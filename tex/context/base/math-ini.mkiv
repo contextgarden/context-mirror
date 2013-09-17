@@ -553,13 +553,13 @@
 \def\activatemathcharacters
   {\the\activatedmathcharacters}
 
-% \setnewconstant\primeasciicode 39 % '
+% beware, not runtime, so has to happen at format generation
 
 \activatemathcharacter\circumflexasciicode
 \activatemathcharacter\underscoreasciicode
 \activatemathcharacter\ampersandasciicode
 
-%activatemathcharacter\primeasciicode
+% \activatemathcharacter\primeasciicode
 
 % not used:
 %
@@ -1076,6 +1076,9 @@
 %     \global\mathcode\c_math_comma \c_math_special
 %     \global\mathcode\c_math_period\c_math_special
 % \to \everyjob
+
+% \activatemathcharacter\c_math_comma
+% \activatemathcharacter\c_math_period
 
 \appendtoks
     \mathcode\c_math_comma \c_math_special

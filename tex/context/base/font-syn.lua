@@ -271,6 +271,7 @@ function fontloader.fullinfo(...) -- check with taco what we get / could get
 end
 
 filters.otf = fontloader.fullinfo
+filters.ttf = fontloader.fullinfo
 
 function filters.afm(name)
     -- we could parse the afm file as well, and then report an error but

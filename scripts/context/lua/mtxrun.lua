@@ -144,7 +144,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-package"] = package.loaded["l-package"] or true
 
--- original size: 9893, stripped down to: 7253
+-- original size: 10594, stripped down to: 7819
 
 if not modules then modules={} end modules ['l-package']={
   version=1.001,
@@ -154,7 +154,7 @@ if not modules then modules={} end modules ['l-package']={
   license="see context related readme files"
 }
 local type=type
-local gsub,format=string.gsub,string.format
+local gsub,format,find=string.gsub,string.format,string.find
 local P,S,Cs,lpegmatch=lpeg.P,lpeg.S,lpeg.Cs,lpeg.match
 local package=package
 local searchers=package.searchers or package.loaders
@@ -184,6 +184,7 @@ local helpers=package.helpers or {
   sequence={
     "already loaded",
     "preload table",
+    "qualified path",
     "lua extra list",
     "lib extra list",
     "path specification",
@@ -329,11 +330,29 @@ local function loadedbypath(name,rawname,paths,islib,what)
   end
 end
 helpers.loadedbypath=loadedbypath
+local function loadedbyname(name,rawname)
+  if find(name,"^/") or find(name,"^[a-zA-Z]:/") then
+    local trace=helpers.trace
+    if trace then
+      helpers.report("qualified name, identifying '%s'",what,name)
+    end
+    if isreadable(name) then
+      if trace then
+        helpers.report("qualified name, '%s' found",what,name)
+      end
+      return loadfile(name)
+    end
+  end
+end
+helpers.loadedbyname=loadedbyname
 methods["already loaded"]=function(name)
   return package.loaded[name]
 end
 methods["preload table"]=function(name)
   return builtin["preload table"](name)
+end
+methods["qualified path"]=function(name)
+ return loadedbyname(addsuffix(lualibfile(name),"lua"),name)
 end
 methods["lua extra list"]=function(name)
   return loadedbypath(addsuffix(lualibfile(name),"lua"    ),name,getextraluapaths(),false,"lua")
@@ -8305,7 +8324,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-env"] = package.loaded["util-env"] or true
 
--- original size: 8722, stripped down to: 5050
+-- original size: 8761, stripped down to: 5085
 
 if not modules then modules={} end modules ['util-env']={
   version=1.001,
@@ -8341,6 +8360,7 @@ local luaengines=allocate {
 environment.validengines=validengines
 environment.basicengines=basicengines
 if not arg then
+  environment.used_as_library=true
 elseif luaengines[file.removesuffix(arg[-1])] then
 elseif validengines[file.removesuffix(arg[0])] then
   if arg[1]=="--luaonly" then
@@ -16449,8 +16469,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 675096
--- stripped bytes    : 238858
+-- original bytes    : 675836
+-- stripped bytes    : 238997
 
 -- end library merge
 

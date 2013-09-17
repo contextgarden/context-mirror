@@ -57,6 +57,7 @@ environment.basicengines = basicengines
 -- instead we could set ranges
 
 if not arg then
+    environment.used_as_library = true
     -- used as library
 elseif luaengines[file.removesuffix(arg[-1])] then
 --     arg[-1] = arg[0]

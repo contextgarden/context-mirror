@@ -60,6 +60,7 @@ local insert_node_after   = node.insert_after
 local insert_node_before  = node.insert_before
 local free_node           = node.free
 local new_node            = node.new -- todo: pool: math_noad math_sub
+local copy_node           = node.copy
 
 local new_kern            = nodes.pool.kern
 local new_rule            = nodes.pool.rule
@@ -150,6 +151,10 @@ local function process(start,what,n,parent)
         elseif id == math_char or id == math_textchar or id == math_delim then
             break
         elseif id == math_noad then
+if prev then
+    -- we have no proper prev in math nodes yet
+    start.prev = prev
+end
             local noad = start.nucleus      if noad then process(noad,what,n,start) end -- list
                   noad = start.sup          if noad then process(noad,what,n,start) end -- list
                   noad = start.sub          if noad then process(noad,what,n,start) end -- list
@@ -185,6 +190,7 @@ local function process(start,what,n,parent)
         else
             -- glue, penalty, etc
         end
+prev = start
         start = start.next
     end
 end
@@ -497,13 +503,30 @@ local collapse = { } processors.collapse = collapse
 
 local mathpairs = characters.mathpairs
 
-mathpairs[0x2032] = { [0x2032] = 0x2033, [0x2033] = 0x2034 } -- (prime,prime) (prime,doubleprime)
-mathpairs[0x2033] = { [0x2032] = 0x2034 }                    -- (doubleprime,prime)
+mathpairs[0x2032] = { [0x2032] = 0x2033, [0x2033] = 0x2034, [0x2034] = 0x2057 } -- (prime,prime) (prime,doubleprime) (prime,tripleprime)
+mathpairs[0x2033] = { [0x2032] = 0x2034, [0x2033] = 0x2057 }                    -- (doubleprime,prime) (doubleprime,doubleprime)
+mathpairs[0x2034] = { [0x2032] = 0x2057 }                                       -- (tripleprime,prime)
+
+mathpairs[0x2035] = { [0x2035] = 0x2036, [0x2036] = 0x2037 }                    -- (reversedprime,reversedprime) (reversedprime,doublereversedprime)
+mathpairs[0x2036] = { [0x2035] = 0x2037 }                                       -- (doublereversedprime,reversedprime)
 
 mathpairs[0x222B] = { [0x222B] = 0x222C, [0x222C] = 0x222D }
 mathpairs[0x222C] = { [0x222B] = 0x222D }
 
-mathpairs[0x007C] = { [0x007C] = 0x2016 } -- double bars
+mathpairs[0x007C] = { [0x007C] = 0x2016, [0x2016] = 0x2980 } -- bar+bar=double bar+double=triple
+mathpairs[0x2016] = { [0x007C] = 0x2980 }                    -- double+bar=triple
+
+local movesub = {
+    -- primes
+    [0x2032] = 0xFE932,
+    [0x2033] = 0xFE933,
+    [0x2034] = 0xFE934,
+    [0x2057] = 0xFE957,
+    -- reverse primes
+    [0x2035] = 0xFE935,
+    [0x2036] = 0xFE936,
+    [0x2037] = 0xFE937,
+}
 
 local validpair = {
     [noad_rel]             = true,
@@ -513,48 +536,79 @@ local validpair = {
     [noad_opnolimits]      = true,
 }
 
-local function collapsepair(pointer,what,n,parent) -- todo: switch to turn in on and off
+local function movesubscript(parent,current_nucleus,current_char)
+    local prev = parent.prev
+    if prev and prev.id == math_noad then
+        if not prev.sup and not prev.sub then
+            current_nucleus.char = movesub[current_char or current_nucleus.char]
+            -- {f} {'}_n => f_n^'
+            local nucleus = parent.nucleus
+            local sub     = parent.sub
+            local sup     = parent.sup
+            prev.sup = nucleus
+            prev.sub = sub
+            local dummy = copy_node(nucleus)
+            dummy.char = 0
+            parent.nucleus = dummy
+            parent.sub = nil
+            if trace_collapsing then
+                report_collapsing("fixing subscript")
+            end
+        end
+    end
+end
+
+local function collapsepair(pointer,what,n,parent,nested) -- todo: switch to turn in on and off
     if parent then
         if validpair[parent.subtype] then
             local current_nucleus = parent.nucleus
-            if not parent.sub and not parent.sup and current_nucleus.id == math_char then
+            if current_nucleus.id == math_char then
                 local current_char = current_nucleus.char
-                local mathpair = mathpairs[current_char]
-                if mathpair then
-                    local next_noad = parent.next
-                    if next_noad and next_noad.id == math_noad then
-                        if validpair[next_noad.subtype] then
-                            local next_nucleus = next_noad.nucleus
-                            if next_nucleus.id == math_char then
-                                local next_char = next_nucleus.char
-                                local newchar = mathpair[next_char]
-                                if newchar then
-                                    local fam = current_nucleus.fam
-                                    local id = font_of_family(fam)
-                                    local characters = fontcharacters[id]
-                                    if characters and characters[newchar] then
-                                        if trace_collapsing then
-                                            report_collapsing("%U + %U => %U",current_char,next_char,newchar)
+                if not parent.sub and not parent.sup then
+                    local mathpair = mathpairs[current_char]
+                    if mathpair then
+                        local next_noad = parent.next
+                        if next_noad and next_noad.id == math_noad then
+                            if validpair[next_noad.subtype] then
+                                local next_nucleus = next_noad.nucleus
+                                if next_nucleus.id == math_char then
+                                    local next_char = next_nucleus.char
+                                    local newchar = mathpair[next_char]
+                                    if newchar then
+                                        local fam = current_nucleus.fam
+                                        local id = font_of_family(fam)
+                                        local characters = fontcharacters[id]
+                                        if characters and characters[newchar] then
+                                            if trace_collapsing then
+                                                report_collapsing("%U + %U => %U",current_char,next_char,newchar)
+                                            end
+                                            current_nucleus.char = newchar
+                                            local next_next_noad = next_noad.next
+                                            if next_next_noad then
+                                                parent.next = next_next_noad
+                                                next_next_noad.prev = parent
+                                            else
+                                                parent.next = nil
+                                            end
+                                            parent.sup = next_noad.sup
+                                            parent.sub = next_noad.sub
+                                            next_noad.sup = nil
+                                            next_noad.sub = nil
+                                            free_node(next_noad)
+                                            collapsepair(pointer,what,n,parent,true)
+                                            if not nested and movesub[current_char] then
+                                                movesubscript(parent,current_nucleus)
+                                            end
                                         end
-                                        current_nucleus.char = newchar
-                                        local next_next_noad = next_noad.next
-                                        if next_next_noad then
-                                            parent.next = next_next_noad
-                                            next_next_noad.prev = parent
-                                        else
-                                            parent.next = nil
-                                        end
-                                        parent.sup = next_noad.sup
-                                        parent.sub = next_noad.sub
-                                        next_noad.sup = nil
-                                        next_noad.sub = nil
-                                        free_node(next_noad)
-                                        collapsepair(pointer,what,n,parent)
                                     end
                                 end
                             end
                         end
+                    elseif not nested and movesub[current_char] then
+                        movesubscript(parent,current_nucleus,current_char)
                     end
+                elseif not nested and movesub[current_char] then
+                    movesubscript(parent,current_nucleus,current_char)
                 end
             end
         end
