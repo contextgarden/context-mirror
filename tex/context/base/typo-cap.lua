@@ -16,11 +16,9 @@ local report_casing = logs.reporter("typesetting","casing")
 
 local nodes, node = nodes, node
 
-local traverse_id     = nodes.traverse_id
 local copy_node       = nodes.copy
 local end_of_math     = nodes.end_of_math
-local free_node       = nodes.free
-local remove_node     = nodes.remove
+
 
 local nodecodes       = nodes.nodecodes
 local skipcodes       = nodes.skipcodes
@@ -28,6 +26,7 @@ local kerncodes       = nodes.kerncodes
 
 local glyph_code      = nodecodes.glyph
 local kern_code       = nodecodes.kern
+local disc_code       = nodecodes.disc
 local math_code       = nodecodes.math
 
 local kerning_code    = kerncodes.kerning
@@ -56,13 +55,38 @@ cases.actions         = { }
 local actions         = cases.actions
 local a_cases         = attributes.private("case")
 
--- we use char(0) as placeholder for the larger font, so we need to remove it
--- before it can do further harm
+local extract         = bit32.extract
+local run             = 0 -- a trick to make neighbouring ranges work
+
+local function set(tag,font)
+    if run == 2^6 then
+        run = 1
+    else
+        run = run + 1
+    end
+    return font * 0x10000 + tag * 0x100 + run
+end
+
+local function get(a)
+    local font = extract(a,16,12) -- 4000
+    local tag  = extract(a, 8, 8) --  250
+    local run  = extract(a, 0, 8) --   50
+    return tag, font, run
+end
+
+-- print(get(set(  1,   0)))
+-- print(get(set(  1,  99)))
+-- print(get(set(  2,  96)))
+-- print(get(set( 30, 922)))
+-- print(get(set(250,4000)))
+
+-- a previous implementation used char(0) as placeholder for the larger font, so we needed
+-- to remove it before it can do further harm ... that was too tricky as we use char 0 for
+-- other cases too
 --
--- we could do the whole glyph run here (till no more attributes match) but
--- then we end up with more code .. maybe i will clean this up anyway as the
--- lastfont hack is somewhat ugly .. on the other hand, we need to deal with
--- cases like:
+-- we could do the whole glyph run here (till no more attributes match) but then we end up
+-- with more code .. maybe i will clean this up anyway as the lastfont hack is somewhat ugly
+-- ... on the other hand, we need to deal with cases like:
 --
 -- \WORD {far too \Word{many \WORD{more \word{pushed} in between} useless} words}
 
@@ -71,34 +95,30 @@ local lccodes = characters.lccodes
 
 -- true false true == mixed
 
-local function helper(head,start,attr,lastfont,codes,special,once,keepother)
+local function helper(start,attr,lastfont,n,codes,special,once,keepother)
     local char = start.char
-    local dc = codes[char]
+    local dc   = codes[char]
     if dc then
         local fnt = start.font
-        if special then
-            -- will become function
-            if char == 0 then
-                lastfont[attr] = fnt
-                head, start = remove_node(head,start,true)
-                return head, start and start.prev or head, true
-            elseif lastfont[attr] and start.prev.id ~= glyph_code then
-                fnt = lastfont[attr]
-                start.font = fnt
-            end
-        elseif char == 0 then
-         -- print("removing",char)
-         -- head, start = remove_node(head,start,true)
-         -- return head, start and getprev(start) or head, true
-        end
         if keepother and dc == char then
-            if lastfont[attr] then
-                start.font = lastfont[attr]
-                return head, start, true
+            local lfa = lastfont[n]
+            if lfa then
+                start.font = lfa
+                return start, true
             else
-                return head, start, false
+                return start, false
             end
         else
+            if special then
+                local lfa = lastfont[n]
+                if lfa then
+                    local previd = start.prev.id
+                    if previd ~= glyph_code and previd ~= disc_code then
+                        fnt = lfa
+                        setfield(start,"font",lfa)
+                    end
+                end
+            end
             local ifc = fontchar[fnt]
             if type(dc) == "table" then
                 local ok = true
@@ -111,7 +131,8 @@ local function helper(head,start,attr,lastfont,codes,special,once,keepother)
                 end
                 if ok then
                     -- todo: use generic injector
-                    local prev, original = start, start
+                    local prev     = start
+                    local original = start
                     for i=1,#dc do
                         local chr = dc[i]
                         prev = start
@@ -131,27 +152,27 @@ local function helper(head,start,attr,lastfont,codes,special,once,keepother)
                         end
                     end
                     if once then
-                        lastfont[attr] = nil
+                        lastfont[n] = false
                     end
-                    return head, prev, true
+                    return prev, true
                 end
                 if once then
-                    lastfont[attr] = nil
+                    lastfont[n] = false
                 end
-                return head, start, false
+                return start, false
             elseif ifc[dc] then
                 start.char = dc
                 if once then
-                    lastfont[attr] = nil
+                    lastfont[n] = false
                 end
-                return head, start, true
+                return start, true
             end
         end
     end
     if once then
-        lastfont[attr] = nil
+        lastfont[n] = false
     end
-    return head, start, false
+    return start, false
 end
 
 local registered, n = { }, 0
@@ -171,70 +192,86 @@ end
 
 cases.register = register
 
-local function WORD(head,start,attr,lastfont)
-    lastfont[attr] = nil
-    return helper(head,start,attr,lastfont,uccodes)
+local function WORD(start,attr,lastfont,n)
+    lastfont[n] = false
+    return helper(start,attr,lastfont,n,uccodes)
 end
 
-local function word(head,start,attr,lastfont)
-    lastfont[attr] = nil
-    return helper(head,start,attr,lastfont,lccodes)
+local function word(start,attr,lastfont,n)
+    lastfont[n] = false
+    return helper(start,attr,lastfont,n,lccodes)
 end
 
-local function Word(head,start,attr,lastfont)
-    lastfont[attr] = nil
+local function blockrest(start)
+    local n = start.next
+    while n do
+        local id = n.id
+        if id == glyph_code or id == disc_node and n[a_cases] == attr then
+            n[a_cases] = unsetvalue
+        else
+         -- break -- we can have nested mess
+        end
+        n = n.next
+    end
+end
+
+local function Word(start,attr,lastfont,n) -- looks quite complex
+    lastfont[n] = false
     local prev = start.prev
     if prev and prev.id == kern_code and prev.subtype == kerning_code then
         prev = prev.prev
     end
-    if not prev or prev.id ~= glyph_code then
+    if not prev then
+        blockrest(start)
+        return helper(start,attr,lastfont,n,uccodes)
+    end
+    local previd = prev.id
+    if previd ~= glyph_code and previd ~= disc_code then
         -- only the first character is treated
-        for n in traverse_id(glyph_code,start.next) do
-            if n[a_cases] == attr then
-                n[a_cases] = unsetvalue
-            else
-             -- break -- we can have nested mess
-            end
-        end
+        blockrest(start)
         -- we could return the last in the range and save some scanning
         -- but why bother
-        return helper(head,start,attr,lastfont,uccodes)
+        return helper(start,attr,lastfont,n,uccodes)
     else
-        return head, start, false
+        return start, false
     end
 end
 
-local function Words(head,start,attr,lastfont)
-    lastfont[attr] = nil
+local function Words(start,attr,lastfont,n)
+    lastfont[n] = false
     local prev = start.prev
     if prev and prev.id == kern_code and prev.subtype == kerning_code then
         prev = prev.prev
     end
-    if not prev or prev.id ~= glyph_code then
-        return helper(head,start,attr,lastfont,uccodes)
+    if not prev then
+        return helper(start,attr,lastfont,n,uccodes)
+    end
+    local previd = prev.id
+    if previd ~= glyph_code and previd ~= disc_code then
+        return helper(start,attr,lastfont,n,uccodes)
     else
-        return head, start, false
+        return start, false
     end
 end
 
-local function capital(head,start,attr,lastfont) -- 3
-    return helper(head,start,attr,lastfont,uccodes,true,true)
+local function capital(start,attr,lastfont,n) -- 3
+    return helper(start,attr,lastfont,n,uccodes,true,true)
 end
 
-local function Capital(head,start,attr,lastfont) -- 4
-    return helper(head,start,attr,lastfont,uccodes,true,false)
+local function Capital(start,attr,lastfont,n) -- 4
+    return helper(start,attr,lastfont,n,uccodes,true,false)
 end
 
-local function mixed(head,start,attr,lastfont)
-    return helper(head,start,attr,lastfont,uccodes,true,false,true)
+local function mixed(start,attr,lastfont,n)
+    return helper(start,attr,lastfont,n,uccodes,false,false,true)
 end
 
-local function none(head,start,attr,lastfont)
-    return head, start, false
+local function none(start,attr,lastfont,n)
+    return start, false
 end
 
-local function random(head,start,attr,lastfont)
-    lastfont[attr] = nil
+local function random(start,attr,lastfont,n)
+    lastfont[n] = false
     local ch  = start.char
     local tfm = fontchar[start.font]
     if lccodes[ch] then
@@ -244,7 +281,7 @@ local function random(head,start,attr,lastfont)
                 local uc = uccodes[d]
                 if uc and tfm[uc] then -- this also intercepts tables
                     start.char = uc
-                    return head, start, true
+                    return start, true
                 end
             end
         end
@@ -255,12 +292,12 @@ local function random(head,start,attr,lastfont)
                 local lc = lccodes[d]
                 if lc and tfm[lc] then -- this also intercepts tables
                     start.char = lc
-                    return head, start, true
+                    return start, true
                 end
             end
         end
     end
-    return head, start, false
+    return start, false
 end
 
 register(variables.WORD,    WORD)              --  1
@@ -290,17 +327,48 @@ function cases.handler(head) -- not real fast but also not used on much data
                     lastattr = attr
                 end
                 start[a_cases] = unsetvalue
-                local action = actions[attr%100] -- map back to low number
+                local n, id, m = get(attr)
+                if lastfont[n] == nil then
+                    lastfont[n] = id
+                end
+                local action = actions[n] -- map back to low number
                 if action then
-                    head, start, ok = action(head,start,attr,lastfont)
+                    start, ok = action(start,attr,lastfont,n)
                     if ok then
                         done = true
                     end
                     if trace_casing then
-                        report_casing("case trigger %a, instance %a, result %a",attr%100,div(attr,100),ok)
+                        report_casing("case trigger %a, instance %a, fontid %a, result %a",n,m,id,ok)
                     end
                 elseif trace_casing then
-                    report_casing("unknown case trigger %a",attr)
+                    report_casing("unknown case trigger %a",n)
+                end
+            end
+        elseif id == disc_code then
+            local attr = start[a_cases]
+            if attr and attr > 0 then
+                if attr ~= lastattr then
+                    lastattr = attr
+                end
+                start[a_cases] = unsetvalue
+                local n, id, m = get(attr)
+                if lastfont[n] == nil then
+                    lastfont[n] = id
+                end
+                local action = actions[n] -- map back to low number
+                if action then
+                    local replace = start.replace
+                    if replace then
+                        action(replace,attr,lastfont,n)
+                    end
+                    local pre = start.pre
+                    if pre then
+                        action(pre,attr,lastfont,n)
+                    end
+                    local post = start.post
+                    if post then
+                        action(post,attr,lastfont,n)
+                    end
                 end
             end
         elseif id == math_code then
@@ -313,9 +381,9 @@ function cases.handler(head) -- not real fast but also not used on much data
     return head, done
 end
 
-local m, enabled = 0, false -- a trick to make neighbouring ranges work
+local enabled = false
 
-function cases.set(n)
+function cases.set(n,id)
     if n == v_reset then
         n = unsetvalue
     else
@@ -328,12 +396,7 @@ function cases.set(n)
                 end
                 enabled = true
             end
-            if m == 100 then
-                m = 1
-            else
-                m = m + 1
-            end
-            n = m * 100 + n
+            n = set(n,id)
         else
             n = unsetvalue
         end
