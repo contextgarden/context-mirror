@@ -487,20 +487,20 @@ class CommandLine
 
     private
 
-    def dirtyvalue(value)
+    def dirtyvalue(value) # \xFF suddenly doesn't work any longer
         if value then
             value.gsub(/([\"\'])(.*?)\1/) do
-                $2.gsub(/\s+/o, "\xFFFC")
+                $2.gsub(/\s+/o, "\0xFF")
             end
         else
             ''
         end
     end
 
-    def cleanvalue(value)
+    def cleanvalue(value) # \xFF suddenly doesn't work any longer
         if value then
-            # value.sub(/^([\"\'])(.*?)\1$/) { $2.gsub(/\xFFFC/o, ' ') }
-            value.gsub(/\xFFFC/o, ' ')
+            # value.sub(/^([\"\'])(.*?)\1$/) { $2.gsub(/\xFF/o, ' ') }
+            value.gsub(/\0xFF/o, ' ')
         else
             ''
         end
@@ -569,7 +569,7 @@ class CommandLine
 
     def locateseries(series, value)
 
-        series.each do |key|
+        series.each_char do |key| # was .each but there is no alias to each_char any longer
             locatesingle(key,cleanvalue(value))
         end
 
