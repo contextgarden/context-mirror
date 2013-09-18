@@ -2892,13 +2892,18 @@
 %D
 %D Trivial:
 
-\def\letempty             #1{\let#1\empty}
-\def\globalletempty#1{\global\let#1\empty}
+\unexpanded\def\letempty             #1{\let#1\empty}
+\unexpanded\def\globalletempty#1{\global\let#1\empty}
 
-\def\letvalueempty        #1{\expandafter\let\csname#1\endcsname\empty}
-\def\letgvalueempty#1{\global\expandafter\let\csname#1\endcsname\empty}
-\def\letvaluerelax        #1{\expandafter\let\csname#1\endcsname\relax}
-\def\letgvalurelax #1{\global\expandafter\let\csname#1\endcsname\relax}
+\unexpanded\def\letvalueempty        #1{\expandafter\let\csname#1\endcsname\empty}
+\unexpanded\def\letgvalueempty#1{\global\expandafter\let\csname#1\endcsname\empty}
+\unexpanded\def\letvaluerelax        #1{\expandafter\let\csname#1\endcsname\relax}
+\unexpanded\def\letgvalurelax #1{\global\expandafter\let\csname#1\endcsname\relax}
+
+\unexpanded\def\relaxvalueifundefined#1%
+  {\ifcsname#1\endcsname \else
+     \expandafter\let\csname#1\endcsname\relax
+   \fi}
 
 %D \macros
 %D   {wait}
