@@ -38,13 +38,14 @@ local replacer      = lpeg.replacer
 local utfvalues     = utf.values
 local utfgmatch     = utf.gmatch -- not always present
 
-local p_utftype     = patterns.utftype
-local p_utfoffset   = patterns.utfoffset
-local p_utf8char    = patterns.utf8char
-local p_utf8byte    = patterns.utf8byte
-local p_utfbom      = patterns.utfbom
-local p_newline     = patterns.newline
-local p_whitespace  = patterns.whitespace
+local p_utftype       = patterns.utftype
+local p_utfstricttype = patterns.utfstricttype
+local p_utfoffset     = patterns.utfoffset
+local p_utf8char      = patterns.utf8char
+local p_utf8byte      = patterns.utf8byte
+local p_utfbom        = patterns.utfbom
+local p_newline       = patterns.newline
+local p_whitespace    = patterns.whitespace
 
 if not unicode then
 
@@ -974,6 +975,22 @@ end
 
 function utf.xstring(s)
     return format("0x%05X",type(s) == "number" and s or utfbyte(s))
+end
+
+function utf.toeight(str)
+    if not str then
+        return nil
+    end
+    local utftype = lpegmatch(p_utfstricttype,str)
+    if utftype == "utf-8" then
+        return sub(str,4)
+    elseif utftype == "utf-16-le" then
+        return utf16_to_utf8_le(str)
+    elseif utftype == "utf-16-be" then
+        return utf16_to_utf8_ne(str)
+    else
+        return str
+    end
 end
 
 --

@@ -434,7 +434,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 28801, stripped down to: 15770
+-- original size: 29071, stripped down to: 15964
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -483,6 +483,7 @@ local utfbom_16_le=P('\255\254')
 local utfbom_8=P('\239\187\191')   
 local utfbom=utfbom_32_be+utfbom_32_le+utfbom_16_be+utfbom_16_le+utfbom_8
 local utftype=utfbom_32_be*Cc("utf-32-be")+utfbom_32_le*Cc("utf-32-le")+utfbom_16_be*Cc("utf-16-be")+utfbom_16_le*Cc("utf-16-le")+utfbom_8*Cc("utf-8")+alwaysmatched*Cc("utf-8") 
+local utfstricttype=utfbom_32_be*Cc("utf-32-be")+utfbom_32_le*Cc("utf-32-le")+utfbom_16_be*Cc("utf-16-be")+utfbom_16_le*Cc("utf-16-le")+utfbom_8*Cc("utf-8")
 local utfoffset=utfbom_32_be*Cc(4)+utfbom_32_le*Cc(4)+utfbom_16_be*Cc(2)+utfbom_16_le*Cc(2)+utfbom_8*Cc(3)+Cc(0)
 local utf8next=R("\128\191")
 patterns.utfbom_32_be=utfbom_32_be
@@ -498,6 +499,7 @@ patterns.utf8three=R("\224\239")*utf8next*utf8next
 patterns.utf8four=R("\240\244")*utf8next*utf8next*utf8next
 patterns.utfbom=utfbom
 patterns.utftype=utftype
+patterns.utfstricttype=utfstricttype
 patterns.utfoffset=utfoffset
 local utf8char=patterns.utf8one+patterns.utf8two+patterns.utf8three+patterns.utf8four
 local validutf8char=utf8char^0*endofstring*Cc(true)+Cc(false)
@@ -4092,7 +4094,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 32631, stripped down to: 14233
+-- original size: 33066, stripped down to: 14607
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -4115,6 +4117,7 @@ local replacer=lpeg.replacer
 local utfvalues=utf.values
 local utfgmatch=utf.gmatch 
 local p_utftype=patterns.utftype
+local p_utfstricttype=patterns.utfstricttype
 local p_utfoffset=patterns.utfoffset
 local p_utf8char=patterns.utf8char
 local p_utf8byte=patterns.utf8byte
@@ -4601,6 +4604,21 @@ function utf.ustring(s)
 end
 function utf.xstring(s)
   return format("0x%05X",type(s)=="number" and s or utfbyte(s))
+end
+function utf.toeight(str)
+  if not str then
+    return nil
+  end
+  local utftype=lpegmatch(p_utfstricttype,str)
+  if utftype=="utf-8" then
+    return sub(str,4)
+  elseif utftype=="utf-16-le" then
+    return utf16_to_utf8_le(str)
+  elseif utftype=="utf-16-be" then
+    return utf16_to_utf8_ne(str)
+  else
+    return str
+  end
 end
 local p_nany=p_utf8char/""
 if utfgmatch then
@@ -5235,7 +5253,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 22703, stripped down to: 15360
+-- original size: 22787, stripped down to: 15432
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -5247,13 +5265,14 @@ if not modules then modules={} end modules ['util-tab']={
 utilities=utilities or {}
 utilities.tables=utilities.tables or {}
 local tables=utilities.tables
-local format,gmatch,gsub=string.format,string.gmatch,string.gsub
+local format,gmatch,gsub,sub=string.format,string.gmatch,string.gsub,string.sub
 local concat,insert,remove=table.concat,table.insert,table.remove
 local setmetatable,getmetatable,tonumber,tostring=setmetatable,getmetatable,tonumber,tostring
 local type,next,rawset,tonumber,tostring,load,select=type,next,rawset,tonumber,tostring,load,select
 local lpegmatch,P,Cs,Cc=lpeg.match,lpeg.P,lpeg.Cs,lpeg.Cc
 local sortedkeys,sortedpairs=table.sortedkeys,table.sortedpairs
 local formatters=string.formatters
+local utftoeight=utf.toeight
 local splitter=lpeg.tsplitat(".")
 function tables.definetable(target,nofirst,nolast) 
   local composed,shortcut,t=nil,nil,{}
@@ -5528,6 +5547,7 @@ function table.load(filename,loader)
   if filename then
     local t=(loader or io.loaddata)(filename)
     if t and t~="" then
+      local t=utftoeight(t)
       t=load(t)
       if type(t)=="function" then
         t=t()
@@ -16469,8 +16489,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 675836
--- stripped bytes    : 238997
+-- original bytes    : 676625
+-- stripped bytes    : 239146
 
 -- end library merge
 

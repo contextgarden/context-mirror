@@ -100,21 +100,6 @@ local methods            = fonts.analyzers.methods
 local otffeatures        = fonts.constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
 
-local fontprocesses      = fonts.hashes.processes
-local xprocesscharacters = nodes.handlers.characters
-
-local function processcharacters(head,font)
-    return xprocesscharacters(head)
-end
-
--- function processcharacters(head,font)
---     local processors = fontprocesses[font]
---     for i=1,#processors do
---         head = processors[i](head,font,0)
---     end
---     return head, true
--- end
-
 local insert_node_after  = node.insert_after
 local copy_node          = node.copy
 local free_node          = node.free
@@ -137,6 +122,30 @@ local s_half             = states.half
 local s_pref             = states.pref
 local s_blwf             = states.blwf
 local s_pstf             = states.pstf
+
+local replace_all_nbsp   = nil
+
+replace_all_nbsp = function(head) -- delayed definition
+    replace_all_nbsp = typesetters and typesetters.characters and typesetters.characters.replacenbspaces or function(head)
+        return head
+    end
+    return replace_all_nbsp(head)
+end
+
+local fontprocesses      = fonts.hashes.processes
+local xprocesscharacters = nodes.handlers.characters
+
+local function processcharacters(head,font)
+    return xprocesscharacters(head)
+end
+
+-- function processcharacters(head,font)
+--     local processors = fontprocesses[font]
+--     for i=1,#processors do
+--         head = processors[i](head,font,0)
+--     end
+--     return head, true
+-- end
 
 -- In due time there will be entries here for scripts like Bengali, Gujarati,
 -- Gurmukhi, Kannada, Malayalam, Oriya, Tamil, Telugu. Feel free to provide the
@@ -535,15 +544,15 @@ local function deva_initialize(font,attr)
 
 end
 
-local function deva_reorder(head,start,stop,font,attr)
+local function deva_reorder(head,start,stop,font,attr,nbspaces)
 
     local lookuphash, reph, vattu, blwfcache = deva_initialize(font,attr) -- could be inlines but ugly
 
-    local current = start
-    local n = start.next
-    local base = nil
+    local current   = start
+    local n         = start.next
+    local base      = nil
     local firstcons = nil
-    local lastcons = nil
+    local lastcons  = nil
     local basefound = false
 
     if start.char == c_ra and halant[n.char] and reph then
@@ -568,8 +577,11 @@ local function deva_reorder(head,start,stop,font,attr)
             free_node(current)
             return head, stop
         else
-            base, firstcons, lastcons = current, current, current
-            current = current.next
+            nbspaces[current] = true
+            base      = current
+            firstcons = current
+            lastcons  = current
+            current   = current.next
             if current ~= stop then
                 if nukta[current.char] then
                     current = current.next
@@ -861,7 +873,14 @@ local function deva_reorder(head,start,stop,font,attr)
                 end
             else
                 local char = current.char
-                if consonant[char] or char == c_nbsp then -- maybe combined hash
+                if consonant[char] then
+                    cns = current
+                    local next = cns.next
+                    if halant[next.char] then
+                        cns = next
+                    end
+                elseif char == c_nbsp then
+                    nbspaces[current] = true
                     cns = current
                     local next = cns.next
                     if halant[next.char] then
@@ -874,6 +893,7 @@ local function deva_reorder(head,start,stop,font,attr)
     end
 
     if base.char == c_nbsp then
+        nbspaces[base] = nil
         head = remove_node(head,base)
         free_node(base)
     end
@@ -1208,13 +1228,18 @@ end
 -- this one will be merged into the caller: it saves a call, but we will then make function
 -- of the actions
 
-local function dev2_reorder(head,start,stop,font,attr) -- maybe do a pass over (determine stop in sweep)
+local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pass over (determine stop in sweep)
 
     local lookuphash, seqsubset = dev2_initialize(font,attr)
 
-    local reph, pre_base_reordering_consonants = false, { } -- was nil ... probably went unnoticed because never assigned
-    local halfpos, basepos, subpos, postpos = nil, nil, nil, nil
-    local locl = { }
+    local pre_base_reordering_consonants = { } -- was nil ... probably went unnoticed because never assigned
+
+    local reph     = false -- was nil ... probably went unnoticed because never assigned
+    local halfpos  = nil
+    local basepos  = nil
+    local subpos   = nil
+    local postpos  = nil
+    local locl     = { }
 
     for i=1,#seqsubset do
 
@@ -1262,6 +1287,7 @@ local function dev2_reorder(head,start,stop,font,attr) -- maybe do a pass over (
         elseif kind == "pref" then
             -- why not global? pretty ineffient this way
             -- this will move to the initializer and we will store the hash in dataset
+            -- todo: reph might also be result of chain
             for k, v in lookupcache[0x094D], next do
                 pre_base_reordering_consonants[k] = v and v["ligature"]    --ToDo: reph might also be result of chain
             end
@@ -1364,15 +1390,17 @@ local function dev2_reorder(head,start,stop,font,attr) -- maybe do a pass over (
         current = start.next.next
     end
 
-    if current ~= stop.next and current.char == c_nbsp then
-        -- Stand Alone cluster
+    local function action(is_nbsp)
         if current == stop then
             stop = stop.prev
             head = remove_node(head,current)
             free_node(current)
             return head, stop
         else
-            base = current
+            if is_nbsp then
+                nbspaces[current] = true
+            end
+            base    = current
             current = current.next
             if current ~= stop then
                 local char = current.char
@@ -1410,6 +1438,14 @@ local function dev2_reorder(head,start,stop,font,attr) -- maybe do a pass over (
                 end
             end
         end
+    end
+
+    if current ~= stop.next then
+        -- Stand Alone cluster
+        stand_alone()
+    elseif current.char == c_nbsp then
+        -- Stand Alone cluster
+        stand_alone(true)
     else -- not Stand Alone cluster
         local last = stop.next
         while current ~= last do    -- find base consonant
@@ -1573,6 +1609,7 @@ local function dev2_reorder(head,start,stop,font,attr) -- maybe do a pass over (
     end
 
     if base.char == c_nbsp then
+        nbspaces[base] = nil 
         head = remove_node(head, base)
         free_node(base)
     end
@@ -1900,7 +1937,10 @@ end
 -- a lot. Common code has been synced.
 
 function methods.deva(head,font,attr)
-    local current, start, done = head, true, false
+    local current  = head
+    local start    = true
+    local done     = false
+    local nbspaces = { }
     while current do
         if current.id == glyph_code and current.subtype<256 and current.font == font then
             done = true
@@ -1932,7 +1972,7 @@ function methods.deva(head,font,attr)
 				local syllableend = analyze_next_chars_one(c,font,2)
 				current = syllableend.next
                 if syllablestart ~= syllableend then
-                    head, current = deva_reorder(head,syllablestart,syllableend,font,attr)
+                    head, current = deva_reorder(head,syllablestart,syllableend,font,attr,nbspaces)
                     current = current.next
                 end
             else
@@ -2041,7 +2081,7 @@ function methods.deva(head,font,attr)
                         end
                     end
                     if syllablestart ~= syllableend then
-                        head, current = deva_reorder(head,syllablestart,syllableend,font,attr)
+                        head, current = deva_reorder(head,syllablestart,syllableend,font,attr,nbspaces)
                         current = current.next
                     end
                 elseif independent_vowel[char] then
@@ -2080,6 +2120,9 @@ function methods.deva(head,font,attr)
         start = false
     end
 
+    if next(nbspaces) then
+        head = replace_all_nbsp(head,nbspaces)
+    end
     return head, done
 end
 
@@ -2089,10 +2132,11 @@ end
 -- handler(head,start,kind,lookupname,lookupmatch,sequence,lookuphash,1)
 
 function methods.dev2(head,font,attr)
-    local current = head
-    local start = true
-    local done = false
-    local syllabe = 0
+    local current  = head
+    local start    = true
+    local done     = false
+    local syllabe  = 0
+    local nbspaces = { }
     while current do
         local syllablestart, syllableend = nil, nil
         if current.id == glyph_code and current.subtype<256 and current.font == font then
@@ -2114,6 +2158,7 @@ function methods.dev2(head,font,attr)
             else
                 local standalone = char == c_nbsp
                 if standalone then
+                    nbspaces[current] = true
                     local p = current.prev
                     if not p then
                         -- begin of paragraph or box
@@ -2148,7 +2193,7 @@ function methods.dev2(head,font,attr)
             end
         end
         if syllableend and syllablestart ~= syllableend then
-            head, current = dev2_reorder(head,syllablestart,syllableend,font,attr)
+            head, current = dev2_reorder(head,syllablestart,syllableend,font,attr,nbspaces)
         end
         if not syllableend and current.id == glyph_code and current.subtype<256 and current.font == font and not current[a_state] then
             local mark = mark_four[current.char]
@@ -2158,6 +2203,9 @@ function methods.dev2(head,font,attr)
         end
         start = false
         current = current.next
+    end
+    if next(nbspaces) then
+        head = replace_all_nbsp(head,nbspaces)
     end
 
     return head, done

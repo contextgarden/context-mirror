@@ -14,6 +14,8 @@ local byte, lower = string.byte, string.lower
 -- to be redone: characters will become tagged spaces instead as then we keep track of
 -- spaceskip etc
 
+local next = next
+
 trace_characters = false  trackers.register("typesetters.characters", function(v) trace_characters = v end)
 
 report_characters = logs.reporter("typesetting","characters")
@@ -41,7 +43,7 @@ local chardata           = characters.data
 
 local typesetters        = typesetters
 
-local characters         = { }
+local characters         = typesetters.characters or { } -- can be predefined
 typesetters.characters   = characters
 
 local fonthashes         = fonts.hashes
@@ -93,20 +95,52 @@ local function inject_nobreak_space(unicode,head,current,space,spacestretch,spac
     return head, current
 end
 
+local keepnbspbefore = {
+    [0x094D] = true, -- category mn
+    [0x0CCD] = true,
+}
+
+characters.keepnbspbefore = keepnbspbefore -- so we can extend
+
+local function nbsp(head,current)
+    local para = fontparameters[current.font]
+    if current[a_alignstate] == 1 then -- flushright
+        head, current = inject_nobreak_space(0x00A0,head,current,para.space,0,0)
+        current.subtype = space_skip_code
+    else
+        head, current = inject_nobreak_space(0x00A0,head,current,para.space,para.spacestretch,para.spaceshrink)
+    end
+    return head, current
+end
+
+-- assumes nuts or nodes, depending on callers .. so no tonuts here
+
+function characters.replacenbsp(head,current)
+    head, current = nbsp(head,current)
+    head, current = remove_node(head,current,true)
+    return head, current
+end
+
+function characters.replacenbspaces(head,nbspaces)
+    for current in next, nbspaces do
+        head, current = nbsp(head,current)
+        head, current = remove_node(head,current,true)
+    end
+    return head
+end
+
 local methods = {
 
     -- The next one uses an attribute assigned to the character but still we
     -- don't have the 'local' value.
 
     [0x00A0] = function(head,current) -- nbsp
-        local para = fontparameters[current.font]
-        if current[a_alignstate] == 1 then -- flushright
-            head, current = inject_nobreak_space(0x00A0,head,current,para.space,0,0)
-            current.subtype = space_skip_code
+        local next = current.next
+        if next and next.id == glyph_code and keepnbspbefore[next.char] then
+            return false
         else
-            head, current = inject_nobreak_space(0x00A0,head,current,para.space,para.spacestretch,para.spaceshrink)
+            return nbsp(head,current)
         end
-        return head, current
     end,
 
     [0x2000] = function(head,current) -- enquad
@@ -184,8 +218,10 @@ function characters.handler(head)
                 if trace_characters then
                     report_characters("replacing character %C, description %a",char,lower(chardata[char].description))
                 end
-                head = method(head,current)
-                head = remove_node(head,current,true)
+                local h = method(head,current)
+                if h then
+                    head = remove_node(h,current,true)
+                end
                 done = true
             end
             current = next

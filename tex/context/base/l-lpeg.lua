@@ -82,7 +82,6 @@ setinspector(function(v) if lpegtype(v) then lpegprint(v) return true end end)
 lpeg.patterns  = lpeg.patterns or { } -- so that we can share
 local patterns = lpeg.patterns
 
-
 local anything         = P(1)
 local endofstring      = P(-1)
 local alwaysmatched    = P(true)
@@ -120,6 +119,9 @@ local utfbom           = utfbom_32_be + utfbom_32_le
 local utftype          = utfbom_32_be * Cc("utf-32-be") + utfbom_32_le  * Cc("utf-32-le")
                        + utfbom_16_be * Cc("utf-16-be") + utfbom_16_le  * Cc("utf-16-le")
                        + utfbom_8     * Cc("utf-8")     + alwaysmatched * Cc("utf-8") -- assume utf8
+local utfstricttype    = utfbom_32_be * Cc("utf-32-be") + utfbom_32_le  * Cc("utf-32-le")
+                       + utfbom_16_be * Cc("utf-16-be") + utfbom_16_le  * Cc("utf-16-le")
+                       + utfbom_8     * Cc("utf-8")
 local utfoffset        = utfbom_32_be * Cc(4) + utfbom_32_le * Cc(4)
                        + utfbom_16_be * Cc(2) + utfbom_16_le * Cc(2)
                        + utfbom_8     * Cc(3) + Cc(0)
@@ -141,6 +143,7 @@ patterns.utf8three     = R("\224\239") * utf8next * utf8next
 patterns.utf8four      = R("\240\244") * utf8next * utf8next * utf8next
 patterns.utfbom        = utfbom
 patterns.utftype       = utftype
+patterns.utfstricttype = utfstricttype
 patterns.utfoffset     = utfoffset
 
 local utf8char         = patterns.utf8one + patterns.utf8two + patterns.utf8three + patterns.utf8four

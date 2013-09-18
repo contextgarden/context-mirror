@@ -1686,6 +1686,12 @@ return {
   },
   {
    category = "mkiv",
+   filename = "meta-fnt",
+   loading  = "always",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
    filename = "meta-tex",
    loading  = "always",
    status   = "okay",
@@ -3860,6 +3866,12 @@ return {
   },
   {
    category = "lua",
+   filename = "meta-fnt",
+   loading  = "meta-fnt",
+   status   = "okay",
+  },
+  {
+   category = "lua",
    comment  = "could be done nicer nowadays but who needs it",
    filename = "meta-pdf",
    loading  = "meta-pdf",
@@ -4764,7 +4776,28 @@ return {
   {
    category = "lua",
    filename = "typo-dir",
+   loading  = "typo-dir",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   comment  = "work in progress",
+   filename = "typo-dha",
+   loading  = "typo-dir",
    status   = "todo",
+  },
+  {
+   category = "lua",
+   filename = "typo-dua",
+   loading  = "typo-dir",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   comment  = "work in progress",
+   filename = "typo-dub",
+   loading  = "typo-dir",
+   status   = "okay",
   },
   {
    category = "lua",

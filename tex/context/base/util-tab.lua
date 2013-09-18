@@ -10,13 +10,14 @@ utilities        = utilities or {}
 utilities.tables = utilities.tables or { }
 local tables     = utilities.tables
 
-local format, gmatch, gsub = string.format, string.gmatch, string.gsub
+local format, gmatch, gsub, sub = string.format, string.gmatch, string.gsub, string.sub
 local concat, insert, remove = table.concat, table.insert, table.remove
 local setmetatable, getmetatable, tonumber, tostring = setmetatable, getmetatable, tonumber, tostring
 local type, next, rawset, tonumber, tostring, load, select = type, next, rawset, tonumber, tostring, load, select
 local lpegmatch, P, Cs, Cc = lpeg.match, lpeg.P, lpeg.Cs, lpeg.Cc
 local sortedkeys, sortedpairs = table.sortedkeys, table.sortedpairs
 local formatters = string.formatters
+local utftoeight = utf.toeight
 
 local splitter = lpeg.tsplitat(".")
 
@@ -375,6 +376,7 @@ function table.load(filename,loader)
     if filename then
         local t = (loader or io.loaddata)(filename)
         if t and t ~= "" then
+            local t = utftoeight(t)
             t = load(t)
             if type(t) == "function" then
                 t = t()
