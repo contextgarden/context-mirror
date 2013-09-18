@@ -26,9 +26,9 @@ local insert_node_after  = node.insert_after
 local remove_node        = nodes.remove -- ! nodes
 local copy_node_list     = node.copy_list
 
-local nodepool           = nodes.pool
 local tasks              = nodes.tasks
 
+local nodepool           = nodes.pool
 local new_penalty        = nodepool.penalty
 local new_glue           = nodepool.glue
 
@@ -43,6 +43,8 @@ local chardata           = characters.data
 
 local typesetters        = typesetters
 
+local unicodeblocks      = characters.blocks
+
 local characters         = typesetters.characters or { } -- can be predefined
 typesetters.characters   = characters
 
@@ -50,6 +52,8 @@ local fonthashes         = fonts.hashes
 local fontparameters     = fonthashes.parameters
 local fontcharacters     = fonthashes.characters
 local fontquads          = fonthashes.quads
+
+local setmetatableindex  = table.setmetatableindex
 
 local a_character        = attributes.private("characters")
 local a_alignstate       = attributes.private("alignstate")
@@ -95,13 +99,6 @@ local function inject_nobreak_space(unicode,head,current,space,spacestretch,spac
     return head, current
 end
 
-local keepnbspbefore = {
-    [0x094D] = true, -- category mn
-    [0x0CCD] = true,
-}
-
-characters.keepnbspbefore = keepnbspbefore -- so we can extend
-
 local function nbsp(head,current)
     local para = fontparameters[current.font]
     if current[a_alignstate] == 1 then -- flushright
@@ -129,18 +126,55 @@ function characters.replacenbspaces(head,nbspaces)
     return head
 end
 
+-- This initialization might move someplace else if we need more of it. The problem is that
+-- this module depends on fonts so we have an order problem.
+
+local nbsphash = { } setmetatableindex(nbsphash,function(t,k)
+    for i=unicodeblocks.devanagari.first,unicodeblocks.devanagari.last do nbsphash[i] = true end
+    for i=unicodeblocks.kannada   .first,unicodeblocks.kannada   .last do nbsphash[i] = true end
+    setmetatableindex(nbsphash,nil)
+    return nbsphash[k]
+end)
+
 local methods = {
 
     -- The next one uses an attribute assigned to the character but still we
     -- don't have the 'local' value.
 
+ -- [0x00A0] = function(head,current) -- nbsp
+ --     local next = current.next
+ --     if next and next.id == glyph_code then
+ --         local char = next.char
+ --         if char >= 0x00900 and char <= 0x0097F then
+ --             return false -- devangari
+ --         end
+ --         if char >= 0x00C80 and char <= 0x00CFF then
+ --             return false -- kannada
+ --         end
+ --     end
+ --     local prev = current.prev
+ --     if prev and prev.id == glyph_code then
+ --         local char = prev.char
+ --         if char >= 0x00900 and char <= 0x0097F then
+ --             return false -- devangari
+ --         end
+ --         if char >= 0x00C80 and char <= 0x00CFF then
+ --             return false -- kannada
+ --         end
+ --     end
+ --     return nbsp(head,current)
+ -- end,
+
     [0x00A0] = function(head,current) -- nbsp
         local next = current.next
-        if next and next.id == glyph_code and keepnbspbefore[next.char] then
+        if next and next.id == glyph_code and nbsphash[next.char] then
             return false
-        else
-            return nbsp(head,current)
         end
+        local prev = current.prev
+        if prev and prev.id == glyph_code and nbsphash[prev.char] then
+            return false -- kannada
+        end
+        return nbsp(head,current)
     end,
 
     [0x2000] = function(head,current) -- enquad
