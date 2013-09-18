@@ -490,7 +490,7 @@ class CommandLine
     def dirtyvalue(value)
         if value then
             value.gsub(/([\"\'])(.*?)\1/) do
-                $2.gsub(/\s+/o, "\xFF")
+                $2.gsub(/\s+/o, "\xFFFC")
             end
         else
             ''
@@ -499,8 +499,8 @@ class CommandLine
 
     def cleanvalue(value)
         if value then
-            # value.sub(/^([\"\'])(.*?)\1$/) { $2.gsub(/\xFF/o, ' ') }
-            value.gsub(/\xFF/o, ' ')
+            # value.sub(/^([\"\'])(.*?)\1$/) { $2.gsub(/\xFFFC/o, ' ') }
+            value.gsub(/\xFFFC/o, ' ')
         else
             ''
         end
