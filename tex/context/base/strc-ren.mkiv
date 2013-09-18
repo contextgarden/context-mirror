@@ -625,10 +625,16 @@
         \dontleavehmode % in case there is no strut, else side effects with llap
         \ifconditional\headshownumber
             \llap {
+                \signalrightpage
                 \hbox {
                     \hfill
                     \headnumbercontent
-                    \hskip\dimexpr\d_strc_rendering_local_leftoffset+\doifoddpageelse\leftmargindistance\rightmargindistance\relax
+                    \doifrightpageelse{
+                        \scratchdistance\leftmargindistance
+                    } {
+                        \scratchdistance\rightmargindistance
+                    }
+                    \hskip\dimexpr\d_strc_rendering_local_leftoffset+\scratchdistance\relax
                 }
             }
         \fi

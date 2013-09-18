@@ -36,13 +36,14 @@
 
 %D Beware, these are not really defines (yet).
 
-\definecapitals[\v!WORD   ] % all upper
-\definecapitals[\v!capital] % one upper + font
-\definecapitals[\v!Capital] % some upper + font
-\definecapitals[\v!mixed  ] % UpperCase
-\definecapitals[\v!WORD   ] % all lower
-\definecapitals[\v!Word   ] % one upper + font
-\definecapitals[\v!Words  ] % some upper
+\definecapitals[\v!WORD]            % all upper
+\definecapitals[\v!capital]         % one upper + font
+\definecapitals[\v!Capital]         % some upper + font
+\definecapitals[\v!mixed]           % UpperCase
+\definecapitals[\v!WORD]            % all lower
+\definecapitals[\v!Word]            % one upper + font
+\definecapitals[\v!Words]           % some upper
+\definecapitals[\v!word][\c!style=] % nothing
 
 %D \macros
 %D   {Word, Words, WORD, WORDS}
@@ -185,6 +186,8 @@
 \unexpanded\def\realSmallcapped  {\groupedcommand{\typo_capitals_set_real\v!Word   }\donothing} % one upper + font
 \unexpanded\def\realSmallCapped  {\groupedcommand{\typo_capitals_set_real\v!Words  }\donothing} % some upper
 
+\unexpanded\def\notsmallcapped   {\groupedcommand{\typo_capitals_set_fake\v!word   }\donothing}
+
 \unexpanded\def\font_style_pseudosmallcapped{\typo_capitals_set_fake\v!WORD   } % all upper
 \unexpanded\def\font_style_pseudoSmallcapped{\typo_capitals_set_fake\v!capital} % one upper + font
 \unexpanded\def\font_style_pseudoSmallCapped{\typo_capitals_set_fake\v!Capital} % some upper + font
@@ -193,6 +196,8 @@
 \unexpanded\def\font_style_realsmallcapped  {\typo_capitals_set_real\v!WORD   } % all lower
 \unexpanded\def\font_style_realSmallcapped  {\typo_capitals_set_real\v!Word   } % one upper + font
 \unexpanded\def\font_style_realSmallCapped  {\typo_capitals_set_real\v!Words  } % some upper
+
+\unexpanded\def\font_style_notsmallcapped   {\typo_capitals_set_fake\v!word   }
 
 \unexpanded\def\typo_capitals_smallcaps
   {\ifconditional\c_typo_capitals_pseudo
@@ -228,10 +233,6 @@
 \let\font_style_normalsmallcapped\font_style_smallcapped
 \let\font_style_normalWORD       \WORD
 \let\font_style_normalword       \word
-
-%D As suggested by WS:
-
-\unexpanded\def\notsmallcapped{\groupedcommand{\setcharactercasing[\v!word]\signalcharacter}{}}
 
 %D Further tweaks
 
