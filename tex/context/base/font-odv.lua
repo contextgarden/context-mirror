@@ -100,11 +100,11 @@ local methods            = fonts.analyzers.methods
 local otffeatures        = fonts.constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
 
-local insert_node_after  = node.insert_after
-local copy_node          = node.copy
-local free_node          = node.free
-local remove_node        = node.remove
-local flush_list         = node.flush_list
+local insert_node_after  = nodes.insert_after
+local copy_node          = nodes.copy
+local free_node          = nodes.free
+local remove_node        = nodes.remove
+local flush_list         = nodes.flush_list
 
 local unsetvalue         = attributes.unsetvalue
 
@@ -577,7 +577,7 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
             free_node(current)
             return head, stop
         else
-            nbspaces[current] = true
+            nbspaces  = nbspaces + 1
             base      = current
             firstcons = current
             lastcons  = current
@@ -880,8 +880,8 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
                         cns = next
                     end
                 elseif char == c_nbsp then
-                    nbspaces[current] = true
-                    cns = current
+                    nbspaces   = nbspaces + 1
+                    cns        = current
                     local next = cns.next
                     if halant[next.char] then
                         cns = next
@@ -893,12 +893,12 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
     end
 
     if base.char == c_nbsp then
-        nbspaces[base] = nil
+        nbspaces = nbspaces - 1
         head = remove_node(head,base)
         free_node(base)
     end
 
-    return head, stop
+    return head, stop, nbspaces
 end
 
 -- If a pre-base matra character had been reordered before applying basic features,
@@ -1398,7 +1398,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
             return head, stop
         else
             if is_nbsp then
-                nbspaces[current] = true
+                nbspaces = nbspaces + 1
             end
             base    = current
             current = current.next
@@ -1609,12 +1609,12 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
     end
 
     if base.char == c_nbsp then
-        nbspaces[base] = nil 
+        nbspaces = nbspaces - 1
         head = remove_node(head, base)
         free_node(base)
     end
 
-    return head, stop
+    return head, stop, nbspaces
 end
 
 -- cleaned up and optimized ... needs checking (local, check order, fixes, extra hash, etc)
@@ -1674,9 +1674,9 @@ local function analyze_next_chars_one(c,font,variant) -- skip one dependent vowe
                 if nv and zw_char[n.char] then
                     n = nn
                     nn = nn.next
-                    nv = nn.id == glyph_code and nn.subtype<256 and nn.font == font
+                    nv = nn and nn.id == glyph_code and nn.subtype<256 and nn.font == font
                 end
-                if nn and nv and halant[n.char] and consonant[nn.char] then
+                if nv and halant[n.char] and consonant[nn.char] then
                     c = nn
                 end
             end
@@ -1940,7 +1940,7 @@ function methods.deva(head,font,attr)
     local current  = head
     local start    = true
     local done     = false
-    local nbspaces = { }
+    local nbspaces = 0
     while current do
         if current.id == glyph_code and current.subtype<256 and current.font == font then
             done = true
@@ -1972,7 +1972,7 @@ function methods.deva(head,font,attr)
 				local syllableend = analyze_next_chars_one(c,font,2)
 				current = syllableend.next
                 if syllablestart ~= syllableend then
-                    head, current = deva_reorder(head,syllablestart,syllableend,font,attr,nbspaces)
+                    head, current, nbspaces = deva_reorder(head,syllablestart,syllableend,font,attr,nbspaces)
                     current = current.next
                 end
             else
@@ -2081,7 +2081,7 @@ function methods.deva(head,font,attr)
                         end
                     end
                     if syllablestart ~= syllableend then
-                        head, current = deva_reorder(head,syllablestart,syllableend,font,attr,nbspaces)
+                        head, current, nbspaces = deva_reorder(head,syllablestart,syllableend,font,attr,nbspaces)
                         current = current.next
                     end
                 elseif independent_vowel[char] then
@@ -2120,9 +2120,12 @@ function methods.deva(head,font,attr)
         start = false
     end
 
-    if next(nbspaces) then
-        head = replace_all_nbsp(head,nbspaces)
+    if nbspaces > 0 then
+        head = replace_all_nbsp(head)
     end
+
+    head = typesetters.characters.handler(head)
+
     return head, done
 end
 
@@ -2136,7 +2139,7 @@ function methods.dev2(head,font,attr)
     local start    = true
     local done     = false
     local syllabe  = 0
-    local nbspaces = { }
+    local nbspaces = 0
     while current do
         local syllablestart, syllableend = nil, nil
         if current.id == glyph_code and current.subtype<256 and current.font == font then
@@ -2158,7 +2161,7 @@ function methods.dev2(head,font,attr)
             else
                 local standalone = char == c_nbsp
                 if standalone then
-                    nbspaces[current] = true
+                    nbspaces = nbspaces + 1
                     local p = current.prev
                     if not p then
                         -- begin of paragraph or box
@@ -2193,7 +2196,7 @@ function methods.dev2(head,font,attr)
             end
         end
         if syllableend and syllablestart ~= syllableend then
-            head, current = dev2_reorder(head,syllablestart,syllableend,font,attr,nbspaces)
+            head, current, nbspaces = dev2_reorder(head,syllablestart,syllableend,font,attr,nbspaces)
         end
         if not syllableend and current.id == glyph_code and current.subtype<256 and current.font == font and not current[a_state] then
             local mark = mark_four[current.char]
@@ -2204,8 +2207,9 @@ function methods.dev2(head,font,attr)
         start = false
         current = current.next
     end
-    if next(nbspaces) then
-        head = replace_all_nbsp(head,nbspaces)
+
+    if nbspaces > 0 then
+        head = replace_all_nbsp(head)
     end
 
     return head, done
