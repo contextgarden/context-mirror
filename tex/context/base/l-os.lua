@@ -492,3 +492,60 @@ end
 -- print(os.which("inkscape"))
 -- print(os.which("gs.exe"))
 -- print(os.which("ps2pdf"))
+
+-- These are moved from core-con.lua (as I needed them elsewhere).
+
+local function isleapyear(year)
+    return (year % 400 == 0) or ((year % 100 ~= 0) and (year % 4 == 0))
+end
+
+os.isleapyear = isleapyear
+
+-- nicer:
+--
+-- local days = {
+--     [false] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
+--     [true]  = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+-- }
+--
+-- local function nofdays(year,month)
+--     return days[isleapyear(year)][month]
+--     return month == 2 and isleapyear(year) and 29 or days[month]
+-- end
+--
+-- more efficient:
+
+local days = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+
+local function nofdays(year,month)
+    if not month then
+        return isleapyear(year) and 365 or 364
+    else
+        return month == 2 and isleapyear(year) and 29 or days[month]
+    end
+end
+
+os.nofdays = nofdays
+
+function os.weekday(day,month,year)
+    return date("%w",time { year = year, month = month, day = day }) + 1
+end
+
+function os.validdate(year,month,day)
+    -- we assume that all three values are set
+    -- year is always ok, even if lua has a 1970 time limit
+    if month < 1 then
+        month = 1
+    elseif month > 12 then
+        month = 12
+    end
+    if day < 1 then
+        day = 1
+    else
+        local max = nofdays(year,month)
+        if day > max then
+            day = max
+        end
+    end
+    return year, month, day
+end

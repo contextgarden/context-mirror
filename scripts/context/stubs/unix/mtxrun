@@ -2575,7 +2575,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 14418, stripped down to: 8830
+-- original size: 15800, stripped down to: 9551
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -2913,6 +2913,38 @@ if not os.sleep then
     end
     socket.sleep(n)
   end
+end
+local function isleapyear(year)
+  return (year%400==0) or ((year%100~=0) and (year%4==0))
+end
+os.isleapyear=isleapyear
+local days={ 31,28,31,30,31,30,31,31,30,31,30,31 }
+local function nofdays(year,month)
+  if not month then
+    return isleapyear(year) and 365 or 364
+  else
+    return month==2 and isleapyear(year) and 29 or days[month]
+  end
+end
+os.nofdays=nofdays
+function os.weekday(day,month,year)
+  return date("%w",time { year=year,month=month,day=day })+1
+end
+function os.validdate(year,month,day)
+  if month<1 then
+    month=1
+  elseif month>12 then
+    month=12
+  end
+  if day<1 then
+    day=1
+  else
+    local max=nofdays(year,month)
+    if day>max then
+      day=max
+    end
+  end
+  return year,month,day
 end
 
 
@@ -16489,8 +16521,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 676625
--- stripped bytes    : 239146
+-- original bytes    : 678007
+-- stripped bytes    : 239807
 
 -- end library merge
 
