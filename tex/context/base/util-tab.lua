@@ -301,11 +301,19 @@ local f_hashed_number   = formatters["[%q]=%s,"]
 local f_hashed_boolean  = formatters["[%q]=%l,"]
 local f_hashed_table    = formatters["[%q]="]
 
-local f_indexed_string  = formatters["%q,"]
-local f_indexed_number  = formatters["%s,"]
-local f_indexed_boolean = formatters["%l,"]
+local f_indexed_string  = formatters["[%s]=%q,"]
+local f_indexed_number  = formatters["[%s]=%s,"]
+local f_indexed_boolean = formatters["[%s]=%l,"]
 
-function table.fastserialize(t,prefix) -- so prefix should contain the = | not sorted
+local f_ordered_string  = formatters["%q,"]
+local f_ordered_number  = formatters["%s,"]
+local f_ordered_boolean = formatters["%l,"]
+
+function table.fastserialize(t,prefix)
+
+    -- prefix should contain the =
+    -- not sorted
+    -- only number and string indices (currently)
 
     local r = { prefix or "return" }
     local m = 1
@@ -315,22 +323,36 @@ function table.fastserialize(t,prefix) -- so prefix should contain the = | not s
         m = m + 1
         r[m] = "{"
         if n > 0 then
-            for i=1,n do
+            for i=0,n do
                 local v  = t[i]
                 local tv = type(v)
                 if tv == "string" then
-                    m = m + 1 r[m] = f_indexed_string(v)
+                    m = m + 1 r[m] = f_ordered_string(v)
                 elseif tv == "number" then
-                    m = m + 1 r[m] = f_indexed_number(v)
+                    m = m + 1 r[m] = f_ordered_number(v)
                 elseif tv == "table" then
                     fastserialize(v)
                 elseif tv == "boolean" then
-                    m = m + 1 r[m] = f_indexed_boolean(v)
+                    m = m + 1 r[m] = f_ordered_boolean(v)
                 end
             end
-        else
-            for k, v in next, t do
-                local tv = type(v)
+        end
+        for k, v in next, t do
+            local tk = type(k)
+            local tv = type(v)
+            if tk == "number" then
+                if k > n or k < 0 then
+                    if tv == "string" then
+                        m = m + 1 r[m] = f_indexed_string(k,v)
+                    elseif tv == "number" then
+                        m = m + 1 r[m] = f_indexed_number(k,v)
+                    elseif tv == "table" then
+                        fastserialize(v)
+                    elseif tv == "boolean" then
+                        m = m + 1 r[m] = f_indexed_boolean(k,v)
+                    end
+                end
+            else
                 if tv == "string" then
                     m = m + 1 r[m] = f_hashed_string(k,v)
                 elseif tv == "number" then
@@ -519,6 +541,10 @@ local f_table_finish      = formatters["}"]
 local spaces = utilities.strings.newrepeater(" ")
 
 local serialize = table.serialize -- the extensive one, the one we started with
+
+-- there is still room for optimization: index run, key run, but i need to check with the
+-- latest lua for the value of #n (with holes) .. anyway for tracing purposes we want
+-- indices / keys being sorted, so it will never be real fast
 
 function table.serialize(root,name,specification)
 
