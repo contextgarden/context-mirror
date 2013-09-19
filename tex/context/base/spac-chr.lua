@@ -22,9 +22,10 @@ report_characters = logs.reporter("typesetting","characters")
 
 local nodes, node = nodes, node
 
-local insert_node_after  = node.insert_after
-local remove_node        = nodes.remove -- ! nodes
-local copy_node_list     = node.copy_list
+local insert_node_after  = nodes.insert_after
+local remove_node        = nodes.remove
+local copy_node_list     = nodes.copy_list
+local traverse_id        = nodes.traverse_id
 
 local tasks              = nodes.tasks
 
@@ -112,16 +113,20 @@ end
 
 -- assumes nuts or nodes, depending on callers .. so no tonuts here
 
-function characters.replacenbsp(head,current)
-    head, current = nbsp(head,current)
-    head, current = remove_node(head,current,true)
+function characters.replacenbsp(head,original)
+    local head, current = nbsp(head,original)
+    head = remove_node(head,original,true)
     return head, current
 end
 
-function characters.replacenbspaces(head,nbspaces)
-    for current in next, nbspaces do
-        head, current = nbsp(head,current)
-        head, current = remove_node(head,current,true)
+function characters.replacenbspaces(head)
+    for current in traverse_id(glyph_code,head) do
+        if current.char == 0x00A0 then
+            local h = nbsp(head,current)
+            if h then
+                head = remove_node(h,current,true)
+            end
+        end
     end
     return head
 end
@@ -141,34 +146,18 @@ local methods = {
     -- The next one uses an attribute assigned to the character but still we
     -- don't have the 'local' value.
 
- -- [0x00A0] = function(head,current) -- nbsp
- --     local next = current.next
- --     if next and next.id == glyph_code then
- --         local char = next.char
- --         if char >= 0x00900 and char <= 0x0097F then
- --             return false -- devangari
- --         end
- --         if char >= 0x00C80 and char <= 0x00CFF then
- --             return false -- kannada
- --         end
- --     end
- --     local prev = current.prev
- --     if prev and prev.id == glyph_code then
- --         local char = prev.char
- --         if char >= 0x00900 and char <= 0x0097F then
- --             return false -- devangari
- --         end
- --         if char >= 0x00C80 and char <= 0x00CFF then
- --             return false -- kannada
- --         end
- --     end
- --     return nbsp(head,current)
- -- end,
-
     [0x00A0] = function(head,current) -- nbsp
         local next = current.next
-        if next and next.id == glyph_code and nbsphash[next.char] then
-            return false
+        if next and next.id == glyph_code then
+            local char = next.char
+            if char == 0x200C or char == 0x200D then -- nzwj zwj
+                next = next.next
+				if next and nbsphash[next.char] then
+                    return false
+                end
+            elseif nbsphash[char] then
+                return false
+            end
         end
         local prev = current.prev
         if prev and prev.id == glyph_code and nbsphash[prev.char] then
