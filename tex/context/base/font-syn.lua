@@ -593,7 +593,7 @@ local function collectstatistics()
             if width   then widths  [width  ] = (widths  [width  ] or 0) + 1 end
             if variant then variants[variant] = (variants[variant] or 0) + 1 end
             -- weird stuff
-            local angle   = f_a(s.angle or 0)
+            local angle   = f_a(tonumber(s.angle) or 0)
             angles[angle] = (angles[angles] or 0) + 1
             -- extra stuff
             local pfmweight     = f_w(s.pfmweight or 0)
