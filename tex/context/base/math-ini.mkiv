@@ -414,6 +414,17 @@
   {\ifdefined\normalhbox\else\let\normalhbox\hbox\fi % ?
    \let\hbox\mbox}
 
+\unexpanded\def\snappedmath#1% sort of \struttedbox
+  {\dontleavehmode
+   \begingroup
+   \setbox\scratchbox\hbox\bgroup
+     \startimath#1\stopimath
+   \egroup
+   \ht\scratchbox\strutht
+   \dp\scratchbox\strutht
+   \box\scratchbox
+   \endgroup}
+
 %D The next hack is needed needed for sine, cosine etc.
 
 \let\mathfunction\firstofoneunexpanded
