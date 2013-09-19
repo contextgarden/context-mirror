@@ -124,6 +124,7 @@ local right_fence_code    = 3
 
 local function process(start,what,n,parent)
     if n then n = n + 1 else n = 0 end
+    local prev = nil
     while start do
         local id = start.id
         if trace_processing then
