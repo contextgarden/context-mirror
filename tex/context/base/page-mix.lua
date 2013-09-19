@@ -135,16 +135,11 @@ local function discardtopglue(current,discarded)
         elseif id == penalty_code then
             if current.penalty == forcedbreak then
                 discarded[#discarded+1] = current
-                current = current.next
-                while current do
-                    local id = current.id
-                    if id == glue_code then
-                        size = size + current.spec.width
-                        discarded[#discarded+1] = current
-                        current = current.next
-                    else
-                        break
-                    end
+                current = getnext(current)
+                while current and current.id == glue_code do
+                    size = size + current.spec.width
+                    discarded[#discarded+1] = current
+                    current = current.next
                 end
             else
                 discarded[#discarded+1] = current
@@ -221,6 +216,10 @@ local function setsplit(specification) -- a rather large function
     local height = 0
     local depth = 0
     local skip = 0
+    local splitmethod = specification.splitmethod or false
+    if splitmethod == v_none then
+        splitmethod = false
+    end
     local options = settings_to_hash(specification.option or "")
     local stripbottom = specification.alternative == v_local
     local cycle = specification.cycle or 1
@@ -256,12 +255,35 @@ local function setsplit(specification) -- a rather large function
             delta   = 0,
         }
     end
+
     local column   = 1
     local line     = 0
-    local result   = results[column]
+    local result   = results[1]
     local lasthead = nil
     local rest     = nil
+
+    if trace_state then
+        report_state("setting collector to column %s",column)
+    end
+
+    local lastlocked  = nil
+    local lastcurrent = nil
+
+    local backtracked = false
+
     local function gotonext()
+        if lastcurrent then
+            if current ~= lastcurrent then
+                if trace_state then
+                    report_state("backtracking to preferred break in column %s",column)
+                end
+                -- todo: also remember height/depth
+                current = lastcurrent
+                backtracked = true
+            end
+            lastcurrent = nil
+            lastlocked = nil
+        end
         if head == lasthead then
             if trace_state then
                 report_state("empty column %s, needs more work",column)
@@ -290,12 +312,16 @@ local function setsplit(specification) -- a rather large function
             local skipped
             column = column + 1
             result = results[column]
+            if trace_state then
+                report_state("setting collector to column %s",column)
+            end
             current, skipped = discardtopglue(current,discarded)
             head = current
             return true, skipped
         end
     end
-    local function checked(advance,where)
+
+    local function checked(advance,where,locked)
         local total   = skip + height + depth + advance
         local delta   = total - target
         local state   = "same"
@@ -317,47 +343,34 @@ local function setsplit(specification) -- a rather large function
         end
         return state, skipped
     end
+
     current, skipped = discardtopglue(current,discarded)
     if trace_detail and skipped ~= 0 then
         report_state("check > column 1, discarded %p",skipped)
     end
+
+    -- problem: when we cannot break after a list (and we only can expect same-page situations as we don't
+    -- care too much about weighted breaks here) we should sort of look ahead or otherwise be able to push
+    -- back inserts and so
+    --
+    -- ok, we could use vsplit but we don't have that one opened up yet .. maybe i should look into the c-code
+    -- .. something that i try to avoid so let's experiment more before we entry dirty trick mode
+
     head = current
-    while current do
-        local id = current.id
-        local nxt = current.next
-        local lastcolumn = column
-        if id == hlist_code or id == vlist_code then
-            line = line + 1
-            local nxtid = nxt and nxt.id
-            local inserts, currentskips, nextskips, inserttotal = nil, 0, 0, 0
-            local advance = current.height -- + current.depth
-            if nxt and (nxtid == insert_code or nxtid == mark_code) then
-                nxt, inserts, localskips, insertskips, inserttotal = collectinserts(result,nxt,nxtid)
-            end
-            local state, skipped = checked(advance+inserttotal+currentskips,"line")
-            if trace_state then
-                report_state("%-7s > column %s, state %a, line %s, advance %p, insert %p, height %p","line",column,state,line,advance,inserttotal,height)
-                if skipped ~= 0 then
-                    report_state("%-7s > column %s, discarded %p","line",column,skipped)
+
+    local function process_skip(current,nxt)
+        local advance = current.spec.width
+            local prv = current.prev
+            if prv.id == penalty_code then
+                local penalty = prv.penalty
+                if penalty < 4000 then
+                    lastlocked  = nil
+                    lastcurrent = nil
                 end
+            elseif current.subtype ~= lineskip_code then
+                lastlocked  = nil
+                lastcurrent = nil
             end
-            if state == "quit" then
-                break
-            else
-                height = height + depth + skip + advance + inserttotal
-                if state == "next" then
-                    height = height + nextskips
-                else
-                    height = height + currentskips
-                end
-            end
-            depth = current.depth
-            skip  = 0
-            if inserts then
-                appendinserts(result.inserts,inserts)
-            end
-        elseif id == glue_code then
-            local advance = current.spec.width
             if advance ~= 0 then
                 local state, skipped = checked(advance,"glue")
                 if trace_state then
@@ -367,60 +380,222 @@ local function setsplit(specification) -- a rather large function
                     end
                 end
                 if state == "quit" then
-                    break
+                    return true
                 end
                 height = height + depth + skip
                 depth  = 0
                 skip   = height > 0 and advance or 0
-            end
-        elseif id == kern_code then
-            local advance = current.kern
-            if advance ~= 0 then
-                local state, skipped = checked(advance,"kern")
                 if trace_state then
-                    report_state("%-7s > column %s, state %a, advance %p, height %p, state %a","kern",column,state,advance,height)
-                    if skipped ~= 0 then
-                        report_state("%-7s > column %s, discarded %p","kern",column,skipped)
-                    end
-                end
-                if state == "quit" then
-                    break
-                end
-                height = height + depth + skip + advance
-                depth  = 0
-                skip   = 0
-            end
-        elseif id == penalty_code then
-            local penalty = current.penalty
-            if penalty == 0 then
-                -- don't bother
-            elseif penalty == forcedbreak then
-                local okay, skipped = gotonext()
-                if okay then
-                    if trace_state then
-                        report_state("cycle: %s, forced column break (same page)",cycle)
-                        if skipped ~= 0 then
-                            report_state("%-7s > column %s, discarded %p","penalty",column,skipped)
-                        end
-                    end
-                else
-                    if trace_state then
-                        report_state("cycle: %s, forced column break (next page)",cycle)
-                        if skipped ~= 0 then
-                            report_state("%-7s > column %s, discarded %p","penalty",column,skipped)
-                        end
-                    end
-                    break
+                    report_state("%-7s > column %s, height %p, depth %p, skip %p","glue",column,height,depth,skip)
                 end
             else
-                -- todo: nobreak etc ... we might need to backtrack so we need to remember
-                -- the last acceptable break
-                -- club and widow and such i.e. resulting penalties (if we care)
+                -- what else? ignore? treat as valid as usual?
+            end
+    end
+
+    local function process_kern(current,nxt)
+        local advance = current.kern
+        if advance ~= 0 then
+            local state, skipped = checked(advance,"kern")
+            if trace_state then
+                report_state("%-7s > column %s, state %a, advance %p, height %p, state %a","kern",column,state,advance,height)
+                if skipped ~= 0 then
+                    report_state("%-7s > column %s, discarded %p","kern",column,skipped)
+                end
+            end
+            if state == "quit" then
+                return true
+            end
+            height = height + depth + skip + advance
+            depth  = 0
+            skip   = 0
+            if trace_state then
+                report_state("%-7s > column %s, height %p, depth %p, skip %p","kern",column,height,depth,skip)
             end
         end
-        if current then -- lastcolumn == column then
-            nxt = current.next -- can have changed
+    end
+
+    local function process_rule(current,nxt)
+        -- simple variant of h|vlist
+        local advance = current.height -- + current.depth
+        local state, skipped = checked(advance+currentskips,"rule")
+        if trace_state then
+            report_state("%-7s > column %s, state %a, rule, advance %p, height %p","line",column,state,advance,inserttotal,height)
+            if skipped ~= 0 then
+                report_state("%-7s > column %s, discarded %p","rule",column,skipped)
+            end
         end
+        if state == "quit" then
+            return true
+        end
+        height = height + depth + skip + advance
+        if state == "next" then
+            height = height + nextskips
+        else
+            height = height + currentskips
+        end
+        depth = current.depth
+        skip  = 0
+    end
+
+    -- okay, here we could do some badness like magic but we want something
+    -- predictable and even better: strategies .. so eventually this will
+    -- become installable
+    --
+    -- [chapter] [penalty] [section] [penalty] [first line]
+    --
+    -- we need some nice use cases so the next is just for me to play with
+
+    -- todo: presets:
+    --
+    -- fixed :  criterium=4000  check=no
+    -- large :  criterium=4000  check=more
+    -- auto  :  criterium=0     check=more
+
+    local lockcriterium = 4000
+
+    local function prevprev(current)
+        local p = current.prev
+        return p and p.prev
+    end
+
+    local function reassess(current,penalty)
+        if splitmethod == v_fixed then
+         -- quite ok, a magic number: used as samepage (in sectioning)
+            if penalty >= lockcriterium then
+                if not lastlocked then
+                    lastcurrent = prevprev(current)
+                    lastlocked  = lastcurrent and penalty
+                end
+                return
+            end
+        elseif splitmethod == v_more then
+            -- experiment, might change
+            if penalty >= lockcriterium then
+                if not lastlocked or penalty >= lastlocked then
+                    lastcurrent = prevprev(current)
+                    lastlocked  = lastcurrent and penalty
+                end
+                return
+            end
+        elseif splitmethod == v_auto then
+            if penalty > 0 then
+                if not lastlocked or penalty > lastlocked then
+                    lastcurrent = prevprev(current)
+                    lastlocked  = lastcurrent and penalty
+                end
+                return
+            end
+        end
+        lastlocked  = nil
+        lastcurrent = nil
+    end
+
+    local function process_penalty(current,nxt)
+        local penalty = current.penalty
+        if penalty == 0 then
+            lastlocked  = nil
+            lastcurrent = nil
+        elseif penalty == forcedbreak then
+            lastlocked  = nil
+            lastcurrent = nil
+            local okay, skipped = gotonext()
+            if okay then
+                if trace_state then
+                    report_state("cycle: %s, forced column break, same page",cycle)
+                    if skipped ~= 0 then
+                        report_state("%-7s > column %s, discarded %p","penalty",column,skipped)
+                    end
+                end
+            else
+                if trace_state then
+                    report_state("cycle: %s, forced column break, next page",cycle)
+                    if skipped ~= 0 then
+                        report_state("%-7s > column %s, discarded %p","penalty",column,skipped)
+                    end
+                end
+                return true
+            end
+        elseif penalty < 0 then
+            -- we don't care too much
+            lastlocked  = nil
+            lastcurrent = nil
+        elseif splitmethod then
+            reassess(current,penalty)
+        else
+            lastlocked  = nil
+            lastcurrent = nil
+        end
+    end
+
+    local function process_list(current,nxt)
+        local nxtid = nxt and nxt.id
+        line = line + 1
+        local inserts, currentskips, nextskips, inserttotal = nil, 0, 0, 0
+        local advance = current.height -- + current.depth
+        if trace_state then
+            report_state("%-7s > column %s, content: %s","line",column,listtoutf(current.list,true,true))
+        end
+        if nxt and (nxtid == insert_code or nxtid == mark_code) then
+            nxt, inserts, localskips, insertskips, inserttotal = collectinserts(result,nxt,nxtid)
+        end
+        local state, skipped = checked(advance+inserttotal+currentskips,"line",lastlocked)
+        if trace_state then
+            report_state("%-7s > column %s, state %a, line %s, advance %p, insert %p, height %p","line",column,state,line,advance,inserttotal,height)
+            if skipped ~= 0 then
+                report_state("%-7s > column %s, discarded %p","line",column,skipped)
+            end
+        end
+        if state == "quit" then
+            return true
+        end
+        height = height + depth + skip + advance + inserttotal
+        if state == "next" then
+            height = height + nextskips
+        else
+            height = height + currentskips
+        end
+        depth = current.depth
+        skip  = 0
+        if inserts then
+            -- so we already collect them ... makes backtracking tricky ... alternatively
+            -- we can do that in a separate loop ... no big deal either
+            appendinserts(result.inserts,inserts)
+        end
+        if trace_state then
+            report_state("%-7s > column %s, height %p, depth %p, skip %p","line",column,height,depth,skip)
+        end
+    end
+
+    while current do
+
+        local id  = current.id
+        local nxt = current.next
+
+        backtracked = false
+
+     -- print("process",nodetostring(current))
+
+        if id == hlist_code or id == vlist_code then
+            if process_list(current,nxt) then break end
+        elseif id == glue_code then
+            if process_skip(current,nxt) then break end
+        elseif id == kern_code then
+            if process_kern(current,nxt) then break end
+        elseif id == penalty_code then
+            if process_penalty(current,nxt) then break end
+        elseif id == rule_code then
+            if process_rule(current,nxt) then break end
+        else
+        end
+
+        if backtracked then
+         -- print("pickup",nodetostring(current))
+            nxt = current
+        else
+         -- print("move on",nodetostring(current))
+        end
+
         if nxt then
             current = nxt
         elseif head == lasthead then
@@ -438,6 +613,7 @@ local function setsplit(specification) -- a rather large function
             break
         end
     end
+
     if not current then
         if trace_state then
             report_state("nilling rest")
@@ -557,9 +733,6 @@ function mixedcolumns.setsplit(specification)
     end
 end
 
-local topskip_code      = gluecodes.topskip
-local baselineskip_code = gluecodes.baselineskip
-
 function mixedcolumns.getsplit(result,n)
     if not result then
         report_state("flush, column %s, no result",n)
@@ -616,7 +789,8 @@ function mixedcolumns.getsplit(result,n)
     end
 
     for c, list in next, r.inserts do
-        local b = vpack(concatnodes(list)) -- multiple arguments
+        local l = concatnodes(list)
+        local b = vpack(l) -- multiple arguments, todo: fastvpack
      -- texsetbox("global",c,b)
         texsetbox(c,b)
         r.inserts[c] = nil
