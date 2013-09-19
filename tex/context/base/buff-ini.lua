@@ -27,6 +27,7 @@ local variables         = interfaces.variables
 local settings_to_array = utilities.parsers.settings_to_array
 local formatters        = string.formatters
 local addsuffix         = file.addsuffix
+local replacesuffix     = file.replacesuffix
 
 local v_yes             = variables.yes
 
@@ -344,12 +345,13 @@ local last  = 0
 function commands.runbuffer(name,encapsulate) -- we used to compare the saved file with content
     local names    = getnames(name)
     local filename = files[name]
-    if not filename then
+    local tobedone = not istypeset(names)
+    if tobedone or not filename then
         last        = last + 1
         filename    = formatters["%s-typeset-buffer-%03i"](tex.jobname,last)
         files[name] = filename
     end
-    if not istypeset(names) then
+    if tobedone then
         if trace_run then
             report_typeset("changes in %a, processing forced",name)
         end
@@ -361,15 +363,15 @@ function commands.runbuffer(name,encapsulate) -- we used to compare the saved fi
         if encapsulate then
             content = formatters["\\starttext\n%s\n\\stoptext\n"](content)
         end
-        report_typeset("\n")
         io.savedata(filename,content)
-        os.execute(formatters["context %s"](filename))
-        report_typeset("\n")
+        local command = formatters["context %s"](filename)
+        report_typeset("running: %s\n",command)
+        os.execute(command)
         markastypeset(names)
     elseif trace_run then
         report_typeset("no changes in %a, not processed",name)
     end
-    context(addsuffix(filename,"pdf"))
+    context(replacesuffix(filename,"pdf"))
 end
 
 function commands.getbuffer(name)

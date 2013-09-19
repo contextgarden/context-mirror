@@ -53,7 +53,7 @@
    \fi\fi}
 
 \def\grph_buffers_typeset_indeed[#1][#2]% we could use the via files
-  {\doifnot{#1}{*}{\xdef\lasttypesetbuffer{\ctxcommand{runbuffer("#1")}}}%
+  {\doifnot{#1}{*}{\xdef\lasttypesetbuffer{\ctxcommand{runbuffer("#1",true)}}}%
    \ifcase\c_grph_buffers_mode
      % typesetonly
    \or

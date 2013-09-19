@@ -340,9 +340,9 @@ function table.fastserialize(t,prefix)
         end
         for k, v in next, t do
             local tk = type(k)
-            local tv = type(v)
             if tk == "number" then
                 if k > n or k < 0 then
+                    local tv = type(v)
                     if tv == "string" then
                         m = m + 1 r[m] = f_indexed_string(k,v)
                     elseif tv == "number" then
@@ -355,6 +355,7 @@ function table.fastserialize(t,prefix)
                     end
                 end
             else
+                local tv = type(v)
                 if tv == "string" then
                     m = m + 1 r[m] = f_hashed_string(k,v)
                 elseif tv == "number" then
