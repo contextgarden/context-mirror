@@ -304,6 +304,7 @@ local f_hashed_table    = formatters["[%q]="]
 local f_indexed_string  = formatters["[%s]=%q,"]
 local f_indexed_number  = formatters["[%s]=%s,"]
 local f_indexed_boolean = formatters["[%s]=%l,"]
+local f_indexed_table   = formatters["[%s]="]
 
 local f_ordered_string  = formatters["%q,"]
 local f_ordered_number  = formatters["%s,"]
@@ -347,6 +348,7 @@ function table.fastserialize(t,prefix)
                     elseif tv == "number" then
                         m = m + 1 r[m] = f_indexed_number(k,v)
                     elseif tv == "table" then
+                        m = m + 1 r[m] = f_indexed_table(k)
                         fastserialize(v)
                     elseif tv == "boolean" then
                         m = m + 1 r[m] = f_indexed_boolean(k,v)

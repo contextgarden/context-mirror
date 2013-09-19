@@ -5285,7 +5285,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 23803, stripped down to: 15979
+-- original size: 23909, stripped down to: 16063
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -5515,6 +5515,7 @@ local f_hashed_table=formatters["[%q]="]
 local f_indexed_string=formatters["[%s]=%q,"]
 local f_indexed_number=formatters["[%s]=%s,"]
 local f_indexed_boolean=formatters["[%s]=%l,"]
+local f_indexed_table=formatters["[%s]="]
 local f_ordered_string=formatters["%q,"]
 local f_ordered_number=formatters["%s,"]
 local f_ordered_boolean=formatters["%l,"]
@@ -5550,6 +5551,7 @@ function table.fastserialize(t,prefix)
           elseif tv=="number" then
             m=m+1 r[m]=f_indexed_number(k,v)
           elseif tv=="table" then
+            m=m+1 r[m]=f_indexed_table(k)
             fastserialize(v)
           elseif tv=="boolean" then
             m=m+1 r[m]=f_indexed_boolean(k,v)
@@ -16538,8 +16540,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 679023
--- stripped bytes    : 240276
+-- original bytes    : 679129
+-- stripped bytes    : 240298
 
 -- end library merge
 
