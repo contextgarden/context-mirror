@@ -147,9 +147,9 @@ local function dummyconstructor(t,name,i)
 end
 
 setmetatableindex(constructor,function(t,k)
-    if trace_counters then
-        report_counters("unknown constructor %a",k)
-    end
+ -- if trace_counters then
+ --     report_counters("unknown constructor %a",k)
+ -- end
     return dummyconstructor
 end)
 
