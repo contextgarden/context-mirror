@@ -1204,7 +1204,8 @@
 
 \def\strc_itemgroups_handle_lapped_item_positive
   {\llap
-     {\hbox to \d_strc_itemgroups_list_width
+     {\dontcomplain
+      \hbox to \d_strc_itemgroups_list_width
         {\ifconditional\c_strc_itemgroups_sub
            \llap{+\enspace}%
          \fi

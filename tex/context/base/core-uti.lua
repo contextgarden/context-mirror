@@ -141,7 +141,7 @@ local jobpacker = packers.new(packlist,job.packversion) -- jump number when chan
 job.pack = true
 -- job.pack = false
 
-directives.register("job.pack",function(v) pack = v end)
+directives.register("job.pack",function(v) job.pack = v end)
 
 local _save_, _load_, _others_ = { }, { }, { } -- registers timing
 
