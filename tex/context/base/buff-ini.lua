@@ -364,7 +364,7 @@ function commands.runbuffer(name,encapsulate) -- we used to compare the saved fi
             content = formatters["\\starttext\n%s\n\\stoptext\n"](content)
         end
         io.savedata(filename,content)
-        local command = formatters["context %s"](filename)
+        local command = formatters["context %s %s"](jit and "--jit" or "",filename)
         report_typeset("running: %s\n",command)
         os.execute(command)
         markastypeset(names)

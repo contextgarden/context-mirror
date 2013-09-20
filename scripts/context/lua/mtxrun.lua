@@ -3481,7 +3481,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-url"] = package.loaded["l-url"] or true
 
--- original size: 11806, stripped down to: 5417
+-- original size: 11993, stripped down to: 5584
 
 if not modules then modules={} end modules ['l-url']={
   version=1.001,
@@ -3532,9 +3532,14 @@ setmetatable(escapes,{ __index=function(t,k)
 end })
 local escaper=Cs((R("09","AZ","az")^1+P(" ")/"%%20"+S("-./_")^1+P(1)/escapes)^0) 
 local unescaper=Cs((escapedchar+1)^0)
+local getcleaner=Cs((P("+++")/"%%2B"+P("+")/"%%20"+P(1))^1)
 lpegpatterns.urlunescaped=escapedchar
 lpegpatterns.urlescaper=escaper
 lpegpatterns.urlunescaper=unescaper
+lpegpatterns.urlgetcleaner=getcleaner
+function url.unescapeget(str)
+  return lpegmatch(getcleaner,str)
+end
 local function split(str)
   return (type(str)=="string" and lpegmatch(parser,str)) or str
 end
@@ -16541,8 +16546,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 679172
--- stripped bytes    : 240312
+-- original bytes    : 679359
+-- stripped bytes    : 240332
 
 -- end library merge
 
