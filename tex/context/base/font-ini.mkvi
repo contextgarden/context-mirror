@@ -1524,7 +1524,7 @@
 
 \unexpanded\def\font_basics_define_body_font_name_identifier_a#name#identifier#style%
   {%\writestatus\m!fonts{[#name:#style] => [##identifier:#style]}%
-   \ifcsname\csname\??fontdefinitions#name:#style\endcsname
+   \ifcsname\??fontdefinitions#name:#style\endcsname
      \expandafter\let\csname\??fontdefinitions#name:#style\expandafter\endcsname\csname\??fontdefinitions#identifier:#style\endcsname
    \else
      \expandafter\def\csname\??fontdefinitions#name:#style\endcsname{\csname\??fontdefinitions#identifier:#style\endcsname}%

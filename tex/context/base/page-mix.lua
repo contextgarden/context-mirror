@@ -135,7 +135,7 @@ local function discardtopglue(current,discarded)
         elseif id == penalty_code then
             if current.penalty == forcedbreak then
                 discarded[#discarded+1] = current
-                current = getnext(current)
+                current = current.next
                 while current and current.id == glue_code do
                     size = size + current.spec.width
                     discarded[#discarded+1] = current

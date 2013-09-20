@@ -1108,7 +1108,7 @@ local colors = {
 }
 
 classes[math_char] = function(pointer,what,n,parent)
-    local color = colors[getsubtype(parent)]
+    local color = colors[parent.subtype]
     if color then
         setcolor(pointer,color)
     else

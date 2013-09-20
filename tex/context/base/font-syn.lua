@@ -828,7 +828,7 @@ local function analyzefiles(olddata)
     local oldindices         = olddata and olddata.indices        or { }
     local oldspecifications  = olddata and olddata.specifications or { }
     local oldrejected        = olddata and olddata.rejected       or { }
-    local treatmentdata      = fonts.treatments.data
+    local treatmentdata      = fonts.treatments and fonts.treatments.data or { } -- when used outside context
     local function identify(completename,name,suffix,storedname)
         local pathpart, basepart = splitbase(completename)
         nofread = nofread + 1
