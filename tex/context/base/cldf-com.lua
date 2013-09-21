@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['cldf-com'] = {
     license   = "see context related readme files"
 }
 
+-- todo ... needs more thinking ... a special table toolkit
+
 local tostring  = tostring
 local context   = context
 local generics  = context.generics -- needs documentation
