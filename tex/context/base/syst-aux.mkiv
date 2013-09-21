@@ -1243,8 +1243,13 @@
 %D complicated arguments, for instance arguments that
 %D consist of two or more expandable tokens.
 
-\def\getfirstcharacter  #1{\ctxcommand{getfirstcharacter(\!!bs#1\!!es)}}
-\def\doiffirstcharelse#1#2{\ctxcommand{doiffirstcharelse(\!!bs#1\!!es,\!!bs#2\!!es)}} % chr str
+\let\firstcharacter     \empty
+\let\remainingcharacters\empty
+
+\unexpanded\def\getfirstcharacter     #1{\ctxcommand{getfirstcharacter(\!!bs#1\!!es)}}
+\unexpanded\def\doiffirstcharelse   #1#2{\ctxcommand{doiffirstcharelse(\!!bs#1\!!es,\!!bs#2\!!es)}} % chr str
+\unexpanded\def\thefirstcharacter     #1{\ctxcommand{thefirstcharacter(\!!bs#1\!!es)}}
+\unexpanded\def\theremainingcharacters#1{\ctxcommand{theremainingcharacters(\!!bs#1\!!es)}}
 
 %D \macros
 %D   {doifinstringelse, doifincsnameelse}

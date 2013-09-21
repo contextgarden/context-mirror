@@ -809,7 +809,7 @@ end
 
 -- context.delayed (todo: lines)
 
-local delayed = { } context.delayed = delayed -- maybe also store them
+local delayed = { } context.delayed = delayed -- creates function (maybe also store them)
 
 local function indexer(parent,k)
     local f = function(...)
@@ -871,7 +871,7 @@ setmetatable(delayed, { __index = indexer, __call = caller } )
 
 -- context.nested (todo: lines)
 
-local nested = { } context.nested = nested
+local nested = { } context.nested = nested -- creates strings
 
 local function indexer(parent,k)
     local f = function(...)

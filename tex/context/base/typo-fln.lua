@@ -37,10 +37,9 @@ local insert_node_after  = nodes.insert_after
 local insert_node_before = nodes.insert_before
 local hpack_node_list    = nodes.hpack
 
-local hpack_filter       = nodes.processors.hpack_filter
-
-local newpenalty         = nodes.pool.penalty
-local newkern            = nodes.pool.kern
+local nodepool           = nodes.pool
+local newpenalty         = nodepool.penalty
+local newkern            = nodepool.kern
 local tracerrule         = nodes.tracers.pool.nodes.rule
 
 local actions            = { }
@@ -217,11 +216,11 @@ end
 
 actions[v_default] = actions[v_line]
 
-local function process(namespace,attribute,head)
+function firstlines.handler(head)
     local start = head
     local attr  = nil
     while start do
-        attr = start[attribute]
+        attr = start[a_firstline]
         if attr then
             break
         elseif start.id == glyph then

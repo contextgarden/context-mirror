@@ -29,6 +29,15 @@ function commands.getfirstcharacter(str)
     setvalue("remainingcharacters",rest)
 end
 
+function commands.thefirstcharacter(str)
+    local first, rest = lpegmatch(pattern,str)
+    context(first)
+end
+function commands.theremainingcharacters(str)
+    local first, rest = lpegmatch(pattern,str)
+    context(rest)
+end
+
 local pattern = C(utf8char^-1)
 
 function commands.doiffirstcharelse(chr,str)
