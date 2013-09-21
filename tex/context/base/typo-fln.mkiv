@@ -95,4 +95,18 @@
 
 \let\typo_firstline_handle\relax
 
+% goodie, question on list
+%
+% \defineframed[ChapterFramed][location=low,background=color,backgroundcolor=red,frame=off]
+%
+% \setuphead[chapter][deeptextcommand=\applytofirstcharacter\ChapterFramed]
+
+\unexpanded\def\applytofirstcharacter#1%
+  {\begingroup
+   \dowithnextbox
+     {\ctxcommand{applytofirstcharacter(\number\nextbox,"\strippedcsname#1")}%
+      \unhbox\nextbox
+      \endgroup}%
+   \hbox}
+
 \protect \endinput
