@@ -24,6 +24,7 @@ local function flush(page)
     local c = cache[page]
     if c then
         for i=1,#c do
+         -- characters.showstring(c[i])
             context.viafile(c[i],format("page.%s",validstring(page,"nopage")))
         end
         cache[page] = nil

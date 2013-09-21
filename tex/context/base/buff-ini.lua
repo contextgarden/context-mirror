@@ -377,6 +377,7 @@ end
 function commands.getbuffer(name)
     local str = getcontent(name)
     if str ~= "" then
+     -- characters.showstring(str)
         context.viafile(str,formatters["buffer.%s"](validstring(name,"noname")))
     end
 end

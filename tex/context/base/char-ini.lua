@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['char-ini'] = {
 
 -- we can remove the tag range starting at 0xE0000 (special applications)
 
-local utfchar, utfbyte, utfvalues, ustring = utf.char, utf.byte, utf.values, utf.ustring
+local utfchar, utfbyte, utfvalues, ustring, utotable = utf.char, utf.byte, utf.values, utf.ustring, utf.totable
 local concat, unpack, tohash = table.concat, table.unpack, table.tohash
 local next, tonumber, type, rawget, rawset = next, tonumber, type, rawget, rawset
 local format, lower, gsub, match, gmatch = string.format, string.lower, string.gsub, string.match, string.match, string.gmatch
@@ -948,7 +948,18 @@ end
 local tracedchars = utilities.strings.tracers
 
 tracedchars[0x00] = "[signal]"
+tracedchars[0x0A] = "[linefeed]"
+tracedchars[0x0B] = "[tab]"
+tracedchars[0x0C] = "[formfeed]"
+tracedchars[0x0D] = "[return]"
 tracedchars[0x20] = "[space]"
+
+function characters.showstring(str)
+    local list = utotable(str)
+    for i=1,#list do
+        report_defining("split % 3i : %C",i,list[i])
+    end
+end
 
 -- the following code will move to char-tex.lua
 
