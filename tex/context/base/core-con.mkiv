@@ -15,6 +15,8 @@
 
 \registerctxluafile{core-con}{1.001}
 
+% todo: iso date ranges (from/to)
+
 \unprotect
 
 \ifdefined\currentlanguage \else \let\currentlanguage\empty              \fi
@@ -96,6 +98,9 @@
 \def\koreannumerals    #1{\ctxcommand{alphabetic(\number#1,"korean")}}
 \def\koreannumeralsp   #1{\ctxcommand{alphabetic(\number#1,"korean-parent")}}
 \def\koreannumeralsc   #1{\ctxcommand{alphabetic(\number#1,"korean-circle")}}
+
+\let\koreanparentnumerals\koreannumeralsp
+\let\koreancirclenumerals\koreannumeralsc
 
 \def\chinesenumerals   #1{\ctxcommand{chinesenumerals   (\number#1)}}
 \def\chinesecapnumerals#1{\ctxcommand{chinesecapnumerals(\number#1,"cap")}}

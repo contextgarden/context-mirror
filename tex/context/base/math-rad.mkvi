@@ -77,10 +77,10 @@
 \setvalue{\??mathradicalalternative\v!normal}#body%
   {\edef\p_color{\mathradicalparameter\c!color}%
    \ifx\p_color\empty
-     \rootradical\currentmathradicaldegree{#body}%
+     \rootradical{\currentmathradicaldegree}{#body}% {} really needed as \rootradical expands first
    \else\ifx\currentmathradicaldegree\empty
      \pushcolor[\p_color]%
-     \rootradical\currentmathradicaldegree
+     \rootradical{\currentmathradicaldegree}%
      {\popcolor#body}%
    \else
      \pushcolor[\p_color]%

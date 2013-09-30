@@ -1679,7 +1679,7 @@
 \unexpanded\def\font_helpers_set_font_set_font_option_body#method#body#message%
   {\normalizebodyfontsize\normalizedsetfont{#body}% redundant for some calls
    \ifcsname\??fontbodyknown\normalizedsetfont\endcsname \else
-     \font_helpers_define_unknown_font{#body}%
+     \font_helpers_define_unknown_font\normalizedsetfont
    \fi
    \ifcsname\??fontbodyknown\normalizedsetfont\endcsname
      \localbodyfontsize\normalizedsetfont
@@ -2135,6 +2135,37 @@
 %D \starttyping
 %D $\cases{& \ccaron}$ $x=\hbox{\ccaron $x=\hbox{\ccaron}$}$
 %D \stoptyping
+
+%D \macros
+%D   {usebodyfont}
+%D
+%D This looks nicer then a switch in the preamble
+%D
+%D \starttyping
+%D \usebodyfont[pagella,10pt]
+%D \usebodyfont[termes,10pt]
+%D \usebodyfont[dejavu,10pt]
+%D
+%D \setupbodyfont[dejavu]
+%D
+%D \starttext
+%D     test
+%D \stoptext
+%D \stoptyping
+
+% \unexpanded\def\usebodyfont[#1]%
+%   {\pushmacro\fontclass
+%    \switchtobodyfont[#1]%
+%    \popmacro\fontclass
+%    \ifx\fontclass\empty\else\setupbodyfont\relax\fi}
+
+\unexpanded\def\usebodyfont[#1]%
+  {\pushmacro\fontclass
+   \font_helpers_set_font\zerocount{#1}%
+   \popmacro\fontclass
+   \ifx\fontclass\empty \else
+     \font_basics_setupbodyfont_nop
+   \fi}
 
 %D Handy for manuals:
 

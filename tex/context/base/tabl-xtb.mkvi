@@ -153,6 +153,7 @@
 \let\stopxtable\relax
 
 \def\tabl_x_default_buffer{x_table_\number\c_tabl_x_nesting}
+\let\tabl_x_current_buffer\empty
 
 \unexpanded\def\tabl_x_start_table[#settings]% maybe two arguments: [tag][settings] | [tag] | [settings]
   {\bgroup

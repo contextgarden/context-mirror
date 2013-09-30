@@ -12,6 +12,10 @@ if not modules then modules = { } end modules ['task-ini'] = {
 -- we can disable more handlers and enable then when really used (*)
 --
 -- todo: two finalizers: real shipout (can be imposed page) and page shipout (individual page)
+--
+-- todo: consider moving the kernel kerning/ligaturing functions in the main font loop because
+-- there we know if they are needed; doesn't save time but; if we overload unh* commands to
+-- not apply the font handler, we can remove all checks for subtypes 255
 
 local tasks           = nodes.tasks
 local appendaction    = tasks.appendaction

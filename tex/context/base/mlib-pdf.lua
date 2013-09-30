@@ -277,11 +277,11 @@ local key      = C((1-equal)^1) * equal
 local newline  = S("\n\r")^1
 local number   = (((1-space-newline)^1) / tonumber) * (space^0)
 local variable =
-    lpeg.P("1:")           * key * number
-  + lpeg.P("2:")           * key * C((1-newline)^0)
-  + lpeg.P("3:")           * key * (P("false") * Cc(false) + P("true") * Cc(true))
-  + lpeg.S("456") * P(":") * key * Ct(number^1)
-  + lpeg.P("7:")           * key * Ct(Ct(number * number^-5)^1)
+    lpeg.P("1:")            * key * number
+  + lpeg.P("2:")            * key * C((1-newline)^0)
+  + lpeg.P("3:")            * key * (P("false") * Cc(false) + P("true") * Cc(true))
+  + lpeg.S("4568") * P(":") * key * Ct(number^1)
+  + lpeg.P("7:")            * key * Ct(Ct(number * number^-5)^1)
 
 local pattern = Cf ( Carg(1) * (Cg(variable * newline^0)^0), rawset)
 

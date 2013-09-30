@@ -466,6 +466,9 @@ function lpeg.replacer(one,two,makefunction,isutf) -- in principle we should sor
     end
 end
 
+-- local pattern1 = P(1-P(pattern))^0 * P(pattern)   : test for not nil
+-- local pattern2 = (P(pattern) * Cc(true) + P(1))^0 : test for true (could be faster, but not much)
+
 function lpeg.finder(lst,makefunction) -- beware: slower than find with 'patternless finds'
     local pattern
     if type(lst) == "table" then

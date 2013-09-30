@@ -1923,7 +1923,7 @@
    \tabl_tabulate_nobreak_inject
    \stoptabulatenoalign}
 
-\let\tabl_tabulate_BL_second\tabl_tabulate_TL_second
+\let\tabl_tabulate_BL_second_indeed\tabl_tabulate_TL_second_indeed
 
 \def\tabl_tabulate_HL_second
   {\csname
@@ -2015,6 +2015,8 @@
 
 \let\tabl_tabulate_flush_collected       \empty
 \let\tabl_tabulate_flush_collected_indeed\empty
+
+\let\v_tabl_tabulate_align\!!zerocount
 
 \def\tabl_tabulate_set_local_hsize
   {\setlocalhsize

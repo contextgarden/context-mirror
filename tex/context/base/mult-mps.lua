@@ -105,6 +105,8 @@ return {
         "graypart", "graycolor",
         --
         "mm", "pt", "dd", "bp", "cm", "pc", "cc", "in",
+        --
+        "triplet", "quadruplet",
     },
     internals = { -- we need to remove duplicates above
         --

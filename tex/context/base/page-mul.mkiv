@@ -1158,26 +1158,28 @@
     \def\setlocalcolumnfloats
       {\settrue\onlylocalcolumnfloats
        \everypar\everylocalcolumnfloatspar
-       \let\page_mul_flush_float\doflushcolumnfloat
+       \let\page_mul_flush_float \doflushcolumnfloat
        \let\page_mul_flush_floats\doflushcolumnfloats}
 
     \def\setglobalcolumnfloats
       {\setfalse\onlylocalcolumnfloats
        \reseteverypar
-       \let\page_mul_flush_float\relax
+       \let\page_mul_flush_float \relax
        \let\page_mul_flush_floats\noflushcolumnfloats}
 
-    \def\noflushcolumnfloats
-      {\bgroup
-       \xdef\localsavednoffloats{\the\savednoffloats}%
-       \global\savednoffloats\globalsavednoffloats
-       \page_otr_command_flush_top_insertions
-       \xdef\globalsavenoffloats{\the\savednoffloats}%
-       \ifnum\globalsavednoffloats=\zerocount
-         \setlocalcolumnfloats
-       \fi
-       \global\savednoffloats\localsavednoffloats
-       \egroup}
+ % \def\noflushcolumnfloats
+ %   {\bgroup
+ %    \xdef\localsavednoffloats{\the\savednoffloats}%
+ %    \global\savednoffloats\globalsavednoffloats
+ %    \page_otr_command_flush_top_insertions
+ %    \xdef\globalsavenoffloats{\the\savednoffloats}%
+ %    \ifnum\globalsavednoffloats=\zerocount
+ %      \setlocalcolumnfloats
+ %    \fi
+ %    \global\savednoffloats\localsavednoffloats
+ %    \egroup}
+ %
+    \def\noflushcolumnfloats{\doflushcolumnfloats} % not yet redone
 
 %D We need to calculate the amount of free space in a columns. When there is not
 %D enough room, we migrate the float to the next column. These macro's are

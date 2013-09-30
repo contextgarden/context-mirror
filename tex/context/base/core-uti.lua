@@ -279,11 +279,11 @@ statistics.register("randomizer", function()
     end
 end)
 
--- local kg_per_watt_per_second  = 1 / 15000000
--- local watts_per_core          = 50
--- local speedup_by_other_engine = 1.2
--- local used_wood_factor        = watts_per_core * kg_per_watt_per_second / speedup_by_other_engine
--- local used_wood_factor        = (50 / 15000000) / 1.2
+local kg_per_watt_per_second  = 1 / 15000000
+local watts_per_core          = 50
+local speedup_by_other_engine = 1.2
+local used_wood_factor        = watts_per_core * kg_per_watt_per_second / speedup_by_other_engine
+local used_wood_factor        = (50 / 15000000) / 1.2
 
 function statistics.formatruntime(runtime)
     if not environment.initex then -- else error when testing as not counters yet
@@ -295,13 +295,14 @@ function statistics.formatruntime(runtime)
         if shipped > 0 or pages > 0 then
             local persecond = shipped / runtime
             if pages == 0 then pages = shipped end
--- if jit then
--- local saved = watts_per_core * runtime * kg_per_watt_per_second / speedup_by_other_engine
--- local saved = used_wood_factor * runtime
+if jit then
+local saved = watts_per_core * runtime * kg_per_watt_per_second / speedup_by_other_engine
+local saved = used_wood_factor * runtime
 --             return format("%s seconds, %i processed pages, %i shipped pages, %.3f pages/second, %f kg tree saved by using luajittex",runtime,pages,shipped,persecond,saved)
--- else
+            return format("%s seconds, %i processed pages, %i shipped pages, %.3f pages/second, %f g tree saved by using luajittex",runtime,pages,shipped,persecond,saved*1000)
+else
             return format("%s seconds, %i processed pages, %i shipped pages, %.3f pages/second",runtime,pages,shipped,persecond)
--- end
+end
         else
             return format("%s seconds",runtime)
         end

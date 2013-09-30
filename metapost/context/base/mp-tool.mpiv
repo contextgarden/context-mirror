@@ -77,6 +77,11 @@ def stopplaincompatibility =
     endgroup ;
 enddef ;
 
+%D More neutral:
+
+let triplet    = rgbcolor ;
+let quadruplet = cmykcolor ;
+
 %D Colors:
 
 newinternal nocolormodel   ; nocolormodel   := 1 ;
