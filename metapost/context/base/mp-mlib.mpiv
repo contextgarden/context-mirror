@@ -781,7 +781,7 @@ enddef ;
 % passvariable("boolean",false) ;
 % passvariable("path",fullcircle scaled 1cm) ;
 
-vardef mfun_p_to_s(expr p,i) =
+vardef mfun_point_to_string(expr p,i) =
     decimal xpart (point       i of p) & " " &
     decimal ypart (point       i of p) & " " &
     decimal xpart (precontrol  i of p) & " " &
@@ -790,14 +790,54 @@ vardef mfun_p_to_s(expr p,i) =
     decimal ypart (postcontrol i of p)
 enddef ;
 
+vardef mfun_transform_to_string(expr t) =
+    decimal xxpart t & " " &   % rx
+    decimal xypart t & " " &   % sx
+    decimal yxpart t & " " &   % sy
+    decimal yypart t & " " &   % ry
+    decimal xpart  t & " " &   % tx
+    decimal ypart  t           % ty
+enddef ;
+
+vardef mfun_numeric_to_string(expr n) =
+    decimal n
+enddef ;
+
+vardef mfun_pair_to_string(expr p) =
+    decimal xpart p & " " &
+    decimal ypart p
+enddef ;
+
+vardef mfun_rbgcolor_to_string(expr c) =
+    decimal redpart   c & " " &
+    decimal greenpart c & " " &
+    decimal bluepart  c
+enddef ;
+
+vardef mfun_cmykcolor_to_string(expr c) =
+    decimal cyanpart    c & " " &
+    decimal magentapart c & " " &
+    decimal yellowpart  c & " " &
+    decimal blackpart   c
+enddef ;
+
+vardef mfun_path_to_string(expr p) =
+    mfun_point_to_string(value,1) for i=2 upto length(value) : & " " & mfun_point_to_string(value,i) endfor
+enddef ;
+
+vardef mfun_boolean_to_string(expr b) =
+    if value : "true" else : "false" fi
+enddef ;
+
 def passvariable(expr key, value) =
     special
-        if     numeric   value : "1:" & key & "=" & decimal value
-        elseif pair      value : "4:" & key & "=" & ddecimal value
-        elseif rgbcolor  value : "5:" & key & "=" & dddecimal value
-        elseif cmykcolor value : "6:" & key & "=" & ddddecimal value
-        elseif boolean   value : "3:" & key & "=" & if value : "true" else : "false" fi
-        elseif path      value : "7:" & key & "=" & mfun_p_to_s(value,1) for i=2 upto length(value) : & " " & mfun_p_to_s(value,i) endfor
+        if     numeric   value : "1:" & key & "=" & mfun_numeric_to_string(value)
+        elseif pair      value : "4:" & key & "=" & mfun_pair_to_string(value)
+        elseif rgbcolor  value : "5:" & key & "=" & mfun_rgbcolor_to_string(value)
+        elseif cmykcolor value : "6:" & key & "=" & mfun_cmykcolor_to_string(value)
+        elseif boolean   value : "3:" & key & "=" & mfun_boolean_to_string(value)
+        elseif path      value : "7:" & key & "=" & mfun_path_to_string(value)
+        elseif transform value : "8:" & key & "=" & mfun_transform_to_string(value)
         else                   : "2:" & key & "=" & value
         fi ;
 enddef ;

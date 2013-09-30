@@ -64250,8 +64250,10 @@ characters.data={
   description="DIAMETER SIGN",
   direction="on",
   linebreak="al",
-  mathclass="ordinary",
-  mathname="varnothing",
+  mathspec={
+   { class="ord", name="varnothing" },
+   { class="ord", name="diameter" },
+  },
   unicodeslot=0x2300,
  },
  [0x2301]={

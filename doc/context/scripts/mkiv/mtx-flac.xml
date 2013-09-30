@@ -9,6 +9,7 @@
   <category name="basic">
    <subcategory>
     <flag name="collect"><short>collect albums in xml file</short></flag>
+    <flag name="pattern"><short>use pattern for locating files</short></flag>
    </subcategory>
   </category>
  </flags>

@@ -11,8 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 %C details.
 
-% laboff -> mfun_laboff or use plain_label instead
-
 if known context_grap : endinput ; fi ;
 
 boolean context_grap ; context_grap := true ;
@@ -43,6 +41,7 @@ fi
 % OUT                            loc value for labels relative to whole graph
 % gdata(file,s,text)             read coords from file ; evaluate t w/ tokens s[]
 % auto.<x or y>                  default x or y tick locations (for interation)
+% tick.<bot|top|..>(fmt,u)       draw centered tick from given side at u w/ format
 % itick.<bot|top|..>(fmt,u)      draw inward tick from given side at u w/ format
 % otick.<bot|top|..>(fmt,u)      draw outward tick at coord u ; label format fmt
 % grid.<bot|top|..>(fmt,u)       draw grid line at u with given side labeled
@@ -135,7 +134,7 @@ enddef ;
 
 vardef graph_error(expr x,s) =
   interim showstopping :=0 ;
-  show x ; errmessage s;
+  show x ; errmessage s ;
 enddef ;
 
 %%%%%%%%%%%%%%%%%%%%%%%% Data structures, begingraph %%%%%%%%%%%%%%%%%%%%%%%%
@@ -170,8 +169,12 @@ def begingraph(expr w, h) =
   save    graph_last_drawn ;
   picture graph_last_drawn ;     % result of last gdraw or gfill
           graph_last_drawn      = nullpicture ;
+  save    graph_last_path ;
+  path    graph_last_path ;      % last gdraw or gfill path in data coordinates.
   save    graph_plot_picture ;
   picture graph_plot_picture ;   % a picture from the `plot' option known when plot allowed
+  save    graph_foreground ;
+  color   graph_foreground ;     % drawing color, if set.
   save    graph_label ;
   picture graph_label[] ;        % labels to place around the whole graph when it is done
   save    graph_autogrid_needed ;
@@ -356,7 +359,7 @@ vardef graph_set_bounds@#(expr l, h) =
   graph_clear_bounds@# ;
   if @#graph_coordinate_type>0 :
      @#low  = if unknown l :
-                whatever
+                whatever 
               else :
                 if abs @#graph_coordinate_type=log : graph_mlog fi if string l : scantokens fi l
               fi ;
@@ -366,7 +369,7 @@ vardef graph_set_bounds@#(expr l, h) =
                 if abs @#graph_coordinate_type=log : graph_mlog fi if string h : scantokens fi h
               fi ;
   else :
-    -@#high = if unknown l :
+    -@#high = if unknown l : 
                 whatever
               else :
                 if abs @#graph_coordinate_type=log : graph_mlog fi if string l : scantokens fi l
@@ -500,7 +503,7 @@ enddef ;
 vardef augment@#(text t) =
   interim warningcheck := 0 ;
   if not path begingroup @# endgroup :
-    Gerr(begingroup @# endgroup, "Cannot augment--not a path") ;
+    graph_error(begingroup @# endgroup, "Cannot augment--not a path") ;
   else :
     def graph_comma= hide(def graph_comma=,enddef) enddef ;
     if known @# :  @# :=@#--  else :  @#=  fi
@@ -517,6 +520,7 @@ enddef ;
 % Unknown pair components are set to 0 because glabel and gdotlabel understand
 % unknown coordinates as `0 in absolute units'.
 vardef graph_unknown_pair_bbox(expr p) =
+  interim warningcheck:=0 ;
   if known p : addto graph_current_bb doublepath p ;
   else :
     save x,y ;
@@ -528,19 +532,24 @@ vardef graph_unknown_pair_bbox(expr p) =
   graph_current_bb := image(fill llcorner graph_current_bb..urcorner graph_current_bb--cycle) ;
 enddef ;
 
-
 % Initiate a gdraw or gfill command.  This must be done before scanning the
 % argument, because that could invoke the `if known graph_plot_picture' test in a following
 % plot option .
 def graph_addto =
+  def graph_errorbar_text = enddef ;
+  color graph_foreground ;
+  path graph_last_path ;
   graph_last_drawn := graph_plot_picture := nullpicture ; addto graph_last_drawn
 enddef;
 
 
 % Handle the part of a Gdraw command that uses path or data file p.
 def graph_draw expr p =
-  if string p : graph_convert_user_path_to_internal graph_readpath(p)
-  elseif path p or pair p : graph_convert_user_path_to_internal p
+  if string p :    hide(graph_last_path := graph_readpath(p) ;)
+                   graph_convert_user_path_to_internal graph_last_path
+  elseif path p or pair p :
+                   hide(graph_last_path := p ;)
+                   graph_convert_user_path_to_internal p
   else : graph_error(p,"gdraw argument should be a data file or a path")
         origin
   fi
@@ -550,8 +559,10 @@ enddef ;
 
 % Handle the part of a Gdraw command that uses path or data file p.
 def graph_fill expr p =
-  if string p : graph_convert_user_path_to_internal graph_readpath(p) --cycle
-  elseif cycle p : graph_convert_user_path_to_internal p
+  if string p :    hide(graph_last_path := graph_readpath(p) --cycle ;)
+                   graph_convert_user_path_to_internal graph_last_path
+  elseif cycle p : hide(graph_last_path := p ;)
+                   graph_convert_user_path_to_internal p
   else : graph_error(p,"gfill argument should be a data file or a cyclic path")
         origin..cycle
   fi graph_withlist _op_
@@ -564,6 +575,74 @@ def gfill = graph_addto contour graph_fill enddef ;
 % This is used in graph_draw and graph_fill to allow postprocessing graph_last_drawn
 def graph_withlist text t_ = t_ ; graph_post_draw; enddef;
 
+def witherrorbars(text t) text options =
+    hide(
+        def graph_errorbar_text = t enddef ;
+        save pic ; picture pic ; pic := image(draw origin _op_ options ;) ;
+        if color colorpart pic : graph_foreground := colorpart pic ; fi
+    )
+    options
+enddef ;
+
+picture graph_errorbar_picture ; graph_errorbar_picture := image(draw (left--right) scaled .5 ;) ;
+%picture graph_xbar_picture ;    graph_xbar_picture := image(draw (down--up)    scaled .5 ;) ;
+%picture graph_ybar_picture ;    graph_ybar_picture := image(draw (left--right) scaled .5 ;) ;
+
+vardef graph_errorbars(text t) =
+    if known graph_last_path :
+        save n, p, q ; path p ; pair q ;
+        save pic ; picture pic[] ; pic0 := nullpicture ;
+        pic1 := if     known graph_xbar_picture :     graph_xbar_picture
+                elseif known graph_errorbar_picture : graph_errorbar_picture rotated 90
+                else :                                nullpicture fi ;
+        pic2 := if     known graph_ybar_picture :     graph_ybar_picture
+                elseif known graph_errorbar_picture : graph_errorbar_picture
+                else :                                nullpicture fi ;
+        if length pic1>0 :
+            pic1 := pic1 scaled graph_shapesize ;
+            setbounds pic1 to origin..cycle ;
+        fi
+        if length pic2>0 :
+            pic2 := pic2 scaled graph_shapesize ;
+            setbounds pic2 to origin..cycle ;
+        fi
+        for i=0 upto length graph_last_path :
+            clearxy ; z = point i of graph_last_path ;
+            n := 1 ;
+            for $=t :
+                if known $ :
+                    q := if path $ : if length $>i : point i of $ else : origin fi
+                       elseif pair $ : $ elseif numeric $ : ($,$) else : origin fi ;
+                    if q<>origin :
+                        p := graph_convert_user_path_to_internal ((
+                            if n=1 :
+                                (-xpart q,0)--(ypart q,0)
+                            else :
+                                (0,-xpart q)--(0,ypart q)
+                            fi ) shifted z) ;
+                        addto pic0 doublepath p ;
+                        if length pic[n]>0 :
+                           if ypart q<>0 :
+                               addto pic0 also pic[n] shifted point 1 of p ;
+                           fi
+                           if xpart q<>0 :
+                               addto pic0 also pic[n] rotated 180 shifted point 0 of p ;
+                           fi
+                        fi
+                    fi
+                fi
+                exitif incr n>3 ;
+            endfor
+        endfor
+        if length pic0>0 :
+            save bg, fg ; color bg, fg ;
+            bg := if known graph_background : graph_background else : background fi ;
+            fg := if known graph_foreground : graph_foreground else : black fi ;
+            addto graph_current_graph also pic0 withpen currentpen scaled 2  _op_ withcolor bg ;
+            addto graph_current_graph also pic0 withpen currentpen scaled .5 _op_ withcolor fg ;
+        fi
+    fi
+enddef ;
 
 % Set graph_plot_picture so the postprocessing step will plot picture p at each path knot.
 % Also select nullpen to suppress stroking.
@@ -596,6 +675,7 @@ vardef graph_post_draw =
   if filled graph_last_drawn or not graph_is_null(penpart graph_last_drawn) :
     addto graph_current_graph also graph_last_drawn ;
   fi
+  graph_errorbars(graph_errorbar_text) ;
   if length graph_plot_picture>0 :
     for i=0 upto length p if cycle p : -1 fi :
       addto graph_current_graph also graph_plot_picture shifted point i of p ;
@@ -644,7 +724,7 @@ enddef ;
 
 
 % Stash the result drawing command c in the graph_label table using with list w and
-% an index based on angle laboff$.
+% an index based on angle mfun_laboff$.
 vardef graph_stash_label(suffix $)(text c) text w =
   graph_label[1.5+angle mfun_laboff$ /90] = image(c(origin) w) ;
 enddef ;
@@ -679,10 +759,13 @@ def OUT = enddef ;       % location text for outside labels
 % Grid lines and tick marks are transformed versions of the templates below.
 % In the template paths, (0,0) is on the edge of the frame and inward is to
 % the right.
-path Gtemplate.itick, Gtemplate.otick, Gtemplate.grid ;
+path Gtemplate.tick, Gtemplate.itick, Gtemplate.otick, Gtemplate.grid ;
+Gtemplate.tick  = (-3.5bp,0)--(3.5bp,0) ;
 Gtemplate.itick = origin--(7bp,0) ;
 Gtemplate.otick = (-7bp,0)--origin ;
-Gtemplate.grid = origin--(1,0) ;
+Gtemplate.grid  = origin--(1,0) ;
+
+vardef  tick@#(expr f,u) text w =  graph_tick_label(@#,@,false,f,u,w) ;  enddef;
 
 vardef itick@#(expr f,u) text w =  graph_tick_label(@#,@,false,f,u,w) ;  enddef;
 
@@ -1020,7 +1103,7 @@ vardef format(expr f, x) = textext(strfmt(f, x)) enddef ;
 % unfilled outline, interior filled with different shades of the background.
 % This allows overlapping points on a plot to be more distinguishable.
 
-vardef graph_shapesize = .33BodyFontSize enddef ;
+vardef graph_shapesize = (.33BodyFontSize) enddef ;
 
 path graph_shape[] ; % (internal) symbol path
 
@@ -1101,9 +1184,11 @@ def plotsymbol(expr n, f) text t =
             save bg, fg ; color bg, fg ;
             bg := if known graph_background : graph_background else : background fi ;
             save pic ; picture pic ; pic := image(draw origin _op_ t ;) ;
-            fg := if color colorpart pic : colorpart pic else : black fi ;
+            if color colorpart pic : graph_foreground := colorpart pic ; fi
+            fg := if known graph_foreground : graph_foreground else : black fi ;
             save p ; path p ; p = graph_shape[n] scaled graph_shapesize ;
             draw p withcolor bg withpen currentpen scaled 2 ; % halo
+            currentpen := currentpen scaled .5 ;
             if cycle p :
                 fill p withcolor
                     if known f :
@@ -1120,7 +1205,7 @@ def plotsymbol(expr n, f) text t =
                         bg
                     fi ;
             fi
-            draw p withpen currentpen _op_ t ;
+            draw p _op_ t ;
         )
     else :
         nullpicture
@@ -1193,7 +1278,7 @@ enddef ;
 
 def makefunctionpath (expr f, t, n) (text func) =
     (for x=f step ((t-f)/(abs n)) until t :
-        if x<>f : .. fi
+        if x<>f : -- fi
         (x, func)
     endfor )
 enddef ;
@@ -1298,9 +1383,9 @@ numeric fit_chi_squared ;
 
 vardef polynomial_fit (suffix p, $) (expr n) (text t) =
     if not path p :
-        Gerr(p, "Cannot fit--not a path") ;
+        graph_error(p, "Cannot fit--not a path") ;
     elseif length p < n :
-        Gerr(p, "Cannot fit--not enough points") ;
+        graph_error(p, "Cannot fit--not enough points") ;
     else :
         fit_chi_squared := 0 ;
         % calculate sums of the data
@@ -1314,7 +1399,24 @@ vardef polynomial_fit (suffix p, $) (expr n) (text t) =
         endfor
         for i=0 upto length p :
             clearxy ; z = point i of p ;
-            w := if length(t) > 0 : t else : 1 fi ; % weight
+            w := 1 ; % weight
+            if known t :
+                if  numeric t :
+                    w := 1 if t<>0 : /(abs t) fi ;
+                elseif pair t :
+                    if t<>origin :
+                        w := 1/(abs t) ;
+                    fi
+                elseif path t :
+                    if length t>= i:
+                        if point i of t<>origin :
+                            w := 1/(abs point i of t) ;
+                        fi
+                    else :
+                        w := 0 ;
+                    fi ;
+                fi
+            fi
             x1 := w ;
             for j=0 upto 2n :
                 sumx[j] := sumx[j] + x1 ;
@@ -1385,13 +1487,29 @@ vardef exponential_function (suffix $) (expr x) = $1*exp($0*x) enddef ;
 
 vardef exponential_fit (suffix p, $) (text t) =
     save a ; numeric a[] ;
-    save q ; path q ; % fit to the log of the ordinate
+    save q ; path q[] ; % fit to the log of the ordinate
     for i=0 upto length p :
-        if ypart(point i of p)>0 :
-            augment.q(xpart(point i of p),ln(ypart(point i of p))) ;
+        clearxy ; z = point i of p ;
+        if y>0 :
+            augment.q0(x,ln(y)) ;
+            augment.q1(
+                if known t :
+                    if numeric t : (0,ln(t))
+                    elseif pair t : (xpart t,ln(ypart t))
+                    elseif path t :
+                        if length t>=i :
+                            hide(z1 = point i of t;)
+                            (x1,ln(y1))
+                        else :
+                            origin
+                        fi
+                    fi
+                else :
+                    (0,1)
+                fi ) ;
         fi
     endfor
-    linear_fit(q,a,t) ;
+    linear_fit(q0,a,q1) ;
     save e ; e := exp(sqrt(fit_chi_squared)) ;
     fit_chi_squared := e * e ;
     $0 := a1 ;
@@ -1406,13 +1524,29 @@ vardef power_law_function (suffix $) (expr x) = $1*(x**$0) enddef ;
 
 vardef power_law_fit (suffix p, $) (text t) =
     save a ; numeric a[] ;
-    save q ; path q ; % fit to the logs of the abscissae and ordinates
+    save q ; path q[] ; % fit to the logs of the abscissae and ordinates
     for i=0 upto length p :
-        if (xpart(point i of p)>0) and (ypart(point i of p)>0) :
-            augment.q(ln(xpart(point i of p)),ln(ypart(point i of p))) ;
+        clearxy ; z = point i of p ;
+        if (x>0) and (y>0) :
+            augment.q0(ln(x),ln(y)) ;
+            augment.q1(
+                if known t :
+                    if numeric t : (0,ln(t))
+                    elseif pair t : (ln(xpart t),ln(ypart t))
+                    elseif path t :
+                        if length t>=i :
+                            hide(z1 = point i of t)
+                            (ln(x1),ln(y1))
+                        else :
+                            origin
+                        fi
+                    fi
+                else :
+                    (0,1)
+                fi ) ;
         fi
     endfor
-    linear_fit(q,a,t) ;
+    linear_fit(q0,a,q1) ;
     save e ; e := exp(sqrt(fit_chi_squared)) ;
     fit_chi_squared := e * e ;
     $0 := a1 ;
@@ -1440,13 +1574,29 @@ enddef ;
 
 vardef gaussian_fit (suffix p, $) (text t) =
     save a ; numeric a[] ;
-    save q ; path q ; % fit to the log of the ordinate
+    save q ; path q[] ; % fit to the log of the ordinate
     for i=0 upto length p :
-        if ypart(point i of p)>0 :
-            augment.q(xpart(point i of p), ln(ypart(point i of p))) ;
+        clearxy ; z = point i of p ;
+        if y>0 :
+            augment.q0(x,ln(y)) ;
+            augment.q1(
+                if known t :
+                    if numeric t : (0,ln(t))
+                    elseif pair t : (xpart t,ln(ypart t))
+                    elseif path t :
+                        if length t>=i :
+                            hide(z1 = point i of t)
+                            (x1,ln(y1))
+                        else :
+                            origin
+                        fi
+                    fi
+                else :
+                    (0,1)
+                fi ) ;
         fi
     endfor
-    polynomial_fit(q,a,2,if t > 0 : ln(t) else : 0 fi) ;
+    polynomial_fit(q0,a,2,q1) ;
     save e ; e := exp(sqrt(fit_chi_squared)) ;
     fit_chi_squared := e * e ;
     $1 := sqrt(-lntwo/a2) ;

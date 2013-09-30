@@ -689,6 +689,9 @@
 \unexpanded\def\buff_verbatim_type_defined_buffer
   {\dotripleempty\buff_verbatim_type_defined_buffer_indeed}
 
+\unexpanded\def\typedefinedbuffer[#1]%
+  {\buff_verbatim_type_defined_buffer[\v!buffer][\thedefinedbuffer{#1}]}%
+
 \appendtoks
     \setuevalue{\e!type\currentbuffer}{\buff_verbatim_type_defined_buffer[\v!buffer][\currentdefinedbuffer]}%
 \to \everydefinebuffer

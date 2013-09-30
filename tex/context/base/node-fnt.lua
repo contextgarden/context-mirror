@@ -126,8 +126,11 @@ function handlers.characters(head)
                     attrfonts[font] = used
                 end
                 if not used[attr] then
-                    used[attr] = setfontdynamics[font][attr]
-                    a = a + 1
+                    local fd = setfontdynamics[font]
+                    if fd then
+                        used[attr] = fd[attr]
+                        a = a + 1
+                    end
                 end
             else
                 local used = usedfonts[font]

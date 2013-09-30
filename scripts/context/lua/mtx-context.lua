@@ -854,7 +854,7 @@ local function make_mkiv_format(name,engine)
 end
 
 local function make_mkii_format(name,engine)
-    local command = format("mtxrun texexec.rb --make --%s %s",name,engine)
+    local command = format("mtxrun texexec.rb --make %s --%s",name,engine)
     report("running command: %s",command)
     os.spawn(command)
 end

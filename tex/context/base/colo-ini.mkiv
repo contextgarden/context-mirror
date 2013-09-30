@@ -121,6 +121,9 @@
 
 % \testfeatureonce{100000}{\color[red]{}} % 1.046 => 0.541
 
+\let\g_color\empty
+\let\g_style\empty
+
 \unexpanded\def\switchtocolor[#1]{\csname#1\endcsname}
 
 \unexpanded\def\color        [#1]{\bgroup

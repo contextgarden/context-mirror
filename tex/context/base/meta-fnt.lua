@@ -127,6 +127,7 @@ local function process(mpxformat,name,instances,scalefactor)
                 }
             }
         end
+--         inspect(lists)
         lists.version = metapost.variables.fontversion or "1.000"
         metapost.reset(mpxformat) -- saves memory
         lists = containers.write(mpfonts.cache, hash, lists)
