@@ -1,0 +1,21 @@
+\starttext
+
+    \definemetafont[demo-symbols][demo-symbols.mp]
+
+    \startbuffer
+        watch this: {\demo\char"261A} \quad  \ruledhbox{\demo\char"261A}
+    \stopbuffer
+
+    \definefont[demo][demo@demo-symbols]
+
+    \getbuffer \blank
+
+    \definefont[demo][demo@demo-symbols at \the\dimexpr3\exheight]
+
+    \getbuffer \blank
+
+    \definefont[demo][demo@demo-symbols at \the\dimexpr4\exheight]
+
+    \getbuffer \blank
+
+\stoptext

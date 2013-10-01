@@ -26,7 +26,7 @@ metapost.fonts = metapost.fonts or { }
 -- a few glocals
 
 local characters, descriptions = { }, { }
-local factor, code, slot, width, height, depth, total, variants = 100, { }, 0, 0, 0, 0, 0, 0, true
+local factor, code, slot, width, height, depth, total, variants, bbox, llx, lly, urx, ury = 100, { }, 0, 0, 0, 0, 0, 0, true, 0, 0, 0, 0
 
 -- The next variant of ActualText is what Taco and I could come up with
 -- eventually. As of September 2013 Acrobat copies okay, Summatra copies a
@@ -48,9 +48,13 @@ end
 -- end
 
 local flusher = {
-    startfigure = function(chrnum,llx,lly,urx,ury)
+    startfigure = function(_chr_,_llx_,_lly_,_urx_,_ury_)
         code   = { }
-        slot   = chrnum
+        slot   = _chr_
+        llx    = _llx_
+        lly    = _lly_
+        urx    = _urx_
+        ury    = _ury_
         width  = urx - llx
         height = ury
         depth  = -lly
@@ -70,7 +74,7 @@ local flusher = {
             width       = width * 100,
             height      = height * 100,
             depth       = depth * 100,
-            boundingbox = { 0, -depth, width, height },
+            boundingbox = { llx, lly, urx, ury },
         }
         if inline then
             characters[slot] = {
@@ -95,63 +99,74 @@ local flusher = {
 }
 
 local function process(mpxformat,name,instances,scalefactor)
-    statistics.starttiming(metapost.fonts)
-    scalefactor = scalefactor or 1
-    instances = instances or metapost.fonts.instances or 1
-    local fontname = file.removesuffix(file.basename(name))
-    local hash  = file.robustname(formatters["%s %05i %03i"](fontname,scalefactor*1000,instances))
-    local lists = containers.read(mpfonts.cache,hash)
-    if not lists or lists.version ~= version then
-        statistics.starttiming(flusher)
-        local data = io.loaddata(resolvers.findfile(name))
-        metapost.reset(mpxformat)
-        metapost.setoutercolor(2) -- no outer color and no reset either
-        lists = { }
-        for i=1,instances do
-            characters   = { }
-            descriptions = { }
-            metapost.process(
-                mpxformat,
-                {
-                    formatters["randomseed := %s ;"](i*10),
-                    formatters["charscale  := %s ;"](scalefactor),
-                    data,
-                },
-                false,
-                flusher,
-                false,
-                false,
-                "all"
-            )
-            lists[i] = {
-                characters   = characters,
-                descriptions = descriptions,
-                parameters   = {
-                    designsize    = 655360,
-                    slant         =      0,
-                    space         =    333   * scalefactor,
-                    space_stretch =    166.5 * scalefactor,
-                    space_shrink  =    111   * scalefactor,
-                    x_height      =    431   * scalefactor,
-                    quad          =   1000   * scalefactor,
-                    extra_space   =      0,
-                },
-                properties  = {
-                    name          = formatters["%s-%03i"](hash,i),
-                    virtualized   = true,
-                    spacer        = "space",
+    local filename = resolvers.findfile(name)
+    local attributes = filename and lfs.isfile(filename) and lfs.attributes(filename)
+    if attributes then
+        statistics.starttiming(metapost.fonts)
+        scalefactor = scalefactor or 1
+        instances = instances or metapost.fonts.instances or 1 -- maybe store in liost too
+        local fontname = file.removesuffix(file.basename(name))
+        local modification = attributes.modification
+        local filesize = attributes.size
+        local hash = file.robustname(formatters["%s %05i %03i"](fontname,scalefactor*1000,instances))
+        local lists = containers.read(mpfonts.cache,hash)
+        if not lists or lists.modification ~= modification or lists.filesize ~= filesize or lists.instances ~= instances or lists.scalefactor ~= scalefactor then
+            statistics.starttiming(flusher)
+            local data = io.loaddata(filename)
+            metapost.reset(mpxformat)
+            metapost.setoutercolor(2) -- no outer color and no reset either
+            lists = { }
+            for i=1,instances do
+                characters   = { }
+                descriptions = { }
+                metapost.process(
+                    mpxformat,
+                    {
+                        formatters["randomseed := %s ;"](i*10),
+                        formatters["charscale  := %s ;"](scalefactor),
+                        data,
+                    },
+                    false,
+                    flusher,
+                    false,
+                    false,
+                    "all"
+                )
+                lists[i] = {
+                    characters   = characters,
+                    descriptions = descriptions,
+                    parameters   = {
+                        designsize    = 655360,
+                        slant         =      0,
+                        space         =    333   * scalefactor,
+                        space_stretch =    166.5 * scalefactor,
+                        space_shrink  =    111   * scalefactor,
+                        x_height      =    431   * scalefactor,
+                        quad          =   1000   * scalefactor,
+                        extra_space   =      0,
+                    },
+                    properties  = {
+                        name          = formatters["%s-%03i"](hash,i),
+                        virtualized   = true,
+                        spacer        = "space",
+                    }
                 }
-            }
+            end
+            lists.version = metapost.variables.fontversion or "1.000"
+            lists.modification = modification
+            lists.filesize = filesize
+            lists.instances = instances
+            lists.scalefactor = scalefactor
+            metapost.reset(mpxformat) -- saves memory
+            lists = containers.write(mpfonts.cache, hash, lists)
+            statistics.stoptiming(flusher)
         end
---         inspect(lists)
-        lists.version = metapost.variables.fontversion or "1.000"
-        metapost.reset(mpxformat) -- saves memory
-        lists = containers.write(mpfonts.cache, hash, lists)
-        statistics.stoptiming(flusher)
+        variants = variants + #lists
+        statistics.stoptiming(metapost.fonts)
+        return lists
+    else
+        return { }
     end
-    variants = variants + #lists
-    statistics.stoptiming(metapost.fonts)
-    return lists
 end
 
 metapost.fonts.flusher   = flusher
