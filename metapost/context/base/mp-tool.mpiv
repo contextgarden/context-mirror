@@ -2454,8 +2454,10 @@ def beginglyph(expr unicode, width, height, depth) =
 enddef ;
 
 def endglyph =
-    currentpicture := currentpicture scaled charscale ;
     setbounds currentpicture to (boundingbox unitsquare xscaled charwd yscaled (charht + chardp) shifted (0,-chardp)) ;
+    if known charscale :
+        currentpicture := currentpicture scaled charscale ;
+    fi ;
     endfig ;
 enddef ;
 
