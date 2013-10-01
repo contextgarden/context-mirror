@@ -133,7 +133,12 @@ replace_all_nbsp = function(head) -- delayed definition
 end
 
 local fontprocesses      = fonts.hashes.processes
-local xprocesscharacters = nodes.handlers.characters
+local xprocesscharacters = nil
+
+xprocesscharacters = function(head,font)
+    xprocesscharacters = nodes.handlers.characters
+    return xprocesscharacters(head,font)
+end
 
 local function processcharacters(head,font)
     return xprocesscharacters(head)
@@ -559,7 +564,7 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
         -- if syllable starts with Ra + H and script has 'Reph' then exclude Reph
         -- from candidates for base consonants
         if n == stop then
-            return head, stop
+            return head, stop, nbspaces
         end
         if n.next.char == c_zwj then
             current = start
@@ -575,7 +580,7 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
             stop = stop.prev
             head = remove_node(head,current)
             free_node(current)
-            return head, stop
+            return head, stop, nbspaces
         else
             nbspaces  = nbspaces + 1
             base      = current
@@ -592,7 +597,7 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
                         if next ~= stop and halant[next.char] then
                             current = next
                             next = current.next
-                            local tmp = next.next
+                            local tmp = next and next.next or nil -- needs checking 
                             local changestop = next == stop
                             local tempcurrent = copy_node(next)
                             local nextcurrent = copy_node(current)
@@ -610,7 +615,9 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
                                 current.char = tempcurrent.char    -- (assumes that result of blwf consists of one node)
                                 local freenode = current.next
                                 current.next = tmp
-                                tmp.prev = current
+                                if tmp then 
+                                    tmp.prev = current
+                                end
                                 free_node(freenode)
                                 flush_list(tempcurrent)
                                 if changestop then
@@ -1390,12 +1397,12 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
         current = start.next.next
     end
 
-    local function action(is_nbsp)
+    local function stand_alone(is_nbsp)
         if current == stop then
             stop = stop.prev
             head = remove_node(head,current)
             free_node(current)
-            return head, stop
+            return head, stop, nbspaces
         else
             if is_nbsp then
                 nbspaces = nbspaces + 1
@@ -1473,7 +1480,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
         if start[a_state] == s_rphf then
             start[a_state] = unsetvalue
         end
-        return head, stop
+        return head, stop, nbspaces
     else
         if base[a_state] then
             base[a_state] = unsetvalue

@@ -335,19 +335,23 @@ function metapost.flush(result,flusher,askedfig)
                     local bbox = figure:boundingbox()
                     local llx, lly, urx, ury = bbox[1], bbox[2], bbox[3], bbox[4]
                     local variables = { }
+                    metapost.variables = variables
+                    metapost.properties = {
+                        llx    = llx,
+                        lly    = lly,
+                        urx    = urx,
+                        ury    = ury,
+                        slot   = figure:charcode(),
+                        width  = figure:width(),
+                        height = figure:height(),
+                        depth  = figure:depth(),
+                        italic = figure:italcorr(),
+                    }
+                    -- replaced by the above
                     metapost.llx = llx
                     metapost.lly = lly
                     metapost.urx = urx
                     metapost.ury = ury
-                    metapost.variables = variables
--- todo (maybe the lib will change to charwd too):
---
--- metapost.charcode = figure.charcode
--- metapost.charwd   = figure.width
--- metapost.charht   = figure.height
--- metapost.chardp   = figure.depth
--- metapost.charic   = figure.italic
---
                     if urx < llx then
                         -- invalid
                         startfigure(fignum,0,0,0,0,"invalid",figure)
