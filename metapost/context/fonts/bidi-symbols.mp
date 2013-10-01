@@ -12,7 +12,7 @@
 %C details.
 
 passvariable("fontname","bidi-symbols") ;
-passvariable("fontversion","1.007") ;
+passvariable("fontversion","1.009") ;
 
 numeric font_bidi_dp ; font_bidi_dp := -6 ;
 numeric font_bidi_wd ; font_bidi_wd := -12 ;

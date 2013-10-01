@@ -30,6 +30,17 @@ local factor, code, slot, width, height, depth, total, variants = 100, { }, 0, 0
 
 -- A next version of mplib will provide the tfm font information which
 -- gives better glyph dimensions, plus additional kerning information.
+--
+-- Somehow actualtext is not used for cut and paste ... in spite of what
+-- manuals say ... the usual compatibility mess I guess.
+
+local function topdf(n,code)
+    if n < 0x10000 then
+        return formatters["/Span << /ActualText <feff%04x> >> BDC % t EMC"](n,code)
+    else
+        return formatters["/Span << /ActualText <feff%04x%04x> >> BDC % t EMC"](n/1024+0xD800,n%1024+0xDC00,code)
+    end
+end
 
 local flusher = {
     startfigure = function(chrnum,llx,lly,urx,ury)
@@ -59,7 +70,7 @@ local flusher = {
         if inline then
             characters[slot] = {
                 commands = {
-                    { "special", "pdf: " .. concat(code," ") },
+                    { "special", "pdf: " .. topdf(slot,code) },
                 }
             }
         else
@@ -68,7 +79,7 @@ local flusher = {
                     {
                         "image",
                         {
-                            stream = concat(code," "),
+                            stream = topdf(slot,code),
                             bbox   = { 0, -depth * 65536, width * 65536, height * 65536 }
                         },
                     },

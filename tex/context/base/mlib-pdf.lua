@@ -340,6 +340,14 @@ function metapost.flush(result,flusher,askedfig)
                     metapost.urx = urx
                     metapost.ury = ury
                     metapost.variables = variables
+-- todo (maybe the lib will change to charwd too):
+--
+-- metapost.charcode = figure.charcode
+-- metapost.charwd   = figure.width
+-- metapost.charht   = figure.height
+-- metapost.chardp   = figure.depth
+-- metapost.charic   = figure.italic
+--
                     if urx < llx then
                         -- invalid
                         startfigure(fignum,0,0,0,0,"invalid",figure)
