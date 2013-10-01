@@ -317,33 +317,45 @@
 
 % special macros (probably needs some more work)
 
+\let\chem_box_visual\ruledhbox
+\let\chem_box_visual\hbox
+\let\chem_box_normal\hbox
+
 \def\chem_top_construct#1#2#3#4%
-  {\begingroup
-   \setbox0\hbox{\setstrut\strut#3}%
-   \setbox2\hbox{\setstrut\strut\molecule{#4}}%
-   \setbox0\hbox{\raise\dimexpr\dp0+\ht2\relax\hbox to \wd2{#1\box0#2}}%
-   % no: \smashbox0
-   \hbox{\box0\box2}%
-   \endgroup}%
+  {\hbox\bgroup
+   \setstrut
+   \setbox\scratchboxone\chem_box_visual{\strut#3}%
+   \setbox\scratchboxtwo\chem_box_visual{\strut\molecule{#4}}%
+   \setbox\scratchboxone\chem_box_normal{\raise\dimexpr\dp\scratchboxone+\ht\scratchboxtwo\relax\hbox to \wd\scratchboxtwo{#1\box\scratchboxone#2}}%
+   \smashbox\scratchboxone
+   \box\scratchboxone
+   \box\scratchboxtwo
+   \egroup}
 
 \def\chem_bottom_construct#1#2#3#4%
-  {\begingroup
-   \setbox0\hbox{\setstrut\strut#3}%
-   \setbox2\hbox{\setstrut\strut#4}%
-   \setbox0\hbox{\lower\dimexpr\dp2+\ht0\relax\hbox to \wd2{#1\box0#2}}%
-   % no: \smashbox0
-   \hbox{\box0\box2}%
-   \endgroup}%
+  {\hbox\bgroup
+   \setstrut
+   \setbox\scratchboxone\chem_box_visual{\strut#3}%
+   \setbox\scratchboxtwo\chem_box_visual{\strut\molecule{#4}}%
+   \setbox\scratchboxone\chem_box_normal{\lower\dimexpr\dp\scratchboxtwo+\ht\scratchboxone\relax\hbox to \wd\scratchboxtwo{#1\box\scratchboxone#2}}%
+   \smashbox\scratchboxone
+   \box\scratchboxone
+   \box\scratchboxtwo
+   \egroup}
 
-\unexpanded\def\chemicalleft#1#2%
-  {\begingroup
-   \hbox{\llap{\setstrut\strut#1}\setstrut\strut#2}%
-   \endgroup}%
+\unexpanded\def\chemicalleft#1#2% redundant boxes thanks to visual
+  {\hbox\bgroup
+   \setstrut
+   \llap{\chem_box_visual{\strut#1}}%
+   \chem_box_visual{\strut#2}%
+   \egroup}
 
-\unexpanded\def\chemicalright#1#2%
-  {\begingroup
-   \hbox{\setstrut\strut#2\rlap{\setstrut\strut#1}}%
-   \endgroup}%
+\unexpanded\def\chemicalright#1#2% redundant boxes thanks to visual
+  {\hbox\bgroup
+   \setstrut
+   \chem_box_visual{\strut#2}%
+   \rlap{\chem_box_visual{\strut#1}}%
+   \egroup}
 
 \unexpanded\def\chemicaltop            {\chem_top_construct    \hss   \hss  }
 \unexpanded\def\chemicallefttop        {\chem_top_construct    \relax \hss  }
@@ -372,11 +384,16 @@
      \expandafter\chem_aligned_text_text
    \fi}
 
+\let\chemicaltighttext\relax % maybe smaller strut
+
 \def\chem_aligned_text_text#1#2#3%
   {\dontleavehmode
    \begingroup
    \usechemicalstyleandcolor\c!style\c!color
-   \hbox to \fontcharwd\font`C{\setstrut\strut#1\molecule{#3}#2}%
+   \chem_box_visual to \fontcharwd\font`C\bgroup
+     \setstrut\strut
+     #1\molecule{#3}#2%
+   \egroup
    \endgroup}
 
 \def\chem_aligned_text_math#1#2#3%
@@ -384,7 +401,10 @@
    \begingroup
    \scratchcounter\normalmathstyle
    \usechemicalstyleandcolor\c!style\c!color
-   \hbox to \fontcharwd\font`C{\setstrut\strut#1\mathematics{\tf\triggermathstyle\scratchcounter\molecule{#3}}#2}%
+   \chem_box_visual to \fontcharwd\font`C\bgroup
+     \setstrut\strut
+     #1\mathematics{\tf\triggermathstyle\scratchcounter\molecule{#3}}#2%
+   \egroup
    \endgroup}
 
 \unexpanded\def\chemicalcentered     {\chemicalalignedtext\hss  \hss  }
