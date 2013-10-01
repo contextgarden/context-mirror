@@ -832,3 +832,41 @@ registerotffeature {
         node = finalize,
     }
 }
+
+-- kern hackery
+
+local function setkeptligatures(tfmdata,scheme)
+    local goodies = tfmdata.goodies
+    if goodies then
+        for i=1,#goodies do
+            local g = goodies[i]
+            local letterspacing = g.letterspacing
+            if letterspacing then
+                local keptligatures = letterspacing.keptligatures
+                if keptligatures then
+                    local unicodes = tfmdata.resources.unicodes
+                    local hash = { }
+                    for k, v in next, keptligatures do
+                        local u = unicodes[k]
+                        if u then
+                            hash[u] = true
+                        else
+                            -- error: unknown name
+                        end
+                    end
+                    tfmdata.properties.keptligatures = hash
+                end
+            end
+        end
+    end
+end
+
+registerotffeature {
+    name         = "keptligatures",
+    description  = "kept ligatures in letterspacing",
+    default      = true,
+    initializers = {
+        base = setkeptligatures,
+        node = setkeptligatures,
+    }
+}

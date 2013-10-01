@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['typo-krn'] = {
     license   = "see context related readme files"
 }
 
+-- glue is still somewhat suboptimal
+
 local next, type, tonumber = next, type, tonumber
 local utfchar = utf.char
 
@@ -53,6 +55,8 @@ local fontdata           = fonthashes.identifiers
 local chardata           = fonthashes.characters
 local quaddata           = fonthashes.quads
 local markdata           = fonthashes.marks
+local fontproperties     = fonthashes.properties
+local fontdescriptions   = fonthashes.descriptions
 
 local v_max              = interfaces.variables.max
 
@@ -61,6 +65,9 @@ local typesetters        = typesetters
 
 typesetters.kerns        = typesetters.kerns or { }
 local kerns              = typesetters.kerns
+
+local report             = logs.reporter("kerns")
+local trace_ligatures    = trackers.register("typesetters.kerns.ligatures",function(v) trace_ligatures = v end)
 
 kerns.mapping            = kerns.mapping or { }
 kerns.factors            = kerns.factors or { }
@@ -84,6 +91,26 @@ local gluefactor = 4 -- assumes quad = .5 enspace
 
 kerns.keepligature = false -- just for fun (todo: control setting with key/value)
 kerns.keeptogether = false -- just for fun (todo: control setting with key/value)
+
+function kerns.keepligature(n) -- might become default
+    local f = n.font
+    local c = n.char
+    local k = fontproperties[f].keptligatures
+    if trace_ligatures then
+        -- mostly for identifying names as they get reported
+        local d = fontdescriptions[f][c].name
+        if k and k[c] then
+            report("font %s, glyph %a, slot %X -> kept ligature",f,d,c)
+            return true
+        else
+            report("font %s, glyph %a, slot %X -> split ligature",f,d,c)
+        end
+    else
+        if k and k[c] then
+            return true
+        end
+    end
+end
 
 -- can be optimized .. the prev thing .. but hardly worth the effort
 
@@ -133,30 +160,30 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
                 if id == glyph_code then
                     lastfont = start.font
                     local c = start.components
-                    if c then
-                        if keepligature and keepligature(start) then
-                            -- keep 'm
+                    if not c then
+                        -- fine
+                    elseif keepligature and keepligature(start) then
+                        -- keep 'm
+                    else
+                        c = do_process(c,attr)
+                        local s = start
+                        local p, n = s.prev, s.next
+                        local tail = find_node_tail(c)
+                        if p then
+                            p.next = c
+                            c.prev = p
                         else
-                            c = do_process(c,attr)
-                            local s = start
-                            local p, n = s.prev, s.next
-                            local tail = find_node_tail(c)
-                            if p then
-                                p.next = c
-                                c.prev = p
-                            else
-                                head = c
-                            end
-                            if n then
-                                n.prev = tail
-                            end
-                            tail.next = n
-                            start = c
-                            s.components = nil
-                            -- we now leak nodes !
-                        --  free_node(s)
-                            done = true
+                            head = c
                         end
+                        if n then
+                            n.prev = tail
+                        end
+                        tail.next = n
+                        start = c
+                        s.components = nil
+                        -- we now leak nodes !
+                     -- free_node(s)
+                        done = true
                     end
                     local prev = start.prev
                     if not prev then
