@@ -20,7 +20,7 @@ function moduledata.fonts.protrusions.showvector(specification)
     local vector = vectors[specification.name or "?"]
     if vector then
         context.blank()
-        context.startcolumns { n = specification.columns or 3 }
+        context.startcolumns { n = specification.columns or 3, balance="yes"  }
             context.starttabulate { "|T||cw(.5em)||" }
                 for unicode, values in table.sortedhash(vector) do
                     NC() context("%U",unicode)
@@ -65,7 +65,7 @@ function moduledata.fonts.expansions.showvector(specification)
     local vector = vectors[specification.name or "?"]
     if vector then
         context.blank()
-        context.startcolumns { n = specification.columns or 3 }
+        context.startcolumns { n = specification.columns or 3, balance="yes"  }
             context.starttabulate { "|T|cw(.5em)||" }
                 for unicode, value in table.sortedhash(vector) do
                     NC() context("%U",unicode)

@@ -822,11 +822,11 @@ vardef mfun_cmykcolor_to_string(expr c) =
 enddef ;
 
 vardef mfun_path_to_string(expr p) =
-    mfun_point_to_string(value,1) for i=2 upto length(value) : & " " & mfun_point_to_string(value,i) endfor
+    mfun_point_to_string(p,1) for i=2 upto length(p) : & " " & mfun_point_to_string(p,i) endfor
 enddef ;
 
 vardef mfun_boolean_to_string(expr b) =
-    if value : "true" else : "false" fi
+    if b : "true" else : "false" fi
 enddef ;
 
 def passvariable(expr key, value) =

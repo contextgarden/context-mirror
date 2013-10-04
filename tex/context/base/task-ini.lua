@@ -27,6 +27,7 @@ appendaction("processors",   "normalizers", "typesetters.characters.handler")   
 appendaction("processors",   "normalizers", "fonts.collections.process")                         -- disabled
 appendaction("processors",   "normalizers", "fonts.checkers.missing")                            -- disabled
 
+appendaction("processors",   "characters",  "typesetters.characteralign.handler")                -- disabled
 appendaction("processors",   "characters",  "scripts.autofontfeature.handler")
 appendaction("processors",   "characters",  "scripts.splitters.handler")                         -- disabled
 appendaction("processors",   "characters",  "typesetters.cleaners.handler")                      -- disabled
@@ -119,6 +120,7 @@ appendaction("vboxbuilders","normalizers","typesetters.checkers.handler")
 
 -- speedup: only kick in when used
 
+disableaction("processors",  "typesetters.characteralign.handler")
 disableaction("processors",  "scripts.autofontfeature.handler")
 disableaction("processors",  "scripts.splitters.handler")
 disableaction("processors",  "scripts.injectors.handler") -- was enabled

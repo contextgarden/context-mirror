@@ -57,8 +57,14 @@ local quaddata           = fonthashes.quads
 local markdata           = fonthashes.marks
 local fontproperties     = fonthashes.properties
 local fontdescriptions   = fonthashes.descriptions
+local fontfeatures       = fonthashes.features
+
+local tracers            = nodes.tracers
+local setcolor           = tracers.colors.set
+local resetcolor         = tracers.colors.reset
 
 local v_max              = interfaces.variables.max
+local v_auto             = interfaces.variables.auto
 
 typesetters              = typesetters or { }
 local typesetters        = typesetters
@@ -67,12 +73,14 @@ typesetters.kerns        = typesetters.kerns or { }
 local kerns              = typesetters.kerns
 
 local report             = logs.reporter("kerns")
-local trace_ligatures    = trackers.register("typesetters.kerns.ligatures",function(v) trace_ligatures = v end)
+local trace_ligatures    = false  trackers.register("typesetters.kerns.ligatures",function(v) trace_ligatures = v end)
 
 kerns.mapping            = kerns.mapping or { }
 kerns.factors            = kerns.factors or { }
 local a_kerns            = attributes.private("kern")
 local a_fontkern         = attributes.private('fontkern')
+
+local contextsetups      = fonts.specifiers.contextsetups
 
 storage.register("typesetters/kerns/mapping", kerns.mapping, "typesetters.kerns.mapping")
 storage.register("typesetters/kerns/factors", kerns.factors, "typesetters.kerns.factors")
@@ -92,20 +100,62 @@ local gluefactor = 4 -- assumes quad = .5 enspace
 kerns.keepligature = false -- just for fun (todo: control setting with key/value)
 kerns.keeptogether = false -- just for fun (todo: control setting with key/value)
 
+-- red   : kept by dynamic feature
+-- green : kept by static feature
+-- blue  : keep by goodie
+
 function kerns.keepligature(n) -- might become default
     local f = n.font
-    local c = n.char
-    local k = fontproperties[f].keptligatures
+    local a = n[0] or 0
     if trace_ligatures then
-        -- mostly for identifying names as they get reported
+        local c = n.char
         local d = fontdescriptions[f][c].name
+        if a > 0 and contextsetups[a].keepligatures == v_auto then
+            report("font %!font:name!, glyph %a, slot %X -> ligature %s, by %s feature %a",f,d,c,"kept","dynamic","keepligatures")
+            setcolor(n,"darkred")
+            return true
+        end
+        local k = fontfeatures[f].keepligatures
+        if k == v_auto then
+            report("font %!font:name!, glyph %a, slot %X -> ligature %s, by %s feature %a",f,d,c,"kept","static","keepligatures")
+            setcolor(n,"darkgreen")
+            return true
+        end
+        if not k then
+            report("font %!font:name!, glyph %a, slot %X -> ligature %s, by %s feature %a",f,d,c,"split","static","keepligatures")
+            resetcolor(n)
+            return false
+        end
+        local k = fontproperties[f].keptligatures
+        if not k then
+            report("font %!font:name!, glyph %a, slot %X -> ligature %s, %s goodie specification",f,d,c,"split","no")
+            resetcolor(n)
+            return false
+        end
         if k and k[c] then
-            report("font %s, glyph %a, slot %X -> kept ligature",f,d,c)
+            report("font %!font:name!, glyph %a, slot %X -> ligature %s, %s goodie specification",f,d,c,"kept","by")
+            setcolor(n,"darkblue")
             return true
         else
-            report("font %s, glyph %a, slot %X -> split ligature",f,d,c)
+            report("font %!font:name!, glyph %a, slot %X -> ligature %s, %s goodie specification",f,d,c,"split","by")
+            resetcolor(n)
+            return false
         end
     else
+        if a > 0 and contextsetups[a].keepligatures == v_auto then
+            return true
+        end
+        local k = fontfeatures[f].keepligatures
+        if k == v_auto then
+            return true
+        end
+        if not k then
+            return false
+        end
+        local k = fontproperties[f].keptligatures
+        if not k then
+            return false
+        end
         if k and k[c] then
             return true
         end
@@ -136,7 +186,7 @@ local function spec_injector(fillup,width,stretch,shrink)
     end
 end
 
--- needs checking ... base mode / node mode
+-- needs checking ... base mode / node mode -- also use insert_before/after etc
 
 local function do_process(head,force) -- todo: glue so that we can fully stretch
     local start, done, lastfont = head, false, nil

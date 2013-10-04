@@ -17,13 +17,15 @@
 
 %D A basic set of features is defined here.
 
+% beware, base mode + dynamics can give weird effects
+
 % rlig ccmp
 
 \definefontfeature
   [always]
-  [mode=auto,
-   script=auto,
-   kern=yes,
+  [mode=node,    % we had 'auto', but let's try 'node' for a while and see what the impact is
+   script=auto,  % on speed; 'base' just doesn't play well with dynamics; some day we can even
+   kern=yes,     % consider skipping the base passes when no base mode is used
    mark=yes,
    mkmk=yes,
    curs=yes]
@@ -60,6 +62,15 @@
   [liga=yes,
    tlig=yes,
    trep=yes]
+
+\definefontfeature
+  [letterspacing]
+  [liga=no,
+   rlig=no,
+   clig=no,
+   dlig=no,
+   ccmp=yes,
+   keepligatures=auto]
 
 \definefontfeature % can be used for type1 fonts
   [complete]
