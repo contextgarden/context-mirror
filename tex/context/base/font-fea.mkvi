@@ -164,7 +164,7 @@
 \let\doaddfeature        \font_feature_add_nop       % low level faster ones
 \let\dosubtractfeature   \font_feature_subtract_nop
 \let\doreplacefeature    \font_feature_replace_nop
-\let\doreserandaddfeature\font_feature_reset_add_nop
+\let\doresetandaddfeature\font_feature_reset_add_nop
 
 \unexpanded\def\font_feature_add
   {\ifnum\c_font_feature_state=\plusone
@@ -329,5 +329,13 @@
 % new:
 
 \ctxcommand{registerlanguagefeatures()}
+
+% also new
+
+\unexpanded\def\useaddfontfeatureparameter#1% faster local variant
+  {\edef\m_font_feature_asked{#1\c!features}%
+   \ifx\m_font_feature_asked\empty\else
+     \font_feature_add
+   \fi}
 
 \protect \endinput

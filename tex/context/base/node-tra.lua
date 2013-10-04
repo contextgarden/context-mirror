@@ -18,8 +18,6 @@ local clock = os.gettimeofday or os.clock -- should go in environment
 
 local report_nodes = logs.reporter("nodes","tracing")
 
-nodes = nodes or { }
-
 local nodes, node, context = nodes, node, context
 
 local texgetattribute  = tex.getattribute
@@ -53,7 +51,7 @@ local glue_code        = nodecodes.glue
 local kern_code        = nodecodes.kern
 local rule_code        = nodecodes.rule
 local whatsit_code     = nodecodes.whatsit
-local spec_code        = nodecodes.glue_spec
+local gluespec_code    = nodecodes.gluespec
 
 local localpar_code    = whatcodes.localpar
 local dir_code         = whatcodes.dir
@@ -260,16 +258,19 @@ local function listtoutf(h,joiner,textonly,last)
     while h do
         local id = h.id
         if id == glyph_code then -- always true
-            w[#w+1] = utfchar(h.char)
+            local c = h.char
+            w[#w+1] = c >= 0 and utfchar(c) or formatters["<%i>"](c)
             if joiner then
                 w[#w+1] = joiner
             end
         elseif id == disc_code then
-            local pre, rep, pos = h.pre, h.replace, h.post
+            local pre = h.pre
+            local pos = h.post
+            local rep = h.replace
             w[#w+1] = formatters["[%s|%s|%s]"] (
                 pre and listtoutf(pre,joiner,textonly) or "",
-                rep and listtoutf(rep,joiner,textonly) or "",
-                mid and listtoutf(mid,joiner,textonly) or ""
+                pos and listtoutf(pos,joiner,textonly) or "",
+                rep and listtoutf(rep,joiner,textonly) or ""
             )
         elseif textonly then
             if id == glue_code and h.spec and h.spec.width > 0 then
@@ -353,7 +354,7 @@ local function numbertodimen(d,unit,fmt,strip)
     if id == glue_code then
         d = d.spec
     end
-    if not d or not d.id == spec_code then
+    if not d or not d.id == gluespec_code then
         local str = formatters[fmt](0,unit)
         return strip and lpegmatch(stripper,str) or str
     end

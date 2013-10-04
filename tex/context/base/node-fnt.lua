@@ -30,6 +30,7 @@ local nodecodes         = nodes.nodecodes
 local handlers          = nodes.handlers
 
 local glyph_code        = nodecodes.glyph
+local disc_code         = nodecodes.disc
 
 local setmetatableindex = table.setmetatableindex
 
@@ -91,11 +92,18 @@ end)
 fonts.hashes.setdynamics = setfontdynamics
 fonts.hashes.processes   = fontprocesses
 
+-- if we forget about basemode we don't need to test too much here and we can consider running
+-- over sub-ranges .. this involves a bit more initializations but who cares .. in that case we
+-- also need to use the stop criterium (we already use head too) ... we cannot use traverse
+-- then, so i'll test it on some local clone first ... the only pitfall is changed directions
+-- inside a run which means that we need to keep track of this which in turn complicates matters
+-- in a way i don't like
+
 function handlers.characters(head)
     -- either next or not, but definitely no already processed list
     starttiming(nodes)
-        local usedfonts, attrfonts = { }, { }
-        local a, u, prevfont, prevattr, done = 0, 0, nil, 0, false
+    local usedfonts, attrfonts = { }, { }
+    local a, u, prevfont, prevattr, done = 0, 0, nil, 0, false
     if trace_fontrun then
         run = run + 1
         report_fonts()
@@ -107,9 +115,11 @@ function handlers.characters(head)
             if id == glyph_code then
                 local font = n.font
                 local attr = n[0] or 0
-                report_fonts("font %03i, dynamic %03i, glyph %s",font,attr,utf.char(n.char))
+                report_fonts("font %03i, dynamic %03i, glyph %C",font,attr,n.char)
+            elseif id == disc_code then
+                report_fonts("[disc] %s",nodes.listtoutf(n,true,false,n))
             else
-                report_fonts("[%s]",nodecodes[n.id])
+                report_fonts("[%s]",nodecodes[id])
             end
             n = n.next
         end
@@ -208,7 +218,6 @@ function handlers.characters(head)
     end
     return head, true
 end
-
 
 --     local formatters = string.formatters
 

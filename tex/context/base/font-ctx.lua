@@ -34,6 +34,7 @@ local trace_designsize    = false  trackers.register("fonts.designsize", functio
 local trace_usage         = false  trackers.register("fonts.usage",      function(v) trace_usage      = v end)
 local trace_mapfiles      = false  trackers.register("fonts.mapfiles",   function(v) trace_mapfiles   = v end)
 local trace_automode      = false  trackers.register("fonts.automode",   function(v) trace_automode   = v end)
+local trace_merge         = false  trackers.register("fonts.merge",      function(v) trace_merge      = v end)
 
 local report_features     = logs.reporter("fonts","features")
 local report_cummulative  = logs.reporter("fonts","cummulative")
@@ -122,7 +123,11 @@ end
 
 -- this will move elsewhere ...
 
-utilities.strings.formatters.add(formatters,"font:name",    [["'"..file.basename(%s.properties.name).."'"]])
+function fonts.helpers.name(tfmdata)
+    return file.basename(type(tfmdata) == "number" and properties[tfmdata].name or tfmdata.properties.name)
+end
+
+utilities.strings.formatters.add(formatters,"font:name",    [["'"..fonts.helpers.name(%s).."'"]])
 utilities.strings.formatters.add(formatters,"font:features",[["'"..table.sequenced(%s," ",true).."'"]])
 
 -- ... like font-sfm or so
@@ -165,10 +170,24 @@ commands.resetnullfont = definers.resetnullfont
 -- so we never enter the loop then; we can store the defaults in the tma
 -- file (features.gpos.mkmk = 1 etc)
 
-local needsnodemode = {
-    gpos_mark2mark     = true,
-    gpos_mark2base     = true,
-    gpos_mark2ligature = true,
+local needsnodemode = { -- we will have node mode by default anyway
+ -- gsub_single              = true,
+    gsub_multiple            = true,
+ -- gsub_alternate           = true,
+ -- gsub_ligature            = true,
+    gsub_context             = true,
+    gsub_contextchain        = true,
+    gsub_reversecontextchain = true,
+ -- chainsub                 = true,
+ -- reversesub               = true,
+    gpos_mark2base           = true,
+    gpos_mark2ligature       = true,
+    gpos_mark2mark           = true,
+    gpos_cursive             = true,
+ -- gpos_single              = true,
+ -- gpos_pair                = true,
+    gpos_context             = true,
+    gpos_contextchain        = true,
 }
 
 otftables.scripts.auto = "automatic fallback to latn when no dflt present"
@@ -205,6 +224,8 @@ local function checkedscript(tfmdata,resources,features)
     features.script = script
     return script
 end
+
+-- basemode combined with dynamics is somewhat tricky
 
 local function checkedmode(tfmdata,resources,features)
     local sequences = resources.sequences
@@ -247,6 +268,9 @@ local function checkedmode(tfmdata,resources,features)
                 end
             end
         end
+    end
+    if trace_automode then
+        report_defining("forcing mode base, font %!font:name!",tfmdata)
     end
     features.mode = "base" -- new, or is this wrong?
     return "base"
@@ -548,6 +572,9 @@ local function mergecontextfeatures(currentname,extraname,how,mergedname) -- str
             for k, v in next, extra do
                 mergedfeatures[k] = v
             end
+            if trace_merge then
+                report_features("merge %a, method %a, current %|T, extra %|T, result %|T",mergedname,"add",current or { },extra,mergedfeatures)
+            end
         elseif how == "-" then
             if current then
                 for k, v in next, current do
@@ -560,9 +587,15 @@ local function mergecontextfeatures(currentname,extraname,how,mergedname) -- str
                     mergedfeatures[k] = false
                 end
             end
+            if trace_merge then
+                report_features("merge %a, method %a, current %|T, extra %|T, result %|T",mergedname,"subtract",current or { },extra,mergedfeatures)
+            end
         else -- =
             for k, v in next, extra do
                 mergedfeatures[k] = v
+            end
+            if trace_merge then
+                report_features("merge %a, method %a, result %|T",mergedname,"replace",mergedfeatures)
             end
         end
         local number = #numbers + 1
@@ -1001,7 +1034,7 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
         -- resolved (when designsize is used):
         local size = fontdata[tfmdata].parameters.size or 0
         setsomefontsize(size .. "sp")
-texsetcount("scaledfontsize",size)
+        texsetcount("scaledfontsize",size)
         lastfontid = tfmdata
     else
         -- setting the extra characters will move elsewhere
@@ -1028,7 +1061,7 @@ texsetcount("scaledfontsize",size)
         -- resolved (when designsize is used):
         local size = tfmdata.parameters.size or 655360
         setsomefontsize(size .. "sp")
-texsetcount("scaledfontsize",size)
+        texsetcount("scaledfontsize",size)
         lastfontid = id
     end
     if trace_defining then

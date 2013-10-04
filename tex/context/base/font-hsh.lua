@@ -29,6 +29,7 @@ local spaces        = hashes.spaces       or allocate()
 local quads         = hashes.quads        or allocate() -- maybe also spacedata
 local xheights      = hashes.xheights     or allocate()
 local csnames       = hashes.csnames      or allocate() -- namedata
+local features      = hashes.features     or allocate()
 local marks         = hashes.marks        or allocate()
 local italics       = hashes.italics      or allocate()
 local lastmathids   = hashes.lastmathids  or allocate()
@@ -44,6 +45,7 @@ hashes.spaces       = spaces
 hashes.quads        = quads                 hashes.emwidths  = quads
 hashes.xheights     = xheights              hashes.exheights = xheights
 hashes.csnames      = csnames
+hashes.features     = features
 hashes.marks        = marks
 hashes.italics      = italics
 hashes.lastmathids  = lastmathids
@@ -135,6 +137,17 @@ setmetatableindex(resources, function(t,k)
         local resources = rawdata and rawdata.resources
         t[k] = resources or false -- better than resolving each time
         return resources
+    end
+end)
+
+setmetatableindex(features, function(t,k)
+    if k == true then
+        return features[currentfont()]
+    else
+        local shared = identifiers[k].shared
+        local features = shared and shared.features or { }
+        t[k] = features
+        return features
     end
 end)
 

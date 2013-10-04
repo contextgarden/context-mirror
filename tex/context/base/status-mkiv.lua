@@ -1261,6 +1261,12 @@ return {
   },
   {
    category = "mkiv",
+   filename = "typo-tal",
+   loading  = "always",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
    comment  = "somewhat weird",
    filename = "tabl-com",
    loading  = "always",
@@ -1487,12 +1493,6 @@ return {
   {
    category = "mkiv",
    filename = "spac-chr",
-   loading  = "always",
-   status   = "okay",
-  },
-  {
-   category = "mkiv",
-   filename = "spac-cha",
    loading  = "always",
    status   = "okay",
   },
@@ -4803,6 +4803,12 @@ return {
    category = "lua",
    filename = "typo-ini",
    status   = "todo",
+  },
+  {
+   category = "mkiv",
+   filename = "typo-tal",
+   loading  = "typo-tal",
+   status   = "okay",
   },
   {
    category = "lua",

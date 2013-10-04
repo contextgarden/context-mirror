@@ -384,13 +384,15 @@ local long_operators = {
 
 local long_suffixes = {
 
-    Linear  = "linear",
-    Square  = "square",
-    Cubic   = "cubic",
-    Inverse = "inverse",
-    ILinear = "ilinear",
-    ISquare = "isquare",
-    ICubic  = "icubic",
+    Linear     = "linear",
+    Square     = "square",
+    Cubic      = "cubic",
+    Quadratic  = "quadratic",
+    Inverse    = "inverse",
+    ILinear    = "ilinear",
+    ISquare    = "isquare",
+    ICubic     = "icubic",
+    IQuadratic = "iquadratic",
 
 }
 
@@ -457,23 +459,29 @@ local short_suffixes = { -- maybe just raw digit match
     ["1"]   = "linear",
     ["2"]   = "square",
     ["3"]   = "cubic",
+    ["4"]   = "quadratic",
     ["+1"]  = "linear",
     ["+2"]  = "square",
     ["+3"]  = "cubic",
+    ["+4"]  = "quadratic",
     ["-1"]  = "inverse",
     ["-1"]  = "ilinear",
     ["-2"]  = "isquare",
     ["-3"]  = "icubic",
+    ["-4"]  = "iquadratic",
     ["^1"]  = "linear",
     ["^2"]  = "square",
     ["^3"]  = "cubic",
+    ["^4"]  = "quadratic",
     ["^+1"] = "linear",
     ["^+2"] = "square",
     ["^+3"] = "cubic",
+    ["^+4"] = "quadratic",
     ["^-1"] = "inverse",
     ["^-1"] = "ilinear",
     ["^-2"] = "isquare",
     ["^-3"] = "icubic",
+    ["^-4"] = "iquadratic",
 }
 
 local symbol_units = {
@@ -638,13 +646,15 @@ labels.operators = allocate {
 }
 
 labels.suffixes = allocate {
-    linear  = { labels = { en = [[1]]  } },
-    square  = { labels = { en = [[2]]  } },
-    cubic   = { labels = { en = [[3]]  } },
-    inverse = { labels = { en = [[-1]] } },
-    ilinear = { labels = { en = [[-1]] } },
-    isquare = { labels = { en = [[-2]] } },
-    icubic  = { labels = { en = [[-3]] } },
+    linear     = { labels = { en = [[1]]  } },
+    square     = { labels = { en = [[2]]  } },
+    cubic      = { labels = { en = [[3]]  } },
+    quadratic  = { labels = { en = [[4]]  } },
+    inverse    = { labels = { en = [[-1]] } },
+    ilinear    = { labels = { en = [[-1]] } },
+    isquare    = { labels = { en = [[-2]] } },
+    icubic     = { labels = { en = [[-3]] } },
+    iquadratic = { labels = { en = [[-4]]  } },
 }
 
 local function dimpus(p,u,s)

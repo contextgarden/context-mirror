@@ -34,10 +34,8 @@ local formatters = string.formatters
 -- todo: inline concat (more efficient)
 
 local nodecodes           = nodes.nodecodes
-local disc_code           = nodecodes.disc
 local kern_code           = nodecodes.kern
 local glyph_code          = nodecodes.glyph
-local disc_code           = nodecodes.disc
 local hlist_code          = nodecodes.hlist
 local vlist_code          = nodecodes.vlist
 local glue_code           = nodecodes.glue
