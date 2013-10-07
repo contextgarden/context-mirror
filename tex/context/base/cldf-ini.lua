@@ -28,11 +28,13 @@ local tex = tex
 context       = context or { }
 local context = context
 
-local format, gsub, validstring = string.format, string.gsub, string.valid
+local format, gsub, validstring, stripstring = string.format, string.gsub, string.valid, string.strip
 local next, type, tostring, tonumber, setmetatable, unpack, select = next, type, tostring, tonumber, setmetatable, unpack, select
 local insert, remove, concat = table.insert, table.remove, table.concat
 local lpegmatch, lpegC, lpegS, lpegP, lpegCc, patterns = lpeg.match, lpeg.C, lpeg.S, lpeg.P, lpeg.Cc, lpeg.patterns
 local formatters = string.formatters -- using formatteds is slower in this case
+
+local loaddata          = io.loaddata
 
 local texsprint         = tex.sprint
 local textprint         = tex.tprint
@@ -797,6 +799,10 @@ function context.runfile(filename)
     else
         report_context("unknown file %a",filename)
     end
+end
+
+function context.loadfile(filename)
+    context(stripstring(loaddata(resolvers.findfile(filename))))
 end
 
 -- some functions
