@@ -75,6 +75,8 @@ local forcenotdef        = false
 local includesubfonts    = false
 local overloadkerns      = false -- experiment
 
+local applyruntimefixes  = fonts.treatments and fonts.treatments.applyfixes
+
 local wildcard           = "*"
 local default            = "dflt"
 
@@ -496,6 +498,9 @@ function otf.load(filename,format,sub,featurefile)
             report_otf("loading from cache using hash %a",hash)
         end
         enhance("unpack",data,filename,nil,false)
+        if applyruntimefixes then
+            applyruntimefixes(filename,data)
+        end
         enhance("add dimensions",data,filename,nil,false)
         if trace_sequences then
             showfeatureorder(data,filename)
@@ -2033,10 +2038,24 @@ local function copytotfm(data,cache_id)
             end
         end
         -- end math
+        -- we need a runtime lookup because of running from cdrom or zip, brrr (shouldn't we use the basename then?)
+        local filename = constructors.checkedfilename(resources)
+        local fontname = metadata.fontname
+        local fullname = metadata.fullname or fontname
+        local units    = metadata.units_per_em or 1000
+        --
+        if units == 0 then -- catch bugs in fonts
+            units = 1000 -- maybe 2000 when ttf
+            metadata.units_per_em = 1000
+            report_otf("changing %a units to %a",0,units)
+        end
+        --
         local monospaced  = metadata.isfixedpitch or (pfminfo.panose and pfminfo.panose.proportion == "Monospaced")
         local charwidth   = pfminfo.avgwidth -- or unset
-        local italicangle = metadata.italicangle
         local charxheight = pfminfo.os2_xheight and pfminfo.os2_xheight > 0 and pfminfo.os2_xheight
+-- charwidth = charwidth * units/1000
+-- charxheight = charxheight * units/1000
+        local italicangle = metadata.italicangle
         properties.monospaced  = monospaced
         parameters.italicangle = italicangle
         parameters.charwidth   = charwidth
@@ -2066,17 +2085,6 @@ local function copytotfm(data,cache_id)
             end
         end
         spaceunits = tonumber(spaceunits) or 500 -- brrr
-        -- we need a runtime lookup because of running from cdrom or zip, brrr (shouldn't we use the basename then?)
-        local filename = constructors.checkedfilename(resources)
-        local fontname = metadata.fontname
-        local fullname = metadata.fullname or fontname
-        local units    = metadata.units_per_em or 1000
-        --
-        if units == 0 then -- catch bugs in fonts
-            units = 1000 -- maybe 2000 when ttf
-            metadata.units_per_em = 1000
-            report_otf("changing %a units to %a",0,units)
-        end
         --
         parameters.slant         = 0
         parameters.space         = spaceunits          -- 3.333 (cmr10)

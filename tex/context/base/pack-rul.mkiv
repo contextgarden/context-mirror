@@ -1649,27 +1649,41 @@
 % \framed[width=12cm,height=3cm,orientation=-180]{\input ward\relax}
 % \framed[width=12cm,height=3cm,orientation=-270]{\input ward\relax}
 
+% \def\pack_framed_start_orientation
+%   {\ifcase\p_framed_orientation
+%      \let\pack_framed_stop_orientation\relax
+%    \else
+%      \scratchcounter\p_framed_orientation % weird .. why
+%      \divide\scratchcounter\plustwo
+%      \ifodd\scratchcounter
+%        \let\pack_framed_stop_orientation\pack_framed_stop_orientation_odd
+%      \else
+%        \let\pack_framed_stop_orientation\pack_framed_stop_orientation_even
+%      \fi
+%    \fi}
+%
+% \def\pack_framed_stop_orientation_odd
+%   {\swapmacros\framedwidth\framedheight
+%    \swapmacros\localwidth\localheight
+%    \swapdimens\d_framed_height\d_framed_width
+%    \pack_framed_stop_orientation_even}
+%
+% \def\pack_framed_stop_orientation_even
+%   {\setbox\b_framed_normal\hbox{\dorotatebox\p_framed_orientation\hbox{\box\b_framed_normal}}%
+%    \d_framed_height\ht\b_framed_normal
+%    \d_framed_width \wd\b_framed_normal}
+
 \def\pack_framed_start_orientation
   {\ifcase\p_framed_orientation
      \let\pack_framed_stop_orientation\relax
    \else
-     \scratchcounter\p_framed_orientation % weird .. why
-     \divide\scratchcounter\plustwo
-     \ifodd\scratchcounter
-       \let\pack_framed_stop_orientation\pack_framed_stop_orientation_odd
-     \else
-       \let\pack_framed_stop_orientation\pack_framed_stop_orientation_even
-     \fi
+     \let\pack_framed_stop_orientation\pack_framed_stop_orientation_indeed
    \fi}
 
-\def\pack_framed_stop_orientation_odd
-  {\swapmacros\framedwidth\framedheight
-   \swapmacros\localwidth\localheight
-   \swapdimens\d_framed_height\d_framed_width
-   \pack_framed_stop_orientation_even}
-
-\def\pack_framed_stop_orientation_even
-  {\setbox\b_framed_normal\hbox{\dorotatebox\p_framed_orientation\hbox{\box\b_framed_normal}}}
+\def\pack_framed_stop_orientation_indeed
+  {\setbox\b_framed_normal\hbox{\dorotatebox\p_framed_orientation\hbox{\box\b_framed_normal}}%
+   \d_framed_height\ht\b_framed_normal
+   \d_framed_width \wd\b_framed_normal}
 
 %D The last conditional takes care of the special situation of in||line \inframed
 %D [height=3cm] {framed} boxes. Such boxes have to be \inframed {aligned} with the

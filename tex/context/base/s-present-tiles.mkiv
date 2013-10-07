@@ -64,8 +64,12 @@
     -\topspace
 ]
 
-\definemeasure [topiclistfont] [\measured{topiclistwidth}/10]
-\definemeasure [titlepagefont] [2\measured{layoutunit}]
+\definemeasure [topiclistfont]  [1.2\measured{topiclistwidth}/10]
+\definemeasure [topictitlefont] [1.2\measured{layoutunit}]
+\definemeasure [titlepagefont]  [2\measured{layoutunit}]
+
+\predefinefont[MyTopicTitleFont][SerifBold*default at \measure{topictitlefont}]
+\predefinefont[MyTopicListFont] [SerifBold*default at \measure{topiclistfont}]
 
 \defineframed
   [topiclistentry]
@@ -73,7 +77,7 @@
    height=\measure{topiclistheight},
    background=color,
    frame=off,
-   foregroundstyle={\definedfont[Bold at \measure{topiclistfont}]},
+   foregroundstyle=MyTopicListFont,
    backgroundcolor=primarycolor,
    foregroundcolor=white]
 
@@ -107,8 +111,6 @@
     \vfill
     \stoptopicmakeup
 \stopsetups
-
-\predefinefont[MyTopicTitleFont][SerifBold*default at \measure{layoutunit}]
 
 \definehead
   [topic]

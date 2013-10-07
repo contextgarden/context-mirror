@@ -611,7 +611,9 @@
               \letexternalfigureparameter\c!offset\v!overlay
               \letexternalfigureparameter\c!width \figurewidth
               \letexternalfigureparameter\c!height\figureheight
-              \inheritedexternalfigureframed{\vfilll\box\foundexternalfigure}%
+%               \letexternalfigureparameter\c!align \v!middle
+%               \letexternalfigureparameter\c!autowidth\v!no
+              \inheritedexternalfigureframed{\box\foundexternalfigure}%
             \fi
           \fi\fi
         \fi

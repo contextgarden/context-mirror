@@ -1,3 +1,9 @@
+-- moved to treatments.lfg
+--
+-- fonts.handlers.otf.enhancers.patches.register("after","check metadata","unifraktur*", function(data,filename)
+--     data.metadata.pfminfo.os2_xheight = nil
+-- end)
+
 return {
     name = "unicode fraktur",
     version = "1.00",

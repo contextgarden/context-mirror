@@ -6,7 +6,10 @@ if not modules then modules = { } end modules ['font-trt'] = {
     license   = "see context related readme files"
 }
 
-local rawget, dofile, next = rawget, dofile, next
+local rawget, dofile, next, type = rawget, dofile, next, type
+
+local cleanfilename = fonts.names.cleanfilename
+local splitbase     = file.splitbase
 
 --[[ldx--
 <p>We provide a simple treatment mechanism (mostly because I want to demonstrate
@@ -14,11 +17,21 @@ something in a manual). It's one of the few places where an lfg file gets loaded
 outside the goodies manager.</p>
 --ldx]]--
 
-local treatments    = utilities.storage.allocate()
-fonts.treatments    = treatments
-local treatmentdata = { }
-treatments.data     = treatmentdata
-treatments.filename = "treatments.lfg"
+local treatments       = utilities.storage.allocate()
+fonts.treatments       = treatments
+local treatmentdata    = { }
+treatments.data        = treatmentdata
+treatments.filename    = "treatments.lfg"
+
+local trace_treatments = false  trackers.register("fonts.treatments", function(v) trace_treatments = v end)
+local report_treatment = logs.reporter("fonts","treatment")
+treatments.report      = report_treatment
+
+function treatments.trace(...)
+    if trace_treatments then
+        report_treatment(...)
+    end
+end
 
 -- function treatments.load(name)
 --     local filename = resolvers.findfile(name)
@@ -55,3 +68,34 @@ table.setmetatableindex(treatmentdata,function(t,k)
     table.setmetatableindex(treatmentdata,nil)
     return treatmentdata[k]
 end)
+
+local function applyfix(fix,filename,data,n)
+    if type(fix) == "function" then
+        -- we assume that when needed the fix reports something
+     -- if trace_treatments then
+     --     report_treatment("applying treatment %a to file %a",n,filename)
+     -- end
+        fix(data)
+    elseif trace_treatments then
+        report_treatment("invalid treatment %a for file %a",n,filename)
+    end
+end
+
+function treatments.applyfixes(filename,data)
+    local filename = cleanfilename(filename)
+    local pathpart, basepart = splitbase(filename)
+    local treatment = treatmentdata[filename] or treatmentdata[basepart]
+    if treatment then
+        local fixes = treatment.fixes
+        if not fixes then
+            -- nothing to fix
+        elseif type(fixes) == "table" then
+            for i=1,#fixes do
+                applyfix(fixes[i],filename,data,i)
+            end
+        else
+            applyfix(fixes,filename,data,1)
+        end
+    end
+end
+

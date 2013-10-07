@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/04/13 23:41:38
+-- merge date  : 10/07/13 09:47:33
 
 do -- begin closure to overcome local limits and interference
 
@@ -5238,6 +5238,7 @@ afm.syncspace=true
 afm.addligatures=true 
 afm.addtexligatures=true 
 afm.addkerns=true 
+local applyruntimefixes=fonts.treatments and fonts.treatments.applyfixes
 local function setmode(tfmdata,value)
   if value then
     tfmdata.properties.mode=lower(value)
@@ -5476,6 +5477,9 @@ function afm.load(filename)
         report_afm("saving %a in cache",name)
         data=containers.write(afm.cache,name,data)
         data=containers.read(afm.cache,name)
+      end
+      if applyruntimefixes and data then
+        applyruntimefixes(filename,data)
       end
     end
     return data
@@ -6348,6 +6352,7 @@ local syncspace=true
 local forcenotdef=false
 local includesubfonts=false
 local overloadkerns=false 
+local applyruntimefixes=fonts.treatments and fonts.treatments.applyfixes
 local wildcard="*"
 local default="dflt"
 local fontloaderfields=fontloader.fields
@@ -6710,6 +6715,9 @@ function otf.load(filename,format,sub,featurefile)
       report_otf("loading from cache using hash %a",hash)
     end
     enhance("unpack",data,filename,nil,false)
+    if applyruntimefixes then
+      applyruntimefixes(filename,data)
+    end
     enhance("add dimensions",data,filename,nil,false)
     if trace_sequences then
       showfeatureorder(data,filename)
@@ -7956,10 +7964,19 @@ local function copytotfm(data,cache_id)
         end
       end
     end
+    local filename=constructors.checkedfilename(resources)
+    local fontname=metadata.fontname
+    local fullname=metadata.fullname or fontname
+    local units=metadata.units_per_em or 1000
+    if units==0 then 
+      units=1000 
+      metadata.units_per_em=1000
+      report_otf("changing %a units to %a",0,units)
+    end
     local monospaced=metadata.isfixedpitch or (pfminfo.panose and pfminfo.panose.proportion=="Monospaced")
     local charwidth=pfminfo.avgwidth 
-    local italicangle=metadata.italicangle
     local charxheight=pfminfo.os2_xheight and pfminfo.os2_xheight>0 and pfminfo.os2_xheight
+    local italicangle=metadata.italicangle
     properties.monospaced=monospaced
     parameters.italicangle=italicangle
     parameters.charwidth=charwidth
@@ -7988,15 +8005,6 @@ local function copytotfm(data,cache_id)
       end
     end
     spaceunits=tonumber(spaceunits) or 500
-    local filename=constructors.checkedfilename(resources)
-    local fontname=metadata.fontname
-    local fullname=metadata.fullname or fontname
-    local units=metadata.units_per_em or 1000
-    if units==0 then 
-      units=1000 
-      metadata.units_per_em=1000
-      report_otf("changing %a units to %a",0,units)
-    end
     parameters.slant=0
     parameters.space=spaceunits     
     parameters.space_stretch=units/2  

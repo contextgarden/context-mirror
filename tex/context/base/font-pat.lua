@@ -20,25 +20,25 @@ local patches  = otf.enhancers.patches
 local register = patches.register
 local report   = patches.report
 
-local function patch(data,filename)
-    if data.design_size == 0 then
-        local ds = match(file.basename(lower(filename)),"(%d+)")
-        if ds then
-            report("font %a has design size %a",filename,ds)
-            data.design_size = tonumber(ds) * 10
-        end
-    end
-end
-
-register("after","migrate metadata","^lmroman",     patch)
-register("after","migrate metadata","^lmsans",      patch)
-register("after","migrate metadata","^lmtypewriter",patch)
+-- local function patch(data,filename)
+--     if not metadata.design_size or metadata.design_size == 0 then
+--         local ds = match(file.basename(lower(filename)),"(%d+)")
+--         if ds then
+--             report("font %a has design size %a",filename,ds)
+--             metadata.design_size = tonumber(ds) * 10
+--         end
+--     end
+-- end
+--
+-- register("after","migrate metadata","^lmroman",     patch)
+-- register("after","migrate metadata","^lmsans",      patch)
+-- register("after","migrate metadata","^lmtypewriter",patch)
 
 -- For some reason (either it's a bug in the font, or it's a problem in the
 -- library) the palatino arabic fonts don't have the mkmk features properly
 -- set up.
 
-local function patch(data,filename)
+register("after","rehash features","^palatino.*arabic", function patch(data,filename)
     local gpos = data.gpos
     if gpos then
         for k=1,#gpos do
@@ -61,9 +61,7 @@ local function patch(data,filename)
             end
         end
     end
-end
-
-register("after","rehash features","palatino.*arabic",patch)
+end)
 
 -- -- this code is now in lm-math.lfg
 --
