@@ -54,6 +54,8 @@ afm.addligatures         = true -- best leave this set to true
 afm.addtexligatures      = true -- best leave this set to true
 afm.addkerns             = true -- best leave this set to true
 
+local applyruntimefixes  = fonts.treatments and fonts.treatments.applyfixes
+
 local function setmode(tfmdata,value)
     if value then
         tfmdata.properties.mode = lower(value)
@@ -359,6 +361,9 @@ function afm.load(filename)
                 report_afm("saving %a in cache",name)
                 data = containers.write(afm.cache, name, data)
                 data = containers.read(afm.cache,name)
+            end
+            if applyruntimefixes and data then
+                applyruntimefixes(filename,data)
             end
         end
         return data

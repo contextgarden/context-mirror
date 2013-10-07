@@ -31,13 +31,12 @@ metapost.flushers     = metapost.flushers or { }
 local pdfflusher      = { }
 metapost.flushers.pdf = pdfflusher
 
-metapost.multipass    = false
+metapost.multipass    = false -- to be stacked
 metapost.n            = 0
-metapost.optimize     = true -- false
+metapost.optimize     = true  -- false
 
 local experiment      = true -- uses context(node) that already does delayed nodes
-
-local savedliterals   = nil -- needs checking
+local savedliterals   = nil  -- needs checking
 local mpsliteral      = nodes.pool.register(node.new("whatsit",nodes.whatsitcodes.pdfliteral)) -- pdfliteral.mode  = 1
 
 local pdfliteral = function(s)
@@ -285,11 +284,11 @@ local variable =
 
 local pattern = Cf ( Carg(1) * (Cg(variable * newline^0)^0), rawset)
 
-metapost.variables = { }
-metapost.llx       = 0
-metapost.lly       = 0
-metapost.urx       = 0
-metapost.ury       = 0
+metapost.variables = { } -- to be stacked
+metapost.llx       = 0   -- to be stacked
+metapost.lly       = 0   -- to be stacked
+metapost.urx       = 0   -- to be stacked
+metapost.ury       = 0   -- to be stacked
 
 function commands.mprunvar(key,n)
     local value = metapost.variables[key]
@@ -328,7 +327,7 @@ function metapost.flush(result,flusher,askedfig)
             for f=1,#figures do
                 local figure = figures[f]
                 local objects = getobjects(result,figure,f)
-                local fignum = figure:charcode() or 0
+                local fignum  = figure:charcode() or 0
                 if askedfig == "direct" or askedfig == "all" or askedfig == fignum then
                     local t = { }
                     local miterlimit, linecap, linejoin, dashed = -1, -1, -1, false

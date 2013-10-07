@@ -6,13 +6,12 @@ if not modules then modules = { } end modules ['mlib-pps'] = {
     license   = "see context related readme files",
 }
 
--- todo: make a hashed textext variant where we only process the text once (normally
--- we cannot assume that no macros are involved which influence a next textext
+-- todo: pass multipass nicer
 
 local format, gmatch, match, split = string.format, string.gmatch, string.match, string.split
 local tonumber, type = tonumber, type
 local round = math.round
-local insert, concat = table.insert, table.concat
+local insert, remove, concat = table.insert, table.remove, table.concat
 local Cs, Cf, C, Cg, Ct, P, S, V, Carg = lpeg.Cs, lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.V, lpeg.Carg
 local lpegmatch = lpeg.match
 local formatters = string.formatters
@@ -212,52 +211,65 @@ local function checkandconvert(ca,cb)
     end
 end
 
-local current_format, current_graphic, current_initializations
+local stack   = { } -- quick hack, we will pass topofstack around
+local top     = nil
+local nofruns = 0 -- askedfig: "all", "first", number
 
-metapost.multipass = false
+local function startjob(texmode)
+    top = {
+        textexts = { }, -- all boxes, optionally with a different color
+        texslots = { }, -- references to textexts in order or usage
+        texorder = { }, -- references to textexts by mp index
+        textrial = 0,
+        texfinal = 0,
+        -- used by tx plugin
+        texhash  = { },
+        texlast  = 0,
+        texmode  = texmode, -- some day we can then skip all pre/postscripts
+    }
+    insert(stack,top)
+    if trace_runs then
+        report_metapost("starting run at level %i",#stack)
+    end
+    return top
+end
 
-local textexts   = { } -- all boxes, optionally with a different color
-local texslots   = { } -- references to textexts in order or usage
-local texorder   = { } -- references to textexts by mp index
-local textrial   = 0
-local texfinal   = 0
-local scratchbox = 0
-
-local function freeboxes()
-    for n, box in next, textexts do
-        local tn = textexts[n]
-        if tn then
+local function stopjob()
+    if top then
+        for n, tn in next, top.textexts do
             free_list(tn)
-          -- texsetbox("scratchbox",tn)
-          -- texsetbox("scratchbox",nil) -- this frees too
             if trace_textexts then
                 report_textexts("freeing box %s",n)
             end
         end
+        if trace_runs then
+            report_metapost("stopping run at level %i",#stack)
+        end
+        remove(stack)
+        top = stack[#stack]
+        return top
     end
-    textexts = { }
-    texslots = { }
-    texorder = { }
-    textrial = 0
-    texfinal = 0
 end
 
-metapost.resettextexts = freeboxes
+function metapost.settextexts  () end -- obsolete
+function metapost.resettextexts() end -- obsolete
+
+-- end of new
 
 function metapost.settext(box,slot)
-    textexts[slot] = copy_list(texgetbox(box))
+    top.textexts[slot] = copy_list(texgetbox(box))
     texsetbox(box,nil)
     -- this will become
-    -- textexts[slot] = texgetbox(box)
+    -- top.textexts[slot] = texgetbox(box)
     -- unsetbox(box)
 end
 
 function metapost.gettext(box,slot)
-    texsetbox(box,copy_list(textexts[slot]))
+    texsetbox(box,copy_list(top.textexts[slot]))
     if trace_textexts then
         report_textexts("putting text %s in box %s",slot,box)
     end
- -- textexts[slot] = nil -- no, pictures can be placed several times
+ -- top.textexts[slot] = nil -- no, pictures can be placed several times
 end
 
 -- rather generic pdf, so use this elsewhere too it no longer pays
@@ -490,7 +502,10 @@ local do_safeguard = ";"
 local f_text_data  = formatters["mfun_tt_w[%i] := %f ; mfun_tt_h[%i] := %f ; mfun_tt_d[%i] := %f ;"]
 
 function metapost.textextsdata()
-    local t, nt, n = { }, 0, 0
+    local texorder     = top.texorder
+    local textexts     = top.textexts
+    local collected    = { }
+    local nofcollected = 0
     for n=1,#texorder do
         local box = textexts[texorder[n]]
         if box then
@@ -498,25 +513,23 @@ function metapost.textextsdata()
             if trace_textexts then
                 report_textexts("passed data item %s: (%p,%p,%p)",n,wd,ht,dp)
             end
-            nt = nt + 1
-            t[nt] = f_text_data(n,wd,n,ht,n,dp)
+            nofcollected = nofcollected + 1
+            collected[nofcollected] = f_text_data(n,wd,n,ht,n,dp)
         else
             break
         end
     end
---     inspect(t)
-    return t
+    return collected
 end
 
-metapost.intermediate         = metapost.intermediate         or {}
-metapost.intermediate.actions = metapost.intermediate.actions or {}
-metapost.intermediate.needed  = false
+metapost.intermediate         = metapost.intermediate         or { }
+metapost.intermediate.actions = metapost.intermediate.actions or { }
 
 metapost.method = 1 -- 1:dumb 2:clever
 
 -- maybe we can latelua the texts some day
 
-local nofruns = 0 -- askedfig: "all", "first", number
+local processmetapost = metapost.process
 
 local function checkaskedfig(askedfig) -- return askedfig, wrappit
     if not askedfig then
@@ -535,18 +548,42 @@ local function checkaskedfig(askedfig) -- return askedfig, wrappit
     end
 end
 
-function metapost.graphic_base_pass(specification)
-    local mpx = specification.mpx -- mandate
-    local data = specification.data or ""
-    local definitions = specification.definitions or ""
---  local extensions = metapost.getextensions(specification.instance,specification.useextensions)
-    local extensions = specification.extensions or ""
-    local inclusions = specification.inclusions or ""
-    local initializations = specification.initializations or ""
-    local askedfig = specification.figure -- no default else no wrapper
+local function extrapass()
+    if trace_runs then
+        report_metapost("second run of job %s, asked figure %a",top.nofruns,top.askedfig)
+    end
+    processmetapost(top.mpx, {
+        top.wrappit and do_begin_fig or "",
+        no_trial_run,
+        concat(metapost.textextsdata()," ;\n"),
+        top.initializations,
+        do_safeguard,
+        top.data,
+        top.wrappit and do_end_fig or "",
+    }, false, nil, false, true, top.askedfig)
+ -- context.MPLIBresettexts() -- must happen afterwards
+end
+
+function metapost.graphic_base_pass(specification) -- name will change (see mlib-ctx.lua)
+    local top = startjob(true)
     --
-    nofruns = nofruns + 1
+    local mpx             = specification.mpx -- mandate
+    local data            = specification.data or ""
+    local definitions     = specification.definitions or ""
+ -- local extensions      = metapost.getextensions(specification.instance,specification.useextensions)
+    local extensions      = specification.extensions or ""
+    local inclusions      = specification.inclusions or ""
+    local initializations = specification.initializations or ""
+    local askedfig        = specification.figure -- no default else no wrapper
+    --
     local askedfig, wrappit = checkaskedfig(askedfig)
+    --
+    nofruns      = nofruns + 1
+    --
+    top.askedfig = askedfig
+    top.wrappit  = wrappit
+    top.nofruns  = nofruns
+    --
     local done_1, done_2, done_3, forced_1, forced_2, forced_3
     data, done_1, forced_1 = checktexts(data)
     -- we had preamble = extensions + inclusions
@@ -560,12 +597,12 @@ function metapost.graphic_base_pass(specification)
     else
         inclusions, done_3, forced_3 = checktexts(inclusions)
     end
-    metapost.intermediate.needed  = false
-    metapost.multipass = false -- no needed here
-    current_format = mpx
-    current_graphic = data
-    current_initializations = initializations
-    local method = metapost.method
+    top.intermediate     = false
+    top.multipass        = false -- no needed here
+    top.mpx              = mpx
+    top.data             = data
+    top.initializations  = initializations
+    local method         = metapost.method
     if trace_runs then
         if method == 1 then
             report_metapost("forcing two runs due to library configuration")
@@ -586,19 +623,19 @@ function metapost.graphic_base_pass(specification)
             report_metapost("first run of job %s, asked figure %a",nofruns,askedfig)
         end
      -- first true means: trialrun, second true means: avoid extra run if no multipass
-        local flushed = metapost.process(mpx, {
+        local flushed = processmetapost(mpx, {
             definitions,
             extensions,
             inclusions,
             wrappit and do_begin_fig or "",
             do_first_run,
             do_trial_run,
-            current_initializations,
+            initializations,
             do_safeguard,
-            current_graphic,
+            data,
             wrappit and do_end_fig or "",
         }, true, nil, not (forced_1 or forced_2 or forced_3), false, askedfig)
-        if metapost.intermediate.needed then
+        if top.intermediate then
             for _, action in next, metapost.intermediate.actions do
                 action()
             end
@@ -606,44 +643,35 @@ function metapost.graphic_base_pass(specification)
         if not flushed or not metapost.optimize then
             -- tricky, we can only ask once for objects and therefore
             -- we really need a second run when not optimized
-            context.MPLIBextrapass(askedfig)
+         -- context.MPLIBextrapass(askedfig)
+            context(extrapass)
         end
     else
         if trace_runs then
             report_metapost("running job %s, asked figure %a",nofruns,askedfig)
         end
-        metapost.process(mpx, {
+        processmetapost(mpx, {
             preamble,
             wrappit and do_begin_fig or "",
             do_first_run,
             no_trial_run,
-            current_initializations,
+            initializations,
             do_safeguard,
-            current_graphic,
+            data,
             wrappit and do_end_fig or "",
         }, false, nil, false, false, askedfig)
     end
+    context(stopjob)
 end
 
-function metapost.graphic_extra_pass(askedfig)
-    if trace_runs then
-        report_metapost("second run of job %s, asked figure %a",nofruns,askedfig)
-    end
-    local askedfig, wrappit = checkaskedfig(askedfig)
-    metapost.process(current_format, {
-        wrappit and do_begin_fig or "",
-        no_trial_run,
-        concat(metapost.textextsdata()," ;\n"),
-        current_initializations,
-        do_safeguard,
-        current_graphic,
-        wrappit and do_end_fig or "",
-    }, false, nil, false, true, askedfig)
-    context.MPLIBresettexts() -- must happen afterwards
+function metapost.process(...)
+    startjob(false)
+    processmetapost(...)
+    stopjob()
 end
 
 local start    = [[\starttext]]
-local preamble = [[\long\def\MPLIBgraphictext#1{\startTEXpage[scale=10000]#1\stopTEXpage}]]
+local preamble = [[\def\MPLIBgraphictext#1{\startTEXpage[scale=10000]#1\stopTEXpage}]]
 local stop     = [[\stoptext]]
 
 function makempy.processgraphics(graphics)
@@ -688,9 +716,9 @@ local resetteractions     = sequencers.new { arguments = "t" }
 local analyzeractions     = sequencers.new { arguments = "object,prescript" }
 local processoractions    = sequencers.new { arguments = "object,prescript,before,after" }
 
-appendgroup(resetteractions,    "system")
-appendgroup(analyzeractions,    "system")
-appendgroup(processoractions,   "system")
+appendgroup(resetteractions, "system")
+appendgroup(analyzeractions, "system")
+appendgroup(processoractions,"system")
 
 -- later entries come first
 
@@ -729,48 +757,56 @@ end
 -- end
 
 function metapost.pluginactions(what,t,flushfigure) -- before/after object, depending on what
-    for i=1,#what do
-        local wi = what[i]
-        if type(wi) == "function" then
-            -- assume injection
-            flushfigure(t) -- to be checked: too many 0 g 0 G
-            t = { }
-            wi()
-        else
-            t[#t+1] = wi
+    if top.texmode then
+        for i=1,#what do
+            local wi = what[i]
+            if type(wi) == "function" then
+                -- assume injection
+                flushfigure(t) -- to be checked: too many 0 g 0 G
+                t = { }
+                wi()
+            else
+                t[#t+1] = wi
+            end
         end
+        return t
     end
-    return t
 end
 
 function metapost.resetplugins(t) -- intialize plugins, before figure
-    -- plugins can have been added
-    resetter     = resetteractions    .runner
-    analyzer     = analyzeractions    .runner
-    processor    = processoractions   .runner
-    -- let's apply one runner
-    resetter(t)
+    if top.texmode then
+        -- plugins can have been added
+        resetter  = resetteractions.runner
+        analyzer  = analyzeractions.runner
+        processor = processoractions.runner
+        -- let's apply one runner
+        resetter(t)
+    end
 end
 
 function metapost.analyzeplugins(object) -- each object (first pass)
-    local prescript = object.prescript   -- specifications
-    if prescript and #prescript > 0 then
-        return analyzer(object,splitprescript(prescript))
+    if top.texmode then
+        local prescript = object.prescript   -- specifications
+        if prescript and #prescript > 0 then
+            return analyzer(object,splitprescript(prescript))
+        end
     end
 end
 
 function metapost.processplugins(object) -- each object (second pass)
-    local prescript = object.prescript   -- specifications
-    if prescript and #prescript > 0 then
-        local before = { }
-        local after = { }
-        processor(object,splitprescript(prescript),before,after)
-        return #before > 0 and before, #after > 0 and after
-    else
-        local c = object.color
-        if c and #c > 0 then
-            local b, a = colorconverter(c)
-            return { b }, { a }
+    if top.texmode then
+        local prescript = object.prescript   -- specifications
+        if prescript and #prescript > 0 then
+            local before = { }
+            local after = { }
+            processor(object,splitprescript(prescript),before,after)
+            return #before > 0 and before, #after > 0 and after
+        else
+            local c = object.color
+            if c and #c > 0 then
+                local b, a = colorconverter(c)
+                return { b }, { a }
+            end
         end
     end
 end
@@ -800,12 +836,11 @@ local function cl_reset(t)
     t[#t+1] = metapost.colorinitializer() -- only color
 end
 
-local tx_hash = { }
-local tx_last = 0
-
 local function tx_reset()
-    tx_hash = { }
-    tx_last = 0
+    if top then
+        top.texhash = { }
+        top.texlast = 0
+    end
 end
 
 local fmt = formatters["%s %s %s % t"]
@@ -814,7 +849,8 @@ local pat = lpeg.tsplitat(":")
 local function tx_analyze(object,prescript) -- todo: hash content and reuse them
     local tx_stage = prescript.tx_stage
     if tx_stage == "trial" then
-        textrial = textrial + 1
+        local tx_trial = top.textrial + 1
+        top.textrial = tx_trial
         local tx_number = tonumber(prescript.tx_number)
         local s = object.postscript or ""
         local c = object.color -- only simple ones, no transparency
@@ -826,10 +862,11 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
         end
         local a = prescript.tr_alternative
         local t = prescript.tr_transparency
-        local h = fmt(tx_number,a or "?",t or "?",c)
-        local n = tx_hash[h] -- todo: hashed variant with s (nicer for similar labels)
+        local h = fmt(tx_number,a or "-",t or "-",c or "-")
+        local n = top.texhash[h] -- todo: hashed variant with s (nicer for similar labels)
         if not n then
-            tx_last = tx_last + 1
+            local tx_last = top.texlast + 1
+            top.texlast = tx_last
             if not c then
                 -- no color
             elseif #c == 1 then
@@ -852,31 +889,35 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
                 end
             end
             context.MPLIBsettext(tx_last,s)
-            metapost.multipass = true
-            tx_hash[h] = tx_last
-            texslots[textrial] = tx_last
-            texorder[tx_number] = tx_last
+            top.multipass = true
+            metapost.multipass = true -- ugly
+            top.texhash[h] = tx_last
+            top.texslots[tx_trial] = tx_last
+            top.texorder[tx_number] = tx_last
             if trace_textexts then
-                report_textexts("stage %a, usage %a, number %a, new %a, hash %a",tx_stage,textrial,tx_number,tx_last,h)
+                report_textexts("stage %a, usage %a, number %a, new %a, hash %a",tx_stage,tx_trial,tx_number,tx_last,h)
             end
         else
-            texslots[textrial] = n
+            top.texslots[tx_trial] = n
             if trace_textexts then
-                report_textexts("stage %a, usage %a, number %a, new %a, hash %a",tx_stage,textrial,tx_number,n,h)
+                report_textexts("stage %a, usage %a, number %a, new %a, hash %a",tx_stage,tx_trial,tx_number,n,h)
             end
         end
     elseif tx_stage == "extra" then
-        textrial = textrial + 1
+        local tx_trial = top.textrial + 1
+        top.textrial = tx_trial
         local tx_number = tonumber(prescript.tx_number)
-        if not texorder[tx_number] then
+        if not top.texorder[tx_number] then
             local s = object.postscript or ""
-            tx_last = tx_last + 1
+            local tx_last = top.texlast + 1
+            top.texlast = tx_last
             context.MPLIBsettext(tx_last,s)
-            metapost.multipass = true
-            texslots[textrial] = tx_last
-            texorder[tx_number] = tx_last
+            top.multipass = true
+            metapost.multipass = true -- ugly
+            top.texslots[tx_trial] = tx_last
+            top.texorder[tx_number] = tx_last
             if trace_textexts then
-                report_textexts("stage %a, usage %a, number %a, extra %a",tx_stage,textrial,tx_number,tx_last)
+                report_textexts("stage %a, usage %a, number %a, extra %a",tx_stage,tx_trial,tx_number,tx_last)
             end
         end
     end
@@ -888,13 +929,13 @@ local function tx_process(object,prescript,before,after)
         tx_number = tonumber(tx_number)
         local tx_stage = prescript.tx_stage
         if tx_stage == "final" then
-            texfinal = texfinal + 1
-            local n = texslots[texfinal]
+            top.texfinal = top.texfinal + 1
+            local n = top.texslots[top.texfinal]
             if trace_textexts then
-                report_textexts("stage %a, usage %a, number %a, use %a",tx_stage,texfinal,tx_number,n)
+                report_textexts("stage %a, usage %a, number %a, use %a",tx_stage,top.texfinal,tx_number,n)
             end
             local sx, rx, ry, sy, tx, ty = cm(object) -- needs to be frozen outside the function
-            local box = textexts[n]
+            local box = top.textexts[n]
             if box then
                 before[#before+1] = function()
                  -- flush always happens, we can have a special flush function injected before
@@ -936,8 +977,9 @@ local function gt_analyze(object,prescript)
     local gt_stage = prescript.gt_stage
     if gt_stage == "trial" then
         graphics[#graphics+1] = formatters["\\MPLIBgraphictext{%s}"](object.postscript or "")
-        metapost.intermediate.needed = true
-        metapost.multipass = true
+        top.intermediate      = true
+        top.multipass         = true
+        metapost.multipass    = true -- ugly
     end
 end
 

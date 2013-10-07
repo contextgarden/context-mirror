@@ -33,18 +33,41 @@
 \newbox \MPtextbox
 \newtoks\everyMPLIBsettext % not used
 
-\newconditional\MPLIBtextgetdone
-
 % \def\MPLIBsettext#1% #2%
 %   {\dowithnextbox{\ctxlua{metapost.settext(\number\nextbox,#1)}}\hbox}
+%
+% \def\MPLIBresettexts
+%   {\ctxlua{metapost.resettextexts()}}
+%
+% \newconditional\MPLIBtextgetdone
+%
+% \def\MPLIBsettext#1% #2%
+%   {\ifconditional\MPLIBtextgetdone
+%    \else
+%      \cldcontext{metapost.tex.get()}% MPenvironments are depricated
+%      \settrue\MPLIBtextgetdone % no \global needed
+%    \fi
+%    \dowithnextbox{\ctxlua{metapost.settext(\number\nextbox,#1)}}\hbox}
+%
+% \def\MPLIBresettexts
+%   {\ctxlua{metapost.resettextexts()}%
+%    \setfalse\MPLIBtextgetdone}
+
+\def\doMPLIBflushenvironment
+  {%\writestatus\m!metapost{flushing environment}%
+   \cldcontext{metapost.tex.get()}%
+   \let\MPLIBflushenvironment\relax}% MPenvironments are depricated}
+
+\let\MPLIBflushenvironment\doMPLIBflushenvironment
 
 \def\MPLIBsettext#1% #2%
-  {\ifconditional\MPLIBtextgetdone
-   \else
-     \cldcontext{metapost.tex.get()}% MPenvironments are depricated
-     \settrue\MPLIBtextgetdone % no \global needed
-   \fi
-   \dowithnextbox{\ctxlua{metapost.settext(\number\nextbox,#1)}}\hbox}
+  {\MPLIBflushenvironment
+   \dowithnextbox{\ctxlua{metapost.settext(\number\nextbox,#1)}}\hbox\bgroup
+     \let\MPLIBflushenvironment\doMPLIBflushenvironment
+     \let\next} % gobble open brace
+
+\def\MPLIBresettexts
+  {\ctxlua{metapost.resettextexts()}}
 
 \def\MPLIBgettextscaled#1#2#3%  why a copy .. can be used more often
   {\ctxlua{metapost.gettext(\number\MPtextbox,#1)}%
@@ -112,15 +135,8 @@
 \def\MPLIBpositionwhd#1#2#3#4#5% bp !
   {\dosavepositionwhd{#1}\zerocount{#2\onebasepoint}{#3\onebasepoint}{#4\onebasepoint}{#5\onebasepoint}\zeropoint}
 
-\def\MPLIBextrapass#1%
-  {\ctxlua{metapost.graphic_extra_pass("#1")}}
-
-% \def\MPLIBresettexts
-%   {\ctxlua{metapost.resettextexts()}}
-
-\def\MPLIBresettexts
-  {\ctxlua{metapost.resettextexts()}%$
-   \setfalse\MPLIBtextgetdone}
+% \def\MPLIBextrapass#1%
+%   {\ctxlua{metapost.graphic_extra_pass("#1")}}
 
 %D Experiment
 
