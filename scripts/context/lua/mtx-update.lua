@@ -253,7 +253,7 @@ function scripts.update.synchronize()
 
     bin = gsub(bin,"\\","/")
 
-    if not url:find("::$") then url = url .. "::" end
+    if not find(url,"::$") then url = url .. "::" end
     local ok = lfs.attributes(texroot,"mode") == "directory"
     if not ok and force then
         dir.mkdirs(texroot)
@@ -314,10 +314,10 @@ function scripts.update.synchronize()
             os.execute(command)
             -- read output of rsync
             local data = io.loaddata(temp_file) or ""
-            -- for every line extract the filename
-            for chmod, s in data:gmatch("([d%-][rwx%-]+).-(%S+)[\n\r]") do
+            -- for every line extract the filename :  drwxr-sr-x          18 2013/10/06 06:16:10 libertine
+            for chmod, s in gmatch(data,"([d%-][rwxst%-]+).-(%S+)[\n\r]") do
                 -- skip "current" folder
-                if s ~= '.' and chmod:len() == 10 then
+                if s ~= '.' and #chmod >= 10 then
                     folders[#folders+1] = s
                 end
             end
@@ -433,7 +433,7 @@ function scripts.update.synchronize()
             if not environment.argument("force") then
                 dryrunflags = "--dry-run"
             end
-            if (destination:find("texmf$") or destination:find("texmf%-context$") or destination:find("texmf%-modules$")) and (not environment.argument("keep")) then
+            if (find(destination,"texmf$") or find(destination,"texmf%-context$") or find(destination,"texmf%-modules$")) and (not environment.argument("keep")) then
                 deleteflags = states.get("rsync.flags.delete")
             end
             command = format("%s %s %s %s %s'%s' '%s'", bin, normalflags, deleteflags, dryrunflags, url, archives, destination)
