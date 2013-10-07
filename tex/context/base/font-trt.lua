@@ -17,14 +17,17 @@ something in a manual). It's one of the few places where an lfg file gets loaded
 outside the goodies manager.</p>
 --ldx]]--
 
-local treatments       = utilities.storage.allocate()
+local treatments       = fonts.treatments or { }
 fonts.treatments       = treatments
-local treatmentdata    = { }
+
+local treatmentdata    = treatments.data or utilities.storage.allocate()
 treatments.data        = treatmentdata
+
 treatments.filename    = "treatments.lfg"
 
 local trace_treatments = false  trackers.register("fonts.treatments", function(v) trace_treatments = v end)
 local report_treatment = logs.reporter("fonts","treatment")
+
 treatments.report      = report_treatment
 
 function treatments.trace(...)

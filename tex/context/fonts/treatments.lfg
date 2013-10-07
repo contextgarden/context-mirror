@@ -8,19 +8,40 @@
 -- applied at runtime. An experimental auto-loaded goodie approach is not yet
 -- enabled and will never be if treatments can do the job.
 
-local unifraktur = {
+local report = fonts.treatments.report
+
+local fix_unifraktur = {
     comment = "suspicious x height",
     fixes   = function(data)
         local pfminfo = data.metadata.pfminfo
         if pfminfo then
             local os2_xheight = pfminfo.os2_xheight
             if os2_xheight and os2_xheight < 350 then
-                fonts.treatments.report("suspicious x-height %a, nilling",os2_xheight)
+                report("suspicious x-height %a, nilling",os2_xheight)
                 pfminfo.os2_xheight_original = os2_xheight
                 pfminfo.os2_xheight = nil
             end
         end
     end,
+}
+
+local fix_lmmonoregular = {
+    comment = "wrong widths of some glyphs",
+    fixes = function(data)
+        report("fixing some wrong widths")
+        local unicodes     = data.resources.unicodes
+        local descriptions = data.descriptions
+        local defaultwidth = descriptions[unicodes["zero"]].width
+        descriptions[unicodes["six"]             ].width = defaultwidth
+        descriptions[unicodes["nine"]            ].width = defaultwidth
+        descriptions[unicodes["caron"]           ].width = defaultwidth
+        descriptions[unicodes["perthousand"]     ].width = defaultwidth
+        descriptions[unicodes["numero"]          ].width = defaultwidth
+        descriptions[unicodes["caron.cap"]       ].width = defaultwidth
+        descriptions[unicodes["six.taboldstyle"] ].width = defaultwidth
+        descriptions[unicodes["nine.taboldstyle"]].width = defaultwidth
+        descriptions[unicodes["dollar.oldstyle" ]].width = defaultwidth
+    end
 }
 
 return {
@@ -43,10 +64,11 @@ return {
             comment = "a text file with suffix ttf", -- used in test file
             ignored = true,
         },
-        ["latinmodern-math.otf"] = {
-            comment = "experimental",
-        },
-        ["unifrakturcook.ttf"]     = unifraktur,
-        ["unifrakturmaguntia.ttf"] = unifraktur,
+     -- ["latinmodern-math.otf"] = {
+     --     comment = "experimental",
+     -- },
+        ["lmmono12regular.otf"]    = fix_lmmonoregular,
+        ["unifrakturcook.ttf"]     = fix_unifraktur,
+        ["unifrakturmaguntia.ttf"] = fix_unifraktur,
     },
 }

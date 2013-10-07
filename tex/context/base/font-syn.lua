@@ -56,6 +56,9 @@ fonts.names      = names
 local filters    = names.filters or { }
 names.filters    = filters
 
+local treatments = names.treatments or { }
+names.treatments = treatments
+
 names.data       = names.data or allocate { }
 
 names.version    = 1.123
@@ -828,7 +831,7 @@ local function analyzefiles(olddata)
     local oldindices         = olddata and olddata.indices        or { }
     local oldspecifications  = olddata and olddata.specifications or { }
     local oldrejected        = olddata and olddata.rejected       or { }
-    local treatmentdata      = fonts.treatments and fonts.treatments.data or { } -- when used outside context
+    local treatmentdata      = treatments.data or { } -- when used outside context
     local function identify(completename,name,suffix,storedname)
         local pathpart, basepart = splitbase(completename)
         nofread = nofread + 1
