@@ -156,6 +156,9 @@ local number        = token("number", lexer.float + integer)
 
 local validword     = R("AZ","az","__") * R("AZ","az","__","09")^0
 
+local utf8character = P(1) * R("\128\191")^1 -- unchecked but fast
+local validword     = (R("AZ","az","__") + utf8character) * (R("AZ","az","__","09") + utf8character)^0
+
 local identifier    = token("default",validword)
 
 ----- operator      = token("special", P('..') + P('~=') + S('+-*/%^#=<>;:,.{}[]()')) -- maybe split off {}[]()
