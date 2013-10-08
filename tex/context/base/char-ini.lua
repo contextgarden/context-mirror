@@ -167,7 +167,7 @@ local blocks = allocate {
     ["cjkradicalssupplement"]                      = { first = 0x02E80, last = 0x02EFF, otf="hang", description = "CJK Radicals Supplement" },
     ["cjkstrokes"]                                 = { first = 0x031C0, last = 0x031EF, otf="hang", description = "CJK Strokes" },
     ["cjksymbolsandpunctuation"]                   = { first = 0x03000, last = 0x0303F, otf="hang", description = "CJK Symbols and Punctuation" },
-    ["cjkunifiedideographs"]                       = { first = 0x04E00, last = 0x09FFF, otf="hang", description = "CJK Unified Ideographs" },
+    ["cjkunifiedideographs"]                       = { first = 0x04E00, last = 0x09FFF, otf="hang", description = "CJK Unified Ideographs", catcode = "letter" },
     ["cjkunifiedideographsextensiona"]             = { first = 0x03400, last = 0x04DBF, otf="hang", description = "CJK Unified Ideographs Extension A" },
     ["cjkunifiedideographsextensionb"]             = { first = 0x20000, last = 0x2A6DF, otf="hang", description = "CJK Unified Ideographs Extension B" },
     ["combiningdiacriticalmarks"]                  = { first = 0x00300, last = 0x0036F,             description = "Combining Diacritical Marks" },
@@ -1065,13 +1065,20 @@ function characters.define(tobelettered, tobeactivated) -- catcodetables
                 end
                 local range = chr.range
                 if range then
-                    for i=1,range.first,range.last do
+                    for i=1,range.first,range.last do -- tricky as not all are letters
                         texsetcatcode(i,11)
                     end
                 end
             end
             texsetcatcode(0x200C,11) -- non-joiner
             texsetcatcode(0x200D,11) -- joiner
+            for k, v in next, blocks do
+                if v.catcode == "letter" then
+                    for i=v.first,v.last do
+                        texsetcatcode(i,11)
+                    end
+                end
+            end
         end
         tex.catcodetable = saved
     end

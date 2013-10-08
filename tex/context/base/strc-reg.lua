@@ -664,13 +664,10 @@ local function collapsepages(pages)
     return #pages
 end
 
--- todo: determine max
-
 function registers.flush(data,options,prefixspec,pagespec)
     local collapse_singles = options.compress == variables.yes
     local collapse_ranges  = options.compress == variables.all
     local result = data.result
-    local done = { } -- reused
     local maxlevel = 0
     --
     for i=1,#result do
@@ -688,15 +685,17 @@ function registers.flush(data,options,prefixspec,pagespec)
     end
     --
     context.startregisteroutput()
+local done = { }
     for i=1,#result do
      -- ranges need checking !
         local sublist = result[i]
+     -- local done = { false, false, false, false }
+for i=1,maxlevel do
+    done[i] = false
+end
         local data = sublist.data
         local d, n = 0, 0
         context.startregistersection(sublist.tag)
-        for i=1,maxlevel do
-            done[i] = false
-        end
         for d=1,#data do
             local entry = data[d]
             if entry.metadata.kind == "see" then
@@ -709,16 +708,18 @@ function registers.flush(data,options,prefixspec,pagespec)
                 end
             end
         end
-        local e = { } -- reused
+        -- ok, this is tricky: we use e[i] delayed so we need it to be local
+        -- but we don't want to allocate too many entries so there we go
         while d < #data do
             d = d + 1
             local entry = data[d]
+            local e = { false, false, false }
+for i=3,maxlevel do
+    e[i] = false
+end
             local metadata = entry.metadata
             local kind = metadata.kind
             local list = entry.list
-            for i=1,maxlevel do
-                e[i] = false
-            end
             for i=1,maxlevel do
                 if list[i] then
                     e[i] = list[i][1]
@@ -726,9 +727,9 @@ function registers.flush(data,options,prefixspec,pagespec)
                 if e[i] ~= done[i] then
                     if e[i] and e[i] ~= "" then
                         done[i] = e[i]
-                        for j=i+1,maxlevel do
-                            done[j] = false
-                        end
+for j=i+1,maxlevel do
+    done[j] = false
+end
                         if n == i then
                             context.stopregisterentries()
                             context.startregisterentries(n)
@@ -745,6 +746,8 @@ function registers.flush(data,options,prefixspec,pagespec)
                         local internal  = entry.references.internal or 0
                         local seeparent = entry.references.seeparent or ""
                         local processor = entry.processors and entry.processors[1] or ""
+                        -- so, we need to keep e as is (local), or we need local title = e[i] ... which might be
+                        -- more of a problem
                         if metadata then
                             context.registerentry(processor,internal,seeparent,function() helpers.title(e[i],metadata) end)
                         else -- ?
@@ -752,9 +755,9 @@ function registers.flush(data,options,prefixspec,pagespec)
                         end
                     else
                         done[i] = false
-                        for j=i,maxlevel do
-                            done[j] = false
-                        end
+for j=i+1,maxlevel do
+    done[j] = false
+end
                     end
                 end
             end
@@ -884,6 +887,7 @@ function registers.flush(data,options,prefixspec,pagespec)
     data.result = nil
     data.metadata.sorted = false
 end
+
 
 function registers.analyze(class,options)
     context(registers.analyzed(class,options))
