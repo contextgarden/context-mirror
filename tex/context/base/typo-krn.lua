@@ -35,6 +35,7 @@ local new_glue           = nodepool.glue
 local nodecodes          = nodes.nodecodes
 local kerncodes          = nodes.kerncodes
 local skipcodes          = nodes.skipcodes
+local disccodes          = nodes.disccodes
 
 local glyph_code         = nodecodes.glyph
 local kern_code          = nodecodes.kern
@@ -44,6 +45,7 @@ local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local math_code          = nodecodes.math
 
+local discretionary_code = disccodes.discretionary
 local kerning_code       = kerncodes.kerning
 local userkern_code      = kerncodes.userkern
 local userskip_code      = skipcodes.userskip
@@ -276,49 +278,63 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
                             -- a bit too complicated, we can best not copy and just calculate
                             -- but we could have multiple glyphs involved so ...
                             local disc = prev -- disc
-                            local pre, post, replace = disc.pre, disc.post, disc.replace
                             local prv, nxt = disc.prev, disc.next
-                            if pre and prv then -- must pair with start.prev
-                                -- this one happens in most cases
-                                local before = copy_node(prv)
-                                pre.prev = before
-                                before.next = pre
-                                before.prev = nil
-                                pre = do_process(before,attr)
-                                pre = pre.next
-                                pre.prev = nil
-                                disc.pre = pre
-                                free_node(before)
-                            end
-                            if post and nxt then  -- must pair with start
-                                local after = copy_node(nxt)
-                                local tail = find_node_tail(post)
-                                tail.next = after
-                                after.prev = tail
-                                after.next = nil
-                                post = do_process(post,attr)
-                                tail.next = nil
-                                disc.post = post
-                                free_node(after)
-                            end
-                            if replace and prv and nxt then -- must pair with start and start.prev
-                                local before = copy_node(prv)
-                                local after = copy_node(nxt)
-                                local tail = find_node_tail(replace)
-                                replace.prev = before
-                                before.next = replace
-                                before.prev = nil
-                                tail.next = after
-                                after.prev = tail
-                                after.next = nil
-                                replace = do_process(before,attr)
-                                replace = replace.next
-                                replace.prev = nil
-                                after.prev.next = nil
-                                disc.replace = replace
-                                free_node(after)
-                                free_node(before)
+                            if disc.subtype == discretionary_code then
+                                -- maybe we should forget about this variant as there is no glue
+                                -- possible
+                                local pre, post, replace = disc.pre, disc.post, disc.replace
+                                if pre and prv then -- must pair with start.prev
+                                    -- this one happens in most cases
+                                    local before = copy_node(prv)
+                                    pre.prev = before
+                                    before.next = pre
+                                    before.prev = nil
+                                    pre = do_process(before,attr)
+                                    pre = pre.next
+                                    pre.prev = nil
+                                    disc.pre = pre
+                                    free_node(before)
+                                end
+                                if post and nxt then  -- must pair with start
+                                    local after = copy_node(nxt)
+                                    local tail = find_node_tail(post)
+                                    tail.next = after
+                                    after.prev = tail
+                                    after.next = nil
+                                    post = do_process(post,attr)
+                                    tail.next = nil
+                                    disc.post = post
+                                    free_node(after)
+                                end
+                                if replace and prv and nxt then -- must pair with start and start.prev
+                                    local before = copy_node(prv)
+                                    local after = copy_node(nxt)
+                                    local tail = find_node_tail(replace)
+                                    replace.prev = before
+                                    before.next = replace
+                                    before.prev = nil
+                                    tail.next = after
+                                    after.prev = tail
+                                    after.next = nil
+                                    replace = do_process(before,attr)
+                                    replace = replace.next
+                                    replace.prev = nil
+                                    after.prev.next = nil
+                                    disc.replace = replace
+                                    free_node(after)
+                                    free_node(before)
+                                elseif prv and prv.id == glyph_code and prv.font == lastfont then
+                                    local prevchar, lastchar = prv.char, start.char
+                                    local kerns = chardata[lastfont][prevchar].kerns
+                                    local kern = kerns and kerns[lastchar] or 0
+                                    krn = kern + quaddata[lastfont]*krn -- here
+                                    disc.replace = kern_injector(false,krn) -- only kerns permitted, no glue
+                                else
+                                    krn = quaddata[lastfont]*krn -- here
+                                    disc.replace = kern_injector(false,krn) -- only kerns permitted, no glue
+                                end
                             else
+                                -- this one happens in most cases: automatic (-), explicit (\-), regular (patterns)
                                 if prv and prv.id == glyph_code and prv.font == lastfont then
                                     local prevchar, lastchar = prv.char, start.char
                                     local kerns = chardata[lastfont][prevchar].kerns
@@ -327,7 +343,7 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
                                 else
                                     krn = quaddata[lastfont]*krn -- here
                                 end
-                                disc.replace = kern_injector(false,krn) -- only kerns permitted, no glue
+                                insert_node_before(head,start,kern_injector(fillup,krn))
                             end
                         end
                     end
