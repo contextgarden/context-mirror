@@ -386,7 +386,7 @@ function constructors.scale(tfmdata,specification)
     local vdelta         = delta
     --
     target.designsize    = parameters.designsize -- not really needed so it might become obsolete
-    target.units_per_em  = units                 -- just a trigger for the backend (does luatex use this? if not it will go)
+    target.units_per_em  = units                 -- just a trigger for the backend
     --
     local direction      = properties.direction or tfmdata.direction or 0 -- pointless, as we don't use omf fonts at all
     target.direction     = direction

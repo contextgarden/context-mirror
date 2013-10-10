@@ -84,6 +84,13 @@ local fontloaderfields   = fontloader.fields
 local mainfields         = nil
 local glyphfields        = nil -- not used yet
 
+local formats            = fonts.formats
+
+formats.otf              = "opentype"
+formats.ttf              = "truetype"
+formats.ttc              = "truetype"
+formats.dfont            = "truetype"
+
 registerdirective("fonts.otf.loader.cleanup",       function(v) cleanup       = tonumber(v) or (v and 1) or 0 end)
 registerdirective("fonts.otf.loader.force",         function(v) forceload     = v end)
 registerdirective("fonts.otf.loader.usemetatables", function(v) usemetatables = v end)
@@ -91,6 +98,10 @@ registerdirective("fonts.otf.loader.pack",          function(v) packdata      = 
 registerdirective("fonts.otf.loader.syncspace",     function(v) syncspace     = v end)
 registerdirective("fonts.otf.loader.forcenotdef",   function(v) forcenotdef   = v end)
 registerdirective("fonts.otf.loader.overloadkerns", function(v) overloadkerns = v end)
+
+local function otf_format(filename)
+    return formats[lower(file.suffix(filename))]
+end
 
 local function load_featurefile(raw,featurefile)
     if featurefile and featurefile ~= "" then
@@ -325,7 +336,7 @@ function enhancers.register(what,action) -- only already registered can be overl
     actions[what] = action
 end
 
-function otf.load(filename,format,sub,featurefile)
+function otf.load(filename,sub,featurefile) -- second argument (format) is gone !
     local base = file.basename(file.removesuffix(filename))
     local name = file.removesuffix(base)
     local attr = lfs.attributes(filename)
@@ -424,7 +435,7 @@ function otf.load(filename,format,sub,featurefile)
             data = {
                 size        = size,
                 time        = time,
-                format      = format,
+                format      = otf_format(filename),
                 featuredata = featurefiles,
                 resources   = {
                     filename = resolvers.unresolve(filename), -- no shortcut
@@ -2127,7 +2138,7 @@ local function copytotfm(data,cache_id)
         --
         properties.space         = spacer
         properties.encodingbytes = 2
-        properties.format        = data.format or fonts.formats[filename] or "opentype"
+        properties.format        = data.format or otf_format(filename) or formats.otf
         properties.noglyphnames  = true
         properties.filename      = filename
         properties.fontname      = fontname
@@ -2156,9 +2167,9 @@ local function otftotfm(specification)
         local name     = specification.name
         local sub      = specification.sub
         local filename = specification.filename
-        local format   = specification.format
+     -- local format   = specification.format
         local features = specification.features.normal
-        local rawdata  = otf.load(filename,format,sub,features and features.featurefile)
+        local rawdata  = otf.load(filename,sub,features and features.featurefile)
         if rawdata and next(rawdata) then
             rawdata.lookuphash = { }
             tfmdata = copytotfm(rawdata,cache_id)
@@ -2252,12 +2263,12 @@ function otf.collectlookups(rawdata,kind,script,language)
     return nil, nil
 end
 
--- readers
+-- readers (a bit messy, this forced so I might redo that bit: foo.ttf FOO.ttf foo.TTF FOO.TTF)
 
-local function check_otf(forced,specification,suffix,what)
+local function check_otf(forced,specification,suffix)
     local name = specification.name
     if forced then
-        name = file.addsuffix(name,suffix,true)
+        name = specification.forcedname -- messy
     end
     local fullname = findbinfile(name,suffix) or ""
     if fullname == "" then
@@ -2265,35 +2276,25 @@ local function check_otf(forced,specification,suffix,what)
     end
     if fullname ~= "" then
         specification.filename = fullname
-        specification.format   = what
         return read_from_otf(specification)
     end
 end
 
-local function opentypereader(specification,suffix,what)
+local function opentypereader(specification,suffix)
     local forced = specification.forced or ""
-    if forced == "otf" then
-        return check_otf(true,specification,forced,"opentype")
-    elseif forced == "ttf" or forced == "ttc" or forced == "dfont" then
-        return check_otf(true,specification,forced,"truetype")
+    if formats[forced] then
+        return check_otf(true,specification,forced)
     else
-        return check_otf(false,specification,suffix,what)
+        return check_otf(false,specification,suffix)
     end
 end
 
-readers.opentype = opentypereader
+readers.opentype = opentypereader -- kind of useless and obsolete
 
-local formats = fonts.formats
-
-formats.otf   = "opentype"
-formats.ttf   = "truetype"
-formats.ttc   = "truetype"
-formats.dfont = "truetype"
-
-function readers.otf  (specification) return opentypereader(specification,"otf",formats.otf  ) end
-function readers.ttf  (specification) return opentypereader(specification,"ttf",formats.ttf  ) end
-function readers.ttc  (specification) return opentypereader(specification,"ttf",formats.ttc  ) end
-function readers.dfont(specification) return opentypereader(specification,"ttf",formats.dfont) end
+function readers.otf  (specification) return opentypereader(specification,"otf") end
+function readers.ttf  (specification) return opentypereader(specification,"ttf") end
+function readers.ttc  (specification) return opentypereader(specification,"ttf") end
+function readers.dfont(specification) return opentypereader(specification,"ttf") end
 
 -- this will be overloaded
 

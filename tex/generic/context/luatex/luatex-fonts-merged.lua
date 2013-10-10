@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/10/13 14:36:18
+-- merge date  : 10/10/13 17:47:59
 
 do -- begin closure to overcome local limits and interference
 
@@ -6358,6 +6358,11 @@ local default="dflt"
 local fontloaderfields=fontloader.fields
 local mainfields=nil
 local glyphfields=nil 
+local formats=fonts.formats
+formats.otf="opentype"
+formats.ttf="truetype"
+formats.ttc="truetype"
+formats.dfont="truetype"
 registerdirective("fonts.otf.loader.cleanup",function(v) cleanup=tonumber(v) or (v and 1) or 0 end)
 registerdirective("fonts.otf.loader.force",function(v) forceload=v end)
 registerdirective("fonts.otf.loader.usemetatables",function(v) usemetatables=v end)
@@ -6365,6 +6370,9 @@ registerdirective("fonts.otf.loader.pack",function(v) packdata=v end)
 registerdirective("fonts.otf.loader.syncspace",function(v) syncspace=v end)
 registerdirective("fonts.otf.loader.forcenotdef",function(v) forcenotdef=v end)
 registerdirective("fonts.otf.loader.overloadkerns",function(v) overloadkerns=v end)
+local function otf_format(filename)
+  return formats[lower(file.suffix(filename))]
+end
 local function load_featurefile(raw,featurefile)
   if featurefile and featurefile~="" then
     if trace_loading then
@@ -6551,7 +6559,7 @@ end
 function enhancers.register(what,action) 
   actions[what]=action
 end
-function otf.load(filename,format,sub,featurefile)
+function otf.load(filename,sub,featurefile) 
   local base=file.basename(file.removesuffix(filename))
   local name=file.removesuffix(base)
   local attr=lfs.attributes(filename)
@@ -6649,7 +6657,7 @@ function otf.load(filename,format,sub,featurefile)
       data={
         size=size,
         time=time,
-        format=format,
+        format=otf_format(filename),
         featuredata=featurefiles,
         resources={
           filename=resolvers.unresolve(filename),
@@ -8043,7 +8051,7 @@ local function copytotfm(data,cache_id)
     parameters.units=units
     properties.space=spacer
     properties.encodingbytes=2
-    properties.format=data.format or fonts.formats[filename] or "opentype"
+    properties.format=data.format or otf_format(filename) or formats.otf
     properties.noglyphnames=true
     properties.filename=filename
     properties.fontname=fontname
@@ -8068,9 +8076,8 @@ local function otftotfm(specification)
     local name=specification.name
     local sub=specification.sub
     local filename=specification.filename
-    local format=specification.format
     local features=specification.features.normal
-    local rawdata=otf.load(filename,format,sub,features and features.featurefile)
+    local rawdata=otf.load(filename,sub,features and features.featurefile)
     if rawdata and next(rawdata) then
       rawdata.lookuphash={}
       tfmdata=copytotfm(rawdata,cache_id)
@@ -8152,10 +8159,10 @@ function otf.collectlookups(rawdata,kind,script,language)
   end
   return nil,nil
 end
-local function check_otf(forced,specification,suffix,what)
+local function check_otf(forced,specification,suffix)
   local name=specification.name
   if forced then
-    name=file.addsuffix(name,suffix,true)
+    name=specification.forcedname 
   end
   local fullname=findbinfile(name,suffix) or ""
   if fullname=="" then
@@ -8163,30 +8170,22 @@ local function check_otf(forced,specification,suffix,what)
   end
   if fullname~="" then
     specification.filename=fullname
-    specification.format=what
     return read_from_otf(specification)
   end
 end
-local function opentypereader(specification,suffix,what)
+local function opentypereader(specification,suffix)
   local forced=specification.forced or ""
-  if forced=="otf" then
-    return check_otf(true,specification,forced,"opentype")
-  elseif forced=="ttf" or forced=="ttc" or forced=="dfont" then
-    return check_otf(true,specification,forced,"truetype")
+  if formats[forced] then
+    return check_otf(true,specification,forced)
   else
-    return check_otf(false,specification,suffix,what)
+    return check_otf(false,specification,suffix)
   end
 end
-readers.opentype=opentypereader
-local formats=fonts.formats
-formats.otf="opentype"
-formats.ttf="truetype"
-formats.ttc="truetype"
-formats.dfont="truetype"
-function readers.otf (specification) return opentypereader(specification,"otf",formats.otf ) end
-function readers.ttf (specification) return opentypereader(specification,"ttf",formats.ttf ) end
-function readers.ttc (specification) return opentypereader(specification,"ttf",formats.ttc ) end
-function readers.dfont(specification) return opentypereader(specification,"ttf",formats.dfont) end
+readers.opentype=opentypereader 
+function readers.otf (specification) return opentypereader(specification,"otf") end
+function readers.ttf (specification) return opentypereader(specification,"ttf") end
+function readers.ttc (specification) return opentypereader(specification,"ttf") end
+function readers.dfont(specification) return opentypereader(specification,"ttf") end
 function otf.scriptandlanguage(tfmdata,attr)
   local properties=tfmdata.properties
   return properties.script or "dflt",properties.language or "dflt"
@@ -12750,6 +12749,7 @@ if not modules then modules={} end modules ['font-def']={
 local format,gmatch,match,find,lower,gsub=string.format,string.gmatch,string.match,string.find,string.lower,string.gsub
 local tostring,next=tostring,next
 local lpegmatch=lpeg.match
+local suffixonly,removesuffix=file.suffix,file.removesuffix
 local allocate=utilities.storage.allocate
 local trace_defining=false trackers .register("fonts.defining",function(v) trace_defining=v end)
 local directive_embedall=false directives.register("fonts.embedall",function(v) directive_embedall=v end)
@@ -12839,10 +12839,11 @@ definers.resolvers=definers.resolvers or {}
 local resolvers=definers.resolvers
 function resolvers.file(specification)
   local name=resolvefile(specification.name) 
-  local suffix=file.suffix(name)
+  local suffix=lower(suffixonly(name))
   if fonts.formats[suffix] then
     specification.forced=suffix
-    specification.name=file.removesuffix(name)
+    specification.forcedname=name
+    specification.name=removesuffix(name)
   else
     specification.name=name 
   end
@@ -12854,10 +12855,11 @@ function resolvers.name(specification)
     if resolved then
       specification.resolved=resolved
       specification.sub=sub
-      local suffix=file.suffix(resolved)
+      local suffix=lower(suffixonly(resolved))
       if fonts.formats[suffix] then
         specification.forced=suffix
-        specification.name=file.removesuffix(resolved)
+        specification.forcedname=resolved
+        specification.name=removesuffix(resolved)
       else
         specification.name=resolved
       end
@@ -12873,8 +12875,9 @@ function resolvers.spec(specification)
     if resolved then
       specification.resolved=resolved
       specification.sub=sub
-      specification.forced=file.suffix(resolved)
-      specification.name=file.removesuffix(resolved)
+      specification.forced=lower(suffixonly(resolved))
+      specification.forcedname=resolved
+      specification.name=removesuffix(resolved)
     end
   else
     resolvers.name(specification)
@@ -12889,8 +12892,7 @@ function definers.resolve(specification)
   end
   if specification.forced=="" then
     specification.forced=nil
-  else
-    specification.forced=specification.forced
+    specification.forcedname=nil
   end
   specification.hash=lower(specification.name..' @ '..constructors.hashfeatures(specification))
   if specification.sub and specification.sub~="" then
@@ -12935,7 +12937,7 @@ function definers.loadfont(specification)
   if not tfmdata then
     local forced=specification.forced or ""
     if forced~="" then
-      local reader=readers[lower(forced)]
+      local reader=readers[lower(forced)] 
       tfmdata=reader and reader(specification)
       if not tfmdata then
         report_defining("forced type %a of %a not found",forced,specification.name)
