@@ -12893,7 +12893,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
--- original size: 14615, stripped down to: 11208
+-- original size: 15532, stripped down to: 11648
 
 if not modules then modules={} end modules ['data-tmp']={
   version=1.100,
@@ -13106,6 +13106,22 @@ function caches.getfirstreadablefile(filename,...)
     end
   end
   return caches.setfirstwritablefile(filename,...)
+end
+function caches.getfirstreadablefile_TEST_ME_FIRST(filename,...)
+  local fullname,path=caches.setfirstwritablefile(filename,...)
+  if is_readable(fullname) then
+    return fullname,path 
+  end
+  local rd=getreadablepaths(...)
+  for i=1,#rd do
+    local path=rd[i]
+    local fullname=file.join(path,filename)
+    if is_readable(fullname) then
+      usedreadables[i]=true
+      return fullname,path 
+    end
+  end
+  return fullname,path 
 end
 function caches.setfirstwritablefile(filename,...)
   local wr=getwritablepath(...)
@@ -16546,8 +16562,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 679533
--- stripped bytes    : 240506
+-- original bytes    : 680450
+-- stripped bytes    : 240983
 
 -- end library merge
 

@@ -1346,11 +1346,11 @@
 %D   {processisolatedwords,processisolatedchars}
 %D
 %D \startbuffer
-%D \processisolatedchars{some more words}                 \ruledhbox \par
-%D \processisolatedchars{and some $x + y = z$ math}       \ruledhbox \par
+%D \processisolatedchars{some more words}           \ruledhbox \par
+%D \processisolatedchars{and some $x + y = z$ math} \ruledhbox \par
 %D \processisolatedchars{and a \hbox{$x + y = z$}}  \ruledhbox \par
-%D \processisolatedwords{some more words}                 \ruledhbox \par
-%D \processisolatedwords{and some $x + y = z$ math}       \ruledhbox \par
+%D \processisolatedwords{some more words}           \ruledhbox \par
+%D \processisolatedwords{and some $x + y = z$ math} \ruledhbox \par
 %D \processisolatedwords{and a \hbox{$x + y = z$}}  \ruledhbox \par
 %D \stopbuffer
 %D
@@ -1379,7 +1379,15 @@
 
 \let\processword\relax
 
-%D The better variant:
+\unexpanded\def\applytosplitstringchar#1#2{\dontleavehmode\ctxcommand{processsplit(\!!bs#2\!!es,"\strippedcsname#1","char")}}
+\unexpanded\def\applytosplitstringword#1#2{\dontleavehmode\ctxcommand{processsplit(\!!bs#2\!!es,"\strippedcsname#1","word")}}
+\unexpanded\def\applytosplitstringline#1#2{\dontleavehmode\ctxcommand{processsplit(\!!bs#2\!!es,"\strippedcsname#1","line")}}
+
+\unexpanded\def\applytosplitstringcharspaced#1#2{\dontleavehmode\ctxcommand{processsplit(\!!bs#2\!!es,"\strippedcsname#1","char",true)}}
+\unexpanded\def\applytosplitstringwordspaced#1#2{\dontleavehmode\ctxcommand{processsplit(\!!bs#2\!!es,"\strippedcsname#1","word",true)}}
+\unexpanded\def\applytosplitstringlinespaced#1#2{\dontleavehmode\ctxcommand{processsplit(\!!bs#2\!!es,"\strippedcsname#1","line",true)}}
+
+%D A variant:
 
 \unexpanded\def\applytocharacters#1%
   {\dontleavehmode

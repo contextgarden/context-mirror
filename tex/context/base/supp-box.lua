@@ -10,8 +10,12 @@ if not modules then modules = { } end modules ['supp-box'] = {
 
 local report_hyphenation = logs.reporter("languages","hyphenation")
 
-local tex, node = tex, node
-local context, commands, nodes = context, commands, nodes
+local tex          = tex
+local context      = context
+local commands     = commands
+local nodes        = nodes
+
+local splitstring  = string.split
 
 local nodecodes    = nodes.nodecodes
 
@@ -25,10 +29,10 @@ local new_penalty  = nodes.pool.penalty
 local new_hlist    = nodes.pool.hlist
 local new_glue     = nodes.pool.glue
 
-local free_node    = node.free
-local copy_list    = node.copy_list
-local copy_node    = node.copy
-local find_tail    = node.tail
+local free_node    = nodes.free
+local copy_list    = nodes.copy_list
+local copy_node    = nodes.copy
+local find_tail    = nodes.tail
 
 local texsetbox    = tex.setbox
 local texgetbox    = tex.getbox
@@ -116,6 +120,57 @@ end
 
 commands.applytochars = applytochars
 commands.applytowords = applytowords
+
+local split_char = lpeg.Ct(lpeg.C(1)^0)
+local split_word = lpeg.tsplitat(lpeg.patterns.space)
+local split_line = lpeg.tsplitat(lpeg.patterns.eol)
+
+function commands.processsplit(str,command,how,spaced)
+    how = how or "word"
+    if how == "char" then
+        local words = lpeg.match(split_char,str)
+        for i=1,#words do
+            local word = words[i]
+            if word == " " then
+                if spaced then
+                    context.space()
+                end
+            elseif command then
+                context[command](word)
+            else
+                context(word)
+            end
+        end
+    elseif how == "word" then
+        local words = lpeg.match(split_word,str)
+        for i=1,#words do
+            local word = words[i]
+            if spaced and i > 1 then
+                context.space()
+            end
+            if command then
+                context[command](word)
+            else
+                context(word)
+            end
+        end
+    elseif how == "line" then
+        local words = lpeg.match(split_line,str)
+        for i=1,#words do
+            local word = words[i]
+            if spaced and i > 1 then
+                context.par()
+            end
+            if command then
+                context[command](word)
+            else
+                context(word)
+            end
+        end
+    else
+        context(str)
+    end
+end
 
 function commands.vboxlisttohbox(original,target,inbetween)
     local current = texgetbox(original).list
