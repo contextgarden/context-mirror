@@ -81,7 +81,7 @@
 \to \everyenableelements
 
 \appendtoks % frozen and assumed global per highlight class
-    \unexpanded\def\dotaghighlight{\taggedctxcommand{settaghighlight("\currenthighlight","\highlightparameter\c!style",\number\attribute\colorattribute)}}%
+    \unexpanded\def\dotaghighlight{\taggedctxcommand{settaghighlight("\currenthighlight",\!!bs\highlightparameter\c!style\!!es,\number\attribute\colorattribute)}}%
 \to \everyenableelements
 
 \appendtoks % we can have differently scaled images
