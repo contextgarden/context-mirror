@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/10/13 17:47:59
+-- merge date  : 10/13/13 22:46:23
 
 do -- begin closure to overcome local limits and interference
 
@@ -5074,6 +5074,9 @@ fonts.names.resolvespec=fonts.names.resolve
 function fonts.names.getfilename(askedname,suffix) 
   return ""
 end
+function fonts.names.ignoredfile(filename) 
+  return true 
+end
 
 end -- closure
 
@@ -5428,7 +5431,7 @@ end
 local addkerns,addligatures,addtexligatures,unify,normalize 
 function afm.load(filename)
   filename=resolvers.findfile(filename,'afm') or ""
-  if filename~="" then
+  if filename~="" and not fonts.names.ignoredfile(filename) then
     local name=file.removesuffix(file.basename(filename))
     local data=containers.read(afm.cache,name)
     local attr=lfs.attributes(filename)
@@ -8168,7 +8171,7 @@ local function check_otf(forced,specification,suffix)
   if fullname=="" then
     fullname=fonts.names.getfilename(name,suffix) or ""
   end
-  if fullname~="" then
+  if fullname~="" and not fonts.names.ignoredfile(fullname) then
     specification.filename=fullname
     return read_from_otf(specification)
   end

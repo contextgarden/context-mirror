@@ -687,15 +687,20 @@ function makempy.processgraphics(graphics)
         os.execute(command)
         if io.exists(pdffile) then
             command = format("pstoedit -ssp -dt -f mpost %s %s", pdffile, mpyfile)
+            logs.newline()
+            report_metapost("running: %s",command)
+            logs.newline()
             os.execute(command)
             local result, r = { }, 0
             if io.exists(mpyfile) then
                 local data = io.loaddata(mpyfile)
-                for figure in gmatch(data,"beginfig(.-)endfig") do
-                    r = r + 1
-                    result[r] = formatters["begingraphictextfig%sendgraphictextfig ;\n"](figure)
+                if data and #data > 0 then
+                    for figure in gmatch(data,"beginfig(.-)endfig") do
+                        r = r + 1
+                        result[r] = formatters["begingraphictextfig%sendgraphictextfig ;\n"](figure)
+                    end
+                    io.savedata(mpyfile,concat(result,""))
                 end
-                io.savedata(mpyfile,concat(result,""))
             end
         end
         stoptiming(makempy)

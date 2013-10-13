@@ -64,6 +64,11 @@ return {
             comment = "a text file with suffix ttf", -- used in test file
             ignored = true,
         },
+        -- harmless example
+     -- ["copperplatethirtythreebc.ttf"] = {
+     --     comment = "hangs and has no hyphen",
+     --     ignored = true,
+     -- },
      -- ["latinmodern-math.otf"] = {
      --     comment = "experimental",
      -- },
