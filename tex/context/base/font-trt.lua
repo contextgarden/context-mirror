@@ -10,6 +10,7 @@ local rawget, dofile, next, type = rawget, dofile, next, type
 
 local cleanfilename = fonts.names.cleanfilename
 local splitbase     = file.splitbase
+local lower         = string.lower
 
 --[[ldx--
 <p>We provide a simple treatment mechanism (mostly because I want to demonstrate
@@ -102,3 +103,14 @@ function treatments.applyfixes(filename,data)
     end
 end
 
+function treatments.ignoredfile(fullname)
+    local treatmentdata = treatments.data or { } -- when used outside context
+    local _, basepart = splitbase(fullname)
+    local treatment = treatmentdata[basepart] or treatmentdata[lower(basepart)]
+    if treatment and treatment.ignored then
+        report_treatment("font file %a resolved as %a is ignored, reason %a",basepart,fullname,treatment.comment or "unknown")
+        return true
+    end
+end
+
+fonts.names.ignoredfile = treatments.ignoredfile

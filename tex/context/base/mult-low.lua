@@ -354,6 +354,8 @@ return {
         --
         "carryoverpar",
         --
+        "assumelongusagecs",
+        --
         "Umathbotaccent",
         --
         "righttolefthbox", "lefttorighthbox", "righttoleftvbox", "lefttorightvbox", "righttoleftvtop", "lefttorightvtop",

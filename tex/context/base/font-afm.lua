@@ -311,7 +311,7 @@ local addkerns, addligatures, addtexligatures, unify, normalize -- we will imple
 function afm.load(filename)
     -- hm, for some reasons not resolved yet
     filename = resolvers.findfile(filename,'afm') or ""
-    if filename ~= "" then
+    if filename ~= "" and not fonts.names.ignoredfile(filename) then
         local name = file.removesuffix(file.basename(filename))
         local data = containers.read(afm.cache,name)
         local attr = lfs.attributes(filename)

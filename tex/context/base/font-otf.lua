@@ -2274,7 +2274,7 @@ local function check_otf(forced,specification,suffix)
     if fullname == "" then
         fullname = fonts.names.getfilename(name,suffix) or ""
     end
-    if fullname ~= "" then
+    if fullname ~= "" and not fonts.names.ignoredfile(fullname) then
         specification.filename = fullname
         return read_from_otf(specification)
     end

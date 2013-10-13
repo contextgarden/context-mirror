@@ -401,7 +401,52 @@
      \expandafter\m_syst_action_nop
    \fi}
 
-%D This macro uses some auxiliary macros. Although we were able to program quite
+%D Here's one for skipping spaces and pars, handy for:
+%D
+%D \starttyping
+%D \hbox
+%D
+%D   {a few lines later}
+%D \stoptyping
+
+% \unexpanded\def\assumelongusagecs#1%
+%   {\let\m_syst_action#1%
+%    \futurelet\nexttoken\syst_helpers_ignore_par_character}
+%
+% \def\syst_helpers_ignore_par_character
+%   {\ifx\nexttoken\blankspace
+%      \expandafter\syst_helpers_ignore_par_character_blankspace
+%    \else
+%      \expandafter\syst_helpers_ignore_par_character_followup
+%    \fi}
+%
+% \def\syst_helpers_ignore_par_character_followup
+%   {\ifx\nexttoken\par
+%      \expandafter\syst_helpers_ignore_par_partoken
+%    \else
+%      \expandafter\m_syst_action
+%    \fi}
+%
+% \def\syst_helpers_ignore_par_partoken
+%   {\afterassignment\m_syst_action\let\nexttoken}
+
+\unexpanded\def\assumelongusagecs#1% can be relaxed when we have long support in \hbox etc
+  {\let\m_syst_action#1%
+   \futurelet\nexttoken\syst_helpers_ignore_spacing}
+
+\def\syst_helpers_ignore_spacing
+  {\ifx\nexttoken\blankspace
+     \singleexpandafter\syst_helpers_ignore_spacing_blankspace
+   \else\ifx\nexttoken\par
+     \doubleexpandafter\syst_helpers_ignore_spacing_partoken
+   \else
+     \doubleexpandafter\m_syst_action
+   \fi\fi}
+
+\def\syst_helpers_ignore_spacing_partoken\par
+  {\futurelet\nexttoken\syst_helpers_ignore_spacing}
+
+%D These macros use some auxiliary macros. Although we were able to program quite
 %D complicated things, I only understood these after rereading the \TEX book. The
 %D trick is in using a command with a one character name. Such commands differ from
 %D the longer ones in the fact that trailing spaces are {\em not} skipped. This
@@ -428,6 +473,9 @@
 
 \def\:{\syst_helpers_reinspect_next_parenthesis_character}
 \expandafter\def\: {\let\if_next_blank_space_token\iftrue\futurelet\nexttoken\syst_helpers_inspect_next_parenthesis_character}
+
+\def\:{\syst_helpers_ignore_spacing_blankspace}
+\expandafter\def\: {\futurelet\nexttoken\syst_helpers_ignore_spacing}
 
 \let\:\next
 
@@ -4523,7 +4571,6 @@
 \def\dogotoparcs#1%
   {\let\dodogotopar#1%
    \redogotopar\par}
-
 
 \unexpanded\def\GetPar
   {\expanded
