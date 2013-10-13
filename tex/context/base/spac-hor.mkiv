@@ -486,17 +486,17 @@
 
 \ifdefined\thinspace \else
 
-    \def\thinspace   {\kern .16667\emwidth}
-    \def\negthinspace{\kern-.16667\emwidth}
-    \def\enspace     {\kern     .5\emwidth}
+    \unexpanded\def\thinspace   {\kern .16667\emwidth}
+    \unexpanded\def\negthinspace{\kern-.16667\emwidth}
+    \unexpanded\def\enspace     {\kern     .5\emwidth}
 
 \fi
 
 \ifdefined\quad \else
 
-    \def\enskip{\hskip.5\emwidth}
-    \def\quad  {\hskip  \emwidth}
-    \def\qquad {\hskip 2\emwidth}
+    \unexpanded\def\enskip{\hskip.5\emwidth}
+    \unexpanded\def\quad  {\hskip  \emwidth}
+    \unexpanded\def\qquad {\hskip 2\emwidth}
 
 \fi
 
