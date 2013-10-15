@@ -19,11 +19,17 @@
 \resetfontfallback  [euleroverpagella]
 \resetfontfallback  [pagellaovereuler]
 
+% 0x1D455 : italic h
+
 \definefontfallback [euleroverpagella] [\s!file:euler.otf]   [0x02100-0x02BFF] [\s!check=yes,\c!force=yes]
 \definefontfallback [euleroverpagella] [\s!file:euler.otf]   [0x1D400-0x1D7FF] [\s!check=yes,\c!force=yes]
+\definefontfallback [euleroverpagella] [texgyrepagella-math] [0x0210E]         [\s!check=yes,\c!force=\v!yes]
 %definefontfallback [euleroverpagella] [\s!file:euler.otf]   [0x1D538-0x1D550] [\s!check=yes,\c!force=yes]
+
 \definefontfallback [pagellaovereuler] [texgyrepagella-math] [0x02100-0x02BFF] [\s!check=yes]
 \definefontfallback [pagellaovereuler] [texgyrepagella-math] [0x1D400-0x1D7FF] [\s!check=yes]
+\definefontfallback [pagellaovereuler] [texgyrepagella-math] [0x1D400-0x1D7FF] [\s!check=yes]
+\definefontfallback [pagellaovereuler] [texgyrepagella-math] [0x0210E]         [\s!check=yes,\c!force=\v!yes]
 %definefontfallback [pagellaovereuler] [texgyrepagella-math] [0x1D538-0x1D550] [\s!check=yes]
 
 % example for aditya:
@@ -43,7 +49,7 @@
 
     \starttypescript [\s!math] [eulernova] [\s!name]
         \loadfontgoodies[euler-math]
-        \definefontsynonym [MathRoman] [eulermath@euler-nova] [\s!features=\s!math\mathsizesuffix]
+        \definefontsynonym [MathRoman] [\s!file:euler.otf] [\s!features=\s!math\mathsizesuffix]
     \stoptypescript
 
     \starttypescript [pagella-eulernova]
