@@ -64,7 +64,17 @@
     -\topspace
 ]
 
-\definemeasure [topiclistfont]  [1.2\measured{topiclistwidth}/10]
+\definemeasure [topiclistfontsize] [
+    \ifcase\numexpr\structurelistsize\relax 2.5            %  0
+    \or1.4\or1.4\or1.4\or1.4\or1.4\or1.4\or1.4\or1.4\or1.4 %  1 -  9
+    \or1.3\or1.3\or1.3\or1.3\or1.3\or1.3\or1.3             % 10 - 16
+    \or1.2\or1.2\or1.2\or1.2\or1.2                         % 17 - 20
+    \else1                                                 % 21 - 25
+    \fi
+    \bodyfontsize
+]
+
+\definemeasure [topiclistfont]  [\measured{topiclistfontsize}]
 \definemeasure [topictitlefont] [1.2\measured{layoutunit}]
 \definemeasure [titlepagefont]  [2\measured{layoutunit}]
 
@@ -217,6 +227,15 @@
 \defineoverlay[setbuttons][\directsetup{document:buttons}]
 
 % end of buttons
+
+\defineframed
+  [conclusion]
+  [location=low,
+   width=max,
+   align={flushleft,lohi},
+   background=color,
+   backgroundcolor=white,
+   foregroundcolor=secondarycolor]
 
 \startsetups [document:titlepage]
 

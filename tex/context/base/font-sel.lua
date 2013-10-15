@@ -10,6 +10,7 @@ local context             = context
 local cleanname           = fonts.names.cleanname
 local gsub, splitup, find = string.gsub, string.splitup, string.find
 local formatters          = string.formatters
+local settings_to_array   = utilities.parsers.settings_to_array
 
 local v_yes               = interfaces.variables.yes
 local v_simplefonts       = interfaces.variables.simplefonts
@@ -269,6 +270,7 @@ function commands.defineselectfont(settings)
     local index = #data + 1
     data[index] = settings
     selectfont.searchfiles(index)
+    selectfont.filterinput(index)
     context(index)
 end
 
@@ -279,6 +281,24 @@ local function savefont(data,alternative,entries)
         data.fonts = f
     end
     f[alternative] = entries
+end
+
+local function savefeatures(data,alternative,entries)
+    local f = data.features
+    if not f then
+        f = { }
+        data.features = f
+    end
+    f[alternative] = entries
+end
+
+local function savegoodies(data,alternative,entries)
+    local g = data.goodies
+    if not f then
+        g = { }
+        data.goodies = g
+    end
+    g[alternative] = entries
 end
 
 methods[v_simplefonts] = function(data,alternative,style)
@@ -389,6 +409,14 @@ methods["style"] = function(data,alternative,style)
     (methods[method] or methods[v_default])(data,alternative,style)
 end
 
+methods["features"] = function(data,alternative,features)
+    savefeatures(data,alternative,features)
+end
+
+methods["goodies"] = function(data,alternative,goodies)
+    savegoodies(data,alternative,goodies)
+end
+
 function selectfont.searchfiles(index)
     local data = data[index]
     for alternative, _ in next, alternatives do
@@ -398,9 +426,8 @@ function selectfont.searchfiles(index)
         local style    = alternatives[alternative]
         if filename == "" then
             local pattern = getlookups{ familyname = cleanname(family) }
-            if #pattern == 1 then -- needs to be improved
-                savefont(data,"tf",pattern)
-                break
+            if #pattern == 1 and alternative == "tf" then -- needs to be improved
+                savefont(data,alternative,pattern)
             else
                 (methods[method] or methods[v_default])(data,alternative,style)
             end
@@ -415,25 +442,40 @@ function selectfont.searchfiles(index)
     end
 end
 
+function selectfont.filterinput(index)
+    local data = data[index]
+    for alternative, _ in next, alternatives do
+        local list = settings_to_array(data.alternatives[alternative])
+        for _, entry in next, list do
+            method, entries = splitup(entry,":")
+            if not entries then
+                entries = method
+                method  = "name"
+            end
+            (methods[method] or methods["name"])(data,alternative,entries)
+        end
+    end
+end
+
 local function definefontsynonym(data,alternative,index,fallback)
     local fontdata     = data.fonts and data.fonts[alternative]
     local style        = data.metadata.style
     local typeface     = data.metadata.typeface
     local mathsettings = mathsettings[cleanname(data.metadata.family)]
-    local features     = mathsettings and mathsettings["features"] and (mathsettings["features"][alternative] or mathsettings["features"]["tf"]) or data.features[alternative]
-    local goodies      = mathsettings and mathsettings["goodies"]  and (mathsettings["goodies"] [alternative] or mathsettings["goodies"] ["tf"]) or ""
+    local features     = mathsettings and mathsettings["features"] and (mathsettings["features"][alternative] or mathsettings["features"]["tf"]) or data.features and data.features[alternative] or ""
+    local goodies      = mathsettings and mathsettings["goodies"]  and (mathsettings["goodies"] [alternative] or mathsettings["goodies"] ["tf"]) or data.goodies  and data.goodies [alternative] or ""
     local parent       = replacement["style"][alternative] or ""
     local fontname, fontfile, fontparent
     if fallback then
         fontname   = formatters["%s-%s-%s-fallback-%s"](typeface, style, alternative, index)
         fontfile   = formatters["%s-%s-%s-%s"]         (typeface, style, alternative, index)
-        fontparent = formatters["%s-%s-%s-%s"]         (typeface, style, parent,      index)
+        fontparent = formatters["%s-%s-%s-fallback-%s"](typeface, style, parent,      index)
     else
         fontname   = synonyms[style][alternative]
         fontfile   = formatters["%s-%s-%s"](typeface, style, alternative)
         fontparent = formatters["%s-%s-%s"](typeface, style, parent)
     end
-    if fontdata then
+    if fontdata and #fontdata > 0 then
         for _, size in next, sizes["default"] do
             for _, entry in next, fontdata do
                 if entry["minsize"] and entry["maxsize"] then
@@ -530,6 +572,7 @@ local function definetextfallback(entry,index)
         definetextfontfallback(data,alternative,entry)
     end
     context.stopfontclass()
+    -- inspect(data)
 end
 
 local function definemathfontfallback(data,alternative,index)
