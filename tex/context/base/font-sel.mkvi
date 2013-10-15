@@ -1,6 +1,6 @@
 %D \module
 %D   [     file=font-sel,
-%D      version=2013.09.28,
+%D      version=2013.10.14,
 %D        title=\CONTEXT\ User Module,
 %D     subtitle=Selectfont,
 %D       author=Wolfgang Schuster,
@@ -43,6 +43,15 @@
                 offset      = "\selectfontparameter\c!offset", % fallback only
                 check       = "\selectfontparameter\c!check",  % fallback only
                 force       = "\selectfontparameter\c!force",  % fallback only
+            },
+            alternatives = {
+                ["tf"]      = "\selectfontparameter\s!tf",
+                ["bf"]      = "\selectfontparameter\s!bf",
+                ["it"]      = "\selectfontparameter\s!it",
+                ["sl"]      = "\selectfontparameter\s!sl",
+                ["bi"]      = "\selectfontparameter\s!bi",
+                ["bs"]      = "\selectfontparameter\s!bs",
+                ["sc"]      = "\selectfontparameter\s!sc",
             },
             files = {
                 ["tf"]      = "\selectfontparameter\c!regularfont",
@@ -91,7 +100,7 @@
 
 \installcorenamespace {selectfontpreset}
 
-\unexpanded\def\defineselectfontpreset
+\unexpanded\def\definefontfamilypreset
   {\dodoubleargument\selectfont_preset_define}
 
 \def\selectfont_preset_define[#name][#settings]%
@@ -106,11 +115,11 @@
      % unknown preset
    \fi}
 
-\let\definefontfamilypreset\defineselectfontpreset
-
-\definefontfamilypreset [\s!chinese ] [\c!range={0x00400-0x2FA1F}]
-\definefontfamilypreset [\s!japanese] [\c!range={0x00400-0x2FA1F}]
-\definefontfamilypreset [\s!korean  ] [\c!range={0x00400-0x2FA1F}]
+\definefontfamilypreset [r:chinese]  [\c!range={cjkcompatibilityforms,cjkcompatibilityideographs,cjkcompatibilityideographssupplement,cjkradicalssupplement,cjkstrokes,cjksymbolsandpunctuation,cjkunifiedideographs,cjkunifiedideographsextensiona,cjkunifiedideographsextensionb,halfwidthandfullwidthforms,verticalforms,bopomofo,bopomofoextended}]
+\definefontfamilypreset [r:japanese] [\c!range={cjkcompatibilityforms,cjkcompatibilityideographs,cjkcompatibilityideographssupplement,cjkradicalssupplement,cjkstrokes,cjksymbolsandpunctuation,cjkunifiedideographs,cjkunifiedideographsextensiona,cjkunifiedideographsextensionb,halfwidthandfullwidthforms,verticalforms,hiragana,katakana}]
+\definefontfamilypreset [r:korean]   [\c!range={cjkcompatibilityforms,cjkcompatibilityideographs,cjkcompatibilityideographssupplement,cjkradicalssupplement,cjkstrokes,cjksymbolsandpunctuation,cjkunifiedideographs,cjkunifiedideographsextensiona,cjkunifiedideographsextensionb,halfwidthandfullwidthforms,verticalforms,hangulcompatibilityjamo,hanguljamo,hanguljamoextendeda,hanguljamoextendedb,hangulsyllables}]
+\definefontfamilypreset [r:cyrillic] [\c!range={cyrillic,cyrillicextendeda,cyrillicextendedb,cyrillicsupplement}]
+\definefontfamilypreset [r:greek]    [\c!range={greekandcoptic,greekextended,ancientgreeknumbers}]
 
 %D \macros
 %D   {defineselectfontalternative}
@@ -229,7 +238,9 @@
   {\doquadrupleempty\selectfont_family_define}
 
 \def\selectfont_family_define[#typeface][#style][#family][#settings]%
-  {\selectfont_setparameters[\c!name={#typeface},\c!style={#style},\c!family={#family},#settings]%
+  {\doifassignmentelse{#settings}
+     {\selectfont_setparameters[\c!name={#typeface},\c!style={#style},\c!family={#family},#settings]}
+     {\selectfont_setparameters[\c!name={#typeface},\c!style={#style},\c!family={#family},\c!preset={#settings}]}%
    \ctxcommand{definefontfamily(\selectfont_index)}}
 
 \unexpanded\def\definefallbackfamily
@@ -271,9 +282,19 @@
 \unexpanded\def\setupfontfamily
   {\dotripleempty\selectfont_family_setup}
 
-\def\selectfont_family_setup[#style][#family][#settings]%
+\def\selectfont_family_setup
+  {\ifsecondargument
+     \expandafter\selectfont_family_setup_yes
+   \else
+     \expandafter\selectfont_family_setup_nop
+   \fi}
+
+\def\selectfont_family_setup_yes[#style][#family][#settings]%
   {\normalexpanded{\t_selectfont_styles{\selectfont_set_font_family[#style][#family][#settings]\the\t_selectfont_styles}}%
    \selectfont_set_font_indeed}
+
+\def\selectfont_family_setup_nop[#settings][#dummya][#dummyb]%
+  {\setupselectfont[#settings]}
 
 \unexpanded\def\selectfont_set_default
   {\selectfont_set_font_family[\v!serif][Latin Modern Roman][\c!opticalsize=\v!yes]%

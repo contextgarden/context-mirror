@@ -8274,7 +8274,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tpl"] = package.loaded["util-tpl"] or true
 
--- original size: 6225, stripped down to: 3412
+-- original size: 6251, stripped down to: 3488
 
 if not modules then modules={} end modules ['util-tpl']={
   version=1.001,
@@ -8288,8 +8288,8 @@ local templates=utilities.templates
 local trace_template=false trackers.register("templates.trace",function(v) trace_template=v end)
 local report_template=logs.reporter("template")
 local tostring=tostring
-local format,sub=string.format,string.sub
-local P,C,Cs,Carg,lpegmatch,lpegpatterns=lpeg.P,lpeg.C,lpeg.Cs,lpeg.Carg,lpeg.match,lpeg.patterns
+local format,sub,byte=string.format,string.sub,string.byte
+local P,C,R,Cs,Cc,Carg,lpegmatch,lpegpatterns=lpeg.P,lpeg.C,lpeg.R,lpeg.Cs,lpeg.Cc,lpeg.Carg,lpeg.match,lpeg.patterns
 local replacer
 local function replacekey(k,t,how,recursive)
   local v=t[k]
@@ -8319,6 +8319,7 @@ local sqlescape=lpeg.replacer {
 local sqlquoted=lpeg.Cs(lpeg.Cc("'")*sqlescape*lpeg.Cc("'"))
 lpegpatterns.sqlescape=sqlescape
 lpegpatterns.sqlquoted=sqlquoted
+local luaescape=lpegpatterns.luaescape
 local escapers={
   lua=function(s)
     return lpegmatch(luaescape,s)
@@ -16562,8 +16563,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 680450
--- stripped bytes    : 240983
+-- original bytes    : 680476
+-- stripped bytes    : 240933
 
 -- end library merge
 

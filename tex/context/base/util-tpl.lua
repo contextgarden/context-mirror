@@ -17,8 +17,8 @@ local trace_template  = false  trackers.register("templates.trace",function(v) t
 local report_template = logs.reporter("template")
 
 local tostring = tostring
-local format, sub = string.format, string.sub
-local P, C, Cs, Carg, lpegmatch, lpegpatterns = lpeg.P, lpeg.C, lpeg.Cs, lpeg.Carg, lpeg.match, lpeg.patterns
+local format, sub, byte = string.format, string.sub, string.byte
+local P, C, R, Cs, Cc, Carg, lpegmatch, lpegpatterns = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs, lpeg.Cc, lpeg.Carg, lpeg.match, lpeg.patterns
 
 -- todo: make installable template.new
 
@@ -71,7 +71,7 @@ lpegpatterns.sqlquoted = sqlquoted
 --     }
 --
 -- slightly faster:
---
+
 -- local luaescape = Cs ((
 --     P('"' ) / [[\"]] +
 --     P('\\') / [[\\]] +
@@ -81,11 +81,11 @@ lpegpatterns.sqlquoted = sqlquoted
 --     P(1)
 -- )^0)
 
--- local xmlescape = lpegpatterns.xmlescape
--- local texescape = lpegpatterns.texescape
--- local luaescape = lpegpatterns.luaescape
--- local sqlquoted = lpegpatterns.sqlquoted
--- local luaquoted = lpegpatterns.luaquoted
+----- xmlescape = lpegpatterns.xmlescape
+----- texescape = lpegpatterns.texescape
+local luaescape = lpegpatterns.luaescape
+----- sqlquoted = lpegpatterns.sqlquoted
+----- luaquoted = lpegpatterns.luaquoted
 
 local escapers = {
     lua = function(s)

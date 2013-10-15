@@ -31,7 +31,7 @@ local context = context
 local format, gsub, validstring, stripstring = string.format, string.gsub, string.valid, string.strip
 local next, type, tostring, tonumber, setmetatable, unpack, select = next, type, tostring, tonumber, setmetatable, unpack, select
 local insert, remove, concat = table.insert, table.remove, table.concat
-local lpegmatch, lpegC, lpegS, lpegP, lpegCc, patterns = lpeg.match, lpeg.C, lpeg.S, lpeg.P, lpeg.Cc, lpeg.patterns
+local lpegmatch, lpegC, lpegS, lpegP, lpegV, lpegCc, lpegCs, patterns = lpeg.match, lpeg.C, lpeg.S, lpeg.P, lpeg.V, lpeg.Cc, lpeg.Cs, lpeg.patterns
 local formatters = string.formatters -- using formatteds is slower in this case
 
 local loaddata          = io.loaddata
@@ -1078,3 +1078,89 @@ setmetatable(delayed, { __index = indexer, __call = caller } )
 function context.concat(...)
     context(concat(...))
 end
+
+-- templates
+
+local single  = lpegP("%")
+local double  = lpegP("%%")
+local lquoted = lpegP("%[")
+local rquoted = lpegP("]%")
+
+local start = [[
+local texescape = lpeg.patterns.texescape
+local lpegmatch = lpeg.match
+return function(variables) return
+]]
+
+local stop  = [[
+end
+]]
+
+local replacer = lpegP { "parser",
+    parser   = lpegCs(lpegCc(start) * lpegV("step") * (lpegCc("..") * lpegV("step"))^0 * lpegCc(stop)),
+    unquoted = (lquoted/'') * ((lpegC((1-rquoted)^1)) / "lpegmatch(texescape,variables['%0'] or '')" ) * (rquoted/''),
+    escape   = double/'%%',
+    key      = (single/'') * ((lpegC((1-single)^1)) / "(variables['%0'] or '')" ) * (single/''),
+    step     = lpegV("unquoted")
+             + lpegV("escape")
+             + lpegV("key")
+             + lpegCc("\n[===[") * (1 - lpegV("unquoted") - lpegV("escape") - lpegV("key"))^1 * lpegCc("]===]\n"),
+}
+
+local templates = { }
+
+local function indexer(parent,k)
+    local v = lpegmatch(replacer,k)
+    if not v then
+        v = "error: no valid template (1)"
+    else
+        v = loadstring(v)
+        if type(v) ~= "function" then
+            v = "error: no valid template (2)"
+        else
+            v = v()
+            if not v then
+                v = "error: no valid template (3)"
+            end
+        end
+    end
+    if type(v) == "function" then
+        local f = function(first,second)
+            if second then
+                pushcatcodes(first)
+                flushlines(v(second))
+                popcatcodes()
+            else
+                flushlines(v(first))
+            end
+        end
+        parent[k] = f
+        return f
+    else
+        return function()
+            flush(v)
+        end
+    end
+
+end
+
+local function caller(parent,k,...)
+    return parent[k](...)
+end
+
+setmetatable(templates, { __index = indexer, __call = caller } )
+
+function context.template(template,...)
+    context(templates[template](...))
+end
+
+context.templates = templates
+
+-- The above is a bit over the top as we could also stick to a simple context.replace
+-- which is fast enough anyway, but the above fits in nicer, also with the catcodes.
+--
+-- local replace = utilities.templates.replace
+--
+-- function context.template(template,variables)
+--     context(replace(template,variables))
+-- end
