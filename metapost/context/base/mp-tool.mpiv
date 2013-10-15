@@ -331,6 +331,12 @@ vardef asinh  primary x = ln(x+(x++1))     enddef ;
 vardef sinh   primary x = save xx ; xx = exp x ; (xx-1/xx)/2 enddef ;
 vardef cosh   primary x = save xx ; xx = exp x ; (xx+1/xx)/2 enddef ;
 
+%D Sometimes this is handy:
+
+def undashed =
+    dashed nullpicture
+enddef ;
+
 %D We provide two macros for drawing stripes across a shape.
 %D The first method (with the n suffix) uses another method,
 %D slower in calculation, but more efficient when drawn. The
@@ -1272,12 +1278,12 @@ def _finarr text t =
     draw arrowhead _apth t ;
 enddef;
 
-def _findarr text t =
+def _finarr text t =
     if autoarrows : set_ahlength (t) fi ;
-    draw arrowpath         _apth                    t ;
-    fill arrowhead         _apth withpen currentpen t ;
-    fill arrowhead reverse _apth withpen currentpen t ;
-enddef ;
+    draw arrowpath _apth t ; % arrowpath added
+    fill arrowhead _apth t ;
+    draw arrowhead _apth t undashed ;
+enddef;
 
 %D Handy too ......
 
