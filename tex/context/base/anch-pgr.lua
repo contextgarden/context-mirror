@@ -681,12 +681,12 @@ end
 function commands.doifelserangeonpage(first,last,page)
     local collected = jobpositions.collected
     local f = collected[first]
-    if not f or f.p == true then
+    if not f then
         doifelse(false)
         return
     end
     local l = collected[last]
-    if not l or l.p == true  then
+    if not l then
         doifelse(false)
         return
     end

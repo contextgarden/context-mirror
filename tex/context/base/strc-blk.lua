@@ -13,10 +13,7 @@ local find, format, validstring = string.find, string.format, string.valid
 local settings_to_set, settings_to_array = utilities.parsers.settings_to_set, utilities.parsers.settings_to_array
 local allocate = utilities.storage.allocate
 
-local context     = context
-local commands    = commands
-
-local structures  = structures
+local structures, context = structures, context
 
 structures.blocks = structures.blocks or { }
 

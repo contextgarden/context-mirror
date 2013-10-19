@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['buff-imp-tex'] = {
     license   = "see context related readme files"
 }
 
--- needs an update, use mult-low
-
 local P, S, V, patterns = lpeg.P, lpeg.S, lpeg.V, lpeg.patterns
 
 local context            = context
@@ -41,7 +39,7 @@ local handler = visualizers.newhandler {
 -- todo: unicode letters in control sequences (slow as we need to test the nature)
 
 local comment  = S("%")
-local name     = P("\\") * (patterns.letter + S("@!?_"))^1
+local name     = P("\\") * (patterns.letter + S("@!?"))^1
 local escape   = P("\\") * (patterns.anything - patterns.newline)^-1 -- else we get \n
 local group    = S("${}")
 local boundary = S('[]()<>#="')

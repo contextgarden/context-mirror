@@ -29,7 +29,7 @@ local remove_node        = nodes.remove -- ! nodes
 
 local tonodes            = nodes.tonodes
 
-local texsetattribute    = tex.setattribute
+local texattribute       = tex.attribute
 local unsetvalue         = attributes.unsetvalue
 
 local nodepool           = nodes.pool
@@ -61,6 +61,7 @@ breakpoints.methods      = breakpoints.methods or { }
 local methods            = breakpoints.methods
 
 local a_breakpoints      = attributes.private("breakpoint")
+breakpoints.attribute    = a_breakpoints
 
 storage.register("typesetters/breakpoints/mapping", breakpoints.mapping, "typesetters.breakpoints.mapping")
 
@@ -154,8 +155,8 @@ methods[5] = function(head,start,settings) -- x => p q r
     return head, start
 end
 
-function breakpoints.handler(head)
-    local done, numbers = false, languages.numbers
+local function process(namespace,attribute,head)
+    local done, numbers = false,  languages.numbers
     local start, n = head, 0
     while start do
         local id = start.id
@@ -281,8 +282,14 @@ function breakpoints.set(n)
             n = n.number
         end
     end
-    texsetattribute(a_breakpoints,n)
+    texattribute[a_breakpoints] = n
 end
+
+breakpoints.handler = nodes.installattributehandler {
+    name      = "breakpoint",
+    namespace = breakpoints,
+    processor = process,
+}
 
 -- function breakpoints.enable()
 --     tasks.enableaction("processors","typesetters.breakpoints.handler")

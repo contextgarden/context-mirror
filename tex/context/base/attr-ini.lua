@@ -20,9 +20,6 @@ local attributes      = attributes
 
 local sharedstorage   = storage.shared
 
-local texgetcount     = tex.getcount
-local texsetattribute = tex.setattribute
-
 attributes.names      = attributes.names    or { }
 attributes.numbers    = attributes.numbers  or { }
 attributes.list       = attributes.list     or { }
@@ -67,7 +64,7 @@ sharedstorage.attributes_last_private = sharedstorage.attributes_last_private or
 -- setmetatable(private, {
 --     __index = function(t,name)
 --         local number = sharedstorage.attributes_last_private
---         if number < 1023 then -- texgetcount("minallocatedattribute") - 1
+--         if number < 1023 then -- tex.count.minallocatedattribute - 1
 --             number = number + 1
 --             sharedstorage.attributes_last_private = number
 --         end
@@ -84,7 +81,7 @@ function attributes.private(name) -- at the lua end (hidden from user)
     local number = numbers[name]
     if not number then
         local last = sharedstorage.attributes_last_private
-        if last < 1023 then -- texgetcount("minallocatedattribute") - 1
+        if last < 1023 then -- tex.count.minallocatedattribute - 1
             last = last + 1
             sharedstorage.attributes_last_private = last
         else
@@ -158,7 +155,7 @@ function commands.restorecurrentattributes(name)
         local font = t.font
         if attr then
             for k, v in next, attr do
-                texsetattribute(k,v)
+                tex.attribute[k] = v
             end
         end
         if font then

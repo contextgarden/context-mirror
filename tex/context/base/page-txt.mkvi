@@ -269,7 +269,7 @@
 \let\m_page_layouts_element_content\empty
 
 \unexpanded\def\page_layouts_process_element_single#style#color#width#content%
-  {\edef\m_page_layouts_element_content{\detokenize{#content}}% so no \v!xxx
+  {\edef\m_page_layouts_element_content{\detokenize{#content}}%
    \ifx\m_page_layouts_element_content\empty
      % should not happen too often
    \else

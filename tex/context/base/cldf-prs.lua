@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['cldf-bas'] = {
     license   = "see context related readme files"
 }
 
--- used in chem-ini.lua
-
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local P, R, V, Cc, Cs = lpeg.P, lpeg.R, lpeg.V, lpeg.Cc, lpeg.Cs
 local format = string.format

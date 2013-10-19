@@ -35,7 +35,6 @@ local function readall(f)
         return f:read('*all')
     else
         local done = f:seek("set",0)
-        local step
         if size < 1024*1024 then
             step = 1024 * 1024
         elseif size > 16*1024*1024 then
@@ -60,7 +59,7 @@ io.readall = readall
 function io.loaddata(filename,textmode) -- return nil if empty
     local f = io.open(filename,(textmode and 'r') or 'rb')
     if f then
-     -- local data = f:read('*all')
+--       local data = f:read('*all')
         local data = readall(f)
         f:close()
         if #data > 0 then

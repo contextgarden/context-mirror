@@ -31,7 +31,7 @@ local helpinfo = [[
 ]]
 
 local application = logs.application {
-    name     = "mtx-profile",
+    name     = "mtx-cache",
     banner   = "ConTeXt MkIV LuaTeX Profiler 1.00",
     helpinfo = helpinfo,
 }
@@ -56,22 +56,20 @@ function scripts.profiler.analyze(filename)
         local times, counts, calls = { }, { }, { }
         local totalruntime, totalcount, totalcalls = 0, 0, 0
         for line in f:lines() do
-            if not find(line,"__index") and not find(line,"__newindex") then
-                local stacklevel, filename, functionname, linenumber, currentline, localtime, totaltime = line:match("^(%d+)\t(.-)\t(.-)\t(.-)\t(.-)\t(.-)\t(.-)")
-                if not filename then
-                    -- next
-                elseif filename == "=[C]" then
-                    if not functionname:find("^%(") then
-                        calls[functionname] = (calls[functionname] or 0) + 1
-                    end
-                else
-                    local filename = filename:match("^@(.*)$")
-                    if filename then
-                        local fi = times[filename]
-                        if not fi then fi = { } times[filename] = fi end
-                        fi[functionname] = (fi[functionname] or 0) + tonumber(localtime)
-                        counts[functionname] = (counts[functionname] or 0) + 1
-                    end
+            local stacklevel, filename, functionname, linenumber, currentline, localtime, totaltime = line:match("^(%d+)\t(.-)\t(.-)\t(.-)\t(.-)\t(.-)\t(.-)")
+            if not filename then
+                -- next
+            elseif filename == "=[C]" then
+                if not functionname:find("^%(") then
+                    calls[functionname] = (calls[functionname] or 0) + 1
+                end
+            else
+                local filename = filename:match("^@(.*)$")
+                if filename then
+                    local fi = times[filename]
+                    if not fi then fi = { } times[filename] = fi end
+                    fi[functionname] = (fi[functionname] or 0) + tonumber(localtime)
+                    counts[functionname] = (counts[functionname] or 0) + 1
                 end
             end
         end

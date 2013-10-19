@@ -368,14 +368,11 @@ function file.joinpath(tab,separator) -- table
     return tab and concat(tab,separator or io.pathseparator) -- can have trailing //
 end
 
-local someslash = S("\\/")
 local stripper  = Cs(P(fwslash)^0/"" * reslasher)
-local isnetwork = someslash * someslash * (1-someslash)
-                + (1-fwslash-colon)^1 * colon
+local isnetwork = fwslash * fwslash * (1-fwslash) + (1-fwslash-colon)^1 * colon
 local isroot    = fwslash^1 * -1
 local hasroot   = fwslash^1
 
-local reslasher = lpeg.replacer(S("\\/"),"/")
 local deslasher = lpeg.replacer(S("\\/")^1,"/")
 
 -- If we have a network or prefix then there is a change that we end up with two
@@ -389,13 +386,8 @@ function file.join(...)
     local lst = { ... }
     local one = lst[1]
     if lpegmatch(isnetwork,one) then
-        local one = lpegmatch(reslasher,one)
         local two = lpegmatch(deslasher,concat(lst,"/",2))
-        if lpegmatch(hasroot,two) then
-            return one .. two
-        else
-            return one .. "/" .. two
-        end
+        return one .. "/" .. two
     elseif lpegmatch(isroot,one) then
         local two = lpegmatch(deslasher,concat(lst,"/",2))
         if lpegmatch(hasroot,two) then
@@ -420,8 +412,6 @@ end
 -- print(file.join("http://a","/y"))
 -- print(file.join("http:///a","/y"))
 -- print(file.join("//nas-1","/y"))
--- print(file.join("//nas-1/a/b/c","/y"))
--- print(file.join("\\\\nas-1\\a\\b\\c","\\y"))
 
 -- The previous one fails on "a.b/c"  so Taco came up with a split based
 -- variant. After some skyping we got it sort of compatible with the old
@@ -431,14 +421,9 @@ end
 -- finds were replaced by lpegs.
 
 local drivespec    = R("az","AZ")^1 * colon
-local anchors      = fwslash
-                   + drivespec
-local untouched    = periods
-                   + (1-period)^1 * P(-1)
-local mswindrive   = Cs(drivespec * (bwslash/"/" + fwslash)^0)
-local mswinuncpath = (bwslash + fwslash) * (bwslash + fwslash) * Cc("//")
-local splitstarter = (mswindrive + mswinuncpath + Cc(false))
-                   * Ct(lpeg.splitat(S("/\\")^1))
+local anchors      = fwslash + drivespec
+local untouched    = periods + (1-period)^1 * P(-1)
+local splitstarter = (Cs(drivespec * (bwslash/"/" + fwslash)^0) + Cc(false)) * Ct(lpeg.splitat(S("/\\")^1))
 local absolute     = fwslash
 
 function file.collapsepath(str,anchor) -- anchor: false|nil, true, "."
@@ -505,7 +490,6 @@ end
 -- test("a/./b/..") test("a/aa/../b/bb") test("a/.././././b/..") test("a/./././b/..")
 -- test("a/b/c/../..") test("./a/b/c/../..") test("a/b/c/../..")
 -- test("./a")
--- test([[\\a.b.c\d\e]])
 
 local validchars = R("az","09","AZ","--","..")
 local pattern_a  = lpeg.replacer(1-validchars)

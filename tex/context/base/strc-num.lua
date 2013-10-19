@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['strc-num'] = {
 local format = string.format
 local next, type = next, type
 local min, max = math.min, math.max
-local texsetcount = tex.setcount
+local texcount, texsetcount = tex.count, tex.setcount
 
 -- Counters are managed here. They can have multiple levels which makes it easier to synchronize
 -- them. Synchronization is sort of special anyway, as it relates to document structuring.
@@ -147,9 +147,9 @@ local function dummyconstructor(t,name,i)
 end
 
 setmetatableindex(constructor,function(t,k)
- -- if trace_counters then
- --     report_counters("unknown constructor %a",k)
- -- end
+    if trace_counters then
+        report_counters("unknown constructor %a",k)
+    end
     return dummyconstructor
 end)
 

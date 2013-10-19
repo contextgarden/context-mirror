@@ -116,7 +116,6 @@
 %D \stoptyping
 
 \newconditional\c_strc_registers_defining
-\setnewconstant\c_strc_registers_maxlevel \plusfive
 
 \ifdefined\Word \else \unexpanded\def\Word#1{#1} \fi
 
@@ -132,7 +131,7 @@
       \setuevalue{\e!place\currentregister}{\placeregister[\currentregister]}%
       \setuevalue{\e!complete\currentregister}{\completeregister[\currentregister]}%
       \setuevalue{\e!setup\currentregister\e!endsetup}{\setupregister[\currentregister]}%
-      \dorecurse\c_strc_registers_maxlevel{% weird, expanded should not be needed
+      \dorecurse\plusthree {% weird, expanded should not be needed
         \normalexpanded{\defineregister[\currentregister:\recurselevel][\currentregister]}%
        %\defineregister[\currentregister:\recurselevel][\currentregister]%
         \letregisterparameter{\c!entries:\recurselevel}\empty % needed as we use detokenize (ok, we can
@@ -673,29 +672,14 @@
    \dostoptagged
    \endgroup}
 
-% \unexpanded\def\startregisterentries#1% depth
-%   {\endgraf
-%    \begingroup
-%    \dostarttagged\t!registerentries\empty
-%    \let\savedcurrentregister\currentregister
-%    \edef\currentregister{\currentregister:#1}%
-%    \useregisterstyleandcolor\c!textstyle\c!textcolor
-%    \advance\leftskip\numexpr#1-\plusone\relax\dimexpr\d_strc_registers_distance\relax
-%    \hangindent\registerparameter\c!distance\relax
-%    \hangafter\plusone
-%    \let\currentregister\savedcurrentregister}
-
 \unexpanded\def\startregisterentries#1% depth
   {\endgraf
    \begingroup
-   \scratchcounter\ifnum#1>\c_strc_registers_maxlevel\c_strc_registers_maxlevel\else#1\fi\relax
    \dostarttagged\t!registerentries\empty
    \let\savedcurrentregister\currentregister
-   \edef\currentregister{\currentregister:\number\scratchcounter}%
+   \edef\currentregister{\currentregister:#1}%
    \useregisterstyleandcolor\c!textstyle\c!textcolor
-   \ifnum\scratchcounter>\plusone
-     \advance\leftskip\d_strc_registers_distance\relax
-   \fi
+   \advance\leftskip\numexpr#1-\plusone\relax\dimexpr\d_strc_registers_distance\relax
    \hangindent\registerparameter\c!distance\relax
    \hangafter\plusone
    \let\currentregister\savedcurrentregister}

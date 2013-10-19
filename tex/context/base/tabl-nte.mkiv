@@ -102,9 +102,9 @@
 \unexpanded\def\startTABLEbody{\dosingleempty\tabl_nte_start_body} \let\stopTABLEbody\relax
 \unexpanded\def\startTABLEfoot{\dosingleempty\tabl_nte_start_foot} \let\stopTABLEfoot\relax
 
-\def\tabl_nte_start_head[#1]#2\stopTABLEhead{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_head}
-\def\tabl_nte_start_next[#1]#2\stopTABLEnext{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_next}
-\def\tabl_nte_start_body[#1]#2\stopTABLEbody{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_body}
-\def\tabl_nte_start_foot[#1]#2\stopTABLEfoot{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_foot}
+\def\tabl_nte_start_head[#1]#2\stopTABLEhead{\appendtoks\doTABLEsection[#1]{#2}\to\TBLhead}
+\def\tabl_nte_start_next[#1]#2\stopTABLEnext{\appendtoks\doTABLEsection[#1]{#2}\to\TBLnext}
+\def\tabl_nte_start_body[#1]#2\stopTABLEbody{\appendtoks\doTABLEsection[#1]{#2}\to\TBLbody}
+\def\tabl_nte_start_foot[#1]#2\stopTABLEfoot{\appendtoks\doTABLEsection[#1]{#2}\to\TBLfoot}
 
 \protect \endinput

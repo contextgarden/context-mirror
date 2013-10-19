@@ -15,7 +15,7 @@
 
 \unprotect
 
-%D Some day this will be done at the lua end.
+% this will be done at the lua end
 
 \startluacode
     mathematics.define(\number\defaultmathfamily)
@@ -24,8 +24,22 @@
 
 \activatemathcharacters
 
-%D The \mfunction macro is an alternative for \hbox with a controlable font
-%D switch.
+% will go to math-ext (if used at all)
+
+\Umathchardef\braceld=0 \defaultmathfamily "FF07A
+\Umathchardef\bracerd=0 \defaultmathfamily "FF07B
+\Umathchardef\bracelu=0 \defaultmathfamily "FF07C
+\Umathchardef\braceru=0 \defaultmathfamily "FF07D
+
+% ctx specific
+
+% \bgroup
+% \catcode`|=\othercatcode
+% \global\let\|=|
+% \egroup
+
+% The \mfunction macro is an alternative for \hbox with a
+% controlable font switch.
 
 \definemathcommand [arccos]  [nolop] {\mfunctionlabeltext{arccos}}
 \definemathcommand [arcsin]  [nolop] {\mfunctionlabeltext{arcsin}}
@@ -55,7 +69,7 @@
 \definemathcommand [max]     [limop] {\mfunctionlabeltext{max}}
 \definemathcommand [min]     [limop] {\mfunctionlabeltext{min}}
 \definemathcommand [mod]     [limop] {\mfunctionlabeltext{mod}}
-%definemathcommand [div]     [limop] {\mfunctionlabeltext{div}}      % overloads \div symbol
+%definemathcommand [div]     [limop] {\mfunctionlabeltext{div}}                              % overloads \div symbol
 \definemathcommand [projlim] [limop] {\mfunctionlabeltext{projlim}}
 \definemathcommand [Pr]      [limop] {\mfunctionlabeltext{Pr}}
 \definemathcommand [sec]     [nolop] {\mfunctionlabeltext{sec}}
@@ -65,23 +79,157 @@
 \definemathcommand [tanh]    [nolop] {\mfunctionlabeltext{tanh}}
 \definemathcommand [tan]     [nolop] {\mfunctionlabeltext{tan}}
 
+% \definemathcommand [integers]      {{\mathblackboard Z}}
+% \definemathcommand [reals]         {{\mathblackboard R}}
+% \definemathcommand [rationals]     {{\mathblackboard Q}}
+% \definemathcommand [naturalnumbers]{{\mathblackboard N}}
+% \definemathcommand [complexes]     {{\mathblackboard C}}
+% \definemathcommand [primes]        {{\mathblackboard P}}
+
 \let\normalmatharg\arg % todo: maybe automatically
+
+% using attributes
+
+\setnewconstant\bigmathdelimitermethod\plusone
+
+\def\plainbigdelimiters % traditional method
+  {\bigmathdelimitermethod\plustwo}
+
+\plainbigdelimiters % is default for the moment but not so nice
+
+\def\doplainbigmath#1#2%
+  {{\hbox{$%
+      \nulldelimiterspace\zeropoint\relax
+      \mathsurround\zeropoint
+  $}}}
+
+\def\doleftbigmath #1{\ifx#1\relax\else\left#1\expandafter\doleftbigmath \fi}
+\def\dorightbigmath#1{\ifx#1\relax\else\right.\expandafter\dorightbigmath\fi}
+
+\installcorenamespace{mathbig}
+
+\unexpanded\def\choosemathbig#1#2% so we accent \big{||} as well
+  {{\hbox{$%
+      \ifcase\bigmathdelimitermethod
+        \doleftbigmath#2\relax
+        \dorightbigmath#2\relax
+      \or
+        \attribute\mathsizeattribute#1\relax
+        \doleftbigmath#2\relax
+        \dorightbigmath#2\relax
+      \else
+        \doleftbigmath#2\relax
+        \vbox to\getvalue{\??mathbig\number#1}\bodyfontsize{}%
+        \dorightbigmath#2\relax
+      \fi
+      \nulldelimiterspace\zeropoint\relax
+      \mathsurround\zeropoint
+  $}}}
+
+\definemathcommand [big]  {\choosemathbig\plusone  } \setvalue{\??mathbig1}{0.85}
+\definemathcommand [Big]  {\choosemathbig\plustwo  } \setvalue{\??mathbig2}{1.15}
+\definemathcommand [bigg] {\choosemathbig\plusthree} \setvalue{\??mathbig3}{1.45}
+\definemathcommand [Bigg] {\choosemathbig\plusfour } \setvalue{\??mathbig4}{1.75}
+
+\definemathcommand [bigl]  [open]  [one] {\big}
+\definemathcommand [bigm]  [rel]   [one] {\big}
+\definemathcommand [bigr]  [close] [one] {\big}
+\definemathcommand [Bigl]  [open]  [one] {\Big}
+\definemathcommand [Bigm]  [rel]   [one] {\Big}
+\definemathcommand [Bigr]  [close] [one] {\Big}
+\definemathcommand [biggl] [open]  [one] {\bigg}
+\definemathcommand [biggm] [rel]   [one] {\bigg}
+\definemathcommand [biggr] [close] [one] {\bigg}
+\definemathcommand [Biggl] [open]  [one] {\Bigg}
+\definemathcommand [Biggm] [rel]   [one] {\Bigg}
+\definemathcommand [Biggr] [close] [one] {\Bigg}
 
 %D This needs checking:
 
-\unexpanded\def\setoperatorlimits#1#2% operator limits
+\def\setoperatorlimits#1#2% operator limits
   {\savenormalmeaning{#1}%
-   \expandafter\def\expandafter#1\expandafter{\csname normal\strippedcsname#1\endcsname#2}}
+   \def#1{\csname normal\strippedcsname#1\endcsname#2}}
 
-\setoperatorlimits \int              \intlimits
-\setoperatorlimits \iint             \intlimits
-\setoperatorlimits \iiint            \intlimits
-\setoperatorlimits \oint             \intlimits
-\setoperatorlimits \oiint            \intlimits
-\setoperatorlimits \oiiint           \intlimits
-\setoperatorlimits \intclockwise     \intlimits
-\setoperatorlimits \ointclockwise    \intlimits
-\setoperatorlimits \ointctrclockwise \intlimits
+\setoperatorlimits\int              \intlimits
+\setoperatorlimits\iint             \intlimits
+\setoperatorlimits\iiint            \intlimits
+\setoperatorlimits\oint             \intlimits
+\setoperatorlimits\oiint            \intlimits
+\setoperatorlimits\oiiint           \intlimits
+\setoperatorlimits\intclockwise     \intlimits
+\setoperatorlimits\ointclockwise    \intlimits
+\setoperatorlimits\ointctrclockwise \intlimits
+
+%D This is a temporary hack until we figure out how to do this correctly,
+%D preferably using math parameters but we can also consider doing some
+%D node juggling here.
+
+\unexpanded\def\implies  {\mathrel{\;\Longrightarrow\;}}
+\unexpanded\def\impliedby{\mathrel{\;\Longleftarrow\;}}
+\unexpanded\def\And      {\mathrel{\;\internalAnd\;}}
+%unexpanded\def\iff      {\;\Longleftrightarrow\;}
+\setuvalue          {iff}{\;\Longleftrightarrow\;} % nicer for if checker
+
+% todo: virtual in math-vfu
+
+% \definemathcommand [mapsto]         {\mapstochar\rightarrow}
+% \definemathcommand [hookrightarrow] {\lhook\joinrel\rightarrow}
+% \definemathcommand [hookleftarrow]  {\leftarrow\joinrel\rhook}
+% \definemathcommand [bowtie]         {\mathrel\triangleright\joinrel\mathrel\triangleleft}
+% \definemathcommand [models]         {\mathrel|\joinrel=}
+% \definemathcommand [iff]            {\;\Longleftrightarrow\;}
+
+% hm
+
+% ldots = 2026
+% vdots = 22EE
+% cdots = 22EF
+% ddots = 22F1
+% udots = 22F0
+
+% \def\PLAINldots{\ldotp\ldotp\ldotp}
+% \def\PLAINcdots{\cdotp\cdotp\cdotp}
+
+% \def\PLAINvdots
+%   {\vbox{\baselineskip.4\bodyfontsize\lineskiplimit\zeropoint\kern.6\bodyfontsize\hbox{.}\hbox{.}\hbox{.}}}
+
+% \def\PLAINddots
+%   {\mkern1mu%
+%    \raise.7\bodyfontsize\vbox{\kern.7\bodyfontsize\hbox{.}}%
+%    \mkern2mu%
+%    \raise.4\bodyfontsize\relax\hbox{.}%
+%    \mkern2mu%
+%    \raise.1\bodyfontsize\hbox{.}%
+%    \mkern1mu}
+
+% \definemathcommand [ldots] [inner]   {\PLAINldots}
+% \definemathcommand [cdots] [inner]   {\PLAINcdots}
+% \definemathcommand [vdots] [nothing] {\PLAINvdots}
+% \definemathcommand [ddots] [inner]   {\PLAINddots}
+
+%D \starttyping
+%D $\sqrt[3]{10}$
+%D \stoptyping
+
+\def\rootradical{\Uroot \defaultmathfamily "221A } % can be done in char-def
+
+\def\root#1\of{\rootradical{#1}} % #2
+
+\unexpanded\def\sqrt{\doifnextoptionalelse\rootwithdegree\rootwithoutdegree}
+
+\def\rootwithdegree   [#1]{\rootradical{#1}}
+\def\rootwithoutdegree    {\rootradical  {}}
+
+\definemathcommand [mathstrut] {\vphantom{(}}
+\definemathcommand [joinrel]   {\mathrel{\mkern-3mu}}
+
+\unexpanded\def\{{\mathortext\lbrace\letterleftbrace } % or maybe a chardef
+\unexpanded\def\}{\mathortext\rbrace\letterrightbrace} % or maybe a chardef
+\unexpanded\def\|{\mathortext\vert  \letterbar       } % or maybe a chardef
+
+%D The following colon related definitions are provided by Aditya
+%D Mahajan who derived them from \type {mathtools.sty} and \type
+%D {colonequals.sty}.
 
 %D \macros
 %D   {centercolon, colonminus, minuscolon, colonequals, equalscolon,
@@ -89,11 +237,6 @@
 %D    coloncolonminus, minuscoloncolon, coloncolonequals,
 %D    equalscoloncolon, coloncolonapprox, approxcoloncolon,
 %D    colonsim, simcoloncolon}
-%D
-%D The following colon related definitions are provided by Aditya
-%D Mahajan who derived them from \type {mathtools.sty} and \type
-%D {colonequals.sty}. This will be redone as part of the overhaul
-%D and font updates.
 %D
 %D In $a := b$ the colon is not vertically centered with the equal
 %D to. Also the distance between colon and equal to is a bit large.
@@ -120,12 +263,15 @@
 %D \formula {A \colonsim          B}
 %D \formula {A \simcoloncolon     B}
 %D \stoplines
-%D
+
 %D The next macros take care of the space between the colon and the
 %D relation symbol.
 
 \definemathcommand  [colonsep]        {\mkern-1.2mu}
 \definemathcommand  [doublecolonsep]  {\mkern-0.9mu}
+
+%D Now we define all the colon relations .. needs checking with char-def.lua ...
+%d will move to a separate module.
 
 \definemathcommand [centercolon]      [rel] {\mathstylevcenteredhbox\colon}
 \definemathcommand [colonminus]       [rel] {\centercolon\colonsep\mathrel{-}}
@@ -146,6 +292,93 @@
 \definemathcommand [approxcoloncolon] [rel] {\approx\coloncolon\colonsep}
 \definemathcommand [colonsim]         [rel] {\coloncolon\colonsep\sim}
 \definemathcommand [simcoloncolon]    [rel] {\sim\coloncolon\colonsep}
+
+%D Goodies. We might move this elsewhere.
+
+% Be careful in choosing what accents you take (the code below uses a
+% combining one):
+%
+% \startbuffer
+% % $\Umathaccent top        0 0 "20D7 {example}$
+% % $\Umathaccent top  fixed 0 0 "20D7 {example}$
+% $\Umathaccent              0 0 "20D7 {example}$
+% $\Umathaccent        fixed 0 0 "20D7 {example}$
+% $\Umathaccent bottom       0 0 "20D7 {example}$
+% $\Umathaccent bottom fixed 0 0 "20D7 {example}$
+% $\Umathaccent both         0 0 "20D7
+%                            0 0 "20D7 {example}$
+% $\Umathaccent both fixed   0 0 "20D7
+%                    fixed   0 0 "20D7 {example}$
+% $\Umathaccent both         0 0 "20D7
+%                    fixed   0 0 "20D7 {example}$
+% $\Umathaccent both fixed   0 0 "20D7
+%                            0 0 "20D7 {example}$
+% \stopbuffer
+%
+% \setupbodyfont[modern]  \getbuffer
+% \setupbodyfont[xits]    \getbuffer
+% \setupbodyfont[cambria] \getbuffer
+
+\unexpanded\def\underleftarrow #1{\mathop{\Uunderdelimiter \defaultmathfamily "2190 {#1}}}
+\unexpanded\def\overleftarrow  #1{\mathop{\Uoverdelimiter  \defaultmathfamily "2190 {#1}}}
+\unexpanded\def\underrightarrow#1{\mathop{\Uunderdelimiter \defaultmathfamily "2192 {#1}}}
+\unexpanded\def\overrightarrow #1{\mathop{\Uoverdelimiter  \defaultmathfamily "2192 {#1}}}
+
+% watch out: here we have a class (zero):
+
+\unexpanded\def\normaldoublebrace {\Umathaccents 0 \defaultmathfamily "23DE 0 \defaultmathfamily "23DF }
+\unexpanded\def\normaldoubleparent{\Umathaccents 0 \defaultmathfamily "23DC 0 \defaultmathfamily "23DD }
+
+% let's keep this
+
+\def\Umathbotaccent{\Umathaccent \s!bottom }
+\def\Umathaccents  {\Umathaccent \s!both   }
+
+\let\normaloverbrace      \overbrace
+\let\normalunderbrace     \underbrace
+\let\normaloverparent     \overparent
+\let\normalunderparent    \underparent
+\let\normaloverbracket    \overbracket
+\let\normalunderbracket   \underbracket
+\let\normalunderleftarrow \underleftarrow
+\let\normaloverleftarrow  \overleftarrow
+\let\normalunderrightarrow\underrightarrow
+\let\normaloverrightarrow \overrightarrow
+
+\unexpanded\def\mathopwithlimits#1#2{\mathop{#1{#2}}\limits}
+\unexpanded\def\stackrel        #1#2{\mathrel{\mathop{#2}\limits^{#1}}}
+
+\unexpanded\def\overbrace      {\mathopwithlimits\normaloverbrace      }
+\unexpanded\def\underbrace     {\mathopwithlimits\normalunderbrace     }
+\unexpanded\def\doublebrace    {\mathopwithlimits\normaldoublebrace    }
+\unexpanded\def\overparent     {\mathopwithlimits\normaloverparent     }
+\unexpanded\def\underparent    {\mathopwithlimits\normalunderparent    }
+\unexpanded\def\overbracket    {\mathopwithlimits\normaloverbracket    }
+\unexpanded\def\underbracket   {\mathopwithlimits\normalunderbracket   }
+\unexpanded\def\doubleparent   {\mathopwithlimits\normaldoubleparent   }
+\unexpanded\def\underleftarrow {\mathopwithlimits\normalunderleftarrow }
+\unexpanded\def\overleftarrow  {\mathopwithlimits\normaloverleftarrow  }
+\unexpanded\def\underrightarrow{\mathopwithlimits\normalunderrightarrow}
+\unexpanded\def\overrightarrow {\mathopwithlimits\normaloverrightarrow }
+
+\let\lceil \lceiling
+\let\rceil \rceiling
+
+\let\normalsurd\surd
+
+\unexpanded\def\surd{\normalsurd{}}
+
+% Some special characters:
+
+\unexpanded\def\nabla{∇} % this one adapts
+
+%
+% todo mathclass=punctuation ord
+
+% \Umathcode"02C="6 \defaultmathfamily "02C
+% \Umathcode"02E="0 \defaultmathfamily "02E
+
+% tricky .. todo
 
 % \appendtoks
 %     \def\over{\primitive\over}%

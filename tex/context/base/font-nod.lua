@@ -41,12 +41,10 @@ tracers.characters     = char_tracers
 local step_tracers     = tracers.steppers or { }
 tracers.steppers       = step_tracers
 
-local texsetbox        = tex.setbox
-
-local copy_node_list   = nodes.copy_list
-local hpack_node_list  = nodes.hpack
-local free_node_list   = nodes.flush_list
-local traverse_nodes   = nodes.traverse
+local copy_node_list   = node.copy_list
+local hpack_node_list  = node.hpack
+local free_node_list   = node.flush_list
+local traverse_nodes   = node.traverse
 
 local nodecodes        = nodes.nodecodes
 local whatcodes        = nodes.whatcodes
@@ -234,8 +232,7 @@ end
 function step_tracers.glyphs(n,i)
     local c = collection[i]
     if c then
-        local b = hpack_node_list(copy_node_list(c)) -- multiple arguments 
-        texsetbox(n,b)
+        tex.box[n] = hpack_node_list(copy_node_list(c))
     end
 end
 

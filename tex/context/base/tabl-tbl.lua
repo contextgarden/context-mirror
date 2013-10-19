@@ -15,7 +15,7 @@ local tonumber = tonumber
 local gsub, rep, sub, find = string.gsub, string.rep, string.sub, string.find
 local P, C, Cc, Ct, lpegmatch = lpeg.P, lpeg.C, lpeg.Cc, lpeg.Ct, lpeg.match
 
-local texsetcount = tex.setcount
+local settexcount = tex.setcount
 
 local separator = P("|")
 local nested    = lpeg.patterns.nested
@@ -31,9 +31,9 @@ function commands.presettabulate(preamble)
     end
     local t = lpegmatch(pattern,preamble)
     local m = #t - 2
-    texsetcount("global","c_tabl_tabulate_nofcolumns", m/2)
-    texsetcount("global","c_tabl_tabulate_has_rule_spec_first", t[1] == "" and 0 or 1)
-    texsetcount("global","c_tabl_tabulate_has_rule_spec_last", t[m+1] == "" and 0 or 1)
+    settexcount("global","c_tabl_tabulate_nofcolumns", m/2)
+    settexcount("global","c_tabl_tabulate_has_rule_spec_first", t[1] == "" and 0 or 1)
+    settexcount("global","c_tabl_tabulate_has_rule_spec_last", t[m+1] == "" and 0 or 1)
     for i=1,m,2 do
         context.settabulateentry(t[i],t[i+1])
     end

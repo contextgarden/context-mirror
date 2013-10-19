@@ -6,8 +6,7 @@ if not modules then modules = { } end modules ['buff-imp-lua'] = {
     license   = "see context related readme files"
 }
 
--- borrowed from ctx scite lexers
--- add goto/label scanning
+-- borrowed from scite
 --
 -- depricated:
 --
@@ -27,9 +26,9 @@ local core = tohash {
 
 local base = tohash {
     "assert", "collectgarbage", "dofile", "error", "loadfile",
-    "loadstring", "load", "print", "rawget", "rawset", "require", "tonumber",
+    "loadstring", "print", "rawget", "rawset", "require", "tonumber",
     "tostring", "type", "_G", "getmetatable", "ipairs", "next", "pairs",
-    "pcall", "rawequal", "setmetatable", "xpcall", "module", "select", "goto",
+    "pcall", "rawequal", "setmetatable", "xpcall", "module", "select",
 }
 
 local libraries = {
@@ -62,7 +61,7 @@ local libraries = {
     },
     lpeg = tohash{
         "print", "match", "locale", "type", "version", "setmaxstack",
-        "P", "R", "S", "C", "V", "Cs", "Ct", "Cs", "Cc", "Cp", "Carg",
+        "P", "R", "S", "C", "V", "Cs", "Ct", "Cs", "Cp", "Carg",
         "Cg", "Cb", "Cmt", "Cf", "B",
     },
     -- bit

@@ -76,23 +76,21 @@ local function pop()
     top = remove(stack)
 end
 
-local leftbrace      = P("{")   -- will be in patterns
-local rightbrace     = P("}")
-local escape         = P("\\")
+local leftbrace   = P("{")   -- will be in patterns
+local rightbrace  = P("}")
+local escape      = P("\\")
 
-local space          = patterns.space
-local spaces         = space^1
-local newline        = patterns.newline
-local nobrace        = 1 - leftbrace - rightbrace
+local space       = patterns.space
+local spaces      = space^1
+local newline     = patterns.newline
+local nobrace     = 1 - leftbrace - rightbrace
 
 local longleft       = leftbrace  -- P("(")
 local longright      = rightbrace -- P(")")
 local nolong         = 1 - longleft - longright
 
-local utf8character  = P(1) * R("\128\191")^1 -- unchecked but fast
-
-local name           = (R("AZ","az") + utf8character)^1
-local csname         = (R("AZ","az") + S("@?!_") + utf8character)^1
+local name           = R("AZ","az")^1
+local csname         = (R("AZ","az") + S("@?!_"))^1
 local longname       = (longleft/"") * (nolong^1) * (longright/"")
 local variable       = P("#") * Cs(name + longname)
 local escapedname    = escape * csname

@@ -24,7 +24,6 @@ local helpinfo = [[
   <category name="basic">
    <subcategory>
     <flag name="make"><short>create format file</short></flag>
-    <flag name="fonts"><short>create plain font database</short></flag>
     <flag name="run"><short>process file</short></flag>
     <flag name="format" value="string"><short>format name (default: luatex-plain)</short></flag>
     <flag name="engine" value="string"><short>engine to use (default: luatex)</short></flag>
@@ -106,10 +105,6 @@ function scripts.plain.run(texengine,texformat,filename)
     execute('%s --fmt=%s "%s"',texengine,file.removesuffix(texformat),filename)
 end
 
-function scripts.plain.fonts()
-    execute('mtxrun --script fonts --reload --simple --typeone')
-end
-
 local texformat = environment.arguments.texformat or environment.arguments.format
 local texengine = environment.arguments.texengine or environment.arguments.engine
 
@@ -127,8 +122,6 @@ if environment.arguments.exporthelp then
     application.export(environment.arguments.exporthelp,filename)
 elseif environment.arguments.make then
     scripts.plain.make(texengine,texformat)
-elseif environment.arguments.fonts then
-    scripts.plain.fonts()
 elseif filename then
     scripts.plain.run(texengine,texformat,filename)
 else

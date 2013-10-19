@@ -18,7 +18,6 @@ local trace_goodies      = false  trackers.register("fonts.goodies", function(v)
 local report_goodies     = logs.reporter("fonts","goodies")
 
 local allocate           = utilities.storage.allocate
-local setmetatableindex  = table.setmetatableindex
 
 local otf                = fonts.handlers.otf
 local afm                = fonts.handlers.afm
@@ -43,10 +42,6 @@ fontgoodies.list         = list -- no allocate as we want to see what is there
 local addotffeature      = otf.enhancers.addfeature
 
 local findfile           = resolvers.findfile
-
-local glyph_code         = nodes.nodecodes.glyph
-
-local traverse_id        = nodes.traverse_id
 
 function fontgoodies.report(what,trace,goodies)
     if trace_goodies or trace then
@@ -303,104 +298,27 @@ local function setcolorscheme(tfmdata,scheme)
     tfmdata.properties.colorscheme = false
 end
 
-local fontproperties = fonts.hashes.properties
-
-local a_colorscheme  = attributes.private('colorscheme')
-local setnodecolor   = nodes.tracers.colors.set
-
--- function colorschemes.coloring(head)
---     local lastfont, lastscheme
---     local done = false
---     for n in traverse_id(glyph_code,head) do
---         local a = n[a_colorscheme]
---         if a then
---             local f = n.font
---             if f ~= lastfont then
---                 lastscheme = fontproperties[f].colorscheme
---                 lastfont   = f
---             end
---             if lastscheme then
---                 local sc = lastscheme[n.char]
---                 if sc then
---                     done = true
---                     setnodecolor(n,"colorscheme:"..a..":"..sc) -- slow
---                 end
---             end
---         end
---     end
---     return head, done
--- end
-
--- seldom used, mostly in manuals, so non critical .. anyhow, somewhat faster:
-
--- function colorschemes.coloring(head)
---     local lastfont   = nil
---     local lastattr   = nil
---     local lastscheme = nil
---     local lastprefix = nil
---     local done      = nil
---     for n in traverse_id(glyph_code,head) do
---         local a = n[a_colorscheme]
---         if a then
---             if a ~= lastattr then
---                 lastattr   = a
---                 lastprefix = "colorscheme:" .. a .. ":"
---             end
---             local f = n.font
---             if f ~= lastfont then
---                 lastfont   = f
---                 lastscheme = fontproperties[f].colorscheme
---             end
---             if lastscheme then
---                 local sc = lastscheme[n.char]
---                 if sc then
---                     setnodecolor(n,lastprefix .. sc) -- slow
---                     done = true
---                 end
---             end
---         end
---     end
---     return head, done
--- end
-
--- ok, in case we have hundreds of pages colored:
-
-local cache = { } -- this could be a weak table
-
-setmetatableindex(cache,function(t,a)
-    local v = { }
-    setmetatableindex(v,function(t,c)
-        local v = "colorscheme:" .. a .. ":" .. c
-        t[c] = v
-        return c
-    end)
-    t[a]= v
-    return v
-end)
+local fontdata      = fonts.hashes.identifiers
+local setnodecolor  = nodes.tracers.colors.set
+local traverse_id   = node.traverse_id
+local a_colorscheme = attributes.private('colorscheme')
+local glyph         = node.id("glyph")
 
 function colorschemes.coloring(head)
-    local lastfont   = nil
-    local lastattr   = nil
-    local lastcache  = nil
-    local lastscheme = nil
-    local done       = nil
-    for n in traverse_id(glyph_code,head) do
+    local lastfont, lastscheme
+    local done = false
+    for n in traverse_id(glyph,head) do
         local a = n[a_colorscheme]
         if a then
             local f = n.font
             if f ~= lastfont then
-                lastfont   = f
-                lastscheme = fontproperties[f].colorscheme
-            end
-            if a ~= lastattr then
-                lastattr  = a
-                lastcache = cache[a]
+                lastscheme, lastfont = fontdata[f].properties.colorscheme, f
             end
             if lastscheme then
                 local sc = lastscheme[n.char]
                 if sc then
-                    setnodecolor(n,lastcache[sc]) -- we could inline this one
                     done = true
+                    setnodecolor(n,"colorscheme:"..a..":"..sc) -- slow
                 end
             end
         end
@@ -773,7 +691,7 @@ function fontgoodies.designsizes.register(name,size,specification)
         d.default = specification
     else
         if type(size) == "string" then
-            size = texsp(size) -- hm
+            size = texsp(size)
         end
         local ranges = d.ranges
         ranges[#ranges+1] = { size, specification }
@@ -830,47 +748,5 @@ registerotffeature {
     manipulators = {
         base = finalize,
         node = finalize,
-    }
-}
-
--- kern hackery:
---
--- yes  : use goodies table
--- auto : assume features to be set (often ccmp only)
-
-local function setkeepligatures(tfmdata,value)
-    if not tfmdata.properties.keptligatures then
-        local goodies = tfmdata.goodies
-        if goodies then
-            for i=1,#goodies do
-                local g = goodies[i]
-                local letterspacing = g.letterspacing
-                if letterspacing then
-                    local keptligatures = letterspacing.keptligatures
-                    if keptligatures then
-                        local unicodes = tfmdata.resources.unicodes
-                        local hash = { }
-                        for k, v in next, keptligatures do
-                            local u = unicodes[k]
-                            if u then
-                                hash[u] = true
-                            else
-                                -- error: unknown name
-                            end
-                        end
-                        tfmdata.properties.keptligatures = hash
-                    end
-                end
-            end
-        end
-    end
-end
-
-registerotffeature {
-    name         = "keepligatures",
-    description  = "keep ligatures in letterspacing",
-    initializers = {
-        base = setkeepligatures,
-        node = setkeepligatures,
     }
 }

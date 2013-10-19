@@ -228,7 +228,7 @@
 
 \installpagebreakmethod \v!quadruple % not yet ok inside columnsets
   {\ifdoublesided
-     \ifnum\numexpr\realpageno/\plusfour\relax=\numexpr\realpageno/\plustwo\relax\else
+     \ifnum\numexpr\realpageno/4\relax=\numexpr\realpageno/2\relax\else
        \page_breaks_handle_direct\v!yes
        \page_breaks_handle_direct\v!empty
        \page_breaks_handle_direct\v!empty

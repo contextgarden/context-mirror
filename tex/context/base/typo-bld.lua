@@ -31,7 +31,6 @@ constructors.attribute   = a_parbuilder
 local unsetvalue         = attributes.unsetvalue
 local texsetattribute    = tex.setattribute
 local texnest            = tex.nest
-local texlists           = tex.lists
 
 local nodepool           = nodes.pool
 local new_baselineskip   = nodepool.baselineskip
@@ -184,72 +183,3 @@ commands.stopparbuilder    = constructors.stop
 commands.setparbuilder     = constructors.set
 commands.enableparbuilder  = constructors.enable
 commands.disableparbuilder = constructors.disable
-
--- todo: move from nodes.builders to builders
-
-nodes.builders = nodes.builder or { }
-local builders = nodes.builders
-
-local actions = nodes.tasks.actions("vboxbuilders")
-
-function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
-    local done = false
-    if head then
-        starttiming(builders)
-        if trace_vpacking then
-            local before = nodes.count(head)
-            head, done = actions(head,groupcode,size,packtype,maxdepth,direction)
-            local after = nodes.count(head)
-            if done then
-                nodes.processors.tracer("vpack","changed",head,groupcode,before,after,true)
-            else
-                nodes.processors.tracer("vpack","unchanged",head,groupcode,before,after,true)
-            end
-        else
-            head, done = actions(head,groupcode)
-        end
-        stoptiming(builders)
-    end
-    return head, done
-end
-
--- This one is special in the sense that it has no head and we operate on the mlv. Also,
--- we need to do the vspacing last as it removes items from the mvl.
-
-local actions = nodes.tasks.actions("mvlbuilders")
-
-local function report(groupcode,head)
-    report_page_builder("trigger: %s",groupcode)
-    report_page_builder("  vsize    : %p",tex.vsize)
-    report_page_builder("  pagegoal : %p",tex.pagegoal)
-    report_page_builder("  pagetotal: %p",tex.pagetotal)
-    report_page_builder("  list     : %s",head and nodeidstostring(head) or "<empty>")
-end
-
-function builders.buildpage_filter(groupcode)
-    local head, done = texlists.contrib_head, false
-    if head then
-        starttiming(builders)
-        if trace_page_builder then
-            report(groupcode,head)
-        end
-        head, done = actions(head,groupcode)
-        stoptiming(builders)
-     -- -- doesn't work here (not passed on?)
-     -- tex.pagegoal = tex.vsize - tex.dimen.d_page_floats_inserted_top - tex.dimen.d_page_floats_inserted_bottom
-        texlists.contrib_head = head
-        return done and head or true
-    else
-        if trace_page_builder then
-            report(groupcode)
-        end
-        return nil, false
-    end
-end
-
-callbacks.register('vpack_filter',     builders.vpack_filter,     "vertical spacing etc")
-callbacks.register('buildpage_filter', builders.buildpage_filter, "vertical spacing etc (mvl)")
-
-statistics.register("v-node processing time", function()
-    return statistics.elapsedseconds(builders)
-end)

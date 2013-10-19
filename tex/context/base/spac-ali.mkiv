@@ -149,17 +149,6 @@
    inline:\ifconditional \inlinelefttoright  l2r\else r2l\fi\space
    ]\endgroup}
 
-\unexpanded\def\righttolefthbox#1#{\normalhbox dir TRT #1\bgroup\righttoleft\let\next} \let\rtlhbox\righttolefthbox
-\unexpanded\def\lefttorighthbox#1#{\normalhbox dir TLT #1\bgroup\lefttoright\let\next} \let\ltrhbox\lefttorighthbox
-\unexpanded\def\righttoleftvbox#1#{\normalvbox dir TRT #1\bgroup\righttoleft\let\next} \let\rtlvbox\righttoleftvbox
-\unexpanded\def\lefttorightvbox#1#{\normalvbox dir TLT #1\bgroup\lefttoright\let\next} \let\ltrvbox\lefttorightvbox
-\unexpanded\def\righttoleftvtop#1#{\normalvtop dir TRT #1\bgroup\righttoleft\let\next} \let\rtlvtop\righttoleftvtop
-\unexpanded\def\lefttorightvtop#1#{\normalvtop dir TLT #1\bgroup\lefttoright\let\next} \let\ltrvtop\lefttorightvtop
-
-\unexpanded\def\autodirhbox#1#{\hbox#1\bgroup\synchronizeinlinedirection\let\next}
-\unexpanded\def\autodirvbox#1#{\vbox#1\bgroup\synchronizeinlinedirection\let\next} % maybe also pardir or maybe just a \vbox
-\unexpanded\def\autodirvtop#1#{\vtop#1\bgroup\synchronizeinlinedirection\let\next} % maybe also pardir or maybe just a \vtop
-
 % Tolerance and hyphenation
 
 \ifdefined\lesshyphens \else \let\lesshyphens\relax \fi
@@ -563,20 +552,6 @@
      \expandafter\let\expandafter\updateraggedskips\csname\??alignmentraggedcache\m_spac_align_asked\endcsname
    \fi
    \raggedcommand}
-
-% experiment
-
-\unexpanded\def\spac_align_use_later#1%
-  {\begingroup
-   \edef\m_spac_align_asked{#1}%
-   \expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
-   \ifx\raggedcommand\relax
-     \spac_align_add_to_cache
-   \fi
-   \endgroup}
-
-\unexpanded\def\spac_align_use_now#1%
-  {\csname\??alignmentnormalcache#1\endcsname}
 
 % The keywords:
 

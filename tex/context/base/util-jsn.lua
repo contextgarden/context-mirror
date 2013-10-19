@@ -42,20 +42,8 @@ local dquote     = P('"')
 local whitespace = lpeg.patterns.whitespace
 local optionalws = whitespace^0
 
-local escapes    = {
- -- ["\\"] = "\\",  -- lua will escape these
- -- ["/"]  = "/",   -- no need to escape this one
-    ["b"]  = "\010",
-    ["f"]  = "\014",
-    ["n"]  = "\n",
-    ["r"]  = "\r",
-    ["t"]  = "\t",
-}
-
-local escape_un  = C(P("\\u") / "0x" * S("09","AF","af")) / function(s) return utfchar(tonumber(s)) end
-local escape_bs  = P([[\]]) / "" * (P(1) / escapes) -- if not found then P(1) is returned i.e. the to be escaped char
-
-local jstring    = dquote * Cs((escape_un + escape_bs + (1-dquote))^0) * dquote
+local escape     = C(P("\\u") / "0x" * S("09","AF","af")) / function(s) return utfchar(tonumber(s)) end
+local jstring    = dquote * Cs((escape + (1-dquote))^0) * dquote
 local jtrue      = P("true")  * Cc(true)
 local jfalse     = P("false") * Cc(false)
 local jnull      = P("null")  * Cc(nil)

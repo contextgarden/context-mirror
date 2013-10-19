@@ -3,7 +3,7 @@
 %D        version=2008.28.10, % 1995.10.10,
 %D          title=\CONTEXT,
 %D       subtitle=\CONTEXT\ Format Generation,
-%D         author=Hans Hagen, % ɦɑns ɦɑˈχən
+%D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
@@ -25,8 +25,8 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2013.10.15 13:52}
-\edef\contextkind   {beta}
+\edef\contextversion{2013.05.28 00:36}
+\edef\contextkind   {current}
 
 %D For those who want to use this:
 
@@ -90,8 +90,6 @@
 \loadmarkfile{catc-sym}
 
 \loadmarkfile{cldf-ini}
-
-% \tracecatcodetables
 
 % From here on we have \unexpanded being \normalprotected, as we already had
 % \unexpanded long before etex came around.
@@ -164,7 +162,7 @@
 
 \loadmarkfile{supp-ran}
 \loadmarkfile{supp-mat}
-%loadmarkfile{spac-cha} % obsolete
+\loadmarkfile{spac-cha}
 %loadmarkfile{supp-num} % obsolete
 
 \loadmarkfile{typo-ini}
@@ -326,6 +324,19 @@
 
 \loadmarkfile{strc-bkm} % bookmarks
 
+\loadmarkfile{tabl-com}
+\loadmarkfile{tabl-pln}
+
+\loadmarkfile{tabl-tab} % thrd-tab stripped and merged
+
+\loadmarkfile{tabl-tbl}
+\loadmarkfile{tabl-ntb}
+\loadmarkfile{tabl-nte}
+\loadmarkfile{tabl-ltb}
+\loadmarkfile{tabl-tsp}
+\loadmkvifile{tabl-xtb}
+\loadmarkfile{tabl-mis}
+
 \loadmarkfile{java-ini}
 
 \loadmkvifile{scrn-fld}
@@ -351,22 +362,6 @@
 \loadmkvifile{font-col}
 \loadmkvifile{font-gds}
 \loadmkvifile{font-aux}
-\loadmkvifile{font-sel}
-
-\loadmarkfile{typo-tal}
-
-\loadmarkfile{tabl-com}
-\loadmarkfile{tabl-pln}
-
-\loadmarkfile{tabl-tab} % thrd-tab stripped and merged
-
-\loadmarkfile{tabl-tbl}
-\loadmarkfile{tabl-ntb}
-\loadmarkfile{tabl-nte}
-\loadmarkfile{tabl-ltb}
-\loadmarkfile{tabl-tsp}
-\loadmkvifile{tabl-xtb}
-\loadmarkfile{tabl-mis}
 
 \loadmarkfile{typo-lan}
 
@@ -389,8 +384,7 @@
 \loadmarkfile{typo-dig}
 \loadmarkfile{typo-rep}
 \loadmkvifile{typo-txt}
-\loadmarkfile{typo-drp}
-\loadmarkfile{typo-fln}
+\loadmarkfile{typo-par}
 
 \loadmkvifile{type-ini}
 \loadmarkfile{type-set}
@@ -409,7 +403,6 @@
 \loadmarkfile{meta-fun}
 \loadmarkfile{meta-pag}
 \loadmarkfile{meta-grd}
-\loadmarkfile{meta-fnt}
 
 \loadmarkfile{page-mrk} % depends on mp
 
@@ -427,7 +420,7 @@
 \loadmarkfile{math-ini}
 \loadmarkfile{math-pln}
 \loadmarkfile{math-for}
-\loadmarkfile{math-def} % also saves some meanings
+\loadmarkfile{math-def}
 \loadmarkfile{math-ali}
 %loadmarkfile{math-arr}
 \loadmkvifile{math-stc}
@@ -437,8 +430,6 @@
 \loadmarkfile{math-int}
 \loadmarkfile{math-del}
 \loadmarkfile{math-fen}
-\loadmkvifile{math-acc}
-\loadmkvifile{math-rad}
 \loadmarkfile{math-inl}
 \loadmarkfile{math-dis}
 %loadmarkfile{math-lan}

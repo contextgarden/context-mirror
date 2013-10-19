@@ -34,8 +34,6 @@ as the current variant was written when <l n='lpeg'/> showed up and it's easier 
 build tables in one go.</p>
 --ldx]]--
 
-if lpeg.setmaxstack then lpeg.setmaxstack(1000) end -- deeply nested xml files
-
 xml = xml or { }
 local xml = xml
 
@@ -628,6 +626,7 @@ local definitiondoctype= doctypename * somespace * doctypeset
 local publicdoctype    = doctypename * somespace * P("PUBLIC") * somespace * value * somespace * value * somespace * doctypeset
 local systemdoctype    = doctypename * somespace * P("SYSTEM") * somespace * value * somespace * doctypeset
 local simpledoctype    = (1-close)^1 -- * balanced^0
+local somedoctype      = C((somespace * (publicdoctype + systemdoctype + definitiondoctype + simpledoctype) * optionalspace)^0)
 local somedoctype      = C((somespace * (publicdoctype + systemdoctype + definitiondoctype + simpledoctype) * optionalspace)^0)
 
 local instruction      = (spacing * begininstruction * someinstruction * endinstruction) / function(...) add_special("@pi@",...) end

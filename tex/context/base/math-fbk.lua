@@ -6,20 +6,17 @@ if not modules then modules = { } end modules ['math-fbk'] = {
     license   = "see context related readme files"
 }
 
-local trace_fallbacks   = false  trackers.register("math.fallbacks", function(v) trace_fallbacks = v end)
+local trace_fallbacks = false  trackers.register("math.fallbacks", function(v) trace_fallbacks = v end)
 
-local report_fallbacks  = logs.reporter("math","fallbacks")
+local report_fallbacks = logs.reporter("math","fallbacks")
 
-local formatters        = string.formatters
-local fastcopy          = table.fastcopy
-
-local fallbacks         = { }
-mathematics.fallbacks   = fallbacks
+local fallbacks       = { }
+mathematics.fallbacks = fallbacks
 
 local virtualcharacters = { }
 
-local identifiers       = fonts.hashes.identifiers
-local lastmathids       = fonts.hashes.lastmathids
+local identifiers = fonts.hashes.identifiers
+local lastmathids = fonts.hashes.lastmathids
 
 -- we need a trick (todo): if we define scriptscript, script and text in
 -- that order we could use their id's .. i.e. we could always add a font
@@ -27,11 +24,6 @@ local lastmathids       = fonts.hashes.lastmathids
 -- as it doesn't hurt
 --
 -- todo: use index 'true when luatex provides that feature (on the agenda)
-
--- to be considered:
---
--- in luatex provide reserve_id (and pass id as field of tfmdata)
--- in context define three sizes but pass them later i.e. do virtualize afterwards
 
 function fallbacks.apply(target,original)
     local mathparameters = target.mathparameters -- why not hasmath
@@ -47,7 +39,7 @@ function fallbacks.apply(target,original)
         end
         -- This is not okay yet ... we have no proper way to refer to 'self'
         -- otherwise I will make my own id allocator).
-        local self = #usedfonts == 0 and font.nextid() or nil -- will be true
+local self = #usedfonts == 0 and font.nextid() or nil -- will be true
         local textid, scriptid, scriptscriptid
         local textindex, scriptindex, scriptscriptindex
         local textdata, scriptdata, scriptscriptdata
@@ -56,27 +48,26 @@ function fallbacks.apply(target,original)
          -- textid         = nil -- self
          -- scriptid       = nil -- no smaller
          -- scriptscriptid = nil -- no smaller
-            textid         = self
-            scriptid       = self
-            scriptscriptid = self
+textid = self
+scriptid = self
+scriptscriptid = self
         elseif mathsize == 2 then
             -- scriptsize
          -- textid         = nil -- self
-            textid         = self
+textid = self
             scriptid       = lastmathids[3]
             scriptscriptid = lastmathids[3]
         else
             -- textsize
          -- textid         = nil -- self
-            textid         = self
+textid = self
             scriptid       = lastmathids[2]
             scriptscriptid = lastmathids[3]
         end
         if textid then
             textindex = #usedfonts + 1
             usedfonts[textindex] = { id = textid }
---             textdata = identifiers[textid] or target
-            textdata = target
+            textdata = identifiers[textid]
         else
             textdata = target
         end
@@ -96,7 +87,8 @@ function fallbacks.apply(target,original)
             scriptscriptindex = scriptindex
             scriptscriptdata  = scriptdata
         end
-     -- report_fallbacks("used textid: %S, used script id: %S, used scriptscript id: %S",textid,scriptid,scriptscriptid)
+-- report_fallbacks("used textid: %s, used script id: %s, used scriptscript id: %s",
+--     tostring(textid),tostring(scriptid),tostring(scriptscriptid))
         local data = {
             textdata          = textdata,
             scriptdata        = scriptdata,
@@ -104,9 +96,6 @@ function fallbacks.apply(target,original)
             textindex         = textindex,
             scriptindex       = scriptindex,
             scriptscriptindex = scriptscriptindex,
-            textid            = textid,
-            scriptid          = scriptid,
-            scriptscriptid    = scriptscriptid,
             characters        = characters,
             unicode           = k,
             target            = target,
@@ -114,32 +103,24 @@ function fallbacks.apply(target,original)
             size              = size,
             mathsize          = mathsize,
         }
-        target.mathrelation = data
-     -- inspect(usedfonts)
+-- inspect(usedfonts)
         for k, v in next, virtualcharacters do
             if not characters[k] then
                 local tv = type(v)
-                local cd = nil
                 if tv == "table" then
-                    cd = v
+                    characters[k] = v
                 elseif tv == "number" then
-                    cd = characters[v]
+                    characters[k] = characters[v]
                 elseif tv == "function" then
-                    cd = v(data)
-                end
-                if cd then
-                    characters[k] = cd
-                else
-                    -- something else
+                    characters[k] = v(data)
                 end
                 if trace_fallbacks then
                     if characters[k] then
-                        report_fallbacks("extending math font %a with %U",target.properties.fullname,k)
+                        report_fallbacks("extending font %a with %U",target.properties.fullname,k)
                     end
                 end
             end
         end
-        data.unicode = nil
     end
 end
 
@@ -328,178 +309,4 @@ virtualcharacters[0xFE352] = function(data)
         }
     end
 end
-
--- we could move the defs from math-act here
-
-local function accent_to_extensible(target,newchr,original,oldchr,height,depth,swap,offset)
-    local characters = target.characters
-    local addprivate = fonts.helpers.addprivate
-    local olddata = characters[oldchr]
-    if olddata and not olddata.commands then
-        if swap then
-            swap = characters[swap]
-            height = swap.depth
-            depth  = 0
-        else
-            height = height or 0
-            depth  = depth  or 0
-        end
-        local correction = swap and { "down", (olddata.height or 0) - height } or { "down", olddata.height + (offset or 0)}
-        local newdata = {
-            commands = { correction, { "slot", 1, oldchr } },
-            width    = olddata.width,
-            height   = height,
-            depth    = depth,
-        }
-        local glyphdata = newdata
-        local nextglyph = olddata.next
-        while nextglyph do
-            local oldnextdata = characters[nextglyph]
-            if oldnextdata then
-                local newnextdata = {
-                    commands = { correction, { "slot", 1, nextglyph } },
-                    width    = oldnextdata.width,
-                    height   = height,
-                    depth    = depth,
-                }
-                local newnextglyph = addprivate(target,formatters["M-N-%H"](nextglyph),newnextdata)
-                newdata.next = newnextglyph
-                local nextnextglyph = oldnextdata.next
-                if nextnextglyph == nextglyph then
-                    break
-                else
-                    olddata   = oldnextdata
-                    newdata   = newnextdata
-                    nextglyph = nextnextglyph
-                end
-            else
-                report_fallbacks("error in fallback: no valid next, slot %X",nextglyph)
-                break
-            end
-        end
-        local hv = olddata.horiz_variants
-        if hv then
-            hv = fastcopy(hv)
-            newdata.horiz_variants = hv
-            for i=1,#hv do
-                local hvi = hv[i]
-                local oldglyph = hvi.glyph
-                local olddata = characters[oldglyph]
-                if olddata then
-                    local newdata = {
-                        commands = { correction, { "slot", 1, oldglyph } },
-                        width    = olddata.width,
-                        height   = height,
-                        depth    = depth,
-                    }
-                    hvi.glyph = addprivate(target,formatters["M-H-%H"](oldglyph),newdata)
-                else
-                    report_fallbacks("error in fallback: no valid horiz_variants, slot %X, index %i",oldglyph,i)
-                end
-            end
-        end
-        return glyphdata
-    else
-        return olddata
-    end
-end
-
-virtualcharacters[0x203E] = function(data) -- could be FE33E instead
-    local target = data.target
-    local height, depth = 0, 0
-    local mathparameters = target.mathparameters
-    if mathparameters then
-        height = mathparameters.OverbarVerticalGap
-        depth  = mathparameters.UnderbarVerticalGap
-    else
-        height = target.parameters.xheight/4
-        depth  = height
-    end
-    return accent_to_extensible(target,0x203E,data.original,0x0305,height,depth)
-end
-
-virtualcharacters[0xFE33E] = virtualcharacters[0x203E] -- convenient
-virtualcharacters[0xFE33F] = virtualcharacters[0x203E] -- convenient
-
-local function smashed(data,unicode,swap,private)
-    local target   = data.target
-    local original = data.original
-    local chardata = target.characters[unicode]
-    if chardata and chardata.height > target.parameters.xheight then
-        return accent_to_extensible(target,private,original,unicode,0,0,swap)
-    else
-        return original.characters[unicode]
-    end
-end
-
-addextra(0xFE3DE, { description="EXTENSIBLE OF 0x03DE", unicodeslot=0xFE3DE, mathextensible = "r", mathstretch = "h" } )
-addextra(0xFE3DC, { description="EXTENSIBLE OF 0x03DC", unicodeslot=0xFE3DC, mathextensible = "r", mathstretch = "h" } )
-addextra(0xFE3B4, { description="EXTENSIBLE OF 0x03B4", unicodeslot=0xFE3B4, mathextensible = "r", mathstretch = "h" } )
-
-virtualcharacters[0xFE3DE] = function(data) return smashed(data,0x23DE,0x23DF,0xFE3DE) end
-virtualcharacters[0xFE3DC] = function(data) return smashed(data,0x23DC,0x23DD,0xFE3DC) end
-virtualcharacters[0xFE3B4] = function(data) return smashed(data,0x23B4,0x23B5,0xFE3B4) end
-
-addextra(0xFE3DF, { description="EXTENSIBLE OF 0x03DF", unicodeslot=0xFE3DF, mathextensible = "r", mathstretch = "h" } )
-addextra(0xFE3DD, { description="EXTENSIBLE OF 0x03DD", unicodeslot=0xFE3DD, mathextensible = "r", mathstretch = "h" } )
-addextra(0xFE3B5, { description="EXTENSIBLE OF 0x03B5", unicodeslot=0xFE3B5, mathextensible = "r", mathstretch = "h" } )
-
-virtualcharacters[0xFE3DF] = function(data) return data.original.characters[0x23DF] end
-virtualcharacters[0xFE3DD] = function(data) return data.original.characters[0x23DD] end
-virtualcharacters[0xFE3B5] = function(data) return data.original.characters[0x23B5] end
-
--- todo: add some more .. numbers might change
-
-addextra(0xFE302, { description="EXTENSIBLE OF 0x0302", unicodeslot=0xFE302, mathstretch = "h" } )
-addextra(0xFE303, { description="EXTENSIBLE OF 0x0303", unicodeslot=0xFE303, mathstretch = "h" } )
-
-local function smashed(data,unicode,private)
-    local target = data.target
-    local height = target.parameters.xheight / 2
-    local c = accent_to_extensible(target,private,data.original,unicode,height,0,nil,-height)
-    c.top_accent = nil
-    return c
-end
-
-virtualcharacters[0xFE302] = function(data) return smashed(data,0x0302,0xFE302) end
-virtualcharacters[0xFE303] = function(data) return smashed(data,0x0303,0xFE303) end
-
--- another crazy hack .. doesn't work as we define scrscr first .. we now have smaller
--- primes so we have smaller primes for the moment, big ones will become an option
-
-local function smashed(data,unicode,optional)
-    local oldchar = data.characters[unicode]
-    if oldchar then
-        local height  = 1.2 * data.target.parameters.xheight
-        local newchar = {
-            commands = {
-                { "down", oldchar.height - height },
-                { "char", unicode },
-            },
-            height = height,
-            width  = oldchar.width,
-        }
-        return newchar
-    elseif not optional then
-        report_fallbacks("missing %U prime in font %a",unicode,data.target.properties.fullname)
-    end
-end
-
-addextra(0xFE932, { description="SMASHED PRIME 0x02032", unicodeslot=0xFE932 } )
-addextra(0xFE933, { description="SMASHED PRIME 0x02033", unicodeslot=0xFE933 } )
-addextra(0xFE934, { description="SMASHED PRIME 0x02034", unicodeslot=0xFE934 } )
-addextra(0xFE957, { description="SMASHED PRIME 0x02057", unicodeslot=0xFE957 } )
-
-addextra(0xFE935, { description="SMASHED BACKWARD PRIME 0x02035", unicodeslot=0xFE935 } )
-addextra(0xFE936, { description="SMASHED BACKWARD PRIME 0x02036", unicodeslot=0xFE936 } )
-addextra(0xFE937, { description="SMASHED BACKWARD PRIME 0x02037", unicodeslot=0xFE937 } )
-
-virtualcharacters[0xFE932] = function(data) return smashed(data,0x02032) end
-virtualcharacters[0xFE933] = function(data) return smashed(data,0x02033) end
-virtualcharacters[0xFE934] = function(data) return smashed(data,0x02034) end
-virtualcharacters[0xFE957] = function(data) return smashed(data,0x02057) end
-
-virtualcharacters[0xFE935] = function(data) return smashed(data,0x02035,true) end
-virtualcharacters[0xFE936] = function(data) return smashed(data,0x02036,true) end
-virtualcharacters[0xFE937] = function(data) return smashed(data,0x02037,true) end
 

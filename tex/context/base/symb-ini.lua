@@ -6,7 +6,6 @@ if not modules then modules = { } end modules ['symb-ini'] = {
     license   = "see context related readme files"
 }
 
-local context, commands = context, commands
 
 local variables = interfaces.variables
 

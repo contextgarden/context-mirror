@@ -85,8 +85,8 @@ local report = application.report
 if not fontloader then fontloader = fontforge end
 
 dofile(resolvers.findfile("font-otp.lua","tex")) -- we need to unpack the font for analysis
-dofile(resolvers.findfile("font-syn.lua","tex"))
 dofile(resolvers.findfile("font-trt.lua","tex"))
+dofile(resolvers.findfile("font-syn.lua","tex"))
 dofile(resolvers.findfile("font-mis.lua","tex"))
 
 scripts       = scripts       or { }
@@ -132,9 +132,9 @@ function fonts.names.statistics()
 
 end
 
-function fonts.names.simple(alsotypeone)
+function fonts.names.simple()
     local simpleversion = 1.001
-    local simplelist = { "ttf", "otf", "ttc", "dfont", alsotypeone and "afm" or nil }
+    local simplelist = { "ttf", "otf", "ttc", "dfont" }
     local name = "luatex-fonts-names.lua"
     local path = file.collapsepath(caches.getwritablepath("..","..","generic","fonts","data"))
     fonts.names.filters.list = simplelist
@@ -182,7 +182,7 @@ end
 
 function scripts.fonts.reload()
     if getargument("simple") then
-        fonts.names.simple(getargument("typeone"))
+        fonts.names.simple()
     else
         fonts.names.load(true,getargument("force"))
     end

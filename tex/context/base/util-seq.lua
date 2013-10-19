@@ -296,7 +296,7 @@ function sequencers.nodeprocessor(t,nofarguments) -- todo: handle 'kind' in plug
         args = ",one"
     elseif nofarguments == 2 then
         args = ",one,two"
-    elseif nofarguments == 3 then -- from here on probably slower than ...
+    elseif nofarguments == 3 then
         args = ",one,two,three"
     elseif nofarguments == 4 then
         args = ",one,two,three,four"
@@ -321,8 +321,6 @@ function sequencers.nodeprocessor(t,nofarguments) -- todo: handle 'kind' in plug
                     else
                         calls[n] = format("  head, ok = %s(head%s) done = done or ok",localized,args)
                     end
--- local s = " print('" .. tostring(group) .. " " .. tostring(action) .. " : ' .. tostring(head)) "
--- calls[n] = s .. calls[n] .. s
                 end
             end
         end

@@ -20,13 +20,12 @@ but it does not make sense to store all processdata.
 
 ]]--
 
+local formatters = string.formatters
 local lpegmatch = lpeg.match
+local count = tex.count
 local type, next, tonumber, select = type, next, tonumber, select
-
-local formatters        = string.formatters
-local settings_to_array = utilities.parsers.settings_to_array
-local settings_to_hash  = utilities.parsers.settings_to_hash
-local allocate          = utilities.storage.allocate
+local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array, utilities.parsers.settings_to_hash
+local allocate = utilities.storage.allocate
 
 local catcodenumbers    = catcodes.numbers -- better use the context(...) way to switch
 
@@ -35,8 +34,7 @@ local xmlcatcodes       = catcodenumbers.xmlcatcodes
 local notcatcodes       = catcodenumbers.notcatcodes
 local txtcatcodes       = catcodenumbers.txtcatcodes
 
-local context           = context
-local commands          = commands
+local context, commands = context, commands
 
 local pushcatcodes = context.pushcatcodes
 local popcatcodes  = context.popcatcodes

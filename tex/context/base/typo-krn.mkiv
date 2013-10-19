@@ -40,7 +40,6 @@
 
 \def\typo_kerning_set
   {\usecharacterkerningstyleandcolor\c!style\c!color % goodie, maybe also strut
-   \useaddfontfeatureparameter\characterkerningparameter
    \ctxcommand{setcharacterkerning("\characterkerningparameter\c!factor")}}
 
 \unexpanded\def\resetcharacterkerning % fast one
@@ -63,54 +62,28 @@
 %D then we always would get a command defined which is not beforehand
 %D a good idea.
 
+\definecharacterkerning [\v!kerncharacters] [\c!factor=.125]
+
 % Here we need to keep the groupedcommand solution as it is
 % used as modifier.
 
-% \definecharacterkerning [\v!kerncharacters] [\c!factor=.125]
-% \definecharacterkerning [\v!letterspacing ] [\v!kerncharacters] [\c!features=letterspacing]
-%
-% \unexpanded\def\kerncharacters
-%   {\doifnextoptionalelse\typo_kerning_apply_yes\typo_kerning_apply_nop}
-%
-% \def\typo_kerning_apply_yes[#1]%
-%   {\groupedcommand{\typo_kerning_apply_yes_indeed{#1}}\donothing}
-%
-% \def\typo_kerning_apply_nop
-%   {\groupedcommand\typo_kerning_apply_nop_indeed\donothing}
-%
-% \def\typo_kerning_apply_yes_indeed#1%
-%   {\let\currentcharacterkerning\v!kerncharacters
-%    \setupcurrentcharacterkerning[\c!factor=#1]%
-%    \typo_kerning_set}
-%
-% \def\typo_kerning_apply_nop_indeed
-%   {\let\currentcharacterkerning\v!kerncharacters
-%    \typo_kerning_set}
+\unexpanded\def\kerncharacters
+  {\doifnextoptionalelse\typo_kerning_apply_yes\typo_kerning_apply_nop}
 
-\appendtoks
-  \setuevalue{\currentcharacterkerning}%
-    {\doifnextoptionalelse
-       {\typo_kerning_apply_yes{\currentcharacterkerning}}%
-       {\typo_kerning_apply_nop{\currentcharacterkerning}}}
-\to \everydefinecharacterkerning
+\def\typo_kerning_apply_yes[#1]%
+  {\groupedcommand{\typo_kerning_apply_yes_indeed{#1}}\donothing}
 
-\unexpanded\def\typo_kerning_apply_yes#1[#2]%
-  {\groupedcommand{\typo_kerning_apply_yes_indeed{#1}{#2}}\donothing}
+\def\typo_kerning_apply_nop
+  {\groupedcommand\typo_kerning_apply_nop_indeed\donothing}
 
-\unexpanded\def\typo_kerning_apply_nop#1%
-  {\groupedcommand{\typo_kerning_apply_nop_indeed{#1}}\donothing}
-
-\def\typo_kerning_apply_yes_indeed#1#2%
-  {\edef\currentcharacterkerning{#1}%
-   \setupcurrentcharacterkerning[\c!factor=#2]%
+\def\typo_kerning_apply_yes_indeed#1%
+  {\let\currentcharacterkerning\v!kerncharacters
+   \setupcurrentcharacterkerning[\c!factor=#1]%
    \typo_kerning_set}
 
-\def\typo_kerning_apply_nop_indeed#1%
-  {\edef\currentcharacterkerning{#1}%
+\def\typo_kerning_apply_nop_indeed
+  {\let\currentcharacterkerning\v!kerncharacters
    \typo_kerning_set}
-
-\definecharacterkerning [\v!kerncharacters] [\c!factor=.125]
-\definecharacterkerning [\v!letterspacing ] [\v!kerncharacters] [\c!features=letterspacing]
 
 %D \macros
 %D   {stretched}
@@ -160,7 +133,6 @@
    \fi
    \bgroup
    \usecharacterkerningstyleandcolor\c!style\c!color
-   \useaddfontfeatureparameter\characterkerningparameter
    \typo_kerning_set
    #2%
    \egroup

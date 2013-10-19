@@ -5,24 +5,16 @@ module PDFview
     @closecalls = Hash.new
     @allcalls   = Hash.new
 
-    # acrobat no longer is a valid default as (1) it keeps crashing with pdfopen due to a dual acrobat/reader install (a side effect
-    # of the api changing every version, and (2) because there are all these anyoing popups with respect to signed, review, online
-    # this and that stuff ... hardly useable as fast previewer, and (3) sumatra is faster and nicer and doesn't block (okay, we have to
-    # get rid of this horrible yellow bg-coloring buts that is doable
-
-    @method     = 'sumatra' # 'default' # 'xpdf'
+    @method     = 'default' # 'xpdf'
 
     @opencalls['default']  = "pdfopen  --file" # "pdfopen --back --file"
     @opencalls['xpdf']     = "xpdfopen"
-    @opencalls['sumatra']  = 'start "test" sumatrapdf.exe -reuse-instance -bg-color 0xCCCCCC'
 
     @closecalls['default'] = "pdfclose --file"
     @closecalls['xpdf']    = nil
-    @closecalls['sumatra'] = nil
 
     @allcalls['default']   = "pdfclose --all"
     @allcalls['xpdf']      = nil
-    @allcalls['sumatra']   = nil
 
     def PDFview.setmethod(method)
         @method = method

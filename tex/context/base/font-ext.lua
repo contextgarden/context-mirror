@@ -469,7 +469,7 @@ end
 
 registerotffeature {
     name         = "protrusion",
-    description  = "l/r margin character protrusion",
+    description  = "shift characters into the left and or right margin",
     initializers = {
         base = initializeprotrusion,
         node = initializeprotrusion,
@@ -727,8 +727,6 @@ registerotffeature {
 --
 -- local gray  = { "special", "pdf: /Tr1 gs .75 g" }
 -- local black = { "special", "pdf: /Tr0 gs 0 g" }
-
--- sort of obsolete as we now have \showglyphs
 
 local push  = { "push" }
 local pop   = { "pop" }

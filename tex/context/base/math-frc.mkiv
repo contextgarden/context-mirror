@@ -102,7 +102,6 @@
 \setupmathfractions
   [\c!mathstyle=,
    \c!alternative=\v!inner,
-   \c!margin=\zeropoint,
    \c!rulethickness=.25\exheight,
    \c!left=0x2E,
    \c!right=0x2E,
@@ -112,12 +111,9 @@
     \setuevalue{\currentmathfraction}{\math_frac{\currentmathfraction}}%
 \to \everydefinemathfraction
 
-\newdimen\d_math_fraction_margin
-
 \unexpanded\def\math_frac#1%
   {\begingroup
    \edef\currentmathfraction{#1}%
-   \d_math_fraction_margin\mathfractionparameter\c!margin
    \edef\p_math_fractions_color{\mathfractionparameter\c!color}%
    \ifx\p_math_fractions_color\empty
      \expandafter\math_frac_normal
@@ -143,56 +139,17 @@
     \number\dimexpr\mathfractionparameter\c!rulethickness%
   )}}
 
-% Having a \withmarginornot{#1}{#2} makes not much sense nor do
-% 4 tests or 4 redundant kerns (longer node lists plus possible
-% interference). A split in normal and margin also makes testing
-% easier. When left and right margins are needed we might merge
-% the variants again. After all, these are not real installers.
-
-\setvalue{\??mathfractionalternative\v!inner}%
-  {\ifcase\d_math_fraction_margin
-      \expandafter\math_fraction_inner_normal
-   \else
-      \expandafter\math_fraction_inner_margin
-   \fi}
-
-\def\math_fraction_inner_normal#1#2%
+\setvalue{\??mathfractionalternative\v!inner}#1#2%
   {\Ustack{%
      {\usemathstyleparameter\mathfractionparameter{#1}}% we should store this one
      \math_frac_command
      {\usemathstyleparameter\mathfractionparameter{#2}}% and reuse it here
    }\endgroup}
 
-\def\math_fraction_inner_margin#1#2%
-  {\Ustack{%
-     {\kern\d_math_fraction_margin
-      \usemathstyleparameter\mathfractionparameter{#1}% we should store this one
-      \kern\d_math_fraction_margin}%
-     \math_frac_command
-     {\kern\d_math_fraction_margin
-      \usemathstyleparameter\mathfractionparameter{#2}% and reuse it here
-      \kern\d_math_fraction_margin}%
-   }\endgroup}
-
-\setvalue{\??mathfractionalternative\v!outer}%
-  {\ifcase\d_math_fraction_margin
-      \expandafter\math_fraction_outer_normal
-   \else
-      \expandafter\math_fraction_outer_margin
-   \fi}
-
-\def\math_fraction_outer_normal#1#2%
+\setvalue{\??mathfractionalternative\v!outer}#1#2%
   {\Ustack{%
      \usemathstyleparameter\mathfractionparameter
      {{#1}\math_frac_command{#2}}%
-   }\endgroup}
-
-\def\math_fraction_outer_margin#1#2%
-  {\Ustack{%
-     \usemathstyleparameter\mathfractionparameter
-     {{\kern\d_math_fraction_margin#1\kern\d_math_fraction_margin}%
-      \math_frac_command
-      {\kern\d_math_fraction_margin#2\kern\d_math_fraction_margin}}%
    }\endgroup}
 
 \definemathfraction[frac][\c!mathstyle=]

@@ -192,12 +192,9 @@ context.styleset = styleset
 function context.stylesetcopy()
     local t = { }
     for i=1,#styleset do
-        local s = styleset[i]
-        t[i] = s
-t[s[1]] = t[s[2]] -- new style ?
+        t[i] = styleset[i]
     end
     t[#t+1] = { "whitespace", style_nothing }
-t.whitespace = style_nothing -- new style ?
     return t
 end
 

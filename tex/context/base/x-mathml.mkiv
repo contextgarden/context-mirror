@@ -1,4 +1,4 @@
-%D \modul
+%D \module
 %D   [       file=x-mathml,
 %D        version=2008.05.29,
 %D          title=\CONTEXT\ XML Modules,
@@ -74,30 +74,17 @@
             }
         }
         {
-            \math_fences_checked_start
-                \MMLhack
-                \xmlflush{#1}
-            \math_fences_checked_stop
+            \MMLhack\xmlflush{#1}
         }
     \endgroup
 \stopxmlsetups
 
 \startxmlsetups mml:imath
-    \inlinemathematics {
-        \math_fences_checked_start
-            \MMLhack
-            \xmlflush{#1}
-        \math_fences_checked_stop
-    }
+    \inlinemathematics{\MMLhack\xmlflush{#1}}
 \stopxmlsetups
 
 \startxmlsetups mml:dmath
-    \displaymathematics {
-        \math_fences_checked_start
-            \MMLhack
-            \xmlflush{#1}
-        \math_fences_checked_stop
-    }
+    \displaymathematics{\MMLhack\xmlflush{#1}}
 \stopxmlsetups
 
 %D First we define some general formula elements.
@@ -109,45 +96,24 @@
     \startformula\MMLhack\xmlfirst{#1}{/mml:math}\stopformula
 \stopxmlsetups
 
-% old delimiter hacks
-%
-% \setfalse\mmlignoredelimiter
-% \settrue \mmlsomeleftdelimiter
-%
-% \def\MMLleftorright
-%    {\ifconditional\mmlsomeleftdelimiter
-%       \setfalse\mmlsomeleftdelimiter\expandafter\MMLleft
-%     \else
-%       \settrue \mmlsomeleftdelimiter\expandafter\MMLright
-%     \fi}
-%
-% \ifx\MMLleft  \undefined \let\MMLleft  \firstofoneargument \fi
-% \ifx\MMLright \undefined \let\MMLright \firstofoneargument \fi
-% \ifx\MMLmiddle\undefined \let\MMLmiddle\firstofoneargument \fi
-%
-% \def\mmlleftdelimiter       #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLleft       #1}\fi}
-% \def\mmlrightdelimiter      #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLright      #1}\fi}
-% \def\mmlmiddledelimiter     #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLmiddle     #1}\fi}
-% \def\mmlleftorrightdelimiter#1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLleftorright#1}\fi}
+\setfalse\mmlignoredelimiter
+\settrue \mmlsomeleftdelimiter
 
-% new delimiter hacks (assumes wrapping)
-%
-% \math_fences_checked_start
-% \math_fences_checked_stop
-%
-% \math_fences_checked_left
-% \math_fences_checked_middle
-% \math_fences_checked_right
-% \math_fences_checked_left_or_right
+\def\MMLleftorright
+   {\ifconditional\mmlsomeleftdelimiter
+      \setfalse\mmlsomeleftdelimiter\expandafter\MMLleft
+    \else
+      \settrue \mmlsomeleftdelimiter\expandafter\MMLright
+    \fi}
 
-\setfalse\mmlignoredelimiter % alternatively we could turn it on/off inside the start/stop and ignore \left\right\middle otherwise
+\ifx\MMLleft  \undefined \let\MMLleft  \firstofoneargument \fi
+\ifx\MMLright \undefined \let\MMLright \firstofoneargument \fi
+\ifx\MMLmiddle\undefined \let\MMLmiddle\firstofoneargument \fi
 
-\def\mmlleftdelimiter       {\ifconditional\mmlignoredelimiter\else\expandafter\math_fences_checked_left         \fi}
-\def\mmlrightdelimiter      {\ifconditional\mmlignoredelimiter\else\expandafter\math_fences_checked_right        \fi}
-\def\mmlmiddledelimiter     {\ifconditional\mmlignoredelimiter\else\expandafter\math_fences_checked_middle       \fi}
-\def\mmlleftorrightdelimiter{\ifconditional\mmlignoredelimiter\else\expandafter\math_fences_checked_left_or_right\fi}
-
-% end of delimiter mess
+\def\mmlleftdelimiter       #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLleft       #1}\fi}
+\def\mmlrightdelimiter      #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLright      #1}\fi}
+\def\mmlmiddledelimiter     #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLmiddle     #1}\fi}
+\def\mmlleftorrightdelimiter#1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLleftorright#1}\fi}
 
 \def\mmlchar#1{\char#1 } % used in lua code
 
@@ -235,10 +201,6 @@
 \def\mmlprelast#1{\xmlelement{#1}{-2}}
 \def\mmllast   #1{\xmlelement{#1}{-1}}
 
-\unexpanded\def\mmlunexpandedfirst  #1{\xmlelement{#1}{1}} % we can move these inline if needed
-\unexpanded\def\mmlunexpandedsecond #1{\xmlelement{#1}{2}}
-\unexpanded\def\mmlunexpandedthird  #1{\xmlelement{#1}{3}}
-
 \starttexdefinition doifelsemmlfunction #1
     \xmldoifelse {#1} {/mml:fn} {
         \firstoftwoarguments
@@ -254,6 +216,19 @@
         }
     }
 \stoptexdefinition
+
+%D Special features:
+
+                \newtoks \@@postponedMMLactions \setfalse \somepostponedMMLactions
+
+                \def\postponeMMLactions#1%
+                  {\global\settrue\somepostponedMMLactions
+                   \global\@@postponedMMLactions\expandafter{\the\@@postponedMMLactions#1}}
+
+                \def\postponedMMLactions
+                  {\global\setfalse\somepostponedMMLactions
+                   \@EA\global\@EA\@@postponedMMLactions\@EA\emptytoks
+                   \the\@@postponedMMLactions}
 
 %D A couple of lists:
 
@@ -325,17 +300,6 @@
 \let\MMLdoR\donothing
 
 \newcount\mmlapplydepth \def\MMLcreset{\mmlapplydepth\zerocount}
-
-% \newtoks \@@postponedMMLactions \setfalse \somepostponedMMLactions
-%
-% \def\postponeMMLactions#1%
-%   {\global\settrue\somepostponedMMLactions
-%    \global\@@postponedMMLactions\expandafter{\the\@@postponedMMLactions#1}}
-%
-% \def\postponedMMLactions
-%   {\global\setfalse\somepostponedMMLactions
-%    \@EA\global\@EA\@@postponedMMLactions\@EA\emptytoks
-%    \the\@@postponedMMLactions}
 
 \startxmlsetups mml:apply
     \MMLmathinner {
@@ -1821,23 +1785,25 @@
 \stopxmlsetups
 
 % PRESENTATION MATHML
+%
+% there are some rough edges that need to be sorted out
 
-% helpers: maybe we can need a setting for the uprights
+% helpers
 
-\xmlmapvalue {mml} {normal}                 {\mathupright} % {\mathtf}
-\xmlmapvalue {mml} {double-struck}          {\mathblackboard}
-\xmlmapvalue {mml} {italic}                 {\mathit}
-\xmlmapvalue {mml} {fraktur}                {\mathfraktur}
-\xmlmapvalue {mml} {script}                 {\mathscript}
-\xmlmapvalue {mml} {bold}                   {\mb}          % {\mathbf}
-\xmlmapvalue {mml} {bold-italic}            {\mathbi}
-\xmlmapvalue {mml} {bold-fraktur}           {\mathfraktur\mathbf}
-\xmlmapvalue {mml} {bold-script}            {\mathscript\mathbf}
-\xmlmapvalue {mml} {sans-serif}             {\mathss}
-\xmlmapvalue {mml} {bold-sans-serif}        {\mathss\mathbf}
-\xmlmapvalue {mml} {sans-serif-italic}      {\mathss\mathit}
-\xmlmapvalue {mml} {sans-serif-bold-italic} {\mathss\mathbi}
-\xmlmapvalue {mml} {monospace}              {\mathtt}
+\xmlmapvalue {mml} {normal}                 {\tf}
+\xmlmapvalue {mml} {double-struck}          {\bf}
+\xmlmapvalue {mml} {italic}                 {\it}
+\xmlmapvalue {mml} {fraktur}                {\bf}
+\xmlmapvalue {mml} {script}                 {\tf}
+\xmlmapvalue {mml} {bold}                   {\bf}
+\xmlmapvalue {mml} {bold-italic}            {\bi}
+\xmlmapvalue {mml} {bold-fraktur}           {\bf}
+\xmlmapvalue {mml} {bold-script}            {\bf}
+\xmlmapvalue {mml} {sans-serif}             {\ss}
+\xmlmapvalue {mml} {bold-sans-serif}        {\ss\bf}
+\xmlmapvalue {mml} {sans-serif-italic}      {\ss\it}
+\xmlmapvalue {mml} {sans-serif-bold-italic} {\ss\bi}
+\xmlmapvalue {mml} {monospace}              {\tt}
 
 % todo: displaystyle=true/false (or whatever else shows up)
 
@@ -1897,15 +1863,15 @@
 
 % setups
 
-\startxmlsetups mml:mi % todo: mathsize (unlikely) mathcolor (easy) mathbackground (easy)
-    \begingroup
-        \setmmlmathstyle{#1}
-        \ctxmodulemathml{mi("#1")}
-    \endgroup
+\startxmlsetups mml:mi % todo: mathvariant mathsize mathcolor mathbackground
+    \ctxmodulemathml{mi("#1")}
 \stopxmlsetups
 
-\startxmlsetups mml:mn
-    \ctxmodulemathml{mn("#1")}% no \hbox, would be ok for . , but spoils rest
+\startxmlsetups mml:mn % todo: mathvariant mathsize mathcolor mathbackground
+%     \begingroup
+%         \mr
+        \ctxmodulemathml{mn("#1")}% no \hbox, would be ok for . , but spoils rest
+%     \endgroup
 \stopxmlsetups
 
 % <m:mo>-</m:mo><m:mn>2</m:mn> and <m:mn>1</m:mn><m:mo>-</m:mo><m:mn>2</m:mn>
@@ -1919,19 +1885,12 @@
     \setfalse\mmlignoredelimiter
 \stopxmlsetups
 
-% \startxmlsetups mml:mfenced % {} around separator is needed for spacing
-%     \def\MMLleft  {\left }% weird
-%     \def\MMLright {\right}
-%     \def\MMLmiddle{\middle}
-%     \ctxmodulemathml{mfenced("#1")}
-% \stopxmlsetups
-
 \startxmlsetups mml:mfenced % {} around separator is needed for spacing
-    \math_fences_checked_start
+    \def\MMLleft  {\left }% weird
+    \def\MMLright {\right}
+    \def\MMLmiddle{\middle}
     \ctxmodulemathml{mfenced("#1")}
-    \math_fences_checked_stop
 \stopxmlsetups
-
 
 \defineoverlay [mml:enclose:box]                [\useMPgraphic{mml:enclose:box}]
 \defineoverlay [mml:enclose:roundedbox]         [\useMPgraphic{mml:enclose:roundedbox}]
@@ -2144,32 +2103,18 @@
 %
 % fails on { ... so we need
 
-% \startxmlsetups mml:mrow
-%     \begingroup
-%         \xmldoifelse {#1} {/mml:mo[first() or last()]} {% we need a {}
-%             \def\MMLleft  {\left }
-%             \def\MMLright {\right}
-%             \def\MMLmiddle{\middle}
-%             \enabledelimiter
-%             \checkdelimiters{\xmlall{#1}{/mml:mo}}
-%             \fakeleftdelimiter
-%             \xmlflush{#1}
-%             \fakerightdelimiter
-%             \disabledelimiter
-%         } {
-%             \xmlflush{#1}
-%         }
-%     \endgroup
-% \stopxmlsetups
-%
-% more modern:
-
 \startxmlsetups mml:mrow
     \begingroup
         \xmldoifelse {#1} {/mml:mo[first() or last()]} {% we need a {}
-            \math_fences_checked_start
-                \xmlflush{#1}
-            \math_fences_checked_stop
+            \def\MMLleft  {\left }
+            \def\MMLright {\right}
+            \def\MMLmiddle{\middle}
+            \enabledelimiter
+            \checkdelimiters{\xmlall{#1}{/mml:mo}}
+            \fakeleftdelimiter
+            \xmlflush{#1}
+            \fakerightdelimiter
+            \disabledelimiter
         } {
             \xmlflush{#1}
         }
@@ -2188,8 +2133,6 @@
 
 % brrr no { } when limop .. todo: better in lua
 % speed up with ifx and setups or just in lua
-
-\let\mmlnucleus\relax
 
 \startxmlsetups mml:msub
     \edef\mmlnucleus{\xmlraw{#1}{/mml:*[1]}}
@@ -2240,129 +2183,65 @@
    \fi\fi
    {\csname#1\endcsname}}
 
-% todo: combine topaccent/over/bottomaccent/under check
-
-\definemathextensible [\v!mathematics] [mml:overleftarrow]         ["2190] % ["27F5]
-\definemathextensible [\v!mathematics] [mml:overrightarrow]        ["2192] % ["27F6]
-\definemathextensible [\v!mathematics] [mml:overleftrightarrow]    ["27F7]
-\definemathextensible [\v!mathematics] [mml:overtwoheadrightarrow] ["27F9]
-\definemathextensible [\v!mathematics] [mml:overleftharpoondown]   ["21BD]
-\definemathextensible [\v!mathematics] [mml:overleftharpoonup]     ["21BC]
-\definemathextensible [\v!mathematics] [mml:overrightharpoondown]  ["21C1]
-\definemathextensible [\v!mathematics] [mml:overrightharpoonup]    ["21C0]
-
-\definemathextensible [\v!mathematics] [mml:underleftarrow]         ["2190] % ["27F5]
-\definemathextensible [\v!mathematics] [mml:underrightarrow]        ["2192] % ["27F6]
-\definemathextensible [\v!mathematics] [mml:underleftrightarrow]    ["27F7]
-\definemathextensible [\v!mathematics] [mml:undertwoheadrightarrow] ["27F9]
-\definemathextensible [\v!mathematics] [mml:underleftharpoondown]   ["21BD]
-\definemathextensible [\v!mathematics] [mml:underleftharpoonup]     ["21BC]
-\definemathextensible [\v!mathematics] [mml:underrightharpoondown]  ["21C1]
-\definemathextensible [\v!mathematics] [mml:underrightharpoonup]    ["21C0]
-
-\definemathtriplet   [\v!mathematics]  [mmlovertriplet]
-\definemathtriplet   [\v!mathematics]  [mmlundertriplet]
-\definemathtriplet   [\v!mathematics]  [mmldoubletriplet]
-
-% alternative:
-%
-% \definemathextensible [\v!mathematics] [mml:\utfchar{0x2190}] ["2190] % ["27F5]
-% \definemathextensible [\v!mathematics] [mml:\utfchar{0x2192}] ["2192] % ["27F6]
-% \definemathextensible [\v!mathematics] [mml:\utfchar{0x27F5}] ["2190] % ["27F5]
-% \definemathextensible [\v!mathematics] [mml:\utfchar{0x27F6}] ["2192] % ["27F6]
-% \definemathextensible [\v!mathematics] [mml:\utfchar{0x27F7}] ["27F7]
-% \definemathextensible [\v!mathematics] [mml:\utfchar{0x27F9}] ["27F9]
-% \definemathextensible [\v!mathematics] [mml:\utfchar{0x21BD}] ["21BD]
-% \definemathextensible [\v!mathematics] [mml:\utfchar{0x21BC}] ["21BC]
-% \definemathextensible [\v!mathematics] [mml:\utfchar{0x21C1}] ["21C1]
-% \definemathextensible [\v!mathematics] [mml:\utfchar{0x21C0}] ["21C0]
-
-\unexpanded\def\mmloverof#1{\mmlexecuteifdefined\mmlovercommand\relax{\mmlunexpandedfirst {#1}}\relax}
-\unexpanded\def\mmloveros#1{\mmlexecuteifdefined\mmlovercommand      {\mmlunexpandedsecond{#1}}\relax}
-\unexpanded\def\mmloverbf#1{\mmlexecuteifdefined\mmlbasecommand      {\mmlunexpandedfirst {#1}}\relax}
-\unexpanded\def\mmloverbs#1{\mmlexecuteifdefined\mmlbasecommand\relax{\mmlunexpandedsecond{#1}}\relax}
-
 \startxmlsetups mml:mover
-    \edef\mmlovertoken{\xmlraw{#1}{/mml:*[2]}}% /text()
-    \doifelseutfmathabove\mmlovertoken {
-        \edef\mmlovercommand{\utfmathcommandabove\mmlovertoken}
-        \mmloverof{#1}
+    \edef\mmlovertoken{\xmlraw{#1}{/mml:*[2]}}
+    \doifelseutfmathaccentfiltered\mmlovertoken{topaccent} {% not ok
+        \edef\mmlovercommand{\utfmathcommandfiltered\mmlovertoken{topaccent}}
+        \mmlexecuteifdefined\mmlovercommand\mathematics{\mmlfirst{#1}}
     } {
-        \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]}}% /text()
-        \doifelseutfmathabove\mmlbasetoken {
-            \edef\mmlbasecommand{mml:\utfmathcommandabove\mmlbasetoken}
-            \mmloverbs{#1}
-        } {
-            \edef\mmlbasecommand{\utfmathfiller\mmlbasetoken}
-            \edef\mmlovercommand{\utfmathfiller\mmlovertoken}
-            \mmlovertriplet{\mmloveros{#1}}{\mmloverbf{#1}}\relax
+        \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]}}
+        \edef\mmlbasecommand{\utfmathfiller\mmlbasetoken}
+        \edef\mmlovercommand{\utfmathfiller\mmlovertoken}
+        \vbox {
+            \mathsurround\zeropoint
+            \ialign {
+                \hss$\alignmark\alignmark$\hss
+                \crcr
+                \noalign{\kern3\onepoint}%
+                \mmlexecuteifdefined\mmlovercommand{\mmlsecond{#1}}{}% extra {} is safeguard
+                \crcr
+                \noalign{\kern3\onepoint\nointerlineskip}%
+                \mmlexecuteifdefined\mmlbasecommand{\mmlfirst{#1}}{}% extra {} is safeguard
+                \crcr
+            }
         }
     }
-  % \limits % spoils spacing
+%     \limits % spoils spacing
 \stopxmlsetups
 
-% alternative:
-%
-% \startxmlsetups mml:mover
-%     \edef\mmlovertoken{\xmlraw{#1}{/mml:*[2]}}% /text()
-%     \doifelseutfmathabove\mmlovertoken {
-%         \edef\mmlovercommand{\utfmathcommandabove\mmlovertoken}
-%         \mmloverof{#1}
-%     } {
-%         \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]/text()}}
-%         \ifcsname mml:\mmlbasetoken\endcsname
-%             \csname mml:\mmlbasetoken\endcsname{\mmlunexpandedsecond{#1}}\relax
-%         \else
-%             \edef\mmlbasecommand{\utfmathfiller\mmlbasetoken}
-%             \edef\mmlovercommand{\utfmathfiller\mmlovertoken}
-%             \mmlovertriplet{\mmloveros{#1}}{\mmloverbf{#1}}\relax
-%         \fi
-%     }
-%   % \limits % spoils spacing
-% \stopxmlsetups
-
-\unexpanded\def\mmlunderuf#1{\mmlexecuteifdefined\mmlundercommand\relax  {\mmlunexpandedfirst {#1}}\relax}
-\unexpanded\def\mmlunderus#1{\mmlexecuteifdefined\mmlundercommand        {\mmlunexpandedsecond{#1}}\relax}
-\unexpanded\def\mmlunderbf#1{\mmlexecuteifdefined\mmlbasecommand         {\mmlunexpandedfirst {#1}}\relax}
-\unexpanded\def\mmlunderbs#1{\mmlexecuteifdefined\mmlbasecommand \relax{}{\mmlunexpandedsecond{#1}}\relax}
+% messy: <munder><mo>(</mo><mo>&UnderBar;</mo></munder>
 
 \startxmlsetups mml:munder
-    \edef\mmlundertoken{\xmlraw{#1}{/mml:*[2]}}% /text()
-    \doifelseutfmathbelow\mmlundertoken {%
-        \edef\mmlundercommand{\utfmathcommandbelow\mmlundertoken}
-        \mmlunderuf{#1}
-    } {
-        \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]}}% /text()
-        \doifelseutfmathbelow\mmlbasetoken {
-            \edef\mmlbasecommand{mml:\utfmathcommandbelow\mmlbasetoken}
-            \mmlunderbs{#1}
+%     \mathop {
+        \edef\mmlundertoken{\xmlraw{#1}{/mml:*[2]}}
+        \doifelseutfmathaccentfiltered\mmlundertoken{botaccent} {
+            \edef\mmlundercommand{\utfmathcommandfiltered\mmlundertoken{botaccent}}
+            \mmlexecuteifdefined\mmlundercommand\mathematics{\mmlfirst{#1}}
         } {
+            \edef\mmlbasetoken   {\xmlraw{#1}{/mml:*[1]}}
             \edef\mmlbasecommand {\utfmathfiller\mmlbasetoken}
             \edef\mmlundercommand{\utfmathfiller\mmlundertoken}
-            \mmlundertriplet{\mmlunderus{#1}}{\mmlunderbf{#1}}\relax
+            \vtop {
+                \mathsurround\zeropoint \ialign {
+                    \hss$##$\hss
+                    \crcr
+                    \mmlexecuteifdefined\mmlbasecommand {\mmlfirst{#1}}
+                    \crcr
+                    \noalign{\kern3\onepoint\nointerlineskip}%
+                    \mmlexecuteifdefined\mmlundercommand{\mmlsecond{#1}}
+                    \crcr
+                    \noalign{\kern3\onepoint}
+                }
+            }
         }
-    }
-  % \limits % spoils spacing
+%     }
+%     \limits % spoils spacing
 \stopxmlsetups
 
-\unexpanded\def\mmlunderoverst#1{\mmlexecuteifdefined\mmlbasecommand \relax{\mmlunexpandedsecond{#1}}{\mmlunexpandedthird{#1}}\relax}
-\unexpanded\def\mmlunderoverbf#1{\mmlexecuteifdefined\mmlbasecommand       {\mmlunexpandedfirst {#1}}\relax}
-\unexpanded\def\mmlunderoverus#1{\mmlexecuteifdefined\mmlundercommand      {\mmlunexpandedsecond{#1}}\relax}
-\unexpanded\def\mmlunderoverot#1{\mmlexecuteifdefined\mmlovercommand       {\mmlunexpandedthird {#1}}\relax}
-
 \startxmlsetups mml:munderover
-    \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]}}% /text()
-    \doifelseutfmathbelow\mmlbasetoken {
-        \edef\mmlbasecommand{mml:\utfmathcommandbelow\mmlbasetoken}
-        \mmlunderoverst{#1}
-    } {
-        \edef\mmlundertoken  {\xmlraw{#1}{/mml:*[2]}}% /text()
-        \edef\mmlovertoken   {\xmlraw{#1}{/mml:*[3]}}% /text()
-        \edef\mmlbasecommand {\utfmathfiller\mmlbasetoken}
-        \edef\mmlundercommand{\utfmathfiller\mmlundertoken}
-        \edef\mmlovercommand {\utfmathfiller\mmlovertoken}
-        \mmldoubletriplet{\mmlunderoverbf{#1}}{\mmlunderoverus{#1}}{\mmlunderoverot{#1}}\relax
-    }
+    \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]}}
+    \edef\mmlbasecommand{\utfmathcommand\mmlbasetoken}
+    \mmlexecuteifdefined\mmlbasecommand{\mathematics{\mmlfirst{#1}}}\normalsubscript{\mmlsecond{#1}}\normalsuperscript{\mmlthird{#1}}
 \stopxmlsetups
 
 % tables (mml:mtable, mml:mtr, mml:mlabledtr, mml:mtd)

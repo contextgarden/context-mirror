@@ -58,7 +58,6 @@ function openers.virtual(specification)
         end
         data[original] = nil -- when we comment this we can have error messages
         -- With utf-8 we signal that no regime is to be applied!
-     -- characters.showstring(d)
         return openers.helpers.textopener("virtual",original,d,"utf-8")
     else
         if trace_virtual then

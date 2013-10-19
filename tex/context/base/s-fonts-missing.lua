@@ -14,12 +14,17 @@ local function legend(id)
     local privates = c.properties.privates
     if privates then
         local categories = table.swapped(fonts.loggers.category_to_placeholder)
-        context.starttabulate { "|c|l|" }
+     -- context.starttabulate { "|l|c|c|l|" }
+        context.starttabulate { "|l|c|l|" }
             context.HL()
+            context.NC()
+            context.bold("name")
             context.NC()
             context.bold("symbol")
             context.NC()
-            context.bold("name")
+         -- context.bold("node")
+         -- context.NC()
+            context.bold("category")
             context.NC()
             context.NR()
             context.HL()
@@ -27,10 +32,15 @@ local function legend(id)
                 local tag = characters.categorytags[categories[k]]
                 if tag and tag ~= "" then
                     context.NC()
+                    context(k)
+                    context.NC()
                     context.dontleavehmode()
                     context.char(v)
                     context.NC()
-                    context(k)
+                 -- context.dontleavehmode()
+                 -- commands.getprivatechar(k)
+                 -- context.NC()
+                    context(string.lower(tag))
                     context.NC()
                     context.NR()
                 end

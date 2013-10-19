@@ -41,9 +41,6 @@ take pathpart of given pattern
 .B --longname
 set name attributes to full path name
 .TP
-.B --downcase
-lowercase names
-.TP
 .B --pattern
 glob pattern (default: *)
 .TP

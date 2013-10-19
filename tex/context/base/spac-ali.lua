@@ -20,6 +20,8 @@ local hpack_nodes      = node.hpack -- nodes.fasthpack not really faster here
 
 local unsetvalue       = attributes.unsetvalue
 
+local concat_nodes     = nodes.concat
+
 local nodecodes        = nodes.nodecodes
 local listcodes        = nodes.listcodes
 
@@ -33,8 +35,8 @@ local new_stretch      = nodepool.stretch
 
 local a_realign        = attributes.private("realign")
 
-local texsetattribute  = tex.setattribute
-local texgetcount      = tex.getcount
+local texattribute     = tex.attribute
+local texcount         = tex.count
 
 local isleftpage       = layouts.status.isleftpage
 
@@ -75,12 +77,12 @@ local function handler(head,leftpage,realpageno)
                             action = leftpage and 2 or 1
                         end
                         if action == 1 then
-                            current.list = hpack_nodes(current.list .. new_stretch(3),current.width,"exactly")
+                            current.list = hpack_nodes(concat_nodes{current.list,new_stretch(3)},current.width,"exactly")
                             if trace_realign then
                                 report_realign("flushing left, align %a, page %a, realpage %a",align,pageno,realpageno)
                             end
                         elseif action == 2 then
-                            current.list = hpack_nodes(new_stretch(3) .. current.list,current.width,"exactly")
+                            current.list = hpack_nodes(concat_nodes{new_stretch(3),current.list},current.width,"exactly")
                             if trace_realign then
                                 report_realign("flushing right. align %a, page %a, realpage %a",align,pageno,realpageno)
                             end
@@ -104,7 +106,7 @@ end
 
 function alignments.handler(head)
     local leftpage = isleftpage(true,false)
-    local realpageno = texgetcount("realpageno")
+    local realpageno = texcount.realpageno
     return handler(head,leftpage,realpageno)
 end
 
@@ -118,7 +120,7 @@ function alignments.set(n)
             report_realign("enabled")
         end
     end
-    texsetattribute(a_realign,texgetcount("realpageno") * 10 + n)
+    texattribute[a_realign] = texcount.realpageno * 10 + n
 end
 
 commands.setrealign = alignments.set

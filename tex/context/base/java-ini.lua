@@ -6,36 +6,30 @@ if not modules then modules = { } end modules ['java-ini'] = {
     license   = "see context related readme files"
 }
 
--- todo: don't flush scripts if no JS key
-
 local format = string.format
 local concat = table.concat
 local lpegmatch, P, S, C, Carg, Cc = lpeg.match, lpeg.P, lpeg.S, lpeg.C, lpeg.Carg, lpeg.Cc
 
-local allocate           = utilities.storage.allocate
-local settings_to_array  = utilities.parsers.settings_to_array
+local allocate  = utilities.storage.allocate
+local settings_to_array = utilities.parsers.settings_to_array
+local variables = interfaces.variables
+local formatters = string.formatters
 
-local variables          = interfaces.variables
-local formatters         = string.formatters
+-- todo: don't flush scripts if no JS key
 
-local context            = context
-local commands           = commands
-
-local trace_javascript   = false  trackers.register("backends.javascript", function(v) trace_javascript = v end)
+local trace_javascript = false  trackers.register("backends.javascript", function(v) trace_javascript = v end)
 
 local report_javascripts = logs.reporter ("interactions","javascripts")
 local status_javascripts = logs.messenger("interactions","javascripts")
 
-local javascripts        = interactions.javascripts or { }
-interactions.javascripts = javascripts
+interactions.javascripts = interactions.javascripts or { }
+local javascripts        = interactions.javascripts
 
-local codes              = allocate()
-local preambles          = allocate()
-local functions          = allocate()
+javascripts.codes        = allocate()
+javascripts.preambles    = allocate()
+javascripts.functions    = allocate()
 
-javascripts.codes        = codes
-javascripts.preambles    = preambles
-javascripts.functions    = functions
+local codes, preambles, functions = javascripts.codes, javascripts.preambles, javascripts.functions
 
 local preambled = { }
 

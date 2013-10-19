@@ -12,25 +12,18 @@ if not modules then modules = { } end modules ['page-str'] = {
 
 local concat, insert, remove = table.concat, table.insert, table.remove
 
-local nodes, node = nodes, node
-
-local nodepool          = nodes.pool
-local tasks             = nodes.tasks
-
-local new_kern          = nodepool.kern
-local new_glyph         = nodepool.glyph
-
-local find_tail         = node.slide
-local write_node        = node.write
-local free_node         = node.free
-local copy_nodelist     = node.copy_list
-local vpack_nodelist    = node.vpack
-local hpack_nodelist    = node.hpack
-
+local find_tail, write_node, free_node, copy_nodelist = node.slide, node.write, node.free, node.copy_list
+local vpack_nodelist, hpack_nodelist = node.vpack, node.hpack
+local texdimen, texbox = tex.dimen, tex.box
 local settings_to_array = utilities.parsers.settings_to_array
 
-local texgetdimen       = tex.getdimen
-local texgetbox         = tex.getbox
+local nodes, node = nodes, node
+
+local nodepool  = nodes.pool
+local tasks     = nodes.tasks
+
+local new_kern  = nodepool.kern
+local new_glyph = nodepool.glyph
 
 local trace_collecting = false  trackers.register("streams.collecting", function(v) trace_collecting = v end)
 local trace_flushing   = false  trackers.register("streams.flushing",   function(v) trace_flushing   = v end)
@@ -182,8 +175,7 @@ function streams.synchronize(list) -- this is an experiment !
         if trace_flushing then
             report_streams("slot %s has max height %p and max depth %p",m,height,depth)
         end
-        local strutht = texgetdimen("globalbodyfontstrutheight")
-        local strutdp = texgetdimen("globalbodyfontstrutdepth")
+        local strutht, strutdp = texdimen.globalbodyfontstrutheight, texdimen.globalbodyfontstrutdepth
         local struthtdp = strutht + strutdp
         for i=1,#list do
             local name = list[i]
@@ -206,7 +198,7 @@ function streams.synchronize(list) -- this is an experiment !
                         local n, delta = 0, delta_height -- for tracing
                         while delta > 0 do
                             -- we need to add some interline penalties
-                            local line = copy_nodelist(texgetbox("strutbox"))
+                            local line = copy_nodelist(tex.box.strutbox)
                             line.height, line.depth = strutht, strutdp
                             if tail then
                                 tail.next, line.prev = line, tail

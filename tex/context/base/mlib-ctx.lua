@@ -43,7 +43,6 @@ local function setmpsformat(specification)
         specification.method = method
     end
     specification.mpx = metapost.format(instance,format,method)
-    return specification
 end
 
 local extensiondata    = metapost.extensiondata or storage.allocate { }

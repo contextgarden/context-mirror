@@ -54,7 +54,7 @@
 
 \unexpanded\def\MPfigure#1#2% test for dup figure, can be replaced by a textext
   {\bgroup
-   \getfiguredimensions[#1]% [\c!object=\v!no] already set
+   \getfiguredimensionsonly[#1]% [\c!object=\v!no] already set
    \startMPcode
      externalfigure "#1"
        xscaled \the\dimexpr\figurewidth \relax\space % must be points

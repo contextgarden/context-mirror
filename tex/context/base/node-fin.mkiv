@@ -23,12 +23,8 @@
 
 % we might have two variants at some point (efficiency)
 
-\unexpanded\def\finalizeobjectbox #1{\ctxcommand{finalizebox(\number#1)}}
-\unexpanded\def\finalizeshipoutbox#1{\ctxcommand{finalizebox(\number#1)}}
-
-% Experimental (for Aditya):
-
-\unexpanded\def\cleanupbox#1{\ctxcommand{cleanupbox(\number#1)}}
+\def\finalizeobjectbox #1{\ctxcommand{finalizebox(\number#1)}}
+\def\finalizeshipoutbox#1{\ctxcommand{finalizebox(\number#1)}}
 
 % Tricky stuff: this might become obsolete.
 

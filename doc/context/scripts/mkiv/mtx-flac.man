@@ -13,9 +13,6 @@
 .TP
 .B --collect
 collect albums in xml file
-.TP
-.B --pattern
-use pattern for locating files
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

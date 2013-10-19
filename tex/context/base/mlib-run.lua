@@ -589,37 +589,3 @@ function metapost.directrun(formatname,filename,outputformat,astable,mpdata)
         end
     end
 end
-
--- goodie
-
-function metapost.quickanddirty(mpxformat,data)
-    if not data then
-        mpxformat = "metafun"
-        data      = mpxformat
-    end
-    local code, bbox
-    local flusher = {
-        startfigure = function(n,llx,lly,urx,ury)
-            code = { }
-            bbox = { llx, lly, urx, ury }
-        end,
-        flushfigure = function(t)
-            for i=1,#t do
-                code[#code+1] = t[i]
-            end
-        end,
-        stopfigure = function()
-        end
-    }
-    local data = format("; beginfig(1) ;\n %s\n ; endfig ;",data)
-    metapost.process(mpxformat, { data }, false, flusher, false, false, "all")
-    if code then
-        return {
-            bbox = bbox or { 0, 0, 0, 0 },
-            code = code,
-            data = data,
-        }
-    else
-        report_metapost("invalid quick and dirty run")
-    end
-end

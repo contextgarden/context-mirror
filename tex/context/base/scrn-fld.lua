@@ -11,8 +11,6 @@ if not modules then modules = { } end modules ['scrn-fld'] = {
 local variables     = interfaces.variables
 local v_yes         = variables.yes
 
-local texsetbox     = tex.setbox
-
 local fields        = { }
 interactions.fields = fields
 
@@ -45,7 +43,7 @@ commands.definefieldset = defineset
 commands.clonefield     = clone
 
 function commands.insertfield(name,specification)
-    texsetbox("b_scrn_field_body",insert(name,specification))
+    tex.box["b_scrn_field_body"] = insert(name,specification)
 end
 
 -- (for the monent) only tex interface

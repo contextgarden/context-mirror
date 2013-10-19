@@ -25,21 +25,12 @@
 % \appendtoks \setbuffer[typeset-b]\endbuffer\to \everystarttext
 % \appendtoks \setbuffer[typeset-a]\endbuffer\to \everystarttext
 
-% we could use \typesetbuffer[*] to access the last one
+\newcount\c_grph_buffers_n
 
-\newconstant\c_grph_buffers_mode
-
-\let\lasttypesetbuffer\empty
+\let\m_grph_buffers_filename\empty
 
 \unexpanded\def\typesetbuffer
-  {\bgroup
-   \setconstant\c_grph_buffers_mode\plusone
-   \dodoubleempty\grph_buffers_typeset}
-
-\unexpanded\def\typesetbufferonly
-  {\bgroup
-   \setconstant\c_grph_buffers_mode\zerocount
-   \dodoubleempty\grph_buffers_typeset}
+  {\dodoubleempty\grph_buffers_typeset}
 
 \def\grph_buffers_typeset[#1][#2]% beware: this will mix up the mp graphics
   {\ifsecondargument
@@ -53,12 +44,11 @@
    \fi\fi}
 
 \def\grph_buffers_typeset_indeed[#1][#2]% we could use the via files
-  {\doifnot{#1}{*}{\xdef\lasttypesetbuffer{\ctxcommand{runbuffer("#1",true)}}}%
-   \ifcase\c_grph_buffers_mode
-     % typesetonly
-   \or
-     \externalfigure[\lasttypesetbuffer][#2]%
-   \fi
+  {\bgroup
+   \global\advance\c_grph_buffers_n\plusone
+   \edef\m_grph_buffers_filename{\jobname-buffer-\the\c_grph_buffers_n}%
+   \ctxcommand{runbuffer("\m_grph_buffers_filename.tmp","#1",true)}%
+   \externalfigure[\m_grph_buffers_filename.pdf][#2]%
    \egroup}
 
 % For manuals and such:

@@ -10,9 +10,6 @@ local format, gmatch, match = string.format, string.gmatch, string.match
 local lpegmatch = lpeg.match
 local serialize = table.serialize
 
-local context             = context
-local commands            = commands
-
 local allocate            = utilities.storage.allocate
 local mark                = utilities.storage.mark
 local prtcatcodes         = catcodes.numbers.prtcatcodes

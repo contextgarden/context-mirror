@@ -399,11 +399,9 @@ local inlinelua              = P("\\") * (
                                )
 
 local startlua               = P("\\start") * Cmt(luaenvironment,startdisplaylua)
-                             + P("<?lua") * Cmt(P(true),startdisplaylua)
                              + inlinelua * space^0 * ( Cmt(P("{"),startinlinelua) )
 
 local stoplua                = P("\\stop") * Cmt(luaenvironment,stopdisplaylua)
-                             + P("?>") * Cmt(P(true),stopdisplaylua)
                              + Cmt(P("{"),stopinlinelua_b)
                              + Cmt(P("}"),stopinlinelua_e)
 
@@ -415,7 +413,7 @@ local metafuncall            = ( P("reusable") + P("usable") + P("unique") + P("
                              + P("MPpositiongraphic")
 
 local metafunenvironment     = metafuncall -- ( P("use") + P("reusable") + P("unique") ) * ("MPgraphic")
-                             + P("MP") * ( P("code")+ P("page") + P("inclusions") + P("initializations") + P("definitions") + P("extensions") + P("graphic") + P("calculation") )
+                             + P("MP") * ( P("code")+ P("page") + P("inclusions") + P("initializations") + P("definitions") + P("extensions") + P("graphic") )
 
 local startmetafun           = P("\\start") * metafunenvironment
 local stopmetafun            = P("\\stop")  * metafunenvironment -- todo match start

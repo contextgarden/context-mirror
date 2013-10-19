@@ -96,7 +96,7 @@ return {
         "startproduct", "stopproduct", "product",
         "startproject", "stopproject", "project",
         "starttext", "stoptext", "startnotext", "stopnotext","startdocument", "stopdocument", "documentvariable", "setupdocument",
-        "startmodule", "stopmodule", "usemodule", "usetexmodule", "useluamodule","setupmodule","currentmoduleparameter","moduleparameter",
+        "startmodule", "stopmodule", "usemodule", "usetexmodule", "useluamodule",
         --
         "startTEXpage", "stopTEXpage",
     --  "startMPpage", "stopMPpage", -- already catched by nested lexer
@@ -116,14 +116,6 @@ return {
         "continueifinputfile",
         --
         "luastringsep", "!!bs", "!!es",
-        --
-        "lefttorightmark", "righttoleftmark",
-        --
-        "breakablethinspace", "nobreakspace", "narrownobreakspace", "zerowidthnobreakspace",
-        "ideographicspace", "ideographichalffillspace",
-        "twoperemspace", "threeperemspace", "fourperemspace", "fiveperemspace", "sixperemspace",
-        "figurespace", "punctuationspace", "hairspace",
-        "zerowidthspace", "zerowidthnonjoiner", "zerowidthjoiner", "zwnj", "zwj",
     },
     ["helpers"] = {
         --
@@ -180,7 +172,7 @@ return {
         --
         "ruledhss", "ruledhfil", "ruledhfill", "ruledhfilneg", "ruledhfillneg", "normalhfillneg",
         "ruledvss", "ruledvfil", "ruledvfill", "ruledvfilneg", "ruledvfillneg", "normalvfillneg",
-        "ruledhbox", "ruledvbox", "ruledvtop", "ruledvcenter", "ruledmbox",
+        "ruledhbox", "ruledvbox", "ruledvtop", "ruledvcenter",
         "ruledhskip", "ruledvskip", "ruledkern", "ruledmskip", "ruledmkern",
         "ruledhglue", "ruledvglue", "normalhglue", "normalvglue",
         "ruledpenalty",
@@ -193,8 +185,6 @@ return {
         "scratchmuskip", "globalscratchmuskip",
         "scratchtoks", "globalscratchtoks",
         "scratchbox", "globalscratchbox",
-        --
-        "normalbaselineskip", "normallineskip", "normallineskiplimit",
         --
         "availablehsize", "localhsize", "setlocalhsize",
         --
@@ -298,8 +288,6 @@ return {
         --
         "twodigits","threedigits",
         --
-        "leftorright",
-        --
         "strut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "struthtdp", "begstrut", "endstrut", "lineheight",
         --
         "ordordspacing", "ordopspacing", "ordbinspacing", "ordrelspacing",
@@ -354,16 +342,6 @@ return {
         --
         "carryoverpar",
         --
-        "assumelongusagecs",
-        --
         "Umathbotaccent",
-        --
-        "righttolefthbox", "lefttorighthbox", "righttoleftvbox", "lefttorightvbox", "righttoleftvtop", "lefttorightvtop",
-        "rtlhbox", "ltrhbox", "rtlvbox", "ltrvbox", "rtlvtop", "ltrvtop",
-        "autodirhbox", "autodirvbox", "autodirvtop",
-        "lefttoright", "righttoleft","synchronizelayoutdirection","synchronizedisplaydirection","synchronizeinlinedirection",
-        --
-        "lesshyphens", "morehyphens", "nohyphens", "dohyphens",
-        --
     }
 }

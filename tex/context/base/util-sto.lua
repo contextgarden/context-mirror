@@ -103,22 +103,12 @@ end
 local function f_empty ()                           return "" end -- t,k
 local function f_self  (t,k) t[k] = k               return k  end
 local function f_table (t,k) local v = { } t[k] = v return v  end
-local function f_number(t,k) t[k] = 0               return 0  end -- t,k,v
 local function f_ignore()                                     end -- t,k,v
 
-local f_index = {
-    ["empty"]  = f_empty,
-    ["self"]   = f_self,
-    ["table"]  = f_table,
-    ["number"] = f_number,
-}
-
-local t_index = {
-    ["empty"]  = { __index = f_empty  },
-    ["self"]   = { __index = f_self   },
-    ["table"]  = { __index = f_table  },
-    ["number"] = { __index = f_number },
-}
+local t_empty  = { __index    = f_empty  }
+local t_self   = { __index    = f_self   }
+local t_table  = { __index    = f_table  }
+local t_ignore = { __newindex = f_ignore }
 
 function table.setmetatableindex(t,f)
     if type(t) ~= "table" then
@@ -126,20 +116,28 @@ function table.setmetatableindex(t,f)
     end
     local m = getmetatable(t)
     if m then
-        m.__index = f_index[f] or f
+        if f == "empty" then
+            m.__index = f_empty
+        elseif f == "key" then
+            m.__index = f_self
+        elseif f == "table" then
+            m.__index = f_table
+        else
+            m.__index = f
+        end
     else
-        setmetatable(t,t_index[f] or { __index = f })
+        if f == "empty" then
+            setmetatable(t, t_empty)
+        elseif f == "key" then
+            setmetatable(t, t_self)
+        elseif f == "table" then
+            setmetatable(t, t_table)
+        else
+            setmetatable(t,{ __index = f })
+        end
     end
     return t
 end
-
-local f_index = {
-    ["ignore"] = f_ignore,
-}
-
-local t_index = {
-    ["ignore"] = { __newindex = f_ignore },
-}
 
 function table.setmetatablenewindex(t,f)
     if type(t) ~= "table" then
@@ -147,9 +145,17 @@ function table.setmetatablenewindex(t,f)
     end
     local m = getmetatable(t)
     if m then
-        m.__newindex = f_index[f] or f
+        if f == "ignore" then
+            m.__newindex = f_ignore
+        else
+            m.__newindex = f
+        end
     else
-        setmetatable(t,t_index[f] or { __newindex = f })
+        if f == "ignore" then
+            setmetatable(t, t_ignore)
+        else
+            setmetatable(t,{ __newindex = f })
+        end
     end
     return t
 end

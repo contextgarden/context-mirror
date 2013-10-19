@@ -15,12 +15,11 @@ local formatters = string.formatters
 
 ----- lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
-local trace_links    = false  trackers.register("figures.links", function(v) trace_links = v end)
-local report_link    = logs.reporter("backend","merging")
+local trace_links = false  trackers.register("figures.links", function(v) trace_links = v end)
 
-local backends       = backends
-local lpdf           = lpdf
-local context        = context
+local report_link = logs.reporter("backend","merging")
+
+local backends, lpdf = backends, lpdf
 
 local variables      = interfaces.variables
 local codeinjections = backends.pdf.codeinjections

@@ -700,7 +700,6 @@
 \let\somefontsize\zerocount
 
 \newcount\scaledfontmode  % also used at the lua end
-\newcount\scaledfontsize  % also used at the lua end
 \newcount\lastfontid      % also used at the lua end / tex end
 \newtoks \everydefinefont
 
@@ -756,9 +755,6 @@
    \or
      % scaled, don't use this one as it's unpredictable
      \d_font_scaled_font_size-\somefontsize\scaledpoint
-   \else % ht cp
-     % experiment, yet undocumented
-     \d_font_scaled_font_size\somefontsize
    \fi
    \relax
    \d_font_scaled_font_size\v_font_size_relative\d_font_scaled_font_size
@@ -774,7 +770,7 @@
    \else
      \d_font_scaled_text_face\textface
    \fi
-   \edef\somefontspec{at \number\d_font_scaled_font_size sp}% probably no longer used, needs checking
+   \edef\somefontspec{at \number\d_font_scaled_font_size sp}%
    \edef\somefontfile{\truefontname\somefontname}%
    \ifx\somefontfile\s!unknown
      \edef\somefontfile{\defaultfontfile}%
@@ -801,10 +797,9 @@
       "\m_font_class_goodies",            % experiment (not yet used)
       "\m_font_goodies",
       "\m_font_class_designsize",
-      "\m_font_designsize",
-      \number\scaledfontmode
+      "\m_font_designsize"
    )}%
-   \edef\somefontspec{at \number\scaledfontsize sp}% we need the resolved designsize (for fallbacks)
+   \edef\somefontspec{at \number\d_font_scaled_font_size sp}% we need the resolved designsize (for fallbacks)
    \expandafter\let\expandafter\lastrawfontcall\csname#csname\endcsname
    \the\everydefinefont
    \c_font_feature_inheritance_mode\c_font_feature_inheritance_default}
@@ -1524,7 +1519,7 @@
 
 \unexpanded\def\font_basics_define_body_font_name_identifier_a#name#identifier#style%
   {%\writestatus\m!fonts{[#name:#style] => [##identifier:#style]}%
-   \ifcsname\??fontdefinitions#name:#style\endcsname
+   \ifcsname\csname\??fontdefinitions#name:#style\endcsname
      \expandafter\let\csname\??fontdefinitions#name:#style\expandafter\endcsname\csname\??fontdefinitions#identifier:#style\endcsname
    \else
      \expandafter\def\csname\??fontdefinitions#name:#style\endcsname{\csname\??fontdefinitions#identifier:#style\endcsname}%
@@ -1679,7 +1674,7 @@
 \unexpanded\def\font_helpers_set_font_set_font_option_body#method#body#message%
   {\normalizebodyfontsize\normalizedsetfont{#body}% redundant for some calls
    \ifcsname\??fontbodyknown\normalizedsetfont\endcsname \else
-     \font_helpers_define_unknown_font\normalizedsetfont
+     \font_helpers_define_unknown_font{#body}%
    \fi
    \ifcsname\??fontbodyknown\normalizedsetfont\endcsname
      \localbodyfontsize\normalizedsetfont
@@ -1713,7 +1708,6 @@
 \let\defaultfontstyle      \s!rm
 \let\defaultfontalternative\s!tf
 \let\defaultfontsize       \empty
-\let\defaultfontface       \!!zerocount
 
 %D So far for synchronisation. (We can inline the following macros.)
 
@@ -2136,37 +2130,6 @@
 %D $\cases{& \ccaron}$ $x=\hbox{\ccaron $x=\hbox{\ccaron}$}$
 %D \stoptyping
 
-%D \macros
-%D   {usebodyfont}
-%D
-%D This looks nicer then a switch in the preamble
-%D
-%D \starttyping
-%D \usebodyfont[pagella,10pt]
-%D \usebodyfont[termes,10pt]
-%D \usebodyfont[dejavu,10pt]
-%D
-%D \setupbodyfont[dejavu]
-%D
-%D \starttext
-%D     test
-%D \stoptext
-%D \stoptyping
-
-% \unexpanded\def\usebodyfont[#1]%
-%   {\pushmacro\fontclass
-%    \switchtobodyfont[#1]%
-%    \popmacro\fontclass
-%    \ifx\fontclass\empty\else\setupbodyfont\relax\fi}
-
-\unexpanded\def\usebodyfont[#1]%
-  {\pushmacro\fontclass
-   \font_helpers_set_font\zerocount{#1}%
-   \popmacro\fontclass
-   \ifx\fontclass\empty \else
-     \font_basics_setupbodyfont_nop
-   \fi}
-
 %D Handy for manuals:
 
 \unexpanded\def\fontchar#character%
@@ -2265,7 +2228,6 @@
 \unexpanded\def\fullrestoreglobalbodyfont
   {\let\fontsize\defaultfontsize
    \let\fontbody\defaultfontbody
-   \let\fontface\defaultfontface
    \currentxfontsize\zerocount
    \let\fontclass\globalfontclass
    \font_basics_switch_points\normalizedglobalbodyfontsize
@@ -2279,7 +2241,6 @@
 \unexpanded\def\partialrestoreglobalbodyfont
   {\let\fontsize\defaultfontsize
    \let\fontbody\defaultfontbody
-   \let\fontface\defaultfontface
    \currentxfontsize\zerocount
    \redoconvertfont
    \tf

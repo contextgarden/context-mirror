@@ -26,13 +26,8 @@ local rawget = rawget
 local lpegmatch = lpeg.match
 local insert, remove = table.insert, table.remove
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
-local texsp = tex.sp
+local texsp, texcount, texbox, texdimen, texsetcount = tex.sp, tex.count, tex.box, tex.dimen, tex.setcount
 ----- texsp = string.todimen -- because we cache this is much faster but no rounding
-
-local texgetcount       = tex.getcount
-local texgetbox         = tex.getbox
-local texsetcount       = tex.setcount
-local texget            = tex.get
 
 local pdf               = pdf -- h and v are variables
 
@@ -175,7 +170,7 @@ local function setdim(name,w,h,d,extra) -- will be used when we move to sp allov
     if extra == "" then extra = nil end
     -- todo: sparse
     tobesaved[name] = {
-        p = texgetcount("realpageno"),
+        p = texcount.realpageno,
         x = x,
         y = y,
         w = w,
@@ -222,7 +217,7 @@ local function enhance(data)
         data.y = pdf.v
     end
     if data.p == true then
-        data.p = texgetcount("realpageno")
+        data.p = texcount.realpageno
     end
     if data.c == true then
         data.c = column
@@ -274,8 +269,6 @@ commands.setpos     = setall
 -- will become private table (could also become attribute driven but too nasty
 -- as attributes can bleed e.g. in margin stuff)
 
--- not much gain in keeping stack (inc/dec instead of insert/remove)
-
 function jobpositions.b_col(tag)
     tobesaved[tag] = {
         r = true,
@@ -298,7 +291,7 @@ function jobpositions.e_col(tag)
     column = columns[#columns]
 end
 
-function commands.bcolumn(tag,register) -- name will change
+function commands.bcolumn(tag,register)
     insert(columns,tag)
     column = tag
     if register then
@@ -306,7 +299,7 @@ function commands.bcolumn(tag,register) -- name will change
     end
 end
 
-function commands.ecolumn(register) -- name will change
+function commands.ecolumn(register)
     if register then
         context(new_latelua(f_e_column()))
     end
@@ -319,17 +312,17 @@ end
 function jobpositions.b_region(tag)
     local last = tobesaved[tag]
     last.x = pdf.h
-    last.y = pdf.v
-    last.p = texgetcount("realpageno")
+last.y = pdf.v
+    last.p = texcount.realpageno
     insert(regions,tag)
     region = tag
 end
 
 function jobpositions.e_region(correct)
     local last = tobesaved[region]
-    if correct then
-        last.h = last.y - pdf.v
-    end
+if correct then
+    last.h = last.y - pdf.v
+end
     last.y = pdf.v
     remove(regions)
     region = regions[#regions]
@@ -340,7 +333,7 @@ function jobpositions.markregionbox(n,tag,correct)
         nofregions = nofregions + 1
         tag = f_region(nofregions)
     end
-    local box = texgetbox(n)
+    local box = texbox[n]
     local w = box.width
     local h = box.height
     local d = box.depth
@@ -383,7 +376,7 @@ local nofparagraphs = 0
 function commands.parpos() -- todo: relate to localpar (so this is an intermediate variant)
     nofparagraphs = nofparagraphs + 1
     texsetcount("global","c_anch_positions_paragraph",nofparagraphs)
-    local strutbox = texgetbox("strutbox")
+    local strutbox = texbox.strutbox
     local t = {
         p  = true,
         c  = true,
@@ -392,14 +385,14 @@ function commands.parpos() -- todo: relate to localpar (so this is an intermedia
         y  = true,
         h  = strutbox.height,
         d  = strutbox.depth,
-        hs = texget("hsize"),
+        hs = tex.hsize,
     }
-    local leftskip   = texget("leftskip").width
-    local rightskip  = texget("rightskip").width
-    local hangindent = texget("hangindent")
-    local hangafter  = texget("hangafter")
-    local parindent  = texget("parindent")
-    local parshape   = texget("parshape")
+    local leftskip   = tex.leftskip.width
+    local rightskip  = tex.rightskip.width
+    local hangindent = tex.hangindent
+    local hangafter  = tex.hangafter
+    local parindent  = tex.parindent
+    local parshape   = tex.parshape
     if leftskip ~= 0 then
         t.ls = leftskip
     end
@@ -467,7 +460,7 @@ function commands.posplus(name,w,h,d,extra)
 end
 
 function commands.posstrut(name,w,h,d)
-    local strutbox = texgetbox("strutbox")
+    local strutbox = texbox.strutbox
     tobesaved[name] = {
         p = true,
         c = column,
@@ -483,7 +476,7 @@ end
 
 function jobpositions.getreserved(tag,n)
     if tag == v_column then
-        local fulltag = f_tag_three(tag,texgetcount("realpageno"),n or 1)
+        local fulltag = f_tag_three(tag,texcount.realpageno,n or 1)
         local data = collected[fulltag]
         if data then
             return data, fulltag
@@ -491,7 +484,7 @@ function jobpositions.getreserved(tag,n)
         tag = v_text
     end
     if tag == v_text then
-        local fulltag = f_tag_two(tag,texgetcount("realpageno"))
+        local fulltag = f_tag_two(tag,texcount.realpageno)
         return collected[fulltag] or false, fulltag
     end
     return collected[tag] or false, tag
@@ -1020,7 +1013,7 @@ function commands.doifpositionsonsamepageelse(list,page)
 end
 
 function commands.doifpositionsonthispageelse(list)
-    doifelse(onsamepage(list,tostring(texgetcount("realpageno"))))
+    doifelse(onsamepage(list,tostring(tex.count.realpageno)))
 end
 
 function commands.doifelsepositionsused()

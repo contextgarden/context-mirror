@@ -297,12 +297,11 @@
    %
    \edef\p_width {\externalfigureparameter\c!width}%
    \edef\p_height{\externalfigureparameter\c!height}%
-   \edef\p_label {\externalfigureparameter\c!label}%
    %
    \dostarttagged\t!image\empty
    \ctxlua{figures.push {
         name       = "\p_grph_include_name",
-        label      = "\ifx\p_label\empty\p_grph_include_label\else\p_label\fi",
+        label      = "\p_grph_include_label",
         page       = "\externalfigureparameter\c!page",
         size       = "\externalfigureparameter\c!size",
         object     = "\externalfigureparameter\c!object",
@@ -611,9 +610,7 @@
               \letexternalfigureparameter\c!offset\v!overlay
               \letexternalfigureparameter\c!width \figurewidth
               \letexternalfigureparameter\c!height\figureheight
-%               \letexternalfigureparameter\c!align \v!middle
-%               \letexternalfigureparameter\c!autowidth\v!no
-              \inheritedexternalfigureframed{\box\foundexternalfigure}%
+              \inheritedexternalfigureframed{\vfilll\box\foundexternalfigure}%
             \fi
           \fi\fi
         \fi

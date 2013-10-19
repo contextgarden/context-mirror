@@ -123,35 +123,45 @@
 \to \everylastbackendshipout
 
 %D Transformations. Some day we will use primitives (once they're fixed).
+
+% \def\dostartscaling#1#2% the test is needed because acrobat is bugged!
+%   {\forcecolorhack % maybe use signal instead
+%    \pdfliteral{q \ifdim#1\points=\zeropoint.0001\else#1\fi\space 0 0
+%                  \ifdim#2\points=\zeropoint.0001\else#2\fi\space 0 0 cm}}
+%
+% \def\dostopscaling
+%   {\pdfliteral{Q}}
+%
+% \def\dostartrotation#1% grouped
+%   {\forcecolorhack % maybe use signal instead
+%    \pdfliteral{q \cldcontext{lpdf.rotationcm(#1)}}}
+%
+% \def\dostoprotation
+%   {\pdfliteral{Q}}
+%
+% function lpdf.rotationcm(a)
+%     local s, c = sind(a), cosd(a)
+%     return format("%f %f %f %f 0 0 cm",c,s,-s,c)
+% end
+%
+% \def\dostartmirroring{\pdfliteral{-1 0 0 1 0 0 cm}}
+% \def\dostopmirroring {\pdfliteral{-1 0 0 1 0 0 cm}}
+
 % todo: inject at the lua end cq. deal with #5 and #6 too
 
-% % % rotation % % %
-
 \unexpanded\def\dostartrotation#1% grouped
-  {\advance\backendtransformlevel\plusone
-   \forcecolorhack
+  {\forcecolorhack % maybe use signal instead
+   \advance\backendtransformlevel\plusone
    \pdfsave
    \pdfsetmatrix{\ctxcommand{pdfrotation(#1)}}}
 
 \unexpanded\def\dostoprotation
   {\pdfrestore
-   \forcecolorhack
    \advance\backendtransformlevel\minusone}
 
-% \unexpanded\def\dostartrotation#1% grouped
-%   {\forcecolorhack
-%    \advance\backendtransformlevel\plusone
-%    \ctxcommand{pdfstartrotation(#1)}}
-
-% \unexpanded\def\dostoprotation
-%   {\ctxcommand{pdfstoprotation()}%
-%    \advance\backendtransformlevel\minusone}
-
-% % % scaling % % %
-
 \unexpanded\def\dostartscaling#1#2% the test is needed because acrobat is bugged!
-  {\advance\backendtransformlevel\plusone
-   \forcecolorhack % maybe use signal instead
+  {\forcecolorhack % maybe use signal instead
+   \advance\backendtransformlevel\plusone
    \pdfsave
    \pdfsetmatrix
      {\ifdim#1\points=\zeropoint.0001\else#1\fi\space 0 0
@@ -159,40 +169,16 @@
 
 \unexpanded\def\dostopscaling
   {\pdfrestore
-   \forcecolorhack
    \advance\backendtransformlevel\minusone}
-
-% \unexpanded\def\dostartscaling#1#2% the test is needed because acrobat is bugged!
-%   {\forcecolorhack
-%    \advance\backendtransformlevel\plusone
-%    \ctxcommand{pdfstartscaling(#1,#2)}}
-
-% \unexpanded\def\dostopscaling
-%   {\ctxcommand{pdfstopscaling()}%
-%    \advance\backendtransformlevel\minusone}
-
-% % % mirroring % % %
 
 \unexpanded\def\dostartmirroring
   {\advance\backendtransformlevel\plusone
-   \forcecolorhack
    \pdfsave
    \pdfsetmatrix{-1 0 0 1}} % 0 0
 
 \unexpanded\def\dostopmirroring
   {\pdfrestore
-   \forcecolorhack
    \advance\backendtransformlevel\minusone}
-
-% \unexpanded\def\dostartmirroring
-%   {\advance\backendtransformlevel\plusone
-%    \ctxcommand{pdfstartmirroring()}}
-
-% \unexpanded\def\dostopmirroring
-%   {\ctxcommand{pdfstopmirroring()}%
-%    \advance\backendtransformlevel\minusone}
-
-% % % transform % % %
 
 \unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
   {\advance\backendtransformlevel\plusone
@@ -200,8 +186,7 @@
    \dowithnextbox{\dodotransformnextbox{#5}{#6}{#1 #2 #3 #4}}}
 
 \unexpanded\def\dodotransformnextbox#1#2#3%
-  {%\forcecolorhack
-   \hbox
+  {\hbox
      {\kern#1\onebasepoint
       \raise#2\onebasepoint\hbox
         {\pdfsave
@@ -210,31 +195,14 @@
          \pdfrestore
          \advance\backendtransformlevel\minusone}}}
 
-% \unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
-%   {\advance\backendtransformlevel\plusone
-%    % fixing ht/dp/wd should happen elsewhere
-%    \dowithnextbox{\dodotransformnextbox{#1}{#2}{#3}{#4}{#5}{#6}}}
-
-% \unexpanded\def\dodotransformnextbox#1#2#3#4#5#6%
-%   {\hbox
-%      {\kern #5\onebasepoint
-%       \raise#6\onebasepoint
-%       \hbox
-%         {\ctxcommand{pdfstartmatrix(#1,#2,#3,#4)}%
-%          \box\nextbox
-%          \ctxcommand{pdfstopmatrix()}%
-%          \advance\backendtransformlevel\minusone}}}
-
-% % % clipping % % %
-
-\unexpanded\def\dostartclipping#1#2#3% we can move this to lua and only set a box here
+\unexpanded\def\dostartclipping#1#2#3%
   {\PointsToBigPoints{#2}\width
    \PointsToBigPoints{#3}\height
    \meta_grab_clip_path{#1}\width\height{0 0 m \width\space 0 l \width \height l 0 \height l}%
    \pdfliteral{q 0 w \MPclippath\space W n}}
 
 \unexpanded\def\dostopclipping
-  {\pdfliteral{Q}}
+  {\pdfliteral{Q n}}
 
 %D The following will move to the backend \LUA\ code:
 
@@ -261,8 +229,6 @@
 \unexpanded\def\dostopobject % needs to be \unexpanded
   {\back_object_stop
    \egroup}
-
-\let\back_object_stop\relax
 
 % attr {/Group << /S /Transparency /I false /K true >>}
 

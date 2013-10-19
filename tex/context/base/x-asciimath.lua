@@ -140,8 +140,6 @@ local reserved = {
 
 }
 
-table.setmetatableindex(reserved,characters.entities)
-
 local postmapper = Cs ( (
 
     P("\\mathoptext ") * spaces * (P("\\bgroup ")/"{") * (1-P("\\egroup "))^1 * (P("\\egroup ")/"}") +

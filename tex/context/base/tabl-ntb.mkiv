@@ -1517,29 +1517,18 @@
         {\scratchdimen\tabl_ntb_get_wid\recurselevel\relax
          [\recurselevel:\the\scratchdimen]}}}
 
-% \def\tabl_ntb_char_align
-%   {\doifelse{\naturaltablelocalparameter\c!aligncharacter}\v!yes
-%      \tabl_ntb_char_align_indeed\gobbletwoarguments}
-
-% \def\tabl_ntb_char_align_indeed#1#2#3% row column data
-%   {\edef\alignmentclass{#2}%
-%    \edef\alignmentcharacter{\naturaltablelocalparameter\c!alignmentcharacter}%
-%    \ifcase\c_tabl_tbl_pass\or
-%      \setfirstpasscharacteralign\checkalignment{#3}% {\strut#2\unskip}%
-%    \fi % force hsize, so always a second
-%    \setsecondpasscharacteralign \checkalignment{#3}% {\strut#2\unskip}%
-%    \ignorespaces}
-
 \def\tabl_ntb_char_align
   {\doifelse{\naturaltablelocalparameter\c!aligncharacter}\v!yes
-     \tabl_ntb_char_align_indeed
-     \gobbletwoarguments}
+     \tabl_ntb_char_align_indeed\gobbleoneargument}
 
-\def\tabl_ntb_char_align_indeed#1#2% row column
-  {\ifcase\c_tabl_tbl_pass \or
-     \setcharacteralign{#2}{\naturaltablelocalparameter\c!alignmentcharacter}%
-   \fi
-   \signalcharacteralign{#2}{#1}}
+\def\tabl_ntb_char_align_indeed#1#2% column data
+  {\edef\alignmentclass{#1}%
+   \edef\alignmentcharacter{\naturaltablelocalparameter\c!alignmentcharacter}%
+   \ifcase\c_tabl_tbl_pass\or
+     \setfirstpasscharacteralign\checkalignment{#2}% {\strut#2\unskip}%
+   \fi % force hsize, so always a second
+   \setsecondpasscharacteralign \checkalignment{#2}% {\strut#2\unskip}%
+   \ignorespaces}
 
 \unexpanded\def\tabl_ntb_cell_process_a#1#2[#3]#4% grouping added ! ! !
   {\bgroup
@@ -1550,7 +1539,7 @@
         \tabl_ntb_set_dis{#2}{\the\scratchdimen}%
       \fi
       \setupcurrentnaturaltablelocal[#3,\c!background=,\c!frame=\v!off]% 25% faster
-      \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#1}{#2}#4\tabl_ntb_cell_stop\tabl_ntb_cell_finalize}}%
+      \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#2}{#4}\tabl_ntb_cell_stop\tabl_ntb_cell_finalize}}%
    \scratchdimen\tabl_ntb_get_wid\c_tabl_ntb_col\relax
    \ifdim\wd\scratchbox>\scratchdimen
      \ifsqueezeTBLspan
@@ -1636,7 +1625,7 @@
       \fi
     \fi
     \normalexpanded{\tabl_ntb_cell_process_b_c{\ifdim\scratchdimen>\zeropoint \c!width=\the\scratchdimen\fi}}%
-      {#1}{#2}[#3]{\tabl_ntb_char_align{#1}{#2}#4}}
+      {#1}{#2}[#3]{\tabl_ntb_char_align{#2}{#4}}}
 
 \unexpanded\def\tabl_ntb_cell_process_c
   {\tabl_ntb_cell_process_b_c{}}
@@ -1645,7 +1634,7 @@
   {\tabl_ntb_setup_cell{#1}{#2}%
    \bgroup
    \setupcurrentnaturaltablelocal[#3,\c!width=\d_tabl_ntb_width,\c!background=,\c!frame=\v!off]% 25% faster
-   \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#1}{#2}#4\tabl_ntb_cell_stop}%
+   \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#2}{#4}\tabl_ntb_cell_stop}%
    \egroup}
 
 \unexpanded\def\tabl_ntb_cell_process_e#1#2[#3]#4%
@@ -1658,7 +1647,7 @@
       \else
         \setupcurrentnaturaltablelocal[\c!color=,\c!width=\d_tabl_ntb_width,\c!height=\d_tabl_ntb_height]%
       \fi
-      \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#1}{#2}#4\tabl_ntb_cell_stop}}%
+      \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#2}{#4}\tabl_ntb_cell_stop}}%
    \hskip\tabl_ntb_get_dis{#2}}
 
 \setupTABLE

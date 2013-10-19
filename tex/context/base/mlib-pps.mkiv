@@ -33,41 +33,18 @@
 \newbox \MPtextbox
 \newtoks\everyMPLIBsettext % not used
 
+\newconditional\MPLIBtextgetdone
+
 % \def\MPLIBsettext#1% #2%
 %   {\dowithnextbox{\ctxlua{metapost.settext(\number\nextbox,#1)}}\hbox}
-%
-% \def\MPLIBresettexts
-%   {\ctxlua{metapost.resettextexts()}}
-%
-% \newconditional\MPLIBtextgetdone
-%
-% \def\MPLIBsettext#1% #2%
-%   {\ifconditional\MPLIBtextgetdone
-%    \else
-%      \cldcontext{metapost.tex.get()}% MPenvironments are depricated
-%      \settrue\MPLIBtextgetdone % no \global needed
-%    \fi
-%    \dowithnextbox{\ctxlua{metapost.settext(\number\nextbox,#1)}}\hbox}
-%
-% \def\MPLIBresettexts
-%   {\ctxlua{metapost.resettextexts()}%
-%    \setfalse\MPLIBtextgetdone}
-
-\def\doMPLIBflushenvironment
-  {%\writestatus\m!metapost{flushing environment}%
-   \cldcontext{metapost.tex.get()}%
-   \let\MPLIBflushenvironment\relax}% MPenvironments are depricated}
-
-\let\MPLIBflushenvironment\doMPLIBflushenvironment
 
 \def\MPLIBsettext#1% #2%
-  {\MPLIBflushenvironment
-   \dowithnextbox{\ctxlua{metapost.settext(\number\nextbox,#1)}}\hbox\bgroup
-     \let\MPLIBflushenvironment\doMPLIBflushenvironment
-     \let\next} % gobble open brace
-
-\def\MPLIBresettexts
-  {\ctxlua{metapost.resettextexts()}}
+  {\ifconditional\MPLIBtextgetdone
+   \else
+     \cldcontext{metapost.tex.get()}% MPenvironments are depricated
+     \settrue\MPLIBtextgetdone % no \global needed
+   \fi
+   \dowithnextbox{\ctxlua{metapost.settext(\number\nextbox,#1)}}\hbox}
 
 \def\MPLIBgettextscaled#1#2#3%  why a copy .. can be used more often
   {\ctxlua{metapost.gettext(\number\MPtextbox,#1)}%
@@ -78,7 +55,7 @@
    \ctxlua{metapost.edefsxsy(\number\wd\scratchbox,\number\ht\scratchbox,0)}%
    \vbox to \zeropoint{\vss\hbox to \zeropoint{\scale[\c!sx=\sx,\c!sy=\sy]{\box\scratchbox}\hss}}}
 
-% horrible (we could inline scale and matrix code):
+% horrible:
 
 \def\MPLIBgettextscaledcm#1#2#3#4#5#6#7#8#9% 2-7: sx,rx,ry,sy,tx,ty
   {\ctxlua{metapost.gettext(\number\MPtextbox,#1)}%
@@ -87,16 +64,16 @@
        \vbox to \zeropoint\bgroup
           \vss
           \hbox to \zeropoint \bgroup
-           % \scale[\c!sx=#8,\c!sy=#9]{\raise\dp\MPtextbox\box\MPtextbox}%
-           % \scale[\c!sx=#8,\c!sy=#9,\c!depth=\v!no]{\box\MPtextbox}%
+%             \scale[\c!sx=#8,\c!sy=#9]{\raise\dp\MPtextbox\box\MPtextbox}%
+%             \scale[\c!sx=#8,\c!sy=#9,\c!depth=\v!no]{\box\MPtextbox}%
              \fastsxsy{#8}{#9}{\raise\dp\MPtextbox\box\MPtextbox}%
-             % This gives: LuaTeX warning: Misplaced \pdfrestore .. don't ask me why.
-             % but I'll retry it some day soon.
-             % \dostartscaling{#8}{#9}%
-             %   \raise\dp\MPtextbox\box\MPtextbox
-             % \dostopscaling
-             \forcecolorhack % can go away ... already in the scale macro
-             \hss
+              % This gives: LuaTeX warning: Misplaced \pdfrestore .. don't ask me why.
+              % but I'll retry it some day soon.
+              % \dostartscaling{#8}{#9}%
+              %   \raise\dp\MPtextbox\box\MPtextbox
+              % \dostopscaling
+              \forcecolorhack % needed ? already in the scale macro
+            \hss
          \egroup
        \egroup
    \egroup
@@ -135,8 +112,15 @@
 \def\MPLIBpositionwhd#1#2#3#4#5% bp !
   {\dosavepositionwhd{#1}\zerocount{#2\onebasepoint}{#3\onebasepoint}{#4\onebasepoint}{#5\onebasepoint}\zeropoint}
 
-% \def\MPLIBextrapass#1%
-%   {\ctxlua{metapost.graphic_extra_pass("#1")}}
+\def\MPLIBextrapass#1%
+  {\ctxlua{metapost.graphic_extra_pass("#1")}}
+
+% \def\MPLIBresettexts
+%   {\ctxlua{metapost.resettextexts()}}
+
+\def\MPLIBresettexts
+  {\ctxlua{metapost.resettextexts()}%$
+   \setfalse\MPLIBtextgetdone}
 
 %D Experiment
 

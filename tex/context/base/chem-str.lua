@@ -37,24 +37,24 @@ local concat, insert, remove, unique, sorted = table.concat, table.insert, table
 local processor_tostring = typesetters and typesetters.processors.tostring
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_array_with_repeat = utilities.parsers.settings_to_array_with_repeat
+local formatters = string.formatters
 
 local lpegmatch = lpeg.match
 local P, R, S, C, Cs, Ct, Cc, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.Cc, lpeg.Cmt
 
-local variables    = interfaces and interfaces.variables
-local commands     = commands
-local context      = context
-local formatters   = string.formatters
-local texgetcount  = tex.getcount
+local variables  = interfaces and interfaces.variables
+local context    = context
+local formatters = string.formatters
+local texcount   = tex.count
 
-local v_default    = variables.default
-local v_small      = variables.small
-local v_medium     = variables.medium
-local v_big        = variables.big
-local v_normal     = variables.normal
-local v_fit        = variables.fit
-local v_on         = variables.on
-local v_none       = variables.none
+local v_default = variables.default
+local v_small   = variables.small
+local v_medium  = variables.medium
+local v_big     = variables.big
+local v_normal  = variables.normal
+local v_fit     = variables.fit
+local v_on      = variables.on
+local v_none    = variables.none
 
 local mpnamedcolor = attributes.colors.mpnamedcolor
 local topoints     = number.topoints
@@ -716,7 +716,7 @@ function chemistry.start(settings)
     width,  left,   right, sp_width  = calculated(width, left,  right,factor,unit,scale)
     height, bottom, top,   sp_height = calculated(height,bottom,top,  factor,unit,scale)
     --
-    if width ~= "true" and height ~= "true" and texgetcount("@@trialtypesetting") ~= 0 then
+    if width ~= "true" and height ~= "true" and texcount["@@trialtypesetting"] ~= 0 then
         if trace_structure then
             report_chemistry("skipping trial run")
         end

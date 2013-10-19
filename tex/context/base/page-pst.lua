@@ -8,15 +8,8 @@ if not modules then modules = { } end modules ['page-pst'] = {
 
 -- todo: adapt message
 
-local tonumber, next = tonumber, next
 local format, validstring = string.format, string.valid
 local sortedkeys = table.sortedkeys
-
-local context  = context
-local commands = commands
-
-local texgetcount = tex.getcount
-local texsetcount = tex.setcount
 
 local cache = { }
 
@@ -24,7 +17,6 @@ local function flush(page)
     local c = cache[page]
     if c then
         for i=1,#c do
-         -- characters.showstring(c[i])
             context.viafile(c[i],format("page.%s",validstring(page,"nopage")))
         end
         cache[page] = nil
@@ -40,14 +32,14 @@ local function setnextpage()
     elseif n > 0 then
                         -- upcoming page (realpageno)
     end
-    texsetcount("global","c_page_postponed_blocks_next_page",n)
+    tex.setcount("global","c_page_postponed_blocks_next_page",n)
 end
 
 function commands.flushpostponedblocks(page)
     -- we need to flush previously pending pages as well and the zero
     -- slot is the generic one so that one is always flushed
     local t = sortedkeys(cache)
-    local p = tonumber(page) or texgetcount("realpageno") or 0
+    local p = tonumber(page) or tex.count.realpageno or 0
     for i=1,#t do
         local ti = t[i]
         if ti <= p then
@@ -62,7 +54,7 @@ end
 function commands.registerpostponedblock(page)
     if type(page) == "string" then
         if string.find(page,"^+") then
-            page = texgetcount("realpageno") + (tonumber(page) or 1) -- future delta page
+            page = tex.count.realpageno + (tonumber(page) or 1) -- future delta page
         else
             page = tonumber(page) or 0 -- preferred page or otherwise first possible occasion
         end

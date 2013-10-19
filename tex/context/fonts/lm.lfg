@@ -1,4 +1,4 @@
--- In order to be able to use beta math fonts, we use our own file name and
+-- In order to be ale to use beta math fonts, we use our own file name and
 -- always remap.
 
 return {
@@ -11,13 +11,12 @@ return {
         tweaks = {
             aftercopying = {
                 mathematics.tweaks.fixbadprime, -- prime is too low
-            --  mathematics.tweaks.fixoverline,
             },
         },
         dimensions = {
             -- always applied
-         -- default = {
-         -- },
+--             default = {
+--             },
             -- driven by 'mathdimensions' feature
             signs   = {
                 -- set dimensions

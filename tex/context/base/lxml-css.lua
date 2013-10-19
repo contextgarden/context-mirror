@@ -30,9 +30,8 @@ if tex then
 
     local exheights = fonts.hashes.exheights
     local emwidths  = fonts.hashes.emwidths
-    local texget    = tex.get
 
-    percentage = function(s,pcf) return tonumber(s) * (pcf or texget("hsize"))    end
+    percentage = function(s,pcf) return tonumber(s) * (pcf or tex.hsize)          end
     exheight   = function(s,exf) return tonumber(s) * (exf or exheights[true])    end
     emwidth    = function(s,emf) return tonumber(s) * (emf or emwidths[true])     end
     pixels     = function(s,pxf) return tonumber(s) * (pxf or emwidths[true]/300) end
@@ -110,17 +109,17 @@ css.padding   = padding
 
 -- print(padding("0",pixel,hsize,exheight,emwidth))
 
--- local currentfont = font.current
--- local texget      = tex.get
--- local hashes      = fonts.hashes
--- local quads       = hashes.quads
--- local xheights    = hashes.xheights
+-- local currentfont  = font.current
+-- local texdimen     = tex.dimen
+-- local hashes       = fonts.hashes
+-- local quads        = hashes.quads
+-- local xheights     = hashes.xheights
 --
 -- local function padding(str)
 --     local font     = currentfont()
 --     local exheight = xheights[font]
 --     local emwidth  = quads[font]
---     local hsize    = texget("hsize")/100
+--     local hsize    = texdimen.hsize/100
 --     local pixel    = emwidth/100
 --     return padding(str,pixel,hsize,exheight,emwidth)
 -- end

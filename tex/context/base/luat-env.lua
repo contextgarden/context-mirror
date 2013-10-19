@@ -20,8 +20,6 @@ local report_lua = logs.reporter("resolvers","lua")
 local luautilities = utilities.lua
 local luasuffixes  = luautilities.suffixes
 
-local texgettoks   = tex and tex.gettoks
-
 environment        = environment or { }
 local environment  = environment
 
@@ -30,7 +28,7 @@ local environment  = environment
 local mt = {
     __index = function(_,k)
         if k == "version" then
-            local version = texgettoks and texgettoks("contextversiontoks")
+            local version = tex.toks and tex.toks.contextversiontoks
             if version and version ~= "" then
                 rawset(environment,"version",version)
                 return version
@@ -38,7 +36,7 @@ local mt = {
                 return "unknown"
             end
         elseif k == "kind" then
-            local kind = texgettoks and texgettoks("contextkindtoks")
+            local kind = tex.toks and tex.toks.contextkindtoks
             if kind and kind ~= "" then
                 rawset(environment,"kind",kind)
                 return kind

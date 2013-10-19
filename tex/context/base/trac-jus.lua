@@ -15,16 +15,19 @@ local a_alignstate        = attributes.private("alignstate")
 local a_justification     = attributes.private("justification")
 
 local tracers             = nodes.tracers
-local tracedrule          = tracers.rule
+local setcolor            = tracers.colors.set
+local settransparency     = tracers.transparencies.set
 
 local new_rule            = nodes.pool.rule
-local new_hlist           = nodes.pool.hlist
 local new_glue            = nodes.pool.glue
 local new_kern            = nodes.pool.kern
+local concat_nodes        = nodes.concat
+local hpack_nodes         = node.hpack
+local copy_node           = node.copy
 local get_list_dimensions = node.dimensions
 local hlist_code          = nodes.nodecodes.hlist
 
-local texsetattribute     = tex.setattribute
+local tex_set_attribute   = tex.setattribute
 local unsetvalue          = attributes.unsetvalue
 
 local min_threshold = 0
@@ -33,14 +36,14 @@ local max_threshold = 0
 local function set(n)
     nodes.tasks.enableaction("mvlbuilders", "typesetters.checkers.handler")
     nodes.tasks.enableaction("vboxbuilders","typesetters.checkers.handler")
-    texsetattribute(a_justification,n or 1)
+    tex_set_attribute(a_justification,n or 1)
     function typesetters.checkers.set(n)
-        texsetattribute(a_justification,n or 1)
+        tex_set_attribute(a_justification,n or 1)
     end
 end
 
 local function reset()
-    texsetattribute(a_justification,unsetvalue)
+    tex_set_attribute(a_justification,unsetvalue)
 end
 
 checkers.set   = set
@@ -71,22 +74,58 @@ function checkers.handler(head)
                     if naturalwidth == 0 or delta == 0 then
                         -- special box
                     elseif delta >= max_threshold then
-                        local rule = tracedrule(delta,naturalheight,naturaldepth,list.glue_set == 1 and "trace:dr"or "trace:db")
-                        current.list = list .. new_hlist(rule)
+                        local rule = new_rule(delta,naturalheight,naturaldepth)
+                        list = hpack_nodes(list,width,"exactly")
+                        if list.glue_set == 1 then
+                            setcolor(rule,"trace:dr")
+                            settransparency(rule,"trace:dr")
+                        else
+                            setcolor(rule,"trace:db")
+                            settransparency(rule,"trace:db")
+                        end
+                        rule = hpack_nodes(rule)
+                        rule.width = 0
+                        rule.height = 0
+                        rule.depth = 0
+                        current.list = concat_nodes { list, rule }
+                     -- current.list = concat_nodes { list, new_kern(-naturalwidth+width), rule }
                     elseif delta <= min_threshold then
                         local alignstate = list[a_alignstate]
                         if alignstate == 1 then
-                            local rule = tracedrule(-delta,naturalheight,naturaldepth,"trace:dc")
-                            current.list = new_hlist(rule) .. list
+                            local rule = new_rule(-delta,naturalheight,naturaldepth)
+                            setcolor(rule,"trace:dc")
+                            settransparency(rule,"trace:dc")
+                            rule = hpack_nodes(rule)
+                            rule.height = 0
+                            rule.depth = 0
+                            rule.width = 0
+                            current.list = nodes.concat { rule, list }
                         elseif alignstate == 2 then
-                            local rule = tracedrule(-delta/2,naturalheight,naturaldepth,"trace:dy")
-                            current.list = new_hlist(rule^1) .. list .. new_kern(delta/2) .. new_hlist(rule)
+                            local rule = new_rule(-delta/2,naturalheight,naturaldepth)
+                            setcolor(rule,"trace:dy")
+                            settransparency(rule,"trace:dy")
+                            rule = hpack_nodes(rule)
+                            rule.width = 0
+                            rule.height = 0
+                            rule.depth = 0
+                            current.list = concat_nodes { copy_node(rule), list, new_kern(delta/2), rule }
                         elseif alignstate == 3 then
-                            local rule = tracedrule(-delta,naturalheight,naturaldepth,"trace:dm")
-                            current.list = list .. new_kern(delta) .. new_hlist(rule)
+                            local rule = new_rule(-delta,naturalheight,naturaldepth)
+                            setcolor(rule,"trace:dm")
+                            settransparency(rule,"trace:dm")
+                            rule = hpack_nodes(rule)
+                            rule.height = 0
+                            rule.depth = 0
+                            current.list = concat_nodes { list, new_kern(delta), rule }
                         else
-                            local rule = tracedrule(-delta,naturalheight,naturaldepth,"trace:dg")
-                            current.list = list .. new_kern(delta) .. new_hlist(rule)
+                            local rule = new_rule(-delta,naturalheight,naturaldepth)
+                            setcolor(rule,"trace:dg")
+                            settransparency(rule,"trace:dg")
+                            rule = hpack_nodes(rule)
+                            rule.height = 0
+                            rule.depth = 0
+                            rule.width = 0
+                            current.list = concat_nodes { list, new_kern(delta), rule }
                         end
                     end
                 end

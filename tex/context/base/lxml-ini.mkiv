@@ -87,10 +87,10 @@
 \def\xmldisplayverbatim    #1{\ctxlxml{displayverbatim("#1")}}
 \def\xmlinlineverbatim     #1{\ctxlxml{inlineverbatim("#1")}}
 
-\def\xmlload             #1#2{\ctxlxml{load("#1","#2","\directxmlparameter\c!entities","\directxmlparameter\c!compress")}}
-\def\xmlloadbuffer       #1#2{\ctxlxml{loadbuffer("#1","#2","\directxmlparameter\c!entities","\directxmlparameter\c!compress")}}
-\def\xmlloaddata         #1#2{\ctxlxml{loaddata("#1",\!!bs#2\!!es,"\directxmlparameter\c!entities","\directxmlparameter\c!compress")}}
-\def\xmlloadregistered   #1#2{\ctxlxml{loadregistered("#1","\directxmlparameter\c!entities","\directxmlparameter\c!compress")}}
+\def\xmlload             #1#2{\ctxlxml{load("#1","#2","\p_lxml_entities","\p_lxml_compress")}}
+\def\xmlloadbuffer       #1#2{\ctxlxml{loadbuffer("#1","#2","\p_lxml_entities","\p_lxml_compress")}}
+\def\xmlloaddata         #1#2{\ctxlxml{loaddata("#1",\!!bs#2\!!es,"\p_lxml_entities","\p_lxml_compress")}}
+\def\xmlloadregistered   #1#2{\ctxlxml{loadregistered("#1","\p_lxml_entities","\p_lxml_compress")}}
 \def\xmlloaddirectives     #1{\ctxlxml{directives.load("any:///#1")}}
 \def\xmlpos                #1{\ctxlxml{pos("#1")}}
 
@@ -311,6 +311,17 @@
 
 \appendtoks
     \xmlprocessingmode\executeifdefined{\??xmldefaults\directxmlparameter\c!default}\plusone
+\to \everysetupxml
+
+\unexpanded\def\initializexmlprocessing % is this still needed?
+  {\the\everysetupxml}
+
+\let\p_lxml_entities\empty
+\let\p_lxml_compress\empty
+
+\appendtoks
+    \edef\p_lxml_entities{\directxmlparameter\c!entities}%
+    \edef\p_lxml_compress{\directxmlparameter\c!compress}%
 \to \everysetupxml
 
 \setupxml

@@ -156,28 +156,28 @@
 
 % todo: text
 
-\installcorenamespace{linenumberinglocation}
-\installcorenamespace{linenumberingalternative}
+\installcorenamespace{linennumberinglocation}
+\installcorenamespace{linennumberingalternative}
 
-\expandafter\let\csname\??linenumberinglocation\v!middle       \endcsname \zerocount
-\expandafter\let\csname\??linenumberinglocation\v!left         \endcsname \plusone
-\expandafter\let\csname\??linenumberinglocation\v!margin       \endcsname \plusone
-\expandafter\let\csname\??linenumberinglocation\v!inmargin     \endcsname \plusone
-\expandafter\let\csname\??linenumberinglocation\v!inleft       \endcsname \plusone
-\expandafter\let\csname\??linenumberinglocation\v!right        \endcsname \plustwo
-\expandafter\let\csname\??linenumberinglocation\v!inright      \endcsname \plustwo
-\expandafter\let\csname\??linenumberinglocation\v!inner        \endcsname \plusthree
-\expandafter\let\csname\??linenumberinglocation\v!outer        \endcsname \plusfour
-\expandafter\let\csname\??linenumberinglocation\v!text         \endcsname \plusfive
-\expandafter\let\csname\??linenumberinglocation\v!begin        \endcsname \plussix
-\expandafter\let\csname\??linenumberinglocation\v!end          \endcsname \plusseven
+\expandafter\let\csname\??linennumberinglocation\v!middle       \endcsname \zerocount
+\expandafter\let\csname\??linennumberinglocation\v!left         \endcsname \plusone
+\expandafter\let\csname\??linennumberinglocation\v!margin       \endcsname \plusone
+\expandafter\let\csname\??linennumberinglocation\v!inmargin     \endcsname \plusone
+\expandafter\let\csname\??linennumberinglocation\v!inleft       \endcsname \plusone
+\expandafter\let\csname\??linennumberinglocation\v!right        \endcsname \plustwo
+\expandafter\let\csname\??linennumberinglocation\v!inright      \endcsname \plustwo
+\expandafter\let\csname\??linennumberinglocation\v!inner        \endcsname \plusthree
+\expandafter\let\csname\??linennumberinglocation\v!outer        \endcsname \plusfour
+\expandafter\let\csname\??linennumberinglocation\v!text         \endcsname \plusfive
+\expandafter\let\csname\??linennumberinglocation\v!begin        \endcsname \plussix
+\expandafter\let\csname\??linennumberinglocation\v!end          \endcsname \plusseven
 
-\expandafter\let\csname\??linenumberingalternative\v!middle    \endcsname \zerocount
-\expandafter\let\csname\??linenumberingalternative\v!right     \endcsname \plusone
-\expandafter\let\csname\??linenumberingalternative\v!flushleft \endcsname \plusone
-\expandafter\let\csname\??linenumberingalternative\v!left      \endcsname \plustwo
-\expandafter\let\csname\??linenumberingalternative\v!flushright\endcsname \plustwo
-\expandafter\let\csname\??linenumberingalternative\v!auto      \endcsname \plusfive
+\expandafter\let\csname\??linennumberingalternative\v!middle    \endcsname \zerocount
+\expandafter\let\csname\??linennumberingalternative\v!right     \endcsname \plusone
+\expandafter\let\csname\??linennumberingalternative\v!flushleft \endcsname \plusone
+\expandafter\let\csname\??linennumberingalternative\v!left      \endcsname \plustwo
+\expandafter\let\csname\??linennumberingalternative\v!flushright\endcsname \plustwo
+\expandafter\let\csname\??linennumberingalternative\v!auto      \endcsname \plusfive
 
 % \startlinenumbering[<startvalue>|continue|settings|name]
 % \startlinenumbering[name][<startvalue>|continue|settings]
@@ -339,8 +339,8 @@
    \else
      \setfalse\c_page_lines_fake_number
    \fi
-   \c_page_lines_location \executeifdefined{\??linenumberinglocation   \linenumberingparameter\c!location}\plusone \relax % left
-   \c_page_lines_alignment\executeifdefined{\??linenumberingalternative\linenumberingparameter\c!align   }\plusfive\relax % auto
+   \c_page_lines_location \executeifdefined{\??linennumberinglocation   \linenumberingparameter\c!location}\plusone \relax % left
+   \c_page_lines_alignment\executeifdefined{\??linennumberingalternative\linenumberingparameter\c!align   }\plusfive\relax % auto
    \ifcase\c_page_lines_last_column\relax
      \settrue \c_page_lines_fake_number
    \or

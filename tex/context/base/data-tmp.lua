@@ -250,10 +250,6 @@ end
 caches.getreadablepaths = getreadablepaths
 caches.getwritablepath  = getwritablepath
 
--- this can be tricky as we can have a pre-generated format while at the same time
--- use e.g. a home path where we have updated file databases and so maybe we need
--- to check first if we do have a writable one
-
 function caches.getfirstreadablefile(filename,...)
     local rd = getreadablepaths(...)
     for i=1,#rd do
@@ -265,28 +261,6 @@ function caches.getfirstreadablefile(filename,...)
         end
     end
     return caches.setfirstwritablefile(filename,...)
-end
-
--- next time we have an issue, we can test this instead:
-
-function caches.getfirstreadablefile_TEST_ME_FIRST(filename,...)
-    -- check if we have already written once
-    local fullname, path = caches.setfirstwritablefile(filename,...)
-    if is_readable(fullname) then
-        return fullname, path -- , true
-    end
-    -- otherwise search for pregenerated
-    local rd = getreadablepaths(...)
-    for i=1,#rd do
-        local path = rd[i]
-        local fullname = file.join(path,filename)
-        if is_readable(fullname) then
-            usedreadables[i] = true
-            return fullname, path -- , false
-        end
-    end
-    -- else assume new written
-    return fullname, path -- , true
 end
 
 function caches.setfirstwritablefile(filename,...)

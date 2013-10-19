@@ -25,17 +25,17 @@ function mail.send(specification)
     local server = specification.server or ""
     if not server then
         report_mail("no server specified")
-        return false, "invalid server"
+        return false
     end
     local to = specification.to or specification.recepient or ""
     if to == "" then
-        report_mail("no recipient specified")
-        return false, "invalid recipient"
+        report_mail("no recepient specified")
+        return false
     end
     local from = specification.from or specification.sender or ""
     if from == "" then
         report_mail("no sender specified")
-        return false, "invalid sender"
+        return false
     end
     local message = { }
     local body = specification.body
@@ -68,13 +68,11 @@ function mail.send(specification)
             end
         end
     end
-    local user     = specification.user
-    local password = specification.password
     local result, detail = smtp.send {
         server   = specification.server,
         port     = specification.port,
-        user     = user ~= "" and user or nil,
-        password = password ~= "" and password or nil,
+        user     = specification.user,
+        password = specification.password,
         from     = from,
         rcpt     = to,
         source   = smtp.message {
@@ -89,9 +87,7 @@ function mail.send(specification)
     }
     if detail then
         report_mail("error: %s",detail)
-        return false, detail
     else
         report_mail("message sent")
-        return true
     end
 end

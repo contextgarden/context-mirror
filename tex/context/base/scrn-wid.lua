@@ -9,26 +9,18 @@ if not modules then modules = { } end modules ['scrn-wid'] = {
 interactions             = interactions or { }
 local interactions       = interactions
 
-local context            = context
-
-local allocate           = utilities.storage.allocate
-
-local attachments        = allocate()
-local comments           = allocate()
-local soundclips         = allocate()
-local renderings         = allocate()
-local linkedlists        = allocate()
+local attachments        = { }
+local comments           = { }
+local soundclips         = { }
+local renderings         = { }
+local linkedlists        = { }
 
 interactions.attachments = attachments
 interactions.soundclips  = soundclips
 interactions.renderings  = renderings
 interactions.linkedlists = linkedlists
 
-local texsetbox          = tex.setbox
-
 local jobpasses          = job.passes
-
-local texgetcount        = tex.getcount
 
 local codeinjections     = backends.codeinjections
 local nodeinjections     = backends.nodeinjections
@@ -111,7 +103,7 @@ end
 commands.registerattachment = attachments.register
 
 function commands.insertattachment(specification)
-    texsetbox("b_scrn_attachment_link",(attachments.insert(specification)))
+    tex.box["b_scrn_attachment_link"] = attachments.insert(specification)
 end
 
 -- Comment
@@ -125,7 +117,7 @@ function comments.insert(specification)
 end
 
 function commands.insertcomment(specification)
-    texsetbox("b_scrn_comment_link",(comments.insert(specification)))
+    tex.box["b_scrn_comment_link"] = comments.insert(specification)
 end
 
 -- Soundclips
@@ -203,7 +195,7 @@ end
 function commands.enhancelinkedlist(tag,n)
     local ll = jobpasses.gettobesaved(tag)
     if ll then
-        ll[n] = texgetcount("realpageno")
+        ll[n] = texcount.realpageno
     end
 end
 

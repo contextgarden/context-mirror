@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['data-exp'] = {
 local format, find, gmatch, lower, char, sub = string.format, string.find, string.gmatch, string.lower, string.char, string.sub
 local concat, sort = table.concat, table.sort
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
-local Ct, Cs, Cc, Carg, P, C, S = lpeg.Ct, lpeg.Cs, lpeg.Cc, lpeg.Carg, lpeg.P, lpeg.C, lpeg.S
+local Ct, Cs, Cc, P, C, S = lpeg.Ct, lpeg.Cs, lpeg.Cc, lpeg.P, lpeg.C, lpeg.S
 local type, next = type, next
 
 local ostype = os.type
@@ -26,21 +26,21 @@ local resolvers = resolvers
 -- all, when working on the main resolver code, I don't want to scroll
 -- past this every time. See data-obs.lua for the gsub variant.
 
--- local function f_first(a,b)
---     local t, n = { }, 0
---     for s in gmatch(b,"[^,]+") do
---         n = n + 1 ; t[n] = a .. s
---     end
---     return concat(t,",")
--- end
---
--- local function f_second(a,b)
---     local t, n = { }, 0
---     for s in gmatch(a,"[^,]+") do
---         n = n + 1 ; t[n] = s .. b
---     end
---     return concat(t,",")
--- end
+local function f_first(a,b)
+    local t, n = { }, 0
+    for s in gmatch(b,"[^,]+") do
+        n = n + 1 ; t[n] = a .. s
+    end
+    return concat(t,",")
+end
+
+local function f_second(a,b)
+    local t, n = { }, 0
+    for s in gmatch(a,"[^,]+") do
+        n = n + 1 ; t[n] = s .. b
+    end
+    return concat(t,",")
+end
 
 -- kpsewhich --expand-braces '{a,b}{c,d}'
 -- ac:bc:ad:bd
@@ -68,21 +68,6 @@ local function f_both(a,b)
     end
     return concat(t,",")
 end
-
-local comma   = P(",")
-local nocomma = (1-comma)^1
-local docomma = comma^1/","
-local before  = Cs((nocomma * Carg(1) + docomma)^0)
-local after   = Cs((Carg(1) * nocomma + docomma)^0)
-local both    = Cs(((C(nocomma) * Carg(1))/function(a,b) return lpegmatch(before,b,1,a) end + docomma)^0)
-
-local function f_first (a,b) return lpegmatch(after, b,1,a) end
-local function f_second(a,b) return lpegmatch(before,a,1,b) end
-local function f_both  (a,b) return lpegmatch(both,  b,1,a) end
-
--- print(f_first ("a",    "x,y,z"))
--- print(f_second("a,b,c","x"))
--- print(f_both  ("a,b,c","x,y,z"))
 
 local left  = P("{")
 local right = P("}")

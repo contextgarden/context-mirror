@@ -11,7 +11,6 @@ if not modules then modules = { } end modules ['font-def'] = {
 local format, gmatch, match, find, lower, gsub = string.format, string.gmatch, string.match, string.find, string.lower, string.gsub
 local tostring, next = tostring, next
 local lpegmatch = lpeg.match
-local suffixonly, removesuffix = file.suffix, file.removesuffix
 
 local allocate = utilities.storage.allocate
 
@@ -113,7 +112,7 @@ addlookup("name")
 addlookup("spec")
 
 local function getspecification(str)
-    return lpegmatch(splitter,str or "") -- weird catch
+    return lpegmatch(splitter,str)
 end
 
 definers.getspecification = getspecification
@@ -170,13 +169,12 @@ local resolvers    = definers.resolvers
 
 function resolvers.file(specification)
     local name = resolvefile(specification.name) -- catch for renames
-    local suffix = lower(suffixonly(name))
+    local suffix = file.suffix(name)
     if fonts.formats[suffix] then
-        specification.forced     = suffix
-        specification.forcedname = name
-        specification.name       = removesuffix(name)
+        specification.forced = suffix
+        specification.name = file.removesuffix(name)
     else
-        specification.name       = name -- can be resolved
+        specification.name = name -- can be resolved
     end
 end
 
@@ -187,13 +185,12 @@ function resolvers.name(specification)
         if resolved then
             specification.resolved = resolved
             specification.sub      = sub
-            local suffix = lower(suffixonly(resolved))
+            local suffix = file.suffix(resolved)
             if fonts.formats[suffix] then
-                specification.forced     = suffix
-                specification.forcedname = resolved
-                specification.name       = removesuffix(resolved)
+                specification.forced = suffix
+                specification.name   = file.removesuffix(resolved)
             else
-                specification.name       = resolved
+                specification.name = resolved
             end
         end
     else
@@ -206,11 +203,10 @@ function resolvers.spec(specification)
     if resolvespec then
         local resolved, sub = resolvespec(specification.name,specification.sub,specification) -- we pass specification for overloaded versions
         if resolved then
-            specification.resolved   = resolved
-            specification.sub        = sub
-            specification.forced     = lower(suffixonly(resolved))
-            specification.forcedname = resolved
-            specification.name       = removesuffix(resolved)
+            specification.resolved = resolved
+            specification.sub      = sub
+            specification.forced   = file.suffix(resolved)
+            specification.name     = file.removesuffix(resolved)
         end
     else
         resolvers.name(specification)
@@ -225,8 +221,9 @@ function definers.resolve(specification)
         end
     end
     if specification.forced == "" then
-        specification.forced     = nil
-        specification.forcedname = nil
+        specification.forced = nil
+    else
+        specification.forced = specification.forced
     end
     specification.hash = lower(specification.name .. ' @ ' .. constructors.hashfeatures(specification))
     if specification.sub and specification.sub ~= "" then
@@ -297,7 +294,7 @@ function definers.loadfont(specification)
     if not tfmdata then
         local forced = specification.forced or ""
         if forced ~= "" then
-            local reader = readers[lower(forced)] -- normally forced is already lowered
+            local reader = readers[lower(forced)]
             tfmdata = reader and reader(specification)
             if not tfmdata then
                 report_defining("forced type %a of %a not found",forced,specification.name)

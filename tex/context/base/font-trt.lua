@@ -6,11 +6,7 @@ if not modules then modules = { } end modules ['font-trt'] = {
     license   = "see context related readme files"
 }
 
-local rawget, dofile, next, type = rawget, dofile, next, type
-
-local cleanfilename = fonts.names.cleanfilename
-local splitbase     = file.splitbase
-local lower         = string.lower
+local rawget, dofile, next = rawget, dofile, next
 
 --[[ldx--
 <p>We provide a simple treatment mechanism (mostly because I want to demonstrate
@@ -18,24 +14,11 @@ something in a manual). It's one of the few places where an lfg file gets loaded
 outside the goodies manager.</p>
 --ldx]]--
 
-local treatments       = fonts.treatments or { }
-fonts.treatments       = treatments
-
-local treatmentdata    = treatments.data or utilities.storage.allocate()
-treatments.data        = treatmentdata
-
-treatments.filename    = "treatments.lfg"
-
-local trace_treatments = false  trackers.register("fonts.treatments", function(v) trace_treatments = v end)
-local report_treatment = logs.reporter("fonts","treatment")
-
-treatments.report      = report_treatment
-
-function treatments.trace(...)
-    if trace_treatments then
-        report_treatment(...)
-    end
-end
+local treatments    = utilities.storage.allocate()
+fonts.treatments    = treatments
+local treatmentdata = { }
+treatments.data     = treatmentdata
+treatments.filename = "treatments.lfg"
 
 -- function treatments.load(name)
 --     local filename = resolvers.findfile(name)
@@ -72,45 +55,3 @@ table.setmetatableindex(treatmentdata,function(t,k)
     table.setmetatableindex(treatmentdata,nil)
     return treatmentdata[k]
 end)
-
-local function applyfix(fix,filename,data,n)
-    if type(fix) == "function" then
-        -- we assume that when needed the fix reports something
-     -- if trace_treatments then
-     --     report_treatment("applying treatment %a to file %a",n,filename)
-     -- end
-        fix(data)
-    elseif trace_treatments then
-        report_treatment("invalid treatment %a for file %a",n,filename)
-    end
-end
-
-function treatments.applyfixes(filename,data)
-    local filename = cleanfilename(filename)
-    local pathpart, basepart = splitbase(filename)
-    local treatment = treatmentdata[filename] or treatmentdata[basepart]
-    if treatment then
-        local fixes = treatment.fixes
-        if not fixes then
-            -- nothing to fix
-        elseif type(fixes) == "table" then
-            for i=1,#fixes do
-                applyfix(fixes[i],filename,data,i)
-            end
-        else
-            applyfix(fixes,filename,data,1)
-        end
-    end
-end
-
-function treatments.ignoredfile(fullname)
-    local treatmentdata = treatments.data or { } -- when used outside context
-    local _, basepart = splitbase(fullname)
-    local treatment = treatmentdata[basepart] or treatmentdata[lower(basepart)]
-    if treatment and treatment.ignored then
-        report_treatment("font file %a resolved as %a is ignored, reason %a",basepart,fullname,treatment.comment or "unknown")
-        return true
-    end
-end
-
-fonts.names.ignoredfile = treatments.ignoredfile

@@ -36,7 +36,7 @@ local pdfstring                = lpdf.string
 local pdfverbose               = lpdf.verbose
 local pdfflushstreamfileobject = lpdf.flushstreamfileobject
 
-local texset                   = tex.set
+local texset                   = tex.set -- we could make tex.setglobal
 
 local addtoinfo                = lpdf.addtoinfo
 local injectxmpinfo            = lpdf.injectxmpinfo

@@ -9,37 +9,24 @@ if not modules then modules = { } end modules ['node-ser'] = {
 -- beware, some field names will change in a next releases
 -- of luatex; this is pretty old code that needs an overhaul
 
-local type = type
+local type, format, rep = type, string.format, string.rep
 local concat, tohash, sortedkeys, printtable = table.concat, table.tohash, table.sortedkeys, table.print
-local formatters, format, rep = string.formatters, string.format, string.rep
 
 local allocate = utilities.storage.allocate
 
-local context     = context
-local nodes       = nodes
-local node        = node
+local nodes, node = nodes, node
 
-local traverse    = nodes.traverse
-local is_node     = nodes.is_node
+local traverse    = node.traverse
+local is_node     = node.is_node
 
 local nodecodes   = nodes.nodecodes
-local subtcodes   = nodes.codes
 local noadcodes   = nodes.noadcodes
-local getfields   = nodes.fields
-
-local tonode      = nodes.tonode
+local nodefields  = nodes.fields
 
 local hlist_code  = nodecodes.hlist
 local vlist_code  = nodecodes.vlist
 
------ utfchar     = utf.char
-local f_char      = formatters["%U"]
------ fontchars   = { } table.setmetatableindex(fontchars,function(t,k) fontchars = fonts.hashes.characters return fontchars[k] end)
-
------ f_char      = utilities.strings.chkuni -- formatters["%!chkuni!"]
-
 local expand = allocate ( tohash {
-    -- text:
     "list",         -- list_ptr & ins_ptr & adjust_ptr
     "pre",          --
     "post",         --
@@ -55,23 +42,6 @@ local expand = allocate ( tohash {
     "action",       -- action_ptr
     "value",        -- user_defined nodes with subtype 'a' en 'n'
     "head",
-    -- math:
-    "nucleus",
-    "sup",
-    "sub",
-    "list",
-    "num",
-    "denom",
-    "left",
-    "right",
-    "display",
-    "text",
-    "script",
-    "scriptscript",
-    "delim",
-    "degree",
-    "accent",
-    "bot_accent",
 } )
 
 -- page_insert: "height", "last_ins_ptr", "best_ins_ptr"
@@ -102,9 +72,8 @@ nodes.ignorablefields = ignore
 
 -- not ok yet:
 
-local function astable(n,sparse) -- not yet ok, might get obsolete anyway
-    n = tonode(n)
-    local f, t = getfields(n), { }
+local function astable(n,sparse) -- not yet ok
+    local f, t = nodefields(n), { }
     for i=1,#f do
         local v = f[i]
         local d = n[v]
@@ -132,9 +101,10 @@ setinspector(function(v) if is_node(v) then printtable(astable(v),tostring(v)) r
 
 -- under construction:
 
-local function totable(n,flat,verbose,noattributes) -- nicest: n,true,true,true
+local function totable(n,flat,verbose,noattributes)
+    -- todo: no local function
     local function to_table(n,flat,verbose,noattributes) -- no need to pass
-        local f = getfields(n)
+        local f = nodefields(n)
         local tt = { }
         for k=1,#f do
             local v = f[k]
@@ -148,7 +118,7 @@ local function totable(n,flat,verbose,noattributes) -- nicest: n,true,true,true
                     if type(nv) == "number" or type(nv) == "string" then
                         tt[v] = nv
                     else
-                        tt[v] = totable(nv,flat,verbose,noattributes)
+                        tt[v] = totable(nv,flat,verbose)
                     end
                 elseif type(nv) == "table" then
                     tt[v] = nv -- totable(nv,flat,verbose) -- data
@@ -158,27 +128,7 @@ local function totable(n,flat,verbose,noattributes) -- nicest: n,true,true,true
             end
         end
         if verbose then
-            local subtype = tt.subtype
-            local id = tt.id
-            local nodename = nodecodes[id]
-            tt.id = nodename
-            local subtypes = subtcodes[nodename]
-            if subtypes then
-                tt.subtype = subtypes[subtype]
-            elseif subtype == 0 then
-                tt.subtype = nil
-            else
-                -- we need a table
-            end
-            if tt.char then
-                tt.char = f_char(tt.char)
-            end
-            if tt.small_char then
-                tt.small_char = f_char(tt.small_char)
-            end
-            if tt.large_char then
-                tt.large_char = f_char(tt.large_char)
-            end
+            tt.type = nodecodes[tt.id]
         end
         return tt
     end
@@ -187,18 +137,14 @@ local function totable(n,flat,verbose,noattributes) -- nicest: n,true,true,true
             local t, tn = { }, 0
             while n do
                 tn = tn + 1
-                local nt = to_table(n,flat,verbose,noattributes)
-                t[tn] = nt
-                nt.next = nil
-                nt.prev = nil
+                t[tn] = to_table(n,flat,verbose,noattributes)
                 n = n.next
             end
             return t
         else
-            local t = to_table(n,flat,verbose,noattributes)
-            local n = n.next
-            if n then
-                t.next = totable(n,flat,verbose,noattributes)
+            local t = to_table(n)
+            if n.next then
+                t.next = totable(n.next,flat,verbose,noattributes)
             end
             return t
         end
@@ -207,8 +153,7 @@ local function totable(n,flat,verbose,noattributes) -- nicest: n,true,true,true
     end
 end
 
-nodes.totable = function(n,...) return totable(tonode(n),...) end
-nodes.totree  = function(n)     return totable(tonode(n),true,true,true) end -- no attributes, todo: attributes in k,v list
+nodes.totable = totable
 
 local function key(k)
     return ((type(k) == "number") and "["..k.."]") or k
@@ -216,7 +161,7 @@ end
 
 -- not ok yet; this will become a module
 
--- todo: adapt to nodecodes etc .. use formatters
+-- todo: adapt to nodecodes etc
 
 local function serialize(root,name,handle,depth,m,noattributes)
     handle = handle or print
@@ -241,12 +186,12 @@ local function serialize(root,name,handle,depth,m,noattributes)
     if root then
         local fld
         if root.id then
-            fld = getfields(root) -- we can cache these (todo)
+            fld = nodefields(root) -- we can cache these (todo)
         else
             fld = sortedkeys(root)
         end
         if type(root) == 'table' and root['type'] then -- userdata or table
-            handle(format("%s type=%q,",depth,root['type']))
+            handle(format("%s %s=%q,",depth,'type',root['type']))
         end
         for f=1,#fld do
             local k = fld[f]
@@ -296,7 +241,7 @@ function nodes.serialize(root,name,noattributes)
         n = n + 1
         t[n] = s
     end
-    serialize(tonode(root),name,flush,nil,0,noattributes)
+    serialize(root,name,flush,nil,0,noattributes)
     return concat(t,"\n")
 end
 
@@ -313,7 +258,6 @@ function nodes.visualizebox(...) -- to be checked .. will move to module anyway
 end
 
 function nodes.list(head,n) -- name might change to nodes.type -- to be checked .. will move to module anyway
-    head = tonode(head)
     if not n then
         context.starttyping(true)
     end
@@ -331,7 +275,6 @@ function nodes.list(head,n) -- name might change to nodes.type -- to be checked 
 end
 
 function nodes.print(head,n)
-    head = tonode(head)
     while head do
         local id = head.id
         logs.writer(string.formatters["%w%S"],n or 0,head)

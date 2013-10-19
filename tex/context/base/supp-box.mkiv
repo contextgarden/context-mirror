@@ -1346,11 +1346,11 @@
 %D   {processisolatedwords,processisolatedchars}
 %D
 %D \startbuffer
-%D \processisolatedchars{some more words}           \ruledhbox \par
-%D \processisolatedchars{and some $x + y = z$ math} \ruledhbox \par
+%D \processisolatedchars{some more words}                 \ruledhbox \par
+%D \processisolatedchars{and some $x + y = z$ math}       \ruledhbox \par
 %D \processisolatedchars{and a \hbox{$x + y = z$}}  \ruledhbox \par
-%D \processisolatedwords{some more words}           \ruledhbox \par
-%D \processisolatedwords{and some $x + y = z$ math} \ruledhbox \par
+%D \processisolatedwords{some more words}                 \ruledhbox \par
+%D \processisolatedwords{and some $x + y = z$ math}       \ruledhbox \par
 %D \processisolatedwords{and a \hbox{$x + y = z$}}  \ruledhbox \par
 %D \stopbuffer
 %D
@@ -1379,15 +1379,7 @@
 
 \let\processword\relax
 
-\unexpanded\def\applytosplitstringchar#1#2{\dontleavehmode\ctxcommand{processsplit(\!!bs#2\!!es,"\strippedcsname#1","char")}}
-\unexpanded\def\applytosplitstringword#1#2{\dontleavehmode\ctxcommand{processsplit(\!!bs#2\!!es,"\strippedcsname#1","word")}}
-\unexpanded\def\applytosplitstringline#1#2{\dontleavehmode\ctxcommand{processsplit(\!!bs#2\!!es,"\strippedcsname#1","line")}}
-
-\unexpanded\def\applytosplitstringcharspaced#1#2{\dontleavehmode\ctxcommand{processsplit(\!!bs#2\!!es,"\strippedcsname#1","char",true)}}
-\unexpanded\def\applytosplitstringwordspaced#1#2{\dontleavehmode\ctxcommand{processsplit(\!!bs#2\!!es,"\strippedcsname#1","word",true)}}
-\unexpanded\def\applytosplitstringlinespaced#1#2{\dontleavehmode\ctxcommand{processsplit(\!!bs#2\!!es,"\strippedcsname#1","line",true)}}
-
-%D A variant:
+%D The better variant:
 
 \unexpanded\def\applytocharacters#1%
   {\dontleavehmode
@@ -1738,56 +1730,35 @@
 %D These macros are used in reformatting footnotes, so they do
 %D what they're meant for.
 
-\newdimen\vboxtohboxslack
-\newdimen\hboxestohboxslack
-
-% Create line and fake height of paragraph by messign with heights:
-% a nice hack by DEK himself.
-
-%\unexpanded\def\setvboxtohbox
-%  {\bgroup
-%   \ifdim\baselineskip<16pt \relax
-%     \scratchdimen\baselineskip
-%     \multiply\scratchdimen 1024
-%   \else
-%     \message{cropping \baselineskip to 16pt}%
-%     \scratchdimen\maxdimen
-%   \fi
-%   \divide\scratchdimen \hsize
-%   \multiply\scratchdimen 64
-%   \xdef\vboxtohboxfactor{\withoutpt\the\scratchdimen}%
-%   \egroup}
-%
-% \unexpanded\def\startvboxtohbox
-%  {\bgroup
-%   \setvboxtohbox
-%   \setbox\scratchbox\hbox\bgroup}
-%
-% \unexpanded\def\stopvboxtohbox
-%   {\ifcase\vboxtohboxslack\else\hskip\zeropoint\!!minus\vboxtohboxslack\fi
-%    \egroup
-%    \dp\scratchbox\zeropoint
-%    \ht\scratchbox\vboxtohboxfactor\wd\scratchbox
-%    \box\scratchbox
-%    \egroup}
-
-% More modern:
+\unexpanded\def\setvboxtohbox
+  {\bgroup
+   \ifdim\baselineskip<16pt \relax
+     \scratchdimen\baselineskip
+     \multiply\scratchdimen 1024
+   \else
+     \message{cropping \baselineskip to 16pt}%
+     \scratchdimen\maxdimen
+   \fi
+   \divide\scratchdimen \hsize
+   \multiply\scratchdimen 64
+   \xdef\vboxtohboxfactor{\withoutpt\the\scratchdimen}%
+   \egroup}
 
 \unexpanded\def\startvboxtohbox
-  {\bgroup
-   \setbox\scratchbox\hbox\bgroup}
+ {\bgroup
+  \setvboxtohbox
+  \setbox\scratchbox\hbox\bgroup}
 
 \unexpanded\def\stopvboxtohbox
-  {\ifcase\vboxtohboxslack\else\hskip\zeropoint\!!minus\vboxtohboxslack\fi
-   \egroup
-   \ctxcommand{hboxtovbox(\number\scratchbox)}%
+  {\egroup
+   \dp\scratchbox\zeropoint
+   \ht\scratchbox\vboxtohboxfactor\wd\scratchbox
    \box\scratchbox
    \egroup}
 
-% A possible reconstruction:
-
 \unexpanded\def\convertvboxtohbox
-  {\makehboxofhboxes
+  {\setvboxtohbox
+   \makehboxofhboxes
    \setbox0\hbox{\unhbox0 \removehboxes}%
    \noindent\unhbox0\par}
 
@@ -1804,42 +1775,6 @@
    \ifhbox0
      {\removehboxes}\unhbox0
    \fi}
-
-% And one special for notes:
-
-% \unexpanded\def\starthboxestohbox
-%   {\bgroup
-%    \beginofshapebox}
-%
-% \unexpanded\def\stophboxestohbox
-%   {\endofshapebox
-%    \doreshapebox
-%      {\hbox\bgroup
-%         \unhbox\shapebox
-%         \ifcase\hboxestohboxslack\else\hskip\zeropoint\!!minus\hboxestohboxslack\fi
-%       \egroup}%
-%      \donothing
-%      \donothing
-%      \donothing % get rid of penalties etc
-%    \innerflushshapebox
-%    \convertvboxtohbox
-%    \par
-%    \egroup}
-
-% More modern:
-
-\unexpanded\def\starthboxestohbox
-  {\bgroup
-   \setbox\scratchbox\vbox\bgroup}
-
-\unexpanded\def\stophboxestohbox
-  {\egroup
-   \ctxcommand{vboxlisttohbox(\number\scratchbox,\number\nextbox,\number\dimexpr\hboxestohboxslack)}%
-   \dontleavehmode
-   \unhbox\nextbox
-   \removeunwantedspaces
-   \par
-   \egroup}
 
 %D \macros
 %D   {unhhbox}

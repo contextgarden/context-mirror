@@ -24,7 +24,7 @@ local traverse_id        = node.traverse_id
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 
-local texsetattribute    = tex.setattribute
+local texattribute       = tex.attribute
 local unsetvalue         = attributes.unsetvalue
 
 local nodecodes          = nodes.nodecodes
@@ -55,6 +55,7 @@ digits.actions           = { }
 local actions            = digits.actions
 
 local a_digits           = attributes.private("digits")
+digits.attribute         = a_digits
 
 -- at some point we can manipulate the glyph node so then i need
 -- to rewrite this then
@@ -82,7 +83,7 @@ function nodes.aligned(head,start,stop,width,how)
     end
 end
 
-actions[1] = function(head,start,attr)
+actions[1] = function(head,start,attribute,attr)
     local font = start.font
     local char = start.char
     local unic = chardata[font][char].tounicode
@@ -101,16 +102,16 @@ actions[1] = function(head,start,attr)
     return head, start, false
 end
 
-function digits.handler(head)
+local function process(namespace,attribute,head)
     local done, current, ok = false, head, false
     while current do
         if current.id == glyph_code then
-            local attr = current[a_digits]
+            local attr = current[attribute]
             if attr and attr > 0 then
-                current[a_digits] = unsetvalue
+                current[attribute] = unsetvalue
                 local action = actions[attr%100] -- map back to low number
                 if action then
-                    head, current, ok = action(head,current,attr)
+                    head, current, ok = action(head,current,attribute,attr)
                     done = done and ok
                 elseif trace_digits then
                     report_digits("unknown digit trigger %a",attr)
@@ -147,8 +148,14 @@ function digits.set(n) -- number or 'reset'
             n = unsetvalue
         end
     end
-    texsetattribute(a_digits,n)
+    texattribute[a_digits] = n
 end
+
+digits.handler = nodes.installattributehandler { -- we could avoid this wrapper
+    name      = "digits",
+    namespace = digits,
+    processor = process,
+}
 
 -- interface
 

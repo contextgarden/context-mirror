@@ -571,7 +571,7 @@ local function doit(word,list,best,width,badness,line,set,listdir)
                 local font = found.font
                 local setdynamics = setfontdynamics[font]
                 if setdynamics then
-                    local processes = setdynamics[featurenumber]
+                    local processes = setdynamics(font,featurenumber)
                     for i=1,#processes do -- often more than 1
                         first = processes[i](first,font,featurenumber)
                     end

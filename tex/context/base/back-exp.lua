@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['back-exp'] = {
     license   = "see context related readme files"
 }
 
--- beware: we run out of the 200 local limit
-
 -- language       -> only mainlanguage, local languages should happen through start/stoplanguage
 -- tocs/registers -> maybe add a stripper (i.e. just don't flush entries in final tree)
 -- footnotes      -> css 3
@@ -24,10 +22,10 @@ if not modules then modules = { } end modules ['back-exp'] = {
 -- todo: delay loading (apart from basic tag stuff)
 
 local next, type = next, type
-local format, concat, sub, gsub = string.format, table.concat, string.sub, string.gsub
+local format, match, concat, rep, sub, gsub, gmatch, find = string.format, string.match, table.concat, string.rep, string.sub, string.gsub, string.gmatch, string.find
 local validstring = string.valid
 local lpegmatch = lpeg.match
-local utfchar, utfvalues = utf.char, utf.values
+local utfchar, utfbyte, utfvalues = utf.char, utf.byte, utf.values
 local insert, remove = table.insert, table.remove
 local fromunicode16 = fonts.mappings.fromunicode16
 local sortedhash = table.sortedhash
@@ -83,8 +81,6 @@ local xspaceskip_code   = skipcodes.xspaceskip
 
 local line_code         = listcodes.line
 
-local texgetcount       = tex.getcount
-
 local a_characters      = attributes.private('characters')
 local a_exportstatus    = attributes.private('exportstatus')
 
@@ -98,6 +94,9 @@ local a_textblock       = attributes.private("textblock")
 local traverse_id       = node.traverse_id
 local traverse_nodes    = node.traverse
 local slide_nodelist    = node.slide
+local texattribute      = tex.attribute
+local texdimen          = tex.dimen
+local texcount          = tex.count
 local locate_node       = nodes.locate
 
 local references        = structures.references
@@ -455,7 +454,7 @@ local function checkdocument(root)
 end
 
 function extras.document(result,element,detail,n,fulltag,di)
-    result[#result+1] = format(" language=%q",languagenames[texgetcount("mainlanguagenumber")])
+    result[#result+1] = format(" language=%q",languagenames[tex.count.mainlanguagenumber])
     if not less_state then
         result[#result+1] = format(" file=%q",tex.jobname)
         result[#result+1] = format(" date=%q",os.date())
@@ -2354,7 +2353,7 @@ local function stopexport(v)
             images     = uniqueusedimages(),
             root       = xhtmlfile,
             files      = files,
-            language   = languagenames[texgetcount("mainlanguagenumber")],
+            language   = languagenames[tex.count.mainlanguagenumber],
             title      = validstring(finetuning.title) or validstring(identity.title),
             subtitle   = validstring(finetuning.subtitle) or validstring(identity.subtitle),
             author     = validstring(finetuning.author) or validstring(identity.author),
@@ -2378,13 +2377,13 @@ end
 local function startexport(v)
     if v and not exporting then
         report_export("enabling export to xml")
-     -- not yet known in task-ini
+-- not yet known in task-ini
         appendaction("shipouts","normalizers", "nodes.handlers.export")
-     -- enableaction("shipouts","nodes.handlers.export")
+--      enableaction("shipouts","nodes.handlers.export")
         enableaction("shipouts","nodes.handlers.accessibility")
         enableaction("math",    "noads.handlers.tags")
-     -- appendaction("finalizers","lists","builders.paragraphs.tag")
-     -- enableaction("finalizers","builders.paragraphs.tag")
+--~ appendaction("finalizers","lists","builders.paragraphs.tag")
+--~ enableaction("finalizers","builders.paragraphs.tag")
         luatex.registerstopactions(function() stopexport(v) end)
         exporting = true
     end

@@ -9,7 +9,6 @@ if not modules then modules = { } end modules ['sort-lan'] = {
 
 -- todo: look into uts#10 (2012) ... some experiments ... something
 -- to finish in winter.
--- todo: U+1E9E (german SS)
 
 -- Many vectors were supplied by Wolfgang Schuster and Philipp
 -- Gesang. However this is a quite adapted and reformatted variant

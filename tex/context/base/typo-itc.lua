@@ -28,8 +28,7 @@ local insert_node_after   = node.insert_after
 local delete_node         = nodes.delete
 local end_of_math         = node.end_of_math
 
-local texgetattribute     = tex.getattribute
-local texsetattribute     = tex.setattribute
+local texattribute        = tex.attribute
 local a_italics           = attributes.private("italics")
 local unsetvalue          = attributes.unsetvalue
 
@@ -82,7 +81,7 @@ end
 
 -- todo: clear attribute
 
-function italics.handler(head)
+local function process(namespace,attribute,head)
     local done     = false
     local italic   = 0
     local lastfont = nil
@@ -121,7 +120,7 @@ function italics.handler(head)
                 lastfont = font
             end
             if data then
-                local attr = forcedvariant or current[a_italics]
+                local attr = forcedvariant or current[attribute]
                 if attr and attr > 0 then
                     local cd = data[char]
                     if not cd then
@@ -200,15 +199,21 @@ function italics.set(n)
         enable()
     end
     if n == variables.reset then
-        texsetattribute(a_italics,unsetvalue)
+        texattribute[a_italics] = unsetvalue
     else
-        texsetattribute(a_italics,tonumber(n) or unsetvalue)
+        texattribute[a_italics] = tonumber(n) or unsetvalue
     end
 end
 
 function italics.reset()
-    texsetattribute(a_italics,unsetvalue)
+    texattribute[a_italics] = unsetvalue
 end
+
+italics.handler = nodes.installattributehandler {
+    name      = "italics",
+    namespace = italics,
+    processor = process,
+}
 
 local variables        = interfaces.variables
 local settings_to_hash = utilities.parsers.settings_to_hash
@@ -226,10 +231,10 @@ function commands.setupitaliccorrection(option) -- no grouping !
     end
     if options[variables.global] then
         forcedvariant = variant
-        texsetattribute(a_italics,unsetvalue)
+        texattribute[a_italics] = unsetvalue
     else
         forcedvariant = false
-        texsetattribute(a_italics,variant)
+        texattribute[a_italics] = variant
     end
     if trace_italics then
         report_italics("forcing %a, variant %a",forcedvariant,variant ~= unsetvalue and variant)
@@ -241,11 +246,11 @@ end
 local stack = { }
 
 function commands.pushitaliccorrection()
-    table.insert(stack,{forcedvariant, texgetattribute(a_italics) })
+    table.insert(stack,{forcedvariant, texattribute[a_italics] })
 end
 
 function commands.popitaliccorrection()
     local top = table.remove(stack)
     forcedvariant = top[1]
-    texsetattribute(a_italics,top[2])
+    texattribute[a_italics] = top[2]
 end

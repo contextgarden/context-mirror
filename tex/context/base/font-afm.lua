@@ -54,8 +54,6 @@ afm.addligatures         = true -- best leave this set to true
 afm.addtexligatures      = true -- best leave this set to true
 afm.addkerns             = true -- best leave this set to true
 
-local applyruntimefixes  = fonts.treatments and fonts.treatments.applyfixes
-
 local function setmode(tfmdata,value)
     if value then
         tfmdata.properties.mode = lower(value)
@@ -311,7 +309,7 @@ local addkerns, addligatures, addtexligatures, unify, normalize -- we will imple
 function afm.load(filename)
     -- hm, for some reasons not resolved yet
     filename = resolvers.findfile(filename,'afm') or ""
-    if filename ~= "" and not fonts.names.ignoredfile(filename) then
+    if filename ~= "" then
         local name = file.removesuffix(file.basename(filename))
         local data = containers.read(afm.cache,name)
         local attr = lfs.attributes(filename)
@@ -361,9 +359,6 @@ function afm.load(filename)
                 report_afm("saving %a in cache",name)
                 data = containers.write(afm.cache, name, data)
                 data = containers.read(afm.cache,name)
-            end
-            if applyruntimefixes and data then
-                applyruntimefixes(filename,data)
             end
         end
         return data
@@ -642,10 +637,10 @@ local function copytotfm(data)
         parameters.x_height      = 400
         parameters.quad          = 1000
         --
-        if italicangle and italicangle ~= 0 then
+        if italicangle then
             parameters.italicangle  = italicangle
             parameters.italicfactor = math.cos(math.rad(90+italicangle))
-            parameters.slant        = - math.tan(italicangle*math.pi/180)
+            parameters.slant        = - math.round(math.tan(italicangle*math.pi/180))
         end
         if monospaced then
             parameters.space_stretch = 0

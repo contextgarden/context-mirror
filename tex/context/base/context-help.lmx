@@ -24,41 +24,44 @@
             <?lmx-include context.css ?>
         </style>
         <style type="text/css">
-            #main-left {
-                position: absolute;
-                left: 0% ;
-                top: 0% ;
-                right: 0% ;
-                bottom: 0% ;
-                z-index: 2 ;
-                width: 75% ;
-                height: 100% ;
-                padding: 0% ;
-                margin: 0% ;
-                overflow: auto ;
-                border-style: none ;
-                border-width: 0 ;
-                background-color: <?lua pv('color-background-main-left')?> ;
-            }
-            #main-right {
-                position: absolute;
-                left: 75% ;
-                top: 0% ;
-                right: 0% ;
-                bottom: 0% ;
-                z-index: 2 ;
-                width: 25% ;
-                height: 100% ;
-                padding: 0% ;
-                margin: 0% ;
-                overflow: auto ;
-                border-style: none ;
-                border-width: 0 ;
-                background-color: <?lua pv('color-background-main-right')?> ;
-            }
-            #main-common-settings {
-                padding: 1em ;
-            }
+            <!--
+#main-left {
+	position: absolute;
+	left: 0% ;
+	top: 0% ;
+	right: 0% ;
+	bottom: 0% ;
+	z-index: 2 ;
+	width: 75% ;
+	height: 100% ;
+	padding: 0% ;
+	margin: 0% ;
+	overflow: auto ;
+	border-style: none ;
+	border-width: 0 ;
+	background-color: <?lua pv('color-background-main-left')?> ;
+}
+#main-right {
+	position: absolute;
+	left: 75% ;
+	top: 0% ;
+	right: 0% ;
+	bottom: 0% ;
+	z-index: 2 ;
+	width: 25% ;
+	height: 100% ;
+	padding: 0% ;
+	margin: 0% ;
+	overflow: auto ;
+	border-style: none ;
+	border-width: 0 ;
+	background-color: <?lua pv('color-background-main-right')?> ;
+}
+#main-common-settings {
+	padding: 1em ;
+}
+
+        -->
         </style>
     </head>
     <body>
@@ -72,12 +75,12 @@
             <?lua pv('interfaces') ?>
         </div></div></div></div></div></div></div>
         <div id="main"><div id='main-settings'>
+            <div id="main-right"><div id="main-common-settings">
+                <?lua pv('names') ?>
+            </div></div>
             <div id="main-left"><div id="main-common-settings">
                 <h1><?lua pv('maintitle') ?></h1>
                 <?lua pv('maintext') ?>
-            </div></div>
-            <div id="main-right"><div id="main-common-settings">
-                <?lua pv('names') ?>
             </div></div>
         </div></div>
         <div id="bottom"><div id="bottom-one"><div id="bottom-two">

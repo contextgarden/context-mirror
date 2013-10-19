@@ -16,7 +16,6 @@
 \registerctxluafile{scrn-wid}{1.001}
 
 % todo: expansion in comments (default is expanded)
-% todo: check renderings ... acrobat crashes too easily on missing one
 
 \unprotect
 
@@ -567,8 +566,8 @@
 \definereference[PauseCurrentRendering] [\v!PauseRendering {\currentrendering}]
 \definereference[ResumeCurrentRendering][\v!ResumeRendering{\currentrendering}]
 
-\unexpanded\def\useexternalrendering{\doquadrupleempty\scrn_rendering_use}
-\unexpanded\def\setinternalrendering{\dodoubleempty   \scrn_rendering_set}
+\def\useexternalrendering{\doquadrupleempty\scrn_rendering_use}
+\def\setinternalrendering{\dodoubleempty   \scrn_rendering_set}
 
 \def\scrn_rendering_use[#tag][#mime][#file][#option]%
   {\ctxcommand{registerrendering{
@@ -579,7 +578,7 @@
       option   = "#option",
   }}}
 
-\def\scrn_rendering_set[#tag][#option]% {content} % crappy
+\def\scrn_rendering_set[#tag][#option]% {content}
   {\bgroup
    \dowithnextbox
      {\ctxcommand{registerrendering{
@@ -616,9 +615,17 @@
 \unexpanded\def\placerenderingwindow
   {\dodoubleempty\scrn_rendering_place_window}
 
-\def\scrn_rendering_place_window[#window][#rendering]% do all in lua
+\def\scrn_rendering_place_window[#window][#rendering]%
   {\bgroup
    \edef\currentrendering{\ifsecondargument#rendering\else#window\fi}%
+   \doifelse{\renderingtype\currentrendering}{internal} % an object
+     {\getobjectdimensions{IRO}\currentrendering
+      \d_scrn_rendering_height\dimexpr\objectheight+\objectdepth\relax
+      \d_scrn_rendering_width\objectwidth\relax
+      \dogetobjectreferencepage{IRO}\currentrendering\m_scrn_rendering_page}%
+     {\d_scrn_rendering_height\vsize
+      \d_scrn_rendering_width\hsize
+      \let\m_scrn_rendering_page\realpageno}%
    % create fall back if needed
    \edef\currentrenderingwindow{\namedrenderingwindowparameter{#window}\c!width}% stupid test, we need a proper one here
    \ifx\currentrenderingwindow\empty
@@ -627,21 +634,6 @@
    \else
      \edef\currentrenderingwindow{#window}%
    \fi
-   \edef\currentrenderingtype{\renderingtype\currentrendering}%
-   \ifx\currentrenderingtype\s!internal
-     \getobjectdimensions{IRO}\currentrendering
-     \d_scrn_rendering_height\dimexpr\objectheight+\objectdepth\relax
-     \d_scrn_rendering_width\objectwidth\relax
-     \dogetobjectreferencepage{IRO}\currentrendering\m_scrn_rendering_page
-   \else\ifx\currentrenderingwindow\s!default
-     \d_scrn_rendering_height\vsize
-     \d_scrn_rendering_width \hsize
-     \let\m_scrn_rendering_page\realpageno
-   \else
-     \d_scrn_rendering_height\renderingwindowparameter\c!height
-     \d_scrn_rendering_width \renderingwindowparameter\c!width
-     \let\m_scrn_rendering_page\realpageno
-   \fi\fi
  % todo:
  % \handlereferenceactions{\renderingwindowparameter\c!openpageaction }\dosetuprenderingopenpageaction
  % \handlereferenceactions{\renderingwindowparameter\c!closepageaction}\dosetuprenderingclosepageaction

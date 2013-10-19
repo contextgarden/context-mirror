@@ -6,9 +6,6 @@ if not modules then modules = { } end modules ['scrn-but'] = {
     license   = "see context related readme files"
 }
 
-local commands    = commands
-local context     = context
-
 local f_two_colon = string.formatters["%s:%s"]
 
 function commands.registerbuttons(tag,register,language)

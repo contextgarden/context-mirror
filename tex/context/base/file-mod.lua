@@ -27,8 +27,6 @@ local report_modules = logs.reporter("resolvers","modules")
 commands             = commands or { }
 local commands       = commands
 
-local context        = context
-
 local findbyscheme   = resolvers.finders.byscheme -- use different one
 local iterator       = utilities.parsers.iterator
 

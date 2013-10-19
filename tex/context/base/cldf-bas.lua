@@ -38,8 +38,7 @@ local new_rule     = nodepool.rule
 local new_glyph    = nodepool.glyph
 
 local current_font = font.current
-local texgetcount  = tex.getcount
-local texsetcount  = tex.setcount
+local texcount     = tex.count
 
 function context.char(k) -- used as escape too, so don't change to utf
     if type(k) == "table" then
@@ -164,9 +163,9 @@ context.endhbox = context.egroup
 
 local function allocate(name,what,cmd)
     local a = format("c_syst_last_allocated_%s",what)
-    local n = texgetcount(a) + 1
-    if n <= texgetcount("c_syst_max_allocated_register") then
-        texsetcount(a,n)
+    local n = texcount[a] + 1
+    if n <= texcount.c_syst_max_allocated_register then
+        texcount[a] = n
     end
     context("\\global\\expandafter\\%sdef\\csname %s\\endcsname %s\\relax",cmd or what,name,n)
     return n

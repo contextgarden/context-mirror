@@ -43,7 +43,7 @@ scripts.webserver = scripts.webserver or { }
 dofile(resolvers.findfile("luat-soc.lua","tex"))
 
 local socket = socket or require("socket")
------ http   = http   or require("socket.http") -- not needed
+local http   = http   or require("socket.http") -- not needed
 local format = string.format
 
 -- The following two lists are taken from webrick (ruby) and
@@ -197,7 +197,6 @@ function handlers.generic(client,configuration,data,suffix,iscontent)
         client:send("Connection: close\r\n")
         client:send(format("Content-Length: %s\r\n",#data))
         client:send(format("Content-Type: %s\r\n",(suffix and mimetypes[suffix]) or "text/html"))
-        client:send("Cache-Control: no-cache, no-store, must-revalidate, max-age=0\r\n")
         client:send("\r\n")
         client:send(data)
         client:send("\r\n")
@@ -334,9 +333,8 @@ function scripts.webserver.run(configuration)
                 report("no url")
                 errormessage(client,configuration,404)
             else
-                fullurl = url.unescapeget(fullurl)
                 report("requested url: %s",fullurl)
-             -- fullurl = socket.url.unescape(fullurl) -- happens later
+                fullurl = socket.url.unescape(fullurl) -- still needed?
                 local hashed = url.hashed(fullurl)
                 local query = url.query(hashed.query)
                 local filename = hashed.path -- hm, not query?

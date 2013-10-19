@@ -983,8 +983,6 @@
      {\let\extrafloatlocation#rightpagelocation}%
      {\let\extrafloatlocation#leftpagelocation}}
 
-\let\extrafloatlocation\empty
-
 \installcorenamespace{extrafloataction}
 
 \setvalue{\??extrafloataction      \v!inner}#1{\strc_floats_set_extra_action\v!left       \v!right}
@@ -1009,7 +1007,6 @@
       \processcommacommand[\floatlocation]\strc_floats_check_extra_actions_step
       \ifx\extrafloatlocation\empty \else
         \edef\floatlocation{\extrafloatlocation,\floatlocation}%
-        \setfloatmethodvariables\floatlocation
       \fi}}
 
 \def\strc_floats_check_extra_actions_step#step%

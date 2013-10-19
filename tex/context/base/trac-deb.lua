@@ -11,25 +11,22 @@ local lpeg, status = lpeg, status
 local lpegmatch = lpeg.match
 local format, concat, match = string.format, table.concat, string.match
 local tonumber, tostring = tonumber, tostring
+local texdimen, textoks, texcount = tex.dimen, tex.toks, tex.count
 
 -- maybe tracers -> tracers.tex (and tracers.lua for current debugger)
 
 local report_system = logs.reporter("system","tex")
 
-tracers             = tracers or { }
-local tracers       = tracers
+tracers         = tracers or { }
+local tracers   = tracers
 
-tracers.lists       = { }
-local lists         = tracers.lists
+tracers.lists   = { }
+local lists     = tracers.lists
 
-tracers.strings     = { }
-local strings       = tracers.strings
+tracers.strings = { }
+local strings   = tracers.strings
 
-local texgetdimen   = tex.getdimen
-local texgettoks    = tex.gettoks
-local texgetcount   = tex.getcount
-
-strings.undefined   = "undefined"
+strings.undefined = "undefined"
 
 lists.scratch = {
     0, 2, 4, 6, 8
@@ -74,16 +71,16 @@ function tracers.cs(csname)
 end
 
 function tracers.dimen(name)
-    local d = texgetdimen(name)
+    local d = texdimen[name]
     return d and number.topoints(d) or strings.undefined
 end
 
 function tracers.count(name)
-    return texgetcount(name) or strings.undefined
+    return texcount[name] or strings.undefined
 end
 
 function tracers.toks(name,limit)
-    local t = texgettoks(name)
+    local t = textoks[name]
     return t and string.limit(t,tonumber(limit) or 40) or strings.undefined
 end
 

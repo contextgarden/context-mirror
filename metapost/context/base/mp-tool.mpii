@@ -98,19 +98,6 @@ vardef ddecimal primary p =
   decimal xpart p & " " & decimal ypart p
 enddef ;
 
-%D Plain compatibility
-
-string plain_compatibility_data ; plain_compatibility_data := "" ;
-
-def startplaincompatibility =
-    begingroup ;
-    scantokens plain_compatibility_data ;
-enddef ;
-
-def stopplaincompatibility =
-    endgroup ;
-enddef ;
-
 % is now built in
 
 % extra_endfig := extra_endfig
@@ -2575,5 +2562,3 @@ primarydef p snapped s =
   fi ; )
   p
 enddef ;
-
-let dump = relax ;

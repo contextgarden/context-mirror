@@ -44,14 +44,6 @@
 \registerctxluafile{math-noa}{1.001}
 \registerctxluafile{math-tag}{1.001}
 \registerctxluafile{math-fbk}{1.001}
-\registerctxluafile{math-dir}{1.001}
-
-%D A few compatibility helpers:
-
-\def\Umathbotaccent{\Umathaccent \s!bottom }
-\def\Umathaccents  {\Umathaccent \s!both   }
-
-%D The attributes that we will use:
 
 \definesystemattribute[mathalphabet]   [public]
 \definesystemattribute[mathsize]       [public]
@@ -62,7 +54,6 @@
 \definesystemattribute[mathcategory]   [public]
 \definesystemattribute[mathmode]       [public]
 \definesystemattribute[mathitalics]    [public]
-\definesystemattribute[mathbidi]       [public]
 
 \definesystemattribute[displaymath]    [public]
 
@@ -286,14 +277,8 @@
 \def\utfmathclassfiltered  #1#2{\ctxcommand{utfmathclass  (\!!bs#1\!!es,nil,"#2")}}
 \def\utfmathcommandfiltered#1#2{\ctxcommand{utfmathcommand(\!!bs#1\!!es,nil,"#2")}}
 
-\def\utfmathcommandabove#1{\ctxcommand{utfmathcommandabove(\!!bs#1\!!es)}}
-\def\utfmathcommandbelow#1{\ctxcommand{utfmathcommandbelow(\!!bs#1\!!es)}}
-
 \unexpanded\def\doifelseutfmathaccent          #1{\ctxcommand{doifelseutfmathaccent(\!!bs#1\!!es)}}
 \unexpanded\def\doifelseutfmathaccentfiltered#1#2{\ctxcommand{doifelseutfmathaccent(\!!bs#1\!!es,"#2")}}
-
-\unexpanded\def\doifelseutfmathabove           #1{\ctxcommand{doifelseutfmathabove(\!!bs#1\!!es)}}
-\unexpanded\def\doifelseutfmathbelow           #1{\ctxcommand{doifelseutfmathbelow(\!!bs#1\!!es)}}
 
 %D Not used that much:
 
@@ -364,17 +349,6 @@
 \unexpanded\def\mathcommand#1%
   {\csname\??mathcommand#1\endcsname}
 
-%D Let's define a few comands here:
-
-\definemathcommand [mathstrut]       {\vphantom{(}}
-%definemathcommand [joinrel]         {\mathrel{\mkern-3mu}}
-\definemathcommand [joinrel]   [rel] {\mkern-3mu}
-
-%D We could have a arg variant \unknown\ but not now.
-
-\unexpanded\def\mathopwithlimits#1#2{\mathop{#1{#2}}\limits}
-\unexpanded\def\stackrel        #1#2{\mathrel{\mathop{#2}\limits^{#1}}}
-
 %D Moved from font-ini.mkiv:
 %D
 %D \macros
@@ -413,17 +387,6 @@
 \def\math_enable_mbox
   {\ifdefined\normalhbox\else\let\normalhbox\hbox\fi % ?
    \let\hbox\mbox}
-
-\unexpanded\def\snappedmath#1% sort of \struttedbox
-  {\dontleavehmode
-   \begingroup
-   \setbox\scratchbox\hbox\bgroup
-     \startimath#1\stopimath
-   \egroup
-   \ht\scratchbox\strutht
-   \dp\scratchbox\strutht
-   \box\scratchbox
-   \endgroup}
 
 %D The next hack is needed needed for sine, cosine etc.
 
@@ -531,6 +494,10 @@
 %D \tt test $\sin{(x^{\sin(x^{\sin(x)})})}$ test
 %D \stoptyping
 
+%D Some goodies:
+
+\unexpanded\def\Angstrom{\nomathematics{\Aring}}
+
 %D \macros
 %D   {nonknuthmode, donknuthmode}
 %D
@@ -564,13 +531,12 @@
 \def\activatemathcharacters
   {\the\activatedmathcharacters}
 
-% beware, not runtime, so has to happen at format generation
+% \setnewconstant\primeasciicode 39 % '
 
 \activatemathcharacter\circumflexasciicode
 \activatemathcharacter\underscoreasciicode
 \activatemathcharacter\ampersandasciicode
-
-% \activatemathcharacter\primeasciicode
+\activatemathcharacter\primeasciicode
 
 % not used:
 %
@@ -635,57 +601,57 @@
     \Umathchardef\prime "0 "0 "2032
 \fi
 
-% \let\math_prime_indeed_normal\prime
-%
-% \appendtoks
-%     \let\math_prime_indeed_normal\prime    % gets defined later
-%     \let\mathfontprime\prime               % for tracing
-%     \let\prime\math_prime_indeed           % so this is needed
-% \to \everydump
-%
-% \unexpanded\def\math_prime_indeed
-%   {\iffontchar\textfont\zerocount"FE325\relax
-%     ^\bgroup
-%      \expandafter\math_prime_indeed_virtual % virtual mess (using funny signal)
-%    \else
-%    % \expandafter\math_prime_indeed_normal  % gets collapsed
-%      \expandafter\math_prime_indeed_crapped  % gets collapsed
-%    \fi}
-%
-% \def\math_prime_indeed_crapped
-%   {{^{\math_prime_indeed_normal}}}
-%
-% % \let\prime\math_prime_indeed
-%
-% \def\math_prime_indeed_virtual
-%   {\math_prime_indeed_normal
-%    \futurelet\nexttoken\math_prime_indeed_choice}
-%
-% \installcorenamespace{mathprime}
-%
-% \def\math_prime_indeed_choice
-%   {\csname\??mathprime
-%      \ifx                          '\nexttoken a\else
-%      \ifx  \math_prime_indeed_normal\nexttoken a\else
-%      \ifx                     \prime\nexttoken a\else
-%      \ifx\superscriptcircumflextoken\nexttoken b\else
-%      \ifx\othercircumflextoken      \nexttoken b\else
-%                                                c\fi\fi\fi\fi\fi
-%    \endcsname}
-%
-% \setvalue{\??mathprime a}#1{\math_prime_indeed_virtual}
-% \setvalue{\??mathprime b}#1#2{#2\egroup}
-% \setvalue{\??mathprime c}{\egroup}
-%
-% \let\activemathprime\math_prime_indeed
-%
-% \bgroup
-%
-%     \catcode\primeasciicode\activecatcode
-%
-%     \global\everymathematics\expandafter{\the\everymathematics\let'\math_prime_indeed} % todo: do this at the lua end
-%
-% \egroup
+\let\math_prime_indeed_normal\prime
+
+\appendtoks
+    \let\math_prime_indeed_normal\prime    % gets defined later
+    \let\mathfontprime\prime               % for tracing
+    \let\prime\math_prime_indeed           % so this is needed
+\to \everydump
+
+\unexpanded\def\math_prime_indeed
+  {\iffontchar\textfont\zerocount"FE325\relax
+    ^\bgroup
+     \expandafter\math_prime_indeed_virtual % virtual mess (using funny signal)
+   \else
+   % \expandafter\math_prime_indeed_normal  % gets collapsed
+     \expandafter\math_prime_indeed_crapped  % gets collapsed
+   \fi}
+
+\def\math_prime_indeed_crapped
+  {{^{\math_prime_indeed_normal}}}
+
+\let\prime\math_prime_indeed
+
+\def\math_prime_indeed_virtual
+  {\math_prime_indeed_normal
+   \futurelet\nexttoken\math_prime_indeed_choice}
+
+\installcorenamespace{mathprime}
+
+\def\math_prime_indeed_choice
+  {\csname\??mathprime
+     \ifx                          '\nexttoken a\else
+     \ifx  \math_prime_indeed_normal\nexttoken a\else
+     \ifx                     \prime\nexttoken a\else
+     \ifx\superscriptcircumflextoken\nexttoken b\else
+     \ifx\othercircumflextoken      \nexttoken b\else
+                                               c\fi\fi\fi\fi\fi
+   \endcsname}
+
+\setvalue{\??mathprime a}#1{\math_prime_indeed_virtual}
+\setvalue{\??mathprime b}#1#2{#2\egroup}
+\setvalue{\??mathprime c}{\egroup}
+
+\let\activemathprime\math_prime_indeed
+
+\bgroup
+
+    \catcode\primeasciicode\activecatcode
+
+    \global\everymathematics\expandafter{\the\everymathematics\let'\math_prime_indeed} % todo: do this at the lua end
+
+\egroup
 
 \bgroup
 
@@ -706,8 +672,8 @@
 
 \newconditional \knuthmode
 
-\let\nonknuthmode\relax % no longer needed in MkIV
-\let\donknuthmode\relax % no longer needed in MkIV
+\let\nonknuthmode\relax
+\let\donknuthmode\relax
 
 % \def\nonknuthmode
 %   {\pushcatcodetable
@@ -818,34 +784,7 @@
 \setupmathematics
   [\c!compact=no]
 
-% \enabletrackers[typesetters.directions.math]
-
-%D Right||to||left typesetting in math is supported by the \type {align} parameter
-%D with as option the \type {bidi} parameter. Of course support for special symbols
-%D like square roots depends on the font as well. We probably need to mirror a few
-%D more characters.
-%D
-%D \startbuffer
-%D     \removeunwantedspaces
-%D     \m{   (  1 =   1)   }\quad
-%D     \m{   (123 = 123)   }\quad
-%D     \m{ a (  1 =   1) b }\quad
-%D     \m{ a (123 = 123) b }\quad
-%D     \m{ x = 123 y + (1 / \sqrt {x}) }
-%D \stopbuffer
-%D
-%D \typebuffer
-%D
-%D \starttabulate[|T|T||]
-%D \HL
-%D \NC align \NC bidi \NC                                                  \NC \NR
-%D \HL
-%D \NC l2r   \NC no   \NC \setupmathematics[bidi=no]            \getbuffer \NC \NR
-%D \NC l2r   \NC yes  \NC \setupmathematics[bidi=yes]           \getbuffer \NC \NR
-%D \NC r2l   \NC no   \NC \setupmathematics[align=r2l,bidi=no]  \getbuffer \NC \NR
-%D \NC r2l   \NC yes  \NC \setupmathematics[align=r2l,bidi=yes] \getbuffer \NC \NR
-%D \HL
-%D \stoptabulate
+%D Arabic:
 
 \newconditional\c_math_right_to_left
 
@@ -858,27 +797,8 @@
 
 \appendtoks
     \math_basics_synchronize_direction
-%to \everymathematics % comes too late and I'm not in the mood for a mixed mode kludge now (should be a property of beginmath nodes and passed to callbacks)
+%to \everymathematics % comes too late and I'm not in the mood for a mixed mode kludge now
 \to \everyswitchmathematics
-
-% experimental (needed for an article)
-
-\installcorenamespace {mathbidi}
-
-\newcount\c_math_bidi
-
-\setvalue{\??mathbidi\v!no }{\ctxcommand{setmathdirection(0)}\c_math_bidi\attributeunsetvalue}
-\setvalue{\??mathbidi\v!yes}{\ctxcommand{setmathdirection(1)}\c_math_bidi\plusone}
-
-\appendtoks
-    \edef\p_bidi{\mathematicsparameter\c!bidi}%
-    \csname\??mathbidi\ifcsname\??mathbidi\p_bidi\endcsname\p_bidi\else\v!no\fi\endcsname
-\to \everysetupmathematics
-
-\appendtoks
-    \attribute\mathbidiattribute\ifconditional\c_math_right_to_left\c_math_bidi\else\attributeunsetvalue\fi
-\to \everyswitchmathematics
-
 
 %D Delayed: greek.
 %D
@@ -1087,9 +1007,6 @@
 %     \global\mathcode\c_math_comma \c_math_special
 %     \global\mathcode\c_math_period\c_math_special
 % \to \everyjob
-
-% \activatemathcharacter\c_math_comma
-% \activatemathcharacter\c_math_period
 
 \appendtoks
     \mathcode\c_math_comma \c_math_special
@@ -1722,7 +1639,7 @@
 %
 % \def\displ@y
 %   {\global\dt@ptrue
-%    \math_openup\displayopenupvalue % was \openup\jot
+%    \openup\displayopenupvalue % was \openup\jot
 %    \everycr
 %      {\noalign
 %         {\ifdt@p
@@ -1743,7 +1660,7 @@
 
 \unexpanded\def\math_display_align_hack % I don't like the global, maybe we should push and pop
   {\global\let\math_display_align_hack_indeed\math_display_align_hack_remove_skip
-   \math_openup\displayopenupvalue % was \math_openup\jot
+   \openup\displayopenupvalue % was \openup\jot
    \everycr{\noalign{\math_display_align_hack_indeed}}}
 
 \def\math_display_align_hack_remove_skip
@@ -1806,20 +1723,3 @@
 \def\mathhorizontalcode#1#2{\ctxcommand{horizontalcode(\number#1,\number#2)}}
 
 \protect \endinput
-
-% % not used (yet)
-%
-% \newtoks \everystartimath
-% \newtoks \everystopimath
-%
-% \unexpanded\def\startimath{\Ustartmath\the\everystartimath}
-% \unexpanded\def\stopimath {\the\everystopimath\Ustopmath}
-%
-% \unexpanded\def\m%
-%   {\relax
-%    \ifmmode\expandafter\math_m_stay\else\expandafter\math_m_math\fi}
-%
-% \unexpanded\def\math_m_math#1%
-%   {\startimath#1\stopimath}
-%
-% \let\math_m_stay\firstofoneargument

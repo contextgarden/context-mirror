@@ -21,17 +21,13 @@ local trace_pagestates = false  trackers.register("job.pagestates", function(v) 
 local report_dataset   = logs.reporter("dataset")
 local report_pagestate = logs.reporter("pagestate")
 
-local allocate         = utilities.storage.allocate
+local allocate = utilities.storage.allocate
 local settings_to_hash = utilities.parsers.settings_to_hash
+local texcount = tex.count
+local formatters = string.formatters
+local v_yes = interfaces.variables.yes
 
-local texgetcount      = tex.getcount
-local texsetcount      = tex.setcount
-
-local formatters       = string.formatters
-
-local v_yes            = interfaces.variables.yes
-
-local new_latelua      = nodes.pool.latelua
+local new_latelua = nodes.pool.latelua
 
 local collected = allocate()
 local tobesaved = allocate()
@@ -90,7 +86,7 @@ local function setdata(settings)
         set.index = index
         data.index = index
         data.order = index
-        data.realpage = texgetcount("realpageno")
+        data.realpage = texcount.realpageno
         if trace_datasets then
             report_dataset("action %a, name %a, tag %a, index %a","assign delayed",name,tag,index)
         end
@@ -105,7 +101,7 @@ datasets.setdata = setdata
 function datasets.extend(name,tag)
     local set = sets[name]
     local order = set.order + 1
-    local realpage = texgetcount("realpageno")
+    local realpage = texcount.realpageno
     set.order = order
     local t = tobesaved[name][tag]
     t.realpage = realpage
@@ -211,7 +207,7 @@ local function setstate(settings)
     else
         tag = tonumber(tag) or tag -- autonumber saves keys
     end
-    local realpage = texgetcount("realpageno")
+    local realpage = texcount.realpageno
     local data = realpage
     list[tag] = data
     if trace_pagestates then
@@ -223,7 +219,7 @@ end
 pagestates.setstate = setstate
 
 function pagestates.extend(name,tag)
-    local realpage = texgetcount("realpageno")
+    local realpage = texcount.realpageno
     if trace_pagestates then
         report_pagestate("action %a, name %a, tag %a, preset %a","synchronize",name,tag,realpage)
     end
@@ -265,5 +261,9 @@ end
 function commands.setpagestaterealpageno(name,tag)
     local t = collected[name]
     t = t and (t[tag] or t[tonumber(tag)])
-    texsetcount("realpagestateno",t or texgetcount("realpageno"))
+    if t then
+        texcount.realpagestateno = t
+    else
+        texcount.realpagestateno = texcount.realpageno
+    end
 end

@@ -307,7 +307,6 @@ function constructors.scale(tfmdata,specification)
     if tonumber(specification) then
         specification    = { size = specification }
     end
-    target.specification = specification
     --
     local scaledpoints   = specification.size
     local relativeid     = specification.relativeid
@@ -380,13 +379,13 @@ function constructors.scale(tfmdata,specification)
     targetproperties.mode     = properties.mode     or "base" -- inherited
     --
     local askedscaledpoints   = scaledpoints
-    local scaledpoints, delta = constructors.calculatescale(tfmdata,scaledpoints,nil,specification) -- no shortcut, dan be redefined
+    local scaledpoints, delta = constructors.calculatescale(tfmdata,scaledpoints) -- no shortcut, dan be redefined
     --
     local hdelta         = delta
     local vdelta         = delta
     --
-    target.designsize    = parameters.designsize -- not really needed so it might become obsolete
-    target.units_per_em  = units                 -- just a trigger for the backend
+    target.designsize    = parameters.designsize -- not really needed so it muight become obsolete
+    target.units_per_em  = units                 -- just a trigger for the backend (does luatex use this? if not it will go)
     --
     local direction      = properties.direction or tfmdata.direction or 0 -- pointless, as we don't use omf fonts at all
     target.direction     = direction
@@ -475,13 +474,13 @@ function constructors.scale(tfmdata,specification)
     --
     target.postprocessors = tfmdata.postprocessors
     --
-    local targetslant         = (parameters.slant         or parameters[1] or 0) * factors.pt -- per point
-    local targetspace         = (parameters.space         or parameters[2] or 0) * hdelta
-    local targetspace_stretch = (parameters.space_stretch or parameters[3] or 0) * hdelta
-    local targetspace_shrink  = (parameters.space_shrink  or parameters[4] or 0) * hdelta
-    local targetx_height      = (parameters.x_height      or parameters[5] or 0) * vdelta
-    local targetquad          = (parameters.quad          or parameters[6] or 0) * hdelta
-    local targetextra_space   = (parameters.extra_space   or parameters[7] or 0) * hdelta
+    local targetslant         = (parameters.slant         or parameters[1] or 0)
+    local targetspace         = (parameters.space         or parameters[2] or 0)*hdelta
+    local targetspace_stretch = (parameters.space_stretch or parameters[3] or 0)*hdelta
+    local targetspace_shrink  = (parameters.space_shrink  or parameters[4] or 0)*hdelta
+    local targetx_height      = (parameters.x_height      or parameters[5] or 0)*vdelta
+    local targetquad          = (parameters.quad          or parameters[6] or 0)*hdelta
+    local targetextra_space   = (parameters.extra_space   or parameters[7] or 0)*hdelta
     --
     targetparameters.slant         = targetslant -- slantperpoint
     targetparameters.space         = targetspace
@@ -842,7 +841,7 @@ function constructors.finalize(tfmdata)
     end
     --
     if not parameters.designsize then
-        parameters.designsize = tfmdata.designsize or (factors.pt * 10)
+        parameters.designsize = tfmdata.designsize or 655360
     end
     --
     if not parameters.units then
@@ -1000,11 +999,21 @@ function constructors.hashinstance(specification,force)
         size = math.round(constructors.scaled(size,designsizes[hash]))
         specification.size = size
     end
-    if fallbacks then
-        return hash .. ' @ ' .. tostring(size) .. ' @ ' .. fallbacks
-    else
-        return hash .. ' @ ' .. tostring(size)
-    end
+ -- local mathsize = specification.mathsize or 0
+ -- if mathsize > 0 then
+ --     local textsize = specification.textsize
+ --     if fallbacks then
+ --         return hash .. ' @ ' .. tostring(size) .. ' [ ' .. tostring(mathsize) .. ' : ' .. tostring(textsize) .. ' ] @ ' .. fallbacks
+ --     else
+ --         return hash .. ' @ ' .. tostring(size) .. ' [ ' .. tostring(mathsize) .. ' : ' .. tostring(textsize) .. ' ]'
+ --     end
+ -- else
+        if fallbacks then
+            return hash .. ' @ ' .. tostring(size) .. ' @ ' .. fallbacks
+        else
+            return hash .. ' @ ' .. tostring(size)
+        end
+ -- end
 end
 
 function constructors.setname(tfmdata,specification) -- todo: get specification from tfmdata
@@ -1269,8 +1278,7 @@ function constructors.collectprocessors(what,tfmdata,features,trace,report)
         local whathandler    = handlers[what]
         local whatfeatures   = whathandler.features
         local whatprocessors = whatfeatures.processors
-        local mode           = properties.mode
-        local processors     = whatprocessors[mode]
+        local processors     = whatprocessors[properties.mode]
         if processors then
             for i=1,#processors do
                 local step = processors[i]
@@ -1287,7 +1295,7 @@ function constructors.collectprocessors(what,tfmdata,features,trace,report)
                 end
             end
         elseif trace then
-            report("no feature processors for mode %a for font %a",mode,properties.fullname)
+            report("no feature processors for mode %a for font %a",mode,tfmdata.properties.fullname)
         end
     end
     return processes
@@ -1301,8 +1309,7 @@ function constructors.applymanipulators(what,tfmdata,features,trace,report)
         local whathandler      = handlers[what]
         local whatfeatures     = whathandler.features
         local whatmanipulators = whatfeatures.manipulators
-        local mode             = properties.mode
-        local manipulators     = whatmanipulators[mode]
+        local manipulators     = whatmanipulators[properties.mode]
         if manipulators then
             for i=1,#manipulators do
                 local step = manipulators[i]
@@ -1311,7 +1318,7 @@ function constructors.applymanipulators(what,tfmdata,features,trace,report)
                 if value then
                     local action = step.action
                     if trace then
-                        report("applying feature manipulator %a for mode %a for font %a",feature,mode,properties.fullname)
+                        report("applying feature manipulator %a for mode %a for font %a",feature,mode,tfmdata.properties.fullname)
                     end
                     if action then
                         action(tfmdata,feature,value)

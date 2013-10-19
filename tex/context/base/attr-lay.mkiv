@@ -98,11 +98,8 @@
    \let\setlayoutcomponentattribute  \attr_layoutcomponent_set
    \let\resetlayoutcomponentattribute\attr_layoutcomponent_reset}
 
-\unexpanded\def\attr_layoutcomponent_cleanup
-  {\ctxcommand{cleanuplayers()}}
-
 \appendtoks
-    \attr_layoutcomponent_cleanup
+    \ctxcommand{cleanuplayers()}%
 \to \everyshipout
 
 \protect \endinput

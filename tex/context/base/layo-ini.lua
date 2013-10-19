@@ -6,10 +6,17 @@ if not modules then modules = { } end modules ['layo-ini'] = {
     license   = "see context related readme files"
 }
 
--- We need to share information between the TeX and Lua end about the typographical
--- model. This happens here. This code might move.
+-- We need to share information between the TeX and Lua end
+-- about the typographical model. This happens here.
+--
+-- Code might move.
 
-local texgetcount  = tex.getcount
+-- conditionals.layoutisdoublesided
+-- conditionals.layoutissinglesided
+-- texcount.pagenoshift
+-- texcount.realpageno
+
+local texcount     = tex.count
 local conditionals = tex.conditionals
 
 layouts = {
@@ -26,14 +33,14 @@ function status.leftorrightpagection(left,right)
         return left, right
     elseif conditionals.layoutissinglesided then
         return left, right
-    elseif texgetcount("pagenoshift") % 2 == 0 then
-        if texgetcount("realpageno") % 2 == 0 then
+    elseif texcount.pagenoshift % 2 == 0 then
+        if texcount.realpageno % 2 == 0 then
             return right, left
         else
             return left, right
         end
     else
-        if texgetcount("realpageno") % 2 == 0 then
+        if texcount.realpageno % 2 == 0 then
             return left, right
         else
             return right, left
@@ -46,9 +53,9 @@ function status.isleftpage()
         return false
     elseif conditionals.layoutissinglesided then
         return false
-    elseif texgetcount("pagenoshift") % 2 == 0 then
-        return texgetcount("realpageno") % 2 == 0
+    elseif texcount.pagenoshift % 2 == 0 then
+        return texcount.realpageno % 2 == 0
     else
-        return not texgetcount("realpageno") % 2 == 0
+        return not texcount.realpageno % 2 == 0
     end
 end

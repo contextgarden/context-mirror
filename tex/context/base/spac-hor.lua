@@ -8,10 +8,6 @@ if not modules then modules = { } end modules ['spac-hor'] = {
 
 local match = string.match
 local utfbyte = utf.byte
-
-local context  = context
-local commands = commands
-
 local chardata = characters.data
 
 local can_have_space = table.tohash {

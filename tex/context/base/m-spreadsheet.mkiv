@@ -120,15 +120,12 @@
    \let\stopcell \module_spreadsheet_cell_stop
    \doifassignmentelse{#1}
      {\module_spreadsheet_start
-      \directsetup{spreadsheet:before:\currentspreadsheet}%
       \bTABLE[\c!align=\v!flushright,#1]}
      {\module_spreadsheet_start[#1]%
-      \directsetup{spreadsheet:before:\currentspreadsheet}%
       \bTABLE[\c!align=\v!flushright,#2]}}
 
 \unexpanded\def\stopspreadsheettable
    {\eTABLE
-    \directsetup{spreadsheet:after:\currentspreadsheet}%
     \stopspreadsheet
     \egroup}
 

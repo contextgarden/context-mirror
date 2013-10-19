@@ -85,9 +85,6 @@ local variables          = interfaces.variables
 local dimenfactor        = fonts.helpers.dimenfactor
 local splitdimen         = number.splitdimen
 
-local v_yes              = variables.yes
-local v_foreground       = variables.foreground
-
 local nodecodes          = nodes.nodecodes
 local skipcodes          = nodes.skipcodes
 local whatcodes          = nodes.whatcodes
@@ -153,7 +150,7 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                     else
                         -- possible extensions: when in same class then keep spanning
                         local newlevel, newclass = floor(aa/1000), aa%1000
-                     -- strip = not continue or level == 1 -- 0
+--~                         strip = not continue or level == 1 -- 0
                         if f then
                             if class == newclass then -- and newlevel > level then
                                 head, done = flush(head,f,l,d,level,parent,false), true
@@ -164,7 +161,7 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                         f, l, a = n, n, aa
                         level, class = newlevel, newclass
                         d = data[class]
-                        continue = d.continue == v_yes
+                        continue = d.continue == variables.yes
                     end
                 else
                     if f then
@@ -172,16 +169,8 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                     end
                     f, l, a = nil, nil, nil
                 end
---             elseif f and (id == disc_code or (id == kern_code and n.subtype == kerning_code)) then
---                 l = n
-            elseif id == disc_code then
-                if f then
-                    l = n
-                end
-            elseif id == kern_code and n.subtype == kerning_code then
-                if f then
-                    l = n
-                end
+            elseif f and (id == disc_code or (id == kern_code and n.subtype == kerning_code)) then
+                l = n
             elseif id == hlist_code or id == vlist_code then
                 if f then
                     head, done = flush(head,f,l,d,level,parent,strip), true
@@ -199,12 +188,13 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                 if continue then
                     if id == penalty_code then
                         l = n
-                 -- elseif id == kern_code then
-                 --     l = n
+                    elseif id == kern_code then
+                        l = n
                     elseif id == glue_code then
                         -- catch \underbar{a} \underbar{a} (subtype test is needed)
                         local subtype = n.subtype
-                        if n[attribute] and (subtype == userskip_code or subtype == spaceskip_code or subtype == xspaceskip_code) then
+                        if continue and n[attribute] and
+                            (subtype == userskip_code or subtype == spaceskip_code or subskip == xspaceskip_code) then
                             l = n
                         else
                             head, done = flush(head,f,l,d,level,parent,strip), true
@@ -271,9 +261,9 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     local colorspace   = ma > 0 and ma or f[a_colorspace] or 1
     local color        = ca > 0 and ca or f[a_color]
     local transparency = ta > 0 and ta or f[a_transparency]
-    local foreground = order == v_foreground
+    local foreground = order == variables.foreground
 
-    local e = dimenfactor(unit,f.font) -- what if no glyph node
+    local e = dimenfactor(unit,fontdata[f.font]) -- what if no glyph node
 
     local rt = tonumber(rulethickness)
     if rt then

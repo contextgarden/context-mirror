@@ -429,19 +429,16 @@
    \hskip\cldcontext{fonts.hashes.parameters[font.current()].designsize}sp\relax
    \endgroup}
 
-\definefontsynonym[MetafunDefault][Regular*default]
-
 \startMPinitializations % scale is not yet ok
-    defaultfont:="\truefontname{MetafunDefault}";
-  % defaultscale:=\the\bodyfontsize/10pt; % only when hard coded 10pt
-    defaultscale:=1;
+    defaultfont:="\truefontname{Regular}";
+    defaultscale:=\the\bodyfontsize/10pt;
 \stopMPinitializations
 
 % watch out, this is a type1 font because mp can only handle 8 bit fonts
 
-% \startMPinitializations % scale is not yet ok
-%     defaultfont:="rm-lmtt10";
-% \stopMPinitializations
+\startMPinitializations % scale is not yet ok
+    defaultfont:="rm-lmtt10";
+\stopMPinitializations
 
 %D A signal that we're in combined \CONTEXT||\METAFUN mode:
 
@@ -596,7 +593,7 @@
 %D \stoptyping
 
 \def\overlaystamp % watch the \MPcolor, since colors can be redefined
-  {\overlaywidth:\overlayheight:\overlaydepth:\overlayoffset:\overlaylinewidth:\MPcolor\overlaycolor:\MPcolor\overlaylinecolor}
+  {\overlaywidth:\overlayheight:\overlaydepth:\MPcolor\overlaycolor:\MPcolor\overlaylinecolor}
 
 %D A better approach is to let additional variables play a role
 %D in determining the uniqueness. In the next macro, the
@@ -1097,9 +1094,8 @@
     CurrentLayout:="\currentlayout";
     OverlayWidth:=\overlaywidth;
     OverlayHeight:=\overlayheight;
-    OverlayDepth:=\overlaydepth;
+    OverlayDepth:=\overlayheight;
     OverlayLineWidth:=\overlaylinewidth;
-    OverlayOffset:=\overlayoffset;
     %
     \m_meta_colo_initializations
     %
@@ -1363,67 +1359,6 @@
 \startMPinitializations
     defaultcolormodel := \ifcase\MPcolormethod1\or1\or3\else3\fi;
 \stopMPinitializations
-
-%D macros
-%D  {mprunvar,mpruntab,mprunset}
-%D
-%D \starttyping
-%D \startMPcode
-%D     passvariable("version","1.0") ;
-%D     passvariable("number",123) ;
-%D     passvariable("string","whatever") ;
-%D     passvariable("point",(1.5,2.8)) ;
-%D     passvariable("triplet",(1/1,1/2,1/3)) ;
-%D     passvariable("quad",(1.1,2.2,3.3,4.4)) ;
-%D     passvariable("boolean",false) ;
-%D     passvariable("path",fullcircle scaled 1cm) ;
-%D     draw fullcircle scaled 20pt ;
-%D \stopMPcode
-%D
-%D \ctxlua{inspect(metapost.variables)}
-%D
-%D \MPrunvar{version} \MPruntab{quad}{3} (\MPrunset{triplet}{,})
-%D
-%D $(x,y) = (\MPruntab{point}{1},\MPruntab{point}{2})$
-%D $(x,y) = (\MPrunset{point}{,})$
-%D \stoptyping
-
-\def\MPrunvar  #1{\ctxcommand{mprunvar("#1")}}           \let\mprunvar\MPrunvar
-\def\MPruntab#1#2{\ctxcommand{mprunvar("#1",\number#2)}} \let\mpruntab\MPruntab
-\def\MPrunset#1#2{\ctxcommand{mprunvar("#1","#2")}}      \let\mprunset\MPrunset
-
-%D We also provide an outputless run:
-
-\unexpanded\def\startMPcalculation
-  {\begingroup
-   \setbox\nextbox\hbox\bgroup
-   \dosinglegroupempty\meta_start_calculation}
-
-\def\meta_start_calculation
-  {\iffirstargument
-     \expandafter\meta_start_calculation_instance
-   \else
-     \expandafter\meta_start_calculation_standard
-   \fi}
-
-\def\meta_start_calculation_instance#1#2\stopMPcalculation
-  {\edef\currentMPinstance{#1}%
-   \let\currentMPgraphicname\empty
-   \edef\currentMPformat{\MPinstanceparameter\s!format}%
-   \meta_enable_include
-   \meta_process_graphic{#2;draw origin}%
-   \egroup
-   \endgroup}
-
-\def\meta_start_calculation_standard#1#2\stopMPcalculation
-  {\let\currentMPinstance\defaultMPinstance
-   \let\currentMPgraphicname\empty
-   \edef\currentMPformat{\MPinstanceparameter\s!format}%
-   \meta_process_graphic{#2;draw origin}%
-   \egroup
-   \endgroup}
-
-\let\stopMPcalculation\relax
 
 %D \macros
 %D   {setupMPgraphics}

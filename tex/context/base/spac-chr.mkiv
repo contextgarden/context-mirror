@@ -68,15 +68,12 @@
 \edef\breakablethinspace      {\normalUchar"2009} % quad/8
 \edef\hairspace               {\normalUchar"200A} % quad/8
 \edef\zerowidthspace          {\normalUchar"200B} % 0
-\edef\zerowidthnonjoiner      {\normalUchar"200C} % 0
-\edef\zerowidthjoiner         {\normalUchar"200D} % 0
+\edef\zwnj                    {\normalUchar"200C} % 0
+\edef\zwj                     {\normalUchar"200D} % 0
 \edef\narrownobreakspace      {\normalUchar"202F} % quad/8
 %                             %            "205F  % space/8 (math)
 %    \zerowidthnobreakspace   {\normalUchar"FEFF}
 \udef\zerowidthnobreakspace   {\penalty\plustenthousand\kern\zeropoint}
-
-\let\zwnj\zerowidthnonjoiner
-\let\zwj \zerowidthjoiner
 
 % Shortcuts:
 

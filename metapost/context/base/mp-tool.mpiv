@@ -64,24 +64,6 @@ vardef ddecimal primary p =
     decimal xpart p & " " & decimal ypart p
 enddef ;
 
-%D Plain compatibility:
-
-string plain_compatibility_data ; plain_compatibility_data := "" ;
-
-def startplaincompatibility =
-    begingroup ;
-    scantokens plain_compatibility_data ;
-enddef ;
-
-def stopplaincompatibility =
-    endgroup ;
-enddef ;
-
-%D More neutral:
-
-let triplet    = rgbcolor ;
-let quadruplet = cmykcolor ;
-
 %D Colors:
 
 newinternal nocolormodel   ; nocolormodel   := 1 ;
@@ -210,32 +192,32 @@ def newpair      text v = forsuffixes i=v : save i ; pair      i ; endfor ; endd
 %D box, draw the graphics that may not count, and restore the
 %D bounding box.
 %D
-%D \starttyping
+%D \starttypen
 %D push_boundingbox currentpicture;
 %D pop_boundingbox currentpicture;
-%D \stoptyping
+%D \stoptypen
 %D
 %D The bounding box can be called with:
 %D
-%D \starttyping
+%D \starttypen
 %D boundingbox currentpicture
 %D inner_boundingbox currentpicture
 %D outer_boundingbox currentpicture
-%D \stoptyping
+%D \stoptypen
 %D
 %D Especially the latter one can be of use when we include
 %D the graphic in a document that is clipped to the bounding
 %D box. In such occasions one can use:
 %D
-%D \starttyping
+%D \starttypen
 %D set_outer_boundingbox currentpicture;
-%D \stoptyping
+%D \stoptypen
 %D
 %D Its counterpart is:
 %D
-%D \starttyping
+%D \starttypen
 %D set_inner_boundingbox p
-%D \stoptyping
+%D \stoptypen
 
 path    mfun_boundingbox_stack ;
 numeric mfun_boundingbox_stack_depth ;
@@ -331,12 +313,6 @@ vardef asinh  primary x = ln(x+(x++1))     enddef ;
 vardef sinh   primary x = save xx ; xx = exp x ; (xx-1/xx)/2 enddef ;
 vardef cosh   primary x = save xx ; xx = exp x ; (xx+1/xx)/2 enddef ;
 
-%D Sometimes this is handy:
-
-def undashed =
-    dashed nullpicture
-enddef ;
-
 %D We provide two macros for drawing stripes across a shape.
 %D The first method (with the n suffix) uses another method,
 %D slower in calculation, but more efficient when drawn. The
@@ -345,209 +321,67 @@ enddef ;
 %D the second argument identifier the way the shape is to be
 %D drawn.
 %D
-%D \starttyping
+%D \starttypen
 %D stripe_path_n
 %D   (dashed evenly withcolor blue)
 %D   (filldraw)
 %D   fullcircle xscaled 100 yscaled 40 shifted (50,50) withpen pencircle scaled 4;
-%D \stoptyping
+%D \stoptypen
 %D
 %D The a (or angle) alternative supports arbitrary angles and
 %D is therefore more versatile.
 %D
-%D \starttyping
+%D \starttypen
 %D stripe_path_a
 %D   (withpen pencircle scaled 2 withcolor red)
 %D   (draw)
 %D   fullcircle xscaled 100 yscaled 40 withcolor blue;
-%D \stoptyping
+%D \stoptypen
 %D
-%D We have two alternatives, controlled by arguments or defaults (when arguments
-%D are zero).
-%D
-%D The newer and nicer interface is used as follows (triggered by a question by Mari):
-%D
-%D \starttyping
-%D draw image (draw fullcircle scaled 3cm shifted (0cm,0cm) withcolor green) numberstriped (1,10,3) withcolor red ;
-%D draw image (draw fullcircle scaled 3cm shifted (3cm,0cm) withcolor green) numberstriped (2,20,3) withcolor green ;
-%D draw image (draw fullcircle scaled 3cm shifted (3cm,3cm) withcolor green) numberstriped (3,10,5) withcolor blue ;
-%D draw image (draw fullcircle scaled 3cm shifted (0cm,3cm) withcolor green) numberstriped (4,20,5) withcolor yellow ;
-%D
-%D draw image (draw fullcircle scaled 3cm shifted (6cm,0cm) withcolor green) anglestriped (1,20,2) withcolor red ;
-%D draw image (draw fullcircle scaled 3cm shifted (9cm,0cm) withcolor green) anglestriped (2,40,2) withcolor green ;
-%D draw image (draw fullcircle scaled 3cm shifted (9cm,3cm) withcolor green) anglestriped (3,60,2) withcolor blue ;
-%D draw image (draw fullcircle scaled 3cm shifted (6cm,3cm) withcolor green) anglestriped (4,80,2) withcolor yellow ;
-%D
-%D draw image (
-%D     draw fullcircle scaled 3cm shifted (0cm,0cm) withcolor green withpen pencircle scaled 2mm ;
-%D     draw fullcircle scaled 2cm shifted (0cm,1cm) withcolor blue  withpen pencircle scaled 3mm ;
-%D ) shifted (9cm,0cm) numberstriped (1,10,3) withcolor red ;
-%D
-%D draw image (
-%D     draw fullcircle scaled 3cm shifted (0cm,0cm) withcolor green  withpen pencircle scaled 2mm ;
-%D     draw fullcircle scaled 2cm shifted (0cm,1cm) withcolor blue   withpen pencircle scaled 3mm ;
-%D ) shifted (12cm,0cm) numberstriped (2,10,3) withcolor red ;
-%D
-%D draw image (
-%D     draw fullcircle scaled 3cm shifted (0cm,0cm) withcolor green  withpen pencircle scaled 2mm ;
-%D     draw fullcircle scaled 2cm shifted (0cm,1cm) withcolor blue   withpen pencircle scaled 3mm ;
-%D ) shifted (9cm,5cm) numberstriped (3,10,3) withcolor red ;
-%D
-%D draw image (
-%D     draw fullcircle scaled 3cm shifted (0cm,0cm) withcolor green  withpen pencircle scaled 2mm ;
-%D     draw fullcircle scaled 2cm shifted (0cm,1cm) withcolor blue   withpen pencircle scaled 3mm ;
-%D ) shifted (12cm,5cm) numberstriped (4,10,3) withcolor red ;
-%D \stoptyping
+%D The first alternative obeys:
 
 stripe_n     := 10;
 stripe_slot  :=  3;
+
+%D When no pen dimensions are passed, the slot determines
+%D the spacing.
+%D
+%D The angle alternative is influenced by:
+
+% to be redone: use image
+
 stripe_gap   :=  5;
 stripe_angle := 45;
-
-def mfun_tool_striped_number_action text extra =
-    for i = 1/used_n step 1/used_n until 1 :
-        draw point (1+i) of bounds -- point (3-i) of bounds withpen pencircle scaled penwidth extra ;
-    endfor ;
-    for i = 0 step 1/used_n until 1 :
-        draw point (3+i) of bounds -- point (1-i) of bounds withpen pencircle scaled penwidth extra ;
-    endfor ;
-enddef ;
-
-def mfun_tool_striped_set_options(expr option) =
-    save isinner, swapped ;
-    boolean isinner, swapped ;
-    if option = 1 :
-        isinner := false ;
-        swapped := false ;
-    elseif option = 2 :
-        isinner := true ;
-        swapped := false ;
-    elseif option = 3 :
-        isinner := false ;
-        swapped := true ;
-    elseif option = 4 :
-        isinner := true ;
-        swapped := true ;
-    else :
-        isinner := false ;
-        swapped := false ;
-    fi ;
-enddef ;
-
-vardef mfun_tool_striped_number(expr option, p, s_n, s_slot) text extra =
-    image (
-        begingroup ;
-        save pattern, shape, bounds, penwidth, used_n, used_slot ;
-        picture pattern, shape ; path bounds ; numeric used_s, used_slot ;
-        mfun_tool_striped_set_options(option) ;
-        used_slot := if s_slot = 0 : stripe_slot else : s_slot fi ;
-        used_n := if s_n = 0 : stripe_n else : s_n fi ;
-        shape := image(draw p) ;
-        bounds := boundingbox shape ;
-        penwidth := min(ypart urcorner shape - ypart llcorner shape, xpart urcorner shape - xpart llcorner shape) / (used_slot * used_n) ;
-        pattern := image (
-            if isinner :
-                mfun_tool_striped_number_action extra ;
-                for s within shape :
-                    if stroked s or filled s :
-                        clip currentpicture to pathpart s ;
-                    fi
-                endfor ;
-            else :
-                for s within shape :
-                    if stroked s or filled s :
-                        draw image (
-                            mfun_tool_striped_number_action extra ;
-                            clip currentpicture to pathpart s ;
-                        ) ;
-                    fi ;
-                endfor ;
-            fi ;
-        ) ;
-        if swapped :
-            addto currentpicture also shape ;
-            addto currentpicture also pattern ;
-        else :
-            addto currentpicture also pattern ;
-            addto currentpicture also shape ;
-        fi ;
-        endgroup ;
-    )
-enddef ;
-
-def mfun_tool_striped_angle_action text extra =
-    for i = minimum -.5used_gap step used_gap until maximum :
-        draw (minimum,i) -- (maximum,i) extra ;
-    endfor ;
-    currentpicture := currentpicture rotated used_angle ;
-enddef ;
-
-vardef mfun_tool_striped_angle(expr option, p, s_angle, s_gap) text extra =
-    image (
-        begingroup ;
-        save pattern, shape, mask, maximum, minimum, centrum, used_angle, used_gap ;
-        picture pattern, shape, mask ; numeric maximum, minimum ; pair centrum ; numeric used_angle, used_gap ;
-        mfun_tool_striped_set_options(option) ;
-        used_angle := if s_angle = 0 : stripe_angle else : s_angle fi ;
-        used_gap := if s_gap = 0 : stripe_gap else : s_gap fi ;
-        shape := image(draw p) ;
-        centrum := center shape ;
-        shape := shape shifted - centrum ;
-        mask := shape rotated used_angle ;
-        maximum := max (xpart llcorner mask, xpart urcorner mask, ypart llcorner mask, ypart urcorner mask) ;
-        minimum := min (xpart llcorner mask, xpart urcorner mask, ypart llcorner mask, ypart urcorner mask) ;
-        pattern := image (
-            if isinner :
-                mfun_tool_striped_angle_action extra ;
-                for s within shape :
-                    if stroked s or filled s :
-                        clip currentpicture to pathpart s ;
-                    fi
-                endfor ;
-            else :
-                for s within shape :
-                    if stroked s or filled s :
-                        draw image (
-                            mfun_tool_striped_angle_action extra ;
-                            clip currentpicture to pathpart s ;
-                        ) ;
-                    fi ;
-                endfor ;
-            fi ;
-        ) ;
-        if swapped :
-            addto currentpicture also shape ;
-            addto currentpicture also pattern ;
-        else :
-            addto currentpicture also pattern ;
-            addto currentpicture also shape ;
-        fi ;
-        currentpicture := currentpicture shifted - centrum ;
-        endgroup ;
-    )
-enddef;
-
-newinternal striped_normal_inner  ; striped_normal_inner  := 1 ;
-newinternal striped_reverse_inner ; striped_reverse_inner := 2 ;
-newinternal striped_normal_outer  ; striped_normal_outer  := 3 ;
-newinternal striped_reverse_outer ; striped_reverse_outer := 4 ;
-
-secondarydef p anglestriped s =
-    mfun_tool_striped_angle(redpart s,p,greenpart s,bluepart s)
-enddef ;
-
-secondarydef p numberstriped s =
-    mfun_tool_striped_number(redpart s,p,greenpart s,bluepart s)
-enddef ;
-
-% for old times sake:
 
 def stripe_path_n (text s_spec) (text s_draw) expr s_path =
     do_stripe_path_n (s_spec) (s_draw) (s_path)
 enddef;
 
 def do_stripe_path_n (text s_spec) (text s_draw) (expr s_path) text s_text =
-    draw image(s_draw s_path s_text) numberstriped(3,0,0) s_spec ;
+    begingroup ;
+    save curpic, newpic, bb, pp, ww ;
+    picture curpic, newpic ;
+    path bb, pp ;
+    pp := s_path ;
+    curpic := currentpicture ;
+    currentpicture := nullpicture ;
+    s_draw pp s_text ;
+    bb := boundingbox currentpicture ;
+    newpic := currentpicture ;
+    currentpicture := nullpicture;
+    ww := min(ypart urcorner newpic - ypart llcorner newpic,xpart urcorner newpic - xpart llcorner newpic) ;
+    ww := ww/(stripe_slot*stripe_n) ;
+    for i=1/stripe_n step 1/stripe_n until 1 :
+        draw point (1+i) of bb -- point (3-i) of bb withpen pencircle scaled ww s_spec ;
+    endfor ;
+    for i=0 step 1/stripe_n until 1 :
+        draw point (3+i) of bb -- point (1-i) of bb withpen pencircle scaled ww s_spec;
+    endfor ;
+    clip currentpicture to pp ;
+    addto newpic also currentpicture ;
+    currentpicture := curpic ;
+    addto currentpicture also newpic ;
+    endgroup ;
 enddef ;
 
 def stripe_path_a (text s_spec) (text s_draw) expr s_path =
@@ -555,8 +389,33 @@ def stripe_path_a (text s_spec) (text s_draw) expr s_path =
 enddef;
 
 def do_stripe_path_a (text s_spec) (text s_draw) (expr s_path) text s_text =
-    draw image(s_draw s_path s_text) anglestriped(3,0,0) s_spec ;
-enddef ;
+    begingroup ;
+    save curpic, newpic, pp; picture curpic, newpic; path pp ;
+    pp := s_path ;
+    curpic := currentpicture ;
+    currentpicture := nullpicture ;
+    s_draw pp s_text ;
+    def do_stripe_rotation (expr p) =
+        (currentpicture rotatedaround(center p,stripe_angle))
+    enddef ;
+    s_max := max (
+        xpart llcorner do_stripe_rotation(currentpicture),
+        xpart urcorner do_stripe_rotation(currentpicture),
+        ypart llcorner do_stripe_rotation(currentpicture),
+        ypart urcorner do_stripe_rotation(currentpicture)
+    ) ;
+    newpic := currentpicture ;
+    currentpicture := nullpicture ;
+    for i=-s_max-.5stripe_gap step stripe_gap until s_max :
+        draw (-s_max,i)--(s_max,i) s_spec ;
+    endfor ;
+    currentpicture := do_stripe_rotation(newpic) ;
+    clip currentpicture to pp ;
+    addto newpic also currentpicture ;
+    currentpicture := curpic ;
+    addto currentpicture also newpic ;
+    endgroup ;
+enddef;
 
 %D A few normalizing macros:
 
@@ -904,32 +763,32 @@ primarydef p randomized s = (
         p randomshifted s
     elseif cmykcolor p :
         if color s :
-           ((uniformdeviate cyanpart    s) * cyanpart    p,
-            (uniformdeviate magentapart s) * magentapart p,
-            (uniformdeviate yellowpart  s) * yellowpart  p,
-            (uniformdeviate blackpart   s) * blackpart   p)
+           (uniformdeviate cyanpart    s * cyanpart    p,
+            uniformdeviate magentapart s * magentapart p,
+            uniformdeviate yellowpart  s * yellowpart  p,
+            uniformdeviate blackpart   s * blackpart   p)
         elseif pair s :
-            ((xpart s + (uniformdeviate (ypart s - xpart s))) * p)
+            ((xpart s + uniformdeviate (ypart s - xpart s)) * p)
         else :
-            ((uniformdeviate s) * p)
+            (uniformdeviate s * p)
         fi
     elseif rgbcolor p :
         if color s :
-           ((uniformdeviate redpart   s) * redpart   p,
-            (uniformdeviate greenpart s) * greenpart p,
-            (uniformdeviate bluepart  s) * bluepart  p)
+           (uniformdeviate redpart   s * redpart   p,
+            uniformdeviate greenpart s * greenpart p,
+            uniformdeviate bluepart  s * bluepart  p)
         elseif pair s :
-           ((xpart s + (uniformdeviate (ypart s - xpart s))) * p)
+           ((xpart s + uniformdeviate (ypart s - xpart s)) * p)
         else :
-           ((uniformdeviate s) * p)
+           (uniformdeviate s * p)
         fi
     elseif color p :
         if color s :
-            ((uniformdeviate greypart s) * greypart p)
+            (uniformdeviate greypart s * greypart p)
         elseif pair s :
-            ((xpart s + (uniformdeviate (ypart s - xpart s))) * p)
+            ((xpart s + uniformdeviate (ypart s - xpart s)) * p)
         else :
-            ((uniformdeviate s) * p)
+            (uniformdeviate s * p)
         fi
     else :
         p + uniformdeviate s
@@ -1107,7 +966,7 @@ def mfun_draw_pointlabels text t =
         pair _p_ ; _p_ := (point _i_ of _c_) ;
         _u_ := 12 * defaultscale * _u_ ;
         normaldraw thelabel ( decimal _i_, _p_ shifted if cycle _c_ and (_i_=0) : - fi _u_ ) _lab_opt_ t ;
-    endfor ;
+  endfor ;
 enddef;
 
 %D Bounding box.
@@ -1278,12 +1137,12 @@ def _finarr text t =
     draw arrowhead _apth t ;
 enddef;
 
-def _finarr text t =
+def _findarr text t =
     if autoarrows : set_ahlength (t) fi ;
-    draw arrowpath _apth t ; % arrowpath added
-    fill arrowhead _apth t ;
-    draw arrowhead _apth t undashed ;
-enddef;
+    draw arrowpath         _apth                    t ;
+    fill arrowhead         _apth withpen currentpen t ;
+    fill arrowhead reverse _apth withpen currentpen t ;
+enddef ;
 
 %D Handy too ......
 
@@ -1306,10 +1165,10 @@ def centerarrow (expr pat,tim,len) = pointarrow(pat,tim,len,   0) enddef ;
 %D The \type {along} and \type {on} operators can be used
 %D as follows:
 %D
-%D \starttyping
+%D \starttypen
 %D drawdot point .5  along somepath ;
 %D drawdot point 3cm on    somepath ;
-%D \stoptyping
+%D \stoptypen
 %D
 %D The number denotes a percentage (fraction).
 
@@ -1366,9 +1225,9 @@ vardef freedotlabel (expr str, loc, ori) =
     draw thefreelabel(str,loc,ori) ;
 enddef ;
 
-%D \starttyping
+%D \starttypen
 %D drawarrow anglebetween(line_a,line_b,somelabel) ;
-%D \stoptyping
+%D \stoptypen
 
 newinternal angleoffset ; angleoffset :=  0pt ;
 newinternal anglelength ; anglelength := 20pt ;
@@ -2449,24 +2308,6 @@ enddef ;
 %     )
 % enddef ;
 
-%D New helpers:
-
-def beginglyph(expr unicode, width, height, depth) =
-    beginfig(unicode) ; % the number is irrelevant
-    charcode := unicode ;
-    charwd   := width ;
-    charht   := height ;
-    chardp   := depth ;
-enddef ;
-
-def endglyph =
-    setbounds currentpicture to (boundingbox unitsquare xscaled charwd yscaled (charht + chardp) shifted (0,-chardp)) ;
-    if known charscale :
-        currentpicture := currentpicture scaled charscale ;
-    fi ;
-    endfig ;
-enddef ;
-
 %D Dimensions have bever been an issue as traditional MP can't make that large
 %D pictures, but with double mode we need a catch:
 
@@ -2481,5 +2322,3 @@ def mfun_apply_max_dimensions = % not a generic helper, we want to protect this 
 enddef;
 
 extra_endfig := extra_endfig & "mfun_apply_max_dimensions ;" ;
-
-let dump = relax ;

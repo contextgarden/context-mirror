@@ -18,11 +18,10 @@ local report_tasks  = logs.reporter("tasks")
 
 local allocate      = utilities.storage.allocate
 
-local context       = context
 local nodes         = nodes
 
-local tasks         = nodes.tasks or { }
-nodes.tasks         = tasks
+nodes.tasks         = nodes.tasks or { }
+local tasks         = nodes.tasks
 
 local tasksdata     = { } -- no longer public
 
@@ -114,14 +113,6 @@ function tasks.disableaction(name,action)
     if data then
         sequencers.disableaction(data.list,action)
         data.runner = false
-    end
-end
-
-function tasks.setaction(name,action,value)
-    if value then
-        tasks.enableaction(name,action)
-    else
-        tasks.disableaction(name,action)
     end
 end
 
@@ -326,8 +317,7 @@ end
 
 tasks.new {
     name      = "processors",
-    arguments = 5, -- often only the first is used, and the last three are only passed in hpack filter
---  arguments = 2,
+    arguments = 4,
     processor = nodeprocessor,
     sequence  = {
         "before",      -- for users

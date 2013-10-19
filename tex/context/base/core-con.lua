@@ -216,12 +216,25 @@ function commands.Character (n)   context(chr (n,upper_offset)) end
 function commands.characters(n)   context(chrs(n,lower_offset)) end
 function commands.Characters(n)   context(chrs(n,upper_offset)) end
 
-local weekday    = os.weekday    -- moved to l-os
-local isleapyear = os.isleapyear -- moved to l-os
-local nofdays    = os.nofdays    -- moved to l-os
+local days = {
+    [false] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
+    [true]  = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+}
+
+local function weekday(day,month,year)
+    return date("%w",time{year=year,month=month,day=day}) + 1
+end
+
+local function isleapyear(year)
+    return (year % 400 == 0) or ((year % 100 ~= 0) and (year % 4 == 0))
+end
 
 local function leapyear(year)
     return isleapyear(year) and 1 or 0
+end
+
+local function nofdays(year,month)
+    return days[isleapyear(year)][month]
 end
 
 local function textime()
@@ -241,7 +254,7 @@ converters.nofdays    = nofdays
 converters.textime    = textime
 
 function commands.weekday (day,month,year) context(weekday (day,month,year)) end
-function commands.leapyear(year)           context(leapyear(year))           end -- rather useless, only for ifcase
+function commands.leapyear(year)           context(leapyear(year))           end -- rather useless
 function commands.nofdays (year,month)     context(nofdays (year,month))     end
 
 function commands.year   () context(date("%Y")) end

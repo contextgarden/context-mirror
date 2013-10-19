@@ -66,8 +66,8 @@
 
 \definesystemattribute[mathfamily][public]
 
-\newconditional\c_font_bidirectional_mathstrategy  % can be default, not that much overhead: \settrue\c_font_bidirectional_mathstrategy
-\newconditional\c_font_complete_bold_mathstrategy  \settrue\c_font_complete_bold_mathstrategy
+\newconditional\c_font_bidirectional_math_strategy  % can be default, not that much overhead: \settrue\c_font_bidirectional_math_strategy
+\newconditional\c_font_complete_bold_math_strategy  \settrue\c_font_complete_bold_math_strategy
 
 \def\mathtextsuffix        {-text}
 \def\mathscriptsuffix      {-script}
@@ -224,9 +224,9 @@
     \edef\m_font_class_direction{\ifcsname\??fontclass\fontclass\s!mm\s!direction\endcsname\csname\??fontclass\fontclass\s!mm\s!direction\endcsname\fi}%
     % ...
     \ifx\m_font_class_direction\v!both
-      \settrue\c_font_bidirectional_mathstrategy
+      \settrue\c_font_bidirectional_math_strategy
     \else
-      \setfalse\c_font_bidirectional_mathstrategy
+      \setfalse\c_font_bidirectional_math_strategy
     \fi
 \to \t_font_math_strategies
 
@@ -257,32 +257,32 @@
    \scriptscriptfont\c_font_fam_mr_lr\scriptscriptfont\c_font_fam_mr}
 
 \appendtoks
-    \ifconditional\c_font_bidirectional_mathstrategy
+    \ifconditional\c_font_bidirectional_math_strategy
       \font_helpers_bidirectional_mathstrategy_yes
     \else
       \font_helpers_bidirectional_mathstrategy_nop
     \fi
 \to \t_font_math_strategies
 
-\def\font_helpers_complete_bold_mathstrategy_yes_bidi
+\def\font_helpers_complete_bold_math_strategy_yes_bidi
   {\font_helpers_set_math_family_bold\c_font_fam_mb_lr\s!mblr\c_font_fam_mr_lr
    \font_helpers_set_math_family_bold\c_font_fam_mb_rl\s!mbrl\c_font_fam_mr_rl
    \ifnum\fontid\textfont\c_font_fam_mb=\fontid\textfont\c_font_fam_mb_lr\else
-     \font_helpers_complete_bold_mathstrategy_yes_bidi_changed
+     \font_helpers_complete_bold_math_strategy_yes_bidi_changed
    \fi}
 
-\def\font_helpers_complete_bold_mathstrategy_yes_bidi_changed
+\def\font_helpers_complete_bold_math_strategy_yes_bidi_changed
   {\textfont        \c_font_fam_mb\textfont        \c_font_fam_mb_lr
    \scriptfont      \c_font_fam_mb\scriptfont      \c_font_fam_mb_lr
    \scriptscriptfont\c_font_fam_mb\scriptscriptfont\c_font_fam_mb_lr}
 
-\def\font_helpers_complete_bold_mathstrategy_yes
+\def\font_helpers_complete_bold_math_strategy_yes
   {\font_helpers_set_math_family_bold\c_font_fam_mb\s!mb\c_font_fam_mr\relax
    \ifnum\fontid\textfont\c_font_fam_mb_rl=\fontid\textfont\c_font_fam_mb\else
-     \font_helpers_complete_bold_mathstrategy_yes_changed
+     \font_helpers_complete_bold_math_strategy_yes_changed
    \fi}
 
-\def\font_helpers_complete_bold_mathstrategy_yes_changed
+\def\font_helpers_complete_bold_math_strategy_yes_changed
   {\textfont        \c_font_fam_mb_rl\textfont        \c_font_fam_mb
    \scriptfont      \c_font_fam_mb_rl\scriptfont      \c_font_fam_mb
    \scriptscriptfont\c_font_fam_mb_rl\scriptscriptfont\c_font_fam_mb
@@ -290,12 +290,12 @@
    \scriptfont      \c_font_fam_mb_lr\scriptfont      \c_font_fam_mb
    \scriptscriptfont\c_font_fam_mb_lr\scriptscriptfont\c_font_fam_mb}
 
-\def\font_helpers_complete_bold_mathstrategy_nop
+\def\font_helpers_complete_bold_math_strategy_nop
   {\ifnum\fontid\textfont\c_font_fam_mb=\fontid\textfont\c_font_fam_mr\else
-     \font_helpers_complete_bold_mathstrategy_nop_changed
+     \font_helpers_complete_bold_math_strategy_nop_changed
    \fi}
 
-\def\font_helpers_complete_bold_mathstrategy_nop_changed
+\def\font_helpers_complete_bold_math_strategy_nop_changed
   {\textfont        \c_font_fam_mb   \textfont        \c_font_fam_mr
    \scriptfont      \c_font_fam_mb   \scriptfont      \c_font_fam_mr
    \scriptscriptfont\c_font_fam_mb   \scriptscriptfont\c_font_fam_mr
@@ -306,19 +306,19 @@
    \scriptfont      \c_font_fam_mb_lr\scriptfont      \c_font_fam_mr_lr
    \scriptscriptfont\c_font_fam_mb_lr\scriptscriptfont\c_font_fam_mr_lr}
 
-\def\font_helpers_apply_complete_bold_mathstrategy
-  {\ifconditional\c_font_complete_bold_mathstrategy
-     \ifconditional\c_font_bidirectional_mathstrategy
-       \font_helpers_complete_bold_mathstrategy_yes_bidi
+\def\font_helpers_apply_complete_bold_math_strategy
+  {\ifconditional\c_font_complete_bold_math_strategy
+     \ifconditional\c_font_bidirectional_math_strategy
+       \font_helpers_complete_bold_math_strategy_yes_bidi
      \else
-       \font_helpers_complete_bold_mathstrategy_yes
+       \font_helpers_complete_bold_math_strategy_yes
      \fi
    \else
-     \font_helpers_complete_bold_mathstrategy_nop
+     \font_helpers_complete_bold_math_strategynop
    \fi}
 
 \appendtoks
-    \font_helpers_apply_complete_bold_mathstrategy
+    \font_helpers_apply_complete_bold_math_strategy
 \to \t_font_math_strategies
 
 \ifdefined\defaultmathfamily \else
@@ -330,7 +330,7 @@
 \to \everymathematics
 
 \unexpanded\def\font_helpers_synchronize_math_family_mr
-  {\attribute\mathfamilyattribute\ifconditional\c_font_bidirectional_mathstrategy
+  {\attribute\mathfamilyattribute\ifconditional\c_font_bidirectional_math_strategy
      \ifconditional\c_math_right_to_left
        \plustwo
      \else
@@ -341,7 +341,7 @@
    \fi}
 
 \unexpanded\def\font_helpers_synchronize_math_family_mb
-  {\attribute\mathfamilyattribute\ifconditional\c_font_bidirectional_mathstrategy
+  {\attribute\mathfamilyattribute\ifconditional\c_font_bidirectional_math_strategy
      \ifconditional\c_math_right_to_left
        \ifconditional\c_font_pseudo_bold_math_state\pluseight\else\plusfive\fi
      \else

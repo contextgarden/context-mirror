@@ -597,7 +597,7 @@
 \let\p_page_layouts_height\empty
 
 \def\page_layouts_synchronize
-  {\setups[\layoutparameter\c!preset]\relax
+  {\setups[\layoutparameter\c!preset]%
    \global\leftmarginwidth \layoutparameter\c!leftmargin
    \global\rightmarginwidth\layoutparameter\c!rightmargin
    \global\leftedgewidth   \layoutparameter\c!leftedge
@@ -987,12 +987,13 @@
    \global\let\page_adepts_pop\page_adepts_pop_indeed}
 
 \def\page_adapts_check
-  {\csname\??pageadaptations\the\ifcsname\??pageadaptations\the\realpageno\endcsname\realpageno\else\zerocount\fi\endcsname}
-
-\def\page_adapts_reset
   {\ifcsname\??pageadaptations\the\realpageno\endcsname
-     \global\undefinevalue{\??pageadaptations\the\realpageno}%
+     \page_adapts_check_indeed
    \fi}
+
+\def\page_adapts_check_indeed
+  {\getvalue{\??pageadaptations\the\realpageno}%
+   \letvalue{\??pageadaptations\the\realpageno}\relax}
 
 \def\page_adepts_push_indeed
   {\global\d_page_adepts_pushed_text_height  \textheight
@@ -1004,9 +1005,6 @@
    \page_layouts_synchronize
    \global\let\page_adepts_push\page_adepts_push_indeed
    \global\let\page_adepts_pop\relax}
-
-\appendtoks \page_adapts_check \to \everystarttext
-\appendtoks \page_adapts_reset \to \everyshipout
 
 \let\page_adepts_pop \relax
 \let\page_adepts_push\page_adepts_push_indeed

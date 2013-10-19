@@ -19,7 +19,7 @@ local P, S, C, Cc, lpegmatch = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc, lpeg.match
 
 local report_chart = logs.reporter("chart")
 
-local points     = number.points -- we can use %p instead
+local points     = number.points
 
 local variables  = interfaces.variables
 
@@ -499,7 +499,7 @@ local function process_cells(chart,xoffset,yoffset)
                     local linesettings = settings.line
                     context("flow_shape_line_color := \\MPcolor{%s} ;", linesettings.color)
                     context("flow_shape_fill_color := \\MPcolor{%s} ;", linesettings.backgroundcolor)
-                    context("flow_shape_line_width := %s ; ",           points(linesettings.rulethickness))
+                    context("flow_shape_line_width := %s ; ",           points(linesettingsrulethickness))
                 elseif focus[cell.focus] or focus[cell.name] then
                     local focussettings = settings.focus
                     context("flow_shape_line_color := \\MPcolor{%s} ;", focussettings.framecolor)
@@ -580,7 +580,7 @@ local function process_connections(chart,xoffset,yoffset)
                             context("flow_touchshape := %s ;", linesettings.offset == v_none and "true" or "false")
                             context("flow_dsp_x := %s ; flow_dsp_y := %s ;",connection.dx or 0, connection.dy or 0)
                             context("flow_connection_line_color := \\MPcolor{%s} ;",linesettings.color)
-                            context("flow_connection_line_width := %s ;",points(linesettings.rulethickness))
+                            context("flow_connection_line_width := 2pt ;",points(linesettings.rulethickness))
                             context("flow_connect_%s_%s (%s) (%s,%s,%s) (%s,%s,%s) ;",where_cell,where_other,j,cellx,celly,what_cell,otherx,othery,what_other)
                             context("flow_dsp_x := 0 ; flow_dsp_y := 0 ;")
                         end

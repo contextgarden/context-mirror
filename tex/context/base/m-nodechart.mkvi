@@ -1,19 +1,154 @@
-%D \module
-%D   [       file=m-nodechart,
-%D        version=2011.11.11, % nos sure when it started, needed for fonts-mkiv
-%D          title=\CONTEXT\ Modules,
-%D       subtitle=Node Visualization,
-%D         author=Hans Hagen,
-%D           date=\currentdate,
-%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
-
-%C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
-%C details.
-
-\registerctxluafile{m-nodechart}{1.001}
-
 \usemodule[chart]
+
+\startluacode
+
+local format       = string.format
+local points       = number.nopts
+local ptfactor     = number.dimenfactors.pt
+
+local nodecodes    = nodes.nodecodes
+local kerncodes    = nodes.kerncodes
+local penaltycodes = nodes.penaltycodes
+local gluecodes    = nodes.gluecodes
+local whatsitcodes = nodes.whatsitcodes
+
+local formatters = { }
+
+function formatters.glyph(n,comment)
+    -- subtype font char lang left right uchyph components xoffset yoffset width height depth
+    return format("\\doFLOWglyphnode{%s}{%s}{%s}{%s}{U+%05X}",comment,n.subtype,n.font,n.char,n.char)
+end
+
+function formatters.disc(n,comment)
+    -- pre post replace
+    return format("\\doFLOWdiscnode{%s}{%s}",comment,n.subtype)
+end
+
+function formatters.kern(n,comment)
+    -- subtype kern
+ -- return format("\\doFLOWkernnode{%s}{%s}{%s}",comment,kerncodes[n.subtype],points(n.kern))
+    return format("\\doFLOWkernnode{%s}{%s}{%.4f}",comment,kerncodes[n.subtype],n.kern*ptfactor)
+end
+
+function formatters.penalty(n,comment)
+    -- subtype penalty
+    return format("\\doFLOWpenaltynode{%s}{%s}{%s}",comment,"penalty",n.penalty)
+end
+
+function formatters.glue(n,comment)
+    -- subtype width leader spec (stretch shrink ...
+    local s = n.spec
+ -- return format("\\doFLOWgluenode{%s}{%s}{%s}{%s}{%s}",comment,gluecodes[n.subtype],points(s.width),points(s.stretch),points(s.shrink))
+    return format("\\doFLOWgluenode{%s}{%s}{%.4f}{%.4f}{%.4f}",comment,gluecodes[n.subtype],s.width*ptfactor,s.stretch*ptfactor,s.shrink*ptfactor)
+end
+
+function formatters.whatsit(n,comment)
+    -- subtype width leader spec (stretch shrink ...
+    local subtype = n.subtype
+    local whatsit = whatsitcodes[subtype]
+    if whatsit == "dir" or whatsit == "localpar" then
+        return format("\\doFLOWdirnode{%s}{%s}{%s}",comment,whatsit,n.dir)
+    else
+        return nodecodes[n.id]
+    end
+end
+
+local shapes = { -- I will make a dedicated set of shapes for this.
+    glyph   = "procedure",
+    disc    = "procedure",
+    kern    = "action",
+    penalty = "action",
+    glue    = "action",
+}
+
+local function flow_nodes_to_chart(head,comment,x,y,how)
+    local current = head
+    while current do
+        local nodecode  = nodecodes[current.id]
+        local formatter = formatters[nodecode]
+        local shape     = shapes[nodecode]
+        y = y + 1
+        local next = current.next
+        commands.flow_start_cell { shape = { framecolor = "nodechart:" .. nodecode } }
+        commands.flow_set_name(tostring(current))
+        commands.flow_set_location(x,y)
+        if shape then
+            commands.flow_set_shape(shape)
+        end
+        if formatter then
+            commands.flow_set_text("node",formatter(current,comment))
+        else
+            commands.flow_set_text("node",nodecode)
+        end
+        if next then
+            commands.flow_set_connection("bt","",tostring(next))
+        end
+        if nodecode == "glyph" then
+            local components = current.components
+            if components then
+                commands.flow_set_connection("rl","",tostring(components))
+                commands.flow_stop_cell()
+                n = flow_nodes_to_chart(components,"component",x+2,y-1)
+            else
+                commands.flow_stop_cell()
+            end
+        elseif nodecode == "disc" then
+            local pre = current.pre
+            local pos = current.post
+            local rep = current.replace
+            if pre and not rep and not rep then
+                if pre then
+                    commands.flow_set_connection("rl","",tostring(pre))
+                end
+                commands.flow_stop_cell()
+                if pre then
+                    n = flow_nodes_to_chart(pre,"prebreak",x+1,y-1)
+                end
+            else
+                if pre then
+                    commands.flow_set_connection("+rl","",tostring(pre))
+                end
+                if rep then
+                    commands.flow_set_connection("rl","",tostring(rep))
+                end
+                if pos then
+                    commands.flow_set_connection("-rl","",tostring(pos))
+                end
+                commands.flow_stop_cell()
+                if pre then
+                    n = flow_nodes_to_chart(pre,"prebreak",x+1,y-2)
+                end
+                if rep then
+                    n = flow_nodes_to_chart(rep,"replacement",x+1,y-1)
+                end
+                if pos then
+                    n = flow_nodes_to_chart(pos,"postbreak",x+1,y)
+                end
+            end
+        elseif nodecode == "hlist" then
+            local list = current.list
+            if list then
+                commands.flow_set_connection("rl","",tostring(list))
+                commands.flow_stop_cell()
+                n = flow_nodes_to_chart(list,"list",x+2,y-1)
+            else
+                commands.flow_stop_cell()
+            end
+        else
+            commands.flow_stop_cell()
+        end
+        current = next
+    end
+    return n
+end
+
+function commands.flow_nodes_to_chart(name,head,max)
+    commands.flow_start_chart(name)
+    flow_nodes_to_chart(head,"",1,0)
+    commands.flow_stop_chart()
+end
+
+\stopluacode
 
 \unprotect
 
@@ -65,20 +200,17 @@
 
 % this is a temporary interface ... we will have instances and optional settings
 
-\unexpanded\def\boxtoFLOWchart[#name]#box%
-  {\ctxlua{moduledata.charts.nodes.chart {
-       name = "#name",
-       box  = \number#box,
-   }}}
+\unexpanded\def\boxtoFLOWchart#name#max#box%
+  {\ctxcommand{flow_nodes_to_chart("#name",tex.box[\number#box].list,\number#max)}}
 
-\unexpanded\def\nextboxtoFLOWchart[#name]%
-  {\dowithnextbox{\boxtoFLOWchart[#name]\nextbox}}
+\unexpanded\def\nextboxtoFLOWchart#name#max%
+  {\dowithnextbox{\boxtoFLOWchart{#name}{#max}\nextbox}}
 
-\unexpanded\def\hboxtoFLOWchart[#name]%
-  {\nextboxtoFLOWchart[#name]\hbox}
+\unexpanded\def\hboxtoFLOWchart#name#max%
+  {\nextboxtoFLOWchart{#name}{#max}\hbox}
 
-\unexpanded\def\vboxtoFLOWchart[#name]%
-  {\nextboxtoFLOWchart[#name]\vbox}
+\unexpanded\def\vboxtoFLOWchart#name#max%
+  {\nextboxtoFLOWchart{#name}{#max}\vbox}
 
 \protect
 
@@ -92,7 +224,7 @@
 
 \startTEXpage[offset=10pt]
 
-    \hboxtoFLOWchart[dummy]{an affil\discretionary{-}{-}{!}iation}
+    \hboxtoFLOWchart{dummy}{3}{an affil\discretionary{-}{-}{!}iation}
 
     \FLOWchart[dummy][width=14em,height=3em,dx=1em,dy=.75em,hcompact=yes]
 
@@ -100,7 +232,7 @@
 
 \startTEXpage[offset=10pt]
 
-    \hboxtoFLOWchart[dummy]{an affiliation}
+    \hboxtoFLOWchart{dummy}{3}{an affiliation}
 
     \FLOWchart[dummy][width=14em,height=3em,dx=.5em,dy=.75em,hcompact=yes]
 
@@ -108,7 +240,7 @@
 
 \startTEXpage[offset=10pt]
 
-    \hboxtoFLOWchart[dummy]{\nl effe fijn fietsen}
+    \hboxtoFLOWchart{dummy}{3}{\nl effe fijn fietsen}
 
     \FLOWchart[dummy][width=14em,height=3em,dx=.5em,dy=.75em,hcompact=yes]
 
@@ -116,7 +248,7 @@
 
 \startTEXpage[offset=10pt]
 
-    \hboxtoFLOWchart[dummy]{\righttoleft t\kern 1pt est}
+    \hboxtoFLOWchart{dummy}{3}{\righttoleft t\kern 1pt est}
 
     \FLOWchart[dummy][width=14em,height=3em,dx=.5em,dy=.75em,hcompact=yes]
 

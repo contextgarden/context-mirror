@@ -17,23 +17,23 @@ local report_stripping = logs.reporter("fonts","stripping")
 
 local nodes, node = nodes, node
 
-local delete_node     = nodes.delete
-local replace_node    = nodes.replace
-local copy_node       = node.copy
+local delete_node   = nodes.delete
+local replace_node  = nodes.replace
+local copy_node     = node.copy
 
-local chardata        = characters.data
-local collected       = false
-local a_stripping     = attributes.private("stripping")
-local fontdata        = fonts.hashes.identifiers
-local tasks           = nodes.tasks
+local chardata      = characters.data
+local collected     = false
+local a_stripping   = attributes.private("stripping")
+local fontdata      = fonts.hashes.identifiers
+local tasks         = nodes.tasks
 
-local texsetattribute = tex.setattribute
-local unsetvalue      = attributes.unsetvalue
+local texattribute  = tex.attribute
+local unsetvalue    = attributes.unsetvalue
 
-local v_reset         = interfaces.variables.reset
+local v_reset       = interfaces.variables.reset
 
-local nodecodes       = nodes.nodecodes
-local glyph_code      = nodecodes.glyph
+local nodecodes     = nodes.nodecodes
+local glyph_code    = nodecodes.glyph
 
 -- todo: other namespace -> typesetters
 
@@ -115,7 +115,7 @@ function stripping.set(n) -- number or 'reset'
             n = unsetvalue
         end
     end
-    texsetattribute(a_stripping,n)
+    texattribute[a_stripping] = n
 end
 
 -- why not in task-ini?

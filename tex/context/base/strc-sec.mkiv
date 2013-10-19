@@ -432,9 +432,6 @@
 \unexpanded\def\startnamedsection
   {\dotripleempty\strc_sectioning_start_named_section}
 
-% todo: add grouping but where: before/after trickery .. probably inside because one can always add
-% grouping to the before/after settings
-
 \unexpanded\def\strc_sectioning_start_named_section[#1]% [#2][#3]
   {\pushmacro\currentnamedsection
    \edef\currentnamedsection{#1}%
@@ -591,13 +588,11 @@
    \headparameter\c!beforesection % beware, no users vars set yet
    \the\everybeforehead
    \strc_sectioning_handle{#1}{#2}{#3}% name -- -- -- userdata (we might move the tagged to here)
-   % potential: \bgroup (can be optional: grouped = yes)
    \headparameter\c!insidesection}
 
 \unexpanded\def\strc_sectioning_stop[#1]% !!! also used at lua end
   {\dostoptagged
    \dostoptagged
-   % potential: \egroup
   %\globalpopmacro\currenthead % so we do a hard recover
    \xdef\currenthead{#1}% recover
    \headparameter\c!aftersection
@@ -686,15 +681,8 @@
      \setfalse\headshownumber
    \fi}
 
-\newtoks\everyheadsynchronization
-
-\appendtoks
-    \currentstructuresynchronize
-\to \everyheadsynchronization
-
 \unexpanded\def\theheadsynchonization
-  {\the\everyheadsynchronization
-   \currentstructuresynchronize}
+  {\currentstructuresynchronize}
 
 % BEWARE: \marking[section]{my text} does not work as we use list indices instead
 % so we need a 'keep track of raw set option' (or maybe a funny internal prefix)

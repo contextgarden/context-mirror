@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['typo-krn'] = {
     license   = "see context related readme files"
 }
 
--- glue is still somewhat suboptimal
-
 local next, type, tonumber = next, type, tonumber
 local utfchar = utf.char
 
@@ -22,7 +20,7 @@ local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 local end_of_math        = node.end_of_math
 
-local texsetattribute    = tex.setattribute
+local texattribute       = tex.attribute
 local unsetvalue         = attributes.unsetvalue
 
 local nodepool           = nodes.pool
@@ -35,7 +33,6 @@ local new_glue           = nodepool.glue
 local nodecodes          = nodes.nodecodes
 local kerncodes          = nodes.kerncodes
 local skipcodes          = nodes.skipcodes
-local disccodes          = nodes.disccodes
 
 local glyph_code         = nodecodes.glyph
 local kern_code          = nodecodes.kern
@@ -45,7 +42,6 @@ local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local math_code          = nodecodes.math
 
-local discretionary_code = disccodes.discretionary
 local kerning_code       = kerncodes.kerning
 local userkern_code      = kerncodes.userkern
 local userskip_code      = skipcodes.userskip
@@ -57,16 +53,8 @@ local fontdata           = fonthashes.identifiers
 local chardata           = fonthashes.characters
 local quaddata           = fonthashes.quads
 local markdata           = fonthashes.marks
-local fontproperties     = fonthashes.properties
-local fontdescriptions   = fonthashes.descriptions
-local fontfeatures       = fonthashes.features
-
-local tracers            = nodes.tracers
-local setcolor           = tracers.colors.set
-local resetcolor         = tracers.colors.reset
 
 local v_max              = interfaces.variables.max
-local v_auto             = interfaces.variables.auto
 
 typesetters              = typesetters or { }
 local typesetters        = typesetters
@@ -74,15 +62,11 @@ local typesetters        = typesetters
 typesetters.kerns        = typesetters.kerns or { }
 local kerns              = typesetters.kerns
 
-local report             = logs.reporter("kerns")
-local trace_ligatures    = false  trackers.register("typesetters.kerns.ligatures",function(v) trace_ligatures = v end)
-
 kerns.mapping            = kerns.mapping or { }
 kerns.factors            = kerns.factors or { }
 local a_kerns            = attributes.private("kern")
 local a_fontkern         = attributes.private('fontkern')
-
-local contextsetups      = fonts.specifiers.contextsetups
+kerns.attribute          = kerns.attribute
 
 storage.register("typesetters/kerns/mapping", kerns.mapping, "typesetters.kerns.mapping")
 storage.register("typesetters/kerns/factors", kerns.factors, "typesetters.kerns.factors")
@@ -95,74 +79,11 @@ local factors = kerns.factors
 -- make sure it runs after all others
 -- there will be a width adaptor field in nodes so this will change
 -- todo: interchar kerns / disc nodes / can be made faster
--- todo: use insert_before etc
 
 local gluefactor = 4 -- assumes quad = .5 enspace
 
 kerns.keepligature = false -- just for fun (todo: control setting with key/value)
 kerns.keeptogether = false -- just for fun (todo: control setting with key/value)
-
--- red   : kept by dynamic feature
--- green : kept by static feature
--- blue  : keep by goodie
-
-function kerns.keepligature(n) -- might become default
-    local f = n.font
-    local a = n[0] or 0
-    if trace_ligatures then
-        local c = n.char
-        local d = fontdescriptions[f][c].name
-        if a > 0 and contextsetups[a].keepligatures == v_auto then
-            report("font %!font:name!, glyph %a, slot %X -> ligature %s, by %s feature %a",f,d,c,"kept","dynamic","keepligatures")
-            setcolor(n,"darkred")
-            return true
-        end
-        local k = fontfeatures[f].keepligatures
-        if k == v_auto then
-            report("font %!font:name!, glyph %a, slot %X -> ligature %s, by %s feature %a",f,d,c,"kept","static","keepligatures")
-            setcolor(n,"darkgreen")
-            return true
-        end
-        if not k then
-            report("font %!font:name!, glyph %a, slot %X -> ligature %s, by %s feature %a",f,d,c,"split","static","keepligatures")
-            resetcolor(n)
-            return false
-        end
-        local k = fontproperties[f].keptligatures
-        if not k then
-            report("font %!font:name!, glyph %a, slot %X -> ligature %s, %s goodie specification",f,d,c,"split","no")
-            resetcolor(n)
-            return false
-        end
-        if k and k[c] then
-            report("font %!font:name!, glyph %a, slot %X -> ligature %s, %s goodie specification",f,d,c,"kept","by")
-            setcolor(n,"darkblue")
-            return true
-        else
-            report("font %!font:name!, glyph %a, slot %X -> ligature %s, %s goodie specification",f,d,c,"split","by")
-            resetcolor(n)
-            return false
-        end
-    else
-        if a > 0 and contextsetups[a].keepligatures == v_auto then
-            return true
-        end
-        local k = fontfeatures[f].keepligatures
-        if k == v_auto then
-            return true
-        end
-        if not k then
-            return false
-        end
-        local k = fontproperties[f].keptligatures
-        if not k then
-            return false
-        end
-        if k and k[c] then
-            return true
-        end
-    end
-end
 
 -- can be optimized .. the prev thing .. but hardly worth the effort
 
@@ -188,18 +109,18 @@ local function spec_injector(fillup,width,stretch,shrink)
     end
 end
 
--- needs checking ... base mode / node mode -- also use insert_before/after etc
+-- needs checking ... base mode / node mode
 
-local function do_process(head,force) -- todo: glue so that we can fully stretch
+local function do_process(namespace,attribute,head,force) -- todo: glue so that we can fully stretch
     local start, done, lastfont = head, false, nil
     local keepligature = kerns.keepligature
     local keeptogether = kerns.keeptogether
     local fillup = false
     while start do
         -- faster to test for attr first
-        local attr = force or start[a_kerns]
+        local attr = force or start[attribute]
         if attr and attr > 0 then
-            start[a_kerns] = unsetvalue
+            start[attribute] = unsetvalue
             local krn = mapping[attr]
             if krn == v_max then
                 krn = .25
@@ -212,30 +133,30 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
                 if id == glyph_code then
                     lastfont = start.font
                     local c = start.components
-                    if not c then
-                        -- fine
-                    elseif keepligature and keepligature(start) then
-                        -- keep 'm
-                    else
-                        c = do_process(c,attr)
-                        local s = start
-                        local p, n = s.prev, s.next
-                        local tail = find_node_tail(c)
-                        if p then
-                            p.next = c
-                            c.prev = p
+                    if c then
+                        if keepligature and keepligature(start) then
+                            -- keep 'm
                         else
-                            head = c
+                            c = do_process(namespace,attribute,c,attr)
+                            local s = start
+                            local p, n = s.prev, s.next
+                            local tail = find_node_tail(c)
+                            if p then
+                                p.next = c
+                                c.prev = p
+                            else
+                                head = c
+                            end
+                            if n then
+                                n.prev = tail
+                            end
+                            tail.next = n
+                            start = c
+                            s.components = nil
+                            -- we now leak nodes !
+                        --  free_node(s)
+                            done = true
                         end
-                        if n then
-                            n.prev = tail
-                        end
-                        tail.next = n
-                        start = c
-                        s.components = nil
-                        -- we now leak nodes !
-                     -- free_node(s)
-                        done = true
                     end
                     local prev = start.prev
                     if not prev then
@@ -278,63 +199,49 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
                             -- a bit too complicated, we can best not copy and just calculate
                             -- but we could have multiple glyphs involved so ...
                             local disc = prev -- disc
+                            local pre, post, replace = disc.pre, disc.post, disc.replace
                             local prv, nxt = disc.prev, disc.next
-                            if disc.subtype == discretionary_code then
-                                -- maybe we should forget about this variant as there is no glue
-                                -- possible
-                                local pre, post, replace = disc.pre, disc.post, disc.replace
-                                if pre and prv then -- must pair with start.prev
-                                    -- this one happens in most cases
-                                    local before = copy_node(prv)
-                                    pre.prev = before
-                                    before.next = pre
-                                    before.prev = nil
-                                    pre = do_process(before,attr)
-                                    pre = pre.next
-                                    pre.prev = nil
-                                    disc.pre = pre
-                                    free_node(before)
-                                end
-                                if post and nxt then  -- must pair with start
-                                    local after = copy_node(nxt)
-                                    local tail = find_node_tail(post)
-                                    tail.next = after
-                                    after.prev = tail
-                                    after.next = nil
-                                    post = do_process(post,attr)
-                                    tail.next = nil
-                                    disc.post = post
-                                    free_node(after)
-                                end
-                                if replace and prv and nxt then -- must pair with start and start.prev
-                                    local before = copy_node(prv)
-                                    local after = copy_node(nxt)
-                                    local tail = find_node_tail(replace)
-                                    replace.prev = before
-                                    before.next = replace
-                                    before.prev = nil
-                                    tail.next = after
-                                    after.prev = tail
-                                    after.next = nil
-                                    replace = do_process(before,attr)
-                                    replace = replace.next
-                                    replace.prev = nil
-                                    after.prev.next = nil
-                                    disc.replace = replace
-                                    free_node(after)
-                                    free_node(before)
-                                elseif prv and prv.id == glyph_code and prv.font == lastfont then
-                                    local prevchar, lastchar = prv.char, start.char
-                                    local kerns = chardata[lastfont][prevchar].kerns
-                                    local kern = kerns and kerns[lastchar] or 0
-                                    krn = kern + quaddata[lastfont]*krn -- here
-                                    disc.replace = kern_injector(false,krn) -- only kerns permitted, no glue
-                                else
-                                    krn = quaddata[lastfont]*krn -- here
-                                    disc.replace = kern_injector(false,krn) -- only kerns permitted, no glue
-                                end
+                            if pre and prv then -- must pair with start.prev
+                                -- this one happens in most cases
+                                local before = copy_node(prv)
+                                pre.prev = before
+                                before.next = pre
+                                before.prev = nil
+                                pre = do_process(namespace,attribute,before,attr)
+                                pre = pre.next
+                                pre.prev = nil
+                                disc.pre = pre
+                                free_node(before)
+                            end
+                            if post and nxt then  -- must pair with start
+                                local after = copy_node(nxt)
+                                local tail = find_node_tail(post)
+                                tail.next = after
+                                after.prev = tail
+                                after.next = nil
+                                post = do_process(namespace,attribute,post,attr)
+                                tail.next = nil
+                                disc.post = post
+                                free_node(after)
+                            end
+                            if replace and prv and nxt then -- must pair with start and start.prev
+                                local before = copy_node(prv)
+                                local after = copy_node(nxt)
+                                local tail = find_node_tail(replace)
+                                replace.prev = before
+                                before.next = replace
+                                before.prev = nil
+                                tail.next = after
+                                after.prev = tail
+                                after.next = nil
+                                replace = do_process(namespace,attribute,before,attr)
+                                replace = replace.next
+                                replace.prev = nil
+                                after.prev.next = nil
+                                disc.replace = replace
+                                free_node(after)
+                                free_node(before)
                             else
-                                -- this one happens in most cases: automatic (-), explicit (\-), regular (patterns)
                                 if prv and prv.id == glyph_code and prv.font == lastfont then
                                     local prevchar, lastchar = prv.char, start.char
                                     local kerns = chardata[lastfont][prevchar].kerns
@@ -343,7 +250,7 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
                                 else
                                     krn = quaddata[lastfont]*krn -- here
                                 end
-                                insert_node_before(head,start,kern_injector(fillup,krn))
+                                disc.replace = kern_injector(false,krn) -- only kerns permitted, no glue
                             end
                         end
                     end
@@ -409,13 +316,19 @@ function kerns.set(factor)
     else
         factor = unsetvalue
     end
-    texsetattribute(a_kerns,factor)
+    texattribute[a_kerns] = factor
     return factor
 end
 
-function kerns.handler(head)
-    return do_process(head)  -- no direct map, because else fourth argument is tail == true
+local function process(namespace,attribute,head)
+    return do_process(namespace,attribute,head)  -- no direct map, because else fourth argument is tail == true
 end
+
+kerns.handler = nodes.installattributehandler {
+    name     = "kern",
+    namespace = kerns,
+    processor = process,
+}
 
 -- interface
 

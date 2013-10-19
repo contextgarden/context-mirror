@@ -13,9 +13,9 @@
 string base_name, base_version ;
 
 base_name    := "plain" ;
-base_version := "1.004 for metafun iv"  ;
+base_version := "0.63"  ;
 
-message "loading metafun, including plain.mp version " & base_version ;
+message "Preloading the plain mem file, version " & base_version ;
 
 delimiters () ; % this makes parentheses behave like parentheses
 
@@ -196,28 +196,6 @@ background := white ; % obsolete
 
 let graypart  = greypart  ;
 let graycolor = greycolor ;
-
-% color part (will be overloaded)
-
-def colorpart primary t =
-    if colormodel t=7:
-        (cyanpart t, magentapart t, yellowpart t, blackpart t)
-    elseif colormodel t = 5 :
-        (redpart t, greenpart t, bluepart t)
-    elseif colormodel t = 3 :
-        (greypart t)
-    elseif colormodel t = 1 :
-        false
-    elseif defaultcolormodel = 7 :
-        (0,0,0,1)
-    elseif defaultcolormodel = 5 :
-        black
-    elseif defaultcolormodel = 3 :
-        0
-    else :
-        false
-    fi
-enddef ;
 
 % picture constants
 
@@ -726,10 +704,10 @@ def _finarr text t =
     filldraw arrowhead _apth t
 enddef ;
 
-def _findarr text t = % this had fill in 0.63 (potential incompatibility)
+def _findarr text t =
     draw _apth t ;
-    filldraw arrowhead         _apth withpen currentpen t ;
-    filldraw arrowhead reverse _apth withpen currentpen t ; % ; added HH
+    fill arrowhead         _apth withpen currentpen t ;
+    fill arrowhead reverse _apth withpen currentpen t ; % ; added HH
 enddef ;
 
 %% macros for labels

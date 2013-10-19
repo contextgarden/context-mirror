@@ -9,12 +9,9 @@ if not modules then modules = { } end modules ['lxml-sor'] = {
 local format, concat, rep = string.format, table.concat, string.rep
 local lpegmatch = lpeg.match
 
-local xml         = xml
-local lxml        = lxml
-local context     = context
+local xml, lxml = xml, lxml
 
-local lxmlsorters = lxml.sorters or { }
-lxml.sorters      = lxmlsorters
+lxml.sorters = lxml.sorters or { }
 
 if not lxml.splitid then
     local splitter = lpeg.C((1-lpeg.P(":"))^1) * lpeg.P("::") * lpeg.C(lpeg.P(1)^1)
@@ -30,7 +27,7 @@ end
 
 local lists = { }
 
-function lxmlsorters.reset(name)
+function lxml.sorters.reset(name)
     lists[name] = {
         sorted  = false,
         entries = { },
@@ -39,7 +36,7 @@ function lxmlsorters.reset(name)
     }
 end
 
-function lxmlsorters.add(name,n,key)
+function lxml.sorters.add(name,n,key)
     local list = lists[name]
     if list.sorted then
         -- reverse is messed up, we could regenerate it and go on
@@ -59,7 +56,7 @@ function lxmlsorters.add(name,n,key)
     end
 end
 
-function lxmlsorters.show(name)
+function lxml.sorters.show(name)
     local list = lists[name]
     local entries = list and list.entries
     local NC, NR, bold = context.NC, context.NR, context.bold -- somehow bold is not working
@@ -95,9 +92,9 @@ function lxmlsorters.show(name)
     end
 end
 
-lxmlsorters.compare = sorters.comparers.basic -- (a,b)
+lxml.sorters.compare = sorters.comparers.basic -- (a,b)
 
-function lxmlsorters.sort(name)
+function lxml.sorters.sort(name)
     local list = lists[name]
     local entries = list and list.entries
     if entries then
@@ -120,7 +117,7 @@ function lxmlsorters.sort(name)
             r.split = splitter(strip(r.key))
         end
         -- sorting
-        sorters.sort(results,lxmlsorters.compare)
+        sorters.sort(results,lxml.sorters.compare)
         -- finalizing
         list.nofsorted = #results
         local split = { }
@@ -140,7 +137,7 @@ function lxmlsorters.sort(name)
     end
 end
 
-function lxmlsorters.flush(name,setup)
+function lxml.sorters.flush(name,setup)
     local list = lists[name]
     local results = list and list.results
     local xmlw = context.xmlw

@@ -29,21 +29,17 @@ moduledata.zint = { }
 local format, lower, gsub  = string.format, string.lower, string.gsub
 local patterns = lpeg.patterns
 
-local zint        = "zint" -- '"c:/program files/zint/zint.exe"'
-local defaultcode = "PDF417"
+local zint       = "zint" -- '"c:/program files/zint/zint.exe"'
 
-local whitespace  = patterns.whitespace
-local spaces      = whitespace^0
-local key         = (spaces / "") * patterns.digit^0 * (patterns.colon * spaces / "")
-local value       = (whitespace / "" + (1 - key))^1
-local pattern     = lpeg.Cf(lpeg.Ct("") * (lpeg.Cg((lpeg.Cs(key) / tonumber) * (lpeg.Cs(value) / lower)) + patterns.anything)^0,rawset)
+local whitespace = patterns.whitespace
+local spaces     = whitespace^0
+local key        = (spaces / "") * patterns.digit^0 * (patterns.colon * spaces / "")
+local value      = (whitespace / "" + (1 - key))^1
+local pattern    = lpeg.Cf(lpeg.Ct("") * (lpeg.Cg((lpeg.Cs(key) / tonumber) * (lpeg.Cs(value) / lower)) + patterns.anything)^0,rawset)
 
 local reverse
 
 local function cleancode(code)
-    if not code or code == "" then
-        code = defaultcode
-    end
     return lower(gsub(code," ",""))
 end
 
@@ -80,19 +76,6 @@ end
 
 \stopluacode
 
-\unprotect
-
-\unexpanded\def\barcode[#1]% [alternative=,text=]
-  {\bgroup
-   \getdummyparameters
-     [\c!alternative=,\c!text=,#1]%
-   \externalfigure
-     [\cldcontext{moduledata.zint.generate("\dummyparameter\c!alternative",\!!bs\dummyparameter\c!text\!!es)}]%
-     [#1,\c!alternative=,\c!text=]%
-   \egroup}
-
-\protect
-
 \continueifinputfile{m-zint.mkiv}
 
 \starttext
@@ -102,10 +85,6 @@ end
     \externalfigure[\cldcontext{moduledata.zint.generate("PDF417","Ton Otten")}]
     \blank
     \externalfigure[\cldcontext{moduledata.zint.generate("ISBN","9789490688011")}]
-    \blank
-    \barcode[text=Does It Work?,width=\textwidth]
-    \blank
-    \barcode[alternative=isbn,text=9789490688011,width=3cm]
 
 \stoptext
 

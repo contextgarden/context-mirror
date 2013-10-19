@@ -287,7 +287,6 @@ local left        = P("(")
 local right       = P(")")
 local comma       = P(",")
 local mixnumber   = lpegpatterns.number / tonumber
-                  + P("-") / function() return -1 end
 local mixname     = C(P(1-left-right-comma)^1)
 ----- mixcolor    = Cc("M") * mixnumber * left * mixname * (comma * mixname)^-1 * right * P(-1)
 local mixcolor    = Cc("M") * mixnumber * left * mixname * (comma * mixname)^0 * right * P(-1) -- one is also ok
@@ -510,23 +509,7 @@ colors.mpcolor      = mpcolor
 colors.mpnamedcolor = mpnamedcolor
 colors.mpoptions    = mpoptions
 
--- local function formatcolor(ca,separator)
---     local cv = colorvalues[ca]
---     if cv then
---         local c, cn, f, t, model = { }, 0, 13, 13, cv[1]
---         if model == 2 then
---             return c[2]
---         elseif model == 3 then
---             return concat(c,separator,3,5)
---         elseif model == 4 then
---             return concat(c,separator,6,9)
---         end
---     else
---         return 0
---     end
--- end
-
-local function formatcolor(ca,separator)
+function colors.formatcolor(ca,separator)
     local cv = colorvalues[ca]
     if cv then
         local c, cn, f, t, model = { }, 0, 13, 13, cv[1]
@@ -547,64 +530,41 @@ local function formatcolor(ca,separator)
     end
 end
 
-local function formatgray(ca,separator)
+function colors.formatgray(ca,separator)
     local cv = colorvalues[ca]
     return format("%0.3f",(cv and cv[2]) or 0)
 end
 
-colors.formatcolor = formatcolor
-colors.formatgray  = formatgray
-
-local f_gray         = formatters["s=%1.3f"]
-local f_rgb          = formatters["r=%1.3f%sg=%1.3f%sb=%1.3f"]
-local f_cmyk         = formatters["c=%1.3f%sm=%1.3f%sy=%1.3f%sk=%1.3f"]
-local f_spot_name    = formatters["p=%s"]
-local f_spot_value   = formatters["p=%1.3f"]
-local f_transparency = formatters["a=%1.3f%st=%1.3f"]
-local f_both         = formatters["%s%s%s"]
-
-local function colorcomponents(ca,separator) -- return list
+function colors.colorcomponents(ca) -- return list
     local cv = colorvalues[ca]
     if cv then
         local model = cv[1]
         if model == 2 then
-            return f_gray(cv[2])
+            return format("s=%1.3f",cv[2])
         elseif model == 3 then
-            return f_rgb(cv[3],separator or " ",cv[4],separator or " ",cv[5])
+            return format("r=%1.3f g=%1.3f b=%1.3f",cv[3],cv[4],cv[5])
         elseif model == 4 then
-            return f_cmyk(cv[6],separator or " ",cv[7],separator or " ",cv[8],separator or " ",cv[9])
+            return format("c=%1.3f m=%1.3f y=%1.3f k=%1.3f",cv[6],cv[7],cv[8],cv[9])
         elseif type(cv[13]) == "string" then
-            return f_spot_name(cv[13])
+            return format("p=%s",cv[13])
         else
-            return f_spot_value(cv[13])
+            return format("p=%1.3f",cv[13])
         end
     else
         return ""
     end
 end
 
-local function transparencycomponents(ta,separator)
+function colors.transparencycomponents(ta)
     local tv = transparencyvalues[ta]
     if tv then
-        return f_transparency(tv[1],separator or " ",tv[2])
+        return format("a=%1.3f t=%1.3f",tv[1],tv[2])
     else
         return ""
     end
 end
 
-local function processcolorcomponents(ca,separator)
-    local cs = colorcomponents(ca,separator)
-    local ts = transparencycomponents(ca,separator)
-    if cs == "" then
-        return ts
-    elseif ts == "" then
-        return cs
-    else
-        return f_both(cs,separator or " ",ts)
-    end
-end
-
-local function spotcolorname(ca,default)
+function colors.spotcolorname(ca,default)
     local cv, v = colorvalues[ca], "unknown"
     if cv and cv[1] == 5 then
         v = cv[10]
@@ -612,7 +572,7 @@ local function spotcolorname(ca,default)
     return tostring(v)
 end
 
-local function spotcolorparent(ca,default)
+function colors.spotcolorparent(ca,default)
     local cv, v = colorvalues[ca], "unknown"
     if cv and cv[1] == 5 then
         v = cv[12]
@@ -623,7 +583,7 @@ local function spotcolorparent(ca,default)
     return tostring(v)
 end
 
-local function spotcolorvalue(ca,default)
+function colors.spotcolorvalue(ca,default)
     local cv, v = colorvalues[ca], 0
     if cv and cv[1] == 5 then
        v = cv[13]
@@ -631,38 +591,15 @@ local function spotcolorvalue(ca,default)
     return tostring(v)
 end
 
-colors.colorcomponents        = colorcomponents
-colors.transparencycomponents = transparencycomponents
-colors.processcolorcomponents = processcolorcomponents
-colors.spotcolorname          = spotcolorname
-colors.spotcolorparent        = spotcolorparent
-colors.spotcolorvalue         = spotcolorvalue
-
 -- experiment  (a bit of a hack, as we need to get the attribute number)
 
 local min = math.min
 
 -- a[b,c] -> b+a*(c-b)
 
-local function inbetween(one,two,i,fraction)
+local function f(one,two,i,fraction)
     local o, t = one[i], two[i]
     local otf = o + fraction * (t - o)
-    if otf > 1 then
-        otf = 1
-    end
-    return otf
-end
-
-local function justone(one,fraction,i)
-    local otf = fraction * one[i]
-    if otf > 1 then
-        otf = 1
-    end
-    return otf
-end
-
-local function complement(one,fraction,i)
-    local otf = - fraction * (1 - one[i])
     if otf > 1 then
         otf = 1
     end
@@ -680,38 +617,37 @@ function colors.defineintermediatecolor(name,fraction,c_one,c_two,a_one,a_two,sp
                 -- problems with weighted gray conversions and work with original values
                 local ca
                 if csone == 2 then
-                    ca = register_color(name,'gray',inbetween(one,two,2,fraction))
+                    ca = register_color(name,'gray',f(one,two,2,fraction))
                 elseif csone == 3 then
-                    ca = register_color(name,'rgb', inbetween(one,two,3,fraction),
-                                                    inbetween(one,two,4,fraction),
-                                                    inbetween(one,two,5,fraction))
+                    ca = register_color(name,'rgb', f(one,two,3,fraction),
+                                                    f(one,two,4,fraction),
+                                                    f(one,two,5,fraction))
                 elseif csone == 4 then
-                    ca = register_color(name,'cmyk',inbetween(one,two,6,fraction),
-                                                    inbetween(one,two,7,fraction),
-                                                    inbetween(one,two,8,fraction),
-                                                    inbetween(one,two,9,fraction))
+                    ca = register_color(name,'cmyk',f(one,two,6,fraction),
+                                                    f(one,two,7,fraction),
+                                                    f(one,two,8,fraction),
+                                                    f(one,two,9,fraction))
                 else
-                    ca = register_color(name,'gray',inbetween(one,two,2,fraction))
+                    ca = register_color(name,'gray',f(one,two,2,fraction))
                 end
                 definecolor(name,ca,global,freeze)
          -- end
         else
-            local inbetween = fraction < 0 and complement or justone
             local csone = one[1]
             local ca
             if csone == 2 then
-                ca = register_color(name,'gray',inbetween(one,fraction,2))
+                ca = register_color(name,'gray',fraction*one[2])
             elseif csone == 3 then
-                ca = register_color(name,'rgb', inbetween(one,fraction,3),
-                                                inbetween(one,fraction,4),
-                                                inbetween(one,fraction,5))
+                ca = register_color(name,'rgb', fraction*one[3],
+                                                fraction*one[4],
+                                                fraction*one[5])
             elseif csone == 4 then
-                ca = register_color(name,'cmyk',inbetween(one,fraction,6),
-                                                inbetween(one,fraction,7),
-                                                inbetween(one,fraction,8),
-                                                inbetween(one,fraction,9))
+                ca = register_color(name,'cmyk',fraction*one[6],
+                                                fraction*one[7],
+                                                fraction*one[8],
+                                                fraction*one[9])
             else
-                ca = register_color(name,'gray',inbetween(one,fraction,2))
+                ca = register_color(name,'gray',fraction*one[2])
             end
             definecolor(name,ca,global,freeze)
         end
@@ -816,14 +752,13 @@ commands.definemultitonecolor    = colors.definemultitonecolor
 commands.definetransparency      = colors.definetransparency
 commands.defineintermediatecolor = colors.defineintermediatecolor
 
-function commands.spotcolorname         (a)   context(spotcolorname         (a))   end
-function commands.spotcolorparent       (a)   context(spotcolorparent       (a))   end
-function commands.spotcolorvalue        (a)   context(spotcolorvalue        (a))   end
-function commands.colorcomponents       (a,s) context(colorcomponents       (a,s)) end
-function commands.transparencycomponents(a,s) context(transparencycomponents(a,s)) end
-function commands.processcolorcomponents(a,s) context(processcolorcomponents(a,s)) end
-function commands.formatcolor           (...) context(formatcolor           (...)) end
-function commands.formatgray            (...) context(formatgray            (...)) end
+function commands.spotcolorname         (a)   context(colors.spotcolorname         (a))   end
+function commands.spotcolorparent       (a)   context(colors.spotcolorparent       (a))   end
+function commands.spotcolorvalue        (a)   context(colors.spotcolorvalue        (a))   end
+function commands.colorcomponents       (a)   context(colors.colorcomponents       (a))   end
+function commands.transparencycomponents(a)   context(colors.transparencycomponents(a))   end
+function commands.formatcolor           (...) context(colors.formatcolor           (...)) end
+function commands.formatgray            (...) context(colors.formatgray            (...)) end
 
 function commands.mpcolor(model,ca,ta,default)
     context(mpcolor(model,ca,ta,default))

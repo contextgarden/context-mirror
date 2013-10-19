@@ -18,9 +18,9 @@ local clock = os.gettimeofday or os.clock -- should go in environment
 
 local report_nodes = logs.reporter("nodes","tracing")
 
-local nodes, node, context = nodes, node, context
+nodes = nodes or { }
 
-local texgetattribute  = tex.getattribute
+local nodes, node, context = nodes, node, context
 
 local tracers          = nodes.tracers or { }
 nodes.tracers          = tracers
@@ -51,13 +51,12 @@ local glue_code        = nodecodes.glue
 local kern_code        = nodecodes.kern
 local rule_code        = nodecodes.rule
 local whatsit_code     = nodecodes.whatsit
-local gluespec_code    = nodecodes.gluespec
+local spec_code        = nodecodes.glue_spec
 
 local localpar_code    = whatcodes.localpar
 local dir_code         = whatcodes.dir
 
 local nodepool         = nodes.pool
-local new_rule         = nodepool.rule
 
 local dimenfactors     = number.dimenfactors
 local formatters       = string.formatters
@@ -258,19 +257,16 @@ local function listtoutf(h,joiner,textonly,last)
     while h do
         local id = h.id
         if id == glyph_code then -- always true
-            local c = h.char
-            w[#w+1] = c >= 0 and utfchar(c) or formatters["<%i>"](c)
+            w[#w+1] = utfchar(h.char)
             if joiner then
                 w[#w+1] = joiner
             end
         elseif id == disc_code then
-            local pre = h.pre
-            local pos = h.post
-            local rep = h.replace
+            local pre, rep, pos = h.pre, h.replace, h.post
             w[#w+1] = formatters["[%s|%s|%s]"] (
                 pre and listtoutf(pre,joiner,textonly) or "",
-                pos and listtoutf(pos,joiner,textonly) or "",
-                rep and listtoutf(rep,joiner,textonly) or ""
+                rep and listtoutf(rep,joiner,textonly) or "",
+                mid and listtoutf(mid,joiner,textonly) or ""
             )
         elseif textonly then
             if id == glue_code and h.spec and h.spec.width > 0 then
@@ -346,7 +342,7 @@ local function numbertodimen(d,unit,fmt,strip)
         local str = formatters[fmt](d*dimenfactors[unit],unit)
         return strip and lpegmatch(stripper,str) or str
     end
-    local id = d.id
+    local id = node.id
     if id == kern_code then
         local str = formatters[fmt](d.width*dimenfactors[unit],unit)
         return strip and lpegmatch(stripper,str) or str
@@ -354,7 +350,7 @@ local function numbertodimen(d,unit,fmt,strip)
     if id == glue_code then
         d = d.spec
     end
-    if not d or not d.id == gluespec_code then
+    if not d or not d.id == spec_code then
         local str = formatters[fmt](0,unit)
         return strip and lpegmatch(stripper,str) or str
     end
@@ -526,63 +522,8 @@ end
 
 -- for the moment here
 
-local visualizers = nodes.visualizers or { }
-nodes.visualizers = visualizers
+nodes.visualizers = { }
 
-function visualizers.handler(head)
+function nodes.visualizers.handler(head)
     return head, false
 end
-
--- we could cache attribute lists and set attr (copy will increment count) .. todo ..
--- although tracers are used seldom
-
-local function setproperties(n,c,s)
-    local mm = texgetattribute(a_colormodel)
-    n[a_colormodel]   = mm > 0 and mm or 1
-    n[a_color]        = m_color[c]
-    n[a_transparency] = m_transparency[c]
-    return n
-end
-
-tracers.setproperties = setproperties
-
-function tracers.setlistv(n,c,s)
-    local f = n
-    local mc = m_color[c]
-    local mt = m_transparency[c]
-    local mm = texgetattribute(a_colormodel)
-    if mm <= 0 then
-        mm = 1
-    end
-    while n do
-        n[a_colormodel]   = mm
-        n[a_color]        = mc
-        n[a_transparency] = mt
-        n = n.next
-    end
-    return f
-end
-
-function tracers.resetproperties(n)
-    n[a_color]        = unsetvalue
-    n[a_transparency] = unsetvalue
-    return n
-end
-
-function tracers.rule(w,h,d,c,s) -- so some day we can consider using literals (speedup)
-    return setproperties(new_rule(w,h,d),c,s)
-end
-
--- only nodes
-
-local nodestracerpool = { }
-
-tracers.pool = {
-    nodes = nodestracerpool,
-}
-
-function nodestracerpool.rule(w,h,d,c,s) -- so some day we can consider using literals (speedup)
-    return setproperties(new_rule(w,h,d),c,s)
-end
-
-tracers.rule = nodestracerpool.rule -- for a while

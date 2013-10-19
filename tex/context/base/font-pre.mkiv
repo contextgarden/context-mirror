@@ -17,15 +17,11 @@
 
 %D A basic set of features is defined here.
 
-% beware, base mode + dynamics can give weird effects
-
-% rlig ccmp
-
 \definefontfeature
   [always]
-  [mode=node,    % we had 'auto', but let's try 'node' for a while and see what the impact is
-   script=auto,  % on speed; 'base' just doesn't play well with dynamics; some day we can even
-   kern=yes,     % consider skipping the base passes when no base mode is used
+  [mode=auto,
+   script=auto,
+   kern=yes,
    mark=yes,
    mkmk=yes,
    curs=yes]
@@ -63,15 +59,6 @@
    tlig=yes,
    trep=yes]
 
-\definefontfeature
-  [letterspacing]
-  [liga=no,
-   rlig=no,
-   clig=no,
-   dlig=no,
-   ccmp=yes,
-   keepligatures=auto]
-
 \definefontfeature % can be used for type1 fonts
   [complete]
   [always]
@@ -85,38 +72,28 @@
   [mode=none,
    features=no]
 
-\definefontfeature
-  [semetic-complete]
-  [mode=node,analyze=yes,language=dflt,ccmp=yes,
-   init=yes,medi=yes,fina=yes,isol=yes,
-   mark=yes,mkmk=yes,kern=yes,curs=yes,
-   liga=yes,dlig=yes,rlig=yes,clig=yes,calt=yes]
-
-\definefontfeature
-  [semetic-simple]
-  [mode=node,analyze=yes,language=dflt,ccmp=yes,
-   init=yes,medi=yes,fina=yes,isol=yes,
-   mark=yes,mkmk=yes,kern=yes,curs=yes,
-   rlig=yes,calt=yes]
-
-\definefontfeature
+\definefontfeature % might move
   [arabic]
-  [semetic-complete]
-  [script=arab]
+  [mode=node,language=dflt,script=arab,ccmp=yes,
+   init=yes,medi=yes,fina=yes,isol=yes,
+   liga=yes,dlig=yes,rlig=yes,clig=yes,calt=yes,
+   mark=yes,mkmk=yes,kern=yes,curs=yes]
 
 \definefontfeature
   [hebrew]
-  [semetic-complete]
+  [arabic]
   [script=hebr]
 
-\definefontfeature
+\definefontfeature % might move
   [simplearabic]
-  [semetic-simple]
-  [script=arab]
+  [mode=node,language=dflt,script=arab,
+   init=yes,medi=yes,fina=yes,
+   rlig=yes,calt=yes,
+   mark=yes,mkmk=yes,curs=yes]
 
 \definefontfeature
   [simplehebrew]
-  [semetic-simple]
+  [simplearabic]
   [script=hebr]
 
 % \definefont [DevaOne] [file:chandas.ttf*devanagari-one at 12pt]
@@ -174,7 +151,6 @@
    trep=yes,
    mathalternates=yes,
    mathitalics=yes,
- % mathgaps=yes,
  % nomathitalics=yes, % don't pass to tex, might become default
    language=dflt,
    script=math]
@@ -218,21 +194,6 @@
 \definefontfeature
   [missing]
   [missing=yes]
-
-%D Nice to have too:
-
-\definefontfeature
-  [quality]
-  [expansion=quality,
-   protrusion=quality]
-
-\definefontfeature
-  [slanted]
-  [slant=.2]
-
-\definefontfeature
-  [boldened]
-  [extend=1.2]
 
 %D We define some colors that are used in tracing (for instance \OPENTYPE\
 %D features). We cannot yet inherit because no colors are predefined.
@@ -536,7 +497,6 @@
 \definealternativestyle [\v!Words]   [{\setcharactercasing[\v!Words  ]}] [{\setcharactercasing[\v!Words  ]}]
 \definealternativestyle [\v!capital] [{\setcharactercasing[\v!capital]}] [{\setcharactercasing[\v!capital]}]
 \definealternativestyle [\v!Capital] [{\setcharactercasing[\v!Capital]}] [{\setcharactercasing[\v!Capital]}]
-\definealternativestyle [\v!mixed]   [{\setcharactercasing[\v!mixed  ]}] [{\setcharactercasing[\v!mixed  ]}]
 
 \definealternativestyle [\v!cap]     [{\setcharactercasing[\v!cap    ]}] [{\setcharactercasing[\v!cap    ]}]
 \definealternativestyle [\v!Cap]     [{\setcharactercasing[\v!Cap    ]}] [{\setcharactercasing[\v!Cap    ]}]
@@ -563,7 +523,7 @@
 %D
 %D For tracing purposes we define:
 
-\definefont[tinyfont][dejavusansmono at 1ex]
+\definefont[tinyfont][Mono at 1ex]
 
 %D \macros
 %D   {infofont}
@@ -575,7 +535,7 @@
 
 \let\infofont\relax % satisfy dep checker
 
-\definefont[infofont][dejavusansmono at 6pt] % todo \the\everybodyfont
+\definefont [infofont] [Mono at 6pt] % todo \the\everybodyfont
 
 \protect \endinput
 

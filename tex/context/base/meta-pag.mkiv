@@ -41,7 +41,7 @@
 % maybe always set as frozen anyway
 
 \startMPinitializations
-  % def LoadPageState =
+    def LoadPageState =
         OnRightPage:=\MPonrightpage;
         OnOddPage:=\MPonoddpage;
         RealPageNumber:=\the\realpageno;
@@ -88,8 +88,6 @@
         LayoutColumns:=\the\layoutcolumns;
         LayoutColumnDistance:=\the\layoutcolumndistance;
         LayoutColumnWidth:=\the\layoutcolumnwidth;
-    def LoadPageState =
-      % now always set .. this dummy can move to the mp code
     enddef;
 \stopMPinitializations
 

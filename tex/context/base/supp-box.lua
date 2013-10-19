@@ -6,16 +6,12 @@ if not modules then modules = { } end modules ['supp-box'] = {
     license   = "see context related readme files"
 }
 
--- this is preliminary code, use insert_before etc
+-- this is preliminary code
 
 local report_hyphenation = logs.reporter("languages","hyphenation")
 
-local tex          = tex
-local context      = context
-local commands     = commands
-local nodes        = nodes
-
-local splitstring  = string.split
+local tex, node = tex, node
+local context, commands, nodes = context, commands, nodes
 
 local nodecodes    = nodes.nodecodes
 
@@ -26,17 +22,11 @@ local glue_code    = nodecodes.glue
 local glyph_code   = nodecodes.glyph
 
 local new_penalty  = nodes.pool.penalty
-local new_hlist    = nodes.pool.hlist
-local new_glue     = nodes.pool.glue
 
-local free_node    = nodes.free
-local copy_list    = nodes.copy_list
-local copy_node    = nodes.copy
-local find_tail    = nodes.tail
-
-local texsetbox    = tex.setbox
-local texgetbox    = tex.getbox
-local texget       = tex.get
+local free_node    = node.free
+local copynodelist = node.copy_list
+local copynode     = node.copy
+local texbox       = tex.box
 
 local function hyphenatedlist(list)
     while list do
@@ -66,7 +56,7 @@ end
 
 local function checkedlist(list)
     if type(list) == "number" then
-        return texgetbox(list).list
+        return texbox[list].list
     else
         return list
     end
@@ -83,9 +73,9 @@ local function applytochars(list,what,nested)
             applytochars(current.list,what,nested)
             context.endhbox()
         elseif id ~= glyph_code then
-            noaction(copy_node(current))
+            noaction(copynode(current))
         else
-            doaction(copy_node(current))
+            doaction(copynode(current))
         end
         current = current.next
     end
@@ -100,10 +90,10 @@ local function applytowords(list,what,nested)
         local id = current.id
         if id == glue_code then
             if start then
-                doaction(copy_list(start,current))
+                doaction(copynodelist(start,current))
                 start = nil
             end
-            noaction(copy_node(current))
+            noaction(copynode(current))
         elseif nested and (id == hlist_code or id == vlist_code) then
             context.beginhbox()
             applytowords(current.list,what,nested)
@@ -114,97 +104,9 @@ local function applytowords(list,what,nested)
         current = current.next
     end
     if start then
-        doaction(copy_list(start))
+        doaction(copynodelist(start))
     end
 end
 
 commands.applytochars = applytochars
 commands.applytowords = applytowords
-
-local split_char = lpeg.Ct(lpeg.C(1)^0)
-local split_word = lpeg.tsplitat(lpeg.patterns.space)
-local split_line = lpeg.tsplitat(lpeg.patterns.eol)
-
-function commands.processsplit(str,command,how,spaced)
-    how = how or "word"
-    if how == "char" then
-        local words = lpeg.match(split_char,str)
-        for i=1,#words do
-            local word = words[i]
-            if word == " " then
-                if spaced then
-                    context.space()
-                end
-            elseif command then
-                context[command](word)
-            else
-                context(word)
-            end
-        end
-    elseif how == "word" then
-        local words = lpeg.match(split_word,str)
-        for i=1,#words do
-            local word = words[i]
-            if spaced and i > 1 then
-                context.space()
-            end
-            if command then
-                context[command](word)
-            else
-                context(word)
-            end
-        end
-    elseif how == "line" then
-        local words = lpeg.match(split_line,str)
-        for i=1,#words do
-            local word = words[i]
-            if spaced and i > 1 then
-                context.par()
-            end
-            if command then
-                context[command](word)
-            else
-                context(word)
-            end
-        end
-    else
-        context(str)
-    end
-end
-
-function commands.vboxlisttohbox(original,target,inbetween)
-    local current = texgetbox(original).list
-    local head = nil
-    local tail = nil
-    while current do
-        if current.id == hlist_code then
-            local list = current.list
-            if head then
-                if inbetween > 0 then
-                    local n = new_glue(0,0,inbetween)
-                    tail.next = n
-                    n.prev = tail
-                    tail = n
-                end
-                tail.next = list
-                list.prev = tail
-            else
-                head = list
-            end
-            tail = find_tail(list)
-            tail.next = nil
-            current.list = nil
-        end
-        current = current.next
-    end
-    local result = new_hlist()
-    result.list = head
-    texsetbox(target,result)
-end
-
-function commands.hboxtovbox(original)
-    local b = texgetbox(original)
-    local factor = texget("baselineskip").width / texget("hsize")
-    b.depth = 0
-    b.height = b.width * factor
-end

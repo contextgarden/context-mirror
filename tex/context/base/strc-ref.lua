@@ -15,10 +15,10 @@ if not modules then modules = { } end modules ['strc-ref'] = {
 -- todo: autoload components when :::
 
 local format, find, gmatch, match, concat = string.format, string.find, string.gmatch, string.match, table.concat
-local floor = math.floor
+local texcount, texsetcount = tex.count, tex.setcount
 local rawget, tonumber = rawget, tonumber
 local lpegmatch = lpeg.match
-local insert, remove, copytable = table.insert, table.remove, table.copy
+local copytable = table.copy
 local formatters = string.formatters
 
 local allocate           = utilities.storage.allocate
@@ -46,17 +46,16 @@ local report_empty       = logs.reporter("references","empty")
 local variables          = interfaces.variables
 local constants          = interfaces.constants
 local context            = context
-local commands           = commands
-
-local texgetcount        = tex.getcount
-local texsetcount        = tex.setcount
-local texconditionals    = tex.conditionals
 
 local v_default          = variables.default
 local v_url              = variables.url
 local v_file             = variables.file
 local v_unknown          = variables.unknown
 local v_yes              = variables.yes
+
+local texcount           = tex.count
+local texconditionals    = tex.conditionals
+
 local productcomponent   = resolvers.jobs.productcomponent
 local justacomponent     = resolvers.jobs.justacomponent
 
@@ -141,10 +140,16 @@ job.register('structures.references.collected', tobesaved, initializer, finalize
 local maxreferred = 1
 local nofreferred = 0
 
+-- local function initializer() -- can we use a tobesaved as metatable for collected?
+--     tobereferred = references.tobereferred
+--     referred     = references.referred
+--     nofreferred = #referred
+-- end
+
 local function initializer() -- can we use a tobesaved as metatable for collected?
     tobereferred = references.tobereferred
     referred     = references.referred
-    nofreferred = #referred
+    setmetatableindex(referred,get) -- hm, what is get ?
 end
 
 -- We make the array sparse (maybe a finalizer should optionally return a table) because
@@ -211,10 +216,8 @@ local function referredpage(n)
         end
     end
     -- fallback
-    return texgetcount("realpageno")
+    return texcount.realpageno
 end
-
--- setmetatableindex(referred,function(t,k) return referredpage(k) end )
 
 references.referredpage = referredpage
 
@@ -223,7 +226,7 @@ function references.registerpage(n) -- called in the backend code
         if n > maxreferred then
             maxreferred = n
         end
-        tobereferred[n] = texgetcount("realpageno")
+        tobereferred[n] = texcount.realpageno
     end
 end
 
@@ -249,7 +252,7 @@ references.setnextorder = setnextorder
 
 function references.setnextinternal(kind,name)
     setnextorder(kind,name) -- always incremented with internal
-    local n = texgetcount("locationcount") + 1
+    local n = texcount.locationcount + 1
     texsetcount("global","locationcount",n)
     return n
 end
@@ -308,7 +311,7 @@ end
 function references.enhance(prefix,tag)
     local l = tobesaved[prefix][tag]
     if l then
-        l.references.realpage = texgetcount("realpageno")
+        l.references.realpage = texcount.realpageno
     end
 end
 
@@ -1381,36 +1384,25 @@ local function identify_inner_or_outer(set,var,i)
             return v
         end
 
-        -- these get auto prefixes but are loaded in the document so they are
-        -- internal .. we also set the realpage (for samepage analysis)
+local components = job.structure.components
 
-        local components = job.structure.components
-        if components then
-            for i=1,#components do
-                local component = components[i]
-                local data = collected[component]
-                local vi = data and data[inner]
-                if vi then
---                     var = copytable(var)
---                     var.kind = "inner"
---                     var.i = vi
---                     var.p = component
---                     runners.inner(var.r = vi.references.realpage
---                     if trace_identifying then
---                         report_identify_outer(set,var,i,"4x")
---                     end
---                     return var
-local v = identify_inner(set,copytable(var),component,collected) -- is copy needed ?
-if v.i and not v.error then
-    v.kind = "inner"
-    if trace_identifying then
-        report_identify_outer(set,var,i,"4x")
-    end
-    return v
-end
-                end
+if components then
+    for i=1,#components do
+        local component = components[i]
+        local data = collected[component]
+        local vi = data and data[inner]
+        if vi then
+            var.outer = component
+            var.i = vi
+            var.kind = "outer with inner"
+            set.external = true
+            if trace_identifying then
+                report_identify_outer(set,var,i,"4x")
             end
+            return var
         end
+    end
+end
 
         local componentreferences = productdata.componentreferences
         local productreferences = productdata.productreferences
@@ -1555,7 +1547,7 @@ local function identify(prefix,reference)
     end
     local set = resolve(prefix,reference)
     local bug = false
-    texsetcount("referencehastexstate",set.has_tex and 1 or 0)
+    texcount.referencehastexstate = set.has_tex and 1 or 0
     nofidentified = nofidentified + 1
     set.n = nofidentified
     for i=1,#set do
@@ -1683,14 +1675,14 @@ function references.setinternalreference(prefix,tag,internal,view) -- needs chec
             t[tn] = "aut:" .. internal
         end
         local destination = references.mark(t,nil,nil,view) -- returns an attribute
-        texsetcount("lastdestinationattribute",destination)
+        texcount.lastdestinationattribute = destination
         return destination
     end
 end
 
 function references.setandgetattribute(kind,prefix,tag,data,view) -- maybe do internal automatically here
     local attr = references.set(kind,prefix,tag,data) and references.setinternalreference(prefix,tag,nil,view) or unsetvalue
-    texsetcount("lastdestinationattribute",attr)
+    texcount.lastdestinationattribute = attr
     return attr
 end
 
@@ -1809,7 +1801,7 @@ function filters.generic.number(data,what,prefixspec) -- todo: spec and then no 
             sections.typesetnumber(numberdata,"number",numberdata)
         else
             local useddata = data.useddata
-            if useddata and useddata.number then
+            if useddata and useddsta.number then
                 context(useddata.number)
             end
         end
@@ -1939,8 +1931,7 @@ local specials = references.testspecials
 -- real page to determine if we need contrastlocation as that is more lightweight.
 
 local function checkedpagestate(n,page)
-    local r = referredpage(n)
-    local p = tonumber(page)
+    local r, p = referredpage(n), tonumber(page)
     if not p then
         return 0
     elseif p > r then
@@ -1953,9 +1944,7 @@ local function checkedpagestate(n,page)
 end
 
 local function setreferencerealpage(actions)
-    if not actions then
-        actions = references.currentset
-    end
+    actions = actions or references.currentset
     if not actions then
         return 0
     else
@@ -1987,9 +1976,7 @@ end
 -- normally such an analysis happens in the backend code
 
 function references.analyze(actions)
-    if not actions then
-        actions = references.currentset
-    end
+    actions = actions or references.currentset
     if not actions then
         actions = { realpage = 0, pagestate = 0 }
     elseif actions.pagestate then
@@ -2008,15 +1995,12 @@ function references.analyze(actions)
 end
 
 function commands.referencepagestate(actions)
-    if not actions then
-        actions = references.currentset
-    end
+    actions = actions or references.currentset
     if not actions then
         context(0)
     else
         if not actions.pagestate then
             references.analyze(actions) -- delayed unless explicitly asked for
--- print("NO STATE",actions.reference,actions.pagestate)
         end
         context(actions.pagestate)
     end
@@ -2035,10 +2019,7 @@ local function realpageofpage(p) -- the last one counts !
         nofrealpages = #pages
         plist = { }
         for rp=1,nofrealpages do
-            local page = pages[rp]
-            if page then
-                plist[page.number] = rp
-            end
+            plist[pages[rp].number] = rp
         end
         references.nofrealpages = nofrealpages
     end
@@ -2052,7 +2033,7 @@ function references.checkedrealpage(r)
         realpageofpage(r) -- just initialize
     end
     if not r then
-        return texgetcount("realpageno")
+        return texcount.realpageno
     elseif r < 1 then
         return 1
     elseif r > nofrealpages then
@@ -2145,7 +2126,7 @@ end
 function specials.deltapage(var,actions)
     local p = tonumber(var.operation)
     if p then
-        p = references.checkedrealpage(p + texgetcount("realpageno"))
+        p = references.checkedrealpage(p + texcount.realpageno)
         var.r = p
         actions.realpage = actions.realpage or p -- first wins
     end
@@ -2175,23 +2156,3 @@ function references.import(usedname) end
 function references.load  (usedname) end
 
 commands.exportreferences = references.export
-
--- better done here .... we don't insert/remove, just use a pointer
-
-local prefixstack = { "" }
-local prefixlevel = 1
-
-function commands.pushreferenceprefix(prefix)
-    prefixlevel = prefixlevel + 1
-    prefixstack[prefixlevel] = prefix
-    context(prefix)
-end
-
-function commands.popreferenceprefix()
-    prefixlevel = prefixlevel - 1
-    if prefixlevel > 0 then
-        context(prefixstack[prefixlevel])
-    else
-        report_references("unable to pop referenceprefix")
-    end
-end

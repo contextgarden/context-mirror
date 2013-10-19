@@ -62,4 +62,4 @@ def end =
   ; message "" ; message metafunversion ; message "" ; normalend ;
 enddef ;
 
-% dump ;
+dump ;

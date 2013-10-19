@@ -27,7 +27,6 @@ local catcodenumbers = catcodes.numbers
 local ctxcatcodes    = catcodenumbers.ctxcatcodes -- todo: use different method
 local notcatcodes    = catcodenumbers.notcatcodes -- todo: use different method
 
-local commands       = commands
 local context        = context
 local contextsprint  = context.sprint             -- with catcodes (here we use fast variants, but with option for tracing)
 

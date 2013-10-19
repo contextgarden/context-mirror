@@ -19,10 +19,9 @@ local catcodenumbers = catcodes.numbers
 local ctxcatcodes    = catcodenumbers.ctxcatcodes
 local vrbcatcodes    = catcodenumbers.vrbcatcodes
 
-local context        = context
 local contextsprint  = context.sprint
 
-local trace_define   = false  trackers.register("context.define", function(v) trace_define = v end)
+local trace_define = false  trackers.register("context.define", function(v) trace_define = v end)
 
 interfaces = interfaces or { }
 

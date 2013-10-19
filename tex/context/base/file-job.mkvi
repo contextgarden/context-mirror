@@ -66,16 +66,14 @@
 % \def\doloadsystemfile#1% only mkiv files
 %   {\readfile{sys:///#1.\mksuffix}{\showmessage\m!system2{#1.\mksuffix}}\donothing}
 
-\unexpanded\def\syst_files_load
-  {\syst_files_load_indeed\f!newfilename  % new code, to be integrated at some point, plus fixes posted on the list
-   \syst_files_load_indeed\f!locfilename  % new code, somewhat experimental, not distributed (outside the dev group)
-   \syst_files_load_indeed\f!expfilename  % new code, very experimental, can be engine specific, mostly for me only
-   \syst_files_load_indeed\f!sysfilename  % local settings, but probably not that good an idea to use
-  %\syst_files_load_indeed\f!fntfilename  % maybe some day, can load goodies and patches
-  }
+\unexpanded\def\loadsystemfiles
+  {\syst_files_load\f!newfilename  % new code, to be integrated at some point, plus fixes posted on the list
+   \syst_files_load\f!locfilename  % new code, somewhat experimental, not distributed (outside the dev group)
+   \syst_files_load\f!expfilename  % new code, very experimental, can be engine specific, mostly for me only
+   \syst_files_load\f!sysfilename} % local settings, but probably not that good an idea to use
 
-\def\syst_files_load_indeed#name% from now on we assume a suffix to be part of the name
-  {\readsysfile{#name}{\showmessage\m!system2{#name}}\donothing}
+\def\syst_files_load#name% only mkiv files
+  {\readsysfile{#name.\mksuffix}{\showmessage\m!system2{#name.\mksuffix}}\donothing}
 
 % obsolete, but we keep it as reference of what happened
 %

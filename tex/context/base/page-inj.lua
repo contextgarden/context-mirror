@@ -8,8 +8,6 @@ if not modules then modules = { } end modules ["page-inj"] = {
 
 -- Adapted a bit by HH: numbered states, tracking, delayed, order, etc.
 
-local type, tonumber = type, tonumber
-
 local injections        = pagebuilders.injections or { }
 pagebuilders.injections = injections
 
@@ -17,11 +15,6 @@ local report            = logs.reporter("pagebuilder","injections")
 local trace             = false  trackers.register("pagebuilder.injections",function(v) trace = v end)
 
 local variables         = interfaces.variables
-
-local context           = context
-local commands          = commands
-
-local texsetcount       = tex.setcount
 
 local v_yes             = variables.yes
 local v_previous        = variables.previous
@@ -38,7 +31,7 @@ function injections.save(specification) -- maybe not public, just commands.*
         state      = tonumber(specification.state) or specification.state,
         parameters = specification.userdata,
     }
-    texsetcount("global","c_page_boxes_flush_n",#cache)
+    tex.setcount("global","c_page_boxes_flush_n",#cache)
 end
 
 function injections.flushbefore() -- maybe not public, just commands.*
@@ -69,7 +62,7 @@ function injections.flushbefore() -- maybe not public, just commands.*
         end
         context.unprotect()
         cache = delayed
-        texsetcount("global","c_page_boxes_flush_n",#cache)
+        tex.setcount("global","c_page_boxes_flush_n",#cache)
     end
 end
 
@@ -99,7 +92,7 @@ function injections.flushafter() -- maybe not public, just commands.*
         end
         context.protect()
         cache = delayed
-        texsetcount("global","c_page_boxes_flush_n",#cache)
+        tex.setcount("global","c_page_boxes_flush_n",#cache)
     end
 end
 

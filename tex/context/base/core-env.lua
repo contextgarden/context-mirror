@@ -15,13 +15,11 @@ local P, C, S, Cc, lpegmatch, patterns = lpeg.P, lpeg.C, lpeg.S, lpeg.Cc, lpeg.m
 
 local csname_id         = token.csname_id
 local create            = token.create
-local texgetcount       = tex.getcount
+local texcount          = tex.count
 local texsetcount       = tex.setcount
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
-
-local context           = context
 
 local undefined         = csname_id("*undefined*crap*")
 local iftrue            = create("iftrue")[2] -- inefficient hack
@@ -44,8 +42,8 @@ setmetatableindex(tex.modes, function(t,k)
         if csname_id(n) == undefined then
             return false
         else
-            modes[k] = function() return texgetcount(n) >= 1 end
-            return texgetcount(n) >= 1
+            modes[k] = function() return texcount[n] >= 1 end
+            return texcount[n] >= 1
         end
     end
 end)
@@ -59,18 +57,18 @@ setmetatableindex(tex.systemmodes, function(t,k)
         if csname_id(n) == undefined then
             return false
         else
-            systemmodes[k] = function() return texgetcount(n) >= 1 end
-            return texgetcount(n) >= 1
+            systemmodes[k] = function() return texcount[n] >= 1 end
+            return texcount[n] >= 1
         end
     end
 end)
 
 setmetatableindex(tex.constants, function(t,k)
-    return csname_id(k) ~= undefined and texgetcount(k) or 0
+    return csname_id(k) ~= undefined and texcount[k] or 0
 end)
 
 setmetatableindex(tex.conditionals, function(t,k) -- 0 == true
-    return csname_id(k) ~= undefined and texgetcount(k) == 0
+    return csname_id(k) ~= undefined and texcount[k] == 0
 end)
 
 setmetatableindex(tex.ifs, function(t,k)
@@ -86,7 +84,7 @@ end)
 --     if glob then
 --         texsetcount("global",name,0)
 --     else
---         texsetcount(name,0)
+--         texcount[name] = 0
 --     end
 -- end
 --
@@ -94,7 +92,7 @@ end)
 --     if glob then
 --         texsetcount("global",name,1)
 --     else
---         texsetcount(name,1)
+--         texcount[name] = 1
 --     end
 -- end
 

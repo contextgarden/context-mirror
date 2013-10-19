@@ -1261,12 +1261,6 @@ return {
   },
   {
    category = "mkiv",
-   filename = "typo-tal",
-   loading  = "always",
-   status   = "okay",
-  },
-  {
-   category = "mkiv",
    comment  = "somewhat weird",
    filename = "tabl-com",
    loading  = "always",
@@ -1498,6 +1492,12 @@ return {
   },
   {
    category = "mkiv",
+   filename = "spac-cha",
+   loading  = "always",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
    comment  = "work in progress",
    filename = "blob-ini",
    loading  = "always",
@@ -1586,13 +1586,8 @@ return {
   },
   {
    category = "mkiv",
-   filename = "typo-drp",
-   loading  = "always",
-   status   = "okay",
-  },
-  {
-   category = "mkiv",
-   filename = "typo-fln",
+   comment  = "might get extended",
+   filename = "typo-par",
    loading  = "always",
    status   = "okay",
   },
@@ -1682,12 +1677,6 @@ return {
    comment  = "code used in a project",
    filename = "meta-lua",
    loading  = "experimental",
-   status   = "okay",
-  },
-  {
-   category = "mkiv",
-   filename = "meta-fnt",
-   loading  = "always",
    status   = "okay",
   },
   {
@@ -1829,12 +1818,6 @@ return {
    status   = "okay",
   },
   {
-   category = "mkvi",
-   filename = "math-acc",
-   loading  = "always",
-   status   = "okay",
-  },
-  {
    category = "mkiv",
    comment  = "at least for the moment",
    filename = "math-frc",
@@ -1863,12 +1846,6 @@ return {
   {
    category = "mkiv",
    filename = "math-fen",
-   loading  = "always",
-   status   = "okay",
-  },
-  {
-   category = "mkiv",
-   filename = "math-rad",
    loading  = "always",
    status   = "okay",
   },
@@ -3737,12 +3714,7 @@ return {
   {
    category = "lua",
    filename = "m-database",
-   status   = "okay",
-  },
-  {
-   category = "lua",
-   filename = "m-nodechart",
-   status   = "okay",
+   status   = "todo",
   },
   {
    category = "lua",
@@ -3862,12 +3834,6 @@ return {
    category = "lua",
    filename = "meta-lua",
    loading  = "meta-lua",
-   status   = "okay",
-  },
-  {
-   category = "lua",
-   filename = "meta-fnt",
-   loading  = "meta-fnt",
    status   = "okay",
   },
   {
@@ -4776,39 +4742,12 @@ return {
   {
    category = "lua",
    filename = "typo-dir",
-   loading  = "typo-dir",
-   status   = "okay",
-  },
-  {
-   category = "lua",
-   comment  = "work in progress",
-   filename = "typo-dha",
-   loading  = "typo-dir",
    status   = "todo",
-  },
-  {
-   category = "lua",
-   filename = "typo-dua",
-   loading  = "typo-dir",
-   status   = "okay",
-  },
-  {
-   category = "lua",
-   comment  = "work in progress",
-   filename = "typo-dub",
-   loading  = "typo-dir",
-   status   = "okay",
   },
   {
    category = "lua",
    filename = "typo-ini",
    status   = "todo",
-  },
-  {
-   category = "mkiv",
-   filename = "typo-tal",
-   loading  = "typo-tal",
-   status   = "okay",
   },
   {
    category = "lua",
@@ -4832,13 +4771,8 @@ return {
   },
   {
    category = "lua",
-   filename = "typo-drp",
-   status   = "okay",
-  },
-  {
-   category = "lua",
-   filename = "typo-fln",
-   status   = "okay",
+   filename = "typo-par",
+   status   = "todo",
   },
   {
    category = "lua",
@@ -5156,12 +5090,7 @@ return {
   {
    category = "mkiv",
    filename = "m-database",
-   status   = "okay",
-  },
-  {
-   category = "mkiv",
-   filename = "m-nodechart",
-   status   = "okay",
+   status   = "todo",
   },
   {
    category = "tex",

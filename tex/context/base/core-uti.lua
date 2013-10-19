@@ -20,6 +20,7 @@ saves much runtime but at the cost of more memory usage.</p>
 local format, match = string.format, string.match
 local next, type, tostring = next, type, tostring
 local concat = table.concat
+local texcount = tex.count
 
 local definetable   = utilities.tables.definetable
 local accesstable   = utilities.tables.accesstable
@@ -28,8 +29,6 @@ local serialize     = table.serialize
 local packers       = utilities.packers
 local allocate      = utilities.storage.allocate
 local mark          = utilities.storage.mark
-
-local texgetcount   = tex.getcount
 
 local report_passes = logs.reporter("job","passes")
 
@@ -96,8 +95,6 @@ job.register('job.variables.checksums', checksums)
 
 local rmethod, rvalue
 
-local setxvalue = context.setxvalue
-
 local function initializer()
     tobesaved = jobvariables.tobesaved
     collected = jobvariables.collected
@@ -113,7 +110,7 @@ local function initializer()
     end
     tobesaved.randomseed = rvalue
     for cs, value in next, collected do
-        setxvalue(cs,value)
+        context.setxvalue(cs,value)
     end
 end
 
@@ -141,7 +138,7 @@ local jobpacker = packers.new(packlist,job.packversion) -- jump number when chan
 job.pack = true
 -- job.pack = false
 
-directives.register("job.pack",function(v) job.pack = v end)
+directives.register("job.pack",function(v) pack = v end)
 
 local _save_, _load_, _others_ = { }, { }, { } -- registers timing
 
@@ -150,7 +147,7 @@ function job.save(filename) -- we could return a table but it can get pretty lar
     local f = io.open(filename,'w')
     if f then
         f:write("local utilitydata = { }\n\n")
-        f:write(serialize(comment,"utilitydata.comment",true),"\n\n")
+        f:write(serialize(comment,"utilitydata.comment",true,true),"\n\n")
         for l=1,#savelist do
             local list      = savelist[l]
             local target    = format("utilitydata.%s",list[1])
@@ -163,11 +160,11 @@ function job.save(filename) -- we could return a table but it can get pretty lar
                 packers.pack(data,jobpacker,true)
             end
             local definer, name = definetable(target,true,true) -- no first and no last
-            f:write(definer,"\n\n",serialize(data,name,true),"\n\n")
+            f:write(definer,"\n\n",serialize(data,name,true,true),"\n\n")
         end
         if job.pack then
             packers.strip(jobpacker)
-            f:write(serialize(jobpacker,"utilitydata.job.packed",true),"\n\n")
+            f:write(serialize(jobpacker,"utilitydata.job.packed",true,true),"\n\n")
         end
         f:write("return utilitydata")
         f:close()
@@ -265,7 +262,7 @@ end)
 
 statistics.register("callbacks", function()
     local total, indirect = status.callbacks or 0, status.indirect_callbacks or 0
-    local pages = texgetcount('realpageno') - 1
+    local pages = texcount['realpageno'] - 1
     if pages > 1 then
         return format("direct: %s, indirect: %s, total: %s (%i per page)", total-indirect, indirect, total, total/pages)
     else
@@ -279,30 +276,17 @@ statistics.register("randomizer", function()
     end
 end)
 
-local kg_per_watt_per_second  = 1 / 15000000
-local watts_per_core          = 50
-local speedup_by_other_engine = 1.2
-local used_wood_factor        = watts_per_core * kg_per_watt_per_second / speedup_by_other_engine
-local used_wood_factor        = (50 / 15000000) / 1.2
-
 function statistics.formatruntime(runtime)
     if not environment.initex then -- else error when testing as not counters yet
-        local shipped = texgetcount('nofshipouts')
-        local pages = texgetcount('realpageno')
+        local shipped = texcount['nofshipouts']
+        local pages = texcount['realpageno']
         if pages > shipped then
             pages = shipped
         end
         if shipped > 0 or pages > 0 then
             local persecond = shipped / runtime
             if pages == 0 then pages = shipped end
-if jit then
-local saved = watts_per_core * runtime * kg_per_watt_per_second / speedup_by_other_engine
-local saved = used_wood_factor * runtime
---             return format("%s seconds, %i processed pages, %i shipped pages, %.3f pages/second, %f kg tree saved by using luajittex",runtime,pages,shipped,persecond,saved)
-            return format("%s seconds, %i processed pages, %i shipped pages, %.3f pages/second, %f g tree saved by using luajittex",runtime,pages,shipped,persecond,saved*1000)
-else
             return format("%s seconds, %i processed pages, %i shipped pages, %.3f pages/second",runtime,pages,shipped,persecond)
-end
         else
             return format("%s seconds",runtime)
         end

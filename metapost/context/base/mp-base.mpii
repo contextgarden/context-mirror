@@ -1,15 +1,12 @@
 % This is (currently) a copy of the plain.mp file. We use a copy
 % because (1) we want to make sure that there are no unresolved
 % dependencies, and (2) we may patch this file eventually.
-%
-% colorpart will be overloaded later (we already had that one)
-% _findarr now has a filldraw, was fill in 0.63
 
 % This file gives the macros for plain MetaPost
 % It contains all the features of plain METAFONT except those specific to
 % font-making.  (See The METAFONTbook by D.E. Knuth).
 % There are also a number of macros for labeling figures, etc.
-string base_name, base_version; base_name="plain"; base_version="1.004 for metafun ii";
+string base_name, base_version; base_name="plain"; base_version="0.63";
 
 message "Preloading the plain mem file, version "&base_version;
 
@@ -117,26 +114,6 @@ red = (1,0,0);
 green = (0,1,0);
 blue = (0,0,1);
 background = white;   % The user can reset this
-
-% color part selection for within
-def colorpart primary t =
-  if colormodel t=7:
-    (cyanpart t, magentapart t, yellowpart t, blackpart t)
-  elseif colormodel t=5:
-    (redpart t, greenpart t, bluepart t)
-  elseif colormodel t=3:
-    (greypart t)
-  elseif colormodel t=1:
-    false
-  else:
-    %%% For clipping and bounding paths, etc.
-    if defaultcolormodel=7: (0,0,0,1)
-    elseif defaultcolormodel=5: black
-    elseif defaultcolormodel=3: 0
-    else: false
-    fi
-  fi
-enddef;
 
 % picture constants
 picture blankpicture,evenly,withdots;
@@ -464,8 +441,8 @@ enddef;
 
 def _findarr text t =
   draw _apth t;
-  filldraw arrowhead _apth withpen currentpen  t;
-  filldraw arrowhead  reverse _apth  withpen currentpen  t
+  fill arrowhead _apth withpen currentpen  t;
+  fill arrowhead  reverse _apth  withpen currentpen  t
 enddef;
 
 
@@ -502,6 +479,7 @@ def label = draw thelabel enddef;
 newinternal dotlabeldiam; dotlabeldiam:=3bp;
 vardef dotlabel@#(expr s,z) text t_ =
   label@#(s,z) t_;
+% label@#(s,z);
   interim linecap:=rounded;
   draw z withpen pencircle scaled dotlabeldiam t_;
 enddef;

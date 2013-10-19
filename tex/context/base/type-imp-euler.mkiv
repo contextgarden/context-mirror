@@ -12,79 +12,35 @@
 %C details.
 
 \loadtypescriptfile[texgyre]
-\loadtypescriptfile[dejavu]
 
-% U+0000 upto U+3100 is probably ok, but even then we don't want a mix of accented
+\starttypescriptcollection[pagella-euler]
 
-\resetfontfallback  [euleroverpagella]
-\resetfontfallback  [pagellaovereuler]
+    \starttypescript [\s!math] [euler]
+        \definefontsynonym [EulerMath] [\s!file:euler.otf]
+    \stoptypescript
 
-% 0x1D455 : italic h
+    \starttypescript [\s!math] [euler] [\s!name]
+    %   \definefontsynonym [MathRoman] [EulerMath] [\s!features=\s!math]
+        \definefontsynonym [MathRoman] [EulerMath] [\s!features=\s!math\mathsizesuffix]
+    \stoptypescript
 
-\definefontfallback [euleroverpagella] [\s!file:euler.otf]   [0x02100-0x02BFF] [\s!check=yes,\c!force=yes]
-\definefontfallback [euleroverpagella] [\s!file:euler.otf]   [0x1D400-0x1D7FF] [\s!check=yes,\c!force=yes]
-\definefontfallback [euleroverpagella] [texgyrepagella-math] [0x0210E]         [\s!check=yes,\c!force=\v!yes]
-%definefontfallback [euleroverpagella] [\s!file:euler.otf]   [0x1D538-0x1D550] [\s!check=yes,\c!force=yes]
+    \starttypescript [pagella-euler]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [pagella] [\s!default]
+    %   \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [pagella] [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]  [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [euler]   [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
 
-\definefontfallback [pagellaovereuler] [texgyrepagella-math] [0x02100-0x02BFF] [\s!check=yes]
-\definefontfallback [pagellaovereuler] [texgyrepagella-math] [0x1D400-0x1D7FF] [\s!check=yes]
-\definefontfallback [pagellaovereuler] [texgyrepagella-math] [0x1D400-0x1D7FF] [\s!check=yes]
-\definefontfallback [pagellaovereuler] [texgyrepagella-math] [0x0210E]         [\s!check=yes,\c!force=\v!yes]
-%definefontfallback [pagellaovereuler] [texgyrepagella-math] [0x1D538-0x1D550] [\s!check=yes]
-
-% example for aditya:
-
-% \definefontfallback [pagellaovereuler] [texgyrepagella-math] [lowercasenormal] [offset=uppercasenormal,force=yes]
-% \definefontfallback [pagellaovereuler] [texgyrepagella-math] [uppercasenormal] [offset=lowercasenormal,force=yes]
-
-% \definefontfallback [pagellaovereuler] [texgyrepagella-math] [uppercasebolditalic] [force=yes]
-% \definefontfallback [pagellaovereuler] [texgyrepagella-math] [lowercasebolditalic] [force=yes]
-
-\starttypescriptcollection[pagella-eulernova]
-
-    \starttypescript [\s!serif] [eulernova] [\s!name]
+    \starttypescript [\s!serif] [euler] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]
         \definefontsynonym [\s!Serif] [\s!file:euler.otf] [\s!features=\s!default]
     \stoptypescript
 
-    \starttypescript [\s!math] [eulernova] [\s!name]
-        \loadfontgoodies[euler-math]
-        \definefontsynonym [MathRoman] [\s!file:euler.otf] [\s!features=\s!math\mathsizesuffix]
-    \stoptypescript
-
-    \starttypescript [pagella-eulernova]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [pagella]   [\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]    [\s!default] [\s!rscale=0.9]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [eulernova] [\s!default]
-        \quittypescriptscanning
-    \stoptypescript
-
-    \starttypescript [eulernova]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [eulernova] [\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]    [\s!default] [\s!rscale=0.9]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [eulernova] [\s!default]
-        \quittypescriptscanning
-    \stoptypescript
-
-    \starttypescript [\s!math] [euleroverpagella] [\s!name]
-        \definefontsynonym [MathRoman] [texgyrepagella-math] [\s!features=\s!math\mathsizesuffix,\s!fallbacks=euleroverpagella]
-    \stoptypescript
-
-    \starttypescript [\s!math] [pagellaovereuler] [\s!name]
-        \definefontsynonym [MathRoman] [\s!file:euler.otf] [\s!features=\s!math\mathsizesuffix,\s!fallbacks=pagellaovereuler]
-    \stoptypescript
-
-    \starttypescript [pagella-with-euler]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [pagella]          [\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]           [\s!default] [\s!rscale=0.9]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [euleroverpagella] [\s!default]
-        \quittypescriptscanning
-    \stoptypescript
-
-    \starttypescript [euler-with-pagella]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [eulernova]        [\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]           [\s!default] [\s!rscale=0.9]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [pagellaovereuler] [\s!default]
+    \starttypescript [euler]
+        \definetypeface [euler] [\s!rm] [\s!serif] [euler]  [\s!default]
+        \definetypeface [euler] [\s!tt] [\s!mono]  [modern] [\s!default]
+        \definetypeface [euler] [\s!mm] [\s!math]  [euler]  [\s!default]
         \quittypescriptscanning
     \stoptypescript
 

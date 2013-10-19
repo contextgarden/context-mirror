@@ -123,6 +123,8 @@ local free_node_list     = node.flush_list
 local insert_node_after  = node.insert_after
 local insert_node_before = node.insert_before
 
+local concat_nodes       = nodes.concat
+
 local nodecodes          = nodes.nodecodes
 local listcodes          = nodes.listcodes
 local gluecodes          = nodes.gluecodes
@@ -153,10 +155,9 @@ local new_stretch        = nodepool.stretch
 local new_usernumber     = nodepool.usernumber
 local new_latelua        = nodepool.latelua
 
-local texgetcount        = tex.getcount
-local texgetdimen        = tex.getdimen
-local texgetbox          = tex.getbox
-local texget             = tex.get
+local texcount           = tex.count
+local texdimen           = tex.dimen
+local texbox             = tex.box
 
 local points             = number.points
 
@@ -242,7 +243,7 @@ end
 
 function margins.save(t)
     setmetatable(t,defaults)
-    local content  = texgetbox(t.number)
+    local content  = texbox[t.number]
     local location = t.location
     local category = t.category
     local inline   = t.inline
@@ -308,24 +309,23 @@ function margins.save(t)
         t.n                   = nofsaved
         -- used later (we will clean up this natural mess later)
         -- nice is to make a special status table mechanism
-        local leftmargindistance  = texgetdimen("naturalleftmargindistance")
-        local rightmargindistance = texgetdimen("naturalrightmargindistance")
-        local strutbox        = texgetbox("strutbox")
-        t.strutdepth          = strutbox.depth
-        t.strutheight         = strutbox.height
-        t.leftskip            = texget("leftskip").width  -- we're not in forgetall
-        t.rightskip           = texget("rightskip").width -- we're not in forgetall
+        local leftmargindistance  = texdimen.naturalleftmargindistance
+        local rightmargindistance = texdimen.naturalrightmargindistance
+        t.strutdepth          = texbox.strutbox.depth
+        t.strutheight         = texbox.strutbox.height
+        t.leftskip            = tex.leftskip.width  -- we're not in forgetall
+        t.rightskip           = tex.rightskip.width -- we're not in forgetall
         t.leftmargindistance  = leftmargindistance -- todo:layoutstatus table
         t.rightmargindistance = rightmargindistance
-        t.leftedgedistance    = texgetdimen("naturalleftedgedistance")
-                              + texgetdimen("leftmarginwidth")
+        t.leftedgedistance    = texdimen.naturalleftedgedistance
+                              + texdimen.leftmarginwidth
                               + leftmargindistance
-        t.rightedgedistance   = texgetdimen("naturalrightedgedistance")
-                              + texgetdimen("rightmarginwidth")
+        t.rightedgedistance   = texdimen.naturalrightedgedistance
+                              + texdimen.rightmarginwidth
                               + rightmargindistance
-        t.lineheight          = texgetdimen("lineheight")
+        t.lineheight          = texdimen.lineheight
         --
-     -- t.realpageno          = texgetcount("realpageno")
+     -- t.realpageno          = texcount.realpageno
         if inline then
             context(new_usernumber(inline_mark,nofsaved))
             store[nofsaved] = t -- no insert
@@ -447,7 +447,7 @@ local function realign(current,candidate)
         end
     end
 
-    current.list = hpack_nodes(anchornode .. new_kern(-delta) .. current.list .. new_kern(delta))
+    current.list = hpack_nodes(concat_nodes{anchornode,new_kern(-delta),current.list,new_kern(delta)})
     current.width = 0
 end
 
@@ -490,7 +490,7 @@ local function markovershoot(current)
     v_anchors = v_anchors + 1
     cache[v_anchors] = stacked
     local anchor = new_latelua(format("typesetters.margins.ha(%s)",v_anchors)) -- todo: alleen als offset > line
-    current.list = hpack_nodes(anchor .. current.list)
+    current.list = hpack_nodes(concat_nodes{anchor,current.list})
 end
 
 local function getovershoot(location)
@@ -623,7 +623,7 @@ local function inject(parent,head,candidate)
     elseif head.id == whatsit_code and head.subtype == localpar_code then
         -- experimental
         if head.dir == "TRT" then
-            box.list = hpack_nodes(new_kern(candidate.hsize) .. box.list .. new_kern(-candidate.hsize))
+            box.list = hpack_nodes(concat_nodes{new_kern(candidate.hsize),box.list,new_kern(-candidate.hsize)})
         end
         insert_node_after(head,head,box)
     else

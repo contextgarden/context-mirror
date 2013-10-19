@@ -35,7 +35,7 @@ local function injectspaces(head)
     while n do
         local id = n.id
         if id == glue_code then -- todo: check for subtype related to spacing (13/14 but most seems to be 0)
-       -- if n.spec.width > 0 then -- threshold
+--~ if n.spec.width > 0 then -- threshold
             if p and p.id == glyph_code then
                 local g = copy_node(p)
                 local c = g.components
@@ -56,7 +56,7 @@ local function injectspaces(head)
                 s[a_characters] = 0
                 n[a_characters] = 0
             end
-       -- end
+--~ end
         elseif id == hlist_code or id == vlist_code then
             injectspaces(n.list,attribute)
      -- elseif id == kern_code then -- the backend already collapses
@@ -83,58 +83,58 @@ nodes.handlers.accessibility = injectspaces
 
 -- todo:
 
--- local a_hyphenated = attributes.private('hyphenated')
---
--- local hyphenated, codes = { }, { }
---
--- local function compact(n)
---     local t = { }
---     for n in traverse_id(glyph_code,n) do
---         t[#t+1] = utfchar(n.char) -- check for unicode
---     end
---     return concat(t,"")
--- end
---
--- local function injectspans(head)
---     for n in traverse_nodes(head) do
---         local id = n.id
---         if id == disc then
---             local r, p = n.replace, n.pre
---             if r and p then
---                 local str = compact(r)
---                 local hsh = hyphenated[str]
---                 if not hsh then
---                     hsh = #codes + 1
---                     hyphenated[str] = hsh
---                     codes[hsh] = str
---                 end
---                 n[a_hyphenated] = hsh
---             end
---         elseif id == hlist_code or id == vlist_code then
---             injectspans(n.list)
---         end
---     end
---     return head, true
--- end
---
--- nodes.injectspans = injectspans
---
--- tasks.appendaction("processors", "words", "nodes.injectspans")
---
--- local function injectspans(head)
---     for n in traverse_nodes(head) do
---         local id = n.id
---         if id == disc then
---             local a = n[a_hyphenated]
---             if a then
---                 local str = codes[a]
---                 local b = new_pdfliteral(format("/Span << /ActualText %s >> BDC", lpdf.tosixteen(str)))
---                 local e = new_pdfliteral("EMC")
---                 node.insert_before(head,n,b)
---                 node.insert_after(head,n,e)
---             end
---         elseif id == hlist_code or id == vlist_code then
---             injectspans(n.list)
---         end
---     end
--- end
+--~ local a_hyphenated = attributes.private('hyphenated')
+--~
+--~ local hyphenated, codes = { }, { }
+--~
+--~ local function compact(n)
+--~     local t = { }
+--~     for n in traverse_id(glyph_code,n) do
+--~         t[#t+1] = utfchar(n.char) -- check for unicode
+--~     end
+--~     return concat(t,"")
+--~ end
+--~
+--~ local function injectspans(head)
+--~     for n in traverse_nodes(head) do
+--~         local id = n.id
+--~         if id == disc then
+--~             local r, p = n.replace, n.pre
+--~             if r and p then
+--~                 local str = compact(r)
+--~                 local hsh = hyphenated[str]
+--~                 if not hsh then
+--~                     hsh = #codes + 1
+--~                     hyphenated[str] = hsh
+--~                     codes[hsh] = str
+--~                 end
+--~                 n[a_hyphenated] = hsh
+--~             end
+--~         elseif id == hlist_code or id == vlist_code then
+--~             injectspans(n.list)
+--~         end
+--~     end
+--~     return head, true
+--~ end
+--~
+--~ nodes.injectspans = injectspans
+--~
+--~ tasks.appendaction("processors", "words", "nodes.injectspans")
+--~
+--~ local function injectspans(head)
+--~     for n in traverse_nodes(head) do
+--~         local id = n.id
+--~         if id == disc then
+--~             local a = n[a_hyphenated]
+--~             if a then
+--~                 local str = codes[a]
+--~                 local b = new_pdfliteral(format("/Span << /ActualText %s >> BDC", lpdf.tosixteen(str)))
+--~                 local e = new_pdfliteral("EMC")
+--~                 node.insert_before(head,n,b)
+--~                 node.insert_after(head,n,e)
+--~             end
+--~         elseif id == hlist_code or id == vlist_code then
+--~             injectspans(n.list)
+--~         end
+--~     end
+--~ end

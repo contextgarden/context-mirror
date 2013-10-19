@@ -9,9 +9,8 @@ if not modules then modules = { } end modules ['util-prs'] = {
 local lpeg, table, string = lpeg, table, string
 local P, R, V, S, C, Ct, Cs, Carg, Cc, Cg, Cf, Cp = lpeg.P, lpeg.R, lpeg.V, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.Cp
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
-local concat, gmatch, find = table.concat, string.gmatch, string.find
+local concat, format, gmatch, find = table.concat, string.format, string.gmatch, string.find
 local tostring, type, next, rawset = tostring, type, next, rawset
-local mod, div = math.mod, math.div
 
 utilities         = utilities or {}
 local parsers     = utilities.parsers or { }
@@ -261,16 +260,6 @@ function parsers.simple_hash_to_string(h, separator)
     return concat(t,separator or ",")
 end
 
--- for mtx-context etc: aaaa bbbb cccc=dddd eeee=ffff
-
-local str      = C((1-whitespace-equal)^1)
-local setting  = Cf( Carg(1) * (whitespace^0 * Cg(str * whitespace^0 * (equal * whitespace^0 * str + Cc(""))))^1,rawset)
-local splitter = setting^1
-
-function utilities.parsers.options_to_hash(str,target)
-    return str and lpegmatch(splitter,str,1,target or { }) or { }
-end
-
 -- for chem (currently one level)
 
 local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)
@@ -420,7 +409,7 @@ function parsers.csvsplitter(specification)
         end
         whatever = quotedata + whatever
     end
-    local parser = Ct((Ct(whatever * (separator * whatever)^0) * S("\n\r")^1)^0 )
+    local parser = Ct((Ct(whatever * (separator * whatever)^0) * S("\n\r"))^0 )
     return function(data)
         return lpegmatch(parser,data)
     end
@@ -579,7 +568,7 @@ local function fetch(t,name)
     return t[name] or { }
 end
 
-local function process(result,more)
+function process(result,more)
     for k, v in next, more do
         result[k] = v
     end
@@ -601,16 +590,3 @@ end
 -- }
 --
 -- inspect(utilities.parsers.mergehashes(t,"aa, bb, cc"))
-
-function utilities.parsers.runtime(time)
-    if not time then
-        time = os.runtime()
-    end
-    local days = div(time,24*60*60)
-    time = mod(time,24*60*60)
-    local hours = div(time,60*60)
-    time = mod(time,60*60)
-    local minutes = div(time,60)
-    local seconds = mod(time,60)
-    return days, hours, minutes, seconds
-end

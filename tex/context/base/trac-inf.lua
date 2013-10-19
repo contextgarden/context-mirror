@@ -11,24 +11,20 @@ if not modules then modules = { } end modules ['trac-inf'] = {
 -- get warnings about assignments. This is more efficient than using rawset
 -- and rawget.
 
-local type, tonumber, select = type, tonumber, select
+local type, tonumber = type, tonumber
 local format, lower = string.format, string.lower
 local concat = table.concat
 local clock = os.gettimeofday or os.clock -- should go in environment
 
-local setmetatableindex = table.setmetatableindex
-local serialize         = table.serialize
-local formatters        = string.formatters
+statistics       = statistics or { }
+local statistics = statistics
 
-statistics              = statistics or { }
-local statistics        = statistics
-
-statistics.enable       = true
-statistics.threshold    = 0.01
+statistics.enable    = true
+statistics.threshold = 0.01
 
 local statusinfo, n, registered, timers = { }, 0, { }, { }
 
-setmetatableindex(timers,function(t,k)
+table.setmetatableindex(timers,function(t,k)
     local v = { timing = 0, loadtime = 0 }
     t[k] = v
     return v
@@ -180,19 +176,6 @@ function statistics.timed(action)
     action()
     stoptiming("run")
     report("total runtime: %s",elapsedtime("run"))
-end
-
--- goodie
-
-function statistics.tracefunction(base,tag,...)
-    for i=1,select("#",...) do
-        local name = select(i,...)
-        local stat = { }
-        local func = base[name]
-        setmetatableindex(stat,function(t,k) t[k] = 0 return 0 end)
-        base[name] = function(n,k,v) stat[k] = stat[k] + 1 return func(n,k,v) end
-        statistics.register(formatters["%s.%s"](tag,name),function() return serialize(stat,"calls") end)
-    end
 end
 
 -- where, not really the best spot for this:

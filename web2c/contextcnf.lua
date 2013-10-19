@@ -207,7 +207,7 @@ return {
             -- In an edit cycle it can be handy to launch an editor. The
             -- preferred one can be set here.
 
-         -- ["pdfview.method"]           = "sumatra",
+         -- ["pdfview.method"]           = "okular", -- default (often acrobat) xpdf okular
 
         },
 

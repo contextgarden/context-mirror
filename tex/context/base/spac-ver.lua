@@ -23,7 +23,8 @@ if not modules then modules = { } end modules ['spac-ver'] = {
 
 local next, type, tonumber = next, type, tonumber
 local gmatch, concat = string.gmatch, table.concat
-local ceil, floor = math.ceil, math.floor
+local ceil, floor, max, min, round, abs = math.ceil, math.floor, math.max, math.min, math.round, math.abs
+local texlists, texdimen, texbox = tex.lists, tex.dimen, tex.box
 local lpegmatch = lpeg.match
 local unpack = unpack or table.unpack
 local allocate = utilities.storage.allocate
@@ -32,13 +33,12 @@ local formatters = string.formatters
 
 local P, C, R, S, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc
 
-local nodes, node, trackers, attributes, context, commands, tex =  nodes, node, trackers, attributes, context, commands, tex
-
------ texlists    = tex.lists
-local texgetdimen = tex.getdimen
-local texgetbox   = tex.getbox
+local nodes, node, trackers, attributes, context =  nodes, node, trackers, attributes, context
 
 local variables   = interfaces.variables
+
+local starttiming = statistics.starttiming
+local stoptiming  = statistics.stoptiming
 
 -- vertical space handler
 
@@ -87,6 +87,7 @@ local new_gluespec        = nodepool.gluespec
 
 local nodecodes           = nodes.nodecodes
 local skipcodes           = nodes.skipcodes
+local fillcodes           = nodes.fillcodes
 
 local penalty_code        = nodecodes.penalty
 local kern_code           = nodecodes.kern
@@ -95,7 +96,7 @@ local hlist_code          = nodecodes.hlist
 local vlist_code          = nodecodes.vlist
 local whatsit_code        = nodecodes.whatsit
 
-local texnest             = tex.nest
+local userskip_code       = skipcodes.userskip
 
 local vspacing            = builders.vspacing or { }
 builders.vspacing         = vspacing
@@ -287,24 +288,20 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
     local snapht, snapdp
     if method["local"] then
         -- snapping is done immediately here
-        snapht = texgetdimen("bodyfontstrutheight")
-        snapdp = texgetdimen("bodyfontstrutdepth")
+        snapht, snapdp = texdimen.bodyfontstrutheight, texdimen.bodyfontstrutdepth
         if t then
             t[#t+1] = formatters["local: snapht %p snapdp %p"](snapht,snapdp)
         end
     elseif method["global"] then
-        snapht = texgetdimen("globalbodyfontstrutheight")
-        snapdp = texgetdimen("globalbodyfontstrutdepth")
+        snapht, snapdp = texdimen.globalbodyfontstrutheight, texdimen.globalbodyfontstrutdepth
         if t then
             t[#t+1] = formatters["global: snapht %p snapdp %p"](snapht,snapdp)
         end
     else
         -- maybe autolocal
         -- snapping might happen later in the otr
-        snapht = texgetdimen("globalbodyfontstrutheight")
-        snapdp = texgetdimen("globalbodyfontstrutdepth")
-        local lsnapht = texgetdimen("bodyfontstrutheight")
-        local lsnapdp = texgetdimen("bodyfontstrutdepth")
+        snapht, snapdp = texdimen.globalbodyfontstrutheight, texdimen.globalbodyfontstrutdepth
+        local lsnapht, lsnapdp = texdimen.bodyfontstrutheight, texdimen.bodyfontstrutdepth
         if snapht ~= lsnapht and snapdp ~= lsnapdp then
             snapht, snapdp = lsnapht, lsnapdp
         end
@@ -345,16 +342,13 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
             id = thebox and thebox.id
         end
         if thebox and id == vlist_code then
-            local list = thebox.list
-            local lh, ld
+            local list, lh, ld = thebox.list
             for n in traverse_nodes_id(hlist_code,list) do
-                lh = n.height
-                ld = n.depth
+                lh, ld = n.height, n.depth
                 break
             end
             if lh then
-                local ht = thebox.height
-                local dp = thebox.depth
+                local ht, dp = thebox.height, thebox.depth
                 if t then
                     t[#t+1] = formatters["first line: height %p depth %p"](lh,ld)
                     t[#t+1] = formatters["dimensions: height %p depth %p"](ht,dp)
@@ -385,12 +379,10 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
         if thebox and id == vlist_code then
             local list, lh, ld = thebox.list
             for n in traverse_nodes_id(hlist_code,list) do
-                lh = n.height
-                ld = n.depth
+                lh, ld = n.height, n.depth
             end
             if lh then
-                local ht = thebox.height
-                local dp = thebox.depth
+                local ht, dp = thebox.height, thebox.depth
                 if t then
                     t[#t+1] = formatters["last line: height %p depth %p" ](lh,ld)
                     t[#t+1] = formatters["dimensions: height %p depth %p"](ht,dp)
@@ -487,7 +479,7 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
     local lines = (ch+cd)/snaphtdp
     if t then
         local original = (h+d)/snaphtdp
-        local whatever = (ch+cd)/(texgetdimen("globalbodyfontstrutheight") + texgetdimen("globalbodyfontstrutdepth"))
+        local whatever = (ch+cd)/(texdimen.globalbodyfontstrutheight + texdimen.globalbodyfontstrutdepth)
         t[#t+1] = formatters["final lines: %s -> %s (%s)"](original,lines,whatever)
         t[#t+1] = formatters["final height: %p -> %p"](h,ch)
         t[#t+1] = formatters["final depth: %p -> %p"](d,cd)
@@ -503,8 +495,7 @@ local function snap_topskip(current,method)
     local w = spec.width
     local wd = w
     if spec.writable then
-        spec.width = 0
-        wd = 0
+        spec.width, wd = 0, 0
     end
     return w, wd
 end
@@ -749,11 +740,21 @@ local topskip_code               = skipcodes.topskip
 local splittopskip_code          = skipcodes.splittopskip
 
 local free_glue_node = free_node
+local discard, largest, force, penalty, add, disable, nowhite, goback, together = 0, 1, 2, 3, 4, 5, 6, 7, 8
+
+-- local function free_glue_node(n)
+--  -- free_node(n.spec)
+--     print("before",n)
+--     logs.flush()
+--     free_node(n)
+--     print("after")
+--     logs.flush()
+-- end
 
 function vspacing.snapbox(n,how)
     local sv = snapmethods[how]
     if sv then
-        local box = texgetbox(n)
+        local box = texbox[n]
         local list = box.list
         if list then
             local s = list[a_snapmethod]
@@ -762,8 +763,7 @@ function vspacing.snapbox(n,how)
                 --  report_snapper("box list not snapped, already done")
                 end
             else
-                local ht = box.height
-                local dp = box.depth
+                local ht, dp = box.height, box.depth
                 if false then -- todo: already_done
                     -- assume that the box is already snapped
                     if trace_vsnapping then
@@ -772,8 +772,7 @@ function vspacing.snapbox(n,how)
                     end
                 else
                     local h, d, ch, cd, lines = snap_hlist("box",box,sv,ht,dp)
-                    box.height= ch
-                    box.depth = cd
+                    box.height, box.depth = ch, cd
                     if trace_vsnapping then
                         report_snapper("box list snapped from (%p,%p) to (%p,%p) using method %a (%s) for %a (%s lines): %s",
                             h,d,ch,cd,sv.name,sv.specification,"direct",lines,listtoutf(list))
@@ -786,17 +785,8 @@ function vspacing.snapbox(n,how)
     end
 end
 
--- I need to figure out how to deal with the prevdepth that crosses pages. In fact,
--- prevdepth is often quite interfering (even over a next paragraph) so I need to
--- figure out a trick.
-
 local function forced_skip(head,current,width,where,trace)
-    if head == current and head.subtype == baselineskip_code then
-        width = width - head.spec.width
-    end
-    if width == 0 then
-        -- do nothing
-    elseif where == "after" then
+    if where == "after" then
         head, current = insert_node_after(head,current,new_rule(0,0,0))
         head, current = insert_node_after(head,current,new_kern(width))
         head, current = insert_node_after(head,current,new_rule(0,0,0))
@@ -814,8 +804,6 @@ local function forced_skip(head,current,width,where,trace)
 end
 
 -- penalty only works well when before skip
-
-local discard, largest, force, penalty, add, disable, nowhite, goback, together = 0, 1, 2, 3, 4, 5, 6, 7, 8 -- move into function when upvalue 60 issue
 
 local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also pass tail
     if trace then
@@ -835,12 +823,11 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
             head = insert_node_before(head,current,p)
         end
         if glue_data then
-            local spec = glue_data.spec
             if force_glue then
                 if trace then trace_done("flushed due to " .. why,glue_data) end
-                head = forced_skip(head,current,spec.width,"before",trace)
+                head = forced_skip(head,current,glue_data.spec.width,"before",trace)
                 free_glue_node(glue_data)
-            elseif spec.writable then
+            elseif glue_data.spec.writable then
                 if trace then trace_done("flushed due to " .. why,glue_data) end
                 head = insert_node_before(head,current,glue_data)
             else
@@ -854,9 +841,8 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
     end
     if trace_vsnapping then
         report_snapper("global ht/dp = %p/%p, local ht/dp = %p/%p",
-            texgetdimen("globalbodyfontstrutheight"), texgetdimen("globalbodyfontstrutdepth"),
-            texgetdimen("bodyfontstrutheight"), texgetdimen("bodyfontstrutdepth")
-        )
+            texdimen.globalbodyfontstrutheight, texdimen.globalbodyfontstrutdepth,
+            texdimen.bodyfontstrutheight, texdimen.bodyfontstrutdepth)
     end
     if trace then trace_info("start analyzing",where,what) end
     while current do
@@ -879,8 +865,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                     if sv then
                         -- check if already snapped
                         if list and already_done(id,list,a_snapmethod) then
-                            local ht = current.height
-                            local dp = current.depth
+                            local ht, dp = current.height, current.depth
                             -- assume that the box is already snapped
                             if trace_vsnapping then
                                 report_snapper("mvl list already snapped at (%p,%p): %s",ht,dp,listtoutf(list))
@@ -951,9 +936,9 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                                     previous.spec = new_gluespec(pw + cw, pp + cp, pm + cm) -- else topskip can disappear
                                     if trace then trace_natural("removed",current) end
                                     head, current = remove_node(head, current, true)
-                                 -- current = previous
+                                --  current = previous
                                     if trace then trace_natural("collapsed",previous) end
-                                 -- current = current.next
+                                --  current = current.next
                                 else
                                     if trace then trace_natural("filler",current) end
                                     current = current.next
@@ -1090,8 +1075,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                     if trace then trace_natural("ignored parskip",current) end
                     head, current = remove_node(head, current, true)
                 elseif glue_data then
-                    local ps = current.spec
-                    local gs = glue_data.spec
+                    local ps, gs = current.spec, glue_data.spec
                     if ps.writable and gs.writable and ps.width > gs.width then
                         glue_data.spec = copy_node(ps)
                         if trace then trace_natural("taking parskip",current) end
@@ -1147,14 +1131,11 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 current = current.next
                 --
             else -- other glue
-                if snap and trace_vsnapping then
-                    local spec = current.spec
-                    if spec.writable and spec.width ~= 0 then
-                        report_snapper("glue %p of type %a kept",current.spec.width,skipcodes[subtype])
-                     -- spec.width = 0
-                    end
+                if snap and trace_vsnapping and current.spec.writable and current.spec.width ~= 0 then
+                    report_snapper("glue %p of type %a kept",current.spec.width,skipcodes[subtype])
+                --~ current.spec.width = 0
                 end
-                if trace then trace_skip(formatter["glue of type %a"](subtype),sc,so,sp,current) end
+                if trace then trace_skip(formatted["glue of type %a"](subtype),sc,so,sp,current) end
                 flush("some glue")
                 current = current.next
             end
@@ -1186,7 +1167,6 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         else
             head, tail = insert_node_after(head,tail,glue_data)
         end
-texnest[texnest.ptr].prevdepth = 0 -- appending to the list bypasses tex's prevdepth handler
     end
     if trace then
         if glue_data or penalty_data then
@@ -1247,11 +1227,11 @@ function vspacing.pagehandler(newhead,where)
             if stackhack then
                 stackhack = false
                 if trace_collect_vspacing then report("processing %s nodes: %s",newhead) end
-                 -- texlists.contrib_head = collapser(newhead,"page",where,trace_page_vspacing,true,a_snapmethod)
+--~                 texlists.contrib_head = collapser(newhead,"page",where,trace_page_vspacing,true,a_snapmethod)
                     newhead = collapser(newhead,"page",where,trace_page_vspacing,true,a_snapmethod)
             else
                 if trace_collect_vspacing then report("flushing %s nodes: %s",newhead) end
-             -- texlists.contrib_head = newhead
+--~                 texlists.contrib_head = newhead
             end
         else
             if stackhead then
@@ -1278,29 +1258,96 @@ local ignore = table.tohash {
 
 function vspacing.vboxhandler(head,where)
     if head and not ignore[where] and head.next then
+    --  starttiming(vspacing)
         head = collapser(head,"vbox",where,trace_vbox_vspacing,true,a_snapvbox) -- todo: local snapper
+    --  stoptiming(vspacing)
     end
     return head
 end
 
 function vspacing.collapsevbox(n) -- for boxes but using global a_snapmethod
-    local box = texgetbox(n)
-    if box then
-        local list = box.list
-        if list then
-            box.list = vpack_node(collapser(list,"snapper","vbox",trace_vbox_vspacing,true,a_snapmethod))
-        end
+    local list = texbox[n].list
+    if list then
+    --  starttiming(vspacing)
+        texbox[n].list = vpack_node(collapser(list,"snapper","vbox",trace_vbox_vspacing,true,a_snapmethod))
+    --  stoptiming(vspacing)
     end
 end
 
--- This one is needed to prevent bleeding of prevdepth to the next page
--- which doesn't work well with forced skips.
+-- We will split this module so a few locals are repeated. Also this will be
+-- rewritten.
 
-local outer = texnest[0]
+nodes.builders = nodes.builder or { }
+local builders = nodes.builders
 
-function vspacing.resetprevdepth()
-    outer.prevdepth = 0
+local actions = nodes.tasks.actions("vboxbuilders")
+
+function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
+    local done = false
+    if head then
+        starttiming(builders)
+        if trace_vpacking then
+            local before = nodes.count(head)
+            head, done = actions(head,groupcode,size,packtype,maxdepth,direction)
+            local after = nodes.count(head)
+            if done then
+                nodes.processors.tracer("vpack","changed",head,groupcode,before,after,true)
+            else
+                nodes.processors.tracer("vpack","unchanged",head,groupcode,before,after,true)
+            end
+        else
+            head, done = actions(head,groupcode)
+        end
+        stoptiming(builders)
+    end
+    return head, done
 end
+
+-- This one is special in the sense that it has no head and we operate on the mlv. Also,
+-- we need to do the vspacing last as it removes items from the mvl.
+
+local actions = nodes.tasks.actions("mvlbuilders")
+
+local function report(groupcode,head)
+    report_page_builder("trigger: %s",groupcode)
+    report_page_builder("  vsize    : %p",tex.vsize)
+    report_page_builder("  pagegoal : %p",tex.pagegoal)
+    report_page_builder("  pagetotal: %p",tex.pagetotal)
+    report_page_builder("  list     : %s",head and nodeidstostring(head) or "<empty>")
+end
+
+function builders.buildpage_filter(groupcode)
+    local head, done = texlists.contrib_head, false
+ -- if head and head.next and head.next.id == hlist_code and head.next.width == 1 then
+ --     report_page_builder("trigger otr calculations")
+ --     free_node_list(head)
+ --     head = nil
+ -- end
+    if head then
+        starttiming(builders)
+        if trace_page_builder then
+            report(groupcode,head)
+        end
+        head, done = actions(head,groupcode)
+        stoptiming(builders)
+     -- -- doesn't work here (not passed on?)
+     -- tex.pagegoal = tex.vsize - tex.dimen.d_page_floats_inserted_top - tex.dimen.d_page_floats_inserted_bottom
+        texlists.contrib_head = head
+        return done and head or true
+    else
+        if trace_page_builder then
+            report(groupcode)
+        end
+        return nil, false
+    end
+end
+
+callbacks.register('vpack_filter',     builders.vpack_filter,     "vertical spacing etc")
+callbacks.register('buildpage_filter', builders.buildpage_filter, "vertical spacing etc (mvl)")
+
+statistics.register("v-node processing time", function()
+    return statistics.elapsedseconds(builders)
+end)
 
 -- interface
 
@@ -1309,4 +1356,3 @@ commands.vspacingsetamount = vspacing.setskip
 commands.vspacingdefine    = vspacing.setmap
 commands.vspacingcollapse  = vspacing.collapsevbox
 commands.vspacingsnap      = vspacing.snapbox
-commands.resetprevdepth    = vspacing.resetprevdepth

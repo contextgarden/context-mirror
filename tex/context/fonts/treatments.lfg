@@ -2,47 +2,6 @@
 -- the order specified by tree order access. The first treatment of a file
 -- always wins, so one can overload. These files are not (to be) loaded with
 -- font definitions. (Experiment as part of writing the font manual.)
---
--- So there are several ways to fix a font: add a patcher to a goodie file and
--- load that one. Such a patch can end up in the cached file. Treatments are
--- applied at runtime. An experimental auto-loaded goodie approach is not yet
--- enabled and will never be if treatments can do the job.
-
-local report = fonts.treatments.report
-
-local fix_unifraktur = {
-    comment = "suspicious x height",
-    fixes   = function(data)
-        local pfminfo = data.metadata.pfminfo
-        if pfminfo then
-            local os2_xheight = pfminfo.os2_xheight
-            if os2_xheight and os2_xheight < 350 then
-                report("suspicious x-height %a, nilling",os2_xheight)
-                pfminfo.os2_xheight_original = os2_xheight
-                pfminfo.os2_xheight = nil
-            end
-        end
-    end,
-}
-
-local fix_lmmonoregular = {
-    comment = "wrong widths of some glyphs",
-    fixes = function(data)
-        report("fixing some wrong widths")
-        local unicodes     = data.resources.unicodes
-        local descriptions = data.descriptions
-        local defaultwidth = descriptions[unicodes["zero"]].width
-        descriptions[unicodes["six"]             ].width = defaultwidth
-        descriptions[unicodes["nine"]            ].width = defaultwidth
-        descriptions[unicodes["caron"]           ].width = defaultwidth
-        descriptions[unicodes["perthousand"]     ].width = defaultwidth
-        descriptions[unicodes["numero"]          ].width = defaultwidth
-        descriptions[unicodes["caron.cap"]       ].width = defaultwidth
-        descriptions[unicodes["six.taboldstyle"] ].width = defaultwidth
-        descriptions[unicodes["nine.taboldstyle"]].width = defaultwidth
-        descriptions[unicodes["dollar.oldstyle" ]].width = defaultwidth
-    end
-}
 
 return {
     name = "treatments",
@@ -54,26 +13,18 @@ return {
         -- we need to complete this list in order to be able to warn
         -- users not to include these files unless permitted
         ["adobeheitistd-regular.otf"] = {
-            comment  = "this font is part of acrobat",
             ignored  = false,
          -- included = false, -- not yet
+            comment  = "this font is part of acrobat",
         },
         -- just an experiment .. normally no big deal but I ran into
         -- such case
         ["crap.ttf"] = {
-            comment = "a text file with suffix ttf", -- used in test file
             ignored = true,
+            comment = "a text file with suffix ttf", -- used in test file
         },
-        -- harmless example
-     -- ["copperplatethirtythreebc.ttf"] = {
-     --     comment = "hangs and has no hyphen",
-     --     ignored = true,
-     -- },
-     -- ["latinmodern-math.otf"] = {
-     --     comment = "experimental",
-     -- },
-        ["lmmono12regular.otf"]    = fix_lmmonoregular,
-        ["unifrakturcook.ttf"]     = fix_unifraktur,
-        ["unifrakturmaguntia.ttf"] = fix_unifraktur,
+        ["latinmodern-math.otf"] = {
+            comment = "experimental",
+        }
     },
 }

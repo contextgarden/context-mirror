@@ -11,8 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% todo: mkvi #
-
 \writestatus{loading}{ConTeXt Structure Macros / Line Notes}
 
 %D This module loads on top of the footnote and line numbering macros.
@@ -81,8 +79,6 @@
 \letvalue\??linenotespreviousfrom\empty
 \letvalue\??linenotespreviousto  \empty
 
-% maybe do this in lua
-
 \def\page_lines_in_from{\in[lr:b:\currentlinenotereference]}
 \def\page_lines_in_to  {\in[lr:e:\currentlinenotereference]}
 
@@ -117,11 +113,14 @@
            \notationparameter\c!compressseparator
          \else
            \page_lines_in_from
-           \ifx\m_page_lines_current_from\m_page_lines_current_to\else\endash\page_lines_in_to\fi
          \fi
        \else
          \page_lines_in_from
-         \ifx\m_page_lines_current_from\m_page_lines_current_to\else\endash\page_lines_in_to\fi
+         \ifx\m_page_lines_current_from\m_page_lines_current_to
+         \else
+           \endash
+           \page_lines_in_to
+         \fi
        \fi
      \else
        \page_lines_in_from

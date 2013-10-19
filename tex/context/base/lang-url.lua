@@ -8,10 +8,10 @@ if not modules then modules = { } end modules ['lang-url'] = {
 
 local utfcharacters, utfvalues, utfbyte, utfchar = utf.characters, utf.values, utf.byte, utf.char
 
+context = context
+
 commands       = commands or { }
 local commands = commands
-
-context        = context
 
 --[[
 <p>Hyphenating <l n='url'/>'s is somewhat tricky and a matter of taste. I did

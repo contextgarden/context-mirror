@@ -106,7 +106,7 @@
    \fi
    \d_page_fitting_width \wd\b_page_fitting
    \d_page_fitting_height\ht\b_page_fitting
-   \startlocallayout % hm, we change the papersize so we still need it
+   \startlocallayout % still valid?
    \let\checkcurrentlayout\relax % else interference with odd/even layout
    \processaction
      [\fittingpageparameter\c!paper]
@@ -117,7 +117,7 @@
    \startmakeup[fittingpage]%
      \box\b_page_fitting
    \stopmakeup
-   \stoplocallayout % we need to get rid of this and use the built-in
+   \stoplocallayout % still valid?
    \egroup
    \autostoptext}
 

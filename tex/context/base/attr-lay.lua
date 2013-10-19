@@ -133,8 +133,8 @@ attributes.viewerlayers.handler = nodes.installattributehandler {
     namespace   = viewerlayers,
     initializer = initializer,
     finalizer   = states.finalize,
-    processor   = states.stacker,
  -- processor   = states.stacked,
+    processor   = states.stacker,
 }
 
 local stack, enabled, global = { }, false, false
