@@ -408,7 +408,6 @@
                                            \settrue\c_strc_itemgroups_inline
                                            \settrue\c_strc_itemgroups_joined
                                            \strc_itemgroups_process_set_option_pack}
-\setvalue{\??itemgroupkeyword\v!columns  }{\strc_itemgroups_process_set_option_pack}
 \setvalue{\??itemgroupkeyword\v!before   }{\settrue\c_strc_itemgroups_before}
 \setvalue{\??itemgroupkeyword\v!after    }{\settrue\c_strc_itemgroups_after}
 \setvalue{\??itemgroupkeyword\v!nowhite  }{\settrue\c_strc_itemgroups_nowhite}
@@ -1205,7 +1204,8 @@
 
 \def\strc_itemgroups_handle_lapped_item_positive
   {\llap
-     {\hbox to \d_strc_itemgroups_list_width
+     {\dontcomplain
+      \hbox to \d_strc_itemgroups_list_width
         {\ifconditional\c_strc_itemgroups_sub
            \llap{+\enspace}%
          \fi
@@ -1246,7 +1246,7 @@
    \strc_itemgroups_start_head}
 
 \def\strc_itemgroups_make_symbol_box
-  {\setbox\b_strc_itemgroups\hbox
+  {\setbox\b_strc_itemgroups\autodirhbox
      {\ifconditional\c_strc_itemgroups_head
         \ifconditional\c_strc_itemgroups_symbol
           \strc_itemgroups_insert_extra_reference
@@ -1443,6 +1443,19 @@
     \to \itemgroupcommands
 
 \fi
+
+\relaxvalueifundefined \v!item
+\relaxvalueifundefined \v!sub
+\relaxvalueifundefined \v!sym
+\relaxvalueifundefined \v!ran
+\relaxvalueifundefined \v!head
+\relaxvalueifundefined \v!its
+\relaxvalueifundefined \v!mar
+\relaxvalueifundefined \v!txt
+\relaxvalueifundefined {\e!start\v!item}
+\relaxvalueifundefined {\e!stop \v!item}
+\relaxvalueifundefined {\e!start\v!head}
+\relaxvalueifundefined {\e!stop \v!head}
 
 %D A nice example of a plugin:
 %D

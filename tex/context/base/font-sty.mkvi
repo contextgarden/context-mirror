@@ -172,6 +172,8 @@
 
 %D The new one:
 
+\setfalse\fontattributeisset
+
 \unexpanded\def\dousestyleparameter#value%
   {\edef\currentstyleparameter{#value}%
    \ifx\currentstyleparameter\empty\else
@@ -342,6 +344,9 @@
      \font_styles_define_style_collection_a\s!default
   \fi}
 
+\let\font_styles_define_style_collection_a\relax
+\let\font_styles_define_style_collection_b\relax
+
 \unexpanded\def\definestyleinstance
   {\doquadrupleargument\font_styles_define_style_instance}
 
@@ -403,6 +408,5 @@
    \dousecolorhashparameter{#1}{#3}}
 
 \let\dostopattributes\endgroup
-
 
 \protect \endinput

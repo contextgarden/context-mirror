@@ -16,19 +16,18 @@ if not modules then modules = { } end modules ['math-ini'] = {
 -- then we also have to set the other characters (only a subset done now)
 
 local formatters, find = string.formatters, string.find
-local utfchar, utfbyte = utf.char, utf.byte
-local setmathcode, setdelcode = tex.setmathcode, tex.setdelcode
-local settexattribute = tex.setattribute
+local utfchar, utfbyte, utflength = utf.char, utf.byte, utf.length
 local floor = math.floor
 
-local context = context
+local context           = context
+local commands          = commands
 
-local contextsprint = context.sprint
-local contextfprint = context.fprint -- a bit inefficient
+local contextsprint     = context.sprint
+local contextfprint     = context.fprint -- a bit inefficient
 
-local trace_defining = false  trackers.register("math.defining", function(v) trace_defining = v end)
+local trace_defining    = false  trackers.register("math.defining", function(v) trace_defining = v end)
 
-local report_math = logs.reporter("mathematics","initializing")
+local report_math       = logs.reporter("mathematics","initializing")
 
 mathematics             = mathematics or { }
 local mathematics       = mathematics
@@ -39,6 +38,10 @@ mathematics.privatebase = 0xFF000 -- here we push the ex
 local unsetvalue        = attributes.unsetvalue
 local allocate          = utilities.storage.allocate
 local chardata          = characters.data
+
+local texsetattribute   = tex.setattribute
+local setmathcode       = tex.setmathcode
+local setdelcode        = tex.setdelcode
 
 local families = allocate {
     mr = 0,
@@ -87,6 +90,7 @@ local classes = allocate {
     large       =  1, -- op
     variable    =  7, -- alphabetic
     number      =  7, -- alphabetic
+    root        = 16, -- a private one
 }
 
 local open_class   = 4
@@ -151,6 +155,10 @@ local function radical(family,slot)
     return formatters['\\Uradical "%X "%X '](family,slot)
 end
 
+local function root(family,slot)
+    return formatters['\\Uroot "%X "%X '](family,slot)
+end
+
 local function mathchardef(name,class,family,slot)
     return formatters['\\Umathchardef\\%s "%X "%X "%X '](name,class,family,slot)
 end
@@ -191,29 +199,42 @@ local setmathcharacter = function(class,family,slot,unicode,mset,dset)
     return mset, dset
 end
 
+local f_accent    = formatters[ [[\ugdef\%s{\Umathaccent 0 "%X "%X }]] ]
+local f_topaccent = formatters[ [[\ugdef\%s{\Umathaccent 0 "%X "%X }]] ]
+local f_botaccent = formatters[ [[\ugdef\%s{\Umathbotaccent 0 "%X "%X }]] ]
+local f_over      = formatters[ [[\ugdef\%s{\Udelimiterover "%X "%X }]] ]
+local f_under     = formatters[ [[\ugdef\%s{\Udelimiterunder "%X "%X }]] ]
+local f_fence     = formatters[ [[\ugdef\%s{\Udelimiter "%X "%X "%X }]] ]
+local f_delimiter = formatters[ [[\ugdef\%s{\Udelimiter 0 "%X "%X }]] ]
+local f_radical   = formatters[ [[\ugdef\%s{\Uradical "%X "%X }]] ]
+local f_root      = formatters[ [[\ugdef\%s{\Uroot "%X "%X }]] ]
+----- f_char      = formatters[ [[\ugdef\%s{\Umathchar "%X "%X "%X }]]
+local f_char      = formatters[ [[\Umathchardef\%s "%X "%X "%X ]] ]
+
 local setmathsymbol = function(name,class,family,slot) -- hex is nicer for tracing
     if class == classes.accent then
-        contextsprint(formatters[ [[\ugdef\%s{\Umathaccent 0 "%X "%X }]] ](name,family,slot))
+        contextsprint(f_accent(name,family,slot))
     elseif class == classes.topaccent then
-        contextsprint(formatters[ [[\ugdef\%s{\Umathaccent 0 "%X "%X }]] ](name,family,slot))
+        contextsprint(f_topaccent(name,family,slot))
     elseif class == classes.botaccent then
-        contextsprint(formatters[ [[\ugdef\%s{\Umathbotaccent 0 "%X "%X }]] ](name,family,slot))
+        contextsprint(f_botaccent(name,family,slot))
     elseif class == classes.over then
-        contextsprint(formatters[ [[\ugdef\%s{\Udelimiterover "%X "%X }]] ](name,family,slot))
+        contextsprint(f_over(name,family,slot))
     elseif class == classes.under then
-        contextsprint(formatters[ [[\ugdef\%s{\Udelimiterunder "%X "%X }]] ](name,family,slot))
+        contextsprint(f_under(name,family,slot))
     elseif class == open_class or class == close_class or class == middle_class then
         setdelcode("global",slot,{family,slot,0,0})
-        contextsprint(formatters[ [[\ugdef\%s{\Udelimiter "%X "%X "%X }]] ](name,class,family,slot))
+        contextsprint(f_fence(name,class,family,slot))
     elseif class == classes.delimiter then
         setdelcode("global",slot,{family,slot,0,0})
-        contextsprint(formatters[ [[\ugdef\%s{\Udelimiter 0 "%X "%X }]] ](name,family,slot))
+        contextsprint(f_delimiter(name,family,slot))
     elseif class == classes.radical then
-        contextsprint(formatters[ [[\ugdef\%s{\Uradical "%X "%X }]] ](name,family,slot))
+        contextsprint(f_radical(name,family,slot))
+    elseif class == classes.root then
+        contextsprint(f_root(name,family,slot))
     else
         -- beware, open/close and other specials should not end up here
-     -- contextsprint(formatters[ [[\ugdef\%s{\Umathchar "%X "%X "%X }]],name,class,family,slot))
-        contextsprint(formatters[ [[\Umathchardef\%s "%X "%X "%X ]] ](name,class,family,slot))
+        contextsprint(f_char(name,class,family,slot))
     end
 end
 
@@ -313,30 +334,55 @@ function mathematics.define(family)
 end
 
 -- needed for mathml analysis
-
+-- string with # > 1 are invalid
 -- we could cache
 
+local lpegmatch = lpeg.match
+
+local utf8byte  = lpeg.patterns.utf8byte * lpeg.P(-1)
+
+-- function somechar(c)
+--     local b = lpegmatch(utf8byte,c)
+--     return b and chardata[b]
+-- end
+
+
+local somechar = { }
+
+table.setmetatableindex(somechar,function(t,k)
+    local b = lpegmatch(utf8byte,k)
+    local v = b and chardata[b] or false
+    t[k] = v
+    return v
+end)
+
 local function utfmathclass(chr, default)
-    local cd = chardata[utfbyte(chr)]
+    local cd = somechar[chr]
     return cd and cd.mathclass or default or "unknown"
 end
 
-local function utfmathaccent(chr,default,asked)
-    local cd = chardata[utfbyte(chr)]
+local function utfmathaccent(chr,default,asked1,asked2)
+    local cd = somechar[chr]
     if not cd then
         return default or false
     end
-    if asked then
+    if asked1 and asked1 ~= "" then
         local mc = cd.mathclass
-        if mc and mc == asked then
+        if mc and (mc == asked1 or mc == asked2) then
             return true
         end
         local ms = cd.mathspec
+        if not ms then
+            local mp = cd.mathparent
+            if mp then
+                ms = chardata[mp].mathspec
+            end
+        end
         if ms then
             for i=1,#ms do
                 local msi = ms[i]
                 local mc = msi.class
-                if mc and mc == asked then
+                if mc and (mc == asked1 or mc == asked2) then
                     return true
                 end
             end
@@ -360,32 +406,38 @@ local function utfmathaccent(chr,default,asked)
     return default or false
 end
 
-local function utfmathstretch(chr, default) -- "h", "v", "b", ""
-    local cd = chardata[utfbyte(chr)]
+local function utfmathstretch(chr,default) -- "h", "v", "b", ""
+    local cd = somechar[chr]
     return cd and cd.mathstretch or default or ""
 end
 
-local function utfmathcommand(chr,default,asked)
---     local cd = chardata[utfbyte(chr)]
---     local cmd = cd and cd.mathname
---     return cmd or default or ""
-    local cd = chardata[utfbyte(chr)]
+local function utfmathcommand(chr,default,asked1,asked2)
+    local cd = somechar[chr]
     if not cd then
         return default or ""
     end
-    if asked then
+    if asked1 then
         local mn = cd.mathname
         local mc = cd.mathclass
-        if mn and mc and mc == asked then
+        if mn and mc and (mc == asked1 or mc == asked2) then
             return mn
         end
         local ms = cd.mathspec
+        if not ms then
+            local mp = cd.mathparent
+            if mp then
+                ms = chardata[mp].mathspec
+            end
+        end
         if ms then
             for i=1,#ms do
                 local msi = ms[i]
                 local mn = msi.name
-                if mn and msi.class == asked then
-                    return mn
+                if mn then
+                    local mc = msi.class
+                    if mc == asked1 or mc == asked2 then
+                        return mn
+                    end
                 end
             end
         end
@@ -409,7 +461,7 @@ local function utfmathcommand(chr,default,asked)
 end
 
 local function utfmathfiller(chr, default)
-    local cd = chardata[utfbyte(chr)]
+    local cd = somechar[chr]
     local cmd = cd and (cd.mathfiller or cd.mathname)
     return cmd or default or ""
 end
@@ -430,17 +482,31 @@ function commands.doifelseutfmathaccent(chr,asked)
     commands.doifelse(utfmathaccent(chr,nil,asked))
 end
 
--- helpers
+function commands.utfmathcommandabove(asked) context(utfmathcommand(asked,nil,"topaccent","over" )) end
+function commands.utfmathcommandbelow(asked) context(utfmathcommand(asked,nil,"botaccent","under")) end
 
-function mathematics.big(tfmdata,unicode,n)
+function commands.doifelseutfmathabove(chr) commands.doifelse(utfmathaccent(chr,nil,"topaccent","over" )) end
+function commands.doifelseutfmathbelow(chr) commands.doifelse(utfmathaccent(chr,nil,"botaccent","under")) end
+
+-- helpers
+--
+-- 1: step 1
+-- 2: step 2
+-- 3: htdp * 1.33^n
+-- 4: size * 1.33^n
+
+function mathematics.big(tfmdata,unicode,n,method)
     local t = tfmdata.characters
     local c = t[unicode]
-    if c then
+    if c and n > 0 then
         local vv = c.vert_variants or c.next and t[c.next].vert_variants
         if vv then
             local vvn = vv[n]
             return vvn and vvn.glyph or vv[#vv].glyph or unicode
-        else
+        elseif method == 1 or method == 2 then
+            if method == 2 then -- large steps
+                n = n * 2
+            end
             local next = c.next
             while next do
                 if n <= 1 then
@@ -448,6 +514,27 @@ function mathematics.big(tfmdata,unicode,n)
                 else
                     n = n - 1
                     local tn = t[next].next
+                    if tn then
+                        next = tn
+                    else
+                        return next
+                    end
+                end
+            end
+        else
+            local size = 1.33^n
+            if method == 4 then
+                size = tfmdata.parameters.size * size
+            else -- if method == 3 then
+                size = (c.height + c.depth) * size
+            end
+            local next = c.next
+            while next do
+                local cn = t[next]
+                if (cn.height + cn.depth) >= size then
+                    return next
+                else
+                    local tn = cn.next
                     if tn then
                         next = tn
                     else
@@ -491,10 +578,10 @@ end
 --
 -- function commands.taggedmathfunction(tag,label)
 --     if label then
---         settexattribute(a_mathcategory,registercategory(1,tag,tag))
+--         texsetattribute(a_mathcategory,registercategory(1,tag,tag))
 --         context.mathlabeltext(tag)
 --     else
---         settexattribute(a_mathcategory,1)
+--         texsetattribute(a_mathcategory,1)
 --         context(tag)
 --     end
 -- end
@@ -517,13 +604,13 @@ function commands.taggedmathfunction(tag,label,apply)
             noffunctions = noffunctions + 1
             functions[noffunctions] = tag
             functions[tag] = noffunctions
-            settexattribute(a_mathcategory,noffunctions + delta)
+            texsetattribute(a_mathcategory,noffunctions + delta)
         else
-            settexattribute(a_mathcategory,n + delta)
+            texsetattribute(a_mathcategory,n + delta)
         end
         context.mathlabeltext(tag)
     else
-        settexattribute(a_mathcategory,1000 + delta)
+        texsetattribute(a_mathcategory,1000 + delta)
         context(tag)
     end
 end
@@ -542,6 +629,6 @@ function commands.resetmathattributes()
         end
     end
     for i=1,#list do
-        settexattribute(list[i],unsetvalue)
+        texsetattribute(list[i],unsetvalue)
     end
 end

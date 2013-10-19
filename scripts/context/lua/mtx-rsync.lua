@@ -92,13 +92,26 @@ else
     end
 end
 
-function rsynccommand(dryrun,recurse,origin,target)
-    local command = "rsync -ptlva "
+function rsynccommand(origin,target,dryrun,recurse,delete,exclude)
+    local command = "rsync -t -p"
     if dryrun then
-        command = command .. "-n "
+        command = command .. " -n"
     end
     if recurse then
-        command = command .. "-r "
+        command = command .. " -r"
+    end
+    if type(exclude) == "table" then
+        for i=1,#exclude do
+            local e = exclude[i]
+            if e then
+                command = command .. ' --exclude "' .. e .. '"'
+            end
+        end
+    elseif type(exclude) == "string" then
+        command = command .. " --exclude-from " .. exclude
+    end
+    if delete and recurse then
+        command = command .. " --delete"
     end
     return format('%s %s %s',command,origin,target)
 end
@@ -109,7 +122,7 @@ local rsync   = scripts.rsync
 
 rsync.mode = "command"
 
-function rsync.run(origin,target,message,recurse)
+function rsync.run(origin,target,message,recurse,delete,exclude)
     if type(origin) == "table" then
         origin = concat(origin,"/")
     end
@@ -127,15 +140,15 @@ function rsync.run(origin,target,message,recurse)
         report_message(message)
     end
     if rsync.mode == "dryrun" then
-        local command = rsynccommand(true,recurse,origin,target)
+        local command = rsynccommand(origin,target,true,recurse,delete,exclude)
         report_dryrun(command.."\n")
         os.execute(command)
     elseif rsync.mode == "force" then
-        local command = rsynccommand(false,recurse,origin,target)
+        local command = rsynccommand(origin,target,false,recurse,delete,exclude)
         report_normal(command.."\n")
         os.execute(command)
     else
-        local command = rsynccommand(true,recurse,origin,target)
+        local command = rsynccommand(origin,target,true,recurse,delete,exclude)
         report_command(command)
     end
 end
@@ -154,8 +167,10 @@ function rsync.job(list)
         local target  = li.target
         local message = li.message
         local recurse = li.recurse
+        local delete  = li.delete
+        local exclude = li.exclude
         if origin and #origin > 0 and target and #target > 0 then -- string or table
-            rsync.run(origin,target,message,recurse)
+            rsync.run(origin,target,message,recurse,delete,exclude)
         else
             report_message("invalid job specification at index %s",i)
         end

@@ -91,6 +91,8 @@ end
 
 local pattern = P(" ")^0 * P(-1)
 
+-- patterns.onlyspaces = pattern
+
 function string.is_empty(str)
     if str == "" then
         return true

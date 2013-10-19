@@ -7,36 +7,41 @@ if not modules then modules = { } end modules ['strc-reg'] = {
 }
 
 local next, type = next, type
-local texcount = tex.count
 local format, gmatch = string.format, string.gmatch
 local equal, concat, remove = table.are_equal, table.concat, table.remove
 local utfchar = utf.char
 local lpegmatch = lpeg.match
 local allocate = utilities.storage.allocate
 
-local trace_registers = false  trackers.register("structures.registers", function(v) trace_registers = v end)
+local trace_registers   = false  trackers.register("structures.registers", function(v) trace_registers = v end)
 
-local report_registers = logs.reporter("structure","registers")
+local report_registers  = logs.reporter("structure","registers")
 
-local structures      = structures
-local registers       = structures.registers
-local helpers         = structures.helpers
-local sections        = structures.sections
-local documents       = structures.documents
-local pages           = structures.pages
-local references      = structures.references
+local structures        = structures
+local registers         = structures.registers
+local helpers           = structures.helpers
+local sections          = structures.sections
+local documents         = structures.documents
+local pages             = structures.pages
+local references        = structures.references
 
-local mappings        = sorters.mappings
-local entries         = sorters.entries
-local replacements    = sorters.replacements
+local mappings          = sorters.mappings
+local entries           = sorters.entries
+local replacements      = sorters.replacements
 
-local processors      = typesetters.processors
-local splitprocessor  = processors.split
+local processors        = typesetters.processors
+local splitprocessor    = processors.split
 
-local variables       = interfaces.variables
-local context         = context
+local texgetcount       = tex.getcount
 
-local matchingtilldepth, numberatdepth = sections.matchingtilldepth, sections.numberatdepth
+local variables         = interfaces.variables
+local context           = context
+local commands          = commands
+
+local matchingtilldepth = sections.matchingtilldepth
+local numberatdepth     = sections.numberatdepth
+
+local absmaxlevel       = 5 -- \c_strc_registers_maxlevel
 
 -- some day we will share registers and lists (although there are some conceptual
 -- differences in the application of keywords)
@@ -286,7 +291,7 @@ end
 function registers.enhance(name,n)
     local r = tobesaved[name].entries[n]
     if r then
-        r.references.realpage = texcount.realpageno
+        r.references.realpage = texgetcount("realpageno")
     end
 end
 
@@ -298,7 +303,7 @@ function registers.extend(name,tag,rawdata) -- maybe do lastsection internally
         local r = tobesaved[name].entries[tag]
         if r then
             local rr = r.references
-            rr.lastrealpage = texcount.realpageno
+            rr.lastrealpage = texgetcount("realpageno")
             rr.lastsection = sections.currentid()
             if rawdata then
                 if rawdata.entries then
@@ -663,11 +668,31 @@ function registers.flush(data,options,prefixspec,pagespec)
     local collapse_singles = options.compress == variables.yes
     local collapse_ranges  = options.compress == variables.all
     local result = data.result
+    local maxlevel = 0
+    --
+    for i=1,#result do
+        local data = result[i].data
+        for d=1,#data do
+            local m = #data[d].list
+            if m > maxlevel then
+                maxlevel = m
+            end
+        end
+    end
+    if maxlevel > absmaxlevel then
+        maxlevel = absmaxlevel
+        report_registers("limiting level to %a",maxlevel)
+    end
+    --
     context.startregisteroutput()
+local done = { }
     for i=1,#result do
      -- ranges need checking !
         local sublist = result[i]
-        local done = { false, false, false, false }
+     -- local done = { false, false, false, false }
+for i=1,maxlevel do
+    done[i] = false
+end
         local data = sublist.data
         local d, n = 0, 0
         context.startregistersection(sublist.tag)
@@ -683,20 +708,28 @@ function registers.flush(data,options,prefixspec,pagespec)
                 end
             end
         end
+        -- ok, this is tricky: we use e[i] delayed so we need it to be local
+        -- but we don't want to allocate too many entries so there we go
         while d < #data do
             d = d + 1
             local entry = data[d]
-            local e = { false, false, false, false }
+            local e = { false, false, false }
+for i=3,maxlevel do
+    e[i] = false
+end
             local metadata = entry.metadata
             local kind = metadata.kind
             local list = entry.list
-            for i=1,4 do -- max 4
+            for i=1,maxlevel do
                 if list[i] then
                     e[i] = list[i][1]
                 end
                 if e[i] ~= done[i] then
                     if e[i] and e[i] ~= "" then
                         done[i] = e[i]
+for j=i+1,maxlevel do
+    done[j] = false
+end
                         if n == i then
                             context.stopregisterentries()
                             context.startregisterentries(n)
@@ -713,6 +746,8 @@ function registers.flush(data,options,prefixspec,pagespec)
                         local internal  = entry.references.internal or 0
                         local seeparent = entry.references.seeparent or ""
                         local processor = entry.processors and entry.processors[1] or ""
+                        -- so, we need to keep e as is (local), or we need local title = e[i] ... which might be
+                        -- more of a problem
                         if metadata then
                             context.registerentry(processor,internal,seeparent,function() helpers.title(e[i],metadata) end)
                         else -- ?
@@ -720,6 +755,9 @@ function registers.flush(data,options,prefixspec,pagespec)
                         end
                     else
                         done[i] = false
+for j=i+1,maxlevel do
+    done[j] = false
+end
                     end
                 end
             end
@@ -849,6 +887,7 @@ function registers.flush(data,options,prefixspec,pagespec)
     data.result = nil
     data.metadata.sorted = false
 end
+
 
 function registers.analyze(class,options)
     context(registers.analyzed(class,options))

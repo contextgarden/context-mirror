@@ -192,7 +192,7 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         -- with context. The mtx-fonts script can be used to genate this file (using the --names option).
 
         -- In 2013/14 I will merge/move some generic files into luatex-fonts-* files (copies) so that
-        -- intermediate updates of context not interfere. We can then also use the general merger and
+        -- intermediate updates of context don't interfere. We can then also use the general merger and
         -- consider stripping debug code.
 
         loadmodule('font-ini.lua')
@@ -201,6 +201,11 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         loadmodule('font-cid.lua')
         loadmodule('font-map.lua')         -- for loading lum file (will be stripped)
         loadmodule('luatex-fonts-syn.lua') -- deals with font names (synonyms)
+        -- begin of test
+        loadmodule('font-tfm.lua')         -- optional
+        loadmodule('font-afm.lua')         -- optional
+        loadmodule('font-afk.lua')         -- optional
+        -- end of test
         loadmodule('luatex-fonts-tfm.lua')
         loadmodule('font-oti.lua')
         loadmodule('font-otf.lua')
@@ -209,7 +214,6 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         loadmodule('font-ota.lua')
         loadmodule('font-otn.lua')
         loadmodule('font-otp.lua')         -- optional
-        ----------('luatex-fonts-chr.lua')
         loadmodule('luatex-fonts-lua.lua')
         loadmodule('font-def.lua')
         loadmodule('luatex-fonts-def.lua')

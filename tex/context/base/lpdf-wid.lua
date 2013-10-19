@@ -8,14 +8,18 @@ if not modules then modules = { } end modules ['lpdf-wid'] = {
 
 local gmatch, gsub, find, lower, format = string.gmatch, string.gsub, string.find, string.lower, string.format
 local stripstring = string.strip
-local texbox, texcount = tex.box, tex.count
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash = utilities.parsers.settings_to_hash
 
-local report_media      = logs.reporter("backend","media")
-local report_attachment = logs.reporter("backend","attachment")
+local report_media             = logs.reporter("backend","media")
+local report_attachment        = logs.reporter("backend","attachment")
 
-local backends, lpdf, nodes = backends, lpdf, nodes
+local backends                 = backends
+local lpdf                     = lpdf
+local nodes                    = nodes
+local context                  = context
+
+local texgetcount              = tex.getcount
 
 local nodeinjections           = backends.pdf.nodeinjections
 local codeinjections           = backends.pdf.codeinjections
@@ -487,8 +491,8 @@ end
 
 local function insertrenderingwindow(specification)
     local label = specification.label
---~     local openpage = specification.openpage
---~     local closepage = specification.closepage
+ -- local openpage = specification.openpage
+ -- local closepage = specification.closepage
     if specification.option == v_auto then
         if openpageaction then
             -- \handlereferenceactions{\v!StartRendering{#2}}
@@ -504,7 +508,7 @@ local function insertrenderingwindow(specification)
             PC = (closepage and lpdf.action(closepage)) or nil,
         }
     end
-    local page = tonumber(specification.page) or texcount.realpageno -- todo
+    local page = tonumber(specification.page) or texgetcount("realpageno") -- todo
     local r = mu[label] or pdfreserveannotation() -- why the reserve here?
     local a = pdfdictionary {
         S  = pdfconstant("Rendition"),
@@ -536,34 +540,34 @@ local function insertrendering(specification)
     if not mf[label] then
         local filename = specification.filename
         local isurl = find(filename,"://")
-    --~ local start = pdfdictionary {
-    --~     Type = pdfconstant("MediaOffset"),
-    --~     S = pdfconstant("T"), -- time
-    --~     T = pdfdictionary { -- time
-    --~         Type = pdfconstant("Timespan"),
-    --~         S    = pdfconstant("S"),
-    --~         V    = 3, -- time in seconds
-    --~     },
-    --~ }
-    --~ local start = pdfdictionary {
-    --~     Type = pdfconstant("MediaOffset"),
-    --~     S = pdfconstant("F"), -- frame
-    --~     F = 100 -- framenumber
-    --~ }
-    --~ local start = pdfdictionary {
-    --~     Type = pdfconstant("MediaOffset"),
-    --~     S = pdfconstant("M"), -- mark
-    --~     M = "somemark",
-    --~ }
-    --~ local parameters = pdfdictionary {
-    --~     BE = pdfdictionary {
-    --~          B = start,
-    --~     }
-    --~ }
-    --~ local parameters = pdfdictionary {
-    --~     Type = pdfconstant(MediaPermissions),
-    --~     TF   = pdfstring("TEMPALWAYS") }, -- TEMPNEVER TEMPEXTRACT TEMPACCESS TEMPALWAYS
-    --~ }
+     -- local start = pdfdictionary {
+     --     Type = pdfconstant("MediaOffset"),
+     --     S = pdfconstant("T"), -- time
+     --     T = pdfdictionary { -- time
+     --         Type = pdfconstant("Timespan"),
+     --         S    = pdfconstant("S"),
+     --         V    = 3, -- time in seconds
+     --     },
+     -- }
+     -- local start = pdfdictionary {
+     --     Type = pdfconstant("MediaOffset"),
+     --     S = pdfconstant("F"), -- frame
+     --     F = 100 -- framenumber
+     -- }
+     -- local start = pdfdictionary {
+     --     Type = pdfconstant("MediaOffset"),
+     --     S = pdfconstant("M"), -- mark
+     --     M = "somemark",
+     -- }
+     -- local parameters = pdfdictionary {
+     --     BE = pdfdictionary {
+     --          B = start,
+     --     }
+     -- }
+     -- local parameters = pdfdictionary {
+     --     Type = pdfconstant(MediaPermissions),
+     --     TF   = pdfstring("TEMPALWAYS") }, -- TEMPNEVER TEMPEXTRACT TEMPACCESS TEMPALWAYS
+     -- }
         local descriptor = pdfdictionary {
             Type = pdfconstant("Filespec"),
             F    = filename,

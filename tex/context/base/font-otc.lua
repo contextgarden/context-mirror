@@ -188,9 +188,11 @@ otf.enhancers.register("check extra features",enhance)
 
 -- tlig --
 
-local tlig = {
-    endash        = "hyphen hyphen",
-    emdash        = "hyphen hyphen hyphen",
+local tlig = { -- we need numbers for some fonts so ...
+ -- endash        = "hyphen hyphen",
+ -- emdash        = "hyphen hyphen hyphen",
+    [0x2013]      = { 0x002D, 0x002D },
+    [0x2014]      = { 0x002D, 0x002D, 0x002D },
  -- quotedblleft  = "quoteleft quoteleft",
  -- quotedblright = "quoteright quoteright",
  -- quotedblleft  = "grave grave",

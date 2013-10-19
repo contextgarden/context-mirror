@@ -25,7 +25,7 @@
 %D Modules may provide additional alignment features. The following
 %D mechanisms are provided by the core.
 
-% n>1 #### needed, strange # interaction in recurse
+% n>1 ### needed, strange # interaction in recurse
 
 \newtoks\c_math_align_a
 \newtoks\c_math_align_b
@@ -39,9 +39,9 @@
 \def\math_build_eqalign_step
   {\ifnum\recurselevel>\plusone
     %\appendtoks
-    %  \tabskip\mathalignmentparameter\c!distance&\tabskip\zeropoint
+    %  \tabskip\mathalignmentparameter\c!distance\aligntab\tabskip\zeropoint
     %\to\scratchtoks
-     \scratchtoks\expandafter{\the\scratchtoks\tabskip\mathalignmentparameter\c!distance&\tabskip\zeropoint}%
+     \scratchtoks\expandafter{\the\scratchtoks\tabskip\mathalignmentparameter\c!distance\aligntab\tabskip\zeropoint}%
    \fi
    \normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_a}}%
    \dorecurse{\numexpr\mathalignmentparameter\c!n-\plusone\relax}
@@ -56,9 +56,9 @@
   {\emptyhbox
    \mskip\thinmuskip
    \vcenter
-     {\openup\displayopenupvalue % was: \openup\jot
+     {\math_openup\displayopenupvalue % was: \openup\jot
       \mathsurround\zeropoint
-      \ialign{\strut\hfil$\displaystyle{##}$&$\displaystyle{{}##{}}$\hfil\crcr#1\crcr}}%
+      \ialign{\strut\hfil$\displaystyle{\alignmark\alignmark}$\aligntab$\displaystyle{{}\alignmark\alignmark{}}$\hfil\crcr#1\crcr}}%
    \mskip\thinmuskip}
 
 % preamble is scanned for tabskips so we need the span to prevent an error message
@@ -68,14 +68,14 @@
 % use zeroskipplusfill
 
 \def\math_prepare_r_eqalign_no
-  {\c_math_align_a{\strut\math_first_in_eqalign\hfil\math_left_of_equalign\span\math_math_in_eqalign{##}\math_right_of_eqalign\tabskip\zeropoint}%
-   \c_math_align_b{&\math_next_in_eqalign\math_left_of_equalign\span\math_math_in_eqalign{##}\math_right_of_eqalign\tabskip\zeropoint}%
+  {\c_math_align_a{\strut\math_first_in_eqalign\hfil\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
+   \c_math_align_b{\aligntab\math_next_in_eqalign\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
    \ifnum\mathraggedstatus=\plusone
-     \c_math_align_c{\hfil&\span\math_text_in_eqalign{##}\tabskip\zeropoint}%
+     \c_math_align_c{\hfil\aligntab\span\math_text_in_eqalign{\alignmark\alignmark}\tabskip\zeropoint}%
    \else\ifnum\mathraggedstatus=\plusthree
-     \c_math_align_c{\hfil\tabskip\zeropoint\s!plus 1\s!fill&\span\math_text_in_eqalign{##}\tabskip\zeropoint}%
+     \c_math_align_c{\hfil\tabskip\zeropoint\s!plus 1\s!fill\aligntab\span\math_text_in_eqalign{\alignmark\alignmark}\tabskip\zeropoint}%
    \else
-     \c_math_align_c{\hfil\tabskip\centering&\llap{\span\math_text_in_eqalign{##}}\tabskip\zeropoint}%
+     \c_math_align_c{\hfil\tabskip\centering\aligntab\llap{\span\math_text_in_eqalign{\alignmark\alignmark}}\tabskip\zeropoint}%
    \fi\fi
    \global\mathnumberstatus\zerocount
    \math_build_eqalign
@@ -83,15 +83,15 @@
    \tabskip\centering}
 
 \def\math_prepare_l_eqalign_no
-  {\c_math_align_a{\strut\math_first_in_eqalign\hfil\math_left_of_equalign\span\math_math_in_eqalign{##}\math_right_of_eqalign\tabskip\zeropoint}%
-   \c_math_align_b{&\math_next_in_eqalign\math_left_of_equalign\span\math_math_in_eqalign{##}\math_right_of_eqalign\tabskip\zeropoint}%
+  {\c_math_align_a{\strut\math_first_in_eqalign\hfil\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
+   \c_math_align_b{\aligntab\math_next_in_eqalign\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
    % problem: number is handled after rest and so ends up in the margin
    \ifnum\mathraggedstatus=\plusone
-     \c_math_align_c{\hfil&\kern-\displaywidth\rlap{\span\math_text_in_eqalign{##}}\tabskip\displaywidth}%
+     \c_math_align_c{\hfil\aligntab\kern-\displaywidth\rlap{\span\math_text_in_eqalign{\alignmark\alignmark}}\tabskip\displaywidth}%
    \else\ifnum\mathraggedstatus=\plusthree
-     \c_math_align_c{\hfil\tabskip\zeropoint\s!plus 1\s!fill&\kern-\displaywidth\span\math_rlap{\span\math_text_in_eqalign{##}}\tabskip\displaywidth}%
+     \c_math_align_c{\hfil\tabskip\zeropoint\s!plus 1\s!fill\aligntab\kern-\displaywidth\span\math_rlap{\span\math_text_in_eqalign{\alignmark\alignmark}}\tabskip\displaywidth}%
    \else
-     \c_math_align_c{\hfil\tabskip\centering&\kern-\displaywidth\rlap{\span\math_text_in_eqalign{##}}\tabskip\displaywidth}%
+     \c_math_align_c{\hfil\tabskip\centering\aligntab\kern-\displaywidth\rlap{\span\math_text_in_eqalign{\alignmark\alignmark}}\tabskip\displaywidth}%
    \fi\fi
    \global\mathnumberstatus\zerocount
    \math_build_eqalign
@@ -192,7 +192,7 @@
    \c_math_eqalign_column\zerocount
    \processcommacommand
      [\mathalignmentparameter\c!align]
-     {\advance\c_math_eqalign_column\plusone\doseteqaligncolumn}% takes argument
+     {\advance\c_math_eqalign_column\plusone\math_eqalign_set_column}% takes argument
    \global\c_math_eqalign_column\plusone
    \dostarttagged\t!math\empty
    \dostarttagged\t!mathtable\currentmathalignment
@@ -286,7 +286,7 @@
      \fi
    \fi}
 
-\def\doseteqaligncolumn#1% we could just add to the preamble (as with other alignments)
+\def\math_eqalign_set_column#1% we could just add to the preamble (as with other alignments)
   {\expandafter\let\csname\??mathalignmentvariant\number\c_math_eqalign_column\expandafter\endcsname
      \csname\??mathalignmentvariant\ifcsname\??mathalignmentvariant#1\endcsname#1\else\v!normal\fi\endcsname}
 
@@ -594,6 +594,8 @@
     \setvalue  {\e!stop \currentmathmatrix}{\math_matrix_stop}% no u else lookahead problem
 \to \everydefinemathmatrix
 
+\let\math_matrix_NC\relax
+
 \unexpanded\def\math_matrix_start#1%
   {\begingroup
    \edef\currentmathmatrix{#1}%
@@ -607,12 +609,12 @@
    \math_matrix_align_method_analyze
    \mathmatrixleft
    \mathmatrixbox\bgroup
-   \pushmacro\domatrixNC
+   \pushmacro\math_matrix_NC
    \let\endmath\relax
-   \def\NC{\domatrixNC}%
-   \def\MC{\domatrixNC\ifmmode\else$\def\endmath{$}\fi}%
-   \global\let\domatrixNC\dodomatrixNC
-   \def\NR{\endmath\global\let\domatrixNC\dodomatrixNC\crcr}%
+   \def\NC{\math_matrix_NC}%
+   \def\MC{\math_matrix_NC\ifmmode\else\startimath\let\endmath\stopimath\fi}%
+   \global\let\math_matrix_NC\math_matrix_NC_indeed
+   \def\NR{\endmath\global\let\math_matrix_NC\math_matrix_NC_indeed\crcr}%
    \normalbaselines
    \mathsurround\zeropoint
    \everycr\emptytoks
@@ -620,8 +622,8 @@
    \c_math_eqalign_column\zerocount
    \processcommacommand
      [\mathmatrixparameter\c!align]
-     {\advance\c_math_eqalign_column\plusone\doseteqaligncolumn}% was \dosetmatrixcolumn
-   \scratchcounter=\ifnum\c_math_eqalign_column>\zerocount \c_math_eqalign_column \else \plusone \fi
+     {\advance\c_math_eqalign_column\plusone\math_eqalign_set_column}%
+   \scratchcounter\ifnum\c_math_eqalign_column>\zerocount \c_math_eqalign_column \else \plusone \fi
    \global\c_math_eqalign_column\plusone
    \math_matrix_prepare}
 
@@ -630,7 +632,7 @@
    \mathstrut\crcr
    \noalign{\kern-\baselineskip}%
    \egroup
-   \popmacro\domatrixNC
+   \popmacro\math_matrix_NC
    \egroup
    \mathmatrixright
    \endgroup}
@@ -640,13 +642,13 @@
 
 \def\math_matrix_prepare
   {\c_math_align_a{\strut\math_first_in_eqalign\math_left_of_equalign\span
-            \math_text_in_eqalign{\mathmatrixparameter\c!style##}\math_right_of_eqalign}%
-   \c_math_align_b{&\hskip\mathmatrixparameter\c!distance
+            \math_text_in_eqalign{\mathmatrixparameter\c!style\alignmark\alignmark}\math_right_of_eqalign}%
+   \c_math_align_b{\aligntab\hskip\mathmatrixparameter\c!distance
             \math_next_in_eqalign\math_left_of_equalign\span
-            \math_text_in_eqalign{\mathmatrixparameter\c!style##}\math_right_of_eqalign}%
-   \c_math_align_c{&&\hskip\mathmatrixparameter\c!distance
+            \math_text_in_eqalign{\mathmatrixparameter\c!style\alignmark\alignmark}\math_right_of_eqalign}%
+   \c_math_align_c{\aligntab\aligntab\hskip\mathmatrixparameter\c!distance
             \math_left_of_equalign\span
-            \math_text_in_eqalign{\mathmatrixparameter\c!style##}\math_right_of_eqalign}%
+            \math_text_in_eqalign{\mathmatrixparameter\c!style\alignmark\alignmark}\math_right_of_eqalign}%
    \scratchtoks\emptytoks
    \normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_a}}%
    \dorecurse{\numexpr\scratchcounter-\plusone\relax}
@@ -654,8 +656,8 @@
    \normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_c}}%
    \halign \expandafter \bgroup\the\scratchtoks \crcr}
 
-\unexpanded\def\dodomatrixNC
-  {\gdef\domatrixNC{\endmath&}}
+\unexpanded\def\math_matrix_NC_indeed
+  {\gdef\math_matrix_NC{\endmath\aligntab}}
 
 \installcorenamespace{mathmatrixalignmethod}
 
@@ -877,16 +879,16 @@
    \lineskip\mathstackvgap
    \lineskiplimit\lineskip
    \let\stopmathmode\relax
-   \def\NC{\domatrixNC}%
-   \def\MC{\domatrixNC\startmathmode}%
-   \global\let\domatrixNC\dodomatrixNC
+   \def\NC{\math_matrix_NC}%
+   \def\MC{\math_matrix_NC\startmathmode}%
+   \global\let\math_matrix_NC\math_matrix_NC_indeed
    \def\NR
      {\stopmathmode
-      \global\let\domatrixNC\dodomatrixNC
+      \global\let\math_matrix_NC\math_matrix_NC_indeed
       \crcr}%
    \mathsurround\zeropoint
    \everycr\emptytoks
-   \halign\bgroup\hfil$\scriptstyle##$\hfil\crcr}
+   \halign\bgroup\hfil$\scriptstyle\alignmark\alignmark$\hfil\crcr}
 
 \def\stopsubstack
   {\crcr

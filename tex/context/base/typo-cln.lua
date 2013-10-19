@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['typo-cln'] = {
 }
 
 -- This quick and dirty hack took less time than listening to a CD (In
--- this case Dream Theaters' Octavium. Of course extensions will take
+-- this case Dream Theaters' Octavium). Of course extensions will take
 -- more time.
 
 local utfbyte = utf.byte
@@ -26,7 +26,7 @@ local variables       = interfaces.variables
 local nodecodes       = nodes.nodecodes
 local tasks           = nodes.tasks
 
-local texattribute    = tex.attribute
+local texsetattribute = tex.setattribute
 
 local traverse_id     = node.traverse_id
 
@@ -46,14 +46,14 @@ local resetter = { -- this will become an entry in char-def
 -- the other hand we might want to apply casing afterwards. So,
 -- cleaning comes first.
 
-local function process(namespace,attribute,head)
+function cleaners.handler(head)
     local inline, done = false, false
     for n in traverse_id(glyph_code,head) do
         local char = n.char
         if resetter[char] then
             inline = false
         elseif not inline then
-            local a = n[attribute]
+            local a = n[a_cleaner]
             if a == 1 then -- currently only one cleaner so no need to be fancy
                 local upper = uccodes[char]
                 if type(upper) == "table" then
@@ -78,7 +78,7 @@ local enabled = false
 
 function cleaners.set(n)
     if n == variables.reset or not tonumber(n) or n == 0 then
-        texattribute[a_cleaner] = unsetvalue
+        texsetattribute(a_cleaner,unsetvalue)
     else
         if not enabled then
             tasks.enableaction("processors","typesetters.cleaners.handler")
@@ -87,15 +87,9 @@ function cleaners.set(n)
             end
             enabled = true
         end
-        texattribute[a_cleaner] = n
+        texsetattribute(a_cleaner,n)
     end
 end
-
-cleaners.handler = nodes.installattributehandler {
-    name      = "cleaner",
-    namespace = cleaners,
-    processor = process,
-}
 
 -- interface
 

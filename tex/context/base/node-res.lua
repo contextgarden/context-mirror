@@ -35,6 +35,9 @@ local glyph_code   = nodecodes.glyph
 
 local allocate     = utilities.storage.allocate
 
+local texgetbox    = tex.getbox
+local texgetcount  = tex.getcount
+
 local reserved, nofreserved = { }, 0
 
 local function register_node(n)
@@ -57,11 +60,10 @@ function pool.cleanup(nofboxes) -- todo
     --  end
     end
     if nofboxes then
-        local tb = tex.box
         for i=0,nofboxes do
-            local l = tb[i]
+            local l = texgetbox(i)
             if l then
-                free_node(tb[i])
+                free_node(l) -- also list ?
                 nl = nl + 1
             end
         end
@@ -293,12 +295,38 @@ function pool.noad()
     return copy_node(noad)
 end
 
-function pool.hlist()
-    return copy_node(hlist)
+function pool.hlist(list,width,height,depth)
+    local n = copy_node(hlist)
+    if list then
+        n.list = list
+    end
+    if width then
+        n.width = width
+    end
+    if height then
+        n.height = height
+    end
+    if depth then
+        n.depth = depth
+    end
+    return n
 end
 
-function pool.vlist()
-    return copy_node(vlist)
+function pool.vlist(list,width,height,depth)
+    local n = copy_node(vlist)
+    if list then
+        n.list = list
+    end
+    if width then
+        n.width = width
+    end
+    if height then
+        n.height = height
+    end
+    if depth then
+        n.depth = depth
+    end
+    return n
 end
 
 --[[
@@ -396,7 +424,7 @@ function pool.special(str)
 end
 
 statistics.register("cleaned up reserved nodes", function()
-    return format("%s nodes, %s lists of %s", pool.cleanup(tex.count["c_syst_last_allocated_box"]))
+    return format("%s nodes, %s lists of %s", pool.cleanup(texgetcount("c_syst_last_allocated_box")))
 end) -- \topofboxstack
 
 statistics.register("node memory usage", function() -- comes after cleanup !

@@ -117,6 +117,8 @@
 %D The next feature was not present in previous versions. It
 %D takes care of \type {\em \bf ...} situations.
 
+\let\font_emphasis_saved_emphasis_boldface\relax
+
 \def\font_emphasis_set_emphasis_boldface
   {\let\font_emphasis_saved_emphasis_boldface\bf
    \let\font_emphasis_set_emphasis_boldface\relax

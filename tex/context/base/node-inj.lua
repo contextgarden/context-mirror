@@ -11,6 +11,8 @@ if not modules then modules = { } end modules ['node-inj'] = {
 -- test fonts. Btw, future versions of luatex will have extended glyph properties
 -- that can be of help. Some optimizations can go away when we have faster machines.
 
+-- todo: make a special one for context
+
 local next = next
 local utfchar = utf.char
 
@@ -106,7 +108,7 @@ function injections.setkern(current,factor,rlmode,x,tfmchr)
     end
 end
 
-function injections.setmark(start,base,factor,rlmode,ba,ma,index) -- ba=baseanchor, ma=markanchor
+function injections.setmark(start,base,factor,rlmode,ba,ma,index,baseismark) -- ba=baseanchor, ma=markanchor
     local dx, dy = factor*(ba[1]-ma[1]), factor*(ba[2]-ma[2])     -- the index argument is no longer used but when this
     local bound = base[a_markbase]                    -- fails again we should pass it
     local index = 1
@@ -129,7 +131,7 @@ function injections.setmark(start,base,factor,rlmode,ba,ma,index) -- ba=baseanch
     base[a_markbase] = bound
     start[a_markmark] = bound
     start[a_markdone] = index
-    marks[bound] = { [index] = { dx, dy, rlmode } }
+    marks[bound] = { [index] = { dx, dy, rlmode, baseismark } }
     return dx, dy, bound
 end
 
@@ -382,6 +384,11 @@ function injections.handler(head,where,keep)
                                             n.xoffset = p.xoffset - p.width + d[1]
                                         else
                                             n.xoffset = p.xoffset - d[1]
+                                        end
+                                        local w = n.width
+                                        if w ~= 0 then
+                                            insert_node_before(head,n,newkern(-w/2))
+                                            insert_node_after(head,n,newkern(-w/2))
                                         end
                                     end
                                     --                                    --

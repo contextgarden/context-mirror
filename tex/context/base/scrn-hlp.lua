@@ -11,12 +11,17 @@ local format = string.format
 local help           = { }
 interactions.help    = help
 
+local context        = context
+local commands       = commands
+
 local a_help         = attributes.private("help")
 
 local copy_nodelist  = node.copy_list
 local hpack_nodelist = node.hpack
 
 local register_list  = nodes.pool.register
+
+local texgetbox      = tex.getbox
 
 local nodecodes      = nodes.nodecodes
 
@@ -48,7 +53,7 @@ function help.register(number,name,box)
         interactions.javascripts.setpreamble("HelpTexts",helpscript)
         helpscript = false
     end
-    local b = copy_nodelist(tex.box[box])
+    local b = copy_nodelist(texgetbox(box))
     register_list(b)
     data[number] = b
     if name and name ~= "" then
@@ -81,7 +86,7 @@ end
 
 function help.collect(box)
     if next(data) then
-        return collect(tex.box[box].list)
+        return collect(texgetbox(box).list)
     end
 end
 

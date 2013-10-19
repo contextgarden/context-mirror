@@ -23,6 +23,29 @@
 \definesystemattribute[case][public]
 
 %D \macros
+%D   {setupcapitals}
+%D
+%D By default we use pseudo small caps in titles. This can be
+%D set up with:
+%D
+%D \showsetup{setupcapitals}
+
+\installcorenamespace{capitals}
+
+\installcommandhandler \??capitals {capitals} \??capitals
+
+%D Beware, these are not really defines (yet).
+
+\definecapitals[\v!WORD]            % all upper
+\definecapitals[\v!capital]         % one upper + font
+\definecapitals[\v!Capital]         % some upper + font
+\definecapitals[\v!mixed]           % UpperCase
+\definecapitals[\v!WORD]            % all lower
+\definecapitals[\v!Word]            % one upper + font
+\definecapitals[\v!Words]           % some upper
+\definecapitals[\v!word][\c!style=] % nothing
+
+%D \macros
 %D   {Word, Words, WORD, WORDS}
 %D
 %D This is probably not the right place to present the next set
@@ -53,7 +76,7 @@
 % test \Word{test TEST \TeX} test
 
 \unexpanded\def\setcharactercasing[#1]%
-  {\ctxcommand{setcharactercasing("#1")}}
+  {\ctxcommand{setcharactercasing("#1",\number\fontid\font)}}
 
 % todo: names casings
 
@@ -141,21 +164,40 @@
 %
 % here we keep the \groupedcommand
 
-\unexpanded\def\pseudosmallcapped{\groupedcommand{\setcharactercasing   [\v!WORD   ]\signalcharacter\tx}{}} % all upper
-\unexpanded\def\pseudoSmallcapped{\groupedcommand{\setcharactercasing   [\v!capital]\signalcharacter\tx}{}} % one upper + font
-\unexpanded\def\pseudoSmallCapped{\groupedcommand{\setcharactercasing   [\v!Capital]\signalcharacter\tx}{}} % some upper + font
+\def\typo_capitals_set_fake#1%
+  {\edef\currentcapitals{#1}%
+  %\setcharactercasing[\currentcapitals]%
+   \ctxcommand{setcharactercasing("\currentcapitals",\number\fontid\font)}%
+   \signalcharacter % retain current style
+   \usecapitalsstyleparameter\c!style}
 
-\unexpanded\def\realsmallcapped  {\groupedcommand{\sc\setcharactercasing[\v!WORD   ]}{}} % all lower
-\unexpanded\def\realSmallcapped  {\groupedcommand{\sc\setcharactercasing[\v!Word   ]}{}} % one upper + font
-\unexpanded\def\realSmallCapped  {\groupedcommand{\sc\setcharactercasing[\v!Words  ]}{}} % some upper
+\def\typo_capitals_set_real#1%
+  {\edef\currentcapitals{#1}%
+   \sc
+  %\setcharactercasing[\currentcapitals]}
+   \ctxcommand{setcharactercasing("\currentcapitals",\number\fontid\font)}}
 
-\unexpanded\def\font_style_pseudosmallcapped{\setcharactercasing   [\v!WORD   ]\signalcharacter\tx} % all upper
-\unexpanded\def\font_style_pseudoSmallcapped{\setcharactercasing   [\v!capital]\signalcharacter\tx} % one upper + font
-\unexpanded\def\font_style_pseudoSmallCapped{\setcharactercasing   [\v!Capital]\signalcharacter\tx} % some upper + font
+\unexpanded\def\pseudosmallcapped{\groupedcommand{\typo_capitals_set_fake\v!WORD   }\donothing} % all upper
+\unexpanded\def\pseudoSmallcapped{\groupedcommand{\typo_capitals_set_fake\v!capital}\donothing} % one upper + font
+\unexpanded\def\pseudoSmallCapped{\groupedcommand{\typo_capitals_set_fake\v!Capital}\donothing} % some upper + font
+\unexpanded\def\pseudoMixedCapped{\groupedcommand{\typo_capitals_set_fake\v!mixed  }\donothing} % UpperCase
 
-\unexpanded\def\font_style_realsmallcapped  {\sc\setcharactercasing[\v!WORD   ]} % all lower
-\unexpanded\def\font_style_realSmallcapped  {\sc\setcharactercasing[\v!Word   ]} % one upper + font
-\unexpanded\def\font_style_realSmallCapped  {\sc\setcharactercasing[\v!Words  ]} % some upper
+\unexpanded\def\realsmallcapped  {\groupedcommand{\typo_capitals_set_real\v!WORD   }\donothing} % all lower
+\unexpanded\def\realSmallcapped  {\groupedcommand{\typo_capitals_set_real\v!Word   }\donothing} % one upper + font
+\unexpanded\def\realSmallCapped  {\groupedcommand{\typo_capitals_set_real\v!Words  }\donothing} % some upper
+
+\unexpanded\def\notsmallcapped   {\groupedcommand{\typo_capitals_set_fake\v!word   }\donothing}
+
+\unexpanded\def\font_style_pseudosmallcapped{\typo_capitals_set_fake\v!WORD   } % all upper
+\unexpanded\def\font_style_pseudoSmallcapped{\typo_capitals_set_fake\v!capital} % one upper + font
+\unexpanded\def\font_style_pseudoSmallCapped{\typo_capitals_set_fake\v!Capital} % some upper + font
+\unexpanded\def\font_style_pseudoMixedCapped{\typo_capitals_set_fake\v!mixed  }
+
+\unexpanded\def\font_style_realsmallcapped  {\typo_capitals_set_real\v!WORD   } % all lower
+\unexpanded\def\font_style_realSmallcapped  {\typo_capitals_set_real\v!Word   } % one upper + font
+\unexpanded\def\font_style_realSmallCapped  {\typo_capitals_set_real\v!Words  } % some upper
+
+\unexpanded\def\font_style_notsmallcapped   {\typo_capitals_set_fake\v!word   }
 
 \unexpanded\def\typo_capitals_smallcaps
   {\ifconditional\c_typo_capitals_pseudo
@@ -182,6 +224,8 @@
 \let\kap\cap          % for old times sake
 \let\Caps\SmallCapped % for old times sake
 
+\let\mixedcaps\pseudoMixedCapped
+
 \let\normalsmallcapped\smallcapped
 \let\normalWORD       \WORD
 \let\normalword       \word
@@ -190,33 +234,21 @@
 \let\font_style_normalWORD       \WORD
 \let\font_style_normalword       \word
 
-%D As suggested by WS:
-
-\unexpanded\def\notsmallcapped{\groupedcommand{\setcharactercasing[\v!word]\signalcharacter}{}}
-
-%D \macros
-%D   {setupcapitals}
-%D
-%D By default we use pseudo small caps in titles. This can be
-%D set up with:
-%D
-%D \showsetup{setupcapitals}
-
-\installcorenamespace{capitals}
-
-\installsetuponlycommandhandler \??capitals {capitals}
+%D Further tweaks
 
 \let\normalsmallcapped\smallcapped
 
 \appendtoks
-    \doifelse{\directcapitalsparameter\c!title}\v!yes
-      {\definealternativestyle[\v!capital  ][\font_style_normalsmallcapped][\font_style_normalsmallcapped]%
-       \definealternativestyle[\v!smallcaps][\setsmallcaps][\setsmallcaps]}
-      {\definealternativestyle[\v!capital  ][\font_style_normalsmallcapped][\font_style_normalWORD]%
-       \definealternativestyle[\v!smallcaps][\setsmallcaps][\font_style_normalWORD]}%
-    \doifelse{\directcapitalsparameter\s!sc}\v!yes
-      \userealcaps
-      \usepseudocaps
+    \ifx\currentcapitals\empty
+      \doifelse{\directcapitalsparameter\c!title}\v!yes
+        {\definealternativestyle[\v!capital  ][\font_style_normalsmallcapped][\font_style_normalsmallcapped]%
+         \definealternativestyle[\v!smallcaps][\setsmallcaps][\setsmallcaps]}
+        {\definealternativestyle[\v!capital  ][\font_style_normalsmallcapped][\font_style_normalWORD]%
+         \definealternativestyle[\v!smallcaps][\setsmallcaps][\font_style_normalWORD]}%
+      \doifelse{\directcapitalsparameter\s!sc}\v!yes
+        \userealcaps
+        \usepseudocaps
+    \fi
 \to \everysetupcapitals
 
 \let\uppercased\normalWORD
@@ -224,7 +256,29 @@
 
 \setupcapitals
   [\c!title=\v!yes,
+   \c!style=\tx,
    \s!sc=\v!no] % no \c!sc any longer
+
+% \definefont
+%   [MixedCaps]
+%   [\v_font_string_a\v_font_string_c*default cp \the\exheight]
+%
+% \definefont
+%   [MixedCaps]
+%   [MixedCaps*default cp \the\exheight]
+
+\definefontfeature
+  [mixeddefault]
+  [default]
+  [extend=1.2]
+
+\definefont
+  [MixedCaps]
+  [CurrentFont*default,mixeddefault cp \the\exheight]
+
+\setupcapitals
+  [\v!mixed]
+  [\c!style=MixedCaps]
 
 % \definestartstop is not yet in available at core-spa time
 %

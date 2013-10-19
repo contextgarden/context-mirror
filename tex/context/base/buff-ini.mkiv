@@ -61,6 +61,9 @@
 \def\buff_grab_direct_indeed_a[#1][#2][#3][#4]{\buff_start_indeed  {#1}{#2}{#3}{#4}}
 \def\buff_grab_direct_indeed_b[#1][#2][#3][#4]{\buff_start_indeed\empty{#1}{#2}{#3}}
 
+\let\buff_finish\relax
+\let\buff_gobble\relax
+
 \unexpanded\def\buff_pickup#1#2#3#4#5% name, startsequence, stopsequence, before, after
   {\begingroup % (1)
    #4%
@@ -139,6 +142,20 @@
 
 \unexpanded\def\buff_get_stored_indeed#1%
   {\ctxcommand{getbuffer("#1")}}
+
+\unexpanded\def\getdefinedbuffer[#1]%
+  {\buff_get_stored{#1}{\thedefinedbuffer{#1}}}%
+
+\unexpanded\def\inlinebuffer
+  {\dosingleempty\buff_get_inline}
+
+\unexpanded\def\buff_get_inline[#1]% [name]
+  {\doifelsenothing{#1}
+     {\buff_get_stored_inline_indeed\empty}
+     {\processcommalist[#1]\buff_get_stored_inline_indeed}}
+
+\unexpanded\def\buff_get_stored_inline_indeed#1%
+  {\ignorespaces\ctxcommand{getbuffer("#1")}\removeunwantedspaces}
 
 \definebuffer
   [\v!hiding]

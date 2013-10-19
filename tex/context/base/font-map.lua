@@ -261,38 +261,51 @@ function mappings.addtounicode(data,filename)
                 end
             end
             -- a.whatever or a_b_c.whatever or a_b_c (no numbers) a.b_
+            --
+            -- It is not trivial to find a solution that suits all fonts. We tried several alternatives
+            -- and this one seems to work reasonable also with fonts that use less standardized naming
+            -- schemes. The extra private test is tested by KE and seems to work okay with non-typical
+            -- fonts as well.
+            --
+            -- The next time I look into this, I'll add an extra analysis step to the otf loader (we can
+            -- resolve some tounicodes by looking into the gsub data tables that are bound to glyphs.
+            --
             if not unicode or unicode == "" then
                 local split = lpegmatch(namesplitter,name)
                 local nsplit = split and #split or 0
-                if nsplit >= 2 then
-                    local t, n = { }, 0
-                    for l=1,nsplit do
-                        local base = split[l]
-                        local u = unicodes[base] or unicodevector[base]
-                        if not u then
+                local t, n = { }, 0
+                unicode = true
+                for l=1,nsplit do
+                    local base = split[l]
+                    local u = unicodes[base] or unicodevector[base]
+                    if not u then
+                        break
+                    elseif type(u) == "table" then
+                        if u[1] >= private then
+                            unicode = false
                             break
-                        elseif type(u) == "table" then
-                            n = n + 1
-                            t[n] = u[1]
-                        else
-                            n = n + 1
-                            t[n] = u
                         end
-                    end
-                    if n == 0 then -- done then
-                        -- nothing
-                    elseif n == 1 then
-                        originals[index] = t[1]
-                        tounicode[index] = tounicode16(t[1],name)
+                        n = n + 1
+                        t[n] = u[1]
                     else
-                        originals[index] = t
-                        tounicode[index] = tounicode16sequence(t)
+                        if u >= private then
+                            unicode = false
+                            break
+                        end
+                        n = n + 1
+                        t[n] = u
                     end
-                    nl = nl + 1
-                    unicode = true
-                else
-                    -- skip: already checked and we don't want privates here
                 end
+                if n == 0 then -- done then
+                    -- nothing
+                elseif n == 1 then
+                    originals[index] = t[1]
+                    tounicode[index] = tounicode16(t[1],name)
+                else
+                    originals[index] = t
+                    tounicode[index] = tounicode16sequence(t)
+                end
+                nl = nl + 1
             end
             -- last resort (we might need to catch private here as well)
             if not unicode or unicode == "" then

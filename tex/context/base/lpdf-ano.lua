@@ -12,7 +12,6 @@ if not modules then modules = { } end modules ['lpdf-ano'] = {
 
 local next, tostring = next, tostring
 local rep, format = string.rep, string.format
-local texcount = tex.count
 local lpegmatch = lpeg.match
 local formatters = string.formatters
 
@@ -51,6 +50,8 @@ local nodepool                = nodes.pool
 local pdfannotation_node      = nodepool.pdfannotation
 local pdfdestination_node     = nodepool.pdfdestination
 local latelua_node            = nodepool.latelua
+
+local texgetcount             = tex.getcount
 
 local pdfdictionary           = lpdf.dictionary
 local pdfarray                = lpdf.array
@@ -334,13 +335,38 @@ end
 
 -- runners and specials
 
+-- runners["inner"] = function(var,actions)
+--     if getinnermethod() == "names" then
+--         local vi = var.i
+--         if vi then
+--             local vir = vi.references
+--             if vir then
+--                 local internal = vir.internal
+--                 if internal then
+--                     var.inner = "aut:" .. internal
+--                 end
+--             end
+--         end
+--     else
+--         var.inner = nil
+--     end
+--     local prefix = var.p
+--     local inner = var.inner
+--     if inner and prefix and prefix ~= "" then
+--         inner = prefix .. ":" .. inner -- might not always be ok
+--     end
+--     return link(nil,nil,inner,var.r,actions)
+-- end
+
 runners["inner"] = function(var,actions)
+    local internal = false
     if getinnermethod() == "names" then
         local vi = var.i
         if vi then
             local vir = vi.references
             if vir then
-                local internal = vir.internal
+                -- todo: no need for it when we have a real reference
+                internal = vir.internal
                 if internal then
                     var.inner = "aut:" .. internal
                 end
@@ -351,8 +377,9 @@ runners["inner"] = function(var,actions)
     end
     local prefix = var.p
     local inner = var.inner
-    if inner and prefix and prefix ~= "" then
-        inner = prefix .. ":" .. inner -- might not always be ok
+    if not internal and inner and prefix and prefix ~= "" then
+        -- no prefix with e.g. components
+        inner = prefix .. ":" .. inner
     end
     return link(nil,nil,inner,var.r,actions)
 end
@@ -486,7 +513,7 @@ end
 function specials.deltapage(var,actions)
     local p = tonumber(var.operation)
     if p then
-        p = references.checkedrealpage(p + texcount.realpageno)
+        p = references.checkedrealpage(p + texgetcount("realpageno"))
         return link(nil,nil,nil,p,actions)
     end
 end

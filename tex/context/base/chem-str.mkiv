@@ -317,33 +317,50 @@
 
 % special macros (probably needs some more work)
 
+\let\chem_box_normal_yes\hbox
+\let\chem_box_visual_yes\hbox
+\let\chem_box_visual_nop\relax
+
+\installtextracker
+  {chemistry.boxes}
+  {\let\chem_box_visual_yes\ruledhbox \let\chem_box_visual_nop\ruledhbox}
+  {\let\chem_box_visual_yes\hbox      \let\chem_box_visual_nop\relax    }
+
 \def\chem_top_construct#1#2#3#4%
-  {\begingroup
-   \setbox0\hbox{\setstrut\strut#3}%
-   \setbox2\hbox{\setstrut\strut\molecule{#4}}%
-   \setbox0\hbox{\raise\dimexpr\dp0+\ht2\relax\hbox to \wd2{#1\box0#2}}%
-   % no: \smashbox0
-   \hbox{\box0\box2}%
-   \endgroup}%
+  {\hbox\bgroup
+   \setstrut
+   \setbox\scratchboxone\chem_box_visual_yes{\strut#3}%
+   \setbox\scratchboxtwo\chem_box_visual_yes{\strut\molecule{#4}}%
+   \setbox\scratchboxone\chem_box_normal_yes{\raise\dimexpr\dp\scratchboxone+\ht\scratchboxtwo\relax\hbox to \wd\scratchboxtwo{#1\box\scratchboxone#2}}%
+   \smashbox\scratchboxone
+   \box\scratchboxone
+   \box\scratchboxtwo
+   \egroup}
 
 \def\chem_bottom_construct#1#2#3#4%
-  {\begingroup
-   \setbox0\hbox{\setstrut\strut#3}%
-   \setbox2\hbox{\setstrut\strut#4}%
-   \setbox0\hbox{\lower\dimexpr\dp2+\ht0\relax\hbox to \wd2{#1\box0#2}}%
-   % no: \smashbox0
-   \hbox{\box0\box2}%
-   \endgroup}%
+  {\hbox\bgroup
+   \setstrut
+   \setbox\scratchboxone\chem_box_visual_yes{\strut#3}%
+   \setbox\scratchboxtwo\chem_box_visual_yes{\strut\molecule{#4}}%
+   \setbox\scratchboxone\chem_box_normal_yes{\lower\dimexpr\dp\scratchboxtwo+\ht\scratchboxone\relax\hbox to \wd\scratchboxtwo{#1\box\scratchboxone#2}}%
+   \smashbox\scratchboxone
+   \box\scratchboxone
+   \box\scratchboxtwo
+   \egroup}
 
-\unexpanded\def\chemicalleft#1#2%
-  {\begingroup
-   \hbox{\llap{\setstrut\strut#1}\setstrut\strut#2}%
-   \endgroup}%
+\unexpanded\def\chemicalleft#1#2% redundant boxes thanks to visual
+  {\hbox\bgroup
+   \setstrut
+   \llap{\chem_box_visual_nop{\strut#1}}%
+   \chem_box_visual_nop{\strut#2}%
+   \egroup}
 
-\unexpanded\def\chemicalright#1#2%
-  {\begingroup
-   \hbox{\setstrut\strut#2\rlap{\setstrut\strut#1}}%
-   \endgroup}%
+\unexpanded\def\chemicalright#1#2% redundant boxes thanks to visual
+  {\hbox\bgroup
+   \setstrut
+   \chem_box_visual_yes{\strut#2}%
+   \rlap{\chem_box_visual_nop{\strut#1}}%
+   \egroup}
 
 \unexpanded\def\chemicaltop            {\chem_top_construct    \hss   \hss  }
 \unexpanded\def\chemicallefttop        {\chem_top_construct    \relax \hss  }
@@ -372,11 +389,16 @@
      \expandafter\chem_aligned_text_text
    \fi}
 
+\let\chemicaltighttext\relax % maybe smaller strut
+
 \def\chem_aligned_text_text#1#2#3%
   {\dontleavehmode
    \begingroup
    \usechemicalstyleandcolor\c!style\c!color
-   \hbox to \fontcharwd\font`C{\setstrut\strut#1\molecule{#3}#2}%
+   \chem_box_visual_yes to \fontcharwd\font`C\bgroup
+     \setstrut\strut
+     #1\molecule{#3}#2%
+   \egroup
    \endgroup}
 
 \def\chem_aligned_text_math#1#2#3%
@@ -384,7 +406,10 @@
    \begingroup
    \scratchcounter\normalmathstyle
    \usechemicalstyleandcolor\c!style\c!color
-   \hbox to \fontcharwd\font`C{\setstrut\strut#1\mathematics{\tf\triggermathstyle\scratchcounter\molecule{#3}}#2}%
+   \chem_box_visual_yes to \fontcharwd\font`C\bgroup
+     \setstrut\strut
+     #1\mathematics{\tf\triggermathstyle\scratchcounter\molecule{#3}}#2%
+   \egroup
    \endgroup}
 
 \unexpanded\def\chemicalcentered     {\chemicalalignedtext\hss  \hss  }
@@ -582,6 +607,9 @@
 \definechemicalsymbol[d:gives]       [\rightarrowfill]          % \chem_arrow_construct\xrightarrow
 \definechemicalsymbol[d:equilibrium] [\rightoverleftarrowfill]  % \chem_arrow_construct\xrightoverleftarrow
 \definechemicalsymbol[d:mesomeric]   [\leftarrowfill]           % \chem_arrow_construct\xleftrightarrow
+\definechemicalsymbol[d:single]      [\chemicalbondrule]
+\definechemicalsymbol[d:double]      [\hbox{\lower.5ex\chemicalbondrule\hskip-1em\raise.5ex\chemicalbondrule}]
+\definechemicalsymbol[d:triple]      [\hbox{\chemicalbondrule\hskip-1em\lower.5ex\chemicalbondrule\hskip-1em\raise.5ex\chemicalbondrule}]
 \definechemicalsymbol[d:opencomplex] [\mathematics{\Bigg[}]     % not yet ok
 \definechemicalsymbol[d:closecomplex][\mathematics{\Bigg]}]     % not yet ok
 
@@ -591,6 +619,9 @@
 \definechemicalsymbol[d:GIVES]       [{\chemicalsymbol[d:gives]}]
 \definechemicalsymbol[d:EQUILIBRIUM] [{\chemicalsymbol[d:equilibrium]}]
 \definechemicalsymbol[d:MESOMERIC]   [{\chemicalsymbol[d:mesomeric]}]
+\definechemicalsymbol[d:SINGLE]      [{\chemicalsymbol[d:single]}]
+\definechemicalsymbol[d:DOUBLE]      [{\chemicalsymbol[d:double]}]
+\definechemicalsymbol[d:TRIPLE]      [{\chemicalsymbol[d:triple]}]
 \definechemicalsymbol[d:OPENCOMPLEX] [{\chemicalsymbol[d:opencomplex]}]
 \definechemicalsymbol[d:CLOSECOMPLEX][{\chemicalsymbol[d:closecomplex]}]
 

@@ -48,6 +48,7 @@
 %  p  p(dimen) of automatisch als alleen p
 %  w  column width
 %  f  font#1
+%  A  {alignmentoptions}
 %  B  bold
 %  I  italic
 %  S  slanted
@@ -231,7 +232,6 @@
 \unexpanded\def\tolerantTABLEbreaktrue   {\settrue \c_tabl_tabulate_tolerant_break} % used in styles !
 \unexpanded\def\handletabulatepbreakfalse{\setfalse\c_tabl_tabulate_handlepbreak  } % depricated
 
-\installcorenamespace{tabulatealign}
 \installcorenamespace{tabulatebox}
 \installcorenamespace{tabulatesetup}
 \installcorenamespace{tabulatehook}
@@ -295,14 +295,6 @@
 \let\stoptabulatenoalign\egroup
 
 % [|lg{.}|] => \NG 12.34 \NC
-
-\def\tabl_tabulate_charalign#1 % space delimited ! (will be redone in lua)
-  {\edef\alignmentclass{\the\c_tabl_tabulate_column}%
-   \edef\alignmentcharacter{\csname\??tabulatealign\the\c_tabl_tabulate_column\endcsname}%
-   \ifcase\c_tabl_tabulate_pass\or
-     \setfirstpasscharacteralign\checkalignment{#1}%
-   \fi % force hsize
-   \setsecondpasscharacteralign\checkalignment{#1}}
 
 \def\tabl_tabulate_nobreak_inject_tracer
   {\red % maybe use the fast color switcher here
@@ -424,6 +416,8 @@
 \let\tabl_tabulate_hook_b\donothing
 \let\tabl_tabulate_hook_e\donothing
 
+\let\tabl_tabulate_hook_g\donothing
+
 \def\tabl_tabulate_set_preamble_step#1#2% only makes sense for many tabulates
   {\normalexpanded{\t_tabl_tabulate_preamble{\the\t_tabl_tabulate_preamble
         \tabl_tabulate_check_local_vrule_thickness\constantdimenargument\d_tabl_tabulate_vrulethickness
@@ -439,6 +433,7 @@
         \tabl_tabulate_color_side_both
         \global\c_tabl_tabulate_colorspan\zerocount
         \global\c_tabl_tabulate_column\constantnumber\c_tabl_tabulate_columns
+        \tabl_tabulate_hook_g
         \tabl_tabulate_setups_check % unexpandable
         \tabl_tabulate_hook_check   % unexpandable
         \ifzeropt\d_tabl_tabulate_width
@@ -458,6 +453,9 @@
             \bgroup % we cannot combine the if because a cell may have only one ##
                 \tabl_tabulate_hook_b
                 \c_tabl_tabulate_align\constantnumber\c_tabl_tabulate_align % needed in tag passing
+                \ifx\m_tabl_tabulate_alignment\empty \else
+                    \spac_align_use_now{\m_tabl_tabulate_alignment}%
+                \fi
                 \noexpand\dostarttagged\noexpand\t!tabulatecell\noexpand\empty
                 \noexpand\dotagtabulatecell
                 \noexpand#1%
@@ -554,6 +552,7 @@
 \installtabulatepreambleoption{d}{\t_tabl_tabulate_settings\expandafter{\the\t_tabl_tabulate_settings\fixedspaces}%
                                   \tabl_tabulate_set_preamble}
 \installtabulatepreambleoption{ }{\tabl_tabulate_set_preamble}
+\installtabulatepreambleoption{A}{\tabl_tabulate_set_alignment}
 
 % We no longer deal with '~' here but map it onto 'd' instead. Of course
 % we could prefix a key with \type {\meaning} instead, which works ok (and
@@ -619,9 +618,21 @@
   {\setvalue{\??tabulatehook\the\c_tabl_tabulate_columns}{#1}%
    \tabl_tabulate_set_preamble}
 
+% begin of character align plugin
+
+\newconditional\c_tabl_auto_align_mode % reset later
+
+\def\tabl_tabulate_hook_g % partly expanded
+  {\ifconditional\c_tabl_auto_align_mode
+     \signalcharacteralign\c_tabl_tabulate_column{\c_tabl_tabulate_noflines+\plusone}%
+   \fi}
+
 \def\tabl_tabulate_set_align#1%
-  {\setvalue{\??tabulatealign\the\c_tabl_tabulate_columns}{#1}%
+  {\global\settrue\c_tabl_auto_align_mode
+   \setcharacteralign\c_tabl_tabulate_columns{#1}%
    \tabl_tabulate_set_preamble}
+
+% end of character align plugin
 
 \def\tabl_tabulate_set_before#1%
   {\t_tabl_tabulate_before{#1}%
@@ -642,6 +653,11 @@
   {\setfalse\c_tabl_tabulate_pwidth_set
    \c_tabl_tabulate_modus\zerocount
    \tabl_tabulate_pickup_width}
+
+\def\tabl_tabulate_set_alignment#1%
+  {\edef\m_tabl_tabulate_alignment{#1}%
+   \spac_align_use_later\m_tabl_tabulate_alignment
+   \tabl_tabulate_set_preamble}
 
 \def\tabl_tabulate_set_paragraph
   {\doifnextparenthesiselse
@@ -718,6 +734,7 @@
 
 \installcorenamespace{tabulatecolorspec}
 
+\setvalue{\??tabulatecolorspec C}#1{\xdef\m_tabl_tabulate_color     {#1}\global\c_tabl_tabulate_colorspan\zerocount}
 \setvalue{\??tabulatecolorspec L}#1{\xdef\m_tabl_tabulate_color     {#1}\global\c_tabl_tabulate_colorspan\plusone  }
 \setvalue{\??tabulatecolorspec M}#1{\xdef\m_tabl_tabulate_color     {#1}\global\c_tabl_tabulate_colorspan\plustwo  }
 \setvalue{\??tabulatecolorspec R}#1{\xdef\m_tabl_tabulate_color     {#1}\global\c_tabl_tabulate_colorspan\plusthree}
@@ -743,10 +760,12 @@
    \t_tabl_tabulate_emath\emptytoks
    \t_tabl_tabulate_font\emptytoks
    \t_tabl_tabulate_settings\emptytoks
+   \global\let\m_tabl_tabulate_alignment\empty
    \global\let\m_tabl_tabulate_color\empty
    \global\let\m_tabl_tabulate_text_color\empty
    \global\let\m_tabl_tabulate_vrule_color\empty
    \global\c_tabl_tabulate_colorspan\zerocount
+   \global\setfalse\c_tabl_auto_align_mode
    \global\advance\c_tabl_tabulate_columns\plusone
    \expandafter\let\csname\??tabulatesetup\the\c_tabl_tabulate_columns\endcsname\donothing % here ?
    \edef\currenttabulationtrulespec{#1}%
@@ -756,7 +775,7 @@
      \global\d_tabl_tabulate_vrulethickness\d_tabl_tabulate_vrulethickness_default
      \rawprocesscommalist[#1]\tabl_tabulate_set_vrule_command
    \fi
-   \tabl_tabulate_set_preamble#2\relax\relax % permits i without n
+      \tabl_tabulate_set_preamble#2\relax\relax % permits i without n
    \ifcase\c_tabl_tabulate_modus\relax
      \tabl_tabulate_set_width_normal
    \or % fixed width
@@ -833,8 +852,7 @@
 
 \let\tabl_tabulate_hook\tabl_tabulate_hook_nop
 
-\def\tabl_tabulate_hook_yes {\csname\??tabulatehook \the\c_tabl_tabulate_column\endcsname}
-\def\tabl_tabulate_align_yes{\csname\??tabulatealign\the\c_tabl_tabulate_column\endcsname} % to be used
+\def\tabl_tabulate_hook_yes{\csname\??tabulatehook\the\c_tabl_tabulate_column\endcsname}
 
 \def\tabl_tabulate_pheight_reset
   {\global\c_tabl_tabulate_plines_min\plusone
@@ -1684,7 +1702,8 @@
 \unexpanded\def\tabl_tabulate_RQ_first{\tabl_tabulate_column_equal \plusone}
 \unexpanded\def\tabl_tabulate_HQ_first{\tabl_tabulate_column_equal \plustwo}
 
-\unexpanded\def\tabl_tabulate_NG_first{\NC\tabl_tabulate_charalign}
+%unexpanded\def\tabl_tabulate_NG_first{\NC\tabl_tabulate_charalign}
+\unexpanded\def\tabl_tabulate_NG_first{\NC}
 \unexpanded\def\tabl_tabulate_NN_first{\NC\tabl_tabulate_digits} % new, undocumented, test first
 \unexpanded\def\tabl_tabulate_ND_first{\NC\tabl_tabulate_digits} % same, for old times sake
 
@@ -1911,7 +1930,7 @@
    \tabl_tabulate_nobreak_inject
    \stoptabulatenoalign}
 
-\let\tabl_tabulate_BL_second\tabl_tabulate_TL_second
+\let\tabl_tabulate_BL_second_indeed\tabl_tabulate_TL_second_indeed
 
 \def\tabl_tabulate_HL_second
   {\csname
@@ -2003,6 +2022,8 @@
 
 \let\tabl_tabulate_flush_collected       \empty
 \let\tabl_tabulate_flush_collected_indeed\empty
+
+\let\v_tabl_tabulate_align\!!zerocount
 
 \def\tabl_tabulate_set_local_hsize
   {\setlocalhsize

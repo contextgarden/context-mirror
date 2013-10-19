@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['l-pdfview'] = {
     license   = "see context related readme files"
 }
 
+-- Todo: add options in cnf file
+
 -- Todo: figure out pdfopen/pdfclose on linux. Calling e.g. okular directly
 -- doesn't work in linux when issued from scite as it blocks the editor (no
 -- & possible or so). Unfortunately pdfopen keeps changing with not keeping
@@ -15,62 +17,107 @@ if not modules then modules = { } end modules ['l-pdfview'] = {
 
 local format, concat = string.format, table.concat
 
+local report  = logs.reporter("pdfview")
+local replace = utilities.templates.replace
+
 pdfview = pdfview or { }
 
-local opencalls, closecalls, allcalls, runner
+local opencalls  -- a table with templates that open a given pdf document
+local closecalls -- a table with templates that close a given pdf document
+local allcalls   -- a table with templates that close all open pdf documents
+local runner     -- runner function
+local expander   -- filename cleanup function
 
--- this might become template based
+-- maybe spawn/execute spec in calls
 
 if os.type == "windows" then
 
+    -- os.setenv("path",os.getenv("path") .. ";" .. "c:/data/system/pdf-xchange")
+    -- os.setenv("path",os.getenv("path") .. ";" .. "c:/data/system/sumatrapdf")
+
+    -- start is more flexible as it locates binaries in more places and doesn't lock
+
     opencalls = {
-        ['default']     = "pdfopen --rxi --file",
-        ['acrobat']     = "pdfopen --rxi --file",
-        ['fullacrobat'] = "pdfopen --axi --file",
-        ['okular']      = 'start "test" "c:/data/system/kde/bin/okular.exe" --unique', -- todo!
-        ['sumatra']     = 'start "test" "c:/data/system/sumatrapdf/sumatrapdf.exe" -reuse-instance',
-        ['okular']      = 'start "test" "okular.exe" --unique',
-        ['sumatra']     = 'start "test" "sumatrapdf.exe" -reuse-instance -bg-color 0xCCCCCC',
+        ['default']     = [[pdfopen --rxi --file "%filename%"]],
+        ['acrobat']     = [[pdfopen --rxi --file "%filename%"]],
+        ['fullacrobat'] = [[pdfopen --axi --file "%filename%"]],
+        ['okular']      = [[start "test" okular.exe --unique "%filename%"]],
+        ['pdfxcview']   = [[start "test" pdfxcview.exe /A "nolock=yes=OpenParameters" "%filename%"]],
+        ['sumatra']     = [[start "test" sumatrapdf.exe -reuse-instance -bg-color 0xCCCCCC "%filename%"]],
+        ['auto']        = [[start "%filename%"]],
     }
     closecalls= {
-        ['default'] = "pdfclose --file",
-        ['acrobat'] = "pdfclose --file",
-        ['okular']  = false,
-        ['sumatra'] = false,
+        ['default']     = [[pdfclose --file "%filename%"]],
+        ['acrobat']     = [[pdfclose --file "%filename%"]],
+        ['okular']      = false,
+        ['pdfxcview']   = false, -- [[pdfxcview.exe /close:discard "%filename%"]],
+        ['sumatra']     = false,
+        ['auto']        = false,
     }
     allcalls = {
-        ['default'] = "pdfclose --all",
-        ['acrobat'] = "pdfclose --all",
-        ['okular']  = false,
-        ['sumatra'] = false,
+        ['default']     = [[pdfclose --all]],
+        ['acrobat']     = [[pdfclose --all]],
+        ['okular']      = false,
+        ['pdfxcview']   = false,
+        ['sumatra']     = false,
+        ['auto']        = false,
     }
 
-    pdfview.method = "acrobat" -- no longer usefull due to green pop up line and clasing reader/full
+    pdfview.method = "acrobat" -- no longer useful due to green pop up line and clashing reader/full
+ -- pdfview.method = "pdfxcview"
     pdfview.method = "sumatra"
 
-    runner = function(cmd)
-        os.execute(cmd) -- .. " > /null"
+    runner = function(template,variables)
+        local cmd = replace(template,variables)
+     -- cmd = cmd  .. " > /null"
+        report("command: %s",cmd)
+        os.execute(cmd)
+    end
+
+    expander = function(name)
+        -- We need to avoid issues with chdir to UNC paths and therefore expand
+        -- the path when we're current. (We could use one of the helpers instead)
+        if file.pathpart(name) == "" then
+            return file.collapsepath(file.join(lfs.currentdir(),name))
+        else
+            return name
+        end
     end
 
 else
 
     opencalls = {
-        ['default'] = "pdfopen", -- we could pass the default here
-        ['okular']  = 'okular --unique'
+        ['default']   = [[pdfopen "%filename%"]],
+        ['okular']    = [[okular --unique "%filename%"]],
+        ['sumatra']   = [[wine "sumatrapdf.exe" -reuse-instance -bg-color 0xCCCCCC "%filename%"]],
+        ['pdfxcview'] = [[wine "pdfxcview.exe" /A "nolock=yes=OpenParameters" "%filename%"]],
+        ['auto']      = [[open "%filename%"]],
     }
     closecalls= {
-        ['default'] = "pdfclose --file",
-        ['okular']  = false,
+        ['default']   = [[pdfclose --file "%filename%"]],
+        ['okular']    = false,
+        ['sumatra']   = false,
+        ['auto']      = false,
     }
     allcalls = {
-        ['default'] = "pdfclose --all",
-        ['okular']  = false,
+        ['default']   = [[pdfclose --all]],
+        ['okular']    = false,
+        ['sumatra']   = false,
+        ['auto']      = false,
     }
 
     pdfview.method = "okular"
+    pdfview.method = "sumatra" -- faster and more complete
 
-    runner = function(cmd)
-        os.execute(cmd .. " 1>/dev/null 2>/dev/null &")
+    runner = function(template,variables)
+        local cmd = replace(template,variables)
+        cmd = cmd .. " 1>/dev/null 2>/dev/null &"
+        report("command: %s",cmd)
+        os.execute(cmd)
+    end
+
+    expander = function(name)
+        return name
     end
 
 end
@@ -93,8 +140,6 @@ function pdfview.status()
     return format("pdfview methods: %s, current method: %s (directives_pdfview_method)",pdfview.methods(),tostring(pdfview.method))
 end
 
--- local openedfiles = { }
-
 local function fullname(name)
     return file.addsuffix(name,"pdf")
 end
@@ -104,10 +149,9 @@ function pdfview.open(...)
     if opencall then
         local t = { ... }
         for i=1,#t do
-            local name = fullname(t[i])
+            local name = expander(fullname(t[i]))
             if io.exists(name) then
-                runner(format('%s "%s"', opencall, name))
-             -- openedfiles[name] = true
+                runner(opencall,{ filename = name })
             end
         end
     end
@@ -118,14 +162,10 @@ function pdfview.close(...)
     if closecall then
         local t = { ... }
         for i=1,#t do
-            local name = fullname(t[i])
-         -- if openedfiles[name] then
-                runner(format('%s "%s"', closecall, name))
-         --     openedfiles[name] = nil
-         -- else
-         --     pdfview.closeall()
-         --     break
-         -- end
+            local name = expander(fullname(t[i]))
+            if io.exists(name) then
+                replace(closecall,{ filename = name })
+            end
         end
     end
 end
@@ -133,13 +173,8 @@ end
 function pdfview.closeall()
     local allcall = allcalls[pdfview.method]
     if allcall then
-        runner(format('%s', allcall))
+        runner(allcall)
     end
- -- openedfiles = { }
 end
-
---~ pdfview.open("t:/document/show-exa.pdf")
---~ os.sleep(3)
---~ pdfview.close("t:/document/show-exa.pdf")
 
 return pdfview

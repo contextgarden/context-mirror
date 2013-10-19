@@ -622,8 +622,15 @@
 \unexpanded\def\strc_notes_inject_symbol_nop
   {\strc_notes_inject_symbol_indeed\conditionalfalse}
 
-\unexpanded\def\strc_notes_inject_symbol_snc
-  {\currentconstructionsynchronize} % this flushes the data to the list
+% % this flushes the data to the list
+%
+% \unexpanded\def\strc_notes_inject_symbol_snc
+%   {\currentconstructionsynchronize}
+%
+% but instead we need to do this with the content
+
+\unexpanded\def\strc_notes_inject_symbol_snc % so this will go away probably
+  {}
 
 \unexpanded\def\strc_notes_inject_symbol_indeed#synchronize%
   {\removeunwantedspaces
@@ -1170,16 +1177,17 @@
      \usesetupsparameter\noteparameter % experimental
      \doifelse{\noteparameter\c!paragraph}\v!yes
         {\nointerlineskip
+         \vboxtohboxslack.5\emwidth % we can instead use \hboxestohboxslack later
          \startvboxtohbox
-         \handlenoteitself{#tag}{#id}%
-         % add some slack
+           \handlenoteitself{#tag}{#id}%
+           \strc_notes_between_paragraphs
          \stopvboxtohbox}
         {\handlenoteitself{#tag}{#id}}%
    \egroup
    \the\everyafternoteinsert
    \endgroup}
 
-\unexpanded\def\betweennoteitself#tag%
+\unexpanded\def\betweennoteitself#tag% used ?
   {\edef\currentnote{#tag}%
    \doif{\noteparameter\c!paragraph}\v!yes\strc_notes_between_paragraphs}
 
@@ -1192,7 +1200,7 @@
    % as we can have collected notes (e.g. in tables) we need to recover
    % \currentdescriptionattribute and \currentdescriptionsynchronize
    %
-  %\reinstateconstructionnumberentry\currentconstructionlistentry % we could store the number in the entry
+   \reinstateconstructionnumberentry\currentconstructionlistentry % we could store the number in the entry (e.g. needed when local notes in table)
    %
    \dontcomplain
 %  \begingroup
@@ -1338,18 +1346,11 @@
 \def\strc_notes_between_paragraphs_first
   {\glet\strc_notes_between_paragraphs_indeed\strc_notes_between_paragraphs}% shape works reverse
 
-\def\strc_notes_flush_global % will be done in lua instead
+\def\strc_notes_flush_global
   {\doifelse{\noteparameter\c!paragraph}\v!yes
-     {\vbox
-        {\beginofshapebox
-           \iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteinsertionnumber
-         \endofshapebox
-         \let\strc_notes_between_paragraphs_indeed\strc_notes_between_paragraphs_first % shape works reverse
-         \doreshapebox
-           {\hbox{\unhbox\shapebox\strc_notes_between_paragraphs_indeed}}
-           \donothing \donothing \donothing % get rid of penalties etc
-         \innerflushshapebox
-         \convertvboxtohbox}}
+     {\vbox\starthboxestohbox
+        \iftrialtypesetting\unvcopy\else\unvbox\fi\currentnoteinsertionnumber
+      \stophboxestohbox}
      {\iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteinsertionnumber}}
 
 %D Supporting end notes is surprisingly easy. Even better, we

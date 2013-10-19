@@ -41,9 +41,10 @@ local trace_detail        = false  trackers.register("structures.detail",     fu
 
 local report_structure    = logs.reporter("structure","sectioning")
 
-local structures          = structures
 local context             = context
+local commands            = commands
 
+local structures          = structures
 local helpers             = structures.helpers
 local documents           = structures.documents
 local sections            = structures.sections
@@ -736,13 +737,13 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                         applyprocessor(connector)
                     end
                 else
-if groupsuffix and kind ~= "prefix" then
-    if result then
-        result[#result+1] = strippedprocessor(groupsuffix)
-    else
-        applyprocessor(groupsuffix)
-    end
-end
+                    if groupsuffix and kind ~= "prefix" then
+                        if result then
+                            result[#result+1] = strippedprocessor(groupsuffix)
+                        else
+                            applyprocessor(groupsuffix)
+                        end
+                    end
                     if stopper then
                         if result then
                             result[#result+1] = strippedprocessor(stopper)
@@ -768,94 +769,104 @@ end
 
 function sections.findnumber(depth,what) -- needs checking (looks wrong and slow too)
     local data = data.status[depth or data.depth]
-    if data then
-        local index = data.references.section
-        local collected = sections.collected
-        local sectiondata = collected[index]
-        if sectiondata and sectiondata.hidenumber ~= true then -- can be nil
-            local quit = what == v_previous or what == v_next
-            if what == v_first or what == v_previous then
-                for i=index,1,-1 do
-                    local s = collected[i]
-                    if s then
-                        local n = s.numbers
-                        if #n == depth and n[depth] and n[depth] ~= 0 then
-                            sectiondata = s
-                            if quit then
-                                break
-                            end
-                        elseif #n < depth then
+    if not data then
+        return
+    end
+    local references = data.references
+    if not references then
+        return
+    end
+    local index       = references.section
+    local collected   = sections.collected
+    local sectiondata = collected[index]
+    if sectiondata and sectiondata.hidenumber ~= true then -- can be nil
+        local quit = what == v_previous or what == v_next
+        if what == v_first or what == v_previous then
+            for i=index,1,-1 do
+                local s = collected[i]
+                if s then
+                    local n = s.numbers
+                    if #n == depth and n[depth] and n[depth] ~= 0 then
+                        sectiondata = s
+                        if quit then
                             break
                         end
-                    end
-                end
-            elseif what == v_last or what == v_next then
-                for i=index,#collected do
-                    local s = collected[i]
-                    if s then
-                        local n = s.numbers
-                        if #n == depth and n[depth] and n[depth] ~= 0 then
-                            sectiondata = s
-                            if quit then
-                                break
-                            end
-                        elseif #n < depth then
-                            break
-                        end
+                    elseif #n < depth then
+                        break
                     end
                 end
             end
-            return sectiondata
+        elseif what == v_last or what == v_next then
+            for i=index,#collected do
+                local s = collected[i]
+                if s then
+                    local n = s.numbers
+                    if #n == depth and n[depth] and n[depth] ~= 0 then
+                        sectiondata = s
+                        if quit then
+                            break
+                        end
+                    elseif #n < depth then
+                        break
+                    end
+                end
+            end
         end
+        return sectiondata
     end
 end
 
 function sections.finddata(depth,what)
     local data = data.status[depth or data.depth]
-    if data then
-        -- if sectiondata and sectiondata.hidenumber ~= true then -- can be nil
-        local index = data.references.listindex
-        if index then
-            local collected = structures.lists.collected
-            local quit = what == v_previous or what == v_next
-            if what == v_first or what == v_previous then
-                for i=index-1,1,-1 do
-                    local s = collected[i]
-                    if not s then
+    if not data then
+        return
+    end
+    local references = data.references
+    if not references then
+        return
+    end
+    local index = references.listindex
+    if not index then
+        return
+    end
+    local collected = structures.lists.collected
+    local quit      = what == v_previous or what == v_next
+    if what == v_first or what == v_previous then
+        for i=index-1,1,-1 do
+            local s = collected[i]
+            if not s then
+                break
+            elseif s.metadata.kind == "section" then -- maybe check on name
+                local n = s.numberdata.numbers
+                if #n == depth and n[depth] and n[depth] ~= 0 then
+                    data = s
+                    if quit then
                         break
-                    elseif s.metadata.kind == "section" then -- maybe check on name
-                        local n = s.numberdata.numbers
-                        if #n == depth and n[depth] and n[depth] ~= 0 then
-                            data = s
-                            if quit then
-                                break
-                            end
-                        elseif #n < depth then
-                            break
-                        end
                     end
-                end
-            elseif what == v_last or what == v_next then
-                for i=index+1,#collected do
-                    local s = collected[i]
-                    if not s then
-                        break
-                    elseif s.metadata.kind == "section" then -- maybe check on name
-                        local n = s.numberdata.numbers
-                        if #n == depth and n[depth] and n[depth] ~= 0 then
-                            data = s
-                            if quit then
-                                break
-                            end
-                        elseif #n < depth then
-                            break
-                        end
-                    end
+                elseif #n < depth then
+                    break
                 end
             end
         end
-        return data
+    elseif what == v_last or what == v_next then
+        for i=index+1,#collected do
+            local s = collected[i]
+            if not s then
+                break
+            elseif s.metadata.kind == "section" then -- maybe check on name
+                local n = s.numberdata.numbers
+                if #n == depth and n[depth] and n[depth] ~= 0 then
+                    data = s
+                    if quit then
+                        break
+                    end
+                elseif #n < depth then
+                    break
+                end
+            end
+        end
     end
+    return data
 end
 
 function sections.internalreference(sectionname,what) -- to be used in pagebuilder (no marks used)

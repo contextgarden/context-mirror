@@ -100,11 +100,11 @@
      \expandafter\noexpand\csname do#1rootparameter\endcsname
      \expandafter\noexpand\csname setupcurrent#1\endcsname
      \expandafter\noexpand\csname inherited#1framed\endcsname
-     \noexpand\??framed}} % if needed we can have a variant
+     \expandafter\noexpand\csname inherited#1framedbox\endcsname}} % new
 
 \unexpanded\def\doinstallinheritedframed#1#2#3#4#5#6#7#8#9%
   {\def#5##1##2{\ifx##1\relax#6{##2}\else#4{##1}{##2}\fi}%
-   \def#6##1{\ifcsname#9:##1\endcsname#9:##1\else\s!empty\fi}% root
+   \def#6##1{\ifcsname\??framed:##1\endcsname\??framed:##1\else\s!empty\fi}% root
    \unexpanded\def#8%
      {\bgroup
       \bgroup
@@ -113,7 +113,15 @@
       \let\framedparameter    #2%
       \let\framedparameterhash#3%
       \let\setupcurrentframed #7%
-      \pack_framed_process_indeed}}
+      \pack_framed_process_indeed}%
+   \unexpanded\def#9%
+     {\bgroup
+      \inframedtrue
+      \let\currentframed      #1%
+      \let\framedparameter    #2%
+      \let\framedparameterhash#3%
+      \let\setupcurrentframed #7%
+      \pack_framed_process_box_indeed}}
 
 \unexpanded\def\installframedcommandhandler#1#2#3%
   {\installcommandhandler{#1}{#2}{#3}%
@@ -880,11 +888,8 @@
 %D The next macro uses a box and takes its natural width and height so these
 %D can better be correct.
 
-\unexpanded\def\localbackgroundframed#1#2#3% namespace component box
-  {\bgroup
-   \edef\currentframed{#1}%
-   \pack_framed_initialize
-   \setbox\b_framed_normal\box#3%
+\unexpanded\def\pack_framed_process_box_indeed#1#2% component box (assumes parameters set and grouped usage)
+  {\setbox\b_framed_normal\box#2% could actually be \let\b_framed_normal#2
    \edef\p_framed_region{\framedparameter\c!region}%
    \ifx\p_framed_region\v!yes % maybe later named
      \pack_framed_add_region
@@ -907,11 +912,17 @@
        \else
          \p_framed_backgroundoffset
        \fi
-     \edef\p_framed_component{#2}%
+     \edef\p_framed_component{#1}%
      \pack_framed_add_background
    \fi
    \box\b_framed_normal
    \egroup}
+
+\unexpanded\def\localbackgroundframed#1% namespace component box
+  {\bgroup
+   \edef\currentframed{#1}%
+   \pack_framed_initialize
+   \pack_framed_process_box_indeed} % group ends here
 
 \let\postprocessframebox\relax
 
@@ -1638,27 +1649,41 @@
 % \framed[width=12cm,height=3cm,orientation=-180]{\input ward\relax}
 % \framed[width=12cm,height=3cm,orientation=-270]{\input ward\relax}
 
+% \def\pack_framed_start_orientation
+%   {\ifcase\p_framed_orientation
+%      \let\pack_framed_stop_orientation\relax
+%    \else
+%      \scratchcounter\p_framed_orientation % weird .. why
+%      \divide\scratchcounter\plustwo
+%      \ifodd\scratchcounter
+%        \let\pack_framed_stop_orientation\pack_framed_stop_orientation_odd
+%      \else
+%        \let\pack_framed_stop_orientation\pack_framed_stop_orientation_even
+%      \fi
+%    \fi}
+%
+% \def\pack_framed_stop_orientation_odd
+%   {\swapmacros\framedwidth\framedheight
+%    \swapmacros\localwidth\localheight
+%    \swapdimens\d_framed_height\d_framed_width
+%    \pack_framed_stop_orientation_even}
+%
+% \def\pack_framed_stop_orientation_even
+%   {\setbox\b_framed_normal\hbox{\dorotatebox\p_framed_orientation\hbox{\box\b_framed_normal}}%
+%    \d_framed_height\ht\b_framed_normal
+%    \d_framed_width \wd\b_framed_normal}
+
 \def\pack_framed_start_orientation
   {\ifcase\p_framed_orientation
      \let\pack_framed_stop_orientation\relax
    \else
-     \scratchcounter\p_framed_orientation % weird .. why
-     \divide\scratchcounter\plustwo
-     \ifodd\scratchcounter
-       \let\pack_framed_stop_orientation\pack_framed_stop_orientation_odd
-     \else
-       \let\pack_framed_stop_orientation\pack_framed_stop_orientation_even
-     \fi
+     \let\pack_framed_stop_orientation\pack_framed_stop_orientation_indeed
    \fi}
 
-\def\pack_framed_stop_orientation_odd
-  {\swapmacros\framedwidth\framedheight
-   \swapmacros\localwidth\localheight
-   \swapdimens\d_framed_height\d_framed_width
-   \pack_framed_stop_orientation_even}
-
-\def\pack_framed_stop_orientation_even
-  {\setbox\b_framed_normal\hbox{\dorotatebox\p_framed_orientation\hbox{\box\b_framed_normal}}}
+\def\pack_framed_stop_orientation_indeed
+  {\setbox\b_framed_normal\hbox{\dorotatebox\p_framed_orientation\hbox{\box\b_framed_normal}}%
+   \d_framed_height\ht\b_framed_normal
+   \d_framed_width \wd\b_framed_normal}
 
 %D The last conditional takes care of the special situation of in||line \inframed
 %D [height=3cm] {framed} boxes. Such boxes have to be \inframed {aligned} with the
@@ -1738,17 +1763,45 @@
    \edef\currentmathframed{#1}%
    \dosingleempty\pack_framed_mathframed_indeed}
 
+% \def\pack_framed_mathframed_indeed[#1]#2% no fancy nesting supported here
+%   {\iffirstargument
+%       \setupcurrentmathframed[#1]%
+%    \fi
+%    \c_framed_mstyle\mathstyle
+%    \doifnot{\mathframedparameter\c!location}\v!low{\let\normalstrut\pack_framed_math_strut}%
+%    \inheritedmathframedframed{\Ustartmath\triggermathstyle\c_framed_mstyle#2\Ustopmath}%
+%    \endgroup}
+
+\newcount\c_pack_framed_mc
+
+\def\pack_framed_math_pos
+  {\global\advance\c_pack_framed_mc\plusone
+   \xdef\pack_framed_mc_one{mcf:1:\number\c_pack_framed_mc}%
+   \xdef\pack_framed_mc_two{mcf:2:\number\c_pack_framed_mc}%
+   \xypos\pack_framed_mc_two}
+
 \def\pack_framed_mathframed_indeed[#1]#2% no fancy nesting supported here
   {\iffirstargument
       \setupcurrentmathframed[#1]%
    \fi
    \c_framed_mstyle\mathstyle
-   \doifnot{\mathframedparameter\c!location}\v!low{\let\normalstrut\pack_framed_math_strut}%
+   \edef\m_framed_location{\mathframedparameter\c!location}%
+   \ifx\m_framed_location\v!mathematics
+     \let\normalstrut\pack_framed_math_pos
+   \else\ifx\m_framed_location\v!low\else
+     \let\normalstrut\pack_framed_math_strut
+   \fi\fi
    \inheritedmathframedframed{\Ustartmath\triggermathstyle\c_framed_mstyle#2\Ustopmath}%
    \endgroup}
 
+\installframedlocator \v!mathematics
+  {}
+  {\lower\dimexpr\MPy\pack_framed_mc_two-\MPy\pack_framed_mc_one\relax
+   \hbox{\xypos\pack_framed_mc_one\box\b_framed_normal}}
+
 \definemathframed[mframed]
 \definemathframed[inmframed][\c!location=\v!low]
+\definemathframed[mcframed] [\c!location=\v!mathematics]
 
 %D So instead of the rather versatile \type {\framed}, we use \type {\mframed}:
 %D
@@ -1953,6 +2006,7 @@
        \raggedcommand
        \pack_framed_do_top
        \bgroup
+\synchronizeinlinedirection
        \localbegstrut
        \aftergroup\localendstrut
        \aftergroup\pack_framed_do_bottom
@@ -1974,6 +2028,7 @@
        \raggedcenter
        \vss
        \bgroup
+\synchronizeinlinedirection
        \localbegstrut
        \aftergroup\localendstrut
        \aftergroup\vss
@@ -1996,6 +2051,7 @@
        \aftergroup\localendstrut
        \aftergroup\vss
        \aftergroup\egroup
+\synchronizeinlinedirection
        \localbegstrut
        \doformatonelinerbox}
 
@@ -2013,6 +2069,7 @@
        \raggedcommand
        \pack_framed_do_top
        \bgroup
+\synchronizeinlinedirection
        \localbegstrut
        \aftergroup\localendstrut
        \aftergroup\pack_framed_do_bottom
@@ -2036,6 +2093,7 @@
        \hbox
          \bgroup
          \aftergroup\egroup
+\synchronizeinlinedirection
          \localstrut
          \doformatonelinerbox}
 
@@ -2049,6 +2107,7 @@
        \fi
        \pack_framed_do_setups
        \hss
+\synchronizeinlinedirection
        \localstrut
        \bgroup
        \aftergroup\hss
@@ -2063,6 +2122,7 @@
        \fi
        \let\postprocessframebox\relax
        \pack_framed_do_setups
+\synchronizeinlinedirection
        \localstrut
        \doformatonelinerbox}
 

@@ -12,8 +12,6 @@ local trace_numbers = false  trackers.register("lines.numbers",  function(v) tra
 
 local report_lines = logs.reporter("lines")
 
-local texbox = tex.box
-
 local attributes, nodes, node, context = attributes, nodes, node, context
 
 nodes.lines       = nodes.lines or { }
@@ -22,6 +20,8 @@ local lines       = nodes.lines
 lines.data        = lines.data or { } -- start step tag
 local data        = lines.data
 local last        = #data
+
+local texgetbox   = tex.getbox
 
 lines.scratchbox  = lines.scratchbox or 0
 
@@ -208,7 +208,7 @@ local function identify(list)
 end
 
 function boxed.stage_zero(n)
-    return identify(texbox[n].list)
+    return identify(texgetbox(n).list)
 end
 
 -- reset ranges per page
@@ -217,9 +217,9 @@ end
 
 function boxed.stage_one(n,nested)
     current_list = { }
-    local head = texbox[n]
-    if head then
-        local list = head.list
+    local box = texgetbox(n)
+    if box then
+        local list = box.list
         if nested then
             list = identify(list)
         end
@@ -268,7 +268,7 @@ function boxed.stage_two(n,m)
     if #current_list > 0 then
         m = m or lines.scratchbox
         local t, tn = { }, 0
-        for l in traverse_id(hlist_code,texbox[m].list) do
+        for l in traverse_id(hlist_code,texgetbox(m).list) do
             tn = tn + 1
             t[tn] = copy_node(l)
         end

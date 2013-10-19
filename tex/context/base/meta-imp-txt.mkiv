@@ -170,12 +170,12 @@
   % we default to nothing
 \stopuseMPgraphic
 
-\unexpanded\def\followtokens#1%
+\unexpanded\def\dofollowtokens#1#2%
   {\vbox\bgroup
    \forgetall
    \dontcomplain
    \startMPenvironment
-     \doifundefined{RotFont}{\definefont[RotFont][RegularBold]}
+     \doifundefined{RotFont}{\definefont[RotFont][RegularBold]}%
    \stopMPenvironment
    \MPtoks\emptytoks
    \resetMPdrawing
@@ -183,13 +183,13 @@
      \includeMPgraphic{followtokens} ;
      picture pic[] ; numeric len[], n ; n := 0 ;
    \stopMPdrawing
-   \handletokens#1\with\processfollowingtoken
+   \handletokens#2\with\processfollowingtoken
    \startMPdrawing
      if unknown RotPath  : path    RotPath  ; RotPath  := origin ; fi ;
      if unknown RotColor : color   RotColor ; RotColor := black  ; fi ;
      if unknown TraceRot : boolean TraceRot ; TraceRot := false  ; fi ;
      if unknown ExtraRot : numeric ExtraRot ; ExtraRot := 0      ; fi ;
-     numeric al, at, pl, wid, pos ; pair ap, ad ;
+     numeric al, at, pl, pc, wid, pos ; pair ap, ad ;
      al := arclength RotPath ;
      if al=0 :
        al := len[n] + ExtraRot ;
@@ -199,13 +199,19 @@
        RotPath := RotPath scaled ((len[n]+ExtraRot)/al) ;
        al := arclength RotPath ;
      fi ;
-     pl := (al-len[n])/(if n>1 : (n-1) else : 1 fi) ;
+     if \number#1 = 1 :
+       pl := (al-len[n])/(if n>1 : (n-1) else : 1 fi) ;
+       pc := 0 ;
+     else : % centered / MP
+       pl := 0 ;
+       pc := arclength RotPath/2 - len[n]/2 ;
+     fi ;
      if TraceRot :
        draw RotPath withpen pencircle scaled 1pt withcolor blue ;
      fi ;
      for i=1 upto n :
        wid := abs(xpart urcorner pic[i] - xpart llcorner pic[i]) ;
-       pos := len[i]-wid/2 + (i-1)*pl ;
+       pos := len[i]-wid/2 + (i-1)*pl + pc ;
        at := arctime   pos of RotPath ;
        ap := point     at  of RotPath ;
        ad := direction at  of RotPath ;
@@ -225,12 +231,38 @@
    \resetMPdrawing
    \egroup}
 
+\unexpanded\def\followtokens        {\dofollowtokens1}
+\unexpanded\def\followtokenscentered{\dofollowtokens0}
+
+% stretched variant:
+%
 % \followtokens
 %   {This is just a dummy text, kerned by T{\kern
 %    -.1667em\lower .5ex\hbox {E}}{\kern -.125emX} and typeset
 %    in a circle using {\setMFPfont M}{\setMFPfont
 %    E}{\setMFPfont T}{\setMFPfont A}{\setMFPfont
 %    P}{\setMFPfont O}{\setMFPfont S}{\setMFPfont T}.\quad}
+
+% centered variant:
+%
+% \def\followtokengraphicscale#1{%%
+%   \startuseMPgraphic {followtokens}
+%     path RotPath; RotPath :=  reverse halfcircle scaled #1 ;
+%     draw RotPath ;
+%     setbounds currentpicture to boundingbox fullcircle scaled 12cm ;
+%   \stopuseMPgraphic}
+%
+% \startoverlay
+%   {\followtokengraphicscale{12cm}%%
+%    \followtokenscentered{There was question on the list about this kind of graphics.}}
+%   {\followtokengraphicscale{10cm}%%
+%    \followtokenscentered{And Marco patched followingtokens to handle a centered text.}}
+%   {\followtokengraphicscale{8cm}%%
+%    \followtokenscentered{That ended up as variant branch in the main macro.}}
+%   {\followtokengraphicscale{6cm}%%
+%    \followtokenscentered{So now we have two commands.}}
+% \stopoverlay
+
 
 \startuseMPgraphic{fuzzycount}
    begingroup

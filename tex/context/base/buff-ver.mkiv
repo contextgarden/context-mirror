@@ -45,8 +45,10 @@
 
 \unexpanded\def\specialcontrolspace{\hskip\zeropoint\fastcontrolspace\hskip\zeropoint}
 
-\setvalue{\??typinglines\v!yes       }{\obeybreakpoints}
-\setvalue{\??typinglines\v!hyphenated}{\obeyhyphens}
+\setvalue{\??typinglines\v!no        }{\buff_verbatim_ignore_hyphens}
+\setvalue{\??typinglines\v!normal    }{\buff_verbatim_ignore_hyphens}
+\setvalue{\??typinglines\v!yes       }{\buff_verbatim_obey_breakpoints}
+\setvalue{\??typinglines\v!hyphenated}{\buff_verbatim_obey_hyphens}
 
 \setvalue{\??typingspace\v!on        }{\let\obeyedspace\specialcontrolspace}
 \setvalue{\??typingspace\v!stretch   }{\let\obeyedspace\specialstretchedspace}
@@ -61,15 +63,36 @@
 \setvalue{\??typingblank\v!line      }{\baselineskip}
 \setvalue{\??typingblank\v!none      }{\zeropoint}
 
+\unexpanded\def\buff_verbatim_obey_hyphens
+  {}
+
+\unexpanded\def\buff_verbatim_obey_breakpoints
+  {\language\minusone  % tricky as this affects the pagebuilder
+   \veryraggedright}
+
+\unexpanded\def\buff_verbatim_ignore_hyphens
+  {\language\minusone} % tricky as this affects the pagebuilder
+
+\def\buff_verbatim_initialize_breaks % order matters
+  {\spaceskip.5\emwidth\relax
+   \let\obeyedspace\specialobeyedspace
+   \let\controlspace\specialcontrolspace
+   \edef\p_buff_lines{\typeparameter\c!lines}%
+   \ifcsname\??typinglines\p_buff_lines\endcsname % sets \obeyedspace, \controlspace,
+     \csname\??typinglines\p_buff_lines\endcsname
+   \fi
+   \edef\p_buff_space{\typeparameter\c!space}%
+   \ifcsname\??typingspace\p_buff_space\endcsname % sets \obeyedspace
+     \csname\??typingspace\p_buff_space\endcsname
+   \fi}
+
 \def\buff_verbatim_initialize_type_one
   {\let\obeylines\ignorelines
-   \ignorehyphens % default
    \usetypestyleandcolor\c!style\c!color
    \setcatcodetable\vrbcatcodes}
 
 \def\buff_verbatim_initialize_type_two
-  {\let\obeyedspace\specialobeyedspace
-   \csname\??typingspace\typeparameter\c!space\endcsname
+  {\buff_verbatim_initialize_breaks
    \relax\the\everyinitializeverbatim\relax}
 
 \unexpanded\def\doinitializeverbatim % for use elsewhere .. temp hack (see lxml-ini)
@@ -98,13 +121,10 @@
   {\switchtobodyfont[\typingparameter\c!bodyfont]% can be low level call
    \buff_verbatim_check_margins
    \usetypingstyleandcolor\c!style\c!color
-   \doifsomething{\typingparameter\c!align}{\setupalign[\typingparameter\c!align]}%
-   \ignorehyphens} % default
+   \doifsomething{\typingparameter\c!align}{\setupalign[\typingparameter\c!align]}}
 
 \def\buff_verbatim_initialize_typing_two
-  {\let\obeyedspace\specialobeyedspace
-   \csname\??typingspace\typingparameter\c!space\endcsname
-   \csname\??typinglines\typingparameter\c!lines\endcsname
+  {\buff_verbatim_initialize_breaks
    \relax\the\everyinitializeverbatim\relax}
 
 %D \macros
@@ -255,7 +275,7 @@
   {\dontleavehmode
    \bgroup
    \edef\currenttype{#1}%
-   \lettypeparameter\v!lines\v!hyphenated
+   \lettypeparameter\c!lines\v!hyphenated
    \let\specialobeyedspace\specialstretchedspace
    \doifnextoptionalelse\buff_verbatim_type_yes\buff_verbatim_type_nop}
 
@@ -298,10 +318,11 @@
   {\buff_verbatim_initialize_type_two
    \dostarttagged\t!verbatim\currenttype
    \ctxcommand{typestring{
-     data   = \!!bs\detokenize{#1}\!!es,
-     tab    = "\typeparameter\c!tab",
-     method = "\typeparameter\c!option",
-     nature = "inline",
+     data    = \!!bs\detokenize{#1}\!!es,
+     tab     = "\typeparameter\c!tab",
+     method  = "\typeparameter\c!option",
+     nature  = "inline",
+     compact = "\typeparameter\c!compact", % none | all | last (all needed in tabulate etc for manuals)
     }}%
    \dostoptagged
    \buff_verbatim_right_of_type
@@ -334,7 +355,7 @@
 
 \unexpanded\def\specialfixedspace    {\kern\interwordspace\relax}
 \unexpanded\def\specialobeyedspace   {\hskip\interwordspace\relax} % better than spaceskip
-\unexpanded\def\specialstretchedspace{\hskip.5\interwordspace\s!plus.125\interwordstretch\relax} % more but not less
+\unexpanded\def\specialstretchedspace{\hskip.5\interwordspace\s!plus.125\interwordspace\relax} % \interwordstretch can be zero
 \unexpanded\def\specialcontrolspace  {\hskip\zeropoint\hbox{\normalcontrolspace}\hskip\zeropoint\relax}
 
 \unexpanded\def\obeyhyphens
@@ -350,7 +371,7 @@
   {\language\minusone % extra bonus, the \null should do the job too
    \let\obeyedspace \specialobeyedspace
    \let\controlspace\specialcontrolspace
-   \spaceskip.5em\relax}
+   \spaceskip.5\emwidth\relax}
 
 %D \macros
 %D   {tex,arg,mat,dis,astype}
@@ -378,7 +399,9 @@
    \catcode\leftbraceasciicode \begingroupcatcode
    \catcode\rightbraceasciicode\endgroupcatcode
    #1%
+   \bgroup % else wrong font for #2
    \aftergroup#2%
+   \aftergroup\egroup
    \let\nexttoken}
 
 \unexpanded\def\tex{\buff_verbatim_special_type\texescape        \relax}
@@ -640,6 +663,7 @@
   %\c!bodyfont=,
   %\c!color=,
    \c!space=\v!off,
+   \c!lines=\v!no,
    \c!page=\v!no,
    \c!tab=\v!yes, % what is this: \s!ascii ?
    \c!option=\v!none,
@@ -652,7 +676,6 @@
    \c!blank=\v!line,
   %\c!escape=, % yes | no | {START,STOP} | default when yes: {BTEX,ETEX}
    \c!numbering=\v!no,
-  %\c!lines=,
   %\c!range=,
    \c!start=1,
   %\c!stop=,
@@ -669,11 +692,13 @@
 
 \setuptype
   [\c!space=\v!off,
+   \c!lines=\v!no,
   %\c!color=,
    \c!style=\tt,
   %\c!option=\v!normal,
    \c!page=\v!no,
-   \c!tab=\v!yes]
+   \c!tab=\v!yes,
+   \c!compact=\v!all]
 
 %D Buffers
 
@@ -684,6 +709,9 @@
 
 \unexpanded\def\buff_verbatim_type_defined_buffer
   {\dotripleempty\buff_verbatim_type_defined_buffer_indeed}
+
+\unexpanded\def\typedefinedbuffer[#1]%
+  {\buff_verbatim_type_defined_buffer[\v!buffer][\thedefinedbuffer{#1}]}%
 
 \appendtoks
     \setuevalue{\e!type\currentbuffer}{\buff_verbatim_type_defined_buffer[\v!buffer][\currentdefinedbuffer]}%

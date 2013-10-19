@@ -38,7 +38,6 @@ run TeX code from within Lua. Some more functionality will move to Lua.
 ]]--
 
 local format, lower, find, match, gsub, gmatch = string.format, string.lower, string.find, string.match, string.gsub, string.gmatch
-local texbox = tex.box
 local contains = table.contains
 local concat, insert, remove = table.concat, table.insert, table.remove
 local todimen = string.todimen
@@ -55,6 +54,15 @@ local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
 local replacetemplate   = utilities.templates.replace
 
+local images            = img
+
+local texgetbox         = tex.getbox
+local texsetbox         = tex.setbox
+
+local hpack             = node.hpack
+
+local context           = context
+
 local variables         = interfaces.variables
 local codeinjections    = backends.codeinjections
 local nodeinjections    = backends.nodeinjections
@@ -66,8 +74,6 @@ local trace_conversion  = false  trackers.register("graphics.conversion", functi
 local trace_inclusion   = false  trackers.register("graphics.inclusion",  function(v) trace_inclusion  = v end)
 
 local report_inclusion  = logs.reporter("graphics","inclusion")
-
-local context, img = context, img
 
 local f_hash_part = formatters["%s->%s->%s"]
 local f_hash_full = formatters["%s->%s->%s->%s->%s->%s->%s"]
@@ -82,7 +88,7 @@ local v_default = variables.default
 
 local maxdimen = 2^30-1
 
-function img.check(figure)
+function images.check(figure)
     if figure then
         local width = figure.width
         local height = figure.height
@@ -103,36 +109,38 @@ end
 
 --- some extra img functions --- can become luat-img.lua
 
-local imgkeys = img.keys()
+local allimagekeys = images.keys()
 
-function img.totable(imgtable)
+local function imagetotable(imgtable)
     local result = { }
-    for k=1,#imgkeys do
-        local key = imgkeys[k]
+    for k=1,#allimagekeys do
+        local key = allimagekeys[k]
         result[key] = imgtable[key]
     end
     return result
 end
 
-function img.serialize(i,...)
-    return table.serialize(img.totable(i),...)
+images.totable = imagetotable
+
+function images.serialize(i,...)
+    return table.serialize(imagetotable(i),...)
 end
 
-function img.print(i,...)
-    return table.print(img.totable(i),...)
+function images.print(i,...)
+    return table.print(imagetotable(i),...)
 end
 
-function img.clone(i,data)
+function images.clone(i,data)
     i.width  = data.width  or i.width
     i.height = data.height or i.height
     -- attr etc
     return i
 end
 
-local validsizes = table.tohash(img.boxes())
-local validtypes = table.tohash(img.types())
+local validsizes = table.tohash(images.boxes())
+local validtypes = table.tohash(images.types())
 
-function img.checksize(size)
+function images.checksize(size)
     if size then
         size = gsub(size,"box","")
         return validsizes[size] and size or "crop"
@@ -143,7 +151,7 @@ end
 
 local indexed = { }
 
-function img.ofindex(n)
+function images.ofindex(n)
     return indexed[n]
 end
 
@@ -430,7 +438,7 @@ function figures.initialize(request)
         request.height = h > 0 and h or nil
         --
         request.page      = math.max(tonumber(request.page) or 1,1)
-        request.size      = img.checksize(request.size)
+        request.size      = images.checksize(request.size)
         request.object    = request.object == v_yes
         request["repeat"] = request["repeat"] == v_yes
         request.preview   = request.preview == v_yes
@@ -734,6 +742,9 @@ local function locate(request) -- name, format, cache
                 local pattern = figures_patterns[i]
                 if find(askedformat,pattern[1]) then
                     format = pattern[2]
+                    if trace_figures then
+                        report_inclusion("asked format %a matches %a",askedformat,pattern[1])
+                    end
                     break
                 end
             end
@@ -753,6 +764,7 @@ local function locate(request) -- name, format, cache
             elseif quitscanning then
                 return register(askedname)
             end
+            askedformat = format -- new per 2013-08-05
         elseif trace_figures then
             report_inclusion("unknown format %a",askedformat)
         end
@@ -971,7 +983,7 @@ function figures.done(data)
     figures.nofprocessed = figures.nofprocessed + 1
     data = data or callstack[#callstack] or lastfiguredata
     local dr, du, ds, nr = data.request, data.used, data.status, figures.boxnumber
-    local box = texbox[nr]
+    local box = texgetbox(nr)
     ds.width  = box.width
     ds.height = box.height
     ds.xscale = ds.width /(du.width  or 1)
@@ -983,7 +995,7 @@ end
 function figures.dummy(data)
     data = data or callstack[#callstack] or lastfiguredata
     local dr, du, nr = data.request, data.used, figures.boxnumber
-    local box  = node.hpack(node.new("hlist")) -- we need to set the dir (luatex 0.60 buglet)
+    local box  = hpack(node.new("hlist")) -- we need to set the dir (luatex 0.60 buglet)
     du.width   = du.width  or figures.defaultwidth
     du.height  = du.height or figures.defaultheight
     du.depth   = du.depth  or figures.defaultdepth
@@ -991,7 +1003,7 @@ function figures.dummy(data)
     box.width  = du.width
     box.height = du.height
     box.depth  = du.depth
-    texbox[nr] = box -- hm, should be global (to be checked for consistency)
+    texsetbox(nr,box) -- hm, should be global (to be checked for consistency)
 end
 
 -- -- -- generic -- -- --
@@ -1033,7 +1045,7 @@ function checkers.generic(data)
     local hash = f_hash_full(name,page,size,color,conversion,resolution,mask)
     local figure = figures_loaded[hash]
     if figure == nil then
-        figure = img.new {
+        figure = images.new {
             filename        = name,
             page            = page,
             pagebox         = dr.size,
@@ -1041,7 +1053,7 @@ function checkers.generic(data)
         }
         codeinjections.setfigurecolorspace(data,figure)
         codeinjections.setfiguremask(data,figure)
-        figure = figure and img.check(img.scan(figure)) or false
+        figure = figure and images.check(images.scan(figure)) or false
         local f, d = codeinjections.setfigurealternative(data,figure)
         figure, data = f or figure, d or data
         figures_loaded[hash] = figure
@@ -1084,18 +1096,18 @@ function includers.generic(data)
     if figure == nil then
         figure = ds.private
         if figure then
-            figure = img.copy(figure)
-            figure = figure and img.clone(figure,data.request) or false
+            figure = images.copy(figure)
+            figure = figure and images.clone(figure,data.request) or false
         end
         figures_used[hash] = figure
     end
     if figure then
         local nr = figures.boxnumber
         -- it looks like we have a leak in attributes here .. todo
-        local box = node.hpack(img.node(figure)) -- img.node(figure) not longer valid
+        local box = hpack(images.node(figure)) -- images.node(figure) not longer valid
         indexed[figure.index] = figure
         box.width, box.height, box.depth = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
-        texbox[nr] = box
+        texsetbox(nr,box)
         ds.objectnumber = figure.objnum
         context.relocateexternalfigure()
     end

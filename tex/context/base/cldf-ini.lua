@@ -28,17 +28,19 @@ local tex = tex
 context       = context or { }
 local context = context
 
-local format, gsub, validstring = string.format, string.gsub, string.valid
+local format, gsub, validstring, stripstring = string.format, string.gsub, string.valid, string.strip
 local next, type, tostring, tonumber, setmetatable, unpack, select = next, type, tostring, tonumber, setmetatable, unpack, select
 local insert, remove, concat = table.insert, table.remove, table.concat
-local lpegmatch, lpegC, lpegS, lpegP, lpegCc, patterns = lpeg.match, lpeg.C, lpeg.S, lpeg.P, lpeg.Cc, lpeg.patterns
+local lpegmatch, lpegC, lpegS, lpegP, lpegV, lpegCc, lpegCs, patterns = lpeg.match, lpeg.C, lpeg.S, lpeg.P, lpeg.V, lpeg.Cc, lpeg.Cs, lpeg.patterns
 local formatters = string.formatters -- using formatteds is slower in this case
+
+local loaddata          = io.loaddata
 
 local texsprint         = tex.sprint
 local textprint         = tex.tprint
 local texprint          = tex.print
 local texwrite          = tex.write
-local texcount          = tex.count
+local texgetcount       = tex.getcount
 
 local isnode            = node.is_node -- after 0.65 just node.type
 local writenode         = node.write
@@ -86,13 +88,13 @@ local function _flush_f_(n)
     else
         local tn = type(sn)
         if tn == "function" then
-            if not sn() and texcount["@@trialtypesetting"] == 0 then  -- @@trialtypesetting is private!
+            if not sn() and texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
                 _stack_f_[n] = nil
             else
                 -- keep, beware, that way the stack can grow
             end
         else
-            if texcount["@@trialtypesetting"] == 0 then  -- @@trialtypesetting is private!
+            if texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
                 writenode(sn)
                 _stack_f_[n] = nil
             else
@@ -107,7 +109,7 @@ local function _flush_n_(n)
     local sn = _stack_n_[n]
     if not sn then
         report_cld("data with id %a cannot be found on stack",n)
-    elseif texcount["@@trialtypesetting"] == 0 then  -- @@trialtypesetting is private!
+    elseif texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
         writenode(sn)
         _stack_n_[n] = nil
     else
@@ -799,6 +801,10 @@ function context.runfile(filename)
     end
 end
 
+function context.loadfile(filename)
+    context(stripstring(loaddata(resolvers.findfile(filename))))
+end
+
 -- some functions
 
 function context.direct(first,...)
@@ -809,7 +815,7 @@ end
 
 -- context.delayed (todo: lines)
 
-local delayed = { } context.delayed = delayed -- maybe also store them
+local delayed = { } context.delayed = delayed -- creates function (maybe also store them)
 
 local function indexer(parent,k)
     local f = function(...)
@@ -871,7 +877,7 @@ setmetatable(delayed, { __index = indexer, __call = caller } )
 
 -- context.nested (todo: lines)
 
-local nested = { } context.nested = nested
+local nested = { } context.nested = nested -- creates strings
 
 local function indexer(parent,k)
     local f = function(...)
@@ -903,28 +909,36 @@ setmetatable(nested, { __index = indexer, __call = caller } )
 
 -- verbatim
 
-local verbatim = { } context.verbatim = verbatim
+function context.newindexer(catcodes)
+    local handler = { }
 
-local function indexer(parent,k)
-    local command = context[k]
-    local f = function(...)
+    local function indexer(parent,k)
+        local command = context[k]
+        local f = function(...)
+            local savedcatcodes = contentcatcodes
+            contentcatcodes = catcodes
+            command(...)
+            contentcatcodes = savedcatcodes
+        end
+        parent[k] = f
+        return f
+    end
+
+    local function caller(parent,...)
         local savedcatcodes = contentcatcodes
-        contentcatcodes = vrbcatcodes
-        command(...)
+        contentcatcodes = catcodes
+        defaultcaller(parent,...)
         contentcatcodes = savedcatcodes
     end
-    parent[k] = f
-    return f
+
+    setmetatable(handler, { __index = indexer, __call = caller } )
+
+    return handler
 end
 
-local function caller(parent,...)
-    local savedcatcodes = contentcatcodes
-    contentcatcodes = vrbcatcodes
-    defaultcaller(parent,...)
-    contentcatcodes = savedcatcodes
-end
-
-setmetatable(verbatim, { __index = indexer, __call = caller } )
+context.verbatim  = context.newindexer(vrbcatcodes)
+context.puretext  = context.newindexer(txtcatcodes)
+-------.protected = context.newindexer(prtcatcodes)
 
 -- formatted
 
@@ -1064,3 +1078,89 @@ setmetatable(delayed, { __index = indexer, __call = caller } )
 function context.concat(...)
     context(concat(...))
 end
+
+-- templates
+
+local single  = lpegP("%")
+local double  = lpegP("%%")
+local lquoted = lpegP("%[")
+local rquoted = lpegP("]%")
+
+local start = [[
+local texescape = lpeg.patterns.texescape
+local lpegmatch = lpeg.match
+return function(variables) return
+]]
+
+local stop  = [[
+end
+]]
+
+local replacer = lpegP { "parser",
+    parser   = lpegCs(lpegCc(start) * lpegV("step") * (lpegCc("..") * lpegV("step"))^0 * lpegCc(stop)),
+    unquoted = (lquoted/'') * ((lpegC((1-rquoted)^1)) / "lpegmatch(texescape,variables['%0'] or '')" ) * (rquoted/''),
+    escape   = double/'%%',
+    key      = (single/'') * ((lpegC((1-single)^1)) / "(variables['%0'] or '')" ) * (single/''),
+    step     = lpegV("unquoted")
+             + lpegV("escape")
+             + lpegV("key")
+             + lpegCc("\n[===[") * (1 - lpegV("unquoted") - lpegV("escape") - lpegV("key"))^1 * lpegCc("]===]\n"),
+}
+
+local templates = { }
+
+local function indexer(parent,k)
+    local v = lpegmatch(replacer,k)
+    if not v then
+        v = "error: no valid template (1)"
+    else
+        v = loadstring(v)
+        if type(v) ~= "function" then
+            v = "error: no valid template (2)"
+        else
+            v = v()
+            if not v then
+                v = "error: no valid template (3)"
+            end
+        end
+    end
+    if type(v) == "function" then
+        local f = function(first,second)
+            if second then
+                pushcatcodes(first)
+                flushlines(v(second))
+                popcatcodes()
+            else
+                flushlines(v(first))
+            end
+        end
+        parent[k] = f
+        return f
+    else
+        return function()
+            flush(v)
+        end
+    end
+
+end
+
+local function caller(parent,k,...)
+    return parent[k](...)
+end
+
+setmetatable(templates, { __index = indexer, __call = caller } )
+
+function context.template(template,...)
+    context(templates[template](...))
+end
+
+context.templates = templates
+
+-- The above is a bit over the top as we could also stick to a simple context.replace
+-- which is fast enough anyway, but the above fits in nicer, also with the catcodes.
+--
+-- local replace = utilities.templates.replace
+--
+-- function context.template(template,variables)
+--     context(replace(template,variables))
+-- end

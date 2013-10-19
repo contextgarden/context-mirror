@@ -52,7 +52,7 @@
      \let\currentdatabasename\currentdatabase
      \let\currentdatabase\empty
    \fi
-   \ctxlua{buffers.database.process {
+   \ctxlua{moduledata.database.csv.process {
      name        = "\currentdatabase",
      type        = "\currentdatabasetype",
      database    = "\currentdatabasename",
@@ -68,6 +68,7 @@
      left        = \!!bs\databaseparameter\c!left       \!!es,
      right       = \!!bs\databaseparameter\c!right      \!!es,
      command     = \!!bs\databaseparameter\c!command    \!!es,
+     catcodes    = \number\catcodetable
   }}}
 
 \unexpanded\def\processdatabasebuffer{\dodoubleempty\module_database_process_buffer}
@@ -120,8 +121,7 @@
    first={\endgraf[},
    last={]\endgraf},
    left={ (},
-   right={) },
-   command=\ruledhbox]
+   right={) }]
 
 \startbuffer[testbuffer]
 1,2,3,4,5

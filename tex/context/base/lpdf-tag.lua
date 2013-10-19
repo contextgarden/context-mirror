@@ -32,6 +32,8 @@ local pdfflushobject   = lpdf.flushobject
 local pdfreserveobject = lpdf.reserveobject
 local pdfpagereference = lpdf.pagereference
 
+local texgetcount      = tex.getcount
+
 local nodepool         = nodes.pool
 
 local pdfliteral       = nodepool.pdfliteral
@@ -69,10 +71,9 @@ local dashsplitter    = lpeg.splitat("-")
 
 local add_ids         = false -- true
 
-
---~ function codeinjections.maptag(original,target,kind)
---~     mapping[original] = { target, kind or "inline" }
---~ end
+-- function codeinjections.maptag(original,target,kind)
+--     mapping[original] = { target, kind or "inline" }
+-- end
 
 local function finishstructure()
     if #structure_kids > 0 then
@@ -133,7 +134,7 @@ local pdf_struct_element = pdfconstant("StructElem")
 
 local function initializepage()
     index = 0
-    pagenum = tex.count.realpageno
+    pagenum = texgetcount("realpageno")
     pageref = pdfreference(pdfpagereference(pagenum))
     list = pdfarray()
     tree[pagenum] = list -- we can flush after done, todo

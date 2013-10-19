@@ -41,291 +41,100 @@ luautilities.suffixes = {
 
 -- environment.loadpreprocessedfile can be set to a preprocessor
 
-if jit or status.luatex_version >= 74 then
-
-    local function register(name)
-        if tracestripping then
-            report_lua("stripped bytecode from %a",name or "unknown")
-        end
-        strippedchunks[#strippedchunks+1] = name
-        luautilities.nofstrippedchunks = luautilities.nofstrippedchunks + 1
+local function register(name)
+    if tracestripping then
+        report_lua("stripped bytecode from %a",name or "unknown")
     end
+    strippedchunks[#strippedchunks+1] = name
+    luautilities.nofstrippedchunks = luautilities.nofstrippedchunks + 1
+end
 
-    local function stupidcompile(luafile,lucfile,strip)
-        local code = io.loaddata(luafile)
-        if code and code ~= "" then
-            code = load(code)
-            if code then
-                code = dump(code,strip and luautilities.stripcode or luautilities.alwaysstripcode)
-                if code and code ~= "" then
-                    register(name)
-                    io.savedata(lucfile,code)
-                    return true, 0
-                end
-            else
-                report_lua("fatal error %a in file %a",1,luafile)
+local function stupidcompile(luafile,lucfile,strip)
+    local code = io.loaddata(luafile)
+    if code and code ~= "" then
+        code = load(code)
+        if code then
+            code = dump(code,strip and luautilities.stripcode or luautilities.alwaysstripcode)
+            if code and code ~= "" then
+                register(name)
+                io.savedata(lucfile,code)
+                return true, 0
             end
         else
-            report_lua("fatal error %a in file %a",2,luafile)
+            report_lua("fatal error %a in file %a",1,luafile)
         end
-        return false, 0
+    else
+        report_lua("fatal error %a in file %a",2,luafile)
     end
+    return false, 0
+end
 
+-- quite subtle ... doing this wrong incidentally can give more bytes
+
+function luautilities.loadedluacode(fullname,forcestrip,name)
     -- quite subtle ... doing this wrong incidentally can give more bytes
-
-    function luautilities.loadedluacode(fullname,forcestrip,name)
-        -- quite subtle ... doing this wrong incidentally can give more bytes
-        name = name or fullname
-        local code = environment.loadpreprocessedfile and environment.loadpreprocessedfile(fullname) or loadfile(fullname)
-        if code then
-            code()
+    name = name or fullname
+    local code, message
+    if environment.loadpreprocessedfile then
+        code, message = environment.loadpreprocessedfile(fullname)
+    else
+        code, message = loadfile(fullname)
+    end
+    if code then
+        code()
+    else
+        report_lua("loading of file %a failed:\n\t%s",fullname,message or "no message")
+    end
+    if forcestrip and luautilities.stripcode then
+        if type(forcestrip) == "function" then
+            forcestrip = forcestrip(fullname)
         end
-        if forcestrip and luautilities.stripcode then
-            if type(forcestrip) == "function" then
-                forcestrip = forcestrip(fullname)
-            end
-            if forcestrip or luautilities.alwaysstripcode then
-                register(name)
-                return load(dump(code,true)), 0
-            else
-                return code, 0
-            end
-        elseif luautilities.alwaysstripcode then
+        if forcestrip or luautilities.alwaysstripcode then
             register(name)
             return load(dump(code,true)), 0
         else
             return code, 0
         end
-    end
-
-    function luautilities.strippedloadstring(code,forcestrip,name) -- not executed
-        if forcestrip and luautilities.stripcode or luautilities.alwaysstripcode then
-            code = load(code)
-            if not code then
-                report_lua("fatal error %a in file %a",3,name)
-            end
-            register(name)
-            code = dump(code,true)
-        end
-        return load(code), 0
-    end
-
-    function luautilities.compile(luafile,lucfile,cleanup,strip,fallback) -- defaults: cleanup=false strip=true
-        report_lua("compiling %a into %a",luafile,lucfile)
-        os.remove(lucfile)
-        local done = stupidcompile(luafile,lucfile,strip ~= false)
-        if done then
-            report_lua("dumping %a into %a stripped",luafile,lucfile)
-            if cleanup == true and lfs.isfile(lucfile) and lfs.isfile(luafile) then
-                report_lua("removing %a",luafile)
-                os.remove(luafile)
-            end
-        end
-        return done
-    end
-
-    function luautilities.loadstripped(...)
-        local l = load(...)
-        if l then
-            return load(dump(l,true))
-        end
-    end
-
-else
-
-    -- The next function was posted by Peter Cawley on the lua list and strips line
-    -- number information etc. from the bytecode data blob. We only apply this trick
-    -- when we store data tables. Stripping makes the compressed format file about
-    -- 1MB smaller (and uncompressed we save at least 6MB).
-    --
-    -- You can consider this feature an experiment, so it might disappear. There is
-    -- no noticeable gain in runtime although the memory footprint should be somewhat
-    -- smaller (and the file system has a bit less to deal with).
-    --
-    -- Begin of borrowed code ... works for Lua 5.1 which LuaTeX currently uses ...
-
-    local function register(name,before,after)
-        local delta = before - after
-        if tracestripping then
-            report_lua("bytecodes stripped from %a, # before %s, # after %s, delta %s",name,before,after,delta)
-        end
-        strippedchunks[#strippedchunks+1] = name
-        luautilities.nofstrippedchunks = luautilities.nofstrippedchunks + 1
-        luautilities.nofstrippedbytes  = luautilities.nofstrippedbytes  + delta
-        return delta
-    end
-
-    local strip_code_pc
-
-    if _MAJORVERSION == 5 and _MINORVERSION == 1 then
-
-        strip_code_pc = function(dump,name)
-            local before = #dump
-            local version, format, endian, int, size, ins, num = byte(dump,5,11)
-            local subint
-            if endian == 1 then
-                subint = function(dump, i, l)
-                    local val = 0
-                    for n = l, 1, -1 do
-                        val = val * 256 + byte(dump,i + n - 1)
-                    end
-                    return val, i + l
-                end
-            else
-                subint = function(dump, i, l)
-                    local val = 0
-                    for n = 1, l, 1 do
-                        val = val * 256 + byte(dump,i + n - 1)
-                    end
-                    return val, i + l
-                end
-            end
-            local strip_function
-            strip_function = function(dump)
-                local count, offset = subint(dump, 1, size)
-                local stripped, dirty = rep("\0", size), offset + count
-                offset = offset + count + int * 2 + 4
-                offset = offset + int + subint(dump, offset, int) * ins
-                count, offset = subint(dump, offset, int)
-                for n = 1, count do
-                    local t
-                    t, offset = subint(dump, offset, 1)
-                    if t == 1 then
-                        offset = offset + 1
-                    elseif t == 4 then
-                        offset = offset + size + subint(dump, offset, size)
-                    elseif t == 3 then
-                        offset = offset + num
-                    end
-                end
-                count, offset = subint(dump, offset, int)
-                stripped = stripped .. sub(dump,dirty, offset - 1)
-                for n = 1, count do
-                    local proto, off = strip_function(sub(dump,offset, -1))
-                    stripped, offset = stripped .. proto, offset + off - 1
-                end
-                offset = offset + subint(dump, offset, int) * int + int
-                count, offset = subint(dump, offset, int)
-                for n = 1, count do
-                    offset = offset + subint(dump, offset, size) + size + int * 2
-                end
-                count, offset = subint(dump, offset, int)
-                for n = 1, count do
-                    offset = offset + subint(dump, offset, size) + size
-                end
-                stripped = stripped .. rep("\0", int * 3)
-                return stripped, offset
-            end
-            dump = sub(dump,1,12) .. strip_function(sub(dump,13,-1))
-            local after = #dump
-            local delta = register(name,before,after)
-            return dump, delta
-        end
-
+    elseif luautilities.alwaysstripcode then
+        register(name)
+        return load(dump(code,true)), 0
     else
-
-        strip_code_pc = function(dump,name)
-            return dump, 0
-        end
-
+        return code, 0
     end
+end
 
-    -- ... end of borrowed code.
-
-    -- quite subtle ... doing this wrong incidentally can give more bytes
-
-    function luautilities.loadedluacode(fullname,forcestrip,name)
-        -- quite subtle ... doing this wrong incidentally can give more bytes
-        local code = environment.loadpreprocessedfile and environment.preprocessedloadfile(fullname) or loadfile(fullname)
-        if code then
-            code()
-        end
-        if forcestrip and luautilities.stripcode then
-            if type(forcestrip) == "function" then
-                forcestrip = forcestrip(fullname)
-            end
-            if forcestrip then
-                local code, n = strip_code_pc(dump(code),name)
-                return load(code), n
-            elseif luautilities.alwaysstripcode then
-                return load(strip_code_pc(dump(code),name))
-            else
-                return code, 0
-            end
-        elseif luautilities.alwaysstripcode then
-            return load(strip_code_pc(dump(code),name))
-        else
-            return code, 0
-        end
+function luautilities.strippedloadstring(code,forcestrip,name) -- not executed
+    local code, message = load(code)
+    if not code then
+        report_lua("loading of file %a failed:\n\t%s",name,message or "no message")
     end
-
-    function luautilities.strippedloadstring(code,forcestrip,name) -- not executed
-        local n = 0
-        if (forcestrip and luautilities.stripcode) or luautilities.alwaysstripcode then
-            code = load(code)
-            if not code then
-                report_lua("fatal error in file %a",name)
-            end
-            code, n = strip_code_pc(dump(code),name)
-        end
-        return load(code), n
+    if forcestrip and luautilities.stripcode or luautilities.alwaysstripcode then
+        register(name)
+        return load(dump(code,true)), 0 -- not yet executes
+    else
+        return code, 0
     end
+end
 
-    local function stupidcompile(luafile,lucfile,strip)
-        local code = io.loaddata(luafile)
-        local n = 0
-        if code and code ~= "" then
-            code = load(code)
-            if not code then
-                report_lua("fatal error in file %a",luafile)
-            end
-            code = dump(code)
-            if strip then
-                code, n = strip_code_pc(code,luautilities.stripcode or luautilities.alwaysstripcode,luafile) -- last one is reported
-            end
-            if code and code ~= "" then
-                io.savedata(lucfile,code)
-            end
-        end
-        return n
-    end
-
-    local luac_normal = "texluac -o %q %q"
-    local luac_strip  = "texluac -s -o %q %q"
-
-    function luautilities.compile(luafile,lucfile,cleanup,strip,fallback) -- defaults: cleanup=false strip=true
-        report_lua("compiling %a into %a",luafile,lucfile)
-        os.remove(lucfile)
-        local done = false
-        if strip ~= false then
-            strip = true
-        end
-        if forcestupidcompile then
-            fallback = true
-        elseif strip then
-            done = os.spawn(format(luac_strip, lucfile,luafile)) == 0
-        else
-            done = os.spawn(format(luac_normal,lucfile,luafile)) == 0
-        end
-        if not done and fallback then
-            local n = stupidcompile(luafile,lucfile,strip)
-            if n > 0 then
-                report_lua("%a dumped into %a (%i bytes stripped)",luafile,lucfile,n)
-            else
-                report_lua("%a dumped into %a (unstripped)",luafile,lucfile)
-            end
-            cleanup = false -- better see how bad it is
-            done = true -- hm
-        end
-        if done and cleanup == true and lfs.isfile(lucfile) and lfs.isfile(luafile) then
+function luautilities.compile(luafile,lucfile,cleanup,strip,fallback) -- defaults: cleanup=false strip=true
+    report_lua("compiling %a into %a",luafile,lucfile)
+    os.remove(lucfile)
+    local done = stupidcompile(luafile,lucfile,strip ~= false)
+    if done then
+        report_lua("dumping %a into %a stripped",luafile,lucfile)
+        if cleanup == true and lfs.isfile(lucfile) and lfs.isfile(luafile) then
             report_lua("removing %a",luafile)
             os.remove(luafile)
         end
-        return done
     end
+    return done
+end
 
-    luautilities.loadstripped = loadstring
-
+function luautilities.loadstripped(...)
+    local l = load(...)
+    if l then
+        return load(dump(l,true))
+    end
 end
 
 -- local getmetatable, type = getmetatable, type

@@ -45,6 +45,8 @@
     \flushpostponednodedata
     \typo_delimited_repeat
     \insertparagraphintro
+    \typo_initial_handle
+    \typo_firstline_handle
 \to \everypar
 
 \appendtoks
@@ -93,23 +95,26 @@
     \font_preloads_at_stop_text
 \to \everystoptext
 
+% We made \loadoptionfile obsolete: we pass options via the command line to
+% luatex now and handle them directly instead of via a file. This also makes
+% the next obsolete:
+%
+% \directsetup{*runtime:options}
+% \directsetup{*runtime:modules}
+
 \appendtoks
     \showcontextbanner
     \initializenewlinechar
     \calculatecurrenttime
-    \loadsystemfiles
-  % \loadoptionfile                       % obsolete, but nice to keep as reference of when/how
+    \syst_files_load
     \job_options_get_commandline          % expands some commands
     \job_options_get_ctxfile              % might expand some commands
     \job_options_set_filenames
     \font_preloads_at_every_job
     \settopskip                           % brrr
     \initializemainlanguage
-    \initializexmlprocessing              % is this still needed?
     \initializepagebackgrounds
     \initializepagecounters
-  % \directsetup{*runtime:options}%       % obsolete as the option file is replaced by a more direct mechanism
-  % \directsetup{*runtime:modules}%       % obsolete as the option file is replaced by a more direct mechanism
     \job_options_set_modes
     \job_options_set_modules
     \job_options_set_environments

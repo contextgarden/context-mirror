@@ -13,13 +13,10 @@ modules.</p>
 
 -- this module is being reconstructed
 
-local next, type = next, type
-local format, match, gsub = string.format, string.match, string.gsub
+local next, type, tostring = next, type, tostring
+local gsub = string.gsub
 local concat, remove = table.concat, table.remove
-local sortedhash, sortedkeys, swapped, tohash = table.sortedhash, table.sortedkeys, table.swapped, table.tohash
-local utfchar = utf.char
-local lpegmatch = lpeg.match
-local formatcolumns = utilities.formatters.formatcolumns
+local sortedhash, sortedkeys, swapped = table.sortedhash, table.sortedkeys, table.swapped
 
 --[[ldx--
 <p>Access to nodes is what gives <l n='luatex'/> its power. Here we
@@ -54,20 +51,12 @@ into the <l n='tex'/> engine, but this is a not so natural extension.</p>
 also ignore the empty nodes. [This is obsolete!]</p>
 --ldx]]--
 
-local traverse           = node.traverse
-local traverse_id        = node.traverse_id
-local free_node          = node.free
-local remove_node        = node.remove
-local insert_node_before = node.insert_before
-local insert_node_after  = node.insert_after
-local node_fields        = node.fields
+nodes               = nodes or { }
+local nodes         = nodes
+nodes.handlers      = nodes.handlers or { }
 
-local allocate = utilities.storage.allocate
-
-nodes          = nodes or { }
-local nodes    = nodes
-
-nodes.handlers = nodes.handlers or { }
+local allocate      = utilities.storage.allocate
+local formatcolumns = utilities.formatters.formatcolumns
 
 -- there will be more of this:
 
@@ -103,7 +92,7 @@ local penaltycodes = allocate { -- unfortunately not used
 
 table.setmetatableindex(penaltycodes,function(t,k) return "userpenalty" end) -- not used anyway
 
-local noadcodes = allocate {
+local noadcodes = allocate { -- simple nodes
     [ 0] = "ord",
     [ 1] = "opdisplaylimits",
     [ 2] = "oplimits",
@@ -170,6 +159,20 @@ local disccodes = allocate {
     [5] = "second",        -- hard second item
 }
 
+local accentcodes = allocate {
+    [0] = "bothflexible",
+    [1] = "fixedtop",
+    [2] = "fixedbottom",
+    [3] = "fixedboth",
+}
+
+local fencecodes = allocate {
+    [0] = "unset",
+    [1] = "left",
+    [2] = "middle",
+    [3] = "right",
+}
+
 local function simplified(t)
     local r = { }
     for k, v in next, t do
@@ -193,6 +196,8 @@ mathcodes    = allocate(swapped(mathcodes,mathcodes))
 fillcodes    = allocate(swapped(fillcodes,fillcodes))
 margincodes  = allocate(swapped(margincodes,margincodes))
 disccodes    = allocate(swapped(disccodes,disccodes))
+accentcodes  = allocate(swapped(accentcodes,accentcodes))
+fencecodes   = allocate(swapped(fencecodes,fencecodes))
 
 nodes.skipcodes    = skipcodes     nodes.gluecodes    = skipcodes -- more official
 nodes.noadcodes    = noadcodes
@@ -206,6 +211,8 @@ nodes.mathcodes    = mathcodes
 nodes.fillcodes    = fillcodes
 nodes.margincodes  = margincodes
 nodes.disccodes    = disccodes     nodes.discretionarycodes = disccodes
+nodes.accentcodes  = accentcodes
+nodes.fencecodes   = fencecodes
 
 listcodes.row              = listcodes.alignment
 listcodes.column           = listcodes.alignment
@@ -227,6 +234,8 @@ nodes.codes = allocate { -- mostly for listing
     margin  = margincodes,
     disc    = disccodes,
     whatsit = whatcodes,
+    accent  = accentcodes,
+    fence   = fencecodes,
 }
 
 local report_codes = logs.reporter("nodes","codes")
@@ -248,174 +257,4 @@ function nodes.showcodes()
     end
 end
 
-local whatsit_node = nodecodes.whatsit
-
-local messyhack    = tohash { -- temporary solution
-    nodecodes.attributelist,
-    nodecodes.attribute,
-    nodecodes.gluespec,
-    nodecodes.action,
-}
-
-function nodes.fields(n)
-    local id = n.id
-    if id == whatsit_node then
-        return node_fields(id,n.subtype)
-    else
-        local t = node_fields(id)
-        if messyhack[id] then
-            for i=1,#t do
-                if t[i] == "subtype" then
-                    remove(t,i)
-                    break
-                end
-            end
-        end
-        return t
-    end
-end
-
 trackers.register("system.showcodes", nodes.showcodes)
-
-local hlist_code = nodecodes.hlist
-local vlist_code = nodecodes.vlist
-local glue_code  = nodecodes.glue
-
--- if t.id == glue_code then
---     local s = t.spec
--- print(t)
--- print(s,s and s.writable)
---     if s and s.writable then
---         free_node(s)
---     end
---     t.spec = nil
--- end
-
-local function remove(head, current, free_too)
-   local t = current
-   head, current = remove_node(head,current)
-   if t then
-        if free_too then
-            free_node(t)
-            t = nil
-        else
-            t.next = nil
-            t.prev = nil
-        end
-   end
-   return head, current, t
-end
-
-nodes.remove = remove
-
-function nodes.delete(head,current)
-    return remove(head,current,true)
-end
-
-nodes.before = insert_node_before
-nodes.after  = insert_node_after
-
--- we need to test this, as it might be fixed now
-
-function nodes.before(h,c,n)
-    if c then
-        if c == h then
-            n.next = h
-            n.prev = nil
-            h.prev = n
-        else
-            local cp = c.prev
-            n.next = c
-            n.prev = cp
-            if cp then
-                cp.next = n
-            end
-            c.prev = n
-            return h, n
-        end
-    end
-    return n, n
-end
-
-function nodes.after(h,c,n)
-    if c then
-        local cn = c.next
-        if cn then
-            n.next = cn
-            cn.prev = n
-        else
-            n.next = nil
-        end
-        c.next = n
-        n.prev = c
-        return h, n
-    end
-    return n, n
-end
-
--- local h, c = nodes.replace(head,current,new)
--- local c = nodes.replace(false,current,new)
--- local c = nodes.replace(current,new)
-
-function nodes.replace(head,current,new) -- no head returned if false
-    if not new then
-        head, current, new = false, head, current
-    end
-    local prev, next = current.prev, current.next
-    if next then
-        new.next = next
-        next.prev = new
-    end
-    if prev then
-        new.prev = prev
-        prev.next = new
-    end
-    if head then
-        if head == current then
-            head = new
-        end
-        free_node(current)
-        return head, new
-    else
-        free_node(current)
-        return new
-    end
-end
-
--- will move
-
-local function count(stack,flat)
-    local n = 0
-    while stack do
-        local id = stack.id
-        if not flat and id == hlist_code or id == vlist_code then
-            local list = stack.list
-            if list then
-                n = n + 1 + count(list) -- self counts too
-            else
-                n = n + 1
-            end
-        else
-            n = n + 1
-        end
-        stack  = stack.next
-    end
-    return n
-end
-
-nodes.count = count
-
-local left, space = lpeg.P("<"), lpeg.P(" ")
-
-local reference = left * (1-left)^0 * left * space^0 * lpeg.C((1-space)^0)
-
-function nodes.reference(n)
-    return lpegmatch(reference,tostring(n))
-end
-
-if not node.next then
-
-    function node.next(n) return n and n.next end
-    function node.prev(n) return n and n.prev end
-
-end

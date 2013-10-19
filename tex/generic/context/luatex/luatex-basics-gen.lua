@@ -89,6 +89,7 @@ local remapper = {
     fea    = "font feature files",
     pfa    = "type1 fonts", -- this is for Khaled, in ConTeXt we don't use this!
     pfb    = "type1 fonts", -- this is for Khaled, in ConTeXt we don't use this!
+    afm    = "afm",
 }
 
 function resolvers.findfile(name,fileformat)
@@ -116,6 +117,11 @@ end
 -- end
 
 resolvers.findbinfile = resolvers.findfile
+
+function resolvers.loadbinfile(filename,filetype)
+    local data = io.loaddata(filename)
+    return true, data, #data
+end
 
 function resolvers.resolve(s)
     return s
@@ -149,19 +155,29 @@ do
 
     local cachepaths = kpse.expand_var('$TEXMFCACHE') or ""
 
-    -- quite like tex live or so
+    -- quite like tex live or so (the weird $TEXMFCACHE test seems to be needed on miktex)
 
-    if cachepaths == "" then
+    if cachepaths == "" or cachepaths == "$TEXMFCACHE" then
         cachepaths = kpse.expand_var('$TEXMFVAR') or ""
     end
 
-    -- this also happened to be used
+    -- this also happened to be used (the weird $TEXMFVAR test seems to be needed on miktex)
 
-    if cachepaths == "" then
+    if cachepaths == "" or cachepaths == "$TEXMFVAR" then
         cachepaths = kpse.expand_var('$VARTEXMF') or ""
     end
 
-    -- and this is a last resort
+    -- and this is a last resort (hm, we could use TEMP or TEMPDIR)
+
+    if cachepaths == "" then
+        local fallbacks = { "TMPDIR", "TEMPDIR", "TMP", "TEMP", "HOME", "HOMEPATH" }
+        for i=1,#fallbacks do
+            cachepaths = os.getenv(fallbacks[i]) or ""
+            if cachepath ~= "" and lfs.isdir(cachepath) then
+                break
+            end
+        end
+    end
 
     if cachepaths == "" then
         cachepaths = "."
@@ -267,7 +283,7 @@ function caches.savedata(path,name,data)
     local luaname, lucname = makefullname(path,name)
     if luaname then
         texio.write(string.format("(save: %s)",luaname))
-        table.tofile(luaname,data,true,{ reduce = true })
+        table.tofile(luaname,data,true)
         if lucname and type(caches.compile) == "function" then
             os.remove(lucname) -- better be safe
             texio.write(string.format("(save: %s)",lucname))

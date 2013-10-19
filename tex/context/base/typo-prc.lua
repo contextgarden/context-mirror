@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['typo-prc'] = {
 
 -- moved from strc-ini.lua
 
-
+local context, commands = context, commands
 local formatters = string.formatters
 local lpegmatch, patterns, P, C, Cs = lpeg.match, lpeg.patterns, lpeg.P, lpeg.C, lpeg.Cs
 

@@ -10,16 +10,21 @@ if not modules then modules = { } end modules ['pack-rul'] = {
 <p>An explanation is given in the history document <t>mk</t>.</p>
 --ldx]]--
 
-local texsetdimen, texsetcount, texbox = tex.setdimen, tex.setcount, tex.box
-local hpack, free, copy, traverse_id = node.hpack, node.free, node.copy_list, node.traverse_id
-local texdimen, texcount = tex.dimen, tex.count
+local hpack           = node.hpack
+local free            = node.free
+local copy            = node.copy_list
+local traverse_id     = node.traverse_id
+local node_dimensions = node.dimensions
 
 local hlist_code      = nodes.nodecodes.hlist
 local box_code        = nodes.listcodes.box
-local node_dimensions = node.dimensions
+
+local texsetdimen     = tex.setdimen
+local texsetcount     = tex.setcount
+local texgetbox       = tex.getbox
 
 function commands.doreshapeframedbox(n)
-    local box            = texbox[n]
+    local box            = texgetbox(n)
     local noflines       = 0
     local firstheight    = nil
     local lastdepth      = nil
@@ -76,17 +81,16 @@ function commands.doreshapeframedbox(n)
             end
         end
     end
- -- print("reshape", noflines, firstheight or 0, lastdepth or 0)
-    texsetcount("global","framednoflines",     noflines)
-    texsetdimen("global","framedfirstheight",  firstheight or 0)
-    texsetdimen("global","framedlastdepth",    lastdepth or 0)
-    texsetdimen("global","framedminwidth",     minwidth)
-    texsetdimen("global","framedmaxwidth",     maxwidth)
-    texsetdimen("global","framedaveragewidth", noflines > 0 and totalwidth/noflines or 0)
+    texsetcount("global","framednoflines",noflines)
+    texsetdimen("global","framedfirstheight",firstheight or 0)
+    texsetdimen("global","framedlastdepth",lastdepth or 0)
+    texsetdimen("global","framedminwidth",minwidth)
+    texsetdimen("global","framedmaxwidth",maxwidth)
+    texsetdimen("global","framedaveragewidth",noflines > 0 and totalwidth/noflines or 0)
 end
 
 function commands.doanalyzeframedbox(n)
-    local box         = texbox[n]
+    local box         = texgetbox(n)
     local noflines    = 0
     local firstheight = nil
     local lastdepth   = nil
@@ -102,8 +106,7 @@ function commands.doanalyzeframedbox(n)
             end
         end
     end
- -- print("analyze", noflines, firstheight or 0, lastdepth or 0)
-    texsetcount("global","framednoflines",    noflines)
-    texsetdimen("global","framedfirstheight", firstheight or 0)
-    texsetdimen("global","framedlastdepth",   lastdepth or 0)
+    texsetcount("global","framednoflines",noflines)
+    texsetdimen("global","framedfirstheight",firstheight or 0)
+    texsetdimen("global","framedlastdepth",lastdepth or 0)
 end

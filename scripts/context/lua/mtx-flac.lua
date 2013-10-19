@@ -56,11 +56,20 @@ readers.default = function(f,size,target)
     f:seek("cur",size)
 end
 
+local valid = {
+    ["fLaC"] = true,
+    ["ID3♥"] = false,
+}
+
 function flac.getmetadata(filename)
     local f = io.open(filename, "rb")
     if f then
-        local banner = readstring(f,4)
-        if banner == "fLaC" then
+        local banner  = readstring(f,4)
+        local whatsit = valid[banner]
+        if whatsit ~= nil then
+            if whatsit == false then
+                flac.report("suspicious flac file: %s (%s)",filename,banner)
+            end
             local data = {
                 banner   = banner,
                 filename = filename,
@@ -96,13 +105,14 @@ function flac.savecollection(pattern,filename)
     local files = dir.glob(pattern)
     flac.report("%s files found, analyzing files",#files)
     local music = { }
+    table.sort(files)
     for i=1,#files do
         local data = flac.getmetadata(files[i])
         if data then
-            local tags = data.tags
-            local info = data.info
-            local artist = tags.artist
-            local album = tags.album
+            local tags   = data.tags
+            local info   = data.info
+            local artist = tags.artist or "no-artist"
+            local album  = tags.album  or "no-album"
             local albums = music[artist]
             if not albums then
                 albums = { }
@@ -134,8 +144,18 @@ function flac.savecollection(pattern,filename)
             f:write("\t<artist>\n")
             f:write("\t\t<name>",lpegmatch(p_escaped,artist),"</name>\n")
             f:write("\t\t<albums>\n")
-            for album, data in sortedpairs(albums) do
-                nofalbums = nofalbums + 1
+            local list = table.keys(albums)
+            table.sort(list,function(a,b)
+                local ya, yb = albums[a].year or 0, albums[b].year or 0
+                if ya == yb then
+                    return a < b
+                else
+                    return ya < yb
+                end
+            end)
+            for nofalbums=1,#list do
+                local album = list[nofalbums]
+                local data  = albums[album]
                 f:write("\t\t\t<album year='",data.year or 0,"'>\n")
                 f:write("\t\t\t\t<name>",lpegmatch(p_escaped,album),"</name>\n")
                 f:write("\t\t\t\t<tracks>\n")
@@ -179,6 +199,7 @@ local helpinfo = [[
   <category name="basic">
    <subcategory>
     <flag name="collect"><short>collect albums in xml file</short></flag>
+    <flag name="pattern"><short>use pattern for locating files</short></flag>
    </subcategory>
   </category>
  </flags>

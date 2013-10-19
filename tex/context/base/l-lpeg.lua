@@ -13,6 +13,19 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
 
 lpeg = require("lpeg")
 
+-- The latest lpeg doesn't have print any more, and even the new ones are not
+-- available by default (only when debug mode is enabled), which is a pitty as
+-- as it helps bailign down bottlenecks. Performance seems comparable, although
+--
+-- local p = lpeg.C(lpeg.P(1)^0 * lpeg.P(-1))
+-- local a = string.rep("123",10)
+-- lpeg.match(p,a)
+--
+-- is nearly 20% slower and also still suboptimal (i.e. a match that runs from
+-- begin to end, one of the cases where string matchers win).
+
+if not lpeg.print then function lpeg.print(...) print(lpeg.pcode(...)) end end
+
 -- tracing (only used when we encounter a problem in integration of lpeg in luatex)
 
 -- some code will move to unicode and string
@@ -69,7 +82,6 @@ setinspector(function(v) if lpegtype(v) then lpegprint(v) return true end end)
 lpeg.patterns  = lpeg.patterns or { } -- so that we can share
 local patterns = lpeg.patterns
 
-
 local anything         = P(1)
 local endofstring      = P(-1)
 local alwaysmatched    = P(true)
@@ -79,30 +91,51 @@ patterns.endofstring   = endofstring
 patterns.beginofstring = alwaysmatched
 patterns.alwaysmatched = alwaysmatched
 
-local digit, sign      = R('09'), S('+-')
+local sign             = S('+-')
+local zero             = P('0')
+local digit            = R('09')
+local octdigit         = R("07")
+local lowercase        = R("az")
+local uppercase        = R("AZ")
+local underscore       = P("_")
+local hexdigit         = digit + lowercase + uppercase
 local cr, lf, crlf     = P("\r"), P("\n"), P("\r\n")
 local newline          = crlf + S("\r\n") -- cr + lf
 local escaped          = P("\\") * anything
 local squote           = P("'")
 local dquote           = P('"')
 local space            = P(" ")
+local period           = P(".")
+local comma            = P(",")
 
-local utfbom_32_be     = P('\000\000\254\255')
-local utfbom_32_le     = P('\255\254\000\000')
-local utfbom_16_be     = P('\255\254')
-local utfbom_16_le     = P('\254\255')
-local utfbom_8         = P('\239\187\191')
+local utfbom_32_be     = P('\000\000\254\255') -- 00 00 FE FF
+local utfbom_32_le     = P('\255\254\000\000') -- FF FE 00 00
+local utfbom_16_be     = P('\254\255')         -- FE FF
+local utfbom_16_le     = P('\255\254')         -- FF FE
+local utfbom_8         = P('\239\187\191')     -- EF BB BF
 local utfbom           = utfbom_32_be + utfbom_32_le
                        + utfbom_16_be + utfbom_16_le
                        + utfbom_8
 local utftype          = utfbom_32_be * Cc("utf-32-be") + utfbom_32_le  * Cc("utf-32-le")
                        + utfbom_16_be * Cc("utf-16-be") + utfbom_16_le  * Cc("utf-16-le")
                        + utfbom_8     * Cc("utf-8")     + alwaysmatched * Cc("utf-8") -- assume utf8
+local utfstricttype    = utfbom_32_be * Cc("utf-32-be") + utfbom_32_le  * Cc("utf-32-le")
+                       + utfbom_16_be * Cc("utf-16-be") + utfbom_16_le  * Cc("utf-16-le")
+                       + utfbom_8     * Cc("utf-8")
 local utfoffset        = utfbom_32_be * Cc(4) + utfbom_32_le * Cc(4)
                        + utfbom_16_be * Cc(2) + utfbom_16_le * Cc(2)
                        + utfbom_8     * Cc(3) + Cc(0)
 
 local utf8next         = R("\128\191")
+
+patterns.utfbom_32_be  = utfbom_32_be
+patterns.utfbom_32_le  = utfbom_32_le
+patterns.utfbom_16_be  = utfbom_16_be
+patterns.utfbom_16_le  = utfbom_16_le
+patterns.utfbom_8      = utfbom_8
+
+patterns.utf_16_be_nl  = P("\000\r\000\n") + P("\000\r") + P("\000\n")
+patterns.utf_16_le_nl  = P("\r\000\n\000") + P("\r\000") + P("\n\000")
 
 patterns.utf8one       = R("\000\127")
 patterns.utf8two       = R("\194\223") * utf8next
@@ -110,6 +143,7 @@ patterns.utf8three     = R("\224\239") * utf8next * utf8next
 patterns.utf8four      = R("\240\244") * utf8next * utf8next * utf8next
 patterns.utfbom        = utfbom
 patterns.utftype       = utftype
+patterns.utfstricttype = utfstricttype
 patterns.utfoffset     = utfoffset
 
 local utf8char         = patterns.utf8one + patterns.utf8two + patterns.utf8three + patterns.utf8four
@@ -137,29 +171,14 @@ patterns.nonwhitespace = nonwhitespace
 
 local stripper         = spacer^0 * C((spacer^0     * nonspacer^1)^0) -- from example by roberto
 
------ collapser        = Cs(spacer^0/"" * ((spacer^1 * P(-1) / "") + (spacer^1/" ") + P(1))^0)
+----- collapser        = Cs(spacer^0/"" * ((spacer^1 * endofstring / "") + (spacer^1/" ") + P(1))^0)
 local collapser        = Cs(spacer^0/"" * nonspacer^0 * ((spacer^0/" " * nonspacer^1)^0))
 
 patterns.stripper      = stripper
 patterns.collapser     = collapser
 
-patterns.digit         = digit
-patterns.sign          = sign
-patterns.cardinal      = sign^0 * digit^1
-patterns.integer       = sign^0 * digit^1
-patterns.unsigned      = digit^0 * P('.') * digit^1
-patterns.float         = sign^0 * patterns.unsigned
-patterns.cunsigned     = digit^0 * P(',') * digit^1
-patterns.cfloat        = sign^0 * patterns.cunsigned
-patterns.number        = patterns.float + patterns.integer
-patterns.cnumber       = patterns.cfloat + patterns.integer
-patterns.oct           = P("0") * R("07")^1
-patterns.octal         = patterns.oct
-patterns.HEX           = P("0x") * R("09","AF")^1
-patterns.hex           = P("0x") * R("09","af")^1
-patterns.hexadecimal   = P("0x") * R("09","AF","af")^1
-patterns.lowercase     = R("az")
-patterns.uppercase     = R("AZ")
+patterns.lowercase     = lowercase
+patterns.uppercase     = uppercase
 patterns.letter        = patterns.lowercase + patterns.uppercase
 patterns.space         = space
 patterns.tab           = P("\t")
@@ -167,12 +186,12 @@ patterns.spaceortab    = patterns.space + patterns.tab
 patterns.newline       = newline
 patterns.emptyline     = newline^1
 patterns.equal         = P("=")
-patterns.comma         = P(",")
-patterns.commaspacer   = P(",") * spacer^0
-patterns.period        = P(".")
+patterns.comma         = comma
+patterns.commaspacer   = comma * spacer^0
+patterns.period        = period
 patterns.colon         = P(":")
 patterns.semicolon     = P(";")
-patterns.underscore    = P("_")
+patterns.underscore    = underscore
 patterns.escaped       = escaped
 patterns.squote        = squote
 patterns.dquote        = dquote
@@ -187,12 +206,38 @@ patterns.singlequoted  = squote * patterns.nosquote * squote
 patterns.doublequoted  = dquote * patterns.nodquote * dquote
 patterns.quoted        = patterns.doublequoted + patterns.singlequoted
 
-patterns.propername    = R("AZ","az","__") * R("09","AZ","az", "__")^0 * P(-1)
+patterns.digit         = digit
+patterns.octdigit      = octdigit
+patterns.hexdigit      = hexdigit
+patterns.sign          = sign
+patterns.cardinal      = digit^1
+patterns.integer       = sign^-1 * digit^1
+patterns.unsigned      = digit^0 * period * digit^1
+patterns.float         = sign^-1 * patterns.unsigned
+patterns.cunsigned     = digit^0 * comma * digit^1
+patterns.cfloat        = sign^-1 * patterns.cunsigned
+patterns.number        = patterns.float + patterns.integer
+patterns.cnumber       = patterns.cfloat + patterns.integer
+patterns.oct           = zero * octdigit^1
+patterns.octal         = patterns.oct
+patterns.HEX           = zero * P("X") * (digit+uppercase)^1
+patterns.hex           = zero * P("x") * (digit+lowercase)^1
+patterns.hexadecimal   = zero * S("xX") * hexdigit^1
+
+patterns.hexafloat     = sign^-1
+                       * zero * S("xX")
+                       * (hexdigit^0 * period * hexdigit^1 + hexdigit^1 * period * hexdigit^0 + hexdigit^1)
+                       * (S("pP") * sign^-1 * hexdigit^1)^-1
+patterns.decafloat     = sign^-1
+                       * (digit^0 * period * digit^1 + digit^1 * period * digit^0 + digit^1)
+                       *  S("eE") * sign^-1 * digit^1
+
+patterns.propername    = (uppercase + lowercase + underscore) * (uppercase + lowercase + underscore + digit)^0 * endofstring
 
 patterns.somecontent   = (anything - newline - space)^1 -- (utf8char - newline - space)^1
 patterns.beginline     = #(1-newline)
 
-patterns.longtostring  = Cs(whitespace^0/"" * nonwhitespace^0 * ((whitespace^0/" " * (patterns.quoted + nonwhitespace)^1)^0))
+patterns.longtostring  = Cs(whitespace^0/"" * ((patterns.quoted + nonwhitespace^1 + whitespace^1/"" * (P(-1) + Cc(" ")))^0))
 
 local function anywhere(pattern) --slightly adapted from website
     return P { P(pattern) + 1 * V(1) }
@@ -421,7 +466,10 @@ function lpeg.replacer(one,two,makefunction,isutf) -- in principle we should sor
     end
 end
 
-function lpeg.finder(lst,makefunction)
+-- local pattern1 = P(1-P(pattern))^0 * P(pattern)   : test for not nil
+-- local pattern2 = (P(pattern) * Cc(true) + P(1))^0 : test for true (could be faster, but not much)
+
+function lpeg.finder(lst,makefunction) -- beware: slower than find with 'patternless finds'
     local pattern
     if type(lst) == "table" then
         pattern = P(false)
@@ -456,8 +504,8 @@ local splitters_f, splitters_s = { }, { }
 function lpeg.firstofsplit(separator) -- always return value
     local splitter = splitters_f[separator]
     if not splitter then
-        separator = P(separator)
-        splitter = C((1 - separator)^0)
+        local pattern = P(separator)
+        splitter = C((1 - pattern)^0)
         splitters_f[separator] = splitter
     end
     return splitter
@@ -466,9 +514,31 @@ end
 function lpeg.secondofsplit(separator) -- nil if not split
     local splitter = splitters_s[separator]
     if not splitter then
-        separator = P(separator)
-        splitter = (1 - separator)^0 * separator * C(anything^0)
+        local pattern = P(separator)
+        splitter = (1 - pattern)^0 * pattern * C(anything^0)
         splitters_s[separator] = splitter
+    end
+    return splitter
+end
+
+local splitters_s, splitters_p = { }, { }
+
+function lpeg.beforesuffix(separator) -- nil if nothing but empty is ok
+    local splitter = splitters_s[separator]
+    if not splitter then
+        local pattern = P(separator)
+        splitter = C((1 - pattern)^0) * pattern * endofstring
+        splitters_s[separator] = splitter
+    end
+    return splitter
+end
+
+function lpeg.afterprefix(separator) -- nil if nothing but empty is ok
+    local splitter = splitters_p[separator]
+    if not splitter then
+        local pattern = P(separator)
+        splitter = pattern * C(anything^0)
+        splitters_p[separator] = splitter
     end
     return splitter
 end
@@ -832,9 +902,9 @@ end
 
 -- moved here (before util-str)
 
-local digit         = R("09")
-local period        = P(".")
-local zero          = P("0")
+----- digit         = R("09")
+----- period        = P(".")
+----- zero          = P("0")
 local trailingzeros = zero^0 * -digit -- suggested by Roberto R
 local case_1        = period * trailingzeros / ""
 local case_2        = period * (digit - trailingzeros)^1 * (trailingzeros / "")

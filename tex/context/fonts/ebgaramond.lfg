@@ -1,0 +1,53 @@
+return {
+    name = "eb garamond",
+    version = "1.00",
+    comment = "Goodies that complement eb garamond.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    designsizes = {
+        ["EBGaramond-Italic"] = {
+            ["8pt"]   = "file:EBGaramond08-Italic",
+            ["9pt"]   = "file:EBGaramond08-Italic",
+            ["9.5pt"] = "file:EBGaramond08-Italic",
+            ["10pt"]  = "file:EBGaramond12-Italic",
+            ["11pt"]  = "file:EBGaramond12-Italic",
+            ["12pt"]  = "file:EBGaramond12-Italic",
+            default   = "file:EBGaramond12-Italic",
+        },
+        ["EBGaramond-Regular"] = {
+            ["8pt"]   = "file:EBGaramond08-Regular",
+            ["9pt"]   = "file:EBGaramond08-Regular",
+            ["9.5pt"] = "file:EBGaramond08-Regular",
+            ["10pt"]  = "file:EBGaramond12-Regular",
+            ["11pt"]  = "file:EBGaramond12-Regular",
+            ["12pt"]  = "file:EBGaramond12-Regular",
+            default   = "file:EBGaramond12-Regular",
+        },
+        ["EBGaramond-SC"] = {
+            ["8pt"]   = "file:EBGaramond08-SC",
+            ["9pt"]   = "file:EBGaramond08-SC",
+            ["9.5pt"] = "file:EBGaramond08-SC",
+            ["10pt"]  = "file:EBGaramond12-SC",
+            ["11pt"]  = "file:EBGaramond12-SC",
+            ["12pt"]  = "file:EBGaramond12-SC",
+            default   = "file:EBGaramond12-SC",
+        },
+        ["EBGaramond-Bold"] = {
+            default  = "file:EBGaramond12-Bold",
+        },
+        ["EBGaramond-AllSC"] = {
+            default  = "file:EBGaramond12-AllSC",
+        },
+        ["EBGaramond-Initials"] = {
+            default  = "file:EBGaramondInitials",
+        },
+        ["EBGaramond-InitialsF1"] = {
+            default  = "file:EBGaramondInitialsF1",
+        },
+        ["EBGaramond-InitialsF2"] = {
+            default  = "file:EBGaramondInitialsF2",
+        },
+    }
+}
+
+

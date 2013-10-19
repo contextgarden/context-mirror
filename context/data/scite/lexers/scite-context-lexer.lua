@@ -12,6 +12,9 @@ local info = {
 -- todo: explore adapted dll ... properties + init
 -- todo: play with hotspot and other properties
 
+-- wish: replace errorlist lexer (per language!)
+-- wish: access to all scite properties
+
 -- The fold and lex functions are copied and patched from original code by Mitchell (see
 -- lexer.lua). All errors are mine. The ability to use lpeg is a real nice adition and a
 -- brilliant move. The code is a byproduct of the (mainly Lua based) textadept (still a
@@ -38,6 +41,7 @@ local info = {
 -- In 3.3.1 another major change took place: some helper constants (maybe they're no
 -- longer constants) and functions were moved into the lexer modules namespace but the
 -- functions are assigned to the Lua module afterward so we cannot alias them beforehand.
+-- We're probably getting close to a stable interface now.
 --
 -- I've considered making a whole copy and patch the other functions too as we need
 -- an extra nesting model. However, I don't want to maintain too much. An unfortunate
@@ -102,9 +106,37 @@ local type, next, setmetatable, rawset = type, next, setmetatable, rawset
 
 -- less confusing as we also use lexer for the current lexer and local _M = lexer is just ugly
 
-local lexers = lexer
+local lexers = lexer or { } -- + fallback for syntax check
 
--- these helpers are set afterwards so we delay their initialization ... there is no need to alias each time again
+-- ok, let's also move helpers here (todo: all go here)
+
+local sign      = S("+-")
+local digit     = R("09")
+local octdigit  = R("07")
+local hexdigit  = R("09","AF","af")
+
+lexers.sign     = sign
+lexers.digit    = digit
+lexers.octdigit = octdigit
+lexers.hexdigit = hexdigit
+lexers.xdigit   = hexdigit
+
+lexers.dec_num  = digit^1
+lexers.oct_num  = P("0")
+                * octdigit^1
+lexers.hex_num  = P("0") * S("xX")
+                * (hexdigit^0 * '.' * hexdigit^1 + hexdigit^1 * '.' * hexdigit^0 + hexdigit^1)
+                * (S("pP") * sign^-1 * hexdigit^1)^-1
+lexers.float    = sign^-1
+                * (digit^0 * '.' * digit^1 + digit^1 * '.' * digit^0 + digit^1)
+                * S("eE") * sign^-1 * digit^1
+
+lexers.dec_int  = sign^-1 * lexers.dec_num
+lexers.oct_int  = sign^-1 * lexers.oct_num
+lexers.hex_int  = sign^-1 * lexers.hex_num
+
+-- these helpers are set afterwards so we delay their initialization ... there is no need to alias
+-- each time again and this way we can more easily adapt to updates
 
 local get_style_at, get_indent_amount, get_property, get_fold_level, FOLD_BASE, FOLD_HEADER, FOLD_BLANK, initialize
 

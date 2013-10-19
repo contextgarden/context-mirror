@@ -195,12 +195,14 @@ end
 -- points           %p      number (scaled points)
 -- basepoints       %b      number (scaled points)
 -- table concat     %...t   table
+-- table concat     %{.}t   table
 -- serialize        %...T   sequenced (no nested tables)
+-- serialize        %{.}T   sequenced (no nested tables)
 -- boolean (logic)  %l      boolean
 -- BOOLEAN          %L      boolean
 -- whitespace       %...w
 -- automatic        %...a   'whatever' (string, table, ...)
--- automatic        %...a   "whatever" (string, table, ...)
+-- automatic        %...A   "whatever" (string, table, ...)
 
 local n = 0
 
@@ -279,6 +281,7 @@ local tracedchar = string.tracedchar
 local autosingle = string.autosingle
 local autodouble = string.autodouble
 local sequenced = table.sequenced
+local formattednumber = number.formatted
 ]]
 
 local template = [[
@@ -298,7 +301,7 @@ setmetatable(arguments, { __index =
 })
 
 local prefix_any = C((S("+- .") + R("09"))^0)
-local prefix_tab = C((1-R("az","AZ","09","%%"))^0)
+local prefix_tab = P("{") * C((1-P("}"))^0) * P("}") + C((1-R("az","AZ","09","%%"))^0)
 
 -- we've split all cases as then we can optimize them (let's omit the fuzzy u)
 
@@ -337,7 +340,7 @@ local format_i = function(f)
     if f and f ~= "" then
         return format("format('%%%si',a%s)",f,n)
     else
-        return format("a%s",n)
+        return format("format('%%i',a%s)",n)
     end
 end
 
@@ -518,6 +521,61 @@ local format_W = function(f) -- handy when doing depth related indent
     return format("nspaces[%s]",tonumber(f) or 0)
 end
 
+-- maybe to util-num
+
+local digit  = patterns.digit
+local period = patterns.period
+local three  = digit * digit * digit
+
+local splitter = Cs (
+    (((1 - (three^1 * period))^1 + C(three)) * (Carg(1) * three)^1 + C((1-period)^1))
+  * (P(1)/"" * Carg(2)) * C(2)
+)
+
+patterns.formattednumber = splitter
+
+function number.formatted(n,sep1,sep2)
+    local s = type(s) == "string" and n or format("%0.2f",n)
+    if sep1 == true then
+        return lpegmatch(splitter,s,1,".",",")
+    elseif sep1 == "." then
+        return lpegmatch(splitter,s,1,sep1,sep2 or ",")
+    elseif sep1 == "," then
+        return lpegmatch(splitter,s,1,sep1,sep2 or ".")
+    else
+        return lpegmatch(splitter,s,1,sep1 or ",",sep2 or ".")
+    end
+end
+
+-- print(number.formatted(1))
+-- print(number.formatted(12))
+-- print(number.formatted(123))
+-- print(number.formatted(1234))
+-- print(number.formatted(12345))
+-- print(number.formatted(123456))
+-- print(number.formatted(1234567))
+-- print(number.formatted(12345678))
+-- print(number.formatted(12345678,true))
+-- print(number.formatted(1234.56,"!","?"))
+
+local format_m = function(f)
+    n = n + 1
+    if not f or f == "" then
+        f = ","
+    end
+    return format([[formattednumber(a%s,%q,".")]],n,f)
+end
+
+local format_M = function(f)
+    n = n + 1
+    if not f or f == "" then
+        f = "."
+    end
+    return format([[formattednumber(a%s,%q,",")]],n,f)
+end
+
+--
+
 local format_rest = function(s)
     return format("%q",s) -- catches " and \n and such
 end
@@ -572,6 +630,7 @@ local builder = Cs { "start",
               + V("W") -- new
               + V("a") -- new
               + V("A") -- new
+              + V("m") + V("M") -- new
               --
               + V("*") -- ignores probably messed up %
             )
@@ -608,17 +667,20 @@ local builder = Cs { "start",
     ["b"] = (prefix_any * P("b")) / format_b, -- %b => 12.342bp / maybe: B (and more units)
     ["t"] = (prefix_tab * P("t")) / format_t, -- %t => concat
     ["T"] = (prefix_tab * P("T")) / format_T, -- %t => sequenced
-    ["l"] = (prefix_tab * P("l")) / format_l, -- %l => boolean
-    ["L"] = (prefix_tab * P("L")) / format_L, -- %L => BOOLEAN
+    ["l"] = (prefix_any * P("l")) / format_l, -- %l => boolean
+    ["L"] = (prefix_any * P("L")) / format_L, -- %L => BOOLEAN
     ["I"] = (prefix_any * P("I")) / format_I, -- %I => signed integer
     --
     ["w"] = (prefix_any * P("w")) / format_w, -- %w => n spaces (optional prefix is added)
     ["W"] = (prefix_any * P("W")) / format_W, -- %W => mandate prefix, no specifier
     --
+    ["m"] = (prefix_tab * P("m")) / format_m, -- %m => xxx.xxx.xxx,xx (optional prefix instead of .)
+    ["M"] = (prefix_tab * P("M")) / format_M, -- %M => xxx,xxx,xxx.xx (optional prefix instead of ,)
+    --
     ["a"] = (prefix_any * P("a")) / format_a, -- %a => '...' (forces tostring)
     ["A"] = (prefix_any * P("A")) / format_A, -- %A => "..." (forces tostring)
     --
-    ["*"] = Cs(((1-P("%"))^1 + P("%%")/"%%%%")^1) / format_rest, -- rest (including %%)
+    ["*"] = Cs(((1-P("%"))^1 + P("%%")/"%%")^1) / format_rest, -- rest (including %%)
     --
     ["!"] = Carg(2) * prefix_any * P("!") * C((1-P("!"))^1) * P("!") / format_extension,
 }
@@ -645,7 +707,7 @@ local function make(t,str)
         p = lpegmatch(builder,str,1,"..",t._extensions_) -- after this we know n
         if n > 0 then
             p = format(template,preamble,t._preamble_,arguments[n],p)
---           print("builder>",p)
+--                 print("builder>",p)
             f = loadstripped(p)()
         else
             f = function() return str end
@@ -733,11 +795,17 @@ strings.formatters.add = add
 
 -- registered in the default instance (should we fall back on this one?)
 
-lpeg.patterns.xmlescape = Cs((P("<")/"&lt;" + P(">")/"&gt;" + P("&")/"&amp;" + P('"')/"&quot;" + P(1))^0)
-lpeg.patterns.texescape = Cs((C(S("#$%\\{}"))/"\\%1" + P(1))^0)
+patterns.xmlescape = Cs((P("<")/"&lt;" + P(">")/"&gt;" + P("&")/"&amp;" + P('"')/"&quot;" + P(1))^0)
+patterns.texescape = Cs((C(S("#$%\\{}"))/"\\%1" + P(1))^0)
+patterns.luaescape = Cs(((1-S('"\n'))^1 + P('"')/'\\"' + P('\n')/'\\n"')^0) -- maybe also \0
+patterns.luaquoted = Cs(Cc('"') * ((1-S('"\n'))^1 + P('"')/'\\"' + P('\n')/'\\n"')^0 * Cc('"'))
 
-add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],[[local xmlescape = lpeg.patterns.xmlescape]])
-add(formatters,"tex",[[lpegmatch(texescape,%s)]],[[local texescape = lpeg.patterns.texescape]])
+-- escaping by lpeg is faster for strings without quotes, slower on a string with quotes, but
+-- faster again when other q-escapables are found (the ones we don't need to escape)
+
+add(formatters,"xml", [[lpegmatch(xmlescape,%s)]],[[local xmlescape = lpeg.patterns.xmlescape]])
+add(formatters,"tex", [[lpegmatch(texescape,%s)]],[[local texescape = lpeg.patterns.texescape]])
+add(formatters,"lua", [[lpegmatch(luaescape,%s)]],[[local luaescape = lpeg.patterns.luaescape]])
 
 -- -- yes or no:
 --

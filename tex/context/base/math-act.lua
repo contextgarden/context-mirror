@@ -10,19 +10,24 @@ if not modules then modules = { } end modules ['math-act'] = {
 
 local type, next = type, next
 local fastcopy = table.fastcopy
+local formatters = string.formatters
 
-local trace_defining = false  trackers.register("math.defining", function(v) trace_defining = v end)
-local report_math    = logs.reporter("mathematics","initializing")
+local trace_defining   = false  trackers.register("math.defining",   function(v) trace_defining   = v end)
+local trace_collecting = false  trackers.register("math.collecting", function(v) trace_collecting = v end)
 
-local context        = context
-local commands       = commands
-local mathematics    = mathematics
-local texdimen       = tex.dimen
-local abs            = math.abs
+local report_math      = logs.reporter("mathematics","initializing")
 
-local sequencers     = utilities.sequencers
-local appendgroup    = sequencers.appendgroup
-local appendaction   = sequencers.appendaction
+local context          = context
+local commands         = commands
+local mathematics      = mathematics
+local texsetdimen      = tex.setdimen
+local abs              = math.abs
+
+local sequencers       = utilities.sequencers
+local appendgroup      = sequencers.appendgroup
+local appendaction     = sequencers.appendaction
+
+local fontchars        = fonts.hashes.characters
 
 local mathfontparameteractions = sequencers.new {
     name      = "mathparameters",
@@ -286,14 +291,104 @@ end
 
 sequencers.appendaction("aftercopyingcharacters", "system","mathematics.overloaddimensions")
 
--- a couple of predefined tewaks:
+-- a couple of predefined tweaks:
 
 local tweaks       = { }
 mathematics.tweaks = tweaks
 
-function tweaks.fixbadprime(target,original)
-    target.characters[0xFE325] = target.characters[0x2032]
-end
+-- function tweaks.fixbadprime(target,original)
+--     target.characters[0xFE325] = target.characters[0x2032]
+-- end
+
+-- these could go to math-fbk
+
+-- local function accent_to_extensible(target,newchr,original,oldchr,height,depth,swap)
+--     local characters = target.characters
+--  -- if not characters[newchr] then -- xits needs an enforce
+--     local addprivate = fonts.helpers.addprivate
+--         local olddata = characters[oldchr]
+--         if olddata then
+--             if swap then
+--                 swap = characters[swap]
+--                 height = swap.depth
+--                 depth  = 0
+--             else
+--                 height = height or 0
+--                 depth  = depth  or 0
+--             end
+--             local correction = swap and { "down", (olddata.height or 0) - height } or { "down", olddata.height }
+--             local newdata = {
+--                 commands = { correction, { "slot", 1, oldchr } },
+--                 width    = olddata.width,
+--                 height   = height,
+--                 depth    = depth,
+--             }
+--             characters[newchr] = newdata
+--             local nextglyph = olddata.next
+--             while nextglyph do
+--                 local oldnextdata = characters[nextglyph]
+--                 local newnextdata = {
+--                     commands = { correction, { "slot", 1, nextglyph } },
+--                     width    = oldnextdata.width,
+--                     height   = height,
+--                     depth    = depth,
+--                 }
+--                 local newnextglyph = addprivate(target,formatters["original-%H"](nextglyph),newnextdata)
+--                 newdata.next = newnextglyph
+--                 local nextnextglyph = oldnextdata.next
+--                 if nextnextglyph == nextglyph then
+--                     break
+--                 else
+--                     olddata   = oldnextdata
+--                     newdata   = newnextdata
+--                     nextglyph = nextnextglyph
+--                 end
+--             end
+--             local hv = olddata.horiz_variants
+--             if hv then
+--                 hv = fastcopy(hv)
+--                 newdata.horiz_variants = hv
+--                 for i=1,#hv do
+--                     local hvi = hv[i]
+--                     local oldglyph = hvi.glyph
+--                     local olddata = characters[oldglyph]
+--                     local newdata = {
+--                         commands = { correction, { "slot", 1, oldglyph } },
+--                         width    = olddata.width,
+--                         height   = height,
+--                         depth    = depth,
+--                     }
+--                     hvi.glyph = addprivate(target,formatters["original-%H"](oldglyph),newdata)
+--                 end
+--             end
+--         end
+--  -- end
+-- end
+
+-- function tweaks.fixoverline(target,original)
+--     local height, depth = 0, 0
+--     local mathparameters = target.mathparameters
+--     if mathparameters then
+--         height = mathparameters.OverbarVerticalGap
+--         depth  = mathparameters.UnderbarVerticalGap
+--     else
+--         height = target.parameters.xheight/4
+--         depth  = height
+--     end
+--     accent_to_extensible(target,0x203E,original,0x0305,height,depth)
+--     -- also crappy spacing for our purpose: push to top of baseline
+--     accent_to_extensible(target,0xFE3DE,original,0x23DE,height,depth,0x23DF)
+--     accent_to_extensible(target,0xFE3DC,original,0x23DC,height,depth,0x23DD)
+--     accent_to_extensible(target,0xFE3B4,original,0x23B4,height,depth,0x23B5)
+--     -- for symmetry
+--     target.characters[0xFE3DF] = original.characters[0x23DF]
+--     target.characters[0xFE3DD] = original.characters[0x23DD]
+--     target.characters[0xFE3B5] = original.characters[0x23B5]
+--  -- inspect(fonts.helpers.expandglyph(target.characters,0x203E))
+--  -- inspect(fonts.helpers.expandglyph(target.characters,0x23DE))
+-- end
+
+-- sequencers.appendaction("aftercopyingcharacters", "system","mathematics.tweaks.fixoverline") -- for the moment always
 
 -- helpers
 
@@ -301,6 +396,7 @@ local setmetatableindex  = table.setmetatableindex
 local family_font        = node.family_font
 
 local fontcharacters     = fonts.hashes.characters
+local fontdescriptions   = fonts.hashes.descriptions
 local extensibles        = utilities.storage.allocate()
 fonts.hashes.extensibles = extensibles
 
@@ -324,24 +420,34 @@ local function extensiblecode(font,unicode)
     if not character then
         return unknown
     end
+    local first = character.next
     local code = unicode
-    local next = character.next
+    local next = first
     while next do
         code = next
         character = characters[next]
         next = character.next
     end
     local char = chardata[unicode]
-    local mathextensible = char and char.mathextensible
+    if not char then
+        return unknown
+    end
     if character.horiz_variants then
         if character.vert_variants then
             return { e_mixed, code, character }
         else
-            local e = mathextensible and extensibles[mathextensible]
+            local m = char.mathextensible
+            local e = m and extensibles[m]
             return e and { e, code, character } or unknown
         end
     elseif character.vert_variants then
-        local e =  mathextensible and extensibles[mathextensible]
+        local m = char.mathextensible
+        local e = m and extensibles[m]
+        return e and { e, code, character } or unknown
+    elseif first then
+        -- assume accent (they seldom stretch .. sizes)
+        local m = char.mathextensible or char.mathstretch
+        local e = m and extensibles[m]
         return e and { e, code, character } or unknown
     else
         return unknown
@@ -374,31 +480,199 @@ end
 -- abs(right["start"] - right["end"]) | right.advance | characters[right.glyph].width
 
 function commands.horizontalcode(family,unicode)
-    local font = family_font(family or 0)
-    local data = extensibles[font][unicode]
-    local kind = data[1]
+    local font    = family_font(family or 0)
+    local data    = extensibles[font][unicode]
+    local kind    = data[1]
+    local loffset = 0
+    local roffset = 0
     if kind == e_left then
         local charlist = data[3].horiz_variants
-        local characters = fontcharacters[font]
-        local left = charlist[1]
-        texdimen.scratchleftoffset  = abs((left["start"] or 0) - (left["end"] or 0))
-        texdimen.scratchrightoffset = 0
+        if charlist then
+            local left = charlist[1]
+            loffset = abs((left["start"] or 0) - (left["end"] or 0))
+        end
     elseif kind == e_right then
         local charlist = data[3].horiz_variants
-        local characters = fontcharacters[font]
         local right = charlist[#charlist]
-        texdimen.scratchleftoffset  = 0
-        texdimen.scratchrightoffset = abs((right["start"] or 0) - (right["end"] or 0))
+        roffset = abs((right["start"] or 0) - (right["end"] or 0))
      elseif kind == e_horizontal then
         local charlist = data[3].horiz_variants
-        local characters = fontcharacters[font]
-        local left = charlist[1]
-        local right = charlist[#charlist]
-        texdimen.scratchleftoffset  = abs((left["start"] or 0) - (left["end"] or 0))
-        texdimen.scratchrightoffset = abs((right["start"] or 0) - (right["end"] or 0))
+        if charlist then
+            local left = charlist[1]
+            local right = charlist[#charlist]
+            loffset = abs((left ["start"] or 0) - (left ["end"] or 0))
+            roffset = abs((right["start"] or 0) - (right["end"] or 0))
+        end
     else
-        texdimen.scratchleftoffset  = 0
-        texdimen.scratchrightoffset = 0
     end
+    texsetdimen("scratchleftoffset",loffset)
+    texsetdimen("scratchrightoffset",roffset)
     context(kind)
 end
+
+-- experiment
+
+-- check: when true, only set when present in font
+-- force: when false, then not set when already set
+
+local blocks = characters.blocks -- this will move to char-ini
+
+blocks["uppercasenormal"]                     = { first = 0x00041, last = 0x0005A }
+blocks["uppercasebold"]                       = { first = 0x1D400, last = 0x1D419 }
+blocks["uppercaseitalic"]                     = { first = 0x1D434, last = 0x1D44D }
+blocks["uppercasebolditalic"]                 = { first = 0x1D468, last = 0x1D481 }
+blocks["uppercasescript"]                     = { first = 0x1D49C, last = 0x1D4B5 }
+blocks["uppercaseboldscript"]                 = { first = 0x1D4D0, last = 0x1D4E9 }
+blocks["uppercasefraktur"]                    = { first = 0x1D504, last = 0x1D51D }
+blocks["uppercasedoublestruck"]               = { first = 0x1D538, last = 0x1D551 }
+blocks["uppercaseboldfraktur"]                = { first = 0x1D56C, last = 0x1D585 }
+blocks["uppercasesansserifnormal"]            = { first = 0x1D5A0, last = 0x1D5B9 }
+blocks["uppercasesansserifbold"]              = { first = 0x1D5D4, last = 0x1D5ED }
+blocks["uppercasesansserifitalic"]            = { first = 0x1D608, last = 0x1D621 }
+blocks["uppercasesansserifbolditalic"]        = { first = 0x1D63C, last = 0x1D655 }
+blocks["uppercasemonospace"]                  = { first = 0x1D670, last = 0x1D689 }
+blocks["uppercasegreeknormal"]                = { first = 0x00391, last = 0x003AA }
+blocks["uppercasegreekbold"]                  = { first = 0x1D6A8, last = 0x1D6C1 }
+blocks["uppercasegreekitalic"]                = { first = 0x1D6E2, last = 0x1D6FB }
+blocks["uppercasegreekbolditalic"]            = { first = 0x1D71C, last = 0x1D735 }
+blocks["uppercasegreeksansserifbold"]         = { first = 0x1D756, last = 0x1D76F }
+blocks["uppercasegreeksansserifbolditalic"]   = { first = 0x1D790, last = 0x1D7A9 }
+
+blocks["lowercasenormal"]                     = { first = 0x00061, last = 0x0007A }
+blocks["lowercasebold"]                       = { first = 0x1D41A, last = 0x1D433 }
+blocks["lowercaseitalic"]                     = { first = 0x1D44E, last = 0x1D467 }
+blocks["lowercasebolditalic"]                 = { first = 0x1D482, last = 0x1D49B }
+blocks["lowercasescript"]                     = { first = 0x1D4B6, last = 0x1D4CF }
+blocks["lowercaseboldscript"]                 = { first = 0x1D4EA, last = 0x1D503 }
+blocks["lowercasefraktur"]                    = { first = 0x1D51E, last = 0x1D537 }
+blocks["lowercasedoublestruck"]               = { first = 0x1D552, last = 0x1D56B }
+blocks["lowercaseboldfraktur"]                = { first = 0x1D586, last = 0x1D59F }
+blocks["lowercasesansserifnormal"]            = { first = 0x1D5BA, last = 0x1D5D3 }
+blocks["lowercasesansserifbold"]              = { first = 0x1D5EE, last = 0x1D607 }
+blocks["lowercasesansserifitalic"]            = { first = 0x1D622, last = 0x1D63B }
+blocks["lowercasesansserifbolditalic"]        = { first = 0x1D656, last = 0x1D66F }
+blocks["lowercasemonospace"]                  = { first = 0x1D68A, last = 0x1D6A3 }
+blocks["lowercasegreeknormal"]                = { first = 0x003B1, last = 0x003CA }
+blocks["lowercasegreekbold"]                  = { first = 0x1D6C2, last = 0x1D6DB }
+blocks["lowercasegreekitalic"]                = { first = 0x1D6FC, last = 0x1D715 }
+blocks["lowercasegreekbolditalic"]            = { first = 0x1D736, last = 0x1D74F }
+blocks["lowercasegreeksansserifbold"]         = { first = 0x1D770, last = 0x1D789 }
+blocks["lowercasegreeksansserifbolditalic"]   = { first = 0x1D7AA, last = 0x1D7C3 }
+
+blocks["digitsnormal"]                        = { first = 0x00030, last = 0x00039 }
+blocks["digitsbold"]                          = { first = 0x1D7CE, last = 0x1D7D8 }
+blocks["digitsdoublestruck"]                  = { first = 0x1D7D8, last = 0x1D7E2 }
+blocks["digitssansserifnormal"]               = { first = 0x1D7E2, last = 0x1D7EC }
+blocks["digitssansserifbold"]                 = { first = 0x1D7EC, last = 0x1D805 }
+blocks["digitsmonospace"]                     = { first = 0x1D7F6, last = 0x1D80F }
+
+blocks["mathematicaloperators"]               = { first = 0x02200, last = 0x022FF }
+blocks["miscellaneousmathematicalsymbolsa"]   = { first = 0x027C0, last = 0x027EF }
+blocks["miscellaneousmathematicalsymbolsb"]   = { first = 0x02980, last = 0x029FF }
+blocks["supplementalmathematicaloperators"]   = { first = 0x02A00, last = 0x02AFF }
+blocks["letterlikesymbols"]                   = { first = 0x02100, last = 0x0214F }
+blocks["miscellaneoustechnical"]              = { first = 0x02308, last = 0x0230B }
+blocks["geometricshapes"]                     = { first = 0x025A0, last = 0x025FF }
+blocks["miscellaneoussymbolsandarrows"]       = { first = 0x02B30, last = 0x02B4C }
+blocks["mathematicalalphanumericsymbols"]     = { first = 0x00400, last = 0x1D7FF }
+
+blocks["digitslatin"]                         = { first = 0x00030, last = 0x00039 }
+blocks["digitsarabicindic"]                   = { first = 0x00660, last = 0x00669 }
+blocks["digitsextendedarabicindic"]           = { first = 0x006F0, last = 0x006F9 }
+------["digitsdevanagari"]                    = { first = 0x00966, last = 0x0096F }
+------["digitsbengali"]                       = { first = 0x009E6, last = 0x009EF }
+------["digitsgurmukhi"]                      = { first = 0x00A66, last = 0x00A6F }
+------["digitsgujarati"]                      = { first = 0x00AE6, last = 0x00AEF }
+------["digitsoriya"]                         = { first = 0x00B66, last = 0x00B6F }
+------["digitstamil"]                         = { first = 0x00030, last = 0x00039 } -- no zero
+------["digitstelugu"]                        = { first = 0x00C66, last = 0x00C6F }
+------["digitskannada"]                       = { first = 0x00CE6, last = 0x00CEF }
+------["digitsmalayalam"]                     = { first = 0x00D66, last = 0x00D6F }
+------["digitsthai"]                          = { first = 0x00E50, last = 0x00E59 }
+------["digitslao"]                           = { first = 0x00ED0, last = 0x00ED9 }
+------["digitstibetan"]                       = { first = 0x00F20, last = 0x00F29 }
+------["digitsmyanmar"]                       = { first = 0x01040, last = 0x01049 }
+------["digitsethiopic"]                      = { first = 0x01369, last = 0x01371 }
+------["digitskhmer"]                         = { first = 0x017E0, last = 0x017E9 }
+------["digitsmongolian"]                     = { first = 0x01810, last = 0x01809 }
+
+-- operators    : 0x02200
+-- symbolsa     : 0x02701
+-- symbolsb     : 0x02901
+-- supplemental : 0x02A00
+
+-- todo: tounicode
+
+function mathematics.injectfallbacks(target,original)
+    local properties = original.properties
+    if properties and properties.hasmath then
+        local specification = target.specification
+        if specification then
+            local fallbacks = specification.fallbacks
+            if fallbacks then
+                local definitions = fonts.collections.definitions[fallbacks]
+                if definitions then
+                    if trace_collecting then
+                        report_math("adding fallback characters to font %a",specification.hash)
+                    end
+                    local definedfont = fonts.definers.internal
+                    local copiedglyph = fonts.handlers.vf.math.copy_glyph
+                    local fonts       = target.fonts
+                    local size        = specification.size -- target.size
+                    local characters  = target.characters
+                    if not fonts then
+                        fonts = { }
+                        target.fonts = fonts
+                        target.type = "virtual"
+                        target.properties.virtualized = true
+                    end
+                    if #fonts == 0 then
+                        fonts[1] = { id = 0, size = size } -- sel, will be resolved later
+                    end
+                    local done = { }
+                    for i=1,#definitions do
+                        local definition = definitions[i]
+                        local name   = definition.font
+                        local start  = definition.start
+                        local stop   = definition.stop
+                        local check  = definition.check
+                        local force  = definition.force
+                        local rscale = definition.rscale or 1
+                        local offset = definition.offset or start
+                        local id     = definedfont { name = name, size = size * rscale }
+                        local index  = #fonts + 1
+                        fonts[index] = { id = id, size = size }
+                        local chars  = fontchars[id]
+                        if check then
+                            for unicode = start, stop do
+                                local unic = unicode + offset - start
+                                if not chars[unicode] then
+                                    -- not in font
+                                elseif force or (not done[unic] and not characters[unic]) then
+                                    if trace_collecting then
+                                        report_math("remapping math character, vector %a, font %a, character %C, %s",fallbacks,name,unic,"checked")
+                                    end
+                                    characters[unic] = copiedglyph(target,characters,chars,unicode,index)
+                                    done[unic] = true
+                                end
+                            end
+                        else
+                            for unicode = start, stop do
+                                local unic = unicode + offset - start
+                                if force or (not done[unic] and not characters[unic]) then
+                                    if trace_collecting then
+                                        report_math("remapping math character, vector %a, font %a, character %C, %s",fallbacks,name,unic,"unchecked")
+                                    end
+                                    characters[unic] = copiedglyph(target,characters,chars,unicode,index)
+                                    done[unic] = true
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+sequencers.appendaction("aftercopyingcharacters", "system","mathematics.injectfallbacks")

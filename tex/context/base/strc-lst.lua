@@ -17,7 +17,6 @@ if not modules then modules = { } end modules ['strc-lst'] = {
 
 local format, gmatch, gsub = string.format, string.gmatch, string.gsub
 local tonumber = tonumber
-local texcount = tex.count
 local concat, insert, remove = table.concat, table.insert, table.remove
 local lpegmatch = lpeg.match
 local simple_hash_to_string, settings_to_hash = utilities.parsers.simple_hash_to_string, utilities.parsers.settings_to_hash
@@ -26,6 +25,11 @@ local allocate, checked = utilities.storage.allocate, utilities.storage.checked
 local trace_lists       = false  trackers.register("structures.lists", function(v) trace_lists = v end)
 
 local report_lists      = logs.reporter("structure","lists")
+
+local context           = context
+local commands          = commands
+
+local texgetcount       = tex.getcount
 
 local structures        = structures
 local lists             = structures.lists
@@ -122,6 +126,8 @@ function lists.groupindex(name,group)
     return groupindex and groupindex[group] or 0
 end
 
+-- we could use t (as hash key) in order to check for dup entries
+
 function lists.addto(t)
     local m = t.metadata
     local u = t.userdata
@@ -130,12 +136,13 @@ function lists.addto(t)
     end
     local numberdata = t.numberdata
     local group = numberdata and numberdata.group
+    local name = m.name
     if not group then
         -- forget about it
     elseif group == "" then
         group, numberdata.group = nil, nil
     else
-        local groupindex = groupindices[m.name][group]
+        local groupindex = groupindices[name][group]
         if groupindex then
             numberdata.numbers = cached[groupindex].numberdata.numbers
         end
@@ -154,7 +161,10 @@ function lists.addto(t)
         setcomponent(t) -- might move to the tex end
     end
     if group then
-        groupindices[m.name][group] = p
+        groupindices[name][group] = p
+    end
+    if trace_lists then
+        report_lists("added %a, internal %a",name,p)
     end
     return p
 end
@@ -181,10 +191,17 @@ end
 
 -- this is the main pagenumber enhancer
 
+local enhanced = { }
+
 function lists.enhance(n)
- -- todo: symbolic names for counters
     local l = cached[n]
-    if l then
+    if not l then
+        report_lists("enhancing %a, unknown internal",n)
+    elseif enhanced[n] then
+        if trace_lists then
+            report_lists("enhancing %a, name %a, duplicate ignored",n,name)
+        end
+    else
         local metadata   = l.metadata
         local references = l.references
         --
@@ -192,23 +209,27 @@ function lists.enhance(n)
         -- save in the right order (happens at shipout)
         lists.tobesaved[#lists.tobesaved+1] = l
         -- default enhancer (cross referencing)
-        references.realpage = texcount.realpageno
+        references.realpage = texgetcount("realpageno")
         -- tags
         local kind = metadata.kind
         local name = metadata.name
+        if trace_lists then
+            report_lists("enhancing %a, name %a",n,name)
+        end
         if references then
             -- is this used ?
             local tag = tags.getid(kind,name)
             if tag and tag ~= "?" then
                 references.tag = tag
             end
-        --~ references.listindex = n
         end
         -- specific enhancer (kind of obsolete)
         local enhancer = kind and lists.enhancers[kind]
         if enhancer then
             enhancer(l)
         end
+        --
+        enhanced[n] = true
         return l
     end
 end

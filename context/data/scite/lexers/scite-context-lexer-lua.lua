@@ -47,15 +47,17 @@ local functions = {
 local constants = {
     '_G', '_VERSION', '_M', '...', '_ENV',
     -- here too
-    '__add', '__call', '__concat', '__div', '__eq', '__gc', '__index',
+    '__add', '__call', '__concat', '__div', '__idiv', '__eq', '__gc', '__index',
     '__le', '__lt', '__metatable', '__mode', '__mul', '__newindex',
-    '__pow', '__sub', '__tostring', '__unm',
+    '__pow', '__sub', '__tostring', '__unm', '__len',
+    '__pairs', '__ipairs',
+    'NaN',
 }
 
 local internals = { -- __
     'add', 'call', 'concat', 'div', 'eq', 'gc', 'index',
     'le', 'lt', 'metatable', 'mode', 'mul', 'newindex',
-    'pow', 'sub', 'tostring', 'unm',
+    'pow', 'sub', 'tostring', 'unm', 'len',
 }
 
 local depricated = {
@@ -153,6 +155,9 @@ local number        = token("number", lexer.float + integer)
 -- officially 127-255 are ok but not utf so useless
 
 local validword     = R("AZ","az","__") * R("AZ","az","__","09")^0
+
+local utf8character = P(1) * R("\128\191")^1
+local validword     = (R("AZ","az","__") + utf8character) * (R("AZ","az","__","09") + utf8character)^0
 
 local identifier    = token("default",validword)
 

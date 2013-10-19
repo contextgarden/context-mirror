@@ -1,0 +1,23 @@
+-- this file might go away and is for experiments only
+
+return {
+    name = "euler-math",
+    version = "1.00",
+    comment = "Goodies that complement euler math.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    mathematics = {
+     -- virtuals = {
+     --     ["euler-nova"] = {
+     --         { name = "texgyrepagella-math.otf", main = true, parameters = true },
+     --         { name = "euler.otf", overlay = true }, -- first = 0x1234, last = 0x1256
+     --
+     --      -- { name = "euler.otf", main = true, parameters = true },
+     --      -- { name = "texgyrepagella-math.otf", overlay = true },
+     --
+     --     },
+     -- }
+    }
+}
+
+

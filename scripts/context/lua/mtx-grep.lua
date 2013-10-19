@@ -51,7 +51,9 @@ local content  = lpeg.C((1-newline)^0) * newline + lpeg.C(lpeg.P(1)^1)
 
 local write_nl = texio.write_nl
 
- -- local pattern = "LIJST[@TYPE='BULLET']/LIJSTITEM[contains(text(),'Kern')]"
+-- local pattern = "LIJST[@TYPE='BULLET']/LIJSTITEM[contains(text(),'Kern')]"
+
+-- 'Cc%(\\\"\\\"%)'
 
 function scripts.grep.find(pattern, files, offset)
     if pattern and pattern ~= "" then

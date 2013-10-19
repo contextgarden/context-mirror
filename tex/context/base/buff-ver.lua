@@ -10,15 +10,15 @@ if not modules then modules = { } end modules ['buff-ver'] = {
 -- supposed to use different names for their own variants.
 --
 -- todo: skip=auto
+--
+-- todo: update to match context scite lexing
 
-local type, next, rawset, rawget, setmetatable, getmetatable = type, next, rawset, rawget, setmetatable, getmetatable
+local type, next, rawset, rawget, setmetatable, getmetatable, tonumber = type, next, rawset, rawget, setmetatable, getmetatable, tonumber
 local format, lower, upper,match, find, sub = string.format, string.lower, string.upper, string.match, string.find, string.sub
 local splitlines = string.splitlines
 local concat = table.concat
 local C, P, R, S, V, Carg, Cc, Cs = lpeg.C, lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Carg, lpeg.Cc, lpeg.Cs
 local patterns, lpegmatch, is_lpeg = lpeg.patterns, lpeg.match, lpeg.is_lpeg
-
-local context, commands = context, commands
 
 local trace_visualize      = false  trackers.register("buffers.visualize", function(v) trace_visualize = v end)
 local report_visualizers   = logs.reporter("buffers","visualizers")
@@ -29,6 +29,9 @@ visualizers                = visualizers or { }
 local specifications       = allocate()
 visualizers.specifications = specifications
 
+local context              = context
+local commands             = commands
+
 local tabtospace           = utilities.strings.tabtospace
 local variables            = interfaces.variables
 local settings_to_array    = utilities.parsers.settings_to_array
@@ -38,6 +41,8 @@ local addsuffix            = file.addsuffix
 
 local v_auto               = variables.auto
 local v_yes                = variables.yes
+local v_last               = variables.last
+local v_all                = variables.all
 
 -- beware, all macros have an argument:
 
@@ -568,7 +573,7 @@ local function realign(lines,strip) -- "yes", <number>
     if strip == v_yes then
         n = math.huge
         for i=1, #lines do
-            local spaces = find(lines[i],"%S")
+            local spaces = find(lines[i],"%S") -- can be lpeg
             if not spaces then
                 -- empty line
             elseif spaces == 0 then
@@ -592,11 +597,13 @@ local function realign(lines,strip) -- "yes", <number>
     return lines
 end
 
+local onlyspaces = S(" \t\f\n\r")^0 * P(-1)
+
 local function getstrip(lines,first,last)
     local first, last = first or 1, last or #lines
     for i=first,last do
         local li = lines[i]
-        if #li == 0 or find(li,"^%s*$") then
+        if #li == 0 or lpegmatch(onlyspaces,li) then
             first = first + 1
         else
             break
@@ -604,7 +611,7 @@ local function getstrip(lines,first,last)
     end
     for i=last,first,-1 do
         local li = lines[i]
-        if #li == 0 or find(li,"^%s*$") then
+        if #li == 0 or lpegmatch(onlyspaces,li) then
             last = last - 1
         else
             break
@@ -730,14 +737,21 @@ end
 -- parser so we use lpeg.
 --
 -- [[\text ]]  [[\text{}]]  [[\text \text ]]  [[\text \\ \text ]]
+--
+-- needed in e.g. tabulate (manuals)
 
------ strip = Cs((P(" ")^1 * P(-1)/"" + 1)^0)
-local strip = Cs((P("\\") * ((1-S("\\ "))^1) * (P(" ")/"") + 1)^0) --
+local compact_all  = Cs((P("\\") * ((1-S("\\ "))^1) * (P(" ")/"") * (P(-1) + S("[{")) + 1)^0)
+local compact_last = Cs((P(" ")^1 * P(-1)/"" + 1)^0)
 
 function commands.typestring(settings)
     local content = settings.data
     if content and content ~= "" then
-        content = #content > 1 and lpegmatch(strip,content) or content -- can be an option, but needed in e.g. tabulate
+        local compact = settings.compact
+        if compact == v_all then
+            content = lpegmatch(compact_all,content)
+        elseif compact == v_last then
+            content = lpegmatch(compact_last,content)
+        end
      -- content = decodecomment(content)
      -- content = dotabs(content,settings)
         visualize(content,checkedsettings(settings,"inline"))

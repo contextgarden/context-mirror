@@ -6454,6 +6454,34 @@ return {
   },
  },
  ["constants"]={
+  -- select/simplefonts
+  ["regularfont"]        ={ ["en"]="regularfont" },
+  ["boldfont"]           ={ ["en"]="boldfont" },
+  ["italicfont"]         ={ ["en"]="italicfont" },
+  ["slantedfont"]        ={ ["en"]="slantedfont" },
+  ["bolditalicfont"]     ={ ["en"]="bolditalicfont" },
+  ["boldslantedfont"]    ={ ["en"]="boldslantedfont" },
+  ["smallcapsfont"]      ={ ["en"]="smallcapsfont" },
+  ["features"]           ={ ["en"]="features" },
+  ["regularfeatures"]    ={ ["en"]="regularfeatures" },
+  ["boldfeatures"]       ={ ["en"]="boldfeatures" },
+  ["italicfeatures"]     ={ ["en"]="italicfeatures" },
+  ["slantedfeatures"]    ={ ["en"]="slantedfeatures" },
+  ["bolditalicfeatures"] ={ ["en"]="bolditalicfeatures" },
+  ["boldslantedfeatures"]={ ["en"]="boldslantedfeatures" },
+  ["smallcapsfeatures"]  ={ ["en"]="smallcapsfeatures" },
+  ["opticalsize"]        ={ ["en"]="opticalsize" },
+  ["goodies"]            ={ ["en"]="goodies" },
+  ["check"]              ={ ["en"]="check" },
+  --
+  ["separatorcolor"]={
+   ["en"]="separatorcolor",
+   ["nl"]="scheiderkleur",
+  },
+  ["separatorstyle"]={
+   ["en"]="separatorstyle",
+   ["nl"]="scheiderletter",
+  },
   ["less"]={
    ["en"]="less",
    ["nl"]="minder",
@@ -6981,6 +7009,10 @@ return {
    ["nl"]="kopvoor",
    ["pe"]="قبل‌ازسر",
    ["ro"]="inaintetitlu",
+  },
+  ["concerns"]={
+   ["en"]="concerns",
+   ["nl"]="betreft",
   },
   ["bet"]={
    ["cs"]="bet",
@@ -8361,6 +8393,10 @@ return {
    ["pe"]="آیتمها",
    ["ro"]="elemente",
   },
+  ["mark"]={
+   ["en"]="mark",
+   ["nl"]="kernmerk",
+  },
   ["ken"]={
    ["cs"]="ken",
    ["de"]="ken",
@@ -8923,6 +8959,32 @@ return {
    ["nl"]="minbreedte",
    ["pe"]="کمترین‌عرض",
    ["ro"]="latimeminima",
+  },
+  ["moffset"]={
+   ["cs"]="moffset",
+   ["de"]="moffset",
+   ["en"]="moffset",
+   ["fr"]="moffset",
+   ["it"]="moffset",
+   ["nl"]="moffset",
+   ["pe"]="moffset",
+   ["ro"]="moffset",
+  },
+  ["mpwidth"]={
+   ["en"]="mpwidth",
+   ["nl"]="mpbreedte",
+  },
+  ["mpheight"]={
+   ["en"]="mpheight",
+   ["nl"]="mphoogte",
+  },
+  ["mpdepth"]={
+   ["en"]="mpdepth",
+   ["nl"]="mpdiepte",
+  },
+  ["mpoffset"]={
+   ["en"]="mpoffset",
+   ["nl"]="mpoffset",
   },
   ["monthconversion"]={
    ["en"]="monthconversion",
@@ -10363,8 +10425,14 @@ return {
    ["pe"]="بست",
    ["ro"]="strut",
   },
+  ["mathclass"]={
+   ["en"]="mathclass",
+  },
   ["mathstyle"]={
    ["en"]="mathstyle",
+  },
+  ["mathlimits"]={
+   ["en"]="mathlimits",
   },
   ["style"]={
    ["cs"]="pismeno",
@@ -11325,6 +11393,15 @@ return {
   },
  },
  ["variables"]={
+  ["math"]={
+   ["en"]="math",
+  },
+  ["selectfont"]={
+    ["en"]="selectfont",
+  },
+  ["simplefonts"]={
+    ["en"]="simplefonts",
+  },
   ["more"]={
    ["en"]="more",
    ["nl"]="meer",

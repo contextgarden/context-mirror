@@ -48,4 +48,4 @@ def end =
   ; message "" ; message metafunversion ; message "" ; normalend ;
 enddef ;
 
-dump ; % obsolete in mplib
+% dump ; % obsolete in mplib

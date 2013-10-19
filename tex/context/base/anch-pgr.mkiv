@@ -254,7 +254,7 @@
   {\vbox to \overlayheight
      {%\writestatus{!!!}{\currentpositionoverlay/\MPanchoridentifier/\MPanchornumber}%
       \edef\MPanchorid{\currentpositionoverlay::\MPanchoridentifier:\MPanchornumber}% realpageno
-%       \edef\MPanchor##1{\MPpos\MPanchorid}%
+    % \edef\MPanchor##1{\MPpos\MPanchorid}%
       \let\MPanchor\MPoverlayanchor % no need to fetch it already, seldom used
       \the\everyinsertpositionaction
       \copyposition{\currentpositionoverlay::\MPanchoridentifier}\MPanchorid
@@ -443,6 +443,8 @@
   {\ifnum\MPp{#1}=\realpageno\relax % extra saveguard
      \def\currentposition{#1}\MPpositiongraphic{#2}{#3}%
    \fi}
+
+\let\anch_positions_meta_graphic_handle_indeed\relax
 
 \appendtoks
     \let\anch_positions_meta_graphic_handle_indeed\anch_positions_meta_graphic_insert

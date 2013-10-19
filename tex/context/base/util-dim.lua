@@ -22,6 +22,8 @@ local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
 local formatters        = string.formatters
 
+local texget            = tex and tex.get or function() return 65536*10*100 end
+
 --this might become another namespace
 
 number = number or { }
@@ -137,7 +139,7 @@ capture takes place.</p>
 --ldx]]--
 
 local amount = (S("+-")^0 * R("09")^0 * P(".")^0 * R("09")^0) + Cc("0")
-local unit   = R("az")^1
+local unit   = R("az")^1 + P("%")
 
 local dimenpair = amount/tonumber * (unit^1/dimenfactors + Cc(1)) -- tonumber is new
 
@@ -376,10 +378,10 @@ function dimen(a)
                 a = k
             else
                 local value, unit = lpegmatch(dimenpair,a)
-                if type(unit) == "function" then
-                    k = value/unit()
+                if value and unit then
+                    k = value/unit -- to be considered: round
                 else
-                    k = value/unit
+                    k = 0
                 end
                 known[a] = k
                 a = k
@@ -412,16 +414,16 @@ function string.todimen(str) -- maybe use tex.sp when available
     end
 end
 
---~ local known = { }
-
---~ function string.todimen(str) -- maybe use tex.sp
---~     local k = known[str]
---~     if not k then
---~         k = tex.sp(str)
---~         known[str] = k
---~     end
---~     return k
---~ end
+-- local known = { }
+--
+-- function string.todimen(str) -- maybe use tex.sp
+--     local k = known[str]
+--     if not k then
+--         k = tex.sp(str)
+--         known[str] = k
+--     end
+--     return k
+-- end
 
 stringtodimen = string.todimen -- local variable defined earlier
 
@@ -439,7 +441,7 @@ probably use a hash instead of a one-element table.</p>
 --ldx]]--
 
 function number.percent(n,d) -- will be cleaned up once luatex 0.30 is out
-    d = d or tex.hsize
+    d = d or texget("hsize")
     if type(d) == "string" then
         d = stringtodimen(d)
     end

@@ -13,7 +13,7 @@
 
 %D The Bacho\TeX\ 2013 style.
 
-\setupbodyfont[palatino,14.4pt]
+\setupbodyfont[pagella,14.4pt]
 
 \setuppapersize[S6][S6]
 
@@ -64,8 +64,22 @@
     -\topspace
 ]
 
-\definemeasure [topiclistfont] [\measured{topiclistwidth}/10]
-\definemeasure [titlepagefont] [2\measured{layoutunit}]
+\definemeasure [topiclistfontsize] [
+    \ifcase\numexpr\structurelistsize\relax 2.5            %  0
+    \or1.4\or1.4\or1.4\or1.4\or1.4\or1.4\or1.4\or1.4\or1.4 %  1 -  9
+    \or1.3\or1.3\or1.3\or1.3\or1.3\or1.3\or1.3             % 10 - 16
+    \or1.2\or1.2\or1.2\or1.2\or1.2                         % 17 - 20
+    \else1                                                 % 21 - 25
+    \fi
+    \bodyfontsize
+]
+
+\definemeasure [topiclistfont]  [\measured{topiclistfontsize}]
+\definemeasure [topictitlefont] [1.2\measured{layoutunit}]
+\definemeasure [titlepagefont]  [2\measured{layoutunit}]
+
+\predefinefont[MyTopicTitleFont][SerifBold*default at \measure{topictitlefont}]
+\predefinefont[MyTopicListFont] [SerifBold*default at \measure{topiclistfont}]
 
 \defineframed
   [topiclistentry]
@@ -73,7 +87,7 @@
    height=\measure{topiclistheight},
    background=color,
    frame=off,
-   foregroundstyle={\definedfont[Bold at \measure{topiclistfont}]},
+   foregroundstyle=MyTopicListFont,
    backgroundcolor=primarycolor,
    foregroundcolor=white]
 
@@ -107,8 +121,6 @@
     \vfill
     \stoptopicmakeup
 \stopsetups
-
-\predefinefont[MyTopicTitleFont][SerifBold*default at \measure{layoutunit}]
 
 \definehead
   [topic]
@@ -215,6 +227,15 @@
 \defineoverlay[setbuttons][\directsetup{document:buttons}]
 
 % end of buttons
+
+\defineframed
+  [conclusion]
+  [location=low,
+   width=max,
+   align={flushleft,lohi},
+   background=color,
+   backgroundcolor=white,
+   foregroundcolor=secondarycolor]
 
 \startsetups [document:titlepage]
 

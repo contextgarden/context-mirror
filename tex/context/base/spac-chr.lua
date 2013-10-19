@@ -14,19 +14,22 @@ local byte, lower = string.byte, string.lower
 -- to be redone: characters will become tagged spaces instead as then we keep track of
 -- spaceskip etc
 
+local next = next
+
 trace_characters = false  trackers.register("typesetters.characters", function(v) trace_characters = v end)
 
 report_characters = logs.reporter("typesetting","characters")
 
 local nodes, node = nodes, node
 
-local insert_node_after  = node.insert_after
-local remove_node        = nodes.remove -- ! nodes
-local copy_node_list     = node.copy_list
+local insert_node_after  = nodes.insert_after
+local remove_node        = nodes.remove
+local copy_node_list     = nodes.copy_list
+local traverse_id        = nodes.traverse_id
 
-local nodepool           = nodes.pool
 local tasks              = nodes.tasks
 
+local nodepool           = nodes.pool
 local new_penalty        = nodepool.penalty
 local new_glue           = nodepool.glue
 
@@ -41,13 +44,17 @@ local chardata           = characters.data
 
 local typesetters        = typesetters
 
-local characters         = { }
+local unicodeblocks      = characters.blocks
+
+local characters         = typesetters.characters or { } -- can be predefined
 typesetters.characters   = characters
 
 local fonthashes         = fonts.hashes
 local fontparameters     = fonthashes.parameters
 local fontcharacters     = fonthashes.characters
 local fontquads          = fonthashes.quads
+
+local setmetatableindex  = table.setmetatableindex
 
 local a_character        = attributes.private("characters")
 local a_alignstate       = attributes.private("alignstate")
@@ -74,7 +81,6 @@ local function inject_char_space(unicode,head,current,parent)
     local font = current.font
     local char = fontcharacters[font][parent]
     local glue = new_glue(char and char.width or fontparameters[font].space)
- -- glue.attr = copy_node_list(current.attr)
     glue.attr = current.attr
     current.attr = nil
     glue[a_character] = unicode
@@ -86,15 +92,54 @@ local function inject_nobreak_space(unicode,head,current,space,spacestretch,spac
     local attr = current.attr
     local glue = new_glue(space,spacestretch,spaceshrink)
     local penalty = new_penalty(10000)
- -- glue.attr = copy_node_list(attr)
     glue.attr = attr
     current.attr = nil
- -- penalty.attr = attr
     glue[a_character] = unicode
     head, current = insert_node_after(head,current,penalty)
     head, current = insert_node_after(head,current,glue)
     return head, current
 end
+
+local function nbsp(head,current)
+    local para = fontparameters[current.font]
+    if current[a_alignstate] == 1 then -- flushright
+        head, current = inject_nobreak_space(0x00A0,head,current,para.space,0,0)
+        current.subtype = space_skip_code
+    else
+        head, current = inject_nobreak_space(0x00A0,head,current,para.space,para.spacestretch,para.spaceshrink)
+    end
+    return head, current
+end
+
+-- assumes nuts or nodes, depending on callers .. so no tonuts here
+
+function characters.replacenbsp(head,original)
+    local head, current = nbsp(head,original)
+    head = remove_node(head,original,true)
+    return head, current
+end
+
+function characters.replacenbspaces(head)
+    for current in traverse_id(glyph_code,head) do
+        if current.char == 0x00A0 then
+            local h = nbsp(head,current)
+            if h then
+                head = remove_node(h,current,true)
+            end
+        end
+    end
+    return head
+end
+
+-- This initialization might move someplace else if we need more of it. The problem is that
+-- this module depends on fonts so we have an order problem.
+
+local nbsphash = { } setmetatableindex(nbsphash,function(t,k)
+    for i=unicodeblocks.devanagari.first,unicodeblocks.devanagari.last do nbsphash[i] = true end
+    for i=unicodeblocks.kannada   .first,unicodeblocks.kannada   .last do nbsphash[i] = true end
+    setmetatableindex(nbsphash,nil)
+    return nbsphash[k]
+end)
 
 local methods = {
 
@@ -102,14 +147,23 @@ local methods = {
     -- don't have the 'local' value.
 
     [0x00A0] = function(head,current) -- nbsp
-        local para = fontparameters[current.font]
-        if current[a_alignstate] == 1 then -- flushright
-            head, current = inject_nobreak_space(0x00A0,head,current,para.space,0,0)
-            current.subtype = space_skip_code
-        else
-            head, current = inject_nobreak_space(0x00A0,head,current,para.space,para.spacestretch,para.spaceshrink)
+        local next = current.next
+        if next and next.id == glyph_code then
+            local char = next.char
+            if char == 0x200C or char == 0x200D then -- nzwj zwj
+                next = next.next
+				if next and nbsphash[next.char] then
+                    return false
+                end
+            elseif nbsphash[char] then
+                return false
+            end
         end
-        return head, current
+        local prev = current.prev
+        if prev and prev.id == glyph_code and nbsphash[prev.char] then
+            return false -- kannada
+        end
+        return nbsp(head,current)
     end,
 
     [0x2000] = function(head,current) -- enquad
@@ -187,8 +241,10 @@ function characters.handler(head)
                 if trace_characters then
                     report_characters("replacing character %C, description %a",char,lower(chardata[char].description))
                 end
-                head = method(head,current)
-                head = remove_node(head,current,true)
+                local h = method(head,current)
+                if h then
+                    head = remove_node(h,current,true)
+                end
                 done = true
             end
             current = next

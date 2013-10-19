@@ -24,7 +24,7 @@ local traverse_id        = node.traverse_id
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 
-local texattribute       = tex.attribute
+local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
 
 local nodecodes          = nodes.nodecodes
@@ -55,7 +55,6 @@ digits.actions           = { }
 local actions            = digits.actions
 
 local a_digits           = attributes.private("digits")
-digits.attribute         = a_digits
 
 -- at some point we can manipulate the glyph node so then i need
 -- to rewrite this then
@@ -83,7 +82,7 @@ function nodes.aligned(head,start,stop,width,how)
     end
 end
 
-actions[1] = function(head,start,attribute,attr)
+actions[1] = function(head,start,attr)
     local font = start.font
     local char = start.char
     local unic = chardata[font][char].tounicode
@@ -102,16 +101,16 @@ actions[1] = function(head,start,attribute,attr)
     return head, start, false
 end
 
-local function process(namespace,attribute,head)
+function digits.handler(head)
     local done, current, ok = false, head, false
     while current do
         if current.id == glyph_code then
-            local attr = current[attribute]
+            local attr = current[a_digits]
             if attr and attr > 0 then
-                current[attribute] = unsetvalue
+                current[a_digits] = unsetvalue
                 local action = actions[attr%100] -- map back to low number
                 if action then
-                    head, current, ok = action(head,current,attribute,attr)
+                    head, current, ok = action(head,current,attr)
                     done = done and ok
                 elseif trace_digits then
                     report_digits("unknown digit trigger %a",attr)
@@ -148,14 +147,8 @@ function digits.set(n) -- number or 'reset'
             n = unsetvalue
         end
     end
-    texattribute[a_digits] = n
+    texsetattribute(a_digits,n)
 end
-
-digits.handler = nodes.installattributehandler { -- we could avoid this wrapper
-    name      = "digits",
-    namespace = digits,
-    processor = process,
-}
 
 -- interface
 

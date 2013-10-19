@@ -172,7 +172,7 @@ function functions._s_(row,col,c,f,t)
     for i=f,t do
         local ci = c[i]
         if type(ci) == "number" then
-            r = r + c[i]
+            r = r + ci
         end
     end
     return r
