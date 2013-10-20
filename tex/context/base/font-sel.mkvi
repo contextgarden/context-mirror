@@ -1,6 +1,6 @@
 %D \module
 %D   [     file=font-sel,
-%D      version=2013.10.14,
+%D      version=2013.10.19,
 %D        title=\CONTEXT\ User Module,
 %D     subtitle=Selectfont,
 %D       author=Wolfgang Schuster,
@@ -115,11 +115,37 @@
      % unknown preset
    \fi}
 
-\definefontfamilypreset [r:chinese]  [\c!range={cjkcompatibilityforms,cjkcompatibilityideographs,cjkcompatibilityideographssupplement,cjkradicalssupplement,cjkstrokes,cjksymbolsandpunctuation,cjkunifiedideographs,cjkunifiedideographsextensiona,cjkunifiedideographsextensionb,halfwidthandfullwidthforms,verticalforms,bopomofo,bopomofoextended}]
-\definefontfamilypreset [r:japanese] [\c!range={cjkcompatibilityforms,cjkcompatibilityideographs,cjkcompatibilityideographssupplement,cjkradicalssupplement,cjkstrokes,cjksymbolsandpunctuation,cjkunifiedideographs,cjkunifiedideographsextensiona,cjkunifiedideographsextensionb,halfwidthandfullwidthforms,verticalforms,hiragana,katakana}]
-\definefontfamilypreset [r:korean]   [\c!range={cjkcompatibilityforms,cjkcompatibilityideographs,cjkcompatibilityideographssupplement,cjkradicalssupplement,cjkstrokes,cjksymbolsandpunctuation,cjkunifiedideographs,cjkunifiedideographsextensiona,cjkunifiedideographsextensionb,halfwidthandfullwidthforms,verticalforms,hangulcompatibilityjamo,hanguljamo,hanguljamoextendeda,hanguljamoextendedb,hangulsyllables}]
-\definefontfamilypreset [r:cyrillic] [\c!range={cyrillic,cyrillicextendeda,cyrillicextendedb,cyrillicsupplement}]
-\definefontfamilypreset [r:greek]    [\c!range={greekandcoptic,greekextended,ancientgreeknumbers}]
+\definefontfamilypreset [range:chinese]  [\c!range={cjkcompatibilityforms,cjkcompatibilityideographs,cjkcompatibilityideographssupplement,cjkradicalssupplement,cjkstrokes,cjksymbolsandpunctuation,cjkunifiedideographs,cjkunifiedideographsextensiona,cjkunifiedideographsextensionb,halfwidthandfullwidthforms,verticalforms,bopomofo,bopomofoextended}]
+\definefontfamilypreset [range:japanese] [\c!range={cjkcompatibilityforms,cjkcompatibilityideographs,cjkcompatibilityideographssupplement,cjkradicalssupplement,cjkstrokes,cjksymbolsandpunctuation,cjkunifiedideographs,cjkunifiedideographsextensiona,cjkunifiedideographsextensionb,halfwidthandfullwidthforms,verticalforms,hiragana,katakana}]
+\definefontfamilypreset [range:korean]   [\c!range={cjkcompatibilityforms,cjkcompatibilityideographs,cjkcompatibilityideographssupplement,cjkradicalssupplement,cjkstrokes,cjksymbolsandpunctuation,cjkunifiedideographs,cjkunifiedideographsextensiona,cjkunifiedideographsextensionb,halfwidthandfullwidthforms,verticalforms,hangulcompatibilityjamo,hanguljamo,hanguljamoextendeda,hanguljamoextendedb,hangulsyllables}]
+\definefontfamilypreset [range:cyrillic] [\c!range={cyrillic,cyrillicextendeda,cyrillicextendedb,cyrillicsupplement}]
+\definefontfamilypreset [range:greek]    [\c!range={greekandcoptic,greekextended,ancientgreeknumbers}]
+
+\definefontfamilypreset [math:digitsnormal]             [\c!range=digitsnormal]
+\definefontfamilypreset [math:digitsbold]               [\c!range=digitsnormal,\c!offset=digitsbold,\s!tf=style:bold]
+
+\definefontfamilypreset [math:uppercasenormal]          [\c!range=uppercasenormal]
+\definefontfamilypreset [math:uppercaseitalic]          [\c!range=uppercasenormal,\c!offset=uppercaseitalic,    \s!tf=style:italic]
+\definefontfamilypreset [math:uppercasebold]            [\c!range=uppercasenormal,\c!offset=uppercasebold,      \s!tf=style:bold]
+\definefontfamilypreset [math:uppercasebolditalic]      [\c!range=uppercasenormal,\c!offset=uppercasebolditalic,\s!tf=style:bolditalic]
+
+\definefontfamilypreset [math:lowercasenormal]          [\c!range=lowercasenormal]
+\definefontfamilypreset [math:lowercaseitalic]          [\c!range=lowercasenormal,\c!offset=lowercaseitalic,    \s!tf=style:italic]
+\definefontfamilypreset [math:lowercasebold]            [\c!range=lowercasenormal,\c!offset=lowercasebold,      \s!tf=style:bold]
+\definefontfamilypreset [math:lowercasebolditalic]      [\c!range=lowercasenormal,\c!offset=lowercasebolditalic,\s!tf=style:bolditalic]
+
+\definefontfamilypreset [math:mathematicaloperators]    [\c!range=mathematicaloperators]
+
+\definefontfamilypreset [math:lowercasegreeknormal]     [\c!range=lowercasegreeknormal]
+\definefontfamilypreset [math:lowercasegreekitalic]     [\c!range=lowercasegreeknormal,\c!offset=lowercasegreekitalic,    \s!tf=style:italic]
+\definefontfamilypreset [math:lowercasegreekbold]       [\c!range=lowercasegreeknormal,\c!offset=lowercasegreekbold,      \s!tf=style:bold]
+\definefontfamilypreset [math:lowercasegreekbolditalic] [\c!range=lowercasegreeknormal,\c!offset=lowercasegreekbolditalic,\s!tf=style:bolditalic]
+
+\definefontfamilypreset [math:uppercasegreeknormal]     [\c!range=uppercasegreeknormal]
+\definefontfamilypreset [math:uppercasegreekitalic]     [\c!range=uppercasegreeknormal,\c!offset=uppercasegreekitalic,    \s!tf=style:italic]
+\definefontfamilypreset [math:uppercasegreekbold]       [\c!range=uppercasegreeknormal,\c!offset=uppercasegreekbold,      \s!tf=style:bold]
+\definefontfamilypreset [math:uppercasegreekbolditalic] [\c!range=uppercasegreeknormal,\c!offset=uppercasegreekbolditalic,\s!tf=style:bolditalic]
+
 
 %D \macros
 %D   {defineselectfontalternative}

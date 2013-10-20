@@ -1575,12 +1575,17 @@ statistics.register("xml load time", function()
 end)
 
 statistics.register("lxml preparation time", function()
-    local calls, cached = xml.lpathcalls(), xml.lpathcached()
-    if calls > 0 or cached > 0 then
-        return format("%s seconds, %s nodes, %s lpath calls, %s cached calls",
-            statistics.elapsedtime(lxml), nofindices, calls, cached)
+    if noffiles > 0 or nofconverted > 0 then
+        local calls  = xml.lpathcalls()
+        local cached = xml.lpathcached()
+        if calls > 0 or cached > 0 then
+            return format("%s seconds, %s nodes, %s lpath calls, %s cached calls",
+                statistics.elapsedtime(lxml), nofindices, calls, cached)
+        else
+            return nil
+        end
     else
-        return nil
+        -- pretty close to zero so not worth mentioning
     end
 end)
 

@@ -589,14 +589,16 @@ local function definemathfontfallback(data,alternative,index)
     if index == 1 then
         context.resetfontfallback( { fallback } )
     end
-    for _, entry in next, fontdata do
-        local filename   = entry["filename"]
-        local designsize = entry["designsize"] or 100
-        if designsize == 100 or designsize == 120 or designsize == 0 then
-            context.definefontfallback( { fallback }, { formatters["%s*%s"](filename,features) }, { range }, { rscale = rscale, check = check, force = force, offset = offset } )
-            break
+    if fontdata and #fontdata > 0 then
+        for _, entry in next, fontdata do
+            local filename   = entry["filename"]
+            local designsize = entry["designsize"] or 100
+            if designsize == 100 or designsize == 120 or designsize == 0 then
+                context.definefontfallback( { fallback }, { formatters["file:%s*%s"](filename,features) }, { range }, { rscale = rscale, check = check, force = force, offset = offset } )
+                break
+            end
         end
-    end        
+    end
 end
 
 local function definemathfallback(entry,index)
@@ -610,6 +612,7 @@ local function definemathfallback(entry,index)
         end
     end
     context.stopfontclass()
+    -- inspect(data)
 end
 
 local function definefallbackfont(index)
