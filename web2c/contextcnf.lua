@@ -209,6 +209,8 @@ return {
 
          -- ["pdfview.method"]           = "sumatra",
 
+         -- ["fonts.usesystemfonts"]     = false,
+
         },
 
         experiments = {

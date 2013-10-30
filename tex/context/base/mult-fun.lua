@@ -100,6 +100,6 @@ return {
         --
         "decorated", "redecorated", "undecorated",
         --
-        "passvariable",
+        "passvariable", "tostring"
     },
 }

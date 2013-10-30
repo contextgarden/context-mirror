@@ -841,3 +841,27 @@ def passvariable(expr key, value) =
         else                   : "2:" & key & "=" & value
         fi ;
 enddef ;
+
+vardef tostring(expr value) =
+    if     numeric   value : mfun_numeric_to_string(value)
+    elseif pair      value : mfun_pair_to_string(value)
+    elseif rgbcolor  value : mfun_rgbcolor_to_string(value)
+    elseif cmykcolor value : mfun_cmykcolor_to_string(value)
+    elseif boolean   value : mfun_boolean_to_string(value)
+    elseif path      value : mfun_path_to_string(value)
+    elseif transform value : mfun_transform_to_string(value)
+    else                   : value
+    fi
+enddef ;
+
+vardef mfun_tagged_string(expr value) =
+    if     numeric   value : "1:" & mfun_numeric_to_string(value)
+    elseif pair      value : "4:" & mfun_pair_to_string(value)
+    elseif rgbcolor  value : "5:" & mfun_rgbcolor_to_string(value)
+    elseif cmykcolor value : "6:" & mfun_cmykcolor_to_string(value)
+    elseif boolean   value : "3:" & mfun_boolean_to_string(value)
+    elseif path      value : "7:" & mfun_path_to_string(value)
+    elseif transform value : "8:" & mfun_transform_to_string(value)
+    else                   : "2:" & value
+    fi
+enddef ;

@@ -276,13 +276,31 @@ local key      = C((1-equal)^1) * equal
 local newline  = S("\n\r")^1
 local number   = (((1-space-newline)^1) / tonumber) * (space^0)
 local variable =
-    lpeg.P("1:")            * key * number
-  + lpeg.P("2:")            * key * C((1-newline)^0)
-  + lpeg.P("3:")            * key * (P("false") * Cc(false) + P("true") * Cc(true))
-  + lpeg.S("4568") * P(":") * key * Ct(number^1)
-  + lpeg.P("7:")            * key * Ct(Ct(number * number^-5)^1)
+    P("1:")            * key * number
+  + P("2:")            * key * C((1-newline)^0)
+  + P("3:")            * key * (P("false") * Cc(false) + P("true") * Cc(true))
+  + S("4568") * P(":") * key * Ct(number^1)
+  + P("7:")            * key * Ct(Ct(number * number^-5)^1)
 
-local pattern = Cf ( Carg(1) * (Cg(variable * newline^0)^0), rawset)
+local pattern_key = Cf ( Carg(1) * (Cg(variable * newline^0)^0), rawset)
+
+local variable =
+    P("1:")            * number
+  + P("2:")            * C((1-newline)^0)
+  + P("3:")            * (P("false") * Cc(false) + P("true") * Cc(true))
+  + S("4568") * P(":") * Ct(number^1)
+  + P("7:")            * Ct(Ct(number * number^-5)^1)
+
+local pattern_tab = Cf ( Carg(1) * (Cg(variable * newline^0)^0), rawset)
+
+local variable =
+    P("1:")            * number
+  + P("2:")            * C((1-newline)^0)
+  + P("3:")            * (P("false") * Cc(false) + P("true") * Cc(true))
+  + S("4568") * P(":") * number^1
+  + P("7:")            * (number * number^-5)^1
+
+local pattern_lst = (variable * newline^0)^0
 
 metapost.variables = { } -- to be stacked
 metapost.llx       = 0   -- to be stacked
@@ -290,7 +308,7 @@ metapost.lly       = 0   -- to be stacked
 metapost.urx       = 0   -- to be stacked
 metapost.ury       = 0   -- to be stacked
 
-function commands.mprunvar(key,n)
+function commands.mprunvar(key,n) -- should be defined in another lib
     local value = metapost.variables[key]
     if value ~= nil then
         local tvalue = type(value)
@@ -308,6 +326,14 @@ function commands.mprunvar(key,n)
         elseif tvalue == "string" then
             context(value)
         end
+    end
+end
+
+function metapost.untagvariable(str,variables)
+    if variables == false then
+        return lpegmatch(pattern_lst,str)
+    else
+        return lpegmatch(pattern_tab,str,1,variables or { })
     end
 end
 
@@ -366,7 +392,7 @@ function metapost.flush(result,flusher,askedfig)
                                 if objecttype == "start_bounds" or objecttype == "stop_bounds" then
                                     -- skip
                                 elseif objecttype == "special" then
-                                    lpegmatch(pattern,object.prescript,1,variables)
+                                    lpegmatch(pattern_key,object.prescript,1,variables)
                                 elseif objecttype == "start_clip" then
                                     t[#t+1] = "q"
                                     flushnormalpath(object.path,t,false)

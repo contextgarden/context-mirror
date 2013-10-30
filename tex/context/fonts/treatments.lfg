@@ -64,6 +64,10 @@ return {
             comment = "a text file with suffix ttf", -- used in test file
             ignored = true,
         },
+        ["lingoes.ttf"] = {
+            comment = "bugged file",
+            ignored = true,
+        },
         -- harmless example
      -- ["copperplatethirtythreebc.ttf"] = {
      --     comment = "hangs and has no hyphen",

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/20/13 07:09:03
+-- merge date  : 10/30/13 13:30:14
 
 do -- begin closure to overcome local limits and interference
 
@@ -6334,7 +6334,7 @@ local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
 otf.glists={ "gsub","gpos" }
-otf.version=2.745 
+otf.version=2.747 
 otf.cache=containers.define("fonts","otf",otf.version,true)
 local fontdata=fonts.hashes.identifiers
 local chardata=characters and characters.data 
@@ -7204,14 +7204,6 @@ local g_directions={
   gsub_reversecontextchain=-1,
   gpos_reversecontextchain=-1,
 }
-local function supported(features)
-  for i=1,#features do
-    if features[i].ismac then
-      return false
-    end
-  end
-  return true
-end
 actions["reorganize subtables"]=function(data,filename,raw)
   local resources=data.resources
   local sequences={}
@@ -7225,7 +7217,6 @@ actions["reorganize subtables"]=function(data,filename,raw)
       for k=1,#dw do
         local gk=dw[k]
         local features=gk.features
-        if not features or supported(features) then 
           local typ=gk.type
           local chain=g_directions[typ] or 0
           local subtables=gk.subtables
@@ -7288,7 +7279,6 @@ actions["reorganize subtables"]=function(data,filename,raw)
               markclass=markclass,
             }
           end
-        end
       end
     end
   end
@@ -10901,6 +10891,10 @@ local function show_skip(kind,chainname,char,ck,class)
     logwarning("%s: skipping char %s, class %a, rule %a, lookuptype %a",cref(kind,chainname),gref(char),class,ck[1],ck[2])
   end
 end
+local quit_on_no_replacement=true
+directives.register("otf.chain.quitonnoreplacement",function(value) 
+  quit_on_no_replacement=value
+end)
 local function normal_handle_contextchain(head,start,kind,chainname,contexts,sequence,lookuphash)
   local flags=sequence.flags
   local done=false
@@ -11171,7 +11165,7 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
         if replacements then
           head,start,done=chainprocs.reversesub(head,start,last,kind,chainname,ck,lookuphash,replacements) 
         else
-          done=true 
+          done=quit_on_no_replacement 
           if trace_contexts then
             logprocess("%s: skipping match",cref(kind,chainname))
           end
