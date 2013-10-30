@@ -20,6 +20,7 @@ local virtualcharacters = { }
 
 local identifiers       = fonts.hashes.identifiers
 local lastmathids       = fonts.hashes.lastmathids
+local tounicode16       = fonts.mappings.tounicode16
 
 -- we need a trick (todo): if we define scriptscript, script and text in
 -- that order we could use their id's .. i.e. we could always add a font
@@ -503,29 +504,32 @@ virtualcharacters[0xFE935] = function(data) return smashed(data,0x02035,true) en
 virtualcharacters[0xFE936] = function(data) return smashed(data,0x02036,true) end
 virtualcharacters[0xFE937] = function(data) return smashed(data,0x02037,true) end
 
--- actuarian
+-- actuarian (beware: xits has an ugly one)
 
-virtualcharacters[0x020E7] = function(data)
+addextra(0xFE940, { category = "mn", description="SMALL ANNUITY SYMBOL", unicodeslot=0xFE940, mathclass="topaccent", mathname="smallactuarial" })
+
+local function actuarian(data)
     local characters = data.target.characters
- -- if characters[0x020E7] then
- --     -- we cannot assume that the character is useable
- -- else
-        local parameters = data.target.parameters
-        local basechar   = characters[0x0078] -- x (0x0058 X)
-        local linewidth  = parameters.xheight / 10
-        local basewidth  = basechar.width
-        local baseheight = basechar.height
-        return {
-            -- compromise: lm has large hooks e.g. \actuarial{a}
-            commands = {
-                { "right", 2 * linewidth },
-                { "down", - baseheight - 3 * linewidth },
-                { "rule", linewidth, basewidth + 4 * linewidth },
-                { "right", -linewidth },
-                { "down", baseheight + 4 * linewidth },
-                { "rule", baseheight + 5 * linewidth, linewidth },
-            },
-            width = basewidth + 4 * linewidth,
-        }
- -- end
+    local parameters = data.target.parameters
+    local basechar   = characters[0x0078] -- x (0x0058 X)
+    local linewidth  = parameters.xheight / 10
+    local basewidth  = basechar.width
+    local baseheight = basechar.height
+    return {
+        -- todo: add alttext
+        -- compromise: lm has large hooks e.g. \actuarial{a}
+        width     = basewidth + 4 * linewidth,
+        tounicode = tounicode16(0x20E7),
+        commands  = {
+            { "right", 2 * linewidth },
+            { "down", - baseheight - 3 * linewidth },
+            { "rule", linewidth, basewidth + 4 * linewidth },
+            { "right", -linewidth },
+            { "down", baseheight + 4 * linewidth },
+            { "rule", baseheight + 5 * linewidth, linewidth },
+        },
+    }
 end
+
+virtualcharacters[0x020E7] = actuarian -- checked
+virtualcharacters[0xFE940] = actuarian -- unchecked
