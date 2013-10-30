@@ -48,7 +48,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.745 -- beware: also sync font-mis.lua
+otf.version              = 2.747 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -1056,20 +1056,21 @@ local g_directions = {
     gsub_reversecontextchain = -1,
     gpos_reversecontextchain = -1,
 }
-
--- Research by Khaled Hosny has demonstrated that the font loader merges
--- regular and AAT features and that these can interfere (especially because
--- we dropped checking for valid features elsewhere. So, we just check for
--- the special flag and drop the feature if such a tag is found.
-
-local function supported(features)
-    for i=1,#features do
-        if features[i].ismac then
-            return false
-        end
-    end
-    return true
-end
+-- The following is no longer needed as AAT is ignored per end October 2013.
+--
+-- -- Research by Khaled Hosny has demonstrated that the font loader merges
+-- -- regular and AAT features and that these can interfere (especially because
+-- -- we dropped checking for valid features elsewhere. So, we just check for
+-- -- the special flag and drop the feature if such a tag is found.
+--
+-- local function supported(features)
+--     for i=1,#features do
+--         if features[i].ismac then
+--             return false
+--         end
+--     end
+--     return true
+-- end
 
 actions["reorganize subtables"] = function(data,filename,raw)
     local resources       = data.resources
@@ -1084,8 +1085,7 @@ actions["reorganize subtables"] = function(data,filename,raw)
             for k=1,#dw do
                 local gk = dw[k]
                 local features = gk.features
---              if features and supported(features) then
-                if not features or supported(features) then -- not always features !
+             -- if not features or supported(features) then -- not always features !
                     local typ = gk.type
                     local chain = g_directions[typ] or 0
                     local subtables = gk.subtables
@@ -1152,7 +1152,7 @@ actions["reorganize subtables"] = function(data,filename,raw)
                             markclass = markclass,
                         }
                     end
-                end
+             -- end
             end
         end
     end

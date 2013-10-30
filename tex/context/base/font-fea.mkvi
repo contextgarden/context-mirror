@@ -286,7 +286,7 @@
 \unexpanded\def\featureattribute#feature%
   {\ctxcommand{featureattribute("#feature")}}
 
-\unexpanded\def\setfontfeature  #feature%
+\unexpanded\def\setfontfeature#feature%
   {\edef\currentfeature{#feature}%
    \let\m_font_feature_list\currentfeature
    \ctxcommand{setfontfeature("\currentfeature")}}

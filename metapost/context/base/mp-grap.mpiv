@@ -359,7 +359,7 @@ vardef graph_set_bounds@#(expr l, h) =
   graph_clear_bounds@# ;
   if @#graph_coordinate_type>0 :
      @#low  = if unknown l :
-                whatever 
+                whatever
               else :
                 if abs @#graph_coordinate_type=log : graph_mlog fi if string l : scantokens fi l
               fi ;
@@ -369,7 +369,7 @@ vardef graph_set_bounds@#(expr l, h) =
                 if abs @#graph_coordinate_type=log : graph_mlog fi if string h : scantokens fi h
               fi ;
   else :
-    -@#high = if unknown l : 
+    -@#high = if unknown l :
                 whatever
               else :
                 if abs @#graph_coordinate_type=log : graph_mlog fi if string l : scantokens fi l
@@ -1075,6 +1075,8 @@ enddef ;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% we could pass via variables and save escaping
+
 Ten_to0 =     1 ;
 Ten_to1 =    10 ;
 Ten_to2 =   100 ;
@@ -1082,7 +1084,7 @@ Ten_to3 =  1000 ;
 Ten_to4 = 10000 ;
 
 vardef escaped_format(expr s) =
-    "" for n=1 upto length(s) : &
+    "" for n=0 upto length(s) : &
         if ASCII substring (n,n+1) of s = 37 :
             "@"
         else :
@@ -1092,7 +1094,7 @@ vardef escaped_format(expr s) =
 enddef ;
 
 vardef strfmt(expr f, x) =
-    "\MPgraphformat{" & escaped_format(f) & "}{" & (if string x : x else : decimal x fi) & "}"
+    "\MPgraphformat{" & escaped_format(f) & "}{" & mfun_tagged_string(x) & "}"
 enddef ;
 
 vardef format(expr f, x) = textext(strfmt(f, x)) enddef ;

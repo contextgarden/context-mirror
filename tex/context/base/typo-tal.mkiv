@@ -109,4 +109,27 @@
 \def\setfirstpasscharacteralign {\let\checkcharacteralign\gobbleoneargument}
 \def\setsecondpasscharacteralign{\let\checkcharacteralign\firstofoneargument}
 
+%D We need fonts to provide tabular digits that is, the digits need to have the same
+%D width.
+
+\definefontfeature
+  [system:tabnum]
+  [tnum=yes,
+   lnum=no]
+
+\newconditional\c_tabl_ntb_char_align_auto_font \settrue\c_tabl_ntb_char_align_auto_font
+
+\installtexdirective % yes or no ?
+  {typesetters.characteralign.autofont}
+  {\settrue \c_tabl_ntb_char_align_auto_font}
+  {\setfalse\c_tabl_ntb_char_align_auto_font}
+
+\def\m_font_feature_auto_tabnum{system:tabnum}
+
+\def\typo_charalign_adapt_font % slow but seldom used
+  {\ifconditional\c_tabl_ntb_char_align_auto_font
+     \let\m_font_feature_asked\m_font_feature_auto_tabnum
+     \font_feature_reset_add_indeed
+   \fi}
+
 \protect \endinput

@@ -452,7 +452,6 @@ characters.data={
   adobename="slash",
   category="po",
   cjkwd="na",
-  comment="mathsymbol=0x2044",
   contextname="textslash",
   description="SOLIDUS",
   direction="cs",
@@ -460,11 +459,13 @@ characters.data={
   mathspec={
    {
     class="middle",
-    unicode=0x2044,
+ -- unicode=0x2044,
+ -- unicode=0x2215,
    },
    {
     class="ordinary",
-    unicode=0x2044,
+ -- unicode=0x2044,
+ -- unicode=0x2215,
    },
   },
   unicodeslot=0x002F,
@@ -58822,6 +58823,8 @@ characters.data={
   category="mn",
   description="COMBINING ANNUITY SYMBOL",
   direction="nsm",
+  mathclass="topaccent",
+  mathname="actuarial",
   linebreak="cm",
   unicodeslot=0x20E7,
  },

@@ -41,37 +41,39 @@ local trace_names          = false  trackers.register("fonts.names",          fu
 local trace_warnings       = false  trackers.register("fonts.warnings",       function(v) trace_warnings       = v end)
 local trace_specifications = false  trackers.register("fonts.specifications", function(v) trace_specifications = v end)
 
-local report_names      = logs.reporter("fonts","names")
+local report_names         = logs.reporter("fonts","names")
 
 --[[ldx--
 <p>This module implements a name to filename resolver. Names are resolved
 using a table that has keys filtered from the font related files.</p>
 --ldx]]--
 
-fonts            = fonts or { } -- also used elsewhere
+fonts                      = fonts or { } -- also used elsewhere
 
-local names      = font.names or allocate { }
-fonts.names      = names
+local names                = font.names or allocate { }
+fonts.names                = names
 
-local filters    = names.filters or { }
-names.filters    = filters
+local filters              = names.filters or { }
+names.filters              = filters
 
-local treatments = names.treatments or { }
-names.treatments = treatments
+local treatments           = fonts.treatments or { }
+fonts.treatments           = treatments
 
-names.data       = names.data or allocate { }
+names.data                 = names.data or allocate { }
 
-names.version    = 1.123
-names.basename   = "names"
-names.saved      = false
-names.loaded     = false
-names.be_clever  = true
-names.enabled    = true
-names.cache      = containers.define("fonts","data",names.version,true)
+names.version              = 1.123
+names.basename             = "names"
+names.saved                = false
+names.loaded               = false
+names.be_clever            = true
+names.enabled              = true
+names.cache                = containers.define("fonts","data",names.version,true)
 
-local autoreload = true
+local usesystemfonts       = true
+local autoreload           = true
 
-directives.register("fonts.autoreload", function(v) autoreload = toboolean(v) end)
+directives.register("fonts.autoreload",     function(v) autoreload     = toboolean(v) end)
+directives.register("fonts.usesystemfonts", function(v) usesystemfonts = toboolean(v) end)
 
 --[[ldx--
 <p>A few helpers.</p>
@@ -979,7 +981,9 @@ local function analyzefiles(olddata)
         walk_tree(names.getpaths(trace),suffix,identify)
     end
     traverse("tree",withtree) -- TEXTREE only
-    if texconfig.kpse_init then
+    if not usesystemfonts then
+        report_names("ignoring system fonts")
+    elseif texconfig.kpse_init then
         traverse("lsr", withlsr)
     else
         traverse("system", withsystem)

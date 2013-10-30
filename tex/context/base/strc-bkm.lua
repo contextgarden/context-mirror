@@ -85,7 +85,7 @@ end
 local function stripped(str) -- kind of generic
     str = gsub(str,"\\([A-Z]+)","%1")            -- \LOGO
     str = gsub(str,"\\ "," ")                    -- \
-    str = gsub(str,"\\([A-Za-z]+) *{(.-)}","%1") -- \bla{...}
+    str = gsub(str,"\\([A-Za-z]+) *{(.-)}","%2") -- \bla{...}
     str = gsub(str," +"," ")                     -- spaces
     return str
 end

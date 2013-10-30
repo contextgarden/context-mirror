@@ -372,7 +372,7 @@ setmetatableindex(cache,function(t,a)
     setmetatableindex(v,function(t,c)
         local v = "colorscheme:" .. a .. ":" .. c
         t[c] = v
-        return c
+        return v
     end)
     t[a]= v
     return v

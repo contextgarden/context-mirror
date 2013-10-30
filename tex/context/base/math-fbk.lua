@@ -503,3 +503,29 @@ virtualcharacters[0xFE935] = function(data) return smashed(data,0x02035,true) en
 virtualcharacters[0xFE936] = function(data) return smashed(data,0x02036,true) end
 virtualcharacters[0xFE937] = function(data) return smashed(data,0x02037,true) end
 
+-- actuarian
+
+virtualcharacters[0x020E7] = function(data)
+    local characters = data.target.characters
+ -- if characters[0x020E7] then
+ --     -- we cannot assume that the character is useable
+ -- else
+        local parameters = data.target.parameters
+        local basechar   = characters[0x0078] -- x (0x0058 X)
+        local linewidth  = parameters.xheight / 10
+        local basewidth  = basechar.width
+        local baseheight = basechar.height
+        return {
+            -- compromise: lm has large hooks e.g. \actuarial{a}
+            commands = {
+                { "right", 2 * linewidth },
+                { "down", - baseheight - 3 * linewidth },
+                { "rule", linewidth, basewidth + 4 * linewidth },
+                { "right", -linewidth },
+                { "down", baseheight + 4 * linewidth },
+                { "rule", baseheight + 5 * linewidth, linewidth },
+            },
+            width = basewidth + 4 * linewidth,
+        }
+ -- end
+end
