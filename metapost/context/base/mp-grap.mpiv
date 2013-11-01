@@ -1075,7 +1075,7 @@ enddef ;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% we could pass via variables and save escaping
+% we could pass via variables and save escaping as that is inefficient
 
 Ten_to0 =     1 ;
 Ten_to1 =    10 ;
@@ -1083,21 +1083,30 @@ Ten_to2 =   100 ;
 Ten_to3 =  1000 ;
 Ten_to4 = 10000 ;
 
-vardef escaped_format(expr s) =
-    "" for n=0 upto length(s) : &
-        if ASCII substring (n,n+1) of s = 37 :
-            "@"
-        else :
-            substring (n,n+1) of s
-        fi
-    endfor
-enddef ;
+if unknown context_mlib :
 
-vardef strfmt(expr f, x) =
-    "\MPgraphformat{" & escaped_format(f) & "}{" & mfun_tagged_string(x) & "}"
-enddef ;
+    vardef escaped_format(expr s) =
+        "" for n=0 upto length(s) : &
+            if ASCII substring (n,n+1) of s = 37 :
+                "@"
+            else :
+                substring (n,n+1) of s
+            fi
+        endfor
+    enddef ;
 
-vardef format(expr f, x) = textext(strfmt(f, x)) enddef ;
+    vardef strfmt(expr f, x) = % maybe use mfun_ namespace
+        "\MPgraphformat{" & escaped_format(f) & "}{" & mfun_tagged_string(x) & "}"
+    enddef ;
+
+    vardef varfmt(expr f, x) = % maybe use mfun_ namespace
+        "\MPformatted{" & escaped_format(f) & "}{" & mfun_tagged_string(x) & "}"
+    enddef ;
+
+    vardef format   (expr f, x) = textext(strfmt(f,x)) enddef ;
+    vardef formatted(expr f, x) = textext(varfmt(f,x)) enddef ;
+
+fi ;
 
 % A couple of extensions :
 

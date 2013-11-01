@@ -35,20 +35,37 @@
 \starttext
 
 \startMPpage[instance=graph]
-    label(format("@g","1e-8"),  (0,       0)) ;
-    label(format("@g","1e+8"),  (2cm,     0)) ;
-    label(format("@g","1e-10"), (0,  -0.5cm)) ;
-    label(format("@g","1e+10"), (2cm,-0.5cm)) ;
-    label(format("@g","1e-12"), (0,  -1.0cm)) ;
-    label(format("@g","1e+12"), (2cm,-1.0cm)) ;
-    label(format("@g","1e-0"),  (0,  -1.5cm)) ;
-    label(format("@g","1e+0"),  (2cm,-1.5cm)) ;
-    label(format("@g","1"),     (0,  -2.0cm)) ;
-    label(format("@g","1"),     (2cm,-2.0cm)) ;
-    label(format("@g","1e-102"),(0,  -2.5cm)) ;
-    label(format("@g","1e+102"),(2cm,-2.5cm)) ;
-    label(format("@f,@f",(1.23,4.56)),(0cm,-3.0cm)) ;
-    label(format("@i,@f",(1.23,4.56)),(0cm,-3.5cm)) ;
+    label.rt(format("@g","1e-8"),  (0,       0)) ;
+    label.rt(format("@g","1e+8"),  (2cm,     0)) ;
+    label.rt(format("@g","1e-10"), (0,  -0.5cm)) ;
+    label.rt(format("@g","1e+10"), (2cm,-0.5cm)) ;
+    label.rt(format("@g","1e-12"), (0,  -1.0cm)) ;
+    label.rt(format("@g","1e+12"), (2cm,-1.0cm)) ;
+    label.rt(format("@g","1e-0"),  (0,  -1.5cm)) ;
+    label.rt(format("@g","1e+0"),  (2cm,-1.5cm)) ;
+    label.rt(format("@g","1"),     (0,  -2.0cm)) ;
+    label.rt(format("@g","1"),     (2cm,-2.0cm)) ;
+    label.rt(format("@g","1e-102"),(0,  -2.5cm)) ;
+    label.rt(format("@g","1e+102"),(2cm,-2.5cm)) ;
+    currentpicture := currentpicture shifted (-4cm,0) ;
+    %
+    label.rt(format("@j","1e-8"),  (0,       0)) ;
+    label.rt(format("@j","1e+8"),  (2cm,     0)) ;
+    label.rt(format("@j","1e-10"), (0,  -0.5cm)) ;
+    label.rt(format("@j","1e+10"), (2cm,-0.5cm)) ;
+    label.rt(format("@j","1e-12"), (0,  -1.0cm)) ;
+    label.rt(format("@j","1e+12"), (2cm,-1.0cm)) ;
+    label.rt(format("@j","1e-0"),  (0,  -1.5cm)) ;
+    label.rt(format("@j","1e+0"),  (2cm,-1.5cm)) ;
+    label.rt(format("@j","1"),     (0,  -2.0cm)) ;
+    label.rt(format("@j","1"),     (2cm,-2.0cm)) ;
+    label.rt(format("@j","1e-102"),(0,  -2.5cm)) ;
+    label.rt(format("@j","1e+102"),(2cm,-2.5cm)) ;
+    label.rt(formatted("(@f,@f)",(1.23,4.56)),(0cm,-3.0cm)) ;
+    label.rt(formatted("(@i,@i)",(1.23,4.56)),(0cm,-3.5cm)) ;
+    label.rt(formatted("(@g,@g)",(1.23,4.56)),(0cm,-4.0cm)) ;
+    label.rt(formatted("(@e,@e)",(1.23,4.56)),(0cm,-4.5cm)) ;
+    label.rt(formatted("(@j,@j)",(1.23,4.56)),(0cm,-5.0cm)) ;
 \stopMPpage
 
 \stoptext

@@ -138,6 +138,8 @@
 %
 % {\showstruts\useMPgraphic{testgraphic}}
 
-\unexpanded\def\MPgraphformat#1#2{\ctxlua{metapost.format_v("#1","#2")}}
+\unexpanded\def\MPexponent   #1#2{\mathematics{#1\times10^{#2}}}
+\unexpanded\def\MPformatted  #1#2{\ctxlua{metapost.svformat("#1","#2")}}
+\unexpanded\def\MPgraphformat#1#2{\ctxlua{metapost.nvformat("#1","#2")}}
 
 \protect \endinput

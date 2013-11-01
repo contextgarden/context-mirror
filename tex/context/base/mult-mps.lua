@@ -58,6 +58,8 @@ return {
 --         "colorpart",
         "stroked", "filled", "textual", "clipped", "bounded", "pathpart",
         "expandafter",
+        "minute", "hour", "outputformat", "outputtemplate", "filenametemplate", "fontmapfile", "fontmapline",
+        "fontpart", "fontsize", "glyph", "restoreclipcolor", "troffmode",
     },
     commands = {
         "beginfig", "endfig",
