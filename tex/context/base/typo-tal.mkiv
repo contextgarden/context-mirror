@@ -111,6 +111,28 @@
 
 %D We need fonts to provide tabular digits that is, the digits need to have the same
 %D width.
+%D
+%D \startbuffer
+%D \startbuffer[demo]
+%D     \switchtobodyfont[pagella]
+%D     \setupTABLE[column][1][alignmentcharacter=.,aligncharacter=yes]
+%D     \bTABLE
+%D         \bTR \bTD  11.111 \eTD \bTD  11.111 \eTD \eTR
+%D         \bTR \bTD   2.2   \eTD \bTD   2.2   \eTD \eTR
+%D         \bTR \bTD 444.444 \eTD \bTD 444.444 \eTD \eTR
+%D     \eTABLE
+%D \stopbuffer
+%D
+%D \start inlinenumbers:  \crlf \addfeature[inlinenumbers]   \getbuffer \stop
+%D \start tabularnumbers: \crlf \addfeature[tabularnumbers]  \getbuffer \stop
+%D \start oldstylenumbers:\crlf \addfeature[oldstylenumbers] \getbuffer \stop
+%D \stopbuffer
+%D
+%D \enabledirectives[typesetters.characteralign.autofont]
+%D \typebuffer \blank \getbuffer \blank
+%D \disabledirectives[typesetters.characteralign.autofont]
+%D \typebuffer \blank \getbuffer \blank
+%D \enabledirectives[typesetters.characteralign.autofont]
 
 \definefontfeature
   [system:tabnum]

@@ -115,7 +115,7 @@ local function helper(start,attr,lastfont,n,codes,special,once,keepother)
                     local previd = start.prev.id
                     if previd ~= glyph_code and previd ~= disc_code then
                         fnt = lfa
-                        setfield(start,"font",lfa)
+                        start.font = lfa
                     end
                 end
             end

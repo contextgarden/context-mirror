@@ -1,0 +1,37 @@
+return {
+    name = "mdbch-math",
+    version = "1.00",
+    comment = "Math fonts that complement ITC Charter.",
+    author = "Hans, Mojca, Aditya",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        mapfiles = {
+            "mdbch.map",
+            "mkiv-base.map",
+        },
+        virtuals = {
+            ["mdbch-rm"] = {
+                { name = "file:bchr8a", features = "virtualmath", main = true },
+                { name = "mdbchr7m",  vector = "tex-mr", skewchar=0x7F },
+                { name = "mdbchri7m", vector = "tex-mi", skewchar=0x7F },
+                { name = "mdbchri7m", vector = "tex-it", skewchar=0x7F },
+                { name = "mdbchb7m",  vector = "tex-bf", skewchar=0x7F },
+                { name = "mdbchbi7m", vector = "tex-bi", skewchar=0x7F },
+                { name = "mdbchr7y",  vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "mdbchr7v",  vector = "tex-ex", extension = true },
+                { name = "mdbchrma",  vector = "tex-ma" },
+                { name = "mdbchrmb",  vector = "tex-mb" },
+            },
+            ["mdbch-bf"] = {
+                { name = "file:bchb8a", features = "virtualmath", main = true },
+                { name = "mdbchb7m",  vector = "tex-mr", skewchar=0x7F },
+                { name = "mdbchbi7m", vector = "tex-mi", skewchar=0x7F },
+                { name = "mdbchbi7m", vector = "tex-it", skewchar=0x7F },
+                { name = "mdbchb7y",  vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "mdbchb7v",  vector = "tex-ex", extension = true },
+                { name = "mdbchbma",  vector = "tex-ma" },
+                { name = "mdbchbmb",  vector = "tex-mb" },
+            }
+        }
+    }
+}

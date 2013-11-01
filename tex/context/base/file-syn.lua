@@ -32,11 +32,15 @@ function commands.truefilename(name)
 end
 
 function commands.definefilesynonym(name,realname)
-    local synonym = filesynonyms[name]
-    if synonym then
-        interfaces.showmessage("files",1,{ name or "?", realname or "?", synonym or "?" })
+    local names = settings_to_array(name)
+    for i=1,#names do
+        local name = names[i]
+        local synonym = filesynonyms[name]
+        if synonym then
+            interfaces.showmessage("files",1,{ name or "?", realname or "?", synonym or "?" })
+        end
+        filesynonyms[name] = realname
     end
-    filesynonyms[name] = realname
 end
 
 function commands.definefilefallback(name,alternatives)

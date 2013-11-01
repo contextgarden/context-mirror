@@ -102,5 +102,5 @@ function fonts.names.getfilename(askedname,suffix)  -- only supported in mkiv
 end
 
 function fonts.names.ignoredfile(filename) -- only supported in mkiv
-    return true -- will be overloaded
+    return false -- will be overloaded
 end
