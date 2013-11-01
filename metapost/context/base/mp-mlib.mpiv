@@ -865,3 +865,26 @@ vardef mfun_tagged_string(expr value) =
     else                   : "2:" & value
     fi
 enddef ;
+
+% moved here from mp-grap.mpiv
+
+vardef escaped_format(expr s) =
+    "" for n=0 upto length(s) : &
+        if ASCII substring (n,n+1) of s = 37 :
+            "@"
+        else :
+            substring (n,n+1) of s
+        fi
+    endfor
+enddef ;
+
+vardef strfmt(expr f, x) = % maybe use mfun_ namespace
+    "\MPgraphformat{" & escaped_format(f) & "}{" & mfun_tagged_string(x) & "}"
+enddef ;
+
+vardef varfmt(expr f, x) = % maybe use mfun_ namespace
+    "\MPformatted{" & escaped_format(f) & "}{" & mfun_tagged_string(x) & "}"
+enddef ;
+
+vardef format   (expr f, x) = textext(strfmt(f, x)) enddef ;
+vardef formatted(expr f, x) = textext(varfmt(f, x)) enddef ;

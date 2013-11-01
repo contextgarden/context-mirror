@@ -264,6 +264,33 @@ function number.signed(i)
     end
 end
 
+local zero      = P("0")^1 / ""
+local plus      = P("+")   / ""
+local minus     = P("-")
+local separator = S(".")
+local digit     = R("09")
+local trailing  = zero^1 * #S("eE")
+local exponent  = (S("eE") * (plus + Cs((minus * zero^0 * P(-1))/"") + minus) * zero^0 * (P(-1) * Cc("0") + P(1)^1))
+local pattern_a = Cs(minus^0 * digit^1 * (separator/"" * trailing + separator * (trailing + digit)^0) * exponent)
+local pattern_b = Cs((exponent + P(1))^0)
+
+function number.sparseexponent(f,n)
+    if not n then
+        n = f
+        f = "%e"
+    end
+    local tn = type(n)
+    if tn == "string" then -- cast to number
+        local m = tonumber(n)
+        if m then
+            return lpegmatch((f == "%e" or f == "%E") and pattern_a or pattern_b,format(f,m))
+        end
+    elseif tn == "number" then
+        return lpegmatch((f == "%e" or f == "%E") and pattern_a or pattern_b,format(f,n))
+    end
+    return tostring(n)
+end
+
 local preamble = [[
 local type = type
 local tostring = tostring
@@ -282,6 +309,7 @@ local autosingle = string.autosingle
 local autodouble = string.autodouble
 local sequenced = table.sequenced
 local formattednumber = number.formatted
+local sparseexponent = number.sparseexponent
 ]]
 
 local template = [[
@@ -374,6 +402,16 @@ end
 local format_E = function(f)
     n = n + 1
     return format("format('%%%sE',a%s)",f,n)
+end
+
+local format_j = function(f)
+    n = n + 1
+    return format("sparseexponent('%%%se',a%s)",f,n)
+end
+
+local format_J = function(f)
+    n = n + 1
+    return format("sparseexponent('%%%sE',a%s)",f,n)
 end
 
 local format_x = function(f)
@@ -602,6 +640,8 @@ local format_extension = function(extensions,f,name)
     end
 end
 
+-- aA b cC d eE f gG hH iI jJ lL mM N o p qQ r sS tT uU wW xX
+
 local builder = Cs { "start",
     start = (
         (
@@ -625,11 +665,11 @@ local builder = Cs { "start",
               + V("t") + V("T")
               + V("l") + V("L")
               + V("I")
-              + V("h") -- new
               + V("w") -- new
               + V("W") -- new
               + V("a") -- new
               + V("A") -- new
+              + V("j") + V("J") -- stripped e E
               + V("m") + V("M") -- new
               --
               + V("*") -- ignores probably messed up %
@@ -673,6 +713,9 @@ local builder = Cs { "start",
     --
     ["w"] = (prefix_any * P("w")) / format_w, -- %w => n spaces (optional prefix is added)
     ["W"] = (prefix_any * P("W")) / format_W, -- %W => mandate prefix, no specifier
+    --
+    ["j"] = (prefix_any * P("j")) / format_j, -- %j => %e (float) stripped exponent (irrational)
+    ["J"] = (prefix_any * P("J")) / format_J, -- %J => %E (float) stripped exponent (irrational)
     --
     ["m"] = (prefix_tab * P("m")) / format_m, -- %m => xxx.xxx.xxx,xx (optional prefix instead of .)
     ["M"] = (prefix_tab * P("M")) / format_M, -- %M => xxx,xxx,xxx.xx (optional prefix instead of ,)
