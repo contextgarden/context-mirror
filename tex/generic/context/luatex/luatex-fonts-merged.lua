@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/30/13 14:53:50
+-- merge date  : 11/01/13 12:20:30
 
 do -- begin closure to overcome local limits and interference
 
@@ -3400,10 +3400,12 @@ nodes.handlers={}
 local nodecodes={} for k,v in next,node.types  () do nodecodes[string.gsub(v,"_","")]=k end
 local whatcodes={} for k,v in next,node.whatsits() do whatcodes[string.gsub(v,"_","")]=k end
 local glyphcodes={ [0]="character","glyph","ligature","ghost","left","right" }
+local disccodes={ [0]="discretionary","explicit","automatic","regular","first","second" }
 nodes.nodecodes=nodecodes
 nodes.whatcodes=whatcodes
 nodes.whatsitcodes=whatcodes
 nodes.glyphcodes=glyphcodes
+nodes.disccodes=disccodes
 local free_node=node.free
 local remove_node=node.remove
 local new_node=node.new
@@ -5075,7 +5077,7 @@ function fonts.names.getfilename(askedname,suffix)
   return ""
 end
 function fonts.names.ignoredfile(filename) 
-  return true 
+  return false 
 end
 
 end -- closure

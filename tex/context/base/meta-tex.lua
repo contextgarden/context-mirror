@@ -6,7 +6,9 @@ if not modules then modules = { } end modules ['meta-tex'] = {
     license   = "see context related readme files"
 }
 
---~ local P, C, lpegmatch = lpeg.P, lpeg.C, lpeg.match
+local format, gsub, find, match = string.format, string.gsub, string.find, string.match
+
+local P, C, Cs, lpegmatch = lpeg.P, lpeg.C, lpeg.Cs, lpeg.match
 
 -- local left     = P("[")
 -- local right    = P("]")
@@ -29,10 +31,70 @@ if not modules then modules = { } end modules ['meta-tex'] = {
 --     end
 -- end
 
-local P, Cs, lpegmatch = lpeg.P, lpeg.Cs, lpeg.match
-
 local pattern = Cs((P([[\"]]) + P([["]])/"\\quotedbl{}" + P(1))^0) -- or \char
 
 function metapost.escaped(str)
     context(lpegmatch(pattern,str))
+end
+
+local simplify = true
+
+-- local function strip(n,e)
+--     -- get rid of e(0)
+--     -- get rid of e(+*)
+--     e = gsub(e,"^+","")
+--     -- remove leading zeros
+--     e = gsub(e,"^([+-]*)0+(%d)","%1%2")
+--     if not simplify then
+--         -- take it as it is
+--     elseif n == "1" then
+--         return format("10^{%s}",e)
+--     end
+--     return format("%s\\times10^{%s}",n,e)
+-- end
+--
+-- function metapost.format_n(fmt,...)
+--     fmt = gsub(fmt,"@","%%")
+--     local initial, hasformat, final = match(fmt,"^(.-)(%%.-[%a])(.-)$")
+--     if hasformat then
+--         str = format(fmt,...)
+--         str = gsub(str,"(.-)e(.-)$",strip)
+--         str = format("%s\\mathematics{%s}%s",initial,str,final)
+--     elseif not find(fmt,"%%") then
+--         str = format("%"..fmt,...)
+--         str = gsub(str,"(.-)e(.-)$",strip)
+--         str = format("\\mathematics{%s}",str)
+--     end
+--     context(str)
+-- end
+
+-- todo: proper lpeg
+
+local function strip(n,e)
+    -- get rid of e(0)
+    -- get rid of e(+*)
+    e = gsub(e,"^+","")
+    -- remove leading zeros
+    e = gsub(e,"^([+-]*)0+(%d)","%1%2")
+    if not simplify then
+        -- take it as it is
+    elseif n == "1" then
+        return format("\\mathematics{10^{%s}}",e)
+    end
+    return format("\\mathematics{%s\\times10^{%s}}",n,e)
+end
+
+function metapost.format_n(fmt,...)
+    fmt = gsub(fmt,"@","%%")
+    if find(fmt,"%%") then
+        str = format(fmt,...)
+    else -- yes or no
+        str = format("%"..fmt,...)
+    end
+    str = gsub(str,"([%-%+]-[%.%d]+)e([%-%+]-[%.%d]+)",strip)
+    context(str)
+end
+
+function metapost.format_v(fmt,str)
+    metapost.format_n(fmt,metapost.untagvariable(str,false))
 end

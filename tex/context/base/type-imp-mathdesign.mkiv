@@ -1,9 +1,9 @@
 %D \module
 %D   [       file=type-imp-mathdesign,
-%D        version=2007.07.30,
+%D        version=2013.10.31,
 %D          title=\CONTEXT\ Typescript Macros,
 %D       subtitle=Mathdesign,
-%D         author=Hans Hagen,
+%D         author=Hans Hagen \& Wolfgang Schuster,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
@@ -13,20 +13,52 @@
 
 \starttypescriptcollection [mathdesign]
 
-    \starttypescript [\s!math] [charter,mathdesignch] [\s!all]
-        \loadfontgoodies[charter-math]
-        \definefontsynonym[\s!MathRoman][chartermath@charter-math]
+    % Bitstream Charter
+
+    \starttypescript [\s!math] [mdbch,mathdesignch,mathdesigncharter] [\s!all]
+        \loadfontgoodies[mdbch-math]
+        \definefontsynonym [\s!MathRoman]     [mdbchrm@mdbch-rm]
+        \definefontsynonym [\s!MathRomanBold] [mdbchbf@mdbch-bf]
     \stoptypescript
 
-    \starttypescript [\s!math] [garamond,mathdesigngm] [\s!all]
-        \loadfontgoodies[garamond-math]
-        \definefontsynonym[\s!MathRoman][garamondmath@garamond-math]
+    % URW Garamond
+
+    \starttypescript [\s!math] [mdugm,mathdesigngm,mathdesigngaramond] [\s!all]
+        \loadfontgoodies[mdugm-math]
+        \definefontsynonym [\s!MathRoman]     [mdugmrm@mdugm-rm]
+        \definefontsynonym [\s!MathRomanBold] [mdugmbf@mdugm-bf]
     \stoptypescript
 
-    \starttypescript [\s!math] [utopia,mathdesignut] [\s!all]
-        \loadfontgoodies[utopia-math]
-        \definefontsynonym[\s!MathRoman][utopiamath@utopia-math]
+    % Adobe Utopia
+
+    \starttypescript [\s!math] [mdput,mathdesignut,mathdesignutopia] [\s!all]
+        \loadfontgoodies[mdput-math]
+        \definefontsynonym [\s!MathRoman]     [mdputrm@mdput-rm]
+        \definefontsynonym [\s!MathRomanBold] [mdputbf@mdput-bf]
+    \stoptypescript
+
+    % Charter ITC Std
+
+    \starttypescript [\s!math] [mdici,mathdesignci] [\s!all]
+        \loadfontgoodies[mdici-math]
+        \definefontsynonym [\s!MathRoman]     [mdicirm@mdici-rm]
+        \definefontsynonym [\s!MathRomanBold] [mdicibf@mdici-bf]
+    \stoptypescript
+
+    % Adobe Garamond Pro
+
+    \starttypescript [\s!math] [mdpgd,mathdesigngd] [\s!all]
+        \loadfontgoodies[mdpgd-math]
+        \definefontsynonym [\s!MathRoman]     [mdpgdrm@mdpgd-rm]
+        \definefontsynonym [\s!MathRomanBold] [mdpgdbf@mdpgd-bf]
+    \stoptypescript
+
+    % Adobe Utopia Std
+
+    \starttypescript [\s!math] [mdpus,mathdesignus] [\s!all]
+        \loadfontgoodies[mdpus-math]
+        \definefontsynonym [\s!MathRoman]     [mdpusrm@mdpus-rm]
+        \definefontsynonym [\s!MathRomanBold] [mdpusbf@mdpus-bf]
     \stoptypescript
 
 \stoptypescriptcollection
-

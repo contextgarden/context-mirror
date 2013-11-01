@@ -17,76 +17,6 @@
 
 \unprotect
 
-\startluacode
-    local format, gsub, find, match = string.format, string.gsub, string.find, string.match
-
-    local simplify = true
-
- -- local function strip(n,e)
- --     -- get rid of e(0)
- --     -- get rid of e(+*)
- --     e = gsub(e,"^+","")
- --     -- remove leading zeros
- --     e = gsub(e,"^([+-]*)0+(%d)","%1%2")
- --     if not simplify then
- --         -- take it as it is
- --     elseif n == "1" then
- --         return format("10^{%s}",e)
- --     end
- --     return format("%s\\times10^{%s}",n,e)
- -- end
- --
- -- function metapost.format_n(fmt,...)
- --     fmt = gsub(fmt,"@","%%")
- --     local initial, hasformat, final = match(fmt,"^(.-)(%%.-[%a])(.-)$")
- --     if hasformat then
- --         str = format(fmt,...)
- --         str = gsub(str,"(.-)e(.-)$",strip)
- --         str = format("%s\\mathematics{%s}%s",initial,str,final)
- --     elseif not find(fmt,"%%") then
- --         str = format("%"..fmt,...)
- --         str = gsub(str,"(.-)e(.-)$",strip)
- --         str = format("\\mathematics{%s}",str)
- --     end
- --     context(str)
- -- end
-
-    -- todo: proper lpeg
-
-    local function strip(n,e)
-        -- get rid of e(0)
-        -- get rid of e(+*)
-        e = gsub(e,"^+","")
-        -- remove leading zeros
-        e = gsub(e,"^([+-]*)0+(%d)","%1%2")
-        if not simplify then
-            -- take it as it is
-        elseif n == "1" then
-            return format("\\mathematics{10^{%s}}",e)
-        end
-        return format("\\mathematics{%s\\times10^{%s}}",n,e)
-    end
-
-    function metapost.format_n(fmt,...)
-        fmt = gsub(fmt,"@","%%")
-        if find(fmt,"%%") then
-            str = format(fmt,...)
-        else -- yes or no
-            str = format("%"..fmt,...)
-        end
-        str = gsub(str,"([%-%+]-[%.%d]+)e([%-%+]-[%.%d]+)",strip)
-        context(str)
-    end
-
-    function metapost.format_v(fmt,str)
-        metapost.format_n(fmt,metapost.untagvariable(str,false))
-    end
-\stopluacode
-
-\unexpanded\def\MPgraphformat#1#2{\ctxlua{metapost.format_v("#1","#2")}}
-
-% We could also delegate parsing using lower level plugins.
-
 \defineMPinstance
   [graph]
   [\s!format=metafun,
@@ -120,6 +50,8 @@
     label(format("@f,@f",(1.23,4.56)),(0cm,-3.0cm)) ;
     label(format("@i,@f",(1.23,4.56)),(0cm,-3.5cm)) ;
 \stopMPpage
+
+\stoptext
 
 % \startMPpage[instance=graph]
 % draw begingraph(3in,2in);
@@ -179,5 +111,3 @@
 %     autogrid(otick.bot,otick.rt);
 % endgraph;
 % \stopMPpage
-
-\stoptext

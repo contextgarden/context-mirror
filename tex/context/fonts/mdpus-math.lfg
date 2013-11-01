@@ -1,0 +1,37 @@
+return {
+    name = "mdpus-math",
+    version = "1.00",
+    comment = "Math fonts that complement Adobe Utopia Std.",
+    author = "Hans, Mojca, Aditya",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        mapfiles = {
+            "mdpus.map",
+            "mkiv-base.map",
+        },
+        virtuals = {
+            ["mdpus-rm"] = {
+                { name = "file:putr8a", features = "virtualmath", main = true },
+                { name = "mdpusr7m",  vector = "tex-mr", skewchar=0x7F },
+                { name = "mdpusri7m", vector = "tex-mi", skewchar=0x7F },
+                { name = "mdpusri7m", vector = "tex-it", skewchar=0x7F },
+                { name = "mdpuss7m",  vector = "tex-bf", skewchar=0x7F },
+                { name = "mdpussi7m", vector = "tex-bi", skewchar=0x7F },
+                { name = "mdpusr7y",  vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "mdpusr7v",  vector = "tex-ex", extension = true },
+                { name = "mdpusrma",  vector = "tex-ma" },
+                { name = "mdpusrmb",  vector = "tex-mb" },
+            },
+            ["mdpus-bf"] = {
+                { name = "file:putb8a", features = "virtualmath", main = true },
+                { name = "mdpuss7m",  vector = "tex-mr", skewchar=0x7F },
+                { name = "mdpussi7m", vector = "tex-mi", skewchar=0x7F },
+                { name = "mdpussi7m", vector = "tex-it", skewchar=0x7F },
+                { name = "mdpuss7y",  vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "mdpuss7v",  vector = "tex-ex", extension = true },
+                { name = "mdpussma",  vector = "tex-ma" },
+                { name = "mdpussmb",  vector = "tex-mb" },
+            }
+        }
+    }
+}

@@ -1,0 +1,37 @@
+return {
+    name = "mdici-math",
+    version = "1.00",
+    comment = "Math fonts that complement Charter ITC Std.",
+    author = "Hans, Mojca, Aditya",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        mapfiles = {
+            "mdici.map",
+            "mkiv-base.map",
+        },
+        virtuals = {
+            ["mdici-rm"] = {
+                { name = "file:bchr8a", features = "virtualmath", main = true },
+                { name = "mdicir7m",  vector = "tex-mr", skewchar=0x7F },
+                { name = "mdiciri7m", vector = "tex-mi", skewchar=0x7F },
+                { name = "mdiciri7m", vector = "tex-it", skewchar=0x7F },
+                { name = "mdicib7m",  vector = "tex-bf", skewchar=0x7F },
+                { name = "mdicibi7m", vector = "tex-bi", skewchar=0x7F },
+                { name = "mdicir7y",  vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "mdicir7v",  vector = "tex-ex", extension = true },
+                { name = "mdicirma",  vector = "tex-ma" },
+                { name = "mdicirmb",  vector = "tex-mb" },
+            },
+            ["mdici-bf"] = {
+                { name = "file:bchb8a", features = "virtualmath", main = true },
+                { name = "mdicib7m",  vector = "tex-mr", skewchar=0x7F },
+                { name = "mdicibi7m", vector = "tex-mi", skewchar=0x7F },
+                { name = "mdicibi7m", vector = "tex-it", skewchar=0x7F },
+                { name = "mdicib7y",  vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "mdicib7v",  vector = "tex-ex", extension = true },
+                { name = "mdicibma",  vector = "tex-ma" },
+                { name = "mdicibmb",  vector = "tex-mb" },
+            }
+        }
+    }
+}

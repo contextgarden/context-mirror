@@ -1,0 +1,37 @@
+return {
+    name = "mdpgd-math",
+    version = "1.00",
+    comment = "Math fonts that complement Adobe Garamond Pro.",
+    author = "Hans, Mojca, Aditya",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        mapfiles = {
+            "mdpgd.map",
+            "mkiv-base.map",
+        },
+        virtuals = {
+            ["mdpgd-rm"] = {
+                { name = "file:ugmr8a", features = "virtualmath", main = true },
+                { name = "mdpgdr7m",  vector = "tex-mr", skewchar=0x7F },
+                { name = "mdpgdri7m", vector = "tex-mi", skewchar=0x7F },
+                { name = "mdpgdri7m", vector = "tex-it", skewchar=0x7F },
+                { name = "mdpgds7m",  vector = "tex-bf", skewchar=0x7F },
+                { name = "mdpgdsi7m", vector = "tex-bi", skewchar=0x7F },
+                { name = "mdpgdr7y",  vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "mdpgdr7v",  vector = "tex-ex", extension = true },
+                { name = "mdpgdrma",  vector = "tex-ma" },
+                { name = "mdpgdrmb",  vector = "tex-mb" },
+            },
+            ["mdpgd-bf"] = {
+                { name = "file:ugmm8a", features = "virtualmath", main = true },
+                { name = "mdpgds7m",  vector = "tex-mr", skewchar=0x7F },
+                { name = "mdpgdsi7m", vector = "tex-mi", skewchar=0x7F },
+                { name = "mdpgdsi7m", vector = "tex-it", skewchar=0x7F },
+                { name = "mdpgds7y",  vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "mdpgds7v",  vector = "tex-ex", extension = true },
+                { name = "mdpgdsma",  vector = "tex-ma" },
+                { name = "mdpgdsmb",  vector = "tex-mb" },
+            }
+        }
+    }
+}
