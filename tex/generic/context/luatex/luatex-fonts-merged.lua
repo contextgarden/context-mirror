@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 11/04/13 11:26:47
+-- merge date  : 11/04/13 11:52:02
 
 do -- begin closure to overcome local limits and interference
 
@@ -2894,6 +2894,10 @@ local format_M=function(f)
   end
   return format([[formattednumber(a%s,%q,",")]],n,f)
 end
+local format_z=function(f)
+  n=n+(tonumber(f) or 1)
+  return "''" 
+end
 local format_rest=function(s)
   return format("%q",s) 
 end
@@ -2932,7 +2936,8 @@ local builder=Cs { "start",
 +V("a") 
 +V("A") 
 +V("j")+V("J") 
-+V("m")+V("M")
++V("m")+V("M") 
++V("z")
 +V("*") 
       )+V("*")
     )*(P(-1)+Carg(1))
@@ -2972,6 +2977,7 @@ local builder=Cs { "start",
   ["J"]=(prefix_any*P("J"))/format_J,
   ["m"]=(prefix_tab*P("m"))/format_m,
   ["M"]=(prefix_tab*P("M"))/format_M,
+  ["z"]=(prefix_any*P("z"))/format_z,
   ["a"]=(prefix_any*P("a"))/format_a,
   ["A"]=(prefix_any*P("A"))/format_A,
   ["*"]=Cs(((1-P("%"))^1+P("%%")/"%%")^1)/format_rest,
