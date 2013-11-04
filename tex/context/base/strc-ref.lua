@@ -418,9 +418,9 @@ local function register_from_lists(collected,derived,pages,sections)
                  --     g[s] = g[s] or t -- first wins
                  -- end
                     local function action(s)
---                         if trace_referencing then
+                        if trace_referencing then
                             report_references("list entry %a provides %a reference %a on realpage %a",i,kind,s,realpage)
---                         end
+                        end
                         c[s] = c[s] or t -- share them
                         d[s] = d[s] or t -- share them
                         g[s] = g[s] or t -- first wins
