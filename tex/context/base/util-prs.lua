@@ -40,8 +40,8 @@ local newline     = lpegpatterns.newline
 local anything    = lpegpatterns.anything
 local endofstring = lpegpatterns.endofstring
 
-local nobrace     = 1 - ( lbrace  + rbrace )
-local noparent    = 1 - ( lparent + rparent)
+local nobrace     = 1 - (lbrace  + rbrace )
+local noparent    = 1 - (lparent + rparent)
 
 -- we could use a Cf Cg construct
 
@@ -188,6 +188,38 @@ function parsers.settings_to_array(str,strict)
         return lpegmatch(pattern,str)
     end
 end
+
+-- this one also strips end spaces before separators
+--
+-- "{123} , 456  " -> "123" "456"
+
+local separator = space^0 * comma * space^0
+local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)
+                + C((nestedbraces + (1-(space^0*(comma+P(-1)))))^0)
+local withvalue = Carg(1) * value / function(f,s) return f(s) end
+local pattern_a = spaces * Ct(value*(separator*value)^0)
+local pattern_b = spaces * withvalue * (separator*withvalue)^0
+
+function parsers.stripped_settings_to_array(str)
+    if not str or str == "" then
+        return { }
+    else
+        return lpegmatch(pattern_a,str)
+    end
+end
+
+function parsers.process_stripped_settings(str,action)
+    if not str or str == "" then
+        return { }
+    else
+        return lpegmatch(pattern_b,str,1,action)
+    end
+end
+
+-- parsers.process_stripped_settings("{123} , 456  ",function(s) print("["..s.."]") end)
+-- parsers.process_stripped_settings("123 , 456  ",function(s) print("["..s.."]") end)
+
+--
 
 local function set(t,v)
     t[#t+1] = v
