@@ -614,6 +614,13 @@ end
 
 --
 
+local format_z = function(f)
+    n = n + (tonumber(f) or 1)
+    return "''" -- okay, not that efficient to append '' but a special case anyway
+end
+
+--
+
 local format_rest = function(s)
     return format("%q",s) -- catches " and \n and such
 end
@@ -671,6 +678,7 @@ local builder = Cs { "start",
               + V("A") -- new
               + V("j") + V("J") -- stripped e E
               + V("m") + V("M") -- new
+              + V("z") -- new
               --
               + V("*") -- ignores probably messed up %
             )
@@ -720,6 +728,8 @@ local builder = Cs { "start",
     ["m"] = (prefix_tab * P("m")) / format_m, -- %m => xxx.xxx.xxx,xx (optional prefix instead of .)
     ["M"] = (prefix_tab * P("M")) / format_M, -- %M => xxx,xxx,xxx.xx (optional prefix instead of ,)
     --
+    ["z"] = (prefix_any * P("z")) / format_z, -- %M => xxx,xxx,xxx.xx (optional prefix instead of ,)
+    --
     ["a"] = (prefix_any * P("a")) / format_a, -- %a => '...' (forces tostring)
     ["A"] = (prefix_any * P("A")) / format_A, -- %A => "..." (forces tostring)
     --
@@ -750,7 +760,7 @@ local function make(t,str)
         p = lpegmatch(builder,str,1,"..",t._extensions_) -- after this we know n
         if n > 0 then
             p = format(template,preamble,t._preamble_,arguments[n],p)
---                 print("builder>",p)
+--         print("builder>",p)
             f = loadstripped(p)()
         else
             f = function() return str end

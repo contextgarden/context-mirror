@@ -4759,7 +4759,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 26573, stripped down to: 14944
+-- original size: 26855, stripped down to: 15062
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -5185,6 +5185,10 @@ local format_M=function(f)
   end
   return format([[formattednumber(a%s,%q,",")]],n,f)
 end
+local format_z=function(f)
+  n=n+(tonumber(f) or 1)
+  return "''" 
+end
 local format_rest=function(s)
   return format("%q",s) 
 end
@@ -5223,7 +5227,8 @@ local builder=Cs { "start",
 +V("a") 
 +V("A") 
 +V("j")+V("J") 
-+V("m")+V("M")
++V("m")+V("M") 
++V("z")
 +V("*") 
       )+V("*")
     )*(P(-1)+Carg(1))
@@ -5263,6 +5268,7 @@ local builder=Cs { "start",
   ["J"]=(prefix_any*P("J"))/format_J,
   ["m"]=(prefix_tab*P("m"))/format_m,
   ["M"]=(prefix_tab*P("M"))/format_M,
+  ["z"]=(prefix_any*P("z"))/format_z,
   ["a"]=(prefix_any*P("a"))/format_a,
   ["A"]=(prefix_any*P("A"))/format_A,
   ["*"]=Cs(((1-P("%"))^1+P("%%")/"%%")^1)/format_rest,
@@ -16618,8 +16624,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 682906
--- stripped bytes    : 241678
+-- original bytes    : 683188
+-- stripped bytes    : 241842
 
 -- end library merge
 
