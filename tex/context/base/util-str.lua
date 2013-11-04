@@ -647,7 +647,7 @@ local format_extension = function(extensions,f,name)
     end
 end
 
--- aA b cC d eE f gG hH iI jJ lL mM N o p qQ r sS tT uU wW xX
+-- aA b cC d eE f gG hH iI jJ lL mM N o p qQ r sS tT uU wW xX z
 
 local builder = Cs { "start",
     start = (
