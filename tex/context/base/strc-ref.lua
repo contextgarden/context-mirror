@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['strc-ref'] = {
 
 -- todo: autoload components when :::
 
-local format, find, gmatch, match, concat = string.format, string.find, string.gmatch, string.match, table.concat
+local format, find, gmatch, match, strip = string.format, string.find, string.gmatch, string.match, string.strip
 local floor = math.floor
 local rawget, tonumber = rawget, tonumber
 local lpegmatch = lpeg.match
@@ -65,6 +65,7 @@ local logspushtarget     = logs.pushtarget
 local logspoptarget      = logs.poptarget
 
 local settings_to_array  = utilities.parsers.settings_to_array
+local process_settings   = utilities.parsers.process_stripped_settings
 local unsetvalue         = attributes.unsetvalue
 
 local structures         = structures
@@ -287,21 +288,37 @@ function references.set(kind,prefix,tag,data)
         tobesaved[prefix] = pd
     end
     local n = 0
-    for ref in gmatch(tag,"[^,]+") do
-        if ref ~= "" then
-            if check_duplicates and pd[ref] then
-                if prefix and prefix ~= "" then
-                    report_references("redundant reference %a in namespace %a",ref,prefix)
-                else
-                    report_references("redundant reference %a",ref)
-                end
+ -- for ref in gmatch(tag,"[^,]+") do
+ --     if ref ~= "" then
+ --         if check_duplicates and pd[ref] then
+ --             if prefix and prefix ~= "" then
+ --                 report_references("redundant reference %a in namespace %a",ref,prefix)
+ --             else
+ --                 report_references("redundant reference %a",ref)
+ --             end
+ --         else
+ --             n = n + 1
+ --             pd[ref] = data
+ --             context.dofinishsomereference(kind,prefix,ref)
+ --         end
+ --     end
+ -- end
+    local function action(ref)
+        if ref == "" then
+            -- skip
+        elseif check_duplicates and pd[ref] then
+            if prefix and prefix ~= "" then
+                report_references("redundant reference %a in namespace %a",ref,prefix)
             else
-                n = n + 1
-                pd[ref] = data
-                context.dofinishsomereference(kind,prefix,ref)
+                report_references("redundant reference %a",ref)
             end
+        else
+            n = n + 1
+            pd[ref] = data
+            context.dofinishsomereference(kind,prefix,ref)
         end
     end
+    process_settings(tag,action)
     return n > 0
 end
 
@@ -392,14 +409,23 @@ local function register_from_lists(collected,derived,pages,sections)
                         derived[component] = c
                     end
                     local t = { kind, i, entry }
-                    for s in gmatch(reference,"%s*([^,]+)") do
-                        if trace_referencing then
+                 -- for s in gmatch(reference,"%s*([^,]+)") do
+                 --     if trace_referencing then
+                 --         report_references("list entry %a provides %a reference %a on realpage %a",i,kind,s,realpage)
+                 --     end
+                 --     c[s] = c[s] or t -- share them
+                 --     d[s] = d[s] or t -- share them
+                 --     g[s] = g[s] or t -- first wins
+                 -- end
+                    local function action(s)
+--                         if trace_referencing then
                             report_references("list entry %a provides %a reference %a on realpage %a",i,kind,s,realpage)
-                        end
+--                         end
                         c[s] = c[s] or t -- share them
                         d[s] = d[s] or t -- share them
                         g[s] = g[s] or t -- first wins
                     end
+                    process_settings(reference,action)
                 end
             end
         end
@@ -804,13 +830,21 @@ local function loadexternalreferences(name,utilitydata)
                             target = { }
                             external[prefix] = target
                         end
-                        for s in gmatch(reference,"%s*([^,]+)") do
+                     -- for s in gmatch(reference,"%s*([^,]+)") do
+                     --     if trace_importing then
+                     --         report_importing("registering %s reference, kind %a, name %a, prefix %a, reference %a",
+                     --             "external",kind,name,prefix,s)
+                     --     end
+                     --     target[s] = target[s] or entry
+                     -- end
+                        local function action(s)
                             if trace_importing then
                                 report_importing("registering %s reference, kind %a, name %a, prefix %a, reference %a",
                                     "external",kind,name,prefix,s)
                             end
                             target[s] = target[s] or entry
                         end
+                        process_settings(reference,action)
                     end
                 end
             end
@@ -918,7 +952,23 @@ local function loadproductreferences(productname,componentname,utilitydata)
                             ptarget = { }
                             productreferences[prefix] = ptarget
                         end
-                        for s in gmatch(reference,"%s*([^,]+)") do
+                     -- for s in gmatch(reference,"%s*([^,]+)") do
+                     --     if ptarget then
+                     --         if trace_importing then
+                     --             report_importing("registering %s reference, kind %a, name %a, prefix %a, reference %a",
+                     --                 "product",kind,productname,prefix,s)
+                     --         end
+                     --         ptarget[s] = ptarget[s] or entry
+                     --     end
+                     --     if ctarget then
+                     --         if trace_importing then
+                     --             report_importing("registering %s reference, kind %a, name %a, prefix %a, referenc %a",
+                     --                 "component",kind,productname,prefix,s)
+                     --         end
+                     --         ctarget[s] = ctarget[s] or entry
+                     --     end
+                     -- end
+                        local function action(s)
                             if ptarget then
                                 if trace_importing then
                                     report_importing("registering %s reference, kind %a, name %a, prefix %a, reference %a",
@@ -934,6 +984,7 @@ local function loadproductreferences(productname,componentname,utilitydata)
                                 ctarget[s] = ctarget[s] or entry
                             end
                         end
+                        process_settings(reference,action)
                     end
                 end
             end
@@ -1667,15 +1718,25 @@ function references.setinternalreference(prefix,tag,internal,view) -- needs chec
         if tag then
             if prefix and prefix ~= "" then
                 prefix = prefix .. ":" -- watch out, : here
-                for ref in gmatch(tag,"[^,]+") do
+             -- for ref in gmatch(tag,"[^,]+") do
+             --     tn = tn + 1
+             --     t[tn] = prefix .. ref
+             -- end
+                local function action(ref)
                     tn = tn + 1
                     t[tn] = prefix .. ref
                 end
+                process_settings(tag,action)
             else
-                for ref in gmatch(tag,"[^,]+") do
+             -- for ref in gmatch(tag,"[^,]+") do
+             --     tn = tn + 1
+             --     t[tn] = ref
+             -- end
+                local function action(ref)
                     tn = tn + 1
                     t[tn] = ref
                 end
+                process_settings(tag,action)
             end
         end
         if internal and innermethod == "names" then -- mixed or page
