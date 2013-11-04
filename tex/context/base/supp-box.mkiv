@@ -2712,6 +2712,19 @@
       \egroup}
      \hbox}
 
+%D A bit dirty:
+
+% \unexpanded\def\nodestostring#1% \cs {content}
+%   {\dowithnextbox{\edef#1{\syst_boxes_nodestostring}}\hbox}
+%
+% \def\syst_boxes_nodestostring
+%   {\ctxcommand{boxtostring(\number\nextbox)}}
+
+\unexpanded\def\nodestostring#1#2% more tolerant for #2=\cs
+  {\begingroup
+   \setbox\nextbox\hbox{#2}%
+   \normalexpanded{\endgroup\edef\noexpand#1{\ctxcommand{boxtostring(\number\nextbox)}}}}
+
 \protect \endinput
 
 % a bit of test code:

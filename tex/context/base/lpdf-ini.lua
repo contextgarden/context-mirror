@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
 local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
 local char, byte, format, gsub, concat, match, sub, gmatch = string.char, string.byte, string.format, string.gsub, table.concat, string.match, string.sub, string.gmatch
 local utfchar, utfvalues = utf.char, utf.values
-local sind, cosd = math.sind, math.cosd
+local sind, cosd, floor = math.sind, math.cosd, math.floor
 local lpegmatch, P, C, R, S, Cc, Cs = lpeg.match, lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs
 local formatters = string.formatters
 
@@ -49,7 +49,8 @@ local function tosixteen(str) -- an lpeg might be faster (no table)
             if b < 0x10000 then
                 r[n] = format("%04x",b)
             else
-                r[n] = format("%04x%04x",b/1024+0xD800,b%1024+0xDC00)
+             -- r[n] = format("%04x%04x",b/1024+0xD800,b%1024+0xDC00)
+                r[n] = format("%04x%04x",floor(b/1024),b%1024+0xDC00)
             end
         end
         n = n + 1

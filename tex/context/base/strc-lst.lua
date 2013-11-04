@@ -54,6 +54,9 @@ lists.ordered           = allocate(lists.ordered   or { }) -- to be checked
 lists.cached            = cached
 lists.pushed            = pushed
 
+local sectionblocks     = allocate()
+lists.sectionblocks     = sectionblocks
+
 references.specials     = references.specials or { }
 
 local variables         = interfaces.variables
@@ -85,15 +88,23 @@ local function initializer()
     local collected = lists.collected
     local internals = checked(references.internals)
     local ordered   = lists.ordered
+    local blockdone = { }
     for i=1,#collected do
         local c = collected[i]
         local m = c.metadata
         local r = c.references
         if m then
             -- access by internal reference
-            local internal = r and r.internal
-            if internal then
-                internals[internal] = c
+            if r then
+                local internal = r.internal
+                if internal then
+                    internals[internal] = c
+                end
+                local block = r.block
+                if block and not blockdone[block] then
+                    blockdone[block] = true
+                    sectionblocks[#sectionblocks+1] = block
+                end
             end
             -- access by order in list
             local kind, name = m.kind, m.name

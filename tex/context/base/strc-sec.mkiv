@@ -88,6 +88,24 @@
 \def\namedstructureheadlocation#1% expandable, maybe [#1]
   {\csname\??savedinternalreference\ifcsname\??savedinternalreference#1\endcsname#1\else\s!default\fi\endcsname}
 
+% The next directive only makes sense when we have sort of garanteed outcome (math is not so
+% nice for instance).
+%
+% \enabledirectives[references.bookmarks.preroll]
+
+\newconditional\c_strc_bookmarks_preroll
+
+\installtexdirective
+  {references.bookmarks.preroll}
+  {\settrue \c_strc_bookmarks_preroll}
+  {\setfalse\c_strc_bookmarks_preroll}
+
+\def\strc_sectioning_autobookmark#1%
+  {\nodestostring\tempstring{#1}%
+   \globallet\currentstructurebookmark\tempstring}
+
+% so it's an experiment
+
 \unexpanded\def\strc_sectioning_register#1#2#3% #1=interfaced-settings, #2=optional user data (not yet supported)
   {\begingroup
    \setupstructure[\c!name={#1},#2]%
@@ -112,6 +130,9 @@
        \xdef\currentstructuremarking {\structureparameter\c!marking}%
        \xdef\currentstructurelist    {\structureparameter\c!list}%
      \xmlstopraw
+\iflocation \ifx\currentstructurebookmark\empty \ifconditional\c_strc_bookmarks_preroll
+  \strc_sectioning_autobookmark\currentstructuretitle
+\fi \fi \fi
      \ifx\currentstructurelist\empty
        \globallet\currentstructurelist\currentstructuretitle
      \fi
@@ -122,16 +143,23 @@
        \xdef\currentstructurebookmark{\structureparameter\c!bookmark}%
        \xdef\currentstructuremarking {\structureparameter\c!marking}%
        \xdef\currentstructurelist    {\structureparameter\c!list}%
+\iflocation \ifx\currentstructurebookmark\empty \ifconditional\c_strc_bookmarks_preroll
+  \strc_sectioning_autobookmark\currentstructuretitle
+\fi \fi \fi
      \else
        \xdef\currentstructuretitle   {\detokenizedstructureparameter\c!title}%
        \xdef\currentstructurebookmark{\detokenizedstructureparameter\c!bookmark}%
        \xdef\currentstructuremarking {\detokenizedstructureparameter\c!marking}%
        \xdef\currentstructurelist    {\detokenizedstructureparameter\c!list}%
        \iflocation \ifx\currentstructurebookmark\empty
-         \begingroup
-         \simplifycommands
-         \xdef\currentstructurebookmark{\detokenize\expandafter{\normalexpanded{\structureparameter\c!title}}}%
-        \endgroup
+\ifconditional\c_strc_bookmarks_preroll
+  \strc_sectioning_autobookmark{\structureparameter\c!title}%
+\else
+            \begingroup
+            \simplifycommands
+            \xdef\currentstructurebookmark{\detokenize\expandafter{\normalexpanded{\structureparameter\c!title}}}%
+            \endgroup
+\fi
        \fi \fi
      \fi
      \ifx\currentstructurelist\empty

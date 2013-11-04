@@ -101,11 +101,64 @@ function bookmarks.setup(spec)
     end
 end
 
+-- function bookmarks.place()
+--     if next(names) then
+--         local list = lists.filtercollected(names,"all",nil,lists.collected,forced)
+--         if #list > 0 then
+--             local levels, noflevels, lastlevel = { }, 0, 1
+--             for i=1,#list do
+--                 local li = list[i]
+--                 local metadata = li.metadata
+--                 local name = metadata.name
+--                 if not metadata.nolist or forced[name] then -- and levelmap[name] then
+--                     local titledata = li.titledata
+--                     if titledata then
+--                         local structural = levelmap[name]
+--                         lastlevel = structural or lastlevel
+--                         local title = titledata.bookmark
+--                         if not title or title == "" then
+--                             -- We could typeset the title and then convert it.
+--                             if not structural then
+--                                 -- placeholder, todo: bookmarklabel
+--                                 title = name .. ": " .. (titledata.title or "?")
+--                             else
+--                                 title = titledata.title or "?"
+--                             end
+--                         end
+--                         if numbered[name] then
+--                             local sectiondata = sections.collected[li.references.section]
+--                             local numberdata = li.numberdata
+--                             if sectiondata and numberdata and not numberdata.hidenumber then
+--                                 -- we could typeset the number and convert it
+--                                 title = concat(sections.typesetnumber(sectiondata,"direct",numberspec,sectiondata)) .. " " .. title
+--                             end
+--                         end
+--                         noflevels = noflevels + 1
+--                         levels[noflevels] = {
+--                             lastlevel,
+--                             stripped(title), -- can be replaced by converter
+--                             li.references, -- has internal and realpage
+--                             allopen or opened[name]
+--                         }
+--                     end
+--                 end
+--             end
+--             bookmarks.finalize(levels)
+--         end
+--         function bookmarks.place() end -- prevent second run
+--     end
+-- end
+
 function bookmarks.place()
     if next(names) then
-        local list = lists.filtercollected(names,"all",nil,lists.collected,forced)
-        if #list > 0 then
-            local levels, noflevels, lastlevel = { }, 0, 1
+        local levels    = { }
+        local noflevels = 0
+        local lastlevel = 1
+        local nofblocks = #lists.sectionblocks -- always >= 1
+        for i=1,nofblocks do
+            local block = lists.sectionblocks[i]
+            local blockdone = nofblocks == 1
+            local list = lists.filtercollected(names,block..":all",nil,lists.collected,forced)
             for i=1,#list do
                 local li = list[i]
                 local metadata = li.metadata
@@ -113,8 +166,24 @@ function bookmarks.place()
                 if not metadata.nolist or forced[name] then -- and levelmap[name] then
                     local titledata = li.titledata
                     if titledata then
+                        if not blockdone then
+                            -- add block entry
+                            local blockdata = sections.sectionblockdata[block]
+                            noflevels = noflevels + 1
+                            levels[noflevels] = {
+                                1, -- toplevel
+                                stripped(blockdata.bookmark ~= "" and blockdata.bookmark or block),
+                                li.references,
+                                allopen or opened[name] -- same as first entry
+                            }
+                            blockdone = true
+                        end
                         local structural = levelmap[name]
                         lastlevel = structural or lastlevel
+                        if nofblocks > 1 then
+                            -- we have a block so increase the level
+                            lastlevel = lastlevel + 1
+                        end
                         local title = titledata.bookmark
                         if not title or title == "" then
                             -- We could typeset the title and then convert it.
@@ -143,8 +212,8 @@ function bookmarks.place()
                     end
                 end
             end
-            bookmarks.finalize(levels)
         end
+        bookmarks.finalize(levels)
         function bookmarks.place() end -- prevent second run
     end
 end
