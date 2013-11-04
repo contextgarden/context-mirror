@@ -171,15 +171,16 @@ end)
 
 --
 
-sections.levelmap = sections.levelmap or { }
+sections.verbose          = true
 
-local levelmap = sections.levelmap
+local sectionblockdata    = sections.sectionblockdata or { }
+sections.sectionblockdata = sectionblockdata
+
+local levelmap            = sections.levelmap or { }
+sections.levelmap         = levelmap
+levelmap.block            = -1
 
 storage.register("structures/sections/levelmap", sections.levelmap, "structures.sections.levelmap")
-
-sections.verbose = true
-
-levelmap.block = -1
 
 function sections.setlevel(name,level) -- level can be number or parent (=string)
     local l = tonumber(level)
@@ -197,17 +198,21 @@ function sections.getlevel(name)
     return levelmap[name] or 0
 end
 
-function sections.setblock(name)
+table.setmetatableindex(sectionblockdata,"table")
+
+function sections.setblock(name,settings)
     local block = name or data.block or "unknown" -- can be used to set the default
     data.block = block
+    sectionblockdata[block] = settings
     return block
 end
 
-function sections.pushblock(name)
+function sections.pushblock(name,settings)
     counters.check(0) -- we assume sane usage of \page between blocks
     local block = name or data.block
     data.blocks[#data.blocks+1] = block
     data.block = block
+    sectionblockdata[block] = settings
     documents.reset()
     return block
 end
@@ -954,9 +959,9 @@ commands.namedstructureuservariable = function(depth,name)   sections.userdata  
 
 --
 
-function commands.setsectionblock (name) context(sections.setblock(name))  end
-function commands.pushsectionblock(name) context(sections.pushblock(name)) end
-function commands.popsectionblock ()     context(sections.popblock())      end
+commands.setsectionblock  = sections.setblock
+commands.pushsectionblock = sections.pushblock
+commands.popsectionblock  = sections.popblock
 
 --
 

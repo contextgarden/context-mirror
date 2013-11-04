@@ -76,17 +76,24 @@
 \to \everyaftersectionblock
 
 \unexpanded\def\setsectionblock
-  {\dosingleargument\strc_sectionblock_set}
+  {\dodoubleempty\strc_sectionblock_set}
 
-\def\strc_sectionblock_set[#1]% used to set the default
-  {\edef\currentsectionblock{\ctxcommand{setsectionblock("#1")}}}
+\def\strc_sectionblock_set[#1][#2]% used to set the default
+  {\edef\currentsectionblock{#1}% from now on we assume a value
+   \setupcurrentsectionblock[#2]%
+   \ctxcommand{setsectionblock("#1", { bookmark = "\sectionblockparameter\c!bookmark" })}}
 
 \let\currentsectionblock\empty % was \s!unknown
 
-\unexpanded\def\startsectionblock[#1]%
+\unexpanded\def\startsectionblock
+  {\dodoubleempty\strc_sectionblock_start}
+
+\unexpanded\def\strc_sectionblock_start[#1][#2]%
   {%\ctxlua{structures.counters.check(0)}% we assume sane usage of \page, as this is the only workable place (in push)
    \begingroup
-   \edef\currentsectionblock{\ctxcommand{pushsectionblock("#1")}}%
+   \edef\currentsectionblock{#1}% from now on we assume a value
+   \setupcurrentsectionblock[#2]%
+   \ctxcommand{pushsectionblock("#1", { bookmark = "\sectionblockparameter\c!bookmark" })}%
    \csname #1true\endcsname % obsolete
    \setsystemmode\currentsectionblock
    \the\everybeforesectionblock\relax
@@ -95,7 +102,7 @@
 \unexpanded\def\stopsectionblock
   {\showmessage\m!structures2\currentsectionblock
    \the\everyaftersectionblock\relax
-   \edef\currentsectionblock{\ctxcommand{popsectionblock()}}%
+   \ctxcommand{popsectionblock()}%
    \endgroup}
 
 %D \starttyping

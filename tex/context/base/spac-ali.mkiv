@@ -984,6 +984,24 @@
 %
 % \wordright[\rightskip]{whatever}
 
+% Trick posted by WS on mailing list, generalized a bit. The bottom text only shows
+% op when there is one line space available. We could add some extra space if needed.
+
+% \unexpanded\def\bottomword
+%   {\par
+%    \dowithnextbox
+%      {\leaders\box\nextbox\vfil\page}
+%      \vbox to \lineheight}
+%
+% \unexpanded\def\bottomword
+%   {\par
+%    \groupedcommand
+%      {\leaders
+%       \vbox to \lineheight\bgroup}
+%      {\egroup
+%       \vfil
+%       \page}}
+
 % \simplealignedbox{2cm}{right}{x}
 
 \installcorenamespace{alignsimple}
