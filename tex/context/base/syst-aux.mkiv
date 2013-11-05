@@ -6763,11 +6763,31 @@
 %D
 %D This one is for Mojca Miklavec, who made me aware of the fact that
 %D \type {page-imp.tex} was not the best place to hide it.
+%D
+%D \startbuffer
+%D \def\DoSomething#1{ [item #1] }
+%D
+%D \processranges[1,4:5]\DoSomething \par
+%D \dowithrange  {1,4:5}\DoSomething \par
+%D \stopbuffer
+%D
+%D \typebuffer \blank \getbuffer \blank
 
-\unexpanded\def\dowithrange#1#2% #2 takes number
-  {\splitstring#1\at:\to\fromrange\and\torange
-   \ifx\torange\empty\let\torange\fromrange\fi
-   \dostepwiserecurse\fromrange\torange1{#2{\recurselevel}}}
+\def\syst_helpers_with_range#1%
+  {\splitstring#1\at:\to\m_syst_helpers_range_from\and\m_syst_helpers_range_to
+   \ifx\m_syst_helpers_range_to\empty\let\m_syst_helpers_range_to\m_syst_helpers_range_from\fi
+   \dostepwiserecurse\m_syst_helpers_range_from\m_syst_helpers_range_to\plusone{\m_helpers_range_action{##1}}}%
+
+\unexpanded\def\processranges[#1]#2% #1= n:m,p,q:r
+  {\def\m_helpers_range_action{#2}%
+   \processcommacommand[#1]\syst_helpers_with_range}
+
+\unexpanded\def\dowithrange#1#2%
+  {\def\m_helpers_range_action{#2}%
+   \processcommacommand[#1]\syst_helpers_with_range}
+
+% \def\DoSomething#1{ [item #1] }
+% \dowithrange[1,4:5]\DoSomething
 
 %D \macros
 %D   {ignoreimplicitspaces}
