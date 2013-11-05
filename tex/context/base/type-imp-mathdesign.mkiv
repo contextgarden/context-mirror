@@ -1,9 +1,9 @@
 %D \module
 %D   [       file=type-imp-mathdesign,
-%D        version=2013.10.31,
+%D        version=2013.11.03,
 %D          title=\CONTEXT\ Typescript Macros,
 %D       subtitle=Mathdesign,
-%D         author=Hans Hagen \& Wolfgang Schuster,
+%D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
@@ -13,28 +13,97 @@
 
 \starttypescriptcollection [mathdesign]
 
-    % Bitstream Charter
+    % Bistream Charter
 
-    \starttypescript [\s!math] [mdbch,mathdesignch,mathdesigncharter] [\s!all]
+    \starttypescript [\s!serif] [charter]
+        \definefontsynonym [Charter-Regular]     [\s!file:bchr8a.afm]
+        \definefontsynonym [Charter-Italic]      [\s!file:bchri8a.afm]
+        \definefontsynonym [Charter-Bold]        [\s!file:bchb8a.afm]
+        \definefontsynonym [Charter-BoldItalic]  [\s!file:bchbi8a.afm]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [charter] [\s!name]
+		\setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]            [Charter-Regular]
+        \definefontsynonym [\s!SerifItalic]      [Charter-Italic]
+        \definefontsynonym [\s!SerifBold]        [Charter-Bold]
+        \definefontsynonym [\s!SerifBoldItalic]  [Charter-BoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!math] [mdbch,mathdesignch,charter] [\s!all]
         \loadfontgoodies[mdbch-math]
         \definefontsynonym [\s!MathRoman]     [mdbchrm@mdbch-rm]
         \definefontsynonym [\s!MathRomanBold] [mdbchbf@mdbch-bf]
     \stoptypescript
 
+    \starttypescript [mathdesignch,charter]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [charter] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]  [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]  [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [charter] [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
     % URW Garamond
 
-    \starttypescript [\s!math] [mdugm,mathdesigngm,mathdesigngaramond] [\s!all]
+    \starttypescript [\s!serif] [garamond]
+        \definefontsynonym [Garamond-Regular]     [\s!file:ugmr8a.afm]
+        \definefontsynonym [Garamond-Italic]      [\s!file:ugmri8a.afm]
+        \definefontsynonym [Garamond-Bold]        [\s!file:bchb8a.afm]
+        \definefontsynonym [Garamond-BoldItalic]  [\s!file:ugmmi8a.afm]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [garamond] [\s!name]
+		\setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]            [Garamond-Regular]
+        \definefontsynonym [\s!SerifItalic]      [Garamond-Italic]
+        \definefontsynonym [\s!SerifBold]        [Garamond-Bold]
+        \definefontsynonym [\s!SerifBoldItalic]  [Garamond-BoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!math] [mdugm,mathdesigngm,garamond] [\s!all]
         \loadfontgoodies[mdugm-math]
         \definefontsynonym [\s!MathRoman]     [mdugmrm@mdugm-rm]
         \definefontsynonym [\s!MathRomanBold] [mdugmbf@mdugm-bf]
     \stoptypescript
 
+    \starttypescript [mathdesigngm,garamond]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [garamond] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]   [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]   [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [garamond] [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
     % Adobe Utopia
 
-    \starttypescript [\s!math] [mdput,mathdesignut,mathdesignutopia] [\s!all]
+    \starttypescript [\s!serif] [utopia]
+        \definefontsynonym [Utopia-Regular]     [\s!file:putr8a.afm]
+        \definefontsynonym [Utopia-Italic]      [\s!file:putri8a.afm]
+        \definefontsynonym [Utopia-Bold]        [\s!file:putb8a.afm]
+        \definefontsynonym [Utopia-BoldItalic]  [\s!file:putbi8a.afm]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [utopia] [\s!name]
+		\setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]            [Utopia-Regular]
+        \definefontsynonym [\s!SerifItalic]      [Utopia-Italic]
+        \definefontsynonym [\s!SerifBold]        [Utopia-Bold]
+        \definefontsynonym [\s!SerifBoldItalic]  [Utopia-BoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!math] [mdput,mathdesignut,utopia] [\s!all]
         \loadfontgoodies[mdput-math]
         \definefontsynonym [\s!MathRoman]     [mdputrm@mdput-rm]
         \definefontsynonym [\s!MathRomanBold] [mdputbf@mdput-bf]
+    \stoptypescript
+
+    \starttypescript [mathdesignut,utopia]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [utopia] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern] [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [utopia] [\s!default]
+        \quittypescriptscanning
     \stoptypescript
 
     % Charter ITC Std
