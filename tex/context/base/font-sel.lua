@@ -6,31 +6,33 @@ if not modules then modules = { } end modules ['font-sel'] = {
     license   = "GNU General Public License"
 }
 
-local context             = context
-local cleanname           = fonts.names.cleanname
-local gsub, splitup, find = string.gsub, string.splitup, string.find
-local formatters          = string.formatters
-local settings_to_array   = utilities.parsers.settings_to_array
+local context                 = context
+local cleanname               = fonts.names.cleanname
+local gsub, splitup, find     = string.gsub, string.splitup, string.find
+local splitbase, removesuffix = file.splitbase, file.removesuffix
 
-local v_yes               = interfaces.variables.yes
-local v_simplefonts       = interfaces.variables.simplefonts
-local v_selectfont        = interfaces.variables.selectfont
-local v_default           = interfaces.variables.default
+local formatters              = string.formatters
+local settings_to_array       = utilities.parsers.settings_to_array
 
-local selectfont          = fonts.select or { }
-fonts.select              = selectfont
+local v_yes                   = interfaces.variables.yes
+local v_simplefonts           = interfaces.variables.simplefonts
+local v_selectfont            = interfaces.variables.selectfont
+local v_default               = interfaces.variables.default
 
-local data                = selectfont.data or { }
-selectfont.data           = data
+local selectfont              = fonts.select or { }
+fonts.select                  = selectfont
 
-local fallbacks           = selectfont.fallbacks or { }
-selectfont.fallbacks      = fallbacks
+local data                    = selectfont.data or { }
+selectfont.data               = data
 
-local methods             = selectfont.methods or { }
-selectfont.methods        = methods
+local fallbacks               = selectfont.fallbacks or { }
+selectfont.fallbacks          = fallbacks
 
-local getlookups          = fonts.names.getlookups
-local registerdesignsizes = fonts.goodies.designsizes.register
+local methods                 = selectfont.methods or { }
+selectfont.methods            = methods
+
+local getlookups              = fonts.names.getlookups
+local registerdesignsizes     = fonts.goodies.designsizes.register
 
 local alternatives = {
     ["tf"] = "regular",
@@ -382,7 +384,7 @@ end
 methods["file"] = function(data,alternative,filename)
     local data     = data
     local family   = data.metadata.family
-    local filename = gsub(file.removesuffix(filename),"*",family)
+    local filename = gsub(removesuffix(filename),"*",family)
     local filename = getlookups{ cleanfilename = cleanname(filename) }
     if #filename > 0 then
         savefont(data,alternative,filename)
@@ -480,15 +482,16 @@ local function definefontsynonym(data,alternative,index,fallback)
             for _, entry in next, fontdata do
                 if entry["minsize"] and entry["maxsize"] then
                     if size[1] > entry["minsize"] and size[1] <= entry["maxsize"] then
-                        registerdesignsizes( fontfile, size[2], entry["filename"] )
+                        local filepath, filename = splitbase(entry["filename"])
+                        registerdesignsizes( fontfile, size[2], filename )
                     end
                 end
             end
         end
         for _, entry in next, fontdata do
-            local filename   = entry["filename"]
             local designsize = entry["designsize"] or 100
             if designsize == 100 or designsize == 120 or designsize == 0 then
+                local filepath, filename = splitbase(entry["filename"])
                 registerdesignsizes( fontfile, "default", filename )
                 break
             end
