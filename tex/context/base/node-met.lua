@@ -91,6 +91,7 @@ nodes.traverse_id          = node.traverse_id
 nodes.slide                = node.slide
 nodes.vpack                = node.vpack
 nodes.fields               = node.fields
+nodes.is_node              = node.is_node
 
 nodes.first_glyph          = node.first_glyph
 nodes.first_character      = node.first_character

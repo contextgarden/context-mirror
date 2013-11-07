@@ -34,6 +34,7 @@ local marks         = hashes.marks        or allocate()
 local italics       = hashes.italics      or allocate()
 local lastmathids   = hashes.lastmathids  or allocate()
 local dynamics      = hashes.dynamics     or allocate()
+local unicodes      = hashes.unicodes     or allocate()
 
 hashes.characters   = characters
 hashes.descriptions = descriptions
@@ -50,6 +51,7 @@ hashes.marks        = marks
 hashes.italics      = italics
 hashes.lastmathids  = lastmathids
 hashes.dynamics     = dynamics
+hashes.unicodes     = unicodes
 
 local nodepool      = nodes.pool
 local dummyglyph    = nodepool.register(nodepool.glyph())
@@ -256,6 +258,24 @@ setmetatableindex(dynamics, function(t,k)
         local dynamics = shared and shared.dynamics or false
         t[k] = dynamics
         return dynamics
+    end
+end)
+
+setmetatableindex(unicodes, function(t,k)
+    if k == true then
+        return originals[currentfont()]
+    else
+        local resources  = resources[k]
+        local originals  = resources and resources.originals or { }
+        local characters = characters[k]
+        local unicodes   = { }
+        setmetatableindex(unicodes,function(t,k)
+            local v = originals[characters[k].index] or k
+            t[k] = v
+            return v
+        end)
+        t[k] = unicodes
+        return unicodes
     end
 end)
 

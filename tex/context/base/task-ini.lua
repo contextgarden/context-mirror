@@ -27,7 +27,6 @@ appendaction("processors",   "normalizers", "typesetters.characters.handler")   
 appendaction("processors",   "normalizers", "fonts.collections.process")                         -- disabled
 appendaction("processors",   "normalizers", "fonts.checkers.missing")                            -- disabled
 
-appendaction("processors",   "characters",  "typesetters.characteralign.handler")                -- disabled
 appendaction("processors",   "characters",  "scripts.autofontfeature.handler")
 appendaction("processors",   "characters",  "scripts.splitters.handler")                         -- disabled
 appendaction("processors",   "characters",  "typesetters.cleaners.handler")                      -- disabled
@@ -51,6 +50,7 @@ appendaction("processors",   "fonts",       "builders.kernel.kerning")          
 appendaction("processors",   "fonts",       "nodes.handlers.stripping")                          -- disabled (might move)
 ------------("processors",   "fonts",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
 
+appendaction("processors",   "lists",       "typesetters.characteralign.handler")                -- disabled (we need to to this after otf appliance)
 appendaction("processors",   "lists",       "typesetters.spacings.handler")                      -- disabled
 appendaction("processors",   "lists",       "typesetters.kerns.handler")                         -- disabled
 appendaction("processors",   "lists",       "typesetters.digits.handler")                        -- disabled (after otf handling)

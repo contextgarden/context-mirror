@@ -464,7 +464,7 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
                 },
                 goodies = {
                 },
-                helpers = {
+                helpers = { -- might go away
                     tounicodelist  = splitter,
                     tounicodetable = lpeg.Ct(splitter),
                 },

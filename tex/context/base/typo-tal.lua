@@ -17,6 +17,7 @@ local glyph_code           = nodecodes.glyph
 local glue_code            = nodecodes.glue
 
 local fontcharacters       = fonts.hashes.characters
+local unicodes             = fonts.hashes.unicodes
 local categories           = characters.categories -- nd
 
 local insert_node_before   = nodes.insert_before
@@ -72,7 +73,12 @@ function characteralign.handler(head,where)
     if not datasets then
         return head, false
     end
-    local first = first_glyph(head) -- we could do that once
+ -- local first = first_glyph(head) -- we could do that once
+    local first
+    for n in traverse_list_by_id(glyhp_code,head) do
+        first = n
+        break
+    end
     if not first then
         return head, false
     end
@@ -97,12 +103,17 @@ function characteralign.handler(head,where)
         local id = current.id
         if id == glyph_code then
             local char = current.char
-            if char == separator then
+            local font = current.font
+            local unicode = unicodes[font][char]
+            if not unicode then
+                -- no unicode so forget about it
+            elseif unicode == separator then
                 c = current
                 if trace_split then
                     setcolor(current,"darkred")
                 end
-            elseif categories[char] == "nd" or validseparators[char] then
+                dataset.hasseparator = true
+            elseif categories[unicode] == "nd" or validseparators[unicode] then
                 if c then
                     if not a_start then
                         a_start = current
@@ -137,10 +148,10 @@ function characteralign.handler(head,where)
                     end
                 end
             elseif not b_start then
-                sign = validsigns[char] and current
+                sign = validsigns[unicode] and current
             end
         elseif (b_start or a_start) and id == glue_code then
-            -- somewhat inefficient 
+            -- somewhat inefficient
             local next = current.next
             local prev = current.prev
             if next and prev and next.id == glyph_code and prev.id == glyph_code then -- too much checking
@@ -169,12 +180,12 @@ function characteralign.handler(head,where)
                     maxafter = after
                 end
             end
-            dataset.maxafter  = maxafter
             dataset.maxbefore = maxbefore
+            dataset.maxafter  = maxafter
             dataset.collected = true
         end
-        local maxafter  = dataset.maxafter
         local maxbefore = dataset.maxbefore
+        local maxafter  = dataset.maxafter
         local before    = entry.before or 0
         local after     = entry.after  or 0
         local new_kern = trace_split and traced_kern or new_kern
@@ -184,8 +195,10 @@ function characteralign.handler(head,where)
             end
             if not c then
              -- print("[before]")
-                local width = fontcharacters[b_stop.font][separator].width
-                insert_node_after(head,b_stop,new_kern(maxafter+width))
+                if dataset.hasseparator then
+                    local width = fontcharacters[b_stop.font][separator].width
+                    insert_node_after(head,b_stop,new_kern(maxafter+width))
+                end
             elseif a_start then
              -- print("[before] [separator] [after]")
                 if after < maxafter then

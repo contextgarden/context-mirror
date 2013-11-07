@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 11/05/13 09:50:05
+-- merge date  : 11/07/13 15:28:28
 
 do -- begin closure to overcome local limits and interference
 
@@ -6725,7 +6725,7 @@ function otf.load(filename,sub,featurefile)
         },
         descriptions={},
         goodies={},
-        helpers={
+        helpers={ 
           tounicodelist=splitter,
           tounicodetable=lpeg.Ct(splitter),
         },
