@@ -155,6 +155,7 @@ function bookmarks.place()
         local noflevels = 0
         local lastlevel = 1
         local nofblocks = #lists.sectionblocks -- always >= 1
+        local showblocktitle = toboolean(numberspec.showblocktitle,true)
         for i=1,nofblocks do
             local block = lists.sectionblocks[i]
             local blockdone = nofblocks == 1
@@ -167,15 +168,17 @@ function bookmarks.place()
                     local titledata = li.titledata
                     if titledata then
                         if not blockdone then
-                            -- add block entry
-                            local blockdata = sections.sectionblockdata[block]
-                            noflevels = noflevels + 1
-                            levels[noflevels] = {
-                                1, -- toplevel
-                                stripped(blockdata.bookmark ~= "" and blockdata.bookmark or block),
-                                li.references,
-                                allopen or opened[name] -- same as first entry
-                            }
+                            if showblocktitle then
+                                -- add block entry
+                                local blockdata = sections.sectionblockdata[block]
+                                noflevels = noflevels + 1
+                                levels[noflevels] = {
+                                    1, -- toplevel
+                                    stripped(blockdata.bookmark ~= "" and blockdata.bookmark or block),
+                                    li.references,
+                                    allopen or opened[name] -- same as first entry
+                                }
+                            end
                             blockdone = true
                         end
                         local structural = levelmap[name]

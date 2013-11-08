@@ -55,8 +55,9 @@
 \installsetuponlycommandhandler \??bookmark {bookmark} % installdirectparametersethandler
 
 \setupbookmark
-  [\c!force=\v!no,    % it's easier to force that to inhibit
-   \c!number=\v!yes]  % might become v!no
+  [\c!force=\v!no,        % it's easier to force that to inhibit
+   \c!number=\v!yes,      % might become v!no
+   \c!sectionblock=\v!no] % show sectionblock level + title
 
 \let\setupbookmarks\setupbookmark
 
@@ -117,11 +118,12 @@
 
 \appendtoks
     \ctxcommand{setupbookmarks {
-        separatorset  = "\bookmarkparameter\c!numberseparatorset",
-        conversionset = "\bookmarkparameter\c!numberconversionset",
-        starter       = \!!bs\bookmarkparameter\c!numberstarter\!!es,
-        stopper       = \!!bs\bookmarkparameter\c!numberstopper\!!es,
-        segments      = "\bookmarkparameter\c!numbersegments",
+        separatorset   = "\bookmarkparameter\c!numberseparatorset",
+        conversionset  = "\bookmarkparameter\c!numberconversionset",
+        starter        = \!!bs\bookmarkparameter\c!numberstarter\!!es,
+        stopper        = \!!bs\bookmarkparameter\c!numberstopper\!!es,
+        segments       = "\bookmarkparameter\c!numbersegments",
+        showblocktitle = "\bookmarkparameter\c!sectionblock",
     }}%
 \to \everysetupbookmark
 

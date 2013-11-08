@@ -75,7 +75,7 @@ function characteralign.handler(head,where)
     end
  -- local first = first_glyph(head) -- we could do that once
     local first
-    for n in traverse_list_by_id(glyhp_code,head) do
+    for n in traverse_list_by_id(glyph_code,head) do
         first = n
         break
     end
@@ -120,7 +120,7 @@ function characteralign.handler(head,where)
                     end
                     a_stop = current
                     if trace_split then
-                        setcolor(current,"darkgreen")
+                        setcolor(current,validseparators[unicode] and "darkcyan" or "darkblue")
                     end
                 else
                     if not b_start then
@@ -138,13 +138,17 @@ function characteralign.handler(head,where)
                                 end
                             end
                             sign = nil
+                            b_stop = current
                         else
                             b_start = current
+                            b_stop = current
+                            setcolor(current,validseparators[unicode] and "darkcyan" or "darkblue")
                         end
-                    end
-                    b_stop = current
-                    if trace_split then
-                        setcolor(current,"darkblue")
+                    else
+                        b_stop = current
+                        if trace_split then
+                            setcolor(current,validseparators[unicode] and "darkcyan" or "darkblue")
+                        end
                     end
                 end
             elseif not b_start then
@@ -155,11 +159,16 @@ function characteralign.handler(head,where)
             local next = current.next
             local prev = current.prev
             if next and prev and next.id == glyph_code and prev.id == glyph_code then -- too much checking
-                local width = fontcharacters[b_start.font][period].width
+                local width = fontcharacters[b_start.font][separator or period].width
              -- local spec = current.spec
              -- nodes.free(spec) -- hm, we leak but not that many specs
                 current.spec = new_gluespec(width)
                 current[a_character] = punctuationspace
+                if a_start then
+                    a_stop = current
+                elseif b_start then
+                    b_stop = current
+                end
             end
         end
         current = current.next
