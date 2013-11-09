@@ -171,10 +171,20 @@
     \global\setfalse\c_strc_formulas_inside_place_sub
 \to \everyresetformulas
 
+% \def\strc_formulas_place_numbering % place formula
+%   {\settrue\c_strc_formulas_handle_number
+%    \strc_formulas_check_reference\c_strc_formulas_place_number_mode\currentplaceformulareference
+%    \glet\strc_formulas_place_number\strc_formulas_place_number_indeed
+%    \glet\strc_formulas_place_number_nested\strc_formulas_place_number_nested_indeed}
+
 \def\strc_formulas_place_numbering % place formula
   {\settrue\c_strc_formulas_handle_number
    \strc_formulas_check_reference\c_strc_formulas_place_number_mode\currentplaceformulareference
-   \glet\strc_formulas_place_number\strc_formulas_place_number_indeed
+   \ifnum\c_strc_formulas_place_number_mode=\plustwo
+     \glet\strc_formulas_place_number\relax
+   \else
+     \glet\strc_formulas_place_number\strc_formulas_place_number_indeed
+   \fi
    \glet\strc_formulas_place_number_nested\strc_formulas_place_number_nested_indeed}
 
 \def\strc_formulas_handle_number % formulas
@@ -610,6 +620,33 @@
 %D \startformula x \stopformula % now has \noindent (in mkii we messed with baselineskip)
 %D \stoptyping
 
+% \unexpanded\def\startdisplaymath
+%   {\bgroup
+%    \par
+%    \informulatrue
+%    \beforedisplayspace
+%    \par
+%    \ifvmode
+%      \prevdepth-\maxdimen % texbook pagina 79-80
+%    \fi
+%    \noindent % else funny hlist with funny baselineskip
+%    $$% \Ustartdisplaymath
+%    \setdisplaydimensions
+%    \startinnermath}
+%
+% \unexpanded\def\stopdisplaymath
+%   {\stopinnermath
+%    $$% \Ustopdisplaymath
+%    \par
+%    \afterdisplayspace
+%    \par
+%    \egroup}
+
+\newconstant\c_strc_formulas_space_model
+
+\c_strc_formulas_space_model\plusone
+%c_strc_formulas_space_model\plustwo % needs chdcking with spac-ver
+
 \unexpanded\def\startdisplaymath
   {\bgroup
    \par
@@ -617,18 +654,32 @@
    \beforedisplayspace
    \par
    \ifvmode
-     \prevdepth-\maxdimen % texbook pagina 79-80
+     \ifcase\c_strc_formulas_space_model
+       % nothing
+     \or
+       % nothing yet
+     \or
+       \prevdepth-\maxdimen % texbook pagina 79-80
+     \fi
    \fi
    \noindent % else funny hlist with funny baselineskip
    $$% \Ustartdisplaymath
    \setdisplaydimensions
-  %\setpredisplaysize
    \startinnermath}
 
 \unexpanded\def\stopdisplaymath
   {\stopinnermath
    $$% \Ustopdisplaymath
    \par
+   \ifvmode
+     \ifcase\c_strc_formulas_space_model
+       % nothing
+     \or
+       \prevdepth .5\strutdp
+     \or
+       \prevdepth\lineheight
+     \fi
+   \fi
    \afterdisplayspace
    \par
    \egroup}

@@ -263,12 +263,63 @@ filters.ttf   = fontloader.info
 filters.ttc   = fontloader.info
 filters.dfont = fontloader.info
 
-function fontloader.fullinfo(...) -- check with taco what we get / could get
+-- We had this as temporary solution because we needed a bit more info but in the
+-- meantime it got an interesting side effect: currently luatex delays loading of e.g.
+-- glyphs so here we first load and then discard which is a waste. In the past it did
+-- free memory because a full load was done. One of these things that goes unnoticed.
+--
+-- function fontloader.fullinfo(...) -- check with taco what we get / could get
+--     local ff = fontloader.open(...)
+--     if ff then
+--         local d = ff -- and fontloader.to_table(ff)
+--         d.glyphs, d.subfonts, d.gpos, d.gsub, d.lookups = nil, nil, nil, nil, nil
+--         fontloader.close(ff)
+--         return d
+--     else
+--         return nil, "error in loading font"
+--     end
+-- end
+
+-- Phillip suggested this faster variant but it's still a hack as fontloader.info should
+-- return these keys/values (and maybe some more) but at least we close the loader which
+-- might save some memory in the end.
+--
+-- function fontloader.fullinfo(name)
+--     local ff = fontloader.open(name)
+--     if ff then
+--         local fields = table.tohash(fontloader.fields(ff),true)
+--         local d   = {
+--             names               = fields.names               and ff.names,
+--             familyname          = fields.familyname          and ff.familyname,
+--             fullname            = fields.fullname            and ff.fullname,
+--             fontname            = fields.fontname            and ff.fontname,
+--             weight              = fields.weight              and ff.weight,
+--             italicangle         = fields.italicangle         and ff.italicangle,
+--             units_per_em        = fields.units_per_em        and ff.units_per_em,
+--             design_range_bottom = fields.design_range_bottom and ff.design_range_bottom,
+--             design_range_top    = fields.design_range_top    and ff.design_range_top,
+--             design_size         = fields.design_size         and ff.design_size,
+--             italicangle         = fields.italicangle         and ff.italicangle,
+--             pfminfo             = fields.pfminfo             and ff.pfminfo,
+--         }
+--         table.setmetatableindex(d,function(t,k)
+--             report_names("warning, trying to access field %a in font table of %a",k,name)
+--         end)
+--         fontloader.close(ff)
+--         return d
+--     else
+--         return nil, "error in loading font"
+--     end
+-- end
+
+-- As we have lazy loading anyway, this one still is full and with less code than
+-- the previous one.
+
+function fontloader.fullinfo(...)
     local ff = fontloader.open(...)
     if ff then
-        local d = ff and fontloader.to_table(ff)
-        d.glyphs, d.subfonts, d.gpos, d.gsub, d.lookups = nil, nil, nil, nil, nil
-        fontloader.close(ff)
+        local d = { } -- ff is userdata so [1] or # fails on it
+        table.setmetatableindex(d,ff)
         return d
     else
         return nil, "error in loading font"
@@ -909,9 +960,10 @@ local function analyzefiles(olddata)
                 end
             end
             if result == nil then
-                local result, message = filters[lower(suffix)](completename)
+                local lsuffix = lower(suffix)
+                local result, message = filters[lsuffix](completename)
                 if result then
-                    if result[1] then
+                    if #result > 0 then
                         for r=1,#result do
                             local ok = check_name(data,result[r],storedname,modification,suffix,r-1) -- subfonts start at zero
                          -- if not ok then

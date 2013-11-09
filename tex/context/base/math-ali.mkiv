@@ -980,8 +980,11 @@
 \installcorenamespace{mathinnerstart}
 \installcorenamespace{mathinnerstop}
 
-\unexpanded\def\startinnermath{\csname\??mathinnerstart\formulaparameter\c!align\endcsname}
-\unexpanded\def\stopinnermath {\csname\??mathinnerstop \formulaparameter\c!align\endcsname}
+% \unexpanded\def\startinnermath{\csname\??mathinnerstart\formulaparameter\c!align\endcsname}
+% \unexpanded\def\stopinnermath {\csname\??mathinnerstop \formulaparameter\c!align\endcsname}
+
+\unexpanded\def\startinnermath{\expandnamespaceparameter\??mathinnerstart\formulaparameter\c!align\v!normal}
+\unexpanded\def\stopinnermath {\expandnamespaceparameter\??mathinnerstop \formulaparameter\c!align\v!normal}
 
 \unexpanded\def\mathinnerstrut
   {\doif{\formulaparameter\c!strut}\v!yes\strut}
@@ -1090,6 +1093,9 @@
 \defineinnermathhandler\v!flushleft {\startmathbox\plusthree}{\stopmathbox}
 \defineinnermathhandler\v!center    {\startmathbox\plustwo  }{\stopmathbox}
 \defineinnermathhandler\v!flushright{\startmathbox\plusone  }{\stopmathbox}
+\defineinnermathhandler\v!normal    {}                       {}
+
+%defineinnermathhandler\v!normal    {\startmathbox\plustwo  }{\stopmathbox}
 
 %D [The examples below are in english and don't process in the
 %D  documentation style, which will be english some day.]

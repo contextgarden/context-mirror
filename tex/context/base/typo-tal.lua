@@ -142,7 +142,9 @@ function characteralign.handler(head,where)
                         else
                             b_start = current
                             b_stop = current
-                            setcolor(current,validseparators[unicode] and "darkcyan" or "darkblue")
+                            if trace_split then
+                                setcolor(current,validseparators[unicode] and "darkcyan" or "darkblue")
+                            end
                         end
                     else
                         b_stop = current
