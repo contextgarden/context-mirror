@@ -12,9 +12,9 @@ local sub, format = string.sub, string.format
 local splitlines, validstring = string.splitlines, string.valid
 local P, Cs, patterns, lpegmatch = lpeg.P, lpeg.Cs, lpeg.patterns, lpeg.match
 
-local trace_run         = false  trackers.register("buffers.run",       function(v) trace_run       = v end)
-local trace_grab        = false  trackers.register("buffers.grab",      function(v) trace_grab      = v end)
-local trace_visualize   = false  trackers.register("buffers.visualize", function(v) trace_visualize = v end)
+local trace_run         = false  trackers  .register("buffers.run",       function(v) trace_run       = v end)
+local trace_grab        = false  trackers  .register("buffers.grab",      function(v) trace_grab      = v end)
+local trace_visualize   = false  trackers  .register("buffers.visualize", function(v) trace_visualize = v end)
 
 local report_buffers    = logs.reporter("buffers","usage")
 local report_typeset    = logs.reporter("buffers","typeset")
@@ -28,6 +28,8 @@ local settings_to_array = utilities.parsers.settings_to_array
 local formatters        = string.formatters
 local addsuffix         = file.addsuffix
 local replacesuffix     = file.replacesuffix
+
+local registertempfile  = luatex.registertempfile
 
 local v_yes             = variables.yes
 
@@ -97,7 +99,7 @@ local function getnames(name)
 end
 
 local function istypeset(name)
-    local names  = getnames(name)
+    local names = getnames(name)
     if #names == 0 then
         return false
     end
@@ -339,39 +341,93 @@ function commands.savebuffer(list,name,prefix) -- name is optional
     io.savedata(name,content)
 end
 
-local files = { }
-local last  = 0
+-- local files = { }
+-- local last  = 0
+--
+-- function commands.runbuffer(name,encapsulate) -- we used to compare the saved file with content
+--     local names    = getnames(name)
+--     local filename = files[name]
+--     local tobedone = not istypeset(names)
+--     if tobedone or not filename then
+--         last        = last + 1
+--         filename    = formatters["%s-typeset-buffer-%03i"](tex.jobname,last)
+--         files[name] = filename
+--     end
+--     if tobedone then
+--         if trace_run then
+--             report_typeset("changes in %a, processing forced",name)
+--         end
+--         local filename = addsuffix(filename,"tmp")
+--         local content = collectcontent(names,nil) or ""
+--         if content == "" then
+--             content = "empty buffer"
+--         end
+--         if encapsulate then
+--             content = formatters["\\starttext\n%s\n\\stoptext\n"](content)
+--         end
+--         io.savedata(filename,content)
+--         local command = formatters["context %s %s"](jit and "--jit" or "",filename)
+--         report_typeset("running: %s\n",command)
+--         os.execute(command)
+--         markastypeset(names)
+--     elseif trace_run then
+--         report_typeset("no changes in %a, not processed",name)
+--     end
+--     context(replacesuffix(filename,"pdf"))
+-- end
 
-function commands.runbuffer(name,encapsulate) -- we used to compare the saved file with content
-    local names    = getnames(name)
-    local filename = files[name]
-    local tobedone = not istypeset(names)
-    if tobedone or not filename then
-        last        = last + 1
-        filename    = formatters["%s-typeset-buffer-%03i"](tex.jobname,last)
-        files[name] = filename
+-- we can consider adding a size to avoid unlikely clashes
+
+local oldhashes = nil
+local newhashes = nil
+
+function commands.runbuffer(name,encapsulate)
+    if not oldhashes then
+        oldhashes = job.datasets.getdata("typeset buffers","hashes") or { }
+        for hash, n in next, oldhashes do
+            local tag  = formatters["%s-t-b-%s"](tex.jobname,hash)
+            registertempfile(addsuffix(tag,"tmp")) -- to be sure
+            registertempfile(addsuffix(tag,"pdf"))
+        end
+        newhashes = { }
+        job.datasets.setdata {
+            name = "typeset buffers",
+            tag  = "hashes",
+            data = newhashes,
+        }
     end
-    if tobedone then
+    local names   = getnames(name)
+    local content = collectcontent(names,nil) or ""
+    if content == "" then
+        content = "empty buffer"
+    end
+    if encapsulate then
+        content = formatters["\\starttext\n%s\n\\stoptext\n"](content)
+    end
+    --
+    local hash = md5.hex(content)
+    local tag  = formatters["%s-t-b-%s"](tex.jobname,hash)
+    --
+    local filename   = addsuffix(tag,"tmp")
+    local resultname = addsuffix(tag,"pdf")
+    --
+    if newhashes[hash] then
+        -- done
+    elseif not oldhashes[hash] or not lfs.isfile(resultname) then
         if trace_run then
             report_typeset("changes in %a, processing forced",name)
         end
-        local filename = addsuffix(filename,"tmp")
-        local content = collectcontent(names,nil) or ""
-        if content == "" then
-            content = "empty buffer"
-        end
-        if encapsulate then
-            content = formatters["\\starttext\n%s\n\\stoptext\n"](content)
-        end
         io.savedata(filename,content)
-        local command = formatters["context %s %s"](jit and "--jit" or "",filename)
+        local command = formatters["context --purgeall %s %s"](jit and "--jit" or "",filename)
         report_typeset("running: %s\n",command)
         os.execute(command)
-        markastypeset(names)
-    elseif trace_run then
-        report_typeset("no changes in %a, not processed",name)
     end
-    context(replacesuffix(filename,"pdf"))
+    newhashes[hash] = (newhashes[hash] or 0) + 1
+    report_typeset("no changes in %a, processing skipped",name)
+    registertempfile(filename)
+    registertempfile(resultname,nil,true)
+    --
+    context(resultname)
 end
 
 function commands.getbuffer(name)

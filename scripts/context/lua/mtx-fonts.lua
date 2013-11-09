@@ -385,6 +385,7 @@ function scripts.fonts.justload()
         local result = fontloader.open(fullname)
         if type(result) == "table" then
             report("loading %s: %s","succeeded",fullname)
+            fontloader.close(result)
         end
     end
     report("loading %s: %s","failed",fullname)
@@ -426,7 +427,7 @@ function scripts.fonts.save()
                 local fontinfo = fontloader.info(filename)
                 if fontinfo then
                     report("font: %s located as %s",name,filename)
-                    if fontinfo[1] then
+                    if #fontinfo > 0 then
                         for k=1,#fontinfo do
                             local v = fontinfo[k]
                             save(v.fontname,fontloader.open(filename,v.fullname))

@@ -36,8 +36,8 @@ local report_passes = logs.reporter("job","passes")
 job                 = job or { }
 local job           = job
 
-job.version         = 1.22 -- make sure we don't have old lua 5.1 hash leftovers
-job.packversion     = 1.02 -- make sure we don't have old lua 5.1 hash leftovers
+job.version         = 1.23
+job.packversion     = 1.02
 
 -- some day we will implement loading of other jobs and then we need
 -- job.jobs
@@ -87,12 +87,16 @@ local jobvariables = {
     checksums = checksums,
 }
 
+-- if not checksums.old then checksums.old = md5.HEX("old") end -- used in experiment
+-- if not checksums.new then checksums.new = md5.HEX("new") end -- used in experiment
+
 job.variables = jobvariables
 
-if not checksums.old then checksums.old = md5.HEX("old") end -- used in experiment
-if not checksums.new then checksums.new = md5.HEX("new") end -- used in experiment
+local function initializer()
+    checksums = jobvariables.checksums
+end
 
-job.register('job.variables.checksums', checksums)
+job.register('job.variables.checksums', 'job.variables.checksums', initializer)
 
 local rmethod, rvalue
 
@@ -101,7 +105,6 @@ local setxvalue = context.setxvalue
 local function initializer()
     tobesaved = jobvariables.tobesaved
     collected = jobvariables.collected
-    checksums = jobvariables.checksums
     rvalue = collected.randomseed
     if not rvalue then
         rvalue = math.random()
@@ -122,6 +125,22 @@ job.register('job.variables.collected', tobesaved, initializer)
 function jobvariables.save(cs,value)
     tobesaved[cs] = value
 end
+
+-- checksums
+
+function jobvariables.getchecksum(tag)
+    return checksums[tag] -- no default
+end
+
+function jobvariables.makechecksum(data)
+    return data and md5.HEX(data) -- no default
+end
+
+function jobvariables.setchecksum(tag,checksum)
+    checksums[tag] = checksum
+end
+
+--
 
 local packlist = {
     "numbers",
@@ -156,6 +175,9 @@ function job.save(filename) -- we could return a table but it can get pretty lar
             local target    = format("utilitydata.%s",list[1])
             local data      = list[2]
             local finalizer = list[4]
+            if type(data) == "string" then
+                data = utilities.tables.accesstable(data)
+            end
             if type(finalizer) == "function" then
                 finalizer()
             end

@@ -13,6 +13,7 @@ if not modules then modules = { } end modules ['node-par'] = {
 -- todo: permit global steps i.e. using an attribute that sets min/max/step and overloads the font parameters
 -- todo: split the three passes into three functions
 -- todo: simplify the direction stack, no copy needed
+-- todo: see if we can do without delta nodes (needs thinking)
 -- todo: add more mkiv like tracing
 -- todo: add a couple of plugin hooks
 -- todo: maybe split expansion code paths
@@ -90,9 +91,31 @@ if not modules then modules = { } end modules ['node-par'] = {
                 tex vbox    9.84    10.16   0.20 linebreak / 0.52 with hz -> 0.32 hz overhead (150pct more)
                 lua vbox   17.28    18.43   7.64 linebreak / 8.79 with hz -> 1.33 hz overhead ( 20pct more)
 
+    new laptop | no nuts
+                            3.42            baseline
+                            3.63            0.21 linebreak
+                            7.38            3.96 linebreak
+
+    new laptop | most nuts
+                            2.45            baseline
+                            2.53            0.08 linebreak
+                            6.16            3.71 linebreak
+                 ltp nuts   5.45            3.00 linebreak
+
     luajittex   tex hbox    6.33     6.33   baseline font feature processing, hyphenation etc: 6.33
                 tex vbox    6.53     6.81   0.20 linebreak / 0.48 with hz -> 0.28 hz overhead (expected 0.32)
                 lua vbox   11.06    11.81   4.53 linebreak / 5.28 with hz -> 0.75 hz overhead
+
+    new laptop | no nuts
+                            2.06            baseline
+                            2.27            0.21 linebreak
+                            3.95            1.89 linebreak
+
+    new laptop | most nuts
+                            1.25            baseline
+                            1.30            0.05 linebreak
+                            3.03            1.78 linebreak
+                 ltp nuts   2.47            1.22 linebreak
 
     Interesting is that the runtime for the built-in parbuilder indeed increases much when expansion
     is enabled, but in the Lua variant the extra overhead is way less significant. This means that when we
@@ -103,7 +126,7 @@ if not modules then modules = { } end modules ['node-par'] = {
 local utfchar = utf.char
 local write, write_nl = texio.write, texio.write_nl
 local sub, format = string.sub, string.format
-local round = math.round
+local round, floor = math.round, math.floor
 local insert, remove = table.insert, table.remove
 
 local fonts, nodes, node = fonts, nodes, node
@@ -265,6 +288,7 @@ local glyphdir_is_equal    = nodes.glyphdir_is_equal
 local dir_pops             = nodes.dir_is_pop
 local dir_negations        = nodes.dir_negation
 local is_skipable          = node.protrusion_skippable
+local a_fontkern           = attributes.private('fontkern')
 
 -- helpers --
 
@@ -389,7 +413,7 @@ local function calculate_fraction(x,n,d,max_answer)
 end
 
 local function check_shrinkage(par,n)
-    -- called often, so maybe move inline
+    -- called often, so maybe move inline -- use NORMAL
     if n.shrink_order ~= 0 and n.shrink ~= 0 then
         if par.no_shrink_error_yet then
             par.no_shrink_error_yet = false
@@ -407,7 +431,7 @@ end
 local expansions = { }
 local nothing    = { stretch = 0, shrink = 0 }
 
-setmetatableindex(expansions,function(t,font)
+setmetatableindex(expansions,function(t,font) -- we can store this in tfmdata if needed
     local expansion = parameters[font].expansion -- can be an extra hash
     if expansion and expansion.auto then
         local factors = { }
@@ -426,7 +450,7 @@ setmetatableindex(expansions,function(t,font)
                         glyphshrink  = shrink  * ef_quad,
                         factor       = factor,
                         stretch      = stretch,
-                        shrink       = shrink ,
+                        shrink       = shrink,
                     }
                     t[char] = v
                     return v
@@ -503,6 +527,8 @@ local function kern_stretch_shrink(p,d)
 end
 
 local function kern_stretch_shrink(p,d)
+    -- maybe make it an option in luatex where we also need to check for attribute fontkern but in general
+    -- it makes no sense to scale kerns
     return 0, 0
 end
 
@@ -514,6 +540,7 @@ local function check_expand_pars(checked_expansion,f)
         checked_expansion[f] = false
         return false
     end
+expansion.step = 1
     local step    = expansion.step    or 0
     local stretch = expansion.stretch or 0
     local shrink  = expansion.shrink  or 0
@@ -561,6 +588,7 @@ local function check_expand_lines(checked_expansion,f)
         checked_expansion[f] = false
         return false
     end
+expansion.step = 1
     local step    = expansion.step    or 0
     local stretch = expansion.stretch or 0
     local shrink  = expansion.shrink  or 0
@@ -796,7 +824,8 @@ local function append_to_vlist(par, b)
             local head_field = par.head_field
             if head_field then
                 local n = slide_nodes(head_field)
-                n.next, s.prev = s, n
+                n.next = s
+                s.prev = n
             else
                 par.head_field = s
             end
@@ -805,7 +834,8 @@ local function append_to_vlist(par, b)
     local head_field = par.head_field
     if head_field then
         local n = slide_nodes(head_field)
-        n.next, b.prev = b, n
+        n.next = b
+        b.prev = n
     else
         par.head_field = b
     end
@@ -820,7 +850,8 @@ local function append_list(par, b)
     local head_field = par.head_field
     if head_field then
         local n = slide_nodes(head_field)
-        n.next, b.prev = b, n
+        n.next = b
+        b.prev = n
     else
         par.head_field = b
     end
@@ -828,6 +859,9 @@ end
 
 -- We can actually make par local to this module as we never break inside a break call and that way the
 -- array is reused. At some point the information will be part of the paragraph spec as passed.
+
+local hztolerance = 2500
+local hzwarned    = false
 
 local function initialize_line_break(head,display)
 
@@ -903,7 +937,7 @@ local function initialize_line_break(head,display)
         double_hyphen_demerits       = tex.doublehyphendemerits or 0,
         final_hyphen_demerits        = tex.finalhyphendemerits  or 0,
 
-        first_line                   = 0, -- tex.nest.modeline, -- 0, -- cur_list.pg_field
+        first_line                   = 0, -- tex.nest[tex.nest.ptr].modeline, -- 0, -- cur_list.pg_field
 
         each_line_height             = tex.pdfeachlineheight    or 0, -- this will go away
         each_line_depth              = tex.pdfeachlinedepth     or 0, -- this will go away
@@ -964,15 +998,24 @@ local function initialize_line_break(head,display)
 
         prev_char_p                  = nil,
 
-        font_steps                   = { }, -- mine
-
         statistics                   = {
 
             noflines          = 0,
             nofprotrudedlines = 0,
             nofadjustedlines  = 0,
 
-        }
+        },
+
+     -- -- just a thought ... parshape functions ... it would be nice to
+     -- -- also store the height so far (probably not too hard) although
+     -- -- in most cases we work on grids in such cases
+     --
+     -- adapt_width = function(par,line)
+     --     -- carry attribute, so that we can accumulate
+     --     local left  = 655360 * (line - 1)
+     --     local right = 655360 * (line - 1)
+     --     return left, right
+     -- end
 
     }
 
@@ -980,6 +1023,15 @@ local function initialize_line_break(head,display)
         local checked_expansion = { par = par }
         setmetatableindex(checked_expansion,check_expand_pars)
         par.checked_expansion = checked_expansion
+
+        if par.tolerance < hztolerance then
+            if not hzwarned then
+                report_parbuilders("setting tolerance to %a for hz",hztolerance)
+                hzwarned = true
+            end
+            par.tolerance = hztolerance
+        end
+
     end
 
     -- we need par for the error message
@@ -1029,9 +1081,9 @@ local function initialize_line_break(head,display)
     else
         local last_special_line = #par_shape_ptr
         par.last_special_line = last_special_line
-        local ptr = par_shape_ptr[last_special_line]
-        par.second_width  = ptr[2]
-        par.second_indent = ptr[1]
+        local parshape = par_shape_ptr[last_special_line]
+        par.second_width  = parshape[2]
+        par.second_indent = parshape[1]
     end
 
     if par.looseness == 0 then
@@ -1281,6 +1333,8 @@ local function post_line_break(par)
         statistics.noflines = statistics.noflines + 1
         if adjust_spacing > 0 then
             statistics.nofadjustedlines = statistics.nofadjustedlines + 1
+            -- in the built-in hpack cal_expand_ratio will later on call subst_ext_font
+            -- in the alternative approach we can do both in one run
             just_box = xpack_nodes(q,cur_width,"cal_expand_ratio",par.par_break_dir) -- ,cur_p.analysis)
         else
             just_box = xpack_nodes(q,cur_width,"exactly",par.par_break_dir) -- ,cur_p.analysis)
@@ -1850,7 +1904,7 @@ end
                 local total = cur_active_width.adjust_stretch + margin_kern_stretch
                 if shortfall > 0 and total > 0 then
                     if total > shortfall then
-                        shortfall = total / (par.max_stretch_ratio / par.cur_font_step) / 2
+                        shortfall = total / (par.max_stretch_ratio / par.cur_font_step) / 2 -- to be adapted
                     else
                         shortfall = shortfall - total
                     end
@@ -1858,15 +1912,12 @@ end
                     total = cur_active_width.adjust_shrink + margin_kern_shrink
                     if shortfall < 0 and total > 0 then
                         if total > - shortfall then
-                            shortfall = - total / (par.max_shrink_ratio / par.cur_font_step) / 2
+                            shortfall = - total / (par.max_shrink_ratio / par.cur_font_step) / 2 -- to be adapted
                         else
                             shortfall = shortfall + total
                         end
                     end
                 end
-                par.font_steps[line_number] = par.cur_font_step -- mine
-            else
-                par.font_steps[line_number] = 0 -- mine
             end
             local b = 0
             local g = 0
@@ -2334,7 +2385,7 @@ function constructors.methods.basic(head,d)
     return wrap_up(par)
 end
 
--- standard tex logging .. will be adapted .. missing font names and to many []
+-- standard tex logging .. will be adapted ..
 
 local function write_esc(cs)
     local esc = tex.escapechar
@@ -2654,8 +2705,6 @@ end
 --     return hlist, 0
 -- end
 
--- local expansion_stack = { } -- no dealloc
-
 local function hpack(head,width,method,direction) -- fast version when head = nil
 
     -- we can pass the adjust_width and adjust_height so that we don't need to recalculate them but
@@ -2667,11 +2716,10 @@ local function hpack(head,width,method,direction) -- fast version when head = ni
         return hlist, 0
     end
 
-    local cal_expand_ratio  = method == "cal_expand_ratio" -- "subst_ex_font" -- is gone
+    local cal_expand_ratio  = method == "cal_expand_ratio" or method == "subst_ex_font"
 
     direction               = direction or tex.textdir
 
-    local pack_begin_line   = 0
     local line              = 0
 
     local height            = 0
@@ -2761,7 +2809,7 @@ local function hpack(head,width,method,direction) -- fast version when head = ni
             current = current.next
         elseif id == disc_code then
             if current.subtype ~= second_disc_code then
-                -- todo : local stretch, shrink = char_stretch_shrink(s)
+                -- we follow the end of line disc chain
                 local replace = current.replace
                 if replace then
                     disc_level = disc_level + 1
@@ -2771,14 +2819,6 @@ local function hpack(head,width,method,direction) -- fast version when head = ni
                     current = current.next
                 end
             else
-                -- -- pre post replace
-                --
-                -- local stretch, shrink = char_stretch_shrink(current.pre)
-                -- font_stretch = font_stretch + stretch
-                -- font_shrink  = font_shrink + shrink
-                -- expansion_index = expansion_index + 1
-                -- expansion_stack[expansion_index] = current.pre
-                --
                 current = current.next
             end
         elseif id == glue_code then
@@ -2919,89 +2959,32 @@ local function hpack(head,width,method,direction) -- fast version when head = ni
     if mode == "additional" then
         width = width + natural
     end
+
     hlist.width  = width
     hlist.height = height
     hlist.depth  = depth
+
     local delta  = width - natural
     if delta == 0 then
         hlist.glue_sign = 0
         hlist.glue_order = 0
         hlist.glue_set = 0
     elseif delta > 0 then
+        -- natural width smaller than requested width
         local order = (total_stretch[4] ~= 0 and 4 or total_stretch[3] ~= 0 and 3) or
                       (total_stretch[2] ~= 0 and 2 or total_stretch[1] ~= 0 and 1) or 0
-        if cal_expand_ratio and order == 0 and font_stretch > 0 then
-            font_expand_ratio = (delta/font_stretch) * 1000 -- round(delta/font_stretch * 1000)
-        else
-            local tso = total_stretch[order]
-            if tso ~= 0 then
-                hlist.glue_sign = 1
-                hlist.glue_order = order
-                hlist.glue_set = delta/tso
-            else
-                hlist.glue_sign = 0
-                hlist.glue_order = order
-                hlist.glue_set = 0
-            end
--- print("stretch",hlist.glue_sign,hlist.glue_order,hlist.glue_set)
-            if order == 0 and hlist.list then
-                last_badness = calculate_badness(delta,total_stretch[0])
-                if last_badness > tex.hbadness then
-                    if last_badness > 100 then
-                        diagnostics.underfull_hbox(hlist,pack_begin_line,line,last_badness)
-                    else
-                        diagnostics.loose_hbox(hlist,pack_begin_line,line,last_badness)
-                    end
-                end
-            end
-        end
-    else
-        local order = total_shrink[4] ~= 0 and 4 or total_shrink[3] ~= 0 and 3
-                   or total_shrink[2] ~= 0 and 2 or total_shrink[1] ~= 0 and 1 or 0
-        if cal_expand_ratio and order == 0 and font_shrink > 0 then
-            font_expand_ratio = (delta/font_shrink) * 1000 -- round(delta/font_shrink * 1000)
-        else -- why was this else commented
-            local tso = total_shrink[order]
-            if tso ~= 0 then
-                hlist.glue_sign  = 2
-                hlist.glue_order = order
-                hlist.glue_set   = -delta/tso
-            else
-                hlist.glue_sign  = 0
-                hlist.glue_order = order
-                hlist.glue_set   = 0
-            end
--- print("shrink",hlist.glue_sign,hlist.glue_order,hlist.glue_set)
-            if total_shrink[order] < -delta and order == 0 and hlist.list then
-                last_badness = 1000000
-                hlist.glue_set = 1
-                local fuzz = - delta - total_shrink[0]
-                local hfuzz = tex.hfuzz
-                if fuzz > hfuzz or tex.hbadness < 100 then
-                    local overfullrule = tex.overfullrule
-                    if fuzz > hfuzz and overfullrule > 0 then
-                        -- weird, is always called and no rules shows up
-                        slide_nodes(list).next = new_rule(overfullrule,nil,nil,hlist.dir)
-                    end
-                    diagnostics.overfull_hbox(hlist,pack_begin_line,line,-delta) -- - added
-                end
-            elseif order == 0 and hlist.list and last_badness > tex.hbadness then
-                diagnostics.bad_hbox(hlist,pack_begin_line,line,last_badness)
-            end
-        end
-    end
-    if cal_expand_ratio and font_expand_ratio ~= 0 then
-        -- if font_expand_ratio > 1000 then
-        --     font_expand_ratio = 1000
-        -- elseif font_expand_ratio < -1000 then
-        --     font_expand_ratio = -1000
-        -- end
+        local correction = 0
+        if cal_expand_ratio and order == 0 and font_stretch > 0 then -- check sign of font_stretch
+            font_expand_ratio = delta/font_stretch
 
-        local fontexps, lastfont
+            if font_expand_ratio > 1 then
+                font_expand_ratio = 1
+            end
 
-        if font_expand_ratio > 0 then
+            local fontexps, lastfont
             for i=1,expansion_index do
                 local g = expansion_stack[i]
+                local e
                 if g.id == glyph_code then
                     local currentfont = g.font
                     if currentfont ~= lastfont then
@@ -3012,15 +2995,56 @@ local function hpack(head,width,method,direction) -- fast version when head = ni
                     if trace_expansion then
                         setnodecolor(g,"hz:positive")
                     end
-                    g.expansion_factor = font_expand_ratio * data.glyphstretch
+                    e = font_expand_ratio * data.glyphstretch / 1000
+                    correction = correction + (e / 1000) * g.width
                 else
-                    local stretch, shrink = kern_stretch_shrink(g,g.kern)
-                    g.expansion_factor = font_expand_ratio * stretch
+                    local kern = g.kern
+                    local stretch, shrink = kern_stretch_shrink(g,kern)
+                    e = font_expand_ratio * stretch / 1000
+                    correction = correction + (e / 1000) * kern
+                end
+                g.expansion_factor = e
+            end
+        end
+        delta = delta - correction
+        local tso = total_stretch[order]
+        if tso ~= 0 then
+            hlist.glue_sign  = 1
+            hlist.glue_order = order
+            hlist.glue_set   = delta/tso
+        else
+            hlist.glue_sign  = 0
+            hlist.glue_order = order
+            hlist.glue_set   = 0
+        end
+        if font_expand_ratio ~= 0 then
+            -- todo
+        elseif order == 0 then -- and hlist.list then
+            last_badness = calculate_badness(delta,total_stretch[0])
+            if last_badness > tex.hbadness then
+                if last_badness > 100 then
+                    diagnostics.underfull_hbox(hlist,line,last_badness)
+                else
+                    diagnostics.loose_hbox(hlist,line,last_badness)
                 end
             end
-        else
+        end
+    else
+        -- natural width larger than requested width
+        local order = total_shrink[4] ~= 0 and 4 or total_shrink[3] ~= 0 and 3
+                   or total_shrink[2] ~= 0 and 2 or total_shrink[1] ~= 0 and 1 or 0
+        local correction = 0
+        if cal_expand_ratio and order == 0 and font_shrink > 0 then -- check sign of font_shrink
+            font_expand_ratio = delta/font_shrink
+
+            if font_expand_ratio < 1 then
+                font_expand_ratio = -1
+            end
+
+            local fontexps, lastfont
             for i=1,expansion_index do
                 local g = expansion_stack[i]
+                local e
                 if g.id == glyph_code then
                     local currentfont = g.font
                     if currentfont ~= lastfont then
@@ -3031,33 +3055,68 @@ local function hpack(head,width,method,direction) -- fast version when head = ni
                     if trace_expansion then
                         setnodecolor(g,"hz:negative")
                     end
-                    g.expansion_factor = font_expand_ratio * data.glyphshrink
+                    e = font_expand_ratio * data.glyphshrink / 1000
+                 -- local d = (e / 1000) * 1000
+                 -- local eps = g.width - (1 + d / 1000000) * g.width
+                 -- correction = correction + eps
+                 -- e = d
+                    correction = correction + (e / 1000) * g.width
                 else
-                    local stretch, shrink = kern_stretch_shrink(g,g.kern)
-                    g.expansion_factor = font_expand_ratio * shrink
+                    local kern = g.kern
+                    local stretch, shrink = kern_stretch_shrink(g,kern)
+                    e = font_expand_ratio * shrink / 1000
+                    correction = correction + (e / 1000) * kern
                 end
+                g.expansion_factor = e
             end
         end
-
+        delta = delta - correction
+        local tso = total_shrink[order]
+        if tso ~= 0 then
+            hlist.glue_sign  = 2
+            hlist.glue_order = order
+            hlist.glue_set   = -delta/tso
+        else
+            hlist.glue_sign  = 0
+            hlist.glue_order = order
+            hlist.glue_set   = 0
+        end
+        if font_expand_ratio ~= 0 then
+            -- todo
+        elseif tso < -delta and order == 0 then -- and hlist.list then
+            last_badness = 1000000
+            hlist.glue_set = 1
+            local fuzz = - delta - total_shrink[0]
+            local hfuzz = tex.hfuzz
+            if fuzz > hfuzz or tex.hbadness < 100 then
+                local overfullrule = tex.overfullrule
+                if fuzz > hfuzz and overfullrule > 0 then
+                    -- weird, is always called and no rules shows up
+                    slide_nodes(list).next = new_rule(overfullrule,nil,nil,hlist.dir)
+                end
+                diagnostics.overfull_hbox(hlist,line,-delta)
+            end
+        elseif order == 0 and hlist.list and last_badness > tex.hbadness then
+            diagnostics.bad_hbox(hlist,line,last_badness)
+        end
     end
     return hlist, last_badness
 end
 
-nodes.hpack = hpack
-hpack_nodes = hpack -- comment this for old fashioned expansion
 xpack_nodes = hpack -- comment this for old fashioned expansion
 
-local function common_message(hlist,pack_begin_line,line,str)
+local function common_message(hlist,line,str)
     write_nl("")
     if status.output_active then -- unset
         write(str," has occurred while \\output is active")
     end
-    if pack_begin_line > 0 then
-        write(str," in paragraph at lines ",pack_begin_line,"--",line)
-    elseif pack_begin_line < 0 then
-        write(str," in alignment at lines ",-pack_begin_line,"--",line)
+    local fileline = status.linenumber
+    if line > 0 then
+        write(str," in paragraph at lines ",fileline,"--",fileline+line-1)
+    elseif line < 0 then
+        write(str," in alignment at lines ",fileline,"--",fileline-line-1)
     else
-        write(str," detected at line ",line)
+        write(str," detected at line ",fileline)
     end
     write_nl("")
     diagnostics.short_display(hlist.list,false)
@@ -3067,141 +3126,35 @@ local function common_message(hlist,pack_begin_line,line,str)
  -- diagnostics.stop()
 end
 
-function diagnostics.overfull_hbox(hlist,pack_begin_line,line,d)
-    common_message(hlist,pack_begin_line,line,format("Overfull \\hbox (%spt too wide)",number.toscaled(d)))
+function diagnostics.overfull_hbox(hlist,line,d)
+    common_message(hlist,line,format("Overfull \\hbox (%spt too wide)",number.toscaled(d)))
 end
 
-function diagnostics.bad_hbox(hlist,pack_begin_line,line,b)
-    common_message(hlist,pack_begin_line,line,format("Tight \\hbox (badness %i)",b))
+function diagnostics.bad_hbox(hlist,line,b)
+    common_message(hlist,line,format("Tight \\hbox (badness %i)",b))
 end
 
-function diagnostics.underfull_hbox(hlist,pack_begin_line,line,b)
-    common_message(hlist,pack_begin_line,line,format("Underfull \\hbox (badness %i)",b))
+function diagnostics.underfull_hbox(hlist,line,b)
+    common_message(hlist,line,format("Underfull \\hbox (badness %i)",b))
 end
 
-function diagnostics.loose_hbox(hlist,pack_begin_line,line,b)
-    common_message(hlist,pack_begin_line,line,format("Loose \\hbox (badness %i)",b))
+function diagnostics.loose_hbox(hlist,line,b)
+    common_message(hlist,line,format("Loose \\hbox (badness %i)",b))
 end
 
--- for the moment here:
+-- e = font_expand_ratio * data.glyphstretch / 1000
+-- local stretch = data.stretch
+-- if e >= stretch then
+--     e = stretch
+-- else
+--     local step = 5
+--     e = math.round(e/step) * step
+-- end
 
-local utfchar = utf.char
-local concat = table.concat
-
-local nodecodes     = nodes.nodecodes
-local hlist_code    = nodecodes.hlist
-local vlist_code    = nodecodes.vlist
-local glyph_code    = nodecodes.glyph
-local kern_code     = nodecodes.kern
-local setnodecolor  = nodes.tracers.colors.set
-local parameters    = fonts.hashes.parameters
-local basepoints    = number.basepoints
-
--- definecolor[hz:positive] [r=0.6]
--- definecolor[hz:negative] [g=0.6]
--- definecolor[hz:zero]     [b=0.6]
-
--- scale = multiplier + ef/multiplier
-
-local trace_verbose = false  trackers.register("builders.paragraphs.expansion.verbose", function(v) trace_verbose = v end)
-
-local report_verbose = logs.reporter("fonts","expansion")
-
-local function colorize(n)
-    local size, font, ef, width, scale, list, flush, length
-    if trace_verbose then
-        width  = 0
-        length = 0
-        list   = { }
-        flush  = function()
-            if length > 0 then
-                report_verbose("%0.3f : %10s  %10s  %s",scale,basepoints(width),basepoints(width*scale),concat(list,"",1,length))
-                width  = 0
-                length = 0
-            end
-        end
-    else
-        length = 0
-    end
-    -- tricky: the built-in method creates dummy fonts and the last line normally has the
-    -- original font and that one then has ex.auto set
-    while n do
-        local id = n.id
-        if id == glyph_code then
-            local ne = n.expansion_factor
-            if ne == 0 then
-                if length > 0 then flush() end
-            else
-                local f = n.font
-                if f ~= font then
-                    if length > 0 then
-                        flush()
-                    end
-                    local pf = parameters[f]
-                    local ex = pf.expansion
-                    if ex and ex.auto then
-                        size = pf.size
-                        font = f -- save lookups
-                    else
-                        size = false
-                    end
-                end
-                if size then
-                    if ne ~= ef then
-                        if length > 0 then
-                            flush()
-                        end
-                        ef = ne
-                    end
-                 -- scale = 1.0 + ef / 1000 / 1000 / 1000
-                    scale = 1.0 + ef / 1000000000
-                    if scale > 1 then
-                        setnodecolor(n,"hz:positive")
-                    elseif scale < 1 then
-                        setnodecolor(n,"hz:negative")
-                    else
-                        setnodecolor(n,"hz:zero")
-                    end
-                    if report_verbose then
-                        length = length + 1
-                        list[length] = utfchar(n.char)
-                        width = width + n.width -- no kerning yet
-                    end
-                end
-            end
-        elseif id == hlist_code or id == vlist_code then
-            if length > 0 then
-                flush()
-            end
-            colorize(n.list,flush)
-        else -- nothing to show on kerns
-            if length > 0 then
-                flush()
-            end
-        end
-        n = n.next
-    end
-    if length > 0 then
-        flush()
-    end
-end
-
-builders.paragraphs.expansion = builders.paragraphs.expansion or { }
-
-function builders.paragraphs.expansion.trace(head)
-    colorize(head,true)
-    return head
-end
-
-local tasks = nodes.tasks
-
-tasks.prependaction("shipouts","normalizers","builders.paragraphs.expansion.trace")
-tasks.disableaction("shipouts","builders.paragraphs.expansion.trace")
-
-trackers.register("builders.paragraphs.expansion.verbose", function(v)
-    if v then
-        tasks.enableaction("shipouts","builders.paragraphs.expansion.trace")
-    else
-        tasks.disableaction("shipouts","builders.paragraphs.expansion.trace")
-    end
-end)
+-- local shrink = - data.shrink
+-- if e <= shrink then
+--     e = shrink
+-- else
+--     local step = 5
+--     e = math.round(e/step) * step
+-- end
