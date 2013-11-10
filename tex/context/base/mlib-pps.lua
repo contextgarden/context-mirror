@@ -967,24 +967,25 @@ local function tx_process(object,prescript,before,after)
     end
 end
 
--- graphics
+-- graphics (we use the given index because pictures can be reused)
 
 local graphics = { }
 
 function metapost.intermediate.actions.makempy()
     if #graphics > 0 then
         makempy.processgraphics(graphics)
-        graphics = { } -- ?
+        graphics = { } -- ? could be gt_reset
     end
 end
 
 local function gt_analyze(object,prescript)
     local gt_stage = prescript.gt_stage
-    if gt_stage == "trial" then
-        graphics[#graphics+1] = formatters["\\MPLIBgraphictext{%s}"](object.postscript or "")
-        top.intermediate      = true
-        top.multipass         = true
-        metapost.multipass    = true -- ugly
+    local gt_index = tonumber(prescript.gt_index)
+    if gt_stage == "trial" and not graphics[gt_index] then
+        graphics[gt_index] = formatters["\\MPLIBgraphictext{%s}"](object.postscript or "")
+        top.intermediate   = true
+        top.multipass      = true
+        metapost.multipass = true -- ugly
     end
 end
 
