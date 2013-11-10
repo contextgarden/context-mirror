@@ -139,7 +139,11 @@ def mfun_do_graphic_text (expr t) =
 enddef ;
 
 def mfun_no_graphic_text (expr t) text rest =
-    draw unitsquare withprescript "gt_stage=trial" withpostscript t
+    currentgraphictext := currentgraphictext + 1 ;
+    draw unitsquare
+        withprescript "gt_stage=trial"
+        withprescript "gt_index=" & decimal currentgraphictext
+        withpostscript t
 enddef ;
 
 def mfun_finish_graphic_text text x_op_x =
