@@ -971,7 +971,7 @@ local days = { -- not variables.sunday
     "saturday",
 }
 
-local months = { -- not variables.januari
+local months = { -- not variables.january
     "january",
     "february",
     "march",
