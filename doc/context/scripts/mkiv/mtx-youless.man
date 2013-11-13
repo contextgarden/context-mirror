@@ -1,0 +1,42 @@
+.TH "mtx-youless" "1" "01-01-2013" "version 1.00" "youless Fetcher"
+.SH NAME
+.B mtx-youless
+.SH SYNOPSIS
+.B mtxrun --script youless [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B youless Fetcher
+.SH OPTIONS
+.TP
+.B --collect
+collect data from device
+.TP
+.B --nobackup
+don't backup old datafile
+.TP
+.B --nofile
+don't write data to file (for checking)
+.TP
+.B --kwh
+summative kwk data
+.TP
+.B --watt
+collected watt data
+.TP
+.B --host
+ip address of device
+.SH AUTHOR
+More information about ConTeXt and the tools that come with it can be found at:
+
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

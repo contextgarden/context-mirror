@@ -206,8 +206,8 @@
 %D
 %D Anyhow, the conversion looks like:
 
-\def\monthlong #1{\ctxcommand{monthname(#1)}}
-\def\monthshort#1{\ctxcommand{monthmnem(#1)}}
+\unexpanded\def\monthlong #1{\ctxcommand{monthname(#1)}}
+\unexpanded\def\monthshort#1{\ctxcommand{monthmnem(#1)}}
 
 \let\convertmonth\monthlong % for old times sake
 
@@ -218,9 +218,9 @@
 
 \let\month              \monthlong
 
-\def\MONTH     #1{\WORD{\month     {#1}}}
-\def\MONTHLONG #1{\WORD{\monthlong {#1}}}
-\def\MONTHSHORT#1{\WORD{\monthshort{#1}}}
+\unexpanded\def\MONTH     #1{\WORD{\month     {#1}}}
+\unexpanded\def\MONTHLONG #1{\WORD{\monthlong {#1}}}
+\unexpanded\def\MONTHSHORT#1{\WORD{\monthshort{#1}}}
 
 %D We never explicitly needed this, but Tobias Burnus pointed out that it would be
 %D handy to convert to the day of the week. In doing so, we have to calculate the
@@ -240,8 +240,8 @@
 %D \showsetup{weekday}
 %D \showsetup{WEEKDAY}
 
-\def\weekday#1{\ctxcommand{day(#1)}}
-\def\WEEKDAY#1{\WORD{\weekday{#1}}}
+\unexpanded\def\weekday#1{\ctxcommand{day(#1)}}
+\unexpanded\def\WEEKDAY#1{\WORD{\weekday{#1}}}
 
 %D \macros
 %D   {getdayoftheweek, dayoftheweek}

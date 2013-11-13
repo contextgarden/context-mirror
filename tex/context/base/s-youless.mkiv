@@ -1,0 +1,201 @@
+%D \module
+%D   [      file=s-youless,
+%D        version=2013.11.12,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Youless Graphics,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is experimental code. When I have collected enough data I will make the
+%D graphics nicer and provide some more.
+%D
+%D The Jouless can serve web pages but there is not much detail in them. They also are
+%D somewhat bad \HTML, like unquoted attributes and so. We don't need this anyway as we
+%D can also fetch data directly. The data is collected using a dedicated helper script
+%D (of course we could just call it as module too). The data is fetched from the Jouless
+%D device using queries (currently we use json, but a more direct parsing of data might
+%D be more efficient). The data is converted into a proper \LUA\ table and saved (merged).
+
+% mtxrun --script youless --collect --kwk
+% mtxrun --script youless --collect --watt
+
+\startluacode
+
+    moduledata.youless = { }
+
+    function moduledata.youless.enhance(data)
+        if data.years then
+            for y, year in next, data.years do
+                if year.months then
+                    local a_year, n_year, m_year = 0, 0, 0
+                    for m, month in next, year.months do
+                        if month.days then
+                            n_year = n_year + 1
+                            local a_month, n_month = 0, 0
+                            for d, day in next, month.days do
+                                if day.hours then
+                                    n_month = n_month + 1
+                                    local a_day, n_day = 0, 0
+                                    for h, hour in next, day.hours do
+                                        local a_hour, n_hour, m_hour = 0, 0, 0
+                                        for k, v in next, hour do
+                                            if type(k) == "number" then
+                                                a_hour = a_hour + v
+                                                n_hour = n_hour + 1
+                                                if v > m_hour then
+                                                    m_hour = v
+                                                end
+                                            end
+                                        end
+                                        n_day = n_day + n_hour
+                                        a_day = a_day + a_hour
+                                        hour.maxwatt = m_hour
+                                        hour.watt = a_hour / n_hour
+                                        if m_hour > m_year then
+                                            m_year = m_hour
+                                        end
+                                    end
+                                    if n_day > 0 then
+                                        a_month = a_month + a_day
+                                        n_month = n_month + n_day
+                                        day.watt = a_day / n_day
+                                    else
+                                        day.watt = 0
+                                    end
+                                end
+                            end
+                            if n_month > 0 then
+                                a_year = a_year + a_month
+                                n_year = n_year + n_month
+                                month.watt = a_month / n_month
+                            else
+                                month.watt = 0
+                            end
+                        end
+                    end
+                    if n_year > 0 then
+                        year.watt    = a_year / n_year
+                        year.maxwatt = m_year
+                    else
+                        year.watt    = 0
+                        year.maxwatt = 0
+                    end
+                end
+            end
+        end
+    end
+
+    function moduledata.youless.kwh(specification)
+        -- todo
+    end
+
+    function moduledata.youless.watt(specification)
+
+        local y    = tonumber(specification.year) or os.today().year
+        local data = table.load(specification.filename or "youless-watt.lua")
+
+        if not data then
+            return
+        end
+
+        moduledata.youless.enhance(data)
+
+        local year = data.years[y]
+        local scale = 10
+
+        for m=1,12 do
+            local month = year.months[m]
+            if month then
+                context.startMPpage { offset = "10pt" }
+                context("linecap := butt; pickup pencircle scaled .5")
+
+                for i=0,(math.div(year.maxwatt,1000)+1)*1000,100 do
+                    context("draw (%s,%s) -- (%s,%s) withcolor .6white ;",0,i/scale,31 * 24,i/scale)
+                end
+
+                context("draw (0,%s) -- (31 * 24,%s) dashed dashpattern(on 3 off 3) withcolor darkgreen withpen pencircle scaled 1 ;",year.watt /scale,year.watt /scale)
+                context("draw (0,%s) -- (31 * 24,%s) dashed dashpattern(off 3 on 3) withcolor darkred   withpen pencircle scaled 1 ;",month.watt/scale,month.watt/scale)
+
+                local days = month.days
+                if days then
+                    local nd = os.nofdays(y,m)
+                    for d=1,nd do
+                        local day = days[d]
+                        local xoffset = (d-1) * 24
+                        local wd = os.weekday(d,m,y)
+                        local weekend = wd == 1 or wd == 2 or wd == 7
+                        if weekend then
+                            context("draw (%s,%s) -- (%s,%s); ",xoffset,-12,xoffset,weekend and -30)
+                            context("draw (%s,%s) -- (%s,%s); ",xoffset+24,-12,xoffset+24,weekend and -30)
+                        end
+                        context([[draw textext("%s") shifted (%s,%s) ; ]],d,xoffset + 12,-20)
+                        if day then
+                            for h=0,23 do
+                                local hours = day.hours
+                                if hours then
+                                    local hour = hours[h]
+                                    if hour then
+                                        local dx = xoffset + h
+                                        local dy = hour.watt/scale
+                                        local dm = hour.maxwatt/scale
+                                        context("draw (%s,%s) -- (%s,%s) withcolor darkblue ; ",dx,0,dx,dy)
+                                        context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",dx,dy,dx,dm)
+                                    end
+                                end
+                            end
+                        end
+                    end
+                    for d=1,31 do
+                        local xoffset = d * 24
+                        context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset,0,xoffset,-10)
+                    end
+                end
+
+                local max = (math.div(year.maxwatt,1000)+1)
+
+                for i=0,max*1000,1000 do
+                    context([[draw textext.lft("%s") shifted (%s,%s) ; ]],i,-10,i/scale)
+                    context("draw (%s,%s) -- (%s,%s) withcolor .2white  ;",0,i/scale,31 * 24,i/scale)
+                end
+
+                context([[draw textext("\strut\month{%s}\enspace%s") shifted (%s,%s) ; ]],m, y, 31 * 24 / 2, -50)
+                context([[draw textext("watt") rotated 90 shifted (%s,%s) ; ]],-15,50)
+
+                context.stopMPpage()
+            else
+                -- maybe placeholder
+            end
+        end
+
+    end
+
+\stopluacode
+
+\continueifinputfile{s-youless.mkiv}
+
+\setupbodyfont[dejavu]
+
+% printer (oce)  : > 3000 W startup (900 W idle, 2000 W printing)
+% coffeemaker    :   1500 W when heating
+
+% baseline day   :   2250 W (servers, airco, workstations, routers, switches, heating, etc)
+% baseline night :   1750 W
+
+\starttext
+
+    \startluacode
+
+        os.execute([[mtxrun --script youless --collect --watt "c:/data/system/youless/data/youless-watt.lua"]])
+
+     -- os.execute([[mtxrun --script youless --collect --watt --nobackup "c:/data/system/youless/data/youless-watt.lua"]])
+
+        moduledata.youless.watt { year = 2013, filename = "c:/data/system/youless/data/youless-watt.lua" }
+
+    \stopluacode
+
+\stoptext

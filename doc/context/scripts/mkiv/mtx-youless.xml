@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-youless</entry>
+  <entry name="detail">youless Fetcher</entry>
+  <entry name="version">1.00</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="collect"><short>collect data from device</short></flag>
+    <flag name="nobackup"><short>don't backup old datafile</short></flag>
+    <flag name="nofile"><short>don't write data to file (for checking)</short></flag>
+    <flag name="kwh"><short>summative kwk data</short></flag>
+    <flag name="watt"><short>collected watt data</short></flag>
+    <flag name="host"><short>ip address of device</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+ <examples>
+  <category>
+   <title>Example</title>
+   <subcategory>
+    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --kwk</command></example>
+    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --watt somefile.lua</command></example>
+   </subcategory>
+  </category>
+ </examples>
+</application>
