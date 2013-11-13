@@ -57,7 +57,7 @@ lpdf.epdf  = { }
 
 local checked_access
 
-local function prepare(document,d,t,n,k)
+local function prepare(document,d,t,n,k,mt)
     for i=1,n do
         local v = d:getVal(i)
         local r = d:getValNF(i)
@@ -78,15 +78,16 @@ local function prepare(document,d,t,n,k)
             t[d:getKey(i)] = checked_access[v:getTypeName()](v,document)
         end
     end
-    getmetatable(t).__index = nil
+    getmetatable(t).__index = nil -- ?? weird
+setmetatable(t,mt)
     return t[k]
 end
 
-local function some_dictionary(d,document,r)
+local function some_dictionary(d,document,r,mt)
     local n = d and d:getLength() or 0
     if n > 0 then
         local t = { }
-        setmetatable(t, { __index = function(t,k) return prepare(document,d,t,n,k) end } )
+        setmetatable(t, { __index = function(t,k) return prepare(document,d,t,n,k,mt) end } )
         return t
     end
 end
@@ -153,7 +154,7 @@ local function some_stream(d,document,r)
     end
 end
 
--- we need epdf.getBool
+-- we need epdf.boolean(v) in addition to v:getBool() [dictionary, array, stream, real, integer, string, boolean, name, ref, null]
 
 checked_access = {
     dictionary = function(d,document,r)
@@ -260,7 +261,8 @@ local function getlayers(document)
     end
 end
 
-local function getpages(document)
+
+local function getpages(document,Catalog)
     local data  = document.data
     local xrefs = document.xrefs
     local cache = document.cache
@@ -268,9 +270,33 @@ local function getpages(document)
     local xref  = data:getXRef()
     local pages = { }
     local nofpages = cata:getNumPages()
+--     local function getpagestuff(pagenumber,k)
+--         if k == "MediaBox" then
+--             local pageobj = cata:getPage(pagenumber)
+--             local pagebox = pageobj:getMediaBox()
+--             return { pagebox.x1, pagebox.y1, pagebox.x2, pagebox.y2 }
+--         elseif k == "CropBox" then
+--             local pageobj = cata:getPage(pagenumber)
+--             local pagebox = pageobj:getMediaBox()
+--             return { pagebox.x1, pagebox.y1, pagebox.x2, pagebox.y2 }
+--         elseif k == "Resources" then
+--             print("todo page resources from parent")
+--          -- local pageobj = cata:getPage(pagenumber)
+--          -- local resources = pageobj:getResources()
+--         end
+--     end
+--     for pagenumber=1,nofpages do
+--         local mt = { __index = function(t,k)
+--             local v = getpagestuff(pagenumber,k)
+--             if v then
+--                 t[k] = v
+--             end
+--             return v
+--         end }
+    local mt = { __index = Catalog.Pages }
     for pagenumber=1,nofpages do
         local pagereference = cata:getPageRef(pagenumber).num
-        local pagedata = some_dictionary(xref:fetch(pagereference,0):getDict(),document,pagereference)
+        local pagedata = some_dictionary(xref:fetch(pagereference,0):getDict(),document,pagereference,mt)
         if pagedata then
             pagedata.number = pagenumber
             pages[pagenumber] = pagedata
@@ -298,6 +324,9 @@ local function delayed(document,tag,f)
     return t
 end
 
+-- local catobj = data:getXRef():fetch(data:getXRef():getRootNum(),data:getXRef():getRootGen())
+-- print(catobj:getDict(),data:getXRef():getCatalog():getDict())
+
 local loaded = { }
 
 function lpdf.epdf.load(filename)
@@ -318,7 +347,7 @@ function lpdf.epdf.load(filename)
             document.Info    = Info
          -- document.catalog = Catalog
             -- a few handy helper tables
-            document.pages         = delayed(document,"pages",        function() return getpages(document) end)
+            document.pages         = delayed(document,"pages",        function() return getpages(document,Catalog) end)
             document.destinations  = delayed(document,"destinations", function() return getnames(document,Catalog.Names and Catalog.Names.Dests) end)
             document.javascripts   = delayed(document,"javascripts",  function() return getnames(document,Catalog.Names and Catalog.Names.JS) end)
             document.widgets       = delayed(document,"widgets",      function() return getnames(document,Catalog.Names and Catalog.Names.AcroForm) end)
