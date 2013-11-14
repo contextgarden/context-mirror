@@ -42,7 +42,7 @@ local basicengines = allocate {
  -- ["texluajit.exe"] = "luajittex",
 }
 
-local luaengines=allocate {
+local luaengines = allocate {
     ["lua"]    = true,
     ["luajit"] = true,
 }
@@ -66,6 +66,8 @@ elseif luaengines[file.removesuffix(arg[-1])] then
 --         arg[k-1] = arg[k]
 --     end
 --     remove(arg) -- last
+--
+--    environment.used_as_library = true
 elseif validengines[file.removesuffix(arg[0])] then
     if arg[1] == "--luaonly" then
         arg[-1] = arg[0]

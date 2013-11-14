@@ -106,7 +106,7 @@ local relations = allocate { -- todo: handlers also here
         texmfscripts = {
             names    = { "texmfscript", "texmfscripts", "script", "scripts" },
             variable = 'TEXMFSCRIPTS',
-            suffixes = { 'rb', 'pl', 'py' },
+            suffixes = { 'lua', 'rb', 'pl', 'py' },
         },
         lua = {
             names    = { "lua" },

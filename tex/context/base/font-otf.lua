@@ -18,7 +18,7 @@ local utfbyte = utf.byte
 local format, gmatch, gsub, find, match, lower, strip = string.format, string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 local abs = math.abs
-local getn = table.getn
+local insert = table.insert
 local lpegmatch = lpeg.match
 local reversed, concat, remove = table.reversed, table.concat, table.remove
 local ioflush = io.flush
@@ -48,7 +48,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.747 -- beware: also sync font-mis.lua
+otf.version              = 2.748 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -815,21 +815,21 @@ actions["check encoding"] = function(data,filename,raw)
                     if parentdescription then
                         local altuni = parentdescription.altuni
                         if not altuni then
-                            altuni = { { unicode = parent } }
+                            altuni = { { unicode = unicode } }
                             parentdescription.altuni = altuni
                             duplicates[parent] = { unicode }
                         else
                             local done = false
                             for i=1,#altuni do
-                                if altuni[i].unicode == parent then
+                                if altuni[i].unicode == unicode then
                                     done = true
                                     break
                                 end
                             end
                             if not done then
                                 -- let's assume simple cjk reuse
-                                altuni[#altuni+1] = { unicode = parent }
-                                table.insert(duplicates[parent],unicode)
+                                insert(altuni,{ unicode = unicode })
+                                insert(duplicates[parent],unicode)
                             end
                         end
                         if trace_loading then
@@ -1552,118 +1552,6 @@ actions["reorganize glyph kerns"] = function(data,filename,raw)
     end
 end
 
--- actions["merge kern classes"] = function(data,filename,raw)
---     local gposlist = raw.gpos
---     if gposlist then
---         local descriptions = data.descriptions
---         local resources    = data.resources
---         local unicodes     = resources.unicodes
---         local splitter     = data.helpers.tounicodetable
---         local ignored      = 0
---         for gp=1,#gposlist do
---             local gpos = gposlist[gp]
---             local subtables = gpos.subtables
---             if subtables then
---                 for s=1,#subtables do
---                     local subtable = subtables[s]
---                     local kernclass = subtable.kernclass -- name is inconsistent with anchor_classes
---                     if kernclass then -- the next one is quite slow
---                         local split = { } -- saves time
---                         for k=1,#kernclass do
---                             local kcl = kernclass[k]
---                             local firsts  = kcl.firsts
---                             local seconds = kcl.seconds
---                             local offsets = kcl.offsets
---                             local lookups = kcl.lookup  -- singular
---                             if type(lookups) ~= "table" then
---                                 lookups = { lookups }
---                             end
---                          -- if offsets[1] == nil then
---                          --     offsets[1] = "" -- defaults ?
---                          -- end
---                             -- we can check the max in the loop
---                          -- local maxseconds = getn(seconds)
---                             for n, s in next, firsts do
---                                 split[s] = split[s] or lpegmatch(splitter,s)
---                             end
---                             local maxseconds = 0
---                             for n, s in next, seconds do
---                                 if n > maxseconds then
---                                     maxseconds = n
---                                 end
---                                 split[s] = split[s] or lpegmatch(splitter,s)
---                             end
---                             for l=1,#lookups do
---                                 local lookup = lookups[l]
---                                 for fk=1,#firsts do -- maxfirsts ?
---                                     local fv = firsts[fk]
---                                     local splt = split[fv]
---                                     if splt then
---                                         local extrakerns = { }
---                                         local baseoffset = (fk-1) * maxseconds
---                                         for sk=2,maxseconds do -- will become 1 based in future luatex
---                                             local sv = seconds[sk]
---                                      -- for sk, sv in next, seconds do
---                                             local splt = split[sv]
---                                             if splt then -- redundant test
---                                                 local offset = offsets[baseoffset + sk]
---                                                 if offset then
---                                                     for i=1,#splt do
---                                                         extrakerns[splt[i]] = offset
---                                                     end
---                                                 end
---                                             end
---                                         end
---                                         for i=1,#splt do
---                                             local first_unicode = splt[i]
---                                             local description = descriptions[first_unicode]
---                                             if description then
---                                                 local kerns = description.kerns
---                                                 if not kerns then
---                                                     kerns = { } -- unicode indexed !
---                                                     description.kerns = kerns
---                                                 end
---                                                 local lookupkerns = kerns[lookup]
---                                                 if not lookupkerns then
---                                                     lookupkerns = { }
---                                                     kerns[lookup] = lookupkerns
---                                                 end
---                                                 if overloadkerns then
---                                                     for second_unicode, kern in next, extrakerns do
---                                                         lookupkerns[second_unicode] = kern
---                                                     end
---                                                 else
---                                                     for second_unicode, kern in next, extrakerns do
---                                                         local k = lookupkerns[second_unicode]
---                                                         if not k then
---                                                             lookupkerns[second_unicode] = kern
---                                                         elseif k ~= kern then
---                                                             if trace_loading then
---                                                                 report_otf("lookup %a: ignoring overload of kern between %C and %C, rejecting %a, keeping %a",lookup,first_unicode,second_unicode,k,kern)
---                                                             end
---                                                             ignored = ignored + 1
---                                                         end
---                                                     end
---                                                 end
---                                             elseif trace_loading then
---                                                 report_otf("no glyph data for %U", first_unicode)
---                                             end
---                                         end
---                                     end
---                                 end
---                             end
---                         end
---                         subtable.kernclass = { }
---                     end
---                 end
---             end
---         end
---         if ignored > 0 then
---             report_otf("%s kern overloads ignored")
---         end
---     end
--- end
-
 actions["merge kern classes"] = function(data,filename,raw)
     local gposlist = raw.gpos
     if gposlist then
@@ -1695,8 +1583,6 @@ actions["merge kern classes"] = function(data,filename,raw)
                      -- if offsets[1] == nil then
                      --     offsets[1] = "" -- defaults ?
                      -- end
-                        -- we can check the max in the loop
-                     -- local maxseconds = getn(seconds)
                         for n, s in next, firsts do
                             split[s] = split[s] or lpegmatch(splitter,s)
                         end
