@@ -8463,7 +8463,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-env"] = package.loaded["util-env"] or true
 
--- original size: 8761, stripped down to: 5085
+-- original size: 8807, stripped down to: 5085
 
 if not modules then modules={} end modules ['util-env']={
   version=1.001,
@@ -12687,7 +12687,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-env"] = package.loaded["data-env"] or true
 
--- original size: 8762, stripped down to: 6484
+-- original size: 8769, stripped down to: 6490
 
 if not modules then modules={} end modules ['data-env']={
   version=1.001,
@@ -12790,7 +12790,7 @@ local relations=allocate {
     texmfscripts={
       names={ "texmfscript","texmfscripts","script","scripts" },
       variable='TEXMFSCRIPTS',
-      suffixes={ 'rb','pl','py' },
+      suffixes={ 'lua','rb','pl','py' },
     },
     lua={
       names={ "lua" },
@@ -16624,8 +16624,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 683190
--- stripped bytes    : 241844
+-- original bytes    : 683243
+-- stripped bytes    : 241891
 
 -- end library merge
 
