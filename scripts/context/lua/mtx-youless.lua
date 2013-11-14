@@ -95,6 +95,7 @@ function scripts.youless.collect()
     elseif filename == "" then
         report("data collected but not saved")
     end
+    report("current time %a",os.now())
 end
 
 if environment.argument("collect") then

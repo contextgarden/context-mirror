@@ -61,7 +61,10 @@
 \unexpanded\def\enablefiller    {\let\normalorfiller\secondoftwoarguments}
 \unexpanded\def\disablefiller   {\let\normalorfiller\firstoftwoarguments}
 
-\def\mathopnolimits#1{\mathop{\mr#1}\nolimits} % was \rm, which follows text fonts (used in mml parser)
-\def\mathopdolimits#1{\mathop{\mr#1}}          % was \rm, which follows text fonts (used in mml parser)
+% \def\mathopnolimits#1{\mathop{\mr\mathrm#1}\nolimits} % was \rm, which follows text fonts (used in mml parser)
+% \def\mathopdolimits#1{\mathop{\mr\mathrm#1}}          % was \rm, which follows text fonts (used in mml parser)
+
+\def\mathopnolimits#1{\mathop{\mathrm#1}\nolimits} % was \rm, which follows text fonts (used in mml parser, check!)
+\def\mathopdolimits#1{\mathop{\mathrm#1}}          % was \rm, which follows text fonts (used in mml parser, check!)
 
 \protect \endinput

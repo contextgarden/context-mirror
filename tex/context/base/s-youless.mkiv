@@ -74,10 +74,10 @@
                             local wd = os.weekday(d,m,y)
                             local weekend = wd == 1 or wd == 7
                             if weekend then
-                                context("draw (%s,%s) -- (%s,%s); ",xoffset,-12,xoffset,weekend and -30)
-                                context("draw (%s,%s) -- (%s,%s); ",xoffset+24,-12,xoffset+24,weekend and -30)
+                                context("draw (%s,%s) -- (%s,%s); ",xoffset,-17,xoffset,weekend and -35)
+                                context("draw (%s,%s) -- (%s,%s); ",xoffset+24,-17,xoffset+24,weekend and -35)
                             end
-                            context([[draw textext("%s") shifted (%s,%s) ; ]],d,xoffset + 12,-20)
+                            context([[draw textext("%s") shifted (%s,%s) ; ]],d,xoffset + 12,-25)
                             if day then
                                 for h=0,23 do
                                     local hours = day.hours
@@ -94,13 +94,15 @@
                                 end
                             end
                         end
-                        for d=1,31 do
+                        for d=0,30 do
                             local xoffset = d * 24
                             context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset+ 0,0,xoffset+ 0,-10)
                             context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset+ 6,0,xoffset+ 6,-2.5)
                             context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset+12,0,xoffset+12,-5)
                             context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset+18,0,xoffset+18,-2.5)
                         end
+                        local xoffset = 31 * 24
+                        context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset,0,xoffset,-10)
                     end
 
                     local max = (math.div(year.maxwatt,1000)+1)
@@ -111,7 +113,7 @@
                     end
 
                     context([[draw textext("\strut\month{%s}\enspace%s") shifted (%s,%s) ; ]],m, y, 31 * 24 / 2, -50)
-                    context([[draw textext.lft("watt") shifted (%s,%s) ; ]],-10,-20)
+                    context([[draw textext.lft("watt") shifted (%s,%s) ; ]],-10,-25)
 
                     context.stopMPpage()
                 else
