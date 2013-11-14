@@ -119,8 +119,8 @@ function youless.collect(specification)
     if host == "" then
         return
     end
-    if name then
-        data = table.load(name) or data
+    if filename ~= "" then
+        data = table.load(filename) or data
     end
     if variant == "kwh" then
         get(host,"m",1,data,true)
