@@ -17,6 +17,7 @@ local traverse_id     = node.traverse_id
 local node_dimensions = node.dimensions
 
 local hlist_code      = nodes.nodecodes.hlist
+local vlist_code      = nodes.nodecodes.vlist
 local box_code        = nodes.listcodes.box
 
 local texsetdimen     = tex.setdimen
@@ -32,7 +33,9 @@ function commands.doreshapeframedbox(n)
     local minwidth       = 0
     local maxwidth       = 0
     local totalwidth     = 0
-    if box.width ~= 0 then
+    local averagewidth   = 0
+    local boxwidth       = box.width
+    if boxwidth ~= 0 then -- and h.subtype == vlist_code
         local list = box.list
         if list then
             for h in traverse_id(hlist_code,list) do -- no dir etc needed
@@ -76,17 +79,18 @@ function commands.doreshapeframedbox(n)
                             end
                         end
                     end
+                    box.width    = maxwidth -- moved
+                    averagewidth = noflines > 0 and totalwidth/noflines or 0
                 end
-                box.width = maxwidth
             end
         end
     end
     texsetcount("global","framednoflines",noflines)
-    texsetdimen("global","framedfirstheight",firstheight or 0)
+    texsetdimen("global","framedfirstheight",firstheight or 0) -- also signal
     texsetdimen("global","framedlastdepth",lastdepth or 0)
     texsetdimen("global","framedminwidth",minwidth)
     texsetdimen("global","framedmaxwidth",maxwidth)
-    texsetdimen("global","framedaveragewidth",noflines > 0 and totalwidth/noflines or 0)
+    texsetdimen("global","framedaveragewidth",averagewidth)
 end
 
 function commands.doanalyzeframedbox(n)
