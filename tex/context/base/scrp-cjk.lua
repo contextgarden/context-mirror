@@ -494,48 +494,20 @@ scripts.installmethod {
     },
 }
 
--- function scripts.decomposehangul(head)
---     local current = head
---     local done = false
---     while current do
---         local id = current.id
---         if id == glyph_code then -- local index = unicode - 0xAC00 if index >= 0 and index < 19 * 21 * 28 then ... end
---             local lead_consonant, medial_vowel, tail_consonant = decomposed(current.char)
---             if lead_consonant then
---                 if not tail_consonant then
---                     tail_consonant = 0x11A7
---                 end
---                 current.char = lead_consonant
---                 local m = copy_node(current)
---                 local t = copy_node(current)
---                 m.char = medial_vowel
---                 t.char = tail_consonant
---                 insert_node_after(head,current,m)
---                 insert_node_after(head,current,t)
---                 done = true
---                 current = t
---             end
---         end
---         current = current.next
---     end
---     return head, done
--- end
-
 function scripts.decomposehangul(head)
     local done = false
     for current in traverse_id(glyph_code,head) do
         local lead_consonant, medial_vowel, tail_consonant = decomposed(current.char)
         if lead_consonant then
-            if not tail_consonant then
-                tail_consonant = 0x11A7
-            end
-            current.char = tail_consonant
-            local l = copy_node(current)
+            current.char = lead_consonant
             local m = copy_node(current)
-            l.char = lead_consonant
             m.char = medial_vowel
-            head, current = insert_node_before(head,current,m)
-            head, current = insert_node_before(head,current,l)
+            head, current = insert_node_after(head,current,m)
+            if tail_consonant then
+                local t = copy_node(current)
+                t.char" = tail_consonant
+                head, current = insert_node_after(head,current,t)
+            end
             done = true
         end
     end
@@ -551,10 +523,11 @@ registerotffeature {
     name         = "decomposehangul",
     description  = "decompose hangul",
     processors = {
-    --  position = 1,
+        position = 1,
         node     = scripts.decomposehangul,
     }
 }
+
 -- Chinese: hanzi
 
 local chinese_0 = {
