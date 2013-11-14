@@ -119,7 +119,9 @@ function youless.collect(specification)
     if host == "" then
         return
     end
-    if filename ~= "" then
+    if filename == "" then
+        return
+    else
         data = table.load(filename) or data
     end
     if variant == "kwh" then
@@ -130,8 +132,7 @@ function youless.collect(specification)
         if detail then
             get(host,"h",1,data)
         end
-    end
-    if filename == "" then
+    else
         return
     end
     local path = file.dirname(filename)
