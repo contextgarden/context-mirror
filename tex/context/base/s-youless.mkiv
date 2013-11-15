@@ -47,10 +47,13 @@
 
         utilities.youless.analyze(data)
 
+        -- for the moment no specific font scaling
+
         for y=year,year do
 
-            local year = data.years[y]
+            local year  = data.years[y]
             local scale = 20
+            local mark  = 3
 
             for m=1,12 do
                 local month = year.months[m]
@@ -73,9 +76,16 @@
                             local xoffset = (d-1) * 24
                             local wd = os.weekday(d,m,y)
                             local weekend = wd == 1 or wd == 7
-                            if weekend then
-                                context("draw (%s,%s) -- (%s,%s); ",xoffset,-17,xoffset,weekend and -35)
-                                context("draw (%s,%s) -- (%s,%s); ",xoffset+24,-17,xoffset+24,weekend and -35)
+                            if not weekend then
+                                -- okay
+                            elseif mark == 1 then
+                                context("draw (%s,%s) -- (%s,%s) ; ",xoffset,   -17.5,xoffset,   -32.5)
+                                context("draw (%s,%s) -- (%s,%s) ; ",xoffset+24,-17.5,xoffset+24,-32.5)
+                            elseif mark == 2 then
+                                context("draw (%s,%s) -- (%s,%s) ; ",xoffset,   -17.5,xoffset+24,-17.5)
+                                context("draw (%s,%s) -- (%s,%s) ; ",xoffset,   -32.5,xoffset+24,-32.5)
+                            elseif mark == 3 then
+                                context("draw unitsquare xysized (%s,%s) shifted (%s,%s) ; ",24,15,xoffset,-32.5)
                             end
                             context([[draw textext("%s") shifted (%s,%s) ; ]],d,xoffset + 12,-25)
                             if day then
@@ -87,8 +97,8 @@
                                             local dx = xoffset + h
                                             local dy = hour.watt/scale
                                             local dm = hour.maxwatt/scale
-                                            context("draw (%s,%s) -- (%s,%s) withcolor darkblue ; ",dx,0,dx,dy)
-                                            context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",dx,dy,dx,dm)
+                                            context("draw (%s,%s) -- (%s,%s) withcolor %s ; ",dx, 0,dx,dy,weekend and "darkyellow" or "darkblue")
+                                            context("draw (%s,%s) -- (%s,%s) withcolor %s ; ",dx,dy,dx,dm,"darkgray")
                                         end
                                     end
                                 end
@@ -129,7 +139,7 @@
 
 \continueifinputfile{s-youless.mkiv}
 
-\setupbodyfont[dejavu]
+\setupbodyfont[dejavu] % smaller sizes also look ok
 
 % printer (oce)  : > 3000 W startup (900 W idle, 2000 W printing)
 % coffeemaker    :   1500 W when heating

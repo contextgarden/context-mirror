@@ -505,7 +505,7 @@ function scripts.decomposehangul(head)
             head, current = insert_node_after(head,current,m)
             if tail_consonant then
                 local t = copy_node(current)
-                t.char" = tail_consonant
+                t.char = tail_consonant
                 head, current = insert_node_after(head,current,t)
             end
             done = true

@@ -1980,6 +1980,19 @@
 
 %D The handlers:
 
+% Beware, we have a \noindent so an empty line is indeed an empty line and
+% the \synchronizeinlinedirection triggers a vbox instead of a line.
+%
+% \startTEXpage[offset=0.5ex,align={lohi,middle}]
+%
+%     \vbox{\hbox{x}}
+% \stopTEXpage
+%
+% \startTEXpage[offset=0.5ex,align={lohi,middle}]
+%     \vbox{\hbox{x}}
+% \stopTEXpage
+
+
 % \def\pack_framed_forgetall{\forgetall}
 
 \def\pack_framed_set_foregroundcolor
