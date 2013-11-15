@@ -8,6 +8,9 @@ if not modules then modules = { } end modules ['util-you'] = {
 
 -- See mtx-youless.lua and s-youless.mkiv for examples of usage.
 
+-- todo: already calculate min, max and average per hour and discard
+--       older data, or maybe a condense option
+
 require("util-jsn")
 
 -- the library variant:
@@ -130,7 +133,7 @@ function youless.collect(specification)
         get(host,"d",0,data,true)
         get(host,"w",1,data)
         if detail then
-            get(host,"h",1,data)
+            get(host,"h",1,data) -- todo: get this for calculating the precise max
         end
     else
         return

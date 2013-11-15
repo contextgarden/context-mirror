@@ -38,16 +38,16 @@ function commands.doreshapeframedbox(n)
     if boxwidth ~= 0 then -- and h.subtype == vlist_code
         local list = box.list
         if list then
-            for h in traverse_id(hlist_code,list) do -- no dir etc needed
+            local function check(n,usewidth)
                 if not firstheight then
-                    firstheight = h.height
+                    firstheight = n.height
                 end
-                lastdepth = h.depth
+                lastdepth = n.depth
                 noflines = noflines + 1
-                local l = h.list
+                local l = n.list
                 if l then
-                    if h.subtype == box_code then -- maybe more
-                        lastlinelength = h.width
+                    if usewidth or n.subtype == box_code then -- maybe more
+                        lastlinelength = n.width
                     else
                         lastlinelength = node_dimensions(l) -- used to be: hpack(copy(l)).width
                     end
@@ -60,22 +60,34 @@ function commands.doreshapeframedbox(n)
                     totalwidth = totalwidth + lastlinelength
                 end
             end
+            local hdone = false
+         -- local vdone = false
+            for h in traverse_id(hlist_code,list) do -- no dir etc needed
+                check(h)
+                hdone = true
+            end
+            for v in traverse_id(vlist_code,list) do -- no dir etc needed
+                check(v)
+             -- vdone = true
+            end
             if firstheight then
                 if maxwidth ~= 0 then
-                    for h in traverse_id(hlist_code,list) do
-                        local l = h.list
-                        if l then
-                            if h.subtype == box_code then
-                                -- explicit box, no 'line'
-                            else
-                             -- if h.width ~= maxwidth then -- else no display math handling (uses shift)
-                                -- challenge: adapt glue_set
-                                -- h.glue_set = h.glue_set * h.width/maxwidth -- interesting ... doesn't matter much
-                                -- h.width = maxwidth
-                                    h.list = hpack(l,maxwidth,'exactly',h.dir)
-                                    h.shift = 0 -- needed for display math
-                                    h.width = maxwidth
-                             -- end
+                    if hdone then
+                        for h in traverse_id(hlist_code,list) do
+                            local l = h.list
+                            if l then
+                                if h.subtype == box_code then
+                                    -- explicit box, no 'line'
+                                else
+                                 -- if h.width ~= maxwidth then -- else no display math handling (uses shift)
+                                     -- challenge: adapt glue_set
+                                     -- h.glue_set = h.glue_set * h.width/maxwidth -- interesting ... doesn't matter much
+                                     -- h.width = maxwidth
+                                        h.list = hpack(l,maxwidth,'exactly',h.dir)
+                                        h.shift = 0 -- needed for display math
+                                        h.width = maxwidth
+                                 -- end
+                                end
                             end
                         end
                     end
@@ -101,12 +113,18 @@ function commands.doanalyzeframedbox(n)
     if box.width ~= 0 then
         local list = box.list
         if list then
-            for h in traverse_id(hlist_code,list) do
+            local function check(n)
                 if not firstheight then
-                    firstheight = h.height
+                    firstheight = n.height
                 end
-                lastdepth = h.depth
+                lastdepth = n.depth
                 noflines = noflines + 1
+            end
+            for h in traverse_id(hlist_code,list) do
+                check(h)
+            end
+            for v in traverse_id(vlist_code,list) do
+                check(v)
             end
         end
     end
