@@ -14,10 +14,22 @@ if exist %TEXMFOS%\bin\mtxrun.exe goto start
 set TEXMFOS=%~s1\texmf-mswin-64
 if exist %TEXMFOS%\bin\mtxrun.exe goto start
 
+set TEXMFOS=%~s1texmf-win64
+if exist %TEXMFOS%\bin\mtxrun.exe goto start
+
+set TEXMFOS=%~s1\texmf-win64
+if exist %TEXMFOS%\bin\mtxrun.exe goto start
+
 set TEXMFOS=%~s1texmf-mswin
 if exist %TEXMFOS%\bin\mtxrun.exe goto start
 
 set TEXMFOS=%~s1\texmf-mswin
+if exist %TEXMFOS%\bin\mtxrun.exe goto start
+
+set TEXMFOS=%~s1texmf-win32
+if exist %TEXMFOS%\bin\mtxrun.exe goto start
+
+set TEXMFOS=%~s1\texmf-win32
 if exist %TEXMFOS%\bin\mtxrun.exe goto start
 
 :selftest
@@ -28,10 +40,22 @@ if exist %TEXMFOS%\bin\mtxrun.exe goto start
 set TEXMFOS=%~d0%~p0\texmf-mswin-64
 if exist %TEXMFOS%\bin\mtxrun.exe goto start
 
+set TEXMFOS=%~d0%~p0texmf-win64
+if exist %TEXMFOS%\bin\mtxrun.exe goto start
+
+set TEXMFOS=%~d0%~p0\texmf-win64
+if exist %TEXMFOS%\bin\mtxrun.exe goto start
+
 set TEXMFOS=%~d0%~p0texmf-mswin
 if exist %TEXMFOS%\bin\mtxrun.exe goto start
 
 set TEXMFOS=%~d0%~p0\texmf-mswin
+if exist %TEXMFOS%\bin\mtxrun.exe goto start
+
+set TEXMFOS=%~d0%~p0texmf-win32
+if exist %TEXMFOS%\bin\mtxrun.exe goto start
+
+set TEXMFOS=%~d0%~p0\texmf-win32
 if exist %TEXMFOS%\bin\mtxrun.exe goto start
 
 :start

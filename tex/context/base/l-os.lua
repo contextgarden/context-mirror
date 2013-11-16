@@ -222,6 +222,8 @@ local function guess()
     return os.resultof("echo $HOSTTYPE") or ""
 end
 
+-- os.bits = 32 | 64
+
 if platform ~= "" then
 
     os.platform = platform
@@ -229,6 +231,9 @@ if platform ~= "" then
 elseif os.type == "windows" then
 
     -- we could set the variable directly, no function needed here
+
+    -- PROCESSOR_ARCHITECTURE : binary platform
+    -- PROCESSOR_ARCHITEW6432 : OS platform
 
     function os.resolvers.platform(t,k)
         local platform, architecture = "", os.getenv("PROCESSOR_ARCHITECTURE") or ""
