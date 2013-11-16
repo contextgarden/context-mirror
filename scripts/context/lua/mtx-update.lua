@@ -17,7 +17,7 @@ local helpinfo = [[
  <metadata>
   <entry name="name">mtx-update</entry>
   <entry name="detail">ConTeXt Minimals Updater</entry>
-  <entry name="version">0.31</entry>
+  <entry name="version">1.01</entry>
  </metadata>
  <flags>
   <category name="basic">
@@ -48,7 +48,7 @@ local helpinfo = [[
 
 local application = logs.application {
     name     = "mtx-update",
-    banner   = "ConTeXt Minimals Updater 0.31",
+    banner   = "ConTeXt Minimals Updater 1.01",
     helpinfo = helpinfo,
 }
 
@@ -162,9 +162,16 @@ scripts.update.platforms = {
     ["windows"]        = "mswin",
     ["win32"]          = "mswin",
     ["win"]            = "mswin",
-    ["mswin-64"]       = "mswin-64",
-    ["windows-64"]     = "mswin-64",
-    ["win64"]          = "mswin-64",
+-- ["mswin"]          = "win32",
+-- ["windows"]        = "win32",
+-- ["win32"]          = "win32",
+-- ["win"]            = "win32",
+-- ["mswin-64"]       = "mswin-64",
+-- ["windows-64"]     = "mswin-64",
+-- ["win64"]          = "mswin-64",
+["mswin-64"]       = "win64",
+["windows-64"]     = "win64",
+["win64"]          = "win64",
     ["linux"]          = "linux",
     ["freebsd"]        = "freebsd",
     ["freebsd-amd64"]  = "freebsd-amd64",
@@ -189,6 +196,13 @@ scripts.update.platforms = {
     ["solaris-intel"]  = "solaris-intel",
     ["solaris-sparc"]  = "solaris-sparc",
     ["solaris"]        = "solaris-sparc",
+}
+
+
+local windowsplatform = {
+    ["mswin"] = true,
+    ["win32"] = true,
+    ["win64"] = true,
 }
 
 scripts.update.selfscripts = {
@@ -328,17 +342,26 @@ function scripts.update.synchronize()
 
         -- rsync://contextgarden.net/minimals/current/modules/
 
+        local available_platforms = get_list_of_files_from_rsync({"bin/luatex/"})
+
+        report("available platforms: % t",table.sorted(available_platforms))
+
         if modules and type(modules) == "table" then
             -- fetch the list of available modules from rsync server
-            local available_modules = get_list_of_files_from_rsync({"modules/"})
+         -- local available_modules = get_list_of_files_from_rsync({"modules/"})
             -- hash of requested modules
             -- local h = table.tohash(modules:split(","))
+            local available_modules = get_list_of_files_from_rsync({"modules/"})
             local asked = table.copy(modules)
             asked.all = nil
+            report("available modules: %s",#available_modules)
             for i=1,#available_modules do
                 local s = available_modules[i]
                 if modules.all or modules[s] then
                     scripts.update.modules[#scripts.update.modules+1] = { format("modules/%s/",s), "texmf-modules" }
+                    report("+ %s",s)
+                else
+                    report("  %s",s)
                 end
                 asked[s] = nil
             end
@@ -450,7 +473,7 @@ function scripts.update.synchronize()
             platform = scripts.update.platforms[platform]
             if platform then
                 local command
-                if platform == 'mswin' then
+                if windowsplatform[platform] then
                     bin = drive(bin)
                     texroot = drive(texroot)
                     command = format([[%s -t "%s/texmf-context/scripts/context/lua/%s.lua" "%s/texmf-mswin/bin/"]], bin, texroot, script, texroot)
