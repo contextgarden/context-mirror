@@ -7604,7 +7604,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 6295, stripped down to: 4966
+-- original size: 6501, stripped down to: 5156
 
 if not modules then modules={} end modules ['trac-inf']={
   version=1.001,
@@ -7704,6 +7704,9 @@ local report=logs.reporter("mkiv lua stats")
 function statistics.show()
   if statistics.enable then
     local register=statistics.register
+    register("used platform",function()
+      return format("%s, type: %s, binary subtree: %s",os.platform or "unknown",os.type or "unknown",environment.texos or "unknown")
+    end)
     register("luatex banner",function()
       return lower(status.banner)
     end)
@@ -7752,7 +7755,7 @@ function statistics.timed(action)
   starttiming("run")
   action()
   stoptiming("run")
-  report("total runtime: %s",elapsedtime("run"))
+  report("total runtime: %s seconds",elapsedtime("run"))
 end
 function statistics.tracefunction(base,tag,...)
   for i=1,select("#",...) do
@@ -16210,7 +16213,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lib"] = package.loaded["util-lib"] or true
 
--- original size: 11136, stripped down to: 5549
+-- original size: 11205, stripped down to: 5618
 
 if not modules then modules={} end modules ['util-lib']={
   version=1.001,
@@ -16336,7 +16339,7 @@ local function requireswiglib(required,version)
       if libtype=="function" then
         library=library()
       else
-        report_swiglib("load error: %a returns %a, message %a",opener,libtype,message or "no message")
+        report_swiglib("load error: %a returns %a, message %a, library %a",opener,libtype,(string.gsub(message or "no message","[%s]+$","")),found_library or "no library")
         library=false
       end
       dir.pop()
@@ -16624,8 +16627,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 683358
--- stripped bytes    : 242006
+-- original bytes    : 683633
+-- stripped bytes    : 242022
 
 -- end library merge
 
@@ -17957,7 +17960,7 @@ end
 
 if e_verbose then
     report()
-    report("runtime: %0.3f seconds",os.runtime())
+    report("elapsed lua time: %0.3f seconds",os.runtime())
 end
 
 if os.type ~= "windows" then

@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['util-sql-swiglib'] = {
 -- closer to the original library it's also less dependant.
 
 local concat = table.concat
-local format = string.format
+local format, byte = string.format, string.byte
 local lpegmatch = lpeg.match
 local setmetatable, type = setmetatable, type
 local sleep = os.sleep
@@ -21,9 +21,15 @@ local trace_sql              = false  trackers.register("sql.trace",  function(v
 local trace_queries          = false  trackers.register("sql.queries",function(v) trace_queries = v end)
 local report_state           = logs.reporter("sql","swiglib")
 
+local helpers                = require("swiglib.helpers.core")
 local sql                    = utilities.sql
 local mysql                  = require("swiglib.mysql.core") -- "5.6"
 ----- mysql                  = swiglib("mysql.core") -- "5.6"
+
+local new_u_char_array       = helpers.new_u_char_array     or helpers.new_ucharArray
+local ucharArray_setitem     = helpers.u_char_array_setitem or helpers.ucharArray_setitem
+local int_p_assign           = helpers.int_p_assign
+local ulongArray_getitem     = helpers.u_long_array_getitem or helpers.ulongArray_getitem
 
 -- inspect(table.sortedkeys(mysql))
 
@@ -57,12 +63,14 @@ local mysql_free_result      = mysql.mysql_free_result
 local mysql_use_result       = mysql.mysql_use_result
 
 local mysql_error_message    = mysql.mysql_error
-local mysql_options_argument = mysql.mysql_options_argument
+----- mysql_options_argument = mysql.mysql_options_argument
 
 local instance               = mysql.MYSQL()
 
 local mysql_constant_false   = false
 local mysql_constant_true    = true
+
+----- util_getbytearray      = mysql.util_getbytearray
 
 -- if mysql_options_argument then
 --
@@ -81,6 +89,48 @@ local mysql_constant_true    = true
 --     print("")
 --
 -- end
+
+-- some helpers:
+
+function mysql.options_argument(arg)
+    local targ = type(arg)
+    if targ == "boolean" then
+        local o = new_u_char_array(1)
+        ucharArray_setitem(o,0,arg == true and 64 or 0)
+        return o
+    elseif targ == "string" then
+        local o = new_u_char_array(#arg)
+        ucharArray_setitem(o,0,0)
+        for i=1,#arg do
+            ucharArray_setitem(o,i-1,byte(arg,i))
+        end
+        return o
+    elseif targ == "number" then
+        local o = core.new_int_p()
+        int_p_assign(o, arg)
+        return o
+    else
+        return nil
+    end
+end
+
+-- function mysql.util_unpackbytearray(row,noffields,len)
+--     if row == nil then
+--         return { }
+--     elseif noffields < 1 then
+--         return { }
+--     else
+--         local t = { }
+--         for i=0,noffields-1 do
+--             local l = ulongArray_getitem(len,i)  -- zero based ... element from len array
+--             local r = util_getbytearray(row,i,l) -- zero based ... element from len array
+--             t[#t+1]= r
+--         end
+--         return t
+--     end
+-- end
+
+--
 
 local typemap = mysql.MYSQL_TYPE_VAR_STRING and {
     [mysql.MYSQL_TYPE_VAR_STRING ]  = "string",
@@ -145,10 +195,10 @@ local function numrows(t)
     return t.nofrows
 end
 
--- swig_type
+local fetch_fields_from_current_row = mysql.util_mysql_fetch_fields_from_current_row
+local fetch_all_rows                = mysql.util_mysql_fetch_all_rows
 
--- local ulongArray_getitem                       = mysql.ulongArray_getitem
--- local util_getbytearray                        = mysql.util_getbytearray
+-- swig_type
 
 -- local function list(t)
 --     local result = t._result_
@@ -163,7 +213,7 @@ end
 -- end
 
 -- local function hash(t)
---     local list = util_mysql_fetch_fields_from_current_row(t._result_)
+--     local list = fetch_fields_from_current_row(t._result_)
 --     local result = t._result_
 --     local fields = t.names
 --     local row = mysql_fetch_row(result)
@@ -176,15 +226,12 @@ end
 --     return result
 -- end
 
-local util_mysql_fetch_fields_from_current_row = mysql.util_mysql_fetch_fields_from_current_row
-local util_mysql_fetch_all_rows                = mysql.util_mysql_fetch_all_rows
-
 local function list(t)
-    return util_mysql_fetch_fields_from_current_row(t._result_)
+    return fetch_fields_from_current_row(t._result_)
 end
 
 local function hash(t)
-    local list = util_mysql_fetch_fields_from_current_row(t._result_)
+    local list = fetch_fields_from_current_row(t._result_)
     local fields = t.names
     local data = { }
     for i=1,t.noffields do
@@ -194,7 +241,7 @@ local function hash(t)
 end
 
 local function wholelist(t)
-    return util_mysql_fetch_all_rows(t._result_)
+    return fetch_all_rows(t._result_)
 end
 
 local mt = { __index = {
@@ -453,21 +500,16 @@ local function execute(specification)
 end
 
 local wraptemplate = [[
------ mysql                = require("swigluamysql") -- will be stored in method
-local mysql                = require("swiglib.mysql.core") -- will be stored in method
+local mysql         = require("swiglib.mysql.core") -- will be stored in method
 
------ mysql_fetch_row      = mysql.mysql_fetch_row
------ mysql_fetch_lengths  = mysql.mysql_fetch_lengths
------ util_unpackbytearray = mysql.util_unpackbytearray
-local util_mysql_fetch_fields_from_current_row
-                           = mysql.util_mysql_fetch_fields_from_current_row
+local fetch_fields  = mysql.util_mysql_fetch_fields_from_current_row
 
-local converters           = utilities.sql.converters
-local deserialize          = utilities.sql.deserialize
+local converters    = utilities.sql.converters
+local deserialize   = utilities.sql.deserialize
 
-local tostring             = tostring
-local tonumber             = tonumber
-local booleanstring        = string.booleanstring
+local tostring      = tostring
+local tonumber      = tonumber
+local booleanstring = string.booleanstring
 
 %s
 
@@ -483,10 +525,7 @@ return function(result)
     local target = { } -- no %s needed here
     result = result._result_
     for i=1,nofrows do
-     -- local row = mysql_fetch_row(result)
-     -- local len = mysql_fetch_lengths(result)
-     -- local cells = util_unpackbytearray(row,noffields,len)
-        local cells = util_mysql_fetch_fields_from_current_row(result)
+        local cells = fetch_fields(result)
         target[%s] = {
             %s
         }
