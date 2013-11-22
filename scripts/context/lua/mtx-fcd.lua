@@ -122,7 +122,7 @@ local stubdata
 local stubdummy
 local stubchdir
 
-if os.platform == 'mswin' then
+if os.type == 'windows' then
     gotofile  = 'mtx-fcd-goto.cmd'
     datafile  = 'mtx-fcd-data.lua'
     stubfile  = 'fcd.cmd'

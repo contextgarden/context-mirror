@@ -122,6 +122,9 @@ function statistics.show()
     if statistics.enable then
         -- this code will move
         local register = statistics.register
+        register("used platform", function()
+            return format("%s, type: %s, binary subtree: %s",os.platform or "unknown",os.type or "unknown", environment.texos or "unknown")
+        end)
         register("luatex banner", function()
             return lower(status.banner)
         end)
@@ -179,7 +182,7 @@ function statistics.timed(action)
     starttiming("run")
     action()
     stoptiming("run")
-    report("total runtime: %s",elapsedtime("run"))
+    report("total runtime: %s seconds",elapsedtime("run"))
 end
 
 -- goodie

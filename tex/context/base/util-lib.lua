@@ -209,7 +209,7 @@ local function requireswiglib(required,version)
             if libtype == "function" then
                 library = library()
             else
-                report_swiglib("load error: %a returns %a, message %a",opener,libtype,message or "no message")
+                report_swiglib("load error: %a returns %a, message %a, library %a",opener,libtype,(string.gsub(message or "no message","[%s]+$","")),found_library or "no library")
                 library = false
             end
             dir.pop()

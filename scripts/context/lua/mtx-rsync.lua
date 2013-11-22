@@ -81,7 +81,7 @@ local report_command = logs.new("rsync command")
 
 local cleanup
 
-if os.platform == "mswin" then
+if os.type == "windows" then
     os.setenv("CYGWIN","nontsec")
     cleanup = function(name)
         return (gsub(name,"([a-zA-Z]):/", "/cygdrive/%1/"))
