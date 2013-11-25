@@ -10,6 +10,7 @@ local context                 = context
 local cleanname               = fonts.names.cleanname
 local gsub, splitup, find     = string.gsub, string.splitup, string.find
 local splitbase, removesuffix = file.splitbase, file.removesuffix
+local splitat, lpegmatch      = lpeg.splitat, lpeg.match
 
 local formatters              = string.formatters
 local settings_to_array       = utilities.parsers.settings_to_array
@@ -286,21 +287,23 @@ local function savefont(data,alternative,entries)
 end
 
 local function savefeatures(data,alternative,entries)
+    local e = gsub(entries,"{(.*)}","%1")
     local f = data.features
     if not f then
         f = { }
         data.features = f
     end
-    f[alternative] = entries
+    f[alternative] = e
 end
 
 local function savegoodies(data,alternative,entries)
+    local e = gsub(entries,"{(.*)}","%1")
     local g = data.goodies
     if not f then
         g = { }
         data.goodies = g
     end
-    g[alternative] = entries
+    g[alternative] = e
 end
 
 methods[v_simplefonts] = function(data,alternative,style)
@@ -446,10 +449,11 @@ end
 
 function selectfont.filterinput(index)
     local data = data[index]
+    local p    = splitat(":",true)
     for alternative, _ in next, alternatives do
         local list = settings_to_array(data.alternatives[alternative])
         for _, entry in next, list do
-            method, entries = splitup(entry,":")
+            method, entries = lpegmatch(p,entry)
             if not entries then
                 entries = method
                 method  = "name"

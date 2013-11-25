@@ -93,6 +93,9 @@ local function requireswiglib(required,version)
     local trace_swiglib = trace_swiglib or package.helpers.trace
     local library = loaded[required]
     if library == nil then
+        if trace_swiglib then
+            report_swiglib("requiring library %a with version %a",required,version or "any")
+        end
         -- initialize a few variables
         local required_full = gsub(required,"%.","/") -- package.helpers.lualibfile
         local required_path = pathpart(required_full)

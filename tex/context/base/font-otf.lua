@@ -2025,6 +2025,9 @@ local function copytotfm(data,cache_id)
         properties.space         = spacer
         properties.encodingbytes = 2
         properties.format        = data.format or otf_format(filename) or formats.otf
+-- if units ~= 1000 and format ~= "truetype" then
+--     properties.format = "truetype"
+-- end
         properties.noglyphnames  = true
         properties.filename      = filename
         properties.fontname      = fontname

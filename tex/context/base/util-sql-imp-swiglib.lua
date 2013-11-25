@@ -23,8 +23,8 @@ local report_state           = logs.reporter("sql","swiglib")
 
 local helpers                = require("swiglib.helpers.core")
 local sql                    = utilities.sql
-local mysql                  = require("swiglib.mysql.core") -- "5.6"
------ mysql                  = swiglib("mysql.core") -- "5.6"
+local mysql                  = require("swiglib.mysql.core") -- "5.6.14"
+----- mysql                  = swiglib("mysql.core") -- "5.6.14"
 
 local new_u_char_array       = helpers.new_u_char_array     or helpers.new_ucharArray
 local ucharArray_setitem     = helpers.u_char_array_setitem or helpers.ucharArray_setitem

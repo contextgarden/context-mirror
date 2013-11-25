@@ -20,6 +20,13 @@
 %D merged into one and caching has been added, which makes switching
 %D twice as fast.
 
+% Todo: find a way to force last lines to have some distance from the right
+% edge (problem: keywords or presets), maybe a plugin
+%
+% \setupalign[...,myoption] % last
+%
+% but that also means myoption gets frozen due to caching.
+
 \registerctxluafile{spac-ali}{1.001}
 
 \definesystemattribute[realign]   [public] % might be combined with the next one

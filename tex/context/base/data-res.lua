@@ -1526,10 +1526,11 @@ local function findwildcardfiles(filename,allresults,result) -- todo: remap: and
         end
     else
         local hashes = instance.hashes
+-- inspect(hashes)
         for k=1,#hashes do
             local hash = hashes[k]
             local hashname, hashtype = hash.name, hash.type
-            if doit(path,files[hashname][bname],bname,hashname,hashtype,result,allresults) then done = true end
+            if doit(path,files[hashname][base],base,hashname,hashtype,result,allresults) then done = true end
             if done and not allresults then break end
         end
     end
