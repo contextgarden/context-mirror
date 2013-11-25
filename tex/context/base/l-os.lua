@@ -238,7 +238,8 @@ elseif os.type == "windows" then
     function os.resolvers.platform(t,k)
         local platform, architecture = "", os.getenv("PROCESSOR_ARCHITECTURE") or ""
         if find(architecture,"AMD64") then
-            platform = "mswin-64"
+         -- platform = "mswin-64"
+            platform = "win64"
         else
             platform = "mswin"
         end

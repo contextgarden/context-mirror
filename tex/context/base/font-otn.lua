@@ -624,9 +624,9 @@ function handlers.gsub_ligature(head,start,kind,lookupname,ligature,sequence)
                 break
             end
         end
-        if stop then
-            local lig = ligature.ligature
-            if lig then
+        local lig = ligature.ligature
+        if lig then
+            if stop then
                 if trace_ligatures then
                     local stopchar = stop.char
                     head, start = toligature(kind,lookupname,head,start,stop,lig,skipmark,discfound)
@@ -636,8 +636,15 @@ function handlers.gsub_ligature(head,start,kind,lookupname,ligature,sequence)
                 end
                 return head, start, true
             else
-                -- ok, goto next lookup
+                -- weird but happens (in some arabic font)
+                start.char = lig
+                if trace_ligatures then
+                    logprocess("%s: replacing %s by (no real) ligature %s case 3",pref(kind,lookupname),gref(startchar),gref(lig))
+                end
+                return head, start, true
             end
+        else
+            -- weird but happens
         end
     end
     return head, start, false

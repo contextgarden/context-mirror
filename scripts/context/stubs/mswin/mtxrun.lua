@@ -2575,7 +2575,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 15915, stripped down to: 9551
+-- original size: 15946, stripped down to: 9548
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -2726,7 +2726,7 @@ elseif os.type=="windows" then
   function os.resolvers.platform(t,k)
     local platform,architecture="",os.getenv("PROCESSOR_ARCHITECTURE") or ""
     if find(architecture,"AMD64") then
-      platform="mswin-64"
+      platform="win64"
     else
       platform="mswin"
     end
@@ -13452,7 +13452,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 61782, stripped down to: 42959
+-- original size: 61799, stripped down to: 42957
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -14706,7 +14706,7 @@ local function findwildcardfiles(filename,allresults,result)
     for k=1,#hashes do
       local hash=hashes[k]
       local hashname,hashtype=hash.name,hash.type
-      if doit(path,files[hashname][bname],bname,hashname,hashtype,result,allresults) then done=true end
+      if doit(path,files[hashname][base],base,hashname,hashtype,result,allresults) then done=true end
       if done and not allresults then break end
     end
   end
@@ -16213,7 +16213,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lib"] = package.loaded["util-lib"] or true
 
--- original size: 11205, stripped down to: 5618
+-- original size: 11340, stripped down to: 5739
 
 if not modules then modules={} end modules ['util-lib']={
   version=1.001,
@@ -16233,6 +16233,9 @@ local function requireswiglib(required,version)
   local trace_swiglib=trace_swiglib or package.helpers.trace
   local library=loaded[required]
   if library==nil then
+    if trace_swiglib then
+      report_swiglib("requiring library %a with version %a",required,version or "any")
+    end
     local required_full=gsub(required,"%.","/") 
     local required_path=pathpart(required_full)
     local required_base=nameonly(required_full)
@@ -16627,8 +16630,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 683633
--- stripped bytes    : 242022
+-- original bytes    : 683816
+-- stripped bytes    : 242089
 
 -- end library merge
 
