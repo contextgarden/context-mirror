@@ -1236,6 +1236,20 @@
      \expandafter#3\else
      \expandafter#1\fi}
 
+\unexpanded\def\verbosemathstyle#1% #1 is number (\normalmathstyle)
+  {{\normalexpanded{\relax\darkgray\ttxx[\number#1:\ifcase\numexpr#1\relax
+                display\or   % 0
+         crampeddisplay\or   % 1
+                   text\or   % 2
+            crampedtext\or   % 3
+                 script\or   % 4
+          crampedscript\or   % 5
+           scriptscript\or   % 6
+    crampedscriptscript\else % 7
+                unknown\fi]}}}
+
+\unexpanded\def\showmathstyle{\verbosemathstyle\normalmathstyle}
+
 %D A plain inheritance:
 
 \def\mathpalette#1#2%
@@ -1699,6 +1713,7 @@
 
 \def\math_text_choice% if needed we can get rid of the normalize (predo in font code)
   {\normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
+  %\showmathstyle
    \hbox\bgroup\font_basics_switchtobodyfont\m_math_text_choice_face\let\next}
 
 %D Safeguard against redefinitions:

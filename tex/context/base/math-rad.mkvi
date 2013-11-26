@@ -30,6 +30,9 @@
 
 \unexpanded\def\sqrt{\doifnextoptionalelse\rootwithdegree\rootwithoutdegree}
 
+\def\styledrootradical#1#2% so that \text works ok ... \rootradical behaves somewhat weird
+  {\normalexpanded{\rootradical{\normalunexpanded{#1}}{\noexpand\triggermathstyle{\normalmathstyle}\normalunexpanded{#2}}}}
+
 \def\rootwithdegree[#1]{\rootradical{#1}}
 \def\rootwithoutdegree {\rootradical  {}}
 
@@ -77,14 +80,14 @@
 \setvalue{\??mathradicalalternative\v!normal}#body%
   {\edef\p_color{\mathradicalparameter\c!color}%
    \ifx\p_color\empty
-     \rootradical{\currentmathradicaldegree}{#body}% {} really needed as \rootradical expands first
+     \styledrootradical{\currentmathradicaldegree}{#body}% {} really needed as \rootradical expands first
    \else\ifx\currentmathradicaldegree\empty
      \pushcolor[\p_color]%
-     \rootradical{\currentmathradicaldegree}%
+     \styledrootradical{\currentmathradicaldegree}%
      {\popcolor#body}%
    \else
      \pushcolor[\p_color]%
-     \rootradical{\popcolor\currentmathradicaldegree\pushcolor[\p_color]}%
+     \styledrootradical{\popcolor\currentmathradicaldegree\pushcolor[\p_color]}%
      {\popcolor#body}%
    \fi\fi}
 
