@@ -208,3 +208,7 @@ function commands.hboxtovbox(original)
     b.depth = 0
     b.height = b.width * factor
 end
+
+function commands.boxtostring(n)
+    context.puretext(nodes.toutf(tex.box[n].list)) -- helper is defined later
+end

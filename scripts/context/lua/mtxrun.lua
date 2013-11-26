@@ -2575,7 +2575,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 15946, stripped down to: 9548
+-- original size: 16023, stripped down to: 9634
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -2702,8 +2702,8 @@ local startuptime=gettimeofday()
 function os.runtime()
   return gettimeofday()-startuptime
 end
-os.resolvers=os.resolvers or {} 
-local resolvers=os.resolvers
+local resolvers=os.resolvers or {}
+os.resolvers=resolvers
 setmetatable(os,{ __index=function(t,k)
   local r=resolvers[k]
   return r and r(t,k) or nil 
@@ -2723,7 +2723,7 @@ end
 if platform~="" then
   os.platform=platform
 elseif os.type=="windows" then
-  function os.resolvers.platform(t,k)
+  function resolvers.platform(t,k)
     local platform,architecture="",os.getenv("PROCESSOR_ARCHITECTURE") or ""
     if find(architecture,"AMD64") then
       platform="win64"
@@ -2735,7 +2735,7 @@ elseif os.type=="windows" then
     return platform
   end
 elseif name=="linux" then
-  function os.resolvers.platform(t,k)
+  function resolvers.platform(t,k)
     local platform,architecture="",os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
     if find(architecture,"x86_64") then
       platform="linux-64"
@@ -2749,7 +2749,7 @@ elseif name=="linux" then
     return platform
   end
 elseif name=="macosx" then
-  function os.resolvers.platform(t,k)
+  function resolvers.platform(t,k)
     local platform,architecture="",os.resultof("echo $HOSTTYPE") or ""
     if architecture=="" then
       platform="osx-intel"
@@ -2765,7 +2765,7 @@ elseif name=="macosx" then
     return platform
   end
 elseif name=="sunos" then
-  function os.resolvers.platform(t,k)
+  function resolvers.platform(t,k)
     local platform,architecture="",os.resultof("uname -m") or ""
     if find(architecture,"sparc") then
       platform="solaris-sparc"
@@ -2777,7 +2777,7 @@ elseif name=="sunos" then
     return platform
   end
 elseif name=="freebsd" then
-  function os.resolvers.platform(t,k)
+  function resolvers.platform(t,k)
     local platform,architecture="",os.resultof("uname -m") or ""
     if find(architecture,"amd64") then
       platform="freebsd-amd64"
@@ -2789,7 +2789,7 @@ elseif name=="freebsd" then
     return platform
   end
 elseif name=="kfreebsd" then
-  function os.resolvers.platform(t,k)
+  function resolvers.platform(t,k)
     local platform,architecture="",os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
     if find(architecture,"x86_64") then
       platform="kfreebsd-amd64"
@@ -2801,12 +2801,17 @@ elseif name=="kfreebsd" then
     return platform
   end
 else
-  function os.resolvers.platform(t,k)
+  function resolvers.platform(t,k)
     local platform="linux"
     os.setenv("MTX_PLATFORM",platform)
     os.platform=platform
     return platform
   end
+end
+function resolvers.bits(t,k)
+  local bits=find(os.platform,"64") and 64 or 32
+  os.bits=bits
+  return bits
 end
 local t={ 8,9,"a","b" }
 function os.uuid()
@@ -16630,8 +16635,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 683816
--- stripped bytes    : 242089
+-- original bytes    : 683893
+-- stripped bytes    : 242080
 
 -- end library merge
 
