@@ -34,8 +34,9 @@ local P, C, R, S, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc
 
 local nodes, node, trackers, attributes, context, commands, tex =  nodes, node, trackers, attributes, context, commands, tex
 
------ texlists    = tex.lists
+local texlists    = tex.lists
 local texgetdimen = tex.getdimen
+local texnest     = tex.nest
 local texgetbox   = tex.getbox
 
 local variables   = interfaces.variables
@@ -87,6 +88,7 @@ local new_gluespec        = nodepool.gluespec
 
 local nodecodes           = nodes.nodecodes
 local skipcodes           = nodes.skipcodes
+local whatsitcodes        = nodes.whatsitcodes
 
 local penalty_code        = nodecodes.penalty
 local kern_code           = nodecodes.kern
@@ -94,8 +96,6 @@ local glue_code           = nodecodes.glue
 local hlist_code          = nodecodes.hlist
 local vlist_code          = nodecodes.vlist
 local whatsit_code        = nodecodes.whatsit
-
-local texnest             = tex.nest
 
 local vspacing            = builders.vspacing or { }
 builders.vspacing         = vspacing
@@ -279,7 +279,7 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
     local list = current.list
     local t = trace_vsnapping and { }
     if t then
-        t[#t+1] = formatters["list content: %s"](nodes.toutf(list))
+        t[#t+1] = formatters["list content: %s"](listtoutf(list))
         t[#t+1] = formatters["parent id: %s"](reference(current))
         t[#t+1] = formatters["snap method: %s"](method.name)
         t[#t+1] = formatters["specification: %s"](method.specification)
@@ -788,7 +788,17 @@ end
 
 -- I need to figure out how to deal with the prevdepth that crosses pages. In fact,
 -- prevdepth is often quite interfering (even over a next paragraph) so I need to
--- figure out a trick.
+-- figure out a trick. Maybe use something other than a rule. If we visualize we'll
+-- see the baselineskip in action:
+--
+-- \blank[force,5*big] { \baselineskip1cm xxxxxxxxx \par } \page
+-- \blank[force,5*big] { \baselineskip1cm xxxxxxxxx \par } \page
+-- \blank[force,5*big] { \baselineskip5cm xxxxxxxxx \par } \page
+
+-- We can register and copy the rule instead.
+
+local w, h, d = 0, 0, 0
+----- w, h, d = 100*65536, 65536, 65536
 
 local function forced_skip(head,current,width,where,trace)
     if head == current and head.subtype == baselineskip_code then
@@ -797,14 +807,14 @@ local function forced_skip(head,current,width,where,trace)
     if width == 0 then
         -- do nothing
     elseif where == "after" then
-        head, current = insert_node_after(head,current,new_rule(0,0,0))
+        head, current = insert_node_after(head,current,new_rule(w,h,d))
         head, current = insert_node_after(head,current,new_kern(width))
-        head, current = insert_node_after(head,current,new_rule(0,0,0))
+        head, current = insert_node_after(head,current,new_rule(w,h,d))
     else
         local c = current
-        head, current = insert_node_before(head,current,new_rule(0,0,0))
+        head, current = insert_node_before(head,current,new_rule(w,h,d))
         head, current = insert_node_before(head,current,new_kern(width))
-        head, current = insert_node_before(head,current,new_rule(0,0,0))
+        head, current = insert_node_before(head,current,new_rule(w,h,d))
         current = c
     end
     if trace then
@@ -816,6 +826,36 @@ end
 -- penalty only works well when before skip
 
 local discard, largest, force, penalty, add, disable, nowhite, goback, together = 0, 1, 2, 3, 4, 5, 6, 7, 8 -- move into function when upvalue 60 issue
+
+-- [whatsits][hlist][glue][glue][penalty]
+
+local special_penalty_min = 32250
+local special_penalty_max = 35000
+
+local function specialpenalty(start,penalty)
+ -- nodes.showsimplelist(texlists.page_head,1)
+    local current = find_node_tail(texlists.page_head)
+    while current do
+        local id = current.id
+        if id == glue_code then
+            current = current.prev
+        elseif id == penalty_code then
+            local p = current.penalty
+            if p == penalty then
+                if trace_vspacing then
+                    report_vspacing("overloading penalty %a",p)
+                end
+                return current
+            elseif p >= 10000 then
+                current = current.prev
+            else
+                break
+            end
+        else
+            current = current.prev
+        end
+    end
+end
 
 local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also pass tail
     if trace then
@@ -921,6 +961,14 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 local so = current[a_skiporder] or 1 -- has  1 default, no unset (yet)
                 local sp = current[a_skippenalty]    -- has no default, no unset (yet)
                 if sp and sc == penalty then
+
+if where == "page" and sp >= special_penalty_min and sp <= special_penalty_max then
+    local previousspecial = specialpenalty(current,sp)
+    if previousspecial then
+        previousspecial.penalty = 0
+        sp = 0
+    end
+end
                     if not penalty_data then
                         penalty_data = sp
                     elseif penalty_order < so then
@@ -938,6 +986,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                         current = current.next
                     else
                         -- not look back across head
+-- todo: prev can be whatsit (latelua)
                         local previous = current.prev
                         if previous and previous.id == glue_code and previous.subtype == userskip_code then
                             local ps = previous.spec
@@ -1216,12 +1265,16 @@ local function report(message,lst)
     report_vspacing(message,count_nodes(lst,true),nodeidstostring(lst))
 end
 
+-- ugly code: we get partial lists (check if this stack is still okay) ... and we run
+-- into temp nodes (sigh)
+
 function vspacing.pagehandler(newhead,where)
     -- local newhead = texlists.contrib_head
     if newhead then
         local newtail = find_node_tail(newhead) -- best pass that tail, known anyway
         local flush = false
         stackhack = true -- todo: only when grid snapping once enabled
+        -- todo: fast check if head = tail
         for n in traverse_nodes(newhead) do -- we could just look for glue nodes
             local id = n.id
             if id ~= glue_code then

@@ -16218,7 +16218,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lib"] = package.loaded["util-lib"] or true
 
--- original size: 11340, stripped down to: 5739
+-- original size: 11549, stripped down to: 5905
 
 if not modules then modules={} end modules ['util-lib']={
   version=1.001,
@@ -16372,6 +16372,7 @@ function require(name,version)
   end
 end
 local swiglibs={}
+local initializer="core"
 function swiglib(name,version)
   local library=swiglibs[name]
   if not library then
@@ -16379,7 +16380,12 @@ function swiglib(name,version)
     if trace_swiglib then
       report_swiglib("loading %a",name)
     end
-    library=requireswiglib("swiglib."..name,version)
+    if not find(name,"%."..initializer.."$") then
+      fullname="swiglib."..name.."."..initializer
+    else
+      fullname="swiglib."..name
+    end
+    library=requireswiglib(fullname,version)
     swiglibs[name]=library
     statistics.stoptiming(swiglibs)
   end
@@ -16635,8 +16641,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 683893
--- stripped bytes    : 242080
+-- original bytes    : 684102
+-- stripped bytes    : 242123
 
 -- end library merge
 

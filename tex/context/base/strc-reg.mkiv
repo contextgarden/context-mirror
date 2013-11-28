@@ -773,17 +773,12 @@
    \dostoptagged
    \dostoptagged}
 
-\unexpanded\def\doapplyregisterentrycommand#1#2% processor text
-  {\dostarttagged\t!registerentry\empty
-   \ifx\currentregisterseeindex\empty \else
-     \dontleavehmode
-     \dosetdirectpagereference{seeindex:\currentregisterseeindex}% maybe some day we will support an area
-   \fi
-   \applyprocessor{#1}{\registerparameter\c!textcommand{\limitedregisterentry{\registerparameter\c!deeptextcommand{#2}}}}%
-   \dostoptagged}
+\let\strc_register_injector_process\relax
+\let\strc_register_injector_show   \relax
 
 \unexpanded\def\defaultregisterentry#1#2#3#4% #1:processor #2:internal #3:seeindex #4:word
   {\def\currentregisterpageindex{#2}%
+   \strc_register_injector_process
    \iflocation
      \def\currentregisterseeindex{#3}%
      \doifelse{\registerparameter\c!interaction}\v!text
@@ -793,6 +788,16 @@
      \let\currentregisterseeindex\empty
      \doapplyregisterentrycommand{#1}{#4}%
    \fi}
+
+\unexpanded\def\doapplyregisterentrycommand#1#2% processor text
+  {\dostarttagged\t!registerentry\empty
+   \ifx\currentregisterseeindex\empty \else
+     \dontleavehmode
+     \strc_register_injector_show
+     \dosetdirectpagereference{seeindex:\currentregisterseeindex}% maybe some day we will support an area
+   \fi
+   \applyprocessor{#1}{\registerparameter\c!textcommand{\limitedregisterentry{\registerparameter\c!deeptextcommand{#2}}}}%
+   \dostoptagged}
 
 \unexpanded\def\doapplyregisterseecommand#1#2%
   {\ifx\currentregisterseeindex\empty

@@ -185,23 +185,41 @@
 
 \let\flushpostponednodedata\relax % hook into everypar
 
-\newbox\b_spac_postponed_data
+\newbox  \b_spac_postponed_data
+\newcount\c_spac_postponed_data
+
+\installcorenamespace {postponednodesstack}
+
+\initializeboxstack\??postponednodesstack
+
+\unexpanded\def\pushpostponednodedata
+  {\global\advance\c_spac_postponed_data\plusone
+   \savebox\??postponednodesstack{\the\c_spac_postponed_data}{\box\b_spac_postponed_data}}
+
+\unexpanded\def\poppostponednodedata
+  {\global\setbox\b_spac_postponed_data\hbox{\foundbox\??postponednodesstack{\the\c_spac_postponed_data}}%
+   \global\advance\c_spac_postponed_data\minusone
+   \ifvoid\b_spac_postponed_data\else
+     \glet\flushpostponednodedata\spac_postponed_data_flush
+   \fi}
 
 \unexpanded\def\flushatnextpar
   {\begingroup
-   \glet\flushpostponednodedata\spac_postponed_flush
-   \dowithnextboxcs\spac_postponed_finish\hbox}
+   \glet\flushpostponednodedata\spac_postponed_data_flush
+   \dowithnextboxcs\spac_postponed_data_finish\hbox}
 
-\def\spac_postponed_finish
+\def\spac_postponed_data_finish
   {\global\setbox\b_spac_postponed_data\hbox % to\zeropoint
      {\box\b_spac_postponed_data\box\nextbox}%
    \endgroup}
 
-\def\spac_postponed_flush
-  {\ifvoid\b_spac_postponed_data\else
-     \hbox{\smashedbox\b_spac_postponed_data}% \box\b_spac_postponed_data
-   \fi
-   \glet\flushpostponednodedata\relax}
+\def\spac_postponed_data_flush
+  {%\iftrialtypesetting \else
+     \ifvoid\b_spac_postponed_data\else
+       \hbox{\smashedbox\b_spac_postponed_data}% \box\b_spac_postponed_data
+     \fi
+     \glet\flushpostponednodedata\relax
+   }%\fi}
 
 \unexpanded\def\doflushatpar
   {\ifvmode
