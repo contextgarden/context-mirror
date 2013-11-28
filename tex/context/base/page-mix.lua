@@ -149,6 +149,9 @@ local function discardtopglue(current,discarded)
             break
         end
     end
+    if current then
+        current.prev = nil
+    end
     return current, size
 end
 
@@ -256,20 +259,44 @@ local function setsplit(specification) -- a rather large function
         }
     end
 
-    local column   = 1
-    local line     = 0
-    local result   = results[1]
-    local lasthead = nil
-    local rest     = nil
+    local column        = 1
+    local line          = 0
+    local result        = results[1]
+    local lasthead      = nil
+    local rest          = nil
+    local lastlocked    = nil
+    local lastcurrent   = nil
+    local backtracked   = false
 
     if trace_state then
         report_state("setting collector to column %s",column)
     end
 
-    local lastlocked  = nil
-    local lastcurrent = nil
-
-    local backtracked = false
+    local function backtrack(start)
+        local current = start
+        -- first skip over glue and penalty
+        while current do
+            local id = current.id
+            if id == glue_code or id == penalty_code then
+                current = current.prev
+            else
+                break
+            end
+        end
+        -- then skip over content
+        while current do
+            local id = current.id
+            if id == glue_code or id == penalty_code then
+                break
+            else
+                current = current.prev
+            end
+        end
+        if not current then
+            current = start
+        end
+        return current
+    end
 
     local function gotonext()
         if lastcurrent then
@@ -278,7 +305,7 @@ local function setsplit(specification) -- a rather large function
                     report_state("backtracking to preferred break in column %s",column)
                 end
                 -- todo: also remember height/depth
-                current = lastcurrent
+                current = backtrack(lastcurrent)
                 backtracked = true
             end
             lastcurrent = nil
@@ -360,37 +387,26 @@ local function setsplit(specification) -- a rather large function
 
     local function process_skip(current,nxt)
         local advance = current.spec.width
-            local prv = current.prev
-            if prv.id == penalty_code then
-                local penalty = prv.penalty
-                if penalty < 4000 then
-                    lastlocked  = nil
-                    lastcurrent = nil
+        if advance ~= 0 then
+            local state, skipped = checked(advance,"glue")
+            if trace_state then
+                report_state("%-7s > column %s, state %a, advance %p, height %p","glue",column,state,advance,height)
+                if skipped ~= 0 then
+                    report_state("%-7s > column %s, discarded %p","glue",column,skipped)
                 end
-            elseif current.subtype ~= lineskip_code then
-                lastlocked  = nil
-                lastcurrent = nil
             end
-            if advance ~= 0 then
-                local state, skipped = checked(advance,"glue")
-                if trace_state then
-                    report_state("%-7s > column %s, state %a, advance %p, height %p","glue",column,state,advance,height)
-                    if skipped ~= 0 then
-                        report_state("%-7s > column %s, discarded %p","glue",column,skipped)
-                    end
-                end
-                if state == "quit" then
-                    return true
-                end
-                height = height + depth + skip
-                depth  = 0
-                skip   = height > 0 and advance or 0
-                if trace_state then
-                    report_state("%-7s > column %s, height %p, depth %p, skip %p","glue",column,height,depth,skip)
-                end
-            else
-                -- what else? ignore? treat as valid as usual?
+            if state == "quit" then
+                return true
             end
+            height = height + depth + skip
+            depth  = 0
+            skip   = height > 0 and advance or 0
+            if trace_state then
+                report_state("%-7s > column %s, height %p, depth %p, skip %p","glue",column,height,depth,skip)
+            end
+        else
+            -- what else? ignore? treat as valid as usual?
+        end
     end
 
     local function process_kern(current,nxt)
@@ -443,53 +459,6 @@ local function setsplit(specification) -- a rather large function
     -- become installable
     --
     -- [chapter] [penalty] [section] [penalty] [first line]
-    --
-    -- we need some nice use cases so the next is just for me to play with
-
-    -- todo: presets:
-    --
-    -- fixed :  criterium=4000  check=no
-    -- large :  criterium=4000  check=more
-    -- auto  :  criterium=0     check=more
-
-    local lockcriterium = 4000
-
-    local function prevprev(current)
-        local p = current.prev
-        return p and p.prev
-    end
-
-    local function reassess(current,penalty)
-        if splitmethod == v_fixed then
-         -- quite ok, a magic number: used as samepage (in sectioning)
-            if penalty >= lockcriterium then
-                if not lastlocked then
-                    lastcurrent = prevprev(current)
-                    lastlocked  = lastcurrent and penalty
-                end
-                return
-            end
-        elseif splitmethod == v_more then
-            -- experiment, might change
-            if penalty >= lockcriterium then
-                if not lastlocked or penalty >= lastlocked then
-                    lastcurrent = prevprev(current)
-                    lastlocked  = lastcurrent and penalty
-                end
-                return
-            end
-        elseif splitmethod == v_auto then
-            if penalty > 0 then
-                if not lastlocked or penalty > lastlocked then
-                    lastcurrent = prevprev(current)
-                    lastlocked  = lastcurrent and penalty
-                end
-                return
-            end
-        end
-        lastlocked  = nil
-        lastcurrent = nil
-    end
 
     local function process_penalty(current,nxt)
         local penalty = current.penalty
@@ -520,8 +489,13 @@ local function setsplit(specification) -- a rather large function
             -- we don't care too much
             lastlocked  = nil
             lastcurrent = nil
-        elseif splitmethod then
-            reassess(current,penalty)
+        elseif penalty >= 10000 then
+            if not lastcurrent then
+                lastcurrent = current
+                lastlocked = penalty
+            elseif penalty > lastlocked then
+                lastlocked = penalty
+            end
         else
             lastlocked  = nil
             lastcurrent = nil

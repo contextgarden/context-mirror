@@ -97,7 +97,7 @@ function nodes.handlers.checkforleaks(sparse)
     end
     node.flush_list(q)
     for k, v in next, l do
-        write_nl(formatters["%s * %s"](v,k))
+        report_nodes("%s * %s",v,k)
     end
 end
 
@@ -231,7 +231,7 @@ end
 
 local function showsimplelist(h,depth,n)
     while h do
-        write_nl(rep(" ",n) .. tostring(h))
+        report_nodes("% w%s",n,d_tostring(h))
         if not depth or n < depth then
             local id = h.id
             if id == hlist_code or id == vlist_code then

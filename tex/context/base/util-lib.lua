@@ -255,7 +255,8 @@ recommended loader.
 
 ]]--
 
-local swiglibs = { }
+local swiglibs    = { }
+local initializer = "core"
 
 function swiglib(name,version)
     local library = swiglibs[name]
@@ -264,7 +265,12 @@ function swiglib(name,version)
         if trace_swiglib then
             report_swiglib("loading %a",name)
         end
-        library = requireswiglib("swiglib." .. name,version)
+        if not find(name,"%." .. initializer .. "$") then
+            fullname = "swiglib." .. name .. "." .. initializer
+        else
+            fullname = "swiglib." .. name
+        end
+        library = requireswiglib(fullname,version)
         swiglibs[name] = library
         statistics.stoptiming(swiglibs)
     end
