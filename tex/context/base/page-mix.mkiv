@@ -256,7 +256,8 @@
   {\goodbreak}
 
 \installcolumnbreakmethod \s!mixedcolumn \v!yes
-  {\penalty\c_page_mix_break_forced\relax}
+  {\par
+   \penalty\c_page_mix_break_forced\relax}
 
 %D As we operate in grid snapping mode, we use a dedicated macro to enable this
 %D mechamism.
@@ -781,6 +782,21 @@
 \unexpanded\def\page_mix_command_next_page_and_inserts
   {\page_otr_eject_page_and_flush_inserts}
 
+%D Moved here and dedicated:
+
+\unexpanded\def\page_mix_command_test_column
+  {\dodoubleempty\page_mix_command_test_column_indeed}
+
+\unexpanded\def\page_mix_command_test_column_indeed[#1][#2]% works on last column
+  {\par
+   \begingroup
+   \scratchdimen\dimexpr#1\lineheight\ifsecondargument+#2\fi\relax
+   \ifdim\scratchdimen>\zeropoint
+     \attribute\checkedbreakattribute\number\scratchdimen
+     \penalty\c_page_mix_break_forced\relax
+   \fi
+   \endgroup}
+
 %D We need to hook some handlers into the output routine and we define
 %D a dedicated one:
 
@@ -804,8 +820,9 @@
    \s!page_otr_command_side_float_output      =\page_mix_command_side_float_output,
    \s!page_otr_command_flush_floats           =\page_mix_command_flush_floats,
    \s!page_otr_command_flush_side_floats      =\page_mix_command_flush_side_floats,
-   \s!page_otr_command_flush_saved_floats     =\page_mix_command_flush_saved_floats
+   \s!page_otr_command_flush_saved_floats     =\page_mix_command_flush_saved_floats,
  % \s!page_otr_command_flush_margin_blocks    =\page_mix_command_flush_margin_blocks, % not used
+   \s!page_otr_command_test_column            =\page_mix_command_test_column
   ]
 
 %D Only a few float placement options are supported:

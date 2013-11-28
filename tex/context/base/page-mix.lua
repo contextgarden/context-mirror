@@ -59,7 +59,8 @@ pagebuilders              = pagebuilders or { }
 pagebuilders.mixedcolumns = pagebuilders.mixedcolumns or { }
 local mixedcolumns        = pagebuilders.mixedcolumns
 
-local forcedbreak = -123
+local a_checkedbreak      = attributes.private("checkedbreak")
+local forcedbreak         = -123
 
 -- initializesplitter(specification)
 -- cleanupsplitter()
@@ -466,24 +467,35 @@ local function setsplit(specification) -- a rather large function
             lastlocked  = nil
             lastcurrent = nil
         elseif penalty == forcedbreak then
-            lastlocked  = nil
-            lastcurrent = nil
-            local okay, skipped = gotonext()
-            if okay then
+            local needed  = current[a_checkedbreak]
+            local proceed = not checked or checked == 0
+            if not proceed then
+                local available = target - height
+                proceed = needed >= available
                 if trace_state then
-                    report_state("cycle: %s, forced column break, same page",cycle)
-                    if skipped ~= 0 then
-                        report_state("%-7s > column %s, discarded %p","penalty",column,skipped)
-                    end
+                    report_state("cycle: %s, column %s, available %p, needed %p, %s break",cycle,column,available,needed,proceed and "forcing" or "ignoring")
                 end
-            else
-                if trace_state then
-                    report_state("cycle: %s, forced column break, next page",cycle)
-                    if skipped ~= 0 then
-                        report_state("%-7s > column %s, discarded %p","penalty",column,skipped)
+            end
+            if proceed then
+                lastlocked  = nil
+                lastcurrent = nil
+                local okay, skipped = gotonext()
+                if okay then
+                    if trace_state then
+                        report_state("cycle: %s, forced column break, same page",cycle)
+                        if skipped ~= 0 then
+                            report_state("%-7s > column %s, discarded %p","penalty",column,skipped)
+                        end
                     end
+                else
+                    if trace_state then
+                        report_state("cycle: %s, forced column break, next page",cycle)
+                        if skipped ~= 0 then
+                            report_state("%-7s > column %s, discarded %p","penalty",column,skipped)
+                        end
+                    end
+                    return true
                 end
-                return true
             end
         elseif penalty < 0 then
             -- we don't care too much
