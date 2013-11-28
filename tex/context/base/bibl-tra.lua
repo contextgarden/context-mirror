@@ -59,8 +59,9 @@ function hacks.process(settings)
     local database = settings.database or ""
     local jobname = tex.jobname
     if database ~= "" then
-        interfaces.showmessage("publications",3)
-        io.savedata(file.addsuffix(jobname,"aux"),format(template,style,database))
+        local targetfile = file.addsuffix(jobname,"aux")
+        interfaces.showmessage("publications",3,targetfile)
+        io.savedata(targetfile,format(template,style,database))
         if trace_bibtex then
             report_tex("processing bibtex file %a using %a",jobname,bibtexbin)
         end

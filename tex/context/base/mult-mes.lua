@@ -982,13 +982,13 @@ return {
             en = "file %a not found, waiting for bibtex",
         },
         ["publications:3"] = {
-            en = "wrote a new auxiliary file \\jobname.aux",
+            en = "wrote a new auxiliary file %a",
         },
         ["publications:4"] = {
             en = "loading database from %a",
         },
         ["publications:5"] = {
-            en = "warning: unknown cite argument %a on line \\the\\inputlineno",
+            en = "warning: unknown cite argument %a on line %a",
         },
         ["publications:6"] = {
             en = "loading formatting style from %a",

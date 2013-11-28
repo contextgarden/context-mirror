@@ -387,26 +387,12 @@
 
 %D Test column breaks.
 
-\def\testcolumn
+\unexpanded\def\testcolumn
   {\dodoubleempty\page_tests_columns_test}
 
 \def\page_tests_columns_test[#1][#2]%
-  {\endgraf
-   \ifdim\pagegoal<\maxdimen
-     \ifdim\pagetotal<\pagegoal
-       \d_page_tests_test\dimexpr
-         \pagegoal
-        -\pagetotal
-         \ifdim\lastskip<\parskip+\parskip\fi
-         \ifsecondargument+#2\fi
-       \relax
-       \getrawnoflines\d_page_tests_test % (raw)
-       \ifnum#1>\noflines
-         \column
-       \fi
-     \else
-       \penalty-\plustenthousand % (untested)
-     \fi
+  {\ifdefined\page_otr_command_test_column
+     \page_otr_command_test_column[#1][#2]%
    \fi}
 
 \protect \endinput

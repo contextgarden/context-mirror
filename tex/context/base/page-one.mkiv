@@ -587,6 +587,9 @@
 \unexpanded\def\page_one_command_synchronize_side_floats
   {\page_sides_synchronize_floats}
 
+\unexpanded\def\page_one_command_test_page
+  {\testpage}
+
 \defineoutputroutine
   [\s!singlecolumn]
   [\s!page_otr_command_routine                =\page_one_command_routine,
@@ -608,7 +611,8 @@
    \s!page_otr_command_flush_floats           =\page_one_command_flush_floats,
    \s!page_otr_command_flush_side_floats      =\page_one_command_flush_side_floats,
    \s!page_otr_command_flush_saved_floats     =\page_one_command_flush_saved_floats,
-   \s!page_otr_command_flush_margin_blocks    =\page_one_command_flush_margin_blocks
+   \s!page_otr_command_flush_margin_blocks    =\page_one_command_flush_margin_blocks,
+   \s!page_otr_command_test_column            =\page_one_command_test_page
   ]
 
 % \setupoutputroutine

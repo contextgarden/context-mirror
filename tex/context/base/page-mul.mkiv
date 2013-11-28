@@ -1765,6 +1765,32 @@
      {\directdummyparameter\c!distance}%
      {\directdummyparameter\c!n}}
 
+%D Moved here:
+
+\unexpanded\def\page_mul_command_test_column
+  {\dodoubleempty\page_mul_command_test_column_indeed}
+
+\unexpanded\def\page_mul_command_test_column_indeed[#1][#2]% works on last column
+  {\page_otr_command_flush_top_insertions\endgraf
+   \ifdim\pagegoal<\maxdimen
+     \ifdim\pagetotal<\pagegoal
+       \d_page_tests_test\dimexpr
+         \pagegoal
+        -\pagetotal
+         \ifdim\lastskip<\parskip+\parskip\fi
+         \ifsecondargument+#2\fi
+       \relax
+       \getrawnoflines\d_page_tests_test % (raw)
+       \ifnum#1>\noflines
+         \column
+       \fi
+     \else
+       \penalty-\plustenthousand % (untested)
+     \fi
+   \fi}
+
+%D but fragile anyway.
+
 \let\page_mul_command_package_contents\page_one_command_package_contents
 \let\page_mul_command_flush_float_box \page_one_command_flush_float_box
 
@@ -1788,8 +1814,9 @@
    \s!page_otr_command_side_float_output      =\page_mul_command_side_float_output,
    \s!page_otr_command_flush_floats           =\page_mul_command_flush_floats,
    \s!page_otr_command_flush_side_floats      =\page_mul_command_flush_side_floats,
-   \s!page_otr_command_flush_saved_floats     =\page_mul_command_flush_saved_floats
+   \s!page_otr_command_flush_saved_floats     =\page_mul_command_flush_saved_floats,
  % \s!page_otr_command_flush_margin_blocks    =\page_mul_command_flush_margin_blocks, % not used
+   \s!page_otr_command_test_column            =\page_mul_command_test_column
   ]
 
 \protect \endinput
