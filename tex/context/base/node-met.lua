@@ -185,18 +185,18 @@ local n_remove_node     = node.remove -- not yet nodes.remove
 -- end
 
 local function remove(head,current,free_too)
-   local t = current
-   head, current = n_remove_node(head,current)
-   if t then
-        if free_too then
-            n_free_node(t)
-            t = nil
-        else
-            n_setfield(t,"next",nil)
-            n_setfield(t,"prev",nil)
-        end
-   end
-   return head, current, t
+    local t = current
+    head, current = n_remove_node(head,current)
+    if not t then
+        -- forget about it
+    elseif free_too then
+        n_free_node(t)
+        t = nil
+    else
+        n_setfield(t,"next",nil)
+        n_setfield(t,"prev",nil)
+    end
+    return head, current, t
 end
 
 nodes.remove = remove

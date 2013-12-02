@@ -42,6 +42,7 @@
         local data = table.load(specification.filename or "youless-watt.lua")
 
         if not data or data.variant ~= "watt" then
+            context("invalid variant")
             return
         end
 
@@ -49,9 +50,16 @@
 
         -- for the moment no specific font scaling
 
+        local years = data.years
+
+        if not years then
+            context("no years")
+            return
+        end
+
         for y=year,year do
 
-            local year  = data.years[y]
+            local year  = years[y]
             local scale = 20
             local mark  = 3
 

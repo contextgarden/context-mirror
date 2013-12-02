@@ -1077,12 +1077,12 @@
 %D \stoptyping
 
 \def\dohyphenatednextbox
-  {\ctxcommand{hyphenatedlist(tex.box[\number\nextbox])}%
+  {\ctxcommand{hyphenatedlist(tex.box[\number\nextbox].list)}%
    \unhbox\nextbox}
 
-\unexpanded\def\hyphenatedword  {\dowithnextboxcs\dohyphenatednextbox    \hbox}
-\unexpanded\def\hyphenatedpar   {\dowithnextboxcs\dohyphenatednextbox    \hbox}
-\unexpanded\def\hyphenatedfile#1{\dowithnextboxcs\dohyphenatednextbox    \hbox{\readfile{#1}\donothing\donothing}}
+\unexpanded\def\hyphenatedword  {\dowithnextboxcs\dohyphenatednextbox\hbox}
+\unexpanded\def\hyphenatedpar   {\dowithnextboxcs\dohyphenatednextbox\hbox}
+\unexpanded\def\hyphenatedfile#1{\dowithnextboxcs\dohyphenatednextbox\hbox{\readfile{#1}\donothing\donothing}}
 
 %D \macros
 %D   {processtokens}
@@ -1773,16 +1773,31 @@
 
 % More modern:
 
+% \definesystemattribute[vboxtohboxseparator][public]
+
+%newbox\d_syst_boxes_vboxtohbox
+\newbox\d_syst_boxes_separator
+
+\unexpanded\def\startvboxtohboxseparator
+  {\setbox\d_syst_boxes_separator\hbox attr \vboxtohboxseparatorattribute\plusone\bgroup}
+
+\unexpanded\def\stopvboxtohboxseparator
+  {\egroup}
+
 \unexpanded\def\startvboxtohbox
-  {\bgroup
+  {\begingroup
    \setbox\scratchbox\hbox\bgroup}
 
 \unexpanded\def\stopvboxtohbox
-  {\ifcase\vboxtohboxslack\else\hskip\zeropoint\!!minus\vboxtohboxslack\fi
+  {\ifvoid\d_syst_boxes_separator
+      \hskip\zeropoint\ifcase\vboxtohboxslack\else\s!minus\vboxtohboxslack\fi % we really need a skip
+   \else
+      \box\d_syst_boxes_separator
+   \fi
    \egroup
    \ctxcommand{hboxtovbox(\number\scratchbox)}%
    \box\scratchbox
-   \egroup}
+   \endgroup}
 
 % A possible reconstruction:
 
@@ -2435,44 +2450,83 @@
 %D \hbox{y:\foundbox{two}{a}} \par
 %D \stoptyping
 
-\def\@@stackbox{@box@}
-\def\@@stacklst{@xob@}
+\installcorenamespace {stackbox}
+\installcorenamespace {stacklst}
 
 \unexpanded\def\setstackbox#1#2%
-  {\ifcsname\@@stackbox:#1:#2\endcsname\else
-     \expandafter\newbox\csname\@@stackbox:#1:#2\endcsname
+  {\ifcsname\??stackbox#1:#2\endcsname\else
+     \expandafter\newbox\csname\??stackbox#1:#2\endcsname
    \fi
-   \global\setbox\csname\@@stackbox:#1:#2\endcsname\vbox}
+   \global\setbox\csname\??stackbox#1:#2\endcsname\vbox}
 
 \unexpanded\def\initializeboxstack#1%
   {\def\docommand##1{\setstackbox{#1}{##1}{}}%
-   \ifcsname\@@stacklst#1\endcsname
-     \processcommacommand[\getvalue{\@@stacklst#1}]\docommand
+   \ifcsname\??stacklst#1\endcsname
+     \processcommacommand[\getvalue{\??stacklst#1}]\docommand
    \fi
-   \letgvalueempty{\@@stacklst#1}}
+   \letgvalueempty{\??stacklst#1}}
 
 \unexpanded\def\savebox#1#2% stack name
   {% beware, \setxvalue defines the cs beforehand so we cannot use the
    % test inside the { }
-   \ifcsname\@@stacklst#1\endcsname
-     \setxvalue{\@@stacklst#1}{\csname\@@stacklst#1\endcsname,#2}%
+   \ifcsname\??stacklst#1\endcsname
+     \setxvalue{\??stacklst#1}{\csname\??stacklst#1\endcsname,#2}%
    \else
-     \setxvalue{\@@stacklst#1}{#2}%
+     \setxvalue{\??stacklst#1}{#2}%
    \fi
    \setstackbox{#1}{#2}}
 
-\unexpanded\def\foundbox#1#2%
+\unexpanded\def\restorebox#1#2% unwrapped
+  {\ifcsname\??stackbox#1:#2\endcsname
+     \copy\csname\??stackbox#1:#2\endcsname
+   \else
+     \emptybox
+   \fi}
+
+\unexpanded\def\foundbox#1#2% wrapped
   {\vbox
-     {\ifcsname\@@stackbox:#1:#2\endcsname
-        \copy\csname\@@stackbox:#1:#2\endcsname
+     {\ifcsname\??stackbox#1:#2\endcsname
+        \copy\csname\??stackbox#1:#2\endcsname
       \fi}}
 
 \unexpanded\def\doifboxelse#1#2#3#4%
-  {\ifcsname\@@stackbox:#1:#2\endcsname
-     \ifvoid\csname\@@stackbox:#1:#2\endcsname#4\else#3\fi
+  {\ifcsname\??stackbox#1:#2\endcsname
+     \ifvoid\csname\??stackbox#1:#2\endcsname#4\else#3\fi
    \else
      #4%
    \fi}
+
+%D This one is cheaper (the above is no longer used that much):
+
+\installcorenamespace {boxstack}
+
+\newcount\c_syst_boxes_stack
+\let     \b_syst_boxes_stack\relax
+
+\unexpanded\def\syst_boxes_stack_allocate
+  {\newbox\b_syst_boxes_stack
+   \expandafter\let\csname\??boxstack\number\c_syst_boxes_stack\endcsname\b_syst_boxes_stack}
+
+\unexpanded\def\syst_boxes_push#1#2%
+  {\global\advance\c_syst_boxes_stack\plusone
+   \expandafter\let\expandafter\b_syst_boxes_stack\csname\??boxstack\number\c_syst_boxes_stack\endcsname
+   \ifx\b_syst_boxes_stack\relax % cheaper then csname check as in most cases it's defined
+      \syst_boxes_stack_allocate
+   \fi
+   #1\setbox\b_syst_boxes_stack\box#2\relax}
+
+\unexpanded\def\syst_boxes_pop#1#2%
+  {#1\setbox#2\box\csname\??boxstack\number\c_syst_boxes_stack\endcsname
+   \global\advance\c_syst_boxes_stack\minusone}
+
+\unexpanded\def\localpushbox {\syst_boxes_push\relax}
+\unexpanded\def\localpopbox  {\syst_boxes_pop \relax}
+
+\unexpanded\def\globalpushbox{\syst_boxes_push\global}
+\unexpanded\def\globalpopbox {\syst_boxes_pop \global}
+
+% \unexpanded\def\pushbox#1{\ctxcommand{pushbox(\number#1)}}
+% \unexpanded\def\popbox #1{\ctxcommand{popbox(\number#1)}}
 
 %D \macros
 %D   {removedepth, obeydepth}
@@ -2514,15 +2568,16 @@
 %D \macros
 %D   {makestrutofbox}
 %D
-%D This macro sets the dimensions of a box to those of a strut.
+%D This macro sets the dimensions of a box to those of a strut. Sort of obsolete
+%D so it will go away.
 
-\def\domakestrutofbox
+\unexpanded\def\makestrutofbox % not used
+  {\afterassignment\syst_boxes_makestrutofbox\c_boxes_register}
+
+\def\syst_boxes_makestrutofbox
   {\ht\c_boxes_register\strutht
    \dp\c_boxes_register\strutdp
    \wd\c_boxes_register\zeropoint}
-
-\unexpanded\def\makestrutofbox % not used
-  {\afterassignment\domakestrutofbox\c_boxes_register}
 
 %D \macros
 %D   {raisebox,lowerbox}
@@ -2632,19 +2687,22 @@
 %D \macros
 %D   {setboxllx,setboxlly,gsetboxllx,gsetboxlly,getboxllx,getboxlly}
 %D
-%D A prelude to an extended \TEX:
+%D A prelude to an extended \TEX\ feature:
 
-\unexpanded\def\setboxllx #1#2{\expandafter\edef\csname boxes_x_\number#1\endcsname{\the\dimexpr#2\relax}}
-\unexpanded\def\setboxlly #1#2{\expandafter\edef\csname boxes_y_\number#1\endcsname{\the\dimexpr#2\relax}}
+\installcorenamespace {box_x}
+\installcorenamespace {box_y}
 
-\unexpanded\def\gsetboxllx#1#2{\expandafter\xdef\csname boxes_x_\number#1\endcsname{\the\dimexpr#2\relax}}
-\unexpanded\def\gsetboxlly#1#2{\expandafter\xdef\csname boxes_y_\number#1\endcsname{\the\dimexpr#2\relax}}
+\unexpanded\def\setboxllx #1#2{\expandafter\edef\csname\??box_x\number#1\endcsname{\the\dimexpr#2\relax}}
+\unexpanded\def\setboxlly #1#2{\expandafter\edef\csname\??box_y\number#1\endcsname{\the\dimexpr#2\relax}}
 
-\def\getboxllx#1{\ifcsname boxes_x_\number#1\endcsname\csname boxes_x_\number#1\endcsname\else\zeropoint\fi}
-\def\getboxlly#1{\ifcsname boxes_y_\number#1\endcsname\csname boxes_y_\number#1\endcsname\else\zeropoint\fi}
+\unexpanded\def\gsetboxllx#1#2{\expandafter\xdef\csname\??box_x\number#1\endcsname{\the\dimexpr#2\relax}}
+\unexpanded\def\gsetboxlly#1#2{\expandafter\xdef\csname\??box_y\number#1\endcsname{\the\dimexpr#2\relax}}
 
-\def\directgetboxllx#1{\csname boxes_x_\number#1\endcsname} % use when sure existence
-\def\directgetboxlly#1{\csname boxes_y_\number#1\endcsname} % use when sure existence
+\def\getboxllx#1{\ifcsname\??box_x\number#1\endcsname\csname\??box_x\number#1\endcsname\else\zeropoint\fi}
+\def\getboxlly#1{\ifcsname\??box_y\number#1\endcsname\csname\??box_y\number#1\endcsname\else\zeropoint\fi}
+
+\def\directgetboxllx#1{\csname\??box_x\number#1\endcsname} % use when sure existence
+\def\directgetboxlly#1{\csname\??box_y\number#1\endcsname} % use when sure existence
 
 %D \macros
 %D   {shownextbox}
@@ -2729,14 +2787,14 @@
 
 % a bit of test code:
 
-\hbox \bgroup
-    \ruledvbox                {\hbox{\strut gans}}
-    \ruledvbox to \lineheight {\hbox{\strut gans}}
-    \ruledvbox to \lineheight {\hbox       {gans}}
-    \ruledvbox to \strutheight{\hbox       {gans}}
-    \ruledvbox to \strutheight{\hbox{\strut gans}}
-    \ruledvbox to \strutheight{\vss\hbox{gans}}
-\egroup
+% \hbox \bgroup
+%     \ruledvbox                {\hbox{\strut gans}}
+%     \ruledvbox to \lineheight {\hbox{\strut gans}}
+%     \ruledvbox to \lineheight {\hbox       {gans}}
+%     \ruledvbox to \strutheight{\hbox       {gans}}
+%     \ruledvbox to \strutheight{\hbox{\strut gans}}
+%     \ruledvbox to \strutheight{\vss\hbox{gans}}
+% \egroup
 
 % to be considered
 

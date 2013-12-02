@@ -1177,10 +1177,11 @@
      \usesetupsparameter\noteparameter % experimental
      \doifelse{\noteparameter\c!paragraph}\v!yes
         {\nointerlineskip
-         \vboxtohboxslack.5\emwidth % we can instead use \hboxestohboxslack later
+         \startvboxtohboxseparator
+           \noteparameter\c!inbetween
+         \stopvboxtohboxseparator
          \startvboxtohbox
            \handlenoteitself{#tag}{#id}%
-           \strc_notes_between_paragraphs
          \stopvboxtohbox}
         {\handlenoteitself{#tag}{#id}}%
    \egroup
@@ -1189,7 +1190,7 @@
 
 \unexpanded\def\betweennoteitself#tag% used ?
   {\edef\currentnote{#tag}%
-   \doif{\noteparameter\c!paragraph}\v!yes\strc_notes_between_paragraphs}
+   \doif{\noteparameter\c!paragraph}\v!yes{\noteparameter\c!inbetween}}
 
 \unexpanded\def\handlenoteitself#tag#id%
   {\edef\currentnotenumber{#id}%
@@ -1339,12 +1340,6 @@
    \stopsimplecolumns}
 
 % idea: tag with attr and then just flush them again
-
-\def\strc_notes_between_paragraphs % should not be too much
-  {\noteparameter\c!inbetween}
-
-\def\strc_notes_between_paragraphs_first
-  {\glet\strc_notes_between_paragraphs_indeed\strc_notes_between_paragraphs}% shape works reverse
 
 \def\strc_notes_flush_global
   {\doifelse{\noteparameter\c!paragraph}\v!yes

@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['mtx-youless'] = {
     version   = 1.002,
-    comment   = "script tp fetch data from kwk meter polling device",
+    comment   = "script tp fetch data from kwh meter polling device",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE",
     license   = "see context related readme files"
@@ -11,6 +11,8 @@ if not modules then modules = { } end modules ['mtx-youless'] = {
 -- as kwh usage). There is an accompanying module to generate graphics.
 
 require("util-you")
+
+local formatters = string.formatters
 
 -- the script
 
@@ -28,7 +30,7 @@ local helpinfo = [[
     <flag name="collect"><short>collect data from device</short></flag>
     <flag name="nobackup"><short>don't backup old datafile</short></flag>
     <flag name="nofile"><short>don't write data to file (for checking)</short></flag>
-    <flag name="kwh"><short>summative kwk data</short></flag>
+    <flag name="kwh"><short>summative kwh data</short></flag>
     <flag name="watt"><short>collected watt data</short></flag>
     <flag name="host"><short>ip address of device</short></flag>
    </subcategory>
@@ -38,7 +40,7 @@ local helpinfo = [[
   <category>
    <title>Example</title>
    <subcategory>
-    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --kwk</command></example>
+    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --kwh</command></example>
     <example><command>mtxrun --script youless --collect --host=192.168.2.50 --watt somefile.lua</command></example>
    </subcategory>
   </category>
@@ -62,6 +64,7 @@ function scripts.youless.collect()
     local variant  = environment.arguments.kwh and "kwh" or environment.arguments.watt and "watt"
     local nobackup = environment.arguments.nobackup
     local nofile   = environment.arguments.nofile
+    local password = environment.arguments.password
     local filename = environment.files[1]
     if not variant then
         report("provide variant --kwh or --watt")
@@ -89,6 +92,7 @@ function scripts.youless.collect()
         host     = host,
         variant  = variant,
         nobackup = nobackup,
+        password = password,
     }
     if type(data) ~= "table" then
         report("no data collected")

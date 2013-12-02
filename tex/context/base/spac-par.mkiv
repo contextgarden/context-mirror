@@ -186,19 +186,28 @@
 \let\flushpostponednodedata\relax % hook into everypar
 
 \newbox  \b_spac_postponed_data
-\newcount\c_spac_postponed_data
+%newcount\c_spac_postponed_data
 
-\installcorenamespace {postponednodesstack}
-
-\initializeboxstack\??postponednodesstack
+% \installcorenamespace {postponednodesstack}
+%
+% \initializeboxstack\??postponednodesstack
+%
+% \unexpanded\def\pushpostponednodedata
+%   {\global\advance\c_spac_postponed_data\plusone
+%    \savebox\??postponednodesstack{\the\c_spac_postponed_data}{\box\b_spac_postponed_data}}
+%
+% \unexpanded\def\poppostponednodedata
+%   {\global\setbox\b_spac_postponed_data\hbox{\foundbox\??postponednodesstack{\the\c_spac_postponed_data}}%
+%    \global\advance\c_spac_postponed_data\minusone
+%    \ifvoid\b_spac_postponed_data\else
+%      \glet\flushpostponednodedata\spac_postponed_data_flush
+%    \fi}
 
 \unexpanded\def\pushpostponednodedata
-  {\global\advance\c_spac_postponed_data\plusone
-   \savebox\??postponednodesstack{\the\c_spac_postponed_data}{\box\b_spac_postponed_data}}
+  {\globalpushbox\b_spac_postponed_data}
 
 \unexpanded\def\poppostponednodedata
-  {\global\setbox\b_spac_postponed_data\hbox{\foundbox\??postponednodesstack{\the\c_spac_postponed_data}}%
-   \global\advance\c_spac_postponed_data\minusone
+  {\globalpopbox\b_spac_postponed_data
    \ifvoid\b_spac_postponed_data\else
      \glet\flushpostponednodedata\spac_postponed_data_flush
    \fi}

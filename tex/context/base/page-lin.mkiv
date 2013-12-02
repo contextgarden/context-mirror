@@ -50,7 +50,12 @@
 \newcount   \c_page_lines_reference
 \newconstant\c_page_lines_nesting
 
-\newconditional\tracelinenumbering
+\newconditional\tracelinenumbering % we keep this for old times sake
+
+\installtextracker
+  {lines.numbers.show}
+  {\settrue \tracelinenumbering}
+  {\setfalse\tracelinenumbering}
 
 % id nr shift width leftskip dir
 
@@ -100,8 +105,8 @@
    \normalexpanded{\strc_references_set_named_reference{line}{#2}{conversion=\linenumberingparameter\c!conversion}{\the\c_page_lines_reference}}% kind labels userdata text
    \endgroup}
 
-\def\page_lines_reference_start#1{\page_lines_some_reference{#1}{lr:b:#1}{}\ignorespaces}
-\def\page_lines_reference_stop #1{\removeunwantedspaces\page_lines_some_reference{#1}{lr:e:#1}{}}
+% \def\page_lines_reference_start#1{\page_lines_some_reference{#1}{lr:b:#1}{}} % reimplemented later
+% \def\page_lines_reference_stop #1{\page_lines_some_reference{#1}{lr:e:#1}{}} % reimplemented later
 
 % \def\mklinestartreference#1[#2]{\in{#1}[lr:b:#2]} % not interfaced/ not used
 % \def\mklinestopreference #1[#2]{\in{#1}[lr:e:#2]} % not interfaced/ not used
@@ -498,30 +503,41 @@
    \the\everylinenumber
    \endgroup}
 
-% referencing
+% referencing: \permithyphenation, also removes leading spaces (new per 29-11-2013)
 
 \unexpanded\def\someline [#1]{\page_lines_reference_start{#1}\page_lines_reference_stop{#1}} % was just a def
-\unexpanded\def\startline[#1]{\page_lines_reference_start{#1}}
-\unexpanded\def\stopline [#1]{\page_lines_reference_stop {#1}}
+\unexpanded\def\startline[#1]{\page_lines_reference_start{#1}\ignorespaces}
+\unexpanded\def\stopline [#1]{\removeunwantedspaces\permithyphenation\page_lines_reference_stop{#1}}
 
-\def\page_lines_reference_show_start#1%
+\def\page_lines_reference_show_start
   {\ifconditional\tracelinenumbering
-     \setbox\scratchbox\hbox{\llap
-       {\vrule\s!width\onepoint\s!depth\strutdp\s!height.8\strutht\raise.85\strutht\hbox{\llap{\tt\txx#1}}}}%
-     \smashbox\scratchbox
-     \box\scratchbox
+     \expandafter\page_lines_reference_show_start_indeed
+   \else
+     \expandafter\gobbleoneargument
    \fi}
 
-\def\page_lines_reference_show_stop#1%
+\def\page_lines_reference_show_stop
   {\ifconditional\tracelinenumbering
-     \setbox\scratchbox\hbox{\rlap
-       {\raise.85\strutht\hbox{\rlap{\tt\txx#1}}\vrule\s!width\onepoint\s!depth\strutdp\s!height.8\strutht}}%
-     \smashbox\scratchbox
-     \box\scratchbox
+     \expandafter\page_lines_reference_show_stop_indeed
+   \else
+     \expandafter\gobbleoneargument
    \fi}
 
-\def\page_lines_reference_start#1{\page_lines_some_reference{#1}{lr:b:#1}{\page_lines_reference_show_start{#1}}\ignorespaces}
-\def\page_lines_reference_stop #1{\removeunwantedspaces\page_lines_some_reference{#1}{lr:e:#1}{\page_lines_reference_show_stop{#1}}}
+
+\def\page_lines_reference_show_start_indeed#1%
+  {\setbox\scratchbox\hbox{\llap
+     {\vrule\s!width\onepoint\s!depth\strutdp\s!height.8\strutht\raise.85\strutht\hbox{\llap{\tt\txx#1}}}}%
+   \smashbox\scratchbox
+   \box\scratchbox}
+
+\def\page_lines_reference_show_stop_indeed#1%
+  {\setbox\scratchbox\hbox{\rlap
+     {\raise.85\strutht\hbox{\rlap{\tt\txx#1}}\vrule\s!width\onepoint\s!depth\strutdp\s!height.8\strutht}}%
+   \smashbox\scratchbox
+   \box\scratchbox}
+
+\def\page_lines_reference_start#1{\page_lines_some_reference{#1}{lr:b:#1}{\page_lines_reference_show_start{#1}}}
+\def\page_lines_reference_stop #1{\page_lines_some_reference{#1}{lr:e:#1}{\page_lines_reference_show_stop {#1}}}
 
 % eventually we will do this in lua
 
