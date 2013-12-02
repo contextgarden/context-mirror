@@ -21,7 +21,7 @@ don't backup old datafile
 don't write data to file (for checking)
 .TP
 .B --kwh
-summative kwk data
+summative kwh data
 .TP
 .B --watt
 collected watt data

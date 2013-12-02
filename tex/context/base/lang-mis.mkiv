@@ -157,9 +157,9 @@
 %D In the main \CONTEXT\ modules these can be tuned by a setup
 %D command. Watch the (maybe) better looking compound hyphen.
 
-\ifx\compoundhyphen    \undefined \def\compoundhyphen    {\hbox{-\kern-.25ex-}} \fi
-\ifx\beginofsubsentence\undefined \def\beginofsubsentence{\hbox{---}}           \fi
-\ifx\endofsubsentence  \undefined \def\endofsubsentence  {\hbox{---}}           \fi
+\ifx\compoundhyphen    \undefined \unexpanded\def\compoundhyphen    {\hbox{-\kern-.25ex-}} \fi
+\ifx\beginofsubsentence\undefined \unexpanded\def\beginofsubsentence{\hbox{\emdash}}       \fi
+\ifx\endofsubsentence  \undefined \unexpanded\def\endofsubsentence  {\hbox{\emdash}}       \fi
 
 %D The last two variables are needed for subsentences
 %D |<|like this one|>| which we did not yet mention.
@@ -168,10 +168,11 @@
 %D compound characters like |-| or || to be separated from the
 %D words. \TEX\ hackers will recognise the next two macro's:
 
-\ifx\prewordbreak \undefined \def\prewordbreak    {\penalty\plustenthousand\hskip\zeropoint\relax} \fi
-%ifx\postwordbreak\undefined \def\postwordbreak   {\penalty\zerocount      \prewordbreak         } \fi
-\ifx\postwordbreak\undefined \def\postwordbreak   {\penalty\zerocount      \hskip\zeropoint\relax} \fi
-\ifx\hspaceamount \undefined \def\hspaceamount#1#2{.16667em}                                       \fi % language specific
+\ifx\prewordbreak \undefined \unexpanded\def\prewordbreak    {\penalty\plustenthousand\hskip\zeropoint\relax} \fi
+\ifx\postwordbreak\undefined \unexpanded\def\postwordbreak   {\penalty\zerocount      \hskip\zeropoint\relax} \fi
+\ifx\hspaceamount \undefined            \def\hspaceamount#1#2{.16667\emwidth}                                 \fi % language specific
+
+\unexpanded\def\permithyphenation{\ifhmode\prewordbreak\fi} % doesn't remove spaces
 
 %D \macros
 %D   {beginofsubsentencespacing,endofsubsentencespacing}
@@ -201,21 +202,21 @@
 \installcorenamespace{discretionarymath}
 \installcorenamespace{discretionaryboth}
 
-\def\installdiscretionary#1#2%
+\unexpanded\def\installdiscretionary#1#2%
   {\setevalue{\??discretionarymath\detokenize{#1}}{\detokenize{#1}}% ?
    \setvalue {\??discretionarytext\detokenize{#1}}{#2}%
    \setvalue {\??discretionaryboth\detokenize{#1}}{\lang_discretionaries_command#1}%
    \scratchcounter\expandafter`\detokenize{#1}%
    \expandafter\uedcatcodecommand\expandafter\ctxcatcodes\expandafter\scratchcounter\csname\??discretionaryboth\detokenize{#1}\endcsname}
 
-\def\handlemathmodediscretionary#1{\executeifdefined{\??discretionarymath\detokenize{#1}}\donothing}
-\def\handletextmodediscretionary#1{\executeifdefined{\??discretionarytext\detokenize{#1}}\donothing}
+\unexpanded\def\handlemathmodediscretionary#1{\executeifdefined{\??discretionarymath\detokenize{#1}}\donothing}
+\unexpanded\def\handletextmodediscretionary#1{\executeifdefined{\??discretionarytext\detokenize{#1}}\donothing}
 
-\def\installdiscretionaries#1#2{\writestatus\m!system{use \string \installdiscretionary}} % obsolete
+\unexpanded\def\installdiscretionaries#1#2{\writestatus\m!system{use \string \installdiscretionary}} % obsolete
 
 \setnewconstant\discretionarymode\plusone
 
-\def\ignorediscretionaries
+\unexpanded\def\ignorediscretionaries
   {\discretionarymode\zerocount}
 
 \def\lang_discretionaries_command
@@ -277,7 +278,7 @@
       \futurelet\nextnext\next}%
    \next}
 
-\def\activedododotextmodediscretionary#1#2%
+\unexpanded\def\activedododotextmodediscretionary#1#2%
   {\edef\discretionarytoken{\detokenize{#2}}%
    \def\textmodediscretionary{\handletextmodediscretionary{#1}}%
    \lang_discretionaries_check_after
@@ -329,7 +330,7 @@
 %D In those situations where the nature of characters is
 %D less predictable, we can use the more direct approach:
 
-\def\directdiscretionary
+\unexpanded\def\directdiscretionary
   {\csname
      \ifcase\discretionarymode
        \strippedcsname\lang_discretionaries_process_none
@@ -338,7 +339,7 @@
      \fi
    \endcsname}
 
-\def\indirectdiscretionary
+\unexpanded\def\indirectdiscretionary
   {\csname
      \ifcase\discretionarymode
        \strippedcsname\lang_discretionaries_process_none
@@ -352,7 +353,7 @@
    \let\textmodediscretionary\compoundhyphen
    \executeifdefined{\??discretionaryaction\discretionarytoken}{\indirectdiscretionary{#1}}}
 
-\unexpanded\def\lang_discretionaries_process_indirect#1%
+\unexpanded\unexpanded\def\lang_discretionaries_process_indirect#1%
   {\prewordbreak\discretionary{\hbox{#1}}{}{\hbox{#1}}\allowbreak\postwordbreak}
 
 \unexpanded\def\definetextmodediscretionary #1

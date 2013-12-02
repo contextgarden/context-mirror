@@ -24,6 +24,7 @@
 \let\setuplinenote\setupnote
 
 \newcount\c_strc_linenotes
+\newtoks\everydefinelinenote
 
 \unexpanded\def\definelinenote
   {\dotripleempty\strc_linenotes_define}
@@ -44,10 +45,14 @@
      \else
        \definenote[#1]%
      \fi\fi
-     \expandafter\let\csname\??linenote#1\expandafter\endcsname\csname#1\endcsname % use copy command
-     \setuevalue        {#1}{\strc_linenotes_direct{#1}}%
-     \setuevalue{\e!start#1}{\strc_linenotes_start {#1}}%
-     \setuevalue{\e!stop #1}{\strc_linenotes_stop      }%
+     \pushmacro\currentnote
+     \edef\currentnote{#1}
+     \expandafter\let\csname\??linenote\currentnote\expandafter\endcsname\csname\currentnote\endcsname % use copy command
+     \setuevalue        {\currentnote}{\strc_linenotes_direct{\currentnote}}%
+     \setuevalue{\e!start\currentnote}{\strc_linenotes_start {\currentnote}}%
+     \setuevalue{\e!stop \currentnote}{\strc_linenotes_stop                }%
+     \the\everydefinelinenote
+     \popmacro\currentnote
    \fi}
 
 \unexpanded\def\strc_linenotes_direct#1#2%
@@ -113,9 +118,7 @@
      \ifconditional\c_page_lines_current_to
        \xdef\m_page_lines_current_to{\currentreferencelinenumber}%
        \ifx\m_page_lines_previous_from\m_page_lines_current_from
-         \ifx\m_page_lines_previous_to\m_page_lines_current_to
-           \notationparameter\c!compressseparator
-         \else
+         \ifx\m_page_lines_previous_to\m_page_lines_current_to \else
            \page_lines_in_from
            \ifx\m_page_lines_current_from\m_page_lines_current_to\else\endash\page_lines_in_to\fi
          \fi
@@ -127,9 +130,7 @@
        \page_lines_in_from
      \fi
    \else
-     \ifx\m_page_lines_previous_from\m_page_lines_current_from
-       \notationparameter\c!compressseparator
-     \else
+     \ifx\m_page_lines_previous_from\m_page_lines_current_from \else
        \page_lines_in_from
      \fi
    \fi}
@@ -143,9 +144,7 @@
    \edef\currentlinenotereference{#2}%
    \xdef\m_page_lines_previous_from{\csname\??linenotespreviousfrom\ifcsname\??linenotespreviousfrom\currentnotation\endcsname\currentnotation\fi\endcsname}%
    \xdef\m_page_lines_previous_to  {\csname\??linenotespreviousto  \ifcsname\??linenotespreviousto  \currentnotation\endcsname\currentnotation\fi\endcsname}%
-   \doifelse{\notationparameter\c!compress}\v!yes
-     {\let\linenotelinenumber\strc_linenotes_range_sparse}%
-     {\let\linenotelinenumber\strc_linenotes_range_normal}%
+   \strc_linenotes_check_compression
    \let\currentnote\currentnotation
    \letnotationparameter\c!numbercommand\linenotelinenumber% todo: deep hook
    \letnoteparameter    \c!textcommand  \gobbleoneargument % todo: deep hook
@@ -153,6 +152,73 @@
    \expandafter\glet\csname\??linenotespreviousfrom\currentnotation\endcsname\m_page_lines_current_from
    \expandafter\glet\csname\??linenotespreviousto  \currentnotation\endcsname\m_page_lines_current_to
    \endgroup}
+
+% compression
+
+\installcorenamespace{linenotescompressmethod}
+
+% compress=yes|no
+% compressmethod=separator|stopper
+
+\def\c!compressdistance{compressdistance}
+\def\c!compressmethod  {compressmethod}
+\def\c!compressstopper {compressstopper} % c
+\def\v!compressstopper {compressstopper} % v
+
+\def\v!separator {separator} % v
+
+\setvalue{\??linenotescompressmethod\v!separator}%
+  {\edef\p_compressseparator{\noteparameter\c!compressseparator}%
+   \scratchskip\noteparameter\c!compressdistance\relax
+   \ifx\p_compressseparator\empty
+     \hskip\scratchskip
+   \else
+     \hskip.5\scratchskip
+     \p_compressseparator
+     \hskip.5\scratchskip
+   \fi}
+
+\setvalue{\??linenotescompressmethod\v!stopper}%
+  {\edef\p_compressstopper{\noteparameter\c!compressstopper}%
+   \scratchskip\noteparameter\c!compressdistance\relax
+   \ifx\p_compressstopper\empty
+     \hskip\scratchskip
+   \else
+     \p_compressstopper
+     \hskip.5\scratchskip
+   \fi}
+
+\setvalue{\??linenotescompressmethod\v!space}%
+  {\hskip\noteparameter\c!compressdistance\relax}
+
+\def\strc_linenotes_check_compression
+%   {\edef\p_linenotes_compress      {\notationparameter\c!compress}%
+%    \edef\p_linenotes_compressmethod{\notationparameter\c!compressmethod}%
+  {\edef\p_linenotes_compress      {\noteparameter\c!compress}%
+   \edef\p_linenotes_compressmethod{\noteparameter\c!compressmethod}%
+   \ifx\p_linenotes_compress\v!yes
+     \let\linenotelinenumber\strc_linenotes_range_sparse
+   \else
+     \let\linenotelinenumber\strc_linenotes_range_normal
+   \fi
+   \ifcsname\??linenotescompressmethod\p_linenotes_compressmethod\endcsname \else
+      \let\p_linenotes_compressmethod\v!space
+   \fi}
+
+\def\strc_linenotes_inbetween % \ifcsname\??linenote\currentnote\expandafter\endcsname
+  {\csname\??linenotescompressmethod\p_linenotes_compressmethod\endcsname}
+
+\def\strc_notes_compress_distance{\emwidth \s!plus .5\emwidth \s!minus .25\emwidth}
+
+\setupnotes
+  [%c\compress=\v!no,
+   \c!compressdistance=\strc_notes_compress_distance,
+   \c!compressseparator=\symbol{\v!compressseparator},
+   \c!compressstopper=\symbol{\v!compressstopper}]
+
+\appendtoks
+    \letnoteparameter\c!inbetween\strc_linenotes_inbetween
+\to \everydefinelinenote
 
 % where to hook this one in? resetcounter has no hook:
 
@@ -162,11 +228,15 @@
 
 \definesymbol
   [\v!compressseparator]
-  [\space\hbox{\vl\thinspace\vl}]
+  [\hbox{\vl\thinspace\vl}] % \space removed
 
-\setupnotations
-  [%c\compress=\v!no,
-   \c!compressseparator=\symbol\v!compressseparator]
+\definesymbol
+  [\v!compressstopper]
+  [,]
+
+% \setupnotations
+%   [%c\compress=\v!no,
+%    \c!compressseparator=\symbol\v!compressseparator]
 
 \let\strc_linenotes_traced\gobbleoneargument
 

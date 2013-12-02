@@ -2194,7 +2194,7 @@
       \else
         \directlocalfloatsparameter\c!inbetween
       \fi
-      \dontleavehmode\hbox{\foundbox\??localfloatstack\recurselevel}%
+      \dontleavehmode\hbox{\foundbox\??localfloatstack\recurselevel}% \restorebox...
       \ifnum\recurselevel=\c_strc_localfloats_n\relax
         \directlocalfloatsparameter\c!after
       \fi}}
@@ -2203,8 +2203,11 @@
   {\getlocalfloats
    \resetlocalfloats}
 
+% \unexpanded\def\getlocalfloat#1%
+%   {\normalexpanded{\foundbox{\??localfloatstack}{\number#1}}}% \vbox{\restorebox...}
+
 \unexpanded\def\getlocalfloat#1%
-  {\normalexpanded{\foundbox{\??localfloatstack}{\number#1}}}
+  {\foundbox\??localfloatstack{\number#1}} % \vbox{\restorebox...}
 
 \unexpanded\def\forcelocalfloats
   {\let\forcedfloatmethod\v!local}

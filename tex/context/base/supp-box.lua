@@ -23,6 +23,7 @@ local disc_code    = nodecodes.disc
 local hlist_code   = nodecodes.hlist
 local vlist_code   = nodecodes.vlist
 local glue_code    = nodecodes.glue
+local kern_code    = nodecodes.kern
 local glyph_code   = nodecodes.glyph
 
 local new_penalty  = nodes.pool.penalty
@@ -172,12 +173,16 @@ function commands.processsplit(str,command,how,spaced)
     end
 end
 
+local a_vboxtohboxseparator = attributes.private("vboxtohboxseparator")
+
 function commands.vboxlisttohbox(original,target,inbetween)
     local current = texgetbox(original).list
     local head = nil
     local tail = nil
     while current do
-        if current.id == hlist_code then
+        local id   = current.id
+        local next = current.next
+        if id == hlist_code then
             local list = current.list
             if head then
                 if inbetween > 0 then
@@ -192,10 +197,26 @@ function commands.vboxlisttohbox(original,target,inbetween)
                 head = list
             end
             tail = find_tail(list)
+            -- remove last separator
+            if tail.id == hlist_code and tail[a_vboxtohboxseparator] == 1 then
+                local temp = tail
+                local prev = tail.prev
+                if next then
+                    local list = tail.list
+                    prev.next = list
+                    list.prev = prev
+                    tail.list = nil
+                    tail = find_tail(list)
+                else
+                    tail = prev
+                end
+                free_node(temp)
+            end
+            -- done
             tail.next = nil
             current.list = nil
         end
-        current = current.next
+        current = next
     end
     local result = new_hlist()
     result.list = head

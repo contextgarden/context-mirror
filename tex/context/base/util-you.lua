@@ -1,15 +1,24 @@
 if not modules then modules = { } end modules ['util-you'] = {
     version   = 1.002,
-    comment   = "library for fetching data from youless kwk meter polling device",
+    comment   = "library for fetching data from youless kwh meter polling device",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE",
     license   = "see context related readme files"
 }
 
 -- See mtx-youless.lua and s-youless.mkiv for examples of usage.
-
+--
 -- todo: already calculate min, max and average per hour and discard
 --       older data, or maybe a condense option
+--
+-- maybe just a special parser but who cares about speed here
+--
+-- curl -c pw.txt http://192.168.2.50/L?w=pwd
+-- curl -b pw.txt http://192.168.2.50/V?...
+--
+-- the socket library barks on an (indeed) invalid header ... unfortunately we cannot
+-- pass a password with each request ... although the youless is a rather nice gadget,
+-- the weak part is in the http polling
 
 require("util-jsn")
 
@@ -22,14 +31,17 @@ utilities.youless = youless
 local lpegmatch  = lpeg.match
 local formatters = string.formatters
 
+-- dofile("http.lua")
+
 local http = socket.http
 
--- maybe just a special parser but who cares about speed here
+local f_normal   = formatters["http://%s/V?%s=%i&f=j"]
+local f_password = formatters["http://%s/L?w=%s"]
 
-local function fetch(url,what,i)
-    local url    = formatters["http://%s/V?%s=%i&f=j"](url,what,i)
-    local data   = http.request(url)
-    local result = data and utilities.json.tolua(data)
+local function fetch(url,password,what,i)
+    local url     = f_normal(url,what,i)
+    local data, h = http.request(url)
+    local result  = data and utilities.json.tolua(data)
     return result
 end
 
@@ -46,12 +58,12 @@ local totime = (lpeg.C(4) / tonumber) * lpeg.P("-")
              * (lpeg.C(2) / tonumber) * lpeg.P(":")
              * (lpeg.C(2) / tonumber)
 
-local function get(url,what,i,data,average,variant)
+local function get(url,password,what,i,data,average,variant)
     if not data then
         data = { }
     end
     while true do
-        local d = fetch(url,what,i)
+        local d = fetch(url,password,what,i)
         if d and next(d) then
             local c_year, c_month, c_day, c_hour, c_minute, c_seconds = lpegmatch(totime,d.tm)
             if c_year and c_seconds then
@@ -119,6 +131,7 @@ function youless.collect(specification)
     local variant  = specification.variant  or "kwh"
     local detail   = specification.detail   or false
     local nobackup = specification.nobackup or false
+    local password = specification.password or ""
     if host == "" then
         return
     end
@@ -128,12 +141,12 @@ function youless.collect(specification)
         data = table.load(filename) or data
     end
     if variant == "kwh" then
-        get(host,"m",1,data,true)
+        get(host,password,"m",1,data,true)
     elseif variant == "watt" then
-        get(host,"d",0,data,true)
-        get(host,"w",1,data)
+        get(host,password,"d",0,data,true)
+        get(host,password,"w",1,data)
         if detail then
-            get(host,"h",1,data) -- todo: get this for calculating the precise max
+            get(host,password,"h",1,data) -- todo: get this for calculating the precise max
         end
     else
         return
@@ -141,6 +154,8 @@ function youless.collect(specification)
     local path = file.dirname(filename)
     local base = file.basename(filename)
     data.variant = variant
+    data.host    = host
+    data.updated = os.now()
     if nobackup then
         -- saved but with checking
         local tempname = file.join(path,"youless.tmp")
