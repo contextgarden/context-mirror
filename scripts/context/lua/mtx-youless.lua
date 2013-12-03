@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['mtx-youless'] = {
     version   = 1.002,
-    comment   = "script tp fetch data from kwh meter polling device",
+    comment   = "script to fetch data from kwh meter polling device",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE",
     license   = "see context related readme files"

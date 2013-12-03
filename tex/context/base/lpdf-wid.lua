@@ -305,9 +305,9 @@ function nodeinjections.attachfile(specification)
     if registered == "" then
         registered = filename
     end
-    if author == "" then
+    if author == "" and title ~= "" then
         author = title
-        title = ""
+        title  = filename or ""
     end
     if author == "" then
         author = filename or "<unknown>"

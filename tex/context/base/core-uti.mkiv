@@ -22,7 +22,8 @@
 
 \appendtoks
     \ctxlua {
-        job.comment("file","\jobname")
+      % job.comment("file","\jobname")
+        job.comment("file",tex.jobname)
         job.comment("format","\contextformat")
         job.comment("stamp","\contextversion")
         job.comment("escape","\!!bs\space...\space\!!es")
@@ -31,7 +32,8 @@
 
 \appendtoks
     \ctxlua {
-        job.initialize("\jobname.tuc","\jobname.tua")
+      % job.initialize("\jobname.tuc","\jobname.tua")
+        job.initialize(tex.jobname .. ".tuc",tex.jobname .. ".tua")
     }%
 \to \everyjob
 

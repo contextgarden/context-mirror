@@ -468,7 +468,7 @@ local function setsplit(specification) -- a rather large function
             lastcurrent = nil
         elseif penalty == forcedbreak then
             local needed  = current[a_checkedbreak]
-            local proceed = not checked or checked == 0
+            local proceed = not needed or needed == 0
             if not proceed then
                 local available = target - height
                 proceed = needed >= available
