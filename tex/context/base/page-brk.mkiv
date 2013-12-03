@@ -392,7 +392,11 @@
 
 \def\page_tests_columns_test[#1][#2]%
   {\ifdefined\page_otr_command_test_column
-     \page_otr_command_test_column[#1][#2]%
+     \ifsecondargument
+        \page_otr_command_test_column[#1][#2]%
+     \else
+        \page_otr_command_test_column[#1][\zeropoint]%
+     \fi
    \fi}
 
 \protect \endinput

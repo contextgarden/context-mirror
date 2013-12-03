@@ -1313,6 +1313,9 @@
            \fi}}%
      \setbox\scratchbox\hbox{\lower\strutdepth\box\scratchbox}%
      \dp\scratchbox\strutdepth % so we know that it has the note bodyfont depth
+     \ifvmode
+       \nointerlineskip % else sometimes empty line
+     \fi
      \box\scratchbox
      \egroup
      \endgraf
