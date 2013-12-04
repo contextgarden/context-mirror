@@ -565,12 +565,14 @@
 
 \definefontfeature[f:smallcaps][smcp=yes]
 \definefontfeature[f:oldstyle] [onum=yes]
+\definefontfeature[f:tabular]  [tnum=yes]
 
 \definealternativestyle [\v!smallcaps] [\setsmallcaps] [\setsmallcaps]
 \definealternativestyle [\v!oldstyle]  [\setoldstyle ] [\setoldstyle ]
 
 \unexpanded\def\setsmallcaps{\doaddfeature{f:smallcaps}}
 \unexpanded\def\setoldstyle {\doaddfeature{f:oldstyle}}
+\unexpanded\def\settabular  {\doaddfeature{f:tabular}}
 
 %D \macros
 %D   {tinyfont}

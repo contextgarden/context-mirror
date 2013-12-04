@@ -429,7 +429,8 @@
    \hskip\wd\scratchbox\relax}
 
 \unexpanded\def\fixedspaces
-  {\letcatcodecommand \ctxcatcodes \tildeasciicode \fixedspace}
+  {\letcatcodecommand \ctxcatcodes \tildeasciicode\fixedspace
+   \let~\fixedspace} % we need to renew it
 
 \appendtoks
     \let~\space
