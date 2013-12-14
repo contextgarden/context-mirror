@@ -483,8 +483,8 @@ function parsers.rfc4180splitter(specification)
                       * Cs((dquotechar + (1 - quotechar))^0)
                       * quotechar
     local non_escaped = C((1 - quotechar - newline - separator)^1)
-    local field       = escaped + non_escaped
-    local record      = Ct((field * separator^-1)^1)
+    local field       = escaped + non_escaped + Cc("")
+    local record      = Ct(field * (separator * field)^1)
     local headerline  = record * Cp()
     local wholeblob   = Ct((newline^-1 * record)^0)
     return function(data,getheader)

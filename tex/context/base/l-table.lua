@@ -1054,3 +1054,24 @@ function table.sorted(t,...)
     sort(t,...)
     return t -- still sorts in-place
 end
+
+--
+
+function table.values(t,s) -- optional sort flag
+    if t then
+        local values, keys, v = { }, { }, 0
+        for key, value in next, t do
+            if not keys[value] then
+                v = v + 1
+                values[v] = value
+                keys[k] = key
+            end
+        end
+        if s then
+            sort(values)
+        end
+        return values
+    else
+        return { }
+    end
+end

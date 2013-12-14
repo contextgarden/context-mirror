@@ -164,7 +164,8 @@ local function remap_accents(a,c,braced)
 end
 
 local command_map = allocate {
-    ["i"] = "ı"
+    ["i"] = "ı",
+    ["l"] = "ł",
 }
 
 local function remap_commands(c)
@@ -176,8 +177,9 @@ local function remap_commands(c)
     end
 end
 
-local accents  = (P('\\') * C(S(accents)) * (P("{") * C(U) * P("}" * Cc(true)) + C(U) * Cc(false))) / remap_accents
-local commands = (P('\\') * C(R("az","AZ")^1)) / remap_commands
+local spaces   = P(" ")^0
+local accents  = ( P('\\') * C(S(accents)) * spaces * (P("{") * C(U) * P("}" * Cc(true)) + C(U) * Cc(false)) ) / remap_accents
+local commands = ( P('\\') * C(R("az","AZ")^1) + P("{") * P('\\') * C(R("az","AZ")^1) * spaces * P("}") )/ remap_commands
 
 local convert_accents  = Cs((accents  + P(1))^0)
 local convert_commands = Cs((commands + P(1))^0)
@@ -198,8 +200,12 @@ function characters.tex.toutf(str,strip)
     end
 end
 
---~ print(characters.tex.toutf([[\"{e}]]),true)
---~ print(characters.tex.toutf([[{\"{e}}]],true))
+-- print(characters.tex.toutf([[\"{e}]],true))
+-- print(characters.tex.toutf([[\" {e}]],true))
+-- print(characters.tex.toutf([[{\"{e}}]],true))
+-- print(characters.tex.toutf([[{\" {e}}]],true))
+-- print(characters.tex.toutf([[{\l}]],true))
+-- print(characters.tex.toutf([[{\l }]],true))
 
 function characters.tex.defineaccents()
     for accent, group in next, accentmapping do

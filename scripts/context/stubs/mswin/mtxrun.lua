@@ -1172,7 +1172,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 30618, stripped down to: 19908
+-- original size: 31038, stripped down to: 20207
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -2031,6 +2031,24 @@ end
 function table.sorted(t,...)
   sort(t,...)
   return t 
+end
+function table.values(t,s) 
+  if t then
+    local values,keys,v={},{},0
+    for key,value in next,t do
+      if not keys[value] then
+        v=v+1
+        values[v]=value
+        keys[k]=key
+      end
+    end
+    if s then
+      sort(values)
+    end
+    return values
+  else
+    return {}
+  end
 end
 
 
@@ -4136,7 +4154,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 33066, stripped down to: 14607
+-- original size: 33250, stripped down to: 14767
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -4622,17 +4640,25 @@ local function big(c)
 end
 local _,l_remap=utf.remapper(little)
 local _,b_remap=utf.remapper(big)
-function utf.utf8_to_utf16_be(str)
-  return char(254,255)..lpegmatch(b_remap,str)
-end
-function utf.utf8_to_utf16_le(str)
-  return char(255,254)..lpegmatch(l_remap,str)
-end
-function utf.utf8_to_utf16(str,littleendian)
-  if littleendian then
-    return utf.utf8_to_utf16_le(str)
+function utf.utf8_to_utf16_be(str,nobom)
+  if nobom then
+    return lpegmatch(b_remap,str)
   else
-    return utf.utf8_to_utf16_be(str)
+    return char(254,255)..lpegmatch(b_remap,str)
+  end
+end
+function utf.utf8_to_utf16_le(str,nobom)
+  if nobom then
+    return lpegmatch(l_remap,str)
+  else
+    return char(255,254)..lpegmatch(l_remap,str)
+  end
+end
+function utf.utf8_to_utf16(str,littleendian,nobom)
+  if littleendian then
+    return utf.utf8_to_utf16_le(str,nobom)
+  else
+    return utf.utf8_to_utf16_be(str,nobom)
   end
 end
 local pattern=Cs (
@@ -6094,7 +6120,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 19537, stripped down to: 13941
+-- original size: 19551, stripped down to: 13951
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -6455,8 +6481,8 @@ function parsers.rfc4180splitter(specification)
   local separator=S(separator~="" and separator or ",")
   local escaped=quotechar*Cs((dquotechar+(1-quotechar))^0)*quotechar
   local non_escaped=C((1-quotechar-newline-separator)^1)
-  local field=escaped+non_escaped
-  local record=Ct((field*separator^-1)^1)
+  local field=escaped+non_escaped+Cc("")
+  local record=Ct(field*(separator*field)^1)
   local headerline=record*Cp()
   local wholeblob=Ct((newline^-1*record)^0)
   return function(data,getheader)
@@ -16641,8 +16667,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 684102
--- stripped bytes    : 242123
+-- original bytes    : 684720
+-- stripped bytes    : 242272
 
 -- end library merge
 
@@ -17459,10 +17485,22 @@ function runners.execute_ctx_script(filename,...)
                     local scriptbase = match(scriptname,".*mtx%-([^%-]-)%.lua")
                     if scriptbase then
                         local data = io.loaddata(scriptname)
-                        local banner, version = match(data,"[\n\r]logs%.extendbanner%s*%(%s*[\"\']([^\n\r]+)%s*(%d+%.%d+)")
-                        if banner then
-                            valid[#valid+1] = { scriptbase, version, banner }
-                        end
+local application = match(data,"local application.-=.-(%{.-%})")
+if application then
+    application = loadstring("return " .. application)
+    if application then
+        application = application()
+        local banner = application.banner
+        if banner then
+            local description, version = match(banner,"^(.-) ([%d.]+)$")
+            if description then
+                valid[#valid+1] = { scriptbase, version, description }
+            else
+                valid[#valid+1] = { scriptbase, "", banner }
+            end
+        end
+    end
+end
                     end
                 end
                 if #valid > 0 then

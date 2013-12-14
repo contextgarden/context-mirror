@@ -122,13 +122,25 @@ local stubdata
 local stubdummy
 local stubchdir
 
+
 if os.type == 'windows' then
-    gotofile  = 'mtx-fcd-goto.cmd'
-    datafile  = 'mtx-fcd-data.lua'
-    stubfile  = 'fcd.cmd'
-    stubdata  = mswinstub
-    stubdummy = 'rem no dir to change to'
-    stubchdir = 'cd /d "%s"'
+    local shell = "cmd"
+--     local shell = "powershell"
+    if shell == "powershell" then
+        gotofile  = 'mtx-fcd-goto.ps1'
+        datafile  = 'mtx-fcd-data.lua'
+        stubfile  = 'fcd.cmd'
+        stubdata  = mswinstub
+        stubdummy = '# no dir to change to'
+        stubchdir = '. Set-Location %s' -- powershell
+    else
+        gotofile  = 'mtx-fcd-goto.cmd'
+        datafile  = 'mtx-fcd-data.lua'
+        stubfile  = 'fcd.cmd'
+        stubdata  = mswinstub
+        stubdummy = 'rem no dir to change to'
+        stubchdir = 'cd /d "%s"' -- cmd
+    end
 else
     gotofile  = 'mtx-fcd-goto.sh'
     datafile  = 'mtx-fcd-data.lua'
@@ -183,7 +195,7 @@ end
 
 local function fcd_changeto(dir)
     if dir and dir ~= "" then
-        io.savedata(gotofile,format(stubchdir,dir))
+        io.savedata(gotofile,format(stubchdir,dir,dir))
     end
 end
 

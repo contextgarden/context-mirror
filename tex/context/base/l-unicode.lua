@@ -935,19 +935,27 @@ end
 local _, l_remap = utf.remapper(little)
 local _, b_remap = utf.remapper(big)
 
-function utf.utf8_to_utf16_be(str)
-    return char(254,255) .. lpegmatch(b_remap,str)
-end
-
-function utf.utf8_to_utf16_le(str)
-    return char(255,254) .. lpegmatch(l_remap,str)
-end
-
-function utf.utf8_to_utf16(str,littleendian)
-    if littleendian then
-        return utf.utf8_to_utf16_le(str)
+function utf.utf8_to_utf16_be(str,nobom)
+    if nobom then
+        return lpegmatch(b_remap,str)
     else
-        return utf.utf8_to_utf16_be(str)
+        return char(254,255) .. lpegmatch(b_remap,str)
+    end
+end
+
+function utf.utf8_to_utf16_le(str,nobom)
+    if nobom then
+        return lpegmatch(l_remap,str)
+    else
+        return char(255,254) .. lpegmatch(l_remap,str)
+    end
+end
+
+function utf.utf8_to_utf16(str,littleendian,nobom)
+    if littleendian then
+        return utf.utf8_to_utf16_le(str,nobom)
+    else
+        return utf.utf8_to_utf16_be(str,nobom)
     end
 end
 
