@@ -129,7 +129,7 @@ scripts.patterns.list = {
  -- { "lo",  "hyph-lo",            "lao" },
     { "lt",  "hyph-lt",            "lithuanian" },
     { "lv",  "hyph-lv",            "latvian" },
- -- { "ml",  "hyph-ml",            "..." },
+    { "ml",  "hyph-ml",            "malayalam" },
     { "mn",  "hyph-mn-cyrl",       "mongolian, cyrillic script" },
  -- { "mr",  "hyph-mr",            "..." },
     { "nb",  "hyph-nb",            "norwegian bokmål" },
@@ -282,11 +282,11 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
                             report("%s: no entry in chardata for character %C",basename,b)
                         else
                             local ct = cdb.category
-                            if ct == "lu" or ct == "ll" or ct == "lo" or ct == "mn" then -- hm, really mn ?
+                            if ct == "lu" or ct == "ll" or ct == "lo" or ct == "mn" or ct == "mc" then -- hm, really mn and mc ?
                                 used[char(b)] = true
                             elseif ct == "nd" then
                                 -- number
-                            else
+                            else -- maybe accent cf  (200D)
                                 report("%s: removing line with suspected utf character %C, category %s: %s",basename,b,ct,line)
                                 splitdata[i] = ""
                                 break

@@ -2260,6 +2260,35 @@ local function featuresprocessor(head,font,attr)
                         end
                     end
 
+                    local function kerndisc(disc) -- we can assume that prev and next are glyphs
+                        local prev = disc.prev
+                        local next = disc.next
+                        if prev and next then
+                            prev.next = next
+                         -- next.prev = prev
+                            local a = prev[0]
+                            if a then
+                                a = (a == attr) and (not attribute or prev[a_state] == attribute)
+                            else
+                                a = not attribute or prev[a_state] == attribute
+                            end
+                            if a then
+                                local lookupmatch = lookupcache[prev.char]
+                                if lookupmatch then
+                                    -- sequence kan weg
+                                    local h, d, ok = handler(head,prev,dataset[4],lookupname,lookupmatch,sequence,lookuphash,1)
+                                    if ok then
+                                        done = true
+                                        success = true
+                                    end
+                                end
+                            end
+                            prev.next = disc
+                         -- next.prev = disc
+                        end
+                        return next
+                    end
+
                     while start do
                         local id = start.id
                         if id == glyph_code then
@@ -2305,6 +2334,8 @@ local function featuresprocessor(head,font,attr)
                                     local new = subrun(replace)
                                     if new then start.replace = new end
                                 end
+elseif typ == "gpos_single" or typ == "gpos_pair" then
+    kerndisc(start)
                             end
                             start = start.next
                         elseif id == whatsit_code then -- will be function
@@ -2402,6 +2433,43 @@ local function featuresprocessor(head,font,attr)
                     end
                 end
 
+                local function kerndisc(disc) -- we can assume that prev and next are glyphs
+                    local prev = disc.prev
+                    local next = disc.next
+                    if prev and next then
+                        prev.next = next
+                     -- next.prev = prev
+                        local a = prev[0]
+                        if a then
+                            a = (a == attr) and (not attribute or prev[a_state] == attribute)
+                        else
+                            a = not attribute or prev[a_state] == attribute
+                        end
+                        if a then
+                            for i=1,ns do
+                                local lookupname = subtables[i]
+                                local lookupcache = lookuphash[lookupname]
+                                if lookupcache then
+                                    local lookupmatch = lookupcache[prev.char]
+                                    if lookupmatch then
+                                        -- we could move all code inline but that makes things even more unreadable
+                                        local h, d, ok = handler(head,prev,dataset[4],lookupname,lookupmatch,sequence,lookuphash,i)
+                                        if ok then
+                                            done = true
+                                            break
+                                        end
+                                    end
+                                else
+                                    report_missing_cache(typ,lookupname)
+                                end
+                            end
+                        end
+                        prev.next = disc
+                     -- next.prev = disc
+                    end
+                    return next
+                end
+
                 while start do
                     local id = start.id
                     if id == glyph_code then
@@ -2459,6 +2527,8 @@ local function featuresprocessor(head,font,attr)
                                 local new = subrun(replace)
                                 if new then start.replace = new end
                             end
+elseif typ == "gpos_single" or typ == "gpos_pair" then
+    kerndisc(start)
                         end
                         start = start.next
                     elseif id == whatsit_code then

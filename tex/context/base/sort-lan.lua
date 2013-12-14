@@ -59,7 +59,7 @@ definitions["en"] = { parent = "default" }
 definitions['nl'] = {
     parent = 'default',
     replacements = {
-        { "ij", 'y' }, { "IJ", 'Y' },
+        { "ij", 'y' }, { "IJ", 'Y' }, -- hm
     },
 }
 

@@ -920,13 +920,13 @@ if not characters.superscripts then
             if what == "super" then
                 if #specials == 2 then
                     superscripts[k] = specials[2]
-                else
+                elseif trace_defining then
                     report_defining("ignoring %s %a, char %c, description %a","superscript",ustring(k),k,v.description)
                 end
             elseif what == "sub" then
                 if #specials == 2 then
                     subscripts[k] = specials[2]
-                else
+                elseif trace_defining then
                     report_defining("ignoring %s %a, char %c, description %a","subscript",ustring(k),k,v.description)
                 end
             end
