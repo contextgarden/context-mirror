@@ -8,6 +8,19 @@ if not modules then modules = { } end modules ['bibl-tra'] = {
 
 -- also see bibl-tra-new !
 
+-- temporary hack, needed for transition
+
+if not punlications then
+
+    local hacks = utilities.storage.allocate()
+
+    job.register('publications.collected',hacks,function(t) publications.collected = t end)
+
+end
+
+-- end of hack
+
+
 local match, gmatch, format, concat, sort = string.match, string.gmatch, string.format, table.concat, table.sort
 
 bibtex       = bibtex or { }

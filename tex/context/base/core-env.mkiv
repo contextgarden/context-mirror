@@ -384,6 +384,9 @@
 \edef\setupwithargument#1% saves a few expansions
   {\noexpand\csname\??setup:\noexpand\ifcsname\??setup:#1\endcsname#1\noexpand\else\letterpercent\noexpand\fi\endcsname}
 
+\edef\setupwithargumentswapped#1#2% saves a few expansions (can be \let)
+  {\noexpand\csname\??setup:\noexpand\ifcsname\??setup:#2\endcsname#2\noexpand\else\letterpercent\noexpand\fi\endcsname{#1}}
+
 \let\directsetup\syst_setups
 \let\texsetup   \syst_setups % nicer than \directsetup and more en par with xmlsetup and luasetup
 

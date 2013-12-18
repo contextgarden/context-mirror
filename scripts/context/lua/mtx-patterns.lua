@@ -286,8 +286,11 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
                                 used[char(b)] = true
                             elseif ct == "nd" then
                                 -- number
+                            elseif ct == "cf" then
+                                report("%s: %s line with suspected utf character %C, category %s: %s",basename,"keeping",b,ct,line)
+                                used[char(b)] = true
                             else -- maybe accent cf  (200D)
-                                report("%s: removing line with suspected utf character %C, category %s: %s",basename,b,ct,line)
+                                report("%s: %s line with suspected utf character %C, category %s: %s",basename,"removing",b,ct,line)
                                 splitdata[i] = ""
                                 break
                             end

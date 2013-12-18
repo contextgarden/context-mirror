@@ -36,7 +36,7 @@ local report_passes = logs.reporter("job","passes")
 job                 = job or { }
 local job           = job
 
-job.version         = 1.23
+job.version         = 1.24
 job.packversion     = 1.02
 
 -- some day we will implement loading of other jobs and then we need
@@ -300,6 +300,8 @@ statistics.register("randomizer", function()
         return format("%s with value %s",rmethod,rvalue)
     end
 end)
+
+-- a sort of joke (for ctx meeting)
 
 local kg_per_watt_per_second  = 1 / 15000000
 local watts_per_core          = 50
