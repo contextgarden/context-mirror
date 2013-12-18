@@ -124,9 +124,10 @@
 \let\xmlgrab\xmlsetsetup % obsolete
 \let\xmlself\s!unknown   % obsolete
 
-\def\xmlsetup#1#2{\setupwithargument{#2}{#1}}
+%\ef\xmlsetup#1#2{\setupwithargument{#2}{#1}}
+\let\xmlsetup\setupwithargumentswapped
 
-\let\xmls\xmlsetup
+\let\xmls\setupwithargumentswapped
 \let\xmlw\setupwithargument
 
 \newtoks \registeredxmlsetups
