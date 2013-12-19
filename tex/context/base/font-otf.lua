@@ -99,8 +99,27 @@ registerdirective("fonts.otf.loader.syncspace",     function(v) syncspace     = 
 registerdirective("fonts.otf.loader.forcenotdef",   function(v) forcenotdef   = v end)
 registerdirective("fonts.otf.loader.overloadkerns", function(v) overloadkerns = v end)
 
+function otf.fileformat(filename)
+    local leader = lower(io.loadchunk(filename,4))
+    local suffix = lower(file.suffix(filename))
+    if leader == "otto" then
+        return "opentype", "otf", suffix == "otf"
+    elseif leader == "ttcf" then
+        return "truetype", "ttc", suffix == "ttc"
+    elseif suffix == "ttc" then
+        return "truetype", "ttc", true
+    else
+        return "truetype", "ttf", suffix == "ttf"
+    end
+end
+
 local function otf_format(filename)
-    return formats[lower(file.suffix(filename))]
+    local format, suffix, okay = otf.fileformat(filename)
+    if not okay then
+        report_otf("font %a is actually an %a file",filename,format)
+    end
+ -- return formats[lower(file.suffix(filename))]
+    return suffix
 end
 
 local function load_featurefile(raw,featurefile)

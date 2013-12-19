@@ -494,7 +494,7 @@ local function definefontsynonym(data,alternative,index,fallback)
         end
         for _, entry in next, fontdata do
             local designsize = entry["designsize"] or 100
-            if designsize == 100 or designsize == 120 or designsize == 0 then
+            if designsize == 100 or designsize == 120 or designsize == 0 or #fontdata == 1 then
                 local filepath, filename = splitbase(entry["filename"])
                 registerdesignsizes( fontfile, "default", filename )
                 break
@@ -600,7 +600,7 @@ local function definemathfontfallback(data,alternative,index)
         for _, entry in next, fontdata do
             local filename   = entry["filename"]
             local designsize = entry["designsize"] or 100
-            if designsize == 100 or designsize == 120 or designsize == 0 then
+            if designsize == 100 or designsize == 120 or designsize == 0 or #fontdata == 1 then
                 context.definefontfallback( { fallback }, { formatters["file:%s*%s"](filename,features) }, { range }, { rscale = rscale, check = check, force = force, offset = offset } )
                 break
             end

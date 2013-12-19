@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['char-tex'] = {
 local lpeg = lpeg
 
 local find = string.find
-local P, C, R, S, Cs, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cs, lpeg.Cc
+local P, C, R, S, V, Cs, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.V, lpeg.Cs, lpeg.Cc
 local U, lpegmatch = lpeg.patterns.utf8, lpeg.match
 
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
@@ -150,53 +150,80 @@ local accent_map = allocate { -- incomplete
     --  ̰ Ḛ
 }
 
-local accents = table.concat(table.keys(accent_map))
+-- local accents = table.concat(table.keys(accentmapping)) -- was _map
 
-local function remap_accents(a,c,braced)
-    local m = accent_map[a]
+local function remap_accent(a,c,braced)
+    local m = accentmapping[a]
     if m then
-        return c .. m
-    elseif braced then
+        local n = m[c]
+        if n then
+            return n
+        end
+    end
+--     local m = accent_map[a]
+--     if m then
+--         return c .. m
+--     elseif braced then -- or #c > 0
+    if braced then -- or #c > 0
         return "\\" .. a .. "{" .. c .. "}"
     else
-        return "\\" .. a .. c
+        return "\\" .. a .. " " .. c
     end
 end
 
 local command_map = allocate {
-    ["i"] = "ı",
-    ["l"] = "ł",
+    ["i"]  = "ı",
+    ["l"]  = "ł",
+    ["ss"] = "ß",
+    ["ae"] = "æ",
+    ["AE"] = "Æ",
+    ["oe"] = "œ",
+    ["OE"] = "Œ",
 }
 
-local function remap_commands(c)
-    local m = command_map[c]
-    if m then
-        return m
-    else
-        return "\\" .. c
-    end
-end
+-- no need for U here
 
 local spaces   = P(" ")^0
-local accents  = ( P('\\') * C(S(accents)) * spaces * (P("{") * C(U) * P("}" * Cc(true)) + C(U) * Cc(false)) ) / remap_accents
-local commands = ( P('\\') * C(R("az","AZ")^1) + P("{") * P('\\') * C(R("az","AZ")^1) * spaces * P("}") )/ remap_commands
+local no_l     = P("{") / ""
+local no_r     = P("}") / ""
+local no_b     = P('\\') / ""
 
-local convert_accents  = Cs((accents  + P(1))^0)
-local convert_commands = Cs((commands + P(1))^0)
+local lUr      = P("{") * C(R("az","AZ")) * P("}")
 
-local no_l = P("{") / ""
-local no_r = P("}") / ""
+local accents_1 = [["'.=^`~]]
+local accents_2 = [[Hckruv]]
 
-local convert_accents_strip  = Cs((no_l * accents  * no_r + accents  + P(1))^0)
-local convert_commands_strip = Cs((no_l * commands * no_r + commands + P(1))^0)
+local accent   = P('\\') * (
+    C(S(accents_1)) * (lUr * Cc(true) + C(R("az","AZ")) * Cc(false)) +
+    C(S(accents_2)) *  lUr * Cc(true)
+) / remap_accent
+
+local csname  = P('\\') * C(R("az","AZ")^1)
+
+local command  = (
+    csname +
+    P("{") * csname * spaces * P("}")
+) / command_map -- remap_commands
+
+local both_1 = Cs { "run",
+    accent  = accent,
+    command = command,
+    run     = (V("accent") + no_l * V("accent") * no_r + V("command") + P(1))^0,
+}
+
+local both_2 = Cs { "run",
+    accent  = accent,
+    command = command,
+    run     = (V("accent") + V("command") + no_l * ( V("accent") + V("command") ) * no_r + P(1))^0,
+}
 
 function characters.tex.toutf(str,strip)
-    if not find(str,"\\") then -- we can start at the found position
+    if not find(str,"\\") then
         return str
     elseif strip then
-        return lpegmatch(convert_accents_strip,lpegmatch(convert_commands_strip,str))
+        return lpegmatch(both_1,str)
     else
-        return lpegmatch(convert_accents,      lpegmatch(convert_commands,      str))
+        return lpegmatch(both_2,str)
     end
 end
 
@@ -206,6 +233,9 @@ end
 -- print(characters.tex.toutf([[{\" {e}}]],true))
 -- print(characters.tex.toutf([[{\l}]],true))
 -- print(characters.tex.toutf([[{\l }]],true))
+-- print(characters.tex.toutf([[\v{r}]],true))
+-- print(characters.tex.toutf([[fo{\"o}{\ss}ar]],true))
+-- print(characters.tex.toutf([[H{\'a}n Th\^e\llap{\raise 0.5ex\hbox{\'{\relax}}} Th{\'a}nh]],true))
 
 function characters.tex.defineaccents()
     for accent, group in next, accentmapping do

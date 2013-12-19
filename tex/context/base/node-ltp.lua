@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['node-par'] = {
     comment   = "a translation of the built in parbuilder, initial convertsin by Taco Hoekwater",
 }
 
--- todo: remove nest_stack from  linebreak.w
+-- todo: remove nest_stack from linebreak.w
 -- todo: use ex field as signal (index in ?)
 -- todo: attr driven unknown/on/off
 -- todo: permit global steps i.e. using an attribute that sets min/max/step and overloads the font parameters
@@ -526,11 +526,26 @@ local function kern_stretch_shrink(p,d)
     return 0, 0
 end
 
-local function kern_stretch_shrink(p,d)
-    -- maybe make it an option in luatex where we also need to check for attribute fontkern but in general
-    -- it makes no sense to scale kerns
-    return 0, 0
-end
+-- local function kern_stretch_shrink(p,d)
+--     -- maybe make it an option in luatex where we also need to check for attribute fontkern but in general
+--     -- it makes no sense to scale kerns
+--     return 0, 0
+-- end
+
+local expand_kerns = false
+-- local expand_kerns = "both"
+
+directives.register("builders.paragraphs.adjusting.kerns",function(v)
+    if not v then
+        expand_kerns = false
+    elseif v == "stretch" or v == "shrink" then
+        expand_kerns = v
+    elseif v == "both" then
+        expand_kerns = true
+    else
+        expand_kerns = toboolean(v,true) or false
+    end
+end)
 
 -- state:
 
@@ -540,7 +555,7 @@ local function check_expand_pars(checked_expansion,f)
         checked_expansion[f] = false
         return false
     end
-expansion.step = 1
+-- expansion.step = 1
     local step    = expansion.step    or 0
     local stretch = expansion.stretch or 0
     local shrink  = expansion.shrink  or 0
@@ -588,7 +603,7 @@ local function check_expand_lines(checked_expansion,f)
         checked_expansion[f] = false
         return false
     end
-expansion.step = 1
+-- expansion.step = 1
     local step    = expansion.step    or 0
     local stretch = expansion.stretch or 0
     local shrink  = expansion.shrink  or 0
@@ -730,15 +745,21 @@ local function add_to_width(line_break_dir,checked_expansion,s) -- split into tw
                 size = size + s.depth + s.height
             end
         elseif id == kern_code then
-            if checked_expansion and s.subtype == kerning_code then
-                local d = s.kern
-                if d ~= 0 then
+            local d = s.kern
+            if d ~= 0 then 
+                if checked_expansion and expand_kerns and (s.subtype == kerning_code or s[a_fontkern]) then
                     local stretch, shrink = kern_stretch_shrink(s,d)
-                    adjust_stretch = adjust_stretch + stretch
-                    adjust_shrink  = adjust_shrink  + shrink
+                    if expand_kerns == "stretch" then
+                        adjust_stretch = adjust_stretch + stretch
+                    elseif expand_kerns == "shrink" then
+                        adjust_shrink  = adjust_shrink  + shrink
+                    else
+                        adjust_stretch = adjust_stretch + stretch
+                        adjust_shrink  = adjust_shrink  + shrink
+                    end
                 end
+                size = size + d
             end
-            size = size + s.kern
         elseif id == rule_code then
             size = size + s.width
         else
@@ -946,6 +967,7 @@ local function initialize_line_break(head,display)
         ignored_dimen                = tex.pdfignoreddimen      or 0, -- this will go away
 
         baseline_skip                = tex.baselineskip         or 0,
+        lineskip                     = tex.lineskip             or 0,
         line_skip_limit              = tex.lineskiplimit        or 0,
 
         prev_depth                   = texnest[texnest.ptr].prevdepth,
@@ -2281,13 +2303,19 @@ function constructors.methods.basic(head,d)
                 if cur_p.subtype == userkern_code then
                     kern_break(par,cur_p,first_p, checked_expansion)
                 else
-                    active_width.size = active_width.size + cur_p.kern
-                    if checked_expansion and cur_p.subtype == kerning_code then
-                        local d = cur_p.kern
-                        if d ~= 0 then
+                    local d = cur_p.kern
+                    of d ~= 0 then 
+                        active_width.size = active_width.size + d
+                        if checked_expansion and expand_kerns and (cur_p.subtype == kerning_code or cur_p[a_fontkern]) then
                             local stretch, shrink = kern_stretch_shrink(cur_p,d)
-                            active_width.adjust_stretch = active_width.adjust_stretch + stretch
-                            active_width.adjust_shrink  = active_width.adjust_shrink  + shrink
+                            if expand_kerns == "stretch" then
+                                active_width.adjust_stretch = active_width.adjust_stretch + stretch
+                            elseif expand_kerns == "shrink" then
+                                active_width.adjust_shrink  = active_width.adjust_shrink  + shrink
+                            else
+                                active_width.adjust_stretch = active_width.adjust_stretch + stretch
+                                active_width.adjust_shrink  = active_width.adjust_shrink  + shrink
+                            end
                         end
                     end
                 end
@@ -2794,16 +2822,20 @@ local function hpack(head,width,method,direction) -- fast version when head = ni
             local kern = current.kern
             if kern == 0 then
                 -- no kern
-            elseif current.subtype == kerning_code then -- check p.kern
-                if cal_expand_ratio then
+            else
+                if cal_expand_ratio and expand_kerns and current.subtype == kerning_code or current[a_fontkern] then -- check p.kern
                     local stretch, shrink = kern_stretch_shrink(current,kern)
-                    font_stretch = font_stretch + stretch
-                    font_shrink  = font_shrink + shrink
+                    if expand_kerns == "stretch" then
+                        font_stretch = font_stretch + stretch
+                    elseif expand_kerns == "shrink" then
+                        font_shrink  = font_shrink + shrink
+                    else
+                        font_stretch = font_stretch + stretch
+                        font_shrink  = font_shrink + shrink
+                    end
                     expansion_index = expansion_index + 1
                     expansion_stack[expansion_index] = current
                 end
-                natural = natural + kern
-            else
                 natural = natural + kern
             end
             current = current.next
@@ -2973,7 +3005,7 @@ local function hpack(head,width,method,direction) -- fast version when head = ni
         -- natural width smaller than requested width
         local order = (total_stretch[4] ~= 0 and 4 or total_stretch[3] ~= 0 and 3) or
                       (total_stretch[2] ~= 0 and 2 or total_stretch[1] ~= 0 and 1) or 0
-        local correction = 0
+--         local correction = 0
         if cal_expand_ratio and order == 0 and font_stretch > 0 then -- check sign of font_stretch
             font_expand_ratio = delta/font_stretch
 
@@ -2996,17 +3028,17 @@ local function hpack(head,width,method,direction) -- fast version when head = ni
                         setnodecolor(g,"hz:positive")
                     end
                     e = font_expand_ratio * data.glyphstretch / 1000
-                    correction = correction + (e / 1000) * g.width
+--                     correction = correction + (e / 1000) * g.width
                 else
                     local kern = g.kern
                     local stretch, shrink = kern_stretch_shrink(g,kern)
                     e = font_expand_ratio * stretch / 1000
-                    correction = correction + (e / 1000) * kern
+--                     correction = correction + (e / 1000) * kern
                 end
                 g.expansion_factor = e
             end
         end
-        delta = delta - correction
+--         delta = delta - correction
         local tso = total_stretch[order]
         if tso ~= 0 then
             hlist.glue_sign  = 1
@@ -3033,7 +3065,7 @@ local function hpack(head,width,method,direction) -- fast version when head = ni
         -- natural width larger than requested width
         local order = total_shrink[4] ~= 0 and 4 or total_shrink[3] ~= 0 and 3
                    or total_shrink[2] ~= 0 and 2 or total_shrink[1] ~= 0 and 1 or 0
-        local correction = 0
+--         local correction = 0
         if cal_expand_ratio and order == 0 and font_shrink > 0 then -- check sign of font_shrink
             font_expand_ratio = delta/font_shrink
 
@@ -3060,17 +3092,17 @@ local function hpack(head,width,method,direction) -- fast version when head = ni
                  -- local eps = g.width - (1 + d / 1000000) * g.width
                  -- correction = correction + eps
                  -- e = d
-                    correction = correction + (e / 1000) * g.width
+--                     correction = correction + (e / 1000) * g.width
                 else
                     local kern = g.kern
                     local stretch, shrink = kern_stretch_shrink(g,kern)
                     e = font_expand_ratio * shrink / 1000
-                    correction = correction + (e / 1000) * kern
+--                     correction = correction + (e / 1000) * kern
                 end
                 g.expansion_factor = e
             end
         end
-        delta = delta - correction
+--         delta = delta - correction
         local tso = total_shrink[order]
         if tso ~= 0 then
             hlist.glue_sign  = 2
