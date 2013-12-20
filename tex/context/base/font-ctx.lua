@@ -134,6 +134,70 @@ utilities.strings.formatters.add(formatters,"font:features",[["'"..table.sequenc
 
 constructors.resolvevirtualtoo = true -- context specific (due to resolver)
 
+constructors.sharefonts        = true -- experimental
+constructors.nofsharedhashes   = 0
+constructors.nofsharedvectors  = 0
+constructors.noffontsloaded    = 0
+
+local shares    = { }
+local hashes    = { }
+
+function constructors.trytosharefont(target,tfmdata)
+    constructors.noffontsloaded = constructors.noffontsloaded + 1
+    if constructors.sharefonts then
+        local properties = target.properties
+        local fullname   = target.fullname
+        local fonthash   = target.specification.hash
+        local sharedname = hashes[fonthash]
+        if sharedname then
+            -- this is ok for context as we know that only features can mess with font definitions
+            -- so a similar hash means that the fonts are similar too
+            if trace_defining then
+                report_defining("font %a uses backend resources of font %a (%s)",target.fullname,sharedname,"common hash")
+            end
+            target.fullname = sharedname
+            properties.sharedwith = sharedname
+            constructors.nofsharedfonts = constructors.nofsharedfonts + 1
+            constructors.nofsharedhashes = constructors.nofsharedhashes + 1
+        else
+            -- the one takes more time (in the worst case of many cjk fonts) but it also saves
+            -- embedding time
+            local characters = target.characters
+            local n = 1
+            local t = { target.psname }
+            local u = sortedkeys(characters)
+            for i=1,#u do
+                n = n + 1 ; t[n] = k
+                n = n + 1 ; t[n] = characters[u[i]].index or k
+            end
+            local checksum   = md5.HEX(concat(t," "))
+            local sharedname = shares[checksum]
+            local fullname   = target.fullname
+            if sharedname then
+                if trace_defining then
+                    report_defining("font %a uses backend resources of font %a (%s)",fullname,sharedname,"common vector")
+                end
+                fullname = sharedname
+                properties.sharedwith= sharedname
+                constructors.nofsharedfonts = constructors.nofsharedfonts + 1
+                constructors.nofsharedvectors = constructors.nofsharedvectors + 1
+            else
+                shares[checksum] = fullname
+            end
+            target.fullname  = fullname
+            hashes[fonthash] = fullname
+        end
+    end
+end
+
+
+directives.register("fonts.checksharing",function(v)
+    if not v then
+        report_defining("font sharing in backend is disabled")
+    end
+    constructors.sharefonts = v
+end)
+
 local limited = false
 
 directives.register("system.inputmode", function(v)
@@ -1366,13 +1430,14 @@ function loggers.reportdefinedfonts()
             local parameters = data.parameters or { }
             tn = tn + 1
             t[tn] = {
-  format("%03i",id                  or 0),
-  format("%09i",parameters.size     or 0),
-                properties.type     or "real",
-                properties.format   or "unknown",
-                properties.name     or "",
-                properties.psname   or "",
-                properties.fullname or "",
+  format("%03i",id                    or 0),
+  format("%09i",parameters.size       or 0),
+                properties.type       or "real",
+                properties.format     or "unknown",
+                properties.name       or "",
+                properties.psname     or "",
+                properties.fullname   or "",
+                properties.sharedwith or "",
             }
             report_status("%s: % t",properties.name,sortedkeys(data))
         end
@@ -1413,7 +1478,14 @@ end
 luatex.registerstopactions(loggers.reportusedfeatures)
 
 statistics.register("fonts load time", function()
-    return statistics.elapsedseconds(fonts)
+    local elapsed   = statistics.elapsedseconds(fonts)
+    local nofshared = constructors.nofsharedfonts or 0
+    if nofshared > 0 then
+        return format("%sfor %s fonts, %s shared in backend, %s common vectors, %s common hashes",
+            elapsed,constructors.noffontsloaded,nofshared,constructors.nofsharedvectors,constructors.nofsharedhashes)
+    else
+        return elapsed
+    end
 end)
 
 -- experimental mechanism for Mojca:

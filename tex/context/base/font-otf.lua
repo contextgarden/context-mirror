@@ -48,7 +48,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.748 -- beware: also sync font-mis.lua
+otf.version              = 2.749 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -103,23 +103,28 @@ function otf.fileformat(filename)
     local leader = lower(io.loadchunk(filename,4))
     local suffix = lower(file.suffix(filename))
     if leader == "otto" then
-        return "opentype", "otf", suffix == "otf"
+        return formats.otf, suffix == "otf"
     elseif leader == "ttcf" then
-        return "truetype", "ttc", suffix == "ttc"
+        return formats.ttc, suffix == "ttc"
     elseif suffix == "ttc" then
-        return "truetype", "ttc", true
+        return formats.ttc, true
+    elseif suffix == "dfont" then
+        return formats.dfont, true
     else
-        return "truetype", "ttf", suffix == "ttf"
+        return formats.ttf, suffix == "ttf"
     end
 end
 
+-- local function otf_format(filename)
+--  -- return formats[lower(file.suffix(filename))]
+-- end
+
 local function otf_format(filename)
-    local format, suffix, okay = otf.fileformat(filename)
+    local format, okay = otf.fileformat(filename)
     if not okay then
         report_otf("font %a is actually an %a file",filename,format)
     end
- -- return formats[lower(file.suffix(filename))]
-    return suffix
+    return format
 end
 
 local function load_featurefile(raw,featurefile)
