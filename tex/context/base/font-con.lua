@@ -278,6 +278,42 @@ function constructors.aftercopyingcharacters(target,original)
     -- can be used for additional tweaking
 end
 
+-- It's probably ok to hash just the indices because there is not that much
+-- chance that one will shift slots and leave the others unset then. Anyway,
+-- there is of course some overhead here, but it might as well get compensated
+-- by less time spent on including the font resource twice. For the moment
+-- we default to false, so a macro package has to enable it explicitly. In
+-- LuaTeX the fullname is used to identify a font as being unique.
+
+constructors.sharefonts     = false
+constructors.nofsharedfonts = 0
+local sharednames           = { }
+
+function constructors.trytosharefont(target,tfmdata)
+    if constructors.sharefonts then
+        local characters = target.characters
+        local n = 1
+        local t = { target.psname }
+        local u = sortedkeys(characters)
+        for i=1,#u do
+            n = n + 1 ; t[n] = k
+            n = n + 1 ; t[n] = characters[u[i]].index or k
+        end
+        local h = md5.HEX(concat(t," "))
+        local s = sharednames[h]
+        if s then
+            if trace_defining then
+                report_defining("font %a uses backend resources of font %a",target.fullname,s)
+            end
+            target.fullname = s
+            constructors.nofsharedfonts = constructors.nofsharedfonts + 1
+            target.properties.sharedwith = s
+        else
+            sharednames[h] = target.fullname
+        end
+    end
+end
+
 function constructors.enhanceparameters(parameters)
     local xheight = parameters.x_height
     local quad    = parameters.quad
@@ -790,8 +826,11 @@ function constructors.scale(tfmdata,specification)
         end
         targetcharacters[unicode] = chr
     end
+
     --
     constructors.aftercopyingcharacters(target,tfmdata)
+    --
+    constructors.trytosharefont(target,tfmdata)
     --
     return target
 end

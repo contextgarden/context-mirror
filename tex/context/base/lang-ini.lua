@@ -20,7 +20,6 @@ local type, tonumber = type, tonumber
 local utfbyte = utf.byte
 local format, gsub = string.format, string.gsub
 local concat, sortedkeys, sortedpairs = table.concat, table.sortedkeys, table.sortedpairs
-local lpegmatch = lpeg.match
 
 local settings_to_array = utilities.parsers.settings_to_array
 
