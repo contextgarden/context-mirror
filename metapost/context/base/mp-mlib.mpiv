@@ -940,7 +940,7 @@ def mfun_array_to_lua(expr key)(suffix value)(expr first, last, stp)(text t) =
     special
         "metapost.variables['" & key & "']={"
             for i=first step stp until last :
-                & t(value[i]) & ","
+                & "[" & decimal i & "]=" & t(value[i]) & ","
             endfor
         & "}" ;
 enddef ;
@@ -971,14 +971,17 @@ enddef ;
 
 def startpassingvariable(expr k) =
     begingroup ;
-    save stoppassingvariable, startarray, stoparray, starthash, stophash, key, value ;
+    save stoppassingvariable, startarray, stoparray, starthash, stophash, index, key, value, slot, entry ;
     let stoppassingvariable = mfun_stop_lua_variable ;
     let startarray = mfun_start_lua_array ;
     let stoparray = mfun_stop_lua_array ;
     let starthash = mfun_start_lua_hash ;
     let stophash = mfun_stop_lua_hash ;
+    let index = mfun_lua_index ;
     let key = mfun_lua_key ;
     let value = mfun_lua_value ;
+    let slot = mfun_lua_slot ;
+    let entry = mfun_lua_entry ;
     save s ; string s ;
     s := "metapost.variables['" & k & "']="
 enddef ;
@@ -988,6 +991,8 @@ def mfun_stop_lua_variable =
     special substring(0,length(s)-1) of s ;
     endgroup ;
 enddef ;
+
+% currently there is no difference between array and hash
 
 def mfun_start_lua_array =
     & "{"
@@ -1009,6 +1014,10 @@ def mfun_lua_key(expr k) =
     & "['" & k & "']="
 enddef ;
 
+def mfun_lua_index(expr k) =
+    & "[" & decimal k & "]="
+enddef ;
+
 def mfun_lua_value(expr v) =
     if     numeric   v : & mfun_numeric_to_lua(v) & ","
     elseif pair      v : & mfun_pair_to_lua(v) & ","
@@ -1019,6 +1028,16 @@ def mfun_lua_value(expr v) =
     elseif cmykcolor v : & mfun_cmykcolor_to_lua(v) & ","
     elseif transform v : & mfun_transform_to_lua(v) & ","
     fi
+enddef ;
+
+def mfun_lua_entry(expr k, v) =
+    mfun_lua_key(k)
+    mfun_lua_value(v)
+enddef ;
+
+def mfun_lua_slot(expr k, v) =
+    mfun_lua_index(k)
+    mfun_lua_value(v)
 enddef ;
 
 % moved here from mp-grap.mpiv

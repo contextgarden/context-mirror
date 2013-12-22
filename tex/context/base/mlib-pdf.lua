@@ -17,7 +17,9 @@ local formatters = string.formatters
 
 local report_metapost = logs.reporter("metapost")
 
-local mplib, context = mplib, context
+local trace_variables = false  trackers.register("metapost.variables",function(v) trace_variables = v end)
+
+local mplib, context  = mplib, context
 
 local allocate        = utilities.storage.allocate
 
@@ -282,14 +284,14 @@ local p_boolean = P("false") * Cc(false) + P("true") * Cc(true)
 local p_set     = Ct(number^1)
 local p_path    = Ct(Ct(number * number^-5)^1)
 
-local variable =
-    P("1:")            * key * p_number
-  + P("2:")            * key * p_string
-  + P("3:")            * key * p_boolean
-  + S("4568") * P(":") * key * p_set
-  + P("7:")            * key * p_path
-
-local pattern_key = Cf ( Carg(1) * (Cg(variable * newline^0)^0), rawset)
+-- local variable =
+--     P("1:")            * key * p_number
+--   + P("2:")            * key * p_string
+--   + P("3:")            * key * p_boolean
+--   + S("4568") * P(":") * key * p_set
+--   + P("7:")            * key * p_path
+--
+-- local pattern_key = Cf ( Carg(1) * (Cg(variable * newline^0)^0), rawset)
 
 local variable =
     P("1:")            * p_number
@@ -336,7 +338,7 @@ function commands.mprunvar(key,n) -- should be defined in another lib
     end
 end
 
-function metapost.untagvariable(str,variables)
+function metapost.untagvariable(str,variables) -- will be redone
     if variables == false then
         return lpegmatch(pattern_lst,str)
     else
@@ -351,9 +353,12 @@ end
 function metapost.processspecial(str)
     local code = loadstring(str)
     if code then
+        if trace_variables then
+            report_metapost("executing special code: %s",str)
+        end
         code()
     else
-        report_metapost("invalid special: %s",str)
+        report_metapost("invalid special code: %s",str)
     end
 end
 
