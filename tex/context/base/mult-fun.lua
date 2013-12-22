@@ -100,6 +100,7 @@ return {
         --
         "decorated", "redecorated", "undecorated",
         --
-        "passvariable", "tostring", "format", "formatted",
+        "passvariable", "passarrayvariable", "tostring", "format", "formatted",
+        "startpassingvariable", "stoppassingvariable",
     },
 }
