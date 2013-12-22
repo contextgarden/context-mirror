@@ -132,6 +132,8 @@ function metapost.format_number(fmt,num)
     end
 end
 
+-- This is experimental and will change!
+
 function metapost.svformat(fmt,str)
     metapost.format_string(fmt,metapost.untagvariable(str,false))
 end
