@@ -808,7 +808,7 @@ vardef mfun_pair_to_string(expr p) =
     decimal ypart p
 enddef ;
 
-vardef mfun_rbgcolor_to_string(expr c) =
+vardef mfun_rgbcolor_to_string(expr c) =
     decimal redpart   c & " " &
     decimal greenpart c & " " &
     decimal bluepart  c
@@ -829,18 +829,18 @@ vardef mfun_boolean_to_string(expr b) =
     if b : "true" else : "false" fi
 enddef ;
 
-def passvariable(expr key, value) =
-    special
-        if     numeric   value : "1:" & key & "=" & mfun_numeric_to_string(value)
-        elseif pair      value : "4:" & key & "=" & mfun_pair_to_string(value)
-        elseif rgbcolor  value : "5:" & key & "=" & mfun_rgbcolor_to_string(value)
-        elseif cmykcolor value : "6:" & key & "=" & mfun_cmykcolor_to_string(value)
-        elseif boolean   value : "3:" & key & "=" & mfun_boolean_to_string(value)
-        elseif path      value : "7:" & key & "=" & mfun_path_to_string(value)
-        elseif transform value : "8:" & key & "=" & mfun_transform_to_string(value)
-        else                   : "2:" & key & "=" & value
-        fi ;
-enddef ;
+% def passvariable(expr key, value) =
+%     special
+%         if     numeric   value : "1:" & key & "=" & mfun_numeric_to_string(value)
+%         elseif pair      value : "4:" & key & "=" & mfun_pair_to_string(value)
+%         elseif rgbcolor  value : "5:" & key & "=" & mfun_rgbcolor_to_string(value)
+%         elseif cmykcolor value : "6:" & key & "=" & mfun_cmykcolor_to_string(value)
+%         elseif boolean   value : "3:" & key & "=" & mfun_boolean_to_string(value)
+%         elseif path      value : "7:" & key & "=" & mfun_path_to_string(value)
+%         elseif transform value : "8:" & key & "=" & mfun_transform_to_string(value)
+%         else                   : "2:" & key & "=" & value
+%         fi ;
+% enddef ;
 
 vardef tostring(expr value) =
     if     numeric   value : mfun_numeric_to_string(value)
@@ -863,6 +863,161 @@ vardef mfun_tagged_string(expr value) =
     elseif path      value : "7:" & mfun_path_to_string(value)
     elseif transform value : "8:" & mfun_transform_to_string(value)
     else                   : "2:" & value
+    fi
+enddef ;
+
+% amore flexible variant for passing data to context
+
+vardef mfun_point_to_lua(expr p,i) =
+    "{" &
+    decimal xpart (point       i of p) & "," &
+    decimal ypart (point       i of p) & "," &
+    decimal xpart (precontrol  i of p) & "," &
+    decimal ypart (precontrol  i of p) & "," &
+    decimal xpart (postcontrol i of p) & "," &
+    decimal ypart (postcontrol i of p)
+    & "}"
+enddef ;
+
+vardef mfun_transform_to_lua(expr t) =
+    "{" &
+    decimal xxpart t & "," &   % rx
+    decimal xypart t & "," &   % sx
+    decimal yxpart t & "," &   % sy
+    decimal yypart t & "," &   % ry
+    decimal xpart  t & "," &   % tx
+    decimal ypart  t           % ty
+    & "}"
+enddef ;
+
+vardef mfun_numeric_to_lua(expr n) =
+    decimal n
+enddef ;
+
+vardef mfun_pair_to_lua(expr p) =
+    "{" &
+    decimal xpart p & "," &
+    decimal ypart p
+    & "}"
+enddef ;
+
+vardef mfun_rgbcolor_to_lua(expr c) =
+    "{" &
+    decimal redpart   c & "," &
+    decimal greenpart c & "," &
+    decimal bluepart  c
+    & "}"
+enddef ;
+
+vardef mfun_cmykcolor_to_lua(expr c) =
+    "{" &
+    decimal cyanpart    c & "," &
+    decimal magentapart c & "," &
+    decimal yellowpart  c & "," &
+    decimal blackpart   c
+    & "}"
+enddef ;
+
+vardef mfun_path_to_lua(expr p) =
+    "{" &
+    mfun_point_to_lua(p,0) for i=1 upto length(p) : & "," & mfun_point_to_lua(p,i) endfor
+    & "}"
+enddef ;
+
+vardef mfun_boolean_to_lua(expr b) =
+    if b : "true" else : "false" fi
+enddef ;
+
+vardef mfun_string_to_lua(expr s) =
+   "[==[" & s & "]==]"
+enddef ;
+
+def mfun_to_lua(expr key)(expr value)(text t) =
+    special "metapost.variables['" & key & "']=" & t(value) ;
+enddef ;
+
+def mfun_array_to_lua(expr key)(suffix value)(expr first, last, stp)(text t) =
+    special
+        "metapost.variables['" & key & "']={"
+            for i=first step stp until last :
+                & t(value[i]) & ","
+            endfor
+        & "}" ;
+enddef ;
+
+def passvariable(expr key, value) =
+    if     numeric   value : mfun_to_lua(key,value,mfun_numeric_to_lua)
+    elseif pair      value : mfun_to_lua(key,value,mfun_pair_to_lua)
+    elseif string    value : mfun_to_lua(key,value,mfun_string_to_lua)
+    elseif boolean   value : mfun_to_lua(key,value,mfun_boolean_to_lua)
+    elseif path      value : mfun_to_lua(key,value,mfun_path_to_lua)
+    elseif rgbcolor  value : mfun_to_lua(key,value,mfun_rgbcolor_to_lua)
+    elseif cmykcolor value : mfun_to_lua(key,value,mfun_cmykcolor_to_lua)
+    elseif transform value : mfun_to_lua(key,value,mfun_transform_to_lua)
+    fi ;
+enddef ;
+
+def passarrayvariable(expr key)(suffix values)(expr first, last, stp) =
+    if     numeric   values[first] : mfun_array_to_lua(key,values,first,last,stp,mfun_numeric_to_lua)
+    elseif pair      values[first] : mfun_array_to_lua(key,values,first,last,stp,mfun_pair_to_lua)
+    elseif string    values[first] : mfun_array_to_lua(key,values,first,last,stp,mfun_string_to_lua)
+    elseif boolean   values[first] : mfun_array_to_lua(key,values,first,last,stp,mfun_boolean_to_lua)
+    elseif path      values[first] : mfun_array_to_lua(key,values,first,last,stp,mfun_path_to_lua)
+    elseif rgbcolor  values[first] : mfun_array_to_lua(key,values,first,last,stp,mfun_rgbcolor_to_lua)
+    elseif cmykcolor values[first] : mfun_array_to_lua(key,values,first,last,stp,mfun_cmykcolor_to_lua)
+    elseif transform values[first] : mfun_array_to_lua(key,values,first,last,stp,mfun_transform_to_lua)
+    fi ;
+enddef ;
+
+def startpassingvariable(expr k) =
+    begingroup ;
+    save stoppassingvariable, startarray, stoparray, starthash, stophash, key, value ;
+    let stoppassingvariable = mfun_stop_lua_variable ;
+    let startarray = mfun_start_lua_array ;
+    let stoparray = mfun_stop_lua_array ;
+    let starthash = mfun_start_lua_hash ;
+    let stophash = mfun_stop_lua_hash ;
+    let key = mfun_lua_key ;
+    let value = mfun_lua_value ;
+    save s ; string s ;
+    s := "metapost.variables['" & k & "']="
+enddef ;
+
+def mfun_stop_lua_variable =
+    ;
+    special substring(0,length(s)-1) of s ;
+    endgroup ;
+enddef ;
+
+def mfun_start_lua_array =
+    & "{"
+enddef ;
+
+def mfun_stop_lua_array =
+    & "},"
+enddef ;
+
+def mfun_start_lua_hash =
+    & "{"
+enddef ;
+
+def mfun_stop_lua_hash =
+    & "},"
+enddef ;
+
+def mfun_lua_key(expr k) =
+    & "['" & k & "']="
+enddef ;
+
+def mfun_lua_value(expr v) =
+    if     numeric   v : & mfun_numeric_to_lua(v) & ","
+    elseif pair      v : & mfun_pair_to_lua(v) & ","
+    elseif string    v : & mfun_string_to_lua(v) & ","
+    elseif boolean   v : & mfun_boolean_to_lua(v) & ","
+    elseif path      v : & mfun_path_to_lua(v) & ","
+    elseif rgbcolor  v : & mfun_rgbcolor_to_lua(v) & ","
+    elseif cmykcolor v : & mfun_cmykcolor_to_lua(v) & ","
+    elseif transform v : & mfun_transform_to_lua(v) & ","
     fi
 enddef ;
 

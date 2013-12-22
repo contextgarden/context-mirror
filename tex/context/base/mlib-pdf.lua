@@ -275,28 +275,35 @@ local equal    = P("=")
 local key      = C((1-equal)^1) * equal
 local newline  = S("\n\r")^1
 local number   = (((1-space-newline)^1) / tonumber) * (space^0)
+
+local p_number  = number
+local p_string  = C((1-newline)^0)
+local p_boolean = P("false") * Cc(false) + P("true") * Cc(true)
+local p_set     = Ct(number^1)
+local p_path    = Ct(Ct(number * number^-5)^1)
+
 local variable =
-    P("1:")            * key * number
-  + P("2:")            * key * C((1-newline)^0)
-  + P("3:")            * key * (P("false") * Cc(false) + P("true") * Cc(true))
-  + S("4568") * P(":") * key * Ct(number^1)
-  + P("7:")            * key * Ct(Ct(number * number^-5)^1)
+    P("1:")            * key * p_number
+  + P("2:")            * key * p_string
+  + P("3:")            * key * p_boolean
+  + S("4568") * P(":") * key * p_set
+  + P("7:")            * key * p_path
 
 local pattern_key = Cf ( Carg(1) * (Cg(variable * newline^0)^0), rawset)
 
 local variable =
-    P("1:")            * number
-  + P("2:")            * C((1-newline)^0)
-  + P("3:")            * (P("false") * Cc(false) + P("true") * Cc(true))
-  + S("4568") * P(":") * Ct(number^1)
-  + P("7:")            * Ct(Ct(number * number^-5)^1)
+    P("1:")            * p_number
+  + P("2:")            * p_string
+  + P("3:")            * p_boolean
+  + S("4568") * P(":") * p_set
+  + P("7:")            * p_path
 
 local pattern_tab = Cf ( Carg(1) * (Cg(variable * newline^0)^0), rawset)
 
 local variable =
-    P("1:")            * number
-  + P("2:")            * C((1-newline)^0)
-  + P("3:")            * (P("false") * Cc(false) + P("true") * Cc(true))
+    P("1:")            * p_number
+  + P("2:")            * p_string
+  + P("3:")            * p_boolean
   + S("4568") * P(":") * number^1
   + P("7:")            * (number * number^-5)^1
 
@@ -337,6 +344,19 @@ function metapost.untagvariable(str,variables)
     end
 end
 
+-- function metapost.processspecial(str)
+--     lpegmatch(pattern_key,object.prescript,1,variables)
+-- end
+
+function metapost.processspecial(str)
+    local code = loadstring(str)
+    if code then
+        code()
+    else
+        report_metapost("invalid special: %s",str)
+    end
+end
+
 function metapost.flush(result,flusher,askedfig)
     if result then
         local figures = result.fig
@@ -350,6 +370,7 @@ function metapost.flush(result,flusher,askedfig)
             local stopfigure = flusher.stopfigure
             local flushfigure = flusher.flushfigure
             local textfigure = flusher.textfigure
+            local processspecial = flusher.processspecial or metapost.processspecial
             for f=1,#figures do
                 local figure = figures[f]
                 local objects = getobjects(result,figure,f)
@@ -392,7 +413,9 @@ function metapost.flush(result,flusher,askedfig)
                                 if objecttype == "start_bounds" or objecttype == "stop_bounds" then
                                     -- skip
                                 elseif objecttype == "special" then
-                                    lpegmatch(pattern_key,object.prescript,1,variables)
+                                    if processspecial then
+                                        processspecial(object.prescript)
+                                    end
                                 elseif objecttype == "start_clip" then
                                     t[#t+1] = "q"
                                     flushnormalpath(object.path,t,false)
