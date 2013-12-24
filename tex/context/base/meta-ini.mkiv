@@ -849,9 +849,11 @@
 
 % This will change ...
 
-\def\MPdataMPDfile{\jobname-mpgraph.mpd}
+\def\MPdataMPDfile{\jobname-mpgraph.mpd} % this one will become obsolete
 \def\MPdataMPOfile{\jobname-mpgraph.mpo}
 \def\MPdataMPYfile{\jobname-mpgraph.mpy}
+
+% makempy.registerfile(filename)
 
 \startMPinitializations
     boolean collapse_data; collapse_data:=true;
@@ -1445,6 +1447,23 @@
 
 \setupMPgraphics
   [\c!color=\v!local]
+
+%D This can save some runtime: rename the mpy file from a first run (when stable) to
+%D another file and reuse it. One can also use the original filename, but a copy is
+%D often better.
+%D
+%D \starttyping
+%D \setupMPgraphics
+%D   [mpy=\jobname.mpy]
+%D \stoptyping
+
+\appendtoks
+    \edef\p_mpy{\directMPgraphicsparameter{mpy}}%
+    \ifx\p_mpy\empty \else
+      \let\MPdataMPYfile\p_mpy
+      \ctxlua{metapost.makempy.registerfile("\p_mpy")}%
+    \fi
+\to \everysetupMPgraphics
 
 %D Done.
 

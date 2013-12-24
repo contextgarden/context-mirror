@@ -1172,7 +1172,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 31038, stripped down to: 20207
+-- original size: 31113, stripped down to: 20256
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -1286,10 +1286,13 @@ local function sortedhash(t,cmp)
       s=sortedkeys(t) 
     end
     local n=0
+    local m=#s
     local function kv(s)
-      n=n+1
-      local k=s[n]
-      return k,t[k]
+      if n<m then
+        n=n+1
+        local k=s[n]
+        return k,t[k]
+      end
     end
     return kv,s
   else
@@ -4154,7 +4157,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 33250, stripped down to: 14767
+-- original size: 33473, stripped down to: 14938
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -4744,6 +4747,15 @@ if not utf.values then
     end
   end
   string.utfvalues=utf.values
+end
+function utf.chrlen(u) 
+  return
+    (u<0x80 and 1) or
+    (u<0xE0 and 2) or
+    (u<0xF0 and 3) or
+    (u<0xF8 and 4) or
+    (u<0xFC and 5) or
+    (u<0xFE and 6) or 0
 end
 
 
@@ -16667,8 +16679,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 684720
--- stripped bytes    : 242272
+-- original bytes    : 685018
+-- stripped bytes    : 242350
 
 -- end library merge
 

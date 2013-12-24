@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 12/22/13 19:05:41
+-- merge date  : 12/24/13 17:52:44
 
 do -- begin closure to overcome local limits and interference
 
@@ -922,10 +922,13 @@ local function sortedhash(t,cmp)
       s=sortedkeys(t) 
     end
     local n=0
+    local m=#s
     local function kv(s)
-      n=n+1
-      local k=s[n]
-      return k,t[k]
+      if n<m then
+        n=n+1
+        local k=s[n]
+        return k,t[k]
+      end
     end
     return kv,s
   else

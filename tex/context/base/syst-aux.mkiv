@@ -5470,7 +5470,7 @@
 %D We have to use a two||step implementation, because the
 %D expansion has to take place outside \type{\uppercase}.
 %D
-%D These might up as \LUA based helpers (i.e. considere these
+%D These might end up as \LUA based helpers (i.e. consider these
 %D obsolete:
 
 \unexpanded\def\syst_helpers_do_IF#1#2%
@@ -5892,7 +5892,7 @@
 \ifdefined\normalquitvmode \let\dontleavehmode\normalquitvmode \fi
 
 %D \macros
-%D   {uppercasestring,lowercasestring}
+%D   {utfupper, utflower, uppercasestring, lowercasestring}
 %D
 %D The names tell what they do:
 %D
@@ -5903,14 +5903,20 @@
 %D
 %D The first argument may be a \type{\macro}.
 
-\unexpanded\def\uppercasestring#1\to#2%
-  {\uppercase\expandafter{\expandafter\dodoglobal\expandafter\edef\expandafter#2\expandafter{\normalexpanded{#1}}}}
-
-\unexpanded\def\lowercasestring#1\to#2%
-  {\lowercase\expandafter{\expandafter\dodoglobal\expandafter\edef\expandafter#2\expandafter{\normalexpanded{#1}}}}
+% \unexpanded\def\uppercasestring#1\to#2%
+%   {\uppercase\expandafter{\expandafter\dodoglobal\expandafter\edef\expandafter#2\expandafter{\normalexpanded{#1}}}}
+%
+% \unexpanded\def\lowercasestring#1\to#2%
+%   {\lowercase\expandafter{\expandafter\dodoglobal\expandafter\edef\expandafter#2\expandafter{\normalexpanded{#1}}}}
 
 %D These macros are sort of obsolete as we never use uppercase this
-%D way.
+%D way. But nevertheless we provide them:
+
+\def\utfupper#1{\ctxcommand{upper(\!!bs#1\!!es)}} % expandable
+\def\utflower#1{\ctxcommand{lower(\!!bs#1\!!es)}} % expandable
+
+\unexpanded\def\uppercasestring#1\to#2{\dodoglobal\edef#2{\ctxcommand{upper(\!!bs#1\!!es)}}}
+\unexpanded\def\lowercasestring#1\to#2{\dodoglobal\edef#2{\ctxcommand{lower(\!!bs#1\!!es)}}}
 
 %D \macros
 %D   {handletokens}
