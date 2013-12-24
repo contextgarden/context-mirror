@@ -46,20 +46,21 @@ local v_all                = variables.all
 
 -- beware, all macros have an argument:
 
-local doinlineverbatimnewline    = context.doinlineverbatimnewline
-local doinlineverbatimbeginline  = context.doinlineverbatimbeginline
-local doinlineverbatimemptyline  = context.doinlineverbatimemptyline
-local doinlineverbatimstart      = context.doinlineverbatimstart
-local doinlineverbatimstop       = context.doinlineverbatimstop
+local doinlineverbatimnewline     = context.doinlineverbatimnewline
+local doinlineverbatimbeginline   = context.doinlineverbatimbeginline
+local doinlineverbatimemptyline   = context.doinlineverbatimemptyline
+local doinlineverbatimstart       = context.doinlineverbatimstart
+local doinlineverbatimstop        = context.doinlineverbatimstop
 
-local dodisplayverbatimnewline   = context.dodisplayverbatimnewline
-local dodisplayverbatimbeginline = context.dodisplayverbatimbeginline
-local dodisplayverbatimemptyline = context.dodisplayverbatimemptyline
-local dodisplayverbatimstart     = context.dodisplayverbatimstart
-local dodisplayverbatimstop      = context.dodisplayverbatimstop
+local dodisplayverbatiminitialize = context.dodisplayverbatiminitialize -- the number of arguments might change over time
+local dodisplayverbatimnewline    = context.dodisplayverbatimnewline
+local dodisplayverbatimbeginline  = context.dodisplayverbatimbeginline
+local dodisplayverbatimemptyline  = context.dodisplayverbatimemptyline
+local dodisplayverbatimstart      = context.dodisplayverbatimstart
+local dodisplayverbatimstop       = context.dodisplayverbatimstop
 
-local verbatim                   = context.verbatim
-local doverbatimspace            = context.doverbatimspace
+local verbatim                    = context.verbatim
+local doverbatimspace             = context.doverbatimspace
 
 local CargOne = Carg(1)
 
@@ -710,6 +711,7 @@ commands.loadvisualizer = visualizers.load
 function commands.typebuffer(settings)
     local lines = getlines(settings.name)
     if lines then
+        dodisplayverbatiminitialize(#lines)
         local content, m = filter(lines,settings)
         if content and content ~= "" then
          -- content = decodecomment(content)

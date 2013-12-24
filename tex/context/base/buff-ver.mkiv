@@ -437,21 +437,31 @@
      \expandafter\buff_verbatim_typing_start_nop
    \fi}
 
+\unexpanded\def\buff_verbatim_setup_keep_together
+  {\edef\p_keeptogether{\typingparameter\c!keeptogether}%
+   \ifx\p_keeptogether\v!yes
+     \settrue \c_buff_optimize_linebreaks
+   \else
+     \setfalse\c_buff_optimize_linebreaks
+   \fi}
+
 \def\buff_verbatim_typing_start_nop
   {\typingparameter\c!before
    \startpacked[\v!blank]
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one
+   \buff_verbatim_setup_keep_together
    \normalexpanded{\buff_verbatim_type_block{\e!start\currenttyping}{\e!stop\currenttyping}}}
 
 \def\buff_verbatim_typing_start_yes[#1]%
   {\typingparameter\c!before
    \startpacked[\v!blank]
    \doifassignmentelse{#1}
-     {\setuptyping[\currenttyping][#1]}
-     {\doifinset\v!continue{#1}{\setuptyping[\currenttyping][\c!continue=\v!yes]}}%
+     {\setupcurrenttyping[#1]}
+     {\doifinset\v!continue{#1}{\lettypingparameter\c!continue\v!yes}}%
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one
+   \buff_verbatim_setup_keep_together
    \normalexpanded{\buff_verbatim_type_block{\e!start\currenttyping}{\e!stop\currenttyping}}}
 
 \unexpanded\def\buff_verbatim_type_block#1#2%
@@ -660,6 +670,7 @@
 \setuptyping
   [\c!before=\blank,
    \c!after=\blank,
+  %\c!keeptogether=yes, % this will become default (when tested enough)
   %\c!bodyfont=,
   %\c!color=,
    \c!space=\v!off,
@@ -835,19 +846,42 @@
 
 % hooks:
 
-\def\doinlineverbatimstart      {}
-\def\doinlineverbatimstop       {}
-\def\doinlineverbatimbeginline  {}
-\def\doinlineverbatimnewline    {\obeyedspace}
-\def\doinlineverbatimemptyline  {\obeyedspace}
+\newcount      \c_buff_verbatim_noflines
+\newcount      \c_buff_verbatim_current
+\newconditional\c_buff_optimize_linebreaks
 
-\def\dodisplayverbatimstart     {\buff_verbatim_begin_of_line}
-\def\dodisplayverbatimstop      {\buff_verbatim_end_of_line}
-\def\dodisplayverbatimbeginline {\buff_verbatim_begin_of_line}
-\def\dodisplayverbatimnewline   {\buff_verbatim_end_of_line\par}
-\def\dodisplayverbatimemptyline {\buff_verbatim_empty_line}
+\def\doverbatimspace           {\obeyedspace}
 
-\def\doverbatimspace            {\obeyedspace}
+\unexpanded\def\doinlineverbatimstart     {}
+\unexpanded\def\doinlineverbatimstop      {}
+\unexpanded\def\doinlineverbatimbeginline {}
+\unexpanded\def\doinlineverbatimnewline   {\obeyedspace}
+\unexpanded\def\doinlineverbatimemptyline {\obeyedspace}
+
+\unexpanded\def\dodisplayverbatimstart    {\advance\c_buff_verbatim_current\plusone
+                                           \buff_verbatim_begin_of_line}
+\unexpanded\def\dodisplayverbatimstop     {\buff_verbatim_end_of_line}
+\unexpanded\def\dodisplayverbatimbeginline{\advance\c_buff_verbatim_current\plusone
+                                           \buff_verbatim_begin_of_line}
+\unexpanded\def\dodisplayverbatimnewline  {\buff_verbatim_end_of_line
+                                           \par
+                                           \ifconditional\c_buff_optimize_linebreaks
+                                             \buff_verbatim_inject_breaks
+                                           \fi}
+\unexpanded\def\dodisplayverbatimemptyline{\buff_verbatim_empty_line}
+
+\unexpanded\def\buff_verbatim_inject_breaks
+  {\ifnum\c_buff_verbatim_current=\plusone
+     \nobreak
+   \else\ifnum\c_buff_verbatim_noflines=\plusthree
+     \nobreak
+   \else\ifnum\c_buff_verbatim_current=\numexpr\c_buff_verbatim_noflines-\plusone\relax
+     \nobreak
+   \fi\fi\fi}
+
+\unexpanded\def\dodisplayverbatiminitialize#1%
+  {\c_buff_verbatim_noflines#1\relax
+   \c_buff_verbatim_current\zerocount}
 
 \loadmarkfile{buff-imp-default}    % preloaded as otherwise spurious spaces inline due to loading
 \loadmarkfile{buff-imp-nested}     % preloaded as otherwise spurious spaces inline due to loading

@@ -674,37 +674,48 @@ local start    = [[\starttext]]
 local preamble = [[\def\MPLIBgraphictext#1{\startTEXpage[scale=10000]#1\stopTEXpage}]]
 local stop     = [[\stoptext]]
 
+local mpyfilename = nil
+
+function makempy.registerfile(filename)
+    mpyfilename = filename
+end
+
 function makempy.processgraphics(graphics)
-    if #graphics > 0 then
-        makempy.nofconverted = makempy.nofconverted + 1
-        starttiming(makempy)
-        local mpofile = tex.jobname .. "-mpgraph"
-        local mpyfile = file.replacesuffix(mpofile,"mpy")
-        local pdffile = file.replacesuffix(mpofile,"pdf")
-        local texfile = file.replacesuffix(mpofile,"tex")
-        io.savedata(texfile, { start, preamble, metapost.tex.get(), concat(graphics,"\n"), stop }, "\n")
-        local command = format("context --once %s %s", (tex.interactionmode == 0 and "--batchmode") or "", texfile)
+    if #graphics == 0 then
+        return
+    end
+    if mpyfilename and io.exists(mpyfilename) then
+        report_metapost("using file: %s",mpyfilename)
+        return
+    end
+    makempy.nofconverted = makempy.nofconverted + 1
+    starttiming(makempy)
+    local mpofile = tex.jobname .. "-mpgraph"
+    local mpyfile = file.replacesuffix(mpofile,"mpy")
+    local pdffile = file.replacesuffix(mpofile,"pdf")
+    local texfile = file.replacesuffix(mpofile,"tex")
+    io.savedata(texfile, { start, preamble, metapost.tex.get(), concat(graphics,"\n"), stop }, "\n")
+    local command = format("context --once %s %s", (tex.interactionmode == 0 and "--batchmode") or "", texfile)
+    os.execute(command)
+    if io.exists(pdffile) then
+        command = format("pstoedit -ssp -dt -f mpost %s %s", pdffile, mpyfile)
+        logs.newline()
+        report_metapost("running: %s",command)
+        logs.newline()
         os.execute(command)
-        if io.exists(pdffile) then
-            command = format("pstoedit -ssp -dt -f mpost %s %s", pdffile, mpyfile)
-            logs.newline()
-            report_metapost("running: %s",command)
-            logs.newline()
-            os.execute(command)
+        if io.exists(mpyfile) then
             local result, r = { }, 0
-            if io.exists(mpyfile) then
-                local data = io.loaddata(mpyfile)
-                if data and #data > 0 then
-                    for figure in gmatch(data,"beginfig(.-)endfig") do
-                        r = r + 1
-                        result[r] = formatters["begingraphictextfig%sendgraphictextfig ;\n"](figure)
-                    end
-                    io.savedata(mpyfile,concat(result,""))
+            local data = io.loaddata(mpyfile)
+            if data and #data > 0 then
+                for figure in gmatch(data,"beginfig(.-)endfig") do
+                    r = r + 1
+                    result[r] = formatters["begingraphictextfig%sendgraphictextfig ;\n"](figure)
                 end
+                io.savedata(mpyfile,concat(result,""))
             end
         end
-        stoptiming(makempy)
     end
+    stoptiming(makempy)
 end
 
 -- -- the new plugin handler -- --

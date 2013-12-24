@@ -129,10 +129,13 @@ local function sortedhash(t,cmp)
             s = sortedkeys(t) -- the robust one
         end
         local n = 0
+        local m = #s
         local function kv(s)
-            n = n + 1
-            local k = s[n]
-            return k, t[k]
+            if n < m then
+                n = n + 1
+                local k = s[n]
+                return k, t[k]
+            end
         end
         return kv, s
     else

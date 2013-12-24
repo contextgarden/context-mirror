@@ -9,7 +9,6 @@ if not modules then modules = { } end modules ['l-unicode'] = {
 -- this module will be reorganized
 
 -- todo: utf.sub replacement (used in syst-aux)
-
 -- we put these in the utf namespace:
 
 utf = utf or (unicode and unicode.utf8) or { }
@@ -1129,4 +1128,14 @@ if not utf.values then
 
     string.utfvalues = utf.values
 
+end
+
+function utf.chrlen(u) -- u is number
+    return
+        (u < 0x80 and 1) or
+        (u < 0xE0 and 2) or
+        (u < 0xF0 and 3) or
+        (u < 0xF8 and 4) or
+        (u < 0xFC and 5) or
+        (u < 0xFE and 6) or 0
 end

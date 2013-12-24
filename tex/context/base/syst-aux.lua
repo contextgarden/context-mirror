@@ -108,3 +108,8 @@ local pattern = Cs(
 function commands.thetexdefinition(str)
     context(lpegmatch(pattern,str))
 end
+
+local upper, lower = utf.upper, utf.lower
+
+function commands.upper(s) context(upper(s)) end
+function commands.lower(s) context(lower(s)) end
