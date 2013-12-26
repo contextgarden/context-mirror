@@ -337,11 +337,11 @@
 
 \defineregister
   [texmacro]
-  [texmacros]
+% [texmacros]
 
 \definesorting
   [texcommand]
-  [texcommands]
+% [texcommands]
 
 \setupsorting
   [texcommand]
@@ -390,6 +390,7 @@
 
 \startxmlsetups xml:setups:register
     \xmlsetup{#1}{xml:setups:assemblename}
+    % not really needed if we just use setups
     \expanded{\texcommand[stp:x:\currentSETUPfullname]{#1}}
 \stopxmlsetups
 
@@ -404,7 +405,7 @@
 
 \xmlregisterdocumentsetup{setups}{xml:setups:basics}
 
-\def\loadsetups{\complexorsimple\loadsetups}
+\unexpanded\def\loadsetups{\complexorsimple\loadsetups}
 
 \let\loadedsetups\empty % we load more setups, setups:<name>
 
@@ -416,7 +417,7 @@
      {\doonlyonce{setups:#1}
         {\doglobal\prependtocommalist{setups:#1}\loadedsetups % last overloads first
          \xmlloadonly{setups:#1}{#1}{setups}%
-         \xmlfilter{setups:#1}{interface/command/command(xml:setups:register)}}}} % qualified path saves > 50% runtime
+         \xmlfilter{setups:#1}{/interface/command/command(xml:setups:register)}}}} % qualified path saves > 50% runtime
 
 \newif\ifshortsetup
 
@@ -448,7 +449,7 @@
 %   {\xmlfilterlist{\loadedsetups}{interface/command[@name='#1']/command(xml:setups:typeset)}}
 
 \def\showsetupindeed#1%
-  {\xmlfilterlist{\loadedsetups}{interface/command['#1' == (@type=='environment' and 'start' or '') .. @name]/command(xml:setups:typeset)}}
+  {\xmlfilterlist{\loadedsetups}{/interface/command['#1' == (@type=='environment' and 'start' or '') .. @name]/command(xml:setups:typeset)}}
 
 \unexpanded\def\placesetup    {\placelistofsorts[texcommand][\c!criterium=\v!used]}
 \unexpanded\def\placeallsetups{\placelistofsorts[texcommand][\c!criterium=\v!all ]}
@@ -480,10 +481,9 @@
             \doif {\xmlatt{#1}{generated}} {yes} {
                 \ttsl
             }
-            \doifelse {\xmlatt{#1}{type}} {environment} {
-                \tex{\e!start}
-            } {
-                \tex{}
+            \letterbackslash
+            \doif {\xmlatt{#1}{type}} {environment} {
+                \e!start
             }
             \xmlfilter{#1}{/sequence/first()}
             \ignorespaces
@@ -530,7 +530,7 @@
 
 \startxmlsetups xml:setups:resolve
     \ignorespaces
-    \xmlfilterlist{\loadedsetups}{interface/define[@name='\xmlatt{#1}{name}']/first()}
+    \xmlfilterlist{\loadedsetups}{/interface/define[@name='\xmlatt{#1}{name}']/first()}
 \stopxmlsetups
 
 %D This is the first pass; here we generate the top line.
@@ -661,7 +661,7 @@
    \secondSETUPcolumn {
         \c!setup!text!{\getmessage{setup}{inherits}}
         \enspace
-        \tex{}
+        \letterbackslash
         \xmlatt{#1}{name}
     } {}
     \ignorespaces

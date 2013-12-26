@@ -744,4 +744,24 @@
 %    \unexpanded\def#7##1% register
 %       {\normalexpanded{#5{\the#5\edef\noexpand\currentcounter{##1}\noexpand\the\everysetupcounter}}}}
 
+%D For good old times (easier to explain in manuals):
+%D
+%D \starttyping
+%D \setcounter[userpage][9]
+%D \setupcounter[userpage][number=9]
+%D \setupuserpagenumber[number=9]
+%D \stoptyping
+
+% needs testing: we might have conflicts with mixins
+%
+% \appendtoks
+%     \ifx\currentcounter\empty \else
+%         \edef\p_number{\counterparameter\c!number}%
+%         \ifx\p_number\empty \else
+%             \strc_counters_set\currentcounter\p_number
+%             \letcounterparameter\c!number\empty
+%         \fi
+%     \fi
+% \to \everysetupcounter
+
 \protect \endinput

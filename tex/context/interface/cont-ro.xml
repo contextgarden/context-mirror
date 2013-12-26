@@ -10311,10 +10311,10 @@
     </cd:sequence>
     <cd:arguments>
       <cd:keywords n="1">
-        <cd:constant type="cd:text"/>
+        <cd:constant type="cd:name"/>
       </cd:keywords>
       <cd:keywords n="2">
-        <cd:constant type="cd:name"/>
+        <cd:constant type="cd:text"/>
       </cd:keywords>
       <cd:assignments n="3" optional="yes">
         <cd:parameter name="fallbacks">

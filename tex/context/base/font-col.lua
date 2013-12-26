@@ -89,7 +89,7 @@ function collections.define(name,font,ranges,details)
     details = settings_to_hash(details)
     -- todo, combine per font start/stop as arrays
     for s in gmatch(ranges,"[^, ]+") do
-        local start, stop, description = characters.getrange(s)
+        local start, stop, description, gaps = characters.getrange(s)
         if start and stop then
             if trace_collecting then
                 if description then
@@ -113,6 +113,7 @@ function collections.define(name,font,ranges,details)
                 font   = font,
                 start  = start,
                 stop   = stop,
+                gaps   = gaps,
                 offset = offset,
                 rscale = tonumber (details.rscale) or 1,
                 force  = toboolean(details.force,true),
