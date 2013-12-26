@@ -382,7 +382,7 @@ end)
 function characters.getrange(name) -- used in font fallback definitions (name or range)
     local range = blocks[name]
     if range then
-        return range.first, range.last, range.description
+        return range.first, range.last, range.description, range.gaps
     end
     name = gsub(name,'"',"0x") -- goodie: tex hex notation
     local start, stop = match(name,"^(.-)[%-%:](.-)$")
