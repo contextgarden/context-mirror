@@ -33,7 +33,7 @@ local type, tostring, tonumber = type, tostring, tonumber
 local format, gsub, match, find = string.format, string.gsub, string.match, string.find
 local concat = table.concat
 local emptystring = string.is_empty
-local lpegmatch, P = lpeg.match, lpeg.P
+local P = lpeg.P
 
 local trace_graphics   = false  trackers.register("metapost.graphics",   function(v) trace_graphics   = v end)
 local trace_tracingall = false  trackers.register("metapost.tracingall", function(v) trace_tracingall = v end)
@@ -283,6 +283,8 @@ if mplibone then
  -- end
 
 else
+
+    -- let end = relax ;
 
     local preamble = [[
         boolean mplib ; mplib := true ;

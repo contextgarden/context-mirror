@@ -22,7 +22,7 @@ local accentmapping = allocate {
     ['"'] = { [""] = "¨",
         A = "Ä", a = "ä",
         E = "Ë", e = "ë",
-        I = "Ï", i = "ï", ["ı"] = "ï",
+        I = "Ï", i = "ï", ["ı"] = "ï", ["\\i"] = "ï",
         O = "Ö", o = "ö",
         U = "Ü", u = "ü",
         Y = "Ÿ", y = "ÿ",
@@ -31,7 +31,7 @@ local accentmapping = allocate {
         A = "Á", a = "á",
         C = "Ć", c = "ć",
         E = "É", e = "é",
-        I = "Í", i = "í", ["ı"] = "í",
+        I = "Í", i = "í", ["ı"] = "í", ["\\i"] = "í",
         L = "Ĺ", l = "ĺ",
         N = "Ń", n = "ń",
         O = "Ó", o = "ó",
@@ -45,13 +45,13 @@ local accentmapping = allocate {
         C = "Ċ", c = "ċ",
         E = "Ė", e = "ė",
         G = "Ġ", g = "ġ",
-        I = "İ", i = "i", ["ı"] = "i",
+        I = "İ", i = "i", ["ı"] = "i", ["\\i"] = "i",
         Z = "Ż", z = "ż",
     },
     ["="] = { [""] = "¯",
         A = "Ā", a = "ā",
         E = "Ē", e = "ē",
-        I = "Ī", i = "ī", ["ı"] = "ī",
+        I = "Ī", i = "ī", ["ı"] = "ī", ["\\i"] = "ī",
         O = "Ō", o = "ō",
         U = "Ū", u = "ū",
     },
@@ -65,7 +65,7 @@ local accentmapping = allocate {
         E = "Ê", e = "ê",
         G = "Ĝ", g = "ĝ",
         H = "Ĥ", h = "ĥ",
-        I = "Î", i = "î", ["ı"] = "î",
+        I = "Î", i = "î", ["ı"] = "î", ["\\i"] = "î",
         J = "Ĵ", j = "ĵ",
         O = "Ô", o = "ô",
         S = "Ŝ", s = "ŝ",
@@ -76,7 +76,7 @@ local accentmapping = allocate {
     ["`"] = { [""] = "`",
         A = "À", a = "à",
         E = "È", e = "è",
-        I = "Ì", i = "ì", ["ı"] = "ì",
+        I = "Ì", i = "ì", ["ı"] = "ì", ["\\i"] = "ì",
         O = "Ò", o = "ò",
         U = "Ù", u = "ù",
         Y = "Ỳ", y = "ỳ",
@@ -104,7 +104,7 @@ local accentmapping = allocate {
         A = "Ă", a = "ă",
         E = "Ĕ", e = "ĕ",
         G = "Ğ", g = "ğ",
-        I = "Ĭ", i = "ĭ", ["ı"] = "ĭ",
+        I = "Ĭ", i = "ĭ", ["ı"] = "ĭ", ["\\i"] = "ĭ",
         O = "Ŏ", o = "ŏ",
         U = "Ŭ", u = "ŭ",
         },
@@ -121,7 +121,7 @@ local accentmapping = allocate {
         },
     ["~"] = { [""] = "˜",
         A = "Ã", a = "ã",
-        I = "Ĩ", i = "ĩ", ["ı"] = "ĩ",
+        I = "Ĩ", i = "ĩ", ["ı"] = "ĩ", ["\\i"] = "ĩ",
         N = "Ñ", n = "ñ",
         O = "Õ", o = "õ",
         U = "Ũ", u = "ũ",
@@ -179,22 +179,28 @@ local command_map = allocate {
     ["AE"] = "Æ",
     ["oe"] = "œ",
     ["OE"] = "Œ",
+    ["o"]  = "ø",
+    ["O"]  = "Ø",
+    ["aa"] = "å",
+    ["AA"] = "Å",
 }
 
 -- no need for U here
+
+local achar    = R("az","AZ") + P("ı") + P("\\i")
 
 local spaces   = P(" ")^0
 local no_l     = P("{") / ""
 local no_r     = P("}") / ""
 local no_b     = P('\\') / ""
 
-local lUr      = P("{") * C(R("az","AZ")) * P("}")
+local lUr      = P("{") * C(achar) * P("}")
 
 local accents_1 = [["'.=^`~]]
 local accents_2 = [[Hckruv]]
 
 local accent   = P('\\') * (
-    C(S(accents_1)) * (lUr * Cc(true) + C(R("az","AZ")) * Cc(false)) +
+    C(S(accents_1)) * (lUr * Cc(true) + C(achar) * Cc(false)) + -- we need achar for ı etc, could be sped up
     C(S(accents_2)) *  lUr * Cc(true)
 ) / remap_accent
 
@@ -227,6 +233,9 @@ function characters.tex.toutf(str,strip)
     end
 end
 
+-- print(characters.tex.toutf([[\~{Z}]],true))
+-- print(characters.tex.toutf([[\'\i]],true))
+-- print(characters.tex.toutf([[\'{\i}]],true))
 -- print(characters.tex.toutf([[\"{e}]],true))
 -- print(characters.tex.toutf([[\" {e}]],true))
 -- print(characters.tex.toutf([[{\"{e}}]],true))

@@ -317,7 +317,7 @@
    \let\normal_meta_process_graphic_stop \meta_process_graphic_stop
    \let\meta_process_graphic_start\relax
    \let\meta_process_graphic_stop \relax
-   \def\meta_process_graphic_figure_start{\startTEXpage\normal_meta_process_graphic_start}%
+   \def\meta_process_graphic_figure_start{\startTEXpage[\c!offset=\v!overlay,\c!align=]\normal_meta_process_graphic_start}%
    \def\meta_process_graphic_figure_stop {\normal_meta_process_graphic_stop\stopTEXpage}
    \def\MPaskedfigure{all}%
    \meta_process_graphic{input "#1" ;}%

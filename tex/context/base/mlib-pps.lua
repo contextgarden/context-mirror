@@ -13,7 +13,7 @@ local tonumber, type = tonumber, type
 local round = math.round
 local insert, remove, concat = table.insert, table.remove, table.concat
 local Cs, Cf, C, Cg, Ct, P, S, V, Carg = lpeg.Cs, lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.V, lpeg.Carg
-local lpegmatch = lpeg.match
+local lpegmatch, tsplitat, tsplitter = lpeg.match, lpeg.tsplitat, lpeg.tsplitter
 local formatters = string.formatters
 
 local mplib, metapost, lpdf, context = mplib, metapost, lpdf, context
@@ -108,9 +108,9 @@ end
 
 --~
 
-local specificationsplitter = lpeg.tsplitat(" ")
-local colorsplitter         = lpeg.tsplitter(":",tonumber) -- no need for :
-local domainsplitter        = lpeg.tsplitter(" ",tonumber)
+local specificationsplitter = tsplitat(" ")
+local colorsplitter         = tsplitter(":",tonumber) -- no need for :
+local domainsplitter        = tsplitter(" ",tonumber)
 local centersplitter        = domainsplitter
 local coordinatesplitter    = domainsplitter
 
@@ -147,7 +147,7 @@ local function spotcolorconverter(parent, n, d, p)
     return pdfcolor(colors.model,registercolor(nil,'spot',parent,n,d,p)), outercolor
 end
 
-local commasplitter = lpeg.tsplitat(",")
+local commasplitter = tsplitat(",")
 
 local function checkandconvertspot(n_a,f_a,c_a,v_a,n_b,f_b,c_b,v_b)
     -- must be the same but we don't check
@@ -860,7 +860,7 @@ local function tx_reset()
 end
 
 local fmt = formatters["%s %s %s % t"]
-local pat = lpeg.tsplitat(":")
+local pat = tsplitat(":")
 
 local function tx_analyze(object,prescript) -- todo: hash content and reuse them
     local tx_stage = prescript.tx_stage

@@ -44,8 +44,10 @@ string metafunversion ; metafunversion =
 
 let normalend = end ;
 
-def end =
-  ; message "" ; message metafunversion ; message "" ; normalend ;
-enddef ;
+if known mplib :
+    def end = ; message "" ; message metafunversion ; message "" ; endinput  ; enddef ;
+else :
+    def end = ; message "" ; message metafunversion ; message "" ; normalend ; enddef ;
+fi ;
 
 % dump ; % obsolete in mplib

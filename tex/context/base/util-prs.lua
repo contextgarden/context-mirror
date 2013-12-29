@@ -184,8 +184,10 @@ function parsers.settings_to_array(str,strict)
         else
             return { str }
         end
-    else
+    elseif find(str,",") then
         return lpegmatch(pattern,str)
+    else
+        return { str }
     end
 end
 
