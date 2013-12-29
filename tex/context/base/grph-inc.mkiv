@@ -536,17 +536,13 @@
       \c!offset=\v!overlay,\c!width=\v!fit,\c!height=\v!fit]
      {\blank[\v!disable]#1\endgraf\removelastskip}} % disable should stay here!
 
-\def\grph_include_process_mps#1% retrofit into mkii
-  {\global\setbox\foundexternalfigure\vbox{\convertMPtoPDF{#1}11}}
+% used al lua end:
 
-\def\grph_include_process_cld#1%
-  {\global\setbox\foundexternalfigure\vbox{\cldprocessfile{#1}}}
-
-\unexpanded\def\docheckfigurebuffer  #1{\grph_include_process_tex{\getbuffer[#1]}}    % used al lua end
-\unexpanded\def\docheckfiguretex     #1{\grph_include_process_tex{\input{#1}}}        % used al lua end
-\unexpanded\def\docheckfigurecld     #1{\grph_include_process_cld{#1}}                % used al lua end
-\unexpanded\def\docheckfiguremps     #1{\grph_include_process_mps{#1}}                % used al lua end
-\unexpanded\def\docheckfiguremprun #1#2{\grph_include_process_tex{\useMPrun{#1}{#2}}} % used al lua end
+\unexpanded\def\docheckfigurebuffer  #1{\grph_include_process_tex{\getbuffer[#1]}}
+\unexpanded\def\docheckfiguretex     #1{\grph_include_process_tex{\input{#1}}}
+\unexpanded\def\docheckfigurecld     #1{\global\setbox\foundexternalfigure\vbox{\cldprocessfile{#1}}}
+\unexpanded\def\docheckfiguremps     #1{\global\setbox\foundexternalfigure\vbox{\convertMPtoPDF{#1}11}}
+\unexpanded\def\docheckfiguremprun #1#2{\global\setbox\foundexternalfigure\vbox{\useMPrun{#1}{#2}}}
 
 \unexpanded\def\relocateexternalfigure % easier here than in lua
   {\global\setbox\foundexternalfigure\vbox to \ht\foundexternalfigure\bgroup

@@ -126,7 +126,7 @@
   {\endgroup}
 
 \def\strc_lists_inject_yes[#settings][#userdata]%
-  {\setupcurrentlist[\c!type=userdata,\c!location=\v!none,#settings]% grouped
+  {\setupcurrentlist[\c!type=userdata,\c!location=\v!none,#settings]% grouped (use \let...
    \edef\p_location{\listparameter\c!location}%
    \setnextinternalreference
    \edef\currentlistnumber{\ctxcommand{addtolist{

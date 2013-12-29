@@ -476,6 +476,7 @@
         \veryraggedright
         \doglobal\newcounter\currentSETUPargument
         \xdef\maximumSETUPargument{\xmlcount{#1}{/arguments/*}}
+        \edef\currentSETUPhash{\xmlatt{#1}{hash}}
         \bgroup
             \enablemode[setups-pass-one]%
             \doif {\xmlatt{#1}{generated}} {yes} {
@@ -605,7 +606,11 @@
         \egroup
         \startfirstSETUPcolumn{\showSETUPnumber}%
             \ignorespaces
-            \xmlflush{#1}
+            \xmldoifelse{#1}{/(parameter|inherit)}{
+                \xmlflush{#1}
+            } {
+             ...
+            }
             \let\previousSETUPargument\currentSETUPargument
         \stopfirstSETUPcolumn
         \blank[\v!halfline]
@@ -631,6 +636,15 @@
     \startsecondSETUPcolumn{\c!setup!reserved!{\xmlatt{#1}{name}}}{=}
         \ignorespaces
         \xmlflush{#1}
+        \doifmode{interface:setup:defaults} {
+            \ifx\currentSETUPhash\empty \else
+               \edef\currentSETUPvalue{\csname named\currentSETUPhash parameter\endcsname\empty{\xmlatt{#1}{name}}}
+               \ifx\currentSETUPvalue\empty
+                 \space=\space
+                 \detokenize\expandafter{\currentSETUPvalue}
+               \fi
+            \fi
+        }
     \stopsecondSETUPcolumn
     \ignorespaces
 \stopxmlsetups
@@ -746,5 +760,77 @@
 \def\showSETUPtriplet    #1{\showSETUP{#1}{[x:y:z=]}                            {[x:y:z=,..]}}
 \def\showSETUPword       #1{\showSETUP{#1}{\leftargument...\rightargument}      {\leftargument.. ... ..\rightargument}}
 \def\showSETUPcontent    #1{\showSETUP{#1}{\leftargument...\rightargument}      {\leftargument.. ... ..\rightargument}}
+
+% A prelude to a rewrite and some more:
+
+\definetype[parametercommand][type]
+\definetype[parameterkey]    [type]
+\definetype[parametervalue]  [type][space=on]
+
+\setuptype[parametercommand] [color=darkmagenta]
+\setuptype[parametervalue]   [color=darkyellow]
+
+\startxmlsetups xml:setups:parameters:value
+    \edef\currentsetupparameterkey  {\xmlatt{#1}{name}}
+    \edef\currentsetupparametervalue{\csname named\currentsetupparametercategory parameter\endcsname\currentsetupparameterinstance\currentsetupparameterkey}
+    \ifx\currentsetupparameterinstance\empty
+        \expanded {
+            \NC \parameterkey  {\currentsetupparameterkey}
+            \NC \parametervalue{\detokenize\expandafter{\currentsetupparametervalue}}
+            \NC \NR
+        }
+    \else\ifx\currentsetupparametervalue\empty
+    \else
+        \edef\currentsetupparameterdefault{\csname named\currentsetupparametercategory parameter\endcsname\empty\currentsetupparameterkey}
+        \ifx\currentsetupparametervalue\currentsetupparameterdefault
+            % skip
+        \else
+            \expanded {
+                \NC \parameterkey  {\currentsetupparameterkey}
+                \NC \parametervalue{\detokenize\expandafter{\currentsetupparametervalue}}
+                \NC \NR
+            }
+        \fi
+    \fi\fi
+\stopxmlsetups
+
+\startxmlsetups xml:setups:parameters:values
+    \blank[big]
+    \expanded {
+        \parametercommand {
+            \currentsetupparametercommand
+            \space:\space
+            \ifx\currentsetupparameterinstance\empty
+                defaults
+            \else
+                \currentsetupparameterinstance
+            \fi
+        }
+    }
+    \blank[big,samepage]
+    \starttabulate[|l|p|]
+        \xmlall
+            {#1}
+            {/interface/command[@name=='\currentsetupparametercommand']/arguments/assignments/parameter/command(xml:setups:parameters:value)}
+        \ifnum\noftabulaterows = \zerocount
+            \NC \parameterkey{no specific settings} \NC \NC \NR
+        \fi
+    \stoptabulate
+\stopxmlsetups
+
+
+\starttexdefinition showrootvalues [#1]
+    \edef\currentsetupparametercategory{#1}
+    \edef\currentsetupparametercommand{setup#1}
+    \let\currentsetupparameterinstance\empty
+    \xmlsetup{\loadedsetups}{xml:setups:parameters:values}
+\stoptexdefinition
+
+\starttexdefinition showinstancevalues [#1]#2[#3]
+    \edef\currentsetupparametercategory{#1}
+    \edef\currentsetupparametercommand{setup#1}
+    \edef\currentsetupparameterinstance{#3}
+    \xmlsetup{\loadedsetups}{xml:setups:parameters:values}
+\stoptexdefinition
 
 \protect \endinput
