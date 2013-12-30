@@ -10,19 +10,23 @@ if not modules then modules = { } end modules ['pack-rul'] = {
 <p>An explanation is given in the history document <t>mk</t>.</p>
 --ldx]]--
 
-local hpack           = node.hpack
-local free            = node.free
-local copy            = node.copy_list
-local traverse_id     = node.traverse_id
-local node_dimensions = node.dimensions
+-- we need to be careful with display math as it uses shifts
+-- challenge: adapt glue_set
+-- setfield(h,"glue_set", getfield(h,"glue_set") * getfield(h,"width")/maxwidth -- interesting ... doesn't matter much
 
 local hlist_code      = nodes.nodecodes.hlist
 local vlist_code      = nodes.nodecodes.vlist
 local box_code        = nodes.listcodes.box
+local line_code       = nodes.listcodes.line
 
 local texsetdimen     = tex.setdimen
 local texsetcount     = tex.setcount
 local texgetbox       = tex.getbox
+local hpack           = nodes.hpack
+local free            = nodes.free
+local copy            = nodes.copy_list
+local traverse_id     = nodes.traverse_id
+local node_dimensions = nodes.dimensions
 
 function commands.doreshapeframedbox(n)
     local box            = texgetbox(n)
@@ -38,7 +42,7 @@ function commands.doreshapeframedbox(n)
     if boxwidth ~= 0 then -- and h.subtype == vlist_code
         local list = box.list
         if list then
-            local function check(n,usewidth)
+            local function check(n,repack)
                 if not firstheight then
                     firstheight = n.height
                 end
@@ -46,10 +50,15 @@ function commands.doreshapeframedbox(n)
                 noflines = noflines + 1
                 local l = n.list
                 if l then
-                    if usewidth or n.subtype == box_code then -- maybe more
-                        lastlinelength = n.width
+                    if repack then
+                        local subtype = n.subtype
+                        if subtype == box_code or subtype == line_code then
+                            lastlinelength = node_dimensions(l,l.dir) -- used to be: hpack(copy(l)).width
+                        else
+                            lastlinelength = n.width
+                        end
                     else
-                        lastlinelength = node_dimensions(l) -- used to be: hpack(copy(l)).width
+                        lastlinelength = n.width
                     end
                     if lastlinelength > maxwidth then
                         maxwidth = lastlinelength
@@ -61,39 +70,43 @@ function commands.doreshapeframedbox(n)
                 end
             end
             local hdone = false
-         -- local vdone = false
             for h in traverse_id(hlist_code,list) do -- no dir etc needed
-                check(h)
+                check(h,true)
                 hdone = true
             end
+         -- local vdone = false
             for v in traverse_id(vlist_code,list) do -- no dir etc needed
-                check(v)
+                check(v,false)
              -- vdone = true
             end
-            if firstheight then
-                if maxwidth ~= 0 then
-                    if hdone then
-                        for h in traverse_id(hlist_code,list) do
-                            local l = h.list
-                            if l then
-                                if h.subtype == box_code then
-                                    -- explicit box, no 'line'
-                                else
-                                 -- if h.width ~= maxwidth then -- else no display math handling (uses shift)
-                                     -- challenge: adapt glue_set
-                                     -- h.glue_set = h.glue_set * h.width/maxwidth -- interesting ... doesn't matter much
-                                     -- h.width = maxwidth
-                                        h.list = hpack(l,maxwidth,'exactly',h.dir)
-                                        h.shift = 0 -- needed for display math
-                                        h.width = maxwidth
-                                 -- end
-                                end
+            if not firstheight then
+                -- done
+            elseif maxwidth ~= 0 then
+                if hdone then
+                    for h in traverse_id(hlist_code,list) do
+                        local l = h.list
+                        if l then
+                            local subtype = h.subtype
+                            if subtype == box_code or subtype == line_code then
+                                h.list = hpack(l,maxwidth,'exactly',h.dir)
+                                h.shift = 0 -- needed for display math
                             end
+                            h.width = maxwidth
                         end
                     end
                     box.width    = maxwidth -- moved
                     averagewidth = noflines > 0 and totalwidth/noflines or 0
                 end
+             -- if vdone then
+             --     for v in traverse_id(vlist_code,list) do
+             --         local width = n.width
+             --         if width > maxwidth then
+             --             v.width = maxwidth
+             --         end
+             --     end
+             -- end
+                box.width = maxwidth
+                averagewidth = noflines > 0 and totalwidth/noflines or 0
             end
         end
     end
