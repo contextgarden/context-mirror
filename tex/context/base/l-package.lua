@@ -274,7 +274,7 @@ methods["qualified path"]=function(name)
 end
 
 methods["lua extra list"] = function(name)
-    return loadedbypath(addsuffix(lualibfile(name),"lua"       ),name,getextraluapaths(),false,"lua")
+    return loadedbypath(addsuffix(lualibfile(name),"lua"),name,getextraluapaths(),false,"lua")
 end
 
 methods["lib extra list"] = function(name)
