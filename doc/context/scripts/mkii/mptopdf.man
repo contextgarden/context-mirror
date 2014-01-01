@@ -1,4 +1,4 @@
-.TH "mptopdf" "1" "01-01-2013" "version 1.4.1" "convert MetaPost to PDF"
+.TH "mptopdf" "1" "01-01-2014" "version 1.4.1" "convert MetaPost to PDF"
 .SH NAME
 .B mptopdf
 .SH SYNOPSIS
