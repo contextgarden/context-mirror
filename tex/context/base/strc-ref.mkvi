@@ -209,14 +209,14 @@
                         xmlroot  = \ifx\currentreferencecoding\s!xml "\xmldocument"\else nil\fi, % only useful when text
                     \fi
                 },
-                \ifx\currentreferencedata\empty\else
-                    entries = {
-                        text = \!!bs\currentreferencedata\!!es
-                    },
-                \fi
-                \ifx\currentreferenceuserdata\empty\else
-                    userdata = structures.helpers.touserdata(\!!bs\detokenize{#userdata}\!!es)
-                \fi
+            \ifx\currentreferencedata\empty\else
+                entries = {
+                    text = \!!bs\currentreferencedata\!!es
+                },
+            \fi
+            \ifx\currentreferenceuserdata\empty\else
+                userdata = structures.helpers.touserdata(\!!bs\detokenize{#userdata}\!!es)
+            \fi
             },"\interactionparameter\c!focus")
            }%
        \strc_references_stop_destination_nodes
@@ -260,6 +260,40 @@
      \setbox\b_strc_destination_nodes\emptyhbox
      \lastdestinationattribute\attributeunsetvalue
    \fi}
+
+\unexpanded\def\strc_references_direct_full#labels#text%
+  {\ifreferencing
+     \strc_references_start_destination_nodes
+       \ctxcommand{setreferenceattribute("\s!full", "\referenceprefix","#labels",
+         {
+              references = {
+                  block    = "\currentsectionblock",
+                  section  = structures.sections.currentid(),
+              },
+              metadata = {
+                  kind = "\s!full",
+              },
+              entries = {
+                  text = \!!bs#text\!!es
+              },
+          },"\interactionparameter\c!focus")
+         }%
+     \strc_references_stop_destination_nodes
+   \else
+     \setbox\b_strc_destination_nodes\emptyhbox
+     \lastdestinationattribute\attributeunsetvalue
+   \fi
+   % will become obsolete:
+   \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
+   % will become an option:
+   \ifnum\lastdestinationattribute>\zerocount
+     \dontleavehmode\hbox attr \destinationattribute\lastdestinationattribute\bgroup
+       \strc_references_flush_destination_nodes
+     \egroup
+     \prewordbreak % new
+   \fi}
+
+\let\dodirectfullreference\strc_references_direct_full % for at lua end
 
 \def\strc_references_set_page_only_destination_box_attribute#cs#labels%
   {\strc_references_set_page_only_destination_attribute{#labels}%
