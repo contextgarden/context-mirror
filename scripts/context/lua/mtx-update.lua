@@ -378,7 +378,7 @@ function scripts.update.synchronize()
                 asked[s] = nil
             end
             if next(asked) then
-                report("skipping unknown modules: %s",table.concat(table.sortedkeys(asked),", "))
+                report("skipping unknown modules: %s",concat(table.sortedkeys(asked),", "))
             end
         end
 
@@ -396,7 +396,7 @@ function scripts.update.synchronize()
                 asked[s] = nil
             end
             if next(asked) then
-                report("skipping unknown fonts: %s",table.concat(table.sortedkeys(asked),", "))
+                report("skipping unknown fonts: %s",concat(table.sortedkeys(asked),", "))
             end
         end
 
@@ -410,7 +410,7 @@ function scripts.update.synchronize()
                         local destination = format("%s/%s", texroot, gsub(c[2],"<platform>", platform))
                         destination = gsub(destination,"\\","/")
                         archive = gsub(archive,"<version>",version)
-                        if osplatform == "windows" or osplatform == "mswin" then
+                        if osplatform == "windows" or osplatform == "mswin" or osplatform == "win64" then
                             destination = drive(destination)
                         end
                         individual[#individual+1] = { archive, destination }
@@ -419,24 +419,24 @@ function scripts.update.synchronize()
             end
         end
 
-        for platform, _ in next, platforms do
+        for platform in table.sortedhash(platforms) do
             add_collection(scripts.update.base,platform)
         end
-        for platform, _ in next, platforms do
+        for platform in table.sortedhash(platforms) do
             add_collection(scripts.update.modules,platform)
         end
-        for platform, _ in next, platforms do
+        for platform in table.sortedhash(platforms) do
             add_collection(scripts.update.fonts,platform)
         end
-        for engine, _ in next, engines do
-            for platform, _ in next, platforms do
+        for engine in table.sortedhash(engines) do
+            for platform in table.sortedhash(platforms) do
                 add_collection(scripts.update.engines[engine],platform)
             end
         end
 
         if goodies and type(goodies) == "table" then
-            for goodie, _ in next, goodies do
-                for platform, _ in next, platforms do
+            for goodie in table.sortedhash(goodies) do
+                for platform in table.sortedhash(platforms) do
                     add_collection(scripts.update.goodies[goodie],platform)
                 end
             end
@@ -447,7 +447,7 @@ function scripts.update.synchronize()
         for i=1,#update_repositories do
             local repository = update_repositories[i]
             if repositories[repository] then
-                for _, v in next, individual do
+                for _, v in table.sortedhash(individual) do
                     local archive, destination = v[1], v[2]
                     local cd = combined[destination]
                     if not cd then
@@ -458,7 +458,7 @@ function scripts.update.synchronize()
                 end
             end
         end
-        for destination, archive in next, combined do
+        for destination, archive in table.sortedhash(combined) do
             local archives, command = concat(archive," "), ""
             local normalflags, deleteflags = states.get("rsync.flags.normal"), ""
             if os.name == "windows" then
@@ -471,7 +471,7 @@ function scripts.update.synchronize()
             if (find(destination,"texmf$") or find(destination,"texmf%-context$") or find(destination,"texmf%-modules$")) and (not environment.argument("keep")) then
                 deleteflags = states.get("rsync.flags.delete")
             end
-            command = format("%s %s %s %s %s'%s' '%s'", bin, normalflags, deleteflags, dryrunflags, url, archives, destination)
+            command = format("%s %s %s %s %s'%s' '%s'", bin, normalflags, deleteflags, dryrunflags, url, archives, drive(destination))
             -- report("running command: %s",command)
             if not fetched[command] then
                 scripts.update.run(command,true)
@@ -488,7 +488,7 @@ function scripts.update.synchronize()
                 if windowsplatform[platform] then
                     bin = drive(bin)
                     texroot = drive(texroot)
-                    command = format([[%s -t "%s/texmf-context/scripts/context/lua/%s.lua" "%s/texmf-mswin/bin/"]], bin, texroot, script, texroot)
+                    command = format([[%s -t "%s/texmf-context/scripts/context/lua/%s.lua" "%s/texmf-%s/bin/"]], bin, texroot, script, texroot, platform)
                 else
                     command = format([[%s -tgo --chmod=a+x '%s/texmf-context/scripts/context/lua/%s.lua' '%s/texmf-%s/bin/%s']], bin, texroot, script, texroot, platform, script)
                 end
@@ -497,7 +497,7 @@ function scripts.update.synchronize()
             end
         end
 
-        for platform, _ in next, platforms do
+        for platform in table.sortedhash(platforms) do
             for i=1, #scripts.update.selfscripts do
                 update_script(scripts.update.selfscripts[i],platform)
             end
@@ -522,7 +522,7 @@ end
 
 function table.fromhash(t)
     local h = { }
-    for k, v in next, t do -- not indexed
+    for k, v in table.sortedhash(t) do -- not indexed
         if v then h[#h+1] = k end
     end
     return h
@@ -548,19 +548,19 @@ function scripts.update.make()
     local askedformats = formats
     local texformats = table.tohash(scripts.update.texformats)
     local mpformats = table.tohash(scripts.update.mpformats)
-    for k,v in next, texformats do
+    for k,v in table.sortedhash(texformats) do
         if not askedformats[k] then
             texformats[k] = nil
         end
     end
-    for k,v in next, mpformats do
+    for k,v in table.sortedhash(mpformats) do
         if not askedformats[k] then
             mpformats[k] = nil
         end
     end
     local formatlist = concat(table.fromhash(texformats), " ")
     if formatlist ~= "" then
-        for engine in next, engines do
+        for engine in table.sortedhash(engines) do
             if engine == "luatex" then
                 scripts.update.run(format('mtxrun --tree="%s" --script context --autogenerate --make',texroot))
             elseif engine == "luajittex" then
