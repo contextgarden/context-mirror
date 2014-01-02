@@ -16,9 +16,25 @@ if defined ProgramFiles(x86) (
     if "%PROCESSOR_ARCHITEW6432%"=="AMD64" set PLATFORM=win64
 )
 
+REM ~ copy /y bin\mtx-update.lua bin\x.lua
+
+if "%PLATFORM%" == "win64" goto update-win64
+
+:update-win32
+
 rsync -av --exclude 'rsync.exe' --exclude 'cygwin1.dll' --exclude 'cygiconv-2.dll' rsync://contextgarden.net/minimals/setup/mswin/bin/ bin
 
+goto update
+
+:update-win64
+
+rsync -av --exclude 'rsync.exe' --exclude 'cygwin1.dll' --exclude 'cygiconv-2.dll' rsync://contextgarden.net/minimals/setup/win64/bin/ bin
+
+goto update
+
 :update
+
+REM ~ copy /y bin\x.lua bin\mtx-update.lua
 
 REM --mingw --nofiledatabase --engine=luatex
 
