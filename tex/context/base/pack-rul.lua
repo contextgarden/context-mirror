@@ -53,7 +53,7 @@ function commands.doreshapeframedbox(n)
                     if repack then
                         local subtype = n.subtype
                         if subtype == box_code or subtype == line_code then
-                            lastlinelength = node_dimensions(l,l.dir) -- used to be: hpack(copy(l)).width
+                            lastlinelength = node_dimensions(l,n.dir) -- used to be: hpack(copy(l)).width
                         else
                             lastlinelength = n.width
                         end
