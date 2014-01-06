@@ -1600,8 +1600,8 @@ local tpm = twopart_mark[char]
 if tpm then
     local extra = copy_node(current)
     char = tpm[1]
-    setfield(current,"char",char)
-    setfield(extra,"char",tpm[2])
+    current.char = char
+    extra.char = tpm[2]
     head = insert_after(head,current,extra)
 end
 --
