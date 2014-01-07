@@ -96,7 +96,7 @@ function commands.doreshapeframedbox(n)
                     for h in traverse_id(hlist_code,list) do
                         local l = getlist(h)
                         if l then
-                            local subtype = getsubtype(n)
+                            local subtype = getsubtype(h)
                             if subtype == box_code or subtype == line_code then
                                 l = hpack(l,maxwidth,'exactly',getfield(h,"dir")) -- multiple return values
                                 setfield(h,"list",l)
