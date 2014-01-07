@@ -133,10 +133,8 @@ function fallbacks.apply(target,original)
                 else
                     -- something else
                 end
-                if trace_fallbacks then
-                    if characters[k] then
-                        report_fallbacks("extending math font %a with %U",target.properties.fullname,k)
-                    end
+                if trace_fallbacks and characters[k] then
+                    report_fallbacks("extending math font %a with %U",target.properties.fullname,k)
                 end
             end
         end
@@ -334,9 +332,10 @@ end
 
 local function accent_to_extensible(target,newchr,original,oldchr,height,depth,swap,offset)
     local characters = target.characters
-    local addprivate = fonts.helpers.addprivate
     local olddata = characters[oldchr]
-    if olddata and not olddata.commands then
+    -- brrr ... pagella has only next
+    if olddata and not olddata.commands and olddata.width > 0 then
+        local addprivate = fonts.helpers.addprivate
         if swap then
             swap = characters[swap]
             height = swap.depth
@@ -445,9 +444,9 @@ addextra(0xFE3DF, { description="EXTENSIBLE OF 0x03DF", unicodeslot=0xFE3DF, mat
 addextra(0xFE3DD, { description="EXTENSIBLE OF 0x03DD", unicodeslot=0xFE3DD, mathextensible = "r", mathstretch = "h" } )
 addextra(0xFE3B5, { description="EXTENSIBLE OF 0x03B5", unicodeslot=0xFE3B5, mathextensible = "r", mathstretch = "h" } )
 
-virtualcharacters[0xFE3DF] = function(data) return data.original.characters[0x23DF] end
-virtualcharacters[0xFE3DD] = function(data) return data.original.characters[0x23DD] end
-virtualcharacters[0xFE3B5] = function(data) return data.original.characters[0x23B5] end
+virtualcharacters[0xFE3DF] = function(data) return data.target.characters[0x23DF] end
+virtualcharacters[0xFE3DD] = function(data) return data.target.characters[0x23DD] end
+virtualcharacters[0xFE3B5] = function(data) return data.target.characters[0x23B5] end
 
 -- todo: add some more .. numbers might change
 
