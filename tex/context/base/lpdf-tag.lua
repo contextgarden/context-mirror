@@ -14,7 +14,9 @@ local trace_tags = false  trackers.register("structures.tags", function(v) trace
 
 local report_tags = logs.reporter("backend","tags")
 
-local backends, lpdf, nodes = backends, lpdf, nodes
+local backends         = backends
+local lpdf             = lpdf
+local nodes            = nodes
 
 local nodeinjections   = backends.pdf.nodeinjections
 local codeinjections   = backends.pdf.codeinjections
@@ -47,11 +49,22 @@ local glyph_code       = nodecodes.glyph
 local a_tagged         = attributes.private('tagged')
 local a_image          = attributes.private('image')
 
-local traverse_nodes   = node.traverse
-local traverse_id      = node.traverse_id
-local tosequence       = nodes.tosequence
-local copy_node        = node.copy
-local slide_nodelist   = node.slide
+local nuts             = nodes.nuts
+local tonut            = nuts.tonut
+local tonode           = nuts.tonode
+
+local getid            = nuts.getid
+local getattr          = nuts.getattr
+local getprev          = nuts.getprev
+local getlist          = nuts.getlist
+local setfield         = nuts.setfield
+
+local traverse_nodes   = nuts.traverse
+local tosequence       = nuts.tosequence
+local copy_node        = nuts.copy
+local slide_nodelist   = nuts.slide
+local insert_before    = nuts.insert_before
+local insert_after     = nuts.insert_after
 
 local structure_stack = { }
 local structure_kids  = pdfarray()
@@ -175,7 +188,8 @@ local function makeelement(fulltag,parent)
 end
 
 local function makecontent(parent,start,stop,slist,id)
-    local tag, kids = parent.tag, parent.kids
+    local tag  = parent.tag
+    local kids = parent.kids
     local last = index
     if id == "image" then
         local d = pdfdictionary {
@@ -198,23 +212,16 @@ local function makecontent(parent,start,stop,slist,id)
     end
     --
     local bliteral = pdfliteral(format("/%s <</MCID %s>>BDC",tag,last))
-    local prev = start.prev
-    if prev then
-        prev.next, bliteral.prev = bliteral, prev
-    end
-    start.prev, bliteral.next = bliteral, start
-    if slist and slist.list == start then
-        slist.list = bliteral
-    elseif not prev then
+    local eliteral = pdfliteral("EMC")
+    --
+    if slist and getlist(slist) == start then
+        setfield(slist,"list",bliteral)
+    elseif not getprev(start) then
         report_tags("this can't happen: injection in front of nothing")
     end
     --
-    local eliteral = pdfliteral("EMC")
-    local next = stop.next
-    if next then
-        next.prev, eliteral.next = eliteral, next
-    end
-    stop.next, eliteral.prev = eliteral, stop
+    insert_before(start,start,bliteral)
+    insert_after(stop,stop,eliteral)
     --
     index = index + 1
     list[index] = parent.pref
@@ -227,9 +234,9 @@ local level, last, ranges, range = 0, nil, { }, nil
 
 local function collectranges(head,list)
     for n in traverse_nodes(head) do
-        local id = n.id -- 14: image, 8: literal (mp)
+        local id = getid(n) -- 14: image, 8: literal (mp)
         if id == glyph_code then
-            local at = n[a_tagged]
+            local at = getattr(n,a_tagged)
             if not at then
                 range = nil
             elseif last ~= at then
@@ -240,9 +247,9 @@ local function collectranges(head,list)
                 range[4] = n -- stop
             end
         elseif id == hlist_code or id == vlist_code then
-            local at = n[a_image]
+            local at = getattr(n,a_image)
             if at then
-                local at = n[a_tagged]
+                local at = getattr(n,a_tagged)
                 if not at then
                     range = nil
                 else
@@ -250,7 +257,7 @@ local function collectranges(head,list)
                 end
                 last = nil
             else
-                local nl = n.list
+                local nl = getlist(n)
                 slide_nodelist(nl) -- temporary hack till math gets slided (tracker item)
                 collectranges(nl,n)
             end
@@ -262,7 +269,7 @@ function nodeinjections.addtags(head)
     -- no need to adapt head, as we always operate on lists
     level, last, ranges, range = 0, nil, { }, nil
     initializepage()
-    collectranges(head)
+    collectranges(tonut(head))
     if trace_tags then
         for i=1,#ranges do
             local range = ranges[i]
@@ -289,13 +296,13 @@ function nodeinjections.addtags(head)
         local b, e = makecontent(prev,start,stop,list,id)
         if start == head then
             report_tags("this can't happen: parent list gets tagged")
-            head = b
+            head = tonode(b)
         end
     end
     finishpage()
     -- can be separate feature
     --
-    -- injectspans(head) -- does to work yet
+    -- injectspans(tonut(head)) -- does to work yet
     --
     return head, true
 end

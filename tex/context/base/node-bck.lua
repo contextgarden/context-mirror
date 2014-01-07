@@ -11,6 +11,8 @@ if not modules then modules = { } end modules ['node-bck'] = {
 
 local attributes, nodes, node = attributes, nodes, node
 
+local tasks             = nodes.tasks
+
 local nodecodes         = nodes.nodecodes
 local listcodes         = nodes.listcodes
 
@@ -19,11 +21,25 @@ local vlist_code        = nodecodes.vlist
 local glyph_code        = nodecodes.glyph
 local cell_code         = listcodes.cell
 
-local traverse          = node.traverse
-local traverse_id       = node.traverse_id
+local nuts              = nodes.nuts
+local nodepool          = nuts.pool
 
-local nodepool          = nodes.pool
-local tasks             = nodes.tasks
+local tonode            = nuts.tonode
+local tonut             = nuts.tonut
+
+local getfield          = nuts.getfield
+local setfield          = nuts.setfield
+local getnext           = nuts.getnext
+local getprev           = nuts.getprev
+local getid             = nuts.getid
+local getlist           = nuts.getlist
+local getattr           = nuts.getattr
+local setattr           = nuts.setattr
+local getsubtype        = nuts.getsubtype
+
+local traverse          = nuts.traverse
+local traverse_id       = nuts.traverse_id
+
 
 local new_rule          = nodepool.rule
 local new_glue          = nodepool.glue
@@ -37,50 +53,50 @@ local a_alignbackground = attributes.private('alignbackground')
 local function add_backgrounds(head) -- rather old code .. to be redone
     local current = head
     while current do
-        local id = current.id
+        local id = getid(current)
         if id == hlist_code or id == vlist_code then
-            local list = current.list
+            local list = getlist(current)
             if list then
                 local head = add_backgrounds(list)
                 if head then
-                    current.list = head
+                    setfield(current,"list",head)
                     list = head
                 end
             end
-            local width = current.width
+            local width = getfield(current,"width")
             if width > 0 then
-                local background = current[a_background]
+                local background = getattr(current,a_background)
                 if background then
                     -- direct to hbox
                     -- colorspace is already set so we can omit that and stick to color
-                    local mode = current[a_colorspace]
+                    local mode = getattr(current,a_colorspace)
                     if mode then
-                        local height = current.height
-                        local depth = current.depth
+                        local height = getfield(current,"height")
+                        local depth = getfield(current,"depth")
                         local skip = id == hlist_code and width or (height + depth)
                         local glue = new_glue(-skip)
                         local rule = new_rule(width,height,depth)
-                        local color = current[a_color]
-                        local transparency = current[a_transparency]
-                        rule[a_colorspace] = mode
+                        local color = getattr(current,a_color)
+                        local transparency = getattr(current,a_transparency)
+                        setattr(rule,a_colorspace,mode)
                         if color then
-                            rule[a_color] = color
+                            setattr(rule,a_color,color)
                         end
                         if transparency then
-                            rule[a_transparency] = transparency
+                            setattr(rule,a_transparency,transparency)
                         end
-                        rule.next = glue
-                        glue.prev = rule
+                        setfield(rule,"next",glue)
+                        setfield(glue,"prev",rule)
                         if list then
-                            glue.next = list
-                            list.prev = glue
+                            setfield(glue,"next",list)
+                            setfield(list,"prev",glue)
                         end
-                        current.list = rule
+                        setfield(current,"list",rule)
                     end
                 end
             end
         end
-        current = current.next
+        current = getnext(current)
     end
     return head, true
 end
@@ -88,16 +104,16 @@ end
 local function add_alignbackgrounds(head)
     local current = head
     while current do
-        local id = current.id
+        local id = getid(current)
         if id == hlist_code then
-            local list = current.list
+            local list = getlist(current)
             if not list then
                 -- no need to look
-            elseif current.subtype == cell_code then
+            elseif getsubtype(current) == cell_code then
                 local background = nil
                 local found = nil
              -- for l in traverse(list) do
-             --     background = l[a_alignbackground]
+             --     background = getattr(l,a_alignbackground)
              --     if background then
              --         found = l
              --         break
@@ -106,7 +122,7 @@ local function add_alignbackgrounds(head)
                 -- we know that it's a fake hlist (could be user node)
                 -- but we cannot store tables in user nodes yet
                 for l in traverse_id(hpack_code,list) do
-                    background = l[a_alignbackground]
+                    background = getattr(l,a_alignbackground)
                     if background then
                         found = l
                     end
@@ -115,28 +131,28 @@ local function add_alignbackgrounds(head)
                 --
                 if background then
                     -- current has subtype 5 (cell)
-                    local width = current.width
+                    local width = getfield(current,"width")
                     if width > 0 then
-                        local mode = found[a_colorspace]
+                        local mode = getattr(found,a_colorspace)
                         if mode then
                             local glue = new_glue(-width)
-                            local rule = new_rule(width,current.height,current.depth)
-                            local color = found[a_color]
-                            local transparency = found[a_transparency]
-                            rule[a_colorspace] = mode
+                            local rule = new_rule(width,getfield(current,"height"),getfield(current,"depth"))
+                            local color = getattr(found,a_color)
+                            local transparency = getattr(found,a_transparency)
+                            setattr(rule,a_colorspace,mode)
                             if color then
-                                rule[a_color] = color
+                                setattr(rule,a_color,color)
                             end
                             if transparency then
-                                rule[a_transparency] = transparency
+                                setattr(rule,a_transparency,transparency)
                             end
-                            rule.next = glue
-                            glue.prev = rule
+                            setfield(rule,"next",glue)
+                            setfield(glue,"prev",rule)
                             if list then
-                                glue.next = list
-                                list.prev = glue
+                                setfield(glue,"next",list)
+                                setfield(list,"prev",glue)
                             end
-                            current.list = rule
+                            setfield(current,"list",rule)
                         end
                     end
                 end
@@ -144,18 +160,21 @@ local function add_alignbackgrounds(head)
                 add_alignbackgrounds(list)
             end
         elseif id == vlist_code then
-            local list = current.list
+            local list = getlist(current)
             if list then
                 add_alignbackgrounds(list)
             end
         end
-        current = current.next
+        current = getnext(current)
     end
     return head, true
 end
 
-nodes.handlers.backgrounds      = add_backgrounds
-nodes.handlers.alignbackgrounds = add_alignbackgrounds
+-- nodes.handlers.backgrounds      = add_backgrounds
+-- nodes.handlers.alignbackgrounds = add_alignbackgrounds
+
+nodes.handlers.backgrounds      = function(head) local head, done = add_backgrounds     (tonut(head)) return tonode(head), done end
+nodes.handlers.alignbackgrounds = function(head) local head, done = add_alignbackgrounds(tonut(head)) return tonode(head), done end
 
 tasks.appendaction("shipouts","normalizers","nodes.handlers.backgrounds")
 tasks.appendaction("shipouts","normalizers","nodes.handlers.alignbackgrounds")

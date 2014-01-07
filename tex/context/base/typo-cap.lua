@@ -16,9 +16,23 @@ local report_casing = logs.reporter("typesetting","casing")
 
 local nodes, node = nodes, node
 
-local copy_node       = nodes.copy
-local end_of_math     = nodes.end_of_math
+local nuts            = nodes.nuts
+local tonode          = nuts.tonode
+local tonut           = nuts.tonut
 
+local getfield        = nuts.getfield
+local setfield        = nuts.setfield
+local getnext         = nuts.getnext
+local getprev         = nuts.getprev
+local getid           = nuts.getid
+local getattr         = nuts.getattr
+local setattr         = nuts.setattr
+local getfont         = nuts.getfont
+local getsubtype      = nuts.getsubtype
+local getchar         = nuts.getchar
+
+local copy_node       = nuts.copy
+local end_of_math     = nuts.end_of_math
 
 local nodecodes       = nodes.nodecodes
 local skipcodes       = nodes.skipcodes
@@ -96,14 +110,14 @@ local lccodes = characters.lccodes
 -- true false true == mixed
 
 local function helper(start,attr,lastfont,n,codes,special,once,keepother)
-    local char = start.char
+    local char = getchar(start)
     local dc   = codes[char]
     if dc then
-        local fnt = start.font
+        local fnt = getfont(start)
         if keepother and dc == char then
             local lfa = lastfont[n]
             if lfa then
-                start.font = lfa
+                setfield(start,"font",lfa)
                 return start, true
             else
                 return start, false
@@ -112,10 +126,10 @@ local function helper(start,attr,lastfont,n,codes,special,once,keepother)
             if special then
                 local lfa = lastfont[n]
                 if lfa then
-                    local previd = start.prev.id
+                    local previd = getid(getprev(start))
                     if previd ~= glyph_code and previd ~= disc_code then
                         fnt = lfa
-                        start.font = lfa
+                        setfield(start,"font",lfa)
                     end
                 end
             end
@@ -137,18 +151,18 @@ local function helper(start,attr,lastfont,n,codes,special,once,keepother)
                         local chr = dc[i]
                         prev = start
                         if i == 1 then
-                            start.char = chr
+                            setfield(start,"char",chr)
                         else
                             local g = copy_node(original)
-                            g.char = chr
-                            local next = start.next
-                            g.prev = start
+                            setfield(g,"char",chr)
+                            local next = getnext(start)
+                            setfield(g,"prev",start)
                             if next then
-                                g.next = next
-                                start.next = g
-                                next.prev = g
+                                setfield(g,"next",next)
+                                setfield(start,"next",g)
+                                setfield(next,"prev",g)
                             end
-                            start = g 
+                            start = g
                         end
                     end
                     if once then
@@ -161,7 +175,7 @@ local function helper(start,attr,lastfont,n,codes,special,once,keepother)
                 end
                 return start, false
             elseif ifc[dc] then
-                start.char = dc
+                setfield(start,"char",dc)
                 if once then
                     lastfont[n] = false
                 end
@@ -203,29 +217,29 @@ local function word(start,attr,lastfont,n)
 end
 
 local function blockrest(start)
-    local n = start.next
+    local n = getnext(start)
     while n do
-        local id = n.id
-        if id == glyph_code or id == disc_node and n[a_cases] == attr then
-            n[a_cases] = unsetvalue
+        local id = getid(n)
+        if id == glyph_code or id == disc_node and getattr(n,a_cases) == attr then
+            setattr(n,a_cases,unsetvalue)
         else
          -- break -- we can have nested mess
         end
-        n = n.next
+        n = getnext(n)
     end
 end
 
 local function Word(start,attr,lastfont,n) -- looks quite complex
     lastfont[n] = false
-    local prev = start.prev
-    if prev and prev.id == kern_code and prev.subtype == kerning_code then
-        prev = prev.prev
+    local prev = getprev(start)
+    if prev and getid(prev) == kern_code and getsubtype(prev) == kerning_code then
+        prev = getprev(prev)
     end
     if not prev then
         blockrest(start)
         return helper(start,attr,lastfont,n,uccodes)
     end
-    local previd = prev.id
+    local previd = getid(prev)
     if previd ~= glyph_code and previd ~= disc_code then
         -- only the first character is treated
         blockrest(start)
@@ -239,14 +253,14 @@ end
 
 local function Words(start,attr,lastfont,n)
     lastfont[n] = false
-    local prev = start.prev
-    if prev and prev.id == kern_code and prev.subtype == kerning_code then
-        prev = prev.prev
+    local prev = getprev(start)
+    if prev and getid(prev) == kern_code and getsubtype(prev) == kerning_code then
+        prev = getprev(prev)
     end
     if not prev then
         return helper(start,attr,lastfont,n,uccodes)
     end
-    local previd = prev.id
+    local previd = getid(prev)
     if previd ~= glyph_code and previd ~= disc_code then
         return helper(start,attr,lastfont,n,uccodes)
     else
@@ -272,15 +286,15 @@ end
 
 local function random(start,attr,lastfont,n)
     lastfont[n] = false
-    local ch  = start.char
-    local tfm = fontchar[start.font]
+    local ch  = getchar(start)
+    local tfm = fontchar[getfont(start)]
     if lccodes[ch] then
         while true do
             local d = chardata[randomnumber(1,0xFFFF)]
             if d then
                 local uc = uccodes[d]
                 if uc and tfm[uc] then -- this also intercepts tables
-                    start.char = uc
+                    setfield(start,"char",uc)
                     return start, true
                 end
             end
@@ -291,7 +305,7 @@ local function random(start,attr,lastfont,n)
             if d then
                 local lc = lccodes[d]
                 if lc and tfm[lc] then -- this also intercepts tables
-                    start.char = lc
+                    setfield(start,"char",lc)
                     return start, true
                 end
             end
@@ -314,19 +328,20 @@ register(variables.cap,     variables.capital) -- clone
 register(variables.Cap,     variables.Capital) -- clone
 
 function cases.handler(head) -- not real fast but also not used on much data
+    head           = tonut(head)
     local lastfont = { }
     local lastattr = nil
     local done     = false
     local start    = head
     while start do -- while because start can jump ahead
-        local id = start.id
+        local id = getid(start)
         if id == glyph_code then
-            local attr = start[a_cases]
+            local attr = getattr(start,a_cases)
             if attr and attr > 0 then
                 if attr ~= lastattr then
                     lastattr = attr
                 end
-                start[a_cases] = unsetvalue
+                setattr(start,a_cases,unsetvalue)
                 local n, id, m = get(attr)
                 if lastfont[n] == nil then
                     lastfont[n] = id
@@ -345,27 +360,27 @@ function cases.handler(head) -- not real fast but also not used on much data
                 end
             end
         elseif id == disc_code then
-            local attr = start[a_cases]
+            local attr = getattr(start,a_cases)
             if attr and attr > 0 then
                 if attr ~= lastattr then
                     lastattr = attr
                 end
-                start[a_cases] = unsetvalue
+                setattr(start,a_cases,unsetvalue)
                 local n, id, m = get(attr)
                 if lastfont[n] == nil then
                     lastfont[n] = id
                 end
                 local action = actions[n] -- map back to low number
                 if action then
-                    local replace = start.replace
+                    local replace = getfield(start,"replace")
                     if replace then
                         action(replace,attr,lastfont,n)
                     end
-                    local pre = start.pre
+                    local pre = getfield(start,"pre")
                     if pre then
                         action(pre,attr,lastfont,n)
                     end
-                    local post = start.post
+                    local post = getfield(start,"post")
                     if post then
                         action(post,attr,lastfont,n)
                     end
@@ -375,10 +390,10 @@ function cases.handler(head) -- not real fast but also not used on much data
             start = end_of_math(start)
         end
         if start then -- why test
-            start = start.next
+            start = getnext(start)
         end
     end
-    return head, done
+    return tonode(head), done
 end
 
 local enabled = false

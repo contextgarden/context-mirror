@@ -24,15 +24,31 @@ typesetters.initials    = initials or { }
 local nodes             = nodes
 local tasks             = nodes.tasks
 
-local hpack_nodes       = nodes.hpack
+local nuts              = nodes.nuts
+local tonut             = nuts.tonut
+local tonode            = nuts.tonode
+
+local getnext           = nuts.getnext
+local getprev           = nuts.getprev
+local getchar           = nuts.getchar
+local getid             = nuts.getid
+local getsubtype        = nuts.getsubtype
+local getfield          = nuts.getfield
+local getattr           = nuts.getattr
+
+local setfield          = nuts.setfield
+local setattr           = nuts.setattr
+
+local hpack_nodes       = nuts.hpack
+
 local nodecodes         = nodes.nodecodes
 local whatsitcodes      = nodes.whatsitcodes
 
-local nodepool          = nodes.pool
+local nodepool          = nuts.pool
 local new_kern          = nodepool.kern
 
-local insert_before     = nodes.insert_before
-local insert_after      = nodes.insert_after
+local insert_before     = nuts.insert_before
+local insert_after      = nuts.insert_after
 
 local variables         = interfaces.variables
 local v_default         = variables.default
@@ -86,48 +102,48 @@ commands.setinitial = initials.set
 
 actions[v_default] = function(head,setting)
     local done = false
-    if head.id == whatsit_code and head.subtype == localpar_code then
+    if getid(head) == whatsit_code and getsubtype(head) == localpar_code then
         -- begin of par
-        local first = head.next
+        local first = getnext(head)
         -- parbox .. needs to be set at 0
-        if first and first.id == hlist_code then
-            first = first.next
+        if first and getid(first) == hlist_code then
+            first = getnext(first)
         end
         -- we need to skip over kerns and glues (signals)
-        while first and first.id ~= glyph_code do
-            first = first.next
+        while first and getid(first) ~= glyph_code do
+            first = getnext(first)
         end
-        if first and first.id == glyph_code then
-            local char = first.char
-            local prev = first.prev
-            local next = first.next
-         -- if prev.id == hlist_code then
+        if first and getid(first) == glyph_code then
+            local char = getchar(first)
+            local prev = getprev(first)
+            local next = getnext(first)
+         -- if getid(prev) == hlist_code then
          --     -- set the width to 0
          -- end
-            if next and next.id == kern_node then
-                next.kern = 0
+            if next and getid(next) == kern_node then
+                setfield(next,"kern",0)
             end
             if setting.font then
-                first.font = setting.font
+                setfield(first,"font",setting.font)
             end
             if setting.dynamic > 0 then
-                first[0] = setting.dynamic
+                setattr(first,0,setting.dynamic)
             end
             -- can be a helper
             local ma = setting.ma or 0
             local ca = setting.ca
             local ta = setting.ta
             if ca and ca > 0 then
-                first[a_colorspace] = ma == 0 and 1 or ma
-                first[a_color] = ca
+                setattr(first,a_colorspace,ma == 0 and 1 or ma)
+                setattr(first,a_color,ca)
             end
             if ta and ta > 0 then
-                first[a_transparency] = ta
+                setattr(first,a_transparency,ta)
             end
             --
-            local width     = first.width
-            local height    = first.height
-            local depth     = first.depth
+            local width     = getfield(first,"width")
+            local height    = getfield(first,"height")
+            local depth     = getfield(first,"depth")
             local distance  = setting.distance or 0
             local voffset   = setting.voffset or 0
             local hoffset   = setting.hoffset or 0
@@ -135,22 +151,22 @@ actions[v_default] = function(head,setting)
             local baseline  = texget("baselineskip").width
             local lines     = tonumber(setting.n) or 0
             --
-            first.xoffset   = - width  - hoffset - distance - parindent
-            first.yoffset   = - voffset -- no longer - height here 
+            setfield(first,"xoffset",- width  - hoffset - distance - parindent)
+            setfield(first,"yoffset",- voffset) -- no longer - height here
             -- We pack so that successive handling cannot touch the dropped cap. Packaging
             -- in a hlist is also needed because we cannot locally adapt e.g. parindent (not
             -- yet stored in with localpar).
-            first.prev = nil
-            first.next = nil
+            setfield(first,"prev",nil)
+            setfield(first,"next",nil)
             local h = hpack_nodes(first)
-            h.width = 0
-            h.height = 0
-            h.depth = 0
-            prev.next = h
-            next.prev = h
-            h.next = next
-            h.prev = prev
-
+            setfield(h,"width",0)
+            setfield(h,"height",0)
+            setfield(h,"depth",0)
+            setfield(prev,"next",h)
+            setfield(next,"prev",h)
+            setfield(h,"next",next)
+            setfield(h,"prev",prev)
+            first = h
             -- end of packaging
             if setting.location == v_margin then
                 -- okay
@@ -178,16 +194,17 @@ actions[v_default] = function(head,setting)
 end
 
 function initials.handler(head)
+    head = tonut(head)
     local start = head
     local attr  = nil
     while start do
-        attr = start[a_initial]
+        attr = getattr(start,a_initial)
         if attr then
             break
-        elseif start.id == glyph then
+        elseif getid(start) == glyph then
             break
         else
-            start = start.next
+            start = getnext(start)
         end
     end
     if attr then
@@ -201,8 +218,8 @@ function initials.handler(head)
                 report_initials("processing initials, alternative %a",alternative)
             end
             local head, done = action(head,settings)
-            return head, done
+            return tonode(head), done
         end
     end
-    return head, false
+    return tonode(head), false
 end

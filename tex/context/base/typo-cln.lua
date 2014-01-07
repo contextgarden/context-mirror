@@ -28,7 +28,14 @@ local tasks           = nodes.tasks
 
 local texsetattribute = tex.setattribute
 
-local traverse_id     = node.traverse_id
+local nuts            = nodes.nuts
+local tonut           = nuts.tonut
+
+local setfield        = nuts.setfield
+local getchar         = nuts.getchar
+local getattr         = nuts.getattr
+
+local traverse_id     = nuts.traverse_id
 
 local unsetvalue      = attributes.unsetvalue
 
@@ -48,18 +55,18 @@ local resetter = { -- this will become an entry in char-def
 
 function cleaners.handler(head)
     local inline, done = false, false
-    for n in traverse_id(glyph_code,head) do
-        local char = n.char
+    for n in traverse_id(glyph_code,tonut(head)) do
+        local char = getchar(n)
         if resetter[char] then
             inline = false
         elseif not inline then
-            local a = n[a_cleaner]
+            local a = getattr(n,a_cleaner)
             if a == 1 then -- currently only one cleaner so no need to be fancy
                 local upper = uccodes[char]
                 if type(upper) == "table" then
                     -- some day, not much change that \SS ends up here
                 else
-                    n.char = upper
+                    setfield(n,"char",upper)
                     done = true
                     if trace_autocase then
                         report_autocase("")

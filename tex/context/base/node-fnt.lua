@@ -23,11 +23,23 @@ local fontdata          = fonthashes.identifiers
 
 local otf               = fonts.handlers.otf
 
-local traverse_id       = node.traverse_id
 local starttiming       = statistics.starttiming
 local stoptiming        = statistics.stoptiming
+
 local nodecodes         = nodes.nodecodes
 local handlers          = nodes.handlers
+
+local nuts              = nodes.nuts
+local tonut             = nuts.tonut
+
+local getattr           = nuts.getattr
+local getid             = nuts.getid
+local getfont           = nuts.getfont
+local getsubtype        = nuts.getsubtype
+local getchar           = nuts.getchar
+local getnext           = nuts.getnext
+
+local traverse_id       = nuts.traverse_id
 
 local glyph_code        = nodecodes.glyph
 local disc_code         = nodecodes.disc
@@ -109,25 +121,25 @@ function handlers.characters(head)
         report_fonts()
         report_fonts("checking node list, run %s",run)
         report_fonts()
-        local n = head
+        local n = tonut(head)
         while n do
-            local id = n.id
+            local id = getid(n)
             if id == glyph_code then
-                local font = n.font
-                local attr = n[0] or 0
-                report_fonts("font %03i, dynamic %03i, glyph %C",font,attr,n.char)
+                local font = getfont(n)
+                local attr = getattr(n,0) or 0
+                report_fonts("font %03i, dynamic %03i, glyph %C",font,attr,getchar(n))
             elseif id == disc_code then
                 report_fonts("[disc] %s",nodes.listtoutf(n,true,false,n))
             else
                 report_fonts("[%s]",nodecodes[id])
             end
-            n = n.next
+            n = getnext(n)
         end
     end
-    for n in traverse_id(glyph_code,head) do
-     -- if n.subtype<256 then -- all are 1
-        local font = n.font
-        local attr = n[0] or 0 -- zero attribute is reserved for fonts in context
+    for n in traverse_id(glyph_code,tonut(head)) do
+     -- if getsubtype(n) <256 then -- all are 1
+        local font = getfont(n)
+        local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
         if font ~= prevfont or attr ~= prevattr then
             if attr > 0 then
                 local used = attrfonts[font]
@@ -391,5 +403,8 @@ end
 --         return head, true
 --     end
 
-handlers.protectglyphs   = node.protect_glyphs
-handlers.unprotectglyphs = node.unprotect_glyphs
+local d_protect_glyphs   = nuts.protect_glyphs
+local d_unprotect_glyphs = nuts.unprotect_glyphs
+
+handlers.protectglyphs   = function(n) return d_protect_glyphs  (tonut(n)) end
+handlers.unprotectglyphs = function(n) return d_unprotect_glyphs(tonut(n)) end

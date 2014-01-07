@@ -26,101 +26,118 @@ local glue_code    = nodecodes.glue
 local kern_code    = nodecodes.kern
 local glyph_code   = nodecodes.glyph
 
-local new_penalty  = nodes.pool.penalty
-local new_hlist    = nodes.pool.hlist
-local new_glue     = nodes.pool.glue
+local nuts         = nodes.nuts
+local tonut        = nuts.tonut
+local tonode       = nuts.tonode
 
-local free_node    = nodes.free
-local copy_list    = nodes.copy_list
-local copy_node    = nodes.copy
-local find_tail    = nodes.tail
+local getfield     = nuts.getfield
+local getnext      = nuts.getnext
+local getprev      = nuts.getprev
+local getid        = nuts.getid
+local getlist      = nuts.getlist
+local getattribute = nuts.getattribute
+local getbox       = nuts.getbox
 
-local texsetbox    = tex.setbox
-local texgetbox    = tex.getbox
+local setfield     = nuts.setfield
+local setbox       = nuts.setbox
+
+local free_node    = nuts.free
+local copy_list    = nuts.copy_list
+local copy_node    = nuts.copy
+local find_tail    = nuts.tail
+
+local listtoutf    = nodes.listtoutf
+
+local nodepool     = nuts.pool
+local new_penalty  = nodepool.penalty
+local new_hlist    = nodepool.hlist
+local new_glue     = nodepool.glue
+
 local texget       = tex.get
 
-local function hyphenatedlist(list)
-    while list do
-        local id, next, prev = list.id, list.next, list.prev
+local function hyphenatedlist(head)
+    local current = head and tonut(head)
+    while current do
+        local id   = getid(current)
+        local next = getnext(current)
+        local prev = getprev(current)
         if id == disc_code then
-            local hyphen = list.pre
+            local hyphen = getfield(current,"pre")
             if hyphen then
                 local penalty = new_penalty(-500)
-                hyphen.next, penalty.prev = penalty, hyphen
-                prev.next, next.prev = hyphen, penalty
-                penalty.next, hyphen.prev = next, prev
-                list.pre = nil
-                free_node(list)
+                -- insert_after etc
+                setfield(hyphen,"next",penalty)
+                setfield(penalty,"prev",hyphen)
+                setfield(prev,"next",hyphen)
+                setfield(next,"prev", penalty)
+                setfield(penalty,"next",next)
+                setfield(hyphen,"prev",prev)
+                setfield(current,"pre",nil)
+                free_node(current)
             end
         elseif id == vlist_code or id == hlist_code then
-            hyphenatedlist(list.list)
+            hyphenatedlist(getlist(current))
         end
-        list = next
+        current = next
     end
 end
 
 commands.hyphenatedlist = hyphenatedlist
 
 function commands.showhyphenatedinlist(list)
-    report_hyphenation("show: %s",nodes.listtoutf(list,false,true))
+    report_hyphenation("show: %s",listtoutf(tonut(list),false,true))
 end
 
 local function checkedlist(list)
     if type(list) == "number" then
-        return texgetbox(list).list
+        return getlist(getbox(tonut(list)))
     else
-        return list
+        return tonut(list)
     end
 end
 
-local function applytochars(list,what,nested)
-    local doaction = context[what or "ruledhbox"]
-    local noaction = context
-    local current  = checkedlist(list)
+local function applytochars(current,doaction,noaction,nested)
     while current do
-        local id = current.id
+        local id = getid(current)
         if nested and (id == hlist_code or id == vlist_code) then
             context.beginhbox()
-            applytochars(current.list,what,nested)
+            applytochars(getlist(current),what,nested)
             context.endhbox()
         elseif id ~= glyph_code then
-            noaction(copy_node(current))
+            noaction(tonode(copy_node(current)))
         else
-            doaction(copy_node(current))
+            doaction(tonode(copy_node(current)))
         end
-        current = current.next
+        current = getnext(current)
     end
 end
 
-local function applytowords(list,what,nested)
-    local doaction = context[what or "ruledhbox"]
-    local noaction = context
-    local current  = checkedlist(list)
+local function applytowords(current,doaction,noaction,nested)
     local start
     while current do
-        local id = current.id
+        local id = getid(current)
         if id == glue_code then
             if start then
-                doaction(copy_list(start,current))
+                doaction(tonode(copy_list(start,current)))
                 start = nil
             end
-            noaction(copy_node(current))
+            noaction(tonode(copy_node(current)))
         elseif nested and (id == hlist_code or id == vlist_code) then
             context.beginhbox()
-            applytowords(current.list,what,nested)
+            applytowords(getlist(current),what,nested)
             context.egroup()
         elseif not start then
             start = current
         end
-        current = current.next
+        current = getnext(current)
     end
     if start then
-        doaction(copy_list(start))
+        doaction(tonode(copy_list(start)))
     end
 end
 
-commands.applytochars = applytochars
-commands.applytowords = applytowords
+commands.applytochars = function(list,what,nested) applytochars(checkedlist(list),context[what or "ruledhbox"],context,nested) end
+commands.applytowords = function(list,what,nested) applytowords(checkedlist(list),context[what or "ruledhbox"],context,nested) end
 
 local split_char = lpeg.Ct(lpeg.C(1)^0)
 local split_word = lpeg.tsplitat(lpeg.patterns.space)
@@ -176,36 +193,36 @@ end
 local a_vboxtohboxseparator = attributes.private("vboxtohboxseparator")
 
 function commands.vboxlisttohbox(original,target,inbetween)
-    local current = texgetbox(original).list
+    local current = getlist(getbox(original))
     local head = nil
     local tail = nil
     while current do
-        local id   = current.id
-        local next = current.next
+        local id   = getid(current)
+        local next = getnext(current)
         if id == hlist_code then
-            local list = current.list
+            local list = getlist(current)
             if head then
                 if inbetween > 0 then
                     local n = new_glue(0,0,inbetween)
-                    tail.next = n
-                    n.prev = tail
+                    setfield(tail,"next",n)
+                    setfield(n,"prev",tail)
                     tail = n
                 end
-                tail.next = list
-                list.prev = tail
+                setfield(tail,"next",list)
+                setfield(list,"prev",tail)
             else
                 head = list
             end
             tail = find_tail(list)
             -- remove last separator
-            if tail.id == hlist_code and tail[a_vboxtohboxseparator] == 1 then
+            if getid(tail) == hlist_code and getattribute(tail,a_vboxtohboxseparator) == 1 then
                 local temp = tail
-                local prev = tail.prev
+                local prev = getprev(tail)
                 if next then
-                    local list = tail.list
-                    prev.next = list
-                    list.prev = prev
-                    tail.list = nil
+                    local list = getlist(tail)
+                    setfield(prev,"next",list)
+                    setfield(list,"prev",prev)
+                    setfield(tail,"list",nil)
                     tail = find_tail(list)
                 else
                     tail = prev
@@ -213,21 +230,21 @@ function commands.vboxlisttohbox(original,target,inbetween)
                 free_node(temp)
             end
             -- done
-            tail.next = nil
-            current.list = nil
+            setfield(tail,"next",nil)
+            setfield(current,"list",nil)
         end
         current = next
     end
     local result = new_hlist()
-    result.list = head
-    texsetbox(target,result)
+    setfield(result,"list",head)
+    setbox(target,result)
 end
 
 function commands.hboxtovbox(original)
-    local b = texgetbox(original)
+    local b = getbox(original)
     local factor = texget("baselineskip").width / texget("hsize")
-    b.depth = 0
-    b.height = b.width * factor
+    setfield(b,"depth",0)
+    setfield(b,"height",getfield(b,"width") * factor)
 end
 
 function commands.boxtostring(n)

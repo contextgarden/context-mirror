@@ -14,15 +14,29 @@ if not modules then modules = { } end modules ['scrp-cjk'] = {
 -- sense either because otherwise a wanted space at the end of a
 -- line would have to be a hard coded ones.
 
-local utfchar = utf.char
+local utfchar = utf.getchar
 
-local insert_node_after  = nodes.insert_after
-local insert_node_before = nodes.insert_before
-local remove_node        = nodes.remove
-local copy_node          = nodes.copy
-local traverse_id        = nodes.traverse_id
+local nuts               = nodes.nuts
+local tonut              = nodes.tonut
+local tonode             = nodes.tonode
 
-local nodepool           = nodes.pool
+local insert_node_after  = nuts.insert_after
+local insert_node_before = nuts.insert_before
+local copy_node          = nuts.copy
+local remove_node        = nuts.remove
+local traverse_id        = nuts.traverse_id
+
+local getnext            = nuts.getnext
+local getprev            = nuts.getprev
+local getfont            = nuts.getfont
+local getchar            = nuts.getchar
+local getid              = nuts.getid
+local getattr            = nuts.getattr
+local getsubtype         = nuts.getsubtype
+local getfield           = nuts.getfield
+local setfield           = nuts.setfield
+
+local nodepool           = nuts.pool
 local new_glue           = nodepool.glue
 local new_kern           = nodepool.kern
 local new_penalty        = nodepool.penalty
@@ -88,20 +102,20 @@ end
 -- at font definition time and/or just assume a correct font
 
 local function trace_detail(current,what)
-    local prev = current.prev
-    local c_id = current.id
-    local p_id = prev and prev.id
+    local prev = getprev(current)
+    local c_id = getid(current)
+    local p_id = prev and getid(prev)
     if c_id == glyph_code then
-        local c_ch = current.char
+        local c_ch = getchar(current)
         if p_id == glyph_code then
-            local p_ch = p_id and prev.char
+            local p_ch = p_id and getchar(prev)
             report_details("[%C %a] [%s] [%C %a]",p_ch,hash[p_ch],what,c_ch,hash[c_ch])
         else
             report_details("[%s] [%C %a]",what,c_ch,hash[c_ch])
         end
     else
         if p_id == glyph_code then
-            local p_ch = p_id and prev.char
+            local p_ch = p_id and getchar(prev)
             report_details("[%C %a] [%s]",p_ch,hash[p_ch],what)
         else
             report_details("[%s]",what)
@@ -110,8 +124,8 @@ local function trace_detail(current,what)
 end
 
 local function trace_detail_between(p,n,what)
-    local p_ch = p.char
-    local n_ch = n.char
+    local p_ch = getchar(p)
+    local n_ch = getchar(n)
     report_details("[%C %a] [%s] [%C %a]",p_ch,hash[p_ch],what,n_ch,hash[n_ch])
 end
 
@@ -427,29 +441,29 @@ local function process(head,first,last)
     if first ~= last then
         local lastfont, previous, last = nil, "start", nil
         while true do
-            local upcoming, id = first.next, first.id
+            local upcoming, id = getnext(first), getid(first)
             if id == glyph_code then
-                local a = first[a_scriptstatus]
+                local a = getattr(first,a_scriptstatus)
                 local current = numbertocategory[a]
                 local action = injectors[previous]
                 if action then
                     action = action[current]
                     if action then
-                        local font = first.font
+                        local font = getfont(first)
                         if font ~= lastfont then
                             lastfont = font
-                            set_parameters(font,numbertodataset[first[a_scriptinjection]])
+                            set_parameters(font,numbertodataset[getattr(first,a_scriptinjection)])
                         end
                         action(head,first)
                     end
                 end
                 previous = current
             else -- glue
-                local p, n = first.prev, upcoming
+                local p, n = getprev(first), upcoming
                 if p and n then
-                    local pid, nid = p.id, n.id
+                    local pid, nid = getid(p), getid(n)
                     if pid == glyph_code and nid == glyph_code then
-                        local pa, na = p[a_scriptstatus], n[a_scriptstatus]
+                        local pa, na = getattr(p,a_scriptstatus), getattr(n,a_scriptstatus)
                         local pcjk, ncjk = pa and numbertocategory[pa], na and numbertocategory[na]
                         if not pcjk                 or not ncjk
                             or pcjk == "korean"     or ncjk == "korean"
@@ -495,23 +509,24 @@ scripts.installmethod {
 }
 
 function scripts.decomposehangul(head)
+    local head = tonut(head)
     local done = false
     for current in traverse_id(glyph_code,head) do
-        local lead_consonant, medial_vowel, tail_consonant = decomposed(current.char)
+        local lead_consonant, medial_vowel, tail_consonant = decomposed(getchar(current))
         if lead_consonant then
-            current.char = lead_consonant
+            setfield(current,"char",lead_consonant)
             local m = copy_node(current)
-            m.char = medial_vowel
+            setfield(m,"char",medial_vowel)
             head, current = insert_node_after(head,current,m)
             if tail_consonant then
                 local t = copy_node(current)
-                t.char = tail_consonant
+                setfield(t,"char",tail_consonant)
                 head, current = insert_node_after(head,current,t)
             end
             done = true
         end
     end
-    return head, done
+    return tonode(head), done
 end
 
 -- nodes.tasks.prependaction("processors","normalizers","scripts.decomposehangul")
@@ -682,29 +697,29 @@ local function process(head,first,last)
     if first ~= last then
         local lastfont, previous, last = nil, "start", nil
         while true do
-            local upcoming, id = first.next, first.id
+            local upcoming, id = getnext(first), getid(first)
             if id == glyph_code then
-                local a = first[a_scriptstatus]
+                local a = getattr(first,a_scriptstatus)
                 local current = numbertocategory[a]
                 local action = injectors[previous]
                 if action then
                     action = action[current]
                     if action then
-                        local font = first.font
+                        local font = getfont(first)
                         if font ~= lastfont then
                             lastfont = font
-                            set_parameters(font,numbertodataset[first[a_scriptinjection]])
+                            set_parameters(font,numbertodataset[getattr(first,a_scriptinjection)])
                         end
                         action(head,first)
                     end
                 end
                 previous = current
             else -- glue
-                local p, n = first.prev, upcoming
+                local p, n = getprev(first), upcoming
                 if p and n then
-                    local pid, nid = p.id, n.id
+                    local pid, nid = getid(p), getid(n)
                     if pid == glyph_code and nid == glyph_code then
-                        local pa, na = p[a_scriptstatus], n[a_scriptstatus]
+                        local pa, na = getattr(p,a_scriptstatus), getattr(n,a_scriptstatus)
                         local pcjk, ncjk = pa and numbertocategory[pa], na and numbertocategory[na]
                         if not pcjk                       or not ncjk
                             or pcjk == "korean"           or ncjk == "korean"
@@ -904,34 +919,32 @@ local function process(head,first,last)
     if first ~= last then
         local lastfont, previous, last = nil, "start", nil
         while true do
-            local upcoming, id = first.next, first.id
+            local upcoming, id = getnext(first), getid(first)
             if id == glyph_code then
-                local a = first[a_scriptstatus]
+                local a = getattr(first,a_scriptstatus)
                 local current = numbertocategory[a]
                 local action = injectors[previous]
                 if action then
                     action = action[current]
                     if action then
-                        local font = first.font
+                        local font = getfont(first)
                         if font ~= lastfont then
                             lastfont = font
-                            set_parameters(font,numbertodataset[first[a_scriptinjection]])
+                            set_parameters(font,numbertodataset[getattr(first,a_scriptinjection)])
                         end
                         action(head,first)
                     end
                 end
                 previous = current
-
--- elseif id == math_code then
---     upcoming = end_of_math(current).next
---     previous = "start"
-
+         -- elseif id == math_code then
+         --     upcoming = getnext(end_of_math(current))
+         --     previous = "start"
             else -- glue
-                local p, n = first.prev, upcoming -- we should remember prev
+                local p, n = getprev(first), upcoming -- we should remember prev
                 if p and n then
-                    local pid, nid = p.id, n.id
+                    local pid, nid = getid(p), getid(n)
                     if pid == glyph_code and nid == glyph_code then
-                        local pa, na = p[a_scriptstatus], n[a_scriptstatus]
+                        local pa, na = getattr(p,a_scriptstatus), getattr(n,a_scriptstatus)
                         local pcjk, ncjk = pa and numbertocategory[pa], na and numbertocategory[na]
                         if not pcjk                       or not ncjk
                             or pcjk == "korean"           or ncjk == "korean"
@@ -940,17 +953,17 @@ local function process(head,first,last)
                             or pcjk == "half_width_close" or ncjk == "half_width_open" then -- extra compared to korean
                             previous = "start"
                         else -- if head ~= first then
-if id == glue_code and first.subtype == userskip_code then -- also scriptstatus check?
-    -- for the moment no distinction possible between space and userskip
-    local w = first.spec.width
-    local s = spacedata[p.font]
-    if w == s then -- could be option
-        if trace_details then
-            trace_detail_between(p,n,"space removed")
-        end
-                            remove_node(head,first,true)
-    end
-end
+                            if id == glue_code and getsubtype(first) == userskip_code then -- also scriptstatus check?
+                                -- for the moment no distinction possible between space and userskip
+                                local w = getfield(getfield(first,"spec"),"width")
+                                local s = spacedata[getfont(p)]
+                                if w == s then -- could be option
+                                    if trace_details then
+                                        trace_detail_between(p,n,"space removed")
+                                    end
+                                    remove_node(head,first,true)
+                                end
+                            end
                             previous = pcjk
                     --    else
                     --        previous = pcjk

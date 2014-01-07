@@ -8,21 +8,27 @@ if not modules then modules = { } end modules ['node-typ'] = {
 
 -- code has been moved to blob-ini.lua
 
-local typesetters = nodes.typesetters or { }
-nodes.typesetters = typesetters
+local typesetters     = nodes.typesetters or { }
+nodes.typesetters     = typesetters
 
-local hpack_node_list = nodes.hpack
-local vpack_node_list = nodes.vpack
-local fast_hpack_list = nodes.fasthpack
+local nuts            = nodes.nuts
+local tonode          = nuts.tonode
+local tonut           = nuts.tonut
 
-local nodepool        = nodes.pool
+local setfield        = nuts.setfield
+
+local hpack_node_list = nuts.hpack
+local vpack_node_list = nuts.vpack
+local fast_hpack_list = nuts.fasthpack
+
+local nodepool        = nuts.pool
 local new_glyph       = nodepool.glyph
 local new_glue        = nodepool.glue
 
 local utfvalues       = utf.values
 
-local currentfont    = font.current
-local fontparameters = fonts.hashes.parameters
+local currentfont     = font.current
+local fontparameters  = fonts.hashes.parameters
 
 local function tonodes(str,fontid,spacing) -- quick and dirty
     local head, prev = nil, nil
@@ -53,8 +59,8 @@ local function tonodes(str,fontid,spacing) -- quick and dirty
         elseif not head then
             head = next
         else
-            prev.next = next
-            next.prev = prev
+            setfield(prev,"next",next)
+            setfield(next,"prev",prev)
         end
         prev = next
     end
@@ -77,17 +83,30 @@ end
 
 local tovpackfast = tovpack
 
-typesetters.tonodes     = tonodes
-typesetters.tohpack     = tohpack
-typesetters.tohpackfast = tohpackfast
-typesetters.tovpack     = tovpack
-typesetters.tovpackfast = tovpackfast
+local tnuts       = { }
+nuts.typesetters  = tnuts
 
-typesetters.hpack       = tohpack
-typesetters.fast_hpack  = tohpackfast
-typesetters.vpack       = tovpack
+tnuts.tonodes     = tonodes
+tnuts.tohpack     = tohpack
+tnuts.tohpackfast = tohpackfast
+tnuts.tovpack     = tovpack
+tnuts.tovpackfast = tovpackfast
+
+tnuts.hpack       = tohpack     -- obsolete
+tnuts.fast_hpack  = tohpackfast -- obsolete
+tnuts.vpack       = tovpack     -- obsolete
+
+typesetters.tonodes     = function(...) local h, b = tonodes    (...) return tonode(h), b end
+typesetters.tohpack     = function(...) local h, b = tohpack    (...) return tonode(h), b end
+typesetters.tohpackfast = function(...) local h, b = tohpackfast(...) return tonode(h), b end
+typesetters.tovpack     = function(...) local h, b = tovpack    (...) return tonode(h), b end
+typesetters.tovpackfast = function(...) local h, b = tovpackfast(...) return tonode(h), b end
+
+typesetters.hpack       = typesetters.tohpack     -- obsolete
+typesetters.fast_hpack  = typesetters.tofasthpack -- obsolete
+typesetters.vpack       = typesetters.tovpack     -- obsolete
 
 -- node.write(nodes.typestters.hpack("Hello World!"))
 -- node.write(nodes.typestters.hpack("Hello World!",1,100*1024*10))
 
-string.tonodes = tonodes -- quite convenient
+string.tonodes = function(...) return tonode(tonodes(...)) end  -- quite convenient

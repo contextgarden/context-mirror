@@ -26,7 +26,17 @@ words.threshold       = 4
 local numbers         = languages.numbers
 local registered      = languages.registered
 
-local traverse_nodes  = node.traverse
+local nuts            = nodes.nuts
+local tonut           = nuts.tonut
+
+local getfield        = nuts.getfield
+local getnext         = nuts.getnext
+local getid           = nuts.getid
+local getsubtype      = nuts.getsubtype
+local getchar         = nuts.getchar
+
+local traverse_nodes  = nuts.traverse
+
 local wordsdata       = words.data
 local chardata        = characters.data
 local tasks           = nodes.tasks
@@ -96,7 +106,7 @@ end
 -- there is an n=1 problem somewhere in nested boxes
 
 local function mark_words(head,whenfound) -- can be optimized and shared
-    local current, language, done = head, nil, nil, 0, false
+    local current, language, done = tonut(head), nil, nil, 0, false
     local str, s, nds, n = { }, 0, { }, 0 -- n could also be a table, saves calls
     local function action()
         if s > 0 then
@@ -112,9 +122,9 @@ local function mark_words(head,whenfound) -- can be optimized and shared
         n, s = 0, 0
     end
     while current do
-        local id = current.id
+        local id = getid(current)
         if id == glyph_code then
-            local a = current.lang
+            local a = getfield(current,"lang")
             if a then
                 if a ~= language then
                     if s > 0 then
@@ -126,16 +136,16 @@ local function mark_words(head,whenfound) -- can be optimized and shared
                 action()
                 language = a
             end
-            local components = current.components
+            local components = getfield(current,"components")
             if components then
                 n = n + 1
                 nds[n] = current
                 for g in traverse_nodes(components) do
                     s = s + 1
-                    str[s] = utfchar(g.char)
+                    str[s] = utfchar(getchar(g))
                 end
             else
-                local code = current.char
+                local code = getchar(current)
                 local data = chardata[code]
                 if is_letter[data.category] then
                     n = n + 1
@@ -151,12 +161,12 @@ local function mark_words(head,whenfound) -- can be optimized and shared
                 n = n + 1
                 nds[n] = current
             end
-        elseif id == kern_code and current.subtype == kerning_code and s > 0 then
+        elseif id == kern_code and getsubtype(current) == kerning_code and s > 0 then
             -- ok
         elseif s > 0 then
             action()
         end
-        current = current.next
+        current = getnext(current)
     end
     if s > 0 then
         action()

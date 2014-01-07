@@ -14,12 +14,22 @@ local glue_code           = nodecodes.glue
 local kern_code           = nodecodes.kern
 local penalty_code        = nodecodes.penalty
 
-local insert_node_after   = node.insert_after
-local new_penalty         = nodes.pool.penalty
-
 local unsetvalue          = attributes.unsetvalue
-
 local a_keeptogether      = attributes.private("keeptogether")
+
+local nuts                = nodes.nuts
+local tonut               = nuts.tonut
+
+local getfield            = nuts.getfield
+local setfield            = nuts.setfield
+local getnext             = nuts.getnext
+local getprev             = nuts.getprev
+local getid               = nuts.getid
+local getattr             = nuts.getattr
+local setattr             = nuts.setattr
+
+local insert_node_after   = nuts.insert_after
+local new_penalty         = nuts.pool.penalty
 
 local trace_keeptogether  = false
 local report_keeptogether = logs.reporter("parbuilders","keeptogether")
@@ -37,7 +47,7 @@ function builders.paragraphs.registertogether(line,specification) -- might chang
     if not enabled then
         nodes.tasks.enableaction("finalizers","builders.paragraphs.keeptogether")
     end
-    local a = line[a_keeptogether]
+    local a = getattr(line,a_keeptogether)
     local c = a and cache[a]
     if c then
         local height = specification.height
@@ -64,7 +74,7 @@ function builders.paragraphs.registertogether(line,specification) -- might chang
         if not specification.slack then
             specification.slack = 0
         end
-        line[a_keeptogether] = last
+        setattr(line,a_keeptogether,last)
     end
     if trace_keeptogether then
         local a = a or last
@@ -88,24 +98,24 @@ local function keeptogether(start,a)
     if start then
         local specification = cache[a]
         if a then
-            local current = start.next
+            local current = getnext(start)
             local previous = start
-            local total = previous.depth
+            local total = getfield(previous,"depth")
             local slack = specification.slack
             local threshold = specification.depth - slack
             if trace_keeptogether then
                 report_keeptogether("%s, index %s, total %p, threshold %p, slack %p","list",a,total,threshold,slack)
             end
             while current do
-                local id = current.id
+                local id = getid(current)
                 if id == vlist_code or id == hlist_code then
-                    total = total + current.height + current.depth
+                    total = total + getfield(current,"height") + getfield(current,"depth")
                     if trace_keeptogether then
                         report_keeptogether("%s, index %s, total %p, threshold %p","list",a,total,threshold)
                     end
                     if total <= threshold then
-                        if previous.id == penalty_code then
-                            previous.penalty = 10000
+                        if getid(previous) == penalty_code then
+                            setfield(previous,"penalty",10000)
                         else
                             insert_node_after(head,previous,new_penalty(10000))
                         end
@@ -114,13 +124,13 @@ local function keeptogether(start,a)
                     end
                 elseif id == glue_code then
                     -- hm, breakpoint, maybe turn this into kern
-                    total = total + current.spec.width
+                    total = total + getfield(getfield(current,"spec"),"width")
                     if trace_keeptogether then
                         report_keeptogether("%s, index %s, total %p, threshold %p","glue",a,total,threshold)
                     end
                     if total <= threshold then
-                        if previous.id == penalty_code then
-                            previous.penalty = 10000
+                        if getid(previous) == penalty_code then
+                            setfield(previous,"penalty",10000)
                         else
                             insert_node_after(head,previous,new_penalty(10000))
                         end
@@ -128,13 +138,13 @@ local function keeptogether(start,a)
                         break
                     end
                 elseif id == kern_code then
-                    total = total + current.kern
+                    total = total + getfield(current,"kern")
                     if trace_keeptogether then
                         report_keeptogether("%s, index %s, total %s, threshold %s","kern",a,total,threshold)
                     end
                     if total <= threshold then
-                        if previous.id == penalty_code then
-                            previous.penalty = 10000
+                        if getid(previous) == penalty_code then
+                            setfield(previous,"penalty",10000)
                         else
                             insert_node_after(head,previous,new_penalty(10000))
                         end
@@ -143,16 +153,16 @@ local function keeptogether(start,a)
                     end
                 elseif id == penalty_code then
                     if total <= threshold then
-                        if previous.id == penalty_code then
-                            previous.penalty = 10000
+                        if getid(previous) == penalty_code then
+                            setfield(previous,"penalty",10000)
                         end
-                        current.penalty = 10000
+                        setfield(current,"penalty",10000)
                     else
                         break
                     end
                 end
                 previous = current
-                current = current.next
+                current = getnext(current)
             end
         end
     end
@@ -162,18 +172,18 @@ end
 
 function builders.paragraphs.keeptogether(head)
     local done = false
-    local current = head
+    local current = tonut(head)
     while current do
-        if current.id == hlist_code then
-            local a = current[a_keeptogether]
+        if getid(current) == hlist_code then
+            local a = getattr(current,a_keeptogether)
             if a and a > 0 then
                 keeptogether(current,a)
-                current[a_keeptogether] = unsetvalue
+                setattr(current,a_keeptogether,unsetvalue)
                 cache[a] = nil
                 done = true
             end
         end
-        current = current.next
+        current = getnext(current)
     end
     return head, done
 end
