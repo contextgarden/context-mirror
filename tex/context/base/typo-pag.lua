@@ -6,6 +6,14 @@ if not modules then modules = { } end modules ['typo-pag'] = {
     license   = "see context related readme files"
 }
 
+
+builders                  = builders or { }
+local builders            = builders
+
+builders.paragraphs       = builders.paragraphs or { }
+local parbuilders         = builders.paragraphs
+
+local nodes               = nodes
 local nodecodes           = nodes.nodecodes
 
 local hlist_code          = nodecodes.hlist
@@ -43,7 +51,7 @@ trackers.register("parbuilders.keeptogether", function(v) trace_keeptogether  = 
 -- todo: also support lines = 3 etc (e.g. dropped caps) but how to set that
 -- when no hlists are there ? ... maybe the local_par
 
-function builders.paragraphs.registertogether(line,specification) -- might change
+function parbuilders.registertogether(line,specification) -- might change
     if not enabled then
         nodes.tasks.enableaction("finalizers","builders.paragraphs.keeptogether")
     end
@@ -170,7 +178,7 @@ end
 
 -- also look at first non glue/kern node e.g for a dropped caps
 
-function builders.paragraphs.keeptogether(head)
+function parbuilders.keeptogether(head)
     local done = false
     local current = tonut(head)
     while current do
