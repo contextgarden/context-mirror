@@ -10,7 +10,8 @@ if not modules then modules = { } end modules ['typo-bld'] = { -- was node-par
 
 local insert, remove = table.insert, table.remove
 
-local builders, nodes, node = builders, nodes, node
+builders                 = builders or { }
+local builders           = builders
 
 builders.paragraphs      = builders.paragraphs or { }
 local parbuilders        = builders.paragraphs
@@ -35,6 +36,7 @@ local texsetattribute    = tex.setattribute
 local texnest            = tex.nest
 local texlists           = tex.lists
 
+local nodes              = nodes
 local nodepool           = nodes.pool
 local new_baselineskip   = nodepool.baselineskip
 local new_lineskip       = nodepool.lineskip

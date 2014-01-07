@@ -28,7 +28,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2014.01.07 14:00}
+\edef\contextversion{2014.01.07 15:19}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -143,7 +143,6 @@
 
 \loadmarkfile{node-fin}
 \loadmarkfile{node-mig}
-\loadmarkfile{typo-bld} % par builders
 %loadmarkfile{node-pag}
 
 \loadmarkfile{back-ini}
@@ -171,6 +170,7 @@
 %loadmarkfile{supp-num} % obsolete
 
 \loadmarkfile{typo-ini}
+\loadmarkfile{typo-bld} % par builders
 
 \loadmkvifile{file-syn}
 \loadmkvifile{file-mod}
@@ -357,6 +357,7 @@
 \loadmkvifile{font-sel}
 
 \loadmarkfile{typo-tal}
+\loadmarkfile{typo-par} % par builders (uses fonts)
 
 \loadmarkfile{tabl-com}
 \loadmarkfile{tabl-pln}
@@ -401,7 +402,7 @@
 \loadmarkfile{scrp-ini}
 
 \loadmarkfile{lang-wrd} % can be optional (discussion with mm sideeffect)
-%loadmarkfile{lang-rep} % can be optional (bt 2013 side effect)
+\loadmarkfile{lang-rep} % can be optional (bt 2013 side effect)
 
 \loadmarkfile{prop-ini} % only for downward compatibility
 
