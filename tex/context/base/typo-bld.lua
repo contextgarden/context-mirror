@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['typo-bld'] = { -- was node-par
     license   = "see context related readme files"
 }
 
+-- no need for nuts in the one-line demo (that might move anyway)
+
 local insert, remove = table.insert, table.remove
 
 local builders, nodes, node = builders, nodes, node
@@ -36,8 +38,8 @@ local texlists           = tex.lists
 local nodepool           = nodes.pool
 local new_baselineskip   = nodepool.baselineskip
 local new_lineskip       = nodepool.lineskip
-local insert_node_before = node.insert_before
-local hpack_node         = node.hpack
+local insert_node_before = nodes.insert_before
+local hpack_node         = nodes.hpack
 
 local starttiming        = statistics.starttiming
 local stoptiming         = statistics.stoptiming

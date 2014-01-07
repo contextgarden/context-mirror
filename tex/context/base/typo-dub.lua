@@ -54,11 +54,25 @@ local directiondata       = characters.directions
 local mirrordata          = characters.mirrors
 local textclassdata       = characters.textclasses
 
-local remove_node         = nodes.remove
-local insert_node_after   = nodes.insert_after
-local insert_node_before  = nodes.insert_before
+local nuts                = nodes.nuts
+local tonut               = nuts.tonut
+local tonode              = nuts.tonode
+local nutstring           = nuts.tostring
 
-local nodepool            = nodes.pool
+local getnext             = nuts.getnext
+local getchar             = nuts.getchar
+local getid               = nuts.getid
+local getsubtype          = nuts.getsubtype
+local getlist             = nuts.getlist
+local getattr             = nuts.getattr
+local getfield            = nuts.getfield
+local setfield            = nuts.setfield
+
+local remove_node         = nuts.remove
+local insert_node_after   = nuts.insert_after
+local insert_node_before  = nuts.insert_before
+
+local nodepool            = nuts.pool
 local new_textdir         = nodepool.textdir
 
 local nodecodes           = nodes.nodecodes
@@ -242,17 +256,17 @@ local function build_list(head) -- todo: store node pointer ... saves loop
     local size    = 0
     while current do
         size = size + 1
-        local id = current.id
+        local id = getid(current)
         if id == glyph_code then
-            local chr = current.char
+            local chr = getchar(current)
             local dir = directiondata[chr]
             list[size] = { char = chr, direction = dir, original = dir, level = 0 }
-            current = current.next
+            current = getnext(current)
         elseif id == glue_code then
             list[size] = { char = 0x0020, direction = "ws", original = "ws", level = 0 }
-            current = current.next
-        elseif id == whatsit_code and current.subtype == dir_code then
-            local dir = current.dir
+            current = getnext(current)
+        elseif id == whatsit_code and getsubtype(current) == dir_code then
+            local dir = getfield(current,"dir")
             if dir == "+TLT" then
                 list[size] = { char = 0x202A, direction = "lre", original = "lre", level = 0 }
             elseif dir == "+TRT" then
@@ -262,27 +276,27 @@ local function build_list(head) -- todo: store node pointer ... saves loop
             else
                 list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, id = id } -- object replacement character
             end
-            current = current.next
+            current = getnext(current)
         elseif id == math_code then
             local skip = 0
-            current = current.next
-            while current.id ~= math_code do
+            current    = getnext(current)
+            while getid(current) ~= math_code do
                 skip    = skip + 1
-                current = current.next
+                current = getnext(current)
             end
             skip       = skip + 1
-            current    = current.next
+            current    = getnext(current)
             list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, skip = skip, id = id }
         else
             local skip = 0
             local last = id
-            current    = current.next
+            current    = getnext(current)
             while n do
-                local id = current.id
-                if id ~= glyph_code and id ~= glue_code and not (id == whatsit_code and current.subtype == dir_code) then
+                local id = getid(current)
+                if id ~= glyph_code and id ~= glue_code and not (id == whatsit_code and getsubtype(current) == dir_code) then
                     skip    = skip + 1
                     last    = id
-                    current = current.next
+                    current = getnext(current)
                 else
                     break
                 end
@@ -365,8 +379,8 @@ end
 -- the action
 
 local function get_baselevel(head,list,size) -- todo: skip if first is object (or pass head and test for local_par)
-	if head.id == whatsit_code and head.subtype == localpar_code then
-        if head.dir == "TRT" then
+    if getid(head) == whatsit_code and getsubtype(head) == localpar_code then
+        if getfield(head,"dir") == "TRT" then
             return 1, "TRT", true
         else
             return 0, "TLT", true
@@ -785,30 +799,30 @@ local function apply_to_list(list,size,head,pardir)
             report_directions("fatal error, size mismatch")
             break
         end
-        local id       = current.id
+        local id       = getid(current)
         local entry    = list[index]
         local begindir = entry.begindir
         local enddir   = entry.enddir
         if id == glyph_code then
             local mirror = entry.mirror
             if mirror then
-                current.char = mirror
+                setfield(current,"char",mirror)
             end
             if trace_directions then
                 local direction = entry.direction
                 setcolor(current,direction,direction ~= entry.original,mirror)
             end
         elseif id == hlist_code or id == vlist_code then
-            current.dir = pardir -- is this really needed?
+            setfield(current,"dir",pardir) -- is this really needed?
         elseif id == glue_code then
-            if enddir and current.subtype == parfillskip_code then
+            if enddir and getsubtype(current) == parfillskip_code then
                 -- insert the last enddir before \parfillskip glue
                 head = insert_node_before(head,current,new_textdir(enddir))
                 enddir = false
                 done = true
             end
         elseif id == whatsit_code then
-            if begindir and current.subtype == localpar_code then
+            if begindir and getsubtype(current) == localpar_code then
                 -- local_par should always be the 1st node
                 head, current = insert_node_after(head,current,new_textdir(begindir))
                 begindir = nil
@@ -822,7 +836,7 @@ local function apply_to_list(list,size,head,pardir)
         local skip = entry.skip
         if skip and skip > 0 then
             for i=1,skip do
-                current = current.next
+                current = getnext(current)
             end
         end
         if enddir then
@@ -830,13 +844,13 @@ local function apply_to_list(list,size,head,pardir)
             done = true
         end
         if not entry.remove then
-            current = current.next
+            current = getnext(current)
         elseif remove_controls then
             -- X9
             head, current = remove_node(head,current,true)
             done = true
         else
-            current = current.next
+            current = getnext(current)
         end
         index = index + 1
     end
@@ -844,8 +858,9 @@ local function apply_to_list(list,size,head,pardir)
 end
 
 local function process(head)
+    head = tonut(head)
     -- for the moment a whole paragraph property
-    local attr = head[a_directions]
+    local attr = getattr(head,a_directions)
     local analyze_fences = getfences(attr)
     --
     local list, size = build_list(head)
@@ -864,7 +879,7 @@ local function process(head)
         report_directions("result : %s",show_done(list,size))
     end
     head, done = apply_to_list(list,size,head,pardir)
-    return head, done
+    return tonode(head), done
 end
 
 directions.installhandler(interfaces.variables.two,process)

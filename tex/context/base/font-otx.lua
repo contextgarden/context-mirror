@@ -30,14 +30,28 @@ analyzers.methods         = methods
 
 local a_state             = attributes.private('state')
 
+local nuts                = nodes.nuts
+local tonut               = nuts.tonut
+
+local getfield            = nuts.getfield
+local getnext             = nuts.getnext
+local getprev             = nuts.getprev
+local getid               = nuts.getid
+local getattr             = nuts.getattr
+local getfont             = nuts.getfont
+local getsubtype          = nuts.getsubtype
+local getchar             = nuts.getchar
+
+local setattr             = nuts.setattr
+
+local traverse_id         = nuts.traverse_id
+local traverse_node_list  = nuts.traverse
+local end_of_math         = nuts.end_of_math
+
 local nodecodes           = nodes.nodecodes
 local glyph_code          = nodecodes.glyph
 local disc_code           = nodecodes.disc
 local math_code           = nodecodes.math
-
-local traverse_id         = node.traverse_id
-local traverse_node_list  = node.traverse
-local end_of_math         = node.end_of_math
 
 local fontdata            = fonts.hashes.identifiers
 local categories          = characters and characters.categories or { } -- sorry, only in context
@@ -95,60 +109,61 @@ analyzers.useunicodemarks = false
 -- todo: analyzers per script/lang, cross font, so we need an font id hash -> script
 -- e.g. latin -> hyphenate, arab -> 1/2/3 analyze -- its own namespace
 
-function analyzers.setstate(head,font)
+function analyzers.setstate(head,font) -- we can skip math
     local useunicodemarks  = analyzers.useunicodemarks
     local tfmdata = fontdata[font]
     local descriptions = tfmdata.descriptions
     local first, last, current, n, done = nil, nil, head, 0, false -- maybe make n boolean
+    current = tonut(current)
     while current do
-        local id = current.id
-        if id == glyph_code and current.font == font then
+        local id = getid(current)
+        if id == glyph_code and getfont(current) == font then
             done = true
-            local char = current.char
+            local char = getchar(current)
             local d = descriptions[char]
             if d then
                 if d.class == "mark" then
                     done = true
-                    current[a_state] = s_mark
+                    setattr(current,a_state,s_mark)
                 elseif useunicodemarks and categories[char] == "mn" then
                     done = true
-                    current[a_state] = s_mark
+                    setattr(current,a_state,s_mark)
                 elseif n == 0 then
                     first, last, n = current, current, 1
-                    current[a_state] = s_init
+                    setattr(current,a_state,s_init)
                 else
                     last, n = current, n+1
-                    current[a_state] = s_medi
+                    setattr(current,a_state,s_medi)
                 end
             else -- finish
                 if first and first == last then
-                    last[a_state] = s_isol
+                    setattr(last,a_state,s_isol)
                 elseif last then
-                    last[a_state] = s_fina
+                    setattr(last,a_state,s_fina)
                 end
                 first, last, n = nil, nil, 0
             end
         elseif id == disc_code then
             -- always in the middle
-            current[a_state] = s_medi
+            setattr(current,a_state,s_medi)
             last = current
         else -- finish
             if first and first == last then
-                last[a_state] = s_isol
+                setattr(last,a_state,s_isol)
             elseif last then
-                last[a_state] = s_fina
+                setattr(last,a_state,s_fina)
             end
             first, last, n = nil, nil, 0
             if id == math_code then
                 current = end_of_math(current)
             end
         end
-        current = current.next
+        current = getnext(current)
     end
     if first and first == last then
-        last[a_state] = s_isol
+        setattr(last,a_state,s_isol)
     elseif last then
-        last[a_state] = s_fina
+        setattr(last,a_state,s_fina)
     end
     return head, done
 end
@@ -209,7 +224,7 @@ methods.latn = analyzers.setstate
 local arab_warned = { }
 
 local function warning(current,what)
-    local char = current.char
+    local char = getchar(current)
     if not arab_warned[char] then
         log.report("analyze","arab: character %C has no %a class",char,what)
         arab_warned[char] = true
@@ -261,94 +276,95 @@ function methods.arab(head,font,attr)
     local first, last = nil, nil
     local c_first, c_last = nil, nil
     local current, done = head, false
+    current = tonut(current)
     while current do
-        local id = current.id
-        if id == glyph_code and current.font == font and current.subtype<256 and not current[a_state] then
+        local id = getid(current)
+        if id == glyph_code and getfont(current) == font and getsubtype(current)<256 and not getattr(current,a_state) then
             done = true
-            local char = current.char
+            local char = getchar(current)
             local classifier = classifiers[char]
             if not classifier then
                 if last then
                     if c_last == s_medi or c_last == s_fina then
-                        last[a_state] = s_fina
+                        setattr(last,a_state,s_fina)
                     else
                         warning(last,"fina")
-                        last[a_state] = s_error
+                        setattr(last,a_state,s_error)
                     end
                     first, last = nil, nil
                 elseif first then
                     if c_first == s_medi or c_first == s_fina then
-                        first[a_state] = s_isol
+                        setattr(first,a_state,s_isol)
                     else
                         warning(first,"isol")
-                        first[a_state] = s_error
+                        setattr(first,a_state,s_error)
                     end
                     first = nil
                 end
             elseif classifier == s_mark then
-                current[a_state] = s_mark
+                setattr(current,a_state,s_mark)
             elseif classifier == s_isol then
                 if last then
                     if c_last == s_medi or c_last == s_fina then
-                        last[a_state] = s_fina
+                        setattr(last,a_state,s_fina)
                     else
                         warning(last,"fina")
-                        last[a_state] = s_error
+                        setattr(last,a_state,s_error)
                     end
                     first, last = nil, nil
                 elseif first then
                     if c_first == s_medi or c_first == s_fina then
-                        first[a_state] = s_isol
+                        setattr(first,a_state,s_isol)
                     else
                         warning(first,"isol")
-                        first[a_state] = s_error
+                        setattr(first,a_state,s_error)
                     end
                     first = nil
                 end
-                current[a_state] = s_isol
+                setattr(current,a_state,s_isol)
             elseif classifier == s_medi then
                 if first then
                     last = current
                     c_last = classifier
-                    current[a_state] = s_medi
+                    setattr(current,a_state,s_medi)
                 else
-                    current[a_state] = s_init
+                    setattr(current,a_state,s_init)
                     first = current
                     c_first = classifier
                 end
             elseif classifier == s_fina then
                 if last then
-                    if last[a_state] ~= s_init then
-                        last[a_state] = s_medi
+                    if getattr(last,a_state) ~= s_init then
+                        setattr(last,a_state,s_medi)
                     end
-                    current[a_state] = s_fina
+                    setattr(current,a_state,s_fina)
                     first, last = nil, nil
                 elseif first then
-                 -- if first[a_state] ~= s_init then
+                 -- if getattr(first,a_state) ~= s_init then
                  --     -- needs checking
-                 --     first[a_state] = s_medi
+                 --     setattr(first,a_state,s_medi)
                  -- end
-                    current[a_state] = s_fina
+                    setattr(current,a_state,s_fina)
                     first = nil
                 else
-                    current[a_state] = s_isol
+                    setattr(current,a_state,s_isol)
                 end
             else -- classifier == s_rest
-                current[a_state] = s_rest
+                setattr(current,a_state,s_rest)
                 if last then
                     if c_last == s_medi or c_last == s_fina then
-                        last[a_state] = s_fina
+                        setattr(last,a_state,s_fina)
                     else
                         warning(last,"fina")
-                        last[a_state] = s_error
+                        setattr(last,a_state,s_error)
                     end
                     first, last = nil, nil
                 elseif first then
                     if c_first == s_medi or c_first == s_fina then
-                        first[a_state] = s_isol
+                        setattr(first,a_state,s_isol)
                     else
                         warning(first,"isol")
-                        first[a_state] = s_error
+                        setattr(first,a_state,s_error)
                     end
                     first = nil
                 end
@@ -356,18 +372,18 @@ function methods.arab(head,font,attr)
         else
             if last then
                 if c_last == s_medi or c_last == s_fina then
-                    last[a_state] = s_fina
+                    setattr(last,a_state,s_fina)
                 else
                     warning(last,"fina")
-                    last[a_state] = s_error
+                    setattr(last,a_state,s_error)
                 end
                 first, last = nil, nil
             elseif first then
                 if c_first == s_medi or c_first == s_fina then
-                    first[a_state] = s_isol
+                    setattr(first,a_state,s_isol)
                 else
                     warning(first,"isol")
-                    first[a_state] = s_error
+                    setattr(first,a_state,s_error)
                 end
                 first = nil
             end
@@ -375,21 +391,21 @@ function methods.arab(head,font,attr)
                 current = end_of_math(current)
             end
         end
-        current = current.next
+        current = getnext(current)
     end
     if last then
         if c_last == s_medi or c_last == s_fina then
-            last[a_state] = s_fina
+            setattr(last,a_state,s_fina)
         else
             warning(last,"fina")
-            last[a_state] = s_error
+            setattr(last,a_state,s_error)
         end
     elseif first then
         if c_first == s_medi or c_first == s_fina then
-            first[a_state] = s_isol
+            setattr(first,a_state,s_isol)
         else
             warning(first,"isol")
-            first[a_state] = s_error
+            setattr(first,a_state,s_error)
         end
     end
     return head, done

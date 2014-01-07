@@ -24,17 +24,30 @@ local math_code           = nodecodes.math
 
 local tasks               = nodes.tasks
 
-local insert_node_after   = node.insert_after
-local delete_node         = nodes.delete
-local end_of_math         = node.end_of_math
+local nuts                = nodes.nuts
+local nodepool            = nuts.pool
+
+local tonode              = nuts.tonode
+local tonut               = nuts.tonut
+
+local getfield            = nuts.getfield
+local getnext             = nuts.getnext
+local getid               = nuts.getid
+local getfont             = nuts.getfont
+local getchar             = nuts.getchar
+local getattr             = nuts.getattr
+
+local insert_node_after   = nuts.insert_after
+local delete_node         = nuts.delete
+local end_of_math         = nuts.end_of_math
 
 local texgetattribute     = tex.getattribute
 local texsetattribute     = tex.setattribute
 local a_italics           = attributes.private("italics")
 local unsetvalue          = attributes.unsetvalue
 
-local new_correction_kern = nodes.pool.fontkern
-local new_correction_glue = nodes.pool.glue
+local new_correction_kern = nodepool.fontkern
+local new_correction_glue = nodepool.glue
 
 local fonthashes          = fonts.hashes
 local fontdata            = fonthashes.identifiers
@@ -83,6 +96,7 @@ end
 -- todo: clear attribute
 
 function italics.handler(head)
+    head = tonut(head)
     local done     = false
     local italic   = 0
     local lastfont = nil
@@ -92,10 +106,10 @@ function italics.handler(head)
     local current  = head
     local inserted = nil
     while current do
-        local id = current.id
+        local id = getid(current)
         if id == glyph_code then
-            local font = current.font
-            local char = current.char
+            local font = getfont(current)
+            local char = getchar(current)
             local data = italicsdata[font]
             if font ~= lastfont then
                 if italic ~= 0 then
@@ -121,7 +135,7 @@ function italics.handler(head)
                 lastfont = font
             end
             if data then
-                local attr = forcedvariant or current[a_italics]
+                local attr = forcedvariant or getattr(current,a_italics)
                 if attr and attr > 0 then
                     local cd = data[char]
                     if not cd then
@@ -173,7 +187,7 @@ function italics.handler(head)
             italic = 0
             done = true
         end
-        current = current.next
+        current = getnext(current)
     end
     if italic ~= 0 and lastattr > 1 then -- more control is needed here
         if trace_italics then
@@ -182,7 +196,7 @@ function italics.handler(head)
         insert_node_after(head,previous,new_correction_kern(italic))
         done = true
     end
-    return head, done
+    return tonode(head), done
 end
 
 local enable

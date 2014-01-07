@@ -11,10 +11,22 @@ if not modules then modules = { } end modules ['math-tag'] = {
 local find, match = string.find, string.match
 local insert, remove = table.insert, table.remove
 
-local attributes, nodes = attributes, nodes
+local attributes          = attributes
+local nodes               = nodes
 
-local set_attributes      = nodes.setattributes
-local traverse_nodes      = node.traverse
+local nuts                = nodes.nuts
+local tonut               = nuts.tonut
+
+local getnext             = nuts.getnext
+local getid               = nuts.getid
+local getchar             = nuts.getchar
+local getlist             = nuts.getlist
+local getfield            = nuts.getfield
+local getattr             = nuts.getattr
+local setattr             = nuts.setattr
+
+local set_attributes      = nuts.setattributes
+local traverse_nodes      = nuts.traverse
 
 local nodecodes           = nodes.nodecodes
 
@@ -61,22 +73,24 @@ local function processsubsup(start)
     -- At some point we might need to add an attribute signaling the
     -- super- and subscripts because TeX and MathML use a different
     -- order.
-    local nucleus, sup, sub = start.nucleus, start.sup, start.sub
+    local nucleus = getfield(start,"nucleus")
+    local sup     = getfield(start,"sup")
+    local sub     = getfield(start,"sub")
     if sub then
         if sup then
-            start[a_tagged] = start_tagged("msubsup")
+            setattr(start,a_tagged,start_tagged("msubsup"))
             process(nucleus)
             process(sub)
             process(sup)
             stop_tagged()
         else
-            start[a_tagged] = start_tagged("msub")
+            setattr(start,a_tagged,start_tagged("msub"))
             process(nucleus)
             process(sub)
             stop_tagged()
         end
     elseif sup then
-        start[a_tagged] = start_tagged("msup")
+        setattr(start,a_tagged,start_tagged("msup"))
         process(nucleus)
         process(sup)
         stop_tagged()
@@ -93,11 +107,11 @@ local actionstack = { }
 
 process = function(start) -- we cannot use the processor as we have no finalizers (yet)
     while start do
-        local id = start.id
+        local id = getid(start)
         if id == math_char_code then
-            local char = start.char
+            local char = getchar(start)
             -- check for code
-            local a = start[a_mathcategory]
+            local a = getattr(start,a_mathcategory)
             if a then
                 a = { detail = a }
             end
@@ -119,22 +133,22 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             else
                 tag = "mo"
             end
-            start[a_tagged] = start_tagged(tag,a)
+            setattr(start,a_tagged,start_tagged(tag,a))
             stop_tagged()
             break -- okay?
         elseif id == math_textchar_code then
             -- check for code
-            local a = start[a_mathcategory]
+            local a = getattr(start,a_mathcategory)
             if a then
-                start[a_tagged] = start_tagged("ms",{ detail = a })
+                setattr(start,a_tagged,start_tagged("ms",{ detail = a }))
             else
-                start[a_tagged] = start_tagged("ms")
+                setattr(start,a_tagged,start_tagged("ms"))
             end
             stop_tagged()
             break
         elseif id == math_delim_code then
             -- check for code
-            start[a_tagged] = start_tagged("mo")
+            setattr(start,a_tagged,start_tagged("mo"))
             stop_tagged()
             break
         elseif id == math_style_code then
@@ -143,14 +157,14 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             processsubsup(start)
         elseif id == math_box_code or id == hlist_code or id == vlist_code then
             -- keep an eye on math_box_code and see what ends up in there
-            local attr = start[a_tagged]
+            local attr = getattr(start,a_tagged)
             local last = attr and taglist[attr]
             if last and find(last[#last],"formulacaption[:%-]") then
                 -- leave alone, will nicely move to the outer level
             else
                 local text = start_tagged("mtext")
-                start[a_tagged] = text
-                local list = start.list
+                setattr(start,a_tagged,text)
+                local list = getfield(start,"list")
                 if not list then
                     -- empty list
                 elseif not attr then
@@ -166,8 +180,8 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     local function runner(list) -- quite inefficient
                         local cache = { } -- we can have nested unboxed mess so best local to runner
                         for n in traverse_nodes(list) do
-                            local id = n.id
-                            local aa = n[a_tagged]
+                            local id = getid(n)
+                            local aa = getattr(n,a_tagged)
                             if aa then
                                 local ac = cache[aa]
                                 if not ac then
@@ -185,12 +199,12 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                                     end
                                     cache[aa] = ac
                                 end
-                                n[a_tagged] = ac
+                                setattr(n,a_tagged,ac)
                             else
-                                n[a_tagged] = text
+                                setattr(n,a_tagged,text)
                             end
                             if id == hlist_code or id == vlist_code then
-                                runner(n.list)
+                                runner(getlist(n))
                             end
                         end
                     end
@@ -199,47 +213,53 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 stop_tagged()
             end
         elseif id == math_sub_code then
-            local list = start.list
+            local list = getfield(start,"list")
             if list then
-                local attr = start[a_tagged]
+                local attr = getattr(start,a_tagged)
                 local last = attr and taglist[attr]
                 local action = last and match(last[#last],"maction:(.-)%-")
                 if action and action ~= "" then
                     if actionstack[#actionstack] == action then
-                        start[a_tagged] = start_tagged("mrow")
+                        setattr(start,a_tagged,start_tagged("mrow"))
                         process(list)
                         stop_tagged()
                     else
                         insert(actionstack,action)
-                        start[a_tagged] = start_tagged("mrow",{ detail = action })
+                        setattr(start,a_tagged,start_tagged("mrow",{ detail = action }))
                         process(list)
                         stop_tagged()
                         remove(actionstack)
                     end
                 else
-                    start[a_tagged] = start_tagged("mrow")
+                    setattr(start,a_tagged,start_tagged("mrow"))
                     process(list)
                     stop_tagged()
                 end
             end
         elseif id == math_fraction_code then
-            local num, denom, left, right = start.num, start.denom, start.left, start.right
+            local num   = getfield(start,"num")
+            local denom = getfield(start,"denom")
+            local left  = getfield(start,"left")
+            local right = getfield(start,"right")
             if left then
-               left[a_tagged] = start_tagged("mo")
+               setattr(left,a_tagged,start_tagged("mo"))
                process(left)
                stop_tagged()
             end
-            start[a_tagged] = start_tagged("mfrac")
+            setattr(start,a_tagged,start_tagged("mfrac"))
             process(num)
             process(denom)
             stop_tagged()
             if right then
-                right[a_tagged] = start_tagged("mo")
+                setattr(right,a_tagged,start_tagged("mo"))
                 process(right)
                 stop_tagged()
             end
         elseif id == math_choice_code then
-            local display, text, script, scriptscript = start.display, start.text, start.script, start.scriptscript
+            local display      = getfield(start,"display")
+            local text         = getfield(start,"text")
+            local script       = getfield(start,"script")
+            local scriptscript = getfield(start,"scriptscript")
             if display then
                 process(display)
             end
@@ -253,67 +273,69 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 process(scriptscript)
             end
         elseif id == math_fence_code then
-            local delim = start.delim
-            local subtype = start.subtype
+            local delim   = getfield(start,"delim")
+            local subtype = getfield(start,"subtype")
+         -- setattr(start,a_tagged,start_tagged("mfenced")) -- needs checking
             if subtype == 1 then
                 -- left
-                start[a_tagged] = start_tagged("mfenced")
                 if delim then
-                    start[a_tagged] = start_tagged("mleft")
+                    setattr(start,a_tagged,start_tagged("mleft"))
                     process(delim)
                     stop_tagged()
                 end
             elseif subtype == 2 then
                 -- middle
                 if delim then
-                    start[a_tagged] = start_tagged("mmiddle")
+                    setattr(start,a_tagged,start_tagged("mmiddle"))
                     process(delim)
                     stop_tagged()
                 end
             elseif subtype == 3 then
                 if delim then
-                    start[a_tagged] = start_tagged("mright")
+                    setattr(start,a_tagged,start_tagged("mright"))
                     process(delim)
                     stop_tagged()
                 end
-                stop_tagged()
             else
                 -- can't happen
             end
+         -- stop_tagged()
         elseif id == math_radical_code then
-            local left, degree = start.left, start.degree
+            local left   = getfield(start,"left")
+            local degree = getfield(start,"degree")
             if left then
                 start_tagged("")
                 process(left) -- root symbol, ignored
                 stop_tagged()
             end
             if degree then -- not good enough, can be empty mlist
-                start[a_tagged] = start_tagged("mroot")
+                setattr(start,a_tagged,start_tagged("mroot"))
                 processsubsup(start)
                 process(degree)
                 stop_tagged()
             else
-                start[a_tagged] = start_tagged("msqrt")
+                setattr(start,a_tagged,start_tagged("msqrt"))
                 processsubsup(start)
                 stop_tagged()
             end
         elseif id == math_accent_code then
-            local accent, bot_accent = start.accent, start.bot_accent
+            local accent     = getfield(start,"accent")
+            local bot_accent = getfield(start,"bot_accent")
             if bot_accent then
                 if accent then
-                    start[a_tagged] = start_tagged("munderover",{ detail = "accent" })
+                    setattr(start,a_tagged,start_tagged("munderover",{ detail = "accent" }))
                     processsubsup(start)
                     process(bot_accent)
                     process(accent)
                     stop_tagged()
                 else
-                    start[a_tagged] = start_tagged("munder",{ detail = "accent" })
+                    setattr(start,a_tagged,start_tagged("munder",{ detail = "accent" }))
                     processsubsup(start)
                     process(bot_accent)
                     stop_tagged()
                 end
             elseif accent then
-                start[a_tagged] = start_tagged("mover",{ detail = "accent" })
+                setattr(start,a_tagged,start_tagged("mover",{ detail = "accent" }))
                 processsubsup(start)
                 process(accent)
                 stop_tagged()
@@ -321,22 +343,23 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 processsubsup(start)
             end
         elseif id == glue_code then
-            start[a_tagged] = start_tagged("mspace")
+            setattr(start,a_tagged,start_tagged("mspace"))
             stop_tagged()
         else
-            start[a_tagged] = start_tagged("merror", { detail = nodecodes[i] })
+            setattr(start,a_tagged,start_tagged("merror", { detail = nodecodes[i] }))
             stop_tagged()
         end
-        start = start.next
+        start = getnext(start)
     end
 end
 
 function noads.handlers.tags(head,style,penalties)
+    head = tonut(head)
     local v_math = start_tagged("math")
     local v_mrow = start_tagged("mrow")
-    local v_mode = head[a_mathmode]
-    head[a_tagged] = v_math
-    head[a_tagged] = v_mrow
+    local v_mode = getattr(head,a_mathmode)
+ -- setattr(head,a_tagged,v_math)
+    setattr(head,a_tagged,v_mrow)
     tags.setattributehash(v_math,"mode",v_mode == 1 and "display" or "inline")
     process(head)
     stop_tagged()

@@ -23,25 +23,38 @@ local firstlines         = typesetters.firstlines
 local nodes              = nodes
 local tasks              = nodes.tasks
 
-local getbox             = nodes.getbox
+local nuts               = nodes.nuts
+local tonut              = nuts.tonut
+local tonode             = nuts.tonode
+
+local getnext            = nuts.getnext
+local getid              = nuts.getid
+local getfield           = nuts.getfield
+local getlist            = nuts.getlist
+local getattr            = nuts.getattr
+local getbox             = nuts.getbox
+
+local setfield           = nuts.setfield
+local setattr            = nuts.setattr
+
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
 local disc_code          = nodecodes.disc
 local kern_code          = nodecodes.kern
 
-local traverse_id        = nodes.traverse_id
-local free_node_list     = nodes.flush_list
-local free_node          = nodes.flush_node
-local copy_node_list     = nodes.copy_list
-local insert_node_after  = nodes.insert_after
-local insert_node_before = nodes.insert_before
-local hpack_node_list    = nodes.hpack
-local remove_node        = nodes.remove
+local traverse_id        = nuts.traverse_id
+local free_node_list     = nuts.flush_list
+local free_node          = nuts.flush_node
+local copy_node_list     = nuts.copy_list
+local insert_node_after  = nuts.insert_after
+local insert_node_before = nuts.insert_before
+local hpack_node_list    = nuts.hpack
+local remove_node        = nuts.remove
 
-local nodepool           = nodes.pool
+local nodepool           = nuts.pool
 local newpenalty         = nodepool.penalty
 local newkern            = nodepool.kern
-local tracerrule         = nodes.tracers.pool.nodes.rule
+local tracerrule         = nodes.tracers.pool.nuts.rule
 
 local actions            = { }
 firstlines.actions       = actions
@@ -92,9 +105,9 @@ actions[v_line] = function(head,setting)
     local linebreaks = { }
     for g in traverse_id(glyph_code,temp) do
         if dynamic > 0 then
-            g[0] = dynamic
+            setattr(g,0,dynamic)
         end
-        g.font = font
+        setfield(g,"font",font)
     end
     local start = temp
     local list  = temp
@@ -108,7 +121,7 @@ actions[v_line] = function(head,setting)
             hsize = hsize - hangindent
         end
         while start do
-            local id = start.id
+            local id = getid(start)
             if id == glyph_code then
                 n = n + 1
             elseif id == disc_code then
@@ -117,7 +130,7 @@ actions[v_line] = function(head,setting)
                 -- this could be an option
             elseif n > 0 then
                 local pack = hpack_node_list(copy_node_list(list,start))
-                if pack.width > hsize then
+                if getfield(pack,"width") > hsize then
                     free_node_list(pack)
                     list = prev
                     break
@@ -128,7 +141,7 @@ actions[v_line] = function(head,setting)
                     nofchars = n
                 end
             end
-            start = start.next
+            start = getnext(start)
         end
         if not linebreaks[i] then
             linebreaks[i] = n
@@ -139,18 +152,18 @@ actions[v_line] = function(head,setting)
     for i=1,noflines do
         local linebreak = linebreaks[i]
         while start and n < nofchars do
-            local id = start.id
+            local id = getid(start)
             if id == glyph_code then -- or id == disc_code then
                 if dynamic > 0 then
-                    start[0] = dynamic
+                    setattr(start,0,dynamic)
                 end
-                start.font = font
+                setfield(start,"font",font)
                 if ca and ca > 0 then
-                    start[a_colorspace] = ma == 0 and 1 or ma
-                    start[a_color]      = ca
+                    setattr(start,a_colorspace,ma == 0 and 1 or ma)
+                    setattr(start,a_color,ca)
                 end
                 if ta and ta > 0 then
-                    start[a_transparency] = ta
+                    setattr(start,a_transparency,ta)
                 end
                 n = n + 1
             end
@@ -163,7 +176,7 @@ actions[v_line] = function(head,setting)
                 head, start = insert_node_after(head,start,newpenalty(-10000)) -- break
                 break
             end
-            start = start.next
+            start = getnext(start)
         end
     end
     free_node_list(temp)
@@ -182,7 +195,7 @@ actions[v_word] = function(head,setting)
     local ca       = setting.ca
     local ta       = setting.ta
     while start do
-        local id = start.id
+        local id = getid(start)
         -- todo: delete disc nodes
         if id == glyph_code then
             if not ok then
@@ -190,16 +203,16 @@ actions[v_word] = function(head,setting)
                 ok = true
             end
             if ca and ca > 0 then
-                start[a_colorspace] = ma == 0 and 1 or ma
-                start[a_color]      = ca
+                setattr(start,a_colorspace,ma == 0 and 1 or ma)
+                setattr(start,a_color,ca)
             end
             if ta and ta > 0 then
-                start[a_transparency] = ta
+                setattr(start,a_transparency,ta)
             end
             if dynamic > 0 then
-                start[0] = dynamic
+                setattr(start,0,dynamic)
             end
-            start.font = font
+            setfield(start,"font",font)
         elseif id == disc_code then
             -- continue
         elseif id == kern_code then -- todo: fontkern
@@ -210,7 +223,7 @@ actions[v_word] = function(head,setting)
                 break
             end
         end
-        start = start.next
+        start = getnext(start)
     end
     return head, true
 end
@@ -218,16 +231,17 @@ end
 actions[v_default] = actions[v_line]
 
 function firstlines.handler(head)
+    head = tonut(head)
     local start = head
     local attr  = nil
     while start do
-        attr = start[a_firstline]
+        attr = getattr(start,a_firstline)
         if attr then
             break
-        elseif start.id == glyph then
+        elseif getid(start) == glyph_code then
             break
         else
-            start = start.next
+            start = getnext(start)
         end
     end
     if attr then
@@ -240,17 +254,18 @@ function firstlines.handler(head)
             if trace_firstlines then
                 report_firstlines("processing firstlines, alternative %a",alternative)
             end
-            return action(head,settings)
+            local head, done = action(head,settings)
+            return tonode(head), done
         end
     end
-    return head, false
+    return tonode(head), false
 end
 
 -- goodie
 
 function commands.applytofirstcharacter(box,what)
     local tbox = getbox(box) -- assumes hlist
-    local list = tbox.list
+    local list = getlist(tbox)
     local done = nil
     for n in traverse_id(glyph_code,list) do
         list = remove_node(list,n)
@@ -258,10 +273,10 @@ function commands.applytofirstcharacter(box,what)
         break
     end
     if done then
-        tbox.list = list
+        setfield(tbox,"list",list)
         local kind = type(what)
         if kind == "string" then
-            context[what](done)
+            context[what](tonode(done))
         elseif kind == "function" then
             what(done)
         else

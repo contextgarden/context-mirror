@@ -18,13 +18,8 @@ local report_nodes = logs.reporter("nodes","housekeeping")
 
 local nodes, node = nodes, node
 
-local copy_node    = node.copy
-local free_node    = node.free
-local free_list    = node.flush_list
-local new_node     = node.new
-
 nodes.pool         = nodes.pool or { }
-local pool         = nodes.pool
+local nodepool     = nodes.pool
 
 local whatsitcodes = nodes.whatsitcodes
 local skipcodes    = nodes.skipcodes
@@ -35,329 +30,13 @@ local glyph_code   = nodecodes.glyph
 
 local allocate     = utilities.storage.allocate
 
-local texgetbox    = tex.getbox
 local texgetcount  = tex.getcount
 
 local reserved, nofreserved = { }, 0
 
-local function register_node(n)
-    nofreserved = nofreserved + 1
-    reserved[nofreserved] = n
-    return n
-end
+-- user nodes
 
-pool.register = register_node
-
-function pool.cleanup(nofboxes) -- todo
-    if nodes.tracers.steppers then -- to be resolved
-        nodes.tracers.steppers.reset() -- todo: make a registration subsystem
-    end
-    local nl, nr = 0, nofreserved
-    for i=1,nofreserved do
-        local ri = reserved[i]
-    --  if not (ri.id == glue_spec and not ri.is_writable) then
-            free_node(reserved[i])
-    --  end
-    end
-    if nofboxes then
-        for i=0,nofboxes do
-            local l = texgetbox(i)
-            if l then
-                free_node(l) -- also list ?
-                nl = nl + 1
-            end
-        end
-    end
-    reserved = { }
-    nofreserved = 0
-    return nr, nl, nofboxes -- can be nil
-end
-
-function pool.usage()
-    local t = { }
-    for n, tag in gmatch(status.node_mem_usage,"(%d+) ([a-z_]+)") do
-        t[tag] = n
-    end
-    return t
-end
-
-local disc              = register_node(new_node("disc"))
-local kern              = register_node(new_node("kern",kerncodes.userkern))
-local fontkern          = register_node(new_node("kern",kerncodes.fontkern))
-local penalty           = register_node(new_node("penalty"))
-local glue              = register_node(new_node("glue")) -- glue.spec = nil
-local glue_spec         = register_node(new_node("glue_spec"))
-local glyph             = register_node(new_node("glyph",0))
-local textdir           = register_node(new_node("whatsit",whatsitcodes.dir))
-local latelua           = register_node(new_node("whatsit",whatsitcodes.latelua))
-local special           = register_node(new_node("whatsit",whatsitcodes.special))
-local user_n            = register_node(new_node("whatsit",whatsitcodes.userdefined)) user_n.type = 100 -- 44
-local user_l            = register_node(new_node("whatsit",whatsitcodes.userdefined)) user_l.type = 110 -- 44
-local user_s            = register_node(new_node("whatsit",whatsitcodes.userdefined)) user_s.type = 115 -- 44
-local user_t            = register_node(new_node("whatsit",whatsitcodes.userdefined)) user_t.type = 116 -- 44
-local left_margin_kern  = register_node(new_node("margin_kern",0))
-local right_margin_kern = register_node(new_node("margin_kern",1))
-local lineskip          = register_node(new_node("glue",skipcodes.lineskip))
-local baselineskip      = register_node(new_node("glue",skipcodes.baselineskip))
-local leftskip          = register_node(new_node("glue",skipcodes.leftskip))
-local rightskip         = register_node(new_node("glue",skipcodes.rightskip))
-local temp              = register_node(new_node("temp",0))
-local noad              = register_node(new_node("noad"))
-
--- the dir field needs to be set otherwise crash:
-
-local rule              = register_node(new_node("rule"))  rule .dir = "TLT"
-local hlist             = register_node(new_node("hlist")) hlist.dir = "TLT"
-local vlist             = register_node(new_node("vlist")) vlist.dir = "TLT"
-
-function pool.zeroglue(n)
-    local s = n.spec
-    return not writable or (
-                     s.width == 0
-         and       s.stretch == 0
-         and        s.shrink == 0
-         and s.stretch_order == 0
-         and  s.shrink_order == 0
-        )
-end
-
-function pool.glyph(fnt,chr)
-    local n = copy_node(glyph)
-    if fnt then n.font = fnt end
-    if chr then n.char = chr end
-    return n
-end
-
-function pool.penalty(p)
-    local n = copy_node(penalty)
-    n.penalty = p
-    return n
-end
-
-function pool.kern(k)
-    local n = copy_node(kern)
-    n.kern = k
-    return n
-end
-
-function pool.fontkern(k)
-    local n = copy_node(fontkern)
-    n.kern = k
-    return n
-end
-
-function pool.gluespec(width,stretch,shrink,stretch_order,shrink_order)
-    local s = copy_node(glue_spec)
-    if width         then s.width         = width         end
-    if stretch       then s.stretch       = stretch       end
-    if shrink        then s.shrink        = shrink        end
-    if stretch_order then s.stretch_order = stretch_order end
-    if shrink_order  then s.shrink_order  = shrink_order  end
-    return s
-end
-
-local function someskip(skip,width,stretch,shrink,stretch_order,shrink_order)
-    local n = copy_node(skip)
-    if not width then
-        -- no spec
-    elseif width == false or tonumber(width) then
-        local s = copy_node(glue_spec)
-        if width         then s.width         = width         end
-        if stretch       then s.stretch       = stretch       end
-        if shrink        then s.shrink        = shrink        end
-        if stretch_order then s.stretch_order = stretch_order end
-        if shrink_order  then s.shrink_order  = shrink_order  end
-        n.spec = s
-    else
-        -- shared
-        n.spec = copy_node(width)
-    end
-    return n
-end
-
-function pool.stretch(a,b)
-    local n = copy_node(glue)
-    local s = copy_node(glue_spec)
-    if b then
-        s.stretch       = a
-        s.stretch_order = b
-    else
-        s.stretch       = 1
-        s.stretch_order = a or 1
-    end
-    n.spec = s
-    return n
-end
-
-function pool.shrink(a,b)
-    local n = copy_node(glue)
-    local s = copy_node(glue_spec)
-    if b then
-        s.shrink       = a
-        s.shrink_order = b
-    else
-        s.shrink       = 1
-        s.shrink_order = a or 1
-    end
-    n.spec = s
-    return n
-end
-
-
-function pool.glue(width,stretch,shrink,stretch_order,shrink_order)
-    return someskip(glue,width,stretch,shrink,stretch_order,shrink_order)
-end
-
-function pool.leftskip(width,stretch,shrink,stretch_order,shrink_order)
-    return someskip(leftskip,width,stretch,shrink,stretch_order,shrink_order)
-end
-
-function pool.rightskip(width,stretch,shrink,stretch_order,shrink_order)
-    return someskip(rightskip,width,stretch,shrink,stretch_order,shrink_order)
-end
-
-function pool.lineskip(width,stretch,shrink,stretch_order,shrink_order)
-    return someskip(lineskip,width,stretch,shrink,stretch_order,shrink_order)
-end
-
-function pool.baselineskip(width,stretch,shrink)
-    return someskip(baselineskip,width,stretch,shrink)
-end
-
-function pool.disc()
-    return copy_node(disc)
-end
-
-function pool.textdir(dir)
-    local t = copy_node(textdir)
-    t.dir = dir
-    return t
-end
-
-function pool.rule(width,height,depth,dir) -- w/h/d == nil will let them adapt
-    local n = copy_node(rule)
-    if width  then n.width  = width  end
-    if height then n.height = height end
-    if depth  then n.depth  = depth  end
-    if dir    then n.dir    = dir    end
-    return n
-end
-
-if node.has_field(latelua,'string') then
-    function pool.latelua(code)
-        local n = copy_node(latelua)
-        n.string = code
-        return n
-    end
-else
-    function pool.latelua(code)
-        local n = copy_node(latelua)
-        n.data = code
-        return n
-    end
-end
-
-function pool.leftmarginkern(glyph,width)
-    local n = copy_node(left_margin_kern)
-    if not glyph then
-        report_nodes("invalid pointer to left margin glyph node")
-    elseif glyph.id ~= glyph_code then
-        report_nodes("invalid node type %a for %s margin glyph node",nodecodes[glyph],"left")
-    else
-        n.glyph = glyph
-    end
-    if width then
-        n.width = width
-    end
-    return n
-end
-
-function pool.rightmarginkern(glyph,width)
-    local n = copy_node(right_margin_kern)
-    if not glyph then
-        report_nodes("invalid pointer to right margin glyph node")
-    elseif glyph.id ~= glyph_code then
-        report_nodes("invalid node type %a for %s margin glyph node",nodecodes[p],"right")
-    else
-        n.glyph = glyph
-    end
-    if width then
-        n.width = width
-    end
-    return n
-end
-
-function pool.temp()
-    return copy_node(temp)
-end
-
-function pool.noad()
-    return copy_node(noad)
-end
-
-function pool.hlist(list,width,height,depth)
-    local n = copy_node(hlist)
-    if list then
-        n.list = list
-    end
-    if width then
-        n.width = width
-    end
-    if height then
-        n.height = height
-    end
-    if depth then
-        n.depth = depth
-    end
-    return n
-end
-
-function pool.vlist(list,width,height,depth)
-    local n = copy_node(vlist)
-    if list then
-        n.list = list
-    end
-    if width then
-        n.width = width
-    end
-    if height then
-        n.height = height
-    end
-    if depth then
-        n.depth = depth
-    end
-    return n
-end
-
---[[
-<p>At some point we ran into a problem that the glue specification
-of the zeropoint dimension was overwritten when adapting a glue spec
-node. This is a side effect of glue specs being shared. After a
-couple of hours tracing and debugging Taco and I came to the
-conclusion that it made no sense to complicate the spec allocator
-and settled on a writable flag. This all is a side effect of the
-fact that some glues use reserved memory slots (with the zeropoint
-glue being a noticeable one). So, next we wrap this into a function
-and hide it for the user. And yes, LuaTeX now gives a warning as
-well.</p>
-]]--
-
-function nodes.writable_spec(n) -- not pool
-    local spec = n.spec
-    if not spec then
-        spec = copy_node(glue_spec)
-        n.spec = spec
-    elseif not spec.writable then
-        spec = copy_node(spec)
-        n.spec = spec
-    end
-    return spec
-end
-
--- local num = userids["my id"]
--- local str = userids[num]
-
-local userids = allocate()  pool.userids = userids
+local userids = allocate()
 local lastid  = 0
 
 setmetatable(userids, {
@@ -377,58 +56,428 @@ setmetatable(userids, {
     end
 } )
 
-function pool.usernumber(id,num)
-    local n = copy_node(user_n)
-    if num then
-        n.user_id, n.value = id, num
-    elseif id then
-        n.value = id
+-- nuts overload
+
+local nuts      = nodes.nuts
+local nutpool   = { }
+nuts.pool       = nutpool
+
+local tonut     = nuts.tonut
+local tonode    = nuts.tonode
+
+local getbox    = nuts.getbox
+local getfield  = nuts.getfield
+local setfield  = nuts.setfield
+local getid     = nuts.getid
+
+local copy_nut  = nuts.copy
+local new_nut   = nuts.new
+local free_nut  = nuts.free
+
+-- at some point we could have a dual set (the overhead of tonut is not much larger than
+-- metatable associations at the lua/c end esp if we also take assignments into account
+
+-- table.setmetatableindex(nodepool,function(t,k,v)
+--  -- report_nodes("defining nodepool[%s] instance",k)
+--     local f = nutpool[k]
+--     local v = function(...)
+--         return tonode(f(...))
+--     end
+--     t[k] = v
+--     return v
+-- end)
+--
+-- -- we delay one step because that permits us a forward reference
+-- -- e.g. in pdfsetmatrix
+
+table.setmetatableindex(nodepool,function(t,k,v)
+ -- report_nodes("defining nodepool[%s] instance",k)
+    local v = function(...)
+        local f = nutpool[k]
+        local v = function(...)
+            return tonode(f(...))
+        end
+        t[k] = v
+        return v(...)
+    end
+    t[k] = v
+    return v
+end)
+
+local function register_nut(n)
+    nofreserved = nofreserved + 1
+    reserved[nofreserved] = n
+    return n
+end
+
+local function register_node(n)
+    nofreserved = nofreserved + 1
+    if type(n) == "number" then -- isnut(n)
+        reserved[nofreserved] = n
+    else
+        reserved[nofreserved] = tonut(n)
     end
     return n
 end
 
-function pool.userlist(id,list)
-    local n = copy_node(user_l)
+nodepool.userids  = userids
+nodepool.register = register_node
+
+nutpool.userids   = userids
+nutpool.register  = register_node -- could be register_nut
+
+-- so far
+
+local disc              = register_nut(new_nut("disc"))
+local kern              = register_nut(new_nut("kern",kerncodes.userkern))
+local fontkern          = register_nut(new_nut("kern",kerncodes.fontkern))
+local penalty           = register_nut(new_nut("penalty"))
+local glue              = register_nut(new_nut("glue")) -- glue.spec = nil
+local glue_spec         = register_nut(new_nut("glue_spec"))
+local glyph             = register_nut(new_nut("glyph",0))
+local textdir           = register_nut(new_nut("whatsit",whatsitcodes.dir))
+local latelua           = register_nut(new_nut("whatsit",whatsitcodes.latelua))
+local special           = register_nut(new_nut("whatsit",whatsitcodes.special))
+local user_n            = register_nut(new_nut("whatsit",whatsitcodes.userdefined)) setfield(user_n,"type",100) -- 44
+local user_l            = register_nut(new_nut("whatsit",whatsitcodes.userdefined)) setfield(user_l,"type",110) -- 44
+local user_s            = register_nut(new_nut("whatsit",whatsitcodes.userdefined)) setfield(user_s,"type",115) -- 44
+local user_t            = register_nut(new_nut("whatsit",whatsitcodes.userdefined)) setfield(user_t,"type",116) -- 44
+local left_margin_kern  = register_nut(new_nut("margin_kern",0))
+local right_margin_kern = register_nut(new_nut("margin_kern",1))
+local lineskip          = register_nut(new_nut("glue",skipcodes.lineskip))
+local baselineskip      = register_nut(new_nut("glue",skipcodes.baselineskip))
+local leftskip          = register_nut(new_nut("glue",skipcodes.leftskip))
+local rightskip         = register_nut(new_nut("glue",skipcodes.rightskip))
+local temp              = register_nut(new_nut("temp",0))
+local noad              = register_nut(new_nut("noad"))
+
+-- the dir field needs to be set otherwise crash:
+
+local rule              = register_nut(new_nut("rule"))  setfield(rule, "dir","TLT")
+local hlist             = register_nut(new_nut("hlist")) setfield(hlist,"dir","TLT")
+local vlist             = register_nut(new_nut("vlist")) setfield(vlist,"dir","TLT")
+
+function nutpool.zeroglue(n)
+    local s = getfield(n,"spec")
+    return not writable or ( -- still valid? writable
+             getfield(s,"width") == 0
+         and getfield(s,"stretch") == 0
+         and getfield(s,"shrink") == 0
+         and getfield(s,"stretch_order") == 0
+         and getfield(s,"shrink_order") == 0
+    )
+end
+
+function nutpool.glyph(fnt,chr)
+    local n = copy_nut(glyph)
+    if fnt then setfield(n,"font",fnt) end
+    if chr then setfield(n,"char",chr) end
+    return n
+end
+
+function nutpool.penalty(p)
+    local n = copy_nut(penalty)
+    setfield(n,"penalty",p)
+    return n
+end
+
+function nutpool.kern(k)
+    local n = copy_nut(kern)
+    setfield(n,"kern",k)
+    return n
+end
+
+function nutpool.fontkern(k)
+    local n = copy_nut(fontkern)
+    setfield(n,"kern",k)
+    return n
+end
+
+function nutpool.gluespec(width,stretch,shrink,stretch_order,shrink_order)
+    local s = copy_nut(glue_spec)
+    if width         then setfield(s,"width",width)                 end
+    if stretch       then setfield(s,"stretch",stretch)             end
+    if shrink        then setfield(s,"shrink",shrink)               end
+    if stretch_order then setfield(s,"stretch_order",stretch_order) end
+    if shrink_order  then setfield(s,"shrink_order",shrink_order)   end
+    return s
+end
+
+local function someskip(skip,width,stretch,shrink,stretch_order,shrink_order)
+    local n = copy_nut(skip)
+    if not width then
+        -- no spec
+    elseif width == false or tonumber(width) then
+        local s = copy_nut(glue_spec)
+        if width         then setfield(s,"width",width)                 end
+        if stretch       then setfield(s,"stretch",stretch)             end
+        if shrink        then setfield(s,"shrink",shrink)               end
+        if stretch_order then setfield(s,"stretch_order",stretch_order) end
+        if shrink_order  then setfield(s,"shrink_order",shrink_order)   end
+        setfield(n,"spec",s)
+    else
+        -- shared
+        setfield(n,"spec",copy_nut(width))
+    end
+    return n
+end
+
+function nutpool.stretch(a,b)
+    local n = copy_nut(glue)
+    local s = copy_nut(glue_spec)
+    if b then
+        setfield(s,"stretch",a)
+        setfield(s,"stretch_order",b)
+    else
+        setfield(s,"stretch",1)
+        setfield(s,"stretch_order",a or 1)
+    end
+    setfield(n,"spec",s)
+    return n
+end
+
+function nutpool.shrink(a,b)
+    local n = copy_nut(glue)
+    local s = copy_nut(glue_spec)
+    if b then
+        setfield(s,"shrink",a)
+        setfield(s,"shrink_order",b)
+    else
+        setfield(s,"shrink",1)
+        setfield(s,"shrink_order",a or 1)
+    end
+    setfield(n,"spec",s)
+    return n
+end
+
+function nutpool.glue(width,stretch,shrink,stretch_order,shrink_order)
+    return someskip(glue,width,stretch,shrink,stretch_order,shrink_order)
+end
+
+function nutpool.leftskip(width,stretch,shrink,stretch_order,shrink_order)
+    return someskip(leftskip,width,stretch,shrink,stretch_order,shrink_order)
+end
+
+function nutpool.rightskip(width,stretch,shrink,stretch_order,shrink_order)
+    return someskip(rightskip,width,stretch,shrink,stretch_order,shrink_order)
+end
+
+function nutpool.lineskip(width,stretch,shrink,stretch_order,shrink_order)
+    return someskip(lineskip,width,stretch,shrink,stretch_order,shrink_order)
+end
+
+function nutpool.baselineskip(width,stretch,shrink)
+    return someskip(baselineskip,width,stretch,shrink)
+end
+
+function nutpool.disc()
+    return copy_nut(disc)
+end
+
+function nutpool.textdir(dir)
+    local t = copy_nut(textdir)
+    setfield(t,"dir",dir)
+    return t
+end
+
+function nutpool.rule(width,height,depth,dir) -- w/h/d == nil will let them adapt
+    local n = copy_nut(rule)
+    if width  then setfield(n,"width",width)   end
+    if height then setfield(n,"height",height) end
+    if depth  then setfield(n,"depth",depth)   end
+    if dir    then setfield(n,"dir",dir)       end
+    return n
+end
+
+-- if node.has_field(latelua,'string') then
+    function nutpool.latelua(code)
+        local n = copy_nut(latelua)
+        setfield(n,"string",code)
+        return n
+    end
+-- else
+--     function nutpool.latelua(code)
+--         local n = copy_nut(latelua)
+--         setfield(n,"data",code)
+--         return n
+--     end
+-- end
+
+function nutpool.leftmarginkern(glyph,width)
+    local n = copy_nut(left_margin_kern)
+    if not glyph then
+        report_nodes("invalid pointer to left margin glyph node")
+    elseif getid(glyph) ~= glyph_code then
+        report_nodes("invalid node type %a for %s margin glyph node",nodecodes[glyph],"left")
+    else
+        setfield(n,"glyph",glyph)
+    end
+    if width then
+        setfield(n,"width",width)
+    end
+    return n
+end
+
+function nutpool.rightmarginkern(glyph,width)
+    local n = copy_nut(right_margin_kern)
+    if not glyph then
+        report_nodes("invalid pointer to right margin glyph node")
+    elseif getid(glyph) ~= glyph_code then
+        report_nodes("invalid node type %a for %s margin glyph node",nodecodes[p],"right")
+    else
+        setfield(n,"glyph",glyph)
+    end
+    if width then
+        setfield(n,"width",width)
+    end
+    return n
+end
+
+function nutpool.temp()
+    return copy_nut(temp)
+end
+
+function nutpool.noad()
+    return copy_nut(noad)
+end
+
+function nutpool.hlist(list,width,height,depth)
+    local n = copy_nut(hlist)
     if list then
-        n.user_id, n.value = id, list
-    else
-        n.value = id
+        setfield(n,"list",list)
+    end
+    if width then
+        setfield(n,"width",width)
+    end
+    if height then
+        setfield(n,"height",height)
+    end
+    if depth then
+        setfield(n,"depth",depth)
     end
     return n
 end
 
-function pool.userstring(id,str)
-    local n = copy_node(user_s)
+function nutpool.vlist(list,width,height,depth)
+    local n = copy_nut(vlist)
+    if list then
+        setfield(n,"list",list)
+    end
+    if width then
+        setfield(n,"width",width)
+    end
+    if height then
+        setfield(n,"height",height)
+    end
+    if depth then
+        setfield(n,"depth",depth)
+    end
+    return n
+end
+
+-- local num = userids["my id"]
+-- local str = userids[num]
+
+function nutpool.usernumber(id,num)
+    local n = copy_nut(user_n)
+    if num then
+        setfield(n,"user_id",id)
+        setfield(n,"value",num)
+    elseif id then
+        setfield(n,"value",id)
+    end
+    return n
+end
+
+function nutpool.userlist(id,list)
+    local n = copy_nut(user_l)
+    if list then
+        setfield(n,"user_id",id)
+        setfield(n,"value",list)
+    else
+        setfield(n,"value",id)
+    end
+    return n
+end
+
+function nutpool.userstring(id,str)
+    local n = copy_nut(user_s)
     if str then
-        n.user_id, n.value = id, str
+        setfield(n,"user_id",id)
+        setfield(n,"value",str)
     else
-        n.value = id
+        setfield(n,"value",id)
     end
     return n
 end
 
-function pool.usertokens(id,tokens)
-    local n = copy_node(user_t)
+function nutpool.usertokens(id,tokens)
+    local n = copy_nut(user_t)
     if tokens then
-        n.user_id, n.value = id, tokens
+        setfield(n,"user_id",id)
+        setfield(n,"value",tokens)
     else
-        n.value = id
+        setfield(n,"value",id)
     end
     return n
 end
 
-function pool.special(str)
-    local n = copy_node(special)
-    n.data = str
+function nutpool.special(str)
+    local n = copy_nut(special)
+    setfield(n,"data",str)
     return n
 end
+
+-- housekeeping
+
+local function cleanup(nofboxes) -- todo
+    if nodes.tracers.steppers then -- to be resolved
+        nodes.tracers.steppers.reset() -- todo: make a registration subsystem
+    end
+    local nl, nr = 0, nofreserved
+    for i=1,nofreserved do
+        local ri = reserved[i]
+    --  if not (getid(ri) == glue_spec and not getfield(ri,"is_writable")) then
+            free_nut(reserved[i])
+    --  end
+    end
+    if nofboxes then
+        for i=0,nofboxes do
+            local l = getbox(i)
+            if l then
+                free_nut(l) -- also list ?
+                nl = nl + 1
+            end
+        end
+    end
+    reserved = { }
+    nofreserved = 0
+    return nr, nl, nofboxes -- can be nil
+end
+
+
+local function usage()
+    local t = { }
+    for n, tag in gmatch(status.node_mem_usage,"(%d+) ([a-z_]+)") do
+        t[tag] = n
+    end
+    return t
+end
+
+nutpool .cleanup = cleanup
+nodepool.cleanup = cleanup
+
+nutpool .usage   = usage
+nodepool.usage   = usage
+
+-- end
 
 statistics.register("cleaned up reserved nodes", function()
-    return format("%s nodes, %s lists of %s", pool.cleanup(texgetcount("c_syst_last_allocated_box")))
+    return format("%s nodes, %s lists of %s", cleanup(texgetcount("c_syst_last_allocated_box")))
 end) -- \topofboxstack
 
 statistics.register("node memory usage", function() -- comes after cleanup !
     return status.node_mem_usage
 end)
 
-lua.registerfinalizer(pool.cleanup, "cleanup reserved nodes")
+lua.registerfinalizer(cleanup, "cleanup reserved nodes")

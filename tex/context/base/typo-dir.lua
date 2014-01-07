@@ -40,20 +40,34 @@ local trace_directions     = false  trackers.register("typesetters.directions", 
 local report_textdirections = logs.reporter("typesetting","text directions")
 local report_mathdirections = logs.reporter("typesetting","math directions")
 
+local nuts               = nodes.nuts
+local tonut              = nuts.tonut
+local tonode             = nuts.tonode
+local nutstring          = nuts.tostring
 
+local getnext            = nuts.getnext
+local getprev            = nuts.getprev
+local getfont            = nuts.getfont
+local getchar            = nuts.getchar
+local getid              = nuts.getid
+local getsubtype         = nuts.getsubtype
+local getlist            = nuts.getlist
+local getfield           = nuts.getfield
+local setfield           = nuts.setfield
+local getattr            = nuts.getattr
+local setattr            = nuts.setattr
 
+local hasbit             = number.hasbit
 
-local traverse_id        = node.traverse_id
-local insert_node_before = node.insert_before
-local insert_node_after  = node.insert_after
-local remove_node        = nodes.remove
-local end_of_math        = nodes.end_of_math
+local traverse_id        = nuts.traverse_id
+local insert_node_before = nuts.insert_before
+local insert_node_after  = nuts.insert_after
+local remove_node        = nuts.remove
+local end_of_math        = nuts.end_of_math
 
 local texsetattribute    = tex.setattribute
 local texsetcount        = tex.setcount
 local unsetvalue         = attributes.unsetvalue
-
-local hasbit             = number.hasbit
 
 local nodecodes          = nodes.nodecodes
 local whatcodes          = nodes.whatcodes
@@ -76,7 +90,7 @@ local vlist_code         = nodecodes.vlist
 local localpar_code      = whatcodes.localpar
 local dir_code           = whatcodes.dir
 
-local nodepool           = nodes.pool
+local nodepool           = nuts.pool
 
 local new_textdir        = nodepool.textdir
 

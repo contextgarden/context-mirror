@@ -13,20 +13,35 @@ local utfchar = utf.char
 
 local nodes, node, fonts = nodes, node, fonts
 
-local find_node_tail     = node.tail or node.slide
-local free_node          = node.free
-local free_nodelist      = node.flush_list
-local copy_node          = node.copy
-local copy_nodelist      = node.copy_list
-local insert_node_before = node.insert_before
-local insert_node_after  = node.insert_after
-local end_of_math        = node.end_of_math
+local tasks              = nodes.tasks
+local nuts               = nodes.nuts
+local nodepool           = nuts.pool
+
+local tonode             = nuts.tonode
+local tonut              = nuts.tonut
+
+local find_node_tail     = nuts.tail
+local free_node          = nuts.free
+local free_nodelist      = nuts.flush_list
+local copy_node          = nuts.copy
+local copy_nodelist      = nuts.copy_list
+local insert_node_before = nuts.insert_before
+local insert_node_after  = nuts.insert_after
+local end_of_math        = nuts.end_of_math
+
+local getfield           = nuts.getfield
+local setfield           = nuts.setfield
+local getnext            = nuts.getnext
+local getprev            = nuts.getprev
+local getid              = nuts.getid
+local getattr            = nuts.getattr
+local setattr            = nuts.setattr
+local getfont            = nuts.getfont
+local getsubtype         = nuts.getsubtype
+local getchar            = nuts.getchar
 
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
-
-local nodepool           = nodes.pool
-local tasks              = nodes.tasks
 
 local new_gluespec       = nodepool.gluespec
 local new_kern           = nodepool.kern
@@ -107,10 +122,10 @@ kerns.keeptogether = false -- just for fun (todo: control setting with key/value
 -- blue  : keep by goodie
 
 function kerns.keepligature(n) -- might become default
-    local f = n.font
-    local a = n[0] or 0
+    local f = getfont(n)
+    local a = getattr(n,0) or 0
     if trace_ligatures then
-        local c = n.char
+        local c = getchar(n)
         local d = fontdescriptions[f][c].name
         if a > 0 and contextsetups[a].keepligatures == v_auto then
             report("font %!font:name!, glyph %a, slot %X -> ligature %s, by %s feature %a",f,d,c,"kept","dynamic","keepligatures")
@@ -169,9 +184,9 @@ end
 local function kern_injector(fillup,kern)
     if fillup then
         local g = new_glue(kern)
-        local s = g.spec
-        s.stretch = kern
-        s.stretch_order = 1
+        local s = getfield(g,"spec")
+        setfield(s,"stretch",kern)
+        setfield(s,"stretch_order",1)
         return g
     else
         return new_kern(kern)
@@ -181,7 +196,7 @@ end
 local function spec_injector(fillup,width,stretch,shrink)
     if fillup then
         local s = new_gluespec(width,2*stretch,2*shrink)
-        s.stretch_order = 1
+        setfield(s,"stretch_order",1)
         return s
     else
         return new_gluespec(width,stretch,shrink)
@@ -197,9 +212,9 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
     local fillup = false
     while start do
         -- faster to test for attr first
-        local attr = force or start[a_kerns]
+        local attr = force or getattr(start,a_kerns)
         if attr and attr > 0 then
-            start[a_kerns] = unsetvalue
+            setattr(start,a_kerns,unsetvalue)
             local krn = mapping[attr]
             if krn == v_max then
                 krn = .25
@@ -208,10 +223,10 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
                 fillup = false
             end
             if krn and krn ~= 0 then
-                local id = start.id
-                if id == glyph_code then
-                    lastfont = start.font
-                    local c = start.components
+                local id = getid(start)
+                if id == glyph_code then -- we could use the subtype ligature
+                    lastfont = getfont(start)
+                    local c = getfield(start,"components")
                     if not c then
                         -- fine
                     elseif keepligature and keepligature(start) then
@@ -219,47 +234,47 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
                     else
                         c = do_process(c,attr)
                         local s = start
-                        local p, n = s.prev, s.next
+                        local p, n = getprev(s), getnext(s)
                         local tail = find_node_tail(c)
                         if p then
-                            p.next = c
-                            c.prev = p
+                            setfield(p,"next",c)
+                            setfield(c,"prev",p)
                         else
                             head = c
                         end
                         if n then
-                            n.prev = tail
+                            setfield(n,"prev",tail)
                         end
-                        tail.next = n
+                        setfield(tail,"next",n)
                         start = c
-                        s.components = nil
+                        setfield(s,"components",nil)
                         -- we now leak nodes !
-                     -- free_node(s)
+                    --  free_node(s)
                         done = true
                     end
-                    local prev = start.prev
+                    local prev = getprev(start)
                     if not prev then
                         -- skip
-                    elseif markdata[lastfont][start.char] then
+                    elseif markdata[lastfont][getchar(start)] then
                             -- skip
                     else
-                        local pid = prev.id
+                        local pid = getid(prev)
                         if not pid then
                             -- nothing
                         elseif pid == kern_code then
-                            if prev.subtype == kerning_code or prev[a_fontkern] then
-                                if keeptogether and prev.prev.id == glyph_code and keeptogether(prev.prev,start) then -- we could also pass start
+                            if getsubtype(prev) == kerning_code or getattr(prev,a_fontkern) then
+                                if keeptogether and getid(getprev(prev)) == glyph_code and keeptogether(getprev(prev),start) then -- we could also pass start
                                     -- keep 'm
                                 else
                                     -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
-                                    prev.subtype = userkern_code
-                                    prev.kern = prev.kern + quaddata[lastfont]*krn -- here
+                                    setfield(prev,"subtype",userkern_code)
+                                    setfield(prev,"kern",getfield(prev,"kern") + quaddata[lastfont]*krn) -- here
                                     done = true
                                 end
                             end
                         elseif pid == glyph_code then
-                            if prev.font == lastfont then
-                                local prevchar, lastchar = prev.char, start.char
+                            if getfont(prev) == lastfont then
+                                local prevchar, lastchar = getchar(prev), getchar(start)
                                 if keeptogether and keeptogether(prev,start) then
                                     -- keep 'm
                                 else
@@ -278,102 +293,102 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
                             -- a bit too complicated, we can best not copy and just calculate
                             -- but we could have multiple glyphs involved so ...
                             local disc = prev -- disc
-                            local prv, nxt = disc.prev, disc.next
-                            if disc.subtype == discretionary_code then
+                            local prv, nxt = getprev(disc), getnext(disc)
+                            if getsubtype(disc) == discretionary_code then
                                 -- maybe we should forget about this variant as there is no glue
                                 -- possible
-                                local pre, post, replace = disc.pre, disc.post, disc.replace
-                                if pre and prv then -- must pair with start.prev
-                                    -- this one happens in most cases
+                                local pre, post, replace = getfield(disc,"pre"), getfield(disc,"post"), getfield(disc,"replace")
+                                if pre and prv then -- must pair with getprev(start)
                                     local before = copy_node(prv)
-                                    pre.prev = before
-                                    before.next = pre
-                                    before.prev = nil
+                                    setfield(pre,"prev",before)
+                                    setfield(before,"next",pre)
+                                    setfield(before,"prev",nil)
                                     pre = do_process(before,attr)
-                                    pre = pre.next
-                                    pre.prev = nil
-                                    disc.pre = pre
+                                    pre = getnext(pre)
+                                    setfield(pre,"prev",nil)
+                                    setfield(disc,"pre",pre)
                                     free_node(before)
                                 end
                                 if post and nxt then  -- must pair with start
                                     local after = copy_node(nxt)
                                     local tail = find_node_tail(post)
-                                    tail.next = after
-                                    after.prev = tail
-                                    after.next = nil
+                                    setfield(tail,"next",after)
+                                    setfield(after,"prev",tail)
+                                    setfield(after,"next",nil)
                                     post = do_process(post,attr)
-                                    tail.next = nil
-                                    disc.post = post
+                                    setfield(tail,"next",nil)
+                                    setfield(disc,"post",post)
                                     free_node(after)
                                 end
                                 if replace and prv and nxt then -- must pair with start and start.prev
                                     local before = copy_node(prv)
                                     local after = copy_node(nxt)
                                     local tail = find_node_tail(replace)
-                                    replace.prev = before
-                                    before.next = replace
-                                    before.prev = nil
-                                    tail.next = after
-                                    after.prev = tail
-                                    after.next = nil
+                                    setfield(replace,"prev",before)
+                                    setfield(before,"next",replace)
+                                    setfield(before,"prev",nil)
+                                    setfield(tail,"next",after)
+                                    setfield(after,"prev",tail)
+                                    setfield(after,"next",nil)
                                     replace = do_process(before,attr)
-                                    replace = replace.next
-                                    replace.prev = nil
-                                    after.prev.next = nil
-                                    disc.replace = replace
+                                    replace = getnext(replace)
+                                    setfield(replace,"prev",nil)
+                                    setfield(getfield(after,"prev"),"next",nil)
+                                    setfield(disc,"replace",replace)
                                     free_node(after)
                                     free_node(before)
-                                elseif prv and prv.id == glyph_code and prv.font == lastfont then
-                                    local prevchar, lastchar = prv.char, start.char
+                                elseif prv and getid(prv) == glyph_code and getfont(prv) == lastfont then
+                                    local prevchar, lastchar = getchar(prv), getchar(start)
                                     local kerns = chardata[lastfont][prevchar].kerns
                                     local kern = kerns and kerns[lastchar] or 0
                                     krn = kern + quaddata[lastfont]*krn -- here
-                                    disc.replace = kern_injector(false,krn) -- only kerns permitted, no glue
+                                    setfield(disc,"replace",kern_injector(false,krn)) -- only kerns permitted, no glue
                                 else
                                     krn = quaddata[lastfont]*krn -- here
-                                    disc.replace = kern_injector(false,krn) -- only kerns permitted, no glue
+                                    setfield(disc,"replace",kern_injector(false,krn)) -- only kerns permitted, no glue
                                 end
                             else
                                 -- this one happens in most cases: automatic (-), explicit (\-), regular (patterns)
-                                if prv and prv.id == glyph_code and prv.font == lastfont then
-                                    local prevchar, lastchar = prv.char, start.char
+                                if prv and getid(prv) == glyph_code and getfont(prv) == lastfont then
+                                    -- the normal case
+                                    local prevchar, lastchar = getchar(prv), getchar(start)
                                     local kerns = chardata[lastfont][prevchar].kerns
                                     local kern = kerns and kerns[lastchar] or 0
-                                    krn = kern + quaddata[lastfont]*krn -- here
+                                    krn = kern + quaddata[lastfont]*krn
                                 else
-                                    krn = quaddata[lastfont]*krn -- here
+                                    krn = quaddata[lastfont]*krn
                                 end
                                 insert_node_before(head,start,kern_injector(fillup,krn))
                             end
                         end
                     end
                 elseif id == glue_code then
-                    local subtype = start.subtype
+                    local subtype = getsubtype(start)
                     if subtype == userskip_code or subtype == xspaceskip_code or subtype == spaceskip_code then
-                        local s = start.spec
-                        local w = s.width
+                        local s = getfield(start,"spec")
+                        local w = getfield(s,"width")
                         if w > 0 then
-                            local width, stretch, shrink = w+gluefactor*w*krn, s.stretch, s.shrink
-                            start.spec = spec_injector(fillup,width,stretch*width/w,shrink*width/w)
+                            local width, stretch, shrink = w+gluefactor*w*krn, getfield(s,"stretch"), getfield(s,"shrink")
+                            setfield(start,"spec",spec_injector(fillup,width,stretch*width/w,shrink*width/w))
                             done = true
                         end
                     end
                 elseif id == kern_code then
-                 -- if start.subtype == kerning_code then -- handle with glyphs
-                 --     local sk = start.kern
+                 -- if getsubtype(start) == kerning_code then -- handle with glyphs
+                 --     local sk = getfield(start,"kern")
                  --     if sk > 0 then
-                 --         start.kern = sk*krn
+                 --         setfield(start,"kern",sk*krn)
                  --         done = true
                  --     end
                  -- end
                 elseif lastfont and (id == hlist_code or id == vlist_code) then -- todo: lookahead
-                    local p = start.prev
-                    if p and p.id ~= glue_code then
+                    local p = getprev(start)
+                    if p and getid(p) ~= glue_code then
                         insert_node_before(head,start,kern_injector(fillup,quaddata[lastfont]*krn))
                         done = true
                     end
-                    local n = start.next
-                    if n and n.id ~= glue_code then
+                    local n = getnext(start)
+                    if n and getid(n) ~= glue_code then
                         insert_node_after(head,start,kern_injector(fillup,quaddata[lastfont]*krn))
                         done = true
                     end
@@ -383,7 +398,7 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
             end
         end
         if start then
-            start = start.next
+            start = getnext(start)
         end
     end
     return head, done
@@ -414,7 +429,8 @@ function kerns.set(factor)
 end
 
 function kerns.handler(head)
-    return do_process(head)  -- no direct map, because else fourth argument is tail == true
+    local head, done = do_process(tonut(head))  -- no direct map, because else fourth argument is tail == true
+    return tonode(head), done
 end
 
 -- interface

@@ -8,31 +8,35 @@ if not modules then modules = { } end modules ['page-lin'] = {
 
 -- experimental -> will become builders
 
-local trace_numbers = false  trackers.register("lines.numbers",  function(v) trace_numbers = v end)
-
-local report_lines = logs.reporter("lines")
-
-local attributes, nodes, node, context = attributes, nodes, node, context
-
-nodes.lines       = nodes.lines or { }
-local lines       = nodes.lines
-
-lines.data        = lines.data or { } -- start step tag
-local data        = lines.data
-local last        = #data
-
-local texgetbox   = tex.getbox
-
-lines.scratchbox  = lines.scratchbox or 0
-
-local leftmarginwidth = nodes.leftmarginwidth
-
-storage.register("lines/data", lines.data, "nodes.lines.data")
-
 -- if there is demand for it, we can support multiple numbering streams
 -- and use more than one attibute
 
+local next, tonumber = next, tonumber
+
+local trace_numbers      = false  trackers.register("lines.numbers",  function(v) trace_numbers = v end)
+
+local report_lines       = logs.reporter("lines")
+
+local attributes         = attributes
+local nodes              = nodes
+local context            = context
+
+nodes.lines              = nodes.lines or { }
+local lines              = nodes.lines
+
+lines.data               = lines.data or { } -- start step tag
+local data               = lines.data
+local last               = #data
+
+lines.scratchbox         = lines.scratchbox or 0
+
+storage.register("lines/data", data, "nodes.lines.data")
+
 local variables          = interfaces.variables
+
+local v_next             = variables.next
+local v_page             = variables.page
+local v_no               = variables.no
 
 local nodecodes          = nodes.nodecodes
 
@@ -49,12 +53,25 @@ local current_list       = { }
 local cross_references   = { }
 local chunksize          = 250 -- not used in boxed
 
-local traverse_id        = node.traverse_id
-local traverse           = node.traverse
-local copy_node          = node.copy
-local hpack_node         = node.hpack
-local insert_node_after  = node.insert_after
-local insert_node_before = node.insert_before
+local nuts               = nodes.nuts
+
+local getid              = nuts.getid
+local getnext            = nuts.getnext
+local getattr            = nuts.getattr
+local getlist            = nuts.getlist
+local getbox             = nuts.getbox
+local getfield           = nuts.getfield
+
+local setfield           = nuts.setfield
+
+local traverse_id        = nuts.traverse_id
+local traverse           = nuts.traverse
+local copy_node          = nuts.copy
+local hpack_node         = nuts.hpack
+local insert_node_after  = nuts.insert_after
+local insert_node_before = nuts.insert_before
+local is_display_math    = nuts.is_display_math
+local leftmarginwidth    = nuts.leftmarginwidth
 
 -- cross referencing
 
@@ -67,16 +84,16 @@ end
 
 local function resolve(n,m) -- we can now check the 'line' flag (todo)
     while n do
-        local id = n.id
+        local id = getid(n)
         if id == whatsit_code then -- why whatsit
-            local a = n[a_linereference]
+            local a = getattr(n,a_linereference)
             if a then
                 cross_references[a] = m
             end
         elseif id == hlist_code or id == vlist_code then
-            resolve(n.list,m)
+            resolve(getlist(n),m)
         end
-        n = n.next
+        n = getnext(n)
     end
 end
 
@@ -165,20 +182,20 @@ local function check_number(n,a,skip,sameline)
         if sameline then
             skipflag = 0
             if trace_numbers then
-                report_lines("skipping broken line number %s for setup %a: %s (%s)",#current_list,a,s,d.continue or "no")
+                report_lines("skipping broken line number %s for setup %a: %s (%s)",#current_list,a,s,d.continue or v_no)
             end
         elseif not skip and s % d.step == 0 then
             skipflag, d.start = 1, s + 1 -- (d.step or 1)
             if trace_numbers then
-                report_lines("making number %s for setup %a: %s (%s)",#current_list,a,s,d.continue or "no")
+                report_lines("making number %s for setup %a: %s (%s)",#current_list,a,s,d.continue or v_no)
             end
         else
             skipflag, d.start = 0, s + 1 -- (d.step or 1)
             if trace_numbers then
-                report_lines("skipping line number %s for setup %a: %s (%s)",#current_list,a,s,d.continue or "no")
+                report_lines("skipping line number %s for setup %a: %s (%s)",#current_list,a,s,d.continue or v_no)
             end
         end
-        context.makelinenumber(tag,skipflag,s,n.shift,n.width,leftmarginwidth(n.list),n.dir)
+        context.makelinenumber(tag,skipflag,s,getfield(n,"shift"),getfield(n,"width"),leftmarginwidth(getlist(n)),getfield(n,"dir"))
     end
 end
 
@@ -189,26 +206,26 @@ end
 local function identify(list)
     if list then
         for n in traverse_id(hlist_code,list) do
-            if n[a_linenumber] then
+            if getattr(n,a_linenumber) then
                 return list
             end
         end
         local n = list
         while n do
-            local id = n.id
+            local id = getid(n)
             if id == hlist_code or id == vlist_code then
-                local ok = identify(n.list)
+                local ok = identify(getlist(n))
                 if ok then
                     return ok
                 end
             end
-            n = n.next
+            n = getnext(n)
         end
     end
 end
 
 function boxed.stage_zero(n)
-    return identify(texgetbox(n).list)
+    return identify(getlist(getbox(n)))
 end
 
 -- reset ranges per page
@@ -217,39 +234,39 @@ end
 
 function boxed.stage_one(n,nested)
     current_list = { }
-    local box = texgetbox(n)
+    local box = getbox(n)
     if box then
-        local list = box.list
+        local list = getlist(box)
         if nested then
             list = identify(list)
         end
         local last_a, last_v, skip = nil, -1, false
         for n in traverse_id(hlist_code,list) do -- attr test here and quit as soon as zero found
-            if n.height == 0 and n.depth == 0 then
+            if getfield(n,"height") == 0 and getfield(n,"depth") == 0 then
                 -- skip funny hlists -- todo: check line subtype
             else
-                local list = n.list
-                local a = list[a_linenumber]
+                local list = getlist(n)
+                local a = getattr(list,a_linenumber)
                 if a and a > 0 then
                     if last_a ~= a then
                         local da = data[a]
                         local ma = da.method
-                        if ma == variables.next then
+                        if ma == v_next then
                             skip = true
-                        elseif ma == variables.page then
+                        elseif ma == v_page then
                             da.start = 1 -- eventually we will have a normal counter
                         end
                         last_a = a
                         if trace_numbers then
-                            report_lines("starting line number range %s: start %s, continue",a,da.start,da.continue or "no")
+                            report_lines("starting line number range %s: start %s, continue %s",a,da.start,da.continue or v_no)
                         end
                     end
-                    if n[a_displaymath] then
-                        if nodes.is_display_math(n) then
+                    if getattr(n,a_displaymath) then
+                        if is_display_math(n) then
                             check_number(n,a,skip)
                         end
                     else
-                        local v = list[a_verbatimline]
+                        local v = getattr(list,a_verbatimline)
                         if not v or v ~= last_v then
                             last_v = v
                             check_number(n,a,skip)
@@ -268,7 +285,7 @@ function boxed.stage_two(n,m)
     if #current_list > 0 then
         m = m or lines.scratchbox
         local t, tn = { }, 0
-        for l in traverse_id(hlist_code,texgetbox(m).list) do
+        for l in traverse_id(hlist_code,getlist(getbox(m))) do
             tn = tn + 1
             t[tn] = copy_node(l)
         end
@@ -276,7 +293,8 @@ function boxed.stage_two(n,m)
             local li = current_list[i]
             local n, m, ti = li[1], li[2], t[i]
             if ti then
-                ti.next, n.list = n.list, ti
+                setfield(ti,"next",getlist(n))
+                setfield(n,"list",ti)
                 resolve(n,m)
             else
                 report_lines("error in linenumbering (1)")
