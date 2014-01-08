@@ -57,7 +57,7 @@ statistics.register("used cache path",  function() return caches.usedpaths() end
 -- experiment (code will move)
 
 function statistics.savefmtstatus(texname,formatbanner,sourcefile) -- texname == formatname
-    local enginebanner = status.list().banner
+    local enginebanner = status.banner
     if formatbanner and enginebanner and sourcefile then
         local luvname = file.replacesuffix(texname,"luv") -- utilities.lua.suffixes.luv
         local luvdata = {
@@ -75,7 +75,7 @@ end
 -- a remake
 
 function statistics.checkfmtstatus(texname)
-    local enginebanner = status.list().banner
+    local enginebanner = status.banner
     if enginebanner and texname then
         local luvname = file.replacesuffix(texname,"luv") -- utilities.lua.suffixes.luv
         if lfs.isfile(luvname) then

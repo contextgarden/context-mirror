@@ -8863,7 +8863,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 42447, stripped down to: 26589
+-- original size: 42549, stripped down to: 26643
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -9588,23 +9588,25 @@ local function verbose_document(e,handlers)
   end
 end
 local function serialize(e,handlers,...)
-  local initialize=handlers.initialize
-  local finalize=handlers.finalize
-  local functions=handlers.functions
-  if initialize then
-    local state=initialize(...)
-    if not state==true then
-      return state
+  if e then
+    local initialize=handlers.initialize
+    local finalize=handlers.finalize
+    local functions=handlers.functions
+    if initialize then
+      local state=initialize(...)
+      if not state==true then
+        return state
+      end
     end
-  end
-  local etg=e.tg
-  if etg then
-    (functions[etg] or functions["@el@"])(e,handlers)
-  else
-    functions["@dc@"](e,handlers) 
-  end
-  if finalize then
-    return finalize()
+    local etg=e.tg
+    if etg then
+      (functions[etg] or functions["@el@"])(e,handlers)
+    else
+      functions["@dc@"](e,handlers) 
+    end
+    if finalize then
+      return finalize()
+    end
   end
 end
 local function xserialize(e,handlers)
@@ -15375,7 +15377,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-use"] = package.loaded["data-use"] or true
 
--- original size: 3913, stripped down to: 2998
+-- original size: 3899, stripped down to: 2984
 
 if not modules then modules={} end modules ['data-use']={
   version=1.001,
@@ -15421,7 +15423,7 @@ end
 statistics.register("used config file",function() return caches.configfiles() end)
 statistics.register("used cache path",function() return caches.usedpaths() end)
 function statistics.savefmtstatus(texname,formatbanner,sourcefile) 
-  local enginebanner=status.list().banner
+  local enginebanner=status.banner
   if formatbanner and enginebanner and sourcefile then
     local luvname=file.replacesuffix(texname,"luv") 
     local luvdata={
@@ -15434,7 +15436,7 @@ function statistics.savefmtstatus(texname,formatbanner,sourcefile)
   end
 end
 function statistics.checkfmtstatus(texname)
-  local enginebanner=status.list().banner
+  local enginebanner=status.banner
   if enginebanner and texname then
     local luvname=file.replacesuffix(texname,"luv") 
     if lfs.isfile(luvname) then
@@ -16681,8 +16683,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 685064
--- stripped bytes    : 242353
+-- original bytes    : 685152
+-- stripped bytes    : 242401
 
 -- end library merge
 
