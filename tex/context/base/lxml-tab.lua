@@ -1016,25 +1016,27 @@ local function verbose_document(e,handlers)
 end
 
 local function serialize(e,handlers,...)
-    local initialize = handlers.initialize
-    local finalize   = handlers.finalize
-    local functions  = handlers.functions
-    if initialize then
-        local state = initialize(...)
-        if not state == true then
-            return state
+    if e then
+        local initialize = handlers.initialize
+        local finalize   = handlers.finalize
+        local functions  = handlers.functions
+        if initialize then
+            local state = initialize(...)
+            if not state == true then
+                return state
+            end
         end
-    end
-    local etg = e.tg
-    if etg then
-        (functions[etg] or functions["@el@"])(e,handlers)
- -- elseif type(e) == "string" then
- --     functions["@tx@"](e,handlers)
-    else
-        functions["@dc@"](e,handlers) -- dc ?
-    end
-    if finalize then
-        return finalize()
+        local etg = e.tg
+        if etg then
+            (functions[etg] or functions["@el@"])(e,handlers)
+     -- elseif type(e) == "string" then
+     --     functions["@tx@"](e,handlers)
+        else
+            functions["@dc@"](e,handlers) -- dc ?
+        end
+        if finalize then
+            return finalize()
+        end
     end
 end
 

@@ -639,8 +639,8 @@
         \doifmode{interface:setup:defaults} {
             \ifx\currentSETUPhash\empty \else
                \edef\currentSETUPvalue{\csname named\currentSETUPhash parameter\endcsname\empty{\xmlatt{#1}{name}}}
-               \ifx\currentSETUPvalue\empty
-                 \space=\space
+               \ifx\currentSETUPvalue\empty \else
+                 =\space
                  \detokenize\expandafter{\currentSETUPvalue}
                \fi
             \fi
