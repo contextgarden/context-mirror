@@ -34,6 +34,7 @@ local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getchar            = nuts.getchar
 local getid              = nuts.getid
+local getfont            = nuts.getfont
 local getattr            = nuts.getattr
 
 local setattr            = nuts.setattr

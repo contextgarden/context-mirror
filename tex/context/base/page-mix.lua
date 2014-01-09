@@ -683,10 +683,10 @@ function mixedcolumns.finalize(result)
                         local l = list[i]
                         local h = new_hlist()
                         t[i] = h
-                        setfield(h,"list",l.head)
-                        setfield(h,"height",l.height)
-                        setfield(h,"depth",l.depth)
-                        l.head = nil
+                        setfield(h,"list",getfield(l,"head"))
+                        setfield(h,"height",getfield(l,"height"))
+                        setfield(h,"depth",getfield(l,"depth"))
+                        setfield(l,"head",nil)
                     end
                     setfield(t[1],"prev",nil)  -- needs checking
                     setfield(t[#t],"next",nil) -- needs checking

@@ -34,6 +34,7 @@ local getnext         = nuts.getnext
 local getid           = nuts.getid
 local getsubtype      = nuts.getsubtype
 local getchar         = nuts.getchar
+local setattr         = nuts.setattr
 
 local traverse_nodes  = nuts.traverse
 
@@ -186,6 +187,8 @@ local enabled    = false
 function words.check(head)
     if enabled then
         return methods[wordmethod](head)
+    elseif not head then
+        return head, false
     else
         return head, false
     end
@@ -217,7 +220,7 @@ table.setmetatableindex(cache, function(t,k) -- k == language, numbers[k] == tag
     else
         c = colist["word:" .. (numbers[k] or "unset")] or colist["word:unknown"]
     end
-    local v = c and function(n) n[a_color] = c end or false
+    local v = c and function(n) setattr(n,a_color,c) end or false
     t[k] = v
     return v
 end)
@@ -236,7 +239,7 @@ end
 
 methods[1] = function(head)
     for n in traverse_nodes(head) do
-        n[a_color] = unsetvalue -- hm, not that selective (reset color)
+        setattr(n,a_color,unsetvalue) -- hm, not that selective (reset color)
     end
     return mark_words(head,sweep)
 end
@@ -337,7 +340,7 @@ end
 
 methods[3] = function(head)
     for n in traverse_nodes(head) do
-        n[a_color] = unsetvalue
+        setattr(n,a_color,unsetvalue)
     end
     return mark_words(head,sweep)
 end

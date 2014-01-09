@@ -250,7 +250,7 @@ local function showstore(store,banner,location)
     if next(store) then
         for i, si in table.sortedpairs(store) do
             local si =store[i]
-            report_margindata("%s: stored in %a at %s: %a => %s",banner,location,i,validstring(si.name,"no name"),nodes.toutf(si.box.list))
+            report_margindata("%s: stored in %a at %s: %a => %s",banner,location,i,validstring(si.name,"no name"),nodes.toutf(getlist(si.box)))
         end
     else
         report_margindata("%s: nothing stored in location %a",banner,location)
