@@ -15,15 +15,16 @@ local a_alignstate        = attributes.private("alignstate")
 local a_justification     = attributes.private("justification")
 
 local nuts                = nodes.nuts
-local tonut               = tonut
+local tonut               = nuts.tonut
 
 local getfield            = nuts.getfield
 local setfield            = nuts.setfield
+local getlist             = nuts.getlist
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
 local setlist             = nuts.setlist
 
-local traverse_id         = nuts.travers_id
+local traverse_id         = nuts.traverse_id
 local get_list_dimensions = nuts.dimensions
 local linked_nodes        = nuts.linked
 local copy_node           = nuts.copy
@@ -77,7 +78,7 @@ function checkers.handler(head)
     for current in traverse_id(hlist_code,tonut(head)) do
         if getattr(current,a_justification) == 1 then
             setattr(current,a_justification,0)
-            local width = setfield(current,"width")
+            local width = getfield(current,"width")
             if width > 0 then
                 local list = getlist(current)
                 if list then

@@ -638,11 +638,16 @@
         \xmlflush{#1}
         \doifmode{interface:setup:defaults} {
             \ifx\currentSETUPhash\empty \else
-               \edef\currentSETUPvalue{\csname named\currentSETUPhash parameter\endcsname\empty{\xmlatt{#1}{name}}}
-               \ifx\currentSETUPvalue\empty \else
-                 =\space
-                 \detokenize\expandafter{\currentSETUPvalue}
-               \fi
+                \begingroup
+                    % todo, make a one level expansion of parameter
+                    \let\emwidth \relax
+                    \let\exheight\relax
+                    \edef\currentSETUPvalue{\csname named\currentSETUPhash parameter\endcsname\empty{\xmlatt{#1}{name}}}
+                    \ifx\currentSETUPvalue\empty \else
+                        =\space
+                        \detokenize\expandafter{\currentSETUPvalue}
+                    \fi
+                \endgroup
             \fi
         }
     \stopsecondSETUPcolumn

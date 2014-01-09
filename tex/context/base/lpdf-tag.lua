@@ -36,10 +36,6 @@ local pdfpagereference = lpdf.pagereference
 
 local texgetcount      = tex.getcount
 
-local nodepool         = nodes.pool
-
-local pdfliteral       = nodepool.pdfliteral
-
 local nodecodes        = nodes.nodecodes
 
 local hlist_code       = nodecodes.hlist
@@ -53,9 +49,13 @@ local nuts             = nodes.nuts
 local tonut            = nuts.tonut
 local tonode           = nuts.tonode
 
+local nodepool         = nuts.pool
+local pdfliteral       = nodepool.pdfliteral
+
 local getid            = nuts.getid
 local getattr          = nuts.getattr
 local getprev          = nuts.getprev
+local getnext          = nuts.getnext
 local getlist          = nuts.getlist
 local setfield         = nuts.setfield
 
@@ -213,7 +213,29 @@ local function makecontent(parent,start,stop,slist,id)
     --
     local bliteral = pdfliteral(format("/%s <</MCID %s>>BDC",tag,last))
     local eliteral = pdfliteral("EMC")
-    --
+-- if false
+--     local prev = getprev(start)
+--     if prev then
+--         setfield(prev,"next",bliteral)
+--         setfield(bliteral,"prev",prev)
+--     end
+--     setfield(start,"prev",bliteral)
+--     setfield(bliteral,"next",start)
+--     --
+--     local next = getnext(stop)
+--     if next then
+--         setfield(next,"prev",eliteral)
+--         setfield(eliteral,"next",next)
+--     end
+--     setfield(stop,"next",eliteral)
+--     setfield(eliteral,"prev",stop)
+--     --
+--     if slist and getlist(slist) == start then
+--         setfield(slist,"list",bliteral)
+--     elseif not prev then
+--         report_tags("this can't happen: injection in front of nothing")
+--     end
+-- else
     if slist and getlist(slist) == start then
         setfield(slist,"list",bliteral)
     elseif not getprev(start) then
@@ -222,6 +244,7 @@ local function makecontent(parent,start,stop,slist,id)
     --
     insert_before(start,start,bliteral)
     insert_after(stop,stop,eliteral)
+-- end
     --
     index = index + 1
     list[index] = parent.pref
@@ -269,7 +292,8 @@ function nodeinjections.addtags(head)
     -- no need to adapt head, as we always operate on lists
     level, last, ranges, range = 0, nil, { }, nil
     initializepage()
-    collectranges(tonut(head))
+	head = tonut(head)
+    collectranges(head)
     if trace_tags then
         for i=1,#ranges do
             local range = ranges[i]
@@ -296,7 +320,7 @@ function nodeinjections.addtags(head)
         local b, e = makecontent(prev,start,stop,list,id)
         if start == head then
             report_tags("this can't happen: parent list gets tagged")
-            head = tonode(b)
+            head = b
         end
     end
     finishpage()
@@ -304,6 +328,7 @@ function nodeinjections.addtags(head)
     --
     -- injectspans(tonut(head)) -- does to work yet
     --
+    head = tonode(head)
     return head, true
 end
 

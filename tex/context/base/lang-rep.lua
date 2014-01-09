@@ -28,9 +28,9 @@ local getattr            = nuts.getattr
 local getid              = nuts.getid
 local getchar            = nuts.getchar
 
-local insert_node_before = nodes.insert_before
-local remove_node        = nodes.remove
-local copy_node          = nodes.copy
+local insert_node_before = nuts.insert_before
+local remove_node        = nuts.remove
+local copy_node          = nuts.copy
 
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
@@ -58,12 +58,13 @@ end)
 
 local function add(root,word,replacement)
     local list = utfsplit(word,true)
-    for i=1,#list do
+    local size = #list
+    for i=1,size do
         local l = utfbyte(list[i])
         if not root[l] then
             root[l] = { }
         end
-        if i == #list then
+        if i == size then
             local newlist = utfsplit(replacement,true)
             for i=1,#newlist do
                 newlist[i] = utfbyte(newlist[i])
@@ -71,7 +72,7 @@ local function add(root,word,replacement)
             root[l].final = {
                 word        = word,
                 replacement = replacement,
-                oldlength   = #list,
+                oldlength   = size,
                 newcodes    = newlist,
             }
         end
@@ -124,10 +125,11 @@ local function hit(a,head)
 end
 
 function replacements.handler(head)
-    local current = tonut(head)
+    head = tonut(head)
+    local current = head
     local done    = false
     while current do
-        if current.id == glyph_code then
+        if getid(current) == glyph_code then
             local a = getattr(current,a_replacements)
             if a then
                 local last, final = hit(a,current)
@@ -141,7 +143,7 @@ function replacements.handler(head)
                     if oldlength == newlength then -- #old == #new
                         for i=1,newlength do
                             setfield(current,"char",newcodes[i])
-                            current = current.next
+                            current = getnext(current)
                         end
                     elseif oldlength < newlength then -- #old < #new
                         for i=1,newlength-oldlength do

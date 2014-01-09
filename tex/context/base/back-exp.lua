@@ -2097,7 +2097,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
             if kern > 0 then
                 local limit = threshold
                 if p and getid(p) == glyph_code then
-                    limit = fontquads[p.font] / 4
+                    limit = fontquads[getfont(p)] / 4
                 end
                 if kern > limit then
                     if last and not somespace[currentcontent[nofcurrentcontent]] then

@@ -31,6 +31,8 @@ local copy_node      = nuts.copy
 local free_nodelist  = nuts.flush_list
 local insert_after   = nuts.insert_after
 
+local new_gluespec   = nuts.pool.gluespec -- temp hack 
+
 local glue_code      = nodecodes.glue
 local kern_code      = nodecodes.kern
 local glyph_code     = nodecodes.glyph
@@ -53,7 +55,8 @@ local function injectspaces(head)
         local id = getid(n)
         if id == glue_code then -- todo: check for subtype related to spacing (13/14 but most seems to be 0)
        -- if getfield(getfield(n,"spec"),"width") > 0 then -- threshold
-            if p and p_id == glyph_code then
+--          if p and p_id == glyph_code then
+            if p and getid(p) == glyph_code then
                 local g = copy_node(p)
                 local c = getfield(g,"components")
                 if c then -- it happens that we copied a ligature
@@ -61,16 +64,19 @@ local function injectspaces(head)
                     setfield(g,"components",nil)
                     setfield(g,"subtype",256)
                 end
-                -- p .. g
                 local a = getattr(n,a_characters)
-                local s = copy_node(getfield(n,"spec"))
+                -- local s = copy_node(getfield(n,"spec"))
+                -- this will be fixed in luatex but for now a temp hack (zero test)
+                local s = getfield(n,"spec")
+                s = s == 0 and new_gluespec(0) or copy_node(s)
+                --
                 setfield(g,"char",32)
-                insert_after(p,p,g)
-             -- setfield(p,"next",g)
-             -- setfield(g,"prev",p)
-             -- setfield(g,"next",n)
-             -- setfield(n,"prev",g)
                 setfield(n,"spec",s)
+             -- insert_after(p,p,g)
+                setfield(p,"next",g)
+                setfield(g,"prev",p)
+                setfield(g,"next",n)
+                setfield(n,"prev",g)
                 setfield(s,"width",getfield(s,"width") - getfield(g,"width"))
                 if a then
                     setattr(g,a_characters,a)
