@@ -294,6 +294,8 @@ local halant = {
     [0x094D] = true,
     -- kannada
     [0x0CCD] = true,
+    -- malayalam
+    [0x0D4D] = true,
 }
 
 local ra = {
