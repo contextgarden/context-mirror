@@ -8,6 +8,9 @@ if not modules then modules = { } end modules ['font-otn'] = {
 
 -- preprocessors = { "nodes" }
 
+-- anchor class : mark, mkmk, curs, mklg (todo)
+-- anchor type  : mark, basechar, baselig, basemark, centry, cexit, max (todo)
+
 -- this is still somewhat preliminary and it will get better in due time;
 -- much functionality could only be implemented thanks to the husayni font
 -- of Idris Samawi Hamid to who we dedicate this module.

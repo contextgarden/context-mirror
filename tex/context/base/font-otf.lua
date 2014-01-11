@@ -106,6 +106,8 @@ function otf.fileformat(filename)
         return formats.otf, suffix == "otf"
     elseif leader == "ttcf" then
         return formats.ttc, suffix == "ttc"
+ -- elseif leader == "true" then
+ --     return formats.ttf, suffix == "ttf"
     elseif suffix == "ttc" then
         return formats.ttc, true
     elseif suffix == "dfont" then
