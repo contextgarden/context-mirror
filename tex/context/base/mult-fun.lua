@@ -17,7 +17,7 @@ return {
         --
         "sqr", "log", "ln", "exp", "inv", "pow", "pi", "radian",
         "tand", "cotd", "sin", "cos", "tan", "cot", "atan", "asin", "acos",
-        "invsin", "invcos", "acosh", "asinh", "sinh", "cosh",
+        "invsin", "invcos", "invtan", "acosh", "asinh", "sinh", "cosh",
         "paired", "tripled",
         "unitcircle", "fulldiamond", "unitdiamond", "fullsquare",
      -- "halfcircle", "quartercircle",
