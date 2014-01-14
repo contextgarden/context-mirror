@@ -365,5 +365,7 @@ return {
         --
         "lesshyphens", "morehyphens", "nohyphens", "dohyphens",
         --
+        "Ucheckedstartdisplaymath", "Ucheckedstopdisplaymath",
+        --
     }
 }

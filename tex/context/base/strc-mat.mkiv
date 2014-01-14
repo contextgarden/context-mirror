@@ -630,13 +630,13 @@
 %      \prevdepth-\maxdimen % texbook pagina 79-80
 %    \fi
 %    \noindent % else funny hlist with funny baselineskip
-%    $$% \Ustartdisplaymath
+%    $$% \Ucheckedstartdisplaymath
 %    \setdisplaydimensions
 %    \startinnermath}
 %
 % \unexpanded\def\stopdisplaymath
 %   {\stopinnermath
-%    $$% \Ustopdisplaymath
+%    $$% \Ucheckedstopdisplaymath
 %    \par
 %    \afterdisplayspace
 %    \par
@@ -663,13 +663,13 @@
      \fi
    \fi
    \noindent % else funny hlist with funny baselineskip
-   $$% \Ustartdisplaymath
+   \Ucheckedstartdisplaymath
    \setdisplaydimensions
    \startinnermath}
 
 \unexpanded\def\stopdisplaymath
   {\stopinnermath
-   $$% \Ustopdisplaymath
+   \Ucheckedstopdisplaymath
    \par
    \ifvmode
      \ifcase\c_strc_formulas_space_model
