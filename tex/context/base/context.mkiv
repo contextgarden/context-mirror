@@ -28,7 +28,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2014.01.11 23:58}
+\edef\contextversion{2014.01.14 15:03}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -479,14 +479,15 @@
 
 % old bibtex support: (will be m-oldbibtex.mkiv)
 
-\loadmarkfile{bibl-bib}
-\loadmarkfile{bibl-tra}
+% \loadmarkfile{bibl-bib}
+% \loadmarkfile{bibl-tra}
 
 % new bibtex support:
 
-% \loadmarkfile{publ-ini}
-% \loadmarkfile{publ-tra}
-% \loadmarkfile{publ-xml}
+\loadmarkfile{publ-ini}
+\loadmarkfile{publ-tra}
+\loadmarkfile{publ-xml}
+\loadmarkfile{publ-old}
 
 %loadmarkfile{x-xtag}  % no longer preloaded
 
