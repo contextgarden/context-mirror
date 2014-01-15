@@ -454,13 +454,18 @@ local function checkdocument(root)
     if data then
         for i=1,#data do
             local di = data[i]
-            if di.content then
-                -- ok
-            elseif di.tg == "ignore" then
+            local tg = di.tg
+            if tg == "noexport" then
+data[i] = false
+--                 di.element = ""
+--                 di.data = nil -- { }
+            elseif di.content then
+                -- okay
+            elseif tg == "ignore" then
                 di.element = ""
                 checkdocument(di)
             else
-                -- can't happen
+checkdocument(di)
             end
         end
     end
@@ -1197,23 +1202,28 @@ function structurestags.settabulatecell(align)
     end
 end
 
+local function hascontent(data)
+    for i=1,#data do
+        local di = data[i]
+        if not di then
+            --
+        elseif di.content then
+            return true
+        else
+            local d = di.data
+            if d and #d > 0 and hascontent(d) then
+                return true
+            end
+        end
+    end
+end
+
 function extras.tabulate(result,element,detail,n,fulltag,di)
     local data = di.data
     for i=1,#data do
         local di = data[i]
-        if di.tg == "tabulaterow" then
-            local did = di.data
-            local content = false
-            for i=1,#did do
-                local d = did[i].data
-                if d and #d > 0 and d[1].content then
-                    content = true
-                    break
-                end
-            end
-            if not content then
-                di.element = "" -- or simply remove
-            end
+        if di.tg == "tabulaterow" and not hascontent(di.data) then
+            di.element = "" -- or simply remove
         end
     end
 end
@@ -1766,9 +1776,9 @@ local function pushentry(current)
     end
 end
 
-local function pushcontent(currentparagraph,newparagraph)
+local function pushcontent(oldparagraph,newparagraph)
     if nofcurrentcontent > 0 then
-        if currentparagraph then
+        if oldparagraph then
             if currentcontent[nofcurrentcontent] == "\n" then
                 if trace_export then
                     report_export("%w<!-- removing newline -->",currentdepth)
@@ -1778,9 +1788,9 @@ local function pushcontent(currentparagraph,newparagraph)
         end
         local content = concat(currentcontent,"",1,nofcurrentcontent)
         if content == "" then
-            -- omit; when currentparagraph we could push, remove spaces, pop
-        elseif somespace[content] and currentparagraph then
-            -- omit; when currentparagraph we could push, remove spaces, pop
+            -- omit; when oldparagraph we could push, remove spaces, pop
+        elseif somespace[content] and oldparagraph then
+            -- omit; when oldparagraph we could push, remove spaces, pop
         else
             local olddepth, newdepth
             local list = taglist[currentattribute]
@@ -1789,7 +1799,7 @@ local function pushcontent(currentparagraph,newparagraph)
             end
             local td = tree.data
             local nd = #td
-            td[nd+1] = { parnumber = currentparagraph, content = content }
+            td[nd+1] = { parnumber = oldparagraph or currentparagraph, content = content }
             if trace_export then
                 report_export("%w<!-- start content with length %s -->",currentdepth,#content)
                 report_export("%w%s",currentdepth,(gsub(content,"\n","\\n")))
@@ -1803,10 +1813,10 @@ local function pushcontent(currentparagraph,newparagraph)
         end
         nofcurrentcontent = 0
     end
-    if currentparagraph then
+    if oldparagraph then
         pushentry(makebreaklist(currentnesting))
         if trace_export then
-            report_export("%w<!-- break added betweep paragraph %a and %a -->",currentdepth,currentparagraph,newparagraph)
+            report_export("%w<!-- break added betweep paragraph %a and %a -->",currentdepth,oldparagraph,newparagraph)
         end
     end
 end

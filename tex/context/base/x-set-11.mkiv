@@ -448,8 +448,17 @@
 % \def\showsetupindeed#1%
 %   {\xmlfilterlist{\loadedsetups}{interface/command[@name='#1']/command(xml:setups:typeset)}}
 
+% \def\showsetupindeed#1%
+%   {\xmlfilterlist{\loadedsetups}{/interface/command['#1' == (@type=='environment' and 'start' or '') .. @name]/command(xml:setups:typeset)}}
+
+\setelementnature[setup][display]
+
 \def\showsetupindeed#1%
-  {\xmlfilterlist{\loadedsetups}{/interface/command['#1' == (@type=='environment' and 'start' or '') .. @name]/command(xml:setups:typeset)}}
+  {\startelement[setup][name=#1]%
+     \startelement[noexport]%
+       \xmlfilterlist{\loadedsetups}{/interface/command['#1' == (@type=='environment' and 'start' or '') .. @name]/command(xml:setups:typeset)}%
+     \stopelement
+   \stopelement}
 
 \unexpanded\def\placesetup    {\placelistofsorts[texcommand][\c!criterium=\v!used]}
 \unexpanded\def\placeallsetups{\placelistofsorts[texcommand][\c!criterium=\v!all ]}
@@ -822,7 +831,6 @@
         \fi
     \stoptabulate
 \stopxmlsetups
-
 
 \starttexdefinition showrootvalues [#1]
     \edef\currentsetupparametercategory{#1}

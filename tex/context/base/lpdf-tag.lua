@@ -213,39 +213,28 @@ local function makecontent(parent,start,stop,slist,id)
     --
     local bliteral = pdfliteral(format("/%s <</MCID %s>>BDC",tag,last))
     local eliteral = pdfliteral("EMC")
--- if false
---     local prev = getprev(start)
---     if prev then
---         setfield(prev,"next",bliteral)
---         setfield(bliteral,"prev",prev)
---     end
---     setfield(start,"prev",bliteral)
---     setfield(bliteral,"next",start)
---     --
---     local next = getnext(stop)
---     if next then
---         setfield(next,"prev",eliteral)
---         setfield(eliteral,"next",next)
---     end
---     setfield(stop,"next",eliteral)
---     setfield(eliteral,"prev",stop)
---     --
---     if slist and getlist(slist) == start then
---         setfield(slist,"list",bliteral)
---     elseif not prev then
---         report_tags("this can't happen: injection in front of nothing")
---     end
--- else
+    --
+    local prev = getprev(start)
+    if prev then
+        setfield(prev,"next",bliteral)
+        setfield(bliteral,"prev",prev)
+    end
+    setfield(start,"prev",bliteral)
+    setfield(bliteral,"next",start)
+    --
+    local next = getnext(stop)
+    if next then
+        setfield(next,"prev",eliteral)
+        setfield(eliteral,"next",next)
+    end
+    setfield(stop,"next",eliteral)
+    setfield(eliteral,"prev",stop)
+    --
     if slist and getlist(slist) == start then
         setfield(slist,"list",bliteral)
     elseif not getprev(start) then
         report_tags("this can't happen: injection in front of nothing")
     end
-    --
-    insert_before(start,start,bliteral)
-    insert_after(stop,stop,eliteral)
--- end
-    --
     index = index + 1
     list[index] = parent.pref
     return bliteral, eliteral
