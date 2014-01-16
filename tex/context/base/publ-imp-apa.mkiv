@@ -163,7 +163,7 @@
         \btxdoifelse {editor} {
             \enablemode[btx:apa:edited-book]
             \btxflushauthor{editor}
-            \btxcomma\btxsingularplural{editor}{editors}
+            \btxcomma\btxsingularplural{editor}{editor}{editors}
         } {
             % weird period
             \btxdoif {crossref} {
@@ -181,7 +181,7 @@
     \btxdoifelse {editor} {
         \enablemode[btx:apa:edited-book]
         \btxflushauthor{editor}
-        \btxcomma\btxsingularplural{editor}{editors}
+        \btxcomma\btxsingularplural{editor}{editor}{editors}
     } {
         \btxdoif {key} {
             \btxlbracket\btxsetup{btx:format:key}\btxrbracket
@@ -439,9 +439,9 @@
     }
     In\btxspace
     \btxdoifelse {title} {
-        \btxdoif {editors} {
+        \btxdoif {editor} {
             \btxflush{btx:apa:format:editors}
-            \btxcomma\btxsingularplural{editor}{editors}\btxcomma
+            \btxcomma\btxsingularplural{editor}{editor}{editors}\btxcomma
         }
         \bgroup\it\btxflush{title}\/\egroup
         \btxdoif {series} {
