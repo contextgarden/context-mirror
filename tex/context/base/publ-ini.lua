@@ -199,6 +199,17 @@ local function getdetail(dataset,tag,name)
     return d and d[name]
 end
 
+function commands.btxsingularorplural(dataset,tag,name) -- todo: make field dependent
+    local d = datasets[dataset].details[tag]
+    if d then
+        d = d[name]
+    end
+    if d then
+        d = #d <= 1
+    end
+    commands.doifelse(d)
+end
+
 -- basic loading
 
 function commands.usebtxdataset(name,filename)

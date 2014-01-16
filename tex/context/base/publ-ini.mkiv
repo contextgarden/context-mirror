@@ -683,17 +683,24 @@
 \let\nocitation    \btxnocite
 \let\usepublication\btxnocite
 
-%D Cite: helpers
+%D Cite helpers:
 
 \unexpanded\def\btxcitevariant#1%
   {\ctxcommand{btxcitevariant("\currentbtxdataset","\currentbtxblock","\currentbtxtag","#1")}}
 
-%D List: helpers
+%D List helpers:
 
 \def\currentbtxindex{0}
 
 \unexpanded\def\btxlistvariant#1%
   {\ctxcommand{btxlistvariant("\currentbtxdataset","\currentbtxblock","\currentbtxtag","#1","\currentbtxindex")}} % some can go
+
+%D Whatever helpers:
+
+\unexpanded\def\btxsingularplural#1%
+  {\ctxcommand{btxsingularorplural("\currentbtxdataset","\currentbtxtag","#1")}}
+
+\let\btxsingularorplural\btxsingularplural
 
 %D Loading variants:
 
