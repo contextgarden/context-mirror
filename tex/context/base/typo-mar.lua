@@ -344,7 +344,7 @@ function margins.save(t)
         --
      -- t.realpageno          = texgetcount("realpageno")
         if inline then
-            context(new_usernumber(inline_mark,nofsaved))
+            context(tonode(new_usernumber(inline_mark,nofsaved))) -- or use a normal node 
             store[nofsaved] = t -- no insert
             nofinlined = nofinlined + 1
         else
@@ -650,7 +650,7 @@ local function inject(parent,head,candidate)
         setfield(box,"next",head)
         head = box
     end
-    setfield(box,a_margindata,nofstatus)
+    setattr(box,a_margindata,nofstatus)
     if trace_margindata then
         report_margindata("injected, location %a, shift %p",location,shift)
     end
