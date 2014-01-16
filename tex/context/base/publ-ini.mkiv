@@ -810,10 +810,6 @@
     \c!left={[},
     \c!right={]}]
 
-% \c!artauthor=invertedshort % todo
-% \c!editor   =invertedshort % todo
-% \c!author   =invertedshort % todo
-
 \setupbtxlistvariant
   [\c!namesep={, },
    \c!lastnamesep={ and },
@@ -822,6 +818,7 @@
    \c!juniorsep={ },
    \c!vonsep={ },
    \c!surnamesep={, },
+   \c!surnameinitialsep={, },
    \c!etallimit=5,
    \c!etaldisplay=5,
    \c!etaltext={ et al.},
@@ -830,6 +827,7 @@
 
 \definebtxlistvariant
   [author]
+  [author=invertedshort] % we could also do this in the apa style itself
 
 \definebtxlistvariant
   [editor]

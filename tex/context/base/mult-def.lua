@@ -6622,6 +6622,9 @@ return {
   ["surnamesep"]={
    ["en"]="surnamesep",
   },
+  ["surnameinitialsep"]={
+   ["en"]="surnameinitialsep",
+  },
   ["lastnamesep"]={
    ["en"]="lastnamesep",
   },
