@@ -841,8 +841,7 @@ function lists.resolve(dataset,reference) -- maybe already feed it split
             for rest in gmatch(reference,"[^, ]+") do
                 local blk, tag, found = block, nil, nil
                 if block then
---                     tag = blk .. ":" .. rest
-                    tag = dataset .. ":" .. blk .. ":" .. rest
+                    tag = f_destination(dataset,blk,rest)
                     found = subset[tag]
                     if not found then
                         for i=block-1,1,-1 do
@@ -857,7 +856,7 @@ function lists.resolve(dataset,reference) -- maybe already feed it split
                 end
                 if not found then
                     blk = "*"
-                    tag = dataset .. ":" .. blk .. ":" .. rest
+                    tag = f_destination(dataset,blk,rest)
                     found = subset[tag]
                 end
                 if found then
@@ -1022,7 +1021,7 @@ function commands.btxhandlecite(dataset,tag,mark,variant,sorttype,setup) -- vari
             if i > 1 then
                 context.btxcitevariantparameter(v_middle)
             end
-            if mark then
+            if mark ~= false then
                 context.dobtxmarkcitation(dataset,tag)
             end
             context.formatted.directsetup(setup) -- cite can become alternative
@@ -1033,17 +1032,19 @@ function commands.btxhandlecite(dataset,tag,mark,variant,sorttype,setup) -- vari
     end
 end
 
-function commands.btxhandlenocite(dataset,tag)
-    local prefix, rest = lpegmatch(splitter,tag)
-    if rest then
-        dataset = prefix
-    else
-        rest = tag
-    end
-    context.setvalue("currentbtxdataset",dataset)
-    local tags = settings_to_array(rest)
-    for i=1,#tags do
-        context.dobtxmarkcitation(dataset,tags[i])
+function commands.btxhandlenocite(dataset,tag,mark)
+    if mark ~= false then
+        local prefix, rest = lpegmatch(splitter,tag)
+        if rest then
+            dataset = prefix
+        else
+            rest = tag
+        end
+        context.setvalue("currentbtxdataset",dataset)
+        local tags = settings_to_array(rest)
+        for i=1,#tags do
+            context.dobtxmarkcitation(dataset,tags[i])
+        end
     end
 end
 

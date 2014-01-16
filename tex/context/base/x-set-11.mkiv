@@ -451,11 +451,12 @@
 % \def\showsetupindeed#1%
 %   {\xmlfilterlist{\loadedsetups}{/interface/command['#1' == (@type=='environment' and 'start' or '') .. @name]/command(xml:setups:typeset)}}
 
-\setelementnature[setup][display]
+% \setelementnature[setup][display]
+% \setelementnature[setup][mixed]
 
 \def\showsetupindeed#1%
   {\startelement[setup][name=#1]%
-     \startelement[noexport]%
+     \startelement[noexport][comment={setup definition #1}]
        \xmlfilterlist{\loadedsetups}{/interface/command['#1' == (@type=='environment' and 'start' or '') .. @name]/command(xml:setups:typeset)}%
      \stopelement
    \stopelement}

@@ -456,16 +456,24 @@ local function checkdocument(root)
             local di = data[i]
             local tg = di.tg
             if tg == "noexport" then
-data[i] = false
---                 di.element = ""
---                 di.data = nil -- { }
+                local ud = userdata[di.fulltag]
+                local comment = ud and ud.comment
+                if comment then
+                    di.element = "comment"
+                    di.data = { { content = comment } }
+                    ud.comment = nil
+                else
+                    data[i] = false
+                 -- di.element = ""
+                 -- di.data = nil
+                end
             elseif di.content then
                 -- okay
             elseif tg == "ignore" then
                 di.element = ""
                 checkdocument(di)
             else
-checkdocument(di)
+                checkdocument(di) -- new, else no noexport handling
             end
         end
     end

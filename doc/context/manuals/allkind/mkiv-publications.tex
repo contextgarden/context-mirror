@@ -23,7 +23,8 @@
    css=export-example.css]
 
 \setupexport
-  [hyphen=yes]
+  [hyphen=yes,
+   width=60em]
 
 % \input publ-tmp.mkiv
 
@@ -650,6 +651,7 @@ subsystem is configurable and extensible. Just look at the following commands:
 \startlines \getbuffer \stoplines
 
 The first argument is optional.
+% What is the default? How can one set this up?
 
 \showsetup[cite]
 
@@ -672,13 +674,23 @@ Here we sort the authors and color the citation:
 \startlines \getbuffer \stoplines
 
 For reasons of backward compatibility the \type {\cite} command is a bit picky
-about spaces between the two arguments, of which the first is optional.
+about spaces between the two arguments, of which the first is optional. This is
+a consequence of allowing its use with the key specified between curly brackets
+as is the traditional practice. (We do encourage users to adopt the more
+coherent \CONTEXT\ syntax by using square brackets for keywords and reserving
+curly brackets to regroup text to be typeset.)
+% Just how is it picky?
+
+The \type {\citation} command is synonymous but is more flexible with respect to
+spacing of its arguments:
 
 \starttyping
 \citation[author]     [example::demo-004,demo-003]
 \citation[authoryear] [example::demo-004,demo-003]
 \citation[authoryears][example::demo-004,demo-003]
 \stoptyping
+
+% The first argument of cite and citation is optional. What is the default and how does one set it?
 
 There is a whole bunch of cite options and more can be easily defined.
 
@@ -1040,19 +1052,20 @@ from the contextgarden wiki):
 \stoptyping
 
 For \MKIV\ the modules were partly rewritten and ended up in the core so the two
-{\usemodule} commands are not needed there. One advantage of explicitly loading a
-module is that a job that doesn't need references to publications doesn't suffer
-from the associated overhead. Nowadays this overhead can be neglected. The first
-setup command in this example is needed to bootstrap the process: it tells what
-database has to be processed by \BIBTEX\ between runs. The second setup command
-is optional. Each citation (tagged with \type {\cite}) ends up in the list of
-publications.
+{\usemodule} commands were no longer needed. The overhead associated with the
+automatic loading of the bibliography macros can be neglected these days, so
+standardized modules such as \type {bib} are all being moved to the core and do
+not need to be explicitly loaded.
 
-In the new approach again the code is in the \CONTEXT\ kernel, so no modules need
-to be loaded. But, as we no longer use \BIBTEX, we don't need to setup \BIBTEX.
+The first \type {\setupbibtex} command in this example is needed to bootstrap
+the process: it tells what database has to be processed by \BIBTEX\ between
+runs. The second \type {\setuppublications} command is optional. Each citation
+(tagged with \type {\cite}) ends up in the list of publications.
+
+In the new approach we no longer use \BIBTEX so we don't need to setup \BIBTEX.
 Instead we define dataset(s). We also no longer set up publications with one
 command, but have split that up in rendering-, list-, and cite|-|variants. The
-basic \type {\cite} command remains.
+basic \type {\cite} command remains. The above example becomes:
 
 \starttyping
 \definebtxdataset
@@ -1077,8 +1090,8 @@ basic \type {\cite} command remains.
 \stoptext
 \stoptyping
 
-So, we have a few more commands to set up things. If you use just one dataset
-and rendering, the above preamble can be simplified to:
+So, we have a few more commands to set up things. If you intend to use just a
+single dataset and rendering, the above preamble can be simplified to:
 
 \starttyping
 \usebtxdataset
@@ -1088,14 +1101,14 @@ and rendering, the above preamble can be simplified to:
   [numbering=yes]
 \stoptyping
 
-But keep in mind, that compared to the old \MKII\ derived method we have moved
-some of the setup options to setting up the list and cite variants.
+But keep in mind that compared to the old \MKII\ derived method we have moved
+some of the options to the rendering, list and cite setup variants.
 
-Another difference is the use of lists. When you define a rendering, you also
-define a list. However, all entries are collected in a common list tagged \type
-{btx}. Although you will normally configure a rendering you can still set some
-properties of lists, but in that case you need to prefix the list identifier. In
-the case of the above example this is \type {btx:document}.
+Another difference is now the use of lists. When you define a rendering, you
+also define a list. However, all entries are collected in a common list tagged
+\type {btx}. Although you will normally configure a rendering you can still set
+some properties of lists, but in that case you need to prefix the list
+identifier. In the case of the above example this is \type {btx:document}.
 
 \stopchapter
 
