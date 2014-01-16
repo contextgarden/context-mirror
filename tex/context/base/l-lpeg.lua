@@ -469,7 +469,7 @@ end
 -- local pattern1 = P(1-P(pattern))^0 * P(pattern)   : test for not nil
 -- local pattern2 = (P(pattern) * Cc(true) + P(1))^0 : test for true (could be faster, but not much)
 
-function lpeg.finder(lst,makefunction) -- beware: slower than find with 'patternless finds'
+function lpeg.finder(lst,makefunction,isutf) -- beware: slower than find with 'patternless finds'
     local pattern
     if type(lst) == "table" then
         pattern = P(false)
@@ -485,7 +485,12 @@ function lpeg.finder(lst,makefunction) -- beware: slower than find with 'pattern
     else
         pattern = P(lst)
     end
-    pattern = (1-pattern)^0 * pattern
+    if isutf then
+--         pattern = ((utf8char or 1)-pattern)^0 * pattern
+        pattern = ((utf8char or 1)-pattern)^0 * pattern
+    else
+        pattern = (1-pattern)^0 * pattern
+    end
     if makefunction then
         return function(str)
             return lpegmatch(pattern,str)

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 01/15/14 18:03:19
+-- merge date  : 01/16/14 18:46:41
 
 do -- begin closure to overcome local limits and interference
 
@@ -395,7 +395,7 @@ function lpeg.replacer(one,two,makefunction,isutf)
     return pattern
   end
 end
-function lpeg.finder(lst,makefunction) 
+function lpeg.finder(lst,makefunction,isutf) 
   local pattern
   if type(lst)=="table" then
     pattern=P(false)
@@ -411,7 +411,11 @@ function lpeg.finder(lst,makefunction)
   else
     pattern=P(lst)
   end
-  pattern=(1-pattern)^0*pattern
+  if isutf then
+    pattern=((utf8char or 1)-pattern)^0*pattern
+  else
+    pattern=(1-pattern)^0*pattern
+  end
   if makefunction then
     return function(str)
       return lpegmatch(pattern,str)

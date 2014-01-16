@@ -709,3 +709,18 @@ a[href]:hover {
 	color           : rgb(50%,0%,0%) ;
 	text-decoration : underline ;
 }
+
+/* setups */
+
+setup {
+	display       : block ;
+}
+
+comment {
+	background-color : rgb(50%,75%,100%) ;
+	display          : block ;
+	padding          : 1em ;
+	margin-bottom    : 1em ;
+	margin-top       : 1em ;
+	font-family      : "Lucida Console", "DejaVu Sans Mono", monospace ;
+}

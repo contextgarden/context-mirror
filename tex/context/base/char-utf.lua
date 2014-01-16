@@ -357,44 +357,55 @@ function utffilters.collapse(str,filename)   -- we can make high a seperate pass
     return str
 end
 
-function utffilters.decompose(str)
-    if str and str ~= "" then
-        local nstr = #str
-        if nstr > 1 then
-         -- if initialize then -- saves a call
-         --     initialize()
-         -- end
-            local tokens, t, done, n = { }, 0, false, 0
-            for s in utfcharacters(str) do
-                local dec = decomposed[s]
-                if dec then
-                    if not done then
-                        if n > 0 then
-                            for s in utfcharacters(str) do
-                                if n == 1 then
-                                    break
-                                else
-                                    t = t + 1
-                                    tokens[t] = s
-                                    n = n - 1
-                                end
-                            end
-                        end
-                        done = true
-                    end
-                    t = t + 1
-                    tokens[t] = dec
-                elseif done then
-                    t = t + 1
-                    tokens[t] = s
-                else
-                    n = n + 1
-                end
-            end
-            if done then
-                return concat(tokens) -- seldom called
-            end
-        end
+-- function utffilters.decompose(str)
+--     if str and str ~= "" then
+--         local nstr = #str
+--         if nstr > 1 then
+--          -- if initialize then -- saves a call
+--          --     initialize()
+--          -- end
+--             local tokens, t, done, n = { }, 0, false, 0
+--             for s in utfcharacters(str) do
+--                 local dec = decomposed[s]
+--                 if dec then
+--                     if not done then
+--                         if n > 0 then
+--                             for s in utfcharacters(str) do
+--                                 if n == 0 then
+--                                     break
+--                                 else
+--                                     t = t + 1
+--                                     tokens[t] = s
+--                                     n = n - 1
+--                                 end
+--                             end
+--                         end
+--                         done = true
+--                     end
+--                     t = t + 1
+--                     tokens[t] = dec
+--                 elseif done then
+--                     t = t + 1
+--                     tokens[t] = s
+--                 else
+--                     n = n + 1
+--                 end
+--             end
+--             if done then
+--                 return concat(tokens) -- seldom called
+--             end
+--         end
+--     end
+--     return str
+-- end
+
+local tree     = lpeg.utfchartabletopattern(table.keys(decomposed))
+local finder   = lpeg.finder(tree,false,true)
+local replacer = lpeg.replacer(tree,decomposed,false,true)
+
+function utffilters.decompose(str) -- 3 to 4 times faster than the above
+    if str and str ~= "" and #str > 1 and lpegmatch(finder,str) then
+        return lpegmatch(replacer,str)
     end
     return str
 end
