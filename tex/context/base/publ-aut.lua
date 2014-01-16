@@ -340,9 +340,6 @@ function authors.invertedshort(author,settings)
         result[#result+1] = concat(vons," ")
         result[#result+1] = settings.vonsep or defaultsettings.vonsep
     end
-    if surnames then
-        result[#result+1] = concat(surnames," ")
-    end
     if surnames and #surnames > 0 then
         result[#result+1] = concat(surnames," ")
         if juniors and #juniors > 0 then
@@ -384,7 +381,7 @@ end
 
 function authors.concat(dataset,tag,field,settings)
     table.setmetatableindex(settings,defaultsettings)
-    local combined = settings.combiner
+    local combiner = settings.combiner
     if not combiner or type(combiner) == "string" then
         combiner = authors[combiner or "normal"] or authors.normal
     end
