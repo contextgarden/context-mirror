@@ -1006,7 +1006,9 @@ function table.print(t,...)
     end
 end
 
-setinspector(function(v) if type(v) == "table" then serialize(print,v,"table") return true end end)
+if setinspector then
+    setinspector(function(v) if type(v) == "table" then serialize(print,v,"table") return true end end)
+end
 
 -- -- -- obsolete but we keep them for a while and might comment them later -- -- --
 

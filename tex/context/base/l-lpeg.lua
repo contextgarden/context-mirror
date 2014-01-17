@@ -74,7 +74,9 @@ local lpegtype, lpegmatch, lpegprint = lpeg.type, lpeg.match, lpeg.print
 
 -- let's start with an inspector:
 
-setinspector(function(v) if lpegtype(v) then lpegprint(v) return true end end)
+if setinspector then
+    setinspector(function(v) if lpegtype(v) then lpegprint(v) return true end end)
+end
 
 -- Beware, we predefine a bunch of patterns here and one reason for doing so
 -- is that we get consistent behaviour in some of the visualizers.
