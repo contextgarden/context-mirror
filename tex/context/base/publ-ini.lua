@@ -979,6 +979,7 @@ publications.citevariants = citevariants
 local compare  = sorters.comparers.basic -- (a,b)
 local strip    = sorters.strip
 local splitter = sorters.splitters.utf
+local sort     = sorters.sort
 
 local function sortedtags(dataset,list,sorttype)
     local luadata = datasets[dataset].luadata
@@ -1000,7 +1001,7 @@ local function sortedtags(dataset,list,sorttype)
     if #valid == 0 or #valid ~= #list then
         return list
     else
-        table.sort(valid,sorters.comparers.basic)
+        sort(valid,sorters.comparers.basic)
         for i=1,#valid do
             valid[i] = valid[i].tag
         end

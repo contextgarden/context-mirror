@@ -13,6 +13,7 @@ end
 
 local chardata = characters.data
 
+local tostring = tostring
 local concat = table.concat
 local lpeg = lpeg
 local utfchar = utf.char
@@ -95,13 +96,12 @@ local function splitauthorstring(str)
             -- print("hit 2",author,nofhits,nofused,math.round(100*nofhits/nofused))
         end
         if not detail then
-            local firstnames, vons, surnames, initials, juniors, words
+            local firstnames, vons, surnames, initials, juniors
             local split = lpegmatch(commasplitter,author)
             local n = #split
             if n == 1 then
                 -- First von Last
-                words = lpegmatch(spacesplitter,author)
--- inspect(words)
+                local words = lpegmatch(spacesplitter,author)
                 firstnames, vons, surnames = { }, { }, { }
                 local i, n = 1, #words
                 while i <= n do
@@ -138,9 +138,22 @@ local function splitauthorstring(str)
                 end
             elseif n == 2 then
                 -- von Last, First
-                words    = lpegmatch(spacesplitter,split[2])
-                surnames = lpegmatch(spacesplitter,split[1])
-                firstnames, vons = { }, { }
+                firstnames, vons, surnames = { }, { }, { }
+                local words = lpegmatch(spacesplitter,split[1])
+                local i, n = 1, #words
+                while i <= n do
+                    local w = words[i]
+                    if is_upper(w) then
+                        break
+                    else
+                        vons[#vons+1], i = w, i + 1
+                    end
+                end
+                while i <= n do
+                    surnames[#surnames+1], i = words[i], i + 1
+                end
+                --
+                local words = lpegmatch(spacesplitter,split[2])
                 local i, n = 1, #words
                 while i <= n do
                     local w = words[i]
@@ -437,6 +450,65 @@ end
 -- We can consider creating a hashtable key -> entry but I wonder if
 -- pays off.
 
--- inspect(splitauthorstring("Hagen, Hans and Hoekwater, Taco Whoever T. Ex. and Henkel Hut, Hartmut Harald von der"))
--- inspect(splitauthorstring("Hans Hagen  and Taco Whoever T. Ex. Hoekwater  and Hartmut Harald von der Henkel Hut"))
+local compare  = sorters.comparers.basic -- (a,b)
+local strip    = sorters.strip
+local splitter = sorters.splitters.utf
+local sort     = sorters.sort
 
+function authors.sorted(dataset,list,sorttype) -- experimental
+    local luadata = datasets[dataset].details -- details
+    local valid = { }
+    for i=1,#list do
+        local tag = list[i]
+        local entry = luadata[tag]
+        if entry then
+            local key = entry[sorttype]
+            local suf = tostring(i)
+            if key then
+                local split = { }
+                for i=1,#key do
+                    local k = key[i]
+                    local vons = table.concat(k.vons," ")
+                    local surnames = table.concat(k.surnames," ")
+                    local assembled = (#vons > 0 and vons .. " " .. surnames) or surnames
+                    split[i] = splitter(strip(assembled .. ":" .. suf))
+                end
+                valid[i] = {
+                    index = i,
+                    split = split,
+                }
+            else
+                local split = splitter(suf)
+                valid[i] = {
+                    index = i,
+                    split = split,
+                }
+            end
+        end
+    end
+ -- inspect(valid)
+    if #valid == 0 or #valid ~= #list then
+        return list
+    else
+        sorters.sort(valid,compare)
+        for i=1,#valid do
+            valid[i] = valid[i].index
+        end
+        return valid
+    end
+end
+
+-- local dataset = publications.datasets.test
+--
+-- local function add(str)
+--     dataset.details[str] = { author = publications.authors.splitstring(str) }
+-- end
+--
+-- add("Hagen, Hans and Hoekwater, Taco Whoever T. Ex. and Henkel Hut, Hartmut Harald von der")
+-- add("Hans Hagen and Taco Whoever T. Ex. Hoekwater  and Hartmut Harald von der Henkel Hut")
+-- add("de Gennes, P. and Gennes, P. de")
+-- add("van't Hoff, J. H. and {van't Hoff}, J. H.")
+--
+-- local list = table.keys(dataset.details)
+-- local sort = publications.authors.sorted("test",list,"author")
+-- local test = { } for i=1,#sort do test[i] = dataset.details[list[sort[i]]] end

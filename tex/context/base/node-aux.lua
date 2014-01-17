@@ -255,7 +255,7 @@ end
 --     end
 -- end
 
-function nuts.firstcharinbox(n)
+local function firstcharinbox(n)
     local l = getlist(getbox(n))
     if l then
         for g in traverse_id(glyph_code,l) do
@@ -265,8 +265,17 @@ function nuts.firstcharinbox(n)
     return 0
 end
 
-nodes.firstcharinbox = nuts.firstcharinbox
+nuts .firstcharinbox = firstcharinbox
+nodes.firstcharinbox = firstcharinbox
 nodes.firstcharacter = vianuts(firstcharacter)
+
+function commands.buildtextaccent(n)
+    local char = firstcharinbox(n)
+    if char > 0 then
+     -- context.accent(false,char)
+        context([[\accent%s\relax]],char)
+    end
+end
 
 -- this depends on fonts, so we have a funny dependency ... will be
 -- sorted out .. we could make tonodes a plugin into this
