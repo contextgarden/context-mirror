@@ -594,9 +594,22 @@ def filldraw expr c =
     addto currentpicture contour c withpen currentpen _op_
 enddef ;
 
-def drawdot expr z =
-    addto currentpicture contour makepath currentpen shifted z _op_
-enddef ;
+% def drawdot expr z =
+%     addto currentpicture contour makepath currentpen shifted z _op_
+% enddef ;
+%
+% testcase DEK:
+%
+% for j=1 upto 9 :
+%     pickup pencircle xscaled .4 yscaled .2 ;
+%     drawdot (10j,0) withpen pencircle xscaled .5j yscaled .25j rotated 45 ;
+%     pickup pencircle xscaled .5j yscaled .25j rotated 45 ;
+%     drawdot (10j,10);
+% endfor ;
+%
+% so ...
+
+let drawdot = draw ;
 
 def unfill     expr c = fill     c withcolor background enddef ;
 def undraw     expr p = draw     p withcolor background enddef ;

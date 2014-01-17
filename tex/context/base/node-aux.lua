@@ -50,6 +50,9 @@ local slide_nodes        = nuts.slide
 local insert_node_after  = nuts.insert_after
 local isnode             = nuts.is_node
 
+local nodes_traverse_id  = nodes.traverse_id
+local nodes_first_glyph  = nodes.first_glyph
+
 local nodepool           = nuts.pool
 local new_glue           = nodepool.glue
 local new_glyph          = nodepool.glyph
@@ -232,7 +235,7 @@ nuts.unsetattributes     = unset_attributes                  nodes.unsetattribut
 --
 -- nodes.firstline = firstline
 
-local function firstcharacter(n,untagged) -- tagged == subtype > 255
+function nuts.firstcharacter(n,untagged) -- tagged == subtype > 255
     if untagged then
         return first_glyph(n)
     else
@@ -242,7 +245,17 @@ local function firstcharacter(n,untagged) -- tagged == subtype > 255
     end
 end
 
-local function firstcharinbox(n)
+-- function nodes.firstcharacter(n,untagged) -- tagged == subtype > 255
+--     if untagged then
+--         return nodes_first_glyph(n)
+--     else
+--         for g in nodes_traverse_id(glyph_code,n) do
+--             return g
+--         end
+--     end
+-- end
+
+function nuts.firstcharinbox(n)
     local l = getlist(getbox(n))
     if l then
         for g in traverse_id(glyph_code,l) do
@@ -252,8 +265,8 @@ local function firstcharinbox(n)
     return 0
 end
 
-nuts.firstcharacter = firstcharacter  nodes.firstcharacter = vianuts(firstcharacter)
-nuts.firstcharinbox = firstcharinbox  nodes.firstcharinbox = vianuts(firstcharinbox)
+nodes.firstcharinbox = nuts.firstcharinbox
+nodes.firstcharacter = vianuts(firstcharacter)
 
 -- this depends on fonts, so we have a funny dependency ... will be
 -- sorted out .. we could make tonodes a plugin into this

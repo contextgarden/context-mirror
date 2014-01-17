@@ -437,26 +437,6 @@ end
 -- We can consider creating a hashtable key -> entry but I wonder if
 -- pays off.
 
--- local function test(sample)
---     local authors = splitauthors(sample)
---     print(table.serialize(authors))
---     for i=1,#authors do
---         local author = authors[i]
---         print(normalauthor       (author,settings))
---         print(normalshortauthor  (author,settings))
---         print(invertedauthor     (author,settings))
---         print(invertedshortauthor(author,settings))
---     end
---     print(concatauthors(sample,settings,normalauthor))
---     print(concatauthors(sample,settings,normalshortauthor))
---     print(concatauthors(sample,settings,invertedauthor))
---     print(concatauthors(sample,settings,invertedshortauthor))
--- end
-
--- local sample_a = "Hagen, Hans and Hoekwater, Taco Whoever T. Ex. and Henkel Hut, Hartmut Harald von der"
--- local sample_b = "Hans Hagen  and Taco Whoever T. Ex. Hoekwater  and Hartmut Harald von der Henkel Hut"
-
--- test(sample_a)
--- test(sample_b)
-
+-- inspect(splitauthorstring("Hagen, Hans and Hoekwater, Taco Whoever T. Ex. and Henkel Hut, Hartmut Harald von der"))
+-- inspect(splitauthorstring("Hans Hagen  and Taco Whoever T. Ex. Hoekwater  and Hartmut Harald von der Henkel Hut"))
 
