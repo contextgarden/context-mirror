@@ -11,6 +11,7 @@ if not characters then
     dofile(resolvers.findfile("char-ini.lua"))
 end
 
+local context  = context
 local chardata = characters.data
 
 local tostring = tostring

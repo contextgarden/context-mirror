@@ -21,8 +21,6 @@ local lpegmatch = lpeg.match
 local report         = logs.reporter("publications")
 local trace          = false  trackers.register("publications", function(v) trace = v end)
 
-local context        = context
-
 local datasets       = publications.datasets
 
 local variables      = interfaces.variables
@@ -51,6 +49,23 @@ local logsnewline    = logs.newline
 local logspushtarget = logs.pushtarget
 local logspoptarget  = logs.poptarget
 local csname_id      = token.csname_id
+
+local context                     = context
+
+local ctx_btxlistparameter        = context.btxlistparameter
+local ctx_btxcitevariantparameter = context.btxcitevariantparameter
+local ctx_btxlistvariantparameter = context.btxlistvariantparameter
+local ctx_btxdomarkcitation       = context.btxdomarkcitation
+local ctx_setvalue                = context.setvalue
+local ctx_firstoftwoarguments     = context.firstoftwoarguments
+local ctx_secondoftwoarguments    = context.secondoftwoarguments
+local ctx_firstofoneargument      = context.firstofoneargument
+local ctx_gobbleoneargument       = context.gobbleoneargument
+local ctx_btxdirectlink           = context.btxdirectlink
+local ctx_btxhandlelistentry      = context.btxhandlelistentry
+local ctx_btxchecklistentry       = context.btxchecklistentry
+local ctx_dodirectfullreference   = context.dodirectfullreference
+local ctx_directsetup             = context.directsetup
 
 statistics.register("publications load time", function()
     local publicationsstats = publications.statistics
@@ -403,11 +418,11 @@ function commands.btxdoifelse(name,tag,field)
         local data  = dataset.luadata[tag]
         local value = data and data[field]
         if value and value ~= "" then
-            context.firstoftwoarguments()
+            ctx_firstoftwoarguments()
             return
         end
     end
-    context.secondoftwoarguments()
+    ctx_secondoftwoarguments()
 end
 
 function commands.btxdoif(name,tag,field)
@@ -416,11 +431,11 @@ function commands.btxdoif(name,tag,field)
         local data  = dataset.luadata[tag]
         local value = data and data[field]
         if value and value ~= "" then
-            context.firstofoneargument()
+            ctx_firstofoneargument()
             return
         end
     end
-    context.gobbleoneargument()
+    ctx_gobbleoneargument()
 end
 
 function commands.btxdoifnot(name,tag,field)
@@ -429,11 +444,11 @@ function commands.btxdoifnot(name,tag,field)
         local data  = dataset.luadata[tag]
         local value = data and data[field]
         if value and value ~= "" then
-            context.gobbleoneargument()
+            ctx_gobbleoneargument()
             return
         end
     end
-    context.firstofoneargument()
+    ctx_firstofoneargument()
 end
 
 -- -- alternative approach: keep data at the tex end
@@ -445,12 +460,12 @@ function publications.listconcat(t)
         if n > 1 then
             if n > 2 then
                 for i=2,n-1 do
-                    context.btxlistparameter("sep")
+                    ctx_btxlistparameter("sep")
                     context(t[i])
                 end
-                context.btxlistparameter("finalsep")
+                ctx_btxlistparameter("finalsep")
             else
-                context.btxlistparameter("lastsep")
+                ctx_btxlistparameter("lastsep")
             end
             context(t[n])
         end
@@ -464,12 +479,12 @@ function publications.citeconcat(t)
         if n > 1 then
             if n > 2 then
                 for i=2,n-1 do
-                    context.btxcitevariantparameter("sep")
+                    ctx_btxcitevariantparameter("sep")
                     context(t[i])
                 end
-                context.btxcitevariantparameter("finalsep")
+                ctx_btxcitevariantparameter("finalsep")
             else
-                context.btxcitevariantparameter("lastsep")
+                ctx_btxcitevariantparameter("lastsep")
             end
             context(t[n])
         end
@@ -484,105 +499,105 @@ function publications.singularorplural(singular,plural)
     end
 end
 
-function commands.makebibauthorlist(settings)
-    if not settings then
-        return
-    end
-    local dataset = datasets[settings.dataset]
-    if not dataset or dataset == "" then
-        return
-    end
-    local tag = settings.tag
-    if not tag or tag == "" then
-        return
-    end
-    local asked = settings_to_array(tag)
-    if #asked == 0 then
-        return
-    end
-    local compress    = settings.compress
-    local interaction = settings.interactionn == v_start
-    local limit       = tonumber(settings.limit)
-    local found       = { }
-    local hash        = { }
-    local total       = 0
-    local luadata     = dataset.luadata
-    for i=1,#asked do
-        local tag  = asked[i]
-        local data = luadata[tag]
-        if data then
-            local author = data.a or "Xxxxxxxxxx"
-            local year   = data.y or "0000"
-            if not compress or not hash[author] then
-                local t = {
-                    author = author,
-                    name   = name, -- first
-                    year   = { [year] = name },
-                }
-                total = total + 1
-                found[total] = t
-                hash[author] = t
-            else
-                hash[author].year[year] = name
-            end
-        end
-    end
-    for i=1,total do
-        local data = found[i]
-        local author = data.author
-        local year = table.keys(data.year)
-        table.sort(year)
-        if interaction then
-            for i=1,#year do
-                year[i] = string.formatters["\\bibmaybeinteractive{%s}{%s}"](data.year[year[i]],year[i])
-            end
-        end
-        context.setvalue("currentbibyear",concat(year,","))
-        if author == "" then
-            context.setvalue("currentbibauthor","")
-        else -- needs checking
-            local authors = settings_to_array(author) -- {{}{}},{{}{}}
-            local nofauthors = #authors
-            if nofauthors == 1 then
-                if interaction then
-                    author = string.formatters["\\bibmaybeinteractive{%s}{%s}"](data.name,author)
-                end
-                context.setvalue("currentbibauthor",author)
-            else
-                limit = limit or nofauthors
-                if interaction then
-                    for i=1,#authors do
-                        authors[i] = string.formatters["\\bibmaybeinteractive{%s}{%s}"](data.name,authors[i])
-                    end
-                end
-                if limit == 1 then
-                    context.setvalue("currentbibauthor",authors[1] .. "\\bibalternative{otherstext}")
-                elseif limit == 2 and nofauthors == 2 then
-                    context.setvalue("currentbibauthor",concat(authors,"\\bibalternative{andtext}"))
-                else
-                    for i=1,limit-1 do
-                        authors[i] = authors[i] .. "\\bibalternative{namesep}"
-                    end
-                    if limit < nofauthors then
-                        authors[limit+1] = "\\bibalternative{otherstext}"
-                        context.setvalue("currentbibauthor",concat(authors,"",1,limit+1))
-                    else
-                        authors[limit-1] = authors[limit-1] .. "\\bibalternative{andtext}"
-                        context.setvalue("currentbibauthor",concat(authors))
-                    end
-                end
-            end
-        end
-        -- the following use: currentbibauthor and currentbibyear
-        if i == 1 then
-            context.ixfirstcommand()
-        elseif i == total then
-            context.ixlastcommand()
-        else
-            context.ixsecondcommand()
-        end
-    end
-end
+-- function commands.makebibauthorlist(settings) -- ?
+--     if not settings then
+--         return
+--     end
+--     local dataset = datasets[settings.dataset]
+--     if not dataset or dataset == "" then
+--         return
+--     end
+--     local tag = settings.tag
+--     if not tag or tag == "" then
+--         return
+--     end
+--     local asked = settings_to_array(tag)
+--     if #asked == 0 then
+--         return
+--     end
+--     local compress    = settings.compress
+--     local interaction = settings.interactionn == v_start
+--     local limit       = tonumber(settings.limit)
+--     local found       = { }
+--     local hash        = { }
+--     local total       = 0
+--     local luadata     = dataset.luadata
+--     for i=1,#asked do
+--         local tag  = asked[i]
+--         local data = luadata[tag]
+--         if data then
+--             local author = data.a or "Xxxxxxxxxx"
+--             local year   = data.y or "0000"
+--             if not compress or not hash[author] then
+--                 local t = {
+--                     author = author,
+--                     name   = name, -- first
+--                     year   = { [year] = name },
+--                 }
+--                 total = total + 1
+--                 found[total] = t
+--                 hash[author] = t
+--             else
+--                 hash[author].year[year] = name
+--             end
+--         end
+--     end
+--     for i=1,total do
+--         local data = found[i]
+--         local author = data.author
+--         local year = table.keys(data.year)
+--         table.sort(year)
+--         if interaction then
+--             for i=1,#year do
+--                 year[i] = formatters["\\bibmaybeinteractive{%s}{%s}"](data.year[year[i]],year[i])
+--             end
+--         end
+--         ctx_setvalue("currentbibyear",concat(year,","))
+--         if author == "" then
+--             ctx_setvalue("currentbibauthor","")
+--         else -- needs checking
+--             local authors = settings_to_array(author) -- {{}{}},{{}{}}
+--             local nofauthors = #authors
+--             if nofauthors == 1 then
+--                 if interaction then
+--                     author = formatters["\\bibmaybeinteractive{%s}{%s}"](data.name,author)
+--                 end
+--                 ctx_setvalue("currentbibauthor",author)
+--             else
+--                 limit = limit or nofauthors
+--                 if interaction then
+--                     for i=1,#authors do
+--                         authors[i] = formatters["\\bibmaybeinteractive{%s}{%s}"](data.name,authors[i])
+--                     end
+--                 end
+--                 if limit == 1 then
+--                     ctx_setvalue("currentbibauthor",authors[1] .. "\\bibalternative{otherstext}")
+--                 elseif limit == 2 and nofauthors == 2 then
+--                     ctx_setvalue("currentbibauthor",concat(authors,"\\bibalternative{andtext}"))
+--                 else
+--                     for i=1,limit-1 do
+--                         authors[i] = authors[i] .. "\\bibalternative{namesep}"
+--                     end
+--                     if limit < nofauthors then
+--                         authors[limit+1] = "\\bibalternative{otherstext}"
+--                         ctx_setvalue("currentbibauthor",concat(authors,"",1,limit+1))
+--                     else
+--                         authors[limit-1] = authors[limit-1] .. "\\bibalternative{andtext}"
+--                         ctx_setvalue("currentbibauthor",concat(authors))
+--                     end
+--                 end
+--             end
+--         end
+--         -- the following use: currentbibauthor and currentbibyear
+--         if i == 1 then
+--             context.ixfirstcommand()
+--         elseif i == total then
+--             context.ixlastcommand()
+--         else
+--             context.ixsecondcommand()
+--         end
+--     end
+-- end
 
 local patterns = { "publ-imp-%s.mkiv", "publ-imp-%s.tex" }
 
@@ -719,6 +734,11 @@ function lists.collectentries(specification)
                 end
             end
         end
+    elseif method == v_dataset then
+        dataset = datasets[dataset]
+        for tag, data in table.sortedhash(dataset.luadata) do
+            list[#list+1] = { tag }
+        end
     end
 end
 
@@ -775,16 +795,16 @@ function lists.flushentries(dataset,sortvariant)
         sort(list,compare)
     end
     for i=1,#list do
-        context.setvalue("currentbtxindex",i)
-        context.btxhandlelistentry(list[i][1]) -- we can pass i here too ... more efficient to avoid the setvalue
+        ctx_setvalue("currentbtxindex",i)
+        ctx_btxhandlelistentry(list[i][1]) -- we can pass i here too ... more efficient to avoid the setvalue
     end
 end
 
 function lists.fetchentries(dataset)
     local list = renderings[dataset].list
     for i=1,#list do
-        context.setvalue("currentbtxindex",i)
-        context.btxchecklistentry(list[i][1])
+        ctx_setvalue("currentbtxindex",i)
+        ctx_btxchecklistentry(list[i][1])
     end
 end
 
@@ -921,17 +941,17 @@ function lists.resolve(dataset,reference) -- maybe already feed it split
             for i=1,nofcollected do
                 local c = collected[i]
                 if i == nofcollected then
-                    context.btxlistvariantparameter("lastpubsep")
+                    ctx_btxlistvariantparameter("lastpubsep")
                 elseif i > 1 then
-                    context.btxlistvariantparameter("pubsep")
+                    ctx_btxlistvariantparameter("pubsep")
                 end
                 if #c == 3 then -- a range (3 is first or last)
-                    context.btxdirectlink(f_reference(dataset,c[1],c[2]),c[3])
+                    ctx_btxdirectlink(f_reference(dataset,c[1],c[2]),c[3])
                 else
                     local f, l = c[2], c[2]
-                    context.btxdirectlink(f_reference(dataset,f[1],f[2]),f[3])
+                    ctx_btxdirectlink(f_reference(dataset,f[1],f[2]),f[3])
                     context.endash() -- to do
-                    context.btxdirectlink(f_reference(dataset,l[4],l[5]),l[6])
+                    ctx_btxdirectlink(f_reference(dataset,l[4],l[5]),l[6])
                 end
             end
         else
@@ -948,7 +968,7 @@ function commands.btxreference(dataset,block,tag,data)
     local ref = f_reference(dataset,block,tag)
     if not done[ref] then
         done[ref] = true
-        context.dodirectfullreference(ref,data)
+        ctx_dodirectfullreference(ref,data)
     end
 end
 
@@ -958,7 +978,7 @@ function commands.btxdestination(dataset,block,tag,data)
     local ref = f_destination(dataset,block,tag)
     if not done[ref] then
         done[ref] = true
-        context.dodirectfullreference(ref,data)
+        ctx_dodirectfullreference(ref,data)
     end
 end
 
@@ -1020,25 +1040,25 @@ function commands.btxhandlecite(dataset,tag,mark,variant,sorttype,setup) -- vari
     else
         rest = tag
     end
-    context.setvalue("currentbtxdataset",dataset)
+    ctx_setvalue("currentbtxdataset",dataset)
     local tags = settings_to_array(rest)
     if #tags > 0 then
         if sorttype and sorttype ~= "" then
             tags = sortedtags(dataset,tags,sorttype)
         end
-        context.btxcitevariantparameter(v_left)
+        ctx_btxcitevariantparameter(v_left)
         for i=1,#tags do
             local tag = tags[i]
-            context.setvalue("currentbtxtag",tag)
+            ctx_setvalue("currentbtxtag",tag)
             if i > 1 then
-                context.btxcitevariantparameter(v_middle)
+                ctx_btxcitevariantparameter(v_middle)
             end
             if mark ~= false then
-                context.dobtxmarkcitation(dataset,tag)
+                ctx_btxdomarkcitation(dataset,tag)
             end
-            context.formatted.directsetup(setup) -- cite can become alternative
+            ctx_directsetup(setup) -- cite can become alternative
         end
-        context.btxcitevariantparameter(v_right)
+        ctx_btxcitevariantparameter(v_right)
     else
         -- error
     end
@@ -1052,10 +1072,10 @@ function commands.btxhandlenocite(dataset,tag,mark)
         else
             rest = tag
         end
-        context.setvalue("currentbtxdataset",dataset)
+        ctx_setvalue("currentbtxdataset",dataset)
         local tags = settings_to_array(rest)
         for i=1,#tags do
-            context.dobtxmarkcitation(dataset,tags[i])
+            ctx_btxdomarkcitation(dataset,tags[i])
         end
     end
 end
@@ -1162,7 +1182,7 @@ end
 function citevariants.authornum(dataset,tags)
     local result, order = collectauthoryears(dataset,tags,method,what) -- we can have a collectauthors
     publications.citeconcat(order)
-    context.btxcitevariantparameter(v_inbetween)
+    ctx_btxcitevariantparameter(v_inbetween)
     lists.resolve(dataset,tags) -- left/right ?
 end
 
@@ -1179,7 +1199,7 @@ function citevariants.page(dataset,tags)
         -- nothing
     elseif type(pages) == "table" then
         context(pages[1])
-        context.btxcitevariantparameter(v_inbetween)
+        ctx_btxcitevariantparameter(v_inbetween)
         context(pages[2])
     else
         context(pages)
@@ -1206,10 +1226,10 @@ publications.listvariants = listvariants
 --     if sorttype and sorttype ~= "" then
 --         tags = sortedtags(dataset,tags,sorttype)
 --     end
---     context.setvalue("currentbtxtag",tag)
---     context.btxlistvariantparameter(v_left)
---     context.formatted.directsetup(setup)
---     context.btxlistvariantparameter(v_right)
+--     ctx_setvalue("currentbtxtag",tag)
+--     ctx_btxlistvariantparameter(v_left)
+--     ctx_directsetup(setup)
+--     ctx_btxlistvariantparameter(v_right)
 -- end
 
 function commands.btxlistvariant(dataset,block,tags,variant,listindex)
@@ -1224,7 +1244,7 @@ function listvariants.default(dataset,block,tags,variant)
 end
 
 function listvariants.num(dataset,block,tags,variant,listindex)
-    context.btxdirectlink(f_destination(dataset,block,tags),listindex) -- not okay yet
+    ctx_btxdirectlink(f_destination(dataset,block,tags),listindex) -- not okay yet
 end
 
 function listvariants.short(dataset,block,tags,variant,listindex)

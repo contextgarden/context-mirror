@@ -115,9 +115,13 @@ function publications.markasupdated(name)
 end
 
 setmetatableindex(datasets,function(t,k)
-    local v = publications.new(k)
-    datasets[k] = v
-    return v
+    if type(k) == "table" then
+        return k -- so we can use this accessor as checker
+    else
+        local v = publications.new(k)
+        datasets[k] = v
+        return v
+    end
 end)
 
 -- we apply some normalization
@@ -259,6 +263,7 @@ local bibtotable = (space + forget + shortcut/do_shortcut + definition/do_defini
 -- converttoxml -> dataset.xmldata from dataset.luadata
 
 function publications.loadbibdata(dataset,content,source,kind)
+    dataset = datasets[dataset]
     statistics.starttiming(publications)
     publicationsstats.nofbytes = publicationsstats.nofbytes + #content
     dataset.nofbytes = dataset.nofbytes + #content
@@ -286,6 +291,7 @@ local cleaner_2 = Cs ( (
 local compact = false -- can be a directive but then we also need to deal with newlines ... not now
 
 function publications.converttoxml(dataset,nice) -- we have fields !
+    dataset = datasets[dataset]
     local luadata = dataset and dataset.luadata
     if luadata then
         statistics.starttiming(publications)
@@ -357,6 +363,7 @@ local loaders        = publications.loaders or { }
 publications.loaders = loaders
 
 function loaders.bib(dataset,filename,kind)
+    dataset = datasets[dataset]
     local data = io.loaddata(filename) or ""
     if data == "" then
         report("empty file %a, nothing loaded",filename)
@@ -367,6 +374,7 @@ function loaders.bib(dataset,filename,kind)
 end
 
 function loaders.lua(dataset,filename) -- if filename is a table we load that one
+    dataset = datasets[dataset]
     if type(dataset) == "table" then
         dataset = datasets[dataset]
     end
@@ -383,6 +391,7 @@ function loaders.lua(dataset,filename) -- if filename is a table we load that on
 end
 
 function loaders.xml(dataset,filename)
+    dataset = datasets[dataset]
     local luadata = dataset.luadata
     local root = xml.load(filename)
     for entry in xmlcollected(root,"/bibtex/entry") do
@@ -417,6 +426,7 @@ setmetatableindex(loaders,function(t,filetype)
 end)
 
 function publications.load(dataset,filename,kind)
+    dataset = datasets[dataset]
     statistics.starttiming(publications)
     local files = settings_to_array(filename)
     for i=1,#files do
@@ -438,12 +448,14 @@ function publications.load(dataset,filename,kind)
         end
     end
     statistics.stoptiming(publications)
+    return dataset
 end
 
 local checked  = function(s,d) d[s] = (d[s] or 0) + 1 end
 local checktex = ( (1-P("\\"))^1 + P("\\") * ((C(R("az","AZ")^1)  * Carg(1))/checked))^0
 
 function publications.analyze(dataset)
+    dataset = datasets[dataset]
     local data       = dataset.luadata
     local categories = { }
     local fields     = { }

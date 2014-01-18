@@ -14,6 +14,8 @@
 % todo: we cannot use 'default' as this wipes metadata names (maybe no longer do that)
 % todo: \v!cite => \s!cite
 % todo: interface with (ml)bibtex (export -> call -> import)
+% todo: check if 'all' etc are ok ... either use list or use other criterium
+% todo: maybe use description instead of list
 
 % \definecolor[btx:field]   [darkred]
 % \definecolor[btx:crossref][darkblue]
@@ -294,6 +296,9 @@
    \fi
 \to \everysetupbtxlistplacement
 
+% use description instead of list ... more flexible .. but then not via
+% a real description in the tuc but directly
+
 \def\publ_place_list_indeed
   {\startbtxrendering[\currentbtxrendering]%
      \directsetup{\btxrenderingparameter\c!setups}%
@@ -552,7 +557,7 @@
 \def\publ_cite_indeed#1#2%
   {\expanded{\writedatatolist[btx][btxset=#1,btxref=#2]}}
 
-\def\dobtxmarkcitation#1#2% called from lua end
+\def\btxdomarkcitation#1#2% called from lua end
   {\iftrialtypesetting \else
      \writedatatolist[btx][btxset=#1,btxref=#2]% \c!location=\v!here
    \fi}
