@@ -120,7 +120,7 @@ local sorters   = sorters
 local constants = sorters.constants
 
 local data, language, method, digits
-local replacements, m_mappings, z_mappings, p_mappings, entries, orders, lower, upper, method, sequence
+local replacements, m_mappings, z_mappings, p_mappings, entries, orders, lower, upper, method, sequence, usedinsequence
 local thefirstofsplit
 
 local mte = { -- todo: assign to t
@@ -334,6 +334,8 @@ local function setlanguage(l,m,d,u)
         end
     end
     data.sequence = sequence
+    usedinsequence = table.tohash(sequence)
+    data.usedinsequence = usedinsequence
     if trace_tests then
         report_sorters("using sort sequence: % t",sequence)
     end
@@ -371,6 +373,8 @@ local function basicsort(sort_a,sort_b)
     end
     return 0
 end
+
+-- todo: compile compare function
 
 function comparers.basic(a,b) -- trace ea and eb
     local ea, eb = a.split, b.split
@@ -477,7 +481,7 @@ sorters.firstofsplit = firstofsplit
 -- for the moment we use an inefficient bunch of tables but once
 -- we know what combinations make sense we can optimize this
 
-function splitters.utf(str) -- we could append m and u but this is cleaner, s is for tracing
+function splitters.utf(str,checked) -- we could append m and u but this is cleaner, s is for tracing
     if #replacements > 0 then
         -- todo make an lpeg for this
         for k=1,#replacements do
@@ -580,18 +584,31 @@ function splitters.utf(str) -- we could append m and u but this is cleaner, s is
     --         p_mapping = { p_mappings[fs][1] }
     --     end
     -- end
-    local t = {
-        ch = char,
-        uc = byte,
-        mc = m_case,
-        zc = z_case,
-        pc = p_case,
-        mm = m_mapping,
-        zm = z_mapping,
-        pm = p_mapping,
-    }
 
-    return t
+    if checked then
+        return {
+            ch = usedinsequence.ch and char      or nil, -- not in sequence
+            uc = usedinsequence.uc and byte      or nil,
+            mc = usedinsequence.mc and m_case    or nil,
+            zc = usedinsequence.zc and z_case    or nil,
+            pc = usedinsequence.pc and p_case    or nil,
+            mm = usedinsequence.mm and m_mapping or nil,
+            zm = usedinsequence.zm and z_mapping or nil,
+            pm = usedinsequence.pm and p_mapping or nil,
+        }
+    else
+        return {
+            ch = char,
+            uc = byte,
+            mc = m_case,
+            zc = z_case,
+            pc = p_case,
+            mm = m_mapping,
+            zm = z_mapping,
+            pm = p_mapping,
+        }
+    end
+
 end
 
 local function packch(entry)
