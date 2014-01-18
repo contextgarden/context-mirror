@@ -465,26 +465,40 @@ function authors.sorted(dataset,list,sorttype) -- experimental
         if entry then
             local key = entry[sorttype]
             local suf = tostring(i)
+            local split
             if key then
-                local split = { }
-                for i=1,#key do
-                    local k = key[i]
-                    local vons = table.concat(k.vons," ")
-                    local surnames = table.concat(k.surnames," ")
-                    local assembled = (#vons > 0 and vons .. " " .. surnames) or surnames
-                    split[i] = splitter(strip(assembled .. ":" .. suf))
+                split = { }
+                local n = #key
+                if n > 0 then
+                    -- least efficient
+                    for i=1,n do
+                        local k = key[i]
+                        local vons = k.vons
+                        local surs = k.surnames
+                        local vons = vons and concat(vons," ")
+                        local surs = surs and concat(surs," ") or ""
+                        local assembled = (vons and #vons > 0 and vons .. " " .. surs) or surs
+                        split[i] = splitter(strip(assembled),true)
+                    end
+                    split[n+1] = splitter(suf)
+                else
+                    -- medium efficient
+                    local k = key[1]
+                    local vons = k.vons
+                    local surs = k.surnames
+                    local vons = vons and concat(vons," ")
+                    local surs = surs and concat(surs," ") or ""
+                    local assembled = (vons and #vons > 0 and vons .. " " .. surs) or surs
+                    split = splitter(strip(assembled..":"..suf),true)
                 end
-                valid[i] = {
-                    index = i,
-                    split = split,
-                }
             else
-                local split = splitter(suf)
-                valid[i] = {
-                    index = i,
-                    split = split,
-                }
+                -- efficient fallback
+                split = splitter(suf,true)
             end
+            valid[i] = {
+                index = i,
+                split = split,
+            }
         end
     end
  -- inspect(valid)
