@@ -832,6 +832,63 @@ This results in:
 
 \ctxluabuffer
 
+You can manipulate a dataset after loading. Of course this assumes that you know
+what kind of content you have and what you need for rendering. As example we
+load a small dataset.
+
+\startbuffer
+\definebtxdataset[drumming]
+\usebtxdataset[drumming][mkiv-publications.lua]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Because we're going to do some \LUA, we could also have loaded the dataset
+with:
+
+\starttyping
+publications.load("drumming","mkiv-publications.lua","lua")
+\stoptyping
+
+The dataset has three entries:
+
+\typefile{mkiv-publications.lua}
+
+As you can see, we can have a subtitle. We will combine the title and subtitle
+into one:
+
+\startbuffer
+\startluacode
+for tag, entry in next, publications.datasets.drumming.luadata do
+    if entry.subtitle then
+        if entry.title then
+            entry.title = entry.title .. ", " .. entry.subtitle
+        else
+            entry.title = entry.subtitle
+        end
+        entry.subtitle = nil
+        logs.report("btx","combining title and subtitle of entry tagged %a",tag)
+    end
+end
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We can now typeset the entries with:
+
+\startbuffer
+\definebtxrendering[drumming][dataset=drumming,method=dataset]
+\placebtxrendering[drumming]
+\stopbuffer
+
+\typebuffer
+
+Because we just want to show the entries, and have no citations that force them
+to be shown, we have to the \type {method} to \type {dataset}.
+
+\blank \getbuffer \blank
+
 \stopchapter
 
 \startchapter[title=The \XML\ view]

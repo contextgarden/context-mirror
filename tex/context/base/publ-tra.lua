@@ -11,6 +11,7 @@ local sortedhash = table.sortedhash
 local tracers        = { }
 publications.tracers = tracers
 
+local context = context
 local NC, NR, bold = context.NC, context.NR, context.bold
 
 publications.tracers.fields = table.sorted {

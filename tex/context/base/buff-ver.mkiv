@@ -758,8 +758,9 @@
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one
    \buff_verbatim_initialize_typing_two
-   \beginofverbatimlines
    \dostarttagged\t!verbatimblock{#1}%
+   \beginofverbatimlines
+   \dostarttagged\t!verbatimlines\empty
    \ctxcommand{typebuffer {
      name   = "#2",
      strip  = "\typingparameter\c!strip",
@@ -772,6 +773,7 @@
    }}%
    \dostoptagged
    \endofverbatimlines
+   \dostoptagged
    \stoppacked
    \typingparameter\c!after}
 
