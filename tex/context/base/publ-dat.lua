@@ -150,12 +150,17 @@ local filter_2 = Cs(
 -- in tugboat.bib this is not that efficient. However, eventually strings get
 -- hashed again.
 
-local function do_shortcut(tag,key,value,shortcuts)
+-- local function do_shortcut(tag,key,value,dataset)
+--     publicationsstats.nofshortcuts = publicationsstats.nofshortcuts + 1
+--     tag = lowercase(tag)
+--     if tag == "@string" then
+--         dataset.shortcuts[key] = value
+--     end
+-- end
+
+local function do_shortcut(key,value,dataset)
     publicationsstats.nofshortcuts = publicationsstats.nofshortcuts + 1
-    tag = lowercase(tag)
-    if tag == "@string" then
-        shortcuts[key] = value
-    end
+    dataset.shortcuts[key] = value
 end
 
 local function getindex(dataset,luadata,tag)
@@ -247,14 +252,16 @@ local somevalue  = s_value + d_value + b_value + r_value
 local value      = Cs((somevalue * ((spacing * hash * spacing)/"" * somevalue)^0))
 
 local assignment = spacing * keyword * spacing * equal * spacing * value * spacing
-local shortcut   = keyword * spacing * left * spacing * (assignment * comma^0)^0 * spacing * right * Carg(1)
+----- shortcut   = keyword * spacing * left * spacing * (assignment * comma^0)^0  * spacing * right * Carg(1)
+local shortcut   = P("@") * (P("string") + P("STRING")) * spacing * left * ((assignment * Carg(1))/do_shortcut * comma^0)^0  * spacing * right
 local definition = keyword * spacing * left * spacing * keyword * comma * Ct((assignment * comma^0)^0) * spacing * right * Carg(1)
 local comment    = keyword * spacing * left * (1-right)^0 * spacing * right
 local forget     = percent^1 * (1-lineending)^0
 
 -- todo \%
 
-local bibtotable = (space + forget + shortcut/do_shortcut + definition/do_definition + comment + 1)^0
+-- local bibtotable = (space + forget + shortcut/do_shortcut + definition/do_definition + comment + 1)^0
+local bibtotable = (space + forget + shortcut + definition/do_definition + comment + 1)^0
 
 -- loadbibdata  -> dataset.luadata
 -- loadtexdata  -> dataset.luadata
