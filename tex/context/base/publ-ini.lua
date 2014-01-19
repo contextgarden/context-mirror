@@ -42,6 +42,7 @@ local v_cite         = variables.cite
 local v_default      = variables.default
 local v_reference    = variables.default
 local v_dataset      = variables.dataset
+local v_author       = variables.author or "author"
 
 local numbertochar   = converters.characters
 
@@ -745,7 +746,7 @@ end
 lists.sorters = {
     [v_short] = function(dataset,rendering,list)
         local shorts = rendering.shorts
-        return function(a,b)
+        local function compare(a,b)
             local aa, bb = a and a[1], b and b[1]
             if aa and bb then
                 aa, bb = shorts[aa], shorts[bb]
@@ -753,18 +754,20 @@ lists.sorters = {
             end
             return false
         end
+        sort(list,compare)
     end,
     [v_reference] = function(dataset,rendering,list)
-        return function(a,b)
+        local function compare(a,b)
             local aa, bb = a and a[1], b and b[1]
             if aa and bb then
                 return aa and bb and aa < bb
             end
             return false
         end
+        sort(list,compare)
     end,
     [v_dataset] = function(dataset,rendering,list)
-        return function(a,b)
+        local function compare(a,b)
             local aa, bb = a and a[1], b and b[1]
             if aa and bb then
                 aa, bb = list[aa].index or 0, list[bb].index or 0
@@ -772,16 +775,30 @@ lists.sorters = {
             end
             return false
         end
+        sort(list,compare)
     end,
     [v_default] = function(dataset,rendering,list) -- not really needed
         local ordered = rendering.ordered
-        return function(a,b)
+        local function compare(a,b)
             local aa, bb = a and a[1], b and b[1]
             if aa and bb then
                 aa, bb = ordered[aa], ordered[bb]
                 return aa and bb and aa < bb
             end
             return false
+        end
+        sort(list,compare)
+    end,
+    [v_author] = function(dataset,rendering,list)
+        local valid = publications.authors.preparedsort(dataset,list,v_author)
+        if #valid == 0 or #valid ~= #list then
+            -- nothing to sort
+        else
+            -- if needed we can wrap compare and use the list directly but this is cleaner
+            sort(valid,sorters.comparers.basic)
+            for i=1,#valid do
+                list[i] = valid[i].index
+            end
         end
     end,
 }
@@ -791,9 +808,6 @@ function lists.flushentries(dataset,sortvariant)
     local list = rendering.list
     local compare = lists.sorters[sortvariant] or lists.sorters[v_default]
     compare = type(compare) == "function" and compare(dataset,rendering,list)
-    if compare then
-        sort(list,compare)
-    end
     for i=1,#list do
         ctx_setvalue("currentbtxindex",i)
         ctx_btxhandlelistentry(list[i][1]) -- we can pass i here too ... more efficient to avoid the setvalue
