@@ -765,7 +765,16 @@ local belowdisplayshortskip_code = skipcodes.belowdisplayshortskip
 local topskip_code               = skipcodes.topskip
 local splittopskip_code          = skipcodes.splittopskip
 
+-- local function free_glue_node(n)
+--     free_node(n)
+--     local s = getfield(n,"spec")
+--     if s then
+--         free_node(s)
+--     end
+-- end
+
 local free_glue_node = free_node
+local free_glue_spec = free_node
 
 function vspacing.snapbox(n,how)
     local sv = snapmethods[how]
@@ -980,14 +989,13 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 local so = getattr(current,a_skiporder) or 1 -- has  1 default, no unset (yet)
                 local sp = getattr(current,a_skippenalty)    -- has no default, no unset (yet)
                 if sp and sc == penalty then
-
-if where == "page" and sp >= special_penalty_min and sp <= special_penalty_max then
-    local previousspecial = specialpenalty(current,sp)
-    if previousspecial then
-        setfield(previousspecial,"penalty",0)
-        sp = 0
-    end
-end
+                    if where == "page" and sp >= special_penalty_min and sp <= special_penalty_max then
+                        local previousspecial = specialpenalty(current,sp)
+                        if previousspecial then
+                            setfield(previousspecial,"penalty",0)
+                            sp = 0
+                        end
+                    end
                     if not penalty_data then
                         penalty_data = sp
                     elseif penalty_order < so then
@@ -1016,6 +1024,7 @@ end
                                     local cw, cp, cm = getfield(cs,"width"), getfield(cs,"stretch"), getfield(cs,"shrink")
                                  -- ps = writable_spec(previous) -- no writable needed here
                                  -- ps.width, ps.stretch, ps.shrink = pw + cw, pp + cp, pm + cm
+                                    free_glue_spec(ps)
                                     setfield(previous,"spec",new_gluespec(pw + cw, pp + cp, pm + cm)) -- else topskip can disappear
                                     if trace then trace_natural("removed",current) end
                                     head, current = remove_node(head, current, true)

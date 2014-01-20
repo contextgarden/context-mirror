@@ -88,7 +88,7 @@ local function convert(name)
                         delta = factor/delta
                     end
                     for k=1,#s do
-                        s[k] = format("(%s,%s)",k,(s[k]-b)*delta)
+                        s[k] = format("(%.3f,%.3f)",k,(s[k]-b)*delta)
                     end
                     paths[tagname] = concat(s,"--")
                 end
