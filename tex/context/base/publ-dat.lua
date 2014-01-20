@@ -126,8 +126,11 @@ end)
 
 -- we apply some normalization
 
+local space    = S(" \t\n\r\f") -- / " "
+
 ----- command  = P("\\") * Cc("btxcmd{") * (R("az","AZ")^1) * Cc("}")
-local command  = P("\\") * (Carg(1) * C(R("az","AZ")^1) / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
+----- command  = P("\\") * (Carg(1) * C(R("az","AZ")^1) / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
+local command  = P("\\") * (Carg(1) * C(R("az","AZ")^1) * space^0 / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
 local somemath = P("$") * ((1-P("$"))^1) * P("$") -- let's not assume nested math
 local any      = P(1)
 local done     = P(-1)
@@ -150,14 +153,6 @@ local filter_2 = Cs(
 -- in tugboat.bib this is not that efficient. However, eventually strings get
 -- hashed again.
 
--- local function do_shortcut(tag,key,value,dataset)
---     publicationsstats.nofshortcuts = publicationsstats.nofshortcuts + 1
---     tag = lowercase(tag)
---     if tag == "@string" then
---         dataset.shortcuts[key] = value
---     end
--- end
-
 local function do_shortcut(key,value,dataset)
     publicationsstats.nofshortcuts = publicationsstats.nofshortcuts + 1
     dataset.shortcuts[key] = value
@@ -176,6 +171,9 @@ end
 
 publications.getindex = getindex
 
+-- todo: categories : metatable that lowers and also counts
+-- todo: fields     : metatable that lowers
+
 local function do_definition(category,tag,tab,dataset)
     publicationsstats.nofdefinitions = publicationsstats.nofdefinitions + 1
     local fields  = dataset.fields
@@ -183,7 +181,7 @@ local function do_definition(category,tag,tab,dataset)
     local found   = luadata[tag]
     local index   = getindex(dataset,luadata,tag)
     local entries = {
-        category = gsub(lower(category),"^@",""),
+        category = lower(category),
         tag      = tag,
         index    = index,
     }
@@ -239,29 +237,31 @@ local balanced   = P {
     [2] = left * V(1) * right
 }
 
-local keyword    = C((R("az","AZ","09") + S("@_:-"))^1)  -- C((1-space)^1)
+local keyword    = C((R("az","AZ","09") + S("@_:-"))^1)
+local key        = C((1-space-equal)^1)
+local tag        = C((1-space-comma)^1)
+local reference  = keyword
+local category   = P("@") * C((1-space-left)^1)
 local s_quoted   = ((escape*single) + collapsed + (1-single))^0
 local d_quoted   = ((escape*double) + collapsed + (1-double))^0
 
 local b_value    = (left  /"") * balanced * (right /"")
 local s_value    = (single/"") * (b_value + s_quoted) * (single/"")
 local d_value    = (double/"") * (b_value + d_quoted) * (double/"")
-local r_value    = keyword * Carg(1) /resolve
+local r_value    = reference * Carg(1) /resolve
 
 local somevalue  = s_value + d_value + b_value + r_value
 local value      = Cs((somevalue * ((spacing * hash * spacing)/"" * somevalue)^0))
 
-local assignment = spacing * keyword * spacing * equal * spacing * value * spacing
------ shortcut   = keyword * spacing * left * spacing * (assignment * comma^0)^0  * spacing * right * Carg(1)
+local assignment = spacing * key * spacing * equal * spacing * value * spacing
 local shortcut   = P("@") * (P("string") + P("STRING")) * spacing * left * ((assignment * Carg(1))/do_shortcut * comma^0)^0  * spacing * right
-local definition = keyword * spacing * left * spacing * keyword * comma * Ct((assignment * comma^0)^0) * spacing * right * Carg(1)
+local definition = category * spacing * left * spacing * tag * spacing * comma * Ct((assignment * comma^0)^0) * spacing * right * Carg(1) / do_definition
 local comment    = keyword * spacing * left * (1-right)^0 * spacing * right
 local forget     = percent^1 * (1-lineending)^0
 
 -- todo \%
 
--- local bibtotable = (space + forget + shortcut/do_shortcut + definition/do_definition + comment + 1)^0
-local bibtotable = (space + forget + shortcut + definition/do_definition + comment + 1)^0
+local bibtotable = (space + forget + shortcut + definition + comment + 1)^0
 
 -- loadbibdata  -> dataset.luadata
 -- loadtexdata  -> dataset.luadata

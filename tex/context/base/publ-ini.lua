@@ -853,8 +853,8 @@ end
 
 -- rendering ?
 
-local f_reference   = formatters["r:%s:%s:%s"] -- dataset, instance, tag
-local f_destination = formatters["d:%s:%s:%s"] -- dataset, instance, tag
+local f_reference   = formatters["r:%s:%s:%s"] -- dataset, instance (block), tag
+local f_destination = formatters["d:%s:%s:%s"] -- dataset, instance (block), tag
 
 function lists.resolve(dataset,reference) -- maybe already feed it split
     -- needs checking (the prefix in relation to components)
@@ -879,6 +879,7 @@ function lists.resolve(dataset,reference) -- maybe already feed it split
             end
         end
     end
+-- inspect(subsets)
     if #subsets > 0 then
         local result, nofresult, done = { }, 0, { }
         for i=1,#subsets do
@@ -890,7 +891,8 @@ function lists.resolve(dataset,reference) -- maybe already feed it split
                     found = subset[tag]
                     if not found then
                         for i=block-1,1,-1 do
-                            tag = i .. ":" .. rest
+                            tag = f_destination(dataset,blk,rest)
+--                             tag = i .. ":" .. rest
                             found = subset[tag]
                             if found then
                                 blk = i
@@ -952,6 +954,9 @@ function lists.resolve(dataset,reference) -- maybe already feed it split
             end
         end
         if nofcollected > 0 then
+-- inspect(reference)
+-- inspect(result)
+-- inspect(collected)
             for i=1,nofcollected do
                 local c = collected[i]
                 if i == nofcollected then
@@ -982,6 +987,7 @@ function commands.btxreference(dataset,block,tag,data)
     local ref = f_reference(dataset,block,tag)
     if not done[ref] then
         done[ref] = true
+-- context("<%s>",data)
         ctx_dodirectfullreference(ref,data)
     end
 end
@@ -992,6 +998,7 @@ function commands.btxdestination(dataset,block,tag,data)
     local ref = f_destination(dataset,block,tag)
     if not done[ref] then
         done[ref] = true
+-- context("<<%s>>",data)
         ctx_dodirectfullreference(ref,data)
     end
 end
@@ -1221,7 +1228,8 @@ function citevariants.page(dataset,tags)
 end
 
 function citevariants.num(dataset,tags)
-   lists.resolve(dataset,tags)
+--     ctx_btxdirectlink(f_destination(dataset,block,tags),listindex) -- not okay yet
+    lists.resolve(dataset,tags)
 end
 
 function citevariants.serial(dataset,tags) -- the traditional fieldname is "serial" and not "index"

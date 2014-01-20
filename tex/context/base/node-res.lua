@@ -159,13 +159,12 @@ local vlist             = register_nut(new_nut("vlist")) setfield(vlist,"dir","T
 
 function nutpool.zeroglue(n)
     local s = getfield(n,"spec")
-    return not writable or ( -- still valid? writable
-             getfield(s,"width") == 0
-         and getfield(s,"stretch") == 0
-         and getfield(s,"shrink") == 0
-         and getfield(s,"stretch_order") == 0
-         and getfield(s,"shrink_order") == 0
-    )
+    return
+        getfield(s,"width")         == 0 and
+        getfield(s,"stretch")       == 0 and
+        getfield(s,"shrink")        == 0 and
+        getfield(s,"stretch_order") == 0 and
+        getfield(s,"shrink_order")  == 0
 end
 
 function nutpool.glyph(fnt,chr)
