@@ -1209,6 +1209,37 @@ suffix, you can do this:
 
 \stopchapter
 
+\startchapter[title=Notes]
+
+The move from external \BIBTEX\ processing to internal processing has the advantage that
+we stay within the same run. In the traditional approach we had roughly the following
+steps:
+
+\startitemize[packed]
+\startitem the first run information is collected and written to file \stopitem
+\startitem after that run the \BIBTEX\ program converts that file to another one \stopitem
+\startitem successive runs use that data for references and producing lists \stopitem
+\stopitemize
+
+In the \MKIV\ approach the bibliographic database is loaded in memory each run and
+processing also happens each run. On paper this looks less efficient but as \LUA\ is
+quite fast, in practice performance is much better.
+
+Probably most demanding is the treatment of authors as we have to analyze names,
+split multiple authors and reassemble firstnames, vons, surnames and juniors.
+When we sort by author sorting vectors have to be made which also has a penalty.
+However, in practice the user will not notice a performance degradation. We did
+some tests with a list of 500.000 authors, sorted them and typeset them as list
+(producing some 5400 dense pages in a small font and with small margins). This is
+typical one of these cases where using \LUAJITTEX\ saves quite time. On my
+machine it took just over 100 seconds to get this done. Unfortunately not all
+operating systems performed equally well: 32 bit versions worked fine, but 64 bit
+\LINUX\ either crashed (stalled) the machine or ran out of memory rather fast,
+while \OSX\ and \WINDOWS\ performed fine. In practice you will never run into this,
+unless you produce massive amounts of bibliographic entries.
+
+\stopchapter
+
 \stopbodymatter
 
 \stoptext
