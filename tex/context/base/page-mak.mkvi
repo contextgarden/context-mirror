@@ -92,9 +92,12 @@
   {\doifelsecommandhandler\??makeup{#name}\page_makeup_start_indeed\page_makeup_start_nop[#name]}%
 
 \def\page_makeup_start_indeed[#name][#settings]%
-  {\doifelsenothing{\namedmakeupparameter{#name}\c!page}
-     {\page}% new, so best not have dangling mess here like references (we could capture then and flush embedded)
-     {\page[\namedmakeupparameter{#name}\c!page]}%
+  {\edef\p_page{\namedmakeupparameter{#name}\c!page}
+   \ifx\p_page\empty
+     \page % new, so best not have dangling mess here like references (we could capture then and flush embedded)
+   \else
+     \page[\p_page]%
+   \fi
    \startlayout[#name]% includes \page
    \bgroup
    \edef\currentmakeup{#name}%
@@ -183,7 +186,8 @@
    \c!textstate=\v!normal,
    \c!headerstate=\v!stop,
    \c!footerstate=\v!stop,
-   \c!pagestate=\v!stop] % in manual ! ! !
+ % \c!pagestate=\v!stop] % in manual ! ! !
+   \c!pagestate=\v!start]
 
 \definemakeup
   [\v!standard]

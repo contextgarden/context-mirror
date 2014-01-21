@@ -20,8 +20,16 @@ local utfchar, utfbyte = utf.char, utf.byte
 ----- loadstripped = utilities.lua.loadstripped
 ----- setmetatableindex = table.setmetatableindex
 
-local loadstripped = _LUAVERSION < 5.2 and load or function(str)
-    return load(dump(load(str),true)) -- it only makes sense in luajit and luatex where we have a stipped load
+-- local loadstripped = _LUAVERSION < 5.2 and load or function(str)
+--     return load(dump(load(str),true)) -- it only makes sense in luajit and luatex where we have a stipped load
+-- end
+
+local loadstripped = function(str,shortcuts)
+    if shortcuts then
+        return load(dump(load(str),true),nil,nil,shortcuts)
+    else
+        return load(dump(load(str),true))
+    end
 end
 
 -- todo: make a special namespace for the formatter
@@ -291,32 +299,67 @@ function number.sparseexponent(f,n)
     return tostring(n)
 end
 
-local preamble = [[
-local type = type
-local tostring = tostring
-local tonumber = tonumber
-local format = string.format
-local concat = table.concat
-local signed = number.signed
-local points = number.points
-local basepoints = number.basepoints
-local utfchar = utf.char
-local utfbyte = utf.byte
-local lpegmatch = lpeg.match
-local nspaces = string.nspaces
-local tracedchar = string.tracedchar
-local autosingle = string.autosingle
-local autodouble = string.autodouble
-local sequenced = table.sequenced
-local formattednumber = number.formatted
-local sparseexponent = number.sparseexponent
-]]
-
 local template = [[
 %s
 %s
 return function(%s) return %s end
 ]]
+
+-- local environment = {
+--     lpeg   = lpeg,
+--     type   = type,
+--     string = string,
+--     number = number,
+--     table  = table,
+--     utf    = utf,
+-- }
+--
+-- local preamble = [[
+-- local type            = type
+-- local tostring        = tostring
+-- local tonumber        = tonumber
+-- local format          = string.format
+-- local concat          = table.concat
+-- local signed          = number.signed
+-- local points          = number.points
+-- local basepoints      = number.basepoints
+-- local utfchar         = utf.char
+-- local utfbyte         = utf.byte
+-- local lpegmatch       = lpeg.match
+-- local nspaces         = string.nspaces
+-- local tracedchar      = string.tracedchar
+-- local autosingle      = string.autosingle
+-- local autodouble      = string.autodouble
+-- local sequenced       = table.sequenced
+-- local formattednumber = number.formatted
+-- local sparseexponent  = number.sparseexponent
+-- ]]
+
+local environment = {
+    lpeg            = lpeg,
+    type            = type,
+    tostring        = tostring,
+    tonumber        = tonumber,
+    format          = string.format,
+    concat          = table.concat,
+    signed          = number.signed,
+    points          = number.points,
+    basepoints      = number.basepoints,
+    utfchar         = utf.char,
+    utfbyte         = utf.byte,
+    lpegmatch       = lpeg.match,
+    nspaces         = string.nspaces,
+    tracedchar      = string.tracedchar,
+    autosingle      = string.autosingle,
+    autodouble      = string.autodouble,
+    sequenced       = table.sequenced,
+    formattednumber = number.formatted,
+    sparseexponent  = number.sparseexponent,
+}
+
+local preamble = ""
+
+-- -- --
 
 local arguments = { "a1" } -- faster than previously used (select(n,...))
 
@@ -740,28 +783,37 @@ local builder = Cs { "start",
 
 -- we can be clever and only alias what is needed
 
+-- local direct = Cs (
+--         P("%")/""
+--       * Cc([[local format = string.format return function(str) return format("%]])
+--       * (S("+- .") + R("09"))^0
+--       * S("sqidfgGeExXo")
+--       * Cc([[",str) end]])
+--       * P(-1)
+--     )
+
 local direct = Cs (
-        P("%")/""
-      * Cc([[local format = string.format return function(str) return format("%]])
-      * (S("+- .") + R("09"))^0
-      * S("sqidfgGeExXo")
-      * Cc([[",str) end]])
-      * P(-1)
-    )
+    P("%")
+  * (S("+- .") + R("09"))^0
+  * S("sqidfgGeExXo")
+  * P(-1) / [[local format = string.format return function(str) return format("%0",str) end]]
+)
 
 local function make(t,str)
     local f
     local p
     local p = lpegmatch(direct,str)
     if p then
+     -- f = loadstripped(p)()
+     -- print("builder 1 >",p)
         f = loadstripped(p)()
     else
         n = 0
         p = lpegmatch(builder,str,1,"..",t._extensions_) -- after this we know n
         if n > 0 then
             p = format(template,preamble,t._preamble_,arguments[n],p)
---         print("builder>",p)
-            f = loadstripped(p)()
+         -- print("builder 2 >",p)
+            f = loadstripped(p,t._environment_)() -- t._environment is not populated (was experiment)
         else
             f = function() return str end
         end
@@ -817,7 +869,11 @@ strings.formatters = { }
 -- clear that table when a threshold is reached
 
 function strings.formatters.new()
-    local t = { _extensions_ = { }, _preamble_ = "", _type_ = "formatter" }
+    local e = { } -- better make a copy as we can overload
+    for k, v in next, environment do
+        e[k] = v
+    end
+    local t = { _extensions_ = { }, _preamble_ = "", _environment_ = e, _type_ = "formatter" }
     setmetatable(t, { __index = make, __call = use })
     return t
 end
@@ -838,8 +894,12 @@ string.formatter   = function(str,...) return formatters[str](...) end -- someti
 local function add(t,name,template,preamble)
     if type(t) == "table" and t._type_ == "formatter" then
         t._extensions_[name] = template or "%s"
-        if preamble then
+        if type(preamble) == "string" then
             t._preamble_ = preamble .. "\n" .. t._preamble_ -- so no overload !
+        elseif type(preamble) == "table" then
+            for k, v in next, preamble do
+                t._environment_[k] = v
+            end
         end
     end
 end
@@ -856,9 +916,13 @@ patterns.luaquoted = Cs(Cc('"') * ((1-S('"\n'))^1 + P('"')/'\\"' + P('\n')/'\\n"
 -- escaping by lpeg is faster for strings without quotes, slower on a string with quotes, but
 -- faster again when other q-escapables are found (the ones we don't need to escape)
 
-add(formatters,"xml", [[lpegmatch(xmlescape,%s)]],[[local xmlescape = lpeg.patterns.xmlescape]])
-add(formatters,"tex", [[lpegmatch(texescape,%s)]],[[local texescape = lpeg.patterns.texescape]])
-add(formatters,"lua", [[lpegmatch(luaescape,%s)]],[[local luaescape = lpeg.patterns.luaescape]])
+-- add(formatters,"xml", [[lpegmatch(xmlescape,%s)]],[[local xmlescape = lpeg.patterns.xmlescape]])
+-- add(formatters,"tex", [[lpegmatch(texescape,%s)]],[[local texescape = lpeg.patterns.texescape]])
+-- add(formatters,"lua", [[lpegmatch(luaescape,%s)]],[[local luaescape = lpeg.patterns.luaescape]])
+
+add(formatters,"xml", [[lpegmatch(xmlescape,%s)]],{ xmlescape = lpeg.patterns.xmlescape })
+add(formatters,"tex", [[lpegmatch(texescape,%s)]],{ texescape = lpeg.patterns.texescape })
+add(formatters,"lua", [[lpegmatch(luaescape,%s)]],{ luaescape = lpeg.patterns.luaescape })
 
 -- -- yes or no:
 --

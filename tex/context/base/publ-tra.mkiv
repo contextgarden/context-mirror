@@ -15,6 +15,8 @@
 
 \registerctxluafile{publ-tra}{1.001}
 
+% todo: use the module interface
+
 \unprotect
 
 \unexpanded\def\showbtxdatasetfields
@@ -22,5 +24,11 @@
 
 \def\publ_dataset_show_fields[#1]%
   {\ctxcommand{showbtxdatasetfields("\iffirstargument#1\else\currentbtxdataset\fi")}}
+
+\unexpanded\def\showbtxdatasetcompleteness
+  {\dosingleempty\publ_dataset_show_completeness}
+
+\def\publ_dataset_show_completeness[#1]%
+  {\ctxcommand{showbtxdatasetcompleteness("\iffirstargument#1\else\currentbtxdataset\fi")}}
 
 \protect \endinput
