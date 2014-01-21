@@ -7,6 +7,8 @@ if not modules then modules = { } end modules ['publ-tra'] = {
 }
 
 local sortedhash = table.sortedhash
+local sorted     = table.sorted
+local allocate   = utilities.storage.allocate
 
 local tracers        = { }
 publications.tracers = tracers
@@ -17,7 +19,7 @@ local NC, NR = context.NC, context.NR
 local bold = context.bold
 local darkgreen, darkred, darkblue = context.darkgreen, context.darkred, context.darkblue
 
-local fields = table.sorted {
+local fields = allocate ( table.sorted {
     "abstract",
     "address",
     "annotate",
@@ -64,9 +66,9 @@ local fields = table.sorted {
     "monthfiled",
     "yearfiled",
     "revision",
-}
+} )
 
-local citevariants = table.sorted {
+local citevariants = allocate ( table.sorted {
     "author",
     "authoryear",
     "authoryears",
@@ -81,13 +83,13 @@ local citevariants = table.sorted {
     "page",
     "none",
     "num",
-}
+} )
 
-local listvariants = table.sorted {
+local listvariants = allocate ( table.sorted {
     "author",
     "editor",
     "artauthor",
-}
+} )
 
 -- local categories = table.sorted {
 --     "article",
@@ -106,7 +108,7 @@ local listvariants = table.sorted {
 --     "unpublished",
 -- }
 
-local categories = {
+local categories = allocate {
     article = {
         required = { "author", "title", "journal", "year" },
         optional = { "volume", "number", "pages", "month", "note" },
@@ -232,7 +234,7 @@ function tracers.showdatasetcompleteness(dataset)
     local luadata = datasets[dataset].luadata
 
     if next(luadata) then
-        for tag, entry in table.sortedhash(luadata) do
+        for tag, entry in sortedhash(luadata) do
             local category = entry.category
             local fields = categories[category]
             if fields then
