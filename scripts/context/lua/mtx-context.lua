@@ -87,14 +87,17 @@ scripts.context = scripts.context or { }
 
 -- for the moment here
 
-if getargument("jit") or getargument("jiton") then
+if jit then -- already luajittex
+    setargument("engine","luajittex")
+    setargument("jit",nil)
+elseif getargument("jit") or getargument("jiton") then -- relaunch luajittex
     -- bonus shortcut, we assume than --jit also indicates the engine
     -- although --jit and --engine=luajittex are independent
     setargument("engine","luajittex")
 end
 
-local engine_new = getargument("engine") or directives.value("system.engine")
-local engine_old = environment.ownbin
+local engine_new = file.nameonly(getargument("engine") or directives.value("system.engine"))
+local engine_old = file.nameonly(environment.ownbin)
 
 local function restart(engine_old,engine_new)
     local command = format("%s --luaonly %q %s --redirected",engine_new,environment.ownname,environment.reconstructcommandline())
