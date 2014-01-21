@@ -55,7 +55,6 @@
   return 1; \
 }
 
-char texlua_name[] = "texlua"; // just a bare name, luatex strips the rest anyway
 static char cmdline[MAX_CMD];
 static char dirpath[MAX_PATH];
 static char progname[MAX_PATH];
@@ -73,6 +72,7 @@ __declspec(dllexport) int dllrunscript( int argc, char *argv[] )
   char *s, *luatexfname, *argstr, **lua_argv;
   int k, quoted, lua_argc;
   int passprogname = 0;
+  unsigned char is_jit=0;
 
   // directory of this module/executable
 
@@ -92,6 +92,14 @@ __declspec(dllexport) int dllrunscript( int argc, char *argv[] )
   strcpy(progname, &argv[0][k]);
   s = progname;
   if ( s = strrchr(s, '.') ) *s = '\0'; // remove file extension part
+
+   /* check "jit" : strlen("jit") = 3 */
+  if (strncmp(s + strlen(s) - 3, "jit", 3) == 0) {
+        is_jit = 1;
+        *(s+strlen(s)-2) = "\0" ;
+  } else {
+       is_jit = 0;
+  }
 
   // script path
 
@@ -122,7 +130,7 @@ __declspec(dllexport) int dllrunscript( int argc, char *argv[] )
 
   if ( !SearchPath(
 	   getenv( "PATH" ), // path to search (optional)
-	   "texlua.exe",     // file name to search
+	   (is_jit ? "luajittex.exe":"luatex.exe"),     // file name to search
 	   NULL,             // file extension to add (optional)
 	   MAX_PATH,         // output buffer size
 	   luatexpath,       // output buffer pointer
@@ -130,7 +138,7 @@ __declspec(dllexport) int dllrunscript( int argc, char *argv[] )
       )
       if ( !SearchPath(
 	       dirpath,          // path to search (optional)
-	       "texlua.exe",     // file name to search
+	       (is_jit ? "luajittex.exe":"luatex.exe"),     // file name to search
 	       NULL,             // file extension to add (optional)
 	       MAX_PATH,         // output buffer size
 	       luatexpath,       // output buffer pointer
@@ -151,7 +159,8 @@ __declspec(dllexport) int dllrunscript( int argc, char *argv[] )
 
     lua_argv = (char **)malloc( (argc + 4) * sizeof(char *) );
     if ( lua_argv == NULL ) DIE( "out of memory\n" );
-    lua_argv[lua_argc=0] = texlua_name;
+    lua_argv[lua_argc=0] =  (is_jit ? "luajittex.exe":"luatex.exe");
+    lua_argv[++lua_argc] = "--luaonly";
     lua_argv[++lua_argc] = scriptpath; // script to execute
     if (passprogname) {
       lua_argv[++lua_argc] = "--script";
@@ -170,7 +179,8 @@ __declspec(dllexport) int dllrunscript( int argc, char *argv[] )
 
   // we are still here, so no luatex.dll; spawn texlua.exe instead
 
-  strcpy( luatexfname, "texlua.exe" );
+  strcpy( luatexfname,(is_jit ? "luajittex.exe":"luatex.exe"));
+  strcpy( cmdline, " --luaonly " );
   strcpy( cmdline, "\"" );
   strcat( cmdline, luatexpath );
   strcat( cmdline, "\" \"" );
