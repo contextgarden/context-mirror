@@ -774,7 +774,7 @@ local splittopskip_code          = skipcodes.splittopskip
 -- end
 
 local free_glue_node = free_node
-local free_glue_spec = free_node
+local free_glue_spec = function() end -- free_node
 
 function vspacing.snapbox(n,how)
     local sv = snapmethods[how]

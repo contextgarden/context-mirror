@@ -232,6 +232,7 @@ local d_find_tail       = direct.tail
 local d_insert_after    = direct.insert_after
 local d_insert_before   = direct.insert_before
 local d_slide           = direct.slide
+local d_copy_node       = direct.copy
 
 local function remove(head,current,free_too)
     local t = current
