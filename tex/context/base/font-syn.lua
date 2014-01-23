@@ -346,7 +346,7 @@ filters.dfont = fontloader.info
 --             pfminfo             = fields.pfminfo             and ff.pfminfo,
 --             top_side_bearing    = fields.top_side_bearing    and ff.top_side_bearing,
 --         }
---         table.setmetatableindex(d,function(t,k)
+--         setmetatableindex(d,function(t,k)
 --             report_names("warning, trying to access field %a in font table of %a",k,name)
 --         end)
 --         fontloader.close(ff)
@@ -363,16 +363,19 @@ function fontloader.fullinfo(...)
     local ff = fontloader.open(...)
     if ff then
         local d = { } -- ff is userdata so [1] or # fails on it
-        table.setmetatableindex(d,ff)
+        setmetatableindex(d,ff)
         return d
     else
         return nil, "error in loading font"
     end
 end
 
-if tonumber(status.luatex_version) > 78 or (tonumber(status.luatex_version) == 78 and tonumber(status.luatex_revision) > 0) then
-    fontloader.fullinfo = fontloader.info
-end
+-- We don't get the design_* values here as for that the fontloader has to load feature
+-- info and therefore we're not much better off than using 'open'.
+--
+-- if tonumber(status.luatex_version) > 78 or (tonumber(status.luatex_version) == 78 and tonumber(status.luatex_revision) > 0) then
+--     fontloader.fullinfo = fontloader.info
+-- end
 
 filters.otf = fontloader.fullinfo
 filters.ttf = fontloader.fullinfo
@@ -595,7 +598,7 @@ local function check_name(data,result,filename,modification,suffix,subfont)
     fullname   = fullname   or fontname
     familyname = familyname or fontname
     -- we do these sparse
-    local units      = result.units_per_em or 1000
+    local units      = result.units_per_em or 1000 -- can be zero too
     local minsize    = result.design_range_bottom or 0
     local maxsize    = result.design_range_top or 0
     local designsize = result.design_size or 0
@@ -619,7 +622,7 @@ local function check_name(data,result,filename,modification,suffix,subfont)
         style         = style,
         width         = width,
         variant       = variant,
-        units         = units        ~= 1000 and unit         or nil,
+        units         = units        ~= 1000 and units        or nil,
         pfmwidth      = pfmwidth     ~=    0 and pfmwidth     or nil,
         pfmweight     = pfmweight    ~=    0 and pfmweight    or nil,
         angle         = angle        ~=    0 and angle        or nil,
@@ -628,6 +631,9 @@ local function check_name(data,result,filename,modification,suffix,subfont)
         designsize    = designsize   ~=    0 and designsize   or nil,
         modification  = modification ~=    0 and modification or nil,
     }
+-- inspect(filename)
+-- inspect(result)
+-- inspect(specifications[#specifications])
 end
 
 local function cleanupkeywords()

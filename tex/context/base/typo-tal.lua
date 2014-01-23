@@ -179,7 +179,7 @@ function characteralign.handler(originalhead,where)
             if next and prev and getid(next) == glyph_code and getid(prev) == glyph_code then -- too much checking
                 local width = fontcharacters[getfont(b_start)][separator or period].width
              -- local spec = getfield(current,"spec")
-             -- nodes.free(spec) -- hm, we leak but not that many specs
+             -- free_spec(spec)
                 setfield(current,"spec",new_gluespec(width))
                 setattr(current,a_character,punctuationspace)
                 if a_start then
