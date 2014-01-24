@@ -398,9 +398,9 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
                 end
             end
         end
-        return glyphdata
+        return glyphdata, true
     else
-        return olddata
+        return olddata, false
     end
 end
 
@@ -456,8 +456,10 @@ addextra(0xFE303, { description="EXTENSIBLE OF 0x0303", unicodeslot=0xFE303, mat
 local function smashed(data,unicode,private)
     local target = data.target
     local height = target.parameters.xheight / 2
-    local c = accent_to_extensible(target,private,data.original,unicode,height,0,nil,-height)
-    c.top_accent = nil
+    local c, done = accent_to_extensible(target,private,data.original,unicode,height,0,nil,-height)
+    if done then
+        c.top_accent = nil -- or maybe also all the others
+    end
     return c
 end
 

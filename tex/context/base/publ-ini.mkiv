@@ -45,6 +45,80 @@
 
 \unprotect
 
+% a dedicated construction mechanism
+
+\installcorenamespace {btxlist}
+
+\installcommandhandler \??btxlist {btxlist} \??btxlist
+
+\def\v!btxlist{btxlist}
+
+\unexpanded\setvalue{\??constructioninitializer\v!btxlist}%
+  {\let\currentbtxlist                  \currentconstruction
+   \let\constructionparameter           \btxlistparameter
+   \let\detokenizedconstructionparameter\detokenizedbtxlistparameter
+   \let\letconstructionparameter        \letbtxlistparameter
+   \let\useconstructionstyleandcolor    \usebtxliststyleandcolor
+   \let\setupcurrentconstruction        \setupcurrentbtxlist}
+
+\expandafter\let\csname\??constructionmainhandler   \v!btxlist\expandafter\endcsname\csname\??constructionmainhandler   \v!construction\endcsname
+\expandafter\let\csname\??constructioncommandhandler\v!btxlist\expandafter\endcsname\csname\??constructioncommandhandler\v!construction\endcsname
+\expandafter\let\csname\??constructiontexthandler   \v!btxlist\expandafter\endcsname\csname\??constructiontexthandler   \v!construction\endcsname
+
+\unexpanded\setvalue{\??constructioncommandhandler\v!btxlist}%
+  {\csname\??constructionstarthandler\v!construction\endcsname
+   \csname\??constructionstophandler \v!construction\endcsname
+   \endgroup}
+
+\unexpanded\setvalue{\??constructionstarthandler\v!btxlist}%
+  {\csname\??constructionstarthandler\v!construction\endcsname}
+
+\unexpanded\setvalue{\??constructionstophandler\v!btxlist}%
+  {\csname\??constructionstophandler\v!construction\endcsname
+   \endgroup}
+
+\unexpanded\def\startbtxlistentry#1%
+  {\begingroup
+  %\the\everybtxlistentry
+   \strc_constructions_initialize{#1}%
+   \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
+
+\unexpanded\def\stopbtxlistentry
+  {\csname\??constructionstophandler\currentconstructionhandler\endcsname}
+
+\unexpanded\def\strc_constructions_initialize#1% class instance
+  {\edef\currentconstruction{#1}%
+   \let\currentconstructionlistentry\!!zerocount
+   \expandafter\let\expandafter\currentconstructionmain   \csname\??constructionmain \currentconstruction\endcsname
+   \expandafter\let\expandafter\currentconstructionlevel  \csname\??constructionlevel\currentconstruction\endcsname
+   \expandafter\let\expandafter\currentconstructionhandler\csname\??constructionclass\currentconstruction\endcsname
+   \csname\??constructioninitializer\currentconstructionhandler\endcsname}
+
+\appendtoks
+%     \ifx\currentbtxlistparent\empty
+%         \defineconstruction[\currentbtxlist][\currentbtxlistparent][\s!handler=\v!btxlist,\c!level=1]%
+%     \else
+%         \defineconstruction[\currentbtxlist][\s!handler=\v!btxlist,\c!level=1]%
+%     \fi
+    \ifx\currentbtxlistparent\empty
+        \letvalue{\??constructionmain\currentbtxlist}\currentbtx
+    \else
+        \letvalue{\??constructionmain\currentbtxlist}\currentbtxparent
+    \fi
+    \setevalue{\??constructionlevel\currentbtxlist}{\number\btxlistparameter\c!level}%
+    \setevalue{\??constructionclass\currentbtxlist}{\btxlistparameter\s!handler}%
+%      \settrue\c_strc_constructions_title_state
+\to \everydefinebtxlist
+
+\setupbtxlist
+  [\s!handler=\v!btxlist,
+   \c!level=1,
+%    \c!alternative=\v!left,
+%    \c!distance=\emwidth]
+]
+
+% here starts the bib stuff
+
 \installcorenamespace {btxdataset}
 \installcorenamespace {btxlistvariant}
 \installcorenamespace {btxcitevariant}
@@ -217,22 +291,22 @@
 % \def\publ_list_processor % bibref -> btx (old method, keep as reference)
 %   {\ctxcommand{btxaddtolist("\currentbtxrendering",\currentlistindex,"btxref")}}
 
-\definelist
+\definelist % only used for selecting
   [btx]
-  [\c!before=,
-  %\c!inbetween=,
-   \c!after=]
+
+\setuplist
+  [btx]%
+  [\c!state=\v!start]%
+
+% \definedescription
+%   [btx]
+%   [\c!before=,
+%   %\c!inbetween=,
+%    \c!after=]
 
 \appendtoks
-    \definelist
-      [btx:\currentbtxrendering]%
-      [btx]
-    \setuplist
-      [btx:\currentbtxrendering]%
-      [\c!state=\v!start]%
-   % \installstructurelistprocessor
-   %   {\currentbtxrendering:userdata}%
-   %   {\publ_list_processor}%
+    \definebtxlist
+      [\currentbtxrendering]%
 \to \everydefinebtxrendering
 
 \unexpanded\def\btx_entry_inject
@@ -264,6 +338,7 @@
    \edef\currentbtxrendering{#1}%
    \setupcurrentbtxrendering[#2]%
    \edef\currentlist{btx:\currentbtxrendering}%
+   \let\currentbtxlist\currentbtxrendering
    \publ_place_list_check_criterium
    \edef\currentbtxrenderingtitle{\btxrenderingparameter\c!title}%
    \ifx\currentbtxrenderingtitle\empty
@@ -279,7 +354,8 @@
   {\begingroup
    \edef\currentbtxrendering{#1}%
    \setupcurrentbtxrendering[#2]%
-   \edef\currentlist{btx:\currentbtxrendering}%
+   \edef\currentlist{btx}%
+   \let\currentbtxlist\currentbtxrendering
    \publ_place_list_check_criterium
    \publ_place_list_indeed
    \endgroup}
@@ -296,25 +372,19 @@
    \fi
 \to \everysetupbtxlistplacement
 
-% use description instead of list ... more flexible .. but then not via
-% a real description in the tuc but directly
-
 \def\publ_place_list_indeed
   {\startbtxrendering[\currentbtxrendering]%
      \directsetup{\btxrenderingparameter\c!setups}%
    % \determinelistcharacteristics[\currentbtxrendering]%
      \edef\currentbtxalternative{\btxrenderingparameter\c!alternative}%
      \edef\currentbtxdataset{\btxrenderingparameter\c!dataset}%
-     \edef\currentlist{btx:\currentbtxrendering}%
+     \edef\currentlist{btx}%
+     \let\currentbtxlist\currentbtxrendering
      \the\everysetupbtxlistplacement
      \forgetall
      \ctxcommand{btxsetlistmethod("\currentbtxdataset","\btxrenderingparameter\c!method")}%
      \startpacked[\v!blank]%
        % here we just collect items
-     % \strc_lists_analyze
-     %   {btx}%
-     %   {\currentbtxcriterium}%
-     %   {\namedlistparameter\currentbtxrendering\c!number}%
        \ctxcommand{btxcollectlistentries {
            names        = "btx",
            criterium    = "\currentbtxcriterium",
@@ -337,10 +407,10 @@
          \fi
          \d_publ_number_distance\btxrenderingparameter\c!distance
        \fi
-       \letlistparameter\c!width   \d_publ_number_width
-       \letlistparameter\c!distance\d_publ_number_distance
+       % only when authomatic
+       \letbtxlistparameter\c!width   \d_publ_number_width
+       \letbtxlistparameter\c!distance\d_publ_number_distance
        % this actually typesets them
-       \letlistparameter\c!interaction\v!none
        \ctxcommand{btxflushlistentries("\currentbtxdataset","\btxrenderingparameter\c!sorttype")}%
      \stoppacked
    \stopbtxrendering
@@ -373,11 +443,12 @@
    \ifconditional\c_publ_place_register
      \publ_place_list_entry_register
    \fi
-   \edef\currentlist              {btx:\currentbtxrendering}%
-   \let\currentlistentrynumber    \btx_reference_inject
-   \let\currentlistentrytitle     \btx_entry_inject
-   \let\currentlistentrypagenumber\empty
-   \strc_lists_apply_renderingsetup
+   \edef\currentlist  {btx}%
+%    \let\currentbtxlist\currentbtxrendering
+   \let\currentconstructiontext\btx_reference_inject
+   \startbtxlistentry\currentbtxrendering
+     \btx_entry_inject
+   \stopbtxlistentry
    }%\endstrut}
 
 \unexpanded\def\btxchecklistentry#1% called at the lua end
