@@ -607,7 +607,16 @@ enddef ;
 %     drawdot (10j,10);
 % endfor ;
 %
-% so ...
+% or:
+%
+%\startMPpage
+%
+% def drawdot expr z =
+%     addto currentpicture contour (makepath currentpen shifted z) _op_
+% enddef;
+%
+% drawdot origin shifted (0,-3cm) withpen pencircle scaled 2cm ;
+% pickup pencircle scaled 2cm ; drawdot origin withcolor red ;
 
 def drawdot expr p =
     if pair p :
