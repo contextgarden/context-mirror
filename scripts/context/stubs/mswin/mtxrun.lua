@@ -16805,17 +16805,18 @@ local ownlibs = { -- order can be made better
 
 }
 
+-- c:/data/develop/tex-context/tex/texmf-win64/bin/../../texmf-context/tex/context/base/data-tmf.lua
+-- c:/data/develop/context/sources/data-tmf.lua
+
 local ownlist = {
-    '.',
-    ownpath ,
-    ownpath .. "/../sources", -- HH's development path
+ -- '.',
+ -- ownpath ,
+    owntree .. "/../../../../context/sources", -- HH's development path
     owntree .. "/../../texmf-local/tex/context/base",
     owntree .. "/../../texmf-context/tex/context/base",
-    owntree .. "/../../texmf-dist/tex/context/base",
     owntree .. "/../../texmf/tex/context/base",
     owntree .. "/../../../texmf-local/tex/context/base",
     owntree .. "/../../../texmf-context/tex/context/base",
-    owntree .. "/../../../texmf-dist/tex/context/base",
     owntree .. "/../../../texmf/tex/context/base",
 }
 
@@ -17745,8 +17746,16 @@ elseif e_argument("selfmerge") then
 
     runners.loadbase()
     local found = locate_libs()
+
     if found then
-        utilities.merger.selfmerge(own.name,own.libs,{ found })
+        local mtxrun = resolvers.findfile("mtxrun.lua") -- includes local name
+        if lfs.isfile(mtxrun) then
+            utilities.merger.selfmerge(mtxrun,own.libs,{ found })
+            application.report("runner updated on resolved path: %s",mtxrun)
+        else
+            utilities.merger.selfmerge(own.name,own.libs,{ found })
+            application.report("runner updated on relative path: %s",own.name)
+        end
     end
 
 elseif e_argument("selfclean") then
@@ -17754,7 +17763,15 @@ elseif e_argument("selfclean") then
     -- remove embedded libraries
 
     runners.loadbase()
-    utilities.merger.selfclean(own.name)
+
+    local mtxrun = resolvers.findfile("mtxrun.lua") -- includes local name
+    if lfs.isfile(mtxrun) then
+        utilities.merger.selfclean(mtxrun)
+        application.report("runner cleaned on resolved path: %s",mtxrun)
+    else
+        utilities.merger.selfclean(own.name)
+        application.report("runner cleaned on relative path: %s",own.name)
+    end
 
 elseif e_argument("selfupdate") then
 
@@ -17995,6 +18012,8 @@ elseif e_argument("help") and filename=='base' then
 elseif e_argument("version") then
 
     application.version()
+
+    application.report("source path",environment.ownbin)
 
 elseif e_argument("directives") then
 
