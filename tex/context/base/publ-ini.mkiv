@@ -15,7 +15,6 @@
 % todo: \v!cite => \s!cite
 % todo: interface with (ml)bibtex (export -> call -> import)
 % todo: check if 'all' etc are ok ... either use list or use other criterium
-% todo: maybe use description instead of list
 
 % \definecolor[btx:field]   [darkred]
 % \definecolor[btx:crossref][darkblue]
@@ -45,13 +44,14 @@
 
 \unprotect
 
+\def\s!btx{btx}
+\def\v!btxlist{btxlist}
+
 % a dedicated construction mechanism
 
 \installcorenamespace {btxlist}
 
 \installcommandhandler \??btxlist {btxlist} \??btxlist
-
-\def\v!btxlist{btxlist}
 
 \unexpanded\setvalue{\??constructioninitializer\v!btxlist}%
   {\let\currentbtxlist                  \currentconstruction
@@ -79,12 +79,21 @@
 
 \unexpanded\def\startbtxlistentry#1%
   {\begingroup
-  %\the\everybtxlistentry
    \strc_constructions_initialize{#1}%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
 \unexpanded\def\stopbtxlistentry
   {\csname\??constructionstophandler\currentconstructionhandler\endcsname}
+
+\unexpanded\setvalue{\??constructiontexthandler\v!btxlist}%
+  {\begingroup
+   \useconstructionstyleandcolor\c!headstyle\c!headcolor % move to \currentconstructiontext
+   \the\everyconstruction
+   \constructionparameter\c!headcommand
+     {\strut
+      \constructionparameter\c!text
+      \btx_reference_inject}%
+   \endgroup}
 
 \unexpanded\def\strc_constructions_initialize#1% class instance
   {\edef\currentconstruction{#1}%
@@ -95,27 +104,23 @@
    \csname\??constructioninitializer\currentconstructionhandler\endcsname}
 
 \appendtoks
-%     \ifx\currentbtxlistparent\empty
-%         \defineconstruction[\currentbtxlist][\currentbtxlistparent][\s!handler=\v!btxlist,\c!level=1]%
-%     \else
-%         \defineconstruction[\currentbtxlist][\s!handler=\v!btxlist,\c!level=1]%
-%     \fi
+  % \ifx\currentbtxlistparent\empty
+  %     \defineconstruction[\currentbtxlist][\currentbtxlistparent][\s!handler=\v!btxlist,\c!level=1]%
+  % \else
+  %     \defineconstruction[\currentbtxlist][\s!handler=\v!btxlist,\c!level=1]%
+  % \fi
     \ifx\currentbtxlistparent\empty
-        \letvalue{\??constructionmain\currentbtxlist}\currentbtx
+        \letvalue{\??constructionmain\currentbtxlist}\currentbtxlist
     \else
         \letvalue{\??constructionmain\currentbtxlist}\currentbtxparent
     \fi
     \setevalue{\??constructionlevel\currentbtxlist}{\number\btxlistparameter\c!level}%
     \setevalue{\??constructionclass\currentbtxlist}{\btxlistparameter\s!handler}%
-%      \settrue\c_strc_constructions_title_state
 \to \everydefinebtxlist
 
 \setupbtxlist
   [\s!handler=\v!btxlist,
-   \c!level=1,
-%    \c!alternative=\v!left,
-%    \c!distance=\emwidth]
-]
+   \c!level=1]
 
 % here starts the bib stuff
 
@@ -277,7 +282,7 @@
 %D Lists:
 
 \newdimen\d_publ_number_width
-\newdimen\d_publ_number_distance
+%newdimen\d_publ_number_distance
 
 \ifdefined\btxblock   \else \newcount\btxblock   \fi \btxblock\plusone
 \ifdefined\btxcounter \else \newcount\btxcounter \fi
@@ -298,12 +303,6 @@
   [btx]%
   [\c!state=\v!start]%
 
-% \definedescription
-%   [btx]
-%   [\c!before=,
-%   %\c!inbetween=,
-%    \c!after=]
-
 \appendtoks
     \definebtxlist
       [\currentbtxrendering]%
@@ -313,7 +312,7 @@
   {\begingroup
    \edef\currentbtxcategory{\btxfield{category}}%
    \ignorespaces
-   \directsetup{btx:\currentbtxalternative:\currentbtxcategory}%
+   \directsetup{\s!btx:\currentbtxalternative:\currentbtxcategory}%
    \removeunwantedspaces
    \endgroup}
 
@@ -337,7 +336,7 @@
   {\begingroup
    \edef\currentbtxrendering{#1}%
    \setupcurrentbtxrendering[#2]%
-   \edef\currentlist{btx:\currentbtxrendering}%
+   \let\currentlist\s!btx
    \let\currentbtxlist\currentbtxrendering
    \publ_place_list_check_criterium
    \edef\currentbtxrenderingtitle{\btxrenderingparameter\c!title}%
@@ -354,7 +353,7 @@
   {\begingroup
    \edef\currentbtxrendering{#1}%
    \setupcurrentbtxrendering[#2]%
-   \edef\currentlist{btx}%
+   \let\currentlist\s!btx
    \let\currentbtxlist\currentbtxrendering
    \publ_place_list_check_criterium
    \publ_place_list_indeed
@@ -378,7 +377,7 @@
    % \determinelistcharacteristics[\currentbtxrendering]%
      \edef\currentbtxalternative{\btxrenderingparameter\c!alternative}%
      \edef\currentbtxdataset{\btxrenderingparameter\c!dataset}%
-     \edef\currentlist{btx}%
+     \let\currentlist\s!btx
      \let\currentbtxlist\currentbtxrendering
      \the\everysetupbtxlistplacement
      \forgetall
@@ -393,8 +392,7 @@
        }}%
        % next we analyze the width
        \ifx\btx_reference_inject_indeed\relax
-         \d_publ_number_width   \zeropoint
-         \d_publ_number_distance\zeropoint
+         % nothing
        \else
          \edef\p_width{\btxrenderingparameter\c!width}%
          \ifx\p_width\v!auto
@@ -402,14 +400,9 @@
            \setbox\scratchbox\vbox{\settrialtypesetting\ctxcommand{btxfetchlistentries("\currentbtxdataset")}}%
            \d_publ_number_width\wd\scratchbox
            \global\btxcounter\scratchcounter
-         \else
-           \d_publ_number_width\p_width
+           \letbtxlistparameter\c!width\d_publ_number_width
          \fi
-         \d_publ_number_distance\btxrenderingparameter\c!distance
        \fi
-       % only when authomatic
-       \letbtxlistparameter\c!width   \d_publ_number_width
-       \letbtxlistparameter\c!distance\d_publ_number_distance
        % this actually typesets them
        \ctxcommand{btxflushlistentries("\currentbtxdataset","\btxrenderingparameter\c!sorttype")}%
      \stoppacked
@@ -437,19 +430,14 @@
    \endgroup}
 
 \unexpanded\def\publ_place_list_entry
-  {%\dontleavehmode
-  %\begstrut
-   \global\advance\btxcounter\plusone
+  {\global\advance\btxcounter\plusone
    \ifconditional\c_publ_place_register
      \publ_place_list_entry_register
    \fi
-   \edef\currentlist  {btx}%
-%    \let\currentbtxlist\currentbtxrendering
-   \let\currentconstructiontext\btx_reference_inject
+   \let\currentlist\s!btx
    \startbtxlistentry\currentbtxrendering
      \btx_entry_inject
-   \stopbtxlistentry
-   }%\endstrut}
+   \stopbtxlistentry}
 
 \unexpanded\def\btxchecklistentry#1% called at the lua end
   {\begingroup
@@ -777,7 +765,12 @@
 \def\currentbtxindex{0}
 
 \unexpanded\def\btxlistvariant#1%
-  {\ctxcommand{btxlistvariant("\currentbtxdataset","\currentbtxblock","\currentbtxtag","#1","\currentbtxindex")}} % some can go
+  {\begingroup
+   \edef\currentbtxlistvariant{#1}%
+   \btxlistvariantparameter\c!left
+   \ctxcommand{btxlistvariant("\currentbtxdataset","\currentbtxblock","\currentbtxtag","#1","\currentbtxindex")}% some can go
+   \btxlistvariantparameter\c!right
+   \endgroup}
 
 %D Whatever helpers:
 
