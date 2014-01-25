@@ -176,5 +176,7 @@ end
 nodes.handlers.backgrounds      = function(head) local head, done = add_backgrounds     (tonut(head)) return tonode(head), done end
 nodes.handlers.alignbackgrounds = function(head) local head, done = add_alignbackgrounds(tonut(head)) return tonode(head), done end
 
+-- elsewhere: needs checking
+
 tasks.appendaction("shipouts","normalizers","nodes.handlers.backgrounds")
 tasks.appendaction("shipouts","normalizers","nodes.handlers.alignbackgrounds")

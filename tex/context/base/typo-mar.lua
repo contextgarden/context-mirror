@@ -344,7 +344,7 @@ function margins.save(t)
         --
      -- t.realpageno          = texgetcount("realpageno")
         if inline then
-            context(tonode(new_usernumber(inline_mark,nofsaved))) -- or use a normal node 
+            context(tonode(new_usernumber(inline_mark,nofsaved))) -- or use a normal node
             store[nofsaved] = t -- no insert
             nofinlined = nofinlined + 1
         else

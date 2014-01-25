@@ -243,11 +243,40 @@ local function remove(head,current,free_too)
         d_free_node(t)
         t = nil
     else
-        d_setfield(t,"next",nil)
-        d_setfield(t,"prev",nil)
+        d_setfield(t,"next",nil) -- not that much needed (slows down unless we check the source on this)
+        d_setfield(t,"prev",nil) -- not that much needed (slows down unless we check the source on this)
     end
     return head, current, t
 end
+
+-- bad: we can have prev's being glue_spec
+
+-- local function remove(head,current,free_too) -- d_remove_node does a slide which can fail
+--     local prev = d_getprev(current)          -- weird
+--     local next = d_getnext(current)
+--     if next then
+--     -- print("!!!!!!!! prev is gluespec",
+--     --     nodes.nodecodes[d_getid(current)],
+--     --     nodes.nodecodes[d_getid(next)],
+--     --     nodes.nodecodes[d_getid(prev)])
+--         d_setfield(prev,"next",next)
+--         d_setfield(next,"prev",prev)
+--     else
+--         d_setfield(prev,"next",nil)
+--     end
+--     if free_too then
+--         d_free_node(current)
+--         current = nil
+--     else
+--         d_setfield(current,"next",nil) -- use this fact !
+--         d_setfield(current,"prev",nil) -- use this fact !
+--     end
+--     if head == current then
+--         return next, next, current
+--     else
+--         return head, next, current
+--     end
+-- end
 
 nuts.remove = remove
 
