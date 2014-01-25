@@ -116,6 +116,9 @@ white = (1,1,1);
 red = (1,0,0);
 green = (0,1,0);
 blue = (0,0,1);
+cyan = (0,1,1);
+magenta = (1,0,1);
+yellow = (1,1,0);
 background = white;   % The user can reset this
 
 % color part selection for within
