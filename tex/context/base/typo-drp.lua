@@ -205,19 +205,18 @@ actions[v_default] = function(head,setting)
     local done = false
     if getid(head) == whatsit_code and getsubtype(head) == localpar_code then
         -- begin of par
-        local first = getnext(head)
+        local first  = getnext(head)
+        local indent = false
         -- parbox .. needs to be set at 0
         if first and getid(first) == hlist_code then
-            first = getnext(first)
+            first  = getnext(first)
+            indent = true
         end
         -- we need to skip over kerns and glues (signals)
         while first and getid(first) ~= glyph_code do
             first = getnext(first)
         end
         if first and getid(first) == glyph_code then
-
--- show(head,8,"one")
-
             local ma        = setting.ma or 0
             local ca        = setting.ca
             local ta        = setting.ta
@@ -371,7 +370,7 @@ actions[v_default] = function(head,setting)
                 end
             end
             --
-            local hoffset = width + hoffset + distance + parindent
+            local hoffset = width + hoffset + distance + (indent and parindent or 0)
             for current in traverse_id(glyph_code,first) do
                 setfield(current,"xoffset",- hoffset )
                 setfield(current,"yoffset",- voffset) -- no longer - height here
@@ -391,15 +390,15 @@ actions[v_default] = function(head,setting)
                 -- We cannot set parshape yet ... when we can I'll add a slope
                 -- option (positive and negative, in emwidth).
                 local hangafter  = - lines
-                local hangindent = width + distance + parindent
+                local hangindent = width + distance
                 if trace_initials then
                     report_initials("setting hangafter to %i and hangindent to %p",hangafter,hangindent)
                 end
                 tex.hangafter  = hangafter
                 tex.hangindent = hangindent
-                if parindent ~= 0 then
-                    insert_after(first,first,new_kern(-parindent))
-                end
+            end
+            if indent then
+                insert_after(first,first,new_kern(-parindent))
             end
             done = true
         end

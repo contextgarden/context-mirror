@@ -1220,7 +1220,7 @@ enddef ;
 
 extra_endfig := extra_endfig & " naturalizepaths ; " ;
 
-%D Noce tracer:
+%D Nice tracer:
 
 def drawboundary primary p =
     draw p dashed evenly withcolor white ;
