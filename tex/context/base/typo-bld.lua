@@ -241,7 +241,7 @@ function builders.buildpage_filter(groupcode)
         stoptiming(builders)
      -- -- doesn't work here (not passed on?)
      -- tex.pagegoal = tex.vsize - tex.dimen.d_page_floats_inserted_top - tex.dimen.d_page_floats_inserted_bottom
-        texlists.contrib_head = head
+        texlists.contrib_head = head or nil -- needs checking
         return done and head or true
     else
         if trace_page_builder then

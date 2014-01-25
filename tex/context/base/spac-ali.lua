@@ -10,9 +10,6 @@ local div = math.div
 local format = string.format
 
 local tasks            = nodes.tasks
-local appendaction     = tasks.appendaction
-local prependaction    = tasks.prependaction
-local disableaction    = tasks.disableaction
 local enableaction     = tasks.enableaction
 
 local nuts             = nodes.nuts

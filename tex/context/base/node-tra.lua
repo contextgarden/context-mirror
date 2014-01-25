@@ -653,3 +653,17 @@ end
 
 tracers.rule = nodestracerpool.rule -- for a while
 
+-- local function show(head,n,message)
+--     print("START",message or "")
+--     local i = 0
+--     for current in traverse(head) do
+--         local prev = getprev(current)
+--         local next = getnext(current)
+--         i = i + 1
+--         print(i, prev and nodecodes[getid(prev)],nodecodes[getid(current)],next and nodecodes[getid(next)])
+--         if i == n then
+--             break
+--         end
+--     end
+--     print("STOP", message or "")
+-- end

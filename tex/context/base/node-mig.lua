@@ -29,7 +29,7 @@ local getattr       = nuts.getattr
 local setfield      = nuts.setfield
 local setattr       = nuts.setattr
 
-local remove_nodes  = nuts.remove
+local remove_node   = nuts.remove
 
 local nodecodes     = nodes.nodecodes
 local hlist_code    = nodecodes.hlist
@@ -56,7 +56,7 @@ local function locate(head,first,last,ni,nm)
             current = getnext(current)
         elseif migrate_inserts and id == insert_code then
             local insert
-            head, current, insert = remove_nodes(head,current)
+            head, current, insert = remove_node(head,current)
             setfield(insert,"next",nil)
             if first then
                 setfield(insert,"prev",last)
@@ -69,7 +69,7 @@ local function locate(head,first,last,ni,nm)
             ni = ni + 1
         elseif migrate_marks and id == mark_code then
             local mark
-            head, current, mark = remove_nodes(head,current)
+            head, current, mark = remove_node(head,current)
             setfield(mark,"next",nil)
             if first then
                 setfield(mark,"prev",last)
