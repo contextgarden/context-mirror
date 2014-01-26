@@ -325,9 +325,6 @@
 \newtoks \everysetupbtxlistplacement % name will change
 \newtoks \everysetupbtxciteplacement % name will change
 
-\def\btxlistnumberbox
-  {\hbox \ifzeropt\d_publ_number_width\else to \d_publ_number_width\fi}
-
 % \def\publ_list_processor % bibref -> btx (old method, keep as reference)
 %   {\ctxcommand{btxaddtolist("\currentbtxrendering",\currentlistindex,"btxref")}}
 
@@ -432,9 +429,7 @@
            btxdataset   = "\currentbtxdataset",
        }}%
        % next we analyze the width
-       \ifx\btx_reference_inject_indeed\relax
-         % nothing
-       \else
+       \ifx\btx_reference_inject_indeed\relax \else
          \edef\p_width{\btxrenderingparameter\c!width}%
          \ifx\p_width\v!auto
            \scratchcounter\btxcounter
@@ -497,20 +492,16 @@
    \par}
 
 \unexpanded\def\btx_reference_inject % we can use a faster \reference
-  {\btxlistnumberbox\bgroup
-   % \btxlistvariantparameter\c!left
+  {\dontleavehmode\begingroup % no box
      \iftrialtypesetting\else
        \ctxcommand{btxdestination("\currentbtxdataset","\currentbtxblock","\currentbtxtag","\number\btxcounter")}%
      \fi
      \btx_reference_inject_indeed
-   % \btxlistvariantparameter\c!right
-   \egroup}
+   \endgroup}
 
 \unexpanded\def\btx_reference_checked
-  {\btxlistnumberbox\bgroup
-   % \btxlistvariantparameter\c!left
+  {\dontleavehmode\hbox\bgroup
      \btx_reference_inject_indeed
-   % \btxlistvariantparameter\c!right
    \egroup}
 
 \setuvalue{\??btxnumbering\v!short  }{\btxlistvariant{short}} % these will be setups
