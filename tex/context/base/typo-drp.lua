@@ -234,7 +234,15 @@ actions[v_default] = function(head,setting)
             --
             -- 1 char | n chars | skip first quote | ignore punct | keep punct
             --
-            if method[v_auto] then
+            if getattr(first,a_initial) then
+                for current in traverse(getnext(first)) do
+                    if getattr(current,a_initial) then
+                        last = current
+                    else
+                        break
+                    end
+                end
+            elseif method[v_auto] then
                 local char = getchar(first)
                 local kind = category(char)
                 if kind == "po" or kind == "pi" then
@@ -276,6 +284,7 @@ actions[v_default] = function(head,setting)
                 else
                     -- okay
                 end
+                -- maybe also: get all A. B. etc
                 local next = getnext(first)
                 if next then
                     for current in traverse_id(glyph_code,next) do

@@ -75,18 +75,19 @@
 \def\typo_initials_place[#1]% old command
   {\par
    \namedinitialparameter{#1}\c!before
-   \setinitial[#1]}
+   \setinitial[#1]\relax}
 
 \unexpanded\def\setinitial
-  {\dosingleempty\typo_initials_set}
+  {\dodoubleempty\typo_initials_set}
 
-\unexpanded\def\typo_initials_set[#1]%
-  {\edef\typo_initial_handle{\typo_initial_handle_indeed{#1}}}
+\unexpanded\def\typo_initials_set[#1][#2]%
+  {\edef\typo_initial_handle{\typo_initial_handle_indeed{#1}{#2}}}
 
-\unexpanded\def\typo_initial_handle_indeed#1%
+\unexpanded\def\typo_initial_handle_indeed#1#2%
   {\dontleavehmode
    \begingroup
    \edef\currentinitial{#1}%
+   \setupcurrentinitial[#2]%
    \scratchcounter \initialparameter\c!n\relax
    \scratchdistance\initialparameter\c!distance\relax
    \scratchhoffset \initialparameter\c!hoffset \relax
@@ -97,6 +98,7 @@
      {\definedfont[\initialparameter\s!font]}
      {\useinitialstyleparameter\c!style}%
    \useinitialcolorparameter\c!color
+   \edef\p_text{\initialparameter\c!text}% optional
    \ctxcommand{setinitial{
         location  = "\initialparameter\c!location",
         enabled   = true,
@@ -114,20 +116,25 @@
    }}%
    \stopluacode
    \kern\zeropoint % we need a node
+   \p_text
    \endgroup
    \globallet\typo_initial_handle\relax}
 
 \let\typo_initial_handle\relax
 
+% \setupbodyfont[dejavu,9pt]
+%
 % \startbuffer
-% \placeinitial[two]            D. E. Knuth  \ignorespaces\input knuth \par
-% \placeinitial[two]                  Knuth  \ignorespaces\input knuth \par
-% \placeinitial[two] \quotation{D. E. Knuth} \ignorespaces\input knuth \par
-% \placeinitial[two] \quotation      {Knuth} \ignorespaces\input knuth \par
+% \setinitial[two]            D. E. Knuth   \ignorespaces\input knuth \par
+% \setinitial[two]                  Knuth   \ignorespaces\input knuth \par
+% \setinitial[two] \quotation{D. E. Knuth}  \ignorespaces\input knuth \par
+% \setinitial[two] \quotation      {Knuth}  \ignorespaces\input knuth \par
+% \setinitial[two]      [text={D.E. Knuth}] \ignorespaces\input knuth \par
+% \setinitial[two]       [m=4] D. E. Knuth  \ignorespaces\input knuth \par
 % \stopbuffer
-
-% \type{m=2}                          \defineinitial[two][m=2]                          \getbuffer \page
-% \type{m=1,method=auto}              \defineinitial[two][m=1,method=auto]              \getbuffer \page
-% \type{m=1,method={auto,first,last}} \defineinitial[two][m=1,method={first,auto,last}] \getbuffer \page
+%
+% \type{m=2}                          \start \defineinitial[two][m=2,method=none]              \getbuffer \page \stop
+% \type{m=1,method=auto}              \start \defineinitial[two][m=1,method=auto]              \getbuffer \page \stop
+% \type{m=1,method={auto,first,last}} \start \defineinitial[two][m=1,method={first,auto,last}] \getbuffer \page \stop
 
 \protect \endinput
