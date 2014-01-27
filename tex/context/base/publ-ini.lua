@@ -691,6 +691,7 @@ function lists.collectentries(specification)
     end
 -- method=v_local --------------------
     local result  = structures.lists.filter(specification)
+-- inspect(result)
     lists.result  = result
     local section = sections.currentid()
     local list    = rendering.list
