@@ -361,13 +361,11 @@
 \let\placelistofpublications   \placebtxrendering
 
 \def\publ_place_list_check_criterium
-  {\edef\p_criterium{\btxrenderingparameter\c!criterium} % \v!cite will become \s!cite
-   \ifx\p_criterium\empty
-     \letlistparameter\c!criterium\v!previous
-   \else\ifx\p_criterium\v_cite
-     \letlistparameter\c!criterium\v!here
-   \else
-     \letlistparameter\c!criterium\v_cite
+  {\edef\currentbtxcriterium{\btxrenderingparameter\c!criterium}% \v!cite will become \s!cite
+   \ifx\currentbtxcriterium\empty
+     \let\currentbtxcriterium\v!previous
+   \else\ifx\currentbtxcriterium\v!cite
+     \let\currentbtxcriterium\v!here
    \fi\fi}
 
 \def\publ_place_list_complete[#1][#2]% title might become obsolete, just headtext
@@ -526,9 +524,9 @@
    \fi
 \to \everysetupbtxlistplacement
 
-\appendtoks
-    \edef\currentbtxcriterium{\btxrenderingparameter\c!criterium}%
-\to \everysetupbtxlistplacement
+% \appendtoks
+%     \edef\currentbtxcriterium{\btxrenderingparameter\c!criterium}%
+% \to \everysetupbtxlistplacement
 
 \unexpanded\def\btxflushauthor
   {\doifnextoptionalelse\btx_flush_author_yes\btx_flush_author_nop}
