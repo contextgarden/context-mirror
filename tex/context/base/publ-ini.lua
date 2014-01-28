@@ -40,9 +40,10 @@ local v_inbetween    = variables.inbetween
 local v_short        = variables.short
 local v_cite         = variables.cite
 local v_default      = variables.default
-local v_reference    = variables.default
+local v_reference    = variables.reference
 local v_dataset      = variables.dataset
 local v_author       = variables.author or "author"
+local v_editor       = variables.editor or "editor"
 
 local numbertochar   = converters.characters
 
@@ -50,6 +51,12 @@ local logsnewline    = logs.newline
 local logspushtarget = logs.pushtarget
 local logspoptarget  = logs.poptarget
 local csname_id      = token.csname_id
+
+local basiccompare   = sorters.basicsorter -- (a,b)
+local compare        = sorters.comparers.basic -- (a,b)
+local strip          = sorters.strip
+local splitter       = sorters.splitters.utf
+local sort           = sorters.sort
 
 local context                     = context
 
@@ -296,7 +303,7 @@ function publications.enhance(dataset) -- for the moment split runs (maybe publi
     end
     for short, tags in next, shorts do
         if type(tags) == "table" then
-            table.sort(tags)
+            sort(tags)
             for i=1,#tags do
                 details[tags[i]].short = short .. numbertochar(i)
             end
@@ -778,28 +785,30 @@ lists.sorters = {
         end
         sort(list,compare)
     end,
-    [v_default] = function(dataset,rendering,list) -- not really needed
-        local ordered = rendering.ordered
-        local function compare(a,b)
-            local aa, bb = a and a[1], b and b[1]
-            if aa and bb then
-                aa, bb = ordered[aa], ordered[bb]
-                return aa and bb and aa < bb
-            end
-            return false
-        end
-        sort(list,compare)
-    end,
+ -- [v_default] = function(dataset,rendering,list) -- not really needed
+ --     local ordered = rendering.ordered
+ --     local function compare(a,b)
+ --         local aa, bb = a and a[1], b and b[1]
+ --         if aa and bb then
+ --             aa, bb = ordered[aa], ordered[bb]
+ --             return aa and bb and aa < bb
+ --         end
+ --         return false
+ --     end
+ --     sort(list,compare)
+ -- end,
     [v_author] = function(dataset,rendering,list)
-        local valid = publications.authors.preparedsort(dataset,list,v_author)
+        local valid = publications.authors.preparedsort(dataset,list,v_author,v_editor)
         if #valid == 0 or #valid ~= #list then
             -- nothing to sort
         else
             -- if needed we can wrap compare and use the list directly but this is cleaner
-            sort(valid,sorters.comparers.basic)
+            sort(valid,compare)
             for i=1,#valid do
-                list[i] = valid[i].index
+                local v = valid[i]
+                valid[i] = list[v.index]
             end
+            return valid
         end
     end,
 }
@@ -807,8 +816,10 @@ lists.sorters = {
 function lists.flushentries(dataset,sortvariant)
     local rendering = renderings[dataset]
     local list = rendering.list
-    local compare = lists.sorters[sortvariant] or lists.sorters[v_default]
-    compare = type(compare) == "function" and compare(dataset,rendering,list)
+    local sort = lists.sorters[sortvariant] or lists.sorters[v_default]
+    if type(sort) == "function" then
+        list = sort(dataset,rendering,list) or list
+    end
     for i=1,#list do
         ctx_setvalue("currentbtxindex",i)
         ctx_btxhandlelistentry(list[i][1]) -- we can pass i here too ... more efficient to avoid the setvalue
@@ -1018,11 +1029,6 @@ publications.citevariants = citevariants
 
 -- helper
 
-local compare  = sorters.comparers.basic -- (a,b)
-local strip    = sorters.strip
-local splitter = sorters.splitters.utf
-local sort     = sorters.sort
-
 local function sortedtags(dataset,list,sorttype)
     local luadata = datasets[dataset].luadata
     local valid = { }
@@ -1043,7 +1049,7 @@ local function sortedtags(dataset,list,sorttype)
     if #valid == 0 or #valid ~= #list then
         return list
     else
-        sort(valid,sorters.comparers.basic)
+        sort(valid,basiccompare)
         for i=1,#valid do
             valid[i] = valid[i].tag
         end

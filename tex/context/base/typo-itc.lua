@@ -9,8 +9,9 @@ if not modules then modules = { } end modules ['typo-itc'] = {
 local utfchar = utf.char
 
 local trace_italics       = false  trackers.register("typesetters.italics", function(v) trace_italics = v end)
-
 local report_italics      = logs.reporter("nodes","italics")
+
+local threshold           = 0.5   trackers.register("typesetters.threshold", function(v) threshold = v == true and 0.5 or tonumber(v) end)
 
 typesetters.italics       = typesetters.italics or { }
 local italics             = typesetters.italics
@@ -52,6 +53,7 @@ local new_correction_glue = nodepool.glue
 local fonthashes          = fonts.hashes
 local fontdata            = fonthashes.identifiers
 local italicsdata         = fonthashes.italics
+local exheights           = fonthashes.exheights
 
 local forcedvariant       = false
 
@@ -118,11 +120,25 @@ function italics.handler(head)
                             report_italics("ignoring %p between italic %C and italic %C",italic,prevchar,char)
                         end
                     else
-                        if trace_italics then
-                            report_italics("inserting %p between italic %C and regular %C",italic,prevchar,char)
+                        local okay = true
+                        if threshold then
+                            local ht = getfield(current,"height")
+                            local ex = exheights[font]
+                            local th = threshold * ex
+                            if ht <= th then
+                                if trace_italics then
+                                    report_italics("ignoring correction between italic %C and regular %C, height %p less than threshold %p",prevchar,char,ht,th)
+                                end
+                                okay = false
+                            end
                         end
-                        insert_node_after(head,previous,new_correction_kern(italic))
-                        done = true
+                        if okay then
+                            if trace_italics then
+                                report_italics("inserting %p between italic %C and regular %C",italic,prevchar,char)
+                            end
+                            insert_node_after(head,previous,new_correction_kern(italic))
+                            done = true
+                        end
                     end
                 elseif inserted and data then
                     if trace_italics then
@@ -238,6 +254,7 @@ function commands.setupitaliccorrection(option) -- no grouping !
     elseif options[variables.always] then
         variant = 2
     end
+    -- maybe also keywords for threshold
     if options[variables.global] then
         forcedvariant = variant
         texsetattribute(a_italics,unsetvalue)

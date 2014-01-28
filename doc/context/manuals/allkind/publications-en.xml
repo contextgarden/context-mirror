@@ -298,4 +298,68 @@
         </cd:arguments>
     </cd:command>
 
+    <!-- list entries -->
+
+
+    <cd:command name="setupbtxlist" file="publ-ini.mkiv" category="publications" hash="btxlist">
+        <cd:sequence>
+            <cd:string value="setupbtxlist"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments n="1">
+                <cd:parameter name="alternative">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="headstyle">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="headcolor">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="hang">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="align">
+                    <cd:resolve name="align"/>
+                </cd:parameter>
+                <cd:parameter name="headalign">
+                    <cd:resolve name="symalign"/>
+                </cd:parameter>
+                <cd:parameter name="margin">
+                    <cd:constant type="cd:yes"/>
+                    <cd:constant type="cd:no"/>
+                </cd:parameter>
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command" default="\blank"/>
+                </cd:parameter>
+                <cd:parameter name="inbetween">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command" default="\blank"/>
+                </cd:parameter>
+                <cd:parameter name="display">
+                    <cd:constant type="cd:yes"/>
+                    <cd:constant type="cd:no"/>
+                </cd:parameter>
+                <cd:parameter name="command">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+
 </cd:interface>

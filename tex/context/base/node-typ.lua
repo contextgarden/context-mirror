@@ -16,10 +16,12 @@ local tonode          = nuts.tonode
 local tonut           = nuts.tonut
 
 local setfield        = nuts.setfield
+local getfont         = nuts.getfont
 
 local hpack_node_list = nuts.hpack
 local vpack_node_list = nuts.vpack
 local fast_hpack_list = nuts.fasthpack
+local copy_node       = nuts.copy
 
 local nodepool        = nuts.pool
 local new_glyph       = nodepool.glyph
@@ -30,10 +32,14 @@ local utfvalues       = utf.values
 local currentfont     = font.current
 local fontparameters  = fonts.hashes.parameters
 
-local function tonodes(str,fontid,spacing) -- quick and dirty
+local function tonodes(str,fontid,spacing,templateglyph) -- quick and dirty
     local head, prev = nil, nil
     if not fontid then
-        fontid = currentfont()
+        if templateglyph then
+            fontid = getfont(templateglyph)
+        else
+            fontid = currentfont()
+        end
     end
     local fp = fontparameters[fontid]
     local s, p, m
@@ -50,6 +56,10 @@ local function tonodes(str,fontid,spacing) -- quick and dirty
                 next = new_glue(s,p,m)
                 spacedone = true
             end
+        elseif templateglyph then
+            next = copy_glyph(templateglyph)
+            setfield(next,"char",c)
+            spacedone = false
         else
             next = new_glyph(fontid or 1,c)
             spacedone = false

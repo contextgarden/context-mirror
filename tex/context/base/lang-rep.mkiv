@@ -25,12 +25,15 @@
 
 %D \startluacode
 %D
+%D     -- todo: other nodes (prelude to more experiments with auto dropped caps)
+%D
 %D     languages.replacements.add("basics", {
 %D         ["aap"]   = "monkey",
 %D         ["noot"]  = "nut",
 %D         ["never"] = "forever",
 %D         ["newer"] = "cooler",
 %D         ["new"]   = "cool",
+%D      -- ["special"] = "veryspe{>>>}{<<<}{=}cial",
 %D     })
 %D
 %D \stopluacode
@@ -38,10 +41,13 @@
 %D \replaceword[more][this][that]
 %D \replaceword[more][crap][support]
 %D \replaceword[more][---][—]
+%D \replaceword[basics][special][veryspe{>>>}{<<<}{=}cial]
 %D
 %D \starttyping
-%D \start \setreplacements[basics] What the heck, it's now or never, isn't it new? \stop \par
-%D \start \setreplacements[more]   Do we --- {\it really} --- need this kind of crap? \stop \par
+%D \start \setreplacements[basics] What the heck, it's now or never, isn't it new? \par \stop
+%D \start \setreplacements[more]   Do we --- {\it really} --- need this kind of crap? \par \stop
+%D \start \setreplacements[basics] All kinds of special thingies! \par \stop
+%D \start \setreplacements[basics] \hsize1mm special \par \stop
 %D \stoptyping
 
 \unexpanded\def\setreplacements[#1]%
