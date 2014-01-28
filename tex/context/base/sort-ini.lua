@@ -82,7 +82,7 @@ local v_first           = variables.first
 local v_last            = variables.last
 
 local validmethods      = table.tohash {
- -- "ch", -- raw character
+    "ch", -- raw character (for tracing)
     "mm", -- minus mapping
     "zm", -- zero  mapping
     "pm", -- plus  mapping
@@ -336,6 +336,7 @@ local function setlanguage(l,m,d,u)
     data.sequence = sequence
     usedinsequence = table.tohash(sequence)
     data.usedinsequence = usedinsequence
+-- usedinsequence.ch = true -- better just store the string
     if trace_tests then
         report_sorters("using sort sequence: % t",sequence)
     end
@@ -376,7 +377,7 @@ end
 
 -- todo: compile compare function
 
-function comparers.basic(a,b) -- trace ea and eb
+local function basic(a,b) -- trace ea and eb
     local ea, eb = a.split, b.split
     local na, nb = #ea, #eb
     if na == 0 and nb == 0 then
@@ -434,6 +435,12 @@ function comparers.basic(a,b) -- trace ea and eb
             return 0
         end
     end
+end
+
+comparers.basic = basic
+
+function sorters.basicsorter(a,b)
+    return basic(a,b) == -1
 end
 
 local function numify(s)
@@ -587,7 +594,7 @@ function splitters.utf(str,checked) -- we could append m and u but this is clean
 
     if checked then
         return {
-            ch = usedinsequence.ch and char      or nil, -- not in sequence
+            ch = trace_tests       and char      or nil, -- not in sequence
             uc = usedinsequence.uc and byte      or nil,
             mc = usedinsequence.mc and m_case    or nil,
             zc = usedinsequence.zc and z_case    or nil,

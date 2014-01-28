@@ -454,10 +454,11 @@ inherited.
 
 \startchapter[title=Renderings]
 
-A list of publications can be rendered at any place in the document. A
-database can be much larger than needed for a document. The same is true for
-the fields that make up an entry. Here is the list of fields that are currently
-handled, but of course there can be additional ones:
+A list of publications can be rendered at any place in the document. A database
+can be much larger than needed for a document. The same is true for the fields
+that make up an entry. Here is the list of fields that are currently handled, but
+of course there can be additional ones:
+
 
 \startalignment[flushleft,verytolerant,nothyphenated]
 \startluacode
@@ -522,10 +523,10 @@ A dataset can have all kind of entries:
 \stopalignment
 
 Each has its own rendering variant. To keep things simple we have their settings
-separated. However, these settings are shared for all rendering alternatives. In practice
-this is seldom a problem in a publication as only one rendering alternative will
-be active. If this be not sufficient, you can always group local settings in a setup
-and hook that into the specific rendering.
+separated. However, these settings are shared for all rendering alternatives. In
+practice this is seldom a problem in a publication as only one rendering
+alternative will be active. If this be not sufficient, you can always group local
+settings in a setup and hook that into the specific rendering.
 
 \showsetup[setupbtxlistvariant]
 %showrootvalues[btxlistvariant]
@@ -599,9 +600,9 @@ You can improve readability by using setups, for instance:
 }
 \stoptyping
 
-Keep in mind that normally you don't need to mess with definitions like this because
-standard rendering styles are provided. These styles use a few helpers that inject symbols
-but also take care of leading and trailing spaces:
+Keep in mind that normally you don't need to mess with definitions like this
+because standard rendering styles are provided. These styles use a few helpers
+that inject symbols but also take care of leading and trailing spaces:
 
 \starttabulate[|||]
 \NC \type {\btxspace   } \NC before \btxspace    after \NC \NR
@@ -646,6 +647,49 @@ You can use a (configurable) default or pass directives: Valid directives are
 \NC \type{normal}        \NC Kermit, the Frog, jr \NC \NR
 \NC \type{normalshort}   \NC K, the Frog, jr      \NC \NR
 \stoptabulate
+
+The list itself is not a list in the sense of a regular \CONTEXT\ structure related
+list. We do use the list mechanism to keep track of used entries but that is mostly
+because we can then reuse filtering mechanisms. The actual rendering of a reference
+and entry runs on top of so called constructions (other examples of constructions are
+descriptions, enumerations and notes).
+
+\showsetup[setupbtxlist]
+
+You need to be aware what command is used to achieve the desired result. For instance,
+in order to put parentheses around a number reference you say:
+
+\starttyping
+\setupbtxlistvariant
+  [num]
+  [left=(,
+   right=)]
+\stoptyping
+
+If you want automated width calculations, the following does the trick:
+
+\starttyping
+\setupbtxrendering
+  [standard]
+  [width=auto]
+\stoptyping
+
+but if you want to control it yourself you say something:
+
+\starttyping
+\setupbtxrendering
+  [width=none]
+
+\setupbtxlist
+  [standard]
+  [width=3cm,
+   distance=\emwidth,
+   color=red,
+   headcolor=blue,
+   headalign=flushright]
+\stoptyping
+
+In most cases the defaults will work out fine.
 
 \stopchapter
 

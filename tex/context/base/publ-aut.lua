@@ -457,62 +457,7 @@ local strip    = sorters.strip
 local splitter = sorters.splitters.utf
 local sort     = sorters.sort
 
--- function authors.preparedsort(dataset,list,sorttype)
---     local luadata = datasets[dataset].luadata
---     local details = datasets[dataset].details
---     local valid = { }
---     for i=1,#list do
---         local tag    = list[i]
---         local entry  = luadata[tag]
---         local detail = details[tag]
---         local suffix = tostring(i)
---         local split  = nil
---         if entry and detail then
---             local key   = detail[sorttype]
---             local year  = entry.year or 9998
---             if key then
---                 split = { }
---                 local n = #key
---                 if n > 0 then
---                     -- least efficient
---                     for i=1,n do
---                         local k = key[i]
---                         local vons = k.vons
---                         local surs = k.surnames
---                         local vons = vons and concat(vons," ")
---                         local surs = surs and concat(surs," ") or ""
---                         local assembled = (vons and #vons > 0 and vons .. " " .. surs) or surs
---                         split[i] = splitter(strip(assembled),true)
---                     end
---                     split[n+1] = splitter(year,true)
---                     split[n+2] = splitter(suffix,true)
---                 else
---                     -- medium efficient
---                     local k = key[1]
---                     local vons = k.vons
---                     local surs = k.surnames
---                     local vons = vons and concat(vons," ")
---                     local surs = surs and concat(surs," ") or ""
---                     local assembled = ((vons and #vons > 0 and vons .. " " .. surs) or surs) .. ":" .. year .. ":" ..suffix
---                     split = splitter(strip(assembled),true)
---                 end
---             else
---                 -- efficient fallback
---                 split = splitter(year .. ":" .. suffix,true)
---             end
---         else
---             -- efficient fallback
---             split = splitter("9999:" .. suffix,true)
---         end
---         valid[i] = {
---             index = i,
---             split = split,
---         }
---     end
---     return valid
--- end
-
-function authors.preparedsort(dataset,list,sorttype)
+function authors.preparedsort(dataset,list,sorttype_a,sorttype_b,sorttype_c)
     local luadata  = datasets[dataset].luadata
     local details  = datasets[dataset].details
     local valid    = { }
@@ -522,50 +467,57 @@ function authors.preparedsort(dataset,list,sorttype)
         t[k] = v
         return v
     end)
+    local snippets = { }
     for i=1,#list do
-        local tag    = list[i]
-        local entry  = luadata[tag]
-        local detail = details[tag]
-        local suffix = tostring(i)
+        -- either { tag, tag, ... } or { { tag, index }, { tag, index } }
+        local li        = list[i]
+        local tag       = type(li) == "string" and li or li[1]
+        local entry     = luadata[tag]
+        local detail    = details[tag]
+        local suffix    = tostring(i)
+        local year      = nil
+        local assembled = nil
         if entry and detail then
-            local key  = detail[sorttype]
-            local year = entry.year or "9998"
+            local key  = detail[sorttype_a] or detail[sorttype_b] or detail[sorttype_c]
             if key then
+                -- maybe an option is to also sort the authors first
                 local n = #key
-                local split = { }
+                local s = 0
                 for i=1,n do
                     local k = key[i]
-                    local vons = k.vons
-                    local surs = k.surnames
-                    local vons = vons and concat(vons," ")
-                    local surs = surs and concat(surs," ") or ""
-                    local assembled = (vons and #vons > 0 and vons .. " " .. surs) or surs
-                    split[i] = splitted[strip(assembled)]
+                    local vons     = k.vons
+                    local surnames = k.surnames
+                    local initials = k.initials
+                    if vons and #vons > 0 then
+                        s = s + 1 ; snippets[s] = concat(vons," ")
+                    end
+                    if surnames and #surnames > 0 then
+                        s = s + 1 ; snippets[s] = concat(surnames," ")
+                    end
+                    if initials and #initials > 0 then
+                        s = s + 1 ; snippets[s] = concat(initials," ")
+                    end
                 end
-                split[n+1] = splitted[year]
-                split[n+2] = splitted[suffix]
-                valid[i] = {
-                    index = i,
-                    split = split,
-                }
+                assembled = concat(snippets," ",1,s)
             else
-            valid[i] = {
-                index = i,
-                split = {
-                    splitted[year],
-                    splitted[suffix],
-                }
-            }
+                assembled = ""
             end
+            year = entry.year or "9998"
         else
-            valid[i] = {
-                index = i,
-                split = {
-                    splitted["9999"],
-                    splitted[suffix],
-                },
-            }
+            assembled = ""
+            year = "9999"
         end
+        valid[i] = {
+            index = i,
+            split = {
+                splitted[strip(assembled)],
+                splitted[year],
+                splitted[suffix],
+            },
+-- names  = assembled,
+-- year   = year,
+-- suffix = suffix,
+        }
     end
     return valid
 end
