@@ -110,7 +110,7 @@ transform identity;
 for z=origin,right,up: z transformed identity = z; endfor
 
 % color constants
-color black, white, red, green, blue, background;
+color black, white, red, green, blue, cyan, magenta, yellow, background;
 black = (0,0,0);
 white = (1,1,1);
 red = (1,0,0);

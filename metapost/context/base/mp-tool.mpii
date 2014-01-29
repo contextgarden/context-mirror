@@ -28,6 +28,8 @@ let @## = @# ;
 
 if not known mpversion : string mpversion ; mpversion := "0.641" ; fi ;
 
+newinternal metapostversion ; metapostversion := scantokens(mpversion) ;
+
 % vardef mpversiongt(expr s) =
 %     scantokens (mpversion & " > " & if numeric s : decimal s else : s fi)
 % enddef ;
@@ -1128,7 +1130,7 @@ enddef ;
 %   save arrowpath ; path arrowpath ; arrowpath := p ;
 %   _drawarrowpath_
 % enddef ;
-% 
+%
 % def _drawarrowpath_ text t =
 %   drawarrow arrowpath _pth_opt_ t ;
 %   endgroup ;
