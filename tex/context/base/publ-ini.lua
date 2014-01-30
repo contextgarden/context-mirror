@@ -56,7 +56,6 @@ local basiccompare   = sorters.basicsorter -- (a,b)
 local compare        = sorters.comparers.basic -- (a,b)
 local strip          = sorters.strip
 local splitter       = sorters.splitters.utf
-local sort           = sorters.sort
 
 local context                     = context
 
@@ -803,7 +802,7 @@ lists.sorters = {
             -- nothing to sort
         else
             -- if needed we can wrap compare and use the list directly but this is cleaner
-            sort(valid,compare)
+            sorters.sort(valid,compare)
             for i=1,#valid do
                 local v = valid[i]
                 valid[i] = list[v.index]
@@ -1049,7 +1048,7 @@ local function sortedtags(dataset,list,sorttype)
     if #valid == 0 or #valid ~= #list then
         return list
     else
-        sort(valid,basiccompare)
+        sorters.sort(valid,basiccompare)
         for i=1,#valid do
             valid[i] = valid[i].tag
         end

@@ -801,23 +801,45 @@ function commands.getcommandline() -- has to happen at the tex end in order to e
         inputfile = basename(inputfile)
     end
 
+    local forcedruns = arguments.forcedruns
     local kindofrun  = arguments.kindofrun
-    local currentrun = arguments.maxnofruns
-    local maxnofruns = arguments.currentrun
+    local currentrun = arguments.currentrun
+    local maxnofruns = arguments.maxnofruns or arguments.runs
+
+ -- context.setupsystem {
+ --     [constants.directory] = validstring(arguments.setuppath),
+ --     [constants.inputfile] = inputfile,
+ --     [constants.file]      = validstring(arguments.result),
+ --     [constants.random]    = validstring(arguments.randomseed),
+ --     -- old:
+ --     [constants.n]         = validstring(kindofrun),
+ --     [constants.m]         = validstring(currentrun),
+ -- }
 
     context.setupsystem {
-        [constants.directory] = validstring(arguments.setuppath),
-        [constants.inputfile] = inputfile,
-        [constants.file]      = validstring(arguments.result),
-        [constants.random]    = validstring(arguments.randomseed),
+        directory = validstring(arguments.setuppath),
+        inputfile = inputfile,
+        file      = validstring(arguments.result),
+        random    = validstring(arguments.randomseed),
         -- old:
-        [constants.n]         = validstring(kindofrun),
-        [constants.m]         = validstring(currentrun),
+        n         = validstring(kindofrun),
+        m         = validstring(currentrun),
     }
 
-    environment.kindofrun  = tonumber(kindofrun)  or 0
-    environment.maxnofruns = tonumber(maxnofruns) or 0
-    environment.currentrun = tonumber(currentrun) or 0
+    forcedruns = tonumber(forcedruns) or 0
+    kindofrun  = tonumber(kindofrun)  or 0
+    maxnofruns = tonumber(maxnofruns) or 0
+    currentrun = tonumber(currentrun) or 0
+
+    local prerollrun = forcedruns > 0 and currentrun > 0 and currentrun < forcedruns
+
+    environment.forcedruns = forcedruns
+    environment.kindofrun  = kindofrun
+    environment.maxnofruns = maxnofruns
+    environment.currentrun = currentrun
+    environment.prerollrun = prerollrun
+
+    context.setconditional("prerollrun",prerollrun)
 
     if validstring(arguments.arguments) then
         context.setupenv { arguments.arguments }

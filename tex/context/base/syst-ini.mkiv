@@ -246,9 +246,10 @@
 % Watch out, for the moment we disable the check for already being defined
 % later we will revert this but first all chardefs must be replaced.
 
-\normalprotected\def\newconstant   #1{\ifdefined#1\let#1\undefined\fi\newcount#1}
-\normalprotected\def\setnewconstant#1{\ifdefined#1\let#1\undefined\fi\newcount#1#1} % just a number
-\normalprotected\def\setconstant     {}                                             % dummy, no checking, so it warns
+\normalprotected\def\newconstant       #1{\ifdefined#1\let#1\undefined\fi\newcount#1}
+\normalprotected\def\setnewconstant    #1{\ifdefined#1\let#1\undefined\fi\newcount#1#1} % just a number
+\normalprotected\def\setconstant         {}                                             % dummy, no checking, so it warns
+\normalprotected\def\setconstantvalue#1#2{\csname#1\endcsname\numexpr#2\relax}
 
 % maybe setconstant with check
 
@@ -743,6 +744,9 @@
 
 \normalprotected\def\settrue #1{\let#1\conditionaltrue }
 \normalprotected\def\setfalse#1{\let#1\conditionalfalse}
+
+\normalprotected\def\settruevalue #1{\expandafter\let\csname#1\endcsname\conditionaltrue }
+\normalprotected\def\setfalsevalue#1{\expandafter\let\csname#1\endcsname\conditionalfalse}
 
 \let\newconditional\setfalse
 \let\ifconditional \ifcase

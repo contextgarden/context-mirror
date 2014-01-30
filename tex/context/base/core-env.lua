@@ -78,6 +78,15 @@ setmetatableindex(tex.ifs, function(t,k)
     return csname_id(k) ~= undefined and create(k)[2] == iftrue -- inefficient, this create, we need a helper
 end)
 
+function context.setconditional(name,value)
+    if value then
+        context.settruevalue(name)
+    else
+        context.setfalsevalue(name)
+    end
+end
+
+
 -- todo : global
 
 -- not possible as we let at the tex end to zerocount and plusone

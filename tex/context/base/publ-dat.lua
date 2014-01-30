@@ -446,7 +446,7 @@ function publications.load(dataset,filename,kind)
         if dataset.loaded[fullname] then -- will become better
             -- skip
         elseif fullname == "" then
-            report("no file %a",fullname)
+            report("no file %a",filename)
         else
             loaders[filetype](dataset,fullname)
         end
