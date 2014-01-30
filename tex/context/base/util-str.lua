@@ -336,6 +336,7 @@ return function(%s) return %s end
 -- ]]
 
 local environment = {
+    global          = global or _G,
     lpeg            = lpeg,
     type            = type,
     tostring        = tostring,

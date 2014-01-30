@@ -46,6 +46,8 @@ local hpack               = nuts.hpack
 local vpack               = nuts.vpack
 local freenode            = nuts.free
 local concatnodes         = nuts.concat
+local slidenodes          = nuts.slide
+local traversenodes       = nuts.traverse
 
 local getfield            = nuts.getfield
 local setfield            = nuts.setfield
@@ -86,6 +88,19 @@ local mixedcolumns        = pagebuilders.mixedcolumns
 
 local a_checkedbreak      = attributes.private("checkedbreak")
 local forcedbreak         = -123
+
+-- local function slidenodes(head)
+--     local last = nil
+--     for current in traversenodes(head) do
+--         local prev = getprev(current)
+--         if not prev and last then
+--             logs.report("slide","setting prev of %a",nodecodes[getid(current)])
+--             setfield(current,"prev",last)
+--         end
+--         last = current
+--     end
+--     return last or head
+-- end
 
 -- initializesplitter(specification)
 -- cleanupsplitter()
@@ -236,6 +251,7 @@ local function setsplit(specification) -- a rather large function
         report_state("fatal error, no head")
         return
     end
+    slidenodes(head) -- we can have set prev's to nil to prevent backtracking
     local discarded = { }
     local originalhead = head
     local originalwidth = specification.originalwidth or getfield(list,"width")
@@ -394,7 +410,7 @@ local function setsplit(specification) -- a rather large function
             end
         end
         if trace_detail then
-            report_state("%-7s > column %s, delta %p, threshold %p, advance %p, total %p, target %p, discarded %p => %a (height %p, depth %p, skip %p)",
+            report_state("%-7s > column %s, delta %p, threshold %p, advance %p, total %p, target %p => %a (height %p, depth %p, skip %p)",
                 where,curcol,delta,threshold,advance,total,target,state,skipped,height,depth,skip)
         end
         return state, skipped
@@ -465,7 +481,7 @@ local function setsplit(specification) -- a rather large function
         local advance = getfield(current,"height") -- + getfield(current,"depth")
         local state, skipped = checked(advance+currentskips,"rule")
         if trace_state then
-            report_state("%-7s > column %s, state %a, rule, advance %p, height %p","line",column,state,advance,inserttotal,height)
+            report_state("%-7s > column %s, state %a, rule, advance %p, height %p","rule",column,state,advance,inserttotal,height)
             if skipped ~= 0 then
                 report_state("%-7s > column %s, discarded %p","rule",column,skipped)
             end
