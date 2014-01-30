@@ -163,6 +163,7 @@ storage.register("storage/shared", storage.shared, "storage.shared")
 local mark  = storage.mark
 
 if string.patterns     then                               mark(string.patterns)     end
+if string.formatters   then                               mark(string.formatters)   end
 if lpeg.patterns       then                               mark(lpeg.patterns)       end
 if os.env              then                               mark(os.env)              end
 if number.dimenfactors then                               mark(number.dimenfactors) end
