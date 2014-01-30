@@ -137,8 +137,8 @@ function fonts.helpers.name(tfmdata)
     return file.basename(type(tfmdata) == "number" and properties[tfmdata].name or tfmdata.properties.name)
 end
 
-utilities.strings.formatters.add(formatters,"font:name",    [["'"..fonts.helpers.name(%s).."'"]])
-utilities.strings.formatters.add(formatters,"font:features",[["'"..table.sequenced(%s," ",true).."'"]])
+utilities.strings.formatters.add(formatters,"font:name",    [["'"..fontname(%s).."'"]], { fontname = fonts.helpers.name })
+utilities.strings.formatters.add(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]], { sequenced = table.sequenced })
 
 -- ... like font-sfm or so
 

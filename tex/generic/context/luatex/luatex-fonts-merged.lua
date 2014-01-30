@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 01/29/14 23:48:33
+-- merge date  : 01/30/14 12:15:34
 
 do -- begin closure to overcome local limits and interference
 
@@ -2677,6 +2677,7 @@ local template=[[
 return function(%s) return %s end
 ]]
 local environment={
+  global=global or _G,
   lpeg=lpeg,
   type=type,
   tostring=tostring,
