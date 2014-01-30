@@ -455,7 +455,6 @@ end
 local compare  = sorters.comparers.basic -- (a,b)
 local strip    = sorters.strip
 local splitter = sorters.splitters.utf
-local sort     = sorters.sort
 
 function authors.preparedsort(dataset,list,sorttype_a,sorttype_b,sorttype_c)
     local luadata  = datasets[dataset].luadata

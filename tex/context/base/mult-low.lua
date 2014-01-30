@@ -279,7 +279,9 @@ return {
         --
         "dorecurse", "doloop", "exitloop", "dostepwiserecurse", "recurselevel", "recursedepth", "dofastloopcs", "dowith",
         --
-        "newconstant", "setnewconstant", "newconditional", "settrue", "setfalse", "setconstant",
+        "newconstant", "setnewconstant", "setconstant", "setconstantvalue",
+        "newconditional", "settrue", "setfalse", "settruevalue", "setfalsevalue",
+        --
         "newmacro", "setnewmacro", "newfraction",
         "newsignal",
         --
