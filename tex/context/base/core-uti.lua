@@ -126,6 +126,10 @@ function jobvariables.save(cs,value)
     tobesaved[cs] = value
 end
 
+function jobvariables.restore(cs)
+    return collected[cs] or tobesaved[cs]
+end
+
 -- checksums
 
 function jobvariables.getchecksum(tag)

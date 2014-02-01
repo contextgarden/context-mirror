@@ -92,12 +92,21 @@
   {\doifelsecommandhandler\??makeup{#name}\page_makeup_start_indeed\page_makeup_start_nop[#name]}%
 
 \def\page_makeup_start_indeed[#name][#settings]%
-  {\edef\p_page{\namedmakeupparameter{#name}\c!page}
+  {% the next grouping hack is somewhat messy:
+   \begingroup
+   \edef\currentmakeup{#name}%
+   \setupcurrentmakeup[#settings]%
+   \edef\p_page{\makeupparameter\c!page}%
    \ifx\p_page\empty
+     \endgroup
      \page % new, so best not have dangling mess here like references (we could capture then and flush embedded)
+   \else\ifx\p_page\v!no
+     % nothing
+     \endgroup
    \else
+     \endgroup
      \page[\p_page]%
-   \fi
+   \fi\fi
    \startlayout[#name]% includes \page
    \bgroup
    \edef\currentmakeup{#name}%

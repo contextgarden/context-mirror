@@ -517,7 +517,8 @@
 %D footnotes. Eventually we will have multiple strategies available.
 
 \unexpanded\def\page_mix_routine_construct#1%
-  {\ctxcommand{mixsetsplit {
+  {\d_page_mix_max_height\mixedcolumnsparameter\c!maxheight % can have changed due to header=high
+   \ctxcommand{mixsetsplit {
        box         = \number\b_page_mix_collected,
        nofcolumns  = \number\c_page_mix_n_of_columns,
        maxheight   = \number\d_page_mix_max_height,

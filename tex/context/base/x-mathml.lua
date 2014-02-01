@@ -491,13 +491,18 @@ function mathml.mi(id)
         if n == 0 then
             -- nothing to do
         elseif n == 1 then
-            local str = gsub(str[1],"&.-;","") -- bah
-            local rep = i_replacements[str]
-            if not rep then
-                rep = gsub(str,".",i_replacements)
+            local first = str[1]
+            if type(first) == "string" then
+                local str = gsub(first,"&.-;","") -- bah
+                local rep = i_replacements[str]
+                if not rep then
+                    rep = gsub(str,".",i_replacements)
+                end
+                context(rep)
+             -- context.mi(rep)
+            else
+                context.xmlflush(id) -- xmlsprint or so
             end
-            context(rep)
-         -- context.mi(rep)
         else
             context.xmlflush(id) -- xmlsprint or so
         end

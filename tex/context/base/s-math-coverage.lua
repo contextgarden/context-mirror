@@ -123,7 +123,7 @@ function moduledata.math.coverage.showalphabets()
 end
 
 function moduledata.math.coverage.showcharacters()
-    context.startcolumns()
+    context.startmixedcolumns()
     context.setupalign { "nothyphenated" }
     context.starttabulate { "|T|i2|Tpl|" }
     for u, d in table.sortedpairs(chardata) do
@@ -150,7 +150,7 @@ function moduledata.math.coverage.showcharacters()
         end
     end
     context.stoptabulate()
-    context.stopcolumns()
+    context.stopmixedcolumns()
 end
 
 -- This is a somewhat tricky table as we need to bypass the math machinery.

@@ -6,6 +6,39 @@ if not modules then modules = { } end modules ['publ-ini'] = {
     license   = "see context related readme files"
 }
 
+-- for the moment here
+
+local lpegmatch  = lpeg.match
+local P, C, Ct = lpeg.P, lpeg.C, lpeg.Ct
+
+local lpegmatch  = lpeg.match
+local pattern    = lpeg.Cs((1 - lpeg.P(1) * lpeg.P(-1))^0 * (lpeg.P(".")/"" + lpeg.P(1)))
+
+local manipulators = {
+    stripperiod = function(str) return lpegmatch(pattern,str) end,
+    uppercase   = characters.upper,
+    lowercase   = characters.lower,
+}
+
+local manipulation = C((1-P("->"))^1) * P("->") * C(P(1)^0)
+
+local pattern = manipulation / function(operation,str)
+    local manipulator = manipulators[operation]
+    return manipulator and manipulator(str) or str
+end
+
+local function manipulated(str)
+    return lpegmatch(pattern,str) or str
+end
+
+utilities.parsers.manipulation = manipulation
+utilities.parsers.manipulators = manipulators
+utilities.parsers.manipulated  = manipulated
+
+function commands.manipulated(str)
+    context(manipulated(str))
+end
+
 -- use: for rest in gmatch(reference,"[^, ]+") do
 
 local next, rawget, type = next, rawget, type
@@ -17,6 +50,7 @@ local allocate = utilities.storage.allocate
 local settings_to_array = utilities.parsers.settings_to_array
 local sortedkeys, sortedhash = table.sortedkeys, table.sortedhash
 local lpegmatch = lpeg.match
+local P, C, Ct = lpeg.P, lpeg.C, lpeg.Ct
 
 local report         = logs.reporter("publications")
 local trace          = false  trackers.register("publications", function(v) trace = v end)
@@ -350,23 +384,59 @@ function commands.setbtxentry(name,tag)
     end
 end
 
--- rendering of fields
+-- rendering of fields (maybe multiple manipulators)
+
+local manipulation = utilities.parsers.manipulation
+local manipulators = utilities.parsers.manipulators
+
+-- local function checked(field)
+--     local m, f = lpegmatch(manipulation,field)
+--     if m then
+--         return manipulators[m], f or field
+--     else
+--         return nil, field
+--     end
+-- end
+
+local manipulation = Ct((C((1-P("->"))^1) * P("->"))^1) * C(P(1)^0)
+
+local function checked(field)
+    local m, f = lpegmatch(manipulation,field)
+    if m then
+        return m, f or field
+    else
+        return nil, field
+    end
+end
+
+local function manipulated(actions,str)
+    for i=1,#actions do
+        local action = manipulators[actions[i]]
+        if action then
+            str = action(str) or str
+        end
+    end
+    return str
+end
 
 function commands.btxflush(name,tag,field)
     local dataset = rawget(datasets,name)
     if dataset then
         local fields = dataset.luadata[tag]
         if fields then
+            local manipulator, field = checked(field)
             local value = fields[field]
             if type(value) == "string" then
-                context(value)
+             -- context(manipulator and manipulator(value) or value)
+                context(manipulator and manipulated(manipulator,value) or value)
                 return
             end
             local details = dataset.details[tag]
             if details then
                 local value = details[field]
                 if type(value) == "string" then
-                    context(value)
+                 -- context(manipulator and manipulator(value) or value)
+                    context(manipulator and manipulated(manipulator,value) or value)
                     return
                 end
             end
@@ -384,9 +454,11 @@ function commands.btxdetail(name,tag,field)
     if dataset then
         local details = dataset.details[tag]
         if details then
+            local manipulator, field = checked(field)
             local value = details[field]
             if type(value) == "string" then
-                context(value)
+             -- context(manipulator and manipulator(value) or value)
+                context(manipulator and manipulated(manipulator,value) or value)
             else
                 report("unknown detail %a of tag %a in dataset %a",field,tag,name)
             end
@@ -403,9 +475,11 @@ function commands.btxfield(name,tag,field)
     if dataset then
         local fields = dataset.luadata[tag]
         if fields then
+            local manipulator, field = checked(field)
             local value = fields[field]
             if type(value) == "string" then
-                context(value)
+             -- context(manipulator and manipulator(value) or value)
+                context(manipulator and manipulated(manipulator,value) or value)
             else
                 report("unknown field %a of tag %a in dataset %a",field,tag,name)
             end

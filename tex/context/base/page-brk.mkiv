@@ -506,9 +506,9 @@
 \definepagechecker[\s!unknown:2][\s!unknown:0][\c!method=2]
 \definepagechecker[\s!unknown:3][\s!unknown:0][\c!method=3]
 
-\def\page_tests_test_a[#1][#2]{\checkpage[\s!unknown:1][\c!lines=#1,\c!offset=\ifsecondargument#2\else\zeropoint\fi]}
-\def\page_tests_test_b[#1][#2]{\checkpage[\s!unknown:2][\c!lines=#1,\c!offset=\ifsecondargument#2\else\zeropoint\fi]}
-\def\page_tests_test_c[#1][#2]{\checkpage[\s!unknown:3][\c!lines=#1,\c!offset=\ifsecondargument#2\else\zeropoint\fi]}
+\def\page_tests_test_a[#1][#2]{\normalexpanded{\checkpage[\s!unknown:1][\c!lines=#1,\c!offset=\ifsecondargument#2\else\zeropoint\fi]}}
+\def\page_tests_test_b[#1][#2]{\normalexpanded{\checkpage[\s!unknown:2][\c!lines=#1,\c!offset=\ifsecondargument#2\else\zeropoint\fi]}}
+\def\page_tests_test_c[#1][#2]{\normalexpanded{\checkpage[\s!unknown:3][\c!lines=#1,\c!offset=\ifsecondargument#2\else\zeropoint\fi]}}
 
 \unexpanded\def\testpage    {\dodoubleempty\page_tests_test_a} %
 \unexpanded\def\testpageonly{\dodoubleempty\page_tests_test_b} % no penalties added to the mvl
