@@ -40,10 +40,12 @@ local collected, tobesaved = allocate(), allocate()
 
 pages.collected = collected
 pages.tobesaved = tobesaved
+pages.nofpages  = 0
 
 local function initializer()
     collected = pages.collected
     tobesaved = pages.tobesaved
+    pages.nofpages = #collected
 end
 
 job.register('structures.pages.collected', tobesaved, initializer)
