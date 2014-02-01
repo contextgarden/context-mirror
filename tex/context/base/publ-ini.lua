@@ -9,10 +9,10 @@ if not modules then modules = { } end modules ['publ-ini'] = {
 -- for the moment here
 
 local lpegmatch  = lpeg.match
-local P, C, Ct = lpeg.P, lpeg.C, lpeg.Ct
+local P, C, Ct, Cs = lpeg.P, lpeg.C, lpeg.Ct, lpeg.Cs
 
 local lpegmatch  = lpeg.match
-local pattern    = lpeg.Cs((1 - lpeg.P(1) * lpeg.P(-1))^0 * (lpeg.P(".")/"" + lpeg.P(1)))
+local pattern    = Cs((1 - P(1) * P(-1))^0 * (P(".")/"" + P(1)))
 
 local manipulators = {
     stripperiod = function(str) return lpegmatch(pattern,str) end,
@@ -86,10 +86,10 @@ local logspushtarget = logs.pushtarget
 local logspoptarget  = logs.poptarget
 local csname_id      = token.csname_id
 
-local basiccompare   = sorters.basicsorter -- (a,b)
-local compare        = sorters.comparers.basic -- (a,b)
-local strip          = sorters.strip
-local splitter       = sorters.splitters.utf
+local basicsorter    = sorters.basicsorter -- (a,b)
+local sortcomparer   = sorters.comparers.basic -- (a,b)
+local sortstripper   = sorters.strip
+local sortsplitter   = sorters.splitters.utf
 
 local context                     = context
 
@@ -280,7 +280,7 @@ end
 
 local splitauthorstring = publications.authors.splitstring
 
-local pagessplitter = lpeg.splitat(lpeg.P("-")^1)
+local pagessplitter = lpeg.splitat(P("-")^1)
 
 -- maybe not redo when already done
 
@@ -876,7 +876,7 @@ lists.sorters = {
             -- nothing to sort
         else
             -- if needed we can wrap compare and use the list directly but this is cleaner
-            sorters.sort(valid,compare)
+            sorters.sort(valid,sortcomparer)
             for i=1,#valid do
                 local v = valid[i]
                 valid[i] = list[v.index]
@@ -1113,7 +1113,7 @@ local function sortedtags(dataset,list,sorttype)
             if key then
                 valid[#valid+1] = {
                     tag   = tag,
-                    split = splitter(strip(key))
+                    split = sortsplitter(sortstripper(key))
                 }
             else
             end
@@ -1122,7 +1122,7 @@ local function sortedtags(dataset,list,sorttype)
     if #valid == 0 or #valid ~= #list then
         return list
     else
-        sorters.sort(valid,basiccompare)
+        sorters.sort(valid,basicsorter)
         for i=1,#valid do
             valid[i] = valid[i].tag
         end
@@ -1132,10 +1132,10 @@ end
 
 -- todo: standard : current
 
-local splitter = lpeg.splitat("::")
+local prefixsplitter = lpeg.splitat("::")
 
 function commands.btxhandlecite(dataset,tag,mark,variant,sorttype,setup) -- variant for tracing
-    local prefix, rest = lpegmatch(splitter,tag)
+    local prefix, rest = lpegmatch(prefixsplitter,tag)
     if rest then
         dataset = prefix
     else
@@ -1167,7 +1167,7 @@ end
 
 function commands.btxhandlenocite(dataset,tag,mark)
     if mark ~= false then
-        local prefix, rest = lpegmatch(splitter,tag)
+        local prefix, rest = lpegmatch(prefixsplitter,tag)
         if rest then
             dataset = prefix
         else

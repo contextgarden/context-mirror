@@ -627,7 +627,7 @@
 \to \everysetupbtxciteplacement
 
 \appendtoks
-   \doifnot{\btxlistvariantparameter\c!option}\v!continue
+   \doifnot{\btxrenderingparameter\c!continue}\v!yes
      {\global\btxcounter\zerocount}%
 \to \everysetupbtxlistplacement
 
@@ -794,11 +794,11 @@
 
 \def\currentbtxindex{0}
 
-\unexpanded\def\btxlistvariant#1%
+\unexpanded\def\btxlistvariant#1% was \currentbtxindex
   {\begingroup
    \edef\currentbtxlistvariant{#1}%
    \btxlistvariantparameter\c!left
-   \ctxcommand{btxlistvariant("\currentbtxdataset","\currentbtxblock","\currentbtxtag","#1","\currentbtxindex")}% some can go
+   \ctxcommand{btxlistvariant("\currentbtxdataset","\currentbtxblock","\currentbtxtag","#1","\number\btxcounter")}% some can go
    \btxlistvariantparameter\c!right
    \endgroup}
 
