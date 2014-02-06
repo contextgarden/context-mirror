@@ -48,7 +48,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.750 -- beware: also sync font-mis.lua
+otf.version              = 2.751 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -239,7 +239,7 @@ local valid_fields = table.tohash {
     "upos",
     "use_typo_metrics",
     "uwidth",
- -- "validation_state",
+    "validation_state",
     "version",
     "vert_base",
     "weight",
@@ -1772,6 +1772,13 @@ actions["check metadata"] = function(data,filename,raw)
             ttftables[i].data = "deleted"
         end
     end
+    --
+    if metadata.validation_state and table.contains(metadata.validation_state,"bad_ps_fontname") then
+        local name = file.nameonly(filename)
+        metadata.fontname = "bad-fontname-" .. name
+        metadata.fullname = "bad-fullname-" .. name
+    end
+    --
 end
 
 actions["cleanup tables"] = function(data,filename,raw)

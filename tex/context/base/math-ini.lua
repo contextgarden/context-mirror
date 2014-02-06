@@ -470,6 +470,7 @@ mathematics.utfmathclass   = utfmathclass
 mathematics.utfmathstretch = utfmathstretch
 mathematics.utfmathcommand = utfmathcommand
 mathematics.utfmathfiller  = utfmathfiller
+mathematics.utfmathaccent  = utfmathaccent
 
 -- interfaced
 

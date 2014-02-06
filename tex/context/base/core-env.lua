@@ -31,6 +31,7 @@ tex.systemmodes         = allocate { }
 tex.constants           = allocate { }
 tex.conditionals        = allocate { }
 tex.ifs                 = allocate { }
+tex.isdefined           = allocate { }
 
 local modes             = { }
 local systemmodes       = { }
@@ -76,6 +77,10 @@ end)
 setmetatableindex(tex.ifs, function(t,k)
  -- k = "if" .. k -- better not
     return csname_id(k) ~= undefined and create(k)[2] == iftrue -- inefficient, this create, we need a helper
+end)
+
+setmetatableindex(tex.isdefined, function(t,k)
+    return csname_id(k) ~= undefined
 end)
 
 function context.setconditional(name,value)

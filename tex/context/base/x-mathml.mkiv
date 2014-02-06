@@ -2283,7 +2283,7 @@
 \unexpanded\def\mmloverbs#1{\mmlexecuteifdefined\mmlbasecommand\relax{\mmlunexpandedsecond{#1}}\relax}
 
 \startxmlsetups mml:mover
-    \edef\mmlovertoken{\xmlraw{#1}{/mml:*[2]}}% /text()
+    \edef\mmlovertoken{\mmlextensible{\xmlraw{#1}{/mml:*[2]}}}% /text()
     \doifelseutfmathabove\mmlovertoken {
         \edef\mmlovercommand{\utfmathcommandabove\mmlovertoken}
         \mmloverof{#1}
@@ -2321,13 +2321,18 @@
 %   % \limits % spoils spacing
 % \stopxmlsetups
 
+% do this in lua
+
+\def\mmlextensible#1{\ctxmodulemathml{extensible(\!!bs#1\!!es)}}
+
 \unexpanded\def\mmlunderuf#1{\mmlexecuteifdefined\mmlundercommand\relax  {\mmlunexpandedfirst {#1}}\relax}
 \unexpanded\def\mmlunderus#1{\mmlexecuteifdefined\mmlundercommand        {\mmlunexpandedsecond{#1}}\relax}
 \unexpanded\def\mmlunderbf#1{\mmlexecuteifdefined\mmlbasecommand         {\mmlunexpandedfirst {#1}}\relax}
-\unexpanded\def\mmlunderbs#1{\mmlexecuteifdefined\mmlbasecommand \relax{}{\mmlunexpandedsecond{#1}}\relax}
+%unexpanded\def\mmlunderbs#1{\mmlexecuteifdefined\mmlbasecommand \relax{}{\mmlunexpandedsecond{#1}}\relax}
+\unexpanded\def\mmlunderbs#1{\mmlexecuteifdefined\mmlbasecommand \relax  {\mmlunexpandedsecond{#1}}\relax}
 
 \startxmlsetups mml:munder
-    \edef\mmlundertoken{\xmlraw{#1}{/mml:*[2]}}% /text()
+    \edef\mmlundertoken{\mmlextensible{\xmlraw{#1}{/mml:*[2]}}}% /text()
     \doifelseutfmathbelow\mmlundertoken {%
         \edef\mmlundercommand{\utfmathcommandbelow\mmlundertoken}
         \mmlunderuf{#1}
