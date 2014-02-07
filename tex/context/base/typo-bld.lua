@@ -173,7 +173,6 @@ function constructors.disable()
     enabled = false
 end
 
-
 callbacks.register('linebreak_filter', processor, "breaking paragraps into lines")
 
 statistics.register("linebreak processing time", function()

@@ -47,7 +47,7 @@ local concat, sort = table.concat, table.sort
 local utfsub = utf.sub
 local formatters = string.formatters
 local allocate = utilities.storage.allocate
-local settings_to_array = utilities.parsers.settings_to_array
+local settings_to_array, settings_to_set = utilities.parsers.settings_to_array, utilities.parsers.settings_to_set
 local sortedkeys, sortedhash = table.sortedkeys, table.sortedhash
 local lpegmatch = lpeg.match
 local P, C, Ct = lpeg.P, lpeg.C, lpeg.Ct
@@ -338,7 +338,10 @@ function publications.enhance(dataset) -- for the moment split runs (maybe publi
         if type(tags) == "table" then
             sort(tags)
             for i=1,#tags do
-                details[tags[i]].short = short .. numbertochar(i)
+--                 details[tags[i]].short = short .. numbertochar(i)
+local detail = details[tags[i]]
+detail.short  = short
+detail.suffix = numbertochar(i)
             end
         else
             details[tags].short = short
@@ -350,6 +353,13 @@ function publications.enhance(dataset) -- for the moment split runs (maybe publi
         if pages then
             local first, last = lpegmatch(pagessplitter,pages)
             details[tag].pages = first and last and { first, last } or pages
+        end
+    end
+    -- keywords
+    for tag, entry in next, luadata do
+        local keyword = entry.keyword
+        if keyword then
+            details[tag].keyword = settings_to_set(keyword)
         end
     end
     statistics.stoptiming(publications)
@@ -733,7 +743,7 @@ end)
 
 -- why shorts vs tags: only for sorting
 
-function lists.register(dataset,tag,short)
+function lists.register(dataset,tag,short) -- needs checking now that we split
     local r = renderings[dataset]
     if not short or short == "" then
         short = tag
@@ -759,19 +769,49 @@ function lists.setmethod(dataset,method)
     r.done   = { }
 end
 
+local function validkeyword(dataset,tag,keyword)
+    local ds = datasets[dataset]
+    if not ds then
+        report("unknown dataset %a",dataset)
+        return
+    end
+    local dt = ds.details[tag]
+    if not dt then
+        report("no details for tag %a",tag)
+        return
+    end
+    local kw = dt.keyword
+    if kw then
+-- inspect(keyword)
+-- inspect(kw)
+        for k in next, keyword do
+            if kw[k] then
+                return true
+            end
+        end
+    end
+end
+
 function lists.collectentries(specification)
     local dataset = specification.btxdataset
     if not dataset then
         return
     end
     local rendering = renderings[dataset]
+-- specification.names = "btx"
     local method = rendering.method
     if method == v_none then
         return
     end
 -- method=v_local --------------------
     local result  = structures.lists.filter(specification)
--- inspect(result)
+    --
+    local keyword = specification.keyword
+    if keyword and keyword ~= "" then
+        keyword = settings_to_set(keyword)
+    else
+        keyword = nil
+    end
     lists.result  = result
     local section = sections.currentid()
     local list    = rendering.list
@@ -784,9 +824,11 @@ function lists.collectentries(specification)
             if u and u.btxset == dataset then
                 local tag = u.btxref
                 if tag and done[tag] ~= section then
-                    done[tag]     = section
-                    alldone[tag]  = true
-                    list[#list+1] = { tag, listindex }
+                    if not keyword or validkeyword(dataset,tag,keyword) then
+                        done[tag]     = section
+                        alldone[tag]  = true
+                        list[#list+1] = { tag, listindex }
+                    end
                 end
             end
         end
@@ -797,9 +839,11 @@ function lists.collectentries(specification)
             if u and u.btxset == dataset then
                 local tag = u.btxref
                 if tag and not alldone[tag] and done[tag] ~= section then
-                    done[tag]     = section
-                    alldone[tag]  = true
-                    list[#list+1] = { tag, listindex }
+                    if not keyword or validkeyword(dataset,tag,keyword) then
+                        done[tag]     = section
+                        alldone[tag]  = true
+                        list[#list+1] = { tag, listindex }
+                    end
                 end
             end
         end
@@ -812,14 +856,18 @@ function lists.collectentries(specification)
             if u and u.btxset == dataset then
                 local tag = u.btxref
                 if tag then
-                    list[#list+1] = { tag, listindex }
+                    if not keyword or validkeyword(dataset,tag,keyword) then
+                        list[#list+1] = { tag, listindex }
+                    end
                 end
             end
         end
     elseif method == v_dataset then
-        dataset = datasets[dataset]
-        for tag, data in table.sortedhash(dataset.luadata) do
-            list[#list+1] = { tag }
+        local luadata = datasets[dataset].luadata
+        for tag, data in table.sortedhash(luadata) do
+            if not keyword or validkeyword(dataset,tag,keyword) then
+                list[#list+1] = { tag }
+            end
         end
     end
 end
@@ -1287,9 +1335,19 @@ function citevariants.authornum(dataset,tags)
     lists.resolve(dataset,tags) -- left/right ?
 end
 
+-- function citevariants.short(dataset,tags)
+--     local short = getdetail(dataset,tags,"short")
+--     if short then
+--         context(short)
+--     end
+-- end
+
 function citevariants.short(dataset,tags)
     local short = getdetail(dataset,tags,"short")
-    if short then
+    local suffix = getdetail(dataset,tags,"suffix")
+    if suffix then
+        context(short .. suffix)
+    elseif short then
         context(short)
     end
 end
@@ -1349,9 +1407,19 @@ function listvariants.num(dataset,block,tags,variant,listindex)
     ctx_btxdirectlink(f_destination(dataset,block,tags),listindex) -- not okay yet
 end
 
+-- function listvariants.short(dataset,block,tags,variant,listindex)
+--     local short = getdetail(dataset,tags,variant,variant)
+--     if short then
+--         context(short)
+--     end
+-- end
+
 function listvariants.short(dataset,block,tags,variant,listindex)
-    local short = getdetail(dataset,tags,variant,variant)
-    if short then
+    local short  = getdetail(dataset,tags,"short","short")
+    local suffix = getdetail(dataset,tags,"suffix","suffix")
+    if suffix then
+        context(short .. suffix)
+    elseif short then
         context(short)
     end
 end
