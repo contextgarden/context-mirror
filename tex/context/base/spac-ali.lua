@@ -28,7 +28,6 @@ local getattr          = nuts.getattr
 local setattr          = nuts.setattr
 local getsubtype       = nuts.getsubtype
 
-local slide_nodes      = nuts.slide
 local hpack_nodes      = nuts.hpack -- nodes.fasthpack not really faster here
 local linked_nodes     = nuts.linked
 

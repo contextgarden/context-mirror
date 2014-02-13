@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['lpdf-tag'] = {
     license   = "see context related readme files"
 }
 
+local next = next
 local format, match, concat = string.format, string.match, table.concat
 local lpegmatch = lpeg.match
 local utfchar = utf.char
@@ -213,7 +214,7 @@ local function makecontent(parent,start,stop,slist,id)
     --
     local bliteral = pdfliteral(format("/%s <</MCID %s>>BDC",tag,last))
     local eliteral = pdfliteral("EMC")
-    --
+    -- use insert instead:
     local prev = getprev(start)
     if prev then
         setfield(prev,"next",bliteral)
@@ -221,7 +222,7 @@ local function makecontent(parent,start,stop,slist,id)
     end
     setfield(start,"prev",bliteral)
     setfield(bliteral,"next",start)
-    --
+    -- use insert instead:
     local next = getnext(stop)
     if next then
         setfield(next,"prev",eliteral)

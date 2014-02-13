@@ -105,6 +105,13 @@ local function processmath(head)
             end
         elseif not start then
             -- nothing
+if id == hlist_code or id == vlist_code then
+    local list, d = processmath(getlist(current))
+    setfield(current,"list",list)
+    if d then
+        done = true
+    end
+end
         elseif start == stop then
             start = nil
         else

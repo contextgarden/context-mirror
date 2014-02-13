@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['font-otn'] = {
     license   = "see context related readme files",
 }
 
+-- this is a context version which can contain experimental code, but when we
+-- have serious patches we also need to change the other two font-otn files
+
 -- preprocessors = { "nodes" }
 
 -- anchor class : mark, mkmk, curs, mklg (todo)

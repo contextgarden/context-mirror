@@ -46,7 +46,7 @@ local unset_attribute    = nuts.unset_attribute
 local first_glyph        = nuts.first_glyph
 local copy_node          = nuts.copy
 local copy_node_list     = nuts.copy_list
-local slide_nodes        = nuts.slide
+local find_tail          = nuts.tail
 local insert_node_after  = nuts.insert_after
 local isnode             = nuts.is_node
 
@@ -374,7 +374,7 @@ end
 --                 end
 --             elseif not head then
 --                 head = n
---                 tail = slide_nodes(n)
+--                 tail = find_tail(n)
 --             elseif getid(n) == attributelist_code then
 --                 -- weird case
 --                 report_error("weird node type in list at index %s:",i)
@@ -387,7 +387,7 @@ end
 --                 setfield(tail,"next",n)
 --                 setfield(n,"prev",tail)
 --                 if getnext(n) then
---                     tail = slide_nodes(n)
+--                     tail = find_tail(n)
 --                 else
 --                     tail = n
 --                 end
@@ -429,7 +429,7 @@ local function link(list,currentfont,currentattr,head,tail) -- an oldie, might b
                 end
             elseif not head then
                 head = n
-                tail = slide_nodes(n)
+                tail = find_tail(n)
             elseif getid(n) == attributelist_code then
                 -- weird case
                 report_error("weird node type in list at index %s:",i)
@@ -442,7 +442,7 @@ local function link(list,currentfont,currentattr,head,tail) -- an oldie, might b
                 setfield(tail,"next",n)
                 setfield(n,"prev",tail)
                 if getnext(n) then
-                    tail = slide_nodes(n)
+                    tail = find_tail(n)
                 else
                     tail = n
                 end

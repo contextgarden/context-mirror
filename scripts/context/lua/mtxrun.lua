@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 3123, stripped down to: 1694
+-- original size: 3227, stripped down to: 1745
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -136,6 +136,7 @@ function optionalrequire(...)
     return result
   end
 end
+lua.mask=load([[τεχ = 1]]) and "utf" or "ascii"
 
 
 end -- of closure
@@ -434,7 +435,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 29680, stripped down to: 16076
+-- original size: 29808, stripped down to: 16182
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -521,9 +522,11 @@ patterns.spacer=spacer
 patterns.whitespace=whitespace
 patterns.nonspacer=nonspacer
 patterns.nonwhitespace=nonwhitespace
-local stripper=spacer^0*C((spacer^0*nonspacer^1)^0)
+local stripper=spacer^0*C((spacer^0*nonspacer^1)^0)   
+local fullstripper=whitespace^0*C((whitespace^0*nonwhitespace^1)^0)
 local collapser=Cs(spacer^0/""*nonspacer^0*((spacer^0/" "*nonspacer^1)^0))
 patterns.stripper=stripper
+patterns.fullstripper=fullstripper
 patterns.collapser=collapser
 patterns.lowercase=lowercase
 patterns.uppercase=uppercase
@@ -1077,7 +1080,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-string"] = package.loaded["l-string"] or true
 
--- original size: 5547, stripped down to: 2708
+-- original size: 5671, stripped down to: 2827
 
 if not modules then modules={} end modules ['l-string']={
   version=1.001,
@@ -1113,10 +1116,14 @@ function string.limit(str,n,sentinel)
   end
 end
 local stripper=patterns.stripper
+local fullstripper=patterns.fullstripper
 local collapser=patterns.collapser
 local longtostring=patterns.longtostring
 function string.strip(str)
   return lpegmatch(stripper,str) or ""
+end
+function string.fullstrip(str)
+  return lpegmatch(fullstripper,str) or ""
 end
 function string.collapsespaces(str)
   return lpegmatch(collapser,str) or ""
@@ -3726,7 +3733,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 14229, stripped down to: 8740
+-- original size: 14768, stripped down to: 9107
 
 if not modules then modules={} end modules ['l-dir']={
   version=1.001,
@@ -3749,6 +3756,7 @@ local isdir=lfs.isdir
 local isfile=lfs.isfile
 local currentdir=lfs.currentdir
 local chdir=lfs.chdir
+local mkdir=lfs.mkdir
 local onwindows=os.type=="windows" or find(os.getenv("PATH"),";")
 if not isdir then
   function isdir(name)
@@ -3921,16 +3929,27 @@ end
 local make_indeed=true 
 if onwindows then
   function dir.mkdirs(...)
-    local str,pth="",""
-    for i=1,select("#",...) do
-      local s=select(i,...)
-      if s=="" then
-      elseif str=="" then
-        str=s
-      else
-        str=str.."/"..s
+    local n=select("#",...)
+    local str
+    if n==1 then
+      str=select(1,...)
+      if isdir(str) then
+        return str,true
+      end
+    else
+      str=""
+      for i=1,n do
+        local s=select(i,...)
+        local s=select(i,...)
+        if s=="" then
+        elseif str=="" then
+          str=s
+        else
+          str=str.."/"..s
+        end
       end
     end
+    local pth=""
     local drive=false
     local first,middle,last=match(str,"^(//)(//*)(.*)$")
     if first then
@@ -3965,21 +3984,30 @@ if onwindows then
         pth=pth.."/"..s
       end
       if make_indeed and not isdir(pth) then
-        lfs.mkdir(pth)
+        mkdir(pth)
       end
     end
     return pth,(isdir(pth)==true)
   end
 else
   function dir.mkdirs(...)
-    local str,pth="",""
-    for i=1,select("#",...) do
-      local s=select(i,...)
-      if s and s~="" then 
-        if str~="" then
-          str=str.."/"..s
-        else
-          str=s
+    local n=select("#",...)
+    local str,pth
+    if n==1 then
+      str=select(1,...)
+      if isdir(str) then
+        return str,true
+      end
+    else
+      str=""
+      for i=1,n do
+        local s=select(i,...)
+        if s and s~="" then 
+          if str~="" then
+            str=str.."/"..s
+          else
+            str=s
+          end
         end
       end
     end
@@ -3994,7 +4022,7 @@ else
           pth=pth.."/"..s
         end
         if make_indeed and not first and not isdir(pth) then
-          lfs.mkdir(pth)
+          mkdir(pth)
         end
       end
     else
@@ -4002,7 +4030,7 @@ else
       for s in gmatch(str,"[^/]+") do
         pth=pth.."/"..s
         if make_indeed and not isdir(pth) then
-          lfs.mkdir(pth)
+          mkdir(pth)
         end
       end
     end
@@ -7672,7 +7700,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 6501, stripped down to: 5156
+-- original size: 6643, stripped down to: 5272
 
 if not modules then modules={} end modules ['trac-inf']={
   version=1.001,
@@ -7773,7 +7801,10 @@ function statistics.show()
   if statistics.enable then
     local register=statistics.register
     register("used platform",function()
-      return format("%s, type: %s, binary subtree: %s",os.platform or "unknown",os.type or "unknown",environment.texos or "unknown")
+      local mask=lua.mask or "ascii"
+      return format("%s, type: %s, binary subtree: %s, symbol mask: %s (%s)",
+        os.platform or "unknown",os.type or "unknown",environment.texos or "unknown",
+        mask,mask=="utf" and "τεχ" or "tex")
     end)
     register("luatex banner",function()
       return lower(status.banner)
@@ -7852,7 +7883,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-pro"] = package.loaded["trac-pro"] or true
 
--- original size: 5773, stripped down to: 3453
+-- original size: 5829, stripped down to: 3501
 
 if not modules then modules={} end modules ['trac-pro']={
   version=1.001,
@@ -7869,14 +7900,16 @@ local namespaces=namespaces
 local registered={}
 local function report_index(k,name)
   if trace_namespaces then
-    report_system("reference to %a in protected namespace %a: %s",k,name,debug.traceback())
+    report_system("reference to %a in protected namespace %a: %s",k,name)
+    debugger.showtraceback(report_system)
   else
     report_system("reference to %a in protected namespace %a",k,name)
   end
 end
 local function report_newindex(k,name)
   if trace_namespaces then
-    report_system("assignment to %a in protected namespace %a: %s",k,name,debug.traceback())
+    report_system("assignment to %a in protected namespace %a: %s",k,name)
+    debugger.showtraceback(report_system)
   else
     report_system("assignment to %a in protected namespace %a",k,name)
   end
@@ -8127,7 +8160,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-deb"] = package.loaded["util-deb"] or true
 
--- original size: 3708, stripped down to: 2568
+-- original size: 3898, stripped down to: 2644
 
 if not modules then modules={} end modules ['util-deb']={
   version=1.001,
@@ -8207,20 +8240,22 @@ end
 function debugger.disable()
   debug.sethook()
 end
-function traceback()
-  local level=1
+local function showtraceback(rep) 
+  local level=2 
+  local reporter=rep or report
   while true do
-    local info=debug.getinfo(level,"Sl")
+    local info=getinfo(level,"Sl")
     if not info then
       break
     elseif info.what=="C" then
-      print(format("%3i : C function",level))
+      reporter("%2i : %s",level-1,"C function")
     else
-      print(format("%3i : [%s]:%d",level,info.short_src,info.currentline))
+      reporter("%2i : %s : %s",level-1,info.short_src,info.currentline)
     end
     level=level+1
   end
 end
+debugger.showtraceback=showtraceback
 
 
 end -- of closure
@@ -8886,7 +8921,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 42549, stripped down to: 26643
+-- original size: 42614, stripped down to: 26694
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -9412,8 +9447,11 @@ local function _xmlconvert_(data,settings)
   end
   if errorstr and errorstr~="" then
     result.error=true
+  else
+    errorstr=nil
   end
   result.statistics={
+    errormessage=errorstr,
     entities={
       decimals=dcache,
       hexadecimals=hcache,
@@ -16706,8 +16744,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 688201
--- stripped bytes    : 245099
+-- original bytes    : 689549
+-- stripped bytes    : 245513
 
 -- end library merge
 

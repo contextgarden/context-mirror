@@ -746,8 +746,11 @@ local function _xmlconvert_(data, settings)
     end
     if errorstr and errorstr ~= "" then
         result.error = true
+    else
+        errorstr = nil
     end
     result.statistics = {
+        errormessage = errorstr,
         entities = {
             decimals     = dcache,
             hexadecimals = hcache,

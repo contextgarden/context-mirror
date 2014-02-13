@@ -117,8 +117,8 @@ appendaction("vboxbuilders", "normalizers", "builders.vspacing.vboxhandler")    
 
 -- experimental too
 
-appendaction("mvlbuilders", "normalizers","typesetters.checkers.handler")
-appendaction("vboxbuilders","normalizers","typesetters.checkers.handler")
+appendaction("mvlbuilders",  "normalizers", "typesetters.checkers.handler")
+appendaction("vboxbuilders", "normalizers", "typesetters.checkers.handler")
 
 -- speedup: only kick in when used
 

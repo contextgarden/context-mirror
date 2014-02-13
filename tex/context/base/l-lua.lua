@@ -148,3 +148,7 @@ function optionalrequire(...)
         return result
     end
 end
+
+-- nice for non ascii scripts (this might move):
+
+lua.mask = load([[τεχ = 1]]) and "utf" or "ascii"

@@ -46,7 +46,7 @@ local hpack               = nuts.hpack
 local vpack               = nuts.vpack
 local freenode            = nuts.free
 local concatnodes         = nuts.concat
-local slidenodes          = nuts.slide
+local slidenodes          = nuts.slide -- ok here as we mess with prev links intermediately
 local traversenodes       = nuts.traverse
 
 local getfield            = nuts.getfield
@@ -88,19 +88,6 @@ local mixedcolumns        = pagebuilders.mixedcolumns
 
 local a_checkedbreak      = attributes.private("checkedbreak")
 local forcedbreak         = -123
-
--- local function slidenodes(head)
---     local last = nil
---     for current in traversenodes(head) do
---         local prev = getprev(current)
---         if not prev and last then
---             logs.report("slide","setting prev of %a",nodecodes[getid(current)])
---             setfield(current,"prev",last)
---         end
---         last = current
---     end
---     return last or head
--- end
 
 -- initializesplitter(specification)
 -- cleanupsplitter()
