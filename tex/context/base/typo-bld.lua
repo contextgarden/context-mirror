@@ -229,7 +229,16 @@ local function report(groupcode,head)
     report_page_builder("  list     : %s",head and nodeidstostring(head) or "<empty>")
 end
 
+-- use tex.[sg]etlist
+
 function builders.buildpage_filter(groupcode)
+ -- -- this needs checking .. gets called too often
+ -- if group_code ~= "after_output" then
+ --     if trace_page_builder then
+ --         report(groupcode)
+ --     end
+ --     return nil, false
+ -- end
     local head, done = texlists.contrib_head, false
     if head then
         starttiming(builders)
@@ -241,13 +250,15 @@ function builders.buildpage_filter(groupcode)
      -- -- doesn't work here (not passed on?)
      -- tex.pagegoal = tex.vsize - tex.dimen.d_page_floats_inserted_top - tex.dimen.d_page_floats_inserted_bottom
         texlists.contrib_head = head or nil -- needs checking
-        return done and head or true
+-- tex.setlist("contrib_head",head,head and nodes.tail(head))
+        return done and head or true -- no return value needed
     else
         if trace_page_builder then
             report(groupcode)
         end
-        return nil, false
+        return nil, false -- no return value needed
     end
+
 end
 
 callbacks.register('vpack_filter',     builders.vpack_filter,     "vertical spacing etc")

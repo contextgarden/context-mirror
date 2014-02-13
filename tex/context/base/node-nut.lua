@@ -101,6 +101,10 @@ end
 
 local texget              = tex.get
 
+local nodecodes           = nodes.nodecodes
+local hlist_code          = nodecodes.hlist
+local vlist_code          = nodecodes.vlist
+
 local nuts                = nodes.nuts or { }
 nodes.nuts                = nuts
 
@@ -233,6 +237,7 @@ local d_insert_after    = direct.insert_after
 local d_insert_before   = direct.insert_before
 local d_slide           = direct.slide
 local d_copy_node       = direct.copy
+local d_traverse        = direct.traverse
 
 local function remove(head,current,free_too)
     local t = current
@@ -532,3 +537,114 @@ function nuts.insert_list_after(h,c,n)
     end
     return n, t
 end
+
+-- test code only
+
+-- collectranges and mix
+
+local report = logs.reporter("sliding")
+
+local function message(detail,head,current,previous)
+    report("error: %s, current: %s:%s, previous: %s:%s, list: %s, text: %s",
+        detail,
+        nodecodes[d_getid(current)],
+        current,
+        nodecodes[d_getid(previous)],
+        previous,
+        nodes.idstostring(head),
+        nodes.listtoutf(head)
+    )
+    utilities.debugger.showtraceback(report)
+end
+
+local function warn()
+    report()
+    report("warning: the slide tracer is enabled")
+    report()
+    warn = false
+end
+
+local function tracedslide(head)
+    if head then
+        if warn then
+            warn()
+        end
+        local next = d_getnext(head)
+        if next then
+            local prev = head
+            for n in d_traverse(next) do
+                local p = d_getprev(n)
+                if not p then
+                    message("unset",head,n,prev)
+                 -- break
+                elseif p ~= prev then
+                    message("wrong",head,n,prev)
+                 -- break
+                end
+                prev = n
+            end
+        end
+        return d_slide(head)
+    end
+end
+
+local function nestedtracedslide(head,level) -- no sliding !
+    if head then
+        if warn then
+            warn()
+        end
+        local id = d_getid(head)
+        local next = d_getnext(head)
+        if next then
+            report("%whead:%s",level or 0,nodecodes[id])
+            local prev = head
+            for n in d_traverse(next) do
+                local p = d_getprev(n)
+                if not p then
+                    message("unset",head,n,prev)
+                 -- break
+                elseif p ~= prev then
+                    message("wrong",head,n,prev)
+                 -- break
+                end
+                prev = n
+                local id = d_getid(n)
+                if id == hlist_code or id == vlist_code then
+                    nestedtracedslide(d_getlist(n),(level or 0) + 1)
+                end
+            end
+        elseif id == hlist_code or id == vlist_code then
+            report("%wlist:%s",level or 0,nodecodes[id])
+            nestedtracedslide(d_getlist(head),(level or 0) + 1)
+        end
+     -- return d_slide(head)
+    end
+end
+
+local function untracedslide(head)
+    if head then
+        if warn then
+            warn()
+        end
+        local next = d_getnext(head)
+        if next then
+            local prev = head
+            for n in d_traverse(next) do
+                local p = d_getprev(n)
+                if not p then
+                    return "unset", d_getid(n)
+                elseif p ~= prev then
+                    return "wrong", d_getid(n)
+                end
+                prev = n
+            end
+        end
+        return d_slide(head)
+    end
+end
+
+nuts.tracedslide       = tracedslide
+nuts.untracedslide     = untracedslide
+nuts.nestedtracedslide = nestedtracedslide
+
+-- nuts.slide          = tracedslide

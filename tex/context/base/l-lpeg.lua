@@ -176,12 +176,14 @@ patterns.whitespace    = whitespace
 patterns.nonspacer     = nonspacer
 patterns.nonwhitespace = nonwhitespace
 
-local stripper         = spacer^0 * C((spacer^0     * nonspacer^1)^0) -- from example by roberto
+local stripper         = spacer    ^0 * C((spacer    ^0 * nonspacer    ^1)^0)     -- from example by roberto
+local fullstripper     = whitespace^0 * C((whitespace^0 * nonwhitespace^1)^0)
 
 ----- collapser        = Cs(spacer^0/"" * ((spacer^1 * endofstring / "") + (spacer^1/" ") + P(1))^0)
 local collapser        = Cs(spacer^0/"" * nonspacer^0 * ((spacer^0/" " * nonspacer^1)^0))
 
 patterns.stripper      = stripper
+patterns.fullstripper  = fullstripper
 patterns.collapser     = collapser
 
 patterns.lowercase     = lowercase

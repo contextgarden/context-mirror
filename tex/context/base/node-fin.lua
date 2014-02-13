@@ -31,7 +31,6 @@ local setfield           = nuts.setfield
 local setattr            = nuts.setattr
 
 local copy_node          = nuts.copy
-local find_tail          = nuts.slide
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 
