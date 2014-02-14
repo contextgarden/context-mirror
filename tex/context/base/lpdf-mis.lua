@@ -43,6 +43,7 @@ local pdfflushobject       = lpdf.flushobject
 local pdfflushstreamobject = lpdf.flushstreamobject
 
 local variables            = interfaces.variables
+local v_stop               = variables.stop
 
 local positive             = register(pdfliteral("/GSpositive gs"))
 local negative             = register(pdfliteral("/GSnegative gs"))
@@ -337,31 +338,82 @@ local map = {
     characters    = "a",
 }
 
+-- local function featurecreep()
+--     local pages, lastconversion, list = structures.pages.tobesaved, nil, pdfarray()
+--     local getstructureset = structures.sets.get
+--     for i=1,#pages do
+--         local p = pages[i]
+--         if not p then
+--             return -- fatal error
+--         else
+--             local numberdata = p.numberdata
+--             if numberdata then
+--                 local conversionset = numberdata.conversionset
+--                 if conversionset then
+--                     local conversion = getstructureset("structure:conversions",p.block,conversionset,1,"numbers")
+--                     if conversion ~= lastconversion then
+--                         lastconversion = conversion
+--                         list[#list+1] = i - 1 -- pdf starts numbering at 0
+--                         list[#list+1] = pdfdictionary { S = pdfconstant(map[conversion] or map.numbers) }
+--                     end
+--                 end
+--             end
+--             if not lastconversion then
+--                 lastconversion = "numbers"
+--                 list[#list+1] = i - 1 -- pdf starts numbering at 0
+--                 list[#list+1] = pdfdictionary { S = pdfconstant(map.numbers) }
+--             end
+--         end
+--     end
+--     lpdf.addtocatalog("PageLabels", pdfdictionary { Nums = list })
+-- end
+
 local function featurecreep()
-    local pages, lastconversion, list = structures.pages.tobesaved, nil, pdfarray()
-    local getstructureset = structures.sets.get
+    local pages        = structures.pages.tobesaved
+    local list         = pdfarray()
+    local getset       = structures.sets.get
+    local stopped      = false
+    local oldlabel     = nil
+    local olconversion = nil
     for i=1,#pages do
         local p = pages[i]
         if not p then
             return -- fatal error
+        end
+        local label = p.viewerprefix or ""
+        if p.status == v_stop then
+            if not stopped then
+                list[#list+1] = i - 1 -- pdf starts numbering at 0
+                list[#list+1] = pdfdictionary {
+                    P = pdfunicode(label),
+                }
+                stopped = true
+            end
+            oldlabel      = nil
+            oldconversion = nil
+            stopped       = false
         else
             local numberdata = p.numberdata
+            local conversion = nil
+            local number     = p.number
             if numberdata then
                 local conversionset = numberdata.conversionset
                 if conversionset then
-                    local conversion = getstructureset("structure:conversions",p.block,conversionset,1,"numbers")
-                    if conversion ~= lastconversion then
-                        lastconversion = conversion
-                        list[#list+1] = i - 1 -- pdf starts numbering at 0
-                        list[#list+1] = pdfdictionary { S = pdfconstant(map[conversion] or map.numbers) }
-                    end
+                    conversion = getset("structure:conversions",p.block,conversionset,1,"numbers")
                 end
             end
-            if not lastconversion then
-                lastconversion = "numbers"
+            conversion = conversion and map[conversion] or map.numbers
+            if number == 1 or oldlabel ~= label or oldconversion ~= conversion then
                 list[#list+1] = i - 1 -- pdf starts numbering at 0
-                list[#list+1] = pdfdictionary { S = pdfconstant(map.numbers) }
+                list[#list+1] = pdfdictionary {
+                    S  = pdfconstant(conversion),
+                    St = number,
+                    P  = label ~= "" and pdfunicode(label) or nil,
+                }
             end
+            oldlabel      = label
+            oldconversion = conversion
+            stopped       = false
         end
     end
     lpdf.addtocatalog("PageLabels", pdfdictionary { Nums = list })

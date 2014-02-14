@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 3227, stripped down to: 1745
+-- original size: 3247, stripped down to: 1763
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -136,7 +136,9 @@ function optionalrequire(...)
     return result
   end
 end
-lua.mask=load([[τεχ = 1]]) and "utf" or "ascii"
+if lua then
+  lua.mask=load([[τεχ = 1]]) and "utf" or "ascii"
+end
 
 
 end -- of closure
@@ -4838,7 +4840,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 29106, stripped down to: 15282
+-- original size: 29502, stripped down to: 16632
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -4857,11 +4859,18 @@ local unpack,concat=table.unpack,table.concat
 local P,V,C,S,R,Ct,Cs,Cp,Carg,Cc=lpeg.P,lpeg.V,lpeg.C,lpeg.S,lpeg.R,lpeg.Ct,lpeg.Cs,lpeg.Cp,lpeg.Carg,lpeg.Cc
 local patterns,lpegmatch=lpeg.patterns,lpeg.match
 local utfchar,utfbyte=utf.char,utf.byte
-local loadstripped=function(str,shortcuts)
-  if shortcuts then
-    return load(dump(load(str),true),nil,nil,shortcuts)
-  else
-    return load(dump(load(str),true))
+local loadstripped=nil
+if _LUAVERSION<5.2 then
+  loadstripped=function(str,shortcuts)
+    return load(str)
+  end
+else
+  loadstripped=function(str,shortcuts)
+    if shortcuts then
+      return load(dump(load(str),true),nil,nil,shortcuts)
+    else
+      return load(dump(load(str),true))
+    end
   end
 end
 if not number then number={} end 
@@ -5017,29 +5026,53 @@ local template=[[
 %s
 return function(%s) return %s end
 ]]
-local environment={
-  global=global or _G,
-  lpeg=lpeg,
-  type=type,
-  tostring=tostring,
-  tonumber=tonumber,
-  format=string.format,
-  concat=table.concat,
-  signed=number.signed,
-  points=number.points,
-  basepoints=number.basepoints,
-  utfchar=utf.char,
-  utfbyte=utf.byte,
-  lpegmatch=lpeg.match,
-  nspaces=string.nspaces,
-  tracedchar=string.tracedchar,
-  autosingle=string.autosingle,
-  autodouble=string.autodouble,
-  sequenced=table.sequenced,
-  formattednumber=number.formatted,
-  sparseexponent=number.sparseexponent,
-}
-local preamble=""
+local preamble,environment="",{}
+if _LUAVERSION<5.2 then
+  preamble=[[
+local lpeg=lpeg
+local type=type
+local tostring=tostring
+local tonumber=tonumber
+local format=string.format
+local concat=table.concat
+local signed=number.signed
+local points=number.points
+local basepoints= number.basepoints
+local utfchar=utf.char
+local utfbyte=utf.byte
+local lpegmatch=lpeg.match
+local nspaces=string.nspaces
+local tracedchar=string.tracedchar
+local autosingle=string.autosingle
+local autodouble=string.autodouble
+local sequenced=table.sequenced
+local formattednumber=number.formatted
+local sparseexponent=number.sparseexponent
+    ]]
+else
+  environment={
+    global=global or _G,
+    lpeg=lpeg,
+    type=type,
+    tostring=tostring,
+    tonumber=tonumber,
+    format=string.format,
+    concat=table.concat,
+    signed=number.signed,
+    points=number.points,
+    basepoints=number.basepoints,
+    utfchar=utf.char,
+    utfbyte=utf.byte,
+    lpegmatch=lpeg.match,
+    nspaces=string.nspaces,
+    tracedchar=string.tracedchar,
+    autosingle=string.autosingle,
+    autodouble=string.autodouble,
+    sequenced=table.sequenced,
+    formattednumber=number.formatted,
+    sparseexponent=number.sparseexponent,
+  }
+end
 local arguments={ "a1" } 
 setmetatable(arguments,{ __index=function(t,k)
     local v=t[k-1]..",a"..k
@@ -5386,14 +5419,22 @@ local function use(t,fmt,...)
   return t[fmt](...)
 end
 strings.formatters={}
-function strings.formatters.new()
-  local e={} 
-  for k,v in next,environment do
-    e[k]=v
+if _LUAVERSION<5.2 then
+  function strings.formatters.new()
+    local t={ _extensions_={},_preamble_=preamble,_environment_={},_type_="formatter" }
+    setmetatable(t,{ __index=make,__call=use })
+    return t
   end
-  local t={ _extensions_={},_preamble_="",_environment_=e,_type_="formatter" }
-  setmetatable(t,{ __index=make,__call=use })
-  return t
+else
+  function strings.formatters.new()
+    local e={} 
+    for k,v in next,environment do
+      e[k]=v
+    end
+    local t={ _extensions_={},_preamble_="",_environment_=e,_type_="formatter" }
+    setmetatable(t,{ __index=make,__call=use })
+    return t
+  end
 end
 local formatters=strings.formatters.new() 
 string.formatters=formatters 
@@ -5415,9 +5456,15 @@ patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;
 patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+P(1))^0)
 patterns.luaescape=Cs(((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0) 
 patterns.luaquoted=Cs(Cc('"')*((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0*Cc('"'))
-add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],{ xmlescape=lpeg.patterns.xmlescape })
-add(formatters,"tex",[[lpegmatch(texescape,%s)]],{ texescape=lpeg.patterns.texescape })
-add(formatters,"lua",[[lpegmatch(luaescape,%s)]],{ luaescape=lpeg.patterns.luaescape })
+if _LUAVERSION<5.2 then
+  add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],"local xmlescape = lpeg.patterns.xmlescape")
+  add(formatters,"tex",[[lpegmatch(texescape,%s)]],"local texescape = lpeg.patterns.texescape")
+  add(formatters,"lua",[[lpegmatch(luaescape,%s)]],"local luaescape = lpeg.patterns.luaescape")
+else
+  add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],{ xmlescape=lpeg.patterns.xmlescape })
+  add(formatters,"tex",[[lpegmatch(texescape,%s)]],{ texescape=lpeg.patterns.texescape })
+  add(formatters,"lua",[[lpegmatch(luaescape,%s)]],{ luaescape=lpeg.patterns.luaescape })
+end
 
 
 end -- of closure
@@ -5426,7 +5473,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 23952, stripped down to: 16092
+-- original size: 23980, stripped down to: 16119
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -5661,7 +5708,7 @@ local f_ordered_string=formatters["%q,"]
 local f_ordered_number=formatters["%s,"]
 local f_ordered_boolean=formatters["%l,"]
 function table.fastserialize(t,prefix)
-  local r={ prefix or "return" }
+  local r={ type(prefix)=="string" and prefix or "return" }
   local m=1
   local function fastserialize(t,outer) 
     local n=#t
@@ -16744,8 +16791,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 689549
--- stripped bytes    : 245513
+-- original bytes    : 689993
+-- stripped bytes    : 244562
 
 -- end library merge
 

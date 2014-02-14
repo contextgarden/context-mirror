@@ -20,16 +20,24 @@ local utfchar, utfbyte = utf.char, utf.byte
 ----- loadstripped = utilities.lua.loadstripped
 ----- setmetatableindex = table.setmetatableindex
 
--- local loadstripped = _LUAVERSION < 5.2 and load or function(str)
---     return load(dump(load(str),true)) -- it only makes sense in luajit and luatex where we have a stipped load
--- end
+local loadstripped = nil
 
-local loadstripped = function(str,shortcuts)
-    if shortcuts then
-        return load(dump(load(str),true),nil,nil,shortcuts)
-    else
-        return load(dump(load(str),true))
+if _LUAVERSION < 5.2  then
+
+    loadstripped = function(str,shortcuts)
+        return load(str)
     end
+
+else
+
+    loadstripped = function(str,shortcuts)
+        if shortcuts then
+            return load(dump(load(str),true),nil,nil,shortcuts)
+        else
+            return load(dump(load(str),true))
+        end
+    end
+
 end
 
 -- todo: make a special namespace for the formatter
@@ -305,60 +313,58 @@ local template = [[
 return function(%s) return %s end
 ]]
 
--- local environment = {
---     lpeg   = lpeg,
---     type   = type,
---     string = string,
---     number = number,
---     table  = table,
---     utf    = utf,
--- }
---
--- local preamble = [[
--- local type            = type
--- local tostring        = tostring
--- local tonumber        = tonumber
--- local format          = string.format
--- local concat          = table.concat
--- local signed          = number.signed
--- local points          = number.points
--- local basepoints      = number.basepoints
--- local utfchar         = utf.char
--- local utfbyte         = utf.byte
--- local lpegmatch       = lpeg.match
--- local nspaces         = string.nspaces
--- local tracedchar      = string.tracedchar
--- local autosingle      = string.autosingle
--- local autodouble      = string.autodouble
--- local sequenced       = table.sequenced
--- local formattednumber = number.formatted
--- local sparseexponent  = number.sparseexponent
--- ]]
+local preamble, environment = "", { }
 
-local environment = {
-    global          = global or _G,
-    lpeg            = lpeg,
-    type            = type,
-    tostring        = tostring,
-    tonumber        = tonumber,
-    format          = string.format,
-    concat          = table.concat,
-    signed          = number.signed,
-    points          = number.points,
-    basepoints      = number.basepoints,
-    utfchar         = utf.char,
-    utfbyte         = utf.byte,
-    lpegmatch       = lpeg.match,
-    nspaces         = string.nspaces,
-    tracedchar      = string.tracedchar,
-    autosingle      = string.autosingle,
-    autodouble      = string.autodouble,
-    sequenced       = table.sequenced,
-    formattednumber = number.formatted,
-    sparseexponent  = number.sparseexponent,
-}
+if _LUAVERSION < 5.2  then
 
-local preamble = ""
+    preamble = [[
+local lpeg=lpeg
+local type=type
+local tostring=tostring
+local tonumber=tonumber
+local format=string.format
+local concat=table.concat
+local signed=number.signed
+local points=number.points
+local basepoints= number.basepoints
+local utfchar=utf.char
+local utfbyte=utf.byte
+local lpegmatch=lpeg.match
+local nspaces=string.nspaces
+local tracedchar=string.tracedchar
+local autosingle=string.autosingle
+local autodouble=string.autodouble
+local sequenced=table.sequenced
+local formattednumber=number.formatted
+local sparseexponent=number.sparseexponent
+    ]]
+
+else
+
+    environment = {
+        global          = global or _G,
+        lpeg            = lpeg,
+        type            = type,
+        tostring        = tostring,
+        tonumber        = tonumber,
+        format          = string.format,
+        concat          = table.concat,
+        signed          = number.signed,
+        points          = number.points,
+        basepoints      = number.basepoints,
+        utfchar         = utf.char,
+        utfbyte         = utf.byte,
+        lpegmatch       = lpeg.match,
+        nspaces         = string.nspaces,
+        tracedchar      = string.tracedchar,
+        autosingle      = string.autosingle,
+        autodouble      = string.autodouble,
+        sequenced       = table.sequenced,
+        formattednumber = number.formatted,
+        sparseexponent  = number.sparseexponent,
+    }
+
+end
 
 -- -- --
 
@@ -869,14 +875,26 @@ strings.formatters = { }
 -- table (metatable) in which case we could better keep a count and
 -- clear that table when a threshold is reached
 
-function strings.formatters.new()
-    local e = { } -- better make a copy as we can overload
-    for k, v in next, environment do
-        e[k] = v
+if _LUAVERSION < 5.2  then
+
+    function strings.formatters.new()
+        local t = { _extensions_ = { }, _preamble_ = preamble, _environment_ = { }, _type_ = "formatter" }
+        setmetatable(t, { __index = make, __call = use })
+        return t
     end
-    local t = { _extensions_ = { }, _preamble_ = "", _environment_ = e, _type_ = "formatter" }
-    setmetatable(t, { __index = make, __call = use })
-    return t
+
+else
+
+    function strings.formatters.new()
+        local e = { } -- better make a copy as we can overload
+        for k, v in next, environment do
+            e[k] = v
+        end
+        local t = { _extensions_ = { }, _preamble_ = "", _environment_ = e, _type_ = "formatter" }
+        setmetatable(t, { __index = make, __call = use })
+        return t
+    end
+
 end
 
 -- function strings.formatters.new()
@@ -921,9 +939,19 @@ patterns.luaquoted = Cs(Cc('"') * ((1-S('"\n'))^1 + P('"')/'\\"' + P('\n')/'\\n"
 -- add(formatters,"tex", [[lpegmatch(texescape,%s)]],[[local texescape = lpeg.patterns.texescape]])
 -- add(formatters,"lua", [[lpegmatch(luaescape,%s)]],[[local luaescape = lpeg.patterns.luaescape]])
 
-add(formatters,"xml", [[lpegmatch(xmlescape,%s)]],{ xmlescape = lpeg.patterns.xmlescape })
-add(formatters,"tex", [[lpegmatch(texescape,%s)]],{ texescape = lpeg.patterns.texescape })
-add(formatters,"lua", [[lpegmatch(luaescape,%s)]],{ luaescape = lpeg.patterns.luaescape })
+if _LUAVERSION < 5.2  then
+
+    add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],"local xmlescape = lpeg.patterns.xmlescape")
+    add(formatters,"tex",[[lpegmatch(texescape,%s)]],"local texescape = lpeg.patterns.texescape")
+    add(formatters,"lua",[[lpegmatch(luaescape,%s)]],"local luaescape = lpeg.patterns.luaescape")
+
+else
+
+    add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],{ xmlescape = lpeg.patterns.xmlescape })
+    add(formatters,"tex",[[lpegmatch(texescape,%s)]],{ texescape = lpeg.patterns.texescape })
+    add(formatters,"lua",[[lpegmatch(luaescape,%s)]],{ luaescape = lpeg.patterns.luaescape })
+
+end
 
 -- -- yes or no:
 --

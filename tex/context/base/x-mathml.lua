@@ -82,8 +82,9 @@ local o_replacements = { -- in main table
 
  -- [utfchar(0xF103C)] = "\\mmlleftdelimiter<",
     [utfchar(0xF1026)] = "\\mmlchar{38}",
+    [utfchar(0x02061)]  = "", -- function applicator sometimes shows up in font
  -- [utfchar(0xF103E)] = "\\mmlleftdelimiter>",
--- [utfchar(0xAF)] = '\\mmlchar{"203E}', -- 0x203E
+ -- [utfchar(0x000AF)] = '\\mmlchar{"203E}', -- 0x203E
 }
 
 local simpleoperatorremapper = utf.remapper(o_replacements)

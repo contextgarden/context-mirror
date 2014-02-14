@@ -151,4 +151,6 @@ end
 
 -- nice for non ascii scripts (this might move):
 
-lua.mask = load([[τεχ = 1]]) and "utf" or "ascii"
+if lua then
+    lua.mask = load([[τεχ = 1]]) and "utf" or "ascii"
+end

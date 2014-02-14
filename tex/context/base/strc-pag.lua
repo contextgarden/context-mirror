@@ -52,7 +52,7 @@ job.register('structures.pages.collected', tobesaved, initializer)
 
 local specification = { } -- to be checked
 
-function pages.save(prefixdata,numberdata)
+function pages.save(prefixdata,numberdata,extradata)
     local realpage = texgetcount("realpageno")
     local userpage = texgetcount("userpageno")
     if realpage > 0 then
@@ -60,10 +60,12 @@ function pages.save(prefixdata,numberdata)
             report_pages("saving page %s.%s",realpage,userpage)
         end
         local data = {
-            number     = userpage,
-            block      = sections.currentblock(),
-            prefixdata = prefixdata and helpers.simplify(prefixdata),
-            numberdata = numberdata and helpers.simplify(numberdata),
+            number       = userpage,
+            viewerprefix = extradata.viewerprefix,
+            state        = extradata.state,
+            block        = sections.currentblock(),
+            prefixdata   = prefixdata and helpers.simplify(prefixdata),
+            numberdata   = numberdata and helpers.simplify(numberdata),
         }
         tobesaved[realpage] = data
         if not collected[realpage] then
