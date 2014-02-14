@@ -350,10 +350,12 @@ local utf8byte  = lpeg.patterns.utf8byte * lpeg.P(-1)
 local somechar = { }
 
 table.setmetatableindex(somechar,function(t,k)
-    local b = lpegmatch(utf8byte,k)
-    local v = b and chardata[b] or false
-    t[k] = v
-    return v
+    if k then
+        local b = lpegmatch(utf8byte,k)
+        local v = b and chardata[b] or false
+        t[k] = v
+        return v
+    end
 end)
 
 local function utfmathclass(chr, default)

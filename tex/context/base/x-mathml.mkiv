@@ -2295,7 +2295,7 @@
         } {
             \edef\mmlbasecommand{\utfmathfiller\mmlbasetoken}
             \edef\mmlovercommand{\utfmathfiller\mmlovertoken}
-            \mmlovertriplet{\mmloveros{#1}}{\mmloverbf{#1}}\relax
+            \mmlundertriplet{\mmloverbf{#1}}{\mmloveros{#1}}{}%\relax
         }
     }
   % \limits % spoils spacing
@@ -2344,7 +2344,7 @@
         } {
             \edef\mmlbasecommand {\utfmathfiller\mmlbasetoken}
             \edef\mmlundercommand{\utfmathfiller\mmlundertoken}
-            \mmlundertriplet{\mmlunderus{#1}}{\mmlunderbf{#1}}\relax
+            \mmlundertriplet{\mmlunderbf{#1}}{}{\mmlunderus{#1}}%\relax
         }
     }
   % \limits % spoils spacing
