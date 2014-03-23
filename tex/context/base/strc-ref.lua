@@ -16,7 +16,7 @@ if not modules then modules = { } end modules ['strc-ref'] = {
 
 local format, find, gmatch, match, strip = string.format, string.find, string.gmatch, string.match, string.strip
 local floor = math.floor
-local rawget, tonumber = rawget, tonumber
+local rawget, tonumber, type = rawget, tonumber, type
 local lpegmatch = lpeg.match
 local insert, remove, copytable = table.insert, table.remove, table.copy
 local formatters = string.formatters
@@ -44,7 +44,13 @@ local report_importing   = logs.reporter("references","importing")
 local report_empty       = logs.reporter("references","empty")
 
 local variables          = interfaces.variables
-local constants          = interfaces.constants
+local v_default          = variables.default
+local v_url              = variables.url
+local v_file             = variables.file
+local v_unknown          = variables.unknown
+local v_page             = variables.page
+local v_auto             = variables.auto
+
 local context            = context
 local commands           = commands
 
@@ -52,11 +58,6 @@ local texgetcount        = tex.getcount
 local texsetcount        = tex.setcount
 local texconditionals    = tex.conditionals
 
-local v_default          = variables.default
-local v_url              = variables.url
-local v_file             = variables.file
-local v_unknown          = variables.unknown
-local v_yes              = variables.yes
 local productcomponent   = resolvers.jobs.productcomponent
 local justacomponent     = resolvers.jobs.justacomponent
 
@@ -93,6 +94,7 @@ local tobereferred       = allocate()
 local referred           = allocate()
 local usedinternals      = allocate()
 local flaginternals      = allocate()
+local usedviews          = allocate()
 
 references.derived       = derived
 references.specials      = specials
@@ -107,6 +109,7 @@ references.tobereferred  = tobereferred
 references.referred      = referred
 references.usedinternals = usedinternals
 references.flaginternals = flaginternals
+references.usedviews     = usedviews
 
 local splitreference     = references.splitreference
 local splitprefix        = references.splitcomponent -- replaces: references.splitprefix
@@ -114,6 +117,22 @@ local prefixsplitter     = references.prefixsplitter
 local componentsplitter  = references.componentsplitter
 
 local currentreference   = nil
+
+local txtcatcodes        = catcodes.numbers.txtcatcodes -- or just use "txtcatcodes"
+local context_delayed    = context.delayed
+
+local ctx_pushcatcodes                = context.pushcatcodes
+local ctx_popcatcodes                 = context.popcatcodes
+local ctx_dofinishsomereference       = context.dofinishsomereference
+local ctx_dofromurldescription        = context.dofromurldescription
+local ctx_dofromurlliteral            = context.dofromurlliteral
+local ctx_dofromfiledescription       = context.dofromfiledescription
+local ctx_dofromfileliteral           = context.dofromfileliteral
+local ctx_expandreferenceoperation    = context.expandreferenceoperation
+local ctx_expandreferencearguments    = context.expandreferencearguments
+local ctx_getreferencestructureprefix = context.getreferencestructureprefix
+local ctx_convertnumber               = context.convertnumber
+local ctx_emptyreference              = context.emptyreference
 
 storage.register("structures/references/defined", references.defined, "structures.references.defined")
 
@@ -134,11 +153,31 @@ local function initializer() -- can we use a tobesaved as metatable for collecte
     for i=1,#initializers do
         initializers[i](tobesaved,collected)
     end
+    for prefix, list in next, collected do
+        for tag, data in next, list do
+            local r = data.references
+            local i = r.internal
+            if i then
+                internals[i]     = c
+                usedinternals[i] = r.used
+            end
+        end
+    end
 end
 
 local function finalizer()
     for i=1,#finalizers do
         finalizers[i](tobesaved)
+    end
+    for prefix, list in next, tobesaved do
+        for tag, data in next, list do
+            local r = data.references
+            local i = r.internal
+            local f = flaginternals[i]
+            if f then
+                r.used = usedviews[i] or true
+            end
+        end
     end
 end
 
@@ -220,8 +259,6 @@ local function referredpage(n)
     return texgetcount("realpageno")
 end
 
--- setmetatableindex(referred,function(t,k) return referredpage(k) end )
-
 references.referredpage = referredpage
 
 function references.registerpage(n) -- called in the backend code
@@ -276,6 +313,9 @@ local function setcomponent(data)
         local references = data and data.references
         if references then
             references.component = component
+            if references.referenceprefix == component then
+                references.referenceprefix = nil
+            end
         end
         return component
     end
@@ -296,21 +336,6 @@ function references.set(kind,prefix,tag,data)
         tobesaved[prefix] = pd
     end
     local n = 0
- -- for ref in gmatch(tag,"[^,]+") do
- --     if ref ~= "" then
- --         if check_duplicates and pd[ref] then
- --             if prefix and prefix ~= "" then
- --                 report_references("redundant reference %a in namespace %a",ref,prefix)
- --             else
- --                 report_references("redundant reference %a",ref)
- --             end
- --         else
- --             n = n + 1
- --             pd[ref] = data
- --             context.dofinishsomereference(kind,prefix,ref)
- --         end
- --     end
- -- end
     local function action(ref)
         if ref == "" then
             -- skip
@@ -323,7 +348,7 @@ function references.set(kind,prefix,tag,data)
         else
             n = n + 1
             pd[ref] = data
-            context.dofinishsomereference(kind,prefix,ref)
+            ctx_dofinishsomereference(kind,prefix,ref)
         end
     end
     process_settings(tag,action)
@@ -341,99 +366,59 @@ commands.enhancereference = references.enhance
 
 -- -- -- related to strc-ini.lua -- -- --
 
-references.resolvers = references.resolvers or { }
-local resolvers = references.resolvers
-
-local function getfromlist(var)
-    local vi = var.i
-    if vi then
-        vi = vi[3] or lists.collected[vi[2]]
-        if vi then
-            local r = vi.references and vi.references
-            if r then
-                r = r.realpage
-            end
-            if not r then
-                r = vi.pagedata and vi.pagedata
-                if r then
-                    r = r.realpage
-                end
-            end
-            var.i = vi
-            var.r = r or 1
-        else
-            var.i = nil
-            var.r = 1
-        end
-    else
-        var.i = nil
-        var.r = 1
-    end
-end
-
--- resolvers.section     = getfromlist
--- resolvers.float       = getfromlist
--- resolvers.description = getfromlist
--- resolvers.formula     = getfromlist
--- resolvers.note        = getfromlist
-
-setmetatableindex(resolvers,function(t,k)
-    local v = getfromlist
-    resolvers[k] = v
-    return v
-end)
-
-function resolvers.reference(var)
-    local vi = var.i[2] -- check
-    if vi then
-        var.i = vi
-        var.r = (vi.references and vi.references.realpage) or (vi.pagedata and vi.pagedata.realpage) or 1
-    else
-        var.i = nil
-        var.r = 1
-    end
-end
-
 local function register_from_lists(collected,derived,pages,sections)
-    local g = derived[""] if not g then g = { } derived[""] = g end -- global
+    local derived_g = derived[""] -- global
+    if not derived_g then
+        derived_g = { }
+        derived[""] = derived_g
+    end
     for i=1,#collected do
-        local entry = collected[i]
-        local m, r = entry.metadata, entry.references
-        if m and r then
-            local reference = r.reference or ""
-            local prefix = r.referenceprefix or ""
-            local component = r.component and r.component or ""
-            if reference ~= "" then
-                local kind, realpage = m.kind, r.realpage
-                if kind and realpage then
-                    local d = derived[prefix]
-                    if not d then
-                        d = { }
-                        derived[prefix] = d
-                    end
-                    local c = derived[component]
-                    if not c then
-                        c = { }
-                        derived[component] = c
-                    end
-                    local t = { kind, i, entry }
-                 -- for s in gmatch(reference,"%s*([^,]+)") do
-                 --     if trace_referencing then
-                 --         report_references("list entry %a provides %a reference %a on realpage %a",i,kind,s,realpage)
-                 --     end
-                 --     c[s] = c[s] or t -- share them
-                 --     d[s] = d[s] or t -- share them
-                 --     g[s] = g[s] or t -- first wins
-                 -- end
-                    local function action(s)
-                        if trace_referencing then
-                            report_references("list entry %a provides %a reference %a on realpage %a",i,kind,s,realpage)
+        local entry    = collected[i]
+        local metadata = entry.metadata
+        if metadata then
+            local kind = metadata.kind
+            if kind then
+                local references = entry.references
+                if references then
+                    local reference = references.reference
+                    if reference and reference ~= "" then
+                        local realpage = references.realpage
+                        if realpage then
+                            local prefix    = references.referenceprefix
+                            local component = references.component
+                            local derived_p = nil
+                            local derived_c = nil
+                            if prefix and prefix ~= "" then
+                                derived_p = derived[prefix]
+                                if not derived_p then
+                                    derived_p = { }
+                                    derived[prefix] = derived_p
+                                end
+                            end
+                            if component and component ~= "" and component ~= prefix then
+                                derived_c = derived[component]
+                                if not derived_c then
+                                    derived_c = { }
+                                    derived[component] = derived_c
+                                end
+                            end
+                            local function action(s)
+                                if trace_referencing then
+                                    report_references("list entry %a provides %a reference %a on realpage %a",i,kind,s,realpage)
+                                end
+                                if derived_p and not derived_p[s] then
+                                    derived_p[s] = entry
+                                end
+                                if derived_c and not derived_c[s] then
+                                    derived_c[s] = entry
+                                end
+                                if not derived_g[s] then
+                                    derived_g[s] = entry -- first wins
+                                end
+                            end
+                            process_settings(reference,action)
                         end
-                        c[s] = c[s] or t -- share them
-                        d[s] = d[s] or t -- share them
-                        g[s] = g[s] or t -- first wins
                     end
-                    process_settings(reference,action)
                 end
             end
         end
@@ -455,10 +440,6 @@ function references.urls.define(name,url,file,description)
         urls[name] = { url or "", file or "", description or url or file or ""}
     end
 end
-
-local ctx_pushcatcodes = context.pushcatcodes
-local ctx_popcatcodes  = context.popcatcodes
-local txtcatcodes      = catcodes.numbers.txtcatcodes -- or just use "txtcatcodes"
 
 function references.urls.get(name)
     local u = urls[name]
@@ -643,21 +624,21 @@ function commands.from(name)
     if u then
         local url, file, description = u[1], u[2], u[3]
         if description ~= "" then
-            context.dofromurldescription(description)
+            ctx_dofromurldescription(description)
             -- ok
         elseif file and file ~= "" then
-            context.dofromurlliteral(url .. "/" .. file)
+            ctx_dofromurlliteral(url .. "/" .. file)
         else
-            context.dofromurlliteral(url)
+            ctx_dofromurlliteral(url)
         end
     else
         local f = files[name]
         if f then
             local file, description = f[1], f[2]
             if description ~= "" then
-                context.dofromfiledescription(description)
+                ctx_dofromfiledescription(description)
             else
-                context.dofromfileliteral(file)
+                ctx_dofromfileliteral(file)
             end
         end
     end
@@ -768,9 +749,6 @@ function commands.setreferencearguments(k,v)
     references.currentset[k].arguments = v
 end
 
-local ctx_expandreferenceoperation = context.expandreferenceoperation
-local ctx_expandreferencearguments = context.expandreferencearguments
-
 function references.expandcurrent() -- todo: two booleans: o_has_tex& a_has_tex
     local currentset = references.currentset
     if currentset and currentset.has_tex then
@@ -864,7 +842,7 @@ end
 
 local externalfiles = { }
 
-table.setmetatableindex(externalfiles, function(t,k)
+setmetatableindex(externalfiles, function(t,k)
     local v = files[k]
     if not v then
         v = { k, k }
@@ -873,7 +851,7 @@ table.setmetatableindex(externalfiles, function(t,k)
     return v
 end)
 
-table.setmetatableindex(externals,function(t,k) -- either or not automatically
+setmetatableindex(externals, function(t,k) -- either or not automatically
     local filename = externalfiles[k][1] -- filename
     local fullname = file.replacesuffix(filename,"tuc")
     if lfs.isfile(fullname) then -- todo: use other locator
@@ -960,22 +938,6 @@ local function loadproductreferences(productname,componentname,utilitydata)
                             ptarget = { }
                             productreferences[prefix] = ptarget
                         end
-                     -- for s in gmatch(reference,"%s*([^,]+)") do
-                     --     if ptarget then
-                     --         if trace_importing then
-                     --             report_importing("registering %s reference, kind %a, name %a, prefix %a, reference %a",
-                     --                 "product",kind,productname,prefix,s)
-                     --         end
-                     --         ptarget[s] = ptarget[s] or entry
-                     --     end
-                     --     if ctarget then
-                     --         if trace_importing then
-                     --             report_importing("registering %s reference, kind %a, name %a, prefix %a, referenc %a",
-                     --                 "component",kind,productname,prefix,s)
-                     --         end
-                     --         ctarget[s] = ctarget[s] or entry
-                     --     end
-                     -- end
                         local function action(s)
                             if ptarget then
                                 if trace_importing then
@@ -1212,114 +1174,105 @@ local function identify_arguments(set,var,i)
     return var
 end
 
-local function identify_inner(set,var,prefix,collected,derived,tobesaved)
+-- needs checking: if we don't do too much (redundant) checking now
+-- inner ... we could move the prefix logic into the parser so that we have 'm for each entry
+-- foo:bar -> foo == prefix (first we try the global one)
+-- -:bar   -> ignore prefix
+
+local function finish_inner(var,p,i)
+    var.kind = "inner"
+    var.i = i
+    var.p = p
+    var.r = (i.references and i.references.realpage) or (i.pagedata and i.pagedata.realpage) or 1
+    return var
+end
+
+local function identify_inner(set,var,prefix,collected,derived)
     local inner = var.inner
-    local outer = var.outer
-    -- inner ... we could move the prefix logic into the parser so that we have 'm for each entry
-    -- foo:bar -> foo == prefix (first we try the global one)
-    -- -:bar   -> ignore prefix
-    local p, i = prefix, nil
-    local splitprefix, splitinner
     -- the next test is a safeguard when references are auto loaded from outer
-    if inner then
-        splitprefix, splitinner = lpegmatch(prefixsplitter,inner)
+    if not inner or inner == "" then
+        return false
     end
-    -- these are taken from other anonymous references
+    local splitprefix, splitinner = lpegmatch(prefixsplitter,inner)
     if splitprefix and splitinner then
+        -- we check for a prefix:reference instance in the regular set of collected
+        -- references; a special case is -: which forces a lookup in the global list
         if splitprefix == "-" then
-            i = collected[""]
-            i = i and i[splitinner]
+            local i = collected[""]
             if i then
-                p = ""
-            end
-        else
-            i = collected[splitprefix]
-            i = i and i[splitinner]
-            if i then
-                p = splitprefix
+                i = i[splitinner]
+                if i then
+                    return finish_inner(var,"",i)
+                end
             end
         end
-    end
-    -- todo: strict here
-    if not i then
-        i = collected[prefix]
-        i = i and i[inner]
+        local i = collected[splitprefix]
         if i then
-            p = prefix
+            i = i[splitinner]
+            if i then
+                return finish_inner(var,splitprefix,i)
+            end
         end
-    end
-    if not i and prefix ~= "" then
-        i = collected[""]
-        i = i and i[inner]
-        if i then
-            p = ""
-        end
-    end
-    if i then
-        var.i = { "reference", i }
-        resolvers.reference(var)
-        var.kind = "inner"
-        var.p = p
-    elseif derived then
-        -- these are taken from other data structures (like lists)
-        if splitprefix and splitinner then
+        if derived then
+            -- next we look for a reference in the regular set of collected references
+            -- using the prefix that is active at this moment (so we overload the given
+            -- these are taken from other data structures (like lists)
             if splitprefix == "-" then
-                i = derived[""]
-                i = i and i[splitinner]
+                local i = derived[""]
                 if i then
-                    p = ""
-                end
-            else
-                i = derived[splitprefix]
-                i = i and i[splitinner]
-                if i then
-                    p = splitprefix
+                    i = i[splitinner]
+                    if i then
+                        return finish_inner(var,"",i)
+                    end
                 end
             end
-        end
-        if not i then
-            i = derived[prefix]
-            i = i and i[inner]
+            local i = derived[splitprefix]
             if i then
-                p = prefix
+                i = i[splitinner]
+                if i then
+                    return finish_inner(var,splitprefix,i)
+                end
             end
         end
-        if not i and prefix ~= "" then
-            i = derived[""]
-            i = i and i[inner]
+    end
+    -- we now ignore the split prefix and treat the whole inner as a potential
+    -- referenice into the global list
+    local i = collected[prefix]
+    if i then
+        i = i[inner]
+        if i then
+            return finish_inner(var,prefix,i)
+        end
+    end
+    if not i and derived then
+        -- and if not found we look in the derived references
+        local i = derived[prefix]
+        if i then
+            i = i[inner]
             if i then
-                p = ""
+                return finish_inner(var,prefix,i)
             end
         end
+    end
+    return false
+end
+
+local function unprefixed_inner(set,var,prefix,collected,derived,tobesaved)
+    local inner = var.inner
+    local s = specials[inner]
+    if s then
+        var.kind = "special"
+    else
+        local i = (collected and collected[""] and collected[""][inner]) or
+                  (derived   and derived  [""] and derived  [""][inner]) or
+                  (tobesaved and tobesaved[""] and tobesaved[""][inner])
         if i then
             var.kind = "inner"
-            var.i = i
-            var.p = p
-            local ri = resolvers[i[1]]
-            if ri then
-                ri(var)
-            else
-                -- can't happen as we catch it with a metatable now
-                report_references("unknown inner resolver for %a",i[1])
-            end
+            var.p    = ""
+            var.i    = i
+            var.r    = (i.references and i.references.realpage) or (i.pagedata and i.pagedata.realpage) or 1
         else
-            -- no prefixes here
-            local s = specials[inner]
-            if s then
-                var.kind = "special"
-            else
-                i = (collected and collected[""] and collected[""][inner]) or
-                    (derived   and derived  [""] and derived  [""][inner]) or
-                    (tobesaved and tobesaved[""] and tobesaved[""][inner])
-                if i then
-                    var.kind = "inner"
-                    var.i = { "reference", i }
-                    resolvers.reference(var)
-                    var.p = ""
-                else
-                    var.error = "unknown inner or special"
-                end
-            end
+            var.error = "unknown inner or special"
         end
     end
     return var
@@ -1330,9 +1283,8 @@ local function identify_outer(set,var,i)
     local inner    = var.inner
     local external = externals[outer]
     if external then
-        local v = copytable(var)
-        v = identify_inner(set,v,nil,external)
-        if v.i and not v.error then
+        local v = identify_inner(set,var,nil,external)
+        if v then
             v.kind = "outer with inner"
             set.external = true
             if trace_identifying then
@@ -1340,9 +1292,8 @@ local function identify_outer(set,var,i)
             end
             return v
         end
-        v = copytable(var)
-        local v = identify_inner(set,v,v.outer,external)
-        if v.i and not v.error then
+        local v = identify_inner(set,var,var.outer,external)
+        if v then
             v.kind = "outer with inner"
             set.external = true
             if trace_identifying then
@@ -1353,8 +1304,8 @@ local function identify_outer(set,var,i)
     end
     local external = productdata.componentreferences[outer]
     if external then
-        local v = identify_inner(set,copytable(var),nil,external)
-        if v.i and not v.error then
+        local v = identify_inner(set,var,nil,external)
+        if v then
             v.kind = "outer with inner"
             set.external = true
             if trace_identifying then
@@ -1427,57 +1378,62 @@ local function identify_outer(set,var,i)
     return var
 end
 
+-- todo: avoid copy
+
 local function identify_inner_or_outer(set,var,i)
     -- here we fall back on product data
     local inner = var.inner
     if inner and inner ~= "" then
-        local v = identify_inner(set,copytable(var),set.prefix,collected,derived,tobesaved)
-        if v.i and not v.error then
-            v.kind = "inner" -- check this
+
+        -- first we look up in collected and derived using the current prefix
+
+        local prefix = set.prefix
+
+        local v = identify_inner(set,var,set.prefix,collected,derived)
+        if v then
             if trace_identifying then
                 report_identify_outer(set,v,i,"4a")
             end
             return v
         end
 
-        -- these get auto prefixes but are loaded in the document so they are
-        -- internal .. we also set the realpage (for samepage analysis)
+        -- nest we look at each component (but we can omit the already consulted one
 
         local components = job.structure.components
         if components then
-            for i=1,#components do
-                local component = components[i]
-                local data = collected[component]
-                local vi = data and data[inner]
-                if vi then
---                     var = copytable(var)
---                     var.kind = "inner"
---                     var.i = vi
---                     var.p = component
---                     runners.inner(var.r = vi.references.realpage
---                     if trace_identifying then
---                         report_identify_outer(set,var,i,"4x")
---                     end
---                     return var
-local v = identify_inner(set,copytable(var),component,collected) -- is copy needed ?
-if v.i and not v.error then
-    v.kind = "inner"
-    if trace_identifying then
-        report_identify_outer(set,var,i,"4x")
-    end
-    return v
-end
+            for c=1,#components do
+                local component = components[c]
+                if component ~= prefix then
+                    local v = identify_inner(set,var,component,collected,derived)
+                    if v then
+                        if trace_identifying then
+                            report_identify_outer(set,var,i,"4b")
+                        end
+                        return v
+                    end
                 end
             end
         end
+
+        -- as a last resort we will consult the global lists
+
+        local v = unprefixed_inner(set,var,"",collected,derived,tobesaved)
+        if v then
+            if trace_identifying then
+                report_identify_outer(set,v,i,"4c")
+            end
+            return v
+        end
+
+        -- not it gets bad ... we need to look in external files ... keep in mind that
+        -- we can best use explicit references for this ... we might issue a warning
 
         local componentreferences = productdata.componentreferences
         local productreferences = productdata.productreferences
         local components = productdata.components
         if components and componentreferences then
-         -- for component, data in next, productdata.componentreferences do -- better do this in order of processing:
-            for i=1,#components do
-                local component = components[i]
+            for c=1,#components do
+                local component = components[c]
                 local data = componentreferences[component]
                 if data then
                     local d = data[""]
@@ -1488,7 +1444,7 @@ end
                         var.kind = "outer with inner"
                         set.external = true
                         if trace_identifying then
-                            report_identify_outer(set,var,i,"4b")
+                            report_identify_outer(set,var,i,"4d")
                         end
                         return var
                     end
@@ -1508,7 +1464,7 @@ end
                     var.kind = "outer with inner"
                     set.external = true
                     if trace_identifying then
-                        report_identify_outer(set,var,i,"4c")
+                        report_identify_outer(set,var,i,"4e")
                     end
                     return var
                 end
@@ -1523,7 +1479,7 @@ end
                     var.kind = "outer with inner"
                     set.external = true
                     if trace_identifying then
-                        report_identify_outer(set,var,i,"4d")
+                        report_identify_outer(set,var,i,"4f")
                     end
                     return var
                 end
@@ -1534,30 +1490,18 @@ end
         var.error = "no inner"
     end
     if trace_identifying then
-        report_identify_outer(set,var,i,"4e")
+        report_identify_outer(set,var,i,"4g")
     end
     return var
 end
 
--- local function identify_inner_or_outer(set,var,i)
---     -- we might consider first checking with a prefix prepended and then without
---     -- which is better for fig:oeps
---     local var = do_identify_inner_or_outer(set,var,i)
---     if var.error then
---         local prefix = set.prefix
---         if prefix and prefix ~= "" then
---             var.inner = prefix .. ':' .. var.inner
---             var.error = nil
---             return do_identify_inner_or_outer(set,var,i)
---         end
---     end
---     return var
--- end
-
 local function identify_inner_component(set,var,i)
     -- we're in a product (maybe ignore when same as component)
     local component = var.component
-    identify_inner(set,var,component,collected,derived,tobesaved)
+    local v = identify_inner(set,var,component,collected,derived)
+    if not v then
+        var.error = "unknown inner in component"
+    end
     if trace_identifying then
         report_identify_outer(set,var,i,"5a")
     end
@@ -1697,17 +1641,15 @@ luatex.registerstopactions(references.reportproblems)
 -- can make files smaller without sacrificing external references. Some of
 -- the housekeeping happens the backend side.
 
-local innermethod        = "auto" -- was "names"
+local innermethod        = v_auto       -- only page|auto now
 local defaultinnermethod = defaultinnermethod
-references.innermethod   = innermethod        -- don't mess with this one directly
+references.innermethod   = innermethod  -- don't mess with this one directly
 
 function references.setinnermethod(m)
-    if m then
-        if m == "page" or m == "mixed" or m == "names" or m == "auto" then
-            innermethod = m
-        elseif m == true or m == v_yes then
-            innermethod = "page"
-        end
+    if toboolean(m) or m == v_page then
+        innermethod = v_page
+    else
+        innermethod = v_auto
     end
     references.innermethod = innermethod
     function references.setinnermethod()
@@ -1719,7 +1661,7 @@ function references.getinnermethod()
     return innermethod or defaultinnermethod
 end
 
-directives.register("references.linkmethod", function(v) -- page mixed names
+directives.register("references.linkmethod", function(v) -- page auto
     references.setinnermethod(v)
 end)
 
@@ -1729,7 +1671,7 @@ local destinationattributes = { }
 
 local function setinternalreference(prefix,tag,internal,view) -- needs checking
     local destination = unsetvalue
-    if innermethod ~= "page" then
+    if innermethod == v_auto then
         local t, tn = { }, 0 -- maybe add to current
         if tag then
             if prefix and prefix ~= "" then
@@ -1749,7 +1691,7 @@ local function setinternalreference(prefix,tag,internal,view) -- needs checking
         end
         -- ugly .. later we decide to ignore it when we have a real one
         -- but for testing we might want to see them all
-        if internal and (innermethod == "names" or innermethod == "auto") then -- mixed or page
+        if internal then
             tn = tn + 1
             t[tn] = internal -- when number it's internal
         end
@@ -1820,10 +1762,22 @@ end
 references.getcurrentprefixspec = getcurrentprefixspec
 
 function commands.getcurrentprefixspec(default)
-    context.getreferencestructureprefix(getcurrentprefixspec(default))
+    ctx_getreferencestructureprefix(getcurrentprefixspec(default))
 end
 
-function references.filter(name,...) -- number page title ...
+local genericfilters = { }
+local userfilters    = { }
+local textfilters    = { }
+local fullfilters    = { }
+local sectionfilters = { }
+
+filters.generic = genericfilters
+filters.user    = userfilters
+filters.text    = textfilters
+filters.full    = fullfilters
+filters.section = sectionfilters
+
+local function filterreference(name,...) -- number page title ...
     local data = currentreference and currentreference.i -- maybe we should take realpage from here
     if data then
         if name == "realpage" then
@@ -1832,8 +1786,8 @@ function references.filter(name,...) -- number page title ...
         else -- assumes data is table
             local kind = type(data) == "table" and data.metadata and data.metadata.kind
             if kind then
-                local filter = filters[kind] or filters.generic
-                filter = filter and (filter[name] or filter.unknown or filters.generic[name] or filters.generic.unknown)
+                local filter = filters[kind] or genericfilters
+                filter = filter and (filter[name] or filter.unknown or genericfilters[name] or genericfilters.unknown)
                 if filter then
                     if trace_referencing then
                         report_references("name %a, kind %a, using dedicated filter",name,kind)
@@ -1853,18 +1807,24 @@ function references.filter(name,...) -- number page title ...
     end
 end
 
-function references.filterdefault()
-    return references.filter("default",getcurrentprefixspec(v_default))
+local function filterreferencedefault()
+    return filterreference("default",getcurrentprefixspec(v_default))
 end
+
+references.filter        = filterreference
+references.filterdefault = filterreferencedefault
+
+commands.filterreference        = filterreference
+commands.filterdefaultreference = filterreferencedefault
 
 function commands.currentreferencedefault(tag)
-    if not tag then tag = "default" end
-    references.filter(tag,context.delayed(getcurrentprefixspec(tag)))
+    if not tag then
+        tag = "default"
+    end
+    filterreference(tag,context_delayed(getcurrentprefixspec(tag)))
 end
 
-filters.generic = { }
-
-function filters.generic.title(data)
+function genericfilters.title(data)
     if data then
         local titledata = data.titledata or data.useddata
         if titledata then
@@ -1873,7 +1833,7 @@ function filters.generic.title(data)
     end
 end
 
-function filters.generic.text(data)
+function genericfilters.text(data)
     if data then
         local entries = data.entries or data.useddata
         if entries then
@@ -1882,7 +1842,7 @@ function filters.generic.text(data)
     end
 end
 
-function filters.generic.number(data,what,prefixspec) -- todo: spec and then no stopper
+function genericfilters.number(data,what,prefixspec) -- todo: spec and then no stopper
     if data then
         numberdata = lists.reordered(data) -- data.numberdata
         if numberdata then
@@ -1897,16 +1857,16 @@ function filters.generic.number(data,what,prefixspec) -- todo: spec and then no 
     end
 end
 
-filters.generic.default = filters.generic.text
+genericfilters.default = genericfilters.text
 
-function filters.generic.page(data,prefixspec,pagespec)
+function genericfilters.page(data,prefixspec,pagespec)
     local pagedata = data.pagedata
     if pagedata then
         local number, conversion = pagedata.number, pagedata.conversion
         if not number then
             -- error
         elseif conversion then
-            context.convertnumber(conversion,number)
+            ctx_convertnumber(conversion,number)
         else
             context(number)
         end
@@ -1915,14 +1875,12 @@ function filters.generic.page(data,prefixspec,pagespec)
     end
 end
 
-filters.user = { }
-
-function filters.user.unknown(data,name)
+function userfilters.unknown(data,name)
     if data then
         local userdata = data.userdata
         local userkind = userdata and userdata.kind
         if userkind then
-            local filter = filters[userkind] or filters.generic
+            local filter = filters[userkind] or genericfilters
             filter = filter and (filter[name] or filter.unknown)
             if filter then
                 filter(data,name)
@@ -1936,9 +1894,7 @@ function filters.user.unknown(data,name)
     end
 end
 
-filters.text = { }
-
-function filters.text.title(data)
+function textfilters.title(data)
     helpers.title(data.entries.text or "?",data.metadata)
 end
 
@@ -1948,18 +1904,14 @@ end
 --     helpers.title(data.entries.text or "?",data.metadata)
 -- end
 
-function filters.text.page(data,prefixspec,pagespec)
+function textfilters.page(data,prefixspec,pagespec)
     helpers.prefixpage(data,prefixspec,pagespec)
 end
 
-filters.full = { }
+fullfilters.title = textfilters.title
+fullfilters.page  = textfilters.page
 
-filters.full.title = filters.text.title
-filters.full.page  = filters.text.page
-
-filters.section = { }
-
-function filters.section.number(data,what,prefixspec)
+function sectionfilters.number(data,what,prefixspec)
     if data then
         local numberdata = data.numberdata
         if not numberdata then
@@ -1971,7 +1923,7 @@ function filters.section.number(data,what,prefixspec)
             local references = data.references
             if trace_empty then
                 report_empty("reference %a has a hidden number",references.reference)
-                context.emptyreference() -- maybe an option
+                ctx_emptyreference() -- maybe an option
             end
         else
             sections.typesetnumber(numberdata,"number",prefixspec,numberdata)
@@ -1979,18 +1931,18 @@ function filters.section.number(data,what,prefixspec)
     end
 end
 
-filters.section.title   = filters.generic.title
-filters.section.page    = filters.generic.page
-filters.section.default = filters.section.number
+sectionfilters.title   = genericfilters.title
+sectionfilters.page    = genericfilters.page
+sectionfilters.default = sectionfilters.number
 
--- filters.note        = { default = filters.generic.number }
--- filters.formula     = { default = filters.generic.number }
--- filters.float       = { default = filters.generic.number }
--- filters.description = { default = filters.generic.number }
--- filters.item        = { default = filters.generic.number }
+-- filters.note        = { default = genericfilters.number }
+-- filters.formula     = { default = genericfilters.number }
+-- filters.float       = { default = genericfilters.number }
+-- filters.description = { default = genericfilters.number }
+-- filters.item        = { default = genericfilters.number }
 
 setmetatableindex(filters, function(t,k) -- beware, test with rawget
-    local v = { default = filters.generic.number } -- not copy as it might be extended differently
+    local v = { default = genericfilters.number } -- not copy as it might be extended differently
     t[k] = v
     return v
 end)
@@ -2245,9 +2197,6 @@ function specials.section(var,actions)
 end
 
 -- needs a better split ^^^
-
-commands.filterreference        = references.filter
-commands.filterdefaultreference = references.filterdefault
 
 -- done differently now:
 
