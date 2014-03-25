@@ -296,13 +296,7 @@ local function setnextinternal(kind,name)
     return n
 end
 
-references.setnextorder    = setnextorder
-references.setnextinternal = setnextinternal
-
-commands.setnextreferenceorder    = setnextorder
-commands.setnextinternalreference = setnextinternal
-
-function references.currentorder(kind,name)
+local function currentorder(kind,name)
     return orders[kind] and orders[kind][name] or lastorder
 end
 
@@ -322,11 +316,17 @@ local function setcomponent(data)
     -- but for the moment we do it here (experiment)
 end
 
-function commands.currentreferenceorder(kind,name)
-    context(references.currentorder(kind,name))
-end
+references.setnextorder    = setnextorder
+references.setnextinternal = setnextinternal
+references.currentorder    = currentorder
+references.setcomponent    = setcomponent
 
-references.setcomponent = setcomponent
+commands.setnextreferenceorder    = setnextorder
+commands.setnextinternalreference = setnextinternal
+
+function commands.currentreferenceorder(kind,name)
+    context(currentorder(kind,name))
+end
 
 function references.set(kind,prefix,tag,data)
 --  setcomponent(data)
@@ -365,6 +365,8 @@ end
 commands.enhancereference = references.enhance
 
 -- -- -- related to strc-ini.lua -- -- --
+
+-- no metatable here .. better be sparse
 
 local function register_from_lists(collected,derived,pages,sections)
     local derived_g = derived[""] -- global
@@ -423,26 +425,26 @@ local function register_from_lists(collected,derived,pages,sections)
             end
         end
     end
---     inspect(derived)
+ -- inspect(derived)
 end
 
 references.registerinitializer(function() register_from_lists(lists.collected,derived) end)
 
 -- urls
 
-references.urls      = references.urls      or { }
-references.urls.data = references.urls.data or { }
+local urls      = references.urls or { }
+references.urls = urls
+local urldata   = urls.data or { }
+urls.data       = urldata
 
-local urls = references.urls.data
-
-function references.urls.define(name,url,file,description)
+function urls.define(name,url,file,description)
     if name and name ~= "" then
-        urls[name] = { url or "", file or "", description or url or file or ""}
+        urldata[name] = { url or "", file or "", description or url or file or ""}
     end
 end
 
-function references.urls.get(name)
-    local u = urls[name]
+function urls.get(name)
+    local u = urldata[name]
     if u then
         local url, file = u[1], u[2]
         if file and file ~= "" then
@@ -454,7 +456,7 @@ function references.urls.get(name)
 end
 
 function commands.geturl(name)
-    local url = references.urls.get(name)
+    local url = urls.get(name)
     if url and url ~= "" then
         ctx_pushcatcodes(txtcatcodes)
         context(url)
@@ -463,49 +465,49 @@ function commands.geturl(name)
 end
 
 -- function commands.gethyphenatedurl(name,...)
---     local url = references.urls.get(name)
+--     local url = urls.get(name)
 --     if url and url ~= "" then
 --         hyphenatedurl(url,...)
 --     end
 -- end
 
 function commands.doifurldefinedelse(name)
-    commands.doifelse(urls[name])
+    commands.doifelse(urldata[name])
 end
 
-commands.useurl= references.urls.define
+commands.useurl= urls.define
 
 -- files
 
-references.files      = references.files      or { }
-references.files.data = references.files.data or { }
+local files      = references.files or { }
+references.files = files
+local filedata   = files.data or { }
+files.data       = filedata
 
-local files = references.files.data
-
-function references.files.define(name,file,description)
+function files.define(name,file,description)
     if name and name ~= "" then
-        files[name] = { file or "", description or file or "" }
+        filedata[name] = { file or "", description or file or "" }
     end
 end
 
-function references.files.get(name,method,space) -- method: none, before, after, both, space: yes/no
-    local f = files[name]
+function files.get(name,method,space) -- method: none, before, after, both, space: yes/no
+    local f = filedata[name]
     if f then
         context(f[1])
     end
 end
 
 function commands.doiffiledefinedelse(name)
-    commands.doifelse(files[name])
+    commands.doifelse(filedata[name])
 end
 
-commands.usefile= references.files.define
+commands.usefile= files.define
 
 -- helpers
 
 function references.checkedfile(whatever) -- return whatever if not resolved
     if whatever then
-        local w = files[whatever]
+        local w = filedata[whatever]
         if w then
             return w[1]
         else
@@ -516,7 +518,7 @@ end
 
 function references.checkedurl(whatever) -- return whatever if not resolved
     if whatever then
-        local w = urls[whatever]
+        local w = urldata[whatever]
         if w then
             local u, f = w[1], w[2]
             if f and f ~= "" then
@@ -532,11 +534,11 @@ end
 
 function references.checkedfileorurl(whatever,default) -- return nil, nil if not resolved
     if whatever then
-        local w = files[whatever]
+        local w = filedata[whatever]
         if w then
             return w[1], nil
         else
-            local w = urls[whatever]
+            local w = urldata[whatever]
             if w then
                 local u, f = w[1], w[2]
                 if f and f ~= "" then
@@ -552,25 +554,25 @@ end
 
 -- programs
 
-references.programs      = references.programs      or { }
-references.programs.data = references.programs.data or { }
+local programs      = references.programs or { }
+references.programs = programs
+local programdata   = programs.data or { }
+programs.data       = programdata
 
-local programs = references.programs.data
-
-function references.programs.define(name,file,description)
+function programs.define(name,file,description)
     if name and name ~= "" then
-        programs[name] = { file or "", description or file or ""}
+        programdata[name] = { file or "", description or file or ""}
     end
 end
 
-function references.programs.get(name)
-    local f = programs[name]
+function programs.get(name)
+    local f = programdata[name]
     return f and f[1]
 end
 
 function references.checkedprogram(whatever) -- return whatever if not resolved
     if whatever then
-        local w = programs[whatever]
+        local w = programdata[whatever]
         if w then
             return w[1]
         else
@@ -579,10 +581,10 @@ function references.checkedprogram(whatever) -- return whatever if not resolved
     end
 end
 
-commands.defineprogram = references.programs.define
+commands.defineprogram = programs.define
 
 function commands.getprogram(name)
-    local f = programs[name]
+    local f = programdata[name]
     if f then
         context(f[1])
     end
@@ -591,11 +593,11 @@ end
 -- shared by urls and files
 
 function references.whatfrom(name)
-    context((urls[name] and v_url) or (files[name] and v_file) or v_unknown)
+    context((urldata[name] and v_url) or (filedata[name] and v_file) or v_unknown)
 end
 
 function references.from(name)
-    local u = urls[name]
+    local u = urldata[name]
     if u then
         local url, file, description = u[1], u[2], u[3]
         if description ~= "" then
@@ -607,7 +609,7 @@ function references.from(name)
             return url
         end
     else
-        local f = files[name]
+        local f = filedata[name]
         if f then
             local file, description = f[1], f[2]
             if description ~= "" then
@@ -620,7 +622,7 @@ function references.from(name)
 end
 
 function commands.from(name)
-    local u = urls[name]
+    local u = urldata[name]
     if u then
         local url, file, description = u[1], u[2], u[3]
         if description ~= "" then
@@ -632,7 +634,7 @@ function commands.from(name)
             ctx_dofromurlliteral(url)
         end
     else
-        local f = files[name]
+        local f = filedata[name]
         if f then
             local file, description = f[1], f[2]
             if description ~= "" then
@@ -646,7 +648,7 @@ end
 
 function references.define(prefix,reference,list)
     local d = defined[prefix] if not d then d = { } defined[prefix] = d end
-    d[reference] = { "defined", list }
+    d[reference] = list
 end
 
 function references.reset(prefix,reference)
@@ -667,7 +669,77 @@ commands.resetreference  = references.reset
 
 -- to what extend do we check the non prefixed variant
 
-local strict = false
+-- local strict = false
+--
+-- local function resolve(prefix,reference,args,set) -- we start with prefix,reference
+--     if reference and reference ~= "" then
+--         if not set then
+--             set = { prefix = prefix, reference = reference }
+--         else
+--             if not set.reference then set.reference = reference end
+--             if not set.prefix    then set.prefix    = prefix    end
+--         end
+--         local r = settings_to_array(reference)
+--         for i=1,#r do
+--             local ri = r[i]
+--             local d
+--             if strict then
+--                 d = defined[prefix] or defined[""]
+--                 d = d and d[ri]
+--             else
+--                 d = defined[prefix]
+--                 d = d and d[ri]
+--                 if not d then
+--                     d = defined[""]
+--                     d = d and d[ri]
+--                 end
+--             end
+--             if d then
+--                 resolve(prefix,d,nil,set)
+--             else
+--                 local var = splitreference(ri)
+--                 if var then
+--                     var.reference = ri
+--                     local vo, vi = var.outer, var.inner
+--                     if not vo and vi then
+--                         -- to be checked
+--                         if strict then
+--                             d = defined[prefix] or defined[""]
+--                             d = d and d[vi]
+--                         else
+--                             d = defined[prefix]
+--                             d = d and d[vi]
+--                             if not d then
+--                                 d = defined[""]
+--                                 d = d and d[vi]
+--                             end
+--                         end
+--                         --
+--                         if d then
+--                             resolve(prefix,d,var.arguments,set) -- args can be nil
+--                         else
+--                             if args then var.arguments = args end
+--                             set[#set+1] = var
+--                         end
+--                     else
+--                         if args then var.arguments = args end
+--                         set[#set+1] = var
+--                     end
+--                     if var.has_tex then
+--                         set.has_tex = true
+--                     end
+--                 else
+--                 --  report_references("funny pattern %a",ri)
+--                 end
+--             end
+--         end
+--         return set
+--     else
+--         return { }
+--     end
+-- end
+
+setmetatableindex(defined,"table")
 
 local function resolve(prefix,reference,args,set) -- we start with prefix,reference
     if reference and reference ~= "" then
@@ -680,20 +752,9 @@ local function resolve(prefix,reference,args,set) -- we start with prefix,refere
         local r = settings_to_array(reference)
         for i=1,#r do
             local ri = r[i]
-            local d
-            if strict then
-                d = defined[prefix] or defined[""]
-                d = d and d[ri]
-            else
-                d = defined[prefix]
-                d = d and d[ri]
-                if not d then
-                    d = defined[""]
-                    d = d and d[ri]
-                end
-            end
+            local d = defined[prefix][ri] or defined[""][ri]
             if d then
-                resolve(prefix,d[2],nil,set)
+                resolve(prefix,d,nil,set)
             else
                 local var = splitreference(ri)
                 if var then
@@ -701,20 +762,10 @@ local function resolve(prefix,reference,args,set) -- we start with prefix,refere
                     local vo, vi = var.outer, var.inner
                     if not vo and vi then
                         -- to be checked
-                        if strict then
-                            d = defined[prefix] or defined[""]
-                            d = d and d[vi]
-                        else
-                            d = defined[prefix]
-                            d = d and d[vi]
-                            if not d then
-                                d = defined[""]
-                                d = d and d[vi]
-                            end
-                        end
+                        d = defined[prefix][vi] or defined[""][vi]
                         --
                         if d then
-                            resolve(prefix,d[2],var.arguments,set) -- args can be nil
+                            resolve(prefix,d,var.arguments,set) -- args can be nil
                         else
                             if args then var.arguments = args end
                             set[#set+1] = var
@@ -843,7 +894,7 @@ end
 local externalfiles = { }
 
 setmetatableindex(externalfiles, function(t,k)
-    local v = files[k]
+    local v = filedata[k]
     if not v then
         v = { k, k }
     end
@@ -1032,7 +1083,7 @@ references.registerinitializer(function(tobesaved,collected)
     productdata.components = componentlist(job.structure.collected) or { }
 end)
 
-function structures.references.loadpresets(product,component) -- we can consider a special components hash
+function references.loadpresets(product,component) -- we can consider a special components hash
     if product and component and product~= "" and component ~= "" and not productdata.product then -- maybe: productdata.filename ~= filename
         productdata.product = product
         productdata.component = component
@@ -1052,7 +1103,7 @@ function structures.references.loadpresets(product,component) -- we can consider
     end
 end
 
-structures.references.productdata = productdata
+references.productdata = productdata
 
 local useproduct = commands.useproduct
 
@@ -1066,7 +1117,7 @@ if useproduct then
                 if trace_referencing or trace_importing then
                     report_references("loading presets for component %a of product %a",component,product)
                 end
-                structures.references.loadpresets(product,component)
+                references.loadpresets(product,component)
             end
         end
     end
