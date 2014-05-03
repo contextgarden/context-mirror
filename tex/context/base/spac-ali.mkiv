@@ -585,35 +585,12 @@
 \unexpanded\def\spac_align_use_now#1%
   {\csname\??alignmentnormalcache#1\endcsname}
 
-% Maybe we need something different in columns.
+% The keywords:
 
 \unexpanded\def\installalign#1#2% beware: commands must be unexpandable!
   {\ifcsname\??aligncommand#1\endcsname \else
      \setvalue{\??aligncommand#1}{\t_spac_align_collected\expandafter{\the\t_spac_align_collected#2}}%
    \fi}
-
-% beware, toks stuff and states are set at a differt time, so installalign is
-% only for special options
-%
-% \setvalue{\??aligncommand whatever}%
-%   {\c_spac_align_state_horizontal\plushundred
-%    \t_spac_align_collected\expandafter{\the\t_spac_align_collected .....}}
-%
-% this one could deal with both
-%
-% \unexpanded\def\installalignoption#1#2%
-%   {\ifcsname\??aligncommand#1\endcsname \else
-%      \setvalue{\??aligncommand#1}%
-%        {\spac_align_set_horizontal_none
-%         \c_spac_align_state_horizontal\plushundred % don't set
-%         \t_spac_align_collected\expandafter{\the\t_spac_align_collected#2}}%
-%    \fi}
-%
-% \installalignoption
-%   {whatever}
-%   {}
-
-% The keywords:
 
 \letvalue{\??aligncommand\empty            }\empty
 \setvalue{\??aligncommand\v!broad          }{\c_spac_align_state_broad     \plusone  }

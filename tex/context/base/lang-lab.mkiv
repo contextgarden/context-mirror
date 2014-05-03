@@ -94,10 +94,8 @@
           \csname\??label\currentlabelcategory#1:##1:##2\endcsname
         \else\ifcsname\??label#1:##1:##2\endcsname
           \csname\??label#1:##1:##2\endcsname
-%         \else\ifcsname\??language#4\s!default\endcsname
-%           \expandafter#5\csname\??language#4\s!default\endcsname{##2}%
-        \else\ifcsname\??language##1\s!default\endcsname
-          \expandafter#5\csname\??language##1\s!default\endcsname{##2}%
+        \else\ifcsname\??language#4\s!default\endcsname
+          \expandafter#5\csname\??language#4\s!default\endcsname{##2}%
         \else\ifcsname\??label\currentlabelcategory#1:##2\endcsname
           \csname\??label\currentlabelcategory#1:##2\endcsname
         \else\ifcsname\??label#1:##2\endcsname

@@ -332,28 +332,6 @@ function nodes.writable_spec(n) -- not pool
     return spec
 end
 
-function nodes.copy_spec(old,free) -- also frees
-    if not old then
-        return n_new_node("glue_spec")
-    else
-        local new = n_copy_node(old)
-        if free and old.writable then
-            free_node(old)
-        end
-        return new
-    end
-end
-
-function nodes.free_spec(old)
-    if not old then
-        -- skip
-    elseif old.writable then
-        free_node(old)
-    else
-        -- skip
-    end
-end
-
 if gonuts then
 
     function nodes.reference(n)
@@ -690,34 +668,3 @@ end
 
 nodes.keys   = keys       -- [id][subtype]
 nodes.fields = nodefields -- (n)
-
--- one issue solved in flush_node:
---
--- case glue_spec_node:
---     if (glue_ref_count(p)!=null) {
---         decr(glue_ref_count(p));
---         return ;
---     /*
---     } else if (! valid_node(p)) {
---          return ;
---     */
---     /*
---     } else {
---         free_node(p, get_node_size(type(p), subtype(p)));
---         return ;
---     */
---     }
---     break ;
---
--- or:
---
--- case glue_spec_node:
---     if (glue_ref_count(p)!=null) {
---         decr(glue_ref_count(p));
---         return ;
---     } else if (valid_node(p)) {
---         free_node(p, get_node_size(type(p), subtype(p)));
---         return ;
---     } else {
---         break ;
---     }

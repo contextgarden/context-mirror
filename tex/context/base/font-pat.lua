@@ -38,7 +38,7 @@ local report   = patches.report
 -- library) the palatino arabic fonts don't have the mkmk features properly
 -- set up.
 
-register("after","rehash features","^palatino.*arabic", function (data,filename)
+register("after","rehash features","^palatino.*arabic", function patch(data,filename)
     local gpos = data.gpos
     if gpos then
         for k=1,#gpos do

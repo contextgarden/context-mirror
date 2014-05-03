@@ -24,7 +24,7 @@ local newglue           = nodepool.glue
 local insert_node_after = node.insert_after
 local traverse_by_id    = node.traverse_id
 local hyphenate         = lang.hyphenate
-local find_tail         = node.tail
+local find_tail         = node.slide
 local remove_node       = nodes.remove
 
 local tracers           = nodes.tracers

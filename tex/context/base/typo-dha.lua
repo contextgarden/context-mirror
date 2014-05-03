@@ -49,30 +49,13 @@ local trace_directions   = false  trackers.register("typesetters.directions.defa
 
 local report_directions  = logs.reporter("typesetting","text directions")
 
-local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-local tonode             = nuts.tonode
-local nutstring          = nuts.tostring
 
-local getnext            = nuts.getnext
-local getprev            = nuts.getprev
-local getfont            = nuts.getfont
-local getchar            = nuts.getchar
-local getid              = nuts.getid
-local getsubtype         = nuts.getsubtype
-local getlist            = nuts.getlist
-local getfield           = nuts.getfield
-local setfield           = nuts.setfield
-local getattr            = nuts.getattr
-local setattr            = nuts.setattr
+local insert_node_before = nodes.insert_before
+local insert_node_after  = nodes.insert_after
+local remove_node        = nodes.remove
+local end_of_math        = nodes.end_of_math
 
-local insert_node_before = nuts.insert_before
-local insert_node_after  = nuts.insert_after
-local remove_node        = nuts.remove
-local end_of_math        = nuts.end_of_math
-
-
-local nodepool           = nuts.pool
+local nodepool           = nodes.pool
 
 local nodecodes          = nodes.nodecodes
 local whatcodes          = nodes.whatcodes
@@ -125,7 +108,7 @@ end
 
 local function process(start)
 
-    local head     = tonut(start) -- we have a global head
+    local head     = start
 
     local current  = head
     local inserted = nil
@@ -197,31 +180,31 @@ local function process(start)
     end
 
     local function nextisright(current)
-        current = getnext(current)
-        local id = getid(current)
+        current = current.next
+        local id = current.id
         if id == glyph_code then
-            local character = getchar(current)
+            local character = current.char
             local direction = chardirections[character]
             return direction == "r" or direction == "al" or direction == "an"
         end
     end
 
     local function previsright(current)
-        current = getprev(current)
-        local id = getid(current)
+        current = current.prev
+        local id = current.id
         if id == glyph_code then
-            local character = getchar(current)
+            local char = current.char
             local direction = chardirections[character]
             return direction == "r" or direction == "al" or direction == "an"
         end
     end
 
     while current do
-        local id = getid(current)
+        local id = current.id
         if id == math_code then
-            current = getnext(end_of_math(getnext(current)))
+            current = end_of_math(current.next).next
         else
-            local attr = getattr(current,a_directions)
+            local attr = current[a_directions]
             if attr and attr > 0 and attr ~= prevattr then
                 if not getglobal(a) then
                     lro, rlo = false, false
@@ -230,7 +213,7 @@ local function process(start)
             end
             if id == glyph_code then
                 if attr and attr > 0 then
-                    local character = getchar(current)
+                    local character = current.char
                     local direction = chardirections[character]
                     local reversed  = false
                     if rlo or override > 0 then
@@ -240,24 +223,24 @@ local function process(start)
                         end
                     elseif lro or override < 0 then
                         if direction == "r" or direction == "al" then
-                            setattr(current,a_state,s_isol)
+                            current[a_state] = s_isol
                             direction = "l"
                             reversed = true
                         end
                     end
                     if direction == "on" then
                         local mirror = charmirrors[character]
-                        if mirror and fontchar[getfont(current)][mirror] then
+                        if mirror and fontchar[current.font][mirror] then
                             local class = charclasses[character]
                             if class == "open" then
                                 if nextisright(current) then
                                     if autodir >= 0 then
                                         force_auto_right_before(direction)
                                     end
-                                    setfield(current,"char",mirror)
+                                    current.char = mirror
                                     done = true
                                 elseif autodir < 0 then
-                                    setfield(current,"char",mirror)
+                                    current.char = mirror
                                     done = true
                                 else
                                     mirror = false
@@ -268,14 +251,14 @@ local function process(start)
                                 local fencedir = fences[#fences]
                                 fences[#fences] = nil
                                 if fencedir < 0 then
-                                    setfield(current,"char",mirror)
+                                    current.char = mirror
                                     done = true
                                     force_auto_right_before(direction)
                                 else
                                     mirror = false
                                 end
                             elseif autodir < 0 then
-                                setfield(current,"char",mirror)
+                                current.char = mirror
                                 done = true
                             else
                                 mirror = false
@@ -353,9 +336,9 @@ local function process(start)
                     -- we do nothing
                 end
             elseif id == whatsit_code then
-                local subtype = getsubtype(current)
+                local subtype = current.subtype
                 if subtype == localpar_code then
-                    local dir = getfield(current,"dir")
+                    local dir = current.dir
                     if dir == 'TRT' then
                         autodir = -1
                     elseif dir == 'TLT' then
@@ -368,7 +351,7 @@ local function process(start)
                     if finish then
                         finish_auto_before()
                     end
-                    local dir = getfield(current,"dir")
+                    local dir = current.dir
                     if dir == "+TRT" then
                         finish, autodir = "TRT", -1
                     elseif dir == "-TRT" then
@@ -387,7 +370,7 @@ local function process(start)
             elseif finish then
                 finish_auto_before()
             end
-            local cn = getnext(current)
+            local cn = current.next
             if cn then
                 -- we're okay
             elseif finish then
@@ -407,7 +390,7 @@ local function process(start)
         end
     end
 
-    return tonode(head), done
+    return head, done
 
 end
 

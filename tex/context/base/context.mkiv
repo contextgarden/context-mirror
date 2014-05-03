@@ -28,8 +28,8 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2014.02.14 17:07}
-\edef\contextkind   {beta}
+\edef\contextversion{2014.01.03 00:40}
+\edef\contextkind   {current}
 
 %D For those who want to use this:
 
@@ -143,6 +143,7 @@
 
 \loadmarkfile{node-fin}
 \loadmarkfile{node-mig}
+\loadmarkfile{typo-bld} % par builders
 %loadmarkfile{node-pag}
 
 \loadmarkfile{back-ini}
@@ -170,7 +171,6 @@
 %loadmarkfile{supp-num} % obsolete
 
 \loadmarkfile{typo-ini}
-\loadmarkfile{typo-bld} % par builders
 
 \loadmkvifile{file-syn}
 \loadmkvifile{file-mod}
@@ -357,7 +357,6 @@
 \loadmkvifile{font-sel}
 
 \loadmarkfile{typo-tal}
-\loadmarkfile{typo-par} % par builders (uses fonts)
 
 \loadmarkfile{tabl-com}
 \loadmarkfile{tabl-pln}
@@ -402,7 +401,7 @@
 \loadmarkfile{scrp-ini}
 
 \loadmarkfile{lang-wrd} % can be optional (discussion with mm sideeffect)
-\loadmarkfile{lang-rep} % can be optional (bt 2013 side effect)
+%loadmarkfile{lang-rep} % can be optional (bt 2013 side effect)
 
 \loadmarkfile{prop-ini} % only for downward compatibility
 
@@ -477,17 +476,8 @@
 
 \loadmarkfile{lang-spa} % will become obsolete
 
-% old bibtex support: (will be m-oldbibtex.mkiv)
-
-% \loadmarkfile{bibl-bib}
-% \loadmarkfile{bibl-tra}
-
-% new bibtex support:
-
-\loadmarkfile{publ-ini}
-\loadmarkfile{publ-tra}
-\loadmarkfile{publ-xml}
-\loadmarkfile{publ-old}
+\loadmarkfile{bibl-bib}
+\loadmarkfile{bibl-tra}
 
 %loadmarkfile{x-xtag}  % no longer preloaded
 

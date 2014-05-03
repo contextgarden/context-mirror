@@ -22,29 +22,14 @@ report_characters = logs.reporter("typesetting","characters")
 
 local nodes, node = nodes, node
 
-local nuts               = nodes.nuts
-
-local tonode             = nuts.tonode
-local tonut              = nuts.tonut
-
-local getfield           = nuts.getfield
-local setfield           = nuts.setfield
-local getnext            = nuts.getnext
-local getprev            = nuts.getprev
-local getid              = nuts.getid
-local getattr            = nuts.getattr
-local setattr            = nuts.setattr
-local getfont            = nuts.getfont
-local getchar            = nuts.getchar
-
-local insert_node_after  = nuts.insert_after
-local remove_node        = nuts.remove
-local copy_node_list     = nuts.copy_list
-local traverse_id        = nuts.traverse_id
+local insert_node_after  = nodes.insert_after
+local remove_node        = nodes.remove
+local copy_node_list     = nodes.copy_list
+local traverse_id        = nodes.traverse_id
 
 local tasks              = nodes.tasks
 
-local nodepool           = nuts.pool
+local nodepool           = nodes.pool
 local new_penalty        = nodepool.penalty
 local new_glue           = nodepool.glue
 
@@ -78,47 +63,48 @@ local c_zero   = byte('0')
 local c_period = byte('.')
 
 local function inject_quad_space(unicode,head,current,fraction)
-    local attr = getfield(current,"attr")
+    local attr = current.attr
     if fraction ~= 0 then
-        fraction = fraction * fontquads[getfont(current)]
+        fraction = fraction * fontquads[current.font]
     end
     local glue = new_glue(fraction)
-    setfield(glue,"attr",attr)
-    setfield(current,"attr",nil)
-    setattr(glue,a_character,unicode)
+--     glue.attr = copy_node_list(attr)
+    glue.attr = attr
+    current.attr = nil
+    glue[a_character] = unicode
     head, current = insert_node_after(head,current,glue)
     return head, current
 end
 
 local function inject_char_space(unicode,head,current,parent)
-    local attr = getfield(current,"attr")
-    local font = getfont(current)
+    local attr = current.attr
+    local font = current.font
     local char = fontcharacters[font][parent]
     local glue = new_glue(char and char.width or fontparameters[font].space)
-    setfield(glue,"attr",attr)
-    setfield(current,"attr",nil)
-    setattr(glue,a_character,unicode)
+    glue.attr = current.attr
+    current.attr = nil
+    glue[a_character] = unicode
     head, current = insert_node_after(head,current,glue)
     return head, current
 end
 
 local function inject_nobreak_space(unicode,head,current,space,spacestretch,spaceshrink)
-    local attr = getfield(current,"attr")
+    local attr = current.attr
     local glue = new_glue(space,spacestretch,spaceshrink)
     local penalty = new_penalty(10000)
-    setfield(glue,"attr",attr)
-    setfield(current,"attr",nil)
-    setattr(glue,a_character,unicode)
+    glue.attr = attr
+    current.attr = nil
+    glue[a_character] = unicode
     head, current = insert_node_after(head,current,penalty)
     head, current = insert_node_after(head,current,glue)
     return head, current
 end
 
 local function nbsp(head,current)
-    local para = fontparameters[getfont(current)]
-    if getattr(current,a_alignstate) == 1 then -- flushright
+    local para = fontparameters[current.font]
+    if current[a_alignstate] == 1 then -- flushright
         head, current = inject_nobreak_space(0x00A0,head,current,para.space,0,0)
-        setfield(current,"subtype",space_skip_code)
+        current.subtype = space_skip_code
     else
         head, current = inject_nobreak_space(0x00A0,head,current,para.space,para.spacestretch,para.spaceshrink)
     end
@@ -135,7 +121,7 @@ end
 
 function characters.replacenbspaces(head)
     for current in traverse_id(glyph_code,head) do
-        if getchar(current) == 0x00A0 then
+        if current.char == 0x00A0 then
             local h = nbsp(head,current)
             if h then
                 head = remove_node(h,current,true)
@@ -161,21 +147,21 @@ local methods = {
     -- don't have the 'local' value.
 
     [0x00A0] = function(head,current) -- nbsp
-        local next = getnext(current)
-        if next and getid(next) == glyph_code then
-            local char = getchar(next)
+        local next = current.next
+        if next and next.id == glyph_code then
+            local char = next.char
             if char == 0x200C or char == 0x200D then -- nzwj zwj
-                next = getnext(next)
-				if next and nbsphash[getchar(next)] then
+                next = next.next
+				if next and nbsphash[next.char] then
                     return false
                 end
             elseif nbsphash[char] then
                 return false
             end
         end
-        local prev = getprev(current)
-        if prev and getid(prev) == glyph_code and nbsphash[getchar(prev)] then
-            return false
+        local prev = current.prev
+        if prev and prev.id == glyph_code and nbsphash[prev.char] then
+            return false -- kannada
         end
         return nbsp(head,current)
     end,
@@ -229,11 +215,11 @@ local methods = {
     end,
 
     [0x202F] = function(head,current) -- narrownobreakspace
-        return inject_nobreak_space(0x202F,head,current,fontquads[getfont(current)]/8)
+        return inject_nobreak_space(0x202F,head,current,fontquads[current.font]/8)
     end,
 
     [0x205F] = function(head,current) -- math thinspace
-        return inject_nobreak_space(0x205F,head,current,fontparameters[getfont(current)].space/8)
+        return inject_nobreak_space(0x205F,head,current,fontparameters[current.font].space/8)
     end,
 
  -- [0xFEFF] = function(head,current) -- zerowidthnobreakspace
@@ -242,15 +228,14 @@ local methods = {
 
 }
 
-function characters.handler(head) -- todo: use traverse_id
-    head = tonut(head)
+function characters.handler(head)
     local current = head
     local done = false
     while current do
-        local id = getid(current)
+        local id = current.id
         if id == glyph_code then
-            local next = getnext(current)
-            local char = getchar(current)
+            local next = current.next
+            local char = current.char
             local method = methods[char]
             if method then
                 if trace_characters then
@@ -264,8 +249,8 @@ function characters.handler(head) -- todo: use traverse_id
             end
             current = next
         else
-            current = getnext(current)
+            current = current.next
         end
     end
-    return tonode(head), done
+    return head, done
 end

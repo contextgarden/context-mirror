@@ -1026,12 +1026,12 @@
 
 \unexpanded\def\startlayout[#1]%
   {\page
-   \globalpushmacro\currentlayout
+   \pushmacro\currentlayout
    \doiflayoutdefinedelse{#1}{\setuplayout[#1]}\donothing} % {\setuplayout[\currentlayout]}}
 
 \unexpanded\def\stoplayout
   {\page
-   \globalpopmacro\currentlayout
+   \popmacro\currentlayout
    \setuplayout[\currentlayout]}
 
 % NOG EENS NAGAAN WANNEER NU GLOBAL EN WANNEER NIET
@@ -1275,7 +1275,7 @@
   {\globalpopmacro\currentlayout
    \globalpopmacro\page_paper_restore
    \page_paper_restore
-   \setuplayout[\currentlayout]\relax} % explicit !
+   \setuplayout\relax}
 
 %D \macros
 %D   {showprint, showframe, showlayout, showsetups}

@@ -41,6 +41,13 @@ tracers.characters     = char_tracers
 local step_tracers     = tracers.steppers or { }
 tracers.steppers       = step_tracers
 
+local texsetbox        = tex.setbox
+
+local copy_node_list   = nodes.copy_list
+local hpack_node_list  = nodes.hpack
+local free_node_list   = nodes.flush_list
+local traverse_nodes   = nodes.traverse
+
 local nodecodes        = nodes.nodecodes
 local whatcodes        = nodes.whatcodes
 
@@ -52,32 +59,12 @@ local glue_code        = nodecodes.glue
 local kern_code        = nodecodes.kern
 local rule_code        = nodecodes.rule
 local whatsit_code     = nodecodes.whatsit
+local spec_code        = nodecodes.glue_spec
 
 local localpar_code    = whatcodes.localpar
 local dir_code         = whatcodes.dir
 
-local nuts             = nodes.nuts
-local tonut            = nuts.tonut
-local tonode           = nuts.tonode
-
-local getfield         = nuts.getfield
-local setfield         = nuts.setfield
-local getnext          = nuts.getnext
-local getprev          = nuts.getprev
-local getid            = nuts.getid
-local getfont          = nuts.getfont
-local getsubtype       = nuts.getsubtype
-local getchar          = nuts.getchar
-local getlist          = nuts.getlist
-local setbox           = nuts.setbox
-
-local copy_node_list   = nuts.copy_list
-local hpack_node_list  = nuts.hpack
-local free_node_list   = nuts.flush_list
-local traverse_nodes   = nuts.traverse
-local protect_glyphs   = nuts.protect_glyphs
-
-local nodepool         = nuts.pool
+local nodepool         = nodes.pool
 local new_glyph        = nodepool.glyph
 
 local formatters       = string.formatters
@@ -92,17 +79,16 @@ local fontproperties   = hashes.properties
 local fontparameters   = hashes.parameters
 
 function char_tracers.collect(head,list,tag,n)
-    head = tonut(head)
     n = n or 0
     local ok, fn = false, nil
     while head do
-        local id = getid(head)
+        local id = head.id
         if id == glyph_code then
-            local f = getfont(head)
+            local f = head.font
             if f ~= fn then
                 ok, fn = false, f
             end
-            local c = getchar(head)
+            local c = head.char
             local i = fontidentifiers[f].indices[c] or 0
             if not ok then
                 ok = true
@@ -117,7 +103,7 @@ function char_tracers.collect(head,list,tag,n)
         else
             ok = false
         end
-        head = getnext(head)
+        head = head.next
     end
 end
 
@@ -176,12 +162,12 @@ function char_tracers.indices(t,decimal)
 end
 
 function char_tracers.start()
-    local npc = handlers.characters -- should accept nuts too
+    local npc = handlers.characters
     local list = { }
     function handlers.characters(head)
         local n = #list
         char_tracers.collect(head,list,'before',n)
-        local h, d = npc(tonode(head)) -- for the moment tonode
+        local h, d = npc(head)
         char_tracers.collect(head,list,'after',n)
         if #list > n then
             list[#list+1] = { }
@@ -248,8 +234,8 @@ end
 function step_tracers.glyphs(n,i)
     local c = collection[i]
     if c then
-        local b = hpack_node_list(copy_node_list(c)) -- multiple arguments
-        setbox(n,b)
+        local b = hpack_node_list(copy_node_list(c)) -- multiple arguments 
+        texsetbox(n,b)
     end
 end
 
@@ -257,8 +243,8 @@ function step_tracers.features()
     -- we cannot use first_glyph here as it only finds characters with subtype < 256
     local f = collection[1]
     while f do
-        if getid(f) == glyph_code then
-            local tfmdata, t = fontidentifiers[getfont(f)], { }
+        if f.id == glyph_code then
+            local tfmdata, t = fontidentifiers[f.font], { }
             for feature, value in table.sortedhash(tfmdata.shared.features) do
                 if feature == "number" or feature == "features" then
                     -- private
@@ -279,24 +265,22 @@ function step_tracers.features()
             end
             return
         end
-        f = getnext(f)
+        f = f.next
     end
 end
 
 function tracers.fontchar(font,char)
     local n = new_glyph()
-    setfield(n,"font",font)
-    setfield(n,"char",char)
-    setfield(n,"subtype",256)
-    context(tonode(n))
+    n.font, n.char, n.subtype = font, char, 256
+    context(n)
 end
 
 function step_tracers.font(command)
     local c = collection[1]
     while c do
-        local id = getid(c)
+        local id = c.id
         if id == glyph_code then
-            local font = getfont(c)
+            local font = c.font
             local name = file.basename(fontproperties[font].filename or "unknown")
             local size = fontparameters[font].size or 0
             if command then
@@ -306,7 +290,7 @@ function step_tracers.font(command)
             end
             return
         else
-            c = getnext(c)
+            c = c.next
         end
     end
 end
@@ -314,22 +298,22 @@ end
 function step_tracers.codes(i,command)
     local c = collection[i]
     while c do
-        local id = getid(c)
+        local id = c.id
         if id == glyph_code then
             if command then
-                local f, c = getfont(c), getchar(c)
+                local f, c = c.font,c.char
                 local d = fontdescriptions[f]
                 local d = d and d[c]
                 context[command](f,c,d and d.class or "")
             else
-                context("[%s:U+%04X]",getfont(c),getchar(c))
+                context("[%s:U+%04X]",c.font,c.char)
             end
-        elseif id == whatsit_code and (getsubtype(c) == localpar_code or getsubtype(c) == dir_code) then
-            context("[%s]",getfield(c,"dir"))
+        elseif id == whatsit_code and (c.subtype == localpar_code or c.subtype == dir_code) then
+            context("[%s]",c.dir)
         else
             context("[%s]",nodecodes[id])
         end
-        c = getnext(c)
+        c = c.next
     end
 end
 
@@ -355,10 +339,9 @@ end
 function step_tracers.check(head)
     if collecting then
         step_tracers.reset()
-        local n = copy_node_list(tonut(head))
+        local n = copy_node_list(head)
         injections.handler(n,nil,"trace",true)
-     -- handlers.protectglyphs(n) -- can be option
-        protect_glyphs(n)
+        handlers.protectglyphs(n) -- can be option
         collection[1] = n
     end
 end
@@ -367,10 +350,9 @@ function step_tracers.register(head)
     if collecting then
         local nc = #collection+1
         if messages[nc] then
-            local n = copy_node_list(tonut(head))
+            local n = copy_node_list(head)
             injections.handler(n,nil,"trace",true)
-         -- handlers.protectglyphs(n) -- can be option
-            protect_glyphs(n)
+            handlers.protectglyphs(n) -- can be option
             collection[nc] = n
         end
     end
@@ -393,28 +375,21 @@ local threshold = 65536
 
 local function toutf(list,result,nofresult,stopcriterium)
     if list then
-        for n in traverse_nodes(tonut(list)) do
-            local id = getid(n)
+        for n in traverse_nodes(list) do
+            local id = n.id
             if id == glyph_code then
-                local components = getfield(n,"components")
+                local components = n.components
                 if components then
                     result, nofresult = toutf(components,result,nofresult)
                 else
-                    local c = getchar(n)
-                    local fc = fontcharacters[getfont(n)]
+                    local c = n.char
+                    local fc = fontcharacters[n.font]
                     if fc then
-                        local fcc = fc[c]
-                        if fcc then
-                            -- == fromunicode
-                            local u = fcc.tounicode
-                            if u then
-                                for s in gmatch(u,"....") do
-                                    nofresult = nofresult + 1
-                                    result[nofresult] = utfchar(tonumber(s,16))
-                                end
-                            else
+                        local u = fc[c].tounicode
+                        if u then
+                            for s in gmatch(u,"....") do
                                 nofresult = nofresult + 1
-                                result[nofresult] = utfchar(c)
+                                result[nofresult] = utfchar(tonumber(s,16))
                             end
                         else
                             nofresult = nofresult + 1
@@ -422,23 +397,23 @@ local function toutf(list,result,nofresult,stopcriterium)
                         end
                     else
                         nofresult = nofresult + 1
-                        result[nofresult] = f_unicode(c)
+                        result[nofresult] = utfchar(c)
                     end
                 end
             elseif id == disc_code then
-                result, nofresult = toutf(getfield(n,"replace"),result,nofresult) -- needed?
+                result, nofresult = toutf(n.replace,result,nofresult) -- needed?
             elseif id == hlist_code or id == vlist_code then
              -- if nofresult > 0 and result[nofresult] ~= " " then
              --     nofresult = nofresult + 1
              --     result[nofresult] = " "
              -- end
-                result, nofresult = toutf(getlist(n),result,nofresult)
+                result, nofresult = toutf(n.list,result,nofresult)
             elseif id == glue_code then
                 if nofresult > 0 and result[nofresult] ~= " " then
                     nofresult = nofresult + 1
                     result[nofresult] = " "
                 end
-            elseif id == kern_code and getfield(n,"kern") > threshold then
+            elseif id == kern_code and n.kern > threshold then
                 if nofresult > 0 and result[nofresult] ~= " " then
                     nofresult = nofresult + 1
                     result[nofresult] = " "

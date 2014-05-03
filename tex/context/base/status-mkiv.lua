@@ -2014,13 +2014,13 @@ return {
   {
    category = "mkiv",
    filename = "bibl-bib",
-   loading  = "on demand",
+   loading  = "always",
    status   = "pending",
   },
   {
    category = "mkiv",
    filename = "bibl-tra",
-   loading  = "on demand",
+   loading  = "always",
    status   = "pending",
   },
   {
@@ -2534,60 +2534,6 @@ return {
    loading  = "on demand",
    status   = "okay",
   },
-  {
-   category = "mkiv",
-   filename = "publ-ini",
-   loading  = "always",
-   status   = "pending",
-  },
-  {
-   category = "mkiv",
-   filename = "publ-old",
-   loading  = "always",
-   status   = "pending",
-  },
-  {
-   category = "mkiv",
-   filename = "publ-tra",
-   loading  = "always",
-   status   = "pending",
-  },
-  {
-   category = "mkiv",
-   filename = "publ-usr",
-   loading  = "always",
-   status   = "pending",
-  },
-  {
-   category = "mkiv",
-   filename = "publ-xml",
-   loading  = "always",
-   status   = "pending",
-  },
-  {
-   category = "mkiv",
-   filename = "publ-imp-apa",
-   loading  = "always",
-   status   = "pending",
-  },
-  {
-   category = "mkiv",
-   filename = "publ-imp-cite",
-   loading  = "always",
-   status   = "pending",
-  },
-  {
-   category = "mkiv",
-   filename = "publ-imp-definitions",
-   loading  = "always",
-   status   = "pending",
-  },
-  {
-   category = "mkiv",
-   filename = "publ-imp-commands",
-   loading  = "always",
-   status   = "pending",
-  },
  },
  lua = {
   {
@@ -2660,12 +2606,12 @@ return {
   {
    category = "lua",
    filename = "bibl-bib",
-   loading  = "on demand",
+   status   = "todo",
   },
   {
    category = "lua",
    filename = "bibl-tra",
-   loading  = "on demand",
+   status   = "todo",
   },
   {
    category = "lua",
@@ -5050,42 +4996,6 @@ return {
    category = "lua",
    filename = "x-mathml",
    status   = "todo",
-  },
-  {
-   category = "lua",
-   filename = "publ-ini",
-   loading  = "publ-ini.mkiv",
-   status   = "pending",
-  },
-  {
-   category = "lua",
-   filename = "publ-aut",
-   loading  = "publ-ini.mkiv",
-   status   = "pending",
-  },
-  {
-   category = "lua",
-   filename = "publ-dat",
-   loading  = "publ-ini.mkiv",
-   status   = "pending",
-  },
-  {
-   category = "lua",
-   filename = "publ-oth",
-   loading  = "publ-ini.mkiv",
-   status   = "pending",
-  },
-  {
-   category = "lua",
-   filename = "publ-tra",
-   loading  = "publ-ini.mkiv",
-   status   = "pending",
-  },
-  {
-   category = "lua",
-   filename = "publ-usr",
-   loading  = "publ-ini.mkiv",
-   status   = "pending",
   },
  },
  metafun = {

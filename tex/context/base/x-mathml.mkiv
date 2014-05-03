@@ -2283,7 +2283,7 @@
 \unexpanded\def\mmloverbs#1{\mmlexecuteifdefined\mmlbasecommand\relax{\mmlunexpandedsecond{#1}}\relax}
 
 \startxmlsetups mml:mover
-    \edef\mmlovertoken{\mmlextensible{\xmlraw{#1}{/mml:*[2]}}}% /text()
+    \edef\mmlovertoken{\xmlraw{#1}{/mml:*[2]}}% /text()
     \doifelseutfmathabove\mmlovertoken {
         \edef\mmlovercommand{\utfmathcommandabove\mmlovertoken}
         \mmloverof{#1}
@@ -2295,7 +2295,7 @@
         } {
             \edef\mmlbasecommand{\utfmathfiller\mmlbasetoken}
             \edef\mmlovercommand{\utfmathfiller\mmlovertoken}
-            \mmlundertriplet{\mmloverbf{#1}}{\mmloveros{#1}}{}%\relax
+            \mmlovertriplet{\mmloveros{#1}}{\mmloverbf{#1}}\relax
         }
     }
   % \limits % spoils spacing
@@ -2321,18 +2321,13 @@
 %   % \limits % spoils spacing
 % \stopxmlsetups
 
-% do this in lua
-
-\def\mmlextensible#1{\ctxmodulemathml{extensible(\!!bs#1\!!es)}}
-
 \unexpanded\def\mmlunderuf#1{\mmlexecuteifdefined\mmlundercommand\relax  {\mmlunexpandedfirst {#1}}\relax}
 \unexpanded\def\mmlunderus#1{\mmlexecuteifdefined\mmlundercommand        {\mmlunexpandedsecond{#1}}\relax}
 \unexpanded\def\mmlunderbf#1{\mmlexecuteifdefined\mmlbasecommand         {\mmlunexpandedfirst {#1}}\relax}
-%unexpanded\def\mmlunderbs#1{\mmlexecuteifdefined\mmlbasecommand \relax{}{\mmlunexpandedsecond{#1}}\relax}
-\unexpanded\def\mmlunderbs#1{\mmlexecuteifdefined\mmlbasecommand \relax  {\mmlunexpandedsecond{#1}}\relax}
+\unexpanded\def\mmlunderbs#1{\mmlexecuteifdefined\mmlbasecommand \relax{}{\mmlunexpandedsecond{#1}}\relax}
 
 \startxmlsetups mml:munder
-    \edef\mmlundertoken{\mmlextensible{\xmlraw{#1}{/mml:*[2]}}}% /text()
+    \edef\mmlundertoken{\xmlraw{#1}{/mml:*[2]}}% /text()
     \doifelseutfmathbelow\mmlundertoken {%
         \edef\mmlundercommand{\utfmathcommandbelow\mmlundertoken}
         \mmlunderuf{#1}
@@ -2344,7 +2339,7 @@
         } {
             \edef\mmlbasecommand {\utfmathfiller\mmlbasetoken}
             \edef\mmlundercommand{\utfmathfiller\mmlundertoken}
-            \mmlundertriplet{\mmlunderbf{#1}}{}{\mmlunderus{#1}}%\relax
+            \mmlundertriplet{\mmlunderus{#1}}{\mmlunderbf{#1}}\relax
         }
     }
   % \limits % spoils spacing

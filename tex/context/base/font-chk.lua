@@ -41,18 +41,9 @@ local enableaction       = tasks.enableaction
 local disableaction      = tasks.disableaction
 
 local glyph_code         = nodes.nodecodes.glyph
-
-local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-local tonode             = nuts.tonode
-
-local getfont            = nuts.getfont
-local getchar            = nuts.getchar
-local setfield           = nuts.setfield
-
-local traverse_id        = nuts.traverse_id
-local remove_node        = nuts.remove
-local insert_node_after  = nuts.insert_after
+local traverse_id        = node.traverse_id
+local remove_node        = nodes.remove
+local insert_node_after  = node.insert_after
 
 -- maybe in fonts namespace
 -- deletion can be option
@@ -214,10 +205,9 @@ end
 
 function checkers.missing(head)
     local lastfont, characters, found = nil, nil, nil
-    head = tonut(head)
     for n in traverse_id(glyph_code,head) do -- faster than while loop so we delay removal
-        local font = getfont(n)
-        local char = getchar(n)
+        local font = n.font
+        local char = n.char
         if font ~= lastfont then
             characters = fontcharacters[font]
             lastfont = font
@@ -246,8 +236,8 @@ function checkers.missing(head)
     elseif action == "replace" then
         for i=1,#found do
             local n = found[i]
-            local font = getfont(n)
-            local char = getchar(n)
+            local font = n.font
+            local char = n.char
             local tfmdata = fontdata[font]
             local properties = tfmdata.properties
             local privates = properties.privates
@@ -265,13 +255,13 @@ function checkers.missing(head)
                 head = remove_node(head,n,true)
             else
                 -- good, we have \definefontfeature[default][default][missing=yes]
-                setfield(n,"char",p)
+                n.char = p
             end
         end
     else
         -- maye write a report to the log
     end
-    return tonode(head), false
+    return head, false
 end
 
 local relevant = { "missing (will be deleted)", "missing (will be flagged)", "missing" }

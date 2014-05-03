@@ -30,25 +30,15 @@ local texsp = tex.sp
 ----- texsp = string.todimen -- because we cache this is much faster but no rounding
 
 local texgetcount       = tex.getcount
+local texgetbox         = tex.getbox
 local texsetcount       = tex.setcount
 local texget            = tex.get
 
 local pdf               = pdf -- h and v are variables
 
 local setmetatableindex = table.setmetatableindex
-
-local nuts              = nodes.nuts
-
-local getfield          = nuts.getfield
-local setfield          = nuts.setfield
-local getlist           = nuts.getlist
-local getbox            = nuts.getbox
-local getskip           = nuts.getskip
-
-local find_tail         = nuts.tail
-
-local new_latelua       = nuts.pool.latelua
-local new_latelua_node  = nodes.pool.latelua
+local new_latelua       = nodes.pool.latelua
+local find_tail         = node.slide
 
 local variables         = interfaces.variables
 local v_text            = variables.text
@@ -312,13 +302,13 @@ function commands.bcolumn(tag,register) -- name will change
     insert(columns,tag)
     column = tag
     if register then
-        context(new_latelua_node(f_b_column(tag)))
+        context(new_latelua(f_b_column(tag)))
     end
 end
 
 function commands.ecolumn(register) -- name will change
     if register then
-        context(new_latelua_node(f_e_column()))
+        context(new_latelua(f_e_column()))
     end
     remove(columns)
     column = columns[#columns]
@@ -350,10 +340,10 @@ function jobpositions.markregionbox(n,tag,correct)
         nofregions = nofregions + 1
         tag = f_region(nofregions)
     end
-    local box = getbox(n)
-    local w = getfield(box,"width")
-    local h = getfield(box,"height")
-    local d = getfield(box,"depth")
+    local box = texgetbox(n)
+    local w = box.width
+    local h = box.height
+    local d = box.depth
     tobesaved[tag] = {
         p = true,
         x = true,
@@ -365,18 +355,18 @@ function jobpositions.markregionbox(n,tag,correct)
     local push = new_latelua(f_b_region(tag))
     local pop  = new_latelua(f_e_region(tostring(correct))) -- todo: check if tostring is needed with formatter
     -- maybe we should construct a hbox first (needs experimenting) so that we can avoid some at the tex end
-    local head = getlist(box)
+    local head = box.list
     if head then
         local tail = find_tail(head)
-        setfield(head,"prev",push)
-        setfield(push,"next",head)
-        setfield(pop,"prev",tail)
-        setfield(tail,"next",pop)
+        head.prev = push
+        push.next = head
+        pop .prev = tail
+        tail.next = pop
     else -- we can have a simple push/pop
-        setfield(push,"next",pop)
-        setfield(pop,"prev",push)
+        push.next = pop
+        pop.prev = push
     end
-    setfield(box,"list",push)
+    box.list = push
 end
 
 function jobpositions.enhance(name)
@@ -385,7 +375,7 @@ end
 
 function commands.pos(name,t)
     tobesaved[name] = t
-    context(new_latelua_node(f_enhance(name)))
+    context(new_latelua(f_enhance(name)))
 end
 
 local nofparagraphs = 0
@@ -393,19 +383,19 @@ local nofparagraphs = 0
 function commands.parpos() -- todo: relate to localpar (so this is an intermediate variant)
     nofparagraphs = nofparagraphs + 1
     texsetcount("global","c_anch_positions_paragraph",nofparagraphs)
-    local strutbox = getbox("strutbox")
+    local strutbox = texgetbox("strutbox")
     local t = {
         p  = true,
         c  = true,
         r  = true,
         x  = true,
         y  = true,
-        h  = getfield(strutbox,"height"),
-        d  = getfield(strutbox,"depth"),
+        h  = strutbox.height,
+        d  = strutbox.depth,
         hs = texget("hsize"),
     }
-    local leftskip   = getfield(getskip("leftskip"),"width")
-    local rightskip  = getfield(getskip("rightskip"),"width")
+    local leftskip   = texget("leftskip").width
+    local rightskip  = texget("rightskip").width
     local hangindent = texget("hangindent")
     local hangafter  = texget("hangafter")
     local parindent  = texget("parindent")
@@ -430,7 +420,7 @@ function commands.parpos() -- todo: relate to localpar (so this is an intermedia
     end
     local tag = f_p_tag(nofparagraphs)
     tobesaved[tag] = t
-    context(new_latelua_node(f_enhance(tag)))
+    context(new_latelua(f_enhance(tag)))
 end
 
 function commands.posxy(name) -- can node.write be used here?
@@ -442,7 +432,7 @@ function commands.posxy(name) -- can node.write be used here?
         y = true,
         n = nofparagraphs > 0 and nofparagraphs or nil,
     }
-    context(new_latelua_node(f_enhance(name)))
+    context(new_latelua(f_enhance(name)))
 end
 
 function commands.poswhd(name,w,h,d)
@@ -457,7 +447,7 @@ function commands.poswhd(name,w,h,d)
         d = d,
         n = nofparagraphs > 0 and nofparagraphs or nil,
     }
-    context(new_latelua_node(f_enhance(name)))
+    context(new_latelua(f_enhance(name)))
 end
 
 function commands.posplus(name,w,h,d,extra)
@@ -473,22 +463,22 @@ function commands.posplus(name,w,h,d,extra)
         n = nofparagraphs > 0 and nofparagraphs or nil,
         e = extra,
     }
-    context(new_latelua_node(f_enhance(name)))
+    context(new_latelua(f_enhance(name)))
 end
 
 function commands.posstrut(name,w,h,d)
-    local strutbox = getbox("strutbox")
+    local strutbox = texgetbox("strutbox")
     tobesaved[name] = {
         p = true,
         c = column,
         r = true,
         x = true,
         y = true,
-        h = getfield(strutbox,"height"),
-        d = getfield(strutbox,"depth"),
+        h = strutbox.height,
+        d = strutbox.depth,
         n = nofparagraphs > 0 and nofparagraphs or nil,
     }
-    context(new_latelua_node(f_enhance(name)))
+    context(new_latelua(f_enhance(name)))
 end
 
 function jobpositions.getreserved(tag,n)

@@ -1051,8 +1051,6 @@
 		<cd:constant name='suffix' value='suffix'/>
 		<cd:constant name='suffixseparator' value='suffixseparator'/>
 		<cd:constant name='suffixstopper' value='suffixstopper'/>
-		<cd:constant name='surnamefirstnamesep' value='surnamefirstnamesep'/>
-		<cd:constant name='surnameinitialsep' value='surnameinitialsep'/>
 		<cd:constant name='surnamesep' value='surnamesep'/>
 		<cd:constant name='sx' value='sx'/>
 		<cd:constant name='sy' value='sy'/>

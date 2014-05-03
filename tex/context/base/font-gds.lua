@@ -46,12 +46,7 @@ local findfile           = resolvers.findfile
 
 local glyph_code         = nodes.nodecodes.glyph
 
-local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-local getfont            = nuts.getfont
-local getchar            = nuts.getchar
-local getattr            = nuts.getattr
-local traverse_id        = nuts.traverse_id
+local traverse_id        = nodes.traverse_id
 
 function fontgoodies.report(what,trace,goodies)
     if trace_goodies or trace then
@@ -316,16 +311,16 @@ local setnodecolor   = nodes.tracers.colors.set
 -- function colorschemes.coloring(head)
 --     local lastfont, lastscheme
 --     local done = false
---     for n in traverse_id(glyph_code,tonut(head)) do
---         local a = getattr(n,a_colorscheme)
+--     for n in traverse_id(glyph_code,head) do
+--         local a = n[a_colorscheme]
 --         if a then
---             local f = getfont(n)
+--             local f = n.font
 --             if f ~= lastfont then
 --                 lastscheme = fontproperties[f].colorscheme
 --                 lastfont   = f
 --             end
 --             if lastscheme then
---                 local sc = lastscheme[getchar(n)]
+--                 local sc = lastscheme[n.char]
 --                 if sc then
 --                     done = true
 --                     setnodecolor(n,"colorscheme:"..a..":"..sc) -- slow
@@ -343,21 +338,21 @@ local setnodecolor   = nodes.tracers.colors.set
 --     local lastattr   = nil
 --     local lastscheme = nil
 --     local lastprefix = nil
---     local done       = nil
---     for n in traverse_id(glyph_code,tonut(head)) do
---         local a = getattr(n,a_colorscheme)
+--     local done      = nil
+--     for n in traverse_id(glyph_code,head) do
+--         local a = n[a_colorscheme]
 --         if a then
 --             if a ~= lastattr then
 --                 lastattr   = a
 --                 lastprefix = "colorscheme:" .. a .. ":"
 --             end
---             local f = getfont(n)
+--             local f = n.font
 --             if f ~= lastfont then
 --                 lastfont   = f
 --                 lastscheme = fontproperties[f].colorscheme
 --             end
 --             if lastscheme then
---                 local sc = lastscheme[getchar(n)]
+--                 local sc = lastscheme[n.char]
 --                 if sc then
 --                     setnodecolor(n,lastprefix .. sc) -- slow
 --                     done = true
@@ -389,10 +384,10 @@ function colorschemes.coloring(head)
     local lastcache  = nil
     local lastscheme = nil
     local done       = nil
-    for n in traverse_id(glyph_code,tonut(head)) do
-        local a = getattr(n,a_colorscheme)
+    for n in traverse_id(glyph_code,head) do
+        local a = n[a_colorscheme]
         if a then
-            local f = getfont(n)
+            local f = n.font
             if f ~= lastfont then
                 lastfont   = f
                 lastscheme = fontproperties[f].colorscheme
@@ -402,7 +397,7 @@ function colorschemes.coloring(head)
                 lastcache = cache[a]
             end
             if lastscheme then
-                local sc = lastscheme[getchar(n)]
+                local sc = lastscheme[n.char]
                 if sc then
                     setnodecolor(n,lastcache[sc]) -- we could inline this one
                     done = true

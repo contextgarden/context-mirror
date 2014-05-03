@@ -22,108 +22,82 @@ local vlist_code         = nodecodes.vlist
 local attributelist_code = nodecodes.attributelist -- temporary
 local math_code          = nodecodes.math
 
-local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-local tonode             = nuts.tonode
-local vianuts            = nuts.vianuts
+local nodepool           = nodes.pool
 
-local getbox             = nuts.getbox
-local getnext            = nuts.getnext
-local getid              = nuts.getid
-local getsubtype         = nuts.getsubtype
-local getlist            = nuts.getlist
-local getfont            = nuts.getfont
-local getchar            = nuts.getchar
-local getattr            = nuts.getattr
-local setfield           = nuts.setfield
-local setattr            = nuts.setattr
-
-local traverse_nodes     = nuts.traverse
-local traverse_id        = nuts.traverse_id
-local free_node          = nuts.free
-local hpack_nodes        = nuts.hpack
-local unset_attribute    = nuts.unset_attribute
-local first_glyph        = nuts.first_glyph
-local copy_node          = nuts.copy
-local copy_node_list     = nuts.copy_list
-local find_tail          = nuts.tail
-local insert_node_after  = nuts.insert_after
-local isnode             = nuts.is_node
-
-local nodes_traverse_id  = nodes.traverse_id
-local nodes_first_glyph  = nodes.first_glyph
-
-local nodepool           = nuts.pool
 local new_glue           = nodepool.glue
 local new_glyph          = nodepool.glyph
+
+local traverse_nodes     = node.traverse
+local traverse_id        = node.traverse_id
+local free_node          = node.free
+local hpack_nodes        = node.hpack
+local unset_attribute    = node.unset_attribute
+local first_glyph        = node.first_glyph or node.first_character
+local copy_node          = node.copy
+local copy_node_list     = node.copy_list
+local slide_nodes        = node.slide
+local insert_node_after  = node.insert_after
+local isnode             = node.is_node
 
 local unsetvalue         = attributes.unsetvalue
 
 local current_font       = font.current
 
+local texgetbox          = tex.getbox
+
 local report_error       = logs.reporter("node-aux:error")
 
-local function repackhlist(list,...)
+function nodes.repackhlist(list,...)
+--~ nodes.showsimplelist(list)
     local temp, b = hpack_nodes(list,...)
-    list = getlist(temp)
-    setfield(temp,"list",nil)
+    list = temp.list
+    temp.list = nil
     free_node(temp)
     return list, b
 end
 
-nuts.repackhlist = repackhlist
-
-function nodes.repackhlist(list,...)
-    local list, b = repackhlist(tonut(list),...)
-    return tonode(list), b
-end
-
 local function set_attributes(head,attr,value)
     for n in traverse_nodes(head) do
-        setattr(n,attr,value)
-        local id = getid(n)
+        n[attr] = value
+        local id = n.id
         if id == hlist_node or id == vlist_node then
-            set_attributes(getlist(n),attr,value)
+            set_attributes(n.list,attr,value)
         end
     end
 end
 
 local function set_unset_attributes(head,attr,value)
     for n in traverse_nodes(head) do
-        if not getattr(n,attr) then
-            setattr(n,attr,value)
+        if not n[attr] then
+            n[attr] = value
         end
-        local id = getid(n)
+        local id = n.id
         if id == hlist_code or id == vlist_code then
-            set_unset_attributes(getlist(n),attr,value)
+            set_unset_attributes(n.list,attr,value)
         end
     end
 end
 
 local function unset_attributes(head,attr)
     for n in traverse_nodes(head) do
-        setattr(n,attr,unsetvalue)
-        local id = getid(n)
+        n[attr] = unsetvalue
+        local id = n.id
         if id == hlist_code or id == vlist_code then
-            unset_attributes(getlist(n),attr)
+            unset_attributes(n.list,attr)
         end
     end
 end
 
--- for old times sake
+nodes.setattribute       = node.set_attribute
+nodes.getattribute       = node.has_attribute
+nodes.unsetattribute     = node.unset_attribute
+nodes.has_attribute      = node.has_attribute
 
-nuts.setattribute        = nuts.setattr                      nodes.setattribute       = nodes.setattr
-nuts.getattribute        = nuts.getattr                      nodes.getattribute       = nodes.getattr
-nuts.unsetattribute      = nuts.unset_attribute              nodes.unsetattribute     = nodes.unset_attribute
-nuts.has_attribute       = nuts.has_attribute                nodes.has_attribute      = nodes.has_attribute
-nuts.firstglyph          = nuts.first_glyph                  nodes.firstglyph         = nodes.first_glyph
+nodes.firstglyph         = first_glyph
+nodes.setattributes      = set_attributes
+nodes.setunsetattributes = set_unset_attributes
+nodes.unsetattributes    = unset_attributes
 
-nuts.setattributes       = set_attributes                    nodes.setattributes      = vianuts(set_attributes)
-nuts.setunsetattributes  = set_unset_attributes              nodes.setunsetattributes = vianuts(set_unset_attributes)
-nuts.unsetattributes     = unset_attributes                  nodes.unsetattributes    = vianuts(unset_attributes)
-
--- history:
---
 -- function nodes.is_skipable(a,id)  -- skipable nodes at the margins during character protrusion
 --     return (
 --             id ~= glyph_node
@@ -132,26 +106,29 @@ nuts.unsetattributes     = unset_attributes                  nodes.unsetattribut
 --         or  id == adjust_node
 --         or  id == penalty_node
 --         or (id == glue_node    and a.spec.writable)
---         or (id == disc_node    and getfield(a,"pre") == nil and getfield(a,"post") == nil and getfield(a,"replace") == nil)
---         or (id == math_node    and getfield(a,"surround") == 0)
---         or (id == kern_node    and (getfield(a,"kern") == 0 or getsubtype(subtype) == NORMAL))
---         or (id == hlist_node   and getfield(a,"width") == 0 and getfield(a,"height") == 0 and getfield(a,"depth") == 0 and getlist(a) == nil)
---         or (id == whatsit_node and getsubtype(a) ~= pdf_refximage_node and getsubtype(a) ~= pdf_refxform_node)
+--         or (id == disc_node    and a.pre == nil and a.post == nil and a.replace == nil)
+--         or (id == math_node    and a.surround == 0)
+--         or (id == kern_node    and (a.kern == 0 or a.subtype == NORMAL))
+--         or (id == hlist_node   and a.width == 0 and a.height == 0 and a.depth == 0 and a.list == nil)
+--         or (id == whatsit_node and a.subtype ~= pdf_refximage_node and a.subtype ~= pdf_refxform_node)
 --     )
 -- end
+
+-- history:
+--
 --
 -- local function glyph_width(a)
---     local ch = chardata[getfont(a)][getchar(a)]
+--     local ch = chardata[a.font][a.char]
 --     return (ch and ch.width) or 0
 -- end
 --
 -- local function glyph_total(a)
---     local ch = chardata[getfont(a)][getchar(a)]
+--     local ch = chardata[a.font][a.char]
 --     return (ch and (ch.height+ch.depth)) or 0
 -- end
 --
 -- local function non_discardable(a) -- inline
---     return getid(id) < math_node -- brrrr
+--     return a.id < math_node -- brrrr
 -- end
 --
 -- local function calculate_badness(t,s)
@@ -206,36 +183,8 @@ nuts.unsetattributes     = unset_attributes                  nodes.unsetattribut
 --         return -u
 --     end
 -- end
---
--- if not node.end_of_math then
---     function node.end_of_math(n)
---         for n in traverse_id(math_code,getnext(next)) do
---             return n
---         end
---     end
--- end
---
--- nodes.endofmath = node.end_of_math
---
--- local function firstline(n)
---     while n do
---         local id = getid(n)
---         if id == hlist_code then
---             if getsubtype(n) == line_code then
---                 return n
---             else
---                 return firstline(getlist(n))
---             end
---         elseif id == vlist_code then
---             return firstline(getlist(n))
---         end
---         n = getnext(n)
---     end
--- end
---
--- nodes.firstline = firstline
 
-function nuts.firstcharacter(n,untagged) -- tagged == subtype > 255
+function nodes.firstcharacter(n,untagged) -- tagged == subtype > 255
     if untagged then
         return first_glyph(n)
     else
@@ -245,37 +194,43 @@ function nuts.firstcharacter(n,untagged) -- tagged == subtype > 255
     end
 end
 
--- function nodes.firstcharacter(n,untagged) -- tagged == subtype > 255
---     if untagged then
---         return nodes_first_glyph(n)
---     else
---         for g in nodes_traverse_id(glyph_code,n) do
---             return g
---         end
---     end
--- end
-
-local function firstcharinbox(n)
-    local l = getlist(getbox(n))
+function nodes.firstcharinbox(n)
+    local l = texgetbox(n).list
     if l then
         for g in traverse_id(glyph_code,l) do
-            return getchar(g)
+            return g.char
         end
     end
     return 0
 end
 
-nuts .firstcharinbox = firstcharinbox
-nodes.firstcharinbox = firstcharinbox
-nodes.firstcharacter = vianuts(firstcharacter)
-
-function commands.buildtextaccent(n)
-    local char = firstcharinbox(n)
-    if char > 0 then
-     -- context.accent(false,char)
-        context([[\accent%s\relax]],char)
+if not node.end_of_math then
+    function node.end_of_math(n)
+        for n in traverse_id(math_code,n.next) do
+            return n
+        end
     end
 end
+
+nodes.endofmath = node.end_of_math
+
+-- local function firstline(n)
+--     while n do
+--         local id = n.id
+--         if id == hlist_code then
+--             if n.subtype == line_code then
+--                 return n
+--             else
+--                 return firstline(n.list)
+--             end
+--         elseif id == vlist_code then
+--             return firstline(n.list)
+--         end
+--         n = n.next
+--     end
+-- end
+
+-- nodes.firstline = firstline
 
 -- this depends on fonts, so we have a funny dependency ... will be
 -- sorted out .. we could make tonodes a plugin into this
@@ -287,8 +242,10 @@ local function tonodes(str,fnt,attr) -- (str,template_glyph) -- moved from blob-
     local head, tail, space, fnt, template = nil, nil, nil, nil, nil
     if not fnt then
         fnt = current_font()
-    elseif type(fnt) ~= "number" and getid(fnt) == glyph_code then -- so it has to be a real node
-        fnt, template = nil, tonut(fnt)
+    elseif type(fnt) ~= "number" and fnt.id == "glyph" then
+        fnt, template = nil, fnt
+ -- else
+     -- already a number
     end
     for s in utfvalues(str) do
         local n
@@ -302,12 +259,12 @@ local function tonodes(str,fnt,attr) -- (str,template_glyph) -- moved from blob-
             end
         elseif template then
             n = copy_node(template)
-            setvalue(n,"char",s)
+            n.char = s
         else
             n = new_glyph(fnt,s)
         end
         if attr then -- normally false when template
-            setfield(n,"attr",copy_node_list(attr))
+            n.attr = copy_node_list(attr)
         end
         if head then
             insert_node_after(head,tail,n)
@@ -319,130 +276,69 @@ local function tonodes(str,fnt,attr) -- (str,template_glyph) -- moved from blob-
     return head, tail
 end
 
-nuts.tonodes = tonodes
+nodes.tonodes = tonodes
 
-nodes.tonodes = function(str,fnt,attr)
-    local head, tail = tonodes(str,fnt,attr)
-    return tonode(head), tonode(tail)
-end
-
--- local function link(list,currentfont,currentattr,head,tail)
---     for i=1,#list do
---         local n = list[i]
---         if n then
---             local tn = isnode(n)
---             if not tn then
---                 local tn = type(n)
---                 if tn == "number" then
---                     if not currentfont then
---                         currentfont = current_font()
---                     end
---                     local h, t = tonodes(tostring(n),currentfont,currentattr)
---                     if not h then
---                         -- skip
---                     elseif not head then
---                         head = h
---                         tail = t
---                     else
---                         setfield(tail,"next",h)
---                         setfield(h,"prev",t)
---                         tail = t
---                     end
---                 elseif tn == "string" then
---                     if #tn > 0 then
---                         if not currentfont then
---                             currentfont = current_font()
---                         end
---                         local h, t = tonodes(n,currentfont,currentattr)
---                         if not h then
---                             -- skip
---                         elseif not head then
---                             head, tail = h, t
---                         else
---                             setfield(tail,"next",h)
---                             setfield(h,"prev",t)
---                             tail = t
---                         end
---                     end
---                 elseif tn == "table" then
---                     if #tn > 0 then
---                         if not currentfont then
---                             currentfont = current_font()
---                         end
---                         head, tail = link(n,currentfont,currentattr,head,tail)
---                     end
---                 end
---             elseif not head then
---                 head = n
---                 tail = find_tail(n)
---             elseif getid(n) == attributelist_code then
---                 -- weird case
---                 report_error("weird node type in list at index %s:",i)
---                 for i=1,#list do
---                     local l = list[i]
---                     report_error("%3i: %s %S",i,getid(l) == attributelist_code and "!" or ">",l)
---                 end
---                 os.exit()
---             else
---                 setfield(tail,"next",n)
---                 setfield(n,"prev",tail)
---                 if getnext(n) then
---                     tail = find_tail(n)
---                 else
---                     tail = n
---                 end
---             end
---         else
---             -- permitting nil is convenient
---         end
---     end
---     return head, tail
--- end
-
-local function link(list,currentfont,currentattr,head,tail) -- an oldie, might be replaced
+local function link(list,currentfont,currentattr,head,tail)
     for i=1,#list do
         local n = list[i]
         if n then
-            local tn = type(n)
-            if tn == "string" then
-                if #tn > 0 then
+            local tn = isnode(n)
+            if not tn then
+                local tn = type(n)
+                if tn == "number" then
                     if not currentfont then
                         currentfont = current_font()
                     end
-                    local h, t = tonodes(n,currentfont,currentattr)
+                    local h, t = tonodes(tostring(n),currentfont,currentattr)
                     if not h then
                         -- skip
                     elseif not head then
                         head, tail = h, t
                     else
-                        setfield(tail,"next",h)
-                        setfield(h,"prev",t)
-                        tail = t
+                        tail.next, h.prev, tail = h, t, t
                     end
-                end
-            elseif tn == "table" then
-                if #tn > 0 then
-                    if not currentfont then
-                        currentfont = current_font()
+                elseif tn == "string" then
+                    if #tn > 0 then
+                        if not currentfont then
+                            currentfont = current_font()
+                        end
+                        local h, t = tonodes(n,currentfont,currentattr)
+                        if not h then
+                            -- skip
+                        elseif not head then
+                            head, tail = h, t
+                        else
+                            tail.next, h.prev, tail = h, t, t
+                        end
                     end
-                    head, tail = link(n,currentfont,currentattr,head,tail)
+                elseif tn == "table" then
+                    if #tn > 0 then
+                        if not currentfont then
+                            currentfont = current_font()
+                        end
+                        head, tail = link(n,currentfont,currentattr,head,tail)
+                    end
                 end
             elseif not head then
                 head = n
-                tail = find_tail(n)
-            elseif getid(n) == attributelist_code then
+                if n.next then
+                    tail = slide_nodes(n)
+                else
+                    tail = n
+                end
+            elseif n.id == attributelist_code then
                 -- weird case
                 report_error("weird node type in list at index %s:",i)
                 for i=1,#list do
                     local l = list[i]
-                    report_error("%3i: %s %S",i,getid(l) == attributelist_code and "!" or ">",l)
+                    report_error("%3i: %s %S",i,l.id == attributelist_code and "!" or ">",l)
                 end
                 os.exit()
             else
-                setfield(tail,"next",n)
-                setfield(n,"prev",tail)
-                if getnext(n) then
-                    tail = find_tail(n)
+                tail.next = n
+                n.prev = tail
+                if n.next then
+                    tail = slide_nodes(n)
                 else
                     tail = n
                 end
@@ -454,22 +350,17 @@ local function link(list,currentfont,currentattr,head,tail) -- an oldie, might b
     return head, tail
 end
 
-nuts.link = link
-
-nodes.link = function(list,currentfont,currentattr,head,tail)
-    local head, tail = link(list,currentfont,currentattr,tonut(head),tonut(tail))
-    return tonode(head), tonode(tail)
-end
+nodes.link = link
 
 local function locate(start,wantedid,wantedsubtype)
     for n in traverse_nodes(start) do
-        local id = getid(n)
+        local id = n.id
         if id == wantedid then
-            if not wantedsubtype or getsubtype(n) == wantedsubtype then
+            if not wantedsubtype or n.subtype == wantedsubtype then
                 return n
             end
         elseif id == hlist_code or id == vlist_code then
-            local found = locate(getlist(n),wantedid,wantedsubtype)
+            local found = locate(n.list,wantedid,wantedsubtype)
             if found then
                 return found
             end
@@ -477,12 +368,7 @@ local function locate(start,wantedid,wantedsubtype)
     end
 end
 
-nuts.locate = locate
-
-nodes.locate = function(start,wantedid,wantedsubtype)
-    local found = locate(tonut(start),wantedid,wantedsubtype)
-    return found and tonode(found)
-end
+nodes.locate =  locate
 
 -- I have no use for this yet:
 --
@@ -495,12 +381,10 @@ end
 --     return (badness/100)^(1/3)
 -- end
 --
--- function tex.stretch_amount(skip,badness) -- node no nut
+-- function tex.stretch_amount(skip,badness)
 --     if skip.id == gluespec_code then
 --         return skip.width + (badness and (badness/100)^(1/3) or 1) * skip.stretch
 --     else
 --         return 0
 --     end
 -- end
-
-

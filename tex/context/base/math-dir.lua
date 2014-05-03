@@ -23,19 +23,8 @@ local trace_directions   = false  trackers.register("typesetters.directions.math
 
 local report_directions  = logs.reporter("typesetting","math directions")
 
-local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-local tonode             = nuts.tonode
-
-local getnext            = nuts.getnext
-local getchar            = nuts.getchar
-local getid              = nuts.getid
-local getlist            = nuts.getlist
-local setfield           = nuts.setfield
-local getattr            = nuts.getattr
-
-local insert_node_before = nuts.insert_before
-local insert_node_after  = nuts.insert_after
+local insert_node_before = nodes.insert_before
+local insert_node_after  = nodes.insert_after
 
 local nodecodes          = nodes.nodecodes
 local tasks              = nodes.tasks
@@ -44,7 +33,7 @@ local glyph_code         = nodecodes.glyph
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 
-local nodepool           = nuts.pool
+local nodepool           = nodes.pool
 
 local new_textdir        = nodepool.textdir
 
@@ -72,9 +61,9 @@ local function processmath(head)
         stop  = nil
     end
     while current do
-        local id = getid(current)
+        local id = current.id
         if id == glyph_code then
-            local char = getchar(current)
+            local char = current.char
             local cdir = chardirections[char]
             if cdir == "en" or cdir == "an" then -- we could check for mathclass punctuation
                 if not start then
@@ -94,7 +83,7 @@ local function processmath(head)
                     if mirror then
                         local class = charclasses[char]
                         if class == "open" or class == "close" then
-                            setfield(current,"char",mirror)
+                            current.char = mirror
                             if trace_directions then
                                 report_directions("mirrored: %C to %C",char,mirror)
                             end
@@ -105,13 +94,6 @@ local function processmath(head)
             end
         elseif not start then
             -- nothing
-if id == hlist_code or id == vlist_code then
-    local list, d = processmath(getlist(current))
-    setfield(current,"list",list)
-    if d then
-        done = true
-    end
-end
         elseif start == stop then
             start = nil
         else
@@ -119,14 +101,14 @@ end
             -- math can pack things into hlists .. we need to make sure we don't process
             -- too often: needs checking
             if id == hlist_code or id == vlist_code then
-                local list, d = processmath(getlist(current))
-                setfield(current,"list",list)
+                local list, d = processmath(current.list)
+                current.list = list
                 if d then
                     done = true
                 end
             end
         end
-        current = getnext(current)
+        current = current.next
     end
     if not start then
         -- nothing
@@ -142,11 +124,9 @@ local enabled = false
 
 function directions.processmath(head) -- style, penalties
     if enabled then
-        local h = tonut(head)
-        local a = getattr(h,a_mathbidi)
+        local a = head[a_mathbidi]
         if a and a > 0 then
-            local head, done = processmath(h)
-            return tonode(head), done
+            return processmath(head)
         end
     end
     return head, false

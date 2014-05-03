@@ -42,7 +42,6 @@ local scripts = allocate {
     ['cprt'] = 'cypriot syllabary',
     ['cyrl'] = 'cyrillic',
     ['deva'] = 'devanagari',
-    ['dev2'] = 'devanagari variant 2',
     ['dsrt'] = 'deseret',
     ['ethi'] = 'ethiopic',
     ['geor'] = 'georgian',
@@ -68,7 +67,6 @@ local scripts = allocate {
     ['linb'] = 'linear b',
     ['math'] = 'mathematical alphanumeric symbols',
     ['mlym'] = 'malayalam',
-    ['mlm2'] = 'malayalam variant 2',
     ['mong'] = 'mongolian',
     ['musc'] = 'musical symbols',
     ['mymr'] = 'myanmar',
@@ -633,7 +631,6 @@ local features = allocate {
     ['js..'] = 'justification ..',
 
     ["dv.."] = "devanagari ..",
-    ["ml.."] = "malayalam ..",
 }
 
 local baselines = allocate {

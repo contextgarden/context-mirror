@@ -9,9 +9,8 @@ if not modules then modules = { } end modules ['typo-itc'] = {
 local utfchar = utf.char
 
 local trace_italics       = false  trackers.register("typesetters.italics", function(v) trace_italics = v end)
-local report_italics      = logs.reporter("nodes","italics")
 
-local threshold           = 0.5   trackers.register("typesetters.threshold", function(v) threshold = v == true and 0.5 or tonumber(v) end)
+local report_italics      = logs.reporter("nodes","italics")
 
 typesetters.italics       = typesetters.italics or { }
 local italics             = typesetters.italics
@@ -25,35 +24,21 @@ local math_code           = nodecodes.math
 
 local tasks               = nodes.tasks
 
-local nuts                = nodes.nuts
-local nodepool            = nuts.pool
-
-local tonode              = nuts.tonode
-local tonut               = nuts.tonut
-
-local getfield            = nuts.getfield
-local getnext             = nuts.getnext
-local getid               = nuts.getid
-local getfont             = nuts.getfont
-local getchar             = nuts.getchar
-local getattr             = nuts.getattr
-
-local insert_node_after   = nuts.insert_after
-local delete_node         = nuts.delete
-local end_of_math         = nuts.end_of_math
+local insert_node_after   = node.insert_after
+local delete_node         = nodes.delete
+local end_of_math         = node.end_of_math
 
 local texgetattribute     = tex.getattribute
 local texsetattribute     = tex.setattribute
 local a_italics           = attributes.private("italics")
 local unsetvalue          = attributes.unsetvalue
 
-local new_correction_kern = nodepool.fontkern
-local new_correction_glue = nodepool.glue
+local new_correction_kern = nodes.pool.fontkern
+local new_correction_glue = nodes.pool.glue
 
 local fonthashes          = fonts.hashes
 local fontdata            = fonthashes.identifiers
 local italicsdata         = fonthashes.italics
-local exheights           = fonthashes.exheights
 
 local forcedvariant       = false
 
@@ -98,7 +83,6 @@ end
 -- todo: clear attribute
 
 function italics.handler(head)
-    head = tonut(head)
     local done     = false
     local italic   = 0
     local lastfont = nil
@@ -108,10 +92,10 @@ function italics.handler(head)
     local current  = head
     local inserted = nil
     while current do
-        local id = getid(current)
+        local id = current.id
         if id == glyph_code then
-            local font = getfont(current)
-            local char = getchar(current)
+            local font = current.font
+            local char = current.char
             local data = italicsdata[font]
             if font ~= lastfont then
                 if italic ~= 0 then
@@ -120,25 +104,11 @@ function italics.handler(head)
                             report_italics("ignoring %p between italic %C and italic %C",italic,prevchar,char)
                         end
                     else
-                        local okay = true
-                        if threshold then
-                            local ht = getfield(current,"height")
-                            local ex = exheights[font]
-                            local th = threshold * ex
-                            if ht <= th then
-                                if trace_italics then
-                                    report_italics("ignoring correction between italic %C and regular %C, height %p less than threshold %p",prevchar,char,ht,th)
-                                end
-                                okay = false
-                            end
+                        if trace_italics then
+                            report_italics("inserting %p between italic %C and regular %C",italic,prevchar,char)
                         end
-                        if okay then
-                            if trace_italics then
-                                report_italics("inserting %p between italic %C and regular %C",italic,prevchar,char)
-                            end
-                            insert_node_after(head,previous,new_correction_kern(italic))
-                            done = true
-                        end
+                        insert_node_after(head,previous,new_correction_kern(italic))
+                        done = true
                     end
                 elseif inserted and data then
                     if trace_italics then
@@ -151,7 +121,7 @@ function italics.handler(head)
                 lastfont = font
             end
             if data then
-                local attr = forcedvariant or getattr(current,a_italics)
+                local attr = forcedvariant or current[a_italics]
                 if attr and attr > 0 then
                     local cd = data[char]
                     if not cd then
@@ -203,7 +173,7 @@ function italics.handler(head)
             italic = 0
             done = true
         end
-        current = getnext(current)
+        current = current.next
     end
     if italic ~= 0 and lastattr > 1 then -- more control is needed here
         if trace_italics then
@@ -212,7 +182,7 @@ function italics.handler(head)
         insert_node_after(head,previous,new_correction_kern(italic))
         done = true
     end
-    return tonode(head), done
+    return head, done
 end
 
 local enable
@@ -254,7 +224,6 @@ function commands.setupitaliccorrection(option) -- no grouping !
     elseif options[variables.always] then
         variant = 2
     end
-    -- maybe also keywords for threshold
     if options[variables.global] then
         forcedvariant = variant
         texsetattribute(a_italics,unsetvalue)

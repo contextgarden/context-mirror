@@ -82,9 +82,8 @@ local o_replacements = { -- in main table
 
  -- [utfchar(0xF103C)] = "\\mmlleftdelimiter<",
     [utfchar(0xF1026)] = "\\mmlchar{38}",
-    [utfchar(0x02061)]  = "", -- function applicator sometimes shows up in font
  -- [utfchar(0xF103E)] = "\\mmlleftdelimiter>",
- -- [utfchar(0x000AF)] = '\\mmlchar{"203E}', -- 0x203E
+
 }
 
 local simpleoperatorremapper = utf.remapper(o_replacements)
@@ -480,7 +479,7 @@ end
 function mathml.mo(id)
     local str = xmlcontent(getid(id)) or ""
     local rep = gsub(str,"&.-;","") -- todo
-    context(simpleoperatorremapper(rep) or rep)
+    context(simpleoperatorremapper(rep))
 end
 
 function mathml.mi(id)
@@ -492,18 +491,13 @@ function mathml.mi(id)
         if n == 0 then
             -- nothing to do
         elseif n == 1 then
-            local first = str[1]
-            if type(first) == "string" then
-                local str = gsub(first,"&.-;","") -- bah
-                local rep = i_replacements[str]
-                if not rep then
-                    rep = gsub(str,".",i_replacements)
-                end
-                context(rep)
-             -- context.mi(rep)
-            else
-                context.xmlflush(id) -- xmlsprint or so
+            local str = gsub(str[1],"&.-;","") -- bah
+            local rep = i_replacements[str]
+            if not rep then
+                rep = gsub(str,".",i_replacements)
             end
+            context(rep)
+         -- context.mi(rep)
         else
             context.xmlflush(id) -- xmlsprint or so
         end
@@ -833,14 +827,4 @@ function mathml.cpolar_a(root)
         end
     end
     context.right(false,")")
-end
-
--- crap .. maybe in char-def a mathml overload
-
-local mathmleq = {
-    [utfchar(0x00AF)] = utfchar(0x203E),
-}
-
-function mathml.extensible(chr)
-    context(mathmleq[chr] or chr)
 end

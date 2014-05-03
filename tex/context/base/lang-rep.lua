@@ -7,21 +7,9 @@ if not modules then modules = { } end modules ['lang-rep'] = {
 }
 
 -- A BachoTeX 2013 experiment, probably not that useful. Eventually I used a simpler
--- more generic example. I'm sure no one ever notices of even needs this code.
---
--- As a follow up on a question by Alan about special treatment of dropped caps I wonder
--- if I can make this one more clever (probably in a few more dev steps). For instance
--- injecting nodes or replacing nodes. It's a prelude to a kind of lpeg for nodes,
--- although (given experiences so far) we don't really need that. After all, each problem
--- is somewhat unique.
+-- more generic example.
 
-local type = type
 local utfbyte, utfsplit = utf.byte, utf.split
-local P, C, U, Cc, Ct, lpegmatch = lpeg.P, lpeg.C, lpeg.patterns.utf8character, lpeg.Cc, lpeg.Ct, lpeg.match
-local find = string.find
-
-local grouped  = P("{") * ( Ct((U/utfbyte-P("}"))^1) + Cc(false) ) * P("}")-- grouped
-local splitter = Ct((Ct(Cc("discretionary") * grouped * grouped * grouped) + U/utfbyte)^1)
 
 local trace_replacements = false  trackers.register("languages.replacements",        function(v) trace_replacements = v end)
 local trace_detail       = false  trackers.register("languages.replacements.detail", function(v) trace_detail       = v end)
@@ -30,26 +18,9 @@ local report_replacement = logs.reporter("languages","replacements")
 
 local glyph_code         = nodes.nodecodes.glyph
 
-local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-local tonode             = nuts.tonode
-
-local setfield           = nuts.setfield
-local getnext            = nuts.getnext
-local getprev            = nuts.getprev
-local getattr            = nuts.getattr
-local getid              = nuts.getid
-local getchar            = nuts.getchar
-
-local insert_node_before = nuts.insert_before
-local remove_node        = nuts.remove
-local copy_node          = nuts.copy
-local flush_list         = nuts.flush_list
-local insert_after       = nuts.insert_after
-
-local nodepool           = nuts.pool
-local new_glyph          = nodepool.glyph
-local new_disc           = nodepool.disc
+local insert_node_before = nodes.insert_before
+local remove_node        = nodes.remove
+local copy_node          = nodes.copy
 
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
@@ -75,30 +46,23 @@ table.setmetatableindex(lists,function(lists,name)
     return data
 end)
 
--- todo: glue kern
-
 local function add(root,word,replacement)
     local list = utfsplit(word,true)
-    local size = #list
-    for i=1,size do
+    for i=1,#list do
         local l = utfbyte(list[i])
         if not root[l] then
             root[l] = { }
         end
-        if i == size then
-         -- local newlist = utfsplit(replacement,true)
-         -- for i=1,#newlist do
-         --     newlist[i] = utfbyte(newlist[i])
-         -- end
-            local special = find(replacement,"{")
-            local newlist = lpegmatch(splitter,replacement)
-            --
+        if i == #list then
+            local newlist = utfsplit(replacement,true)
+            for i=1,#newlist do
+                newlist[i] = utfbyte(newlist[i])
+            end
             root[l].final = {
                 word        = word,
                 replacement = replacement,
-                oldlength   = size,
+                oldlength   = #list,
                 newcodes    = newlist,
-                special     = special,
             }
         end
         root = root[l]
@@ -119,13 +83,13 @@ end
 local function hit(a,head)
     local tree = trees[a]
     if tree then
-        local root = tree[getchar(head)]
+        local root = tree[head.char]
         if root then
-            local current   = getnext(head)
+            local current   = head.next
             local lastrun   = false
             local lastfinal = false
-            while current and getid(current) == glyph_code do
-                local newroot = root[getchar(current)]
+            while current and current.id == glyph_code do
+                local newroot = root[current.char]
                 if not newroot then
                     return lastrun, lastfinal
                 else
@@ -140,7 +104,7 @@ local function hit(a,head)
                         root = newroot
                     end
                 end
-                current = getnext(current)
+                current = current.next
             end
             if lastrun then
                 return lastrun, lastfinal
@@ -149,27 +113,11 @@ local function hit(a,head)
     end
 end
 
-local function tonodes(list,template)
-    local head, current
-    for i=1,#list do
-        local new = copy_node(template)
-        setfield(new,"char",list[i])
-        if head then
-            head, current = insert_after(head,current,new)
-        else
-            head, current = new, new
-        end
-    end
-    return head
-end
-
-
 function replacements.handler(head)
-    head = tonut(head)
     local current = head
     local done    = false
     while current do
-        if getid(current) == glyph_code then
+        if current.id == glyph_code then
             local a = getattr(current,a_replacements)
             if a then
                 local last, final = hit(a,current)
@@ -177,85 +125,41 @@ function replacements.handler(head)
                     local oldlength = final.oldlength
                     local newcodes  = final.newcodes
                     local newlength = #newcodes
-                    if trace_replacement then
+                    if report_replacement then
                         report_replacement("replacing word %a by %a",final.word,final.replacement)
                     end
-                    if final.special then
-                        -- easier is to delete and insert (a simple callout to tex would be more efficient)
-                        -- maybe just walk over a replacement string instead
-                        local prev = getprev(current)
-                        local next = getnext(last)
-                        local list = current
-                        setfield(last,"next",nil)
-                        setfield(prev,"next",next)
-                        if next then
-                            setfield(next,"prev",prev)
-                        end
-                        current = prev
-                        if not current then
-                            head = nil
-                        end
+                    if oldlength == newlength then -- #old == #new
                         for i=1,newlength do
-                            local codes = newcodes[i]
-                            local new = nil
-                            if type(codes) == "table" then
-                                local method = codes[1]
-                                if method == "discretionary" then
-                                    local pre, post, replace = codes[2], codes[3], codes[4]
-                                    new = new_disc()
-                                    if pre then
-                                        setfield(new,"pre",tonodes(pre,last))
-                                    end
-                                    if post then
-                                        setfield(new,"post",tonodes(post,last))
-                                    end
-                                    if replace then
-                                        setfield(new,"replace",tonodes(replace,last))
-                                    end
-                                else
-                                    -- todo
-                                end
-                            else
-                                new = copy_node(last)
-                                setfield(new,"char",codes)
-                            end
-                            if new then
-                                head, current = insert_after(head,current,new)
-                            end
-                        end
-                        flush_list(list)
-                    elseif oldlength == newlength then -- #old == #new
-                        for i=1,newlength do
-                            setfield(current,"char",newcodes[i])
-                            current = getnext(current)
+                            current.char = newcodes[i]
+                            current = current.next
                         end
                     elseif oldlength < newlength then -- #old < #new
                         for i=1,newlength-oldlength do
                             local n = copy_node(current)
-                            setfield(n,"char",newcodes[i])
+                            n.char = newcodes[i]
                             head, current = insert_node_before(head,current,n)
-                            current = getnext(current)
+                            current = current.next
                         end
                         for i=newlength-oldlength+1,newlength do
-                            setfield(current,"char",newcodes[i])
-                            current = getnext(current)
+                            current.char = newcodes[i]
+                            current = current.next
                         end
                     else -- #old > #new
                         for i=1,oldlength-newlength do
                             head, current = remove_node(head,current,true)
                         end
                         for i=1,newlength do
-                            setfield(current,"char",newcodes[i])
-                            current = getnext(current)
+                            current.char = newcodes[i]
+                            current = current.next
                         end
                     end
                     done = true
                 end
             end
         end
-        current = getnext(current)
+        current = current.next
     end
-    return tonode(head), done
+    return head, done
 end
 
 local enabled = false
@@ -280,3 +184,6 @@ end
 
 commands.setreplacements = replacements.set
 commands.addreplacements = replacements.add
+
+nodes.tasks.prependaction("processors","words","languages.replacements.handler")
+nodes.tasks.disableaction("processors","languages.replacements.handler")

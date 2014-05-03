@@ -746,11 +746,8 @@ local function _xmlconvert_(data, settings)
     end
     if errorstr and errorstr ~= "" then
         result.error = true
-    else
-        errorstr = nil
     end
     result.statistics = {
-        errormessage = errorstr,
         entities = {
             decimals     = dcache,
             hexadecimals = hcache,
@@ -1019,27 +1016,25 @@ local function verbose_document(e,handlers)
 end
 
 local function serialize(e,handlers,...)
-    if e then
-        local initialize = handlers.initialize
-        local finalize   = handlers.finalize
-        local functions  = handlers.functions
-        if initialize then
-            local state = initialize(...)
-            if not state == true then
-                return state
-            end
+    local initialize = handlers.initialize
+    local finalize   = handlers.finalize
+    local functions  = handlers.functions
+    if initialize then
+        local state = initialize(...)
+        if not state == true then
+            return state
         end
-        local etg = e.tg
-        if etg then
-            (functions[etg] or functions["@el@"])(e,handlers)
-     -- elseif type(e) == "string" then
-     --     functions["@tx@"](e,handlers)
-        else
-            functions["@dc@"](e,handlers) -- dc ?
-        end
-        if finalize then
-            return finalize()
-        end
+    end
+    local etg = e.tg
+    if etg then
+        (functions[etg] or functions["@el@"])(e,handlers)
+ -- elseif type(e) == "string" then
+ --     functions["@tx@"](e,handlers)
+    else
+        functions["@dc@"](e,handlers) -- dc ?
+    end
+    if finalize then
+        return finalize()
     end
 end
 

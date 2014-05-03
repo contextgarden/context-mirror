@@ -106,8 +106,6 @@
 \let\setuppagenumber\setupuserpagenumber
 \let\resetpagenumber\resetuserpagenumber
 
-% invisible =
-
 \def\strc_pagenumbers_page_state_save % \normalexpanded?
   {\ctxlua{structures.pages.save({
         prefix        = "\namedcounterparameter\s!userpage\c!prefix",
@@ -122,9 +120,6 @@
         conversionset = "\namedcounterparameter\s!userpage\c!numberconversionset",
         starter       = \!!bs\namedcounterparameter\s!userpage\c!numberstarter\!!es,
         stopper       = \!!bs\namedcounterparameter\s!userpage\c!numberstopper\!!es,
-    },{
-        viewerprefix  = \!!bs\namedcounterparameter\s!userpage\c!viewerprefix\!!es,
-        state         = \!!bs\namedcounterparameter\s!userpage\c!state\!!es,
     }
    )}}
 

@@ -429,8 +429,7 @@
         \aligntab
         \tabl_tabulate_column_vrule_inject
         \tabl_tabulate_color_side_left
-%         \tabl_tabulate_inject_pre_skip{\the\s_tabl_tabulate_pre}%
-        \tabl_tabulate_inject_pre_skip{\the\dimexpr\s_tabl_tabulate_pre}% get rid of plus
+        \tabl_tabulate_inject_pre_skip{\the\s_tabl_tabulate_pre}%
         \alignmark\alignmark
         \aligntab
         \tabl_tabulate_color_side_both
@@ -497,7 +496,7 @@
         \egroup
         \aligntab
         \noexpand\dostoptagged
-        \tabl_tabulate_inject_post_skip{\the\dimexpr\s_tabl_tabulate_post}% get rid of plus
+        \tabl_tabulate_inject_post_skip{\the\s_tabl_tabulate_post}%
         \alignmark\alignmark
    }}%
    \t_tabl_tabulate_dummy\expandafter{\the\t_tabl_tabulate_dummy\NC}%

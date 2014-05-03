@@ -6,14 +6,13 @@ if not modules then modules = { } end modules ['file-res'] = {
     license   = "see context related readme files"
 }
 
-local format, find = string.format, string.find
+local format = string.format
 local isfile = lfs.isfile
 local is_qualified_path = file.is_qualified_path
-local hasscheme, urlescape = url.hasscheme, url.escape
+local hasscheme = url.hasscheme
 
-local trace_files   = false  trackers.register("resolvers.readfile",         function(v) trace_files   = v end)
-local trace_details = false  trackers.register("resolvers.readfile.details", function(v) trace_details = v end)
-local report_files  = logs.reporter("files","readfile")
+local trace_files  = false  trackers.register("resolvers.readfile", function(v) trace_files = v end)
+local report_files = logs.reporter("files","readfile")
 
 resolvers.maxreadlevel = 2
 
@@ -24,9 +23,6 @@ local finders, loaders, openers = resolvers.finders, resolvers.loaders, resolver
 local found = { } -- can best be done in the resolver itself
 
 local function readfilename(specification,backtrack,treetoo)
-    if trace_details then
-        report_files(table.serialize(specification,"specification"))
-    end
     local name = specification.filename
     local fnd = name and found[name]
     if not fnd then
@@ -136,11 +132,9 @@ function getreadfilename(scheme,path,name) -- better do a split and then pass ta
     if hasscheme(name) or is_qualified_path(name) then
         fullname = name
     else
-        if not find(name,"%%") then
-            name = urlescape(name) -- if no % in names
-        end
         fullname = ((path == "") and format("%s:///%s",scheme,name)) or format("%s:///%s/%s",scheme,path,name)
     end
+--~ print(">>>",fullname)
     return resolvers.findtexfile(fullname) or "" -- can be more direct
 end
 

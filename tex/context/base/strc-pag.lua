@@ -40,19 +40,17 @@ local collected, tobesaved = allocate(), allocate()
 
 pages.collected = collected
 pages.tobesaved = tobesaved
-pages.nofpages  = 0
 
 local function initializer()
     collected = pages.collected
     tobesaved = pages.tobesaved
-    pages.nofpages = #collected
 end
 
 job.register('structures.pages.collected', tobesaved, initializer)
 
 local specification = { } -- to be checked
 
-function pages.save(prefixdata,numberdata,extradata)
+function pages.save(prefixdata,numberdata)
     local realpage = texgetcount("realpageno")
     local userpage = texgetcount("userpageno")
     if realpage > 0 then
@@ -60,12 +58,10 @@ function pages.save(prefixdata,numberdata,extradata)
             report_pages("saving page %s.%s",realpage,userpage)
         end
         local data = {
-            number       = userpage,
-            viewerprefix = extradata.viewerprefix,
-            state        = extradata.state,
-            block        = sections.currentblock(),
-            prefixdata   = prefixdata and helpers.simplify(prefixdata),
-            numberdata   = numberdata and helpers.simplify(numberdata),
+            number     = userpage,
+            block      = sections.currentblock(),
+            prefixdata = prefixdata and helpers.simplify(prefixdata),
+            numberdata = numberdata and helpers.simplify(numberdata),
         }
         tobesaved[realpage] = data
         if not collected[realpage] then

@@ -24,26 +24,17 @@ local rightskip_code             = skipcodes.rightskip
 local abovedisplayshortskip_code = skipcodes.abovedisplayshortskip
 local belowdisplayshortskip_code = skipcodes.belowdisplayshortskip
 
-local nuts                       = nodes.nuts
+local find_node_tail             = node.tail or node.slide
 
-local getfield                   = nuts.getfield
-local getnext                    = nuts.getnext
-local getprev                    = nuts.getprev
-local getid                      = nuts.getid
-local getchar                    = nuts.getchar
-local getsubtype                 = nuts.getsubtype
-
-local find_node_tail             = nuts.tail
-
-function nuts.leftmarginwidth(n) -- todo: three values
+function nodes.leftmarginwidth(n) -- todo: three values
     while n do
-        local id = getid(n)
+        local id = n.id
         if id == glue_code then
-            return getsubtype(n) == leftskip_code and getfield(getfield(n,"spec"),"width") or 0
+            return n.subtype == leftskip_code and n.spec.width or 0
         elseif id == whatsit_code then
-            n = getnext(n)
+            n = n.next
         elseif id == hlist_code then
-            return getfield(n,"width")
+            return n.width
         else
             break
         end
@@ -51,15 +42,15 @@ function nuts.leftmarginwidth(n) -- todo: three values
     return 0
 end
 
-function nuts.rightmarginwidth(n)
+function nodes.rightmarginwidth(n)
     if n then
         n = find_node_tail(n)
         while n do
-            local id = getid(n)
+            local id = n.id
             if id == glue_code then
-                return getsubtype(n) == rightskip_code and getfield(getfield(n,"spec"),"width") or 0
+                return n.subtype == rightskip_code and n.spec.width or 0
             elseif id == whatsit_code then
-                n = getprev(n)
+                n = n.prev
             else
                 break
             end
@@ -68,15 +59,15 @@ function nuts.rightmarginwidth(n)
     return false
 end
 
-function nuts.somespace(n,all)
+function nodes.somespace(n,all)
     if n then
-        local id = getid(n)
+        local id = n.id
         if id == glue_code then
-            return (all or (getfield(getfield(n,"spec"),"width") ~= 0)) and glue_code
+            return (all or (n.spec.width ~= 0)) and glue_code
         elseif id == kern_code then
-            return (all or (getfield(n,"kern") ~= 0)) and kern
+            return (all or (n.kern ~= 0)) and kern
         elseif id == glyph_code then
-            local category = chardata[getchar(n)].category
+            local category = chardata[n.char].category
          -- maybe more category checks are needed
             return (category == "zs") and glyph_code
         end
@@ -84,12 +75,12 @@ function nuts.somespace(n,all)
     return false
 end
 
-function nuts.somepenalty(n,value)
+function nodes.somepenalty(n,value)
     if n then
-        local id = getid(n)
+        local id = n.id
         if id == penalty_code then
             if value then
-                return getfield(n,"penalty") == value
+                return n.penalty == value
             else
                 return true
             end
@@ -98,38 +89,32 @@ function nuts.somepenalty(n,value)
     return false
 end
 
-function nuts.is_display_math(head)
-    local n = getprev(head)
+function nodes.is_display_math(head)
+    local n = head.prev
     while n do
-        local id = getid(n)
+        local id = n.id
         if id == penalty_code then
         elseif id == glue_code then
-            if getsubtype(n) == abovedisplayshortskip_code then
+            if n.subtype == abovedisplayshortskip_code then
                 return true
             end
         else
             break
         end
-        n = getprev(n)
+        n = n.prev
     end
-    n = getnext(head)
+    n = head.next
     while n do
-        local id = getid(n)
+        local id = n.id
         if id == penalty_code then
         elseif id == glue_code then
-            if getsubtype(n) == belowdisplayshortskip_code then
+            if n.subtype == belowdisplayshortskip_code then
                 return true
             end
         else
             break
         end
-        n = getnext(n)
+        n = n.next
     end
     return false
 end
-
-nodes.leftmarginwidth  = nodes.vianuts(nuts.leftmarginwidth)
-nodes.rightmarginwidth = nodes.vianuts(nuts.rightmarginwidth)
-nodes.somespace        = nodes.vianuts(nuts.somespace)
-nodes.somepenalty      = nodes.vianuts(nuts.somepenalty)
-nodes.is_display_math  = nodes.vianuts(nuts.is_display_math)

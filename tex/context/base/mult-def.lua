@@ -6613,9 +6613,6 @@ return {
   ["firstnamesep"]={
    ["en"]="firstnamesep",
   },
-  ["surnamefirstnamesep"]={
-   ["en"]="surnamefirstnamesep",
-  },
   ["vonsep"]={
    ["en"]="vonsep",
   },
@@ -6624,9 +6621,6 @@ return {
   },
   ["surnamesep"]={
    ["en"]="surnamesep",
-  },
-  ["surnameinitialsep"]={
-   ["en"]="surnameinitialsep",
   },
   ["lastnamesep"]={
    ["en"]="lastnamesep",

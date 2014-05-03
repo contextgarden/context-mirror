@@ -413,12 +413,8 @@ function scripts.fonts.save()
     local sub  = givenfiles[2] or ""
     local function save(savename,fontblob)
         if fontblob then
-            if fontblob.validation_state and table.contains(fontblob.validation_state,"bad_ps_fontname") then
-                report("ignoring bad fontname for %a",name)
-                savename = file.nameonly(name) .. "-bad-ps-name"
-            end
             savename = file.addsuffix(string.lower(savename),"lua")
-            report("fontsave, saving data in %a",savename)
+            report("fontsave, saving data in %s",savename)
             table.tofile(savename,fontloader.to_table(fontblob),"return")
             fontloader.close(fontblob)
         end
@@ -430,7 +426,7 @@ function scripts.fonts.save()
             if suffix == 'ttf' or suffix == 'otf' or suffix == 'ttc' or suffix == "dfont" then
                 local fontinfo = fontloader.info(filename)
                 if fontinfo then
-                    report("font: %a located as %a",name,filename)
+                    report("font: %s located as %s",name,filename)
                     if #fontinfo > 0 then
                         for k=1,#fontinfo do
                             local v = fontinfo[k]
@@ -440,13 +436,13 @@ function scripts.fonts.save()
                         save(fontinfo.fullname,fontloader.open(filename))
                     end
                 else
-                    report("font: %a cannot be read",filename)
+                    report("font: %s cannot be read",filename)
                 end
             else
-                report("font: %a not saved",filename)
+                report("font: %s not saved",filename)
             end
         else
-            report("font: %a not found",name)
+            report("font: %s not found",name)
         end
     else
         report("font: no name given")

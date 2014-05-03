@@ -20,34 +20,19 @@ local fontcharacters       = fonts.hashes.characters
 local unicodes             = fonts.hashes.unicodes
 local categories           = characters.categories -- nd
 
-local nuts                 = nodes.nuts
-local tonut                = nuts.tonut
-local tonode               = nuts.tonode
+local insert_node_before   = nodes.insert_before
+local insert_node_after    = nodes.insert_after
+local traverse_list_by_id  = nodes.traverse_id
+local dimensions_of_list   = nodes.dimensions
+local first_glyph          = nodes.first_glyph
 
-local getnext              = nuts.getnext
-local getprev              = nuts.getprev
-local getid                = nuts.getid
-local getfont              = nuts.getfont
-local getchar              = nuts.getchar
-local getattr              = nuts.getattr
-local getfield             = nuts.getfield
-
-local setattr              = nuts.setattr
-local setfield             = nuts.setfield
-
-local insert_node_before   = nuts.insert_before
-local insert_node_after    = nuts.insert_after
-local traverse_list_by_id  = nuts.traverse_id
-local dimensions_of_list   = nuts.dimensions
-local first_glyph          = nuts.first_glyph
-
-local nodepool             = nuts.pool
+local nodepool             = nodes.pool
 local new_kern             = nodepool.kern
 local new_gluespec         = nodepool.gluespec
 
 local tracers              = nodes.tracers
 local setcolor             = tracers.colors.set
-local tracedrule           = tracers.pool.nuts.rule
+local tracedrule           = tracers.pool.nodes.rule
 
 local characteralign       = { }
 typesetters.characteralign = characteralign
@@ -84,11 +69,10 @@ local function traced_kern(w)
     return tracedrule(w,nil,nil,"darkgray")
 end
 
-function characteralign.handler(originalhead,where)
+function characteralign.handler(head,where)
     if not datasets then
-        return originalhead, false
+        return head, false
     end
-    local head = tonut(originalhead)
  -- local first = first_glyph(head) -- we could do that once
     local first
     for n in traverse_list_by_id(glyph_code,head) do
@@ -96,11 +80,11 @@ function characteralign.handler(originalhead,where)
         break
     end
     if not first then
-        return originalhead, false
+        return head, false
     end
-    local a = getattr(first,a_characteralign)
+    local a = first[a_characteralign]
     if not a or a == 0 then
-        return originalhead, false
+        return head, false
     end
     local column    = div(a,100)
     local row       = a % 100
@@ -116,10 +100,10 @@ function characteralign.handler(originalhead,where)
     local sign      = nil
     -- we can think of constraints
     while current do
-        local id = getid(current)
+        local id = current.id
         if id == glyph_code then
-            local char = getchar(current)
-            local font = getfont(current)
+            local char = current.char
+            local font = current.font
             local unicode = unicodes[font][char]
             if not unicode then
                 -- no unicode so forget about it
@@ -142,13 +126,13 @@ function characteralign.handler(originalhead,where)
                     if not b_start then
                         if sign then
                             b_start = sign
-                            local new = validsigns[getchar(sign)]
-                            if char == new or not fontcharacters[getfont(sign)][new] then
+                            local new = validsigns[sign.char]
+                            if char == new or not fontcharacters[sign.font][new] then
                                 if trace_split then
                                     setcolor(sign,"darkyellow")
                                 end
                             else
-                                setfield(sign,"char",new)
+                                sign.char = new
                                 if trace_split then
                                     setcolor(sign,"darkmagenta")
                                 end
@@ -174,14 +158,14 @@ function characteralign.handler(originalhead,where)
             end
         elseif (b_start or a_start) and id == glue_code then
             -- somewhat inefficient
-            local next = getnext(current)
-            local prev = getprev(current)
-            if next and prev and getid(next) == glyph_code and getid(prev) == glyph_code then -- too much checking
-                local width = fontcharacters[getfont(b_start)][separator or period].width
-             -- local spec = getfield(current,"spec")
-             -- free_spec(spec)
-                setfield(current,"spec",new_gluespec(width))
-                setattr(current,a_character,punctuationspace)
+            local next = current.next
+            local prev = current.prev
+            if next and prev and next.id == glyph_code and prev.id == glyph_code then -- too much checking
+                local width = fontcharacters[b_start.font][separator or period].width
+             -- local spec = current.spec
+             -- nodes.free(spec) -- hm, we leak but not that many specs
+                current.spec = new_gluespec(width)
+                current[a_character] = punctuationspace
                 if a_start then
                     a_stop = current
                 elseif b_start then
@@ -189,7 +173,7 @@ function characteralign.handler(originalhead,where)
                 end
             end
         end
-        current = getnext(current)
+        current = current.next
     end
     local entry = list[row]
     if entry then
@@ -223,7 +207,7 @@ function characteralign.handler(originalhead,where)
             if not c then
              -- print("[before]")
                 if dataset.hasseparator then
-                    local width = fontcharacters[getfont(b_stop)][separator].width
+                    local width = fontcharacters[b_stop.font][separator].width
                     insert_node_after(head,b_stop,new_kern(maxafter+width))
                 end
             elseif a_start then
@@ -245,7 +229,7 @@ function characteralign.handler(originalhead,where)
                 end
             else
              -- print("[after]")
-                local width = fontcharacters[getfont(b_stop)][separator].width
+                local width = fontcharacters[b_stop.font][separator].width
                 head = insert_node_before(head,a_start,new_kern(maxbefore+width))
             end
             if after < maxafter then
@@ -262,12 +246,12 @@ function characteralign.handler(originalhead,where)
         end
     else
         entry = {
-            before = b_start and dimensions_of_list(b_start,getnext(b_stop)) or 0,
-            after  = a_start and dimensions_of_list(a_start,getnext(a_stop)) or 0,
+            before = b_start and dimensions_of_list(b_start,b_stop.next) or 0,
+            after  = a_start and dimensions_of_list(a_start,a_stop.next) or 0,
         }
         list[row] = entry
     end
-    return tonode(head), true
+    return head, true
 end
 
 function setcharacteralign(column,separator)

@@ -2564,25 +2564,10 @@
        \inheritedframedtextframed\bgroup
          \let\\=\endgraf
          \framedtextparameter\c!inner % oud spul
-         \edef\p_framed_text_depthcorrection{\framedtextparameter\c!depthcorrection}%
-         \ifx\p_framed_text_depthcorrection\v!on
-            \pack_framed_text_start_depth_correction
-         \else
-            \bgroup
-         \fi
-\vskip-\strutdp % brrr why is this needed ... needs to be sorted out, see testcase 1
+         \doif{\framedtextparameter\c!depthcorrection}\v!on\pack_framed_text_start_depth_correction
          \doinhibitblank
          \setupindenting[\framedtextparameter\c!indenting]%
-         \useframedtextstyleandcolor\c!style\c!color
-         \ignorespaces}
-
-% testcase 1:
-%
-% \showstruts
-% \startframedtext[align={normal,tolerant},offset=0pt] \input tufte \stopframedtext
-% \startframedtext[align={normal,tolerant},offset=0pt,depthcorrection=off] \input tufte \stopframedtext
-% \startframedtext[align={normal,tolerant},offset=0pt,depthcorrection=off] \inframed{x} \stopframedtext
-% \framed[align={normal,tolerant},offset=0pt]{\input tufte }
+         \useframedtextstyleandcolor\c!style\c!color}
 
 %D The \type {none} option is handy for nested usage, as in the presentation
 %D styles, where we don't want interference.
@@ -2592,11 +2577,7 @@
 \unexpanded\def\pack_framed_text_stop % no \baselinecorrection, see faq docs
   {\endgraf
    \removelastskip
-   \ifx\p_framed_text_depthcorrection\v!on
-     \pack_framed_text_stop_depth_correction
-   \else
-     \egroup
-   \fi
+   \doif{\framedtextparameter\c!depthcorrection}\v!on\pack_framed_text_stop_depth_correction
    \stopboxedcontent
    \ifconditional\c_framed_text_location_none
      \egroup

@@ -95,22 +95,10 @@ local a_reference       = attributes.private('reference')
 
 local a_textblock       = attributes.private("textblock")
 
-local nuts              = nodes.nuts
-local tonut             = nuts.tonut
-
-local getnext           = nuts.getnext
-local getsubtype        = nuts.getsubtype
-local getfont           = nuts.getfont
-local getchar           = nuts.getchar
-local getlist           = nuts.getlist
-local getid             = nuts.getid
-local getfield          = nuts.getfield
-local getattr           = nuts.getattr
-
-local setattr           = nuts.setattr
-
-local traverse_id       = nuts.traverse_id
-local traverse_nodes    = nuts.traverse
+local traverse_id       = node.traverse_id
+local traverse_nodes    = node.traverse
+local slide_nodelist    = node.slide
+local locate_node       = nodes.locate
 
 local references        = structures.references
 local structurestags    = structures.tags
@@ -454,26 +442,13 @@ local function checkdocument(root)
     if data then
         for i=1,#data do
             local di = data[i]
-            local tg = di.tg
-            if tg == "noexport" then
-                local ud = userdata[di.fulltag]
-                local comment = ud and ud.comment
-                if comment then
-                    di.element = "comment"
-                    di.data = { { content = comment } }
-                    ud.comment = nil
-                else
-                    data[i] = false
-                 -- di.element = ""
-                 -- di.data = nil
-                end
-            elseif di.content then
-                -- okay
-            elseif tg == "ignore" then
+            if di.content then
+                -- ok
+            elseif di.tg == "ignore" then
                 di.element = ""
                 checkdocument(di)
             else
-                checkdocument(di) -- new, else no noexport handling
+                -- can't happen
             end
         end
     end
@@ -1210,28 +1185,23 @@ function structurestags.settabulatecell(align)
     end
 end
 
-local function hascontent(data)
-    for i=1,#data do
-        local di = data[i]
-        if not di then
-            --
-        elseif di.content then
-            return true
-        else
-            local d = di.data
-            if d and #d > 0 and hascontent(d) then
-                return true
-            end
-        end
-    end
-end
-
 function extras.tabulate(result,element,detail,n,fulltag,di)
     local data = di.data
     for i=1,#data do
         local di = data[i]
-        if di.tg == "tabulaterow" and not hascontent(di.data) then
-            di.element = "" -- or simply remove
+        if di.tg == "tabulaterow" then
+            local did = di.data
+            local content = false
+            for i=1,#did do
+                local d = did[i].data
+                if d and #d > 0 and d[1].content then
+                    content = true
+                    break
+                end
+            end
+            if not content then
+                di.element = "" -- or simply remove
+            end
         end
     end
 end
@@ -1784,9 +1754,9 @@ local function pushentry(current)
     end
 end
 
-local function pushcontent(oldparagraph,newparagraph)
+local function pushcontent(currentparagraph,newparagraph)
     if nofcurrentcontent > 0 then
-        if oldparagraph then
+        if currentparagraph then
             if currentcontent[nofcurrentcontent] == "\n" then
                 if trace_export then
                     report_export("%w<!-- removing newline -->",currentdepth)
@@ -1796,9 +1766,9 @@ local function pushcontent(oldparagraph,newparagraph)
         end
         local content = concat(currentcontent,"",1,nofcurrentcontent)
         if content == "" then
-            -- omit; when oldparagraph we could push, remove spaces, pop
-        elseif somespace[content] and oldparagraph then
-            -- omit; when oldparagraph we could push, remove spaces, pop
+            -- omit; when currentparagraph we could push, remove spaces, pop
+        elseif somespace[content] and currentparagraph then
+            -- omit; when currentparagraph we could push, remove spaces, pop
         else
             local olddepth, newdepth
             local list = taglist[currentattribute]
@@ -1807,7 +1777,7 @@ local function pushcontent(oldparagraph,newparagraph)
             end
             local td = tree.data
             local nd = #td
-            td[nd+1] = { parnumber = oldparagraph or currentparagraph, content = content }
+            td[nd+1] = { parnumber = currentparagraph, content = content }
             if trace_export then
                 report_export("%w<!-- start content with length %s -->",currentdepth,#content)
                 report_export("%w%s",currentdepth,(gsub(content,"\n","\\n")))
@@ -1821,10 +1791,10 @@ local function pushcontent(oldparagraph,newparagraph)
         end
         nofcurrentcontent = 0
     end
-    if oldparagraph then
+    if currentparagraph then
         pushentry(makebreaklist(currentnesting))
         if trace_export then
-            report_export("%w<!-- break added betweep paragraph %a and %a -->",currentdepth,oldparagraph,newparagraph)
+            report_export("%w<!-- break added betweep paragraph %a and %a -->",currentdepth,currentparagraph,newparagraph)
         end
     end
 end
@@ -1856,25 +1826,25 @@ end
 local function collectresults(head,list) -- is last used (we also have currentattribute)
     local p
     for n in traverse_nodes(head) do
-        local id = getid(n) -- 14: image, 8: literal (mp)
+        local id = n.id -- 14: image, 8: literal (mp)
         if id == glyph_code then
-            local at = getattr(n,a_tagged)
+            local at = n[a_tagged]
             if not at then
              -- we need to tag the pagebody stuff as being valid skippable
              --
              -- report_export("skipping character: %C (no attribute)",n.char)
             else
                 -- we could add tonunicodes for ligatures (todo)
-                local components =  getfield(n,"components")
+                local components =  n.components
                 if components then -- we loose data
                     collectresults(components,nil)
                 else
-                    local c = getchar(n)
+                    local c = n.char
                     if last ~= at then
                         local tl = taglist[at]
                         pushcontent()
                         currentnesting = tl
-                        currentparagraph = getattr(n,a_taggedpar)
+                        currentparagraph = n[a_taggedpar]
                         currentattribute = at
                         last = at
                         pushentry(currentnesting)
@@ -1883,13 +1853,13 @@ local function collectresults(head,list) -- is last used (we also have currentat
                         end
                         -- We need to intercept this here; maybe I will also move this
                         -- to a regular setter at the tex end.
-                        local r = getattr(n,a_reference)
+                        local r = n[a_reference]
                         if r then
                             referencehash[tl[#tl]] = r -- fulltag
                         end
                         --
                     elseif last then
-                        local ap = getattr(n,a_taggedpar)
+                        local ap = n[a_taggedpar]
                         if ap ~= currentparagraph then
                             pushcontent(currentparagraph,ap)
                             pushentry(currentnesting)
@@ -1904,7 +1874,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                             report_export("%w<!-- processing glyph %C tagged %a) -->",currentdepth,c,at)
                         end
                     end
-                    local s = getattr(n,a_exportstatus)
+                    local s = n[a_exportstatus]
                     if s then
                         c = s
                     end
@@ -1913,7 +1883,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                             report_export("%w<!-- skipping last glyph -->",currentdepth)
                         end
                     elseif c == 0x20 then
-                        local a = getattr(n,a_characters)
+                        local a = n[a_characters]
                         nofcurrentcontent = nofcurrentcontent + 1
                         if a then
                             if trace_export then
@@ -1924,7 +1894,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                             currentcontent[nofcurrentcontent] = " "
                         end
                     else
-                        local fc = fontchar[getfont(n)]
+                        local fc = fontchar[n.font]
                         if fc then
                             fc = fc and fc[c]
                             if fc then
@@ -1949,23 +1919,20 @@ local function collectresults(head,list) -- is last used (we also have currentat
             end
         elseif id == disc_code then -- probably too late
             if keephyphens then
-                local pre = getfield(n,"pre")
-                if pre and not getnext(pre) and getid(pre) == glyph_code and getchar(pre) == hyphencode then
+                local pre = n.pre
+                if pre and not pre.next and pre.id == glyph_code and pre.char == hyphencode then
                     nofcurrentcontent = nofcurrentcontent + 1
                     currentcontent[nofcurrentcontent] = hyphen
                 end
             end
-            local replace = getfield(n,"replace")
-            if replace then
-                collectresults(replace,nil)
-            end
+            collectresults(n.replace,nil)
         elseif id == glue_code then
             -- we need to distinguish between hskips and vskips
-            local ca = getattr(n,a_characters)
+            local ca = n[a_characters]
             if ca == 0 then
                 -- skip this one ... already converted special character (node-acc)
             elseif ca then
-                local a = getattr(n,a_tagged)
+                local a = n[a_tagged]
                 if a then
                     local c = specialspaces[ca]
                     if last ~= a then
@@ -1975,13 +1942,13 @@ local function collectresults(head,list) -- is last used (we also have currentat
                         end
                         pushcontent()
                         currentnesting = tl
-                        currentparagraph = getattr(n,a_taggedpar)
+                        currentparagraph = n[a_taggedpar]
                         currentattribute = a
                         last = a
                         pushentry(currentnesting)
                         -- no reference check (see above)
                     elseif last then
-                        local ap = getattr(n,a_taggedpar)
+                        local ap = n[a_taggedpar]
                         if ap ~= currentparagraph then
                             pushcontent(currentparagraph,ap)
                             pushentry(currentnesting)
@@ -2002,11 +1969,11 @@ local function collectresults(head,list) -- is last used (we also have currentat
                     currentcontent[nofcurrentcontent] = c
                 end
             else
-                local subtype = getsubtype(n)
+                local subtype = n.subtype
                 if subtype == userskip_code then
-                    if getfield(getfield(n,"spec"),"width") > threshold then
+                    if n.spec.width > threshold then
                         if last and not somespace[currentcontent[nofcurrentcontent]] then
-                            local a = getattr(n,a_tagged)
+                            local a = n[a_tagged]
                             if a == last then
                                 if trace_export then
                                     report_export("%w<!-- injecting spacing 5a -->",currentdepth)
@@ -2033,7 +2000,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                     end
                 elseif subtype == spaceskip_code or subtype == xspaceskip_code then
                     if not somespace[currentcontent[nofcurrentcontent]] then
-                        local a = getattr(n,a_tagged)
+                        local a = n[a_tagged]
                         if a == last then
                             if trace_export then
                                 report_export("%w<!-- injecting spacing 7 (stay in element) -->",currentdepth)
@@ -2062,7 +2029,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                                 nofcurrentcontent = nofcurrentcontent - 1
                             end
                         elseif not somespace[r] then
-                            local a = getattr(n,a_tagged)
+                            local a = n[a_tagged]
                             if a == last then
                                 if trace_export then
                                     report_export("%w<!-- injecting spacing 1 (end of line, stay in element) -->",currentdepth)
@@ -2090,9 +2057,9 @@ local function collectresults(head,list) -- is last used (we also have currentat
                 end
             end
         elseif id == hlist_code or id == vlist_code then
-            local ai = getattr(n,a_image)
+            local ai = n[a_image]
             if ai then
-                local at = getattr(n,a_tagged)
+                local at = n[a_tagged]
                 if nofcurrentcontent > 0 then
                     pushcontent()
                     pushentry(currentnesting) -- ??
@@ -2105,21 +2072,18 @@ local function collectresults(head,list) -- is last used (we also have currentat
                 currentparagraph = nil
             else
                 -- we need to determine an end-of-line
-                local list = getlist(n)
-                if list then
-                    collectresults(list,n)
-                end
+                collectresults(n.list,n)
             end
         elseif id == kern_code then
-            local kern = getfield(n,"kern")
+            local kern = n.kern
             if kern > 0 then
                 local limit = threshold
-                if p and getid(p) == glyph_code then
-                    limit = fontquads[getfont(p)] / 4
+                if p and p.id == glyph_code then
+                    limit = fontquads[p.font] / 4
                 end
                 if kern > limit then
                     if last and not somespace[currentcontent[nofcurrentcontent]] then
-                        local a = getattr(n,a_tagged)
+                        local a = n[a_tagged]
                         if a == last then
                             if not somespace[currentcontent[nofcurrentcontent]] then
                                 if trace_export then
@@ -2159,7 +2123,7 @@ function nodes.handlers.export(head) -- hooks into the page builder
     end
  -- continueexport()
     restart = true
-    collectresults(tonut(head))
+    collectresults(head)
     if trace_export then
         report_export("%w<!-- stop flushing page -->",currentdepth)
     end
@@ -2169,12 +2133,12 @@ end
 
 function builders.paragraphs.tag(head)
     noftextblocks = noftextblocks + 1
-    for n in traverse_id(hlist_code,tonut(head)) do
-        local subtype = getsubtype(n)
+    for n in traverse_id(hlist_code,head) do
+        local subtype = n.subtype
         if subtype == line_code then
-            setattr(n,a_textblock,noftextblocks)
+            n[a_textblock] = noftextblocks
         elseif subtype == glue_code or subtype == kern_code then
-            setattr(n,a_textblock,0)
+            n[a_textblock] = 0
         end
     end
     return false

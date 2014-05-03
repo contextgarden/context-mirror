@@ -66,6 +66,21 @@ local function makenameparser(str)
     end
 end
 
+-- local parser = makenameparser("Japan1")
+-- local parser = makenameparser()
+-- local function test(str)
+--     local b, a = lpegmatch(parser,str)
+--     print((a and table.serialize(b)) or b)
+-- end
+-- test("a.sc")
+-- test("a")
+-- test("uni1234")
+-- test("uni1234.xx")
+-- test("uni12349876")
+-- test("u123400987600")
+-- test("index1234")
+-- test("Japan1.123")
+
 local function tounicode16(unicode,name)
     if unicode < 0x10000 then
         return format("%04X",unicode)
@@ -331,18 +346,3 @@ function mappings.addtounicode(data,filename)
         report_fonts("%s tounicode entries added, ligatures %s",nl+ns,ns)
     end
 end
-
--- local parser = makenameparser("Japan1")
--- local parser = makenameparser()
--- local function test(str)
---     local b, a = lpegmatch(parser,str)
---     print((a and table.serialize(b)) or b)
--- end
--- test("a.sc")
--- test("a")
--- test("uni1234")
--- test("uni1234.xx")
--- test("uni12349876")
--- test("u123400987600")
--- test("index1234")
--- test("Japan1.123")

@@ -115,30 +115,13 @@ local v_first            = variables.first
 local v_text             = variables.text
 local v_column           = variables.column
 
-local nuts               = nodes.nuts
-local nodepool           = nuts.pool
-
-local tonode             = nuts.tonode
-local tonut              = nuts.tonut
-
-local copy_node_list     = nuts.copy_list
-local hpack_nodes        = nuts.hpack -- nodes.fasthpack not really faster here
-local traverse_id        = nuts.traverse_id
-local free_node_list     = nuts.flush_list
-local insert_node_after  = nuts.insert_after
-local insert_node_before = nuts.insert_before
-local linked_nodes       = nuts.linked
-
-local getfield           = nuts.getfield
-local setfield           = nuts.setfield
-local getnext            = nuts.getnext
-local getprev            = nuts.getprev
-local getid              = nuts.getid
-local getattr            = nuts.getattr
-local setattr            = nuts.setattr
-local getsubtype         = nuts.getsubtype
-local getbox             = nuts.getbox
-local getlist            = nuts.getlist
+local copy_node_list     = node.copy_list
+local slide_nodes        = node.slide
+local hpack_nodes        = node.hpack -- nodes.fasthpack not really faster here
+local traverse_id        = node.traverse_id
+local free_node_list     = node.flush_list
+local insert_node_after  = node.insert_after
+local insert_node_before = node.insert_before
 
 local nodecodes          = nodes.nodecodes
 local listcodes          = nodes.listcodes
@@ -161,7 +144,7 @@ local userdefined_code   = whatsitcodes.userdefined
 local dir_code           = whatsitcodes.dir
 local localpar_code      = whatsitcodes.localpar
 
-local nodepool           = nuts.pool
+local nodepool           = nodes.pool
 
 local new_kern           = nodepool.kern
 local new_glue           = nodepool.glue
@@ -172,12 +155,13 @@ local new_latelua        = nodepool.latelua
 
 local texgetcount        = tex.getcount
 local texgetdimen        = tex.getdimen
+local texgetbox          = tex.getbox
 local texget             = tex.get
 
 local points             = number.points
 
 local isleftpage         = layouts.status.isleftpage
-local registertogether   = builders.paragraphs.registertogether -- tonode
+local registertogether   = builders.paragraphs.registertogether
 
 local jobpositions       = job.positions
 local getposition        = jobpositions.position
@@ -186,7 +170,7 @@ local a_margindata       = attributes.private("margindata")
 
 local inline_mark        = nodepool.userids["margins.inline"]
 
-local margins            = { }
+local margins            =  { }
 typesetters.margins      = margins
 
 local locations          = { v_left, v_right, v_inner, v_outer } -- order might change
@@ -249,7 +233,7 @@ local function showstore(store,banner,location)
     if next(store) then
         for i, si in table.sortedpairs(store) do
             local si =store[i]
-            report_margindata("%s: stored in %a at %s: %a => %s",banner,location,i,validstring(si.name,"no name"),nodes.toutf(getlist(si.box)))
+            report_margindata("%s: stored in %a at %s: %a => %s",banner,location,i,validstring(si.name,"no name"),nodes.toutf(si.box.list))
         end
     else
         report_margindata("%s: nothing stored in location %a",banner,location)
@@ -258,7 +242,7 @@ end
 
 function margins.save(t)
     setmetatable(t,defaults)
-    local content  = getbox(t.number)
+    local content  = texgetbox(t.number)
     local location = t.location
     local category = t.category
     local inline   = t.inline
@@ -326,11 +310,11 @@ function margins.save(t)
         -- nice is to make a special status table mechanism
         local leftmargindistance  = texgetdimen("naturalleftmargindistance")
         local rightmargindistance = texgetdimen("naturalrightmargindistance")
-        local strutbox        = getbox("strutbox")
-        t.strutdepth          = getfield(strutbox,"depth")
-        t.strutheight         = getfield(strutbox,"height")
-        t.leftskip            = getfield(texget("leftskip"),"width")  -- we're not in forgetall
-        t.rightskip           = getfield(texget("rightskip"),"width") -- we're not in forgetall
+        local strutbox        = texgetbox("strutbox")
+        t.strutdepth          = strutbox.depth
+        t.strutheight         = strutbox.height
+        t.leftskip            = texget("leftskip").width  -- we're not in forgetall
+        t.rightskip           = texget("rightskip").width -- we're not in forgetall
         t.leftmargindistance  = leftmargindistance -- todo:layoutstatus table
         t.rightmargindistance = rightmargindistance
         t.leftedgedistance    = texgetdimen("naturalleftedgedistance")
@@ -343,7 +327,7 @@ function margins.save(t)
         --
      -- t.realpageno          = texgetcount("realpageno")
         if inline then
-            context(tonode(new_usernumber(inline_mark,nofsaved))) -- or use a normal node
+            context(new_usernumber(inline_mark,nofsaved))
             store[nofsaved] = t -- no insert
             nofinlined = nofinlined + 1
         else
@@ -420,7 +404,7 @@ local function realign(current,candidate)
     -- we assume that list is a hbox, otherwise we had to take the whole current
     -- in order to get it right
 
-    setfield(current,"width",0)
+    current.width = 0
     local anchornode, move_x
 
     -- this mess is needed for alignments (combinations) so we use that
@@ -462,9 +446,9 @@ local function realign(current,candidate)
             report_margindata("realigned %a, location %a, margin %a",candidate.n,location,margin)
         end
     end
-    local list = hpack_nodes(linked_nodes(anchornode,new_kern(-delta),getlist(current),new_kern(delta)))
-    setfield(current,"list",list)
-    setfield(current,"width",0)
+
+    current.list = hpack_nodes(anchornode .. new_kern(-delta) .. current.list .. new_kern(delta))
+    current.width = 0
 end
 
 local function realigned(current,a)
@@ -506,8 +490,7 @@ local function markovershoot(current)
     v_anchors = v_anchors + 1
     cache[v_anchors] = stacked
     local anchor = new_latelua(format("typesetters.margins.ha(%s)",v_anchors)) -- todo: alleen als offset > line
-    local list = hpack_nodes(linked_nodes(anchor,getlist(current)))
-    setfield(current,"list",list)
+    current.list = hpack_nodes(anchor .. current.list)
 end
 
 local function getovershoot(location)
@@ -529,10 +512,10 @@ end
 
 local function inject(parent,head,candidate)
     local box          = candidate.box
-    local width        = getfield(box,"width")
-    local height       = getfield(box,"height")
-    local depth        = getfield(box,"depth")
-    local shift        = getfield(box,"shift")
+    local width        = box.width
+    local height       = box.height
+    local depth        = box.depth
+    local shift        = box.shift
     local stack        = candidate.stack
     local location     = candidate.location
     local method       = candidate.method
@@ -541,7 +524,7 @@ local function inject(parent,head,candidate)
     local baseline     = candidate.baseline
     local strutheight  = candidate.strutheight
     local strutdepth   = candidate.strutdepth
-    local psubtype     = getsubtype(parent)
+    local psubtype     = parent.subtype
     local offset       = stacked[location]
     local firstonstack = offset == false or offset == nil
     nofstatus          = nofstatus  + 1
@@ -563,7 +546,7 @@ local function inject(parent,head,candidate)
         end
     end
     candidate.width = width
-    candidate.hsize = getfield(parent,"width") -- we can also pass textwidth
+    candidate.hsize = parent.width -- we can also pass textwidth
     candidate.psubtype = psubtype
     if trace_margindata then
         report_margindata("processing, index %s, height %p, depth %p, parent %s",candidate.n,height,depth,listcodes[psubtype])
@@ -590,7 +573,7 @@ local function inject(parent,head,candidate)
     -- experimental.
     -- -- --
     if method == v_top then
-        local delta = height - getfield(parent,"height")
+        local delta = height - parent.height
         if trace_margindata then
             report_margindata("top aligned by %p",delta)
         end
@@ -633,23 +616,22 @@ local function inject(parent,head,candidate)
         shift = shift + delta
         offset = offset + delta
     end
-    setfield(box,"shift",shift)
-    setfield(box,"width",0)
+    box.shift = shift
+    box.width = 0
     if not head then
         head = box
-    elseif getid(head) == whatsit_code and getsubtype(head) == localpar_code then
+    elseif head.id == whatsit_code and head.subtype == localpar_code then
         -- experimental
-        if getfield(head,"dir") == "TRT" then
-            local list = hpack_nodes(linked_nodes(new_kern(candidate.hsize),getlist(box),new_kern(-candidate.hsize)))
-            setfield(box,"list",list)
+        if head.dir == "TRT" then
+            box.list = hpack_nodes(new_kern(candidate.hsize) .. box.list .. new_kern(-candidate.hsize))
         end
         insert_node_after(head,head,box)
     else
-        setfield(head,"prev",box)
-        setfield(box,"next",head)
+        head.prev = box
+        box.next = head
         head = box
     end
-    setattr(box,a_margindata,nofstatus)
+    box[a_margindata] = nofstatus
     if trace_margindata then
         report_margindata("injected, location %a, shift %p",location,shift)
     end
@@ -674,12 +656,12 @@ local function flushinline(parent,head)
     local current = head
     local done = false
     local continue = false
-    local room, don, con, list
+    local room, don, con
     while current and nofinlined > 0 do
-        local id = getid(current)
+        local id = current.id
         if id == whatsit_code then
-            if getsubtype(current) == userdefined_code and getfield(current,"user_id") == inline_mark then
-                local n = getfield(current,"value")
+            if current.subtype == userdefined_code and current.user_id == inline_mark then
+                local n = current.value
                 local candidate = inlinestore[n]
                 if candidate then -- no vpack, as we want to realign
                     inlinestore[n] = nil
@@ -692,12 +674,11 @@ local function flushinline(parent,head)
             end
         elseif id == hlist_code or id == vlist_code then
             -- optional (but sometimes needed)
-            list, don, con = flushinline(current,getlist(current))
-            setfield(current,"list",list)
+            current.list, don, con = flushinline(current,current.list)
             continue = continue or con
             done = done or don
         end
-        current = getnext(current)
+        current = current.next
     end
     return head, done, continue
 end
@@ -705,7 +686,7 @@ end
 local a_linenumber = attributes.private('linenumber')
 
 local function flushed(scope,parent) -- current is hlist
-    local head = getlist(parent)
+    local head = parent.list
     local done = false
     local continue = false
     local room, con, don
@@ -721,7 +702,7 @@ local function flushed(scope,parent) -- current is hlist
                     done = true
                     continue = continue or con
                     nofstored = nofstored - 1
-                    registertogether(tonode(parent),room) -- !! tonode
+                    registertogether(parent,room)
                 else
                     break
                 end
@@ -730,18 +711,17 @@ local function flushed(scope,parent) -- current is hlist
     end
     if nofinlined > 0 then
         if done then
-            setfield(parent,"list",head)
+            parent.list = head
         end
         head, don, con = flushinline(parent,head)
         continue = continue or con
         done = done or don
     end
     if done then
-        local a = getattr(head,a_linenumber) -- hack .. we need a more decent critical attribute inheritance mechanism
-        local l = hpack_nodes(head,getfield(parent,"width"),"exactly")
-        setfield(parent,"list",l)
+        local a = head[a_linenumber] -- hack .. we need a more decent critical attribute inheritance mechanism
+        parent.list = hpack_nodes(head,parent.width,"exactly")
         if a then
-            setattr(l,a_linenumber,a)
+            parent.list[a_linenumber] = a
         end
      -- resetstacked()
     end
@@ -756,15 +736,14 @@ local function handler(scope,head,group)
         if trace_margindata then
             report_margindata("flushing stage one, stored %s, scope %s, delayed %s, group %a",nofstored,scope,nofdelayed,group)
         end
-        head = tonut(head)
         local current = head
         local done = false
         while current do
-            local id = getid(current)
-            if (id == vlist_code or id == hlist_code) and not getattr(current,a_margindata) then
+            local id = current.id
+            if (id == vlist_code or id == hlist_code) and not current[a_margindata] then
                 local don, continue = flushed(scope,current)
                 if don then
-                    setattr(current,a_margindata,0) -- signal to prevent duplicate processing
+                    current[a_margindata] = 0 -- signal to prevent duplicate processing
                     if continue then
                         markovershoot(current)
                     end
@@ -774,12 +753,12 @@ local function handler(scope,head,group)
                     done = true
                 end
             end
-            current = getnext(current)
+            current = current.next
         end
      -- if done then
         resetstacked() -- why doesn't done work ok here?
      -- end
-        return tonode(head), done
+        return head, done
     else
         return head, false
     end
@@ -832,11 +811,11 @@ local function finalhandler(head)
         local current = head
         local done = false
         while current do
-            local id = getid(current)
+            local id = current.id
             if id == hlist_code then
-                local a = getattr(current,a_margindata)
+                local a = current[a_margindata]
                 if not a or a == 0 then
-                    finalhandler(getlist(current))
+                    finalhandler(current.list)
                 elseif realigned(current,a) then
                     done = true
                     if nofdelayed == 0 then
@@ -844,9 +823,9 @@ local function finalhandler(head)
                     end
                 end
             elseif id == vlist_code then
-                finalhandler(getlist(current))
+                finalhandler(current.list)
             end
-            current = getnext(current)
+            current = current.next
         end
         return head, done
     else
@@ -859,10 +838,7 @@ function margins.finalhandler(head)
      -- if trace_margindata then
      --     report_margindata("flushing stage two, instore: %s, delayed: %s",nofstored,nofdelayed)
      -- end
-head = tonut(head)
-local head, done = finalhandler(head)
-head = tonode(head)
-        return head, done
+        return finalhandler(head)
     else
         return head, false
     end

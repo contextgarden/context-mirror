@@ -26,8 +26,6 @@ local lpegmatch, lpegpatterns, replacer = lpeg.match, lpeg.patterns, lpeg.replac
 --    |   ___________|____________                              |
 --   / \ /                        \                             |
 --   urn:example:animal:ferret:nose               interpretable as extension
---
--- also nice: http://url.spec.whatwg.org/ (maybe some day ...)
 
 url       = url or { }
 local url = url
@@ -45,7 +43,7 @@ local hexdigit    = R("09","AF","af")
 local plus        = P("+")
 local nothing     = Cc("")
 local escapedchar = (percent * C(hexdigit * hexdigit)) / tochar
-local escaped     = (plus / " ") + escapedchar -- so no loc://foo++.tex
+local escaped     = (plus / " ") + escapedchar
 
 local noslash     = P("/") / ""
 
@@ -191,11 +189,7 @@ local function hashed(str) -- not yet ok (/test?test)
     return s
 end
 
--- inspect(hashed("template:///test"))
--- inspect(hashed("template:///test++.whatever"))
--- inspect(hashed("template:///test%2B%2B.whatever"))
--- inspect(hashed("template:///test%x.whatever"))
--- inspect(hashed("tem%2Bplate:///test%x.whatever"))
+-- inspect(hashed("template://test"))
 
 -- Here we assume:
 --

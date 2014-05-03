@@ -21,6 +21,7 @@ local attributes, nodes, node = attributes, nodes, node
 local allocate            = utilities.storage.allocate, utilities.storage.mark
 local mark                = utilities.storage.allocate, utilities.storage.mark
 
+
 local nodeinjections      = backends.nodeinjections
 local codeinjections      = backends.codeinjections
 
@@ -32,6 +33,9 @@ local colors              = attributes.colors
 local references          = structures.references
 local tasks               = nodes.tasks
 
+local hpack_list          = node.hpack
+local list_dimensions     = node.dimensions
+
 local trace_backend       = false  trackers.register("nodes.backend",      function(v) trace_backend      = v end)
 local trace_references    = false  trackers.register("nodes.references",   function(v) trace_references   = v end)
 local trace_destinations  = false  trackers.register("nodes.destinations", function(v) trace_destinations = v end)
@@ -39,27 +43,6 @@ local trace_destinations  = false  trackers.register("nodes.destinations", funct
 local report_reference    = logs.reporter("backend","references")
 local report_destination  = logs.reporter("backend","destinations")
 local report_area         = logs.reporter("backend","areas")
-
-local nuts                = nodes.nuts
-local nodepool            = nuts.pool
-
-local tonode              = nuts.tonode
-local tonut               = nuts.tonut
-
-local getfield            = nuts.getfield
-local setfield            = nuts.setfield
-local getnext             = nuts.getnext
-local getprev             = nuts.getprev
-local getid               = nuts.getid
-local getlist             = nuts.getlist
-local getattr             = nuts.getattr
-local setattr             = nuts.setattr
-local getsubtype          = nuts.getsubtype
-
-local hpack_list          = nuts.hpack
-local list_dimensions     = nuts.dimensions
-local traverse            = nuts.traverse
-local find_node_tail      = nuts.tail
 
 local nodecodes           = nodes.nodecodes
 local skipcodes           = nodes.skipcodes
@@ -80,18 +63,21 @@ local dir_code            = whatcodes.dir
 
 local line_code           = listcodes.line
 
-local new_rule            = nodepool.rule
+local nodepool            = nodes.pool
+
 local new_kern            = nodepool.kern
 
+local traverse            = node.traverse
+local find_node_tail      = node.tail or node.slide
 local tosequence          = nodes.tosequence
 
 -- local function dimensions(parent,start,stop)
---     stop = stop and getnext(stop)
+--     stop = stop and stop.next
 --     if parent then
 --         if stop then
---             return list_dimensions(getfield(parent,"glue_set"),getfield(parent,"glue_sign"),getfield(parent,"glue_order"),start,stop)
+--             return list_dimensions(parent.glue_set,parent.glue_sign,parent.glue_order,start,stop)
 --         else
---             return list_dimensions(getfield(parent,"glue_set"),getfield(parent,"glue_sign",getfield(parent,"glue_order"),start)
+--             return list_dimensions(parent.glue_set,parent.glue_sign,parent.glue_order,start)
 --         end
 --     else
 --         if stop then
@@ -106,9 +92,9 @@ local tosequence          = nodes.tosequence
 
 local function dimensions(parent,start,stop)
     if parent then
-        return list_dimensions(getfield(parent,"glue_set"),getfield(parent,"glue_sign"),getfield(parent,"glue_order"),start,stop and getnext(stop))
+        return list_dimensions(parent.glue_set,parent.glue_sign,parent.glue_order,start,stop and stop.next)
     else
-        return list_dimensions(start,stop and getnext(stop))
+        return list_dimensions(start,stop and stop.next)
     end
 end
 
@@ -125,25 +111,25 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
             if trace_backend then
                 report_area("head: %04i %s %s %s => w=%p, h=%p, d=%p, c=%s",reference,pardir or "---",txtdir or "----",tosequence(first,last,true),width,height,depth,resolved)
             end
-            setfield(result,"next",first)
-            setfield(first,"prev",result)
+            result.next = first
+            first.prev = result
             return result, last
         else
             if trace_backend then
                 report_area("middle: %04i %s %s => w=%p, h=%p, d=%p, c=%s",reference,pardir or "---",txtdir or "----",tosequence(first,last,true),width,height,depth,resolved)
             end
-            local prev = getprev(first)
+            local prev = first.prev
             if prev then
-                setfield(result,"next",first)
-                setfield(result,"prev",prev)
-                setfield(prev,"next",result)
-                setfield(first,"prev",result)
+                result.next = first
+                result.prev = prev
+                prev.next = result
+                first.prev = result
             else
-                setfield(result,"next",first)
-                setfield(first,"prev",result)
+                result.next = first
+                first.prev = result
             end
-            if first == getnext(head) then
-                setfield(head,"next",result) -- hm, weird
+            if first == head.next then
+                head.next = result -- hm, weird
             end
             return head, last
         end
@@ -153,9 +139,9 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
 end
 
 local function inject_list(id,current,reference,make,stack,pardir,txtdir)
-    local width, height, depth, correction = getfield(current,"width"), getfield(current,"height"), getfield(current,"depth"), 0
+    local width, height, depth, correction = current.width, current.height, current.depth, 0
     local moveright = false
-    local first = getlist(current)
+    local first = current.list
     if id == hlist_code then -- box_code line_code
         -- can be either an explicit hbox or a line and there is no way
         -- to recognize this; anyway only if ht/dp (then inline)
@@ -163,17 +149,17 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
         if first then
             if sr and sr[2] then
                 local last = find_node_tail(first)
-                if getid(last) == glue_code and getsubtype(last) == rightskip_code then
-                    local prev = getprev(last)
-                    moveright = getid(first) == glue_code and getsubtype(first) == leftskip_code
-                    if prev and getid(prev) == glue_code and getsubtype(prev) == parfillskip_code then
-                        width = dimensions(current,first,getprev(prev)) -- maybe not current as we already take care of it
+                if last.id == glue_code and last.subtype == rightskip_code then
+                    local prev = last.prev
+                    moveright = first.id == glue_code and first.subtype == leftskip_code
+                    if prev and prev.id == glue_code and prev.subtype == parfillskip_code then
+                        width = dimensions(current,first,prev.prev) -- maybe not current as we already take care of it
                     else
-                        if moveright and getfield(first,"writable") then
-                            width = width - getfield(getfield(first,"spec"),"stretch") * getfield(current,"glue_set") * getfield(current,"glue_sign")
+                        if moveright and first.writable then
+                            width = width - first.spec.stretch*current.glue_set * current.glue_sign
                         end
-                        if getfield(last,"writable") then
-                            width = width - getfield(getfield(last,"spec"),"stretch") * getfield(current,"glue_set") * getfield(current,"glue_sign")
+                        if last.writable then
+                            width = width - last.spec.stretch*current.glue_set * current.glue_sign
                         end
                     end
                 end
@@ -198,21 +184,19 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
             report_area("box: %04i %s %s: w=%p, h=%p, d=%p, c=%s",reference,pardir or "---",txtdir or "----",width,height,depth,resolved)
         end
         if not first then
-            setfield(current,"list",result)
+            current.list = result
         elseif moveright then -- brr no prevs done
             -- result after first
-            local n = getnext(first)
-            setfield(result,"next",n)
-            setfield(first,"next",result)
-            setfield(result,"prev",first)
-            if n then
-                setfield(n,"prev",result)
-            end
+            local n = first.next
+            result.next = n
+            first.next = result
+            result.prev = first
+            if n then n.prev = result end
         else
             -- first after result
-            setfield(result,"next",first)
-            setfield(first,"prev",result)
-            setfield(current,"list",result)
+            result.next = first
+            first.prev = result
+            current.list = result
         end
     end
 end
@@ -225,9 +209,9 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
         pardir = pardir or "==="
         txtdir = txtdir or "==="
         while current do
-            local id = getid(current)
+            local id = current.id
             if id == hlist_code or id == vlist_code then
-                local r = getattr(current,attribute)
+                local r = current[attribute]
                 -- somehow reference is true so the following fails (second one not done) in
                 --    test \goto{test}[page(2)] test \gotobox{test}[page(2)]
                 -- so let's wait till this fails again
@@ -238,33 +222,32 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
                 if r then
                     done[r] = (done[r] or 0) + 1
                 end
-                local list = getlist(current)
+                local list = current.list
                 if list then
-                    local h, ok
-                    h, ok , pardir, txtdir = inject_areas(list,attribute,make,stack,done,r or skip or 0,current,pardir,txtdir)
-                    setfield(current,"list",h)
+                    local _
+                    current.list, _, pardir, txtdir = inject_areas(list,attribute,make,stack,done,r or skip or 0,current,pardir,txtdir)
                 end
                 if r then
                     done[r] = done[r] - 1
                 end
             elseif id == whatsit_code then
-                local subtype = getsubtype(current)
+                local subtype = current.subtype
                 if subtype == localpar_code then
-                    pardir = getfield(current,"dir")
+                    pardir = current.dir
                 elseif subtype == dir_code then
-                    txtdir = getfield(current,"dir")
+                    txtdir = current.dir
                 end
-            elseif id == glue_code and getsubtype(current) == leftskip_code then -- any glue at the left?
+            elseif id == glue_code and current.subtype == leftskip_code then -- any glue at the left?
                 --
             else
-                local r = getattr(current,attribute)
+                local r = current[attribute]
                 if not r then
                     -- just go on, can be kerns
                 elseif not reference then
                     reference, first, last, firstdir = r, current, current, txtdir
                 elseif r == reference then
                     last = current
-                elseif (done[reference] or 0) == 0 then -- or id == glue_code and getsubtype(current) == right_skip_code
+                elseif (done[reference] or 0) == 0 then -- or id == glue_code and current.subtype == right_skip_code
                     if not skip or r > skip then -- maybe no > test
                         head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
                         reference, first, last, firstdir = nil, nil, nil, nil
@@ -273,7 +256,7 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
                     reference, first, last, firstdir = r, current, current, txtdir
                 end
             end
-            current = getnext(current)
+            current = current.next
         end
         if reference and (done[reference] or 0) == 0 then
             head = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
@@ -288,32 +271,32 @@ local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) 
         txtdir = txtdir or "==="
         local current = head
         while current do
-            local id = getid(current)
+            local id = current.id
             if id == hlist_code or id == vlist_code then
-                local r = getattr(current,attribute)
+                local r = current[attribute]
                 if r and not done[r] then
                     done[r] = true
                     inject_list(id,current,r,make,stack,pardir,txtdir)
                 end
-                local list = getlist(current)
+                local list = current.list
                 if list then
-                    setfield(current,"list",inject_area(list,attribute,make,stack,done,current,pardir,txtdir))
+                    current.list = inject_area(list,attribute,make,stack,done,current,pardir,txtdir)
                 end
             elseif id == whatsit_code then
-                local subtype = getsubtype(current)
+                local subtype = current.subtype
                 if subtype == localpar_code then
-                    pardir = getfield(current,"dir")
+                    pardir = current.dir
                 elseif subtype == dir_code then
-                    txtdir = getfield(current,"dir")
+                    txtdir = current.dir
                 end
             else
-                local r = getattr(current,attribute)
+                local r = current[attribute]
                 if r and not done[r] then
                     done[r] = true
                     head, current = inject_range(head,current,current,r,make,stack,parent,pardir,txtdir)
                 end
             end
-            current = getnext(current)
+            current = current.next
         end
     end
     return head, true
@@ -321,6 +304,12 @@ end
 
 -- tracing
 
+local nodepool       = nodes.pool
+
+local new_rule       = nodepool.rule
+local new_kern       = nodepool.kern
+
+local set_attribute  = node.set_attribute
 local register_color = colors.register
 
 local a_color        = attributes.private('color')
@@ -357,15 +346,15 @@ local function colorize(width,height,depth,n,reference,what)
         height = 65536/2
         depth  = height
     end
-    local rule = new_rule(width,height,depth) -- todo: use tracer rule
-    setattr(rule,a_colormodel,1) -- gray color model
-    setattr(rule,a_color,u_color)
-    setattr(rule,a_transparency,u_transparency)
+    local rule = new_rule(width,height,depth)
+    rule[a_colormodel] = 1 -- gray color model
+    rule[a_color] = u_color
+    rule[a_transparency] = u_transparency
     if width < 0 then
         local kern = new_kern(width)
-        setfield(rule,"width",-width)
-        setfield(kern,"next",rule)
-        setfield(rule,"prev",kern)
+        rule.width = -width
+        kern.next = rule
+        rule.prev = kern
         return kern
     else
         return rule
@@ -373,6 +362,9 @@ local function colorize(width,height,depth,n,reference,what)
 end
 
 -- references:
+
+local nodepool        = nodes.pool
+local new_kern        = nodepool.kern
 
 local texsetattribute = tex.setattribute
 local texsetcount     = tex.setcount
@@ -418,25 +410,22 @@ local function makereference(width,height,depth,reference)
         end
         local annot = nodeinjections.reference(width,height,depth,set)
         if annot then
-annot = tonut(annot)
             nofreferences = nofreferences + 1
             local result, current
             if trace_references then
                 local step = 65536
                 result = hpack_list(colorize(width,height-step,depth-step,2,reference,"reference")) -- step subtracted so that we can see seperate links
-                setfield(result,"width",0)
+                result.width = 0
                 current = result
             end
             if current then
-                setfield(current,"next",annot)
+                current.next = annot
             else
                 result = annot
             end
             references.registerpage(n)
             result = hpack_list(result,0)
-            setfield(result,"width",0)
-            setfield(result,"height",0)
-            setfield(result,"depth",0)
+            result.width, result.height, result.depth = 0, 0, 0
             if cleanupreferences then stack[reference] = nil end
             return result, resolved
         elseif trace_references then
@@ -447,19 +436,9 @@ annot = tonut(annot)
     end
 end
 
--- function nodes.references.handler(head)
---     if topofstack > 0 then
---         return inject_areas(head,attribute,makereference,stack,done)
---     else
---         return head, false
---     end
--- end
-
 function nodes.references.handler(head)
     if topofstack > 0 then
-        head = tonut(head)
-        local head, done = inject_areas(head,attribute,makereference,stack,done)
-        return tonode(head), done
+        return inject_areas(head,attribute,makereference,stack,done)
     else
         return head, false
     end
@@ -505,12 +484,12 @@ local function makedestination(width,height,depth,reference)
             end
             for n=1,#name do
                 local rule = hpack_list(colorize(width,height,depth,3,reference,"destination"))
-                setfield(rule,"width",0)
+                rule.width = 0
                 if not result then
                     result, current = rule, rule
                 else
-                    setfield(current,"next",rule)
-                    setfield(rule,"prev",current)
+                    current.next = rule
+                    rule.prev = current
                     current = rule
                 end
                 width, height = width - step, height - step
@@ -520,12 +499,12 @@ local function makedestination(width,height,depth,reference)
         for n=1,#name do
             local annot = nodeinjections.destination(width,height,depth,name[n],view)
             if annot then
-annot = tonut(annot) -- obsolete soon
+                -- probably duplicate
                 if not result then
                     result  = annot
                 else
-                    setfield(current,"next",annot)
-                    setfield(annot,"prev",current)
+                    current.next = annot
+                    annot.prev = current
                 end
                 current = find_node_tail(annot)
             end
@@ -533,9 +512,7 @@ annot = tonut(annot) -- obsolete soon
         if result then
             -- some internal error
             result = hpack_list(result,0)
-            setfield(result,"width",0)
-            setfield(result,"height",0)
-            setfield(result,"depth",0)
+            result.width, result.height, result.depth = 0, 0, 0
         end
         if cleanupdestinations then stack[reference] = nil end
         return result, resolved
@@ -544,24 +521,13 @@ annot = tonut(annot) -- obsolete soon
     end
 end
 
--- function nodes.destinations.handler(head)
---     if topofstack > 0 then
---         return inject_area(head,attribute,makedestination,stack,done) -- singular
---     else
---         return head, false
---     end
--- end
-
 function nodes.destinations.handler(head)
     if topofstack > 0 then
-        head = tonut(head)
-        local head, done = inject_areas(head,attribute,makedestination,stack,done)
-        return tonode(head), done
+        return inject_area(head,attribute,makedestination,stack,done) -- singular
     else
         return head, false
     end
 end
-
 
 -- will move
 

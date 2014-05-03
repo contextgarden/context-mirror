@@ -57,16 +57,6 @@ local helpers             = fonts.helpers
 local hashes              = fonts.hashes
 local currentfont         = font.current
 
-local nuts                = nodes.nuts
-local tonut               = nuts.tonut
-
-local getfield            = nuts.getfield
-local getattr             = nuts.getattr
-local getfont             = nuts.getfont
-
-local setfield            = nuts.setfield
-local setattr             = nuts.setattr
-
 local texgetattribute     = tex.getattribute
 local texsetattribute     = tex.setattribute
 local texgetdimen         = tex.getdimen
@@ -137,8 +127,8 @@ function fonts.helpers.name(tfmdata)
     return file.basename(type(tfmdata) == "number" and properties[tfmdata].name or tfmdata.properties.name)
 end
 
-utilities.strings.formatters.add(formatters,"font:name",    [["'"..fontname(%s).."'"]], { fontname = fonts.helpers.name })
-utilities.strings.formatters.add(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]], { sequenced = table.sequenced })
+utilities.strings.formatters.add(formatters,"font:name",    [["'"..fonts.helpers.name(%s).."'"]])
+utilities.strings.formatters.add(formatters,"font:features",[["'"..table.sequenced(%s," ",true).."'"]])
 
 -- ... like font-sfm or so
 
@@ -1911,25 +1901,24 @@ end
 
 -- a fontkern plug:
 
+local copy_node = node.copy
+local kern      = nodes.pool.register(nodes.pool.kern())
 
-local copy_node = nuts.copy
-local kern      = nuts.pool.register(nuts.pool.kern())
-
-setattr(kern,attributes.private('fontkern'),1) -- we can have several, attributes are shared
+node.set_attribute(kern,attributes.private('fontkern'),1) -- we can have several, attributes are shared
 
 nodes.injections.installnewkern(function(k)
     local c = copy_node(kern)
-    setfield(c,"kern",k)
+    c.kern = k
     return c
 end)
 
-directives.register("nodes.injections.fontkern", function(v) setfield(kern,"subtype",v and 0 or 1) end)
+directives.register("nodes.injections.fontkern", function(v) kern.subtype = v and 0 or 1 end)
 
 -- here
 
 local trace_analyzing    = false  trackers.register("otf.analyzing", function(v) trace_analyzing = v end)
 
-local otffeatures        = constructors.newfeatures("otf")
+local otffeatures        = fonts.constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
 
 local analyzers          = fonts.analyzers
@@ -1937,7 +1926,7 @@ local methods            = analyzers.methods
 
 local unsetvalue         = attributes.unsetvalue
 
-local traverse_by_id     = nuts.traverse_id
+local traverse_by_id     = node.traverse_id
 
 local a_color            = attributes.private('color')
 local a_colormodel       = attributes.private('colormodel')
@@ -1964,17 +1953,16 @@ local names = {
 
 local function markstates(head)
     if head then
-        head = tonut(head)
-        local model = getattr(head,a_colormodel) or 1
+        local model = head[a_colormodel] or 1
         for glyph in traverse_by_id(glyph_code,head) do
-            local a = getattr(glyph,a_state)
+            local a = glyph[a_state]
             if a then
                 local name = names[a]
                 if name then
                     local color = m_color[name]
                     if color then
-                        setattr(glyph,a_colormodel,model)
-                        setattr(glyph,a_color,color)
+                        glyph[a_colormodel] = model
+                        glyph[a_color] = color
                     end
                 end
             end
@@ -2017,8 +2005,8 @@ registerotffeature { -- adapts
 
 function methods.nocolor(head,font,attr)
     for n in traverse_by_id(glyph_code,head) do
-        if not font or getfont(n) == font then
-            setattr(n,a_color,unsetvalue)
+        if not font or n.font == font then
+            n[a_color] = unsetvalue
         end
     end
     return head, true

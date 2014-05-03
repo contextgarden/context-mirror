@@ -15,72 +15,45 @@ if not modules then modules = { } end modules ["page-mix"] = {
 
 local concat = table.concat
 
+local nodecodes        = nodes.nodecodes
+local gluecodes        = nodes.gluecodes
+local nodepool         = nodes.pool
+
+local hlist_code       = nodecodes.hlist
+local vlist_code       = nodecodes.vlist
+local kern_code        = nodecodes.kern
+local glue_code        = nodecodes.glue
+local penalty_code     = nodecodes.penalty
+local insert_code      = nodecodes.ins
+local mark_code        = nodecodes.mark
+
+local new_hlist        = nodepool.hlist
+local new_vlist        = nodepool.vlist
+local new_glue         = nodepool.glue
+
+local hpack            = node.hpack
+local vpack            = node.vpack
+local freenode         = node.free
+local concatnodes      = nodes.concat
+
+local texgetbox        = tex.getbox
+local texsetbox        = tex.setbox
+local texgetskip       = tex.getskip
+
+local points           = number.points
+
+local settings_to_hash = utilities.parsers.settings_to_hash
+
+local variables        = interfaces.variables
+local v_yes            = variables.yes
+local v_global         = variables["global"]
+local v_local          = variables["local"]
+local v_columns        = variables.columns
+
 local trace_state  = false  trackers.register("mixedcolumns.trace",  function(v) trace_state  = v end)
 local trace_detail = false  trackers.register("mixedcolumns.detail", function(v) trace_detail = v end)
 
 local report_state = logs.reporter("mixed columns")
-
-local nodecodes           = nodes.nodecodes
-local gluecodes           = nodes.gluecodes
-
-local hlist_code          = nodecodes.hlist
-local vlist_code          = nodecodes.vlist
-local kern_code           = nodecodes.kern
-local glue_code           = nodecodes.glue
-local penalty_code        = nodecodes.penalty
-local insert_code         = nodecodes.ins
-local mark_code           = nodecodes.mark
-local rule_code           = nodecodes.rule
-
-local topskip_code        = gluecodes.topskip
-local lineskip_code       = gluecodes.lineskip
-local baselineskip_code   = gluecodes.baselineskip
-local userskip_code       = gluecodes.userskip
-
-local nuts                = nodes.nuts
-local tonode              = nuts.tonode
-local nodetostring        = nuts.tostring
-local listtoutf           = nodes.listtoutf
-
-local hpack               = nuts.hpack
-local vpack               = nuts.vpack
-local freenode            = nuts.free
-local concatnodes         = nuts.concat
-local slidenodes          = nuts.slide -- ok here as we mess with prev links intermediately
-local traversenodes       = nuts.traverse
-
-local getfield            = nuts.getfield
-local setfield            = nuts.setfield
-local getnext             = nuts.getnext
-local getprev             = nuts.getprev
-local getid               = nuts.getid
-local getlist             = nuts.getlist
-local getsubtype          = nuts.getsubtype
-local getbox              = nuts.getbox
-local setbox              = nuts.setbox
-local getskip             = nuts.getskip
-local getattribute        = nuts.getattribute
-
-local nodepool            = nuts.pool
-
-local new_hlist           = nodepool.hlist
-local new_vlist           = nodepool.vlist
-local new_glue            = nodepool.glue
-
-local points              = number.points
-
-local settings_to_hash    = utilities.parsers.settings_to_hash
-
-local variables           = interfaces.variables
-local v_yes               = variables.yes
-local v_global            = variables["global"]
-local v_local             = variables["local"]
-local v_columns           = variables.columns
-local v_fixed             = variables.fixed
-local v_auto              = variables.auto
-local v_none              = variables.none
-local v_more              = variables.more
-local v_less              = variables.less
 
 pagebuilders              = pagebuilders or { }
 pagebuilders.mixedcolumns = pagebuilders.mixedcolumns or { }
@@ -104,13 +77,13 @@ local function collectinserts(result,nxt,nxtid)
     local inserts, currentskips, nextskips, inserttotal = { }, 0, 0, 0
     while nxt do
         if nxtid == insert_code then
-            inserttotal = inserttotal + getfield(nxt,"height") + getfield(nxt,"depth")
-            local s = getsubtype(nxt)
+            inserttotal = inserttotal + nxt.height + nxt.depth
+            local s = nxt.subtype
             local c = inserts[s]
             if not c then
                 c = { }
                 inserts[s] = c
-                local width = getfield(getskip(s),"width")
+                local width = texgetskip(s).width
                 if not result.inserts[s] then
                     currentskips = currentskips + width
                 end
@@ -127,9 +100,9 @@ local function collectinserts(result,nxt,nxtid)
         else
             break
         end
-        nxt = getnext(nxt)
+        nxt = nxt.next
         if nxt then
-            nxtid = getid(nxt)
+            nxtid = nxt.id
         else
             break
         end
@@ -155,30 +128,30 @@ end
 local function discardtopglue(current,discarded)
     local size = 0
     while current do
-        local id = getid(current)
+        local id = current.id
         if id == glue_code then
-            size = size + getfield(getfield(current,"spec"),"width")
+            size = size + current.spec.width
             discarded[#discarded+1] = current
-            current = getnext(current)
+            current = current.next
         elseif id == penalty_code then
-            if getfield(current,"penalty") == forcedbreak then
+            if current.penalty == forcedbreak then
                 discarded[#discarded+1] = current
-                current = getnext(current)
-                while current and getid(current) == glue_code do
-                    size = size + getfield(getfield(current,"spec"),"width")
+                current = current.next
+                while current and current.id == glue_code do
+                    size = size + current.spec.width
                     discarded[#discarded+1] = current
-                    current = getnext(current)
+                    current = current.next
                 end
             else
                 discarded[#discarded+1] = current
-                current = getnext(current)
+                current = current.next
             end
         else
             break
         end
     end
     if current then
-        setfield(current,"prev",nil) -- prevent look back
+        current.prev = nil
     end
     return current, size
 end
@@ -189,13 +162,13 @@ local function stripbottomglue(results,discarded)
         local r = results[i]
         local t = r.tail
         while t and t ~= r.head do
-            local prev = getprev(t)
+            local prev = t.prev
             if not prev then
                 break
             end
-            local id = getid(t)
+            local id = t.id
             if id == penalty_code then
-                if getfield(t,"penalty") == forcedbreak then
+                if t.penalty == forcedbreak then
                     break
                 else
                     discarded[#discarded+1] = t
@@ -204,7 +177,7 @@ local function stripbottomglue(results,discarded)
                 end
             elseif id == glue_code then
                 discarded[#discarded+1] = t
-                local width = getfield(getfield(t,"spec"),"width")
+                local width = t.spec.width
                 if trace_state then
                     report_state("columns %s, discarded bottom glue %p",i,width)
                 end
@@ -228,21 +201,20 @@ local function setsplit(specification) -- a rather large function
         report_state("fatal error, no box")
         return
     end
-    local list = getbox(box)
+    local list = texgetbox(box)
     if not list then
         report_state("fatal error, no list")
         return
     end
-    local head = getlist(list) or specification.originalhead
+    local head = list.head or specification.originalhead
     if not head then
         report_state("fatal error, no head")
         return
     end
-    slidenodes(head) -- we can have set prev's to nil to prevent backtracking
     local discarded = { }
     local originalhead = head
-    local originalwidth = specification.originalwidth or getfield(list,"width")
-    local originalheight = specification.originalheight or getfield(list,"height")
+    local originalwidth = specification.originalwidth or list.width
+    local originalheight = specification.originalheight or list.height
     local current = head
     local skipped = 0
     local height = 0
@@ -305,20 +277,20 @@ local function setsplit(specification) -- a rather large function
         local current = start
         -- first skip over glue and penalty
         while current do
-            local id = getid(current)
+            local id = current.id
             if id == glue_code or id == penalty_code then
-                current = getprev(current)
+                current = current.prev
             else
                 break
             end
         end
         -- then skip over content
         while current do
-            local id = getid(current)
+            local id = current.id
             if id == glue_code or id == penalty_code then
                 break
             else
-                current = getprev(current)
+                current = current.prev
             end
         end
         if not current then
@@ -352,7 +324,7 @@ local function setsplit(specification) -- a rather large function
             if current == head then
                 result.tail = head
             else
-                result.tail = getprev(current)
+                result.tail = current.prev
             end
             result.height = height
             result.depth  = depth
@@ -372,9 +344,6 @@ local function setsplit(specification) -- a rather large function
                 report_state("setting collector to column %s",column)
             end
             current, skipped = discardtopglue(current,discarded)
-            if trace_detail and skipped ~= 0 then
-                report_state("check > column 1, discarded %p",skipped)
-            end
             head = current
             return true, skipped
         end
@@ -397,7 +366,7 @@ local function setsplit(specification) -- a rather large function
             end
         end
         if trace_detail then
-            report_state("%-7s > column %s, delta %p, threshold %p, advance %p, total %p, target %p => %a (height %p, depth %p, skip %p)",
+            report_state("%-7s > column %s, delta %p, threshold %p, advance %p, total %p, target %p, discarded %p => %a (height %p, depth %p, skip %p)",
                 where,curcol,delta,threshold,advance,total,target,state,skipped,height,depth,skip)
         end
         return state, skipped
@@ -418,7 +387,7 @@ local function setsplit(specification) -- a rather large function
     head = current
 
     local function process_skip(current,nxt)
-        local advance = getfield(getfield(current,"spec"),"width")
+        local advance = current.spec.width
         if advance ~= 0 then
             local state, skipped = checked(advance,"glue")
             if trace_state then
@@ -442,7 +411,7 @@ local function setsplit(specification) -- a rather large function
     end
 
     local function process_kern(current,nxt)
-        local advance = getfield(current,"kern")
+        local advance = current.kern
         if advance ~= 0 then
             local state, skipped = checked(advance,"kern")
             if trace_state then
@@ -465,10 +434,10 @@ local function setsplit(specification) -- a rather large function
 
     local function process_rule(current,nxt)
         -- simple variant of h|vlist
-        local advance = getfield(current,"height") -- + getfield(current,"depth")
+        local advance = current.height -- + current.depth
         local state, skipped = checked(advance+currentskips,"rule")
         if trace_state then
-            report_state("%-7s > column %s, state %a, rule, advance %p, height %p","rule",column,state,advance,inserttotal,height)
+            report_state("%-7s > column %s, state %a, rule, advance %p, height %p","line",column,state,advance,inserttotal,height)
             if skipped ~= 0 then
                 report_state("%-7s > column %s, discarded %p","rule",column,skipped)
             end
@@ -482,7 +451,7 @@ local function setsplit(specification) -- a rather large function
         else
             height = height + currentskips
         end
-        depth = getfield(current,"depth")
+        depth = current.depth
         skip  = 0
     end
 
@@ -493,12 +462,12 @@ local function setsplit(specification) -- a rather large function
     -- [chapter] [penalty] [section] [penalty] [first line]
 
     local function process_penalty(current,nxt)
-        local penalty = getfield(current,"penalty")
+        local penalty = current.penalty
         if penalty == 0 then
             lastlocked  = nil
             lastcurrent = nil
         elseif penalty == forcedbreak then
-            local needed  = getattribute(current,a_checkedbreak)
+            local needed  = current[a_checkedbreak]
             local proceed = not needed or needed == 0
             if not proceed then
                 local available = target - height
@@ -546,12 +515,12 @@ local function setsplit(specification) -- a rather large function
     end
 
     local function process_list(current,nxt)
-        local nxtid = nxt and getid(nxt)
+        local nxtid = nxt and nxt.id
         line = line + 1
         local inserts, currentskips, nextskips, inserttotal = nil, 0, 0, 0
-        local advance = getfield(current,"height") -- + getfield(current,"depth")
+        local advance = current.height -- + current.depth
         if trace_state then
-            report_state("%-7s > column %s, content: %s","line",column,listtoutf(getlist(current),true,true))
+            report_state("%-7s > column %s, content: %s","line",column,listtoutf(current.list,true,true))
         end
         if nxt and (nxtid == insert_code or nxtid == mark_code) then
             nxt, inserts, localskips, insertskips, inserttotal = collectinserts(result,nxt,nxtid)
@@ -572,7 +541,7 @@ local function setsplit(specification) -- a rather large function
         else
             height = height + currentskips
         end
-        depth = getfield(current,"depth")
+        depth = current.depth
         skip  = 0
         if inserts then
             -- so we already collect them ... makes backtracking tricky ... alternatively
@@ -586,8 +555,8 @@ local function setsplit(specification) -- a rather large function
 
     while current do
 
-        local id  = getid(current)
-        local nxt = getnext(current)
+        local id  = current.id
+        local nxt = current.next
 
         backtracked = false
 
@@ -660,7 +629,7 @@ local function setsplit(specification) -- a rather large function
     specification.overflow       = overflow
     specification.discarded      = discarded
 
-    setfield(getbox(specification.box),"list",nil)
+    texgetbox(specification.box).list = nil
 
     return specification
 end
@@ -672,12 +641,12 @@ function mixedcolumns.finalize(result)
             local r = results[i]
             local h = r.head
             if h then
-                setfield(h,"prev",nil)
+                h.prev = nil
                 local t = r.tail
                 if t then
-                    setfield(t,"next",nil)
+                    t.next = nil
                 else
-                    setfield(h,"next",nil)
+                    h.next = nil
                     r.tail = h
                 end
                 for c, list in next, r.inserts do
@@ -686,13 +655,13 @@ function mixedcolumns.finalize(result)
                         local l = list[i]
                         local h = new_hlist()
                         t[i] = h
-                        setfield(h,"list",getfield(l,"head"))
-                        setfield(h,"height",getfield(l,"height"))
-                        setfield(h,"depth",getfield(l,"depth"))
-                        setfield(l,"head",nil)
+                        h.head = l.head
+                        h.height = l.height
+                        h.depth = l.depth
+                        l.head = nil
                     end
-                    setfield(t[1],"prev",nil)  -- needs checking
-                    setfield(t[#t],"next",nil) -- needs checking
+                    t[1].prev  = nil -- needs checking
+                    t[#t].next = nil -- needs checking
                     r.inserts[c] = t
                 end
             end
@@ -764,13 +733,13 @@ function mixedcolumns.getsplit(result,n)
         return new_glue(result.originalwidth)
     end
 
-    setfield(h,"prev",nil) -- move up
+    h.prev = nil -- move up
     local strutht    = result.strutht
     local strutdp    = result.strutdp
     local lineheight = strutht + strutdp
 
     local v = new_vlist()
-    setfield(v,"list",h)
+    v.head = h
 
  -- local v = vpack(h,"exactly",height)
 
@@ -792,14 +761,14 @@ function mixedcolumns.getsplit(result,n)
         dp = result.depth
     end
 
-    setfield(v,"width",wd)
-    setfield(v,"height",ht)
-    setfield(v,"depth",dp)
+    v.width  = wd
+    v.height = ht
+    v.depth  = dp
 
     if trace_state then
-        local id = getid(h)
+        local id = h.id
         if id == hlist_code then
-            report_state("flush, column %s, grid %a, width %p, height %p, depth %p, %s: %s",n,grid,wd,ht,dp,"top line",listtoutf(getlist(h)))
+            report_state("flush, column %s, grid %a, width %p, height %p, depth %p, %s: %s",n,grid,wd,ht,dp,"top line",nodes.toutf(h.list))
         else
             report_state("flush, column %s, grid %a, width %p, height %p, depth %p, %s: %s",n,grid,wd,ht,dp,"head node",nodecodes[id])
         end
@@ -808,8 +777,8 @@ function mixedcolumns.getsplit(result,n)
     for c, list in next, r.inserts do
         local l = concatnodes(list)
         local b = vpack(l) -- multiple arguments, todo: fastvpack
-     -- setbox("global",c,b)
-        setbox(c,b)
+     -- texsetbox("global",c,b)
+        texsetbox(c,b)
         r.inserts[c] = nil
     end
 
@@ -853,7 +822,7 @@ end
 
 function commands.mixgetsplit(n)
     if result then
-        context(tonode(mixedcolumns.getsplit(result,n)))
+        context(mixedcolumns.getsplit(result,n))
     end
 end
 
@@ -865,13 +834,13 @@ end
 
 function commands.mixflushrest()
     if result then
-        context(tonode(mixedcolumns.getrest(result)))
+        context(mixedcolumns.getrest(result))
     end
 end
 
 function commands.mixflushlist()
     if result then
-        context(tonode(mixedcolumns.getlist(result)))
+        context(mixedcolumns.getlist(result))
     end
 end
 

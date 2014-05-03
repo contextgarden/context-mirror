@@ -110,15 +110,12 @@ transform identity;
 for z=origin,right,up: z transformed identity = z; endfor
 
 % color constants
-color black, white, red, green, blue, cyan, magenta, yellow, background;
+color black, white, red, green, blue, background;
 black = (0,0,0);
 white = (1,1,1);
 red = (1,0,0);
 green = (0,1,0);
 blue = (0,0,1);
-cyan = (0,1,1);
-magenta = (1,0,1);
-yellow = (1,1,0);
 background = white;   % The user can reset this
 
 % color part selection for within
@@ -363,17 +360,9 @@ enddef;
 def filldraw expr c =
   addto currentpicture contour c withpen currentpen
   _op_ enddef;
-% def drawdot expr z =
-%   addto currentpicture contour makepath currentpen shifted z
-%   _op_ enddef;
-
-def drawdot expr p =
-    if pair p :
-        addto currentpicture doublepath p withpen currentpen _op_
-    else :
-        errmessage("drawdot only accepts a pair expression")
-    fi
-enddef ;
+def drawdot expr z =
+  addto currentpicture contour makepath currentpen shifted z
+  _op_ enddef;
 
 def unfill expr c = fill c withcolor background enddef;
 def undraw expr p = draw p withcolor background enddef;

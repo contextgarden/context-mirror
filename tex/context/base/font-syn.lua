@@ -81,33 +81,7 @@ directives.register("fonts.usesystemfonts", function(v) usesystemfonts = toboole
 
 local P, C, Cc, Cs = lpeg.P, lpeg.C, lpeg.Cc, lpeg.Cs
 
--- -- what to do with these -- --
---
--- thin -> thin
---
--- regu -> regular  -> normal
--- norm -> normal   -> normal
--- stan -> standard -> normal
--- medi -> medium
--- ultr -> ultra
--- ligh -> light
--- heav -> heavy
--- blac -> black
--- thin
--- book
--- verylight
---
--- buch        -> book
--- buchschrift -> book
--- halb        -> demi
--- halbfett    -> demi
--- mitt        -> medium
--- mittel      -> medium
--- fett        -> bold
--- mage        -> light
--- mager       -> light
--- nord        -> normal
--- gras        -> normal
+-- what to do with 'thin'
 
 local weights = Cs ( -- not extra
     P("demibold")
@@ -116,7 +90,6 @@ local weights = Cs ( -- not extra
   + P("ultrabold")
   + P("extrabold")
   + P("ultralight")
-  + P("extralight")
   + P("bold")
   + P("demi")
   + P("semi")
@@ -129,17 +102,6 @@ local weights = Cs ( -- not extra
   + P("bol")
   + P("regular")  / "normal"
 )
-
--- numeric_weights = {
---     200 = "extralight",
---     300 = "light",
---     400 = "book",
---     500 = "medium",
---     600 = "demi",
---     700 = "bold",
---     800 = "heavy",
---     900 = "black",
--- }
 
 local normalized_weights = sparse {
     regular = "normal",
@@ -154,7 +116,6 @@ local styles = Cs (
   + P("roman")          / "normal"
   + P("ital")           / "italic" -- might be tricky
   + P("ita")            / "italic" -- might be tricky
---+ P("obli")           / "oblique"
 )
 
 local normalized_styles = sparse {
@@ -168,7 +129,6 @@ local widths = Cs(
   + P("thin")
   + P("expanded")
   + P("cond")     / "condensed"
---+ P("expa")     / "expanded"
   + P("normal")
   + P("book")     / "normal"
 )
@@ -308,9 +268,6 @@ filters.dfont = fontloader.info
 -- glyphs so here we first load and then discard which is a waste. In the past it did
 -- free memory because a full load was done. One of these things that goes unnoticed.
 --
--- missing: names, units_per_em, design_range_bottom, design_range_top, design_size,
--- pfminfo, top_side_bearing
-
 -- function fontloader.fullinfo(...) -- check with taco what we get / could get
 --     local ff = fontloader.open(...)
 --     if ff then
@@ -326,7 +283,7 @@ filters.dfont = fontloader.info
 -- Phillip suggested this faster variant but it's still a hack as fontloader.info should
 -- return these keys/values (and maybe some more) but at least we close the loader which
 -- might save some memory in the end.
-
+--
 -- function fontloader.fullinfo(name)
 --     local ff = fontloader.open(name)
 --     if ff then
@@ -344,9 +301,8 @@ filters.dfont = fontloader.info
 --             design_size         = fields.design_size         and ff.design_size,
 --             italicangle         = fields.italicangle         and ff.italicangle,
 --             pfminfo             = fields.pfminfo             and ff.pfminfo,
---             top_side_bearing    = fields.top_side_bearing    and ff.top_side_bearing,
 --         }
---         setmetatableindex(d,function(t,k)
+--         table.setmetatableindex(d,function(t,k)
 --             report_names("warning, trying to access field %a in font table of %a",k,name)
 --         end)
 --         fontloader.close(ff)
@@ -357,25 +313,18 @@ filters.dfont = fontloader.info
 -- end
 
 -- As we have lazy loading anyway, this one still is full and with less code than
--- the previous one. But this depends on the garbage collector to kick in.
+-- the previous one.
 
 function fontloader.fullinfo(...)
     local ff = fontloader.open(...)
     if ff then
         local d = { } -- ff is userdata so [1] or # fails on it
-        setmetatableindex(d,ff)
+        table.setmetatableindex(d,ff)
         return d
     else
         return nil, "error in loading font"
     end
 end
-
--- We don't get the design_* values here as for that the fontloader has to load feature
--- info and therefore we're not much better off than using 'open'.
---
--- if tonumber(status.luatex_version) > 78 or (tonumber(status.luatex_version) == 78 and tonumber(status.luatex_revision) > 0) then
---     fontloader.fullinfo = fontloader.info
--- end
 
 filters.otf = fontloader.fullinfo
 filters.ttf = fontloader.fullinfo
@@ -598,7 +547,7 @@ local function check_name(data,result,filename,modification,suffix,subfont)
     fullname   = fullname   or fontname
     familyname = familyname or fontname
     -- we do these sparse
-    local units      = result.units_per_em or 1000 -- can be zero too
+    local units      = result.units_per_em or 1000
     local minsize    = result.design_range_bottom or 0
     local maxsize    = result.design_range_top or 0
     local designsize = result.design_size or 0
@@ -622,7 +571,7 @@ local function check_name(data,result,filename,modification,suffix,subfont)
         style         = style,
         width         = width,
         variant       = variant,
-        units         = units        ~= 1000 and units        or nil,
+        units         = units        ~= 1000 and unit         or nil,
         pfmwidth      = pfmwidth     ~=    0 and pfmwidth     or nil,
         pfmweight     = pfmweight    ~=    0 and pfmweight    or nil,
         angle         = angle        ~=    0 and angle        or nil,
@@ -631,9 +580,6 @@ local function check_name(data,result,filename,modification,suffix,subfont)
         designsize    = designsize   ~=    0 and designsize   or nil,
         modification  = modification ~=    0 and modification or nil,
     }
--- inspect(filename)
--- inspect(result)
--- inspect(specifications[#specifications])
 end
 
 local function cleanupkeywords()

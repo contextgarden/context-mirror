@@ -20,7 +20,7 @@ local tasks             = nodes.tasks
 local new_kern          = nodepool.kern
 local new_glyph         = nodepool.glyph
 
-local slide_nodelist    = node.slide
+local find_tail         = node.slide
 local write_node        = node.write
 local free_node         = node.free
 local copy_nodelist     = node.copy_list
@@ -73,7 +73,7 @@ function streams.collect(head,where)
         end
         local last = dana[#dana]
         if last then
-            local tail = slide_nodelist(last)
+            local tail = find_tail(last)
             tail.next, head.prev = head, tail
         elseif last == false then
             dana[#dana] = head
@@ -202,7 +202,7 @@ function streams.synchronize(list) -- this is an experiment !
                     else
                         -- this is not yet ok as we also need to keep an eye on vertical spacing
                         -- so we might need to do some splitting or whatever
-                        local tail = vbox.list and slide_nodelist(vbox.list)
+                        local tail = vbox.list and find_tail(vbox.list)
                         local n, delta = 0, delta_height -- for tracing
                         while delta > 0 do
                             -- we need to add some interline penalties

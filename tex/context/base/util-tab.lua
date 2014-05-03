@@ -316,7 +316,7 @@ function table.fastserialize(t,prefix)
     -- not sorted
     -- only number and string indices (currently)
 
-    local r = { type(prefix) == "string" and prefix or "return" }
+    local r = { prefix or "return" }
     local m = 1
 
     local function fastserialize(t,outer) -- no mixes
@@ -376,6 +376,7 @@ function table.fastserialize(t,prefix)
         end
         return r
     end
+
     return concat(fastserialize(t,true))
 end
 

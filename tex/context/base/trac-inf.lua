@@ -123,10 +123,7 @@ function statistics.show()
         -- this code will move
         local register = statistics.register
         register("used platform", function()
-            local mask = lua.mask or "ascii"
-            return format("%s, type: %s, binary subtree: %s, symbol mask: %s (%s)",
-                os.platform or "unknown",os.type or "unknown", environment.texos or "unknown",
-                mask,mask == "utf" and "τεχ" or "tex")
+            return format("%s, type: %s, binary subtree: %s",os.platform or "unknown",os.type or "unknown", environment.texos or "unknown")
         end)
         register("luatex banner", function()
             return lower(status.banner)

@@ -6,12 +6,9 @@ if not modules then modules = { } end modules ['typo-bld'] = { -- was node-par
     license   = "see context related readme files"
 }
 
--- no need for nuts in the one-line demo (that might move anyway)
-
 local insert, remove = table.insert, table.remove
 
-builders                 = builders or { }
-local builders           = builders
+local builders, nodes, node = builders, nodes, node
 
 builders.paragraphs      = builders.paragraphs or { }
 local parbuilders        = builders.paragraphs
@@ -36,12 +33,11 @@ local texsetattribute    = tex.setattribute
 local texnest            = tex.nest
 local texlists           = tex.lists
 
-local nodes              = nodes
 local nodepool           = nodes.pool
 local new_baselineskip   = nodepool.baselineskip
 local new_lineskip       = nodepool.lineskip
-local insert_node_before = nodes.insert_before
-local hpack_node         = nodes.hpack
+local insert_node_before = node.insert_before
+local hpack_node         = node.hpack
 
 local starttiming        = statistics.starttiming
 local stoptiming         = statistics.stoptiming
@@ -173,6 +169,7 @@ function constructors.disable()
     enabled = false
 end
 
+
 callbacks.register('linebreak_filter', processor, "breaking paragraps into lines")
 
 statistics.register("linebreak processing time", function()
@@ -229,16 +226,7 @@ local function report(groupcode,head)
     report_page_builder("  list     : %s",head and nodeidstostring(head) or "<empty>")
 end
 
--- use tex.[sg]etlist
-
 function builders.buildpage_filter(groupcode)
- -- -- this needs checking .. gets called too often
- -- if group_code ~= "after_output" then
- --     if trace_page_builder then
- --         report(groupcode)
- --     end
- --     return nil, false
- -- end
     local head, done = texlists.contrib_head, false
     if head then
         starttiming(builders)
@@ -249,16 +237,14 @@ function builders.buildpage_filter(groupcode)
         stoptiming(builders)
      -- -- doesn't work here (not passed on?)
      -- tex.pagegoal = tex.vsize - tex.dimen.d_page_floats_inserted_top - tex.dimen.d_page_floats_inserted_bottom
-        texlists.contrib_head = head or nil -- needs checking
--- tex.setlist("contrib_head",head,head and nodes.tail(head))
-        return done and head or true -- no return value needed
+        texlists.contrib_head = head
+        return done and head or true
     else
         if trace_page_builder then
             report(groupcode)
         end
-        return nil, false -- no return value needed
+        return nil, false
     end
-
 end
 
 callbacks.register('vpack_filter',     builders.vpack_filter,     "vertical spacing etc")

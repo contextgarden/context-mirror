@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['bibl-tra'] = {
 
 -- temporary hack, needed for transition
 
-if not publications then
+if not punlications then
 
     local hacks = utilities.storage.allocate()
 

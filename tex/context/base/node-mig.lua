@@ -6,38 +6,25 @@ if not modules then modules = { } end modules ['node-mig'] = {
     license   = "see context related readme files"
 }
 
--- todo: insert_after
-
 local format = string.format
 
-local trace_migrations = false trackers.register("nodes.migrations", function(v) trace_migrations = v end)
+local attributes, nodes, node = attributes, nodes, node
 
-local report_nodes = logs.reporter("nodes","migrations")
-
-local attributes    = attributes
-local nodes         = nodes
-local tasks         = nodes.tasks
-
-local nuts          = nodes.nuts
-local tonut         = nuts.tonut
-
-local getnext       = nuts.getnext
-local getid         = nuts.getid
-local getlist       = nuts.getlist
-local getattr       = nuts.getattr
-
-local setfield      = nuts.setfield
-local setattr       = nuts.setattr
-
-local remove_node   = nuts.remove
+local remove_nodes  = nodes.remove
 
 local nodecodes     = nodes.nodecodes
+local tasks         = nodes.tasks
+
 local hlist_code    = nodecodes.hlist
 local vlist_code    = nodecodes.vlist
 local insert_code   = nodecodes.ins
 local mark_code     = nodecodes.mark
 
 local a_migrated    = attributes.private("migrated")
+
+local trace_migrations = false trackers.register("nodes.migrations", function(v) trace_migrations = v end)
+
+local report_nodes = logs.reporter("nodes","migrations")
 
 local migrate_inserts, migrate_marks, inserts_too
 
@@ -46,42 +33,32 @@ local t_inserts, t_marks, t_sweeps = 0, 0, 0
 local function locate(head,first,last,ni,nm)
     local current = head
     while current do
-        local id = getid(current)
+        local id = current.id
         if id == vlist_code or id == hlist_code then
-            local list = getlist(current)
-            if list then
-                list, first, last, ni, nm = locate(list,first,last,ni,nm)
-                setfield(current,"list",list)
-            end
-            current = getnext(current)
+            current.list, first, last, ni, nm = locate(current.list,first,last,ni,nm)
+            current = current.next
         elseif migrate_inserts and id == insert_code then
             local insert
-            head, current, insert = remove_node(head,current)
-            setfield(insert,"next",nil)
+            head, current, insert = remove_nodes(head,current)
+            insert.next = nil
             if first then
-                setfield(insert,"prev",last)
-                setfield(last,"next",insert)
+                insert.prev, last.next = last, insert
             else
-                setfield(insert,"prev",nil)
-                first = insert
+                insert.prev, first = nil, insert
             end
-            last = insert
-            ni = ni + 1
+            last, ni = insert, ni + 1
         elseif migrate_marks and id == mark_code then
             local mark
-            head, current, mark = remove_node(head,current)
-            setfield(mark,"next",nil)
+            head, current, mark = remove_nodes(head,current)
+            mark.next = nil
             if first then
-                setfield(mark,"prev",last)
-                setfield(last,"next",mark)
+                mark.prev, last.next = last, mark
             else
-                setfield(mark,"prev",nil)
-                first = mark
+                mark.prev, first = nil, mark
             end
-            last = mark
-            nm = nm + 1
+            last, nm = mark, nm + 1
         else
-            current = getnext(current)
+            current= current.next
         end
     end
     return head, first, last, ni, nm
@@ -93,43 +70,39 @@ function nodes.handlers.migrate(head,where)
         if trace_migrations then
             report_nodes("migration sweep %a",where)
         end
-        local current = tonut(head)
+        local current = head
         while current do
-            local id = getid(current)
+            local id = current.id
             -- inserts_too is a temp hack, we should only do them when it concerns
             -- newly placed (flushed) inserts
-            if id == vlist_code or id == hlist_code or (inserts_too and id == insert_code) and not getattr(current,a_migrated) then
-                setattr(current,a_migrated,1)
+            if id == vlist_code or id == hlist_code or (inserts_too and id == insert_code) and not current[a_migrated] then
+                current[a_migrated] = 1
                 t_sweeps = t_sweeps + 1
-                local h = getlist(current)
+                local h = current.list
                 local first, last, ni, nm
                 while h do
-                    local id = getid(h)
+                    local id = h.id
                     if id == vlist_code or id == hlist_code then
                         h, first, last, ni, nm = locate(h,first,last,0,0)
                     end
-                    h = getnext(h)
+                    h = h.next
                 end
                 if first then
-                    t_inserts = t_inserts + ni
-                    t_marks = t_marks + nm
+                    t_inserts, t_marks = t_inserts + ni, t_marks + nm
                     if trace_migrations and (ni > 0 or nm > 0) then
                         report_nodes("sweep %a, container %a, %s inserts and %s marks migrated outwards during %a",
                             t_sweeps,nodecodes[id],ni,nm,where)
                     end
-                    -- inserts after head, use insert_after
-                    local n = getnext(current)
+                    -- inserts after head
+                    local n = current.next
                     if n then
-                        setfield(last,"next",n)
-                        setfield(n,"prev",last)
+                        last.next, n.prev = n, last
                     end
-                    setfield(current,"next",first)
-                    setfield(first,"prev",current)
-                    done = true
-                    current = last
+                    current.next, first.prev = first, current
+                    done, current = true, last
                 end
             end
-            current = getnext(next)
+            current = current.next
         end
         return head, done
     end

@@ -279,9 +279,7 @@ return {
         --
         "dorecurse", "doloop", "exitloop", "dostepwiserecurse", "recurselevel", "recursedepth", "dofastloopcs", "dowith",
         --
-        "newconstant", "setnewconstant", "setconstant", "setconstantvalue",
-        "newconditional", "settrue", "setfalse", "settruevalue", "setfalsevalue",
-        --
+        "newconstant", "setnewconstant", "newconditional", "settrue", "setfalse", "setconstant",
         "newmacro", "setnewmacro", "newfraction",
         "newsignal",
         --
@@ -366,8 +364,6 @@ return {
         "lefttoright", "righttoleft","synchronizelayoutdirection","synchronizedisplaydirection","synchronizeinlinedirection",
         --
         "lesshyphens", "morehyphens", "nohyphens", "dohyphens",
-        --
-        "Ucheckedstartdisplaymath", "Ucheckedstopdisplaymath",
         --
     }
 }

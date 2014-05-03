@@ -81,6 +81,9 @@
 \let\setupsidebars\setupsidebar
 
 \unexpanded\def\startsidebar
+  {\dosingleempty\anch_sidebars_start}
+
+\unexpanded\def\startsidebar
   {\dodoubleempty\anch_sidebars_start}
 
 \def\anch_sidebars_start[#1][#2]%
@@ -120,7 +123,7 @@
        \d_anch_sidebars_distance\dimexpr\scratchdimen+\numexpr\m_level-\plusone\relax\dimexpr\scratchdistance\relax\relax
      \fi
    \fi
-   \startpositionoverlay{\v!text-1}%
+   \startpositionoverlay{text-1}%
      \normalexpanded{\setMPpositiongraphicrange % maybe expand in definition
        {b:sidebar:\the\c_anch_sidebars_n}%
        {e:sidebar:\the\c_anch_sidebars_n}%
@@ -204,6 +207,9 @@
    \fi}
 
 \let\setupmarginrules\setupmarginrule
+
+\unexpanded\def\startmarginrule
+  {\dosingleempty\anch_marginrules_start}
 
 \unexpanded\def\startmarginrule
   {\dosingleempty\anch_marginrules_start}

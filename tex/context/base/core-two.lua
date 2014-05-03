@@ -54,7 +54,7 @@ end
 
 function jobpasses.getdata(id,index,default)
     local jti = collected[id]
-    local value = jti and jti[index]
+    local value = jit and jti[index]
     return value ~= "" and value or default or ""
 end
 

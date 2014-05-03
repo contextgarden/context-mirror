@@ -6,29 +6,21 @@ if not modules then modules = { } end modules ['lpdf-nod'] = {
     license   = "see context related readme files"
 }
 
-local type = type
-
 local formatters     = string.formatters
 
+local copy_node      = node.copy
+local new_node       = node.new
+
+local nodepool       = nodes.pool
+local register       = nodepool.register
 local whatsitcodes   = nodes.whatsitcodes
 local nodeinjections = backends.nodeinjections
 
-local nuts           = nodes.nuts
-local tonut          = nuts.tonut
-
-local setfield       = nuts.setfield
-
-local copy_node      = nuts.copy
-local new_node       = nuts.new
-
-local nodepool       = nuts.pool
-local register       = nodepool.register
-
-local pdfliteral     = register(new_node("whatsit", whatsitcodes.pdfliteral))    setfield(pdfliteral,"mode",1)
+local pdfliteral     = register(new_node("whatsit", whatsitcodes.pdfliteral))    pdfliteral.mode  = 1
 local pdfsave        = register(new_node("whatsit", whatsitcodes.pdfsave))
 local pdfrestore     = register(new_node("whatsit", whatsitcodes.pdfrestore))
 local pdfsetmatrix   = register(new_node("whatsit", whatsitcodes.pdfsetmatrix))
-local pdfdest        = register(new_node("whatsit", whatsitcodes.pdfdest))       setfield(pdfdest,"named_id",1) -- xyz_zoom untouched
+local pdfdest        = register(new_node("whatsit", whatsitcodes.pdfdest))       pdfdest.named_id = 1 -- xyz_zoom untouched
 local pdfannot       = register(new_node("whatsit", whatsitcodes.pdfannot))
 
 local variables      = interfaces.variables
@@ -46,14 +38,14 @@ local views = { -- beware, we do support the pdf keys but this is *not* official
 
 function nodepool.pdfliteral(str)
     local t = copy_node(pdfliteral)
-    setfield(t,"data",str)
+    t.data = str
     return t
 end
 
 function nodepool.pdfdirect(str)
     local t = copy_node(pdfliteral)
-    setfield(t,"data",str)
-    setfield(t,"mode",1)
+    t.data = str
+    t.mode = 1
     return t
 end
 
@@ -65,10 +57,16 @@ function nodepool.pdfrestore()
     return copy_node(pdfrestore)
 end
 
-function nodepool.pdfsetmatrix(rx,sx,sy,ry,tx,ty) -- todo: tx ty
+function nodepool.pdfsetmatrix(rx,sx,sy,ry,tx,ty)
+    local t = copy_node(pdfsetmatrix)
+    t.data = formatters["%s %s %s %s"](rx or 0,sx or 0,sy or 0,ry or 0) -- todo: tx ty
+    return t
+end
+
+function nodepool.pdfsetmatrix(rx,sx,sy,ry,tx,ty)
     local t = copy_node(pdfsetmatrix)
     if type(rx) == "string" then
-        setfield(t,"data",rx)
+        t.data = rx
     else
         if not rx then
             rx = 1
@@ -88,12 +86,12 @@ function nodepool.pdfsetmatrix(rx,sx,sy,ry,tx,ty) -- todo: tx ty
         end
         if sx == 0 and sy == 0 then
             if rx == 1 and ry == 1 then
-                setfield(t,"data","1 0 0 1")
+                t.data = "1 0 0 1"
             else
-                setfield(t,"data",formatters["%0.6f 0 0 %0.6f"](rx,ry))
+                t.data = formatters["%0.6f 0 0 %0.6f"](rx,ry)
             end
         else
-            setfield(t,"data",formatters["%0.6f %0.6f %0.6f %0.6f"](rx,sx,sy,ry))
+            t.data = formatters["%0.6f %0.6f %0.6f %0.6f"](rx,sx,sy,ry)
         end
     end
     return t
@@ -106,19 +104,19 @@ nodeinjections.transform = nodepool.pdfsetmatrix
 function nodepool.pdfannotation(w,h,d,data,n)
     local t = copy_node(pdfannot)
     if w and w ~= 0 then
-        setfield(t,"width",w)
+        t.width = w
     end
     if h and h ~= 0 then
-        setfield(t,"height",h)
+        t.height = h
     end
     if d and d ~= 0 then
-        setfield(t,"depth",d)
+        t.depth = d
     end
     if n then
-        setfield(t,"objnum",n)
+        t.objnum = n
     end
     if data and data ~= "" then
-        setfield(t,"data",data)
+        t.data = data
     end
     return t
 end
@@ -140,36 +138,35 @@ function nodepool.pdfdestination(w,h,d,name,view,n)
     local t = copy_node(pdfdest)
     local hasdimensions = false
     if w and w ~= 0 then
-        setfield(t,"width",w)
+        t.width = w
         hasdimensions = true
     end
     if h and h ~= 0 then
-        setfield(t,"height",h)
+        t.height = h
         hasdimensions = true
     end
     if d and d ~= 0 then
-        setfield(t,"depth",d)
+        t.depth = d
         hasdimensions = true
     end
     if n then
-        setfield(t,"objnum",n)
+        t.objnum = n
     end
     view = views[view] or view or 1 -- fit is default
-    setfield(t,"dest_id",name)
-    setfield(t,"dest_type",view)
+    t.dest_id = name
+    t.dest_type = view
     if hasdimensions and view == 0 then -- xyz
         -- see (!) s -> m -> t -> r
-        -- linked
         local s = copy_node(pdfsave)
         local m = copy_node(pdfsetmatrix)
         local r = copy_node(pdfrestore)
-        setfield(m,"data","1 0 0 1")
-        setfield(s,"next",m)
-        setfield(m,"next",t)
-        setfield(t,"next",r)
-        setfield(m,"prev",s)
-        setfield(t,"prev",m)
-        setfield(r,"prev",t)
+        m.data = "1 0 0 1"
+        s.next = m
+        m.next = t
+        t.next = r
+        m.prev = s
+        t.prev = m
+        r.prev = t
         return s -- a list
     else
         return t

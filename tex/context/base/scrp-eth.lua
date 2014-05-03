@@ -9,17 +9,9 @@ if not modules then modules = { } end modules ['scrp-eth'] = {
 -- at some point I will review the script code but for the moment we
 -- do it this way; so space settings like with cjk yet
 
-local nuts               = nodes.nuts
+local insert_node_before = node.insert_before
 
-local getnext            = nuts.getnext
-local getfont            = nuts.getfont
-local getchar            = nuts.getchar
-local getid              = nuts.getid
-local getattr            = nuts.getattr
-
-local insert_node_before = nuts.insert_before
-
-local nodepool           = nuts.pool
+local nodepool           = nodes.pool
 
 local new_glue           = nodepool.glue
 local new_penalty        = nodepool.penalty
@@ -45,13 +37,13 @@ local inter_character_stretch_factor = 1
 local inter_character_shrink_factor  = 1
 
 local function space_glue(current)
-    local data = numbertodataset[getattr(current,a_scriptinjection)]
+    local data = numbertodataset[current[a_scriptinjection]]
     if data then
         inter_character_space_factor   = data.inter_character_space_factor   or 1
         inter_character_stretch_factor = data.inter_character_stretch_factor or 1
         inter_character_shrink_factor  = data.inter_character_shrink_factor  or 1
     end
-    local font = getfont(current)
+    local font = current.font
     if lastfont ~= font then
         local pf = parameters[font]
         space    = pf.space
@@ -112,9 +104,9 @@ local function process(head,first,last)
         local injector = false
         local current = first
         while current do
-            local id = getid(current)
+            local id = current.id
             if id == glyph_code then
-                local scriptstatus = getattr(current,a_scriptstatus)
+                local scriptstatus = current[a_scriptstatus]
                 local category = numbertocategory[scriptstatus]
                 if injector then
                     local action = injector[category]
@@ -129,7 +121,7 @@ local function process(head,first,last)
             if current == last then
                 break
             else
-                current = getnext(current)
+                current = current.next
             end
         end
     end

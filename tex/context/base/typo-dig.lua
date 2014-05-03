@@ -19,24 +19,10 @@ local report_digits = logs.reporter("typesetting","digits")
 
 local nodes, node = nodes, node
 
-local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-local tonode             = nuts.tonode
-
-local getnext            = nuts.getnext
-local getprev            = nuts.getprev
-local getfont            = nuts.getfont
-local getchar            = nuts.getchar
-local getid              = nuts.getid
-local getfield           = nuts.getfield
-local setfield           = nuts.setfield
-local getattr            = nuts.getattr
-local setattr            = nuts.setattr
-
-local hpack_node         = nuts.hpack
-local traverse_id        = nuts.traverse_id
-local insert_node_before = nuts.insert_before
-local insert_node_after  = nuts.insert_after
+local hpack_node         = node.hpack
+local traverse_id        = node.traverse_id
+local insert_node_before = node.insert_before
+local insert_node_after  = node.insert_after
 
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
@@ -44,7 +30,7 @@ local unsetvalue         = attributes.unsetvalue
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
 
-local nodepool           = nuts.pool
+local nodepool           = nodes.pool
 local tasks              = nodes.tasks
 
 local new_glue           = nodepool.glue
@@ -80,20 +66,16 @@ function nodes.aligned(head,start,stop,width,how)
     if how == "flushleft" or how == "middle" then
         head, stop = insert_node_after(head,stop,new_glue(0,65536,65536))
     end
-    local prv = getprev(start)
-    local nxt = getnext(stop)
-    setfield(start,"prev",nil)
-    setfield(stop,"next",nil)
+    local prv, nxt = start.prev, stop.next
+    start.prev, stop.next = nil, nil
     local packed = hpack_node(start,width,"exactly") -- no directional mess here, just lr
     if prv then
-        setfield(prv,"next",packed)
-        setfield(packed,"prev",prv)
+        prv.next, packed.prev = packed, prv
     end
     if nxt then
-        setfield(nxt,"prev",packed)
-        setfield(packed,"next",nxt)
+        nxt.prev, packed.next = packed, nxt
     end
-    if getprev(packed) then
+    if packed.prev then
         return head, packed
     else
         return packed, packed
@@ -101,13 +83,12 @@ function nodes.aligned(head,start,stop,width,how)
 end
 
 actions[1] = function(head,start,attr)
-    local font = getfont(start)
-    local char = getchar(start)
+    local font = start.font
+    local char = start.char
     local unic = chardata[font][char].tounicode
     local what = unic and tonumber(unic,16) or char
     if charbase[what].category == "nd" then
-        local oldwidth = getfield(start,"width")
-        local newwidth = getdigitwidth(font)
+        local oldwidth, newwidth = start.width, getdigitwidth(font)
         if newwidth ~= oldwidth then
             if trace_digits then
                 report_digits("digit trigger %a, instance %a, char %C, unicode %U, delta %s",
@@ -121,13 +102,12 @@ actions[1] = function(head,start,attr)
 end
 
 function digits.handler(head)
-    head = tonut(head)
     local done, current, ok = false, head, false
     while current do
-        if getid(current) == glyph_code then
-            local attr = getattr(current,a_digits)
+        if current.id == glyph_code then
+            local attr = current[a_digits]
             if attr and attr > 0 then
-                setattr(current,a_digits,unsetvalue)
+                current[a_digits] = unsetvalue
                 local action = actions[attr%100] -- map back to low number
                 if action then
                     head, current, ok = action(head,current,attr)
@@ -137,11 +117,9 @@ function digits.handler(head)
                 end
             end
         end
-        if current then
-            current = getnext(current)
-        end
+        current = current and current.next
     end
-    return tonode(head), done
+    return head, done
 end
 
 local m, enabled = 0, false -- a trick to make neighbouring ranges work

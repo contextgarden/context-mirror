@@ -114,7 +114,7 @@ local texformat = environment.arguments.texformat or environment.arguments.forma
 local texengine = environment.arguments.texengine or environment.arguments.engine
 
 if type(texengine) ~= "string" or texengine == "" then
-    texengine = (jit or environment.arguments.jit) and "luajittex" or "luatex"
+    texengine = environment.arguments.jit and "luajittex" or"luatex"
 end
 
 if type(texformat) ~= "string" or texformat == "" then

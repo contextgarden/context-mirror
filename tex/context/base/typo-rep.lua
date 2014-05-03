@@ -10,43 +10,30 @@ if not modules then modules = { } end modules ['typo-rep'] = {
 -- endure it by listening to a couple cd's by The Scene and The Lau
 -- on the squeezebox on my desk.
 
-local next, type, tonumber = next, type, tonumber
-
 local trace_stripping = false  trackers.register("nodes.stripping",  function(v) trace_stripping = v end)
                                trackers.register("fonts.stripping",  function(v) trace_stripping = v end)
 
 local report_stripping = logs.reporter("fonts","stripping")
 
-local nodes           = nodes
-local tasks           = nodes.tasks
+local nodes, node = nodes, node
 
-local nuts            = nodes.nuts
-local tonut           = nuts.tonut
-local tonode          = nuts.tonode
-
-local getnext         = nuts.getnext
-local getchar         = nuts.getchar
-local getid           = nuts.getid
-local getattr         = nuts.getid
-
-local setattr         = nuts.setattr
-
-local delete_node     = nuts.delete
-local replace_node    = nuts.replace
-local copy_node       = nuts.copy
-
-local nodecodes       = nodes.nodecodes
-local glyph_code      = nodecodes.glyph
+local delete_node     = nodes.delete
+local replace_node    = nodes.replace
+local copy_node       = node.copy
 
 local chardata        = characters.data
 local collected       = false
-local fontdata        = fonts.hashes.identifiers
-
 local a_stripping     = attributes.private("stripping")
+local fontdata        = fonts.hashes.identifiers
+local tasks           = nodes.tasks
+
 local texsetattribute = tex.setattribute
 local unsetvalue      = attributes.unsetvalue
 
 local v_reset         = interfaces.variables.reset
+
+local nodecodes       = nodes.nodecodes
+local glyph_code      = nodecodes.glyph
 
 -- todo: other namespace -> typesetters
 
@@ -72,13 +59,13 @@ local function process(what,head,current,char)
         head, current = delete_node(head,current)
     elseif type(what) == "function" then
         head, current = what(head,current)
-        current = getnext(current)
+        current = current.next
         if trace_stripping then
             report_stripping("processing %C in text",char)
         end
     elseif what then  -- assume node
         head, current = replace_node(head,current,copy_node(what))
-        current = getnext(current)
+        current = current.next
         if trace_stripping then
             report_stripping("replacing %C in text",char)
         end
@@ -87,29 +74,28 @@ local function process(what,head,current,char)
 end
 
 function nodes.handlers.stripping(head)
-    head = tonut(head)
     local current, done = head, false
     while current do
-        if getid(current) == glyph_code then
+        if current.id == glyph_code then
             -- it's more efficient to keep track of what needs to be kept
-            local todo = getattr(current,a_stripping)
+            local todo = current[a_stripping]
             if todo == 1 then
-                local char = getchar(current)
+                local char = current.char
                 local what = glyphs[char]
                 if what then
                     head, current = process(what,head,current,char)
                     done = true
                 else -- handling of spacing etc has to be done elsewhere
-                    current = getnext(current)
+                    current = current.next
                 end
             else
-                current = getnext(current)
+                current = current.next
             end
         else
-            current = getnext(current)
+            current = current.next
         end
     end
-    return tonode(head), done
+    return head, done
 end
 
 local enabled = false

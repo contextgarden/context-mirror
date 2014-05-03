@@ -14,30 +14,14 @@ typesetters.checkers      = checkers
 local a_alignstate        = attributes.private("alignstate")
 local a_justification     = attributes.private("justification")
 
-local nuts                = nodes.nuts
-local tonut               = nuts.tonut
+local tracers             = nodes.tracers
+local tracedrule          = tracers.rule
 
-local getfield            = nuts.getfield
-local setfield            = nuts.setfield
-local getlist             = nuts.getlist
-local getattr             = nuts.getattr
-local setattr             = nuts.setattr
-local setlist             = nuts.setlist
-
-local traverse_id         = nuts.traverse_id
-local get_list_dimensions = nuts.dimensions
-local linked_nodes        = nuts.linked
-local copy_node           = nuts.copy
-
-local tracedrule          = nodes.tracers.pool.nuts.rule
-
-local nodepool            = nuts.pool
-
-local new_rule            = nodepool.rule
-local new_hlist           = nodepool.hlist
-local new_glue            = nodepool.glue
-local new_kern            = nodepool.kern
-
+local new_rule            = nodes.pool.rule
+local new_hlist           = nodes.pool.hlist
+local new_glue            = nodes.pool.glue
+local new_kern            = nodes.pool.kern
+local get_list_dimensions = node.dimensions
 local hlist_code          = nodes.nodecodes.hlist
 
 local texsetattribute     = tex.setattribute
@@ -75,35 +59,34 @@ trackers.register("visualizers.justification", function(v)
 end)
 
 function checkers.handler(head)
-    for current in traverse_id(hlist_code,tonut(head)) do
-        if getattr(current,a_justification) == 1 then
-            setattr(current,a_justification,0)
-            local width = getfield(current,"width")
+    for current in node.traverse_id(hlist_code,head) do
+        if current[a_justification] == 1 then
+            current[a_justification] = 0
+            local width = current.width
             if width > 0 then
-                local list = getlist(current)
+                local list = current.list
                 if list then
                     local naturalwidth, naturalheight, naturaldepth = get_list_dimensions(list)
                     local delta = naturalwidth - width
                     if naturalwidth == 0 or delta == 0 then
                         -- special box
                     elseif delta >= max_threshold then
-                        local rule = tracedrule(delta,naturalheight,naturaldepth,getfield(list,"glue_set") == 1 and "trace:dr" or "trace:db")
-                        setfield(current,"list",linked_nodes(list,new_hlist(rule)))
+                        local rule = tracedrule(delta,naturalheight,naturaldepth,list.glue_set == 1 and "trace:dr"or "trace:db")
+                        current.list = list .. new_hlist(rule)
                     elseif delta <= min_threshold then
-                        local alignstate = getattr(list,a_alignstate)
+                        local alignstate = list[a_alignstate]
                         if alignstate == 1 then
                             local rule = tracedrule(-delta,naturalheight,naturaldepth,"trace:dc")
-                            setfield(current,"list",linked_nodes(new_hlist(rule),list))
+                            current.list = new_hlist(rule) .. list
                         elseif alignstate == 2 then
-                            local lrule = tracedrule(-delta/2,naturalheight,naturaldepth,"trace:dy")
-                            local rrule = copy_node(lrule)
-                            setfield(current,"list",linked_nodes(new_hlist(lrule),list,new_kern(delta/2),new_hlist(rrule)))
+                            local rule = tracedrule(-delta/2,naturalheight,naturaldepth,"trace:dy")
+                            current.list = new_hlist(rule^1) .. list .. new_kern(delta/2) .. new_hlist(rule)
                         elseif alignstate == 3 then
                             local rule = tracedrule(-delta,naturalheight,naturaldepth,"trace:dm")
-                            setfield(current,"list",linked_nodes(list,new_kern(delta),new_hlist(rule)))
+                            current.list = list .. new_kern(delta) .. new_hlist(rule)
                         else
                             local rule = tracedrule(-delta,naturalheight,naturaldepth,"trace:dg")
-                            setfield(current,"list",linked_nodes(list,new_kern(delta),new_hlist(rule)))
+                            current.list = list .. new_kern(delta) .. new_hlist(rule)
                         end
                     end
                 end

@@ -11,27 +11,10 @@ local nodes, node = nodes, node
 local nodecodes      = nodes.nodecodes
 local tasks          = nodes.tasks
 
-local nuts           = nodes.nuts
-local tonut          = nodes.tonut
-local tonode         = nodes.tonode
-
-local getid          = nuts.getid
-local getfield       = nuts.getfield
-local getattr        = nuts.getattr
-local getlist        = nuts.getlist
-local getchar        = nuts.getchar
-local getnext        = nuts.getnext
-
-local setfield       = nuts.setfield
-local setattr        = nuts.setattr
-
-local traverse_nodes = nuts.traverse
-local traverse_id    = nuts.traverse_id
-local copy_node      = nuts.copy
-local free_nodelist  = nuts.flush_list
-local insert_after   = nuts.insert_after
-
-local new_gluespec   = nuts.pool.gluespec -- temp hack 
+local traverse_nodes = node.traverse
+local traverse_id    = node.traverse_id
+local copy_node      = node.copy
+local free_nodelist  = node.flush_list
 
 local glue_code      = nodecodes.glue
 local kern_code      = nodecodes.kern
@@ -46,72 +29,57 @@ local threshold      = 65536
 -- todo: nbsp etc
 -- todo: collapse kerns
 
--- p_id
-
 local function injectspaces(head)
-    local p, p_id
+    local p
     local n = head
     while n do
-        local id = getid(n)
+        local id = n.id
         if id == glue_code then -- todo: check for subtype related to spacing (13/14 but most seems to be 0)
-       -- if getfield(getfield(n,"spec"),"width") > 0 then -- threshold
---          if p and p_id == glyph_code then
-            if p and getid(p) == glyph_code then
+       -- if n.spec.width > 0 then -- threshold
+            if p and p.id == glyph_code then
                 local g = copy_node(p)
-                local c = getfield(g,"components")
+                local c = g.components
                 if c then -- it happens that we copied a ligature
                     free_nodelist(c)
-                    setfield(g,"components",nil)
-                    setfield(g,"subtype",256)
+                    g.components = nil
+                    g.subtype = 256
                 end
-                local a = getattr(n,a_characters)
-                -- local s = copy_node(getfield(n,"spec"))
-                -- this will be fixed in luatex but for now a temp hack (zero test)
-                local s = getfield(n,"spec")
-                s = s == 0 and new_gluespec(0) or copy_node(s)
-                --
-                setfield(g,"char",32)
-                setfield(n,"spec",s)
-             -- insert_after(p,p,g)
-                setfield(p,"next",g)
-                setfield(g,"prev",p)
-                setfield(g,"next",n)
-                setfield(n,"prev",g)
-                setfield(s,"width",getfield(s,"width") - getfield(g,"width"))
+                local a = n[a_characters]
+                local s = copy_node(n.spec)
+                g.char, n.spec = 32, s
+                p.next, g.prev = g, p
+                g.next, n.prev = n, g
+                s.width = s.width - g.width
                 if a then
-                    setattr(g,a_characters,a)
+                    g[a_characters] = a
                 end
-                setattr(s,a_characters,0)
-                setattr(n,a_characters,0)
+                s[a_characters] = 0
+                n[a_characters] = 0
             end
        -- end
         elseif id == hlist_code or id == vlist_code then
-            injectspaces(getlist(n),attribute)
+            injectspaces(n.list,attribute)
      -- elseif id == kern_code then -- the backend already collapses
      --     local first = n
      --     while true do
-     --         local nn = getnext(n)
-     --         if nn and getid(nn) == kern_code then
+     --         local nn = n.next
+     --         if nn and nn.id == kern_code then
      --          -- maybe we should delete kerns but who cares at this stage
-     --             setfield(first,"kern",getfield(first,"kern") + getfield(nn,"kern")
-     --             setfield(nn,"kern",0)
+     --             first.kern = first.kern + nn.kern
+     --             nn.kern = 0
      --             n = nn
      --         else
      --             break
      --         end
      --     end
         end
-        p_id = id
         p = n
-        n = getnext(n)
+        n = n.next
     end
-    return head, true -- always done anyway
+    return head, true
 end
 
-nodes.handlers.accessibility = function(head)
-    local head, done = injectspaces(tonut(head))
-    return tonode(head), done
-end
+nodes.handlers.accessibility = injectspaces
 
 -- todo:
 
@@ -122,18 +90,16 @@ end
 -- local function compact(n)
 --     local t = { }
 --     for n in traverse_id(glyph_code,n) do
---         t[#t+1] = utfchar(getchar(n)) -- check for unicode
+--         t[#t+1] = utfchar(n.char) -- check for unicode
 --     end
 --     return concat(t,"")
 -- end
 --
 -- local function injectspans(head)
---     local done = false
---     for n in traverse_nodes(tonuts(head)) do
---         local id = getid(n)
+--     for n in traverse_nodes(head) do
+--         local id = n.id
 --         if id == disc then
---             local r = getfield(n,"replace")
---             local p = getfield(n,"pre")
+--             local r, p = n.replace, n.pre
 --             if r and p then
 --                 local str = compact(r)
 --                 local hsh = hyphenated[str]
@@ -142,14 +108,13 @@ end
 --                     hyphenated[str] = hsh
 --                     codes[hsh] = str
 --                 end
---                 setattr(n,a_hyphenated,hsh)
---                 done = true
+--                 n[a_hyphenated] = hsh
 --             end
 --         elseif id == hlist_code or id == vlist_code then
---             injectspans(getlist(n))
+--             injectspans(n.list)
 --         end
 --     end
---     return tonodes(head), done
+--     return head, true
 -- end
 --
 -- nodes.injectspans = injectspans
@@ -157,22 +122,19 @@ end
 -- tasks.appendaction("processors", "words", "nodes.injectspans")
 --
 -- local function injectspans(head)
---     local done = false
---     for n in traverse_nodes(tonut(head)) do
---         local id = getid(n)
+--     for n in traverse_nodes(head) do
+--         local id = n.id
 --         if id == disc then
---             local a = getattr(n,a_hyphenated)
+--             local a = n[a_hyphenated]
 --             if a then
 --                 local str = codes[a]
 --                 local b = new_pdfliteral(format("/Span << /ActualText %s >> BDC", lpdf.tosixteen(str)))
 --                 local e = new_pdfliteral("EMC")
---                 insert_before(head,n,b)
---                 insert_after(head,n,e)
---                 done = true
+--                 node.insert_before(head,n,b)
+--                 node.insert_after(head,n,e)
 --             end
 --         elseif id == hlist_code or id == vlist_code then
---             injectspans(getlist(n))
+--             injectspans(n.list)
 --         end
 --     end
---     return tonodes(head), done
 -- end

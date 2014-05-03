@@ -53,36 +53,6 @@
 \let\normalstartdmath  \Ustartdisplaymath
 \let\normalstopdmath   \Ustopdisplaymath
 
-% \unexpanded\def\Ustartdisplaymath
-%   {\ifinner
-%      \ifhmode
-%        \normalUstartmath
-%        \let\Ustopdisplaymath\normalUstopmath
-%      \else
-%        \normalUstartdisplaymath
-%        \let\Ustopdisplaymath\normalUstopdisplaymath
-%      \fi
-%    \else
-%      \normalUstartdisplaymath
-%      \let\Ustopdisplaymath\normalUstopdisplaymath
-%    \fi}
-
-\unexpanded\def\Ucheckedstartdisplaymath
-  {\ifinner
-     \ifhmode
-       \normalUstartmath
-       \let\Ucheckedstopdisplaymath\normalUstopmath
-     \else
-       \normalUstartdisplaymath
-       \let\Ucheckedstopdisplaymath\normalUstopdisplaymath
-     \fi
-   \else
-     \normalUstartdisplaymath
-     \let\Ucheckedstopdisplaymath\normalUstopdisplaymath
-   \fi}
-
-\let\Ucheckedstopdisplaymath\relax
-
 \def\normalmathaligntab{&} % \let\normalmathaligntab\aligntab does to work well in a let to & (a def works ok)
 
 \let\normalsuper       \Usuperscript       % obsolete
@@ -90,8 +60,8 @@
 
 \let\startimath        \Ustartmath
 \let\stopimath         \Ustopmath
-\let\startdmath        \Ustartdisplaymath  % \Ucheckedstartdisplaymath
-\let\stopdmath         \Ustopdisplaymath   % \Ucheckedstopdisplaymath
+\let\startdmath        \Ustartdisplaymath
+\let\stopdmath         \Ustopmath
 
 \unexpanded\def\mathematics#1{\relax         \ifmmode#1\else\normalstartimath#1\normalstopimath\fi}
 \unexpanded\def\displaymath#1{\noindent      \ifmmode#1\else\normalstartdmath#1\normalstopdmath\fi}

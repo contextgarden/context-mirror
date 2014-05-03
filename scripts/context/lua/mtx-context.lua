@@ -87,17 +87,14 @@ scripts.context = scripts.context or { }
 
 -- for the moment here
 
-if jit then -- already luajittex
-    setargument("engine","luajittex")
-    setargument("jit",nil)
-elseif getargument("jit") or getargument("jiton") then -- relaunch luajittex
+if getargument("jit") or getargument("jiton") then
     -- bonus shortcut, we assume than --jit also indicates the engine
     -- although --jit and --engine=luajittex are independent
     setargument("engine","luajittex")
 end
 
-local engine_new = file.nameonly(getargument("engine") or directives.value("system.engine"))
-local engine_old = file.nameonly(environment.ownbin)
+local engine_new = getargument("engine") or directives.value("system.engine")
+local engine_old = environment.ownbin
 
 local function restart(engine_old,engine_new)
     local command = format("%s --luaonly %q %s --redirected",engine_new,environment.ownname,environment.reconstructcommandline())
@@ -256,9 +253,8 @@ end
 
 -- multipass control
 
-local multipass_suffixes   = { ".tuc" }
-local multipass_nofruns    = 8 -- or 7 to test oscillation
-local multipass_forcedruns = false
+local multipass_suffixes = { ".tuc" }
+local multipass_nofruns  = 8 -- or 7 to test oscillation
 
 local function multipass_hashfiles(jobname)
     local hash = { }
@@ -694,7 +690,6 @@ function scripts.context.run(ctxdata,filename)
                     c_flags.final      = false
                     c_flags.kindofrun  = (a_once and 3) or (currentrun==1 and 1) or (currentrun==maxnofruns and 4) or 2
                     c_flags.maxnofruns = maxnofruns
-                    c_flags.forcedruns = multipass_forcedruns and multipass_forcedruns > 0 and multipass_forcedruns or nil
                     c_flags.currentrun = currentrun
                     c_flags.noarrange  = a_noarrange or a_arrange or nil
                     --
@@ -712,15 +707,10 @@ function scripts.context.run(ctxdata,filename)
                         break
                     elseif returncode == 0 then
                         multipass_copyluafile(jobname)
-                        if not multipass_forcedruns then
-                            newhash = multipass_hashfiles(jobname)
-                            if multipass_changed(oldhash,newhash) then
-                                oldhash = newhash
-                            else
-                                break
-                            end
-                        elseif currentrun == multipass_forcedruns then
-                            report("quitting after force %i runs",multipass_forcedruns)
+                        newhash = multipass_hashfiles(jobname)
+                        if multipass_changed(oldhash,newhash) then
+                            oldhash = newhash
+                        else
                             break
                         end
                     else
@@ -1488,12 +1478,9 @@ do
 end
 
 if getargument("once") then
-    multipass_nofruns    = 1
-else
-    if getargument("runs") then
-        multipass_nofruns    = tonumber(getargument("runs")) or nil
-    end
-    multipass_forcedruns = tonumber(getargument("forcedruns")) or nil
+    multipass_nofruns = 1
+elseif getargument("runs") then
+    multipass_nofruns = tonumber(getargument("runs")) or nil
 end
 
 if getargument("run") then

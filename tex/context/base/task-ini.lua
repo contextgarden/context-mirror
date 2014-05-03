@@ -35,7 +35,6 @@ appendaction("processors",   "characters",  "typesetters.cases.handler")        
 appendaction("processors",   "characters",  "typesetters.breakpoints.handler")                   -- disabled
 appendaction("processors",   "characters",  "scripts.injectors.handler")                         -- disabled
 
-appendaction("processors",   "words",       "languages.replacements.handler")                    -- disabled
 appendaction("processors",   "words",       "builders.kernel.hyphenation")                       -- always on
 appendaction("processors",   "words",       "languages.words.check")                             -- disabled  -- might move up, no disc check needed then
 
@@ -58,7 +57,6 @@ appendaction("processors",   "lists",       "typesetters.digits.handler")       
 appendaction("processors",   "lists",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
 ------------("processors",   "lists",       "typesetters.initials.handler")                      -- disabled
 
-appendaction("shipouts",     "normalizers", "builders.paragraphs.expansion.trace")               -- disabled
 appendaction("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled
 appendaction("shipouts",     "normalizers", "typesetters.alignments.handler")
 appendaction("shipouts",     "normalizers", "nodes.references.handler")                          -- disabled
@@ -117,12 +115,11 @@ appendaction("vboxbuilders", "normalizers", "builders.vspacing.vboxhandler")    
 
 -- experimental too
 
-appendaction("mvlbuilders",  "normalizers", "typesetters.checkers.handler")
-appendaction("vboxbuilders", "normalizers", "typesetters.checkers.handler")
+appendaction("mvlbuilders", "normalizers","typesetters.checkers.handler")
+appendaction("vboxbuilders","normalizers","typesetters.checkers.handler")
 
 -- speedup: only kick in when used
 
-disableaction("processors",  "languages.replacements.handler")
 disableaction("processors",  "typesetters.characteralign.handler")
 disableaction("processors",  "scripts.autofontfeature.handler")
 disableaction("processors",  "scripts.splitters.handler")
@@ -143,7 +140,6 @@ disableaction("processors",  "typesetters.kerns.handler")
 disableaction("processors",  "typesetters.italics.handler")
 disableaction("processors",  "nodes.handlers.stripping")
 
-disableaction("shipouts",    "builders.paragraphs.expansion.trace")
 disableaction("shipouts",    "typesetters.alignments.handler")
 disableaction("shipouts",    "nodes.rules.handler")
 disableaction("shipouts",    "nodes.shifts.handler")

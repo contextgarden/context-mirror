@@ -1605,11 +1605,9 @@
     \else
         \balancecolumnsfalse
     \fi
-    % % this won't work (blocked by check for overloading; too fuzzy anyway)
-    % \installalign\v!yes {\page_columns_align_option_yes }% \stretchcolumnstrue \inheritcolumnsfalse
-    % \installalign\v!no  {\page_columns_align_option_no  }% \stretchcolumnsfalse\inheritcolumnsfalse
-    % \installalign\v!text{\page_columns_align_option_text}% \stretchcolumnsfalse\inheritcolumnstrue
-    % %
+    \installalign\v!yes {\page_columns_align_option_yes }%
+    \installalign\v!no  {\page_columns_align_option_no  }%
+    \installalign\v!text{\page_columns_align_option_text}%
     \stretchcolumnsfalse
     \inheritcolumnstrue
     \edef\p_align{\columnsparameter\c!align}%

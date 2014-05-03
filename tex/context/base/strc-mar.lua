@@ -19,27 +19,14 @@ local commands           = commands
 local allocate           = utilities.storage.allocate
 local setmetatableindex  = table.setmetatableindex
 
-local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-
-local getfield           = nuts.getfield
-local setfield           = nuts.setfield
-local getnext            = nuts.getnext
-local getprev            = nuts.getprev
-local getid              = nuts.getid
-local getlist            = nuts.getlist
-local getattr            = nuts.getattr
-local setattr            = nuts.setattr
-local getbox             = nuts.getbox
-
-local traversenodes      = nuts.traverse
-
+local traversenodes      = nodes.traverse
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 
 local texsetattribute    = tex.setattribute
+local texgetbox          = tex.getbox
 
 local a_marks            = attributes.private("structure","marks")
 
@@ -119,9 +106,9 @@ end
 
 local function sweep(head,first,last)
     for n in traversenodes(head) do
-        local id = getid(n)
+        local id = n.id
         if id == glyph_code then
-            local a = getattr(n,a_marks)
+            local a = n[a_marks]
             if not a then
                 -- next
             elseif first == 0 then
@@ -131,7 +118,7 @@ local function sweep(head,first,last)
             end
         elseif id == hlist_code or id == vlist_code then
             if boxes_too then
-                local a = getattr(n,a_marks)
+                local a = n[a_marks]
                 if not a then
                     -- next
                 elseif first == 0 then
@@ -140,7 +127,7 @@ local function sweep(head,first,last)
                     last = a
                 end
             end
-            local list = getlist(n)
+            local list = n.list
             if list then
                 first, last = sweep(list,first,last)
             end
@@ -156,9 +143,9 @@ setmetatableindex(classes, function(t,k) local s = settings_to_array(k) t[k] = s
 local lasts = { }
 
 function marks.synchronize(class,n,option)
-    local box = getbox(n)
+    local box = texgetbox(n)
     if box then
-        local first, last = sweep(getlist(box),0,0)
+        local first, last = sweep(box.list,0,0)
         if option == v_keep and first == 0 and last == 0 then
             if trace_marks_get or trace_marks_set then
                 report_marks("action %a, class %a, box %a","retain at synchronize",class,n)

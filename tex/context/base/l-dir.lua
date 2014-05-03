@@ -25,7 +25,6 @@ local isdir      = lfs.isdir
 local isfile     = lfs.isfile
 local currentdir = lfs.currentdir
 local chdir      = lfs.chdir
-local mkdir      = lfs.mkdir
 
 local onwindows  = os.type == "windows" or find(os.getenv("PATH"),";")
 
@@ -285,28 +284,17 @@ local make_indeed = true -- false
 if onwindows then
 
     function dir.mkdirs(...)
-        local n = select("#",...)
-        local str
-        if n == 1 then
-            str = select(1,...)
-            if isdir(str) then
-                return str, true
-            end
-        else
-            str = ""
-            for i=1,n do
-                local s = select(i,...)
-                local s = select(i,...)
-                if s == "" then
-                    -- skip
-                elseif str == "" then
-                    str = s
-                else
-                    str = str .. "/" .. s
-                end
+        local str, pth = "", ""
+        for i=1,select("#",...) do
+            local s = select(i,...)
+            if s == "" then
+                -- skip
+            elseif str == "" then
+                str = s
+            else
+                str = str .. "/" .. s
             end
         end
-        local pth = ""
         local drive = false
         local first, middle, last = match(str,"^(//)(//*)(.*)$")
         if first then
@@ -342,7 +330,7 @@ if onwindows then
                 pth = pth .. "/" .. s
             end
             if make_indeed and not isdir(pth) then
-                mkdir(pth)
+                lfs.mkdir(pth)
             end
         end
         return pth, (isdir(pth) == true)
@@ -363,23 +351,14 @@ if onwindows then
 else
 
     function dir.mkdirs(...)
-        local n = select("#",...)
-        local str, pth
-        if n == 1 then
-            str = select(1,...)
-            if isdir(str) then
-                return str, true
-            end
-        else
-            str = ""
-            for i=1,n do
-                local s = select(i,...)
-                if s and s ~= "" then -- we catch nil and false
-                    if str ~= "" then
-                        str = str .. "/" .. s
-                    else
-                        str = s
-                    end
+        local str, pth = "", ""
+        for i=1,select("#",...) do
+            local s = select(i,...)
+            if s and s ~= "" then -- we catch nil and false
+                if str ~= "" then
+                    str = str .. "/" .. s
+                else
+                    str = s
                 end
             end
         end
@@ -394,7 +373,7 @@ else
                     pth = pth .. "/" .. s
                 end
                 if make_indeed and not first and not isdir(pth) then
-                    mkdir(pth)
+                    lfs.mkdir(pth)
                 end
             end
         else
@@ -402,7 +381,7 @@ else
             for s in gmatch(str,"[^/]+") do
                 pth = pth .. "/" .. s
                 if make_indeed and not isdir(pth) then
-                    mkdir(pth)
+                    lfs.mkdir(pth)
                 end
             end
         end

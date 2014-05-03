@@ -10,26 +10,13 @@ local div = math.div
 local format = string.format
 
 local tasks            = nodes.tasks
+local appendaction     = tasks.appendaction
+local prependaction    = tasks.prependaction
+local disableaction    = tasks.disableaction
 local enableaction     = tasks.enableaction
 
-local nuts             = nodes.nuts
-local nodepool         = nuts.pool
-
-local tonode           = nuts.tonode
-local tonut            = nuts.tonut
-
-local getfield         = nuts.getfield
-local setfield         = nuts.setfield
-local getnext          = nuts.getnext
-local getprev          = nuts.getprev
-local getid            = nuts.getid
-local getlist          = nuts.getlist
-local getattr          = nuts.getattr
-local setattr          = nuts.setattr
-local getsubtype       = nuts.getsubtype
-
-local hpack_nodes      = nuts.hpack -- nodes.fasthpack not really faster here
-local linked_nodes     = nuts.linked
+local slide_nodes      = node.slide
+local hpack_nodes      = node.hpack -- nodes.fasthpack not really faster here
 
 local unsetvalue       = attributes.unsetvalue
 
@@ -39,6 +26,8 @@ local listcodes        = nodes.listcodes
 local hlist_code       = nodecodes.hlist
 local vlist_code       = nodecodes.vlist
 local line_code        = listcodes.line
+
+local nodepool         = nodes.pool
 
 local new_stretch      = nodepool.stretch
 
@@ -67,10 +56,10 @@ local function handler(head,leftpage,realpageno)
     local current = head
     local done = false
     while current do
-        local id = getid(current)
+        local id = current.id
         if id == hlist_code then
-            if getsubtype(current) == line_code then
-                local a = getattr(current,a_realign)
+            if current.subtype == line_code then
+                local a = current[a_realign]
                 if not a or a == 0 then
                     -- skip
                 else
@@ -86,12 +75,12 @@ local function handler(head,leftpage,realpageno)
                             action = leftpage and 2 or 1
                         end
                         if action == 1 then
-                            setfield(current,"list",hpack_nodes(linked_nodes(getlist(current),new_stretch(3)),getfield(current,"width"),"exactly"))
+                            current.list = hpack_nodes(current.list .. new_stretch(3),current.width,"exactly")
                             if trace_realign then
                                 report_realign("flushing left, align %a, page %a, realpage %a",align,pageno,realpageno)
                             end
                         elseif action == 2 then
-                            setfield(current,"list",hpack_nodes(linked_nodes(new_stretch(3),getlist(current)),getfield(current,"width"),"exactly"))
+                            current.list = hpack_nodes(new_stretch(3) .. current.list,current.width,"exactly")
                             if trace_realign then
                                 report_realign("flushing right. align %a, page %a, realpage %a",align,pageno,realpageno)
                             end
@@ -101,14 +90,14 @@ local function handler(head,leftpage,realpageno)
                         done = true
                         nofrealigned = nofrealigned + 1
                     end
-                    setattr(current,a_realign,unsetvalue)
+                    current[a_realign] = unsetvalue
                 end
             end
-            handler(getlist(current),leftpage,realpageno)
+            handler(current.list,leftpage,realpageno)
         elseif id == vlist_code then
-            handler(getlist(current),leftpage,realpageno)
+            handler(current.list,leftpage,realpageno)
         end
-        current = getnext(current)
+        current = current.next
     end
     return head, done
 end
@@ -116,8 +105,7 @@ end
 function alignments.handler(head)
     local leftpage = isleftpage(true,false)
     local realpageno = texgetcount("realpageno")
-    local head, done = handler(tonut(head),leftpage,realpageno)
-    return tonode(head), done
+    return handler(head,leftpage,realpageno)
 end
 
 local enabled = false

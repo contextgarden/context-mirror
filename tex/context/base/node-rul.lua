@@ -13,28 +13,12 @@ if not modules then modules = { } end modules ['node-rul'] = {
 
 local attributes, nodes, node = attributes, nodes, node
 
-local nuts         = nodes.nuts
-local tonode       = nuts.tonode
-local tonut        = nuts.tonut
+local nodecodes  = nodes.nodecodes
+local tasks      = nodes.tasks
 
-local getfield     = nuts.getfield
-local setfield     = nuts.setfield
-local getnext      = nuts.getnext
-local getprev      = nuts.getprev
-local getid        = nuts.getid
-local getattr      = nuts.getattr
-local setattr      = nuts.setattr
-local getfont      = nuts.getfont
-local getsubtype   = nuts.getsubtype
-local getchar      = nuts.getchar
-local getlist      = nuts.getlist
-
-local nodecodes    = nodes.nodecodes
-local tasks        = nodes.tasks
-
-local glyph_code   = nodecodes.glyph
-local disc_code    = nodecodes.disc
-local rule_code    = nodecodes.rule
+local glyph_code = nodecodes.glyph
+local disc_code  = nodecodes.disc
+local rule_code  = nodecodes.rule
 
 function nodes.striprange(first,last) -- todo: dir
     if first and last then -- just to be sure
@@ -42,11 +26,11 @@ function nodes.striprange(first,last) -- todo: dir
             return first, last
         end
         while first and first ~= last do
-            local id = getid(first)
+            local id = first.id
             if id == glyph_code or id == disc_code then -- or id == rule_code
                 break
             else
-                first = getnext(first)
+                first = first.next
             end
         end
         if not first then
@@ -55,13 +39,13 @@ function nodes.striprange(first,last) -- todo: dir
             return first, last
         end
         while last and last ~= first do
-            local id = getid(last)
+            local id = last.id
             if id == glyph_code or id == disc_code then -- or id == rule_code
                 break
             else
-                local prev = getprev(last) -- luatex < 0.70 has italic correction kern not prev'd
+                local prev = last.prev -- luatex < 0.70 has italic correction kern not prev'd
                 if prev then
-                    last = prev
+                    last = last.prev
                 else
                     break
                 end
@@ -89,12 +73,12 @@ local a_color            = attributes.private('color')
 local a_transparency     = attributes.private('transparency')
 local a_colorspace       = attributes.private('colormodel')
 
-local insert_node_before = nuts.insert_before
-local insert_node_after  = nuts.insert_after
-local list_dimensions    = nuts.dimensions
-local hpack_nodes        = nuts.hpack
-
+local insert_node_before = node.insert_before
+local insert_node_after  = node.insert_after
 local striprange         = nodes.striprange
+local list_dimensions    = node.dimensions
+
+local hpack_nodes        = node.hpack
 
 local fontdata           = fonts.hashes.identifiers
 local variables          = interfaces.variables
@@ -127,7 +111,7 @@ local dir_code           = whatcodes.dir
 
 local kerning_code       = kerncodes.kern
 
-local nodepool           = nuts.pool
+local nodepool           = nodes.pool
 
 local new_rule           = nodepool.rule
 local new_kern           = nodepool.kern
@@ -157,9 +141,9 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
         local f, l, a, d, i, class
         local continue, done, strip, level = false, false, true, -1
         while n do
-            local id = getid(n)
+            local id = n.id
             if id == glyph_code or id == rule_code then
-                local aa = getattr(n,attribute)
+                local aa = n[attribute]
                 if aa then
                     if aa == a then
                         if not f then -- ?
@@ -188,13 +172,13 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                     end
                     f, l, a = nil, nil, nil
                 end
---             elseif f and (id == disc_code or (id == kern_code and getsubtype(n) == kerning_code)) then
+--             elseif f and (id == disc_code or (id == kern_code and n.subtype == kerning_code)) then
 --                 l = n
             elseif id == disc_code then
                 if f then
                     l = n
                 end
-            elseif id == kern_code and getsubtype(n) == kerning_code then
+            elseif id == kern_code and n.subtype == kerning_code then
                 if f then
                     l = n
                 end
@@ -203,11 +187,11 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                     head, done = flush(head,f,l,d,level,parent,strip), true
                     f, l, a = nil, nil, nil
                 end
-                local list = getlist(n)
+                local list = n.list
                 if list then
-                    setfield(n,"list",(processwords(attribute,data,flush,list,n))) -- watch ()
+                    n.list = processwords(attribute,data,flush,list,n)
                 end
-            elseif checkdir and id == whatsit_code and getsubtype(n) == dir_code then -- only changes in dir, we assume proper boundaries
+            elseif checkdir and id == whatsit_code and n.subtype == dir_code then -- only changes in dir, we assume proper boundaries
                 if f and a then
                     l = n
                 end
@@ -219,8 +203,8 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                  --     l = n
                     elseif id == glue_code then
                         -- catch \underbar{a} \underbar{a} (subtype test is needed)
-                        local subtype = getsubtype(n)
-                        if getattr(n,attribute) and (subtype == userskip_code or subtype == spaceskip_code or subtype == xspaceskip_code) then
+                        local subtype = n.subtype
+                        if n[attribute] and (subtype == userskip_code or subtype == spaceskip_code or subtype == xspaceskip_code) then
                             l = n
                         else
                             head, done = flush(head,f,l,d,level,parent,strip), true
@@ -232,7 +216,7 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                     f, l, a = nil, nil, nil
                 end
             end
-            n = getnext(n)
+            n = n.next
         end
         if f then
             head, done = flush(head,f,l,d,level,parent,strip), true
@@ -243,16 +227,7 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
     end
 end
 
--- nodes.processwords = processwords
-
-nodes.processwords = function(attribute,data,flush,head,parent) -- we have hlistdir and local dir
-    head = tonut(head)
-    if parent then
-        parent = tonut(parent)
-    end
-    local head, done = processwords(attribute,data,flush,head,parent)
-    return tonode(head), done
-end
+nodes.processwords = processwords
 
 --
 
@@ -271,7 +246,7 @@ end
 local a_viewerlayer = attributes.private("viewerlayer")
 
 local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but acceptable for this purpose
-    if getid(f) ~= glyph_code then
+    if f.id ~= glyph_code then
         -- saveguard ... we need to deal with rules and so (math)
         return head
     end
@@ -289,16 +264,16 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     if not f then
         return head
     end
-    local w = list_dimensions(getfield(parent,"glue_set"),getfield(parent,"glue_sign"),getfield(parent,"glue_order"),f,getnext(l))
+    local w = list_dimensions(parent.glue_set,parent.glue_sign,parent.glue_order,f,l.next)
     local method, offset, continue, dy, order, max = d.method, d.offset, d.continue, d.dy, d.order, d.max
     local rulethickness, unit = d.rulethickness, d.unit
     local ma, ca, ta = d.ma, d.ca, d.ta
-    local colorspace   = ma > 0 and ma or getattr(f,a_colorspace) or 1
-    local color        = ca > 0 and ca or getattr(f,a_color)
-    local transparency = ta > 0 and ta or getattr(f,a_transparency)
+    local colorspace   = ma > 0 and ma or f[a_colorspace] or 1
+    local color        = ca > 0 and ca or f[a_color]
+    local transparency = ta > 0 and ta or f[a_transparency]
     local foreground = order == v_foreground
 
-    local e = dimenfactor(unit,getfont(f)) -- what if no glyph node
+    local e = dimenfactor(unit,f.font) -- what if no glyph node
 
     local rt = tonumber(rulethickness)
     if rt then
@@ -306,7 +281,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     else
         local n, u = splitdimen(rulethickness)
         if n and u then -- we need to intercept ex and em and % and ...
-            rulethickness = n * dimenfactor(u,fontdata[getfont(f)]) / 2
+            rulethickness = n * dimenfactor(u,fontdata[f.font]) / 2
         else
             rulethickness = 1/5
         end
@@ -325,18 +300,18 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
         local ht =  (offset+(i-1)*dy)*e + rulethickness - m
         local dp = -(offset+(i-1)*dy)*e + rulethickness + m
         local r = new_rule(w,ht,dp)
-        local v = getattr(f,a_viewerlayer)
+        local v = f[a_viewerlayer]
         -- quick hack
         if v then
-            setattr(r,a_viewerlayer,v)
+            r[a_viewerlayer] = v
         end
         --
         if color then
-            setattr(r,a_colorspace,colorspace)
-            setattr(r,a_color,color)
+            r[a_colorspace] = colorspace
+            r[a_color] = color
         end
         if transparency then
-            setattr(r,a_transparency,transparency)
+            r[a_transparency] = transparency
         end
         local k = new_kern(-w)
         if foreground then
@@ -390,27 +365,21 @@ local function flush_shifted(head,first,last,data,level,parent,strip) -- not tha
     if true then
         first, last = striprange(first,last)
     end
-    local prev = getprev(first)
-    local next = getnext(last)
-    setfield(first,"prev",nil)
-    setfield(last,"next",nil)
-    local width, height, depth = list_dimensions(getfield(parent,"glue_set"),getfield(parent,"glue_sign"),getfield(parent,"glue_order"),first,next)
+    local prev, next = first.prev, last.next
+    first.prev, last.next = nil, nil
+    local width, height, depth = list_dimensions(parent.glue_set,parent.glue_sign,parent.glue_order,first,next)
     local list = hpack_nodes(first,width,"exactly")
     if first == head then
         head = list
     end
     if prev then
-       setfield(prev,"next",list)
-       setfield(list,"prev",prev)
+        prev.next, list.prev = list, prev
     end
     if next then
-        setfield(next,"prev",list)
-        setfield(list,"next",next)
+        next.prev, list.next = list, next
     end
-    local raise = data.dy * dimenfactor(data.unit,fontdata[getfont(first)])
-    setfield(list,"shift",raise)
-    setfield(list,"height",height)
-    setfield(list,"depth",depth)
+    local raise = data.dy * dimenfactor(data.unit,fontdata[first.font])
+    list.shift, list.height, list.depth = raise, height, depth
     if trace_shifted then
         report_shifted("width %p, nodes %a, text %a",width,n_tostring(first,last),n_tosequence(first,last,true))
     end

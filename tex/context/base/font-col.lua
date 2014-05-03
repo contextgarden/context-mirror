@@ -17,12 +17,7 @@ local type, next, toboolean = type, next, toboolean
 local gmatch = string.gmatch
 local fastcopy = table.fastcopy
 
-local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-local getfont            = nuts.getfont
-local getchar            = nuts.getchar
-local setfield           = nuts.setfield
-local traverse_id        = nuts.traverse_id
+local traverse_id        = nodes.traverse_id
 
 local settings_to_hash   = utilities.parsers.settings_to_hash
 
@@ -204,7 +199,7 @@ end
 --
 -- if lpegmatch(okay,name) then
 
-function collections.prepare(name) -- we can do this in lua now .. todo
+function collections.prepare(name) -- we can do this in lua now
     current = currentfont()
     if vectors[current] then
         return
@@ -249,23 +244,23 @@ end
 
 function collections.process(head) -- this way we keep feature processing
     local done = false
-    for n in traverse_id(glyph_code,tonut(head)) do
-        local v = vectors[getfont(n)]
+    for n in traverse_id(glyph_code,head) do
+        local v = vectors[n.font]
         if v then
-            local id = v[getchar(n)]
+            local id = v[n.char]
             if id then
                 if type(id) == "table" then
                     local newid, newchar = id[1], id[2]
                     if trace_collecting then
                         report_fonts("remapping character %C in font %a to character %C in font %a",getchar(n),getfont(n),newchar,newid)
                     end
-                    setfield(n,"font",newid)
-                    setfield(n,"char",newchar)
+                    n.font = newid
+                    n.char = newchar
                 else
                     if trace_collecting then
                         report_fonts("remapping font %a to %a for character %C",getfont(n),id,getchar(n))
                     end
-                    setfield(n,"font",id)
+                    n.font = id
                 end
             end
         end

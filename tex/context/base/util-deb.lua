@@ -92,41 +92,37 @@ end
 
 function debugger.disable()
     debug.sethook()
- -- counters[debug.getinfo(2,"f").func] = nil
+--~ counters[debug.getinfo(2,"f").func] = nil
 end
 
--- debugger.enable()
---
--- print(math.sin(1*.5))
--- print(math.sin(1*.5))
--- print(math.sin(1*.5))
--- print(math.sin(1*.5))
--- print(math.sin(1*.5))
---
--- debugger.disable()
---
--- print("")
--- debugger.showstats()
--- print("")
--- debugger.showstats(print,3)
---
+--~ debugger.enable()
+
+--~ print(math.sin(1*.5))
+--~ print(math.sin(1*.5))
+--~ print(math.sin(1*.5))
+--~ print(math.sin(1*.5))
+--~ print(math.sin(1*.5))
+
+--~ debugger.disable()
+
+--~ print("")
+--~ debugger.showstats()
+--~ print("")
+--~ debugger.showstats(print,3)
+
 -- from the lua book:
 
-local function showtraceback(rep) -- from lua site / adapted
-    local level = 2 -- we don't want this function to be reported
-    local reporter = rep or report
+function traceback()
+    local level = 1
     while true do
-        local info = getinfo(level, "Sl")
+        local info = debug.getinfo(level, "Sl")
         if not info then
             break
         elseif info.what == "C" then
-            reporter("%2i : %s",level-1,"C function")
+            print(format("%3i : C function",level))
         else
-            reporter("%2i : %s : %s",level-1,info.short_src,info.currentline)
+            print(format("%3i : [%s]:%d",level,info.short_src,info.currentline))
         end
         level = level + 1
     end
 end
-
-debugger.showtraceback = showtraceback
--- debug.showtraceback = showtraceback

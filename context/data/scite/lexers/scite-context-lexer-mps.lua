@@ -98,7 +98,7 @@ local number     = token('number',    number)
 local grouping   = token('grouping',  S("()[]{}")) -- can be an option
 local special    = token('special',   S("#()[]{}<>=:\"")) -- or else := <> etc split
 local texlike    = token('warning',   P("\\") * cstokentex^1)
-local extra      = token('extra',     P("+-+") + P("++") + S("`~%^&_-+*/\'|\\"))
+local extra      = token('extra',     S("`~%^&_-+*/\'|\\"))
 
 local nested     = P { leftbrace * (V(1) + (1-rightbrace))^0 * rightbrace }
 local texlike    = token('embedded', P("\\") * (P("MP") + P("mp")) * mptoken^1)

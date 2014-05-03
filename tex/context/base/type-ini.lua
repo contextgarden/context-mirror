@@ -35,9 +35,7 @@ end
 
 local function failure_one(name)
     name_two = gsub(name,"%-.*$","")
-    if name == "loc" then
-        -- ignore
-    elseif name_two == name then
+    if name_two == name then
         report_typescripts("unknown library %a",name_one)
     else
         commands.uselibrary {

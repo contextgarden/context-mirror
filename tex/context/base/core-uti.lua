@@ -126,10 +126,6 @@ function jobvariables.save(cs,value)
     tobesaved[cs] = value
 end
 
-function jobvariables.restore(cs)
-    return collected[cs] or tobesaved[cs]
-end
-
 -- checksums
 
 function jobvariables.getchecksum(tag)
@@ -327,7 +323,7 @@ if jit then
 local saved = watts_per_core * runtime * kg_per_watt_per_second / speedup_by_other_engine
 local saved = used_wood_factor * runtime
 --             return format("%s seconds, %i processed pages, %i shipped pages, %.3f pages/second, %f kg tree saved by using luajittex",runtime,pages,shipped,persecond,saved)
-            return format("%s seconds, %i processed pages, %i shipped pages, %.3f pages/second, %f mg tree saved by using luajittex",runtime,pages,shipped,persecond,saved*1000*1000)
+            return format("%s seconds, %i processed pages, %i shipped pages, %.3f pages/second, %f g tree saved by using luajittex",runtime,pages,shipped,persecond,saved*1000)
 else
             return format("%s seconds, %i processed pages, %i shipped pages, %.3f pages/second",runtime,pages,shipped,persecond)
 end
