@@ -28,7 +28,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2014.02.14 17:07}
+\edef\contextversion{2014.04.28 23:24}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -234,7 +234,7 @@
 \loadmarkfile{strc-xml}
 \loadmarkfile{strc-def} % might happen later
 \loadmkvifile{strc-ref}
-\loadmarkfile{strc-reg}
+%loadmarkfile{strc-reg}
 \loadmkvifile{strc-lev} % experiment
 
 \loadmarkfile{spac-ali}
@@ -296,7 +296,9 @@
 \loadmarkfile{pack-pos}
 \loadmkvifile{page-mak}
 
-\loadmarkfile{page-lin}
+\loadmarkfile{strc-reg} % uses mixed columns
+
+\loadmkvifile{page-lin}
 \loadmarkfile{page-par}
 \loadmarkfile{typo-pag}
 \loadmarkfile{typo-mar}

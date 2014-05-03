@@ -193,12 +193,12 @@
          \globallet\currentreferencecoding\s!tex
        \fi
        % beware, the structures.references.set writes a
-       % \setnextinternalreference
+       \setnextinternalreference
        \strc_references_start_destination_nodes
          \ctxcommand{setreferenceattribute("\currentreferencekind", "\referenceprefix","\currentreferencelabels",
            {
                 references = {
-                %   internal = \nextinternalreference, % no need for an internal as we have an explicit
+                    internal = \nextinternalreference,
                     block    = "\currentsectionblock",
                     section  = structures.sections.currentid(),
                 },
@@ -243,9 +243,11 @@
        \lastdestinationattribute\attributeunsetvalue
      \else
        \strc_references_start_destination_nodes
-         \ctxcommand{setreferenceattribute("\s!page", "\referenceprefix","\currentreferencelabels",
+\setnextinternalreference
+       \ctxcommand{setreferenceattribute("\s!page", "\referenceprefix","\currentreferencelabels",
             {
                 references = {
+                    internal = \nextinternalreference,
                     block    = "\currentsectionblock",
                     section  = structures.sections.currentid(),
                 },
@@ -264,9 +266,11 @@
 \unexpanded\def\strc_references_direct_full#labels#text%
   {\ifreferencing
      \strc_references_start_destination_nodes
-       \ctxcommand{setreferenceattribute("\s!full", "\referenceprefix","#labels",
+\setnextinternalreference
+     \ctxcommand{setreferenceattribute("\s!full", "\referenceprefix","#labels",
          {
               references = {
+                  internal = \nextinternalreference,
                   block    = "\currentsectionblock",
                   section  = structures.sections.currentid(),
               },
@@ -947,11 +951,12 @@
    \begingroup
    \let\crlf\space
    \let\\\space
-   \postponenotes
+   \postponenotes % might go
    \referencingparameter\c!left
    \doifreferencefoundelse{#label}
      {\goto{\limitatetext\currentreferencetitle{\referencingparameter\c!width}\unknown}[#label]}% not so efficient (dup lookup)
      {}% todo
+   \flushnotes % might go
    \referencingparameter\c!right
    \endgroup}
 

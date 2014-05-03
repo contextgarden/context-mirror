@@ -16,7 +16,7 @@ if not modules then modules = { } end modules ['strc-lst'] = {
 -- move more to commands
 
 local format, gmatch, gsub = string.format, string.gmatch, string.gsub
-local tonumber = tonumber
+local tonumber, type = tonumber, type
 local concat, insert, remove = table.concat, table.insert, table.remove
 local lpegmatch = lpeg.match
 local simple_hash_to_string, settings_to_hash = utilities.parsers.simple_hash_to_string, utilities.parsers.settings_to_hash
@@ -49,7 +49,7 @@ lists.collected         = collected
 lists.tobesaved         = tobesaved
 
 lists.enhancers         = lists.enhancers or { }
-lists.internals         = allocate(lists.internals or { }) -- to be checked
+-----.internals         = allocate(lists.internals or { }) -- to be checked
 lists.ordered           = allocate(lists.ordered   or { }) -- to be checked
 lists.cached            = cached
 lists.pushed            = pushed
@@ -88,6 +88,7 @@ local function initializer()
     local collected = lists.collected
     local internals = checked(references.internals)
     local ordered   = lists.ordered
+    local usedinternals = references.usedinternals
     local blockdone = { }
     for i=1,#collected do
         local c = collected[i]
@@ -99,6 +100,7 @@ local function initializer()
                 local internal = r.internal
                 if internal then
                     internals[internal] = c
+                    usedinternals[internal] = r.used
                 end
                 local block = r.block
                 if block and not blockdone[block] then
@@ -128,7 +130,22 @@ local function initializer()
     end
 end
 
-job.register('structures.lists.collected', tobesaved, initializer)
+local function finalizer()
+    local flaginternals = references.flaginternals
+    local usedviews     = references.usedviews
+    for i=1,#tobesaved do
+        local r = tobesaved[i].references
+        if r then
+            local i = r.internal
+            local f = flaginternals[i]
+            if f then
+                r.used = usedviews[i] or true
+            end
+        end
+    end
+end
+
+job.register('structures.lists.collected', tobesaved, initializer, finalizer)
 
 local groupindices = table.setmetatableindex("table")
 
@@ -139,11 +156,11 @@ end
 
 -- we could use t (as hash key) in order to check for dup entries
 
-function lists.addto(t)
+function lists.addto(t) -- maybe more more here (saves parsing at the tex end)
     local m = t.metadata
     local u = t.userdata
     if u and type(u) == "string" then
-        t.userdata = helpers.touserdata(u) -- nicer at the tex end
+        t.userdata = helpers.touserdata(u)
     end
     local numberdata = t.numberdata
     local group = numberdata and numberdata.group
@@ -158,6 +175,10 @@ function lists.addto(t)
             numberdata.numbers = cached[groupindex].numberdata.numbers
         end
     end
+    local setcomponent = references.setcomponent
+    if setcomponent then
+        setcomponent(t) -- can be inlined
+    end
     local r = t.references
     local i = r and r.internal or 0 -- brrr
     local p = pushed[i]
@@ -166,10 +187,6 @@ function lists.addto(t)
         cached[p] = helpers.simplify(t)
         pushed[i] = p
         r.listindex = p
-    end
-    local setcomponent = references.setcomponent
-    if setcomponent then
-        setcomponent(t) -- might move to the tex end
     end
     if group then
         groupindices[name][group] = p

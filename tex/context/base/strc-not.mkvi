@@ -231,7 +231,7 @@
    \ifnotesenabled
      \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
    \fi
-   \doifnextoptionalelse\strc_notations_command_yes\strc_notations_command_nop}
+   \doifnextoptionalcselse\strc_notations_command_yes\strc_notations_command_nop}
 
 \unexpanded\def\strc_notations_command_nop#title%
   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#title},\c!bookmark=,\c!list=][]%
@@ -265,7 +265,7 @@
 %    \normalexpanded % not that efficient but also not that frequently used (\normaldef for parser)
 %      {\normaldef\noexpand\strc_pickup_yes[##1]##2\csname\e!stop#stoptag\endcsname{\strc_notations_command_yes[##1]{##2}}%
 %       \normaldef\noexpand\strc_pickup_nop     ##1\csname\e!stop#stoptag\endcsname{\strc_notations_command_nop     {##1}}}%
-%    \doifnextoptionalelse\strc_pickup_yes\strc_pickup_nop}
+%    \doifnextoptionalcselse\strc_pickup_yes\strc_pickup_nop}
 
 \unexpanded\def\strc_notations_start#tag#stoptag%
   {\begingroup
@@ -278,7 +278,7 @@
    \normalexpanded % not that efficient but also not that frequently used (\normaldef for parser)
      {\def\noexpand\strc_pickup_yes[#one]#two\csname\e!stop#stoptag\endcsname{\strc_notations_command_yes[#one]{#two}}%
       \def\noexpand\strc_pickup_nop      #one\csname\e!stop#stoptag\endcsname{\strc_notations_command_nop      {#one}}}%
-   \doifnextoptionalelse\strc_pickup_yes\strc_pickup_nop}
+   \doifnextoptionalcselse\strc_pickup_yes\strc_pickup_nop}
 
 \unexpanded\def\strc_notations_start_yes[#reference]#title%
   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#reference},\c!title={#title},\c!bookmark=,\c!list=][]%
@@ -460,7 +460,11 @@
        \else\ifconditional\inlocalnotes % todo: per note class
          \global\settrue\postponednote
        \else
+\ifconditional\c_strc_notes_delayed
+    % probably end notes
+\else
          \handlenoteinsert\currentnote\currentnotenumber % either an insert or just delayed
+\fi
        \fi\fi
        \endgroup
      \fi
@@ -756,7 +760,9 @@
 
 %appendtoks \notesenabledfalse \to \everymarking
 \appendtoks \notesenabledfalse \to \everybeforepagebody
-\appendtoks \notesenabledfalse \to \everystructurelist % quick hack
+\appendtoks \notesenabledfalse \to \everystructurelist    % quick hack
+\appendtoks \notesenabledfalse \to \everysimplifycommands % quick hack
+\appendtoks \notesenabledfalse \to \everypreroll          % quick hack
 
 %D Often we need to process the whole set of notes and to make that
 %D fast, we use a token register:
@@ -1242,6 +1248,7 @@
 \appendtoks
   \doif{\noteparameter\c!scope}\v!page{\floatingpenalty\maxdimen}% experiment
   \penalty\currentnotepenalty
+ %\interlinepenalty\maxdimen % todo
   \forgetall
   \strc_notes_set_bodyfont
   \redoconvertfont % to undo \undo calls in in headings etc
@@ -1298,6 +1305,7 @@
      \strc_notes_set_bodyfont
      \setbox\scratchbox\hbox
        {\strc_notes_flush_inserts}%
+     \page_postprocessors_linenumbers_deepbox\scratchbox
      \setbox\scratchbox\hbox
        {\setupcurrentnote
           [\c!location=,
@@ -1778,19 +1786,19 @@
   {\dodoubleempty\strc_notes_symbol}
 
 \def\strc_notes_symbol[#tag][#reference]%
-  {\dontleavehmode
-   \begingroup
-   \edef\currentnote{#tag}%
-   \usenotestyleandcolor\c!textstyle\c!textcolor
-   \ifnotesenabled
+  {\ifnotesenabled
+     \dontleavehmode
+     \begingroup
+     \edef\currentnote{#tag}%
+     \usenotestyleandcolor\c!textstyle\c!textcolor
      \ifsecondargument
        \unskip
        \noteparameter\c!textcommand{\in[#reference]}% command here?
      \else
        \noteparameter\c!textcommand\lastnotesymbol % check if command double
      \fi
-   \fi
-   \endgroup}
+     \endgroup
+   \fi}
 
 \unexpanded\def\note
   {\dodoubleempty\strc_notes_note}

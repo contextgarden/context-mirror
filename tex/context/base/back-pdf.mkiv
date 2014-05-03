@@ -18,8 +18,8 @@
 \registerctxluafile{lpdf-nod}{1.001}
 \registerctxluafile{lpdf-col}{1.000}
 \registerctxluafile{lpdf-xmp}{1.001}
-\registerctxluafile{lpdf-mis}{1.001}
 \registerctxluafile{lpdf-ano}{1.001}
+\registerctxluafile{lpdf-mis}{1.001}
 \registerctxluafile{lpdf-ren}{1.001}
 \registerctxluafile{lpdf-grp}{1.001}
 \registerctxluafile{lpdf-wid}{1.001}
@@ -238,7 +238,7 @@
 
 %D The following will move to the backend \LUA\ code:
 
-\appendtoks \ctxlua{backends.codeinjections.finalizepage    ()}\to \everybackendshipout       % is immediate
+%appendtoks \ctxlua{backends.codeinjections.finalizepage    ()}\to \everybackendshipout       % is immediate
 %appendtoks \ctxlua{backends.codeinjections.finalizedocument()}\to \everylastbackendshipout   % is immediate
 
 %D Temporary hack, will be removed or improved or default.

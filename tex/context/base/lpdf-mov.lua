@@ -11,10 +11,10 @@ local format = string.format
 local lpdf = lpdf
 
 local nodeinjections     = backends.pdf.nodeinjections
-local pdfannotation_node = nodes.pool.pdfannotation
 local pdfconstant        = lpdf.constant
 local pdfdictionary      = lpdf.dictionary
 local pdfarray           = lpdf.array
+local pdfborder          = lpdf.border
 local write_node         = node.write
 
 function nodeinjections.insertmovie(specification)
@@ -31,14 +31,16 @@ function nodeinjections.insertmovie(specification)
         ShowControls = (specification.controls and true) or false,
         Mode         = (specification["repeat"] and pdfconstant("Repeat")) or nil,
     }
+    local bs, bc = pdfborder()
     local action = pdfdictionary {
         Subtype = pdfconstant("Movie"),
-        Border  = pdfarray { 0, 0, 0 },
+        Border  = bs,
+        C       = bc,
         T       = format("movie %s",specification.label),
         Movie   = moviedict,
         A       = controldict,
     }
-    write_node(pdfannotation_node(width,height,0,action())) -- test: context(...)
+    write_node(nodeinjections.annotation(width,height,0,action())) -- test: context(...)
 end
 
 function nodeinjections.insertsound(specification)
@@ -51,13 +53,15 @@ function nodeinjections.insertsound(specification)
         local sounddict = pdfdictionary {
             F = soundclip.filename
         }
+        local bs, bc = pdfborder()
         local action = pdfdictionary {
             Subtype = pdfconstant("Movie"),
-            Border  = pdfarray { 0, 0, 0 },
+            Border  = bs,
+            C       = bc,
             T       = format("sound %s",specification.label),
             Movie   = sounddict,
             A       = controldict,
         }
-        write_node(pdfannotation_node(0,0,0,action())) -- test: context(...)
+        write_node(nodeinjections.annotation(0,0,0,action())) -- test: context(...)
     end
 end

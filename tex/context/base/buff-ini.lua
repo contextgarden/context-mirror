@@ -12,9 +12,9 @@ local sub, format = string.sub, string.format
 local splitlines, validstring = string.splitlines, string.valid
 local P, Cs, patterns, lpegmatch = lpeg.P, lpeg.Cs, lpeg.patterns, lpeg.match
 
-local trace_run         = false  trackers  .register("buffers.run",       function(v) trace_run       = v end)
-local trace_grab        = false  trackers  .register("buffers.grab",      function(v) trace_grab      = v end)
-local trace_visualize   = false  trackers  .register("buffers.visualize", function(v) trace_visualize = v end)
+local trace_run         = false  trackers.register("buffers.run",       function(v) trace_run       = v end)
+local trace_grab        = false  trackers.register("buffers.grab",      function(v) trace_grab      = v end)
+local trace_visualize   = false  trackers.register("buffers.visualize", function(v) trace_visualize = v end)
 
 local report_buffers    = logs.reporter("buffers","usage")
 local report_typeset    = logs.reporter("buffers","typeset")
@@ -143,37 +143,12 @@ local function collectcontent(name,separator) -- no print
 end
 
 local function loadcontent(name) -- no print
-    local names  = getnames(name)
-    local nnames = #names
-    local ok     = false
-    if nnames == 0 then
-        ok = load(getcontent("")) -- default buffer
-    elseif nnames == 1 then
-        ok = load(getcontent(names[1]))
-    else
-        -- lua 5.2 chunked load
-        local i = 0
-        ok = load(function()
-            while true do
-                i = i + 1
-                if i > nnames then
-                    return nil
-                end
-                local c = getcontent(names[i])
-                if c == "" then
-                    -- would trigger end of load
-                else
-                    return c
-                end
-            end
-        end)
-    end
+    local content = collectcontent(name,"\n")
+    local ok, err = load(content)
     if ok then
         return ok()
-    elseif nnames == 0 then
-        report_buffers("invalid lua code in default buffer")
     else
-        report_buffers("invalid lua code in buffer %a",concat(names,","))
+        report_buffers("invalid lua code in buffer %a: %s",name,err or "unknown error")
     end
 end
 

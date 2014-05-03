@@ -10,46 +10,66 @@ if not modules then modules = { } end modules ['lpdf-ano'] = {
 
 -- todo: /AA << WC << ... >> >> : WillClose actions etc
 
-local next, tostring = next, tostring
-local rep, format = string.rep, string.format
+-- internal references are indicated by a number (and turned into <autoprefix><number>)
+-- we only flush internal destinations that are referred
+
+local next, tostring, tonumber, rawget = next, tostring, tonumber, rawget
+local rep, format, find = string.rep, string.format, string.find
+local min = math.min
 local lpegmatch = lpeg.match
 local formatters = string.formatters
 
 local backends, lpdf = backends, lpdf
 
-local trace_references   = false  trackers.register("references.references",   function(v) trace_references   = v end)
-local trace_destinations = false  trackers.register("references.destinations", function(v) trace_destinations = v end)
-local trace_bookmarks    = false  trackers.register("references.bookmarks",    function(v) trace_bookmarks    = v end)
+local trace_references        = false  trackers.register("references.references",   function(v) trace_references   = v end)
+local trace_destinations      = false  trackers.register("references.destinations", function(v) trace_destinations = v end)
+local trace_bookmarks         = false  trackers.register("references.bookmarks",    function(v) trace_bookmarks    = v end)
 
-local report_reference   = logs.reporter("backend","references")
-local report_destination = logs.reporter("backend","destinations")
-local report_bookmark    = logs.reporter("backend","bookmarks")
+local log_destinations        = false  directives.register("destinations.log",      function(v) log_destinations   = v end)
+
+local report_reference        = logs.reporter("backend","references")
+local report_destination      = logs.reporter("backend","destinations")
+local report_bookmark         = logs.reporter("backend","bookmarks")
 
 local variables               = interfaces.variables
-local constants               = interfaces.constants
+local v_auto                  = variables.auto
+local v_page                  = variables.page
+
+local factor                  = number.dimenfactors.bp
 
 local settings_to_array       = utilities.parsers.settings_to_array
+
+local allocate                = utilities.storage.allocate
+local setmetatableindex       = table.setmetatableindex
 
 local nodeinjections          = backends.pdf.nodeinjections
 local codeinjections          = backends.pdf.codeinjections
 local registrations           = backends.pdf.registrations
+
+local getpos                  = codeinjections.getpos
+local gethpos                 = codeinjections.gethpos
+local getvpos                 = codeinjections.getvpos
 
 local javascriptcode          = interactions.javascripts.code
 
 local references              = structures.references
 local bookmarks               = structures.bookmarks
 
+local flaginternals           = references.flaginternals
+local usedinternals           = references.usedinternals
+local usedviews               = references.usedviews
+
 local runners                 = references.runners
 local specials                = references.specials
 local handlers                = references.handlers
 local executers               = references.executers
-local getinnermethod          = references.getinnermethod
 
 local nodepool                = nodes.pool
 
-local pdfannotation_node      = nodepool.pdfannotation
-local pdfdestination_node     = nodepool.pdfdestination
-local latelua_node            = nodepool.latelua
+----- pdfannotation_node      = nodepool.pdfannotation
+----- pdfdestination_node     = nodepool.pdfdestination
+----- latelua_node            = nodepool.latelua
+local latelua_function_node   = nodepool.lateluafunction -- still node ... todo
 
 local texgetcount             = tex.getcount
 
@@ -63,7 +83,12 @@ local pdfshareobjectreference = lpdf.shareobjectreference
 local pdfreserveobject        = lpdf.reserveobject
 local pdfpagereference        = lpdf.pagereference
 local pdfdelayedobject        = lpdf.delayedobject
-local pdfregisterannotation   = lpdf.registerannotation
+local pdfregisterannotation   = lpdf.registerannotation -- forward definition (for the moment)
+local pdfnull                 = lpdf.null
+local pdfaddtocatalog         = lpdf.addtocatalog
+local pdfaddtonames           = lpdf.addtonames
+local pdfaddtopageattributes  = lpdf.addtopageattributes
+local pdfrectangle            = lpdf.rectangle
 
 -- todo: 3dview
 
@@ -79,102 +104,417 @@ local pdf_t                   = pdfconstant("T")
 local pdf_fit                 = pdfconstant("Fit")
 local pdf_named               = pdfconstant("Named")
 
-local pdf_border              = pdfarray { 0, 0, 0 }
+local autoprefix              = "#"
 
-local cache = { }
+-- Bah, I hate this kind of features .. anyway, as we have delayed resolving we
+-- only support a document-wide setup and it has to be set before the first one
+-- is used. Also, we default to a non-intrusive gray and the outline is kept
+-- thin without dashing lines. This is as far as I'm prepared to go. This way
+-- it can also be used as a debug feature.
 
-local function pagedestination(n) -- only cache fit
-    if n > 0 then
-        local pd = cache[n]
-        if not pd then
-            local a = pdfarray {
-                pdfreference(pdfpagereference(n)),
-                pdf_fit,
-            }
-            pd = pdfshareobjectreference(a)
-            cache[n] = pd
-        end
-        return pd
-    end
+local pdf_border_style        = pdfarray { 0, 0, 0 } -- radius radius linewidth
+local pdf_border_color        = nil
+local set_border              = false
+
+function pdfborder()
+    border_set = true
+    return pdf_border_style, pdf_border_color
 end
 
-lpdf.pagedestination = pagedestination
+lpdf.border = pdfborder
+
+directives.register("references.border",function(v)
+    if v and not set_border then
+        if type(v) == "string" then
+            local m = attributes.list[attributes.private('color')] or { }
+            local c = m and m[v]
+            local v = c and attributes.colors.value(c)
+            if v then
+                local r, g, b = v[3], v[4], v[5]
+             -- if r == g and g == b then
+             --     pdf_border_color = pdfarray { r }       -- reduced, not not ... bugged viewers
+             -- else
+                    pdf_border_color = pdfarray { r, g, b } -- always rgb
+             -- end
+            end
+        end
+        if not pdf_border_color then
+            pdf_border_color = pdfarray { .6, .6, .6 } -- no reduce to { 0.6 } as there are buggy viewers out there
+        end
+        pdf_border_style = pdfarray { 0, 0, .5 } -- < 0.5 is not show by acrobat (at least not in my version)
+    end
+end)
+
+-- the used and flag code here is somewhat messy in the sense
+-- that it belongs in strc-ref but at the same time depends on
+-- the backend so we keep it here
+
+-- the caching is somewhat memory intense on the one hand but
+-- it saves many small temporary tables so it might pay off
+
+local pagedestinations = allocate()
+local pagereferences   = allocate() -- annots are cached themselves
+
+setmetatableindex(pagedestinations, function(t,k)
+    k = tonumber(k)
+    local v = rawget(t,k)
+    if v then
+     -- report_reference("page number expected, got %s: %a",type(k),k)
+        return v
+    end
+    local v = k > 0 and pdfarray {
+        pdfreference(pdfpagereference(k)),
+        pdf_fit,
+    } or pdfnull()
+    t[k] = v
+    return v
+end)
+
+setmetatableindex(pagereferences,function(t,k)
+    k = tonumber(k)
+    local v = rawget(t,k)
+    if v then
+        return v
+    end
+    local v = pdfdictionary { -- can be cached
+        S = pdf_goto,
+        D = pagedestinations[k],
+    }
+    t[k] = v
+    return v
+end)
+
+lpdf.pagereferences   = pagereferences   -- table
+lpdf.pagedestinations = pagedestinations -- table
 
 local defaultdestination = pdfarray { 0, pdf_fit }
 
-local function link(url,filename,destination,page,actions)
-    if filename and filename ~= "" then
-        if file.basename(filename) == tex.jobname then
-            return false
-        else
-            filename = file.addsuffix(filename,"pdf")
-        end
-    end
-    if url and url ~= "" then
-        if filename and filename ~= "" then
-            if destination and destination ~= "" then
-                url = file.join(url,filename).."#"..destination
-            else
-                url = file.join(url,filename)
-            end
-        end
-        return pdfdictionary {
-            S = pdf_uri,
-            URI = url,
-        }
-    elseif filename and filename ~= "" then
-        -- no page ?
-        if destination == "" then
-            destination = nil
-        end
-        if not destination and page then
-            destination = pdfarray { page - 1, pdf_fit }
-        end
-        return pdfdictionary {
-            S = pdf_gotor, -- can also be pdf_launch
-            F = filename,
-            D = destination or defaultdestination, -- D is mandate
-            NewWindow = (actions.newwindow and true) or nil,
-        }
-    elseif destination and destination ~= "" then
-        return pdfdictionary { -- can be cached
-            S = pdf_goto,
-            D = destination,
-        }
+-- fit is default (see lpdf-nod)
+
+local destinations = { } -- to be used soon
+
+local function pdfregisterdestination(name,reference)
+    local d = destinations[name]
+    if d then
+        report_destination("ignoring duplicate destination %a with reference %a",name,reference)
     else
-        local p = tonumber(page)
-        if p and p > 0 then
-            return pdfdictionary { -- can be cached
-                S = pdf_goto,
-                D = pdfarray {
-                    pdfreference(pdfpagereference(p)),
-                    pdf_fit,
-                }
-            }
-        elseif trace_references then
-            report_reference("invalid page reference %a",page)
-        end
+        destinations[name] = reference
     end
-    return false
 end
 
-lpdf.link = link
+lpdf.registerdestination = pdfregisterdestination
 
-function lpdf.launch(program,parameters)
-    if program and program ~= "" then
-        local d = pdfdictionary {
-            S = pdf_launch,
-            F = program,
-            D = ".",
+local maxslice = 32 -- could be made configureable ... 64 is also ok
+
+luatex.registerstopactions(function()
+    if log_destinations and next(destinations) then
+        local logsnewline      = logs.newline
+        local log_destinations = logs.reporter("system","references")
+        local log_destination  = logs.reporter("destination")
+        logs.pushtarget("logfile")
+        logsnewline()
+        log_destinations("start used destinations")
+        logsnewline()
+        local n = 0
+        for destination, pagenumber in table.sortedhash(destinations) do
+            log_destination("% 4i : %-5s : %s",pagenumber,usedviews[destination] or defaultview,destination)
+            n = n + 1
+        end
+        logsnewline()
+        log_destinations("stop used destinations")
+        logsnewline()
+        logs.poptarget()
+        report_destination("%s destinations saved in log file",n)
+    end
+end)
+
+
+local function pdfnametree(destinations)
+    local slices = { }
+    local sorted = table.sortedkeys(destinations)
+    local size   = #sorted
+
+    if size <= 1.5*maxslice then
+        maxslice = size
+    end
+
+    for i=1,size,maxslice do
+        local amount = min(i+maxslice-1,size)
+        local names  = pdfarray { }
+        for j=i,amount do
+            local destination = sorted[j]
+            local pagenumber  = destinations[destination]
+            names[#names+1] = destination
+            names[#names+1] = pdfreference(pagenumber)
+        end
+        local first = sorted[i]
+        local last  = sorted[amount]
+        local limits = pdfarray {
+            first,
+            last,
         }
-        if parameters and parameters ~= "" then
-            d.P = parameters
+        local d = pdfdictionary {
+            Names  = names,
+            Limits = limits,
+        }
+        slices[#slices+1] = {
+            reference = pdfreference(pdfflushobject(d)),
+            limits    = limits,
+        }
+    end
+    local function collectkids(slices,first,last)
+        local k = pdfarray()
+        local d = pdfdictionary {
+            Kids   = k,
+            Limits = pdfarray {
+                slices[first].limits[1],
+                slices[last ].limits[2],
+            },
+        }
+        for i=first,last do
+            k[#k+1] = slices[i].reference
         end
         return d
     end
+    if #slices == 1 then
+        return slices[1].reference
+    else
+        while true do
+            if #slices > maxslice then
+                local temp = { }
+                local size = #slices
+                for i=1,size,maxslice do
+                    local kids = collectkids(slices,i,min(i+maxslice-1,size))
+                    temp[#temp+1] = {
+                        reference = pdfreference(pdfflushobject(kids)),
+                        limits    = kids.Limits,
+                    }
+                end
+                slices = temp
+            else
+                return pdfreference(pdfflushobject(collectkids(slices,1,#slices)))
+            end
+        end
+    end
 end
 
-function lpdf.javascript(name,arguments)
+local function pdfdestinationspecification()
+    if next(destinations) then -- safeguard
+        local r = pdfnametree(destinations)
+     -- pdfaddtocatalog("Dests",r)
+        pdfaddtonames("Dests",r)
+        if not log_destinations then
+            destinations = nil
+        end
+    end
+end
+
+lpdf.nametree                 = pdfnametree
+lpdf.destinationspecification = pdfdestinationspecification
+
+lpdf.registerdocumentfinalizer(pdfdestinationspecification,"collect destinations")
+
+-- todo
+
+local destinations = { }
+
+local f_xyz   = formatters["<< /D [ %i 0 R /XYZ %0.3F %0.3F null ] >>"]
+local f_fit   = formatters["<< /D [ %i 0 R /Fit ] >>"]
+local f_fitb  = formatters["<< /D [ %i 0 R /FitB ] >>"]
+local f_fith  = formatters["<< /D [ %i 0 R /FitH %0.3F ] >>"]
+local f_fitv  = formatters["<< /D [ %i 0 R /FitV %0.3F ] >>"]
+local f_fitbh = formatters["<< /D [ %i 0 R /FitBH %0.3F ] >>"]
+local f_fitbv = formatters["<< /D [ %i 0 R /FitBV %0.3F ] >>"]
+local f_fitr  = formatters["<< /D [ %i 0 R /FitR [ %0.3F %0.3F %0.3F %0.3F ] ] >>"]
+
+local v_standard  = variables.standard
+local v_frame     = variables.frame
+local v_width     = variables.width
+local v_minwidth  = variables.minwidth
+local v_height    = variables.height
+local v_minheight = variables.minheight
+local v_fit       = variables.fit
+local v_tight     = variables.tight
+
+-- nicer is to create dictionaries and set properties but it's a bit overkill
+
+local destinationactions = {
+    [v_standard]  = function(r,w,h,d) return f_xyz  (r,pdfrectangle(w,h,d))  end, -- local left,top with zoom (0 in our case)
+    [v_frame]     = function(r,w,h,d) return f_fitr (r,pdfrectangle(w,h,d))  end, -- fit rectangle in window
+    [v_width]     = function(r,w,h,d) return f_fith (r, gethpos()   *factor) end, -- top coordinate, fit width of page in window
+    [v_minwidth]  = function(r,w,h,d) return f_fitbh(r, gethpos()   *factor) end, -- top coordinate, fit width of content in window
+    [v_height]    = function(r,w,h,d) return f_fitv (r,(getvpos()+h)*factor) end, -- left coordinate, fit height of page in window
+    [v_minheight] = function(r,w,h,d) return f_fitbv(r,(getvpos()+h)*factor) end, -- left coordinate, fit height of content in window
+    [v_fit]       =                          f_fit,                               -- fit page in window
+    [v_tight]     =                          f_fitb,                              -- fit content in window
+}
+
+local mapping = {
+    [v_standard]  = v_standard,  xyz   = v_standard,
+    [v_frame]     = v_frame,     fitr  = v_frame,
+    [v_width]     = v_width,     fith  = v_width,
+    [v_minwidth]  = v_minwidth,  fitbh = v_minwidth,
+    [v_height]    = v_height,    fitv  = v_height,
+    [v_minheight] = v_minheight, fitbv = v_minheight,
+    [v_fit]       = v_fit,       fit   = v_fit,
+    [v_tight]     = v_tight,     fitb  = v_tight,
+}
+
+local defaultview   = v_fit
+local defaultaction = destinationactions[defaultview]
+
+-- A complication is that we need to use named destinations when we have views so we
+-- end up with a mix. A previous versions just output multiple destinations but not
+-- that we noved all to here we can be more sparse.
+
+local pagedestinations = { }
+
+table.setmetatableindex(pagedestinations,function(t,k)
+    local v = pdfdelayedobject(f_fit(k))
+    t[k] = v
+    return v
+end)
+
+local function flushdestination(width,height,depth,names,view)
+    local r = pdfpagereference(texgetcount("realpageno"))
+    if view == defaultview then
+        r = pagedestinations[r]
+    else
+        local action = view and destinationactions[view] or defaultaction
+        r = pdfdelayedobject(action(r,width,height,depth))
+    end
+    for n=1,#names do
+        local name = names[n]
+        if name then
+            pdfregisterdestination(name,r)
+        end
+    end
+end
+
+function nodeinjections.destination(width,height,depth,names,view)
+    -- todo check if begin end node / was comment
+    view = view and mapping[view] or defaultview
+    if trace_destinations then
+        report_destination("width %p, height %p, depth %p, names %|t, view %a",width,height,depth,names,view)
+    end
+    local method = references.innermethod
+    local noview = view == defaultview
+    local doview = false
+    -- we could save some aut's by using a name when given but it doesn't pay off apart
+    -- from making the code messy and tracing hard .. we only save some destinations
+    -- which we already share anyway
+    for n=1,#names do
+        local name = names[n]
+        if usedviews[name] then
+            -- already done, maybe a warning
+        elseif type(name) == "number" then
+            if noview then
+                usedviews[name] = view
+                names[n] = false
+            elseif method == v_page then
+                usedviews[name] = view
+                names[n] = false
+            else
+                local used = usedinternals[name]
+                if used and used ~= defaultview then
+                    usedviews[name] = view
+                    names[n] = autoprefix .. name
+                    doview = true
+                end
+            end
+        elseif method == v_page then
+            usedviews[name] = view
+        else
+            usedviews[name] = view
+            doview = true
+        end
+    end
+    if doview then
+        return latelua_function_node(function() flushdestination(width,height,depth,names,view) end)
+    end
+end
+
+-- we could share dictionaries ... todo
+
+local function somedestination(destination,internal,page) -- no view anyway
+    if references.innermethod ~= v_page then
+        if type(destination) == "number" then
+            if not internal then
+                internal = destination
+            end
+            destination = nil
+        end
+        if internal then
+            flaginternals[internal] = true -- for bookmarks and so
+            local used = usedinternals[internal]
+            if used == defaultview or used == true then
+                return pagereferences[page]
+            end
+            if type(destination) ~= "string" then
+                destination = autoprefix .. internal
+            end
+            return pdfdictionary {
+                S = pdf_goto,
+                D = destination,
+            }
+        end
+        if destination then
+            -- hopefully this one is flushed
+            return pdfdictionary {
+                S = pdf_goto,
+                D = destination,
+            }
+        end
+    end
+    return pagereferences[page]
+end
+
+-- annotations
+
+local pdflink = somedestination
+
+local function pdffilelink(filename,destination,page,actions)
+    if not filename or filename == "" or file.basename(filename) == tex.jobname then
+        return false
+    end
+    filename = file.addsuffix(filename,"pdf")
+    if not destination or destination == "" then
+        destination = pdfarray { (page or 0) - 1, pdf_fit }
+    end
+    return pdfdictionary {
+        S = pdf_gotor, -- can also be pdf_launch
+        F = filename,
+        D = destination or defaultdestination, -- D is mandate
+        NewWindow = actions.newwindow and true or nil,
+    }
+end
+
+local function pdfurllink(url,destination,page)
+    if not url or url == "" then
+        return false
+    end
+    if destination and destination ~= "" then
+        url = url .. "#" .. destination
+    end
+    return pdfdictionary {
+        S   = pdf_uri,
+        URI = url,
+    }
+end
+
+local function pdflaunch(program,parameters)
+    if not program or program == "" then
+        return false
+    end
+    return pdfdictionary {
+        S = pdf_launch,
+        F = program,
+        D = ".",
+        P = parameters ~= "" and parameters or nil
+    }
+end
+
+local function pdfjavascript(name,arguments)
     local script = javascriptcode(name,arguments) -- make into object (hash)
     if script then
         return pdfdictionary {
@@ -219,9 +559,11 @@ function codeinjections.prerollreference(actions) -- share can become option
     if actions then
         local main, n = pdfaction(actions)
         if main then
-             main = pdfdictionary {
+            local bs, bc = pdfborder()
+            main = pdfdictionary {
                 Subtype = pdf_link,
-                Border  = pdf_border,
+                Border  = bs,
+                C       = bc,
                 H       = (not actions.highlight and pdf_n) or nil,
                 A       = pdfshareobjectreference(main),
                 F       = 4, -- print (mandate in pdf/a)
@@ -231,157 +573,146 @@ function codeinjections.prerollreference(actions) -- share can become option
     end
 end
 
-local function use_normal_annotations()
-
-    local function reference(width,height,depth,prerolled) -- keep this one
-        if prerolled then
-            if trace_references then
-                report_reference("width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
-            end
-            return pdfannotation_node(width,height,depth,prerolled)
-        end
-    end
-
-    local function finishreference()
-    end
-
-    return reference, finishreference
-
-end
+-- local function use_normal_annotations()
+--
+--     local function reference(width,height,depth,prerolled) -- keep this one
+--         if prerolled then
+--             if trace_references then
+--                 report_reference("width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
+--             end
+--             return pdfannotation_node(width,height,depth,prerolled)
+--         end
+--     end
+--
+--     local function finishreference()
+--     end
+--
+--     return reference, finishreference
+--
+-- end
 
 -- eventually we can do this for special refs only
 
-local hashed, nofunique, nofused = { }, 0, 0
+local hashed     = { }
+local nofunique  = 0
+local nofused    = 0
+local nofspecial = 0
+local share      = true
 
-local f_annot = formatters["<< /Type /Annot %s /Rect [%0.3f %0.3f %0.3f %0.3f] >>"]
-local f_bpnf  = formatters["_bpnf_(%s,%s,%s,'%s')"]
+local f_annot = formatters["<< /Type /Annot %s /Rect [ %0.3F %0.3F %0.3F %0.3F ] >>"]
 
-local function use_shared_annotations()
+directives.register("refences.sharelinks", function(v) share = v end)
 
-    local factor = number.dimenfactors.bp
-
-    local function finishreference(width,height,depth,prerolled) -- %0.2f looks okay enough (no scaling anyway)
-        local h, v = pdf.h, pdf.v
-        local llx, lly = h*factor, (v - depth)*factor
-        local urx, ury = (h + width)*factor, (v + height)*factor
-        local annot = f_annot(prerolled,llx,lly,urx,ury)
-        local n = hashed[annot]
-        if not n then
-            n = pdfdelayedobject(annot)
-            hashed[annot] = n
-            nofunique = nofunique + 1
-        end
-        nofused = nofused + 1
-        pdfregisterannotation(n)
+table.setmetatableindex(hashed,function(t,k)
+    local v = pdfdelayedobject(k)
+    if share then
+        t[k] = v
     end
+    nofunique = nofunique + 1
+    return v
+end)
 
-    _bpnf_ = finishreference
-
-    local function reference(width,height,depth,prerolled)
-        if prerolled then
-            if trace_references then
-                report_reference("width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
-            end
-            local luacode = f_bpnf(width,height,depth,prerolled)
-            return latelua_node(luacode)
-        end
-    end
-
-    statistics.register("pdf annotations", function()
-        if nofused > 0 then
-            return format("%s embedded, %s unique",nofused,nofunique)
-        else
-            return nil
-        end
-    end)
-
-
-    return reference, finishreference
-
+local function finishreference(width,height,depth,prerolled) -- %0.2f looks okay enough (no scaling anyway)
+    local annot = hashed[f_annot(prerolled,pdfrectangle(width,height,depth))]
+    nofused = nofused + 1
+    return pdfregisterannotation(annot)
 end
 
-local lln = latelua_node()  if node.has_field(lln,'string') then
+local function finishannotation(width,height,depth,prerolled,r)
+    local annot = f_annot(prerolled,pdfrectangle(width,height,depth))
+    if r then
+        pdfdelayedobject(annot,r)
+    else
+        r = pdfdelayedobject(annot)
+    end
+    nofspecial = nofspecial + 1
+    return pdfregisterannotation(r)
+end
 
-    directives.register("refences.sharelinks", function(v)
-        if v then
-            nodeinjections.reference, codeinjections.finishreference = use_shared_annotations()
-        else
-            nodeinjections.reference, codeinjections.finishreference = use_normal_annotations()
+function nodeinjections.reference(width,height,depth,prerolled)
+    if prerolled then
+        if trace_references then
+            report_reference("link: width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
         end
-    end)
-
-    nodeinjections.reference, codeinjections.finishreference = use_shared_annotations()
-
-else
-
-    nodeinjections.reference, codeinjections.finishreference = use_normal_annotations()
-
-end  node.free(lln)
-
--- -- -- --
--- -- -- --
-
-local done = { } -- prevent messages
-
-function nodeinjections.destination(width,height,depth,name,view)
-    if not done[name] then
-        done[name] = true
-        if trace_destinations then
-            report_destination("width %p, height %p, depth %p, name %a, view %a",width,height,depth,name,view)
-        end
-        return pdfdestination_node(width,height,depth,name,view) -- can be begin/end node
+        return latelua_function_node(function() finishreference(width,height,depth,prerolled) end)
     end
 end
+
+function nodeinjections.annotation(width,height,depth,prerolled,r)
+    if prerolled then
+        if trace_references then
+            report_reference("special: width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
+        end
+        return latelua_function_node(function() finishannotation(width,height,depth,prerolled,r or false) end)
+    end
+end
+
+-- beware, we register during a latelua sweep so we have to make sure that
+-- we finalize after that (also in a latelua for the moment as we have no
+-- callback yet)
+
+local annotations = nil
+
+function lpdf.registerannotation(n)
+    if annotations then
+        annotations[#annotations+1] = pdfreference(n)
+    else
+        annotations = pdfarray { pdfreference(n) } -- no need to use lpdf.array cum suis
+    end
+end
+
+pdfregisterannotation = lpdf.registerannotation
+
+function lpdf.annotationspecification()
+    if annotations then
+        local r = pdfdelayedobject(tostring(annotations)) -- delayed so okay in latelua
+        pdfaddtopageattributes("Annots",pdfreference(r))
+        annotations = nil
+    end
+end
+
+lpdf.registerpagefinalizer(lpdf.annotationspecification,"finalize annotations")
+
+statistics.register("pdf annotations", function()
+    if nofused > 0 or nofspecial > 0 then
+        return format("%s links (%s unique), %s special",nofused,nofunique,nofspecial)
+    else
+        return nil
+    end
+end)
 
 -- runners and specials
 
--- runners["inner"] = function(var,actions)
---     if getinnermethod() == "names" then
---         local vi = var.i
---         if vi then
---             local vir = vi.references
---             if vir then
---                 local internal = vir.internal
---                 if internal then
---                     var.inner = "aut:" .. internal
---                 end
---             end
---         end
---     else
---         var.inner = nil
---     end
---     local prefix = var.p
---     local inner = var.inner
---     if inner and prefix and prefix ~= "" then
---         inner = prefix .. ":" .. inner -- might not always be ok
---     end
---     return link(nil,nil,inner,var.r,actions)
--- end
-
 runners["inner"] = function(var,actions)
     local internal = false
-    if getinnermethod() == "names" then
+    local inner    = nil
+    if references.innermethod == v_auto then
         local vi = var.i
         if vi then
             local vir = vi.references
             if vir then
                 -- todo: no need for it when we have a real reference
+                local reference = vir.reference
+                if reference and reference ~= "" then
+                    var.inner = reference
+                    local prefix = var.p
+                    if prefix and prefix ~= "" then
+                        var.prefix = prefix
+                        inner = prefix .. ":" .. reference
+                    else
+                        inner = reference
+                    end
+                end
                 internal = vir.internal
                 if internal then
-                    var.inner = "aut:" .. internal
+                    flaginternals[internal] = true
                 end
             end
         end
     else
         var.inner = nil
     end
-    local prefix = var.p
-    local inner = var.inner
-    if not internal and inner and prefix and prefix ~= "" then
-        -- no prefix with e.g. components
-        inner = prefix .. ":" .. inner
-    end
-    return link(nil,nil,inner,var.r,actions)
+    return pdflink(inner,internal,var.r)
 end
 
 runners["inner with arguments"] = function(var,actions)
@@ -391,12 +722,15 @@ end
 
 runners["outer"] = function(var,actions)
     local file, url = references.checkedfileorurl(var.outer,var.outer)
-    return link(url,file,var.arguments,nil,actions)
+    if file  then
+        return pdffilelink(file,var.arguments,nil,actions)
+    elseif url then
+        return pdfurllink(url,var.arguments,nil,actions)
+    end
 end
 
 runners["outer with inner"] = function(var,actions)
-    local file = references.checkedfile(var.outer) -- was var.f but fails ... why
-    return link(nil,file,var.inner,var.r,actions)
+    return pdffilelink(references.checkedfile(var.outer),var.inner,var.r,actions)
 end
 
 runners["special outer with operation"] = function(var,actions)
@@ -443,12 +777,9 @@ function specials.internal(var,actions) -- better resolve in strc-ref
     if not v then
         -- error
         report_reference("no internal reference %a",i)
-    elseif getinnermethod() == "names" then
-        -- named
-        return link(nil,nil,"aut:"..i,v.references.realpage,actions)
     else
-        -- page
-        return link(nil,nil,nil,v.references.realpage,actions)
+        flaginternals[i] = true
+        return pdflink(nil,i,v.references.realpage)
     end
 end
 
@@ -461,8 +792,7 @@ local pages = references.pages
 function specials.page(var,actions)
     local file = var.f
     if file then
-        file = references.checkedfile(file)
-        return link(nil,file,nil,var.operation,actions)
+        return pdffilelink(references.checkedfile(file),nil,var.operation,actions)
     else
         local p = var.r
         if not p then -- todo: call special from reference code
@@ -472,29 +802,24 @@ function specials.page(var,actions)
             else
                 p = references.realpageofpage(tonumber(p))
             end
-         -- if p then
-         --     var.r = p
-         -- end
         end
-        return link(nil,nil,nil,p or var.operation,actions)
+        return pdflink(nil,nil,p or var.operation)
     end
 end
 
 function specials.realpage(var,actions)
     local file = var.f
     if file then
-        file = references.checkedfile(file)
-        return link(nil,file,nil,var.operation,actions)
+        return pdffilelink(references.checkedfile(file),nil,var.operation,actions)
     else
-        return link(nil,nil,nil,var.operation,actions)
+        return pdflink(nil,nil,var.operation)
     end
 end
 
 function specials.userpage(var,actions)
     local file = var.f
     if file then
-        file = references.checkedfile(file)
-        return link(nil,file,nil,var.operation,actions)
+        return pdffilelink(references.checkedfile(file),nil,var.operation,actions)
     else
         local p = var.r
         if not p then -- todo: call special from reference code
@@ -506,7 +831,7 @@ function specials.userpage(var,actions)
          --     var.r = p
          -- end
         end
-        return link(nil,nil,nil,p or var.operation,actions)
+        return pdflink(nil,nil,p or var.operation)
     end
 end
 
@@ -514,7 +839,7 @@ function specials.deltapage(var,actions)
     local p = tonumber(var.operation)
     if p then
         p = references.checkedrealpage(p + texgetcount("realpageno"))
-        return link(nil,nil,nil,p,actions)
+        return pdflink(nil,nil,p)
     end
 end
 
@@ -554,27 +879,29 @@ function specials.order(var,actions) -- references.specials !
 end
 
 function specials.url(var,actions)
-    local url = references.checkedurl(var.operation)
-    return link(url,nil,var.arguments,nil,actions)
+    return pdfurllink(references.checkedurl(var.operation),var.arguments,nil,actions)
 end
 
 function specials.file(var,actions)
-    local file = references.checkedfile(var.operation)
-    return link(nil,file,var.arguments,nil,actions)
+    return pdffilelink(references.checkedfile(var.operation),var.arguments,nil,actions)
 end
 
 function specials.fileorurl(var,actions)
     local file, url = references.checkedfileorurl(var.operation,var.operation)
-    return link(url,file,var.arguments,nil,actions)
+    if file then
+        return pdffilelink(file,var.arguments,nil,actions)
+    elseif url then
+        return pdfurllink(url,var.arguments,nil,actions)
+    end
 end
 
 function specials.program(var,content)
     local program = references.checkedprogram(var.operation)
-    return lpdf.launch(program,var.arguments)
+    return pdflaunch(program,var.arguments)
 end
 
 function specials.javascript(var)
-    return lpdf.javascript(var.operation,var.arguments)
+    return pdfjavascript(var.operation,var.arguments)
 end
 
 specials.JS = specials.javascript
@@ -698,11 +1025,6 @@ function specials.action(var)
     end
 end
 
---~ entry.A = pdfdictionary {
---~     S = pdf_goto,
---~     D = ....
---~ }
-
 local function build(levels,start,parent,method)
     local startlevel = levels[start][1]
     local i, n = start, 0
@@ -727,12 +1049,9 @@ local function build(levels,start,parent,method)
                 Title  = pdfunicode(title),
                 Parent = parent,
                 Prev   = prev and pdfreference(prev),
+                A      = somedestination(reference.internal,reference.internal,reference.realpage),
             }
-            if method == "internal" then
-                entry.Dest = "aut:" .. reference.internal
-            else -- if method == "page" then
-                entry.Dest = pagedestination(reference.realpage)
-            end
+         -- entry.Dest = somedestination(reference.internal,reference.internal,reference.realpage)
             if not first then first, last = child, child end
             prev = child
             last = prev
@@ -771,10 +1090,10 @@ function codeinjections.addbookmarks(levels,method)
             Count = m,
         }
         pdfflushobject(parent,dict)
-        lpdf.addtocatalog("Outlines",lpdf.reference(parent))
+        pdfaddtocatalog("Outlines",lpdf.reference(parent))
     end
 end
 
 -- this could also be hooked into the frontend finalizer
 
-lpdf.registerdocumentfinalizer(function() bookmarks.place() end,1,"bookmarks")
+lpdf.registerdocumentfinalizer(function() bookmarks.place() end,1,"bookmarks") -- hm, why indirect call

@@ -41,7 +41,6 @@ local format                  = string.format
 local concat                  = table.concat
 local points                  = number.points
 
-local context                 = context
 local context_beginvbox       = context.beginvbox
 local context_endvbox         = context.endvbox
 local context_blank           = context.blank
@@ -573,8 +572,8 @@ function xtables.reflow_height()
         local total = totalheight + totaldepth
         local leftover = settings.textheight - total
         if leftover > 0 then
-            local leftheight = (totalheight / total ) * leftover / #heights
-            local leftdepth  = (totaldepth  / total ) * leftover / #depths
+            local leftheight = (totalheight / total) * leftover / #heights
+            local leftdepth  = (totaldepth  / total) * leftover / #depths
             for i=1,nofrows do
                 heights[i] = heights[i] + leftheight
                 depths [i] = depths [i] + leftdepth

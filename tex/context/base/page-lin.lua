@@ -39,10 +39,16 @@ local v_page             = variables.page
 local v_no               = variables.no
 
 local nodecodes          = nodes.nodecodes
+local skipcodes          = nodes.skipcodes
+local whatcodes          = nodes.whatcodes
 
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local whatsit_code       = nodecodes.whatsit
+local glue_code          = nodecodes.glue
+local glyph_code         = nodecodes.glyph
+local leftskip_code      = skipcodes.leftskip
+local textdir_code       = whatcodes.dir
 
 local a_displaymath      = attributes.private('displaymath')
 local a_linenumber       = attributes.private('linenumber')
@@ -56,6 +62,7 @@ local chunksize          = 250 -- not used in boxed
 local nuts               = nodes.nuts
 
 local getid              = nuts.getid
+local getsubtype         = nuts.getsubtype
 local getnext            = nuts.getnext
 local getattr            = nuts.getattr
 local getlist            = nuts.getlist
@@ -72,6 +79,12 @@ local insert_node_after  = nuts.insert_after
 local insert_node_before = nuts.insert_before
 local is_display_math    = nuts.is_display_math
 local leftmarginwidth    = nuts.leftmarginwidth
+
+local negated_glue       = nuts.pool.negatedglue
+local new_hlist          = nuts.pool.hlist
+
+local ctx_convertnumber  = context.convertnumber
+local ctx_makelinenumber = context.makelinenumber
 
 -- cross referencing
 
@@ -122,7 +135,7 @@ filters.line = filters.line or { }
 
 function filters.line.default(data)
 --  helpers.title(data.entries.linenumber or "?",data.metadata)
-    context.convertnumber(data.entries.conversion or "numbers",data.entries.linenumber or "0")
+    ctx_convertnumber(data.entries.conversion or "numbers",data.entries.linenumber or "0")
 end
 
 function filters.line.page(data,prefixspec,pagespec) -- redundant
@@ -195,7 +208,7 @@ local function check_number(n,a,skip,sameline)
                 report_lines("skipping line number %s for setup %a: %s (%s)",#current_list,a,s,d.continue or v_no)
             end
         end
-        context.makelinenumber(tag,skipflag,s,getfield(n,"shift"),getfield(n,"width"),leftmarginwidth(getlist(n)),getfield(n,"dir"))
+        ctx_makelinenumber(tag,skipflag,s,getfield(n,"shift"),getfield(n,"width"),leftmarginwidth(getlist(n)),getfield(n,"dir"))
     end
 end
 
@@ -206,17 +219,18 @@ end
 local function identify(list)
     if list then
         for n in traverse_id(hlist_code,list) do
-            if getattr(n,a_linenumber) then
-                return list
+            local a = getattr(n,a_linenumber)
+            if a then
+                return list, a
             end
         end
         local n = list
         while n do
             local id = getid(n)
             if id == hlist_code or id == vlist_code then
-                local ok = identify(getlist(n))
+                local ok, a = identify(getlist(n))
                 if ok then
-                    return ok
+                    return ok, a
                 end
             end
             n = getnext(n)
@@ -236,48 +250,119 @@ function boxed.stage_one(n,nested)
     current_list = { }
     local box = getbox(n)
     if box then
-        local list = getlist(box)
-        if nested then
-            list = identify(list)
+        local found = nil
+        local list  = getlist(box)
+        if list and nested then
+            list, found = identify(list)
         end
-        local last_a, last_v, skip = nil, -1, false
-        for n in traverse_id(hlist_code,list) do -- attr test here and quit as soon as zero found
-            if getfield(n,"height") == 0 and getfield(n,"depth") == 0 then
-                -- skip funny hlists -- todo: check line subtype
-            else
-                local list = getlist(n)
-                local a = getattr(list,a_linenumber)
-                if a and a > 0 then
-                    if last_a ~= a then
-                        local da = data[a]
-                        local ma = da.method
-                        if ma == v_next then
-                            skip = true
-                        elseif ma == v_page then
-                            da.start = 1 -- eventually we will have a normal counter
+        if list then
+            local last_a, last_v, skip = nil, -1, false
+            for n in traverse_id(hlist_code,list) do -- attr test here and quit as soon as zero found
+                if getfield(n,"height") == 0 and getfield(n,"depth") == 0 then
+                    -- skip funny hlists -- todo: check line subtype
+                else
+                    local list = getlist(n)
+                    local a = getattr(list,a_linenumber)
+                    if not a or a == 0 then
+                        local n = getnext(list)
+                        while n do
+                            local id = getid(n)
+                            if id == whatsit_code and getsubtype(n) == textdir_code then
+                                n = getnext(n)
+                            elseif id == glue_code and getsubtype(n) == leftskip_code then
+                                n = getnext(n)
+                            else
+if id == glyph_code then
+                                break
+else
+    -- can be hlist or skip (e.g. footnote line)
+    n = getnext(n)
+end
+                            end
                         end
-                        last_a = a
-                        if trace_numbers then
-                            report_lines("starting line number range %s: start %s, continue %s",a,da.start,da.continue or v_no)
-                        end
+                        a = n and getattr(n,a_linenumber)
                     end
-                    if getattr(n,a_displaymath) then
-                        if is_display_math(n) then
-                            check_number(n,a,skip)
+                    if a and a > 0 then
+                        if last_a ~= a then
+                            local da = data[a]
+                            local ma = da.method
+                            if ma == v_next then
+                                skip = true
+                            elseif ma == v_page then
+                                da.start = 1 -- eventually we will have a normal counter
+                            end
+                            last_a = a
+                            if trace_numbers then
+                                report_lines("starting line number range %s: start %s, continue %s",a,da.start,da.continue or v_no)
+                            end
                         end
-                    else
-                        local v = getattr(list,a_verbatimline)
-                        if not v or v ~= last_v then
-                            last_v = v
-                            check_number(n,a,skip)
+                        if getattr(n,a_displaymath) then
+                            if is_display_math(n) then
+                                check_number(n,a,skip)
+                            end
                         else
-                            check_number(n,a,skip,true)
+                            local v = getattr(list,a_verbatimline)
+                            if not v or v ~= last_v then
+                                last_v = v
+                                check_number(n,a,skip)
+                            else
+                                check_number(n,a,skip,true)
+                            end
                         end
+                        skip = false
                     end
-                    skip = false
                 end
             end
         end
+    end
+end
+
+-- [dir][leftskip][content]
+
+function boxed.stage_two(n,m)
+    if #current_list > 0 then
+        m = m or lines.scratchbox
+        local t, tn = { }, 0
+        for l in traverse_id(hlist_code,getlist(getbox(m))) do
+            tn = tn + 1
+            t[tn] = copy_node(l) -- use take_box instead
+        end
+        for i=1,#current_list do
+            local li = current_list[i]
+            local n, m, ti = li[1], li[2], t[i]
+            if ti then
+                local l = getlist(n)
+                -- we want to keep leftskip at the start
+--                 local id = getid(l)
+--                 if id == whatsit_code and getsubtype(l) == textdir_code then
+--                     l = getnext(l)
+--                     id = getid(l)
+--                 end
+--                 if getid(l) == glue_code and getsubtype(l) == leftskip_code then
+--                     -- [leftskip] [number] [rest]
+--                     local forward  = copy_node(l)
+--                     local backward = negated_glue(l)
+--                     local next     = getnext(l)
+--                     setfield(l,"next",backward)
+--                     setfield(backward,"prev",l)
+--                     setfield(backward,"next",ti)
+--                     setfield(ti,"prev",backward)
+--                     setfield(ti,"next",forward)
+--                     setfield(forward,"prev",ti)
+--                     setfield(forward,"next",next)
+--                     setfield(next,"prev",forward)
+--                 else
+                    -- [number] [rest]
+                    setfield(ti,"next",l)
+                    setfield(l,"prev",ti)
+                    setfield(n,"list",ti)
+--                 end
+                resolve(n,m)
+            else
+                report_lines("error in linenumbering (1)")
+                return
+            end
+       end
     end
 end
 
@@ -287,14 +372,19 @@ function boxed.stage_two(n,m)
         local t, tn = { }, 0
         for l in traverse_id(hlist_code,getlist(getbox(m))) do
             tn = tn + 1
-            t[tn] = copy_node(l)
+            t[tn] = copy_node(l) -- use take_box instead
         end
         for i=1,#current_list do
             local li = current_list[i]
             local n, m, ti = li[1], li[2], t[i]
             if ti then
-                setfield(ti,"next",getlist(n))
-                setfield(n,"list",ti)
+                local l = getlist(n)
+                setfield(ti,"next",l)
+                setfield(l,"prev",ti)
+                local h = copy_node(n)
+                setfield(h,"dir","TLT")
+                setfield(h,"list",ti)
+                setfield(n,"list",h)
                 resolve(n,m)
             else
                 report_lines("error in linenumbering (1)")

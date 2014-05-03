@@ -18,10 +18,12 @@ if not modules then modules = { } end modules ['task-ini'] = {
 -- not apply the font handler, we can remove all checks for subtypes 255
 
 local tasks           = nodes.tasks
+local prependaction   = tasks.prependaction
 local appendaction    = tasks.appendaction
 local disableaction   = tasks.disableaction
 local freezegroup     = tasks.freezegroup
 local freezecallbacks = callbacks.freeze
+
 
 appendaction("processors",   "normalizers", "typesetters.characters.handler")                    -- always on
 appendaction("processors",   "normalizers", "fonts.collections.process")                         -- disabled
@@ -119,6 +121,11 @@ appendaction("vboxbuilders", "normalizers", "builders.vspacing.vboxhandler")    
 
 appendaction("mvlbuilders",  "normalizers", "typesetters.checkers.handler")
 appendaction("vboxbuilders", "normalizers", "typesetters.checkers.handler")
+
+-- rather special (this might get hardcoded):
+
+prependaction("processors",  "before",      "nodes.properties.attach")  -- enabled but optimized for quick abort
+appendaction ("shipouts",    "normalizers", "nodes.properties.delayed") -- enabled but optimized for quick abort
 
 -- speedup: only kick in when used
 

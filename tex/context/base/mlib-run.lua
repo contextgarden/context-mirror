@@ -121,7 +121,7 @@ local function o_finder(name,mode,ftype)
     return name
 end
 
-local function finder(name, mode, ftype)
+local function finder(name,mode,ftype)
     if mode == "w" then
         return o_finder(name,mode,ftype)
     else
@@ -295,17 +295,28 @@ else
     local methods = {
         double  = "double",
         scaled  = "scaled",
+        binary  = "binary",
+        decimal = "decimal",
         default = "scaled",
-        decimal = false, -- for the moment
     }
+
+    function metapost.runscript(code)
+        return code
+    end
+
+    function metapost.scripterror(str)
+        report_metapost("script error: %s",str)
+    end
 
     function metapost.load(name,method)
         starttiming(mplib)
         method = method and methods[method] or "scaled"
         local mpx = mplib.new {
-            ini_version = true,
-            find_file   = finder,
-            math_mode   = method,
+            ini_version  = true,
+            find_file    = finder,
+            math_mode    = method,
+            run_script   = metapost.runscript,
+            script_error = metapost.scripterror,
         }
         report_metapost("initializing number mode %a",method)
         local result
@@ -402,6 +413,10 @@ local mp_inp, mp_log, mp_tag = { }, { }, 0
 
 -- key/values
 
+if not metapost.initializescriptrunner then
+    function metapost.initializescriptrunner() end
+end
+
 function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, askedfig)
     local converted, result = false, { }
     if type(mpx) == "string" then
@@ -409,6 +424,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
     end
     if mpx and data then
         starttiming(metapost)
+        metapost.initializescriptrunner(mpx,trialrun)
         if trace_graphics then
             if not mp_inp[mpx] then
                 mp_tag = mp_tag + 1
@@ -623,5 +639,22 @@ function metapost.quickanddirty(mpxformat,data)
         }
     else
         report_metapost("invalid quick and dirty run")
+    end
+end
+
+function metapost.getstatistics(memonly)
+    if memonly then
+        local n, m = 0, 0
+        for name, mpx in next, mpxformats do
+            n = n + 1
+            m = m + mpx:statistics().memory
+        end
+        return n, m
+    else
+        local t = { }
+        for name, mpx in next, mpxformats do
+            t[name] = mpx:statistics()
+        end
+        return t
     end
 end

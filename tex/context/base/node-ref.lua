@@ -123,28 +123,27 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
     if result and resolved then
         if head == first then
             if trace_backend then
-                report_area("head: %04i %s %s %s => w=%p, h=%p, d=%p, c=%s",reference,pardir or "---",txtdir or "----",tosequence(first,last,true),width,height,depth,resolved)
+                report_area("%s: %04i %s %s %s => w=%p, h=%p, d=%p, c=%S","head",
+                    reference,pardir or "---",txtdir or "---",tosequence(first,last,true),width,height,depth,resolved)
             end
             setfield(result,"next",first)
             setfield(first,"prev",result)
             return result, last
         else
             if trace_backend then
-                report_area("middle: %04i %s %s => w=%p, h=%p, d=%p, c=%s",reference,pardir or "---",txtdir or "----",tosequence(first,last,true),width,height,depth,resolved)
+                report_area("%s: %04i %s %s %s => w=%p, h=%p, d=%p, c=%S","middle",
+                    reference,pardir or "---",txtdir or "---",tosequence(first,last,true),width,height,depth,resolved)
             end
             local prev = getprev(first)
             if prev then
-                setfield(result,"next",first)
-                setfield(result,"prev",prev)
                 setfield(prev,"next",result)
-                setfield(first,"prev",result)
-            else
-                setfield(result,"next",first)
-                setfield(first,"prev",result)
+                setfield(result,"prev",prev)
             end
-            if first == getnext(head) then
-                setfield(head,"next",result) -- hm, weird
-            end
+            setfield(result,"next",first)
+            setfield(first,"prev",result)
+--             if first == getnext(head) then
+--                 setfield(head,"next",result) -- hm, weird
+--             end
             return head, last
         end
     else
@@ -195,7 +194,8 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
     -- todo: only when width is ok
     if result and resolved then
         if trace_backend then
-            report_area("box: %04i %s %s: w=%p, h=%p, d=%p, c=%s",reference,pardir or "---",txtdir or "----",width,height,depth,resolved)
+            report_area("%s: %04i %s %s %s: w=%p, h=%p, d=%p, c=%S","box",
+                reference,pardir or "---",txtdir or "----","[]",width,height,depth,resolved)
         end
         if not first then
             setfield(current,"list",result)
@@ -228,14 +228,25 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
             local id = getid(current)
             if id == hlist_code or id == vlist_code then
                 local r = getattr(current,attribute)
-                -- somehow reference is true so the following fails (second one not done) in
-                --    test \goto{test}[page(2)] test \gotobox{test}[page(2)]
-                -- so let's wait till this fails again
-                -- if not reference and r and (not skip or r > skip) then -- > or ~=
-                if r and (not skip or r > skip) then -- > or ~=
-                    inject_list(id,current,r,make,stack,pardir,txtdir)
-                end
+                -- test \goto{test}[page(2)] test \gotobox{test}[page(2)]
+                -- test \goto{\TeX}[page(2)] test \gotobox{\hbox {x} \hbox {x}}[page(2)]
+             -- if r and (not skip or r >) skip then -- maybe no > test
+             --     inject_list(id,current,r,make,stack,pardir,txtdir)
+             -- end
                 if r then
+                    if not reference then
+                        reference, first, last, firstdir = r, current, current, txtdir
+                    elseif r == reference then
+                        -- same link
+                        last = current
+                    elseif (done[reference] or 0) == 0 then
+                        if not skip or r > skip then -- maybe no > test
+                            head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
+                            reference, first, last, firstdir = nil, nil, nil, nil
+                        end
+                    else
+                        reference, first, last, firstdir = r, current, current, txtdir
+                    end
                     done[r] = (done[r] or 0) + 1
                 end
                 local list = getlist(current)
@@ -297,7 +308,7 @@ local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) 
                 end
                 local list = getlist(current)
                 if list then
-                    setfield(current,"list",inject_area(list,attribute,make,stack,done,current,pardir,txtdir))
+                    setfield(current,"list",(inject_area(list,attribute,make,stack,done,current,pardir,txtdir)))
                 end
             elseif id == whatsit_code then
                 local subtype = getsubtype(current)
@@ -429,6 +440,7 @@ annot = tonut(annot)
             end
             if current then
                 setfield(current,"next",annot)
+                setfield(annot,"prev",current)
             else
                 result = annot
             end
@@ -503,32 +515,28 @@ local function makedestination(width,height,depth,reference)
                 step = 4*65536
                 width, height, depth = 5*step, 5*step, 0
             end
-            for n=1,#name do
-                local rule = hpack_list(colorize(width,height,depth,3,reference,"destination"))
-                setfield(rule,"width",0)
-                if not result then
-                    result, current = rule, rule
-                else
-                    setfield(current,"next",rule)
-                    setfield(rule,"prev",current)
-                    current = rule
-                end
-                width, height = width - step, height - step
+            local rule = hpack_list(colorize(width,height,depth,3,reference,"destination"))
+            setfield(rule,"width",0)
+            if not result then
+                result, current = rule, rule
+            else
+                setfield(current,"next",rule)
+                setfield(rule,"prev",current)
+                current = rule
             end
+            width, height = width - step, height - step
         end
         nofdestinations = nofdestinations + 1
-        for n=1,#name do
-            local annot = nodeinjections.destination(width,height,depth,name[n],view)
-            if annot then
-annot = tonut(annot) -- obsolete soon
-                if not result then
-                    result  = annot
-                else
-                    setfield(current,"next",annot)
-                    setfield(annot,"prev",current)
-                end
-                current = find_node_tail(annot)
+        local annot = nodeinjections.destination(width,height,depth,name,view)
+        if annot then
+            annot = tonut(annot) -- obsolete soon
+            if result then
+                setfield(current,"next",annot)
+                setfield(annot,"prev",current)
+            else
+                result  = annot
             end
+            current = find_node_tail(annot)
         end
         if result then
             -- some internal error

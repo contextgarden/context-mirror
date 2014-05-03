@@ -8,7 +8,8 @@ if not modules then modules = { } end modules ['spac-ver'] = {
 
 -- we also need to call the spacer for inserts!
 
--- todo: directly set skips
+-- todo: use lua nodes with lua data (>0.79)
+-- see ** can go when 0.79
 
 -- this code dates from the beginning and is kind of experimental; it
 -- will be optimized and improved soon
@@ -120,8 +121,8 @@ builders.vspacing         = vspacing
 local vspacingdata        = vspacing.data or { }
 vspacing.data             = vspacingdata
 
-vspacingdata.snapmethods  = vspacingdata.snapmethods or { }
-local snapmethods         = vspacingdata.snapmethods --maybe some older code can go
+local snapmethods         = vspacingdata.snapmethods or { }
+vspacingdata.snapmethods  = snapmethods
 
 storage.register("builders/vspacing/data/snapmethods", snapmethods, "builders.vspacing.data.snapmethods")
 
@@ -535,14 +536,15 @@ local categories = allocate {
      [5] = 'disable',
      [6] = 'nowhite',
      [7] = 'goback',
-     [8] = 'together'
+     [8] = 'together', -- not used (?)
+     [9] = 'overlay',
 }
 
 vspacing.categories = categories
 
 function vspacing.tocategories(str)
     local t = { }
-    for s in gmatch(str,"[^, ]") do
+    for s in gmatch(str,"[^, ]") do -- use lpeg instead
         local n = tonumber(s)
         if n then
             t[categories[n]] = true
@@ -553,7 +555,7 @@ function vspacing.tocategories(str)
     return t
 end
 
-function vspacing.tocategory(str)
+function vspacing.tocategory(str) -- can be optimized
     if type(str) == "string" then
         return set.tonumber(vspacing.tocategories(str))
     else
@@ -584,15 +586,15 @@ do -- todo: interface.variables
     -- This will change: just node.write and we can store the values in skips which
     -- then obeys grouping
 
-    local fixedblankskip         = context.fixedblankskip
-    local flexibleblankskip      = context.flexibleblankskip
-    local setblankcategory       = context.setblankcategory
-    local setblankorder          = context.setblankorder
-    local setblankpenalty        = context.setblankpenalty
-    local setblankhandling       = context.setblankhandling
-    local flushblankhandling     = context.flushblankhandling
-    local addpredefinedblankskip = context.addpredefinedblankskip
-    local addaskedblankskip      = context.addaskedblankskip
+    local ctx_fixedblankskip         = context.fixedblankskip
+    local ctx_flexibleblankskip      = context.flexibleblankskip
+    local ctx_setblankcategory       = context.setblankcategory
+    local ctx_setblankorder          = context.setblankorder
+    local ctx_setblankpenalty        = context.setblankpenalty
+    ----- ctx_setblankhandling       = context.setblankhandling
+    local ctx_flushblankhandling     = context.flushblankhandling
+    local ctx_addpredefinedblankskip = context.addpredefinedblankskip
+    local ctx_addaskedblankskip      = context.addaskedblankskip
 
     local function analyze(str,oldcategory) -- we could use shorter names
         for s in gmatch(str,"([^ ,]+)") do
@@ -604,35 +606,35 @@ do -- todo: interface.variables
                 if mk then
                     category = analyze(mk,category)
                 elseif keyword == k_fixed then
-                    fixedblankskip()
+                    ctx_fixedblankskip()
                 elseif keyword == k_flexible then
-                    flexibleblankskip()
+                    ctx_flexibleblankskip()
                 elseif keyword == k_category then
                     local category = tonumber(detail)
                     if category then
-                        setblankcategory(category)
+                        ctx_setblankcategory(category)
                         if category ~= oldcategory then
-                            flushblankhandling()
+                            ctx_flushblankhandling()
                             oldcategory = category
                         end
                     end
                 elseif keyword == k_order and detail then
                     local order = tonumber(detail)
                     if order then
-                        setblankorder(order)
+                        ctx_setblankorder(order)
                     end
                 elseif keyword == k_penalty and detail then
                     local penalty = tonumber(detail)
                     if penalty then
-                        setblankpenalty(penalty)
+                        ctx_setblankpenalty(penalty)
                     end
                 else
                     amount = tonumber(amount) or 1
                     local sk = skip[keyword]
                     if sk then
-                        addpredefinedblankskip(amount,keyword)
+                        ctx_addpredefinedblankskip(amount,keyword)
                     else -- no check
-                        addaskedblankskip(amount,keyword)
+                        ctx_addaskedblankskip(amount,keyword)
                     end
                 end
             end
@@ -640,22 +642,22 @@ do -- todo: interface.variables
         return category
     end
 
-    local pushlogger         = context.pushlogger
-    local startblankhandling = context.startblankhandling
-    local stopblankhandling  = context.stopblankhandling
-    local poplogger          = context.poplogger
+    local ctx_pushlogger         = context.pushlogger
+    local ctx_startblankhandling = context.startblankhandling
+    local ctx_stopblankhandling  = context.stopblankhandling
+    local ctx_poplogger          = context.poplogger
 
     function vspacing.analyze(str)
         if trace_vspacing then
-            pushlogger(report_vspacing)
-            startblankhandling()
+            ctx_pushlogger(report_vspacing)
+            ctx_startblankhandling()
             analyze(str,1)
-            stopblankhandling()
-            poplogger()
+            ctx_stopblankhandling()
+            ctx_poplogger()
         else
-            startblankhandling()
+            ctx_startblankhandling()
             analyze(str,1)
-            stopblankhandling()
+            ctx_stopblankhandling()
         end
     end
 
@@ -774,7 +776,8 @@ local splittopskip_code          = skipcodes.splittopskip
 -- end
 
 local free_glue_node = free_node
-local free_glue_spec = function() end -- free_node
+local free_glue_spec = function() end
+----- free_glue_spec = free_node -- can be enabled in in 0.73 (so for the moment we leak due to old luatex engine issues)
 
 function vspacing.snapbox(n,how)
     local sv = snapmethods[how]
@@ -853,7 +856,16 @@ end
 
 -- penalty only works well when before skip
 
-local discard, largest, force, penalty, add, disable, nowhite, goback, together = 0, 1, 2, 3, 4, 5, 6, 7, 8 -- move into function when upvalue 60 issue
+local discard  = 0
+local largest  = 1
+local force    = 2
+local penalty  = 3
+local add      = 4
+local disable  = 5
+local nowhite  = 6
+local goback   = 7
+local together = 8 -- not used (?)
+local overlay  = 9
 
 -- [whatsits][hlist][glue][glue][penalty]
 
@@ -885,6 +897,108 @@ local function specialpenalty(start,penalty)
     end
 end
 
+local function check_experimental_overlay(head,current) -- todo
+    local p = nil
+    local c = current
+    local n = nil
+
+setfield(head,"prev",nil) -- till we have 0.79 **
+
+    local function overlay(p, n, s, mvl)
+        local c = getprev(n)
+        while c and c ~= p do
+            local p = getprev(c)
+            free_node(c)
+            c = p
+        end
+        setfield(n,"prev",nil)
+        if not mvl then
+            setfield(p,"next",n)
+        end
+        local p_ht = getfield(p,"height")
+        local p_dp = getfield(p,"depth")
+        local n_ht = getfield(n,"height")
+        local delta = n_ht + s + p_dp
+        local k = new_kern(-delta)
+        if trace_vspacing then
+            report_vspacing("overlaying, prev height: %p, prev depth: %p, next height: %p, skips: %p, move up: %p",p_ht,p_dp,n_ht,s,delta)
+        end
+        if n_ht > p_ht then
+            -- we should adapt pagetotal ! (need a hook for that)
+            setfield(p,"height",n_ht)
+        end
+        return k
+    end
+
+    while c do
+        local id = getid(c)
+        if id == glue_code or id == penalty_code or id == kern_code then
+            -- skip (actually, remove)
+            c = getnext(c)
+        elseif id == hlist_code then
+            n = c
+            break
+        else
+            break
+        end
+    end
+    if n then
+        -- we have a next line
+        c = current
+        while c do
+            local id = getid(c)
+            if id == glue_code or id == penalty_code then
+                c = getprev(c)
+            elseif id == hlist_code then
+                p = c
+                break
+            else
+                break
+            end
+        end
+        if not p then
+            if a_snapmethod == a_snapvbox then
+                -- quit, we're not on the mvl
+            else
+                -- messy
+                local c = tonut(texlists.page_head)
+                local s = 0
+                while c do
+                    local id = getid(c)
+                    if id == glue_code then
+                        if p then
+                            s = s + getfield(getfield(c,"glue_spec"),"width")
+                        end
+                    elseif id == kern_code then
+                        if p then
+                            s = s + getfield(c,"kern")
+                        end
+                    elseif id == penalty_code then
+                        -- skip (actually, remove)
+                    elseif id == hlist_code then
+                        p = c
+                        s = 0
+                    else
+                        p = nil
+                        s = 0
+                    end
+                    c = getnext(c)
+                end
+                if p and p ~= n then
+                    local k = overlay(p,n,s,true)
+                    insert_node_before(n,n,k)
+                    return k, getnext(n)
+                end
+            end
+        elseif p ~= n then
+            local k = overlay(p,n,0,false   )
+            insert_node_after(p,p,k)
+            return head, getnext(n)
+        end
+    end
+    return remove_node(head, current, true)
+end
+
 local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also pass tail
     if trace then
         reset_tracing(head)
@@ -900,7 +1014,17 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         if penalty_data then
             local p = new_penalty(penalty_data)
             if trace then trace_done("flushed due to " .. why,p) end
+if penalty_data >= 10000 then -- or whatever threshold?
+    local prev = getprev(current)
+    if getid(prev) == glue_code then -- maybe go back more, or maybe even push back before any glue
+            -- tricky case: spacing/grid-007.tex: glue penalty glue
+            head = insert_node_before(head,prev,p)
+    else
             head = insert_node_before(head,current,p)
+    end
+else
+            head = insert_node_before(head,current,p)
+end
         end
         if glue_data then
             local spec = getfield(glue_data,"spec")
@@ -1059,6 +1183,10 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 elseif sc == discard then
                     if trace then trace_skip("discard",sc,so,sp,current) end
                     head, current = remove_node(head, current, true)
+                elseif sc == overlay then
+                    -- todo (overlay following line over previous
+                    if trace then trace_skip("overlay",sc,so,sp,current) end
+                    head, current = check_experimental_overlay(head,current,a_snapmethod)
                 elseif ignore_following then
                     if trace then trace_skip("disabled",sc,so,sp,current) end
                     head, current = remove_node(head, current, true)
@@ -1403,3 +1531,4 @@ commands.vspacingdefine    = vspacing.setmap
 commands.vspacingcollapse  = vspacing.collapsevbox
 commands.vspacingsnap      = vspacing.snapbox
 commands.resetprevdepth    = vspacing.resetprevdepth
+commands.definesnapmethod  = vspacing.definesnapmethod

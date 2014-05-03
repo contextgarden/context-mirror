@@ -32,9 +32,8 @@ local getchar            = nuts.getchar
 local getfont            = nuts.getfont
 local getid              = nuts.getid
 local getfield           = nuts.getfield
-local getattr            = nuts.getattr
-
 local setfield           = nuts.setfield
+local getattr            = nuts.getattr
 local setattr            = nuts.setattr
 
 local copy_node          = nuts.copy
@@ -108,7 +107,7 @@ methods[2] = function(head,start) -- ( => (-
         local tmp
         head, start, tmp = remove_node(head,start)
         head, start = insert_node_before(head,start,new_disc())
-        setfield(start,"attr",copy_nodelist(getfield(tmp,"attr")))
+        setfield(start,"attr",copy_nodelist(getfield(tmp,"attr"))) -- just a copy will do
         setfield(start,"replace",tmp)
         local tmp = copy_node(tmp)
         local hyphen = copy_node(tmp)
@@ -126,7 +125,7 @@ methods[3] = function(head,start) -- ) => -)
         local tmp
         head, start, tmp = remove_node(head,start)
         head, start = insert_node_before(head,start,new_disc())
-        setfield(start,"attr",copy_nodelist(getfield(tmp,"attr")))
+        setfield(start,"attr",copy_nodelist(getfield(tmp,"attr"))) -- just a copy will do
         setfield(start,"replace",tmp)
         local tmp = copy_node(tmp)
         local hyphen = copy_node(tmp)
@@ -144,7 +143,7 @@ methods[4] = function(head,start) -- - => - - -
         local tmp
         head, start, tmp = remove_node(head,start)
         head, start = insert_node_before(head,start,new_disc())
-        setfield(start,"attr",copy_nodelist(getfield(tmp,"attr")))
+        setfield(start,"attr",copy_nodelist(getfield(tmp,"attr"))) -- just a copy will do
         setfield(start,"pre",copy_node(tmp))
         setfield(start,"post",copy_node(tmp))
         setfield(start,"replace",tmp)
@@ -172,7 +171,7 @@ methods[5] = function(head,start,settings) -- x => p q r
         if middle then
             setfield(start,"replace",(tonodes(tostring(middle),font,attr)))
         end
-        setfield(start,"attr",copy_nodelist(attr)) -- todo: critical only
+        setfield(start,"attr",copy_nodelist(attr)) -- todo: critical only -- just a copy will do
         free_node(tmp)
         insert_break(head,start,10000,10000)
     end
