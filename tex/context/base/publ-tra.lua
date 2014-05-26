@@ -164,9 +164,9 @@ function tracers.showdatasetfields(dataset)
     local luadata = datasets[dataset].luadata
     if next(luadata) then
         ctx_starttabulate { "|lT|lT|pT|" }
-            ctx_NC() bold("tag")
-            ctx_NC() bold("category")
-            ctx_NC() bold("fields")
+            ctx_NC() ctx_bold("tag")
+            ctx_NC() ctx_bold("category")
+            ctx_NC() ctx_bold("fields")
             ctx_NC() ctx_NR()
             ctx_FL()
             for k, v in sortedhash(luadata) do
