@@ -272,28 +272,32 @@ setmetatableindex(usedentries,function(t,k)
         local internals = structures.references.internals
         for i=1,#internals do
             local entry = internals[i]
-            local metadata = entry.metadata
-            if metadata.kind == "full" then
-                local userdata = entry.userdata
-                if userdata then
-                    local set = userdata.btxset
-                    if set then
-                        local tag = userdata.btxref
-                        local s = usedentries[set]
-                        if s then
-                            local u = s[tag]
-                            if u then
-                                u[#u+1] = entry
+            if entry then
+                local metadata = entry.metadata
+                if metadata and metadata.kind == "full" then
+                    local userdata = entry.userdata
+                    if userdata then
+                        local set = userdata.btxset
+                        if set then
+                            local tag = userdata.btxref
+                            local s = usedentries[set]
+                            if s then
+                                local u = s[tag]
+                                if u then
+                                    u[#u+1] = entry
+                                else
+                                    s[tag] = { entry }
+                                end
                             else
-                                s[tag] = { entry }
+                                usedentries[set] = { [tag] = { entry } }
                             end
-                        else
-                            usedentries[set] = { [tag] = { entry } }
                         end
                     end
                 end
+            else
+                -- weird
             end
--- table.save("temp.lua",usedentries)
+         -- table.save("temp.lua",usedentries)
         end
         return usedentries[k]
     end
