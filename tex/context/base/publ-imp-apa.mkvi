@@ -22,69 +22,6 @@
 %D The variables control the shared code for which we use a tex definition with
 %D one argument, specifying the field name.
 
-% \setupbtxlabeltext
-%   [en]
-%   [mastersthesis={Master's thesis},
-%    phdthesis={PhD thesis},
-%    technicalreport={Technical report},
-%    editor=editor,
-%    editors=editors,
-%    edition=edition,
-%    volume=volume,
-%    Volume=Volume,
-%    number=number,
-%    Number=Number,
-%    in=in,
-%    of=of,
-%    In=In,
-%    p=p,
-%    pp=pp,
-%    pages=pages,
-%    and=and,
-%    others={et al.}]
-%
-% \setupbtxlabeltext
-%   [fr]
-%   [mastersthesis={Thèse de master (DEA, DESS, master)},
-%    phdthesis={Thèse de doctorat},
-%    technicalreport={Rapport technique},
-%    editor=éditeur,
-%    editors=éditeurs,
-%    edition=édition,
-%    volume=volume,
-%    Volume=Volume,
-%    number=numéro,
-%    Number=Numéro,
-%    in=dans,
-%    of=de,
-%    In=Dans,
-%    p=p,
-%    pp=pp,
-%    pages=pages,
-%    and=et,
-%    others={et al.}]
-%
-% \setupbtxlabeltext
-%   [de]
-%   [mastersthesis={Masterarbeit},
-%    phdthesis={Dissertation},
-%    technicalreport={Technischer Bericht},
-%    editor=Herausgeber,
-%    editors=Herausgeber,
-%    edition=Auflage,
-%    volume=Band,
-%    Volume=Band,
-%    number=Numer,
-%    Number=Numer,
-%    in=in,
-%    of=von,
-%    In=In,
-%    p=S,
-%    pp=S,
-%    pages=Seiten,
-%    and=und,
-%    others={et al.}]
-
 \setvariables
   [btx:apa:publisher]
   [left=\btxspace,
@@ -154,13 +91,6 @@
         \italiccorrection
     \endgroup
 \stoptexdefinition
-
-% \starttexdefinition btx:apa:bold #field
-%     \begingroup
-%         \bf
-%         \btxflush{#field}
-%     \endgroup
-% \stoptexdefinition
 
 \starttexdefinition btx:apa:title-and-series
     \btxdoif {title} {

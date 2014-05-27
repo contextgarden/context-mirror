@@ -243,7 +243,7 @@ function tracers.showdatasetcompleteness(dataset)
                 end
                 ctx_starttabulate(preamble)
                 identified(tag,category,entry.crossref)
-                ctx_ML()
+                ctx_FL()
                 local requiredfields = fields.required
                 local optionalfields = fields.optional
                 if requiredfields then
@@ -293,6 +293,7 @@ function tracers.showdatasetcompleteness(dataset)
                     end
                 end
                 foundfields.category = nil
+                foundfields.tag = nil
                 for k, v in sortedhash(foundfields) do
                     extra(k,entry[k])
                 end
