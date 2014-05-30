@@ -19,8 +19,10 @@ texconfig.shell_escape = 't'
 luatex       = luatex or { }
 local luatex = luatex
 
-texconfig.error_line      =   1000 --    79 -- obsolete
-texconfig.half_error_line =    500 --    50 -- obsolete
+texconfig.max_print_line  = 100000 -- frozen
+texconfig.max_in_open     =    127 -- frozen
+texconfig.error_line      =     79 -- frozen
+texconfig.half_error_line =     50 -- frozen
 
 texconfig.expand_depth    =  10000 -- 10000
 texconfig.hash_extra      = 100000 --     0
@@ -161,10 +163,17 @@ end)
 ]]
 
 local variablenames = {
-    "error_line", "half_error_line",
-    "expand_depth", "hash_extra", "nest_size",
-    "max_in_open", "max_print_line", "max_strings",
-    "param_size", "save_size", "stack_size",
+    error_line      = false,
+    half_error_line = false,
+    max_print_line  = false,
+    max_in_open     = false,
+    expand_depth    = true,
+    hash_extra      = true,
+    nest_size       = true,
+    max_strings     = true,
+    param_size      = true,
+    save_size       = true,
+    stack_size      = true,
 }
 
 local function makestub()
@@ -176,8 +185,7 @@ local function makestub()
         "-- this file is generated, don't change it\n",
         "-- configuration (can be overloaded later)\n"
     }
-    for i=1,#variablenames do
-        local v = variablenames[i]
+    for v, permitted in table.sortedhash(variablenames) do
         local d = "luatex." .. gsub(lower(v),"[^%a]","")
         local dv = directives.value(d)
         local tv = texconfig[v]
@@ -185,6 +193,8 @@ local function makestub()
             if not tv then
                 report("  %s = %s (%s)",d,dv,"configured")
                 tv = dv
+            elseif not permitted then
+                report("  %s = %s (%s)",d,tv,"frozen")
             elseif tonumber(dv) >= tonumber(tv) then
                 report("  %s = %s (%s)",d,dv,"overloaded")
                 tv = dv
@@ -192,7 +202,7 @@ local function makestub()
                 report("  %s = %s (%s)",d,tv,"preset kept")
             end
         elseif tv then
-            report("  %s = %s (%s)",d,tv,"preset")
+            report("  %s = %s (%s)",d,tv,permitted and "preset" or "frozen")
         else
             report("  %s = <unset>",d)
         end
