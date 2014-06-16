@@ -2,7 +2,7 @@
 %D   [       file=publ-imp-cite,
 %D        version=2013.12.24,
 %D          title=\CONTEXT\ Publication Support,
-%D       subtitle=XML,
+%D       subtitle=Citations,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
@@ -12,6 +12,29 @@
 %C details.
 
 \unprotect
+
+\starttexdefinition btx:cite:inject #content
+    \ifconditional\btxinteractive
+        \ifx\currentbtxinternal\empty
+            #content
+        \else
+            \goto {
+                #content
+            } [
+                \s!internal(\currentbtxinternal)
+            ]
+        \fi
+    \else
+        #content
+    \fi
+\stoptexdefinition
+
+\starttexdefinition btx:cite:checkconcat
+    \ifnum\currentbtxcount>\zerocount
+        \let\currentbtxinternal\empty
+        \let\currentbtxbacklink\empty
+    \fi
+\stoptexdefinition
 
 % The null case:
 
@@ -33,8 +56,10 @@
     \ifx\currentbtxfirst\empty
         \directsetup{\s!btx:\s!cite:\s!unknown}
     \else\ifx\currentbtxsecond\empty
+        \btxcitereference
         \currentbtxfirst
     \else
+        \btxcitereference
         \currentbtxfirst
         \btxcitevariantparameter\v!inbetween
         \currentbtxsecond
@@ -45,8 +70,10 @@
     \ifx\currentbtxfirst\empty
         \directsetup{\s!btx:\s!cite:\s!unknown}
     \else\ifx\currentbtxsecond\empty
+        \btxcitereference
         \currentbtxfirst
     \else
+        \btxcitereference
         \currentbtxfirst
         \btxcitevariantparameter\c!range
         \currentbtxsecond
@@ -67,59 +94,39 @@
     \directsetup{\s!btx:\s!cite:concat}
     \ifx\currentbtxfirst\empty
         \directsetup{\s!btx:\s!cite:\s!unknown}
-    \else\ifconditional\btxinteractive
-        \goto {
+    \else
+        \texdefinition {btx:cite:inject} {
+            \btxcitereference
             \currentbtxfirst
             \ifx\currentbtxsecond\empty \else
                 \btxcitevariantparameter\v!inbetween
                 \currentbtxsecond
             \fi
-        } [
-            \s!internal(\currentbtxinternal)
-        ]
-    \else
-        \currentbtxfirst
-        \ifx\currentbtxsecond\empty \else
-            \btxcitevariantparameter\v!inbetween
-            \currentbtxsecond
-        \fi
-    \fi\fi
+        }
+    \fi
 \stopsetups
 
 \startsetups \s!btx:\s!cite:render:range
     \directsetup{\s!btx:\s!cite:concat}
     \ifx\currentbtxfirst\empty
         \directsetup{\s!btx:\s!cite:missing}
-    \else\ifconditional\btxinteractive
-        \goto {
+    \else
+        \texdefinition {btx:cite:inject} {
+            \btxcitereference
             \currentbtxfirst
             \ifx\currentbtxsecond\empty \else
                 \btxcitevariantparameter\c!range
                 \currentbtxsecond
             \fi
-        } [
-            \s!internal(\currentbtxinternal)
-        ]
-    \else
-        \currentbtxfirst
-        \ifx\currentbtxsecond\empty \else
-            \btxcitevariantparameter\c!range
-            \currentbtxsecond
-        \fi
-    \fi\fi
+        }
+    \fi
 \stopsetups
 
 \startsetups \s!btx:\s!cite:render:variant
     \directsetup{\s!btx:\s!cite:concat}
-    \ifconditional\btxinteractive
-        \goto {
-            \directsetup{\s!btx:\s!cite:render:\currentbtxcitevariant}
-        } [
-            \s!internal(\currentbtxinternal)
-        ]
-    \else
+    \texdefinition {btx:cite:inject} {
         \directsetup{\s!btx:\s!cite:render:\currentbtxcitevariant}
-    \fi
+    }
 \stopsetups
 
 % author lists: can be less
@@ -128,8 +135,10 @@
     \ifx\currentbtxfirst\empty
         \directsetup{\s!btx:\s!cite:\s!unknown}
     \else\ifx\currentbtxcitevariant\v!normal
+        \btxcitereference
         \currentbtxfirst
     \else
+        \btxcitereference
         \currentbtxciteauthor
     \fi\fi
     \ifx\currentbtxsecond\empty \else
@@ -162,15 +171,19 @@
 \stopsetups
 
 \startsetups \s!btx:\s!cite:author
+    \texdefinition{btx:cite:checkconcat}
     \directsetup{\s!btx:\s!cite:render:variant}
 \stopsetups
 \startsetups \s!btx:\s!cite:authoryear
+    \texdefinition{btx:cite:checkconcat}
     \directsetup{\s!btx:\s!cite:render:variant}
 \stopsetups
 \startsetups \s!btx:\s!cite:authoryears
+    \texdefinition{btx:cite:checkconcat}
     \directsetup{\s!btx:\s!cite:render:variant}
 \stopsetups
 \startsetups \s!btx:\s!cite:authornum
+    \texdefinition{btx:cite:checkconcat}
     \directsetup{\s!btx:\s!cite:render:variant}
 \stopsetups
 
@@ -212,6 +225,7 @@
     \ifx\currentbtxfirst\empty
         \directsetup{\s!btx:\s!cite:\s!unknown}
     \else
+        \btxcitereference
         \hyphenatedurl{\currentbtxfirst}
     \fi
 \stopsetups
@@ -221,11 +235,13 @@
         \directsetup{\s!btx:\s!cite:\s!unknown}
     \else\ifconditional\btxinteractive
         \goto {
+            \btxcitereference
             \hyphenatedurl{\currentbtxfirst}
-        } [
+        } {
             url(\currentbtxfirst)
-        ]
+        }
     \else
+        \btxcitereference
         \hyphenatedurl{\currentbtxfirst}
     \fi\fi
 \stopsetups
