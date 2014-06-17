@@ -43,7 +43,9 @@
 \startsetups \s!btx:\s!list:page
     \directsetup{\s!btx:\s!list:concat}
     \texdefinition {btx:list:inject} {
+        % real pagenumber: todo, userpage
         \currentbtxfirst
+        % order
         \high{\currentbtxsecond}
     }
 \stopsetups
