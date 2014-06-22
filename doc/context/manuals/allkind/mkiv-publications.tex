@@ -7,6 +7,8 @@
 % criterium: used
 % numbering: label, short, indexinlist, indexused
 
+% \enabletrackers[publications*]
+
 \dontcomplain
 
 \setupbtxlistvariant [interaction=start]
@@ -1693,6 +1695,27 @@ An alternative rendering is:
 We only get the second rendering because we specified \type {criterium} as
 \type {all}. Future version of \CONTEXT\ will probably provide sorting
 options and ways to plug in additional functionality.
+
+\stopchapter
+
+\startchapter[title=Tracing]
+
+There are several tracing options. If you want to see where a citations refers to and
+where a list entry point back to, you can say:
+
+\starttyping
+\enabletrackers[publications.crosslinks]
+\stoptyping
+
+This injects markers in both places. One list entry can point to multiple citations. The
+other tracers a more for debugging and can generate lots of messages.
+
+\starttyping
+publications
+publications.cite
+publications.cite.missing
+publications.cite.references
+\stoptyping
 
 \stopchapter
 
