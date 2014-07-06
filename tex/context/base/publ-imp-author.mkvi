@@ -159,7 +159,9 @@
 \stopsetups
 
 \startsetups \s!btx:\s!list:\s!author:etaltext
-    \btxcitevariantparameter\c!etaltext
+    \ifcase\currentbtxoverflow \else
+        \btxlistvariantparameter\c!etaltext
+    \fi
 \stopsetups
 
 \startsetups \s!btx:\s!list:\s!author:normal
