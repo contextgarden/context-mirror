@@ -7,7 +7,7 @@ return {
     suffix = "html",
     remapping = {
         {
-            pattern = "*",
+            pattern = "!m:*",
             element = "div",
             extras  = {
                 namespace = true, -- okay as we have no attributes with that name

@@ -48,7 +48,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.757 -- beware: also sync font-mis.lua
+otf.version              = 2.758 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -774,20 +774,32 @@ end
                     end
                     private = private + 1
                 else
-                    unicodes[name] = unicode
+                    -- We have a font that uses and exposes the private area. As this is rather unreliable it's
+                    -- advised no to trust slots here (better use glyphnames). Anyway, we need a double check:
+                    -- we need to move already moved entries and we also need to bump the next private to after
+                    -- the (currently) last slot. This could leave us with a hole but we have holes anyway.
                     if unicode > criterium then
                         -- \definedfont[file:HANBatang-LVT.ttf] \fontchar{uF0135} \char"F0135
                         local taken = descriptions[unicode]
                         if taken then
-                            private = private + 1
+                            if unicode >= private then
+                                private = unicode + 1 -- restart private (so we can have mixed now)
+                            else
+                                private = private + 1 -- move on
+                            end
                             descriptions[private] = taken
                             unicodes[taken.name] = private
                             indices[taken.index] = private
                             if trace_private then
                                 report_otf("slot %U is moved to %U due to private in font",unicode)
                             end
+                        else
+                            if unicode >= private then
+                                private = unicode + 1 -- restart (so we can have mixed now)
+                            end
                         end
                     end
+                    unicodes[name] = unicode
                 end
                 indices[index] = unicode
              -- if not name then

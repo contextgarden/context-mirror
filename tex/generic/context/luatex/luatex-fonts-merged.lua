@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 07/14/14 12:38:06
+-- merge date  : 07/14/14 19:25:59
 
 do -- begin closure to overcome local limits and interference
 
@@ -6681,7 +6681,7 @@ local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
 otf.glists={ "gsub","gpos" }
-otf.version=2.757 
+otf.version=2.758 
 otf.cache=containers.define("fonts","otf",otf.version,true)
 local fontdata=fonts.hashes.identifiers
 local chardata=characters and characters.data 
@@ -7293,19 +7293,27 @@ end
           end
           private=private+1
         else
-          unicodes[name]=unicode
           if unicode>criterium then
             local taken=descriptions[unicode]
             if taken then
-              private=private+1
+              if unicode>=private then
+                private=unicode+1 
+              else
+                private=private+1 
+              end
               descriptions[private]=taken
               unicodes[taken.name]=private
               indices[taken.index]=private
               if trace_private then
                 report_otf("slot %U is moved to %U due to private in font",unicode)
               end
+            else
+              if unicode>=private then
+                private=unicode+1 
+              end
             end
           end
+          unicodes[name]=unicode
         end
         indices[index]=unicode
         descriptions[unicode]={
