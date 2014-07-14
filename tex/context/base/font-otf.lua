@@ -48,7 +48,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.756 -- beware: also sync font-mis.lua
+otf.version              = 2.757 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -694,7 +694,7 @@ elseif unicode >= 0x0F0000 and unicode <= 0x0FFFFD then
 elseif unicode >= 0x100000 and unicode <= 0x10FFFD then
                                 unicode = -1
 end
-                            local name    = glyph.name or cidnames[index]
+                            local name = glyph.name or cidnames[index]
                             if not unicode or unicode == -1 then -- or unicode >= criterium then
                                 unicode = cidunicodes[index]
                             end
@@ -704,7 +704,7 @@ end
                             end
                             if not unicode or unicode == -1 then -- or unicode >= criterium then
                                 if not name then
-                                    name = format("u%06X",private)
+                                    name = format("u%06X.ctx",private)
                                 end
                                 unicode = private
                                 unicodes[name] = private
@@ -714,8 +714,20 @@ end
                                 private = private + 1
                                 nofnames = nofnames + 1
                             else
+                             -- if unicode > criterium then
+                             --     local taken = descriptions[unicode]
+                             --     if taken then
+                             --         private = private + 1
+                             --         descriptions[private] = taken
+                             --         unicodes[taken.name] = private
+                             --         indices[taken.index] = private
+                             --         if trace_private then
+                             --             report_otf("slot %U is moved to %U due to private in font",unicode)
+                             --         end
+                             --     end
+                             -- end
                                 if not name then
-                                    name = format("u%06X",unicode)
+                                    name = format("u%06X.ctx",unicode)
                                 end
                                 unicodes[name] = unicode
                                 nofunicodes = nofunicodes + 1
@@ -763,11 +775,24 @@ end
                     private = private + 1
                 else
                     unicodes[name] = unicode
+                    if unicode > criterium then
+                        -- \definedfont[file:HANBatang-LVT.ttf] \fontchar{uF0135} \char"F0135
+                        local taken = descriptions[unicode]
+                        if taken then
+                            private = private + 1
+                            descriptions[private] = taken
+                            unicodes[taken.name] = private
+                            indices[taken.index] = private
+                            if trace_private then
+                                report_otf("slot %U is moved to %U due to private in font",unicode)
+                            end
+                        end
+                    end
                 end
                 indices[index] = unicode
-                if not name then
-                    name = format("u%06X",unicode)
-                end
+             -- if not name then
+             --     name = format("u%06X",unicode) -- u%06X.ctx
+             -- end
                 descriptions[unicode] = {
                  -- width       = glyph.width,
                     boundingbox = glyph.boundingbox,
@@ -1498,7 +1523,9 @@ local function check_variants(unicode,the_variants,splitter,unicodes)
         for i=1,#glyphs do
             local g = glyphs[i]
             if done[g] then
-                report_otf("skipping cyclic reference %U in math variant %U",g,unicode)
+                if i > 1 then
+                    report_otf("skipping cyclic reference %U in math variant %U",g,unicode)
+                end
             else
                 if n == 0 then
                     n = 1
