@@ -140,6 +140,7 @@ local stoptiming        = statistics.stoptiming
 -- todo: more locals (and optimize)
 
 local exportversion     = "0.31"
+local mathmlns          = "http://www.w3.org/1998/Math/MathML"
 
 local nofcurrentcontent = 0 -- so we don't free (less garbage collection)
 local currentcontent    = { }
@@ -524,7 +525,7 @@ do
             result[#result+1] = f_attribute("date",os.date())
             result[#result+1] = f_attribute("context",environment.version)
             result[#result+1] = f_attribute("version",exportversion)
-            result[#result+1] = f_attribute("xmlns:m","http://www.w3.org/1998/Math/MathML")
+            result[#result+1] = f_attribute("xmlns:m",mathmlns)
             local identity = interactions.general.getidentity()
             for i=1,#fields do
                 local key   = fields[i]
@@ -543,8 +544,8 @@ do
 
     local itemgroups = { }
 
-    local f_symbol   = formatters[" symbol='%s'"]
-    local s_packed   = " packed='yes'"
+    local f_symbol = formatters[" symbol='%s'"]
+    local s_packed = " packed='yes'"
 
     function structurestags.setitemgroup(current,packed,symbol)
         itemgroups[detailedtag("itemgroup",current)] = {
@@ -1194,7 +1195,8 @@ do
         local hash = attributehash[di.fulltag]
         local mode = (hash and hash.mode) == "display" and "block" or "inline"
         di.attributes = {
-            display = mode
+            ["display"] = mode,
+            ["xmlns:m"] = mathmlns,
         }
         -- can be option if needed:
         if mode == "inline" then
