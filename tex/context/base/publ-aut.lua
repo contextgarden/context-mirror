@@ -28,8 +28,11 @@ local publications    = publications or { }
 local datasets        = publications.datasets or { }
 publications.datasets = datasets
 
-publications.authors  = publications.authors or { }
-local authors         = publications.authors
+local writers         = publications.writers or { }
+publications.writers  = writers
+
+local authors         = publications.authors or { }
+publications.authors  = authors
 
 -- local function makesplitter(separator)
 --     return Ct { "start",
@@ -408,6 +411,9 @@ local function writer(key,snippets)
     end
     return concat(snippets," ",1,s)
 end
+
+writers.author = writer
+writers.editor = editor
 
 local function newsplitter(splitter)
     return table.setmetatableindex({},function(t,k) -- could be done in the sorter but seldom that many shared

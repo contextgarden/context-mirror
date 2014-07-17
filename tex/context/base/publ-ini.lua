@@ -23,7 +23,7 @@ local settings_to_array, settings_to_set = utilities.parsers.settings_to_array, 
 local sortedkeys, sortedhash = table.sortedkeys, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 local lpegmatch = lpeg.match
-local P, C, Ct, R, Carg = lpeg.P, lpeg.C, lpeg.Ct, lpeg.R, lpeg.Carg
+local P, S, C, Ct, R, Carg = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.R, lpeg.Carg
 
 local report           = logs.reporter("publications")
 local report_cite      = logs.reporter("publications","cite")
@@ -35,6 +35,7 @@ local trace_missing    = false  trackers.register("publications.cite.missing",  
 local trace_references = false  trackers.register("publications.cite.references", function(v) trace_references = v end)
 
 local datasets       = publications.datasets
+local writers        = publications.writers
 
 local variables      = interfaces.variables
 
@@ -1095,7 +1096,7 @@ end
 
 -- experiment
 
-local splitspec = lpeg.splitat(lpeg.S(":."))
+local splitspec = lpeg.splitat(S(":."))
 local splitter  = sorters.splitters.utf
 local strip     = sorters.strip
 
@@ -1107,14 +1108,10 @@ local function newsplitter(splitter)
     end)
 end
 
-local writers = {
-    author = publications.authors.sorters.writer,
-    editor = publications.authors.sorters.writer,
-}
-
 local template = [[
-    local strip    = sorters.strip
-    return function(entry,detail,splitted,i,writers) -- snippets
+    local strip   = sorters.strip
+    local writers = publications.writers
+    return function(entry,detail,splitted,i) -- snippets
         return {
             index = i,
             split = { %s, splitted[tostring(i)] }
@@ -1128,12 +1125,12 @@ local function byspec(dataset,list,method) -- todo: yearsuffix
     local result   = { }
     local splitted = newsplitter(splitter) -- saves mem
  -- local snippets = { } -- saves mem
-    local fields   = utilities.parsers.settings_to_array(method)
+    local fields   = settings_to_array(method)
     for i=1,#fields do
-        local f = utilities.parsers.settings_to_array(fields[i])
+        local f = settings_to_array(fields[i])
         local r = { }
         for i=1,#f do
-            local a, b = lpeg.match(splitspec,f[i])
+            local a, b = lpegmatch(splitspec,f[i])
             if b then
                 if a == "detail" or a == "entry" then
                     local w = writers[b]
@@ -1163,9 +1160,9 @@ local function byspec(dataset,list,method) -- todo: yearsuffix
             local entry  = luadata[tag]
             local detail = details[tag]
             if entry and detail then
-                result[i] = prepare(entry,detail,splitted,i,writers) -- ,snippets)
+                result[i] = prepare(entry,detail,splitted,i) -- ,snippets)
             else
-                result[i] = prepare(dummy,dummy,splitted,i,writers) -- ,snippets)
+                result[i] = prepare(dummy,dummy,splitted,i) -- ,snippets)
             end
         end
     end

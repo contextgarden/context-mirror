@@ -710,12 +710,19 @@ function resolvers.resetextrapath()
 end
 
 function resolvers.registerextrapath(paths,subpaths)
-    paths = settings_to_array(paths)
-    subpaths = settings_to_array(subpaths)
-    local ep = instance.extra_paths or { }
-    local oldn = #ep
-    local newn = oldn
-    local nofpaths = #paths
+    if not subpaths or subpaths == "" then
+        if not paths or path == "" then
+            return -- invalid spec
+        elseif done[paths] then
+            return -- already done
+        end
+    end
+    local paths       = settings_to_array(paths)
+    local subpaths    = settings_to_array(subpaths)
+    local ep          = instance.extra_paths or { }
+    local oldn        = #ep
+    local newn        = oldn
+    local nofpaths    = #paths
     local nofsubpaths = #subpaths
     if nofpaths > 0 then
         if nofsubpaths > 0 then
