@@ -266,11 +266,20 @@ trackers.register("graphics.lognames", function(v)
                 report_newline()
                 report_figures("start names")
                 for _, data in table.sortedhash(figures_found) do
+                    local comment = data.comment
                     report_newline()
-                    report_figure("asked  : %s %s",data.askedname,data.badname and "(bad name)" or "")
-                    report_figure("format : %s",data.format)
-                    report_figure("found  : %s",data.foundname)
-                    report_figure("used   : %s",data.fullname)
+                    report_figure("asked   : %s",data.askedname)
+                    if data.badname then
+                        comment = "bad name"
+                    end
+                    if data.found then
+                        report_figure("format  : %s",data.format)
+                        report_figure("found   : %s",data.foundname)
+                        report_figure("used    : %s",data.fullname)
+                    end
+                    if comment then
+                        report_figure("comment : %s",comment)
+                    end
                 end
                 report_newline()
                 report_figures("stop names")
