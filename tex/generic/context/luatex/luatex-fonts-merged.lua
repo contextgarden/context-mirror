@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 07/17/14 13:24:59
+-- merge date  : 07/18/14 12:14:41
 
 do -- begin closure to overcome local limits and interference
 
@@ -1603,14 +1603,25 @@ local function identical(a,b)
 end
 table.identical=identical
 table.are_equal=are_equal
-function table.compact(t) 
-  if t then
-    for k,v in next,t do
-      if not next(v) then 
-        t[k]=nil
+local function sparse(old,nest,keeptables)
+  local new={}
+  for k,v in next,old do
+    if not (v=="" or v==false) then
+      if nest and type(v)=="table" then
+        v=sparse(v,nest)
+        if keeptables or next(v) then
+          new[k]=v
+        end
+      else
+        new[k]=v
       end
     end
   end
+  return new
+end
+table.sparse=sparse
+function table.compact(t)
+  return sparse(t,true,true)
 end
 function table.contains(t,v)
   if t then
