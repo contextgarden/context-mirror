@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 07/17/14 13:24:59
+-- merge date  : 07/25/14 12:57:26
 
 do -- begin closure to overcome local limits and interference
 
@@ -1603,14 +1603,25 @@ local function identical(a,b)
 end
 table.identical=identical
 table.are_equal=are_equal
-function table.compact(t) 
-  if t then
-    for k,v in next,t do
-      if not next(v) then 
-        t[k]=nil
+local function sparse(old,nest,keeptables)
+  local new={}
+  for k,v in next,old do
+    if not (v=="" or v==false) then
+      if nest and type(v)=="table" then
+        v=sparse(v,nest)
+        if keeptables or next(v) then
+          new[k]=v
+        end
+      else
+        new[k]=v
       end
     end
   end
+  return new
+end
+table.sparse=sparse
+function table.compact(t)
+  return sparse(t,true,true)
 end
 function table.contains(t,v)
   if t then
@@ -2448,6 +2459,18 @@ function file.collapsepath(str,anchor)
       return newelements
     end
   end
+end
+local tricky=S("/\\")*P(-1)
+local attributes=lfs.attributes
+function lfs.isdir(name)
+  if lpegmatch(tricky,name) then
+    return attributes(name,"mode")=="directory"
+  else
+    return attributes(name.."/.","mode")=="directory"
+  end
+end
+function lfs.isfile(name)
+  return attributes(name,"mode")=="file"
 end
 local validchars=R("az","09","AZ","--","..")
 local pattern_a=lpeg.replacer(1-validchars)
@@ -6681,7 +6704,7 @@ local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
 otf.glists={ "gsub","gpos" }
-otf.version=2.758 
+otf.version=2.759 
 otf.cache=containers.define("fonts","otf",otf.version,true)
 local fontdata=fonts.hashes.identifiers
 local chardata=characters and characters.data 
@@ -7891,12 +7914,12 @@ actions["reorganize lookups"]=function(data,filename,raw)
               local fore=glyphs.fore
               if fore and fore~="" then
                 fore=s_uncover(splitter,s_u_cache,fore)
-                rule.before=s_hashed(fore,s_h_cache)
+                rule.after=s_hashed(fore,s_h_cache)
               end
               local back=glyphs.back
               if back then
                 back=s_uncover(splitter,s_u_cache,back)
-                rule.after=s_hashed(back,s_h_cache)
+                rule.before=s_hashed(back,s_h_cache)
               end
               local names=glyphs.names
               if names then
@@ -13052,27 +13075,6 @@ local function unpackdata(data)
                 local tv=tables[replacements]
                 if tv then
                   rule.replacements=tv
-                end
-              end
-              local fore=rule.fore
-              if fore then
-                local tv=tables[fore]
-                if tv then
-                  rule.fore=tv
-                end
-              end
-              local back=rule.back
-              if back then
-                local tv=tables[back]
-                if tv then
-                  rule.back=tv
-                end
-              end
-              local names=rule.names
-              if names then
-                local tv=tables[names]
-                if tv then
-                  rule.names=tv
                 end
               end
               local lookups=rule.lookups

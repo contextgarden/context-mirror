@@ -48,7 +48,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.758 -- beware: also sync font-mis.lua
+otf.version              = 2.759 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -1499,12 +1499,12 @@ actions["reorganize lookups"] = function(data,filename,raw) -- we could check fo
                             local fore = glyphs.fore
                             if fore and fore ~= "" then
                                 fore = s_uncover(splitter,s_u_cache,fore)
-                                rule.before = s_hashed(fore,s_h_cache)
+                                rule.after = s_hashed(fore,s_h_cache)
                             end
                             local back = glyphs.back
                             if back then
                                 back = s_uncover(splitter,s_u_cache,back)
-                                rule.after = s_hashed(back,s_h_cache)
+                                rule.before = s_hashed(back,s_h_cache)
                             end
                             local names = glyphs.names
                             if names then
