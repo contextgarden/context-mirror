@@ -207,7 +207,7 @@ tags.properties = properties
 local lasttags = { }
 local userdata = { }
 
-tags.userdata = userdata
+tags.userdata  = userdata
 
 function tags.setproperty(tag,key,value)
     local p = properties[tag]
@@ -241,7 +241,9 @@ local nstack = 0
 function tags.start(tag,specification)
     local label, detail, user
     if specification then
-        label, detail, user = specification.label, specification.detail, specification.userdata
+        label  = specification.label
+        detail = specification.detail
+        user   = specification.userdata
     end
     if not enabled then
         codeinjections.enabletags()

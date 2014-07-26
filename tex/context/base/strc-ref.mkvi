@@ -118,6 +118,8 @@
 \unexpanded\def\reference     {\dosingleargument\strc_references_full_reference} % never forgotten
 \unexpanded\def\setreference  {\dodoubleargument\strc_references_set_reference } %
 
+% maybe: \let\reference\textreference
+
 %D These are implemented in a low level form as:
 
 \unexpanded\def\strc_references_text_reference          [#labels]{\strc_references_set_named_reference\s!text{#labels}{}}
