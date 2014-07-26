@@ -8,9 +8,10 @@ if not modules then modules = { } end modules ['strc-tag'] = {
 
 -- This is rather experimental code.
 
+local type = type
 local insert, remove, unpack, concat = table.insert, table.remove, table.unpack, table.concat
 local gsub, find, topattern, format = string.gsub, string.find, string.topattern, string.format
-local lpegmatch = lpeg.match
+local lpegmatch, P, S, C = lpeg.match, lpeg.P, lpeg.S, lpeg.C
 local texattribute = tex.attribute
 local allocate = utilities.storage.allocate
 local settings_to_hash = utilities.parsers.settings_to_hash
@@ -26,23 +27,26 @@ local a_tagged       = attributes.private('tagged')
 local unsetvalue     = attributes.unsetvalue
 local codeinjections = backends.codeinjections
 
-local taglist     = allocate()
-local properties  = allocate()
-local labels      = allocate()
-local stack       = { }
-local chain       = { }
-local ids         = { }
-local enabled     = false
-local tagdata     = { } -- used in export
-local tagmetadata = { } -- used in export
+local taglist        = allocate()
+local properties     = allocate()
+local userproperties = allocate()
+local labels         = allocate()
+local stack          = { }
+local chain          = { }
+local ids            = { }
+local enabled        = false
+local tagdata        = { } -- used in export
+local tagmetadata    = { } -- used in export
+local tagcontext     = { }
 
-local tags        = structures.tags
-tags.taglist      = taglist -- can best be hidden
-tags.labels       = labels
-tags.data         = tagdata
-tags.metadata     = tagmetadata
+local tags           = structures.tags
+tags.taglist         = taglist -- can best be hidden
+tags.labels          = labels
+tags.data            = tagdata
+tags.metadata        = tagmetadata
+tags.userproperties  = userproperties -- used in backend
 
-local properties  = allocate {
+local properties     = allocate {
 
     document           = { pdf = "Div",        nature = "display" },
 
@@ -244,14 +248,6 @@ function tags.start(tag,specification)
         enabled = true
     end
     --
---~     labels[tag] = label ~= "" and label or tag
---~     local fulltag
---~     if detail and detail ~= "" then
---~         fulltag = tag .. ":" .. detail
---~     else
---~         fulltag = tag
---~     end
-    --
     local fulltag = label ~= "" and label or tag
     labels[tag] = fulltag
     if detail and detail ~= "" then
@@ -266,6 +262,9 @@ function tags.start(tag,specification)
     nstack = nstack + 1
     chain[nstack] = completetag
     stack[nstack] = t
+    --
+    tagcontext[tag] = completetag
+    --
     -- a copy as we can add key values for alt and actualtext if needed:
     taglist[t] = { unpack(chain,1,nstack) }
     --
@@ -319,9 +318,43 @@ function tags.last(tag)
     return lasttags[tag] -- or false
 end
 
-function tags.lastinchain()
-    return chain[nstack]
+function tags.lastinchain(tag)
+    if tag and tag ~= "" then
+        return tagcontext[tag]
+    else
+        return chain[nstack]
+    end
 end
+
+local strip = C((1-S(":-"))^1)
+
+commands.getelementtag = function()
+    local fulltag = chain[nstack]
+    if fulltag then
+        context(lpegmatch(strip,fulltag))
+    end
+end
+
+function tags.setuserproperties(tag,list)
+    if list then
+        tag = tagcontext[tag]
+    else
+        tag, list = chain[nstack], tag
+    end
+    if tag then
+        local l = settings_to_hash(list)
+        local p = userproperties[tag]
+        if p then
+            for k, v in next, l do
+                p[k] = v
+            end
+        else
+           userproperties[tag] = l
+        end
+    end
+end
+
+commands.setelementuserproperties = tags.setuserproperties
 
 function structures.atlocation(str)
     local location = gsub(concat(taglist[texattribute[a_tagged]],"-"),"%-%d+","")
