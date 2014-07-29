@@ -112,8 +112,10 @@ local ctx_btxsetcategory          = context.btxsetcategory
 local ctx_btxcitesetup            = context.btxcitesetup
 local ctx_btxsetfirst             = context.btxsetfirst
 local ctx_btxsetsecond            = context.btxsetsecond
-local ctx_btxsetthird            = context.btxsetthird
+local ctx_btxsetthird             = context.btxsetthird
 local ctx_btxsetinternal          = context.btxsetinternal
+local ctx_btxsetlefttext          = context.btxsetlefttext
+local ctx_btxsetrighttext         = context.btxsetrighttext
 local ctx_btxsetbacklink          = context.btxsetbacklink
 local ctx_btxsetbacktrace         = context.btxsetbacktrace
 local ctx_btxsetcount             = context.btxsetcount
@@ -585,11 +587,14 @@ local pagessplitter = lpeg.splitat(P("-")^1)
 
 local function shortsorter(a,b)
     local ay, by = a[2], b[2]
-    if ay == by then
-        return a[3] < b[3]
-    else
+    if ay ~= by then
         return ay < by
     end
+    local ay, by = a[3], b[3]
+    if ay ~= by then
+        return ay < by
+    end
+    return a[4] < b[4]
 end
 
 function publications.enhance(dataset) -- for the moment split runs (maybe publications.enhancers)
@@ -642,10 +647,16 @@ function publications.enhance(dataset) -- for the moment split runs (maybe publi
                         local short = formatters["%t%02i"](t,mod(year,100))
                         local s = shorts[short]
                         -- we could also sort on reference i.e. entries.text
-                        if not s then
-                            shorts[short] = { { tag, year, i } }
+                        local u = used[tag]
+                        if u then
+                            u = u[1].entries.text -- hm
                         else
-                            s[#s+1] = { tag, year, i }
+                            u = "0"
+                        end
+                        if not s then
+                            shorts[short] = { { tag, year, u, i } }
+                        else
+                            s[#s+1] = { tag, year, u, i }
                         end
                     else
                         --
@@ -672,7 +683,24 @@ function publications.enhance(dataset) -- for the moment split runs (maybe publi
         end
     end
     for short, tags in next, shorts do -- ordered ?
-        if #tags > 1 then
+        local done = #tags > 0
+        -- we only use suffixes when there are multiple references to same years
+        -- so we check for used first
+        if done then
+            local n = 0
+            for i=1,#tags do
+                local tag = tags[i][1]
+                if used[tag] then
+                    n = n + 1
+                    if n > 1 then
+                        break
+                    end
+                end
+            end
+            done = n > 1
+        end
+        -- now we assign the suffixes, unless we have only one reference
+        if done then
             sort(tags,shortsorter)
             local n = 0
             for i=1,#tags do
@@ -690,22 +718,22 @@ function publications.enhance(dataset) -- for the moment split runs (maybe publi
                     end
                 end
             end
-            for i=1,#tags do
-                local tag = tags[i][1]
-                local detail = details[tag]
-                if not detail.suffix then
-                    n = n + 1
-                    local suffix  = numbertochar(n)
-                    detail.suffix = suffix
-                    local entry   = luadata[tag]
-                    local year    = entry.year
-                    if year then
-                        detail.suffixedyear = year .. suffix
-                    end
-                end
-            end
+         -- for i=1,#tags do
+         --     local tag = tags[i][1]
+         --     local detail = details[tag]
+         --     if not detail.suffix then
+         --         n = n + 1
+         --         local suffix  = numbertochar(n)
+         --         detail.suffix = suffix
+         --         local entry   = luadata[tag]
+         --         local year    = entry.year
+         --         if year then
+         --             detail.suffixedyear = year .. suffix
+         --         end
+         --     end
+         -- end
         else
-            local tag = tags[i][1]
+            local tag = tags[1][1]
             local detail = details[tag]
             detail.short = short
             local entry  = luadata[tag]
@@ -1043,10 +1071,10 @@ lists.methods = methods
 methods[v_dataset] = function(dataset,rendering,keyword)
     -- why only once inless criterium=all?
     local luadata = datasets[dataset].luadata
-    local list = rendering.list
+    local list    = rendering.list
     for tag, data in sortedhash(luadata) do
         if not keyword or validkeyword(dataset,tag,keyword) then
-            list[#list+1] = { tag, false, false, 0 }
+            list[#list+1] = { tag, false, 0, false, false }
         end
     end
 end
@@ -1062,7 +1090,7 @@ methods[v_force] = function (dataset,rendering,keyword)
         if u and u.btxset == dataset then
             local tag = u.btxref
             if tag and (not keyword or validkeyword(dataset,tag,keyword)) then
-                list[#list+1] = { tag, listindex, u.btxint, 0 }
+                list[#list+1] = { tag, listindex, 0, u, u.btxint }
             end
         end
     end
@@ -1100,14 +1128,14 @@ methods[v_local] = function(dataset,rendering,keyword)
                     if l then
                         l[#l+1] = u.btxint
                     else
-                        local l = { tag, listindex, u.btxint, 0 }
+                        local l = { tag, listindex, 0, u, u.btxint }
                         list[#list+1] = l
                         traced[tag] = l
                     end
                 else
                     done[tag]    = section
                     alldone[tag] = true
-                    list[#list+1] = { tag, listindex, u.btxint, 0 }
+                    list[#list+1] = { tag, listindex, 0, u, u.btxint }
                 end
             end
         end
@@ -1264,22 +1292,10 @@ lists.sorters = {
         end
         sort(list,compare)
     end,
- -- [v_default] = function(dataset,rendering,list) -- not really needed
- --     local ordered = rendering.ordered
- --     local function compare(a,b)
- --         local aa, bb = a and a[1], b and b[1]
- --         if aa and bb then
- --             aa, bb = ordered[aa], ordered[bb]
- --             return aa and bb and aa < bb
- --         end
- --         return false
- --     end
- --     sort(list,compare)
- -- end,
     [v_default] = function(dataset,rendering,list,sorttype) -- experimental
         if sorttype == "" or sorttype == v_default then
             local function compare(a,b)
-                local aa, bb = a and a[4], b and b[4]
+                local aa, bb = a and a[3], b and b[3]
                 if aa and bb then
                     return aa and bb and aa < bb
                 end
@@ -1349,7 +1365,7 @@ function lists.prepareentries(dataset)
                 number        = lastnumber
                 detail.number = lastnumber
             end
-            li[4] = number
+            li[3] = number
         end
     end
     rendering.list = type(sorter) == "function" and sorter(dataset,rendering,newlist,sorttype) or newlist
@@ -1375,7 +1391,7 @@ function lists.flushentries(dataset)
     for i=1,#list do
         local li       = list[i]
         local tag      = li[1]
-        local n        = li[4]
+        local n        = li[3]
         local entry    = luadata[tag]
         local combined = entry.combined
         local language = entry.language
@@ -1388,16 +1404,27 @@ function lists.flushentries(dataset)
         if language then
             ctx_btxsetlanguage(language)
         end
-        local bl = li[3]
+        local bl = li[5]
         if bl and bl ~= "" then
             ctx_btxsetbacklink(bl)
-            ctx_btxsetbacktrace(concat(li," ",3)) -- how about 4
+            ctx_btxsetbacktrace(concat(li," ",5))
             local uc = citetolist[tonumber(bl)]
             if uc then
                 ctx_btxsetinternal(uc.references.internal or "")
             end
         else
             -- nothing
+        end
+        local u = li[4]
+        if u then
+            local l = u.btxltx
+            local r = u.btxrtx
+            if l then
+                ctx_btxsetlefttext (l)
+            end
+            if r then
+                ctx_btxsetrighttext(r)
+            end
         end
         ctx_btxhandlelistentry()
      end
@@ -1408,7 +1435,7 @@ function lists.filterall(dataset)
     local list = r.list
     local registered = r.registered
     for i=1,#registered do
-        list[i] = { registered[i], i, false, 0 }
+        list[i] = { registered[i], i, 0, false, false }
     end
 end
 
