@@ -1377,7 +1377,7 @@ function lists.fetchentries(dataset)
     for i=1,#list do
         local li = list[i]
         ctx_btxsettag(li[1])
-        ctx_btxsetnumber(li[4])
+        ctx_btxsetnumber(li[3])
         ctx_btxchecklistentry()
     end
 end
