@@ -140,7 +140,7 @@ local stoptiming        = statistics.stoptiming
 
 -- todo: more locals (and optimize)
 
-local exportversion     = "0.31"
+local exportversion     = "0.32"
 local mathmlns          = "http://www.w3.org/1998/Math/MathML"
 
 local nofcurrentcontent = 0 -- so we don't free (less garbage collection)
@@ -2453,8 +2453,9 @@ local htmltemplate = [[
 %preamble%
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE math PUBLIC "-//W3C//DTD MathML 2.0//EN"       "http://www.w3.org/Math/DTD/mathml2/mathml2.dtd"   >
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
     <title>%title%</title>
 
@@ -2615,7 +2616,8 @@ local htmltemplate = [[
                 local tg = c.tg
                 local ns = c.ns
                 if ns == "m" then
-                    -- math
+                    c.ns = ""
+                    c.at["xmlns:m"] = nil
                 elseif tg == "a" then
                     c.ns = ""
                 else
@@ -2633,8 +2635,10 @@ local htmltemplate = [[
                  -- end
                     local at = c.at
                     local class = { tg }
-                    for k, v in next, at do
-                        class[#class+1] = k .. "-" .. v
+                    if tg ~= "document" then
+                        for k, v in next, at do
+                            class[#class+1] = k .. "-" .. v
+                        end
                     end
                     c.at = { class = concat(class," ") }
                     c.tg = "div"

@@ -7,6 +7,13 @@
 
 */
 
+/*
+
+	Because empty div elements are not seen we put a comment in them
+	so that empty table cells etc work ok.
+
+*/
+
 /* ignore  : mixed   */
 /* metadata: display */
 
