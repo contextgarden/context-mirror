@@ -187,6 +187,7 @@ local attribentities    = { ["&"] = "&amp;", [">"] = "&gt;", ["<"] = "&lt;", ['"
 
 local p_entity          = lpeg.replacer(entities) -- was: entityremapper = utf.remapper(entities)
 local p_attribute       = lpeg.replacer(attribentities)
+local p_stripper        = lpeg.patterns.stripper
 
 local alignmapping = {
     flushright = "right",
@@ -603,6 +604,30 @@ do
     end
 
 end
+
+local function ignorebreaks(result,element,detail,n,fulltag,di)
+    local data = di.data
+    for i=1,#data do
+        local d = data[i]
+        if d.content == " " then
+            d.content = ""
+        end
+    end
+end
+
+local function ignorespaces(result,element,detail,n,fulltag,di)
+    local data = di.data
+    for i=1,#data do
+        local d = data[i]
+        local c = d.content
+        if type(c) == "string" then
+            d.content = lpegmatch(p_stripper,c)
+        end
+    end
+end
+
+extras.registerpages     = ignorebreaks
+extras.registerseparator = ignorespaces
 
 do
 
