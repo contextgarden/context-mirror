@@ -292,7 +292,7 @@ end
 -- local tagsplitter = C(precolon) * colon * C(predash) * dash * C(rest) +
 --                     C(predash)  * dash  * Cc(nil)           * C(rest)
 
-local listdata = { }
+local listdata = { } -- maybe do this otherwise
 
 function wrapups.hashlistdata()
     local c = structures.lists.collected
@@ -1300,9 +1300,28 @@ do
         end
     end
 
+    -- todo: internal is already hashed
+
+    function structurestags.setlist(tag,n)
+        local data = structures.lists.getresult(n)
+        if data then
+            referencehash[detailedtag("listitem",tag)] = data
+        end
+    end
+
+    function extras.listitem(result,element,detail,n,fulltag,di)
+        local data = referencehash[fulltag]
+        if data then
+            extras.addreference(result,data.references)
+            return true
+        end
+    end
+
 end
 
 do
+
+    -- todo: internal is already hashed
 
     function structurestags.setregister(tag,n)
         local data = structures.registers.get(tag,n)
@@ -2883,3 +2902,4 @@ commands.settagcombination       = structurestags.setcombination
 commands.settagtablecell         = structurestags.settablecell
 commands.settagtabulatecell      = structurestags.settabulatecell
 commands.settagregister          = structurestags.setregister
+commands.settaglist              = structurestags.setlist

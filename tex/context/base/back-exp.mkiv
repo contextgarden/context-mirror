@@ -132,6 +132,10 @@
 \to \everyenableelements
 
 \appendtoks
+    \unexpanded\def\dotaglistlocation{\taggedctxcommand{settaglist("\currentlist",\currentlistindex)}}%
+\to \everyenableelements
+
+\appendtoks
     \let\specialfixedspace    \explicitfixedspace
     \let\specialobeyedspace   \explicitobeyedspace
     \let\specialstretchedspace\explicitstretchedspace
