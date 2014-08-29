@@ -487,6 +487,27 @@ local function makebreaknode(attributes) -- maybe no fulltag
     }
 end
 
+local function ignorebreaks(result,element,detail,n,fulltag,di)
+    local data = di.data
+    for i=1,#data do
+        local d = data[i]
+        if d.content == " " then
+            d.content = ""
+        end
+    end
+end
+
+local function ignorespaces(result,element,detail,n,fulltag,di)
+    local data = di.data
+    for i=1,#data do
+        local d = data[i]
+        local c = d.content
+        if type(c) == "string" then
+            d.content = lpegmatch(p_stripper,c)
+        end
+    end
+end
+
 do
 
     local fields = { "title", "subtitle", "author", "keywords" }
@@ -606,30 +627,6 @@ do
 
 end
 
-local function ignorebreaks(result,element,detail,n,fulltag,di)
-    local data = di.data
-    for i=1,#data do
-        local d = data[i]
-        if d.content == " " then
-            d.content = ""
-        end
-    end
-end
-
-local function ignorespaces(result,element,detail,n,fulltag,di)
-    local data = di.data
-    for i=1,#data do
-        local d = data[i]
-        local c = d.content
-        if type(c) == "string" then
-            d.content = lpegmatch(p_stripper,c)
-        end
-    end
-end
-
-extras.registerpages     = ignorebreaks
-extras.registerseparator = ignorespaces
-
 do
 
     local highlight      = { }
@@ -653,7 +650,8 @@ do
     local f_insert     = formatters[' insert="%s"']
 
     function structurestags.setdescription(tag,n)
-        local nd = structures.notes.get(tag,n) -- todo: use listdata instead
+        -- we can also use the internals hash or list
+        local nd = structures.notes.get(tag,n)
         if nd then
             local references = nd.references
             descriptions[references and references.internal] = detailedtag("description",tag)
@@ -1301,6 +1299,28 @@ do
             end
         end
     end
+
+end
+
+do
+
+    function structurestags.setregister(tag,n)
+        local data = structures.registers.get(tag,n)
+        if data then
+            referencehash[detailedtag("registerlocation",tag)] = data
+        end
+    end
+
+    function extras.registerlocation(result,element,detail,n,fulltag,di)
+        local data = referencehash[fulltag]
+        if data then
+            extras.addreference(result,data.references)
+            return true
+        end
+    end
+
+    extras.registerpages     = ignorebreaks
+    extras.registerseparator = ignorespaces
 
 end
 
@@ -2862,3 +2882,4 @@ commands.settagfigure            = structurestags.setfigure
 commands.settagcombination       = structurestags.setcombination
 commands.settagtablecell         = structurestags.settablecell
 commands.settagtabulatecell      = structurestags.settabulatecell
+commands.settagregister          = structurestags.setregister
