@@ -12963,7 +12963,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-exp"] = package.loaded["data-exp"] or true
 
--- original size: 17039, stripped down to: 10493
+-- original size: 17233, stripped down to: 10672
 
 if not modules then modules={} end modules ['data-exp']={
   version=1.001,
@@ -13155,18 +13155,20 @@ function resolvers.joinpath(str)
 end
 local attributes,directory=lfs.attributes,lfs.dir
 local weird=P(".")^1+lpeg.anywhere(S("~`!#$%^&*()={}[]:;\"\'||<>,?\n\r\t"))
+local lessweird=P(".")^1+lpeg.anywhere(S("~`#$%^&*:;\"\'||<>,?\n\r\t"))
 local timer={}
 local scanned={}
 local nofscans=0
 local scancache={}
 local fullcache={}
 local nofsharedscans=0
-local function scan(files,remap,spec,path,n,m,r,onlyone)
+local function scan(files,remap,spec,path,n,m,r,onlyone,tolerant)
   local full=path=="" and spec or (spec..path..'/')
   local dirs={}
   local nofdirs=0
+  local pattern=tolerant and lessweird or weird
   for name in directory(full) do
-    if not lpegmatch(weird,name) then
+    if not lpegmatch(pattern,name) then
       local mode=attributes(full..name,"mode")
       if mode=="file" then
         n=n+1
@@ -13216,13 +13218,14 @@ local function scan(files,remap,spec,path,n,m,r,onlyone)
   if nofdirs>0 then
     sort(dirs)
     for i=1,nofdirs do
-      files,remap,n,m,r=scan(files,remap,spec,dirs[i],n,m,r,onlyone)
+      files,remap,n,m,r=scan(files,remap,spec,dirs[i],n,m,r,onlyonce,tolerant)
     end
   end
   scancache[sub(full,1,-2)]=files
   return files,remap,n,m,r
 end
-function resolvers.scanfiles(path,branch,usecache,onlyonce)
+function resolvers.scanfiles(path,branch,usecache,onlyonce,tolerant)
+tolerant=false
   local realpath=resolveprefix(path)
   if usecache then
     local content=fullcache[realpath]
@@ -13240,7 +13243,7 @@ function resolvers.scanfiles(path,branch,usecache,onlyonce)
   end
   local content
   if isdir(realpath) then
-    local files,remap,n,m,r=scan({},{},realpath..'/',"",0,0,0,onlyonce)
+    local files,remap,n,m,r=scan({},{},realpath..'/',"",0,0,0,onlyonce,tolerant)
     content={
       metadata={
         path=path,
@@ -13278,7 +13281,7 @@ function resolvers.scanfiles(path,branch,usecache,onlyonce)
   return content
 end
 function resolvers.simplescanfiles(path,branch,usecache)
-  return resolvers.scanfiles(path,branch,usecache,true) 
+  return resolvers.scanfiles(path,branch,usecache,true,true) 
 end
 function resolvers.scandata()
   table.sort(scanned)
@@ -16335,7 +16338,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tre"] = package.loaded["data-tre"] or true
 
--- original size: 7832, stripped down to: 5289
+-- original size: 7987, stripped down to: 5309
 
 if not modules then modules={} end modules ['data-tre']={
   version=1.001,
@@ -16414,7 +16417,7 @@ table.setmetatableindex(collectors,function(t,k)
   local dataname=joinname(rootname,"dirlist")
   local content=caches.loadcontent(dataname,"files",dataname)
   if not content then
-    content=resolvers.scanfiles(rootname)
+    content=resolvers.scanfiles(rootname,nil,nil,false,true) 
     caches.savecontent(dataname,"files",content,dataname)
   end
   t[k]=content
@@ -17425,8 +17428,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 720047
--- stripped bytes    : 257290
+-- original bytes    : 720396
+-- stripped bytes    : 257440
 
 -- end library merge
 

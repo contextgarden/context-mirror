@@ -1439,7 +1439,7 @@ local betterbox   = P("%%BoundingBox:")      * quadruple
                   * P("%AI3_Cropmarks:")     * quadruple
                   * P("%%CropBox:")          * quadruple
                   / function(b,h,m,c)
-                         return formatters["%%%%BoundingBox: %i %i %i %i\n%%%%HighResBoundingBox: %F %F %F %F\n%%%%CropBox: %F %F %F %F\n"](
+                         return formatters["%%%%BoundingBox: %i %i %i %i\n%%%%HiResBoundingBox: %F %F %F %F\n%%%%CropBox: %F %F %F %F\n"](
                              m[1],m[2],m[3],m[4],
                              m[1],m[2],m[3],m[4],
                              m[1],m[2],m[3],m[4]
