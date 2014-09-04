@@ -1420,10 +1420,10 @@ function lists.flushentries(dataset)
         else
             -- nothing
         end
-        local u = li[4]
-        if u then
-            local l = u.btxltx
-            local r = u.btxrtx
+        local userdata = li[4]
+        if userdata then
+            local l = userdata.btxltx
+            local r = userdata.btxrtx
             if l then
                 ctx_btxsetlefttext (l)
             end
@@ -1431,8 +1431,39 @@ function lists.flushentries(dataset)
                 ctx_btxsetrighttext(r)
             end
         end
+        rendering.userdata = userdata
         ctx_btxhandlelistentry()
      end
+end
+
+local function getuserdata(dataset,key)
+    local rendering = renderings[dataset]
+    if rendering then
+        local userdata = rendering.userdata
+        if userdata then
+            local value = userdata[key]
+            if value and value ~= "" then
+                return value
+            end
+        end
+    end
+end
+
+lists.uservariable = getuserdata
+
+function commands.btxuservariable(dataset,key)
+    local value = getuserdata(dataset,key)
+    if value then
+        context(value)
+    end
+end
+
+function commands.btxdoifelseuservariable(dataset,key)
+    if getuserdata(dataset,key) then
+        ctx_firstoftwoarguments()
+    else
+        ctx_secondoftwoarguments()
+    end
 end
 
 function lists.filterall(dataset)
