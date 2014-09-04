@@ -402,7 +402,6 @@ local function scan(files,remap,spec,path,n,m,r,onlyone,tolerant)
 end
 
 function resolvers.scanfiles(path,branch,usecache,onlyonce,tolerant)
-tolerant = false
     local realpath = resolveprefix(path)
     if usecache then
         local content = fullcache[realpath]

@@ -12963,7 +12963,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-exp"] = package.loaded["data-exp"] or true
 
--- original size: 17233, stripped down to: 10672
+-- original size: 17216, stripped down to: 10657
 
 if not modules then modules={} end modules ['data-exp']={
   version=1.001,
@@ -13225,7 +13225,6 @@ local function scan(files,remap,spec,path,n,m,r,onlyone,tolerant)
   return files,remap,n,m,r
 end
 function resolvers.scanfiles(path,branch,usecache,onlyonce,tolerant)
-tolerant=false
   local realpath=resolveprefix(path)
   if usecache then
     local content=fullcache[realpath]
@@ -17428,8 +17427,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 720396
--- stripped bytes    : 257440
+-- original bytes    : 720379
+-- stripped bytes    : 257438
 
 -- end library merge
 
