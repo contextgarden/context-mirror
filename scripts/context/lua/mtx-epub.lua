@@ -18,7 +18,17 @@ if not modules then modules = { } end modules ['mtx-epub'] = {
 -- first we need a decent strategy to export them. More information will be
 -- available on the wiki.
 
-local format, gsub = string.format, string.gsub
+-- META-INF
+--     container.xml
+-- OEBPS
+--     content.opf
+--     toc.ncx
+--     Images
+--     Styles
+--     Text
+-- mimetype
+
+local format, gsub, find = string.format, string.gsub, string.find
 local concat = table.concat
 local replace = utilities.templates.replace
 
@@ -71,18 +81,33 @@ local t_container = [[
 </container>
 ]]
 
+-- urn:uuid:
+
+-- <dc:identifier id="%identifier%" opf:scheme="UUID">%uuid%</dc:identifier>
+
 local t_package = [[
 <?xml version="1.0" encoding="UTF-8"?>
 
-<package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="%identifier%">
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="%identifier%" version="3.0">
 
     <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
         <dc:title>%title%</dc:title>
         <dc:language>%language%</dc:language>
-        <dc:identifier id="%identifier%" opf:scheme="UUID">urn:uuid:%uuid%</dc:identifier>
+        <dc:identifier id="%identifier%">%uuid%</dc:identifier>
         <dc:creator>%creator%</dc:creator>
         <dc:date>%date%</dc:date>
+        <!--
+            <dc:subject>%subject%</dc:subject>
+            <dc:description>%description%</dc:description>
+            <dc:publisher>%publisher%</dc:publisher>
+            <dc:source>%source%</dc:source>
+            <dc:relation>%relation%</dc:relation>
+            <dc:coverage>%coverage%</dc:coverage>
+            <dc:rights>%rights%</dc:rights>
+        -->
         <meta name="cover" content="%firstpage%" />
+        <meta name="generator" content="ConTeXt MkIV" />
+        <meta property="dcterms:modified">%date%</meta>
     </metadata>
 
     <manifest>
@@ -97,16 +122,18 @@ local t_package = [[
 </package>
 ]]
 
-local t_item = [[        <item id="%id%" href="%filename%" media-type="%mime%"/>]]
+local t_item = [[        <item id="%id%" href="%filename%" media-type="%mime%" />]]
+local t_nav  = [[        <item id="%id%" href="%filename%" media-type="%mime%" properties="%properties%" />]]
+
+-- <!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">
 
 local t_toc = [[
-<?xml version="1.0"?>
-
-<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
 
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
 
     <head>
+        <meta name="generator"         content="ConTeXt MkIV" />
         <meta name="dtb:uid"           content="%identifier%" />
         <meta name="dtb:depth"         content="2" />
         <meta name="dtb:totalPgeCount" content="0" />
@@ -133,21 +160,46 @@ local t_toc = [[
 </ncx>
 ]]
 
-local t_coverxhtml = [[
+local t_navtoc = [[
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
     <head>
-        <title>cover.xhtml</title>
+        <title>navtoc</title>
     </head>
     <body>
-        <div>
-            <img src="%image%" alt="The cover image" style="max-width: 100%%;" />
+        <div class="navtoc">
+            <!-- <nav epub:type="lot"> -->
+            <nav epub:type="toc" id="navtoc">
+                <ol>
+                    <li><a href="%root%">document</a></li>
+                </ol>
+            </nav>
         </div>
     </body>
 </html>
+]]
+
+-- <html xmlns="http://www.w3.org/1999/xhtml">
+-- <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+local t_coverxhtml = [[
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>cover page</title>
+    </head>
+    <body>
+        <div class="coverpage">
+            %content%
+        </div>
+    </body>
+</html>
+]]
+
+local t_coverimg = [[
+    <img src="%image%" alt="The cover image" style="max-width: 100%%;" />
 ]]
 
 -- We need to figure out what is permitted. Numbers only seem to give
@@ -165,6 +217,7 @@ end
 local mimetypes = {
     xhtml   = "application/xhtml+xml",
     xml     = "application/xhtml+xml",
+    html    = "application/html",
     css     = "text/css",
     svg     = "image/svg+xml",
     png     = "image/png",
@@ -231,26 +284,32 @@ function scripts.epub.make()
         local specification = lfs.isfile(specfile) and dofile(specfile) or { }
 
         local name       = specification.name       or file.removesuffix(filename)
-        local identifier = specification.identifier or os.uuid(true)
+        local identifier = specification.identifier or ""
         local files      = specification.files      or { file.addsuffix(filename,"xhtml") }
         local images     = specification.images     or { }
         local root       = specification.root       or files[1]
         local language   = specification.language   or "en"
-        local creator    = specification.author     or "My Self"
-        local title      = specification.title      or "My Title"
+        local creator    = specification.author     or "context"
+        local title      = specification.title      or name
         local firstpage  = specification.firstpage  or ""
         local lastpage   = specification.lastpage   or ""
 
      -- identifier = gsub(identifier,"[^a-zA-z0-9]","")
 
-        if firstpage ~= "" then
+        if firstpage == "" then
+         -- firstpage = "firstpage.jpg" -- dummy
+        else
             images[firstpage] = firstpage
         end
-        if lastpage ~= "" then
+        if lastpage == "" then
+         -- lastpage = "lastpage.jpg" -- dummy
+        else
             images[lastpage] = lastpage
         end
 
-        identifier = "BookId" -- weird requirement
+        local uuid = format("urn:uuid:%s",os.uuid(true)) -- os.uuid()
+
+        identifier = "bookid" -- for now
 
         local epubname   = name
         local epubpath   = file.replacesuffix(name,"tree")
@@ -266,30 +325,58 @@ function scripts.epub.make()
 
         local used = { }
 
-        local function copyone(filename)
+        local function registerone(filename)
             local suffix = file.suffix(filename)
             local mime = mimetypes[suffix]
             if mime then
                 local idmaker = idmakers[suffix] or idmakers.default
-                local target = file.join(epubpath,"OEBPS",filename)
-                file.copy(filename,target)
-                application.report("copying %s to %s",filename,target)
                 used[#used+1] = replace(t_item, {
-                    id       = idmaker(filename),
-                    filename = filename,
-                    mime     = mime,
+                    id         = idmaker(filename),
+                    filename   = filename,
+                    mime       = mime,
                 } )
+                return true
             end
         end
 
-        copyone("cover.xhtml")
+        local function copyone(filename,alternative)
+            if registerone(filename) then
+                local target = file.join(epubpath,"OEBPS",file.basename(filename))
+                local source = alternative or filename
+                file.copy(source,target)
+                application.report("copying %s to %s",source,target)
+            end
+        end
+
+        if lfs.isfile(epubcover) then
+            copyone(epubcover)
+            epubcover = false
+        else
+            registerone(epubcover)
+        end
+
         copyone("toc.ncx")
 
         local function copythem(files)
             for i=1,#files do
                 local filename = files[i]
                 if type(filename) == "string" then
-                    copyone(filename)
+                    local suffix = file.suffix(filename)
+                    if suffix == "xhtml" then
+                        local alternative = file.replacesuffix(filename,"html")
+                        if lfs.isfile(alternative) then
+                            copyone(filename,alternative)
+                        else
+                            copyone(filename)
+                        end
+                    elseif suffix == "css" then
+                        if not lfs.isfile(filename) then
+                            filename = resolvers.findfile(filename)
+                        end
+                        copyone(filename)
+                    else
+                        copyone(filename)
+                    end
                 end
             end
         end
@@ -307,39 +394,55 @@ function scripts.epub.make()
             end
         end
 
+        used[#used+1] = replace(t_nav, {
+            id         = "nav",
+            filename   = "nav.xhtml",
+            properties = "nav",
+            mime       = "application/xhtml+xml",
+        })
+
+        io.savedata(file.join(epubpath,"OEBPS","nav.xhtml"),replace(t_navtoc, { -- version 3.0
+            root = root,
+        } ) )
+
         copythem(theimages)
 
         local idmaker = idmakers[file.suffix(root)] or idmakers.default
 
-        container = replace(t_container, {
+        io.savedata(file.join(epubpath,"mimetype"),mimetype)
+
+        io.savedata(file.join(epubpath,"META-INF","container.xml"),replace(t_container, { -- version 2.0
             rootfile = epubroot
-        } )
-        package = replace(t_package, {
+        } ) )
+
+        io.savedata(file.join(epubpath,"OEBPS",epubroot),replace(t_package, {
             identifier = identifier,
             title      = title,
             language   = language,
-            uuid       = os.uuid(),
+            uuid       = uuid,
             creator    = creator,
             date       = os.date("!%Y-%m-%dT%H:%M:%SZ"),
             firstpage  = idmaker(firstpage),
             manifest   = concat(used,"\n"),
             rootfile   = idmaker(root)
-        } )
-        toc = replace(t_toc, {
-            identifier = identifier,
+        } ) )
+
+        -- t_toc is replaced by t_navtoc in >= 3
+
+        io.savedata(file.join(epubpath,"OEBPS",epubtoc), replace(t_toc, {
+            identifier = uuid, -- identifier,
             title      = title,
             author     = author,
             root       = root,
-        } )
-        coverxhtml = replace(t_coverxhtml, {
-            image      = firstpage
-        } )
+        } ) )
 
-        io.savedata(file.join(epubpath,"mimetype"),mimetype)
-        io.savedata(file.join(epubpath,"META-INF","container.xml"),container)
-        io.savedata(file.join(epubpath,"OEBPS",epubroot),package)
-        io.savedata(file.join(epubpath,"OEBPS",epubtoc),toc)
-        io.savedata(file.join(epubpath,"OEBPS",epubcover),coverxhtml)
+        if epubcover then
+
+            io.savedata(file.join(epubpath,"OEBPS",epubcover), replace(t_coverxhtml, {
+                content = firstpage ~= "" and replace(t_coverimg, { image = firstpage }) or "no cover page defined",
+            } ) )
+
+        end
 
         application.report("creating archive\n\n")
 
@@ -383,3 +486,5 @@ elseif environment.argument("exporthelp") then
 else
     application.help()
 end
+
+-- java -jar d:\epubcheck\epubcheck-3.0.1.jar -v 3.0 -mode xhtml mkiv-publications.tree\mkiv-publications.epub

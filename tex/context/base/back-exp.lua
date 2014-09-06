@@ -2456,12 +2456,10 @@ function builders.paragraphs.tag(head)
     return false
 end
 
--- encoding="utf-8"
-
 do
 
 local xmlpreamble = [[
-<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<?xml version="1.0" encoding="UTF-8" standalone="%s" ?>
 
 <!-- input filename   : %- 17s -->
 <!-- processing date  : %- 17s -->
@@ -2472,8 +2470,8 @@ local xmlpreamble = [[
 
     local flushtree = wrapups.flushtree
 
-    local function wholepreamble()
-        return format(xmlpreamble,tex.jobname,os.date(),environment.version,exportversion)
+    local function wholepreamble(standalone)
+        return format(xmlpreamble,standalone and "yes" or "no",tex.jobname,os.date(),environment.version,exportversion)
     end
 
 
@@ -2514,19 +2512,16 @@ local f_d_template = formatters [ [[
 
 local f_category = formatters["/* category: %s */"]
 
+-- <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN" "http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd" >
+
 local htmltemplate = [[
 %preamble%
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<!DOCTYPE math PUBLIC "-//W3C//DTD MathML 2.0//EN"       "http://www.w3.org/Math/DTD/mathml2/mathml2.dtd"   >
-
-<html>
-
-    <title>%title%</title>
-
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:math="http://www.w3.org/1998/Math/MathML">
 
     <head>
+
+        <title>%title%</title>
 
 %style%
 
@@ -2578,36 +2573,63 @@ local htmltemplate = [[
     --     >
     -- ]]
 
+    -- local function cleanxhtmltree(xmltree)
+    --     if xmltree then
+    --         local xmlwrap = xml.wrap
+    --         for e in xml.collected(xmltree,"/document") do
+    --             e.at["xmlns:xhtml"] = "http://www.w3.org/1999/xhtml"
+    --             break
+    --         end
+    --         -- todo: inject xhtmlpreamble (xmlns should have be enough)
+    --         local wrapper = { tg = "a", ns = "xhtml", at = { href = "unknown" } }
+    --         for e in xml.collected(xmltree,"link") do
+    --             local at = e.at
+    --             local href
+    --             if at.location then
+    --                 href = "#" .. gsub(at.location,":","_")
+    --             elseif at.url then
+    --                 href = at.url
+    --             elseif at.file then
+    --                 href = at.file
+    --             end
+    --             if href then
+    --                 wrapper.at.href = href
+    --                 xmlwrap(e,wrapper)
+    --             end
+    --         end
+    --         local wrapper = { tg = "a", ns = "xhtml", at = { name = "unknown" } }
+    --         for e in xml.collected(xmltree,"!link[@location]") do
+    --             local location = e.at.location
+    --             if location then
+    --                 wrapper.at.name = gsub(location,":","_")
+    --                 xmlwrap(e,wrapper)
+    --             end
+    --         end
+    --         return xmltree
+    --     else
+    --         return xml.convert('<?xml version="1.0"?>\n<error>invalid xhtml tree</error>')
+    --     end
+    -- end
+
     local function cleanxhtmltree(xmltree)
         if xmltree then
-            local xmlwrap = xml.wrap
-            for e in xml.collected(xmltree,"/document") do
-                e.at["xmlns:xhtml"] = "http://www.w3.org/1999/xhtml"
-                break
-            end
-            -- todo: inject xhtmlpreamble (xmlns should have be enough)
-            local wrapper = { tg = "a", ns = "xhtml", at = { href = "unknown" } }
             for e in xml.collected(xmltree,"link") do
                 local at = e.at
-                local href
                 if at.location then
-                    href = "#" .. gsub(at.location,":","_")
+                    at.href = "#" .. gsub(at.location,":","_")
                 elseif at.url then
-                    href = at.url
+                    at.href = at.url
                 elseif at.file then
-                    href = at.file
-                end
-                if href then
-                    wrapper.at.href = href
-                    xmlwrap(e,wrapper)
+                    at.href = at.file
                 end
             end
-            local wrapper = { tg = "a", ns = "xhtml", at = { name = "unknown" } }
+            local done = { }
             for e in xml.collected(xmltree,"!link[@location]") do
-                local location = e.at.location
-                if location then
-                    wrapper.at.name = gsub(location,":","_")
-                    xmlwrap(e,wrapper)
+                local at = e.at
+                local location = at.location
+                if location and not done[location] then
+                    done[location] = true
+                    at.id = gsub(location,":","_")
                 end
             end
             return xmltree
@@ -2615,6 +2637,7 @@ local htmltemplate = [[
             return xml.convert('<?xml version="1.0"?>\n<error>invalid xhtml tree</error>')
         end
     end
+
 
     local f_namespace = string.formatters["%s.%s"]
 
@@ -2674,6 +2697,12 @@ local htmltemplate = [[
         end
     end
 
+    local private = {
+        id       = true,
+        location = true,
+        href     = true,
+    }
+
     local function remap(specification,source,target)
         local comment = nil -- share comments
         for c in xml.collected(source,"*") do
@@ -2683,8 +2712,8 @@ local htmltemplate = [[
                 if ns == "m" then
                     c.ns = ""
                     c.at["xmlns:m"] = nil
-                elseif tg == "a" then
-                    c.ns = ""
+             --  elseif tg == "a" then
+             --      c.ns = ""
                 else
                  -- if tg == "tabulatecell" or tg == "tablecell" then
                         local dt = c.dt
@@ -2702,26 +2731,62 @@ local htmltemplate = [[
                     local class = { tg }
                     if tg ~= "document" then
                         for k, v in next, at do
-                            class[#class+1] = k .. "-" .. v
+                            if not private[k] then
+                                class[#class+1] = k .. "-" .. v
+                            end
                         end
                     end
-                    c.at = { class = concat(class," ") }
+                    local id    = at.id
+                    local href  = at.href
+                    local class = concat(class," ")
+                    if id then
+                        if href then
+                            c.at = {
+                                class = class,
+                                id    = id,
+                                href  = href,
+                            }
+                        else
+                            c.at = {
+                                class = class,
+                                id    = id,
+                            }
+                        end
+                    else
+                        if href then
+                            c.at = {
+                                class = class,
+                                href  = href,
+                            }
+                        else
+                            c.at = {
+                                class = class,
+                            }
+                        end
+                    end
                     c.tg = "div"
                 end
             end
         end
     end
 
-    local cssfile, xhtmlfile, alternative = nil, nil, nil
+    local cssfile, xhtmlfile = nil, nil
 
     directives.register("backend.export.css",        function(v) cssfile     = v end)
     directives.register("backend.export.xhtml",      function(v) xhtmlfile   = v end)
-    directives.register("backend.export.alternative",function(v) alternative = v end)
 
     local function stopexport(v)
         starttiming(treehash)
         --
         finishexport()
+        --
+        report_export("")
+        if xhtmlfile then
+            report_export("exporting xml, xhtml and html files")
+        else
+            report_export("exporting xml file")
+        end
+        report_export("")
         --
         wrapups.collapsetree(tree)
         wrapups.indextree(tree)
@@ -2762,9 +2827,8 @@ local htmltemplate = [[
         local files = {
         }
         local x_styles, h_styles = allusedstylesheets(xmlfile,cssfiles,files)
-        local preamble = wholepreamble()
         local results = concat {
-            preamble,
+            wholepreamble(true),
             x_styles, -- adds to files
             result,
         }
@@ -2814,43 +2878,19 @@ local htmltemplate = [[
             report_export("saving specification in %a (mtxrun --script epub --make %s)",specificationfilename,specificationfilename)
             io.savedata(specificationfilename,table.serialize(specification,true))
             -- bonus
---             if type(alternative) == "string" then
---                 local filename = "back-exp-"..alternative ..".lua"
---                 local fullname = resolvers.findfile(filename) or ""
---                 if fullname == "" then
---                     report_export("no valid alternative %a in %a",alternative,filename)
---                 else
---                     specification = dofile(fullname) or false
---                     if specification then
---                         if not xmltree then
---                             xmltree = xml.convert(results)
---                         end
---                         remap(specification,xmltree)
---                         local resultfile = file.replacesuffix(xmlfile,specification.suffix or alternative)
---                         report_export("saving alternative in %a",resultfile)
---                         local variables = {
---                             style    = h_styles,
---                             body     = xml.tostring(xml.first(xmltree,"/div")),
---                             preamble = preamble,
---                             title    = specification.title,
---                         }
---                         local data = utilities.templates.replace(specification.template,variables,"xml")
---                         io.savedata(resultfile,data)
---                     end
---                 end
---             end
-         -- if alternative == "div" then
-                local resultfile = file.replacesuffix(xmlfile,"html")
-                report_export("saving div based alternative in %a",resultfile)
-                remap(specification,xmltree)
-                local variables = {
-                    style    = h_styles,
-                    body     = xml.tostring(xml.first(xmltree,"/div")),
-                    preamble = preamble,
-                    title    = specification.title,
-                }
-                io.savedata(resultfile,utilities.templates.replace(htmltemplate,variables,"xml"))
-         -- end
+            local resultfile = file.replacesuffix(xmlfile,"html")
+            report_export("saving div based alternative in %a",resultfile)
+            remap(specification,xmltree)
+            local variables = {
+                style    = h_styles,
+                body     = xml.tostring(xml.first(xmltree,"/div")),
+                preamble = wholepreamble(false),
+                title    = specification.title,
+            }
+            io.savedata(resultfile,utilities.templates.replace(htmltemplate,variables,"xml"))
+            report_export("")
+            report_export("create epub with: mtxrun --script epub --make %a",file.basename(resultfile))
+            report_export("")
         end
         stoptiming(treehash)
     end
