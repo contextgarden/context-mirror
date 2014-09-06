@@ -341,9 +341,10 @@ function scripts.epub.make()
 
         local function copyone(filename,alternative)
             if registerone(filename) then
-                local target = file.join(epubpath,"OEBPS",filename)
-                file.copy(alternative or filename,target)
-                application.report("copying %s to %s",alternative or filename,target)
+                local target = file.join(epubpath,"OEBPS",file.basename(filename))
+                local source = alternative or filename
+                file.copy(source,target)
+                application.report("copying %s to %s",source,target)
             end
         end
 
@@ -360,16 +361,22 @@ function scripts.epub.make()
             for i=1,#files do
                 local filename = files[i]
                 if type(filename) == "string" then
-if file.suffix(filename) == "xhtml" then
-    local alternative = file.replacesuffix(filename,"html")
-    if lfs.isfile(alternative) then
-                    copyone(filename,alternative)
-    else
-                    copyone(filename)
-    end
-else
-                    copyone(filename)
-end
+                    local suffix = file.suffix(filename)
+                    if suffix == "xhtml" then
+                        local alternative = file.replacesuffix(filename,"html")
+                        if lfs.isfile(alternative) then
+                            copyone(filename,alternative)
+                        else
+                            copyone(filename)
+                        end
+                    elseif suffix == "css" then
+                        if not lfs.isfile(filename) then
+                            filename = resolvers.findfile(filename)
+                        end
+                        copyone(filename)
+                    else
+                        copyone(filename)
+                    end
                 end
             end
         end
