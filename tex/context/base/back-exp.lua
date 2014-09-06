@@ -2875,7 +2875,7 @@ local htmltemplate = [[
                 firstpage  = validstring(finetuning.firstpage),
                 lastpage   = validstring(finetuning.lastpage),
             }
-            report_export("saving specification in %a (mtxrun --script epub --make %s)",specificationfilename,specificationfilename)
+            report_export("saving specification in %a",specificationfilename,specificationfilename)
             io.savedata(specificationfilename,table.serialize(specification,true))
             -- bonus
             local resultfile = file.replacesuffix(xmlfile,"html")
@@ -2889,7 +2889,7 @@ local htmltemplate = [[
             }
             io.savedata(resultfile,utilities.templates.replace(htmltemplate,variables,"xml"))
             report_export("")
-            report_export("create epub with: mtxrun --script epub --make %a",file.basename(resultfile))
+            report_export([[create epub with: mtxrun --script epub --make "%s"]],file.nameonly(resultfile))
             report_export("")
         end
         stoptiming(treehash)
