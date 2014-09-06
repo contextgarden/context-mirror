@@ -38,7 +38,7 @@ local helpinfo = [[
  <metadata>
   <entry name="name">mtx-epub</entry>
   <entry name="detail">ConTeXt EPUB Helpers</entry>
-  <entry name="version">0.12</entry>
+  <entry name="version">1.00</entry>
  </metadata>
  <flags>
   <category name="basic">
@@ -60,7 +60,7 @@ local helpinfo = [[
 
 local application = logs.application {
     name     = "mtx-epub",
-    banner   = "ConTeXt EPUB Helpers 0.12",
+    banner   = "ConTeXt EPUB Helpers 1.00",
     helpinfo = helpinfo,
 }
 
@@ -277,202 +277,226 @@ function scripts.epub.make()
 
     local filename = environment.files[1]
 
-    if filename and filename ~= "" and type(filename) == "string" then
+    if not filename or filename == "" or type(filename) ~= "string" then
+        application.report("provide filename")
+        return
+    end
 
-        filename = file.basename(filename)
-        local specfile = file.replacesuffix(filename,"specification")
-        local specification = lfs.isfile(specfile) and dofile(specfile) or { }
+    filename = file.basename(filename)
 
-        local name       = specification.name       or file.removesuffix(filename)
-        local identifier = specification.identifier or ""
-        local files      = specification.files      or { file.addsuffix(filename,"xhtml") }
-        local images     = specification.images     or { }
-        local root       = specification.root       or files[1]
-        local language   = specification.language   or "en"
-        local creator    = specification.author     or "context"
-        local title      = specification.title      or name
-        local firstpage  = specification.firstpage  or ""
-        local lastpage   = specification.lastpage   or ""
+    local specfile = file.replacesuffix(filename,"specification")
 
-     -- identifier = gsub(identifier,"[^a-zA-z0-9]","")
+    if not lfs.isfile(specfile) then
+        application.report("unknown specificaton file %a",specfile)
+        return
+    end
 
-        if firstpage == "" then
-         -- firstpage = "firstpage.jpg" -- dummy
-        else
-            images[firstpage] = firstpage
+    local specification = dofile(specfile)
+
+    if not specification or not next(specification) then
+        application.report("invalid specificaton file %a",specfile)
+        return
+    end
+
+    local name       = specification.name       or file.removesuffix(filename)
+    local identifier = specification.identifier or ""
+    local files      = specification.files      or { file.addsuffix(filename,"xhtml") }
+    local images     = specification.images     or { }
+    local root       = specification.root       or files[1]
+    local language   = specification.language   or "en"
+    local creator    = specification.author     or "context"
+    local title      = specification.title      or name
+    local firstpage  = specification.firstpage  or ""
+    local lastpage   = specification.lastpage   or ""
+
+ -- identifier = gsub(identifier,"[^a-zA-z0-9]","")
+
+    if firstpage == "" then
+     -- firstpage = "firstpage.jpg" -- dummy
+    else
+        images[firstpage] = firstpage
+    end
+    if lastpage == "" then
+     -- lastpage = "lastpage.jpg" -- dummy
+    else
+        images[lastpage] = lastpage
+    end
+
+    local uuid = format("urn:uuid:%s",os.uuid(true)) -- os.uuid()
+
+    identifier = "bookid" -- for now
+
+    local epubname   = name
+    local epubpath   = file.replacesuffix(name,"tree")
+    local epubfile   = file.replacesuffix(name,"epub")
+    local epubroot   = file.replacesuffix(name,"opf")
+    local epubtoc    = "toc.ncx"
+    local epubcover  = "cover.xhtml"
+
+    application.report("creating paths in tree %a",epubpath)
+    lfs.mkdir(epubpath)
+    lfs.mkdir(file.join(epubpath,"META-INF"))
+    lfs.mkdir(file.join(epubpath,"OEBPS"))
+
+    local used = { }
+
+    local function registerone(filename)
+        local suffix = file.suffix(filename)
+        local mime = mimetypes[suffix]
+        if mime then
+            local idmaker = idmakers[suffix] or idmakers.default
+            used[#used+1] = replace(t_item, {
+                id         = idmaker(filename),
+                filename   = filename,
+                mime       = mime,
+            } )
+            return true
         end
-        if lastpage == "" then
-         -- lastpage = "lastpage.jpg" -- dummy
-        else
-            images[lastpage] = lastpage
+    end
+
+    local function copyone(filename,alternative)
+        if registerone(filename) then
+            local target = file.join(epubpath,"OEBPS",file.basename(filename))
+            local source = alternative or filename
+            file.copy(source,target)
+            application.report("copying %a to %a",source,target)
         end
+    end
 
-        local uuid = format("urn:uuid:%s",os.uuid(true)) -- os.uuid()
+    if lfs.isfile(epubcover) then
+        copyone(epubcover)
+        epubcover = false
+    else
+        registerone(epubcover)
+    end
 
-        identifier = "bookid" -- for now
+    copyone("toc.ncx")
 
-        local epubname   = name
-        local epubpath   = file.replacesuffix(name,"tree")
-        local epubfile   = file.replacesuffix(name,"epub")
-        local epubroot   = file.replacesuffix(name,"opf")
-        local epubtoc    = "toc.ncx"
-        local epubcover  = "cover.xhtml"
-
-        application.report("creating paths in tree %s",epubpath)
-        lfs.mkdir(epubpath)
-        lfs.mkdir(file.join(epubpath,"META-INF"))
-        lfs.mkdir(file.join(epubpath,"OEBPS"))
-
-        local used = { }
-
-        local function registerone(filename)
-            local suffix = file.suffix(filename)
-            local mime = mimetypes[suffix]
-            if mime then
-                local idmaker = idmakers[suffix] or idmakers.default
-                used[#used+1] = replace(t_item, {
-                    id         = idmaker(filename),
-                    filename   = filename,
-                    mime       = mime,
-                } )
-                return true
-            end
-        end
-
-        local function copyone(filename,alternative)
-            if registerone(filename) then
-                local target = file.join(epubpath,"OEBPS",file.basename(filename))
-                local source = alternative or filename
-                file.copy(source,target)
-                application.report("copying %s to %s",source,target)
-            end
-        end
-
-        if lfs.isfile(epubcover) then
-            copyone(epubcover)
-            epubcover = false
-        else
-            registerone(epubcover)
-        end
-
-        copyone("toc.ncx")
-
-        local function copythem(files)
-            for i=1,#files do
-                local filename = files[i]
-                if type(filename) == "string" then
-                    local suffix = file.suffix(filename)
-                    if suffix == "xhtml" then
-                        local alternative = file.replacesuffix(filename,"html")
-                        if lfs.isfile(alternative) then
-                            copyone(filename,alternative)
-                        else
-                            copyone(filename)
-                        end
-                    elseif suffix == "css" then
-                        if not lfs.isfile(filename) then
-                            filename = resolvers.findfile(filename)
-                        end
-                        copyone(filename)
+    local function copythem(files)
+        for i=1,#files do
+            local filename = files[i]
+            if type(filename) == "string" then
+                local suffix = file.suffix(filename)
+                if suffix == "xhtml" then
+                    local alternative = file.replacesuffix(filename,"html")
+                    if lfs.isfile(alternative) then
+                        copyone(filename,alternative)
                     else
                         copyone(filename)
                     end
+                elseif suffix == "css" then
+                    if filename == "export-example.css" then
+                        if lfs.isfile(filename) then
+                            os.remove(filename)
+                            local original = resolvers.findfile(filename)
+                            application.report("updating local copy of %a from %a",filename,original)
+                            file.copy(original,filename)
+                        else
+                            filename = resolvers.findfile(filename)
+                        end
+                    elseif not lfs.isfile(filename) then
+                        filename = resolvers.findfile(filename)
+                    else
+                        -- use specific local one
+                    end
+                    copyone(filename)
+                else
+                    copyone(filename)
                 end
             end
         end
+    end
 
-        copythem(files)
+    copythem(files)
 
-        local theimages = { }
+    local theimages = { }
 
-        for k, v in table.sortedpairs(images) do
-            theimages[#theimages+1] = k
-            if not lfs.isfile(k) and file.suffix(k) == "svg" and file.suffix(v) == "pdf" then
-                local command = format("inkscape --export-plain-svg=%s %s",k,v)
-                application.report("running command '%s'\n\n",command)
-                os.execute(command)
-            end
+    for k, v in table.sortedpairs(images) do
+        theimages[#theimages+1] = k
+        if not lfs.isfile(k) and file.suffix(k) == "svg" and file.suffix(v) == "pdf" then
+            local command = format("inkscape --export-plain-svg=%s %s",k,v)
+            application.report("running command %a\n\n",command)
+            os.execute(command)
         end
+    end
 
-        used[#used+1] = replace(t_nav, {
-            id         = "nav",
-            filename   = "nav.xhtml",
-            properties = "nav",
-            mime       = "application/xhtml+xml",
-        })
+    used[#used+1] = replace(t_nav, {
+        id         = "nav",
+        filename   = "nav.xhtml",
+        properties = "nav",
+        mime       = "application/xhtml+xml",
+    })
 
-        io.savedata(file.join(epubpath,"OEBPS","nav.xhtml"),replace(t_navtoc, { -- version 3.0
-            root = root,
+    io.savedata(file.join(epubpath,"OEBPS","nav.xhtml"),replace(t_navtoc, { -- version 3.0
+        root = root,
+    } ) )
+
+    copythem(theimages)
+
+    local idmaker = idmakers[file.suffix(root)] or idmakers.default
+
+    io.savedata(file.join(epubpath,"mimetype"),mimetype)
+
+    io.savedata(file.join(epubpath,"META-INF","container.xml"),replace(t_container, { -- version 2.0
+        rootfile = epubroot
+    } ) )
+
+    io.savedata(file.join(epubpath,"OEBPS",epubroot),replace(t_package, {
+        identifier = identifier,
+        title      = title,
+        language   = language,
+        uuid       = uuid,
+        creator    = creator,
+        date       = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+        firstpage  = idmaker(firstpage),
+        manifest   = concat(used,"\n"),
+        rootfile   = idmaker(root)
+    } ) )
+
+    -- t_toc is replaced by t_navtoc in >= 3
+
+    io.savedata(file.join(epubpath,"OEBPS",epubtoc), replace(t_toc, {
+        identifier = uuid, -- identifier,
+        title      = title,
+        author     = author,
+        root       = root,
+    } ) )
+
+    if epubcover then
+
+        io.savedata(file.join(epubpath,"OEBPS",epubcover), replace(t_coverxhtml, {
+            content = firstpage ~= "" and replace(t_coverimg, { image = firstpage }) or "no cover page defined",
         } ) )
 
-        copythem(theimages)
+    end
 
-        local idmaker = idmakers[file.suffix(root)] or idmakers.default
+    application.report("creating archive\n\n")
 
-        io.savedata(file.join(epubpath,"mimetype"),mimetype)
+    lfs.chdir(epubpath)
+    os.remove(epubfile)
 
-        io.savedata(file.join(epubpath,"META-INF","container.xml"),replace(t_container, { -- version 2.0
-            rootfile = epubroot
-        } ) )
+    local done = false
 
-        io.savedata(file.join(epubpath,"OEBPS",epubroot),replace(t_package, {
-            identifier = identifier,
-            title      = title,
-            language   = language,
-            uuid       = uuid,
-            creator    = creator,
-            date       = os.date("!%Y-%m-%dT%H:%M:%SZ"),
-            firstpage  = idmaker(firstpage),
-            manifest   = concat(used,"\n"),
-            rootfile   = idmaker(root)
-        } ) )
-
-        -- t_toc is replaced by t_navtoc in >= 3
-
-        io.savedata(file.join(epubpath,"OEBPS",epubtoc), replace(t_toc, {
-            identifier = uuid, -- identifier,
-            title      = title,
-            author     = author,
-            root       = root,
-        } ) )
-
-        if epubcover then
-
-            io.savedata(file.join(epubpath,"OEBPS",epubcover), replace(t_coverxhtml, {
-                content = firstpage ~= "" and replace(t_coverimg, { image = firstpage }) or "no cover page defined",
-            } ) )
-
+    for i=1,#zippers do
+        local zipper = zippers[i]
+        if os.execute(format(zipper.uncompressed,epubfile,"mimetype")) then
+            os.execute(format(zipper.compressed,epubfile,"META-INF"))
+            os.execute(format(zipper.compressed,epubfile,"OEBPS"))
+            done = zipper.name
+            break
         end
+    end
 
-        application.report("creating archive\n\n")
+    lfs.chdir("..")
 
-        lfs.chdir(epubpath)
-        os.remove(epubfile)
-
-        local done = false
-
+    if done then
+        application.report("epub archive made using %s: %s",done,file.join(epubpath,epubfile))
+    else
+        local list = { }
         for i=1,#zippers do
-            local zipper = zippers[i]
-            if os.execute(format(zipper.uncompressed,epubfile,"mimetype")) then
-                os.execute(format(zipper.compressed,epubfile,"META-INF"))
-                os.execute(format(zipper.compressed,epubfile,"OEBPS"))
-                done = zipper.name
-                break
-            end
+            list[#list+1] = zipper.name
         end
-
-        lfs.chdir("..")
-
-        if done then
-            application.report("epub archive made using %s: %s",done,file.join(epubpath,epubfile))
-        else
-            local list = { }
-            for i=1,#zippers do
-                list[#list+1] = zipper.name
-            end
-            application.report("no epub archive made, install one of: %s",concat(list," "))
-        end
-
+        application.report("no epub archive made, install one of: %s",concat(list," "))
     end
 
 end
