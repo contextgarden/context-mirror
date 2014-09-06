@@ -133,6 +133,8 @@ local t_toc = [[
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
 
     <head>
+        <meta charset="utf-8" />
+
         <meta name="generator"         content="ConTeXt MkIV" />
         <meta name="dtb:uid"           content="%identifier%" />
         <meta name="dtb:depth"         content="2" />
@@ -165,6 +167,7 @@ local t_navtoc = [[
 
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
     <head>
+        <meta charset="utf-8" />
         <title>navtoc</title>
     </head>
     <body>
@@ -188,6 +191,7 @@ local t_coverxhtml = [[
 
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
+        <meta charset="utf-8" />
         <title>cover page</title>
     </head>
     <body>
@@ -489,8 +493,16 @@ function scripts.epub.make()
 
     lfs.chdir("..")
 
+    local treefile = file.join(epubpath,epubfile)
+
+    os.remove(epubfile)
+    file.copy(treefile,epubfile)
+    if lfs.isfile(epubfile) then
+        os.remove(treefile)
+    end
+
     if done then
-        application.report("epub archive made using %s: %s",done,file.join(epubpath,epubfile))
+        application.report("epub archive made using %s: %s",done,epubfile)
     else
         local list = { }
         for i=1,#zippers do

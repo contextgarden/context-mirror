@@ -643,6 +643,8 @@ end
 
 do
 
+    -- is this referencing still needed?
+
     local descriptions = { }
     local symbols      = { }
     local linked       = { }
@@ -755,8 +757,21 @@ end
 
 -- quite some code deals with exporting references  --
 
+-- links:
+--
+-- url      :
+-- file     :
+-- internal : automatic location
+-- location : named reference
+
+-- references:
+--
+-- implicit : automatic reference
+-- explicit : named reference
+
 local evaluators = { }
 local specials   = { }
+local explicits  = { }
 
 evaluators.inner = function(result,var)
     local inner = var.inner
@@ -800,10 +815,15 @@ do
     evaluators["special operation"]                = evaluators.special
     evaluators["special operation with arguments"] = evaluators.special
 
-    local f_location    = formatters[' location="aut:%s"']
     local f_prefix      = formatters[' prefix="%s"']
-    local f_destination = formatters[' destination="%s"']
     local f_reference   = formatters[' reference="%s"']
+    local f_destination = formatters[' destination="%s"']
+
+    local f_implicit    = formatters[' implicit="%s"']   -- automatic (internal) reference
+    local f_explicit    = formatters[' explicit="%s"']   -- user given reference
+
+    local f_internal    = formatters[' internal="%s"']   -- links to implicit
+    local f_location    = formatters[' location="%s"']   -- links to explicit
     local f_url         = formatters[' url="%s"']
     local f_file        = formatters[' file="%s"']
 
@@ -857,6 +877,26 @@ do
         end
     end
 
+    local function addimplicit(result,references)
+        if references then
+            local internal = references.internal
+            if internal then
+                result[#result+1] = f_implicit(internal)
+            end
+        end
+    end
+
+    local function addinternal(result,references)
+        if references then
+            local internal = references.internal
+            if internal then
+                result[#result+1] = f_internal(internal)
+            end
+        end
+    end
+
+    local p_firstpart = lpeg.Cs((1-lpeg.P(","))^0)
+
     local function addreference(result,references)
         if references then
             local reference = references.reference
@@ -866,10 +906,11 @@ do
                     result[#result+1] = f_prefix(prefix)
                 end
                 result[#result+1] = f_reference(lpegmatch(p_escaped,reference))
+                result[#result+1] = f_explicit(lpegmatch(p_escaped,lpegmatch(p_firstpart,reference)))
             end
             local internal = references.internal
             if internal and internal ~= "" then
-                result[#result+1] = f_location(internal)
+                result[#result+1] = f_implicit(internal)
             end
         end
     end
@@ -896,8 +937,12 @@ do
         end
     end
 
+    extras.addimplicit    = addimplicit
+    extras.addinternal    = addinternal
+
     extras.adddestination = adddestination
     extras.addreference   = addreference
+
     extras.link           = link
 
 end
@@ -1312,7 +1357,7 @@ do
     function extras.listitem(result,element,detail,n,fulltag,di)
         local data = referencehash[fulltag]
         if data then
-            extras.addreference(result,data.references)
+            extras.addinternal(result,data.references)
             return true
         end
     end
@@ -1333,7 +1378,7 @@ do
     function extras.registerlocation(result,element,detail,n,fulltag,di)
         local data = referencehash[fulltag]
         if data then
-            extras.addreference(result,data.references)
+            extras.addinternal(result,data.references)
             return true
         end
     end
@@ -2097,7 +2142,7 @@ local function pushcontent(oldparagraph,newparagraph)
     if oldparagraph then
         pushentry(makebreaklist(currentnesting))
         if trace_export then
-            report_export("%w<!-- break added betweep paragraph %a and %a -->",currentdepth,oldparagraph,newparagraph)
+            report_export("%w<!-- break added between paragraph %a and %a -->",currentdepth,oldparagraph,newparagraph)
         end
     end
 end
@@ -2521,6 +2566,8 @@ local htmltemplate = [[
 
     <head>
 
+        <meta charset="utf-8"/>
+
         <title>%title%</title>
 
 %style%
@@ -2573,63 +2620,63 @@ local htmltemplate = [[
     --     >
     -- ]]
 
-    -- local function cleanxhtmltree(xmltree)
-    --     if xmltree then
-    --         local xmlwrap = xml.wrap
-    --         for e in xml.collected(xmltree,"/document") do
-    --             e.at["xmlns:xhtml"] = "http://www.w3.org/1999/xhtml"
-    --             break
-    --         end
-    --         -- todo: inject xhtmlpreamble (xmlns should have be enough)
-    --         local wrapper = { tg = "a", ns = "xhtml", at = { href = "unknown" } }
-    --         for e in xml.collected(xmltree,"link") do
-    --             local at = e.at
-    --             local href
-    --             if at.location then
-    --                 href = "#" .. gsub(at.location,":","_")
-    --             elseif at.url then
-    --                 href = at.url
-    --             elseif at.file then
-    --                 href = at.file
-    --             end
-    --             if href then
-    --                 wrapper.at.href = href
-    --                 xmlwrap(e,wrapper)
-    --             end
-    --         end
-    --         local wrapper = { tg = "a", ns = "xhtml", at = { name = "unknown" } }
-    --         for e in xml.collected(xmltree,"!link[@location]") do
-    --             local location = e.at.location
-    --             if location then
-    --                 wrapper.at.name = gsub(location,":","_")
-    --                 xmlwrap(e,wrapper)
-    --             end
-    --         end
-    --         return xmltree
-    --     else
-    --         return xml.convert('<?xml version="1.0"?>\n<error>invalid xhtml tree</error>')
-    --     end
-    -- end
-
     local function cleanxhtmltree(xmltree)
         if xmltree then
-            for e in xml.collected(xmltree,"link") do
+            local implicits = { }
+            local explicits = { }
+            local overloads = { }
+            for e in xml.collected(xmltree,"*") do
                 local at = e.at
-                if at.location then
-                    at.href = "#" .. gsub(at.location,":","_")
-                elseif at.url then
-                    at.href = at.url
-                elseif at.file then
-                    at.href = at.file
+                if at then
+                    local explicit = at.explicit
+                    local implicit = at.implicit
+                    if explicit then
+                        if not explicits[explicit] then
+                            explicits[explicit] = true
+                            at.id = explicit
+                            if implicit then
+                                overloads[implicit] = explicit
+                            end
+                        end
+                    else
+                        if implicit and not implicits[implicit] then
+                            implicits[implicit] = true
+                            at.id = "aut:" .. implicit
+                        end
+                    end
                 end
             end
-            local done = { }
-            for e in xml.collected(xmltree,"!link[@location]") do
+            for e in xml.collected(xmltree,"*") do
                 local at = e.at
-                local location = at.location
-                if location and not done[location] then
-                    done[location] = true
-                    at.id = gsub(location,":","_")
+                if at then
+                    local internal = at.internal
+                    local location = at.location
+                    if internal then
+                        if location then
+                            local explicit = overloads[location]
+                            if explicit then
+                                at.href = "#" .. explicit
+                            else
+                                at.href = "#aut:" .. internal
+                            end
+                        else
+                            at.href = "#aut:" .. internal
+                        end
+                    else
+                        if location then
+                            at.href = "#" .. location
+                        else
+                            local url = at.url
+                            if url then
+                                at.href = url
+                            else
+                                local file = at.file
+                                if file then
+                                    at.href = file
+                                end
+                            end
+                        end
+                    end
                 end
             end
             return xmltree
@@ -2638,70 +2685,25 @@ local htmltemplate = [[
         end
     end
 
-
-    local f_namespace = string.formatters["%s.%s"]
-
-    local function remap(specification,source,target)
-     -- local specification = specification or require(specname)
-     -- if not specification then
-     --     return
-     -- end
-     -- if type(source) == "string" then
-     --     source = xml.load(source)
-     -- end
-     -- if type(source) ~= "table" then
-     --     return
-     -- end
-        local remapping = specification.remapping
-        if not remapping then
-            return
-        end
-        for i=1,#remapping do
-            local remap     = remapping[i]
-            local element   = remap.element
-            local class     = remap.class
-            local extras    = remap.extras
-            local namespace = extras and extras.namespace
-            for c in xml.collected(source,remap.pattern) do
-                if not c.special then
-                    local tg = c.tg
-                    local at = c.at
-                    local class = {
-                        class or (at and at.detail) or tg
-                    }
-                    if extras and at then
-                        for k, v in next, extras do
-                            local a = at[k]
-                            if a then
-                                local va = v[a]
-                                if va then
-                                    if namespace then
-                                        class[#class+1] = f_namespace(tg,va)
-                                    else
-                                        class[#class+1] = va
-                                    end
-                                end
-                            end
-                        end
-                    end
-                    if #class > 0 then
-                        c.at = { class = concat(class," ") }
-                    else
-                        c.at = { }
-                    end
-                    if element then
-                        c.tg = element
-                    end
-                end
-            end
-        end
-    end
-
     local private = {
-        id       = true,
-        location = true,
-        href     = true,
+        destination = true,
+        prefix      = true,
+        reference   = true,
+        --
+        id          = true,
+        href        = true,
+        --
+        implicit    = true,
+        explicit    = true,
+        --
+        url         = true,
+        file        = true,
+        internal    = true,
+        location    = true,
     }
+
+    local addclicks = true
+    local f_onclick = formatters[ [[location.href='%s']] ]
 
     local function remap(specification,source,target)
         local comment = nil -- share comments
@@ -2735,6 +2737,8 @@ local htmltemplate = [[
                                 class[#class+1] = k .. "-" .. v
                             end
                         end
+                    else
+                        at.href = nil
                     end
                     local id    = at.id
                     local href  = at.href
@@ -2742,9 +2746,10 @@ local htmltemplate = [[
                     if id then
                         if href then
                             c.at = {
-                                class = class,
-                                id    = id,
-                                href  = href,
+                                class   = class,
+                                id      = id,
+                                href    = href,
+                                onclick = addclicks and f_onclick(href) or nil,
                             }
                         else
                             c.at = {
@@ -2755,8 +2760,9 @@ local htmltemplate = [[
                     else
                         if href then
                             c.at = {
-                                class = class,
-                                href  = href,
+                                class   = class,
+                                href    = href,
+                                onclick = addclicks and f_onclick(href) or nil,
                             }
                         else
                             c.at = {
