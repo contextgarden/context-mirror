@@ -2461,7 +2461,7 @@ end
 do
 
 local xmlpreamble = [[
-<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<?xml version="1.0" encoding="UTF-8" standalone="%s" ?>
 
 <!-- input filename   : %- 17s -->
 <!-- processing date  : %- 17s -->
@@ -2472,8 +2472,8 @@ local xmlpreamble = [[
 
     local flushtree = wrapups.flushtree
 
-    local function wholepreamble()
-        return format(xmlpreamble,tex.jobname,os.date(),environment.version,exportversion)
+    local function wholepreamble(standalone)
+        return format(xmlpreamble,standalone and "yes" or "no",tex.jobname,os.date(),environment.version,exportversion)
     end
 
 
@@ -2517,16 +2517,24 @@ local f_category = formatters["/* category: %s */"]
 local htmltemplate = [[
 %preamble%
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<!DOCTYPE math PUBLIC "-//W3C//DTD MathML 2.0//EN"       "http://www.w3.org/Math/DTD/mathml2/mathml2.dtd"   >
+<!--
 
-<html>
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN" "http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd" >
 
-    <title>%title%</title>
+-->
 
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:math="http://www.w3.org/1998/Math/MathML">
 
     <head>
+
+        <title>%title%</title>
+
+        <!--
+
+            <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+
+        -->
+
 
 %style%
 
@@ -2578,36 +2586,63 @@ local htmltemplate = [[
     --     >
     -- ]]
 
+--     local function cleanxhtmltree(xmltree)
+--         if xmltree then
+--             local xmlwrap = xml.wrap
+--             for e in xml.collected(xmltree,"/document") do
+--                 e.at["xmlns:xhtml"] = "http://www.w3.org/1999/xhtml"
+--                 break
+--             end
+--             -- todo: inject xhtmlpreamble (xmlns should have be enough)
+--             local wrapper = { tg = "a", ns = "xhtml", at = { href = "unknown" } }
+--             for e in xml.collected(xmltree,"link") do
+--                 local at = e.at
+--                 local href
+--                 if at.location then
+--                     href = "#" .. gsub(at.location,":","_")
+--                 elseif at.url then
+--                     href = at.url
+--                 elseif at.file then
+--                     href = at.file
+--                 end
+--                 if href then
+--                     wrapper.at.href = href
+--                     xmlwrap(e,wrapper)
+--                 end
+--             end
+--             local wrapper = { tg = "a", ns = "xhtml", at = { name = "unknown" } }
+--             for e in xml.collected(xmltree,"!link[@location]") do
+--                 local location = e.at.location
+--                 if location then
+--                     wrapper.at.name = gsub(location,":","_")
+--                     xmlwrap(e,wrapper)
+--                 end
+--             end
+--             return xmltree
+--         else
+--             return xml.convert('<?xml version="1.0"?>\n<error>invalid xhtml tree</error>')
+--         end
+--     end
+
     local function cleanxhtmltree(xmltree)
         if xmltree then
-            local xmlwrap = xml.wrap
-            for e in xml.collected(xmltree,"/document") do
-                e.at["xmlns:xhtml"] = "http://www.w3.org/1999/xhtml"
-                break
-            end
-            -- todo: inject xhtmlpreamble (xmlns should have be enough)
-            local wrapper = { tg = "a", ns = "xhtml", at = { href = "unknown" } }
             for e in xml.collected(xmltree,"link") do
                 local at = e.at
-                local href
                 if at.location then
-                    href = "#" .. gsub(at.location,":","_")
+                    at.href = "#" .. gsub(at.location,":","_")
                 elseif at.url then
-                    href = at.url
+                    at.href = at.url
                 elseif at.file then
-                    href = at.file
-                end
-                if href then
-                    wrapper.at.href = href
-                    xmlwrap(e,wrapper)
+                    at.href = at.file
                 end
             end
-            local wrapper = { tg = "a", ns = "xhtml", at = { name = "unknown" } }
+            local done = { }
             for e in xml.collected(xmltree,"!link[@location]") do
-                local location = e.at.location
-                if location then
-                    wrapper.at.name = gsub(location,":","_")
-                    xmlwrap(e,wrapper)
+                local at = e.at
+                local location = at.location
+                if location and not done[location] then
+                    done[location] = true
+                    at.id = gsub(location,":","_")
                 end
             end
             return xmltree
@@ -2615,6 +2650,7 @@ local htmltemplate = [[
             return xml.convert('<?xml version="1.0"?>\n<error>invalid xhtml tree</error>')
         end
     end
+
 
     local f_namespace = string.formatters["%s.%s"]
 
@@ -2762,9 +2798,8 @@ local htmltemplate = [[
         local files = {
         }
         local x_styles, h_styles = allusedstylesheets(xmlfile,cssfiles,files)
-        local preamble = wholepreamble()
         local results = concat {
-            preamble,
+            wholepreamble(true),
             x_styles, -- adds to files
             result,
         }
@@ -2831,7 +2866,7 @@ local htmltemplate = [[
 --                         local variables = {
 --                             style    = h_styles,
 --                             body     = xml.tostring(xml.first(xmltree,"/div")),
---                             preamble = preamble,
+--                             preamble = wholepreamble(false),
 --                             title    = specification.title,
 --                         }
 --                         local data = utilities.templates.replace(specification.template,variables,"xml")
@@ -2846,7 +2881,7 @@ local htmltemplate = [[
                 local variables = {
                     style    = h_styles,
                     body     = xml.tostring(xml.first(xmltree,"/div")),
-                    preamble = preamble,
+                    preamble = wholepreamble(false),
                     title    = specification.title,
                 }
                 io.savedata(resultfile,utilities.templates.replace(htmltemplate,variables,"xml"))
