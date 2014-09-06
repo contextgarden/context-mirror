@@ -298,6 +298,7 @@ descriptioncontent, div.descriptioncontent {
 }
 
 descriptionsymbol, div.descriptionsymbol {
+	display : inline ;
 }
 
 /* verbatimblock      : display */
@@ -755,16 +756,11 @@ subsup>sub, div.subsup div.sub {
 	vertical-align : bottom ;
 }
 
-/* xhtml ... not used any more */
+/* links */
 
-a[href] {
-	text-decoration : none ;
-	color           : inherit ;
-}
-
-a[href]:hover {
-	color           : rgb(50%,0%,0%) ;
-	text-decoration : underline ;
+div[href]:hover {
+	color            : rgb(50%,0%,0%) ;
+	background-color : rgb(85%,85%,85%) ;
 }
 
 /* setups */
