@@ -48,7 +48,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.760 -- beware: also sync font-mis.lua
+otf.version              = 2.761 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -255,7 +255,7 @@ local ordered_enhancers = {
     "analyze glyphs",
     "analyze math",
 
-    "prepare tounicode", -- maybe merge with prepare
+ -- "prepare tounicode",
 
     "reorganize lookups",
     "reorganize mark classes",
@@ -273,6 +273,8 @@ local ordered_enhancers = {
     "check glyphs",
     "check metadata",
     "check extra features", -- after metadata
+
+    "prepare tounicode",
 
     "check encoding", -- moved
     "add duplicates",
