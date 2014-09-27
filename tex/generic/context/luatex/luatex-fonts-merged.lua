@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 09/27/14 12:07:56
+-- merge date  : 09/27/14 14:46:07
 
 do -- begin closure to overcome local limits and interference
 
@@ -5045,7 +5045,7 @@ local function loadcidfile(filename)
       ordering=ordering,
       filename=filename,
       unicodes=unicodes,
-      names=names
+      names=names,
     }
   end
 end
@@ -5082,8 +5082,21 @@ function cid.getmap(specification)
   local ordering=specification.ordering
   local supplement=specification.supplement
   local filename=format(registry,ordering,supplement)
-  local found=cidmap[lower(filename)]
+  local lowername=lower(filename)
+  local found=cidmap[lowername]
   if found then
+    return found
+  end
+  if ordering=="Identity" then
+    local found={
+      supplement=supplement,
+      registry=registry,
+      ordering=ordering,
+      filename=filename,
+      unicodes={},
+      names={},
+    }
+    cidmap[lowername]=found
     return found
   end
   if trace_loading then
@@ -6825,7 +6838,7 @@ local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
 otf.glists={ "gsub","gpos" }
-otf.version=2.761 
+otf.version=2.762 
 otf.cache=containers.define("fonts","otf",otf.version,true)
 local fontdata=fonts.hashes.identifiers
 local chardata=characters and characters.data 
@@ -7368,13 +7381,13 @@ actions["prepare glyphs"]=function(data,filename,raw)
             local glyph=cidglyphs[index]
             if glyph then
               local unicode=glyph.unicode
-if   unicode>=0x00E000 and unicode<=0x00F8FF then
+              if   unicode>=0x00E000 and unicode<=0x00F8FF then
                 unicode=-1
-elseif unicode>=0x0F0000 and unicode<=0x0FFFFD then
+              elseif unicode>=0x0F0000 and unicode<=0x0FFFFD then
                 unicode=-1
-elseif unicode>=0x100000 and unicode<=0x10FFFD then
+              elseif unicode>=0x100000 and unicode<=0x10FFFD then
                 unicode=-1
-end
+              end
               local name=glyph.name or cidnames[index]
               if not unicode or unicode==-1 then 
                 unicode=cidunicodes[index]
