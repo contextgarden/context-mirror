@@ -437,7 +437,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 32003, stripped down to: 16772
+-- original size: 32210, stripped down to: 16964
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -498,6 +498,8 @@ patterns.utfbom_16_le=utfbom_16_le
 patterns.utfbom_8=utfbom_8
 patterns.utf_16_be_nl=P("\000\r\000\n")+P("\000\r")+P("\000\n") 
 patterns.utf_16_le_nl=P("\r\000\n\000")+P("\r\000")+P("\n\000") 
+patterns.utf_32_be_nl=P("\000\000\000\r\000\000\000\n")+P("\000\000\000\r")+P("\000\000\000\n")
+patterns.utf_32_le_nl=P("\r\000\000\000\n\000\000\000")+P("\r\000\000\000")+P("\n\000\000\000")
 patterns.utf8one=R("\000\127")
 patterns.utf8two=R("\194\223")*utf8next
 patterns.utf8three=R("\224\239")*utf8next*utf8next
@@ -4394,7 +4396,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 35374, stripped down to: 15946
+-- original size: 37111, stripped down to: 15630
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -4621,7 +4623,8 @@ if not utf.sub then
   end
 end
 function utf.remapper(mapping,option) 
-  if type(mapping)=="table" then
+  local variant=type(mapping)
+  if variant=="table" then
     if option=="dynamic" then
       local pattern=false
       table.setmetatablenewindex(mapping,function(t,k,v) rawset(t,k,v) pattern=false end)
@@ -4639,6 +4642,19 @@ function utf.remapper(mapping,option)
       return Cs((tabletopattern(mapping)/mapping+p_utf8char)^0)
     else
       local pattern=Cs((tabletopattern(mapping)/mapping+p_utf8char)^0)
+      return function(str)
+        if not str or str=="" then
+          return ""
+        else
+          return lpegmatch(pattern,str)
+        end
+      end,pattern
+    end
+  elseif variant=="function" then
+    if option=="pattern" then
+      return Cs((p_utf8char/mapping+p_utf8char)^0)
+    else
+      local pattern=Cs((p_utf8char/mapping+p_utf8char)^0)
       return function(str)
         if not str or str=="" then
           return ""
@@ -4701,202 +4717,155 @@ function utf.magic(f)
 end
 local utf16_to_utf8_be,utf16_to_utf8_le
 local utf32_to_utf8_be,utf32_to_utf8_le
-local utf_16_be_linesplitter=patterns.utfbom_16_be^-1*lpeg.tsplitat(patterns.utf_16_be_nl)
-local utf_16_le_linesplitter=patterns.utfbom_16_le^-1*lpeg.tsplitat(patterns.utf_16_le_nl)
-if bytepairs then
-  utf16_to_utf8_be=function(t)
-    if not t then
-      return nil
-    elseif type(t)=="string" then
-      t=lpegmatch(utf_16_be_linesplitter,t)
-    end
-    local result={} 
-    for i=1,#t do
-      local r,more=0,0
-      for left,right in bytepairs(t[i]) do
-        if right then
-          local now=256*left+right
-          if more>0 then
-            now=(more-0xD800)*0x400+(now-0xDC00)+0x10000 
-            more=0
-            r=r+1
-            result[r]=utfchar(now)
-          elseif now>=0xD800 and now<=0xDBFF then
-            more=now
-          else
-            r=r+1
-            result[r]=utfchar(now)
-          end
-        end
-      end
-      t[i]=concat(result,"",1,r) 
-    end
-    return t
+local utf_16_be_getbom=patterns.utfbom_16_be^-1
+local utf_16_le_getbom=patterns.utfbom_16_le^-1
+local utf_32_be_getbom=patterns.utfbom_32_be^-1
+local utf_32_le_getbom=patterns.utfbom_32_le^-1
+local utf_16_be_linesplitter=utf_16_be_getbom*lpeg.tsplitat(patterns.utf_16_be_nl)
+local utf_16_le_linesplitter=utf_16_le_getbom*lpeg.tsplitat(patterns.utf_16_le_nl)
+local utf_32_be_linesplitter=utf_32_be_getbom*lpeg.tsplitat(patterns.utf_32_be_nl)
+local utf_32_le_linesplitter=utf_32_le_getbom*lpeg.tsplitat(patterns.utf_32_le_nl)
+local more=0
+local p_utf16_to_utf8_be=C(1)*C(1)/function(left,right)
+  local now=256*byte(left)+byte(right)
+  if more>0 then
+    now=(more-0xD800)*0x400+(now-0xDC00)+0x10000 
+    more=0
+    return utfchar(now)
+  elseif now>=0xD800 and now<=0xDBFF then
+    more=now
+  else
+    return utfchar(now)
   end
-  utf16_to_utf8_le=function(t)
-    if not t then
-      return nil
-    elseif type(t)=="string" then
-      t=lpegmatch(utf_16_le_linesplitter,t)
-    end
-    local result={} 
-    for i=1,#t do
-      local r,more=0,0
-      for left,right in bytepairs(t[i]) do
-        if right then
-          local now=256*right+left
-          if more>0 then
-            now=(more-0xD800)*0x400+(now-0xDC00)+0x10000 
-            more=0
-            r=r+1
-            result[r]=utfchar(now)
-          elseif now>=0xD800 and now<=0xDBFF then
-            more=now
-          else
-            r=r+1
-            result[r]=utfchar(now)
-          end
-        end
-      end
-      t[i]=concat(result,"",1,r) 
-    end
-    return t
-  end
-  utf32_to_utf8_be=function(t)
-    if not t then
-      return nil
-    elseif type(t)=="string" then
-      t=lpegmatch(utflinesplitter,t)
-    end
-    local result={} 
-    for i=1,#t do
-      local r,more=0,-1
-      for a,b in bytepairs(t[i]) do
-        if a and b then
-          if more<0 then
-            more=256*256*256*a+256*256*b
-          else
-            r=r+1
-            result[t]=utfchar(more+256*a+b)
-            more=-1
-          end
-        else
-          break
-        end
-      end
-      t[i]=concat(result,"",1,r)
-    end
-    return t
-  end
-  utf32_to_utf8_le=function(t)
-    if not t then
-      return nil
-    elseif type(t)=="string" then
-      t=lpegmatch(utflinesplitter,t)
-    end
-    local result={} 
-    for i=1,#t do
-      local r,more=0,-1
-      for a,b in bytepairs(t[i]) do
-        if a and b then
-          if more<0 then
-            more=256*b+a
-          else
-            r=r+1
-            result[t]=utfchar(more+256*256*256*b+256*256*a)
-            more=-1
-          end
-        else
-          break
-        end
-      end
-      t[i]=concat(result,"",1,r)
-    end
-    return t
-  end
-else
-  utf16_to_utf8_be=function(t)
-    if not t then
-      return nil
-    elseif type(t)=="string" then
-      t=lpegmatch(utf_16_be_linesplitter,t)
-    end
-    local result={} 
-    for i=1,#t do
-      local r,more=0,0
-      for left,right in gmatch(t[i],"(.)(.)") do
-        if left=="\000" then 
-          r=r+1
-          result[r]=utfchar(byte(right))
-        elseif right then
-          local now=256*byte(left)+byte(right)
-          if more>0 then
-            now=(more-0xD800)*0x400+(now-0xDC00)+0x10000 
-            more=0
-            r=r+1
-            result[r]=utfchar(now)
-          elseif now>=0xD800 and now<=0xDBFF then
-            more=now
-          else
-            r=r+1
-            result[r]=utfchar(now)
-          end
-        end
-      end
-      t[i]=concat(result,"",1,r) 
-    end
-    return t
-  end
-  utf16_to_utf8_le=function(t)
-    if not t then
-      return nil
-    elseif type(t)=="string" then
-      t=lpegmatch(utf_16_le_linesplitter,t)
-    end
-    local result={} 
-    for i=1,#t do
-      local r,more=0,0
-      for left,right in gmatch(t[i],"(.)(.)") do
-        if right=="\000" then
-          r=r+1
-          result[r]=utfchar(byte(left))
-        elseif right then
-          local now=256*byte(right)+byte(left)
-          if more>0 then
-            now=(more-0xD800)*0x400+(now-0xDC00)+0x10000 
-            more=0
-            r=r+1
-            result[r]=utfchar(now)
-          elseif now>=0xD800 and now<=0xDBFF then
-            more=now
-          else
-            r=r+1
-            result[r]=utfchar(now)
-          end
-        end
-      end
-      t[i]=concat(result,"",1,r) 
-    end
-    return t
-  end
-  utf32_to_utf8_le=function() return {} end 
-  utf32_to_utf8_be=function() return {} end
 end
+local p_utf16_to_utf8_le=C(1)*C(1)/function(right,left)
+  local now=256*byte(left)+byte(right)
+  if more>0 then
+    now=(more-0xD800)*0x400+(now-0xDC00)+0x10000 
+    more=0
+    return utfchar(now)
+  elseif now>=0xD800 and now<=0xDBFF then
+    more=now
+  else
+    return utfchar(now)
+  end
+end
+local p_utf32_to_utf8_be=C(1)*C(1)*C(1)*C(1)/function(a,b,c,d)
+  return utfchar(256*256*256*byte(a)+256*256*byte(b)+256*byte(c)+byte(d))
+end
+local p_utf32_to_utf8_le=C(1)*C(1)*C(1)*C(1)/function(a,b,c,d)
+  return utfchar(256*256*256*byte(d)+256*256*byte(c)+256*byte(b)+byte(a))
+end
+p_utf16_to_utf8_be=P(true)/function() more=0 end*utf_16_be_getbom*Cs(p_utf16_to_utf8_be^0)
+p_utf16_to_utf8_le=P(true)/function() more=0 end*utf_16_le_getbom*Cs(p_utf16_to_utf8_le^0)
+p_utf32_to_utf8_be=P(true)/function() more=0 end*utf_32_be_getbom*Cs(p_utf32_to_utf8_be^0)
+p_utf32_to_utf8_le=P(true)/function() more=0 end*utf_32_le_getbom*Cs(p_utf32_to_utf8_le^0)
+patterns.utf16_to_utf8_be=p_utf16_to_utf8_be
+patterns.utf16_to_utf8_le=p_utf16_to_utf8_le
+patterns.utf32_to_utf8_be=p_utf32_to_utf8_be
+patterns.utf32_to_utf8_le=p_utf32_to_utf8_le
+utf16_to_utf8_be=function(s)
+  if s and s~="" then
+    return lpegmatch(p_utf16_to_utf8_be,s)
+  else
+    return s
+  end
+end
+utf16_to_utf8_be_t=function(t)
+  if not t then
+    return nil
+  elseif type(t)=="string" then
+    t=lpegmatch(utf_16_be_linesplitter,t)
+  end
+  for i=1,#t do
+    local s=t[i]
+    if s~="" then
+      t[i]=lpegmatch(p_utf16_to_utf8_be,s)
+    end
+  end
+  return t
+end
+utf16_to_utf8_le=function(s)
+  if s and s~="" then
+    return lpegmatch(p_utf16_to_utf8_le,s)
+  else
+    return s
+  end
+end
+utf16_to_utf8_le_t=function(t)
+  if not t then
+    return nil
+  elseif type(t)=="string" then
+    t=lpegmatch(utf_16_le_linesplitter,t)
+  end
+  for i=1,#t do
+    local s=t[i]
+    if s~="" then
+      t[i]=lpegmatch(p_utf16_to_utf8_le,s)
+    end
+  end
+  return t
+end
+utf32_to_utf8_be=function(s)
+  if s and s~="" then
+    return lpegmatch(p_utf32_to_utf8_be,s)
+  else
+    return s
+  end
+end
+utf32_to_utf8_be_t=function(t)
+  if not t then
+    return nil
+  elseif type(t)=="string" then
+    t=lpegmatch(utf_32_be_linesplitter,t)
+  end
+  for i=1,#t do
+    local s=t[i]
+    if s~="" then
+      t[i]=lpegmatch(p_utf32_to_utf8_be,s)
+    end
+  end
+  return t
+end
+utf32_to_utf8_le=function(s)
+  if s and s~="" then
+    return lpegmatch(p_utf32_to_utf8_le,s)
+  else
+    return s
+  end
+end
+utf32_to_utf8_le_t=function(t)
+  if not t then
+    return nil
+  elseif type(t)=="string" then
+    t=lpegmatch(utf_32_le_linesplitter,t)
+  end
+  for i=1,#t do
+    local s=t[i]
+    if s~="" then
+      t[i]=lpegmatch(p_utf32_to_utf8_le,s)
+    end
+  end
+  return t
+end
+utf.utf16_to_utf8_le_t=utf16_to_utf8_le_t
+utf.utf16_to_utf8_be_t=utf16_to_utf8_be_t
+utf.utf32_to_utf8_le_t=utf32_to_utf8_le_t
+utf.utf32_to_utf8_be_t=utf32_to_utf8_be_t
 utf.utf16_to_utf8_le=utf16_to_utf8_le
 utf.utf16_to_utf8_be=utf16_to_utf8_be
 utf.utf32_to_utf8_le=utf32_to_utf8_le
 utf.utf32_to_utf8_be=utf32_to_utf8_be
-function utf.utf8_to_utf8(t)
+function utf.utf8_to_utf8_t(t)
   return type(t)=="string" and lpegmatch(utflinesplitter,t) or t
 end
-function utf.utf16_to_utf8(t,endian)
-  return endian and utf16_to_utf8_be(t) or utf16_to_utf8_le(t) or t
+function utf.utf16_to_utf8_t(t,endian)
+  return endian and utf16_to_utf8_be_t(t) or utf16_to_utf8_le_t(t) or t
 end
-function utf.utf32_to_utf8(t,endian)
-  return endian and utf32_to_utf8_be(t) or utf32_to_utf8_le(t) or t
+function utf.utf32_to_utf8_t(t,endian)
+  return endian and utf32_to_utf8_be_t(t) or utf32_to_utf8_le_t(t) or t
 end
-local function little(c)
-  local b=byte(c)
+local function little(b)
   if b<0x10000 then
     return char(b%256,b/256)
   else
@@ -4905,8 +4874,7 @@ local function little(c)
     return char(b1%256,b1/256,b2%256,b2/256)
   end
 end
-local function big(c)
-  local b=byte(c)
+local function big(b)
   if b<0x10000 then
     return char(b/256,b%256)
   else
@@ -4915,27 +4883,29 @@ local function big(c)
     return char(b1/256,b1%256,b2/256,b2%256)
   end
 end
-local l_remap=utf.remapper(little,"pattern")
-local b_remap=utf.remapper(big,"pattern")
-function utf.utf8_to_utf16_be(str,nobom)
+local l_remap=Cs((p_utf8byte/little+P(1)/"")^0)
+local b_remap=Cs((p_utf8byte/big+P(1)/"")^0)
+local function utf8_to_utf16_be(str,nobom)
   if nobom then
     return lpegmatch(b_remap,str)
   else
     return char(254,255)..lpegmatch(b_remap,str)
   end
 end
-function utf.utf8_to_utf16_le(str,nobom)
+local function utf8_to_utf16_le(str,nobom)
   if nobom then
     return lpegmatch(l_remap,str)
   else
     return char(255,254)..lpegmatch(l_remap,str)
   end
 end
+utf.utf8_to_utf16_be=utf8_to_utf16_be
+utf.utf8_to_utf16_le=utf8_to_utf16_le
 function utf.utf8_to_utf16(str,littleendian,nobom)
   if littleendian then
-    return utf.utf8_to_utf16_le(str,nobom)
+    return utf8_to_utf16_le(str,nobom)
   else
-    return utf.utf8_to_utf16_be(str,nobom)
+    return utf8_to_utf16_be(str,nobom)
   end
 end
 local pattern=Cs (
@@ -4951,16 +4921,16 @@ function utf.xstring(s)
   return format("0x%05X",type(s)=="number" and s or utfbyte(s))
 end
 function utf.toeight(str)
-  if not str then
+  if not str or str=="" then
     return nil
   end
   local utftype=lpegmatch(p_utfstricttype,str)
   if utftype=="utf-8" then
-    return sub(str,4)
-  elseif utftype=="utf-16-le" then
-    return utf16_to_utf8_le(str)
+    return sub(str,4)        
   elseif utftype=="utf-16-be" then
-    return utf16_to_utf8_ne(str)
+    return utf16_to_utf8_be(str)  
+  elseif utftype=="utf-16-le" then
+    return utf16_to_utf8_le(str)  
   else
     return str
   end
@@ -17605,8 +17575,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 725293
--- stripped bytes    : 257907
+-- original bytes    : 727237
+-- stripped bytes    : 259975
 
 -- end library merge
 

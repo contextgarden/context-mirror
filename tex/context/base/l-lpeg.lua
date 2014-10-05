@@ -145,6 +145,9 @@ patterns.utfbom_8      = utfbom_8
 patterns.utf_16_be_nl  = P("\000\r\000\n") + P("\000\r") + P("\000\n") -- P("\000\r") * (P("\000\n") + P(true)) + P("\000\n")
 patterns.utf_16_le_nl  = P("\r\000\n\000") + P("\r\000") + P("\n\000") -- P("\r\000") * (P("\n\000") + P(true)) + P("\n\000")
 
+patterns.utf_32_be_nl  = P("\000\000\000\r\000\000\000\n") + P("\000\000\000\r") + P("\000\000\000\n")
+patterns.utf_32_le_nl  = P("\r\000\000\000\n\000\000\000") + P("\r\000\000\000") + P("\n\000\000\000")
+
 patterns.utf8one       = R("\000\127")
 patterns.utf8two       = R("\194\223") * utf8next
 patterns.utf8three     = R("\224\239") * utf8next * utf8next
