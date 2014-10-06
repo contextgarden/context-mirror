@@ -1017,3 +1017,75 @@ lpeg.patterns.stripzeros = stripper
 -- lpegmatch(stripper,str)
 -- print(#str, os.clock()-ts, lpegmatch(stripper,sample))
 
+-- for practical reasone we keep this here:
+
+local byte_to_HEX = { }
+local byte_to_hex = { }
+local byte_to_dec = { } -- for md5
+local hex_to_byte = { }
+
+for i=0,255 do
+    local H = format("%02X",i)
+    local h = format("%02x",i)
+    local d = format("%03i",i)
+    local c = char(i)
+    byte_to_HEX[c] = H
+    byte_to_hex[c] = h
+    byte_to_dec[c] = d
+    hex_to_byte[h] = c
+    hex_to_byte[H] = c
+end
+
+local hextobyte  = P(2)/hex_to_byte
+local bytetoHEX  = P(1)/byte_to_HEX
+local bytetohex  = P(1)/byte_to_hex
+local bytetodec  = P(1)/byte_to_dec
+local hextobytes = Cs(hextobyte^0)
+local bytestoHEX = Cs(bytetoHEX^0)
+local bytestohex = Cs(bytetohex^0)
+local bytestodec = Cs(bytetodec^0)
+
+patterns.hextobyte  = hextobyte
+patterns.bytetoHEX  = bytetoHEX
+patterns.bytetohex  = bytetohex
+patterns.bytetodec  = bytetodec
+patterns.hextobytes = hextobytes
+patterns.bytestoHEX = bytestoHEX
+patterns.bytestohex = bytestohex
+patterns.bytestodec = bytestodec
+
+function string.toHEX(s)
+    if not s or s == "" then
+        return s
+    else
+        return lpegmatch(bytestoHEX,s)
+    end
+end
+
+function string.tohex(s)
+    if not s or s == "" then
+        return s
+    else
+        return lpegmatch(bytestohex,s)
+    end
+end
+
+function string.todec(s)
+    if not s or s == "" then
+        return s
+    else
+        return lpegmatch(bytestodec,s)
+    end
+end
+
+function string.tobytes(s)
+    if not s or s == "" then
+        return s
+    else
+        return lpegmatch(hextobytes,s)
+    end
+end
+
+-- local h = "ADFE0345"
+-- local b = lpegmatch(patterns.hextobytes,h)
+-- print(h,b,string.tohex(b),string.toHEX(b))

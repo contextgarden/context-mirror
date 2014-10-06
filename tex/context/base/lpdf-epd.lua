@@ -342,7 +342,8 @@ end
 -- the getString function gives back bytes so we don't need to worry about
 -- the hex aspect.
 
-local pattern = lpeg.patterns.utfbom_16_be * lpeg.patterns.utf16_to_utf8_be
+local u_pattern = lpeg.patterns.utfbom_16_be * lpeg.patterns.utf16_to_utf8_be
+local b_pattern = lpeg.patterns.hextobytes
 
 local function get_string(v)
     -- the toutf function only converts a utf16 string and leves the original
@@ -352,12 +353,15 @@ local function get_string(v)
     if not s or s == "" then
         return ""
     end
-    local r = lpegmatch(pattern,s)
-    if r then
-        return r
-    else
-        return s, "rawtext"
+    local u = lpegmatch(u_pattern,s)
+    if u then
+        return u -- , "unicode"
     end
+    local b = lpegmatch(b_pattern,s)
+    if b then
+        return b, "rawtext"
+    end
+    return s, "rawtext"
 end
 
 local function get_null()

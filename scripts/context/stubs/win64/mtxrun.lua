@@ -437,7 +437,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 32210, stripped down to: 16964
+-- original size: 33805, stripped down to: 18228
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -1082,6 +1082,65 @@ local case_2=period*(digit-trailingzeros)^1*(trailingzeros/"")
 local number=digit^1*(case_1+case_2)
 local stripper=Cs((number+1)^0)
 lpeg.patterns.stripzeros=stripper
+local byte_to_HEX={}
+local byte_to_hex={}
+local byte_to_dec={} 
+local hex_to_byte={}
+for i=0,255 do
+  local H=format("%02X",i)
+  local h=format("%02x",i)
+  local d=format("%03i",i)
+  local c=char(i)
+  byte_to_HEX[c]=H
+  byte_to_hex[c]=h
+  byte_to_dec[c]=d
+  hex_to_byte[h]=c
+  hex_to_byte[H]=c
+end
+local hextobyte=P(2)/hex_to_byte
+local bytetoHEX=P(1)/byte_to_HEX
+local bytetohex=P(1)/byte_to_hex
+local bytetodec=P(1)/byte_to_dec
+local hextobytes=Cs(hextobyte^0)
+local bytestoHEX=Cs(bytetoHEX^0)
+local bytestohex=Cs(bytetohex^0)
+local bytestodec=Cs(bytetodec^0)
+patterns.hextobyte=hextobyte
+patterns.bytetoHEX=bytetoHEX
+patterns.bytetohex=bytetohex
+patterns.bytetodec=bytetodec
+patterns.hextobytes=hextobytes
+patterns.bytestoHEX=bytestoHEX
+patterns.bytestohex=bytestohex
+patterns.bytestodec=bytestodec
+function string.toHEX(s)
+  if not s or s=="" then
+    return s
+  else
+    return lpegmatch(bytestoHEX,s)
+  end
+end
+function string.tohex(s)
+  if not s or s=="" then
+    return s
+  else
+    return lpegmatch(bytestohex,s)
+  end
+end
+function string.todec(s)
+  if not s or s=="" then
+    return s
+  else
+    return lpegmatch(bytestodec,s)
+  end
+end
+function string.tobytes(s)
+  if not s or s=="" then
+    return s
+  else
+    return lpegmatch(hextobytes,s)
+  end
+end
 
 
 end -- of closure
@@ -3564,7 +3623,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-md5"] = package.loaded["l-md5"] or true
 
--- original size: 3760, stripped down to: 2088
+-- original size: 3248, stripped down to: 2266
 
 if not modules then modules={} end modules ['l-md5']={
   version=1.001,
@@ -3582,14 +3641,20 @@ if not md5 then
   }
 end
 local md5,file=md5,file
-local gsub,format,byte=string.gsub,string.format,string.byte
-local md5sum=md5.sum
-local function convert(str,fmt)
-  return (gsub(md5sum(str),".",function(chr) return format(fmt,byte(chr)) end))
+local gsub=string.gsub
+do
+  local patterns=lpeg and lpeg.patterns
+  if patterns then
+    local bytestoHEX=patterns.bytestoHEX
+    local bytestohex=patterns.bytestohex
+    local bytestodec=patterns.bytestodec
+    local lpegmatch=lpeg.match
+    local md5sum=md5.sum
+    if not md5.HEX then function md5.HEX(str) if str then return lpegmatch(bytestoHEX,md5sum(str)) end end end
+    if not md5.hex then function md5.hex(str) if str then return lpegmatch(bytestohex,md5sum(str)) end end end
+    if not md5.dec then function md5.dec(str) if str then return lpegmatch(bytestodec,md5sum(str)) end end end
+  end
 end
-if not md5.HEX then function md5.HEX(str) return convert(str,"%02X") end end
-if not md5.hex then function md5.hex(str) return convert(str,"%02x") end end
-if not md5.dec then function md5.dec(str) return convert(str,"%03i") end end
 function file.needsupdating(oldname,newname,threshold) 
   local oldtime=lfs.attributes(oldname,"modification")
   if oldtime then
@@ -17575,8 +17640,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 727237
--- stripped bytes    : 259975
+-- original bytes    : 728320
+-- stripped bytes    : 259616
 
 -- end library merge
 
