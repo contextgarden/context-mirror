@@ -6,9 +6,11 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
     license   = "see context related readme files"
 }
 
+-- beware of "too many locals" here
+
 local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
 local char, byte, format, gsub, concat, match, sub, gmatch = string.char, string.byte, string.format, string.gsub, table.concat, string.match, string.sub, string.gmatch
-local utfchar, utfvalues = utf.char, utf.values
+local utfchar, utfbyte, utfvalues = utf.char, utf.byte, utf.values
 local sind, cosd, floor, max, min = math.sind, math.cosd, math.floor, math.max, math.min
 local lpegmatch, P, C, R, S, Cc, Cs = lpeg.match, lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs
 local formatters = string.formatters
@@ -17,6 +19,10 @@ local isboolean = string.is_boolean
 local report_objects    = logs.reporter("backend","objects")
 local report_finalizing = logs.reporter("backend","finalizing")
 local report_blocked    = logs.reporter("backend","blocked")
+
+-- In ConTeXt MkIV we use utf8 exclusively so all strings get mapped onto a hex
+-- encoded utf16 string type between <>. We could probably save some bytes by using
+-- strings between () but then we end up with escaped ()\ too.
 
 -- gethpos              : used
 -- getpos               : used
@@ -193,67 +199,112 @@ function lpdf.rectangle(width,height,depth)
     end
 end
 
---
+-- we could use a hash of predefined unicodes
+
+-- local function tosixteen(str) -- an lpeg might be faster (no table)
+--     if not str or str == "" then
+--         return "<feff>" -- not () as we want an indication that it's unicode
+--     else
+--         local r, n = { "<feff" }, 1
+--         for b in utfvalues(str) do
+--             n = n + 1
+--             if b < 0x10000 then
+--                 r[n] = format("%04x",b)
+--             else
+--              -- r[n] = format("%04x%04x",b/1024+0xD800,b%1024+0xDC00)
+--                 r[n] = format("%04x%04x",floor(b/1024),b%1024+0xDC00) --bit32.rshift(b,10)
+--             end
+--         end
+--         n = n + 1
+--         r[n] = ">"
+--         return concat(r)
+--     end
+-- end
+
+local cache = table.setmetatableindex(function(t,k) -- can be made weak
+    local v = utfbyte(k)
+    if v < 0x10000 then
+        v = format("%04x",v)
+    else
+     -- v = format("%04x%04x",v/1024+0xD800,v%1024+0xDC00)
+        v = format("%04x%04x",floor(v/1024),v%1024+0xDC00)
+    end
+    t[k] = v
+    return v
+end)
+
+local escaped = Cs(Cc("(") * (S("\\()")/"\\%0" + P(1))^0 * Cc(")"))
+local unified = Cs(Cc("<feff") * (lpeg.patterns.utf8character/cache)^1 * Cc(">"))
 
 local function tosixteen(str) -- an lpeg might be faster (no table)
     if not str or str == "" then
         return "<feff>" -- not () as we want an indication that it's unicode
     else
-        local r, n = { "<feff" }, 1
-        for b in utfvalues(str) do
-            n = n + 1
-            if b < 0x10000 then
-                r[n] = format("%04x",b)
-            else
-             -- r[n] = format("%04x%04x",b/1024+0xD800,b%1024+0xDC00)
-                r[n] = format("%04x%04x",floor(b/1024),b%1024+0xDC00)
-            end
-        end
-        n = n + 1
-        r[n] = ">"
-        return concat(r)
+        return lpegmatch(unified,str)
+    end
+end
+
+local more = 0
+
+local pattern = C(4) / function(s) -- needs checking !
+    local now = tonumber(s,16)
+    if more > 0 then
+        now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
+        more = 0
+        return utfchar(now)
+    elseif now >= 0xD800 and now <= 0xDBFF then
+        more = now
+     -- return ""
+    else
+        return utfchar(now)
+    end
+end
+
+local pattern = P(true) / function() more = 0 end * Cs(pattern^0)
+
+local function fromsixteen(str)
+    if not str or str == "" then
+        return ""
+    else
+        return lpegmatch(pattern,str)
+    end
+end
+
+local toregime   = regimes.toregime
+local fromregime = regimes.fromregime
+
+local function topdfdoc(str,default)
+    if not str or str == "" then
+        return ""
+    else
+        return lpegmatch(escaped,toregime("pdfdoc",str,default)) -- could be combined if needed
+    end
+end
+
+local function frompdfdoc(str)
+    if not str or str == "" then
+        return ""
+    else
+        return fromregime("pdfdoc",str)
+    end
+end
+
+if not toregime   then topdfdoc   = function(s) return s end end
+if not fromregime then frompdfdoc = function(s) return s end end
+
+local function toeight(str)
+    if not str or str == "" then
+        return "()"
+    else
+        return lpegmatch(escaped,str)
     end
 end
 
 lpdf.tosixteen   = tosixteen
-
--- lpeg is some 5 times faster than gsub (in test) on escaping
-
--- local escapes = {
---     ["\\"] = "\\\\",
---     ["/"] = "\\/", ["#"] = "\\#",
---     ["<"] = "\\<", [">"] = "\\>",
---     ["["] = "\\[", ["]"] = "\\]",
---     ["("] = "\\(", [")"] = "\\)",
--- }
---
--- local escaped = Cs(Cc("(") * (S("\\/#<>[]()")/escapes + P(1))^0 * Cc(")"))
---
--- local function toeight(str)
---     if not str or str == "" then
---         return "()"
---     else
---         return lpegmatch(escaped,str)
---     end
--- end
---
--- -- no need for escaping .. just use unicode instead
-
--- \0 \t \n \r \f <space> ( ) [ ] { } / %
-
-local function toeight(str)
-    return "(" .. str .. ")"
-end
-
-lpdf.toeight = toeight
-
--- local escaped = lpeg.Cs((lpeg.S("\0\t\n\r\f ()[]{}/%")/function(s) return format("#%02X",byte(s)) end + lpeg.P(1))^0)
---
--- local function cleaned(str)
---     return (str and str ~= "" and lpegmatch(escaped,str)) or ""
--- end
---
--- lpdf.cleaned = cleaned -- not public yet
+lpdf.toeight     = toeight
+lpdf.topdfdoc    = topdfdoc
+lpdf.fromsixteen = fromsixteen
+lpdf.frompdfdoc  = frompdfdoc
 
 local function merge_t(a,b)
     local t = { }
@@ -288,8 +339,8 @@ tostring_d = function(t,contentonly,key)
                 r[rn] = f_key_value(k,toeight(v))
             elseif tv == "number" then
                 r[rn] = f_key_number(k,v)
-            elseif tv == "unicode" then
-                r[rn] = f_key_value(k,tosixteen(v))
+         -- elseif tv == "unicode" then -- can't happen
+         --     r[rn] = f_key_value(k,tosixteen(v))
             elseif tv == "table" then
                 local mv = getmetatable(v)
                 if mv and mv.__lpdftype then
@@ -328,8 +379,8 @@ tostring_a = function(t,contentonly,key)
                 r[k] = toeight(v)
             elseif tv == "number" then
                 r[k] = f_tonumber(v)
-            elseif tv == "unicode" then
-                r[k] = tosixteen(v)
+         -- elseif tv == "unicode" then
+         --     r[k] = tosixteen(v)
             elseif tv == "table" then
                 local mv = getmetatable(v)
                 local mt = mv and mv.__lpdftype
@@ -358,15 +409,16 @@ tostring_a = function(t,contentonly,key)
     end
 end
 
-local tostring_x = function(t) return concat(t," ")    end
-local tostring_s = function(t) return toeight(t[1])    end
-local tostring_u = function(t) return tosixteen(t[1])  end
-local tostring_n = function(t) return tostring(t[1])   end -- tostring not needed
-local tostring_n = function(t) return f_tonumber(t[1]) end -- tostring not needed
-local tostring_c = function(t) return t[1]             end -- already prefixed (hashed)
-local tostring_z = function()  return "null"           end
-local tostring_t = function()  return "true"           end
-local tostring_f = function()  return "false"          end
+local tostring_x = function(t) return concat(t," ")       end
+local tostring_s = function(t) return toeight(t[1])       end
+local tostring_p = function(t) return topdfdoc(t[1],t[2]) end
+local tostring_u = function(t) return tosixteen(t[1])     end
+local tostring_n = function(t) return tostring(t[1])      end -- tostring not needed
+local tostring_n = function(t) return f_tonumber(t[1])    end -- tostring not needed
+local tostring_c = function(t) return t[1]                end -- already prefixed (hashed)
+local tostring_z = function()  return "null"              end
+local tostring_t = function()  return "true"              end
+local tostring_f = function()  return "false"             end
 local tostring_r = function(t) local n = t[1] return n and n > 0 and (n .. " 0 R") or "NULL" end
 
 local tostring_v = function(t)
@@ -378,18 +430,19 @@ local tostring_v = function(t)
     end
 end
 
-local function value_x(t)     return t                  end -- the call is experimental
-local function value_s(t,key) return t[1]               end -- the call is experimental
-local function value_u(t,key) return t[1]               end -- the call is experimental
-local function value_n(t,key) return t[1]               end -- the call is experimental
-local function value_c(t)     return sub(t[1],2)        end -- the call is experimental
-local function value_d(t)     return tostring_d(t,true) end -- the call is experimental
-local function value_a(t)     return tostring_a(t,true) end -- the call is experimental
-local function value_z()      return nil                end -- the call is experimental
-local function value_t(t)     return t.value or true    end -- the call is experimental
-local function value_f(t)     return t.value or false   end -- the call is experimental
-local function value_r()      return t[1] or 0          end -- the call is experimental -- NULL
-local function value_v()      return t[1]               end -- the call is experimental
+local function value_x(t) return t                  end
+local function value_s(t) return t[1]               end
+local function value_p(t) return t[1]               end
+local function value_u(t) return t[1]               end
+local function value_n(t) return t[1]               end
+local function value_c(t) return sub(t[1],2)        end
+local function value_d(t) return tostring_d(t,true) end
+local function value_a(t) return tostring_a(t,true) end
+local function value_z()  return nil                end
+local function value_t(t) return t.value or true    end
+local function value_f(t) return t.value or false   end
+local function value_r()  return t[1] or 0          end -- NULL
+local function value_v()  return t[1]               end
 
 local function add_x(t,k,v) rawset(t,k,tostring(v)) end
 
@@ -398,6 +451,7 @@ local mt_d = { __lpdftype = "dictionary", __tostring = tostring_d, __call = valu
 local mt_a = { __lpdftype = "array",      __tostring = tostring_a, __call = value_a }
 local mt_u = { __lpdftype = "unicode",    __tostring = tostring_u, __call = value_u }
 local mt_s = { __lpdftype = "string",     __tostring = tostring_s, __call = value_s }
+local mt_p = { __lpdftype = "docstring",  __tostring = tostring_p, __call = value_p }
 local mt_n = { __lpdftype = "number",     __tostring = tostring_n, __call = value_n }
 local mt_c = { __lpdftype = "constant",   __tostring = tostring_c, __call = value_c }
 local mt_z = { __lpdftype = "null",       __tostring = tostring_z, __call = value_z }
@@ -431,8 +485,12 @@ local function pdfstring(str,default)
     return setmetatable({ str or default or "" },mt_s)
 end
 
+local function pdfdocstring(str,default,defaultchar)
+    return setmetatable({ str or default or "", defaultchar or " " },mt_p)
+end
+
 local function pdfunicode(str,default)
-    return setmetatable({ str or default or "" },mt_u)
+    return setmetatable({ str or default or "" },mt_u) -- could be a string
 end
 
 local cache = { } -- can be weak
@@ -516,6 +574,7 @@ end
 lpdf.stream      = pdfstream -- THIS WILL PROBABLY CHANGE
 lpdf.dictionary  = pdfdictionary
 lpdf.array       = pdfarray
+lpdf.docstring   = pdfdocstring
 lpdf.string      = pdfstring
 lpdf.unicode     = pdfunicode
 lpdf.number      = pdfnumber
@@ -778,145 +837,147 @@ end
 
 callbacks.register("finish_pdffile", lpdf.finalizedocument)
 
--- some minimal tracing, handy for checking the order
 
-local function trace_set(what,key)
-    if trace_resources then
-        report_finalizing("setting key %a in %a",key,what)
+do
+
+    -- some minimal tracing, handy for checking the order
+
+    local function trace_set(what,key)
+        if trace_resources then
+            report_finalizing("setting key %a in %a",key,what)
+        end
     end
-end
-local function trace_flush(what)
-    if trace_resources then
-        report_finalizing("flushing %a",what)
+
+    local function trace_flush(what)
+        if trace_resources then
+            report_finalizing("flushing %a",what)
+        end
     end
-end
 
-lpdf.protectresources = true
+    lpdf.protectresources = true
 
-local catalog = pdfdictionary { Type = pdfconstant("Catalog") } -- nicer, but when we assign we nil the Type
-local info    = pdfdictionary { Type = pdfconstant("Info")    } -- nicer, but when we assign we nil the Type
------ names   = pdfdictionary { Type = pdfconstant("Names")   } -- nicer, but when we assign we nil the Type
+    local catalog = pdfdictionary { Type = pdfconstant("Catalog") } -- nicer, but when we assign we nil the Type
+    local info    = pdfdictionary { Type = pdfconstant("Info")    } -- nicer, but when we assign we nil the Type
+    ----- names   = pdfdictionary { Type = pdfconstant("Names")   } -- nicer, but when we assign we nil the Type
 
-local function flushcatalog()
-    if not environment.initex then
-        trace_flush("catalog")
-        catalog.Type = nil
-        pdfsetcatalog(catalog())
+    local function flushcatalog()
+        if not environment.initex then
+            trace_flush("catalog")
+            catalog.Type = nil
+            pdfsetcatalog(catalog())
+        end
     end
-end
 
-local function flushinfo()
-    if not environment.initex then
-        trace_flush("info")
-        info.Type = nil
-        pdfsetinfo(info())
+    local function flushinfo()
+        if not environment.initex then
+            trace_flush("info")
+            info.Type = nil
+            pdfsetinfo(info())
+        end
     end
-end
 
--- local function flushnames()
---     if not environment.initex then
---         trace_flush("names")
---         names.Type = nil
---         pdfsetnames(names())
---     end
--- end
+    -- local function flushnames()
+    --     if not environment.initex then
+    --         trace_flush("names")
+    --         names.Type = nil
+    --         pdfsetnames(names())
+    --     end
+    -- end
 
-function lpdf.addtocatalog(k,v)
-    if not (lpdf.protectresources and catalog[k]) then
-        trace_set("catalog",k)
-        catalog[k] = v
+    function lpdf.addtocatalog(k,v)
+        if not (lpdf.protectresources and catalog[k]) then
+            trace_set("catalog",k)
+            catalog[k] = v
+        end
     end
-end
 
-function lpdf.addtoinfo(k,v)
-    if not (lpdf.protectresources and info[k]) then
-        trace_set("info",k)
-        info[k] = v
+    function lpdf.addtoinfo(k,v)
+        if not (lpdf.protectresources and info[k]) then
+            trace_set("info",k)
+            info[k] = v
+        end
     end
-end
 
--- local function lpdf.addtonames(k,v)
---     if not (lpdf.protectresources and names[k]) then
---         trace_set("names",k)
---         names[k] = v
---     end
--- end
+    -- local function lpdf.addtonames(k,v)
+    --     if not (lpdf.protectresources and names[k]) then
+    --         trace_set("names",k)
+    --         names[k] = v
+    --     end
+    -- end
 
-local names = pdfdictionary {
- -- Type = pdfconstant("Names")
-}
+    local names = pdfdictionary {
+     -- Type = pdfconstant("Names")
+    }
 
-local function flushnames()
-    if next(names) and not environment.initex then
-        names.Type = pdfconstant("Names")
-        trace_flush("names")
-        lpdf.addtocatalog("Names",pdfreference(pdfimmediateobject(tostring(names))))
+    local function flushnames()
+        if next(names) and not environment.initex then
+            names.Type = pdfconstant("Names")
+            trace_flush("names")
+            lpdf.addtocatalog("Names",pdfreference(pdfimmediateobject(tostring(names))))
+        end
     end
-end
 
-function lpdf.addtonames(k,v)
-    if not (lpdf.protectresources and names  [k]) then
-        trace_set("names",  k)
-        names  [k] = v
+    function lpdf.addtonames(k,v)
+        if not (lpdf.protectresources and names[k]) then
+            trace_set("names",  k)
+            names  [k] = v
+        end
     end
-end
 
-local dummy = pdfreserveobject() -- else bug in hvmd due so some internal luatex conflict
+    local r_extgstates,  d_extgstates  = pdfreserveobject(), pdfdictionary()  local p_extgstates  = pdfreference(r_extgstates)
+    local r_colorspaces, d_colorspaces = pdfreserveobject(), pdfdictionary()  local p_colorspaces = pdfreference(r_colorspaces)
+    local r_patterns,    d_patterns    = pdfreserveobject(), pdfdictionary()  local p_patterns    = pdfreference(r_patterns)
+    local r_shades,      d_shades      = pdfreserveobject(), pdfdictionary()  local p_shades      = pdfreference(r_shades)
 
--- Some day I will implement a proper minimalized resource management.
+    local function checkextgstates () if next(d_extgstates ) then addtopageresources("ExtGState", p_extgstates ) end end
+    local function checkcolorspaces() if next(d_colorspaces) then addtopageresources("ColorSpace",p_colorspaces) end end
+    local function checkpatterns   () if next(d_patterns   ) then addtopageresources("Pattern",   p_patterns   ) end end
+    local function checkshades     () if next(d_shades     ) then addtopageresources("Shading",   p_shades     ) end end
 
-local r_extgstates,  d_extgstates  = pdfreserveobject(), pdfdictionary()  local p_extgstates  = pdfreference(r_extgstates)
-local r_colorspaces, d_colorspaces = pdfreserveobject(), pdfdictionary()  local p_colorspaces = pdfreference(r_colorspaces)
-local r_patterns,    d_patterns    = pdfreserveobject(), pdfdictionary()  local p_patterns    = pdfreference(r_patterns)
-local r_shades,      d_shades      = pdfreserveobject(), pdfdictionary()  local p_shades      = pdfreference(r_shades)
+    local function flushextgstates () if next(d_extgstates ) then trace_flush("extgstates")  pdfimmediateobject(r_extgstates, tostring(d_extgstates )) end end
+    local function flushcolorspaces() if next(d_colorspaces) then trace_flush("colorspaces") pdfimmediateobject(r_colorspaces,tostring(d_colorspaces)) end end
+    local function flushpatterns   () if next(d_patterns   ) then trace_flush("patterns")    pdfimmediateobject(r_patterns,   tostring(d_patterns   )) end end
+    local function flushshades     () if next(d_shades     ) then trace_flush("shades")      pdfimmediateobject(r_shades,     tostring(d_shades     )) end end
 
-local function checkextgstates () if next(d_extgstates ) then addtopageresources("ExtGState", p_extgstates ) end end
-local function checkcolorspaces() if next(d_colorspaces) then addtopageresources("ColorSpace",p_colorspaces) end end
-local function checkpatterns   () if next(d_patterns   ) then addtopageresources("Pattern",   p_patterns   ) end end
-local function checkshades     () if next(d_shades     ) then addtopageresources("Shading",   p_shades     ) end end
-
-local function flushextgstates () if next(d_extgstates ) then trace_flush("extgstates")  pdfimmediateobject(r_extgstates, tostring(d_extgstates )) end end
-local function flushcolorspaces() if next(d_colorspaces) then trace_flush("colorspaces") pdfimmediateobject(r_colorspaces,tostring(d_colorspaces)) end end
-local function flushpatterns   () if next(d_patterns   ) then trace_flush("patterns")    pdfimmediateobject(r_patterns,   tostring(d_patterns   )) end end
-local function flushshades     () if next(d_shades     ) then trace_flush("shades")      pdfimmediateobject(r_shades,     tostring(d_shades     )) end end
-
-function lpdf.collectedresources()
-    local ExtGState  = next(d_extgstates ) and p_extgstates
-    local ColorSpace = next(d_colorspaces) and p_colorspaces
-    local Pattern    = next(d_patterns   ) and p_patterns
-    local Shading    = next(d_shades     ) and p_shades
-    if ExtGState or ColorSpace or Pattern or Shading then
-        local collected = pdfdictionary {
-            ExtGState  = ExtGState,
-            ColorSpace = ColorSpace,
-            Pattern    = Pattern,
-            Shading    = Shading,
-         -- ProcSet    = pdfarray { pdfconstant("PDF") },
-        }
-        return collected()
-    else
-        return ""
+    function lpdf.collectedresources()
+        local ExtGState  = next(d_extgstates ) and p_extgstates
+        local ColorSpace = next(d_colorspaces) and p_colorspaces
+        local Pattern    = next(d_patterns   ) and p_patterns
+        local Shading    = next(d_shades     ) and p_shades
+        if ExtGState or ColorSpace or Pattern or Shading then
+            local collected = pdfdictionary {
+                ExtGState  = ExtGState,
+                ColorSpace = ColorSpace,
+                Pattern    = Pattern,
+                Shading    = Shading,
+             -- ProcSet    = pdfarray { pdfconstant("PDF") },
+            }
+            return collected()
+        else
+            return ""
+        end
     end
+
+    function lpdf.adddocumentextgstate (k,v) d_extgstates [k] = v end
+    function lpdf.adddocumentcolorspace(k,v) d_colorspaces[k] = v end
+    function lpdf.adddocumentpattern   (k,v) d_patterns   [k] = v end
+    function lpdf.adddocumentshade     (k,v) d_shades     [k] = v end
+
+    registerdocumentfinalizer(flushextgstates,3,"extended graphic states")
+    registerdocumentfinalizer(flushcolorspaces,3,"color spaces")
+    registerdocumentfinalizer(flushpatterns,3,"patterns")
+    registerdocumentfinalizer(flushshades,3,"shades")
+
+    registerdocumentfinalizer(flushnames,3,"names") -- before catalog
+    registerdocumentfinalizer(flushcatalog,3,"catalog")
+    registerdocumentfinalizer(flushinfo,3,"info")
+
+    registerpagefinalizer(checkextgstates,3,"extended graphic states")
+    registerpagefinalizer(checkcolorspaces,3,"color spaces")
+    registerpagefinalizer(checkpatterns,3,"patterns")
+    registerpagefinalizer(checkshades,3,"shades")
+
 end
-
-function lpdf.adddocumentextgstate (k,v) d_extgstates [k] = v end
-function lpdf.adddocumentcolorspace(k,v) d_colorspaces[k] = v end
-function lpdf.adddocumentpattern   (k,v) d_patterns   [k] = v end
-function lpdf.adddocumentshade     (k,v) d_shades     [k] = v end
-
-registerdocumentfinalizer(flushextgstates,3,"extended graphic states")
-registerdocumentfinalizer(flushcolorspaces,3,"color spaces")
-registerdocumentfinalizer(flushpatterns,3,"patterns")
-registerdocumentfinalizer(flushshades,3,"shades")
-
-registerdocumentfinalizer(flushnames,3,"names") -- before catalog
-registerdocumentfinalizer(flushcatalog,3,"catalog")
-registerdocumentfinalizer(flushinfo,3,"info")
-
-registerpagefinalizer(checkextgstates,3,"extended graphic states")
-registerpagefinalizer(checkcolorspaces,3,"color spaces")
-registerpagefinalizer(checkpatterns,3,"patterns")
-registerpagefinalizer(checkshades,3,"shades")
 
 -- in strc-bkm: lpdf.registerdocumentfinalizer(function() structures.bookmarks.place() end,1)
 
@@ -927,19 +988,23 @@ end
 
 -- ! -> universaltime
 
-local timestamp = os.date("%Y-%m-%dT%X") .. os.timezone(true)
+do
 
-function lpdf.timestamp()
-    return timestamp
-end
+    local timestamp = os.date("%Y-%m-%dT%X") .. os.timezone(true)
 
-function lpdf.pdftimestamp(str)
-    local Y, M, D, h, m, s, Zs, Zh, Zm = match(str,"^(%d%d%d%d)%-(%d%d)%-(%d%d)T(%d%d):(%d%d):(%d%d)([%+%-])(%d%d):(%d%d)$")
-    return Y and format("D:%s%s%s%s%s%s%s%s'%s'",Y,M,D,h,m,s,Zs,Zh,Zm)
-end
+    function lpdf.timestamp()
+        return timestamp
+    end
 
-function lpdf.id()
-    return format("%s.%s",tex.jobname,timestamp)
+    function lpdf.pdftimestamp(str)
+        local Y, M, D, h, m, s, Zs, Zh, Zm = match(str,"^(%d%d%d%d)%-(%d%d)%-(%d%d)T(%d%d):(%d%d):(%d%d)([%+%-])(%d%d):(%d%d)$")
+        return Y and format("D:%s%s%s%s%s%s%s%s'%s'",Y,M,D,h,m,s,Zs,Zh,Zm)
+    end
+
+    function lpdf.id()
+        return format("%s.%s",tex.jobname,timestamp)
+    end
+
 end
 
 -- return nil is nicer in test prints
@@ -1082,25 +1147,29 @@ end
 
 -- return formatters["BT /Span << /ActualText (CONTEXT) >> BDC [<feff>] TJ % t EMC ET"](code)
 
-local f_actual_text_one = formatters["BT /Span << /ActualText <feff%04x> >> BDC [<feff>] TJ %s EMC ET"]
-local f_actual_text_two = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC [<feff>] TJ %s EMC ET"]
-local f_actual_text     = formatters["/Span <</ActualText %s >> BDC"]
+do
 
-local context           = context
-local pdfdirect         = nodes.pool.pdfdirect
+    local f_actual_text_one = formatters["BT /Span << /ActualText <feff%04x> >> BDC [<feff>] TJ %s EMC ET"]
+    local f_actual_text_two = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC [<feff>] TJ %s EMC ET"]
+    local f_actual_text     = formatters["/Span <</ActualText %s >> BDC"]
 
-function codeinjections.unicodetoactualtext(unicode,pdfcode)
-    if unicode < 0x10000 then
-        return f_actual_text_one(unicode,pdfcode)
-    else
-        return f_actual_text_two(unicode/1024+0xD800,unicode%1024+0xDC00,pdfcode)
+    local context           = context
+    local pdfdirect         = nodes.pool.pdfdirect
+
+    function codeinjections.unicodetoactualtext(unicode,pdfcode)
+        if unicode < 0x10000 then
+            return f_actual_text_one(unicode,pdfcode)
+        else
+            return f_actual_text_two(unicode/1024+0xD800,unicode%1024+0xDC00,pdfcode)
+        end
     end
-end
 
-function commands.startactualtext(str)
-    context(pdfdirect(f_actual_text(tosixteen(str))))
-end
+    function commands.startactualtext(str)
+        context(pdfdirect(f_actual_text(tosixteen(str))))
+    end
 
-function commands.stopactualtext()
-    context(pdfdirect("EMC"))
+    function commands.stopactualtext()
+        context(pdfdirect("EMC"))
+    end
+
 end

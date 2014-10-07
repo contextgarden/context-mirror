@@ -6,12 +6,13 @@ if not modules then modules = { } end modules ['font-map'] = {
     license   = "see context related readme files"
 }
 
-local tonumber = tonumber
+local tonumber, next, type = tonumber, next, type
 
 local match, format, find, concat, gsub, lower = string.match, string.format, string.find, table.concat, string.gsub, string.lower
 local P, R, S, C, Ct, Cc, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.match
 local utfbyte = utf.byte
 local floor = math.floor
+local formatters = string.formatters
 
 local trace_loading = false  trackers.register("fonts.loading", function(v) trace_loading    = v end)
 local trace_mapping = false  trackers.register("fonts.mapping", function(v) trace_unimapping = v end)
@@ -66,11 +67,14 @@ local function makenameparser(str)
     end
 end
 
+local f_single = formatters["%04X"]
+local f_double = formatters["%04X%04X"]
+
 local function tounicode16(unicode,name)
     if unicode < 0x10000 then
-        return format("%04X",unicode)
+        return f_single(unicode)
     elseif unicode < 0x1FFFFFFFFF then
-        return format("%04X%04X",floor(unicode/1024),unicode%1024+0xDC00)
+        return f_double(floor(unicode/1024),unicode%1024+0xDC00)
     else
         report_fonts("can't convert %a in %a into tounicode",unicode,name)
     end
@@ -79,17 +83,45 @@ end
 local function tounicode16sequence(unicodes,name)
     local t = { }
     for l=1,#unicodes do
-        local unicode = unicodes[l]
-        if unicode < 0x10000 then
-            t[l] = format("%04X",unicode)
+        local u = unicodes[l]
+        if u < 0x10000 then
+            t[l] = f_single(u)
         elseif unicode < 0x1FFFFFFFFF then
-            t[l] = format("%04X%04X",floor(unicode/1024),unicode%1024+0xDC00)
+            t[l] = f_double(floor(u/1024),u%1024+0xDC00)
         else
-            report_fonts ("can't convert %a in %a into tounicode",unicode,name)
+            report_fonts ("can't convert %a in %a into tounicode",u,name)
+            return
         end
     end
     return concat(t)
 end
+
+local function tounicode(unicode,name)
+    if type(unicode) == "table" then
+        local t = { }
+        for l=1,#unicode do
+            local u = unicode[l]
+            if u < 0x10000 then
+                t[l] = f_single(u)
+            elseif u < 0x1FFFFFFFFF then
+                t[l] = f_double(floor(u/1024),u%1024+0xDC00)
+            else
+                report_fonts ("can't convert %a in %a into tounicode",u,name)
+                return
+            end
+        end
+        return concat(t)
+    else
+        if unicode < 0x10000 then
+            return f_single(unicode)
+        elseif unicode < 0x1FFFFFFFFF then
+            return f_double(floor(unicode/1024),unicode%1024+0xDC00)
+        else
+            report_fonts("can't convert %a in %a into tounicode",unicode,name)
+        end
+    end
+end
+
 
 local function fromunicode16(str)
     if #str == 4 then
@@ -136,6 +168,7 @@ end
 
 mappings.loadlumtable        = loadlumtable
 mappings.makenameparser      = makenameparser
+mappings.tounicode           = tounicode
 mappings.tounicode16         = tounicode16
 mappings.tounicode16sequence = tounicode16sequence
 mappings.fromunicode16       = fromunicode16
@@ -158,6 +191,36 @@ local namesplitter = Ct(C((1 - ligseparator - varseparator)^1) * (ligseparator *
 -- test("such_so_more")
 -- test("such_so_more.that")
 
+-- to be completed .. for fonts that use unicodes for ligatures which
+-- is a actually a bad thing and should be avoided in the first place
+
+local overloads = {
+    IJ  = { name = "I_J",   unicode = { 0x49, 0x4A },       mess = 0x0132 },
+    ij  = { name = "i_j",   unicode = { 0x69, 0x6A },       mess = 0x0133 },
+    ff  = { name = "f_f",   unicode = { 0x66, 0x66 },       mess = 0xFB00 },
+    fi  = { name = "f_i",   unicode = { 0x66, 0x69 },       mess = 0xFB01 },
+    fl  = { name = "f_l",   unicode = { 0x66, 0x6C },       mess = 0xFB02 },
+    ffi = { name = "f_f_i", unicode = { 0x66, 0x66, 0x69 }, mess = 0xFB03 },
+    ffl = { name = "f_f_l", unicode = { 0x66, 0x66, 0x6C }, mess = 0xFB04 },
+    fj  = { name = "f_j",   unicode = { 0x66, 0x6A } },
+    fk  = { name = "f_k",   unicode = { 0x66, 0x6B } },
+}
+
+require("char-ini")
+
+for k, v in next, overloads do
+    local name = v.name
+    local mess = v.mess
+    if name then
+        overloads[name] = v
+    end
+    if mess then
+        overloads[mess] = v
+    end
+end
+
+mappings.overloads = overloads
+
 function mappings.addtounicode(data,filename)
     local resources    = data.resources
     local properties   = data.properties
@@ -168,26 +231,16 @@ function mappings.addtounicode(data,filename)
         return
     end
     -- we need to move this code
-    unicodes['space']  = unicodes['space']  or 32
-    unicodes['hyphen'] = unicodes['hyphen'] or 45
-    unicodes['zwj']    = unicodes['zwj']    or 0x200D
-    unicodes['zwnj']   = unicodes['zwnj']   or 0x200C
-    -- the tounicode mapping is sparse and only needed for alternatives
+    unicodes['space']   = unicodes['space']  or 32
+    unicodes['hyphen']  = unicodes['hyphen'] or 45
+    unicodes['zwj']     = unicodes['zwj']    or 0x200D
+    unicodes['zwnj']    = unicodes['zwnj']   or 0x200C
     local private       = fonts.constructors.privateoffset
-    local unknown       = format("%04X",utfbyte("?"))
     local unicodevector = fonts.encodings.agl.unicodes -- loaded runtime in context
     ----- namevector    = fonts.encodings.agl.names    -- loaded runtime in context
-    local tounicode     = { }
-    local originals     = { }
     local missing       = { }
-    resources.tounicode = tounicode
-    resources.originals = originals
     local lumunic, uparser, oparser
     local cidinfo, cidnames, cidcodes, usedmap
-    if false then -- will become an option
-        lumunic = loadlumtable(filename)
-        lumunic = lumunic and lumunic.tounicode
-    end
     --
     cidinfo = properties.cidinfo
     usedmap = cidinfo and fonts.cid.getmap(cidinfo)
@@ -202,12 +255,16 @@ function mappings.addtounicode(data,filename)
     for unic, glyph in next, descriptions do
         local index = glyph.index
         local name  = glyph.name
-        if unic == -1 or unic >= private or (unic >= 0xE000 and unic <= 0xF8FF) or unic == 0xFFFE or unic == 0xFFFF then
+        local r = overloads[name]
+        if r then
+            -- get rid of weird ligatures
+         -- glyph.name    = r.name
+            glyph.unicode = r.unicode
+        elseif unic == -1 or unic >= private or (unic >= 0xE000 and unic <= 0xF8FF) or unic == 0xFFFE or unic == 0xFFFF then
             local unicode = lumunic and lumunic[name] or unicodevector[name]
             if unicode then
-                originals[index] = unicode
-                tounicode[index] = tounicode16(unicode,name)
-                ns               = ns + 1
+                glyph.unicode = unicode
+                ns            = ns + 1
             end
             -- cidmap heuristics, beware, there is no guarantee for a match unless
             -- the chain resolves
@@ -216,9 +273,8 @@ function mappings.addtounicode(data,filename)
                 if foundindex then
                     unicode = cidcodes[foundindex] -- name to number
                     if unicode then
-                        originals[index] = unicode
-                        tounicode[index] = tounicode16(unicode,name)
-                        ns               = ns + 1
+                        glyph.unicode = unicode
+                        ns            = ns + 1
                     else
                         local reference = cidnames[foundindex] -- number to name
                         if reference then
@@ -226,23 +282,20 @@ function mappings.addtounicode(data,filename)
                             if foundindex then
                                 unicode = cidcodes[foundindex]
                                 if unicode then
-                                    originals[index] = unicode
-                                    tounicode[index] = tounicode16(unicode,name)
-                                    ns               = ns + 1
+                                    glyph.unicode = unicode
+                                    ns            = ns + 1
                                 end
                             end
                             if not unicode or unicode == "" then
                                 local foundcodes, multiple = lpegmatch(uparser,reference)
                                 if foundcodes then
-                                    originals[index] = foundcodes
+                                    glyph.unicode = foundcodes
                                     if multiple then
-                                        tounicode[index] = tounicode16sequence(foundcodes)
-                                        nl               = nl + 1
-                                        unicode          = true
+                                        nl      = nl + 1
+                                        unicode = true
                                     else
-                                        tounicode[index] = tounicode16(foundcodes,name)
-                                        ns               = ns + 1
-                                        unicode          = foundcodes
+                                        ns      = ns + 1
+                                        unicode = foundcodes
                                     end
                                 end
                             end
@@ -289,11 +342,9 @@ function mappings.addtounicode(data,filename)
                 if n == 0 then -- done then
                     -- nothing
                 elseif n == 1 then
-                    originals[index] = t[1]
-                    tounicode[index] = tounicode16(t[1],name)
+                    glyph.unicode = t[1]
                 else
-                    originals[index] = t
-                    tounicode[index] = tounicode16sequence(t)
+                    glyph.unicode = t
                 end
                 nl = nl + 1
             end
@@ -301,32 +352,29 @@ function mappings.addtounicode(data,filename)
             if not unicode or unicode == "" then
                 local foundcodes, multiple = lpegmatch(uparser,name)
                 if foundcodes then
+                    glyph.unicode = foundcodes
                     if multiple then
-                        originals[index] = foundcodes
-                        tounicode[index] = tounicode16sequence(foundcodes,name)
-                        nl               = nl + 1
-                        unicode          = true
+                        nl      = nl + 1
+                        unicode = true
                     else
-                        originals[index] = foundcodes
-                        tounicode[index] = tounicode16(foundcodes,name)
-                        ns               = ns + 1
-                        unicode          = foundcodes
+                        ns      = ns + 1
+                        unicode = foundcodes
                     end
                 end
             end
             -- check using substitutes and alternates
+            local r = overloads[unicode]
+            if r then
+                unicode = r.unicode
+                glyph.unicode = unicode
+            end
             --
             if not unicode then
                 missing[name] = true
             end
-         -- if not unicode then
-         --     originals[index] = 0xFFFD
-         --     tounicode[index] = "FFFD"
-         -- end
         end
     end
     if next(missing) then
---         inspect(missing)
         local guess  = { }
         -- helper
         local function check(gname,code,unicode)
@@ -344,12 +392,15 @@ function mappings.addtounicode(data,filename)
                 return
             end
             -- the variant already has a tounicode
-            local index = descriptions[code].index
-            if tounicode[index] then
+            if descriptions[code].unicode then
                 return
             end
             -- add to the list
             local g = guess[variant]
+         -- local r = overloads[unicode]
+         -- if r then
+         --     unicode = r.unicode
+         -- end
             if g then
                 g[gname] = unicode
             else
@@ -413,52 +464,51 @@ function mappings.addtounicode(data,filename)
                 end
             end
         end
-        -- generate tounicodes
+        -- wrap up
+        local orphans = 0
+        local guessed = 0
         for k, v in next, guess do
             if type(v) == "number" then
-                guess[k] = tounicode16(v)
+                descriptions[unicodes[k]].unicode = descriptions[v].unicode or v -- can also be a table
+                guessed = guessed + 1
             else
                 local t = nil
                 local l = lower(k)
                 local u = unicodes[l]
                 if not u then
-                    -- forget about it
+                    orphans = orphans + 1
                 elseif u == -1 or u >= private or (u >= 0xE000 and u <= 0xF8FF) or u == 0xFFFE or u == 0xFFFF then
-                    t = tounicode[descriptions[u].index]
+                    local unicode = descriptions[u].unicode
+                    if unicode then
+                        descriptions[unicodes[k]].unicode = unicode
+                        guessed = guessed + 1
+                    else
+                        orphans = orphans + 1
+                    end
                 else
-                 -- t = u
-                end
-                if t then
-                    guess[k] = t
-                else
-                    guess[k] = "FFFD"
+                    orphans = orphans + 1
                 end
             end
         end
-        local orphans = 0
-        local guessed = 0
-        for k, v in next, guess do
-            tounicode[descriptions[unicodes[k]].index] = v
-            if v == "FFFD" then
-                orphans = orphans + 1
-                guess[k] = false
-            else
-                guessed = guessed + 1
-                guess[k] = true
-            end
-        end
-     -- resources.nounicode = guess -- only when we test things
         if trace_loading and orphans > 0 or guessed > 0 then
             report_fonts("%s glyphs with no related unicode, %s guessed, %s orphans",guessed+orphans,guessed,orphans)
         end
     end
     if trace_mapping then
         for unic, glyph in table.sortedhash(descriptions) do
-            local name  = glyph.name
-            local index = glyph.index
-            local toun  = tounicode[index]
-            if toun then
-                report_fonts("internal slot %U, name %a, unicode %U, tounicode %a",index,name,unic,toun)
+            local name    = glyph.name
+            local index   = glyph.index
+            local unicode = glyph.unicode
+            if unicode then
+                if type(unicode) == "table" then
+                    local unicodes = { }
+                    for i=1,#unicode do
+                        unicodes[i] = formatters("%U",unicode[i])
+                    end
+                    report_fonts("internal slot %U, name %a, unicode %U, tounicode % t",index,name,unic,unicodes)
+                else
+                    report_fonts("internal slot %U, name %a, unicode %U, tounicode %U",index,name,unic,unicode)
+                end
             else
                 report_fonts("internal slot %U, name %a, unicode %U",index,name,unic)
             end
