@@ -64,6 +64,8 @@ local glue_code           = nodecodes.glue
 local kern_code           = nodecodes.kern
 local math_code           = nodecodes.math
 
+local processnoads        = noads.process
+
 local a_tagged            = attributes.private('tagged')
 local a_taggedpar         = attributes.private('taggedpar')
 local a_exportstatus      = attributes.private('exportstatus')
@@ -143,6 +145,21 @@ local function getunicode(n) -- instead of getchar
     local data = fontcharacters[font][char]
     return data.unicode or char
 end
+
+-------------------
+
+local content = { }
+local found   = false
+
+content[math_char_code] = function() found = true end
+
+local function hascontent(head)
+    found = false
+    processnoads(head,content,"content")
+    return found
+end
+
+--------------------
 
 process = function(start) -- we cannot use the processor as we have no finalizers (yet)
     local mtexttag = nil
@@ -423,7 +440,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     process(left) -- root symbol, ignored
                     stop_tagged()
                 end
-                if degree then -- not good enough, can be empty mlist
+                if degree and hascontent(degree) then
                     setattr(start,a_tagged,start_tagged("mroot"))
                     processsubsup(start)
                     process(degree)

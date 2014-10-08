@@ -265,7 +265,7 @@ local namespaces = {
     mstacker     = "m",
     mstackertop  = "m",
     mstackermid  = "m",
-    mstackernbot = "m",
+    mstackerbot  = "m",
 }
 
 setmetatableindex(namespaced, function(t,k)
@@ -1304,7 +1304,7 @@ do
                         local data = di.data
                         local size = #data
                         if size == 1 then
-                            -- else firefox complains
+                            -- else firefox complains ... code in math-tag (for pdf tagging)
                             di.element = "msqrt"
                         elseif size == 2 then
                             data[1], data[2] = data[2], data[1]
@@ -1553,13 +1553,6 @@ do
     end
 
     extras.msup = extras.msub
-
---     function extras.mroot(result,element,detail,n,fulltag,di)
---         local data = di.data
---         if size == #data then
---             data[1], data[2] = data[2], data[1]
---         end
---     end
 
 end
 
