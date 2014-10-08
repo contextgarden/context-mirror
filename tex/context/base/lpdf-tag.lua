@@ -191,14 +191,18 @@ local function makeattribute(t)
     end
 end
 
-local function makeelement(fulltag,parent)
+local function makeelement(fulltag,parent,attr)
     local tag, n = lpegmatch(dashsplitter,fulltag)
-    if tag == "ignore" then
-        return false
---     elseif tag == "mstackertop" or tag == "mstackerbot" or tag == "mstackermid"then
---         return true
-    end
     local tg, detail = lpegmatch(colonsplitter,tag)
+    if tg == "ignore" then
+        return false
+    elseif tg == "mstackertop" or tg == "mstackerbot" or tg == "mstackermid"then
+        return true
+    elseif tg == "mstacker" then
+print("get",fulltag)
+        local p = properties[fulltag]
+        tg = p and p.subtype or tg
+    end
     local k, r = pdfarray(), pdfreserveobject()
     local a = userproperties[fulltag]
     usedmapping[tg] = true
@@ -343,7 +347,7 @@ function nodeinjections.addtags(head)
         local noftags, tag = #tags, nil
         for j=1,noftags do
             local tag = tags[j]
-            local prv = elements[tag] or makeelement(tag,prev)
+            local prv = elements[tag] or makeelement(tag,prev,attr)
             if prv == false then
                 -- ignore this one
                 prev = false
