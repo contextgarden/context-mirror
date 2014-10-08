@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['math-tag'] = {
 -- use lpeg matchers
 
 local find, match = string.find, string.match
-local insert, remove = table.insert, table.remove
+local insert, remove, concat = table.insert, table.remove, table.concat
 
 local attributes          = attributes
 local nodes               = nodes
@@ -344,7 +344,8 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                                 remove(actionstack)
                             end
                         elseif tag == "mstacker" then -- or tag == "mstackertop" or tag == "mstackermid" or tag == "mstackerbot" then
-                            setattr(start,a_tagged,start_tagged(tag))
+                            -- looks like it gets processed twice
+                            setattr(start,a_tagged,restart_tagged(attr)) -- so we just reuse the attribute
                             process(list)
                             stop_tagged()
                         else

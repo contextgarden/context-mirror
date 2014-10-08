@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['back-exp'] = {
     license   = "see context related readme files"
 }
 
+-- Todo: share properties more with tagged pdf (or thge reverse)
+
 -- Because we run into the 200 local limit we quite some do .. end wrappers .. not always
 -- that nice but it has to be.
 
@@ -1261,6 +1263,7 @@ do
                         local t  = nil
                         local b  = nil
                         -- only accent when top / bot have stretch
+                        -- normally we flush [base under over] which is better for tagged pdf
                         if t1 == "mstackermid" then
                             m = accentchar(d1) -- or m
                             if t2 == "mstackertop" then
