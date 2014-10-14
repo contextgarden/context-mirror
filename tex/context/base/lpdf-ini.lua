@@ -430,7 +430,7 @@ local tostring_c = function(t) return t[1]                end -- already prefixe
 local tostring_z = function()  return "null"              end
 local tostring_t = function()  return "true"              end
 local tostring_f = function()  return "false"             end
-local tostring_r = function(t) local n = t[1] return n and n > 0 and (n .. " 0 R") or "NULL" end
+local tostring_r = function(t) local n = t[1] return n and n > 0 and (n .. " 0 R") or "null" end
 
 local tostring_v = function(t)
     local s = t[1]
@@ -452,7 +452,7 @@ local function value_a(t) return tostring_a(t,true) end
 local function value_z()  return nil                end
 local function value_t(t) return t.value or true    end
 local function value_f(t) return t.value or false   end
-local function value_r()  return t[1] or 0          end -- NULL
+local function value_r()  return t[1] or 0          end -- null
 local function value_v()  return t[1]               end
 
 local function add_x(t,k,v) rawset(t,k,tostring(v)) end

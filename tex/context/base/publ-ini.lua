@@ -1376,13 +1376,18 @@ function lists.prepareentries(dataset)
                 used[tag] = true -- beware we keep the old state (one can always use criterium=all)
             end
             local detail = details[tag]
-            local number = detail.number
-            if not number then
-                lastnumber    = lastnumber + 1
-                number        = lastnumber
-                detail.number = lastnumber
+            if detail then
+                local number = detail.number
+                if not number then
+                    lastnumber    = lastnumber + 1
+                    number        = lastnumber
+                    detail.number = lastnumber
+                end
+                li[3] = number
+            else
+                -- weird, this shouldn't happen
+                li[3] = 0
             end
-            li[3] = number
         end
     end
     rendering.list = type(sorter) == "function" and sorter(dataset,rendering,newlist,sorttype) or newlist
