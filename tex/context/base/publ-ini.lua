@@ -833,13 +833,6 @@ function commands.btxflush(name,tag,field)
             local manipulator, field = splitmanipulation(field)
             local value = fields[field]
             if type(value) == "string" then
---                 local suffixes = dataset.suffixes[tag]
---                 if suffixes then
---                     local suffix = suffixes[field]
---                     if suffix then
---                         value = value .. converters.characters(suffix)
---                     end
---                 end
                 context(manipulator and applymanipulation(manipulator,value) or value)
                 return
             end
@@ -847,13 +840,6 @@ function commands.btxflush(name,tag,field)
             if details then
                 local value = details[field]
                 if type(value) == "string" then
---                     local suffixes = dataset.suffixes[tag]
---                     if suffixes then
---                         local suffix = suffixes[field]
---                         if suffix then
---                             value = value .. converters.characters(suffix)
---                         end
---                     end
                     context(manipulator and applymanipulation(manipulator,value) or value)
                     return
                 end
@@ -875,13 +861,6 @@ function commands.btxdetail(name,tag,field)
             local manipulator, field = splitmanipulation(field)
             local value = details[field]
             if type(value) == "string" then
---                 local suffixes = dataset.suffixes[tag]
---                 if suffixes then
---                     local suffix = suffixes[field]
---                     if suffix then
---                         value = value .. converters.characters(suffix)
---                     end
---                 end
                 context(manipulator and applymanipulation(manipulator,value) or value)
             else
                 report("unknown detail %a of tag %a in dataset %a",field,tag,name)
