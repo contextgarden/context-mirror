@@ -105,6 +105,20 @@
 
 \def\inlineordisplaymath{\ifconditional\indisplaymath\expandafter\secondoftwoarguments\else\expandafter\firstoftwoarguments\fi}
 
+\unexpanded\def\forcedisplaymath
+  {\ifmmode
+     \displaystyle
+     \settrue\indisplaymath
+   \fi}
+
+\unexpanded\def\startforceddisplaymath
+  {\startimath
+   \displaystyle
+   \settrue\indisplaymath}
+
+\unexpanded\def\stopforceddisplaymath
+  {\stopimath}
+
 % \unexpanded\def\rawmathcharacter#1% slow but only for tracing
 %   {\begingroup
 %    \ifmmode
@@ -1852,7 +1866,14 @@
 
 \ifdefined\text\else \let\text\hbox \fi
 
-\unexpanded\def\mathoptext#1{\mathop{\text{#1}}}
+% \unexpanded\def\mathoptext#1{\mathop{\text{#1}}}
+
+\unexpanded\def\mathoptext
+  {\normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
+  %\showmathstyle
+   \dowithnextbox
+     {\mathop{\box\nextbox}}%
+     \hbox\bgroup\font_basics_switchtobodyfont\m_math_text_choice_face\let\next}
 
 % new:
 
