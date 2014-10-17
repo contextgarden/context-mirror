@@ -1,3 +1,5 @@
+% macros=mkvi
+
 % makes sense (but rel vs op ...):
 
 % \unexpanded\def\stackrel#1#2{\mathematics{\mathop{\let\limits\relax\mover{#2}{#1}}}}
@@ -78,7 +80,9 @@
     \mexecuteifdefined\movercommand \relax {#1}
 \stoptexdefinition
 \starttexdefinition unexpanded movertext #1#2
-    \mathtriplet {#1} {#2} {}
+  % \mathtriplet {\mathstylehbox{#1}} {#2} {}
+    \mathtriplet {\mathematics{#1}} {#2} {}
+\stoptexdefinition
 \stoptexdefinition
 \starttexdefinition unexpanded moveraccentchecker #1#2
     \edef\movertoken{\tochar{#2}}
@@ -112,7 +116,8 @@
     \mexecuteifdefined\mundercommand \relax {#1}
 \stoptexdefinition
 \starttexdefinition unexpanded mundertext #1#2
-    \mathtriplet {#1} {} {#2}
+  % \mathtriplet {\mathstylehbox{#1}} {} {#2}
+    \mathtriplet {\mathematics{#1}} {} {#2}
 \stoptexdefinition
 \starttexdefinition unexpanded munderaccentchecker #1#2
     \edef\mundertoken{\tochar{#2}}
@@ -160,35 +165,35 @@
 
 \starttext
 
-$\mover{←}{test}$\par
-$\mover{\utfchar{"2190}}{test}$\par
-$\mover{e:leftarrow}{test}$\par
-$\mover{x:2190}{test}$\par
+% $\mover{←}{test}$\par
+% $\mover{\utfchar{"2190}}{test}$\par
+% $\mover{e:leftarrow}{test}$\par
+% $\mover{x:2190}{test}$\par
 
-$\mover{test}{⏞}$\par
-$\mover{test}{\utfchar{"23DE}}$\par
-$\mover{test}{e:overbrace}$\par
-$\mover{test}{x:23DE}$\par
-$\mover{test}{over}$\par
+% $\mover{test}{⏞}$\par
+% $\mover{test}{\utfchar{"23DE}}$\par
+% $\mover{test}{e:overbrace}$\par
+% $\mover{test}{x:23DE}$\par
+% $\mover{test}{over}$\par
 
 \mover{test}{⏞}\par
-\mover{test}{\utfchar{"23DE}}\par
-\mover{test}{e:overbrace}\par
-\mover{test}{x:23DE}\par
+% \mover{test}{\utfchar{"23DE}}\par
+% \mover{test}{e:overbrace}\par
+% \mover{test}{x:23DE}\par
 
-$\munder{←}{test}$\par
-$\munder{\utfchar{"2190}}{test}$\par
-$\munder{e:leftarrow}{test}$\par
-$\munder{x:2190}{test}$\par
+% $\munder{←}{test}$\par
+% $\munder{\utfchar{"2190}}{test}$\par
+% $\munder{e:leftarrow}{test}$\par
+% $\munder{x:2190}{test}$\par
 
-$\munder{test}{⏟}$\par
-$\munder{test}{\utfchar{"23DF}}$\par
-$\munder{test}{e:underbrace}$\par
-$\munder{test}{x:23DF}$\par
-$\munder{test}{under}$\par
+% $\munder{test}{⏟}$\par
+% $\munder{test}{\utfchar{"23DF}}$\par
+% $\munder{test}{e:underbrace}$\par
+% $\munder{test}{x:23DF}$\par
+% $\munder{test}{under}$\par
 
-\math{{\msup{x}{2}\mo{+}\mn{2}\mi{x}\mo{+}\mi{b}}}
+% \math{{\msup{x}{2}\mo{+}\mn{2}\mi{x}\mo{+}\mi{b}}}
 
-\mrow{\msup{x}{2}\mo{+}\mn{2}\mi{x}\mo{+}\mi{b}}
+% \mrow{\msup{x}{2}\mo{+}\mn{2}\mi{x}\mo{+}\mi{b}}
 
 \stoptext
