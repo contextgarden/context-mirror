@@ -40,6 +40,8 @@ local setmetatableindex = table.setmetatableindex
 
 local P, R, S, V, C, Cc, Cs, Ct, Carg, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Carg, lpeg.Cmt
 
+local p_whitespace      = lpegpatterns.whitespace
+
 local trace             = false  trackers.register("publications", function(v) trace = v end)
 local report            = logs.reporter("publications")
 
@@ -85,7 +87,7 @@ local defaultshortcuts = {
     dec = "12",
 }
 
-local space      = lpeg.patterns.whitespace^0
+local space      = p_whitespace^0
 local separator  = space * "+" * space
 local l_splitter = lpeg.tsplitat(separator)
 local d_splitter = lpeg.splitat (separator)
@@ -281,10 +283,19 @@ local function resolve(s,dataset)
     return dataset.shortcuts[s] or defaultshortcuts[s] or s -- can be number
 end
 
-local function showmessage(s)
-    local t = string.splitlines(utilities.strings.striplines(s))
-    for i=1,#t do
-        report("message: %s",t[i])
+local pattern = p_whitespace^0
+              * C(P("message") + P("warning") + P("error") + P("comment")) * p_whitespace^0 * P(":")
+              * p_whitespace^0
+              * C(P(1)^1)
+
+local function do_comment(s,dataset)
+    local how, what = lpegmatch(pattern,s)
+    if how and what then
+        local t = string.splitlines(utilities.strings.striplines(what))
+        local b = file.basename(dataset.fullname or dataset.name or "unset")
+        for i=1,#t do
+            report("%s > %s : %s",b,how,t[i])
+        end
     end
 end
 
@@ -303,7 +314,7 @@ local space      = S(" \t\n\r\f") -- / " "
 local spacing    = space^0
 local equal      = P("=")
 ----- collapsed  = (space^1)/ " "
-local collapsed  = (lpegpatterns.whitespace^1)/" "
+local collapsed  = (p_whitespace^1)/" "
 
 ----- balanced   = lpegpatterns.balanced
 
@@ -340,18 +351,11 @@ local spacing    = spacing * forget^0 * spacing
 local assignment = spacing * key * spacing * equal * spacing * value * spacing
 local definition = category * spacing * left * spacing * tag * spacing * comma * Ct((assignment * comma^0)^0) * spacing * right * Carg(1) / do_definition
 
--- local shortcut   = (P("string")  + P("STRING")  + P("String"))  * spacing * left * ((assignment * Carg(1))/do_shortcut * comma^0)^0  * spacing * right
--- local comment    = (P("comment") + P("COMMENT") + P("Comment")) * spacing * lpeg.patterns.nestedbraces
--- local message    = (P("message") + P("MESSAGE") + P("Message")) * spacing * lpeg.patterns.argument / showmessage
-
--- local bibtotable = (space + forget + P("@") * (shortcut + comment + message + definition) + 1)^0
-
 local crapword   = C((1-space-left)^1)
 local shortcut   = Cmt(crapword,function(_,p,s) return lower(s) == "string"  and p end) * spacing * left * ((assignment * Carg(1))/do_shortcut * comma^0)^0  * spacing * right
-local comment    = Cmt(crapword,function(_,p,s) return lower(s) == "comment" and p end) * spacing * lpeg.patterns.nestedbraces
-local message    = Cmt(crapword,function(_,p,s) return lower(s) == "message" and p end) * spacing * lpeg.patterns.argument / showmessage
+local comment    = Cmt(crapword,function(_,p,s) return lower(s) == "comment" and p end) * spacing * lpegpatterns.argument * Carg(1) / do_comment
 
-local casecrap   = #S("sScCmM") * (shortcut + comment + message)
+local casecrap   = #S("sScC") * (shortcut + comment)
 
 local bibtotable = (space + forget + P("@") * (casecrap + definition) + 1)^0
 
