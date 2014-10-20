@@ -38,7 +38,7 @@ local setmetatableindex = table.setmetatableindex
 
 -- todo: more allocate
 
-local P, R, S, V, C, Cc, Cs, Ct, Carg = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Carg
+local P, R, S, V, C, Cc, Cs, Ct, Carg, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Carg, lpeg.Cmt
 
 local trace             = false  trackers.register("publications", function(v) trace = v end)
 local report            = logs.reporter("publications")
@@ -281,6 +281,13 @@ local function resolve(s,dataset)
     return dataset.shortcuts[s] or defaultshortcuts[s] or s -- can be number
 end
 
+local function showmessage(s)
+    local t = string.splitlines(utilities.strings.striplines(s))
+    for i=1,#t do
+        report("message: %s",t[i])
+    end
+end
+
 local percent    = P("%")
 local start      = P("@")
 local comma      = P(",")
@@ -315,7 +322,7 @@ local keyword    = C((R("az","AZ","09") + S("@_:-"))^1)
 local key        = C((1-space-equal)^1)
 local tag        = C((1-space-comma)^1)
 local reference  = keyword
-local category   = P("@") * C((1-space-left)^1)
+local category   = C((1-space-left)^1)
 local s_quoted   = ((escape*single) + collapsed + (1-single))^0
 local d_quoted   = ((escape*double) + collapsed + (1-double))^0
 
@@ -331,14 +338,24 @@ local value      = Cs((somevalue * ((spacing * hash * spacing)/"" * somevalue)^0
 local forget     = percent^1 * (1-lineending)^0
 local spacing    = spacing * forget^0 * spacing
 local assignment = spacing * key * spacing * equal * spacing * value * spacing
-local shortcut   = P("@") * (P("string") + P("STRING") + P("String")) * spacing * left * ((assignment * Carg(1))/do_shortcut * comma^0)^0  * spacing * right
 local definition = category * spacing * left * spacing * tag * spacing * comma * Ct((assignment * comma^0)^0) * spacing * right * Carg(1) / do_definition
------ comment    = keyword * spacing * left * (1-right)^0 * spacing * right
-local comment    = P("@") * (P("comment") + P("COMMENT") + P("Comment")) * spacing * lpeg.patterns.nestedbraces
+
+-- local shortcut   = (P("string")  + P("STRING")  + P("String"))  * spacing * left * ((assignment * Carg(1))/do_shortcut * comma^0)^0  * spacing * right
+-- local comment    = (P("comment") + P("COMMENT") + P("Comment")) * spacing * lpeg.patterns.nestedbraces
+-- local message    = (P("message") + P("MESSAGE") + P("Message")) * spacing * lpeg.patterns.argument / showmessage
+
+-- local bibtotable = (space + forget + P("@") * (shortcut + comment + message + definition) + 1)^0
+
+local crapword   = C((1-space-left)^1)
+local shortcut   = Cmt(crapword,function(_,p,s) return lower(s) == "string"  and p end) * spacing * left * ((assignment * Carg(1))/do_shortcut * comma^0)^0  * spacing * right
+local comment    = Cmt(crapword,function(_,p,s) return lower(s) == "comment" and p end) * spacing * lpeg.patterns.nestedbraces
+local message    = Cmt(crapword,function(_,p,s) return lower(s) == "message" and p end) * spacing * lpeg.patterns.argument / showmessage
+
+local casecrap   = #S("sScCmM") * (shortcut + comment + message)
+
+local bibtotable = (space + forget + P("@") * (casecrap + definition) + 1)^0
 
 -- todo \%
-
-local bibtotable = (space + forget + shortcut + comment + definition + 1)^0
 
 -- loadbibdata  -> dataset.luadata
 -- loadtexdata  -> dataset.luadata
