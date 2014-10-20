@@ -1179,6 +1179,56 @@
 
 \let\btxhandlelisttextentry\btx_entry_inject
 
+%D Registers
+
+\def\btx_cite_reference_inject_indeed
+  {\btx_trace_list_cross\currentbtxbacklink\empty
+   %
+   \edef\p_register{\btxcitevariantparameter\c!register}%
+   \ifx\p_register\empty\else
+     \ctxcommand{btxauthortoregister("\p_register","\currentbtxdataset","\currentbtxtag")}%
+   \fi
+   %
+   \normalexpanded{\writedatatolist
+      [\s!btx]%
+      [\s!btxset=\currentbtxdataset,%
+       \s!btxref=\currentbtxtag,%
+       \ifx\p_publ_cite_lefttext \empty\else\s!btxltx={\p_publ_cite_lefttext },\fi%
+       \ifx\p_publ_cite_righttext\empty\else\s!btxrtx={\p_publ_cite_righttext},\fi%
+       \s!btxint=\number\currentbtxbacklink
+       \ifx\currentbtxciteuservariables\empty\else,\currentbtxciteuservariables\fi]}}
+
+\unexpanded\def\dosetfastregisterentry#1#2#3% register entry key
+  {\begingroup
+   \edef\currentregister{#1}%
+   \setnextinternalreference
+   \xdef\currentregisternumber{\ctxcommand{storeregister{
+        metadata   = { name = "\currentregister" },
+        entries    = { { \!!bs#2\!!es }, { \!!bs#3\!!es } },
+     }
+   }}%
+   \xdef\currentregistersynchronize{\ctxlatecommand{enhanceregister("\currentregister",\currentregisternumber)}}%
+   \currentregistersynchronize % here?
+   \dostarttagged\t!registerlocation\currentregister
+   \attribute\destinationattribute\lastdestinationattribute \signalcharacter % no \strut as it will be removed during cleanup
+   \dotagregisterlocation
+   \dostoptagged
+   \endgroup}
+
+\unexpanded\def\btx_flush_specific_author#1#2#3#4% dataset tag field index
+  {\begingroup
+   \edef\currentbtxdataset{#1}%
+   \edef\currentbtxtag    {#2}%
+   \edef\currentbtxfield  {#3}%
+   \let\currentbtxlistvariant\currentbtxfield
+   \ctxcommand{btxauthor("\currentbtxdataset","\currentbtxtag","\currentbtxfield",{
+        kind  = "list",
+        index = \number#4,
+   })}%
+   \endgroup}
+
+\let\dobtxindexedauthor\btx_flush_specific_author
+
 %D Defaults:
 
 \setbtxdataset
