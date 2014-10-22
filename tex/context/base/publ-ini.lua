@@ -717,15 +717,23 @@ function publications.enhance(dataset) -- for the moment split runs (maybe publi
                     report("internal error, no detail for tag %s",tag)
                 end
                 --
-                local pages = entry.pages
+                local pages = entry.pages or entry.page
                 if pages then
                     local first, last = lpegmatch(pagessplitter,pages)
-                    details[tag].pages = first and last and { first, last } or pages
+                    detail.pages = first and last and { first, last } or pages
                 end
                 --
                 local keyword = entry.keyword
                 if keyword then
-                    details[tag].keyword = settings_to_set(keyword)
+                    detail.keyword = settings_to_set(keyword)
+                end
+                --
+                if category == "inbook" then
+                    detail.maintitle = entry.chapter or entry.title
+                elseif category == "incollection" then
+                    detail.maintitle = entry.title or entry.booktitle
+                else
+                    detail.maintitle = entry.title or entry.chapter or entry.booktitle
                 end
             else
                 report("internal error, no tag at index %s",i)

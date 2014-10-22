@@ -1242,9 +1242,11 @@
    \edef\currentbtxtag    {#2}%
    \edef\currentbtxfield  {#3}%
    \let\currentbtxlistvariant\currentbtxfield
+   \edef\currentbtxcitevariant{invertedshort}%
    \ctxcommand{btxauthor("\currentbtxdataset","\currentbtxtag","\currentbtxfield",{
-        kind  = "list",
-        index = \number#4,
+        kind     = "list",
+        index    = \number#4,
+        combiner = "\currentbtxcitevariant",
    })}%
    \endgroup}
 
