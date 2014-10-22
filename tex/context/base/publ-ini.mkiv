@@ -331,7 +331,7 @@
 % \let\btxsetdataset\setbtxdataset
 % \let\btxsetentry  \setbtxentry
 
-% todo: no need for the currents as we can keep them at the lua end so we will haqve
+% todo: no need for the currents as we can keep them at the lua end so we will have
 %
 % \btxfield         : current
 % \btxspecificfield : dataset,tag,key
@@ -352,19 +352,23 @@
 
 %D Rendering.
 
-\unexpanded\def\btxspace       {\removeunwantedspaces\space}
-\unexpanded\def\btxnobreakspace{\removeunwantedspaces\nobreakspace} % these two are the
-\unexpanded\def\btxnbsp        {\removeunwantedspaces\nbsp}         % same anyway
-\unexpanded\def\btxperiod      {\removeunwantedspaces.\space}
-\unexpanded\def\btxcomma       {\removeunwantedspaces,\space}
-\unexpanded\def\btxcolon       {\removeunwantedspaces:\space}
-\unexpanded\def\btxsemicolon   {\removeunwantedspaces;\space}
-\unexpanded\def\btxlparent     {\removeunwantedspaces\space(} % obsolete
-\unexpanded\def\btxrparent     {\removeunwantedspaces)\space} % obsolete
-\unexpanded\def\btxlparenthesis{\removeunwantedspaces\space(}
-\unexpanded\def\btxrparenthesis{\removeunwantedspaces)\space}
-\unexpanded\def\btxlbracket    {\removeunwantedspaces\space[}
-\unexpanded\def\btxrbracket    {\removeunwantedspaces]\space}
+\unexpanded\def\btxspace                 {\removeunwantedspaces\space}
+\unexpanded\def\btxnobreakspace          {\removeunwantedspaces\nobreakspace} % these two are
+\unexpanded\def\btxnbsp                  {\removeunwantedspaces\nbsp}         % the same anyway
+\unexpanded\def\btxperiod                {\removeunwantedspaces.\space}
+\unexpanded\def\btxcomma                 {\removeunwantedspaces,\space}
+\unexpanded\def\btxcolon                 {\removeunwantedspaces:\space}
+\unexpanded\def\btxsemicolon             {\removeunwantedspaces;\space}
+\unexpanded\def\btxlparent               {\removeunwantedspaces\space(} % obsolete
+\unexpanded\def\btxrparent               {\removeunwantedspaces)\space} % obsolete
+\unexpanded\def\btxleftparenthesis       {\removeunwantedspaces\space(}
+\unexpanded\def\btxrightparenthesis      {\removeunwantedspaces)\space}
+\unexpanded\def\btxrightparenthesisperiod{\removeunwantedspaces).\space}
+\unexpanded\def\btxrightparenthesiscomma {\removeunwantedspaces),\space}
+\unexpanded\def\btxleftbracket           {\removeunwantedspaces\space[}
+\unexpanded\def\btxrightbracket          {\removeunwantedspaces]\space}
+\unexpanded\def\btxrightbracketperiod    {\removeunwantedspaces].\space}
+\unexpanded\def\btxrightbracketcomma     {\removeunwantedspaces],\space}
 
 %D Variables:
 
@@ -1281,7 +1285,7 @@
  % \c!setups=btx:cite:initialize,
    \c!alternative=num,
    \c!authorconversion=\v!normal,
-   \c!andtext={ \btxlabeltext{\currentbtxalternative:and} },
+ % \c!andtext={ \btxlabeltext{\currentbtxalternative:and} },
    \c!otherstext={ \btxlabeltext{\currentbtxalternative:others}},
    \c!pubsep={, },
    \c!lastpubsep={ \btxlabeltext{\currentbtxalternative:and} },
@@ -1348,6 +1352,10 @@
     \c!right={)}]
 
 \definebtxcitevariant
+   [title]
+   [\c!middle={, }]
+
+\definebtxcitevariant
    [tag]
    [\c!left={[},
     \c!middle={, },
@@ -1368,6 +1376,10 @@
    [\c!left={[},
     \c!middle={, },
     \c!right={]}]
+
+\definebtxcitevariant
+   [pages]
+   [page]
 
 \definebtxcitevariant
    [short]
@@ -1415,7 +1427,7 @@
    \c!lastnamesep={ \btxlabeltext{\currentbtxalternative:and} },
    \c!finalnamesep={ \btxlabeltext{\currentbtxalternative:and} },
    \c!firstnamesep={ },
-   \c!andtext={ \btxlabeltext{\currentbtxalternative:and} },
+ % \c!andtext={ \btxlabeltext{\currentbtxalternative:and} },
    \c!otherstext={ \btxlabeltext{\currentbtxalternative:others}},
    \c!juniorsep={ },
    \c!vonsep={ },
@@ -1431,7 +1443,6 @@
 
 \definebtxlistvariant
   [author]
-  [author=invertedshort] % we could also do this in the apa style itself
 
 \definebtxlistvariant
   [editor]
