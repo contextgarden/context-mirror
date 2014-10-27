@@ -58,7 +58,8 @@
         }}%
         \letcounterparameter\s!name\currentcounter
     \else
-        \letcounterparameter\s!name\currentcounterparent
+      % \letcounterparameter\s!name\currentcounterparent % we need a chained clone
+        \setexpandedcounterparameter\s!name{\namedcounterparameter\currentcounterparent\s!name}%
     \fi
     \strc_counters_check_setup
 \to \everydefinecounter

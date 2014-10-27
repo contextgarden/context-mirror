@@ -22,39 +22,6 @@ local ctx_bold, ctx_rotate, ctx_llap = context.bold, context.rotate, context.lla
 local ctx_darkgreen, ctx_darkred, ctx_darkblue = context.darkgreen, context.darkred, context.darkblue
 local ctx_starttabulate, ctx_stoptabulate = context.starttabulate, context.stoptabulate
 
-local categories = table.setmetatableindex(function(t,name)
-    local filename      = resolvers.findfile(formatters["publ-imp-%s.lua"](name))
-    local fields        = { }
-    local specification = filename and filename ~= "" and table.load(filename) or {
-        name       = name,
-        version    = "1.00",
-        comment    = "unknown specification.",
-        author     = "anonymous",
-        copyright  = "no one",
-        categories = { },
-    }
-    --
-    specification.fields = fields
-    for category, data in next, specification.categories do
-        local list = { }
-        fields[category]  = list
-        local required = data.required
-        local optional = data.optional
-        for i=1,#required do
-            list[required[i]] = "required"
-        end
-        for i=1,#optional do
-            list[optional[i]] = "optional"
-        end
-    end
-    t[name] = specification
-    return specification
-end)
-
-publications.tracers.categories = categories
-
--- -- --
-
 local private = {
     category = true,
     tag      = true,
@@ -173,6 +140,7 @@ function tracers.showdatasetcompleteness(settings)
                     for i=1,#requiredfields do
                         local r = requiredfields[i]
                         if type(r) == "table" then
+                            -- this has to be done differently now
                             local okay = true
                             for i=1,#r do
                                 local ri = r[i]
@@ -200,6 +168,7 @@ function tracers.showdatasetcompleteness(settings)
                     for i=1,#optionalfields do
                         local o = optionalfields[i]
                         if type(o) == "table" then
+                            -- this has to be done differently now
                             for i=1,#o do
                                 local oi = o[i]
                                 if rawget(entry,oi) then
