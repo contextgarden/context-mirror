@@ -12,8 +12,9 @@ local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 local settings_to_array = utilities.parsers.settings_to_array
 local formatters = string.formatters
 
-local tracers  = publications.tracers or { }
-local datasets = publications.datasets
+local tracers        = publications.tracers or { }
+local datasets       = publications.datasets
+local specifications = publications.specifications
 
 local context = context
 
@@ -34,7 +35,7 @@ function tracers.showdatasetfields(settings)
     local luadata = current.luadata
     if next(luadata) then
         local kind       = settings.kind
-        local fielddata  = kind and categories[kind] or categories.apa
+        local fielddata  = kind and specifications[kind] or specifications.apa
         local categories = fielddata.categories
         local fieldspecs = fielddata.fields
         ctx_starttabulate { "|lT|lT|pT|" }
@@ -73,10 +74,9 @@ function tracers.showdatasetcompleteness(settings)
     local current    = datasets[dataset]
     local luadata    = current.luadata
     local kind       = settings.kind
-    local fielddata  = kind and categories[kind] or categories.apa
+    local fielddata  = kind and specifications[kind] or specifications.apa
     local categories = fielddata.categories
     local fieldspecs = fielddata.fields
-
     local lpegmatch  = lpeg.match
     local texescape  = lpeg.patterns.texescape
 
@@ -199,7 +199,7 @@ end
 function tracers.showfields(settings)
     local rotation    = settings.rotation
     local kind        = settings.kind
-    local fielddata   = kind and categories[kind] or categories.apa
+    local fielddata   = kind and specifications[kind] or specifications.apa
     local categories  = fielddata.categories
     local fieldspecs  = fielddata.fields
     local swapped     = { }

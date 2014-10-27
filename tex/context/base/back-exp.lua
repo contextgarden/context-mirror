@@ -507,7 +507,7 @@ local function makebreaknode(attributes) -- maybe no fulltag
     }
 end
 
-local function ignorebreaks(result,element,n,fulltag,di)
+local function ignorebreaks(di,element,n,fulltag)
     local data = di.data
     for i=1,#data do
         local d = data[i]
@@ -517,7 +517,7 @@ local function ignorebreaks(result,element,n,fulltag,di)
     end
 end
 
-local function ignorespaces(result,element,n,fulltag,di)
+local function ignorespaces(di,element,n,fulltag)
     local data = di.data
     for i=1,#data do
         local d = data[i]
@@ -565,7 +565,7 @@ do
         end
     end
 
-    function extras.document(result,element,n,fulltag,di)
+    function extras.document(di,element,n,fulltag)
         setattribute(di,"language",languagenames[texgetcount("mainlanguagenumber")])
         if not less_state then
             setattribute(di,"file",tex.jobname)
@@ -591,18 +591,20 @@ do
 
     local itemgroups = { }
 
-    function structurestags.setitemgroup(packed,symbol)
+    function structurestags.setitemgroup(packed,level,symbol)
         itemgroups[locatedtag("itemgroup")] = {
             packed = packed,
             symbol = symbol,
+            level  = level,
         }
     end
 
-    function extras.itemgroup(result,element,n,fulltag,di)
+    function extras.itemgroup(di,element,n,fulltag)
         local hash = itemgroups[fulltag]
         if hash then
             setattribute(di,"packed",hash.packed and "yes" or nil)
             setattribute(di,"symbol",hash.symbol)
+            setattribute(di,"level",hash.level)
         end
     end
 
@@ -617,7 +619,7 @@ do
         synonyms[locatedtag("synonym")] = tag
     end
 
-    function extras.synonym(result,element,n,fulltag,di)
+    function extras.synonym(di,element,n,fulltag)
         local tag = synonyms[fulltag]
         if tag then
             setattribute(di,"tag",tag)
@@ -628,7 +630,7 @@ do
         sortings[locatedtag("sorting")] = tag
     end
 
-    function extras.sorting(result,element,n,fulltag,di)
+    function extras.sorting(di,element,n,fulltag)
         local tag = sortings[fulltag]
         if tag then
             setattribute(di,"tag",tag)
@@ -688,14 +690,14 @@ do
         end
     end
 
-    function extras.description(result,element,n,fulltag,di)
+    function extras.description(di,element,n,fulltag)
         local id = linked[fulltag]
         if id then
             setattribute(di,"insert",id)
         end
     end
 
-    function extras.descriptionsymbol(result,element,n,fulltag,di)
+    function extras.descriptionsymbol(di,element,n,fulltag)
         local id = linked[fulltag]
         if id then
             setattribute(di,"insert",id)
@@ -706,7 +708,7 @@ end
 
 -- -- todo: ignore breaks
 --
--- function extras.verbatimline(result,element,n,fulltag,di)
+-- function extras.verbatimline(di,element,n,fulltag)
 --     inspect(di)
 -- end
 
@@ -725,7 +727,7 @@ do
         }
     end
 
-    function extras.image(result,element,n,fulltag,di)
+    function extras.image(di,element,n,fulltag)
         local data = image[fulltag]
         if data then
             setattribute(di,"name",data.name)
@@ -752,7 +754,7 @@ do
         }
     end
 
-    function extras.combination(result,element,n,fulltag,di)
+    function extras.combination(di,element,n,fulltag)
         local data = combinations[fulltag]
         if data then
             setattribute(di,"nx",data.nx)
@@ -865,7 +867,7 @@ do
                     local r = references[i]
                     local e = evaluators[r.kind]
                     if e then
-                        e(result,r)
+                        e(di,r)
                     end
                 end
             end
@@ -910,7 +912,7 @@ do
         end
     end
 
-    local function link(di,element,n,fulltag,di)
+    local function link(di,element,n,fulltag)
         -- for instance in lists a link has nested elements and no own text
         local reference = referencehash[fulltag]
         if reference then
@@ -923,7 +925,7 @@ do
                     local di = data[i]
                     if di then
                         local fulltag = di.fulltag
-                        if fulltag and link(di,element,n,fulltag,di) then
+                        if fulltag and link(di,element,n,fulltag) then
                             return true
                         end
                     end
@@ -1509,7 +1511,7 @@ do
 
     local a, z, A, Z = 0x61, 0x7A, 0x41, 0x5A
 
-    function extras.mi(di,element,n,fulltag,di) -- check with content
+    function extras.mi(di,element,n,fulltag) -- check with content
         local str = di.data[1].content
         if str and sub(str,1,1) ~= "&" then -- hack but good enough (maybe gsub op eerste)
             for v in utfvalues(str) do
@@ -1525,7 +1527,7 @@ do
         end
     end
 
-    function extras.msub(di,element,n,fulltag,di)
+    function extras.msub(di,element,n,fulltag)
         -- m$^2$
         local data = di.data
         if #data == 1 then
@@ -1544,7 +1546,7 @@ do
 
     local registered = structures.sections.registered
 
-    local function resolve(di,element,n,fulltag,di)
+    local function resolve(di,element,n,fulltag)
         local data = listdata[fulltag]
         if data then
             extras.addreference(di,data.references)
@@ -1556,7 +1558,7 @@ do
                     local di = data[i]
                     if di then
                         local ft = di.fulltag
-                        if ft and resolve(di,element,n,ft,di) then
+                        if ft and resolve(di,element,n,ft) then
                             return true
                         end
                     end
@@ -1565,12 +1567,12 @@ do
         end
     end
 
-    function extras.section(di,element,n,fulltag,di)
+    function extras.section(di,element,n,fulltag)
         local r = registered[specifications[fulltag].detail]
         if r then
             setattribute(di,"level",r.level)
         end
-        resolve(di,element,n,fulltag,di)
+        resolve(di,element,n,fulltag)
     end
 
     extras.float = resolve
@@ -1584,7 +1586,7 @@ do
         end
     end
 
-    function extras.listitem(di,element,n,fulltag,di)
+    function extras.listitem(di,element,n,fulltag)
         local data = referencehash[fulltag]
         if data then
             extras.addinternal(di,data.references)
@@ -1605,7 +1607,7 @@ do
         end
     end
 
-    function extras.registerlocation(di,element,n,fulltag,di)
+    function extras.registerlocation(di,element,n,fulltag)
         local data = referencehash[fulltag]
         if data then
             extras.addinternal(di,data.references)
@@ -1648,7 +1650,7 @@ do
         end
     end
 
-    function extras.tablecell(di,element,n,fulltag,di)
+    function extras.tablecell(di,element,n,fulltag)
         local hash = tabledata[fulltag]
         if hash then
             local columns = hash.columns
@@ -1682,7 +1684,7 @@ do
         end
     end
 
-    function extras.tabulate(di,element,n,fulltag,di)
+    function extras.tabulate(di,element,n,fulltag)
         local data = di.data
         for i=1,#data do
             local di = data[i]
@@ -1692,7 +1694,7 @@ do
         end
     end
 
-    function extras.tabulatecell(di,element,n,fulltag,di)
+    function extras.tabulatecell(di,element,n,fulltag)
         local hash = tabulatedata[fulltag]
         if hash then
             local align = hash.align
@@ -1843,7 +1845,7 @@ do
             end
             local extra = extras[element]
             if extra then
-                extra(di,element,index,fulltag,di)
+                extra(di,element,index,fulltag)
             end
             if exportproperties then
                 local p = specification.userdata
@@ -2448,7 +2450,8 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
                         -- to a regular setter at the tex end.
                         local r = getattr(n,a_reference)
                         if r then
-                            referencehash[tl[#tl]] = r -- fulltag
+                            local t = tl.taglist
+                            referencehash[t[#t]] = r -- fulltag
                         end
                         --
                     elseif last then
@@ -3028,24 +3031,36 @@ local htmltemplate = [[
     local function makeclass(tg,at)
         local detail = at.detail
         local chain  = at.chain
+        local result
         at.detail = nil
         at.chain  = nil
         if detail and detail ~= "" then
             if chain and chain ~= "" then
                 if chain ~= detail then
-                    return classes[tg .. " " .. chain .. " " .. detail] -- we need to remove duplicates
+                    result = { classes[tg .. " " .. chain .. " " .. detail] } -- we need to remove duplicates
                 elseif tg ~= detail then
-                    return tg .. " " .. detail
+                    result = { tg, detail }
+                else
+                    result = { tg }
                 end
             elseif tg ~= detail then
-                return tg .. " " .. detail
+                result = { tg, detail }
+            else
+                result = { tg }
             end
         elseif chain and chain ~= "" then
             if tg ~= chain then
-                return tg .. " " .. chain
+                result = { tg, chain }
+            else
+                result = { tg }
             end
+        else
+            result = { tg }
         end
-        return tg
+        for k, v in next, at do
+            result[#result+1] = k .. "-" .. v
+        end
+        return concat(result, " ")
     end
 
     local function remap(specification,source,target)

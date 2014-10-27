@@ -126,12 +126,12 @@ local specifications = setmetatableindex(function(t,name)
         return default -- initializer
     end
     local filename = formatters["publ-imp-%s.lua"](name)
-    local fullname = resolvers.findfile(fullname) or ""
+    local fullname = resolvers.findfile(filename) or ""
     if fullname == "" then
         report("no data definition file %a for %a",filename,name)
         return default
     end
-    local specification = table.load(filename)
+    local specification = table.load(fullname)
     if not specification then
         report("invalid data definition file %a for %a",fullname,name)
         return default
