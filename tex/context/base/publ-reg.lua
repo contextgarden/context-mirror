@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['publ-reg'] = {
 
 local formatters = string.formatters
 local sortedhash = table.sortedhash
+local lpegmatch  = lpeg.match
 
 local context        = context
 local commands       = commands
@@ -103,16 +104,17 @@ end
 
 local ctx_dosetfastregisterentry = context.dosetfastregisterentry -- register entry key
 
-local f_field  = formatters[ [[\dobtxindexedfield{%s}{%s}{%s}{%s}{%s}]] ]
-local f_author = formatters[ [[\dobtxindexedauthor{%s}{%s}{%s}{%s}{%s}]] ]
+local f_field    = formatters[ [[\dobtxindexedfield{%s}{%s}{%s}{%s}{%s}]] ]
+local f_author   = formatters[ [[\dobtxindexedauthor{%s}{%s}{%s}{%s}{%s}]] ]
 
-local writer   = publications.serializeauthor
+local p_keywords = lpeg.tsplitat(lpeg.patterns.whitespace^0 * lpeg.P(";") * lpeg.patterns.whitespace^0)
+local writer     = publications.serializeauthor
 
 function flushers.default(register,dataset,tag,field,alternative,current,entry,detail)
-    local value = detail[field] or entry[field]
-    if value then
-        local e = f_field(dataset,tag,field,alternative,value)
-        ctx_dosetfastregisterentry(register,e,value) -- last value can be ""
+    local k = detail[field] or entry[field]
+    if k then
+        local e = f_field(dataset,tag,field,alternative,k)
+        ctx_dosetfastregisterentry(register,e,k)
     end
 end
 
@@ -124,6 +126,21 @@ function flushers.author(register,dataset,tag,field,alternative,current,entry,de
                 local a = author[i]
                 local k = writer{a}
                 local e = f_author(dataset,tag,field,alternative,i)
+                ctx_dosetfastregisterentry(register,e,k)
+            end
+        end
+    end
+end
+
+function flushers.keywords(register,dataset,tag,field,alternative,current,entry,detail)
+    if entry then
+        -- we don't split keywords in details (yet) ... could be an alternative some day
+        local keywords = entry[field]
+        if keywords then
+            keywords = lpegmatch(p_keywords,keywords)
+            for i=1,#keywords do
+                local k = keywords[i]
+                local e = f_field(dataset,tag,field,alternative,k)
                 ctx_dosetfastregisterentry(register,e,k)
             end
         end

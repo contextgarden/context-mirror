@@ -23,10 +23,18 @@ local ctx_bold, ctx_rotate, ctx_llap = context.bold, context.rotate, context.lla
 local ctx_darkgreen, ctx_darkred, ctx_darkblue = context.darkgreen, context.darkred, context.darkblue
 local ctx_starttabulate, ctx_stoptabulate = context.starttabulate, context.stoptabulate
 
-local private = {
+local privates = {
     category = true,
     tag      = true,
     index    = true,
+}
+
+local specials = {
+    key      = true,
+    crossref = true,
+    keywords = true,
+    language = true,
+    comment  = true,
 }
 
 function tracers.showdatasetfields(settings)
@@ -51,7 +59,11 @@ function tracers.showdatasetfields(settings)
                 ctx_NC() context(category)
                 ctx_NC()
                 for k, v in sortedhash(v) do
-                    if not private[k] then
+                    if privates[k] then
+                        -- skip
+                    elseif specials[k] then
+                        ctx_darkblue(k)
+                    else
                         local f = fields[k]
                         if f == "required" then
                             ctx_darkgreen(k)
@@ -106,6 +118,17 @@ function tracers.showdatasetcompleteness(settings)
         foundfields[key] = nil
     end
 
+    local function optional(foundfields,key,value,indirect)
+        ctx_NC() context(key)
+        ctx_NC() if indirect then
+                ctx_darkblue(lpegmatch(texescape,value))
+             elseif value then
+                context(lpegmatch(texescape,value))
+             end
+        ctx_NC() ctx_NR()
+        foundfields[key] = nil
+    end
+
     local function identified(tag,category,crossref)
         ctx_NC() context(category)
         ctx_NC() if crossref then
@@ -113,6 +136,12 @@ function tracers.showdatasetcompleteness(settings)
              else
                 context("\\tttf %s",tag)
              end
+        ctx_NC() ctx_NR()
+    end
+
+    local function special(key,value)
+        ctx_NC() ctx_darkblue(key)
+        ctx_NC() context(lpegmatch(texescape,value))
         ctx_NC() ctx_NR()
     end
 
@@ -186,7 +215,11 @@ function tracers.showdatasetcompleteness(settings)
                 end
             end
             for k, v in sortedhash(foundfields) do
-                if not private[k] then
+                if privates[k] then
+                    -- skip
+                elseif specials[k] then
+                    special(k,entry[k])
+                else
                     extra(k,entry[k])
                 end
             end
@@ -202,22 +235,11 @@ function tracers.showfields(settings)
     local fielddata   = kind and specifications[kind] or specifications.apa
     local categories  = fielddata.categories
     local fieldspecs  = fielddata.fields
-    local swapped     = { }
     local validfields = { }
     for category, fields in next, categories do
-        local categoryfields = { }
         for name, list in next, fields do
             for i=1,#list do
-                local field = list[i]
-                if type(field) == "table" then
-                    field = table.concat(field," + ")
-                end
-                validfields[field] = true
-                if swapped[field] then
-                    swapped[field][category] = true
-                else
-                    swapped[field] = { [category] = true }
-                end
+                validfields[list[i]] = true
             end
         end
     end
@@ -242,12 +264,14 @@ function tracers.showfields(settings)
     ctx_FL()
     for i=1,#s_fields do
         local field  = s_fields[i]
-        local fields = swapped[field]
         ctx_NC()
         ctx_bold(field)
         for j=1,#s_categories do
             ctx_NC()
-            if fields[s_categories[j]] then
+            local kind = fieldspecs[s_categories[j]][field]
+            if kind == "required" then
+                ctx_darkgreen("*")
+            elseif kind == "optional" then
                 context("*")
             end
         end
