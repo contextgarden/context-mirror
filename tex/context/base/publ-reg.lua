@@ -26,7 +26,7 @@ local sequence       = { }
 local flushers       = { }
 
 function commands.setbtxregister(specification)
-    local name     = specification.name or "unset"
+    local name     = specification.name
     local register = specification.register
     local dataset  = specification.dataset
     local field    = specification.field
@@ -50,18 +50,13 @@ function commands.setbtxregister(specification)
     --
     -- check all
     --
-    local alternative = specification.alternative or d.alternative
-    if not alternative or alternative == "" then
-        alternative = field
-    end
-    --
-    d.active      = specification.state ~= v_stop
-    d.once        = specification.method == v_once or false
-    d.field       = field
-    d.alternative = alternative
-    d.register    = register
-    d.dataset     = dataset
-    d.done        = d.done or { }
+    d.active    = specification.state ~= v_stop
+    d.once      = specification.method == v_once or false
+    d.field     = field
+    d.processor = name ~= register and name or ""
+    d.register  = register
+    d.dataset   = dataset
+    d.done      = d.done or { }
     --
     sequence   = { }
     for register, s in sortedhash(specifications) do
@@ -83,11 +78,14 @@ function commands.btxtoregister(dataset,tag)
                 local current = datasets[dataset]
                 local entry   = current.luadata[tag]
                 if entry then
-                    local register    = step.register
-                    local field       = step.field
-                    local alternative = step.alternative
-                    local flusher     = flushers[field] or flushers.default
-                    flusher(register,dataset,tag,field,alternative,current,entry,current.details[tag])
+                    local register  = step.register
+                    local field     = step.field
+                    local processor = step.processor
+                    local flusher   = flushers[field] or flushers.default
+                    if processor and processor ~= "" then
+                        processor = "btx:r:" .. processor
+                    end
+                    flusher(register,dataset,tag,field,processor,current,entry,current.details[tag])
                 end
                 done[tag] = true
             end
@@ -104,45 +102,38 @@ end
 
 local ctx_dosetfastregisterentry = context.dosetfastregisterentry -- register entry key
 
-local f_field    = formatters[ [[\dobtxindexedfield{%s}{%s}{%s}{%s}{%s}]] ]
-local f_author   = formatters[ [[\dobtxindexedauthor{%s}{%s}{%s}{%s}{%s}]] ]
-
 local p_keywords = lpeg.tsplitat(lpeg.patterns.whitespace^0 * lpeg.P(";") * lpeg.patterns.whitespace^0)
 local writer     = publications.serializeauthor
 
-function flushers.default(register,dataset,tag,field,alternative,current,entry,detail)
+function flushers.default(register,dataset,tag,field,processor,current,entry,detail)
     local k = detail[field] or entry[field]
     if k then
-        local e = f_field(dataset,tag,field,alternative,k)
-        ctx_dosetfastregisterentry(register,e,k)
+        ctx_dosetfastregisterentry(register,k,"",processor,"")
     end
 end
 
-function flushers.author(register,dataset,tag,field,alternative,current,entry,detail)
+function flushers.author(register,dataset,tag,field,processor,current,entry,detail)
     if detail then
         local author = detail[field]
         if author then
             for i=1,#author do
-                local a = author[i]
-                local k = writer{a}
-                local e = f_author(dataset,tag,field,alternative,i)
-                ctx_dosetfastregisterentry(register,e,k)
+                local k = writer { author[i] }
+                ctx_dosetfastregisterentry(register,k,"",processor,"") -- todo .. sort key
             end
         end
     end
 end
 
-function flushers.keywords(register,dataset,tag,field,alternative,current,entry,detail)
+function flushers.keywords(register,dataset,tag,field,processor,current,entry,detail)
     if entry then
-        -- we don't split keywords in details (yet) ... could be an alternative some day
         local keywords = entry[field]
         if keywords then
             keywords = lpegmatch(p_keywords,keywords)
             for i=1,#keywords do
                 local k = keywords[i]
-                local e = f_field(dataset,tag,field,alternative,k)
-                ctx_dosetfastregisterentry(register,e,k)
+                ctx_dosetfastregisterentry(register,k,"",processor,"")
             end
         end
     end
 end
+

@@ -160,7 +160,14 @@ local specifications = setmetatableindex(function(t,name)
             local d = data[t]
             if d then
                 for i=1,#d do
-                    list[d[i]] = t
+                    local di = d[i]
+                    if type(di) == "table" then
+                        for i=1,#di do
+                            list[di] = di[i]
+                        end
+                    else
+                        list[di] = t
+                    end
                 end
             else
                 data[t] = { }

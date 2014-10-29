@@ -1265,7 +1265,7 @@
         field       = "\btxregisterparameter\c!field",
         register    = "\btxregisterparameter\c!register",
         method      = "\btxregisterparameter\c!method",
-        alternative = "\btxregisterparameter\c!alternative",
+     %  alternative = "\btxregisterparameter\c!alternative",
     }}%
   \fi}
 
@@ -1278,54 +1278,68 @@
 \to \everysetupbtxregister
 
 \appendtoks
+    \normalexpanded{%
+      \defineprocessor
+        [\s!btx:r:\currentbtxregister]%
+        [\c!style=\noexpand\namedbtxregisterparameter{\currentbtxregister}\noexpand\c!style,
+         \c!color=\noexpand\namedbtxregisterparameter{\currentbtxregister}\noexpand\c!color]}%
+\to \everydefinebtxregister
+
+\appendtoks
     \ctxcommand{btxtoregister("\currentbtxdataset","\currentbtxtag")}%
 \to \t_btx_reference_inject
 
-\unexpanded\def\dosetfastregisterentry#1#2#3% register entry key
-  {\begingroup
-   \edef\currentregister{#1}%
-   \setnextinternalreference
-   \xdef\currentregisternumber{\ctxcommand{storeregister{
-        metadata   = { name = "\currentregister" },
-        entries    = { { \!!bs#2\!!es }, { \!!bs#3\!!es } },
-     }
-   }}%
-   \xdef\currentregistersynchronize{\ctxlatecommand{enhanceregister("\currentregister",\currentregisternumber)}}%
-   \currentregistersynchronize % here?
-   \dostarttagged\t!registerlocation\currentregister
-   \attribute\destinationattribute\lastdestinationattribute \signalcharacter % no \strut as it will be removed during cleanup
-   \dotagregisterlocation
-   \dostoptagged
-   \endgroup}
+% \unexpanded\def\dosetfastregisterentry#1#2#3% register entry key
+%   {\begingroup
+%    \edef\currentregister{#1}%
+%    \setnextinternalreference
+%    \xdef\currentregisternumber{\ctxcommand{storeregister{
+%         metadata   = { name = "\currentregister" },
+%         entries    = { { \!!bs#2\!!es }, { \!!bs#3\!!es } },
+%      }
+%    }}%
+%    \xdef\currentregistersynchronize{\ctxlatecommand{enhanceregister("\currentregister",\currentregisternumber)}}%
+%    \currentregistersynchronize % here?
+%    \dostarttagged\t!registerlocation\currentregister
+%    \attribute\destinationattribute\lastdestinationattribute \signalcharacter % no \strut as it will be removed during cleanup
+%    \dotagregisterlocation
+%    \dostoptagged
+%    \endgroup}
 
-\unexpanded\def\btx_flush_specific_field#1#2#3#4#5% dataset tag field variant value
+% \unexpanded\def\btx_flush_specific_field#1#2#3#4#5% dataset tag field variant value
+%   {\begingroup
+%    \edef\currentbtxdataset{#1}%
+%    \edef\currentbtxtag    {#2}%
+%    \edef\currentbtxfield  {#3}%
+%    \let\currentbtxlistvariant\currentbtxfield
+%    \edef\currentbtxcitevariant{#4}%
+%    \usebtxregisterstyleandcolor\c!style\c!color
+%    \edef\tempstring{\currentbtxalternative:register:\currentbtxcitevariant}%
+%    \doifsetupselse\tempstring{\fastsetup\tempstring}{#5}%
+%    \endgroup}
+
+% \unexpanded\def\btx_flush_specific_author#1#2#3#4#5% dataset tag field variantindex
+%   {\begingroup
+%    \edef\currentbtxdataset{#1}%
+%    \edef\currentbtxtag    {#2}%
+%    \edef\currentbtxfield  {#3}%
+%    \let\currentbtxlistvariant\currentbtxfield
+%    \edef\currentbtxcitevariant{#4}%
+%    \ctxcommand{btxauthor("\currentbtxdataset","\currentbtxtag","\currentbtxfield",{
+%         kind     = "list",
+%         index    = \number#5,
+%         combiner = "\currentbtxcitevariant",
+%    })}%
+%    \endgroup}
+
+% \let\dobtxindexedfield \btx_flush_specific_field  % used at lua end
+% \let\dobtxindexedauthor\btx_flush_specific_author % used at lua end
+
+\unexpanded\def\dobtxindexedfield#1% value
   {\begingroup
-   \edef\currentbtxdataset{#1}%
-   \edef\currentbtxtag    {#2}%
-   \edef\currentbtxfield  {#3}%
-   \let\currentbtxlistvariant\currentbtxfield
-   \edef\currentbtxcitevariant{#4}%
    \usebtxregisterstyleandcolor\c!style\c!color
-   \edef\tempstring{\currentbtxalternative:register:\currentbtxcitevariant}%
-   \doifsetupselse\tempstring{\fastsetup\tempstring}{#5}%
+   #1%
    \endgroup}
-
-\unexpanded\def\btx_flush_specific_author#1#2#3#4#5% dataset tag field variantindex
-  {\begingroup
-   \edef\currentbtxdataset{#1}%
-   \edef\currentbtxtag    {#2}%
-   \edef\currentbtxfield  {#3}%
-   \let\currentbtxlistvariant\currentbtxfield
-   \edef\currentbtxcitevariant{#4}%
-   \ctxcommand{btxauthor("\currentbtxdataset","\currentbtxtag","\currentbtxfield",{
-        kind     = "list",
-        index    = \number#5,
-        combiner = "\currentbtxcitevariant",
-   })}%
-   \endgroup}
-
-\let\dobtxindexedfield \btx_flush_specific_field  % used at lua end
-\let\dobtxindexedauthor\btx_flush_specific_author % used at lua end
 
 %D Defaults:
 
