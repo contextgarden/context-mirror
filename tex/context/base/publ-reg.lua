@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['publ-reg'] = {
 }
 
 local formatters = string.formatters
+local concat     = table.concat
 local sortedhash = table.sortedhash
 local lpegmatch  = lpeg.match
 
@@ -50,13 +51,14 @@ function commands.setbtxregister(specification)
     --
     -- check all
     --
-    d.active    = specification.state ~= v_stop
-    d.once      = specification.method == v_once or false
-    d.field     = field
-    d.processor = name ~= register and name or ""
-    d.register  = register
-    d.dataset   = dataset
-    d.done      = d.done or { }
+    d.active      = specification.state ~= v_stop
+    d.once        = specification.method == v_once or false
+    d.field       = field
+    d.processor   = name ~= register and name or ""
+    d.alternative = d.alternative or specification.alternative
+    d.register    = register
+    d.dataset     = dataset
+    d.done        = d.done or { }
     --
     sequence   = { }
     for register, s in sortedhash(specifications) do
@@ -78,14 +80,15 @@ function commands.btxtoregister(dataset,tag)
                 local current = datasets[dataset]
                 local entry   = current.luadata[tag]
                 if entry then
-                    local register  = step.register
-                    local field     = step.field
-                    local processor = step.processor
-                    local flusher   = flushers[field] or flushers.default
+                    local register    = step.register
+                    local field       = step.field
+                    local processor   = step.processor
+                    local alternative = step.alternative
+                    local flusher     = flushers[field] or flushers.default
                     if processor and processor ~= "" then
                         processor = "btx:r:" .. processor
                     end
-                    flusher(register,dataset,tag,field,processor,current,entry,current.details[tag])
+                    flusher(register,dataset,tag,field,processor,alternative,current,entry,current.details[tag])
                 end
                 done[tag] = true
             end
@@ -103,28 +106,32 @@ end
 local ctx_dosetfastregisterentry = context.dosetfastregisterentry -- register entry key
 
 local p_keywords = lpeg.tsplitat(lpeg.patterns.whitespace^0 * lpeg.P(";") * lpeg.patterns.whitespace^0)
-local writer     = publications.serializeauthor
+local serialize  = publications.serializeauthor
+local components = publications.authorcomponents
+local f_author   = formatters[ [[\btxindexedauthor{%s}{%s}{%s}{%s}{%s}{%s}]] ]
 
-function flushers.default(register,dataset,tag,field,processor,current,entry,detail)
+function flushers.default(register,dataset,tag,field,processor,alternative,current,entry,detail)
     local k = detail[field] or entry[field]
     if k then
         ctx_dosetfastregisterentry(register,k,"",processor,"")
     end
 end
 
-function flushers.author(register,dataset,tag,field,processor,current,entry,detail)
+function flushers.author(register,dataset,tag,field,processor,alternative,current,entry,detail)
     if detail then
         local author = detail[field]
         if author then
             for i=1,#author do
-                local k = writer { author[i] }
-                ctx_dosetfastregisterentry(register,k,"",processor,"") -- todo .. sort key
+                local a = author[i]
+                local k = serialize(a)
+                local e = f_author(alternative or "invertedshort",components(a))
+                ctx_dosetfastregisterentry(register,e,k,processor,"") -- todo .. sort key
             end
         end
     end
 end
 
-function flushers.keywords(register,dataset,tag,field,processor,current,entry,detail)
+function flushers.keywords(register,dataset,tag,field,processor,alternative,current,entry,detail)
     if entry then
         local keywords = entry[field]
         if keywords then

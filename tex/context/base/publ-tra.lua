@@ -186,7 +186,7 @@ function tracers.showdatasetcompleteness(settings)
                                 end
                             end
                             if not okay then
-                                done = required(done,foundfields,table.concat(r,"\\space\\letterbar\\space"))
+                                done = required(done,foundfields,table.concat(r," {\\letterbar} "))
                             end
                         elseif rawget(entry,r) then
                             done = required(done,foundfields,r,entry[r])
