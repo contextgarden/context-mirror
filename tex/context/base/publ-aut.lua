@@ -383,11 +383,11 @@ local splitter = sorters.splitters.utf
 local pubsorters = { }
 authors.sorters  = pubsorters
 
-local function components(snippet)
+local function components(snippet,short)
     local vons       = snippet.vons
     local surnames   = snippet.surnames
     local initials   = snippet.initials
-    local firstnames = snippet.firstnames
+    local firstnames = not short and snippet.firstnames
     local juniors    = snippet.juniors
     return
         vons       and #vons       > 0 and concat(vons,      " ") or "",
