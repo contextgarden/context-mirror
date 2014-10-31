@@ -226,13 +226,15 @@ local function the_initials(initials,symbol,connector)
     for i=1,#initials do
         local initial = initials[i]
         if type(initial) == "table" then
+            local set, s = { }, 0
             for i=1,#initial do
                 if i > 1 then
-                    r = r + 1 ; result[r] = connector
+                    s = s + 1 ; set[s] = connector
                 end
-                r = r + 1 ; result[r] = initial[i]
-                r = r + 1 ; result[r] = symbol
+                s = s + 1 ; set[s] = initial[i]
+                s = s + 1 ; set[s] = symbol
             end
+            r = r + 1 ; result[r] = concat(set)
         else
             r = r + 1 ; result[r] = initial
             r = r + 1 ; result[r] = symbol
@@ -412,10 +414,11 @@ local function components(snippet,short)
     local initials   = snippet.initials
     local firstnames = not short and snippet.firstnames
     local juniors    = snippet.juniors
+-- inspect(initials)
     return
         vons       and #vons       > 0 and concat(vons,      " ") or "",
         surnames   and #surnames   > 0 and concat(surnames,  " ") or "",
-        initials   and #initials   > 0 and concat(the_initials(initials)) or "",
+        initials   and #initials   > 0 and concat(the_initials(initials)," ") or "",
         firstnames and #firstnames > 0 and concat(firstnames," ") or "",
         juniors    and #juniors    > 0 and concat(juniors,   " ") or ""
 end
