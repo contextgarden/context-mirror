@@ -392,9 +392,17 @@ setmetatableindex(usedentries,function(t,k)
             end
         end
         for k, v in next, names do
-            if #v > 1 then
-                for i=1,#v do
-                    v[i].state = 1
+            local n = #v
+            if n > 1 then
+                local original = v[1].original
+                for i=2,n do
+                    if original ~= v[i].original then
+                        report("potential clash in name %a",k)
+                        for i=1,n do
+                            v[i].state = 1
+                        end
+                        break
+                    end
                 end
             end
         end
