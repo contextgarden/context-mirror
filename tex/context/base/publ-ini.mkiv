@@ -729,6 +729,8 @@
    \else\iffirstargument
      \let\currentbtxrendering\currentbtxdataset
      \setupcurrentbtxrendering[#1]%
+   \else
+     \let\currentbtxrendering\currentbtxdataset
    \fi\fi
    \the\everybtxlistrendering
    \publ_place_list_indeed

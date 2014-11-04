@@ -681,6 +681,11 @@ local function shortsorter(a,b)
     return a[4] < b[4]
 end
 
+local authorkeys = {
+    "author",
+    "editor",
+}
+
 function publications.enhance(dataset) -- for the moment split runs (maybe publications.enhancers)
     statistics.starttiming(publications)
     if type(dataset) == "string" then
@@ -692,14 +697,17 @@ function publications.enhance(dataset) -- for the moment split runs (maybe publi
     local luadata = dataset.luadata
     local details = dataset.details
     local ordered = dataset.ordered
-    -- author, editor
+    -- authors: todo, get authorkeys from current specification (so we need to redo when that spec changes)
     for tag, entry in next, luadata do
-        local author = entry.author
-        local editor = entry.editor
-        details[tag] = {
-            author = author and splitauthorstring(author),
-            editor = editor and splitauthorstring(editor),
-        }
+        local detail = { }
+        details[tag] = detail
+        for i=1,#authorkeys do
+            local key   = authorkeys[i]
+            local value = entry[key]
+            if value then
+                detail[key] = splitauthorstring(value)
+            end
+        end
     end
     -- short
     local shorts = { }
@@ -873,149 +881,176 @@ end
 
 -- rendering of fields
 
-local function found(category,field)
-    local fieldspec = currentspecificationfields[category][field]
-    if ignoredfields and fieldspec == "optional" and ignoredfields[field] then
-        return false
-    else
-        return true
-    end
-end
+do
 
-function commands.btxflush(name,tag,field)
-    local dataset = rawget(datasets,name)
-    if dataset then
-        local fields = dataset.luadata[tag]
-        if fields then
-            local category = fields.category
-            if found(category,field) then
-                local manipulator, field = splitmanipulation(field)
-                local value = fields[field]
-                if type(value) == "string" then
-                    context(manipulator and applymanipulation(manipulator,value) or value)
-                    return
+    local function permitted(category,field)
+        local catspec = currentspecificationcategories[category]
+        if not catspec then
+            report("invalid category %a, %s",category,"no specification")
+            return false
+        end
+        local fields = catspec.fields
+        if not fields then
+            report("invalid category %a, %s",category,"no fields")
+            return false
+        end
+        local kind = fields[field]
+        if ignoredfields and kind == "optional" and ignoredfields[field] then
+            return false
+        else
+            local sets = catspec.sets
+            return sets and sets[field] or true
+        end
+    end
+
+    local function found(dataset,tag,field,valid,fields)
+        local details = nil
+        local function check_f(field)
+            local value = fields[field]
+            if type(value) == "string" then
+                return value
+            end
+        end
+        local function check_d(field)
+            local value = details[field]
+            if type(value) == "string" then
+                return value
+            end
+        end
+        if valid == true then
+         -- local fields = dataset.luadata[tag]
+            local okay = check_f(field)
+            if okay then
+                return okay
+            end
+            details = dataset.details[tag]
+            local okay = check_d(field)
+            if okay then
+                return okay
+            end
+        elseif valid then
+         -- local fields = dataset.luadata[tag]
+            for i=1,#valid do
+                local field = valid[i]
+                local okay = check_f(field)
+                if okay then
+                    return okay
                 end
+            end
+            details = dataset.details[tag]
+            for i=1,#valid do
+                local okay = check_d(field)
+                if okay then
+                    return okay
+                end
+            end
+        end
+    end
+
+    function commands.btxflush(name,tag,field)
+        local dataset = rawget(datasets,name)
+        if dataset then
+            local fields = dataset.luadata[tag]
+            if fields then
+                local manipulator, field = splitmanipulation(field)
+                local category = fields.category
+                local valid    = permitted(category,field)
+                if valid then
+                    local okay = found(dataset,tag,field,valid,fields)
+                    if okay then
+                        context(manipulator and applymanipulation(manipulator,okay) or okay)
+                    else
+                        report("%s %s %a in category %a for tag %a in dataset %a","unknown","entry",field,category,tag,name)
+                    end
+                else
+                    report("%s %s %a in category %a for tag %a in dataset %a","invalid","entry",field,category,tag,name)
+                end
+            else
+                report("unknown tag %a in dataset %a",tag,name)
+            end
+        else
+            report("unknown dataset %a",name)
+        end
+    end
+
+    function commands.btxdetail(name,tag,field)
+        local dataset = rawget(datasets,name)
+        if dataset then
+            local fields = dataset.luadata[tag]
+            if fields then
                 local details = dataset.details[tag]
                 if details then
-                    local value = details[field]
+                    local category = fields.category
+                    if permitted(category,field) then
+                        local manipulator, field = splitmanipulation(field)
+                        local value = details[field]
+                        if type(value) == "string" then
+                            context(manipulator and applymanipulation(manipulator,value) or value)
+                        else
+                            report("%s %s %a in category %a for tag %a in dataset %a","unknown","detail",field,category,tag,name)
+                        end
+                    else
+                        report("%s %s %a in category %a for tag %a in dataset %a","invalid","detail",field,category,tag,name)
+                    end
+                else
+                    report("no details for tag %a in dataset %a",tag,name)
+                end
+            else
+                report("unknown tag %a in dataset %a",tag,name)
+            end
+        else
+            report("unknown dataset %a",name)
+        end
+    end
+
+    function commands.btxfield(name,tag,field)
+        local dataset = rawget(datasets,name)
+        if dataset then
+            local fields = dataset.luadata[tag]
+            if fields then
+                local category = fields.category
+                if permitted(category,field) then
+                    local manipulator, field = splitmanipulation(field)
+                    local value = fields[field]
                     if type(value) == "string" then
                         context(manipulator and applymanipulation(manipulator,value) or value)
-                        return
-                    end
-                end
-                report("unknown field %a of tag %a in dataset %a",field,tag,name)
-            end
-        else
-            report("unknown tag %a in dataset %a",tag,name)
-        end
-    else
-        report("unknown dataset %a",name)
-    end
-end
-
-function commands.btxdetail(name,tag,field)
-    local dataset = rawget(datasets,name)
-    if dataset then
-        local details = dataset.details[tag]
-        if details then
-            local category = fields.category
-            if found(category,field) then
-                local manipulator, field = splitmanipulation(field)
-                local value = details[field]
-                if type(value) == "string" then
-                    context(manipulator and applymanipulation(manipulator,value) or value)
-                else
-                    report("unknown detail %a of tag %a in dataset %a",field,tag,name)
-                end
-            end
-        else
-            report("unknown tag %a in dataset %a",tag,name)
-        end
-    else
-        report("unknown dataset %a",name)
-    end
-end
-
-function commands.btxfield(name,tag,field)
-    local dataset = rawget(datasets,name)
-    if dataset then
-        local fields = dataset.luadata[tag]
-        if fields then
-            local category = fields.category
-            if found(category,field) then
-                local manipulator, field = splitmanipulation(field)
-                local value = fields[field]
-                if type(value) == "string" then
-                    context(manipulator and applymanipulation(manipulator,value) or value)
-                else
-                    report("unknown field %a of tag %a in dataset %a",field,tag,name)
-                end
-            end
-        else
-            report("unknown tag %a in dataset %a",tag,name)
-        end
-    else
-        report("unknown dataset %a",name)
-    end
-end
-
--- testing: to be speed up with testcase
-
-local function found(name,tag,field,yes)
-    local dataset = rawget(datasets,name)
-    if dataset then
-        local data  = dataset.luadata[tag]
-        if data then
-            local category  = data.category
-            local fieldspec = currentspecificationfields[category][field]
-            if ignoredfields and fieldspec == "optional" and ignoredfields[field] then
-                fieldspec = false
-            end
-            if fieldspec then
-                local value = data[field]
-                if value then
-                    if value ~= "" then
-                        return true
+                    else
+                        report("%s %s %a in category %a for tag %a in dataset %a","unknown","field",field,category,tag,name)
                     end
                 else
-                    local data = dataset.details[tag]
-                    if data then
-                        local value = data[field]
-                        if value then
-                            if value ~= "" then
-                                return true
-                            end
-                        end
-                    end
+                    report("%s %s %a in category %a for tag %a in dataset %a","invalid","field",field,category,tag,name)
+                end
+            else
+                report("unknown tag %a in dataset %a",tag,name)
+            end
+        else
+            report("unknown dataset %a",name)
+        end
+    end
+
+    local function okay(name,tag,field)
+        local dataset = rawget(datasets,name)
+        if dataset then
+            local fields = dataset.luadata[tag]
+            if fields then
+                local category = fields.category
+                local valid    = permitted(category,field)
+                if valid then
+--         print("!!!!!!",found(dataset,tag,field,valid,fields))
+                    return found(dataset,tag,field,valid,fields)
                 end
             end
         end
     end
-    return false
-end
 
-function commands.btxdoifelse(name,tag,field)
-    if found(name,tag,field) then
-        ctx_firstoftwoarguments()
-    else
-        ctx_secondoftwoarguments()
-    end
-end
+    local ctx_doifelse = commands.doifelse
+    local ctx_doif     = commands.doif
+    local ctx_doifnot  = commands.doifnot
 
-function commands.btxdoif(name,tag,field)
-    if found(name,tag,field) then
-        ctx_firstofoneargument()
-    else
-        ctx_gobbleoneargument()
-    end
-end
+    function commands.btxdoifelse(name,tag,field) ctx_doifelse(okay(name,tag,field)) end
+    function commands.btxdoif    (name,tag,field) ctx_doif    (okay(name,tag,field)) end
+    function commands.btxdoifnot (name,tag,field) ctx_doifnot (okay(name,tag,field)) end
 
-function commands.btxdoifnot(name,tag,field)
-    if found(name,tag,field) then
-        ctx_gobbleoneargument()
-    else
-        ctx_firstofoneargument()
-    end
 end
 
 -- -- alternative approach: keep data at the tex end
