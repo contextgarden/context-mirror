@@ -121,6 +121,7 @@ local ctx_btxsetlanguage          = context.btxsetlanguage
 local ctx_btxsetcombis            = context.btxsetcombis
 local ctx_btxsetcategory          = context.btxsetcategory
 local ctx_btxcitesetup            = context.btxcitesetup
+local ctx_btxpagesetup            = context.btxpagesetup
 local ctx_btxsetfirst             = context.btxsetfirst
 local ctx_btxsetsecond            = context.btxsetsecond
 local ctx_btxsetthird             = context.btxsetthird
@@ -134,6 +135,10 @@ local ctx_btxsetbacktrace         = context.btxsetbacktrace
 local ctx_btxsetcount             = context.btxsetcount
 local ctx_btxsetconcat            = context.btxsetconcat
 local ctx_btxsetoveflow           = context.btxsetoverflow
+local ctx_btxsetfirstpage         = context.btxsetfirstpage
+local ctx_btxsetlastpage          = context.btxsetlastpage
+local ctx_btxsetfirstinternal     = context.btxsetfirstinternal
+local ctx_btxsetlastinternal      = context.btxsetlastinternal
 local ctx_btxstartcite            = context.btxstartcite
 local ctx_btxstopcite             = context.btxstopcite
 local ctx_btxstartciteauthor      = context.btxstartciteauthor
@@ -1150,6 +1155,20 @@ local function validkeyword(dataset,tag,keyword)
     end
 end
 
+local function registerpage(pages,tag,result,listindex)
+    local p = pages[tag]
+    local r = result[listindex].references
+    if p then
+        local last = p[#p][2]
+        local real = last.realpage
+        if real ~= r.realpage then
+            p[#p+1] = { listindex, r }
+        end
+    else
+        pages[tag] = { { listindex, r } }
+    end
+end
+
 local methods = { }
 lists.methods = methods
 
@@ -1196,6 +1215,7 @@ methods[v_local] = function(dataset,rendering,keyword)
     local alldone   = repeated and { } or r_alldone
     local doglobal  = rendering.method == v_global
     local traced    = { } -- todo: only if interactive (backlinks) or when tracing
+    local pages     = { }
     for listindex=1,#result do
         local r = result[listindex]
         local u = r.userdata
@@ -1223,6 +1243,7 @@ methods[v_local] = function(dataset,rendering,keyword)
                     list[#list+1] = { tag, listindex, 0, u, u.btxint }
                 end
             end
+            registerpage(pages,tag,result,listindex)
         end
     end
     if traced then
@@ -1232,6 +1253,9 @@ methods[v_local] = function(dataset,rendering,keyword)
         end
     end
     lists.result = result
+    structures.lists.result = result
+    rendering.pages = pages -- or list.pages
+ -- inspect(pages)
 end
 
 methods[v_global] = methods[v_local]
@@ -1344,7 +1368,6 @@ local function byspec(dataset,list,method) -- todo: yearsuffix
     return result
 end
 
-
 lists.sorters = {
     [v_short] = function(dataset,rendering,list)
         local shorts = rendering.shorts
@@ -1440,31 +1463,33 @@ function lists.prepareentries(dataset)
         local li    = list[i]
         local tag   = li[1]
         local entry = luadata[tag]
-        if entry and (forceall or repeated or not used[tag]) then
-            newlist[#newlist+1] = li
-            -- already here:
-            if not repeated then
-                used[tag] = true -- beware we keep the old state (one can always use criterium=all)
-            end
-            local detail = details[tag]
-            if detail then
-                local referencenumber = detail.referencenumber
-                if not referencenumber then
-                    lastreferencenumber    = lastreferencenumber + 1
-                    referencenumber        = lastreferencenumber
-                    detail.referencenumber = lastreferencenumber
+        if entry then
+            if forceall or repeated or not used[tag] then
+                newlist[#newlist+1] = li
+                -- already here:
+                if not repeated then
+                    used[tag] = true -- beware we keep the old state (one can always use criterium=all)
                 end
-                li[3] = referencenumber
-            else
-                report("missing details for tag %a in dataset %a (enhanced: %s)",tag,dataset,current.enhanced and "yes" or "no")
-                -- weird, this shouldn't happen .. all have a detail
-                lastreferencenumber = lastreferencenumber + 1
-                details[tag] = { referencenumber = lastreferencenumber }
-                li[3] = lastreferencenumber
+                local detail = details[tag]
+                if detail then
+                    local referencenumber = detail.referencenumber
+                    if not referencenumber then
+                        lastreferencenumber    = lastreferencenumber + 1
+                        referencenumber        = lastreferencenumber
+                        detail.referencenumber = lastreferencenumber
+                    end
+                    li[3] = referencenumber
+                else
+                    report("missing details for tag %a in dataset %a (enhanced: %s)",tag,dataset,current.enhanced and "yes" or "no")
+                    -- weird, this shouldn't happen .. all have a detail
+                    lastreferencenumber = lastreferencenumber + 1
+                    details[tag] = { referencenumber = lastreferencenumber }
+                    li[3] = lastreferencenumber
+                end
             end
         end
     end
-    rendering.list = type(sorter) == "function" and sorter(dataset,rendering,newlist,sorttype) or newlist
+    rendering.list  = type(sorter) == "function" and sorter(dataset,rendering,newlist,sorttype) or newlist
 end
 
 function lists.fetchentries(dataset)
@@ -1481,6 +1506,64 @@ end
 -- for rendering
 
 -- setspecification
+
+function commands.btxflushpages(dataset,tag)
+    -- todo: interaction
+    local rendering = renderings[dataset]
+    local pages     = rendering.pages[tag]
+    if not pages then
+        return
+    end
+    local nofpages = #pages
+    if nofpages == 0 then
+        return
+    end
+    local first_p = nil
+    local first_r = nil
+    local last_p  = nil
+    local last_r  = nil
+    local ranges  = { }
+    local nofdone = 0
+    local function flush()
+        if last_r and first_r ~= last_r then
+            ranges[#ranges+1] = { first_p, last_p }
+        else
+            ranges[#ranges+1] = { first_p }
+        end
+    end
+    for i=1,nofpages do
+        local next_p = pages[i]
+        local next_r = next_p[2].realpage
+        if not first_r then
+            first_p = next_p
+            first_r = next_r
+        elseif last_r + 1 == next_r then
+            -- continue
+        elseif first_r then
+            flush()
+            first_p = next_p
+            first_r = next_r
+        end
+        last_p = next_p
+        last_r = next_r
+    end
+    if first_r then
+        flush()
+    end
+    local nofranges = #ranges
+    for i=1,nofranges do
+        local r = ranges[i]
+        ctx_btxsetconcat(concatstate(i,nofranges))
+        local first, last = r[1], r[2]
+        ctx_btxsetfirstinternal(first[2].internal)
+        ctx_btxsetfirstpage(first[1])
+        if last then
+            ctx_btxsetlastinternal(last[2].internal)
+            ctx_btxsetlastpage(last[1])
+        end
+        ctx_btxpagesetup()
+    end
+end
 
 function lists.flushentries(dataset,textmode)
     local rendering = renderings[dataset]

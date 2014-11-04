@@ -589,6 +589,56 @@
     \fi
 \to \everydefinebtxrendering
 
+\newconditional\c_btx_list_texts
+
+\appendtoks
+    \doifelse{\btxrenderingparameter\c!textstate}\v!start
+      \settrue\setfalse\c_btx_list_texts
+\to \everysetupbtxlistplacement
+
+% page stuff (for thomas)
+
+\let\currentbtxfirstpage    \empty \unexpanded\def\btxsetfirstpage    #1{\def\currentbtxfirstpage{\btx_page_number{#1}}}
+\let\currentbtxlastpage     \empty \unexpanded\def\btxsetlastpage     #1{\def\currentbtxlastpage {\btx_page_number{#1}}}
+\let\currentbtxfirstinternal\empty \unexpanded\def\btxsetfirstinternal  {\def\currentbtxfirstinternal}
+\let\currentbtxlastinternal \empty \unexpanded\def\btxsetlastinternal   {\def\currentbtxlastinternal}
+
+\unexpanded\def\btx_page_number#1%
+  {\def\currentlistindex{#1}%
+   \structurelistpagenumber}
+
+\unexpanded\def\btxpagereset
+  {\let        \currentbtxfirstpage    \empty
+   \let        \currentbtxlastpage     \empty
+   \let        \currentbtxfirstinternal\empty
+   \let        \currentbtxlastinternal \empty
+   \setconstant\currentbtxoverflow     \zerocount
+   \setconstant\currentbtxconcat       \zerocount
+   \setconstant\currentbtxcount        \zerocount}
+
+\newconditional\c_btx_list_pages
+
+\appendtoks
+    \doifelse{\btxrenderingparameter\c!pagestate}\v!start
+      \settrue\setfalse\c_btx_list_pages
+\to \everysetupbtxlistplacement
+
+\unexpanded\def\btx_entry_inject_pages
+  {\dontleavehmode
+   \begingroup
+   \let\currentlist\s!btx
+   \btxpagereset
+   \btxlistparameter\c!pageleft
+   \ctxcommand{btxflushpages("\currentbtxdataset","\currentbtxtag")}%
+   \btxlistparameter\c!pageright
+   \endgroup}
+
+\unexpanded\def\btxpagesetup
+  {\fastsetup{\s!btx:\s!list:\s!page:normal}%
+   \btxpagereset}
+
+% end of page stuff
+
 \unexpanded\def\btx_entry_inject
   {\begingroup
    \edef\currentbtxcategory{\btxfield{category}}%
@@ -599,18 +649,20 @@
      \btx_entry_inject_nop
    \endgroup}
 
-\def\btx_entry_inject_yes
-  {\edef\p_textstate{\btxrenderingparameter\c!textstate}%
-   \ifx\p_textstate\v!start
+\unexpanded\def\btx_entry_inject_yes
+  {\ifconditional\c_btx_list_texts
      \currentbtxbefore
    \fi
    \fastsetup\currentbtxsetup
    \removeunwantedspaces
+   \ifconditional\c_btx_list_pages
+     \btx_entry_inject_pages
+   \fi
    \ifx\currentbtxcombis\empty \else
      \btxrenderingparameter\c!separator
      \processcommacommand[\currentbtxcombis]\btx_entry_inject_combi
    \fi
-   \ifx\p_textstate\v!start
+   \ifconditional\c_btx_list_texts
      \currentbtxafter
    \fi}
 
@@ -1579,6 +1631,7 @@
 
 \loadbtxdefinitionfile[cite]
 \loadbtxdefinitionfile[list]
+\loadbtxdefinitionfile[page]
 \loadbtxdefinitionfile[author]
 
 \setupbtx

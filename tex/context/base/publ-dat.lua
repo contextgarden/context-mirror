@@ -124,25 +124,29 @@ local extrafields = {
     crossref = "implicit",
 }
 
+local unknowncategory = function(t,k)
+    local v = {
+        required = { },
+        optional = { },
+    }
+    t[k] = v
+    return v
+end
+
+local unknownfield = function(t,k)
+    local v = setmetatableindex(function(t,k) local v = "optional" t[k] = v return v end)
+    t[k] = v
+    return v
+end
+
 local default = {
     name       = name,
     version    = "1.00",
     comment    = "unknown specification.",
     author     = "anonymous",
     copyright  = "no one",
-    categories = setmetatableindex(function(t,k)
-        local v = {
-            required = { },
-            optional = { },
-        }
-        t[k] = v
-        return v
-    end),
-    fields = setmetatableindex(function(t,k)
-        local v = setmetatableindex(function(t,k) local v = "optional" t[k] = v return v end)
-        t[k] = v
-        return v
-    end),
+    categories = setmetatableindex(unknowncategory),
+    fields     = setmetatableindex(unknownfield),
 }
 
 local types = { "optional", "required", "virtual" }
@@ -164,13 +168,18 @@ local specifications = setmetatableindex(function(t,name)
     end
     -- goodie for alan ...
     local categories = specification.categories
+    if not categories then
+        categories = { }
+        specification.categories = categories
+    end
     for k, v in next, categories do
         if type(v) == "string" then
             categories[k] = categories[v]
         end
     end
+    setmetatableindex(categories,unknowncategory)
     --
-    local fields         = { }
+    local fields         = setmetatableindex(unknownfield)
     specification.fields = fields
     for category, data in next, categories do
         local list       = setmetatableindex({},extrafields)
