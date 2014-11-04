@@ -699,8 +699,8 @@
        \ctxcommand{btxcollectlistentries {
            names      = "btx",
            criterium  = "\currentbtxcriterium",
+           reference  = "\btxrenderingparameter\c!reference",
            method     = "\btxrenderingparameter\c!method",
-           number     = "\btxrenderingparameter\c!number",
            btxdataset = "\currentbtxdataset",
            keyword    = "\btxrenderingparameter\c!keyword",
            sorttype   = "\btxrenderingparameter\c!sorttype",
@@ -1343,32 +1343,32 @@
   %\c!saveinlist=\v!no, % maybe for before/after
    \c!textstate=\v!start,
    \c!width=\v!auto,
-   \c!separator={; },
+   \c!separator={;\space},
    \c!distance=1.5\emwidth]
 
 \definebtxrendering
   [\v!standard]
 
 \setupbtxlistvariant
-  [\c!namesep={, },
+  [\c!namesep={,\space},
    \c!lastnamesep={,\nobreakspace\textampersand\space},
    \c!finalnamesep={,\nobreakspace\textampersand\space},
-   \c!firstnamesep={ },
- % \c!andtext={ \btxlabeltext{\currentbtxalternative:and} },
-   \c!otherstext={ \btxlabeltext{\currentbtxalternative:others}},
-   \c!juniorsep={ },
-   \c!vonsep={ },
-   \c!initialsep={ },  % between initials and lastname
-  %\c!initialssep={ }, % between multiple initials
+   \c!firstnamesep=\space,
+ % \c!andtext={\space\btxlabeltext{\currentbtxalternative:and}\space},
+   \c!otherstext={\space\btxlabeltext{\currentbtxalternative:others}},
+   \c!juniorsep=\space,
+   \c!vonsep=\space,
+   \c!initialsep=\space,  % between initials and lastname
+  %\c!initialssep=\space, % between multiple initials
   %\c!initialsterminator={.},
-   \c!surnamesep={, },
-   \c!surnameinitialsep={, },
-   \c!surnamefirstnamesep={, },
+   \c!surnamesep={,\space},
+   \c!surnameinitialsep={,\space},
+   \c!surnamefirstnamesep={,\space},
    \c!etallimit=5,
    \c!etaldisplay=\btxlistvariantparameter\c!etallimit,
    %c!journalconversion=\v!normal,
    \c!monthconversion=\v!number,
-   \c!authorconversion=\v!normal]
+   \c!authorconversion=\v!invertedshort]
 
 \definebtxlistvariant
   [author]
@@ -1389,11 +1389,11 @@
  % \c!setups=btx:cite:initialize,
    \c!alternative=num,
    % APA 2013 section 6.16 (p. 177)
-   \c!pubsep={, },
-   \c!lastpubsep={ \btxlabeltext{\currentbtxalternative:and} },
-   \c!finalpubsep={ \btxlabeltext{\currentbtxalternative:and} },
+   \c!pubsep={,\space},
+   \c!lastpubsep={\space\btxlabeltext{\currentbtxalternative:and}\space},
+   \c!finalpubsep={\space\btxlabeltext{\currentbtxalternative:and}\space},
    \c!compress=\v!no,
-   \c!inbetween={ },
+   \c!inbetween=\space,
    \c!range=\endash,
    \c!left=,
    \c!middle=,
@@ -1407,28 +1407,28 @@
    [authornum]
    [author]
    [\c!left={(},
-   %\c!middle={, },
+   %\c!middle={,\space},
     \c!right={)}]
 
 \definebtxcitevariant
    [authoryear]
    [\c!compress=\v!yes,
-    \c!inbetween={, },
+    \c!inbetween={,\space},
     \c!left={(},
-   %\c!middle={, },
+   %\c!middle={,\space},
     \c!right={)},
-    \c!pubsep={; },
-    \c!lastpubsep={; },
-    \c!finalpubsep={; }]
+    \c!pubsep={;\space},
+    \c!lastpubsep={;\space},
+    \c!finalpubsep={;\space}]
 
 \definebtxcitevariant
    [authoryears]
    [authoryear]
    [\c!left=,
-    \c!inbetween={ (},
-    \c!pubsep={); },
-    \c!lastpubsep={); },
-    \c!finalpubsep={); }]
+    \c!inbetween={\space(},
+    \c!pubsep={);\space},
+    \c!lastpubsep={);\space},
+    \c!finalpubsep={);\space}]
 
 \definebtxcitevariant
    [author:num]
@@ -1455,20 +1455,20 @@
 \definebtxcitevariant
    [year]
    [\c!left={(},
-   %\c!middle={, },
-    \c!pubsep={, },
-    \c!lastpubsep={, },
-    \c!finalpubsep={, },
+   %\c!middle={,\space},
+    \c!pubsep={,\space},
+    \c!lastpubsep={,\space},
+    \c!finalpubsep={,\space},
     \c!right={)}]
 
 \definebtxcitevariant
    [title]
-   %[\c!middle={, }]
+   %[\c!middle={,\space}]
 
 \definebtxcitevariant
    [tag]
    [\c!left={[},
-   %\c!middle={, },
+   %\c!middle={,\space},
     \c!right={]}]
 
 \definebtxcitevariant
@@ -1478,13 +1478,13 @@
 \definebtxcitevariant
    [serial]
    [\c!left={[},
-   %\c!middle={, },
+   %\c!middle={,\space},
     \c!right={]}]
 
 \definebtxcitevariant
    [page]
    [\c!left={[},
-   %\c!middle={, },
+   %\c!middle={,\space},
     \c!right={]}]
 
 \definebtxcitevariant
@@ -1497,13 +1497,13 @@
 \definebtxcitevariant
    [short]
    [\c!left={[},
-   %\c!middle={, },
+   %\c!middle={,\space},
     \c!right={]}]
 
 \definebtxcitevariant
    [category]
    [\c!left={[},
-   %\c!middle={, },
+   %\c!middle={,\space},
     \c!right={]}]
 
 \definebtxcitevariant
@@ -1513,26 +1513,26 @@
 \definebtxcitevariant
    [doi]
    [\c!left={[},
-   %\c!middle={, },
+   %\c!middle={,\space},
     \c!right={]}]
 
 \definebtxcitevariant
    [url]
    [\c!left={[},
-   %\c!middle={, },
+   %\c!middle={,\space},
     \c!right={]}]
 
 \definebtxcitevariant
    [page]
    [\c!left=,
-   %\c!middle={, },
+   %\c!middle={,\space},
     \c!right=]
 
 \definebtxcitevariant
    [num]
    [\c!compress=\v!yes,
     \c!left={[},
-   %\c!middle={, },
+   %\c!middle={,\space},
     \c!right={]},
     \c!pubsep={,},
     \c!lastpubsep={,},
@@ -1541,37 +1541,35 @@
 % These cannot, for some reason, be folded-in above...
 
 \setupbtxcitevariant
-  [\c!namesep={, },
+  [\c!namesep={,\space},
    \c!lastnamesep={,\nobreakspace\textampersand\space},
-   \c!finalnamesep={,\nobreakspace\textampersand\space},
-   \c!firstnamesep={ },
-  %\c!andtext={ \btxlabeltext{\currentbtxalternative:and} },
-   \c!otherstext={ \btxlabeltext{\currentbtxalternative:others}},
-   \c!juniorsep={ },
-   \c!vonsep={ },
-   \c!initialsep={ },
-  %\c!initialssep={ }, % used?
+   \c!finalnamesep={\nobreakspace\textampersand\space}, % no comma!
+   \c!firstnamesep=\space,
+  %\c!andtext={\space\btxlabeltext{\currentbtxalternative:and}\space},
+   \c!otherstext={\space\btxlabeltext{\currentbtxalternative:others}},
+   \c!juniorsep=\space,
+   \c!vonsep=\space,
+   \c!initialsep=\space,
+  %\c!initialssep=\space, % used?
   %\c!initialsterminator={.},
-   \c!surnamesep={, },
-   \c!surnameinitialsep={, },
-   \c!surnamefirstnamesep={, },
+   \c!surnamesep={,\space},
+   \c!surnameinitialsep={,\space},
+   \c!surnamefirstnamesep={,\space},
    \c!etallimit=5, % when 2-4, show all first time, etaldisplay subsequently...
    \c!etaldisplay=1,
    \c!monthconversion=\v!number,
    \c!authorconversion=\v!name]
 
-% And why these here:
-
 \setupbtxcitevariant
    [author]
-   [\c!lastnamesep={, \btxlabeltext{\currentbtxalternative:and} },
-    \c!finalnamesep={, \btxlabeltext{\currentbtxalternative:and} },
+   [\c!lastnamesep={,\space\btxlabeltext{\currentbtxalternative:and}\space},
+    \c!finalnamesep={\space\btxlabeltext{\currentbtxalternative:and}\space}, % no comma!
     \c!authorconversion=\v!name]
 
 \setupbtxcitevariant
    [authoryears]
-   [\c!lastnamesep={, \btxlabeltext{\currentbtxalternative:and} },
-    \c!finalnamesep={, \btxlabeltext{\currentbtxalternative:and} },
+   [\c!lastnamesep={,\space\btxlabeltext{\currentbtxalternative:and}\space},
+    \c!finalnamesep={\space\btxlabeltext{\currentbtxalternative:and}\space}, % no comma!
     \c!authorconversion=\v!name]
 
 % Do we want these in the format? Loading them delayed is somewhat messy.

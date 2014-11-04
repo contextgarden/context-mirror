@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 11/02/14 17:27:40
+-- merge date  : 11/04/14 00:45:31
 
 do -- begin closure to overcome local limits and interference
 

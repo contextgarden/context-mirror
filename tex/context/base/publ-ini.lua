@@ -5,6 +5,9 @@ if not modules then modules = { } end modules ['publ-ini'] = {
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
 }
+
+-- plug the list sorted in the list mechanism (specification.sortorder)
+
 -- todo: delay details till alternative is known so that potential author
 -- fields are known
 
@@ -1151,7 +1154,7 @@ local methods = { }
 lists.methods = methods
 
 methods[v_dataset] = function(dataset,rendering,keyword)
-    -- why only once inless criterium=all?
+    -- why only once unless criterium=all?
     local luadata = datasets[dataset].luadata
     local list    = rendering.list
     for tag, data in sortedhash(luadata) do
@@ -1631,7 +1634,7 @@ function commands.btxhandlenocite(specification)
     local markentry = specification.markentry ~= false
     local internal  = specification.internal or ""
     --
-    local prefix, rest = lpegmatch(prefixsplitter,tag)
+    local prefix, rest = lpegmatch(prefixsplitter,reference)
     if rest then
         dataset   = prefix
         reference = rest
