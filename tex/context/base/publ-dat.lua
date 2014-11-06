@@ -33,7 +33,7 @@ local textoutf = characters and characters.tex.toutf
 local settings_to_hash, settings_to_array = utilities.parsers.settings_to_hash, utilities.parsers.settings_to_array
 local formatters = string.formatters
 local sortedkeys, sortedhash = table.sortedkeys, table.sortedhash
-local xmlcollected, xmltext, xmlconvert = xml.collected, xml.text, xmlconvert
+local xmlcollected, xmltext, xmlconvert = xml.collected, xml.text, xml.convert
 local setmetatableindex = table.setmetatableindex
 
 -- todo: more allocate
@@ -172,11 +172,6 @@ local specifications = setmetatableindex(function(t,name)
     if not categories then
         categories = { }
         specification.categories = categories
-    end
-    for k, v in next, categories do
-        if type(v) == "string" then
-            categories[k] = categories[v]
-        end
     end
     setmetatableindex(categories,unknowncategory)
     --
