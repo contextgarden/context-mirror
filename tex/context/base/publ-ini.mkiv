@@ -93,8 +93,7 @@
 
 \installcorenamespace {btx}
 
-\installsetuphandler \??btx {btx}
-% \installcommandhandler \??btx {btx} \??btx
+\installsimplecommandhandler \??btx {btx} \??btx
 
 % \setupbtx
 %   [\c!alternative=apa]
@@ -120,14 +119,8 @@
 \unexpanded\def\loadbtxdefinitionfile[#1]%
   {\ctxcommand{loadbtxdefinitionfile("#1")}}
 
-% \appendtoks
-%     \loadbtxdefinitionfile[\btxrenderingparameter\c!alternative]
-% \to \everysetupbtxrendering
-
-\let\currentbtxalternative\empty
-
 \appendtoks
-    \edef\currentbtxalternative{\btxrenderingparameter\c!alternative}%
+    \edef\currentbtxalternative{\btxparameter\c!alternative}%
     \ifcsname\??btxrenderingdefinition\currentbtxalternative\endcsname
         % maybe fall back on apa ?
     \else
@@ -137,7 +130,8 @@
 \to \everysetupbtx
 
 \def\btx_set_rendering_alternative
-  {\ctxcommand{setbtxspecification("\currentbtxalternative")}}
+  {\edef\currentbtxalternative{\btxparameter\c!alternative}%
+   \ctxcommand{setbtxspecification("\currentbtxalternative")}}
 
 % a dedicated construction mechanism
 
@@ -1302,7 +1296,6 @@
 
 \unexpanded\def\placecitation{\citation[entry]} % [#1]
 
-
 \unexpanded\def\btxhandleciteentry
   {\dontleavehmode
    \begingroup
@@ -1592,5 +1585,7 @@
 
 \setupbtx
   [\c!alternative=apa]
+
+% \letvalue{\??btxrenderingdefinition apa}\undefined % we will reload at runtime
 
 \protect

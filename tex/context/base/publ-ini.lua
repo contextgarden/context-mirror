@@ -973,6 +973,31 @@ do
         end
     end
 
+    function commands.btxfield(name,tag,field)
+        local dataset = rawget(datasets,name)
+        if dataset then
+            local fields = dataset.luadata[tag]
+            if fields then
+                local category = fields.category
+                if permitted(category,field) then
+                    local manipulator, field = splitmanipulation(field)
+                    local value = fields[field]
+                    if type(value) == "string" then
+                        context(manipulator and applymanipulation(manipulator,value) or value)
+                    else
+                        report("%s %s %a in category %a for tag %a in dataset %a","unknown","field",field,category,tag,name)
+                    end
+                else
+                    report("%s %s %a in category %a for tag %a in dataset %a","invalid","field",field,category,tag,name)
+                end
+            else
+                report("unknown tag %a in dataset %a",tag,name)
+            end
+        else
+            report("unknown dataset %a",name)
+        end
+    end
+
     function commands.btxdetail(name,tag,field)
         local dataset = rawget(datasets,name)
         if dataset then
@@ -994,31 +1019,6 @@ do
                     end
                 else
                     report("no details for tag %a in dataset %a",tag,name)
-                end
-            else
-                report("unknown tag %a in dataset %a",tag,name)
-            end
-        else
-            report("unknown dataset %a",name)
-        end
-    end
-
-    function commands.btxfield(name,tag,field)
-        local dataset = rawget(datasets,name)
-        if dataset then
-            local fields = dataset.luadata[tag]
-            if fields then
-                local category = fields.category
-                if permitted(category,field) then
-                    local manipulator, field = splitmanipulation(field)
-                    local value = fields[field]
-                    if type(value) == "string" then
-                        context(manipulator and applymanipulation(manipulator,value) or value)
-                    else
-                        report("%s %s %a in category %a for tag %a in dataset %a","unknown","field",field,category,tag,name)
-                    end
-                else
-                    report("%s %s %a in category %a for tag %a in dataset %a","invalid","field",field,category,tag,name)
                 end
             else
                 report("unknown tag %a in dataset %a",tag,name)
