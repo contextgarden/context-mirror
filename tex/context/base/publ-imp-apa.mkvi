@@ -10,15 +10,7 @@
 %C This module is part of the \CONTEXT\ macro||package and is therefore copyrighted
 %D by \PRAGMA. See mreadme.pdf for details.
 
-% Hans: what does the below mean? Just some wrapper (possible tracing and so)
 % \loadbtxdefinitionfile[def]
-
-%D Instead of texdefinitions without arguments, we could have used setups but in my
-%D editor the commands stand out better and it also saves an additional component
-%D in the name (e.g. common:) because commands and setups have a different namespace.
-%D
-%D Sometimes we have verbose injections in an entry and these can be language
-%D dependent, so we use labels.
 
 \startbtxrenderingdefinitions[apa]
 
@@ -34,12 +26,6 @@
 %D     url      ={http://www.apa.org/books/},
 %D }
 %D \stopTEX
-
-% First of all, the APA style defines authoryear bibliography lists.
-
-% does not work here: \setupbtxrendering [standard] [numbering=no,sorttype=authoryear]
-
-% does not work here: \setupbtxcitevariant [alternative=authoryear,sorttype=authoryear]
 
 % set all APA compliant values (may be redundant but we do not count on defaults.)
 
@@ -72,28 +58,29 @@
 
 % like \setupbtxlistvariant above but not exactly...
 
+% The APA style defines authoryear citations.
+
 \setupbtxcitevariant
   [\c!alternative=authoryear,
-   \c!namesep={,\space},
-   \c!lastnamesep={,\nobreakspace\textampersand\space},
+   \c!namesep=\btxlistvariantparameter\c!namesep,
+   \c!lastnamesep=\btxlistvariantparameter\c!lastnamesep,
    \c!finalnamesep={\nobreakspace\textampersand\space}, % no comma!
-   \c!firstnamesep=\space,
-   \c!otherstext={\space\btxlabeltext{\currentbtxspecification:others}},
-   \c!juniorsep=\space,
-   \c!vonsep=\space,
-   \c!initialsep=\space,
-  %\c!initialssep=\space,
-  %\c!initialsterminator={.},
-   \c!surnamesep={,\space},
-   \c!surnameinitialsep={,\space},
-   \c!surnamefirstnamesep={,\space},
+   \c!firstnamesep=\btxlistvariantparameter\c!firstnamesep,
+   \c!otherstext=\btxlistvariantparameter\c!otherstext,
+   \c!juniorsep=\btxlistvariantparameter\c!juniorsep,
+   \c!vonsep=\btxlistvariantparameter\c!vonsep,
+   \c!initialsep=\btxlistvariantparameter\c!initialsep,
+  %\c!initialssep=\btxlistvariantparameter\c!initialssep,
+  %\c!initialsterminator=\btxlistvariantparameter\c!initialsterminator,
+   \c!surnamesep=\btxlistvariantparameter\c!surnamesep,
+   \c!surnameinitialsep=\btxlistvariantparameter\c!surnameinitialsep,
+   \c!surnamefirstnamesep=\btxlistvariantparameter\c!surnamefirstnamesep,
    \c!etallimit=5, % when 2-4, show all first time, etaldisplay subsequently...
    \c!etaldisplay=1,
-   \c!monthconversion=\v!number,
+   \c!monthconversion=\btxlistvariantparameter\c!monthconversion,
    \c!authorconversion=\v!name,
    \c!interaction=\v!start,
  % \c!setups=btx:cite:initialize,
-   \c!alternative=num,
    \c!pubsep={,\space},
    \c!lastpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
    \c!finalpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
@@ -145,6 +132,9 @@
 %D \btxloadjournallist[journals.txt] % the jabref list
 %D \stoptyping
 
+%D Sometimes we have verbose injections in an entry and these can be language
+%D dependent, so we use labels.
+%D
 %D Because we want to mix rendering (in the manual) we need a namespace in label
 %D texts:
 
@@ -178,6 +168,8 @@
    apa:and=and,
    apa:period={. },
    apa:Author=Author,
+   apa:Reference={Ref.},
+   apa:References={Refs.},
    apa:Advanced={Advanced online publication},
    apa:Retrieved={Retrieved from},
    apa:others={et al.}]
@@ -209,6 +201,8 @@
    apa:and=et,
    apa:period={. },
    apa:Author=Auteur,
+   apa:Reference={Réf.},
+   apa:References={Réfs.},
    apa:Advanced={Publication en ligne anticipée},
    apa:Retrieved={Téléchargé de},
    apa:others={et al.}]
@@ -240,6 +234,8 @@
    apa:and=und,
    apa:period={. },
    apa:Author=Autor,
+   apa:Reference={Ref.},
+   apa:References={Ref.},
    apa:Advanced={Erweiterte Online-Publikation},
    apa:Retrieved={heruntergeladen von},
    apa:others={et al.}]
@@ -273,9 +269,17 @@
    apa:and=e,
    apa:period={. },
    apa:Author=Autore,
+   apa:Reference={Rif.},
+   apa:References={Rif.},
    apa:Advanced={Pre-pubblicazione on line},
    apa:Retrieved={Accessible online},
    apa:others={et al.}]
+
+%D Instead of texdefinitions without arguments, we could have used setups but in my
+%D editor (hh, scite) the commands stand out better. It also saves an additional
+%D component in the name (e.g. common:) because commands and setups have a different
+%D namespace, so similar calls don't clash. Performance of definitions is somewhat
+%D better.
 
 %D \btxdoif... and \btxflush rely on the definitions in publ-imp-apa.lua:
 %D fields that are not listed as required nor optional are IGNORED.
@@ -348,6 +352,7 @@
 \stoptexdefinition
 
 \starttexdefinition btx:apa:author-or-title
+    <\btxfieldname{authors},\btxfieldtype{authors}>\space\btxflush{authors}\space
     \btxdoifelse {author} {
         \btxflushauthor[invertedshort]{author}
     } {
@@ -357,7 +362,7 @@
 
 \starttexdefinition btx:apa:editor-or-editors
     \btxleftparenthesis
-    \btxsingularplural {editor} {
+    \btxsingularorplural {editor} {
         \btxlabeltext{apa:Editor}
     } {
         \btxlabeltext{apa:Editors}
@@ -366,6 +371,7 @@
 \stoptexdefinition
 
 \starttexdefinition btx:apa:author-or-editor-or-publisher-or- #title #publisher
+    <\btxfieldname{authors},\btxfieldtype{authors}>\space\btxflush{authors}\space
     \btxdoifelse {author} {
         \btxflushauthor[invertedshort]{author}
     } {

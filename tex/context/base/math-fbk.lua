@@ -469,13 +469,20 @@ virtualcharacters[0xFE303] = function(data) return smashed(data,0x0303,0xFE303) 
 -- another crazy hack .. doesn't work as we define scrscr first .. we now have smaller
 -- primes so we have smaller primes for the moment, big ones will become an option
 
+-- todo: check tounicodes
+
 local function smashed(data,unicode,optional)
     local oldchar = data.characters[unicode]
     if oldchar then
-        local height  = 1.2 * data.target.parameters.xheight
+        local xheight = data.target.parameters.xheight
+        local height  = 1.2 * xheight
+        local shift   = oldchar.height - height
+-- if unicode == 0x2032 then
+--     print(string.formatters["%U %0.4p %0.4p %0.4p %0.4p"](unicode,oldchar.height,xheight,data.target.parameters.size,shift))
+-- end
         local newchar = {
             commands = {
-                { "down", oldchar.height - height },
+                { "down", shift },
                 { "char", unicode },
             },
             height = height,

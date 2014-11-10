@@ -1418,26 +1418,26 @@
 
 \setupbtxcitevariant
   [\c!specification=\btxparameter\c!specification,
-   \c!namesep={,\space},
-   \c!lastnamesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
-   \c!finalnamesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
-   \c!firstnamesep=\space,
-   \c!otherstext={\space\btxlabeltext{\currentbtxspecification:others}},
-   \c!juniorsep=\space,
-   \c!vonsep=\space,
-   \c!initialsep=\space,
-  %\c!initialssep=\space,
-  %\c!initialsterminator={.},
-   \c!surnamesep={,\space},
-   \c!surnameinitialsep={,\space},
-   \c!surnamefirstnamesep={,\space},
-   \c!etallimit=5, % when 2-4, show all first time, etaldisplay subsequently...
-   \c!etaldisplay=1,
-   \c!monthconversion=\v!number,
+   \c!alternative=num,
+   \c!namesep=\btxlistvariantparameter\c!namesep,
+   \c!lastnamesep=\btxlistvariantparameter\c!lastnamesep,
+   \c!finalnamesep=\btxlistvariantparameter\c!finalnamesep,
+   \c!firstnamesep=\btxlistvariantparameter\c!firstnamesep,
+   \c!otherstext=\btxlistvariantparameter\c!otherstext,
+   \c!juniorsep=\btxlistvariantparameter\c!juniorsep,
+   \c!vonsep=\btxlistvariantparameter\c!vonsep,
+   \c!initialsep=\btxlistvariantparameter\c!initialsep,
+  %\c!initialssep=\btxlistvariantparameter\c!initialssep,
+  %\c!initialsterminator=\btxlistvariantparameter\c!initialsterminator,
+   \c!surnamesep=\btxlistvariantparameter\c!surnamesep,
+   \c!surnameinitialsep=\btxlistvariantparameter\c!surnameinitialsep,
+   \c!surnamefirstnamesep=\btxlistvariantparameter\c!surnamefirstnamesep,
+   \c!etallimit=\btxlistvariantparameter\c!etallimit,
+   \c!etaldisplay=\btxlistvariantparameter\c!etaldisplay,
+   \c!monthconversion=\btxlistvariantparameter\c!monthconversion,
    \c!authorconversion=\v!name,
    \c!interaction=\v!start,
  % \c!setups=btx:cite:initialize,
-   \c!alternative=num,
    \c!pubsep={,\space},
    \c!lastpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
    \c!finalpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
@@ -1567,6 +1567,16 @@
     \c!pubsep={,},
     \c!lastpubsep={,},
     \c!finalpubsep={,}]
+
+\definebtxcitevariant
+   [textnum]
+   [num]
+   [\c!left={Ref.\nbsp}, % {Refs.\nbsp}, if multiple?
+    %yuck! ={\btxlabeltext{\currentbtxspecification:Reference\btxsingularplural{num}{}{s}}\nbsp}
+    \c!right=,
+    \c!pubsep={,},
+    \c!lastpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
+    \c!finalpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space}]
 
 % Do we want these in the format? Loading them delayed is somewhat messy.
 

@@ -163,14 +163,14 @@ end
 
 local specifications                 = publications.specifications
 local currentspecification           = specifications[false]
-local currentspecificationfields     = currentspecification.fields
+----- currentspecificationfields     = currentspecification.fields
 local currentspecificationcategories = currentspecification.categories
 
 local ignoredfields                  = { }
 
 local function setspecification(name)
     currentspecification           = specifications[name]
-    currentspecificationfields     = currentspecification.fields
+ -- currentspecificationfields     = currentspecification.fields
     currentspecificationcategories = currentspecification.categories
     if trace then
         report("setting specification %a",type(name) == "string" and name or "anything")
@@ -991,6 +991,19 @@ do
                     if kind then
                         return what and kind or field
                     end
+                    local sets = catspec.sets
+                    if sets then
+                        local set = sets[field]
+                        if set then
+                            for i=1,#set do
+                                local field = set[i]
+                                local kind  = fields[field]
+                                if kind then
+                                    return what and kind or field
+                                end
+                            end
+                        end
+                    end
                 end
             end
         end
@@ -998,11 +1011,15 @@ do
     end
 
     function commands.btxfieldname(name,tag,field)
-        return context(get(name,tag,field))
+        local found = get(name,tag,field)
+     -- print(name,tag,field,found)
+        context(found)
     end
 
     function commands.btxfieldtype(name,tag,field)
-        return context(get(name,tag,field,true))
+        local found = get(name,tag,field,true)
+     -- print(name,tag,field,found)
+        context(found)
     end
 
     function commands.btxflush(name,tag,field)
