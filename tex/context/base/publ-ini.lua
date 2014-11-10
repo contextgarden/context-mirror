@@ -975,19 +975,19 @@ do
         end
     end
 
-    local function get(name,tag,field,what)
+    local function get(name,tag,field,what,check)
         local dataset = rawget(datasets,name)
         if dataset then
-            local fields = dataset.luadata[tag]
-            if fields then
-                local category = fields.category
-                local catspec = currentspecificationcategories[category]
+            local data = dataset.luadata[tag]
+            if data then
+                local category = data.category
+                local catspec  = currentspecificationcategories[category]
                 if not catspec then
                     return false
                 end
                 local fields = catspec.fields
                 if fields then
-                    local kind = fields[field]
+                    local kind = (not check or data[field]) and fields[field]
                     if kind then
                         return what and kind or field
                     end
@@ -995,12 +995,22 @@ do
                     if sets then
                         local set = sets[field]
                         if set then
-                            for i=1,#set do
-                                local field = set[i]
-                                local kind  = fields[field]
-                                if kind then
-                                    return what and kind or field
+                            if check then
+                                for i=1,#set do
+                                    local field = set[i]
+                                    local kind  = (not check or data[field]) and fields[field]
+                                    if kind then
+                                        return what and kind or field
+                                    end
                                 end
+                            elseif what then
+                                local t = { }
+                                for i=1,#set do
+                                    t[i] = fields[set[i]] or "unknown"
+                                end
+                                return concat(t,",")
+                            else
+                                return concat(set,",")
                             end
                         end
                     end
@@ -1010,17 +1020,10 @@ do
         return ""
     end
 
-    function commands.btxfieldname(name,tag,field)
-        local found = get(name,tag,field)
-     -- print(name,tag,field,found)
-        context(found)
-    end
-
-    function commands.btxfieldtype(name,tag,field)
-        local found = get(name,tag,field,true)
-     -- print(name,tag,field,found)
-        context(found)
-    end
+    function commands.btxfieldname(name,tag,field) context(get(name,tag,field,false,false)) end
+    function commands.btxfieldtype(name,tag,field) context(get(name,tag,field,true, false)) end
+    function commands.btxfoundname(name,tag,field) context(get(name,tag,field,false,true )) end
+    function commands.btxfoundtype(name,tag,field) context(get(name,tag,field,true, true )) end
 
     function commands.btxflush(name,tag,field)
         local dataset = rawget(datasets,name)
