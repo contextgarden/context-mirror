@@ -271,11 +271,6 @@
 \installlanguage [\s!slovenian] [\s!sl]
 \installlanguage [slovene]      [\s!sl] % both possible (mojca: still needed?)
 
-\def\doconvertsloveniancharacters{\dodoconvertcharacters{25}}
-
-\def\sloveniancharacters{\doconvertsloveniancharacters\sloveniancharacter}
-\def\slovenianCharacters{\doconvertsloveniancharacters\slovenianCharacter}
-
 %D Define general-purpose macros for Slovenian character enumerations:
 
 \defineconversion [sloveniancharacter]  [\sloveniancharacter]
@@ -284,13 +279,24 @@
 \defineconversion [sloveniancharacters] [\sloveniancharacters]
 \defineconversion [slovenianCharacters] [\slovenianCharacters]
 
+\defineconversion [spanishcharacter]    [\spanishcharacter]
+\defineconversion [spanishCharacter]    [\spanishCharacter]
+
+\defineconversion [spanishcharacters]   [\spanishcharacters]
+\defineconversion [spanishCharacters]   [\spanishCharacters]
+
 %D Define these as the general character enumeration when
 %D language is Slovenian. If you feel uncomfortable with this,
 %D mail Mojca, since she promised to to take the heat.
 
-\defineconversion [\s!sl] [character]  [\sloveniancharacter]
-\defineconversion [\s!sl] [Character]  [\slovenianCharacter]
+\def\sloveniancharacters#1{\ctxcommand{alphabetic(\number#1,"sl")}}
+\def\slovenianCharacters#1{\ctxcommand{Alphabetic(\number#1,"sl")}}
 
+\def\spanishcharacters  #1{\ctxcommand{alphabetic(\number#1,"es")}}
+\def\spanishCharacters  #1{\ctxcommand{Alphabetic(\number#1,"es")}}
+
+\defineconversion [\s!sl] [character]  [\sloveniancharacters]
+\defineconversion [\s!sl] [Character]  [\slovenianCharacters]
 \defineconversion [\s!sl] [characters] [\sloveniancharacters]
 \defineconversion [\s!sl] [Characters] [\slovenianCharacters]
 
@@ -299,8 +305,15 @@
 \defineconversion [\s!sl] [AK]         [\smallcapped\sloveniancharacters]
 \defineconversion [\s!sl] [KA]         [\smallcapped\sloveniancharacters]
 
-\def\sloveniancharacters#1{\ctxcommand{alphabetic(\number#1,"sl")}}
-\def\slovenianCharacters#1{\ctxcommand{Alphabetic(\number#1,"sl")}}
+\defineconversion [\s!es] [character]  [\spanishcharacters]
+\defineconversion [\s!es] [Character]  [\spanishCharacters]
+\defineconversion [\s!es] [characters] [\spanishcharacters]
+\defineconversion [\s!es] [Characters] [\spanishCharacters]
+
+\defineconversion [\s!es] [a]          [\spanishcharacters]
+\defineconversion [\s!es] [A]          [\spanishCharacters]
+\defineconversion [\s!es] [AK]         [\smallcapped\spanishcharacters]
+\defineconversion [\s!es] [KA]         [\smallcapped\spanishcharacters]
 
 % Cyrillic Languages
 

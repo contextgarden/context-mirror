@@ -79,6 +79,9 @@
 \def\languagecharacters#1{\ctxcommand{alphabetic(\number#1,"\currentlanguage")}} % new
 \def\languageCharacters#1{\ctxcommand{Alphabetic(\number#1,"\currentlanguage")}} % new
 
+\def\alphabeticnumerals#1{\ctxcommand{alphabetic(\number#1)}}
+\def\Alphabeticnumerals#1{\ctxcommand{Alphabetic(\number#1)}}
+
 % we could use an auxiliary macro to save some bytes in the format
 %
 % \def\dolanguagecharacters#1#2{\ctxcommand{alphabetic(\number#2,"#1")}}
@@ -627,6 +630,9 @@
 \defineconversion [AK]                   [\smallcappedcharacters]
 \defineconversion [KA]                   [\smallcappedcharacters]
 
+\defineconversion [\v!alphabetic]        [\alphabeticnumerals]
+\defineconversion [\v!Alphabetic]        [\Alphabeticnumerals]
+
 \defineconversion [\v!number]            [\numbers]
 \defineconversion [\v!numbers]           [\numbers]
 \defineconversion [\v!Numbers]           [\Numbers]
@@ -658,6 +664,9 @@
 
 \defineconversion [\v!greek]             [\greeknumerals]
 \defineconversion [\v!Greek]             [\Greeknumerals]
+
+\defineconversion [ñ]                    [\spanishnumerals]
+\defineconversion [Ñ]                    [\Spanishnumerals]
 
 \defineconversion [g]                    [\greeknumerals]
 \defineconversion [G]                    [\Greeknumerals]

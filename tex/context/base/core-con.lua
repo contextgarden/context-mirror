@@ -60,6 +60,14 @@ local counters = allocate {
         0x006F, 0x0070, 0x0072, 0x0073, 0x0161,
         0x0074, 0x0075, 0x0076, 0x007A, 0x017E
     },
+    ['spanish'] = {
+        0x0061, 0x0062, 0x0063, 0x0064, 0x0065,
+        0x0066, 0x0067, 0x0068, 0x0069, 0x006A,
+        0x006B, 0x006C, 0x006D, 0x006E, 0x00F1,
+        0x006F, 0x0070, 0x0071, 0x0072, 0x0073,
+        0x0074, 0x0075, 0x0076, 0x0077, 0x0078,
+        0x0079, 0x007A
+    },
     ['greek'] = { -- this should be the lowercase table
      -- 0x0391, 0x0392, 0x0393, 0x0394, 0x0395,
      -- 0x0396, 0x0397, 0x0398, 0x0399, 0x039A,
@@ -131,6 +139,7 @@ counters['ar']                   = counters['arabic']
 counters['gr']                   = counters['greek']
 counters['g']                    = counters['greek']
 counters['sl']                   = counters['slovenian']
+counters['es']                   = counters['spanish']
 counters['kr']                   = counters['korean']
 counters['kr-p']                 = counters['korean-parent']
 counters['kr-c']                 = counters['korean-circle']
@@ -191,6 +200,8 @@ converters.maxchrs = maxchrs
 local lowercharacter = characters.lcchars
 local uppercharacter = characters.ucchars
 
+local defaultcounter = counters.default
+
 local function do_alphabetic(n,mapping,mapper,t) -- todo: make zero based variant (initial n + 1)
     if not t then
         t = { }
@@ -208,11 +219,11 @@ local function do_alphabetic(n,mapping,mapper,t) -- todo: make zero based varian
 end
 
 function converters.alphabetic(n,code)
-    return do_alphabetic(n,counters[code] or counters.default,lowercharacter)
+    return do_alphabetic(n,code and counters[code] or defaultcounter,lowercharacter)
 end
 
 function converters.Alphabetic(n,code)
-    return do_alphabetic(n,counters[code] or counters.default,uppercharacter)
+    return do_alphabetic(n,code and counters[code] or defaultcounter,uppercharacter)
 end
 
 local lower_offset = 96
@@ -228,8 +239,8 @@ converters['A']  = converters.Characters
 converters['AK'] = converters.Characters
 converters['KA'] = converters.Characters
 
-function commands.alphabetic(n,c) context(do_alphabetic(n,counters[c],lowercharacter)) end
-function commands.Alphabetic(n,c) context(do_alphabetic(n,counters[c],uppercharacter)) end
+function commands.alphabetic(n,c) context(do_alphabetic(n,c and counters[c] or defaultcounter,lowercharacter)) end
+function commands.Alphabetic(n,c) context(do_alphabetic(n,c and counters[c] or defaultcounter,uppercharacter)) end
 function commands.character (n)   context(chr (n,lower_offset)) end
 function commands.Character (n)   context(chr (n,upper_offset)) end
 function commands.characters(n)   context(chrs(n,lower_offset)) end
@@ -893,7 +904,7 @@ local words = {
       [900] = "novecientos",
      [1000] = "mil",
    [1000^2] = "millón",
-   [1000^3] = "mil millónes",
+   [1000^3] = "mil millones",
    [1000^4] = "billón",
 }
 
