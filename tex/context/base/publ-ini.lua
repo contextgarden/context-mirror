@@ -719,13 +719,28 @@ do
     -- of the source and or style).
 
     function publications.enhancers.suffixes(dataset)
-        local used    = usedentries[dataset.name]
+
+        if not dataset then
+            -- bad news
+            return
+        else
+            report("analyzing previous publication run for %a",dataset.name)
+        end
+        local used = usedentries[dataset.name]
+        if not used then
+            -- probably a first run
+            return
+        end
         local luadata = dataset.luadata
         local details = dataset.details
         local ordered = dataset.ordered
         local caster  = casters.author
         local getter  = publications.directget
         local shorts  = { }
+        if not luadata or not detailr or not ordered then
+            return
+            -- also bad news
+        end
         for i=1,#ordered do
             local entry = ordered[i]
             if entry then
