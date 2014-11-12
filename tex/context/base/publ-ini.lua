@@ -958,9 +958,9 @@ do
     end
 
     local function get(dataset,tag,field,what,check,catspec)
-        dataset = rawget(datasets,name)
-        if dataset then
-            local data = dataset.luadata[tag]
+        local current = rawget(datasets,dataset)
+        if current then
+            local data = current.luadata[tag]
             if data then
                 local category = data.category
                 local catspec  = (catspec or currentspecification).categories[category]

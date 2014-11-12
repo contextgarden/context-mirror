@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['typo-wrp'] = {
     license   = "see context related readme files"
 }
 
+-- begin/end par wrapping stuff ... more to come
+
 local nodecodes         = nodes.nodecodes
 
 local glue_code         = nodecodes.glue
@@ -27,6 +29,10 @@ local remove            = nuts.remove
 local wrappers          = { }
 typesetters.wrappers    = wrappers
 
+local trace_wrappers    = trackers.register("typesetters.wrappers",function(v) trace_wrappers = v end)
+
+local report            = logs.reporter("paragraphs","wrappers")
+
 -- we really need to pass tail too ... but then we need to check all the plugins
 -- bah ... slowdown
 
@@ -39,6 +45,9 @@ local function remove_dangling_crlf(head,tail)
                 if tail == head then
                     -- can't happen
                 else
+                    if trace_wrappers then
+                        report("removing a probably unwanted end-of-par break in line %s (guess)",tex.inputlineno)
+                    end
                     remove(head,tail,true)
                     return head, tail, true
                 end

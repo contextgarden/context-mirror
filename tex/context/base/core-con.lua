@@ -42,6 +42,8 @@ converters.numbers = tonumber
 commands.number  = context
 commands.numbers = context
 
+ctx_doifelse     = commands.doifelse
+
 -- to be reconsidered ... languages namespace here, might become local plus a register command
 
 local counters = allocate {
@@ -157,6 +159,9 @@ counters['koreannumerals']       = counters['korean']
 counters['koreanparentnumerals'] = counters['korean-parent']
 counters['koreancirclenumerals'] = counters['korean-circle']
 
+counters['sloveniannumerals']    = counters['slovenian']
+counters['spanishnumerals']      = counters['spanish']
+
 local fallback = utfbyte('0')
 
 local function chr(n,m)
@@ -218,13 +223,11 @@ local function do_alphabetic(n,mapping,mapper,t) -- todo: make zero based varian
     end
 end
 
-function converters.alphabetic(n,code)
-    return do_alphabetic(n,code and counters[code] or defaultcounter,lowercharacter)
-end
+local function alphabetic(n,code) return do_alphabetic(n,code and counters[code] or defaultcounter,lowercharacter) end
+local function Alphabetic(n,code) return do_alphabetic(n,code and counters[code] or defaultcounter,uppercharacter) end
 
-function converters.Alphabetic(n,code)
-    return do_alphabetic(n,code and counters[code] or defaultcounter,uppercharacter)
-end
+converters.alphabetic = alphabetic
+converters.Alphabetic = Alphabetic
 
 local lower_offset = 96
 local upper_offset = 64
@@ -282,7 +285,7 @@ function commands.second () context(date("%S")) end
 function commands.textime() context(textime()) end
 
 function commands.doifleapyearelse(year)
-    commands.doifelse(isleapyear(year))
+    ctx_doifelse(isleapyear(year))
 end
 
 local roman = {
@@ -515,6 +518,20 @@ converters['cn']   = converters.chinesenumerals
 converters['cn-c'] = converters.chinesecapnumerals
 converters['cn-a'] = converters.chineseallnumerals
 
+-- this is a temporary solution: we need a better solution when we have
+-- more languages
+
+function converters.spanishnumerals(n) return alphabetic(n,"es") end
+function converters.Spanishnumerals(n) return Alphabetic(n,"es") end
+function converters.sloviannumerals(n) return alphabetic(n,"sl") end
+function converters.Sloviannumerals(n) return Alphabetic(n,"sl") end
+
+converters['characters:es'] = converters.spanishnumerals
+converters['characters:sl'] = converters.sloveniannumerals
+
+converters['Characters:es'] = converters.Spanishnumerals
+converters['Characters:sl'] = converters.Sloveniannumerals
+
 function commands.chinesenumerals   (n) context(tochinese(n,"normal")) end
 function commands.chinesecapnumerals(n) context(tochinese(n,"cap"   )) end
 function commands.chineseallnumerals(n) context(tochinese(n,"all"   )) end
@@ -524,40 +541,49 @@ local sequences      = converters.sequences
 
 storage.register("converters/sequences", sequences, "converters.sequences")
 
-function converters.define(name,set)
+function converters.define(name,set) -- ,language)
+ -- if language then
+ --     name = name .. ":" .. language
+ -- end
     sequences[name] = settings_to_array(set)
 end
 
 commands.defineconversion = converters.define
 
-local function convert(method,n) -- todo: language
-    local converter = converters[method]
+local function convert(method,n,language)
+    local converter = language and converters[method..":"..language] or converters[method]
     if converter then
         return converter(n)
     else
         local lowermethod = lower(method)
-        local linguistic = counters[lowermethod]
+        local linguistic  = counters[lowermethod]
         if linguistic then
             return do_alphabetic(n,linguistic,lowermethod == method and lowercharacter or uppercharacter)
         end
         local sequence = sequences[method]
         if sequence then
-            local max = #sequence
-            if n > max then
-                return sequence[(n-1) % max + 1]
-            else
-                return sequence[n]
+            local set = sequences.set
+            if set then
+                local max = #set
+                if n > max then
+                    return set[(n-1) % max + 1]
+                else
+                    return set[n]
+                end
             end
-        else
-            return n
         end
+        return n
     end
 end
 
 converters.convert = convert
 
-function commands.checkedconversion(method,n)
-    context(convert(method,n))
+function commands.doifelseconverter(method,language)
+    ctx_doifelse(converters[method..":"..language] or converters[method] or sequences[method])
+end
+
+function commands.checkedconversion(method,n,language)
+    context(convert(method,n,language))
 end
 
 -- Well, since the one asking for this didn't test it the following code is not
