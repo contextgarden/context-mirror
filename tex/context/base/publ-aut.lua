@@ -25,10 +25,7 @@ local commands        = commands
 local publications    = publications
 
 local datasets        = publications.datasets
-local writers         = publications.writers
-local authors         = publications.authors
-local detailed        = publications.detailed
-local casters         = publications.casters
+local getcasted       = publications.getcasted
 
 local chardata        = characters.data
 
@@ -211,9 +208,6 @@ local function splitauthorstring(str)
     return authors
 end
 
-authors.splitstring = splitauthorstring
-casters.author      = splitauthorstring
-
 local function the_initials(initials,symbol,connector)
     if not symbol then
         symbol = "."
@@ -310,23 +304,8 @@ function commands.btxauthorfield(i,field)
 end
 
 function commands.btxauthor(dataset,tag,field,settings)
-    local current = datasets[dataset]
-    if not current then
-        return f_invalid("dataset",dataset)
-    end
-    local entry = current.luadata[tag]
-    if not entry then
-        return f_invalid("entry",tag)
-    end
-    local value = entry[field]
-    if not value then
-        return f_invalid("field",field)
-    end
-    local split = detailed.author[value]
-    if type(split) ~= "table" then
-        return f_invalid("cast",value)
-    end
-    local max = split and #split or 0
+    local split = getcasted(dataset,tag,field)
+    local max   = split and #split or 0
     if max == 0 then
         return
         -- error
@@ -408,9 +387,6 @@ local splitter = sorters.splitters.utf
 
 -- authors(s) | year | journal | title | pages
 
-local pubsorters = { }
-authors.sorters  = pubsorters
-
 local function components(snippet,short)
     local vons       = snippet.vons
     local surnames   = snippet.surnames
@@ -462,41 +438,6 @@ local function writer(key,snippets)
     return concat(snippets," ",1,s)
 end
 
-writers.author = writer
-
-local default = { "author" }
-
-function authors.getauthor(dataset,tag,categories)
-    local current = datasets[dataset]
-    local luadata = current.luadata
-    local entry   = luadata and luadata[tag]
-    if entry then
-        local category = entry.category
-        local list
-        if categories then
-            local c = categories[category]
-            if c then
-                local sets = c.sets
-                list = sets and sets.author and sets.authors or default
-            else
-                list = default
-            end
-        else
-            list = default
-        end
-        for i=1,#list do
-            local l = list[i]
-            local v = entry[l]
-            if v then
-                return detailed.author[v], l
-            end
-        end
-    end
-end
-
-publications.serializeauthor  = function(a) return writer { a } end
-publications.authorcomponents = components
-
 local function newsplitter(splitter)
     return table.setmetatableindex({},function(t,k) -- could be done in the sorter but seldom that many shared
         local v = splitter(k,true)                  -- in other cases
@@ -510,29 +451,21 @@ end
 -- first : key author editor publisher title           journal volume number pages
 -- second: year suffix                 title month day journal volume number
 
-local function directget(dataset,entry,field)
-    local value = entry[field]
-    if value then
-        return detailed.author[value]
-    end
-end
-
-local function byauthor(dataset,list,method)
+local function indexer(dataset,list,method)
     local current  = datasets[dataset]
     local luadata  = current.luadata
     local result   = { }
     local splitted = newsplitter(splitter) -- saves mem
     local snippets = { } -- saves mem
-    local get      = publications.directget or directget
     local field    = "author" -- todo
     for i=1,#list do
         -- either { tag, tag, ... } or { { tag, index }, { tag, index } }
-        local li     = list[i]
-        local tag    = type(li) == "string" and li or li[1]
-        local index  = tostring(i)
-        local entry  = luadata[tag]
+        local li    = list[i]
+        local tag   = type(li) == "string" and li or li[1]
+        local index = tostring(i)
+        local entry = luadata[tag]
         if entry then
-            local value   = get(current,entry,field) or ""
+            local value   = getcasted(current,entry,field) or ""
             local mainkey = writer(value,snippets)
             result[i] = {
                 index  = i,
@@ -555,18 +488,18 @@ local function byauthor(dataset,list,method)
             result[i] = {
                 index  = i,
                 split  = {
-                    splitted[""],         -- key
-                    splitted[""],         -- mainkey
-                    splitted["9999"],     -- year
-                    splitted[" "],        -- suffix
-                    splitted["14"],       -- month
-                    splitted["33"],       -- day
-                    splitted[""],         -- journal
-                    splitted[""],         -- volume
-                    splitted[""],         -- number
-                    splitted[""],         -- title
-                    splitted[""],         -- pages
-                    splitted[index],      -- index
+                    splitted[""],     -- key
+                    splitted[""],     -- mainkey
+                    splitted["9999"], -- year
+                    splitted[" "],    -- suffix
+                    splitted["14"],   -- month
+                    splitted["33"],   -- day
+                    splitted[""],     -- journal
+                    splitted[""],     -- volume
+                    splitted[""],     -- number
+                    splitted[""],     -- title
+                    splitted[""],     -- pages
+                    splitted[index],  -- index
                 },
             }
         end
@@ -574,11 +507,8 @@ local function byauthor(dataset,list,method)
     return result
 end
 
-authors.sorters.writer = writer
-authors.sorters.author = byauthor
-
-function authors.sorted(dataset,list,sorttype) -- experimental
-    local valid = byauthor(dataset,list,sorttype)
+local function sorted(dataset,list,sorttype) -- experimental
+    local valid = indexer(dataset,list,sorttype)
     if #valid == 0 or #valid ~= #list then
         return list
     else
@@ -589,3 +519,11 @@ function authors.sorted(dataset,list,sorttype) -- experimental
         return valid
     end
 end
+
+-- made public
+
+publications.indexers  .author = indexer
+publications.writers   .author = writer
+publications.sorters   .author = sorted
+publications.casters   .author = splitauthorstring
+publications.components.author = components

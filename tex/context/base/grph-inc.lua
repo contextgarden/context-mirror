@@ -643,11 +643,19 @@ local function register(askedname,specification)
                 local newbase = oldbase
                 --
                 local fc = specification.cache or figures.cachepaths.path
+--
+-- -- todo:
+--
+-- if fc == "auto" then
+--     newpath = newpath .. "/cache"
+--     dir.mkdir(newpath)
+-- else
                 if fc and fc ~= "" and fc ~= "." then
                     newpath = fc
                 else
                     newbase = defaultprefix .. newbase
                 end
+-- end
                 if not file.is_writable(newpath) then
                     if trace_conversion then
                         report_inclusion("path %a is not writable, forcing conversion path %a",newpath,".")

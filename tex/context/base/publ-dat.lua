@@ -60,9 +60,6 @@ publications.datasets   = datasets
 local writers           = publications.writers or { }
 publications.writers    = writers
 
-local authors           = publications.authors or { }
-publications.authors    = authors
-
 local tables            = publications.tables or { }
 publications.tables     = tables
 
@@ -74,6 +71,15 @@ publications.loaders    = loaders
 
 local casters           = { }
 publications.casters    = casters
+
+local sorters           = { }
+publications.sorters    = sorters
+
+local indexers          = { }
+publications.indexers   = indexers
+
+local components        = { }
+publications.components = components -- register components
 
 local enhancers         = publications.enhancers or { }
 publications.enhancers  = enhancers
