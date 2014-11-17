@@ -25,6 +25,7 @@ local publications   = publications
 local datasets       = publications.datasets
 local specifications = publications.specifications
 local writers        = publications.writers
+local getcasted      = publications.getcasted
 
 local registrations  = { }
 local sequence       = { }

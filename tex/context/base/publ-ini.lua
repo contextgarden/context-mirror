@@ -104,6 +104,10 @@ manipulatormethods.WORDS = converters.WORDS
 local context                     = context
 local commands                    = commands
 
+local ctx_doifelse                = commands.doifelse
+local ctx_doif                    = commands.doif
+local ctx_doifnot                 = commands.doifnot
+
 local ctx_setvalue                = context.setvalue
 local ctx_firstoftwoarguments     = context.firstoftwoarguments
 local ctx_secondoftwoarguments    = context.secondoftwoarguments
@@ -728,7 +732,7 @@ function commands.btxsingularorplural(dataset,tag,name)
     else
         d = false
     end
-    commands.doifelse(d)
+    ctx_doifelse(d)
 end
 
 function commands.oneorrange(dataset,tag,name)
@@ -742,7 +746,7 @@ function commands.oneorrange(dataset,tag,name)
         d = false
 
     end
-    commands.doifelse(not d) -- so singular is default
+    ctx_doifelse(not d) -- so singular is default
 end
 
 function commands.firstofrange(dataset,tag,name)
@@ -957,6 +961,10 @@ do
     function typesetters.author(field,value,manipulator)
         ctx_btxflushauthor(field)
     end
+
+ -- function typesetters.url(field,value,manipulator)
+ --     ....
+ -- end
 
     -- if there is no specification then we're in trouble but there is
     -- always a default anyway
@@ -1174,9 +1182,6 @@ do
         end
     end
 
-    local ctx_doifelse = commands.doifelse
-    local ctx_doif     = commands.doif
-    local ctx_doifnot  = commands.doifnot
 
     function commands.btxdoifelse(name,tag,field) ctx_doifelse(okay(name,tag,field)) end
     function commands.btxdoif    (name,tag,field) ctx_doif    (okay(name,tag,field)) end

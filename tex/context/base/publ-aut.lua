@@ -303,77 +303,85 @@ function commands.btxauthorfield(i,field)
     end
 end
 
-function commands.btxauthor(dataset,tag,field,settings)
-    local split = getcasted(dataset,tag,field)
-    local max   = split and #split or 0
-    if max == 0 then
-        return
-        -- error
-    end
-    local etallimit   = tonumber(settings.etallimit) or 1000
-    local etaldisplay = tonumber(settings.etaldisplay) or etallimit
-    local combiner    = settings.combiner
-    local symbol      = settings.symbol
-    local index       = settings.index
-    if not combiner or combiner == "" then
-        combiner = "normal"
-    end
-    if not symbol then
-        symbol = "."
-    end
-    local ctx_btxsetup = settings.kind == "cite" and ctx_btxciteauthorsetup or ctx_btxlistauthorsetup
-    if max > etallimit and etaldisplay < max then
-        max = etaldisplay
-    end
-    currentauthordata   = split
-    currentauthorsymbol = symbol
+-- This is somewhat tricky: an author is not always an author but
+-- can also be a title or key, depending on the (optional) set it's
+-- in. Also, authors can be combined with years and so and they
+-- might be called upon mixed with other calls.
 
-    local function oneauthor(i)
-        local author = split[i]
+function commands.btxauthor(dataset,tag,field,settings)
+    local split, usedfield, kind = getcasted(dataset,tag,field)
+    if kind == "author" then
+        local max   = split and #split or 0
+        if max == 0 then
+            return
+            -- error
+        end
+        local etallimit   = tonumber(settings.etallimit) or 1000
+        local etaldisplay = tonumber(settings.etaldisplay) or etallimit
+        local combiner    = settings.combiner
+        local symbol      = settings.symbol
+        local index       = settings.index
+        if not combiner or combiner == "" then
+            combiner = "normal"
+        end
+        if not symbol then
+            symbol = "."
+        end
+        local ctx_btxsetup = settings.kind == "cite" and ctx_btxciteauthorsetup or ctx_btxlistauthorsetup
+        if max > etallimit and etaldisplay < max then
+            max = etaldisplay
+        end
+        currentauthordata   = split
+        currentauthorsymbol = symbol
+
+        local function oneauthor(i)
+            local author = split[i]
+            if index then
+                ctx_btxstartauthor(i,1,0)
+            else
+                local state = author.state or 0
+                ctx_btxstartauthor(i,max,state)
+                ctx_btxsetconcat(concatstate(i,max))
+                ctx_btxsetauthorvariant(combiner)
+            end
+            local initials = author.initials
+            if initials and #initials > 0 then
+                ctx_btxsetinitials() -- (concat(the_initials(initials,symbol)," "))
+            end
+            local firstnames = author.firstnames
+            if firstnames and #firstnames > 0 then
+                ctx_btxsetfirstnames() -- (concat(firstnames," "))
+            end
+            local vons = author.vons
+            if vons and #vons > 0 then
+                ctx_btxsetvons() -- (concat(vons," "))
+            end
+            local surnames = author.surnames
+            if surnames and #surnames > 0 then
+                ctx_btxsetsurnames() -- (concat(surnames," "))
+            end
+            local juniors = author.juniors
+            if juniors and #juniors > 0 then
+                ctx_btxsetjuniors() -- (concat(juniors," "))
+            end
+            if not index and i == max then
+                local overflow = #split - max
+                if overflow > 0 then
+                    ctx_btxsetoverflow(overflow)
+                end
+            end
+            ctx_btxsetup(combiner)
+            ctx_btxstopauthor()
+        end
         if index then
-            ctx_btxstartauthor(i,1,0)
+            oneauthor(index)
         else
-            local state = author.state or 0
-            ctx_btxstartauthor(i,max,state)
-            ctx_btxsetconcat(concatstate(i,max))
-            ctx_btxsetauthorvariant(combiner)
-        end
-        local initials = author.initials
-        if initials and #initials > 0 then
-            ctx_btxsetinitials() -- (concat(the_initials(initials,symbol)," "))
-        end
-        local firstnames = author.firstnames
-        if firstnames and #firstnames > 0 then
-            ctx_btxsetfirstnames() -- (concat(firstnames," "))
-        end
-        local vons = author.vons
-        if vons and #vons > 0 then
-            ctx_btxsetvons() -- (concat(vons," "))
-        end
-        local surnames = author.surnames
-        if surnames and #surnames > 0 then
-            ctx_btxsetsurnames() -- (concat(surnames," "))
-        end
-        local juniors = author.juniors
-        if juniors and #juniors > 0 then
-            ctx_btxsetjuniors() -- (concat(juniors," "))
-        end
-        if not index and i == max then
-            local overflow = #split - max
-            if overflow > 0 then
-                ctx_btxsetoverflow(overflow)
+            for i=1,max do
+                oneauthor(i)
             end
         end
-        ctx_btxsetup(combiner)
-        ctx_btxstopauthor()
-    end
-
-    if index then
-        oneauthor(index)
     else
-        for i=1,max do
-            oneauthor(i)
-        end
+        report("ignored field %a of tag %a, used field %a is no author",field,tag,usedfield)
     end
 end
 
