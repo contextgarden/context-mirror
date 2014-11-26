@@ -95,6 +95,7 @@
    \letdummyparameter\s!lefthyphenmin\!!zerocount
    \letdummyparameter\s!righthyphenmin\!!zerocount
    \letdummyparameter\c!alternative\empty
+   \letdummyparameter\c!rightedge\empty
    \getdummyparameters[#2]%
    \ctxcommand{definehyphenationfeatures("#1",{
       characters   = \!!bs\dummyparameter\c!characters\!!es,
@@ -104,6 +105,7 @@
       leftcharmin  = \number\dummyparameter\s!lefthyphenmin,
       rightcharmin = \number\dummyparameter\s!righthyphenmin,
       alternative  = "\dummyparameter\c!alternative",
+      rightedge    = "\dummyparameter\c!rightedge",
     })}%
    \endgroup}
 
@@ -182,8 +184,13 @@
 
 \definehyphenationfeatures
   [default]
-  [\c!hyphens=\v!yes,
+  [%c!rightedge=\v!tex,
+   \c!hyphens=\v!yes,
    \c!joiners=\v!yes]
+
+\definehyphenationfeatures
+  [strict]
+  [\c!rightedge=\s!tex]
 
 % \sethyphenationfeatures
 %   [fences]

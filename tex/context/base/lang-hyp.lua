@@ -202,10 +202,11 @@ function traditional.loadpatterns(language,filename)
     return dictionary
 end
 
-local lcchars   = characters.lcchars
-local uccodes   = characters.uccodes
-local nofwords  = 0
-local nofhashed = 0
+local lcchars    = characters.lcchars
+local uccodes    = characters.uccodes
+local categories = characters.categories
+local nofwords   = 0
+local nofhashed  = 0
 
 local steps     = nil
 local f_show    = formatters["%w%s"]
@@ -439,6 +440,9 @@ local function hyphenate(dictionary,word,n) -- odd is okay
 end
 
 function traditional.gettrace(language,word)
+    if not word or word == "" then
+        return
+    end
     local dictionary = dictionaries[language]
     if dictionary then
         local hyphenated = dictionary.hyphenated
@@ -763,6 +767,7 @@ if context then
         local rightwordmin = tonumber(featureset.rightwordmin)
         local leftcharmin  = tonumber(featureset.leftcharmin)
         local rightcharmin = tonumber(featureset.rightcharmin)
+        local rightedge    = featureset.rightedge
         --
         joinerchars = joinerchars == v_yes and defaultjoiners or joinerchars
         hyphenchars = hyphenchars == v_yes and defaulthyphens or hyphenchars
@@ -773,6 +778,7 @@ if context then
         featureset.rightwordmin = rightwordmin and rightwordmin > 0 and rightwordmin or nil
         featureset.leftcharmin  = leftcharmin  and leftcharmin  > 0 and leftcharmin  or nil
         featureset.rightcharmin = rightcharmin and rightcharmin > 0 and rightcharmin or nil
+        featureset.strict       = rightedge == 'tex'
         --
         return register(name,featureset)
     end
@@ -830,8 +836,20 @@ if context then
     -- 3M memory on this test. (Some optimizations already brought the 3.30
     -- seconds down to 3.14 but it all depends on aggressive caching.)
 
+    -- As we kick in the hyphenator before fonts get handled, we don't look
+    -- at implicit (font) kerns or ligatures.
+
     local starttiming = statistics.starttiming
     local stoptiming  = statistics.stoptiming
+
+    local strictids   = {
+        [nodecodes.hlist]  = true,
+        [nodecodes.vlist]  = true,
+        [nodecodes.rule]   = true,
+        [nodecodes.disc]   = true,
+        [nodecodes.accent] = true,
+        [nodecodes.math]   = true,
+    }
 
     function traditional.hyphenate(head)
 
@@ -860,6 +878,7 @@ if context then
         local attr         = nil
         local lastwordlast = nil
         local hyphenated   = hyphenate
+        local strict       = nil
 
         -- We cannot use an 'enabled' boolean (false when no characters or extras) because we
         -- can have plugins that set a characters metatable and so) ... it doesn't save much
@@ -882,6 +901,7 @@ if context then
                 rightwordmin = f.rightwordmin
                 leftcharmin  = f.leftcharmin
                 rightcharmin = f.rightcharmin
+                strict       = f.strict and strictids
                 if rightwordmin and rightwordmin > 0 and lastwordlast ~= rightwordmin then
                     -- so we can change mid paragraph but it's kind of unpredictable then
                     if not tail then
@@ -911,6 +931,7 @@ if context then
                 rightwordmin = false
                 leftcharmin  = false
                 rightcharmin = false
+                strict       = false
             end
             return a
         end
@@ -1119,9 +1140,13 @@ if context then
                 local lang = getfield(current,"lang")
                 if lang ~= language then
                     if size > 0 and dictionary and leftmin + rightmin <= size then
-                        local hyphens = hyphenated(dictionary,word,size)
-                        if hyphens then
-                            flush(hyphens)
+                        if categories[word[1]] == "lu" and getfield(start,"uchyph") < 0 then
+                            -- skip
+                        else
+                            local hyphens = hyphenated(dictionary,word,size)
+                            if hyphens then
+                                flush(hyphens)
+                            end
                         end
                     end
                     language = lang
@@ -1165,9 +1190,13 @@ if context then
                         word[size] = char
                     elseif dictionary then
                         if leftmin + rightmin <= size then
-                            local hyphens = hyphenated(dictionary,word,size)
-                            if hyphens then
-                                flush(hyphens)
+                            if categories[word[1]] == "lu" and getfield(start,"uchyph") < 0 then
+                                -- skip
+                            else
+                                local hyphens = hyphenated(dictionary,word,size)
+                                if hyphens then
+                                    flush(hyphens)
+                                end
                             end
                         end
                         size = 0
@@ -1190,13 +1219,20 @@ if context then
                 end
                 stop    = current
                 current = getnext(current)
+            elseif strict and strict[id] then
+                current = id == math_code and getnext(end_of_math(current)) or getnext(current)
+                size = 0
             else
                 current = id == math_code and getnext(end_of_math(current)) or getnext(current)
                 if size > 0 then
                     if dictionary and leftmin + rightmin <= size then
-                        local hyphens = hyphenated(dictionary,word,size)
-                        if hyphens then
-                            flush(hyphens)
+                        if categories[word[1]] == "lu" and getfield(start,"uchyph") < 0 then
+                            -- skip
+                        else
+                            local hyphens = hyphenated(dictionary,word,size)
+                            if hyphens then
+                                flush(hyphens)
+                            end
                         end
                     end
                     size = 0
@@ -1205,9 +1241,13 @@ if context then
         end
         -- we can have quit due to last so we need to flush the last seen word
         if size > 0 and dictionary and leftmin + rightmin <= size then
-            local hyphens = hyphenated(dictionary,word,size)
-            if hyphens then
-                flush(hyphens)
+            if categories[word[1]] == "lu" and getfield(start,"uchyph") < 0 then
+                -- skip
+            else
+                local hyphens = hyphenated(dictionary,word,size)
+                if hyphens then
+                    flush(hyphens)
+                end
             end
         end
 
@@ -1293,6 +1333,9 @@ if context then
     local ctx_verbatim = context.verbatim
 
     function commands.showhyphenationtrace(language,word)
+        if not word or word == "" then
+            return
+        end
         local saved = trace_steps
         trace_steps = "silent"
         local steps = traditional.gettrace(language,word)

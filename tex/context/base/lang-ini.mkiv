@@ -515,6 +515,10 @@
 \unexpanded\def\language
   {\doifnextoptionalcselse\lang_basics_set_current\normallanguage}
 
+\let\setlanguage\language % we make these synonyms
+
+\let\patterns\gobbleoneargument
+
 \newcount\mainlanguagenumber
 
 \unexpanded\def\mainlanguage[#1]%
