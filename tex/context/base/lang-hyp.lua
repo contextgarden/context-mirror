@@ -780,11 +780,8 @@ if context then
     }
 
     local function somehyphenchar(c)
-        if c == "" or c == "0" then
-            return nil
-        else
-            return type(c) == "string" and utfbyte(c) or tonumber(c)
-        end
+        c = tonumber(c)
+        return c ~= 0 and c or nil
     end
 
     local function definefeatures(name,featureset)
