@@ -1034,11 +1034,15 @@ do
         return values
     end)
 
-    casters.keyword         = utilities.parsers.settings_to_array
+    local keywordsplitter = utilities.parsers.groupedsplitat(";,")
 
-    local pagessplitter     = lpeg.splitat(P("-")^1)
+    casters.keyword = function(str)
+        return lpegmatch(keywordsplitter,str)
+    end
 
-    casters.pagenumber      = function(str)
+    local pagessplitter = lpeg.splitat(P("-")^1)
+
+    casters.pagenumber = function(str)
         local first, last = lpegmatch(pagessplitter,str)
         return first and last and { first, last } or str
     end
