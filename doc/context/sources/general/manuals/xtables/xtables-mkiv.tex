@@ -754,6 +754,25 @@ But, if you want you can control the enforced width by setting an option:
 
 \typebuffer \getbuffer
 
+There is also a global setting:
+
+\startbuffer
+\startxtable[option=tight]
+  \startxrow
+    \startxcell[nx=3]
+      1/2/3
+    \stopxcell
+  \stopxrow
+  \startxrow
+    \startxcell 1 \stopxcell
+    \startxcell 2 \stopxcell
+    \startxcell 3 \stopxcell
+  \stopxrow
+\stopxtable
+\stopbuffer
+
+\typebuffer \getbuffer
+
 \stopsection
 
 \startsection[title={Nesting}]

@@ -351,7 +351,7 @@
 \newif\ifenableTBLbreak     \enableTBLbreakfalse
 \newif\ifmultipleTBLheads   \multipleTBLheadsfalse
 \newif\iftightTBLrowspan    \tightTBLrowspantrue
-%newif\iftightTBLcolspan    \tightTBLcolspantrue
+\newif\iftightTBLcolspan    \tightTBLcolspanfalse
 
 \newif\iftraceTABLE         \traceTABLEfalse
 
@@ -907,6 +907,10 @@
    \doifelse{\naturaltablelocalparameter\c!textwidth}\v!local
      {\hsize\availablehsize}
      {\hsize\naturaltablelocalparameter\c!textwidth}%
+   \enableTBLbreakfalse
+   \multipleTBLheadsfalse
+   \autoTBLspreadfalse
+   \tightTBLcolspanfalse
    \processaction
      [\naturaltablelocalparameter\c!split]
      [     \v!yes=>\enableTBLbreaktrue,
@@ -918,7 +922,8 @@
    \tabl_ntb_preset_parameters
    \processallactionsinset
      [\naturaltablelocalparameter\c!option]
-     [\v!stretch=>\autoTBLspreadtrue]%
+     [\v!stretch=>\autoTBLspreadtrue,%
+        \v!tight=>\tightTBLcolspantrue]%
    \linewidth\naturaltablelocalparameter\c!rulethickness % needs to be frozen
    \dontcomplain
    \c_tabl_ntb_running_col     \zerocount
@@ -1802,8 +1807,12 @@
        \fi
      \fi
      \tabl_ntb_spn_doifelse\c_tabl_ntb_col
-       {\edef\p_option{\naturaltablelocalparameter\c!option}%
-        \ifx\p_option\v!tight\donefalse\else\donetrue\fi}%
+       {\iftightTBLcolspan
+          \donefalse
+        \else
+          \edef\p_option{\naturaltablelocalparameter\c!option}%
+          \ifx\p_option\v!tight\donefalse\else\donetrue\fi
+        \fi}%
        \donetrue
      \ifdone
        \ifdim\tabl_ntb_get_wid\c_tabl_ntb_col<\wd\scratchbox

@@ -212,7 +212,7 @@ function xtables.create(settings)
     data.criterium_v =   2 * data.settings.lineheight
     data.criterium_h = .75 * data.settings.textwidth
     --
-    data.tight = globaloptions[v_tight]
+    data.tight = globaloptions[v_tight] and true or false
 end
 
 function xtables.initialize_reflow_width(option,width)
@@ -265,11 +265,12 @@ function xtables.set_reflow_width()
         end
     else
         local options = data.options[r][c]
-        if not options then
+        if data.tight then
+            -- no check
+        elseif not options then
             if width > widths[c] then
                 widths[c] = width
             end
---         elseif not data.tight and not options[v_tight] then
         elseif not options[v_tight] then
             if width > widths[c] then
                 widths[c] = width
