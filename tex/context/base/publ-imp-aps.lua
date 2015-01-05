@@ -492,15 +492,14 @@ categories.other = {
 
 categories.literal = {
     sets = {
-        author = { "key" },
+        author = { "key" }, -- need to check this!
         doi    = generic.doi,
     },
     required = {
-        "author",
         "text"
     },
     optional = {
-        "collaboration",
+        "author",
         "doi", "note"
     },
     virtual = false,

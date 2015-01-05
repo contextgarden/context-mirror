@@ -333,7 +333,7 @@
 
 \unexpanded\def\tabl_ntb_set_txt_process#1#2#3#4#5#6%
   {\expandafter\def\csname\??naturaltabletxt\m_tabl_tbl_level:\number#1:\number#2\endcsname
-     {\tabl_ntb_cell_process{#3}{#4}[#5]{\tabl_ntb_next_level#6\tabl_ntb_prev_level}}}
+     {\tabl_ntb_cell_process{#3}{#4}[#5,\c!option=\v!tight]{\tabl_ntb_next_level#6\tabl_ntb_prev_level}}}
 
 \def\tabl_ntb_get_txt#1#2%
   {\csname\??naturaltabletxt\m_tabl_tbl_level:\number#1:\number#2\endcsname}
@@ -1777,11 +1777,15 @@
 
 \unexpanded\def\tabl_ntb_cell_process_a#1#2[#3]#4% grouping added ! ! !
   {\bgroup
-   \tabl_ntb_setup_cell{#1}{#2}%
 \letnaturaltablelocalparameter\c!option\empty
+   \tabl_ntb_setup_cell{#1}{#2}%
 \setupcurrentnaturaltablelocal[#3]%
 \letnaturaltablelocalparameter\c!background\empty
 \letnaturaltablelocalparameter\c!frame\v!off
+\scratchcounter\tabl_ntb_get_col{#1}{#2}\relax
+\ifnum\scratchcounter>\plusone
+  \letnaturaltablelocalparameter\c!width\v!fit % compatible with extreme tables
+\fi
    \setbox\scratchbox\hbox
      {\scratchdimen\naturaltablelocalparameter\c!distance\relax
       \ifdim\scratchdimen>\tabl_ntb_get_dis{#2}\relax
@@ -1803,7 +1807,7 @@
          \donetrue
        \fi
        \ifdone % brr, 0
-         \ifnum\tabl_ntb_get_col{#1}{#2}>\plusone \tabl_ntb_set_spn\c_tabl_ntb_col\fi
+         \ifnum\scratchcounter>\plusone \tabl_ntb_set_spn\c_tabl_ntb_col\fi
        \fi
      \fi
      \tabl_ntb_spn_doifelse\c_tabl_ntb_col

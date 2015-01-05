@@ -33,8 +33,8 @@
 
 \setupbtxlistvariant
   [\c!namesep={,\space},
-   \c!lastnamesep={,\nobreakspace\textampersand\space},
-   \c!finalnamesep={,\nobreakspace\textampersand\space},
+   \c!lastnamesep={,\space and\space},
+   \c!finalnamesep={,\space and\space},
    \c!firstnamesep=\space,
    \c!otherstext={\space\btxlabeltext{\currentbtxspecification:others}},
    \c!juniorsep=\space,
@@ -49,7 +49,7 @@
    \c!etaldisplay=\btxlistvariantparameter\c!etallimit,
   %\c!journalconversion=\v!normal,
    \c!monthconversion=\v!month,
-   \c!authorconversion=short]
+   \c!authorconversion=normalshort]
 
 \definebtxlistvariant
   [author]
@@ -122,6 +122,10 @@
     \c!lastnamesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
     \c!finalnamesep={\space\btxlabeltext{\currentbtxspecification:and}\space}, % no comma!
     \c!authorconversion=\v!name]
+
+\setupbtxrendering
+    [sorttype=, % num ?
+     numbering=yes]
 
 % Should the following be loaded by default?
 
@@ -360,10 +364,12 @@
 
 \starttexdefinition btx:aps:author
     \btxflush{author}
-    \btxdoif {collaboration} {
+    \btxdoifelse {collaboration} {
         \btxleftparenthesis
         \btxflush{collaboration}
-        \btxrightparenthesis
+        \btxrightparenthesiscomma
+    } {
+        \btxcomma
     }
 \stoptexdefinition
 
@@ -401,7 +407,7 @@
 
 \starttexdefinition btx:aps:editionset
     \btxdoifelse {edition} {
-        \btxleftparenthesis
+        \btxspace
         \doif {\currentbtxcategory} {techreport} {
             \btxdoifelse {type} {
                 \btxflush{Word -> type}
@@ -449,7 +455,7 @@
             \btxspace
             \btxflush{pages}
         }
-        \btxrightparenthesisperiod
+        \btxperiod
     } {
         \doif {\currentbtxcategory} {techreport} {
             \btxleftparenthesis
@@ -461,14 +467,12 @@
 
 \starttexdefinition btx:aps:journal-volumeset-year
     \btxdoif {journal} {
-        \btxcomma
         % expandedjournal abbreviatedjournal
         \btxflush{expandedjournal -> journal}
         % A newspaper may not have a volume but may have a number!
         \btxdoifelse {volume} {
-            \doif {\btxfoundname{volume}} {volume} {
-                \texdefinition{btx:aps:bold}{volume}
-            }
+            \btxspace
+            \texdefinition{btx:aps:bold}{volume}
             \btxdoif {number} {
                 \removeunwantedspaces(
                 \btxflush{number}
@@ -476,11 +480,15 @@
             }
         } {
             \btxdoif {number} {
+                \btxspace
                 \btxflush{number}
                 \btxcomma
             }
         }
-        \btxflush{pages}
+        \btxdoif {number} {
+            \btxspace
+            \btxflush{pages}
+        }
         \btxleftparenthesis
         \btxdoifelse {year} {
             \btxflush{year}
@@ -547,9 +555,8 @@
 \starttexdefinition btx:aps:note
     % grouping could indeed be useful for note.
     \btxdoif {note} {
-        \btxleftparenthesis
+        \btxspace
         {\btxflush{note}}
-        \btxrightparenthesis
     }
 \stoptexdefinition
 
@@ -636,8 +643,8 @@
 \startsetups btx:aps:book
     \texdefinition{btx:aps:author}
     \texdefinition{btx:aps:title}
-    \texdefinition{btx:aps:editionset}
     \texdefinition{btx:aps:publisher-wherefrom-year}
+    \texdefinition{btx:aps:editionset}
     \texdefinition{btx:aps:url-note-doi}
 \stopsetups
 
@@ -654,8 +661,8 @@
         \btxspace
     }
     \texdefinition{btx:aps:editor-in-}{title}
-    \texdefinition{btx:aps:editionset}
     \texdefinition{btx:aps:publisher-wherefrom-year}
+    \texdefinition{btx:aps:editionset}
     \texdefinition{btx:aps:url-note-doi}
 \stopsetups
 
@@ -669,8 +676,8 @@
     \texdefinition{btx:aps:author}
     \texdefinition{btx:aps:title}
     \texdefinition{btx:aps:editor-in-}{booktitle}
-    \texdefinition{btx:aps:editionset}
     \texdefinition{btx:aps:publisher-wherefrom-year}
+    \texdefinition{btx:aps:editionset}
     \texdefinition{btx:aps:url-note-doi}
 \stopsetups
 
@@ -682,7 +689,6 @@
 \startsetups btx:aps:proceedings
     \texdefinition{btx:aps:author}
     \texdefinition{btx:aps:title}
-    \texdefinition{btx:aps:editionset}
     \btxdoif {editor} {
         \btxdoif {organization} {
             \btxspace
@@ -691,6 +697,7 @@
         }
     }
     \texdefinition{btx:aps:publisher-wherefrom-year}
+    \texdefinition{btx:aps:editionset}
     \texdefinition{btx:aps:url-note-doi}
 \stopsetups
 
@@ -703,13 +710,13 @@
     \texdefinition{btx:aps:author}
     \texdefinition{btx:aps:title}
     \texdefinition{btx:aps:editor-in-}{booktitle}
-    \texdefinition{btx:aps:editionset}
     \btxdoif {organization} {
         \btxspace
         \btxflush{organization}
         \btxcomma
     }
     \texdefinition{btx:aps:publisher-wherefrom-year}
+    \texdefinition{btx:aps:editionset}
     \texdefinition{btx:aps:url-note-doi}
 \stopsetups
 
@@ -778,8 +785,8 @@
 \startsetups btx:aps:manual
     \texdefinition{btx:aps:author}
     \texdefinition{btx:aps:title}
-    \texdefinition{btx:aps:editionset}
     \texdefinition{btx:aps:publisher-wherefrom-year}
+    \texdefinition{btx:aps:editionset}
     \texdefinition{btx:aps:url-note-doi}
 \stopsetups
 
@@ -790,8 +797,8 @@
 \startsetups btx:aps:techreport
     \texdefinition{btx:aps:author}
     \texdefinition{btx:aps:title}
-    \texdefinition{btx:aps:editionset}
     \texdefinition{btx:aps:publisher-wherefrom-year}
+    \texdefinition{btx:aps:editionset}
     \texdefinition{btx:aps:url-note-doi}
 \stopsetups
 
@@ -915,10 +922,6 @@
 % If all else fails to match:
 
 \startsetups btx:aps:literal
-    %\btxleftparenthesis
-    \removeunwantedspaces(
-    \btxflush{key}
-    \btxrightparenthesis
     \btxdoif {text} {
         \btxflush{text}
     }

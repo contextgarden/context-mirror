@@ -24,6 +24,7 @@ this mechamism will be improved so that it can replace its older cousin.
 ]]--
 
 -- todo: use linked list instead of r/c array
+-- todo: we can use the sum of previously forced widths for column spans
 
 local tonumber, next = tonumber, next
 
@@ -47,6 +48,7 @@ local context_beginvbox       = context.beginvbox
 local context_endvbox         = context.endvbox
 local context_blank           = context.blank
 local context_nointerlineskip = context.nointerlineskip
+local context_dummyxcell      = context.dummyxcell
 
 local variables               = interfaces.variables
 
@@ -301,13 +303,11 @@ function xtables.set_reflow_width()
     local fixedcolumns = data.fixedcolumns
     local fixedrows = data.fixedrows
     if dimensionstate == 1 then
-if cspan > 1 then
-    -- ignore width
-else
-        if width > fixedcolumns[c] then -- how about a span here?
-            fixedcolumns[c] = width
-        end
-end
+    if cspan > 1 then
+        -- ignore width
+    elseif width > fixedcolumns[c] then -- how about a span here?
+        fixedcolumns[c] = width
+    end
     elseif dimensionstate == 2 then
         fixedrows[r]    = height
     elseif dimensionstate == 3 then
@@ -548,9 +548,7 @@ function xtables.reflow_width()
         showwidths("stage 1",widths,autowidths)
     end
     local noffrozen = 0
-
---     inspect(data.fixedcspans)
-
+ -- inspect(data.fixedcspans)
     if options[v_max] then
         for c=1,nofcolumns do
             width = width + widths[c]
@@ -1182,7 +1180,16 @@ function xtables.next_row(specification)
     data.currentrow = r
     data.currentcolumn = 0
     data.rowproperties[r] = specification
+end
 
+function xtables.finish_row()
+    local n = data.nofcolumns - data.currentcolumn
+    if n > 0 then
+        -- message
+        for i=1,n do
+            context_dummyxcell()
+        end
+    end
 end
 
 -- eventually we might only have commands
@@ -1194,6 +1201,7 @@ commands.x_table_construct          = xtables.construct
 commands.x_table_flush              = xtables.flush
 commands.x_table_cleanup            = xtables.cleanup
 commands.x_table_next_row           = xtables.next_row
+commands.x_table_finish_row         = xtables.finish_row
 commands.x_table_init_reflow_width  = xtables.initialize_reflow_width
 commands.x_table_init_reflow_height = xtables.initialize_reflow_height
 commands.x_table_init_construct     = xtables.initialize_construct
