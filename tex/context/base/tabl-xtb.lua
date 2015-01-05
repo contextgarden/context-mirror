@@ -127,7 +127,7 @@ function xtables.create(settings)
     local modes          = { }
     local fixedrows      = { }
     local fixedcolumns   = { }
-    local fixedcspans    = { }
+ -- local fixedcspans    = { }
     local frozencolumns  = { }
     local options        = { }
     local rowproperties  = { }
@@ -142,7 +142,7 @@ function xtables.create(settings)
         autowidths     = autowidths,
         fixedrows      = fixedrows,
         fixedcolumns   = fixedcolumns,
-        fixedcspans    = fixedcspans,
+     -- fixedcspans    = fixedcspans,
         frozencolumns  = frozencolumns,
         options        = options,
         nofrows        = 0,
@@ -194,22 +194,25 @@ function xtables.create(settings)
     setmetatableindex(fixedrows,add_zero)
     setmetatableindex(fixedcolumns,add_zero)
     setmetatableindex(options,add_table)
-    setmetatableindex(fixedcspans,add_table)
+ -- setmetatableindex(fixedcspans,add_table)
     --
-    settings.columndistance = tonumber(settings.columndistance) or 0
-    settings.rowdistance = tonumber(settings.rowdistance) or 0
-    settings.leftmargindistance = tonumber(settings.leftmargindistance) or 0
+    local globaloptions = settings_to_hash(settings.option)
+    --
+    settings.columndistance      = tonumber(settings.columndistance) or 0
+    settings.rowdistance         = tonumber(settings.rowdistance) or 0
+    settings.leftmargindistance  = tonumber(settings.leftmargindistance) or 0
     settings.rightmargindistance = tonumber(settings.rightmargindistance) or 0
-    settings.options = settings_to_hash(settings.option)
-    settings.textwidth = tonumber(settings.textwidth) or texget("hsize")
-    settings.lineheight = tonumber(settings.lineheight) or texgetdimen("lineheight")
-    settings.maxwidth = tonumber(settings.maxwidth) or settings.textwidth/8
+    settings.options             = globaloptions
+    settings.textwidth           = tonumber(settings.textwidth) or texget("hsize")
+    settings.lineheight          = tonumber(settings.lineheight) or texgetdimen("lineheight")
+    settings.maxwidth            = tonumber(settings.maxwidth) or settings.textwidth/8
  -- if #stack > 0 then
  --     settings.textwidth = texget("hsize")
  -- end
     data.criterium_v =   2 * data.settings.lineheight
     data.criterium_h = .75 * data.settings.textwidth
-
+    --
+    data.tight = globaloptions[v_tight]
 end
 
 function xtables.initialize_reflow_width(option,width)
@@ -266,19 +269,20 @@ function xtables.set_reflow_width()
             if width > widths[c] then
                 widths[c] = width
             end
+--         elseif not data.tight and not options[v_tight] then
         elseif not options[v_tight] then
             if width > widths[c] then
                 widths[c] = width
             end
         end
     end
---     if cspan > 1 then
---         local f = data.fixedcspans[c]
---         local w = f[cspan] or 0
---         if width > w then
---             f[cspan] = width -- maybe some day a solution for autospanmax and so
---         end
---     end
+ -- if cspan > 1 then
+ --     local f = data.fixedcspans[c]
+ --     local w = f[cspan] or 0
+ --     if width > w then
+ --         f[cspan] = width -- maybe some day a solution for autospanmax and so
+ --     end
+ -- end
     if drc.ny < 2 then
         if height > heights[r] then
             heights[r] = height
@@ -296,9 +300,13 @@ function xtables.set_reflow_width()
     local fixedcolumns = data.fixedcolumns
     local fixedrows = data.fixedrows
     if dimensionstate == 1 then
+if cspan > 1 then
+    -- ignore width
+else
         if width > fixedcolumns[c] then -- how about a span here?
             fixedcolumns[c] = width
         end
+end
     elseif dimensionstate == 2 then
         fixedrows[r]    = height
     elseif dimensionstate == 3 then
@@ -857,9 +865,12 @@ function xtables.construct()
                 end
                 nofr = nofr + 1
                 local rp = rowproperties[r]
+                -- we have a direction issue here but hpack_node_list(list,0,"exactly","TLT") cannot be used
+                -- due to the fact that we need the width
+                local hbox = hpack_node_list(list)
+                setfield(hbox,"dir","TLT")
                 result[nofr] = {
-                 -- hpack_node_list(list),
-                    hpack_node_list(list,0,"exactly","TLT"), -- otherwise weird lap
+                    hbox,
                     size,
                     i < nofrange and rowdistance > 0 and rowdistance or false, -- might move
                     false,

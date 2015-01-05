@@ -343,7 +343,8 @@
 
 \setvalue{\??xtableflushsplit\v!no}%
   {\dontleavehmode % else no leftskip etc
-   \ctxcommand{x_table_flush{ method = "\v!normal" }}}
+   \ctxcommand{x_table_flush{ method = "\v!normal" }}%
+   \removeunwantedspaces}
 
 % in text flow: headers and footers get repeated
 
