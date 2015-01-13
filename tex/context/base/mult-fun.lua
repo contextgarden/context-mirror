@@ -75,9 +75,9 @@ return {
         "xstretched", "ystretched", "snapped",
         --
         "pathconnectors", "function", "constructedpath", "constructedpairs",
-        "punkedfunction", "curvedfunction", "tightfunction",
-        "punkedpath", "curvedpath", "tightpath",
-        "punkedpairs", "curvedpairs", "tightpairs",
+        "punkedfunction", "straightfunction", "curvedfunction", "tightfunction",
+        "punkedpath", "straightpath", "curvedpath", "tightpath",
+        "punkedpairs", "straightpairs", "curvedpairs", "tightpairs",
         --
         "evenly", "oddly",
         --
