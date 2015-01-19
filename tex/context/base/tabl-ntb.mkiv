@@ -1305,12 +1305,8 @@
      \normalexpanded
        {\t_tabl_ntb_row
           {\the\t_tabl_ntb_row
-           \ifnum\scratchcounter=\plusone
-             \tabl_ntb_plus
-           \else
-             % span
-             \tabl_ntb_span{\the\scratchcounter}%
-           \fi}}%
+           \tabl_ntb_span{\the\scratchcounter}%
+           \tabl_ntb_plus}}%
    \fi}
 
 \setvalue{\??naturaltablecell\the\c_tabl_ntb_cell}#1#2%
