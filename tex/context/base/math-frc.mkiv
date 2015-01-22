@@ -405,6 +405,22 @@
 \definemathfraction[d:sfrac][\c!alternative=\v!both ,\c!mathstyle={\s!cramped,\s!scriptscript}]
 \definemathfraction[d:dfrac][\c!alternative=\v!inner,\c!mathstyle=\s!display]
 
+%D \unexpanded\def\ShowMathFractions#1#2%
+%D   {\dontleavehmode
+%D    \begingroup
+%D    \showmathstruts
+%D    \mathematics{x+\tfrac{#1}{#2}+1+\frac{#1}{#2}+2+\sfrac{#1}{#2}+g}%
+%D    \endgroup}
+%D
+%D The default \type {tfrac}, \type {frac} and \type \sfrac} look like this:
+%D
+%D \blank
+%D \ShowMathFractions{a}{a}\par
+%D \ShowMathFractions{1}{x}\par
+%D \ShowMathFractions{a}{b}\par
+%D \ShowMathFractions{1}{b}\par
+%D \blank
+
 \unexpanded\def\frac {\csname\inlineordisplaymath id:frac\endcsname}
 \unexpanded\def\tfrac{\csname\inlineordisplaymath id:tfrac\endcsname}
 \unexpanded\def\sfrac{\csname\inlineordisplaymath id:sfrac\endcsname}
