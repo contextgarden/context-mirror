@@ -327,6 +327,8 @@ function tracers.showdatasetauthors(settings)
     local dataset = settings.dataset
     local field   = settings.field
 
+    local sortkey = publications.writers.author
+
     if not dataset or dataset == "" then dataset = "standard" end
     if not field   or field   == "" then field   = "author"   end
 
@@ -339,7 +341,16 @@ function tracers.showdatasetauthors(settings)
         ctx_verbatim(k)
         ctx_EQ()
         if type(v) == "table" then
-            ctx_verbatim(concat(v, " | "))
+            local t = { }
+            for i=1,#v do
+                local vi = v[i]
+                if type(vi) == "table" then
+                    t[i] = concat(vi,"-")
+                else
+                    t[i] = vi
+                end
+            end
+            ctx_verbatim(concat(t, " | "))
         else
             ctx_verbatim(v)
         end
@@ -375,6 +386,7 @@ function tracers.showdatasetauthors(settings)
                 commonrow("tag",tag)
                 commonrow("field",field)
                 commonrow("content",getfield(dataset,tag,field))
+                commonrow("sortkey",sortkey(a))
                 for i=1,#a do
                     ctx_ML()
                     local ai = a[i]
