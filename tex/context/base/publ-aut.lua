@@ -18,7 +18,8 @@ local concat = table.concat
 local utfchar = utf.char
 local formatters = string.formatters
 
-local P, C, V, Cs, Ct, lpegmatch, lpegpatterns = lpeg.P, lpeg.C, lpeg.V, lpeg.Cs, lpeg.Ct, lpeg.match, lpeg.patterns
+local P, C, V, Cs, Ct, Cg, Cf, Cc = lpeg.P, lpeg.C, lpeg.V, lpeg.Cs, lpeg.Ct, lpeg.Cg, lpeg.Cf, lpeg.Cc
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local context         = context
 local commands        = commands
@@ -47,7 +48,7 @@ local report          = logs.reporter("publications","authors")
 -- authorspec = von, surnames, jr, firstnames
 -- authorspec = von, surnames, jr, firstnames, initials
 
-local space          = P(" ")
+local space          = lpegpatterns.whitespace
 local comma          = P(",")
 local period         = P(".")
 local dash           = P("-")
@@ -81,6 +82,8 @@ local spacesplitter = Ct { "start",
 local p_initial       = p_shortone * period * dash^0
                       + p_longone * (period + dash + P(-1))
 local initialsplitter = p_initial * P(-1) + Ct((p_initial)^1)
+
+local optionsplitter  = Cf(Ct("") * Cg(C((1-space)^1) * space^0 * Cc(true))^1,rawset)
 
 local function is_upper(str)
     local first = lpegmatch(firstcharacter,str)
@@ -122,7 +125,7 @@ local function splitauthorstring(str)
             -- print("hit 2",author,nofhits,nofused,math.round(100*nofhits/nofused))
         end
         if not detail then
-            local firstnames, vons, surnames, initials, juniors
+            local firstnames, vons, surnames, initials, juniors, options
             local split = lpegmatch(commasplitter,author)
             local n = #split
             detail = {
@@ -224,12 +227,17 @@ local function splitauthorstring(str)
                 juniors    = lpegmatch(spacesplitter,split[3])
                 firstnames = lpegmatch(spacesplitter,split[4])
                 initials   = lpegmatch(spacesplitter,split[5])
+                options    = split[6]
+                if options then
+                    options = lpegmatch(optionsplitter,options)
+                end
             end
             if firstnames and #firstnames > 0 then detail.firstnames = firstnames end
             if vons       and #vons       > 0 then detail.vons       = vons       end
             if surnames   and #surnames   > 0 then detail.surnames   = surnames   end
             if initials   and #initials   > 0 then detail.initials   = initials   end
             if juniors    and #juniors    > 0 then detail.juniors    = juniors    end
+            if options    and next(options)   then detail.options    = options    end
             cache[author] = detail
             nofhits = nofhits + 1
         end
