@@ -600,15 +600,15 @@ local concatstate = publications.concatstate
 
 local tobemarked = nil
 
-local function marknocite(dataset,tag,nofcitations) -- or just: ctx_btxdomarkcitation
+local function marknocite(dataset,tag,nofcitations,setup)
     ctx_btxstartcite()
     ctx_btxsetdataset(dataset)
     ctx_btxsettag(tag)
     ctx_btxsetbacklink(nofcitations)
     if trace_detail then
-        report("expanding %a cite setup %a","nocite","nocite")
+        report("expanding cite setup %a",setup)
     end
-    ctx_btxcitesetup("nocite")
+    ctx_btxcitesetup(setup)
     ctx_btxstopcite()
 end
 
@@ -626,7 +626,7 @@ local function markcite(dataset,tag,flush)
             report_cite("mark, dataset: %s, tag: %s, number: %s, state: %s",dataset,tag,nofcitations,"cited")
         end
         if flush then
-            marknocite(dataset,tag,nofcitations)
+            marknocite(dataset,tag,nofcitations,"nocite")
         end
         tobemarked[tag] = nofcitations
         return nofcitations
@@ -649,13 +649,12 @@ function commands.flushmarked()
             -- keep order
             local tag = marked_list[i]
             local tbm = tobemarked[tag]
-            if tbm == nil or tbm == true then
+            if tbm == true or not tbm then
                 nofcitations = nofcitations + 1
-                marknocite(marked_dataset,tag,nofcitations)
+                marknocite(marked_dataset,tag,nofcitations,tbm and "nocite" or "invalid")
                 if trace_cite then
-                    report_cite("mark, dataset: %s, tag: %s, number: %s, state: %s",marked_dataset,tag,nofcitations,"unset")
+                    report_cite("mark, dataset: %s, tag: %s, number: %s, state: %s",marked_dataset,tag,nofcitations,tbm and "unset" or "invalid")
                 end
-            else
             end
         end
     end
