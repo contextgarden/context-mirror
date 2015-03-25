@@ -409,21 +409,23 @@ do
 
     local space     = S(" \t\n\r\f") -- / " "
     local collapsed = space^1/" "
+    ----- csletter  = R("az","AZ")
+    local csletter  = lpegpatterns.csletter
 
     ----- command   = P("\\") * Cc("btxcmd{") * (R("az","AZ")^1) * Cc("}")
     ----- command   = P("\\") * (Carg(1) * C(R("az","AZ")^1) / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
     ----- command   = P("\\") * (Carg(1) * C(R("az","AZ")^1) * space^0 / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
-    local command   = P("\\") * (Carg(1) * C(R("az","AZ")^1) * space^0 / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
+    local command   = P("\\") * (Carg(1) * C(csletter^1) * space^0 / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
     local whatever  = P("\\") * P(" ")^1 / " "
                     + P("\\") * ( P("hbox") + P("raise") ) -- bah
     local somemath  = P("$") * ((1-P("$"))^1) * P("$") -- let's not assume nested math
     ----- character = lpegpatterns.utf8character
     local any       = P(1)
     local done      = P(-1)
-    local one_l     = P("{")  / ""
-    local one_r     = P("}")  / ""
-    local two_l     = P("{{") / ""
-    local two_r     = P("}}") / ""
+ -- local one_l     = P("{")  / ""
+ -- local one_r     = P("}")  / ""
+ -- local two_l     = P("{{") / ""
+ -- local two_r     = P("}}") / ""
     local zero_l_r  = P("{}") / "" * #P(1)
     local special   = P("#")  / "\\letterhash "
 
@@ -460,13 +462,16 @@ do
 
     local function do_definition(category,tag,tab,dataset)
         publicationsstats.nofdefinitions = publicationsstats.nofdefinitions + 1
+        if tag == "" then
+            tag = "no-tag-set"
+        end
         local fields  = dataset.fields
         local luadata = dataset.luadata
         local hashtag = tag
         if luadata[tag] then
             local t = tags[tag]
             local d = dataset.name
-            local n = (t[n] or 0) + 1
+            local n = (t[d] or 0) + 1
             t[d] = n
             hashtag = tag .. "-" .. n
             if trace_duplicates then
@@ -561,23 +566,27 @@ do
         [2] = left * V(1) * right,
     }
 
-    local unbalanced = P {
-        [1] = left * V(2) * right,
-        [2] = ((escape * (left+right)) + (collapsed + 1 - (left+right))^1 + V(1))^0,
-    }
+ -- local unbalanced = P {
+ --     [1] = left * V(2) * right,
+ --     [2] = ((escape * (left+right)) + (collapsed + 1 - (left+right))^1 + V(1))^0,
+ -- }
+
+    local unbalanced = (left/"") * balanced * (right/"") * P(-1)
 
     local keyword    = C((R("az","AZ","09") + S("@_:-"))^1)
     local key        = C((1-space-equal)^1)
-    local tag        = C((1-space-comma)^1)
+    local tag        = C((1-space-comma)^0)
     local reference  = keyword
     local category   = C((1-space-left)^1)
     local s_quoted   = ((escape*single) + collapsed + (1-single))^0
     local d_quoted   = ((escape*double) + collapsed + (1-double))^0
 
     local b_value    = p_left * balanced * p_right
-    local u_value    = p_left * unbalanced * p_right -- get rid of outer { }
-    local s_value    = (single/"") * (u_value + s_quoted) * (single/"")
-    local d_value    = (double/"") * (u_value + d_quoted) * (double/"")
+ -- local u_value    = p_left * unbalanced * p_right -- get rid of outer { }
+ -- local s_value    = (single/"") * (u_value + s_quoted) * (single/"")
+ -- local d_value    = (double/"") * (u_value + d_quoted) * (double/"")
+    local s_value    = (single/"") * (unbalanced + s_quoted) * (single/"")
+    local d_value    = (double/"") * (unbalanced + d_quoted) * (double/"")
     local r_value    = reference * Carg(1) /resolve
 
     local somevalue  = d_value + b_value + s_value + r_value
@@ -647,9 +656,9 @@ do
 
     local compact = false -- can be a directive but then we also need to deal with newlines ... not now
 
-    function publications.converttoxml(dataset,nice,dontstore,usedonly) -- we have fields !
+    function publications.converttoxml(dataset,nice,dontstore,usedonly,subset) -- we have fields !
         local current = datasets[dataset]
-        local luadata = current and current.luadata
+        local luadata = subset or (current and current.luadata)
         if luadata then
             statistics.starttiming(publications)
             --
@@ -1011,73 +1020,86 @@ do
 
 ]]
 
-    function savers.bib(dataset,filename,usedonly)
-        local current  = datasets[dataset]
-        local luadata  = current.luadata or { }
-        local usedonly = usedonly and publications.usedentries()
-        local f_start  = formatters["@%s{%s,\n"]
-        local f_field  = formatters["  %s = {%s},\n"]
-        local s_stop   = "}\n\n"
-        local result   = { s_preamble }
+    function savers.bib(dataset,filename,tobesaved)
+        local f_start = formatters["@%s{%s,\n"]
+        local f_field = formatters["  %s = {%s},\n"]
+        local s_stop  = "}\n\n"
+        local result  = { s_preamble }
         local n, r = 0, 1
-        for tag, data in sortedhash(luadata) do
-            if not usedonly or usedonly[tag] then
-                r = r + 1 ; result[r] = f_start(data.category or "article",tag)
-                for key, value in sortedhash(data) do
-                    if not privates[key] then
-                        r = r + 1 ; result[r] = f_field(key,value)
-                    end
+        for tag, data in sortedhash(tobesaved) do
+            r = r + 1 ; result[r] = f_start(data.category or "article",tag)
+            for key, value in sortedhash(data) do
+                if not privates[key] then
+                    r = r + 1 ; result[r] = f_field(key,value)
                 end
-                r = r + 1 ; result[r] = s_stop
-                n = n + 1
             end
+            r = r + 1 ; result[r] = s_stop
+            n = n + 1
         end
         report("%s entries from dataset %a saved in %a",n,dataset,filename)
         io.savedata(filename,concat(result))
     end
 
-    function savers.lua(dataset,filename,usedonly)
-        local current  = datasets[dataset]
-        local luadata  = current.luadata or { }
-        local usedonly = usedonly and publications.usedentries()
-        if usedonly then
-            local list = { }
-            if usedonly then
-                for key, value in next, luadata do
-                    if not privates[key] and usedonly[key] then
-                        list[key] = value
-                    end
-                end
-            else
-                for key, value in next, luadata do
-                    if not privates[key] then
-                        list[key] = value
-                    end
+    function savers.lua(dataset,filename,tobesaved)
+        local list = { }
+        local n = 0
+        for tag, data in next, tobesaved do
+            local t = { }
+            for key, value in next, data do
+                if not privates[key] then
+                    d[key] = value
                 end
             end
-            luadata = list
+            list[tag] = t
+            n = n + 1
         end
-        report("%s entries from dataset %a saved in %a",table.count(luadata),dataset,filename)
-        table.save(filename,luadata)
+        report("%s entries from dataset %a saved in %a",n,dataset,filename)
+        table.save(filename,list)
     end
 
-    function savers.xml(dataset,filename,usedonly)
-        local result, n = publications.converttoxml(dataset,true,true,usedonly) -- maybe also private? but then we need to have tag as attr
+    function savers.xml(dataset,filename,tobesaved)
+        local result, n = publications.converttoxml(dataset,true,true,false,tobesaved)
         report("%s entries from dataset %a saved in %a",n,dataset,filename)
         io.savedata(filename,result)
     end
 
-    function publications.save(dataset,filename,kind,usedonly)
+    function publications.save(specification)
+        local dataset   = specification.dataset
+        local filename  = specification.filename
+        local filetype  = specification.filetype
+        local criterium = specification.criterium
         statistics.starttiming(publications)
-        if not kind or kind == "" then
-            kind = file.suffix(filename)
+        if not filename or filename == "" then
+            report("no filename for saving given")
+            return
         end
-        local saver = savers[kind]
+        if not filetype or filetype == "" then
+            filetype = file.suffix(filename)
+        end
+        if not criterium or criterium == "" then
+            criterium = v_all
+        end
+        local saver = savers[filetype]
         if saver then
-            usedonly = usedonly ~= v_all
-            saver(dataset,filename,usedonly)
+            local current   = datasets[dataset]
+            local luadata   = current.luadata or { }
+            local tobesaved = { }
+            local result  = structures.lists.filter({criterium = criterium, names = "btx"}) or { }
+            for i=1,#result do
+                local userdata = result[i].userdata
+                if userdata then
+                    local set = userdata.btxset or v_default
+                    if set == dataset then
+                        local tag = userdata.btxref
+                        if tag then
+                            tobesaved[tag] = luadata[tag]
+                        end
+                    end
+                end
+            end
+            saver(dataset,filename,tobesaved)
         else
-            report("unknown format %a for saving %a",kind,dataset)
+            report("unknown format %a for saving %a",filetype,dataset)
         end
         statistics.stoptiming(publications)
         return dataset

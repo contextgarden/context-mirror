@@ -891,7 +891,6 @@ lpegpatterns.toshape = toshape -- old ones ... will be overloaded
 -- function characters.upper (str) return lpegmatch(toupper,str) end
 -- function characters.shaped(str) return lpegmatch(toshape,str) end
 
-
 --     local superscripts = allocate()   characters.superscripts = superscripts
 --     local subscripts   = allocate()   characters.subscripts   = subscripts
 
@@ -987,9 +986,9 @@ if not characters.lhash then
 
 end
 
-local lhash = characters.lhash
-local uhash = characters.uhash
-local shash = characters.shash
+local lhash = characters.lhash mark(lhash)
+local uhash = characters.uhash mark(uhash)
+local shash = characters.shash mark(shash)
 
 local utf8lowercharacter = utfchartabletopattern(lhash) / lhash
 local utf8uppercharacter = utfchartabletopattern(uhash) / uhash
