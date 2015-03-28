@@ -2082,7 +2082,7 @@
 \definefloat
   [\v!graphic]
   [\v!graphics]
-
+
 % float strategy, replaces some of the above macros
 
 \installcorenamespace{floatmethods}
@@ -2094,7 +2094,7 @@
 \let\forcedfloatmethod\empty % set by lua
 
 \def\setfloatmethodvariables#1% \floatmethod \floatlabel \floatrow \floatcolumn
-  {\ctxcommand{analysefloatmethod("#1")}}
+  {\clf_analysefloatmethod{#1}}
 
 \def\somesomewherefloat[#1]%
   {\page_floats_save_somewhere_float\s!somewhere{#1}}
