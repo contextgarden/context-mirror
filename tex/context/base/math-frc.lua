@@ -53,5 +53,5 @@ end
 interfaces.implement {
     name      = "mathfraction",
     actions   = mathfraction,
-    arguments = { "string", "integer", "dimen", "dimen" }
+    arguments = { "string", "number", "number", "dimen" }
 }
