@@ -20,6 +20,9 @@ local report_objects    = logs.reporter("backend","objects")
 local report_finalizing = logs.reporter("backend","finalizing")
 local report_blocked    = logs.reporter("backend","blocked")
 
+local implement         = interfaces.implement
+local two_strings       = interfaces.strings[2]
+
 -- In ConTeXt MkIV we use utf8 exclusively so all strings get mapped onto a hex
 -- encoded utf16 string type between <>. We could probably save some bytes by using
 -- strings between () but then we end up with escaped ()\ too.
@@ -1175,12 +1178,36 @@ do
         end
     end
 
-    function commands.startactualtext(str)
-        context(pdfdirect(f_actual_text(tosixteen(str))))
-    end
+    implement {
+        name      = "startactualtext",
+        arguments = "string",
+        actions   = function(str)
+            context(pdfdirect(f_actual_text(tosixteen(str))))
+        end
+    }
 
-    function commands.stopactualtext()
-        context(pdfdirect("EMC"))
-    end
+    implement {
+        name      = "stopactualtext",
+        actions   = function()
+            context(pdfdirect("EMC"))
+        end
+    }
 
 end
+
+-- interface
+
+local lpdfverbose = lpdf.verbose
+
+implement { name = "lpdf_collectedresources",                             actions = { lpdf.collectedresources, context } }
+implement { name = "lpdf_addtocatalog",          arguments = two_strings, actions = lpdf.addtocatalog }
+implement { name = "lpdf_addtoinfo",             arguments = two_strings, actions = lpdf.addtoinfo }
+implement { name = "lpdf_addtonames",            arguments = two_strings, actions = lpdf.addtonames }
+implement { name = "lpdf_addpageattributes",     arguments = two_strings, actions = lpdf.addtopageattributes }
+implement { name = "lpdf_addpagesattributes",    arguments = two_strings, actions = lpdf.addtopagesattributes }
+implement { name = "lpdf_addpageresources",      arguments = two_strings, actions = lpdf.addtopageresources }
+implement { name = "lpdf_adddocumentextgstate",  arguments = two_strings, actions = function(a,b) lpdf.adddocumentextgstate (a,lpdfverbose(b)) end }
+implement { name = "lpdf_adddocumentcolorspace", arguments = two_strings, actions = function(a,b) lpdf.adddocumentcolorspace(a,lpdfverbose(b)) end }
+implement { name = "lpdf_adddocumentpattern",    arguments = two_strings, actions = function(a,b) lpdf.adddocumentpattern   (a,lpdfverbose(b)) end }
+implement { name = "lpdf_adddocumentshade",      arguments = two_strings, actions = function(a,b) lpdf.adddocumentshade     (a,lpdfverbose(b)) end }
+
