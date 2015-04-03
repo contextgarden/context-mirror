@@ -47,11 +47,11 @@
    \dodoubleempty\page_injections_direct}
 
 \def\page_injections_direct[#1][#2]% name parameters | settings parameters | name | parameters
-  {\doifassignmentelse{#1}
-     {\doifassignmentelse{#2}
+  {\doifelseassignment{#1}
+     {\doifelseassignment{#2}
         {\page_injections_direct_settings_parameters{#1}{#2}}
         {\page_injections_direct_parameters         {#1}}}
-     {\doifassignmentelse{#2}
+     {\doifelseassignment{#2}
         {\page_injections_direct_name_parameters    {#1}{#2}}
         {\page_injections_direct_name               {#1}}}}
 

@@ -94,7 +94,7 @@
 
 \def\freezeMPpagelayout
   {\edef\MPonrightpage{\doifbothsides  {tru}{tru}{fals}e}%
-   \edef\MPonoddpage  {\doifoddpageelse     {tru}{fals}e}}
+   \edef\MPonoddpage  {\doifelseoddpage     {tru}{fals}e}}
 
 %D We need to freeze the pagelayout before the backgrounds
 %D are build, because the overlay will temporarily become

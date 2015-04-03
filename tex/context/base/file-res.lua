@@ -166,7 +166,7 @@ implement {
 }
 
 implement {
-    name      = "doiflocfileelse",
+    name      = "doifelselocfile",
     actions   = { getreadfilename, isfile, commands.doifelse },
     arguments = { "'loc'","'.'", "string" },
 }

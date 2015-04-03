@@ -600,7 +600,7 @@
 
 \def\meta_prepare_variable_yes
   {\defconvertedcommand\ascii\m_meta_current_variable % otherwise problems
-   \doifcolorelse \ascii                              % with 2\bodyfontsize
+   \doifelsecolor \ascii                              % with 2\bodyfontsize
      {\meta_prepare_variable_color}
      {\begingroup
       \setbox\b_meta_variable_box\hbox{\scratchdimen\m_meta_current_variable sp}%
@@ -817,7 +817,7 @@
 %D
 %D Experimental.
 
-\def\m_meta_page_prefix{\doifoddpageelse oe}
+\def\m_meta_page_prefix{\doifelseoddpage oe}
 
 \def\overlaypagestamp
   {\m_meta_page_prefix:\overlaywidth:\overlayheight:\overlaydepth:\MPcolor\overlaycolor:\MPcolor\overlaylinecolor}

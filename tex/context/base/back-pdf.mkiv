@@ -313,7 +313,7 @@
 
 \unexpanded\def\doinsertobject#1#2%
   {\begingroup
-   \doifobjectreferencefoundelse{#1}{#2}
+   \doifelseobjectreferencefound{#1}{#2}
      {\dogetobjectreference{#1}{#2}\m_back_object_reference
       \pdfrefxform\m_back_object_reference}%
      \donothing

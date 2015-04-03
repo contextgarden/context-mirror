@@ -436,7 +436,7 @@
 
 \def\pack_ornament_text[#1][#2]%
   {\bgroup
-   \doifassignmentelse{#1}
+   \doifelseassignment{#1}
      {\letdummyparameter\c!alternative\v!a
       \getdummyparameters[#1]%
       \doifelse{\directdummyparameter\c!alternative}\v!a
