@@ -3083,7 +3083,7 @@
 %D
 %D A fully expandable message:
 
-\def\immediatemessage#1{\ctxlua{logs.status("message","#1")}}
+\let\immediatemessage\clf_immediatemessage % {} mandate
 
 %D \macros
 %D   {debuggerinfo}

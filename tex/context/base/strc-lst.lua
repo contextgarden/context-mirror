@@ -974,7 +974,7 @@ implement {
                 }
             },
             { "userdata" },
-                    { "titledata", {
+            { "titledata", {
                     { "label" },
                     { "title" },
                     { "bookmark" },
