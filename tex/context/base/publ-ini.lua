@@ -523,6 +523,7 @@ local findallused do
                     tags[#tags+1] = tag
                 end
             elseif find then
+-- print("case 1.1")
                 tags = { }
                 for i=1,#ordered do
                     local entry = ordered[i]
@@ -537,6 +538,7 @@ local findallused do
                     reported[reference] = true
                 end
             else
+-- print("case 1.2")
                 for i=1,#tags do
                     local tag  = tags[i]
                     if valid[tag] then
@@ -549,6 +551,7 @@ local findallused do
             end
         else
             if find then
+-- print("case 2.1")
                 tags = { }
                 for i=1,#ordered do
                     local entry = ordered[i]
@@ -563,6 +566,7 @@ local findallused do
                     reported[reference] = true
                 end
             else
+-- print("case 2.2")
                 for i=1,#tags do
                     local tag = tags[i]
                     if valid[tag] then
