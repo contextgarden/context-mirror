@@ -434,17 +434,29 @@ local u_transparency = nil
 local u_colors       = { }
 local force_gray     = true
 
-local function addstring(str,what)
+local function addstring(what,str) --todo make a pluggable helper (in font-ctx)
     if str then
         local typesetters = nuts.typesetters
         if typesetters then
+            local hashes   = fonts.hashes
+            local infofont = fonts.infofont()
+            local emwidth  = hashes.emwidths [infofont]
+            local exheight = hashes.exheights[infofont]
+            local shift    = nil
             if what == "reference" then
-                str = str .. "<"
+                str   = str .. " "
+                shift = - 1.25*exheight
             else
-                str = str .. ">"
+                str   = str .. " "
+                shift = 2*exheight
             end
-            local text = typesetters.fast_hpack(str,fonts.infofont())
-            return text
+            local text = typesetters.fast_hpack(str,infofont)
+            local rule = new_rule(emwidth/10,4*exheight,3*exheight)
+            local list = getlist(text)
+            setfield(text,"shift",shift)
+            return nuts.fasthpack(nuts.linked(text,rule))
+         -- local text = typesetters.fast_hpack(str,fonts.infofont())
+         -- return text
         end
     end
 end
@@ -489,7 +501,7 @@ local function colorize(width,height,depth,n,reference,what,sr)
     else
 
 if sr and sr ~= "" then
-    local text = addstring(sr)
+    local text = addstring(what,sr)
     if text then
         local kern = new_kern(-getfield(text,"width"))
         setfield(kern,"next",text)
@@ -506,7 +518,7 @@ end
 
 local function justadd(what,sr)
     if sr and sr ~= "" then
-        local text = addstring(sr)
+        local text = addstring(what,sr)
         if text then
             local kern = new_kern(-getfield(text,"width"))
             setfield(kern,"next",text)
@@ -577,7 +589,7 @@ local function makereference(width,height,depth,reference) -- height and depth a
                     local p = d.prefix
                     if r then
                         if p then
-                            texts = p .. " : " .. r
+                            texts = p .. "|" .. r
                         else
                             texts = r
                         end
@@ -682,7 +694,7 @@ local function makedestination(width,height,depth,reference)
                         local p = d.usedprefix
                         if r then
                             if p then
-                                t[#t+1] = p .. " : " .. r
+                                t[#t+1] = p .. "|" .. r
                             else
                                 t[#t+1] = r
                             end
@@ -692,7 +704,7 @@ local function makedestination(width,height,depth,reference)
                     end
                 end
                 if #t > 0 then
-                    texts = concat(t," | ")
+                    texts = concat(t," & ")
                 end
             end
         end
