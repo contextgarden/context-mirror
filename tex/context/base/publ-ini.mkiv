@@ -847,7 +847,7 @@
      % nothing
    \else
      \usebtxstyleandcolor\c!style\c!color % new, needed?
-     \btxparameter\c!left
+   % \btxparameter\c!left
      \ifconditional\c_publ_prefixed\btxlistprefixednumber\fi
      \clf_btxlistvariant % some can go
        {\currentbtxdataset}%
@@ -856,7 +856,7 @@
        {\currentbtxnumbering}%
        {\currentbtxnumber}%
      \relax
-     \btxparameter\c!right
+   % \btxparameter\c!right
    \fi\fi
    \endgroup}
 
@@ -1418,12 +1418,12 @@
    \def\currentbtxcitealternative{#1}%
    \setbtxparameterset\s!cite\currentbtxcitealternative
    \usebtxstyleandcolor\c!style\c!color
-   \btxparameter\c!left
+ % \btxparameter\c!left
    \relax}
 
 \unexpanded\def\btxstopsubcite
   {\relax
-   \btxparameter\c!right
+ % \btxparameter\c!right
    \endgroup}
 
 \unexpanded\def\btxstartciterendering[#1]%
@@ -1431,12 +1431,12 @@
    \edef\currentbtxcitealternative{#1}%
    \setbtxparameterset\s!cite\currentbtxcitealternative
    \usebtxstyleandcolor\c!style\c!color
-   \btxparameter\c!left
+ % \btxparameter\c!left
    \relax}
 
 \unexpanded\def\btxstopciterendering
   {\relax
-   \btxparameter\c!right
+ % \btxparameter\c!right
    \endgroup}
 
 \let\btxstartcite      \begingroup
