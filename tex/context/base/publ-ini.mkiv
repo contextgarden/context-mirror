@@ -1219,7 +1219,7 @@
    \dosingleargument\publ_cite_handle_variant_indeed}
 
 \unexpanded\def\publ_cite_handle_variant_blob
-  {\btxparameter\v!left\relax
+  {%\btxparameter\v!left\relax
    \clf_btxhandlecite
      dataset   {\currentbtxdataset}%
      reference {\currentbtxreference}%
@@ -1234,7 +1234,7 @@
      after     {\p_publ_cite_after}%
    \relax
    \clf_btxflushmarked % maybe: \iftrialtypesetting\else ... \fi
-   \btxparameter\v!right\relax}
+   }%\btxparameter\v!right\relax}
 
 \def\publ_cite_handle_variant_indeed[#1]%
   {\letbtxparameter\c!alternative\currentbtxcitealternative
@@ -1422,7 +1422,7 @@
    \relax}
 
 \unexpanded\def\btxstopsubcite
-  {\relax
+  {%\relax
  % \btxparameter\c!right
    \endgroup}
 
@@ -1432,7 +1432,7 @@
    \setbtxparameterset\s!cite\currentbtxcitealternative
    \usebtxstyleandcolor\c!style\c!color
  % \btxparameter\c!left
-   \relax}
+   }%\relax}
 
 \unexpanded\def\btxstopciterendering
   {\relax
