@@ -50,36 +50,41 @@
     }
 \stopsetups
 
-\startsetups \s!btx:\s!list:yes
-    \btxstartstyleandcolor [\currentbtxspecification:list:yes]
-        \btxusecommand[\currentbtxspecification:list:yes] {
-            \btxparameter\c!left
-            \texdefinition {\s!btx:\s!list:inject} {
-                \currentbtxfirst
-                \btxparameter\c!stopper
-            }
-            \btxparameter\c!right
+\startsetups \s!btx:\s!list:numbering
+    \btxparameter\c!left
+    \texdefinition {\s!btx:\s!list:inject} {
+        \currentbtxfirst
+        \btxparameter\c!stopper
+    }
+    \btxparameter\c!right
+\stopsetups
+
+\startsetups \s!btx:\s!list:num
+    \btxstartstyleandcolor [\currentbtxspecification:list:num]
+        \btxusecommand[\currentbtxspecification:list:num] {
+            \fastsetup{\s!btx:\s!list:numbering}
         }
     \btxstopstyleandcolor
 \stopsetups
 
-\startsetups \s!btx:\s!list:num
-    \texdefinition {\s!btx:\s!list:inject} {
-        \currentbtxfirst
-    }
-\stopsetups
-
-\startsetups \s!btx:\s!list:bib
-    \texdefinition {\s!btx:\s!list:inject} {
-        \currentbtxfirst
-    }
+\startsetups \s!btx:\s!list:yes
+    \fastsetup{\s!btx:\s!list:num}
 \stopsetups
 
 \startsetups \s!btx:\s!list:short
-    \texdefinition {\s!btx:\s!list:inject} {
-        \currentbtxfirst
-        \currentbtxsecond
-    }
+    \btxstartstyleandcolor [\currentbtxspecification:list:short]
+        \btxusecommand[\currentbtxspecification:list:short] {
+            \fastsetup{\s!btx:\s!list:numbering}
+        }
+    \btxstopstyleandcolor
+\stopsetups
+
+\startsetups \s!btx:\s!list:bib
+    \btxstartstyleandcolor [\currentbtxspecification:list:bib]
+        \btxusecommand[\currentbtxspecification:list:bib] {
+            \fastsetup{\s!btx:\s!list:numbering}
+        }
+    \btxstopstyleandcolor
 \stopsetups
 
 \protect

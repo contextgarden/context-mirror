@@ -1267,7 +1267,12 @@
     \hskip-\leftskip
     \ifconditional\c_lists_has_number
         \ifconditional\c_lists_show_number
-            \setbox\scratchbox\simplealignedbox\scratchwidth{\usealignparameter\c!numberalign}
+            \setbox\scratchbox
+                \ifzeropt\scratchwidth
+                    \hbox
+                \else
+                    \simplealignedbox\scratchwidth{\listparameter\c!numberalign}
+                \fi
                 \bgroup
                     \useliststyleandcolor\c!numberstyle\c!numbercolor
                     \currentlistsymbol
