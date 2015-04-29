@@ -881,11 +881,11 @@
        \strutheightfactor\dimexpr\normallineheight
      \fi
    \strutdp\spacingfactor\dimexpr
-       \ifdim\minimumstrutdepth>\zeropoint
-         \minimumstrutdepth
-       \else
-         \strutdepthfactor\dimexpr\normallineheight
-       \fi
+     \ifdim\minimumstrutdepth>\zeropoint
+       \minimumstrutdepth
+     \else
+       \strutdepthfactor\dimexpr\normallineheight
+     \fi
    \dosetstrut}
 
 \unexpanded\def\setcharstrut#1%
@@ -924,7 +924,9 @@
    \ifabsnum\dimexpr\strutht+\strutdp-\lineheight\relax<\plustwo
      % compensate rounding error /- 1sp to avoid too many
      % 1sp baselineskips in for instance verbatim
-     \strutht\dimexpr\lineheight-\strutdp\relax
+     % \strutht\dimexpr\lineheight-\strutdp\relax
+     % better:
+     \strutdp\dimexpr\lineheight-\strutht\relax
      \struttotal\lineheight
    \else
      \struttotal\dimexpr\strutht+\strutdp\relax
@@ -944,15 +946,47 @@
         \s!height\strutht
         \s!depth \strutdp}}
 
+\newconstant\c_strut_visual_mode
+
 \def\spac_struts_set_vide
   {\setbox\strutbox\hbox  % at some time this extra wrapping was needed
      {\spac_struts_vide_hbox to \zeropoint
-        {% \hss % new, will be option
-         \vrule
-           \s!width \strutwidth
-           \s!height\strutht
-           \s!depth \strutdp
-         \hss}}}
+        {\ifcase\c_strut_visual_mode
+           \spac_struts_black
+         \or
+           \spac_struts_color
+         \else
+           \spac_struts_black
+         \fi}}}
+
+\def\spac_struts_black
+  {\vrule
+     \s!width \strutwidth
+     \s!height\strutht
+     \s!depth \strutdp
+   \hss}
+
+\def\spac_struts_color
+  {\hss % new, will be option
+   \scratchwidth.1\struthtdp
+   \begingroup
+   \directcolor[f:b:t]%
+   \vrule
+     \s!width \scratchwidth
+     \s!height\strutht
+     \s!depth \strutdp
+   \kern-\scratchwidth
+   \vrule
+     \s!width \scratchwidth
+     \s!height\zeropoint
+     \s!depth \strutdp
+   \endgroup
+   \kern-.625\scratchwidth
+   \vrule
+     \s!width .25\scratchwidth
+     \s!height\strutht
+     \s!depth \strutdp
+   \hss}
 
 \let\spac_struts_vide_hbox\hbox % overloaded in trac-vis.mkiv
 
@@ -1046,7 +1080,13 @@
    \fi}
 
 \unexpanded\def\showstruts % adapts .. is wrong
-  {\setteststrut
+  {\c_strut_visual_mode\zerocount
+   \setteststrut
+   \settestcrlf}
+
+\unexpanded\def\showcolorstruts % adapts .. is wrong
+  {\c_strut_visual_mode\plusone
+   \setteststrut
    \settestcrlf}
 
 \unexpanded\def\setteststrut
@@ -1395,6 +1435,16 @@
    \fi
    \setevalue{\??gridsnappers#1}{\attribute\snapmethodattribute\csname\??gridsnapperattributes\currentsnapper\endcsname\space}}
 
+\unexpanded\def\usegridparameter#1% no checking here
+  {\edef\m_spac_grid_asked{#1\c!grid}%
+   \ifx\m_spac_grid_asked\empty
+     \attribute \snapvboxattribute\attributeunsetvalue
+   \else
+     \spac_grids_snap_value_set\m_spac_grid_asked
+     \attribute \snapvboxattribute\attribute\snapmethodattribute
+   \fi}
+
+
 \unexpanded\def\definegridsnapping
   {\dodoubleargument\spac_grids_define}
 
@@ -1471,13 +1521,13 @@
 
 \unexpanded\def\synchronizelocallinespecs
   {\bodyfontlineheight \normallineheight
-   \bodyfontstrutheight\strutheight
-   \bodyfontstrutdepth \strutdepth}
+   \bodyfontstrutheight\strutht
+   \bodyfontstrutdepth \strutdp}
 
 \unexpanded\def\synchronizegloballinespecs
   {\global\globalbodyfontlineheight \normallineheight
-   \global\globalbodyfontstrutheight\strutheight
-   \global\globalbodyfontstrutdepth \strutdepth}
+   \global\globalbodyfontstrutheight\strutht
+   \global\globalbodyfontstrutdepth \strutdp}
 
 \appendtoks
     \synchronizegloballinespecs
@@ -1898,7 +1948,7 @@
 
 % category:4 is default
 
-% this interface might change (into an \install, buw we will then keep this one hidden)
+% this interface might change (into an \install, but we will then keep this one hidden)
 
 \definevspacingamount[\v!none]        [\zeropoint]         [\zeropoint]
 \definevspacingamount[\v!big]         [\bigskipamount]     [\bodyfontlineheight]
@@ -1909,8 +1959,8 @@
 \definevspacingamount[\v!quarterline] [.25\openlineheight] [.25\bodyfontlineheight]
 \definevspacingamount[\v!formula]     [\medskipamount]     [.5\bodyfontlineheight]
 \definevspacingamount[\v!white]       [\parskip]           [\bodyfontwhitespace]
-\definevspacingamount[\v!height]      [\strutheight]       [\bodyfontstrutheight]
-\definevspacingamount[\v!depth]       [\strutdepth]        [\bodyfontstrutdepth]
+\definevspacingamount[\v!height]      [\strutht]           [\bodyfontstrutheight]
+\definevspacingamount[\v!depth]       [\strutdp]           [\bodyfontstrutdepth]
 
 \definevspacingamount[-\v!line]       [-\openlineheight]   [-\bodyfontlineheight]
 \definevspacingamount[-\v!halfline]   [-.5\openlineheight] [-.5\bodyfontlineheight]

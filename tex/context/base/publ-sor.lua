@@ -155,12 +155,13 @@ local function sortsequence(dataset,list,sorttype)
         end
 
         for i=1,#sequence do
-            local step    = sequence[i]
-            local field   = step.field   or "?"
-            local default = step.default or c_default
-            local unknown = step.unknown or c_unknown
-            local fldtype = types[field]
-            local writer  = fldtype and writers[fldtype]
+            local step      = sequence[i]
+            local field     = step.field or "?"
+            local default   = step.default or c_default
+            local unknown   = step.unknown or c_unknown
+            local fldtype   = types[field]
+            local fldwriter = step.writer or fldtype
+            local writer    = fldwriter and writers[fldwriter]
 
             if trace_sorters then
                 report("% 3i : field %a, type %a, default %a, unknown %a",i,field,fldtype,
@@ -172,7 +173,7 @@ local function sortsequence(dataset,list,sorttype)
             if writer then
                 local h = #helpers + 1
                 getters[i] = f_writer(h,field,default,field)
-                helpers[h] = f_helper(h,fldtype,field,fldtype)
+                helpers[h] = f_helper(h,fldwriter,field,fldtype)
             else
                 getters[i] = f_getter(field,default,field)
             end
@@ -213,49 +214,60 @@ local function sortsequence(dataset,list,sorttype)
 
 end
 
+-- index      : order in dataset
+-- order      : order of citations
+-- short      : alphabetic + suffix
+-- reference  : order in list
+-- default    : automatic sorter
+-- authoryear : sort order list
+
+-- tag | listindex | 0 | u | u.btxint | data.index
+
 local sorters = {
-    [v_short] = function(dataset,rendering,list)
+    [v_short] = function(dataset,rendering,list) -- should we store it
         local shorts = rendering.shorts
         local function compare(a,b)
-            local aa, bb = a and a[1], b and b[1]
+            local aa = a and a[1]
+            local bb = b and b[1]
             if aa and bb then
                 aa, bb = shorts[aa], shorts[bb]
                 return aa and bb and aa < bb
+            else
+                return a[1] < b[1]
             end
-            return false
         end
         sort(list,compare)
     end,
-    [v_reference] = function(dataset,rendering,list)
+    [v_reference] = function(dataset,rendering,list) -- order
         local function compare(a,b)
-            local aa, bb = a and a[1], b and b[1]
-            if aa and bb then
-                return aa and bb and aa < bb
-            end
-            return false
+            local aa = a and a[1]
+            local bb = b and b[1]
+            return aa < bb
         end
         sort(list,compare)
     end,
-    [v_dataset] = function(dataset,rendering,list)
+    [v_dataset] = function(dataset,rendering,list) -- index
         local function compare(a,b)
--- inspect(a,b)
-            local aa, bb = a and a[6], b and b[6]
+            local aa = a and a[6]
+            local bb = b and b[6]
             if aa and bb then
-             -- aa, bb = list[aa].index or 0, list[bb].index or 0
-                return aa and bb and aa < bb
+                return aa < bb
+            else
+                return a[1] < b[1]
             end
-            return false
         end
         sort(list,compare)
     end,
     [v_default] = function(dataset,rendering,list,sorttype) -- experimental
         if sorttype == "" or sorttype == v_default then
             local function compare(a,b)
-                local aa, bb = a and a[3], b and b[3]
-                if aa and bb then
-                    return aa and bb and aa < bb
+                local aa = a and a[3] or 0
+                local bb = b and b[3] or 0
+                if aa == bb then
+                    return a[1] < b[1]
+                else
+                    return aa < bb
                 end
-                return false
             end
             sort(list,compare)
         else

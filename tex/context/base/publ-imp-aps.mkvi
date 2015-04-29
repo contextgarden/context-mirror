@@ -22,7 +22,7 @@
 %D     editor   ={Waldron, A and Judd, P. and Miller, V.},
 %D     address  ={Ridge, NY},
 %D     publisher={American Physical Society},
-%D     pages    ={26},
+%D     Xpages   ={26},
 %D     url      ={http://journals.aps.org/files/styleguide-pr.pdf}
 %D }
 %D \stopTEX
@@ -38,7 +38,7 @@
    \c!etaldisplay=\btxparameter\c!etallimit,
    %c!journalconversion=\v!normal,
    \c!monthconversion=\v!month,
-   optionaltitle=\v!yes,
+   \c!title=\v!yes,
    \c!separator:names:2={,\space},
    \c!separator:names:3={,\space\btxlabeltext{aps:and}\space}, % not \textampersand
    \c!separator:names:4= {\space\btxlabeltext{aps:and}\space}] % not \textampersand
@@ -48,6 +48,10 @@
 \definebtxrendering
   [aps]
   [\c!specification=aps]
+
+\setupbtxlist
+  [aps]
+  [\c!alternative=b] % spaces
 
 \definebtx
   [aps:list]
@@ -75,34 +79,26 @@
   [aps:list]
 
 \definebtx
-  [aps:list:invertedshort]
+  [aps:list:numbering]
   [aps:list]
-
-% This is for numbering=num
 
 \definebtx
-  [aps:list:num]
-  [aps:list]
+  [aps:list:numbering:num]
+  [aps:list:numbering]
   [left={[},
    right={]}]
 
-% This is for numbering=yes
+\definebtx
+  [aps:list:numbering:yes]
+  [aps:list:numbering:num]
 
 \definebtx
-  [aps:list:yes]
-  [aps:list:num]
-
-% This is for numbering=short
+  [aps:list:numbering:short]
+  [aps:list:numbering:num]
 
 \definebtx
-  [aps:list:short]
-  [aps:list:num]
-
-% This is for numbering=bib
-
-\definebtx
-  [aps:list:bib]
-  [aps:list:num]
+  [aps:list:numbering:bib]
+  [aps:list:numbering:num]
 
 %D In order to be able to get journals expanded (or normalized or abbreviated) you need
 %D to load a list:
@@ -232,20 +228,22 @@
 % root.
 
 \definebtx
-  [aps:page]
+  [aps:\s!page]
   [\s!page]
 
 \definebtx
-  [aps:page:list]
-  [aps:page]
-  [\c!command={\wordright}]
+  [aps:\s!page:list]
+  [aps:\s!page]
+ %[\c!pagecommand={\wordright}]
 
 % Then define and set all cite parameters
 
 \definebtx
   [aps:cite]
   [aps]
-  [\c!authorconversion=\v!name]
+  [\c!authorconversion=\v!name,
+   \c!compress=\v!yes,
+   \c!sorttype=normal]
 
 \definebtx
   [aps:cite:author]
@@ -269,8 +267,7 @@
   [aps:cite:authornum]
   [aps:cite:author]
   [\c!left={(},
-   \c!right={)},
-   \c!sorttype=authornum]
+   \c!right={)}]
 
 \definebtx
   [aps:cite:authorref]
@@ -292,14 +289,12 @@
   [aps:cite:author:years] % todo
   [aps:cite:authoryears]
   [\c!inbetween=,
-   \c!left=(,
-   \c!right=)]
+   \c!left={\space(},
+   \c!right={)}]
 
 \definebtx
   [aps:cite:year]
   [aps:cite]
-  [\c!compress=\v!yes,
-   \c!sorttype=year]
 
 \definebtx
   [aps:cite:title]
@@ -318,11 +313,7 @@
    \c!right={]}]
 
 \definebtx
-  [aps:cite:key]
-  [aps:cite:tag]
-
-\definebtx
-  [aps:cite:serial]
+  [aps:cite:index]
   [aps:cite]
   [\c!left={[},
    \c!right={]}]
@@ -332,7 +323,7 @@
   [aps:cite]
   [\c!left=,
    \c!right=,
-  [\c!separator:2={,\space}, % :0 and :1 - between items of a list
+   \c!separator:2={,\space}, % :0 and :1 - between items of a list
    \c!separator:3={,\space\btxlabeltext{aps:and}\space}, % not \textampersand
    \c!separator:4= {\space\btxlabeltext{aps:and}\space}] % not \textampersand
 
@@ -347,10 +338,6 @@
    \c!right={)}]
 
 \definebtx
-  [aps:cite:invertedshort]
-  [aps:cite]
-
-\definebtx
   [aps:cite:short]
   [aps:cite]
   [\c!left={[},
@@ -359,12 +346,6 @@
 \definebtx
   [aps:cite:category]
   [aps:cite]
-  [\c!left={[},
-   \c!right={]}]
-
-\definebtx
-  [aps:cite:type]
-  [aps:cite:category]
 
 \definebtx
   [aps:cite:url]
@@ -379,13 +360,12 @@
 \definebtx
   [aps:cite:num]
   [aps:cite]
-  [\c!compress=\v!yes,
-   \c!left={[},
+  [\c!left={[},
    \c!right={]},
   %\c!left=,   % TODO: PRB uses superscript references...
   %\c!right=,  % and after punctuation, PRA, C, D, E, and L are before!
   %\c!command={\high},
-   \c!separator:2={,}, % no space
+   \c!separator:2={\btxcommabreak},
    \c!separator:3=\btxparameter{\c!separator:2},
    \c!separator:4=\btxparameter{\c!separator:2}]
 
@@ -579,16 +559,12 @@
             \currentbtxfirst
         }
         \ifx\currentbtxsecond\empty \else
-            \btxparameter\v!inbetween
+            \btxparameter\c!inbetween
             \texdefinition {\s!btx:\s!cite:inject} {
                 \currentbtxsecond
             }
         \fi
-        \ifx\currentbtxthird\empty \else
-            \texdefinition {\s!btx:\s!cite:inject} {
-                \currentbtxthird
-            }
-        \fi
+        \btxflushsuffix
     \fi
 \stopsetups
 
@@ -596,7 +572,7 @@
     \fastsetup{btx:aps:cite:author:year}
 \stopsetups
 
-\startsetups [btx:aps:page:list]
+\startsetups [btx:aps:list:page]
     \fastsetup{\s!btx:\s!page:concat}
     \ifx\currentbtxlastpage\empty
         \btxlabeltext{aps:page}
@@ -650,7 +626,7 @@
 \starttexdefinition btx:aps:composed-title #title
     \begingroup
         \language[\currentbtxlanguage]
-        \btxusecommand[aps:list:title:\currentbtxcategory] {
+        \btxusecommand [aps:list:title:\currentbtxcategory] {
             \btxflush{#title}
             \btxdoif {sub#title} {
                 \btxcolon
@@ -681,7 +657,7 @@
 \stoptexdefinition
 
 \starttexdefinition btx:aps:optional-title
-    \doif{\btxparameter{optionaltitle}}\v!yes {
+    \doif{\btxparameter{\c!title}}\v!yes {
         \texdefinition {btx:aps:title}
     }
 \stoptexdefinition
@@ -740,7 +716,7 @@
 \starttexdefinition btx:aps:editionset
     \doif {\currentbtxcategory} {techreport} {
         \btxdoifelse {type} {
-            \btxusecommand[\currentbtx:type] {
+            \btxusecommand [\currentbtx:type] {
                 \btxflush{type}
             }
         } {
@@ -996,7 +972,7 @@
     \texdefinition{btx:aps:title}
     \btxleftparenthesis
     \btxdoifelse {type} {
-        \btxusecommand[aps:list:type] {
+        \btxusecommand [aps:list:type] {
             \btxflush{type}
         }
     } {
@@ -1146,7 +1122,7 @@
 \startsetups btx:aps:list:literal
     %\btxleftparenthesis
     \removeunwantedspaces(
-    \btxflush{key}
+    \btxflush{tag}
     \btxrightparenthesis
     \btxdoif {text} {
         \btxflush{text}

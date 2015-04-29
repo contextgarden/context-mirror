@@ -115,10 +115,13 @@ appendaction("finalizers",   "lists",       "builders.paragraphs.tag")
 
 -- still experimental
 
-appendaction("mvlbuilders",  "normalizers", "nodes.handlers.migrate")                            --
-appendaction("mvlbuilders",  "normalizers", "builders.vspacing.pagehandler")                     -- last !
+appendaction("mvlbuilders",  "normalizers", "nodes.handlers.migrate")
 
-appendaction("vboxbuilders", "normalizers", "builders.vspacing.vboxhandler")                     --
+appendaction("mvlbuilders",  "normalizers", "builders.vspacing.pagehandler")                     -- last !
+appendaction("mvlbuilders",  "normalizers", "builders.profiling.pagehandler")                        -- here !
+
+appendaction("vboxbuilders", "normalizers", "builders.vspacing.vboxhandler")
+appendaction("vboxbuilders", "normalizers", "builders.profiling.vboxhandler")                        -- here !
 
 -- experimental too
 
@@ -192,7 +195,10 @@ disableaction("math",        "noads.handlers.classes")
 disableaction("math",        "typesetters.directions.processmath")
 
 disableaction("mvlbuilders", "typesetters.checkers.handler")
+disableaction("mvlbuilders", "builders.profiling.pagehandler")
+
 disableaction("vboxbuilders","typesetters.checkers.handler")
+disableaction("vboxbuilders","builders.profiling.vboxhandler")
 
 freezecallbacks("find_.*_file", "find file using resolver")
 freezecallbacks("read_.*_file", "read file at once")

@@ -260,7 +260,7 @@ end
 -- multipass control
 
 local multipass_suffixes   = { ".tuc" }
-local multipass_nofruns    = 8 -- or 7 to test oscillation
+local multipass_nofruns    = 9 -- better for tracing oscillation
 local multipass_forcedruns = false
 
 local function multipass_hashfiles(jobname)
@@ -861,6 +861,24 @@ function scripts.context.run(ctxdata,filename)
                 local pdfview = getargument("autopdf")
                 if pdfview then
                     pdf_open(resultname or jobname,pdfview)
+                end
+                --
+                local epub = analysis.epub
+                if epub then
+                    if type(epub) == "string" then
+                        local t = settings_to_array(epub)
+                        for i=1,#t do
+                            t[i] = "--" .. gsub(t[i],"^%-*","")
+                        end
+                        epub = concat(t," ")
+                    else
+                        epub = "--make"
+                    end
+                    local command = "mtxrun --script epub " .. epub .. " " .. jobname
+                    report()
+                    report("making epub file: ",command)
+                    report()
+                    os.execute(command)
                 end
                 --
                 if a_timing then

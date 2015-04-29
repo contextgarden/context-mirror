@@ -61,7 +61,6 @@ local trace_page_builder     = false  trackers.register("builders.page",     fun
 local trace_collect_vspacing = false  trackers.register("vspacing.collect",  function(v) trace_collect_vspacing = v end)
 local trace_vspacing         = false  trackers.register("vspacing.spacing",  function(v) trace_vspacing         = v end)
 local trace_vsnapping        = false  trackers.register("vspacing.snapping", function(v) trace_vsnapping        = v end)
-local trace_vpacking         = false  trackers.register("vspacing.packing",  function(v) trace_vpacking         = v end)
 local trace_specials         = false  trackers.register("vspacing.specials", function(v) trace_specials         = v end)
 
 local report_vspacing     = logs.reporter("vspacing","spacing")
@@ -999,7 +998,11 @@ specialmethods[1] = function(pagehead,pagetail,start,penalty)
     end
     -- none found, so no reson to be special
     if trace_specials then
-        report_specials("  context penalty, discarding")
+        if pagetail then
+            report_specials("  context penalty, discarding, nothing special")
+        else
+            report_specials("  context penalty, discarding, nothing preceding")
+        end
     end
     return special_penalty_xxx
 end
@@ -1124,19 +1127,17 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
     --
     -- todo: keep_together: between headers
     --
+    local pagehead = nil
+    local pagetail = nil
+
     local function getpagelist()
         if not pagehead then
             pagehead = texlists.page_head
             if pagehead then
                 pagehead = tonut(texlists.page_head)
                 pagetail = find_node_tail(pagehead) -- no texlists.page_tail yet-- no texlists.page_tail yet
-            else
-                pagetail = nil
             end
-        else
-            pagetail = nil
         end
-        return pagehead, pagetail
     end
     --
     local function flush(why)
@@ -1290,7 +1291,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 local sp = getattr(current,a_skippenalty)    -- has no default, no unset (yet)
                 if sp and sc == penalty then
                     if where == "page" then
-                        local pagehead, pagetail = getpagelist()
+                        getpagelist()
                         local p = specialmethods[specialmethod](pagehead,pagetail,current,sp)
                         if p then
                             if trace then
@@ -1706,7 +1707,7 @@ local ignore = table.tohash {
 function vspacing.vboxhandler(head,where)
     if head and not ignore[where] then
         local h = tonut(head)
-        if getnext(h) then
+        if getnext(h) then -- what if a one liner and snapping?
             h = collapser(h,"vbox",where,trace_vbox_vspacing,true,a_snapvbox) -- todo: local snapper
             return tonode(h)
         end
@@ -1714,13 +1715,17 @@ function vspacing.vboxhandler(head,where)
     return head
 end
 
-function vspacing.collapsevbox(n) -- for boxes but using global a_snapmethod
+function vspacing.collapsevbox(n,aslist) -- for boxes but using global a_snapmethod
     local box = getbox(n)
     if box then
         local list = getlist(box)
         if list then
             list = collapser(list,"snapper","vbox",trace_vbox_vspacing,true,a_snapmethod)
-            setfield(box,"list",vpack_node(list))
+            if aslist then
+                setfield(box,"list",list) -- beware, dimensions of box are wrong now
+            else
+                setfield(box,"list",vpack_node(list))
+            end
         end
     end
 end
@@ -1770,6 +1775,13 @@ implement {
     actions   = vspacing.collapsevbox,
     scope     = "private",
     arguments = "integer"
+}
+
+implement {
+    name      = "vspacingcollapseonly",
+    actions   = vspacing.collapsevbox,
+    scope     = "private",
+    arguments = { "integer", true }
 }
 
 implement {

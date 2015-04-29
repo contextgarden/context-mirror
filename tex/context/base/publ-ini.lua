@@ -22,7 +22,7 @@ if not modules then modules = { } end modules ['publ-ini'] = {
 -- gain is not that large anyway because not much publication stuff is flushed.
 
 local next, rawget, type, tostring, tonumber = next, rawget, type, tostring, tonumber
-local match, find = string.match, string.find
+local match, find, gsub = string.match, string.find, string.gsub
 local concat, sort, tohash = table.concat, table.sort, table.tohash
 local utfsub = utf.sub
 local mod = math.mod
@@ -32,21 +32,21 @@ local settings_to_array, settings_to_set = utilities.parsers.settings_to_array, 
 local sortedkeys, sortedhash = table.sortedkeys, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 local lpegmatch = lpeg.match
-local P, S, C, Ct, R, Carg = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.R, lpeg.Carg
+local P, S, C, Ct, Cs, R, Carg = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.R, lpeg.Carg
 local upper = utf.upper
 
 local report             = logs.reporter("publications")
 local report_cite        = logs.reporter("publications","cite")
 local report_list        = logs.reporter("publications","list")
 local report_reference   = logs.reporter("publications","reference")
-local report_shorts      = logs.reporter("publications","shorts")
+local report_suffix      = logs.reporter("publications","suffix")
 
 local trace              = false  trackers.register("publications",                 function(v) trace            = v end)
 local trace_cite         = false  trackers.register("publications.cite",            function(v) trace_cite       = v end)
 local trace_missing      = false  trackers.register("publications.cite.missing",    function(v) trace_missing    = v end)
 local trace_references   = false  trackers.register("publications.cite.references", function(v) trace_references = v end)
 local trace_detail       = false  trackers.register("publications.detail",          function(v) trace_detail     = v end)
-local trace_shorts       = false  trackers.register("publications.shorts",          function(v) trace_shorts     = v end)
+local trace_suffixes     = false  trackers.register("publications.suffixes",        function(v) trace_suffixes   = v end)
 
 publications             = publications or { }
 local datasets           = publications.datasets
@@ -65,8 +65,11 @@ local v_local            = variables["local"]
 local v_global           = variables["global"]
 
 local v_force            = variables.force
+local v_normal           = variables.normal
+local v_reverse          = variables.reverse
 local v_none             = variables.none
 local v_yes              = variables.yes
+local v_no               = variables.no
 local v_all              = variables.all
 local v_always           = variables.always
 local v_doublesided      = variables.doublesided
@@ -123,10 +126,12 @@ local ctx_btxsetcombis            = context.btxsetcombis
 local ctx_btxsetcategory          = context.btxsetcategory
 local ctx_btxcitesetup            = context.btxcitesetup
 local ctx_btxsubcitesetup         = context.btxsubcitesetup
+local ctx_btxnumberingsetup       = context.btxnumberingsetup
 local ctx_btxpagesetup            = context.btxpagesetup
 local ctx_btxsetfirst             = context.btxsetfirst
 local ctx_btxsetsecond            = context.btxsetsecond
-local ctx_btxsetthird             = context.btxsetthird
+----- ctx_btxsetthird             = context.btxsetthird
+local ctx_btxsetsuffix            = context.btxsetsuffix
 local ctx_btxsetinternal          = context.btxsetinternal
 local ctx_btxsetlefttext          = context.btxsetlefttext
 local ctx_btxsetrighttext         = context.btxsetrighttext
@@ -295,7 +300,7 @@ do
 
     local function initializer()
         statistics.starttiming(publications)
-        for name, state in next, collected do
+        for name, state in sortedhash(collected) do
             local dataset     = datasets[name]
             local datasources = state.datasources
             local usersource  = state.usersource
@@ -422,7 +427,7 @@ do
                 -- weird
             end
         end
-        for k, v in next, names do
+        for k, v in sortedhash(names) do
             local n = #v
             if n > 1 then
                 local original = v[1].original
@@ -992,11 +997,11 @@ do
     -- maybe not redo when already done
 
     local function shortsorter(a,b)
-        local ay, by = a[2], b[2]
+        local ay, by = a[2], b[2] -- year
         if ay ~= by then
             return ay < by
         end
-        local ay, by = a[3], b[3]
+        local ay, by = a[3], b[3] -- suffix
         if ay ~= by then
             -- bah, bah, bah
             local an, bn = tonumber(ay), tonumber(by)
@@ -1014,7 +1019,7 @@ do
     -- seconds are irrelevant (there is for sure more to gain by proper coding
     -- of the source and or style).
 
-    local f_short = formatters["%t%02i"]
+    local f_short = formatters["%s%02i"]
 
     function publications.enhancers.suffixes(dataset)
         if not dataset then
@@ -1022,6 +1027,8 @@ do
         else
             report("analyzing previous publication run for %a",dataset.name)
         end
+        dataset.suffixed = true
+        --
         local used = usedentries[dataset.name]
         if not used then
             return -- probably a first run
@@ -1033,13 +1040,18 @@ do
             report("nothing to be analyzed in %a",dataset.name)
             return -- also bad news
         end
-        local field  = "author"  -- currently only author
-        local shorts = { }
+        -- we have two suffixes: author (dependent of type) and short
+        local kind    = dataset.authorconversion or "name"
+        local field   = "author"  -- currently only author
+        local shorts  = { }
+        local authors = { }
+        local hasher  = publications.authorhashers[kind]
+        local shorter = publications.authorhashers.short
         for i=1,#ordered do
             local entry = ordered[i]
             if entry then
                 local tag = entry.tag
-                if tag  then
+                if tag then
                     local use = used[tag]
                     if use then
                         -- use is a table of used list entries (so there can be more) and we just look at
@@ -1051,33 +1063,31 @@ do
                             -- this will become a specification entry
                             local author = getcasted(dataset,tag,field,specifications[btxspc])
                             if type(author) == "table" then
-                                -- number depends on sort order
-                                local t = { }
-                                if #author > 0 then
-                                    local n = #author == 1 and 3 or 1
-                                    for i=1,#author do
-                                        local surnames = author[i].surnames
-                                        if not surnames or #surnames == 0 then
-                                            -- error
-                                        else
-                                            t[#t+1] = utfsub(surnames[1],1,n)
-                                        end
-                                    end
-                                end
-                                local year  = tonumber(entry.year) or 0
-                                local short = f_short(t,mod(year,100))
-                                local s = shorts[short]
-                                -- we could also sort on reference i.e. entries.text
                                 if u then
                                     u = listentry.entries.text -- hm
                                 else
                                     u = "0"
                                 end
-                                if not s then
-                                    shorts[short] = { { tag, year, u, i } }
+                                local year  = tonumber(entry.year) or 9999
+                                local data  = { tag, year, u, i }
+                                -- authors
+                                local hash  = hasher(author)
+                                local found = authors[hash]
+                                if not found then
+                                    authors[hash] = { data }
                                 else
-                                    s[#s+1] = { tag, year, u, i }
+                                    found[#found+1] = data
                                 end
+                                -- shorts
+                                local hash  = shorter(author)
+                                local short = f_short(hash,mod(year,100))
+                                local found = shorts[short]
+                                if not found then
+                                    shorts[short] = { data }
+                                else
+                                    found[#found+1] = data
+                                end
+                                --
                             else
                                 report("author typecast expected for field %a",field)
                             end
@@ -1088,47 +1098,62 @@ do
                 end
             end
         end
-     -- for short, tags in next, shorts do -- ordered ?
-        for short, tags in sortedhash(shorts) do -- ordered ?
-            local n = #tags
-            if n == 0 then
-                -- skip
-            elseif n == 1 then
-                local tagdata = tags[1]
-                local tag     = tagdata[1]
-                local detail  = details[tag]
-                local entry   = luadata[tag]
-                local year    = entry.year
-                detail.short  = short
-                if year then
-                    detail.suffixedyear = year
-                end
-                if trace_shorts then
-                    report_shorts("year %a, suffix %a, short %a, tag %a",year or "-","-",short,tag)
-                end
-            elseif n > 1 then
-                sort(tags,shortsorter)
-                for i=1,n do
-                    local tagdata = tags[i]
+        local function addsuffix(hashed,key,suffixkey)
+            for hash, tags in sortedhash(hashed) do -- ordered ?
+                local n = #tags
+                if n == 0 then
+                    -- skip
+                elseif n == 1 then
+                    local tagdata = tags[1]
                     local tag     = tagdata[1]
                     local detail  = details[tag]
-                    local suffix  = numbertochar(i)
                     local entry   = luadata[tag]
                     local year    = entry.year
-                    detail.short  = short
-                    detail.suffix = suffix
-                    if year then
-                        detail.suffixedyear = year .. suffix
+                    detail[key]   = hash
+                elseif n > 1 then
+                    sort(tags,shortsorter) -- or take first -- todo: proper utf sorter
+                    local lastyear = nil
+                    local suffix   = nil
+                    local previous = nil
+                    for i=1,n do
+                        local tagdata = tags[i]
+                        local tag     = tagdata[1]
+                        local detail  = details[tag]
+                        local entry   = luadata[tag]
+                        local year    = entry.year
+                        detail[key]   = hash
+                        if year ~= lastyear then
+                            lastyear = year
+                            suffix = 1
+                        else
+                            if previous and suffix == 1 then
+                                previous[suffixkey] = suffix
+                            end
+                            suffix = suffix + 1
+                            detail[suffixkey] = suffix
+                        end
+                        previous = detail
                     end
-                    if trace_shorts then
-                        report_shorts("year %a, suffix %a, short %a, tag %a",year or "-",suffix or "-",short,tag)
+                end
+                if trace_suffixes then
+                    for i=1,n do
+                        local tag    = tags[i][1]
+                        local year   = luadata[tag].year
+                        local suffix = details[tag].suffix
+                        if suffix then
+                            report_suffix("%s: tag %a, hash %a, year %a, suffix %a",key,tag,hash,year or '',suffix or '')
+                        else
+                            report_suffix("%s: tag %a, hash %a, year %a",key,tag,hash,year or '')
+                        end
                     end
                 end
             end
         end
+        addsuffix(shorts, "shorthash", "shortsuffix") -- todo: shorthash
+        addsuffix(authors,"authorhash","authorsuffix")
     end
 
-    utilities.sequencers.appendaction(enhancer,"system","publications.enhancers.suffixes")
+ -- utilities.sequencers.appendaction(enhancer,"system","publications.enhancers.suffixes")
 
 end
 
@@ -1744,6 +1769,7 @@ do
             report_list("invalid method %a",method or "")
             return
         end
+        report_list("collecting entries using method %a and sort order %a",method,rendering.sorttype)
         lists.result  = { } -- kind of reset
         local keyword = specification.keyword
         if keyword and keyword ~= "" then
@@ -1785,31 +1811,39 @@ do
                     if not repeated then
                         used[tag] = true -- beware we keep the old state (one can always use criterium=all)
                     end
-                    local detail = details[tag]
-                    if detail then
-                        local referencenumber = detail.referencenumber
-                        if not referencenumber then
-                            lastreferencenumber    = lastreferencenumber + 1
-                            referencenumber        = lastreferencenumber
-                            detail.referencenumber = lastreferencenumber
-                        end
-                        li[3] = referencenumber
-                    else
-                        report("missing details for tag %a in dataset %a (enhanced: %s)",tag,dataset,current.enhanced and "yes" or "no")
-                        -- weird, this shouldn't happen .. all have a detail
-                        lastreferencenumber = lastreferencenumber + 1
-                        details[tag] = { referencenumber = lastreferencenumber }
-                        li[3] = lastreferencenumber
+                end
+            end
+        end
+        if type(sorter) == "function" then
+            list = sorter(dataset,rendering,newlist,sorttype) or newlist
+        else
+            list = newlist
+        end
+        for i=1,#list do
+            local li    = list[i]
+            local tag   = li[1]
+            local entry = luadata[tag]
+            if entry then
+                local detail = details[tag]
+                if detail then
+                    local referencenumber = detail.referencenumber
+                    if not referencenumber then
+                        lastreferencenumber    = lastreferencenumber + 1
+                        referencenumber        = lastreferencenumber
+                        detail.referencenumber = lastreferencenumber
                     end
+                    li[3] = referencenumber
+                else
+                    report("missing details for tag %a in dataset %a (enhanced: %s)",tag,dataset,current.enhanced and "yes" or "no")
+                    -- weird, this shouldn't happen .. all have a detail
+                    lastreferencenumber = lastreferencenumber + 1
+                    details[tag] = { referencenumber = lastreferencenumber }
+                    li[3] = lastreferencenumber
                 end
             end
         end
         groups[group] = lastreferencenumber
-        if type(sorter) == "function" then
-            rendering.list = sorter(dataset,rendering,newlist,sorttype) or newlist
-        else
-            rendering.list = newlist
-        end
+        rendering.list = list
     end
 
     function lists.fetchentries(dataset)
@@ -1891,7 +1925,7 @@ do
             if trace_detail then
                 report("expanding page setup")
             end
-            ctx_btxpagesetup()
+            ctx_btxpagesetup("") -- nothing yet
         end
     end
 
@@ -1907,8 +1941,13 @@ do
         local n         = tonumber(i)
         if n and n > 1 and n <= #list then
             local luadata   = datasets[dataset].luadata
-            local current   = getdirect(dataset,luadata[list[n  ][1]],name)
-            local previous  = getdirect(dataset,luadata[list[n-1][1]],name)
+            local p_index   = list[n-1][1]
+            local c_index   = list[n  ][1]
+            local previous  = getdirect(dataset,luadata[p_index],name)
+            local current   = getdirect(dataset,luadata[c_index],name)
+
+            -- authors are a special case
+
           -- if not order then
           --    order = gettexcounter("c_btx_list_reference")
           -- end
@@ -1933,7 +1972,18 @@ do
                     end
                 end
             end
-            local sameentry = current and current == previous
+            local sameentry = false
+            if current and current == previous then
+                sameentry = true
+            else
+                local p_casted = getcasted(dataset,p_index,name)
+                local c_casted = getcasted(dataset,c_index,name)
+                if c_casted and c_casted == p_casted then
+                    sameentry = true
+                elseif type(c_casted) == "table" and type(p_casted) == "table" then
+                    sameentry = table.identical(c_casted,p_casted)
+                end
+            end
             if trace_detail then
                 if sameentry then
                     report("previous %a, current %a, same entry",previous,current)
@@ -1950,13 +2000,16 @@ do
     function lists.flushentry(dataset,i,textmode)
         local rendering = renderings[dataset]
         local list      = rendering.list
-        local luadata   = datasets[dataset].luadata
+        local data      = datasets[dataset]
+        local luadata   = data.luadata
+        local details   = data.details
         local li        = list[i]
         if li then
             local tag       = li[1]
             local listindex = li[2]
             local n         = li[3]
             local entry     = luadata[tag]
+            local detail    = details[tag]
             --
             ctx_btxstartlistentry()
             ctx_btxsetcurrentlistentry(i) -- redundant
@@ -1975,13 +2028,13 @@ do
             local bl = li[5]
             if bl and bl ~= "" then
                 ctx_btxsetbacklink(bl)
-                ctx_btxsetbacktrace(concat(li," ",5))
-                local uc = citetolist[tonumber(bl)]
-                if uc then
-                    ctx_btxsetinternal(uc.references.internal or "")
-                end
+             -- ctx_btxsetbacktrace(concat(li," ",5)) -- two numbers
             else
                 -- nothing
+            end
+            local authorsuffix = detail.authorsuffix
+            if authorsuffix then
+                ctx_btxsetsuffix(authorsuffix)
             end
             local userdata = li[4]
             if userdata then
@@ -2112,9 +2165,19 @@ do
             return
         end
         --
+        local data = datasets[dataset]
+        if not data.suffixed then
+            data.authorconversion = specification.authorconversion
+            publications.enhancers.suffixes(data)
+        end
+        --
         specification.variant   = variant
-        specification.compress  = specification.compress == v_yes
+        specification.compress  = specification.compress
         specification.markentry = specification.markentry ~= false
+        --
+        if specification.sorttype == v_yes then
+            specification.sorttype = v_normal
+        end
         --
         local prefix, rest = lpegmatch(prefixsplitter,reference)
         if prefix and rest then
@@ -2178,6 +2241,7 @@ do
                 { "variant" },
                 { "sorttype" },
                 { "compress" },
+                { "authorconversion" },
                 { "author" },
                 { "lefttext" },
                 { "righttext" },
@@ -2205,10 +2269,10 @@ do
         local ak = a.sortkey
         local bk = b.sortkey
         if ak == bk then
-            local as = a.suffix -- alphabetic
-            local bs = b.suffix -- alphabetic
+            local as = a.suffix -- numeric
+            local bs = b.suffix -- numeric
             if as and bs then
-                return (as or "") < (bs or "")
+                return (as or 0) < (bs or 0)
             else
                 return false
             end
@@ -2217,56 +2281,75 @@ do
         end
     end
 
-    local function compresslist(source)
-        for i=1,#source do
-            local t = type(source[i].sortkey)
-            if t == "number" then
-                -- okay
-         -- elseif t == "string" then
-         --     -- okay
-            else
-                return source
-            end
+    local revsorter = function(a,b)
+        return keysorter(b,a)
+    end
+
+    local function compresslist(source,specification)
+        if specification.sorttype == v_normal then
+            sort(source,keysorter)
+        elseif specification.sorttype == v_reverse then
+            sort(source,revsorter)
         end
-        local first, last, firstr, lastr
-        local target, noftarget, tags = { }, 0, { }
-        sort(source,keysorter)
-        local oldvalue = nil
-        local function flushrange()
-            noftarget = noftarget + 1
-            if last > first + 1 then
-                target[noftarget] = {
-                    first = firstr,
-                    last  = lastr,
-                    tags  = tags,
-                }
-            else
-                target[noftarget] = firstr
-                if last > first then
-                    noftarget = noftarget + 1
-                    target[noftarget] = lastr
+        if specification and specification.compress == v_yes and specification.numeric then
+            local first, last, firstr, lastr
+            local target, noftarget, tags = { }, 0, { }
+            local oldvalue = nil
+            local function flushrange()
+                noftarget = noftarget + 1
+                if last > first + 1 then
+                    target[noftarget] = {
+                        first = firstr,
+                        last  = lastr,
+                        tags  = tags,
+                    }
+                else
+                    target[noftarget] = firstr
+                    if last > first then
+                        noftarget = noftarget + 1
+                        target[noftarget] = lastr
+                    end
                 end
+                tags = { }
             end
-            tags = { }
-        end
-        for i=1,#source do
-            local entry = source[i]
-            local current = entry.sortkey
-            local suffix  = entry.suffix -- todo but what
-            if not first then
-                first, last, firstr, lastr = current, current, entry, entry
-            elseif current == last + 1 then
-                last, lastr = current, entry
-            else
+            for i=1,#source do
+                local entry   = source[i]
+                local current = entry.sortkey -- so we need a sortkey !
+if entry.suffix then
+    if not first then
+        first, last, firstr, lastr = current, current, entry, entry
+    else
+        flushrange()
+        first, last, firstr, lastr = current, current, entry, entry
+    end
+else
+                if not first then
+                    first, last, firstr, lastr = current, current, entry, entry
+                elseif current == last + 1 then
+                    last, lastr = current, entry
+                else
+                    flushrange()
+                    first, last, firstr, lastr = current, current, entry, entry
+                end
+end
+                tags[#tags+1] = entry.tag
+            end
+            if first and last then
                 flushrange()
-                first, last, firstr, lastr = current, current, entry, entry
             end
-            tags[#tags+1] = entry.tag
+            return target
+        else
+            local target, noftarget = { }, 0
+            for i=1,#source do
+                local entry = source[i]
+                noftarget   = noftarget + 1
+                target[noftarget] = {
+                    first = entry,
+                    tags  = { entry.tag },
+                }
+            end
+            return target
         end
-        if first and last then
-            flushrange()
-        end
-        return target
     end
 
     -- local source = {
@@ -2297,6 +2380,7 @@ do
         local internal   = specification.internal
         local setup      = specification.variant
         local compress   = specification.compress
+        local sorttype   = specification.sorttype
         local getter     = specification.getter
         local setter     = specification.setter
         local compressor = specification.compressor
@@ -2315,7 +2399,6 @@ do
                 report("processing reference %a",reference)
             end
             local source  = { }
-            local badkey  = false
             local luadata = datasets[dataset].luadata
             for i=1,#found do
                 local entry = found[i]
@@ -2329,19 +2412,6 @@ do
                  -- luadata   = ldata,
                 }
                 setter(data,dataset,tag,entry)
-                if compress and not compressor then
-                    local sortkey = data.sortkey
-                    if sortkey then
-                        local key = lpegmatch(numberonly,sortkey)
-                        if key then
-                            data.sortkey = key
-                        else
-                            badkey = true
-                        end
-                    else
-                        badkey = true
-                    end
-                end
                 if type(data) == "table" then
                     source[#source+1] = data
                 else
@@ -2359,13 +2429,6 @@ do
             if before    and before    ~= "" then before    = settings_to_array(before)    end
             if after     and after     ~= "" then after     = settings_to_array(after)     end
 
-        --  local oneleft  = lefttext  and #lefttext  == 1 and lefttext [1]
-        --  local oneright = righttext and #righttext == 1 and righttext[1]
-        --
-        --  if not oneleft or not oneright then
-        --      compress = false -- very hard coded, or should we have compreess == auto?
-        --  end
-
             local function flush(i,n,entry,last)
                 local tag = entry.tag
                 local currentcitation = markcite(dataset,tag)
@@ -2373,27 +2436,6 @@ do
                 ctx_btxstartcite()
                 ctx_btxsettag(tag)
                 ctx_btxsetcategory(entry.category or "unknown")
-                --
-             -- if oneleft then
-             --     if i == 1 then
-             --         ctx_btxsetlefttext(oneleft)
-             --     end
-             -- elseif lefttext then
-             --     ctx_btxsetlefttext(lefttext[i] or "")
-             -- end
-             -- if oneright then
-             --     if i == n then
-             --         ctx_btxsetrighttext(oneright)
-             --     end
-             -- elseif righttext then
-             --     ctx_btxsetrighttext(righttext[i] or "")
-             -- end
-             -- if before then
-             --     ctx_btxsetbefore(before[i] or (#before == 1 and before[1]) or "")
-             -- end
-             -- if after then
-             --     ctx_btxsetafter(after[i] or (#after == 1 and after[1]) or "")
-             -- end
                 --
                 if lefttext  then local text = lefttext [i] ; if text and text ~= "" then ctx_btxsetlefttext (text) end end
                 if righttext then local text = righttext[i] ; if text and text ~= "" then ctx_btxsetrighttext(text) end end
@@ -2413,7 +2455,7 @@ do
                 if language then
                     ctx_btxsetlanguage(language)
                 end
-                if not getter(entry,last) then
+                if not getter(entry,last,nil,specification) then
                     ctx_btxsetfirst("") -- (f_missing(tag))
                 end
                 ctx_btxsetconcat(concatstate(i,n))
@@ -2423,13 +2465,18 @@ do
                 ctx_btxcitesetup(setup)
                 ctx_btxstopcite()
             end
-
-            if compress and not badkey then
-                local target = (compressor or compresslist)(source)
+            if sorttype == v_normal or sorttype == v_reverse then
+                local target = (compressor or compresslist)(source,specification)
                 local nofcollected = #target
                 if nofcollected == 0 then
-                    report("nothing found for %a",reference)
-                    unknowncite(reference)
+                    local nofcollected = #source
+                    if nofcollected == 0 then
+                        unknowncite(reference)
+                    else
+                        for i=1,nofcollected do
+                            flush(i,nofcollected,source[i])
+                        end
+                    end
                 else
                     for i=1,nofcollected do
                         local entry = target[i]
@@ -2460,7 +2507,7 @@ do
 
     --
 
-    local function simplegetter(first,last,field)
+    local function simplegetter(first,last,field,specification)
         local value = first[field]
         if value then
             ctx_btxsetfirst(value)
@@ -2473,7 +2520,7 @@ do
 
     local setters = setmetatableindex({},function(t,k)
         local v = function(data,dataset,tag,entry)
-            local value = getcasted(dataset,tag,k)
+            local value  = getcasted(dataset,tag,k)
             data.value   = value -- not really needed
             data[k]      = value
             data.sortkey = value
@@ -2484,8 +2531,8 @@ do
     end)
 
     local getters = setmetatableindex({},function(t,k)
-        local v = function(first,last)
-            return simplegetter(first,last,k)
+        local v = function(first,last,_,specification)
+            return simplegetter(first,last,k,specification) -- maybe _ or k
         end
         t[k] = v
         return v
@@ -2508,7 +2555,7 @@ do
         })
     end
 
-    -- category | type
+    -- category
 
     do
 
@@ -2516,21 +2563,12 @@ do
             data.category = getfield(dataset,tag,"category")
         end
 
-        local function getter(first,last)
-            return simplegetter(first,last,"category")
+        local function getter(first,last,_,specification)
+            return simplegetter(first,last,"category",specification)
         end
 
         function citevariants.category(presets)
             processcite(presets,{
-             -- variant  = presets.variant or "serial",
-                setter  = setter,
-                getter  = getter,
-            })
-        end
-
-        function citevariants.type(presets)
-            processcite(presets,{
-             -- variant  = presets.variant or "type",
                 setter  = setter,
                 getter  = getter,
             })
@@ -2547,14 +2585,13 @@ do
             -- nothing
         end
 
-        local function getter(first,last) -- last not used
+        local function getter(first,last,_,specification) -- last not used
             ctx_btxsetfirst(first.tag)
         end
 
         function citevariants.entry(presets)
             processcite(presets,{
                 compress = false,
-             -- variant  = presets.variant or "entry",
                 setter   = setter,
                 getter   = getter,
             })
@@ -2567,18 +2604,20 @@ do
     do
 
         local function setter(data,dataset,tag,entry)
-            data.short  = getdetail(dataset,tag,"short")
-            data.suffix = getdetail(dataset,tag,"suffix")
+            local short  = getdetail(dataset,tag,"shorthash")
+            local suffix = getdetail(dataset,tag,"shortsuffix")
+            data.short   = short
+            data.sortkey = short
+            data.suffix  = suffix
         end
 
-        local function getter(first,last) -- last not used
+        local function getter(first,last,_,specification) -- last not used
             local short = first.short
             if short then
                 local suffix = first.suffix
+                ctx_btxsetfirst(short)
                 if suffix then
-                    ctx_btxsetfirst(short .. suffix)
-                else
-                    ctx_btxsetfirst(short)
+                    ctx_btxsetsuffix(suffix) -- watch out: third
                 end
                 return true
             end
@@ -2586,10 +2625,8 @@ do
 
         function citevariants.short(presets)
             processcite(presets,{
-                compress = false,
-             -- variant  = presets.variant or "short",
-                setter   = setter,
-                getter   = getter,
+                setter = setter,
+                getter = getter,
             })
         end
 
@@ -2603,7 +2640,7 @@ do
             data.pages = getcasted(dataset,tag,"pages")
         end
 
-        local function getter(first,last)
+        local function getter(first,last,_,specification)
             local pages = first.pages
             if pages then
                 if type(pages) == "table" then
@@ -2618,9 +2655,8 @@ do
 
         function citevariants.page(presets)
             processcite(presets,{
-             -- variant = presets.variant or "page",
-                setter  = setter,
-                getter  = getter,
+                setter = setter,
+                getter = getter,
             })
         end
 
@@ -2634,16 +2670,16 @@ do
             local entries = entry.entries
             local text    = entries and entries.text or "?"
             data.num      = text
-            data.sortkey  = text
+            data.sortkey  = tonumber(text) or text
         end
 
-        local function getter(first,last)
-            return simplegetter(first,last,"num")
+        local function getter(first,last,_,specification)
+            return simplegetter(first,last,"num",specification)
         end
 
         function citevariants.num(presets)
             processcite(presets,{
-             -- variant = presets.variant or "num",
+                numeric = true,
                 setter  = setter,
                 getter  = getter,
             })
@@ -2657,19 +2693,19 @@ do
 
         local function setter(data,dataset,tag,entry)
             local year   = getfield (dataset,tag,"year")
-            local suffix = getdetail(dataset,tag,"suffix")
+            local suffix = getdetail(dataset,tag,"authorsuffix")
             data.year    = year
             data.suffix  = suffix
             data.sortkey = tonumber(year) or 9999
         end
 
-        local function getter(first,last)
-            return simplegetter(first,last,"year")
+        local function getter(first,last,_,specification)
+            return simplegetter(first,last,"year",specification)
         end
 
         function citevariants.year(presets)
             processcite(presets,{
-             -- variant  = presets.variant or "year",
+                numeric = true,
                 setter  = setter,
                 getter  = getter,
             })
@@ -2677,64 +2713,47 @@ do
 
     end
 
-    -- index | serial
+    -- index
 
     do
 
         local function setter(data,dataset,tag,entry)
-            local index = getfield(dataset,tag,"index")
+            local index  = getfield(dataset,tag,"index")
             data.index   = index
             data.sortkey = index
         end
 
-        local function getter(first,last)
-            return simplegetter(first,last,"index")
+        local function getter(first,last,_,specification)
+            return simplegetter(first,last,"index",specification)
         end
 
         function citevariants.index(presets)
             processcite(presets,{
-             -- variant  = presets.variant or "index",
                 setter  = setter,
                 getter  = getter,
-            })
-        end
-
-        function citevariants.serial(presets)
-            processcite(presets,{
-             -- variant  = presets.variant or "serial",
-                setter  = setter,
-                getter  = getter,
+                numeric = true,
             })
         end
 
     end
 
-    -- key | tag
+    -- tag
 
     do
 
         local function setter(data,dataset,tag,entry)
-            -- nothing
+            data.tag     = tag
+            data.sortkey = tag
         end
 
-        local function getter(first,last)
-            ctx_btxsetfirst(first.tag)
-            return true
-        end
-
-        function citevariants.key(presets)
-            return processcite(presets,{
-                variant = "key",
-                setter  = setter,
-                getter  = getter,
-            })
+        local function getter(first,last,_,specification)
+            return simplegetter(first,last,"tag",specification)
         end
 
         function citevariants.tag(presets)
             return processcite(presets,{
-                variant = "tag",
-                setter  = setter,
-                getter  = getter,
+                setter = setter,
+                getter = getter,
             })
         end
 
@@ -2764,7 +2783,7 @@ do
             data.keywords = getcasted(dataset,tag,"keywords")
         end
 
-        local function getter(first,last)
+        local function getter(first,last,_,specification)
             context(listof(first.keywords))
         end
 
@@ -2787,12 +2806,12 @@ do
             return true -- needed?
         end
 
-        local function authorcompressor(found)
+        local function authorcompressor(found,specification)
             local result  = { }
             local entries = { }
             for i=1,#found do
                 local entry  = found[i]
-                local author = entry.author
+                local author = entry.authorhash
                 if author then
                     local aentries = entries[author]
                     if aentries then
@@ -2802,11 +2821,11 @@ do
                     end
                 end
             end
-            -- beware: we usetables as hash so we get a cycle when inspecting (unless we start
+            -- beware: we use tables as hash so we get a cycle when inspecting (unless we start
             -- hashing with strings)
             for i=1,#found do
                 local entry  = found[i]
-                local author = entry.author
+                local author = entry.authorhash
                 if author then
                     local aentries = entries[author]
                     if not aentries then
@@ -2820,7 +2839,6 @@ do
                     end
                 end
             end
-            -- todo: add letters (should we then tag all?)
             return result
         end
 
@@ -2843,19 +2861,20 @@ do
                     if first then
                         ctx_btxsetfirst(first[key] or "") -- f_missing(first.tag))
                         local suffix = entry.suffix
-                        local value  = entry.last[key]
+                        local last   = entry.last
+                        local value  = last and last[key]
                         if value then
                             ctx_btxsetsecond(value)
                         end
                         if suffix then
-                            ctx_btxsetthird(suffix)
+                            ctx_btxsetsuffix(suffix)
                         end
                     else
                         local suffix = entry.suffix
                         local value  = entry[key] or "" -- f_missing(tag)
                         ctx_btxsetfirst(value)
                         if suffix then
-                            ctx_btxsetthird(suffix)
+                            ctx_btxsetsuffix(suffix)
                         end
                     end
                     ctx_btxsetconcat(concatstate(i,nofcollected))
@@ -2880,7 +2899,7 @@ do
          -- ctx_btxsetinternal(bl and bl.references.internal or "")
             ctx_btxsetfirst(entry[key] or "") -- f_missing(tag)
             if suffix then
-                ctx_btxsetthird(entry.suffix)
+                ctx_btxsetsuffix(entry.suffix)
             end
             if trace_detail then
                 report("expanding %a cite setup %a","single author",setup)
@@ -2892,7 +2911,7 @@ do
 
         local partialinteractive = false
 
-        local function authorgetter(first,last,key,setup) -- only first
+        local function authorgetter(first,last,key,specification) -- only first
          -- ctx_btxsetfirst(first.author)         -- unformatted
          -- ctx_btxsetfirst(currentbtxciteauthor) -- formatter (much slower)
             if first.type == "author" then
@@ -2908,13 +2927,13 @@ do
             end
             if entries then
                 -- happens with year
-                local c = compresslist(entries)
-                local f = function() authorconcat(c,key,setup) return true end -- indeed return true?
+                local c = compresslist(entries,specification)
+                local f = function() authorconcat(c,key,specification.setup or "author") return true end -- indeed return true?
                 ctx_btxsetcount(#c)
                 ctx_btxsetsecond(f)
             elseif first then
                 -- happens with num
-                local f = function() authorsingle(first,key,setup) return true end -- indeed return true?
+                local f = function() authorsingle(first,key,specification.setup or "author") return true end -- indeed return true?
                 ctx_btxsetcount(0)
                 ctx_btxsetsecond(f)
             end
@@ -2925,9 +2944,10 @@ do
 
         local function setter(data,dataset,tag,entry)
             data.author, data.field, data.type = getcasted(dataset,tag,"author")
+data.authorhash = getdetail(dataset,tag,"authorhash") -- todo let getcasted return
         end
 
-        local function getter(first,last,_,setup)
+        local function getter(first,last,_,specification)
             if first.type == "author" then
                 ctx_btxsetfirst(currentbtxciteauthor) -- formatter (much slower)
             else
@@ -2938,8 +2958,8 @@ do
 
         function citevariants.author(presets)
             processcite(presets,{
-                compress = false,
                 variant  = "author",
+                setup    = "author",
                 setter   = setter,
                 getter   = getter,
             })
@@ -2951,18 +2971,21 @@ do
             local entries = entry.entries
             local text    = entries and entries.text or "?"
             data.author, data.field, data.type = getcasted(dataset,tag,"author")
+data.authorhash = getdetail(dataset,tag,"authorhash") -- todo let getcasted return
             data.num     = text
             data.sortkey = text and lpegmatch(numberonly,text)
         end
 
-        local function getter(first,last)
-            authorgetter(first,last,"num","author:num")
+        local function getter(first,last,_,specification)
+            authorgetter(first,last,"num",specification)
             return true
         end
 
         function citevariants.authornum(presets)
             processcite(presets,{
                 variant    = "authornum",
+                setup      = "author:num",
+                numeric    = true,
                 setter     = setter,
                 getter     = getter,
                 compressor = authorcompressor,
@@ -2973,35 +2996,40 @@ do
 
         local function setter(data,dataset,tag,entry)
             data.author, data.field, data.type = getcasted(dataset,tag,"author")
+data.authorhash = getdetail(dataset,tag,"authorhash") -- todo let getcasted return
             local year   = getfield (dataset,tag,"year")
-            local suffix = getdetail(dataset,tag,"suffix")
+            local suffix = getdetail(dataset,tag,"authorsuffix")
             data.year    = year
             data.suffix  = suffix
             data.sortkey = tonumber(year) or 9999
         end
 
-        local function getter(first,last)
-            authorgetter(first,last,"year","author:year")
+        local function getter(first,last,_,specification)
+            authorgetter(first,last,"year",specification)
             return true
         end
 
         function citevariants.authoryear(presets)
             processcite(presets,{
                 variant    = "authoryear",
+                setup      = "author:year",
+                numeric    = true,
                 setter     = setter,
                 getter     = getter,
                 compressor = authorcompressor,
             })
         end
 
-        local function getter(first,last)
-            authorgetter(first,last,"year","author:years")
+        local function getter(first,last,_,specification)
+            authorgetter(first,last,"year",specification)
             return true
         end
 
         function citevariants.authoryears(presets)
             processcite(presets,{
                 variant    = "authoryears",
+                setup      = "author:years",
+                numeric    = true,
                 setter     = setter,
                 getter     = getter,
                 compressor = authorcompressor,
@@ -3037,7 +3065,7 @@ do
         if trace_detail then
             report("expanding %a list setup %a","default",variant)
         end
-        ctx_btxlistsetup("default")
+        ctx_btxnumberingsetup("default")
     end
 
     function listvariants.num(dataset,block,tag,variant,listindex)
@@ -3045,25 +3073,25 @@ do
         if trace_detail then
             report("expanding %a list setup %a","num",variant)
         end
-        ctx_btxlistsetup(variant)
+        ctx_btxnumberingsetup(variant or "num")
     end
 
     listvariants[v_yes] = listvariants.num
     listvariants.bib    = listvariants.num
 
     function listvariants.short(dataset,block,tag,variant,listindex)
-        local short  = getdetail(dataset,tag,"short","short")
-        local suffix = getdetail(dataset,tag,"suffix","suffix")
+        local short  = getdetail(dataset,tag,"shorthash")
+        local suffix = getdetail(dataset,tag,"shortsuffix")
         if short then
             ctx_btxsetfirst(short)
         end
         if suffix then
-            ctx_btxsetthird(suffix)
+            ctx_btxsetsuffix(suffix)
         end
         if trace_detail then
             report("expanding %a list setup %a","short",variant)
         end
-        ctx_btxlistsetup(variant)
+        ctx_btxnumberingsetup(variant or "short")
     end
 
     function listvariants.page(dataset,block,tag,variant,listindex)

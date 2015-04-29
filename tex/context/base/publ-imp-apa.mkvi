@@ -22,7 +22,7 @@
 %D     edition  ={Sixth},
 %D     address  ={Washington, DC},
 %D     publisher={American Psychological Association},
-%D     pages    ={291},
+%D     Xpages   ={291},
 %D     url      ={http://www.apa.org/books/},
 %D }
 %D \stopTEX
@@ -50,9 +50,9 @@
 \setupbtxlist
   [apa]
   [\c!alternative=\v!paragraph,
-   \c!width=\v!fit,
-   \c!distance=.5\emwidth,
-   \c!margin=3\emwidth]
+  %\c!width=\v!fit,
+  %\c!distance=.5\emwidth,
+   \c!margin=3.5\emwidth]
 
 \definebtx
   [apa:list]
@@ -88,12 +88,24 @@
   [apa:list]
 
 \definebtx
-  [apa:list:invertedshort]
+  [apa:list:numbering]
   [apa:list]
 
 \definebtx
-  [apa:list:short]
-  [apa:list]
+  [apa:list:numbering:num]
+  [apa:list:numbering]
+
+\definebtx
+  [apa:list:numbering:yes]
+  [apa:list:numbering:num]
+
+\definebtx
+  [apa:list:numbering:short]
+  [apa:list:numbering:num]
+
+\definebtx
+  [apa:list:numbering:bib]
+  [apa:list:numbering:num]
 
 % Next, we define a namespace for each category
 
@@ -229,13 +241,13 @@
 % root.
 
 \definebtx
-  [apa:page]
+  [apa:\s!page]
   [\s!page]
 
 \definebtx
-  [apa:page:list]
-  [apa:page]
-  [\c!command={\wordright}]
+  [apa:\s!page:list]
+  [apa:\s!page]
+  [\c!pagecommand={\wordright}]
 
 % Then define and set cite parameters.
 
@@ -247,7 +259,8 @@
    \c!etallimit=5,
    \c!etaldisplay=1, % TODO: when 2-4, show all first time, etaldisplay subsequently...
    \c!authorconversion=\v!name,
-   \c!sorttype=authoryear,
+   \c!sorttype=normal,
+   \c!compress=\v!yes, % note that cite sorts only work with compress=yes.
    \c!separator:names:2={,\space},
    \c!separator:names:3={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
    \c!separator:names:4={\space\btxlabeltext{apa:and}\space}] % not \textampersand
@@ -259,10 +272,9 @@
 \definebtx
   [apa:cite:authoryear]
   [apa:cite:author]
-  [\c!left={\removeunwantedspaces\pushpunctuation\btxspace(},
-   \c!right={)\poppunctuation},
-   \c!inbetween={,\space},
-   \c!compress=\v!yes]
+  [\c!left={(},
+   \c!right={)},
+   \c!inbetween={,\space}]
 
 \definebtx
   [apa:cite:default]
@@ -278,9 +290,8 @@
 \definebtx
   [apa:cite:authornum]
   [apa:cite:author]
-  [\c!left={\removeunwantedspaces\pushpunctuation\btxspace(},
-   \c!right={)\poppunctuation},
-   \c!sorttype=authornum]
+  [\c!left={(},
+   \c!right={)}]
 
 \definebtx
   [apa:cite:authorref]
@@ -289,28 +300,26 @@
 \definebtx
   [apa:cite:author:num] % todo
   [apa:cite:authornum]
-  [\c!left={\removeunwantedspaces\pushpunctuation\btxspace[},
-   \c!right={]\poppunctuation}]
+  [\c!left={[},
+   \c!right={]}]
 
 \definebtx
-  [apa:cite:author:year] % todo 
+  [apa:cite:author:year] % todo
   [apa:cite]
 
 \definebtx
   [apa:cite:author:years] % todo
   [apa:cite:authoryears]
   [\c!inbetween=,
-   \c!left=(,
-   \c!right=)]
+   \c!left={\space(},
+   \c!right={)}]
 
 \definebtx
   [apa:cite:year]
   [apa:cite]
   [\c!separator:2={,\space}, % :0 and :1 - between items of a list
    \c!separator:3={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
-   \c!separator:4={\space\btxlabeltext{apa:and}\space}, % not \textampersand
-   \c!compress=\v!yes,
-   \c!sorttype=\v!default]
+   \c!separator:4={\space\btxlabeltext{apa:and}\space}] % not \textampersand
 
 \definebtx
   [apa:cite:title]
@@ -328,15 +337,12 @@
 \definebtx
   [apa:cite:tag]
   [apa:cite]
-  [\c!left={\removeunwantedspaces\pushpunctuation\btxspace[},
-   \c!right={]\poppunctuation}]
+  [\c!left={[},
+   \c!right={]}]
+
 
 \definebtx
-  [apa:cite:key]
-  [apa:cite:tag]
-
-\definebtx
-  [apa:cite:serial]
+  [apa:cite:index]
   [apa:cite]
   [\c!left={[},
    \c!right={]}]
@@ -346,7 +352,7 @@
   [apa:cite]
   [\c!left=,
    \c!right=,
-  [\c!separator:2={,\space}, % :0 and :1 - between items of a list
+   \c!separator:2={,\space}, % :0 and :1 - between items of a list
    \c!separator:3={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
    \c!separator:4={\space\btxlabeltext{apa:and}\space}] % not \textampersand
 
@@ -356,12 +362,6 @@
 
 \definebtx
   [apa:cite:keywords]
-  [apa:cite]
-  [\c!left={(},
-   \c!right={)}]
-
-\definebtx
-  [apa:cite:invertedshort]
   [apa:cite]
 
 \definebtx
@@ -373,12 +373,6 @@
 \definebtx
   [apa:cite:category]
   [apa:cite]
-  [\c!left={[},
-   \c!right={]}]
-
-\definebtx
-  [apa:cite:type]
-  [apa:cite:category]
 
 \definebtx
   [apa:cite:url]
@@ -393,8 +387,7 @@
 \definebtx
   [apa:cite:num]
   [apa:cite]
-  [\c!compress=\v!yes,
-   \c!left={[},
+  [\c!left={[},
    \c!right={]},
    \c!separator:2={,}, % no space
    \c!separator:3=\btxparameter{\c!separator:2},
@@ -616,7 +609,7 @@
 
 \startsetups btx:apa:cite:author:year
     \texdefinition{\s!btx:\s!cite:concat}
-    \btxparameter\c!left
+   %\btxparameter\c!left
     \ifx\currentbtxfirst\empty
         \btxlabeltext{apa:nd}
     \else
@@ -625,18 +618,14 @@
             \currentbtxfirst
         }
         \ifx\currentbtxsecond\empty \else
-            \btxparameter\v!inbetween
+            \btxparameter\c!range
             \texdefinition {\s!btx:\s!cite:inject} {
                 \currentbtxsecond
             }
         \fi
-        \ifx\currentbtxthird\empty \else
-            \texdefinition {\s!btx:\s!cite:inject} {
-                \currentbtxthird
-            }
-        \fi
+        \btxflushsuffix
     \fi
-    \btxparameter\c!right
+   %\btxparameter\c!right
 \stopsetups
 
 \startsetups btx:apa:cite:author:years
@@ -645,7 +634,7 @@
 
 % The following differs from the default by including the labels p. and pp.
 
-\startsetups btx:apa:page:list
+\startsetups btx:apa:list:page
     \fastsetup{\s!btx:\s!page:concat}
     \ifx\currentbtxlastpage\empty
         \btxlabeltext{apa:page}
@@ -740,7 +729,7 @@
             \begingroup
                 \language[\mainbtxlanguage]
                 \btxleftbracket
-                \btxusecommand[apa:list:title:\currentbtxcategory] {
+                \btxusecommand [apa:list:title:\currentbtxcategory] {
                     \btxflush{#title:\mainbtxlanguage}
                 }
                 \btxrightbracket
@@ -752,7 +741,7 @@
 \starttexdefinition btx:apa:composed-title #title
     \begingroup
         \language[\currentbtxlanguage]
-        \btxusecommand[apa:list:title:\currentbtxcategory] {
+        \btxusecommand [apa:list:title:\currentbtxcategory] {
             \btxflush{#title}
             \btxdoif {sub#title} {
                 \btxcolon
@@ -801,8 +790,7 @@
 \starttexdefinition btx:apa:suffixedyear
     \btxdoifelse {year} {
         \btxflush{year}
-        \btxflush{suffix}
-        %or \btxflush{suffixedyear}
+        \btxflushsuffix
     } {
         \btxlabeltext{apa:nd}
     }
@@ -813,7 +801,7 @@
 \starttexdefinition btx:apa:author-or-editor #author
     \btxdoif {#author} {
         \btxflush{#author}
-        \doif {\btxfoundname{#author}} {editor} {
+        \doifelse {\btxfoundname{#author}} {editor} {
             \btxleftparenthesis
             \btxsingularorplural {editor} {
                 \btxlabeltext{apa:Editor}
@@ -821,6 +809,40 @@
                 \btxlabeltext{apa:Editors}
             }
             \btxrightparenthesisperiod
+        } {
+            \doifelse {\btxfoundname{#author}} {producer} {
+                \btxleftparenthesis
+                \btxsingularorplural {producer} {
+                    \btxlabeltext{apa:Producer}
+                } {
+                    \btxlabeltext{apa:Producers}
+                }
+                \btxrightparenthesis
+                \btxdoifelse {director} {
+                    \removeunwantedspaces
+                    \btxparameter{\c!separator:names:3}
+                    \btxflush{director}
+                    \btxleftparenthesis
+                    \btxsingularorplural {director} {
+                        \btxlabeltext{apa:Director}
+                    } {
+                        \btxlabeltext{apa:Directors}
+                    }
+                    \btxrightparenthesisperiod
+                } {
+                    \btxperiod
+                }
+            } {
+                \doif {\btxfoundname{#author}} {director} {
+                    \btxleftparenthesis
+                    \btxsingularorplural {director} {
+                        \btxlabeltext{apa:Director}
+                    } {
+                        \btxlabeltext{apa:Directors}
+                    }
+                    \btxrightparenthesisperiod
+                }
+            }
         }
     }
 \stoptexdefinition
@@ -882,7 +904,7 @@
     \doif {\currentbtxcategory} {techreport} {
         \texdefinition{btx:apa:leftparenthesis-or-comma}
         \btxdoifelse {type} {
-            \btxusecommand[apa:list:type] {
+            \btxusecommand [apa:list:type] {
                 \btxflush{type}
             }
         } {
@@ -932,7 +954,7 @@
     \btxdoif {journal} {
         \btxspace
         \btxstartstyleandcolor[apa:list:journal]
-            \btxusecommand[apa:list:journal] {
+            \btxusecommand [apa:list:journal] {
                 \btxflush{journal}
             }
         \btxdoifelse {volume} {
@@ -1081,6 +1103,11 @@
 \startsetups btx:apa:list:article
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}
+    \btxdoif {type} {
+        \btxleftbracket
+        \btxflush{type}
+        \btxrightbracketperiod
+    }
     \texdefinition{btx:apa:journal-volume-number-pages}
     \texdefinition{btx:apa:url-doi-note}
 \stopsetups
@@ -1203,7 +1230,7 @@
     \texdefinition{btx:apa:title-if-not-placed}
     \btxleftparenthesis
     \btxdoifelse {type} {
-        \btxusecommand[apa:list:type] {
+        \btxusecommand [apa:list:type] {
             \btxflush{type}
         }
     } {
@@ -1330,35 +1357,7 @@
 % Optional fields: subtitle, type, note, url, doi
 
 \startsetups btx:apa:list:film
-    \btxdoif {producer} {
-        \btxflush{producer}
-        \btxleftparenthesis
-        \btxsingularorplural {producer} {
-            \btxlabeltext{apa:Producer}
-        } {
-            \btxlabeltext{apa:Producers}
-        }
-        \btxrightparenthesis
-        \btxdoifelse {director} {
-            \removeunwantedspaces
-            \btxparameter{\c!separator:names:3}
-        } {
-            \btxperiod
-        }
-    }
-    \btxdoif {director} {
-        \btxflush{director}
-        \btxleftparenthesis
-        \btxsingularorplural {director} {
-            \btxlabeltext{apa:Director}
-        } {
-            \btxlabeltext{apa:Directors}
-        }
-        \btxrightparenthesisperiod
-    }
-    \btxleftparenthesis
-    \texdefinition{btx:apa:suffixedyear}
-    \btxrightparenthesisperiod
+    \texdefinition{btx:apa:authoryear}
     \texdefinition {btx:apa:title}
     \btxleftbracket
         \btxdoifelse {type} {
@@ -1432,7 +1431,7 @@
 \startsetups btx:apa:list:literal
     %\btxleftparenthesis
     \removeunwantedspaces(
-    \btxflush{key}
+    \btxflush{tag}
     \btxrightparenthesis
     \btxdoif {text} {
         \btxflush{text}

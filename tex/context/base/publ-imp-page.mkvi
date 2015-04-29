@@ -26,7 +26,7 @@
 \definebtx
   [\s!page:\s!list]
   [\s!page]
-  [\c!command={\wordright}]
+  [\c!pagecommand={\wordright}]
 
 \startsetups \s!btx:\s!page:concat
     \ifcase\currentbtxoverflow
@@ -44,7 +44,7 @@
 
 % for the moment we have only one variant
 
-\startsetups [\s!btx:\s!page:\s!list]
+\startsetups [\s!btx:\s!list:\s!page]
     \fastsetup{\s!btx:\s!page:concat}
   % \ifx\currentbtxlastpage\empty
   %     p.
