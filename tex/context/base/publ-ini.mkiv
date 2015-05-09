@@ -14,6 +14,8 @@
 % TODO: s! vs v! for default and neutral key/values
 % todo: too many refs in list
 
+% todo: no need for all these %'s
+
 % todo: tagging
 % todo: we cannot use 'default' as this wipes metadata names (maybe no longer do that)
 % todo: \v!cite => \s!cite
@@ -147,11 +149,41 @@
 
 \installswitchcommandhandler \??btx {btx} \??btx
 
+% because we have lots of setups we provide a checker for sloppy users
+
+\unexpanded\def\btx_check_chain#1#2#3%
+  {\doifelsesomething{#3}
+     {\writestatus{btx #1}{defining\space"#2"\space as\space descendant\space of\space"#3"}% we're in definition regime (no space)
+      \definebtx[#2][#3]}
+     {\writestatus{btx #1}{defining\space"#2"}%
+      \definebtx[#2]}}
+
+% \unexpanded\def\btxcheckdefine#1#2{\doifelsecommandhandler\??btx{#1}\donothing{\btx_check_chain{define}{#1}{#2}}}
+% \unexpanded\def\btxchecksetup #1#2{\doifelsecommandhandler\??btx{#1}\donothing{\btx_check_chain {setup}{#1}{#2}}}
+
+\unexpanded\def\btxcheckdefine#1{\doifelsecommandhandler\??btx{#1}\gobbleoneargument{\btx_check_chain{define}{#1}}} % {#2}
+\unexpanded\def\btxchecksetup #1{\doifelsecommandhandler\??btx{#1}\gobbleoneargument{\btx_check_chain {setup}{#1}}} % {#2}
+
+% fpr the moment experimental:
+
+\unexpanded\def\btxenableautodefine
+  {\prependtoks
+     \clf_checkinterfacechain{\currentbtx}{btxcheckdefine}%
+   \to \everydefinebtx
+   \prependtoks
+     \ifnum\btxsetupmode=\doingrootsetupnamed
+       \clf_checkinterfacechain{\currentbtx}{btxchecksetup}%
+     \fi
+   \to \everysetupbtx
+   \let\btxenableautodefine\relax}
+
 \appendtoks
     \ifnum\btxsetupmode=\doingrootsetuproot
         \publ_specification_set{\btxparameter\c!specification}%
     \else\ifnum\btxsetupmode=\doingrootsetupnamed
-        \publ_specification_set{\btxparameter\c!specification}%
+        \doifelsecommandhandler\??btx\currentbtx
+          {\publ_specification_set{\btxparameter\c!specification}}%
+          {}% maybe a warning
     \fi\fi
 \to \everysetupbtx
 
@@ -968,8 +1000,10 @@
 
 \appendtoks
     \edef\currentbtxnumbering{\btxrenderingparameter\c!numbering}%
-    \edef\p_numbering{\btxrenderingparameter\c!numbering}% link to headnumber
-    \ifx\p_numbering\v!no
+    \ifx\currentbtxnumbering\v!yes
+        \def\currentbtxnumbering{num}% convenient alias
+        \letbtxrenderingparameter\c!numbering\currentbtxnumbering
+    \else\ifx\currentbtxnumbering\v!no
         \letlistparameter\c!headnumber\v!no
         \let\currentbtxnumbering\empty
       % \letlistparameter\c!textcommand\outdented % needed? we can use titlealign
@@ -978,7 +1012,7 @@
         \letlistparameter\c!numbercommand\firstofoneargument % for the moment, no doubling needed
     \else
         \letlistparameter\c!headnumber\v!always
-    \fi
+    \fi\fi
     \let\currentlistmethod\s!btx
 \to \everysetupbtxlistplacement
 
@@ -1015,6 +1049,7 @@
             kind        {list}%
             etallimit   {\btxparameter\c!etallimit}%
             etaldisplay {\btxparameter\c!etaldisplay}%
+            etaloption  {\btxparameter\c!etaloption}%
             symbol      {\btxparameter{\c!stopper:initials}}%
         }%
    \relax
@@ -1040,6 +1075,7 @@
             kind        {cite}%
             etallimit   {\btxparameter\c!etallimit}%
             etaldisplay {\btxparameter\c!etaldisplay}%
+            etaloption  {\btxparameter\c!etaloption}%
             symbol      {\btxparameter{\c!stopper:initials}}%
         }%
    \relax

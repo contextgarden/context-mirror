@@ -60,6 +60,7 @@
   [\c!otherstext={,\nobreakspace\textellipsis\space},
    \c!etallimit=7,
    \c!etaldisplay=6,
+   \c!etaloption=last,
    \c!authorconversion=invertedshort,
    \c!separator:names:2={,\space}, % aka namesep - in this namespace
    \c!separator:names:3={,\nobreakspace\textampersand\space}, % comma separated list
@@ -94,6 +95,8 @@
 \definebtx
   [apa:list:numbering:num]
   [apa:list:numbering]
+  [\c!stopper={.},
+   \c!right={\space}]
 
 \definebtx
   [apa:list:numbering:yes]
@@ -102,10 +105,12 @@
 \definebtx
   [apa:list:numbering:short]
   [apa:list:numbering:num]
+  [\c!stopper=]
 
 \definebtx
-  [apa:list:numbering:bib]
+  [apa:list:numbering:tag]
   [apa:list:numbering:num]
+  [\c!stopper=]
 
 % Next, we define a namespace for each category
 
@@ -294,13 +299,9 @@
    \c!right={)}]
 
 \definebtx
-  [apa:cite:authorref]
-  [apa:cite:authornum]
-
-\definebtx
   [apa:cite:author:num] % todo
   [apa:cite:authornum]
-  [\c!left={[},
+  [\c!left={\space[},
    \c!right={]}]
 
 \definebtx
@@ -328,6 +329,7 @@
    \c!separator:3={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
    \c!separator:4={\space\btxlabeltext{apa:and}\space}, % not \textampersand
    \c!command={\language[\currentbtxlanguage]}, % BAH
+   \c!sorttype=none,
    \c!style=\v!italic]
 
 \definebtx
@@ -483,7 +485,6 @@
 \setupbtxlabeltext
   [fr]
   [apa:and=et,
-   apa:others={et al.},
    apa:number={n\high{o}},
    apa:edition={édition},
    apa:Editor=Éditeur,
@@ -749,9 +750,10 @@
             }
         }
     \endgroup
-    \doif{\btxparameter{translate}}\v!yes {
+    % which namespace?
+    %\doif{\btxparameter{translate}}\v!yes {
         \texdefinition{btx:apa:translated-title}{#title}
-    }
+    %}
 \stoptexdefinition
 
 \starttexdefinition btx:apa:title

@@ -1060,9 +1060,11 @@ do
                         local userdata  = listentry.userdata
                         local btxspc    = userdata and userdata.btxspc
                         if btxspc then
-                            -- this will become a specification entry
+                            -- we could act on the 3rd arg returned by getcasted but in general any string will do
+                            -- so we deal with it in the author hashers ... maybe some day ...
                             local author = getcasted(dataset,tag,field,specifications[btxspc])
-                            if type(author) == "table" then
+                            local kind   = type(author)
+                            if kind == "table" or kind == "string" then
                                 if u then
                                     u = listentry.entries.text -- hm
                                 else
@@ -1633,17 +1635,20 @@ do
         end
     end
 
+
+    -- tag | listindex | reference | userdata | dataindex
+
     local methods = { }
     lists.methods = methods
 
     methods[v_dataset] = function(dataset,rendering,keyword)
-        -- why only once unless criterium=all?
         local current = datasets[dataset]
         local luadata = current.luadata
         local list    = rendering.list
         for tag, data in sortedhash(luadata) do
             if not keyword or validkeyword(dataset,tag,keyword) then
-                list[#list+1] = { tag, false, 0, false, false, data.index or 0}
+                local index = data.index or 0
+                list[#list+1] = { tag, index, 0, false, index }
             end
         end
     end
@@ -1666,7 +1671,7 @@ do
                     local tag = u.btxref
                     if tag and (not keyword or validkeyword(dataset,tag,keyword)) then
                         local data = luadata[tag]
-                        list[#list+1] = { tag, listindex, 0, u, u.btxint, data and data.index or 0 }
+                        list[#list+1] = { tag, listindex, 0, u, data and data.index or 0 }
                     end
                 end
             end
@@ -1714,7 +1719,7 @@ do
                                 l[#l+1] = u.btxint
                             else
                                 local data = luadata[tag]
-                                local l = { tag, listindex, 0, u, u.btxint, data and data.index or 0 }
+                                local l = { tag, listindex, 0, u, data and data.index or 0 }
                                 list[#list+1] = l
                                 traced[tag] = l
                             end
@@ -1722,7 +1727,7 @@ do
                             done[tag]    = section
                             alldone[tag] = true
                             local data = luadata[tag]
-                            list[#list+1] = { tag, listindex, 0, u, u.btxint, data and data.index or 0 }
+                            list[#list+1] = { tag, listindex, 0, u, data and data.index or 0 }
                         end
                     end
                     if tag then
@@ -2025,17 +2030,6 @@ do
             if language then
                 ctx_btxsetlanguage(language)
             end
-            local bl = li[5]
-            if bl and bl ~= "" then
-                ctx_btxsetbacklink(bl)
-             -- ctx_btxsetbacktrace(concat(li," ",5)) -- two numbers
-            else
-                -- nothing
-            end
-            local authorsuffix = detail.authorsuffix
-            if authorsuffix then
-                ctx_btxsetsuffix(authorsuffix)
-            end
             local userdata = li[4]
             if userdata then
                 local b = userdata.btxbtx
@@ -2046,6 +2040,14 @@ do
                 if a then
                     ctx_btxsetafter(a)
                 end
+                local bl = userdata.btxint
+                if bl and bl ~= "" then
+                    ctx_btxsetbacklink(bl)
+                end
+            end
+            local authorsuffix = detail.authorsuffix
+            if authorsuffix then
+                ctx_btxsetsuffix(authorsuffix)
             end
             rendering.userdata = userdata
             if textmode then
@@ -2391,7 +2393,7 @@ do
         tobemarked = specification.markentry and todo
         --
         if not found or #found == 0 then
-            report("nothing found for %a",reference)
+            report("no entry %a found in dataset %a",reference,dataset)
         elseif not setup then
             report("invalid reference for %a",reference)
         else
@@ -2816,8 +2818,10 @@ do
                 else
                     return false
                 end
-            else
+            elseif ak and bk then
                 return ak < bk
+            else
+                return false
             end
         end
 
@@ -3109,7 +3113,14 @@ do
     end
 
     listvariants[v_yes] = listvariants.num
-    listvariants.bib    = listvariants.num
+
+    function listvariants.tag(dataset,block,tag,variant,listindex)
+        ctx_btxsetfirst(tag)
+        if trace_detail then
+            report("expanding %a list setup %a","tag",variant)
+        end
+        ctx_btxnumberingsetup(variant or "tag")
+    end
 
     function listvariants.short(dataset,block,tag,variant,listindex)
         local short  = getdetail(dataset,tag,"shorthash")
@@ -3152,5 +3163,34 @@ do
             end
         end
     end
+
+end
+
+-- a helper
+
+do
+
+ -- local context   = context
+ -- local lpegmatch = lpeg.match
+    local splitter  = lpeg.tsplitat(":")
+
+    interfaces.implement {
+        name      = "checkinterfacechain",
+        arguments = { "string", "string" },
+        actions   = function(str,command)
+            local chain = lpegmatch(splitter,str)
+            if #chain > 0 then
+                local command = context[command]
+                local parent  = ""
+                local child   = chain[1]
+                command(child,parent)
+                for i=2,#chain do
+                    parent = child
+                    child  = child .. ":" .. chain[i]
+                    command(child,parent)
+                end
+            end
+        end
+    }
 
 end

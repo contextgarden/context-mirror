@@ -184,12 +184,103 @@
 
 \definemathematics[\v!default] % not needed, but nicer when nesting back to normal
 
-% Normally this is applied to only one character.
+% Now we redefine \type {\mathematics} and \type {\m}:
+
+\unexpanded\def\mathematics
+  {\doifelsenextoptionalcs\math_m_yes\math_m_nop}
+
+\def\math_m_yes[#1]#2%
+  {\relax
+   \ifmmode
+     #2%
+   \else
+     \normalstartimath
+     \edef\currentmathematics{#1}% check for valid
+     \the\everyswitchmathematics\relax
+     #2%
+     \normalstopimath
+   \fi}
+
+\def\math_m_nop#1%
+  {\relax
+   \ifmmode
+     #1%
+   \else
+     \normalstartimath
+     #1%
+     \normalstopimath
+   \fi}
+
+\let\m\mathematics
+
+\newmuskip\defaultthickmuskip  \defaultthickmuskip  5mu plus 5mu
+\newmuskip\defaultmedmuskip    \defaultmedmuskip    4mu plus 2mu minus 4mu
+\newmuskip\defaultthinmuskip   \defaultthinmuskip   3mu
+
+\newmuskip\halfthickmuskip     \halfthickmuskip     2.5mu plus 2.5mu
+\newmuskip\halfmedmuskip       \halfmedmuskip       2.0mu plus 1.0mu minus 2.0mu
+\newmuskip\halfthinmuskip      \halfthinmuskip      1.5mu
+
+\newcount \defaultrelpenalty   \defaultrelpenalty   500
+\newcount \defaultbinoppenalty \defaultbinoppenalty 700
+
+
+\startsetups math:spacing:default
+    \thickmuskip   \defaultthickmuskip
+    \medmuskip     \defaultmedmuskip
+    \thinmuskip    \defaultthinmuskip
+    \relpenalty    \defaultrelpenalty
+    \binoppenalty  \defaultbinoppenalty
+\stopsetups
+
+\startsetups math:spacing:half
+    \thickmuskip   \halfthickmuskip
+    \medmuskip     \halfmedmuskip
+    \thinmuskip    \halfthinmuskip
+    \relpenalty    \defaultrelpenalty
+    \binoppenalty  \defaultbinoppenalty
+\stopsetups
+
+\startsetups math:spacing:tight
+    \ifcase\raggedstatus
+        \thickmuskip   \halfthickmuskip
+        \medmuskip     \halfmedmuskip
+        \thinmuskip    \halfthinmuskip
+    \else
+        \thickmuskip  1\halfthickmuskip
+        \medmuskip    1\halfmedmuskip
+        \thinmuskip   1\halfthinmuskip
+    \fi
+    \relpenalty    \defaultrelpenalty
+    \binoppenalty  \maxdimen
+\stopsetups
+
+\startsetups math:spacing:fixed
+    \ifcase\raggedstatus
+        \thickmuskip   \halfthickmuskip
+        \medmuskip     \halfmedmuskip
+        \thinmuskip    \halfthinmuskip
+    \else
+        \thickmuskip  1\halfthickmuskip
+        \medmuskip    1\halfmedmuskip
+        \thinmuskip   1\halfthinmuskip
+    \fi
+    \relpenalty    \maxdimen
+    \binoppenalty  \maxdimen
+\stopsetups
+
+% \dorecurse{80}{test \m[i:tight]{\red \fakeformula} test }
+
+\definemathematics[i:default][\c!setups=math:spacing:equal]
+\definemathematics[i:half]   [\c!setups=math:spacing:half]
+\definemathematics[i:tight]  [\c!setups=math:spacing:tight]
+\definemathematics[i:fixed]  [\c!setups=math:spacing:fixed]
+
+% Normally the next is applied to only one character.
 %
 % $ABC$ $\cal ABC$ $\mathaltcal ABC$
 
 % todo: only in mmode
-
 % these commands are semi-public but should not be used directly (lua names wil change)
 
 \unexpanded\def\math_set_attribute   #1#2{\ifmmode\clf_setmathattribute{#1}{#2}\fi}
@@ -524,19 +615,32 @@
 \unexpanded\def\math_tags_mn#1{\begingroup\mathupright#1\endgroup}
 \unexpanded\def\math_tags_ms#1{\begingroup\mathupright#1\endgroup}
 
-\unexpanded\def\mfunction         #1{{\mathupright\math_tags_function{#1}}}
-\unexpanded\def\mfunctionlabeltext#1{{\mathupright\math_tags_functionlabeltext{#1}}}
-
 % Once this is stable we can store the number at the tex end which is
 % faster. Functions getnumbers >= 1000.
 
-\expanded\def\math_tags_mathfunction_indeed         #1{\clf_taggedmathfunction{#1}{false}{\ifconditional\c_apply_function true\else false\fi}}
-\expanded\def\math_tags_mathfunctionlabeltext_indeed#1{\clf_taggedmathfunction{#1} {true}{\ifconditional\c_apply_function true\else false\fi}}
+\setupmathematics
+  [\c!functionstyle=\mr,
+   \c!functioncolor=]
 
-\expanded\def\math_tags_mo_indeed#1{\begingroup            \attribute\mathcategoryattribute\plusone  #1\endgroup}
-\expanded\def\math_tags_mi_indeed#1{\begingroup            \attribute\mathcategoryattribute\plustwo  #1\endgroup}
-\expanded\def\math_tags_mn_indeed#1{\begingroup\mathupright\attribute\mathcategoryattribute\plusthree#1\endgroup}
-\expanded\def\math_tags_ms_indeed#1{\begingroup\mathupright\attribute\mathcategoryattribute\plusfour #1\endgroup}
+\unexpanded\def\mfunction#1%
+  {\begingroup
+   \math_tags_mfunctiontxt{#1}\c_apply_function
+   \mathoptext{\usemathematicsstyleandcolor\c!functionstyle\c!functioncolor#1}%
+   \endgroup}
+
+\unexpanded\def\mfunctionlabeltext#1%
+  {\begingroup
+   \math_tags_mfunctionlab{#1}\c_apply_function
+   \mathoptext{\usemathematicsstyleandcolor\c!functionstyle\c!functioncolor\mathlabeltext{#1}}%
+   \endgroup}
+
+\let\math_tags_mfunctiontxt\gobbletwoarguments
+\let\math_tags_mfunctionlab\gobbletwoarguments
+
+\unexpanded\def\math_tags_mo_indeed#1{\begingroup            \attribute\mathcategoryattribute\plusone  #1\endgroup}
+\unexpanded\def\math_tags_mi_indeed#1{\begingroup            \attribute\mathcategoryattribute\plustwo  #1\endgroup}
+\unexpanded\def\math_tags_mn_indeed#1{\begingroup\mathupright\attribute\mathcategoryattribute\plusthree#1\endgroup}
+\unexpanded\def\math_tags_ms_indeed#1{\begingroup\mathupright\attribute\mathcategoryattribute\plusfour #1\endgroup} % todo: mathoptext
 
 \newconditional\c_apply_function
 
@@ -551,12 +655,12 @@
    \endgroup}
 
 \appendtoks
-    \let\math_tags_function         \math_tags_mathfunction_indeed
-    \let\math_tags_functionlabeltext\math_tags_mathfunctionlabeltext_indeed
-    \let\math_tags_mo               \math_tags_mo_indeed
-    \let\math_tags_mi               \math_tags_mi_indeed
-    \let\math_tags_mn               \math_tags_mn_indeed
-    \let\math_tags_ms               \math_tags_ms_indeed
+    \let\math_tags_mfunctiontxt\clf_tagmfunctiontxt
+    \let\math_tags_mfunctionlab\clf_tagmfunctionlab
+    \let\math_tags_mo          \math_tags_mo_indeed
+    \let\math_tags_mi          \math_tags_mi_indeed
+    \let\math_tags_mn          \math_tags_mn_indeed
+    \let\math_tags_ms          \math_tags_ms_indeed
 \to \everyenableelements
 
 \appendtoks
@@ -570,21 +674,21 @@
 % \def\mlimitsfunction  #1{\mathlimopcomm{{\mr#1}}
 % \def\mnolimitsfunction#1{\mathnolopcomm{{\mr#1}}
 
-%D Taco posted this solution as response to a mail by Olivier, so let's integrate
-%D it here.
-
-\def\currentmscaledstyle{rm} % will be plugged into the typeface text=ss option
-
-\unexpanded\def\math_function_style_opnolimits        #1{\mathop{\mscaledtext{#1}}\nolimits}
-\unexpanded\def\math_function_style_mfunction         #1{\mscaledtext{\math_tags_function{#1}}}
-\unexpanded\def\math_function_style_mfunctionlabeltext#1{\mscaledtext{\math_tags_functionlabeltext{#1}}}
-
-\unexpanded\def\setmathfunctionstyle#1% rm ss tt (can be made faster if needed)
-  {\doifsomething{#1}
-     {\def\currentmscaledstyle{#1}%
-      \let\mathopnolimits    \math_function_style_opnolimits
-      \let\mfunction         \math_function_style_mfunction
-      \let\mfunctionlabeltext\math_function_style_mfunctionlabeltext}}
+% %D Taco posted this solution as response to a mail by Olivier, so let's integrate
+% %D it here.
+%
+% \def\currentmscaledstyle{rm} % will be plugged into the typeface text=ss option
+%
+% \unexpanded\def\math_function_style_opnolimits        #1{\mathop{\mscaledtext{#1}}\nolimits}
+% \unexpanded\def\math_function_style_mfunction         #1{\mscaledtext{\math_tags_function{#1}}}
+% \unexpanded\def\math_function_style_mfunctionlabeltext#1{\mscaledtext{\math_tags_functionlabeltext{#1}}}
+%
+% \unexpanded\def\setmathfunctionstyle#1% rm ss tt (can be made faster if needed)
+%   {\doifsomething{#1}
+%      {\def\currentmscaledstyle{#1}%
+%       \let\mathopnolimits    \math_function_style_opnolimits
+%       \let\mfunction         \math_function_style_mfunction
+%       \let\mfunctionlabeltext\math_function_style_mfunctionlabeltext}}
 
 \unexpanded\def\mscaledtext#1%
   {\mathchoice
@@ -592,6 +696,9 @@
      {\hbox{\csname\currentmscaledstyle\endcsname\tf  #1}}
      {\hbox{\csname\currentmscaledstyle\endcsname\tfx #1}}
      {\hbox{\csname\currentmscaledstyle\endcsname\tfxx#1}}}
+
+\unexpanded\def\setmathfunctionstyle#1%
+  {\setupmathematics[\c!functionstyle=#1]} % for old times sake
 
 %D We can force the way functions are typeset by manipulating the text option:
 %D
