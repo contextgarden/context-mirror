@@ -655,6 +655,7 @@
 
 \unexpanded\def\btx_entry_inject
   {\begingroup
+   \redoconvertfont % see (**) in strc-lst, this will become an configuration option
    \edef\currentbtxcategory{\btxfield{category}}%
    \ignorespaces
    \ifconditional\c_btx_list_texts

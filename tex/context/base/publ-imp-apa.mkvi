@@ -124,11 +124,18 @@
 
 \definebtx
   [apa:\s!list:journal]
+  [apa:\s!list]
   [\c!style=\v!italic]
   %command=\btxexpandedjournal] % btxabbreviatedjournal
 
 \definebtx
+  [apa:\s!list:volume]
+  [apa:\s!list]
+  [\c!style=\v!italic]
+
+\definebtx
   [apa:\s!list:title]
+  [apa:\s!list]
   [\c!style=\v!italic,
    \c!command=\Word,
    \c!translate=\v!yes]
@@ -717,7 +724,7 @@
             \begingroup
                 \language[\mainbtxlanguage]
                 \btxleftbracket
-                \btxusecommand [apa:list:title:\currentbtxcategory] {
+                \btxusecommand [apa:\s!list:title:\currentbtxcategory] {
                     \btxflush{#title:\mainbtxlanguage}
                 }
                 \btxrightbracket
@@ -727,20 +734,22 @@
 \stoptexdefinition
 
 \starttexdefinition btx:apa:composed-title #title
-    \begingroup
-        \language[\currentbtxlanguage]
-        \btxusecommand [apa:list:title:\currentbtxcategory] {
-            \btxflush{#title}
-            \btxdoif {sub#title} {
-                \btxcolon
-                \btxflush{sub#title}
+    \btxstartstyleandcolor [apa:\s!list:title:\currentbtxcategory]
+        \begingroup
+            \language[\currentbtxlanguage]
+            \btxusecommand [apa:\s!list:title:\currentbtxcategory] {
+                \btxflush{#title}
+                \btxdoif {sub#title} {
+                    \btxcolon
+                    \btxflush{sub#title}
+                }
             }
-        }
-    \endgroup
-    % which namespace?
-    %\doif{\btxparameter{translate}}\v!yes {
-        \texdefinition{btx:apa:translated-title}{#title}
-    %}
+        \endgroup
+        % which namespace?
+        %\doif{\btxparameter{translate}}\v!yes {
+            \texdefinition{btx:apa:translated-title}{#title}
+        %}
+    \btxstopstyleandcolor
 \stoptexdefinition
 
 \starttexdefinition btx:apa:title
@@ -750,14 +759,10 @@
         \texdefinition{btx:format:inject}
             {url(file:\btxflush{file})}
             {
-                \btxstartstyleandcolor [apa:list:title:\currentbtxcategory]
-                    \texdefinition{btx:apa:composed-title}{title}
-                \btxstopstyleandcolor
+                \texdefinition{btx:apa:composed-title}{title}
             }
     } {
-        \btxstartstyleandcolor [apa:list:title:\currentbtxcategory]
-            \texdefinition{btx:apa:composed-title}{title}
-        \btxstopstyleandcolor
+        \texdefinition{btx:apa:composed-title}{title}
     }
     \btxdoif {title} {
         \btxperiod
@@ -869,9 +874,7 @@
             \texdefinition{btx:apa:author-or-editor} {editor}
         }
         \btxspace
-        \btxstartstyleandcolor[apa:list:title]
-            \texdefinition{btx:apa:composed-title} {booktitle}
-        \btxstopstyleandcolor
+        \texdefinition{btx:apa:composed-title} {booktitle}
         \btxperiod
     }
 \stoptexdefinition
@@ -893,7 +896,7 @@
     \doif {\currentbtxcategory} {techreport} {
         \texdefinition{btx:apa:leftparenthesis-or-comma}
         \btxdoifelse {type} {
-            \btxusecommand [apa:list:type] {
+            \btxusecommand [apa:\s!list:type] {
                 \btxflush{type}
             }
         } {
@@ -937,26 +940,35 @@
     }
 \stoptexdefinition
 
+\starttexdefinition btx:apa:journal
+    \btxstartstyleandcolor[apa:\s!list:journal]
+        \btxusecommand [apa:\s!list:journal] {
+            \btxflush{journal}
+        }
+    \btxstopstyleandcolor
+\stoptexdefinition
+
+\starttexdefinition btx:apa:volume
+    \btxstartstyleandcolor[apa:\s!list:volume]
+        \btxflush{volume}
+    \btxstopstyleandcolor
+\stoptexdefinition
+
  % this could be simplified!
 
 \starttexdefinition btx:apa:journal-volume-number-pages
     \btxdoif {journal} {
         \btxspace
-        \btxstartstyleandcolor[apa:list:journal]
-            \btxusecommand [apa:list:journal] {
-                \btxflush{journal}
-            }
+        \texdefinition{btx:apa:journal}
         \btxdoifelse {volume} {
             \btxcomma
-            \btxflush{volume}
-            \btxstopstyleandcolor
+            \texdefinition{btx:apa:volume}
             \btxdoif {number} {
                 %\btxleftparenthesis
                 (\btxflush{number}
                 \btxrightparenthesis
             }
         } {
-            \btxstopstyleandcolor
             \btxdoif {number} {
                 \btxcomma
                 \btxleftparenthesis
@@ -1219,7 +1231,7 @@
     \texdefinition{btx:apa:title-if-not-placed}
     \btxleftparenthesis
     \btxdoifelse {type} {
-        \btxusecommand [apa:list:type] {
+        \btxusecommand [apa:\s!list:type] {
             \btxflush{type}
         }
     } {

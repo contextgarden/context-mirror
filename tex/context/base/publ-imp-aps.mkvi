@@ -114,15 +114,18 @@
 
 \definebtx
   [aps:\s!list:journal]
+  [aps:\s!list]
   [\c!style=\v!italic]
   %command=\btxexpandedjournal] % btxabbreviatedjournal
 
 \definebtx
   [aps:\s!list:volume]
+  [aps:\s!list]
   [\c!style=\v!bold]
 
 \definebtx
   [aps:\s!list:title]
+  [aps:\s!list]
   [\c!style=\v!italic,
    \c!command=\Word]
 
@@ -610,16 +613,18 @@
 %D author or editor or publisher or title or ""
 
 \starttexdefinition btx:aps:composed-title #title
-    \begingroup
-        \language[\currentbtxlanguage]
-        \btxusecommand [aps:list:title:\currentbtxcategory] {
-            \btxflush{#title}
-            \btxdoif {sub#title} {
-                \btxcolon
-                \btxflush{sub#title}
+    \btxstartstyleandcolor [aps:\s!list:title:\currentbtxcategory]
+        \begingroup
+            \language[\currentbtxlanguage]
+            \btxusecommand [aps:\s!list:title:\currentbtxcategory] {
+                \btxflush{#title}
+                \btxdoif {sub#title} {
+                    \btxcolon
+                    \btxflush{sub#title}
+                }
             }
-        }
-    \endgroup
+        \endgroup
+    \btxstopstyleandcolor
 \stoptexdefinition
 
 \starttexdefinition btx:aps:title
@@ -629,14 +634,10 @@
             \texdefinition{btx:format:inject}
                 {url(file:\btxflush{file})}
                 {
-                    \btxstartstyleandcolor [aps:list:title:\currentbtxcategory]
-                        \texdefinition{btx:aps:composed-title}{title}
-                    \btxstopstyleandcolor
+                    \texdefinition{btx:aps:composed-title}{title}
                 }
         } {
-            \btxstartstyleandcolor [aps:list:title:\currentbtxcategory]
-                \texdefinition{btx:aps:composed-title}{title}
-            \btxstopstyleandcolor
+            \texdefinition{btx:aps:composed-title}{title}
         }
         \btxcomma
     }
@@ -692,9 +693,7 @@
             \texdefinition{btx:aps:author-or-editor} {editor}
         }
         \btxspace
-        \btxstartstyleandcolor[aps:list:title]
-            \texdefinition{btx:aps:composed-title} {booktitle}
-        \btxstopstyleandcolor
+        \texdefinition{btx:aps:composed-title} {booktitle}
         \btxcomma
     }
 \stoptexdefinition
@@ -746,11 +745,13 @@
 
 \starttexdefinition btx:aps:journal-volume-year
     \btxdoif {journal} {
-        % expandedjournal abbreviatedjournal
-        \btxflush{expandedjournal -> journal}
+        \btxstartstyleandcolor [aps:\s!list:journal]
+            % expandedjournal abbreviatedjournal
+            \btxflush{expandedjournal -> journal}
+        \btxstopstyleandcolor
         \btxdoifelse {volume} {
             \btxspace
-            \btxstartstyleandcolor [aps:list:volume]
+            \btxstartstyleandcolor [aps:\s!list:volume]
                 \btxflush{volume}
             \btxstopstyleandcolor
             \btxdoif {number} {
