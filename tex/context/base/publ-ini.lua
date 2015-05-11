@@ -486,7 +486,7 @@ local findallused do
         local tags     = not find and settings_to_array(reference)
         local todo     = { }
         local okay     = { } -- only if mark
-        local allused  = usedentries[dataset]
+        local allused  = usedentries[dataset] or { }
         local luadata  = current.luadata
         local details  = current.details
         local ordered  = current.ordered

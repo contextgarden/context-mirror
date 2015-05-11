@@ -91,7 +91,12 @@
 \definebtx
   [apa:\s!list:\s!page]
   [apa:\s!list]
-  [\c!pagecommand={\wordright}]
+  [\c!separator:2={,\space},
+   \c!separator:3={,\space\btxlabeltext{apa:and}\space},
+   \c!separator:4={\space\btxlabeltext{apa:and}\space},
+   \c!left={\btxleftparenthesis},
+   \c!right={\btxrightparenthesis},
+   \c!command={\wordright}]
 
 \definebtx
   [apa:\s!list:numbering]
@@ -602,11 +607,15 @@
 
 % The following differs from the default returning n.d. if year is empty
 
+\startsetups btx:apa:nd
+    \btxlabeltext{apa:nd}
+\stopsetups
+
 \startsetups btx:apa:cite:author:year
     \texdefinition{\s!btx:\s!cite:concat}
    %\btxparameter\c!left
     \ifx\currentbtxfirst\empty
-        \btxlabeltext{apa:nd}
+        \fastsetup{btx:apa:nd}
     \else
         \texdefinition {\s!btx:\s!cite:inject} {
             \btxcitereference
@@ -627,37 +636,15 @@
     \fastsetup{btx:apa:cite:author:year}
 \stopsetups
 
-% The following differs from the default by including the labels p. and pp.
+% used in publ-imp-page.mkvi
 
-\startsetups btx:apa:list:page
-    \fastsetup{\s!btx:\s!page:concat}
+\startsetups [btx:apa:list:page-or-pages]
     \ifx\currentbtxlastpage\empty
         \btxlabeltext{apa:page}
     \else
         \btxlabeltext{apa:pages}
     \fi
     \btxnbsp
-    \ifconditional\btxinteractive
-        \goto {
-            \currentbtxfirstpage
-        } [
-            internal(\currentbtxfirstinternal)
-        ]
-        \ifx\currentbtxlastpage\empty \else
-            \btxparameter\c!pageconnector
-            \goto {
-                \currentbtxlastpage
-            } [
-                internal(\currentbtxlastinternal)
-            ]
-        \fi
-    \else
-        \currentbtxfirstpage
-        \ifx\currentbtxlastpage\empty \else
-            \btxparameter\c!pageconnector
-            \currentbtxlastpage
-        \fi
-    \fi
 \stopsetups
 
 % The sameauthor feature may not be APA compliant
@@ -676,7 +663,6 @@
       [\c!width=\dimexpr\listparameter\c!margin-\interwordspace\relax,
        \c!height=1.5\linewidth]% \linewidth is just too thin with respect to font strokes...
 \stopsetups
-
 
 \startsetups [apa:list:sameauthor:\v!empty]
     \kern\dimexpr\listparameter\c!margin-\interwordspace\relax

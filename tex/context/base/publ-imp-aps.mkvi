@@ -83,7 +83,12 @@
 \definebtx
   [aps:\s!list:\s!page]
   [aps:\s!list]
-  [\c!left={\space}]
+  [\c!separator:2={,\space},
+   \c!separator:3={,\space\btxlabeltext{aps:and}\space},
+   \c!separator:4={\space\btxlabeltext{aps:and}\space},
+   \c!left={\btxleftparenthesis},
+   \c!right={\btxrightparenthesis},
+   \c!command={\wordright}]
 
 \definebtx
   [aps:\s!list:numbering]
@@ -561,35 +566,15 @@
     \fastsetup{btx:aps:cite:author:year}
 \stopsetups
 
-\startsetups [btx:aps:list:page]
-    \fastsetup{\s!btx:\s!page:concat}
+% used in publ-imp-page.mkvi
+
+\startsetups [btx:aps:list:page-or-pages]
     \ifx\currentbtxlastpage\empty
         \btxlabeltext{aps:page}
     \else
         \btxlabeltext{aps:pages}
     \fi
     \btxnbsp
-    \ifconditional\btxinteractive
-        \goto {
-            \currentbtxfirstpage
-        } [
-            internal(\currentbtxfirstinternal)
-        ]
-        \ifx\currentbtxlastpage\empty \else
-            \btxparameter\c!pageconnector
-            \goto {
-                \currentbtxlastpage
-            } [
-                internal(\currentbtxlastinternal)
-            ]
-        \fi
-    \else
-        \currentbtxfirstpage
-        \ifx\currentbtxlastpage\empty \else
-            \btxparameter\c!pageconnector
-            \currentbtxlastpage
-        \fi
-    \fi
 \stopsetups
 
 %D Instead of texdefinitions without arguments, we could have used setups but in my
