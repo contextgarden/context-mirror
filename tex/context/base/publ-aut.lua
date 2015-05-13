@@ -852,7 +852,7 @@ publications.components.author = components
 
 publications.sortmethods.authoryear = {
     sequence = {
-        { field = "key",     default = "ZZZZ", unknown = "ZZZZ" },
+     -- { field = "key",     default = "ZZZZ", unknown = "ZZZZ" },
         { field = "author",  default = "",     unknown = "" },
         { field = "year",    default = "9998", unknown = "9999" },
      -- { field = "suffix",  default = " ",    unknown = " " },
