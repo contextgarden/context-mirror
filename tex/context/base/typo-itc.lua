@@ -39,6 +39,7 @@ local getfont             = nuts.getfont
 local getchar             = nuts.getchar
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
+local setfield            = nuts.setfield
 
 local insert_node_after   = nuts.insert_after
 local delete_node         = nuts.delete
