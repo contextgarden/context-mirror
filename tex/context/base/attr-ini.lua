@@ -6,14 +6,19 @@ if not modules then modules = { } end modules ['attr-ini'] = {
     license   = "see context related readme files"
 }
 
-local commands, context, nodes, storage = commands, context, nodes, storage
-
 local next, type = next, type
 
 --[[ldx--
 <p>We start with a registration system for atributes so that we can use the
 symbolic names later on.</p>
 --ldx]]--
+
+local nodes           = nodes
+local context         = context
+local storage         = storage
+local commands        = commands
+
+local implement       = interfaces.implement
 
 attributes            = attributes or { }
 local attributes      = attributes
@@ -38,13 +43,13 @@ storage.register("attributes/names",   names,   "attributes.names")
 storage.register("attributes/numbers", numbers, "attributes.numbers")
 storage.register("attributes/list",    list,    "attributes.list")
 
-function attributes.define(name,number) -- at the tex end
-    if not numbers[name] then
-        numbers[name] = number
-        names[number] = name
-        list[number]  = { }
-    end
-end
+-- function attributes.define(name,number) -- at the tex end
+--     if not numbers[name] then
+--         numbers[name] = number
+--         names[number] = name
+--         list[number]  = { }
+--     end
+-- end
 
 --[[ldx--
 <p>We reserve this one as we really want it to be always set (faster).</p>
@@ -53,38 +58,19 @@ end
 names[0], numbers["fontdynamic"] = "fontdynamic", 0
 
 --[[ldx--
-<p>We can use the attributes in the range 127-255 (outside user space). These
-are only used when no attribute is set at the \TEX\ end which normally
-happens in <l n='context'/>.</p>
+<p>private attributes are used by the system and public ones are for users. We use dedicated
+ranges of numbers for them. Of course a the <l n='context'/> end a private attribute can be
+accessible too, so a private attribute can have a public appearance.</p>
 --ldx]]--
 
-sharedstorage.attributes_last_private = sharedstorage.attributes_last_private or 127
-
--- to be considered (so that we can use an array access):
---
--- local private = { } attributes.private = private
---
--- setmetatable(private, {
---     __index = function(t,name)
---         local number = sharedstorage.attributes_last_private
---         if number < 1023 then -- texgetcount("minallocatedattribute") - 1
---             number = number + 1
---             sharedstorage.attributes_last_private = number
---         end
---         numbers[name], names[number], list[number] = number, name, { }
---         private[name] = number
---         return number
---     end,
---     __call = function(t,name)
---         return t[name]
---     end
--- } )
+sharedstorage.attributes_last_private = sharedstorage.attributes_last_private or  127 -- very private (can become 15)
+sharedstorage.attributes_last_public  = sharedstorage.attributes_last_public  or 1024 -- less private
 
 function attributes.private(name) -- at the lua end (hidden from user)
     local number = numbers[name]
     if not number then
         local last = sharedstorage.attributes_last_private
-        if last < 1023 then -- texgetcount("minallocatedattribute") - 1
+        if last < 1023 then
             last = last + 1
             sharedstorage.attributes_last_private = last
         else
@@ -95,6 +81,29 @@ function attributes.private(name) -- at the lua end (hidden from user)
         numbers[name], names[number], list[number] = number, name, { }
     end
     return number
+end
+
+function attributes.public(name) -- at the lua end (hidden from user)
+    local number = numbers[name]
+    if not number then
+        local last = sharedstorage.attributes_last_public
+        if last < 65535 then
+            last = last + 1
+            sharedstorage.attributes_last_public = last
+        else
+            report_attribute("no more room for public attributes")
+            os.exit()
+        end
+        number = last
+        numbers[name], names[number], list[number] = number, name, { }
+    end
+    return number
+end
+
+attributes.system = attributes.private
+
+function attributes.define(name,category)
+    return (attributes[category or "public"] or attributes["public"])(name)
 end
 
 -- tracers
@@ -122,20 +131,11 @@ function attributes.ofnode(n)
     showlist(n,n.attr)
 end
 
--- interface
-
-commands.defineattribute = attributes.define
-commands.showattributes  = attributes.showcurrent
-
-function commands.getprivateattribute(name)
-    context(attributes.private(name))
-end
-
 -- rather special
 
 local store = { }
 
-function commands.savecurrentattributes(name)
+function attributes.save(name)
     name = name or ""
     local n = node.current_attr()
     n = n and n.next
@@ -150,7 +150,7 @@ function commands.savecurrentattributes(name)
     }
 end
 
-function commands.restorecurrentattributes(name)
+function attributes.restore(name)
     name = name or ""
     local t = store[name]
     if t then
@@ -168,3 +168,28 @@ function commands.restorecurrentattributes(name)
     end
  -- store[name] = nil
 end
+
+implement {
+    name      = "defineattribute",
+    arguments = { "string", "string" },
+    actions   = { attributes.define, context }
+}
+
+-- interface
+
+implement {
+    name      = "showattributes",
+    actions   = attributes.showcurrent
+}
+
+implement {
+    name      = "savecurrentattributes",
+    arguments = "string",
+    actions   = attributes.save
+}
+
+implement {
+    name      = "restorecurrentattributes",
+    arguments = "string",
+    actions   = attributes.restore
+}

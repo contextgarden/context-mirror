@@ -7,19 +7,17 @@ if not modules then modules = { } end modules ['font-ext'] = {
 }
 
 local next, type, byte = next, type, string.byte
-local gmatch, concat, format = string.gmatch, table.concat, string.format
-local utfchar = utf.char
 
-local commands, context = commands, context
-local fonts, utilities = fonts, utilities
+local context            = context
+local fonts              = fonts
+local utilities          = utilities
 
-local trace_protrusion = false  trackers.register("fonts.protrusion", function(v) trace_protrusion = v end)
-local trace_expansion  = false  trackers.register("fonts.expansion",  function(v) trace_expansion  = v end)
+local trace_protrusion   = false  trackers.register("fonts.protrusion", function(v) trace_protrusion = v end)
+local trace_expansion    = false  trackers.register("fonts.expansion",  function(v) trace_expansion  = v end)
 
 local report_expansions  = logs.reporter("fonts","expansions")
 local report_protrusions = logs.reporter("fonts","protrusions")
-
--- todo: byte(..) => 0xHHHH
+local report_opbd        = logs.reporter("fonts","otf opbd")
 
 --[[ldx--
 <p>When we implement functions that deal with features, most of them
@@ -41,6 +39,8 @@ local settings_to_array  = utilities.parsers.settings_to_array
 local getparameters      = utilities.parsers.getparameters
 
 local setmetatableindex  = table.setmetatableindex
+
+local implement          = interfaces.implement
 
 -- -- -- -- -- --
 -- shared
@@ -78,10 +78,6 @@ expansions.vectors = vectors
 -- beware, pdftex itself uses percentages * 10
 
 classes.preset = { stretch = 2, shrink = 2, step = .5, factor = 1 }
-
-function commands.setupfontexpansion(class,settings)
-    getparameters(classes,class,'preset',settings)
-end
 
 classes['quality'] = {
     stretch = 2, shrink = 2, step = .5, vector = 'default', factor = 1
@@ -172,7 +168,11 @@ registerafmfeature {
 
 fonts.goodies.register("expansions",  function(...) return fonts.goodies.report("expansions", trace_expansion, ...) end)
 
-local report_opbd = logs.reporter("fonts","otf opbd")
+implement {
+    name      = "setupfontexpansion",
+    arguments = { "string", "string" },
+    actions   = function(class,settings) getparameters(classes,class,'preset',settings) end
+}
 
 -- -- -- -- -- --
 -- protrusion
@@ -190,10 +190,6 @@ local vectors       = protrusions.vectors
 -- the values need to be revisioned
 
 classes.preset = { factor = 1, left = 1, right = 1 }
-
-function commands.setupfontprotrusion(class,settings)
-    getparameters(classes,class,'preset',settings)
-end
 
 classes['pure'] = {
     vector = 'pure', factor = 1
@@ -328,8 +324,10 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
     local characters   = tfmdata.characters
     local descriptions = tfmdata.descriptions
     local properties   = tfmdata.properties
+    local resources    = tfmdata.resources
     local rawdata      = tfmdata.shared.rawdata
     local lookuphash   = rawdata.lookuphash
+    local lookuptags   = resources.lookuptags
     local script       = properties.script
     local language     = properties.language
     local done, factor, left, right = false, 1, 1, 1
@@ -349,14 +347,14 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
                 local data = lookuphash[lookup]
                 if data then
                     if trace_protrusion then
-                        report_protrusions("setting left using lfbd lookup %a",lookup)
+                        report_protrusions("setting left using lfbd lookup %a",lookuptags[lookup])
                     end
                     for k, v in next, data do
                     --  local p = - v[3] / descriptions[k].width-- or 1 ~= 0 too but the same
                         local p = - (v[1] / 1000) * factor * left
                         characters[k].left_protruding = p
                         if trace_protrusion then
-                            report_protrusions("lfbd -> %s -> %C -> %0.03f (% t)",lookup,k,p,v)
+                            report_protrusions("lfbd -> %s -> %C -> %0.03f (% t)",lookuptags[lookup],k,p,v)
                         end
                     end
                     done = true
@@ -372,14 +370,14 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
                 local data = lookuphash[lookup]
                 if data then
                     if trace_protrusion then
-                        report_protrusions("setting right using rtbd lookup %a",lookup)
+                        report_protrusions("setting right using rtbd lookup %a",lookuptags[lookup])
                     end
                     for k, v in next, data do
                     --  local p = v[3] / descriptions[k].width -- or 3
                         local p = (v[1] / 1000) * factor * right
                         characters[k].right_protruding = p
                         if trace_protrusion then
-                            report_protrusions("rtbd -> %s -> %C -> %0.03f (% t)",lookup,k,p,v)
+                            report_protrusions("rtbd -> %s -> %C -> %0.03f (% t)",lookuptags[lookup],k,p,v)
                         end
                     end
                 end
@@ -487,6 +485,12 @@ registerafmfeature {
 
 fonts.goodies.register("protrusions", function(...) return fonts.goodies.report("protrusions", trace_protrusion, ...) end)
 
+implement {
+    name      = "setupfontprotrusion",
+    arguments = { "string", "string" },
+    actions   = function(class,settings) getparameters(classes,class,'preset',settings) end
+}
+
 -- -- --
 
 local function initializenostackmath(tfmdata,value)
@@ -499,6 +503,19 @@ registerotffeature {
     initializers = {
         base = initializenostackmath,
         node = initializenostackmath,
+    }
+}
+
+local function initializerealdimensions(tfmdata,value)
+    tfmdata.properties.realdimensions = value and true
+end
+
+registerotffeature {
+    name        = "realdimensions",
+    description = "accept negative dimenions",
+    initializers = {
+        base = initializerealdimensions,
+        node = initializerealdimensions,
     }
 }
 
@@ -887,11 +904,17 @@ registerotffeature {
 
 -- a handy helper (might change or be moved to another namespace)
 
-local new_special = nodes.pool.special
-local new_glyph   = nodes.pool.glyph
+local nodepool    = nodes.pool
+
+local new_special = nodepool.special
+local new_glyph   = nodepool.glyph
+local new_rule    = nodepool.rule
 local hpack_node  = node.hpack
 
-function fonts.helpers.addprivate(tfmdata,name,characterdata)
+local helpers     = fonts.helpers
+local currentfont = font.current
+
+function helpers.addprivate(tfmdata,name,characterdata)
     local properties = tfmdata.properties
     local privates = properties.privates
     local lastprivate = properties.lastprivate
@@ -915,19 +938,19 @@ function fonts.helpers.addprivate(tfmdata,name,characterdata)
     return lastprivate
 end
 
-function fonts.helpers.getprivatenode(tfmdata,name)
+local function getprivatenode(tfmdata,name)
     local properties = tfmdata.properties
     local privates = properties and properties.privates
     if privates then
         local p = privates[name]
         if p then
-            local char = tfmdata.characters[p]
+            local char     = tfmdata.characters[p]
             local commands = char.commands
             if commands then
-                local fake = hpack_node(new_special(commands[1][2]))
-                fake.width = char.width
+                local fake  = hpack_node(new_special(commands[1][2]))
+                fake.width  = char.width
                 fake.height = char.height
-                fake.depth = char.depth
+                fake.depth  = char.depth
                 return fake
             else
                 -- todo: set current attribibutes
@@ -937,12 +960,18 @@ function fonts.helpers.getprivatenode(tfmdata,name)
     end
 end
 
-function fonts.helpers.hasprivate(tfmdata,name)
+helpers.getprivatenode = getprivatenode
+
+function helpers.hasprivate(tfmdata,name)
     local properties = tfmdata.properties
     local privates = properties and properties.privates
     return privates and privates[name] or false
 end
 
-function commands.getprivatechar(name)
-    context(fonts.helpers.getprivatenode(fontdata[font.current()],name))
-end
+implement {
+    name      = "getprivatechar",
+    arguments = "string",
+    actions   = function(name)
+        context(getprivatenode(fontdata[currentfont()],name))
+    end
+}

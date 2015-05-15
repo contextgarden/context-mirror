@@ -17,6 +17,8 @@
 
 \unprotect
 
+\startcontextdefinitioncode
+
 % Allocation:
 
 \countdef\realpageno \zerocount  \realpageno \plusone
@@ -24,12 +26,14 @@
 \countdef\subpageno  \plustwo    \subpageno  \zerocount % !
 \countdef\arrangeno  \plusthree  \arrangeno  \zerocount % !
 \countdef\pagenoshift\plusfour   \pagenoshift\zerocount % !
+\countdef\lastpageno \plusfive   \lastpageno \zerocount % !
 
 \let\pageno\userpageno
 
 \def\realfolio{\the\realpageno}
 \def\userfolio{\the\userpageno}
 \def\subfolio {\the\subpageno }
+\def\lastfolio{\the\lastpageno}
 
 \newtoks\everyinitializepagecounters
 
@@ -101,27 +105,34 @@
     \strc_counters_set\s!realpage\realpageno
     \strc_counters_set\s!userpage\userpageno
     \strc_counters_set\s!subpage \subpageno
+    \lastpageno\lastcountervalue[\s!realpage]\relax
 \to \everyinitializepagecounters
 
 \let\setuppagenumber\setupuserpagenumber
 \let\resetpagenumber\resetuserpagenumber
 
+% invisible =
+
 \def\strc_pagenumbers_page_state_save % \normalexpanded?
-  {\ctxlua{structures.pages.save({
-        prefix        = "\namedcounterparameter\s!userpage\c!prefix",
-        separatorset  = "\namedcounterparameter\s!userpage\c!prefixseparatorset",
-        conversion    = "\namedcounterparameter\s!userpage\c!prefixconversion",
-        conversionset = "\namedcounterparameter\s!userpage\c!prefixconversionset",
-        set           = "\namedcounterparameter\s!userpage\c!prefixset",
-        segments      = "\namedcounterparameter\s!userpage\c!prefixsegments",
-        connector     = \!!bs\namedcounterparameter\s!userpage\c!prefixconnector\!!es,
-    },{
-        conversion    = "\namedcounterparameter\s!userpage\c!numberconversion",
-        conversionset = "\namedcounterparameter\s!userpage\c!numberconversionset",
-        starter       = \!!bs\namedcounterparameter\s!userpage\c!numberstarter\!!es,
-        stopper       = \!!bs\namedcounterparameter\s!userpage\c!numberstopper\!!es,
-    }
-   )}}
+  {\clf_savepagedata
+     {
+        prefix        {\namedcounterparameter\s!userpage\c!prefix}
+        separatorset  {\namedcounterparameter\s!userpage\c!prefixseparatorset}
+        conversion    {\namedcounterparameter\s!userpage\c!prefixconversion}
+        conversionset {\namedcounterparameter\s!userpage\c!prefixconversionset}
+        set           {\namedcounterparameter\s!userpage\c!prefixset}
+        segments      {\namedcounterparameter\s!userpage\c!prefixsegments}
+        connector     {\namedcounterparameter\s!userpage\c!prefixconnector}
+     }{
+        conversion    {\namedcounterparameter\s!userpage\c!numberconversion}
+        conversionset {\namedcounterparameter\s!userpage\c!numberconversionset}
+        starter       {\namedcounterparameter\s!userpage\c!numberstarter}
+        stopper       {\namedcounterparameter\s!userpage\c!numberstopper}
+     }{
+        viewerprefix  {\namedcounterparameter\s!userpage\c!viewerprefix}
+        state         {\namedcounterparameter\s!userpage\c!state}
+     }%
+   \relax}
 
 \prependtoks
     \strc_pagenumbers_page_state_save
@@ -296,6 +307,12 @@
        \trackingmarginnotesfalse
      \fi
    \fi
+   \pageduplexmode
+     \ifsinglesided
+       \ifdoublesided\plustwo\else\zerocount\fi
+     \else
+       \ifdoublesided\plusone\else\zerocount\fi
+     \fi
    \page_backgrounds_recalculate
    \strc_pagenumbers_set_location
 \to \everysetuppagenumbering
@@ -456,5 +473,7 @@
 \to \everysetuppagenumbering
 
 \initializepagecounters
+
+\stopcontextdefinitioncode
 
 \protect \endinput

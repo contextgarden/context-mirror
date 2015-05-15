@@ -29,6 +29,8 @@
 % - maybe only tag the box
 % - scale to fit
 %
+% - buffers permit verbatim but are not always handy
+
 %D This module started as an afternoon experiment and surprisingly could be
 %D mostly finished the same evening. Of course it builds upon existing
 %D functionality. The main reason for writing it is that we occasionally
@@ -78,8 +80,13 @@
 \let\dotagxtablesignal\relax % names will change
 
 \appendtoks
-    \def\dotagxtablecell  {\taggedctxcommand{settagtablecell(\number\tablecellrows,\number\tablecellcolumns,\number\raggedstatus)}}%
-    \def\dotagxtablesignal{\char\zerocount}% not used
+    \def\dotagxtablecell
+      {\clf_settagtablecell
+         \numexpr\tablecellrows\relax
+         \numexpr\tablecellcolumns\relax
+         \numexpr\raggedstatus\relax}%
+    \def\dotagxtablesignal
+      {\char\zerocount}% not used
 \to \everyenableelements
 
 \newdimen\d_tabl_x_width
@@ -96,8 +103,8 @@
 \newcount\c_tabl_x_skip_mode    % 1 = skip
 \newdimen\d_tabl_x_textwidth
 
-\def\currentxtablerow   {\ctxcommand{x_table_r()}}
-\def\currentxtablecolumn{\ctxcommand{x_table_c()}}
+\let\currentxtablerow   \clf_x_table_r
+\let\currentxtablecolumn\clf_x_table_c
 
 % \setupxtable[one][parent][a=b,c=d]
 % \setupxtable[one]        [a=b,c=d]
@@ -159,7 +166,7 @@
   {\bgroup
    \tabl_x_prepare{#settings}%
    \edef\tabl_x_current_buffer{\tabl_x_default_buffer}%
-   \buff_pickup{\tabl_x_current_buffer}{startxtable}{stopxtable}\relax\tabl_x_process}
+   \buff_pickup{\tabl_x_current_buffer}{startxtable}{stopxtable}\relax\tabl_x_process\zerocount}
 
 \unexpanded\def\processxtablebuffer
   {\dosingleempty\tabl_x_process_buffer_directly}
@@ -175,7 +182,7 @@
   {\bgroup
    \let\tabl_x_start_table\tabl_x_process_buffer
    \edef\tabl_x_current_buffer{#name}%
-   \tabl_x_get_buffer % pickup settings
+   \tabl_x_get_buffer %      settings
    \tabl_x_process}
 
 \unexpanded\def\tabl_x_start_ignore[#settings]%
@@ -194,7 +201,7 @@
 
 \unexpanded\def\tabl_x_embedded_start[#settings]#content\stopembeddedxtable
   {\tabl_x_prepare{#settings}%
-   \ctxcommand{assignbuffer("embedded_x_table",\!!bs\detokenize{#content}\!!es)}%
+   \clf_assignbuffer{embedded_x_table}{\detokenize{#content}}\catcodetable\relax
    \bgroup
    \let\tabl_x_start_table\tabl_x_process_buffer
    \edef\tabl_x_current_buffer{embedded_x_table}%
@@ -216,14 +223,14 @@
 
 \unexpanded\def\tabl_x_start_named_indeed[#settings]%
   {\advance\c_tabl_x_nesting\plusone
-   \dostarttagged\t!table\empty
+   \dostarttaggedchained\t!table\empty\??xtable
    \iffirstargument
      \setupcurrentxtable[#settings]%
    \fi
    \tabl_x_check_textwidth
-   \forgetall
+  %\forgetall % else whitespace mess
    \edef\tabl_x_current_buffer{\tabl_x_default_buffer}%
-   \normalexpanded{\buff_pickup{\tabl_x_current_buffer}{\e!start\currentxtable}{\e!stop\currentxtable}\relax\tabl_x_process}}
+   \normalexpanded{\buff_pickup{\tabl_x_current_buffer}{\e!start\currentxtable}{\e!stop\currentxtable}\relax\tabl_x_process\zerocount}}
 
 \unexpanded\def\tabl_x_stop_named
   {}
@@ -240,15 +247,15 @@
 
 \unexpanded\def\tabl_x_prepare#settings% assumes \iffirstargument to be set
   {\advance\c_tabl_x_nesting\plusone
-   \dostarttagged\t!table\empty
+   \dostarttaggedchained\t!table\empty\??xtable
    \iffirstargument
      \tabl_x_set_checked{#settings}%
    \fi
    \tabl_x_check_textwidth
-   \forgetall}
+   }% else whitespace mess
 
 \def\tabl_x_get_buffer
-  {\ctxcommand{gettexbuffer("\tabl_x_current_buffer")}}
+  {\clf_gettexbuffer{\tabl_x_current_buffer}}
 
 \let\tabl_x_start_row_yes \relax
 \let\tabl_x_start_row_nop \relax
@@ -259,23 +266,24 @@
 
 \unexpanded\def\tabl_x_process
   {\begingroup % *
-   \doifsomething{\xtableparameter\c!bodyfont}
-     {\setupbodyfont[\xtableparameter\c!bodyfont]}%
+   \forgetall % moved here
+   \dontcomplain % for the moment here till we figure out where we get the overflow
+   \usebodyfontparameter\xtableparameter
    \setbox\scratchbox\vbox
-     {\xtableparameter\c!spaceinbetween}%
-   \ctxcommand{x_table_create {
-        option              = "\xtableparameter\c!option",
-        textwidth           = \number\d_tabl_x_textwidth,
-        textheight          = \number\dimexpr\xtableparameter\c!textheight,
-        maxwidth            = \number\dimexpr\xtableparameter\c!maxwidth,
-        lineheight          = \number\openlineheight,
-        columndistance      = \number\dimexpr\xtableparameter\c!columndistance,
-        leftmargindistance  = \number\dimexpr\xtableparameter\c!leftmargindistance,
-        rightmargindistance = \number\dimexpr\xtableparameter\c!rightmargindistance,
-        rowdistance         = \number\ht\scratchbox,
-        header              = "\xtableparameter\c!header",
-        footer              = "\xtableparameter\c!footer",
-   } }%
+     {\doifsomething{\xtableparameter\c!spaceinbetween}{\blank[\xtableparameter\c!spaceinbetween]}}%
+   \clf_x_table_create
+        option              {\xtableparameter\c!option}%
+        textwidth           \d_tabl_x_textwidth
+        textheight          \dimexpr\xtableparameter\c!textheight\relax
+        maxwidth            \dimexpr\xtableparameter\c!maxwidth\relax
+        lineheight          \openlineheight
+        columndistance      \dimexpr\xtableparameter\c!columndistance\relax
+        leftmargindistance  \dimexpr\xtableparameter\c!leftmargindistance\relax
+        rightmargindistance \dimexpr\xtableparameter\c!rightmargindistance\relax
+        rowdistance         \ht\scratchbox
+        header              {\xtableparameter\c!header}%
+        footer              {\xtableparameter\c!footer}%
+   \relax
    %
    \letxtableparameter\c!option\empty
    % not so nice but needed as we use this in the setup
@@ -290,7 +298,7 @@
      \let\tabl_x_stop_cell     \tabl_x_stop_cell_reflow_width
      \settrialtypesetting
      \tabl_x_get_buffer
-     \ctxcommand{x_table_reflow_width()}\relax
+     \clf_x_table_reflow_width
    \endgroup
    \begingroup
      \let\tabl_x_start_row_yes \tabl_x_start_row_reflow_height_yes
@@ -301,7 +309,7 @@
      \let\tabl_x_stop_cell     \tabl_x_stop_cell_reflow_height
      \settrialtypesetting
      \tabl_x_get_buffer
-     \ctxcommand{x_table_reflow_height()}\relax
+     \clf_x_table_reflow_height
    \endgroup
    \begingroup
      \let\tabl_x_start_row_yes \tabl_x_start_row_construct_yes
@@ -311,7 +319,7 @@
      \let\tabl_x_start_cell_nop\tabl_x_start_cell_construct_nop
      \let\tabl_x_stop_cell     \tabl_x_stop_cell_construct
      \tabl_x_get_buffer
-     \ctxcommand{x_table_construct()}\relax
+     \clf_x_table_construct
    \endgroup
    \endgroup % *
    \ifinsidesplitfloat
@@ -321,7 +329,7 @@
    \else
      \tabl_x_flush_text_checked
    \fi\fi
-   \ctxcommand{x_table_cleanup()}%
+   \clf_x_table_cleanup
    \dostoptagged
    \resetbuffer[\tabl_x_current_buffer]%
    \egroup}
@@ -336,19 +344,31 @@
 % in text flow: headers and footers only once
 
 \setvalue{\??xtableflushsplit\v!yes}%
-  {\ctxcommand{x_table_flush{ method = "\v!split" }}}
+  {\clf_x_table_flush
+     method {\v!split}%
+   \relax}
 
 % in text flow: headers and footers only once
 
 \setvalue{\??xtableflushsplit\v!no}%
-  {\dontleavehmode % else no leftskip etc
-   \ctxcommand{x_table_flush{ method = "\v!normal" }}}
+  {% \noindent       % gives extra line after table
+   % \noindentation  % messes up the next indentation
+   % \dontleavehmode % no leftskip
+   \kern\zeropoint   % yet another guess
+   \ignorespaces
+   \clf_x_table_flush
+     method {\v!normal}%
+   \relax
+   \removeunwantedspaces}
 
 % in text flow: headers and footers get repeated
 
 \setvalue{\??xtableflushsplit\v!repeat}%
   {\doloop
-     {\ctxcommand{x_table_flush{ method = "\v!split", vsize = \number\ifdim\pagegoal=\maxdimen\textheight\else\pagegoal\fi }}%
+     {\clf_x_table_flush
+        method {\v!split}%
+        height \ifdim\pagegoal=\maxdimen\textheight\else\pagegoal\fi
+      \relax
       \ifcase\c_tabl_x_state
         \exitloop
       \else
@@ -370,7 +390,10 @@
 % \stopsetups
 %
 % \unexpanded\def\xtablesplitflush
-%   {\ctxcommand{x_table_flush{ method = "\v!split", vsize = \number\dimexpr\xtablesplitvsize\relax}}\relax}
+%   {\clf_x_table_flush
+%      method {\v!split}%
+%      height \dimexpr\xtablesplitvsize\relax
+%    \relax}
 %
 % \def\xtablesplitvsize
 %   {\ifdim\pagegoal=\maxdimen\textheight\else\pagegoal\fi}
@@ -380,7 +403,9 @@
 \let\extratxtablesplitheight\zeropoint % might disappear so don't depend on it
 
 \unexpanded\def\tabl_x_flush_float_normal
-  {\ctxcommand{x_table_flush{ method = "\v!normal" }}}
+  {\clf_x_table_flush
+     method {\v!normal}%
+   \relax}
 
 \unexpanded\def\tabl_x_flush_float_split
   {\resetdirecttsplit
@@ -391,9 +416,12 @@
    \let\tsplitdirectwidth   \d_tabl_x_final_width
    \handledirecttsplit}
 
-\unexpanded\def\tabl_x_split_splitter#vsize%
+\unexpanded\def\tabl_x_split_splitter#height%
   {\setbox\tsplitresult\vbox
-     {\ctxcommand{x_table_flush{ method = "\v!split", vsize = \number\dimexpr#vsize }}}%
+     {\clf_x_table_flush
+        method {\v!split}%
+        height \dimexpr#height\relax
+      \relax}%
    \ifcase\c_tabl_x_state
      \global\setfalse\somenextsplitofffloat
    \else
@@ -402,14 +430,14 @@
 
 \unexpanded\def\startxrow
   {\begingroup
-   \doifnextoptionalelse\tabl_x_start_row_yes\tabl_x_start_row_nop}
+   \doifelsenextoptionalcs\tabl_x_start_row_yes\tabl_x_start_row_nop}
 
 \unexpanded\def\tabl_x_start_row_reflow_width_yes[#settings]%
   {\setupcurrentxtable[#settings]%
-   \ctxcommand{x_table_next_row()}}
+   \clf_x_table_next_row}
 
 \unexpanded\def\tabl_x_start_row_reflow_width_nop
-  {\ctxcommand{x_table_next_row()}}
+  {\clf_x_table_next_row}
 
 \unexpanded\def\tabl_x_stop_row_reflow_width
   {}
@@ -421,27 +449,36 @@
 \unexpanded\def\tabl_x_start_row_construct_yes[#settings]%
   {\setupcurrentxtable[#settings]%
    \dostarttagged\t!tablerow\empty
-   \ctxcommand{x_table_next_row()}}
+   \clf_x_table_next_row_option{\xtableparameter\c!samepage}}
 
 \unexpanded\def\tabl_x_start_row_construct_nop
   {\dostarttagged\t!tablerow\empty
-   \ctxcommand{x_table_next_row()}}
+   \clf_x_table_next_row}
 
 \unexpanded\def\tabl_x_stop_row_construct
-  {\dostoptagged}
+  {\clf_x_table_finish_row
+   \dostoptagged}
 
 \unexpanded\def\stopxrow
   {\tabl_x_stop_row
    \endgroup}
 
 \unexpanded\def\startxcell
-  {\doifnextoptionalelse\tabl_x_start_cell_yes\tabl_x_start_cell_nop}
+  {\doifelsenextoptionalcs\tabl_x_start_cell_yes\tabl_x_start_cell_nop}
 
 \unexpanded\def\stopxcell
   {\tabl_x_stop_cell}
 
+\unexpanded\def\dummyxcell#1%
+  {\tabl_x_start_cell_nop
+   \tabl_x_stop_cell}
+
+\unexpanded\def\dummyxcell
+  {\tabl_x_start_cell_nop
+   \tabl_x_stop_cell}
+
 \unexpanded\def\tabl_x_begin_of_cell
-  {\inhibitblank
+  {%\inhibitblank % already in framed
    \everypar{\delayedbegstrut}}
 
 \unexpanded\def\tabl_x_end_of_cell
@@ -467,8 +504,16 @@
 % Although this becomes kind of messy. It saves already time that we only check
 % for it when we have settings.
 
-\def\tabl_x_set_hsize
-  {\hsize.25\maxdimen} % let's be reasonable
+% \def\tabl_x_set_hsize
+%   {\hsize.25\maxdimen} % let's be reasonable
+
+% \def\tabl_x_set_hsize
+%   {\edef\p_width{\xtableparameter\c!width}%
+%    \ifx\p_width\empty
+%      \hsize.25\maxdimen % is this really needed
+%    \fi}
+
+\let\tabl_x_set_hsize\relax
 
 \unexpanded\def\tabl_x_start_cell_reflow_width_yes[#settings]%
   {\setbox\b_tabl_x\hbox\bgroup
@@ -494,7 +539,7 @@
    \fi
    %
    \d_tabl_x_distance\xtableparameter\c!distance\relax
-   \ctxcommand{x_table_init_reflow_width("\xtableparameter\c!option")}%
+   \clf_x_table_init_reflow_width_option{\xtableparameter\c!option}%
    \inheritedxtableframed\bgroup
    \tabl_x_begin_of_cell
    \tabl_x_set_hsize}
@@ -508,7 +553,7 @@
    \c_tabl_x_nx\plusone
    \c_tabl_x_ny\plusone
    \d_tabl_x_distance\xtableparameter\c!distance\relax
-   \ctxcommand{x_table_init_reflow_width()}%
+   \clf_x_table_init_reflow_width
    \inheritedxtableframed\bgroup
    \tabl_x_begin_of_cell
    \tabl_x_set_hsize}
@@ -517,11 +562,11 @@
   {\tabl_x_end_of_cell
    \egroup
    \egroup
-   \ctxcommand{x_table_set_reflow_width()}}
+   \clf_x_table_set_reflow_width}
 
 \unexpanded\def\tabl_x_start_cell_reflow_height_yes[#settings]%
   {\setbox\b_tabl_x\hbox\bgroup
-   \ctxcommand{x_table_init_reflow_height()}%
+   \clf_x_table_init_reflow_height
    \ifcase\c_tabl_x_skip_mode % can be sped up
      \ifnum\c_tabl_x_nesting>\plusone
        \letxtableparameter\c!height\v!fit  % overloads given height
@@ -535,7 +580,7 @@
 
 \unexpanded\def\tabl_x_start_cell_reflow_height_nop
   {\setbox\b_tabl_x\hbox\bgroup
-   \ctxcommand{x_table_init_reflow_height()}%
+   \clf_x_table_init_reflow_height
    \ifcase\c_tabl_x_skip_mode % can be sped up
      \ifnum\c_tabl_x_nesting>\plusone
        \letxtableparameter\c!height\v!fit  % overloads given height
@@ -552,7 +597,7 @@
      \egroup
    \fi
    \egroup
-   \ctxcommand{x_table_set_reflow_height()}}
+   \clf_x_table_set_reflow_height}
 
 \unexpanded\def\tabl_x_start_cell_construct_yes[#settings]%
   {\dostarttagged\t!tablecell\empty % can't we just tag the box
@@ -560,7 +605,7 @@
    \setupcurrentxtable[#settings]%
    \letxtableparameter\c!width \d_tabl_x_width  % overloads given width
    \letxtableparameter\c!height\d_tabl_x_height % overloads given height
-   \ctxcommand{x_table_init_construct()}%
+   \clf_x_table_init_construct
    \inheritedxtableframed\bgroup
    \tabl_x_begin_of_cell
    \dotagxtablecell}
@@ -569,8 +614,8 @@
   {\dostarttagged\t!tablecell\empty % can't we just tag the box
    \setbox\b_tabl_x\hbox\bgroup
    \letxtableparameter\c!width \d_tabl_x_width  % overloads given width
-   \letxtableparameter\c!height\d_tabl_x_height % overloads given height
-   \ctxcommand{x_table_init_construct()}%
+   \letxtableparameter\c!height\d_tabl_x_height % overloads given height (commenting it ... nice option)
+   \clf_x_table_init_construct
    \inheritedxtableframed\bgroup
    \tabl_x_begin_of_cell
    \dotagxtablecell}
@@ -580,7 +625,7 @@
    \egroup
    \dotagxtablesignal % harmless spot
    \egroup
-   \ctxcommand{x_table_set_construct()}%
+   \clf_x_table_set_construct
    \dostoptagged}
 
 \unexpanded\def\startxcellgroup
@@ -677,7 +722,7 @@
 
 \unexpanded\def\startxgroup
   {\begingroup
-   \doifnextoptionalelse\tabl_x_start_group_delayed_one\relax}
+   \doifelsenextoptionalcs\tabl_x_start_group_delayed_one\relax}
 
 \unexpanded\def\stopxgroup
   {\endgroup}
@@ -695,7 +740,7 @@
      \chaintocurrentxtable{#tag}%
    \fi
    \edef\currentxtable{#tag}%
-   \doifnextoptionalelse\setupcurrentxtable\relax}
+   \doifelsenextoptionalcs\setupcurrentxtable\relax}
 
 \let\startxrowgroup \startxgroup
 \let\stopxrowgroup  \stopxgroup
@@ -706,7 +751,7 @@
 
 \unexpanded\def\startxcell
   {\begingroup
-   \doifnextoptionalelse\tabl_x_start_cell_delayed_one\tabl_x_start_cell_nop}
+   \doifelsenextoptionalcs\tabl_x_start_cell_delayed_one\tabl_x_start_cell_nop}
 
 \unexpanded\def\tabl_x_start_cell_delayed_one[#tag]%
 % {\ifcsname\namedxtablehash{#tag}\s!parent\endcsname
@@ -721,7 +766,7 @@
      \chaintocurrentxtable{#tag}%
    \fi
    \edef\currentxtable{#tag}%
-   \doifnextoptionalelse\tabl_x_start_cell_yes\tabl_x_start_cell_nop}
+   \doifelsenextoptionalcs\tabl_x_start_cell_yes\tabl_x_start_cell_nop}
 
 \unexpanded\def\stopxcell
   {\tabl_x_stop_cell
@@ -731,7 +776,7 @@
 
 \unexpanded\def\startxrow
   {\begingroup
-   \doifnextoptionalelse\tabl_x_start_row_delayed_one\tabl_x_start_row_nop}
+   \doifelsenextoptionalcs\tabl_x_start_row_delayed_one\tabl_x_start_row_nop}
 
 \unexpanded\def\tabl_x_start_row_delayed_one[#tag]%
 % {\ifcsname\namedxtablehash{#tag}\s!parent\endcsname
@@ -746,7 +791,7 @@
      \chaintocurrentxtable{#tag}%
    \fi
    \edef\currentxtable{#tag}%
-   \doifnextoptionalelse\tabl_x_start_row_yes\tabl_x_start_row_nop}
+   \doifelsenextoptionalcs\tabl_x_start_row_yes\tabl_x_start_row_nop}
 
 \unexpanded\def\stopxrow
   {\tabl_x_stop_row

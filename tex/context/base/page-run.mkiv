@@ -74,18 +74,34 @@
 
 \startluacode
 local format, concat = string.format, table.concat
+local todimen = number.todimen
+local texdimen = tex.dimen
 
-local function todimen(name,unit,fmt)
-    return number.todimen(tex.dimen[name],unit,fmt)
+local function asdimen(name,unit)
+    return todimen(texdimen[name],unit,"%0.4f") -- 4 is more than enough, even 3 would be okay
+end
+
+local function checkedoptions(options)
+    if type(options) == "table" then
+        return options
+    elseif not options or options == "" then
+        options = "pt,cm"
+    end
+    options = utilities.parsers.settings_to_hash(options)
+    local n = 4
+    for k, v in table.sortedhash(options) do
+        local m = tonumber(k)
+        if m then
+            n = m
+        end
+    end
+    options.n = n
+    return options
 end
 
 function commands.showlayoutvariables(options)
 
-    if options == "" then
-        options = "pt,cm"
-    end
-
-    local options = utilities.parsers.settings_to_hash(options)
+    options = checkedoptions(options)
 
     local dimensions = { "pt", "bp", "cm", "mm", "dd", "cc", "pc", "nd", "nc", "sp", "in" }
 
@@ -108,7 +124,7 @@ function commands.showlayoutvariables(options)
         for i=1,#dimensions do
             local d = dimensions[i]
             if options[d] then
-                context("%s%s",todimen(name,d,"%0.4f"),d)
+                context("%s%s",asdimen(name,d),d)
                 context.NC()
             end
         end
@@ -129,7 +145,7 @@ function commands.showlayoutvariables(options)
         for i=1,#dimensions do
             local d = dimensions[i]
             if options[d] then
-                result[#result+1] = format("%12s%s",todimen(name,d,"%0.4f"),d)
+                result[#result+1] = format("%12s%s",asdimen(name,d),d)
             end
         end
         commands.writestatus("layout",format("%-24s %s",interfaces.interfacedcommand(name),concat(result," ")))
@@ -215,6 +231,8 @@ end
 
 function commands.showlayout(options)
 
+    options = checkedoptions(options)
+
     if tex.count.textlevel == 0 then
 
         commands.showlayoutvariables(options)
@@ -225,7 +243,7 @@ function commands.showlayout(options)
         context.bgroup()
         context.showframe()
         context.setuplayout { marking = interfaces.variables.on }
-        for i=1,4 do
+        for i=1,(options.n or 4) do
             commands.showlayoutvariables(options)
             context.page()
         end
@@ -281,8 +299,8 @@ end
 
 \unexpanded\gdef\showmargins
   {\starttabulate
-   \NC asynchrone   \NC \doifoddpageelse     {odd}   {even} \NC \NR
-   \NC synchrone    \NC \doifrightpageelse   {right} {left} \NC \NR
+   \NC asynchrone   \NC \doifelseoddpage     {odd}   {even} \NC \NR
+   \NC synchrone    \NC \doifelserightpage   {right} {left} \NC \NR
    \NC right margin \NC \the\rightmarginwidth               \NC \NR
    \NC left margin  \NC \the\leftmarginwidth                \NC \NR
    \NC outer margin \NC \the\outermarginwidth               \NC \NR

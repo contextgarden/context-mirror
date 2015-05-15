@@ -6,9 +6,12 @@ if not modules then modules = { } end modules ['typo-bld'] = { -- was node-par
     license   = "see context related readme files"
 }
 
+-- no need for nuts in the one-line demo (that might move anyway)
+
 local insert, remove = table.insert, table.remove
 
-local builders, nodes, node = builders, nodes, node
+builders                 = builders or { }
+local builders           = builders
 
 builders.paragraphs      = builders.paragraphs or { }
 local parbuilders        = builders.paragraphs
@@ -33,11 +36,12 @@ local texsetattribute    = tex.setattribute
 local texnest            = tex.nest
 local texlists           = tex.lists
 
+local nodes              = nodes
 local nodepool           = nodes.pool
 local new_baselineskip   = nodepool.baselineskip
 local new_lineskip       = nodepool.lineskip
-local insert_node_before = node.insert_before
-local hpack_node         = node.hpack
+local insert_node_before = nodes.insert_before
+local hpack_node         = nodes.hpack
 
 local starttiming        = statistics.starttiming
 local stoptiming         = statistics.stoptiming
@@ -161,29 +165,14 @@ local function processor(head,followed_by_display)
     end
 end
 
-function constructors.enable()
-    enabled = true
-end
-
-function constructors.disable()
-    enabled = false
-end
-
+function constructors.enable () enabled = true  end
+function constructors.disable() enabled = false end
 
 callbacks.register('linebreak_filter', processor, "breaking paragraps into lines")
 
 statistics.register("linebreak processing time", function()
     return statistics.elapsedseconds(parbuilders)
 end)
-
--- interface
-
-commands.defineparbuilder  = constructors.define
-commands.startparbuilder   = constructors.start
-commands.stopparbuilder    = constructors.stop
-commands.setparbuilder     = constructors.set
-commands.enableparbuilder  = constructors.enable
-commands.disableparbuilder = constructors.disable
 
 -- todo: move from nodes.builders to builders
 
@@ -226,7 +215,16 @@ local function report(groupcode,head)
     report_page_builder("  list     : %s",head and nodeidstostring(head) or "<empty>")
 end
 
+-- use tex.[sg]etlist
+
 function builders.buildpage_filter(groupcode)
+ -- -- this needs checking .. gets called too often
+ -- if group_code ~= "after_output" then
+ --     if trace_page_builder then
+ --         report(groupcode)
+ --     end
+ --     return nil, false
+ -- end
     local head, done = texlists.contrib_head, false
     if head then
         starttiming(builders)
@@ -237,14 +235,16 @@ function builders.buildpage_filter(groupcode)
         stoptiming(builders)
      -- -- doesn't work here (not passed on?)
      -- tex.pagegoal = tex.vsize - tex.dimen.d_page_floats_inserted_top - tex.dimen.d_page_floats_inserted_bottom
-        texlists.contrib_head = head
-        return done and head or true
+        texlists.contrib_head = head or nil -- needs checking
+-- tex.setlist("contrib_head",head,head and nodes.tail(head))
+        return done and head or true -- no return value needed
     else
         if trace_page_builder then
             report(groupcode)
         end
-        return nil, false
+        return nil, false -- no return value needed
     end
+
 end
 
 callbacks.register('vpack_filter',     builders.vpack_filter,     "vertical spacing etc")
@@ -253,3 +253,12 @@ callbacks.register('buildpage_filter', builders.buildpage_filter, "vertical spac
 statistics.register("v-node processing time", function()
     return statistics.elapsedseconds(builders)
 end)
+
+local implement = interfaces.implement
+
+implement { name = "defineparbuilder",  actions = constructors.define, arguments = "string" }
+implement { name = "setparbuilder",     actions = constructors.set,    arguments = "string" }
+implement { name = "startparbuilder",   actions = constructors.start,  arguments = "string" }
+implement { name = "stopparbuilder",    actions = constructors.stop    }
+implement { name = "enableparbuilder",  actions = constructors.enable  }
+implement { name = "disableparbuilder", actions = constructors.disable }

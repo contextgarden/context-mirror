@@ -656,12 +656,18 @@ end
 
 -- We load this table only when needed. We could use a loading mechanism
 -- return the table but there are no more vectors like this so why bother.
+--
+-- Well, we currently hav ethis table preloaded anyway.
 
-fonts.encodings = fonts.encodings or { }
-
-fonts.encodings.agl = {
+local agl = {
     names    = names,     -- unicode -> name
     unicodes = unicodes,  -- name -> unicode
     synonyms = synonyms,  -- merged into the other two
     extras   = extras,    -- merged into the other two
 }
+
+fonts               = fonts or { }
+fonts.encodings     = fonts.encodings or { }
+fonts.encodings.agl = agl
+
+return agl

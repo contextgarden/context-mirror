@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2014.01.03 00:40}
+\newcontextversion{2015.05.15 23:03}
 
 %D This file is loaded at runtime, thereby providing an excellent place for
 %D hacks, patches, extensions and new features.
@@ -21,6 +21,71 @@
 % \writestatus\m!system{beware: some patches loaded from cont-new.mkiv}
 
 % \attribute152\zerocount : marks ... lots of sweeps so best early in list
+
+%D Maybe:
+
+% \appendtoks
+%     \inheritmaintextcolor
+% \to \everybeforenoteinsert
+
+% \appendtoks
+%     \inheritmaintextcolor
+% \to \everymargindatacontent
+
+% This is experimental; if this changes we need to adapt the mb-mp style too. It's
+% not in the core yet.
+%
+% \def\ActionY{\blank\inleftmargin{\shownofparlines}}
+% \def\ActionN{\inleftmargin{\shownofparlines}}
+%
+% \saveparnumber
+% ...
+% \checknofparlines
+% \ifnum\nofparlines<2
+%   \ActionY
+% \else
+%   \ActionN
+% \fi
+% ...
+
+\newcount\c_typo_par_current
+\newcount\c_typo_par_saved
+\newcount\c_typo_par_lines
+\newcount\c_typo_par_temp
+
+\appendtoks
+    \advance\c_typo_par_current\plusone % local
+   %\llap{\infofont[\the\c_typo_par_saved:\the\c_typo_par_current]\quad}%
+\to \everypar
+
+\unexpanded\def\saveparnumber % the upcoming number
+  {\c_typo_par_saved\c_typo_par_current} % local
+
+\def\savedparnumber  {\number\c_typo_par_saved}
+\def\currentparnumber{\number\c_typo_par_current}
+\def\nofparlines     {\number\c_typo_par_lines}
+\let\savedparstate   \empty
+
+\unexpanded\def\shownofparlines
+  {\dontleavehmode\hbox\bgroup
+   \infofont[\savedparstate]%
+   \egroup}
+
+\unexpanded\def\checknofparlines
+  {\c_typo_par_temp\numexpr\c_typo_par_saved+\plusone\relax
+   \ifhmode
+     \c_typo_par_lines\zerocount
+     \edef\savedparstate{\number\c_typo_par_temp:\number\c_typo_par_current\space-}%
+   \else\ifnum\c_typo_par_current=\c_typo_par_temp
+     \c_typo_par_lines\prevgraf
+     \edef\savedparstate{\number\c_typo_par_temp:\number\c_typo_par_current\space\number\prevgraf}%
+   \else\ifnum\c_typo_par_temp>\c_typo_par_current
+     \c_typo_par_lines\zerocount
+     \edef\savedparstate{\number\c_typo_par_temp:\number\c_typo_par_current\space-}%
+   \else
+     \c_typo_par_lines\maxdimen
+     \edef\savedparstate{\number\c_typo_par_temp:\number\c_typo_par_current\space+}%
+   \fi\fi\fi}
 
 %D Maybe:
 

@@ -9,10 +9,18 @@ if not modules then modules = { } end modules ['file-lib'] = {
 -- todo: check all usage of truefilename at the tex end and remove
 -- files there (and replace definitions by full names)
 
-local format = string.format
+local format, gsub = string.format, string.gsub
 
-local trace_files   = false  trackers.register("resolvers.readfile", function(v) trace_files = v end)
-local report_files  = logs.reporter("files","readfile")
+local trace_libraries = false  trackers.register("resolvers.libraries", function(v) trace_libraries = v end)
+----- trace_files     = false  trackers.register("resolvers.readfile",  function(v) trace_files     = v end)
+
+local report_library  = logs.reporter("files","library")
+----- report_files    = logs.reporter("files","readfile")
+
+local suffixonly      = file.suffix
+local removesuffix    = file.removesuffix
+
+local getreadfilename = resolvers.getreadfilename
 
 local loaded          = { }
 local defaultpatterns = { "%s" }
@@ -25,7 +33,7 @@ local function defaultfailure(name)
     report_files("asked name %a, not found",name)
 end
 
-function commands.uselibrary(specification) -- todo; reporter
+function resolvers.uselibrary(specification) -- todo: reporter
     local name = specification.name
     if name and name ~= "" then
         local patterns = specification.patterns or defaultpatterns
@@ -34,32 +42,49 @@ function commands.uselibrary(specification) -- todo; reporter
         local onlyonce = specification.onlyonce
         local files    = utilities.parsers.settings_to_array(name)
         local truename = environment.truefilename
-        local done     = false
+        local function found(filename)
+            local somename  = truename and truename(filename) or filename
+            local foundname = getreadfilename("any",".",somename) -- maybe some day also an option not to backtrack .. and ../.. (or block global)
+            return foundname ~= "" and foundname
+        end
         for i=1,#files do
             local filename = files[i]
-            if not loaded[filename] then
+            if loaded[filename] then
+                -- next one
+            else
                 if onlyonce then
                     loaded[filename] = true -- todo: base this on return value
                 end
-                for i=1,#patterns do
-                    local somename = format(patterns[i],filename)
-                    if truename then
-                        somename = truename(somename)
-                    end
-                    local foundname = resolvers.getreadfilename("any",".",somename) or ""
-                    if foundname ~= "" then
-                        action(name,foundname)
-                        done = true
-                        break
+                local foundname = nil
+                local barename  = removesuffix(filename)
+                -- direct search (we have an explicit suffix)
+                if barename ~= filename then
+                    foundname = found(filename)
+                    if trace_libraries then
+                        report_library("checking %a: %s",filename,foundname or "not found")
                     end
                 end
-                if done then
-                    break
+                if not foundname then
+                    -- pattern based search
+                    for i=1,#patterns do
+                        local wanted = format(patterns[i],barename)
+                        foundname = found(wanted)
+                        if trace_libraries then
+                            report_library("checking %a as %a: %s",filename,wanted,foundname or "not found")
+                        end
+                        if foundname then
+                            break
+                        end
+                    end
+                end
+                if foundname then
+                    action(name,foundname)
+                elseif failure then
+                    failure(name)
                 end
             end
         end
-        if failure and not done then
-            failure(name)
-        end
     end
 end
+
+commands.uselibrary = resolvers.uselibrary -- for the moment

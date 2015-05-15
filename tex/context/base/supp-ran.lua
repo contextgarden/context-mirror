@@ -10,23 +10,31 @@ if not modules then modules = { } end modules ['supp-ran'] = {
 
 local report_system = logs.reporter("system","randomizer")
 
-local math = math
-local context, commands = context, commands
+local trace_random    = false  trackers.register("system.randomizer",   function(v) trace_random    = v end)
+local trace_random_mp = false  trackers.register("system.randomizer.mp",function(v) trace_random_mp = v end)
 
-local random, randomseed, round, seed, last = math.random, math.randomseed, math.round, false, 1
+local insert, remove = table.insert, table.remove
 
-local maxcount = 2^30-1 -- 1073741823
+local math       = math
+local context    = context
+local implement  = interfaces.implement
 
-local function setrandomseedi(n,comment)
-    if not n then
- --     n = 0.5 -- hack
-    end
+local random     = math.random
+local randomseed = math.randomseed
+local round      = math.round
+local stack      = { }
+local last       = 1
+local maxcount   = 2^30-1 -- 1073741823
+
+local function setrandomseedi(n)
     if n <= 1 then
         n = n * maxcount
+    elseif n < 1000 then
+        n = n * 1000
     end
     n = round(n)
-    if false then
-        report_system("setting seed to %s (%s)",n,comment or "normal")
+    if trace_random then
+        report_system("setting seed to %s",n)
     end
     randomseed(n)
     last = random(0,maxcount) -- we need an initial value
@@ -34,40 +42,66 @@ end
 
 math.setrandomseedi = setrandomseedi
 
-function commands.getrandomcounta(min,max)
+local function getrandomnumber(min,max)
     last = random(min,max)
-    context(last)
+    return last
 end
 
-function commands.getrandomcountb(min,max)
-    last = random(min,max)/65536
-    context(last)
-end
-
-function commands.setrandomseed(n)
+local function setrandomseed(n)
     last = n
     setrandomseedi(n)
 end
 
-function commands.getrandomseed(n)
-    context(last)
+local function getrandomseed()
+    return last
+end
+
+local function getmprandomnumber()
+    last = random(0,4095)
+    if trace_random_mp then
+        report_system("using mp seed %s",last)
+    end
+    return last
 end
 
 -- maybe stack
 
-function commands.freezerandomseed(n)
-    if seed == false or seed == nil then
-        seed = last
-        setrandomseedi(seed,"freeze",seed)
-    end
-    if n then
-        randomseed(n)
+local function pushrandomseed()
+    insert(stack,last)
+    if trace_random then
+        report_system("pushing seed %s",last)
     end
 end
 
-function commands.defrostrandomseed()
-    if seed ~= false then
-        setrandomseedi(seed,"defrost",seed) -- was last (bug)
-        seed = false
+local function reuserandomseed(n)
+    local seed = stack[#stack]
+    if seed then
+        if trace_random then
+            report_system("reusing seed %s",last)
+        end
+        randomseed(seed)
     end
 end
+
+local function poprandomseed()
+    local seed = remove(stack)
+    if seed then
+        if trace_random then
+            report_system("popping seed %s",seed)
+        end
+        randomseed(seed)
+    end
+end
+
+-- todo: also open up in utilities.randomizer.*
+
+implement { name = "getrandomnumber",   actions = { getrandomnumber, context }, arguments = { "integer", "integer" } }
+implement { name = "getrandomdimen",    actions = { getrandomnumber, context }, arguments = { "dimen", "dimen" } }
+implement { name = "getrandomfloat",    actions = { getrandomnumber, context }, arguments = { "number", "number" } }
+implement { name = "getmprandomnumber", actions = { getmprandomnumber, context } }
+implement { name = "setrandomseed",     actions = { setrandomseed },            arguments = { "integer" } }
+implement { name = "getrandomseed",     actions = { getrandomseed, context } }
+implement { name = "pushrandomseed",    actions = { pushrandomseed  } }
+implement { name = "poprandomseed",     actions = { poprandomseed } }
+implement { name = "reuserandomseed",   actions = { reuserandomseed } }
+

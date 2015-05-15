@@ -84,6 +84,7 @@
 \unexpanded\def\lang_labels_define_class_indeed#1#2#3#4#5#6#7#8#9%
   {\setuvalue{setup#1text}{\protecttextprefixes#2\def\currenttextprefixclass{#1}\dodoubleempty\lang_labels_text_prefix_setup}%
    \setuvalue{preset#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dodoubleempty\lang_labels_text_prefix_setup}%
+   \setuvalue{copy#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dodoubleempty\lang_labels_text_prefix_copy}%
    \setuvalue{start#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dotripleempty\lang_labels_text_prefix_start[#1]}%
    \letvalue{stop#1text}\relax
    \def#4{\reallanguagetag{\defaultlanguage\currentmainlanguage}}%
@@ -94,8 +95,10 @@
           \csname\??label\currentlabelcategory#1:##1:##2\endcsname
         \else\ifcsname\??label#1:##1:##2\endcsname
           \csname\??label#1:##1:##2\endcsname
-        \else\ifcsname\??language#4\s!default\endcsname
-          \expandafter#5\csname\??language#4\s!default\endcsname{##2}%
+%         \else\ifcsname\??language#4\s!default\endcsname
+%           \expandafter#5\csname\??language#4\s!default\endcsname{##2}%
+        \else\ifcsname\??language##1\s!default\endcsname
+          \expandafter#5\csname\??language##1\s!default\endcsname{##2}%
         \else\ifcsname\??label\currentlabelcategory#1:##2\endcsname
           \csname\??label\currentlabelcategory#1:##2\endcsname
         \else\ifcsname\??label#1:##2\endcsname
@@ -178,7 +181,8 @@
    \grabuntil{stop#1text}\lang_labels_text_prefix_start_indeed}
 
 \def\lang_labels_text_prefix_start_indeed#1% text (not special checking done here yet, only for long texts anyway)
-  {\expandafter\edef\csname\??label\currenttextprefixclass:\currenttextprefixtag:\currenttextprefixname\endcsname{{\ctxlua{context(string.strip(\!!bs#1\!!es))}}\empty}}
+  {\expandafter\edef\csname\??label\currenttextprefixclass:\currenttextprefixtag:\currenttextprefixname\endcsname%
+     {{\clf_strip{#1}}\empty}}
 
 \def\lang_labels_text_prefix_setup[#1][#2]%
   {\ifsecondargument
@@ -234,17 +238,38 @@
   {\expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{#2}}
 
 \unexpanded\def\setlabeltextpair#1#2#3#4#5% a fast one for usage at the Lua end
-  {\expandafter\def\csname\??label#1:\reallanguagetag{#2}:#3\endcsname{{#4}{#5}}} % class tag key left right
+  {%\writestatus{!!!!}{#1:\reallanguagetag{#2}:#3}%
+   \expandafter\def\csname\??label#1:\reallanguagetag{#2}:#3\endcsname{{#4}{#5}}} % class tag key left right
+
+\def\lang_labels_text_prefix_copy[#1][#2]%
+  {\ifsecondargument
+     \edef\currenttextprefixtag{\reallanguagetag{#1}}%
+     \processcommalist[#2]\lang_labels_text_prefix_copy_indeed
+   \else
+     \edef\currenttextprefixtag{\reallanguagetag\currentmainlanguage}%
+     \processcommalist[#1]\lang_labels_text_prefix_copy_indeed
+   \fi}
+
+\def\lang_labels_text_prefix_copy_indeed#1%
+  {\lang_labels_text_prefix_copy_pair[#1]}
+
+\def\lang_labels_text_prefix_copy_pair[#1=#2]%
+  {\lang_labels_text_prefix_copy_pair_indeed{#1}[#2,,]}
+
+\def\lang_labels_text_prefix_copy_pair_indeed#1[#2,#3]%
+  {\expandafter\let
+     \csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\expandafter\endcsname
+     \csname\??label\currenttextprefixclass:\currenttextprefixtag:#2\endcsname}
 
 \definelabelclass [head]      [0] % titles
 \definelabelclass [label]     [0] % texts
 \definelabelclass [mathlabel] [0] % functions
 \definelabelclass [taglabel]  [2] % tags
 
-\ctxcommand{definelabels("head",      "titles",   true )}
-\ctxcommand{definelabels("label",     "texts",    true )}
-\ctxcommand{definelabels("mathlabel", "functions",false)}
-\ctxcommand{definelabels("taglabel",  "tags",     false)}
+\clf_definelabels{head}{titles}\s!true\relax
+\clf_definelabels{label}{texts}\s!true\relax
+\clf_definelabels{mathlabel}{functions}\s!false\relax
+\clf_definelabels{taglabel}{tags}\s!false\relax
 
 %D \macros
 %D   {translate}
@@ -296,7 +321,7 @@
 %D \assigntranslation[en=something,nl=iets]\to\command
 %D \stoptyping
 
-\def\assigntranslation[#1]\to#2%
+\unexpanded\def\assigntranslation[#1]\to#2% bad, this \to
   {\getparameters[\??translation][#1]%
    \edef#2{\csname\??translation\currentlanguage\endcsname}}
 
@@ -324,12 +349,12 @@
   {\dodoubleempty\typo_helpers_concat_comma_list}
 
 \def\typo_helpers_concat_comma_list[#1][#2]%
-  {\ctxcommand{concatcommalist{
-     text       = \!!bs#1\!!es,
-     separators = \!!bs#2\!!es,
-     first      = \!!bs\labeltext{and-1}\!!es,
-     second     = \!!bs\labeltext{and-2}\!!es
-   }}}
+  {\clf_concatcommalist
+     text       {#1}%
+     separators {#2}%
+     first      {\detokenize\expandafter{\normalexpanded{\labeltext{and-1}}}}%
+     second     {\detokenize\expandafter{\normalexpanded{\labeltext{and-2}}}}%
+   \relax}
 
 \setuplabeltext [\s!nl] [and-1={{, }}, and-2={{ en }}]   % 1, 2 en 3
 \setuplabeltext [\s!en] [and-1={{, }}, and-2={{, }}]     % 1, 2, 3

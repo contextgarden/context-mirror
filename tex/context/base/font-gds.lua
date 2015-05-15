@@ -9,16 +9,23 @@ if not modules then modules = { } end modules ['font-gds'] = {
 -- depends on ctx
 
 local type, next, tonumber = type, next, tonumber
-local gmatch, format, lower, find, splitup = string.gmatch, string.format, string.lower, string.find, string.splitup
-local texsp = tex.sp
+local gmatch, lower, find, splitup = string.gmatch, string.lower, string.find, string.splitup
 
-local fonts, nodes, attributes, node = fonts, nodes, attributes, node
+local fonts              = fonts
+local nodes              = nodes
+local attributes         = attributes
+local node               = node
 
 local trace_goodies      = false  trackers.register("fonts.goodies", function(v) trace_goodies = v end)
 local report_goodies     = logs.reporter("fonts","goodies")
 
 local allocate           = utilities.storage.allocate
 local setmetatableindex  = table.setmetatableindex
+
+local implement          = interfaces.implement
+
+local texsp              = tex.sp
+local formatters         = string.formatters
 
 local otf                = fonts.handlers.otf
 local afm                = fonts.handlers.afm
@@ -46,7 +53,12 @@ local findfile           = resolvers.findfile
 
 local glyph_code         = nodes.nodecodes.glyph
 
-local traverse_id        = nodes.traverse_id
+local nuts               = nodes.nuts
+local tonut              = nuts.tonut
+local getfont            = nuts.getfont
+local getchar            = nuts.getchar
+local getattr            = nuts.getattr
+local traverse_id        = nuts.traverse_id
 
 function fontgoodies.report(what,trace,goodies)
     if trace_goodies or trace then
@@ -273,7 +285,7 @@ local function setcolorscheme(tfmdata,scheme)
                             end
                         elseif type(name) == "number" then
                             reverse[name] = i
-                        elseif find(name,":") then
+                        elseif find(name,":",1,true) then
                             local start, stop = splitup(name,":")
                             start = tonumber(start)
                             stop = tonumber(stop)
@@ -311,16 +323,16 @@ local setnodecolor   = nodes.tracers.colors.set
 -- function colorschemes.coloring(head)
 --     local lastfont, lastscheme
 --     local done = false
---     for n in traverse_id(glyph_code,head) do
---         local a = n[a_colorscheme]
+--     for n in traverse_id(glyph_code,tonut(head)) do
+--         local a = getattr(n,a_colorscheme)
 --         if a then
---             local f = n.font
+--             local f = getfont(n)
 --             if f ~= lastfont then
 --                 lastscheme = fontproperties[f].colorscheme
 --                 lastfont   = f
 --             end
 --             if lastscheme then
---                 local sc = lastscheme[n.char]
+--                 local sc = lastscheme[getchar(n)]
 --                 if sc then
 --                     done = true
 --                     setnodecolor(n,"colorscheme:"..a..":"..sc) -- slow
@@ -338,21 +350,21 @@ local setnodecolor   = nodes.tracers.colors.set
 --     local lastattr   = nil
 --     local lastscheme = nil
 --     local lastprefix = nil
---     local done      = nil
---     for n in traverse_id(glyph_code,head) do
---         local a = n[a_colorscheme]
+--     local done       = nil
+--     for n in traverse_id(glyph_code,tonut(head)) do
+--         local a = getattr(n,a_colorscheme)
 --         if a then
 --             if a ~= lastattr then
 --                 lastattr   = a
 --                 lastprefix = "colorscheme:" .. a .. ":"
 --             end
---             local f = n.font
+--             local f = getfont(n)
 --             if f ~= lastfont then
 --                 lastfont   = f
 --                 lastscheme = fontproperties[f].colorscheme
 --             end
 --             if lastscheme then
---                 local sc = lastscheme[n.char]
+--                 local sc = lastscheme[getchar(n)]
 --                 if sc then
 --                     setnodecolor(n,lastprefix .. sc) -- slow
 --                     done = true
@@ -384,10 +396,10 @@ function colorschemes.coloring(head)
     local lastcache  = nil
     local lastscheme = nil
     local done       = nil
-    for n in traverse_id(glyph_code,head) do
-        local a = n[a_colorscheme]
+    for n in traverse_id(glyph_code,tonut(head)) do
+        local a = getattr(n,a_colorscheme)
         if a then
-            local f = n.font
+            local f = getfont(n)
             if f ~= lastfont then
                 lastfont   = f
                 lastscheme = fontproperties[f].colorscheme
@@ -397,7 +409,7 @@ function colorschemes.coloring(head)
                 lastcache = cache[a]
             end
             if lastscheme then
-                local sc = lastscheme[n.char]
+                local sc = lastscheme[getchar(n)]
                 if sc then
                     setnodecolor(n,lastcache[sc]) -- we could inline this one
                     done = true
@@ -424,7 +436,7 @@ local function setextrafeatures(tfmdata)
                     addotffeature(tfmdata.shared.rawdata,feature,specification)
                     registerotffeature {
                         name        = feature,
-                        description = format("extra: %s",feature)
+                        description = formatters["extra: %s"](feature)
                     }
                 end
             end
@@ -814,8 +826,17 @@ end
 
 -- interface
 
-commands.loadfontgoodies        = fontgoodies.load
-commands.enablefontcolorschemes = colorschemes.enable
+implement {
+    name      = "loadfontgoodies",
+    actions   = fontgoodies.load,
+    arguments = "string"
+}
+
+implement {
+    name      = "enablefontcolorschemes",
+    onlyonce  = true,
+    actions   = colorschemes.enable
+}
 
 -- weird place ... depends on math
 
@@ -848,7 +869,7 @@ local function setkeepligatures(tfmdata,value)
                 if letterspacing then
                     local keptligatures = letterspacing.keptligatures
                     if keptligatures then
-                        local unicodes = tfmdata.resources.unicodes
+                        local unicodes = tfmdata.resources.unicodes -- so we accept names
                         local hash = { }
                         for k, v in next, keptligatures do
                             local u = unicodes[k]

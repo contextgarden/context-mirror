@@ -14,42 +14,50 @@ local formatters = string.formatters
 
 local backends, lpdf, nodes = backends, lpdf, nodes
 
-local allocate             = utilities.storage.allocate
-local formatters           = string.formatters
+local allocate                = utilities.storage.allocate
+local formatters              = string.formatters
 
-local nodeinjections       = backends.pdf.nodeinjections
-local codeinjections       = backends.pdf.codeinjections
-local registrations        = backends.pdf.registrations
+local nodeinjections          = backends.pdf.nodeinjections
+local codeinjections          = backends.pdf.codeinjections
+local registrations           = backends.pdf.registrations
 
-local nodepool             = nodes.pool
-local register             = nodepool.register
-local pdfliteral           = nodepool.pdfliteral
+local nodepool                = nodes.pool
+local register                = nodepool.register
+local pdfliteral              = nodepool.pdfliteral
 
-local pdfconstant          = lpdf.constant
-local pdfstring            = lpdf.string
-local pdfdictionary        = lpdf.dictionary
-local pdfarray             = lpdf.array
-local pdfreference         = lpdf.reference
-local pdfverbose           = lpdf.verbose
-local pdfflushobject       = lpdf.flushobject
-local pdfflushstreamobject = lpdf.flushstreamobject
+local pdfconstant             = lpdf.constant
+local pdfstring               = lpdf.string
+local pdfdictionary           = lpdf.dictionary
+local pdfarray                = lpdf.array
+local pdfreference            = lpdf.reference
+local pdfverbose              = lpdf.verbose
+local pdfflushobject          = lpdf.flushobject
+local pdfdelayedobject        = lpdf.delayedobject
+local pdfflushstreamobject    = lpdf.flushstreamobject
 
-local colors               = attributes.colors
-local transparencies       = attributes.transparencies
-local registertransparancy = transparencies.register
-local registercolor        = colors.register
-local colorsvalue          = colors.value
-local transparenciesvalue  = transparencies.value
-local forcedmodel          = colors.forcedmodel
+local pdfshareobjectreference = lpdf.shareobjectreference
 
-local c_transparency = pdfconstant("Transparency")
+local addtopageattributes     = lpdf.addtopageattributes
+local adddocumentcolorspace   = lpdf.adddocumentcolorspace
+local adddocumentextgstate    = lpdf.adddocumentextgstate
 
-local f_gray   = formatters["%.3f g %.3f G"]
-local f_rgb    = formatters["%.3f %.3f %.3f rg %.3f %.3f %.3f RG"]
-local f_cmyk   = formatters["%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K"]
+local colors                  = attributes.colors
+local transparencies          = attributes.transparencies
+local registertransparancy    = transparencies.register
+local registercolor           = colors.register
+local colorsvalue             = colors.value
+local transparenciesvalue     = transparencies.value
+local forcedmodel             = colors.forcedmodel
+local getpagecolormodel       = colors.getpagecolormodel
+
+local c_transparency          = pdfconstant("Transparency")
+
+local f_gray   = formatters["%.3F g %.3F G"]
+local f_rgb    = formatters["%.3F %.3F %.3F rg %.3F %.3F %.3F RG"]
+local f_cmyk   = formatters["%.3F %.3F %.3F %.3F k %.3F %.3F %.3F %.3F K"]
 local f_spot   = formatters["/%s cs /%s CS %s SCN %s scn"]
 local f_tr     = formatters["Tr%s"]
-local f_cm     = formatters["q %f %f %f %f %f %f cm"]
+local f_cm     = formatters["q %F %F %F %F %F %F cm"]
 local f_effect = formatters["%s Tc %s w %s Tr"]
 local f_tr_gs  = formatters["/Tr%s gs"]
 local f_num_1  = tostring
@@ -76,11 +84,13 @@ lpdf.transparencygroups  = transparencygroups
 table.setmetatableindex(transparencygroups, function(transparencygroups,colormodel)
     local cs = colorspaceconstants[colormodel]
     if cs then
-        local g = pdfreference(pdfflushobject(pdfdictionary {
+        local d = pdfdictionary {
             S  = c_transparency,
             CS = cs,
             I  = true,
-        }))
+        }
+     -- local g = pdfreference(pdfflushobject(tostring(d)))
+        local g = pdfreference(pdfdelayedobject(tostring(d)))
         transparencygroups[colormodel] = g
         return g
     else
@@ -89,25 +99,17 @@ table.setmetatableindex(transparencygroups, function(transparencygroups,colormod
     end
 end)
 
-local currentgroupcolormodel
-
 local function addpagegroup()
-    if currentgroupcolormodel then
-        local g = transparencygroups[currentgroupcolormodel]
+    local model = getpagecolormodel()
+    if model then
+        local g = transparencygroups[model]
         if g then
-            lpdf.addtopageattributes("Group",g)
+            addtopageattributes("Group",g)
         end
     end
 end
 
 lpdf.registerpagefinalizer(addpagegroup,3,"pagegroup")
-
-local function synchronizecolormodel(model)
-    currentgroupcolormodel = model
-end
-
-backends.codeinjections.synchronizecolormodel = synchronizecolormodel
-commands.synchronizecolormodel                = synchronizecolormodel
 
 -- injection code (needs a bit reordering)
 
@@ -175,7 +177,7 @@ local f_gray_function = formatters["%s mul"]
 
 local documentcolorspaces = pdfdictionary()
 
-local spotcolorhash      = { } -- not needed
+local spotcolorhash       = { } -- not needed
 local spotcolornames      = { }
 local indexcolorhash      = { }
 local delayedindexcolors  = { }
@@ -193,7 +195,7 @@ end
 -- This should become delayed i.e. only flush when used; in that case we need
 -- need to store the specification and then flush them when accesssomespotcolor
 -- is called. At this moment we assume that splotcolors that get defined are
--- also used which keeps the overhad small anyway.
+-- also used which keeps the overhad small anyway. Tricky for mp ...
 
 local processcolors
 
@@ -224,13 +226,14 @@ local function registersomespotcolor(name,noffractions,names,p,colorspace,range,
         local mr = pdfreference(m)
         spotcolorhash[name] = m
         documentcolorspaces[name] = mr
-        lpdf.adddocumentcolorspace(name,mr)
+        adddocumentcolorspace(name,mr)
     else
         local cnames = pdfarray()
         local domain = pdfarray()
         local colorants = pdfdictionary()
         for n in gmatch(names,"[^,]+") do
             local name = spotcolornames[n] or n
+            -- the cmyk names assume that they are indeed these colors
             if n == "cyan" then
                 name = "Cyan"
             elseif n == "magenta" then
@@ -241,9 +244,15 @@ local function registersomespotcolor(name,noffractions,names,p,colorspace,range,
                 name = "Black"
             else
                 local sn = spotcolorhash[name] or spotcolorhash[n]
+                if not sn then
+                    report_color("defining %a as colorant",name)
+                    colors.definespotcolor("",name,"p=1",true)
+                    sn = spotcolorhash[name] or spotcolorhash[n]
+                end
                 if sn then
                     colorants[name] = pdfreference(sn)
                 else
+                    -- maybe some day generate colorants (spot colors for multi) automatically
                     report_color("unknown colorant %a, using black instead",name or n)
                     name = "Black"
                 end
@@ -280,13 +289,13 @@ local function registersomespotcolor(name,noffractions,names,p,colorspace,range,
             cnames,
             colorspace,
             pdfreference(calculation),
-            lpdf.shareobjectreference(tostring(channels)), -- optional but needed for shades
+            pdfshareobjectreference(tostring(channels)), -- optional but needed for shades
         }
         local m = pdfflushobject(array)
         local mr = pdfreference(m)
         spotcolorhash[name] = m
         documentcolorspaces[name] = mr
-        lpdf.adddocumentcolorspace(name,mr)
+        adddocumentcolorspace(name,mr)
     end
 end
 
@@ -336,7 +345,7 @@ local function registersomeindexcolor(name,noffractions,names,p,colorspace,range
     end
     vector = pdfverbose { "<", concat(vector, " "), ">" }
     local n = pdfflushobject(pdfarray{ pdf_indexed, a, 255, vector })
-    lpdf.adddocumentcolorspace(format("%s_indexed",name),pdfreference(n))
+    adddocumentcolorspace(format("%s_indexed",name),pdfreference(n))
     return n
 end
 
@@ -455,7 +464,7 @@ function registrations.transparency(n,a,t)
         local mr = pdfreference(m)
         transparencyhash[0] = m
         documenttransparencies[0] = mr
-        lpdf.adddocumentextgstate("Tr0",mr)
+        adddocumentextgstate("Tr0",mr)
         done = true
     end
     if n > 0 and not transparencyhash[n] then
@@ -470,13 +479,16 @@ function registrations.transparency(n,a,t)
         local mr = pdfreference(m)
         transparencyhash[n] = m
         documenttransparencies[n] = mr
-        lpdf.adddocumentextgstate(f_tr(n),mr)
+        adddocumentextgstate(f_tr(n),mr)
     end
 end
 
 statistics.register("page group warning", function()
-    if done and not transparencygroups[currentgroupcolormodel] then
-        return "transparencies are used but no pagecolormodel is set"
+    if done then
+        local model = getpagecolormodel()
+        if model and not transparencygroups[model] then
+            return "transparencies are used but no pagecolormodel is set"
+        end
     end
 end)
 
@@ -520,6 +532,12 @@ end
 
 lpdf.color = lpdfcolor
 
+interfaces.implement {
+    name      = "lpdf_color",
+    actions   = { lpdfcolor, context },
+    arguments = "integer"
+}
+
 function lpdf.colorspec(model,ca,default)
     if ca and ca > 0 then
         local cv = colors.value(ca)
@@ -544,7 +562,7 @@ function lpdf.colorspec(model,ca,default)
 end
 
 function lpdf.pdfcolor(attribute) -- bonus, for pgf and friends
-    context(lpdfcolor(1,attribute))
+    return lpdfcolor(1,attribute)
 end
 
 function lpdf.transparency(ct,default) -- kind of overlaps with transparencycode
@@ -689,7 +707,7 @@ end
 
 -- this will move to lpdf-spe.lua
 
-local f_slant = formatters["pdf: q 1 0 %f 1 0 0 cm"]
+local f_slant = formatters["pdf: q 1 0 %F 1 0 0 cm"]
 
 backends.pdf.tables.vfspecials = allocate { -- todo: distinguish between glyph and rule color
 

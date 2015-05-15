@@ -17,12 +17,12 @@
 
 \registerctxluafile{grph-epd}{1.001}
 
-\def\figurereference{\ctxcommand{figurestatus("reference")}} % might become private
+\def\figurereference{\clf_figurestatus{reference}{}} % might become private
 
 \defineoverlay[system:graphics:epdf][\directsetup{system:graphics:epdf}]
 
 \startsetups system:graphics:epdf
-    \ctxlua{figures.mergegoodies("\externalfigureparameter\c!interaction")}%
+    \clf_figure_mergegoodies{\externalfigureparameter\c!interaction}%
     \reference[\figurereference]{}% todo: dest area
 \stopsetups
 
@@ -32,7 +32,7 @@
    \c!offset=\v!overlay,
    \c!background={\v!foreground,system:graphics:epdf}]
 
-\def\grph_epdf_add_overlay
+\unexpanded\def\grph_epdf_add_overlay
   {\global\setbox\foundexternalfigure\vbox\bgroup
      \system_graphics_epdf{\box\foundexternalfigure}%
    \egroup}

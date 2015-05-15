@@ -21,16 +21,22 @@ local utfbyte = utf.byte
 local format, gsub = string.format, string.gsub
 local concat, sortedkeys, sortedpairs = table.concat, table.sortedkeys, table.sortedpairs
 
+local context   = context
+local commands  = commands
+local implement = interfaces.implement
+
 local settings_to_array = utilities.parsers.settings_to_array
 
 local trace_patterns = false  trackers.register("languages.patterns", function(v) trace_patterns = v end)
 
 local report_initialization = logs.reporter("languages","initialization")
 
-local prehyphenchar  = lang.prehyphenchar  -- global per language
-local posthyphenchar = lang.posthyphenchar -- global per language
-local lefthyphenmin  = lang.lefthyphenmin
-local righthyphenmin = lang.righthyphenmin
+local prehyphenchar    = lang.prehyphenchar    -- global per language
+local posthyphenchar   = lang.posthyphenchar   -- global per language
+local preexhyphenchar  = lang.preexhyphenchar  -- global per language
+local postexhyphenchar = lang.postexhyphenchar -- global per language
+local lefthyphenmin    = lang.lefthyphenmin
+local righthyphenmin   = lang.righthyphenmin
 
 local lang           = lang
 lang.exceptions      = lang.hyphenation
@@ -53,9 +59,9 @@ local numbers        = languages.numbers
 languages.data       = languages.data       or { }
 local data           = languages.data
 
-storage.register("languages/numbers",   numbers,   "languages.numbers")
 storage.register("languages/registered",registered,"languages.registered")
 storage.register("languages/associated",associated,"languages.associated")
+storage.register("languages/numbers",   numbers,   "languages.numbers")
 storage.register("languages/data",      data,      "languages.data")
 
 local nofloaded  = 0
@@ -73,6 +79,9 @@ local function resolve(tag)
 end
 
 local function tolang(what) -- returns lang object
+    if not what then
+        what = tex.language
+    end
     local tag = numbers[what]
     local data = tag and registered[tag] or registered[what]
     if data then
@@ -82,6 +91,14 @@ local function tolang(what) -- returns lang object
             data.instance = instance
         end
         return instance
+    end
+end
+
+function languages.getdata(tag) -- or number
+    if tag then
+        return registered[tag] or registered[numbers[tag]]
+    else
+        return registered[numbers[tex.language]]
     end
 end
 
@@ -115,7 +132,10 @@ local function loaddefinitions(tag,specification)
         if trace_patterns then
             report_initialization("pattern specification for language %a: %s",tag,specification.patterns)
         end
-        local dataused, ok = data.used, false
+        local dataused  = data.used
+        local ok        = false
+        local resources = data.resources or { }
+        data.resources  = resources
         for i=1,#definitions do
             local definition = definitions[i]
             if definition == "" then
@@ -137,13 +157,15 @@ local function loaddefinitions(tag,specification)
                         report_initialization("loading definition %a for language %a from %a",definition,tag,fullname)
                     end
                     local suffix, gzipped = gzip.suffix(fullname)
-                    local defs = table.load(fullname,gzipped and gzip.load)
-                    if defs then -- todo: version test
+                    local loaded = table.load(fullname,gzipped and gzip.load)
+                    if loaded then -- todo: version test
                         ok, nofloaded = true, nofloaded + 1
-                     -- instance:patterns   (defs.patterns   and defs.patterns  .data or "")
-                     -- instance:hyphenation(defs.exceptions and defs.exceptions.data or "")
-                        instance:patterns   (validdata(defs.patterns,  "patterns",  tag) or "")
-                        instance:hyphenation(validdata(defs.exceptions,"exceptions",tag) or "")
+                     -- instance:patterns   (loaded.patterns   and resources.patterns  .data or "")
+                     -- instance:hyphenation(loaded.exceptions and resources.exceptions.data or "")
+                        instance:patterns   (validdata(loaded.patterns,  "patterns",  tag) or "")
+                        instance:hyphenation(validdata(loaded.exceptions,"exceptions",tag) or "")
+                        resources[#resources+1] = loaded -- so we can use them otherwise
+
                     else
                         report_initialization("invalid definition %a for language %a in %a",definition,tag,filename)
                     end
@@ -286,10 +308,12 @@ end
 
 -- not that usefull, global values
 
-function languages.prehyphenchar (what) return prehyphenchar (tolang(what)) end
-function languages.posthyphenchar(what) return posthyphenchar(tolang(what)) end
-function languages.lefthyphenmin (what) return lefthyphenmin (tolang(what)) end
-function languages.righthyphenmin(what) return righthyphenmin(tolang(what)) end
+function languages.prehyphenchar   (what) return prehyphenchar   (tolang(what)) end
+function languages.posthyphenchar  (what) return posthyphenchar  (tolang(what)) end
+function languages.preexhyphenchar (what) return preexhyphenchar (tolang(what)) end
+function languages.postexhyphenchar(what) return postexhyphenchar(tolang(what)) end
+function languages.lefthyphenmin   (what) return lefthyphenmin   (tolang(what)) end
+function languages.righthyphenmin  (what) return righthyphenmin  (tolang(what)) end
 
 -- e['implementer']= 'imple{m}{-}{-}menter'
 -- e['manual'] = 'man{}{}{}'
@@ -351,7 +375,7 @@ languages.associate('fr','latn','fra')
 statistics.register("loaded patterns", function()
     local result = languages.logger.report()
     if result ~= "none" then
---         return result
+     -- return result
         return format("%s, load time: %s",result,statistics.elapsedtime(languages))
     end
 end)
@@ -363,17 +387,58 @@ end)
 
 -- interface
 
-local getnumber = languages.getnumber
+implement {
+    name      = "languagenumber",
+    actions   = { languages.getnumber, context },
+    arguments = { "string", "string", "string" }
+}
 
-function commands.languagenumber(tag,default,patterns)
-    context(getnumber(tag,default,patterns))
-end
+implement {
+    name      = "installedlanguages",
+    actions   = { languages.installed, context },
+}
 
-function commands.installedlanguages(separator)
-    context(languages.installed(separator))
-end
+implement {
+    name      = "definelanguage",
+    actions   = languages.define,
+    arguments = { "string", "string" }
+}
 
-commands.definelanguage        = languages.define
-commands.setlanguagesynonym    = languages.setsynonym
-commands.unloadlanguage        = languages.unload
-commands.setlanguageexceptions = languages.setexceptions
+implement {
+    name      = "setlanguagesynonym",
+    actions   = languages.setsynonym,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "unloadlanguage",
+    actions   = languages.unload,
+    arguments = { "string" }
+}
+
+implement {
+    name      = "setlanguageexceptions",
+    actions   = languages.setexceptions,
+    arguments = { "string", "string" }
+}
+
+
+implement {
+    name      = "currentprehyphenchar",
+    actions   = function()
+        local c = prehyphenchar(tolang())
+        if c and c > 0 then
+            context.char(c)
+        end
+    end
+}
+
+implement {
+    name      = "currentposthyphenchar",
+    actions   = function()
+        local c = posthyphenchar(tolang())
+        if c and c > 0 then
+            context.char(c)
+        end
+    end
+}

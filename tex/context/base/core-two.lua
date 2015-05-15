@@ -42,9 +42,13 @@ end
 
 jobpasses.define = allocate
 
-function jobpasses.save(id,str)
+function jobpasses.save(id,str,index)
     local jti = allocate(id)
-    jti[#jti+1] = str
+    if index then
+        jti[index] = str
+    else
+        jti[#jti+1] = str
+    end
 end
 
 function jobpasses.savetagged(id,tag,str)
@@ -54,7 +58,7 @@ end
 
 function jobpasses.getdata(id,index,default)
     local jti = collected[id]
-    local value = jit and jti[index]
+    local value = jti and jti[index]
     return value ~= "" and value or default or ""
 end
 
@@ -140,18 +144,36 @@ jobpasses.inlist = inlist
 
 -- interface
 
-function commands.gettwopassdata     (id)   local r = get  (id)   if r then context(r) end end
-function commands.getfirsttwopassdata(id)   local r = first(id)   if r then context(r) end end
-function commands.getlasttwopassdata (id)   local r = last (id)   if r then context(r) end end
-function commands.findtwopassdata    (id,n) local r = find (id,n) if r then context(r) end end
-function commands.gettwopassdatalist (id)   local r = list (id)   if r then context(r) end end
-function commands.counttwopassdata   (id)   local r = count(id)   if r then context(r) end end
-function commands.checktwopassdata   (id)   local r = check(id)   if r then context(r) end end
+local implement = interfaces.implement
 
-commands.definetwopasslist     = jobpasses.define
-commands.savetwopassdata       = jobpasses.save
-commands.savetaggedtwopassdata = jobpasses.savetagged
+implement { name = "gettwopassdata",     actions = { get  , context }, arguments = "string" }
+implement { name = "getfirsttwopassdata",actions = { first, context }, arguments = "string" }
+implement { name = "getlasttwopassdata", actions = { last , context }, arguments = "string" }
+implement { name = "findtwopassdata",    actions = { find , context }, arguments = { "string", "string" } }
+implement { name = "gettwopassdatalist", actions = { list , context }, arguments = "string" }
+implement { name = "counttwopassdata",   actions = { count, context }, arguments = "string" }
+implement { name = "checktwopassdata",   actions = { check, context }, arguments = "string" }
 
-function commands.doifelseintwopassdata(id,str)
-    commands.doifelse(inlist(id,str))
-end
+implement {
+    name      = "definetwopasslist",
+    actions   = jobpasses.define,
+    arguments = "string"
+}
+
+implement {
+    name      = "savetwopassdata",
+    actions   = jobpasses.save,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "savetaggedtwopassdata",
+    actions   = jobpasses.savetagged,
+    arguments = { "string", "string", "string" }
+}
+
+implement {
+    name      = "doifelseintwopassdata",
+    actions   = { inlist, commands.doifelse },
+    arguments = { "string", "string" }
+}

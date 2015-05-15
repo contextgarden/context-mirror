@@ -112,13 +112,13 @@
      \endgroup
    \fi}
 
-\def\resetpagebreak % used elsewhere too
+\unexpanded\def\resetpagebreak % used elsewhere too
   {\global\settrue\c_page_breaks_enabled}
 
-\def\simplifypagebreak % to be used grouped !
+\unexpanded\def\simplifypagebreak % to be used grouped !
   {\def\page_breaks_process[##1]{\goodbreak}}
 
-\def\disablepagebreaks % to be used grouped !
+\unexpanded\def\disablepagebreaks % to be used grouped !
   {\def\page_breaks_process[##1]{}}
 
 \installpagebreakmethod \s!dummy
@@ -134,11 +134,11 @@
    \endgroup}
 
 \installpagebreakmethod \s!unknown
-  {\doifinstringelse{+}\page_breaks_current_option
+  {\doifelseinstring{+}\page_breaks_current_option
      {\page_otr_flush_all_floats
       \page_otr_command_next_page
       \dorecurse\page_breaks_current_option\page_otr_insert_dummy_page}
-     {\doifnumberelse\page_breaks_current_option
+     {\doifelsenumber\page_breaks_current_option
         {\page_otr_flush_all_floats
          \page_otr_command_next_page
          \doloop
@@ -177,6 +177,8 @@
   {\ifcase\pageornamentstate
      \global\pageornamentstate\plusone
    \fi}
+
+% also needed: \page \doifoddpageelse\relax{\page[\v!blank,\v!right]
 
 \installpagebreakmethod \v!no
   {\ifconditional\c_page_breaks_enabled
@@ -220,11 +222,11 @@
 
 \installpagebreakmethod \v!even
   {\page
-   \doifoddpageelse\page_reset_marks_and_insert_dummy\donothing}
+   \doifelseoddpage\page_reset_marks_and_insert_dummy\donothing}
 
 \installpagebreakmethod \v!odd
   {\page
-   \doifoddpageelse\donothing\page_reset_marks_and_insert_dummy}
+   \doifelseoddpage\donothing\page_reset_marks_and_insert_dummy}
 
 \installpagebreakmethod \v!quadruple % not yet ok inside columnsets
   {\ifdoublesided
@@ -316,74 +318,203 @@
 
 %D Test page breaks.
 
-\newdimen   \d_page_tests_test
-\newconstant\c_page_tests_mode
+% \newdimen   \d_page_tests_test
+% \newconstant\c_page_tests_mode
 
-\newconstant\testpagemethod % todo: \testnewpage[method=,lines=,voffset=]
-\newconstant\testpagetrigger
+\newconstant\testpagemethod  % old
+\newconstant\testpagetrigger % old
 
-\unexpanded\def\testpage    {\c_page_tests_mode\plusone  \dodoubleempty\page_tests_test} %
-\unexpanded\def\testpageonly{\c_page_tests_mode\plustwo  \dodoubleempty\page_tests_test} % no penalties added to the mvl
-\unexpanded\def\testpagesync{\c_page_tests_mode\plusthree\dodoubleempty\page_tests_test} % force sync
+% \unexpanded\def\testpage    {\c_page_tests_mode\plusone  \dodoubleempty\page_tests_test} %
+% \unexpanded\def\testpageonly{\c_page_tests_mode\plustwo  \dodoubleempty\page_tests_test} % no penalties added to the mvl
+% \unexpanded\def\testpagesync{\c_page_tests_mode\plusthree\dodoubleempty\page_tests_test} % force sync
+%
+% \def\page_tests_test[#1][#2]% don't change, only add more methods
+%   {\relax % needed before \if
+%    \ifconditional\c_page_breaks_enabled
+%      % new from here
+%      \ifcase\testpagetrigger
+%        \endgraf
+%      \or\ifvmode
+%        \dosomebreak\allowbreak
+%      \else % indeed?
+%        \vadjust{\allowbreak}%
+%        \endgraf
+%      \fi\fi
+%      % till here
+%      \ifdim\pagegoal<\maxdimen \relax
+%        \ifdim\pagetotal<\pagegoal \relax
+%          \d_page_tests_test\dimexpr
+%             #1\lineheight
+%            +\pagetotal
+%            \ifdim\lastskip<\parskip+\parskip\fi
+%            \ifsecondargument+#2\fi
+%          \relax
+%          \ifcase\testpagemethod
+%            \ifdim\d_page_tests_test>.99\pagegoal
+%              \penalty-\plustenthousand
+%            \fi
+%          \or
+%            \ifdim\dimexpr\d_page_tests_test-\pagegoal\relax>-\lineheight
+%              \penalty-\plustenthousand
+%            \fi
+%          \or
+%            \getnoflines\pagegoal
+%            \ifdim\dimexpr\d_page_tests_test-\noflines\lineheight\relax>-\lineheight
+%              \penalty-\plustenthousand
+%            \fi
+%          \or % same as 0 but more accurate
+%            \ifdim\dimexpr\d_page_tests_test-10\scaledpoint\relax>\pagegoal
+%              \penalty-\plustenthousand
+%            \fi
+%          \fi
+%        \else\ifnum\c_page_tests_mode=\plusthree
+%          \page_tests_flush_so_far
+%        \fi\fi
+%      \else\ifnum\c_page_tests_mode=\plusone
+%        \goodbreak
+%      \fi\fi
+%    \else
+%      \endgraf
+%    \fi}
+%
+% \def\page_tests_flush_so_far
+%   {\endgraf
+%    \ifdim\pagetotal>\pagegoal
+%      \ifdim\dimexpr\pagetotal-\pageshrink\relax>\pagegoal
+%        \goodbreak
+%      \else
+%        \page
+%      \fi
+%    \fi}
 
-\def\page_tests_test[#1][#2]% don't change, only add more methods
+\installcorenamespace {pagechecker}
+\installcorenamespace {pagecheckermethod}
+
+\installcommandhandler \??pagechecker {pagechecker} \??pagechecker
+
+\setuppagechecker
+  [\c!method=1,
+   \c!before=,
+   \c!after=,
+   \c!inbetween=,
+   \c!lines=\plusthree,
+   \c!offset=\zeropoint]
+
+\def\page_check_amount
+  {\dimexpr
+      \pagecheckerparameter\c!lines\lineheight
+     +\pagetotal
+     \ifdim\lastskip<\parskip+\parskip\fi
+     +\pagecheckerparameter\c!offset
+   \relax}
+
+\unexpanded\def\checkpage
+  {\dodoubleempty\page_check}
+
+\def\page_check[#1][#2]%
   {\relax % needed before \if
+   \endgraf
    \ifconditional\c_page_breaks_enabled
-     % new from here
-     \ifcase\testpagetrigger
-       \endgraf
-     \or\ifvmode
-       \dosomebreak\allowbreak
-     \else % indeed?
-       \vadjust{\allowbreak}%
-       \endgraf
-     \fi\fi
-     % till here
-     \ifdim\pagegoal<\maxdimen \relax
-       \ifdim\pagetotal<\pagegoal \relax
-         \d_page_tests_test\dimexpr
-            #1\lineheight
-           +\pagetotal
-           \ifdim\lastskip<\parskip+\parskip\fi
-           \ifsecondargument+#2\fi
-         \relax
-         \ifcase\testpagemethod
-           \ifdim\d_page_tests_test>.99\pagegoal
-             \penalty-\plustenthousand
-           \fi
-         \or
-           \ifdim\dimexpr\d_page_tests_test-\pagegoal\relax>-\lineheight
-             \penalty-\plustenthousand
-           \fi
-         \or
-           \getnoflines\pagegoal
-           \ifdim\dimexpr\d_page_tests_test-\noflines\lineheight\relax>-\lineheight
-             \penalty-\plustenthousand
-           \fi
-         \or % same as 0 but more accurate
-           \ifdim\dimexpr\d_page_tests_test-10\scaledpoint\relax>\pagegoal
-             \penalty-\plustenthousand
-           \fi
-         \fi
-       \else\ifnum\c_page_tests_mode=\plusthree
-         \page_tests_flush_so_far
-       \fi\fi
-     \else\ifnum\c_page_tests_mode=\plusone
-       \goodbreak
-     \fi\fi
-   \else
-     \endgraf
+     \begingroup
+     \edef\currentpagechecker{#1}%
+     \ifsecondargument\setupcurrentpagechecker[#2]\fi
+     \csname\??pagecheckermethod\pagecheckerparameter\c!method\endcsname
+     \endgroup
    \fi}
 
-\def\page_tests_flush_so_far
-  {\endgraf
-   \ifdim\pagetotal>\pagegoal
-     \ifdim\dimexpr\pagetotal-\pageshrink\relax>\pagegoal
-       \goodbreak
+\setvalue{\??pagecheckermethod 0}%
+  {\ifdim\pagegoal<\maxdimen \relax
+     \ifdim\pagetotal<\pagegoal \relax
+       \ifdim\page_check_amount>.99\pagegoal
+         \pagecheckerparameter\c!before
+         \penalty-\plustenthousand
+         \pagecheckerparameter\c!after
+       \else
+         \pagecheckerparameter\c!inbetween
+       \fi
      \else
-       \page
+       \pagecheckerparameter\c!inbetween
      \fi
+   \else
+     \pagecheckerparameter\c!inbetween
    \fi}
+
+\setvalue{\??pagecheckermethod 1}%
+  {\ifdim\pagegoal<\maxdimen \relax
+     \ifdim\pagetotal<\pagegoal \relax
+       \ifdim\dimexpr\page_check_amount-\pagegoal\relax>-\lineheight
+         \pagecheckerparameter\c!before
+         \penalty-\plustenthousand
+         \pagecheckerparameter\c!after
+       \else
+         \pagecheckerparameter\c!inbetween
+       \fi
+     \else
+       \pagecheckerparameter\c!inbetween
+     \fi
+   \else
+     \goodbreak
+     \pagecheckerparameter\c!inbetween
+   \fi}
+
+\setvalue{\??pagecheckermethod 2}%
+  {\ifdim\pagegoal<\maxdimen \relax
+     \ifdim\pagetotal<\pagegoal \relax
+       \getnoflines\pagegoal
+       \ifdim\dimexpr\page_check_amount-\noflines\lineheight\relax>-\lineheight
+         \pagecheckparameter\c!before
+         \penalty-\plustenthousand
+         \pagecheckerparameter\c!after
+       \else
+         \pagecheckerparameter\c!inbetween
+       \fi
+     \else
+       \pagecheckerparameter\c!inbetween
+     \fi
+   \else
+     \pagecheckerparameter\c!inbetween
+   \fi}
+
+\setvalue{\??pagecheckermethod 3}%
+  {\ifdim\pagegoal<\maxdimen \relax
+     \ifdim\pagetotal<\pagegoal \relax
+       \ifdim\dimexpr\page_check_amount-10\scaledpoint\relax>\pagegoal
+         \pagecheckerparameter\c!before
+         \penalty-\plustenthousand
+         \pagecheckerparameter\c!after
+       \else
+         \pagecheckerparameter\c!inbetween
+       \fi
+     \else
+       \ifdim\pagetotal>\pagegoal
+         \ifdim\dimexpr\pagetotal-\pageshrink\relax>\pagegoal
+           \goodbreak
+           \pagecheckerparameter\c!inbetween
+         \else
+           \pagecheckerparameter\c!before
+           \page
+           \pagecheckerparameter\c!after
+         \fi
+       \else
+         \pagecheckerparameter\c!inbetween
+       \fi
+     \fi
+   \else
+     \pagecheckerparameter\c!inbetween
+   \fi}
+
+\definepagechecker[\s!unknown:0]              [\c!method=0,\c!before=,\c!after=,\c!inbetween=]
+\definepagechecker[\s!unknown:1][\s!unknown:0][\c!method=1]
+\definepagechecker[\s!unknown:2][\s!unknown:0][\c!method=2]
+\definepagechecker[\s!unknown:3][\s!unknown:0][\c!method=3]
+
+\def\page_tests_test_a[#1][#2]{\normalexpanded{\checkpage[\s!unknown:1][\c!lines=#1,\c!offset=\ifsecondargument#2\else\zeropoint\fi]}}
+\def\page_tests_test_b[#1][#2]{\normalexpanded{\checkpage[\s!unknown:2][\c!lines=#1,\c!offset=\ifsecondargument#2\else\zeropoint\fi]}}
+\def\page_tests_test_c[#1][#2]{\normalexpanded{\checkpage[\s!unknown:3][\c!lines=#1,\c!offset=\ifsecondargument#2\else\zeropoint\fi]}}
+
+\unexpanded\def\testpage    {\dodoubleempty\page_tests_test_a} %
+\unexpanded\def\testpageonly{\dodoubleempty\page_tests_test_b} % no penalties added to the mvl
+\unexpanded\def\testpagesync{\dodoubleempty\page_tests_test_c} % force sync
 
 %D Test column breaks.
 

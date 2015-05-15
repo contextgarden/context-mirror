@@ -183,6 +183,7 @@
 		<cd:variable name='flushleft' value='پمپ‌چپ'/>
 		<cd:variable name='flushouter' value='پمپ‌خارجی'/>
 		<cd:variable name='flushright' value='پمپ‌راست'/>
+		<cd:variable name='followingpage' value='followingpage'/>
 		<cd:variable name='footer' value='ته‌برگ'/>
 		<cd:variable name='footnote' value='پانوشت'/>
 		<cd:variable name='force' value='اجبار'/>
@@ -304,6 +305,7 @@
 		<cd:variable name='mirrored' value='منعکس'/>
 		<cd:variable name='monday' value='دوشنبه'/>
 		<cd:variable name='mono' value='مونو'/>
+		<cd:variable name='monobold' value='monobold'/>
 		<cd:variable name='month' value='ماه'/>
 		<cd:variable name='more' value='more'/>
 		<cd:variable name='morehyphenation' value='شکست‌کلمات‌بیشتر'/>
@@ -363,6 +365,7 @@
 		<cd:variable name='positive' value='مثبت'/>
 		<cd:variable name='postponing' value='تاخیر'/>
 		<cd:variable name='postscript' value='پست‌اسکریپت'/>
+		<cd:variable name='precedingpage' value='followingpage'/>
 		<cd:variable name='preference' value='ترجیح'/>
 		<cd:variable name='preview' value='پیش‌دید'/>
 		<cd:variable name='previous' value='قبلی'/>
@@ -422,7 +425,7 @@
 		<cd:variable name='september' value='سپتامبر'/>
 		<cd:variable name='serif' value='سریف'/>
 		<cd:variable name='serried' value='تنگ‌هم'/>
-		<cd:variable name='setups' value='بارگذاریها'/>
+		<cd:variable name='setups' value='setups'/>
 		<cd:variable name='sheet' value='ورقه'/>
 		<cd:variable name='short' value='short'/>
 		<cd:variable name='simplefonts' value='simplefonts'/>
@@ -657,7 +660,7 @@
 		<cd:constant name='coupling' value='تزویج'/>
 		<cd:constant name='couplingway' value='روش‌تزویج'/>
 		<cd:constant name='criterium' value='criterium'/>
-		<cd:constant name='css' value='css'/>
+		<cd:constant name='cssfile' value='cssfile'/>
 		<cd:constant name='current' value='جاری'/>
 		<cd:constant name='cutspace' value='فضای‌برش'/>
 		<cd:constant name='dash' value='دش'/>
@@ -692,7 +695,7 @@
 		<cd:constant name='equalwidth' value='عرض‌یکسان'/>
 		<cd:constant name='escape' value='فرار'/>
 		<cd:constant name='evenmargin' value='حاشیه‌زوج'/>
-		<cd:constant name='exitoffset' value='labeloffset'/>
+		<cd:constant name='exitoffset' value='exitoffset'/>
 		<cd:constant name='expansion' value='گسترش'/>
 		<cd:constant name='export' value='export'/>
 		<cd:constant name='extras' value='extras'/>
@@ -707,6 +710,7 @@
 		<cd:constant name='file' value='پرونده'/>
 		<cd:constant name='filtercommand' value='filtercommand'/>
 		<cd:constant name='finalnamesep' value='finalnamesep'/>
+		<cd:constant name='finalpubsep' value='finalpubsep'/>
 		<cd:constant name='firstnamesep' value='firstnamesep'/>
 		<cd:constant name='firstpage' value='صفحه‌اول'/>
 		<cd:constant name='focus' value='تمرکز'/>
@@ -758,6 +762,7 @@
 		<cd:constant name='indenting' value='تورفتگی'/>
 		<cd:constant name='indentnext' value='متن‌تورفته'/>
 		<cd:constant name='indicator' value='اندیکاتور'/>
+		<cd:constant name='initialsep' value='initialsep'/>
 		<cd:constant name='inner' value='داخلی'/>
 		<cd:constant name='innermargin' value='حاشیه‌داخلی'/>
 		<cd:constant name='inputfile' value='پرونده‌ورودی'/>
@@ -863,6 +868,7 @@
 		<cd:constant name='nright' value='nright'/>
 		<cd:constant name='ntop' value='ntop'/>
 		<cd:constant name='number' value='شماره'/>
+		<cd:constant name='numberalign' value='numberalign'/>
 		<cd:constant name='numbercolor' value='رنگ‌شماره'/>
 		<cd:constant name='numbercommand' value='فرمان‌شماره'/>
 		<cd:constant name='numberconversion' value='numberconversion'/>
@@ -1007,7 +1013,7 @@
 		<cd:constant name='separatorcolor' value='separatorcolor'/>
 		<cd:constant name='separatorstyle' value='separatorstyle'/>
 		<cd:constant name='set' value='قراربده'/>
-		<cd:constant name='setups' value='بارگذاریها'/>
+		<cd:constant name='setups' value='setups'/>
 		<cd:constant name='shrink' value='shrink'/>
 		<cd:constant name='side' value='کنار'/>
 		<cd:constant name='sidealign' value='تنظیم‌کنار'/>
@@ -1051,6 +1057,8 @@
 		<cd:constant name='suffix' value='پسوند'/>
 		<cd:constant name='suffixseparator' value='suffixseparator'/>
 		<cd:constant name='suffixstopper' value='suffixstopper'/>
+		<cd:constant name='surnamefirstnamesep' value='surnamefirstnamesep'/>
+		<cd:constant name='surnameinitialsep' value='surnameinitialsep'/>
 		<cd:constant name='surnamesep' value='surnamesep'/>
 		<cd:constant name='sx' value='sx'/>
 		<cd:constant name='sy' value='sy'/>
@@ -1290,6 +1298,7 @@
 		<cd:command name='definetabletemplate' value='تعریف‌الگوی‌جدول'/>
 		<cd:command name='definetabulate' value='تعریف‌جدول‌بندی'/>
 		<cd:command name='definetext' value='تعریف‌متن'/>
+		<cd:command name='definetextbackground' value='definetextbackground'/>
 		<cd:command name='definetextposition' value='تعریف‌مکان‌متن'/>
 		<cd:command name='definetextvariable' value='تعریف‌متغیرمتن'/>
 		<cd:command name='definetype' value='تعریف‌تایپ'/>
@@ -1450,7 +1459,6 @@
 		<cd:command name='paperheight' value='ارتفاع‌برگ'/>
 		<cd:command name='paperwidth' value='عرض‌برگ'/>
 		<cd:command name='periods' value='نقطه‌ها'/>
-		<cd:command name='plaatsruwelijst' value='درج‌لیست‌خام'/>
 		<cd:command name='placebookmarks' value='درج‌چوب‌خط'/>
 		<cd:command name='placecombinedlist' value='درج‌لیست‌مختلط'/>
 		<cd:command name='placefloat' value='درج‌شناور'/>
@@ -1460,11 +1468,13 @@
 		<cd:command name='placeheadtext' value='درج‌متن‌سر'/>
 		<cd:command name='placelegend' value='درج‌راهنما'/>
 		<cd:command name='placelist' value='درج‌لیست'/>
+		<cd:command name='placelistofsynonyms' value='placelistofsynonyms'/>
 		<cd:command name='placelocalfootnotes' value='درج‌پانوشتهای‌موضعی'/>
 		<cd:command name='placelogos' value='درج‌آرمها'/>
 		<cd:command name='placeongrid' value='درج‌در‌توری'/>
 		<cd:command name='placeontopofeachother' value='درج‌در‌بالای‌یکدیگر'/>
 		<cd:command name='placepagenumber' value='درج‌شماره‌صفحه'/>
+		<cd:command name='placerawlist' value='درج‌لیست‌خام'/>
 		<cd:command name='placereferencelist' value='درج‌لیست‌مرجع'/>
 		<cd:command name='placeregister' value='درج‌ثبت'/>
 		<cd:command name='placerule' value='درج‌خط'/>
@@ -1611,7 +1621,6 @@
 		<cd:command name='setupregister' value='بارگذاری‌ثبت'/>
 		<cd:command name='setuprotate' value='بارگذاری‌دوران'/>
 		<cd:command name='setuprule' value='بارگذاری‌خط'/>
-		<cd:command name='setups' value='بارگذاریها'/>
 		<cd:command name='setupscreens' value='بارگذاری‌پرده‌ها'/>
 		<cd:command name='setupsection' value='بارگذاری‌بخش'/>
 		<cd:command name='setupsectionblock' value='بارگذاری‌بلوک‌بخش'/>
@@ -1629,6 +1638,7 @@
 		<cd:command name='setuptables' value='بارگذاری‌جدولها'/>
 		<cd:command name='setuptabulate' value='بارگذاری‌جدول‌بندی'/>
 		<cd:command name='setuptext' value='بارگذاری‌متن'/>
+		<cd:command name='setuptextbackground' value='setuptextbackground'/>
 		<cd:command name='setuptextposition' value='بارگذاری‌مکان‌متن'/>
 		<cd:command name='setuptextrules' value='بارگذاری‌خطهای‌متن'/>
 		<cd:command name='setuptexttexts' value='بارگذاری‌متن‌متنها'/>
@@ -1675,6 +1685,7 @@
 		<cd:command name='startdocument' value='شروع‌نوشتار'/>
 		<cd:command name='startenvironment' value='شروع‌محیط'/>
 		<cd:command name='startfigure' value='شروع‌شکل'/>
+		<cd:command name='startframed' value='startframed'/>
 		<cd:command name='startglobal' value='شروع‌سراسری'/>
 		<cd:command name='startline' value='شروع‌خط'/>
 		<cd:command name='startlinecorrection' value='شروع‌تصحیح‌خط'/>
@@ -1701,6 +1712,7 @@
 		<cd:command name='starttable' value='شروع‌جدول'/>
 		<cd:command name='starttables' value='شروع‌جدولها'/>
 		<cd:command name='starttext' value='شروع‌متن'/>
+		<cd:command name='starttextbackground' value='starttextbackground'/>
 		<cd:command name='starttextrule' value='شروع‌خط‌متن'/>
 		<cd:command name='startunpacked' value='شروع‌غیر‌فشرده'/>
 		<cd:command name='startversion' value='شروع‌نسخه'/>
@@ -1715,6 +1727,7 @@
 		<cd:command name='stopcomponent' value='پایان‌مولفه'/>
 		<cd:command name='stopdocument' value='پایان‌نوشتار'/>
 		<cd:command name='stopenvironment' value='پایان‌محیط'/>
+		<cd:command name='stopframed' value='stopframed'/>
 		<cd:command name='stopglobal' value='پایان‌سراسری'/>
 		<cd:command name='stopline' value='پایان‌خط'/>
 		<cd:command name='stoplinecorrection' value='پایان‌تصحیح‌خط'/>
@@ -1740,6 +1753,7 @@
 		<cd:command name='stoptable' value='پایان‌جدول'/>
 		<cd:command name='stoptables' value='پایان‌جدولها'/>
 		<cd:command name='stoptext' value='پایان‌متن'/>
+		<cd:command name='stoptextbackground' value='stoptextbackground'/>
 		<cd:command name='stoptextrule' value='پایان‌خط‌متن'/>
 		<cd:command name='stopunpacked' value='پایان‌غیرفشرده'/>
 		<cd:command name='stopversion' value='پایان‌نسخه'/>

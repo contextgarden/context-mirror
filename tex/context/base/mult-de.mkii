@@ -180,6 +180,7 @@
 \setinterfacevariable{flushleft}{flushleft}
 \setinterfacevariable{flushouter}{flushouter}
 \setinterfacevariable{flushright}{flushright}
+\setinterfacevariable{followingpage}{followingpage}
 \setinterfacevariable{footer}{fusszeile}
 \setinterfacevariable{footnote}{fussnote}
 \setinterfacevariable{force}{zwinge}
@@ -301,6 +302,7 @@
 \setinterfacevariable{mirrored}{gespiegelt}
 \setinterfacevariable{monday}{montag}
 \setinterfacevariable{mono}{mono}
+\setinterfacevariable{monobold}{monofett}
 \setinterfacevariable{month}{monat}
 \setinterfacevariable{more}{more}
 \setinterfacevariable{morehyphenation}{morehyphenation}
@@ -360,6 +362,7 @@
 \setinterfacevariable{positive}{positiv}
 \setinterfacevariable{postponing}{verschieben}
 \setinterfacevariable{postscript}{postscript}
+\setinterfacevariable{precedingpage}{followingpage}
 \setinterfacevariable{preference}{einstellung}
 \setinterfacevariable{preview}{vorschau}
 \setinterfacevariable{previous}{vorig}
@@ -419,7 +422,7 @@
 \setinterfacevariable{september}{september}
 \setinterfacevariable{serif}{serif}
 \setinterfacevariable{serried}{kleinerabstand}
-\setinterfacevariable{setups}{impostazioni}
+\setinterfacevariable{setups}{setups}
 \setinterfacevariable{sheet}{sheet}
 \setinterfacevariable{short}{kurz}
 \setinterfacevariable{simplefonts}{simplefonts}
@@ -651,7 +654,7 @@
 \setinterfaceconstant{coupling}{verknuepfung}
 \setinterfaceconstant{couplingway}{verkopplungsart}
 \setinterfaceconstant{criterium}{kriterium}
-\setinterfaceconstant{css}{css}
+\setinterfaceconstant{cssfile}{cssfile}
 \setinterfaceconstant{current}{aktuell}
 \setinterfaceconstant{cutspace}{cutspace}
 \setinterfaceconstant{dash}{strich}
@@ -686,7 +689,7 @@
 \setinterfaceconstant{equalwidth}{equalwidth}
 \setinterfaceconstant{escape}{escape}
 \setinterfaceconstant{evenmargin}{geraderand}
-\setinterfaceconstant{exitoffset}{labeloffset}
+\setinterfaceconstant{exitoffset}{exitoffset}
 \setinterfaceconstant{expansion}{expansion}
 \setinterfaceconstant{export}{export}
 \setinterfaceconstant{extras}{extras}
@@ -701,6 +704,7 @@
 \setinterfaceconstant{file}{datei}
 \setinterfaceconstant{filtercommand}{filtercommand}
 \setinterfaceconstant{finalnamesep}{finalnamesep}
+\setinterfaceconstant{finalpubsep}{finalpubsep}
 \setinterfaceconstant{firstnamesep}{firstnamesep}
 \setinterfaceconstant{firstpage}{ersteseite}
 \setinterfaceconstant{focus}{focus}
@@ -752,6 +756,7 @@
 \setinterfaceconstant{indenting}{einziehen}
 \setinterfaceconstant{indentnext}{ziehefolgendeein}
 \setinterfaceconstant{indicator}{indikator}
+\setinterfaceconstant{initialsep}{initialsep}
 \setinterfaceconstant{inner}{innen}
 \setinterfaceconstant{innermargin}{innermargin}
 \setinterfaceconstant{inputfile}{inputfile}
@@ -857,6 +862,7 @@
 \setinterfaceconstant{nright}{nrechts}
 \setinterfaceconstant{ntop}{noben}
 \setinterfaceconstant{number}{nummer}
+\setinterfaceconstant{numberalign}{numberalign}
 \setinterfaceconstant{numbercolor}{nummernfarbe}
 \setinterfaceconstant{numbercommand}{nummerbefehl}
 \setinterfaceconstant{numberconversion}{numberconversion}
@@ -1045,6 +1051,8 @@
 \setinterfaceconstant{suffix}{suffix}
 \setinterfaceconstant{suffixseparator}{suffixseparator}
 \setinterfaceconstant{suffixstopper}{suffixstopper}
+\setinterfaceconstant{surnamefirstnamesep}{surnamefirstnamesep}
+\setinterfaceconstant{surnameinitialsep}{surnameinitialsep}
 \setinterfaceconstant{surnamesep}{surnamesep}
 \setinterfaceconstant{sx}{sx}
 \setinterfaceconstant{sy}{sy}
@@ -1278,6 +1286,7 @@
 \setinterfacecommand{definetabletemplate}{definieretabellenvorlage}
 \setinterfacecommand{definetabulate}{definieretabulator}
 \setinterfacecommand{definetext}{definieretext}
+\setinterfacecommand{definetextbackground}{definetextbackground}
 \setinterfacecommand{definetextposition}{definetextposition}
 \setinterfacecommand{definetextvariable}{definetextvariable}
 \setinterfacecommand{definetype}{definetype}
@@ -1438,7 +1447,6 @@
 \setinterfacecommand{paperheight}{papierhoehe}
 \setinterfacecommand{paperwidth}{papierbreite}
 \setinterfacecommand{periods}{punkt}
-\setinterfacecommand{plaatsruwelijst}{placerawlist}
 \setinterfacecommand{placebookmarks}{platzierebookmarks}
 \setinterfacecommand{placecombinedlist}{platzierezusammengestellteliste}
 \setinterfacecommand{placefloat}{placefloat}
@@ -1448,11 +1456,13 @@
 \setinterfacecommand{placeheadtext}{placeheadtext}
 \setinterfacecommand{placelegend}{platzierelegende}
 \setinterfacecommand{placelist}{platziereliste}
+\setinterfacecommand{placelistofsynonyms}{placelistofsynonyms}
 \setinterfacecommand{placelocalfootnotes}{platzierelokalefussnoten}
 \setinterfacecommand{placelogos}{platzierelogo}
 \setinterfacecommand{placeongrid}{amgitterausrichten}
 \setinterfacecommand{placeontopofeachother}{platziereuntereinander}
 \setinterfacecommand{placepagenumber}{placepagenumber}
+\setinterfacecommand{placerawlist}{placerawlist}
 \setinterfacecommand{placereferencelist}{placereferencelist}
 \setinterfacecommand{placeregister}{platziereregister}
 \setinterfacecommand{placerule}{placerule}
@@ -1599,7 +1609,6 @@
 \setinterfacecommand{setupregister}{stelleregisterein}
 \setinterfacecommand{setuprotate}{stelledrehenein}
 \setinterfacecommand{setuprule}{setuprule}
-\setinterfacecommand{setups}{einstellungen}
 \setinterfacecommand{setupscreens}{stellerasterein}
 \setinterfacecommand{setupsection}{stelleabschnittein}
 \setinterfacecommand{setupsectionblock}{stelleabschnittsblockein}
@@ -1617,6 +1626,7 @@
 \setinterfacecommand{setuptables}{stelletabellenein}
 \setinterfacecommand{setuptabulate}{stelletabulatorein}
 \setinterfacecommand{setuptext}{stelletextein}
+\setinterfacecommand{setuptextbackground}{setuptextbackground}
 \setinterfacecommand{setuptextposition}{setuptextposition}
 \setinterfacecommand{setuptextrules}{stelletextumrissein}
 \setinterfacecommand{setuptexttexts}{stelletexttexteein}
@@ -1663,6 +1673,7 @@
 \setinterfacecommand{startdocument}{startdokument}
 \setinterfacecommand{startenvironment}{startumgebung}
 \setinterfacecommand{startfigure}{startabbildung}
+\setinterfacecommand{startframed}{startframed}
 \setinterfacecommand{startglobal}{startglobal}
 \setinterfacecommand{startline}{startzeile}
 \setinterfacecommand{startlinecorrection}{startzeilenkorrektur}
@@ -1689,6 +1700,7 @@
 \setinterfacecommand{starttable}{starttabelle}
 \setinterfacecommand{starttables}{starttabellen}
 \setinterfacecommand{starttext}{starttext}
+\setinterfacecommand{starttextbackground}{starttextbackground}
 \setinterfacecommand{starttextrule}{starttextlinie}
 \setinterfacecommand{startunpacked}{startgrosserdurchschuss}
 \setinterfacecommand{startversion}{startversion}
@@ -1703,6 +1715,7 @@
 \setinterfacecommand{stopcomponent}{stopkomponente}
 \setinterfacecommand{stopdocument}{stopdokument}
 \setinterfacecommand{stopenvironment}{stopumgebung}
+\setinterfacecommand{stopframed}{stopframed}
 \setinterfacecommand{stopglobal}{stopglobal}
 \setinterfacecommand{stopline}{stopzeile}
 \setinterfacecommand{stoplinecorrection}{stopzeilenkorrektur}
@@ -1728,6 +1741,7 @@
 \setinterfacecommand{stoptable}{stoptabelle}
 \setinterfacecommand{stoptables}{stoptabellen}
 \setinterfacecommand{stoptext}{stoptext}
+\setinterfacecommand{stoptextbackground}{stoptextbackground}
 \setinterfacecommand{stoptextrule}{stoptextlinie}
 \setinterfacecommand{stopunpacked}{stopgrosserdurchschuss}
 \setinterfacecommand{stopversion}{stopversion}

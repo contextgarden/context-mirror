@@ -42,6 +42,7 @@ local scripts = allocate {
     ['cprt'] = 'cypriot syllabary',
     ['cyrl'] = 'cyrillic',
     ['deva'] = 'devanagari',
+    ['dev2'] = 'devanagari variant 2',
     ['dsrt'] = 'deseret',
     ['ethi'] = 'ethiopic',
     ['geor'] = 'georgian',
@@ -67,6 +68,7 @@ local scripts = allocate {
     ['linb'] = 'linear b',
     ['math'] = 'mathematical alphanumeric symbols',
     ['mlym'] = 'malayalam',
+    ['mlm2'] = 'malayalam variant 2',
     ['mong'] = 'mongolian',
     ['musc'] = 'musical symbols',
     ['mymr'] = 'myanmar',
@@ -631,6 +633,7 @@ local features = allocate {
     ['js..'] = 'justification ..',
 
     ["dv.."] = "devanagari ..",
+    ["ml.."] = "malayalam ..",
 }
 
 local baselines = allocate {
@@ -855,15 +858,18 @@ function otf.features.normalize(features)
                 if uv then
                  -- report_checks("feature value %a first seen at %a",value,key)
                 else
-                    if type(value) == "string" then
+                    uv = tonumber(value) -- before boolean as there we also handle 0/1
+                    if uv then
+                        -- we're okay
+                    elseif type(value) == "string" then
                         local b = is_boolean(value)
                         if type(b) == "nil" then
-                            uv = tonumber(value) or lower(value)
+                            uv = lower(value)
                         else
                             uv = b
                         end
                     else
-                        uv = v
+                        uv = value
                     end
                     if not rawget(features,k) then
                         k = rawget(verbosefeatures,k) or k

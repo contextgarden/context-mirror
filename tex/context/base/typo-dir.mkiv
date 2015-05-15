@@ -13,6 +13,9 @@
 
 \writestatus{loading}{ConTeXt Typesetting Macros / Directions}
 
+%D At some point we might default to method 'two' but first I need to make it more
+%D efficient (and provide some options). I also want to have some basic tracing.
+
 \unprotect
 
 \registerctxluafile{typo-dir}{1.001}
@@ -33,10 +36,14 @@
 \edef\righttoleftmark{\normalUchar"200F} \let\rlm\righttoleftmark
 
 \unexpanded\def\setdirection[#1]% todo: symbolic names
-   {\ctxcommand{setdirection(\number#1)}}
+  {\clf_setdirection#1\relax}
+
+% \unexpanded\def\resetdirection
+%   {\clf_setdirection\zerocount}
+%
+% is in fact:
 
 \unexpanded\def\resetdirection
- %{\ctxcommand{setdirection(0)}}
   {\attribute\directionsattribute\attributeunsetvalue}
 
 \newconstant\directionsbidimode % this one might become pivate
@@ -46,12 +53,14 @@
 % \setupdirections[bidi=global,method=two]
 % \setupdirections[bidi=global,method=two,fences=no]
 
+% maybee use chardefs
+
 \def\typo_dir_get_mode
-  {\def\currentbidimode{\ctxcommand{getbidimode {
-        scope  = "\directionsparameter\c!bidi  ",
-        method = "\directionsparameter\c!method",
-        fences = "\directionsparameter\c!fences",
-   }}}%
+  {\def\currentbidimode{\clf_getbidimode
+        scope  {\directionsparameter\c!bidi}%
+        method {\directionsparameter\c!method}%
+        fences {\directionsparameter\c!fences}%
+   }%
    \expandafter\glet\csname\??directionsbidimode\currentbidistamp\endcsname\currentbidimode}
 
 \appendtoks

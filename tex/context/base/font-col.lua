@@ -17,7 +17,12 @@ local type, next, toboolean = type, next, toboolean
 local gmatch = string.gmatch
 local fastcopy = table.fastcopy
 
-local traverse_id        = nodes.traverse_id
+local nuts               = nodes.nuts
+local tonut              = nuts.tonut
+local getfont            = nuts.getfont
+local getchar            = nuts.getchar
+local setfield           = nuts.setfield
+local traverse_id        = nuts.traverse_id
 
 local settings_to_hash   = utilities.parsers.settings_to_hash
 
@@ -35,10 +40,13 @@ local vectors            = collections.vectors or { }
 collections.vectors      = vectors
 
 local fontdata           = fonts.hashes.identifiers
+local chardata           = fonts.hashes.characters
 local glyph_code         = nodes.nodecodes.glyph
 local currentfont        = font.current
 
 local fontpatternhassize = fonts.helpers.fontpatternhassize
+
+local implement          = interfaces.implement
 
 local list               = { }
 local current            = 0
@@ -199,7 +207,7 @@ end
 --
 -- if lpegmatch(okay,name) then
 
-function collections.prepare(name) -- we can do this in lua now
+function collections.prepare(name) -- we can do this in lua now .. todo
     current = currentfont()
     if vectors[current] then
         return
@@ -244,23 +252,23 @@ end
 
 function collections.process(head) -- this way we keep feature processing
     local done = false
-    for n in traverse_id(glyph_code,head) do
-        local v = vectors[n.font]
+    for n in traverse_id(glyph_code,tonut(head)) do
+        local v = vectors[getfont(n)]
         if v then
-            local id = v[n.char]
+            local id = v[getchar(n)]
             if id then
                 if type(id) == "table" then
                     local newid, newchar = id[1], id[2]
                     if trace_collecting then
                         report_fonts("remapping character %C in font %a to character %C in font %a",getchar(n),getfont(n),newchar,newid)
                     end
-                    n.font = newid
-                    n.char = newchar
+                    setfield(n,"font",newid)
+                    setfield(n,"char",newchar)
                 else
                     if trace_collecting then
                         report_fonts("remapping font %a to %a for character %C",getfont(n),id,getchar(n))
                     end
-                    n.font = id
+                    setfield(n,"font",id)
                 end
             end
         end
@@ -268,11 +276,58 @@ function collections.process(head) -- this way we keep feature processing
     return head, done
 end
 
+function collections.found(font,char) -- this way we keep feature processing
+    if not char then
+        font, char = currentfont(), font
+    end
+    if chardata[font][char] then
+        return true -- in normal font
+    else
+        local v = vectors[font]
+        return v and v[char] and true or false
+    end
+end
+
 -- interface
 
-commands.fontcollectiondefine   = collections.define
-commands.fontcollectionreset    = collections.reset
-commands.fontcollectionprepare  = collections.prepare
-commands.fontcollectionreport   = collections.report
-commands.fontcollectionregister = collections.registermain
-commands.fontcollectionclone    = collections.clonevector
+implement {
+    name      = "fontcollectiondefine",
+    actions   = collections.define,
+    arguments = { "string", "string", "string", "string" }
+}
+
+implement {
+    name      = "fontcollectionreset",
+    actions   = collections.reset,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "fontcollectionprepare",
+    actions   = collections.prepare,
+    arguments = "string"
+}
+
+implement {
+    name      = "fontcollectionreport",
+    actions   = collections.report,
+    arguments = "string"
+}
+
+implement {
+    name      = "fontcollectionregister",
+    actions   = collections.registermain,
+    arguments = "string"
+}
+
+implement {
+    name      = "fontcollectionclone",
+    actions   = collections.clonevector,
+    arguments = "string"
+}
+
+implement {
+    name      = "doifelsecharinfont",
+    actions   = { collections.found, commands.doifelse },
+    arguments = { "integer" }
+}

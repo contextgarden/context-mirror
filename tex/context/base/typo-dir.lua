@@ -33,85 +33,43 @@ local formatters = string.formatters
 
 local nodes, node = nodes, node
 
-local trace_textdirections = false  trackers.register("typesetters.directions.text", function(v) trace_textdirections = v end)
-local trace_mathdirections = false  trackers.register("typesetters.directions.math", function(v) trace_mathdirections = v end)
-local trace_directions     = false  trackers.register("typesetters.directions",      function(v) trace_textdirections = v trace_mathdirections = v end)
+local trace_textdirections  = false  trackers.register("typesetters.directions.text", function(v) trace_textdirections = v end)
+local trace_mathdirections  = false  trackers.register("typesetters.directions.math", function(v) trace_mathdirections = v end)
+local trace_directions      = false  trackers.register("typesetters.directions",      function(v) trace_textdirections = v trace_mathdirections = v end)
 
 local report_textdirections = logs.reporter("typesetting","text directions")
 local report_mathdirections = logs.reporter("typesetting","math directions")
 
+local hasbit                = number.hasbit
 
+local texsetattribute       = tex.setattribute
+local unsetvalue            = attributes.unsetvalue
 
+local tasks                 = nodes.tasks
+local tracers               = nodes.tracers
+local setcolor              = tracers.colors.set
+local resetcolor            = tracers.colors.reset
 
-local traverse_id        = node.traverse_id
-local insert_node_before = node.insert_before
-local insert_node_after  = node.insert_after
-local remove_node        = nodes.remove
-local end_of_math        = nodes.end_of_math
+local implement             = interfaces.implement
 
-local texsetattribute    = tex.setattribute
-local texsetcount        = tex.setcount
-local unsetvalue         = attributes.unsetvalue
+local directions            = typesetters.directions or { }
+typesetters.directions      = directions
 
-local hasbit             = number.hasbit
+local a_directions          = attributes.private('directions')
 
-local nodecodes          = nodes.nodecodes
-local whatcodes          = nodes.whatcodes
-local mathcodes          = nodes.mathcodes
+local variables             = interfaces.variables
+local v_global              = variables["global"]
+local v_local               = variables["local"]
+local v_on                  = variables.on
+local v_yes                 = variables.yes
 
-local tasks              = nodes.tasks
-local tracers            = nodes.tracers
-local setcolor           = tracers.colors.set
-local resetcolor         = tracers.colors.reset
+local m_enabled             = 2^6 -- 64
+local m_global              = 2^7
+local m_fences              = 2^8
 
-local glyph_code         = nodecodes.glyph
-local whatsit_code       = nodecodes.whatsit
-local math_code          = nodecodes.math
-local penalty_code       = nodecodes.penalty
-local kern_code          = nodecodes.kern
-local glue_code          = nodecodes.glue
-local hlist_code         = nodecodes.hlist
-local vlist_code         = nodecodes.vlist
-
-local localpar_code      = whatcodes.localpar
-local dir_code           = whatcodes.dir
-
-local nodepool           = nodes.pool
-
-local new_textdir        = nodepool.textdir
-
-local fonthashes         = fonts.hashes
-local fontdata           = fonthashes.identifiers
-local fontchar           = fonthashes.characters
-
-local chardirections     = characters.directions
-local charmirrors        = characters.mirrors
-local charclasses        = characters.textclasses
-
-local directions         = typesetters.directions or { }
-typesetters.directions   = directions
-
-local a_state            = attributes.private('state')
-local a_directions       = attributes.private('directions')
-local a_mathbidi         = attributes.private('mathbidi')
-
-local strip              = false
-
-local s_isol             = fonts.analyzers.states.isol
-
-local variables          = interfaces.variables
-local v_global           = variables["global"]
-local v_local            = variables["local"]
-local v_on               = variables.on
-local v_yes              = variables.yes
-
-local m_enabled          = 2^6 -- 64
-local m_global           = 2^7
-local m_fences           = 2^8
-
-local handlers           = { }
-local methods            = { }
-local lastmethod         = 0
+local handlers              = { }
+local methods               = { }
+local lastmethod            = 0
 
 local function installhandler(name,handler)
     local method = methods[name]
@@ -181,9 +139,17 @@ function directions.setcolor(current,direction,reversed,mirror)
     end
 end
 
-function commands.getbidimode(specification)
-    context(tomode(specification)) -- hash at tex end
-end
+implement {
+    name      = "getbidimode",
+    actions   = { tomode, context },
+    arguments = {
+        {
+            { "scope" },
+            { "method" },
+            { "fences" },
+        }
+    }
+}
 
 local enabled = false
 
@@ -234,4 +200,8 @@ function directions.set(n) -- todo: names and numbers
     texsetattribute(a_directions,n)
 end
 
-commands.setdirection = directions.set
+implement {
+    name      = "setdirection",
+    arguments = "integer",
+    actions   = directions.set
+}

@@ -1,4 +1,4 @@
-.TH "mtx-fonts" "1" "01-01-2014" "version 0.21" "ConTeXt Font Database Management"
+.TH "mtx-fonts" "1" "01-01-2015" "version 0.21" "ConTeXt Font Database Management"
 .SH NAME
 .B mtx-fonts
 .SH SYNOPSIS
@@ -44,7 +44,7 @@ show all found instances (combined with other flags)
 .B --info
 give more details
 .TP
-.B --track=list
+.B --trackers=list
 enable trackers
 .TP
 .B --statistics

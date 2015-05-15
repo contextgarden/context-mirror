@@ -46,7 +46,7 @@
 \unexpanded\def\pack_placement#tag%
   {\bgroup
    \edef\currentplacement{#tag}%
-   \doifnextoptionalelse\pack_placement_yes\pack_placement_nop}
+   \doifelsenextoptionalcs\pack_placement_yes\pack_placement_nop}
 
 \def\pack_placement_yes[#settings]%
   {\setupcurrentplacement[#settings]%
@@ -67,6 +67,7 @@
   %\ifinsidefloat \else
   %  \page_backgrounds_add_local_to_box\nextbox
   %\fi
+\flushnotes % new per 2014-05-29 : todo: move them up in the mvl
    \ifgridsnapping
      \pack_placement_flush_grid_yes
    \else

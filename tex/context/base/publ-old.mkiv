@@ -1,0 +1,22 @@
+%D \module
+%D   [       file=publ-old,
+%D        version=2013.12.24,
+%D          title=\CONTEXT\ Publication Support,
+%D       subtitle=Old Fashioned \BIBTEX,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+% we could use runtime commands instead
+
+\unexpanded\def\setupbibtex         {\usemodule[oldbibtex]\setupbibtex}
+\unexpanded\def\setuppublications   {\usemodule[oldbibtex]\setuppublications}
+\unexpanded\def\setuppublicationlist{\usemodule[oldbibtex]\setuppublicationlist}
+
+\protect

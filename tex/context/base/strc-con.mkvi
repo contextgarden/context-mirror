@@ -159,6 +159,7 @@
 
 \unexpanded\def\strc_constructions_initialize#1% class instance
   {\edef\currentconstruction{#1}%
+   \let\currentconstructionhash\??construction
    \let\currentconstructionlistentry\!!zerocount
    \expandafter\let\expandafter\currentconstructionmain   \csname\??constructionmain \currentconstruction\endcsname
    \expandafter\let\expandafter\currentconstructionlevel  \csname\??constructionlevel\currentconstruction\endcsname
@@ -214,7 +215,7 @@
    \constructionparameter\c!headcommand
      {\strut
       \constructionparameter\c!text
-      \ctxcommand{savedlisttitle("\currentconstructionmain",\currentconstructionlistentry)}}%
+      \clf_savedlisttitle{\currentconstructionmain}\currentconstructionlistentry\relax}%
    \endgroup}
 
 \unexpanded\def\strc_constructions_stored_start
@@ -262,10 +263,14 @@
 
 \def\strc_constructions_ignore_head
   {\constructionsheaddistance\zeropoint
-   \constructionsheadwidth   \zeropoint}
+   \constructionsheadwidth   \zeropoint
+   % we also need to make sure that no stretch creeps in (new per 2015-02-02, for Alan)
+   \settrue\c_strc_constructions_distance_none}
+
+\let\currentconstructionhash\??construction
 
 \unexpanded\setvalue{\??constructionstarthandler\v!construction}% this will be redone (reorganized) .. too much boxing
-  {\dostarttagged\t!construction\currentconstruction
+  {\dostarttaggedchained\t!construction\currentconstruction\currentconstructionhash
    \dotagsetconstruction
    \constructionparameter\c!before
    \begingroup
@@ -322,7 +327,7 @@
      \else
        \strc_constructions_preroll_head\currentconstructionsample
        \ifzeropt\wd\constructionheadbox
-     \strc_constructions_ignore_head
+         \strc_constructions_ignore_head
        \else
          \strc_constructions_set_width_and_distance
        \fi
@@ -352,10 +357,6 @@
    \ifx\p_strc_constructions_align\empty \else
      \setupalign[\p_strc_constructions_align]% \use...
    \fi
-   \edef\p_strc_constructions_indenting{\constructionparameter\c!indenting}%
-   \ifx\p_strc_constructions_indenting\empty \else
-     \indenting[\p_strc_constructions_indenting]% \use...
-   \fi
    \ifcase\c_strc_constructions_nested_state
      \c_strc_constructions_nested_state\plusone
    \or
@@ -366,6 +367,11 @@
    \edef\p_strc_constructions_headalign{\constructionparameter\c!headalign}%
    %
    \directsetup\p_strc_constructions_renderingsetup\relax
+   % moved to here 2014-07-03
+   \edef\p_strc_constructions_indenting{\constructionparameter\c!indenting}%
+   \ifx\p_strc_constructions_indenting\empty \else
+     \indenting[\p_strc_constructions_indenting]% \use...
+   \fi
    %
    \dostoptagged % tag
    \dostarttagged\t!constructioncontent\empty
@@ -502,7 +508,7 @@
         \setupalign[\p_strc_constructions_headalign]% use fast one
       \fi
       \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox}%
-\setbox\constructionheadbox\hbox{\box\constructionheadbox}% needed in case of e.g. a real big head font, see descriptions-006.tex
+   \setbox\constructionheadbox\hbox{\box\constructionheadbox}% needed in case of e.g. a real big head font, see descriptions-006.tex
    \ht\constructionheadbox\strutht
    \dp\constructionheadbox\strutdp}
 
@@ -526,9 +532,14 @@
 % The setups. These only deal with placement of the descriptor and initializing the
 % environment. The wrapping happens elsewhere.
 
+% todo: optimize the setups with
+%
+% \ifconditional\c_strc_constructions_distance_none : no need for skip
+% \ifzeropt\wd\constructionheadbox : no need for box and skips
+
 \startsetups[\??constructionrenderings:\v!left]
     \edef\p_strc_constructions_hang{\constructionparameter\c!hang}%
-    \doifsetupselse{\??constructionrenderings:\v!left:\p_strc_constructions_hang} {
+    \doifelsesetups{\??constructionrenderings:\v!left:\p_strc_constructions_hang} {
         \directsetup{\??constructionrenderings:\v!left:\p_strc_constructions_hang}
     } {
         \directsetup{\??constructionrenderings:\v!left:\v!hanging}
@@ -537,7 +548,7 @@
 
 \startsetups[\??constructionrenderings:\v!right]
     \edef\p_strc_constructions_hang{\constructionparameter\c!hang}
-    \doifsetupselse{\??constructionrenderings:\v!right:\p_strc_constructions_hang} {
+    \doifelsesetups{\??constructionrenderings:\v!right:\p_strc_constructions_hang} {
         \directsetup{\??constructionrenderings:\v!right:\p_strc_constructions_hang}
     } {
         \directsetup{\??constructionrenderings:\v!right:\v!hanging}
@@ -556,6 +567,7 @@
             \copy\constructionheadbox\hss
         }
     }
+    \nobreak
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups
@@ -580,6 +592,7 @@
         \copy\constructionheadbox
         \hskip\rightconstructionskip
     }
+    \nobreak
     \advance\rightskip \constructionsheaddistance
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
@@ -634,6 +647,7 @@
             \box\constructionheadbox
         }
     }
+    \nobreak
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups
@@ -653,6 +667,7 @@
             }
         }
     }
+    \nobreak
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups
@@ -730,7 +745,7 @@
 
 \startsetups[\??constructionrenderings:\v!serried]
     \edef\p_strc_constructions_width{\constructionparameter\c!width}% CHECK ! ! ! wrong parameter namespace
-    \doifsetupselse{\??constructionrenderings:\v!serried:\p_strc_constructions_width} {
+    \doifelsesetups{\??constructionrenderings:\v!serried:\p_strc_constructions_width} {
         \directsetup{\??constructionrenderings:\v!serried:\p_strc_constructions_width}
     } {
         \directsetup{\??constructionrenderings:\v!serried:\v!wide}
@@ -741,7 +756,7 @@
     \let\\=\crlf
     \noindent
     \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox % why copy? leftover?
-    \penalty\plustenthousand % new
+    \nobreak
     \hskip\constructionsheaddistance\relax
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
@@ -752,8 +767,8 @@
     \noindent
     \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox % why copy? leftover?
     \ifconditional\c_strc_constructions_distance_none \else
-      \penalty\plustenthousand % new
-      \hskip\constructionsheaddistance \!!plus .5\constructionsheaddistance \!!minus .25\constructionsheaddistance\relax
+        \nobreak
+        \hskip\constructionsheaddistance \!!plus .5\constructionsheaddistance \!!minus .25\constructionsheaddistance\relax
     \fi
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
@@ -770,6 +785,7 @@
         \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox
         \hss
     }
+    \nobreak
     \hskip\constructionsheaddistance\relax
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
@@ -845,7 +861,7 @@
 \let\currentconstructionlistentry\!!zerocount
 
 \def\strc_constructions_register
-  {\ctxcommand{doiflisthasentry(\currentconstructionlistentry)}%
+  {\clf_doifelselisthasentry\numexpr\currentconstructionlistentry\relax
      \strc_constructions_register_nop
      \strc_constructions_register_yes}
 
@@ -858,7 +874,7 @@
 \def\strc_constructions_discard
   {\iftrialtypesetting
    % \writestatus{constructions}{discarding \currentconstruction: \number\currentconstructionlistentry}%
-     \ctxcommand{discardfromlist(\currentconstructionlistentry)}%
+     \clf_discardfromlist\currentconstructionlistentry\relax
    \fi}
 
 \let\currentconstructionlistnumber \!!zerocount
@@ -928,62 +944,67 @@
    \else
      \setnextinternalreferences{construction}\currentconstructionmain % plural
      \relax
-     \scratchcounter\ctxcommand{addtolist{ % we can set a counter at the lua end
-        metadata = {
-            kind     = "construction",
-            name     = "\currentconstructionmain",
-            level    = structures.sections.currentlevel(),
-            catcodes = \the\catcodetable,
-        %   \currentdirectionparameters
-        },
-        references = {
-            internal        = \nextinternalreference,
-            order           = \nextinternalorderreference,
-            reference       = "\currentconstructionreference",
-            referenceprefix = "\referenceprefix",
-            block           = "\currentsectionblock",
-            section         = structures.sections.currentid(),
-        },
-        titledata = {
-            label    = \!!bs\detokenize\expandafter{\currentconstructionlabel   }\!!es,
-            title    = \!!bs\detokenize\expandafter{\currentconstructiontitle   }\!!es,
+     \scratchcounter\clf_addtolist
+        metadata {
+            kind     {construction}
+            name     {\currentconstructionmain}
+          % level    structures.sections.currentlevel()
+            catcodes \catcodetable
+         %  \currentdirectionparameters
+        }
+        references {
+            internal  \nextinternalreference
+            order     \nextinternalorderreference
+            reference {\currentconstructionreference}
+            prefix    {\referenceprefix}
+          % block     {\currentsectionblock}
+          % section   structures.sections.currentid(),
+        }
+        titledata  {
+            label    {\detokenize\expandafter{\currentconstructionlabel}}
+            title    {\detokenize\expandafter{\currentconstructiontitle}}
         \ifx\currentconstructionbookmark\currentconstructiontitle \else
-            bookmark = \!!bs\detokenize\expandafter{\currentconstructionbookmark}\!!es,
+            bookmark {\detokenize\expandafter{\currentconstructionbookmark}}
         \fi
         \ifx\currentconstructionlist\currentconstructiontitle \else
-            list     = \!!bs\detokenize\expandafter{\currentconstructionlist    }\!!es,
+            list     {\detokenize\expandafter{\currentconstructionlist}}
         \fi
-        },
+        }
     \ifconditional\c_strc_constructions_number_state
-        prefixdata = {
-            prefix        = "\constructionparameter\c!prefix",
-            separatorset  = "\constructionparameter\c!prefixseparatorset",
-            conversion    = \!!bs\constructionparameter\c!prefixconversion\!!es,
-            conversionset = "\constructionparameter\c!prefixconversionset",
-            set           = "\constructionparameter\c!prefixset",
-            segments      = "\constructionparameter\c!prefixsegments",
-            connector     = \!!bs\constructionparameter\c!prefixconnector\!!es,
-        },
-        numberdata = {
-            numbers       = structures.counters.compact("\currentconstructionnumber",nil,true), % ! number can be cloned
-            separatorset  = "\constructionparameter\c!numberseparatorset",
-            conversion    = "\constructionparameter\c!numberconversion",
-            conversionset = "\constructionparameter\c!numberconversionset",
-            starter       = \!!bs\constructionparameter\c!numberstarter\!!es,
-            stopper       = \!!bs\constructionparameter\c!numberstopper\!!es,
-            segments      = "\constructionparameter\c!numbersegments",
-        },
+        prefixdata {
+            prefix        {\constructionparameter\c!prefix}
+            separatorset  {\constructionparameter\c!prefixseparatorset}
+            conversion    {\constructionparameter\c!prefixconversion}
+            conversionset {\constructionparameter\c!prefixconversionset}
+            set           {\constructionparameter\c!prefixset}
+            segments      {\constructionparameter\c!prefixsegments}
+            connector     {\constructionparameter\c!prefixconnector}
+        }
+        numberdata {
+            numbers       {\currentconstructionnumber}
+            separatorset  {\constructionparameter\c!numberseparatorset}
+            conversion    {\constructionparameter\c!numberconversion}
+            conversionset {\constructionparameter\c!numberconversionset}
+            starter       {\constructionparameter\c!numberstarter}
+            stopper       {\constructionparameter\c!numberstopper}
+            segments      {\constructionparameter\c!numbersegments}
+        }
     \or
        % symbol
     \fi
-        userdata = \!!bs\detokenize{#2}\!!es % will be converted to table at the lua end
-       }
-     }\relax
+        userdata {\detokenize{#2}}
+     \relax
    % \writestatus{constructions}{registering \currentconstruction: \number\scratchcounter}%
+     \clf_setinternalreference
+       prefix    {\referenceprefix}%
+       reference {\currentconstructionreference}%
+       internal  \nextinternalreference
+       view      {\interactionparameter\c!focus}%
+     \relax
      \normalexpanded{%
        \endgroup
        \edef\noexpand\currentconstructionlistentry  {\the\scratchcounter}%
-       \edef\noexpand\currentconstructionattribute  {\ctxcommand    {setinternalreference("\referenceprefix","\currentconstructionreference",\nextinternalreference,"\interactionparameter\c!focus")}}%
+       \edef\noexpand\currentconstructionattribute  {\the\lastdestinationattribute}%
        \edef\noexpand\currentconstructionsynchronize{\ctxlatecommand{enhancelist(\the\scratchcounter)}}%
      }%
    \fi}
@@ -993,7 +1014,7 @@
 % macros.
 
 \def\reinstateconstructionnumberentry#1% was xdef
-  {\edef\currentconstructionattribute  {\ctxcommand    {getinternalreference(#1)}}%
+  {\edef\currentconstructionattribute  {\clf_getinternallistreference#1}%
    \edef\currentconstructionsynchronize{\ctxlatecommand{enhancelist(#1)}}}
 
 \installstructurelistprocessor{construction}{\usestructurelistprocessor{number+title}}

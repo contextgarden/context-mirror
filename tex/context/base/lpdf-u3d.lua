@@ -17,7 +17,8 @@ if not modules then modules = { } end modules ['lpdf-u3d'] = {
 -- point we will end up with a reimplementation. For instance
 -- it makes sense to add the same activation code as with swf.
 
-local format, find = string.format, string.find
+local tonumber = tonumber
+local formatters, find = string.formatters, string.find
 local cos, sin, sqrt, pi, atan2, abs = math.cos, math.sin, math.sqrt, math.pi, math.atan2, math.abs
 
 local backends, lpdf = backends, lpdf
@@ -37,8 +38,6 @@ local pdfflushstreamfileobject = lpdf.flushstreamfileobject
 
 local checkedkey               = lpdf.checkedkey
 local limited                  = lpdf.limited
-
-local pdfannotation_node       = nodes.pool.pdfannotation
 
 local schemes = table.tohash {
     "Artwork", "None", "White", "Day", "Night", "Hard",
@@ -429,13 +428,13 @@ local function insert3d(spec) -- width, height, factor, display, controls, label
     local preview = checkedkey(param,"preview","string")
     if preview then
         activationdict.A = pdfconstant("XA")
-        local tag = format("%s:%s:%s",label,stream,preview)
+        local tag = formatters["%s:%s:%s"](label,stream,preview)
         local ref = stored_pr[tag]
         if not ref then
             local figure = img.immediatewrite {
                 filename = preview,
-                width = width,
-                height = height
+                width    = width,
+                height   = height
             }
             ref = figure.objnum
             stored_pr[tag] = ref
@@ -462,7 +461,7 @@ local function insert3d(spec) -- width, height, factor, display, controls, label
                             },
                 ProcSet    = pdfarray { pdfconstant("PDF"), pdfconstant("ImageC") },
             }
-            local pwd = pdfflushstreamobject(format("q /GS gs %f 0 0 %f 0 0 cm /IM Do Q",factor*width,factor*height),pw)
+            local pwd = pdfflushstreamobject(formatters["q /GS gs %F 0 0 %F 0 0 cm /IM Do Q"](factor*width,factor*height),pw)
             annot.AP = pdfdictionary {
                 N = pdfreference(pwd)
             }
@@ -484,5 +483,5 @@ function nodeinjections.insertu3d(spec)
         controls  = spec.controls,
         label     = spec.label,
     }
-    node.write(pdfannotation_node(spec.width,spec.height,0,annotation()))
+    node.write(nodeinjections.annotation(spec.width,spec.height,0,annotation()))
 end

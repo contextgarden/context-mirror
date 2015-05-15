@@ -16,7 +16,8 @@ local resolvers = resolvers
 local report_scripts = logs.reporter("resolvers","scripts")
 
 function resolvers.updatescript(oldname,newname) -- oldname -> own.name, not per se a suffix
-    local scriptpath = "scripts/context/lua"
+ -- local scriptpath = "scripts/context/lua"
+    local scriptpath = "context/lua"
     newname = file.addsuffix(newname,"lua")
     local oldscript = resolvers.cleanpath(oldname)
     if trace_locating then

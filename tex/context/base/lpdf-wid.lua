@@ -46,19 +46,17 @@ local pdfcolorspec             = lpdf.colorspec
 local pdfflushobject           = lpdf.flushobject
 local pdfflushstreamobject     = lpdf.flushstreamobject
 local pdfflushstreamfileobject = lpdf.flushstreamfileobject
-local pdfreserveannotation     = lpdf.reserveannotation
 local pdfreserveobject         = lpdf.reserveobject
 local pdfpagereference         = lpdf.pagereference
 local pdfshareobjectreference  = lpdf.shareobjectreference
+local pdfaction                = lpdf.action
+local pdfborder                = lpdf.border
 
-local nodepool                 = nodes.pool
-
-local pdfannotation_node       = nodepool.pdfannotation
+local pdftransparencyvalue     = lpdf.transparencyvalue
+local pdfcolorvalues           = lpdf.colorvalues
 
 local hpack_node               = node.hpack
 local write_node               = node.write -- test context(...) instead
-
-local pdf_border               = pdfarray { 0, 0, 0 } -- can be shared
 
 -- symbols
 
@@ -117,8 +115,8 @@ codeinjections.presetsymbollist = presetsymbollist
 -- }
 
 local attachment_symbols = {
-    Graph     = pdfconstant("GraphPushPin"),
-    Paperclip = pdfconstant("PaperclipTag"),
+    Graph     = pdfconstant("Graph"),
+    Paperclip = pdfconstant("Paperclip"),
     Pushpin   = pdfconstant("PushPin"),
 }
 
@@ -170,19 +168,36 @@ end
 local function analyzecolor(colorvalue,colormodel)
     local cvalue = colorvalue and tonumber(colorvalue)
     local cmodel = colormodel and tonumber(colormodel) or 3
-    return cvalue and pdfarray { lpdf.colorvalues(cmodel,cvalue) } or nil
+    return cvalue and pdfarray { pdfcolorvalues(cmodel,cvalue) } or nil
 end
 
 local function analyzetransparency(transparencyvalue)
     local tvalue = transparencyvalue and tonumber(transparencyvalue)
-    return tvalue and lpdf.transparencyvalue(tvalue) or nil
+    return tvalue and pdftransparencyvalue(tvalue) or nil
 end
 
 -- Attachments
+local nofattachments    = 0
+local attachments       = { }
+local filestreams       = { }
+local referenced        = { }
+local ignorereferenced  = true -- fuzzy pdf spec .. twice in attachment list, can become an option
+local tobesavedobjrefs  = utilities.storage.allocate()
+local collectedobjrefs  = utilities.storage.allocate()
 
-local nofattachments, attachments, filestreams, referenced = 0, { }, { }, { }
+local fileobjreferences = {
+    collected = collectedobjrefs,
+    tobesaved = tobesavedobjrefs,
+}
 
-local ignorereferenced = true -- fuzzy pdf spec .. twice in attachment list, can become an option
+job.fileobjreferences = fileobjreferences
+
+local function initializer()
+    collectedobjrefs = job.fileobjreferences.collected or { }
+    tobesavedobjrefs = job.fileobjreferences.tobesaved or { }
+end
+
+job.register('job.fileobjreferences.collected', tobesavedobjrefs, initializer)
 
 local function flushembeddedfiles()
     if next(filestreams) then
@@ -211,6 +226,7 @@ function codeinjections.embedfile(specification)
     local hash     = specification.hash or filename
     local keepdir  = specification.keepdir -- can change
     local usedname = specification.usedname
+    local filetype = specification.filetype
     if filename == "" then
         filename = nil
     end
@@ -248,11 +264,20 @@ function codeinjections.embedfile(specification)
             end
         end
     end
-    usedname = usedname ~= "" and usedname or filename
+    -- needs to cleaned up:
+    usedname = usedname ~= "" and usedname or filename or name
     local basename = keepdir == true and usedname or file.basename(usedname)
-local basename = gsub(basename,"%./","")
-    local savename = file.addsuffix(name ~= "" and name or basename,"txt") -- else no valid file
-    local a = pdfdictionary { Type = pdfconstant("EmbeddedFile") }
+    local basename = gsub(basename,"%./","")
+    local savename = name ~= "" and name or basename
+    if not filetype or filetype == "" then
+        filetype = name and (filename and file.suffix(filename)) or "txt"
+    end
+    savename = file.addsuffix(savename,filetype) -- type is mandate for proper working in viewer
+    local mimetype = specification.mimetype
+    local a = pdfdictionary {
+        Type    = pdfconstant("EmbeddedFile"),
+        Subtype = mimetype and mimetype ~= "" and pdfconstant(mimetype) or nil,
+    }
     local f
     if data then
         f = pdfflushstreamobject(data,a)
@@ -267,6 +292,7 @@ local basename = gsub(basename,"%./","")
         UF   = pdfstring(savename),
         EF   = pdfdictionary { F = pdfreference(f) },
         Desc = title ~= "" and pdfunicode(title) or nil,
+     -- AFRelationship = pdfconstant("Source"), -- some day maybe, not mandate
     }
     local r = pdfreference(pdfflushobject(d))
     filestreams[hash] = r
@@ -320,6 +346,10 @@ function nodeinjections.attachfile(specification)
         aref = codeinjections.embedfile(specification)
         attachments[registered] = aref
     end
+    local reference = specification.reference
+    if reference and aref then
+        tobesavedobjrefs[reference] = aref[1]
+    end
     if not aref then
         report_attachment("skipping attachment, registered %a",registered)
         -- already reported
@@ -342,7 +372,7 @@ function nodeinjections.attachfile(specification)
             OC       = analyzelayer(specification.layer),
         }
         local width, height, depth = specification.width or 0, specification.height or 0, specification.depth
-        local box = hpack_node(pdfannotation_node(width,height,depth,d()))
+        local box = hpack_node(nodeinjections.annotation(width,height,depth,d()))
         box.width, box.height, box.depth = width, height, depth
         return box
     end
@@ -427,19 +457,19 @@ function nodeinjections.comment(specification) -- brrr: seems to be done twice
     local box
     if usepopupcomments then
         -- rather useless as we can hide/vide
-        local nd = pdfreserveannotation()
-        local nc = pdfreserveannotation()
+        local nd = pdfreserveobject()
+        local nc = pdfreserveobject()
         local c = pdfdictionary {
             Subtype = pdfconstant("Popup"),
             Parent  = pdfreference(nd),
         }
         d.Popup = pdfreference(nc)
         box = hpack_node(
-            pdfannotation_node(0,0,0,d(),nd),
-            pdfannotation_node(width,height,depth,c(),nc)
+            nodeinjections.annotation(0,0,0,d(),nd),
+            nodeinjections.annotation(width,height,depth,c(),nc)
         )
     else
-        box = hpack_node(pdfannotation_node(width,height,depth,d()))
+        box = hpack_node(nodeinjections.annotation(width,height,depth,d()))
     end
     box.width, box.height, box.depth = width, height, depth -- redundant
     return box
@@ -484,7 +514,7 @@ end
 local ms, mu, mf = { }, { }, { }
 
 local function delayed(label)
-    local a = pdfreserveannotation()
+    local a = pdfreserveobject()
     mu[label] = a
     return pdfreference(a)
 end
@@ -504,23 +534,25 @@ local function insertrenderingwindow(specification)
     local actions = nil
     if openpage or closepage then
         actions = pdfdictionary {
-            PO = (openpage  and lpdf.action(openpage )) or nil,
-            PC = (closepage and lpdf.action(closepage)) or nil,
+            PO = (openpage  and lpdfaction(openpage )) or nil,
+            PC = (closepage and lpdfaction(closepage)) or nil,
         }
     end
     local page = tonumber(specification.page) or texgetcount("realpageno") -- todo
-    local r = mu[label] or pdfreserveannotation() -- why the reserve here?
+    local r = mu[label] or pdfreserveobject() -- why the reserve here?
     local a = pdfdictionary {
         S  = pdfconstant("Rendition"),
         R  = mf[label],
         OP = 0,
         AN = pdfreference(r),
     }
+    local bs, bc = pdfborder()
     local d = pdfdictionary {
         Subtype = pdfconstant("Screen"),
         P       = pdfreference(pdfpagereference(page)),
         A       = a, -- needed in order to make the annotation clickable (i.e. don't bark)
-        Border  = pdf_border,
+        Border  = bs,
+        C       = bc,
         AA      = actions,
     }
     local width = specification.width or 0
@@ -528,7 +560,7 @@ local function insertrenderingwindow(specification)
     if height == 0 or width == 0 then
         -- todo: sound needs no window
     end
-    write_node(pdfannotation_node(width,height,0,d(),r)) -- save ref
+    write_node(nodeinjections.annotation(width,height,0,d(),r)) -- save ref
     return pdfreference(r)
 end
 
@@ -539,7 +571,7 @@ local function insertrendering(specification)
     local option = settings_to_hash(specification.option)
     if not mf[label] then
         local filename = specification.filename
-        local isurl = find(filename,"://")
+        local isurl = find(filename,"://",1,true)
      -- local start = pdfdictionary {
      --     Type = pdfconstant("MediaOffset"),
      --     S = pdfconstant("T"), -- time

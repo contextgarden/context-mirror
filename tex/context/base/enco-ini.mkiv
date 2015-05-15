@@ -55,6 +55,8 @@
 \unexpanded\def\enco_define_accent#1#2#3% no spaces, used low level
   {\setvalue{\??accents\string#1\string#2\empty}{#3}}
 
+% the following dirty trick is needed to catch \asciimath{\^{1/5}log}:
+
 \def\enco_handle_accent#1#2% expandable because we want them in the tuc file
   {\csname\??accents
      \ifcsname\??accents\string#1#2\empty\endcsname
@@ -62,16 +64,22 @@
      \else\ifcsname\??accents\string#1\string#2\empty\endcsname
        \string#1\string#2\empty
      \else
-       \empty
+       \endcsname#2\csname\??accents % very dirty trick: ignore accent but keep char
      \fi\fi
    \endcsname}
+
+\letvalue{\??accents}\empty
+
+\unexpanded\def\enco_define_command#1#2%
+  {\setuvalue{\string#1}{#2}}
 
 \let\dohandleaccent       \enco_handle_accent         % maybe useful
 \let\dodefineaccent       \enco_define_accent         % used at the lua end
 \let\dodefineaccentcommand\enco_define_accent_command % used at the lua end
+\let\dodefinecommand      \enco_define_command        % used at the lua end
 
 \unexpanded\def\definecharacter#1 #2 %
-  {\doifnumberelse{\string#2}
+  {\doifelsenumber{\string#2}
      {\setevalue{\string#1}{\utfchar{#2}}} % or {\expandafter\chardef\csname#1\endcsname#2\relax}
      {\setuvalue{\string#1}{#2}}}
 
@@ -87,17 +95,26 @@
 
 %D Accent handling (try to avoid this):
 
+% \buildtextaccent\greekdasia\greekalphamacron
+% \buildtextaccent\textacute q
+
 \newbox\b_enco_accent
 
 \def\buildmathaccent#1%
   {\mathaccent#1 }
 
+% \unexpanded\def\buildtextaccent#1#2% we could do all at the lua end
+%   {\begingroup                     % but that's no fun (yet)
+%    \setbox\b_enco_accent\hbox{#1}%
+%    \scratchcounter\cldcontext{nodes.firstcharinbox(\number\b_enco_accent)}\relax
+%    \ifcase\scratchcounter\else\accent\scratchcounter\fi
+%    \relax#2%
+%    \endgroup}
+
 \unexpanded\def\buildtextaccent#1#2% we could do all at the lua end
   {\begingroup                     % but that's no fun (yet)
    \setbox\b_enco_accent\hbox{#1}%
-   \scratchcounter\cldcontext{nodes.firstcharinbox(\number\b_enco_accent)}\relax
-   \ifcase\scratchcounter\else\accent\scratchcounter\fi
-   \relax#2%
+   \clf_buildtextaccent\b_enco_accent#2%
    \endgroup}
 
 \unexpanded\def\bottomaccent#1#2#3#4#5% down right slantcorrection accent char
@@ -199,11 +216,42 @@
 \def\pound     {£} \def\sterling{£}
 \def\promille  {‰} \def\permille{‰}
 
-% tex specific (obsolete)
+% tex specific
 
-\def\procent   {\percent}
-\def\dollar    {\textdollar}
-\def\permine   {\fakepermine}
+\ifdefined\textpercent
+    \let\percent   \textpercent
+    \let\procent   \textpercent
+    \let\ampersand \textampersand
+    \let\dollar    \textdollar
+    \let\hash      \texthash
+\else
+    \def\percent   {\textpercent}
+    \def\procent   {\textpercent}
+    \def\ampersand {\textampersand}
+    \def\dollar    {\textdollar}
+    \def\hash      {\texthash}
+\fi
+
+% from enco-mis:
+
+\unexpanded\def\fakepercent
+  {\mathematics{\normalsuperscript{\scriptscriptstyle0}\kern-.25\emwidth/\kern-.2\emwidth\normalsubscript{\scriptscriptstyle0}}}
+
+\unexpanded\def\fakeperthousand
+  {\mathematics{\normalsuperscript{\scriptscriptstyle0}\kern-.25\emwidth/\kern-.2\emwidth\normalsubscript{\scriptscriptstyle00}}}
+
+\unexpanded\def\fakepermine
+  {\dontleavehmode
+   \bgroup
+   \setbox\scratchbox\hbox
+     {\mathematics{+}}%
+   \hbox to \wd\scratchbox
+     {\hss
+      \mathematics{\normalsuperscript{\scriptscriptstyle-}\kern-.4\emwidth/\kern-.3\emwidth\normalsubscript{\scriptscriptstyle-}}%
+      \hss}%
+   \egroup}
+
+\def\permine{\fakepermine}
 
 % some more
 
@@ -241,9 +289,27 @@
 
 \chardef\textcontrolspace"2423
 
-\unexpanded\def\fallbackcontrolspace
- %{\getglyph{ComputerModernMono}\textcontrolspace}
-  {\getglyph{LMTypewriter-Regular}\textcontrolspace}
+\installcorenamespace{controlspace}
+
+% \unexpanded\def\fallbackcontrolspace % beware: non-matching widths
+%   {\hbox to \interwordspace{\hss\getglyph{LMTypewriter-Regular}\textcontrolspace\hss}%
+
+\unexpanded\def\fallbackcontrolspace % beware, current font, we also need to honor color
+  {\hbox to \interwordspace \bgroup
+     \hss
+     \ifcsname\??controlspace\number\interwordspace\endcsname
+       \csname\??controlspace\number\interwordspace\endcsname
+     \else
+       \enco_fast_control_space_define % only regular
+     \fi
+     \textcontrolspace
+     \hss
+   \egroup}
+
+\unexpanded\def\enco_fast_control_space_define
+  {\scratchdimen\interwordspace
+   \definedfont[LMTypewriter-Regular at \the\dimexpr\currentfontbodyscale\dimexpr\fontbody]% see font-sym.mkiv
+   \expandafter\glet\csname\??controlspace\number\scratchdimen\endcsname\lastrawfontcall}
 
 \unexpanded\def\normalcontrolspace
   {\iffontchar\font\textcontrolspace
@@ -254,29 +320,35 @@
 
 \let\textvisiblespace\normalcontrolspace
 
-\unexpanded\def\fastcontrolspace % no glyph resolving after first (use grouped)
-  {\enco_fast_control_space}
-
-\def\enco_fast_control_space
+\unexpanded\def\optionalcontrolspace
   {\iffontchar\font\textcontrolspace
-     \enco_fast_control_space_nop
+     \textcontrolspace
    \else
-     \enco_fast_control_space_yes
-   \fi
-   \enco_fast_control_space}
+     \asciispacechar % used for export !
+   \fi}
 
-\newbox\b_enco_control_space
-
-\def\enco_fast_control_space_nop
-  {\let\enco_fast_control_space\textcontrolspace}
-
-\def\enco_fast_control_space_yes
-  {\setbox\b_enco_control_space\hbox{\space}%
-   \setbox\b_enco_control_space\hbox to \wd\b_enco_control_space{\hss\fallbackcontrolspace\hss}%
-   \let\enco_fast_control_space\flushcontrolspacebox}
-
-\def\flushcontrolspacebox
-  {\copy\b_enco_control_space}
+% \unexpanded\def\fastcontrolspace % no glyph resolving after first (use grouped)
+%   {\enco_fast_control_space}
+%
+% \def\enco_fast_control_space
+%   {\iffontchar\font\textcontrolspace
+%      \enco_fast_control_space_nop
+%    \else
+%      \enco_fast_control_space_yes
+%    \fi
+%    \enco_fast_control_space}
+%
+% \newbox\b_enco_control_space
+%
+% \def\enco_fast_control_space_nop
+%   {\let\enco_fast_control_space\textcontrolspace}
+%
+% \def\enco_fast_control_space_yes
+%   {\setbox\b_enco_control_space\fallbackcontrolspace
+%    \let\enco_fast_control_space\flushcontrolspacebox}
+%
+% \def\flushcontrolspacebox
+%   {\copy\b_enco_control_space}
 
 % a few defaults (\<whatever>{}), we really need the verbose \empty as it will be
 % stringified .. anyhow, we define this at the lua end now but keep it here as a
@@ -296,26 +368,7 @@
 % \defineaccent u {\empty} {\textbreve}
 % \defineaccent v {\empty} {\textcaron}
 
-\ctxlua{characters.tex.defineaccents()}
-
-% from enco-mis:
-
-\unexpanded\def\fakepercent
-  {\mathematics{\normalsuperscript{\scriptscriptstyle0}\kern-.25\emwidth/\kern-.2\emwidth\normalsubscript{\scriptscriptstyle0}}}
-
-\unexpanded\def\fakeperthousand
-  {\mathematics{\normalsuperscript{\scriptscriptstyle0}\kern-.25\emwidth/\kern-.2\emwidth\normalsubscript{\scriptscriptstyle00}}}
-
-\unexpanded\def\fakepermine
-  {\dontleavehmode
-   \bgroup
-   \setbox\scratchbox\hbox
-     {\mathematics{+}}%
-   \hbox to \wd\scratchbox
-     {\hss
-      \mathematics{\normalsuperscript{\scriptscriptstyle-}\kern-.4\emwidth/\kern-.3\emwidth\normalsubscript{\scriptscriptstyle-}}%
-      \hss}%
-   \egroup}
+\clf_defineaccents % one time
 
 %D A smaller and bolder variant, more like the math and monospaced ones.
 
@@ -356,37 +409,105 @@
 \unexpanded\def\inch        {\mathematics{\prime\prime}} % was: \hbox{\rm\char125\relax}
 \unexpanded\def\fraction#1#2{\mathematics{#1\over#2}}
 
-\def\periodswidth  {.5em}
-\def\periodsdefault{3}    % was 5, but now it's like \unknown
-
-\unexpanded\def\periods
-  {\dosingleempty\enco_periods}
-
+% \def\periodswidth  {.5em}
+% \def\periodsdefault{3}    % was 5, but now it's like \unknown
+%
+% \unexpanded\def\periods
+%   {\dosingleempty\enco_periods}
+%
 % \def\doperiods[#1]% todo: also n=,width= or maybe just #1,#2
 %   {\dontleavehmode
 %    \begingroup
 %    \scratchdimen\periodswidth
 %    \hbox to \iffirstargument#1\else\periodsdefault\fi \scratchdimen
-%      {\leaders\hbox to \scratchdimen{\hss.\hss}\hss}%
+%      {\leaders\hbox to \scratchdimen{\hss\periodsymbol\hss}\hss}%
 %    \endgroup}
 %
 % better for export:
+%
+% \unexpanded\def\enco_periods[#1]% todo: also n=,width= or maybe just #1,#2
+%   {\dontleavehmode
+%    \hbox\bgroup
+%    \setbox\scratchbox\hbox to \periodswidth{\hss\periodsymbol\hss}%
+%    \dorecurse{\iffirstargument#1\else\periodsdefault\fi}{\copy\scratchbox}%
+%    \egroup}
+%
+% \unexpanded\def\unknown
+%   {\periods\relax} % relax prevents lookahead for []
+%
+% per request:
 
-\unexpanded\def\enco_periods[#1]% todo: also n=,width= or maybe just #1,#2
+%D \startbuffer
+%D \startlines
+%D     x\periods x
+%D     x\periods[10]x
+%D     x\periods[n=10,symbol={,}]x
+%D     x\periods[n=4,symbol={!!},width=1em]x
+%D     x\periods[n=4,symbol={!!},width=fit]x
+%D     x\periods[n=4,symbol={!!},width=fit,distance=1em]x
+%D     x\unknown x
+%D \stoplines
+%D \stopbuffer
+%D
+%D \typbuffer \getbuffer
+
+\def\periodswidth  {.5\emwidth}  % downward compatible
+\def\periodsdefault{3}           % downward compatible
+
+\installcorenamespace {periods}
+
+\installsetuponlycommandhandler \??periods {periods}
+
+\setupperiods
+  [\c!n=\periodsdefault,
+   \c!width=\periodswidth, % can also be \v!fit
+   \c!distance=.25\emwidth,
+   \c!symbol=.]
+
+\unexpanded\def\periods
   {\dontleavehmode
    \hbox\bgroup
-   \setbox\scratchbox\hbox to \periodswidth{\hss.\hss}%
-   \dorecurse{\iffirstargument#1\else\periodsdefault\fi}{\copy\scratchbox}%
+   \doifelsenextoptional\enco_periods_yes\enco_periods_nop}
+
+\unexpanded\def\enco_periods_yes[#1]%
+  {\doifelseassignment{#1}
+     {\setupcurrentperiods[#1]%
+      \scratchcounter\periodsparameter\c!n}
+     {\doifelsenothing{#1}
+        {\scratchcounter\periodsparameter\c!n}%
+        {\scratchcounter#1}}%
+   \enco_periods_finish}
+
+\unexpanded\def\enco_periods_nop
+  {\scratchcounter\periodsparameter\c!n
+   \enco_periods_finish}
+
+\unexpanded\def\enco_periods_finish
+  {\edef\p_width{\periodsparameter\c!width}%
+   \ifx\p_width\v!fit
+     \enco_periods_finish_fit
+   \else
+     \enco_periods_finish_width
+   \fi
    \egroup}
 
-\unexpanded\def\unknown
-  {\periods\relax} % relax prevents lookahead for []
+\unexpanded\def\enco_periods_finish_width
+  {\setbox\scratchbox\hbox to \p_width
+     {\hss\periodsparameter\c!symbol\hss}%
+   \dorecurse\scratchcounter{\copy\scratchbox}}
 
-% Example by Wolfgang Schuster on the context list:
-%
-% \unexpanded\def\fourdots{{\def\periodswidth{.3em}\periods[4]}}
-%
-% Hello\fourdots\ World\fourdots \par Hello\fourdots\ World.
+\unexpanded\def\enco_periods_finish_fit
+  {\edef\p_symbol{\periodsparameter\c!symbol}%
+   \scratchdistance\periodsparameter\c!distance
+   \hskip\scratchdistance
+   \dorecurse\scratchcounter{\p_symbol\hskip\scratchdistance}}
+
+\unexpanded\def\unknown
+  {\dontleavehmode
+   \hbox\bgroup
+   \enco_periods_nop}
+
+%D Left-overs:
 
 \appendtoks
     \let\buildtextaccent\secondoftwoarguments

@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['lpdf-xmp'] = {
     comment   = "with help from Peter Rolf",
 }
 
+local tostring = tostring
 local format, random, char, gsub, concat = string.format, math.random, string.char, string.gsub, table.concat
 local xmlfillin = xml.fillin
 
@@ -25,7 +26,7 @@ local pdfconstant          = lpdf.constant
 local pdfreference         = lpdf.reference
 local pdfflushstreamobject = lpdf.flushstreamobject
 
--- I wonder why this begin end is empty / w (no time now to look into it)
+-- I wonder why this begin end is empty / w (no time now to look into it) / begin can also be "?"
 
 local xpacket = [[
 <?xpacket begin="﻿" id="%s"?>
@@ -49,7 +50,7 @@ local mapping = {
     -- Dublin Core schema
     ["Author"]          = "rdf:Description/dc:creator/rdf:Seq/rdf:li",
     ["Format"]          = "rdf:Description/dc:format", -- optional, but nice to have
-    ["Subject"]         = "rdf:Description/dc:description",
+    ["Subject"]         = "rdf:Description/dc:description/rdf:Alt/rdf:li",
     ["Title"]           = "rdf:Description/dc:title/rdf:Alt/rdf:li",
     -- XMP Basic schema
     ["CreateDate"]      = "rdf:Description/xmp:CreateDate",
@@ -90,7 +91,12 @@ local function setxmpfile(name)
 end
 
 codeinjections.setxmpfile = setxmpfile
-commands.setxmpfile       = setxmpfile
+
+interfaces.implement {
+    name      = "setxmpfile",
+    arguments = "string",
+    actions   = setxmpfile
+}
 
 local function valid_xmp()
     if not xmp then
@@ -104,7 +110,7 @@ local function valid_xmp()
         if xmpfile ~= "" then
             report_xmp("using file %a",xmpfile)
         end
-        local xmpdata = (xmpfile ~= "" and io.loaddata(xmpfile)) or ""
+        local xmpdata = xmpfile ~= "" and io.loaddata(xmpfile) or ""
         xmp = xml.convert(xmpdata)
     end
     return xmp
@@ -119,16 +125,16 @@ end
 
 -- redefined
 
-local addtoinfo  = lpdf.addtoinfo
-local addxmpinfo = lpdf.addxmpinfo
+local pdfaddtoinfo  = lpdf.addtoinfo
+local pdfaddxmpinfo = lpdf.addxmpinfo
 
 function lpdf.addtoinfo(tag,pdfvalue,strvalue)
-    addtoinfo(tag,pdfvalue)
+    pdfaddtoinfo(tag,pdfvalue)
     local value = strvalue or gsub(tostring(pdfvalue),"^%((.*)%)$","%1") -- hack
     if trace_info then
         report_info("set %a to %a",tag,value)
     end
-    addxmpinfo(tag,value)
+    pdfaddxmpinfo(tag,value)
 end
 
 -- for the do-it-yourselvers
@@ -146,7 +152,8 @@ end
 local t = { } for i=1,24 do t[i] = random() end
 
 local function flushxmpinfo()
-    commands.freezerandomseed(os.clock()) -- hack
+    commands.pushrandomseed()
+    commands.setrandomseed(os.time())
 
     local t = { } for i=1,24 do t[i] = char(96 + random(26)) end
     local packetid = concat(t)
@@ -156,23 +163,22 @@ local function flushxmpinfo()
     local producer   = format("LuaTeX-%0.2f.%s",tex.luatexversion/100,tex.luatexrevision)
     local creator    = "LuaTeX + ConTeXt MkIV"
     local time       = lpdf.timestamp()
-    local fullbanner = tex.pdftexbanner
- -- local fullbanner = gsub(tex.pdftexbanner,"kpse.*","")
+    local fullbanner = status.banner
 
-    addxmpinfo("DocumentID",      documentid)
-    addxmpinfo("InstanceID",      instanceid)
-    addxmpinfo("Producer",        producer)
-    addxmpinfo("CreatorTool",     creator)
-    addxmpinfo("CreateDate",      time)
-    addxmpinfo("ModifyDate",      time)
-    addxmpinfo("MetadataDate",    time)
-    addxmpinfo("PTEX.Fullbanner", fullbanner)
+    pdfaddxmpinfo("DocumentID",      documentid)
+    pdfaddxmpinfo("InstanceID",      instanceid)
+    pdfaddxmpinfo("Producer",        producer)
+    pdfaddxmpinfo("CreatorTool",     creator)
+    pdfaddxmpinfo("CreateDate",      time)
+    pdfaddxmpinfo("ModifyDate",      time)
+    pdfaddxmpinfo("MetadataDate",    time)
+    pdfaddxmpinfo("PTEX.Fullbanner", fullbanner)
 
-    addtoinfo("Producer",         producer)
-    addtoinfo("Creator",          creator)
-    addtoinfo("CreationDate",     time)
-    addtoinfo("ModDate",          time)
---  addtoinfo("PTEX.Fullbanner",  fullbanner) -- no checking done on existence
+    pdfaddtoinfo("Producer",         producer)
+    pdfaddtoinfo("Creator",          creator)
+    pdfaddtoinfo("CreationDate",     time)
+    pdfaddtoinfo("ModDate",          time)
+ -- pdfaddtoinfo("PTEX.Fullbanner",  fullbanner) -- no checking done on existence
 
     local blob = xml.tostring(xml.first(xmp or valid_xmp(),"/x:xmpmeta"))
     local md = pdfdictionary {
@@ -196,7 +202,7 @@ local function flushxmpinfo()
     local r = pdfflushstreamobject(blob,md,false) -- uncompressed
     lpdf.addtocatalog("Metadata",pdfreference(r))
 
-    commands.defrostrandomseed() -- hack
+    commands.poprandomseed() -- hack
 end
 
 --  his will be enabled when we can inhibit compression for a stream at the lua end

@@ -20,22 +20,40 @@ local report_breakpoints = logs.reporter("typesetting","breakpoints")
 local nodes, node = nodes, node
 
 local settings_to_array  = utilities.parsers.settings_to_array
-local copy_node          = node.copy
-local copy_nodelist      = node.copy_list
-local free_node          = node.free
-local insert_node_before = node.insert_before
-local insert_node_after  = node.insert_after
-local remove_node        = nodes.remove -- ! nodes
 
-local tonodes            = nodes.tonodes
+local nuts               = nodes.nuts
+local tonut              = nuts.tonut
+local tonode             = nuts.tonode
+
+local getnext            = nuts.getnext
+local getprev            = nuts.getprev
+local getsubtype         = nuts.getsubtype
+local getchar            = nuts.getchar
+local getfont            = nuts.getfont
+local getid              = nuts.getid
+local getfield           = nuts.getfield
+local setfield           = nuts.setfield
+local getattr            = nuts.getattr
+local setattr            = nuts.setattr
+
+local copy_node          = nuts.copy
+local copy_nodelist      = nuts.copy_list
+local free_node          = nuts.free
+local insert_node_before = nuts.insert_before
+local insert_node_after  = nuts.insert_after
+local remove_node        = nuts.remove
+
+local tonodes            = nuts.tonodes
 
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
 
-local nodepool           = nodes.pool
+local nodepool           = nuts.pool
 local tasks              = nodes.tasks
 
 local v_reset            = interfaces.variables.reset
+
+local implement          = interfaces.implement
 
 local new_penalty        = nodepool.penalty
 local new_glue           = nodepool.glue
@@ -80,74 +98,86 @@ local function insert_break(head,start,before,after)
 end
 
 methods[1] = function(head,start)
-    if start.prev and start.next then
+    if getprev(start) and getnext(start) then
         insert_break(head,start,10000,0)
     end
     return head, start
 end
 
 methods[2] = function(head,start) -- ( => (-
-    if start.prev and start.next then
+    if getprev(start) and getnext(start) then
         local tmp
         head, start, tmp = remove_node(head,start)
         head, start = insert_node_before(head,start,new_disc())
-        start.attr = copy_nodelist(tmp.attr) -- todo: critical only
-        start.replace = tmp
-        local tmp, hyphen = copy_node(tmp), copy_node(tmp)
-        hyphen.char = languages.prehyphenchar(tmp.lang)
-        tmp.next, hyphen.prev = hyphen, tmp
-        start.post = tmp
+     -- setfield(start,"attr",copy_nodelist(getfield(tmp,"attr"))) -- just a copy will do
+        setfield(start,"attr",getfield(tmp,"attr"))
+        setfield(start,"replace",tmp)
+        local tmp = copy_node(tmp)
+        local hyphen = copy_node(tmp)
+        setfield(hyphen,"char",languages.prehyphenchar(getfield(tmp,"lang")))
+        setfield(tmp,"next",hyphen)
+        setfield(hyphen,"prev",tmp)
+        setfield(start,"post",tmp)
         insert_break(head,start,10000,10000)
     end
     return head, start
 end
 
 methods[3] = function(head,start) -- ) => -)
-    if start.prev and start.next then
+    if getprev(start) and getnext(start) then
         local tmp
         head, start, tmp = remove_node(head,start)
         head, start = insert_node_before(head,start,new_disc())
-        start.attr = copy_nodelist(tmp.attr) -- todo: critical only
-        start.replace = tmp
-        local tmp, hyphen = copy_node(tmp), copy_node(tmp)
-        hyphen.char = languages.prehyphenchar(tmp.lang)
-        tmp.prev, hyphen.next = hyphen, tmp
-        start.pre = hyphen
+     -- setfield(start,"attr",copy_nodelist(getfield(tmp,"attr"))) -- just a copy will do
+        setfield(start,"attr",getfield(tmp,"attr"))
+        setfield(start,"replace",tmp)
+        local tmp = copy_node(tmp)
+        local hyphen = copy_node(tmp)
+        setfield(hyphen,"char",languages.prehyphenchar(getfield(tmp,"lang")))
+        setfield(tmp,"prev",hyphen)
+        setfield(hyphen,"next",tmp)
+        setfield(start,"pre",hyphen)
         insert_break(head,start,10000,10000)
     end
     return head, start
 end
 
 methods[4] = function(head,start) -- - => - - -
-    if start.prev and start.next then
+    if getprev(start) and getnext(start) then
         local tmp
         head, start, tmp = remove_node(head,start)
         head, start = insert_node_before(head,start,new_disc())
-        start.attr = copy_nodelist(tmp.attr) -- todo: critical only
-        start.pre, start.post, start.replace = copy_node(tmp), copy_node(tmp), tmp
+     -- setfield(start,"attr",copy_nodelist(getfield(tmp,"attr"))) -- just a copy will do
+        setfield(start,"attr",getfield(tmp,"attr"))
+        setfield(start,"pre",copy_node(tmp))
+        setfield(start,"post",copy_node(tmp))
+        setfield(start,"replace",tmp)
         insert_break(head,start,10000,10000)
     end
     return head, start
 end
 
 methods[5] = function(head,start,settings) -- x => p q r
-    if start.prev and start.next then
+    if getprev(start) and getnext(start) then
         local tmp
         head, start, tmp = remove_node(head,start)
         head, start = insert_node_before(head,start,new_disc())
-        local attr = tmp.attr
-        local font = tmp.font
-        start.attr = copy_nodelist(attr) -- todo: critical only
-        local left, right, middle = settings.left, settings.right, settings.middle
+        local attr = getfield(tmp,"attr")
+        local font = getfont(tmp)
+        local left = settings.left
+        local right = settings.right
+        local middle = settings.middle
         if left then
-            start.pre = tonodes(tostring(left),font,attr) -- was right
+            setfield(start,"pre",(tonodes(tostring(left),font,attr))) -- was right
         end
         if right then
-            start.post = tonodes(tostring(right),font,attr) -- was left
+            setfield(start,"post",(tonodes(tostring(right),font,attr))) -- was left
         end
         if middle then
-            start.replace = tonodes(tostring(middle),font,attr)
+            setfield(start,"replace",(tonodes(tostring(middle),font,attr)))
         end
+     -- setfield(start,"attr",copy_nodelist(attr)) -- todo: critical only -- just a copy will do
+        setfield(start,"attr",attr) -- todo: critical only -- just a copy will do
         free_node(tmp)
         insert_break(head,start,10000,10000)
     end
@@ -155,31 +185,32 @@ methods[5] = function(head,start,settings) -- x => p q r
 end
 
 function breakpoints.handler(head)
+    head = tonut(head)
     local done, numbers = false, languages.numbers
     local start, n = head, 0
     while start do
-        local id = start.id
+        local id = getid(start)
         if id == glyph_code then
-            local attr = start[a_breakpoints]
+            local attr = getattr(start,a_breakpoints)
             if attr and attr > 0 then
-                start[a_breakpoints] = unsetvalue -- maybe test for subtype > 256 (faster)
+                setattr(start,a_breakpoints,unsetvalue) -- maybe test for subtype > 256 (faster)
                 -- look ahead and back n chars
                 local data = mapping[attr]
                 if data then
                     local map = data.characters
-                    local cmap = map[start.char]
+                    local cmap = map[getchar(start)]
                     if cmap then
-                        local lang = start.lang
+                        local lang = getfield(start,"lang")
                         -- we do a sanity check for language
                         local smap = lang and lang >= 0 and lang < 0x7FFF and (cmap[numbers[lang]] or cmap[""])
                         if smap then
                             if n >= smap.nleft then
                                 local m = smap.nright
-                                local next = start.next
+                                local next = getnext(start)
                                 while next do -- gamble on same attribute (not that important actually)
-                                    local id = next.id
+                                    local id = getid(next)
                                     if id == glyph_code then -- gamble on same attribute (not that important actually)
-                                        if map[next.char] then
+                                        if map[getchar(next)] then
                                             break
                                         elseif m == 1 then
                                             local method = methods[smap.type]
@@ -190,10 +221,10 @@ function breakpoints.handler(head)
                                             break
                                         else
                                             m = m - 1
-                                            next = next.next
+                                            next = getnext(next)
                                         end
-                                    elseif id == kern_code and next.subtype == kerning_code then
-                                        next = next.next
+                                    elseif id == kern_code and getsubtype(next) == kerning_code then
+                                        next = getnext(next)
                                         -- ignore intercharacter kerning, will go way
                                     else
                                         -- we can do clever and set n and jump ahead but ... not now
@@ -214,14 +245,14 @@ function breakpoints.handler(head)
             else
              -- n = n + 1 -- if we want single char handling (|-|) then we will use grouping and then we need this
             end
-        elseif id == kern_code and start.subtype == kerning_code then
+        elseif id == kern_code and getsubtype(start) == kerning_code then
             -- ignore intercharacter kerning, will go way
         else
             n = 0
         end
-        start = start.next
+        start = getnext(start)
     end
-    return head, done
+    return tonode(head), done
 end
 
 local enabled = false
@@ -290,6 +321,32 @@ end
 
 -- interface
 
-commands.definebreakpoints = breakpoints.define
-commands.definebreakpoint  = breakpoints.setreplacement
-commands.setbreakpoints    = breakpoints.set
+implement {
+    name      = "definebreakpoints",
+    actions   = breakpoints.define,
+    arguments = "string"
+}
+
+implement {
+    name      = "definebreakpoint",
+    actions   = breakpoints.setreplacement,
+    arguments = {
+        "string",
+        "string",
+        "string",
+        {
+            { "type", "integer" },
+            { "nleft" },
+            { "nright" },
+            { "right" },
+            { "left" },
+            { "middle" },
+        }
+    }
+}
+
+implement {
+    name      = "setbreakpoints",
+    actions   = breakpoints.set,
+    arguments = "string"
+}

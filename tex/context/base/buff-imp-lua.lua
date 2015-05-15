@@ -139,7 +139,7 @@ local comment     = P("--")
 local name        = (patterns.letter + patterns.underscore)
                   * (patterns.letter + patterns.underscore + patterns.digit)^0
 local boundary    = S('()[]{}')
-local special     = S("-+/*^%=#") + P("..")
+local special     = S("-+/*^%=#~|<>") + P("..")
 
 -- The following longstring parser is taken from Roberto's documentation
 -- that can be found at http://www.inf.puc-rio.br/~roberto/lpeg/lpeg.html.
@@ -159,11 +159,11 @@ end
 local grammar = visualizers.newgrammar("default", { "visualizer",
     sstring =
         makepattern(handler,"quote",patterns.dquote)
-      * (V("whitespace") + makepattern(handler,"string",1-patterns.dquote))^0 -- patterns.nodquote
+      * (V("whitespace") + makepattern(handler,"string",(1-patterns.dquote-V("whitespace"))^1))^0 -- patterns.nodquote
       * makepattern(handler,"quote",patterns.dquote),
     dstring =
         makepattern(handler,"quote",patterns.squote)
-      * (V("whitespace") + makepattern(handler,"string",1-patterns.squote))^0 -- patterns.nosquote
+      * (V("whitespace") + makepattern(handler,"string",(1-patterns.squote-V("whitespace"))^1))^0 -- patterns.nosquote
       * makepattern(handler,"quote",patterns.squote),
     longstring =
         longstring / long,

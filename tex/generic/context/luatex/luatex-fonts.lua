@@ -27,6 +27,17 @@ if not modules then modules = { } end modules ['luatex-fonts'] = {
 -- also add more helper code here, but that depends to what extend metatex (sidetrack of context)
 -- evolves into a low level layer (depends on time, as usual).
 
+texio.write_nl("")
+texio.write_nl("--------------------------------------------------------------------------------")
+texio.write_nl("The font code has been brought in sync with the context version of 2014.12.21 so")
+texio.write_nl("if things don't work out as expected the interfacing needs to be checked. When")
+texio.write_nl("this works as expected a second upgrade will happen that gives a more complete")
+texio.write_nl("support and another sync with the context code (that new code is currently being")
+texio.write_nl("tested. The base pass is now integrated in the main pass. The results can differ")
+texio.write_nl("from those in context because there we integrate some mechanisms differently.")
+texio.write_nl("--------------------------------------------------------------------------------")
+texio.write_nl("")
+
 utf = utf or unicode.utf8
 
 -- We have some (global) hooks (for latex):
@@ -210,12 +221,12 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         loadmodule('font-oti.lua')
         loadmodule('font-otf.lua')
         loadmodule('font-otb.lua')
-        loadmodule('node-inj.lua')         -- will be replaced (luatex >= .70)
-        loadmodule('font-ota.lua')
-        loadmodule('font-otn.lua')
-        loadmodule('font-otp.lua')         -- optional
+        loadmodule('luatex-fonts-inj.lua')
+        loadmodule('luatex-fonts-ota.lua')
+        loadmodule('luatex-fonts-otn.lua')
+        loadmodule('font-otp.lua')
         loadmodule('luatex-fonts-lua.lua')
-        loadmodule('font-def.lua')
+        loadmodule('font-def.lua')         -- this code (stripped) might end up in luatex-fonts-def.lua
         loadmodule('luatex-fonts-def.lua')
         loadmodule('luatex-fonts-ext.lua') -- some extensions
 

@@ -320,7 +320,6 @@ return {
   },
   {
    category = "mkiv",
-   comment  = "maybe this becomes a runtime module",
    filename = "toks-ini",
    loading  = "always",
    status   = "okay",
@@ -389,6 +388,12 @@ return {
   {
    category = "mkiv",
    filename = "typo-bld",
+   loading  = "always",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
+   filename = "typo-sus",
    loading  = "always",
    status   = "okay",
   },
@@ -542,6 +547,12 @@ return {
   },
   {
    category = "mkiv",
+   filename = "lang-hyp",
+   loading  = "always",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
    filename = "unic-ini",
    loading  = "always",
    status   = "okay",
@@ -610,6 +621,12 @@ return {
   {
    category = "mkiv",
    filename = "lang-def",
+   loading  = "always",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
+   filename = "lang-hyp",
    loading  = "always",
    status   = "okay",
   },
@@ -2014,13 +2031,13 @@ return {
   {
    category = "mkiv",
    filename = "bibl-bib",
-   loading  = "always",
+   loading  = "on demand",
    status   = "pending",
   },
   {
    category = "mkiv",
    filename = "bibl-tra",
-   loading  = "always",
+   loading  = "on demand",
    status   = "pending",
   },
   {
@@ -2534,6 +2551,66 @@ return {
    loading  = "on demand",
    status   = "okay",
   },
+  {
+   category = "mkiv",
+   filename = "publ-ini",
+   loading  = "always",
+   status   = "pending",
+  },
+  {
+   category = "mkiv",
+   filename = "publ-old",
+   loading  = "always",
+   status   = "pending",
+  },
+  {
+   category = "mkiv",
+   filename = "publ-tra",
+   loading  = "always",
+   status   = "pending",
+  },
+  {
+   category = "mkiv",
+   filename = "publ-usr",
+   loading  = "always",
+   status   = "pending",
+  },
+  {
+   category = "mkiv",
+   filename = "publ-jrn",
+   loading  = "always",
+   status   = "pending",
+  },
+  {
+   category = "mkiv",
+   filename = "publ-xml",
+   loading  = "always",
+   status   = "pending",
+  },
+  {
+   category = "mkiv",
+   filename = "publ-imp-apa",
+   loading  = "always",
+   status   = "pending",
+  },
+  {
+   category = "mkiv",
+   filename = "publ-imp-cite",
+   loading  = "always",
+   status   = "pending",
+  },
+  {
+   category = "mkiv",
+   filename = "publ-imp-definitions",
+   loading  = "always",
+   status   = "pending",
+  },
+  {
+   category = "mkiv",
+   filename = "publ-imp-commands",
+   loading  = "always",
+   status   = "pending",
+  },
  },
  lua = {
   {
@@ -2606,12 +2683,12 @@ return {
   {
    category = "lua",
    filename = "bibl-bib",
-   status   = "todo",
+   loading  = "on demand",
   },
   {
    category = "lua",
    filename = "bibl-tra",
-   status   = "todo",
+   loading  = "on demand",
   },
   {
    category = "lua",
@@ -3153,6 +3230,12 @@ return {
   },
   {
    category = "lua",
+   filename = "font-inj",
+   loading  = "font-lib",
+   status   = "okay",
+  },
+  {
+   category = "lua",
    filename = "font-ldr",
    loading  = "on demand",
    status   = "okay",
@@ -3430,6 +3513,18 @@ return {
   },
   {
    category = "lua",
+   filename = "lang-dis",
+   loading  = "lang-ini",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "lang-hyp",
+   loading  = "lang-hyp",
+   status   = "okay",
+  },
+  {
+   category = "lua",
    filename = "lang-ini",
    loading  = "lang-ini",
    status   = "okay",
@@ -3438,6 +3533,12 @@ return {
    category = "lua",
    filename = "lang-lab",
    loading  = "lang-lab",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "lang-hyp",
+   loading  = "lang-hyp",
    status   = "okay",
   },
   {
@@ -4031,6 +4132,11 @@ return {
   {
    category = "lua",
    filename = "node-pag",
+   status   = "todo",
+  },
+  {
+   category = "lua",
+   filename = "node-ppt",
    status   = "todo",
   },
   {
@@ -4651,7 +4757,14 @@ return {
   {
    category = "lua",
    filename = "toks-ini",
-   status   = "todo",
+   loading  = "toks-ini",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "toks-scn",
+   loading  = "toks-ini",
+   status   = "okay",
   },
   {
    category = "lua",
@@ -4755,6 +4868,11 @@ return {
   },
   {
    category = "lua",
+   filename = "typo-sus",
+   status   = "okay",
+  },
+  {
+   category = "lua",
    filename = "typo-brk",
    status   = "todo",
   },
@@ -4839,6 +4957,11 @@ return {
    category = "lua",
    filename = "typo-fln",
    status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "typo-man",
+   status   = "todo",
   },
   {
    category = "lua",
@@ -4996,6 +5119,48 @@ return {
    category = "lua",
    filename = "x-mathml",
    status   = "todo",
+  },
+  {
+   category = "lua",
+   filename = "publ-ini",
+   loading  = "publ-ini.mkiv",
+   status   = "pending",
+  },
+  {
+   category = "lua",
+   filename = "publ-aut",
+   loading  = "publ-ini.mkiv",
+   status   = "pending",
+  },
+  {
+   category = "lua",
+   filename = "publ-dat",
+   loading  = "publ-ini.mkiv",
+   status   = "pending",
+  },
+  {
+   category = "lua",
+   filename = "publ-oth",
+   loading  = "publ-ini.mkiv",
+   status   = "pending",
+  },
+  {
+   category = "lua",
+   filename = "publ-fnd",
+   loading  = "publ-ini.mkiv",
+   status   = "pending",
+  },
+  {
+   category = "lua",
+   filename = "publ-tra",
+   loading  = "publ-ini.mkiv",
+   status   = "pending",
+  },
+  {
+   category = "lua",
+   filename = "publ-usr",
+   loading  = "publ-ini.mkiv",
+   status   = "pending",
   },
  },
  metafun = {

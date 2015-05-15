@@ -45,7 +45,7 @@
   {\ifsecondargument
      \grph_buffers_typeset_indeed[#1][#2]%
    \else\iffirstargument
-     \doifassignmentelse{#1}
+     \doifelseassignment{#1}
        {\grph_buffers_typeset_indeed[\jobname][#1]}%
        {\grph_buffers_typeset_indeed[#1][]}%
    \else
@@ -53,7 +53,7 @@
    \fi\fi}
 
 \def\grph_buffers_typeset_indeed[#1][#2]% we could use the via files
-  {\doifnot{#1}{*}{\xdef\lasttypesetbuffer{\ctxcommand{runbuffer("#1",true)}}}%
+  {\doifnot{#1}{*}{\xdef\lasttypesetbuffer{\clf_runbuffer{#1}}}%
    \ifcase\c_grph_buffers_mode
      % typesetonly
    \or
@@ -94,7 +94,7 @@
 
 \def\grph_typesetting_process_indeed#1#2#3#4% options settings-a filename settings-b
   {\begingroup
-   \edef\m_typesetting_name{\cldcontext{job.files.context("#3","#1")}}%
+   \edef\m_typesetting_name{\clf_runcontextjob{#3}{#1}}%
    \ifx\m_typesetting_name\empty \else
      \expanded{\externalfigure[\m_typesetting_name]}[#2,#4]%
    \fi

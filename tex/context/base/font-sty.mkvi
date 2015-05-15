@@ -279,7 +279,7 @@
   {\groupedcommand{\font_styles_use_defined{#name}}{}} % or {\font_styles_apply_grouped{#name}}
 
 \setvalue{\??styleargument3}#specification%
-  {\doifassignmentelse{#specification}\font_styles_assignment\font_styles_direct{#specification}}
+  {\doifelseassignment{#specification}\font_styles_assignment\font_styles_direct{#specification}}
 
 \def\font_styles_assignment#specification{\groupedcommand{\font_styles_use_generic{#specification}}{}}
 \def\font_styles_direct    #specification{\groupedcommand{\definedfont[#specification]}{}}
@@ -311,7 +311,7 @@
   {\font_styles_use_defined{#name}}
 
 \setvalue{\??styleenvironment3}#specification%
-  {\doifassignmentelse{#specification}\font_styles_start_assignment\font_styles_start_direct{#specification}}
+  {\doifelseassignment{#specification}\font_styles_start_assignment\font_styles_start_direct{#specification}}
 
 \def\font_styles_start_assignment#specification{\font_styles_use_generic{#specification}}
 \def\font_styles_start_direct    #specification{\definedfont[#specification]\relax}
@@ -352,7 +352,7 @@
 
 \def\font_styles_define_style_instance[#instance][#2][#3][#4]% [name] [rm|ss|tt|..] [sl|bf|...] [whatever]
   {\iffirstargument
-     \ifcsname#1\endcsname\else\font_styles_define_style_collection[#instance]\fi
+     \ifcsname#instance\endcsname\else\font_styles_define_style_collection[#instance]\fi
    \fi
    \iffourthargument
      \setvalue{\??stylecollection#instance:#2:#3}{#4}%

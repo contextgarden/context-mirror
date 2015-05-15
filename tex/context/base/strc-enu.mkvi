@@ -172,7 +172,7 @@
    \ifx\p_counter\empty %
        \let\p_counter\currentenumeration
    \fi
-   \doifcounterelse\p_counter\donothing{\strc_enumerations_define_counter\p_counter}%
+   \doifelsecounter\p_counter\donothing{\strc_enumerations_define_counter\p_counter}%
    \letenumerationparameter\s!counter\p_counter
   %\strc_enumerations_setup_counter\currentenumeration
 \to \everydefineenumeration
@@ -183,6 +183,7 @@
 \unexpanded\setvalue{\??constructioninitializer\v!enumeration}%
   {\let\currentenumeration              \currentconstruction
    \let\constructionparameter           \enumerationparameter
+   \let\constructionnamespace           \??enumeration
    \let\detokenizedconstructionparameter\detokenizedenumerationparameter
    \let\letconstructionparameter        \letenumerationparameter
    \let\useconstructionstyleandcolor    \useenumerationstyleandcolor
@@ -283,7 +284,7 @@
 
 \unexpanded\def\strc_enumerations_inject_extra_text
   {\ifconditional\c_strc_constructions_title_state
-     \ctxcommand{doiflisthastitleelse("\currentconstructionmain",\currentconstructionlistentry)}
+     \clf_doifelselisthastitle{\currentconstructionmain}\numexpr\currentconstructionlistentry\relax
        \donothing
        \strc_enumerations_inject_extra_text_indeed
    \fi}
@@ -300,7 +301,7 @@
    \useconstructionstyleandcolor\c!titlestyle\c!titlecolor
    \constructionparameter\c!titlecommand
      {\constructionparameter\c!titleleft
-      \ctxcommand{savedlisttitle("\currentconstructionmain",\currentconstructionlistentry)}%
+      \clf_savedlisttitle{\currentconstructionmain}\currentconstructionlistentry\relax
       \constructionparameter\c!titleright}%
    \endgroup}
 
@@ -312,7 +313,7 @@
 \unexpanded\def\strc_enumerations_inject_number
   {\constructionparameter\c!left
    \constructionparameter\c!starter
-   \ctxcommand{savedlistprefixednumber("\currentconstructionmain",\currentconstructionlistentry)}%
+   \clf_savedlistprefixednumber{\currentconstructionmain}\currentconstructionlistentry\relax
    \constructionparameter\c!stopper
    \constructionparameter\c!right}
 
@@ -370,6 +371,6 @@
    \fi}
 
 \unexpanded\def\strc_enumerations_skip_number_coupling[#tag]% e.g. for questions with no answer
-  {\ctxlua{structures.references.setnextorder("construction","#tag")}}
+  {\clf_setnextreferenceorder{construction}{#tag}}
 
 \protect \endinput

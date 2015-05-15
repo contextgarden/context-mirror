@@ -18,30 +18,33 @@ if not modules then modules = { } end modules ['math-ini'] = {
 local formatters, find = string.formatters, string.find
 local utfchar, utfbyte, utflength = utf.char, utf.byte, utf.length
 local floor = math.floor
+local toboolean = toboolean
 
-local context           = context
-local commands          = commands
+local context               = context
+local commands              = commands
+local implement             = interfaces.implement
 
-local contextsprint     = context.sprint
-local contextfprint     = context.fprint -- a bit inefficient
+local context_sprint        = context.sprint
+----- context_fprint        = context.fprint -- a bit inefficient
+local ctx_doifelsesomething = commands.doifelsesomething
 
-local trace_defining    = false  trackers.register("math.defining", function(v) trace_defining = v end)
+local trace_defining        = false  trackers.register("math.defining", function(v) trace_defining = v end)
 
-local report_math       = logs.reporter("mathematics","initializing")
+local report_math           = logs.reporter("mathematics","initializing")
 
-mathematics             = mathematics or { }
-local mathematics       = mathematics
+mathematics                 = mathematics or { }
+local mathematics           = mathematics
 
-mathematics.extrabase   = 0xFE000 -- here we push some virtuals
-mathematics.privatebase = 0xFF000 -- here we push the ex
+mathematics.extrabase       = 0xFE000 -- here we push some virtuals
+mathematics.privatebase     = 0xFF000 -- here we push the ex
 
-local unsetvalue        = attributes.unsetvalue
-local allocate          = utilities.storage.allocate
-local chardata          = characters.data
+local unsetvalue            = attributes.unsetvalue
+local allocate              = utilities.storage.allocate
+local chardata              = characters.data
 
-local texsetattribute   = tex.setattribute
-local setmathcode       = tex.setmathcode
-local setdelcode        = tex.setdelcode
+local texsetattribute       = tex.setattribute
+local setmathcode           = tex.setmathcode
+local setdelcode            = tex.setdelcode
 
 local families = allocate {
     mr = 0,
@@ -213,28 +216,28 @@ local f_char      = formatters[ [[\Umathchardef\%s "%X "%X "%X ]] ]
 
 local setmathsymbol = function(name,class,family,slot) -- hex is nicer for tracing
     if class == classes.accent then
-        contextsprint(f_accent(name,family,slot))
+        context_sprint(f_accent(name,family,slot))
     elseif class == classes.topaccent then
-        contextsprint(f_topaccent(name,family,slot))
+        context_sprint(f_topaccent(name,family,slot))
     elseif class == classes.botaccent then
-        contextsprint(f_botaccent(name,family,slot))
+        context_sprint(f_botaccent(name,family,slot))
     elseif class == classes.over then
-        contextsprint(f_over(name,family,slot))
+        context_sprint(f_over(name,family,slot))
     elseif class == classes.under then
-        contextsprint(f_under(name,family,slot))
+        context_sprint(f_under(name,family,slot))
     elseif class == open_class or class == close_class or class == middle_class then
         setdelcode("global",slot,{family,slot,0,0})
-        contextsprint(f_fence(name,class,family,slot))
+        context_sprint(f_fence(name,class,family,slot))
     elseif class == classes.delimiter then
         setdelcode("global",slot,{family,slot,0,0})
-        contextsprint(f_delimiter(name,family,slot))
+        context_sprint(f_delimiter(name,family,slot))
     elseif class == classes.radical then
-        contextsprint(f_radical(name,family,slot))
+        context_sprint(f_radical(name,family,slot))
     elseif class == classes.root then
-        contextsprint(f_root(name,family,slot))
+        context_sprint(f_root(name,family,slot))
     else
         -- beware, open/close and other specials should not end up here
-        contextsprint(f_char(name,class,family,slot))
+        context_sprint(f_char(name,class,family,slot))
     end
 end
 
@@ -350,10 +353,12 @@ local utf8byte  = lpeg.patterns.utf8byte * lpeg.P(-1)
 local somechar = { }
 
 table.setmetatableindex(somechar,function(t,k)
-    local b = lpegmatch(utf8byte,k)
-    local v = b and chardata[b] or false
-    t[k] = v
-    return v
+    if k then
+        local b = lpegmatch(utf8byte,k)
+        local v = b and chardata[b] or false
+        t[k] = v
+        return v
+    end
 end)
 
 local function utfmathclass(chr, default)
@@ -462,7 +467,7 @@ end
 
 local function utfmathfiller(chr, default)
     local cd = somechar[chr]
-    local cmd = cd and (cd.mathfiller or cd.mathname)
+    local cmd = cd and cd.mathfiller -- or cd.mathname
     return cmd or default or ""
 end
 
@@ -470,23 +475,76 @@ mathematics.utfmathclass   = utfmathclass
 mathematics.utfmathstretch = utfmathstretch
 mathematics.utfmathcommand = utfmathcommand
 mathematics.utfmathfiller  = utfmathfiller
+mathematics.utfmathaccent  = utfmathaccent
 
 -- interfaced
 
-function commands.utfmathclass  (...) context(utfmathclass  (...)) end
-function commands.utfmathstretch(...) context(utfmathstretch(...)) end
-function commands.utfmathcommand(...) context(utfmathcommand(...)) end
-function commands.utfmathfiller (...) context(utfmathfiller (...)) end
+implement {
+    name      = "utfmathclass",
+    actions   = { utfmathclass, context },
+    arguments = "string"
+}
 
-function commands.doifelseutfmathaccent(chr,asked)
-    commands.doifelse(utfmathaccent(chr,nil,asked))
-end
+implement {
+    name      = "utfmathstretch",
+    actions   = { utfmathstretch, context },
+    arguments = "string"
+}
 
-function commands.utfmathcommandabove(asked) context(utfmathcommand(asked,nil,"topaccent","over" )) end
-function commands.utfmathcommandbelow(asked) context(utfmathcommand(asked,nil,"botaccent","under")) end
+implement {
+    name      = "utfmathcommand",
+    actions   = { utfmathcommand, context },
+    arguments = "string"
+}
 
-function commands.doifelseutfmathabove(chr) commands.doifelse(utfmathaccent(chr,nil,"topaccent","over" )) end
-function commands.doifelseutfmathbelow(chr) commands.doifelse(utfmathaccent(chr,nil,"botaccent","under")) end
+implement {
+    name      = "utfmathfiller",
+    actions   = { utfmathfiller, context },
+    arguments = "string"
+}
+
+implement {
+    name      = "utfmathcommandabove",
+    actions   = { utfmathcommand, context },
+    arguments = { "string", false, "'topaccent'","'over'" }
+}
+
+implement {
+    name      = "utfmathcommandbelow",
+    actions   = { utfmathcommand, context },
+    arguments = { "string", false, "'botaccent'","'under'" }
+}
+implement {
+    name      = "utfmathcommandfiller",
+    actions   = { utfmathfiller, context },
+    arguments = "string"
+}
+
+-- todo: make this a helper:
+
+implement {
+    name      = "doifelseutfmathabove",
+    actions   = { utfmathaccent, ctx_doifelsesomething },
+    arguments = { "string", false, "'topaccent'", "'over'" }
+}
+
+implement {
+    name      = "doifelseutfmathbelow",
+    actions   = { utfmathaccent, ctx_doifelsesomething },
+    arguments = { "string", false, "'botaccent'", "'under'" }
+}
+
+implement {
+    name      = "doifelseutfmathaccent",
+    actions   = { utfmathaccent, ctx_doifelsesomething },
+    arguments = "string",
+}
+
+implement {
+    name      = "doifelseutfmathfiller",
+    actions   = { utfmathfiller, ctx_doifelsesomething },
+    arguments = "string",
+}
 
 -- helpers
 --
@@ -596,9 +654,20 @@ local noffunctions = 1000 -- offset
 
 categories.functions = functions
 
-function commands.taggedmathfunction(tag,label,apply)
-    local delta = apply and 1000 or 0
-    if label then
+implement {
+    name      = "tagmfunctiontxt",
+    arguments = { "string", "conditional" },
+    actions   = function(tag,apply)
+        local delta = apply and 1000 or 0
+        texsetattribute(a_mathcategory,1000 + delta)
+    end
+}
+
+implement {
+    name      = "tagmfunctionlab",
+    arguments = { "string", "conditional" },
+    actions   = function(tag,apply)
+        local delta = apply and 1000 or 0
         local n = functions[tag]
         if not n then
             noffunctions = noffunctions + 1
@@ -608,18 +677,14 @@ function commands.taggedmathfunction(tag,label,apply)
         else
             texsetattribute(a_mathcategory,n + delta)
         end
-        context.mathlabeltext(tag)
-    else
-        texsetattribute(a_mathcategory,1000 + delta)
-        context(tag)
     end
-end
+}
 
 --
 
 local list
 
-function commands.resetmathattributes()
+function mathematics.resetattributes()
     if not list then
         list = { }
         for k, v in next, attributes.numbers do
@@ -632,3 +697,16 @@ function commands.resetmathattributes()
         texsetattribute(list[i],unsetvalue)
     end
 end
+
+implement {
+    name    = "resetmathattributes",
+    actions = mathematics.resetattributes
+}
+
+-- weird to do this here but it's a side affect of math anyway
+
+interfaces.implement {
+    name     = "enableasciimode",
+    onlyonce = true,
+    actions  = resolvers.macros.enablecomment,
+}

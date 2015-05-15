@@ -6,6 +6,17 @@ if not modules then modules = { } end modules ['l-lua'] = {
     license   = "see context related readme files"
 }
 
+-- potential issues with 5.3:
+
+-- i'm not sure yet if the int/float change is good for luatex
+
+-- math.min
+-- math.max
+-- tostring
+-- tonumber
+-- utf.*
+-- bit32
+
 -- compatibility hacksand helpers
 
 local major, minor = string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$")
@@ -147,4 +158,21 @@ function optionalrequire(...)
     if ok then
         return result
     end
+end
+
+-- nice for non ascii scripts (this might move):
+
+if lua then
+    lua.mask = load([[τεχ = 1]]) and "utf" or "ascii"
+end
+
+local flush   = io.flush
+
+if flush then
+
+    local execute = os.execute if execute then function os.execute(...) flush() return execute(...) end end
+    local exec    = os.exec    if exec    then function os.exec   (...) flush() return exec   (...) end end
+    local spawn   = os.spawn   if spawn   then function os.spawn  (...) flush() return spawn  (...) end end
+    local popen   = io.popen   if popen   then function io.popen  (...) flush() return popen  (...) end end
+
 end

@@ -15,21 +15,18 @@
 
 \unprotect
 
-% These macro deal with side floats. We started with Daniel
-% Comenetz macros as published in TUGBoat Volume 14 (1993),
-% No.\ 1: Anchored Figures at Either Margin. I extended and
-% patched the macros to suite our needs which results in a
-% messy module. Therefore, this module badly needs an update
-% because it's now a mixture of old and new macros.
+% These macro deal with side floats. We started with Daniel Comenetz macros as published
+% in TUGBoat Volume 14 (1993), No.\ 1: Anchored Figures at Either Margin. I extended and
+% patched the macros to suite our needs which results in a messy module. Therefore, this
+% module badly needs an update because it's now a mixture of old and new macros.
 
 % Interesting cases where it goes wrong:
 %
 % \placefigure[left]{}{} \dorecurse{3}{\input ward } {\par} \input ward
 %
-% Here we get an unwanted carried over hangindent and parindent. A
-% solution is to associate it with the local par node instead. This
-% is something to discuss with Taco as it could be a new luatex
-% feature: explicitly set par properties.
+% Here we get an unwanted carried over hangindent and parindent. A solution is to associate
+% it with the local par node instead. This is something to discuss with Taco as it could be
+% a new luatex/mkiv feature: explicitly set par properties.
 
 % Maybe I should just rewrite the lot.
 
@@ -202,17 +199,72 @@
    \global\setfalse\c_page_sides_short
    \global\setfalse\c_page_sides_flag}
 
+\unexpanded\def\doifelsesidefloat
+  {\par
+   \ifnum\dimexpr\d_page_sides_vsize-\pagetotal\relax>\zeropoint
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\let\doifsidefloatelse\doifelsesidefloat
+
+% \def\page_sides_flush_floats_indeed
+%   {\global\advance\d_page_sides_vsize-\d_page_sides_bottomskip
+%    \begingroup
+%    \let\page_sides_flush_floats\relax
+%    \forgetall
+%    \doloop
+%      {\strut
+%       \iftracesidefloats
+%         \color[darkgray]{\ruledhbox{\strut\kern\d_page_sides_width}}%
+%       \fi
+%       \par
+%     % \ifdim\dimexpr\d_page_sides_vsize-\pagetotal\relax>\zeropoint
+%       \ifdim\dimexpr\d_page_sides_vsize-\d_page_sides_bottomskip-\pagetotal\relax>\zeropoint
+%         \ifnum\recurselevel>\plushundred % safeguard, sort of deadcycles
+%           \exitloop
+%         \fi
+%       \else
+%         \exitloop
+%       \fi}%
+%    \endgroup
+%    \ifdim\parskip>\zeropoint % why this test ?
+%      \ifdim\d_page_sides_bottomskip>\parskip
+%      % \nowhitespace
+%      % \vskip\d_page_sides_bottomskip
+%        \blank[\v!nowhite,\the\dimexpr\d_page_sides_bottomskip]
+%      \fi
+%    \else
+%       \blank[\the\d_page_sides_bottomskip]% new, so needs checking
+%    \fi}
+
+\installcorenamespace{sidefloatsteps}
+
+\setvalue{\??sidefloatsteps\v!line  }{\strut}
+\setvalue{\??sidefloatsteps\v!big   }{\strut}
+\setvalue{\??sidefloatsteps\v!medium}{\halfstrut}
+\setvalue{\??sidefloatsteps\v!small }{\quarterstrut}
+\setvalue{\??sidefloatsteps\v!depth }{\depthstrut}
+
+% we don't officially know what kind of float we flush
+
 \def\page_sides_flush_floats_indeed
   {\global\advance\d_page_sides_vsize-\d_page_sides_bottomskip
    \begingroup
    \let\page_sides_flush_floats\relax
+   \edef\m_pages_strut{\executeifdefined{\??sidefloatsteps\rootfloatparameter\c!step}\strut}%
    \forgetall
    \doloop
-     {\strut
-      \iftracesidefloats
-        \color[darkgray]{\ruledhbox{\strut\kern\d_page_sides_width}}%
+     {\iftracesidefloats
+        \dontleavehmode
+        \ruledhbox{\m_pages_strut\kern\d_page_sides_width}%
+      \else
+        \m_pages_strut
       \fi
       \par
+      \nointerlineskip
+    % \ifdim\dimexpr\d_page_sides_vsize-\d_page_sides_bottomskip-\pagetotal\relax>\zeropoint
       \ifdim\dimexpr\d_page_sides_vsize-\pagetotal\relax>\zeropoint
         \ifnum\recurselevel>\plushundred % safeguard, sort of deadcycles
           \exitloop
@@ -223,10 +275,27 @@
    \endgroup
    \ifdim\parskip>\zeropoint % why this test ?
      \ifdim\d_page_sides_bottomskip>\parskip
-       \nowhitespace
-       \vskip\d_page_sides_bottomskip
+     % \nowhitespace
+     % \vskip\d_page_sides_bottomskip
+%      \blank[\v!nowhite,\the\dimexpr\d_page_sides_bottomskip]
+       \blank[\v!nowhite,\rootfloatparameter\c!sidespaceafter]
      \fi
+   \else
+%     \blank[\the\d_page_sides_bottomskip]% new, so needs checking
+      \blank[\rootfloatparameter\c!sidespaceafter]% new, so needs checking
    \fi}
+
+% alternative method (unsnapped)
+%
+% \def\page_sides_flush_floats_indeed
+%   {\scratchdimen\dimexpr\d_page_sides_vsize-\d_page_sides_bottomskip-\pagetotal\relax
+%    \ifdim\parskip>\zeropoint % why this test ?
+%      \ifdim\scratchdimen>\parskip
+%        \blank[\v!nowhite,\the\scratchdimen] % better in stages
+%      \fi
+%    \else
+%        \blank[\the\scratchdimen]
+%    \fi}
 
 \def\page_sides_check_floats_after_par
   {\page_sides_check_floats_indeed
@@ -294,10 +363,10 @@
    \page_otr_sides_pop_penalties}
 
 \def\page_sides_output_routine_yes % we need to rework this ... add pagediscards and such
-  {\unvbox\normalpagebox
+  {\unvbox\normalpagebox % bah, and the discards?
    \setbox\b_page_sides_bottom\lastbox
    \ifdim\wd\b_page_sides_bottom>\d_page_sides_hsize
-     \penalty-201
+     \penalty-201 % hm, i really need to write this from scatch
      \box\b_page_sides_bottom
    \else\ifvoid\b_page_sides_bottom
    \else
@@ -592,14 +661,39 @@
      \global\settrue\c_page_floats_room
    \fi}
 
+% \def\page_sides_prepare_space
+%   {\par
+%    % no longer needed  \whitespace
+%    \begingroup
+%    \forgetall
+%    \reseteverypar
+%    \verticalstrut
+%    \vskip-\struttotal
+%    \endgroup}
+
+\installtextracker
+  {sidefloats.anchor}
+  {\let\page_sides_anchor\page_sides_anchor_yes}
+  {\let\page_sides_anchor\page_sides_anchor_nop}
+
+\def\page_sides_anchor_yes
+  {\darkred
+   \hskip-5\emwidth
+   \vrule\s!height.05\exheight\s!depth.05\exheight\s!width10\emwidth}
+
+\def\page_sides_anchor_nop
+  {\strut}
+
+\let\page_sides_anchor\page_sides_anchor_nop
+
 \def\page_sides_prepare_space
   {\par
-   \whitespace
    \begingroup
-   \forgetall
    \reseteverypar
-   \verticalstrut
+   \dontleavehmode\hbox to \zeropoint{\page_sides_anchor\hss\strut}%
+   \vskip-\parskip
    \vskip-\struttotal
+   \inhibitblank
    \endgroup}
 
 \def\page_sides_handle_float#1% grid (4) is rather experimental
@@ -702,13 +796,15 @@
    \fi}
 
 \def\page_sides_inject_dummy_lines
-  {\scratchcounter\pageshrink
+  {\begingroup
+   \scratchcounter\pageshrink
    \divide\scratchcounter \baselineskip
    \advance\scratchcounter \plusone
    \parskip\zeropoint
    \dorecurse\scratchcounter{\hbox to \hsize{}}%
    \kern-\scratchcounter\baselineskip
-   \penalty\zerocount}
+   \penalty\zerocount
+   \endgroup}
 
 % Display math
 %
@@ -764,7 +860,7 @@
 \def\checksidefloat         {\page_sides_check_floats}
 \def\flushsidefloats        {\page_sides_flush_floats}
 \def\flushsidefloatsafterpar{\page_sides_flush_floats_after_par}
-%def\forgetsidefloats       {\page_sides_forget_floats}
+\def\forgetsidefloats       {\page_sides_forget_floats}
 %def\synchronizesidefloats  {\page_sides_synchronize_floats}
 
 \protect \endinput

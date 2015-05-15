@@ -13,6 +13,18 @@
 
 \writestatus{loading}{ConTeXt Math Macros / Initializations}
 
+% Todo in luatex maincontrol.w: also accept a number here:
+%
+%    case set_math_param_cmd:
+%        p = cur_chr;
+%        get_token();
+%        if (cur_cmd != math_style_cmd) {
+%
+% plus two new math styles: larger/smaller
+%
+% \unexpanded\def\Umathshow#1%
+%   {\hbox{\infofont(\string#1:\the#1\textstyle,\the#1\scriptstyle,\the#1\scriptscriptstyle)}}
+
 %D This module provides namespaces for math fonts, thereby permitting mixed usage of
 %D math fonts. Although not strictly needed, we also provide a family name mapping
 %D mechanism as used in the (original) AMS math definition files, but here these
@@ -25,6 +37,15 @@
 %D There is a subtle issue with grouping: the \type {\begingroup} method will not
 %D restore a changed mathstyle so best avoid that one. However, there are cases where
 %D we really need to use such grouping.
+
+% Weird, these fail, maybe amp is solved in a later state from char noads (needs a
+% fix in luatex):
+%
+% $\char"26$
+% $\a$
+% $\string&$
+
+% mathop applied to characters centers it vertically
 
 \unprotect
 
@@ -80,7 +101,35 @@
 
 \setnewconstant\defaultmathfamily \zerocount % 255
 
-\unexpanded\def\resetmathattributes{\ctxcommand{resetmathattributes()}}
+\unexpanded\def\resetmathattributes{\clf_resetmathattributes}
+
+% handy
+
+\newconditional\indisplaymath
+
+\appendtoks
+    \setfalse\indisplaymath
+\to \everymath
+
+\appendtoks
+    \settrue\indisplaymath
+\to \everydisplay
+
+\def\inlineordisplaymath{\ifconditional\indisplaymath\expandafter\secondoftwoarguments\else\expandafter\firstoftwoarguments\fi}
+
+\unexpanded\def\forcedisplaymath
+  {\ifmmode
+     \displaystyle
+     \settrue\indisplaymath
+   \fi}
+
+\unexpanded\def\startforceddisplaymath
+  {\startimath
+   \displaystyle
+   \settrue\indisplaymath}
+
+\unexpanded\def\stopforceddisplaymath
+  {\stopimath}
 
 % \unexpanded\def\rawmathcharacter#1% slow but only for tracing
 %   {\begingroup
@@ -94,9 +143,9 @@
 \unexpanded\def\rawmathematics#1% slow but only for tracing
   {\begingroup
    \ifmmode
-     \resetmathattributes#1%
+     \clf_resetmathattributes#1%
    \else
-     \startimath\resetmathattributes#1\stopimath
+     \startimath\clf_resetmathattributes#1\stopimath
    \fi
    \endgroup}
 
@@ -117,7 +166,7 @@
 \installswitchcommandhandler \??mathematics {mathematics} \??mathematics
 
 \unexpanded\def\startmathematics % no grouping, if ever then also an optional second
-  {\doifnextoptionalelse\math_mathematics_start_yes\math_mathematics_start_nop}
+  {\doifelsenextoptionalcs\math_mathematics_start_yes\math_mathematics_start_nop}
 
 \unexpanded\def\math_mathematics_start_yes[#1]%
   {\pushmacro\currentmathematics
@@ -135,22 +184,149 @@
 
 \definemathematics[\v!default] % not needed, but nicer when nesting back to normal
 
-% Normally this is applied to only one character.
+% Now we redefine \type {\mathematics} and \type {\m}:
+
+\unexpanded\def\mathematics
+  {\doifelsenextoptionalcs\math_m_yes\math_m_nop}
+
+\def\math_m_yes
+  {\relax
+   \ifmmode
+     \expandafter\math_m_yes_math
+   \else
+     \expandafter\math_m_yes_text
+   \fi}
+
+\def\math_m_yes_math[#1]#2%
+  {#2}
+
+\def\math_m_yes_text[#1]%
+  {\begingroup
+   \edef\currentmathematics{#1}% check for valid
+   \edef\p_openup{\mathematicsparameter\c!openup}%
+   \ifx\p_openup\v!yes
+     \expandafter\math_m_yes_text_openedup
+   \else
+     \expandafter\math_m_yes_text_normal
+   \fi}
+
+\def\math_m_yes_text_openedup#1%
+  {\setbox\scratchbox\hbox\bgroup
+      \normalstartimath
+      \the\everyswitchmathematics\relax
+      #1%
+      \normalstopimath
+   \egroup
+   \ifdim\ht\scratchbox>\strutht
+     \math_inline_openup_start_yes
+   \else\ifdim\dp\scratchbox>\strutdp
+     \math_inline_openup_start_yes
+   \else
+     \math_inline_openup_start_nop
+   \fi\fi
+   \unhbox\scratchbox % \normalstartimath#1\normalstopimath
+   \math_inline_openup_stop
+   \endgroup}
+
+\def\math_m_yes_text_normal#1%
+  {\normalstartimath
+   \the\everyswitchmathematics\relax
+   #1%
+   \normalstopimath
+   \endgroup}
+
+\def\math_m_nop#1%
+  {\relax
+   \ifmmode
+     #1%
+   \else
+     \normalstartimath
+     #1%
+     \normalstopimath
+   \fi}
+
+\let\m\mathematics
+
+% e.g.: \definemathematics[i:mp][setups=i:tight,openup=yes]
+
+\newmuskip\defaultthickmuskip  \defaultthickmuskip  5mu plus 5mu
+\newmuskip\defaultmedmuskip    \defaultmedmuskip    4mu plus 2mu minus 4mu
+\newmuskip\defaultthinmuskip   \defaultthinmuskip   3mu
+
+\newmuskip\halfthickmuskip     \halfthickmuskip     2.5mu plus 2.5mu
+\newmuskip\halfmedmuskip       \halfmedmuskip       2.0mu plus 1.0mu minus 2.0mu
+\newmuskip\halfthinmuskip      \halfthinmuskip      1.5mu
+
+\newcount \defaultrelpenalty   \defaultrelpenalty   500
+\newcount \defaultbinoppenalty \defaultbinoppenalty 700
+
+
+\startsetups math:spacing:default
+    \thickmuskip   \defaultthickmuskip
+    \medmuskip     \defaultmedmuskip
+    \thinmuskip    \defaultthinmuskip
+    \relpenalty    \defaultrelpenalty
+    \binoppenalty  \defaultbinoppenalty
+\stopsetups
+
+\startsetups math:spacing:half
+    \thickmuskip   \halfthickmuskip
+    \medmuskip     \halfmedmuskip
+    \thinmuskip    \halfthinmuskip
+    \relpenalty    \defaultrelpenalty
+    \binoppenalty  \defaultbinoppenalty
+\stopsetups
+
+\startsetups math:spacing:tight
+    \ifcase\raggedstatus
+        \thickmuskip   \halfthickmuskip
+        \medmuskip     \halfmedmuskip
+        \thinmuskip    \halfthinmuskip
+    \else
+        \thickmuskip  1\halfthickmuskip
+        \medmuskip    1\halfmedmuskip
+        \thinmuskip   1\halfthinmuskip
+    \fi
+    \relpenalty    \defaultrelpenalty
+    \binoppenalty  \maxdimen
+\stopsetups
+
+\startsetups math:spacing:fixed
+    \ifcase\raggedstatus
+        \thickmuskip   \halfthickmuskip
+        \medmuskip     \halfmedmuskip
+        \thinmuskip    \halfthinmuskip
+    \else
+        \thickmuskip  1\halfthickmuskip
+        \medmuskip    1\halfmedmuskip
+        \thinmuskip   1\halfthinmuskip
+    \fi
+    \relpenalty    \maxdimen
+    \binoppenalty  \maxdimen
+\stopsetups
+
+% \dorecurse{80}{test \m[i:tight]{\red \fakeformula} test }
+
+\definemathematics[i:default][\c!setups=math:spacing:equal]
+\definemathematics[i:half]   [\c!setups=math:spacing:half]
+\definemathematics[i:tight]  [\c!setups=math:spacing:tight]
+\definemathematics[i:fixed]  [\c!setups=math:spacing:fixed]
+
+% Normally the next is applied to only one character.
 %
 % $ABC$ $\cal ABC$ $\mathaltcal ABC$
 
 % todo: only in mmode
-
 % these commands are semi-public but should not be used directly (lua names wil change)
 
-\unexpanded\def\math_set_attribute   #1#2{\ifmmode\ctxcommand{setmathattribute("#1","#2")}\fi}
-\unexpanded\def\math_set_alphabet      #1{\ifmmode\ctxcommand{setmathalphabet("#1")}\fi}
-\unexpanded\def\math_set_font_style    #1{\ifmmode\ctxcommand{setmathstyle("#1")}\fi}
-\unexpanded\def\math_set_font_alternate#1{\ifmmode\ctxcommand{setmathalternate(\number\defaultmathfamily,"#1")}\fi}
+\unexpanded\def\math_set_attribute   #1#2{\ifmmode\clf_setmathattribute{#1}{#2}\fi}
+\unexpanded\def\math_set_alphabet      #1{\ifmmode\clf_setmathalphabet{#1}\fi}
+\unexpanded\def\math_set_font_style    #1{\ifmmode\clf_setmathstyle{#1}\fi}
+\unexpanded\def\math_set_font_alternate#1{\ifmmode\clf_setmathalternate\defaultmathfamily{#1}\fi}
 
 \installcorenamespace{mathstylealternate} % might become a setuphandler
 
-\unexpanded\def\math_set_font_style_alterternate#1%
+\unexpanded\def\math_set_font_style_alternate#1%
   {\ifcsname\??mathstylealternate\fontclass:#1\endcsname
      \expandafter\math_set_font_alternate\csname\??mathstylealternate\fontclass:#1\endcsname
    \else\ifcsname\??mathstylealternate#1\endcsname
@@ -169,31 +345,31 @@
 
 \unexpanded\def\mathaltcal{\math_set_font_alternate{cal}\cal} % ss01 in xits
 
-\let\setmathattribute            \math_set_attribute
-\let\setmathalphabet             \math_set_alphabet
-\let\setmathfontstyle            \math_set_font_style
-\let\setmathfontalternate        \math_set_font_alternate
-\let\setmathfontstylealterternate\math_set_font_style_alterternate
+\let\setmathattribute         \math_set_attribute
+\let\setmathalphabet          \math_set_alphabet
+\let\setmathfontstyle         \math_set_font_style
+\let\setmathfontalternate     \math_set_font_alternate
+\let\setmathfontstylealternate\math_set_font_style_alternate
 
-\let\mathalternate               \math_set_font_alternate % obsolete
+\let\mathalternate            \math_set_font_alternate % obsolete
 
-\unexpanded\def\mathupright   {\math_set_attribute\s!regular\s!tf\math_set_font_style_alterternate\s!tf}
-\unexpanded\def\mathdefault   {\math_set_attribute\s!regular\s!it\math_set_font_style_alterternate\s!it}
-\unexpanded\def\mathscript    {\math_set_alphabet \s!script      \math_set_font_style_alterternate\s!script}
-\unexpanded\def\mathfraktur   {\math_set_alphabet \s!fraktur     \math_set_font_style_alterternate\s!fraktur}
-\unexpanded\def\mathblackboard{\math_set_alphabet \s!blackboard  \math_set_font_style_alterternate\s!blackboard}
+\unexpanded\def\mathupright   {\math_set_attribute\s!regular\s!tf\math_set_font_style_alternate\s!tf}
+\unexpanded\def\mathdefault   {\math_set_attribute\s!regular\s!it\math_set_font_style_alternate\s!it}
+\unexpanded\def\mathscript    {\math_set_alphabet \s!script      \math_set_font_style_alternate\s!script}
+\unexpanded\def\mathfraktur   {\math_set_alphabet \s!fraktur     \math_set_font_style_alternate\s!fraktur}
+\unexpanded\def\mathblackboard{\math_set_alphabet \s!blackboard  \math_set_font_style_alternate\s!blackboard}
 
-\unexpanded\def\mathrm        {\math_set_attribute\s!rm\s!tf     \math_set_font_style_alterternate\s!tf}
-\unexpanded\def\mathss        {\math_set_attribute\s!ss\s!tf     \math_set_font_style_alterternate\s!tf}
-\unexpanded\def\mathtt        {\math_set_attribute\s!tt\s!tf     \math_set_font_style_alterternate\s!tf}
+\unexpanded\def\mathrm        {\math_set_attribute\s!rm\s!tf     \math_set_font_style_alternate\s!tf}
+\unexpanded\def\mathss        {\math_set_attribute\s!ss\s!tf     \math_set_font_style_alternate\s!tf}
+\unexpanded\def\mathtt        {\math_set_attribute\s!tt\s!tf     \math_set_font_style_alternate\s!tf}
 
-\unexpanded\def\mathtf        {\math_set_font_style\s!tf         \math_set_font_style_alterternate\s!tf}
-\unexpanded\def\mathsl        {\math_set_font_style\s!it         \math_set_font_style_alterternate\s!it} % no sl
-\unexpanded\def\mathit        {\math_set_font_style\s!it         \math_set_font_style_alterternate\s!it}
+\unexpanded\def\mathtf        {\math_set_font_style\s!tf         \math_set_font_style_alternate\s!tf}
+\unexpanded\def\mathsl        {\math_set_font_style\s!it         \math_set_font_style_alternate\s!it} % no sl
+\unexpanded\def\mathit        {\math_set_font_style\s!it         \math_set_font_style_alternate\s!it}
 
-\unexpanded\def\mathbf        {\math_set_font_style\s!bf         \math_set_font_style_alterternate\s!bf}
-\unexpanded\def\mathbs        {\math_set_font_style\s!bi         \math_set_font_style_alterternate\s!bi} % no sl
-\unexpanded\def\mathbi        {\math_set_font_style\s!bi         \math_set_font_style_alterternate\s!bi}
+\unexpanded\def\mathbf        {\math_set_font_style\s!bf         \math_set_font_style_alternate\s!bf}
+\unexpanded\def\mathbs        {\math_set_font_style\s!bi         \math_set_font_style_alternate\s!bi} % no sl
+\unexpanded\def\mathbi        {\math_set_font_style\s!bi         \math_set_font_style_alternate\s!bi}
 
 \let\tfmath\mathtf % maybe a grouped command
 \let\slmath\mathsl
@@ -216,12 +392,12 @@
 \unexpanded\def\mathfrak#1{{\mathfraktur   #1}}  % for AMS compatibility
 \unexpanded\def\mathbb  #1{{\mathblackboard#1}}  % for AMS compatibility
 
-\let\normaltf\tf \unexpanded\def\tf{\ifmmode\mathtf\else\normaltf\fi}
-\let\normalbf\bf \unexpanded\def\bf{\ifmmode\mathbf\else\normalbf\fi}
-\let\normalit\it \unexpanded\def\it{\ifmmode\mathit\else\normalit\fi}
-\let\normalsl\sl \unexpanded\def\sl{\ifmmode\mathsl\else\normalsl\fi}
-\let\normalbi\bi \unexpanded\def\bi{\ifmmode\mathbi\else\normalbi\fi}
-\let\normalbs\bs \unexpanded\def\bs{\ifmmode\mathbs\else\normalbs\fi}
+\ifdefined\normaltf\else\let\normaltf\tf\fi \unexpanded\def\tf{\ifmmode\mathtf\else\normaltf\fi}
+\ifdefined\normalbf\else\let\normalbf\bf\fi \unexpanded\def\bf{\ifmmode\mathbf\else\normalbf\fi}
+\ifdefined\normalit\else\let\normalit\it\fi \unexpanded\def\it{\ifmmode\mathit\else\normalit\fi}
+\ifdefined\normalsl\else\let\normalsl\sl\fi \unexpanded\def\sl{\ifmmode\mathsl\else\normalsl\fi}
+\ifdefined\normalbi\else\let\normalbi\bi\fi \unexpanded\def\bi{\ifmmode\mathbi\else\normalbi\fi}
+\ifdefined\normalbs\else\let\normalbs\bs\fi \unexpanded\def\bs{\ifmmode\mathbs\else\normalbs\fi}
 
 \let\normalrm\rm \unexpanded\def\rm{\ifmmode\mathrm\else\normalrm\fi}
 \let\normalss\ss \unexpanded\def\ss{\ifmmode\mathss\else\normalss\fi}
@@ -229,6 +405,12 @@
 
 \ifdefined\mr \else \let\mr\relax \fi
 \ifdefined\mb \else \let\mb\relax \fi
+
+% 1: $\setmathattribute{ss}{bf}3$
+% 2: $\setmathattribute{ss}{bf}\setmathfontstylealternate{bf}3$
+% 3: $\setmathattribute{ss}{bf}\setmathfontstyle{bf}3$
+% 4: $\setmathattribute{ss}{bf}\setmathfontstyle{bf}\setmathfontstylealternate{bf}3$
+% 5: $e=mc^2 \quad \mb e=mc^2$
 
 \prependtoks
     \mathdefault
@@ -254,7 +436,7 @@
 \newcount\c_math_renderings_attribute
 
 \appendtoks
-    \c_math_renderings_attribute\ctxcommand{mathrenderset("\mathematicsparameter\c!symbolset")}\relax
+    \c_math_renderings_attribute\clf_mathrenderset{\mathematicsparameter\c!symbolset}\relax
 \to \everysetupmathematics % only in mathematics
 
 \appendtoks
@@ -276,24 +458,26 @@
 \unexpanded\def\boldsymbol
   {\mathortext\mathboldsymbol\bold}
 
-%D Helpers:
+%D Helpers
 
-\def\utfmathclass  #1{\ctxcommand{utfmathclass  (\!!bs#1\!!es)}}
-\def\utfmathstretch#1{\ctxcommand{utfmathstretch(\!!bs#1\!!es)}}
-\def\utfmathcommand#1{\ctxcommand{utfmathcommand(\!!bs#1\!!es)}}
-\def\utfmathfiller #1{\ctxcommand{utfmathfiller (\!!bs#1\!!es)}}
+\def\utfmathclass  #1{\clf_utfmathclass  {#1}}
+\def\utfmathstretch#1{\clf_utfmathstretch{#1}}
+\def\utfmathcommand#1{\clf_utfmathcommand{#1}}
+\def\utfmathfiller #1{\clf_utfmathfiller {#1}}
 
-\def\utfmathclassfiltered  #1#2{\ctxcommand{utfmathclass  (\!!bs#1\!!es,nil,"#2")}}
-\def\utfmathcommandfiltered#1#2{\ctxcommand{utfmathcommand(\!!bs#1\!!es,nil,"#2")}}
+\def\utfmathcommandabove #1{\clf_utfmathcommandabove {#1}}
+\def\utfmathcommandbelow #1{\clf_utfmathcommandbelow {#1}}
+\def\utfmathcommandfiller#1{\clf_utfmathcommandfiller{#1}}
 
-\def\utfmathcommandabove#1{\ctxcommand{utfmathcommandabove(\!!bs#1\!!es)}}
-\def\utfmathcommandbelow#1{\ctxcommand{utfmathcommandbelow(\!!bs#1\!!es)}}
+\unexpanded\def\doifelseutfmathaccent#1{\clf_doifelseutfmathaccent{#1}}
+\unexpanded\def\doifelseutfmathabove #1{\clf_doifelseutfmathabove {#1}}
+\unexpanded\def\doifelseutfmathbelow #1{\clf_doifelseutfmathbelow {#1}}
+\unexpanded\def\doifelseutfmathfiller#1{\clf_doifelseutfmathfiller{#1}}
 
-\unexpanded\def\doifelseutfmathaccent          #1{\ctxcommand{doifelseutfmathaccent(\!!bs#1\!!es)}}
-\unexpanded\def\doifelseutfmathaccentfiltered#1#2{\ctxcommand{doifelseutfmathaccent(\!!bs#1\!!es,"#2")}}
-
-\unexpanded\def\doifelseutfmathabove           #1{\ctxcommand{doifelseutfmathabove(\!!bs#1\!!es)}}
-\unexpanded\def\doifelseutfmathbelow           #1{\ctxcommand{doifelseutfmathbelow(\!!bs#1\!!es)}}
+\let\doifutfmathaccentelse \doifelseutfmathaccent
+\let\doifutfmathaboveelse  \doifelseutfmathabove
+\let\doifutfmathbelowelse  \doifelseutfmathbelow
+\let\doifutfmathfillerelse \doifelseutfmathfiller
 
 %D Not used that much:
 
@@ -366,9 +550,38 @@
 
 %D Let's define a few comands here:
 
-\definemathcommand [mathstrut]       {\vphantom{(}}
+%definemathcommand [mathstrut]       {\vphantom{(}}
 %definemathcommand [joinrel]         {\mathrel{\mkern-3mu}}
 \definemathcommand [joinrel]   [rel] {\mkern-3mu}
+
+\chardef\c_math_strut"28
+
+\unexpanded\def\math_strut_htdp#1%
+  {\s!height\fontcharht#1\c_math_strut
+   \s!depth \fontchardp#1\c_math_strut}
+
+\unexpanded\def\math_strut_normal
+  {\vrule
+      \normalexpanded{\math_strut_htdp{\mathstylefont\normalmathstyle}}%
+      \s!width \zeropoint
+   \relax}
+
+\unexpanded\def\math_strut_visual
+  {\hskip-.01\emwidth
+   \vrule
+      \normalexpanded{\math_strut_htdp{\mathstylefont\normalmathstyle}}%
+      \s!width .02\emwidth
+   \relax
+   \hskip-.01\emwidth}
+
+\unexpanded\def\showmathstruts % let's not overload \math_strut_normal
+  {\let\math_strut\math_strut_visual}
+
+\let\math_strut\math_strut_normal
+
+% \unexpanded\def\mathstrut{\mathcodecommand{nothing}{\math_strut}}
+
+\definemathcommand [mathstrut] {\math_strut}
 
 %D We could have a arg variant \unknown\ but not now.
 
@@ -390,13 +603,14 @@
 \unexpanded\def\mathop
   {\normalmathop
    \bgroup
-   \let\rm\mf
+  % no: \let\rm\mf
    \let\nexttoken=}
 
 % this one too: \letvalue{\??mathcodecommand op}\mathop ?
 
 \unexpanded\def\normalmbox
-  {\normalhbox\bgroup\mf
+  {\normalhbox\bgroup
+   \usemathematicsstyleandcolor\c!textstyle\c!textcolor % new
    \dowithnextboxcs\math_mbox_finish\normalhbox}
 
 \def\math_mbox_finish
@@ -421,9 +635,12 @@
      \startimath#1\stopimath
    \egroup
    \ht\scratchbox\strutht
-   \dp\scratchbox\strutht
+   \dp\scratchbox\strutdp
    \box\scratchbox
    \endgroup}
+
+\unexpanded\def\mtext#1%
+  {\text{\usemathematicsstyleandcolor\c!textstyle\c!textcolor#1}}
 
 %D The next hack is needed needed for sine, cosine etc.
 
@@ -438,19 +655,69 @@
 \unexpanded\def\math_tags_mn#1{\begingroup\mathupright#1\endgroup}
 \unexpanded\def\math_tags_ms#1{\begingroup\mathupright#1\endgroup}
 
-\unexpanded\def\mfunction         #1{{\mathupright\math_tags_function{#1}}}
-\unexpanded\def\mfunctionlabeltext#1{{\mathupright\math_tags_functionlabeltext{#1}}}
-
 % Once this is stable we can store the number at the tex end which is
 % faster. Functions getnumbers >= 1000.
 
-\expanded\def\math_tags_mathfunction_indeed         #1{\ctxcommand{taggedmathfunction("#1",false,\ifconditional\c_apply_function true\else false\fi)}}
-\expanded\def\math_tags_mathfunctionlabeltext_indeed#1{\ctxcommand{taggedmathfunction("#1",true ,\ifconditional\c_apply_function true\else false\fi)}}
+\setupmathematics
+  [\c!textstyle=,     % rm ss etc i.e. known alternatives, otherwise math
+   \c!textcolor=,
+   \c!functionstyle=, % rm ss etc i.e. known alternatives, otherwise math
+   \c!functioncolor=]
 
-\expanded\def\math_tags_mo_indeed#1{\begingroup            \attribute\mathcategoryattribute\plusone  #1\endgroup}
-\expanded\def\math_tags_mi_indeed#1{\begingroup            \attribute\mathcategoryattribute\plustwo  #1\endgroup}
-\expanded\def\math_tags_mn_indeed#1{\begingroup\mathupright\attribute\mathcategoryattribute\plusthree#1\endgroup}
-\expanded\def\math_tags_ms_indeed#1{\begingroup\mathupright\attribute\mathcategoryattribute\plusfour #1\endgroup}
+% \unexpanded\def\math_mfunction_styled
+%   {\edef\m_math_text_choice_face{\textstyleface\normalmathstyle}%
+%    \dowithnextbox
+%      {\mathop{\box\nextbox}}%
+%      \hbox\bgroup
+%      \usemathematicsstyleandcolor\c!functionstyle\c!functioncolor
+%      \m_math_text_choice_face
+%      \let\next}
+
+\unexpanded\def\math_mfunction_styled
+  {\begingroup
+   \usemathematicscolorparameter\c!functioncolor
+   \edef\p_functionstyle{\mathematicsparameter\c!functionstyle}%
+   \ifx\p_functionstyle\empty
+     \expandafter\math_mfunction_styled_none
+   \else\ifcsname\??alternativestyles\p_functionstyle\endcsname
+     \doubleexpandafter\math_mfunction_styled_text
+   \else
+     \doubleexpandafter\math_mfunction_styled_math
+   \fi\fi}
+
+\unexpanded\def\math_mfunction_styled_text#1%
+  {\mathoptext{\csname\??alternativestyles\p_functionstyle\endcsname#1}%
+   \endgroup}
+
+\unexpanded\def\math_mfunction_styled_math#1%
+  {\p_functionstyle
+   #1%
+   \endgroup}
+
+\unexpanded\def\math_mfunction_styled_none#1%
+  {\mathupright
+   #1%
+   \endgroup}
+
+\unexpanded\def\mfunction#1%
+  {\begingroup
+   \math_tags_mfunctiontxt{#1}\c_apply_function
+   \math_mfunction_styled{#1}%
+   \endgroup}
+
+\unexpanded\def\mfunctionlabeltext#1%
+  {\begingroup
+   \math_tags_mfunctionlab{#1}\c_apply_function
+   \math_mfunction_styled{\mathlabeltext{#1}}%
+   \endgroup}
+
+\let\math_tags_mfunctiontxt\gobbletwoarguments
+\let\math_tags_mfunctionlab\gobbletwoarguments
+
+\unexpanded\def\math_tags_mo_indeed#1{\begingroup            \attribute\mathcategoryattribute\plusone  #1\endgroup}
+\unexpanded\def\math_tags_mi_indeed#1{\begingroup            \attribute\mathcategoryattribute\plustwo  #1\endgroup}
+\unexpanded\def\math_tags_mn_indeed#1{\begingroup\mathupright\attribute\mathcategoryattribute\plusthree#1\endgroup}
+\unexpanded\def\math_tags_ms_indeed#1{\begingroup\mathupright\attribute\mathcategoryattribute\plusfour #1\endgroup} % todo: mathoptext
 
 \newconditional\c_apply_function
 
@@ -465,12 +732,12 @@
    \endgroup}
 
 \appendtoks
-    \let\math_tags_function         \math_tags_mathfunction_indeed
-    \let\math_tags_functionlabeltext\math_tags_mathfunctionlabeltext_indeed
-    \let\math_tags_mo               \math_tags_mo_indeed
-    \let\math_tags_mi               \math_tags_mi_indeed
-    \let\math_tags_mn               \math_tags_mn_indeed
-    \let\math_tags_ms               \math_tags_ms_indeed
+    \let\math_tags_mfunctiontxt\clf_tagmfunctiontxt
+    \let\math_tags_mfunctionlab\clf_tagmfunctionlab
+    \let\math_tags_mo          \math_tags_mo_indeed
+    \let\math_tags_mi          \math_tags_mi_indeed
+    \let\math_tags_mn          \math_tags_mn_indeed
+    \let\math_tags_ms          \math_tags_ms_indeed
 \to \everyenableelements
 
 \appendtoks
@@ -484,21 +751,21 @@
 % \def\mlimitsfunction  #1{\mathlimopcomm{{\mr#1}}
 % \def\mnolimitsfunction#1{\mathnolopcomm{{\mr#1}}
 
-%D Taco posted this solution as response to a mail by Olivier, so let's integrate
-%D it here.
-
-\def\currentmscaledstyle{rm} % will be plugged into the typeface text=ss option
-
-\unexpanded\def\math_function_style_opnolimits        #1{\mathop{\mscaledtext{#1}}\nolimits}
-\unexpanded\def\math_function_style_mfunction         #1{\mscaledtext{\math_tags_function{#1}}}
-\unexpanded\def\math_function_style_mfunctionlabeltext#1{\mscaledtext{\math_tags_functionlabeltext{#1}}}
-
-\unexpanded\def\setmathfunctionstyle#1% rm ss tt (can be made faster if needed)
-  {\doifsomething{#1}
-     {\def\currentmscaledstyle{#1}%
-      \let\mathopnolimits    \math_function_style_opnolimits
-      \let\mfunction         \math_function_style_mfunction
-      \let\mfunctionlabeltext\math_function_style_mfunctionlabeltext}}
+% %D Taco posted this solution as response to a mail by Olivier, so let's integrate
+% %D it here.
+%
+% \def\currentmscaledstyle{rm} % will be plugged into the typeface text=ss option
+%
+% \unexpanded\def\math_function_style_opnolimits        #1{\mathop{\mscaledtext{#1}}\nolimits}
+% \unexpanded\def\math_function_style_mfunction         #1{\mscaledtext{\math_tags_function{#1}}}
+% \unexpanded\def\math_function_style_mfunctionlabeltext#1{\mscaledtext{\math_tags_functionlabeltext{#1}}}
+%
+% \unexpanded\def\setmathfunctionstyle#1% rm ss tt (can be made faster if needed)
+%   {\doifsomething{#1}
+%      {\def\currentmscaledstyle{#1}%
+%       \let\mathopnolimits    \math_function_style_opnolimits
+%       \let\mfunction         \math_function_style_mfunction
+%       \let\mfunctionlabeltext\math_function_style_mfunctionlabeltext}}
 
 \unexpanded\def\mscaledtext#1%
   {\mathchoice
@@ -506,6 +773,9 @@
      {\hbox{\csname\currentmscaledstyle\endcsname\tf  #1}}
      {\hbox{\csname\currentmscaledstyle\endcsname\tfx #1}}
      {\hbox{\csname\currentmscaledstyle\endcsname\tfxx#1}}}
+
+\unexpanded\def\setmathfunctionstyle#1%
+  {\setupmathematics[\c!functionstyle=#1]} % for old times sake
 
 %D We can force the way functions are typeset by manipulating the text option:
 %D
@@ -788,17 +1058,16 @@
 %    \ifconditional\knuthmode\else\donknuthmode\fi}
 
 \unexpanded\def\enableasciimode
-  {\ctxlua{resolvers.macros.enablecomment()}%
-   \glet\enableasciimode\relax}
+  {\clf_enableasciimode} % relaxes itself
 
 \unexpanded\def\asciimode
   {\catcodetable\txtcatcodes
-   \enableasciimode}
+   \clf_enableasciimode}
 
 \unexpanded\def\startasciimode
   {\pushcatcodetable
    \catcodetable\txtcatcodes
-   \enableasciimode}
+   \clf_enableasciimode}
 
 \unexpanded\def\stopasciimode
   {\popcatcodetable}
@@ -816,7 +1085,7 @@
 \to \everysetupmathematics
 
 \setupmathematics
-  [\c!compact=no]
+  [\c!compact=\v!no]
 
 % \enabletrackers[typesetters.directions.math]
 
@@ -867,8 +1136,8 @@
 
 \newcount\c_math_bidi
 
-\setvalue{\??mathbidi\v!no }{\ctxcommand{setmathdirection(0)}\c_math_bidi\attributeunsetvalue}
-\setvalue{\??mathbidi\v!yes}{\ctxcommand{setmathdirection(1)}\c_math_bidi\plusone}
+\setvalue{\??mathbidi\v!no }{\clf_setmathdirection\zerocount\relax\c_math_bidi\attributeunsetvalue}
+\setvalue{\??mathbidi\v!yes}{\clf_setmathdirection\plusone  \relax\c_math_bidi\plusone}
 
 \appendtoks
     \edef\p_bidi{\mathematicsparameter\c!bidi}%
@@ -950,7 +1219,7 @@
 
 \def\math_italics_initialize
   {\ifnum\c_math_italics_attribute=\attributeunsetvalue \else
-     \ctxcommand{setmathitalics()}% one time
+     \clf_setmathitalics % one time
      \global\let\math_italics_initialize\relax
    \fi}
 
@@ -1236,6 +1505,19 @@
      \expandafter#3\else
      \expandafter#1\fi}
 
+% \def\textstyleface#1% #1 is number (\normalmathstyle)
+%   {\ifcase\numexpr#1\relax
+%      \tf   \or
+%      \tf   \or
+%      \tf   \or
+%      \tf   \or
+%      \tfx  \or
+%      \tfx  \or
+%      \tfxx \or
+%      \tfxx \else
+%      \tf
+%    \fi}
+
 \unexpanded\def\verbosemathstyle#1% #1 is number (\normalmathstyle)
   {{\normalexpanded{\relax\darkgray\ttxx[\number#1:\ifcase\numexpr#1\relax
                 display\or   % 0
@@ -1267,7 +1549,9 @@
 %D
 %D \typebuffer \getbuffer
 
-\unexpanded\def\mathstylehbox#1%
+% to be tested: {#1} but it could have side effects
+
+\unexpanded\def\mathstylehbox#1% sensitive for: a \over b => {a\over b} or \frac{a}{b}
   {\normalexpanded{\hbox\bgroup
      \startimath\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup}
 
@@ -1453,6 +1737,16 @@
      \crampedscriptstyle  \or
      \crampedscriptstyle  \or
     \fi}
+
+\newcount\c_math_saved_style
+
+\unexpanded\def\pushmathstyle % assumes begingroup .. endgroup
+  {\c_math_saved_style\mathstyle}
+
+\unexpanded\def\popmathstyle
+  {\ifnum\mathstyle=\c_math_saved_style\else
+     \triggermathstyle\c_math_saved_style
+   \fi}
 
 \installcorenamespace{mathstylecommand}
 \installcorenamespace{mathstylecache}
@@ -1789,7 +2083,14 @@
 
 \ifdefined\text\else \let\text\hbox \fi
 
-\unexpanded\def\mathoptext#1{\mathop{\text{#1}}}
+% \unexpanded\def\mathoptext#1{\mathop{\text{#1}}}
+
+\unexpanded\def\mathoptext
+  {\normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
+  %\showmathstyle
+   \dowithnextbox
+     {\mathop{\box\nextbox}}%
+     \hbox\bgroup\font_basics_switchtobodyfont\m_math_text_choice_face\let\next}
 
 % new:
 
@@ -1814,11 +2115,140 @@
 
 % this should be a primitive:
 
-% \def\mathextensiblecode#1#2%
-%   {\cldcontext{mathematics.extensiblecode(\number#1,\number#2)}}
+\def\mathextensiblecode#1#2{\clf_extensiblecode\numexpr#1\relax\numexpr#2\relax}
+\def\mathhorizontalcode#1#2{\clf_horizontalcode\numexpr#1\relax\numexpr#2\relax}
 
-\def\mathextensiblecode#1#2{\ctxcommand{extensiblecode(\number#1,\number#2)}}
-\def\mathhorizontalcode#1#2{\ctxcommand{horizontalcode(\number#1,\number#2)}}
+% experimental:
+
+%D \starttyping
+%D \enabletrackers[math.openedup]
+%D
+%D \dorecurse{10}{\dorecurse{#1}{whatever }}
+%D
+%D \startitemize[packed]
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D \stopitemize
+%D \startitemize[packed,columns]
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D \stopitemize
+%D
+%D \dorecurse{5}{\dorecurse{#1}{whatever }\openedupimath{\frac{1}{2}} }
+%D
+%D \startitemize[packed,columns]
+%D     \startitem whatever \openedupimath{1+2} whatever
+%D     \startitem whatever \openedupimath{1+2} whatever
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D     \startitem whatever \openedupimath{1+2} whatever
+%D     \startitem whatever \openedupimath{1+2} whatever
+%D \stopitemize
+%D
+%D \dorecurse{5}{\dorecurse{#1}{whatever }\openedupimath{1+2} }
+%D
+%D \startitemize[packed]
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D \stopitemize
+%D
+%D \dorecurse{10}{whatever }
+%D \dorecurse {5}{\dorecurse{#1}{whatever }\openedupimath{\frac{1}{2}} }
+%D \dorecurse{10}{whatever }
+%D \stoptyping
+
+\def\m_math_inline_openup_ht{\dimexpr\ifinsidecolumns\strutdp\else\lineheight\fi/\plusfour\relax}
+\def\m_math_inline_openup_dp{\dimexpr\ifinsidecolumns\strutdp\else\lineheight\fi/\plusfour\relax}
+
+% \def\m_math_inline_openup_ht{\dimexpr\lineheight/\ifinsidecolumns\pluseight\else\plusfour\fi\relax}
+% \def\m_math_inline_openup_dp{\dimexpr\lineheight/\ifinsidecolumns\pluseight\else\plusfour\fi\relax}
+
+\installtextracker
+  {math.openedup}
+  {\let\math_inline_openup_start_yes\math_inline_openup_traced_start}
+  {\let\math_inline_openup_start_yes\math_inline_openup_normal_start}
+
+\unexpanded\def\math_inline_openup_normal_start
+  {\scratchheight\dimexpr\ht\scratchbox+\m_math_inline_openup_ht\relax
+   \scratchdepth \dimexpr\dp\scratchbox+\m_math_inline_openup_dp\relax
+   \vrule\s!width\zeropoint\s!height\scratchheight\s!depth\scratchdepth\relax
+   \begingroup
+   \let\math_inline_openup_stop\math_inline_openup_normal_stop}
+
+\unexpanded\def\math_inline_openup_normal_stop
+   {\endgroup
+    \vrule\s!width\zeropoint\s!height\scratchheight\s!depth\scratchdepth\relax}
+
+\unexpanded\def\math_inline_openup_traced_start
+  {\scratchtopoffset   \ht\scratchbox
+   \scratchbottomoffset\dp\scratchbox
+   \scratchheight      \dimexpr\scratchtopoffset   +\m_math_inline_openup_ht\relax
+   \scratchdepth       \dimexpr\scratchbottomoffset+\m_math_inline_openup_dp\relax
+   \vrule\s!width\zeropoint\s!height\scratchheight\s!depth\scratchdepth\relax
+   \begingroup
+     \dofastcoloractivation{darkred}%
+     \vrule\s!width\emwidth\s!height\scratchheight\s!depth-\scratchtopoffset\relax
+   \endgroup
+   \kern-\emwidth
+   \begingroup
+   \let\math_inline_openup_stop\math_inline_openup_traced_stop}
+
+\unexpanded\def\math_inline_openup_traced_stop
+  {\endgroup
+   \kern-\emwidth
+   \begingroup
+     \dofastcoloractivation{darkblue}%
+     \vrule\s!width\emwidth\s!height-\scratchbottomoffset\s!depth\scratchdepth\relax
+   \endgroup
+   \vrule\s!width\zeropoint\s!height\scratchheight\s!depth\scratchdepth\relax}
+
+\let\math_inline_openup_start_yes\math_inline_openup_normal_start
+\let\math_inline_openup_stop     \relax
+
+\def\math_inline_openup_start_nop
+  {\let\math_inline_openup_stop\relax}
+
+\unexpanded\def\openedupimath
+  {\dontleavehmode
+   \begingroup
+   \ifmmode
+     \expandafter\openedupimath_math
+   \else
+     \expandafter\openedupimath_text
+   \fi}
+
+\unexpanded\def\openedupimath_math#1%
+  {\setbox\scratchbox\mathstylehbox{#1}%
+   \ifdim\ht\scratchbox>\strutht
+     \math_inline_openup_start_yes
+   \else\ifdim\dp\scratchbox>\strutdp
+     \math_inline_openup_start_yes
+   \else
+     \math_inline_openup_start_nop
+   \fi\fi
+   #1%
+   \math_inline_openup_stop
+   \endgroup}
+
+\unexpanded\def\openedupimath_text#1%
+  {\setbox\scratchbox\hbox{\startimath#1\stopimath}%
+   \ifdim\ht\scratchbox>\strutht
+     \math_inline_openup_start_yes
+   \else\ifdim\dp\scratchbox>\strutdp
+     \math_inline_openup_start_yes
+   \else
+     \math_inline_openup_start_nop
+   \fi\fi
+   \startimath
+   #1%
+   \stopimath
+   \math_inline_openup_stop
+   \endgroup}
 
 \protect \endinput
 

@@ -183,6 +183,7 @@
 		<cd:variable name='flushleft' value='lijnlinks'/>
 		<cd:variable name='flushouter' value='lijnbuiten'/>
 		<cd:variable name='flushright' value='lijnrechts'/>
+		<cd:variable name='followingpage' value='opvolgendepagina'/>
 		<cd:variable name='footer' value='voet'/>
 		<cd:variable name='footnote' value='voetnoot'/>
 		<cd:variable name='force' value='forceer'/>
@@ -290,20 +291,21 @@
 		<cd:variable name='mathematics' value='wiskunde'/>
 		<cd:variable name='mathmatrix' value='wiskundematrix'/>
 		<cd:variable name='max' value='max'/>
-		<cd:variable name='maxdepth' value='maxdepth'/>
-		<cd:variable name='maxheight' value='maxheight'/>
-		<cd:variable name='maxwidth' value='maxwidth'/>
+		<cd:variable name='maxdepth' value='maxdiepte'/>
+		<cd:variable name='maxheight' value='maxhoogte'/>
+		<cd:variable name='maxwidth' value='maxbreedte'/>
 		<cd:variable name='may' value='mei'/>
 		<cd:variable name='mediaeval' value='mediaeval'/>
 		<cd:variable name='medium' value='middel'/>
 		<cd:variable name='middle' value='midden'/>
 		<cd:variable name='min' value='min'/>
-		<cd:variable name='mindepth' value='mindepth'/>
+		<cd:variable name='mindepth' value='mindiepte'/>
 		<cd:variable name='minheight' value='minhoogte'/>
 		<cd:variable name='minwidth' value='minbreedte'/>
 		<cd:variable name='mirrored' value='gespiegeld'/>
 		<cd:variable name='monday' value='maandag'/>
 		<cd:variable name='mono' value='mono'/>
+		<cd:variable name='monobold' value='monovet'/>
 		<cd:variable name='month' value='maand'/>
 		<cd:variable name='more' value='meer'/>
 		<cd:variable name='morehyphenation' value='morehyphenation'/>
@@ -363,6 +365,7 @@
 		<cd:variable name='positive' value='positief'/>
 		<cd:variable name='postponing' value='uitstellen'/>
 		<cd:variable name='postscript' value='postscript'/>
+		<cd:variable name='precedingpage' value='voorafgaandepagina'/>
 		<cd:variable name='preference' value='voorkeur'/>
 		<cd:variable name='preview' value='preview'/>
 		<cd:variable name='previous' value='vorige'/>
@@ -422,7 +425,7 @@
 		<cd:variable name='september' value='september'/>
 		<cd:variable name='serif' value='serif'/>
 		<cd:variable name='serried' value='aanelkaar'/>
-		<cd:variable name='setups' value='instellingen'/>
+		<cd:variable name='setups' value='setups'/>
 		<cd:variable name='sheet' value='sheet'/>
 		<cd:variable name='short' value='kort'/>
 		<cd:variable name='simplefonts' value='simplefonts'/>
@@ -657,7 +660,7 @@
 		<cd:constant name='coupling' value='koppeling'/>
 		<cd:constant name='couplingway' value='koppelwijze'/>
 		<cd:constant name='criterium' value='criterium'/>
-		<cd:constant name='css' value='css'/>
+		<cd:constant name='cssfile' value='cssfile'/>
 		<cd:constant name='current' value='huidige'/>
 		<cd:constant name='cutspace' value='snijwit'/>
 		<cd:constant name='dash' value='streep'/>
@@ -692,7 +695,7 @@
 		<cd:constant name='equalwidth' value='equalwidth'/>
 		<cd:constant name='escape' value='escape'/>
 		<cd:constant name='evenmargin' value='evenmarge'/>
-		<cd:constant name='exitoffset' value='labeloffset'/>
+		<cd:constant name='exitoffset' value='exitoffset'/>
 		<cd:constant name='expansion' value='expansie'/>
 		<cd:constant name='export' value='exporteer'/>
 		<cd:constant name='extras' value='extras'/>
@@ -707,6 +710,7 @@
 		<cd:constant name='file' value='file'/>
 		<cd:constant name='filtercommand' value='filtercommand'/>
 		<cd:constant name='finalnamesep' value='finalnamesep'/>
+		<cd:constant name='finalpubsep' value='finalpubsep'/>
 		<cd:constant name='firstnamesep' value='firstnamesep'/>
 		<cd:constant name='firstpage' value='eerstepagina'/>
 		<cd:constant name='focus' value='focus'/>
@@ -758,6 +762,7 @@
 		<cd:constant name='indenting' value='inspringen'/>
 		<cd:constant name='indentnext' value='springvolgendein'/>
 		<cd:constant name='indicator' value='aanduiding'/>
+		<cd:constant name='initialsep' value='initialsep'/>
 		<cd:constant name='inner' value='binnen'/>
 		<cd:constant name='innermargin' value='binnenmarge'/>
 		<cd:constant name='inputfile' value='inputfile'/>
@@ -863,6 +868,7 @@
 		<cd:constant name='nright' value='nrechts'/>
 		<cd:constant name='ntop' value='nboven'/>
 		<cd:constant name='number' value='nummer'/>
+		<cd:constant name='numberalign' value='nummeruitlijnen'/>
 		<cd:constant name='numbercolor' value='nummerkleur'/>
 		<cd:constant name='numbercommand' value='nummercommando'/>
 		<cd:constant name='numberconversion' value='numberconversion'/>
@@ -950,7 +956,7 @@
 		<cd:constant name='reduction' value='reductie'/>
 		<cd:constant name='ref' value='ref'/>
 		<cd:constant name='refcommand' value='refcommand'/>
-		<cd:constant name='reference' value='verwijzing'/>
+		<cd:constant name='reference' value='referentie'/>
 		<cd:constant name='referenceprefix' value='referenceprefix'/>
 		<cd:constant name='referencing' value='refereren'/>
 		<cd:constant name='region' value='gebied'/>
@@ -1051,6 +1057,8 @@
 		<cd:constant name='suffix' value='suffix'/>
 		<cd:constant name='suffixseparator' value='suffixscheider'/>
 		<cd:constant name='suffixstopper' value='suffixafsluiter'/>
+		<cd:constant name='surnamefirstnamesep' value='surnamefirstnamesep'/>
+		<cd:constant name='surnameinitialsep' value='surnameinitialsep'/>
 		<cd:constant name='surnamesep' value='surnamesep'/>
 		<cd:constant name='sx' value='sx'/>
 		<cd:constant name='sy' value='sy'/>
@@ -1098,7 +1106,7 @@
 		<cd:constant name='totalnumber' value='totalnumber'/>
 		<cd:constant name='type' value='type'/>
 		<cd:constant name='unit' value='eenheid'/>
-		<cd:constant name='unknownreference' value='onbekendeverwijzing'/>
+		<cd:constant name='unknownreference' value='onbekendereferentie'/>
 		<cd:constant name='urlalternative' value='urlvariant'/>
 		<cd:constant name='urlspace' value='urlspatie'/>
 		<cd:constant name='validate' value='valideer'/>
@@ -1290,6 +1298,7 @@
 		<cd:command name='definetabletemplate' value='definieertabelvorm'/>
 		<cd:command name='definetabulate' value='definieertabulatie'/>
 		<cd:command name='definetext' value='definieertekst'/>
+		<cd:command name='definetextbackground' value='definieertekstachtergrond'/>
 		<cd:command name='definetextposition' value='definieertekstpositie'/>
 		<cd:command name='definetextvariable' value='definieertekstvariabele'/>
 		<cd:command name='definetype' value='definieertype'/>
@@ -1450,7 +1459,6 @@
 		<cd:command name='paperheight' value='papierhoogte'/>
 		<cd:command name='paperwidth' value='papierbreedte'/>
 		<cd:command name='periods' value='punten'/>
-		<cd:command name='plaatsruwelijst' value='plaatsruwelijst'/>
 		<cd:command name='placebookmarks' value='plaatsbookmarks'/>
 		<cd:command name='placecombinedlist' value='plaatssamengesteldelijst'/>
 		<cd:command name='placefloat' value='plaatsplaatsblok'/>
@@ -1460,11 +1468,13 @@
 		<cd:command name='placeheadtext' value='plaatskoptekst'/>
 		<cd:command name='placelegend' value='plaatslegenda'/>
 		<cd:command name='placelist' value='plaatslijst'/>
+		<cd:command name='placelistofsynonyms' value='plaatslijstmetsynoniemen'/>
 		<cd:command name='placelocalfootnotes' value='plaatslokalevoetnoten'/>
 		<cd:command name='placelogos' value='plaatsbeeldmerken'/>
 		<cd:command name='placeongrid' value='plaatsopgrid'/>
 		<cd:command name='placeontopofeachother' value='plaatsonderelkaar'/>
 		<cd:command name='placepagenumber' value='plaatspaginanummer'/>
+		<cd:command name='placerawlist' value='plaatsruwelijst'/>
 		<cd:command name='placereferencelist' value='plaatsreferentielijst'/>
 		<cd:command name='placeregister' value='plaatsregister'/>
 		<cd:command name='placerule' value='plaatslijn'/>
@@ -1611,7 +1621,6 @@
 		<cd:command name='setupregister' value='stelregisterin'/>
 		<cd:command name='setuprotate' value='stelroterenin'/>
 		<cd:command name='setuprule' value='stellijnin'/>
-		<cd:command name='setups' value='instellingen'/>
 		<cd:command name='setupscreens' value='stelrastersin'/>
 		<cd:command name='setupsection' value='stelsectiein'/>
 		<cd:command name='setupsectionblock' value='stelsectieblokin'/>
@@ -1629,6 +1638,7 @@
 		<cd:command name='setuptables' value='steltabellenin'/>
 		<cd:command name='setuptabulate' value='steltabulatiein'/>
 		<cd:command name='setuptext' value='steltekstin'/>
+		<cd:command name='setuptextbackground' value='steltekstachtergrondin'/>
 		<cd:command name='setuptextposition' value='steltekstpositiein'/>
 		<cd:command name='setuptextrules' value='steltekstlijnenin'/>
 		<cd:command name='setuptexttexts' value='stelteksttekstenin'/>
@@ -1675,6 +1685,7 @@
 		<cd:command name='startdocument' value='startdocument'/>
 		<cd:command name='startenvironment' value='startomgeving'/>
 		<cd:command name='startfigure' value='startfiguur'/>
+		<cd:command name='startframed' value='startomlijnd'/>
 		<cd:command name='startglobal' value='startglobaal'/>
 		<cd:command name='startline' value='startregel'/>
 		<cd:command name='startlinecorrection' value='startregelcorrectie'/>
@@ -1701,6 +1712,7 @@
 		<cd:command name='starttable' value='starttabel'/>
 		<cd:command name='starttables' value='starttabellen'/>
 		<cd:command name='starttext' value='starttekst'/>
+		<cd:command name='starttextbackground' value='starttekstachtergrond'/>
 		<cd:command name='starttextrule' value='starttekstlijn'/>
 		<cd:command name='startunpacked' value='startvanelkaar'/>
 		<cd:command name='startversion' value='startversie'/>
@@ -1715,6 +1727,7 @@
 		<cd:command name='stopcomponent' value='stoponderdeel'/>
 		<cd:command name='stopdocument' value='stopdocument'/>
 		<cd:command name='stopenvironment' value='stopomgeving'/>
+		<cd:command name='stopframed' value='stopomlijnd'/>
 		<cd:command name='stopglobal' value='stopglobaal'/>
 		<cd:command name='stopline' value='stopregel'/>
 		<cd:command name='stoplinecorrection' value='stopregelcorrectie'/>
@@ -1740,6 +1753,7 @@
 		<cd:command name='stoptable' value='stoptabel'/>
 		<cd:command name='stoptables' value='stoptabellen'/>
 		<cd:command name='stoptext' value='stoptekst'/>
+		<cd:command name='stoptextbackground' value='stoptekstachtergrond'/>
 		<cd:command name='stoptextrule' value='stoptekstlijn'/>
 		<cd:command name='stopunpacked' value='stopvanelkaar'/>
 		<cd:command name='stopversion' value='stopversie'/>

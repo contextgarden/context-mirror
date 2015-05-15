@@ -100,14 +100,14 @@
    features=no]
 
 \definefontfeature
-  [semetic-complete]
+  [semitic-complete]
   [mode=node,analyze=yes,language=dflt,ccmp=yes,
    init=yes,medi=yes,fina=yes,isol=yes,
    mark=yes,mkmk=yes,kern=yes,curs=yes,
    liga=yes,dlig=yes,rlig=yes,clig=yes,calt=yes]
 
 \definefontfeature
-  [semetic-simple]
+  [semitic-simple]
   [mode=node,analyze=yes,language=dflt,ccmp=yes,
    init=yes,medi=yes,fina=yes,isol=yes,
    mark=yes,mkmk=yes,kern=yes,curs=yes,
@@ -115,22 +115,22 @@
 
 \definefontfeature
   [arabic]
-  [semetic-complete]
+  [semitic-complete]
   [script=arab]
 
 \definefontfeature
   [hebrew]
-  [semetic-complete]
+  [semitic-complete]
   [script=hebr]
 
 \definefontfeature
   [simplearabic]
-  [semetic-simple]
+  [semitic-simple]
   [script=arab]
 
 \definefontfeature
   [simplehebrew]
-  [semetic-simple]
+  [semitic-simple]
   [script=hebr]
 
 % \definefont [DevaOne] [file:chandas.ttf*devanagari-one at 12pt]
@@ -170,10 +170,54 @@
    kern=yes]
 
 \definefontfeature
+  [malayalam-one]
+  [mode=node,
+   language=dflt,
+   script=mlym,
+   akhn=yes,
+   blwf=yes,
+   half=yes,
+   pres=yes,
+   blws=yes,
+   psts=yes,
+   haln=no]
+
+\definefontfeature
+  [malayalam-two]
+  [malayalam-one]
+  [script=mlm2]
+
+\definefontfeature
   [jamoforms]
   [ljmo=yes,
    tjmo=yes,
    vjmo=yes]
+
+% cjk
+
+% \definefontfeature
+%   [japanese]
+%   [default]
+%   [language=jan]
+
+% \definefontfeature
+%   [simplified-chinese]
+%   [default]
+%   [language=zhs]
+
+% \definefontfeature
+%   [traditional-chinese]
+%   [default]
+%   [language=zht]
+
+% \definefontfeature
+%   [chinese]
+%   [simplified-chinese]
+
+% \definefontfeature
+%   [korean]
+%   [default]
+%   [language=kor]
 
 % symbols:
 
@@ -305,6 +349,23 @@
 \definecolor[font:7] [r=.75]
 \definecolor[font:8] [g=.75]
 \definecolor[font:9] [b=.75]
+
+\definecolor[f:r:t][a=1,t=.25,r=1]
+\definecolor[f:g:t][a=1,t=.25,g=1]
+\definecolor[f:b:t][a=1,t=.25,b=1]
+\definecolor[f:c:t][a=1,t=.25,c=1]
+\definecolor[f:m:t][a=1,t=.25,m=1]
+\definecolor[f:y:t][a=1,t=.25,y=1]
+\definecolor[f:k:t][a=1,t=.25,s=0]
+\definecolor[f:s:t][a=1,t=.25,s=0]
+
+\definepalet % weird place
+  [layout]
+  [grid=trace:dr,
+   page=trace:dg,
+   profile=f:s:t,
+   one=f:y:t,
+   mix=f:b:t]
 
 %D Now we're up to some definitions.
 
@@ -478,15 +539,16 @@
 \definefontsize[\s!a] \definefontsize[\s!b]
 \definefontsize[\s!c] \definefontsize[\s!d]
 
-\definealternativestyle [\v!mediaeval]                              [\os] []
-\definealternativestyle [\v!normal]                                 [\tf] []
-\definealternativestyle [\v!bold]                                   [\bf] []
-\definealternativestyle [\v!type]                                   [\tt] []
-\definealternativestyle [\v!mono]                                   [\tt] []
-\definealternativestyle [\v!slanted]                                [\sl] []
-\definealternativestyle [\v!italic]                                 [\it] []
-\definealternativestyle [\v!boldslanted,\v!slantedbold]             [\bs] []
-\definealternativestyle [\v!bolditalic,\v!italicbold]               [\bi] []
+\definealternativestyle [\v!mediaeval]                              [\os]    []
+\definealternativestyle [\v!normal]                                 [\tf]    []
+\definealternativestyle [\v!bold]                                   [\bf]    []
+\definealternativestyle [\v!type]                                   [\tt]    []
+\definealternativestyle [\v!mono]                                   [\tt]    []
+\definealternativestyle [\v!monobold]                               [\tt\bf] []
+\definealternativestyle [\v!slanted]                                [\sl]    []
+\definealternativestyle [\v!italic]                                 [\it]    []
+\definealternativestyle [\v!boldslanted,\v!slantedbold]             [\bs]    []
+\definealternativestyle [\v!bolditalic,\v!italicbold]               [\bi]    []
 
 \definealternativestyle [\v!small,\v!smallnormal]                   [\setsmallbodyfont\tf] []
 \definealternativestyle [\v!smallbold]                              [\setsmallbodyfont\bf] []
@@ -499,10 +561,16 @@
 \definealternativestyle [\v!smaller]                                [\setsmallbodyfont\tf] []
 
 \definealternativestyle [\v!sans,\v!sansserif]                      [\ss]    []
-\definealternativestyle [\v!sansbold]                               [\ss\bf] []
 \definealternativestyle [\v!roman,\v!serif,\v!regular]              [\rm]
 \definealternativestyle [\v!handwritten]                            [\hw]
 \definealternativestyle [\v!calligraphic]                           [\cg]
+
+\definealternativestyle [\v!sansnormal]  [\ss\tf] []
+\definealternativestyle [\v!sansbold]    [\ss\bf] []
+\definealternativestyle [\v!serifnormal] [\rm\tf] []
+\definealternativestyle [\v!serifbold]   [\rm\bf] []
+\definealternativestyle [\v!mononormal]  [\tt\tf] []
+\definealternativestyle [\v!monobold]    [\tt\bf] []
 
 % % maybe we need interface neutral as well (for use in cld):
 %
@@ -566,6 +634,7 @@
 \definefontfeature[f:smallcaps][smcp=yes]
 \definefontfeature[f:oldstyle] [onum=yes]
 \definefontfeature[f:tabular]  [tnum=yes]
+\definefontfeature[f:superiors][sups=yes]
 
 \definealternativestyle [\v!smallcaps] [\setsmallcaps] [\setsmallcaps]
 \definealternativestyle [\v!oldstyle]  [\setoldstyle ] [\setoldstyle ]
@@ -573,6 +642,7 @@
 \unexpanded\def\setsmallcaps{\doaddfeature{f:smallcaps}}
 \unexpanded\def\setoldstyle {\doaddfeature{f:oldstyle}}
 \unexpanded\def\settabular  {\doaddfeature{f:tabular}}
+\unexpanded\def\setsuperiors{\doaddfeature{f:superiors}}
 
 %D \macros
 %D   {tinyfont}
@@ -598,6 +668,22 @@
 \let\infofont\relax % satisfy dep checker
 
 \definefont[infofont][dejavusansmono at 6pt] % todo \the\everybodyfont
+
+%D Optimization (later we overload in math):
+
+\unexpanded\def\normaltf{\let\fontalternative\s!tf\font_helpers_synchronize_font}
+\unexpanded\def\normalbf{\let\fontalternative\s!bf\font_helpers_synchronize_font}
+\unexpanded\def\normalit{\let\fontalternative\s!it\font_helpers_synchronize_font}
+\unexpanded\def\normalsl{\let\fontalternative\s!sl\font_helpers_synchronize_font}
+\unexpanded\def\normalbi{\let\fontalternative\s!bi\font_helpers_synchronize_font}
+\unexpanded\def\normalbs{\let\fontalternative\s!bs\font_helpers_synchronize_font}
+
+\let\tf\normaltf
+\let\bf\normalbf
+\let\it\normalit
+\let\sl\normalsl
+\let\bi\normalbi
+\let\bs\normalbs
 
 \protect \endinput
 
@@ -634,3 +720,30 @@
 %
 %   /lessorequalslant
 %   /greaterorequalslant
+
+% \unprotect
+%
+% \definehighlight[\v!italic    ][\c!command=\v!no,\c!style=\v!italic]
+% \definehighlight[\v!bold      ][\c!command=\v!no,\c!style=\v!bold]
+% \definehighlight[\v!bolditalic][\c!command=\v!no,\c!style=\v!bolditalic]
+% \definehighlight[\v!mono]      [\c!command=\v!no,\c!style=\v!mono]
+% \definehighlight[\v!monobold]  [\c!command=\v!no,\c!style=\v!monobold]
+%
+% \definehighlight[important]    [\c!command=\v!no,\c!style=\v!bold]
+% \definehighlight[unimportant]  [\c!command=\v!no,\c!color=darkgray]
+% \definehighlight[warning]      [\c!command=\v!no,\c!style=\v!bold,\c!color=darkblue]
+% \definehighlight[error]        [\c!command=\v!no,\c!style=\v!bold,\c!color=darkred]
+%
+% \protect
+%
+% \starttext
+%     \highlight[italic]     {italic}
+%     \highlight[bolditalic] {bolditalic}
+%     \highlight[bold]       {bold}
+%     \highlight[mono]       {mono}
+%     \highlight[monobold]   {monobold}
+%     \highlight[important]  {important}
+%     \highlight[unimportant]{unimportant}
+%     \highlight[warning]    {warning}
+%     \highlight[error]      {error}
+% \stoptext

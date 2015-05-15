@@ -45,7 +45,7 @@
 \appendtoks
    \setuevalue{\e!start\currentmakeup\e!makeup}{\startmakeup[\currentmakeup]}%
    \setuevalue{\e!stop \currentmakeup\e!makeup}{\stopmakeup}%
-   \doiflayoutdefinedelse\currentmakeup\donothing{\definelayout[\currentmakeup]}% new
+   \doifelselayoutdefined\currentmakeup\donothing{\definelayout[\currentmakeup]}% new
 \to \everydefinemakeup
 
 %D The \type{\start}||\type{\stop} macros are used for both
@@ -91,13 +91,59 @@
 \def\page_makeup_start_yes[#name]% [#settings]%
   {\doifelsecommandhandler\??makeup{#name}\page_makeup_start_indeed\page_makeup_start_nop[#name]}%
 
+% case 1:
+%
+% \setuplayout[height=5cm]
+%
+% case 2:
+%
+% \definelayout[crap][height=10cm]
+% \definelayout[standard][crap]
+%
+% case 3:
+%
+% \setuplayout[standard][height=15cm]
+%
+% case 4:
+%
+% \definelayout[whatever][height=2cm]
+% \setuplayout[whatever]
+
 \def\page_makeup_start_indeed[#name][#settings]%
-  {\doifelsenothing{\namedmakeupparameter{#name}\c!page}
-     {\page}% new, so best not have dangling mess here like references (we could capture then and flush embedded)
-     {\page[\namedmakeupparameter{#name}\c!page]}%
+  {% the next grouping hack is somewhat messy:
+   \begingroup
+   % we need to figure out the current layout
+   \xdef\m_page_makeup_name{#name}%
+   \let\currentmakeup\m_page_makeup_name
+   \let\currentlayout\m_page_makeup_name
+   \xdef\m_page_makeup_layout_parent{\layoutparameter\s!parent}%
+   \setupcurrentmakeup[#settings]%
+   \edef\p_page{\makeupparameter\c!page}%
+   \ifx\p_page\empty
+     \endgroup
+     \page % new, so best not have dangling mess here like references (we could capture then and flush embedded)
+   \else\ifx\p_page\v!no
+     % nothing
+     \endgroup
+   \else
+     \normalexpanded{\endgroup\page[\p_page]}%
+   \fi\fi
+   % some dirty trickery (sorry) for determining if we have
+   %  - a layout definition at all
+   %  - inherit from the parent of that definition
+   %  - inherit from the current layout otherwise
+   \ifx\m_page_makeup_name\currentlayout
+      % we already use the layout
+   \else\ifx\m_page_makeup_layout_parent\??layout
+     % we inherit from the current layout
+     \normalexpanded{\setuplayout[#name][\s!parent=\??layout\currentlayout]}% is remembered but checked later anyway
+ % \else
+      % we have an inherited layout
+   \fi\fi
    \startlayout[#name]% includes \page
    \bgroup
-   \edef\currentmakeup{#name}%
+  %\edef\currentmakeup{#name}%
+   \let\currentmakeup\m_page_makeup_name
    \setupcurrentmakeup[#settings]%
    \setsystemmode\v!makeup
    \the\t_page_makeup_every_setup
@@ -137,7 +183,12 @@
    \fi \fi
    \strc_pagenumbers_page_state_pop % new
    \egroup
-   \stoplayout} % includes \page
+   \stoplayout % includes \page
+   \ifx\m_page_makeup_name\currentlayout
+   \else\ifx\m_page_makeup_layout_parent\??layout
+     \normalexpanded{\setuplayout[\m_page_makeup_name][\s!parent=\??layout]}% is remembered but checked later anyway
+ % \else
+   \fi\fi}
 
 \setvalue{\??makeupdoublesided\v!yes}%
   {\emptyhbox
@@ -184,6 +235,7 @@
    \c!headerstate=\v!stop,
    \c!footerstate=\v!stop,
    \c!pagestate=\v!stop] % in manual ! ! !
+%  \c!pagestate=\v!start]
 
 \definemakeup
   [\v!standard]

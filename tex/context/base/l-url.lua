@@ -26,6 +26,8 @@ local lpegmatch, lpegpatterns, replacer = lpeg.match, lpeg.patterns, lpeg.replac
 --    |   ___________|____________                              |
 --   / \ /                        \                             |
 --   urn:example:animal:ferret:nose               interpretable as extension
+--
+-- also nice: http://url.spec.whatwg.org/ (maybe some day ...)
 
 url       = url or { }
 local url = url
@@ -43,7 +45,7 @@ local hexdigit    = R("09","AF","af")
 local plus        = P("+")
 local nothing     = Cc("")
 local escapedchar = (percent * C(hexdigit * hexdigit)) / tochar
-local escaped     = (plus / " ") + escapedchar
+local escaped     = (plus / " ") + escapedchar -- so no loc://foo++.tex
 
 local noslash     = P("/") / ""
 
@@ -143,19 +145,25 @@ local splitquery = Cf ( Ct("") * P { "sequence",
 -- hasher
 
 local function hashed(str) -- not yet ok (/test?test)
-    if str == "" then
+    if not str or str == "" then
         return {
             scheme   = "invalid",
             original = str,
         }
     end
-    local s = split(str)
-    local rawscheme  = s[1]
-    local rawquery   = s[4]
-    local somescheme = rawscheme ~= ""
-    local somequery  = rawquery  ~= ""
+    local detailed   = split(str)
+    local rawscheme  = ""
+    local rawquery   = ""
+    local somescheme = false
+    local somequery  = false
+    if detailed then
+        rawscheme  = detailed[1]
+        rawquery   = detailed[4]
+        somescheme = rawscheme ~= ""
+        somequery  = rawquery  ~= ""
+    end
     if not somescheme and not somequery then
-        s = {
+        return {
             scheme    = "file",
             authority = "",
             path      = str,
@@ -165,31 +173,38 @@ local function hashed(str) -- not yet ok (/test?test)
             noscheme  = true,
             filename  = str,
         }
-    else -- not always a filename but handy anyway
-        local authority, path, filename = s[2], s[3]
-        if authority == "" then
-            filename = path
-        elseif path == "" then
-            filename = ""
-        else
-            filename = authority .. "/" .. path
-        end
-        s = {
-            scheme    = rawscheme,
-            authority = authority,
-            path      = path,
-            query     = lpegmatch(unescaper,rawquery),  -- unescaped, but possible conflict with & and =
-            queries   = lpegmatch(splitquery,rawquery), -- split first and then unescaped
-            fragment  = s[5],
-            original  = str,
-            noscheme  = false,
-            filename  = filename,
-        }
     end
-    return s
+    -- not always a filename but handy anyway
+    local authority = detailed[2]
+    local path      = detailed[3]
+    local filename  = nil
+    if authority == "" then
+        filename = path
+    elseif path == "" then
+        filename = ""
+    else
+        filename = authority .. "/" .. path
+    end
+    return {
+        scheme    = rawscheme,
+        authority = authority,
+        path      = path,
+        query     = lpegmatch(unescaper,rawquery),  -- unescaped, but possible conflict with & and =
+        queries   = lpegmatch(splitquery,rawquery), -- split first and then unescaped
+        fragment  = detailed[5],
+        original  = str,
+        noscheme  = false,
+        filename  = filename,
+    }
 end
 
--- inspect(hashed("template://test"))
+-- inspect(hashed())
+-- inspect(hashed(""))
+-- inspect(hashed("template:///test"))
+-- inspect(hashed("template:///test++.whatever"))
+-- inspect(hashed("template:///test%2B%2B.whatever"))
+-- inspect(hashed("template:///test%x.whatever"))
+-- inspect(hashed("tem%2Bplate:///test%x.whatever"))
 
 -- Here we assume:
 --
@@ -241,7 +256,7 @@ function url.construct(hash) -- dodo: we need to escape !
     return lpegmatch(escaper,concat(fullurl))
 end
 
-local pattern = Cs(noslash * R("az","AZ") * (S(":|")/":") * noslash * P(1)^0)
+local pattern = Cs(slash^-1/"" * R("az","AZ") * ((S(":|")/":") + P(":")) * slash * P(1)^0)
 
 function url.filename(filename)
     local spec = hashed(filename)
@@ -251,6 +266,7 @@ end
 
 -- print(url.filename("/c|/test"))
 -- print(url.filename("/c/test"))
+-- print(url.filename("file:///t:/sources/cow.svg"))
 
 local function escapestring(str)
     return lpegmatch(escaper,str)

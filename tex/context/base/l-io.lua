@@ -12,7 +12,7 @@ local concat = table.concat
 local floor = math.floor
 local type = type
 
-if string.find(os.getenv("PATH"),";") then
+if string.find(os.getenv("PATH"),";",1,true) then
     io.fileseparator, io.pathseparator = "\\", ";"
 else
     io.fileseparator, io.pathseparator = "/" , ":"
@@ -338,11 +338,6 @@ function io.readstring(f,n,m)
     local str = gsub(f:read(n),"\000","")
     return str
 end
-
---
-
-if not io.i_limiter then function io.i_limiter() end end -- dummy so we can test safely
-if not io.o_limiter then function io.o_limiter() end end -- dummy so we can test safely
 
 -- This works quite ok:
 --

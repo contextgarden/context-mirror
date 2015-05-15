@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['font-odv'] = {
     license   = "see context related readme files"
 }
 
+-- One day I'll speed this up ... char swapping and properties.
+
 -- A few remarks:
 --
 -- This code is a partial rewrite of the code that deals with devanagari. The data and logic
@@ -14,6 +16,9 @@ if not modules then modules = { } end modules ['font-odv'] = {
 --
 -- deva: http://www.microsoft.com/typography/OpenType%20Dev/devanagari/introO.mspx
 -- dev2: http://www.microsoft.com/typography/OpenType%20Dev/devanagari/intro.mspx
+--
+-- Rajeesh Nambiar provided patches for the malayalam variant. Thansk to feedback from
+-- the mailing list some aspects could be improved.
 --
 -- As I touched nearly all code, reshuffled it, optimized a lot, etc. etc. (imagine how
 -- much can get messed up in over a week work) it could be that I introduced bugs. There
@@ -47,7 +52,10 @@ if not modules then modules = { } end modules ['font-odv'] = {
 -- Some data will move to char-def.lua (some day).
 --
 -- Hans Hagen, PRAGMA-ADE, Hasselt NL
-
+--
+-- We could have c_nukta, c_halant, c_ra is we know that they are never used mixed within
+-- one script .. yes or no?
+--
 -- Matras: according to Microsoft typography specifications "up to one of each type:
 -- pre-, above-, below- or post- base", but that does not seem to be right. It could
 -- become an option.
@@ -57,9 +65,9 @@ if not modules then modules = { } end modules ['font-odv'] = {
 --
 -- local function ms_matra(c)
 --     local prebase, abovebase, belowbase, postbase = true, true, true, true
---     local n = c.next
---     while n and n.id == glyph_code and n.subtype < 256 and n.font == font do
---         local char = n.char
+--     local n = getnext(c)
+--     while n and getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font do
+--         local char = getchar(n)
 --         if not dependent_vowel[char] then
 --             break
 --         elseif pre_mark[char] and prebase then
@@ -73,7 +81,7 @@ if not modules then modules = { } end modules ['font-odv'] = {
 --         else
 --             return c
 --         end
---         c = c.next
+--         c = getnext(c)
 --     end
 --     return c
 -- end
@@ -100,11 +108,28 @@ local methods            = fonts.analyzers.methods
 local otffeatures        = fonts.constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
 
-local insert_node_after  = nodes.insert_after
-local copy_node          = nodes.copy
-local free_node          = nodes.free
-local remove_node        = nodes.remove
-local flush_list         = nodes.flush_list
+local nuts               = nodes.nuts
+local tonode             = nuts.tonode
+local tonut              = nuts.tonut
+
+local getnext            = nuts.getnext
+local getprev            = nuts.getprev
+local getid              = nuts.getid
+local getchar            = nuts.getchar
+local getfont            = nuts.getfont
+local getsubtype         = nuts.getsubtype
+local getfield           = nuts.getfield
+local setfield           = nuts.setfield
+local getprop            = nuts.getprop
+local setprop            = nuts.setprop
+
+local insert_node_after  = nuts.insert_after
+local copy_node          = nuts.copy
+local free_node          = nuts.free
+local remove_node        = nuts.remove
+local flush_list         = nuts.flush_list
+
+local copyinjection      = nodes.injections.copy -- KE: is this necessary? HH: probably not as positioning comes later and we rawget/set
 
 local unsetvalue         = attributes.unsetvalue
 
@@ -132,18 +157,26 @@ replace_all_nbsp = function(head) -- delayed definition
     return replace_all_nbsp(head)
 end
 
-local fontprocesses      = fonts.hashes.processes
 local xprocesscharacters = nil
 
-xprocesscharacters = function(head,font)
-    xprocesscharacters = nodes.handlers.characters
-    return xprocesscharacters(head,font)
+if context then
+    xprocesscharacters = function(head,font)
+        xprocesscharacters = nodes.handlers.characters
+        return xprocesscharacters(head,font)
+    end
+else
+    xprocesscharacters = function(head,font)
+        xprocesscharacters = nodes.handlers.nodepass -- generic
+        return xprocesscharacters(head,font)
+    end
 end
 
 local function processcharacters(head,font)
-    return xprocesscharacters(head)
+    return tonut(xprocesscharacters(tonode(head)))
 end
 
+-- local fontprocesses = fonts.hashes.processes
+--
 -- function processcharacters(head,font)
 --     local processors = fontprocesses[font]
 --     for i=1,#processors do
@@ -155,6 +188,29 @@ end
 -- In due time there will be entries here for scripts like Bengali, Gujarati,
 -- Gurmukhi, Kannada, Malayalam, Oriya, Tamil, Telugu. Feel free to provide the
 -- code points.
+
+-- We can assume that script are not mixed in the source but if that is the case
+-- we might need to have consonants etc per script and initialize a local table
+-- pointing to the right one.
+
+-- new, to be checked:
+--
+-- U+00978 : DEVANAGARI LETTER MARWARI DDA
+-- U+00980 : BENGALI ANJI
+-- U+00C00 : TELUGU SIGN COMBINING CANDRABINDU ABOVE
+-- U+00C34 : TELUGU LETTER LLLA
+-- U+00C81 : KANNADA SIGN CANDRABINDU
+-- U+00D01 : MALAYALAM SIGN CANDRABINDU
+-- U+00DE6 : SINHALA LITH DIGIT ZERO
+-- U+00DE7 : SINHALA LITH DIGIT ONE
+-- U+00DE8 : SINHALA LITH DIGIT TWO
+-- U+00DE9 : SINHALA LITH DIGIT THREE
+-- U+00DEA : SINHALA LITH DIGIT FOUR
+-- U+00DEB : SINHALA LITH DIGIT FIVE
+-- U+00DEC : SINHALA LITH DIGIT SIX
+-- U+00DED : SINHALA LITH DIGIT SEVEN
+-- U+00DEE : SINHALA LITH DIGIT EIGHT
+-- U+00DEF : SINHALA LITH DIGIT NINE
 
 local consonant = {
     -- devanagari
@@ -182,6 +238,17 @@ local consonant = {
     [0x0CB5] = true, [0x0CB6] = true, [0x0CB7] = true, [0x0CB8] = true,
     [0x0CB9] = true,
     [0x0CDE] = true, -- obsolete
+    -- malayalam
+    [0x0D15] = true, [0x0D16] = true, [0x0D17] = true, [0x0D18] = true,
+    [0x0D19] = true, [0x0D1A] = true, [0x0D1B] = true, [0x0D1C] = true,
+    [0x0D1D] = true, [0x0D1E] = true, [0x0D1F] = true, [0x0D20] = true,
+    [0x0D21] = true, [0x0D22] = true, [0x0D23] = true, [0x0D24] = true,
+    [0x0D25] = true, [0x0D26] = true, [0x0D27] = true, [0x0D28] = true,
+    [0x0D29] = true, [0x0D2A] = true, [0x0D2B] = true, [0x0D2C] = true,
+    [0x0D2D] = true, [0x0D2E] = true, [0x0D2F] = true, [0x0D30] = true,
+    [0x0D31] = true, [0x0D32] = true, [0x0D33] = true, [0x0D34] = true,
+    [0x0D35] = true, [0x0D36] = true, [0x0D37] = true, [0x0D38] = true,
+    [0x0D39] = true, [0x0D3A] = true,
 }
 
 local independent_vowel = {
@@ -198,6 +265,11 @@ local independent_vowel = {
     [0x0C89] = true, [0x0C8A] = true, [0x0C8B] = true, [0x0C8C] = true,
     [0x0C8D] = true, [0x0C8E] = true, [0x0C8F] = true, [0x0C90] = true,
     [0x0C91] = true, [0x0C92] = true, [0x0C93] = true, [0x0C94] = true,
+    -- malayalam
+    [0x0D05] = true, [0x0D06] = true, [0x0D07] = true, [0x0D08] = true,
+    [0x0D09] = true, [0x0D0A] = true, [0x0D0B] = true, [0x0D0C] = true,
+    [0x0D0E] = true, [0x0D0F] = true, [0x0D10] = true, [0x0D12] = true,
+    [0x0D13] = true, [0x0D14] = true,
 }
 
 local dependent_vowel = { -- matra
@@ -213,6 +285,11 @@ local dependent_vowel = { -- matra
     [0x0CC2] = true, [0x0CC3] = true, [0x0CC4] = true, [0x0CC5] = true,
     [0x0CC6] = true, [0x0CC7] = true, [0x0CC8] = true, [0x0CC9] = true,
     [0x0CCA] = true, [0x0CCB] = true, [0x0CCC] = true,
+    -- malayalam
+    [0x0D3E] = true, [0x0D3F] = true, [0x0D40] = true, [0x0D41] = true,
+    [0x0D42] = true, [0x0D43] = true, [0x0D44] = true, [0x0D46] = true,
+    [0x0D47] = true, [0x0D48] = true, [0x0D4A] = true, [0x0D4B] = true,
+    [0x0D4C] = true, [0x0D57] = true,
 }
 
 local vowel_modifier = {
@@ -224,10 +301,16 @@ local vowel_modifier = {
     [0xA8E8] = true, [0xA8E9] = true, [0xA8EA] = true, [0xA8EB] = true,
     [0xA8EC] = true, [0xA8ED] = true, [0xA8EE] = true, [0xA8EF] = true,
     [0xA8F0] = true, [0xA8F1] = true,
+    -- malayalam
+    [0x0D02] = true, [0x0D03] = true,
 }
 
 local stress_tone_mark = {
     [0x0951] = true, [0x0952] = true, [0x0953] = true, [0x0954] = true,
+    -- kannada
+    [0x0CCD] = true,
+    -- malayalam
+    [0x0D4D] = true,
 }
 
 local nukta = {
@@ -242,9 +325,19 @@ local halant = {
     [0x094D] = true,
     -- kannada
     [0x0CCD] = true,
+    -- malayalam
+    [0x0D4D] = true,
 }
 
-local c_ra       = 0x0930 -- used to be tables (also used as constant)
+local ra = {
+    -- devanagari
+    [0x0930] = true,
+    -- kannada
+    [0x0CB0] = true,
+    -- malayalam
+    [0x0D30] = true,
+}
+
 local c_anudatta = 0x0952 -- used to be tables
 local c_nbsp     = 0x00A0 -- used to be tables
 local c_zwnj     = 0x200C -- used to be tables
@@ -270,6 +363,8 @@ local zw_char = { -- could also be inlined
 
 local pre_mark = {
     [0x093F] = true, [0x094E] = true,
+    -- malayalam
+    [0x0D46] = true, [0x0D47] = true, [0x0D48] = true,
 }
 
 local above_mark = {
@@ -281,6 +376,8 @@ local above_mark = {
     [0xA8E8] = true, [0xA8E9] = true, [0xA8EA] = true, [0xA8EB] = true,
     [0xA8EC] = true, [0xA8ED] = true, [0xA8EE] = true, [0xA8EF] = true,
     [0xA8F0] = true, [0xA8F1] = true,
+    -- malayalam
+    [0x0D4E] = true,
 }
 
 local below_mark = {
@@ -293,6 +390,13 @@ local post_mark = {
     [0x0903] = true, [0x093B] = true, [0x093E] = true, [0x0940] = true,
     [0x0949] = true, [0x094A] = true, [0x094B] = true, [0x094C] = true,
     [0x094F] = true,
+}
+
+local twopart_mark = {
+    -- malayalam
+    [0x0D4A] = { 0x0D46, 0x0D3E, },	-- ൊ
+    [0x0D4B] = { 0x0D47, 0x0D3E, },	-- ോ
+    [0x0D4C] = { 0x0D46, 0x0D57, },	-- ൌ
 }
 
 local mark_four = { } -- As we access these frequently an extra hash is used.
@@ -346,6 +450,7 @@ local reorder_class = {
     [0x0CC4] = "after subscript",
     [0x0CD5] = "after subscript",
     [0x0CD6] = "after subscript",
+    -- malayalam
 }
 
 -- We use some pseudo features as we need to manipulate the nodelist based
@@ -376,6 +481,7 @@ local sequence_reorder_matras = {
     features  = { dv01 = dev2_defaults },
     flags     = false_flags,
     name      = "dv01_reorder_matras",
+    order     = { "dv01" },
     subtables = { "dv01_reorder_matras" },
     type      = "devanagari_reorder_matras",
 }
@@ -385,6 +491,7 @@ local sequence_reorder_reph = {
     features  = { dv02 = dev2_defaults },
     flags     = false_flags,
     name      = "dv02_reorder_reph",
+    order     = { "dv02" },
     subtables = { "dv02_reorder_reph" },
     type      = "devanagari_reorder_reph",
 }
@@ -394,6 +501,7 @@ local sequence_reorder_pre_base_reordering_consonants = {
     features  = { dv03 = dev2_defaults },
     flags     = false_flags,
     name      = "dv03_reorder_pre_base_reordering_consonants",
+    order     = { "dv03" },
     subtables = { "dv03_reorder_pre_base_reordering_consonants" },
     type      = "devanagari_reorder_pre_base_reordering_consonants",
 }
@@ -403,6 +511,7 @@ local sequence_remove_joiners = {
     features  = { dv04 = deva_defaults },
     flags     = false_flags,
     name      = "dv04_remove_joiners",
+    order     = { "dv04" },
     subtables = { "dv04_remove_joiners" },
     type      = "devanagari_remove_joiners",
 }
@@ -426,7 +535,7 @@ local basic_shaping_forms =  {
 
 local function initializedevanagi(tfmdata)
     local script, language = otf.scriptandlanguage(tfmdata,attr) -- todo: take fast variant
-    if script == "deva" or script == "dev2" then
+    if script == "deva" or script == "dev2" or script =="mlym" or script == "mlm2" then
         local resources  = tfmdata.resources
         local lookuphash = resources.lookuphash
         if not lookuphash["dv01"] then
@@ -464,15 +573,20 @@ local function initializedevanagi(tfmdata)
             --
             if script == "deva" then
                 sharedfeatures["dv04"] = true -- dv04_remove_joiners
-            end
-            --
-            if script == "dev2" then
+            elseif script == "dev2" then
                 sharedfeatures["dv01"] = true -- dv01_reorder_matras
                 sharedfeatures["dv02"] = true -- dv02_reorder_reph
                 sharedfeatures["dv03"] = true -- dv03_reorder_pre_base_reordering_consonants
                 sharedfeatures["dv04"] = true -- dv04_remove_joiners
+            elseif script == "mlym" then
+                sharedfeatures["pstf"] = true
+            elseif script == "mlm2" then
+                sharedfeatures["pstf"] = true
+                sharedfeatures["pref"] = true
+                sharedfeatures["dv03"] = true        -- dv03_reorder_pre_base_reordering_consonants
+                gsubfeatures["dv03"] = dev2_defaults -- reorder pre base reordering consonants
+                insert(sequences,insertindex,sequence_reorder_pre_base_reordering_consonants)
             end
-            --
         end
     end
 end
@@ -554,30 +668,30 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
     local lookuphash, reph, vattu, blwfcache = deva_initialize(font,attr) -- could be inlines but ugly
 
     local current   = start
-    local n         = start.next
+    local n         = getnext(start)
     local base      = nil
     local firstcons = nil
     local lastcons  = nil
     local basefound = false
 
-    if start.char == c_ra and halant[n.char] and reph then
+    if ra[getchar(start)] and halant[getchar(n)] and reph then
         -- if syllable starts with Ra + H and script has 'Reph' then exclude Reph
         -- from candidates for base consonants
         if n == stop then
             return head, stop, nbspaces
         end
-        if n.next.char == c_zwj then
+        if getchar(getnext(n)) == c_zwj then
             current = start
         else
-            current = n.next
-            start[a_state] = s_rphf
+            current = getnext(n)
+            setprop(start,a_state,s_rphf)
         end
     end
 
-    if current.char == c_nbsp then
+    if getchar(current) == c_nbsp then
         -- Stand Alone cluster
         if current == stop then
-            stop = stop.prev
+            stop = getprev(stop)
             head = remove_node(head,current)
             free_node(current)
             return head, stop, nbspaces
@@ -586,37 +700,40 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
             base      = current
             firstcons = current
             lastcons  = current
-            current   = current.next
+            current   = getnext(current)
             if current ~= stop then
-                if nukta[current.char] then
-                    current = current.next
+                if nukta[getchar(current)] then
+                    current = getnext(current)
                 end
-                if current.char == c_zwj then
+                if getchar(current) == c_zwj then
                     if current ~= stop then
-                        local next = current.next
-                        if next ~= stop and halant[next.char] then
+                        local next = getnext(current)
+                        if next ~= stop and halant[getchar(next)] then
                             current = next
-                            next = current.next
-                            local tmp = next and next.next or nil -- needs checking 
+                            next = getnext(current)
+                            local tmp = next and getnext(next) or nil -- needs checking
                             local changestop = next == stop
                             local tempcurrent = copy_node(next)
+							copyinjection(tempcurrent,next)
                             local nextcurrent = copy_node(current)
-                            tempcurrent.next = nextcurrent
-                            nextcurrent.prev = tempcurrent
-                            tempcurrent[a_state] = s_blwf
+							copyinjection(nextcurrent,current) -- KE: necessary? HH: probably not as positioning comes later and we rawget/set
+                            setfield(tempcurrent,"next",nextcurrent)
+                            setfield(nextcurrent,"prev",tempcurrent)
+                            setprop(tempcurrent,a_state,s_blwf)
                             tempcurrent = processcharacters(tempcurrent,font)
-                            tempcurrent[a_state] = unsetvalue
-                            if next.char == tempcurrent.char then
+                            setprop(tempcurrent,a_state,unsetvalue)
+                            if getchar(next) == getchar(tempcurrent) then
                                 flush_list(tempcurrent)
                                 local n = copy_node(current)
-                                current.char = dotted_circle
+								copyinjection(n,current) -- KE: necessary? HH: probably not as positioning comes later and we rawget/set
+                                setfield(current,"char",dotted_circle)
                                 head = insert_node_after(head, current, n)
                             else
-                                current.char = tempcurrent.char    -- (assumes that result of blwf consists of one node)
-                                local freenode = current.next
-                                current.next = tmp
-                                if tmp then 
-                                    tmp.prev = current
+                                setfield(current,"char",getchar(tempcurrent)) -- we assumes that the result of blwf consists of one node
+                                local freenode = getnext(current)
+                                setfield(current,"next",tmp)
+                                if tmp then
+                                    setfield(tmp,"prev",current)
                                 end
                                 free_node(freenode)
                                 flush_list(tempcurrent)
@@ -633,83 +750,82 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
 
     while not basefound do
         -- find base consonant
-        if consonant[current.char] then
-            current[a_state] = s_half
+        if consonant[getchar(current)] then
+            setprop(current,a_state,s_half)
             if not firstcons then
                 firstcons = current
             end
             lastcons = current
             if not base then
                 base = current
-            elseif blwfcache[current.char] then
+            elseif blwfcache[getchar(current)] then
                 -- consonant has below-base (or post-base) form
-                current[a_state] = s_blwf
+                setprop(current,a_state,s_blwf)
             else
                 base = current
             end
         end
         basefound = current == stop
-        current = current.next
+        current = getnext(current)
     end
 
     if base ~= lastcons then
         -- if base consonant is not last one then move halant from base consonant to last one
         local np = base
-        local n = base.next
-        if nukta[n.char] then
+        local n = getnext(base)
+        if nukta[getchar(n)] then
             np = n
-            n = n.next
+            n = getnext(n)
         end
-        if halant[n.char] then
+        if halant[getchar(n)] then
             if lastcons ~= stop then
-                local ln = lastcons.next
-                if nukta[ln.char] then
+                local ln = getnext(lastcons)
+                if nukta[getchar(ln)] then
                     lastcons = ln
                 end
             end
-         -- local np = n.prev
-            local nn = n.next
-            local ln = lastcons.next -- what if lastcons is nn ?
-            np.next = nn
-            nn.prev = np
-            lastcons.next = n
+         -- local np = getprev(n)
+            local nn = getnext(n)
+            local ln = getnext(lastcons) -- what if lastcons is nn ?
+            setfield(np,"next",nn)
+            setfield(nn,"prev",np)
+            setfield(lastcons,"next",n)
             if ln then
-                ln.prev = n
+                setfield(ln,"prev",n)
             end
-            n.next = ln
-            n.prev = lastcons
+            setfield(n,"next",ln)
+            setfield(n,"prev",lastcons)
             if lastcons == stop then
                 stop = n
             end
         end
     end
 
-    n = start.next
- -- if start.char == c_ra and halant[n.char] and not (n ~= stop and zw_char[n.next.char]) then
-    if n ~= stop and start.char == c_ra and halant[n.char] and not zw_char[n.next.char] then
+    n = getnext(start)
+    if n ~= stop and ra[getchar(start)] and halant[getchar(n)] and not zw_char[getchar(getnext(n))] then
         -- if syllable starts with Ra + H then move this combination so that it follows either:
         -- the post-base 'matra' (if any) or the base consonant
         local matra = base
         if base ~= stop then
-            local next = base.next
-            if dependent_vowel[next.char] then
+            local next = getnext(base)
+            if dependent_vowel[getchar(next)] then
                 matra = next
             end
         end
         -- [sp][start][n][nn] [matra|base][?]
         -- [matra|base][start]  [n][?] [sp][nn]
-        local sp = start.prev
-        local nn = n.next
-        local mn = matra.next
+        local sp = getprev(start)
+        local nn = getnext(n)
+        local mn = getnext(matra)
         if sp then
-            sp.next = nn
+            setfield(sp,"next",nn)
         end
-        nn.prev = sp
-        matra.next = start
-        start.prev = matra
-        n.next = mn
+        setfield(nn,"prev",sp)
+        setfield(matra,"next",start)
+        setfield(start,"prev",matra)
+        setfield(n,"next",mn)
         if mn then
-            mn.prev = n
+            setfield(mn,"prev",n)
         end
         if head == start then
             head = nn
@@ -722,17 +838,17 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
 
     local current = start
     while current ~= stop do
-        local next = current.next
-        if next ~= stop and halant[next.char] and next.next.char == c_zwnj then
-            current[a_state] = unsetvalue
+        local next = getnext(current)
+        if next ~= stop and halant[getchar(next)] and getchar(getnext(next)) == c_zwnj then
+            setprop(current,a_state,unsetvalue)
         end
         current = next
     end
 
-    if base ~= stop and base[a_state] then
-        local next = base.next
-        if halant[next.char] and not (next ~= stop and next.next.char == c_zwj) then
-            base[a_state] = unsetvalue
+    if base ~= stop and getprop(base,a_state) then
+        local next = getnext(base)
+        if halant[getchar(next)] and not (next ~= stop and getchar(getnext(next)) == c_zwj) then
+            setprop(base,a_state,unsetvalue)
         end
     end
 
@@ -742,62 +858,62 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
     -- classify consonants and 'matra' parts as pre-base, above-base (Reph), below-base or post-base, and group elements of the syllable (consonants and 'matras') according to this classification
 
     local current, allreordered, moved = start, false, { [base] = true }
-    local a, b, p, bn = base, base, base, base.next
-    if base ~= stop and nukta[bn.char] then
+    local a, b, p, bn = base, base, base, getnext(base)
+    if base ~= stop and nukta[getchar(bn)] then
         a, b, p = bn, bn, bn
     end
     while not allreordered do
         -- current is always consonant
         local c = current
-        local n = current.next
+        local n = getnext(current)
         local l = nil -- used ?
         if c ~= stop then
-            if nukta[n.char] then
+            if nukta[getchar(n)] then
                 c = n
-                n = n.next
+                n = getnext(n)
             end
             if c ~= stop then
-                if halant[n.char] then
+                if halant[getchar(n)] then
                     c = n
-                    n = n.next
+                    n = getnext(n)
                 end
-                while c ~= stop and dependent_vowel[n.char] do
+                while c ~= stop and dependent_vowel[getchar(n)] do
                     c = n
-                    n = n.next
+                    n = getnext(n)
                 end
                 if c ~= stop then
-                    if vowel_modifier[n.char] then
+                    if vowel_modifier[getchar(n)] then
                         c = n
-                        n = n.next
+                        n = getnext(n)
                     end
-                    if c ~= stop and stress_tone_mark[n.char] then
+                    if c ~= stop and stress_tone_mark[getchar(n)] then
                         c = n
-                        n = n.next
+                        n = getnext(n)
                     end
                 end
             end
         end
-        local bp = firstcons.prev
-        local cn = current.next
-        local last = c.next
+        local bp = getprev(firstcons)
+        local cn = getnext(current)
+        local last = getnext(c)
         while cn ~= last do
             -- move pre-base matras...
-            if pre_mark[cn.char] then
+            if pre_mark[getchar(cn)] then
                 if bp then
-                    bp.next = cn
+                    setfield(bp,"next",cn)
                 end
-                local next = cn.next
-                local prev = cn.prev
+                local next = getnext(cn)
+                local prev = getprev(cn)
                 if next then
-                    next.prev = prev
+                    setfield(next,"prev",prev)
                 end
-                prev.next = next
+                setfield(prev,"next",next)
                 if cn == stop then
                     stop = prev
                 end
-                cn.prev = bp
-                cn.next = firstcons
-                firstcons.prev = cn
+                setfield(cn,"prev",bp)
+                setfield(cn,"next",firstcons)
+                setfield(firstcons,"prev",cn)
                 if firstcons == start then
                     if head == start then
                         head = cn
@@ -806,29 +922,29 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
                 end
                 break
             end
-            cn = cn.next
+            cn = getnext(cn)
         end
         allreordered = c == stop
-        current = c.next
+        current = getnext(c)
     end
 
     if reph or vattu then
         local current, cns = start, nil
         while current ~= stop do
             local c = current
-            local n = current.next
-            if current.char == c_ra and halant[n.char] then
+            local n = getnext(current)
+            if ra[getchar(current)] and halant[getchar(n)] then
                 c = n
-                n = n.next
+                n = getnext(n)
                 local b, bn = base, base
                 while bn ~= stop  do
-                    local next = bn.next
-                    if dependent_vowel[next.char] then
+                    local next = getnext(bn)
+                    if dependent_vowel[getchar(next)] then
                         b = next
                     end
                     bn = next
                 end
-                if current[a_state] == s_rphf then
+                if getprop(current,a_state) == s_rphf then
                     -- position Reph (Ra + H) after post-base 'matra' (if any) since these
                     -- become marks on the 'matra', not on the base glyph
                     if b ~= current then
@@ -841,65 +957,65 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
                         if b == stop then
                             stop = c
                         end
-                        local prev = current.prev
+                        local prev = getprev(current)
                         if prev then
-                            prev.next = n
+                            setfield(prev,"next",n)
                         end
                         if n then
-                            n.prev = prev
+                            setfield(n,"prev",prev)
                         end
-                        local next = b.next
-                        c.next = next
+                        local next = getnext(b)
+                        setfield(c,"next",next)
                         if next then
-                            next.prev = c
+                            setfield(next,"prev",c)
                         end
-                        c.next = next
-                        b.next = current
-                        current.prev = b
+                        setfield(c,"next",next)
+                        setfield(b,"next",current)
+                        setfield(current,"prev",b)
                     end
-                elseif cns and cns.next ~= current then
+                elseif cns and getnext(cns) ~= current then -- todo: optimize next
                     -- position below-base Ra (vattu) following the consonants on which it is placed (either the base consonant or one of the pre-base consonants)
-                    local cp, cnsn = current.prev, cns.next
+                    local cp, cnsn = getprev(current), getnext(cns)
                     if cp then
-                        cp.next = n
+                        setfield(cp,"next",n)
                     end
                     if n then
-                        n.prev = cp
+                        setfield(n,"prev",cp)
                     end
-                    cns.next = current
-                    current.prev = cns
-                    c.next = cnsn
+                    setfield(cns,"next",current)
+                    setfield(current,"prev",cns)
+                    setfield(c,"next",cnsn)
                     if cnsn then
-                        cnsn.prev = c
+                        setfield(cnsn,"prev",c)
                     end
                     if c == stop then
                         stop = cp
                         break
                     end
-                    current = n.prev
+                    current = getprev(n)
                 end
             else
-                local char = current.char
+                local char = getchar(current)
                 if consonant[char] then
                     cns = current
-                    local next = cns.next
-                    if halant[next.char] then
+                    local next = getnext(cns)
+                    if halant[getchar(next)] then
                         cns = next
                     end
                 elseif char == c_nbsp then
                     nbspaces   = nbspaces + 1
                     cns        = current
-                    local next = cns.next
-                    if halant[next.char] then
+                    local next = getnext(cns)
+                    if halant[getchar(next)] then
                         cns = next
                     end
                 end
             end
-            current = current.next
+            current = getnext(current)
         end
     end
 
-    if base.char == c_nbsp then
+    if getchar(base) == c_nbsp then
         nbspaces = nbspaces - 1
         head = remove_node(head,base)
         free_node(base)
@@ -919,24 +1035,24 @@ end
 
 function handlers.devanagari_reorder_matras(head,start,kind,lookupname,replacement) -- no leak
     local current = start -- we could cache attributes here
-    local startfont = start.font
-    local startattr = start[a_syllabe]
+    local startfont = getfont(start)
+    local startattr = getprop(start,a_syllabe)
     -- can be fast loop
-    while current and current.id == glyph_code and current.subtype<256 and current.font == font and current[a_syllabe] == startattr do
-        local next = current.next
-        if halant[current.char] and not current[a_state] then
-            if next and next.id == glyph_code and next.subtype<256 and next.font == font and next[a_syllabe] == startattr and zw_char[next.char] then
+    while current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == font and getprop(current,a_syllabe) == startattr do
+        local next = getnext(current)
+        if halant[getchar(current)] and not getprop(current,a_state) then
+            if next and getid(next) == glyph_code and getsubtype(next) < 256 and getfont(next) == font and getprop(next,a_syllabe) == startattr and zw_char[getchar(next)] then
                 current = next
             end
-            local startnext = start.next
+            local startnext = getnext(start)
             head = remove_node(head,start)
-            local next = current.next
+            local next = getnext(current)
             if next then
-                next.prev = start
+                setfield(next,"prev",start)
             end
-            start.next = next
-            current.next = start
-            start.prev = current
+            setfield(start,"next",next)
+            setfield(current,"next",start)
+            setfield(start,"prev",current)
             start = startnext
             break
         end
@@ -972,98 +1088,98 @@ end
 function handlers.devanagari_reorder_reph(head,start,kind,lookupname,replacement)
     -- since in Devanagari reph has reordering position 'before postscript' dev2 only follows step 2, 4, and 6,
     -- the other steps are still ToDo (required for scripts other than dev2)
-    local current   = start.next
+    local current   = getnext(start)
     local startnext = nil
     local startprev = nil
-    local startfont = start.font
-    local startattr = start[a_syllabe]
-    while current and current.id == glyph_code and current.subtype<256 and current.font == startfont and current[a_syllabe] == startattr do    --step 2
-        if halant[current.char] and not current[a_state] then
-            local next = current.next
-            if next and next.id == glyph_code and next.subtype<256 and next.font == startfont and next[a_syllabe] == startattr and zw_char[next.char] then
+    local startfont = getfont(start)
+    local startattr = getprop(start,a_syllabe)
+    while current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == startfont and getprop(current,a_syllabe) == startattr do    --step 2
+        if halant[getchar(current)] and not getprop(current,a_state) then
+            local next = getnext(current)
+            if next and getid(next) == glyph_code and getsubtype(next) < 256 and getfont(next) == startfont and getprop(next,a_syllabe) == startattr and zw_char[getchar(next)] then
                 current = next
             end
-            startnext = start.next
+            startnext = getnext(start)
             head = remove_node(head,start)
-            local next = current.next
+            local next = getnext(current)
             if next then
-                next.prev = start
+                setfield(next,"prev",start)
             end
-            start.next = next
-            current.next = start
-            start.prev = current
+            setfield(start,"next",next)
+            setfield(current,"next",start)
+            setfield(start,"prev",current)
             start = startnext
-            startattr = start[a_syllabe]
+            startattr = getprop(start,a_syllabe)
             break
         end
-        current = current.next
+        current = getnext(current)
     end
     if not startnext then
-        current = start.next
-        while current and current.id == glyph_code and current.subtype<256 and current.font == startfont and current[a_syllabe] == startattr do    --step 4
-            if current[a_state] == s_pstf then    --post-base
-                startnext = start.next
+        current = getnext(start)
+        while current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == startfont and getprop(current,a_syllabe) == startattr do    --step 4
+            if getprop(current,a_state) == s_pstf then    --post-base
+                startnext = getnext(start)
                 head = remove_node(head,start)
-                local prev = current.prev
-                start.prev = prev
-                prev.next = start
-                start.next = current
-                current.prev = start
+                local prev = getprev(current)
+                setfield(start,"prev",prev)
+                setfield(prev,"next",start)
+                setfield(start,"next",current)
+                setfield(current,"prev",start)
                 start = startnext
-                startattr = start[a_syllabe]
+                startattr = getprop(start,a_syllabe)
                 break
             end
-            current = current.next
+            current = getnext(current)
         end
     end
     -- ToDo: determine position for reph with reordering position other than 'before postscript'
     -- (required for scripts other than dev2)
     -- leaks
     if not startnext then
-        current = start.next
+        current = getnext(start)
         local c = nil
-        while current and current.id == glyph_code and current.subtype<256 and current.font == startfont and current[a_syllabe] == startattr do    --step 5
+        while current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == startfont and getprop(current,a_syllabe) == startattr do    --step 5
             if not c then
-                local char = current.char
+                local char = getchar(current)
                 -- todo: combine in one
                 if mark_above_below_post[char] and reorder_class[char] ~= "after subscript" then
                     c = current
                 end
             end
-            current = current.next
+            current = getnext(current)
         end
         -- here we can loose the old start node: maybe best split cases
         if c then
-            startnext = start.next
+            startnext = getnext(start)
             head = remove_node(head,start)
-            local prev = c.prev
-            start.prev = prev
-            prev.next = start
-            start.next = c
-            c.prev = start
+            local prev = getprev(c)
+            setfield(start,"prev",prev)
+            setfield(prev,"next",start)
+            setfield(start,"next",c)
+            setfield(c,"prev",start)
             -- end
             start = startnext
-            startattr = start[a_syllabe]
+            startattr = getprop(start,a_syllabe)
         end
     end
     -- leaks
     if not startnext then
         current = start
-        local next = current.next
-        while next and next.id == glyph_code and next.subtype<256 and next.font == startfont and next[a_syllabe] == startattr do    --step 6
+        local next = getnext(current)
+        while next and getid(next) == glyph_code and getsubtype(next) < 256 and getfont(next) == startfont and getprop(next,a_syllabe) == startattr do    --step 6
             current = next
-            next = current.next
+            next = getnext(current)
         end
         if start ~= current then
-            startnext = start.next
+            startnext = getnext(start)
             head = remove_node(head,start)
-            local next = current.next
+            local next = getnext(current)
             if next then
-                next.prev = start
+                setfield(next,"prev",start)
             end
-            start.next = next
-            current.next = start
-            start.prev = current
+            setfield(start,"next",next)
+            setfield(current,"next",start)
+            setfield(start,"prev",current)
             start = startnext
         end
     end
@@ -1086,71 +1202,71 @@ function handlers.devanagari_reorder_pre_base_reordering_consonants(head,start,k
     local current = start
     local startnext = nil
     local startprev = nil
-    local startfont = start.font
-    local startattr = start[a_syllabe]
+    local startfont = getfont(start)
+    local startattr = getprop(start,a_syllabe)
     -- can be fast for loop + caching state
-    while current and current.id == glyph_code and current.subtype<256 and current.font == startfont and current[a_syllabe] == startattr do
-        local next = current.next
-        if halant[current.char] and not current[a_state] then
-            if next and next.id == glyph_code and next.subtype<256 and next.font == font and next[a_syllabe] == startattr then
-                local char = next.char
+    while current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == startfont and getprop(current,a_syllabe) == startattr do
+        local next = getnext(current)
+        if halant[getchar(current)] and not getprop(current,a_state) then
+            if next and getid(next) == glyph_code and getsubtype(next) < 256 and getfont(next) == font and getprop(next,a_syllabe) == startattr then
+                local char = getchar(next)
                 if char == c_zwnj or char == c_zwj then
                     current = next
                 end
             end
-            startnext = start.next
+            startnext = getnext(start)
             removenode(start,start)
-            local next = current.next
+            local next = getnext(current)
             if next then
-                next.prev = start
+                setfield(next,"prev",start)
             end
-            start.next = next
-            current.next = start
-            start.prev = current
+            setfield(start,"next",next)
+            setfield(current,"next",start)
+            setfield(start,"prev",current)
             start = startnext
             break
         end
         current = next
     end
     if not startnext then
-        current = start.next
-        startattr = start[a_syllabe]
-        while current and current.id == glyph_code and current.subtype<256 and current.font == startfont and current[a_syllabe] == startattr do
-            if not consonant[current.char] and current[a_state] then    --main
-                startnext = start.next
+        current = getnext(start)
+        startattr = getprop(start,a_syllabe)
+        while current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == startfont and getprop(current,a_syllabe) == startattr do
+            if not consonant[getchar(current)] and getprop(current,a_state) then    --main
+                startnext = getnext(start)
                 removenode(start,start)
-                local prev = current.prev
-                start.prev = prev
-                prev.next = start
-                start.next = current
-                current.prev = start
+                local prev = getprev(current)
+                setfield(start,"prev",prev)
+                setfield(prev,"next",start)
+                setfield(start,"next",current)
+                setfield(current,"prev",start)
                 start = startnext
                 break
             end
-            current = current.next
+            current = getnext(current)
         end
     end
     return head, start, true
 end
 
 function handlers.devanagari_remove_joiners(head,start,kind,lookupname,replacement)
-    local stop = start.next
-    local startfont = start.font
-    while stop and stop.id == glyph_code and stop.subtype<256 and stop.font == startfont do
-        local char = stop.char
+    local stop = getnext(start)
+    local startfont = getfont(start)
+    while stop and getid(stop) == glyph_code and getsubtype(stop) < 256 and getfont(stop) == startfont do
+        local char = getchar(stop)
         if char == c_zwnj or char == c_zwj then
-            stop = stop.next
+            stop = getnext(stop)
         else
             break
         end
     end
     if stop then
-        stop.prev.next = nil
-        stop.prev = start.prev
+        setfield(getfield(stop,"prev"),"next",nil)
+        setfield(stop,"prev",getprev(start))
     end
-    local prev = start.prev
+    local prev = getprev(start)
     if prev then
-        prev.next = stop
+        setfield(prev,"next",stop)
     end
     if head == start then
     	head = stop
@@ -1160,11 +1276,15 @@ function handlers.devanagari_remove_joiners(head,start,kind,lookupname,replaceme
 end
 
 local valid = {
+    akhn = true, -- malayalam
     rphf = true,
     pref = true,
     half = true,
     blwf = true,
     pstf = true,
+    pres = true, -- malayalam
+    blws = true, -- malayalam
+    psts = true, -- malayalam
 }
 
 local function dev2_initialize(font,attr)
@@ -1206,16 +1326,25 @@ local function dev2_initialize(font,attr)
                             local reph = false
                             local chain = dataset[3]
                             if chain ~= 0 then --rphf is result of of chain
-                                --ToDo: rphf might be result of other handler/chainproc
+                                -- rphf might be result of other handler/chainproc
                             else
-                                reph = lookupcache[0x0930]
-                                if reph then
-                                    reph = reph[0x094D]
-                                    if reph then
-                                        reph = reph["ligature"]
+                                -- rphf acts on consonant + halant
+                                for k, v in next, ra do
+                                    local r = lookupcache[k]
+                                    if r then
+                                        local h = false
+                                        for k, v in next, halant do
+                                            local h = r[k]
+                                            if h then
+                                                reph = h.ligature or false
+                                                break
+                                            end
+                                        end
+                                        if reph then
+                                            break
+                                        end
                                     end
                                 end
-                                --ToDo: rphf actualy acts on consonant + halant. This consonant might not necesseraly be 0x0930 ... (but fot dev2 it is)
                             end
                             seqsubset[#seqsubset+1] = { kind, lookupcache, reph }
                         end
@@ -1256,32 +1385,37 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
         local kind = subset[1]
         local lookupcache = subset[2]
         if kind == "rphf" then
-            -- todo: rphf might be result of other handler/chainproc
-            -- todo: rphf actualy acts on consonant + halant.
-            -- todo: the consonant might not necesseraly be 0x0930 ... (but for devanagari it is)
-            local lookup = lookupcache[0x0930]
-            if lookup then
-                local hit = lookup[0x094D]
-                if hit then
-                    reph = hit["ligature"]
+            for k, v in next, ra do
+                local r = lookupcache[k]
+                if r then
+                    for k, v in next, halant do
+                        local h = r[k]
+                        if h then
+                            reph = h.ligature or false
+                            break
+                        end
+                    end
+                    if reph then
+                        break
+                    end
                 end
             end
             local current = start
-            local last = stop.next
+            local last = getnext(stop)
             while current ~= last do
                 if current ~= stop then
-                    local c = locl[current] or current.char
+                    local c = locl[current] or getchar(current)
                     local found = lookupcache[c]
                     if found then
-                        local next = current.next
-                        local n = locl[next] or next.char
+                        local next = getnext(current)
+                        local n = locl[next] or getchar(next)
                         if found[n] then    --above-base: rphf    Consonant + Halant
-                            local afternext = next ~= stop and next.next
-                            if afternext and zw_char[afternext.char] then -- ZWJ and ZWNJ prevent creation of reph
+                            local afternext = next ~= stop and getnext(next)
+                            if afternext and zw_char[getchar(afternext)] then -- ZWJ and ZWNJ prevent creation of reph
                                 current = next
-                                current = current.next
+                                current = getnext(current)
                             elseif current == start then
-                                current[a_state] = s_rphf
+                                setprop(current,a_state,s_rphf)
                                 current = next
                             else
                                 current = next
@@ -1289,98 +1423,111 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
                         end
                     end
                 end
-                current = current.next
+                current = getnext(current)
             end
         elseif kind == "pref" then
             -- why not global? pretty ineffient this way
             -- this will move to the initializer and we will store the hash in dataset
             -- todo: reph might also be result of chain
-            for k, v in lookupcache[0x094D], next do
-                pre_base_reordering_consonants[k] = v and v["ligature"]    --ToDo: reph might also be result of chain
+            for k, v in next, halant do
+                local h = lookupcache[k]
+                if h then
+                    local found = false
+                    for k, v in next, h do
+                        found = v and v.ligature
+                        if found then
+                            pre_base_reordering_consonants[k] = found
+                            break
+                        end
+                    end
+                    if found then
+                        break
+                    end
+                end
             end
             --
             local current = start
-            local last = stop.next
+            local last = getnext(stop)
             while current ~= last do
                 if current ~= stop then
-                    local c = locl[current] or current.char
+                    local c = locl[current] or getchar(current)
                     local found = lookupcache[c]
                     if found then
-                        local next = current.next
-                        local n = locl[next] or next.char
+                        local next = getnext(current)
+                        local n = locl[next] or getchar(next)
                         if found[n] then
-                            current[a_state] = s_pref
-                            next[a_state] = s_pref
+                            setprop(current,a_state,s_pref)
+                            setprop(next,a_state,s_pref)
                             current = next
                         end
                     end
                 end
-                current = current.next
+                current = getnext(current)
             end
         elseif kind == "half" then -- half forms: half / Consonant + Halant
             local current = start
-            local last = stop.next
+            local last = getnext(stop)
             while current ~= last do
                 if current ~= stop then
-                    local c = locl[current] or current.char
+                    local c = locl[current] or getchar(current)
                     local found = lookupcache[c]
                     if found then
-                        local next = current.next
-                        local n = locl[next] or next.char
+                        local next = getnext(current)
+                        local n = locl[next] or getchar(next)
                         if found[n] then
-                            if next ~= stop and next.next.char == c_zwnj then    -- zwnj prevent creation of half
+                            if next ~= stop and getchar(getnext(next)) == c_zwnj then    -- zwnj prevent creation of half
                                 current = next
                             else
-                                current[a_state] = s_half
+                                setprop(current,a_state,s_half)
                                 if not halfpos then
                                     halfpos = current
                                 end
                             end
-                            current = current.next
+                            current = getnext(current)
                         end
                     end
                 end
-                current = current.next
+                current = getnext(current)
             end
         elseif kind == "blwf" then -- below-base: blwf / Halant + Consonant
             local current = start
-            local last = stop.next
+            local last = getnext(stop)
             while current ~= last do
                 if current ~= stop then
-                    local c = locl[current] or current.char
+                    local c = locl[current] or getchar(current)
                     local found = lookupcache[c]
                     if found then
-                        local next = current.next
-                        local n = locl[next] or next.char
+                        local next = getnext(current)
+                        local n = locl[next] or getchar(next)
                         if found[n] then
-                            current[a_state] = s_blwf
-                            next[a_state] = s_blwf
+                            setprop(current,a_state,s_blwf)
+                            setprop(next,a_state,s_blwf)
                             current = next
                             subpos = current
                         end
                     end
                 end
-                current = current.next
+                current = getnext(current)
             end
         elseif kind == "pstf" then -- post-base: pstf / Halant + Consonant
             local current = start
-            local last = stop.next
+            local last = getnext(stop)
             while current ~= last do
                 if current ~= stop then
-                    local c = locl[current] or current.char
+                    local c = locl[current] or getchar(current)
                     local found = lookupcache[c]
                     if found then
-                        local next = current.next
-                        local n = locl[next] or next.char
+                        local next = getnext(current)
+                        local n = locl[next] or getchar(next)
                         if found[n] then
-                            current[a_state] = s_pstf
-                            next[a_state] = s_pstf
+                            setprop(current,a_state,s_pstf)
+                            setprop(next,a_state,s_pstf)
                             current = next
                             postpos = current
                         end
                     end
                 end
-                current = current.next
+                current = getnext(current)
             end
         end
     end
@@ -1392,51 +1539,51 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
 
     local current, base, firstcons = start, nil, nil
 
-    if start[a_state] == s_rphf then
+    if getprop(start,a_state) == s_rphf then
         -- if syllable starts with Ra + H and script has 'Reph' then exclude Reph from candidates for base consonants
-        current = start.next.next
+        current = getnext(getnext(start))
     end
 
-    local function stand_alone(is_nbsp)
+    if current ~= getnext(stop) and getchar(current) == c_nbsp then
+        -- Stand Alone cluster
         if current == stop then
-            stop = stop.prev
+            stop = getprev(stop)
             head = remove_node(head,current)
             free_node(current)
             return head, stop, nbspaces
         else
-            if is_nbsp then
-                nbspaces = nbspaces + 1
-            end
-            base    = current
-            current = current.next
+            nbspaces = nbspaces + 1
+            base     = current
+            current  = getnext(current)
             if current ~= stop then
-                local char = current.char
+                local char = getchar(current)
                 if nukta[char] then
-                    current = current.next
-                    char = current.char
+                    current = getnext(current)
+                    char = getchar(current)
                 end
                 if char == c_zwj then
-                    local next = current.next
-                    if current ~= stop and next ~= stop and halant[next.char] then
+                    local next = getnext(current)
+                    if current ~= stop and next ~= stop and halant[getchar(next)] then
                         current = next
-                        next = current.next
-                        local tmp = next.next
+                        next = getnext(current)
+                        local tmp = getnext(next)
                         local changestop = next == stop
-                        next.next = nil
-                        current[a_state] = s_pref
+                        setfield(next,"next",nil)
+                        setprop(current,a_state,s_pref)
                         current = processcharacters(current,font)
-                        current[a_state] = s_blwf
+                        setprop(current,a_state,s_blwf)
                         current = processcharacters(current,font)
-                        current[a_state] = s_pstf
+                        setprop(current,a_state,s_pstf)
                         current = processcharacters(current,font)
-                        current[a_state] = unsetvalue
-                        if halant[current.char] then
-                            current.next.next = tmp
+                        setprop(current,a_state,unsetvalue)
+                        if halant[getchar(current)] then
+                            setfield(getnext(current),"next",tmp)
                             local nc = copy_node(current)
-                            current.char = dotted_circle
+							copyinjection(nc,current)
+                            setfield(current,"char",dotted_circle)
                             head = insert_node_after(head,current,nc)
                         else
-                            current.next = tmp -- assumes that result of pref, blwf, or pstf consists of one node
+                            setfield(current,"next",tmp) -- assumes that result of pref, blwf, or pstf consists of one node
                             if changestop then
                                 stop = current
                             end
@@ -1445,25 +1592,17 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
                 end
             end
         end
-    end
-
-    if current ~= stop.next then
-        -- Stand Alone cluster
-        stand_alone()
-    elseif current.char == c_nbsp then
-        -- Stand Alone cluster
-        stand_alone(true)
     else -- not Stand Alone cluster
-        local last = stop.next
+        local last = getnext(stop)
         while current ~= last do    -- find base consonant
-            local next = current.next
-            if consonant[current.char] then
-                if not (current ~= stop and next ~= stop and halant[next.char] and next.next.char == c_zwj) then
+            local next = getnext(current)
+            if consonant[getchar(current)] then
+                if not (current ~= stop and next ~= stop and halant[getchar(next)] and getchar(getnext(next)) == c_zwj) then
                     if not firstcons then
                         firstcons = current
                     end
                     -- check whether consonant has below-base or post-base form or is pre-base reordering Ra
-                    local a = current[a_state]
+                    local a = getprop(current,a_state)
                     if not (a == s_pref or a == s_blwf or a == s_pstf) then
                         base = current
                     end
@@ -1477,13 +1616,13 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
     end
 
     if not base then
-        if start[a_state] == s_rphf then
-            start[a_state] = unsetvalue
+        if getprop(start,a_state) == s_rphf then
+            setprop(start,a_state,unsetvalue)
         end
         return head, stop, nbspaces
     else
-        if base[a_state] then
-            base[a_state] = unsetvalue
+        if getprop(base,a_state) then
+            setprop(base,a_state,unsetvalue)
         end
         basepos = base
     end
@@ -1501,22 +1640,33 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
 
     local moved = { }
     local current = start
-    local last = stop.next
+    local last = getnext(stop)
     while current ~= last do
-        local char, target, cn = locl[current] or current.char, nil, current.next
+        local char, target, cn = locl[current] or getchar(current), nil, getnext(current)
+-- not so efficient (needed for malayalam)
+local tpm = twopart_mark[char]
+if tpm then
+    local extra = copy_node(current)
+	copyinjection(extra,current)
+    char = tpm[1]
+    setfield(current,"char",char)
+    setfield(extra,"char",tpm[2])
+    head = insert_node_after(head,current,extra)
+end
+--
         if not moved[current] and dependent_vowel[char] then
             if pre_mark[char] then            -- Before first half form in the syllable
                 moved[current] = true
-                local prev = current.prev
-                local next = current.next
+                local prev = getprev(current)
+                local next = getnext(current)
                 if prev then
-                    prev.next = next
+                    setfield(prev,"next",next)
                 end
                 if next then
-                    next.prev = prev
+                    setfield(next,"prev",prev)
                 end
                 if current == stop then
-                    stop = current.prev
+                    stop = getprev(current)
                 end
                 if halfpos == start then
                     if head == start then
@@ -1524,13 +1674,13 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
                     end
                     start = current
                 end
-                local prev = halfpos.prev
+                local prev = getprev(halfpos)
                 if prev then
-                    prev.next = current
+                    setfield(prev,"next",current)
                 end
-                current.prev = prev
-                halfpos.prev = current
-                current.next = halfpos
+                setfield(current,"prev",prev)
+                setfield(halfpos,"prev",current)
+                setfield(current,"next",halfpos)
                 halfpos = current
             elseif above_mark[char] then    -- After main consonant
                 target = basepos
@@ -1552,25 +1702,25 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
                 postpos = current
             end
             if mark_above_below_post[char] then
-                local prev = current.prev
+                local prev = getprev(current)
                 if prev ~= target then
-                    local next = current.next
+                    local next = getnext(current)
                     if prev then -- not needed, already tested with target
-                        prev.next = next
+                        setfield(prev,"next",next)
                     end
                     if next then
-                        next.prev = prev
+                        setfield(next,"prev",prev)
                     end
                     if current == stop then
                         stop = prev
                     end
-                    local next = target.next
+                    local next = getnext(target)
                     if next then
-                        next.prev = current
+                        setfield(next,"prev",current)
                     end
-                    current.next = next
-                    target.next = current
-                    current.prev = target
+                    setfield(current,"next",next)
+                    setfield(target,"next",current)
+                    setfield(current,"prev",target)
                 end
             end
         end
@@ -1581,7 +1731,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
 
     local current, c = start, nil
     while current ~= stop do
-        local char = current.char
+        local char = getchar(current)
         if halant[char] or stress_tone_mark[char] then
             if not c then
                 c = current
@@ -1589,33 +1739,33 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
         else
             c = nil
         end
-        local next = current.next
-        if c and nukta[next.char] then
+        local next = getnext(current)
+        if c and nukta[getchar(next)] then
             if head == c then
                 head = next
             end
             if stop == next then
                 stop = current
             end
-            local prev = c.prev
+            local prev = getprev(c)
             if prev then
-                prev.next = next
+                setfield(prev,"next",next)
             end
-            next.prev = prev
-            local nextnext = next.next
-            current.next = nextnext
-            local nextnextnext = nextnext.next
+            setfield(next,"prev",prev)
+            local nextnext = getnext(next)
+            setfield(current,"next",nextnext)
+            local nextnextnext = getnext(nextnext)
             if nextnextnext then
-                nextnextnext.prev = current
+                setfield(nextnextnext,"prev",current)
             end
-            c.prev = nextnext
-            nextnext.next = c
+            setfield(c,"prev",nextnext)
+            setfield(nextnext,"next",c)
         end
         if stop == current then break end
-        current = current.next
+        current = getnext(current)
     end
 
-    if base.char == c_nbsp then
+    if getchar(base) == c_nbsp then
         nbspaces = nbspaces - 1
         head = remove_node(head, base)
         free_node(base)
@@ -1639,30 +1789,30 @@ for k, v in next, halant do separator[k] = true end
 
 local function analyze_next_chars_one(c,font,variant) -- skip one dependent vowel
     -- why two variants ... the comment suggests that it's the same ruleset
-    local n = c.next
+    local n = getnext(c)
     if not n then
         return c
     end
     if variant == 1 then
-        local v = n.id == glyph_code and n.subtype<256 and n.font == font
-        if v and nukta[n.char] then
-            n = n.next
+        local v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
+        if v and nukta[getchar(n)] then
+            n = getnext(n)
             if n then
-                v = n.id == glyph_code and n.subtype<256 and n.font == font
+                v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
             end
         end
         if n and v then
-            local nn = n.next
-            if nn and nn.id == glyph_code and nn.subtype<256 and nn.font == font then
-                local nnn = nn.next
-                if nnn and nnn.id == glyph_code and nnn.subtype<256 and nnn.font == font then
-                    local nnc = nn.char
-                    local nnnc = nnn.char
+            local nn = getnext(n)
+            if nn and getid(nn) == glyph_code and getsubtype(nn) < 256 and getfont(nn) == font then
+                local nnn = getnext(nn)
+                if nnn and getid(nnn) == glyph_code and getsubtype(nnn) < 256 and getfont(nnn) == font then
+                    local nnc = getchar(nn)
+                    local nnnc = getchar(nnn)
                     if nnc == c_zwj and consonant[nnnc] then
                         c = nnn
                     elseif (nnc == c_zwnj or nnc == c_zwj) and halant[nnnc] then
-                        local nnnn = nnn.next
-                        if nnnn and nnnn.id == glyph_code and consonant[nnnn.char] and nnnn.subtype<256 and nnnn.font == font then
+                        local nnnn = getnext(nnn)
+                        if nnnn and getid(nnnn) == glyph_code and consonant[getchar(nnnn)] and getsubtype(nnnn) < 256 and getfont(nnnn) == font then
                             c = nnnn
                         end
                     end
@@ -1670,94 +1820,94 @@ local function analyze_next_chars_one(c,font,variant) -- skip one dependent vowe
             end
         end
     elseif variant == 2 then
-        if n.id == glyph_code and nukta[n.char] and n.subtype<256 and n.font == font then
+        if getid(n) == glyph_code and nukta[getchar(n)] and getsubtype(n) < 256 and getfont(n) == font then
             c = n
         end
-        n = c.next
-        if n and n.id == glyph_code and n.subtype<256 and n.font == font then
-            local nn = n.next
+        n = getnext(c)
+        if n and getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font then
+            local nn = getnext(n)
             if nn then
-                local nv = nn.id == glyph_code and nn.subtype<256 and nn.font == font
-                if nv and zw_char[n.char] then
+                local nv = getid(nn) == glyph_code and getsubtype(nn) < 256 and getfont(nn) == font
+                if nv and zw_char[getchar(n)] then
                     n = nn
-                    nn = nn.next
-                    nv = nn and nn.id == glyph_code and nn.subtype<256 and nn.font == font
+                    nn = getnext(nn)
+                    nv = nn and getid(nn) == glyph_code and getsubtype(nn) < 256 and getfont(nn) == font
                 end
-                if nv and halant[n.char] and consonant[nn.char] then
+                if nv and halant[getchar(n)] and consonant[getchar(nn)] then
                     c = nn
                 end
             end
         end
     end
     -- c = ms_matra(c)
-    local n = c.next
+    local n = getnext(c)
     if not n then
         return c
     end
-    local v = n.id == glyph_code and n.subtype<256 and n.font == font
+    local v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
     if not v then
         return c
     end
-    local char = n.char
+    local char = getchar(n)
     if dependent_vowel[char] then
-        c = c.next
-        n = c.next
+        c = getnext(c)
+        n = getnext(c)
         if not n then
             return c
         end
-        v = n.id == glyph_code and n.subtype<256 and n.font == font
+        v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
         if not v then
             return c
         end
-        char = n.char
+        char = getchar(n)
     end
     if nukta[char] then
-        c = c.next
-        n = c.next
+        c = getnext(c)
+        n = getnext(c)
         if not n then
             return c
         end
-        v = n.id == glyph_code and n.subtype<256 and n.font == font
+        v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
         if not v then
             return c
         end
-        char = n.char
+        char = getchar(n)
     end
     if halant[char] then
-        c = c.next
-        n = c.next
+        c = getnext(c)
+        n = getnext(c)
         if not n then
             return c
         end
-        v = n.id == glyph_code and n.subtype<256 and n.font == font
+        v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
         if not v then
             return c
         end
-        char = n.char
+        char = getchar(n)
     end
     if vowel_modifier[char] then
-        c = c.next
-        n = c.next
+        c = getnext(c)
+        n = getnext(c)
         if not n then
             return c
         end
-        v = n.id == glyph_code and n.subtype<256 and n.font == font
+        v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
         if not v then
             return c
         end
-        char = n.char
+        char = getchar(n)
     end
     if stress_tone_mark[char] then
-        c = c.next
-        n = c.next
+        c = getnext(c)
+        n = getnext(c)
         if not n then
             return c
         end
-        v = n.id == glyph_code and n.subtype<256 and n.font == font
+        v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
         if not v then
             return c
         end
-        char = n.char
+        char = getchar(n)
     end
     if stress_tone_mark[char] then
         return n
@@ -1767,38 +1917,38 @@ local function analyze_next_chars_one(c,font,variant) -- skip one dependent vowe
 end
 
 local function analyze_next_chars_two(c,font)
-    local n = c.next
+    local n = getnext(c)
     if not n then
         return c
     end
-    if n.id == glyph_code and nukta[n.char] and n.subtype<256 and n.font == font then
+    if getid(n) == glyph_code and nukta[getchar(n)] and getsubtype(n) < 256 and getfont(n) == font then
         c = n
     end
     n = c
     while true do
-        local nn = n.next
-        if nn and nn.id == glyph_code and nn.subtype<256 and nn.font == font then
-            local char = nn.char
+        local nn = getnext(n)
+        if nn and getid(nn) == glyph_code and getsubtype(nn) < 256 and getfont(nn) == font then
+            local char = getchar(nn)
             if halant[char] then
                 n = nn
-                local nnn = nn.next
-                if nnn and nnn.id == glyph_code and zw_char[nnn.char] and nnn.subtype<256 and nnn.font == font then
+                local nnn = getnext(nn)
+                if nnn and getid(nnn) == glyph_code and zw_char[getchar(nnn)] and getsubtype(nnn) < 256 and getfont(nnn) == font then
                     n = nnn
                 end
             elseif char == c_zwnj or char == c_zwj then
              -- n = nn -- not here (?)
-                local nnn = nn.next
-                if nnn and nnn.id == glyph_code and halant[nnn.char] and nnn.subtype<256 and nnn.font == font then
+                local nnn = getnext(nn)
+                if nnn and getid(nnn) == glyph_code and halant[getchar(nnn)] and getsubtype(nnn) < 256 and getfont(nnn) == font then
                     n = nnn
                 end
             else
                 break
             end
-            local nn = n.next
-            if nn and nn.id == glyph_code and consonant[nn.char] and nn.subtype<256 and nn.font == font then
+            local nn = getnext(n)
+            if nn and getid(nn) == glyph_code and consonant[getchar(nn)] and getsubtype(nn) < 256 and getfont(nn) == font then
                 n = nn
-                local nnn = nn.next
-                if nnn and nnn.id == glyph_code and nukta[nnn.char] and nnn.subtype<256 and nnn.font == font then
+                local nnn = getnext(nn)
+                if nnn and getid(nnn) == glyph_code and nukta[getchar(nnn)] and getsubtype(nnn) < 256 and getfont(nnn) == font then
                     n = nnn
                 end
                 c = n
@@ -1814,114 +1964,114 @@ local function analyze_next_chars_two(c,font)
         -- This shouldn't happen I guess.
         return
     end
-    local n = c.next
+    local n = getnext(c)
     if not n then
         return c
     end
-    local v = n.id == glyph_code and n.subtype<256 and n.font == font
+    local v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
     if not v then
         return c
     end
-    local char = n.char
+    local char = getchar(n)
     if char == c_anudatta then
         c = n
-        n = c.next
+        n = getnext(c)
         if not n then
             return c
         end
-        v = n.id == glyph_code and n.subtype<256 and n.font == font
+        v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
         if not v then
             return c
         end
-        char = n.char
+        char = getchar(n)
     end
     if halant[char] then
-        c = c.next
-        n = c.next
+        c = getnext(c)
+        n = getnext(c)
         if not n then
             return c
         end
-        v = n.id == glyph_code and n.subtype<256 and n.font == font
+        v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
         if not v then
             return c
         end
-        char = n.char
+        char = getchar(n)
         if char == c_zwnj or char == c_zwj then
-            c = c.next
-            n = c.next
+            c = getnext(c)
+            n = getnext(c)
             if not n then
                 return c
             end
-            v = n.id == glyph_code and n.subtype<256 and n.font == font
+            v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
             if not v then
                 return c
             end
-            char = n.char
+            char = getchar(n)
         end
     else
         -- c = ms_matra(c)
         -- same as one
         if dependent_vowel[char] then
-            c = c.next
-            n = c.next
+            c = getnext(c)
+            n = getnext(c)
             if not n then
                 return c
             end
-            v = n.id == glyph_code and n.subtype<256 and n.font == font
+            v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
             if not v then
                 return c
             end
-            char = n.char
+            char = getchar(n)
         end
         if nukta[char] then
-            c = c.next
-            n = c.next
+            c = getnext(c)
+            n = getnext(c)
             if not n then
                 return c
             end
-            v = n.id == glyph_code and n.subtype<256 and n.font == font
+            v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
             if not v then
                 return c
             end
-            char = n.char
+            char = getchar(n)
         end
         if halant[char] then
-            c = c.next
-            n = c.next
+            c = getnext(c)
+            n = getnext(c)
             if not n then
                 return c
             end
-            v = n.id == glyph_code and n.subtype<256 and n.font == font
+            v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
             if not v then
                 return c
             end
-            char = n.char
+            char = getchar(n)
         end
     end
     -- same as one
     if vowel_modifier[char] then
-        c = c.next
-        n = c.next
+        c = getnext(c)
+        n = getnext(c)
         if not n then
             return c
         end
-        v = n.id == glyph_code and n.subtype<256 and n.font == font
+        v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
         if not v then
             return c
         end
-        char = n.char
+        char = getchar(n)
     end
     if stress_tone_mark[char] then
-        c = c.next
-        n = c.next
+        c = getnext(c)
+        n = getnext(c)
         if not n then
             return c
         end
-        v = n.id == glyph_code and n.subtype<256 and n.font == font
+        v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
         if not v then
             return c
         end
-        char = n.char
+        char = getchar(n)
     end
     if stress_tone_mark[char] then
         return n
@@ -1932,10 +2082,11 @@ end
 
 local function inject_syntax_error(head,current,mark)
     local signal = copy_node(current)
+	copyinjection(signal,current)
     if mark == pre_mark then
-        signal.char = dotted_circle
+        setfield(signal,"char",dotted_circle)
     else
-        current.char = dotted_circle
+        setfield(current,"char",dotted_circle)
     end
     return insert_node_after(head,current,signal)
 end
@@ -1944,31 +2095,32 @@ end
 -- a lot. Common code has been synced.
 
 function methods.deva(head,font,attr)
+    head           = tonut(head)
     local current  = head
     local start    = true
     local done     = false
     local nbspaces = 0
     while current do
-        if current.id == glyph_code and current.subtype<256 and current.font == font then
+        if getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == font then
             done = true
             local syllablestart = current
             local syllableend = nil
             local c = current
-            local n = c.next
-            if n and c.char == c_ra and n.id == glyph_code and halant[n.char] and n.subtype<256 and n.font == font then
-                local n = n.next
-                if n and n.id == glyph_code and n.subtype<256 and n.font == font then
+            local n = getnext(c)
+            if n and ra[getchar(c)] and getid(n) == glyph_code and halant[getchar(n)] and getsubtype(n) < 256 and getfont(n) == font then
+                local n = getnext(n)
+                if n and getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font then
                     c = n
                 end
             end
-            local standalone = c.char == c_nbsp
+            local standalone = getchar(c) == c_nbsp
             if standalone then
-                local prev = current.prev
+                local prev = getprev(current)
                 if not prev then
                     -- begin of paragraph or box
-                elseif prev.id ~= glyph_code or prev.subtype>=256 or prev.font ~= font then
+                elseif getid(prev) ~= glyph_code or getsubtype(prev) >= 256 or getfont(prev) ~= font then
                     -- different font or language so quite certainly a different word
-                elseif not separator[prev.char] then
+                elseif not separator[getchar(prev)] then
                     -- something that separates words
                 else
                     standalone = false
@@ -1977,61 +2129,61 @@ function methods.deva(head,font,attr)
             if standalone then
                 -- stand alone cluster (at the start of the word only): #[Ra+H]+NBSP+[N]+[<[<ZWJ|ZWNJ>]+H+C>]+[{M}+[N]+[H]]+[SM]+[(VD)]
 				local syllableend = analyze_next_chars_one(c,font,2)
-				current = syllableend.next
+				current = getnext(syllableend)
                 if syllablestart ~= syllableend then
                     head, current, nbspaces = deva_reorder(head,syllablestart,syllableend,font,attr,nbspaces)
-                    current = current.next
+                    current = getnext(current)
                 end
             else
-                -- we can delay the n.subtype and n.font and test for say halant first
+                -- we can delay the getsubtype(n) and getfont(n) and test for say halant first
                 -- as an table access is faster than two function calls (subtype and font are
                 -- pseudo fields) but the code becomes messy (unless we make it a function)
-                local char = current.char
+                local char = getchar(current)
                 if consonant[char] then
                     -- syllable containing consonant
                     local prevc = true
                     while prevc do
                         prevc = false
-                        local n = current.next
+                        local n = getnext(current)
                         if not n then
                             break
                         end
-                        local v = n.id == glyph_code and n.subtype<256 and n.font == font
+                        local v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
                         if not v then
                             break
                         end
-                        local c = n.char
+                        local c = getchar(n)
                         if nukta[c] then
-                            n = n.next
+                            n = getnext(n)
                             if not n then
                                 break
                             end
-                            v = n.id == glyph_code and n.subtype<256 and n.font == font
+                            v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
                             if not v then
                                 break
                             end
-                            c = n.char
+                            c = getchar(n)
                         end
                         if halant[c] then
-                            n = n.next
+                            n = getnext(n)
                             if not n then
                                 break
                             end
-                            v = n.id == glyph_code and n.subtype<256 and n.font == font
+                            v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
                             if not v then
                                 break
                             end
-                            c = n.char
+                            c = getchar(n)
                             if c == c_zwnj or c == c_zwj then
-                                n = n.next
+                                n = getnext(n)
                                 if not n then
                                     break
                                 end
-                                v = n.id == glyph_code and n.subtype<256 and n.font == font
+                                v = getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font
                                 if not v then
                                     break
                                 end
-                                c = n.char
+                                c = getchar(n)
                             end
                             if consonant[c] then
                                 prevc = true
@@ -2039,77 +2191,77 @@ function methods.deva(head,font,attr)
                             end
                         end
                     end
-                    local n = current.next
-                    if n and n.id == glyph_code and nukta[n.char] and n.subtype<256 and n.font == font then
+                    local n = getnext(current)
+                    if n and getid(n) == glyph_code and nukta[getchar(n)] and getsubtype(n) < 256 and getfont(n) == font then
                         -- nukta (not specified in Microsft Devanagari OpenType specification)
                         current = n
-                        n = current.next
+                        n = getnext(current)
                     end
                     syllableend = current
                     current = n
                     if current then
-                        local v = current.id == glyph_code and current.subtype<256 and current.font == font
+                        local v = getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == font
                         if v then
-                            if halant[current.char] then
+                            if halant[getchar(current)] then
                                 -- syllable containing consonant without vowels: {C + [Nukta] + H} + C + H
-                                local n = current.next
-                                if n and n.id == glyph_code and zw_char[n.char] and n.subtype<256 and n.font == font then
+                                local n = getnext(current)
+                                if n and getid(n) == glyph_code and zw_char[getchar(n)] and getsubtype(n) < 256 and getfont(n) == font then
                                     -- code collapsed, probably needs checking with intention
                                     syllableend = n
-                                    current = n.next
+                                    current = getnext(n)
                                 else
                                     syllableend = current
                                     current = n
                                 end
                             else
                                 -- syllable containing consonant with vowels: {C + [Nukta] + H} + C + [M] + [VM] + [SM]
-                                local c = current.char
+                                local c = getchar(current)
                                 if dependent_vowel[c] then
                                     syllableend = current
-                                    current = current.next
-                                    v = current and current.id == glyph_code and current.subtype<256 and current.font == font
+                                    current = getnext(current)
+                                    v = current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == font
                                     if v then
-                                        c = current.char
+                                        c = getchar(current)
                                     end
                                 end
                                 if v and vowel_modifier[c] then
                                     syllableend = current
-                                    current = current.next
-                                    v = current and current.id == glyph_code and current.subtype<256 and current.font == font
+                                    current = getnext(current)
+                                    v = current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == font
                                     if v then
-                                        c = current.char
+                                        c = getchar(current)
                                     end
                                 end
                                 if v and stress_tone_mark[c] then
                                     syllableend = current
-                                    current = current.next
+                                    current = getnext(current)
                                 end
                             end
                         end
                     end
                     if syllablestart ~= syllableend then
                         head, current, nbspaces = deva_reorder(head,syllablestart,syllableend,font,attr,nbspaces)
-                        current = current.next
+                        current = getnext(current)
                     end
                 elseif independent_vowel[char] then
                     -- syllable without consonants: VO + [VM] + [SM]
                     syllableend = current
-                    current = current.next
+                    current = getnext(current)
                     if current then
-                        local v = current.id == glyph_code and current.subtype<256 and current.font == font
+                        local v = getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == font
                         if v then
-                            local c = current.char
+                            local c = getchar(current)
                             if vowel_modifier[c] then
                                 syllableend = current
-                                current = current.next
-                                v = current and current.id == glyph_code and current.subtype<256 and current.font == font
+                                current = getnext(current)
+                                v = current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == font
                                 if v then
-                                    c = current.char
+                                    c = getchar(current)
                                 end
                             end
                             if v and stress_tone_mark[c] then
                                 syllableend = current
-                                current = current.next
+                                current = getnext(current)
                             end
                         end
                     end
@@ -2118,11 +2270,11 @@ function methods.deva(head,font,attr)
                     if mark then
                         head, current = inject_syntax_error(head,current,mark)
                     end
-                    current = current.next
+                    current = getnext(current)
                 end
             end
         else
-            current = current.next
+            current = getnext(current)
         end
         start = false
     end
@@ -2131,7 +2283,7 @@ function methods.deva(head,font,attr)
         head = replace_all_nbsp(head)
     end
 
-    head = typesetters.characters.handler(head)
+    head = tonode(head)
 
     return head, done
 end
@@ -2142,6 +2294,7 @@ end
 -- handler(head,start,kind,lookupname,lookupmatch,sequence,lookuphash,1)
 
 function methods.dev2(head,font,attr)
+    head           = tonut(head)
     local current  = head
     local start    = true
     local done     = false
@@ -2149,18 +2302,18 @@ function methods.dev2(head,font,attr)
     local nbspaces = 0
     while current do
         local syllablestart, syllableend = nil, nil
-        if current.id == glyph_code and current.subtype<256 and current.font == font then
+        if getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == font then
             done = true
             syllablestart = current
             local c = current
-            local n = current.next
-            if n and c.char == c_ra and n.id == glyph_code and halant[n.char] and n.subtype<256 and n.font == font then
-                local n = n.next
-                if n and n.id == glyph_code and n.subtype<256 and n.font == font then
+            local n = getnext(current)
+            if n and ra[getchar(c)] and getid(n) == glyph_code and halant[getchar(n)] and getsubtype(n) < 256 and getfont(n) == font then
+                local n = getnext(n)
+                if n and getid(n) == glyph_code and getsubtype(n) < 256 and getfont(n) == font then
                     c = n
                 end
             end
-            local char = c.char
+            local char = getchar(c)
             if independent_vowel[char] then
                 -- vowel-based syllable: [Ra+H]+V+[N]+[<[<ZWJ|ZWNJ>]+H+C|ZWJ+C>]+[{M}+[N]+[H]]+[SM]+[(VD)]
                 current = analyze_next_chars_one(c,font,1)
@@ -2169,12 +2322,12 @@ function methods.dev2(head,font,attr)
                 local standalone = char == c_nbsp
                 if standalone then
                     nbspaces = nbspaces + 1
-                    local p = current.prev
+                    local p = getprev(current)
                     if not p then
                         -- begin of paragraph or box
-                    elseif p.id ~= glyph_code or p.subtype>=256 or p.font ~= font then
+                    elseif getid(p) ~= glyph_code or getsubtype(p) >= 256 or getfont(p) ~= font then
                         -- different font or language so quite certainly a different word
-                    elseif not separator[p.char] then
+                    elseif not separator[getchar(p)] then
                         -- something that separates words
                     else
                         standalone = false
@@ -2184,7 +2337,7 @@ function methods.dev2(head,font,attr)
                     -- Stand Alone cluster (at the start of the word only): #[Ra+H]+NBSP+[N]+[<[<ZWJ|ZWNJ>]+H+C>]+[{M}+[N]+[H]]+[SM]+[(VD)]
                     current = analyze_next_chars_one(c,font,2)
                     syllableend = current
-                elseif consonant[current.char] then
+                elseif consonant[getchar(current)] then
                     -- WHY current INSTEAD OF c ?
 
                     -- Consonant syllable: {C+[N]+<H+[<ZWNJ|ZWJ>]|<ZWNJ|ZWJ>+H>} + C+[N]+[A] + [< H+[<ZWNJ|ZWJ>] | {M}+[N]+[H]>]+[SM]+[(VD)]
@@ -2196,28 +2349,33 @@ function methods.dev2(head,font,attr)
         if syllableend then
             syllabe = syllabe + 1
             local c = syllablestart
-            local n = syllableend.next
+            local n = getnext(syllableend)
             while c ~= n do
-                c[a_syllabe] = syllabe
-                c = c.next
+                setprop(c,a_syllabe,syllabe)
+                c = getnext(c)
             end
         end
         if syllableend and syllablestart ~= syllableend then
             head, current, nbspaces = dev2_reorder(head,syllablestart,syllableend,font,attr,nbspaces)
         end
-        if not syllableend and current.id == glyph_code and current.subtype<256 and current.font == font and not current[a_state] then
-            local mark = mark_four[current.char]
+        if not syllableend and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == font and not getprop(current,a_state) then
+            local mark = mark_four[getchar(current)]
             if mark then
                 head, current = inject_syntax_error(head,current,mark)
             end
         end
         start = false
-        current = current.next
+        current = getnext(current)
     end
 
     if nbspaces > 0 then
         head = replace_all_nbsp(head)
     end
 
+    head = tonode(head)
+
     return head, done
 end
+
+methods.mlym = methods.deva
+methods.mlm2 = methods.dev2

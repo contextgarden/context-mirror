@@ -31,6 +31,8 @@
 \newtoks\c_math_align_b
 \newtoks\c_math_align_c
 
+\def\displayopenupvalue{.25\bodyfontsize}
+
 \def\math_build_eqalign
   {\scratchtoks\emptytoks
    \dorecurse{\mathalignmentparameter\c!m}\math_build_eqalign_step
@@ -38,19 +40,25 @@
 
 \def\math_build_eqalign_step
   {\ifnum\recurselevel>\plusone
-    %\appendtoks
-    %  \tabskip\mathalignmentparameter\c!distance\aligntab\tabskip\zeropoint
-    %\to\scratchtoks
      \scratchtoks\expandafter{\the\scratchtoks\tabskip\mathalignmentparameter\c!distance\aligntab\tabskip\zeropoint}%
    \fi
    \normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_a}}%
    \dorecurse{\numexpr\mathalignmentparameter\c!n-\plusone\relax}
      {\normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_b}}}}
 
-\def\math_math_in_eqalign#1{$\tabskip\zeropoint\everycr\emptytoks\displaystyle{{}#1{}}$}
-\def\math_text_in_eqalign#1{$\tabskip\zeropoint\everycr\emptytoks#1$}
+\def\math_math_in_eqalign#1%
+  {\startforceddisplaymath
+   \tabskip\zeropoint
+   \everycr\emptytoks
+   {{}#1{}}%
+   \stopforceddisplaymath}
 
-\def\displayopenupvalue{.25\bodyfontsize}
+\def\math_text_in_eqalign#1%
+  {\startimath
+   \tabskip\zeropoint
+   \everycr\emptytoks
+   #1%
+   \stopimath}
 
 \def\eqalign#1% why no halign here, probably because of displaywidth
   {\emptyhbox
@@ -58,7 +66,15 @@
    \vcenter
      {\math_openup\displayopenupvalue % was: \openup\jot
       \mathsurround\zeropoint
-      \ialign{\strut\hfil$\displaystyle{\alignmark\alignmark}$\aligntab$\displaystyle{{}\alignmark\alignmark{}}$\hfil\crcr#1\crcr}}%
+      \ialign{%
+        \strut
+        \hfil
+        \startforceddisplaymath{\alignmark\alignmark}\stopforceddisplaymath
+        \aligntab
+        \startforceddisplaymath{{}\alignmark\alignmark{}}\stopforceddisplaymath
+        \hfil\crcr
+        #1\crcr}%
+     }%
    \mskip\thinmuskip}
 
 % preamble is scanned for tabskips so we need the span to prevent an error message
@@ -257,7 +273,7 @@
 
 %
 
-\def\numberedeqalign
+\unexpanded\def\numberedeqalign
   {\doifelse{\formulaparameter\c!location}\v!left
      \math_handle_eqalign_no_l_aligned
      \math_handle_eqalign_no_r_aligned}
@@ -605,16 +621,27 @@
   {\iffirstargument
      \setupcurrentmathmatrix[#1]%
    \fi
-   \emptyhbox
+ % \emptyhbox % noted at 25-05-2014: what was that one doing here? it messed up spacing
    \math_matrix_align_method_analyze
    \mathmatrixleft
+   % new per 13-10-2014
+   \edef\p_strut{\mathmatrixparameter\c!strut}%
+   \ifx\p_strut\v!no
+     \let\m_matrix_strut\relax
+   \else
+     \let\m_matrix_strut\strut
+     \ifx\p_strut\v!yes\else
+       \spacing\p_strut
+     \fi
+   \fi
+   %
    \mathmatrixbox\bgroup
    \pushmacro\math_matrix_NC
    \let\endmath\relax
    \def\NC{\math_matrix_NC}%
    \def\MC{\math_matrix_NC\ifmmode\else\startimath\let\endmath\stopimath\fi}%
    \global\let\math_matrix_NC\math_matrix_NC_indeed
-   \def\NR{\endmath\global\let\math_matrix_NC\math_matrix_NC_indeed\crcr}%
+   \def\NR{\endmath\global\let\math_matrix_NC\math_matrix_NC_indeed\m_matrix_strut  \crcr}%
    \normalbaselines
    \mathsurround\zeropoint
    \everycr\emptytoks
@@ -700,7 +727,7 @@
 %D
 %D \typebuffer \getbuffer
 %D
-%D \definemathmatrix[bmatrix][left={\left[\mskip\thinmuskip},right={\mskip\thinmuskip\right]}]
+%D \definemathmatrix[bmatrix][left={\left[\mskip\thinmuskip},right={\mskip\thinmuskip\right]},strut=1.25]
 %D
 %D \startbuffer
 %D \placeformula \startformula[-] \startbmatrix
@@ -1024,8 +1051,7 @@
    \strc_formulas_place_number
    \setbox\scratchbox\math_hbox to \displaywidth\bgroup
      \mathinnerstrut
-     $%
-     \displaystyle
+     \startforceddisplaymath
      \ifcase\mathraggedstatus\or\hfill\or\hfill\fi}
 
 \def\math_box_llapped_math_no
@@ -1047,7 +1073,7 @@
    \fi}
 
 \unexpanded\def\stopmathbox
-  {$%
+  {\stopforceddisplaymath
    \ifcase\mathraggedstatus\or\or\hfill\or\hfill\fi
    \egroup
    \setbox0\hbox{\unhcopy\scratchbox}%

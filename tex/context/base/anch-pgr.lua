@@ -8,8 +8,6 @@ if not modules then modules = { } end modules ['anch-pgr'] = {
 
 -- todo: we need to clean up lists (of previous pages)
 
-local commands, context = commands, context
-
 local format = string.format
 local abs = math.abs
 local concat, sort = table.concat, table.sort
@@ -18,6 +16,11 @@ local lpegmatch = lpeg.match
 
 local jobpositions = job.positions
 local formatters   = string.formatters
+
+local commands     = commands
+local context      = context
+
+local implement    = interfaces.implement
 
 local report_graphics = logs.reporter("graphics")
 
@@ -59,7 +62,7 @@ local function add(t,x,y,last,direction)
         if x == lx and y == ly then
             -- quick skip
         elseif n == 1 then
---             if abs(lx-x) <= eps or abs(ly-y) <= eps then
+         -- if abs(lx-x) <= eps or abs(ly-y) <= eps then
             if abs(lx-x) > eps or abs(ly-y) > eps then
                 t[n+1] = { x, y }
             end
@@ -67,10 +70,9 @@ local function add(t,x,y,last,direction)
             local tm = t[n-1]
             local px = tm[1]
             local py = tm[2]
-if (direction == "down" and y > ly) or (direction == "up" and y < ly) then
-    -- move back from too much hang
-else
-            if abs(lx-px) <= eps and abs(lx-x) <= eps then
+            if (direction == "down" and y > ly) or (direction == "up" and y < ly) then
+                -- move back from too much hang
+            elseif abs(lx-px) <= eps and abs(lx-x) <= eps then
                 if abs(ly-y) > eps then
                     tn[2] = y
                 end
@@ -81,7 +83,6 @@ else
             elseif not last then
                 t[n+1] = { x, y }
             end
-end
         end
     end
 end
@@ -430,7 +431,6 @@ local function calculatemultipar(tag,obeyhang)
     end
     -- Obeying intermediate changes of left/rightskip makes no sense as it will
     -- look bad, so we only look at the begin situation.
-    --
     local bn = b.n
     if bn then
         local bp = collected[f_p_tag(bn)]
@@ -555,7 +555,7 @@ f_template_b = formatters[f_template_b]
 f_template_c = formatters[f_template_c]
 f_template_d = formatters[f_template_d]
 
-function backgrounds.fetchmultipar(n,anchor,page,obeyhang)
+local function fetchmultipar(n,anchor,page,obeyhang)
     local data = pbg[n]
     if not data then
         data = calculatemultipar(n,obeyhang)
@@ -599,17 +599,25 @@ function backgrounds.fetchmultipar(n,anchor,page,obeyhang)
     return f_template_a(0,"origin",0,0,0)
 end
 
+backgrounds.fetchmultipar = fetchmultipar
+
 backgrounds.point = f_point
 backgrounds.pair  = f_pair
 backgrounds.path  = f_path
 
-function commands.fetchmultipar(n,anchor,page)
-    context(backgrounds.fetchmultipar(n,anchor,page))
-end
+-- n anchor page
 
-function commands.fetchmultishape(n,anchor,page)
-    context(backgrounds.fetchmultipar(n,anchor,page,true))
-end
+implement {
+    name      = "fetchmultipar",
+    actions   = { fetchmultipar, context },
+    arguments = { "string", "string", "integer" }
+}
+
+implement {
+    name      = "fetchmultishape",
+    actions   = { fetchmultipar, context },
+    arguments = { "string", "string", "integer", true }
+}
 
 local f_template_a = [[
 path posboxes[], posregions[] ;
@@ -628,67 +636,62 @@ posregions[%s] := (%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle ;
 f_template_a = formatters[f_template_a]
 f_template_b = formatters[f_template_b]
 
-function commands.fetchposboxes(tags,anchor,page) -- no caching (yet) / todo: anchor, page
-    local collected = jobpositions.collected
-    if type(tags) == "string" then
-        tags = utilities.parsers.settings_to_array(tags)
-    end
-    local list, nofboxes = { }, 0
-    for i=1,#tags do
-        local tag= tags[i]
-        local c = collected[tag]
-        if c then
-            local r = c.r
-            if r then
-                r = collected[r]
-                if r then
-                    local rx, ry, rw, rh, rd = r.x, r.y, r.w, r.h, r.d
-                    local cx = c.x - rx
-                    local cy = c.y - ry
-                    local cw = cx + c.w
-                    local ch = cy + c.h
-                    local cd = cy - c.d
-                    nofboxes = nofboxes + 1
-                    list[nofboxes] = f_template_b(
-                        nofboxes,c.p,
-                        nofboxes,cx,ch,cw,ch,cw,cd,cx,cd,
-                        nofboxes,0,rh,rw,rh,rw,rd,0,rd
-                    )
-                end
-            end
-        else
-            print("\n missing",tag)
+implement {
+    name      = "fetchposboxes",
+    arguments = { "string", "string", "integer" },
+    actions   = function(tags,anchor,page)  -- no caching (yet) / todo: anchor, page
+        local collected = jobpositions.collected
+        if type(tags) == "string" then
+            tags = utilities.parsers.settings_to_array(tags)
         end
+        local list, nofboxes = { }, 0
+        for i=1,#tags do
+            local tag= tags[i]
+            local c = collected[tag]
+            if c then
+                local r = c.r
+                if r then
+                    r = collected[r]
+                    if r then
+                        local rx, ry, rw, rh, rd = r.x, r.y, r.w, r.h, r.d
+                        local cx = c.x - rx
+                        local cy = c.y - ry
+                        local cw = cx + c.w
+                        local ch = cy + c.h
+                        local cd = cy - c.d
+                        nofboxes = nofboxes + 1
+                        list[nofboxes] = f_template_b(
+                            nofboxes,c.p,
+                            nofboxes,cx,ch,cw,ch,cw,cd,cx,cd,
+                            nofboxes,0,rh,rw,rh,rw,rd,0,rd
+                        )
+                    end
+                end
+            else
+                print("\n missing",tag)
+            end
+        end
+        context(f_template_a(nofboxes,list))
     end
-    context(f_template_a(nofboxes,list))
-end
+}
 
 local doifelse = commands.doifelse
 
-function commands.doifelsemultipar(n,page,obeyhang)
-    local data = pbg[n]
-    if not data then
-        data = calculatemultipar(n,obeyhang)
-        pbg[n] = data
+implement {
+    name      = "doifelserangeonpage",
+    arguments = { "string", "string", "integer" },
+    actions   = function(first,last,page)
+        local collected = jobpositions.collected
+        local f = collected[first]
+        if not f or f.p == true then
+            doifelse(false)
+            return
+        end
+        local l = collected[last]
+        if not l or l.p == true  then
+            doifelse(false)
+            return
+        end
+        doifelse(page >= f.p and page <= l.p)
     end
-    if page then
-        doifelse(data and data[page] and true)
-    else
-        doifelse(data and next(data) and true)
-    end
-end
-
-function commands.doifelserangeonpage(first,last,page)
-    local collected = jobpositions.collected
-    local f = collected[first]
-    if not f or f.p == true then
-        doifelse(false)
-        return
-    end
-    local l = collected[last]
-    if not l or l.p == true  then
-        doifelse(false)
-        return
-    end
-    doifelse(page >= f.p and page <= l.p)
-end
+}

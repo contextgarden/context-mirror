@@ -996,6 +996,21 @@ return {
         ["publications:7"] = {
             en = "placing all entries, use 'text' to be more selective",
         },
+        ["publications:10"] = {
+            en = "unknown command %a, using built-in context variant %a",
+        },
+        ["publications:11"] = {
+            en = "unknown command %a",
+        },
+        ["publications:12"] = {
+            en = "missing setup: %s",
+        },
+        ["publications:13"] = {
+            en = "no field %a for tag %a in dataset %a",
+        },
+        ["publications:14"] = {
+            en = "unknown rendering alternative %a",
+        },
         ["pushing level: %a"] = {
             nl = "niveau omhoog: %a",
         },

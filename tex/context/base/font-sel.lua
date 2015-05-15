@@ -20,6 +20,8 @@ local v_simplefonts           = interfaces.variables.simplefonts
 local v_selectfont            = interfaces.variables.selectfont
 local v_default               = interfaces.variables.default
 
+local implement               = interfaces.implement
+
 local selectfont              = fonts.select or { }
 fonts.select                  = selectfont
 
@@ -174,28 +176,58 @@ local names = {
         ["heavyitalic"]  = { "heavyitalic" },
     },
     ["default"] = { -- weight, width, italic
-        ["thin"]        = { weight = { 100, 200, 300, 400, 500 }, width = 5, italic = false },
-        ["extralight"]  = { weight = { 200, 100, 300, 400, 500 }, width = 5, italic = false },
-        ["light"]       = { weight = { 300, 200, 100, 400, 500 }, width = 5, italic = false },
-        ["regular"]     = { weight = { 400, 500, 300, 200, 100 }, width = 5, italic = false },
-        ["italic"]      = { weight = { 400, 500, 300, 200, 100 }, width = 5, italic = true  },
-        ["medium"]      = { weight = { 500, 400, 300, 200, 100 }, width = 5, italic = false },
-        ["demibold"]    = { weight = { 600, 700, 800, 900 },      width = 5, italic = false },
-        ["bold"]        = { weight = { 700, 600, 800, 900 },      width = 5, italic = false },
-        ["bolditalic"]  = { weight = { 700, 600, 800, 900 },      width = 5, italic = true  },
-        ["smallcaps"]   = { weight = { 400, 500, 300, 200, 100 }, width = 5, italic = false },
-        ["heavy"]       = { weight = { 800, 900, 700, 600 },      width = 5, italic = false },
-        ["black"]       = { weight = { 900, 800, 700, 600 },      width = 5, italic = false },
+        ["thin"]             = { weight = { 100, 200, 300, 400, 500 }, width = 5, italic = false },
+        ["thinitalic"]       = { weight = { 100, 200, 300, 400, 500 }, width = 5, italic = true  },
+        ["extralight"]       = { weight = { 200, 100, 300, 400, 500 }, width = 5, italic = false },
+        ["extralightitalic"] = { weight = { 200, 100, 300, 400, 500 }, width = 5, italic = true  },
+        ["light"]            = { weight = { 300, 200, 100, 400, 500 }, width = 5, italic = false },
+        ["lightitalic"]      = { weight = { 300, 200, 100, 400, 500 }, width = 5, italic = true  },
+        ["regular"]          = { weight = { 400, 500, 300, 200, 100 }, width = 5, italic = false },
+        ["italic"]           = { weight = { 400, 500, 300, 200, 100 }, width = 5, italic = true  },
+        ["medium"]           = { weight = { 500, 400, 300, 200, 100 }, width = 5, italic = false },
+        ["mediumitalic"]     = { weight = { 500, 400, 300, 200, 100 }, width = 5, italic = true  },
+        ["demibold"]         = { weight = { 600, 700, 800, 900 },      width = 5, italic = false },
+        ["demibolditalic"]   = { weight = { 600, 700, 800, 900 },      width = 5, italic = true  },
+        ["bold"]             = { weight = { 700, 600, 800, 900 },      width = 5, italic = false },
+        ["bolditalic"]       = { weight = { 700, 600, 800, 900 },      width = 5, italic = true  },
+        ["extrabold"]        = { weight = { 800, 900, 700, 600 },      width = 5, italic = false },
+        ["extrabolditalic"]  = { weight = { 800, 900, 700, 600 },      width = 5, italic = true  },
+        ["heavy"]            = { weight = { 900, 800, 700, 600 },      width = 5, italic = false },
+        ["heavyitalic"]      = { weight = { 900, 800, 700, 600 },      width = 5, italic = true  },
     }
 }
 
-names.simplefonts.slanted     = names.simplefonts.italic
-names.simplefonts.boldslanted = names.simplefonts.bolditalic
+-- simplefonts synonyms
 
-names.default.normal          = names.default.regular
-names.default.slanted         = names.default.italic
-names.default.semibold        = names.default.demibold
-names.default.boldslanted     = names.default.bolditalic
+names.simplefonts.slanted       = names.simplefonts.italic
+names.simplefonts.boldslanted   = names.simplefonts.bolditalic
+
+-- default synonyms
+
+names.default.ultralight        = names.default.extralight
+names.default.semibold          = names.default.demibold
+names.default.ultrabold         = names.default.extrabold
+names.default.black             = names.default.heavy
+
+names.default.ultralightitalic  = names.default.extralightitalic
+names.default.semibolditalic    = names.default.demibolditalic
+names.default.ultrabolditalic   = names.default.extrabolditalic
+names.default.blackitalic       = names.default.heavyitalic
+
+names.default.thinslanted       = names.default.thinitalic
+names.default.extralightslanted = names.default.extralightitalic
+names.default.ultralightslanted = names.default.extralightitalic
+names.default.lightslanted      = names.default.lightitalic
+names.default.slanted           = names.default.italic
+names.default.demiboldslanted   = names.default.demibolditalic
+names.default.semiboldslanted   = names.default.demibolditalic
+names.default.boldslanted       = names.default.bolditalic
+names.default.extraboldslanted  = names.default.extrabolditalic
+names.default.ultraboldslanted  = names.default.extrabolditalic
+names.default.heavyslanted      = names.default.heavyitalic
+names.default.blackslanted      = names.default.heavyitalic
+
+names.default.smallcaps         = names.default.regular
 
 local mathsettings = {
     ["asanamath"] = {
@@ -269,12 +301,12 @@ local mathsettings = {
     },
 }
 
-function commands.defineselectfont(settings)
+function selectfont.define(settings)
     local index = #data + 1
     data[index] = settings
     selectfont.searchfiles(index)
     selectfont.filterinput(index)
-    context(index)
+    return index
 end
 
 local function savefont(data,alternative,entries)
@@ -463,6 +495,14 @@ function selectfont.filterinput(index)
     end
 end
 
+local ctx_definefontsynonym  = context.definefontsynonym
+local ctx_resetfontfallback  = context.resetfontfallback
+local ctx_startfontclass     = context.startfontclass
+local ctx_stopfontclass      = context.stopfontclass
+local ctx_loadfontgoodies    = context.loadfontgoodies
+local ctx_definefontfallback = context.definefontfallback
+local ctx_definetypeface     = context.definetypeface
+
 local function definefontsynonym(data,alternative,index,fallback)
     local fontdata     = data.fonts and data.fonts[alternative]
     local style        = data.metadata.style
@@ -494,22 +534,26 @@ local function definefontsynonym(data,alternative,index,fallback)
         end
         for _, entry in next, fontdata do
             local designsize = entry["designsize"] or 100
-            if designsize == 100 or designsize == 120 or designsize == 0 or #fontdata == 1 then
+            if designsize == 100 or designsize == 110 or designsize == 120 or designsize == 0 or #fontdata == 1 then
                 local filepath, filename = splitbase(entry["filename"])
+                if entry["format"] == "ttc" or entry["format"] == "dfont" then
+                    filename = formatters["%s(%s)"](filename, entry["rawname"])
+                end
                 registerdesignsizes( fontfile, "default", filename )
                 break
             end
         end
         if fallback then
-            context.definefontsynonym( { fontname }, { fontfile }, { features = features } )
+            -- can we use
+            ctx_definefontsynonym( { fontname }, { fontfile }, { features = features } )
         else
-            context.definefontsynonym( { fontname }, { fontfile }, { features = features, fallbacks = fontfile, goodies = goodies } )
+            ctx_definefontsynonym( { fontname }, { fontfile }, { features = features, fallbacks = fontfile, goodies = goodies } )
         end
     else
         if fallback then
-            context.definefontsynonym( { fontname }, { fontparent }, { features = features } )
+            ctx_definefontsynonym( { fontname }, { fontparent }, { features = features } )
         else
-            context.definefontsynonym( { fontname }, { fontparent }, { features = features, fallbacks = fontfile, goodies = goodies } )
+            ctx_definefontsynonym( { fontname }, { fontparent }, { features = features, fallbacks = fontfile, goodies = goodies } )
         end
     end
 end
@@ -522,11 +566,11 @@ local function definetypescript(index)
     local typeface     = data.metadata.typeface
     local style        = data.metadata.style
     if entry and entry["tf"] then
-        context.startfontclass( { typeface } )
+        ctx_startfontclass( { typeface } )
         if goodies ~= "" then
             goodies = utilities.parsers.settings_to_array(goodies)
             for _, goodie in next, goodies do
-                context.loadfontgoodies( { goodie } )
+                ctx_loadfontgoodies( { goodie } )
             end
         end
         for alternative, _ in next, alternatives do
@@ -534,7 +578,7 @@ local function definetypescript(index)
                 definefontsynonym(data,alternative)
             end
         end
-        context.stopfontclass()
+        ctx_stopfontclass()
     else
         -- regular style not available, loading aborted
     end
@@ -565,20 +609,20 @@ local function definetextfontfallback(data,alternative,index)
     local synonym  = formatters["%s-%s-%s-fallback-%s"](typeface, style, alternative, index)
     local fallback = formatters["%s-%s-%s"]            (typeface, style, alternative)
     if index == 1 then
-        context.resetfontfallback( { fallback } )
+        ctx_resetfontfallback( { fallback } )
     end
-    context.definefontfallback( { fallback }, { synonym }, { range }, { rscale = rscale, check = check, force = force } )
+    ctx_definefontfallback( { fallback }, { synonym }, { range }, { rscale = rscale, check = check, force = force } )
 end
 
 local function definetextfallback(entry,index)
     local data     = data[index]
     local typeface = data.metadata.typeface
-    context.startfontclass( { typeface } )
+    ctx_startfontclass( { typeface } )
     for alternative, _ in next, alternatives do
         definefontsynonym     (data,alternative,entry,true)
         definetextfontfallback(data,alternative,entry)
     end
-    context.stopfontclass()
+    ctx_stopfontclass()
     -- inspect(data)
 end
 
@@ -594,14 +638,14 @@ local function definemathfontfallback(data,alternative,index)
     local fontdata = data.fonts and data.fonts[alternative]
     local fallback = formatters["%s-%s-%s"](typeface, style, alternative)
     if index == 1 then
-        context.resetfontfallback( { fallback } )
+        ctx_resetfontfallback( { fallback } )
     end
     if fontdata and #fontdata > 0 then
         for _, entry in next, fontdata do
             local filename   = entry["filename"]
             local designsize = entry["designsize"] or 100
-            if designsize == 100 or designsize == 120 or designsize == 0 or #fontdata == 1 then
-                context.definefontfallback( { fallback }, { formatters["file:%s*%s"](filename,features) }, { range }, { rscale = rscale, check = check, force = force, offset = offset } )
+            if designsize == 100 or designsize == 110 or designsize == 120 or designsize == 0 or #fontdata == 1 then
+                ctx_definefontfallback( { fallback }, { formatters["file:%s*%s"](filename,features) }, { range }, { rscale = rscale, check = check, force = force, offset = offset } )
                 break
             end
         end
@@ -612,13 +656,13 @@ local function definemathfallback(entry,index)
     local data     = data[index]
     local typeface = data.metadata.typeface
     local style    = data.metadata.style
-    context.startfontclass( { typeface } )
+    ctx_startfontclass( { typeface } )
     for alternative, _ in next, alternatives do
         if synonyms[style][alternative] then
             definemathfontfallback(data,alternative,entry)
         end
     end
-    context.stopfontclass()
+    ctx_stopfontclass()
     -- inspect(data)
 end
 
@@ -646,7 +690,7 @@ local function definetextfont(index)
     local style      = styles[data.metadata.style]
     local designsize = data.options.opticals == v_yes and "auto" or "default"
     local scale      = data.options.scale ~= "" and data.options.scale or 1
-    context.definetypeface( { fontclass }, { shortstyle }, { style }, { "" }, { "default" }, { designsize = designsize, rscale = scale } )
+    ctx_definetypeface( { fontclass }, { shortstyle }, { style }, { "" }, { "default" }, { designsize = designsize, rscale = scale } )
 end
 
 local function definemathfont(index)
@@ -658,9 +702,9 @@ local function definemathfont(index)
     local typescript = cleanname(data.metadata.family)
     local entries    = data.fonts
     if entries then
-        context.definetypeface( { fontclass }, { shortstyle }, { style }, { "" }, { "default" }, { rscale = scale } )
+        ctx_definetypeface( { fontclass }, { shortstyle }, { style }, { "" }, { "default" }, { rscale = scale } )
     else
-        context.definetypeface( { fontclass }, { shortstyle }, { style }, { typescript }, { "default" }, { rscale = scale } )
+        ctx_definetypeface( { fontclass }, { shortstyle }, { style }, { typescript }, { "default" }, { rscale = scale } )
     end
 end
 
@@ -678,5 +722,49 @@ function selectfont.definetypeface(index)
     -- inspect(data)
 end
 
-commands.definefontfamily     = selectfont.definetypeface
-commands.definefallbackfamily = selectfont.registerfallback
+local styles = {
+    { "tf" }, { "bf" }, { "it" }, { "sl" }, { "bi" }, { "bs" }, { "sc" },
+}
+
+implement {
+    name      = "defineselectfont",
+    actions   = { selectfont.define, context },
+    arguments = {
+        {
+            {
+                "metadata", {
+                    { "typeface" },
+                    { "style" },
+                    { "family" },
+                }
+            },
+            {
+                "options", {
+                    { "opticals" },
+                    { "scale" },
+                    { "goodies" },
+                    { "alternative" },
+                    { "range" },
+                    { "offset" },
+                    { "check" },
+                    { "force" },
+                }
+            },
+            { "alternatives", styles },
+            { "files",        styles },
+            { "features",     styles },
+        }
+   }
+}
+
+implement {
+    name      = "definefontfamily",
+    actions   = selectfont.definetypeface,
+    arguments = "integer"
+}
+
+implement {
+    name      = "definefallbackfamily",
+    actions   = selectfont.registerfallback,
+    arguments = { "string", "string", "integer"}
+}

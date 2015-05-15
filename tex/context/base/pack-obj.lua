@@ -11,19 +11,21 @@ if not modules then modules = { } end modules ['pack-obj'] = {
 reusable components.</p>
 --ldx]]--
 
-local commands, context = commands, context
+local context        = context
 
-local allocate  = utilities.storage.allocate
+local implement      = interfaces.implement
 
-local collected = allocate()
-local tobesaved = allocate()
+local allocate       = utilities.storage.allocate
 
-local jobobjects = {
+local collected      = allocate()
+local tobesaved      = allocate()
+
+local jobobjects     = {
     collected = collected,
     tobesaved = tobesaved,
 }
 
-job.objects = jobobjects
+job.objects          = jobobjects
 
 local function initializer()
     collected = jobobjects.collected
@@ -32,45 +34,60 @@ end
 
 job.register('job.objects.collected', tobesaved, initializer, nil)
 
-function jobobjects.save(tag,number,page)
+local function saveobject(tag,number,page)
     local t = { number, page }
     tobesaved[tag], collected[tag] = t, t
 end
 
-function jobobjects.set(tag,number,page)
+local function setobject(tag,number,page)
     collected[tag] = { number, page }
 end
 
-function jobobjects.get(tag)
+local function getobject(tag)
     return collected[tag] or tobesaved[tag]
 end
 
-function jobobjects.number(tag,default)
+local function getobjectnumber(tag,default)
     local o = collected[tag] or tobesaved[tag]
     return o and o[1] or default
 end
 
-function jobobjects.page(tag,default)
+local function getobjectpage(tag,default)
     local o = collected[tag] or tobesaved[tag]
     return o and o[2] or default
 end
 
--- interface
+jobobjects.save   = saveobject
+jobobjects.set    = setobject
+jobobjects.get    = getobject
+jobobjects.number = getobjectnumber
+jobobjects.page   = getobjectpage
 
-commands.saveobject = jobobjects.save
-commands.setobject  = jobobjects.set
+implement {
+    name      = "saveobject",
+    actions   = saveobject
+}
 
-function commands.objectnumber(tag,default)
-    local o = collected[tag] or tobesaved[tag]
-    context(o and o[1] or default)
-end
+implement {
+    name      = "setobject",
+    actions   = setobject,
+    arguments = { "string", "integer", "integer" }
+}
 
-function commands.objectpage(tag,default)
-    local o = collected[tag] or tobesaved[tag]
-    context(o and o[2] or default)
-end
+implement {
+    name      = "objectnumber",
+    actions   = { getobjectnumber, context },
+    arguments = { "string", "string" },
+}
 
-function commands.doifobjectreferencefoundelse(tag)
-    commands.doifelse(collected[tag] or tobesaved[tag])
-end
+implement {
+    name      = "objectpage",
+    actions   = { getobjectpage, context },
+    arguments = { "string", "string" },
+}
 
+implement {
+    name      = "doifelseobjectreferencefound",
+    actions   = { jobobjects.get, commands.doifelse },
+    arguments = "string"
+}

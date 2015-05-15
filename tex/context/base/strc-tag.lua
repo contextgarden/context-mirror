@@ -6,189 +6,219 @@ if not modules then modules = { } end modules ['strc-tag'] = {
     license   = "see context related readme files"
 }
 
--- This is rather experimental code.
+-- This is rather experimental code. Tagging happens on the fly and there are two analysers
+-- involved: the pdf backend tagger and the exporter. They share data but there are subtle
+-- differences. Each tag carries a specification and these can be accessed by attribute (the
+-- end of the chain tag) or by so called fullname which is a tagname combined with a number.
 
+local type, next = type, next
 local insert, remove, unpack, concat = table.insert, table.remove, table.unpack, table.concat
-local gsub, find, topattern, format = string.gsub, string.find, string.topattern, string.format
-local lpegmatch = lpeg.match
+local find, topattern, format = string.find, string.topattern, string.format
+local lpegmatch, P, S, C, Cc = lpeg.match, lpeg.P, lpeg.S, lpeg.C, lpeg.Cc
 local texattribute = tex.attribute
 local allocate = utilities.storage.allocate
 local settings_to_hash = utilities.parsers.settings_to_hash
+local setmetatableindex = table.setmetatableindex
 
 local trace_tags = false  trackers.register("structures.tags", function(v) trace_tags = v end)
 
 local report_tags = logs.reporter("structure","tags")
 
-local attributes, structures = attributes, structures
+local attributes     = attributes
+local structures     = structures
+local implement      = interfaces.implement
 
 local a_tagged       = attributes.private('tagged')
 
 local unsetvalue     = attributes.unsetvalue
 local codeinjections = backends.codeinjections
 
-local taglist     = allocate()
-local properties  = allocate()
-local labels      = allocate()
-local stack       = { }
-local chain       = { }
-local ids         = { }
-local enabled     = false
-local tagdata     = { } -- used in export
-local tagmetadata = { } -- used in export
+local taglist        = allocate() -- access by attribute
+local specifications = allocate() -- access by fulltag
+local labels         = allocate()
+local stack          = { }
+local chain          = { }
+local ids            = { }
+local enabled        = false
+local tagcontext     = { }
+local tagpatterns    = { }
+local lasttags       = { }
+local stacksize      = 0
+local metadata       = nil -- applied to the next element
 
-local tags        = structures.tags
-tags.taglist      = taglist -- can best be hidden
-tags.labels       = labels
-tags.data         = tagdata
-tags.metadata     = tagmetadata
+local tags           = structures.tags
+tags.taglist         = taglist -- can best be hidden
+tags.labels          = labels
+tags.patterns        = tagpatterns
+tags.specifications  = specifications
 
-local properties  = allocate {
+-- Tags are internally stored as:
+--
+-- tag>number tag>number tag>number
 
-    document           = { pdf = "Div",        nature = "display" },
+local p_splitter     = C((1-S(">"))^1) * P(">") * C(P(1)^1)
+tagpatterns.splitter = p_splitter
 
-    division           = { pdf = "Div",        nature = "display" },
-    paragraph          = { pdf = "P",          nature = "mixed"   },
-    p                  = { pdf = "P",          nature = "mixed"   },
-    construct          = { pdf = "Span",       nature = "inline"  },
-    highlight          = { pdf = "Span",       nature = "inline"  },
+local properties     = allocate {
 
-    section            = { pdf = "Sect",       nature = "display" },
-    sectiontitle       = { pdf = "H",          nature = "mixed"   },
-    sectionnumber      = { pdf = "H",          nature = "mixed"   },
-    sectioncontent     = { pdf = "Div",        nature = "display" },
+    document              = { pdf = "Div",        nature = "display" },
 
-    itemgroup          = { pdf = "L",          nature = "display" },
-    item               = { pdf = "Li",         nature = "display" },
-    itemtag            = { pdf = "Lbl",        nature = "mixed"   },
-    itemcontent        = { pdf = "LBody",      nature = "mixed"   },
+    division              = { pdf = "Div",        nature = "display" },
+    paragraph             = { pdf = "P",          nature = "mixed"   },
+    p                     = { pdf = "P",          nature = "mixed"   },
+    construct             = { pdf = "Span",       nature = "inline"  },
+    highlight             = { pdf = "Span",       nature = "inline"  },
 
-    description        = { pdf = "Div",        nature = "display" },
-    descriptiontag     = { pdf = "Div",        nature = "mixed"   },
-    descriptioncontent = { pdf = "Div",        nature = "mixed"   },
-    descriptionsymbol  = { pdf = "Span",       nature = "inline"  }, -- note reference
+    section               = { pdf = "Sect",       nature = "display" },
+    sectiontitle          = { pdf = "H",          nature = "mixed"   },
+    sectionnumber         = { pdf = "H",          nature = "mixed"   },
+    sectioncontent        = { pdf = "Div",        nature = "display" },
 
-    verbatimblock      = { pdf = "Code",       nature = "display" },
-    verbatimlines      = { pdf = "Code",       nature = "display" },
-    verbatimline       = { pdf = "Code",       nature = "mixed"   },
-    verbatim           = { pdf = "Code",       nature = "inline"  },
+    itemgroup             = { pdf = "L",          nature = "display" },
+    item                  = { pdf = "LI",         nature = "display" },
+    itemtag               = { pdf = "Lbl",        nature = "mixed"   },
+    itemcontent           = { pdf = "LBody",      nature = "mixed"   },
+    itemhead              = { pdf = "Div",        nature = "display" },
+    itembody              = { pdf = "Div",        nature = "display" },
 
-    lines              = { pdf = "Code",       nature = "display" },
-    line               = { pdf = "Code",       nature = "mixed"   },
+    description           = { pdf = "Div",        nature = "display" },
+    descriptiontag        = { pdf = "Div",        nature = "mixed"   },
+    descriptioncontent    = { pdf = "Div",        nature = "mixed"   },
+    descriptionsymbol     = { pdf = "Span",       nature = "inline"  }, -- note reference
 
-    synonym            = { pdf = "Span",       nature = "inline"  },
-    sorting            = { pdf = "Span",       nature = "inline"  },
+    verbatimblock         = { pdf = "Code",       nature = "display" },
+    verbatimlines         = { pdf = "Code",       nature = "display" },
+    verbatimline          = { pdf = "Code",       nature = "mixed"   },
+    verbatim              = { pdf = "Code",       nature = "inline"  },
 
-    register           = { pdf = "Div",        nature = "display" },
-    registersection    = { pdf = "Div",        nature = "display" },
-    registertag        = { pdf = "Span",       nature = "mixed"   },
-    registerentries    = { pdf = "Div",        nature = "display" },
-    registerentry      = { pdf = "Span",       nature = "mixed"   },
-    registersee        = { pdf = "Span",       nature = "mixed"   },
-    registerpages      = { pdf = "Span",       nature = "mixed"   },
-    registerpage       = { pdf = "Span",       nature = "inline"  },
-    registerpagerange  = { pdf = "Span",       nature = "mixed"   },
+    lines                 = { pdf = "Code",       nature = "display" },
+    line                  = { pdf = "Code",       nature = "mixed"   },
 
-    table              = { pdf = "Table",      nature = "display" },
-    tablerow           = { pdf = "TR",         nature = "display" },
-    tablecell          = { pdf = "TD",         nature = "mixed"   },
+    synonym               = { pdf = "Span",       nature = "inline"  },
+    sorting               = { pdf = "Span",       nature = "inline"  },
 
-    tabulate           = { pdf = "Table",      nature = "display" },
-    tabulaterow        = { pdf = "TR",         nature = "display" },
-    tabulatecell       = { pdf = "TD",         nature = "mixed"   },
+    register              = { pdf = "Div",        nature = "display" },
+    registerlocation      = { pdf = "Span",       nature = "inline"  },
+    registersection       = { pdf = "Div",        nature = "display" },
+    registertag           = { pdf = "Span",       nature = "mixed"   },
+    registerentries       = { pdf = "Div",        nature = "display" },
+    registerentry         = { pdf = "Div",        nature = "display" },
+    registercontent       = { pdf = "Span",       nature = "mixed"   },
+    registersee           = { pdf = "Span",       nature = "mixed"   },
+    registerpages         = { pdf = "Span",       nature = "mixed"   },
+    registerpage          = { pdf = "Span",       nature = "mixed"   },
+    registerseparator     = { pdf = "Span",       nature = "inline"  },
+    registerpagerange     = { pdf = "Span",       nature = "mixed"   },
 
-    list               = { pdf = "TOC",        nature = "display" },
-    listitem           = { pdf = "TOCI",       nature = "display" },
-    listtag            = { pdf = "Lbl",        nature = "mixed"   },
-    listcontent        = { pdf = "P",          nature = "mixed"   },
-    listdata           = { pdf = "P",          nature = "mixed"   },
-    listpage           = { pdf = "Reference",  nature = "mixed"   },
+    table                 = { pdf = "Table",      nature = "display" },
+    tablerow              = { pdf = "TR",         nature = "display" },
+    tablecell             = { pdf = "TD",         nature = "mixed"   },
 
-    delimitedblock     = { pdf = "BlockQuote", nature = "display" },
-    delimited          = { pdf = "Quote",      nature = "inline"  },
-    subsentence        = { pdf = "Span",       nature = "inline"  },
+    tabulate              = { pdf = "Table",      nature = "display" },
+    tabulaterow           = { pdf = "TR",         nature = "display" },
+    tabulatecell          = { pdf = "TD",         nature = "mixed"   },
 
-    label              = { pdf = "Span",       nature = "mixed"   },
-    number             = { pdf = "Span",       nature = "mixed"   },
+    list                  = { pdf = "TOC",        nature = "display" },
+    listitem              = { pdf = "TOCI",       nature = "display" },
+    listtag               = { pdf = "Lbl",        nature = "mixed"   },
+    listcontent           = { pdf = "P",          nature = "mixed"   },
+    listdata              = { pdf = "P",          nature = "mixed"   },
+    listpage              = { pdf = "Reference",  nature = "mixed"   },
 
-    float              = { pdf = "Div",        nature = "display" }, -- Figure
-    floatcaption       = { pdf = "Caption",    nature = "mixed"   },
-    floatlabel         = { pdf = "Span",       nature = "inline"  },
-    floatnumber        = { pdf = "Span",       nature = "inline"  },
-    floattext          = { pdf = "Span",       nature = "mixed"   },
-    floatcontent       = { pdf = "P",          nature = "mixed"   },
+    delimitedblock        = { pdf = "BlockQuote", nature = "display" },
+    delimited             = { pdf = "Quote",      nature = "inline"  },
+    subsentence           = { pdf = "Span",       nature = "inline"  },
 
-    image              = { pdf = "P",          nature = "mixed"   },
-    mpgraphic          = { pdf = "P",          nature = "mixed"   },
+    label                 = { pdf = "Span",       nature = "mixed"   },
+    number                = { pdf = "Span",       nature = "mixed"   },
 
-    formulaset         = { pdf = "Div",        nature = "display" },
-    formula            = { pdf = "Div",        nature = "display" }, -- Formula
-    formulacaption     = { pdf = "Span",       nature = "mixed"   },
-    formulalabel       = { pdf = "Span",       nature = "mixed"   },
-    formulanumber      = { pdf = "Span",       nature = "mixed"   },
-    formulacontent     = { pdf = "P",          nature = "display" },
-    subformula         = { pdf = "Div",        nature = "display" },
+    float                 = { pdf = "Div",        nature = "display" }, -- Figure
+    floatcaption          = { pdf = "Caption",    nature = "mixed"   },
+    floatlabel            = { pdf = "Span",       nature = "inline"  },
+    floatnumber           = { pdf = "Span",       nature = "inline"  },
+    floattext             = { pdf = "Span",       nature = "mixed"   },
+    floatcontent          = { pdf = "P",          nature = "mixed"   },
 
-    link               = { pdf = "Link",       nature = "inline"  },
+    image                 = { pdf = "P",          nature = "mixed"   },
+    mpgraphic             = { pdf = "P",          nature = "mixed"   },
 
-    margintextblock    = { pdf = "Span",       nature = "inline"  },
-    margintext         = { pdf = "Span",       nature = "inline"  },
+    formulaset            = { pdf = "Div",        nature = "display" },
+    formula               = { pdf = "Div",        nature = "display" }, -- Formula
+    formulacaption        = { pdf = "Span",       nature = "mixed"   },
+    formulalabel          = { pdf = "Span",       nature = "mixed"   },
+    formulanumber         = { pdf = "Span",       nature = "mixed"   },
+    formulacontent        = { pdf = "P",          nature = "display" },
+    subformula            = { pdf = "Div",        nature = "display" },
 
-    math               = { pdf = "Div",        nature = "inline"  }, -- no display
-    mn                 = { pdf = "Span",       nature = "mixed"   },
-    mi                 = { pdf = "Span",       nature = "mixed"   },
-    mo                 = { pdf = "Span",       nature = "mixed"   },
-    ms                 = { pdf = "Span",       nature = "mixed"   },
-    mrow               = { pdf = "Span",       nature = "display" },
-    msubsup            = { pdf = "Span",       nature = "display" },
-    msub               = { pdf = "Span",       nature = "display" },
-    msup               = { pdf = "Span",       nature = "display" },
-    merror             = { pdf = "Span",       nature = "mixed"   },
-    munderover         = { pdf = "Span",       nature = "display" },
-    munder             = { pdf = "Span",       nature = "display" },
-    mover              = { pdf = "Span",       nature = "display" },
-    mtext              = { pdf = "Span",       nature = "mixed"   },
-    mfrac              = { pdf = "Span",       nature = "display" },
-    mroot              = { pdf = "Span",       nature = "display" },
-    msqrt              = { pdf = "Span",       nature = "display" },
-    mfenced            = { pdf = "Span",       nature = "display" },
-    maction            = { pdf = "Span",       nature = "display" },
+    link                  = { pdf = "Link",       nature = "inline"  },
 
-    mtable             = { pdf = "Table",      nature = "display" }, -- might change
-    mtr                = { pdf = "TR",         nature = "display" }, -- might change
-    mtd                = { pdf = "TD",         nature = "display" }, -- might change
+    margintextblock       = { pdf = "Span",       nature = "inline"  },
+    margintext            = { pdf = "Span",       nature = "inline"  },
 
-    ignore             = { pdf = "Span",       nature = "mixed"   },
-    metadata           = { pdf = "Div",        nature = "display" },
-    metavariable       = { pdf = "Span",       nature = "mixed"   },
+    math                  = { pdf = "Div",        nature = "inline"  }, -- no display
+    mn                    = { pdf = "Span",       nature = "mixed"   },
+    mi                    = { pdf = "Span",       nature = "mixed"   },
+    mo                    = { pdf = "Span",       nature = "mixed"   },
+    ms                    = { pdf = "Span",       nature = "mixed"   },
+    mrow                  = { pdf = "Span",       nature = "display" },
+    msubsup               = { pdf = "Span",       nature = "display" },
+    msub                  = { pdf = "Span",       nature = "display" },
+    msup                  = { pdf = "Span",       nature = "display" },
+    merror                = { pdf = "Span",       nature = "mixed"   },
+    munderover            = { pdf = "Span",       nature = "display" },
+    munder                = { pdf = "Span",       nature = "display" },
+    mover                 = { pdf = "Span",       nature = "display" },
+    mtext                 = { pdf = "Span",       nature = "mixed"   },
+    mfrac                 = { pdf = "Span",       nature = "display" },
+    mroot                 = { pdf = "Span",       nature = "display" },
+    msqrt                 = { pdf = "Span",       nature = "display" },
+    mfenced               = { pdf = "Span",       nature = "display" },
+    maction               = { pdf = "Span",       nature = "display" },
 
-    mid                = { pdf = "Span",       nature = "inline"  },
-    sub                = { pdf = "Span",       nature = "inline"  },
-    sup                = { pdf = "Span",       nature = "inline"  },
-    subsup             = { pdf = "Span",       nature = "inline"  },
+    mstacker              = { pdf = "Span",       nature = "display" }, -- these are only internally used
+    mstackertop           = { pdf = "Span",       nature = "display" }, -- these are only internally used
+    mstackerbot           = { pdf = "Span",       nature = "display" }, -- these are only internally used
+    mstackermid           = { pdf = "Span",       nature = "display" }, -- these are only internally used
 
-    combination        = { pdf = "Span",       nature = "display" },
-    combinationpair    = { pdf = "Span",       nature = "display" },
-    combinationcontent = { pdf = "Span",       nature = "mixed"   },
-    combinationcaption = { pdf = "Span",       nature = "mixed"   },
+    mtable                = { pdf = "Table",      nature = "display" }, -- might change
+    mtr                   = { pdf = "TR",         nature = "display" }, -- might change
+    mtd                   = { pdf = "TD",         nature = "display" }, -- might change
+
+    ignore                = { pdf = "Span",       nature = "mixed"   }, -- used internally
+    private               = { pdf = "Span",       nature = "mixed"   }, -- for users (like LS) when they need it
+    metadata              = { pdf = "Div",        nature = "display" },
+    metavariable          = { pdf = "Span",       nature = "mixed"   },
+
+    mid                   = { pdf = "Span",       nature = "inline"  },
+    sub                   = { pdf = "Span",       nature = "inline"  },
+    sup                   = { pdf = "Span",       nature = "inline"  },
+    subsup                = { pdf = "Span",       nature = "inline"  },
+
+    combination           = { pdf = "Span",       nature = "display" },
+    combinationpair       = { pdf = "Span",       nature = "display" },
+    combinationcontent    = { pdf = "Span",       nature = "mixed"   },
+    combinationcaption    = { pdf = "Span",       nature = "mixed"   },
 }
 
-function tags.detailedtag(tag,detail,attribute)
-    if not attribute then
-        attribute = texattribute[a_tagged]
-    end
+tags.properties = properties
+
+local patterns = setmetatableindex(function(t,tag)
+    local v = topattern("^" .. tag .. ">")
+    t[tag] = v
+    return v
+end)
+
+function tags.locatedtag(tag)
+    local attribute = texattribute[a_tagged]
     if attribute >= 0 then
-        local tl = taglist[attribute]
-        if tl then
-            local pattern
-            if detail and detail ~= "" then
-                pattern = "^" .. tag .. ":".. detail .. "%-"
-            else
-                pattern = "^" .. tag .. "%-"
-            end
-            for i=#tl,1,-1 do
-                local tli = tl[i]
-                if find(tli,pattern) then
-                    return tli
+        local specification = taglist[attribute]
+        if specification then
+            local taglist = specification.taglist
+            local pattern = patterns[tag]
+            for i=#taglist,1,-1 do
+                local t = taglist[i]
+                if find(t,pattern) then
+                    return t
                 end
             end
         end
@@ -198,12 +228,20 @@ function tags.detailedtag(tag,detail,attribute)
     return false -- handy as bogus index
 end
 
-tags.properties = properties
-
-local lasttags = { }
-local userdata = { }
-
-tags.userdata = userdata
+function structures.atlocation(str)
+    local specification = taglist[texattribute[a_tagged]]
+    if specification then
+        if list then
+            local taglist = specification.taglist
+            local pattern = patterns[str]
+            for i=#list,1,-1 do
+                if find(list[i],pattern) then
+                    return true
+                end
+            end
+        end
+    end
+end
 
 function tags.setproperty(tag,key,value)
     local p = properties[tag]
@@ -214,14 +252,17 @@ function tags.setproperty(tag,key,value)
     end
 end
 
-function tags.registerdata(data)
-    local fulltag = chain[nstack]
-    if fulltag then
-        tagdata[fulltag] = data
+function tags.setaspect(key,value)
+    local tag = chain[stacksize]
+    if tag then
+        local p = properties[tag]
+        if p then
+            p[key] = value
+        else
+            properties[tag] = { [key] = value }
+        end
     end
 end
-
-local metadata
 
 function tags.registermetadata(data)
     local d = settings_to_hash(data)
@@ -232,75 +273,92 @@ function tags.registermetadata(data)
     end
 end
 
-local nstack = 0
-
 function tags.start(tag,specification)
-    local label, detail, user
-    if specification then
-        label, detail, user = specification.label, specification.detail, specification.userdata
-    end
     if not enabled then
         codeinjections.enabletags()
         enabled = true
     end
     --
---~     labels[tag] = label ~= "" and label or tag
---~     local fulltag
---~     if detail and detail ~= "" then
---~         fulltag = tag .. ":" .. detail
---~     else
---~         fulltag = tag
---~     end
+    labels[tag] = tag -- can go away
     --
-    local fulltag = label ~= "" and label or tag
-    labels[tag] = fulltag
-    if detail and detail ~= "" then
-        fulltag = fulltag .. ":" .. detail
-    end
+    local attribute = #taglist + 1
+    local tagindex  = (ids[tag] or 0) + 1
     --
-    local t = #taglist + 1
-    local n = (ids[fulltag] or 0) + 1
-    ids[fulltag] = n
-    lasttags[tag] = n
-    local completetag = fulltag .. "-" .. n
-    nstack = nstack + 1
-    chain[nstack] = completetag
-    stack[nstack] = t
-    -- a copy as we can add key values for alt and actualtext if needed:
-    taglist[t] = { unpack(chain,1,nstack) }
+    local completetag = tag .. ">" .. tagindex
     --
-    if user and user ~= "" then
-        -- maybe we should merge this into taglist or whatever ... anyway there is room to optimize
-        -- taglist.userdata = settings_to_hash(user)
-        userdata[completetag] = settings_to_hash(user)
-    end
-    if metadata then
-        tagmetadata[completetag] = metadata
+    ids[tag]      = tagindex
+    lasttags[tag] = tagindex
+    stacksize     = stacksize + 1
+    --
+    chain[stacksize] = completetag
+    stack[stacksize] = attribute
+    tagcontext[tag]  = completetag
+    --
+    local tagnesting = { unpack(chain,1,stacksize) } -- a copy so we can add actualtext
+    --
+    if specification then
+        specification.attribute = attribute
+        specification.tagindex  = tagindex
+        specification.taglist   = tagnesting
+        specification.tagname   = tag
+        if metadata then
+            specification.metadata = metadata
+            metadata = nil
+        end
+        local userdata = specification.userdata
+        if user ~= "" and type(userdata) == "string"  then
+            specification.userdata = settings_to_hash(userdata)
+        end
+        local detail = specification.detail
+        if detail == "" then
+            specification.detail = nil
+        end
+        local parents = specification.parents
+        if parents == "" then
+            specification.parents = nil
+        end
+    else
+        specification = {
+            attribute = attribute,
+            tagindex  = tagindex,
+            taglist   = tagnesting,
+            tagname   = tag,
+            metadata  = metadata,
+        }
         metadata = nil
     end
-    texattribute[a_tagged] = t
-    return t
+    --
+    taglist[attribute]          = specification
+    specifications[completetag] = specification
+    --
+    texattribute[a_tagged] = attribute
+    return attribute
 end
 
-function tags.restart(completetag)
-    local t = #taglist + 1
-    nstack = nstack + 1
-    chain[nstack] = completetag
-    stack[nstack] = t
-    taglist[t] = { unpack(chain,1,nstack) }
-    texattribute[a_tagged] = t
-    return t
+function tags.restart(attribute)
+    stacksize = stacksize + 1
+    if type(attribute) == "number" then
+        local taglist = taglist[attribute].taglist
+        chain[stacksize] = taglist[#taglist]
+    else
+        chain[stacksize] = attribute -- a string
+        attribute = #taglist + 1
+        taglist[attribute] = { taglist = { unpack(chain,1,stacksize) } }
+    end
+    stack[stacksize] = attribute
+    texattribute[a_tagged] = attribute
+    return attribute
 end
 
 function tags.stop()
-    if nstack > 0 then
-        nstack = nstack -1
+    if stacksize > 0 then
+        stacksize = stacksize - 1
     end
-    local t = stack[nstack]
+    local t = stack[stacksize]
     if not t then
-        if trace_tags then
-            report_tags("ignoring end tag, previous chain: %s",nstack > 0 and concat(chain[nstack],"",1,nstack) or "none")
-        end
+     -- if trace_tags then
+            report_tags("ignoring end tag, previous chain: %s",stacksize > 0 and concat(chain," ",1,stacksize) or "none")
+     -- end
         t = unsetvalue
     end
     texattribute[a_tagged] = t
@@ -308,24 +366,56 @@ function tags.stop()
 end
 
 function tags.getid(tag,detail)
-    if detail and detail ~= "" then
-        return ids[tag .. ":" .. detail] or "?"
-    else
-        return ids[tag] or "?"
-    end
+    return ids[tag] or "?"
 end
 
 function tags.last(tag)
     return lasttags[tag] -- or false
 end
 
-function tags.lastinchain()
-    return chain[nstack]
+function tags.lastinchain(tag)
+    if tag and tag ~= "" then
+        return tagcontext[tag]
+    else
+        return chain[stacksize]
+    end
 end
 
-function structures.atlocation(str)
-    local location = gsub(concat(taglist[texattribute[a_tagged]],"-"),"%-%d+","")
-    return find(location,topattern(str)) ~= nil
+local strip = C((1-S(">"))^1)
+
+function tags.elementtag()
+    local fulltag = chain[stacksize]
+    if fulltag then
+        return lpegmatch(strip,fulltag)
+    end
+end
+
+function tags.strip(fulltag)
+    return lpegmatch(strip,fulltag)
+end
+
+function tags.setuserproperties(tag,list)
+    if not list or list == "" then
+        tag, list = chain[stacksize], tag
+    else
+        tag = tagcontext[tag]
+    end
+    if tag then -- an attribute now
+        local l = settings_to_hash(list)
+        local s = specifications[tag]
+        if s then
+            local u = s.userdata
+            if u then
+                for k, v in next, l do
+                    u[k] = v
+                end
+            else
+                s.userdata = l
+            end
+        else
+           -- error
+        end
+    end
 end
 
 function tags.handler(head)  -- we need a dummy
@@ -334,8 +424,8 @@ end
 
 statistics.register("structure elements", function()
     if enabled then
-        if nstack > 0 then
-            return format("%s element chains identified, open chain: %s ",#taglist,concat(chain," => ",1,nstack))
+        if stacksize > 0 then
+            return format("%s element chains identified, open chain: %s ",#taglist,concat(chain," => ",1,stacksize))
         else
             return format("%s element chains identified",#taglist)
         end
@@ -349,6 +439,65 @@ directives.register("backend.addtags", function(v)
     end
 end)
 
-commands.starttag       = tags.start
-commands.stoptag        = tags.stop
-commands.settagproperty = tags.setproperty
+-- interface
+
+local starttag = tags.start
+
+implement {
+    name      = "starttag",
+    actions   = starttag,
+    arguments = { "string" }
+}
+
+implement {
+    name      = "stoptag",
+    actions   = tags.stop,
+}
+
+implement {
+    name      = "starttag_u",
+    scope     = "private",
+    actions   = function(tag,userdata) starttag(tag,{ userdata = userdata }) end,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "starttag_d",
+    scope     = "private",
+    actions   = function(tag,detail) starttag(tag,{ detail = detail }) end,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "starttag_c",
+    scope     = "private",
+    actions   = function(tag,detail,parents) starttag(tag,{ detail = detail, parents = parents }) end,
+    arguments = { "string", "string", "string" }
+}
+
+implement { name = "settagaspect",     actions = tags.setaspect,   arguments = { "string", "string" } }
+
+implement { name = "settagproperty",   actions = tags.setproperty, arguments = { "string", "string", "string" } }
+implement { name = "settagproperty_b", actions = tags.setproperty, arguments = { "string", "'backend'", "string" }, scope = "private" }
+implement { name = "settagproperty_n", actions = tags.setproperty, arguments = { "string", "'nature'",  "string" }, scope = "private" }
+
+implement { name = "getelementtag",    actions = { tags.elementtag, context } }
+
+implement {
+    name      = "setelementuserproperties",
+    scope     = "private",
+    actions   = tags.setuserproperties,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "doifelseinelement",
+    actions   = { structures.atlocation, commands.testcase },
+    arguments = "string",
+}
+
+implement {
+    name      = "settaggedmetadata",
+    actions   = structures.tags.registermetadata,
+    arguments = "string"
+}

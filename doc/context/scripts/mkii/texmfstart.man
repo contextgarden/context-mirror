@@ -1,4 +1,4 @@
-.TH "mtxrun" "1" "01-01-2014" "version 1.31" "ConTeXt TDS Runner Tool"
+.TH "mtxrun" "1" "01-01-2015" "version 1.31" "ConTeXt TDS Runner Tool"
 .SH NAME
 .B mtxrun
 .SH SYNOPSIS
@@ -13,6 +13,9 @@
 .TP
 .B --script
 run an mtx script (lua prefered method) (--noquotes), no script gives list
+.TP
+.B --evaluate
+run code passed on the commandline (between quotes)
 .TP
 .B --execute
 run a script or program (texmfstart method) (--noquotes)
@@ -70,6 +73,9 @@ enable given trackers
 .TP
 .B --progname=str
 format or backend
+.TP
+.B --systeminfo=str
+show current operating system, processor, etc
 .TP
 .B --edit
 launch editor with found file

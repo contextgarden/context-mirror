@@ -349,7 +349,7 @@ local filenames = {
 }
 
 local function locatefile(filename)
-    local fullname = resolvers.findfile(filename,"icc")
+    local fullname = resolvers.findfile(filename,"icc",1,true)
     if not fullname or fullname == "" then
         fullname = resolvers.finders.byscheme("loc",filename) -- could be specific to the project
     end
@@ -710,7 +710,9 @@ function codeinjections.setformat(s)
                 end
             end
             function codeinjections.setformat(noname)
-                report_backend("error, format is already set to %a, ignoring %a",formatname,noname.format)
+                if trace_format then
+                    report_backend("error, format is already set to %a, ignoring %a",formatname,noname.format)
+                end
             end
         else
             report_backend("error, format %a is not supported",format)
@@ -732,9 +734,11 @@ directives.register("backend.format", function(v) -- table !
     end
 end)
 
-function commands.setformat(s)
-    codeinjections.setformat(s)
-end
+interfaces.implement {
+    name      = "setformat",
+    actions   = codeinjections.setformat,
+    arguments = { { "*" } }
+}
 
 function codeinjections.getformatoption(key)
     return formatspecification and formatspecification[key]
@@ -743,7 +747,7 @@ end
 function codeinjections.supportedformats()
     local t = { }
     for k, v in table.sortedhash(formats) do
-        if find(k,"pdf") then
+        if find(k,"pdf",1,true) then
             t[#t+1] = k
         end
     end

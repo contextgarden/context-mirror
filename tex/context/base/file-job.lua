@@ -11,15 +11,20 @@ if not modules then modules = { } end modules ['file-job'] = {
 
 local gsub, match, find = string.gsub, string.match, string.find
 local insert, remove, concat = table.insert, table.remove, table.concat
-local validstring = string.valid
+local validstring, formatters = string.valid, string.formatters
 local sortedhash = table.sortedhash
-local formatters = string.formatters
 
-local commands, resolvers, context = commands, resolvers, context
+local commands          = commands
+local resolvers         = resolvers
+local context           = context
 
-local trace_jobfiles  = false  trackers.register("system.jobfiles", function(v) trace_jobfiles = v end)
+local ctx_doifelse      = commands.doifelse
 
-local report_jobfiles = logs.reporter("system","jobfiles")
+local implement         = interfaces.implement
+
+local trace_jobfiles    = false  trackers.register("system.jobfiles", function(v) trace_jobfiles = v end)
+
+local report_jobfiles   = logs.reporter("system","jobfiles")
 
 local texsetcount       = tex.setcount
 local elements          = interfaces.elements
@@ -42,6 +47,16 @@ local is_qualified_path = file.is_qualified_path
 
 local cleanpath         = resolvers.cleanpath
 local inputstack        = resolvers.inputstack
+local resolveprefix     = resolvers.resolve
+
+local hasscheme         = url.hasscheme
+
+local jobresolvers      = resolvers.jobs
+
+local registerextrapath = resolvers.registerextrapath
+local resetextrapath    = resolvers.resetextrapath
+local pushextrapath     = resolvers.pushextrapath
+local popextrapath      = resolvers.popextrapath
 
 local v_outer           = variables.outer
 local v_text            = variables.text
@@ -56,7 +71,7 @@ local c_prefix          = variables.prefix
 local function findctxfile(name) -- loc ? any ?
     if is_qualified_path(name) then -- maybe when no suffix do some test for tex
         return name
-    elseif not url.hasscheme(name) then
+    elseif not hasscheme(name) then
         return resolvers.finders.byscheme("loc",name) or ""
     else
         return resolvers.findtexfile(name) or ""
@@ -65,44 +80,94 @@ end
 
 resolvers.findctxfile = findctxfile
 
-function commands.processfile(name)
-    name = findctxfile(name)
-    if name ~= "" then
-        context.input(name)
+implement {
+    name      = "processfile",
+    arguments = "string",
+    actions   = function(name)
+        name = findctxfile(name)
+        if name ~= "" then
+            context.input(name)
+        end
     end
-end
+}
 
-function commands.doifinputfileelse(name)
-    commands.doifelse(findctxfile(name) ~= "")
-end
-
-function commands.locatefilepath(name)
-    context(dirname(findctxfile(name)))
-end
-
-function commands.usepath(paths)
-    resolvers.registerextrapath(paths)
-end
-
-function commands.usesubpath(subpaths)
-    resolvers.registerextrapath(nil,subpaths)
-end
-
-function commands.allinputpaths()
-    context(concat(resolvers.instance.extra_paths or { },","))
-end
-
-function commands.setdocumentfilenames()
-    environment.initializefilenames()
-end
-
-function commands.usezipfile(name,tree)
-    if tree and tree ~= "" then
-        resolvers.usezipfile(formatters["zip:///%s?tree=%s"](name,tree))
-    else
-        resolvers.usezipfile(formatters["zip:///%s"](name))
+implement {
+    name      = "doifelseinputfile",
+    arguments = "string",
+    actions   = function(name)
+        ctx_doifelse(findctxfile(name) ~= "")
     end
-end
+}
+
+implement {
+    name      = "locatefilepath",
+    arguments = "string",
+    actions   = function(name)
+        context(dirname(findctxfile(name)))
+    end
+}
+
+implement {
+    name      = "usepath",
+    arguments = "string",
+    actions   = function(paths)
+        report_jobfiles("using path: %s",paths)
+        registerextrapath(paths)
+    end
+}
+
+implement {
+    name      = "pushpath",
+    arguments = "string",
+    actions   = function(paths)
+        report_jobfiles("pushing path: %s",paths)
+        pushextrapath(paths)
+    end
+}
+
+implement {
+    name      = "poppath",
+    actions   = function(paths)
+        popextrapath()
+        report_jobfiles("popping path")
+    end
+}
+
+implement {
+    name      = "usesubpath",
+    arguments = "string",
+    actions   = function(subpaths)
+        report_jobfiles("using subpath: %s",subpaths)
+        registerextrapath(nil,subpaths)
+    end
+}
+
+implement {
+    name      = "resetpath",
+    actions   = function()
+        report_jobfiles("resetting path")
+        resetextrapath()
+    end
+}
+
+implement {
+    name      = "allinputpaths",
+    actions   = function()
+        context(concat(resolvers.instance.extra_paths or { },","))
+    end
+}
+
+implement {
+    name      = "usezipfile",
+    arguments = { "string", "string" },
+    actions   = function(name,tree)
+        if tree and tree ~= "" then
+            resolvers.usezipfile(formatters["zip:///%s?tree=%s"](name,tree))
+        else
+            resolvers.usezipfile(formatters["zip:///%s"](name))
+        end
+    end
+}
 
 local report_system  = logs.reporter("system")
 
@@ -113,7 +178,7 @@ local luapatterns = { "%s" .. utilities.lua.suffixes.luc, "%s.lua" }
 local cldpatterns = { "%s.cld" }
 local xmlpatterns = { "%s.xml" }
 
-local uselibrary = commands.uselibrary
+local uselibrary = resolvers.uselibrary
 local input      = context.input
 
 -- status
@@ -124,23 +189,36 @@ local processstack   = { }
 local processedfile  = ""
 local processedfiles = { }
 
-function commands.processedfile()
-    context(processedfile)
-end
+implement {
+    name    = "processedfile",
+    actions = function()
+        context(processedfile)
+    end
+}
 
-function commands.processedfiles()
-    context(concat(processedfiles,","))
-end
+implement {
+    name    = "processedfiles",
+    actions = function()
+        context(concat(processedfiles,","))
+    end
+}
 
-function commands.dostarttextfile(name)
-    insert(processstack,name)
-    processedfile = name
-    insert(processedfiles,name)
-end
+implement {
+    name      = "dostarttextfile",
+    arguments = "string",
+    actions   = function(name)
+        insert(processstack,name)
+        processedfile = name
+        insert(processedfiles,name)
+    end
+}
 
-function commands.dostoptextfile()
-    processedfile = remove(processstack) or ""
-end
+implement {
+    name      = "dostoptextfile",
+    actions   = function()
+        processedfile = remove(processstack) or ""
+    end
+}
 
 local function startprocessing(name,notext)
     if not notext then
@@ -155,6 +233,11 @@ local function stopprocessing(notext)
      -- report_system("end file %a at line %a",name,status.linenumber or 0)
     end
 end
+
+--
+
+local typestack   = { }
+local currenttype = v_text
 
 --
 
@@ -216,11 +299,6 @@ local function usexmlfile(name,onlyonce,notext)
     stopprocessing(notext)
 end
 
-commands.usetexfile = usetexfile
-commands.useluafile = useluafile
-commands.usecldfile = usecldfile
-commands.usexmlfile = usexmlfile
-
 local suffixes = {
     mkvi = usetexfile,
     mkiv = usetexfile,
@@ -233,21 +311,36 @@ local suffixes = {
 }
 
 local function useanyfile(name,onlyonce)
-    local s = suffixes[file.suffix(name)]
+    local s = suffixes[suffixonly(name)]
+    context(function() resolvers.pushpath(name) end)
     if s then
-        s(removesuffix(name),onlyonce)
+     -- s(removesuffix(name),onlyonce)
+        s(name,onlyonce) -- so, first with suffix, then without
     else
         usetexfile(name,onlyonce) -- e.g. ctx file
---~         resolvers.readfilename(name)
+     -- resolvers.readfilename(name)
     end
+    context(resolvers.poppath)
 end
 
-commands.useanyfile = useanyfile
+implement { name = "usetexfile",     actions = usetexfile, arguments = "string" }
+implement { name = "useluafile",     actions = useluafile, arguments = "string" }
+implement { name = "usecldfile",     actions = usecldfile, arguments = "string" }
+implement { name = "usexmlfile",     actions = usexmlfile, arguments = "string" }
 
-function resolvers.jobs.usefile(name,onlyonce,notext)
-    local s = suffixes[file.suffix(name)]
+implement { name = "usetexfileonce", actions = usetexfile, arguments = { "string", true } }
+implement { name = "useluafileonce", actions = useluafile, arguments = { "string", true } }
+implement { name = "usecldfileonce", actions = usecldfile, arguments = { "string", true } }
+implement { name = "usexmlfileonce", actions = usexmlfile, arguments = { "string", true } }
+
+implement { name = "useanyfile",     actions = useanyfile, arguments = "string" }
+implement { name = "useanyfileonce", actions = useanyfile, arguments = { "string", true } }
+
+function jobresolvers.usefile(name,onlyonce,notext)
+    local s = suffixes[suffixonly(name)]
     if s then
-        s(removesuffix(name),onlyonce,notext)
+     -- s(removesuffix(name),onlyonce,notext)
+        s(name,onlyonce,notext) -- so, first with suffix, then without
     end
 end
 
@@ -262,6 +355,8 @@ local function startstoperror()
     startstoperror = dummyfunction
 end
 
+local stopped
+
 local function starttext()
     if textlevel == 0 then
         if trace_jobfiles then
@@ -275,73 +370,86 @@ local function starttext()
 end
 
 local function stoptext()
-    if textlevel == 0 then
-        startstoperror()
-    elseif textlevel > 0 then
-        textlevel = textlevel - 1
-    end
-    texsetcount("global","textlevel",textlevel)
-    if textlevel <= 0 then
-        if trace_jobfiles then
-            report_jobfiles("stopping text")
+    if not stopped then
+        if textlevel == 0 then
+            startstoperror()
+        elseif textlevel > 0 then
+            textlevel = textlevel - 1
         end
-        context.dostoptext()
-        -- registerfileinfo[end]jobfilename
-        context.finalend()
-        commands.stoptext = dummyfunction
+        texsetcount("global","textlevel",textlevel)
+        if textlevel <= 0 then
+            if trace_jobfiles then
+                report_jobfiles("stopping text")
+            end
+            context.dostoptext()
+            -- registerfileinfo[end]jobfilename
+            context.finalend()
+            stopped = true
+        end
     end
 end
 
-commands.starttext = starttext
-commands.stoptext  = stoptext
+implement { name = "starttext", actions = starttext }
+implement { name = "stoptext",  actions = stoptext  }
 
-function commands.forcequitjob(reason)
-    if reason then
-        report_system("forcing quit: %s",reason)
-    else
-        report_system("forcing quit")
+implement {
+    name      = "forcequitjob",
+    arguments = "string",
+    actions   = function(reason)
+        if reason then
+            report_system("forcing quit: %s",reason)
+        else
+            report_system("forcing quit")
+        end
+        context.batchmode()
+        while textlevel >= 0 do
+            context.stoptext()
+        end
     end
-    context.batchmode()
-    while textlevel >= 0 do
+}
+
+implement {
+    name    = "forceendjob",
+    actions = function()
+        report_system([[don't use \end to finish a document]])
         context.stoptext()
     end
-end
+}
 
-function commands.forceendjob()
-    report_system([[don't use \end to finish a document]])
-    context.stoptext()
-end
-
-function commands.autostarttext()
-    if textlevel == 0 then
-        report_system([[auto \starttext ... \stoptext]])
+implement {
+    name    = "autostarttext",
+    actions = function()
+        if textlevel == 0 then
+            report_system([[auto \starttext ... \stoptext]])
+        end
+        context.starttext()
     end
-    context.starttext()
-end
+}
 
-commands.autostoptext = stoptext
+implement {
+    name    = "autostoptext",
+    actions = stoptext
+}
 
 -- project structure
 
-function commands.processfilemany(name)
-    useanyfile(name,false)
-end
+implement {
+    name      = "processfilemany",
+    arguments = { "string", false },
+    actions   = useanyfile
+}
 
-function commands.processfileonce(name)
-    useanyfile(name,true)
-end
+implement {
+    name      = "processfileonce",
+    arguments = { "string", true },
+    actions   = useanyfile
+}
 
-function commands.processfilenone(name)
-    -- skip file
-end
-
---
-
-local typestack          = { }
-local pathstack          = { }
-
-local currenttype        = v_text
-local currentpath        = "."
+implement {
+    name      = "processfilenone",
+    arguments = "string",
+    actions   = dummyfunction,
+}
 
 local tree               = { type = "text", name = "", branches = { } }
 local treestack          = { }
@@ -401,10 +509,11 @@ luatex.registerstopactions(function()
     logspoptarget()
 end)
 
-job.structure            = job.structure or { }
-job.structure.collected  = job.structure.collected or { }
-job.structure.tobesaved  = root
-job.structure.components = { }
+local jobstructure      = job.structure or { }
+job.structure           = jobstructure
+jobstructure.collected  = jobstructure.collected or { }
+jobstructure.tobesaved  = root
+jobstructure.components = { }
 
 local function initialize()
     local function collect(root,result)
@@ -420,7 +529,7 @@ local function initialize()
         end
         return result
     end
-    job.structure.components = collect(job.structure.collected,{})
+    jobstructure.components = collect(jobstructure.collected,{})
 end
 
 job.register('job.structure.collected',root,initialize)
@@ -432,48 +541,67 @@ local context_processfilemany = context.processfilemany
 local context_processfileonce = context.processfileonce
 local context_processfilenone = context.processfilenone
 
+-- we need a plug in the nested loaded, push pop pseudo current dir
+
+local function processfilecommon(name,action)
+    -- experiment, might go away
+--     if not hasscheme(name) then
+--         local path = dirname(name)
+--         if path ~= "" then
+--             registerextrapath(path)
+--             report_jobfiles("adding search path %a",path)
+--         end
+--     end
+    -- till here
+    action(name)
+end
+
+local function processfilemany(name) processfilecommon(name,context_processfilemany) end
+local function processfileonce(name) processfilecommon(name,context_processfileonce) end
+local function processfilenone(name) processfilecommon(name,context_processfilenone) end
+
 local processors = utilities.storage.allocate {
  -- [v_outer] = {
- --     [v_text]        = { "many", context_processfilemany },
- --     [v_project]     = { "once", context_processfileonce },
- --     [v_environment] = { "once", context_processfileonce },
- --     [v_product]     = { "once", context_processfileonce },
- --     [v_component]   = { "many", context_processfilemany },
+ --     [v_text]        = { "many", processfilemany },
+ --     [v_project]     = { "once", processfileonce },
+ --     [v_environment] = { "once", processfileonce },
+ --     [v_product]     = { "once", processfileonce },
+ --     [v_component]   = { "many", processfilemany },
  -- },
     [v_text] = {
-        [v_text]        = { "many", context_processfilemany },
-        [v_project]     = { "once", context_processfileonce }, -- dubious
-        [v_environment] = { "once", context_processfileonce },
-        [v_product]     = { "many", context_processfilemany }, -- dubious
-        [v_component]   = { "many", context_processfilemany },
+        [v_text]        = { "many", processfilemany },
+        [v_project]     = { "once", processfileonce }, -- dubious
+        [v_environment] = { "once", processfileonce },
+        [v_product]     = { "many", processfilemany }, -- dubious
+        [v_component]   = { "many", processfilemany },
     },
     [v_project] = {
-        [v_text]        = { "many", context_processfilemany },
-        [v_project]     = { "none", context_processfilenone },
-        [v_environment] = { "once", context_processfileonce },
-        [v_product]     = { "none", context_processfilenone },
-        [v_component]   = { "none", context_processfilenone },
+        [v_text]        = { "many", processfilemany },
+        [v_project]     = { "none", processfilenone },
+        [v_environment] = { "once", processfileonce },
+        [v_product]     = { "none", processfilenone },
+        [v_component]   = { "none", processfilenone },
     },
     [v_environment] = {
-        [v_text]        = { "many", context_processfilemany },
-        [v_project]     = { "none", context_processfilenone },
-        [v_environment] = { "once", context_processfileonce },
-        [v_product]     = { "none", context_processfilenone },
-        [v_component]   = { "none", context_processfilenone },
+        [v_text]        = { "many", processfilemany },
+        [v_project]     = { "none", processfilenone },
+        [v_environment] = { "once", processfileonce },
+        [v_product]     = { "none", processfilenone },
+        [v_component]   = { "none", processfilenone },
     },
     [v_product] = {
-        [v_text]        = { "many", context_processfilemany },
-        [v_project]     = { "once", context_processfileonce },
-        [v_environment] = { "once", context_processfileonce },
-        [v_product]     = { "many", context_processfilemany },
-        [v_component]   = { "many", context_processfilemany },
+        [v_text]        = { "many", processfilemany },
+        [v_project]     = { "once", processfileonce },
+        [v_environment] = { "once", processfileonce },
+        [v_product]     = { "many", processfilemany },
+        [v_component]   = { "many", processfilemany },
     },
     [v_component] = {
-        [v_text]        = { "many", context_processfilemany },
-        [v_project]     = { "once", context_processfileonce },
-        [v_environment] = { "once", context_processfileonce },
-        [v_product]     = { "none", context_processfilenone },
-        [v_component]   = { "many", context_processfilemany },
+        [v_text]        = { "many", processfilemany },
+        [v_project]     = { "once", processfileonce },
+        [v_environment] = { "once", processfileonce },
+        [v_product]     = { "none", processfilenone },
+        [v_component]   = { "many", processfilemany },
     }
 }
 
@@ -493,7 +621,7 @@ local stop = {
     [v_component]   = context.stoptext,
 }
 
-resolvers.jobs.processors = processors
+jobresolvers.processors = processors
 
 local function topofstack(what)
     local stack = stacks[what]
@@ -520,22 +648,22 @@ local function justacomponent()
     end
 end
 
-resolvers.jobs.productcomponent = productcomponent
-resolvers.jobs.justacomponent   = justacomponent
+jobresolvers.productcomponent = productcomponent
+jobresolvers.justacomponent   = justacomponent
 
-function resolvers.jobs.currentproject    () return topofstack(v_project    ) end
-function resolvers.jobs.currentproduct    () return topofstack(v_product    ) end
-function resolvers.jobs.currentcomponent  () return topofstack(v_component  ) end
-function resolvers.jobs.currentenvironment() return topofstack(v_environment) end
+function jobresolvers.currentproject    () return topofstack(v_project    ) end
+function jobresolvers.currentproduct    () return topofstack(v_product    ) end
+function jobresolvers.currentcomponent  () return topofstack(v_component  ) end
+function jobresolvers.currentenvironment() return topofstack(v_environment) end
 
 local done     = { }
-local tolerant = false -- too messy, mkii user with the wrong sructure should adapt
+local tolerant = false -- too messy, mkii user with the wrong structure should adapt
 
 local function process(what,name)
     local depth = #typestack
     local process
     --
-    name = resolvers.resolve(name)
+    name = resolveprefix(name)
     --
 --  if not tolerant then
         -- okay, would be best but not compatible with mkii
@@ -589,10 +717,10 @@ local function process(what,name)
     end
 end
 
-function commands.useproject    (name) process(v_project,    name) end
-function commands.useenvironment(name) process(v_environment,name) end
-function commands.useproduct    (name) process(v_product,    name) end
-function commands.usecomponent  (name) process(v_component,  name) end
+implement { name = "useproject",     actions = function(name) process(v_project,    name) end, arguments = "string" }
+implement { name = "useenvironment", actions = function(name) process(v_environment,name) end, arguments = "string" }
+implement { name = "useproduct",     actions = function(name) process(v_product,    name) end, arguments = "string" } -- will be overloaded
+implement { name = "usecomponent",   actions = function(name) process(v_component,  name) end, arguments = "string" }
 
 -- todo: setsystemmode to currenttype
 -- todo: make start/stop commands at the tex end
@@ -614,9 +742,7 @@ local stop = {
 local function gotonextlevel(what,name) -- todo: something with suffix name
     insert(stacks[what],name)
     insert(typestack,currenttype)
-    insert(pathstack,currentpath)
     currenttype = what
-    currentpath = dirname(name)
     pushtree(what,name)
     if start[what] then
         start[what]()
@@ -628,7 +754,6 @@ local function gotopreviouslevel(what)
         stop[what]()
     end
     poptree()
-    currentpath = remove(pathstack) or "."
     currenttype = remove(typestack) or v_text
     remove(stacks[what]) -- not currenttype ... weak recovery
  -- context.endinput() -- does not work
@@ -642,20 +767,20 @@ local function autoname(name)
     return name
 end
 
-function commands.startproject    (name) gotonextlevel(v_project,    autoname(name)) end
-function commands.startproduct    (name) gotonextlevel(v_product,    autoname(name)) end
-function commands.startcomponent  (name) gotonextlevel(v_component,  autoname(name)) end
-function commands.startenvironment(name) gotonextlevel(v_environment,autoname(name)) end
+implement { name = "startproject",       actions = function(name) gotonextlevel(v_project,    autoname(name)) end, arguments = "string" }
+implement { name = "startproduct",       actions = function(name) gotonextlevel(v_product,    autoname(name)) end, arguments = "string" }
+implement { name = "startcomponent",     actions = function(name) gotonextlevel(v_component,  autoname(name)) end, arguments = "string" }
+implement { name = "startenvironment",   actions = function(name) gotonextlevel(v_environment,autoname(name)) end, arguments = "string" }
 
-function commands.stopproject    () gotopreviouslevel(v_project    ) end
-function commands.stopproduct    () gotopreviouslevel(v_product    ) end
-function commands.stopcomponent  () gotopreviouslevel(v_component  ) end
-function commands.stopenvironment() gotopreviouslevel(v_environment) end
+implement { name = "stopproject",        actions = function() gotopreviouslevel(v_project    ) end }
+implement { name = "stopproduct",        actions = function() gotopreviouslevel(v_product    ) end }
+implement { name = "stopcomponent",      actions = function() gotopreviouslevel(v_component  ) end }
+implement { name = "stopenvironment",    actions = function() gotopreviouslevel(v_environment) end }
 
-function commands.currentproject    () context(topofstack(v_project    )) end
-function commands.currentproduct    () context(topofstack(v_product    )) end
-function commands.currentcomponent  () context(topofstack(v_component  )) end
-function commands.currentenvironment() context(topofstack(v_environment)) end
+implement { name = "currentproject",     actions = function() context(topofstack(v_project    )) end }
+implement { name = "currentproduct",     actions = function() context(topofstack(v_product    )) end }
+implement { name = "currentcomponent",   actions = function() context(topofstack(v_component  )) end }
+implement { name = "currentenvironment", actions = function() context(topofstack(v_environment)) end }
 
 -- -- -- this will move -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 --
@@ -684,7 +809,7 @@ local function convertexamodes(str)
     end
 end
 
-function commands.loadexamodes(filename)
+function environment.loadexamodes(filename)
     if not filename or filename == "" then
         filename = removesuffix(tex.jobname)
     end
@@ -696,6 +821,12 @@ function commands.loadexamodes(filename)
         report_examodes("no mode file %a",filename) -- todo: message system
     end
 end
+
+implement {
+    name      = "loadexamodes",
+    actions   = environment.loadexamodes,
+    arguments = "string"
+}
 
 -- changed in mtx-context
 -- code moved from luat-ini
@@ -739,20 +870,50 @@ function document.setfilename(i,name)
     end
 end
 
-function document.getargument(key,default) -- commands
+function document.getargument(key,default)
     local v = document.arguments[key]
     if type(v) == "boolean" then
         v = (v and "yes") or "no"
         document.arguments[key] = v
     end
-    context(v or default or "")
+    return v or default or ""
 end
 
-function document.getfilename(i) -- commands
-    context(document.files[tonumber(i)] or "")
+function document.getfilename(i)
+    return document.files[tonumber(i)] or ""
 end
 
-function commands.getcommandline() -- has to happen at the tex end in order to expand
+implement {
+    name      = "setdocumentargument",
+    actions   = document.setargument,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "setdocumentdefaultargument",
+    actions   = document.setdefaultargument,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "setdocumentfilename",
+    actions   = document.setfilename,
+    arguments = { "integer", "string" }
+}
+
+implement {
+    name      = "getdocumentargument",
+    actions   = { document.getargument, context },
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "getdocumentfilename",
+    actions   = { document.getfilename, context },
+    arguments = "integer"
+}
+
+function document.setcommandline() -- has to happen at the tex end in order to expand
 
     -- the document[arguments|files] tables are copies
 
@@ -801,23 +962,45 @@ function commands.getcommandline() -- has to happen at the tex end in order to e
         inputfile = basename(inputfile)
     end
 
+    local forcedruns = arguments.forcedruns
     local kindofrun  = arguments.kindofrun
-    local currentrun = arguments.maxnofruns
-    local maxnofruns = arguments.currentrun
+    local currentrun = arguments.currentrun
+    local maxnofruns = arguments.maxnofruns or arguments.runs
+
+ -- context.setupsystem {
+ --     [constants.directory] = validstring(arguments.setuppath),
+ --     [constants.inputfile] = inputfile,
+ --     [constants.file]      = validstring(arguments.result),
+ --     [constants.random]    = validstring(arguments.randomseed),
+ --     -- old:
+ --     [constants.n]         = validstring(kindofrun),
+ --     [constants.m]         = validstring(currentrun),
+ -- }
 
     context.setupsystem {
-        [constants.directory] = validstring(arguments.setuppath),
-        [constants.inputfile] = inputfile,
-        [constants.file]      = validstring(arguments.result),
-        [constants.random]    = validstring(arguments.randomseed),
+        directory = validstring(arguments.setuppath),
+        inputfile = inputfile,
+        file      = validstring(arguments.result),
+        random    = validstring(arguments.randomseed),
         -- old:
-        [constants.n]         = validstring(kindofrun),
-        [constants.m]         = validstring(currentrun),
+        n         = validstring(kindofrun),
+        m         = validstring(currentrun),
     }
 
-    environment.kindofrun  = tonumber(kindofrun)  or 0
-    environment.maxnofruns = tonumber(maxnofruns) or 0
-    environment.currentrun = tonumber(currentrun) or 0
+    forcedruns = tonumber(forcedruns) or 0
+    kindofrun  = tonumber(kindofrun)  or 0
+    maxnofruns = tonumber(maxnofruns) or 0
+    currentrun = tonumber(currentrun) or 0
+
+    local prerollrun = forcedruns > 0 and currentrun > 0 and currentrun < forcedruns
+
+    environment.forcedruns = forcedruns
+    environment.kindofrun  = kindofrun
+    environment.maxnofruns = maxnofruns
+    environment.currentrun = currentrun
+    environment.prerollrun = prerollrun
+
+    context.setconditional("prerollrun",prerollrun)
 
     if validstring(arguments.arguments) then
         context.setupenv { arguments.arguments }
@@ -869,20 +1052,35 @@ local function apply(list,action)
     end
 end
 
-function commands.setdocumentmodes() -- was setup: *runtime:modes
+function document.setmodes() -- was setup: *runtime:modes
     apply(document.options.ctxfile    .modes,context.enablemode)
     apply(document.options.commandline.modes,context.enablemode)
 end
 
-function commands.setdocumentmodules() -- was setup: *runtime:modules
+function document.setmodules() -- was setup: *runtime:modules
     apply(document.options.ctxfile    .modules,context.usemodule)
     apply(document.options.commandline.modules,context.usemodule)
 end
 
-function commands.setdocumentenvironments() -- was setup: *runtime:environments
+function document.setenvironments() -- was setup: *runtime:environments
     apply(document.options.ctxfile    .environments,context.environment)
     apply(document.options.commandline.environments,context.environment)
 end
+
+function document.setfilenames()
+    local initialize = environment.initializefilenames
+    if initialize then
+        initialize()
+    else
+        -- fatal error
+    end
+end
+
+implement { name = "setdocumentcommandline",   actions = document.setcommandline,  onlyonce = true }
+implement { name = "setdocumentmodes",         actions = document.setmodes,        onlyonce = true }
+implement { name = "setdocumentmodules",       actions = document.setmodules,      onlyonce = true }
+implement { name = "setdocumentenvironments",  actions = document.setenvironments, onlyonce = true }
+implement { name = "setdocumentfilenames",     actions = document.setfilenames,    onlyonce = true }
 
 local report_files    = logs.reporter("system","files")
 local report_options  = logs.reporter("system","options")
@@ -914,16 +1112,24 @@ luatex.registerstopactions(function()
     logsnewline()
     report_options("start commandline options")
     logsnewline()
-    for argument, value in sortedhash(arguments) do
-        report_option("%s=%A",argument,value)
+    if arguments and next(arguments) then
+        for argument, value in sortedhash(arguments) do
+            report_option("%s=%A",argument,value)
+        end
+    else
+        report_file("no arguments")
     end
     logsnewline()
     report_options("stop commandline options")
     logsnewline()
     report_options("start commandline files")
     logsnewline()
-    for i=1,#files do
-        report_file("% 4i: %s",i,files[i])
+    if files and #files > 0 then
+        for i=1,#files do
+            report_file("% 4i: %s",i,files[i])
+        end
+    else
+        report_file("no files")
     end
     logsnewline()
     report_options("stop commandline files")
@@ -987,15 +1193,20 @@ if environment.initex then
 
 end
 
-function commands.doifelsecontinuewithfile(inpname,basetoo)
-    local inpnamefull = addsuffix(inpname,"tex")
-    local inpfilefull = addsuffix(environment.inputfilename,"tex")
-    local continue = inpnamefull == inpfilefull
-    if basetoo and not continue then
-        continue = inpnamefull == basename(inpfilefull)
+implement {
+    name      = "doifelsecontinuewithfile",
+    arguments = "string",
+    actions   = function(inpname,basetoo)
+        local inpnamefull = addsuffix(inpname,"tex")
+        local inpfilefull = addsuffix(environment.inputfilename,"tex")
+        local continue = inpnamefull == inpfilefull
+     -- if basetoo and not continue then
+        if not continue then
+            continue = inpnamefull == basename(inpfilefull)
+        end
+        if continue then
+            report_system("continuing input file %a",inpname)
+        end
+        ctx_doifelse(continue)
     end
-    if continue then
-        report_system("continuing input file %a",inpname)
-    end
-    commands.doifelse(continue)
-end
+}

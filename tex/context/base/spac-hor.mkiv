@@ -32,7 +32,7 @@
   {\doifoutervmode{\ifconditional\c_spac_indentation_indent_first\else\spac_indentation_variant_no\fi}}
 
 \unexpanded\def\setupindenting
-  {\doifnextoptionalelse\spac_indentation_setup_options\spac_indentation_setup_size}
+  {\doifelsenextoptionalcs\spac_indentation_setup_options\spac_indentation_setup_size}
 
 \unexpanded\def\spac_indentation_setup_size
   {\assigndimension\v_spac_indentation_current\d_spac_indentation_par{1\emwidth}{1.5\emwidth}{2\emwidth}}
@@ -64,24 +64,71 @@
 \def\spac_indentation_set_everypar
   {\everypar{\checkindentation}}
 
+\unexpanded\def\useindentingparameter#1% faster local variant
+  {\edef\m_spac_indentation_options{#1\c!indenting}%
+   \ifx\m_spac_indentation_options\empty \else
+     \spac_indentation_setup_indeed
+   \fi}
+
+% \def\spac_indentation_apply_step_one#1%
+%   {\ifcsname\??indentingmethod#1\endcsname
+%      % case two
+%    \else
+%      \edef\v_spac_indentation_current{#1}% single entry in list
+%      \let\normalindentation\v_spac_indentation_current
+%      \spac_indentation_setup_size
+%    \fi}
+%
+% \def\spac_indentation_apply_step_two#1%
+%   {\ifcsname\??indentingmethod#1\endcsname
+%      \csname\??indentingmethod#1\endcsname
+%    \else
+%      % case one
+%    \fi}
+
+% \defineindenting[whatever][yes,2cm]
+% %defineindenting[whatever][yes,-2cm]
+%
+% \setupindenting[yes,-2em] \input ward \par
+% \setupindenting[yes,2em]  \input ward \par
+% \setupindenting[whatever] \input ward \par
+
+\installcorenamespace {indentingpreset}
+
+\unexpanded\def\defineindenting
+  {\dodoubleargument\spac_indenting_define}
+
+\def\spac_indenting_define[#1][#2]% todo: mixes
+  {\setevalue{\??indentingpreset#1}{#2}}
+
+\def\spac_indentation_apply_step_one_nested#1%
+  {\expandafter\processcommacommand\expandafter[\csname\??indentingpreset#1\endcsname]\spac_indentation_apply_step_one}
+
+\def\spac_indentation_apply_step_two_nested#1%
+  {\expandafter\processcommacommand\expandafter[\csname\??indentingpreset#1\endcsname]\spac_indentation_apply_step_two}
+
 \def\spac_indentation_apply_step_one#1%
-  {\ifcsname\??indentingmethod#1\endcsname
+  {\ifcsname\??indentingpreset#1\endcsname
+     \spac_indentation_apply_step_one_nested{#1}%
+   \else\ifcsname\??indentingmethod#1\endcsname
      % case two
    \else
      \edef\v_spac_indentation_current{#1}% single entry in list
      \let\normalindentation\v_spac_indentation_current
      \spac_indentation_setup_size
-   \fi}
+   \fi\fi}
 
 \def\spac_indentation_apply_step_two#1%
-  {\ifcsname\??indentingmethod#1\endcsname
+  {\ifcsname\??indentingpreset#1\endcsname
+     \spac_indentation_apply_step_two_nested{#1}%
+   \else\ifcsname\??indentingmethod#1\endcsname
      \csname\??indentingmethod#1\endcsname
    \else
      % case one
-   \fi}
+   \fi\fi}
 
 \unexpanded\def\indenting % kind of obsolete
-  {\doifnextoptionalelse\spac_indentation_setup_options\relax}
+  {\doifelsenextoptionalcs\spac_indentation_setup_options\relax}
 
 % use \noindentation to suppress next indentation
 
@@ -217,7 +264,7 @@
 
 \unexpanded\def\spac_indentation_check_next_indentation
   {\global\let\dorechecknextindentation\relax
-   \doifnextcharelse\par\donothing\spac_indentation_variant_no} % messy check as next is seldom \par
+   \doifelsenextchar\par\donothing\spac_indentation_variant_no} % messy check as next is seldom \par
 
 \def\spac_indentation_variant_auto
   {\global\let\dorechecknextindentation\spac_indentation_check_next_indentation}
@@ -339,7 +386,7 @@
 \installspacingmethod \v!broad  {\nonfrenchspacing} % more depending on what punctuation
 
 \unexpanded\def\setupspacing
-  {\doifnextoptionalelse\spac_spacecodes_setup_yes\spac_spacecodes_setup_nop}
+  {\doifelsenextoptionalcs\spac_spacecodes_setup_yes\spac_spacecodes_setup_nop}
 
 \def\spac_spacecodes_setup_yes[#1]%
   {\csname\??spacecodemethod#1\endcsname
@@ -630,7 +677,7 @@
    \fi}
 
 \def\spac_narrower_start_named_one[#1]%
-  {\doifassignmentelse{#1}\spac_narrower_start_named_one_yes\spac_narrower_start_named_one_nop[#1]}
+  {\doifelseassignment{#1}\spac_narrower_start_named_one_yes\spac_narrower_start_named_one_nop[#1]}
 
 \def\spac_narrower_start_named_one_yes[#1][#2]% [settings] []
   {\setupcurrentnarrower[#1]%
@@ -641,14 +688,14 @@
    \spac_narrower_start_apply{\narrowerparameter\v!default}}
 
 \def\spac_narrower_start_named_two[#1]%
-  {\doifassignmentelse{#1}\spac_narrower_start_named_settings_how\spac_narrower_start_named_tag_unknown[#1]}
+  {\doifelseassignment{#1}\spac_narrower_start_named_settings_how\spac_narrower_start_named_tag_unknown[#1]}
 
 \def\spac_narrower_start_named_settings_how[#1][#2]% [settings] [how]
   {\setupcurrentnarrower[#1]%
    \spac_narrower_start_apply{#2}}
 
 \def\spac_narrower_start_named_tag_unknown[#1][#2]% [tag] [...]
-  {\doifassignmentelse{#2}\spac_narrower_start_named_tag_settings\spac_narrower_start_named_tag_how[#1][#2]}
+  {\doifelseassignment{#2}\spac_narrower_start_named_tag_settings\spac_narrower_start_named_tag_how[#1][#2]}
 
 \def\spac_narrower_start_named_tag_settings[#1][#2]% [tag] [settings]
   {\edef\currentnarrower{#1}%
@@ -692,8 +739,8 @@
 \unexpanded\def\dosetleftskipadaption #1{\leftskipadaption \ifcsname\??skipadaptionleft #1\endcsname\csname\??skipadaptionleft #1\endcsname\else#1\fi\relax}
 \unexpanded\def\dosetrightskipadaption#1{\rightskipadaption\ifcsname\??skipadaptionright#1\endcsname\csname\??skipadaptionright#1\endcsname\else#1\fi\relax}
 
-\unexpanded\def\doadaptleftskip #1{\dosetleftskipadaption {#1}\advance\leftskip \leftskipadaption }
-\unexpanded\def\doadaptrightskip#1{\dosetrightskipadaption{#1}\advance\rightskip\rightskipadaption}
+\unexpanded\def\doadaptleftskip #1{\normalexpanded{\dosetleftskipadaption {#1}}\advance\leftskip \leftskipadaption }
+\unexpanded\def\doadaptrightskip#1{\normalexpanded{\dosetrightskipadaption{#1}}\advance\rightskip\rightskipadaption}
 
 \unexpanded\def\forgetbothskips
   {\leftskip\zeropoint
@@ -739,7 +786,7 @@
   {\dosingleargument\spac_tolerances_setup}
 
 \def\spac_tolerances_setup[#1]%
-  {\doifinsetelse\v!vertical{#1}%
+  {\doifelseinset\v!vertical{#1}%
      {\processcommacommand[#1]\spac_tolerances_step_vertical  }
      {\processcommacommand[#1]\spac_tolerances_step_horizontal}}
 
@@ -808,31 +855,6 @@
 %D
 %D In \CONTEXT\ however we save some processing time by putting
 %D an extra \type{\hbox} around the \type{\strutbox}.
-
-% moved from page-lin.tex to here (due to visualization added
-% in august 2003)
-%
-% \unexpanded \def\crlf
-%   {\ifhmode\unskip\else\strut\fi\ifcase\raggedstatus\hfil\fi\break}
-
-\unexpanded\def\crlf
-  {\ifhmode
-     \unskip
-     \prewordbreak\crlfplaceholder
-     \ifcase\raggedstatus\hfil\or\or\or\hfil\fi
-     \break
-   \else
-     \crlfplaceholder
-     \endgraf
-   \fi}
-
-\unexpanded\def\crlfplaceholder
-  {\strut}
-
-\unexpanded\def\settestcrlf
-  {\unexpanded\def\crlfplaceholder
-     {\hbox to \zeropoint
-        {\strut{\infofont\kern.25em}\lohi{\infofont CR}{\infofont LF}\hss}}}
 
 %D \starttyping
 %D % \setuplayout[gridgrid=yes] \showgrid
@@ -1024,7 +1046,7 @@
   {\futurelet\nexttoken\spac_spaces_auto_insert_next}
 
 \def\spac_spaces_auto_insert_next
-  {\ctxcommand{autonextspace(\!!bs\meaning\nexttoken\!!es)}} % todo, just consult nexttoken at the lua end
+  {\clf_autonextspace{\meaning\nexttoken}} % todo, just consult nexttoken at the lua end
 
 %D Moved from bib module:
 
@@ -1059,7 +1081,7 @@
 %D A rather unknown one:
 
 \unexpanded\def\widened % moved from cont-new
-  {\doifnextoptionalelse\spac_widened_yes\spac_widened_nop}
+  {\doifelsenextoptionalcs\spac_widened_yes\spac_widened_nop}
 
 \def\spac_widened_yes[#1]#2{\hbox \s!spread       #1{\hss#2\hss}}
 \def\spac_widened_nop    #1{\hbox \s!spread \emwidth{\hss#1\hss}}

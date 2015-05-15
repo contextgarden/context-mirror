@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['bibl-tra'] = {
 
 -- temporary hack, needed for transition
 
-if not punlications then
+if not publications then
 
     local hacks = utilities.storage.allocate()
 
@@ -55,11 +55,11 @@ local ordered     = { }
 local shorts      = { }
 local mode        = 0
 
-local template = utilities.strings.striplong([[
-    \citation{*}
-    \bibstyle{cont-%s}
-    \bibdata{%s}
-]])
+local template = [[
+\citation{*}
+\bibstyle{cont-%s}
+\bibdata{%s}
+]]
 
 local bibtexbin = environment.arguments.mlbibtex and "mlbibcontext" or "bibtex"
 

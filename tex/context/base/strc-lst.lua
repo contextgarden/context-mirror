@@ -15,12 +15,16 @@ if not modules then modules = { } end modules ['strc-lst'] = {
 --
 -- move more to commands
 
-local format, gmatch, gsub = string.format, string.gmatch, string.gsub
-local tonumber = tonumber
-local concat, insert, remove = table.concat, table.insert, table.remove
+local tonumber, type = tonumber, type
+local concat, insert, remove, sort = table.concat, table.insert, table.remove, table.sort
 local lpegmatch = lpeg.match
-local simple_hash_to_string, settings_to_hash = utilities.parsers.simple_hash_to_string, utilities.parsers.settings_to_hash
-local allocate, checked = utilities.storage.allocate, utilities.storage.checked
+
+local setmetatableindex = table.setmetatableindex
+local sortedkeys        = table.sortedkeys
+
+local settings_to_set   = utilities.parsers.settings_to_set
+local allocate          = utilities.storage.allocate
+local checked           = utilities.storage.checked
 
 local trace_lists       = false  trackers.register("structures.lists", function(v) trace_lists = v end)
 
@@ -28,44 +32,72 @@ local report_lists      = logs.reporter("structure","lists")
 
 local context           = context
 local commands          = commands
-
-local texgetcount       = tex.getcount
+local implement         = interfaces.implement
 
 local structures        = structures
 local lists             = structures.lists
 local sections          = structures.sections
 local helpers           = structures.helpers
 local documents         = structures.documents
-local pages             = structures.pages
 local tags              = structures.tags
+local counters          = structures.counters
 local references        = structures.references
 
 local collected         = allocate()
 local tobesaved         = allocate()
 local cached            = allocate()
 local pushed            = allocate()
+local kinds             = allocate()
+local names             = allocate()
 
 lists.collected         = collected
 lists.tobesaved         = tobesaved
 
 lists.enhancers         = lists.enhancers or { }
-lists.internals         = allocate(lists.internals or { }) -- to be checked
+-----.internals         = allocate(lists.internals or { }) -- to be checked
 lists.ordered           = allocate(lists.ordered   or { }) -- to be checked
 lists.cached            = cached
 lists.pushed            = pushed
+lists.kinds             = kinds
+lists.names             = names
+
+local sorters           = sorters
+local sortstripper      = sorters.strip
+local sortsplitter      = sorters.splitters.utf
+local sortcomparer      = sorters.comparers.basic
 
 local sectionblocks     = allocate()
 lists.sectionblocks     = sectionblocks
 
 references.specials     = references.specials or { }
 
-local variables         = interfaces.variables
 local matchingtilldepth = sections.matchingtilldepth
 local numberatdepth     = sections.numberatdepth
+local getsectionlevel   = sections.getlevel
+local typesetnumber     = sections.typesetnumber
+local autosectiondepth  = sections.autodepth
 
--- -- -- -- -- --
+local variables         = interfaces.variables
 
-local function zerostrippedconcat(t,separator) -- for the moment not public
+local v_all             = variables.all
+local v_reference       = variables.reference
+local v_title           = variables.title
+local v_number          = variables.reference
+local v_command         = variables.command
+local v_text            = variables.text
+local v_current         = variables.current
+local v_previous        = variables.previous
+local v_next            = variables.next
+local v_intro           = variables.intro
+local v_here            = variables.here
+local v_component       = variables.component
+local v_reference       = variables.reference
+local v_local           = variables["local"]
+local v_default         = variables.default
+
+-- for the moment not public --
+
+local function zerostrippedconcat(t,separator)
     local f, l = 1, #t
     for i=f,l do
         if t[i] == 0 then
@@ -85,10 +117,11 @@ end
 local function initializer()
     -- create a cross reference between internal references
     -- and list entries
-    local collected = lists.collected
-    local internals = checked(references.internals)
-    local ordered   = lists.ordered
-    local blockdone = { }
+    local collected     = lists.collected
+    local internals     = checked(references.internals)
+    local ordered       = lists.ordered
+    local usedinternals = references.usedinternals
+    local blockdone     = { }
     for i=1,#collected do
         local c = collected[i]
         local m = c.metadata
@@ -99,6 +132,7 @@ local function initializer()
                 local internal = r.internal
                 if internal then
                     internals[internal] = c
+                    usedinternals[internal] = r.used
                 end
                 local block = r.block
                 if block and not blockdone[block] then
@@ -107,7 +141,8 @@ local function initializer()
                 end
             end
             -- access by order in list
-            local kind, name = m.kind, m.name
+            local kind = m.kind
+            local name = m.name
             if kind and name then
                 local ok = ordered[kind]
                 if ok then
@@ -120,6 +155,12 @@ local function initializer()
                 else
                     ordered[kind] = { [name] = { c } }
                 end
+                kinds[kind] = true
+                names[name] = true
+            elseif kind then
+                kinds[kind] = true
+            elseif name then
+                names[name] = true
             end
         end
         if r then
@@ -128,9 +169,24 @@ local function initializer()
     end
 end
 
-job.register('structures.lists.collected', tobesaved, initializer)
+local function finalizer()
+    local flaginternals = references.flaginternals
+    local usedviews     = references.usedviews
+    for i=1,#tobesaved do
+        local r = tobesaved[i].references
+        if r then
+            local i = r.internal
+            local f = flaginternals[i]
+            if f then
+                r.used = usedviews[i] or true
+            end
+        end
+    end
+end
 
-local groupindices = table.setmetatableindex("table")
+job.register('structures.lists.collected', tobesaved, initializer, finalizer)
+
+local groupindices = setmetatableindex("table")
 
 function lists.groupindex(name,group)
     local groupindex = groupindices[name]
@@ -139,15 +195,24 @@ end
 
 -- we could use t (as hash key) in order to check for dup entries
 
-function lists.addto(t)
-    local m = t.metadata
-    local u = t.userdata
-    if u and type(u) == "string" then
-        t.userdata = helpers.touserdata(u) -- nicer at the tex end
-    end
+function lists.addto(t) -- maybe more more here (saves parsing at the tex end)
+    local metadata   = t.metadata
+    local userdata   = t.userdata
     local numberdata = t.numberdata
+    if userdata and type(userdata) == "string" then
+        t.userdata = helpers.touserdata(userdata)
+    end
+    if not metadata.level then
+        metadata.level = structures.sections.currentlevel() -- this is not used so it will go away
+    end
+    if numberdata then
+        local numbers = numberdata.numbers
+        if type(numbers) == "string" then
+            numberdata.numbers = counters.compact(numbers,nil,true)
+        end
+    end
     local group = numberdata and numberdata.group
-    local name = m.name
+    local name  = metadata.name
     if not group then
         -- forget about it
     elseif group == "" then
@@ -158,7 +223,14 @@ function lists.addto(t)
             numberdata.numbers = cached[groupindex].numberdata.numbers
         end
     end
+    local setcomponent = references.setcomponent
+    if setcomponent then
+        setcomponent(t) -- can be inlined
+    end
     local r = t.references
+    if r and not r.section then
+        r.section = structures.sections.currentid()
+    end
     local i = r and r.internal or 0 -- brrr
     local p = pushed[i]
     if not p then
@@ -166,10 +238,6 @@ function lists.addto(t)
         cached[p] = helpers.simplify(t)
         pushed[i] = p
         r.listindex = p
-    end
-    local setcomponent = references.setcomponent
-    if setcomponent then
-        setcomponent(t) -- might move to the tex end
     end
     if group then
         groupindices[name][group] = p
@@ -204,6 +272,11 @@ end
 
 local enhanced = { }
 
+local synchronizepage = function(r)  -- bah ... will move
+    synchronizepage = references.synchronizepage
+    return synchronizepage(r)
+end
+
 function lists.enhance(n)
     local l = cached[n]
     if not l then
@@ -220,7 +293,7 @@ function lists.enhance(n)
         -- save in the right order (happens at shipout)
         lists.tobesaved[#lists.tobesaved+1] = l
         -- default enhancer (cross referencing)
-        references.realpage = texgetcount("realpageno")
+        synchronizepage(references)
         -- tags
         local kind = metadata.kind
         local name = metadata.name
@@ -250,51 +323,88 @@ end
 local nesting = { }
 
 function lists.pushnesting(i)
-    local parent = lists.result[i]
-    local name = parent.metadata.name
+    local parent     = lists.result[i]
+    local name       = parent.metadata.name
     local numberdata = parent and parent.numberdata
-    local numbers = numberdata and numberdata.numbers
-    local number = numbers and numbers[sections.getlevel(name)] or 0
-    insert(nesting, { number = number, name = name, result = lists.result, parent = parent })
+    local numbers    = numberdata and numberdata.numbers
+    local number     = numbers and numbers[getsectionlevel(name)] or 0
+    insert(nesting, {
+        number = number,
+        name   = name,
+        result = lists.result,
+        parent = parent
+    })
 end
 
 function lists.popnesting()
     local old = remove(nesting)
-    lists.result = old.result
+    if old then
+        lists.result = old.result
+    else
+        report_lists("nesting error")
+    end
 end
-
--- will be split
 
 -- Historically we had blocks but in the mkiv approach that could as well be a level
 -- which would simplify things a bit.
 
-local splitter = lpeg.splitat(":")
+local splitter = lpeg.splitat(":") -- maybe also :: or have a block parameter
 
--- this will become filtercollected(specification) and then we'll also have sectionblock as key
-
-local sorters = {
-    [variables.command] = function(a,b)
+local listsorters = {
+    [v_command] = function(a,b)
         if a.metadata.kind == "command" or b.metadata.kind == "command" then
             return a.references.internal < b.references.internal
         else
             return a.references.order < b.references.order
         end
     end,
-    [variables.all] = function(a,b)
+    [v_all] = function(a,b)
         return a.references.internal < b.references.internal
     end,
+    [v_title] = function(a,b)
+        local da = a.titledata
+        local db = b.titledata
+        if da and db then
+            local ta = da.title
+            local tb = db.title
+            if ta and tb then
+                local sa = da.split
+                if not sa then
+                    sa = sortsplitter(sortstripper(ta))
+                    da.split = sa
+                end
+                local sb = db.split
+                if not sb then
+                    sb = sortsplitter(sortstripper(tb))
+                    db.split = sb
+                end
+                return sortcomparer(da,db) == -1
+            end
+        end
+        return a.references.internal < b.references.internal
+    end
 }
 
--- some day soon we will pass a table .. also split the function
+-- was: names, criterium, number, collected, forced, nested, sortorder
 
-local function filtercollected(names, criterium, number, collected, forced, nested, sortorder) -- names is hash or string
-    local numbers, depth = documents.data.numbers, documents.data.depth
-    local result, nofresult, detail = { }, 0, nil
-    local block = false -- all
-    criterium = gsub(criterium or ""," ","") -- not needed
-    -- new, will be applied stepwise
+local filters = setmetatableindex(function(t,k) return t[v_default] end)
+
+local function filtercollected(specification)
+    --
+    local names     = specification.names     or { }
+    local criterium = specification.criterium or v_default
+    local number    = 0 -- specification.number
+    local reference = specification.reference or ""
+    local collected = specification.collected or lists.collected
+    local forced    = specification.forced    or { }
+    local nested    = specification.nested    or false
+    local sortorder = specification.sortorder or specification.order
+    --
+    local numbers   = documents.data.numbers
+    local depth     = documents.data.depth
+    local block     = false -- all
     local wantedblock, wantedcriterium = lpegmatch(splitter,criterium) -- block:criterium
-    if wantedblock == "" or wantedblock == variables.all or wantedblock == variables.text then
+    if wantedblock == "" or wantedblock == v_all or wantedblock == v_text then
         criterium = wantedcriterium ~= "" and wantedcriterium or criterium
     elseif not wantedcriterium then
         block = documents.data.block
@@ -304,188 +414,368 @@ local function filtercollected(names, criterium, number, collected, forced, nest
     if block == "" then
         block = false
     end
--- print(">>",block,criterium)
-    --
-    forced = forced or { } -- todo: also on other branched, for the moment only needed for bookmarks
     if type(names) == "string" then
-        names = settings_to_hash(names)
+        names = settings_to_set(names)
     end
-    local all = not next(names) or names[variables.all] or false
+    local all = not next(names) or names[v_all] or false
+    --
+    specification.names     = names
+    specification.criterium = criterium
+    specification.number    = 0 -- obsolete
+    specification.reference = reference -- new
+    specification.collected = collected
+    specification.forced    = forced -- todo: also on other branched, for the moment only needed for bookmarks
+    specification.nested    = nested
+    specification.sortorder = sortorder
+    specification.numbers   = numbers
+    specification.depth     = depth
+    specification.block     = block
+    specification.all       = all
+    --
     if trace_lists then
-        report_lists("filtering names %a, criterium %a, block %a, number %a",names,criterium,block or "*",number)
+        report_lists("filtering names %,t, criterium %a, block %a",sortedkeys(names), criterium, block or "*")
     end
-    if criterium == variables.intro then
-        -- special case, no structure yet
-        for i=1,#collected do
-            local v = collected[i]
+    local result = filters[criterium](specification)
+    if trace_lists then
+        report_lists("criterium %a, block %a, found %a",specification.criterium, specification.block or "*", #result)
+    end
+    --
+    if sortorder then -- experiment
+        local sorter = listsorters[sortorder]
+        if sorter then
+            if trace_lists then
+                report_lists("sorting list using method %a",sortorder)
+            end
+            for i=1,#result do
+                result[i].references.order = i
+            end
+            sort(result,sorter)
+        end
+    end
+    --
+    return result
+end
+
+filters[v_intro] = function(specification)
+    local collected = specification.collected
+    local result    = { }
+    local nofresult = #result
+    local all       = specification.all
+    local names     = specification.names
+    for i=1,#collected do
+        local v = collected[i]
+        local metadata = v.metadata
+        if metadata and (all or names[metadata.name or false]) then
             local r = v.references
             if r and r.section == 0 then
                 nofresult = nofresult + 1
                 result[nofresult] = v
             end
         end
-    elseif all or criterium == variables.all or criterium == variables.text then
-        for i=1,#collected do
-            local v = collected[i]
-            local r = v.references
-            if r and (not block or not r.block or block == r.block) then
-                local metadata = v.metadata
-                if metadata then
-                    local name = metadata.name or false
-                    local sectionnumber = (r.section == 0) or sections.collected[r.section]
-                    if forced[name] or (sectionnumber and not metadata.nolist and (all or names[name])) then -- and not sectionnumber.hidenumber then
-                        nofresult = nofresult + 1
-                        result[nofresult] = v
-                    end
-                end
-            end
-        end
-    elseif criterium == variables.current then
-        if depth == 0 then
-            return filtercollected(names,variables.intro,number,collected,forced,false,sortorder)
-        else
+    end
+    return result
+end
+
+filters[v_reference] = function(specification)
+    local collected = specification.collected
+    local result    = { }
+    local nofresult = #result
+    local names     = specification.names
+    local sections  = sections.collected
+    local reference = specification.reference
+    if reference ~= "" then
+        local prefix, rest = lpegmatch(references.prefixsplitter,reference) -- p::r
+        local r = prefix and rest and references.derived[prefix][rest] or references.derived[""][reference]
+        local s = r and r.numberdata -- table ref !
+        if s then
+            local depth   = getsectionlevel(r.metadata.name)
+            local numbers = s.numbers
             for i=1,#collected do
                 local v = collected[i]
                 local r = v.references
                 if r and (not block or not r.block or block == r.block) then
-                    local sectionnumber = sections.collected[r.section]
-                    if sectionnumber then -- and not sectionnumber.hidenumber then
-                        local cnumbers = sectionnumber.numbers
-                        local metadata = v.metadata
-                        if cnumbers then
-                            if metadata and not metadata.nolist and (all or names[metadata.name or false]) and #cnumbers > depth then
-                                local ok = true
-                                for d=1,depth do
-                                    local cnd = cnumbers[d]
-                                    if not (cnd == 0 or cnd == numbers[d]) then
-                                        ok = false
-                                        break
-                                    end
-                                end
-                                if ok then
-                                    nofresult = nofresult + 1
-                                    result[nofresult] = v
-                                end
+                    local metadata = v.metadata
+                    if metadata and names[metadata.name or false] then
+                        local sectionnumber = (r.section == 0) or sections[r.section]
+                        if sectionnumber then
+                            if matchingtilldepth(depth,numbers,sectionnumber.numbers) then
+                                nofresult = nofresult + 1
+                                result[nofresult] = v
                             end
                         end
                     end
                 end
             end
-        end
-    elseif criterium == variables.here then
-        -- this is quite dirty ... as cnumbers is not sparse we can misuse #cnumbers
-        if depth == 0 then
-            return filtercollected(names,variables.intro,number,collected,forced,false,sortorder)
         else
-            for i=1,#collected do
-                local v = collected[i]
-                local r = v.references
-                if r then -- and (not block or not r.block or block == r.block) then
-                    local sectionnumber = sections.collected[r.section]
-                    if sectionnumber then -- and not sectionnumber.hidenumber then
-                        local cnumbers = sectionnumber.numbers
-                        local metadata = v.metadata
-                        if cnumbers then
-                            if metadata and not metadata.nolist and (all or names[metadata.name or false]) and #cnumbers >= depth then
-                                local ok = true
-                                for d=1,depth do
-                                    local cnd = cnumbers[d]
-                                    if not (cnd == 0 or cnd == numbers[d]) then
-                                        ok = false
-                                        break
-                                    end
-                                end
-                                if ok then
-                                    nofresult = nofresult + 1
-                                    result[nofresult] = v
-                                end
-                            end
-                        end
-                    end
-                end
-            end
+            report_lists("unknown reference %a specified",reference)
         end
-    elseif criterium == variables.previous then
-        if depth == 0 then
-            return filtercollected(names,variables.intro,number,collected,forced,false,sortorder)
-        else
-            for i=1,#collected do
-                local v = collected[i]
-                local r = v.references
-                if r and (not block or not r.block or block == r.block) then
-                    local sectionnumber = sections.collected[r.section]
-                    if sectionnumber then -- and not sectionnumber.hidenumber then
-                        local cnumbers = sectionnumber.numbers
-                        local metadata = v.metadata
-                        if cnumbers then
-                            if metadata and not metadata.nolist and (all or names[metadata.name or false]) and #cnumbers >= depth then
-                                local ok = true
-                                for d=1,depth-1 do
-                                    local cnd = cnumbers[d]
-                                    if not (cnd == 0 or cnd == numbers[d]) then
-                                        ok = false
-                                        break
-                                    end
-                                end
-                                if ok then
-                                    nofresult = nofresult + 1
-                                    result[nofresult] = v
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    elseif criterium == variables["local"] then -- not yet ok
-        local nested = nesting[#nesting]
-        if nested then
-            return filtercollected(names,nested.name,nested.number,collected,forced,nested,sortorder)
-        elseif sections.autodepth(documents.data.numbers) == 0 then
-            return filtercollected(names,variables.all,number,collected,forced,false,sortorder)
-        else
-            return filtercollected(names,variables.current,number,collected,forced,false,sortorder)
-        end
-    elseif criterium == variables.component then
-        -- special case, no structure yet
-        local component = resolvers.jobs.currentcomponent() or ""
-        if component ~= "" then
-            for i=1,#collected do
-                local v = collected[i]
-                local r = v.references
-                local m = v.metadata
-                if r and r.component == component and (m and names[m.name] or all) then
+    else
+        report_lists("no reference specified")
+    end
+    return result
+end
+
+filters[v_all] = function(specification)
+    local collected = specification.collected
+    local result    = { }
+    local nofresult = #result
+    local block     = specification.block
+    local all       = specification.all
+    local forced    = specification.forced
+    local names     = specification.names
+    local sections  = sections.collected
+    for i=1,#collected do
+        local v = collected[i]
+        local r = v.references
+        if r and (not block or not r.block or block == r.block) then
+            local metadata = v.metadata
+            if metadata then
+                local name = metadata.name or false
+                local sectionnumber = (r.section == 0) or sections[r.section]
+                if forced[name] or (sectionnumber and not metadata.nolist and (all or names[name])) then -- and not sectionnumber.hidenumber then
                     nofresult = nofresult + 1
                     result[nofresult] = v
                 end
             end
         end
-    else -- sectionname, number
-        -- not the same as register
-        local depth = sections.getlevel(criterium)
-        local number = tonumber(number) or numberatdepth(depth) or 0
-        if trace_lists then
-            local t = sections.numbers()
-            detail = format("depth %s, number %s, numbers %s, startset %s",depth,number,(#t>0 and concat(t,".",1,depth)) or "?",#collected)
-        end
-        if number > 0 then
-            local pnumbers = nil
-            local pblock = block
-            local parent = nested and nested.parent
-            if parent then
-                pnumbers = parent.numberdata.numbers or pnumbers -- so local as well as nested
-                pblock = parent.references.block or pblock
+    end
+    return result
+end
+
+filters[v_text] = filters[v_all]
+
+filters[v_current] = function(specification)
+    if specification.depth == 0 then
+        specification.nested    = false
+        specification.criterium = v_intro
+        return filters[v_intro](specification)
+    end
+    local collected = specification.collected
+    local result    = { }
+    local nofresult = #result
+    local depth     = specification.depth
+    local block     = specification.block
+    local all       = specification.all
+    local names     = specification.names
+    local numbers   = specification.numbers
+    local sections  = sections.collected
+    for i=1,#collected do
+        local v = collected[i]
+        local r = v.references
+        if r and (not block or not r.block or block == r.block) then
+            local sectionnumber = sections[r.section]
+            if sectionnumber then -- and not sectionnumber.hidenumber then
+                local cnumbers = sectionnumber.numbers
+                local metadata = v.metadata
+                if cnumbers then
+                    if metadata and not metadata.nolist and (all or names[metadata.name or false]) and #cnumbers > depth then
+                        local ok = true
+                        for d=1,depth do
+                            local cnd = cnumbers[d]
+                            if not (cnd == 0 or cnd == numbers[d]) then
+                                ok = false
+                                break
+                            end
+                        end
+                        if ok then
+                            nofresult = nofresult + 1
+                            result[nofresult] = v
+                        end
+                    end
+                end
             end
-            for i=1,#collected do
-                local v = collected[i]
-                local r = v.references
-                if r and (not block or not r.block or pblock == r.block) then
-                    local sectionnumber = sections.collected[r.section]
-                    if sectionnumber then
-                        local metadata = v.metadata
-                        local cnumbers = sectionnumber.numbers
-                        if cnumbers then
-                            if (all or names[metadata.name or false]) and #cnumbers >= depth and matchingtilldepth(depth,cnumbers,pnumbers) then
+        end
+    end
+    return result
+end
+
+filters[v_here] = function(specification)
+    -- this is quite dirty ... as cnumbers is not sparse we can misuse #cnumbers
+    if specification.depth == 0 then
+        specification.nested    = false
+        specification.criterium = v_intro
+        return filters[v_intro](specification)
+    end
+    local collected = specification.collected
+    local result    = { }
+    local nofresult = #result
+    local depth     = specification.depth
+    local block     = specification.block
+    local all       = specification.all
+    local names     = specification.names
+    local numbers   = specification.numbers
+    local sections  = sections.collected
+    for i=1,#collected do
+        local v = collected[i]
+        local r = v.references
+        if r then -- and (not block or not r.block or block == r.block) then
+            local sectionnumber = sections[r.section]
+            if sectionnumber then -- and not sectionnumber.hidenumber then
+                local cnumbers = sectionnumber.numbers
+                local metadata = v.metadata
+                if cnumbers then
+                    if metadata and not metadata.nolist and (all or names[metadata.name or false]) and #cnumbers >= depth then
+                        local ok = true
+                        for d=1,depth do
+                            local cnd = cnumbers[d]
+                            if not (cnd == 0 or cnd == numbers[d]) then
+                                ok = false
+                                break
+                            end
+                        end
+                        if ok then
+                            nofresult = nofresult + 1
+                            result[nofresult] = v
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return result
+end
+
+filters[v_previous] = function(specification)
+    if specification.depth == 0 then
+        specification.nested    = false
+        specification.criterium = v_intro
+        return filters[v_intro](specification)
+    end
+    local collected = specification.collected
+    local result    = { }
+    local nofresult = #result
+    local block     = specification.block
+    local all       = specification.all
+    local names     = specification.names
+    local numbers   = specification.numbers
+    local sections  = sections.collected
+    local depth     = specification.depth
+    for i=1,#collected do
+        local v = collected[i]
+        local r = v.references
+        if r and (not block or not r.block or block == r.block) then
+            local sectionnumber = sections[r.section]
+            if sectionnumber then -- and not sectionnumber.hidenumber then
+                local cnumbers = sectionnumber.numbers
+                local metadata = v.metadata
+                if cnumbers then
+                    if metadata and not metadata.nolist and (all or names[metadata.name or false]) and #cnumbers >= depth then
+                        local ok = true
+                        for d=1,depth-1 do
+                            local cnd = cnumbers[d]
+                            if not (cnd == 0 or cnd == numbers[d]) then
+                                ok = false
+                                break
+                            end
+                        end
+                        if ok then
+                            nofresult = nofresult + 1
+                            result[nofresult] = v
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return result
+end
+
+filters[v_local] = function(specification)
+    local numbers = specification.numbers
+    local nested  = nesting[#nesting]
+    if nested then
+        return filtercollected {
+            names     = specification.names,
+            criterium = nested.name,
+            collected = specification.collected,
+            forced    = specification.forced,
+            nested    = nested,
+            sortorder = specification.sortorder,
+        }
+    else
+        specification.criterium = autosectiondepth(numbers) == 0 and v_all or v_current
+        specification.nested    = false
+        return filtercollected(specification) -- rechecks, so better (for determining all)
+    end
+end
+
+
+filters[v_component] = function(specification)
+    -- special case, no structure yet
+    local collected = specification.collected
+    local result    = { }
+    local nofresult = #result
+    local all       = specification.all
+    local names     = specification.names
+    local component = resolvers.jobs.currentcomponent() or ""
+    if component ~= "" then
+        for i=1,#collected do
+            local v = collected[i]
+            local r = v.references
+            local m = v.metadata
+            if r and r.component == component and (m and names[m.name] or all) then
+                nofresult = nofresult + 1
+                result[nofresult] = v
+            end
+        end
+    end
+    return result
+end
+
+-- local number = tonumber(number) or numberatdepth(depth) or 0
+-- if number > 0 then
+--     ...
+-- end
+
+filters[v_default] = function(specification) -- is named
+    local collected = specification.collected
+    local result    = { }
+    local nofresult = #result
+    ----- depth     = specification.depth
+    local block     = specification.block
+    local criterium = specification.criterium
+    local all       = specification.all
+    local names     = specification.names
+    local numbers   = specification.numbers
+    local sections  = sections.collected
+    local reference = specification.reference
+    local nested    = specification.nested
+    --
+    if reference then
+        reference = tonumber(reference)
+    end
+    --
+    local depth     = getsectionlevel(criterium)
+    local pnumbers  = nil
+    local pblock    = block
+    local parent    = nested and nested.parent
+    --
+    if parent then
+        pnumbers = parent.numberdata.numbers or pnumbers -- so local as well as nested
+        pblock   = parent.references.block or pblock
+        if trace_lists then
+            report_lists("filtering by block %a and section %a",pblock,criterium)
+        end
+    end
+    --
+    for i=1,#collected do
+        local v = collected[i]
+        local r = v.references
+        if r and (not block or not r.block or pblock == r.block) then
+            local sectionnumber = sections[r.section]
+            if sectionnumber then
+                local metadata = v.metadata
+                local cnumbers = sectionnumber.numbers
+                if cnumbers then
+                    if all or names[metadata.name or false] then
+                        if reference then
+                            -- filter by number
+                            if reference == cnumbers[depth] then
+                                nofresult = nofresult + 1
+                                result[nofresult] = v
+                            end
+                        else
+                            if #cnumbers >= depth and matchingtilldepth(depth,cnumbers,pnumbers) then
                                 nofresult = nofresult + 1
                                 result[nofresult] = v
                             end
@@ -495,45 +785,22 @@ local function filtercollected(names, criterium, number, collected, forced, nest
             end
         end
     end
-    if trace_lists then
-        report_lists("criterium %a, block %a, found %a, detail %a",criterium,block or "*",#result,detail)
-    end
-
-    if sortorder then -- experiment
-        local sorter = sorters[sortorder]
-        if sorter then
-            if trace_lists then
-                report_lists("sorting list using method %a",sortorder)
-            end
-            for i=1,#result do
-                result[i].references.order = i
-            end
-            table.sort(result,sorter)
-        end
-    end
-
     return result
 end
 
-lists.filtercollected = filtercollected
+-- names, criterium, number, collected, forced, nested, sortorder) -- names is hash or string
 
-function lists.filter(specification)
-    return filtercollected(
-        specification.names,
-        specification.criterium,
-        specification.number,
-        lists.collected,
-        specification.forced,
-        false,
-        specification.order
-    )
-end
+lists.filter = filtercollected
 
 lists.result = { }
 
+function lists.getresult(r)
+    return lists.result[r]
+end
+
 function lists.process(specification)
-    lists.result = lists.filter(specification)
-    local specials = utilities.parsers.settings_to_hash(specification.extras or "")
+    lists.result = filtercollected(specification)
+    local specials = settings_to_set(specification.extras or "")
     specials = next(specials) and specials or nil
     for i=1,#lists.result do
         local r = lists.result[i]
@@ -544,7 +811,7 @@ function lists.process(specification)
 end
 
 function lists.analyze(specification)
-    lists.result = lists.filter(specification)
+    lists.result = filtercollected(specification)
 end
 
 function lists.userdata(name,r,tag) -- to tex (todo: xml)
@@ -584,7 +851,7 @@ function lists.sectionnumber(name,n,spec)
     local data = lists.result[n]
     local sectiondata = sections.collected[data.references.section]
     -- hm, prefixnumber?
-    sections.typesetnumber(sectiondata,"prefix",spec,sectiondata) -- data happens to contain the spec too
+    typesetnumber(sectiondata,"prefix",spec,sectiondata) -- data happens to contain the spec too
 end
 
 -- some basics (todo: helpers for pages)
@@ -661,18 +928,18 @@ function lists.number(name,n,spec)
     if data then
         local numberdata = data.numberdata
         if numberdata then
-            sections.typesetnumber(numberdata,"number",spec or false,numberdata or false)
+            typesetnumber(numberdata,"number",spec or false,numberdata or false)
         end
     end
 end
 
-function lists.prefixednumber(name,n,prefixspec,numberspec)
+function lists.prefixednumber(name,n,prefixspec,numberspec,forceddata)
     local data = lists.result[n]
     if data then
         helpers.prefix(data,prefixspec)
-        local numberdata = data.numberdata
+        local numberdata = data.numberdata or forceddata
         if numberdata then
-            sections.typesetnumber(numberdata,"number",numberspec or false,numberdata or false)
+            typesetnumber(numberdata,"number",numberspec or false,numberdata or false)
         end
     end
 end
@@ -701,29 +968,175 @@ end
 
 -- interface (maybe strclistpush etc)
 
-commands.pushlist           = lists.pushnesting
-commands.poplist            = lists.popnesting
-commands.enhancelist        = lists.enhance
-commands.processlist        = lists.process
-commands.analyzelist        = lists.analyze
-commands.listtitle          = lists.title
-commands.listprefixednumber = lists.prefixednumber
-commands.listprefixedpage   = lists.prefixedpage
-
-
-function commands.addtolist       (...) context(lists.addto     (...)) end
-function commands.listsize        (...) context(lists.size      (...)) end
-function commands.listlocation    (...) context(lists.location  (...)) end
-function commands.listlabel       (...) context(lists.label     (...)) end
-function commands.listrealpage    (...) context(lists.realpage  (...)) end
-function commands.listgroupindex  (...) context(lists.groupindex(...)) end
-
-function commands.currentsectiontolist()
-    context(lists.addto(sections.current()))
+if not lists.reordered then
+    function lists.reordered(data)
+        return data.numberdata
+    end
 end
 
-function commands.listuserdata(...)
-    local str, metadata = lists.userdata(...)
+implement { name = "pushlist", actions = lists.pushnesting, arguments = "integer" }
+implement { name = "poplist",  actions = lists.popnesting  }
+
+implement {
+    name      = "addtolist",
+    actions   = { lists.addto, context },
+    arguments = {
+        {
+            { "references", {
+                    { "internal", "integer" },
+                    { "block" },
+                    { "section", "integer" },
+                    { "location" },
+                    { "prefix" },
+                    { "reference" },
+                    { "order", "integer" },
+                }
+            },
+            { "metadata", {
+                    { "kind" },
+                    { "name" },
+                    { "level", "integer" },
+                    { "catcodes", "integer" },
+                    { "coding" },
+                    { "xmlroot" },
+                    { "setup" },
+                }
+            },
+            { "userdata" },
+            { "titledata", {
+                    { "label" },
+                    { "title" },
+                    { "bookmark" },
+                    { "marking" },
+                    { "list" },
+                }
+            },
+            { "prefixdata", {
+                    { "prefix" },
+                    { "separatorset" },
+                    { "conversionset" },
+                    { "conversion" },
+                    { "set" },
+                    { "segments" },
+                    { "connector" },
+                }
+            },
+            { "numberdata", {
+                    { "numbers" },
+                    { "groupsuffix" },
+                    { "group" },
+                    { "counter" },
+                    { "separatorset" },
+                    { "conversionset" },
+                    { "conversion" },
+                    { "starter" },
+                    { "stopper" },
+                    { "segments" },
+                }
+            }
+        }
+    }
+}
+
+implement {
+    name      = "enhancelist",
+    actions   = lists.enhance,
+    arguments = "integer"
+}
+
+implement {
+    name      = "processlist",
+    actions   = lists.process,
+    arguments = {
+        {
+            { "names" },
+            { "criterium" },
+            { "reference" },
+            { "extras" },
+            { "order" },
+        }
+    }
+}
+
+implement {
+    name      = "analyzelist",
+    actions   = lists.analyze,
+    arguments = {
+        {
+            { "names" },
+            { "criterium" },
+            { "reference" },
+        }
+    }
+}
+
+implement {
+    name      = "listtitle",
+    actions   = lists.title,
+    arguments = { "string", "integer" }
+}
+
+implement {
+    name      = "listprefixednumber",
+    actions   = lists.prefixednumber,
+    arguments = {
+        "string",
+        "integer",
+        {
+            { "prefix" },
+            { "separatorset" },
+            { "conversionset" },
+            { "starter" },
+            { "stopper" },
+            { "set" },
+            { "segments" },
+            { "connector" },
+        },
+        {
+            { "separatorset" },
+            { "conversionset" },
+            { "starter" },
+            { "stopper" },
+            { "segments" },
+        }
+    }
+}
+
+implement {
+    name      = "listprefixedpage",
+    actions   = lists.prefixedpage,
+    arguments = {
+        "string",
+        "integer",
+        {
+            { "separatorset" },
+            { "conversionset" },
+            { "set" },
+            { "segments" },
+            { "connector" },
+        },
+        {
+            { "prefix" },
+            { "conversionset" },
+            { "starter" },
+            { "stopper" },
+        }
+    }
+}
+
+implement { name = "listsize",       actions = { lists.size, context } }
+implement { name = "listlocation",   actions = { lists.location, context }, arguments = "integer" }
+implement { name = "listlabel",      actions = { lists.label, context }, arguments = { "integer", "string" } }
+implement { name = "listrealpage",   actions = { lists.realpage, context }, arguments = { "string", "integer" } }
+implement { name = "listgroupindex", actions = { lists.groupindex, context }, arguments = { "string", "string" } }
+
+implement {
+    name    = "currentsectiontolist",
+    actions = { sections.current, lists.addto, context }
+}
+
+local function userdata(name,r,tag)
+    local str, metadata = lists.userdata(name,r,tag)
     if str then
      -- local catcodes = metadata and metadata.catcodes
      -- if catcodes then
@@ -735,25 +1148,21 @@ function commands.listuserdata(...)
     end
 end
 
+implement {
+    name      = "listuserdata",
+    actions   = userdata,
+    arguments = { "string", "integer", "string" }
+}
+
 -- we could also set variables .. names will change (when this module is done)
 -- maybe strc_lists_savedtitle etc
 
-function commands.doiflisthastitleelse (...) commands.doifelse(lists.hastitledata (...)) end
-function commands.doiflisthaspageelse  (...) commands.doifelse(lists.haspagedata  (...)) end
-function commands.doiflisthasnumberelse(...) commands.doifelse(lists.hasnumberdata(...)) end
-function commands.doiflisthasentry     (n)   commands.doifelse(lists.iscached     (n  )) end
+implement { name = "doifelselisthastitle",  actions = { lists.hastitledata,  commands.doifelse }, arguments = { "string", "integer" } }
+implement { name = "doifelselisthaspage",   actions = { lists.haspagedata,   commands.doifelse }, arguments = { "string", "integer" } }
+implement { name = "doifelselisthasnumber", actions = { lists.hasnumberdata, commands.doifelse }, arguments = { "string", "integer" } }
+implement { name = "doifelselisthasentry",  actions = { lists.iscached,      commands.doifelse }, arguments = { "integer" } }
 
-function commands.savedlistnumber(name,n)
-    local data = cached[tonumber(n)]
-    if data then
-        local numberdata = data.numberdata
-        if numberdata then
-            sections.typesetnumber(numberdata,"number",numberdata or false)
-        end
-    end
-end
-
-function commands.savedlisttitle(name,n,tag)
+local function savedlisttitle(name,n,tag)
     local data = cached[tonumber(n)]
     if data then
         local titledata = data.titledata
@@ -763,39 +1172,56 @@ function commands.savedlisttitle(name,n,tag)
     end
 end
 
--- function commands.savedlistprefixednumber(name,n)
---     local data = cached[tonumber(n)]
---     if data then
---         local numberdata = data.numberdata
---         if numberdata then
---             helpers.prefix(data,data.prefixdata)
---             sections.typesetnumber(numberdata,"number",numberdata or false)
---         end
---     end
--- end
-
-if not lists.reordered then
-    function lists.reordered(data)
-        return data.numberdata
+local function savedlistnumber(name,n)
+    local data = cached[tonumber(n)]
+    if data then
+        local numberdata = data.numberdata
+        if numberdata then
+            typesetnumber(numberdata,"number",numberdata or false)
+        end
     end
 end
 
-function commands.savedlistprefixednumber(name,n)
+local function savedlistprefixednumber(name,n)
     local data = cached[tonumber(n)]
     if data then
         local numberdata = lists.reordered(data)
         if numberdata then
             helpers.prefix(data,data.prefixdata)
-            sections.typesetnumber(numberdata,"number",numberdata or false)
+            typesetnumber(numberdata,"number",numberdata or false)
         end
     end
 end
 
-commands.discardfromlist = lists.discard
+lists.savedlisttitle          = savedlisttitle
+lists.savedlistnumber         = savedlistnumber
+lists.savedlistprefixednumber = savedlistprefixednumber
+
+implement {
+    name      = "savedlistnumber",
+    actions   = savedlistnumber,
+    arguments = { "string", "integer" }
+}
+
+implement {
+    name      = "savedlisttitle",
+    actions   = savedlisttitle,
+    arguments = { "string", "integer" }
+}
+
+implement {
+    name      = "savedlistprefixednumber",
+    actions   = savedlistprefixednumber,
+    arguments = { "string", "integer" }
+}
+
+implement {
+    name      = "discardfromlist",
+    actions   = lists.discard,
+    arguments = { "integer" }
+}
 
 -- new and experimental and therefore off by default
-
-local sort, setmetatableindex = table.sort, table.setmetatableindex
 
 lists.autoreorder = false -- true
 

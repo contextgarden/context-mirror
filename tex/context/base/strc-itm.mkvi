@@ -15,6 +15,9 @@
 
 \registerctxluafile{strc-itm}{1.001}
 
+%D As we analyze/register widths and such we could as well push and pop the
+%D numbers at the \LUA\ end (which saves a few calls).
+
 %D Cleaning up this module happened around the time when Kate Bush came up
 %D with the nicest numbered list of words: 50 Words For Snow. It's therefore
 %D no surprise that I had that cd running several times when updating this
@@ -203,7 +206,6 @@
 \newdimen      \d_strc_itemgroups_max_width         % multipass
 \newcount      \c_strc_itemgroups_max_items         % multipass
 
-\newcount      \c_strc_itemgroups_n_of_lists
 \newcount      \c_strc_itemgroups_n_of_items
 \newcount      \c_strc_itemgroups_nesting
 \newcount      \c_strc_itemgroups_column_depth
@@ -227,13 +229,10 @@
 \let           \currentitemgroupsegments       \empty
 
 \def\strc_itemgroups_register_status
-  {\iftrialtypesetting \else
-     \ctxcommand{registeritemgroup("\currentitemgroup",\number\c_strc_itemgroups_n_of_items,"\itemgroupparameter\c!maxwidth")}%
-   \fi}
+  {\clf_registeritemgroup{\currentparentitemgroup}\c_strc_itemgroups_nesting\c_strc_itemgroups_n_of_items\dimexpr\itemgroupparameter\c!maxwidth\relax}
 
 \def\strc_itemgroups_check_n_of_items % we could do this at the lua end and save a call (i.e. will be dimen and counter)
-  {\c_strc_itemgroups_max_items\ctxcommand{nofitems("\currentitemgroup",\number\c_strc_itemgroups_n_of_lists)}\relax
-   \d_strc_itemgroups_max_width\ctxcommand{maxitemwidth("\currentitemgroup",\number\c_strc_itemgroups_n_of_lists)}\scaledpoint
+  {\clf_analyzeitemgroup{\currentparentitemgroup}\c_strc_itemgroups_nesting\relax
    \edef\currentnofitems{\the\c_strc_itemgroups_max_items}}
 
 % todo: \dodosetreference -> \strc_counters_register_component (to be checked)
@@ -249,47 +248,51 @@
    \fi \fi}
 
 \def\strc_itemgroups_insert_reference_indeed % maybe we need a 'frozen counter' numberdata blob / quick hack .. .mive this to strc-ref
-  {%\setnextinternalreference
+  {% needs testing, gave problems:
+   \setnextinternalreference
    % no need to collect nodes in \b_strc_destination_nodes here ... maybe at some point
    \strc_references_start_destination_nodes
-     % this is somewhat over the top ... we should use the counter's reference
-     \ctxcommand{setreferenceattribute("\s!full", "\referenceprefix","\currentitemreference",
-        {
-            metadata = {
-                kind     = "item",% ?
-                catcodes = \the\catcodetable,
-                xmlroot  = \ifx\currentreferencecoding\s!xml "\xmldocument" \else nil \fi, % only useful when text
-            },
-            references = {
-    %           internal = \nextinternalreference, % no: this spoils references
-                block    = "\currentsectionblock",
-                section  = structures.sections.currentid(),
-            },
-            prefixdata = structures.helpers.simplify {
-                prefix        = "\namedcounterparameter\v_strc_itemgroups_counter\c!prefix",
-                separatorset  = "\namedcounterparameter\v_strc_itemgroups_counter\c!prefixseparatorset",
-                conversion    = \!!bs\namedcounterparameter\v_strc_itemgroups_counter\c!prefixconversion\!!es,
-                conversionset = "\namedcounterparameter\v_strc_itemgroups_counter\c!prefixconversionset",
-                set           = "\namedcounterparameter\v_strc_itemgroups_counter\c!prefixset",
-                segments      = "\namedcounterparameter\v_strc_itemgroups_counter\c!prefixsegments",
-            %   segments      = "\askedprefixsegments",
-                connector     = \!!bs\namedcounterparameter\v_strc_itemgroups_counter\c!prefixconnector\!!es,
-            },
-            numberdata = structures.helpers.simplify {
-                numbers       = structures.counters.compact("\v_strc_itemgroups_counter",nil,true),
-                separatorset  = "\namedcounterparameter\v_strc_itemgroups_counter\c!numberseparatorset",
-  %             conversion    = "\namedcounterparameter\v_strc_itemgroups_counter\c!numberconversion",
-  %             conversion    = "\currentitemgroupconversionset",
-  %             conversionset = "\namedcounterparameter\v_strc_itemgroups_counter\c!numberconversionset",
-  % todo:       fixedconversion = "\currentitemgroupconversionset", % temp hack:
-                conversionset = "fixed::\currentitemgroupconversionset",
-              %
-              % for the moment no stopper, we need to make references configurable first
-              % stopper       = \!!bs\namedcounterparameter\v_strc_itemgroups_counter\c!numberstopper\!!es,
-                segments      = "\namedcounterparameter\v_strc_itemgroups_counter\c!numbersegments",
-            },
-        })
+   % this is somewhat over the top ... we should use the counter's reference
+   \clf_setreferenceattribute
+     {%
+         metadata {%
+             kind            {item}% was item, why?
+         \ifx\currentreferencecoding\s!xml
+             xmlroot         {\xmldocument}% only useful when text
+         \fi
+             catcodes        \catcodetable
+         }%
+         references {%
+             internal        \nextinternalreference % no: this spoils references
+           % block           {\currentsectionblock}%
+             view            {\interactionparameter\c!focus}%
+             prefix          {\referenceprefix}%
+             reference       {\currentitemreference}%
+         }%
+         prefixdata {%
+             prefix          {\namedcounterparameter\v_strc_itemgroups_counter\c!prefix}%
+             separatorset    {\namedcounterparameter\v_strc_itemgroups_counter\c!prefixseparatorset}%
+             conversion      {\namedcounterparameter\v_strc_itemgroups_counter\c!prefixconversion}%
+             conversionset   {\namedcounterparameter\v_strc_itemgroups_counter\c!prefixconversionset}%
+             set             {\namedcounterparameter\v_strc_itemgroups_counter\c!prefixset}%
+             segments        {\namedcounterparameter\v_strc_itemgroups_counter\c!prefixsegments}%
+           % segments        {\askedprefixsegments}%
+             connector       {\namedcounterparameter\v_strc_itemgroups_counter\c!prefixconnector}%
+         }%
+         numberdata {%
+             numbers         {\v_strc_itemgroups_counter}%
+             separatorset    {\namedcounterparameter\v_strc_itemgroups_counter\c!numberseparatorset}%
+           % conversion      {\namedcounterparameter\v_strc_itemgroups_counter\c!numberconversion}%
+           % conversionset   {\namedcounterparameter\v_strc_itemgroups_counter\c!numberconversionset}%
+           % fixedconversion {\currentitemgroupconversionset}%
+             conversionset   {fixed::\currentitemgroupconversionset}% temp hack
+           %
+           % for the moment no stopper, we need to make references configurable first
+           % stopper         {\namedcounterparameter\v_strc_itemgroups_counter\c!numberstopper}%
+             segments        {\namedcounterparameter\v_strc_itemgroups_counter\c!numbersegments}%
+         }%
      }%
+   \relax
    \strc_references_stop_destination_nodes
    \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
    % will become an option:
@@ -331,7 +334,7 @@
 
 \def\strc_itemgroups_store_continue_state#options#settings%
    {\setxvalue{\??itemgroupoption \currentitemgroup}{\strc_itemgroups_process_options{#options}}%
-    \setgvalue{\??itemgroupsetting\currentitemgroup}{\setupcurrentitemgroup     [#settings]}}
+    \setgvalue{\??itemgroupsetting\currentitemgroup}{\setupcurrentitemgroup[#settings]}}
 
 \def\strc_itemgroups_fetch_continue_state
   {\getvalue{\??itemgroupoption \currentitemgroup}%
@@ -467,7 +470,7 @@
    \let\strc_itemgroups_margin_symbol\empty
    \let\strc_itemgroups_extra_symbol\empty
    %
-   \global\letitemgroupparameter\c!maxwidth\!!zerocount
+   \global\letitemgroupparameter\c!maxwidth\!!zeropoint
    }
 
 \setvalue{\??itemgroupfirst\v!intro   }{\settrue\c_strc_itemgroups_intro    }
@@ -482,10 +485,11 @@
      \csname\??itemgroupfirst#option\endcsname
    \fi}
 
-\ifdefined\dotagsetitemgroup \else \let\dotagsetitemgroup\relax \fi
+\ifdefined\dotagsetitemgroup \else \let\dotagsetitemgroup\relax             \fi
+\ifdefined\dotagsetitem      \else \let\dotagsetitem     \gobbleoneargument \fi
 
 \def\strc_itemgroups_tag_start_group
-  {\dostarttagged\t!itemgroup\currentitemgroup
+  {\dostarttaggedchained\t!itemgroup\currentparentitemgroup\??itemgroup
    \dotagsetitemgroup}
 
 \def\strc_itemgroups_tag_stop_group
@@ -576,7 +580,7 @@
 % can be made a bit faster
 
 \def\strc_itemgroups_setup_each#category#whatever%
-  {\doifassignmentelse{#whatever}
+  {\doifelseassignment{#whatever}
      {\strc_itemgroups_normal_setup[#category][#whatever]}
      {\strc_itemgroups_normal_setup[#category][\c!option={#whatever}]}}
 
@@ -587,7 +591,7 @@
   {\strc_itemgroups_normal_setup[#category:#level][\c!option={#whatever}]}
 
 \def\strc_itemgroups_setup_list#subcategories#category#whatever%
-  {\doifassignmentelse{#whatever}
+  {\doifelseassignment{#whatever}
      {\processcommalist[#subcategories]{\strc_itemgroups_setup_list_level_a{#category}{#whatever}}}
      {\processcommalist[#subcategories]{\strc_itemgroups_setup_list_level_b{#category}{#whatever}}}}
 
@@ -639,9 +643,9 @@
 \def\strc_itemgroups_set_symbol#symbol%
   {\edef\strc_itemgroups_tmp_symbol{#symbol}%
    \ifx\strc_itemgroups_tmp_symbol\empty \else
-     \doifsymboldefinedelse\strc_itemgroups_tmp_symbol
+     \doifelsesymboldefined\strc_itemgroups_tmp_symbol
         \strc_itemgroups_set_symbol_symbol
-        {\doifconversiondefinedelse\strc_itemgroups_tmp_symbol
+        {\doifelseconversiondefined\strc_itemgroups_tmp_symbol
            \strc_itemgroups_set_symbol_conversion
            \donothing}%
    \fi}
@@ -706,7 +710,7 @@
    \ifthirdargument
      \strc_itemgroups_start_indeed[#options][#settings]%
    \else\ifsecondargument
-     \doifassignmentelse{#options}
+     \doifelseassignment{#options}
        {\strc_itemgroups_start_indeed[][#options]}
        {\strc_itemgroups_start_indeed[#options][]}%
    \else
@@ -745,7 +749,6 @@
    \iftrialtypesetting
      \strc_counters_save\v_strc_itemgroups_counter
    \fi
-   \global\advance\c_strc_itemgroups_n_of_lists\plusone
    \c_strc_itemgroups_n_of_items\zerocount
    \strc_itemgroups_check_n_of_items
    \ifx\itemgroupoptions\empty
@@ -811,7 +814,7 @@
      \ifinsidecolumns\else\ifcase\c_strc_itemgroups_column_depth
        \global\c_strc_itemgroups_column_depth\c_strc_itemgroups_nesting % global ?
        \strc_itemgroups_before_command
-       \strc_itemgroups_tag_start_group
+      %\strc_itemgroups_tag_start_group
        \strc_itemgroups_start_columns
      \fi\fi
    \fi
@@ -941,8 +944,7 @@
    \fi\fi
    % new test, needed in sidefloats (surfaced in volker's proceedings)
    \iftrialtypesetting
-     \strc_counters_restore\v_strc_itemgroups_counter
-     \global\advance\c_strc_itemgroups_n_of_lists\minusone
+     \strc_counters_restore\v_strc_itemgroups_counter % could happen in LUA
    \fi
    \global\advance\c_strc_itemgroups_nesting\minusone
    \xdef\currentitemlevel{\number\c_strc_itemgroups_nesting}%
@@ -965,7 +967,7 @@
   {\setfalse\c_strc_itemgroups_first
  % \begingroup % (3)
    \ifcase\c_strc_itemgroups_nesting
-                                      % 0
+                                           % 0
    \or
      \strc_itemgroups_start_item_first_one % 1
    \else
@@ -1009,8 +1011,21 @@
      \strc_itemgroups_between_command
    \fi}
 
-\unexpanded\def\strc_itemgroups_start_item[#1]% we can reuse more
-  {\def\currentitemreference{#1}%
+% c_strc_itemgroups_concat:
+%
+% the problem is that we use leftskip so concat cannot reliable take the height into
+% account; it's .. rather tricky when white space in there anyway (due to \par) .. so
+% we rely on a special blank method
+%
+% \startitemize[n]
+%     \item bla
+%     \item \startitemize[a]
+%         \item bla $\displaystyle\int^{x^{y^4}}$ \item bla
+%     \stopitemize
+% \stopitemize
+
+\unexpanded\def\strc_itemgroups_start_item[#reference]% we can reuse more
+  {\def\currentitemreference{#reference}%
    \ifconditional\c_strc_itemgroups_text
      % begin of item
    \else
@@ -1026,13 +1041,11 @@
      \strc_itemgroups_start_item_next
    \fi
    \ifconditional\c_strc_itemgroups_concat
-   % \vskip-\dimexpr\lastskip+\lineheight\relax
-     \vskip-\lastskip   % we cannot use a \dimexpr here  because
-     \vskip-\lineheight % then we loose the stretch and shrink
-     \nobreak
+     \spac_overlay_lines % see spac-ver.mkvi ... a typical potential problem
      \setfalse\c_strc_itemgroups_concat
    \fi
    \dostarttagged\t!item\empty
+  % \dotagsetitem\empty
    \dostarttagged\t!itemtag\empty
    \strc_itemgroups_insert_item
    \dostoptagged
@@ -1073,17 +1086,24 @@
      \fi
    \fi
    \strc_itemgroups_start_item[#reference]%
-   \groupedcommand\strc_itemgroups_start_head_indeed\strc_itemgroups_stop_head_indeed}
+   \pickupgroupedcommand
+     \strc_itemgroups_start_head_indeed
+     \strc_itemgroups_stop_head_indeed
+     \strc_itemgroups_head_body_indeed}
 
 \unexpanded\def\stopitemgrouphead
-  {\stopitemgroupitem}
+  {\dostoptagged
+   \stopitemgroupitem}
 
 \unexpanded\def\strc_itemgroups_start_head_indeed
   {\settrue\c_strc_itemgroups_head
+   \dotagsetitem\s!head% % weird place
+   \dostarttagged\t!itemhead\empty
    \useitemgroupstyleandcolor\c!headstyle\c!headcolor\ignorespaces}
 
 \unexpanded\def\strc_itemgroups_stop_head_indeed
   {\removeunwantedspaces
+   \dostoptagged
    \ifconditional\c_strc_itemgroups_text
      \space
      \ignorespaces
@@ -1092,7 +1112,10 @@
    \fi
    \strc_itemgroups_insert_breakno
    \ifconditional\c_strc_itemgroups_pack\else\strc_itemgroups_after_head_command\fi
-   \strc_itemgroups_insert_breakno
+   \strc_itemgroups_insert_breakno}
+
+\unexpanded\def\strc_itemgroups_head_body_indeed
+  {\dostarttagged\t!itembody\empty
    \noindentation}
 
 % Simple commands.
@@ -1110,30 +1133,37 @@
 \unexpanded\def\strc_itemgroups_start_symbol#text%
   {\def\strc_itemgroups_extra_symbol{#text}%
    \settrue\c_strc_itemgroups_symbol
-   \startitemgroupitem}
+   \startitemgroupitem
+   \dotagsetitem\s!symbol}
 
 \unexpanded\def\strc_itemgroups_start_dummy
   {\strc_itemgroups_start_symbol\strut\strut} % two ?
 
 \unexpanded\def\strc_itemgroups_start_subitem
   {\settrue\c_strc_itemgroups_sub
-   \startitemgroupitem}
+   \startitemgroupitem
+   \dotagsetitem\s!sub}
 
 \unexpanded\def\strc_itemgroups_start_edge#text%
   {\strc_itemgroups_start_symbol
      {\strc_itemgroups_calculate_list_width\c_strc_itemgroups_nesting
+      \dostarttagged\t!ignore\empty % for the moment, maybe an attribute
       \hbox to \d_strc_itemgroups_list_width
-        {#text\hskip\itemgroupparameter\c!distance}}}
+        {#text\hskip\itemgroupparameter\c!distance}%
+      \dostoptagged}}
 
 \unexpanded\def\strc_itemgroups_start_margin#text%
   {\def\strc_itemgroups_margin_symbol % brrr
-     {\llap
+     {\dostarttagged\t!ignore\empty % for the moment, maybe an attribute
+      \llap
         {\begingroup
          \useitemgroupstyleandcolor\c!marstyle\c!marcolor
          #text% keep em/ex local
          \endgroup
-         \hskip\dimexpr\leftskip+\leftmargindistance\relax}}%
-   \startitemgroupitem}
+         \hskip\dimexpr\leftskip+\leftmargindistance\relax}%
+      \dostoptagged}%
+   \startitemgroupitem
+   \dotagsetitem\s!margin}
 
 \unexpanded\def\strc_itemgroups_start_text#text%
   {\def\strc_itemgroups_extra_symbol{#text}%
@@ -1207,7 +1237,9 @@
      {\dontcomplain
       \hbox to \d_strc_itemgroups_list_width
         {\ifconditional\c_strc_itemgroups_sub
+           \dostarttagged\t!ignore\empty
            \llap{+\enspace}%
+           \dostoptagged
          \fi
          \strc_itemgroups_left_sym_filler
          \box\b_strc_itemgroups % can already have a forced widt, only factor handled here
@@ -1217,7 +1249,9 @@
 \def\strc_itemgroups_handle_lapped_item_negative
   {\llap
      {\ifconditional\c_strc_itemgroups_sub
+        \dostarttagged\t!ignore\empty
         \llap{+\enspace}%
+        \dostoptagged
       \fi
       \box\b_strc_itemgroups
       \hskip\leftmargindistance}}
@@ -1225,7 +1259,9 @@
 \def\strc_itemgroups_handle_groups_text_item
   {\hbox
      {\ifconditional\c_strc_itemgroups_sub
+        \dostarttagged\t!ignore\empty
         +\enspace
+        \dostoptagged
       \fi
       \box\b_strc_itemgroups
       \hskip\interwordspace}%
@@ -1234,7 +1270,9 @@
 \def\strc_itemgroups_handle_groups_inline_item
   {\hbox to \d_strc_itemgroups_list_width
      {\ifconditional\c_strc_itemgroups_sub
+        \dostarttagged\t!ignore\empty
         \llap{+\enspace}%
+        \dostoptagged
       \fi
       \box\b_strc_itemgroups
       \hss}} % was: \hfill
@@ -1270,8 +1308,8 @@
    \setfalse\c_strc_itemgroups_symbol}
 
 \def\strc_itemgroups_make_fitting_box
-  {\ifdim\wd\b_strc_itemgroups>\itemgroupparameter\c!maxwidth\scaledpoint\relax % brr, sp
-     \normalexpanded{\global\setitemgroupparameter{\c!maxwidth}{\number\wd\b_strc_itemgroups}}%
+  {\ifdim\wd\b_strc_itemgroups>\itemgroupparameter\c!maxwidth\relax
+     \normalexpanded{\global\setitemgroupparameter{\c!maxwidth}{\the\wd\b_strc_itemgroups}}%
    \fi
    \ifdim\d_strc_itemgroups_max_width>\zeropoint
      \setbox\b_strc_itemgroups\simplealignedbox
@@ -1524,7 +1562,7 @@
   {\strc_itemgroups_item_alone}
 
 \def\strc_itemgroups_item_alone[#category]#text\par
-  {\doifsomethingelse{#category}{\startitemgroup[#category]}{\startitemgroup[\v!itemize]}%
+  {\doifelsesomething{#category}{\startitemgroup[#category]}{\startitemgroup[\v!itemize]}%
    \startitem#text\stopitem
    \stopitemgroup}
 
@@ -1532,7 +1570,7 @@
   {\strc_itemgroups_head_alone}
 
 \def\strc_itemgroups_head_alone[#category]#head\par#body\par
-  {\doifsomethingelse{#category}{\startitemgroup[#category]}{\startitemgroup[\v!itemize]}%
+  {\doifelsesomething{#category}{\startitemgroup[#category]}{\startitemgroup[\v!itemize]}%
    \starthead{#head}#body\stophead
    \stopitemgroup}
 

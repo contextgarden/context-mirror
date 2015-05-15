@@ -6,21 +6,23 @@ if not modules then modules = { } end modules ['buff-par'] = {
     license   = "see context related readme files"
 }
 
-local context, commands = context, commands
-
 local insert, remove, find, gmatch = table.insert, table.remove, string.find, string.gmatch
-local strip, format = string.strip, string.format
+local fullstrip, formatters = string.fullstrip, string.formatters
 
 local trace_parallel  = false  trackers.register("buffers.parallel", function(v) trace_parallel = v end)
 
 local report_parallel = logs.reporter("buffers","parallel")
 
 local variables         = interfaces.variables
+local v_all             = variables.all
 
 local parallel          = buffers.parallel or { }
 buffers.parallel        = parallel
 
 local settings_to_array = utilities.parsers.settings_to_array
+
+local context           = context
+local implement         = interfaces.implement
 
 local data              = { }
 
@@ -40,7 +42,7 @@ function parallel.define(category,tags)
 end
 
 function parallel.reset(category,tags)
-    if not tags or tags == "" or tags == variables.all then
+    if not tags or tags == "" or tags == v_all then
         tags = table.keys(entries)
     else
         tags = settings_to_array(tags)
@@ -62,13 +64,18 @@ function parallel.next(category)
     end
 end
 
-function parallel.save(category,tag,content)
+function parallel.save(category,tag,content,frombuffer)
+    if frombuffer then
+        content = buffers.raw(content)
+    end
     local dc = data[category]
     if not dc then
+        report_parallel("unknown category %a",category)
         return
     end
     local entries = dc.entries[tag]
     if not entries then
+        report_parallel("unknown entry %a",tag)
         return
     end
     local lines = entries.lines
@@ -93,13 +100,14 @@ function parallel.save(category,tag,content)
             if trace_parallel and label ~= "" then
                 report_parallel("reference found of category %a, tag %a, label %a",category,tag,label)
             end
+            line.content = fullstrip(content)
             line.label   = label
-            line.content = strip(content)
         end
     else
-        line.content = strip(content)
+        line.content = fullstrip(content)
         line.label = ""
     end
+    -- print("[["..line.content.."]]")
 end
 
 function parallel.hassomecontent(category,tags)
@@ -108,7 +116,7 @@ function parallel.hassomecontent(category,tags)
         return false
     end
     local entries = dc.entries
-    if not tags or tags == "" or tags == variables.all then
+    if not tags or tags == "" or tags == v_all then
         tags = table.keys(entries)
     else
         tags = utilities.parsers.settings_to_array(tags)
@@ -126,22 +134,25 @@ function parallel.hassomecontent(category,tags)
     return false
 end
 
-local save = resolvers.savers.byscheme
+local ctx_doflushparallel = context.doflushparallel
+local f_content           = formatters["\\input{%s}"]
+local save_byscheme       = resolvers.savers.byscheme
 
 function parallel.place(category,tags,options)
     local dc = data[category]
     if not dc then
         return
     end
-    local entries = dc.entries
-    local tags = utilities.parsers.settings_to_array(tags)
-    local options = utilities.parsers.settings_to_hash(options)
-    local start, n, criterium = options.start, options.n, options.criterium
-    start, n = start and tonumber(start), n and tonumber(n)
-    local max = 1
+    local entries   = dc.entries
+    local tags      = utilities.parsers.settings_to_array(tags)
+    local options   = utilities.parsers.settings_to_hash(options) -- options can be hash too
+    local start     = tonumber(options.start)
+    local n         = tonumber(options.n)
+    local criterium = options.criterium
+    local max       = 1
     if n then
         max = n
-    elseif criterium == variables.all then
+    elseif criterium == v_all then
         max = 0
         for t=1,#tags do
             local tag = tags[t]
@@ -156,15 +167,17 @@ function parallel.place(category,tags,options)
             local tag = tags[t]
             local entry = entries[tag]
             if entry then
-                local lines = entry.lines
-                local number = entry.number + 1
-                entry.number = number
-                local line = remove(lines,1)
-                if line and line.content then
-                    local content = format("\\input{%s}",save("virtual","parallel",line.content))
-                    context.doflushparallel(tag,1,number,line.label,content)
+                local lines   = entry.lines
+                local number  = entry.number + 1
+                entry.number  = number
+                local line    = remove(lines,1)
+                local content = line and line.content
+                local label   = line and line.label or ""
+                if content then
+                    local virtual = save_byscheme("virtual","parallel",content)
+                    ctx_doflushparallel(tag,1,number,label,f_content(virtual))
                 else
-                    context.doflushparallel(tag,0,number,"","")
+                    ctx_doflushparallel(tag,0,number,"","")
                 end
             end
         end
@@ -173,12 +186,47 @@ end
 
 -- interface
 
-commands.defineparallel = parallel.define
-commands.nextparallel   = parallel.next
-commands.saveparallel   = parallel.save
-commands.placeparallel  = parallel.place
-commands.resetparallel  = parallel.reset
+implement {
+    name      = "defineparallel",
+    actions   = parallel.define,
+    arguments = { "string", "string" }
+}
 
-function commands.doifelseparallel(category,tags)
-    commands.doifelse(parallel.hassomecontent(category,tags))
-end
+implement {
+    name      = "nextparallel",
+    actions   = parallel.next,
+    arguments = "string"
+}
+
+implement {
+    name      = "saveparallel",
+    actions   = parallel.save,
+    arguments = { "string", "string", "string", true },
+}
+
+implement {
+    name      = "placeparallel",
+    actions   = parallel.place,
+    arguments = {
+        "string",
+        "string",
+        {
+            { "start" },
+            { "n" },
+            { "criterium" },
+            { "setups" },
+        }
+    }
+}
+
+implement {
+    name      = "resetparallel",
+    actions   = parallel.reset,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "doifelseparallel",
+    actions   = { parallel.hassomecontent, commands.doifelse } ,
+    arguments = { "string", "string" }
+}

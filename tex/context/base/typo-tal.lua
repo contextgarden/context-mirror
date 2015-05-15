@@ -6,33 +6,60 @@ if not modules then modules = { } end modules ['typo-tal'] = {
     license   = "see context related readme files"
 }
 
--- I'll make it a bit more efficient and provide named instances too.
+-- I'll make it a bit more efficient and provide named instances too which is needed for
+-- nested tables.
+--
+-- Currently we have two methods: text and number with some downward compatible
+-- defaulting.
+
+-- We can speed up by saving the current fontcharacters[font] + lastfont.
 
 local next, type = next, type
 local div = math.div
 local utfbyte = utf.byte
+
+local splitmethod          = utilities.parsers.splitmethod
 
 local nodecodes            = nodes.nodecodes
 local glyph_code           = nodecodes.glyph
 local glue_code            = nodecodes.glue
 
 local fontcharacters       = fonts.hashes.characters
-local unicodes             = fonts.hashes.unicodes
+----- unicodes             = fonts.hashes.unicodes
 local categories           = characters.categories -- nd
 
-local insert_node_before   = nodes.insert_before
-local insert_node_after    = nodes.insert_after
-local traverse_list_by_id  = nodes.traverse_id
-local dimensions_of_list   = nodes.dimensions
-local first_glyph          = nodes.first_glyph
+local variables            = interfaces.variables
+local v_text               = variables.text
+local v_number             = variables.number
 
-local nodepool             = nodes.pool
+local nuts                 = nodes.nuts
+local tonut                = nuts.tonut
+local tonode               = nuts.tonode
+
+local getnext              = nuts.getnext
+local getprev              = nuts.getprev
+local getid                = nuts.getid
+local getfont              = nuts.getfont
+local getchar              = nuts.getchar
+local getfield             = nuts.getfield
+local setfield             = nuts.setfield
+
+local getattr              = nuts.getattr
+local setattr              = nuts.setattr
+
+local insert_node_before   = nuts.insert_before
+local insert_node_after    = nuts.insert_after
+local traverse_list_by_id  = nuts.traverse_id
+local dimensions_of_list   = nuts.dimensions
+local first_glyph          = nuts.first_glyph
+
+local nodepool             = nuts.pool
 local new_kern             = nodepool.kern
 local new_gluespec         = nodepool.gluespec
 
 local tracers              = nodes.tracers
 local setcolor             = tracers.colors.set
-local tracedrule           = tracers.pool.nodes.rule
+local tracedrule           = tracers.pool.nuts.rule
 
 local characteralign       = { }
 typesetters.characteralign = characteralign
@@ -46,6 +73,8 @@ local a_character          = attributes.private("characters")
 local enabled              = false
 
 local datasets             = false
+
+local implement            = interfaces.implement
 
 local comma                = 0x002C
 local period               = 0x002E
@@ -65,14 +94,75 @@ local validsigns = {
     [0x2213] = 0x2213, -- minusplus
 }
 
+-- If needed we can have more modes which then also means a faster simple handler
+-- for non numbers.
+
+local function setcharacteralign(column,separator)
+    if not enabled then
+        nodes.tasks.enableaction("processors","typesetters.characteralign.handler")
+        enabled = true
+    end
+    if not datasets then
+        datasets = { }
+    end
+    local dataset = datasets[column] -- we can use a metatable
+    if not dataset then
+        local method, token
+        if separator then
+            method, token = splitmethod(separator)
+            if method and token then
+                separator = utfbyte(token) or comma
+            else
+                separator = utfbyte(separator) or comma
+                method    = validseparators[separator] and v_number or v_text
+            end
+        else
+            separator = comma
+            method    = v_number
+        end
+        dataset = {
+            separator  = separator,
+            list       = { },
+            maxafter   = 0,
+            maxbefore  = 0,
+            collected  = false,
+            method     = method,
+            separators = validseparators,
+            signs      = validsigns,
+        }
+        datasets[column] = dataset
+        used = true
+    end
+    return dataset
+end
+
+local function resetcharacteralign()
+    datasets = false
+end
+
+characteralign.setcharacteralign   = setcharacteralign
+characteralign.resetcharacteralign = resetcharacteralign
+
+implement {
+    name      = "setcharacteralign",
+    actions   = setcharacteralign,
+    arguments = { "integer", "string" }
+}
+
+implement {
+    name      = "resetcharacteralign",
+    actions   = resetcharacteralign
+}
+
 local function traced_kern(w)
     return tracedrule(w,nil,nil,"darkgray")
 end
 
-function characteralign.handler(head,where)
+function characteralign.handler(originalhead,where)
     if not datasets then
-        return head, false
+        return originalhead, false
     end
+    local head = tonut(originalhead)
  -- local first = first_glyph(head) -- we could do that once
     local first
     for n in traverse_list_by_id(glyph_code,head) do
@@ -80,14 +170,14 @@ function characteralign.handler(head,where)
         break
     end
     if not first then
-        return head, false
+        return originalhead, false
     end
-    local a = first[a_characteralign]
+    local a = getattr(first,a_characteralign)
     if not a or a == 0 then
-        return head, false
+        return originalhead, false
     end
-    local column    = div(a,100)
-    local row       = a % 100
+    local column    = div(a,0xFFFF)
+    local row       = a % 0xFFFF
     local dataset   = datasets and datasets[column] or setcharacteralign(column)
     local separator = dataset.separator
     local list      = dataset.list
@@ -98,82 +188,128 @@ function characteralign.handler(head,where)
     local c         = nil
     local current   = first
     local sign      = nil
+    --
+    local validseparators = dataset.separators
+    local validsigns      = dataset.signs
+    local method          = dataset.method
     -- we can think of constraints
-    while current do
-        local id = current.id
-        if id == glyph_code then
-            local char = current.char
-            local font = current.font
-            local unicode = unicodes[font][char]
-            if not unicode then
-                -- no unicode so forget about it
-            elseif unicode == separator then
-                c = current
-                if trace_split then
-                    setcolor(current,"darkred")
-                end
-                dataset.hasseparator = true
-            elseif categories[unicode] == "nd" or validseparators[unicode] then
-                if c then
-                    if not a_start then
-                        a_start = current
-                    end
-                    a_stop = current
+    if method == v_number then
+        while current do
+            local id = getid(current)
+            if id == glyph_code then
+                local char = getchar(current)
+                local font = getfont(current)
+             -- local unicode = unicodes[font][char]
+                local unicode = fontcharacters[font][char].unicode or char -- ignore tables
+                if not unicode then
+                    -- no unicode so forget about it
+                elseif unicode == separator then
+                    c = current
                     if trace_split then
-                        setcolor(current,validseparators[unicode] and "darkcyan" or "darkblue")
+                        setcolor(current,"darkred")
                     end
-                else
-                    if not b_start then
-                        if sign then
-                            b_start = sign
-                            local new = validsigns[sign.char]
-                            if char == new or not fontcharacters[sign.font][new] then
-                                if trace_split then
-                                    setcolor(sign,"darkyellow")
-                                end
-                            else
-                                sign.char = new
-                                if trace_split then
-                                    setcolor(sign,"darkmagenta")
-                                end
-                            end
-                            sign = nil
-                            b_stop = current
-                        else
-                            b_start = current
-                            b_stop = current
-                            if trace_split then
-                                setcolor(current,validseparators[unicode] and "darkcyan" or "darkblue")
-                            end
+                    dataset.hasseparator = true
+                elseif categories[unicode] == "nd" or validseparators[unicode] then
+                    if c then
+                        if not a_start then
+                            a_start = current
                         end
-                    else
-                        b_stop = current
+                        a_stop = current
                         if trace_split then
                             setcolor(current,validseparators[unicode] and "darkcyan" or "darkblue")
                         end
+                    else
+                        if not b_start then
+                            if sign then
+                                b_start = sign
+                                local new = validsigns[getchar(sign)]
+                                if char == new or not fontcharacters[getfont(sign)][new] then
+                                    if trace_split then
+                                        setcolor(sign,"darkyellow")
+                                    end
+                                else
+                                    setfield(sign,"char",new)
+                                    if trace_split then
+                                        setcolor(sign,"darkmagenta")
+                                    end
+                                end
+                                sign = nil
+                                b_stop = current
+                            else
+                                b_start = current
+                                b_stop = current
+                            end
+                        else
+                            b_stop = current
+                        end
+                        if trace_split and current ~= sign then
+                            setcolor(current,validseparators[unicode] and "darkcyan" or "darkblue")
+                        end
+                    end
+                elseif not b_start then
+                    sign = validsigns[unicode] and current
+                 -- if trace_split then
+                 --     setcolor(current,"darkgreen")
+                 -- end
+                end
+            elseif (b_start or a_start) and id == glue_code then
+                -- maybe only in number mode
+                -- somewhat inefficient
+                local next = getnext(current)
+                local prev = getprev(current)
+                if next and prev and getid(next) == glyph_code and getid(prev) == glyph_code then -- too much checking
+                    local width = fontcharacters[getfont(b_start)][separator or period].width
+                 -- local spec = getfield(current,"spec")
+                 -- free_spec(spec)
+                    setfield(current,"spec",new_gluespec(width))
+                    setattr(current,a_character,punctuationspace)
+                    if a_start then
+                        a_stop = current
+                    elseif b_start then
+                        b_stop = current
                     end
                 end
-            elseif not b_start then
-                sign = validsigns[unicode] and current
             end
-        elseif (b_start or a_start) and id == glue_code then
-            -- somewhat inefficient
-            local next = current.next
-            local prev = current.prev
-            if next and prev and next.id == glyph_code and prev.id == glyph_code then -- too much checking
-                local width = fontcharacters[b_start.font][separator or period].width
-             -- local spec = current.spec
-             -- nodes.free(spec) -- hm, we leak but not that many specs
-                current.spec = new_gluespec(width)
-                current[a_character] = punctuationspace
-                if a_start then
-                    a_stop = current
-                elseif b_start then
-                    b_stop = current
+            current = getnext(current)
+        end
+    else
+        while current do
+            local id = getid(current)
+            if id == glyph_code then
+                local char = getchar(current)
+                local font = getfont(current)
+             -- local unicode = unicodes[font][char]
+                local unicode = fontcharacters[font][char].unicode or char -- ignore tables
+                if not unicode then
+                    -- no unicode so forget about it
+                elseif unicode == separator then
+                    c = current
+                    if trace_split then
+                        setcolor(current,"darkred")
+                    end
+                    dataset.hasseparator = true
+                else
+                    if c then
+                        if not a_start then
+                            a_start = current
+                        end
+                        a_stop = current
+                        if trace_split then
+                            setcolor(current,"darkgreen")
+                        end
+                    else
+                        if not b_start then
+                            b_start = current
+                        end
+                        b_stop = current
+                        if trace_split then
+                            setcolor(current,"darkblue")
+                        end
+                    end
                 end
             end
+            current = getnext(current)
         end
-        current = current.next
     end
     local entry = list[row]
     if entry then
@@ -199,7 +335,7 @@ function characteralign.handler(head,where)
         local maxafter  = dataset.maxafter
         local before    = entry.before or 0
         local after     = entry.after  or 0
-        local new_kern = trace_split and traced_kern or new_kern
+        local new_kern  = trace_split and traced_kern or new_kern
         if b_start then
             if before < maxbefore then
                 head = insert_node_before(head,b_start,new_kern(maxbefore-before))
@@ -207,7 +343,7 @@ function characteralign.handler(head,where)
             if not c then
              -- print("[before]")
                 if dataset.hasseparator then
-                    local width = fontcharacters[b_stop.font][separator].width
+                    local width = fontcharacters[getfont(b_stop)][separator].width
                     insert_node_after(head,b_stop,new_kern(maxafter+width))
                 end
             elseif a_start then
@@ -229,7 +365,7 @@ function characteralign.handler(head,where)
                 end
             else
              -- print("[after]")
-                local width = fontcharacters[b_stop.font][separator].width
+                local width = fontcharacters[getfont(b_stop)][separator].width
                 head = insert_node_before(head,a_start,new_kern(maxbefore+width))
             end
             if after < maxafter then
@@ -246,44 +382,10 @@ function characteralign.handler(head,where)
         end
     else
         entry = {
-            before = b_start and dimensions_of_list(b_start,b_stop.next) or 0,
-            after  = a_start and dimensions_of_list(a_start,a_stop.next) or 0,
+            before = b_start and dimensions_of_list(b_start,getnext(b_stop)) or 0,
+            after  = a_start and dimensions_of_list(a_start,getnext(a_stop)) or 0,
         }
         list[row] = entry
     end
-    return head, true
+    return tonode(head), true
 end
-
-function setcharacteralign(column,separator)
-    if not enabled then
-        nodes.tasks.enableaction("processors","typesetters.characteralign.handler")
-        enabled = true
-    end
-    if not datasets then
-        datasets = { }
-    end
-    local dataset = datasets[column] -- we can use a metatable
-    if not dataset then
-        dataset = {
-            separator = separator and utfbyte(separator) or comma,
-            list      = { },
-            maxafter  = 0,
-            maxbefore = 0,
-            collected = false,
-        }
-        datasets[column] = dataset
-        used = true
-    end
-    return dataset
-end
-
-local function resetcharacteralign()
-    datasets = false
-end
-
-characteralign.setcharacteralign   = setcharacteralign
-characteralign.resetcharacteralign = resetcharacteralign
-
-commands.setcharacteralign         = setcharacteralign
-commands.resetcharacteralign       = resetcharacteralign
-

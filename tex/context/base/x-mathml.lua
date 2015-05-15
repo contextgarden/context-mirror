@@ -6,19 +6,55 @@ if not modules then modules = { } end modules ['x-mathml'] = {
     license   = "see context related readme files"
 }
 
--- This needs an upgrade to the latest greatest mechanisms.
+-- This needs an upgrade to the latest greatest mechanisms. But ... it
+-- probably doesn't pay back as no mathml support ever did.
 
 local type, next = type, next
-local format, lower, find, gsub = string.format, string.lower, string.find, string.gsub
+local formatters, lower, find, gsub, match = string.formatters, string.lower, string.find, string.gsub, string.match
 local strip = string.strip
-local xmlsprint, xmlcprint, xmltext, xmlcontent = xml.sprint, xml.cprint, xml.text, xml.content
+local xmlsprint, xmlcprint, xmltext, xmlcontent, xmlempty = xml.sprint, xml.cprint, xml.text, xml.content, xml.empty
+local lxmlcollected, lxmlfilter = lxml.collected, lxml.filter
 local getid = lxml.getid
-local utfchar, utfcharacters, utfvalues = utf.char, utf.characters, utf.values
-local lpegmatch = lpeg.match
+local utfchar, utfcharacters, utfvalues, utfsplit, utflen = utf.char, utf.characters, utf.values, utf.split, utf.len
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
+local P, Cs = lpeg.P, lpeg.Cs
 
 local mathml      = { }
 moduledata.mathml = mathml
 lxml.mathml       = mathml -- for the moment
+
+local context = context
+
+local ctx_enabledelimiter      = context.enabledelimiter
+local ctx_disabledelimiter     = context.disabledelimiter
+local ctx_xmlflush             = context.xmlflush -- better xmlsprint
+
+local ctx_halign               = context.halign
+local ctx_noalign              = context.noalign
+local ctx_bgroup               = context.bgroup
+local ctx_egroup               = context.egroup
+local ctx_crcr                 = context.crcr
+
+local ctx_bTABLE               = context.bTABLE
+local ctx_eTABLE               = context.eTABLE
+local ctx_bTR                  = context.bTR
+local ctx_eTR                  = context.eTR
+local ctx_bTD                  = context.bTD
+local ctx_eTD                  = context.eTD
+
+local ctx_mn                   = context.mn
+local ctx_mi                   = context.mi
+local ctx_mo                   = context.mo
+local ctx_startimath           = context.startimath
+local ctx_ignorespaces         = context.ignorespaces
+local ctx_removeunwantedspaces = context.removeunwantedspaces
+local ctx_stopimath            = context.stopimath
+
+local ctx_mmlapplycsymbol      = context.mmlapplycsymbol
+
+local ctx_mathopnolimits       = context.mathopnolimits
+local ctx_left                 = context.left
+local ctx_right                = context.right
 
 -- an alternative is to remap to private codes, where we can have
 -- different properties .. to be done; this will move and become
@@ -62,6 +98,7 @@ local o_replacements = { -- in main table
     ["{"]              = "\\mmlleftdelimiter \\lbrace",
     ["}"]              = "\\mmlrightdelimiter\\rbrace",
     ["|"]              = "\\mmlleftorrightdelimiter\\vert",
+ -- ["."]              = "\\mmlleftorrightdelimiter.",
     ["/"]              = "\\mmlleftorrightdelimiter\\solidus",
     [doublebar]        = "\\mmlleftorrightdelimiter\\Vert",
     ["("]              = "\\mmlleftdelimiter(",
@@ -82,8 +119,9 @@ local o_replacements = { -- in main table
 
  -- [utfchar(0xF103C)] = "\\mmlleftdelimiter<",
     [utfchar(0xF1026)] = "\\mmlchar{38}",
+    [utfchar(0x02061)]  = "", -- function applicator sometimes shows up in font
  -- [utfchar(0xF103E)] = "\\mmlleftdelimiter>",
-
+ -- [utfchar(0x000AF)] = '\\mmlchar{"203E}', -- 0x203E
 }
 
 local simpleoperatorremapper = utf.remapper(o_replacements)
@@ -466,20 +504,39 @@ function mathml.stripped(str)
     context(strip(str))
 end
 
+local p_entity  = (P("&") * ((1-P(";"))^0) * P(";"))
+local p_utfchar = lpegpatterns.utf8character
+local p_spacing = lpegpatterns.whitespace^1
+
+local p_mn      =  Cs((p_entity/"" + p_spacing/utfchar(0x205F) + p_utfchar/n_replacements)^0)
+local p_strip   =  Cs((p_entity/""                             + p_utfchar               )^0)
+local p_mi      =  Cs((p_entity/""                             + p_utfchar/i_replacements)^0)
+
+-- function mathml.mn(id,pattern)
+--     -- maybe at some point we need to interpret the number, but
+--     -- currently we assume an upright font
+--     local str = xmlcontent(getid(id)) or ""
+--     local rep = gsub(str,"&.-;","")
+--     local rep = gsub(rep,"(%s+)",utfchar(0x205F)) -- medspace e.g.: twenty one (nbsp is not seen)
+--     local rep = gsub(rep,".",n_replacements)
+--     ctx_mn(rep)
+-- end
+
 function mathml.mn(id,pattern)
     -- maybe at some point we need to interpret the number, but
     -- currently we assume an upright font
-    local str = xmlcontent(getid(id)) or ""
-    local rep = gsub(str,"&.-;","")
-    local rep = gsub(rep,"(%s+)",utfchar(0x205F)) -- medspace e.g.: twenty one (nbsp is not seen)
-    local rep = gsub(rep,".",n_replacements)
-    context.mn(rep)
+    ctx_mn(lpegmatch(p_mn,xmlcontent(getid(id)) or ""))
 end
 
+-- function mathml.mo(id)
+--     local str = xmlcontent(getid(id)) or ""
+--     local rep = gsub(str,"&.-;","") -- todo
+--     context(simpleoperatorremapper(rep) or rep)
+-- end
+
 function mathml.mo(id)
-    local str = xmlcontent(getid(id)) or ""
-    local rep = gsub(str,"&.-;","") -- todo
-    context(simpleoperatorremapper(rep))
+    local str = lpegmatch(p_strip,xmlcontent(getid(id)) or "")
+    context(simpleoperatorremapper(str) or str)
 end
 
 function mathml.mi(id)
@@ -491,34 +548,45 @@ function mathml.mi(id)
         if n == 0 then
             -- nothing to do
         elseif n == 1 then
-            local str = gsub(str[1],"&.-;","") -- bah
-            local rep = i_replacements[str]
-            if not rep then
-                rep = gsub(str,".",i_replacements)
+            local first = str[1]
+            if type(first) == "string" then
+                -- local str = gsub(first,"&.-;","") -- bah
+                -- local rep = i_replacements[str]
+                -- if not rep then
+                --     rep = gsub(str,".",i_replacements)
+                -- end
+                local str = lpegmatch(p_strip,first)
+                local rep = i_replacements[str] or lpegmatch(p_mi,str)
+                context(rep)
+             -- ctx_mi(rep)
+            else
+                ctx_xmlflush(id) -- xmlsprint or so
             end
-            context(rep)
-         -- context.mi(rep)
         else
-            context.xmlflush(id) -- xmlsprint or so
+            ctx_xmlflush(id) -- xmlsprint or so
         end
     else
-        context.xmlflush(id) -- xmlsprint or so
+        ctx_xmlflush(id) -- xmlsprint or so
     end
 end
 
 function mathml.mfenced(id) -- multiple separators
     id = getid(id)
-    local left, right, separators = id.at.open or "(", id.at.close or ")", id.at.separators or ","
-    local l, r = l_replacements[left], r_replacements[right]
-    context.enabledelimiter()
+    local at         = id.at
+    local left       = at.open       or "("
+    local right      = at.close      or ")"
+    local separators = at.separators or ","
+    local l          = l_replacements[left]
+    local r          = r_replacements[right]
+    ctx_enabledelimiter()
     if l then
         context(l_replacements[left] or o_replacements[left] or "")
     else
         context(o_replacements["@l"])
         context(left)
     end
-    context.disabledelimiter()
-    local collected = lxml.filter(id,"/*") -- check the *
+    ctx_disabledelimiter()
+    local collected = lxmlfilter(id,"/*") -- check the *
     if collected then
         local n = #collected
         if n == 0 then
@@ -526,7 +594,7 @@ function mathml.mfenced(id) -- multiple separators
         elseif n == 1 then
             xmlsprint(collected[1]) -- to be checked
         else
-            local t = utf.split(separators,true)
+            local t = utfsplit(separators,true)
             for i=1,n do
                 xmlsprint(collected[i]) -- to be checked
                 if i < n then
@@ -545,34 +613,15 @@ function mathml.mfenced(id) -- multiple separators
             end
         end
     end
-    context.enabledelimiter()
+    ctx_enabledelimiter()
     if r then
         context(r_replacements[right] or o_replacements[right] or "")
     else
         context(right)
         context(o_replacements["@r"])
     end
-    context.disabledelimiter()
+    ctx_disabledelimiter()
 end
-
---~ local function flush(e,tag,toggle)
---~     if toggle then
---~         context("^{")
---~     else
---~         context("_{")
---~     end
---~     if tag == "none" then
---~         context("{}")
---~     else
---~         xmlsprint(e.dt)
---~     end
---~     if not toggle then
---~         context("}")
---~     else
---~         context("}{}")
---~     end
---~     return not toggle
---~ end
 
 local function flush(e,tag,toggle)
     if tag == "none" then
@@ -593,7 +642,7 @@ end
 
 function mathml.mmultiscripts(id)
     local done, toggle = false, false
-    for e in lxml.collected(id,"/*") do
+    for e in lxmlcollected(id,"/*") do
         local tag = e.tg
         if tag == "mprescripts" then
             context("{}")
@@ -603,14 +652,14 @@ function mathml.mmultiscripts(id)
         end
     end
     local done, toggle = false, false
-    for e in lxml.collected(id,"/*") do
+    for e in lxmlcollected(id,"/*") do
         local tag = e.tg
         if tag == "mprescripts" then
             break
         elseif done then
             toggle = flush(e,tag,toggle)
         else
-            xmlsprint(e.dt)
+            xmlsprint(e)
             done = true
         end
     end
@@ -645,12 +694,12 @@ function mathml.mcolumn(root)
         local tag = e.tg
         if tag == "mi" or tag == "mn" or tag == "mo" or tag == "mtext" then
             local str = xmltext(e)
-            str = gsub(str,"&.-;","")
+            str = lpegmatch(p_strip,str)
             for s in utfcharacters(str) do
                 m[#m+1] = { tag, s }
             end
             if tag == "mn" then
-                local n = utf.len(str)
+                local n = utflen(str)
                 if n > numbers then
                     numbers = n
                 end
@@ -664,20 +713,20 @@ function mathml.mcolumn(root)
      --     m[#m+1] = { tag, e }
         end
     end
-    for e in lxml.collected(root,"/*") do
+    for e in lxmlcollected(root,"/*") do
         local m = { }
         matrix[#matrix+1] = m
         if e.tg == "mrow" then
             -- only one level
-            for e in lxml.collected(e,"/*") do
+            for e in lxmlcollected(e,"/*") do
                 collect(m,e)
             end
         else
             collect(m,e)
         end
     end
-    context.halign()
-    context.bgroup()
+    ctx_halign()
+    ctx_bgroup()
     context([[\hss\startimath\alignmark\stopimath\aligntab\startimath\alignmark\stopimath\cr]])
     for i=1,#matrix do
         local m = matrix[i]
@@ -689,7 +738,7 @@ function mathml.mcolumn(root)
             end
         end
         if mline then
-            context.noalign([[\obeydepth\nointerlineskip]])
+            ctx_noalign([[\obeydepth\nointerlineskip]])
         end
         for j=1,#m do
             local mm = m[j]
@@ -732,9 +781,9 @@ function mathml.mcolumn(root)
             local nchr = n_replacements[chr]
             context(nchr or chr)
         end
-        context.crcr()
+        ctx_crcr()
     end
-    context.egroup()
+    ctx_egroup()
 end
 
 local spacesplitter = lpeg.tsplitat(" ")
@@ -752,42 +801,47 @@ function mathml.mtable(root)
     local framespacing = at.framespacing or "0pt"
     local framespacing = at.framespacing or "-\\ruledlinewidth" -- make this an option
 
-    context.bTABLE { frame = frametypes[frame or "none"] or "off", offset = framespacing }
-    for e in lxml.collected(root,"/(mml:mtr|mml:mlabeledtr)") do
-        context.bTR()
+    ctx_bTABLE { frame = frametypes[frame or "none"] or "off", offset = framespacing, background = "" } -- todo: use xtables and definextable
+    for e in lxmlcollected(root,"/(mml:mtr|mml:mlabeledtr)") do
+        ctx_bTR()
         local at = e.at
         local col = 0
         local rfr = at.frame       or (frames       and frames      [#frames])
         local rra = at.rowalign    or (rowaligns    and rowaligns   [#rowaligns])
         local rca = at.columnalign or (columnaligns and columnaligns[#columnaligns])
         local ignorelabel = e.tg == "mlabeledtr"
-        for e in lxml.collected(e,"/mml:mtd") do -- nested we can use xml.collected
+        for e in lxmlcollected(e,"/mml:mtd") do -- nested we can use xml.collected
             col = col + 1
             if ignorelabel and col == 1 then
                 -- get rid of label, should happen at the document level
             else
                 local at = e.at
-                local rowspan, columnspan = at.rowspan or 1, at.columnspan or 1
+                local rowspan    = at.rowspan    or 1
+                local columnspan = at.columnspan or 1
                 local cra = rowalignments   [at.rowalign    or (rowaligns    and rowaligns   [col]) or rra or "center"] or "lohi"
                 local cca = columnalignments[at.columnalign or (columnaligns and columnaligns[col]) or rca or "center"] or "middle"
                 local cfr = frametypes      [at.frame       or (frames       and frames      [col]) or rfr or "none"  ] or "off"
-                context.bTD { align = format("{%s,%s}",cra,cca), frame = cfr, nx = columnspan, ny = rowspan }
-                context.startimath()
-                context.ignorespaces()
-                xmlcprint(e)
-                context.stopimath()
-                context.removeunwantedspaces()
-                context.eTD()
+                ctx_bTD { align = formatters["{%s,%s}"](cra,cca), frame = cfr, nx = columnspan, ny = rowspan }
+                if xmlempty(e,".") then
+                    -- nothing, else hsize max
+                else
+                    ctx_startimath()
+                 -- ctx_ignorespaces()
+                    xmlcprint(e)
+                 -- ctx_removeunwantedspaces()
+                    ctx_stopimath()
+                end
+                ctx_eTD()
             end
         end
      -- if e.tg == "mlabeledtr" then
-     --     context.bTD()
+     --     ctx_bTD()
      --     xmlcprint(xml.first(e,"/!mml:mtd"))
-     --     context.eTD()
+     --     ctx_eTD()
      -- end
-        context.eTR()
+        ctx_eTR()
     end
-    context.eTABLE()
+    ctx_eTABLE()
 end
 
 function mathml.csymbol(root)
@@ -798,14 +852,16 @@ function mathml.csymbol(root)
     local full = hash.original or ""
     local base = hash.path or ""
     local text = strip(xmltext(root) or "")
-    context.mmlapplycsymbol(full,base,encoding,text)
+    ctx_mmlapplycsymbol(full,base,encoding,text)
 end
+
+local p = lpeg.Cs(((1-lpegpatterns.whitespace)^1 / "mml:enclose:%0"  + (lpegpatterns.whitespace^1)/",")^1)
 
 function mathml.menclosepattern(root)
     root = getid(root)
     local a = root.at.notation
     if a and a ~= "" then
-        context("mml:enclose:",(gsub(a," +",",mml:enclose:")))
+        context(lpegmatch(p,a))
     end
 end
 
@@ -816,8 +872,8 @@ end
 function mathml.cpolar_a(root)
     root = getid(root)
     local dt = root.dt
-    context.mathopnolimits("Polar")
-    context.left(false,"(")
+    ctx_mathopnolimits("Polar")
+    ctx_left(false,"(")
     for k=1,#dt do
         local dk = dt[k]
         if xml.is_element(dk,"sep") then
@@ -826,5 +882,15 @@ function mathml.cpolar_a(root)
             xmlsprint(dk)
         end
     end
-    context.right(false,")")
+    ctx_right(false,")")
+end
+
+-- crap .. maybe in char-def a mathml overload
+
+local mathmleq = {
+    [utfchar(0x00AF)] = utfchar(0x203E),
+}
+
+function mathml.extensible(chr)
+    context(mathmleq[chr] or chr)
 end

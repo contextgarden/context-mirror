@@ -6,33 +6,32 @@ if not modules then modules = { } end modules ['node-tex'] = {
     license   = "see context related readme files"
 }
 
-local format = string.format
+builders         = builders        or { }
+local kernel     = builders.kernel or { }
+builders.kernel  = kernel
 
-builders        = builders        or { }
-builders.kernel = builders.kernel or { }
-local kernel    = builders.kernel
+local hyphenate  = lang.hyphenate
+local ligaturing = node.ligaturing
+local kerning    = node.kerning
 
-local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
-local hyphenate, ligaturing, kerning = lang.hyphenate, node.ligaturing, node.kerning
+kernel.originals = {
+    hyphenate  = hyphenate,
+    ligaturing = ligaturing,
+    kerning    = kerning,
+}
 
 function kernel.hyphenation(head)
-    --  starttiming(kernel)
     local done = hyphenate(head)
-    --  stoptiming(kernel)
     return head, done
 end
 
 function kernel.ligaturing(head)
-    --  starttiming(kernel)
-    local head, tail, done = ligaturing(head) -- todo: check what is returned
-    --  stoptiming(kernel)
+    local head, tail, done = ligaturing(head) -- we return 3 values indeed
     return head, done
 end
 
 function kernel.kerning(head)
-    --  starttiming(kernel)
-    local head, tail, done = kerning(head) -- todo: check what is returned
-    --  stoptiming(kernel)
+    local head, tail, done = kerning(head) -- we return 3 values indeed
     return head, done
 end
 

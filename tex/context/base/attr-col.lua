@@ -17,9 +17,14 @@ local format = string.format
 local concat = table.concat
 local min, max, floor = math.min, math.max, math.floor
 
-local attributes, nodes, utilities, logs, backends, storage = attributes, nodes, utilities, logs, backends, storage
-local commands, context, interfaces = commands, context, interfaces
-local tex = tex
+local attributes            = attributes
+local nodes                 = nodes
+local utilities             = utilities
+local logs                  = logs
+local backends              = backends
+local storage               = storage
+local context               = context
+local tex                   = tex
 
 local allocate              = utilities.storage.allocate
 local setmetatableindex     = table.setmetatableindex
@@ -42,6 +47,9 @@ local unsetvalue      = attributes.unsetvalue
 
 local registerstorage = storage.register
 local formatters      = string.formatters
+
+local interfaces      = interfaces
+local implement       = interfaces.implement
 
 -- We can distinguish between rules and glyphs but it's not worth the trouble. A
 -- first implementation did that and while it saves a bit for glyphs and rules, it
@@ -119,15 +127,25 @@ local models = {
 }
 
 local function rgbtocmyk(r,g,b) -- we could reduce
-    return 1-r, 1-g, 1-b, 0
+    if not r then
+        return 0, 0, 0
+    else
+        return 1-r, 1-g, 1-b, 0
+    end
 end
 
 local function cmyktorgb(c,m,y,k)
-    return 1.0 - min(1.0,c+k), 1.0 - min(1.0,m+k), 1.0 - min(1.0,y+k)
+    if not c then
+        return 0, 0, 0, 1
+    else
+        return 1.0 - min(1.0,c+k), 1.0 - min(1.0,m+k), 1.0 - min(1.0,y+k)
+    end
 end
 
 local function rgbtogray(r,g,b)
-    if colors.weightgray then
+    if not r then
+        return 0
+    elseif colors.weightgray then
         return .30*r + .59*g + .11*b
     else
         return r/3 + g/3 + b/3
@@ -246,7 +264,11 @@ end
 --~     return { 5, .5, .5, .5, .5, 0, 0, 0, .5, parent, f, d, p }
 --~ end
 
+local p_split   = lpeg.tsplitat(",")
+local lpegmatch = lpeg.match
+
 function colors.spot(parent,f,d,p)
+ -- inspect(parent) inspect(f) inspect(d) inspect(p)
     if type(p) == "number" then
         local n = list[numbers.color][parent] -- hard coded ref to color number
         if n then
@@ -261,6 +283,33 @@ function colors.spot(parent,f,d,p)
         end
     else
         -- todo, multitone (maybe p should be a table)
+        local ps = lpegmatch(p_split,p)
+        local ds = lpegmatch(p_split,d)
+        local c, m, y, k = 0, 0, 0, 0
+        local done = false
+        for i=1,#ps do
+            local p = tonumber(ps[i])
+            local d = ds[i]
+            if p and d then
+                local n = list[numbers.color][d] -- hard coded ref to color number
+                if n then
+                    local v = values[n]
+                    if v then
+                        c = c + p*v[6]
+                        m = m + p*v[7]
+                        y = y + p*v[8]
+                        k = k + p*v[8]
+                        done = true
+                    end
+                end
+            end
+        end
+        if done then
+            local r, g, b = cmyktorgb(c,m,y,k)
+            local s = cmyktogray(c,m,y,k)
+            local f = tonumber(f)
+            return { 5, s, r, g, b, c, m, y, k, parent, f, d, p }
+        end
     end
     return { 5, .5, .5, .5, .5, 0, 0, 0, .5, parent, f, d, p }
 end
@@ -529,10 +578,10 @@ end
 
 -- interface
 
-commands.enablecolor        = colors.enable
-commands.enabletransparency = transparencies.enable
-commands.enablecolorintents = colorintents.enable
+implement { name = "enablecolor",        onlyonce = true, actions = colors.enable }
+implement { name = "enabletransparency", onlyonce = true, actions = transparencies.enable }
+implement { name = "enablecolorintents", onlyonce = true, actions = colorintents.enable }
 
-function commands.registercolor       (...) context(colors        .register(...)) end
-function commands.registertransparency(...) context(transparencies.register(...)) end
-function commands.registercolorintent (...) context(colorintents  .register(...)) end
+--------- { name = "registercolor",        actions = { colors        .register, context }, arguments = "string" }
+--------- { name = "registertransparency", actions = { transparencies.register, context }, arguments = { ... } }
+implement { name = "registercolorintent",  actions = { colorintents  .register, context }, arguments = { ... } }

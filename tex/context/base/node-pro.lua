@@ -13,15 +13,15 @@ local trace_callbacks = false  trackers.register("nodes.callbacks", function(v) 
 
 local report_nodes = logs.reporter("nodes","processors")
 
-local nodes, node = nodes, node
+local nodes = nodes
 
 local nodecodes     = nodes.nodecodes
 local glyph_code    = nodecodes.glyph
 local tasks         = nodes.tasks
+local nuts          = nodes.nuts
 
-local free_node     = node.free
-local first_glyph   = node.first_glyph or node.first_character
-local has_attribute = node.has_attribute
+local first_glyph   = nodes.first_glyph
+local has_glyph     = nodes.has_glyph
 
 nodes.processors    = nodes.processors or { }
 local processors    = nodes.processors
@@ -31,43 +31,53 @@ local processors    = nodes.processors
 
 local actions = tasks.actions("processors")
 
-local n = 0
+do
 
-local function reconstruct(head) -- we probably have a better one
-    local t, n, h = { }, 0, head
-    while h do
-        n = n + 1
-        local id = h.id
-        if id == glyph_code then -- todo: disc etc
-            t[n] = utfchar(h.char)
-        else
-            t[n] = "[]"
+    local tonut   = nuts.tonut
+    local getid   = nuts.getid
+    local getchar = nuts.getchar
+    local getnext = nuts.getnext
+
+    local n = 0
+
+    local function reconstruct(head) -- we probably have a better one
+        local t, n, h = { }, 0, tonut(head)
+        while h do
+            n = n + 1
+            local id = getid(h)
+            if id == glyph_code then -- todo: disc etc
+                t[n] = utfchar(getchar(h))
+            else
+                t[n] = "[]"
+            end
+            h = getnext(h)
         end
-        h = h.next
+        return concat(t)
     end
-    return concat(t)
+
+    function processors.tracer(what,state,head,groupcode,before,after,show)
+        if not groupcode then
+            groupcode = "unknown"
+        elseif groupcode == "" then
+            groupcode = "mvl"
+        end
+        n = n + 1
+        if show then
+            report_nodes("%s: location %a, state %a, group %a, # before %a, # after %s, stream: %s",what,n,state,groupcode,before,after,reconstruct(head))
+        else
+            report_nodes("%s: location %a, state %a, group %a, # before %a, # after %s",what,n,state,groupcode,before,after)
+        end
+    end
+
 end
 
-local function tracer(what,state,head,groupcode,before,after,show)
-    if not groupcode then
-        groupcode = "unknown"
-    elseif groupcode == "" then
-        groupcode = "mvl"
-    end
-    n = n + 1
-    if show then
-        report_nodes("%s: location %a, state %a, group %a, # before %a, # after %s, stream: %s",what,n,state,groupcode,before,after,reconstruct(head))
-    else
-        report_nodes("%s: location %a, state %a, group %a, # before %a, # after %s",what,n,state,groupcode,before,after)
-    end
-end
-
-processors.tracer = tracer
+local tracer = processors.tracer
 
 processors.enabled = true -- this will become a proper state (like trackers)
 
 function processors.pre_linebreak_filter(head,groupcode) -- ,size,packtype,direction
-    local first, found = first_glyph(head) -- they really need to be glyphs
+ -- local first, found = first_glyph(head) -- they really need to be glyphs
+    local found = has_glyph(head)
     if found then
         if trace_callbacks then
             local before = nodes.count(head,true)
@@ -94,10 +104,8 @@ local enabled = true
 
 function processors.hpack_filter(head,groupcode,size,packtype,direction)
     if enabled then
-     -- if not head.next and head.id ~= glyph_code then -- happens often but not faster
-     --     return true
-     -- end
-        local first, found = first_glyph(head) -- they really need to be glyphs
+     -- local first, found = first_glyph(head) -- they really need to be glyphs
+        local found = has_glyph(head)
         if found then
             if trace_callbacks then
                 local before = nodes.count(head,true)
@@ -121,15 +129,36 @@ function processors.hpack_filter(head,groupcode,size,packtype,direction)
     return true
 end
 
-local hpack = node.hpack
+do
 
-function nodes.fasthpack(...) -- todo: pass explicit arguments
-    enabled = false
-    local hp, b = hpack(...)
-    hp.prev = nil
-    hp.next = nil
-    enabled = true
-    return hp, b
+    local setfield = nodes.setfield
+    local hpack    = nodes.hpack
+
+    function nodes.fasthpack(...) -- todo: pass explicit arguments
+        enabled = false
+        local hp, b = hpack(...)
+        setfield(hp,"prev",nil)
+        setfield(hp,"next",nil)
+        enabled = true
+        return hp, b
+    end
+
+end
+
+do
+
+    local setfield = nuts.setfield
+    local hpack    = nuts.hpack
+
+    function nuts.fasthpack(...) -- todo: pass explicit arguments
+        enabled = false
+        local hp, b = hpack(...)
+        setfield(hp,"prev",nil)
+        setfield(hp,"next",nil)
+        enabled = true
+        return hp, b
+    end
+
 end
 
 callbacks.register('pre_linebreak_filter', processors.pre_linebreak_filter, "all kind of horizontal manipulations (before par break)")

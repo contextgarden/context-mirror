@@ -57,8 +57,15 @@ mpprocset    := 1 ;
 %
 % protect ;
 
-string space ; space := char 32 ;
-string CRLF  ; CRLF  := char 10 & char 13 ;
+string space   ; space   := char 32 ;
+string percent ; percent := char 37 ;
+string crlf    ; crlf    := char 10 & char 13 ;
+string dquote  ; dquote  := char 34 ;
+
+let SPACE   = space ;
+let CRLF    = crlf ;
+let DQUOTE  = dquote ;
+let PERCENT = percent ;
 
 vardef ddecimal primary p =
     decimal xpart p & " " & decimal ypart p
@@ -90,8 +97,8 @@ newinternal graycolormodel ; graycolormodel := 3 ;
 newinternal rgbcolormodel  ; rgbcolormodel  := 5 ;
 newinternal cmykcolormodel ; cmykcolormodel := 7 ;
 
-let grayscale = numeric ;
-let greyscale = numeric ;
+let grayscale = graycolor ;
+let greyscale = greycolor ;
 
 vardef colorpart expr c =
     if not picture c :
@@ -141,6 +148,39 @@ vardef colordecimals primary c =
     fi
 enddef ;
 
+vardef colordecimalslist(text t) =
+    save b ; boolean b ; b := false ;
+    for s=t :
+        if b : & " " & fi
+        colordecimals(s)
+        hide(b := true ;)
+    endfor
+enddef ;
+
+% vardef _ctx_color_spec_ primary c =
+%     if cmykcolor c  :
+%          "c=" & decimal cyanpart    c &
+%         ",m=" & decimal magentapart c &
+%         ",y=" & decimal yellowpart  c &
+%         ",k=" & decimal blackpart   c
+%     elseif rgbcolor c :
+%          "r=" & decimal redpart   c &
+%         ",g=" & decimal greenpart c &
+%         ",b=" & decimal bluepart  c
+%     else :
+%          "s=" & decimal c
+%     fi
+% enddef ;
+%
+% vardef _ctx_color_spec_list_(text t) =
+%     save b ; boolean b ; b := false ;
+%     for s=t :
+%         if b : & " " & fi
+%         _ctx_color_spec_(s)
+%         hide(b := true ;)
+%     endfor
+% enddef ;
+
 %D We have standardized data file names:
 
 def job_name =
@@ -152,7 +192,8 @@ def data_mpd_file =
 enddef ;
 
 %D Because \METAPOST\ has a hard coded limit of 4~datafiles,
-%D we need some trickery when we have multiple files.
+%D we need some trickery when we have multiple files. This will
+%D be redone (via \LUA).
 
 if unknown collapse_data :
     boolean collapse_data ;
@@ -289,10 +330,14 @@ vardef set_outer_boundingbox text q = % obsolete
     setbounds q to outerboundingbox q;
 enddef;
 
-%D Some missing functions can be implemented rather
-%D straightforward:
+%D Some missing functions can be implemented rather straightforward (thanks to
+%D Taco and others):
 
-numeric Pi ; Pi := 3.1415926 ;
+% oldpi := 3.14159265358979323846 ; % from <math.h>
+pi      := 3.14159265358979323846264338327950288419716939937510 ; % 50 digits
+radian  := 180/pi ; % 2pi*radian = 360 ;
+
+% let +++ = ++ ;
 
 vardef sqr  primary x = x*x                                 enddef ;
 vardef log  primary x = if x=0: 0 else: mlog(x)/mlog(10) fi enddef ;
@@ -301,15 +346,6 @@ vardef exp  primary x = (mexp 256)**x                       enddef ;
 vardef inv  primary x = if x=0: 0 else: x**-1 fi            enddef ;
 
 vardef pow (expr x,p) = x**p                                enddef ;
-
-vardef asin primary x = x+(x**3)/6+3(x**5)/40               enddef ;
-vardef acos primary x = asin(-x)                            enddef ;
-vardef atan primary x = x-(x**3)/3+(x**5)/5-(x**7)/7        enddef ;
-vardef tand primary x = sind(x)/cosd(x)                     enddef ;
-
-%D Here are Taco Hoekwater's alternatives (but vardef'd and primaried).
-
-pi := 3.1415926 ; radian := 180/pi ; % 2pi*radian = 360 ;
 
 vardef tand   primary x = sind(x)/cosd(x)  enddef ;
 vardef cotd   primary x = cosd(x)/sind(x)  enddef ;
@@ -321,15 +357,22 @@ vardef cot    primary x = cos(x)/sin(x)    enddef ;
 
 vardef asin   primary x = angle((1+-+x,x)) enddef ;
 vardef acos   primary x = angle((x,1+-+x)) enddef ;
+vardef atan   primary x = angle(1,x)       enddef ;
 
 vardef invsin primary x = (asin(x))/radian enddef ;
 vardef invcos primary x = (acos(x))/radian enddef ;
+vardef invtan primary x = (atan(x))/radian enddef ;
 
 vardef acosh  primary x = ln(x+(x+-+1))    enddef ;
 vardef asinh  primary x = ln(x+(x++1))     enddef ;
 
 vardef sinh   primary x = save xx ; xx = exp x ; (xx-1/xx)/2 enddef ;
 vardef cosh   primary x = save xx ; xx = exp x ; (xx+1/xx)/2 enddef ;
+
+%D Like mod, but useful for anglesl it returns (-.5d,+.5d] and is used
+%D in for instance mp-chem.
+
+primarydef a zmod b = (-((b/2 - a) mod b) + b/2) enddef ;
 
 %D Sometimes this is handy:
 
@@ -631,6 +674,15 @@ ultriangle := origin -- (0,+.5) -- (-.5,0) -- cycle ;
 lltriangle := origin -- (-.5,0) -- (0,-.5) -- cycle ;
 lrtriangle := origin -- (0,-.5) -- (+.5,0) -- cycle ;
 
+path triangle, uptriangle, downtriangle, lefttriangle, righttriangle ;
+
+triangle      := (1,0) -- (1,0) rotated 120 -- (1,0) rotated -120 -- cycle ;
+
+uptriangle    := triangle rotated  90 ;
+downtriangle  := triangle rotated -90 ;
+lefttriangle  := triangle rotated 180 ;
+righttriangle := triangle ;
+
 path unitdiamond, fulldiamond ;
 
 unitdiamond := (.5,0) -- (1,.5) -- (.5,1) -- (0,.5) -- cycle ;
@@ -768,8 +820,8 @@ vardef whitecolor(expr c) =
     if cmykcolor c : (0,0,0,0) elseif rgbcolor c : (1,1,1)  else : 1         fi
 enddef ;
 
-vardef blackcolor(expr c) =
-    if cmykcolor c : (0,0,0,1) elseif rgbcolor c : (0,0,0)  else : 0         fi
+vardef blackcolor expr c =
+    if cmykcolor c : (0,0,0,1) elseif rgbcolor c : (0,0,0)  else : 0 fi
 enddef ;
 
 %D Well, this is the dangerous and naive version:
@@ -1223,7 +1275,7 @@ enddef ;
 
 extra_endfig := extra_endfig & " naturalizepaths ; " ;
 
-%D Noce tracer:
+%D Nice tracer:
 
 def drawboundary primary p =
     draw p dashed evenly withcolor white ;
@@ -1318,7 +1370,7 @@ primarydef pct along pat = % also negative
 enddef ;
 
 primarydef len on pat = % no outer ( ) .. somehow fails
-    (arctime if len>0 : len else : (arclength(pat)+len) fi of pat) of pat
+    (arctime if len>=0 : len else : (arclength(pat)+len) fi of pat) of pat
 enddef ;
 
 % this cuts of a piece from both ends
@@ -1539,9 +1591,13 @@ primarydef p softened c =
 enddef ;
 
 vardef grayed primary p =
-    if color p :
+    if rgbcolor p :
         tripled(.30redpart p+.59greenpart p+.11bluepart p)
-    else :
+    elseif cmykcolor p :
+        tripled(.30*(1-cyanpart i)+.59*(1-magentapart i)+.11*(1-yellowpart i)+blackpart i)
+    elseif greycolor p :
+        p
+    elseif picture p :
         image (
             for i within p :
                 addto currentpicture
@@ -1557,11 +1613,23 @@ vardef grayed primary p =
                     else :
                         also i
                     fi
-                withcolor tripled(.30redpart i+.59greenpart i+.11bluepart i) ;
+                if unknown colorpart i :
+                    % nothing
+                elseif rgbcolor colorpart i :
+                    withcolor tripled(.30redpart i+.59greenpart i+.11bluepart i) ;
+                elseif cmykcolor colorpart i :
+                    withcolor tripled(.30*(1-cyanpart i)+.59*(1-magentapart i)+.11*(1-yellowpart i)+blackpart i) ;
+                else :
+                    withcolor colorpart i ;
+                fi
             endfor ;
         )
-  fi
+    else :
+        p
+    fi
 enddef ;
+
+let greyed = grayed ;
 
 % yes or no: "text" infont "cmr12" at 24pt ;
 
@@ -2030,7 +2098,7 @@ enddef ;
 % handy
 
 def withgray primary g =
-    withcolor (g,g,g)
+    withcolor g
 enddef ;
 
 % for metafun
@@ -2253,7 +2321,7 @@ enddef ;
 %D Handy:
 
 def break =
-    exitif true fi ;
+    exitif true ; % fi
 enddef ;
 
 %D New too:
@@ -2266,22 +2334,30 @@ primarydef p ystretched h = (
     p if (bbheight(p)>0) and (h>0) : yscaled (h/bbheight(p)) fi
 ) enddef ;
 
-primarydef p snapped s =
-    hide (
-        if path p :
-            forever :
-                exitif (bbheight(p) <= s) and (bbwidth(p) <= s) ;
-                p := p scaled (1/2) ;
-            endfor ;
-        elseif numeric p :
-            forever :
-                exitif p <= s ;
-                p := p scaled (1/2) ;
-            endfor ;
-        fi ;
-    )
-    p
+%D Newer:
+
+vardef area expr p =
+    % we could calculate the boundingbox once
+    (xpart llcorner boundingbox p,0) -- p --
+    (xpart lrcorner boundingbox p,0) -- cycle
 enddef ;
+
+vardef basiccolors[] =
+    if @ = 0 :
+        white
+    else :
+        save n ; n := @ mod 7 ;
+        if     n = 1 : red
+        elseif n = 2 : green
+        elseif n = 3 : blue
+        elseif n = 4 : cyan
+        elseif n = 5 : magenta
+        elseif n = 6 : yellow
+        else         : black
+        fi
+    fi
+enddef ;
+
 
 % vardef somecolor = (1,1,0,0) enddef ;
 
@@ -2328,7 +2404,6 @@ vardef undecorated (text imagedata) text decoration =
     imagedata ;
     currentpicture
 enddef ;
-
 
 if metapostversion < 1.770  :
 
@@ -2449,7 +2524,57 @@ enddef ;
 %     )
 % enddef ;
 
+vardef mfun_snapped(expr p, s) =
+    if p < 0 : - ( - else : ( fi p div s) * s % the less tokens the better
+enddef ;
+
+vardef mfun_applied(expr p, s)(suffix a) =
+    if path p :
+        if pair s :
+            for i=0 upto length(p)-1 :
+                (a(xpart point i of p,xpart s),a(ypart point i of p,ypart s)) --
+            endfor
+            if cycle p :
+                cycle
+            else :
+                (a(xpart point length(p) of p,xpart s),a(ypart point length(p) of p,ypart s))
+            fi
+        else :
+            for i=0 upto length(p)-1 :
+                (a(xpart point i of p,s),a(ypart point i of p,s)) --
+            endfor
+            if cycle p :
+                cycle
+            else :
+                (a(xpart point length(p) of p,s),a(ypart point length(p) of p,s))
+            fi
+        fi
+    elseif pair p :
+        if pair s :
+            (a(xpart p,xpart s),a(ypart p,ypart s))
+        else :
+            (a(xpart p,s),a(ypart p,s))
+        fi
+    elseif cmykcolor p :
+       (a(cyanpart p,s),a(magentapart p,s),a(yellowpart p,s),a(blackpart p,s))
+    elseif rgbcolor p :
+       (a(redpart p,s),a(greenpart p,s),a(bluepart p,s))
+    elseif graycolor p :
+        a(p,s)
+    elseif numeric p :
+        a(p,s)
+    else
+        p
+    fi
+enddef ;
+
+primarydef p snapped s =
+    mfun_applied(p,s)(mfun_snapped) % so we can play with variants
+enddef ;
+
 %D New helpers:
+
+newinternal charscale ; charscale := 1 ; % persistent so one needs to 'reset' it to 0 or 1
 
 def beginglyph(expr unicode, width, height, depth) =
     beginfig(unicode) ; % the number is irrelevant
@@ -2457,17 +2582,18 @@ def beginglyph(expr unicode, width, height, depth) =
     charwd   := width ;
     charht   := height ;
     chardp   := depth ;
+  % charscale := 1 ; % can be set for a whole font, so no reset here
 enddef ;
 
 def endglyph =
     setbounds currentpicture to (boundingbox unitsquare xscaled charwd yscaled (charht + chardp) shifted (0,-chardp)) ;
-    if known charscale :
+    if known charscale : if (charscale > 0) and (charscale <> 1) :
         currentpicture := currentpicture scaled charscale ;
-    fi ;
+    fi ; fi ;
     endfig ;
 enddef ;
 
-%D Dimensions have bever been an issue as traditional MP can't make that large
+%D Dimensions have never been an issue as traditional MP can't make that large
 %D pictures, but with double mode we need a catch:
 
 newinternal maxdimensions ; maxdimensions := 14000 ;

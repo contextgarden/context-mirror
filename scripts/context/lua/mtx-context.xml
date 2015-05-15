@@ -108,6 +108,14 @@
                 <flag name="once">
                     <short>only run once (no multipass data file is produced)</short>
                 </flag>
+                <flag name="runs">
+                    <short>process at most this many times</short>
+                </flag>
+                <flag name="forcedruns">
+                    <short>process this many times (permits for optimization trial runs)</short>
+                </flag>
+            </subcategory>
+            <subcategory>
                 <flag name="batchmode">
                     <short>run without stopping and do not show messages on the console</short>
                 </flag>
@@ -117,7 +125,7 @@
                 <flag name="synctex">
                     <short>run with synctex enabled (optional value: zipped, unzipped, 1, -1)</short>
                 </flag>
-            </subcategory>
+                </subcategory>
             <subcategory>
                 <flag name="generate">
                     <short>generate file database etc. (as luatools does)</short>
@@ -134,7 +142,7 @@
                     <short>assume given file present elsewhere</short>
                 </flag>
                     <flag name="nofile">
-                <short>use dummy file as jobname</short>
+                    <short>use dummy file as jobname</short>
                 </flag>
             </subcategory>
         </category>
@@ -144,16 +152,22 @@
                     <short>update context version number (also provide <ref name="expert"/>, optionally provide <ref name="basepath"/>)</short>
                 </flag>
                     <flag name="nostatistics">
-                <short>omit runtime statistics at the end of the run</short>
+                    <short>omit runtime statistics at the end of the run</short>
                 </flag>
                     <flag name="update">
-                <short>update context from website (not to be confused with contextgarden)</short>
+                    <short>update context from website (not to be confused with contextgarden)</short>
                 </flag>
-                    <flag name="profile">
-                <short>profile job (use: mtxrun <ref name="script"/> profile <ref name="analyze"/>)</short>
+                <flag name="profile">
+                    <short>profile job (use: mtxrun <ref name="script"/> profile <ref name="analyze"/>)</short>
                 </flag>
-                    <flag name="timing">
-                <short>generate timing and statistics overview</short>
+                <flag name="timing">
+                    <short>generate timing and statistics overview</short>
+                </flag>
+                <flag name="keeptuc">
+                    <short>keep previous tuc files (jobname-tuc-[run].tmp)</short>
+                </flag>
+                <flag name="keeplog">
+                    <short>keep previous log files (jobname-log-[run].tmp)</short>
                 </flag>
             </subcategory>
             <subcategory>
@@ -180,6 +194,11 @@
             <subcategory>
                 <flag name="pipe">
                     <short>do not check for file and enter scroll mode (<ref name="dummyfile"/>=whatever.tmp)</short>
+                </flag>
+            </subcategory>
+            <subcategory>
+                <flag name="sandbox">
+                    <short>process file in a limited environment</short>
                 </flag>
             </subcategory>
         </category>

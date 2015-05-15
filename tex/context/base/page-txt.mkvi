@@ -142,11 +142,11 @@
 %D \showsetup{noheaderandfooterlines}
 %D \showsetup{notopandbottomlines}
 
-\def\noheaderandfooterlines
+\unexpanded\def\noheaderandfooterlines
   {\setuplayoutelement[\v!header][\c!state=\v!empty]%
    \setuplayoutelement[\v!footer][\c!state=\v!empty]}
 
-\def\notopandbottomlines
+\unexpanded\def\notopandbottomlines
   {\setuplayoutelement[\v!top   ][\c!state=\v!empty]%
    \setuplayoutelement[\v!bottom][\c!state=\v!empty]}
 
@@ -253,7 +253,7 @@
 %D only when double sided typesetting is enabled.
 
 \unexpanded\def\page_layouts_process_element_double
-  {\doifoddpageelse
+  {\doifelseoddpage
      \page_layouts_process_element_double_odd
      \page_layouts_process_element_double_even}
 
@@ -378,6 +378,9 @@
      \doubleexpandafter\firstoftwoarguments
    \fi\fi}
 
+\let\doiflayouttextlineelse\doifelselayouttextline
+\let\doiflayoutsomelineelse\doifelselayoutsomeline
+
 \newconditional\resyncaftertextline
 
 \setvalue{\??layouttextsline\v!normal}{\page_layouts_place_text_line_indeed}
@@ -418,7 +421,7 @@
 %D The following macro has to be called after a page
 %D is flushed.
 
-\def\resetlayouttextlines % public
+\unexpanded\def\resetlayouttextlines % public
   {\csname\??layouttextsreset\v!top   \endcsname
    \csname\??layouttextsreset\v!header\endcsname
    \csname\??layouttextsreset\v!text  \endcsname
@@ -435,17 +438,17 @@
 
 % \settext[header][text][middle][xxx][yyy]
 
-\def\settextcontent
+\unexpanded\def\settextcontent
   {\doquintupleempty\page_layouts_set_text_content}
 
 \def\page_layouts_set_text_content[#vertical][#horizontal][#one][#two][#three]% header text middle text/text
   {\iffifthargument
-     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\executeifdefined{\??layouttextcontent\c!text:#one}\c!middletext}%
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\executeifdefined{\??layouttextcontent\v!text:#one}\c!middletext}%
        {\page_layouts_process_element_double
           \c!leftstyle \c!leftcolor \c!leftwidth {#two}%
           \c!rightstyle\c!rightcolor\c!rightwidth{#three}}%
    \else\iffourthargument
-     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\executeifdefined{\??layouttextcontent\c!text:#one}\c!middletext}%
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\executeifdefined{\??layouttextcontent\v!text:#one}\c!middletext}%
        {\page_layouts_process_element_double
           \c!leftstyle \c!leftcolor \c!leftwidth {#two}%
           \c!rightstyle\c!rightcolor\c!rightwidth{#two}}%
@@ -456,22 +459,22 @@
           \c!rightstyle\c!rightcolor\c!rightwidth{#one}}%
    \fi\fi\fi}
 
-\def\resettextcontent
+\unexpanded\def\resettextcontent
   {\dotripleempty\page_layouts_reset_text_content}
 
 \def\page_layouts_reset_text_content[#vertical][#horizontal][#tag]% header text middle
   {\edef\currentlayoutelement{#vertical:#horizontal}%
    \ifthirdargument
-     \letvalueempty{\layoutelementhash\executeifdefined{\??layouttextcontent\c!text:#tag}\c!middletext}%
+     \letvalueempty{\layoutelementhash\executeifdefined{\??layouttextcontent\v!text:#tag}\c!middletext}%
    \else\ifsecondargument
      \resetlayoutelementparameter\c!lefttext
      \resetlayoutelementparameter\c!middletext
      \resetlayoutelementparameter\c!righttext
    \fi\fi}
 
-\letvalue{\??layouttextcontent\c!middle:\c!text}\c!middletext
-\letvalue{\??layouttextcontent\c!left  :\c!text}\c!lefttext
-\letvalue{\??layouttextcontent\c!right :\c!text}\c!righttext
+\letvalue{\??layouttextcontent\c!middle:\v!text}\c!middletext
+\letvalue{\??layouttextcontent\c!left  :\v!text}\c!lefttext
+\letvalue{\??layouttextcontent\c!right :\v!text}\c!righttext
 
 %D The placement of a whole line is handled by the next two
 %D macros. These are hooked into the general purpose token
@@ -756,10 +759,12 @@
      \page_layouts_reset_page_number_location
      \ifx\p_strc_pagenumbers_location\empty
        % set otherwise
+     \else\ifx\p_strc_pagenumbers_location\v!none
+       % set otherwise
      \else
        \page_layouts_identify_page_number_location
        \page_layouts_set_page_number_location
-     \fi
+     \fi\fi
    \fi}
 
 \def\page_layouts_place_page_number_left % historic

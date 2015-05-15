@@ -43,23 +43,23 @@
 \def\pack_framed_setup_line_width[#1]%
   {\assigndimension{#1}\linewidth{.2\points}{.4\points}{.6\points}}
 
-%D \macros
-%D   {setupscreens}
-%D
-%D Sort of obsolete:
-%D
-%D \showsetup{setupscreens}
-
-\installcorenamespace{screens}
-
-\installsetuponlycommandhandler \??screens {screens}
-
-\appendtoks
-    \edef\defaultbackgroundscreen{\directscreensparameter\c!screen}
-\to \everysetupscreens
-
-\setupscreens
-  [\c!screen=.90] % was .95 but that's hardly visible
+% %D \macros
+% %D   {setupscreens}
+% %D
+% %D Sort of obsolete:
+% %D
+% %D \showsetup{setupscreens}
+%
+% \installcorenamespace{screens}
+%
+% \installsetuponlycommandhandler \??screens {screens}
+%
+% \appendtoks
+%     \edef\defaultbackgroundscreen{\directscreensparameter\c!screen}
+% \to \everysetupscreens
+%
+% \setupscreens
+%   [\c!screen=.90] % was .95 but that's hardly visible
 
 %D The parameter handler:
 
@@ -155,8 +155,6 @@
   %\c!foregroundcolor=,
   %\c!foregroundstyle=,
   %\c!background=,
-  %\c!backgroundscreen=,
-   \c!backgroundscreen=\defaultbackgroundscreen,
   %\c!backgroundcolor=,
    \c!backgroundoffset=\zeropoint,
   %\c!framecolor=,
@@ -238,7 +236,6 @@
 \let\p_framed_lines           \empty
 \let\p_framed_empty           \empty
 \let\p_framed_backgroundcolor \empty
-\let\p_framed_backgroundscreen\empty
 \let\p_framed_framecolor      \empty
 \let\p_framed_component       \empty
 \let\p_framed_region          \empty
@@ -352,14 +349,14 @@
 %D The oval box is drawn using a special macro, depending on
 %D the driver in use.
 
-\def\pack_framed_background_box_gray % avoid black rules when no gray
-  {\edef\p_framed_backgroundscreen{\framedparameter\c!backgroundscreen}%
-   \ifx\p_framed_backgroundscreen\empty \else
-     \pack_framed_background_box_gray_indeed
-   \fi}
-
-\def\pack_framed_background_box_gray_indeed  % can be more direct but who cares, just compatibility
-  {\colored[s=\p_framed_backgroundscreen]{\pack_framed_filled_box}}
+% \def\pack_framed_background_box_gray % avoid black rules when no gray
+%   {\edef\p_framed_backgroundscreen{\framedparameter\c!backgroundscreen}%
+%    \ifx\p_framed_backgroundscreen\empty \else
+%      \pack_framed_background_box_gray_indeed
+%    \fi}
+%
+% \def\pack_framed_background_box_gray_indeed  % can be more direct but who cares, just compatibility
+%   {\colored[s=\p_framed_backgroundscreen]{\pack_framed_filled_box}}
 
 %D It won't be a surprise that we not only provide gray boxes, but also colored
 %D ones. Here it is:
@@ -429,13 +426,35 @@
 %D
 %D The resulting box is lowered to the right depth.
 
-\def\overlaywidth      {\the\hsize\space} % We preset the variables
-\def\overlayheight     {\the\vsize\space} % to some reasonable default
-\def\overlaydepth      {0pt }             % values. The attributes
-\let\overlayoffset     \overlaydepth      % of the frame can be (are)
-\let\overlaylinewidth  \overlaydepth      % set somewhere else.
+%def\overlaywidth      {\the\hsize\space} % We preset the variables
+%def\overlayheight     {\the\vsize\space} % to some reasonable default
+%def\overlaydepth      {0pt }             % values. The attributes
+%let\overlayoffset     \overlaydepth      % of the frame can be (are)
+%let\overlaylinewidth  \overlaydepth      % set somewhere else.
 \let\overlaycolor      \empty
 \let\overlaylinecolor  \empty
+
+\newdimen\d_overlay_width
+\newdimen\d_overlay_height
+\newdimen\d_overlay_depth
+\newdimen\d_overlay_offset
+\newdimen\d_overlay_linewidth
+
+% expandable ... in a future version the space will go (in my one can use Overlay*)
+
+\def\overlaywidth        {\the\d_overlay_width    \space} % We preset the variables
+\def\overlayheight       {\the\d_overlay_height   \space} % to some reasonable default
+\def\overlaydepth        {\the\d_overlay_depth    \space} % values.
+\def\overlayoffset       {\the\d_overlay_offset   \space} % of the frame can be (are)
+\def\overlaylinewidth    {\the\d_overlay_linewidth\space} % set somewhere else.
+
+% public but kind of protected
+
+\def\usedoverlaywidth    {\dimexpr\d_overlay_width    \relax}
+\def\usedoverlayheight   {\dimexpr\d_overlay_height   \relax}
+\def\usedoverlaydepth    {\dimexpr\d_overlay_depth    \relax}
+\def\usedoverlayoffset   {\dimexpr\d_overlay_offset   \relax}
+\def\usedoverlaylinewidth{\dimexpr\d_overlay_linewidth\relax}
 
 %D The next register is used to initialize overlays.
 
@@ -452,8 +471,8 @@
 \to \everyoverlay
 
 \prependtoks
-    \hsize\overlaywidth
-    \vsize\overlayheight
+    \hsize\d_overlay_width
+    \vsize\d_overlay_height
 \to \everyoverlay
 
 \unexpanded\def\defineoverlay
@@ -475,8 +494,8 @@
    \egroup
    \setlayoutcomponentattribute{\v!overlay:#1}%
    \setbox\scratchbox\hbox \layoutcomponentboxattribute
-     {\kern -.5\dimexpr\wd\scratchbox-\d_framed_target_wd\relax % was \overlaywidth
-      \raise-.5\dimexpr\ht\scratchbox-\d_framed_target_ht\relax % not \overlayheight !
+     {\kern -.5\dimexpr\wd\scratchbox-\d_framed_target_wd\relax % was \d_overlay_width
+      \raise-.5\dimexpr\ht\scratchbox-\d_framed_target_ht\relax % not \d_overlay_height !
       \box\scratchbox}%
    \wd\scratchbox\d_framed_target_wd
    \ht\scratchbox\d_framed_target_ht
@@ -490,18 +509,20 @@
 \unexpanded\def\overlayfakebox
   {\hbox
      {\setbox\scratchbox\emptyhbox
-      \wd\scratchbox\overlaywidth
-      \ht\scratchbox\overlayheight
+      \wd\scratchbox\d_overlay_width
+      \ht\scratchbox\d_overlay_height
       \box\scratchbox}}
 
 %D For testing we provide:
 
-\def\doifoverlayelse#1% only tests external overlays
+\def\doifelseoverlay#1% only tests external overlays
   {\ifcsname\??overlay#1\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
+
+\let\doifoverlayelse\doifelseoverlay
 
 %D The content of the box will be (temporary) saved in a box. We also have an
 %D extra box for backgrounds.
@@ -599,16 +620,28 @@
          \hss
       \egroup}}
 
+% \def\pack_framed_overlay_initialize_indeed
+%   {\edef\overlaywidth    {\the\d_framed_target_wd\space}%
+%    \edef\overlayheight   {\the\dimexpr\d_framed_target_ht+\d_framed_target_dp\relax\space}%
+%    \edef\overlaydepth    {\the\d_framed_target_dp\space}%
+%    \edef\overlaycolor    {\framedparameter\c!backgroundcolor}% let ?
+%    \edef\overlaylinecolor{\framedparameter\c!framecolor}% only needed for layers
+%    \edef\overlaylinewidth{\the\d_framed_linewidth\space}%
+%   %\edef\overlaycorner   {\framedparameter\c!backgroundcorner}%
+%   %\edef\overlayradius   {\framedparameter\c!backgroundradius}%
+%    \edef\overlayoffset   {\the\framedbackgroundoffset\space}% \backgroundoffset % we steal this one
+%    \let\pack_framed_overlay_initialize\relax}
+
 \def\pack_framed_overlay_initialize_indeed
-  {\edef\overlaywidth    {\the\d_framed_target_wd\space}%
-   \edef\overlayheight   {\the\dimexpr\d_framed_target_ht+\d_framed_target_dp\relax\space}%
-   \edef\overlaydepth    {\the\d_framed_target_dp\space}%
+  {\d_overlay_width     \d_framed_target_wd
+   \d_overlay_height    \dimexpr\d_framed_target_ht+\d_framed_target_dp\relax
+   \d_overlay_depth     \d_framed_target_dp
+   \d_overlay_linewidth \d_framed_linewidth
+   \d_overlay_offset    \framedbackgroundoffset\relax
    \edef\overlaycolor    {\framedparameter\c!backgroundcolor}% let ?
    \edef\overlaylinecolor{\framedparameter\c!framecolor}% only needed for layers
-   \edef\overlaylinewidth{\the\d_framed_linewidth\space}%
   %\edef\overlaycorner   {\framedparameter\c!backgroundcorner}%
   %\edef\overlayradius   {\framedparameter\c!backgroundradius}%
-   \edef\overlayoffset   {\the\framedbackgroundoffset\space}% \backgroundoffset % we steal this one
    \let\pack_framed_overlay_initialize\relax}
 
 %D One can explictly insert the foreground box. For that purpose we introduce the
@@ -778,6 +811,35 @@
 
 \newcount\c_pack_framed_nesting
 
+% to be tested (slightly more efficient):
+%
+% \unexpanded\def\pack_frame_common % #1 #2
+%   {\bgroup
+%    \advance\c_pack_framed_nesting\plusone
+%    \expandafter\let\csname\??framed>\the\c_pack_framed_nesting:\s!parent\endcsname\??framed
+%    \edef\currentframed{>\the\c_pack_framed_nesting}%
+%    \pack_framed_initialize
+%    \bgroup
+%    \doifnextoptionalcselse} % #1 #2
+%
+% \unexpanded\def\framed     {\pack_frame_common\pack_framed_process_framed_pickup\pack_framed_process_indeed}
+% \unexpanded\def\startframed{\pack_frame_common\pack_framed_start_framed_pickup  \pack_framed_start_indeed  }
+%
+% \def\pack_framed_process_framed_pickup[#1]%
+%   {\setupcurrentframed[#1]%
+%    \pack_framed_process_indeed}
+%
+% \def\pack_framed_start_framed_pickup[#1]%
+%   {\setupcurrentframed[#1]% here !
+%    \secondargumenttrue % dirty trick
+%    \pack_framed_start_framed_indeed}
+%
+% \def\pack_framed_start_framed_indeed
+%   {\pack_framed_process_indeed
+%    \bgroup}
+%
+% no longer .. we also accept \startframed[tag]
+
 \unexpanded\def\pack_framed_process_framed[#1]%
   {\bgroup
    \iffirstargument % faster
@@ -793,20 +855,63 @@
    \pack_framed_initialize
    \dosingleempty\pack_framed_process_framed}
 
+% \unexpanded\def\startframed
+%   {\dosingleempty\pack_framed_start_framed}
+%
+% \def\pack_framed_start_framed[#1]%
+%   {\bgroup
+%    \advance\c_pack_framed_nesting\plusone
+%    \expandafter\let\csname\??framed>\the\c_pack_framed_nesting:\s!parent\endcsname\??framed
+%    \edef\currentframed{>\the\c_pack_framed_nesting}%
+%    \pack_framed_initialize
+%    \bgroup
+%    \iffirstargument
+%      \secondargumenttrue % dirty trick
+%      \setupcurrentframed[#1]% here !
+%    \fi
+%    \pack_framed_process_indeed
+%    \bgroup
+%    \ignorespaces}
+
 \unexpanded\def\startframed
   {\dosingleempty\pack_framed_start_framed}
 
 \def\pack_framed_start_framed[#1]%
   {\bgroup
-   \advance\c_pack_framed_nesting\plusone
+   \doifelseassignment{#1}\pack_framed_start_framed_yes\pack_framed_start_framed_nop{#1}}
+
+\def\pack_framed_start_framed_yes#1%
+  {\advance\c_pack_framed_nesting\plusone
    \expandafter\let\csname\??framed>\the\c_pack_framed_nesting:\s!parent\endcsname\??framed
    \iffirstargument\secondargumenttrue\fi % dirty trick
    \edef\currentframed{>\the\c_pack_framed_nesting}%
    \pack_framed_initialize
-   \pack_framed_process_framed[#1]% can be inlined
-   \bgroup}
+   \bgroup
+   \iffirstargument
+     \secondargumenttrue % dirty trick
+     \setupcurrentframed[#1]% here !
+   \fi
+   \pack_framed_process_indeed
+   \bgroup
+   \ignorespaces}
 
-\let\stopframed\egroup
+\def\pack_framed_start_framed_nop#1%
+  {\edef\currentframed{#1}%
+   \dosingleempty\pack_framed_start_framed_nop_indeed}
+
+\def\pack_framed_start_framed_nop_indeed[#1]%
+  {\pack_framed_initialize
+   \bgroup
+   \setupcurrentframed[#1]% here !
+   \pack_framed_process_indeed
+   \bgroup
+   \ignorespaces}
+
+% till here
+
+\unexpanded\def\stopframed
+  {\removeunwantedspaces
+   \egroup}
 
 \unexpanded\def\normalframedwithsettings[#1]%
   {\bgroup
@@ -1304,10 +1409,19 @@
 \def\pack_framed_restart
   {\aftergroup\pack_framed_finish}
 
-\def\pack_framed_do_top   {\raggedtopcommand\framedparameter\c!top}
-\def\pack_framed_do_bottom{\framedparameter\c!bottom\raggedbottomcommand}
+\def\pack_framed_do_top
+  {\raggedtopcommand
+   \framedparameter\c!top
+   \edef\p_blank{\framedparameter\c!blank}%
+   \ifx\p_blank\v!yes\else % auto or no
+     \doinhibitblank
+   \fi}
 
-%D Carefull analysis of this macro will learn us that not all branches in the last
+\def\pack_framed_do_bottom
+  {\framedparameter\c!bottom
+   \raggedbottomcommand}
+
+%D Careful analysis of this macro will learn us that not all branches in the last
 %D conditionals can be encountered, that is, some assignments to \type{\next} will
 %D never occur. Nevertheless we implement the whole scheme, if not for future
 %D extensions.
@@ -1384,10 +1498,20 @@
      \pack_framed_reshape_reset
    \fi}
 
+\def\pack_framed_profile_box
+  {\profilegivenbox\p_profile\b_framed_normal
+   \setbox\b_framed_normal\vbox{\unvbox\b_framed_normal}}
+
 \unexpanded\def\pack_framed_finish
-  {\pack_framed_stop_orientation % hm, wrong place ! should rotate the result (after reshape)
+  {%\pack_framed_stop_orientation % hm, wrong place ! should rotate the result (after reshape) .. moved down
    \pack_framed_locator_before\p_framed_location
    \ifconditional\c_framed_has_format
+     \ifconditional\c_framed_has_height \else
+       \edef\p_profile{\framedparameter\c!profile}%
+       \ifx\p_profile\empty\else
+         \pack_framed_profile_box
+       \fi
+     \fi
      \ifx\p_framed_autowidth\v!force
        \pack_framed_finish_a
      \else\ifx\localwidth\v!fit
@@ -1417,6 +1541,7 @@
    \ifx\p_framed_empty\v!yes
      \pack_framed_fake_box
    \fi
+   \pack_framed_stop_orientation % moved here at 2014-05-25
    \iftrialtypesetting \else
      \edef\p_framed_region{\framedparameter\c!region}%
      \ifx\p_framed_region\v!yes % maybe later named
@@ -1910,10 +2035,10 @@
 %D \stoplinecorrection
 %D
 %D \startbuffer
-%D \framed[strut=nee,offset=.5cm]   {rule based learning}
-%D \framed[strut=nee,offset=0cm]    {rule based learning}
-%D \framed[strut=nee,offset=none]   {rule based learning}
-%D \framed[strut=nee,offset=overlay]{rule based learning}
+%D \framed[strut=no,offset=.5cm]   {rule based learning}
+%D \framed[strut=no,offset=0cm]    {rule based learning}
+%D \framed[strut=no,offset=none]   {rule based learning}
+%D \framed[strut=no,offset=overlay]{rule based learning}
 %D \stopbuffer
 %D
 %D \typebuffer
@@ -1923,9 +2048,9 @@
 %D \stoplinecorrection
 %D
 %D \startbuffer
-%D \framed[width=3cm,align=left]      {rule\\based\\learning}
-%D \framed[width=3cm,align=middle]     {rule\\based\\learning}
-%D \framed[width=3cm,align=right]     {rule\\based\\learning}
+%D \framed[width=3cm,align=left]   {rule\\based\\learning}
+%D \framed[width=3cm,align=middle] {rule\\based\\learning}
+%D \framed[width=3cm,align=right]  {rule\\based\\learning}
 %D \framed[width=fit,align=middle] {rule\\based\\learning}
 %D \stopbuffer
 %D
@@ -1992,7 +2117,6 @@
 %     \vbox{\hbox{x}}
 % \stopTEXpage
 
-
 % \def\pack_framed_forgetall{\forgetall}
 
 \def\pack_framed_set_foregroundcolor
@@ -2001,14 +2125,15 @@
 
 \def\pack_framed_do_setups
   {\ifx\p_framed_setups\empty \else
-     \setups[\p_framed_setups]% \texsetup
+     \setups[\p_framed_setups]% \texsetup (or only one!)
+   % \fastsetup\p_framed_setup % singular would have been better
    \fi}
 
 \def\pack_framed_format_format_yes
   {\vbox to \d_framed_height
      \bgroup
        \let\postprocessframebox\relax
-%        \pack_framed_forgetall
+     % \pack_framed_forgetall
        \iftrialtypesetting \else
          \pack_framed_set_foregroundcolor
        \fi
@@ -2019,7 +2144,7 @@
        \raggedcommand
        \pack_framed_do_top
        \bgroup
-\synchronizeinlinedirection
+       \synchronizeinlinedirection
        \localbegstrut
        \aftergroup\localendstrut
        \aftergroup\pack_framed_do_bottom
@@ -2030,7 +2155,7 @@
   {\vbox to \d_framed_height
      \bgroup
        \let\postprocessframebox\relax
-%        \pack_framed_forgetall
+     % \pack_framed_forgetall
        \iftrialtypesetting \else
          \pack_framed_set_foregroundcolor
        \fi
@@ -2041,7 +2166,7 @@
        \raggedcenter
        \vss
        \bgroup
-\synchronizeinlinedirection
+       \synchronizeinlinedirection
        \localbegstrut
        \aftergroup\localendstrut
        \aftergroup\vss
@@ -2052,7 +2177,7 @@
   {\vbox to \d_framed_height
      \bgroup
        \let\postprocessframebox\relax
-%        \pack_framed_forgetall
+     % \pack_framed_forgetall
        \iftrialtypesetting \else
          \pack_framed_set_foregroundcolor
        \fi
@@ -2064,7 +2189,7 @@
        \aftergroup\localendstrut
        \aftergroup\vss
        \aftergroup\egroup
-\synchronizeinlinedirection
+       \synchronizeinlinedirection
        \localbegstrut
        \doformatonelinerbox}
 
@@ -2072,7 +2197,7 @@
   {\vbox
      \bgroup
        \let\postprocessframebox\relax
-%        \pack_framed_forgetall
+     % \pack_framed_forgetall
        \iftrialtypesetting \else
          \pack_framed_set_foregroundcolor
        \fi
@@ -2082,7 +2207,7 @@
        \raggedcommand
        \pack_framed_do_top
        \bgroup
-\synchronizeinlinedirection
+       \synchronizeinlinedirection
        \localbegstrut
        \aftergroup\localendstrut
        \aftergroup\pack_framed_do_bottom
@@ -2093,7 +2218,7 @@
   {\vbox to \d_framed_height
      \bgroup
        \let\postprocessframebox\relax
-%        \pack_framed_forgetall
+     % \pack_framed_forgetall
        \iftrialtypesetting \else
          \pack_framed_set_foregroundcolor
        \fi
@@ -2106,7 +2231,7 @@
        \hbox
          \bgroup
          \aftergroup\egroup
-\synchronizeinlinedirection
+         \synchronizeinlinedirection
          \localstrut
          \doformatonelinerbox}
 
@@ -2114,13 +2239,13 @@
   {\hbox to \d_framed_width
      \bgroup
        \let\postprocessframebox\relax
-%        \pack_framed_forgetall
+     % \pack_framed_forgetall
        \iftrialtypesetting \else
          \pack_framed_set_foregroundcolor
        \fi
        \pack_framed_do_setups
        \hss
-\synchronizeinlinedirection
+       \synchronizeinlinedirection
        \localstrut
        \bgroup
        \aftergroup\hss
@@ -2135,7 +2260,7 @@
        \fi
        \let\postprocessframebox\relax
        \pack_framed_do_setups
-\synchronizeinlinedirection
+       \synchronizeinlinedirection
        \localstrut
        \doformatonelinerbox}
 
@@ -2215,8 +2340,8 @@
    \framedmaxwidth    \zeropoint
    \framedaveragewidth\zeropoint}
 
-\def\pack_framed_reshape_process{\ifvbox\b_framed_normal\ctxcommand{doreshapeframedbox(\number\b_framed_normal)}\fi}
-\def\pack_framed_reshape_analyze{\ifvbox\b_framed_normal\ctxcommand{doanalyzeframedbox(\number\b_framed_normal)}\fi}
+\def\pack_framed_reshape_process{\ifvbox\b_framed_normal\clf_doreshapeframedbox\b_framed_normal\relax\fi}
+\def\pack_framed_reshape_analyze{\ifvbox\b_framed_normal\clf_doanalyzeframedbox\b_framed_normal\relax\fi}
 
 % torture test / strange case (much depth) / method 2 needed
 %
@@ -2514,7 +2639,6 @@
   %\c!foregroundstyle=,
   %\c!background=,
   %\c!backgroundcolor=,
-   \c!backgroundscreen=\defaultbackgroundscreen,
    \c!linecorrection=\v!on,
    \c!depthcorrection=\v!on,
    \c!margin=\v!standard]
@@ -2544,7 +2668,7 @@
    \dodoubleempty\pack_framed_text_start_indeed}
 
 \def\pack_framed_text_start_indeed[#1][#2]%
-  {\doifassignmentelse{#1}
+  {\doifelseassignment{#1}
      {\pack_framed_text_start_continue\empty{#1}}
      {\pack_framed_text_start_continue{#1}{#2}}}
 
@@ -2559,15 +2683,30 @@
      \startboxedcontent
        \hsize\localhsize
     %  \insidefloattrue % ? better
-       \normalexpanded{\switchtobodyfont[\framedtextparameter\c!bodyfont]}%
+       \usebodyfontparameter\framedtextparameter
        \letframedtextparameter\c!strut\v!no
        \inheritedframedtextframed\bgroup
          \let\\=\endgraf
          \framedtextparameter\c!inner % oud spul
-         \doif{\framedtextparameter\c!depthcorrection}\v!on\pack_framed_text_start_depth_correction
+         \edef\p_framed_text_depthcorrection{\framedtextparameter\c!depthcorrection}%
+         \ifx\p_framed_text_depthcorrection\v!on
+            \pack_framed_text_start_depth_correction
+         \else
+            \bgroup
+         \fi
+         \vskip-\strutdp % brrr why is this needed ... needs to be sorted out, see testcase 1
          \doinhibitblank
-         \setupindenting[\framedtextparameter\c!indenting]%
-         \useframedtextstyleandcolor\c!style\c!color}
+         \useindentingparameter\framedtextparameter
+         \useframedtextstyleandcolor\c!style\c!color
+         \ignorespaces}
+
+% testcase 1:
+%
+% \showstruts
+% \startframedtext[align={normal,tolerant},offset=0pt] \input tufte \stopframedtext
+% \startframedtext[align={normal,tolerant},offset=0pt,depthcorrection=off] \input tufte \stopframedtext
+% \startframedtext[align={normal,tolerant},offset=0pt,depthcorrection=off] \inframed{x} \stopframedtext
+% \framed[align={normal,tolerant},offset=0pt]{\input tufte }
 
 %D The \type {none} option is handy for nested usage, as in the presentation
 %D styles, where we don't want interference.
@@ -2577,7 +2716,11 @@
 \unexpanded\def\pack_framed_text_stop % no \baselinecorrection, see faq docs
   {\endgraf
    \removelastskip
-   \doif{\framedtextparameter\c!depthcorrection}\v!on\pack_framed_text_stop_depth_correction
+   \ifx\p_framed_text_depthcorrection\v!on
+     \pack_framed_text_stop_depth_correction
+   \else
+     \egroup
+   \fi
    \stopboxedcontent
    \ifconditional\c_framed_text_location_none
      \egroup
@@ -2656,7 +2799,7 @@
    \dosingleempty\pack_framed_text_start_direct}
 
 \def\pack_framed_text_start_direct[#1]%
-  {\normalexpanded{\switchtobodyfont[\framedtextparameter\c!bodyfont]}%
+  {\usebodyfontparameter\framedtextparameter
    \letframedtextparameter\c!strut\v!no
    \iffirstargument
      \setupcurrentframedtext[#1]%

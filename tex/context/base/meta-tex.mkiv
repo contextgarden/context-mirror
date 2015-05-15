@@ -28,7 +28,7 @@
 
 \let\stopTeXtexts\relax
 
-\def\TeXtext
+\unexpanded\def\TeXtext
   {\dosingleempty\meta_textext}
 
 \def\meta_textext[#1]#2#3% contrary to mkii we don't process yet but we do expand
@@ -68,7 +68,7 @@
 
 \unexpanded\def\definetextext[#1]%
   {\def\currenttextext{#1}%
-   \doifnextoptionalelse\meta_textext_define_one\meta_textext_define_zero}
+   \doifelsenextoptionalcs\meta_textext_define_one\meta_textext_define_zero}
 
 \def\meta_textext_define_one {\setvalue{\??graphictexarguments1:\currenttextext}}
 \def\meta_textext_define_zero{\setvalue{\??graphictexarguments0:\currenttextext}}
@@ -76,10 +76,10 @@
 \def\sometxt#1#{\meta_some_txt{#1}}
 
 \def\meta_some_txt#1#2% we need to capture embedded quotes (a bit messy as later on textext is filtered
-  {textext.drt("\mpsometxt#1{\ctxlua{metapost.escaped(\!!bs#2\!!es)}}")}
+  {textext.drt("\mpsometxt#1{\clf_metapostescaped{#2}}")}
 
 \unexpanded\def\mpsometxt % no _ catcode
-  {\doifnextoptionalelse\meta_some_txt_indeed_yes\meta_some_txt_indeed_nop}
+  {\doifelsenextoptionalcs\meta_some_txt_indeed_yes\meta_some_txt_indeed_nop}
 
 \def\meta_some_txt_indeed_yes[#1]%
   {\def\currenttextext{#1}%
@@ -116,8 +116,8 @@
 %
 % \unexpanded\def\definetextext[#1]#2{\setvalue{@@st@@#1}{#2}}
 %
-%       \long\def\sometxt         #1#{\dosometxt{#1}}  % grab optional [args]
-%       \long\def\dosometxt      #1#2{\ctxlua{metapost.sometxt(\!!bs#1\!!es,\!!bs#2\!!es)}}
+%       \def\sometxt         #1#{\dosometxt{#1}}  % grab optional [args]
+%       \def\dosometxt      #1#2{\ctxlua{metapost.sometxt(\!!bs#1\!!es,\!!bs#2\!!es)}}
 %
 %            \def\sometxta         #1{textext.drt("#1")}
 %            \def\sometxtb       #1#2{textext.drt("\getvalue{@@st@@#1}{#2}")}
@@ -139,7 +139,7 @@
 % {\showstruts\useMPgraphic{testgraphic}}
 
 \unexpanded\def\MPexponent   #1#2{\mathematics{#1\times10^{#2}}}
-\unexpanded\def\MPformatted  #1#2{\ctxlua{metapost.svformat("#1","#2")}}
-\unexpanded\def\MPgraphformat#1#2{\ctxlua{metapost.nvformat("#1","#2")}}
+\unexpanded\def\MPformatted  #1#2{\clf_metapostformatted{#1}{#2}}
+\unexpanded\def\MPgraphformat#1#2{\clf_metapostgraphformat{#1}{#2}}
 
 \protect \endinput

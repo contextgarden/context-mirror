@@ -37,39 +37,6 @@
 \let\usemodule   \usemodules
 \let\usetexmodule\usemodules
 
-% \def\strc_modules_use[#category][#name][#parameters]%
-%   {\pushmacro\currentmodule
-%    \pushmacro\currentmoduleparameters
-%    \let\currentmoduleparameters\empty
-%    \ifthirdargument
-%      \singleexpandafter\strc_modules_use_a
-%    \else\ifsecondargument
-%      \doubleexpandafter\strc_modules_use_b
-%    \else
-%      \doubleexpandafter\strc_modules_use_c
-%    \fi\fi
-%    % here we load
-%    \popmacro\currentmoduleparameters
-%    \popmacro\currentmodule}
-%
-% \def\strc_modules_use_a[#category][#name][#parameters]%
-%   {\doifsomething{#name}
-%      {\def\currentmoduleparameters{#parameters}%
-%       \processcommalist[#name]{\strc_modules_use_indeed{#category}}}}
-%
-% \def\strc_modules_use_b[#category][#name][#parameters]%
-%   {\doifsomething{#name}
-%      {\doifassignmentelse{#name}
-%         {\def\currentmoduleparameters{#name}%
-%          \processcommalist[#category]{\strc_modules_use_indeed\empty}}
-%         {\processcommalist[#name]{\strc_modules_use_indeed{#category}}}}}
-%
-% \def\strc_modules_use_c[#category][#name][#parameters]%
-%   {\processcommalist[#category]{\strc_modules_use_indeed\empty}}
-%
-% \def\strc_modules_use_indeed#category#name%
-%   {\ctxcommand{usemodules("#category","#name","\truefilename{#name}")}}
-
 \def\strc_modules_use[#category][#name][#parameters]% category=t|m|x|p|...
   {\pushmacro\currentmodule
    \pushmacro\currentmodulecategory
@@ -79,7 +46,7 @@
      \edef\currentmodule          {#name}%
      \def \currentmoduleparameters{#parameters}%
    \else\ifsecondargument
-     \doifassignmentelse{#name}
+     \doifelseassignment{#name}
        {\let\currentmodulecategory   \empty
         \edef\currentmodule          {#category}%
         \edef\currentmoduleparameters{#name}}
@@ -96,8 +63,8 @@
    \popmacro\currentmodulecategory
    \popmacro\currentmodule}
 
-\def\strc_modules_use_indeed#category#name% truefilename moved to lua end
-  {\ctxcommand{usemodules("#category","#name")}} % ,"\truefilename{#name}")}}
+\def\strc_modules_use_indeed#category#name%
+  {\clf_usemodules{#category}{#name}}
 
 \installcorenamespace{module}
 
@@ -107,7 +74,7 @@
 \newtoks\everysetupmodule
 
 \unexpanded\def\startmodule
-  {\doifnextoptionalelse\syst_modules_start_yes\syst_modules_start_nop}
+  {\doifelsenextoptionalcs\syst_modules_start_yes\syst_modules_start_nop}
 
 \def\syst_modules_start_yes[#name]%
   {\pushmacro\currentmodule
@@ -157,8 +124,8 @@
 
 \def\currentmoduleparameter{\moduleparameter\currentmodule} % no need for inlining
 
-\unexpanded\def\useluamodule  [#name]{\ctxlua{dofile(resolvers.findctxfile("#name"))}}
-\unexpanded\def\luaenvironment #name {\ctxlua{dofile(resolvers.findctxfile("#name"))}}
+\unexpanded\def\useluamodule  [#name]{\clf_loadluamodule{#1}} % why not use useluamodule
+\unexpanded\def\luaenvironment #name {\clf_loadluamodule{#1}}
 
 % \usemodule[newmml]
 % \usemodule[newmml][a=b]
@@ -238,10 +205,13 @@
 %D
 %D The version pattern is \type {yyyy.mm.dd} (with mm and dd being optional).
 
-\unexpanded\def\doifolderversionelse#parent#child{\ctxcommand{doifolderversionelse("#parent","#child")}}
-\unexpanded\def\doifoldercontextelse       #child{\ctxcommand{doifolderversionelse("#child")}}
+\unexpanded\def\doifelseolderversion#parent#child{\clf_doifelseolderversion{#parent}{#child}}
+\unexpanded\def\doifelseoldercontext       #child{\clf_doifelseolderversion{#child}{}}
 
-%D Relatively new:
+\let\doifolderversionelse\doifelseolderversion
+\let\doifoldercontextelse\doifelseoldercontext
+
+%D Relatively new (no need for a speedup here):
 
 \unexpanded\def\syst_modules_direct_lua#1#2%
   {\edef\m_module_command_command {#1}%
@@ -284,8 +254,8 @@
    \ctxlua{#2(\!!bs#3\!!es,\!!bs#4\!!es)}%
    \directsetup{module:#1:stop}}
 
-\def\installmodulecommandluaone   #1#2{\unexpanded\def#1{\normalexpanded{\syst_modules_one_lua   {\strippedcsname#1}{#2}}}}
-\def\installmodulecommandluatwo   #1#2{\unexpanded\def#1{\normalexpanded{\syst_modules_two_lua   {\strippedcsname#1}{#2}}}}
+\def\installmodulecommandluaone#1#2{\unexpanded\def#1{\normalexpanded{\syst_modules_one_lua{\strippedcsname#1}{#2}}}}
+\def\installmodulecommandluatwo#1#2{\unexpanded\def#1{\normalexpanded{\syst_modules_two_lua{\strippedcsname#1}{#2}}}}
 
 % obsolete
 %
@@ -299,6 +269,6 @@
 
 % new:
 
-\unexpanded\def\useluamodule[#1]{\ctxcommand{useluamodule("#1")}}
+\unexpanded\def\useluamodule[#1]{\clf_useluamodule{#1}}
 
 \protect \endinput

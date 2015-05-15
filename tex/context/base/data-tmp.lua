@@ -23,7 +23,8 @@ luatools with a recache feature.</p>
 --ldx]]--
 
 local format, lower, gsub, concat = string.format, string.lower, string.gsub, table.concat
-local concat, serialize, serializetofile = table.concat, table.serialize, table.tofile
+----- serialize, serializetofile = table.serialize, table.tofile -- overloaded so no local
+local concat = table.concat
 local mkdirs, isdir, isfile = dir.mkdirs, lfs.isdir, lfs.isfile
 local addsuffix, is_writable, is_readable = file.addsuffix, file.is_writable, file.is_readable
 local formatters = string.formatters
@@ -35,6 +36,7 @@ local report_caches    = logs.reporter("resolvers","caches")
 local report_resolvers = logs.reporter("resolvers","caching")
 
 local resolvers = resolvers
+local cleanpath = resolvers.cleanpath
 
 -- intermezzo
 
@@ -72,7 +74,7 @@ local writable, readables, usedreadables = nil, { }, { }
 local function identify()
     -- Combining the loops makes it messy. First we check the format cache path
     -- and when the last component is not present we try to create it.
-    local texmfcaches = resolvers.cleanpathlist("TEXMFCACHE")
+    local texmfcaches = resolvers.cleanpathlist("TEXMFCACHE") -- forward ref
     if texmfcaches then
         for k=1,#texmfcaches do
             local cachepath = texmfcaches[k]
@@ -348,15 +350,11 @@ local saveoptions = { compact = true }
 
 function caches.savedata(filepath,filename,data,raw)
     local tmaname, tmcname = caches.setluanames(filepath,filename)
-    local reduce, simplify = true, true
-    if raw then
-        reduce, simplify = false, false
-    end
     data.cache_uuid = os.uuid()
     if caches.direct then
-        file.savedata(tmaname,serialize(data,true,saveoptions))
+        file.savedata(tmaname,table.serialize(data,true,saveoptions))
     else
-        serializetofile(tmaname,data,true,saveoptions)
+        table.tofile(tmaname,data,true,saveoptions)
     end
     utilities.lua.compile(tmaname,tmcname)
 end
@@ -369,10 +367,12 @@ function caches.contentstate()
     return content_state or { }
 end
 
-function caches.loadcontent(cachename,dataname)
-    local name = caches.hashed(cachename)
-    local full, path = caches.getfirstreadablefile(addsuffix(name,luasuffixes.lua),"trees")
-    local filename = file.join(path,name)
+function caches.loadcontent(cachename,dataname,filename)
+    if not filename then
+        local name = caches.hashed(cachename)
+        local full, path = caches.getfirstreadablefile(addsuffix(name,luasuffixes.lua),"trees")
+        filename = file.join(path,name)
+    end
     local blob = loadfile(addsuffix(filename,luasuffixes.luc)) or loadfile(addsuffix(filename,luasuffixes.lua))
     if blob then
         local data = blob()
@@ -406,10 +406,12 @@ function caches.collapsecontent(content)
     end
 end
 
-function caches.savecontent(cachename,dataname,content)
-    local name = caches.hashed(cachename)
-    local full, path = caches.setfirstwritablefile(addsuffix(name,luasuffixes.lua),"trees")
-    local filename = file.join(path,name) -- is full
+function caches.savecontent(cachename,dataname,content,filename)
+    if not filename then
+        local name = caches.hashed(cachename)
+        local full, path = caches.setfirstwritablefile(addsuffix(name,luasuffixes.lua),"trees")
+        filename = file.join(path,name) -- is full
+    end
     local luaname = addsuffix(filename,luasuffixes.lua)
     local lucname = addsuffix(filename,luasuffixes.luc)
     if trace_locating then
@@ -424,7 +426,7 @@ function caches.savecontent(cachename,dataname,content)
         content = content,
         uuid    = os.uuid(),
     }
-    local ok = io.savedata(luaname,serialize(data,true))
+    local ok = io.savedata(luaname,table.serialize(data,true))
     if ok then
         if trace_locating then
             report_resolvers("category %a, cachename %a saved in %a",dataname,cachename,luaname)

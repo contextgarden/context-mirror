@@ -92,7 +92,7 @@ local nolong         = 1 - longleft - longright
 local utf8character  = P(1) * R("\128\191")^1 -- unchecked but fast
 
 local name           = (R("AZ","az") + utf8character)^1
-local csname         = (R("AZ","az") + S("@?!_") + utf8character)^1
+local csname         = (R("AZ","az") + S("@?!_:-*") + utf8character)^1
 local longname       = (longleft/"") * (nolong^1) * (longright/"")
 local variable       = P("#") * Cs(name + longname)
 local escapedname    = escape * csname
@@ -144,7 +144,10 @@ local grammar = { "converter",
                 * V("texbody")
                 * stopcode
                 * poplocal,
-    texbody     = (   V("definition")
+    texbody     = (
+leadingcomment -- new per 2015-03-03 (ugly)
++
+                      V("definition")
                     + identifier
                     + V("braced")
                     + (1 - stopcode)
@@ -201,7 +204,7 @@ end
 
 function macros.convertfile(oldname,newname) -- beware, no testing on oldname == newname
     local data = resolvers.loadtexfile(oldname)
-    data = interfaces.preprocessed(data) or ""
+    data = interfaces.preprocessed(data) or "" -- interfaces not yet defined
     io.savedata(newname,data)
 end
 
@@ -385,7 +388,7 @@ end
 --    \normalexpanded
 --      {\def\yes[#one]#two\csname\e!stop#stoptag\endcsname{\command_yes[#one]{#two}}%
 --       \def\nop      #one\csname\e!stop#stoptag\endcsname{\command_nop      {#one}}}%
---    \doifnextoptionalelse\yes\nop}
+--    \doifelsenextoptional\yes\nop}
 -- ]]))
 --
 -- print(macros.preprocessed([[

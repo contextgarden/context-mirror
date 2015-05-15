@@ -102,6 +102,7 @@
    \page_otr_check_for_pending_inserts
    % but does not hurt either (we're still in the otr!)
    \inpagebodytrue      % needed for enabling \blank ! brrr
+   \pagebodymode\plusone % todo: \plustwo when spread
    \page_otr_command_flush_saved_floats
    \page_otr_command_set_vsize   % this is needed for interacting components, like floats and multicolumns
    \strc_pagenumbers_increment_counters % should hook into an every
@@ -143,9 +144,15 @@
 
 \newconstant\pageornamentstate % 0=on 1=one-off 2=always-off
 
+% \appendtoks
+%     \ifcase\pageornamentstate \or
+%         \pageornamentstate\zerocount
+%     \fi
+% \to \everyaftershipout
+
 \appendtoks
     \ifcase\pageornamentstate \or
-        \pageornamentstate\zerocount
+        \global\pageornamentstate\zerocount
     \fi
 \to \everyaftershipout
 
@@ -229,7 +236,7 @@
      \the\everyafterpagebody
    \egroup}
 
-\def\doiftopofpageelse
+\def\doifelsetopofpage
   {\ifdim\pagegoal=\maxdimen
      \expandafter\firstoftwoarguments
    \else\ifdim\pagegoal=\vsize
@@ -237,6 +244,8 @@
    \else
      \doubleexpandafter\secondoftwoarguments
    \fi\fi}
+
+\let\doiftopofpageelse\doifelsetopofpage
 
 % %D Idea:
 %

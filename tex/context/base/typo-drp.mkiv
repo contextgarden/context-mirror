@@ -57,6 +57,8 @@
 \setupinitial
   [\c!location=\v!text,
    \c!n=3,
+   \c!m=1,
+   \c!method=\v!none,
  % \s!font=Bold sa 4,
  % \s!font=Bold ht \measure{initial:n},
    \s!font=Bold cp \measure{initial:n},
@@ -67,24 +69,25 @@
    \c!color=,
    \c!before=\blank]
 
-\unexpanded\def\placeinitial
+\unexpanded\def\placeinitial % we cannot group so no settings
   {\dosingleempty\typo_initials_place}
 
 \def\typo_initials_place[#1]% old command
   {\par
    \namedinitialparameter{#1}\c!before
-   \setinitial[#1]}
+   \setinitial[#1]\relax}
 
 \unexpanded\def\setinitial
-  {\dosingleempty\typo_initials_set}
+  {\dodoubleempty\typo_initials_set}
 
-\unexpanded\def\typo_initials_set[#1]%
-  {\edef\typo_initial_handle{\typo_initial_handle_indeed{#1}}}
+\unexpanded\def\typo_initials_set[#1][#2]%
+  {\edef\typo_initial_handle{\typo_initial_handle_indeed{#1}{#2}}}
 
-\unexpanded\def\typo_initial_handle_indeed#1%
+\unexpanded\def\typo_initial_handle_indeed#1#2%
   {\dontleavehmode
    \begingroup
    \edef\currentinitial{#1}%
+   \setupcurrentinitial[#2]%
    \scratchcounter \initialparameter\c!n\relax
    \scratchdistance\initialparameter\c!distance\relax
    \scratchhoffset \initialparameter\c!hoffset \relax
@@ -95,24 +98,43 @@
      {\definedfont[\initialparameter\s!font]}
      {\useinitialstyleparameter\c!style}%
    \useinitialcolorparameter\c!color
-   \ctxcommand{setinitial{
-        location = "\initialparameter\c!location",
-        enabled  = true,
-        n        = \number\scratchcounter,
-        distance = \number\scratchdistance,
-        hoffset  = \number\scratchhoffset,
-        voffset  = \number\scratchvoffset,
-        ma       = \the\attribute\colormodelattribute  ,
-        ca       = \the\attribute\colorattribute       ,
-        ta       = \the\attribute\transparencyattribute,
-        font     = \fontid\font,
-        dynamic  = \number\attribute\zerocount, % it's a bit over the top to support this here
-   }}%
+   \edef\p_text{\initialparameter\c!text}% optional
+   \clf_setinitial
+        location  {\initialparameter\c!location}%
+        enabled   true\space
+        n         \scratchcounter
+        m         \numexpr\initialparameter\c!m\relax
+        method    {\initialparameter\c!method}%
+        distance  \scratchdistance
+        hoffset   \scratchhoffset
+        voffset   \scratchvoffset
+        ma        \attribute\colormodelattribute
+        ca        \attribute\colorattribute
+        ta        \attribute\transparencyattribute
+        font      \fontid\font
+        dynamic   \attribute\zerocount % it's a bit over the top to support this here
+   \relax
    \stopluacode
    \kern\zeropoint % we need a node
+   \p_text
    \endgroup
    \globallet\typo_initial_handle\relax}
 
 \let\typo_initial_handle\relax
+
+% \setupbodyfont[dejavu,9pt]
+%
+% \startbuffer
+% \setinitial[two]            D. E. Knuth   \ignorespaces\input knuth \par
+% \setinitial[two]                  Knuth   \ignorespaces\input knuth \par
+% \setinitial[two] \quotation{D. E. Knuth}  \ignorespaces\input knuth \par
+% \setinitial[two] \quotation      {Knuth}  \ignorespaces\input knuth \par
+% \setinitial[two]      [text={D.E. Knuth}] \ignorespaces\input knuth \par
+% \setinitial[two]       [m=4] D. E. Knuth  \ignorespaces\input knuth \par
+% \stopbuffer
+%
+% \type{m=2}                          \start \defineinitial[two][m=2,method=none]              \getbuffer \page \stop
+% \type{m=1,method=auto}              \start \defineinitial[two][m=1,method=auto]              \getbuffer \page \stop
+% \type{m=1,method={auto,first,last}} \start \defineinitial[two][m=1,method={first,auto,last}] \getbuffer \page \stop
 
 \protect \endinput

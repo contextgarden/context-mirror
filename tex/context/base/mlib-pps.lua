@@ -6,10 +6,8 @@ if not modules then modules = { } end modules ['mlib-pps'] = {
     license   = "see context related readme files",
 }
 
--- todo: pass multipass nicer
-
 local format, gmatch, match, split = string.format, string.gmatch, string.match, string.split
-local tonumber, type = tonumber, type
+local tonumber, type, unpack = tonumber, type, unpack
 local round = math.round
 local insert, remove, concat = table.insert, table.remove, table.concat
 local Cs, Cf, C, Cg, Ct, P, S, V, Carg = lpeg.Cs, lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.V, lpeg.Carg
@@ -18,8 +16,15 @@ local formatters = string.formatters
 
 local mplib, metapost, lpdf, context = mplib, metapost, lpdf, context
 
+local context              = context
+local context_setvalue     = context.setvalue
+
+local implement            = interfaces.implement
+local setmacro             = interfaces.setmacro
+
 local texgetbox            = tex.getbox
 local texsetbox            = tex.setbox
+local textakebox           = tex.takebox
 local copy_list            = node.copy_list
 local free_list            = node.flush_list
 local setmetatableindex    = table.setmetatableindex
@@ -37,11 +42,19 @@ local report_textexts      = logs.reporter("metapost","textexts")
 local report_scripts       = logs.reporter("metapost","scripts")
 
 local colors               = attributes.colors
+local defineprocesscolor   = colors.defineprocesscolor
+local definespotcolor      = colors.definespotcolor
+local definemultitonecolor = colors.definemultitonecolor
+local colorvalue           = colors.value
 
-local rgbtocmyk            = colors.rgbtocmyk  or function() return 0,0,0,1 end
-local cmyktorgb            = colors.cmyktorgb  or function() return 0,0,0   end
-local rgbtogray            = colors.rgbtogray  or function() return 0       end
-local cmyktogray           = colors.cmyktogray or function() return 0       end
+local transparencies       = attributes.transparencies
+local registertransparency = transparencies.register
+local transparencyvalue    = transparencies.value
+
+local rgbtocmyk            = colors.rgbtocmyk  -- or function() return 0,0,0,1 end
+local cmyktorgb            = colors.cmyktorgb  -- or function() return 0,0,0   end
+local rgbtogray            = colors.rgbtogray  -- or function() return 0       end
+local cmyktogray           = colors.cmyktogray -- or function() return 0       end
 
 metapost.makempy           = metapost.makempy or { nofconverted = 0 }
 local makempy              = metapost.makempy
@@ -56,11 +69,6 @@ local innertransparency    = nooutertransparency
 
 local pdfcolor             = lpdf.color
 local pdftransparency      = lpdf.transparency
-local registercolor        = colors.register
-local registerspotcolor    = colors.registerspotcolor
-
-local transparencies       = attributes.transparencies
-local registertransparency = transparencies.register
 
 function metapost.setoutercolor(mode,colormodel,colorattribute,transparencyattribute)
     -- has always to be called before conversion
@@ -82,11 +90,18 @@ function metapost.setoutercolor(mode,colormodel,colorattribute,transparencyattri
     innertransparency = outertransparency -- not yet used
 end
 
-local f_gray  = formatters["%.3f g %.3f G"]
-local f_rgb   = formatters["%.3f %.3f %.3f rg %.3f %.3f %.3f RG"]
-local f_cmyk  = formatters["%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K"]
-local f_cm    = formatters["q %f %f %f %f %f %f cm"]
+-- todo: get this from the lpdf module
+
+local f_f     = formatters["%F"]
+local f_f3    = formatters["%.3F"]
+
+local f_gray  = formatters["%.3F g %.3F G"]
+local f_rgb   = formatters["%.3F %.3F %.3F rg %.3F %.3F %.3F RG"]
+local f_cmyk  = formatters["%.3F %.3F %.3F %.3F k %.3F %.3F %.3F %.3F K"]
+local f_cm    = formatters["q %F %F %F %F %F %F cm"]
 local f_shade = formatters["MpSh%s"]
+
+local f_spot  = formatters["/%s cs /%s CS %s SCN %s scn"]
 
 local function checked_color_pair(color,...)
     if not color then
@@ -137,15 +152,6 @@ local function normalize(ca,cb)
     end
 end
 
--- todo: check for the same colorspace (actually a backend issue), now we can
--- have several similar resources
---
--- normalize(ca,cb) fails for spotcolors
-
-local function spotcolorconverter(parent, n, d, p)
-    registerspotcolor(parent)
-    return pdfcolor(colors.model,registercolor(nil,'spot',parent,n,d,p)), outercolor
-end
 
 local commasplitter = tsplitat(",")
 
@@ -211,21 +217,34 @@ local function checkandconvert(ca,cb)
     end
 end
 
+-- We keep textexts in a shared list (as it's easier that way and we also had that in
+-- the beginning). Each graphic gets its own (1 based) subtable so that we can also
+-- handle multiple conversions in one go which is needed when we process mp files
+-- directly.
+
 local stack   = { } -- quick hack, we will pass topofstack around
 local top     = nil
 local nofruns = 0 -- askedfig: "all", "first", number
 
-local function startjob(texmode)
-    top = {
-        textexts = { }, -- all boxes, optionally with a different color
-        texslots = { }, -- references to textexts in order or usage
-        texorder = { }, -- references to textexts by mp index
+local function preset(t,k)
+    -- references to textexts by mp index
+    local v = {
         textrial = 0,
         texfinal = 0,
-        -- used by tx plugin
+        texslots = { },
+        texorder = { },
         texhash  = { },
+    }
+    t[k] = v
+    return v
+end
+
+local function startjob(plugmode)
+    top = {
+        textexts = { },                          -- all boxes, optionally with a different color
         texlast  = 0,
-        texmode  = texmode, -- some day we can then skip all pre/postscripts
+        texdata  = setmetatableindex({},preset), -- references to textexts in order or usage
+        plugmode = plugmode,                     -- some day we can then skip all pre/postscripts
     }
     insert(stack,top)
     if trace_runs then
@@ -239,7 +258,7 @@ local function stopjob()
         for n, tn in next, top.textexts do
             free_list(tn)
             if trace_textexts then
-                report_textexts("freeing box %s",n)
+                report_textexts("freeing text %s",n)
             end
         end
         if trace_runs then
@@ -251,26 +270,40 @@ local function stopjob()
     end
 end
 
-function metapost.settextexts  () end -- obsolete
-function metapost.resettextexts() end -- obsolete
+function metapost.getjobdata()
+    return top
+end
 
 -- end of new
 
-function metapost.settext(box,slot)
-    top.textexts[slot] = copy_list(texgetbox(box))
-    texsetbox(box,nil)
-    -- this will become
-    -- top.textexts[slot] = texgetbox(box)
-    -- unsetbox(box)
+local function settext(box,slot)
+    if top then
+        top.textexts[slot] = copy_list(texgetbox(box))
+        texsetbox(box,nil)
+        -- this can become
+        -- top.textexts[slot] = textakebox(box)
+    else
+        -- weird error
+    end
 end
 
-function metapost.gettext(box,slot)
-    texsetbox(box,copy_list(top.textexts[slot]))
-    if trace_textexts then
-        report_textexts("putting text %s in box %s",slot,box)
+local function gettext(box,slot)
+    if top then
+        texsetbox(box,copy_list(top.textexts[slot]))
+        if trace_textexts then
+            report_textexts("putting text %s in box %s",slot,box)
+        end
+     -- top.textexts[slot] = nil -- no, pictures can be placed several times
+    else
+        -- weird error
     end
- -- top.textexts[slot] = nil -- no, pictures can be placed several times
 end
+
+metapost.settext = settext
+metapost.gettext = gettext
+
+implement { name = "mpsettext", actions = settext, arguments = { "integer", "integer" } } -- box slot
+implement { name = "mpgettext", actions = gettext, arguments = { "integer", "integer" } } -- box slot
 
 -- rather generic pdf, so use this elsewhere too it no longer pays
 -- off to distinguish between outline and fill (we now have both
@@ -461,7 +494,7 @@ end
 -- currently a a one-liner produces less code
 
 -- textext.*(".*") can have "'s but tricky parsing as we can have concatenated strings
--- so this is something for a boring plain or train trip and we might assume proper mp
+-- so this is something for a boring plane or train trip and we might assume proper mp
 -- input anyway
 
 local parser = Cs((
@@ -471,56 +504,94 @@ local parser = Cs((
   + 1
 )^0)
 
+local checking_enabled = true   directives.register("metapost.checktexts",function(v) checking_enabled = v end)
+
 local function checktexts(str)
-    found, forced = false, false
-    return lpegmatch(parser,str), found, forced
+    if checking_enabled then
+        found, forced = false, false
+        return lpegmatch(parser,str), found, forced
+    else
+        return str
+    end
 end
 
 metapost.checktexts = checktexts
 
 local factor = 65536*(7227/7200)
 
-function metapost.edefsxsy(wd,ht,dp) -- helper for figure
-    local hd = ht + dp
-    context.setvalue("sx",wd ~= 0 and factor/wd or 0)
-    context.setvalue("sy",hd ~= 0 and factor/hd or 0)
-end
+-- function metapost.edefsxsy(wd,ht,dp) -- helper for figure
+--     local hd = ht + dp
+--     context_setvalue("sx",wd ~= 0 and factor/wd or 0)
+--     context_setvalue("sy",hd ~= 0 and factor/hd or 0)
+-- end
+
+implement {
+    name       = "mpsetsxsy",
+    arguments  = { "dimen", "dimen", "dimen" },
+    actions    = function(wd,ht,dp)
+        local hd = ht + dp
+        setmacro("sx",wd ~= 0 and factor/wd or 0)
+        setmacro("sy",hd ~= 0 and factor/hd or 0)
+    end
+}
 
 local function sxsy(wd,ht,dp) -- helper for text
     local hd = ht + dp
     return (wd ~= 0 and factor/wd) or 0, (hd ~= 0 and factor/hd) or 0
 end
 
-local no_first_run = "mfun_first_run := false ;"
-local do_first_run = "mfun_first_run := true ;"
-local no_trial_run = "mfun_trial_run := false ;"
-local do_trial_run = "mfun_trial_run := true ;"
+-- for stock mp we need to declare the booleans first
+
+local no_first_run = "boolean mfun_first_run ; mfun_first_run := false ;"
+local do_first_run = "boolean mfun_first_run ; mfun_first_run := true ;"
+local no_trial_run = "boolean mfun_trial_run ; mfun_trial_run := false ;"
+local do_trial_run = "boolean mfun_trial_run ; mfun_trial_run := true ;"
 local do_begin_fig = "; beginfig(1) ; "
 local do_end_fig   = "; endfig ;"
 local do_safeguard = ";"
 
-local f_text_data  = formatters["mfun_tt_w[%i] := %f ; mfun_tt_h[%i] := %f ; mfun_tt_d[%i] := %f ;"]
+-- local f_text_data  = formatters["mfun_tt_w[%i] := %f ; mfun_tt_h[%i] := %f ; mfun_tt_d[%i] := %f ;"]
+--
+-- function metapost.textextsdata()
+--     local textexts     = top.textexts
+--     local collected    = { }
+--     local nofcollected = 0
+--     for k, data in sortedhash(top.texdata) do -- sort is nicer in trace
+--         local texorder = data.texorder
+--         for n=1,#texorder do
+--             local box = textexts[texorder[n]]
+--             if box then
+--                 local wd, ht, dp = box.width/factor, box.height/factor, box.depth/factor
+--                 if trace_textexts then
+--                     report_textexts("passed data item %s:%s > (%p,%p,%p)",k,n,wd,ht,dp)
+--                 end
+--                 nofcollected = nofcollected + 1
+--                 collected[nofcollected] = f_text_data(n,wd,n,ht,n,dp)
+--             else
+--                 break
+--             end
+--         end
+--     end
+--     return collected
+-- end
 
 function metapost.textextsdata()
-    local texorder     = top.texorder
-    local textexts     = top.textexts
-    local collected    = { }
-    local nofcollected = 0
-    for n=1,#texorder do
-        local box = textexts[texorder[n]]
-        if box then
-            local wd, ht, dp = box.width/factor, box.height/factor, box.depth/factor
-            if trace_textexts then
-                report_textexts("passed data item %s: (%p,%p,%p)",n,wd,ht,dp)
+    local textexts  = top.textexts
+    local collected = { }
+    for k, data in sortedhash(top.texdata) do -- sort is nicer in trace
+        local texorder = data.texorder
+        for n=1,#texorder do
+            local box = textexts[texorder[n]]
+            if box then
+                collected[n] = box
+            else
+                break
             end
-            nofcollected = nofcollected + 1
-            collected[nofcollected] = f_text_data(n,wd,n,ht,n,dp)
-        else
-            break
         end
     end
-    return collected
+    mp.tt_initialize(collected)
 end
+
 
 metapost.intermediate         = metapost.intermediate         or { }
 metapost.intermediate.actions = metapost.intermediate.actions or { }
@@ -552,16 +623,16 @@ local function extrapass()
     if trace_runs then
         report_metapost("second run of job %s, asked figure %a",top.nofruns,top.askedfig)
     end
+    local textexts = metapost.textextsdata()
     processmetapost(top.mpx, {
         top.wrappit and do_begin_fig or "",
         no_trial_run,
-        concat(metapost.textextsdata()," ;\n"),
+        textexts and concat(textexts," ;\n") or "",
         top.initializations,
         do_safeguard,
         top.data,
         top.wrappit and do_end_fig or "",
     }, false, nil, false, true, top.askedfig)
- -- context.MPLIBresettexts() -- must happen afterwards
 end
 
 function metapost.graphic_base_pass(specification) -- name will change (see mlib-ctx.lua)
@@ -585,17 +656,18 @@ function metapost.graphic_base_pass(specification) -- name will change (see mlib
     top.nofruns  = nofruns
     --
     local done_1, done_2, done_3, forced_1, forced_2, forced_3
-    data, done_1, forced_1 = checktexts(data)
-    -- we had preamble = extensions + inclusions
-    if extensions == "" then
-        extensions, done_2, forced_2 = "", false, false
-    else
-        extensions, done_2, forced_2 = checktexts(extensions)
-    end
-    if inclusions == "" then
-        inclusions, done_3, forced_3 = "", false, false
-    else
-        inclusions, done_3, forced_3 = checktexts(inclusions)
+    if checking_enabled then
+        data, done_1, forced_1 = checktexts(data)
+        if extensions == "" then
+            extensions, done_2, forced_2 = "", false, false
+        else
+            extensions, done_2, forced_2 = checktexts(extensions)
+        end
+        if inclusions == "" then
+            inclusions, done_3, forced_3 = "", false, false
+        else
+            inclusions, done_3, forced_3 = checktexts(inclusions)
+        end
     end
     top.intermediate     = false
     top.multipass        = false -- no needed here
@@ -680,6 +752,12 @@ function makempy.registerfile(filename)
     mpyfilename = filename
 end
 
+implement {
+    name      = "registermpyfile",
+    actions   = makempy.registerfile,
+    arguments = "string"
+}
+
 function makempy.processgraphics(graphics)
     if #graphics == 0 then
         return
@@ -720,13 +798,13 @@ end
 
 -- -- the new plugin handler -- --
 
-local sequencers   = utilities.sequencers
-local appendgroup  = sequencers.appendgroup
-local appendaction = sequencers.appendaction
+local sequencers          = utilities.sequencers
+local appendgroup         = sequencers.appendgroup
+local appendaction        = sequencers.appendaction
 
-local resetter     = nil
-local analyzer     = nil
-local processor    = nil
+local resetter            = nil
+local analyzer            = nil
+local processor           = nil
 
 local resetteractions     = sequencers.new { arguments = "t" }
 local analyzeractions     = sequencers.new { arguments = "object,prescript" }
@@ -773,7 +851,7 @@ end
 -- end
 
 function metapost.pluginactions(what,t,flushfigure) -- before/after object, depending on what
-    if top.texmode then
+    if top.plugmode then -- hm, what about other features
         for i=1,#what do
             local wi = what[i]
             if type(wi) == "function" then
@@ -790,7 +868,7 @@ function metapost.pluginactions(what,t,flushfigure) -- before/after object, depe
 end
 
 function metapost.resetplugins(t) -- intialize plugins, before figure
-    if top.texmode then
+    if top.plugmode then
         -- plugins can have been added
         resetter  = resetteractions.runner
         analyzer  = analyzeractions.runner
@@ -801,16 +879,18 @@ function metapost.resetplugins(t) -- intialize plugins, before figure
 end
 
 function metapost.analyzeplugins(object) -- each object (first pass)
-    if top.texmode then
+    if top.plugmode then
         local prescript = object.prescript   -- specifications
         if prescript and #prescript > 0 then
-            return analyzer(object,splitprescript(prescript))
+            analyzer(object,splitprescript(prescript))
+            return top.multipass
         end
     end
+    return false
 end
 
 function metapost.processplugins(object) -- each object (second pass)
-    if top.texmode then
+    if top.plugmode then
         local prescript = object.prescript   -- specifications
         if prescript and #prescript > 0 then
             local before = { }
@@ -854,19 +934,33 @@ end
 
 local function tx_reset()
     if top then
+        -- why ?
         top.texhash = { }
         top.texlast = 0
     end
 end
 
 local fmt = formatters["%s %s %s % t"]
-local pat = tsplitat(":")
+----- pat = tsplitat(":")
+local pat = lpeg.tsplitter(":",tonumber) -- so that %F can do its work
+
+local f_gray_yes = formatters["s=%F,a=%F,t=%F"]
+local f_gray_nop = formatters["s=%F"]
+local f_rgb_yes  = formatters["r=%F,g=%F,b=%F,a=%F,t=%F"]
+local f_rgb_nop  = formatters["r=%F,g=%F,b=%F"]
+local f_cmyk_yes = formatters["c=%F,m=%F,y=%F,k=%F,a=%F,t=%F"]
+local f_cmyk_nop = formatters["c=%F,m=%F,y=%F,k=%F"]
+
+local ctx_MPLIBsetNtext = context.MPLIBsetNtext
+local ctx_MPLIBsetCtext = context.MPLIBsetCtext
+local ctx_MPLIBsettext  = context.MPLIBsettext
 
 local function tx_analyze(object,prescript) -- todo: hash content and reuse them
+    local data = top.texdata[metapost.properties.number]
     local tx_stage = prescript.tx_stage
     if tx_stage == "trial" then
-        local tx_trial = top.textrial + 1
-        top.textrial = tx_trial
+        local tx_trial = data.textrial + 1
+        data.textrial = tx_trial
         local tx_number = tonumber(prescript.tx_number)
         local s = object.postscript or ""
         local c = object.color -- only simple ones, no transparency
@@ -876,79 +970,80 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
                 c = lpegmatch(pat,txc)
             end
         end
-        local a = prescript.tr_alternative
-        local t = prescript.tr_transparency
+        local a = tonumber(prescript.tr_alternative)
+        local t = tonumber(prescript.tr_transparency)
         local h = fmt(tx_number,a or "-",t or "-",c or "-")
-        local n = top.texhash[h] -- todo: hashed variant with s (nicer for similar labels)
+        local n = data.texhash[h] -- todo: hashed variant with s (nicer for similar labels)
         if not n then
             local tx_last = top.texlast + 1
             top.texlast = tx_last
+         -- report_textexts("tex string: %s",s)
             if not c then
-                -- no color
+                ctx_MPLIBsetNtext(tx_last,s)
             elseif #c == 1 then
                 if a and t then
-                    s = formatters["\\directcolored[s=%f,a=%f,t=%f]%s"](c[1],a,t,s)
+                    ctx_MPLIBsetCtext(tx_last,f_gray_yes(c[1],a,t),s)
                 else
-                    s = formatters["\\directcolored[s=%f]%s"](c[1],s)
+                    ctx_MPLIBsetCtext(tx_last,f_gray_nop(c[1]),s)
                 end
             elseif #c == 3 then
                 if a and t then
-                    s = formatters["\\directcolored[r=%f,g=%f,b=%f,a=%f,t=%f]%s"](c[1],c[2],c[3],a,t,s)
+                    ctx_MPLIBsetCtext(tx_last,f_rgb_nop(c[1],c[2],c[3],a,t),s)
                 else
-                    s = formatters["\\directcolored[r=%f,g=%f,b=%f]%s"](c[1],c[2],c[3],s)
+                    ctx_MPLIBsetCtext(tx_last,f_rgb_nop(c[1],c[2],c[3]),s)
                 end
             elseif #c == 4 then
                 if a and t then
-                    s = formatters["\\directcolored[c=%f,m=%f,y=%f,k=%f,a=%f,t=%f]%s"](c[1],c[2],c[3],c[4],a,t,s)
+                    ctx_MPLIBsetCtext(tx_last,f_cmyk_yes(c[1],c[2],c[3],c[4],a,t),s)
                 else
-                    s = formatters["\\directcolored[c=%f,m=%f,y=%f,k=%f]%s"](c[1],c[2],c[3],c[4],s)
+                    ctx_MPLIBsetCtext(tx_last,f_cmyk_nop(c[1],c[2],c[3],c[4]),s)
                 end
+            else
+                ctx_MPLIBsetNtext(tx_last,s)
             end
-            context.MPLIBsettext(tx_last,s)
             top.multipass = true
-            metapost.multipass = true -- ugly
-            top.texhash[h] = tx_last
-            top.texslots[tx_trial] = tx_last
-            top.texorder[tx_number] = tx_last
+            data.texhash [h]         = tx_last
+            data.texslots[tx_trial]  = tx_last
+            data.texorder[tx_number] = tx_last
             if trace_textexts then
-                report_textexts("stage %a, usage %a, number %a, new %a, hash %a",tx_stage,tx_trial,tx_number,tx_last,h)
+                report_textexts("stage %a, usage %a, number %a, new %a, hash %a, text %a",tx_stage,tx_trial,tx_number,tx_last,h,s)
             end
         else
-            top.texslots[tx_trial] = n
+            data.texslots[tx_trial] = n
             if trace_textexts then
-                report_textexts("stage %a, usage %a, number %a, new %a, hash %a",tx_stage,tx_trial,tx_number,n,h)
+                report_textexts("stage %a, usage %a, number %a, old %a, hash %a, text %a",tx_stage,tx_trial,tx_number,n,h,s)
             end
         end
     elseif tx_stage == "extra" then
-        local tx_trial = top.textrial + 1
-        top.textrial = tx_trial
+        local tx_trial = data.textrial + 1
+        data.textrial = tx_trial
         local tx_number = tonumber(prescript.tx_number)
-        if not top.texorder[tx_number] then
+        if not data.texorder[tx_number] then
             local s = object.postscript or ""
             local tx_last = top.texlast + 1
             top.texlast = tx_last
-            context.MPLIBsettext(tx_last,s)
+            ctx_MPLIBsettext(tx_last,s)
             top.multipass = true
-            metapost.multipass = true -- ugly
-            top.texslots[tx_trial] = tx_last
-            top.texorder[tx_number] = tx_last
+            data.texslots[tx_trial] = tx_last
+            data.texorder[tx_number] = tx_last
             if trace_textexts then
-                report_textexts("stage %a, usage %a, number %a, extra %a",tx_stage,tx_trial,tx_number,tx_last)
+                report_textexts("stage %a, usage %a, number %a, extra %a, text %a",tx_stage,tx_trial,tx_number,tx_last,s)
             end
         end
     end
 end
 
 local function tx_process(object,prescript,before,after)
-    local tx_number = prescript.tx_number
+    local data = top.texdata[metapost.properties.number]
+    local tx_number = tonumber(prescript.tx_number)
     if tx_number then
-        tx_number = tonumber(tx_number)
         local tx_stage = prescript.tx_stage
         if tx_stage == "final" then
-            top.texfinal = top.texfinal + 1
-            local n = top.texslots[top.texfinal]
+            local tx_final = data.texfinal + 1
+            data.texfinal = tx_final
+            local n = data.texslots[tx_final]
             if trace_textexts then
-                report_textexts("stage %a, usage %a, number %a, use %a",tx_stage,top.texfinal,tx_number,n)
+                report_textexts("stage %a, usage %a, number %a, use %a",tx_stage,tx_final,tx_number,n)
             end
             local sx, rx, ry, sy, tx, ty = cm(object) -- needs to be frozen outside the function
             local box = top.textexts[n]
@@ -956,12 +1051,12 @@ local function tx_process(object,prescript,before,after)
                 before[#before+1] = function()
                  -- flush always happens, we can have a special flush function injected before
                     context.MPLIBgettextscaledcm(n,
-                        format("%f",sx), -- bah ... %s no longer checks
-                        format("%f",rx), -- bah ... %s no longer checks
-                        format("%f",ry), -- bah ... %s no longer checks
-                        format("%f",sy), -- bah ... %s no longer checks
-                        format("%f",tx), -- bah ... %s no longer checks
-                        format("%f",ty), -- bah ... %s no longer checks
+                        f_f(sx), -- bah ... %s no longer checks
+                        f_f(rx), -- bah ... %s no longer checks
+                        f_f(ry), -- bah ... %s no longer checks
+                        f_f(sy), -- bah ... %s no longer checks
+                        f_f(tx), -- bah ... %s no longer checks
+                        f_f(ty), -- bah ... %s no longer checks
                         sxsy(box.width,box.height,box.depth))
                 end
             else
@@ -972,8 +1067,9 @@ local function tx_process(object,prescript,before,after)
             if not trace_textexts then
                 object.path = false -- else: keep it
             end
-            object.color = false
+            object.color   = false
             object.grouped = true
+            object.istext  = true
         end
     end
 end
@@ -996,7 +1092,6 @@ local function gt_analyze(object,prescript)
         graphics[gt_index] = formatters["\\MPLIBgraphictext{%s}"](object.postscript or "")
         top.intermediate   = true
         top.multipass      = true
-        metapost.multipass = true -- ugly
     end
 end
 
@@ -1012,9 +1107,9 @@ local function sh_process(object,prescript,before,after)
     local sh_type = prescript.sh_type
     if sh_type then
         nofshades = nofshades + 1
-        local domain  = lpegmatch(domainsplitter,prescript.sh_domain)
-        local centera = lpegmatch(centersplitter,prescript.sh_center_a)
-        local centerb = lpegmatch(centersplitter,prescript.sh_center_b)
+        local domain  = lpegmatch(domainsplitter,prescript.sh_domain   or "0 1")
+        local centera = lpegmatch(centersplitter,prescript.sh_center_a or "0 0")
+        local centerb = lpegmatch(centersplitter,prescript.sh_center_b or "0 0")
         --
         local sh_color_a = prescript.sh_color_a or "1"
         local sh_color_b = prescript.sh_color_b or "1"
@@ -1063,8 +1158,9 @@ local function sh_process(object,prescript,before,after)
             local coordinates = { centera[1], centera[2], centerb[1], centerb[2] }
             lpdf.linearshade(name,domain,ca,cb,1,colorspace,coordinates,separation) -- backend specific (will be renamed)
         elseif sh_type == "circular" then
-            local radiusa = tonumber(prescript.sh_radius_a)
-            local radiusb = tonumber(prescript.sh_radius_b)
+            local factor  = tonumber(prescript.sh_factor) or 1
+            local radiusa = factor * tonumber(prescript.sh_radius_a)
+            local radiusb = factor * tonumber(prescript.sh_radius_b)
             local coordinates = { centera[1], centera[2], radiusa, centerb[1], centerb[2], radiusb }
             lpdf.circularshade(name,domain,ca,cb,1,colorspace,coordinates,separation) -- backend specific (will be renamed)
         else
@@ -1109,8 +1205,9 @@ local function ps_process(object,prescript,before,after)
         local first, third  = op[1], op[3]
         local x, y = first.x_coord, first.y_coord
         local w, h = third.x_coord - x, third.y_coord - y
-        x = x - metapost.llx
-        y = metapost.ury - y
+        local properties = metapost.properties
+        x = x - properties.llx
+        y = properties.ury - y
         before[#before+1] = function()
             context.MPLIBpositionwhd(ps_label,x,y,w,h)
         end
@@ -1136,7 +1233,7 @@ end
 -- color and transparency
 
 local value = Cs ( (
-    (Carg(1) * C((1-P(","))^1)) / function(a,b) return format("%0.3f",a * tonumber(b)) end
+    (Carg(1) * C((1-P(","))^1)) / function(a,b) return f_f3(a * tonumber(b)) end
   + P(","))^1
 )
 
@@ -1144,6 +1241,12 @@ local value = Cs ( (
 
 local t_list = attributes.list[attributes.private('transparency')]
 local c_list = attributes.list[attributes.private('color')]
+
+local remappers = {
+    [1] = formatters["s=%s"],
+    [3] = formatters["r=%s,g=%s,b=%s"],
+    [4] = formatters["c=%s,m=%s,y=%s,k=%s"],
+}
 
 local function tr_process(object,prescript,before,after)
     -- before can be shortcut to t
@@ -1160,56 +1263,83 @@ local function tr_process(object,prescript,before,after)
         local sp_type = prescript.sp_type
         if not sp_type then
             c_b, c_a = colorconverter(cs)
-        elseif sp_type == "spot" or sp_type == "multitone" then
-            local sp_name       = prescript.sp_name       or "black"
-            local sp_fractions  = prescript.sp_fractions  or 1
-            local sp_components = prescript.sp_components or ""
-            local sp_value      = prescript.sp_value      or "1"
-            local cf = cs[1]
-            if cf ~= 1 then
-                -- beware, we do scale the spotcolors but not the alternative representation
-                sp_value = lpegmatch(value,sp_value,1,cf) or sp_value
-            end
-            c_b, c_a = spotcolorconverter(sp_name,sp_fractions,sp_components,sp_value)
-        elseif sp_type == "named" then
-            -- we might move this to another namespace .. also, named can be a spotcolor
-            -- so we need to check for that too ... also we need to resolve indirect
-            -- colors so we might need the second pass for this (draw dots with \MPcolor)
+        else
             local sp_name = prescript.sp_name or "black"
-            if not tr_alternative then
-                -- todo: sp_name is not yet registered at this time
-                local t = t_list[sp_name] -- string or attribute
-                local v = t and attributes.transparencies.value(t)
+            if sp_type == "spot" then
+                local sp_value = prescript.sp_value or "s:1"
+                local sp_temp  = formatters["mp:%s"](sp_value)
+                local s = split(sp_value,":")
+                local r = remappers[#s]
+                defineprocesscolor(sp_temp,r and r(unpack(s)) or "s=0",true,true)
+                definespotcolor(sp_name,sp_temp,"p=1",true)
+                sp_type = "named"
+            elseif sp_type == "multitone" then
+                local sp_value = prescript.sp_value or "s:1"
+                local sp_spec  = { }
+                local sp_list  = split(sp_value," ")
+                for i=1,#sp_list do
+                    local v = sp_list[i]
+                    local t = formatters["mp:%s"](v)
+                    local s = split(v,":")
+                    local r = remappers[#s]
+                    defineprocesscolor(t,r and r(unpack(s)) or "s=0",true,true)
+                    local tt = formatters["ms:%s"](v)
+                    definespotcolor(tt,t,"p=1",true)
+                    sp_spec[#sp_spec+1] = formatters["%s=1"](t)
+                end
+                sp_spec = concat(sp_spec,",")
+                definemultitonecolor(sp_name,sp_spec,"","",true)
+                sp_type = "named"
+            end
+            if sp_type == "named" then
+                -- we might move this to another namespace .. also, named can be a spotcolor
+                -- so we need to check for that too ... also we need to resolve indirect
+                -- colors so we might need the second pass for this (draw dots with \MPcolor)
+                if not tr_alternative then
+                    -- todo: sp_name is not yet registered at this time
+                    local t = t_list[sp_name] -- string or attribute
+                    local v = t and transparencyvalue(t)
+                    if v then
+                        before[#before+1] = formatters["/Tr%s gs"](registertransparency(nil,v[1],v[2],true))
+                        after[#after+1] = "/Tr0 gs" -- outertransparency
+                    end
+                end
+                local c = c_list[sp_name] -- string or attribute
+                local v = c and colorvalue(c)
                 if v then
-                    before[#before+1] = formatters["/Tr%s gs"](registertransparency(nil,v[1],v[2],true))
-                    after[#after+1] = "/Tr0 gs" -- outertransparency
+                    -- all=1 gray=2 rgb=3 cmyk=4
+                    local colorspace = v[1]
+                    local f = cs[1]
+                    if colorspace == 2 then
+                        local s = f*v[2]
+                        c_b, c_a = checked_color_pair(f_gray,s,s)
+                    elseif colorspace == 3 then
+                        local r, g, b = f*v[3], f*v[4], f*v[5]
+                        c_b, c_a = checked_color_pair(f_rgb,r,g,b,r,g,b)
+                    elseif colorspace == 4 or colorspace == 1 then
+                        local c, m, y, k = f*v[6], f*v[7], f*v[8], f*v[9]
+                        c_b, c_a = checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
+                    elseif colorspace == 5 then
+                        -- not all viewers show the fractions ok
+                        local name  = v[10]
+                        local value = split(v[13],",")
+                        if f ~= 1 then
+                            for i=1,#value do
+                                value[i] = f * (tonumber(value[i]) or 1)
+                            end
+                        end
+                        value = concat(value," ")
+                        c_b, c_a = checked_color_pair(f_spot,name,name,value,value)
+                    else
+                        local s = f*v[2]
+                        c_b, c_a = checked_color_pair(f_gray,s,s)
+                    end
                 end
             end
-            local c = c_list[sp_name] -- string or attribute
-            local v = c and attributes.colors.value(c)
-            if v then
-                -- all=1 gray=2 rgb=3 cmyk=4
-                local colorspace = v[1]
-                local f = cs[1]
-                if colorspace == 2 then
-                    local s = f*v[2]
-                    c_b, c_a = checked_color_pair(f_gray,s,s)
-                elseif colorspace == 3 then
-                    local r, g, b = f*v[3], f*v[4], f*v[5]
-                    c_b, c_a = checked_color_pair(f_rgb,r,g,b,r,g,b)
-                elseif colorspace == 4 or colorspace == 1 then
-                    local c, m, y, k = f*v[6], f*v[7], f*v[8], f*v[9]
-                    c_b, c_a = checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
-                else
-                    local s = f*v[2]
-                    c_b, c_a = checked_color_pair(f_gray,s,s)
-                end
-            end
-            --
         end
         if c_a and c_b then
             before[#before+1] = c_b
-            after[#after+1] = c_a
+            after [#after +1] = c_a
         end
     end
 end

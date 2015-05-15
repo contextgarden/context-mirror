@@ -7,7 +7,9 @@ if not modules then modules = { } end modules ['luat-cnf'] = {
 }
 
 local type, next, tostring, tonumber =  type, next, tostring, tonumber
-local format, concat, find = string.format, table.concat, string.find
+local format, concat, find, lower, gsub = string.format, table.concat, string.find, string.lower, string.gsub
+
+local report = logs.reporter("system")
 
 local allocate = utilities.storage.allocate
 
@@ -17,35 +19,21 @@ texconfig.shell_escape = 't'
 luatex       = luatex or { }
 local luatex = luatex
 
-texconfig.error_line      =     79 --    79 -- obsolete
-texconfig.half_error_line =     50 --    50 -- obsolete
+texconfig.max_print_line  = 100000 -- frozen
+texconfig.max_in_open     =    127 -- frozen
+texconfig.error_line      =     79 -- frozen
+texconfig.half_error_line =     50 -- frozen
 
 texconfig.expand_depth    =  10000 -- 10000
 texconfig.hash_extra      = 100000 --     0
 texconfig.nest_size       =   1000 --    50
-texconfig.max_in_open     =    500 --    15
+texconfig.max_in_open     =    500 --    15 -- in fact it's limited to 127
 texconfig.max_print_line  =  10000 --    79
 texconfig.max_strings     = 500000 -- 15000
 texconfig.param_size      =  25000 --    60
 texconfig.save_size       =  50000 --  4000
+texconfig.save_size       = 100000 --  4000
 texconfig.stack_size      =  10000 --   300
-
--- local function initialize()
---     local t, variable = allocate(), resolvers.variable
---     for name, default in next, variablenames do
---         local name = variablenames[i]
---         local value = variable(name)
---         value = tonumber(value)
---         if not value or value == "" or value == 0 then
---             value = default
---         end
---         texconfig[name], t[name] = value, value
---     end
---     initialize = nil
---     return t
--- end
---
--- luatex.variables = initialize()
 
 local stub = [[
 
@@ -76,7 +64,7 @@ function texconfig.init()
             "string", "table", "coroutine", "debug", "file", "io", "lpeg", "math", "os", "package", "bit32",
         },
         basictex = { -- noad
-            "callback", "font", "img", "lang", "lua", "node", "pdf", "status", "tex", "texconfig", "texio", "token",
+            "callback", "font", "img", "lang", "lua", "node", "pdf", "status", "tex", "texconfig", "texio", "token", "newtoken"
         },
         extralua = {
             "gzip",  "zip", "zlib", "lfs", "ltn12", "mime", "socket", "md5", "profiler", "unicode", "utf",
@@ -87,6 +75,7 @@ function texconfig.init()
         obsolete = {
             "fontforge", -- can be filled by luat-log
             "kpse",
+            "token",
         },
         functions = {
             "assert", "pcall", "xpcall", "error", "collectgarbage",
@@ -134,13 +123,14 @@ function texconfig.init()
 
     -- shortcut and helper
 
+    local bytecode = lua.bytecode
+
     local function init(start)
-        local b = lua.bytecode
         local i = start
         local t = os.clock()
-        while b[i] do
-            b[i]() ;
-            b[i] = nil ;
+        while bytecode[i] do
+            bytecode[i]() ;
+            bytecode[i] = nil ;
             i = i + 1
          -- collectgarbage('step')
         end
@@ -159,6 +149,8 @@ function texconfig.init()
         end
     end
 
+    texconfig.init = function() end
+
 end
 
 -- we provide a qualified path
@@ -172,26 +164,55 @@ end)
 ]]
 
 local variablenames = {
-    "error_line", "half_error_line",
-    "expand_depth", "hash_extra", "nest_size",
-    "max_in_open", "max_print_line", "max_strings",
-    "param_size", "save_size", "stack_size",
+    error_line      = false,
+    half_error_line = false,
+    max_print_line  = false,
+    max_in_open     = false,
+    expand_depth    = true,
+    hash_extra      = true,
+    nest_size       = true,
+    max_strings     = true,
+    param_size      = true,
+    save_size       = true,
+    stack_size      = true,
 }
 
 local function makestub()
     name = name or (environment.jobname .. ".lui")
+    report("creating stub file %a using directives:",name)
+    report()
     firsttable = firsttable or lua.firstbytecode
     local t = {
         "-- this file is generated, don't change it\n",
         "-- configuration (can be overloaded later)\n"
     }
-    for _,v in next, variablenames do
+    for v, permitted in table.sortedhash(variablenames) do
+        local d = "luatex." .. gsub(lower(v),"[^%a]","")
+        local dv = directives.value(d)
         local tv = texconfig[v]
-        if tv and tv ~= "" then
+        if dv then
+            if not tv then
+                report("  %s = %s (%s)",d,dv,"configured")
+                tv = dv
+            elseif not permitted then
+                report("  %s = %s (%s)",d,tv,"frozen")
+            elseif tonumber(dv) >= tonumber(tv) then
+                report("  %s = %s (%s)",d,dv,"overloaded")
+                tv = dv
+            else
+                report("  %s = %s (%s)",d,tv,"preset kept")
+            end
+        elseif tv then
+            report("  %s = %s (%s)",d,tv,permitted and "preset" or "frozen")
+        else
+            report("  %s = <unset>",d)
+        end
+        if tv then
             t[#t+1] = format("texconfig.%s=%s",v,tv)
         end
     end
     io.savedata(name,format("%s\n\n%s",concat(t,"\n"),format(stub,firsttable)))
+    logs.newline()
 end
 
 lua.registerfinalizer(makestub,"create stub file")

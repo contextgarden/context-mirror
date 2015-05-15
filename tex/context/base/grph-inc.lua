@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['grph-inc'] = {
     license   = "see context related readme files"
 }
 
+-- todo: files are sometimes located twice
 -- todo: empty filename or only suffix always false (not found)
 -- lowercase types
 -- mps tex tmp svg
@@ -37,6 +38,8 @@ The TeX-Lua mix is suboptimal. This has to do with the fact that we cannot
 run TeX code from within Lua. Some more functionality will move to Lua.
 ]]--
 
+-- todo: store loaded pages per pdf file someplace
+
 local format, lower, find, match, gsub, gmatch = string.format, string.lower, string.find, string.match, string.gsub, string.gmatch
 local contains = table.contains
 local concat, insert, remove = table.concat, table.insert, table.remove
@@ -46,7 +49,7 @@ local formatters = string.formatters
 local longtostring = string.longtostring
 local expandfilename = dir.expandname
 
-local P, lpegmatch = lpeg.P, lpeg.match
+local P, R, S, Cc, C, Cs, Ct, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.Cc, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.match
 
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash  = utilities.parsers.settings_to_hash
@@ -56,24 +59,37 @@ local replacetemplate   = utilities.templates.replace
 
 local images            = img
 
+local hasscheme         = url.hasscheme
+local urlhashed         = url.hashed
+
+local resolveprefix     = resolvers.resolve
+
 local texgetbox         = tex.getbox
 local texsetbox         = tex.setbox
 
 local hpack             = node.hpack
 
+local new_latelua       = nodes.pool.latelua
+
 local context           = context
 
+local implement         = interfaces.implement
 local variables         = interfaces.variables
+
 local codeinjections    = backends.codeinjections
 local nodeinjections    = backends.nodeinjections
 
-local trace_figures     = false  trackers.register("graphics.locating",   function(v) trace_figures    = v end)
-local trace_bases       = false  trackers.register("graphics.bases",      function(v) trace_bases      = v end)
-local trace_programs    = false  trackers.register("graphics.programs",   function(v) trace_programs   = v end)
-local trace_conversion  = false  trackers.register("graphics.conversion", function(v) trace_conversion = v end)
-local trace_inclusion   = false  trackers.register("graphics.inclusion",  function(v) trace_inclusion  = v end)
+local trace_figures     = false  trackers.register  ("graphics.locating",   function(v) trace_figures    = v end)
+local trace_bases       = false  trackers.register  ("graphics.bases",      function(v) trace_bases      = v end)
+local trace_programs    = false  trackers.register  ("graphics.programs",   function(v) trace_programs   = v end)
+local trace_conversion  = false  trackers.register  ("graphics.conversion", function(v) trace_conversion = v end)
+local trace_inclusion   = false  trackers.register  ("graphics.inclusion",  function(v) trace_inclusion  = v end)
+
+local extra_check       = false  directives.register("graphics.extracheck", function(v) extra_check      = v end)
 
 local report_inclusion  = logs.reporter("graphics","inclusion")
+local report_figures    = logs.reporter("system","graphics")
+local report_figure     = logs.reporter("used graphic")
 
 local f_hash_part = formatters["%s->%s->%s"]
 local f_hash_full = formatters["%s->%s->%s->%s->%s->%s->%s"]
@@ -85,23 +101,41 @@ local v_high    = variables.high
 local v_global  = variables["global"]
 local v_local   = variables["local"]
 local v_default = variables.default
+local v_auto    = variables.auto
 
 local maxdimen = 2^30-1
 
 function images.check(figure)
     if figure then
-        local width = figure.width
+        local width  = figure.width
         local height = figure.height
+        if width <= 0 or height <= 0 then
+            report_inclusion("image %a has bad dimensions (%p,%p), discarding",
+                figure.filename,width,height)
+            return false, "bad dimensions"
+        end
+        local xres    = figure.xres
+        local yres    = figure.yres
+        local changes = false
         if height > width then
             if height > maxdimen then
                 figure.height = maxdimen
                 figure.width  = width * maxdimen/height
-                report_inclusion("limiting natural dimensions of %a (%s)",figure.filename,"height")
+                changed       = true
             end
         elseif width > maxdimen then
             figure.width  = maxdimen
             figure.height = height * maxdimen/width
-            report_inclusion("limiting natural dimensions of %a (%s)",figure.filename,"width")
+            changed       = true
+        end
+        if changed then
+            report_inclusion("limiting natural dimensions of %a, old %p * %p, new %p * %p",
+                figure.filename,width,height,figure.width,figure.height)
+        end
+        if width >=maxdimen or height >= maxdimen then
+            report_inclusion("image %a is too large (%p,%p), discarding",
+                figure.filename,width,height)
+            return false, "dimensions too large"
         end
         return figure
     end
@@ -160,6 +194,7 @@ end
 figures                 = figures or { }
 local figures           = figures
 
+figures.images          = images
 figures.boxnumber       = figures.boxnumber or 0
 figures.defaultsearch   = true
 figures.defaultwidth    = 0
@@ -228,9 +263,73 @@ local figures_magics = allocate {
     { format = "pdf", pattern = (1 - P("%PDF"))^0 * P("%PDF") },
 }
 
+local figures_native = allocate {
+    pdf = true,
+    jpg = true,
+    jp2 = true,
+    png = true,
+}
+
 figures.formats = figures_formats -- frozen
 figures.magics  = figures_magics  -- frozen
 figures.order   = figures_order   -- frozen
+
+-- name checker
+
+local okay = P("m_k_i_v_")
+
+local pattern = (R("az","AZ") * P(":"))^-1 * (                                      -- a-z : | A-Z :
+    (okay + R("az","09") + S("_/") - P("_")^2)^1 * (P(".") * R("az")^1)^0 * P(-1) + -- a-z | single _ | /
+    (okay + R("az","09") + S("-/") - P("-")^2)^1 * (P(".") * R("az")^1)^0 * P(-1) + -- a-z | single - | /
+    (okay + R("AZ","09") + S("_/") - P("_")^2)^1 * (P(".") * R("AZ")^1)^0 * P(-1) + -- A-Z | single _ | /
+    (okay + R("AZ","09") + S("-/") - P("-")^2)^1 * (P(".") * R("AZ")^1)^0 * P(-1)   -- A-Z | single - | /
+) * Cc(false) + Cc(true)
+
+function figures.badname(name)
+    if not name then
+        -- bad anyway
+    elseif not hasscheme(name) then
+        return lpegmatch(pattern,name)
+    else
+        return lpegmatch(pattern,file.basename(name))
+    end
+end
+
+local trace_names = false
+
+trackers.register("graphics.lognames", function(v)
+    if v and not trace_names then
+        luatex.registerstopactions(function()
+            if figures.nofprocessed > 0 then
+                local report_newline = logs.newline
+                logs.pushtarget("logfile")
+                report_newline()
+                report_figures("start names")
+                for _, data in table.sortedhash(figures_found) do
+                    report_newline()
+                    report_figure("asked   : %s",data.askedname)
+                    if data.found then
+                        report_figure("format  : %s",data.format)
+                        report_figure("found   : %s",data.foundname)
+                        report_figure("used    : %s",data.fullname)
+                        if data.badname then
+                            report_figure("comment : %s","bad name")
+                        elseif data.comment then
+                            report_figure("comment : %s",data.comment)
+                        end
+                    else
+                        report_figure("comment : %s","not found")
+                    end
+                end
+                report_newline()
+                report_figures("stop names")
+                report_newline()
+                logs.poptarget()
+            end
+        end)
+        trace_names = true
+    end
+end)
 
 -- We can set the order but only indirectly so that we can check for support.
 
@@ -330,6 +429,9 @@ end
 function figures.registersuffix (suffix, target) register('list',   target,suffix ) end
 function figures.registerpattern(pattern,target) register('pattern',target,pattern) end
 
+implement { name = "registerfiguresuffix",  actions = register, arguments = { "'list'",    "string", "string" } }
+implement { name = "registerfigurepattern", actions = register, arguments = { "'pattern'", "string", "string" } }
+
 local last_locationset = last_locationset or nil
 local last_pathlist    = last_pathlist    or nil
 
@@ -366,6 +468,8 @@ function figures.setpaths(locationset,pathlist)
         report_inclusion("using paths % a",figure_paths)
     end
 end
+
+implement { name = "setfigurepaths", actions = figures.setpaths, arguments = { "string", "string" } }
 
 -- check conversions and handle it here
 
@@ -452,14 +556,15 @@ end
 
 function figures.push(request)
     statistics.starttiming(figures)
-    local figuredata = figures.initialize(request)
+    local figuredata = figures.initialize(request) -- we could use table.sparse but we set them later anyway
     insert(callstack,figuredata)
     lastfiguredata = figuredata
     return figuredata
 end
 
 function figures.pop()
-    lastfiguredata = remove(callstack) or lastfiguredata
+    remove(callstack)
+    lastfiguredata = callstack[#callstack] or lastfiguredata
     statistics.stoptiming(figures)
 end
 
@@ -479,17 +584,13 @@ end
 
 figures.get = get
 
-function commands.figurevariable(category,tag,default)
-    context(get(category,tag,default))
-end
+implement { name = "figurestatus",   actions = { get, context }, arguments = { "'status'",  "string", "string" } }
+implement { name = "figurerequest",  actions = { get, context }, arguments = { "'request'", "string", "string" } }
+implement { name = "figureused",     actions = { get, context }, arguments = { "'used'",    "string", "string" } }
 
-function commands.figurestatus (tag,default) context(get("status", tag,default)) end
-function commands.figurerequest(tag,default) context(get("request",tag,default)) end
-function commands.figureused   (tag,default) context(get("used",   tag,default)) end
-
-function commands.figurefilepath() context(file.dirname (get("used","fullname"))) end
-function commands.figurefilename() context(file.nameonly(get("used","fullname"))) end
-function commands.figurefiletype() context(file.extname (get("used","fullname"))) end
+implement { name = "figurefilepath", actions = { get, file.dirname,  context }, arguments = { "'used'", "'fullname'" } }
+implement { name = "figurefilename", actions = { get, file.nameonly, context }, arguments = { "'used'", "'fullname'" } }
+implement { name = "figurefiletype", actions = { get, file.extname,  context }, arguments = { "'used'", "'fullname'" } }
 
 -- todo: local path or cache path
 
@@ -510,12 +611,31 @@ local function forbiddenname(filename)
     end
 end
 
+local function rejected(specification)
+    if extra_check then
+        local fullname = specification.fullname
+        if fullname and figures_native[file.suffix(fullname)] and not figures.guess(fullname) then
+            specification.comment = "probably a bad file"
+            specification.found   = false
+            specification.error   = true
+            report_inclusion("file %a looks bad",fullname)
+            return true
+        end
+    end
+end
+
 local function register(askedname,specification)
     if not specification then
-        specification = { }
+        specification = { askedname = askedname, comment = "invalid specification" }
     elseif forbiddenname(specification.fullname) then
-        specification = { }
-    else
+        specification = { askedname = askedname, comment = "forbidden name" }
+    elseif specification.internal then
+        -- no filecheck needed
+        specification.found = true
+        if trace_figures then
+            report_inclusion("format %a internally supported by engine",specification.format)
+        end
+    elseif not rejected(specification) then
         local format = specification.format
         if format then
             local conversion = specification.conversion
@@ -552,6 +672,9 @@ local function register(askedname,specification)
                 report_inclusion("no converter for %a to %a",format,newformat)
             end
             if converter then
+                --
+                -- todo: outline as helper function
+                --
                 local oldname = specification.fullname
                 local newpath = file.dirname(oldname)
                 local oldbase = file.basename(oldname)
@@ -567,19 +690,22 @@ local function register(askedname,specification)
                 --
                 local fc = specification.cache or figures.cachepaths.path
                 if fc and fc ~= "" and fc ~= "." then
-                    newpath = fc
+                    newpath = gsub(fc,"%*",newpath) -- so cachedir can be "/data/cache/*"
                 else
                     newbase = defaultprefix .. newbase
-                end
-                if not file.is_writable(newpath) then
-                    if trace_conversion then
-                        report_inclusion("path %a is not writable, forcing conversion path %a",newpath,".")
-                    end
-                    newpath = "."
                 end
                 local subpath = specification.subpath or figures.cachepaths.subpath
                 if subpath and subpath ~= "" and subpath ~= "."  then
                     newpath = newpath .. "/" .. subpath
+                end
+                if not lfs.isdir(newpath) then
+                    dir.makedirs(newpath)
+                    if not file.is_writable(newpath) then
+                        if trace_conversion then
+                            report_inclusion("path %a is not writable, forcing conversion path %a",newpath,".")
+                        end
+                        newpath = "."
+                    end
                 end
                 local prefix = specification.prefix or figures.cachepaths.prefix
                 if prefix and prefix ~= "" then
@@ -602,7 +728,6 @@ local function register(askedname,specification)
                 local newbase = newbase .. "." .. newformat
                 --
                 local newname = file.join(newpath,newbase)
-                dir.makedirs(newpath)
                 oldname = collapsepath(oldname)
                 newname = collapsepath(newname)
                 local oldtime = lfs.attributes(oldname,'modification') or 0
@@ -626,7 +751,7 @@ local function register(askedname,specification)
                     format = newformat
                     if not figures_suffixes[format] then
                         -- maybe the new format is lowres.png (saves entry in suffixes)
-                        -- so let's do thsi extra check
+                        -- so let's do this extra check
                         local suffix = file.suffix(newformat)
                         if figures_suffixes[suffix] then
                             if trace_figures then
@@ -636,29 +761,44 @@ local function register(askedname,specification)
                         end
                     end
                 elseif io.exists(oldname) then
-                    specification.fullname  = oldname -- was newname
+                    report_inclusion("file %a is bugged",oldname)
+                    if format and validtypes[format] then
+                        specification.fullname = oldname
+                    end
                     specification.converted = false
+                    specification.bugged    = true
                 end
             end
         end
-        local found = figures_suffixes[format] -- validtypes[format]
-        if not found then
-            specification.found = false
-            if trace_figures then
-                report_inclusion("format %a is not supported",format)
-            end
-        else
-            specification.found = true
-            if trace_figures then
-                if validtypes[format] then -- format?
+        if format then
+            local found = figures_suffixes[format] -- validtypes[format]
+            if not found then
+                specification.found = false
+                if trace_figures then
+                    report_inclusion("format %a is not supported",format)
+                end
+            elseif validtypes[format] then
+                specification.found = true
+                if trace_figures then
                     report_inclusion("format %a natively supported by backend",format)
-                else
+                end
+            else
+                specification.found = true -- else no foo.1 mps conversion
+                if trace_figures then
                     report_inclusion("format %a supported by output file format",format)
                 end
             end
+        else
+            specification.askedname = askedname
+            specification.found     = false
         end
     end
-    specification.foundname = specification.foundname or specification.fullname
+    if specification.found then
+        specification.foundname = specification.foundname or specification.fullname
+    else
+        specification.foundname = nil
+    end
+    specification.badname   = figures.badname(askedname)
     local askedhash = f_hash_part(askedname,specification.conversion or "default",specification.resolution or "default")
     figures_found[askedhash] = specification
     return specification
@@ -667,13 +807,16 @@ end
 local resolve_too = false -- true
 
 local internalschemes = {
-    file = true,
+    file    = true,
+    tree    = true,
+    dirfile = true,
+    dirtree = true,
 }
 
 local function locate(request) -- name, format, cache
     -- not resolvers.cleanpath(request.name) as it fails on a!b.pdf and b~c.pdf
     -- todo: more restricted cleanpath
-    local askedname = request.name
+    local askedname = request.name or ""
     local askedhash = f_hash_part(askedname,request.conversion or "default",request.resolution or "default")
     local foundname = figures_found[askedhash]
     if foundname then
@@ -684,11 +827,18 @@ local function locate(request) -- name, format, cache
     local askedconversion = request.conversion
     local askedresolution = request.resolution
     --
-    if request.format == "" or request.format == "unknown" then
-        request.format = nil
+    local askedformat = request.format
+    if not askedformat or askedformat == "" or askedformat == "unknown" then
+        askedformat = file.suffix(askedname) or ""
+    elseif askedformat == v_auto then
+        if trace_figures then
+            report_inclusion("ignoring suffix of %a",askedname)
+        end
+        askedformat = ""
+        askedname   = file.removesuffix(askedname)
     end
     -- protocol check
-    local hashed = url.hashed(askedname)
+    local hashed = urlhashed(askedname)
     if not hashed then
         -- go on
     elseif internalschemes[hashed.scheme] then
@@ -697,6 +847,7 @@ local function locate(request) -- name, format, cache
             askedname = path
         end
     else
+     -- local fname = methodhandler('finders',pathname .. "/" .. wantedfiles[k])
         local foundname = resolvers.findbinfile(askedname)
         if not foundname or not lfs.isfile(foundname) then -- foundname can be dummy
             if trace_figures then
@@ -705,7 +856,6 @@ local function locate(request) -- name, format, cache
             -- url not found
             return register(askedname)
         end
-        local askedformat = request.format or file.suffix(askedname) or ""
         local guessedformat = figures.guess(foundname)
         if askedformat ~= guessedformat then
             if trace_figures then
@@ -728,9 +878,8 @@ local function locate(request) -- name, format, cache
         end
     end
     -- we could use the hashed data instead
-    local askedpath= file.is_rootbased_path(askedname)
+    local askedpath = file.is_rootbased_path(askedname)
     local askedbase = file.basename(askedname)
-    local askedformat = request.format or file.suffix(askedname) or ""
     if askedformat ~= "" then
         askedformat = lower(askedformat)
         if trace_figures then
@@ -750,7 +899,7 @@ local function locate(request) -- name, format, cache
             end
         end
         if format then
-            local foundname, quitscanning, forcedformat = figures.exists(askedname,format,resolve_too) -- not askedformat
+            local foundname, quitscanning, forcedformat, internal = figures.exists(askedname,format,resolve_too) -- not askedformat
             if foundname then
                 return register(askedname, {
                     askedname  = askedname,
@@ -760,6 +909,7 @@ local function locate(request) -- name, format, cache
                  -- foundname  = foundname, -- no
                     conversion = askedconversion,
                     resolution = askedresolution,
+                    internal   = internal,
                 })
             elseif quitscanning then
                 return register(askedname)
@@ -784,7 +934,7 @@ local function locate(request) -- name, format, cache
         else
             -- type given
             for i=1,#figure_paths do
-                local path = figure_paths[i]
+                local path = resolveprefix(figure_paths[i]) -- we resolve (e.g. jobfile:)
                 local check = path .. "/" .. askedname
              -- we pass 'true' as it can be an url as well, as the type
              -- is given we don't waste much time
@@ -792,7 +942,7 @@ local function locate(request) -- name, format, cache
                 if foundname then
                     return register(check, {
                         askedname  = askedname,
-                        fullname   = check,
+                        fullname   = foundname, -- check,
                         format     = askedformat,
                         cache      = askedcache,
                         conversion = askedconversion,
@@ -850,9 +1000,9 @@ local function locate(request) -- name, format, cache
                  -- local name = file.replacesuffix(askedbase,suffix)
                     local name = file.replacesuffix(askedname,suffix)
                     for i=1,#figure_paths do
-                        local path = figure_paths[i]
+                        local path = resolveprefix(figure_paths[i]) -- we resolve (e.g. jobfile:)
                         local check = path .. "/" .. name
-                        local isfile = url.hashed(check).scheme == "file"
+                        local isfile = internalschemes[urlhashed(check).scheme]
                         if not isfile then
                             if trace_figures then
                                 report_inclusion("warning: skipping path %a",path)
@@ -878,7 +1028,7 @@ local function locate(request) -- name, format, cache
                 report_inclusion("unknown format, using path strategy")
             end
             for i=1,#figure_paths do
-                local path = figure_paths[i]
+                local path = resolveprefix(figure_paths[i]) -- we resolve (e.g. jobfile:)
                 for j=1,#figures_order do
                     local format = figures_order[j]
                     local list = figures_formats[format].list or { format }
@@ -942,7 +1092,7 @@ function identifiers.default(data)
         du.fullname = fullname -- can be cached
         ds.fullname = foundname -- original
         ds.format   = l.format
-        ds.status   = (l.found and 10) or 0
+        ds.status   = (l.bugged and 0) or (l.found and 10) or 0
     end
     return data
 end
@@ -952,8 +1102,8 @@ function figures.identify(data)
     local list = identifiers.list -- defined at the end
     for i=1,#list do
         local identifier = list[i]
-        data = identifier(data)
-        if data.status.status > 0 then
+        local data = identifier(data)
+        if data and (not data.status and data.status.status > 0) then
             break
         end
     end
@@ -969,12 +1119,57 @@ function figures.check(data)
     return (checkers[data.status.format] or checkers.generic)(data)
 end
 
+local trace_usage = false
+local used_images = { }
+
+trackers.register("graphics.usage", function(v)
+    if v and not trace_usage then
+        luatex.registerstopactions(function()
+            local found = { }
+            for _, t in table.sortedhash(figures_found) do
+                found[#found+1] = t
+                for k, v in next, t do
+                    if v == false or v == "" then
+                        t[k] = nil
+                    end
+                end
+            end
+            for i=1,#used_images do
+                local u = used_images[i]
+                local s = u.status
+                if s then
+                    s.status = nil -- doesn't say much here
+                    if s.error then
+                        u.used = { } -- better show that it's not used
+                    end
+                end
+                for _, t in next, u do
+                    for k, v in next, t do
+                        if v == false or v == "" then
+                            t[k] = nil
+                        end
+                    end
+                end
+            end
+            table.save(file.nameonly(environment.jobname) .. "-figures-usage.lua",{
+                found = found,
+                used  = used_images,
+            } )
+        end)
+        trace_usage = true
+    end
+end)
+
 function figures.include(data)
     data = data or callstack[#callstack] or lastfiguredata
+    if trace_usage then
+        used_images[#used_images+1] = data
+    end
     return (includers[data.status.format] or includers.generic)(data)
 end
 
 function figures.scale(data) -- will become lua code
+    data = data or callstack[#callstack] or lastfiguredata
     context.doscalefigure()
     return data
 end
@@ -1011,11 +1206,15 @@ end
 function existers.generic(askedname,resolve)
     -- not findbinfile
     local result
-    if lfs.isfile(askedname) then
+    if hasscheme(askedname) then
+        result = resolvers.findbinfile(askedname)
+    elseif lfs.isfile(askedname) then
         result = askedname
     elseif resolve then
-        result = resolvers.findbinfile(askedname) or ""
-        if result == "" then result = false end
+        result = resolvers.findbinfile(askedname)
+    end
+    if not result or result == "" then
+        result = false
     end
     if trace_figures then
         if result then
@@ -1029,11 +1228,11 @@ end
 
 function checkers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
-    local name = du.fullname or "unknown generic"
-    local page = du.page or dr.page
-    local size = dr.size or "crop"
+    local name  = du.fullname or "unknown generic"
+    local page  = du.page or dr.page
+    local size  = dr.size or "crop"
     local color = dr.color or "natural"
-    local mask = dr.mask or "none"
+    local mask  = dr.mask or "none"
     local conversion = dr.conversion
     local resolution = dr.resolution
     if not conversion or conversion == "" then
@@ -1053,9 +1252,18 @@ function checkers.generic(data)
         }
         codeinjections.setfigurecolorspace(data,figure)
         codeinjections.setfiguremask(data,figure)
-        figure = figure and images.check(images.scan(figure)) or false
+        if figure then
+            local f, comment = images.check(images.scan(figure))
+            if not f then
+                ds.comment = comment
+                ds.found   = false
+                ds.error   = true
+            end
+            figure = f
+        end
         local f, d = codeinjections.setfigurealternative(data,figure)
-        figure, data = f or figure, d or data
+        figure = f or figure
+        data   = d or data
         figures_loaded[hash] = figure
         if trace_conversion then
             report_inclusion("new graphic, using hash %a",hash)
@@ -1081,12 +1289,19 @@ function checkers.generic(data)
     return data
 end
 
+local nofimages = 0
+local pofimages = { }
+
+function figures.getrealpage(index)
+    return pofimages[index] or 0
+end
+
 function includers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
     -- here we set the 'natural dimensions'
-    dr.width = du.width
-    dr.height = du.height
-    local hash = figures.hash(data)
+    dr.width     = du.width
+    dr.height    = du.height
+    local hash   = figures.hash(data)
     local figure = figures_used[hash]
  -- figures.registerresource {
  --     filename = du.fullname,
@@ -1102,9 +1317,17 @@ function includers.generic(data)
         figures_used[hash] = figure
     end
     if figure then
-        local nr = figures.boxnumber
-        -- it looks like we have a leak in attributes here .. todo
-        local box = hpack(images.node(figure)) -- images.node(figure) not longer valid
+        local nr     = figures.boxnumber
+        nofimages    = nofimages + 1
+        ds.pageindex = nofimages
+        local image  = images.node(figure)
+        local pager  = new_latelua(function()
+            pofimages[nofimages] = pofimages[nofimages] or tex.count.realpageno -- so when reused we register the first one only
+        end)
+        image.next = pager
+        pager.prev = image
+        local box  = hpack(image) -- images.node(figure) not longer valid
+
         indexed[figure.index] = figure
         box.width, box.height, box.depth = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
         texsetbox(nr,box)
@@ -1178,6 +1401,8 @@ includers.mov = includers.nongeneric
 
 internalschemes.mprun = true
 
+-- mprun.foo.1 mprun.6 mprun:foo.2
+
 local function internal(askedname)
     local spec, mprun, mpnum = match(lower(askedname),"mprun([:%.]?)(.-)%.(%d+)")
     if spec ~= "" then
@@ -1190,7 +1415,7 @@ end
 function existers.mps(askedname)
     local mprun, mpnum = internal(askedname)
     if mpnum then
-        return askedname
+        return askedname, true, "mps", true
     else
         return existers.generic(askedname)
     end
@@ -1211,7 +1436,7 @@ includers.mps = includers.nongeneric
 
 function existers.tex(askedname)
     askedname = resolvers.findfile(askedname)
-    return askedname ~= "" and askedname or false
+    return askedname ~= "" and askedname or false, true, "tex", true
 end
 
 function checkers.tex(data)
@@ -1225,7 +1450,7 @@ includers.tex = includers.nongeneric
 function existers.buffer(askedname)
     local name = file.nameonly(askedname)
     local okay = buffers.exists(name)
-    return okay and name, true -- always quit scanning
+    return okay and name, true, "buffer", true -- always quit scanning
 end
 
 function checkers.buffer(data)
@@ -1252,7 +1477,10 @@ includers.auto = includers.generic
 
 -- -- -- cld -- -- --
 
-existers.cld = existers.tex
+function existers.cld(askedname)
+    askedname = resolvers.findfile(askedname)
+    return askedname ~= "" and askedname or false, true, "cld", true
+end
 
 function checkers.cld(data)
     return checkers_nongeneric(data,function() context.docheckfigurecld(data.used.fullname) end)
@@ -1270,20 +1498,38 @@ end
 -- programs.makeoptions = makeoptions
 
 local function runprogram(binary,argument,variables)
-    local binary = match(binary,"[%S]+") -- to be sure
+    -- move this check to the runner code
+    local found = nil
+    if type(binary) == "table" then
+        for i=1,#binary do
+            local b = binary[i]
+            found = os.which(b)
+            if found then
+                binary = b
+                break
+            end
+        end
+        if not found then
+            binary = concat(binary, " | ")
+        end
+    elseif binary then
+        found = os.which(match(binary,"[%S]+"))
+    end
     if type(argument) == "table" then
         argument = concat(argument," ") -- for old times sake
     end
-    if not os.which(binary) then
-        report_inclusion("program %a is not installed, not running command: %s",binary,command)
+    if not found then
+        report_inclusion("program %a is not installed",binary or "?")
     elseif not argument or argument == "" then
-        report_inclusion("nothing to run, unknown program %a",binary)
+        report_inclusion("nothing to run, no arguments for program %a",binary)
     else
-        local command = format([["%s" %s]],binary,replacetemplate(longtostring(argument),variables))
+        -- no need to use the full found filename (found) .. we also don't quote the program
+        -- name any longer as in luatex there is too much messing with these names
+        local command = format([[%s %s]],binary,replacetemplate(longtostring(argument),variables))
         if trace_conversion or trace_programs then
             report_inclusion("running command: %s",command)
         end
-        os.spawn(command)
+        os.execute(command)
     end
 end
 
@@ -1298,13 +1544,15 @@ local epsconverter = converters.eps or { }
 converters.eps     = epsconverter
 converters.ps      = epsconverter
 
+-- todo: colorspace
+
 local epstopdf = {
     resolutions = {
         [v_low]    = "screen",
         [v_medium] = "ebook",
         [v_high]   = "prepress",
     },
-    command = os.type == "windows" and "gswin32c" or "gs",
+    command = os.type == "windows" and { "gswin64c", "gswin32c" } or "gs",
     -- -dProcessDSCComments=false
     argument = [[
         -q
@@ -1315,8 +1563,10 @@ local epstopdf = {
         -dAutoRotatePages=/None
         -dPDFSETTINGS=/%presets%
         -dEPSCrop
-        -sOutputFile=%newname%
-        %oldname%
+        -dCompatibilityLevel=%level%
+        -sOutputFile="%newname%"
+        %colorspace%
+        "%oldname%"
         -c quit
     ]],
 }
@@ -1324,14 +1574,66 @@ local epstopdf = {
 programs.epstopdf = epstopdf
 programs.gs       = epstopdf
 
-function epsconverter.pdf(oldname,newname,resolution) -- the resolution interface might change
+local cleanups    = { }
+local cleaners    = { }
+
+local whitespace  = lpeg.patterns.whitespace
+local quadruple   = Ct((whitespace^0 * lpeg.patterns.number/tonumber * whitespace^0)^4)
+local betterbox   = P("%%BoundingBox:")      * quadruple
+                  * P("%%HiResBoundingBox:") * quadruple
+                  * P("%AI3_Cropmarks:")     * quadruple
+                  * P("%%CropBox:")          * quadruple
+                  / function(b,h,m,c)
+                         return formatters["%%%%BoundingBox: %i %i %i %i\n%%%%HiResBoundingBox: %F %F %F %F\n%%%%CropBox: %F %F %F %F\n"](
+                             m[1],m[2],m[3],m[4],
+                             m[1],m[2],m[3],m[4],
+                             m[1],m[2],m[3],m[4]
+                         )
+                     end
+local nocrap      = P("%") / "" * (
+                         (P("AI9_PrivateDataBegin") * P(1)^0)                            / "%%%%EOF"
+                       + (P("%EOF") * whitespace^0 * P("%AI9_PrintingDataEnd") * P(1)^0) / "%%%%EOF"
+                       + (P("AI7_Thumbnail") * (1-P("%%EndData"))^0 * P("%%EndData"))    / ""
+                    )
+local whatever    = nocrap + P(1)
+local pattern     = Cs((betterbox * whatever^1 + whatever)^1)
+
+directives.register("graphics.conversion.eps.cleanup.ai",function(v) cleanups.ai = v end)
+
+cleaners.ai = function(name)
+    local tmpname = name .. ".tmp"
+    io.savedata(tmpname,lpegmatch(pattern,io.loaddata(name)))
+    return tmpname
+end
+
+function epsconverter.pdf(oldname,newname,resolution,colorspace) -- the resolution interface might change
     local epstopdf = programs.epstopdf -- can be changed
-    local presets = epstopdf.resolutions[resolution or ""] or epstopdf.resolutions.high
+    local presets  = epstopdf.resolutions[resolution or "high"] or epstopdf.resolutions.high
+    local level    = codeinjections.getformatoption("pdf_level") or "1.3"
+    local tmpname  = oldname
+    if cleanups.ai then
+        tmpname = cleaners.ai(oldname)
+    end
+    if colorspace == "gray" then
+        colorspace = "-sColorConversionStrategy=Gray -sProcessColorModel=DeviceGray"
+     -- colorspace = "-sColorConversionStrategy=Gray"
+    else
+        colorspace = nil
+    end
     runprogram(epstopdf.command, epstopdf.argument, {
-        newname = newname,
-        oldname = oldname,
-        presets = presets,
+        newname    = newname,
+        oldname    = tmpname,
+        presets    = presets,
+        level      = tostring(level),
+        colorspace = colorspace,
     } )
+    if tmpname ~= oldname then
+        os.remove(tmpname)
+    end
+end
+
+epsconverter["gray.pdf"] = function(oldname,newname,resolution) -- the resolution interface might change
+    epsconverter.pdf(oldname,newname,resolution,"gray")
 end
 
 epsconverter.default = epsconverter.pdf
@@ -1339,22 +1641,23 @@ epsconverter.default = epsconverter.pdf
 local pdfconverter = converters.pdf or { }
 converters.pdf     = pdfconverter
 
-programs.pdftoeps = {
-    command  = "pdftops",
-    argument = [[-eps "%oldname%" "%newname%]],
-}
-
-pdfconverter.stripped = function(oldname,newname)
-    local pdftoeps = programs.pdftoeps -- can be changed
-    local epstopdf = programs.epstopdf -- can be changed
-    local presets = epstopdf.resolutions[resolution or ""] or epstopdf.resolutions.high
-    local tmpname = newname .. ".tmp"
-    runprogram(pdftoeps.command, pdftoeps.argument, { oldname = oldname, newname = tmpname, presets = presets })
-    runprogram(epstopdf.command, epstopdf.argument, { oldname = tmpname, newname = newname, presets = presets })
-    os.remove(tmpname)
-end
-
-figures.registersuffix("stripped","pdf")
+-- programs.pdftoeps = {
+--     command  = "pdftops",
+--     argument = [[-eps "%oldname%" "%newname%"]],
+-- }
+--
+-- pdfconverter.stripped = function(oldname,newname)
+--     local pdftoeps = programs.pdftoeps -- can be changed
+--     local epstopdf = programs.epstopdf -- can be changed
+--     local presets  = epstopdf.resolutions[resolution or ""] or epstopdf.resolutions.high
+--     local level    = codeinjections.getformatoption("pdf_level") or "1.3"
+--     local tmpname  = newname .. ".tmp"
+--     runprogram(pdftoeps.command, pdftoeps.argument, { oldname = oldname, newname = tmpname, presets = presets, level = level })
+--     runprogram(epstopdf.command, epstopdf.argument, { oldname = tmpname, newname = newname, presets = presets, level = level })
+--     os.remove(tmpname)
+-- end
+--
+-- figures.registersuffix("stripped","pdf")
 
 -- -- -- svg -- -- --
 
@@ -1431,14 +1734,111 @@ bmpconverter.default = converter
 
 -- todo: lowres
 
+-- cmyk conversion
+
+-- ecirgb_v2.icc
+-- ecirgb_v2_iccv4.icc
+-- isocoated_v2_300_eci.icc
+-- isocoated_v2_eci.icc
+-- srgb.icc
+-- srgb_v4_icc_preference.icc
+
+-- [[convert %?colorspace: -colorspace "%colorspace%" ?%]]
+
+local rgbprofile  = "srgb_v4_icc_preference.icc" -- srgb.icc
+local cmykprofile = "isocoated_v2_300_eci.icc"   -- isocoated_v2_eci.icc
+
+directives.register("graphics.conversion.rgbprofile", function(v) rgbprofile  = type(v) == "string" and v or rgbprofile  end)
+directives.register("graphics.conversion.cmykprofile",function(v) cmykprofile = type(v) == "string" and v or cmykprofile end)
+
+local function profiles()
+    if not lfs.isfile(rgbprofile) then
+        local found = resolvers.findfile(rgbprofile)
+        if found and found ~= "" then
+            rgbprofile = found
+        else
+            report_figures("unknown profile %a",rgbprofile)
+        end
+    end
+    if not lfs.isfile(cmykprofile) then
+        local found = resolvers.findfile(cmykprofile)
+        if found and found ~= "" then
+            cmykprofile = found
+        else
+            report_figures("unknown profile %a",cmykprofile)
+        end
+    end
+    return rgbprofile, cmykprofile
+end
+
+programs.pngtocmykpdf = {
+    command  = "gm",
+    argument = [[convert -compress Zip  -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -sampling-factor 1x1 "%oldname%" "%newname%"]],
+}
+
+programs.jpgtocmykpdf = {
+    command  = "gm",
+    argument = [[convert -compress JPEG -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -sampling-factor 1x1 "%oldname%" "%newname%"]],
+}
+
+programs.pngtograypdf = {
+    command  = "gm",
+    argument = [[convert -colorspace gray -compress Zip -sampling-factor 1x1 "%oldname%" "%newname%"]],
+}
+
+programs.jpgtograypdf = {
+    command  = "gm",
+    argument = [[convert -colorspace gray -compress Zip -sampling-factor 1x1 "%oldname%" "%newname%"]],
+}
+
+figures.converters.png = {
+    ["cmyk.pdf"] = function(oldname,newname,resolution)
+        local rgbprofile, cmykprofile = profiles()
+        runprogram(programs.pngtocmykpdf.command, programs.pngtocmykpdf.argument, {
+     -- runprogram(programs.pngtocmykpdf, {
+            rgbprofile  = rgbprofile,
+            cmykprofile = cmykprofile,
+            oldname     = oldname,
+            newname     = newname,
+        } )
+    end,
+    ["gray.pdf"] = function(oldname,newname,resolution)
+        runprogram(programs.pngtograypdf.command, programs.pngtograypdf.argument, {
+     -- runprogram(programs.pngtograypdf, {
+            oldname = oldname,
+            newname = newname,
+        } )
+    end,
+}
+
+figures.converters.jpg = {
+    ["cmyk.pdf"] = function(oldname,newname,resolution)
+        local rgbprofile, cmykprofile = profiles()
+        runprogram(programs.jpgtocmykpdf.command, programs.jpgtocmykpdf.argument, {
+     -- runprogram(programs.jpgtocmykpdf, {
+            rgbprofile  = rgbprofile,
+            cmykprofile = cmykprofile,
+            oldname     = oldname,
+            newname     = newname,
+        } )
+    end,
+    ["gray.pdf"] = function(oldname,newname,resolution)
+        runprogram(programs.jpgtograypdf.command, programs.jpgtograypdf.argument, {
+     -- runprogram(programs.jpgtograypdf, {
+            oldname = oldname,
+            newname = newname,
+        } )
+    end,
+}
+
 -- -- -- bases -- -- --
 
 local bases         = allocate()
 figures.bases       = bases
 
-local bases_list    =  nil -- index      => { basename, fullname, xmlroot }
-local bases_used    =  nil -- [basename] => { basename, fullname, xmlroot } -- pointer to list
-local bases_found   =  nil
+local bases_list    = nil -- index      => { basename, fullname, xmlroot }
+local bases_used    = nil -- [basename] => { basename, fullname, xmlroot } -- pointer to list
+local bases_found   = nil
 local bases_enabled = false
 
 local function reset()
@@ -1473,6 +1873,8 @@ function bases.use(basename)
     end
 end
 
+implement { name = "usefigurebase", actions = bases.use, arguments = "string" }
+
 local function bases_find(basename,askedlabel)
     if trace_bases then
         report_inclusion("checking for %a in base %a",askedlabel,basename)
@@ -1485,7 +1887,7 @@ local function bases_find(basename,askedlabel)
         if base[2] == nil then
             -- no yet located
             for i=1,#figure_paths do
-                local path = figure_paths[i]
+                local path = resolveprefix(figure_paths[i]) -- we resolve (e.g. jobfile:)
                 local xmlfile = path .. "/" .. basename
                 if io.exists(xmlfile) then
                     base[2] = xmlfile
@@ -1503,10 +1905,10 @@ local function bases_find(basename,askedlabel)
                 page = page + 1
                 if xml.text(e) == askedlabel then
                     t = {
-                        base = file.replacesuffix(base[2],"pdf"),
+                        base   = file.replacesuffix(base[2],"pdf"),
                         format = "pdf",
-                        name = xml.text(e,"../*:file"), -- to be checked
-                        page = page,
+                        name   = xml.text(e,"../*:file"), -- to be checked
+                        page   = page,
                     }
                     bases_found[askedlabel] = t
                     if trace_bases then
@@ -1541,13 +1943,13 @@ function identifiers.base(data)
         local dr, du, ds = data.request, data.used, data.status
         local fbl = bases_locate(dr.name or dr.label)
         if fbl then
-            du.page = fbl.page
-            du.format = fbl.format
+            du.page     = fbl.page
+            du.format   = fbl.format
             du.fullname = fbl.base
             ds.fullname = fbl.name
-            ds.format = fbl.format
-            ds.page = fbl.page
-            ds.status = 10
+            ds.format   = fbl.format
+            ds.page     = fbl.page
+            ds.status   = 10
         end
     end
     return data
@@ -1566,7 +1968,15 @@ identifiers.list = {
 statistics.register("graphics processing time", function()
     local nofprocessed = figures.nofprocessed
     if nofprocessed > 0 then
-        return format("%s seconds including tex, %s processed images", statistics.elapsedtime(figures),nofprocessed)
+        local nofnames, nofbadnames = 0, 0
+        for hash, data in next, figures_found do
+            nofnames = nofnames + 1
+            if data.badname then
+                nofbadnames = nofbadnames + 1
+            end
+        end
+        return format("%s seconds including tex, %s processed images, %s unique asked, %s bad names",
+            statistics.elapsedtime(figures),nofprocessed,nofnames,nofbadnames)
     else
         return nil
     end
@@ -1618,4 +2028,59 @@ end
 
 -- interfacing
 
-commands.setfigurelookuporder = figures.setorder
+implement {
+    name      = "figure_push",
+    scope     = "private",
+    actions   = figures.push,
+    arguments = {
+        {
+            { "name" },
+            { "label" },
+            { "page" },
+            { "size" },
+            { "object" },
+            { "prefix" },
+            { "cache" },
+            { "format" },
+            { "preset" },
+            { "controls" },
+            { "resources" },
+            { "preview" },
+            { "display" },
+            { "mask" },
+            { "conversion" },
+            { "resolution" },
+            { "color" },
+            { "repeat" },
+            { "width", "dimen" },
+            { "height", "dimen" },
+        }
+    }
+}
+
+-- beware, we get a number passed by default
+
+implement { name = "figure_pop",      scope = "private", actions = figures.pop }
+implement { name = "figure_done",     scope = "private", actions = figures.done }
+implement { name = "figure_dummy",    scope = "private", actions = figures.dummy }
+implement { name = "figure_identify", scope = "private", actions = figures.identify }
+implement { name = "figure_scale",    scope = "private", actions = figures.scale }
+implement { name = "figure_check",    scope = "private", actions = figures.check }
+implement { name = "figure_include",  scope = "private", actions = figures.include }
+
+implement {
+    name      = "setfigurelookuporder",
+    actions   = figures.setorder,
+    arguments = "string"
+}
+
+implement {
+    name      = "figure_reset",
+    scope     = "private",
+    arguments = { "integer", "dimen", "dimen" },
+    actions   = function(box,width,height)
+        figures.boxnumber     = box
+        figures.defaultwidth  = width
+        figures.defaultheight = height
+    end
+}

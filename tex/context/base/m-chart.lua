@@ -19,8 +19,6 @@ local P, S, C, Cc, lpegmatch = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc, lpeg.match
 
 local report_chart = logs.reporter("chart")
 
-local points     = number.points -- we can use %p instead
-
 local variables  = interfaces.variables
 
 local v_yes      = variables.yes
@@ -229,6 +227,8 @@ function commands.flow_start_cell(settings)
         settings    = settings,
         x           = 1,
         y           = 1,
+        realx       = 1,
+        realy       = 1,
         name        = "",
     }
 end
@@ -325,9 +325,13 @@ local function inject(includedata,data,hash)
         if si.include then
             inject(si,data,hash)
         else
+            local x = si.x + xoffset
+            local y = si.y + yoffset
             local t = {
-                x        = si.x + xoffset,
-                y        = si.y + yoffset,
+                x        = x,
+                y        = y,
+                realx    = x,
+                realy    = y,
                 settings = settings,
             }
             setmetatableindex(t,si)
@@ -451,10 +455,12 @@ function commands.flow_set_location(x,y)
     else
         y = tonumber(y)
     end
-    temp.x = x or 1
-    temp.y = y or 1
-    last_x = x or last_x
-    last_y = y or last_y
+    temp.x     = x or 1
+    temp.y     = y or 1
+    temp.realx = x or 1
+    temp.realy = y or 1
+    last_x     = x or last_x
+    last_y     = y or last_y
 end
 
 function commands.flow_set_connection(location,displacement,name)
@@ -499,17 +505,17 @@ local function process_cells(chart,xoffset,yoffset)
                     local linesettings = settings.line
                     context("flow_shape_line_color := \\MPcolor{%s} ;", linesettings.color)
                     context("flow_shape_fill_color := \\MPcolor{%s} ;", linesettings.backgroundcolor)
-                    context("flow_shape_line_width := %s ; ",           points(linesettings.rulethickness))
+                    context("flow_shape_line_width := %p ; ",           linesettings.rulethickness)
                 elseif focus[cell.focus] or focus[cell.name] then
                     local focussettings = settings.focus
                     context("flow_shape_line_color := \\MPcolor{%s} ;", focussettings.framecolor)
                     context("flow_shape_fill_color := \\MPcolor{%s} ;", focussettings.backgroundcolor)
-                    context("flow_shape_line_width := %s ; ",           points(focussettings.rulethickness))
+                    context("flow_shape_line_width := %p ; ",           focussettings.rulethickness)
                 else
                     local shapesettings = settings.shape
                     context("flow_shape_line_color := \\MPcolor{%s} ;", shapesettings.framecolor)
                     context("flow_shape_fill_color := \\MPcolor{%s} ;", shapesettings.backgroundcolor)
-                    context("flow_shape_line_width := %s ; " ,          points(shapesettings.rulethickness))
+                    context("flow_shape_line_width := %p ; " ,          shapesettings.rulethickness)
                 end
                 context("flow_peepshape := false ;")   -- todo
                 context("flow_new_shape(%s,%s,%s) ;",cell.x+xoffset,cell.y+yoffset,shapedata.number)
@@ -580,7 +586,7 @@ local function process_connections(chart,xoffset,yoffset)
                             context("flow_touchshape := %s ;", linesettings.offset == v_none and "true" or "false")
                             context("flow_dsp_x := %s ; flow_dsp_y := %s ;",connection.dx or 0, connection.dy or 0)
                             context("flow_connection_line_color := \\MPcolor{%s} ;",linesettings.color)
-                            context("flow_connection_line_width := %s ;",points(linesettings.rulethickness))
+                            context("flow_connection_line_width := %p ;",linesettings.rulethickness)
                             context("flow_connect_%s_%s (%s) (%s,%s,%s) (%s,%s,%s) ;",where_cell,where_other,j,cellx,celly,what_cell,otherx,othery,what_other)
                             context("flow_dsp_x := 0 ; flow_dsp_y := 0 ;")
                         end
@@ -686,6 +692,7 @@ local function getchart(settings,forced_x,forced_y,forced_nx,forced_ny)
         print("no such chart",chartname)
         return
     end
+-- chart = table.copy(chart)
     chart = expanded(chart,settings)
     local chartsettings = chart.settings.chart
     local autofocus = chart.settings.chart.autofocus
@@ -746,8 +753,8 @@ local function getchart(settings,forced_x,forced_y,forced_nx,forced_ny)
     -- relocate cells
     for i=1,#data do
         local cell = data[i]
-        cell.x = cell.x - minx + 1
-        cell.y = cell.y - miny + 1
+        cell.x = cell.realx - minx + 1
+        cell.y = cell.realy - miny + 1
     end
     chart.from_x = 1
     chart.from_y = 1
@@ -756,7 +763,9 @@ local function getchart(settings,forced_x,forced_y,forced_nx,forced_ny)
     chart.nx     = nx
     chart.ny     = ny
     --
- -- inspect(chart)
+    chart.shift_x = minx + 1
+    chart.shift_y = miny + 1
+    --
     return chart
 end
 
@@ -792,14 +801,14 @@ local function makechart(chart)
     local labeloffset   = chartsettings.labeloffset
     local exitoffset    = chartsettings.exitoffset
     local commentoffset = chartsettings.commentoffset
-    context("flow_grid_width     := %s ;", points(gridwidth))
-    context("flow_grid_height    := %s ;", points(gridheight))
-    context("flow_shape_width    := %s ;", points(shapewidth))
-    context("flow_shape_height   := %s ;", points(shapeheight))
-    context("flow_chart_offset   := %s ;", points(chartoffset))
-    context("flow_label_offset   := %s ;", points(labeloffset))
-    context("flow_exit_offset    := %s ;", points(exitoffset))
-    context("flow_comment_offset := %s ;", points(commentoffset))
+    context("flow_grid_width     := %p ;", gridwidth)
+    context("flow_grid_height    := %p ;", gridheight)
+    context("flow_shape_width    := %p ;", shapewidth)
+    context("flow_shape_height   := %p ;", shapeheight)
+    context("flow_chart_offset   := %p ;", chartoffset)
+    context("flow_label_offset   := %p ;", labeloffset)
+    context("flow_exit_offset    := %p ;", exitoffset)
+    context("flow_comment_offset := %p ;", commentoffset)
     --
     local radius = settings.line.radius
     local rulethickness = settings.line.rulethickness
@@ -814,10 +823,10 @@ local function makechart(chart)
             radius = dy
         end
     end
-    context("flow_connection_line_width := %s ;", points(rulethickness))
-    context("flow_connection_smooth_size := %s ;", points(radius))
-    context("flow_connection_arrow_size := %s ;", points(radius))
-    context("flow_connection_dash_size := %s ;", points(radius))
+    context("flow_connection_line_width  := %p ;", rulethickness)
+    context("flow_connection_smooth_size := %p ;", radius)
+    context("flow_connection_arrow_size  := %p ;", radius)
+    context("flow_connection_dash_size   := %p ;", radius)
     --
     local offset = chartsettings.offset -- todo: pass string
     if offset == v_none or offset == v_overlay or offset == "" then
@@ -825,7 +834,7 @@ local function makechart(chart)
     elseif offset == v_standard then
         offset = radius -- or rulethickness?
     end
-    context("flow_chart_offset := %s ;",points(offset))
+    context("flow_chart_offset := %p ;",offset)
     --
     context("flow_reverse_y := true ;")
     process_cells(chart,0,0)
@@ -854,7 +863,7 @@ local function splitchart(chart)
     local delta_x = splitsettings.dx or 0
     local delta_y = splitsettings.dy or 0
     --
-    report_chart("spliting %a from (%s,%s) upto (%s,%s) into (%s,%s) with overlap (%s,%s)",
+    report_chart("spliting %a from (%s,%s) upto (%s,%s) with steps (%s,%s) and overlap (%s,%s)",
         name,from_x,from_y,to_x,to_y,step_x,step_y,delta_x,delta_y)
     --
     local part_x = 0
@@ -866,6 +875,9 @@ local function splitchart(chart)
         if done then
             last_x = to_x
         end
+-- if first_x >= to_x then
+--     break
+-- end
         local part_y = 0
         local first_y = from_y
         while true do
@@ -875,14 +887,31 @@ local function splitchart(chart)
             if done then
                 last_y = to_y
             end
+-- if first_y >= to_y then
+--     break
+-- end
             --
+local data = chart.data
+for i=1,#data do
+    local cell = data[i]
+--     inspect(cell)
+    local cx, cy = cell.x, cell.y
+    if cx >= first_x and cx <= last_x then
+        if cy >= first_y and cy <= last_y then
             report_chart("part (%s,%s) of %a is split from (%s,%s) -> (%s,%s)",part_x,part_y,name,first_x,first_y,last_x,last_y)
-            local x, y, nx, ny = first_x, first_y, last_x - first_x + 1,last_y - first_y + 1
+            local x  = first_x
+            local y  = first_y
+            local nx = last_x - first_x + 1
+            local ny = last_y - first_y + 1
             context.beforeFLOWsplit()
             context.handleFLOWsplit(function()
                 makechart(getchart(settings,x,y,nx,ny)) -- we need to pass frozen settings !
             end)
             context.afterFLOWsplit()
+            break
+        end
+    end
+end
             --
             if done then
                 break

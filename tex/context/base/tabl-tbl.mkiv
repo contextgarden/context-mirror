@@ -331,7 +331,7 @@
   {\dowithnextboxcs\tabl_tabulate_shaped_par_finish\vbox\bgroup}
 
 \def\tabl_tabulate_shaped_par_finish
-  {\ctxcommand{doreshapeframedbox(\number\nextbox)}%
+  {\clf_doreshapeframedbox\nextbox\relax
    \ifvmode\unvbox\else\box\fi\nextbox}
 
 \let\tabl_tabulate_shaped_par_end\egroup
@@ -429,7 +429,8 @@
         \aligntab
         \tabl_tabulate_column_vrule_inject
         \tabl_tabulate_color_side_left
-        \tabl_tabulate_inject_pre_skip{\the\s_tabl_tabulate_pre}%
+%         \tabl_tabulate_inject_pre_skip{\the\s_tabl_tabulate_pre}%
+        \tabl_tabulate_inject_pre_skip{\the\dimexpr\s_tabl_tabulate_pre}% get rid of plus
         \alignmark\alignmark
         \aligntab
         \tabl_tabulate_color_side_both
@@ -496,7 +497,7 @@
         \egroup
         \aligntab
         \noexpand\dostoptagged
-        \tabl_tabulate_inject_post_skip{\the\s_tabl_tabulate_post}%
+        \tabl_tabulate_inject_post_skip{\the\dimexpr\s_tabl_tabulate_post}% get rid of plus
         \alignmark\alignmark
    }}%
    \t_tabl_tabulate_dummy\expandafter{\the\t_tabl_tabulate_dummy\NC}%
@@ -598,17 +599,17 @@
    \tabl_tabulate_set_preamble}
 
 \def\tabl_tabulate_set_preskip#1%
-  {\doifnumberelse{#1}
+  {\doifelsenumber{#1}
      {\s_tabl_tabulate_pre#1\d_tabl_tabulate_unit\tabl_tabulate_set_preamble  }
      {\s_tabl_tabulate_pre.5\d_tabl_tabulate_unit\tabl_tabulate_set_preamble#1}}
 
 \def\tabl_tabulate_set_posskip#1%
-  {\doifnumberelse{#1}
+  {\doifelsenumber{#1}
      {\s_tabl_tabulate_post#1\d_tabl_tabulate_unit\tabl_tabulate_set_preamble  }
      {\s_tabl_tabulate_post.5\d_tabl_tabulate_unit\tabl_tabulate_set_preamble#1}}
 
 \def\tabl_tabulate_set_preposskip#1%
-  {\doifnumberelse{#1}
+  {\doifelsenumber{#1}
      {\s_tabl_tabulate_pre#1\d_tabl_tabulate_unit\s_tabl_tabulate_post\s_tabl_tabulate_pre\tabl_tabulate_set_preamble  }
      {\s_tabl_tabulate_pre.5\d_tabl_tabulate_unit\s_tabl_tabulate_post\s_tabl_tabulate_pre\tabl_tabulate_set_preamble#1}}
 
@@ -650,7 +651,7 @@
    \tabl_tabulate_set_preamble}
 
 \def\tabl_tabulate_pickup_width
-  {\doifnextparenthesiselse\tabl_tabulate_set_width_indeed\tabl_tabulate_set_preamble}
+  {\doifelsenextparenthesis\tabl_tabulate_set_width_indeed\tabl_tabulate_set_preamble}
 
 \def\tabl_tabulate_set_width
   {\setfalse\c_tabl_tabulate_pwidth_set
@@ -663,7 +664,7 @@
    \tabl_tabulate_set_preamble}
 
 \def\tabl_tabulate_set_paragraph
-  {\doifnextparenthesiselse
+  {\doifelsenextparenthesis
      {\c_tabl_tabulate_modus\plusone
       \settrue\c_tabl_tabulate_pwidth_set
       \tabl_tabulate_pickup_width}
@@ -748,7 +749,7 @@
    \tabl_tabulate_set_preamble}
 
 \def\tabl_tabulate_set_vrule_command#1%
-  {\doifnumberelse{#1}
+  {\doifelsenumber{#1}
      {\global\d_tabl_tabulate_vrulethickness#1\d_tabl_tabulate_vrulethickness_default}
      {\xdef\m_tabl_tabulate_vrule_color{#1}}}
 
@@ -1048,23 +1049,34 @@
 
 \def\tabl_tabulate_insert_foot_content
   {\tabulatenoalign{\global\settrue\c_tabl_tabulate_someamble}%
-   \csname\??tabulatehead\currenttabulation\endcsname
+   \csname\??tabulatefoot\currenttabulation\endcsname
    \tabulatenoalign{\global\setfalse\c_tabl_tabulate_someamble}}%
 
 \def\tabl_tabulate_check_full_content % - needed, else confusion with \c!header
   {\ifcsname\??tabulatehead\currenttabulation\endcsname
-     \let\tabl_tabulate_insert_head\tabl_tabulate_insert_head_content
+     \expandafter\ifx\csname\??tabulatehead\currenttabulation\endcsname\empty
+       \let\tabl_tabulate_insert_head\empty
+     \else
+       \let\tabl_tabulate_insert_head\tabl_tabulate_insert_head_content
+     \fi
    \else
      \let\tabl_tabulate_insert_head\empty
    \fi
    \ifcsname\??tabulatefoot\currenttabulation\endcsname
-     \let\tabl_tabulate_insert_foot\tabl_tabulate_insert_foot_content
+     \expandafter\ifx\csname\??tabulatefoot\currenttabulation\endcsname\empty
+       \let\tabl_tabulate_insert_foot\empty
+     \else
+       \let\tabl_tabulate_insert_foot\tabl_tabulate_insert_head_content
+     \fi
    \else
      \let\tabl_tabulate_insert_foot\empty
    \fi}
 
 \def\tabl_tabulate_insert_content
   {\tabl_tabulate_insert_head
+   \ifcase\c_tabl_tabulate_repeathead \else
+     \tabulatenoalign{\penalty\zerocount}% added 7/5/2014 WS mail
+   \fi
    \tabl_tabulate_insert_body
    \tabl_tabulate_insert_foot
    \tabl_tabulate_remove_funny_line}
@@ -1075,8 +1087,10 @@
      \tabulatenoalign{\kern-\lineheight}%
    \fi}
 
-\setuvalue{\e!start\v!tabulatehead}{\doifnextoptionalelse\tabl_tabulate_start_head_yes\tabl_tabulate_start_head_nop}
-\setuvalue{\e!start\v!tabulatetail}{\doifnextoptionalelse\tabl_tabulate_start_foot_yes\tabl_tabulate_start_foot_nop}
+% todo: make footer synonym to tail
+
+\setuvalue{\e!start\v!tabulatehead}{\doifelsenextoptionalcs\tabl_tabulate_start_head_yes\tabl_tabulate_start_head_nop}
+\setuvalue{\e!start\v!tabulatetail}{\doifelsenextoptionalcs\tabl_tabulate_start_foot_yes\tabl_tabulate_start_foot_nop}
 
 \let\m_tabl_tabulate_data\empty
 
@@ -1086,30 +1100,30 @@
 \def\tabl_tabulate_start_foot_yes[#1]%
   {\processcontent{\e!stop\v!tabulatetail}\m_tabl_tabulate_data{\letvalue{\??tabulatefoot#1}\m_tabl_tabulate_data}}
 
-% \def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_head_yes[\v!tabulate]}
-% \def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_foot_yes[\v!tabulate]}
+\def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_head_yes[\v!tabulate]}
+\def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_foot_yes[\v!tabulate]}
 
-\def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_head_yes[]}
-\def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_foot_yes[]}
+% \def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_head_yes[]}
+% \def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_foot_yes[]}
 
 % \unexpanded\def\tabl_start_defined[#1]%
 %   {\bgroup
 %    \edef\currenttabulationparent{#1}%
 %    \let\currenttabulation\currenttabulationparent
-%    \doifnextoptionalelse\tabl_start_defined_yes\tabl_start_defined_nop}
-%
-% \def\tabl_start_defined_yes[#1]%
-%   {\edef\currenttabulation{\currenttabulation:#1}%
-%    \tabl_tabulate_start_building}
-%
-% \def\tabl_start_defined_nop
-%   {\tabl_tabulate_start_building}
+%    \dodoubleargument\tabl_start_defined_indeed}
 
 \unexpanded\def\tabl_start_defined[#1]%
   {\bgroup
    \edef\currenttabulationparent{#1}%
    \let\currenttabulation\currenttabulationparent
-   \dodoubleargument\tabl_start_defined_indeed}
+   \edef\p_format{\tabulationparameter\c!format}%
+   \ifx\p_format\v!none
+     % this is special case: we need to define the generic english
+     % \starttabulate in other interfaces as well
+     \expandafter\dodoubleempty   \expandafter\tabl_start_regular
+   \else
+     \expandafter\dodoubleargument\expandafter\tabl_start_defined_indeed
+   \fi}
 
 \def\tabl_start_defined_indeed
   {\iffirstargument
@@ -1123,7 +1137,7 @@
    \fi}
 
 \def\tabl_start_defined_one[#1][#2]%
-  {\doifassignmentelse{#1}
+  {\doifelseassignment{#1}
      {\setuptabulation[\currenttabulation][#1]}%
      {\edef\currenttabulation{\currenttabulation:#1}}%
    \tabl_tabulate_start_building}
@@ -1140,26 +1154,11 @@
 
 \unexpanded\setuvalue{\e!start\v!tabulate}%
   {\bgroup % whole thing
+   \let\currenttabulationparent\empty
    \dodoubleempty\tabl_start_regular}
 
-% \def\tabl_start_regular[#1][#2]%
-%   {%\let\currenttabulationparent\v!tabulate
-%    \let\currenttabulationparent\empty
-%    \let\currenttabulation\currenttabulationparent
-%    \def\p_format{#1}%
-%    \ifx\p_format\empty
-%      \def\p_format{|l|p|}%
-%    \fi
-%    \lettabulationparameter\c!format\p_format
-%    \ifsecondargument
-%      \setupcurrenttabulation[#2]%
-%    \fi
-%    \tabl_tabulate_start_building}
-
 \def\tabl_start_regular
-  {%\let\currenttabulationparent\v!tabulate
-   \let\currenttabulationparent\empty
-   \let\currenttabulation\currenttabulationparent
+  {\let\currenttabulation\currenttabulationparent
    \ifsecondargument
      \expandafter\tabl_start_regular_two
    \else
@@ -1167,7 +1166,7 @@
    \fi}
 
 \def\tabl_start_regular_one[#1][#2]%
-  {\doifassignmentelse{#1}
+  {\doifelseassignment{#1}
      {\setupcurrenttabulation[\c!format={|l|p|},#1]}
      {\def\p_format{#1}%
       \ifx\p_format\empty
@@ -1317,7 +1316,7 @@
 
 \def\tabl_tabulate_set_color_column#1% overloaded
   {\unskip
-   \doiffastoptionalcheckelse{\tabl_tabulate_set_color_column_yes#1}{\tabl_tabulate_set_color_column_nop#1}}
+   \doifelsefastoptionalcheck{\tabl_tabulate_set_color_column_yes#1}{\tabl_tabulate_set_color_column_nop#1}}
 
 \def\tabl_tabulate_set_color_column_nop
   {\tabl_tabulate_column_normal}
@@ -1356,13 +1355,13 @@
 %    \fi\fi
    \global\let\m_tabl_tabulate_vrule_color_local\m_tabl_tabulate_vrule_color_default
    \global\d_tabl_tabulate_vrulethickness_local\d_tabl_tabulate_vrulethickness_default
-   \doiffastoptionalcheckelse{\tabl_tabulate_column_vruled_yes#1}{\tabl_tabulate_column_vruled_nop#1}}
+   \doifelsefastoptionalcheck{\tabl_tabulate_column_vruled_yes#1}{\tabl_tabulate_column_vruled_nop#1}}
 
 \def\tabl_tabulate_column_vruled_nop
   {\tabl_tabulate_column_normal}
 
 \def\tabl_tabulate_column_vruled_step#1%
-  {\doifnumberelse{#1}
+  {\doifelsenumber{#1}
      {\global\d_tabl_tabulate_vrulethickness_local#1\d_tabl_tabulate_vrulethickness_default}
      {\xdef\m_tabl_tabulate_vrule_color_local{#1}}}
 
@@ -1450,15 +1449,15 @@
 \def\tabl_tabulate_hrule_spec_ignore#1%
   {%\global\let\currenttabulationlocalhrulecolor\empty
    %\global\d_tabl_tabulate_hrulethickness_local\d_tabl_tabulate_hrulethickness_default
-   \doiffastoptionalcheckelse#1#1}
+   \doifelsefastoptionalcheck#1#1}
 
 \def\tabl_tabulate_hrule_spec_pickup#1%
   {\global\let\currenttabulationlocalhrulecolor\m_tabl_tabulate_hrule_color_default
    \global\d_tabl_tabulate_hrulethickness_local\d_tabl_tabulate_hrulethickness_default
-   \doiffastoptionalcheckelse{\tabl_tabulate_hrule_preset#1}#1}
+   \doifelsefastoptionalcheck{\tabl_tabulate_hrule_preset#1}#1}
 
 \def\tabl_tabulate_hrule_preset_step#1%
-  {\doifnumberelse{#1}
+  {\doifelsenumber{#1}
      {\global\d_tabl_tabulate_hrulethickness_local#1\d_tabl_tabulate_hrulethickness_default}
      {\xdef\currenttabulationlocalhrulecolor{#1}}}
 
@@ -1527,7 +1526,7 @@
 
 \unexpanded\def\tabl_tabulate_color_set#1% we could store the attributes at the cost of a lua call
   {\begingroup
-   \node_backgrounds_align_initialize % name might change
+   \clf_enablebackgroundalign % was \node_backgrounds_align_initialize
    \global\let\tabl_tabulate_color_repeat\tabl_tabulate_color_repeat_second
    \global\settrue\c_tabl_tabulate_has_colors
    \ifnum\c_tabl_tabulate_column>\c_tabl_tabulate_max_colorcolumn
@@ -2066,9 +2065,9 @@
      \donetrue
    \fi\fi
    \ifdone
-     \c_tabl_tabulate_repeathead\executeifdefined{\??tabulateheader\tabulationparameter\c!header}\zerocount
+     \global\c_tabl_tabulate_repeathead\executeifdefined{\??tabulateheader\tabulationparameter\c!header}\zerocount
    \else
-     \c_tabl_tabulate_repeathead\zerocount
+     \global\c_tabl_tabulate_repeathead\zerocount
    \fi
    %
    \the\t_tabl_tabulate_initializers_first % collect more here
@@ -2102,7 +2101,7 @@
    \c_tabl_tabulate_nofcolumns         \zerocount
    \c_tabl_tabulate_has_rule_spec_first\zerocount
    \c_tabl_tabulate_has_rule_spec_last \zerocount
-   \ctxcommand{presettabulate(\!!bs\detokenizedtabulationparameter\c!format\!!es)}%
+   \clf_presettabulate{\detokenizedtabulationparameter\c!format}%
    %
  % \edef\totaltabulatecolumns{\the\numexpr3*\c_tabl_tabulate_columns+\plusfour}%
    \d_tabl_tabulate_width\zeropoint
@@ -2168,7 +2167,7 @@
      \global\setbox\b_tabl_tabulate\vbox \bgroup
    \fi
    %
-   \dostarttagged\t!tabulate\empty
+   \dostarttaggedchained\t!tabulate\empty\??tabulation
    \dostarttagged\t!tabulaterow\empty
    \setfalse\inhibitmargindata % new per 2012.06.13 ... really needed
    \everycr\expandafter{\the\everycr\dostoptagged\dostarttagged\t!tabulaterow\empty}%
@@ -2447,5 +2446,11 @@
 %D \NC left \NC middle \NC middle \NC right \NC \NR
 %D \stopwhatever
 %D \stoptyping
+
+%D This is needed because we soemtimes use the english command in
+%D tracing macros. In fact, most detailed tracing macros that
+%D are done with \LUA\ only work in the english interface anyway.
+
+\definetabulate[tabulate] \setuptabulate[tabulate][\c!format=\v!none] % so no \v! here
 
 \protect \endinput

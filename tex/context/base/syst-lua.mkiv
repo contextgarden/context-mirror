@@ -15,15 +15,18 @@
 
 \unprotect
 
-\def\expdoifelse#1#2{\ctxcommand{doifelse(\!!bs#1\!!es==\!!bs#2\!!es)}}
-\def\expdoif    #1#2{\ctxcommand{doif    (\!!bs#1\!!es==\!!bs#2\!!es)}}
-\def\expdoifnot #1#2{\ctxcommand{doifnot (\!!bs#1\!!es==\!!bs#2\!!es)}}
+\def\expdoifelse#1#2{\clf_doifelsesame{#1}{#2}}
+\def\expdoif    #1#2{\clf_doifsame    {#1}{#2}}
+\def\expdoifnot #1#2{\clf_doifnotsame {#1}{#2}}
 
 % \testfeatureonce{100000}{\doifelse{hello world}{here i am}{}}           % 0.3
 % \testfeatureonce{100000}{\expandabledoifelse{hello world}{here i am}{}} % 1.5
 
-\def\expdoifcommonelse#1#2{\ctxcommand{doifcommonelse("#1","#2")}}
-\def\expdoifinsetelse #1#2{\ctxcommand{doifinsetelse("#1","#2")}}
+\def\expdoifelsecommon#1#2{\clf_doifelsecommon{#1}{#2}}
+\def\expdoifelseinset #1#2{\clf_doifelseinset {#1}{#2}}
+
+\def\expdoifcommonelse\expdoifelsecommon
+\def\expdoifinsetelse \expdoifelseinset
 
 % we define these here, just in case ...
 
@@ -32,7 +35,7 @@
 \edef\!!bs{[\luastringsep[}
 \edef\!!es{]\luastringsep]}
 
-\unexpanded\def\writestatus#1#2{\ctxcommand{writestatus(\!!bs#1\!!es,\!!bs#2\!!es)}}
+\unexpanded\def\writestatus#1#2{\clf_writestatus{#1}{#2}}
 
 % A handy helper:
 
@@ -41,7 +44,7 @@
 % We can omit the tex.ctxcatcodes here as nowadays we seldom
 % change the regime at the \TEX\ end:
 
-\def\luaexpr#1{\directlua{tex.print(tostring(#1))}}
+\def\luaexpr#1{\ctxlua{tex.print(tostring(#1))}} % no use is shortcutting has to be compiled
 
 % helpers:
 
@@ -49,5 +52,50 @@
 \def\ui_go  #1{}
 \def\ui_ft#1#2{#1}
 \def\ui_st#1#2{#2}
+
+%D Let's bring this under \LUA\ (and therefore \MKIV\ sandbox) control:
+
+% \setnewconstant\c_syst_write 18
+%
+% \unexpanded\def\write#1#% so we can handle \immediate
+%   {\ifnum#1=\c_syst_write
+%      \expandafter\syst_execute
+%    \else
+%      \normalwrite#1%
+%    \fi}
+%
+% \unexpanded\def\syst_execute#1%
+%   {\ctxlua{os.execute(\!!bs#1\!!es)}}
+
+%D But as we only use write 16 we could as well do all in \LUA\
+%D and ignore the rest. Okay, we still can do writes here but only
+%D when not blocked.
+
+% Nicer would be if we could just disable write 18 and keep os.execute
+% which in fact we can do by defining write18 as macro instead of
+% primitive ... todo.
+
+% \unexpanded\def\write#1#%
+%   {\syst_write{#1}}
+%
+% \def\syst_write#1#2%
+%   {\ctxcommand{write(\number#1,\!!bs\normalunexpanded{#2}\!!es)}}
+%
+% \unexpanded\def\writeviatex#1#2%
+%   {\ifx\normalwrite\relax\else
+%      \normalwrite#1{#2}%
+%    \fi}
+
+% we have no way yet to pickup \immediate unless we redefine it
+% we assume immediate execution
+
+\let\syst_write_execute\clf_execute % always {...}
+
+\unexpanded\def\write#1#%
+  {\ifnum#1=18
+     \expandafter\syst_write_execute
+   \else
+     \normalwrite#1%
+   \fi}
 
 \protect \endinput

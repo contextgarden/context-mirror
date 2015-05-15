@@ -43,12 +43,14 @@
      \expandafter\gobbleoneargument
    \fi}
 
-\unexpanded\def\doifpositionactionelse#1%
+\unexpanded\def\doifelsepositionaction#1%
   {\ifcsname\??positionaction#1\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
+
+\let\doifpositionactionelse\doifelsepositionaction
 
 \unexpanded\def\dopositionaction#1%
   {\edef\currentpositionaction{#1}%
@@ -57,7 +59,7 @@
    \fi}
 
 \def\anch_positions_action_indeed
-  {\doifpositionelse\currentpositionaction
+  {\doifelseposition\currentpositionaction
      \anch_positions_action_indeed_yes
      \anch_positions_action_indeed_nop}
 
@@ -127,22 +129,25 @@
 %D the head and tail anchors from this one. We set these
 %D anchors before and after each page.
 
+\newdimen\c_anch_page_width
+\newdimen\c_anch_page_height
+
 \unexpanded\def\anch_positions_register_page#1% this one is flushed first ! ... can't we avoid this one
   {\ifpositioning\ifcase\realpageno\or
-     \ifdim\printpaperheight=\paperheight
-       \ifdim\printpaperwidth=\paperwidth
-         % not needed,
+     \ifdim\c_anch_page_height=\paperheight
+       \ifdim\c_anch_page_width=\paperwidth
+         % no change
        \else
-         \anch_positions_register_page_indeed{#1}%
+         \c_anch_page_width \paperwidth
+         \c_anch_page_height\paperheight
+         \anch_make_page_box{#1}% \ifvbox#1\setbox#1\hbox{\box#1}\fi
        \fi
      \else
-       \anch_positions_register_page_indeed{#1}%
+       \c_anch_page_width \paperwidth
+       \c_anch_page_height\paperheight
+       \anch_make_page_box{#1}% \ifvbox#1\setbox#1\hbox{\box#1}\fi
      \fi
    \fi\fi}
-
-\def\anch_positions_register_page_indeed#1% maybe like text
-  {\ifvbox#1\setbox#1\hbox{\box#1}\fi
-   \anch_make_page_box{#1}}
 
 \unexpanded\def\anch_positions_place_anchors
   {\ifpositioning
@@ -251,17 +256,17 @@
 \def\MPoverlayanchor#1{\MPpos\MPanchorid}
 
 \def\anch_positions_overlay_compose
-  {\vbox to \overlayheight
+  {\vbox to \d_overlay_height
      {%\writestatus{!!!}{\currentpositionoverlay/\MPanchoridentifier/\MPanchornumber}%
       \edef\MPanchorid{\currentpositionoverlay::\MPanchoridentifier:\MPanchornumber}% realpageno
     % \edef\MPanchor##1{\MPpos\MPanchorid}%
       \let\MPanchor\MPoverlayanchor % no need to fetch it already, seldom used
       \the\everyinsertpositionaction
       \copyposition{\currentpositionoverlay::\MPanchoridentifier}\MPanchorid
-      \setbox\scratchbox\hbox to \overlaywidth{\dopositionaction{\currentpositionoverlay::\MPanchoridentifier}\hss}%
-      \ht\scratchbox\overlayheight
+      \setbox\scratchbox\hbox to \d_overlay_width{\dopositionaction{\currentpositionoverlay::\MPanchoridentifier}\hss}%
+      \ht\scratchbox\d_overlay_height
       \dp\scratchbox\zeropoint
-      \ctxcommand{markregionbox(\number\scratchbox,"\MPanchorid")}% needs an hbox
+      \anch_mark_tagged_box\scratchbox\MPanchorid % needs an hbox
       \box\scratchbox
       \vfill}}
 
@@ -284,13 +289,13 @@
    \endgroup}
 
 \def\anch_positions_region_overlay_compose
-  {\vbox to \overlayheight
+  {\vbox to \d_overlay_height
      {\let\MPanchorid\currentpositionregion
       \let\MPanchor\MPoverlayanchor % no need to fetch it already, seldom used
       \the\everyinsertpositionaction
       \copyposition{\currentpositionoverlay::\MPanchoridentifier}\MPanchorid
-      \setbox\scratchbox\hbox to \overlaywidth{\dopositionaction{\currentpositionoverlay::\MPanchoridentifier}\hss}%
-      \ht\scratchbox\overlayheight
+      \setbox\scratchbox\hbox to \d_overlay_width{\dopositionaction{\currentpositionoverlay::\MPanchoridentifier}\hss}%
+      \ht\scratchbox\d_overlay_height
       \dp\scratchbox\zeropoint
       \box\scratchbox
       \vfill}}
@@ -475,7 +480,7 @@
   {\handlepositionaction\anch_positions_meta_graphic_handle_range_indeed\with{#1}{#2}{#3}{#4}\on{#2}}
 
 \def\anch_positions_meta_graphic_insert_range#1#2#3#4% pos pos tag setups
-  {\ctxcommand{doifelserangeonpage("#1","#2",\number\realpageno)}%
+  {\clf_doifelserangeonpage{#1}{#2}\realpageno
      {\def\currentposition{#1}%
       \MPpositiongraphic{#3}{#4}}%
      {}}
@@ -497,8 +502,8 @@
 
 % Helpers:
 
-\def\MPgetposboxes   #1#2{\ctxcommand{fetchposboxes("#1","#2",\the\realpageno)}}
-\def\MPgetmultipars  #1#2{\ctxcommand{fetchmultipar("#1","#2",\the\realpageno)}}
-\def\MPgetmultishapes#1#2{\ctxcommand{fetchmultishape("#1","#2",\the\realpageno)}}
+\def\MPgetposboxes   #1#2{\clf_fetchposboxes  {#1}{#2}\realpageno}
+\def\MPgetmultipars  #1#2{\clf_fetchmultipar  {#1}{#2}\realpageno}
+\def\MPgetmultishapes#1#2{\clf_fetchmultishape{#1}{#2}\realpageno}
 
 \protect \endinput

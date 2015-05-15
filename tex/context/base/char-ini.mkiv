@@ -13,11 +13,10 @@
 
 \writestatus{loading}{ConTeXt Character Support / Initialization}
 
-\registerctxluafile{char-def}{1.001} % let's load this one first
-\registerctxluafile{char-ini}{1.001}
-\registerctxluafile{char-cjk}{1.001}
+\registerctxluafile{char-fio}{1.001}
 \registerctxluafile{char-map}{1.001} % maybe we will load this someplace else
 \registerctxluafile{char-tex}{1.001}
+\registerctxluafile{char-ent}{1.001}
 
 \unprotect
 
@@ -43,11 +42,15 @@
 % use \normalUchar when possible .. the next one is nice for documents and it also accepts
 % 0x prefixed numbers
 
-\def\utfchar#1{\ctxcommand{utfchar(\number#1)}}
+\def\utfchar #1{\clf_utfchar \numexpr#1\relax}
+\def\safechar#1{\clf_safechar\numexpr#1\relax}
 
 \def\checkedchar        {\relax\ifmmode\expandafter\checkedmathchar\else\expandafter\checkedtextchar\fi} % #1#2
 \def\checkedmathchar#1#2{#2}
-\def\checkedtextchar  #1{\iffontchar\font#1 \expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi{\char#1}}
+%def\checkedtextchar  #1{\iffontchar\font#1 \expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi{\char#1}}
+
+\unexpanded\def\checkedtextchar#1% #2%
+  {\clf_doifelsecharinfont\numexpr#1\relax{\char#1}} % {#2}
 
 \unexpanded\def\textormathchar#1%
   {\relax\ifmmode
@@ -65,32 +68,26 @@
 % \def\setcclcuc#1#2#3{\global\catcode#1=\lettercatcode\global\lccode#1=#2\global\uccode#1=#3\relax}
 % \def\setcclcucself#1{\global\catcode#1=\lettercatcode\global\lccode#1=#1\global\uccode#1=#1\relax }
 
-\ctxlua{characters.setcodes()}
-
 % Is setting up vrb tpa and tpb needed?
 
-\ctxlua {
-    characters.define(
-        {   % letter catcodes
-            \number\texcatcodes,
-            \number\ctxcatcodes,
-            \number\notcatcodes,
-            %number\mthcatcodes,
-            \number\vrbcatcodes,
-            \number\prtcatcodes,
-            \number\tpacatcodes,
-            \number\tpbcatcodes,
-            \number\txtcatcodes,
-        },
-        {   % activate catcodes
-            \number\ctxcatcodes,
-            \number\notcatcodes,
-            \number\prtcatcodes, % new
-        }
-    )
-%  catcodes.register("xmlcatcodes",\number\xmlcatcodes)
-}
+% move to lua side
 
-\def\chardescription#1{\ctxcommand{chardescription(\number#1)}}
+%clf_setcharactercodes
+
+\clf_setlettercatcodes\texcatcodes
+\clf_setlettercatcodes\ctxcatcodes
+\clf_setlettercatcodes\notcatcodes
+%clf_setlettercatcodes\mthcatcodes
+\clf_setlettercatcodes\vrbcatcodes
+\clf_setlettercatcodes\prtcatcodes
+\clf_setlettercatcodes\tpacatcodes
+\clf_setlettercatcodes\tpbcatcodes
+\clf_setlettercatcodes\txtcatcodes
+
+\clf_setactivecatcodes\ctxcatcodes
+\clf_setactivecatcodes\notcatcodes
+\clf_setactivecatcodes\prtcatcodes
+
+\def\chardescription#1{\clf_chardescription#1\relax}
 
 \protect \endinput

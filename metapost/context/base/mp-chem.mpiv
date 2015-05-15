@@ -11,7 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 %C details.
 
-%D This module is incomplete and experimental.
+%D This module is incomplete and experimental. Okay, it's not that bad but we do need
+%D some disclaimer.
 
 % either consistent setting or not
 
@@ -24,7 +25,7 @@ numeric
     chem_text_min, chem_text_max,
     chem_rotation, chem_adjacent, chem_stack_n,
     chem_substituent, chem_substituent.lft, chem_substituent.rt,
-    chem_setting_offset, chem_text_offset, chem_picture_offset,
+    chem_setting_offset, chem_text_offset,
     chem_center_offset, chem_dbl_offset,
     chem_bb_angle, chem_axis_rulethickness,
     chem_setting_l, chem_setting_r, chem_setting_t, chem_setting_b,
@@ -72,19 +73,18 @@ chem_axis_rulethickness := 1pt ;
 chem_emwidth            := 10pt ; % EmWidth or \the\emwidth does not work...
 chem_b_length           := 3  chem_emwidth ;
 chem_text_offset        := -.3chem_emwidth ; % -.71chem_emwidth ; % 1/sqrt(2)
-chem_center_offset      := .5  chem_emwidth ;
-chem_picture_offset     :=     chem_emwidth ;
+chem_center_offset      :=  .5chem_emwidth ;
 chem_dbl_offset         := .05 ;
 chem_bb_angle           := angle(1,2chem_dbl_offset) ;
 chem_text_min           := 0.75 ;
 chem_text_max           := 1.25 ;
-chem_dot_factor         := 4 ; % *linewidth
+chem_dot_factor         := 2 ; % *linewidth
 chem_sb_pair            := (0.25,0.75) ; %chem_sb_dash   := dashpattern(off 0.25 on 0.5 off 0.25) ;
 chem_sb_pair.m          := (0.25,1   ) ; %chem_sb_dash.m := dashpattern(off 0.25 on 0.75) ;
 chem_sb_pair.p          := (0   ,0.75) ; %chem_sb_dash.p := dashpattern(on  0.75 off 0.25) ;
-chem_sb_pair.b          := (0,   1   ) ; %chem_sb_dash.b := dashpattern(on  1) ;
+chem_sb_pair.b          := (0   ,1   ) ; %chem_sb_dash.b := dashpattern(on  1) ;
 
-chem_bd_wedge           := false ; % true is incorrect, but quite common...
+chem_bd_wedge           := true ; % according to IUPAC 2005
 
 def chem_reset =
     chem_rotation         := 0 ;
@@ -132,6 +132,8 @@ vardef chem_init_some (suffix $) (expr e) =
             fi
             if not chem_star[$] :
                 scaled (.5/(sind .5chem_num1))
+                % carbon-carbon benzene bond length
+                scaled (1.4/1.54)
             fi ;
     fi ;
 
@@ -149,7 +151,7 @@ vardef chem_init_some (suffix $) (expr e) =
                            chem_num2 := i ;
                        fi
                    endfor)
-             scaled (2*(abs(point chem_num2+.5 of chem_b_path[$]) - chem_dbl_offset))
+             scaled (2*(abs(point chem_num2+.5 of chem_b_path[$]) - 2chem_dbl_offset))
         fi ;
 
     chem_r_path[$] :=
@@ -301,17 +303,20 @@ enddef ;
 
 chem_init_all ; % WHY does this not work unless defined and then called?
 
-
 % Like most often in ConTeXt, we will trap but then silently ignore mistaken use,
 % unless of course the error be too harmful...
 
 % \startchemical
 
-def chem_start_structure(expr i, l, r, t, b, rotation, unit, factor, offset, axis, rulethickness, axiscolor) =
+def chem_start_structure(expr i, l, r, t, b, rotation, unit, bond, scale, offset, axis, rulethickness, axiscolor) =
     save chem_setting_l, chem_setting_r, chem_setting_t, chem_setting_b ;
 
-    chem_emwidth            := unit ;
-    chem_b_length           := factor * unit ;
+    chem_emwidth            := unit ; % dynamically set for each structure.
+    chem_text_offset        := -.3chem_emwidth ; % -.71chem_emwidth ; % 1/sqrt(2)
+    chem_center_offset      :=  .5chem_emwidth ;
+    chem_b_length           :=    chem_emwidth * bond * scale ;
+    % scale (normally 1) scales the structure but not the text.
+
     if numeric l :
         chem_setting_l      := -l ;
     fi
@@ -526,6 +531,17 @@ vardef chem_set (suffix $) =
     % This is a fairly complicated optimization and ajustement. It took some
     % thinking to get right, so beware!
 
+    % And then even more time fixing a bug of a rotation +- half the symmetry
+    % angle of a structure depending on the scale and/or the font size
+    % (through chem_b_length).
+
+    % first save the symmetry angle of the structure (as in chem_rot):
+    chem_num0 := if chem_stacked[$] : 3 else : 0 fi ;
+    chem_num9 := if chem_tetra[$] : 360 else :
+                 abs(angle(point 0+chem_num0 of chem_b_path[$]) -
+                     angle(point 1+chem_num0 of chem_b_path[$]))
+                 fi ;
+
     if (chem_adjacent<>0) and chem_star[P] and chem_star[$] :
         % nop
         chem_adjacent := 0 ;
@@ -578,7 +594,8 @@ vardef chem_set (suffix $) =
                           -((point (chem_adjacent-1) of chem_b_path[P]) chem_transformed(P)) ;
         fi
         % adjust the bond angles
-        chem_rotation := (chem_rotation + angle(chem_pair1)-angle(chem_pair3)) mod 360 ;
+        chem_num4 := (angle(chem_pair1)-angle(chem_pair3)) zmod chem_num9 ;
+        chem_rotation := chem_rotation + chem_num4 ;
         if not chem_star[$] :
             chem_pair4 :=
                 if chem_star[P] :
@@ -663,13 +680,17 @@ vardef chem_set (suffix $) =
                 fi
             endfor
             if not chem_front[$] : % adjust rotation
-                chem_rotation := (chem_rotation + angle(chem_pair1)-angle(chem_pair3)) mod 360 ;
+                chem_num4 := angle(chem_pair1)-angle(chem_pair3) ;
+                chem_rotation := (chem_rotation + chem_num4) mod 360 ;
             fi ;
             chem_t := identity chem_transformed($) ;
             chem_pair4 := (point chem_num3 of chem_b_path[$]) transformed chem_t ;
             if not chem_star[$] :
                 currentpicture := currentpicture shifted chem_pair4 ;
                 chem_origin    := chem_origin    shifted chem_pair4 ;
+            fi
+            if not chem_front[$] : % adjust rotation
+                chem_rotation := chem_rotation zmod chem_num9 ;
             fi
         fi
         chem_substituent := 0 ;
@@ -798,28 +819,39 @@ vardef chem_eb@# (suffix $) (expr f, t, r, c) = % EB
 enddef ;
 
 vardef chem_ad@# (suffix $) (expr f, t, r, c) = % AD
-    if not chem_star[$] :
-        chem_t := identity chem_transformed($) ;
-        for i=f upto t :
-            chem_drawarrow(
-                ((subpath (chem_sb_pair@# shifted (i-1,i-1)) of chem_b_path[$])
-                paralleled 2chem_dbl_offset) transformed chem_t,
-                r,c,) ;
-        endfor
-    fi
+    chem_t := identity chem_transformed($) ;
+    for i=f upto t :
+        chem_drawarrow(
+            (
+            (subpath
+            if chem_star[$] :
+                 chem_sb_pair@#                    of chem_r_fragment($,i)
+                ) paralleled 5chem_dbl_offset
+             else :
+                (chem_sb_pair@# shifted (i-1,i-1)) of chem_b_path[$]
+                ) paralleled 2chem_dbl_offset
+             fi
+            ) transformed chem_t,
+            r,c,) ;
+    endfor
 enddef ;
 
 vardef chem_au@# (suffix $) (expr f, t, r, c) = % AU
-    if not chem_star[$] :
-        chem_t := identity chem_transformed($) ;
-        for i=f upto t :
-            chem_drawarrow(
-                reverse(
-                (subpath (chem_sb_pair@# shifted (i-1,i-1)) of chem_b_path[$])
-                paralleled 2chem_dbl_offset) transformed chem_t,
-                r,c,) ;
-        endfor
-    fi
+    chem_t := identity chem_transformed($) ;
+    for i=f upto t :
+        chem_drawarrow(
+             ((reverse
+               subpath
+             if chem_star[$] :
+                 chem_sb_pair@#                    of chem_r_fragment($,i)
+                ) paralleled -5chem_dbl_offset
+             else :
+                (chem_sb_pair@# shifted (i-1,i-1)) of chem_b_path[$]
+                ) paralleled -2chem_dbl_offset
+             fi
+            ) transformed chem_t,
+            r,c,) ;
+    endfor
 enddef ;
 
 vardef chem_es@# (suffix $) (expr f, t, r, c) = % ES
@@ -1004,6 +1036,15 @@ enddef ;
 vardef chem_hb@# (suffix $) (expr f, t, r, c) = % HB
     if chem_star[$] :
         chem_rh@#($,f,t,r,c)
+    else :
+        chem_t := identity chem_transformed($) ;
+        for i=f upto t :
+            chem_draw(
+                (subpath (chem_sb_pair@# shifted (i-1,i-1)) of chem_b_path[$])
+                transformed chem_t,
+                chem_dot_factor*r,c,dashed withdots scaled ((.5chem_b_length/3)/5bp)) ;
+                % not symmetric - needs to be tweaked...
+        endfor
     fi
 enddef ;
 
@@ -1548,9 +1589,9 @@ vardef chem_rot (suffix $) (expr d, s) = % ROT
             chem_rotation := 0
         else :
             chem_num0 := if chem_stacked[$] : 3 else : 0 fi ;
-            chem_num1 := .5(angle(point d+chem_num0 of chem_b_path[$]) -
+            chem_num1 := .5(angle(point d+chem_num0   of chem_b_path[$]) -
                             angle(point d+chem_num0-1 of chem_b_path[$])) ;
-            chem_rotation := (chem_rotation + s*chem_num1) mod 360 ;
+            chem_rotation := (chem_rotation + s*chem_num1) zmod 360 ;
         fi
     fi
 enddef ;
@@ -1561,7 +1602,7 @@ vardef chem_mir (suffix $) (expr d, s)  = % MIR
     if not chem_front[$] :
         if d=0 : % inversion
             if chem_mirror=origin :
-                chem_rotation := (chem_rotation + 180*s) mod 360 ;
+                chem_rotation := (chem_rotation + 180*s) zmod 360 ;
             else :
                 chem_mirror := chem_mirror rotated 90 ;
             fi
@@ -1577,7 +1618,7 @@ vardef chem_mir (suffix $) (expr d, s)  = % MIR
                     chem_num0 := -360 - chem_num0 ;
                 fi
                 chem_num0 := chem_num0 * s ;
-                chem_rotation := (chem_rotation + 2chem_num0) mod 360 ;
+                chem_rotation := (chem_rotation + 2chem_num0) zmod 360 ;
                 chem_mirror := origin ;
             fi
         fi

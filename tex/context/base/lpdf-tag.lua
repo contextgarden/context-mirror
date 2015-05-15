@@ -6,70 +6,107 @@ if not modules then modules = { } end modules ['lpdf-tag'] = {
     license   = "see context related readme files"
 }
 
+local next = next
 local format, match, concat = string.format, string.match, table.concat
-local lpegmatch = lpeg.match
+local lpegmatch, P, S, C = lpeg.match, lpeg.P, lpeg.S, lpeg.C
 local utfchar = utf.char
+local settings_to_hash = utilities.parsers.settings_to_hash
+local formatters = string.formatters
 
 local trace_tags = false  trackers.register("structures.tags", function(v) trace_tags = v end)
 
 local report_tags = logs.reporter("backend","tags")
 
-local backends, lpdf, nodes = backends, lpdf, nodes
+local backends            = backends
+local lpdf                = lpdf
+local nodes               = nodes
 
-local nodeinjections   = backends.pdf.nodeinjections
-local codeinjections   = backends.pdf.codeinjections
+local nodeinjections      = backends.pdf.nodeinjections
+local codeinjections      = backends.pdf.codeinjections
 
-local tasks            = nodes.tasks
+local tasks               = nodes.tasks
 
-local pdfdictionary    = lpdf.dictionary
-local pdfarray         = lpdf.array
-local pdfboolean       = lpdf.boolean
-local pdfconstant      = lpdf.constant
-local pdfreference     = lpdf.reference
-local pdfunicode       = lpdf.unicode
-local pdfstring        = lpdf.string
-local pdfflushobject   = lpdf.flushobject
-local pdfreserveobject = lpdf.reserveobject
-local pdfpagereference = lpdf.pagereference
+local pdfdictionary       = lpdf.dictionary
+local pdfarray            = lpdf.array
+local pdfboolean          = lpdf.boolean
+local pdfconstant         = lpdf.constant
+local pdfreference        = lpdf.reference
+local pdfunicode          = lpdf.unicode
+local pdfstring           = lpdf.string
+local pdfflushobject      = lpdf.flushobject
+local pdfreserveobject    = lpdf.reserveobject
+local pdfpagereference    = lpdf.pagereference
 
-local texgetcount      = tex.getcount
+local addtocatalog        = lpdf.addtocatalog
+local addtopageattributes = lpdf.addtopageattributes
 
-local nodepool         = nodes.pool
+local texgetcount         = tex.getcount
 
-local pdfliteral       = nodepool.pdfliteral
+local nodecodes           = nodes.nodecodes
 
-local nodecodes        = nodes.nodecodes
+local hlist_code          = nodecodes.hlist
+local vlist_code          = nodecodes.vlist
+local glyph_code          = nodecodes.glyph
 
-local hlist_code       = nodecodes.hlist
-local vlist_code       = nodecodes.vlist
-local glyph_code       = nodecodes.glyph
+local a_tagged            = attributes.private('tagged')
+local a_image             = attributes.private('image')
 
-local a_tagged         = attributes.private('tagged')
-local a_image          = attributes.private('image')
+local nuts                = nodes.nuts
+local tonut               = nuts.tonut
+local tonode              = nuts.tonode
 
-local traverse_nodes   = node.traverse
-local traverse_id      = node.traverse_id
-local tosequence       = nodes.tosequence
-local copy_node        = node.copy
-local slide_nodelist   = node.slide
+local nodepool            = nuts.pool
+local pdfliteral          = nodepool.pdfliteral
 
-local structure_stack = { }
-local structure_kids  = pdfarray()
-local structure_ref   = pdfreserveobject()
-local parent_ref      = pdfreserveobject()
-local root            = { pref = pdfreference(structure_ref), kids = structure_kids }
-local tree            = { }
-local elements        = { }
-local names           = pdfarray()
-local taglist         = structures.tags.taglist
-local usedlabels      = structures.tags.labels
-local properties      = structures.tags.properties
-local usedmapping     = { }
+local getid               = nuts.getid
+local getattr             = nuts.getattr
+local getprev             = nuts.getprev
+local getnext             = nuts.getnext
+local getlist             = nuts.getlist
+local setfield            = nuts.setfield
 
-local colonsplitter   = lpeg.splitat(":")
-local dashsplitter    = lpeg.splitat("-")
+local traverse_nodes      = nuts.traverse
+local tosequence          = nuts.tosequence
+local copy_node           = nuts.copy
+local slide_nodelist      = nuts.slide
+local insert_before       = nuts.insert_before
+local insert_after        = nuts.insert_after
 
-local add_ids         = false -- true
+local structure_stack     = { }
+local structure_kids      = pdfarray()
+local structure_ref       = pdfreserveobject()
+local parent_ref          = pdfreserveobject()
+local root                = { pref = pdfreference(structure_ref), kids = structure_kids }
+local tree                = { }
+local elements            = { }
+local names               = pdfarray()
+
+local structurestags      = structures.tags
+local taglist             = structurestags.taglist
+local specifications      = structurestags.specifications
+local usedlabels          = structurestags.labels
+local properties          = structurestags.properties
+local lasttaginchain      = structurestags.lastinchain
+
+local usedmapping         = { }
+
+----- tagsplitter         = structurestags.patterns.splitter
+
+-- local embeddedtags        = false -- true will id all, for tracing
+-- local f_tagid             = formatters["%s-%04i"]
+-- local embeddedfilelist    = pdfarray() -- /AF crap
+--
+-- directives.register("structures.tags.embedmath",function(v)
+--     if not v then
+--         -- only enable
+--     elseif embeddedtags == true then
+--         -- already all tagged
+--     elseif embeddedtags then
+--         embeddedtags.math = true
+--     else
+--         embeddedtags = { math = true }
+--     end
+-- end)
 
 -- function codeinjections.maptag(original,target,kind)
 --     mapping[original] = { target, kind or "inline" }
@@ -79,14 +116,15 @@ local function finishstructure()
     if #structure_kids > 0 then
         local nums, n = pdfarray(), 0
         for i=1,#tree do
-            n = n + 1 ; nums[n] = i-1
+            n = n + 1 ; nums[n] = i - 1
             n = n + 1 ; nums[n] = pdfreference(pdfflushobject(tree[i]))
         end
         local parenttree = pdfdictionary {
             Nums = nums
         }
         -- we need to split names into smaller parts (e.g. alphabetic or so)
-        if add_ids then
+        -- we already have code for that somewhere
+        if #names > 0 then
             local kids = pdfdictionary {
                 Limits = pdfarray { names[1], names[#names-1] },
                 Names  = names,
@@ -106,18 +144,19 @@ local function finishstructure()
             Type       = pdfconstant("StructTreeRoot"),
             K          = pdfreference(pdfflushobject(structure_kids)),
             ParentTree = pdfreference(pdfflushobject(parent_ref,parenttree)),
-            IDTree     = (add_ids and pdfreference(pdfflushobject(idtree))) or nil,
+            IDTree     = #names > 0 and pdfreference(pdfflushobject(idtree)) or nil,
             RoleMap    = rolemap,
         }
         pdfflushobject(structure_ref,structuretree)
-        lpdf.addtocatalog("StructTreeRoot",pdfreference(structure_ref))
+        addtocatalog("StructTreeRoot",pdfreference(structure_ref))
         --
         local markinfo = pdfdictionary {
             Marked         = pdfboolean(true),
          -- UserProperties = pdfboolean(true),
          -- Suspects       = pdfboolean(true),
+         -- AF             = #embeddedfilelist > 0 and pdfreference(pdfflushobject(embeddedfilelist)) or nil,
         }
-        lpdf.addtocatalog("MarkInfo",pdfreference(pdfflushobject(markinfo)))
+        addtocatalog("MarkInfo",pdfreference(pdfflushobject(markinfo)))
         --
         for fulltag, element in next, elements do
             pdfflushobject(element.knum,element.kids)
@@ -133,49 +172,110 @@ local pdf_mcr            = pdfconstant("MCR")
 local pdf_struct_element = pdfconstant("StructElem")
 
 local function initializepage()
-    index = 0
+    index   = 0
     pagenum = texgetcount("realpageno")
     pageref = pdfreference(pdfpagereference(pagenum))
-    list = pdfarray()
+    list    = pdfarray()
     tree[pagenum] = list -- we can flush after done, todo
 end
 
 local function finishpage()
     -- flush what can be flushed
-    lpdf.addtopageattributes("StructParents",pagenum-1)
+    addtopageattributes("StructParents",pagenum-1)
 end
 
 -- here we can flush and free elements that are finished
 
+local pdf_userproperties = pdfconstant("UserProperties")
+
+local function makeattribute(t)
+    if t and next(t) then
+        local properties = pdfarray()
+        for k, v in next, t do
+            properties[#properties+1] = pdfdictionary {
+                N = pdfunicode(k),
+                V = pdfunicode(v),
+            }
+        end
+        return pdfdictionary {
+            O = pdf_userproperties,
+            P = properties,
+        }
+    end
+end
+
 local function makeelement(fulltag,parent)
-    local tag, n = lpegmatch(dashsplitter,fulltag)
-    local tg, detail = lpegmatch(colonsplitter,tag)
-    local k, r = pdfarray(), pdfreserveobject()
-    usedmapping[tg] = true
-    tg = usedlabels[tg] or tg
+    local specification = specifications[fulltag]
+    local tag = specification.tagname
+    if tag == "ignore" then
+        return false
+    elseif tag == "mstackertop" or tag == "mstackerbot" or tag == "mstackermid"then
+        -- TODO
+        return true
+    end
+    --
+    local detail   = specification.detail
+    local userdata = specification.userdata
+    --
+    usedmapping[tag] = true
+    --
+    -- specification.attribute is unique
+    --
+    local id = nil
+ -- local af = nil
+ -- if embeddedtags then
+ --     local tagname  = specification.tagname
+ --     local tagindex = specification.tagindex
+ --     if embeddedtags == true or embeddedtags[tagname] then
+ --         id = f_tagid(tagname,tagindex)
+ --         af = job.fileobjreferences.collected[id]
+ --         if af then
+ --             local r = pdfreference(af)
+ --             af = pdfarray { r }
+ --          -- embeddedfilelist[#embeddedfilelist+1] = r
+ --         end
+ --     end
+ -- end
+    --
+    local k = pdfarray()
+    local r = pdfreserveobject()
+    local t = usedlabels[tag] or tag
     local d = pdfdictionary {
         Type       = pdf_struct_element,
-        S          = pdfconstant(tg),
-        ID         = (add_ids and fulltag) or nil,
+        S          = pdfconstant(t),
+        ID         = id,
         T          = detail and detail or nil,
         P          = parent.pref,
         Pg         = pageref,
         K          = pdfreference(r),
+        A          = a and makeattribute(a) or nil,
      -- Alt        = " Who cares ",
      -- ActualText = " Hi Hans ",
+        AF         = af,
     }
     local s = pdfreference(pdfflushobject(d))
-    if add_ids then
-        names[#names+1] = fulltag
+    if id then
+        names[#names+1] = id
         names[#names+1] = s
     end
     local kids = parent.kids
     kids[#kids+1] = s
-    elements[fulltag] = { tag = tag, pref = s, kids = k, knum = r, pnum = pagenum }
+    local e = {
+        tag  = t,
+        pref = s,
+        kids = k,
+        knum = r,
+        pnum = pagenum
+    }
+    elements[fulltag] = e
+    return e
 end
 
-local function makecontent(parent,start,stop,slist,id)
-    local tag, kids = parent.tag, parent.kids
+local f_BDC = formatters["/%s <</MCID %s>> BDC"]
+
+local function makecontent(parent,id)
+    local tag  = parent.tag
+    local kids = parent.kids
     local last = index
     if id == "image" then
         local d = pdfdictionary {
@@ -197,108 +297,303 @@ local function makecontent(parent,start,stop,slist,id)
         kids[#kids+1] = d
     end
     --
-    local bliteral = pdfliteral(format("/%s <</MCID %s>>BDC",tag,last))
-    local prev = start.prev
-    if prev then
-        prev.next, bliteral.prev = bliteral, prev
-    end
-    start.prev, bliteral.next = bliteral, start
-    if slist and slist.list == start then
-        slist.list = bliteral
-    elseif not prev then
-        report_tags("this can't happen: injection in front of nothing")
-    end
-    --
-    local eliteral = pdfliteral("EMC")
-    local next = stop.next
-    if next then
-        next.prev, eliteral.next = eliteral, next
-    end
-    stop.next, eliteral.prev = eliteral, stop
-    --
     index = index + 1
-    list[index] = parent.pref
-    return bliteral, eliteral
+    list[index] = parent.pref -- page related list
+    --
+    return f_BDC(tag,last)
 end
 
--- -- --
+-- no need to adapt head, as we always operate on lists
 
-local level, last, ranges, range = 0, nil, { }, nil
+function nodeinjections.addtags(head)
 
-local function collectranges(head,list)
-    for n in traverse_nodes(head) do
-        local id = n.id -- 14: image, 8: literal (mp)
-        if id == glyph_code then
-            local at = n[a_tagged]
-            if not at then
-                range = nil
-            elseif last ~= at then
-                range = { at, "glyph", n, n, list } -- attr id start stop list
-                ranges[#ranges+1] = range
-                last = at
-            elseif range then
-                range[4] = n -- stop
-            end
-        elseif id == hlist_code or id == vlist_code then
-            local at = n[a_image]
-            if at then
-                local at = n[a_tagged]
+    local last   = nil
+    local ranges = { }
+    local range  = nil
+	local head   = tonut(head)
+
+    local function collectranges(head,list)
+        for n in traverse_nodes(head) do
+            local id = getid(n) -- 14: image, 8: literal (mp)
+            if id == glyph_code then
+                local at = getattr(n,a_tagged)
                 if not at then
                     range = nil
-                else
-                    ranges[#ranges+1] = { at, "image", n, n, list } -- attr id start stop list
+                elseif last ~= at then
+                    range = { at, "glyph", n, n, list } -- attr id start stop list
+                    ranges[#ranges+1] = range
+                    last = at
+                elseif range then
+                    range[4] = n -- stop
                 end
-                last = nil
-            else
-                local nl = n.list
-                slide_nodelist(nl) -- temporary hack till math gets slided (tracker item)
-                collectranges(nl,n)
+            elseif id == hlist_code or id == vlist_code then
+                local at = getattr(n,a_image)
+                if at then
+                    local at = getattr(n,a_tagged)
+                    if not at then
+                        range = nil
+                    else
+                        ranges[#ranges+1] = { at, "image", n, n, list } -- attr id start stop list
+                    end
+                    last = nil
+                else
+                    local nl = getlist(n)
+                 -- slide_nodelist(nl) -- temporary hack till math gets slided (tracker item)
+                    collectranges(nl,n)
+                end
             end
         end
     end
-end
 
-function nodeinjections.addtags(head)
-    -- no need to adapt head, as we always operate on lists
-    level, last, ranges, range = 0, nil, { }, nil
     initializepage()
+
     collectranges(head)
+
     if trace_tags then
         for i=1,#ranges do
             local range = ranges[i]
-            local attr, id, start, stop = range[1], range[2], range[3], range[4]
-            local tags = taglist[attr]
+            local attr  = range[1]
+            local id    = range[2]
+            local start = range[3]
+            local stop  = range[4]
+            local tags  = taglist[attr]
             if tags then -- not ok ... only first lines
-                report_tags("%s => %s : %05i % t",tosequence(start,start),tosequence(stop,stop),attr,tags)
+                report_tags("%s => %s : %05i % t",tosequence(start,start),tosequence(stop,stop),attr,tags.taglist)
             end
         end
     end
+
+    local top    = nil
+    local noftop = 0
+
     for i=1,#ranges do
-        local range = ranges[i]
-        local attr, id, start, stop, list = range[1], range[2], range[3], range[4], range[5]
-        local tags = taglist[attr]
-        local prev = root
-        local noftags, tag = #tags, nil
-        for j=1,noftags do
-            local tag = tags[j]
-            if not elements[tag] then
-                makeelement(tag,prev)
+        local range         = ranges[i]
+        local attr          = range[1]
+        local id            = range[2]
+        local start         = range[3]
+        local stop          = range[4]
+        local list          = range[5]
+        local specification = taglist[attr]
+        local taglist       = specification.taglist
+        local noftags       = #taglist
+        local common        = 0
+
+        if top then
+            for i=1,noftags >= noftop and noftop or noftags do
+                if top[i] == taglist[i] then
+                    common = i
+                else
+                    break
+                end
             end
-            prev = elements[tag]
         end
-        local b, e = makecontent(prev,start,stop,list,id)
-        if start == head then
-            report_tags("this can't happen: parent list gets tagged")
-            head = b
+
+        local prev = common > 0 and elements[taglist[common]] or root
+
+        for j=common+1,noftags do
+            local tag = taglist[j]
+            local prv = elements[tag] or makeelement(tag,prev)
+            if prv == false then
+                -- ignore this one
+                prev = false
+                break
+            elseif prv == true then
+                -- skip this one
+            else
+                prev = prv
+            end
         end
+
+        if prev then
+            -- use insert instead:
+            local literal = pdfliteral(makecontent(prev,id))
+            local prev    = getprev(start)
+            if prev then
+                setfield(prev,"next",literal)
+                setfield(literal,"prev",prev)
+            end
+            setfield(start,"prev",literal)
+            setfield(literal,"next",start)
+            if list and getlist(list) == start then
+                setfield(list,"list",literal)
+            end
+            -- use insert instead:
+            local literal = pdfliteral("EMC")
+            local next    = getnext(stop)
+            if next then
+                setfield(next,"prev",literal)
+                setfield(literal,"next",next)
+            end
+            setfield(stop,"next",literal)
+            setfield(literal,"prev",stop)
+        end
+        top    = taglist
+        noftop = noftags
     end
+
     finishpage()
-    -- can be separate feature
-    --
-    -- injectspans(head) -- does to work yet
-    --
+
+    head = tonode(head)
     return head, true
+
 end
+
+-- variant: more structure but funny collapsing in viewer
+
+-- function nodeinjections.addtags(head)
+--
+--     local last, ranges, range = nil, { }, nil
+--
+--     local function collectranges(head,list)
+--         for n in traverse_nodes(head) do
+--             local id = getid(n) -- 14: image, 8: literal (mp)
+--             if id == glyph_code then
+--                 local at = getattr(n,a_tagged)
+--                 if not at then
+--                     range = nil
+--                 elseif last ~= at then
+--                     range = { at, "glyph", n, n, list } -- attr id start stop list
+--                     ranges[#ranges+1] = range
+--                     last = at
+--                 elseif range then
+--                     range[4] = n -- stop
+--                 end
+--             elseif id == hlist_code or id == vlist_code then
+--                 local at = getattr(n,a_image)
+--                 if at then
+--                     local at = getattr(n,a_tagged)
+--                     if not at then
+--                         range = nil
+--                     else
+--                         ranges[#ranges+1] = { at, "image", n, n, list } -- attr id start stop list
+--                     end
+--                     last = nil
+--                 else
+--                     local nl = getlist(n)
+--                  -- slide_nodelist(nl) -- temporary hack till math gets slided (tracker item)
+--                     collectranges(nl,n)
+--                 end
+--             end
+--         end
+--     end
+--
+--     initializepage()
+--
+-- 	head = tonut(head)
+--     collectranges(head)
+--
+--     if trace_tags then
+--         for i=1,#ranges do
+--             local range = ranges[i]
+--             local attr  = range[1]
+--             local id    = range[2]
+--             local start = range[3]
+--             local stop  = range[4]
+--             local tags  = taglist[attr]
+--             if tags then -- not ok ... only first lines
+--                 report_tags("%s => %s : %05i % t",tosequence(start,start),tosequence(stop,stop),attr,tags.taglist)
+--             end
+--         end
+--     end
+--
+--     local top    = nil
+--     local noftop = 0
+--     local last   = nil
+--
+--     for i=1,#ranges do
+--         local range         = ranges[i]
+--         local attr          = range[1]
+--         local id            = range[2]
+--         local start         = range[3]
+--         local stop          = range[4]
+--         local list          = range[5]
+--         local specification = taglist[attr]
+--         local taglist       = specification.taglist
+--         local noftags       = #taglist
+--         local tag           = nil
+--         local common        = 0
+--      -- local prev          = root
+--
+--         if top then
+--             for i=1,noftags >= noftop and noftop or noftags do
+--                 if top[i] == taglist[i] then
+--                     common = i
+--                 else
+--                     break
+--                 end
+--             end
+--         end
+--
+--         local result        = { }
+--         local r             = noftop - common
+--         if r > 0 then
+--             for i=1,r do
+--                 result[i] = "EMC"
+--             end
+--         end
+--
+--         local prev   = common > 0 and elements[taglist[common]] or root
+--
+--         for j=common+1,noftags do
+--             local tag = taglist[j]
+--             local prv = elements[tag] or makeelement(tag,prev)
+--          -- if prv == false then
+--          --     -- ignore this one
+--          --     prev = false
+--          --     break
+--          -- elseif prv == true then
+--          --     -- skip this one
+--          -- else
+--                 prev = prv
+--                 r = r + 1
+--                 result[r] = makecontent(prev,id)
+--          -- end
+--         end
+--
+--         if r > 0 then
+--             local literal = pdfliteral(concat(result,"\n"))
+--             -- use insert instead:
+--             local literal = pdfliteral(result)
+--             local prev = getprev(start)
+--             if prev then
+--                 setfield(prev,"next",literal)
+--                 setfield(literal,"prev",prev)
+--             end
+--             setfield(start,"prev",literal)
+--             setfield(literal,"next",start)
+--             if list and getlist(list) == start then
+--                 setfield(list,"list",literal)
+--             end
+--         end
+--
+--         top    = taglist
+--         noftop = noftags
+--         last   = stop
+--
+--     end
+--
+--     if last and noftop > 0 then
+--         local result = { }
+--         for i=1,noftop do
+--             result[i] = "EMC"
+--         end
+--         local literal = pdfliteral(concat(result,"\n"))
+--         -- use insert instead:
+--         local next = getnext(last)
+--         if next then
+--             setfield(next,"prev",literal)
+--             setfield(literal,"next",next)
+--         end
+--         setfield(last,"next",literal)
+--         setfield(literal,"prev",last)
+--     end
+--
+--     finishpage()
+--
+--     head = tonode(head)
+--     return head, true
+--
+-- end
 
 -- this belongs elsewhere (export is not pdf related)
 

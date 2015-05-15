@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['data-tex'] = {
     license   = "see context related readme files"
 }
 
-local char = string.char
+local char, find = string.char, string.find
 local insert, remove = table.insert, table.remove
 
 local trace_locating = false trackers.register("resolvers.locating", function(v) trace_locating = v end)
@@ -15,10 +15,11 @@ local report_tex = logs.reporter("resolvers","tex")
 
 local resolvers = resolvers
 
-local sequencers    = utilities.sequencers
-local methodhandler = resolvers.methodhandler
-local splitlines    = string.splitlines
-local utffiletype   = utf.filetype
+local sequencers        = utilities.sequencers
+local methodhandler     = resolvers.methodhandler
+local splitlines        = string.splitlines
+local utffiletype       = utf.filetype
+local setmetatableindex = table.setmetatableindex
 
 -- local fileprocessor = nil
 -- local lineprocessor = nil
@@ -76,13 +77,13 @@ function helpers.textopener(tag,filename,filehandle,coding)
             report_tex("%a opener: %a opened using method %a",tag,filename,coding)
         end
         if coding == "utf-16-be" then
-            lines = utf.utf16_to_utf8_be(lines)
+            lines = utf.utf16_to_utf8_be_t(lines)
         elseif coding == "utf-16-le" then
-            lines = utf.utf16_to_utf8_le(lines)
+            lines = utf.utf16_to_utf8_le_t(lines)
         elseif coding == "utf-32-be" then
-            lines = utf.utf32_to_utf8_be(lines)
+            lines = utf.utf32_to_utf8_be_t(lines)
         elseif coding == "utf-32-le" then
-            lines = utf.utf32_to_utf8_le(lines)
+            lines = utf.utf32_to_utf8_le_t(lines)
         else -- utf8 or unknown (could be a mkvi file)
             local runner = textfileactions.runner
             if runner then
@@ -99,10 +100,11 @@ function helpers.textopener(tag,filename,filehandle,coding)
     end
     logs.show_open(filename)
     insert(inputstack,filename)
-    return {
+    local currentline, noflines = 0, noflines
+    local t = {
         filename    = filename,
         noflines    = noflines,
-        currentline = 0,
+     -- currentline = 0,
         close       = function()
             if trace_locating then
                 report_tex("%a closer: %a closed",tag,filename)
@@ -113,12 +115,12 @@ function helpers.textopener(tag,filename,filehandle,coding)
         end,
         reader      = function(self)
             self = self or t
-            local currentline, noflines = self.currentline, self.noflines
+         -- local currentline, noflines = self.currentline, self.noflines
             if currentline >= noflines then
                 return nil
             else
                 currentline = currentline + 1
-                self.currentline = currentline
+             -- self.currentline = currentline
                 local content = lines[currentline]
                 if not content then
                     return nil
@@ -137,6 +139,14 @@ function helpers.textopener(tag,filename,filehandle,coding)
             end
         end
     }
+    setmetatableindex(t,function(t,k)
+        if k == "currentline" then
+            return currentline
+        else
+            -- no such key
+        end
+    end)
+    return t
 end
 
 function resolvers.findtexfile(filename,filetype)

@@ -29,6 +29,8 @@ local packers       = utilities.packers
 local allocate      = utilities.storage.allocate
 local mark          = utilities.storage.mark
 
+local implement     = interfaces.implement
+
 local texgetcount   = tex.getcount
 
 local report_passes = logs.reporter("job","passes")
@@ -36,7 +38,7 @@ local report_passes = logs.reporter("job","passes")
 job                 = job or { }
 local job           = job
 
-job.version         = 1.24
+job.version         = 1.30
 job.packversion     = 1.02
 
 -- some day we will implement loading of other jobs and then we need
@@ -51,30 +53,50 @@ directly access the variable using a <l n='lua'/> call.</p>
 local savelist, comment = { }, { }
 
 function job.comment(key,value)
-    comment[key] = value
+    if type(key) == "table" then
+        for k, v in next, key do
+            comment[k] = v
+        end
+    else
+        comment[key] = value
+    end
 end
 
 job.comment("version",job.version)
 
-local enabled = true
+local enabled     = true
+local initialized = false
 
 directives.register("job.save",function(v) enabled = v end)
+----------.register("job.keep",function(v) kept    = v end)
 
 function job.disablesave() -- can be command
     enabled = false
 end
 
 function job.initialize(loadname,savename)
-    job.load(loadname) -- has to come after  structure is defined !
-    luatex.registerstopactions(function()
-        if enabled and not status.lasterrorstring or status.lasterrorstring == "" then
-            job.save(savename)
+    if not initialized then
+        if not loadname or loadname == "" then
+            loadname = tex.jobname .. ".tuc"
         end
-    end)
+        if not savename or savename == "" then
+            savename = tex.jobname .. ".tua"
+        end
+        job.load(loadname) -- has to come after  structure is defined !
+        luatex.registerstopactions(function()
+            if enabled and not status.lasterrorstring or status.lasterrorstring == "" then
+             -- if kept then
+             --     job.keep(loadname) -- could move to mtx-context instead
+             -- end
+                job.save(savename)
+            end
+        end)
+        initialized = true
+    end
 end
 
-function job.register(collected, tobesaved, initializer, finalizer)
-    savelist[#savelist+1] = { collected, tobesaved, initializer, finalizer }
+function job.register(collected, tobesaved, initializer, finalizer, serializer)
+    savelist[#savelist+1] = { collected, tobesaved, initializer, finalizer, serializer }
 end
 
 -- as an example we implement variables
@@ -100,7 +122,7 @@ job.register('job.variables.checksums', 'job.variables.checksums', initializer)
 
 local rmethod, rvalue
 
-local setxvalue = context.setxvalue
+local ctx_setxvalue = context.setxvalue
 
 local function initializer()
     tobesaved = jobvariables.tobesaved
@@ -116,7 +138,7 @@ local function initializer()
     end
     tobesaved.randomseed = rvalue
     for cs, value in next, collected do
-        setxvalue(cs,value)
+        ctx_setxvalue(cs,value)
     end
 end
 
@@ -124,6 +146,10 @@ job.register('job.variables.collected', tobesaved, initializer)
 
 function jobvariables.save(cs,value)
     tobesaved[cs] = value
+end
+
+function jobvariables.restore(cs)
+    return collected[cs] or tobesaved[cs]
 end
 
 -- checksums
@@ -171,10 +197,12 @@ function job.save(filename) -- we could return a table but it can get pretty lar
         f:write("local utilitydata = { }\n\n")
         f:write(serialize(comment,"utilitydata.comment",true),"\n\n")
         for l=1,#savelist do
-            local list      = savelist[l]
-            local target    = format("utilitydata.%s",list[1])
-            local data      = list[2]
-            local finalizer = list[4]
+         -- f:write("do\n\n") -- no solution for the jit limitatione either
+            local list       = savelist[l]
+            local target     = format("utilitydata.%s",list[1])
+            local data       = list[2]
+            local finalizer  = list[4]
+            local serializer = list[5]
             if type(data) == "string" then
                 data = utilities.tables.accesstable(data)
             end
@@ -185,11 +213,18 @@ function job.save(filename) -- we could return a table but it can get pretty lar
                 packers.pack(data,jobpacker,true)
             end
             local definer, name = definetable(target,true,true) -- no first and no last
-            f:write(definer,"\n\n",serialize(data,name,true),"\n\n")
+            if serializer then
+                f:write(definer,"\n\n",serializer(data,name,true),"\n\n")
+            else
+                f:write(definer,"\n\n",serialize(data,name,true),"\n\n")
+            end
+         -- f:write("end\n\n")
         end
         if job.pack then
             packers.strip(jobpacker)
+         -- f:write("do\n\n")
             f:write(serialize(jobpacker,"utilitydata.job.packed",true),"\n\n")
+         -- f:write("end\n\n")
         end
         f:write("return utilitydata")
         f:close()
@@ -210,8 +245,9 @@ local function load(filename)
                 return data
             end
         else
-            os.remove(filename) -- probably a bad file
-            report_passes("removing stale job data file %a, restart job",filename)
+            os.remove(filename) -- probably a bad file (or luajit overflow as it cannot handle large tables well)
+            report_passes("removing stale job data file %a, restart job, message: %s%s",filename,tostring(data),
+                jit and " (try luatex instead of luajittex)" or "")
             os.exit(true) -- trigger second run
         end
     end
@@ -262,6 +298,28 @@ function job.loadother(filename)
     end
     statistics.stoptiming(_load_)
 end
+
+-- function job.keep(filename)
+--     local suffix = file.suffix(filename)
+--     local base   = file.removesuffix(filename)
+--     if suffix == "" then
+--         suffix = "tuc"
+--     end
+--     for i=1,10 do
+--         local tmpname = format("%s-%s-%02d.tmp",base,suffix,i)
+--         if lfs.isfile(tmpname) then
+--             os.remove(tmpname)
+--             report_passes("removing %a",tmpname)
+--         end
+--     end
+--     if lfs.isfile(filename) then
+--         local tmpname = format("%s-%s-%02d.tmp",base,suffix,environment.currentrun or 1)
+--         report_passes("copying %a into %a",filename,tmpname)
+--         file.copy(filename,tmpname)
+--     else
+--         report_passes("no file %a, nothing kept",filename)
+--     end
+-- end
 
 -- eventually this will end up in strc-ini
 
@@ -319,16 +377,37 @@ function statistics.formatruntime(runtime)
         if shipped > 0 or pages > 0 then
             local persecond = shipped / runtime
             if pages == 0 then pages = shipped end
-if jit then
-local saved = watts_per_core * runtime * kg_per_watt_per_second / speedup_by_other_engine
-local saved = used_wood_factor * runtime
---             return format("%s seconds, %i processed pages, %i shipped pages, %.3f pages/second, %f kg tree saved by using luajittex",runtime,pages,shipped,persecond,saved)
-            return format("%s seconds, %i processed pages, %i shipped pages, %.3f pages/second, %f g tree saved by using luajittex",runtime,pages,shipped,persecond,saved*1000)
-else
-            return format("%s seconds, %i processed pages, %i shipped pages, %.3f pages/second",runtime,pages,shipped,persecond)
-end
+         -- if jit then
+         --     local saved = watts_per_core * runtime * kg_per_watt_per_second / speedup_by_other_engine
+         --     local saved = used_wood_factor * runtime
+         --     return format("%s seconds, %i processed pages, %i shipped pages, %.3f pages/second, %f mg tree saved by using luajittex",runtime,pages,shipped,persecond,saved*1000*1000)
+         -- else
+                return format("%s seconds, %i processed pages, %i shipped pages, %.3f pages/second",runtime,pages,shipped,persecond)
+         -- end
         else
             return format("%s seconds",runtime)
         end
     end
 end
+
+implement {
+    name      = "savevariable",
+    actions   = job.variables.save,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "setjobcomment",
+    actions   = job.comment,
+    arguments = { { "*" } }
+}
+
+implement {
+    name      = "initializejob",
+    actions   = job.initialize
+}
+
+implement {
+    name      = "disablejobsave",
+    actions   = job.disablesave
+}

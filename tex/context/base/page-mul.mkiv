@@ -960,7 +960,7 @@
    \ifnum\c_page_mul_balance_tries>\c_page_mul_balance_tries_max\relax
      \showmessage\m!columns7\empty
    \else
-     \showmessage\m!columns8{\the\c_page_mul_balance_tries\space}%
+     \showmessage\m!columns8{\the\c_page_mul_balance_tries}%
    \fi
    \egroup}
 
@@ -1430,7 +1430,7 @@
 % \stopcolumns
 
     % \def\backgroundfinishcolumnbox
-    %   {\doifinsetelse\@@kloffset{\v!none,\v!overlay}
+    %   {\doifelseinset\@@kloffset{\v!none,\v!overlay}
     %      {\let\@@kloffset\!!zeropoint}
     %      {\scratchdimen\@@kloffset
     %       \advance\scratchdimen -\@@klrulethickness
@@ -1605,9 +1605,11 @@
     \else
         \balancecolumnsfalse
     \fi
-    \installalign\v!yes {\page_columns_align_option_yes }%
-    \installalign\v!no  {\page_columns_align_option_no  }%
-    \installalign\v!text{\page_columns_align_option_text}%
+    % % this won't work (blocked by check for overloading; too fuzzy anyway)
+    % \installalign\v!yes {\page_columns_align_option_yes }% \stretchcolumnstrue \inheritcolumnsfalse
+    % \installalign\v!no  {\page_columns_align_option_no  }% \stretchcolumnsfalse\inheritcolumnsfalse
+    % \installalign\v!text{\page_columns_align_option_text}% \stretchcolumnsfalse\inheritcolumnstrue
+    % %
     \stretchcolumnsfalse
     \inheritcolumnstrue
     \edef\p_align{\columnsparameter\c!align}%

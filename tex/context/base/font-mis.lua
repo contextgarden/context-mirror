@@ -22,8 +22,14 @@ local handlers = fonts.handlers
 handlers.otf   = handlers.otf or { }
 local otf      = handlers.otf
 
-otf.version    = otf.version or 2.749
+otf.version    = otf.version or 2.803
 otf.cache      = otf.cache   or containers.define("fonts", "otf", otf.version, true)
+
+local fontloader    = fontloader
+local font_to_table = fontloader.to_table
+local open_font     = fontloader.open
+local get_font_info = fontloader.info
+local close_font    = fontloader.close
 
 function otf.loadcached(filename,format,sub)
     -- no recache when version mismatch
@@ -54,10 +60,10 @@ function fonts.helpers.getfeatures(name,t,script,language) -- maybe per font typ
             if data and data.resources and data.resources.features then
                 return  data.resources.features
             else
-                local ff = fontloader.open(filename)
+                local ff = open_font(filename)
                 if ff then
-                    local data = fontloader.to_table(ff)
-                    fontloader.close(ff)
+                    local data = font_to_table(ff)
+                    close_font(ff)
                     local features = { }
                     for k=1,#featuregroups do
                         local what = featuregroups[k]

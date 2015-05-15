@@ -170,7 +170,7 @@
    \ifx\p_counter\empty %
        \let\p_counter\currentnotation
    \fi
-   \doifcounterelse\p_counter\donothing{\strc_notes_define_counter\p_counter}%
+   \doifelsecounter\p_counter\donothing{\strc_notes_define_counter\p_counter}%
    \letnotationparameter\s!counter\p_counter
   %\strc_notes_setup_counter\currentnotation
 \to \everydefinenotation
@@ -181,6 +181,7 @@
 \unexpanded\setvalue{\??constructioninitializer\v!notation}%
   {\let\currentnotation                 \currentconstruction
    \let\constructionparameter           \notationparameter
+   \let\constructionnamespace           \??notation
    \let\detokenizedconstructionparameter\detokenizednotationparameter
    \let\letconstructionparameter        \letnotationparameter
    \let\useconstructionstyleandcolor    \usenotationstyleandcolor
@@ -231,7 +232,7 @@
    \ifnotesenabled
      \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
    \fi
-   \doifnextoptionalelse\strc_notations_command_yes\strc_notations_command_nop}
+   \doifelsenextoptionalcs\strc_notations_command_yes\strc_notations_command_nop}
 
 \unexpanded\def\strc_notations_command_nop#title%
   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#title},\c!bookmark=,\c!list=][]%
@@ -240,7 +241,7 @@
    \normalexpanded{\endgroup\noteparameter\c!next}}
 
 \unexpanded\def\strc_notations_command_yes[#optional]%
-  {\doifassignmentelse{#optional}\strc_notations_command_assignment\strc_notations_command_argument[#optional]}
+  {\doifelseassignment{#optional}\strc_notations_command_assignment\strc_notations_command_argument[#optional]}
 
 \unexpanded\def\strc_notations_command_assignment[#settings]%
   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,#settings][]%
@@ -265,7 +266,7 @@
 %    \normalexpanded % not that efficient but also not that frequently used (\normaldef for parser)
 %      {\normaldef\noexpand\strc_pickup_yes[##1]##2\csname\e!stop#stoptag\endcsname{\strc_notations_command_yes[##1]{##2}}%
 %       \normaldef\noexpand\strc_pickup_nop     ##1\csname\e!stop#stoptag\endcsname{\strc_notations_command_nop     {##1}}}%
-%    \doifnextoptionalelse\strc_pickup_yes\strc_pickup_nop}
+%    \doifnextoptionalcselse\strc_pickup_yes\strc_pickup_nop}
 
 \unexpanded\def\strc_notations_start#tag#stoptag%
   {\begingroup
@@ -278,7 +279,7 @@
    \normalexpanded % not that efficient but also not that frequently used (\normaldef for parser)
      {\def\noexpand\strc_pickup_yes[#one]#two\csname\e!stop#stoptag\endcsname{\strc_notations_command_yes[#one]{#two}}%
       \def\noexpand\strc_pickup_nop      #one\csname\e!stop#stoptag\endcsname{\strc_notations_command_nop      {#one}}}%
-   \doifnextoptionalelse\strc_pickup_yes\strc_pickup_nop}
+   \doifelsenextoptionalcs\strc_pickup_yes\strc_pickup_nop}
 
 \unexpanded\def\strc_notations_start_yes[#reference]#title%
   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#reference},\c!title={#title},\c!bookmark=,\c!list=][]%
@@ -382,7 +383,7 @@
 
 \appendtoks
     \ifx\currentnoteparent\empty
-        \doifinsertionelse\currentnote
+        \doifelseinsertion\currentnote
           \donothing
           {\defineinsertion[\currentnote]% could be an option
            \normalexpanded{\t_strc_notes{\the\t_strc_notes\noexpand\strc_notes_process_list{\currentnote}}}}%
@@ -392,7 +393,7 @@
         \setexpandednoteparameter\s!insert{\namednoteparameter\currentnoteparent\s!insert}%
         \definenotation[\currentnote][\currentnoteparent][\c!type=\v!note]%
     \fi
-    \ctxcommand{definenote("\currentnote","insert",\number\currentnoteinsertionnumber)}%
+    \clf_definenote{\currentnote}{insert}\currentnoteinsertionnumber\relax
 \to \everydefinenote
 
 % maybe we will share this at some point:
@@ -437,7 +438,7 @@
         \strc_notes_inject_dummy
      \else
        \begingroup
-       \edef\currentnotenumber{\ctxcommand{storenote("\currentnote",\currentconstructionlistentry)}}%
+       \edef\currentnotenumber{\clf_storenote{\currentnote}\currentconstructionlistentry}%
        \settrue\processingnote
        \ifconditional\c_strc_notes_skip
          \globallet\lastnotesymbol\strc_notes_inject_symbol_nop
@@ -460,7 +461,11 @@
        \else\ifconditional\inlocalnotes % todo: per note class
          \global\settrue\postponednote
        \else
+\ifconditional\c_strc_notes_delayed
+    % probably end notes
+\else
          \handlenoteinsert\currentnote\currentnotenumber % either an insert or just delayed
+\fi
        \fi\fi
        \endgroup
      \fi
@@ -515,7 +520,7 @@
    \endcsname}
 
 \setvalue{\??noteinteractioninline\v!yes}%
-  {\strc_references_get_simple_page_reference{page(\ctxcommand{notenumberpage("\currentnote",\currentnotenumber)})}%
+  {\strc_references_get_simple_page_reference{page(\clf_notenumberpage{\currentnote}\currentnotenumber)}%
    \edef\strc_notes_get_reference_attribute_symbol{attr\referenceattribute\currentreferenceattribute}%
    \let \strc_notes_set_style_color_inline        \strc_notes_set_style_color_inline_yes}
 
@@ -535,7 +540,7 @@
 % page(...) : we could have a dedicated one
 
 \setvalue{\??noteinteractiondisplay\v!yes}%
-  {\strc_references_get_simple_page_reference{page(\ctxcommand{notesymbolpage("\currentnote",\currentnotenumber)})}%
+  {\strc_references_get_simple_page_reference{page(\clf_notesymbolpage{\currentnote}\currentnotenumber)}%
    \edef\strc_notes_set_reference_attribute_number{\attribute\referenceattribute\currentreferenceattribute}%
    \let \strc_notes_set_reference_attribute_text  \donothing
    \let \strc_notes_set_destination_attribute_text\donothing
@@ -548,7 +553,7 @@
    \let\strc_notes_set_style_color_display       \strc_notes_set_style_color_display_nop}
 
 \setvalue{\??noteinteractiondisplay\v!all}%
-  {\strc_references_get_simple_page_reference{page(\ctxcommand{notesymbolpage("\currentnote",\currentnotenumber)})}%
+  {\strc_references_get_simple_page_reference{page(\clf_notesymbolpage{\currentnote}\currentnotenumber)}%
    \edef\strc_notes_set_reference_attribute_text  {\attribute\referenceattribute\currentreferenceattribute}%
   %\strc_references_set_simple_page_reference{note:\cldcontext{structures.notes.internalid("\currentnote",\currentnotenumber)}}%
    \strc_references_set_simple_page_reference{note:\currentnote:\currentnotenumber}%
@@ -557,7 +562,7 @@
    \let \strc_notes_set_style_color_display       \strc_notes_set_style_color_display_yes}
 
 \setvalue{\??noteinteractiondisplay\v!text}%
-  {\strc_references_get_simple_page_reference{page(\ctxcommand{notesymbolpage("\currentnote",\currentnotenumber)})}%
+  {\strc_references_get_simple_page_reference{page(\clf_notesymbolpage{\currentnote}\currentnotenumber)}%
    \edef\strc_notes_set_reference_attribute_text  {\attribute\referenceattribute\currentreferenceattribute}%
   %\strc_references_set_simple_page_reference{note:\cldcontext{structures.notes.internalid("\currentnote",\currentnotenumber)}}%
    \strc_references_set_simple_page_reference{note:\currentnote:\currentnotenumber}%
@@ -582,7 +587,7 @@
   {\iftrialtypesetting
       % keep
    \else\ifx\currentcolorparameter\empty
-     \scratchcounter\ctxcommand{notedeltapage("\currentnote",\currentnotenumber)}\relax % todo calculate once
+     \scratchcounter\clf_notedeltapage{\currentnote}\currentnotenumber\relax % todo calculate once
      \setlocationcolorspecified\scratchcounter
    \fi\fi}
 
@@ -601,7 +606,7 @@
 % in mkii the pointer only showed up in pagewise notes
 
 \unexpanded\def\strc_notes_inject_pointer % todo calculate once
-  {\ifcase\ctxcommand{notedeltapage("\currentnote",\currentnotenumber)}\relax
+  {\ifcase\clf_notedeltapage{\currentnote}\currentnotenumber\relax\relax
      % unknown
    \or
      % same page
@@ -634,7 +639,7 @@
 
 \unexpanded\def\strc_notes_inject_symbol_indeed#synchronize%
   {\removeunwantedspaces
-   \doifitalicelse\/\donothing % Charles IV \footnote{the fourth}
+   \doifelseitalic\/\donothing % Charles IV \footnote{the fourth}
    \ifdim\lastkern=\notesignal
    % \kern\noteparameter\c!distance % yes or no note font? or main text
      \strc_notes_inject_separator
@@ -650,18 +655,18 @@
    \hbox \strc_notes_get_reference_attribute_symbol \bgroup
    \dostarttagged\t!descriptionsymbol\currentnote
    \dotagsetnotesymbol
-   \noteparameter\c!textcommand{\ctxcommand{noteprefixednumber("\currentnote",\currentnotenumber)}}%
+   \noteparameter\c!textcommand{\clf_noteprefixednumber{\currentnote}\currentnotenumber\relax}%
    % the next one can cycle so we need to make sure it has no advance width
    \doif{\noteparameter\c!indicator}\v!yes\strc_notes_inject_pointer
    \dostoptagged
    \egroup
    \endgroup
-   \dostoptagged % check
+%    \dostoptagged % check
    \globallet\lastnotesymbol\relax}
 
 \unexpanded\def\strc_notes_inject_dummy % temp hack
   {\removeunwantedspaces
-   \doifitalicelse\/\donothing % Charles IV \footnote{the fourth}
+   \doifelseitalic\/\donothing % Charles IV \footnote{the fourth}
    \ifdim\lastkern=\notesignal
    % \kern\noteparameter\c!distance % yes or no note font? or main text
      \strc_notes_inject_separator
@@ -756,7 +761,9 @@
 
 %appendtoks \notesenabledfalse \to \everymarking
 \appendtoks \notesenabledfalse \to \everybeforepagebody
-\appendtoks \notesenabledfalse \to \everystructurelist % quick hack
+\appendtoks \notesenabledfalse \to \everystructurelist    % quick hack
+\appendtoks \notesenabledfalse \to \everysimplifycommands % quick hack
+\appendtoks \notesenabledfalse \to \everypreroll          % quick hack
 
 %D Often we need to process the whole set of notes and to make that
 %D fast, we use a token register:
@@ -1023,7 +1030,7 @@
 
 \def\strc_notes_set_location_text % we don't use inserts anyway (e.g. endnotes)
   {\settrue\c_strc_notes_delayed
-   \ctxcommand{setnotestate("\currentnote","store")}%
+   \clf_setnotestate{\currentnote}{store}%
    \page_inserts_set_location\currentnoteinsertion\v!text % \setupinsertion[\currentnote][\c!location=\v!text]%
    \global\count\currentnoteinsertionnumber\zerocount
    \global\dimen\currentnoteinsertionnumber\maxdimen
@@ -1175,6 +1182,7 @@
    \insert\currentnoteinsertionnumber\bgroup
      \the\everyinsidenoteinsert\relax
      \usesetupsparameter\noteparameter % experimental
+     \useinterlinespaceparameter\noteparameter
      \doifelse{\noteparameter\c!paragraph}\v!yes
         {\nointerlineskip
          \startvboxtohboxseparator
@@ -1197,7 +1205,7 @@
    \edef\currentnote{#tag}%
    \strc_constructions_initialize{#tag}%
    \strc_notes_synchronize
-   \edef\currentconstructionlistentry{\ctxcommand{notelistindex("\currentnote",#id)}}% index in list cache
+   \edef\currentconstructionlistentry{\clf_notelistindex{\currentnote}#id}% index in list cache
    % as we can have collected notes (e.g. in tables) we need to recover
    % \currentdescriptionattribute and \currentdescriptionsynchronize
    %
@@ -1211,14 +1219,14 @@
    \begstrut
    \strc_references_flush_destination_nodes
    \strc_notes_set_destination_attribute_text
-   \strc_notes_inject_text
-   \endstrut
+   \strc_notes_inject_text\relax
+   \ifvmode\obeydepth\else\endstrut\fi % \obeydepth is new per 2015-01-10
    \strc_constructions_stored_stop
 %  \endgroup
    }
 
 \unexpanded\def\strc_notes_inject_text % hm main?
-  {\ctxcommand{savedlisttitle("\currentconstructionmain",\currentconstructionlistentry)}}
+  {\clf_savedlisttitle{\currentconstructionmain}\currentconstructionlistentry\relax}
 
 \let\startpushnote\relax
 \let\stoppushnote \relax
@@ -1242,6 +1250,7 @@
 \appendtoks
   \doif{\noteparameter\c!scope}\v!page{\floatingpenalty\maxdimen}% experiment
   \penalty\currentnotepenalty
+ %\interlinepenalty\maxdimen % todo
   \forgetall
   \strc_notes_set_bodyfont
   \redoconvertfont % to undo \undo calls in in headings etc
@@ -1290,7 +1299,7 @@
        \noteparameter\c!before
      \fi
       %        \bgroup
-      %        \setupalign[\noteparameter\c!align]%
+      %        \usealignparameter\noteparameter
      \placenoterule  % alleen in ..mode
       %        \par
       %        \egroup
@@ -1298,6 +1307,7 @@
      \strc_notes_set_bodyfont
      \setbox\scratchbox\hbox
        {\strc_notes_flush_inserts}%
+     \page_postprocessors_linenumbers_deepbox\scratchbox
      \setbox\scratchbox\hbox
        {\setupcurrentnote
           [\c!location=,
@@ -1345,11 +1355,14 @@
 % idea: tag with attr and then just flush them again
 
 \def\strc_notes_flush_global
-  {\doifelse{\noteparameter\c!paragraph}\v!yes
+  {\begingroup
+   \useinterlinespaceparameter\noteparameter
+   \doifelse{\noteparameter\c!paragraph}\v!yes
      {\vbox\starthboxestohbox
         \iftrialtypesetting\unvcopy\else\unvbox\fi\currentnoteinsertionnumber
       \stophboxestohbox}
-     {\iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteinsertionnumber}}
+     {\iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteinsertionnumber}%
+   \endgroup}
 
 %D Supporting end notes is surprisingly easy. Even better, we
 %D can combine this feature with solving the common \TEX\
@@ -1387,7 +1400,7 @@
   {\ifconditional\postponingnotes\else
      \global\settrue\postponingnotes
      \global\let\flushnotes\doflushnotes
-     \ctxcommand{postponenotes()}%
+     \clf_postponenotes
    \fi}
 
 \let\flushnotes\relax
@@ -1397,7 +1410,7 @@
      \begingroup
      \let\flushnotes   \relax
      \let\postponenotes\relax
-     \ctxcommand{flushpostponednotes()}% this also resets the states !
+     \clf_flushpostponednotes% this also resets the states !
      \global\setfalse\postponednote
      \global\setfalse\postponingnotes
      \global\let\flushnotes\relax
@@ -1444,20 +1457,20 @@
       \strc_counters_save{#tag}%
       \strc_counters_reset{#tag}%
    \fi
-   \ctxcommand{savenote("#tag","store")}}
+   \clf_savenote{#tag}{store}}
 
 \def\strc_notes_local_stop_step#tag%
   {\p_strc_notes_continue{\noteparameter\c!continue}%
    \ifx\p_strc_notes_continue\v!yes \else
      \strc_counters_restore{#tag}%
    \fi
-   \ctxcommand{restorenote("#tag")}}
+   \clf_restorenote{#tag}}
 
 \unexpanded\def\placelocalnotes
   {\dodoubleempty\strc_notes_local_place}
 
 \def\strc_notes_local_place[#tag][#settings]%
-  {\doif{\ctxcommand{getnotestate("#tag")}}{store}{\strc_notes_local_place_indeed{#settings}{#tag}}}
+  {\doif{\clf_getnotestate{#tag}}{store}{\strc_notes_local_place_indeed{#settings}{#tag}}}
 
 \def\strc_notes_local_place_indeed#settings#tag%
   {\begingroup
@@ -1517,7 +1530,7 @@
 
 \def\strc_notes_place_indeed#settings#tag% settings note
   {\edef\currentnote{#tag}% grouping ?
-   \doifelse{\ctxcommand{getnotestate("#tag")}}{store}
+   \doifelse{\clf_getnotestate{#tag}}{store}
      \strc_notes_local_place_indeed
      \strc_notes_global_place_indeed
      {#settings}{#tag}}
@@ -1537,7 +1550,7 @@
   {\setvalue{\??notealternative#alternative}{#command}}
 
 \unexpanded\def\doifnotescollected#tag%
-  {\ctxcommand{doifnotecontent("#tag")}}
+  {\clf_doifnotecontent{#tag}}
 
 \def\strc_notes_place_local_alternative % will be a setup (wrapper)
   {\doifnotescollected\currentnote
@@ -1564,7 +1577,7 @@
 
 % setups ?
 
-\def\flushlocalnotes#tag{\ctxcommand{flushnotes("#tag","store","\noteparameter\c!criterium")}}
+\def\flushlocalnotes#tag{\clf_flushnotes{#tag}{store}{\noteparameter\c!criterium}}
 
 \installnotealternative \v!none
   {\flushlocalnotes\currentnote}
@@ -1589,7 +1602,7 @@
    \setupcurrentnote[\c!location=]%
    \inheritednoteframed
      {\edef\currentnotewidth{\noteparameter\c!width}%
-      \doifdimensionelse\currentnotewidth\donothing
+      \doifelsedimension\currentnotewidth\donothing
         {\edef\currentnotewidth{\the\hsize}}%
       \startsimplecolumns[\c!distance=\noteparameter\c!columndistance,\c!n=\noteparameter\c!n,\c!width=\currentnotewidth]%
         \flushlocalnotes\currentnote
@@ -1714,8 +1727,8 @@
 \def\strc_notes_set_bodyfont
   {\let\strc_notes_set_bodyfont\relax
    \restoreglobalbodyfont
-   \switchtobodyfont[\noteparameter\c!bodyfont]%
-   \setupalign[\noteparameter\c!align]}
+   \usebodyfontparameter\noteparameter
+   \usealignparameter\noteparameter}
 
 %D The footnote mechanism defaults to a traditional one
 %D column way of showing them. By default we precede them by
@@ -1756,7 +1769,9 @@
 %D }
 %D \stoptyping
 
-\def\doifnoteonsamepageelse[#tag]{\ctxcommand{doifnoteonsamepageasprevious("#tag")}}
+\def\doifelsenoteonsamepage[#tag]{\clf_doifnoteonsamepageasprevious{#tag}}
+
+\let\doifnoteonsamepageelse\doifelsenoteonsamepage
 
 %D New trickery:
 
@@ -1778,19 +1793,19 @@
   {\dodoubleempty\strc_notes_symbol}
 
 \def\strc_notes_symbol[#tag][#reference]%
-  {\dontleavehmode
-   \begingroup
-   \edef\currentnote{#tag}%
-   \usenotestyleandcolor\c!textstyle\c!textcolor
-   \ifnotesenabled
+  {\ifnotesenabled
+     \dontleavehmode
+     \begingroup
+     \edef\currentnote{#tag}%
+     \usenotestyleandcolor\c!textstyle\c!textcolor
      \ifsecondargument
        \unskip
        \noteparameter\c!textcommand{\in[#reference]}% command here?
      \else
        \noteparameter\c!textcommand\lastnotesymbol % check if command double
      \fi
-   \fi
-   \endgroup}
+     \endgroup
+   \fi}
 
 \unexpanded\def\note
   {\dodoubleempty\strc_notes_note}
@@ -1821,4 +1836,24 @@
 %   [ownnote]
 %   [\ownnotesymbol]
 
+% tricky:
+%
+% \enabletrackers[nodes.areas]
+% \enabletrackers[nodes.references]
+% \enabletrackers[nodes.destinations]
+%
+% \setupnotes[interaction=all,rule=no]
+% \setupinteraction[state=start,focus=standard]
+%
+% \starttext
+%     \goto{\input tufte\relax}[page(2)] \par
+%     \ruledhbox{\gotobox{\vtop{\input tufte\relax}}[page(2)]} \par
+%     \ruledhbox{\gotobox{\vbox{\input tufte\relax}}[page(2)]} \par
+%     % \completecontent
+%     % \chapter{Chapter}
+%     % \dorecurse{5}{\input knuth}
+%     a\footnote{\input tufte\par\input ward\relax}
+% \stoptext
+
 \protect \endinput
+

@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 3123, stripped down to: 1694
+-- original size: 3888, stripped down to: 2197
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -135,6 +135,16 @@ function optionalrequire(...)
   if ok then
     return result
   end
+end
+if lua then
+  lua.mask=load([[τεχ = 1]]) and "utf" or "ascii"
+end
+local flush=io.flush
+if flush then
+  local execute=os.execute if execute then function os.execute(...) flush() return execute(...) end end
+  local exec=os.exec  if exec  then function os.exec  (...) flush() return exec  (...) end end
+  local spawn=os.spawn  if spawn  then function os.spawn (...) flush() return spawn (...) end end
+  local popen=io.popen  if popen  then function io.popen (...) flush() return popen (...) end end
 end
 
 
@@ -434,7 +444,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 29245, stripped down to: 15964
+-- original size: 36977, stripped down to: 20349
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -450,7 +460,9 @@ local byte,char,gmatch,format=string.byte,string.char,string.gmatch,string.forma
 local floor=math.floor
 local P,R,S,V,Ct,C,Cs,Cc,Cp,Cmt=lpeg.P,lpeg.R,lpeg.S,lpeg.V,lpeg.Ct,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg.Cp,lpeg.Cmt
 local lpegtype,lpegmatch,lpegprint=lpeg.type,lpeg.match,lpeg.print
-setinspector(function(v) if lpegtype(v) then lpegprint(v) return true end end)
+if setinspector then
+  setinspector(function(v) if lpegtype(v) then lpegprint(v) return true end end)
+end
 lpeg.patterns=lpeg.patterns or {} 
 local patterns=lpeg.patterns
 local anything=P(1)
@@ -469,7 +481,7 @@ local uppercase=R("AZ")
 local underscore=P("_")
 local hexdigit=digit+lowercase+uppercase
 local cr,lf,crlf=P("\r"),P("\n"),P("\r\n")
-local newline=crlf+S("\r\n") 
+local newline=P("\r")*(P("\n")+P(true))+P("\n")
 local escaped=P("\\")*anything
 local squote=P("'")
 local dquote=P('"')
@@ -491,8 +503,10 @@ patterns.utfbom_32_le=utfbom_32_le
 patterns.utfbom_16_be=utfbom_16_be
 patterns.utfbom_16_le=utfbom_16_le
 patterns.utfbom_8=utfbom_8
-patterns.utf_16_be_nl=P("\000\r\000\n")+P("\000\r")+P("\000\n")
-patterns.utf_16_le_nl=P("\r\000\n\000")+P("\r\000")+P("\n\000")
+patterns.utf_16_be_nl=P("\000\r\000\n")+P("\000\r")+P("\000\n") 
+patterns.utf_16_le_nl=P("\r\000\n\000")+P("\r\000")+P("\n\000") 
+patterns.utf_32_be_nl=P("\000\000\000\r\000\000\000\n")+P("\000\000\000\r")+P("\000\000\000\n")
+patterns.utf_32_le_nl=P("\r\000\000\000\n\000\000\000")+P("\r\000\000\000")+P("\n\000\000\000")
 patterns.utf8one=R("\000\127")
 patterns.utf8two=R("\194\223")*utf8next
 patterns.utf8three=R("\224\239")*utf8next*utf8next
@@ -519,10 +533,24 @@ patterns.spacer=spacer
 patterns.whitespace=whitespace
 patterns.nonspacer=nonspacer
 patterns.nonwhitespace=nonwhitespace
-local stripper=spacer^0*C((spacer^0*nonspacer^1)^0)
+local stripper=spacer^0*C((spacer^0*nonspacer^1)^0)   
+local fullstripper=whitespace^0*C((whitespace^0*nonwhitespace^1)^0)
 local collapser=Cs(spacer^0/""*nonspacer^0*((spacer^0/" "*nonspacer^1)^0))
+local b_collapser=Cs(whitespace^0/""*(nonwhitespace^1+whitespace^1/" ")^0)
+local e_collapser=Cs((whitespace^1*P(-1)/""+nonwhitespace^1+whitespace^1/" ")^0)
+local m_collapser=Cs((nonwhitespace^1+whitespace^1/" ")^0)
+local b_stripper=Cs(spacer^0/""*(nonspacer^1+spacer^1/" ")^0)
+local e_stripper=Cs((spacer^1*P(-1)/""+nonspacer^1+spacer^1/" ")^0)
+local m_stripper=Cs((nonspacer^1+spacer^1/" ")^0)
 patterns.stripper=stripper
+patterns.fullstripper=fullstripper
 patterns.collapser=collapser
+patterns.b_collapser=b_collapser
+patterns.m_collapser=m_collapser
+patterns.e_collapser=e_collapser
+patterns.b_stripper=b_stripper
+patterns.m_stripper=m_stripper
+patterns.e_stripper=e_stripper
 patterns.lowercase=lowercase
 patterns.uppercase=uppercase
 patterns.letter=patterns.lowercase+patterns.uppercase
@@ -559,9 +587,12 @@ patterns.integer=sign^-1*digit^1
 patterns.unsigned=digit^0*period*digit^1
 patterns.float=sign^-1*patterns.unsigned
 patterns.cunsigned=digit^0*comma*digit^1
+patterns.cpunsigned=digit^0*(period+comma)*digit^1
 patterns.cfloat=sign^-1*patterns.cunsigned
+patterns.cpfloat=sign^-1*patterns.cpunsigned
 patterns.number=patterns.float+patterns.integer
 patterns.cnumber=patterns.cfloat+patterns.integer
+patterns.cpnumber=patterns.cpfloat+patterns.integer
 patterns.oct=zero*octdigit^1
 patterns.octal=patterns.oct
 patterns.HEX=zero*P("X")*(digit+uppercase)^1
@@ -744,7 +775,7 @@ function lpeg.replacer(one,two,makefunction,isutf)
     return pattern
   end
 end
-function lpeg.finder(lst,makefunction) 
+function lpeg.finder(lst,makefunction,isutf) 
   local pattern
   if type(lst)=="table" then
     pattern=P(false)
@@ -760,7 +791,11 @@ function lpeg.finder(lst,makefunction)
   else
     pattern=P(lst)
   end
-  pattern=(1-pattern)^0*pattern
+  if isutf then
+    pattern=((utf8char or 1)-pattern)^0*pattern
+  else
+    pattern=(1-pattern)^0*pattern
+  end
   if makefunction then
     return function(str)
       return lpegmatch(pattern,str)
@@ -974,37 +1009,139 @@ function lpeg.append(list,pp,delayed,checked)
   end
   return p
 end
+local p_false=P(false)
+local p_true=P(true)
 local function make(t)
-  local p
+  local function making(t)
+    local p=p_false
+    local keys=sortedkeys(t)
+    for i=1,#keys do
+      local k=keys[i]
+      if k~="" then
+        local v=t[k]
+        if v==true then
+          p=p+P(k)*p_true
+        elseif v==false then
+        else
+          p=p+P(k)*making(v)
+        end
+      end
+    end
+    if t[""] then
+      p=p+p_true
+    end
+    return p
+  end
+  local p=p_false
   local keys=sortedkeys(t)
   for i=1,#keys do
     local k=keys[i]
-    local v=t[k]
-    if not p then
-      if next(v) then
-        p=P(k)*make(v)
+    if k~="" then
+      local v=t[k]
+      if v==true then
+        p=p+P(k)*p_true
+      elseif v==false then
       else
-        p=P(k)
-      end
-    else
-      if next(v) then
-        p=p+P(k)*make(v)
-      else
-        p=p+P(k)
+        p=p+P(k)*making(v)
       end
     end
   end
   return p
 end
+local function collapse(t,x)
+  if type(t)~="table" then
+    return t,x
+  else
+    local n=next(t)
+    if n==nil then
+      return t,x
+    elseif next(t,n)==nil then
+      local k=n
+      local v=t[k]
+      if type(v)=="table" then
+        return collapse(v,x..k)
+      else
+        return v,x..k
+      end
+    else
+      local tt={}
+      for k,v in next,t do
+        local vv,kk=collapse(v,k)
+        tt[kk]=vv
+      end
+      return tt,x
+    end
+  end
+end
 function lpeg.utfchartabletopattern(list) 
   local tree={}
-  for i=1,#list do
-    local t=tree
-    for c in gmatch(list[i],".") do
-      if not t[c] then
-        t[c]={}
+  local n=#list
+  if n==0 then
+    for s in next,list do
+      local t=tree
+      local p,pk
+      for c in gmatch(s,".") do
+        if t==true then
+          t={ [c]=true,[""]=true }
+          p[pk]=t
+          p=t
+          t=false
+        elseif t==false then
+          t={ [c]=false }
+          p[pk]=t
+          p=t
+          t=false
+        else
+          local tc=t[c]
+          if not tc then
+            tc=false
+            t[c]=false
+          end
+          p=t
+          t=tc
+        end
+        pk=c
       end
-      t=t[c]
+      if t==false then
+        p[pk]=true
+      elseif t==true then
+      else
+        t[""]=true
+      end
+    end
+  else
+    for i=1,n do
+      local s=list[i]
+      local t=tree
+      local p,pk
+      for c in gmatch(s,".") do
+        if t==true then
+          t={ [c]=true,[""]=true }
+          p[pk]=t
+          p=t
+          t=false
+        elseif t==false then
+          t={ [c]=false }
+          p[pk]=t
+          p=t
+          t=false
+        else
+          local tc=t[c]
+          if not tc then
+            tc=false
+            t[c]=false
+          end
+          p=t
+          t=tc
+        end
+        pk=c
+      end
+      if t==false then
+        p[pk]=true
+      elseif t==true then
+      else
+        t[""]=true
+      end
     end
   end
   return make(tree)
@@ -1044,6 +1181,65 @@ local case_2=period*(digit-trailingzeros)^1*(trailingzeros/"")
 local number=digit^1*(case_1+case_2)
 local stripper=Cs((number+1)^0)
 lpeg.patterns.stripzeros=stripper
+local byte_to_HEX={}
+local byte_to_hex={}
+local byte_to_dec={} 
+local hex_to_byte={}
+for i=0,255 do
+  local H=format("%02X",i)
+  local h=format("%02x",i)
+  local d=format("%03i",i)
+  local c=char(i)
+  byte_to_HEX[c]=H
+  byte_to_hex[c]=h
+  byte_to_dec[c]=d
+  hex_to_byte[h]=c
+  hex_to_byte[H]=c
+end
+local hextobyte=P(2)/hex_to_byte
+local bytetoHEX=P(1)/byte_to_HEX
+local bytetohex=P(1)/byte_to_hex
+local bytetodec=P(1)/byte_to_dec
+local hextobytes=Cs(hextobyte^0)
+local bytestoHEX=Cs(bytetoHEX^0)
+local bytestohex=Cs(bytetohex^0)
+local bytestodec=Cs(bytetodec^0)
+patterns.hextobyte=hextobyte
+patterns.bytetoHEX=bytetoHEX
+patterns.bytetohex=bytetohex
+patterns.bytetodec=bytetodec
+patterns.hextobytes=hextobytes
+patterns.bytestoHEX=bytestoHEX
+patterns.bytestohex=bytestohex
+patterns.bytestodec=bytestodec
+function string.toHEX(s)
+  if not s or s=="" then
+    return s
+  else
+    return lpegmatch(bytestoHEX,s)
+  end
+end
+function string.tohex(s)
+  if not s or s=="" then
+    return s
+  else
+    return lpegmatch(bytestohex,s)
+  end
+end
+function string.todec(s)
+  if not s or s=="" then
+    return s
+  else
+    return lpegmatch(bytestodec,s)
+  end
+end
+function string.tobytes(s)
+  if not s or s=="" then
+    return s
+  else
+    return lpegmatch(hextobytes,s)
+  end
+end
 
 
 end -- of closure
@@ -1071,7 +1267,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-string"] = package.loaded["l-string"] or true
 
--- original size: 5547, stripped down to: 2708
+-- original size: 5694, stripped down to: 2827
 
 if not modules then modules={} end modules ['l-string']={
   version=1.001,
@@ -1107,10 +1303,14 @@ function string.limit(str,n,sentinel)
   end
 end
 local stripper=patterns.stripper
+local fullstripper=patterns.fullstripper
 local collapser=patterns.collapser
 local longtostring=patterns.longtostring
 function string.strip(str)
   return lpegmatch(stripper,str) or ""
+end
+function string.fullstrip(str)
+  return lpegmatch(fullstripper,str) or ""
 end
 function string.collapsespaces(str)
   return lpegmatch(collapser,str) or ""
@@ -1172,7 +1372,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 31113, stripped down to: 20256
+-- original size: 35724, stripped down to: 21525
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -1205,7 +1405,7 @@ end
 function table.keys(t)
   if t then
     local keys,k={},0
-    for key,_ in next,t do
+    for key in next,t do
       k=k+1
       keys[k]=key
     end
@@ -1215,34 +1415,88 @@ function table.keys(t)
   end
 end
 local function compare(a,b)
-  local ta,tb=type(a),type(b) 
-  if ta==tb then
-    return a<b
-  else
-    return tostring(a)<tostring(b)
+  local ta=type(a) 
+  if ta=="number" then
+    local tb=type(b) 
+    if ta==tb then
+      return a<b
+    elseif tb=="string" then
+      return tostring(a)<b
+    end
+  elseif ta=="string" then
+    local tb=type(b) 
+    if ta==tb then
+      return a<b
+    else
+      return a<tostring(b)
+    end
   end
+  return tostring(a)<tostring(b) 
 end
 local function sortedkeys(tab)
   if tab then
     local srt,category,s={},0,0 
-    for key,_ in next,tab do
+    for key in next,tab do
       s=s+1
       srt[s]=key
       if category==3 then
+      elseif category==1 then
+        if type(key)~="string" then
+          category=3
+        end
+      elseif category==2 then
+        if type(key)~="number" then
+          category=3
+        end
       else
         local tkey=type(key)
         if tkey=="string" then
-          category=(category==2 and 3) or 1
+          category=1
         elseif tkey=="number" then
-          category=(category==1 and 3) or 2
+          category=2
         else
           category=3
         end
       end
     end
-    if category==0 or category==3 then
+    if s<2 then
+    elseif category==3 then
       sort(srt,compare)
     else
+      sort(srt)
+    end
+    return srt
+  else
+    return {}
+  end
+end
+local function sortedhashonly(tab)
+  if tab then
+    local srt,s={},0
+    for key in next,tab do
+      if type(key)=="string" then
+        s=s+1
+        srt[s]=key
+      end
+    end
+    if s>1 then
+      sort(srt)
+    end
+    return srt
+  else
+    return {}
+  end
+end
+local function sortedindexonly(tab)
+  if tab then
+    local srt,s={},0
+    for key in next,tab do
+      if type(key)=="number" then
+        s=s+1
+        srt[s]=key
+      end
+    end
+    if s>1 then
       sort(srt)
     end
     return srt
@@ -1253,13 +1507,15 @@ end
 local function sortedhashkeys(tab,cmp) 
   if tab then
     local srt,s={},0
-    for key,_ in next,tab do
+    for key in next,tab do
       if key then
         s=s+1
         srt[s]=key
       end
     end
-    sort(srt,cmp)
+    if s>1 then
+      sort(srt,cmp)
+    end
     return srt
   else
     return {}
@@ -1268,13 +1524,15 @@ end
 function table.allkeys(t)
   local keys={}
   for k,v in next,t do
-    for k,v in next,v do
+    for k in next,v do
       keys[k]=true
     end
   end
   return sortedkeys(keys)
 end
 table.sortedkeys=sortedkeys
+table.sortedhashonly=sortedhashonly
+table.sortedindexonly=sortedindexonly
 table.sortedhashkeys=sortedhashkeys
 local function nothing() end
 local function sortedhash(t,cmp)
@@ -1285,19 +1543,21 @@ local function sortedhash(t,cmp)
     else
       s=sortedkeys(t) 
     end
-    local n=0
     local m=#s
-    local function kv(s)
-      if n<m then
-        n=n+1
-        local k=s[n]
-        return k,t[k]
+    if m==1 then
+      return next,t
+    elseif m>0 then
+      local n=0
+      return function()
+        if n<m then
+          n=n+1
+          local k=s[n]
+          return k,t[k]
+        end
       end
     end
-    return kv,s
-  else
-    return nothing
   end
+  return nothing
 end
 table.sortedhash=sortedhash
 table.sortedpairs=sortedhash 
@@ -1439,39 +1699,36 @@ function table.fromhash(t)
   end
   return hsh
 end
-local noquotes,hexify,handle,reduce,compact,inline,functions
+local noquotes,hexify,handle,compact,inline,functions
 local reserved=table.tohash { 
   'and','break','do','else','elseif','end','false','for','function','if',
   'in','local','nil','not','or','repeat','return','then','true','until','while',
   'NaN','goto',
 }
 local function simple_table(t)
-  if #t>0 then
+  local nt=#t
+  if nt>0 then
     local n=0
     for _,v in next,t do
       n=n+1
     end
-    if n==#t then
-      local tt,nt={},0
-      for i=1,#t do
+    if n==nt then
+      local tt={}
+      for i=1,nt do
         local v=t[i]
         local tv=type(v)
         if tv=="number" then
-          nt=nt+1
           if hexify then
-            tt[nt]=format("0x%04X",v)
+            tt[i]=format("0x%X",v)
           else
-            tt[nt]=tostring(v) 
+            tt[i]=tostring(v) 
           end
         elseif tv=="string" then
-          nt=nt+1
-          tt[nt]=format("%q",v)
+          tt[i]=format("%q",v)
         elseif tv=="boolean" then
-          nt=nt+1
-          tt[nt]=v and "true" or "false"
+          tt[i]=v and "true" or "false"
         else
-          tt=nil
-          break
+          return nil
         end
       end
       return tt
@@ -1490,7 +1747,7 @@ local function do_serialize(root,name,depth,level,indexed)
       local tn=type(name)
       if tn=="number" then
         if hexify then
-          handle(format("%s[0x%04X]={",depth,name))
+          handle(format("%s[0x%X]={",depth,name))
         else
           handle(format("%s[%s]={",depth,name))
         end
@@ -1507,7 +1764,7 @@ local function do_serialize(root,name,depth,level,indexed)
       end
     end
   end
-  if root and next(root) then
+  if root and next(root)~=nil then
     local first,last=nil,0
     if compact then
       last=#root
@@ -1525,22 +1782,19 @@ local function do_serialize(root,name,depth,level,indexed)
     for i=1,#sk do
       local k=sk[i]
       local v=root[k]
-      local tv,tk=type(v),type(k)
+      local tv=type(v)
+      local tk=type(k)
       if compact and first and tk=="number" and k>=first and k<=last then
         if tv=="number" then
           if hexify then
-            handle(format("%s 0x%04X,",depth,v))
+            handle(format("%s 0x%X,",depth,v))
           else
             handle(format("%s %s,",depth,v)) 
           end
         elseif tv=="string" then
-          if reduce and tonumber(v) then
-            handle(format("%s %s,",depth,v))
-          else
-            handle(format("%s %q,",depth,v))
-          end
+          handle(format("%s %q,",depth,v))
         elseif tv=="table" then
-          if not next(v) then
+          if next(v)==nil then
             handle(format("%s {},",depth))
           elseif inline then 
             local st=simple_table(v)
@@ -1570,64 +1824,48 @@ local function do_serialize(root,name,depth,level,indexed)
       elseif tv=="number" then
         if tk=="number" then
           if hexify then
-            handle(format("%s [0x%04X]=0x%04X,",depth,k,v))
+            handle(format("%s [0x%X]=0x%X,",depth,k,v))
           else
             handle(format("%s [%s]=%s,",depth,k,v)) 
           end
         elseif tk=="boolean" then
           if hexify then
-            handle(format("%s [%s]=0x%04X,",depth,k and "true" or "false",v))
+            handle(format("%s [%s]=0x%X,",depth,k and "true" or "false",v))
           else
             handle(format("%s [%s]=%s,",depth,k and "true" or "false",v)) 
           end
         elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
           if hexify then
-            handle(format("%s %s=0x%04X,",depth,k,v))
+            handle(format("%s %s=0x%X,",depth,k,v))
           else
             handle(format("%s %s=%s,",depth,k,v)) 
           end
         else
           if hexify then
-            handle(format("%s [%q]=0x%04X,",depth,k,v))
+            handle(format("%s [%q]=0x%X,",depth,k,v))
           else
             handle(format("%s [%q]=%s,",depth,k,v)) 
           end
         end
       elseif tv=="string" then
-        if reduce and tonumber(v) then
-          if tk=="number" then
-            if hexify then
-              handle(format("%s [0x%04X]=%s,",depth,k,v))
-            else
-              handle(format("%s [%s]=%s,",depth,k,v))
-            end
-          elseif tk=="boolean" then
-            handle(format("%s [%s]=%s,",depth,k and "true" or "false",v))
-          elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
-            handle(format("%s %s=%s,",depth,k,v))
+        if tk=="number" then
+          if hexify then
+            handle(format("%s [0x%X]=%q,",depth,k,v))
           else
-            handle(format("%s [%q]=%s,",depth,k,v))
+            handle(format("%s [%s]=%q,",depth,k,v))
           end
+        elseif tk=="boolean" then
+          handle(format("%s [%s]=%q,",depth,k and "true" or "false",v))
+        elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
+          handle(format("%s %s=%q,",depth,k,v))
         else
-          if tk=="number" then
-            if hexify then
-              handle(format("%s [0x%04X]=%q,",depth,k,v))
-            else
-              handle(format("%s [%s]=%q,",depth,k,v))
-            end
-          elseif tk=="boolean" then
-            handle(format("%s [%s]=%q,",depth,k and "true" or "false",v))
-          elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
-            handle(format("%s %s=%q,",depth,k,v))
-          else
-            handle(format("%s [%q]=%q,",depth,k,v))
-          end
+          handle(format("%s [%q]=%q,",depth,k,v))
         end
       elseif tv=="table" then
-        if not next(v) then
+        if next(v)==nil then
           if tk=="number" then
             if hexify then
-              handle(format("%s [0x%04X]={},",depth,k))
+              handle(format("%s [0x%X]={},",depth,k))
             else
               handle(format("%s [%s]={},",depth,k))
             end
@@ -1643,7 +1881,7 @@ local function do_serialize(root,name,depth,level,indexed)
           if st then
             if tk=="number" then
               if hexify then
-                handle(format("%s [0x%04X]={ %s },",depth,k,concat(st,", ")))
+                handle(format("%s [0x%X]={ %s },",depth,k,concat(st,", ")))
               else
                 handle(format("%s [%s]={ %s },",depth,k,concat(st,", ")))
               end
@@ -1663,7 +1901,7 @@ local function do_serialize(root,name,depth,level,indexed)
       elseif tv=="boolean" then
         if tk=="number" then
           if hexify then
-            handle(format("%s [0x%04X]=%s,",depth,k,v and "true" or "false"))
+            handle(format("%s [0x%X]=%s,",depth,k,v and "true" or "false"))
           else
             handle(format("%s [%s]=%s,",depth,k,v and "true" or "false"))
           end
@@ -1679,7 +1917,7 @@ local function do_serialize(root,name,depth,level,indexed)
           local f=getinfo(v).what=="C" and dump(dummy) or dump(v)
           if tk=="number" then
             if hexify then
-              handle(format("%s [0x%04X]=load(%q),",depth,k,f))
+              handle(format("%s [0x%X]=load(%q),",depth,k,f))
             else
               handle(format("%s [%s]=load(%q),",depth,k,f))
             end
@@ -1694,7 +1932,7 @@ local function do_serialize(root,name,depth,level,indexed)
       else
         if tk=="number" then
           if hexify then
-            handle(format("%s [0x%04X]=%q,",depth,k,tostring(v)))
+            handle(format("%s [0x%X]=%q,",depth,k,tostring(v)))
           else
             handle(format("%s [%s]=%q,",depth,k,tostring(v)))
           end
@@ -1718,7 +1956,6 @@ local function serialize(_handle,root,name,specification)
     noquotes=specification.noquotes
     hexify=specification.hexify
     handle=_handle or specification.handle or print
-    reduce=specification.reduce or false
     functions=specification.functions
     compact=specification.compact
     inline=specification.inline and compact
@@ -1735,7 +1972,6 @@ local function serialize(_handle,root,name,specification)
     noquotes=false
     hexify=false
     handle=_handle or print
-    reduce=false
     compact=true
     inline=true
     functions=true
@@ -1748,7 +1984,7 @@ local function serialize(_handle,root,name,specification)
     end
   elseif tname=="number" then
     if hexify then
-      handle(format("[0x%04X]={",name))
+      handle(format("[0x%X]={",name))
     else
       handle("["..name.."]={")
     end
@@ -1766,7 +2002,7 @@ local function serialize(_handle,root,name,specification)
       local dummy=root._w_h_a_t_e_v_e_r_
       root._w_h_a_t_e_v_e_r_=nil
     end
-    if next(root) then
+    if next(root)~=nil then
       do_serialize(root,name,"",0)
     end
   end
@@ -1895,14 +2131,25 @@ local function identical(a,b)
 end
 table.identical=identical
 table.are_equal=are_equal
-function table.compact(t) 
-  if t then
-    for k,v in next,t do
-      if not next(v) then 
-        t[k]=nil
+local function sparse(old,nest,keeptables)
+  local new={}
+  for k,v in next,old do
+    if not (v=="" or v==false) then
+      if nest and type(v)=="table" then
+        v=sparse(v,nest)
+        if keeptables or next(v)~=nil then
+          new[k]=v
+        end
+      else
+        new[k]=v
       end
     end
   end
+  return new
+end
+table.sparse=sparse
+function table.compact(t)
+  return sparse(t,true,true)
 end
 function table.contains(t,v)
   if t then
@@ -2000,15 +2247,17 @@ function table.print(t,...)
     serialize(print,t,...)
   end
 end
-setinspector(function(v) if type(v)=="table" then serialize(print,v,"table") return true end end)
+if setinspector then
+  setinspector(function(v) if type(v)=="table" then serialize(print,v,"table") return true end end)
+end
 function table.sub(t,i,j)
   return { unpack(t,i,j) }
 end
 function table.is_empty(t)
-  return not t or not next(t)
+  return not t or next(t)==nil
 end
 function table.has_one_entry(t)
-  return t and not next(t,next(t))
+  return t and next(t,next(t))==nil
 end
 function table.loweredkeys(t) 
   local l={}
@@ -2053,6 +2302,44 @@ function table.values(t,s)
     return {}
   end
 end
+function table.filtered(t,pattern,sort,cmp)
+  if t and type(pattern)=="string" then
+    if sort then
+      local s
+      if cmp then
+        s=sortedhashkeys(t,function(a,b) return cmp(t,a,b) end)
+      else
+        s=sortedkeys(t) 
+      end
+      local n=0
+      local m=#s
+      local function kv(s)
+        while n<m do
+          n=n+1
+          local k=s[n]
+          if find(k,pattern) then
+            return k,t[k]
+          end
+        end
+      end
+      return kv,s
+    else
+      local n=next(t)
+      local function iterator()
+        while n~=nil do
+          local k=n
+          n=next(t,k)
+          if find(k,pattern) then
+            return k,t[k]
+          end
+        end
+      end
+      return iterator,t
+    end
+  else
+    return nothing
+  end
+end
 
 
 end -- of closure
@@ -2061,7 +2348,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-io"] = package.loaded["l-io"] or true
 
--- original size: 8817, stripped down to: 6340
+-- original size: 8643, stripped down to: 6232
 
 if not modules then modules={} end modules ['l-io']={
   version=1.001,
@@ -2075,7 +2362,7 @@ local byte,find,gsub,format=string.byte,string.find,string.gsub,string.format
 local concat=table.concat
 local floor=math.floor
 local type=type
-if string.find(os.getenv("PATH"),";") then
+if string.find(os.getenv("PATH"),";",1,true) then
   io.fileseparator,io.pathseparator="\\",";"
 else
   io.fileseparator,io.pathseparator="/",":"
@@ -2368,8 +2655,6 @@ function io.readstring(f,n,m)
   local str=gsub(f:read(n),"\000","")
   return str
 end
-if not io.i_limiter then function io.i_limiter() end end 
-if not io.o_limiter then function io.o_limiter() end end
 
 
 end -- of closure
@@ -2596,7 +2881,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 16023, stripped down to: 9634
+-- original size: 15832, stripped down to: 9456
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -2670,13 +2955,10 @@ if not os.__getenv__ then
     setmetatable(os.env,{ __index=__index,__newindex=__newindex } )
   end
 end
-local execute,spawn,exec,iopopen,ioflush=os.execute,os.spawn or os.execute,os.exec or os.execute,io.popen,io.flush
-function os.execute(...) ioflush() return execute(...) end
-function os.spawn (...) ioflush() return spawn (...) end
-function os.exec  (...) ioflush() return exec  (...) end
-function io.popen (...) ioflush() return iopopen(...) end
+local execute=os.execute
+local iopopen=io.popen
 function os.resultof(command)
-  local handle=io.popen(command,"r")
+  local handle=iopopen(command,"r") 
   if handle then
     local result=handle:read("*all") or ""
     handle:close()
@@ -2686,7 +2968,7 @@ function os.resultof(command)
   end
 end
 if not io.fileseparator then
-  if find(os.getenv("PATH"),";") then
+  if find(os.getenv("PATH"),";",1,true) then
     io.fileseparator,io.pathseparator,os.type="\\",";",os.type or "mswin"
   else
     io.fileseparator,io.pathseparator,os.type="/",":",os.type or "unix"
@@ -2705,7 +2987,7 @@ local launchers={
   unix="$BROWSER %s &> /dev/null &",
 }
 function os.launch(str)
-  os.execute(format(launchers[os.name] or launchers.unix,str))
+  execute(format(launchers[os.name] or launchers.unix,str))
 end
 if not os.times then
   function os.times()
@@ -2746,7 +3028,7 @@ if platform~="" then
 elseif os.type=="windows" then
   function resolvers.platform(t,k)
     local platform,architecture="",os.getenv("PROCESSOR_ARCHITECTURE") or ""
-    if find(architecture,"AMD64") then
+    if find(architecture,"AMD64",1,true) then
       platform="win64"
     else
       platform="mswin"
@@ -2758,9 +3040,9 @@ elseif os.type=="windows" then
 elseif name=="linux" then
   function resolvers.platform(t,k)
     local platform,architecture="",os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
-    if find(architecture,"x86_64") then
+    if find(architecture,"x86_64",1,true) then
       platform="linux-64"
-    elseif find(architecture,"ppc") then
+    elseif find(architecture,"ppc",1,true) then
       platform="linux-ppc"
     else
       platform="linux"
@@ -2774,9 +3056,9 @@ elseif name=="macosx" then
     local platform,architecture="",os.resultof("echo $HOSTTYPE") or ""
     if architecture=="" then
       platform="osx-intel"
-    elseif find(architecture,"i386") then
+    elseif find(architecture,"i386",1,true) then
       platform="osx-intel"
-    elseif find(architecture,"x86_64") then
+    elseif find(architecture,"x86_64",1,true) then
       platform="osx-64"
     else
       platform="osx-ppc"
@@ -2788,7 +3070,7 @@ elseif name=="macosx" then
 elseif name=="sunos" then
   function resolvers.platform(t,k)
     local platform,architecture="",os.resultof("uname -m") or ""
-    if find(architecture,"sparc") then
+    if find(architecture,"sparc",1,true) then
       platform="solaris-sparc"
     else 
       platform="solaris-intel"
@@ -2800,7 +3082,7 @@ elseif name=="sunos" then
 elseif name=="freebsd" then
   function resolvers.platform(t,k)
     local platform,architecture="",os.resultof("uname -m") or ""
-    if find(architecture,"amd64") then
+    if find(architecture,"amd64",1,true) then
       platform="freebsd-amd64"
     else
       platform="freebsd"
@@ -2812,7 +3094,7 @@ elseif name=="freebsd" then
 elseif name=="kfreebsd" then
   function resolvers.platform(t,k)
     local platform,architecture="",os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
-    if find(architecture,"x86_64") then
+    if find(architecture,"x86_64",1,true) then
       platform="kfreebsd-amd64"
     else
       platform="kfreebsd-i386"
@@ -2829,8 +3111,9 @@ else
     return platform
   end
 end
+os.newline=name=="windows" and "\013\010" or "\010" 
 function resolvers.bits(t,k)
-  local bits=find(os.platform,"64") and 64 or 32
+  local bits=find(os.platform,"64",1,true) and 64 or 32
   os.bits=bits
   return bits
 end
@@ -2980,7 +3263,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 18308, stripped down to: 9948
+-- original size: 20949, stripped down to: 9945
 
 if not modules then modules={} end modules ['l-file']={
   version=1.001,
@@ -2994,41 +3277,28 @@ local file=file
 if not lfs then
   lfs=optionalrequire("lfs")
 end
-if not lfs then
-  lfs={
-    getcurrentdir=function()
-      return "."
-    end,
-    attributes=function()
-      return nil
-    end,
-    isfile=function(name)
-      local f=io.open(name,'rb')
-      if f then
-        f:close()
-        return true
-      end
-    end,
-    isdir=function(name)
-      print("you need to load lfs")
-      return false
-    end
-  }
-elseif not lfs.isfile then
-  local attributes=lfs.attributes
-  function lfs.isdir(name)
-    return attributes(name,"mode")=="directory"
-  end
-  function lfs.isfile(name)
-    return attributes(name,"mode")=="file"
-  end
-end
 local insert,concat=table.insert,table.concat
 local match,find,gmatch=string.match,string.find,string.gmatch
 local lpegmatch=lpeg.match
 local getcurrentdir,attributes=lfs.currentdir,lfs.attributes
 local checkedsplit=string.checkedsplit
 local P,R,S,C,Cs,Cp,Cc,Ct=lpeg.P,lpeg.R,lpeg.S,lpeg.C,lpeg.Cs,lpeg.Cp,lpeg.Cc,lpeg.Ct
+local tricky=S("/\\")*P(-1)
+local attributes=lfs.attributes
+if sandbox then
+  sandbox.redefine(lfs.isfile,"lfs.isfile")
+  sandbox.redefine(lfs.isdir,"lfs.isdir")
+end
+function lfs.isdir(name)
+  if lpegmatch(tricky,name) then
+    return attributes(name,"mode")=="directory"
+  else
+    return attributes(name.."/.","mode")=="directory"
+  end
+end
+function lfs.isfile(name)
+  return attributes(name,"mode")=="file"
+end
 local colon=P(":")
 local period=P(".")
 local periods=P("..")
@@ -3230,28 +3500,30 @@ local isroot=fwslash^1*-1
 local hasroot=fwslash^1
 local reslasher=lpeg.replacer(S("\\/"),"/")
 local deslasher=lpeg.replacer(S("\\/")^1,"/")
-function file.join(...)
-  local lst={... }
-  local one=lst[1]
+function file.join(one,two,three,...)
+  if not two then
+    return one=="" and one or lpegmatch(stripper,one)
+  end
+  if one=="" then
+    return lpegmatch(stripper,three and concat({ two,three,... },"/") or two)
+  end
   if lpegmatch(isnetwork,one) then
     local one=lpegmatch(reslasher,one)
-    local two=lpegmatch(deslasher,concat(lst,"/",2))
+    local two=lpegmatch(deslasher,three and concat({ two,three,... },"/") or two)
     if lpegmatch(hasroot,two) then
       return one..two
     else
       return one.."/"..two
     end
   elseif lpegmatch(isroot,one) then
-    local two=lpegmatch(deslasher,concat(lst,"/",2))
+    local two=lpegmatch(deslasher,three and concat({ two,three,... },"/") or two)
     if lpegmatch(hasroot,two) then
       return two
     else
       return "/"..two
     end
-  elseif one=="" then
-    return lpegmatch(stripper,concat(lst,"/",2))
   else
-    return lpegmatch(deslasher,concat(lst,"/"))
+    return lpegmatch(deslasher,concat({ one,two,three,... },"/"))
   end
 end
 local drivespec=R("az","AZ")^1*colon
@@ -3425,7 +3697,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-md5"] = package.loaded["l-md5"] or true
 
--- original size: 3760, stripped down to: 2088
+-- original size: 3248, stripped down to: 2266
 
 if not modules then modules={} end modules ['l-md5']={
   version=1.001,
@@ -3443,14 +3715,20 @@ if not md5 then
   }
 end
 local md5,file=md5,file
-local gsub,format,byte=string.gsub,string.format,string.byte
-local md5sum=md5.sum
-local function convert(str,fmt)
-  return (gsub(md5sum(str),".",function(chr) return format(fmt,byte(chr)) end))
+local gsub=string.gsub
+do
+  local patterns=lpeg and lpeg.patterns
+  if patterns then
+    local bytestoHEX=patterns.bytestoHEX
+    local bytestohex=patterns.bytestohex
+    local bytestodec=patterns.bytestodec
+    local lpegmatch=lpeg.match
+    local md5sum=md5.sum
+    if not md5.HEX then function md5.HEX(str) if str then return lpegmatch(bytestoHEX,md5sum(str)) end end end
+    if not md5.hex then function md5.hex(str) if str then return lpegmatch(bytestohex,md5sum(str)) end end end
+    if not md5.dec then function md5.dec(str) if str then return lpegmatch(bytestodec,md5sum(str)) end end end
+  end
 end
-if not md5.HEX then function md5.HEX(str) return convert(str,"%02X") end end
-if not md5.hex then function md5.hex(str) return convert(str,"%02x") end end
-if not md5.dec then function md5.dec(str) return convert(str,"%03i") end end
 function file.needsupdating(oldname,newname,threshold) 
   local oldtime=lfs.attributes(oldname,"modification")
   if oldtime then
@@ -3507,7 +3785,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-url"] = package.loaded["l-url"] or true
 
--- original size: 11993, stripped down to: 5584
+-- original size: 12531, stripped down to: 5721
 
 if not modules then modules={} end modules ['l-url']={
   version=1.001,
@@ -3534,7 +3812,7 @@ local hexdigit=R("09","AF","af")
 local plus=P("+")
 local nothing=Cc("")
 local escapedchar=(percent*C(hexdigit*hexdigit))/tochar
-local escaped=(plus/" ")+escapedchar
+local escaped=(plus/" ")+escapedchar 
 local noslash=P("/")/""
 local schemestr=Cs((escaped+(1-colon-slash-qmark-hash))^2)
 local authoritystr=Cs((escaped+(1-   slash-qmark-hash))^0)
@@ -3593,19 +3871,25 @@ local splitquery=Cf (Ct("")*P { "sequence",
   pair=Cg(key*equal*value),
 },rawset)
 local function hashed(str) 
-  if str=="" then
+  if not str or str=="" then
     return {
       scheme="invalid",
       original=str,
     }
   end
-  local s=split(str)
-  local rawscheme=s[1]
-  local rawquery=s[4]
-  local somescheme=rawscheme~=""
-  local somequery=rawquery~=""
+  local detailed=split(str)
+  local rawscheme=""
+  local rawquery=""
+  local somescheme=false
+  local somequery=false
+  if detailed then
+    rawscheme=detailed[1]
+    rawquery=detailed[4]
+    somescheme=rawscheme~=""
+    somequery=rawquery~=""
+  end
   if not somescheme and not somequery then
-    s={
+    return {
       scheme="file",
       authority="",
       path=str,
@@ -3615,28 +3899,28 @@ local function hashed(str)
       noscheme=true,
       filename=str,
     }
-  else 
-    local authority,path,filename=s[2],s[3]
-    if authority=="" then
-      filename=path
-    elseif path=="" then
-      filename=""
-    else
-      filename=authority.."/"..path
-    end
-    s={
-      scheme=rawscheme,
-      authority=authority,
-      path=path,
-      query=lpegmatch(unescaper,rawquery),
-      queries=lpegmatch(splitquery,rawquery),
-      fragment=s[5],
-      original=str,
-      noscheme=false,
-      filename=filename,
-    }
   end
-  return s
+  local authority=detailed[2]
+  local path=detailed[3]
+  local filename=nil
+  if authority=="" then
+    filename=path
+  elseif path=="" then
+    filename=""
+  else
+    filename=authority.."/"..path
+  end
+  return {
+    scheme=rawscheme,
+    authority=authority,
+    path=path,
+    query=lpegmatch(unescaper,rawquery),
+    queries=lpegmatch(splitquery,rawquery),
+    fragment=detailed[5],
+    original=str,
+    noscheme=false,
+    filename=filename,
+  }
 end
 url.split=split
 url.hasscheme=hasscheme
@@ -3670,7 +3954,7 @@ function url.construct(hash)
   end
   return lpegmatch(escaper,concat(fullurl))
 end
-local pattern=Cs(noslash*R("az","AZ")*(S(":|")/":")*noslash*P(1)^0)
+local pattern=Cs(slash^-1/""*R("az","AZ")*((S(":|")/":")+P(":"))*slash*P(1)^0)
 function url.filename(filename)
   local spec=hashed(filename)
   local path=spec.path
@@ -3718,7 +4002,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 14229, stripped down to: 8740
+-- original size: 16765, stripped down to: 11003
 
 if not modules then modules={} end modules ['l-dir']={
   version=1.001,
@@ -3728,7 +4012,7 @@ if not modules then modules={} end modules ['l-dir']={
   license="see context related readme files"
 }
 local type,select=type,select
-local find,gmatch,match,gsub=string.find,string.gmatch,string.match,string.gsub
+local find,gmatch,match,gsub,sub=string.find,string.gmatch,string.match,string.gsub,string.sub
 local concat,insert,remove,unpack=table.concat,table.insert,table.remove,table.unpack
 local lpegmatch=lpeg.match
 local P,S,R,C,Cc,Cs,Ct,Cv,V=lpeg.P,lpeg.S,lpeg.R,lpeg.C,lpeg.Cc,lpeg.Cs,lpeg.Ct,lpeg.Cv,lpeg.V
@@ -3737,52 +4021,126 @@ local dir=dir
 local lfs=lfs
 local attributes=lfs.attributes
 local walkdir=lfs.dir
-local isdir=lfs.isdir
-local isfile=lfs.isfile
+local isdir=lfs.isdir 
+local isfile=lfs.isfile 
 local currentdir=lfs.currentdir
 local chdir=lfs.chdir
-local onwindows=os.type=="windows" or find(os.getenv("PATH"),";")
-if not isdir then
-  function isdir(name)
-    local a=attributes(name)
-    return a and a.mode=="directory"
+local mkdir=lfs.mkdir
+local onwindows=os.type=="windows" or find(os.getenv("PATH"),";",1,true)
+if onwindows then
+  local tricky=S("/\\")*P(-1)
+  isdir=function(name)
+    if lpegmatch(tricky,name) then
+      return attributes(name,"mode")=="directory"
+    else
+      return attributes(name.."/.","mode")=="directory"
+    end
+  end
+  isfile=function(name)
+    return attributes(name,"mode")=="file"
   end
   lfs.isdir=isdir
-end
-if not isfile then
-  function isfile(name)
-    local a=attributes(name)
-    return a and a.mode=="file"
+  lfs.isfile=isfile
+else
+  isdir=function(name)
+    return attributes(name,"mode")=="directory"
   end
+  isfile=function(name)
+    return attributes(name,"mode")=="file"
+  end
+  lfs.isdir=isdir
   lfs.isfile=isfile
 end
 function dir.current()
   return (gsub(currentdir(),"\\","/"))
 end
-local lfsisdir=isdir
-local function isdir(path)
-  path=gsub(path,"[/\\]+$","")
-  return lfsisdir(path)
-end
-lfs.isdir=isdir
-local function globpattern(path,patt,recurse,action)
-  if path=="/" then
-    path=path.."."
-  elseif not find(path,"/$") then
-    path=path..'/'
-  end
-  if isdir(path) then 
-    for name in walkdir(path) do 
-      local full=path..name
-      local mode=attributes(full,'mode')
-      if mode=='file' then
-        if find(full,patt) then
-          action(full)
+local function glob_pattern_function(path,patt,recurse,action)
+  if isdir(path) then
+    local usedpath
+    if path=="/" then
+      usedpath="/."
+    elseif not find(path,"/$") then
+      usedpath=path.."/."
+      path=path.."/"
+    else
+      usedpath=path
+    end
+    local dirs
+    for name in walkdir(usedpath) do
+      if name~="." and name~=".." then
+        local full=path..name
+        local mode=attributes(full,'mode')
+        if mode=='file' then
+          if not patt or find(full,patt) then
+            action(full)
+          end
+        elseif recurse and mode=="directory" then
+          if not dirs then
+            dirs={ full }
+          else
+            dirs[#dirs+1]=full
+          end
         end
-      elseif recurse and (mode=="directory") and (name~='.') and (name~="..") then
-        globpattern(full,patt,recurse,action)
       end
     end
+    if dirs then
+      for i=1,#dirs do
+        glob_pattern_function(dirs[i],patt,recurse,action)
+      end
+    end
+  end
+end
+local function glob_pattern_table(path,patt,recurse,result)
+  if not result then
+    result={}
+  end
+  if isdir(path) then
+    local usedpath
+    if path=="/" then
+      usedpath="/."
+    elseif not find(path,"/$") then
+      usedpath=path.."/."
+      path=path.."/"
+    else
+      usedpath=path
+    end
+    local dirs
+    for name in walkdir(usedpath) do
+      if name~="." and name~=".." then
+        local full=path..name
+        local mode=attributes(full,'mode')
+        if mode=='file' then
+          if not patt or find(full,patt) then
+            result[#result+1]=full
+          end
+        elseif recurse and mode=="directory" then
+          if not dirs then
+            dirs={ full }
+          else
+            dirs[#dirs+1]=full
+          end
+        end
+      end
+    end
+    if dirs then
+      for i=1,#dirs do
+        glob_pattern_table(dirs[i],patt,recurse,result)
+      end
+    end
+  end
+  return result
+end
+local function globpattern(path,patt,recurse,method)
+  local kind=type(method)
+  if patt and sub(patt,1,-3)==path then
+    patt=false
+  end
+  if kind=="function" then
+    return glob_pattern_function(path,patt,recurse,method)
+  elseif kind=="table" then
+    return glob_pattern_table(path,patt,recurse,method)
+  else
+    return glob_pattern_table(path,patt,recurse,{})
   end
 end
 dir.globpattern=globpattern
@@ -3795,34 +4153,40 @@ local function collectpattern(path,patt,recurse,result)
     ok,scanner,first=xpcall(function() return walkdir(path)   end,function() end) 
   end
   if ok and type(scanner)=="function" then
-    if not find(path,"/$") then path=path..'/' end
+    if not find(path,"/$") then
+      path=path..'/'
+    end
     for name in scanner,first do
-      local full=path..name
-      local attr=attributes(full)
-      local mode=attr.mode
-      if mode=='file' then
-        if find(full,patt) then
+      if name=="." then
+      elseif name==".." then
+      else
+        local full=path..name
+        local attr=attributes(full)
+        local mode=attr.mode
+        if mode=='file' then
+          if find(full,patt) then
+            result[name]=attr
+          end
+        elseif recurse and mode=="directory" then
+          attr.list=collectpattern(full,patt,recurse)
           result[name]=attr
         end
-      elseif recurse and (mode=="directory") and (name~='.') and (name~="..") then
-        attr.list=collectpattern(full,patt,recurse)
-        result[name]=attr
       end
     end
   end
   return result
 end
 dir.collectpattern=collectpattern
-local separator
-if onwindows then
+local separator,pattern
+if onwindows then 
   local slash=S("/\\")/"/"
-  pattern=Ct {
+  pattern={
     [1]=(Cs(P(".")+slash^1)+Cs(R("az","AZ")*P(":")*slash^0)+Cc("./"))*V(2)*V(3),
     [2]=Cs(((1-S("*?/\\"))^0*slash)^0),
     [3]=Cs(P(1)^0)
   }
-else 
-  pattern=Ct {
+else
+  pattern={
     [1]=(C(P(".")+P("/")^1)+Cc("./"))*V(2)*V(3),
     [2]=C(((1-S("*?/"))^0*P("/"))^0),
     [3]=C(P(1)^0)
@@ -3840,10 +4204,9 @@ local function glob(str,t)
     elseif isfile(str) then
       t(str)
     else
-      local split=lpegmatch(pattern,str) 
-      if split then
-        local root,path,base=split[1],split[2],split[3]
-        local recurse=find(base,"%*%*")
+      local root,path,base=lpegmatch(pattern,str) 
+      if root and path and base then
+        local recurse=find(base,"**",1,true) 
         local start=root..path
         local result=lpegmatch(filter,start..base)
         globpattern(start,result,recurse,t)
@@ -3864,16 +4227,12 @@ local function glob(str,t)
         return { str }
       end
     else
-      local split=lpegmatch(pattern,str) 
-      if split then
-        local t=t or {}
-        local action=action or function(name) t[#t+1]=name end
-        local root,path,base=split[1],split[2],split[3]
-        local recurse=find(base,"%*%*")
+      local root,path,base=lpegmatch(pattern,str) 
+      if root and path and base then
+        local recurse=find(base,"**",1,true) 
         local start=root..path
         local result=lpegmatch(filter,start..base)
-        globpattern(start,result,recurse,action)
-        return t
+        return globpattern(start,result,recurse,t)
       else
         return {}
       end
@@ -3913,16 +4272,26 @@ end
 local make_indeed=true 
 if onwindows then
   function dir.mkdirs(...)
-    local str,pth="",""
-    for i=1,select("#",...) do
-      local s=select(i,...)
-      if s=="" then
-      elseif str=="" then
-        str=s
-      else
-        str=str.."/"..s
+    local n=select("#",...)
+    local str
+    if n==1 then
+      str=select(1,...)
+      if isdir(str) then
+        return str,true
+      end
+    else
+      str=""
+      for i=1,n do
+        local s=select(i,...)
+        if s=="" then
+        elseif str=="" then
+          str=s
+        else
+          str=str.."/"..s
+        end
       end
     end
+    local pth=""
     local drive=false
     local first,middle,last=match(str,"^(//)(//*)(.*)$")
     if first then
@@ -3957,21 +4326,30 @@ if onwindows then
         pth=pth.."/"..s
       end
       if make_indeed and not isdir(pth) then
-        lfs.mkdir(pth)
+        mkdir(pth)
       end
     end
     return pth,(isdir(pth)==true)
   end
 else
   function dir.mkdirs(...)
-    local str,pth="",""
-    for i=1,select("#",...) do
-      local s=select(i,...)
-      if s and s~="" then 
-        if str~="" then
-          str=str.."/"..s
-        else
-          str=s
+    local n=select("#",...)
+    local str,pth
+    if n==1 then
+      str=select(1,...)
+      if isdir(str) then
+        return str,true
+      end
+    else
+      str=""
+      for i=1,n do
+        local s=select(i,...)
+        if s and s~="" then 
+          if str~="" then
+            str=str.."/"..s
+          else
+            str=s
+          end
         end
       end
     end
@@ -3986,7 +4364,7 @@ else
           pth=pth.."/"..s
         end
         if make_indeed and not first and not isdir(pth) then
-          lfs.mkdir(pth)
+          mkdir(pth)
         end
       end
     else
@@ -3994,7 +4372,7 @@ else
       for s in gmatch(str,"[^/]+") do
         pth=pth.."/"..s
         if make_indeed and not isdir(pth) then
-          lfs.mkdir(pth)
+          mkdir(pth)
         end
       end
     end
@@ -4002,47 +4380,51 @@ else
   end
 end
 dir.makedirs=dir.mkdirs
-if onwindows then
-  function dir.expandname(str) 
-    local first,nothing,last=match(str,"^(//)(//*)(.*)$")
-    if first then
-      first=dir.current().."/" 
-    end
-    if not first then
-      first,last=match(str,"^(//)/*(.*)$")
-    end
-    if not first then
-      first,last=match(str,"^([a-zA-Z]:)(.*)$")
-      if first and not find(last,"^/") then
-        local d=currentdir()
-        if chdir(first) then
-          first=dir.current()
+do
+  local chdir=sandbox and sandbox.original(chdir) or chdir
+  if onwindows then
+    local xcurrentdir=dir.current
+    function dir.expandname(str) 
+      local first,nothing,last=match(str,"^(//)(//*)(.*)$")
+      if first then
+        first=xcurrentdir().."/" 
+      end
+      if not first then
+        first,last=match(str,"^(//)/*(.*)$")
+      end
+      if not first then
+        first,last=match(str,"^([a-zA-Z]:)(.*)$")
+        if first and not find(last,"^/") then
+          local d=currentdir() 
+          if chdir(first) then
+            first=xcurrentdir() 
+          end
+          chdir(d)
         end
-        chdir(d)
+      end
+      if not first then
+        first,last=xcurrentdir(),str
+      end
+      last=gsub(last,"//","/")
+      last=gsub(last,"/%./","/")
+      last=gsub(last,"^/*","")
+      first=gsub(first,"/*$","")
+      if last=="" or last=="." then
+        return first
+      else
+        return first.."/"..last
       end
     end
-    if not first then
-      first,last=dir.current(),str
+  else
+    function dir.expandname(str) 
+      if not find(str,"^/") then
+        str=currentdir().."/"..str
+      end
+      str=gsub(str,"//","/")
+      str=gsub(str,"/%./","/")
+      str=gsub(str,"(.)/%.$","%1")
+      return str
     end
-    last=gsub(last,"//","/")
-    last=gsub(last,"/%./","/")
-    last=gsub(last,"^/*","")
-    first=gsub(first,"/*$","")
-    if last=="" or last=="." then
-      return first
-    else
-      return first.."/"..last
-    end
-  end
-else
-  function dir.expandname(str) 
-    if not find(str,"^/") then
-      str=currentdir().."/"..str
-    end
-    str=gsub(str,"//","/")
-    str=gsub(str,"/%./","/")
-    str=gsub(str,"(.)/%.$","%1")
-    return str
   end
 end
 file.expandname=dir.expandname 
@@ -4085,7 +4467,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-boolean"] = package.loaded["l-boolean"] or true
 
--- original size: 1809, stripped down to: 1527
+-- original size: 1850, stripped down to: 1568
 
 if not modules then modules={} end modules ['l-boolean']={
   version=1.001,
@@ -4139,11 +4521,11 @@ function string.booleanstring(str)
     return str=="yes" or str=="on" or str=="t"
   end
 end
-function string.is_boolean(str,default)
+function string.is_boolean(str,default,strict)
   if type(str)=="string" then
-    if str=="true" or str=="yes" or str=="on" or str=="t" or str=="1" then
+    if str=="true" or str=="yes" or str=="on" or str=="t" or (not strict and str=="1") then
       return true
-    elseif str=="false" or str=="no" or str=="off" or str=="f" or str=="0" then
+    elseif str=="false" or str=="no" or str=="off" or str=="f" or (not strict and str=="0") then
       return false
     end
   end
@@ -4157,7 +4539,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 33473, stripped down to: 14938
+-- original size: 37388, stripped down to: 15817
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -4173,7 +4555,9 @@ local type=type
 local char,byte,format,sub,gmatch=string.char,string.byte,string.format,string.sub,string.gmatch
 local concat=table.concat
 local P,C,R,Cs,Ct,Cmt,Cc,Carg,Cp=lpeg.P,lpeg.C,lpeg.R,lpeg.Cs,lpeg.Ct,lpeg.Cmt,lpeg.Cc,lpeg.Carg,lpeg.Cp
-local lpegmatch,patterns=lpeg.match,lpeg.patterns
+local lpegmatch=lpeg.match
+local patterns=lpeg.patterns
+local tabletopattern=lpeg.utfchartabletopattern
 local bytepairs=string.bytepairs
 local finder=lpeg.finder
 local replacer=lpeg.replacer
@@ -4182,7 +4566,7 @@ local utfgmatch=utf.gmatch
 local p_utftype=patterns.utftype
 local p_utfstricttype=patterns.utfstricttype
 local p_utfoffset=patterns.utfoffset
-local p_utf8char=patterns.utf8char
+local p_utf8char=patterns.utf8character
 local p_utf8byte=patterns.utf8byte
 local p_utfbom=patterns.utfbom
 local p_newline=patterns.newline
@@ -4321,6 +4705,7 @@ if not utf.sub then
   local pattern_zero=Cmt(p_utf8char,slide_zero)^0
   local pattern_one=Cmt(p_utf8char,slide_one )^0
   local pattern_two=Cmt(p_utf8char,slide_two )^0
+  local pattern_first=C(patterns.utf8character)
   function utf.sub(str,start,stop)
     if not start then
       return str
@@ -4362,7 +4747,9 @@ if not utf.sub then
         end
       end
     end
-    if start>stop then
+    if start==1 and stop==1 then
+      return lpegmatch(pattern_first,str) or ""
+    elseif start>stop then
       return ""
     elseif start>1 then
       b,e,n,first,last=0,0,0,start-1,stop
@@ -4381,15 +4768,52 @@ if not utf.sub then
     end
   end
 end
-function utf.remapper(mapping)
-  local pattern=Cs((p_utf8char/mapping)^0)
-  return function(str)
-    if not str or str=="" then
-      return ""
+function utf.remapper(mapping,option) 
+  local variant=type(mapping)
+  if variant=="table" then
+    if option=="dynamic" then
+      local pattern=false
+      table.setmetatablenewindex(mapping,function(t,k,v) rawset(t,k,v) pattern=false end)
+      return function(str)
+        if not str or str=="" then
+          return ""
+        else
+          if not pattern then
+            pattern=Cs((tabletopattern(mapping)/mapping+p_utf8char)^0)
+          end
+          return lpegmatch(pattern,str)
+        end
+      end
+    elseif option=="pattern" then
+      return Cs((tabletopattern(mapping)/mapping+p_utf8char)^0)
     else
-      return lpegmatch(pattern,str)
+      local pattern=Cs((tabletopattern(mapping)/mapping+p_utf8char)^0)
+      return function(str)
+        if not str or str=="" then
+          return ""
+        else
+          return lpegmatch(pattern,str)
+        end
+      end,pattern
     end
-  end,pattern
+  elseif variant=="function" then
+    if option=="pattern" then
+      return Cs((p_utf8char/mapping+p_utf8char)^0)
+    else
+      local pattern=Cs((p_utf8char/mapping+p_utf8char)^0)
+      return function(str)
+        if not str or str=="" then
+          return ""
+        else
+          return lpegmatch(pattern,str)
+        end
+      end,pattern
+    end
+  else
+    return function(str)
+      return str or ""
+    end
+  end
 end
 function utf.replacer(t) 
   local r=replacer(t,false,false,true)
@@ -4439,190 +4863,157 @@ function utf.magic(f)
 end
 local utf16_to_utf8_be,utf16_to_utf8_le
 local utf32_to_utf8_be,utf32_to_utf8_le
-local utf_16_be_linesplitter=patterns.utfbom_16_be^-1*lpeg.tsplitat(patterns.utf_16_be_nl)
-local utf_16_le_linesplitter=patterns.utfbom_16_le^-1*lpeg.tsplitat(patterns.utf_16_le_nl)
-if bytepairs then
-  utf16_to_utf8_be=function(t)
-    if type(t)=="string" then
-      t=lpegmatch(utf_16_be_linesplitter,t)
-    end
-    local result={} 
-    for i=1,#t do
-      local r,more=0,0
-      for left,right in bytepairs(t[i]) do
-        if right then
-          local now=256*left+right
-          if more>0 then
-            now=(more-0xD800)*0x400+(now-0xDC00)+0x10000 
-            more=0
-            r=r+1
-            result[r]=utfchar(now)
-          elseif now>=0xD800 and now<=0xDBFF then
-            more=now
-          else
-            r=r+1
-            result[r]=utfchar(now)
-          end
-        end
-      end
-      t[i]=concat(result,"",1,r) 
-    end
-    return t
+local utf_16_be_getbom=patterns.utfbom_16_be^-1
+local utf_16_le_getbom=patterns.utfbom_16_le^-1
+local utf_32_be_getbom=patterns.utfbom_32_be^-1
+local utf_32_le_getbom=patterns.utfbom_32_le^-1
+local utf_16_be_linesplitter=utf_16_be_getbom*lpeg.tsplitat(patterns.utf_16_be_nl)
+local utf_16_le_linesplitter=utf_16_le_getbom*lpeg.tsplitat(patterns.utf_16_le_nl)
+local utf_32_be_linesplitter=utf_32_be_getbom*lpeg.tsplitat(patterns.utf_32_be_nl)
+local utf_32_le_linesplitter=utf_32_le_getbom*lpeg.tsplitat(patterns.utf_32_le_nl)
+local more=0
+local p_utf16_to_utf8_be=C(1)*C(1)/function(left,right)
+  local now=256*byte(left)+byte(right)
+  if more>0 then
+    now=(more-0xD800)*0x400+(now-0xDC00)+0x10000 
+    more=0
+    return utfchar(now)
+  elseif now>=0xD800 and now<=0xDBFF then
+    more=now
+    return "" 
+  else
+    return utfchar(now)
   end
-  utf16_to_utf8_le=function(t)
-    if type(t)=="string" then
-      t=lpegmatch(utf_16_le_linesplitter,t)
-    end
-    local result={} 
-    for i=1,#t do
-      local r,more=0,0
-      for left,right in bytepairs(t[i]) do
-        if right then
-          local now=256*right+left
-          if more>0 then
-            now=(more-0xD800)*0x400+(now-0xDC00)+0x10000 
-            more=0
-            r=r+1
-            result[r]=utfchar(now)
-          elseif now>=0xD800 and now<=0xDBFF then
-            more=now
-          else
-            r=r+1
-            result[r]=utfchar(now)
-          end
-        end
-      end
-      t[i]=concat(result,"",1,r) 
-    end
-    return t
-  end
-  utf32_to_utf8_be=function(t)
-    if type(t)=="string" then
-      t=lpegmatch(utflinesplitter,t)
-    end
-    local result={} 
-    for i=1,#t do
-      local r,more=0,-1
-      for a,b in bytepairs(t[i]) do
-        if a and b then
-          if more<0 then
-            more=256*256*256*a+256*256*b
-          else
-            r=r+1
-            result[t]=utfchar(more+256*a+b)
-            more=-1
-          end
-        else
-          break
-        end
-      end
-      t[i]=concat(result,"",1,r)
-    end
-    return t
-  end
-  utf32_to_utf8_le=function(t)
-    if type(t)=="string" then
-      t=lpegmatch(utflinesplitter,t)
-    end
-    local result={} 
-    for i=1,#t do
-      local r,more=0,-1
-      for a,b in bytepairs(t[i]) do
-        if a and b then
-          if more<0 then
-            more=256*b+a
-          else
-            r=r+1
-            result[t]=utfchar(more+256*256*256*b+256*256*a)
-            more=-1
-          end
-        else
-          break
-        end
-      end
-      t[i]=concat(result,"",1,r)
-    end
-    return t
-  end
-else
-  utf16_to_utf8_be=function(t)
-    if type(t)=="string" then
-      t=lpegmatch(utf_16_be_linesplitter,t)
-    end
-    local result={} 
-    for i=1,#t do
-      local r,more=0,0
-      for left,right in gmatch(t[i],"(.)(.)") do
-        if left=="\000" then 
-          r=r+1
-          result[r]=utfchar(byte(right))
-        elseif right then
-          local now=256*byte(left)+byte(right)
-          if more>0 then
-            now=(more-0xD800)*0x400+(now-0xDC00)+0x10000 
-            more=0
-            r=r+1
-            result[r]=utfchar(now)
-          elseif now>=0xD800 and now<=0xDBFF then
-            more=now
-          else
-            r=r+1
-            result[r]=utfchar(now)
-          end
-        end
-      end
-      t[i]=concat(result,"",1,r) 
-    end
-    return t
-  end
-  utf16_to_utf8_le=function(t)
-    if type(t)=="string" then
-      t=lpegmatch(utf_16_le_linesplitter,t)
-    end
-    local result={} 
-    for i=1,#t do
-      local r,more=0,0
-      for left,right in gmatch(t[i],"(.)(.)") do
-        if right=="\000" then
-          r=r+1
-          result[r]=utfchar(byte(left))
-        elseif right then
-          local now=256*byte(right)+byte(left)
-          if more>0 then
-            now=(more-0xD800)*0x400+(now-0xDC00)+0x10000 
-            more=0
-            r=r+1
-            result[r]=utfchar(now)
-          elseif now>=0xD800 and now<=0xDBFF then
-            more=now
-          else
-            r=r+1
-            result[r]=utfchar(now)
-          end
-        end
-      end
-      t[i]=concat(result,"",1,r) 
-    end
-    return t
-  end
-  utf32_to_utf8_le=function() return {} end 
-  utf32_to_utf8_be=function() return {} end
 end
+local p_utf16_to_utf8_le=C(1)*C(1)/function(right,left)
+  local now=256*byte(left)+byte(right)
+  if more>0 then
+    now=(more-0xD800)*0x400+(now-0xDC00)+0x10000 
+    more=0
+    return utfchar(now)
+  elseif now>=0xD800 and now<=0xDBFF then
+    more=now
+    return "" 
+  else
+    return utfchar(now)
+  end
+end
+local p_utf32_to_utf8_be=C(1)*C(1)*C(1)*C(1)/function(a,b,c,d)
+  return utfchar(256*256*256*byte(a)+256*256*byte(b)+256*byte(c)+byte(d))
+end
+local p_utf32_to_utf8_le=C(1)*C(1)*C(1)*C(1)/function(a,b,c,d)
+  return utfchar(256*256*256*byte(d)+256*256*byte(c)+256*byte(b)+byte(a))
+end
+p_utf16_to_utf8_be=P(true)/function() more=0 end*utf_16_be_getbom*Cs(p_utf16_to_utf8_be^0)
+p_utf16_to_utf8_le=P(true)/function() more=0 end*utf_16_le_getbom*Cs(p_utf16_to_utf8_le^0)
+p_utf32_to_utf8_be=P(true)/function() more=0 end*utf_32_be_getbom*Cs(p_utf32_to_utf8_be^0)
+p_utf32_to_utf8_le=P(true)/function() more=0 end*utf_32_le_getbom*Cs(p_utf32_to_utf8_le^0)
+patterns.utf16_to_utf8_be=p_utf16_to_utf8_be
+patterns.utf16_to_utf8_le=p_utf16_to_utf8_le
+patterns.utf32_to_utf8_be=p_utf32_to_utf8_be
+patterns.utf32_to_utf8_le=p_utf32_to_utf8_le
+utf16_to_utf8_be=function(s)
+  if s and s~="" then
+    return lpegmatch(p_utf16_to_utf8_be,s)
+  else
+    return s
+  end
+end
+local utf16_to_utf8_be_t=function(t)
+  if not t then
+    return nil
+  elseif type(t)=="string" then
+    t=lpegmatch(utf_16_be_linesplitter,t)
+  end
+  for i=1,#t do
+    local s=t[i]
+    if s~="" then
+      t[i]=lpegmatch(p_utf16_to_utf8_be,s)
+    end
+  end
+  return t
+end
+utf16_to_utf8_le=function(s)
+  if s and s~="" then
+    return lpegmatch(p_utf16_to_utf8_le,s)
+  else
+    return s
+  end
+end
+local utf16_to_utf8_le_t=function(t)
+  if not t then
+    return nil
+  elseif type(t)=="string" then
+    t=lpegmatch(utf_16_le_linesplitter,t)
+  end
+  for i=1,#t do
+    local s=t[i]
+    if s~="" then
+      t[i]=lpegmatch(p_utf16_to_utf8_le,s)
+    end
+  end
+  return t
+end
+utf32_to_utf8_be=function(s)
+  if s and s~="" then
+    return lpegmatch(p_utf32_to_utf8_be,s)
+  else
+    return s
+  end
+end
+local utf32_to_utf8_be_t=function(t)
+  if not t then
+    return nil
+  elseif type(t)=="string" then
+    t=lpegmatch(utf_32_be_linesplitter,t)
+  end
+  for i=1,#t do
+    local s=t[i]
+    if s~="" then
+      t[i]=lpegmatch(p_utf32_to_utf8_be,s)
+    end
+  end
+  return t
+end
+utf32_to_utf8_le=function(s)
+  if s and s~="" then
+    return lpegmatch(p_utf32_to_utf8_le,s)
+  else
+    return s
+  end
+end
+local utf32_to_utf8_le_t=function(t)
+  if not t then
+    return nil
+  elseif type(t)=="string" then
+    t=lpegmatch(utf_32_le_linesplitter,t)
+  end
+  for i=1,#t do
+    local s=t[i]
+    if s~="" then
+      t[i]=lpegmatch(p_utf32_to_utf8_le,s)
+    end
+  end
+  return t
+end
+utf.utf16_to_utf8_le_t=utf16_to_utf8_le_t
+utf.utf16_to_utf8_be_t=utf16_to_utf8_be_t
+utf.utf32_to_utf8_le_t=utf32_to_utf8_le_t
+utf.utf32_to_utf8_be_t=utf32_to_utf8_be_t
 utf.utf16_to_utf8_le=utf16_to_utf8_le
 utf.utf16_to_utf8_be=utf16_to_utf8_be
 utf.utf32_to_utf8_le=utf32_to_utf8_le
 utf.utf32_to_utf8_be=utf32_to_utf8_be
-function utf.utf8_to_utf8(t)
+function utf.utf8_to_utf8_t(t)
   return type(t)=="string" and lpegmatch(utflinesplitter,t) or t
 end
-function utf.utf16_to_utf8(t,endian)
-  return endian and utf16_to_utf8_be(t) or utf16_to_utf8_le(t) or t
+function utf.utf16_to_utf8_t(t,endian)
+  return endian and utf16_to_utf8_be_t(t) or utf16_to_utf8_le_t(t) or t
 end
-function utf.utf32_to_utf8(t,endian)
-  return endian and utf32_to_utf8_be(t) or utf32_to_utf8_le(t) or t
+function utf.utf32_to_utf8_t(t,endian)
+  return endian and utf32_to_utf8_be_t(t) or utf32_to_utf8_le_t(t) or t
 end
-local function little(c)
-  local b=byte(c)
+local function little(b)
   if b<0x10000 then
     return char(b%256,b/256)
   else
@@ -4631,8 +5022,7 @@ local function little(c)
     return char(b1%256,b1/256,b2%256,b2/256)
   end
 end
-local function big(c)
-  local b=byte(c)
+local function big(b)
   if b<0x10000 then
     return char(b/256,b%256)
   else
@@ -4641,27 +5031,29 @@ local function big(c)
     return char(b1/256,b1%256,b2/256,b2%256)
   end
 end
-local _,l_remap=utf.remapper(little)
-local _,b_remap=utf.remapper(big)
-function utf.utf8_to_utf16_be(str,nobom)
+local l_remap=Cs((p_utf8byte/little+P(1)/"")^0)
+local b_remap=Cs((p_utf8byte/big+P(1)/"")^0)
+local function utf8_to_utf16_be(str,nobom)
   if nobom then
     return lpegmatch(b_remap,str)
   else
     return char(254,255)..lpegmatch(b_remap,str)
   end
 end
-function utf.utf8_to_utf16_le(str,nobom)
+local function utf8_to_utf16_le(str,nobom)
   if nobom then
     return lpegmatch(l_remap,str)
   else
     return char(255,254)..lpegmatch(l_remap,str)
   end
 end
+utf.utf8_to_utf16_be=utf8_to_utf16_be
+utf.utf8_to_utf16_le=utf8_to_utf16_le
 function utf.utf8_to_utf16(str,littleendian,nobom)
   if littleendian then
-    return utf.utf8_to_utf16_le(str,nobom)
+    return utf8_to_utf16_le(str,nobom)
   else
-    return utf.utf8_to_utf16_be(str,nobom)
+    return utf8_to_utf16_be(str,nobom)
   end
 end
 local pattern=Cs (
@@ -4677,16 +5069,16 @@ function utf.xstring(s)
   return format("0x%05X",type(s)=="number" and s or utfbyte(s))
 end
 function utf.toeight(str)
-  if not str then
+  if not str or str=="" then
     return nil
   end
   local utftype=lpegmatch(p_utfstricttype,str)
   if utftype=="utf-8" then
-    return sub(str,4)
-  elseif utftype=="utf-16-le" then
-    return utf16_to_utf8_le(str)
+    return sub(str,4)        
   elseif utftype=="utf-16-be" then
-    return utf16_to_utf8_ne(str)
+    return utf16_to_utf8_be(str)  
+  elseif utftype=="utf-16-le" then
+    return utf16_to_utf8_le(str)  
   else
     return str
   end
@@ -4765,7 +5157,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-math"] = package.loaded["l-math"] or true
 
--- original size: 915, stripped down to: 836
+-- original size: 974, stripped down to: 890
 
 if not modules then modules={} end modules ['l-math']={
   version=1.001,
@@ -4775,6 +5167,9 @@ if not modules then modules={} end modules ['l-math']={
   license="see context related readme files"
 }
 local floor,sin,cos,tan=math.floor,math.sin,math.cos,math.tan
+if not math.ceiling then
+  math.ceiling=math.ceil
+end
 if not math.round then
   function math.round(x) return floor(x+0.5) end
 end
@@ -4802,7 +5197,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 26857, stripped down to: 15062
+-- original size: 34503, stripped down to: 18933
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -4821,25 +5216,43 @@ local unpack,concat=table.unpack,table.concat
 local P,V,C,S,R,Ct,Cs,Cp,Carg,Cc=lpeg.P,lpeg.V,lpeg.C,lpeg.S,lpeg.R,lpeg.Ct,lpeg.Cs,lpeg.Cp,lpeg.Carg,lpeg.Cc
 local patterns,lpegmatch=lpeg.patterns,lpeg.match
 local utfchar,utfbyte=utf.char,utf.byte
-local loadstripped=_LUAVERSION<5.2 and load or function(str)
-  return load(dump(load(str),true)) 
+local loadstripped=nil
+if _LUAVERSION<5.2 then
+  loadstripped=function(str,shortcuts)
+    return load(str)
+  end
+else
+  loadstripped=function(str,shortcuts)
+    if shortcuts then
+      return load(dump(load(str),true),nil,nil,shortcuts)
+    else
+      return load(dump(load(str),true))
+    end
+  end
 end
 if not number then number={} end 
 local stripper=patterns.stripzeros
+local newline=patterns.newline
+local endofstring=patterns.endofstring
+local whitespace=patterns.whitespace
+local spacer=patterns.spacer
+local spaceortab=patterns.spaceortab
 local function points(n)
+  n=tonumber(n)
   return (not n or n==0) and "0pt" or lpegmatch(stripper,format("%.5fpt",n/65536))
 end
 local function basepoints(n)
+  n=tonumber(n)
   return (not n or n==0) and "0bp" or lpegmatch(stripper,format("%.5fbp",n*(7200/7227)/65536))
 end
 number.points=points
 number.basepoints=basepoints
-local rubish=patterns.spaceortab^0*patterns.newline
-local anyrubish=patterns.spaceortab+patterns.newline
+local rubish=spaceortab^0*newline
+local anyrubish=spaceortab+newline
 local anything=patterns.anything
-local stripped=(patterns.spaceortab^1/"")*patterns.newline
+local stripped=(spaceortab^1/"")*newline
 local leading=rubish^0/""
-local trailing=(anyrubish^1*patterns.endofstring)/""
+local trailing=(anyrubish^1*endofstring)/""
 local redundant=rubish^3/"\n"
 local pattern=Cs(leading*(trailing+redundant+stripped+anything)^0)
 function strings.collapsecrlf(str)
@@ -4885,18 +5298,44 @@ local pattern=Carg(1)/function(t)
      else
        return ""
      end
-   end+patterns.newline*Cp()/function(position)
+   end+newline*Cp()/function(position)
      extra,start=0,position
    end+patterns.anything
  )^1)
 function strings.tabtospace(str,tab)
   return lpegmatch(pattern,str,1,tab or 7)
 end
-function strings.striplong(str) 
-  str=gsub(str,"^%s*","")
-  str=gsub(str,"[\n\r]+ *","\n")
-  return str
+local space=spacer^0
+local nospace=space/""
+local endofline=nospace*newline
+local stripend=(whitespace^1*endofstring)/""
+local normalline=(nospace*((1-space*(newline+endofstring))^1)*nospace)
+local stripempty=endofline^1/""
+local normalempty=endofline^1
+local singleempty=endofline*(endofline^0/"")
+local doubleempty=endofline*endofline^-1*(endofline^0/"")
+local stripstart=stripempty^0
+local p_prune_normal=Cs (stripstart*(stripend+normalline+normalempty )^0 )
+local p_prune_collapse=Cs (stripstart*(stripend+normalline+doubleempty )^0 )
+local p_prune_noempty=Cs (stripstart*(stripend+normalline+singleempty )^0 )
+local p_retain_normal=Cs ((normalline+normalempty )^0 )
+local p_retain_collapse=Cs ((normalline+doubleempty )^0 )
+local p_retain_noempty=Cs ((normalline+singleempty )^0 )
+local striplinepatterns={
+  ["prune"]=p_prune_normal,
+  ["prune and collapse"]=p_prune_collapse,
+  ["prune and no empty"]=p_prune_noempty,
+  ["retain"]=p_retain_normal,
+  ["retain and collapse"]=p_retain_collapse,
+  ["retain and no empty"]=p_retain_noempty,
+  ["collapse"]=patterns.collapser,
+}
+setmetatable(striplinepatterns,{ __index=function(t,k) return p_prune_collapse end })
+strings.striplinepatterns=striplinepatterns
+function strings.striplines(str,how)
+  return str and lpegmatch(striplinepatterns[how],str) or str
 end
+strings.striplong=strings.striplines
 function strings.nice(str)
   str=gsub(str,"[:%-+_]+"," ") 
   return str
@@ -4934,10 +5373,10 @@ string.tracedchars=tracedchars
 strings.tracers=tracedchars
 function string.tracedchar(b)
   if type(b)=="number" then
-    return tracedchars[b] or (utfchar(b).." (U+"..format('%05X',b)..")")
+    return tracedchars[b] or (utfchar(b).." (U+"..format("%05X",b)..")")
   else
     local c=utfbyte(b)
-    return tracedchars[c] or (b.." (U+"..format('%05X',c)..")")
+    return tracedchars[c] or (b.." (U+"..(c and format("%05X",c) or "?????")..")")
   end
 end
 function number.signed(i)
@@ -4972,31 +5411,58 @@ function number.sparseexponent(f,n)
   end
   return tostring(n)
 end
-local preamble=[[
-local type = type
-local tostring = tostring
-local tonumber = tonumber
-local format = string.format
-local concat = table.concat
-local signed = number.signed
-local points = number.points
-local basepoints = number.basepoints
-local utfchar = utf.char
-local utfbyte = utf.byte
-local lpegmatch = lpeg.match
-local nspaces = string.nspaces
-local tracedchar = string.tracedchar
-local autosingle = string.autosingle
-local autodouble = string.autodouble
-local sequenced = table.sequenced
-local formattednumber = number.formatted
-local sparseexponent = number.sparseexponent
-]]
 local template=[[
 %s
 %s
 return function(%s) return %s end
 ]]
+local preamble,environment="",{}
+if _LUAVERSION<5.2 then
+  preamble=[[
+local lpeg=lpeg
+local type=type
+local tostring=tostring
+local tonumber=tonumber
+local format=string.format
+local concat=table.concat
+local signed=number.signed
+local points=number.points
+local basepoints= number.basepoints
+local utfchar=utf.char
+local utfbyte=utf.byte
+local lpegmatch=lpeg.match
+local nspaces=string.nspaces
+local tracedchar=string.tracedchar
+local autosingle=string.autosingle
+local autodouble=string.autodouble
+local sequenced=table.sequenced
+local formattednumber=number.formatted
+local sparseexponent=number.sparseexponent
+    ]]
+else
+  environment={
+    global=global or _G,
+    lpeg=lpeg,
+    type=type,
+    tostring=tostring,
+    tonumber=tonumber,
+    format=string.format,
+    concat=table.concat,
+    signed=number.signed,
+    points=number.points,
+    basepoints=number.basepoints,
+    utfchar=utf.char,
+    utfbyte=utf.byte,
+    lpegmatch=lpeg.match,
+    nspaces=string.nspaces,
+    tracedchar=string.tracedchar,
+    autosingle=string.autosingle,
+    autodouble=string.autodouble,
+    sequenced=table.sequenced,
+    formattednumber=number.formatted,
+    sparseexponent=number.sparseexponent,
+  }
+end
 local arguments={ "a1" } 
 setmetatable(arguments,{ __index=function(t,k)
     local v=t[k-1]..",a"..k
@@ -5035,7 +5501,7 @@ local format_i=function(f)
   if f and f~="" then
     return format("format('%%%si',a%s)",f,n)
   else
-    return format("format('%%i',a%s)",n)
+    return format("format('%%i',a%s)",n) 
   end
 end
 local format_d=format_i
@@ -5046,6 +5512,14 @@ end
 local format_f=function(f)
   n=n+1
   return format("format('%%%sf',a%s)",f,n)
+end
+local format_F=function(f) 
+  n=n+1
+  if not f or f=="" then
+    return format("(((a%s > -0.0000000005 and a%s < 0.0000000005) and '0') or format((a%s %% 1 == 0) and '%%i' or '%%.9f',a%s))",n,n,n,n)
+  else
+    return format("format((a%s %% 1 == 0) and '%%i' or '%%%sf',a%s)",n,f,n)
+  end
 end
 local format_g=function(f)
   n=n+1
@@ -5261,7 +5735,7 @@ local builder=Cs { "start",
     (
       P("%")/""*(
         V("!") 
-+V("s")+V("q")+V("i")+V("d")+V("f")+V("g")+V("G")+V("e")+V("E")+V("x")+V("X")+V("o")
++V("s")+V("q")+V("i")+V("d")+V("f")+V("F")+V("g")+V("G")+V("e")+V("E")+V("x")+V("X")+V("o")
 +V("c")+V("C")+V("S") 
 +V("Q") 
 +V("N")
@@ -5272,7 +5746,6 @@ local builder=Cs { "start",
 +V("j")+V("J") 
 +V("m")+V("M") 
 +V("z")
-+V("*") 
       )+V("*")
     )*(P(-1)+Carg(1))
   )^0,
@@ -5281,6 +5754,7 @@ local builder=Cs { "start",
   ["i"]=(prefix_any*P("i"))/format_i,
   ["d"]=(prefix_any*P("d"))/format_d,
   ["f"]=(prefix_any*P("f"))/format_f,
+  ["F"]=(prefix_any*P("F"))/format_F,
   ["g"]=(prefix_any*P("g"))/format_g,
   ["G"]=(prefix_any*P("G"))/format_G,
   ["e"]=(prefix_any*P("e"))/format_e,
@@ -5315,11 +5789,12 @@ local builder=Cs { "start",
   ["a"]=(prefix_any*P("a"))/format_a,
   ["A"]=(prefix_any*P("A"))/format_A,
   ["*"]=Cs(((1-P("%"))^1+P("%%")/"%%")^1)/format_rest,
+  ["?"]=Cs(((1-P("%"))^1        )^1)/format_rest,
   ["!"]=Carg(2)*prefix_any*P("!")*C((1-P("!"))^1)*P("!")/format_extension,
 }
 local direct=Cs (
-    P("%")/""*Cc([[local format = string.format return function(str) return format("%]])*(S("+- .")+R("09"))^0*S("sqidfgGeExXo")*Cc([[",str) end]])*P(-1)
-  )
+  P("%")*(S("+- .")+R("09"))^0*S("sqidfgGeExXo")*P(-1)/[[local format = string.format return function(str) return format("%0",str) end]]
+)
 local function make(t,str)
   local f
   local p
@@ -5328,10 +5803,10 @@ local function make(t,str)
     f=loadstripped(p)()
   else
     n=0
-    p=lpegmatch(builder,str,1,"..",t._extensions_) 
+    p=lpegmatch(builder,str,1,t._connector_,t._extensions_) 
     if n>0 then
       p=format(template,preamble,t._preamble_,arguments[n],p)
-      f=loadstripped(p)()
+      f=loadstripped(p,t._environment_)() 
     else
       f=function() return str end
     end
@@ -5343,10 +5818,22 @@ local function use(t,fmt,...)
   return t[fmt](...)
 end
 strings.formatters={}
-function strings.formatters.new()
-  local t={ _extensions_={},_preamble_="",_type_="formatter" }
-  setmetatable(t,{ __index=make,__call=use })
-  return t
+if _LUAVERSION<5.2 then
+  function strings.formatters.new(noconcat)
+    local t={ _type_="formatter",_connector_=noconcat and "," or "..",_extensions_={},_preamble_=preamble,_environment_={} }
+    setmetatable(t,{ __index=make,__call=use })
+    return t
+  end
+else
+  function strings.formatters.new(noconcat)
+    local e={} 
+    for k,v in next,environment do
+      e[k]=v
+    end
+    local t={ _type_="formatter",_connector_=noconcat and "," or "..",_extensions_={},_preamble_="",_environment_=e }
+    setmetatable(t,{ __index=make,__call=use })
+    return t
+  end
 end
 local formatters=strings.formatters.new() 
 string.formatters=formatters 
@@ -5354,8 +5841,12 @@ string.formatter=function(str,...) return formatters[str](...) end
 local function add(t,name,template,preamble)
   if type(t)=="table" and t._type_=="formatter" then
     t._extensions_[name]=template or "%s"
-    if preamble then
+    if type(preamble)=="string" then
       t._preamble_=preamble.."\n"..t._preamble_ 
+    elseif type(preamble)=="table" then
+      for k,v in next,preamble do
+        t._environment_[k]=v
+      end
     end
   end
 end
@@ -5364,9 +5855,28 @@ patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;
 patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+P(1))^0)
 patterns.luaescape=Cs(((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0) 
 patterns.luaquoted=Cs(Cc('"')*((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0*Cc('"'))
-add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],[[local xmlescape = lpeg.patterns.xmlescape]])
-add(formatters,"tex",[[lpegmatch(texescape,%s)]],[[local texescape = lpeg.patterns.texescape]])
-add(formatters,"lua",[[lpegmatch(luaescape,%s)]],[[local luaescape = lpeg.patterns.luaescape]])
+if _LUAVERSION<5.2 then
+  add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],"local xmlescape = lpeg.patterns.xmlescape")
+  add(formatters,"tex",[[lpegmatch(texescape,%s)]],"local texescape = lpeg.patterns.texescape")
+  add(formatters,"lua",[[lpegmatch(luaescape,%s)]],"local luaescape = lpeg.patterns.luaescape")
+else
+  add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],{ xmlescape=lpeg.patterns.xmlescape })
+  add(formatters,"tex",[[lpegmatch(texescape,%s)]],{ texescape=lpeg.patterns.texescape })
+  add(formatters,"lua",[[lpegmatch(luaescape,%s)]],{ luaescape=lpeg.patterns.luaescape })
+end
+local dquote=patterns.dquote 
+local equote=patterns.escaped+dquote/'\\"'+1
+local space=patterns.space
+local cquote=Cc('"')
+local pattern=Cs(dquote*(equote-P(-2))^0*dquote)          
++Cs(cquote*(equote-space)^0*space*equote^0*cquote) 
+function string.optionalquoted(str)
+  return lpegmatch(pattern,str) or str
+end
+local pattern=Cs((newline/os.newline+1)^0)
+function string.replacenewlines(str)
+  return lpegmatch(pattern,str)
+end
 
 
 end -- of closure
@@ -5375,7 +5885,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 23952, stripped down to: 16092
+-- original size: 25338, stripped down to: 16247
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -5388,7 +5898,7 @@ utilities=utilities or {}
 utilities.tables=utilities.tables or {}
 local tables=utilities.tables
 local format,gmatch,gsub,sub=string.format,string.gmatch,string.gsub,string.sub
-local concat,insert,remove=table.concat,table.insert,table.remove
+local concat,insert,remove,sort=table.concat,table.insert,table.remove,table.sort
 local setmetatable,getmetatable,tonumber,tostring=setmetatable,getmetatable,tonumber,tostring
 local type,next,rawset,tonumber,tostring,load,select=type,next,rawset,tonumber,tostring,load,select
 local lpegmatch,P,Cs,Cc=lpeg.match,lpeg.P,lpeg.Cs,lpeg.Cc
@@ -5396,27 +5906,29 @@ local sortedkeys,sortedpairs=table.sortedkeys,table.sortedpairs
 local formatters=string.formatters
 local utftoeight=utf.toeight
 local splitter=lpeg.tsplitat(".")
-function tables.definetable(target,nofirst,nolast) 
-  local composed,shortcut,t=nil,nil,{}
+function utilities.tables.definetable(target,nofirst,nolast) 
+  local composed,t=nil,{}
   local snippets=lpegmatch(splitter,target)
   for i=1,#snippets-(nolast and 1 or 0) do
     local name=snippets[i]
     if composed then
-      composed=shortcut.."."..name
-      shortcut=shortcut.."_"..name
-      t[#t+1]=formatters["local %s = %s if not %s then %s = { } %s = %s end"](shortcut,composed,shortcut,shortcut,composed,shortcut)
+      composed=composed.."."..name
+        t[#t+1]=formatters["if not %s then %s = { } end"](composed,composed)
     else
       composed=name
-      shortcut=name
       if not nofirst then
         t[#t+1]=formatters["%s = %s or { }"](composed,composed)
       end
     end
   end
-  if nolast then
-    composed=shortcut.."."..snippets[#snippets]
+  if composed then
+    if nolast then
+      composed=composed.."."..snippets[#snippets]
+    end
+    return concat(t,"\n"),composed 
+  else
+    return "",target
   end
-  return concat(t,"\n"),composed
 end
 function tables.definedtable(...)
   local t=_G
@@ -5443,7 +5955,7 @@ function tables.accesstable(target,root)
 end
 function tables.migratetable(target,v,root)
   local t=root or _G
-  local names=string.split(target,".")
+  local names=lpegmatch(splitter,target)
   for i=1,#names-1 do
     local name=names[i]
     t[name]=t[name] or {}
@@ -5459,6 +5971,15 @@ function tables.removevalue(t,value)
     for i=1,#t do
       if t[i]==value then
         remove(t,i)
+      end
+    end
+  end
+end
+function tables.replacevalue(t,oldvalue,newvalue)
+  if oldvalue and newvalue then
+    for i=1,#t do
+      if t[i]==oldvalue then
+        t[i]=newvalue
       end
     end
   end
@@ -5610,7 +6131,7 @@ local f_ordered_string=formatters["%q,"]
 local f_ordered_number=formatters["%s,"]
 local f_ordered_boolean=formatters["%l,"]
 function table.fastserialize(t,prefix)
-  local r={ prefix or "return" }
+  local r={ type(prefix)=="string" and prefix or "return" }
   local m=1
   local function fastserialize(t,outer) 
     local n=#t
@@ -5807,7 +6328,8 @@ function table.serialize(root,name,specification)
   local t 
   local n=1
   local function simple_table(t)
-    if #t>0 then
+    local nt=#t
+    if nt>0 then
       local n=0
       for _,v in next,t do
         n=n+1
@@ -5815,19 +6337,17 @@ function table.serialize(root,name,specification)
           return nil
         end
       end
-      if n==#t then
+      if n==nt then
         local tt={}
-        local nt=0
-        for i=1,#t do
+        for i=1,nt do
           local v=t[i]
           local tv=type(v)
-          nt=nt+1
           if tv=="number" then
-            tt[nt]=v
+            tt[i]=v 
           elseif tv=="string" then
-            tt[nt]=format("%q",v) 
+            tt[i]=format("%q",v) 
           elseif tv=="boolean" then
-            tt[nt]=v and "true" or "false"
+            tt[i]=v and "true" or "false"
           else
             return nil
           end
@@ -5856,7 +6376,7 @@ function table.serialize(root,name,specification)
       end
       depth=depth+1
     end
-    if root and next(root) then
+    if root and next(root)~=nil then
       local first=nil
       local last=0
       last=#root
@@ -5875,13 +6395,13 @@ function table.serialize(root,name,specification)
         local v=root[k]
         local tv=type(v)
         local tk=type(k)
-        if first and tk=="number" and k>=first and k<=last then
+        if first and tk=="number" and k<=last and k>=first then
           if tv=="number" then
             n=n+1 t[n]=f_val_num(depth,v)
           elseif tv=="string" then
             n=n+1 t[n]=f_val_str(depth,v)
           elseif tv=="table" then
-            if not next(v) then
+            if next(v)==nil then
               n=n+1 t[n]=f_val_not(depth)
             else
               local st=simple_table(v)
@@ -5911,13 +6431,13 @@ function table.serialize(root,name,specification)
             n=n+1 t[n]=f_key_boo_value_str(depth,k,v)
           end
         elseif tv=="table" then
-          if not next(v) then
+          if next(v)==nil then
             if tk=="number" then
-              n=n+1 t[n]=f_key_num_value_not(depth,k,v)
+              n=n+1 t[n]=f_key_num_value_not(depth,k)
             elseif tk=="string" then
-              n=n+1 t[n]=f_key_str_value_not(depth,k,v)
+              n=n+1 t[n]=f_key_str_value_not(depth,k)
             elseif tk=="boolean" then
-              n=n+1 t[n]=f_key_boo_value_not(depth,k,v)
+              n=n+1 t[n]=f_key_boo_value_not(depth,k)
             end
           else
             local st=simple_table(v)
@@ -5969,7 +6489,7 @@ function table.serialize(root,name,specification)
       local dummy=root._w_h_a_t_e_v_e_r_
       root._w_h_a_t_e_v_e_r_=nil
     end
-    if next(root) then
+    if next(root)~=nil then
       do_serialize(root,name,1,0)
     end
   end
@@ -6132,7 +6652,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 19604, stripped down to: 13998
+-- original size: 21780, stripped down to: 15121
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -6154,6 +6674,8 @@ local patterns=parsers.patterns or {}
 parsers.patterns=patterns
 local setmetatableindex=table.setmetatableindex
 local sortedhash=table.sortedhash
+local sortedkeys=table.sortedkeys
+local tohash=table.tohash
 local digit=R("09")
 local space=P(' ')
 local equal=P("=")
@@ -6203,9 +6725,7 @@ patterns.settings_to_hash_a=pattern_a_s
 patterns.settings_to_hash_b=pattern_b_s
 patterns.settings_to_hash_c=pattern_c_s
 function parsers.make_settings_to_hash_pattern(set,how)
-  if type(str)=="table" then
-    return set
-  elseif how=="strict" then
+  if how=="strict" then
     return (pattern_c/set)^1
   elseif how=="tolerant" then
     return (pattern_b/set)^1
@@ -6214,7 +6734,9 @@ function parsers.make_settings_to_hash_pattern(set,how)
   end
 end
 function parsers.settings_to_hash(str,existing)
-  if type(str)=="table" then
+  if not str or str=="" then
+    return {}
+  elseif type(str)=="table" then
     if existing then
       for k,v in next,str do
         existing[k]=v
@@ -6223,16 +6745,16 @@ function parsers.settings_to_hash(str,existing)
     else
       return str
     end
-  elseif str and str~="" then
+  else
     hash=existing or {}
     lpegmatch(pattern_a_s,str)
     return hash
-  else
-    return {}
   end
 end
 function parsers.settings_to_hash_tolerant(str,existing)
-  if type(str)=="table" then
+  if not str or str=="" then
+    return {}
+  elseif type(str)=="table" then
     if existing then
       for k,v in next,str do
         existing[k]=v
@@ -6241,16 +6763,16 @@ function parsers.settings_to_hash_tolerant(str,existing)
     else
       return str
     end
-  elseif str and str~="" then
+  else
     hash=existing or {}
     lpegmatch(pattern_b_s,str)
     return hash
-  else
-    return {}
   end
 end
 function parsers.settings_to_hash_strict(str,existing)
-  if type(str)=="table" then
+  if not str or str=="" then
+    return nil
+  elseif type(str)=="table" then
     if existing then
       for k,v in next,str do
         existing[k]=v
@@ -6263,8 +6785,6 @@ function parsers.settings_to_hash_strict(str,existing)
     hash=existing or {}
     lpegmatch(pattern_c_s,str)
     return next(hash) and hash
-  else
-    return nil
   end
 end
 local separator=comma*space^0
@@ -6272,27 +6792,46 @@ local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C((nestedbraces+(1-comm
 local pattern=spaces*Ct(value*(separator*value)^0)
 patterns.settings_to_array=pattern
 function parsers.settings_to_array(str,strict)
-  if type(str)=="table" then
-    return str
-  elseif not str or str=="" then
+  if not str or str=="" then
     return {}
+  elseif type(str)=="table" then
+    return str
   elseif strict then
-    if find(str,"{") then
+    if find(str,"{",1,true) then
       return lpegmatch(pattern,str)
     else
       return { str }
     end
-  elseif find(str,",") then
+  elseif find(str,",",1,true) then
     return lpegmatch(pattern,str)
   else
     return { str }
   end
 end
-local separator=space^0*comma*space^0
-local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C((nestedbraces+(1-(space^0*(comma+P(-1)))))^0)
-local withvalue=Carg(1)*value/function(f,s) return f(s) end
-local pattern_a=spaces*Ct(value*(separator*value)^0)
-local pattern_b=spaces*withvalue*(separator*withvalue)^0
+local cache_a={}
+local cache_b={}
+function parsers.groupedsplitat(symbol,withaction)
+  if not symbol then
+    symbol=","
+  end
+  local pattern=(withaction and cache_b or cache_a)[symbol]
+  if not pattern then
+    local symbols=S(symbol)
+    local separator=space^0*symbols*space^0
+    local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C((nestedbraces+(1-(space^0*(symbols+P(-1)))))^0)
+    if withaction then
+      local withvalue=Carg(1)*value/function(f,s) return f(s) end
+      pattern=spaces*withvalue*(separator*withvalue)^0
+      cache_b[symbol]=pattern
+    else
+      pattern=spaces*Ct(value*(separator*value)^0)
+      cache_a[symbol]=pattern
+    end
+  end
+  return pattern
+end
+local pattern_a=parsers.groupedsplitat(",",false)
+local pattern_b=parsers.groupedsplitat(",",true)
 function parsers.stripped_settings_to_array(str)
   if not str or str=="" then
     return {}
@@ -6317,8 +6856,8 @@ function parsers.add_settings_to_array(t,str)
 end
 function parsers.hash_to_string(h,separator,yes,no,strict,omit)
   if h then
-    local t,tn,s={},0,table.sortedkeys(h)
-    omit=omit and table.tohash(omit)
+    local t,tn,s={},0,sortedkeys(h)
+    omit=omit and tohash(omit)
     for i=1,#s do
       local key=s[i]
       if not omit or not omit[key] then
@@ -6354,12 +6893,9 @@ function parsers.array_to_string(a,separator)
     return ""
   end
 end
-function parsers.settings_to_set(str,t) 
-  t=t or {}
-  for s in gmatch(str,"[^, ]+") do 
-    t[s]=true
-  end
-  return t
+local pattern=Cf(Ct("")*Cg(C((1-S(", "))^1)*S(", ")^0*Cc(true))^1,rawset)
+function utilities.parsers.settings_to_set(str,t)
+  return str and lpegmatch(pattern,str) or {}
 end
 function parsers.simple_hash_to_string(h,separator)
   local t,tn={},0
@@ -6371,11 +6907,15 @@ function parsers.simple_hash_to_string(h,separator)
   end
   return concat(t,separator or ",")
 end
-local str=C((1-whitespace-equal)^1)
+local str=Cs(lpegpatterns.unquoted)+C((1-whitespace-equal)^1)
 local setting=Cf(Carg(1)*(whitespace^0*Cg(str*whitespace^0*(equal*whitespace^0*str+Cc(""))))^1,rawset)
 local splitter=setting^1
 function utilities.parsers.options_to_hash(str,target)
   return str and lpegmatch(splitter,str,1,target or {}) or {}
+end
+local splitter=lpeg.tsplitat(" ")
+function utilities.parsers.options_to_array(str)
+  return str and lpegmatch(splitter,str) or {}
 end
 local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C(digit^1*lparent*(noparent+nestedparents)^1*rparent)+C((nestedbraces+(1-comma))^1)
 local pattern_a=spaces*Ct(value*(separator*value)^0)
@@ -6463,7 +7003,7 @@ function parsers.keq_to_hash(str)
 end
 local defaultspecification={ separator=",",quote='"' }
 function parsers.csvsplitter(specification)
-  specification=specification and table.setmetatableindex(specification,defaultspecification) or defaultspecification
+  specification=specification and setmetatableindex(specification,defaultspecification) or defaultspecification
   local separator=specification.separator
   local quotechar=specification.quote
   local separator=S(separator~="" and separator or ",")
@@ -6487,7 +7027,7 @@ function parsers.csvsplitter(specification)
   end
 end
 function parsers.rfc4180splitter(specification)
-  specification=specification and table.setmetatableindex(specification,defaultspecification) or defaultspecification
+  specification=specification and setmetatableindex(specification,defaultspecification) or defaultspecification
   local separator=specification.separator 
   local quotechar=P(specification.quote) 
   local dquotechar=quotechar*quotechar  
@@ -6498,7 +7038,7 @@ function parsers.rfc4180splitter(specification)
   local field=escaped+non_escaped+Cc("")
   local record=Ct(field*(separator*field)^1)
   local headerline=record*Cp()
-  local wholeblob=Ct((newline^-1*record)^0)
+  local wholeblob=Ct((newline^(specification.strict and -1 or 1)*record)^0)
   return function(data,getheader)
     if getheader then
       local header,position=lpegmatch(headerline,data)
@@ -6535,20 +7075,20 @@ function parsers.stepper(str,n,action)
     lpegmatch(stepper,str,1,n,action or print)
   end
 end
-local pattern_math=Cs((P("%")/"\\percent "+P("^")*Cc("{")*lpegpatterns.integer*Cc("}")+P(1))^0)
-local pattern_text=Cs((P("%")/"\\percent "+(P("^")/"\\high")*Cc("{")*lpegpatterns.integer*Cc("}")+P(1))^0)
+local pattern_math=Cs((P("%")/"\\percent "+P("^")*Cc("{")*lpegpatterns.integer*Cc("}")+anything)^0)
+local pattern_text=Cs((P("%")/"\\percent "+(P("^")/"\\high")*Cc("{")*lpegpatterns.integer*Cc("}")+anything)^0)
 patterns.unittotex=pattern
 function parsers.unittotex(str,textmode)
   return lpegmatch(textmode and pattern_text or pattern_math,str)
 end
-local pattern=Cs((P("^")/"<sup>"*lpegpatterns.integer*Cc("</sup>")+P(1))^0)
+local pattern=Cs((P("^")/"<sup>"*lpegpatterns.integer*Cc("</sup>")+anything)^0)
 function parsers.unittoxml(str)
   return lpegmatch(pattern,str)
 end
 local cache={}
-local spaces=lpeg.patterns.space^0
+local spaces=lpegpatterns.space^0
 local dummy=function() end
-table.setmetatableindex(cache,function(t,k)
+setmetatableindex(cache,function(t,k)
   local separator=P(k)
   local value=(1-separator)^0
   local pattern=spaces*C(value)*separator^0*Cp()
@@ -6612,6 +7152,18 @@ function utilities.parsers.runtime(time)
   local minutes=div(time,60)
   local seconds=mod(time,60)
   return days,hours,minutes,seconds
+end
+local spacing=whitespace^0
+local apply=P("->")
+local method=C((1-apply)^1)
+local token=lbrace*C((1-rbrace)^1)*rbrace+C(anything^1)
+local pattern=spacing*(method*spacing*apply+Carg(1))*spacing*token
+function utilities.parsers.splitmethod(str,default)
+  if str then
+    return lpegmatch(pattern,str,1,default or false)
+  else
+    return default or false,""
+  end
 end
 
 
@@ -6702,7 +7254,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-set"] = package.loaded["trac-set"] or true
 
--- original size: 12365, stripped down to: 8799
+-- original size: 12482, stripped down to: 8864
 
 if not modules then modules={} end modules ['trac-set']={ 
   version=1.001,
@@ -6730,7 +7282,7 @@ function setters.initialize(filename,name,values)
     local data=setter.data
     if data then
       for key,newvalue in next,values do
-        local newvalue=is_boolean(newvalue,newvalue)
+        local newvalue=is_boolean(newvalue,newvalue,true) 
         local functions=data[key]
         if functions then
           local oldvalue=functions.value
@@ -6784,7 +7336,7 @@ local function set(t,what,newvalue)
       elseif not value then
         value=false 
       else
-        value=is_boolean(value,value)
+        value=is_boolean(value,value,true) 
       end
       w=topattern(w,true,true)
       for name,functions in next,data do
@@ -6923,6 +7475,7 @@ function setters.new(name)
     report=function(...) setters.report (setter,...) end,
     enable=function(...)     enable (setter,...) end,
     disable=function(...)     disable (setter,...) end,
+    reset=function(...)     reset  (setter,...) end,
     register=function(...)     register(setter,...) end,
     list=function(...)     list  (setter,...) end,
     show=function(...)     show  (setter,...) end,
@@ -7014,7 +7567,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 25391, stripped down to: 16561
+-- original size: 29359, stripped down to: 20483
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -7023,15 +7576,18 @@ if not modules then modules={} end modules ['trac-log']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
+local next,type,select,print=next,type,select,print
 local write_nl,write=texio and texio.write_nl or print,texio and texio.write or io.write
 local format,gmatch,find=string.format,string.gmatch,string.find
 local concat,insert,remove=table.concat,table.insert,table.remove
 local topattern=string.topattern
-local next,type,select=next,type,select
 local utfchar=utf.char
+local datetime=os.date
+local openfile=io.open
 local setmetatableindex=table.setmetatableindex
 local formatters=string.formatters
 local texgetcount=tex and tex.getcount
+local variant="default"
 logs=logs or {}
 local logs=logs
 local moreinfo=[[
@@ -7041,32 +7597,122 @@ maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
 webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
 wiki     : http://contextgarden.net
 ]]
-utilities.strings.formatters.add (
+formatters.add (
   formatters,"unichr",
   [["U+" .. format("%%05X",%s) .. " (" .. utfchar(%s) .. ")"]]
 )
-utilities.strings.formatters.add (
+formatters.add (
   formatters,"chruni",
   [[utfchar(%s) .. " (U+" .. format("%%05X",%s) .. ")"]]
 )
 local function ignore() end
 setmetatableindex(logs,function(t,k) t[k]=ignore;return ignore end)
 local report,subreport,status,settarget,setformats,settranslations
-local direct,subdirect,writer,pushtarget,poptarget,setlogfile,settimedlog,setprocessor,setformatters
+local direct,subdirect,writer,pushtarget,poptarget,setlogfile,settimedlog,setprocessor,setformatters,newline
 if tex and (tex.jobname or tex.formatname) then
-  local valueiskey={ __index=function(t,k) t[k]=k return k end } 
-  local target="term and log"
+  local function useluawrites()
+    local texio_write_nl=texio.write_nl
+    local texio_write=texio.write
+    local io_write=io.write
+    write_nl=function(target,...)
+      if not io_write then
+        io_write=io.write
+      end
+      if target=="term and log" then
+        texio_write_nl("log",...)
+        texio_write_nl("term","")
+        io_write(...)
+      elseif target=="log" then
+        texio_write_nl("log",...)
+      elseif target=="term" then
+        texio_write_nl("term","")
+        io_write(...)
+      elseif target~="none" then
+        texio_write_nl("log",target,...)
+        texio_write_nl("term","")
+        io_write(target,...)
+      end
+    end
+    write=function(target,...)
+      if not io_write then
+        io_write=io.write
+      end
+      if target=="term and log" then
+        texio_write("log",...)
+        io_write(...)
+      elseif target=="log" then
+        texio_write("log",...)
+      elseif target=="term" then
+        io_write(...)
+      elseif target~="none" then
+        texio_write("log",target,...)
+        io_write(target,...)
+      end
+    end
+    texio.write=write
+    texio.write_nl=write_nl
+    useluawrites=ignore
+  end
+  local whereto="both"
+  local target=nil
+  local targets=nil
+  local formats=table.setmetatableindex("self")
+  local translations=table.setmetatableindex("self")
+  local report_yes,subreport_yes,direct_yes,subdirect_yes,status_yes
+  local report_nop,subreport_nop,direct_nop,subdirect_nop,status_nop
+  local variants={
+    default={
+      formats={
+        report_yes=formatters["%-15s > %s\n"],
+        report_nop=formatters["%-15s >\n"],
+        direct_yes=formatters["%-15s > %s"],
+        direct_nop=formatters["%-15s >"],
+        subreport_yes=formatters["%-15s > %s > %s\n"],
+        subreport_nop=formatters["%-15s > %s >\n"],
+        subdirect_yes=formatters["%-15s > %s > %s"],
+        subdirect_nop=formatters["%-15s > %s >"],
+        status_yes=formatters["%-15s : %s\n"],
+        status_nop=formatters["%-15s :\n"],
+      },
+      targets={
+        logfile="log",
+        log="log",
+        file="log",
+        console="term",
+        terminal="term",
+        both="term and log",
+      },
+    },
+    ansi={
+      formats={
+        report_yes=formatters["[0;33m%-15s [0;1m>[0m %s\n"],
+        report_nop=formatters["[0;33m%-15s [0;1m>[0m\n"],
+        direct_yes=formatters["[0;33m%-15s [0;1m>[0m %s"],
+        direct_nop=formatters["[0;33m%-15s [0;1m>[0m"],
+        subreport_yes=formatters["[0;33m%-15s [0;1m>[0;35m %s [0;1m>[0m %s\n"],
+        subreport_nop=formatters["[0;33m%-15s [0;1m>[0;35m %s [0;1m>[0m\n"],
+        subdirect_yes=formatters["[0;33m%-15s [0;1m>[0;35m %s [0;1m>[0m %s"],
+        subdirect_nop=formatters["[0;33m%-15s [0;1m>[0;35m %s [0;1m>[0m"],
+        status_yes=formatters["[0;33m%-15s [0;1m:[0m %s\n"],
+        status_nop=formatters["[0;33m%-15s [0;1m:[0m\n"],
+      },
+      targets={
+        logfile="none",
+        log="none",
+        file="none",
+        console="term",
+        terminal="term",
+        both="term",
+      },
+    }
+  }
   logs.flush=io.flush
-  local formats={} setmetatable(formats,valueiskey)
-  local translations={} setmetatable(translations,valueiskey)
   writer=function(...)
     write_nl(target,...)
   end
   newline=function()
     write_nl(target,"\n")
   end
-  local report_yes=formatters["%-15s > %s\n"]
-  local report_nop=formatters["%-15s >\n"]
   report=function(a,b,c,...)
     if c then
       write_nl(target,report_yes(translations[a],formatters[formats[b]](c,...)))
@@ -7078,8 +7724,6 @@ if tex and (tex.jobname or tex.formatname) then
       write_nl(target,"\n")
     end
   end
-  local direct_yes=formatters["%-15s > %s"]
-  local direct_nop=formatters["%-15s >"]
   direct=function(a,b,c,...)
     if c then
       return direct_yes(translations[a],formatters[formats[b]](c,...))
@@ -7091,8 +7735,6 @@ if tex and (tex.jobname or tex.formatname) then
       return ""
     end
   end
-  local subreport_yes=formatters["%-15s > %s > %s\n"]
-  local subreport_nop=formatters["%-15s > %s >\n"]
   subreport=function(a,s,b,c,...)
     if c then
       write_nl(target,subreport_yes(translations[a],translations[s],formatters[formats[b]](c,...)))
@@ -7104,8 +7746,6 @@ if tex and (tex.jobname or tex.formatname) then
       write_nl(target,"\n")
     end
   end
-  local subdirect_yes=formatters["%-15s > %s > %s"]
-  local subdirect_nop=formatters["%-15s > %s >"]
   subdirect=function(a,s,b,c,...)
     if c then
       return subdirect_yes(translations[a],translations[s],formatters[formats[b]](c,...))
@@ -7117,8 +7757,6 @@ if tex and (tex.jobname or tex.formatname) then
       return ""
     end
   end
-  local status_yes=formatters["%-15s : %s\n"]
-  local status_nop=formatters["%-15s :\n"]
   status=function(a,b,c,...)
     if c then
       write_nl(target,status_yes(translations[a],formatters[formats[b]](c,...)))
@@ -7130,16 +7768,13 @@ if tex and (tex.jobname or tex.formatname) then
       write_nl(target,"\n")
     end
   end
-  local targets={
-    logfile="log",
-    log="log",
-    file="log",
-    console="term",
-    terminal="term",
-    both="term and log",
-  }
-  settarget=function(whereto)
-    target=targets[whereto or "both"] or targets.both
+  settarget=function(askedwhereto)
+    whereto=askedwhereto or whereto or "both"
+    target=targets[whereto]
+    if not target then
+      whereto="both"
+      target=targets[whereto]
+    end
     if target=="term" or target=="term and log" then
       logs.flush=io.flush
     else
@@ -7168,21 +7803,74 @@ if tex and (tex.jobname or tex.formatname) then
       writeline(target,f(...))
     end
   end
-  setformatters=function(f)
-    report_yes=f.report_yes  or report_yes
-    report_nop=f.report_nop  or report_nop
-    subreport_yes=f.subreport_yes or subreport_yes
-    subreport_nop=f.subreport_nop or subreport_nop
-    direct_yes=f.direct_yes  or direct_yes
-    direct_nop=f.direct_nop  or direct_nop
-    subdirect_yes=f.subdirect_yes or subdirect_yes
-    subdirect_nop=f.subdirect_nop or subdirect_nop
-    status_yes=f.status_yes  or status_yes
-    status_nop=f.status_nop  or status_nop
+  setformatters=function(specification)
+    local t=nil
+    local f=nil
+    local d=variants.default
+    if not specification then
+    elseif type(specification)=="table" then
+      t=specification.targets
+      f=specification.formats or specification
+    else
+      local v=variants[specification]
+      if v then
+        t=v.targets
+        f=v.formats
+        variant=specification
+      end
+    end
+    targets=t or d.targets
+    target=targets[whereto] or target
+    if f then
+      d=d.formats
+    else
+      f=d.formats
+      d=f
+    end
+    setmetatableindex(f,d)
+    report_yes=f.report_yes
+    report_nop=f.report_nop
+    subreport_yes=f.subreport_yes
+    subreport_nop=f.subreport_nop
+    direct_yes=f.direct_yes
+    direct_nop=f.direct_nop
+    subdirect_yes=f.subdirect_yes
+    subdirect_nop=f.subdirect_nop
+    status_yes=f.status_yes
+    status_nop=f.status_nop
+    if variant=="ansi" then
+      useluawrites() 
+    end
+    settarget(whereto)
   end
+  setformatters(variant)
   setlogfile=ignore
   settimedlog=ignore
 else
+  local report_yes,subreport_yes,status_yes
+  local report_nop,subreport_nop,status_nop
+  local variants={
+    default={
+      formats={
+        report_yes=formatters["%-15s | %s"],
+        report_nop=formatters["%-15s |"],
+        subreport_yes=formatters["%-15s | %s | %s"],
+        subreport_nop=formatters["%-15s | %s |"],
+        status_yes=formatters["%-15s : %s\n"],
+        status_nop=formatters["%-15s :\n"],
+      },
+    },
+    ansi={
+      formats={
+        report_yes=formatters["[0;32m%-15s [0;1m|[0m %s"],
+        report_nop=formatters["[0;32m%-15s [0;1m|[0m"],
+        subreport_yes=formatters["[0;32m%-15s [0;1m|[0;31m %s [0;1m|[0m %s"],
+        subreport_nop=formatters["[0;32m%-15s [0;1m|[0;31m %s [0;1m|[0m"],
+        status_yes=formatters["[0;32m%-15s [0;1m:[0m %s\n"],
+        status_nop=formatters["[0;32m%-15s [0;1m:[0m\n"],
+      },
+    },
+  }
   logs.flush=ignore
   writer=function(s)
     write_nl(s)
@@ -7190,8 +7878,6 @@ else
   newline=function()
     write_nl("\n")
   end
-  local report_yes=formatters["%-15s | %s"]
-  local report_nop=formatters["%-15s |"]
   report=function(a,b,c,...)
     if c then
       write_nl(report_yes(a,formatters[b](c,...)))
@@ -7203,8 +7889,6 @@ else
       write_nl("")
     end
   end
-  local subreport_yes=formatters["%-15s | %s | %s"]
-  local subreport_nop=formatters["%-15s | %s |"]
   subreport=function(a,sub,b,c,...)
     if c then
       write_nl(subreport_yes(a,sub,formatters[b](c,...)))
@@ -7216,8 +7900,6 @@ else
       write_nl("")
     end
   end
-  local status_yes=formatters["%-15s : %s\n"]
-  local status_nop=formatters["%-15s :\n"]
   status=function(a,b,c,...) 
     if c then
       write_nl(status_yes(a,formatters[b](c,...)))
@@ -7242,14 +7924,34 @@ else
       writeline(f(s))
     end
   end
-  setformatters=function(f)
-    report_yes=f.report_yes  or report_yes
-    report_nop=f.report_nop  or report_nop
-    subreport_yes=f.subreport_yes or subreport_yes
-    subreport_nop=f.subreport_nop or subreport_nop
-    status_yes=f.status_yes  or status_yes
-    status_nop=f.status_nop  or status_nop
+  setformatters=function(specification)
+    local f=nil
+    local d=variants.default
+    if specification then
+      if type(specification)=="table" then
+        f=specification.formats or specification
+      else
+        local v=variants[specification]
+        if v then
+          f=v.formats
+        end
+      end
+    end
+    if f then
+      d=d.formats
+    else
+      f=d.formats
+      d=f
+    end
+    setmetatableindex(f,d)
+    report_yes=f.report_yes
+    report_nop=f.report_nop
+    subreport_yes=f.subreport_yes
+    subreport_nop=f.subreport_nop
+    status_yes=f.status_yes
+    status_nop=f.status_nop
   end
+  setformatters(variant)
   setlogfile=function(name,keepopen)
     if name and name~="" then
       local localtime=os.localtime
@@ -7368,9 +8070,10 @@ local function setblocked(category,value)
       v.state=value
     end
   else
-    states=utilities.parsers.settings_to_hash(category)
+    states=utilities.parsers.settings_to_hash(category,type(states)=="table" and states or nil)
     for c,_ in next,states do
-      if data[c] then
+      local v=data[c]
+      if v then
         v.state=value
       else
         c=topattern(c,true,true)
@@ -7501,13 +8204,13 @@ end
 local simple=logs.reporter("comment")
 logs.simple=simple
 logs.simpleline=simple
-function logs.setprogram () end 
-function logs.extendbanner() end 
-function logs.reportlines () end 
-function logs.reportbanner() end 
-function logs.reportline () end 
-function logs.simplelines () end 
-function logs.help    () end
+logs.setprogram=ignore 
+logs.extendbanner=ignore 
+logs.reportlines=ignore 
+logs.reportbanner=ignore 
+logs.reportline=ignore 
+logs.simplelines=ignore 
+logs.help=ignore
 local Carg,C,lpegmatch=lpeg.Carg,lpeg.C,lpeg.match
 local p_newline=lpeg.patterns.newline
 local linewise=(
@@ -7584,10 +8287,11 @@ function logs.application(t)
   end
   return t
 end
-function logs.system(whereto,process,jobname,category,...)
-  local message=formatters["%s %s => %s => %s => %s\r"](os.date("%d/%m/%y %H:%m:%S"),process,jobname,category,format(...))
+local f_syslog=formatters["%s %s => %s => %s => %s\r"]
+function logs.system(whereto,process,jobname,category,fmt,arg,...)
+  local message=f_syslog(datetime("%d/%m/%y %H:%m:%S"),process,jobname,category,arg==nil and fmt or format(fmt,arg,...))
   for i=1,10 do
-    local f=io.open(whereto,"a") 
+    local f=openfile(whereto,"a") 
     if f then
       f:write(message)
       f:close()
@@ -7649,7 +8353,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 6501, stripped down to: 5156
+-- original size: 6704, stripped down to: 5343
 
 if not modules then modules={} end modules ['trac-inf']={
   version=1.001,
@@ -7659,7 +8363,7 @@ if not modules then modules={} end modules ['trac-inf']={
   license="see context related readme files"
 }
 local type,tonumber,select=type,tonumber,select
-local format,lower=string.format,string.lower
+local format,lower,find=string.format,string.lower,string.find
 local concat=table.concat
 local clock=os.gettimeofday or os.clock 
 local setmetatableindex=table.setmetatableindex
@@ -7750,7 +8454,8 @@ function statistics.show()
   if statistics.enable then
     local register=statistics.register
     register("used platform",function()
-      return format("%s, type: %s, binary subtree: %s",os.platform or "unknown",os.type or "unknown",environment.texos or "unknown")
+      return format("%s, type: %s, binary subtree: %s",
+        os.platform or "unknown",os.type or "unknown",environment.texos or "unknown")
     end)
     register("luatex banner",function()
       return lower(status.banner)
@@ -7763,14 +8468,23 @@ function statistics.show()
       return format("%s direct, %s indirect, %s total",total-indirect,indirect,total)
     end)
     if jit then
-      local status={ jit.status() }
-      if status[1] then
-        register("luajit status",function()
-          return concat(status," ",2)
-        end)
+      local jitstatus={ jit.status() }
+      if jitstatus[1] then
+        register("luajit options",concat(jitstatus," ",2))
       end
     end
-    register("current memory usage",statistics.memused)
+    register("lua properties",function()
+      local list=status.list()
+      local hashchar=tonumber(list.luatex_hashchars)
+      local mask=lua.mask or "ascii"
+      return format("engine: %s, used memory: %s, hash type: %s, hash chars: min(%s,40), symbol mask: %s (%s)",
+        jit and "luajit" or "lua",
+        statistics.memused(),
+        list.luatex_hashtype or "default",
+        hashchar and 2^hashchar or "unknown",
+        mask,
+        mask=="utf" and "τεχ" or "tex")
+    end)
     register("runtime",statistics.runtime)
     logs.newline() 
     for i=1,#statusinfo do
@@ -7812,15 +8526,6 @@ function statistics.tracefunction(base,tag,...)
     statistics.register(formatters["%s.%s"](tag,name),function() return serialize(stat,"calls") end)
   end
 end
-commands=commands or {}
-function commands.resettimer(name)
-  resettiming(name or "whatever")
-  starttiming(name or "whatever")
-end
-function commands.elapsedtime(name)
-  stoptiming(name or "whatever")
-  context(elapsedtime(name or "whatever"))
-end
 
 
 end -- of closure
@@ -7829,7 +8534,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-pro"] = package.loaded["trac-pro"] or true
 
--- original size: 5773, stripped down to: 3453
+-- original size: 5829, stripped down to: 3501
 
 if not modules then modules={} end modules ['trac-pro']={
   version=1.001,
@@ -7846,14 +8551,16 @@ local namespaces=namespaces
 local registered={}
 local function report_index(k,name)
   if trace_namespaces then
-    report_system("reference to %a in protected namespace %a: %s",k,name,debug.traceback())
+    report_system("reference to %a in protected namespace %a: %s",k,name)
+    debugger.showtraceback(report_system)
   else
     report_system("reference to %a in protected namespace %a",k,name)
   end
 end
 local function report_newindex(k,name)
   if trace_namespaces then
-    report_system("assignment to %a in protected namespace %a: %s",k,name,debug.traceback())
+    report_system("assignment to %a in protected namespace %a: %s",k,name)
+    debugger.showtraceback(report_system)
   else
     report_system("assignment to %a in protected namespace %a",k,name)
   end
@@ -8104,7 +8811,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-deb"] = package.loaded["util-deb"] or true
 
--- original size: 3708, stripped down to: 2568
+-- original size: 3898, stripped down to: 2644
 
 if not modules then modules={} end modules ['util-deb']={
   version=1.001,
@@ -8184,20 +8891,22 @@ end
 function debugger.disable()
   debug.sethook()
 end
-function traceback()
-  local level=1
+local function showtraceback(rep) 
+  local level=2 
+  local reporter=rep or report
   while true do
-    local info=debug.getinfo(level,"Sl")
+    local info=getinfo(level,"Sl")
     if not info then
       break
     elseif info.what=="C" then
-      print(format("%3i : C function",level))
+      reporter("%2i : %s",level-1,"C function")
     else
-      print(format("%3i : [%s]:%d",level,info.short_src,info.currentline))
+      reporter("%2i : %s : %s",level-1,info.short_src,info.currentline)
     end
     level=level+1
   end
 end
+debugger.showtraceback=showtraceback
 
 
 end -- of closure
@@ -8383,7 +9092,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tpl"] = package.loaded["util-tpl"] or true
 
--- original size: 6251, stripped down to: 3488
+-- original size: 7100, stripped down to: 3978
 
 if not modules then modules={} end modules ['util-tpl']={
   version=1.001,
@@ -8425,7 +9134,7 @@ local sqlescape=lpeg.replacer {
   { "\r\n","\\n" },
   { "\r","\\n" },
 }
-local sqlquoted=lpeg.Cs(lpeg.Cc("'")*sqlescape*lpeg.Cc("'"))
+local sqlquoted=Cs(Cc("'")*sqlescape*Cc("'"))
 lpegpatterns.sqlescape=sqlescape
 lpegpatterns.sqlquoted=sqlquoted
 local luaescape=lpegpatterns.luaescape
@@ -8448,12 +9157,24 @@ local quotedescapers={
 local luaescaper=escapers.lua
 local quotedluaescaper=quotedescapers.lua
 local function replacekeyunquoted(s,t,how,recurse) 
-  local escaper=how and escapers[how] or luaescaper
-  return escaper(replacekey(s,t,how,recurse))
+  if how==false then
+    return replacekey(s,t,how,recurse)
+  else
+    local escaper=how and escapers[how] or luaescaper
+    return escaper(replacekey(s,t,how,recurse))
+  end
 end
 local function replacekeyquoted(s,t,how,recurse) 
-  local escaper=how and quotedescapers[how] or quotedluaescaper
-  return escaper(replacekey(s,t,how,recurse))
+  if how==false then
+    return replacekey(s,t,how,recurse)
+  else
+    local escaper=how and quotedescapers[how] or quotedluaescaper
+    return escaper(replacekey(s,t,how,recurse))
+  end
+end
+local function replaceoptional(l,m,r,t,how,recurse)
+  local v=t[l]
+  return v and v~="" and lpegmatch(replacer,r,1,t,how or "lua",recurse or false) or ""
 end
 local single=P("%") 
 local double=P("%%") 
@@ -8468,11 +9189,16 @@ local nolquoted=lquoted/''
 local norquoted=rquoted/''
 local nolquotedq=lquotedq/''
 local norquotedq=rquotedq/''
-local key=nosingle*((C((1-nosingle )^1)*Carg(1)*Carg(2)*Carg(3))/replacekey    )*nosingle
-local quoted=nolquotedq*((C((1-norquotedq)^1)*Carg(1)*Carg(2)*Carg(3))/replacekeyquoted )*norquotedq
-local unquoted=nolquoted*((C((1-norquoted )^1)*Carg(1)*Carg(2)*Carg(3))/replacekeyunquoted)*norquoted
+local noloptional=P("%?")/''
+local noroptional=P("?%")/''
+local nomoptional=P(":")/''
+local args=Carg(1)*Carg(2)*Carg(3)
+local key=nosingle*((C((1-nosingle  )^1)*args)/replacekey    )*nosingle
+local quoted=nolquotedq*((C((1-norquotedq )^1)*args)/replacekeyquoted )*norquotedq
+local unquoted=nolquoted*((C((1-norquoted )^1)*args)/replacekeyunquoted)*norquoted
+local optional=noloptional*((C((1-nomoptional)^1)*nomoptional*C((1-noroptional)^1)*args)/replaceoptional)*noroptional
 local any=P(1)
-   replacer=Cs((unquoted+quoted+escape+key+any)^0)
+   replacer=Cs((unquoted+quoted+escape+optional+key+any)^0)
 local function replace(str,mapping,how,recurse)
   if mapping and str then
     return lpegmatch(replacer,str,1,mapping,how or "lua",recurse or false) or str
@@ -8511,7 +9237,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-env"] = package.loaded["util-env"] or true
 
--- original size: 8807, stripped down to: 5085
+-- original size: 8022, stripped down to: 5038
 
 if not modules then modules={} end modules ['util-env']={
   version=1.001,
@@ -8522,7 +9248,7 @@ if not modules then modules={} end modules ['util-env']={
 }
 local allocate,mark=utilities.storage.allocate,utilities.storage.mark
 local format,sub,match,gsub,find=string.format,string.sub,string.match,string.gsub,string.find
-local unquoted,quoted=string.unquoted,string.quoted
+local unquoted,quoted,optionalquoted=string.unquoted,string.quoted,string.optionalquoted
 local concat,insert,remove=table.concat,table.insert,table.remove
 environment=environment or {}
 local environment=environment
@@ -8635,24 +9361,14 @@ function environment.splitarguments(separator)
   return before,after
 end
 function environment.reconstructcommandline(arg,noquote)
+  local resolveprefix=resolvers.resolve 
   arg=arg or environment.originalarguments
   if noquote and #arg==1 then
-    local a=arg[1]
-    a=resolvers.resolve(a)
-    a=unquoted(a)
-    return a
+    return unquoted(resolveprefix and resolveprefix(arg[1]) or arg[1])
   elseif #arg>0 then
     local result={}
     for i=1,#arg do
-      local a=arg[i]
-      a=resolvers.resolve(a)
-      a=unquoted(a)
-      a=gsub(a,'"','\\"') 
-      if find(a," ") then
-        result[#result+1]=quoted(a)
-      else
-        result[#result+1]=a
-      end
+      result[i]=optionalquoted(resolveprefix and resolveprefix(arg[i]) or resolveprefix)
     end
     return concat(result," ")
   else
@@ -8708,7 +9424,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-env"] = package.loaded["luat-env"] or true
 
--- original size: 5930, stripped down to: 4235
+-- original size: 6174, stripped down to: 4141
 
  if not modules then modules={} end modules ['luat-env']={
   version=1.001,
@@ -8786,15 +9502,13 @@ function environment.luafilechunk(filename,silent)
   filename=file.replacesuffix(filename,"lua")
   local fullname=environment.luafile(filename)
   if fullname and fullname~="" then
-    local data=luautilities.loadedluacode(fullname,strippable,filename) 
-    if trace_locating then
+    local data=luautilities.loadedluacode(fullname,strippable,filename)
+    if not silent then
       report_lua("loading file %a %s",fullname,not data and "failed" or "succeeded")
-    elseif not silent then
-      texio.write("<",data and "+ " or "- ",fullname,">")
     end
     return data
   else
-    if trace_locating then
+    if not silent then
       report_lua("unknown file %a",filename)
     end
     return nil
@@ -8863,7 +9577,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 42447, stripped down to: 26589
+-- original size: 45683, stripped down to: 27866
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -8878,10 +9592,10 @@ if lpeg.setmaxstack then lpeg.setmaxstack(1000) end
 xml=xml or {}
 local xml=xml
 local concat,remove,insert=table.concat,table.remove,table.insert
-local type,next,setmetatable,getmetatable,tonumber=type,next,setmetatable,getmetatable,tonumber
+local type,next,setmetatable,getmetatable,tonumber,rawset=type,next,setmetatable,getmetatable,tonumber,rawset
 local lower,find,match,gsub=string.lower,string.find,string.match,string.gsub
 local utfchar=utf.char
-local lpegmatch=lpeg.match
+local lpegmatch,lpegpatterns=lpeg.match,lpeg.patterns
 local P,S,R,C,V,C,Cs=lpeg.P,lpeg.S,lpeg.R,lpeg.C,lpeg.V,lpeg.C,lpeg.Cs
 local formatters=string.formatters
 xml.xmlns=xml.xmlns or {}
@@ -8976,8 +9690,10 @@ local function add_end(spacing,namespace,tag)
   top=stack[#stack]
   if #stack<1 then
     errorstr=formatters["unable to close %s %s"](tag,xml.checkerror(top,toclose) or "")
+    report_xml(errorstr)
   elseif toclose.tg~=tag then 
     errorstr=formatters["unable to close %s with %s %s"](toclose.tg,tag,xml.checkerror(top,toclose) or "")
+    report_xml(errorstr)
   end
   dt=top.dt
   dt[#dt+1]=toclose
@@ -8986,10 +9702,29 @@ local function add_end(spacing,namespace,tag)
   end
 end
 local function add_text(text)
+  local n=#dt
   if cleanup and #text>0 then
-    dt[#dt+1]=cleanup(text)
+    if n>0 then
+      local s=dt[n]
+      if type(s)=="string" then
+        dt[n]=s..cleanup(text)
+      else
+        dt[n+1]=cleanup(text)
+      end
+    else
+      dt[1]=cleanup(text)
+    end
   else
-    dt[#dt+1]=text
+    if n>0 then
+      local s=dt[n]
+      if type(s)=="string" then
+        dt[n]=s..text
+      else
+        dt[n+1]=text
+      end
+    else
+      dt[1]=text
+    end
   end
 end
 local function add_special(what,spacing,text)
@@ -9021,8 +9756,10 @@ local function attribute_specification_error(str)
   end
   return str
 end
+local badentity="&error;"
+local badentity="&"
 xml.placeholders={
-  unknown_dec_entity=function(str) return str=="" and "&error;" or formatters["&%s;"](str) end,
+  unknown_dec_entity=function(str) return str=="" and badentity or formatters["&%s;"](str) end,
   unknown_hex_entity=function(str) return formatters["&#x%s;"](str) end,
   unknown_any_entity=function(str) return formatters["&#x%s;"](str) end,
 }
@@ -9043,9 +9780,10 @@ local function fromdec(s)
     return formatters["d:%s"](s),true
   end
 end
-local rest=(1-P(";"))^0
-local many=P(1)^0
-local parsedentity=P("&")*(P("#x")*(rest/fromhex)+P("#")*(rest/fromdec))*P(";")*P(-1)+(P("#x")*(many/fromhex)+P("#")*(many/fromdec))
+local p_rest=(1-P(";"))^0
+local p_many=P(1)^0
+local p_char=lpegpatterns.utf8character
+local parsedentity=P("&")*(P("#x")*(p_rest/fromhex)+P("#")*(p_rest/fromdec))*P(";")*P(-1)+(P("#x")*(p_many/fromhex)+P("#")*(p_many/fromdec))
 local predefined_unified={
   [38]="&amp;",
   [42]="&quot;",
@@ -9071,7 +9809,9 @@ local privates_u={
 local privates_p={}
 local privates_n={
 }
-local escaped=utf.remapper(privates_u)
+local escaped=utf.remapper(privates_u,"dynamic")
+local unprivatized=utf.remapper(privates_p,"dynamic")
+xml.unprivatized=unprivatized
 local function unescaped(s)
   local p=privates_n[s]
   if not p then
@@ -9084,9 +9824,7 @@ local function unescaped(s)
   end
   return p
 end
-local unprivatized=utf.remapper(privates_p)
 xml.privatetoken=unescaped
-xml.unprivatized=unprivatized
 xml.privatecodes=privates_n
 local function handle_hex_entity(str)
   local h=hcache[str]
@@ -9181,7 +9919,7 @@ local function handle_any_entity(str)
               report_xml("keeping entity &%s;",str)
             end
             if str=="" then
-              a="&error;"
+              a=badentity
             else
               a="&"..str..";"
             end
@@ -9209,7 +9947,7 @@ local function handle_any_entity(str)
         if trace_entities then
           report_xml("invalid entity &%s;",str)
         end
-        a="&error;"
+        a=badentity
         acache[str]=a
       else
         if trace_entities then
@@ -9222,8 +9960,14 @@ local function handle_any_entity(str)
     return a
   end
 end
-local function handle_end_entity(chr)
-  report_xml("error in entity, %a found instead of %a",chr,";")
+local function handle_end_entity(str)
+  report_xml("error in entity, %a found without ending %a",str,";")
+  return str
+end
+local function handle_crap_error(chr)
+  report_xml("error in parsing, unexpected %a found ",chr)
+  add_text(chr)
+  return chr
 end
 local space=S(' \r\n\t')
 local open=P('<')
@@ -9239,15 +9983,15 @@ local valid=R('az','AZ','09')+S('_-.')
 local name_yes=C(valid^1)*colon*C(valid^1)
 local name_nop=C(P(true))*C(valid^1)
 local name=name_yes+name_nop
-local utfbom=lpeg.patterns.utfbom 
+local utfbom=lpegpatterns.utfbom 
 local spacing=C(space^0)
-local anyentitycontent=(1-open-semicolon-space-close)^0
+local anyentitycontent=(1-open-semicolon-space-close-ampersand)^0
 local hexentitycontent=R("AF","af","09")^0
 local decentitycontent=R("09")^0
 local parsedentity=P("#")/""*(
                 P("x")/""*(hexentitycontent/handle_hex_entity)+(decentitycontent/handle_dec_entity)
               )+(anyentitycontent/handle_any_entity)
-local entity=ampersand/""*parsedentity*((semicolon/"")+#(P(1)/handle_end_entity))
+local entity=(ampersand/"")*parsedentity*(semicolon/"")+ampersand*(anyentitycontent/handle_end_entity)
 local text_unparsed=C((1-open)^1)
 local text_parsed=Cs(((1-open-ampersand)^1+entity)^1)
 local somespace=space^1
@@ -9298,16 +10042,20 @@ local instruction=(spacing*begininstruction*someinstruction*endinstruction)/func
 local comment=(spacing*begincomment*somecomment*endcomment  )/function(...) add_special("@cm@",...) end
 local cdata=(spacing*begincdata*somecdata*endcdata   )/function(...) add_special("@cd@",...) end
 local doctype=(spacing*begindoctype*somedoctype*enddoctype  )/function(...) add_special("@dt@",...) end
+local crap_parsed=1-beginelement-endelement-emptyelement-begininstruction-begincomment-begincdata-ampersand
+local crap_unparsed=1-beginelement-endelement-emptyelement-begininstruction-begincomment-begincdata
+local parsedcrap=Cs((crap_parsed^1+entity)^1)/handle_crap_error
+local unparsedcrap=Cs((crap_unparsed     )^1)/handle_crap_error
 local trailer=space^0*(text_unparsed/set_message)^0
 local grammar_parsed_text=P { "preamble",
   preamble=utfbom^0*instruction^0*(doctype+comment+instruction)^0*V("parent")*trailer,
   parent=beginelement*V("children")^0*endelement,
-  children=parsedtext+V("parent")+emptyelement+comment+cdata+instruction,
+  children=parsedtext+V("parent")+emptyelement+comment+cdata+instruction+parsedcrap,
 }
 local grammar_unparsed_text=P { "preamble",
   preamble=utfbom^0*instruction^0*(doctype+comment+instruction)^0*V("parent")*trailer,
   parent=beginelement*V("children")^0*endelement,
-  children=unparsedtext+V("parent")+emptyelement+comment+cdata+instruction,
+  children=unparsedtext+V("parent")+emptyelement+comment+cdata+instruction+unparsedcrap,
 }
 local function _xmlconvert_(data,settings)
   settings=settings or {}
@@ -9341,7 +10089,6 @@ local function _xmlconvert_(data,settings)
     errorstr="empty xml file"
   elseif utfize or resolve then
     if lpegmatch(grammar_parsed_text,data) then
-      errorstr=""
     else
       errorstr="invalid xml file - parsed text"
     end
@@ -9357,6 +10104,8 @@ local function _xmlconvert_(data,settings)
   local result
   if errorstr and errorstr~="" then
     result={ dt={ { ns="",tg="error",dt={ errorstr },at={},er=true } } }
+setmetatable(result,mt)
+setmetatable(result.dt[1],mt)
     setmetatable(stack,mt)
     local errorhandler=settings.error_handler
     if errorhandler==false then
@@ -9389,8 +10138,11 @@ local function _xmlconvert_(data,settings)
   end
   if errorstr and errorstr~="" then
     result.error=true
+  else
+    errorstr=nil
   end
   result.statistics={
+    errormessage=errorstr,
     entities={
       decimals=dcache,
       hexadecimals=hcache,
@@ -9404,7 +10156,7 @@ local function _xmlconvert_(data,settings)
   reported_attribute_errors,mt,errorhandler=nil,nil,nil
   return result
 end
-function xmlconvert(data,settings)
+local function xmlconvert(data,settings)
   local ok,result=pcall(function() return _xmlconvert_(data,settings) end)
   if ok then
     return result
@@ -9496,14 +10248,17 @@ function xml.checkbom(root)
     insert(dt,2,"\n" )
   end
 end
-local function verbose_element(e,handlers) 
+local f_attribute=formatters['%s=%q']
+local function verbose_element(e,handlers,escape) 
   local handle=handlers.handle
   local serialize=handlers.serialize
   local ens,etg,eat,edt,ern=e.ns,e.tg,e.at,e.dt,e.rn
   local ats=eat and next(eat) and {}
   if ats then
+    local n=0
     for k,v in next,eat do
-      ats[#ats+1]=formatters['%s=%q'](k,escaped(v))
+      n=n+1
+      ats[n]=f_attribute(k,escaped(v))
     end
   end
   if ern and trace_entities and ern~=ens then
@@ -9588,23 +10343,25 @@ local function verbose_document(e,handlers)
   end
 end
 local function serialize(e,handlers,...)
-  local initialize=handlers.initialize
-  local finalize=handlers.finalize
-  local functions=handlers.functions
-  if initialize then
-    local state=initialize(...)
-    if not state==true then
-      return state
+  if e then
+    local initialize=handlers.initialize
+    local finalize=handlers.finalize
+    local functions=handlers.functions
+    if initialize then
+      local state=initialize(...)
+      if not state==true then
+        return state
+      end
     end
-  end
-  local etg=e.tg
-  if etg then
-    (functions[etg] or functions["@el@"])(e,handlers)
-  else
-    functions["@dc@"](e,handlers) 
-  end
-  if finalize then
-    return finalize()
+    local etg=e.tg
+    if etg then
+      (functions[etg] or functions["@el@"])(e,handlers)
+    else
+      functions["@dc@"](e,handlers) 
+    end
+    if finalize then
+      return finalize()
+    end
   end
 end
 local function xserialize(e,handlers)
@@ -9845,7 +10602,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 48956, stripped down to: 30516
+-- original size: 48229, stripped down to: 30684
 
 if not modules then modules={} end modules ['lxml-lpt']={
   version=1.001,
@@ -10230,8 +10987,8 @@ local lp_builtin=P (
     P("ns")/"ll.ns"
   )*((spaces*P("(")*spaces*P(")"))/"")
 local lp_attribute=(P("@")+P("attribute::"))/""*Cc("(ll.at and ll.at['")*((R("az","AZ")+S("-_:"))^1)*Cc("'])")
-lp_fastpos_p=P("+")^0*R("09")^1*P(-1)/"l==%0"
-lp_fastpos_n=P("-")*R("09")^1*P(-1)/"(%0<0 and (#list+%0==l))"
+local lp_fastpos_p=P("+")^0*R("09")^1*P(-1)/"l==%0"
+local lp_fastpos_n=P("-")*R("09")^1*P(-1)/"(%0<0 and (#list+%0==l))"
 local lp_fastpos=lp_fastpos_n+lp_fastpos_p
 local lp_reserved=C("and")+C("or")+C("not")+C("div")+C("mod")+C("true")+C("false")
 local lp_lua_function=Cs((R("az","AZ","__")^1*(P(".")*R("az","AZ","__")^1)^1)*("("))/"%0"
@@ -10410,7 +11167,7 @@ local function nodesettostring(set,nodetest)
     if not ns or ns=="" then ns="*" end
     if not tg or tg=="" then tg="*" end
     tg=(tg=="@rt@" and "[root]") or format("%s:%s",ns,tg)
-    t[i]=(directive and tg) or format("not(%s)",tg)
+    t[#t+1]=(directive and tg) or format("not(%s)",tg)
   end
   if nodetest==false then
     return format("not(%s)",concat(t,"|"))
@@ -10676,7 +11433,6 @@ expressions.print=function(...)
   print(...)
   return true
 end
-expressions.contains=find
 expressions.find=find
 expressions.upper=upper
 expressions.lower=lower
@@ -10697,6 +11453,9 @@ function expressions.contains(str,pattern)
     end
   end
   return false
+end
+function xml.expressions.idstring(str)
+  return type(str)=="string" and gsub(str,"^#","") or ""
 end
 local function traverse(root,pattern,handle)
   local collected=applylpath(root,pattern)
@@ -10826,8 +11585,13 @@ function xml.elements(root,pattern,reverse)
   local collected=applylpath(root,pattern)
   if not collected then
     return dummy
-  elseif reverse then
-    local c=#collected+1
+  end
+  local n=#collected
+  if n==0 then
+    return dummy
+  end
+  if reverse then
+    local c=n+1
     return function()
       if c>1 then
         c=c-1
@@ -10837,7 +11601,7 @@ function xml.elements(root,pattern,reverse)
       end
     end
   else
-    local n,c=#collected,0
+    local c=0
     return function()
       if c<n then
         c=c+1
@@ -10852,8 +11616,13 @@ function xml.collected(root,pattern,reverse)
   local collected=applylpath(root,pattern)
   if not collected then
     return dummy
-  elseif reverse then
-    local c=#collected+1
+  end
+  local n=#collected
+  if n==0 then
+    return dummy
+  end
+  if reverse then
+    local c=n+1
     return function()
       if c>1 then
         c=c-1
@@ -10861,7 +11630,7 @@ function xml.collected(root,pattern,reverse)
       end
     end
   else
-    local n,c=#collected,0
+    local c=0
     return function()
       if c<n then
         c=c+1
@@ -10876,7 +11645,7 @@ function xml.inspect(collection,pattern)
     report_lpath("pattern: %s\n\n%s\n",pattern,xml.tostring(e))
   end
 end
-local function split(e)
+local function split(e) 
   local dt=e.dt
   if dt then
     for i=1,#dt do
@@ -10975,7 +11744,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 23804, stripped down to: 16817
+-- original size: 28786, stripped down to: 20578
 
 if not modules then modules={} end modules ['lxml-aux']={
   version=1.001,
@@ -10985,16 +11754,19 @@ if not modules then modules={} end modules ['lxml-aux']={
   license="see context related readme files"
 }
 local trace_manipulations=false trackers.register("lxml.manipulations",function(v) trace_manipulations=v end)
+local trace_inclusions=false trackers.register("lxml.inclusions",function(v) trace_inclusions=v end)
 local report_xml=logs.reporter("xml")
 local xml=xml
-local xmlconvert,xmlcopy,xmlname=xml.convert,xml.copy,xml.name
+local xmlcopy,xmlname=xml.copy,xml.name
 local xmlinheritedconvert=xml.inheritedconvert
 local xmlapplylpath=xml.applylpath
 local xmlfilter=xml.filter
-local type,setmetatable,getmetatable=type,setmetatable,getmetatable
+local type,next,setmetatable,getmetatable=type,next,setmetatable,getmetatable
 local insert,remove,fastcopy,concat=table.insert,table.remove,table.fastcopy,table.concat
 local gmatch,gsub,format,find,strip=string.gmatch,string.gsub,string.format,string.find,string.strip
 local utfbyte=utf.byte
+local lpegmatch=lpeg.match
+local striplinepatterns=utilities.strings.striplinepatterns
 local function report(what,pattern,c,e)
   report_xml("%s element %a, root %a, position %a, index %a, pattern %a",what,xmlname(e),xmlname(e.__p__),c,e.ni,pattern)
 end
@@ -11049,13 +11821,15 @@ end
 function xml.each(root,pattern,handle,reverse)
   local collected=xmlapplylpath(root,pattern)
   if collected then
-    if reverse then
-      for c=#collected,1,-1 do
-        handle(collected[c])
-      end
-    else
-      for c=1,#collected do
-        handle(collected[c])
+    if handle then
+      if reverse then
+        for c=#collected,1,-1 do
+          handle(collected[c])
+        end
+      else
+        for c=1,#collected do
+          handle(collected[c])
+        end
       end
     end
     return collected
@@ -11111,6 +11885,7 @@ local function redo_ni(d)
     end
   end
 end
+xml.reindex=redo_ni
 local function xmltoelement(whatever,root)
   if not whatever then
     return nil
@@ -11162,8 +11937,16 @@ function xml.delete(root,pattern)
             report('deleting',pattern,c,e)
           end
           local d=p.dt
-          remove(d,e.ni)
-          redo_ni(d) 
+          local ni=e.ni
+          if ni<=#d then
+            if false then
+              p.dt[ni]=""
+            else
+              remove(d,ni)
+              redo_ni(d) 
+            end
+          else
+          end
         end
       end
     end
@@ -11283,28 +12066,40 @@ xml.insertafter=insert_element
 xml.insertbefore=function(r,p,e) insert_element(r,p,e,true) end
 xml.injectafter=inject_element
 xml.injectbefore=function(r,p,e) inject_element(r,p,e,true) end
-local function include(xmldata,pattern,attribute,recursive,loaddata)
+local function include(xmldata,pattern,attribute,recursive,loaddata,level)
   pattern=pattern or 'include'
   loaddata=loaddata or io.loaddata
   local collected=xmlapplylpath(xmldata,pattern)
   if collected then
+    if not level then
+      level=1
+    end
     for c=1,#collected do
       local ek=collected[c]
       local name=nil
       local ekdt=ek.dt
       local ekat=ek.at
-      local epdt=ek.__p__.dt
+      local ekrt=ek.__p__
+      local epdt=ekrt.dt
       if not attribute or attribute=="" then
         name=(type(ekdt)=="table" and ekdt[1]) or ekdt 
       end
       if not name then
         for a in gmatch(attribute or "href","([^|]+)") do
           name=ekat[a]
-          if name then break end
+          if name then
+            break
+          end
         end
       end
-      local data=(name and name~="" and loaddata(name)) or ""
-      if data=="" then
+      local data=nil
+      if name and name~="" then
+        data=loaddata(name) or ""
+        if trace_inclusions then
+          report_xml("including %s bytes from %a at level %s by pattern %a and attribute %a (%srecursing)",#data,name,level,pattern,attribute or "",recursive and "" or "not ")
+        end
+      end
+      if not data or data=="" then
         epdt[ek.ni]="" 
       elseif ekat["parse"]=="text" then
         epdt[ek.ni]=xml.escaped(data) 
@@ -11314,70 +12109,127 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
           epdt[ek.ni]="" 
         else
           if recursive then
-            include(xi,pattern,attribute,recursive,loaddata)
+            include(xi,pattern,attribute,recursive,loaddata,level+1)
           end
-          epdt[ek.ni]=xml.body(xi) 
+          local child=xml.body(xi) 
+          child.__p__=ekrt
+          child.__f__=name 
+          epdt[ek.ni]=child
+          local inclusions=xmldata.settings.inclusions
+          if inclusions then
+            inclusions[#inclusions+1]=name
+          else
+            xmldata.settings.inclusions={ name }
+          end
+          if child.er then
+            local badinclusions=xmldata.settings.badinclusions
+            if badinclusions then
+              badinclusions[#badinclusions+1]=name
+            else
+              xmldata.settings.badinclusions={ name }
+            end
+          end
         end
       end
     end
   end
 end
 xml.include=include
+function xml.inclusion(e,default)
+  while e do
+    local f=e.__f__
+    if f then
+      return f
+    else
+      e=e.__p__
+    end
+  end
+  return default
+end
+local function getinclusions(key,e,sorted)
+  while e do
+    local settings=e.settings
+    if settings then
+      local inclusions=settings[key]
+      if inclusions then
+        inclusions=table.unique(inclusions) 
+        if sorted then
+          table.sort(inclusions) 
+        end
+        return inclusions 
+      else
+        e=e.__p__
+      end
+    else
+      e=e.__p__
+    end
+  end
+end
+function xml.inclusions(e,sorted)
+  return getinclusions("inclusions",e,sorted)
+end
+function xml.badinclusions(e,sorted)
+  return getinclusions("badinclusions",e,sorted)
+end
+local b_collapser=lpeg.patterns.b_collapser
+local m_collapser=lpeg.patterns.m_collapser
+local e_collapser=lpeg.patterns.e_collapser
+local b_stripper=lpeg.patterns.b_stripper
+local m_stripper=lpeg.patterns.m_stripper
+local e_stripper=lpeg.patterns.e_stripper
+local lpegmatch=lpeg.match
 local function stripelement(e,nolines,anywhere)
   local edt=e.dt
   if edt then
-    if anywhere then
-      local t,n={},0
-      for e=1,#edt do
+    local n=#edt
+    if n==0 then
+      return e 
+    elseif anywhere then
+      local t={}
+      local m=0
+      for e=1,n do
         local str=edt[e]
         if type(str)~="string" then
-          n=n+1
-          t[n]=str
+          m=m+1
+          t[m]=str
         elseif str~="" then
           if nolines then
-            str=gsub(str,"%s+"," ")
+            str=lpegmatch((n==1 and b_collapser) or (n==m and e_collapser) or m_collapser,str)
+          else
+            str=lpegmatch((n==1 and b_stripper) or (n==m and e_stripper) or m_stripper,str)
           end
-          str=gsub(str,"^%s*(.-)%s*$","%1")
           if str~="" then
-            n=n+1
-            t[n]=str
+            m=m+1
+            t[m]=str
           end
         end
       end
       e.dt=t
     else
-      if #edt>0 then
-        local str=edt[1]
-        if type(str)~="string" then
-        elseif str=="" then
+      local str=edt[1]
+      if type(str)=="string" then
+        if str~="" then
+          str=lpegmatch(nolines and b_collapser or b_stripper,str)
+        end
+        if str=="" then
           remove(edt,1)
+          n=n-1
         else
-          if nolines then
-            str=gsub(str,"%s+"," ")
-          end
-          str=gsub(str,"^%s+","")
-          if str=="" then
-            remove(edt,1)
-          else
-            edt[1]=str
-          end
+          edt[1]=str
         end
       end
-      local nedt=#edt
-      if nedt>0 then
-        local str=edt[nedt]
-        if type(str)~="string" then
-        elseif str=="" then
-          remove(edt)
-        else
-          if nolines then
-            str=gsub(str,"%s+"," ")
-          end
-          str=gsub(str,"%s+$","")
+      if n>0 then
+        str=edt[n]
+        if type(str)=="string" then
           if str=="" then
             remove(edt)
           else
-            edt[nedt]=str
+            str=lpegmatch(nolines and e_collapser or e_stripper,str)
+            if str=="" then
+              remove(edt)
+            else
+              edt[n]=str
+            end
           end
         end
       end
@@ -11563,8 +12415,8 @@ function xml.finalizers.xml.cdata(collected)
   end
   return ""
 end
-function xml.insertcomment(e,str,n) 
-  table.insert(e.dt,n or 1,{
+function xml.insertcomment(e,str,n)
+  insert(e.dt,n or 1,{
     tg="@cm@",
     ns="",
     special=true,
@@ -11572,7 +12424,25 @@ function xml.insertcomment(e,str,n)
     dt={ str },
   })
 end
-function xml.setcdata(e,str) 
+function xml.insertcdata(e,str,n)
+  insert(e.dt,n or 1,{
+    tg="@cd@",
+    ns="",
+    special=true,
+    at={},
+    dt={ str },
+  })
+end
+function xml.setcomment(e,str,n)
+  e.dt={ {
+    tg="@cm@",
+    ns="",
+    special=true,
+    at={},
+    dt={ str },
+  } }
+end
+function xml.setcdata(e,str)
   e.dt={ {
     tg="@cd@",
     ns="",
@@ -11642,7 +12512,7 @@ local function recurse(e,action)
     for i=1,#edt do
       local str=edt[i]
       if type(str)~="string" then
-        recurse(str,action,recursive)
+        recurse(str,action) 
       elseif str~="" then
         edt[i]=action(str)
       end
@@ -11658,6 +12528,65 @@ function helpers.recursetext(collected,action,recursive)
     for i=1,#collected do
       normal(collected[i],action)
     end
+  end
+end
+local specials={
+  ["@rt@"]="root",
+  ["@pi@"]="instruction",
+  ["@cm@"]="comment",
+  ["@dt@"]="declaration",
+  ["@cd@"]="cdata",
+}
+local function convert(x,strip,flat)
+  local ns=x.ns
+  local tg=x.tg
+  local at=x.at
+  local dt=x.dt
+  local node=flat and {
+    [0]=(not x.special and (ns~="" and ns..":"..tg or tg)) or nil,
+  } or {
+    _namespace=ns~="" and ns or nil,
+    _tag=not x.special and tg or nil,
+    _type=specials[tg] or "_element",
+  }
+  if at then
+    for k,v in next,at do
+      node[k]=v
+    end
+  end
+  local n=0
+  for i=1,#dt do
+    local di=dt[i]
+    if type(di)=="table" then
+      if flat and di.special then
+      else
+        di=convert(di,strip,flat)
+        if di then
+          n=n+1
+          node[n]=di
+        end
+      end
+    elseif strip then
+      di=lpegmatch(strip,di)
+      if di~="" then
+        n=n+1
+        node[n]=di
+      end
+    else
+      n=n+1
+      node[n]=di
+    end
+  end
+  if next(node) then
+    return node
+  end
+end
+function xml.totable(x,strip,flat)
+  if type(x)=="table" then
+    if strip then
+      strip=striplinepatterns[strip]
+    end
+    return convert(x,strip,flat)
   end
 end
 
@@ -12216,7 +13145,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-ini"] = package.loaded["data-ini"] or true
 
--- original size: 7898, stripped down to: 5501
+-- original size: 11085, stripped down to: 7662
 
 if not modules then modules={} end modules ['data-ini']={
   version=1.001,
@@ -12225,14 +13154,15 @@ if not modules then modules={} end modules ['data-ini']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files",
 }
+local next,type,getmetatable,rawset=next,type,getmetatable,rawset
 local gsub,find,gmatch,char=string.gsub,string.find,string.gmatch,string.char
-local next,type=next,type
 local filedirname,filebasename,filejoin=file.dirname,file.basename,file.join
+local ostype,osname,osuname,ossetenv,osgetenv=os.type,os.name,os.uname,os.setenv,os.getenv
+local P,S,R,C,Cs,Cc,lpegmatch=lpeg.P,lpeg.S,lpeg.R,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg.match
 local trace_locating=false trackers.register("resolvers.locating",function(v) trace_locating=v end)
 local trace_detail=false trackers.register("resolvers.details",function(v) trace_detail=v end)
 local trace_expansions=false trackers.register("resolvers.expansions",function(v) trace_expansions=v end)
 local report_initialization=logs.reporter("resolvers","initialization")
-local ostype,osname,ossetenv,osgetenv=os.type,os.name,os.setenv,os.getenv
 resolvers=resolvers or {}
 local resolvers=resolvers
 texconfig.kpse_init=false
@@ -12360,15 +13290,108 @@ if not texroot or texroot=="" then
   ossetenv('TEXROOT',texroot)
 end
 environment.texroot=file.collapsepath(texroot)
-if profiler then
+if type(profiler)=="table" and not jit then
   directives.register("system.profile",function()
     profiler.start("luatex-profile.log")
   end)
 end
-if not resolvers.resolve then
-  function resolvers.resolve (s) return s end
-  function resolvers.unresolve(s) return s end
-  function resolvers.repath  (s) return s end
+local prefixes=utilities.storage.allocate()
+resolvers.prefixes=prefixes
+local resolved={}
+local abstract={}
+local dynamic={}
+function resolvers.resetresolve(str)
+  resolved,abstract={},{}
+end
+function resolvers.allprefixes(separator)
+  local all=table.sortedkeys(prefixes)
+  if separator then
+    for i=1,#all do
+      all[i]=all[i]..":"
+    end
+  end
+  return all
+end
+local function _resolve_(method,target)
+  local action=prefixes[method]
+  if action then
+    return action(target)
+  else
+    return method..":"..target
+  end
+end
+function resolvers.unresolve(str)
+  return abstract[str] or str
+end
+function resolvers.setdynamic(str)
+  dynamic[str]=true
+end
+local pattern=Cs((C(R("az")^2)*P(":")*C((1-S(" \"\';,"))^1)/_resolve_+P(1))^0)
+local prefix=C(R("az")^2)*P(":")
+local target=C((1-S(" \"\';,"))^1)
+local notarget=(#S(";,")+P(-1))*Cc("")
+local p_resolve=Cs(((prefix*(target+notarget))/_resolve_+P(1))^0)
+local p_simple=prefix*P(-1)
+local function resolve(str) 
+  if type(str)=="table" then
+    local res={}
+    for i=1,#str do
+      res[i]=resolve(str[i])
+    end
+    return res
+  end
+  local res=resolved[str]
+  if res then
+    return res
+  end
+  local simple=lpegmatch(p_simple,str)
+  local action=prefixes[simple]
+  if action then
+    local res=action(res)
+    if not dynamic[simple] then
+      resolved[simple]=res
+      abstract[res]=simple
+    end
+    return res
+  end
+  res=lpegmatch(p_resolve,str)
+  resolved[str]=res
+  abstract[res]=str
+  return res
+end
+resolvers.resolve=resolve
+if type(osuname)=="function" then
+  for k,v in next,osuname() do
+    if not prefixes[k] then
+      prefixes[k]=function() return v end
+    end
+  end
+end
+if ostype=="unix" then
+  local pattern
+  local function makepattern(t,k,v)
+    if t then
+      rawset(t,k,v)
+    end
+    local colon=P(":")
+    for k,v in table.sortedpairs(prefixes) do
+      if p then
+        p=P(k)+p
+      else
+        p=P(k)
+      end
+    end
+    pattern=Cs((p*colon+colon/";"+P(1))^0)
+  end
+  makepattern()
+  table.setmetatablenewindex(prefixes,makepattern)
+  function resolvers.repath(str)
+    return lpegmatch(pattern,str)
+  end
+else 
+  function resolvers.repath(str)
+    return str
+  end
 end
 
 
@@ -12378,7 +13401,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-exp"] = package.loaded["data-exp"] or true
 
--- original size: 15303, stripped down to: 9716
+-- original size: 17216, stripped down to: 10657
 
 if not modules then modules={} end modules ['data-exp']={
   version=1.001,
@@ -12392,12 +13415,16 @@ local concat,sort=table.concat,table.sort
 local lpegmatch,lpegpatterns=lpeg.match,lpeg.patterns
 local Ct,Cs,Cc,Carg,P,C,S=lpeg.Ct,lpeg.Cs,lpeg.Cc,lpeg.Carg,lpeg.P,lpeg.C,lpeg.S
 local type,next=type,next
+local isdir=lfs.isdir
 local ostype=os.type
-local collapsepath=file.collapsepath
+local collapsepath,joinpath,basename=file.collapsepath,file.join,file.basename
 local trace_locating=false trackers.register("resolvers.locating",function(v) trace_locating=v end)
 local trace_expansions=false trackers.register("resolvers.expansions",function(v) trace_expansions=v end)
+local trace_globbing=true  trackers.register("resolvers.globbing",function(v) trace_globbing=v end)
 local report_expansions=logs.reporter("resolvers","expansions")
+local report_globbing=logs.reporter("resolvers","globbing")
 local resolvers=resolvers
+local resolveprefix=resolvers.resolve
 local function f_both(a,b)
   local t,n={},0
   for sb in gmatch(b,"[^,]+") do       
@@ -12487,35 +13514,27 @@ function resolvers.expandedpathfromlist(pathlist)
   end
   return newlist
 end
-local cleanup=lpeg.replacer {
-  { "!","" },
-  { "\\","/" },
-}
-function resolvers.cleanpath(str) 
-  local doslashes=(P("\\")/"/"+1)^0
-  local donegation=(P("!")/""   )^0
-  local homedir=lpegmatch(Cs(donegation*doslashes),environment.homedir or "")
-  if homedir=="~" or homedir=="" or not lfs.isdir(homedir) then
-    if trace_expansions then
-      report_expansions("no home dir set, ignoring dependent paths")
-    end
-    function resolvers.cleanpath(str)
-      if not str or find(str,"~") then
-        return "" 
-      else
-        return lpegmatch(cleanup,str)
+local usedhomedir=nil
+local donegation=(P("!")/""   )^0
+local doslashes=(P("\\")/"/"+1)^0
+local function expandedhome()
+  if not usedhomedir then
+    usedhomedir=lpegmatch(Cs(donegation*doslashes),environment.homedir or "")
+    if usedhomedir=="~" or usedhomedir=="" or not isdir(usedhomedir) then
+      if trace_expansions then
+        report_expansions("no home dir set, ignoring dependent path using current path")
       end
-    end
-  else
-    local dohome=((P("~")+P("$HOME"))/homedir)^0
-    local cleanup=Cs(donegation*dohome*doslashes)
-    function resolvers.cleanpath(str)
-      return str and lpegmatch(cleanup,str) or ""
+      usedhomedir="."
     end
   end
-  return resolvers.cleanpath(str)
+  return usedhomedir
 end
-local expandhome=P("~")/"$HOME" 
+local dohome=((P("~")+P("$HOME")+P("%HOME%"))/expandedhome)^0
+local cleanup=Cs(donegation*dohome*doslashes)
+resolvers.cleanpath=function(str)
+  return str and lpegmatch(cleanup,str) or ""
+end
+local expandhome=P("~")/"$HOME"
 local dodouble=P('"')/""*(expandhome+(1-P('"')))^0*P('"')/""
 local dosingle=P("'")/""*(expandhome+(1-P("'")))^0*P("'")/""
 local dostring=(expandhome+1       )^0
@@ -12567,46 +13586,67 @@ function resolvers.splitpath(str)
 end
 function resolvers.joinpath(str)
   if type(str)=='table' then
-    return file.joinpath(str)
+    return joinpath(str)
   else
     return str
   end
 end
 local attributes,directory=lfs.attributes,lfs.dir
 local weird=P(".")^1+lpeg.anywhere(S("~`!#$%^&*()={}[]:;\"\'||<>,?\n\r\t"))
+local lessweird=P(".")^1+lpeg.anywhere(S("~`#$%^&*:;\"\'||<>,?\n\r\t"))
 local timer={}
 local scanned={}
 local nofscans=0
 local scancache={}
-local function scan(files,spec,path,n,m,r)
-  local full=(path=="" and spec) or (spec..path..'/')
+local fullcache={}
+local nofsharedscans=0
+local function scan(files,remap,spec,path,n,m,r,onlyone,tolerant)
+  local full=path=="" and spec or (spec..path..'/')
   local dirs={}
   local nofdirs=0
+  local pattern=tolerant and lessweird or weird
   for name in directory(full) do
-    if not lpegmatch(weird,name) then
-      local mode=attributes(full..name,'mode')
-      if mode=='file' then
+    if not lpegmatch(pattern,name) then
+      local mode=attributes(full..name,"mode")
+      if mode=="file" then
         n=n+1
-        local f=files[name]
-        if f then
-          if type(f)=='string' then
-            files[name]={ f,path }
+        local lower=lower(name)
+        local paths=files[lower]
+        if paths then
+          if onlyone then
           else
-            f[#f+1]=path
+            if type(paths)=="string" then
+              files[lower]={ paths,path }
+            else
+              paths[#paths+1]=path
+            end
+            if name~=lower then
+              local rl=remap[lower]
+              if not rl then
+                remap[lower]=name
+                r=r+1
+              elseif trace_globbing and rl~=name then
+                report_globbing("confusing filename, name: %a, lower: %a, already: %a",name,lower,rl)
+              end
+            end
           end
         else 
-          files[name]=path
-          local lower=lower(name)
+          files[lower]=path
           if name~=lower then
-            files["remap:"..lower]=name
-            r=r+1
+            local rl=remap[lower]
+            if not rl then
+              remap[lower]=name
+              r=r+1
+            elseif trace_globbing and rl~=name then
+              report_globbing("confusing filename, name: %a, lower: %a, already: %a",name,lower,rl)
+            end
           end
         end
-      elseif mode=='directory' then
+      elseif mode=="directory" then
         m=m+1
         nofdirs=nofdirs+1
         if path~="" then
-          dirs[nofdirs]=path..'/'..name
+          dirs[nofdirs]=path.."/"..name
         else
           dirs[nofdirs]=name
         end
@@ -12616,107 +13656,69 @@ local function scan(files,spec,path,n,m,r)
   if nofdirs>0 then
     sort(dirs)
     for i=1,nofdirs do
-      files,n,m,r=scan(files,spec,dirs[i],n,m,r)
+      files,remap,n,m,r=scan(files,remap,spec,dirs[i],n,m,r,onlyonce,tolerant)
     end
   end
   scancache[sub(full,1,-2)]=files
-  return files,n,m,r
+  return files,remap,n,m,r
 end
-local fullcache={}
-function resolvers.scanfiles(path,branch,usecache)
-  statistics.starttiming(timer)
-  local realpath=resolvers.resolve(path) 
+function resolvers.scanfiles(path,branch,usecache,onlyonce,tolerant)
+  local realpath=resolveprefix(path)
   if usecache then
-    local files=fullcache[realpath]
-    if files then
+    local content=fullcache[realpath]
+    if content then
       if trace_locating then
-        report_expansions("using caches scan of path %a, branch %a",path,branch or path)
+        report_expansions("using cached scan of path %a, branch %a",path,branch or path)
       end
-      return files
+      nofsharedscans=nofsharedscans+1
+      return content
     end
   end
+  statistics.starttiming(timer)
   if trace_locating then
     report_expansions("scanning path %a, branch %a",path,branch or path)
   end
-  local files,n,m,r=scan({},realpath..'/',"",0,0,0)
-  files.__path__=path 
-  files.__files__=n
-  files.__directories__=m
-  files.__remappings__=r
-  if trace_locating then
-    report_expansions("%s files found on %s directories with %s uppercase remappings",n,m,r)
+  local content
+  if isdir(realpath) then
+    local files,remap,n,m,r=scan({},{},realpath..'/',"",0,0,0,onlyonce,tolerant)
+    content={
+      metadata={
+        path=path,
+        files=n,
+        directories=m,
+        remappings=r,
+      },
+      files=files,
+      remap=remap,
+    }
+    if trace_locating then
+      report_expansions("%s files found on %s directories with %s uppercase remappings",n,m,r)
+    end
+  else
+    content={
+      metadata={
+        path=path,
+        files=0,
+        directories=0,
+        remappings=0,
+      },
+      files={},
+      remap={},
+    }
+    if trace_locating then
+      report_expansions("invalid path %a",realpath)
+    end
   end
   if usecache then
     scanned[#scanned+1]=realpath
-    fullcache[realpath]=files
+    fullcache[realpath]=content
   end
   nofscans=nofscans+1
   statistics.stoptiming(timer)
-  return files
+  return content
 end
-local function simplescan(files,spec,path) 
-  local full=(path=="" and spec) or (spec..path..'/')
-  local dirs={}
-  local nofdirs=0
-  for name in directory(full) do
-    if not lpegmatch(weird,name) then
-      local mode=attributes(full..name,'mode')
-      if mode=='file' then
-        if not files[name] then
-          files[name]=path
-        end
-      elseif mode=='directory' then
-        nofdirs=nofdirs+1
-        if path~="" then
-          dirs[nofdirs]=path..'/'..name
-        else
-          dirs[nofdirs]=name
-        end
-      end
-    end
-  end
-  if nofdirs>0 then
-    sort(dirs)
-    for i=1,nofdirs do
-      files=simplescan(files,spec,dirs[i])
-    end
-  end
-  return files
-end
-local simplecache={}
-local nofsharedscans=0
 function resolvers.simplescanfiles(path,branch,usecache)
-  statistics.starttiming(timer)
-  local realpath=resolvers.resolve(path) 
-  if usecache then
-    local files=simplecache[realpath]
-    if not files then
-      files=scancache[realpath]
-      if files then
-        nofsharedscans=nofsharedscans+1
-      end
-    end
-    if files then
-      if trace_locating then
-        report_expansions("using caches scan of path %a, branch %a",path,branch or path)
-      end
-      return files
-    end
-  end
-  if trace_locating then
-    report_expansions("scanning path %a, branch %a",path,branch or path)
-  end
-  local files=simplescan({},realpath..'/',"")
-  if trace_locating then
-    report_expansions("%s files found",table.count(files))
-  end
-  if usecache then
-    scanned[#scanned+1]=realpath
-    simplecache[realpath]=files
-  end
-  nofscans=nofscans+1
-  statistics.stoptiming(timer)
-  return files
+  return resolvers.scanfiles(path,branch,usecache,true,true) 
 end
 function resolvers.scandata()
   table.sort(scanned)
@@ -12727,6 +13729,52 @@ function resolvers.scandata()
     paths=scanned,
   }
 end
+function resolvers.get_from_content(content,path,name) 
+  if not content then
+    return
+  end
+  local files=content.files
+  if not files then
+    return
+  end
+  local remap=content.remap
+  if not remap then
+    return
+  end
+  if name then
+    local used=lower(name)
+    return path,remap[used] or used
+  else
+    local name=path
+    local used=lower(name)
+    local path=files[used]
+    if path then
+      return path,remap[used] or used
+    end
+  end
+end
+local nothing=function() end
+function resolvers.filtered_from_content(content,pattern)
+  if content and type(pattern)=="string" then
+    local pattern=lower(pattern)
+    local files=content.files
+    local remap=content.remap
+    if files and remap then
+      local n=next(files)
+      local function iterator()
+        while n do
+          local k=n
+          n=next(files,k)
+          if find(k,pattern) then
+            return files[k],remap and remap[k] or k
+          end
+        end
+      end
+      return iterator
+    end
+  end
+  return nothing
+end
 
 
 end -- of closure
@@ -12735,7 +13783,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-env"] = package.loaded["data-env"] or true
 
--- original size: 8769, stripped down to: 6490
+-- original size: 9216, stripped down to: 6798
 
 if not modules then modules={} end modules ['data-env']={
   version=1.001,
@@ -12753,10 +13801,12 @@ local formats=allocate()
 local suffixes=allocate()
 local dangerous=allocate()
 local suffixmap=allocate()
+local usertypes=allocate()
 resolvers.formats=formats
 resolvers.suffixes=suffixes
 resolvers.dangerous=dangerous
 resolvers.suffixmap=suffixmap
+resolvers.usertypes=usertypes
 local luasuffixes=utilities.lua.suffixes
 local relations=allocate { 
   core={
@@ -12824,11 +13874,13 @@ local relations=allocate {
       names={ "mp" },
       variable='MPINPUTS',
       suffixes={ 'mp','mpvi','mpiv','mpii' },
+      usertype=true,
     },
     tex={
       names={ "tex" },
       variable='TEXINPUTS',
-      suffixes={ 'tex',"mkvi","mkiv","mkii" },
+      suffixes={ "tex","mkvi","mkiv","mkii","cld","lfg","xml" },
+      usertype=true,
     },
     icc={
       names={ "icc","icc profile","icc profiles" },
@@ -12844,6 +13896,7 @@ local relations=allocate {
       names={ "lua" },
       variable='LUAINPUTS',
       suffixes={ luasuffixes.lua,luasuffixes.luc,luasuffixes.tma,luasuffixes.tmc },
+      usertype=true,
     },
     lib={
       names={ "lib" },
@@ -12852,11 +13905,15 @@ local relations=allocate {
     },
     bib={
       names={ 'bib' },
+      variable='BIBINPUTS',
       suffixes={ 'bib' },
+      usertype=true,
     },
     bst={
       names={ 'bst' },
+      variable='BSTINPUTS',
       suffixes={ 'bst' },
+      usertype=true,
     },
     fontconfig={
       names={ 'fontconfig','fontconfig file','fontconfig files' },
@@ -12938,8 +13995,9 @@ function resolvers.updaterelations()
     for name,relation in next,categories do
       local rn=relation.names
       local rv=relation.variable
-      local rs=relation.suffixes
       if rn and rv then
+        local rs=relation.suffixes
+        local ru=relation.usertype
         for i=1,#rn do
           local rni=lower(gsub(rn[i]," ",""))
           formats[rni]=rv
@@ -12951,8 +14009,9 @@ function resolvers.updaterelations()
             end
           end
         end
-      end
-      if rs then
+        if ru then
+          usertypes[name]=true
+        end
       end
     end
   end
@@ -13003,7 +14062,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
--- original size: 15532, stripped down to: 11648
+-- original size: 15618, stripped down to: 11629
 
 if not modules then modules={} end modules ['data-tmp']={
   version=1.100,
@@ -13013,7 +14072,7 @@ if not modules then modules={} end modules ['data-tmp']={
   license="see context related readme files"
 }
 local format,lower,gsub,concat=string.format,string.lower,string.gsub,table.concat
-local concat,serialize,serializetofile=table.concat,table.serialize,table.tofile
+local concat=table.concat
 local mkdirs,isdir,isfile=dir.mkdirs,lfs.isdir,lfs.isfile
 local addsuffix,is_writable,is_readable=file.addsuffix,file.is_writable,file.is_readable
 local formatters=string.formatters
@@ -13022,6 +14081,7 @@ local trace_cache=false trackers.register("resolvers.cache",function(v) trace_ca
 local report_caches=logs.reporter("resolvers","caches")
 local report_resolvers=logs.reporter("resolvers","caching")
 local resolvers=resolvers
+local cleanpath=resolvers.cleanpath
 local directive_cleanup=false directives.register("system.compile.cleanup",function(v) directive_cleanup=v end)
 local directive_strip=false directives.register("system.compile.strip",function(v) directive_strip=v end)
 local compile=utilities.lua.compile
@@ -13043,7 +14103,7 @@ caches.relocate=false
 caches.defaults={ "TMPDIR","TEMPDIR","TMP","TEMP","HOME","HOMEPATH" }
 local writable,readables,usedreadables=nil,{},{}
 local function identify()
-  local texmfcaches=resolvers.cleanpathlist("TEXMFCACHE")
+  local texmfcaches=resolvers.cleanpathlist("TEXMFCACHE") 
   if texmfcaches then
     for k=1,#texmfcaches do
       local cachepath=texmfcaches[k]
@@ -13281,15 +14341,11 @@ end
 local saveoptions={ compact=true }
 function caches.savedata(filepath,filename,data,raw)
   local tmaname,tmcname=caches.setluanames(filepath,filename)
-  local reduce,simplify=true,true
-  if raw then
-    reduce,simplify=false,false
-  end
   data.cache_uuid=os.uuid()
   if caches.direct then
-    file.savedata(tmaname,serialize(data,true,saveoptions))
+    file.savedata(tmaname,table.serialize(data,true,saveoptions))
   else
-    serializetofile(tmaname,data,true,saveoptions)
+    table.tofile(tmaname,data,true,saveoptions)
   end
   utilities.lua.compile(tmaname,tmcname)
 end
@@ -13297,10 +14353,12 @@ local content_state={}
 function caches.contentstate()
   return content_state or {}
 end
-function caches.loadcontent(cachename,dataname)
-  local name=caches.hashed(cachename)
-  local full,path=caches.getfirstreadablefile(addsuffix(name,luasuffixes.lua),"trees")
-  local filename=file.join(path,name)
+function caches.loadcontent(cachename,dataname,filename)
+  if not filename then
+    local name=caches.hashed(cachename)
+    local full,path=caches.getfirstreadablefile(addsuffix(name,luasuffixes.lua),"trees")
+    filename=file.join(path,name)
+  end
   local blob=loadfile(addsuffix(filename,luasuffixes.luc)) or loadfile(addsuffix(filename,luasuffixes.lua))
   if blob then
     local data=blob()
@@ -13332,10 +14390,12 @@ function caches.collapsecontent(content)
     end
   end
 end
-function caches.savecontent(cachename,dataname,content)
-  local name=caches.hashed(cachename)
-  local full,path=caches.setfirstwritablefile(addsuffix(name,luasuffixes.lua),"trees")
-  local filename=file.join(path,name) 
+function caches.savecontent(cachename,dataname,content,filename)
+  if not filename then
+    local name=caches.hashed(cachename)
+    local full,path=caches.setfirstwritablefile(addsuffix(name,luasuffixes.lua),"trees")
+    filename=file.join(path,name) 
+  end
   local luaname=addsuffix(filename,luasuffixes.lua)
   local lucname=addsuffix(filename,luasuffixes.luc)
   if trace_locating then
@@ -13350,7 +14410,7 @@ function caches.savecontent(cachename,dataname,content)
     content=content,
     uuid=os.uuid(),
   }
-  local ok=io.savedata(luaname,serialize(data,true))
+  local ok=io.savedata(luaname,table.serialize(data,true))
   if ok then
     if trace_locating then
       report_resolvers("category %a, cachename %a saved in %a",dataname,cachename,luaname)
@@ -13378,7 +14438,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-met"] = package.loaded["data-met"] or true
 
--- original size: 5453, stripped down to: 4007
+-- original size: 5347, stripped down to: 4015
 
 if not modules then modules={} end modules ['data-met']={
   version=1.100,
@@ -13406,8 +14466,8 @@ local function splitmethod(filename)
   if type(filename)=="table" then
     return filename 
   end
-  filename=file.collapsepath(filename,".")
-  if not find(filename,"://") then
+  filename=file.collapsepath(filename,".") 
+  if not find(filename,"://",1,true) then
     return { scheme="file",path=filename,original=filename,filename=filename }
   end
   local specification=url.hashed(filename)
@@ -13497,7 +14557,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 61799, stripped down to: 42957
+-- original size: 67003, stripped down to: 46291
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -13507,7 +14567,7 @@ if not modules then modules={} end modules ['data-res']={
   license="see context related readme files",
 }
 local gsub,find,lower,upper,match,gmatch=string.gsub,string.find,string.lower,string.upper,string.match,string.gmatch
-local concat,insert,sortedkeys=table.concat,table.insert,table.sortedkeys
+local concat,insert,remove,sortedkeys,sortedhash=table.concat,table.insert,table.remove,table.sortedkeys,table.sortedhash
 local next,type,rawget=next,type,rawget
 local os=os
 local P,S,R,C,Cc,Cs,Ct,Carg=lpeg.P,lpeg.S,lpeg.R,lpeg.C,lpeg.Cc,lpeg.Cs,lpeg.Ct,lpeg.Carg
@@ -13516,27 +14576,38 @@ local formatters=string.formatters
 local filedirname=file.dirname
 local filebasename=file.basename
 local suffixonly=file.suffixonly
+local addsuffix=file.addsuffix
+local removesuffix=file.removesuffix
 local filejoin=file.join
 local collapsepath=file.collapsepath
 local joinpath=file.joinpath
+local is_qualified_path=file.is_qualified_path
 local allocate=utilities.storage.allocate
 local settings_to_array=utilities.parsers.settings_to_array
+local getcurrentdir=lfs.currentdir
+local isfile=lfs.isfile
+local isdir=lfs.isdir
 local setmetatableindex=table.setmetatableindex
 local luasuffixes=utilities.lua.suffixes
-local getcurrentdir=lfs.currentdir
-local trace_locating=false trackers.register("resolvers.locating",function(v) trace_locating=v end)
-local trace_detail=false trackers.register("resolvers.details",function(v) trace_detail=v end)
-local trace_expansions=false trackers.register("resolvers.expansions",function(v) trace_expansions=v end)
+local trace_locating=false trackers .register("resolvers.locating",function(v) trace_locating=v end)
+local trace_detail=false trackers .register("resolvers.details",function(v) trace_detail=v end)
+local trace_expansions=false trackers .register("resolvers.expansions",function(v) trace_expansions=v end)
+local trace_paths=false trackers .register("resolvers.paths",function(v) trace_paths=v end)
+local resolve_otherwise=true  directives.register("resolvers.otherwise",function(v) resolve_otherwise=v end)
 local report_resolving=logs.reporter("resolvers","resolving")
 local resolvers=resolvers
 local expandedpathfromlist=resolvers.expandedpathfromlist
 local checkedvariable=resolvers.checkedvariable
 local splitconfigurationpath=resolvers.splitconfigurationpath
 local methodhandler=resolvers.methodhandler
+local filtered=resolvers.filtered_from_content
+local lookup=resolvers.get_from_content
+local cleanpath=resolvers.cleanpath
+local resolveprefix=resolvers.resolve
 local initializesetter=utilities.setters.initialize
 local ostype,osname,osenv,ossetenv,osgetenv=os.type,os.name,os.env,os.setenv,os.getenv
-resolvers.cacheversion='1.0.1'
-resolvers.configbanner=''
+resolvers.cacheversion="1.100"
+resolvers.configbanner=""
 resolvers.homedir=environment.homedir
 resolvers.criticalvars=allocate { "SELFAUTOLOC","SELFAUTODIR","SELFAUTOPARENT","TEXMFCNF","TEXMF","TEXOS" }
 resolvers.luacnfname="texmfcnf.lua"
@@ -13555,6 +14626,7 @@ end
 local unset_variable="unset"
 local formats=resolvers.formats
 local suffixes=resolvers.suffixes
+local usertypes=resolvers.usertypes
 local dangerous=resolvers.dangerous
 local suffixmap=resolvers.suffixmap
 resolvers.defaultsuffixes={ "tex" } 
@@ -13563,7 +14635,7 @@ local   instance=resolvers.instance or nil
 function resolvers.setenv(key,value,raw)
   if instance then
     instance.environment[key]=value
-    ossetenv(key,raw and value or resolvers.resolve(value))
+    ossetenv(key,raw and value or resolveprefix(value))
   end
 end
 local function getenv(key)
@@ -13577,7 +14649,7 @@ local function getenv(key)
 end
 resolvers.getenv=getenv
 resolvers.env=getenv
-local function resolve(k)
+local function resolvevariable(k)
   return instance.expansions[k]
 end
 local dollarstripper=lpeg.stripper("$")
@@ -13586,19 +14658,19 @@ local backslashswapper=lpeg.replacer("\\","/")
 local somevariable=P("$")/""
 local somekey=C(R("az","AZ","09","__","--")^1)
 local somethingelse=P(";")*((1-S("!{}/\\"))^1*P(";")/"")+P(";")*(P(";")/"")+P(1)
-local variableexpander=Cs((somevariable*(somekey/resolve)+somethingelse)^1 )
+local variableexpander=Cs((somevariable*(somekey/resolvevariable)+somethingelse)^1 )
 local cleaner=P("\\")/"/"+P(";")*S("!{}/\\")^0*P(";")^1/";"
 local variablecleaner=Cs((cleaner+P(1))^0)
-local somevariable=R("az","AZ","09","__","--")^1/resolve
+local somevariable=R("az","AZ","09","__","--")^1/resolvevariable
 local variable=(P("$")/"")*(somevariable+(P("{")/"")*somevariable*(P("}")/""))
 local variableresolver=Cs((variable+P(1))^0)
 local function expandedvariable(var)
   return lpegmatch(variableexpander,var) or var
 end
-function resolvers.newinstance() 
-   if trace_locating then
+function resolvers.newinstance()
+  if trace_locating then
     report_resolving("creating instance")
-   end
+  end
   local environment,variables,expansions,order=allocate(),allocate(),allocate(),allocate()
   local newinstance={
     environment=environment,
@@ -13611,6 +14683,7 @@ function resolvers.newinstance()
     foundintrees=allocate(),
     hashes=allocate(),
     hashed=allocate(),
+    pathlists=false,
     specification=allocate(),
     lists=allocate(),
     data=allocate(),
@@ -13623,6 +14696,7 @@ function resolvers.newinstance()
     savelists=true,
     pattern=nil,
     force_suffixes=true,
+    pathstack={},
   }
   setmetatableindex(variables,function(t,k)
     local v
@@ -13672,7 +14746,12 @@ function resolvers.reset()
 end
 local function reset_hashes()
   instance.lists={}
+  instance.pathlists=false
   instance.found={}
+end
+local function reset_caches()
+  instance.lists={}
+  instance.pathlists=false
 end
 local slash=P("/")
 local pathexpressionpattern=Cs (
@@ -13725,13 +14804,13 @@ local function identify_configuration_files()
     for i=1,#cnfpaths do
       local filepath=cnfpaths[i]
       local filename=collapsepath(filejoin(filepath,luacnfname))
-      local realname=resolvers.resolve(filename)
+      local realname=resolveprefix(filename)
       if trace_locating then
-        local fullpath=gsub(resolvers.resolve(collapsepath(filepath)),"//","/")
-        local weirdpath=find(fullpath,"/texmf.+/texmf") or not find(fullpath,"/web2c")
+        local fullpath=gsub(resolveprefix(collapsepath(filepath)),"//","/")
+        local weirdpath=find(fullpath,"/texmf.+/texmf") or not find(fullpath,"/web2c",1,true)
         report_resolving("looking for %a on %s path %a from specification %a",luacnfname,weirdpath and "weird" or "given",fullpath,filepath)
       end
-      if lfs.isfile(realname) then
+      if isfile(realname) then
         specification[#specification+1]=filename 
         if trace_locating then
           report_resolving("found configuration file %a",realname)
@@ -13753,7 +14832,7 @@ local function load_configuration_files()
       local filename=specification[i]
       local pathname=filedirname(filename)
       local filename=filejoin(pathname,luacnfname)
-      local realname=resolvers.resolve(filename) 
+      local realname=resolveprefix(filename) 
       local blob=loadfile(realname)
       if blob then
         local setups=instance.setups
@@ -13761,7 +14840,7 @@ local function load_configuration_files()
         local parent=data and data.parent
         if parent then
           local filename=filejoin(pathname,parent)
-          local realname=resolvers.resolve(filename) 
+          local realname=resolveprefix(filename) 
           local blob=loadfile(realname)
           if blob then
             local parentdata=blob()
@@ -13786,7 +14865,7 @@ local function load_configuration_files()
             elseif variables[k]==nil then
               if trace_locating and not warning then
                 report_resolving("variables like %a in configuration file %a should move to the 'variables' subtable",
-                  k,resolvers.resolve(filename))
+                  k,resolveprefix(filename))
                 warning=true
               end
               variables[k]=v
@@ -13846,7 +14925,7 @@ local function locate_file_databases()
       local stripped=lpegmatch(inhibitstripper,path) 
       if stripped~="" then
         local runtime=stripped==path
-        path=resolvers.cleanpath(path)
+        path=cleanpath(path)
         local spec=resolvers.splitmethod(stripped)
         if runtime and (spec.noscheme or spec.scheme=="file") then
           stripped="tree:///"..stripped
@@ -13909,8 +14988,8 @@ function resolvers.renew(hashname)
         report_resolving("identifying tree %a",hashname)
       end
     end
-    local realpath=resolvers.resolve(hashname)
-    if lfs.isdir(realpath) then
+    local realpath=resolveprefix(hashname)
+    if isdir(realpath) then
       if trace_locating then
         report_resolving("using path %a",realpath)
       end
@@ -14011,19 +15090,53 @@ end
 function resolvers.unexpandedpath(str)
   return joinpath(resolvers.unexpandedpathlist(str))
 end
+function resolvers.pushpath(name)
+  local pathstack=instance.pathstack
+  local lastpath=pathstack[#pathstack]
+  local pluspath=filedirname(name)
+  if lastpath then
+    lastpath=collapsepath(filejoin(lastpath,pluspath))
+  else
+    lastpath=collapsepath(pluspath)
+  end
+  insert(pathstack,lastpath)
+  if trace_paths then
+    report_resolving("pushing path %a",lastpath)
+  end
+end
+function resolvers.poppath()
+  local pathstack=instance.pathstack
+  if trace_paths and #pathstack>0 then
+    report_resolving("popping path %a",pathstack[#pathstack])
+  end
+  remove(pathstack)
+end
+function resolvers.stackpath()
+  local pathstack=instance.pathstack
+  local currentpath=pathstack[#pathstack]
+  return currentpath~="" and currentpath or nil
+end
 local done={}
 function resolvers.resetextrapath()
   local ep=instance.extra_paths
   if not ep then
-    ep,done={},{}
-    instance.extra_paths=ep
+    done={}
+    instance.extra_paths={}
   elseif #ep>0 then
-    instance.lists,done={},{}
+    done={}
+    reset_caches()
   end
 end
 function resolvers.registerextrapath(paths,subpaths)
-  paths=settings_to_array(paths)
-  subpaths=settings_to_array(subpaths)
+  if not subpaths or subpaths=="" then
+    if not paths or path=="" then
+      return 
+    elseif done[paths] then
+      return 
+    end
+  end
+  local paths=settings_to_array(paths)
+  local subpaths=settings_to_array(subpaths)
   local ep=instance.extra_paths or {}
   local oldn=#ep
   local newn=oldn
@@ -14038,7 +15151,7 @@ function resolvers.registerextrapath(paths,subpaths)
           local ps=p.."/"..s
           if not done[ps] then
             newn=newn+1
-            ep[newn]=resolvers.cleanpath(ps)
+            ep[newn]=cleanpath(ps)
             done[ps]=true
           end
         end
@@ -14048,7 +15161,7 @@ function resolvers.registerextrapath(paths,subpaths)
         local p=paths[i]
         if not done[p] then
           newn=newn+1
-          ep[newn]=resolvers.cleanpath(p)
+          ep[newn]=cleanpath(p)
           done[p]=true
         end
       end
@@ -14060,7 +15173,7 @@ function resolvers.registerextrapath(paths,subpaths)
         local ps=ep[i].."/"..s
         if not done[ps] then
           newn=newn+1
-          ep[newn]=resolvers.cleanpath(ps)
+          ep[newn]=cleanpath(ps)
           done[ps]=true
         end
       end
@@ -14069,52 +15182,70 @@ function resolvers.registerextrapath(paths,subpaths)
   if newn>0 then
     instance.extra_paths=ep 
   end
-  if newn>oldn then
-    instance.lists={} 
+  if newn~=oldn then
+    reset_caches()
   end
 end
-local function made_list(instance,list)
-  local ep=instance.extra_paths
-  if not ep or #ep==0 then
-    return list
+function resolvers.pushextrapath(path)
+  local paths=settings_to_array(path)
+  if instance.extra_stack then
+    insert(instance.extra_stack,1,paths)
   else
-    local done,new,newn={},{},0
-    for k=1,#list do
-      local v=list[k]
-      if not done[v] then
-        if find(v,"^[%.%/]$") then
-          done[v]=true
-          newn=newn+1
-          new[newn]=v
-        else
-          break
-        end
-      end
-    end
-    for k=1,#ep do
-      local v=ep[k]
-      if not done[v] then
-        done[v]=true
-        newn=newn+1
-        new[newn]=v
-      end
-    end
-    for k=1,#list do
-      local v=list[k]
-      if not done[v] then
-        done[v]=true
-        newn=newn+1
-        new[newn]=v
-      end
-    end
-    return new
+    instance.extra_stack={ paths }
   end
+  reset_caches()
+end
+function resolvers.popextrapath()
+  if instance.extra_stack then
+    reset_caches()
+    return remove(instance.extra_stack,1)
+  end
+end
+local function made_list(instance,list,extra_too)
+  local done={}
+  local new={}
+  local newn=0
+  local function add(p)
+    for k=1,#p do
+      local v=p[k]
+      if not done[v] then
+        done[v]=true
+        newn=newn+1
+        new[newn]=v
+      end
+    end
+  end
+  for k=1,#list do
+    local v=list[k]
+    if done[v] then
+    elseif find(v,"^[%.%/]$") then
+      done[v]=true
+      newn=newn+1
+      new[newn]=v
+    else
+      break
+    end
+  end
+  if extra_too then
+    local es=instance.extra_stack
+    if es and #es>0 then
+      for k=1,#es do
+        add(es[k])
+      end
+    end
+    local ep=instance.extra_paths
+    if ep and #ep>0 then
+      add(ep)
+    end
+  end
+  add(list)
+  return new
 end
 function resolvers.cleanpathlist(str)
   local t=resolvers.expandedpathlist(str)
   if t then
     for i=1,#t do
-      t[i]=collapsepath(resolvers.cleanpath(t[i]))
+      t[i]=collapsepath(cleanpath(t[i]))
     end
   end
   return t
@@ -14122,22 +15253,22 @@ end
 function resolvers.expandpath(str)
   return joinpath(resolvers.expandedpathlist(str))
 end
-function resolvers.expandedpathlist(str)
+function resolvers.expandedpathlist(str,extra_too)
   if not str then
     return {}
-  elseif instance.savelists then
+  elseif instance.savelists then 
     str=lpegmatch(dollarstripper,str)
     local lists=instance.lists
     local lst=lists[str]
     if not lst then
-      local l=made_list(instance,resolvers.splitpath(resolvers.expansion(str)))
+      local l=made_list(instance,resolvers.splitpath(resolvers.expansion(str)),extra_too)
       lst=expandedpathfromlist(l)
       lists[str]=lst
     end
     return lst
   else
     local lst=resolvers.splitpath(resolvers.expansion(str))
-    return made_list(instance,expandedpathfromlist(lst))
+    return made_list(instance,expandedpathfromlist(lst),extra_too)
   end
 end
 function resolvers.expandedpathlistfromvariable(str) 
@@ -14147,6 +15278,13 @@ function resolvers.expandedpathlistfromvariable(str)
 end
 function resolvers.expandpathfromvariable(str)
   return joinpath(resolvers.expandedpathlistfromvariable(str))
+end
+function resolvers.cleanedpathlist(v) 
+  local t=resolvers.expandedpathlist(v)
+  for i=1,#t do
+    t[i]=resolvers.resolve(resolvers.cleanpath(t[i]))
+  end
+  return t
 end
 function resolvers.expandbraces(str)
     local ori=str
@@ -14164,7 +15302,7 @@ function resolvers.registerfilehash(name,content,someerror)
   end
 end
 local function isreadable(name)
-  local readable=lfs.isfile(name) 
+  local readable=isfile(name) 
   if trace_detail then
     if readable then
       report_resolving("file %a is readable",name)
@@ -14174,70 +15312,57 @@ local function isreadable(name)
   end
   return readable
 end
-local function collect_files(names)
-  local filelist,noffiles={},0
-  for k=1,#names do
-    local fname=names[k]
-    if trace_detail then
-      report_resolving("checking name %a",fname)
+local function collect_files(names) 
+  local filelist={}      
+  local noffiles=0
+  local function check(hash,root,pathname,path,name)
+    if not pathname or find(path,pathname) then
+      local variant=hash.type
+      local search=filejoin(root,path,name) 
+      local result=methodhandler('concatinators',variant,root,path,name)
+      if trace_detail then
+        report_resolving("match: variant %a, search %a, result %a",variant,search,result)
+      end
+      noffiles=noffiles+1
+      filelist[noffiles]={ variant,search,result }
     end
-    local bname=filebasename(fname)
-    local dname=filedirname(fname)
-    if dname=="" or find(dname,"^%.") then
-      dname=false
+  end
+  for k=1,#names do
+    local filename=names[k]
+    if trace_detail then
+      report_resolving("checking name %a",filename)
+    end
+    local basename=filebasename(filename)
+    local pathname=filedirname(filename)
+    if pathname=="" or find(pathname,"^%.") then
+      pathname=false
     else
-      dname=gsub(dname,"%*",".*")
-      dname="/"..dname.."$"
+      pathname=gsub(pathname,"%*",".*")
+      pathname="/"..pathname.."$"
     end
     local hashes=instance.hashes
     for h=1,#hashes do
       local hash=hashes[h]
-      local blobpath=hash.name
-      local files=blobpath and instance.files[blobpath]
-      if files then
+      local hashname=hash.name
+      local content=hashname and instance.files[hashname]
+      if content then
         if trace_detail then
-          report_resolving("deep checking %a, base %a, pattern %a",blobpath,bname,dname)
+          report_resolving("deep checking %a, base %a, pattern %a",hashname,basename,pathname)
         end
-        local blobfile=files[bname]
-        if not blobfile then
-          local rname="remap:"..bname
-          blobfile=files[rname]
-          if blobfile then
-            bname=files[rname]
-            blobfile=files[bname]
-          end
-        end
-        if blobfile then
-          local blobroot=files.__path__ or blobpath
-          if type(blobfile)=='string' then
-            if not dname or find(blobfile,dname) then
-              local variant=hash.type
-              local search=filejoin(blobroot,blobfile,bname)
-              local result=methodhandler('concatinators',hash.type,blobroot,blobfile,bname)
-              if trace_detail then
-                report_resolving("match: variant %a, search %a, result %a",variant,search,result)
-              end
-              noffiles=noffiles+1
-              filelist[noffiles]={ variant,search,result }
-            end
+        local path,name=lookup(content,basename)
+        if path then
+          local metadata=content.metadata
+          local realroot=metadata and metadata.path or hashname
+          if type(path)=="string" then
+            check(hash,realroot,pathname,path,name)
           else
-            for kk=1,#blobfile do
-              local vv=blobfile[kk]
-              if not dname or find(vv,dname) then
-                local variant=hash.type
-                local search=filejoin(blobroot,vv,bname)
-                local result=methodhandler('concatinators',hash.type,blobroot,vv,bname)
-                if trace_detail then
-                  report_resolving("match: variant %a, search %a, result %a",variant,search,result)
-                end
-                noffiles=noffiles+1
-                filelist[noffiles]={ variant,search,result }
-              end
+            for i=1,#path do
+              check(hash,realroot,pathname,path[i],name)
             end
           end
         end
       elseif trace_locating then
-        report_resolving("no match in %a (%s)",blobpath,bname)
+        report_resolving("no match in %a (%s)",hashname,basename)
       end
     end
   end
@@ -14262,7 +15387,7 @@ end
 local function can_be_dir(name) 
   local fakepaths=instance.fakepaths
   if not fakepaths[name] then
-    if lfs.isdir(name) then
+    if isdir(name) then
       fakepaths[name]=1 
     else
       fakepaths[name]=2 
@@ -14278,10 +15403,11 @@ local function find_analyze(filename,askedformat,allresults)
   if askedformat=="" then
     if ext=="" or not suffixmap[ext] then
       local defaultsuffixes=resolvers.defaultsuffixes
+      local formatofsuffix=resolvers.formatofsuffix
       for i=1,#defaultsuffixes do
         local forcedname=filename..'.'..defaultsuffixes[i]
         wantedfiles[#wantedfiles+1]=forcedname
-        filetype=resolvers.formatofsuffix(forcedname)
+        filetype=formatofsuffix(forcedname)
         if trace_locating then
           report_resolving("forcing filetype %a",filetype)
         end
@@ -14317,18 +15443,18 @@ local function find_direct(filename,allresults)
   end
 end
 local function find_wildcard(filename,allresults)
-  if find(filename,'%*') then
+  if find(filename,'*',1,true) then
     if trace_locating then
       report_resolving("checking wildcard %a",filename)
     end
-    local method,result=resolvers.findwildcardfiles(filename)
+    local result=resolvers.findwildcardfiles(filename)
     if result then
       return "wildcard",result
     end
   end
 end
 local function find_qualified(filename,allresults,askedformat,alsostripped) 
-  if not file.is_qualified_path(filename) then
+  if not is_qualified_path(filename) then
     return
   end
   if trace_locating then
@@ -14402,33 +15528,66 @@ local function check_subpath(fname)
     return fname
   end
 end
-local function find_intree(filename,filetype,wantedfiles,allresults)
+local function makepathlist(list,filetype)
   local typespec=resolvers.variableofformat(filetype)
-  local pathlist=resolvers.expandedpathlist(typespec)
-  local method="intree"
+  local pathlist=resolvers.expandedpathlist(typespec,filetype and usertypes[filetype]) 
+  local entry={}
   if pathlist and #pathlist>0 then
-    local filelist=collect_files(wantedfiles)
+    for k=1,#pathlist do
+      local path=pathlist[k]
+      local prescanned=find(path,'^!!')
+      local resursive=find(path,'//$')
+      local pathname=lpegmatch(inhibitstripper,path)
+      local expression=makepathexpression(pathname)
+      local barename=gsub(pathname,"/+$","")
+      barename=resolveprefix(barename)
+      local scheme=url.hasscheme(barename)
+      local schemename=gsub(barename,"%.%*$",'')
+      entry[k]={
+        path=path,
+        pathname=pathname,
+        prescanned=prescanned,
+        recursive=recursive,
+        expression=expression,
+        barename=barename,
+        scheme=scheme,
+        schemename=schemename,
+      }
+    end
+    entry.typespec=typespec
+    list[filetype]=entry
+  else
+    list[filetype]=false
+  end
+  return entry
+end
+local function find_intree(filename,filetype,wantedfiles,allresults)
+  local pathlists=instance.pathlists
+  if not pathlists then
+    pathlists=setmetatableindex(allocate(),makepathlist)
+    instance.pathlists=pathlists
+  end
+  local pathlist=pathlists[filetype]
+  if pathlist then
+    local method="intree"
+    local filelist=collect_files(wantedfiles) 
     local dirlist={}
+    local result={}
     if filelist then
       for i=1,#filelist do
         dirlist[i]=filedirname(filelist[i][3]).."/" 
       end
     end
     if trace_detail then
-      report_resolving("checking filename %a",filename)
+      report_resolving("checking filename %a in tree",filename)
     end
-    local resolve=resolvers.resolve
-    local result={}
     for k=1,#pathlist do
-      local path=pathlist[k]
-      local pathname=lpegmatch(inhibitstripper,path)
-      local doscan=path==pathname 
-      if not find (pathname,'//$') then
-        doscan=false 
-      end
+      local entry=pathlist[k]
+      local path=entry.path
+      local pathname=entry.pathname
       local done=false
       if filelist then
-        local expression=makepathexpression(pathname)
+        local expression=entry.expression
         if trace_detail then
           report_resolving("using pattern %a for path %a",expression,pathname)
         end
@@ -14436,8 +15595,8 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
           local fl=filelist[k]
           local f=fl[2]
           local d=dirlist[k]
-          if find(d,expression) or find(resolve(d),expression) then
-            result[#result+1]=resolve(fl[3]) 
+          if find(d,expression) or find(resolveprefix(d),expression) then
+            result[#result+1]=resolveprefix(fl[3]) 
             done=true
             if allresults then
               if trace_detail then
@@ -14458,62 +15617,80 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
         method="database"
       else
         method="filesystem" 
-        pathname=gsub(pathname,"/+$","")
-        pathname=resolve(pathname)
-        local scheme=url.hasscheme(pathname)
+        local scheme=entry.scheme
         if not scheme or scheme=="file" then
-          local pname=gsub(pathname,"%.%*$",'')
-          if not find(pname,"%*") then
+          local pname=entry.schemename
+          if not find(pname,"*",1,true) then
             if can_be_dir(pname) then
-              for k=1,#wantedfiles do
-                local w=wantedfiles[k]
-                local fname=check_subpath(filejoin(pname,w))
-                if fname then
-                  result[#result+1]=fname
-                  done=true
-                  if not allresults then
-                    break
-                  end
+              if not done and not entry.prescanned then
+                if trace_detail then
+                  report_resolving("quick root scan for %a",pname)
                 end
-              end
-              if not done and doscan then
-                local files=resolvers.simplescanfiles(pname,false,true)
                 for k=1,#wantedfiles do
                   local w=wantedfiles[k]
-                  local subpath=files[w]
-                  if not subpath or subpath=="" then
-                  elseif type(subpath)=="string" then
-                    local fname=check_subpath(filejoin(pname,subpath,w))
-                    if fname then
-                      result[#result+1]=fname
-                      done=true
-                      if not allresults then
-                        break
-                      end
+                  local fname=check_subpath(filejoin(pname,w))
+                  if fname then
+                    result[#result+1]=fname
+                    done=true
+                    if not allresults then
+                      break
                     end
-                  else
-                    for i=1,#subpath do
-                      local sp=subpath[i]
-                      if sp=="" then
-                      else
-                        local fname=check_subpath(filejoin(pname,sp,w))
-                        if fname then
-                          result[#result+1]=fname
-                          done=true
-                          if not allresults then
-                            break
+                  end
+                end
+                if not done and entry.recursive then
+                  if trace_detail then
+                    report_resolving("scanning filesystem for %a",pname)
+                  end
+                  local files=resolvers.simplescanfiles(pname,false,true)
+                  for k=1,#wantedfiles do
+                    local w=wantedfiles[k]
+                    local subpath=files[w]
+                    if not subpath or subpath=="" then
+                    elseif type(subpath)=="string" then
+                      local fname=check_subpath(filejoin(pname,subpath,w))
+                      if fname then
+                        result[#result+1]=fname
+                        done=true
+                        if not allresults then
+                          break
+                        end
+                      end
+                    else
+                      for i=1,#subpath do
+                        local sp=subpath[i]
+                        if sp=="" then
+                        else
+                          local fname=check_subpath(filejoin(pname,sp,w))
+                          if fname then
+                            result[#result+1]=fname
+                            done=true
+                            if not allresults then
+                              break
+                            end
                           end
                         end
                       end
-                    end
-                    if done and not allresults then
-                      break
+                      if done and not allresults then
+                        break
+                      end
                     end
                   end
                 end
               end
             end
           else
+          end
+        else
+          for k=1,#wantedfiles do
+            local pname=entry.barename
+            local fname=methodhandler('finders',pname.."/"..wantedfiles[k])
+            if fname then
+              result[#result+1]=fname
+              done=true
+              if not allresults then
+                break
+              end
+            end
           end
         end
       end
@@ -14549,10 +15726,13 @@ local function find_otherwise(filename,filetype,wantedfiles,allresults)
   local filelist=collect_files(wantedfiles)
   local fl=filelist and filelist[1]
   if fl then
-    return "otherwise",{ resolvers.resolve(fl[3]) } 
+    return "otherwise",{ resolveprefix(fl[3]) } 
   end
 end
 collect_instance_files=function(filename,askedformat,allresults) 
+  if not filename or filename=="" then
+    return {}
+  end
   askedformat=askedformat or ""
   filename=collapsepath(filename,".")
   filename=gsub(filename,"^%./",getcurrentdir().."/") 
@@ -14587,7 +15767,11 @@ collect_instance_files=function(filename,askedformat,allresults)
   else
     local method,result,stamp,filetype,wantedfiles
     if instance.remember then
-      stamp=formatters["%s--%s"](filename,askedformat)
+      if askedformat=="" then
+        stamp=formatters["%s::%s"](suffixonly(filename),filename)
+      else
+        stamp=formatters["%s::%s"](askedformat,filename)
+      end
       result=stamp and instance.found[stamp]
       if result then
         if trace_locating then
@@ -14606,7 +15790,7 @@ collect_instance_files=function(filename,askedformat,allresults)
           method,result=find_intree(filename,filetype,wantedfiles)
           if not result then
             method,result=find_onpath(filename,filetype,wantedfiles)
-            if not result then
+            if resolve_otherwise and not result then
               method,result=find_otherwise(filename,filetype,wantedfiles)
             end
           end
@@ -14622,7 +15806,7 @@ collect_instance_files=function(filename,askedformat,allresults)
     end
     if stamp then
       if trace_locating then
-        report_resolving("remembering file %a",filename)
+        report_resolving("remembering file %a using hash %a",filename,stamp)
       end
       instance.found[stamp]=result
     end
@@ -14630,6 +15814,9 @@ collect_instance_files=function(filename,askedformat,allresults)
   end
 end
 local function findfiles(filename,filetype,allresults)
+  if not filename or filename=="" then
+    return {}
+  end
   local result,status=collect_instance_files(filename,filetype or "",allresults)
   if not result or #result==0 then
     local lowered=lower(filename)
@@ -14649,39 +15836,30 @@ function resolvers.findpath(filename,filetype)
   return filedirname(findfiles(filename,filetype,false)[1] or "")
 end
 local function findgivenfiles(filename,allresults)
-  local bname,result=filebasename(filename),{}
+  local base=filebasename(filename)
+  local result={}
   local hashes=instance.hashes
-  local noffound=0
+  local function okay(hash,path,name)
+    local found=methodhandler('concatinators',hash.type,hash.name,path,name)
+    if found and found~="" then
+      result[#result+1]=resolveprefix(found)
+      return not allresults
+    end
+  end
   for k=1,#hashes do
     local hash=hashes[k]
-    local files=instance.files[hash.name] or {}
-    local blist=files[bname]
-    if not blist then
-      local rname="remap:"..bname
-      blist=files[rname]
-      if blist then
-        bname=files[rname]
-        blist=files[bname]
-      end
-    end
-    if blist then
-      if type(blist)=='string' then
-        local found=methodhandler('concatinators',hash.type,hash.name,blist,bname) or ""
-        if found~="" then
-          noffound=noffound+1
-          result[noffound]=resolvers.resolve(found)
-          if not allresults then
-            break
-          end
+    local content=instance.files[hash.name]
+    if content then
+      local path,name=lookup(content,base)
+      if not path then
+      elseif type(path)=="string" then
+        if okay(hash,path,name) then
+          return result
         end
       else
-        for kk=1,#blist do
-          local vv=blist[kk]
-          local found=methodhandler('concatinators',hash.type,hash.name,vv,bname) or ""
-          if found~="" then
-            noffound=noffound+1
-            result[noffound]=resolvers.resolve(found)
-            if not allresults then break end
+        for i=1,#path do
+          if okay(hash,path[i],name) then
+            return result
           end
         end
       end
@@ -14695,64 +15873,80 @@ end
 function resolvers.findgivenfile(filename)
   return findgivenfiles(filename,false)[1] or ""
 end
-local function doit(path,blist,bname,tag,variant,result,allresults)
-  local done=false
-  if blist and variant then
-    local resolve=resolvers.resolve 
-    if type(blist)=='string' then
-      if find(lower(blist),path) then
-        local full=methodhandler('concatinators',variant,tag,blist,bname) or ""
-        result[#result+1]=resolve(full)
-        done=true
-      end
-    else
-      for kk=1,#blist do
-        local vv=blist[kk]
-        if find(lower(vv),path) then
-          local full=methodhandler('concatinators',variant,tag,vv,bname) or ""
-          result[#result+1]=resolve(full)
-          done=true
-          if not allresults then break end
-        end
-      end
-    end
-  end
-  return done
-end
 local makewildcard=Cs(
   (P("^")^0*P("/")*P(-1)+P(-1))/".*"+(P("^")^0*P("/")/"")^0*(P("*")/".*"+P("-")/"%%-"+P(".")/"%%."+P("?")/"."+P("\\")/"/"+P(1))^0
 )
 function resolvers.wildcardpattern(pattern)
   return lpegmatch(makewildcard,pattern) or pattern
 end
-local function findwildcardfiles(filename,allresults,result) 
-  result=result or {}
+local function findwildcardfiles(filename,allresults,result)
+  local result=result or {}
   local base=filebasename(filename)
   local dirn=filedirname(filename)
   local path=lower(lpegmatch(makewildcard,dirn) or dirn)
   local name=lower(lpegmatch(makewildcard,base) or base)
-  local files,done=instance.files,false
-  if find(name,"%*") then
+  local files=instance.files
+  if find(name,"*",1,true) then
     local hashes=instance.hashes
+    local function okay(found,path,base,hashname,hashtype)
+      if find(found,path) then
+        local full=methodhandler('concatinators',hashtype,hashname,found,base)
+        if full and full~="" then
+          result[#result+1]=resolveprefix(full)
+          return not allresults
+        end
+      end
+    end
     for k=1,#hashes do
       local hash=hashes[k]
-      local hashname,hashtype=hash.name,hash.type
-      for kk,hh in next,files[hashname] do
-        if not find(kk,"^remap:") then
-          if find(lower(kk),name) then
-            if doit(path,hh,kk,hashname,hashtype,result,allresults) then done=true end
-            if done and not allresults then break end
+      local hashname=hash.name
+      local hashtype=hash.type
+      if hashname and hashtype then
+        for found,base in filtered(files[hashname],name) do
+          if type(found)=='string' then
+            if okay(found,path,base,hashname,hashtype) then
+              break
+            end
+          else
+            for i=1,#found do
+              if okay(found[i],path,base,hashname,hashtype) then
+                break
+              end
+            end
           end
         end
       end
     end
   else
+    local function okayokay(found,path,base,hashname,hashtype)
+      if find(found,path) then
+        local full=methodhandler('concatinators',hashtype,hashname,found,base)
+        if full and full~="" then
+          result[#result+1]=resolveprefix(full)
+          return not allresults
+        end
+      end
+    end
     local hashes=instance.hashes
     for k=1,#hashes do
       local hash=hashes[k]
-      local hashname,hashtype=hash.name,hash.type
-      if doit(path,files[hashname][base],base,hashname,hashtype,result,allresults) then done=true end
-      if done and not allresults then break end
+      local hashname=hash.name
+      local hashtype=hash.type
+      if hashname and hashtype then
+        local found,base=lookup(content,base)
+        if not found then
+        elseif type(found)=='string' then
+          if okay(found,path,base,hashname,hashtype) then
+            break
+          end
+        else
+          for i=1,#found do
+            if okay(found[i],path,base,hashname,hashtype) then
+              break
+            end
+          end
+        end
+      end
     end
   end
   return result
@@ -14825,7 +16019,7 @@ end
 function resolvers.dowithpath(name,func)
   local pathlist=resolvers.expandedpathlist(name)
   for i=1,#pathlist do
-    func("^"..resolvers.cleanpath(pathlist[i]))
+    func("^"..cleanpath(pathlist[i]))
   end
 end
 function resolvers.dowithvariable(name,func)
@@ -14833,23 +16027,23 @@ function resolvers.dowithvariable(name,func)
 end
 function resolvers.locateformat(name)
   local engine=environment.ownmain or "luatex"
-  local barename=file.removesuffix(name)
-  local fullname=file.addsuffix(barename,"fmt")
+  local barename=removesuffix(name)
+  local fullname=addsuffix(barename,"fmt")
   local fmtname=caches.getfirstreadablefile(fullname,"formats",engine) or ""
   if fmtname=="" then
     fmtname=resolvers.findfile(fullname)
-    fmtname=resolvers.cleanpath(fmtname)
+    fmtname=cleanpath(fmtname)
   end
   if fmtname~="" then
-    local barename=file.removesuffix(fmtname)
-    local luaname=file.addsuffix(barename,luasuffixes.lua)
-    local lucname=file.addsuffix(barename,luasuffixes.luc)
-    local luiname=file.addsuffix(barename,luasuffixes.lui)
-    if lfs.isfile(luiname) then
+    local barename=removesuffix(fmtname)
+    local luaname=addsuffix(barename,luasuffixes.lua)
+    local lucname=addsuffix(barename,luasuffixes.luc)
+    local luiname=addsuffix(barename,luasuffixes.lui)
+    if isfile(luiname) then
       return barename,luiname
-    elseif lfs.isfile(lucname) then
+    elseif isfile(lucname) then
       return barename,lucname
-    elseif lfs.isfile(luaname) then
+    elseif isfile(luaname) then
       return barename,luaname
     end
   end
@@ -14871,29 +16065,24 @@ function resolvers.dowithfilesintree(pattern,handle,before,after)
     local hash=hashes[i]
     local blobtype=hash.type
     local blobpath=hash.name
-    if blobpath then
+    if blobtype and blobpath then
+      local total=0
+      local checked=0
+      local done=0
       if before then
         before(blobtype,blobpath,pattern)
       end
-      local files=instance.files[blobpath]
-      local total,checked,done=0,0,0
-      if files then
-        for k,v in table.sortedhash(files) do 
-          total=total+1
-          if find(k,"^remap:") then
-          elseif find(k,pattern) then
-            if type(v)=="string" then
-              checked=checked+1
-              if handle(blobtype,blobpath,v,k) then
-                done=done+1
-              end
-            else
-              checked=checked+#v
-              for i=1,#v do
-                if handle(blobtype,blobpath,v[i],k) then
-                  done=done+1
-                end
-              end
+      for path,name in filtered(instance.files[blobpath],pattern) do
+        if type(path)=="string" then
+          checked=checked+1
+          if handle(blobtype,blobpath,path,name) then
+            done=done+1
+          end
+        else
+          checked=checked+#path
+          for i=1,#path do
+            if handle(blobtype,blobpath,path[i],name) then
+              done=done+1
             end
           end
         end
@@ -14904,8 +16093,8 @@ function resolvers.dowithfilesintree(pattern,handle,before,after)
     end
   end
 end
-resolvers.obsolete=resolvers.obsolete or {}
-local obsolete=resolvers.obsolete
+local obsolete=resolvers.obsolete or {}
+resolvers.obsolete=obsolete
 resolvers.find_file=resolvers.findfile  obsolete.find_file=resolvers.findfile
 resolvers.find_files=resolvers.findfiles  obsolete.find_files=resolvers.findfiles
 
@@ -14916,7 +16105,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-pre"] = package.loaded["data-pre"] or true
 
--- original size: 6643, stripped down to: 4401
+-- original size: 3950, stripped down to: 2935
 
 if not modules then modules={} end modules ['data-pre']={
   version=1.001,
@@ -14926,43 +16115,50 @@ if not modules then modules={} end modules ['data-pre']={
   license="see context related readme files"
 }
 local resolvers=resolvers
-local prefixes=utilities.storage.allocate()
-resolvers.prefixes=prefixes
-local cleanpath,findgivenfile,expansion=resolvers.cleanpath,resolvers.findgivenfile,resolvers.expansion
+local prefixes=resolvers.prefixes
+local cleanpath=resolvers.cleanpath
+local findgivenfile=resolvers.findgivenfile
+local expansion=resolvers.expansion
 local getenv=resolvers.getenv 
-local P,S,R,C,Cs,Cc,lpegmatch=lpeg.P,lpeg.S,lpeg.R,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg.match
-local joinpath,basename,dirname=file.join,file.basename,file.dirname
-local getmetatable,rawset,type=getmetatable,rawset,type
+local basename=file.basename
+local dirname=file.dirname
+local joinpath=file.join
+local isfile=lfs.isfile
 prefixes.environment=function(str)
   return cleanpath(expansion(str))
 end
-prefixes.relative=function(str,n) 
-  if io.exists(str) then
-  elseif io.exists("./"..str) then
-    str="./"..str
-  else
-    local p="../"
-    for i=1,n or 2 do
-      if io.exists(p..str) then
-        str=p..str
-        break
-      else
-        p=p.."../"
+local function relative(str,n)
+  if not isfile(str) then
+    local pstr="./"..str
+    if isfile(pstr) then
+      str=pstr
+    else
+      local p="../"
+      for i=1,n or 2 do
+        local pstr=p..str
+        if isfile(pstr) then
+          str=pstr
+          break
+        else
+          p=p.."../"
+        end
       end
     end
   end
   return cleanpath(str)
 end
+local function locate(str)
+  local fullname=findgivenfile(str) or ""
+  return cleanpath(fullname~="" and fullname or str)
+end
+prefixes.relative=relative
+prefixes.locate=locate
 prefixes.auto=function(str)
-  local fullname=prefixes.relative(str)
-  if not lfs.isfile(fullname) then
-    fullname=prefixes.locate(str)
+  local fullname=relative(str)
+  if not isfile(fullname) then
+    fullname=locate(str)
   end
   return fullname
-end
-prefixes.locate=function(str)
-  local fullname=findgivenfile(str) or ""
-  return cleanpath((fullname~="" and fullname) or str)
 end
 prefixes.filename=function(str)
   local fullname=findgivenfile(str) or ""
@@ -14984,6 +16180,13 @@ end
 prefixes.home=function(str)
   return cleanpath(joinpath(getenv('HOME'),str))
 end
+prefixes.env=prefixes.environment
+prefixes.rel=prefixes.relative
+prefixes.loc=prefixes.locate
+prefixes.kpse=prefixes.locate
+prefixes.full=prefixes.locate
+prefixes.file=prefixes.filename
+prefixes.path=prefixes.pathname
 local function toppath()
   local inputstack=resolvers.inputstack 
   if not inputstack then         
@@ -14996,98 +16199,22 @@ local function toppath()
     return pathname
   end
 end
+local function jobpath()
+  local path=resolvers.stackpath()
+  if not path or path=="" then
+    return "."
+  else
+    return path
+  end
+end
 resolvers.toppath=toppath
-prefixes.toppath=function(str)
-  return cleanpath(joinpath(toppath(),str))
-end
-prefixes.env=prefixes.environment
-prefixes.rel=prefixes.relative
-prefixes.loc=prefixes.locate
-prefixes.kpse=prefixes.locate
-prefixes.full=prefixes.locate
-prefixes.file=prefixes.filename
-prefixes.path=prefixes.pathname
-function resolvers.allprefixes(separator)
-  local all=table.sortedkeys(prefixes)
-  if separator then
-    for i=1,#all do
-      all[i]=all[i]..":"
-    end
-  end
-  return all
-end
-local function _resolve_(method,target)
-  local action=prefixes[method]
-  if action then
-    return action(target)
-  else
-    return method..":"..target
-  end
-end
-local resolved,abstract={},{}
-function resolvers.resetresolve(str)
-  resolved,abstract={},{}
-end
-local pattern=Cs((C(R("az")^2)*P(":")*C((1-S(" \"\';,"))^1)/_resolve_+P(1))^0)
-local prefix=C(R("az")^2)*P(":")
-local target=C((1-S(" \"\';,"))^1)
-local notarget=(#S(";,")+P(-1))*Cc("")
-local pattern=Cs(((prefix*(target+notarget))/_resolve_+P(1))^0)
-local function resolve(str) 
-  if type(str)=="table" then
-    local t={}
-    for i=1,#str do
-      t[i]=resolve(str[i])
-    end
-    return t
-  else
-    local res=resolved[str]
-    if not res then
-      res=lpegmatch(pattern,str)
-      resolved[str]=res
-      abstract[res]=str
-    end
-    return res
-  end
-end
-local function unresolve(str)
-  return abstract[str] or str
-end
-resolvers.resolve=resolve
-resolvers.unresolve=unresolve
-if type(os.uname)=="function" then
-  for k,v in next,os.uname() do
-    if not prefixes[k] then
-      prefixes[k]=function() return v end
-    end
-  end
-end
-if os.type=="unix" then
-  local pattern
-  local function makepattern(t,k,v)
-    if t then
-      rawset(t,k,v)
-    end
-    local colon=P(":")
-    for k,v in table.sortedpairs(prefixes) do
-      if p then
-        p=P(k)+p
-      else
-        p=P(k)
-      end
-    end
-    pattern=Cs((p*colon+colon/";"+P(1))^0)
-  end
-  makepattern()
-  getmetatable(prefixes).__newindex=makepattern
-  function resolvers.repath(str)
-    return lpegmatch(pattern,str)
-  end
-else 
-  function resolvers.repath(str)
-    return str
-  end
-end
+resolvers.jobpath=jobpath
+prefixes.toppath=function(str) return cleanpath(joinpath(toppath(),str)) end 
+prefixes.jobpath=function(str) return cleanpath(joinpath(jobpath(),str)) end 
+resolvers.setdynamic("toppath")
+resolvers.setdynamic("jobpath")
+prefixes.jobfile=prefixes.jobpath
+resolvers.setdynamic("jobfile")
 
 
 end -- of closure
@@ -15149,7 +16276,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-fil"] = package.loaded["data-fil"] or true
 
--- original size: 3801, stripped down to: 3231
+-- original size: 3863, stripped down to: 3310
 
 if not modules then modules={} end modules ['data-fil']={
   version=1.001,
@@ -15161,30 +16288,31 @@ if not modules then modules={} end modules ['data-fil']={
 local trace_locating=false trackers.register("resolvers.locating",function(v) trace_locating=v end)
 local report_files=logs.reporter("resolvers","files")
 local resolvers=resolvers
+local resolveprefix=resolvers.resolve
 local finders,openers,loaders,savers=resolvers.finders,resolvers.openers,resolvers.loaders,resolvers.savers
 local locators,hashers,generators,concatinators=resolvers.locators,resolvers.hashers,resolvers.generators,resolvers.concatinators
 local checkgarbage=utilities.garbagecollector and utilities.garbagecollector.check
 function locators.file(specification)
-  local name=specification.filename
-  local realname=resolvers.resolve(name) 
+  local filename=specification.filename
+  local realname=resolveprefix(filename) 
   if realname and realname~='' and lfs.isdir(realname) then
     if trace_locating then
-      report_files("file locator %a found as %a",name,realname)
+      report_files("file locator %a found as %a",filename,realname)
     end
-    resolvers.appendhash('file',name,true) 
+    resolvers.appendhash('file',filename,true) 
   elseif trace_locating then
-    report_files("file locator %a not found",name)
+    report_files("file locator %a not found",filename)
   end
 end
 function hashers.file(specification)
-  local name=specification.filename
-  local content=caches.loadcontent(name,'files')
-  resolvers.registerfilehash(name,content,content==nil)
+  local pathname=specification.filename
+  local content=caches.loadcontent(pathname,'files')
+  resolvers.registerfilehash(pathname,content,content==nil)
 end
 function generators.file(specification)
-  local path=specification.filename
-  local content=resolvers.scanfiles(path,false,true)
-  resolvers.registerfilehash(path,content,true)
+  local pathname=specification.filename
+  local content=resolvers.scanfiles(pathname,false,true) 
+  resolvers.registerfilehash(pathname,content,true)
 end
 concatinators.file=file.join
 function finders.file(specification,filetype)
@@ -15375,7 +16503,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-use"] = package.loaded["data-use"] or true
 
--- original size: 3913, stripped down to: 2998
+-- original size: 3899, stripped down to: 2984
 
 if not modules then modules={} end modules ['data-use']={
   version=1.001,
@@ -15421,7 +16549,7 @@ end
 statistics.register("used config file",function() return caches.configfiles() end)
 statistics.register("used cache path",function() return caches.usedpaths() end)
 function statistics.savefmtstatus(texname,formatbanner,sourcefile) 
-  local enginebanner=status.list().banner
+  local enginebanner=status.banner
   if formatbanner and enginebanner and sourcefile then
     local luvname=file.replacesuffix(texname,"luv") 
     local luvdata={
@@ -15434,7 +16562,7 @@ function statistics.savefmtstatus(texname,formatbanner,sourcefile)
   end
 end
 function statistics.checkfmtstatus(texname)
-  local enginebanner=status.list().banner
+  local enginebanner=status.banner
   if enginebanner and texname then
     local luvname=file.replacesuffix(texname,"luv") 
     if lfs.isfile(luvname) then
@@ -15466,7 +16594,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-zip"] = package.loaded["data-zip"] or true
 
--- original size: 8489, stripped down to: 6757
+-- original size: 8772, stripped down to: 6841
 
 if not modules then modules={} end modules ['data-zip']={
   version=1.001,
@@ -15485,16 +16613,6 @@ zip.archives=zip.archives or {}
 local archives=zip.archives
 zip.registeredfiles=zip.registeredfiles or {}
 local registeredfiles=zip.registeredfiles
-local limited=false
-directives.register("system.inputmode",function(v)
-  if not limited then
-    local i_limiter=io.i_limiter(v)
-    if i_limiter then
-      zip.open=i_limiter.protect(zip.open)
-      limited=true
-    end
-  end
-end)
 local function validzip(str) 
   if not find(str,"^zip://") then
     return "zip:///"..str
@@ -15509,7 +16627,7 @@ function zip.openarchive(name)
     local arch=archives[name]
     if not arch then
       local full=resolvers.findfile(name) or ""
-      arch=(full~="" and zip.open(full)) or false
+      arch=full~="" and zip.open(full) or false
       archives[name]=arch
     end
     return arch
@@ -15668,31 +16786,42 @@ function resolvers.usezipfile(archive)
   end
 end
 function resolvers.registerzipfile(z,tree)
-  local files,filter={},""
-  if tree=="" then
-    filter="^(.+)/(.-)$"
-  else
-    filter=format("^%s/(.+)/(.-)$",tree)
-  end
+  local names={}
+  local files={} 
+  local remap={} 
+  local n=0
+  local filter=tree=="" and "^(.+)/(.-)$" or format("^%s/(.+)/(.-)$",tree)
+  local register=resolvers.registerfile
   if trace_locating then
     report_zip("registering: using filter %a",filter)
   end
-  local register,n=resolvers.registerfile,0
   for i in z:files() do
-    local path,name=match(i.filename,filter)
-    if path then
-      if name and name~='' then
-        register(files,name,path)
-        n=n+1
-      else
+    local filename=i.filename
+    local path,name=match(filename,filter)
+    if not path then
+      n=n+1
+      register(names,filename,"")
+      local usedname=lower(filename)
+      files[usedname]=""
+      if usedname~=filename then
+        remap[usedname]=filename
+      end
+    elseif name and name~="" then
+      n=n+1
+      register(names,name,path)
+      local usedname=lower(name)
+      files[usedname]=path
+      if usedname~=name then
+        remap[usedname]=name
       end
     else
-      register(files,i.filename,'')
-      n=n+1
     end
   end
   report_zip("registering: %s files registered",n)
-  return files
+  return {
+    files=files,
+    remap=remap,
+  }
 end
 
 
@@ -15702,7 +16831,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tre"] = package.loaded["data-tre"] or true
 
--- original size: 2508, stripped down to: 2074
+-- original size: 8479, stripped down to: 5580
 
 if not modules then modules={} end modules ['data-tre']={
   version=1.001,
@@ -15711,42 +16840,64 @@ if not modules then modules={} end modules ['data-tre']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local find,gsub,format=string.find,string.gsub,string.format
+local find,gsub,lower=string.find,string.gsub,string.lower
+local basename,dirname,joinname=file.basename,file.dirname,file  .join
+local globdir,isdir,isfile=dir.glob,lfs.isdir,lfs.isfile
+local P,lpegmatch=lpeg.P,lpeg.match
 local trace_locating=false trackers.register("resolvers.locating",function(v) trace_locating=v end)
 local report_trees=logs.reporter("resolvers","trees")
 local resolvers=resolvers
-local done,found,notfound={},{},resolvers.finders.notfound
-function resolvers.finders.tree(specification)
+local resolveprefix=resolvers.resolve
+local notfound=resolvers.finders.notfound
+local lookup=resolvers.get_from_content
+local collectors={}
+local found={}
+function resolvers.finders.tree(specification) 
   local spec=specification.filename
-  local fnd=found[spec]
-  if fnd==nil then
+  local okay=found[spec]
+  if okay==nil then
     if spec~="" then
-      local path,name=file.dirname(spec),file.basename(spec)
-      if path=="" then path="." end
-      local hash=done[path]
-      if not hash then
-        local pattern=path.."/*" 
-        hash=dir.glob(pattern)
-        done[path]=hash
+      local path=dirname(spec)
+      local name=basename(spec)
+      if path=="" then
+        path="."
+      end
+      local names=collectors[path]
+      if not names then
+        local pattern=find(path,"/%*+$") and path or (path.."/*")
+        names=globdir(pattern)
+        collectors[path]=names
       end
       local pattern="/"..gsub(name,"([%.%-%+])","%%%1").."$"
-      for k=1,#hash do
-        local v=hash[k]
-        if find(v,pattern) then
-          found[spec]=v
-          return v
+      for i=1,#names do
+        local fullname=names[i]
+        if find(fullname,pattern) then
+          found[spec]=fullname
+          return fullname
+        end
+      end
+      local pattern=lower(pattern)
+      for i=1,#names do
+        local fullname=lower(names[i])
+        if find(fullname,pattern) then
+          if isfile(fullname) then
+            found[spec]=fullname
+            return fullname
+          else
+            break
+          end
         end
       end
     end
-    fnd=notfound() 
-    found[spec]=fnd
+    okay=notfound() 
+    found[spec]=okay
   end
-  return fnd
+  return okay
 end
 function resolvers.locators.tree(specification)
   local name=specification.filename
-  local realname=resolvers.resolve(name) 
-  if realname and realname~='' and lfs.isdir(realname) then
+  local realname=resolveprefix(name) 
+  if realname and realname~='' and isdir(realname) then
     if trace_locating then
       report_trees("locator %a found",realname)
     end
@@ -15757,16 +16908,110 @@ function resolvers.locators.tree(specification)
 end
 function resolvers.hashers.tree(specification)
   local name=specification.filename
-  if trace_locating then
-    report_trees("analysing %a",name)
-  end
+    report_trees("analyzing %a",name)
   resolvers.methodhandler("hashers",name)
   resolvers.generators.file(specification)
 end
-resolvers.concatinators.tree=resolvers.concatinators.file
-resolvers.generators.tree=resolvers.generators.file
-resolvers.openers.tree=resolvers.openers.file
-resolvers.loaders.tree=resolvers.loaders.file
+local collectors={}
+local splitter=lpeg.splitat("/**/")
+local stripper=lpeg.replacer { [P("/")*P("*")^1*P(-1)]="" }
+table.setmetatableindex(collectors,function(t,k)
+  local rootname=lpegmatch(stripper,k)
+  local dataname=joinname(rootname,"dirlist")
+  local content=caches.loadcontent(dataname,"files",dataname)
+  if not content then
+    content=resolvers.scanfiles(rootname,nil,nil,false,true) 
+    caches.savecontent(dataname,"files",content,dataname)
+  end
+  t[k]=content
+  return content
+end)
+local function checked(root,p,n)
+  if p then
+    if type(p)=="table" then
+      for i=1,#p do
+        local fullname=joinname(root,p[i],n)
+        if isfile(fullname) then 
+          return fullname
+        end
+      end
+    else
+      local fullname=joinname(root,p,n)
+      if isfile(fullname) then 
+        return fullname
+      end
+    end
+  end
+  return notfound()
+end
+local function resolve(specification) 
+  local filename=specification.filename
+  if filename~="" then
+    local root,rest=lpegmatch(splitter,filename)
+    if root and rest then
+      local path,name=dirname(rest),basename(rest)
+      if name~=rest then
+        local content=collectors[root]
+        local p,n=lookup(content,name)
+        if not p then
+          return notfound()
+        end
+        local pattern=".*/"..path.."$"
+        local istable=type(p)=="table"
+        if istable then
+          for i=1,#p do
+            local pi=p[i]
+            if pi==path or find(pi,pattern) then
+              local fullname=joinname(root,pi,n)
+              if isfile(fullname) then 
+                return fullname
+              end
+            end
+          end
+        elseif p==path or find(p,pattern) then
+          local fullname=joinname(root,p,n)
+          if isfile(fullname) then 
+            return fullname
+          end
+        end
+        local queries=specification.queries
+        if queries and queries.option=="fileonly" then
+          return checked(root,p,n)
+        else
+          return notfound()
+        end
+      end
+    end
+    local path,name=dirname(filename),basename(filename)
+    local root=lpegmatch(stripper,path)
+    local content=collectors[path]
+    local p,n=lookup(content,name)
+    if p then
+      return checked(root,p,n)
+    end
+  end
+  return notfound()
+end
+resolvers.finders  .dirlist=resolve
+resolvers.locators .dirlist=resolvers.locators .tree
+resolvers.hashers  .dirlist=resolvers.hashers  .tree
+resolvers.generators.dirlist=resolvers.generators.file
+resolvers.openers  .dirlist=resolvers.openers  .file
+resolvers.loaders  .dirlist=resolvers.loaders  .file
+function resolvers.finders.dirfile(specification)
+  local queries=specification.queries
+  if queries then
+    queries.option="fileonly"
+  else
+    specification.queries={ option="fileonly" }
+  end
+  return resolve(specification)
+end
+resolvers.locators .dirfile=resolvers.locators .dirlist
+resolvers.hashers  .dirfile=resolvers.hashers  .dirlist
+resolvers.generators.dirfile=resolvers.generators.dirlist
+resolvers.openers  .dirfile=resolvers.openers  .dirlist
+resolvers.loaders  .dirfile=resolvers.loaders  .dirlist
 
 
 end -- of closure
@@ -15775,7 +17020,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-sch"] = package.loaded["data-sch"] or true
 
--- original size: 6202, stripped down to: 5149
+-- original size: 6569, stripped down to: 5304
 
 if not modules then modules={} end modules ['data-sch']={
   version=1.001,
@@ -15801,8 +17046,13 @@ directives.register("schemes.threshold",function(v) threshold=tonumber(v) or thr
 function cleaners.none(specification)
   return specification.original
 end
-function cleaners.strip(specification)
-  return (gsub(specification.original,"[^%a%d%.]+","-")) 
+function cleaners.strip(specification) 
+  local path,name=file.splitbase(specification.original)
+  if path=="" then
+    return (gsub(name,"[^%a%d%.]+","-"))
+  else
+    return (gsub((gsub(path,"%.","-").."-"..name),"[^%a%d%.]+","-"))
+  end
 end
 function cleaners.md5(specification)
   return file.addsuffix(md5.hex(specification.original),file.suffix(specification.path))
@@ -15818,8 +17068,8 @@ function resolvers.schemes.cleanname(specification)
 end
 local cached,loaded,reused,thresholds,handlers={},{},{},{},{}
 local function runcurl(name,cachename) 
-  local command="curl --silent --create-dirs --output "..cachename.." "..name
-  os.spawn(command)
+  local command="curl --silent --insecure --create-dirs --output "..cachename.." "..name
+  os.execute(command)
 end
 local function fetch(specification)
   local original=specification.original
@@ -15951,7 +17201,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-lua"] = package.loaded["data-lua"] or true
 
--- original size: 4237, stripped down to: 3177
+-- original size: 4313, stripped down to: 3227
 
 if not modules then modules={} end modules ['data-lua']={
   version=1.001,
@@ -15960,7 +17210,7 @@ if not modules then modules={} end modules ['data-lua']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local resolvers,package=resolvers,package
+local package,lpeg=package,lpeg
 local gsub=string.gsub
 local concat=table.concat
 local addsuffix=file.addsuffix
@@ -15971,9 +17221,11 @@ local luaformats={ 'TEXINPUTS','LUAINPUTS' }
 local libformats={ 'CLUAINPUTS' }
 local helpers=package.helpers or {}
 local methods=helpers.methods or {}
+local resolvers=resolvers
+local resolveprefix=resolvers.resolve
+helpers.report=logs.reporter("resolvers","libraries")
 trackers.register("resolvers.libraries",function(v) helpers.trace=v end)
 trackers.register("resolvers.locating",function(v) helpers.trace=v end)
-helpers.report=logs.reporter("resolvers","libraries")
 helpers.sequence={
   "already loaded",
   "preload table",
@@ -15988,7 +17240,7 @@ helpers.sequence={
 }
 local pattern=Cs(P("!")^0/""*(P("/")*P(-1)/"/"+P("/")^1/"/"+1)^0)
 function helpers.cleanpath(path) 
-  return resolvers.resolve(lpegmatch(pattern,path))
+  return resolveprefix(lpegmatch(pattern,path))
 end
 local loadedaslib=helpers.loadedaslib
 local getextraluapaths=package.extraluapaths
@@ -16058,7 +17310,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-aux"] = package.loaded["data-aux"] or true
 
--- original size: 2394, stripped down to: 2005
+-- original size: 2431, stripped down to: 1996
 
 if not modules then modules={} end modules ['data-aux']={
   version=1.001,
@@ -16072,8 +17324,8 @@ local type,next=type,next
 local trace_locating=false trackers.register("resolvers.locating",function(v) trace_locating=v end)
 local resolvers=resolvers
 local report_scripts=logs.reporter("resolvers","scripts")
-function resolvers.updatescript(oldname,newname) 
-  local scriptpath="scripts/context/lua"
+function resolvers.updatescript(oldname,newname)
+  local scriptpath="context/lua"
   newname=file.addsuffix(newname,"lua")
   local oldscript=resolvers.cleanpath(oldname)
   if trace_locating then
@@ -16125,7 +17377,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmf"] = package.loaded["data-tmf"] or true
 
--- original size: 2600, stripped down to: 1627
+-- original size: 2601, stripped down to: 1627
 
 if not modules then modules={} end modules ['data-tmf']={
   version=1.001,
@@ -16181,7 +17433,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-lst"] = package.loaded["data-lst"] or true
 
--- original size: 2654, stripped down to: 2301
+-- original size: 2734, stripped down to: 2354
 
 if not modules then modules={} end modules ['data-lst']={
   version=1.001,
@@ -16190,10 +17442,13 @@ if not modules then modules={} end modules ['data-lst']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local find,concat,upper,format=string.find,table.concat,string.upper,string.format
+local rawget,type,next=rawget,type,next
+local find,concat,upper=string.find,table.concat,string.upper
 local fastcopy,sortedpairs=table.fastcopy,table.sortedpairs
-resolvers.listers=resolvers.listers or {}
 local resolvers=resolvers
+local listers=resolvers.listers or {}
+resolvers.listers=listers
+local resolveprefix=resolvers.resolve
 local report_lists=logs.reporter("resolvers","lists")
 local function tabstr(str)
   if type(str)=='table' then
@@ -16202,7 +17457,7 @@ local function tabstr(str)
     return str
   end
 end
-function resolvers.listers.variables(pattern)
+function listers.variables(pattern)
   local instance=resolvers.instance
   local environment=instance.environment
   local variables=instance.variables
@@ -16223,10 +17478,10 @@ function resolvers.listers.variables(pattern)
   for key,value in sortedpairs(configured) do
     if key~="" and (pattern=="" or find(upper(key),pattern)) then
       report_lists(key)
-      report_lists("  env: %s",tabstr(rawget(environment,key))  or "unset")
-      report_lists("  var: %s",tabstr(configured[key])      or "unset")
-      report_lists("  exp: %s",tabstr(expansions[key])      or "unset")
-      report_lists("  res: %s",tabstr(resolvers.resolve(expansions[key])) or "unset")
+      report_lists("  env: %s",tabstr(rawget(environment,key))    or "unset")
+      report_lists("  var: %s",tabstr(configured[key])        or "unset")
+      report_lists("  exp: %s",tabstr(expansions[key])        or "unset")
+      report_lists("  res: %s",tabstr(resolveprefix(expansions[key])) or "unset")
     end
   end
   instance.environment=fastcopy(env)
@@ -16234,15 +17489,15 @@ function resolvers.listers.variables(pattern)
   instance.expansions=fastcopy(exp)
 end
 local report_resolved=logs.reporter("system","resolved")
-function resolvers.listers.configurations()
+function listers.configurations()
   local configurations=resolvers.instance.specification
   for i=1,#configurations do
-    report_resolved("file : %s",resolvers.resolve(configurations[i]))
+    report_resolved("file : %s",resolveprefix(configurations[i]))
   end
   report_resolved("")
   local list=resolvers.expandedpathfromlist(resolvers.splitpath(resolvers.luacnfspec))
   for i=1,#list do
-    local li=resolvers.resolve(list[i])
+    local li=resolveprefix(list[i])
     if lfs.isdir(li) then
       report_resolved("path - %s",li)
     else
@@ -16547,7 +17802,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-fmt"] = package.loaded["luat-fmt"] or true
 
--- original size: 5951, stripped down to: 4922
+-- original size: 5955, stripped down to: 4926
 
 if not modules then modules={} end modules ['luat-fmt']={
   version=1.001,
@@ -16635,7 +17890,7 @@ function environment.make_format(name)
   end
   local command=format("%s --ini %s --lua=%s %s %sdump",engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),os.platform=="unix" and "\\\\" or "\\")
   report_format("running command: %s\n",command)
-  os.spawn(command)
+  os.execute(command)
   local pattern=file.removesuffix(file.basename(usedluastub)).."-*.mem"
   local mp=dir.glob(pattern)
   if mp then
@@ -16670,7 +17925,7 @@ function environment.run_format(name,data,more)
       else
         local command=format("%s %s --fmt=%s --lua=%s %s %s",engine,primaryflags(),quoted(barename),quoted(luaname),quoted(data),more~="" and quoted(more) or "")
         report_format("running command: %s",command)
-        os.spawn(command)
+        os.execute(command)
       end
     end
   end
@@ -16681,8 +17936,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 685064
--- stripped bytes    : 242353
+-- original bytes    : 745618
+-- stripped bytes    : 269191
 
 -- end library merge
 
@@ -16781,17 +18036,18 @@ local ownlibs = { -- order can be made better
 
 }
 
+-- c:/data/develop/tex-context/tex/texmf-win64/bin/../../texmf-context/tex/context/base/data-tmf.lua
+-- c:/data/develop/context/sources/data-tmf.lua
+
 local ownlist = {
-    '.',
-    ownpath ,
-    ownpath .. "/../sources", -- HH's development path
+ -- '.',
+ -- ownpath ,
+    owntree .. "/../../../../context/sources", -- HH's development path
     owntree .. "/../../texmf-local/tex/context/base",
     owntree .. "/../../texmf-context/tex/context/base",
-    owntree .. "/../../texmf-dist/tex/context/base",
     owntree .. "/../../texmf/tex/context/base",
     owntree .. "/../../../texmf-local/tex/context/base",
     owntree .. "/../../../texmf-context/tex/context/base",
-    owntree .. "/../../../texmf-dist/tex/context/base",
     owntree .. "/../../../texmf/tex/context/base",
 }
 
@@ -16907,6 +18163,7 @@ local helpinfo = [[
   <category name="basic">
    <subcategory>
     <flag name="script"><short>run an mtx script (lua prefered method) (<ref name="noquotes"/>), no script gives list</short></flag>
+    <flag name="evaluate"><short>run code passed on the commandline (between quotes)</short></flag>
     <flag name="execute"><short>run a script or program (texmfstart method) (<ref name="noquotes"/>)</short></flag>
     <flag name="resolve"><short>resolve prefixed arguments</short></flag>
     <flag name="ctxlua"><short>run internally (using preloaded libs)</short></flag>
@@ -16932,6 +18189,7 @@ local helpinfo = [[
     <flag name="verbose"><short>give a bit more info</short></flag>
     <flag name="trackers" value="list"><short>enable given trackers</short></flag>
     <flag name="progname" value="str"><short>format or backend</short></flag>
+    <flag name="systeminfo" value="str"><short>show current operating system, processor, etc</short></flag>
    </subcategory>
    <subcategory>
     <flag name="edit"><short>launch editor with found file</short></flag>
@@ -17561,6 +18819,39 @@ function runners.associate(filename)
     os.launch(filename)
 end
 
+function runners.evaluate(code,filename) -- for Luigi
+    if code == "loop" then
+        while true do
+            io.write("> ")
+            local code = io.read()
+            if code ~= "" then
+                local temp = string.match(code,"^= (.*)$")
+                if temp then
+                    code = "print("..temp..")"
+                end
+                local compiled, message = loadstring(code)
+                if type(compiled) ~= "function" then
+                    io.write("! " .. (message or code).."\n")
+                else
+                    io.write(compiled())
+                end
+            end
+        end
+    else
+        if type(code) ~= "string" or code == "" then
+            code = filename
+        end
+        if code ~= "" then
+            local compiled, message = loadstring(code)
+            if type(compiled) ~= "function" then
+                io.write("invalid lua code: " .. (message or code))
+                return
+            end
+            io.write(compiled())
+        end
+    end
+end
+
 function runners.gethelp(filename)
     local url = environment.argument("url")
     if url and url ~= "" then
@@ -17570,6 +18861,15 @@ function runners.gethelp(filename)
     else
         report("no --url given")
     end
+end
+
+function runners.systeminfo()
+    report("architecture      : %s",os.platform  or "<unset>")
+    report("operating system  : %s",os.name      or "<unset>")
+    report("file architecture : %s",os.type      or "<unset>")
+    report("binary path       : %s",os.selfdir   or "<unset>")
+    report("binary suffix     : %s",os.binsuffix or "<unset>")
+    report("library suffix    : %s",os.libsuffix or "<unset>")
 end
 
 -- this is a bit dirty ... first we store the first filename and next we
@@ -17687,16 +18987,13 @@ end
 
 if e_argument("ansi") then
 
-    local formatters = string.formatters
+    logs.setformatters("ansi")
 
-    logs.setformatters {
-        report_yes    = formatters["[1;32m%-15s [0;1m|[0m %s"],
-        report_nop    = formatters["[1;32m%-15s [0;1m|[0m"],
-        subreport_yes = formatters["[1;32m%-15s [0;1m|[1;31m %s [0;1m|[0m %s"],
-        subreport_nop = formatters["[1;32m%-15s [0;1m|[1;31m %s [0;1m|[0m"],
-        status_yes    = formatters["[1;32m%-15s [0;1m:[0m %s\n"],
-        status_nop    = formatters["[1;32m%-15s [0;1m:[0m\n"],
-    }
+    local script = e_argument("script") or e_argument("scripts")
+
+    if type(script) == "string" then
+        logs.writer("]0;"..script.."") -- for Alan to test
+    end
 
 end
 
@@ -17715,14 +19012,26 @@ if e_argument("script") or e_argument("scripts") then
         ok = runners.execute_ctx_script(filename)
     end
 
+elseif e_argument("evaluate") then
+
+    runners.evaluate(e_argument("evaluate"),filename)
+
 elseif e_argument("selfmerge") then
 
     -- embed used libraries
 
     runners.loadbase()
     local found = locate_libs()
+
     if found then
-        utilities.merger.selfmerge(own.name,own.libs,{ found })
+        local mtxrun = resolvers.findfile("mtxrun.lua") -- includes local name
+        if lfs.isfile(mtxrun) then
+            utilities.merger.selfmerge(mtxrun,own.libs,{ found })
+            application.report("runner updated on resolved path: %s",mtxrun)
+        else
+            utilities.merger.selfmerge(own.name,own.libs,{ found })
+            application.report("runner updated on relative path: %s",own.name)
+        end
     end
 
 elseif e_argument("selfclean") then
@@ -17730,7 +19039,15 @@ elseif e_argument("selfclean") then
     -- remove embedded libraries
 
     runners.loadbase()
-    utilities.merger.selfclean(own.name)
+
+    local mtxrun = resolvers.findfile("mtxrun.lua") -- includes local name
+    if lfs.isfile(mtxrun) then
+        utilities.merger.selfclean(mtxrun)
+        application.report("runner cleaned on resolved path: %s",mtxrun)
+    else
+        utilities.merger.selfclean(own.name)
+        application.report("runner cleaned on relative path: %s",own.name)
+    end
 
 elseif e_argument("selfupdate") then
 
@@ -17972,6 +19289,8 @@ elseif e_argument("version") then
 
     application.version()
 
+    application.report("source path",environment.ownbin)
+
 elseif e_argument("directives") then
 
     directives.show()
@@ -17988,6 +19307,10 @@ elseif e_argument("exporthelp") then
 
     runners.loadbase()
     application.export(e_argument("exporthelp"),filename)
+
+elseif e_argument("systeminfo") then
+
+    runners.systeminfo()
 
 elseif e_argument("help") or filename=='help' or filename == "" then
 

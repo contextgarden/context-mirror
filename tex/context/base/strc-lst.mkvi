@@ -47,7 +47,7 @@
    \c!state=\v!start,
    \c!coupling=\v!off,
    \c!criterium=\v!local,
-   \c!number=\zerocount,
+   \c!reference=,% was number which was sort of obsolete
    \c!width=3\emwidth,
   %\c!maxwidth=,
    \c!distance=\zeropoint,
@@ -94,6 +94,8 @@
      \expandafter\secondoftwoarguments
    \fi}
 
+\let\doiflistelse\doifelselist
+
 %D Regular list entries are bound to a specific location in order to
 %D get the right pagenumber etc.\ associated. When pushing something
 %D inbetween (in mkiv) it ends up directtly in the list. This is the
@@ -125,36 +127,47 @@
 \def\strc_lists_inject_nop[#dummya][#dummyb]%
   {\endgroup}
 
-\def\strc_lists_inject_yes[#settings][#userdata]%
+\unexpanded\def\strc_lists_inject_enhance#listindex#internal%
+  {\normalexpanded{\ctxlatecommand{enhancelist(#listindex)}}}
+
+\unexpanded\def\strc_lists_inject_yes[#settings][#userdata]% can be used directly
   {\setupcurrentlist[\c!type=userdata,\c!location=\v!none,#settings]% grouped (use \let...
    \edef\p_location{\listparameter\c!location}%
    \setnextinternalreference
-   \edef\currentlistnumber{\ctxcommand{addtolist{
-        references = {
-            internal = \nextinternalreference,
-            block    = "\currentsectionblock", % handy for lists, like bibl
-            section  = structures.sections.currentid(),
-          % location = "\p_location",
-        },
-        metadata = {
-            kind     = "\listparameter\c!type",
-            name     = "\currentlist",
-            level    = structures.sections.currentlevel(),
-            catcodes = \the\catcodetable,
-        },
-        userdata = \!!bs\detokenize{#userdata}\!!es % will be converted to table at the lua end
-   }}}%
+   \scratchcounter\clf_addtolist
+        references {
+            internal \nextinternalreference
+          % block    {\currentsectionblock}
+          % section  structures.sections.currentid()
+          % location {\p_location}
+        }
+        metadata {
+            kind     {\listparameter\c!type}
+            name     {\currentlist}
+          % level    structures.sections.currentlevel()
+            catcodes \catcodetable
+        }
+        userdata {\detokenize\expandafter{\normalexpanded{#userdata}}}
+   \relax
+   \edef\currentlistnumber{\the\scratchcounter}%
    \ifx\p_location\v!here
      % this branch injects nodes !
-     \expanded{\ctxlatecommand{enhancelist(\currentlistnumber)}}%
-     \ctxlua{structures.references.setinternalreference(nil,nil,\nextinternalreference)}% will change
-     \xdef\currentstructurelistattribute{\number\lastdestinationattribute}%
+     \strc_lists_inject_enhance{\currentlistnumber}{\nextinternalreference}%
+     \clf_setinternalreference internal \nextinternalreference\relax % this will change
+     \xdef\currentstructurelistattribute{\the\lastdestinationattribute}%
      \dontleavehmode\hbox attr \destinationattribute \lastdestinationattribute{}% todo
    \else
      % and this one doesn't
-     \ctxcommand{enhancelist(\currentlistnumber)}%
+     \clf_enhancelist\currentlistnumber\relax
    \fi
    \endgroup}
+
+% todo: make like \strc_references_direct_full_user ... with {}{}{}
+
+\unexpanded\def\strc_lists_inject_direct[#tag]% [#settings][#userdata]
+  {\begingroup
+   \edef\currentlist{#tag}%
+   \strc_lists_inject_yes} % [#settings][#userdata]
 
 \unexpanded\def\writebetweenlist{\dodoubleempty   \strc_lists_write_between}
 \unexpanded\def\writedatatolist {\dotripleargument\strc_lists_write_data_to}
@@ -244,7 +257,7 @@
    \strc_lists_place_current % maybe inline
      {#list}%
      {\listparameter\c!criterium}%
-     {\listparameter\c!number}%
+     {\listparameter\c!reference}%
      {\listparameter\c!extras}%
      {\listparameter\c!order}%
  % \stoplistreferences
@@ -288,7 +301,7 @@
   {\dotripleempty\strc_lists_combined_define}
 
 \def\strc_lists_combined_define[#tag][#list][#settings]%
-  {\definelist[#tag][\c!criterium=\v!local,\c!number=0,\c!alternative=,\c!list={#list},#settings]% inherits from root
+  {\definelist[#tag][\c!criterium=\v!local,\c!reference=,\c!alternative=,\c!list={#list},#settings]% inherits from root
    \setvalue{\e!setup   #tag\e!endsetup}{\dodoubleempty\strc_lists_combined_setup   [#tag]}%
    \setvalue{\e!place              #tag}{\dodoubleempty\strc_lists_combined_place   [#tag]}%
    \setvalue{\e!complete           #tag}{\dodoubleempty\strc_lists_combined_complete[#tag]}}
@@ -324,42 +337,46 @@
 
 \def\currentstructurelistnumber{0}     % injection
 \def\currentlistmethod         {entry} % typesetting
-\def\currentlistindex          {0}     % typesetting
+\def\currentlistindex          {0}     % typesetting (maybe also a real counter)
+
+\unexpanded\def\savedlistnumber        #1#2{\clf_savedlistnumber        {#1}\numexpr#2\relax}
+\unexpanded\def\savedlisttitle         #1#2{\clf_savedlisttitle         {#1}\numexpr#2\relax}
+\unexpanded\def\savedlistprefixednumber#1#2{\clf_savedlistprefixednumber{#1}\numexpr#2\relax}
 
 \def\structurelistlocation
-  {\ctxcommand{listlocation(\currentlistindex)}}
+  {\clf_listlocation\numexpr\currentlistindex\relax}
 
 \def\structurelistrealpagenumber
-  {\ctxcommand{listrealpage("\currentlist",\currentlistindex)}}
+  {\clf_listrealpage{\currentlist}\numexpr\currentlistindex\relax}
 
 \unexpanded\def\structurelistpagenumber
   {\dostarttagged\t!listpage\empty
-   \ctxcommand{listprefixedpage(
-    "\currentlist",
-    \currentlistindex,
-    {
-     separatorset  = "\listparameter\c!pageprefixseparatorset",
-     conversionset = "\listparameter\c!pageprefixconversionset",
-     set           = "\listparameter\c!pageprefixset",
-     segments      = "\listparameter\c!pageprefixsegments",
-     connector     = \!!bs\listparameter\c!pageprefixconnector\!!es,
-    },
-    {
-     prefix        = "\listparameter\c!pageprefix",
-     conversionset = "\listparameter\c!pageconversionset",
-     starter       = \!!bs\listparameter\c!pagestarter\!!es,
-     stopper       = \!!bs\listparameter\c!pagestopper\!!es,
+   \clf_listprefixedpage
+     {\currentlist}
+     \currentlistindex
+     {
+       separatorset  {\listparameter\c!pageprefixseparatorset}
+       conversionset {\listparameter\c!pageprefixconversionset}
+       set           {\listparameter\c!pageprefixset}
+       segments      {\listparameter\c!pageprefixsegments}
+       connector     {\listparameter\c!pageprefixconnector}
      }
-   )}%
+     {
+       prefix        {\listparameter\c!pageprefix}
+       conversionset {\listparameter\c!pageconversionset}
+       starter       {\listparameter\c!pagestarter}
+       stopper       {\listparameter\c!pagestopper}
+     }
+   \relax
    \dostoptagged}
 
 \unexpanded\def\structurelistuservariable#name%
   {\dostarttagged\t!listdata{#name}%
-   \ctxcommand{listuserdata("\currentlist",\currentlistindex,"#name")}%
+   \clf_listuserdata{\currentlist}\currentlistindex{#name}%
    \dostoptagged}
 
 \def\rawstructurelistuservariable#name%
-  {\ctxcommand{listuserdata("\currentlist",\currentlistindex,"#name")}}
+  {\clf_listuserdata{\currentlist}\currentlistindex{#name}}
 
 \unexpanded\def\structurelistfirst {\structurelistuservariable\s!first } % s!
 \unexpanded\def\structurelistsecond{\structurelistuservariable\s!second} % s!
@@ -367,63 +384,70 @@
 \def\rawstructurelistfirst {\rawstructurelistuservariable\s!first } % s! % was \unexpanded
 \def\rawstructurelistsecond{\rawstructurelistuservariable\s!second} % s! % was \unexpanded
 
-\unexpanded\def\doifstructurelisthaspageelse
-  {\ctxcommand{doiflisthaspageelse("\currentlist",\currentlistindex)}}
+\unexpanded\def\doifelsestructurelisthaspage
+  {\clf_doifelselisthaspage{\currentlist}\numexpr\currentlistindex\relax}
 
-\unexpanded\def\doifstructurelisthasnumberelse
-  {\ctxcommand{doiflisthasnumberelse("\currentlist",\currentlistindex)}}
+\unexpanded\def\doifelsestructurelisthasnumber
+  {\clf_doifelselisthasnumber{\currentlist}\numexpr\currentlistindex\relax}
+
+\let\doifstructurelisthaspageelse  \doifelsestructurelisthaspage
+\let\doifstructurelisthasnumberelse\doifelsestructurelisthasnumber
 
 \unexpanded\def\structurelistgenerictitle
   {\dostarttagged\t!listcontent\empty
-   \ctxcommand{listtitle("\currentlist",\currentlistindex)}%
+   \clf_listtitle{\currentlist}\currentlistindex\relax
    \dostoptagged}
 
 \unexpanded\def\structurelistgenericnumber % tricky, we need to delay tagging as we have nested lua calls
   {\dostarttagged\t!listtag\empty
-   \ctxcommand{listprefixednumber("\currentlist",\currentlistindex, {
-        prefix        = "\listparameter\c!prefix",
-        separatorset  = "\listparameter\c!prefixseparatorset",
-        conversionset = "\listparameter\c!prefixconversionset",
-        starter       = \!!bs\listparameter\c!prefixstarter\!!es,
-        stopper       = \!!bs\listparameter\c!prefixstopper\!!es,
-        set           = "\listparameter\c!prefixset",
-        segments      = "\listparameter\c!prefixsegments",
-        connector     = \!!bs\listparameter\c!prefixconnector\!!es,
-    },
-    {
-        separatorset  = "\listparameter\c!numberseparatorset",
-        conversionset = "\listparameter\c!numberconversionset",
-        starter       = \!!bs\listparameter\c!numberstarter\!!es,
-        stopper       = \!!bs\listparameter\c!numberstopper\!!es,
-        segments      = "\listparameter\c!numbersegments",
-    } )}%
+   \clf_listprefixednumber
+     {\currentlist}%
+     \currentlistindex
+     {%
+         prefix        {\listparameter\c!prefix}%
+         separatorset  {\listparameter\c!prefixseparatorset}%
+         conversionset {\listparameter\c!prefixconversionset}%
+         starter       {\listparameter\c!prefixstarter}%
+         stopper       {\listparameter\c!prefixstopper}%
+         set           {\listparameter\c!prefixset}%
+         segments      {\listparameter\c!prefixsegments}%
+         connector     {\listparameter\c!prefixconnector}%
+     }%
+     {%
+         separatorset  {\listparameter\c!numberseparatorset}%
+         conversionset {\listparameter\c!numberconversionset}%
+         starter       {\listparameter\c!numberstarter}%
+         stopper       {\listparameter\c!numberstopper}%
+         segments      {\listparameter\c!numbersegments}%
+     }%
+   \relax
    \dostoptagged}
 
 % TODO: pass extra tag name (contents, figures, bibliography ...)
 
-\unexpanded\def\strc_lists_place_current#list#criterium#number#extras#order% beware, not a user command
-  {\dostarttagged\t!list\empty
-   \ctxcommand{processlist{
-        names     = "#list",
-        criterium = "#criterium",
-        number    = "#number",
-        extras    = "#extras",
-        order     = "#order"
-   }}%
+\unexpanded\def\strc_lists_place_current#list#criterium#reference#extras#order% beware, not a user command
+  {\dostarttaggedchained\t!list\empty\??list
+   \clf_processlist
+        names     {#list}
+        criterium {#criterium}
+        reference {#reference}
+        extras    {#extras}
+        order     {#order}
+   \relax
    \dostoptagged}
 
-\unexpanded\def\strc_lists_analyze#list#criterium#number%
-  {\ctxcommand{analyzelist{
-        names     = "#list",
-        criterium = "#criterium",
-        number    = "#number"
-   }}}
+\unexpanded\def\strc_lists_analyze#list#criterium#reference%
+  {\clf_analyzelist
+        names     {#list}
+        criterium {#criterium}
+        reference {#reference}
+   \relax}
 
-\def\firststructureelementinlist#list%
-  {\ctxcommand{firstinset("#list")}}
+\def\firststructureelementinlist#list% expandable
+  {\clf_firstinset{#list}}
 
 \def\structurelistsize
-  {\ctxcommand{listsize()}}
+  {\clf_listsize}
 
 %D Depending on what kind of list we have (e.g.\ a section related one)
 %D processors can be defined.
@@ -451,14 +475,12 @@
 \def\usestructurelistprocessor#tag%
   {\csname\??structurelistprocessor#tag\endcsname}
 
-\unexpanded\def\strclistsentryprocess#tag#method#index#extra% This one is called at the lua end!
-  {\ctxcommand{pushlist(#index)}%
-   \edef\currentlist      {#tag}%
-   \edef\currentlistmethod{#method}%
-   \edef\currentlistindex {#index}%
-   \edef\currentlistextra {#extra}%
-   \listextraparameter\c!before
+\let\dotaglistlocation\relax
+
+\def\strc_lists_entry_process % assume things to be set up
+  {\listextraparameter\c!before
    \dostarttagged\t!listitem\currentlist
+   \dotaglistlocation
    \csname\??structurelistprocessor
      \ifcsname\??structurelistprocessor\currentlist:\currentlistmethod\endcsname\currentlist:\currentlistmethod\else
      \ifcsname\??structurelistprocessor\currentlistmethod             \endcsname\currentlistmethod             \else
@@ -466,8 +488,16 @@
                                                                                 \s!default                     \fi\fi\fi
    \endcsname
    \dostoptagged
-   \listextraparameter\c!after
-   \ctxcommand{poplist()}}
+   \listextraparameter\c!after}
+
+\unexpanded\def\strclistsentryprocess#tag#method#index#extra% This one is called at the lua end!
+  {\clf_pushlist#index\relax
+   \edef\currentlist      {#tag}%
+   \edef\currentlistmethod{#method}%
+   \edef\currentlistindex {#index}%
+   \edef\currentlistextra {#extra}%
+   \strc_lists_entry_process
+   \clf_poplist}
 
 % lists that have a number/title are kind of generic and can share code
 
@@ -481,7 +511,7 @@
    \strc_lists_apply_renderingsetup}
 
 \installstructurelistprocessor\s!command
-  {\ctxcommand{listuserdata("\currentlist",\currentlistindex,"\s!command")}}
+  {\clf_listuserdata{\currentlist}\currentlistindex{\s!command}}
 
 \installstructurelistprocessor{section}
   {\let\currentlistentrynumber    \structurelistgenericnumber
@@ -498,7 +528,7 @@
 % example of usage elsewhere:
 %
 % \installstructcurelistprocessor{pubs:userdata}
-%   {\ctxcommand{listuserdata("\currentlist",\currentlistindex,"bibref")}}
+%   {\clf_listuserdata{\currentlist}\currentlistindex{bibref}}
 
 %D List symbols are used in interactive documents where no numbers
 %D are used but nevertheless structure is present. Beware, the list
@@ -520,7 +550,7 @@
 
 \def\strc_lists_assign_dimen#dimension#key#default%
   {\edef\m_strc_list_dimen{\listparameter#key}%
-   \doifinsetelse\m_strc_list_dimen{\v!fit,\v!broad}{#dimension#default}{#dimension\m_strc_list_dimen}\relax}
+   \doifelseinset\m_strc_list_dimen{\v!fit,\v!broad}{#dimension#default}{#dimension\m_strc_list_dimen}\relax}
 
 \definesymbol[\v!list][\v!none   ][\strc_lists_symbol_none]
 \definesymbol[\v!list][\v!one    ][\strc_lists_symbol_one]
@@ -531,7 +561,7 @@
 
 \unexpanded\def\currentlistsymbol
   {\edef\p_symbol{\listparameter\c!symbol}%
-   \doifinsymbolsetelse\v!list\p_symbol
+   \doifelseinsymbolset\v!list\p_symbol
      {\directsymbol\v!list\p_symbol}
      {\directsymbol\v!list\s!default}}
 
@@ -589,7 +619,7 @@
   {\currentlistentrynumber}
 
 \setvalue{\??listsymbollabels\v!yes}% auto (use value stored in tuc file)
-  {\edef\currentlistlabel{\ctxcommand{listlabel(\currentlistindex,"\currentlistlabel")}}%
+  {\edef\currentlistlabel{\clf_listlabel\currentlistindex{\currentlistlabel}}%
    \leftlabeltext\currentlistlabel
    \listparameter\c!starter
    \currentlistentrynumber
@@ -700,7 +730,7 @@
      \let\p_method\v!command
    \fi
    \normalexpanded{\definelistalternative[#tag][\p_method]}[\c!command=\strc_lists_placement_command]%
-   \doifnextbgroupelse
+   \doifelsenextbgroup
      {\strc_lists_define_placement_yes{#tag}}
      {\strc_lists_define_placement_nop{#tag}}}
 
@@ -747,7 +777,7 @@
     % better is to use a special list entry but we keep this for compatibility
     \let\\=\space
     % so expanding this token register has to come *after* the font switch
-    \dontconvertfont
+    \dontconvertfont % (**) this has to become an option (see publ)
 \to \t_lists_every_renderingtext
 
 \appendtoks
@@ -764,7 +794,7 @@
       \settrue\c_lists_has_page
       \settrue\c_lists_show_page
     \else
-      \doifstructurelisthaspageelse\settrue\setfalse\c_lists_has_page
+      \doifelsestructurelisthaspage\settrue\setfalse\c_lists_has_page
       \ifx\p_pagenumber\v!yes
         \settrue\c_lists_show_page
       \else
@@ -777,7 +807,7 @@
       \settrue\c_lists_has_number
       \settrue\c_lists_show_number
     \else
-      \doifstructurelisthasnumberelse\settrue\setfalse\c_lists_has_number
+      \doifelsestructurelisthasnumber\settrue\setfalse\c_lists_has_number
       \ifx\p_headnumber\v!yes
         \settrue\c_lists_show_number
       \else
@@ -818,6 +848,8 @@
 
 % todo: provide packager via attributes
 
+\doinstallinjector\s!list
+
 \installcorenamespace{listalternativemethods} % the general wrapper of a rendering
 
 \startsetups[\??listrenderings:none]
@@ -845,12 +877,15 @@
 % \stopsetups
 
 \startsetups[\??listrenderings:generic]
+    \typo_injectors_check_list
     \listparameter\c!before % can be \hskip
     \edef\p_command{\listalternativeparameter\c!command}
     \ifx\p_command\empty
         \listalternativeparameter\c!before
         \vbox {
             \forgetall
+            \noindent % otherwise annotations are mirrored up
+            \typo_injectors_mark_list
             \hbox \strc_lists_get_reference_attribute\v!all {
                 \ifconditional\c_lists_show_number
                   % \ifconditional\c_lists_has_page
@@ -878,6 +913,8 @@
         }
         \listalternativeparameter\c!after
    \else
+        \noindent % otherwise annotations are mirrored up
+\typo_injectors_mark_list
         \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
             \p_command\currentlistentrynumber\currentlistentrytitle\currentlistentrypagenumber
         }
@@ -889,6 +926,8 @@
 
 \startsetups[\??listrenderings:abc]
     \endgraf % are we grouped?
+    \typo_injectors_check_list
+  % \advance % yes or no ... \rightskip is also honored
     \leftskip\listparameter\c!margin % after \endgraf !
     \listparameter\c!before
     \endgraf
@@ -907,7 +946,8 @@
             \scratchwidth\p_width
         \fi
     \fi\fi
-    \noindent
+    \noindent % otherwise annotations are mirrored up
+    \typo_injectors_mark_list
     \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
         \setlocalhsize
         \hsize\localhsize
@@ -917,11 +957,19 @@
             \scratchhsize\hsize
             \ifconditional\c_lists_has_number
                 \ifconditional\c_lists_show_number
-                    \setbox\b_strc_lists_number\hbox \strc_lists_get_reference_attribute\v!number \ifdim\scratchwidth>\zeropoint to \scratchwidth \fi {
-                        \strc_lists_set_style_color\c!numberstyle\c!numbercolor\v!number
-                        \listparameter\c!numbercommand\currentlistsymbol
-                        \hfill
-                    }
+                  \setbox\b_strc_lists_number
+%                    \hbox
+%                      \strc_lists_get_reference_attribute\v!number
+%                      \ifdim\scratchwidth>\zeropoint to \scratchwidth \fi
+                    \simplealignedboxplus
+                        \scratchwidth
+                        {\listparameter\c!numberalign}
+                        {\strc_lists_get_reference_attribute\v!number}
+                        {
+                            \strc_lists_set_style_color\c!numberstyle\c!numbercolor\v!number
+                            \listparameter\c!numbercommand\currentlistsymbol
+%                             \hfill
+                        }
                 \else
                     \setbox\b_strc_lists_number\emptyhbox
                 \fi
@@ -951,6 +999,8 @@
                 \hsize\scratchhsize
                 \usealignparameter\listparameter
                 \ifdim\scratchwidth<\hsize
+                    % we have leftskip so we'd better just skip back instead of messing
+                    % with hang*
                     \edef\p_hang{\listparameter\c!hang}
                     \hangindent\dimexpr\wd\b_strc_lists_number+\scratchdistance\relax
                     \hangafter\ifx\p_hang\v!no\zerocount\else\plusone\fi
@@ -963,7 +1013,7 @@
                     \scratchdistance\zeropoint
                 \fi
                 \parindent\zeropoint
-                \dontleavehmode
+                \dontleavehmode % this nils hang: i need to figure out why
                 % % topaligned
                 %
                 % \scratchdimen\wd\b_strc_lists_number
@@ -1049,7 +1099,7 @@
             \listparameter\c!numbercommand\currentlistsymbol
             \listparameter\c!right
             \endgroup
-            \kern.5em
+            \kern.5\emwidth\relax
             \nobreak
         \fi
     \fi
@@ -1068,7 +1118,7 @@
     \ifconditional\c_lists_has_page
         \ifconditional\c_lists_show_page
             \nobreak
-            \hskip.75em\relax
+            \hskip.75\emwidth\relax
             \nobreak
             \strc_lists_set_reference_attribute\v!pagenumber
             \strc_lists_set_style_color\c!pagestyle\c!pagecolor\v!pagenumber
@@ -1088,7 +1138,9 @@
 \stopsetups
 
 \startsetups[\??listrenderings:e]
-    \noindent
+    \typo_injectors_check_list
+    \noindent % otherwise annotations are mirrored up
+    \typo_injectors_mark_list
     \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
         \letlistparameter\c!depth\zeropoint
         \letlistparameter\c!color\empty
@@ -1108,7 +1160,9 @@
 \stopsetups
 
 \startsetups[\??listrenderings:f]
-    \noindent
+    \typo_injectors_check_list
+    \noindent % otherwise annotations are mirrored up
+    \typo_injectors_mark_list
     \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
         \dosetraggedhbox{\listparameter\c!align}%
         \raggedbox {
@@ -1126,7 +1180,9 @@
 \stopsetups
 
 \startsetups[\??listrenderings:g]
-    \noindent
+    \typo_injectors_check_list
+    \noindent % otherwise annotations are mirrored up
+    \typo_injectors_mark_list
     \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
         \midaligned {
             \strc_lists_set_style_color\c!style\c!color\v!all
@@ -1147,19 +1203,115 @@
 
 \definelistalternative
   [\v!interactive]
-  [\c!renderingsetup=\??listrenderings:interactive]
+  [\c!renderingsetup=\??listrenderings:interactive,
+   \c!before=\endgraf, % new per 2014-11-08
+   \c!after=\endgraf]  % new per 2014-11-08
 
 \startsetups[\??listrenderings:interactive]
-   \edef\p_command{\listalternativeparameter\c!command}%
-   \ifx\p_command\empty
-       [\currentlist: \currentlistentrynumber\space -- \currentlistentrytitle\space -- \currentlistentrypagenumber]%
-   \else
-       \listparameter\c!before
-       \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
-           \p_command\currentlistentrynumber\currentlistentrytitle\currentlistentrypagenumber
-       }
-       \listparameter\c!after
-   \fi
+    \edef\p_command{\listalternativeparameter\c!command}%
+    \typo_injectors_check_list
+    \listparameter\c!before
+    \noindent % otherwise annotations are mirrored up
+    \typo_injectors_mark_list
+    \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
+        \ifx\p_command\empty
+            [
+                \currentlist:\space
+                \currentlistentrynumber
+                \space\emdash\space
+                \currentlistentrytitle
+                \space\emdash\space
+                \currentlistentrypagenumber
+            ]
+        \else
+            \p_command\currentlistentrynumber\currentlistentrytitle\currentlistentrypagenumber
+        \fi
+   }
+   \listparameter\c!after
+\stopsetups
+
+%D One special for publications (as Alan loves to hangindent). No fonts and
+%D such (for now). No interaction either as that is dealt with elsewhere.
+%D
+%D \currentlistsymbol
+%D \currentlistentry
+%D \currentlistentrypagenumber % not really used
+
+\definelistalternative
+  [\v!paragraph]
+  [\c!filler=\hskip.25\emwidth,
+   \c!renderingsetup=\??listrenderings:\v!paragraph]
+
+\startsetups[\??listrenderings:\v!paragraph]
+    \endgraf % are we grouped?
+    \typo_injectors_check_list % ?
+    \listparameter\c!before
+    \endgraf
+    \begingroup
+    \forgetall
+    \noindent
+    \parindent\zeropoint
+    \edef\p_width{\listparameter\c!width}%
+    \edef\p_distance{\listparameter\c!distance}% we are nice for bib users
+    \edef\p_margin{\listparameter\c!margin}% we are nice for bib users
+    \ifx\p_distance\v!none
+        \scratchdistance\zeropoint
+    \else
+        \scratchdistance\p_distance
+    \fi
+    \ifx\p_margin\v!none
+        \scratchoffset\zeropoint
+    \else
+        \scratchoffset\p_margin
+    \fi
+    \ifx\p_width\v!fit
+        \scratchwidth\zeropoint
+        \leftskip\scratchoffset
+    \else
+        \scratchwidth\p_width
+        \ifdim\scratchoffset=\zeropoint
+            \leftskip\dimexpr\scratchwidth+\scratchdistance\relax
+        \else
+            \leftskip\scratchoffset
+        \fi
+    \fi
+    \usealignparameter\listparameter
+    \hskip-\leftskip
+    \ifconditional\c_lists_has_number
+        \ifconditional\c_lists_show_number
+            \setbox\scratchbox
+                \simplealignedbox\scratchwidth{\listparameter\c!numberalign}
+                \bgroup
+                    \useliststyleandcolor\c!numberstyle\c!numbercolor
+                    \currentlistsymbol
+                \egroup
+            \ifdim\wd\scratchbox>\zeropoint
+                \box\scratchbox
+                \hskip\scratchdistance\relax
+            \fi
+        \fi
+    \fi
+    \begingroup
+        \useliststyleandcolor\c!textstyle\c!textcolor
+        \setstrut
+        \begstrut
+        \currentlistentrytitle
+        \endstrut
+    \endgroup
+    \ifconditional\c_lists_has_page
+        \ifconditional\c_lists_show_page
+            \nobreak
+            \listalternativeparameter\c!filler\relax
+            \begingroup
+                \useliststyleandcolor\c!pagestyle\c!pagecolor
+                \currentlistentrypagenumber
+            \endgroup
+        \fi
+    \fi
+    \endgraf
+    \endgroup
+    \allowbreak
+    \listparameter\c!after
 \stopsetups
 
 %D List elements are packaged in such a way that we can click on them
@@ -1302,7 +1454,7 @@
      \let\listlength\!!zerocount
    \else
      \setupcurrentlist[#settings]%
-     \strc_lists_analyze{#list}{\listparameter\c!criterium}{\listparameter\c!number}%
+     \strc_lists_analyze{#list}{\listparameter\c!criterium}{\listparameter\c!reference}%
      \normalexpanded{\endgroup\noexpand\edef\noexpand\listlength{\structurelistsize}}%
    \fi
    \strc_lists_set_mode}

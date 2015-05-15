@@ -32,8 +32,10 @@ local formatters = string.formatters
 -- todo: global switch (so no attributes)
 -- todo: maybe also xoffset, yoffset of glyph
 -- todo: inline concat (more efficient)
+-- todo: tags can also be numbers (just add to hash)
 
 local nodecodes           = nodes.nodecodes
+local disc_code           = nodecodes.disc
 local kern_code           = nodecodes.kern
 local glyph_code          = nodecodes.glyph
 local hlist_code          = nodecodes.hlist
@@ -42,6 +44,7 @@ local glue_code           = nodecodes.glue
 local penalty_code        = nodecodes.penalty
 local whatsit_code        = nodecodes.whatsit
 local user_code           = nodecodes.user
+local math_code           = nodecodes.math
 local gluespec_code       = nodecodes.gluespec
 
 local kerncodes           = nodes.kerncodes
@@ -57,31 +60,54 @@ local leftskip_code       = gluecodes.leftskip
 local rightskip_code      = gluecodes.rightskip
 
 local whatsitcodes        = nodes.whatsitcodes
+local mathcodes           = nodes.mathcodes
 
-local hpack_nodes         = node.hpack
-local vpack_nodes         = node.vpack
-local fast_hpack_string   = nodes.typesetters.fast_hpack
-local copy_node           = node.copy
-local copy_list           = node.copy_list
-local free_node           = node.free
-local free_node_list      = node.flush_list
-local insert_node_before  = node.insert_before
-local insert_node_after   = node.insert_after
-local fast_hpack          = nodes.fasthpack
-local traverse_nodes      = node.traverse
+local nuts                = nodes.nuts
+local tonut               = nuts.tonut
+local tonode              = nuts.tonode
+
+local getfield            = nuts.getfield
+local getnext             = nuts.getnext
+local getprev             = nuts.getprev
+local getid               = nuts.getid
+local setfield            = nuts.setfield
+local getattr             = nuts.getattr
+local setattr             = nuts.setattr
+local getfont             = nuts.getfont
+local getsubtype          = nuts.getsubtype
+local getchar             = nuts.getchar
+local getbox              = nuts.getbox
+local getlist             = nuts.getlist
+local getleader           = nuts.getleader
+
+local hpack_nodes         = nuts.hpack
+local vpack_nodes         = nuts.vpack
+local copy_node           = nuts.copy
+local copy_list           = nuts.copy_list
+local free_node           = nuts.free
+local free_node_list      = nuts.flush_list
+local insert_node_before  = nuts.insert_before
+local insert_node_after   = nuts.insert_after
+local traverse_nodes      = nuts.traverse
+local linked_nodes        = nuts.linked
+
+local fast_hpack          = nuts.fasthpack
+local fast_hpack_string   = nuts.typesetters.fast_hpack
 
 local texgetattribute     = tex.getattribute
 local texsetattribute     = tex.setattribute
-local texgetbox           = tex.getbox
+
 local unsetvalue          = attributes.unsetvalue
 
 local current_font        = font.current
 
-local exheights           = fonts.hashes.exheights
-local emwidths            = fonts.hashes.emwidths
+local fonthashes          = fonts.hashes
+local chardata            = fonthashes.characters
+local exheights           = fonthashes.exheights
+local emwidths            = fonthashes.emwidths
 local pt_factor           = number.dimenfactors.pt
 
-local nodepool            = nodes.pool
+local nodepool            = nuts.pool
 local new_rule            = nodepool.rule
 local new_kern            = nodepool.kern
 local new_glue            = nodepool.glue
@@ -117,6 +143,7 @@ local trace_fontkern
 local trace_strut
 local trace_whatsit
 local trace_user
+local trace_math
 
 local report_visualize = logs.reporter("visualize")
 
@@ -136,21 +163,22 @@ local modes = {
     simplevbox = 1024 + 2,
     simplevtop = 1024 + 4,
     user       = 2048,
+    math       = 4096,
 }
 
 local modes_makeup = { "hbox", "vbox", "kern", "glue", "penalty" }
 local modes_boxes  = { "hbox", "vbox"  }
-local modes_all    = { "hbox", "vbox", "kern", "glue", "penalty", "fontkern", "whatsit", "glyph", "user" }
+local modes_all    = { "hbox", "vbox", "kern", "glue", "penalty", "fontkern", "whatsit", "glyph", "user", "math" }
 
 local usedfont, exheight, emwidth
-local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user
+local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math
 
 local enabled = false
 local layers  = { }
 
 local preset_boxes  = modes.hbox + modes.vbox
 local preset_makeup = preset_boxes + modes.kern + modes.glue + modes.penalty
-local preset_all    = preset_makeup + modes.fontkern + modes.whatsit + modes.glyph + modes.user
+local preset_all    = preset_makeup + modes.fontkern + modes.whatsit + modes.glyph + modes.user + modes.math
 
 function visualizers.setfont(id)
     usedfont = id or current_font()
@@ -162,7 +190,7 @@ end
 
 local function enable()
     if not usedfont then
-        -- we use a narrow monospaced font
+        -- we use a narrow monospaced font -- infofont ?
         visualizers.setfont(fonts.definers.define { name = "lmmonoltcond10regular", size = tex.sp("4pt") })
     end
     for mode, value in next, modes do
@@ -187,6 +215,7 @@ local function enable()
     l_whatsit  = layers.whatsit
     l_glyph    = layers.glyph
     l_user     = layers.user
+    l_math     = layers.math
     nodes.tasks.enableaction("shipouts","nodes.visualizers.handler")
     report_visualize("enabled")
     enabled = true
@@ -251,13 +280,6 @@ function visualizers.setlayer(n)
     texsetattribute(a_layer,layers[n] or unsetvalue)
 end
 
-commands.setvisual = visualizers.setvisual
-commands.setlayer  = visualizers.setlayer
-
-function commands.visual(n)
-    context(setvisual(n))
-end
-
 local function set(mode,v)
     texsetattribute(a_visual,setvisual(mode,texgetattribute(a_visual),v))
 end
@@ -266,10 +288,13 @@ for mode, value in next, modes do
     trackers.register(formatters["visualizers.%s"](mode), function(v) set(mode,v) end)
 end
 
-trackers.register("visualizers.reset", function(v) set("reset", v) end)
-trackers.register("visualizers.all",   function(v) set("all",   v) end)
-trackers.register("visualizers.makeup",function(v) set("makeup",v) end)
-trackers.register("visualizers.boxes", function(v) set("boxes", v) end)
+local fraction = 10
+
+trackers  .register("visualizers.reset",    function(v) set("reset", v) end)
+trackers  .register("visualizers.all",      function(v) set("all",   v) end)
+trackers  .register("visualizers.makeup",   function(v) set("makeup",v) end)
+trackers  .register("visualizers.boxes",    function(v) set("boxes", v) end)
+directives.register("visualizers.fraction", function(v) fraction = tonumber(v) or fraction end)
 
 local c_positive   = "trace:b"
 local c_negative   = "trace:r"
@@ -279,7 +304,9 @@ local c_space      = "trace:y"
 local c_skip_a     = "trace:c"
 local c_skip_b     = "trace:m"
 local c_glyph      = "trace:o"
+local c_ligature   = "trace:s"
 local c_white      = "trace:w"
+local c_math       = "trace:r"
 
 local c_positive_d = "trace:db"
 local c_negative_d = "trace:dr"
@@ -289,43 +316,48 @@ local c_space_d    = "trace:dy"
 local c_skip_a_d   = "trace:dc"
 local c_skip_b_d   = "trace:dm"
 local c_glyph_d    = "trace:do"
+local c_ligature_d = "trace:ds"
 local c_white_d    = "trace:dw"
+local c_math_d     = "trace:dr"
 
-local function sometext(str,layer,color,textcolor) -- we can just paste verbatim together .. no typesteting needed
+local function sometext(str,layer,color,textcolor,lap) -- we can just paste verbatim together .. no typesteting needed
     local text = fast_hpack_string(str,usedfont)
-    local size = text.width
+    local size = getfield(text,"width")
     local rule = new_rule(size,2*exheight,exheight/2)
     local kern = new_kern(-size)
     if color then
         setcolor(rule,color)
     end
     if textcolor then
-        setlistcolor(text.list,textcolor)
+        setlistcolor(getlist(text),textcolor)
     end
-    local info = rule .. kern .. text
+    local info = linked_nodes(rule,kern,text)
     setlisttransparency(info,c_zero)
     info = fast_hpack(info)
-    if layer then
-        info[a_layer] = layer
+    local width = getfield(info,"width")
+    if lap then
+        info = fast_hpack(linked_nodes(new_kern(-width),info))
     end
-    local width = info.width
-    info.width = 0
-    info.height = 0
-    info.depth = 0
+    if layer then
+        setattr(info,a_layer,layer)
+    end
+    setfield(info,"width",0)
+    setfield(info,"height",0)
+    setfield(info,"depth",0)
     return info, width
 end
 
 local f_cache = { }
 
 local function fontkern(head,current)
-    local kern = current.kern
+    local kern = getfield(current,"kern")
     local info = f_cache[kern]
     if info then
         -- print("hit fontkern")
     else
         local text = fast_hpack_string(formatters[" %0.3f"](kern*pt_factor),usedfont)
-        local rule = new_rule(emwidth/10,6*exheight,2*exheight)
-        local list = text.list
+        local rule = new_rule(emwidth/fraction,6*exheight,2*exheight)
+        local list = getlist(text)
         if kern > 0 then
             setlistcolor(list,c_positive_d)
         elseif kern < 0 then
@@ -335,13 +367,12 @@ local function fontkern(head,current)
         end
         setlisttransparency(list,c_text_d)
         settransparency(rule,c_text_d)
-        text.shift = -5 * exheight
-        info = rule .. text
-        info = fast_hpack(info)
-        info[a_layer] = l_fontkern
-        info.width = 0
-        info.height = 0
-        info.depth = 0
+        setfield(text,"shift",-5 * exheight)
+        info = fast_hpack(linked_nodes(rule,text))
+        setattr(info,a_layer,l_fontkern)
+        setfield(info,"width",0)
+        setfield(info,"height",0)
+        setfield(info,"depth",0)
         f_cache[kern] = info
     end
     head = insert_node_before(head,current,copy_list(info))
@@ -349,8 +380,7 @@ local function fontkern(head,current)
 end
 
 local w_cache = { }
-
-local tags = {
+local tags    = {
     open           = "FIC",
     write          = "FIW",
     close          = "FIC",
@@ -382,7 +412,7 @@ local tags = {
 }
 
 local function whatsit(head,current)
-    local what = current.subtype
+    local what = getsubtype(current)
     local info = w_cache[what]
     if info then
         -- print("hit whatsit")
@@ -390,22 +420,45 @@ local function whatsit(head,current)
         local tag = whatsitcodes[what]
         -- maybe different text colors per tag
         info = sometext(formatters["W:%s"](tag and tags[tag] or what),usedfont,nil,c_white)
-        info[a_layer] = l_whatsit
+        setattr(info,a_layer,l_whatsit)
         w_cache[what] = info
     end
     head, current = insert_node_after(head,current,copy_list(info))
     return head, current
 end
 
+local u_cache = { }
+
 local function user(head,current)
-    local what = current.subtype
-    local info = w_cache[what]
+    local what = getsubtype(current)
+    local info = u_cache[what]
     if info then
         -- print("hit user")
     else
         info = sometext(formatters["U:%s"](what),usedfont)
-        info[a_layer] = l_user
-        w_cache[what] = info
+        setattr(info,a_layer,l_user)
+        u_cache[what] = info
+    end
+    head, current = insert_node_after(head,current,copy_list(info))
+    return head, current
+end
+
+local m_cache = { }
+local tags    = {
+    beginmath = "B",
+    endmath   = "E",
+}
+
+local function math(head,current)
+    local what = getsubtype(current)
+    local info = m_cache[what]
+    if info then
+        -- print("hit math")
+    else
+        local tag = mathcodes[what]
+        info = sometext(formatters["M:%s"](tag and tags[tag] or what),usedfont,nil,c_math_d)
+        setattr(info,a_layer,l_math)
+        m_cache[what] = info
     end
     head, current = insert_node_after(head,current,copy_list(info))
     return head, current
@@ -414,15 +467,15 @@ end
 local b_cache = { }
 
 local function ruledbox(head,current,vertical,layer,what,simple,previous)
-    local wd = current.width
+    local wd = getfield(current,"width")
     if wd ~= 0 then
-        local ht = current.height
-        local dp = current.depth
-        local next = current.next
-        local prev = previous -- current.prev ... prev can be wrong in math mode
-        current.next = nil
-        current.prev = nil
-        local linewidth = emwidth/10
+        local ht = getfield(current,"height")
+        local dp = getfield(current,"depth")
+        local next = getnext(current)
+        local prev = previous -- getprev(current) ... prev can be wrong in math mode < 0.78.3
+        setfield(current,"next",nil)
+        setfield(current,"prev",nil)
+        local linewidth = emwidth/fraction
         local baseline, baseskip
         if dp ~= 0 and ht ~= 0 then
             if wd > 20*linewidth then
@@ -430,16 +483,16 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous)
                 if not baseline then
                     -- due to an optimized leader color/transparency we need to set the glue node in order
                     -- to trigger this mechanism
-                    local leader = new_glue(2*linewidth) .. new_rule(6*linewidth,linewidth,0) .. new_glue(2*linewidth)
+                    local leader = linked_nodes(new_glue(2*linewidth),new_rule(6*linewidth,linewidth,0),new_glue(2*linewidth))
                  -- setlisttransparency(leader,c_text)
                     leader = fast_hpack(leader)
                  -- setlisttransparency(leader,c_text)
                     baseline = new_glue(0)
-                    baseline.leader = leader
-                    baseline.subtype = cleaders_code
-                    local spec = baseline.spec
-                    spec.stretch = 65536
-                    spec.stretch_order = 2
+                    setfield(baseline,"leader",leader)
+                    setfield(baseline,"subtype",cleaders_code)
+                    local spec = getfield(baseline,"spec")
+                    setfield(spec,"stretch",65536)
+                    setfield(spec,"stretch_order",2)
                     setlisttransparency(baseline,c_text)
                     b_cache.baseline = baseline
                 end
@@ -461,47 +514,49 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous)
             this = b_cache[what]
             if not this then
                 local text = fast_hpack_string(what,usedfont)
-                this = new_kern(-text.width) .. text
+                this = linked_nodes(new_kern(-getfield(text,"width")),text)
                 setlisttransparency(this,c_text)
                 this = fast_hpack(this)
-                this.width = 0
-                this.height = 0
-                this.depth = 0
+                setfield(this,"width",0)
+                setfield(this,"height",0)
+                setfield(this,"depth",0)
                 b_cache[what] = this
             end
         end
         -- we need to trigger the right mode (else sometimes no whatits)
-        local info =
-            (this and copy_list(this) or nil) ..
-            new_rule(linewidth,ht,dp) ..
-            new_rule(wd-2*linewidth,-dp+linewidth,dp) ..
-            new_rule(linewidth,ht,dp) ..
-            new_kern(-wd+linewidth) ..
+        local info = linked_nodes(
+            this and copy_list(this) or nil,
+            new_rule(linewidth,ht,dp),
+            new_rule(wd-2*linewidth,-dp+linewidth,dp),
+            new_rule(linewidth,ht,dp),
+            new_kern(-wd+linewidth),
             new_rule(wd-2*linewidth,ht,-ht+linewidth)
+        )
         if baseskip then
-            info = info .. baseskip .. baseline
+            info = linked_nodes(info,baseskip,baseline)
         end
         setlisttransparency(info,c_text)
         info = fast_hpack(info)
-        info.width = 0
-        info.height = 0
-        info.depth = 0
-        info[a_layer] = layer
-        local info = current .. new_kern(-wd) .. info
+        setfield(info,"width",0)
+        setfield(info,"height",0)
+        setfield(info,"depth",0)
+        setattr(info,a_layer,layer)
+        local info = linked_nodes(current,new_kern(-wd),info)
         info = fast_hpack(info,wd)
         if vertical then
             info = vpack_nodes(info)
         end
         if next then
-            info.next = next
-            next.prev = info
+            setfield(info,"next",next)
+            setfield(next,"prev",info)
         end
         if prev then
-            if prev.id == gluespec_code then
-                -- weird, how can this happen, an inline glue-spec
+            if getid(prev) == gluespec_code then
+                report_visualize("ignoring invalid prev")
+                -- weird, how can this happen, an inline glue-spec, probably math
             else
-                info.prev = prev
-                prev.next = info
+                setfield(info,"prev",prev)
+                setfield(prev,"next",info)
             end
         end
         if head == current then
@@ -515,46 +570,55 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous)
 end
 
 local function ruledglyph(head,current,previous)
-    local wd = current.width
+    local wd = getfield(current,"width")
+ -- local wd = chardata[getfield(current,"font")][getfield(current,"char")].width
     if wd ~= 0 then
-        local ht = current.height
-        local dp = current.depth
-        local next = current.next
+        local ht = getfield(current,"height")
+        local dp = getfield(current,"depth")
+        local next = getnext(current)
         local prev = previous
-        current.next = nil
-        current.prev = nil
-        local linewidth = emwidth/20
+        setfield(current,"next",nil)
+        setfield(current,"prev",nil)
+        local linewidth = emwidth/(2*fraction)
         local baseline
-        if dp ~= 0 and ht ~= 0 then
+     -- if dp ~= 0 and ht ~= 0 then
+        if (dp >= 0 and ht >= 0) or (dp <= 0 and ht <= 0) then
             baseline = new_rule(wd-2*linewidth,linewidth,0)
         end
         local doublelinewidth = 2*linewidth
         -- could be a pdf rule
-        local info =
-            new_rule(linewidth,ht,dp) ..
-            new_rule(wd-doublelinewidth,-dp+linewidth,dp) ..
-            new_rule(linewidth,ht,dp) ..
-            new_kern(-wd+linewidth) ..
-            new_rule(wd-doublelinewidth,ht,-ht+linewidth) ..
-            new_kern(-wd+doublelinewidth) ..
+        local info = linked_nodes(
+            new_rule(linewidth,ht,dp),
+            new_rule(wd-doublelinewidth,-dp+linewidth,dp),
+            new_rule(linewidth,ht,dp),
+            new_kern(-wd+linewidth),
+            new_rule(wd-doublelinewidth,ht,-ht+linewidth),
+            new_kern(-wd+doublelinewidth),
             baseline
+        )
+local char = chardata[getfield(current,"font")][getfield(current,"char")]
+if char and char.tounicode and #char.tounicode > 4 then -- hack test
+        setlistcolor(info,c_ligature)
+        setlisttransparency(info,c_ligature_d)
+else
         setlistcolor(info,c_glyph)
         setlisttransparency(info,c_glyph_d)
+end
         info = fast_hpack(info)
-        info.width = 0
-        info.height = 0
-        info.depth = 0
-        info[a_layer] = l_glyph
-        local info = current .. new_kern(-wd) .. info
+        setfield(info,"width",0)
+        setfield(info,"height",0)
+        setfield(info,"depth",0)
+        setattr(info,a_layer,l_glyph)
+        local info = linked_nodes(current,new_kern(-wd),info)
         info = fast_hpack(info)
-        info.width = wd
+        setfield(info,"width",wd)
         if next then
-            info.next = next
-            next.prev = info
+            setfield(info,"next",next)
+            setfield(next,"prev",info)
         end
         if prev then
-            info.prev = prev
-            prev.next = info
+            setfield(info,"prev",prev)
+            setfield(prev,"next",info)
         end
         if head == current then
             return info, info
@@ -599,9 +663,9 @@ local tags = {
 -- we sometimes pass previous as we can have issues in math (not watertight for all)
 
 local function ruledglue(head,current,vertical)
-    local spec = current.spec
-    local width = spec.width
-    local subtype = current.subtype
+    local spec = getfield(current,"spec")
+    local width = getfield(spec,"width")
+    local subtype = getsubtype(current)
     local amount = formatters["%s:%0.3f"](tags[subtype] or (vertical and "VS") or "HS",width*pt_factor)
     local info = g_cache[amount]
     if info then
@@ -629,13 +693,13 @@ local function ruledglue(head,current,vertical)
         info = vpack_nodes(info)
     end
     head, current = insert_node_before(head,current,info)
-    return head, current.next
+    return head, getnext(current)
 end
 
 local k_cache = { }
 
 local function ruledkern(head,current,vertical)
-    local kern = current.kern
+    local kern = getfield(current,"kern")
     local info = k_cache[kern]
     if info then
         -- print("kern hit")
@@ -655,13 +719,13 @@ local function ruledkern(head,current,vertical)
         info = vpack_nodes(info)
     end
     head, current = insert_node_before(head,current,info)
-    return head, current.next
+    return head, getnext(current)
 end
 
 local p_cache = { }
 
 local function ruledpenalty(head,current,vertical)
-    local penalty = current.penalty
+    local penalty = getfield(current,"penalty")
     local info = p_cache[penalty]
     if info then
         -- print("penalty hit")
@@ -681,10 +745,10 @@ local function ruledpenalty(head,current,vertical)
         info = vpack_nodes(info)
     end
     head, current = insert_node_before(head,current,info)
-    return head, current.next
+    return head, getnext(current)
 end
 
-local function visualize(head,vertical)
+local function visualize(head,vertical,forced)
     local trace_hbox     = false
     local trace_vbox     = false
     local trace_vtop     = false
@@ -697,13 +761,14 @@ local function visualize(head,vertical)
     local trace_glyph    = false
     local trace_simple   = false
     local trace_user     = false
+    local trace_math     = false
     local current        = head
     local previous       = nil
     local attr           = unsetvalue
     local prev_trace_fontkern = nil
     while current do
-        local id = current.id
-        local a = current[a_visual] or unsetvalue
+        local id = getid(current)
+        local a = forced or getattr(current,a_visual) or unsetvalue
         if a ~= attr then
             prev_trace_fontkern = trace_fontkern
             if a == unsetvalue then
@@ -719,6 +784,7 @@ local function visualize(head,vertical)
                 trace_glyph    = false
                 trace_simple   = false
                 trace_user     = false
+                trace_math     = false
             else -- dead slow:
                 trace_hbox     = hasbit(a,   1)
                 trace_vbox     = hasbit(a,   2)
@@ -732,46 +798,45 @@ local function visualize(head,vertical)
                 trace_glyph    = hasbit(a, 512)
                 trace_simple   = hasbit(a,1024)
                 trace_user     = hasbit(a,2048)
+                trace_math     = hasbit(a,4096)
             end
             attr = a
         end
         if trace_strut then
-            current[a_layer] = l_strut
+            setattr(current,a_layer,l_strut)
         elseif id == glyph_code then
             if trace_glyph then
                 head, current = ruledglyph(head,current,previous)
             end
         elseif id == disc_code then
-            if trace_glyph then
-                local pre = current.pre
-                if pre then
-                    current.pre = ruledglyph(pre,pre)
-                end
-                local post = current.post
-                if post then
-                    current.post = ruledglyph(post,post)
-                end
-                local replace = current.replace
-                if replace then
-                    current.replace = ruledglyph(replace,replace)
-                end
+            local pre = getfield(current,"pre")
+            if pre then
+                setfield(current,"pre",visualize(pre,false,a))
+            end
+            local post = getfield(current,"post")
+            if post then
+                setfield(current,"post",visualize(post,false,a))
+            end
+            local replace = getfield(current,"replace")
+            if replace then
+                setfield(current,"replace",visualize(replace,false,a))
             end
         elseif id == kern_code then
-            local subtype = current.subtype
+            local subtype = getsubtype(current)
             -- tricky ... we don't copy the trace attribute in node-inj (yet)
-            if subtype == font_kern_code or current[a_fontkern] then
+            if subtype == font_kern_code or getattr(current,a_fontkern) then
                 if trace_fontkern or prev_trace_fontkern then
                     head, current = fontkern(head,current)
                 end
-            elseif subtype == user_kern_code then
+            else -- if subtype == user_kern_code then
                 if trace_kern then
                     head, current = ruledkern(head,current,vertical)
                 end
             end
         elseif id == glue_code then
-            local content = current.leader
+            local content = getleader(current)
             if content then
-                current.leader = visualize(content,false)
+                setfield(current,"leader",visualize(content,false))
             elseif trace_glue then
                 head, current = ruledglue(head,current,vertical)
             end
@@ -779,22 +844,18 @@ local function visualize(head,vertical)
             if trace_penalty then
                 head, current = ruledpenalty(head,current,vertical)
             end
-        elseif id == disc_code then
-            current.pre = visualize(current.pre)
-            current.post = visualize(current.post)
-            current.replace = visualize(current.replace)
         elseif id == hlist_code then
-            local content = current.list
+            local content = getlist(current)
             if content then
-                current.list = visualize(content,false)
+                setfield(current,"list",visualize(content,false))
             end
             if trace_hbox then
                 head, current = ruledbox(head,current,false,l_hbox,"H__",trace_simple,previous)
             end
         elseif id == vlist_code then
-            local content = current.list
+            local content = getlist(current)
             if content then
-                current.list = visualize(content,true)
+                setfield(current,"list",visualize(content,true))
             end
             if trace_vtop then
                 head, current = ruledbox(head,current,true,l_vtop,"_T_",trace_simple,previous)
@@ -806,12 +867,16 @@ local function visualize(head,vertical)
                 head, current = whatsit(head,current)
             end
         elseif id == user_code then
-            if trace_whatsit then
+            if trace_user then
                 head, current = user(head,current)
+            end
+        elseif id == math_code then
+            if trace_math then
+                head, current = math(head,current)
             end
         end
         previous = current
-        current  = current.next
+        current  = getnext(current)
     end
     return head
 end
@@ -837,28 +902,39 @@ local function cleanup()
     nk, k_cache = freed(k_cache)
     nw, w_cache = freed(w_cache)
     nb, b_cache = freed(b_cache)
- -- report_visualize("cache: %s fontkerns, %s skips, %s penalties, %s kerns, %s whatsits, %s boxes",nf,ng,np,nk,nw,nb)
+ -- report_visualize("cache cleanup: %s fontkerns, %s skips, %s penalties, %s kerns, %s whatsits, %s boxes",nf,ng,np,nk,nw,nb)
 end
 
-function visualizers.handler(head)
+local function handler(head)
     if usedfont then
         starttiming(visualizers)
      -- local l = texgetattribute(a_layer)
      -- local v = texgetattribute(a_visual)
      -- texsetattribute(a_layer,unsetvalue)
      -- texsetattribute(a_visual,unsetvalue)
-        head = visualize(head)
+        head = visualize(tonut(head))
      -- texsetattribute(a_layer,l)
      -- texsetattribute(a_visual,v)
      -- -- cleanup()
         stoptiming(visualizers)
+        return tonode(head), true
+    else
+        return head, false
     end
-    return head, false
 end
 
+visualizers.handler = handler
+
 function visualizers.box(n)
-    local box = texgetbox(n)
-    box.list = visualizers.handler(box.list)
+    if usedfont then
+        starttiming(visualizers)
+        local box = getbox(n)
+        setfield(box,"list",visualize(getlist(box)))
+        stoptiming(visualizers)
+        return head, true
+    else
+        return head, false
+    end
 end
 
 local last = nil
@@ -872,9 +948,9 @@ local mark = {
 
 local function markfonts(list)
     for n in traverse_nodes(list) do
-        local id = n.id
+        local id = getid(n)
         if id == glyph_code then
-            local font = n.font
+            local font = getfont(n)
             local okay = used[font]
             if not okay then
                 last = last + 1
@@ -883,23 +959,32 @@ local function markfonts(list)
             end
             setcolor(n,okay)
         elseif id == hlist_code or id == vlist_code then
-            markfonts(n.list)
+            markfonts(getlist(n))
         end
     end
 end
 
 function visualizers.markfonts(list)
     last, used = 0, { }
-    markfonts(type(n) == "number" and texgetbox(n).list or n)
+    markfonts(type(n) == "number" and getlist(getbox(n)) or n)
 end
 
-function commands.markfonts(n)
-    visualizers.markfonts(n)
-end
+luatex.registerstopactions(cleanup)
 
 statistics.register("visualization time",function()
     if enabled then
-        cleanup() -- in case we don't don't do it each time
+     -- cleanup() -- in case we don't don't do it each time
         return format("%s seconds",statistics.elapsedtime(visualizers))
     end
 end)
+
+-- interface
+
+local implement = interfaces.implement
+
+implement { name = "setvisual",       arguments = "string",  actions = visualizers.setvisual }
+implement { name = "getvisual",       arguments = "string",  actions = { setvisual, context } }
+implement { name = "setvisuallayer",  arguments = "string",  actions = visualizers.setlayer }
+implement { name = "markvisualfonts", arguments = "integer", actions = visualizers.markfonts }
+implement { name = "setvisualfont",   arguments = "integer", actions = visualizers.setfont }
+

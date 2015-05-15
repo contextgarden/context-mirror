@@ -1275,6 +1275,10 @@ return {
    ["pe"]="تعریف‌مترادفها",
    ["ro"]="definestesinonim",
   },
+  ["placelistofsynonyms"]={
+    ["en"]="placelistofsynonyms",
+    ["nl"]="plaatslijstmetsynoniemen",
+  },
   ["definetabletemplate"]={
    ["cs"]="definujsablonutabulky",
    ["de"]="definieretabellenvorlage",
@@ -2905,7 +2909,7 @@ return {
    ["pe"]="نقطه‌ها",
    ["ro"]="puncte",
   },
-  ["plaatsruwelijst"]={
+  ["placerawlist"]={
    ["cs"]="placerawlist",
    ["de"]="placerawlist",
    ["en"]="placerawlist",
@@ -3055,7 +3059,7 @@ return {
    ["pe"]="درج‌شماره‌صفحه",
    ["ro"]="punenumarpagina",
   },
-  ["placereferencelist"]={
+  ["placereferencelist"]={ -- not in mkiv
    ["cs"]="placereferencelist",
    ["de"]="placereferencelist",
    ["en"]="placereferencelist",
@@ -4509,16 +4513,6 @@ return {
    ["pe"]="بارگذاری‌خط",
    ["ro"]="seteazarigla",
   },
-  ["setups"]={
-   ["cs"]="nastaveni",
-   ["de"]="einstellungen",
-   ["en"]="setups",
-   ["fr"]="reglages",
-   ["it"]="impostazioni",
-   ["nl"]="instellingen",
-   ["pe"]="بارگذاریها",
-   ["ro"]="setari",
-  },
   ["setupscreens"]={
    ["cs"]="nastavrastr",
    ["de"]="stellerasterein",
@@ -5038,6 +5032,30 @@ return {
    ["nl"]="startuitlijnen",
    ["pe"]="شروع‌تنظیم",
    ["ro"]="startaliniere",
+  },
+  ["starttextbackground"]={
+   ["en"]="starttextbackground",
+   ["nl"]="starttekstachtergrond",
+  },
+  ["stoptextbackground"]={
+   ["en"]="stoptextbackground",
+   ["nl"]="stoptekstachtergrond",
+  },
+  ["setuptextbackground"]={
+   ["en"]="setuptextbackground",
+   ["nl"]="steltekstachtergrondin",
+  },
+  ["definetextbackground"]={
+   ["en"]="definetextbackground",
+   ["nl"]="definieertekstachtergrond",
+  },
+  ["startframed"]={
+   ["en"]="startframed",
+   ["nl"]="startomlijnd",
+  },
+  ["stopframed"]={
+   ["en"]="stopframed",
+   ["nl"]="stopomlijnd",
   },
   ["startbackground"]={
    ["cs"]="startpozadi",
@@ -6454,6 +6472,10 @@ return {
   },
  },
  ["constants"]={
+  ["setups"]={
+   ["comment"]="no translations",
+   ["en"]="setups",
+  },
   -- select/simplefonts
   ["regularfont"]        ={ ["en"]="regularfont" },
   ["boldfont"]           ={ ["en"]="boldfont" },
@@ -6508,8 +6530,8 @@ return {
   ["export"] = {
     ["en"]="export",
   },
-  ["css"] = {
-    ["en"]="css",
+  ["cssfile"] = {
+    ["en"]="cssfile",
   },
   ["xhtml"] = {
     ["en"]="xhtml",
@@ -6522,7 +6544,7 @@ return {
    ["en"]="labeloffset",
   },
   ["exitoffset"]={
-   ["en"]="labeloffset",
+   ["en"]="exitoffset",
   },
   ["commentoffset"]={
    ["en"]="commentoffset",
@@ -6557,6 +6579,10 @@ return {
   ["headalign"]={
    ["en"]="headalign",
    ["nl"]="kopuitlijnen",
+  },
+  ["numberalign"]={
+   ["en"]="numberalign",
+   ["nl"]="nummeruitlijnen",
   },
   ["alignsymbol"]={
    ["en"]="alignsymbol",
@@ -6613,6 +6639,9 @@ return {
   ["firstnamesep"]={
    ["en"]="firstnamesep",
   },
+  ["surnamefirstnamesep"]={
+   ["en"]="surnamefirstnamesep",
+  },
   ["vonsep"]={
    ["en"]="vonsep",
   },
@@ -6621,6 +6650,12 @@ return {
   },
   ["surnamesep"]={
    ["en"]="surnamesep",
+  },
+  ["initialsep"]={
+   ["en"]="initialsep",
+  },
+  ["surnameinitialsep"]={
+   ["en"]="surnameinitialsep",
   },
   ["lastnamesep"]={
    ["en"]="lastnamesep",
@@ -6636,6 +6671,9 @@ return {
   },
   ["lastpubsep"]={
    ["en"]="lastpubsep",
+  },
+  ["finalpubsep"]={
+   ["en"]="finalpubsep",
   },
   ["refcommand"]={
    ["en"]="refcommand",
@@ -8935,7 +8973,7 @@ return {
    ["de"]="mindepth",
    ["en"]="mindepth",
    ["fr"]="profondeurmin",
-   ["it"]="mindeoth",
+   ["it"]="mindepth",
    ["nl"]="mindiepte",
    ["pe"]="کمترین‌عمق",
    ["ro"]="mindepth",
@@ -9702,7 +9740,7 @@ return {
    ["en"]="reference",
    ["fr"]="reference",
    ["it"]="riferimento",
-   ["nl"]="verwijzing",
+   ["nl"]="referentie",
    ["pe"]="مرجع",
    ["ro"]="referinta",
   },
@@ -10123,16 +10161,6 @@ return {
    ["nl"]="set",
    ["pe"]="قراربده",
    ["ro"]="set",
-  },
-  ["setups"]={
-   ["cs"]="setups",
-   ["de"]="setups",
-   ["en"]="setups",
-   ["fr"]="reglages",
-   ["it"]="setups",
-   ["nl"]="setups",
-   ["pe"]="بارگذاریها",
-   ["ro"]="setups",
   },
   ["shrink"]={
    ["en"]="shrink",
@@ -10911,7 +10939,7 @@ return {
    ["en"]="unknownreference",
    ["fr"]="referenceinconnue",
    ["it"]="riferimentoingoto",
-   ["nl"]="onbekendeverwijzing",
+   ["nl"]="onbekendereferentie",
    ["pe"]="مرجع‌ناشناس",
    ["ro"]="referintanecunoscuta",
   },
@@ -11393,6 +11421,18 @@ return {
   },
  },
  ["variables"]={
+  ["setups"]={
+   ["comment"]="no translations",
+   ["en"]="setups",
+  },
+  ["followingpage"]={
+   ["en"]="followingpage",
+   ["nl"]="opvolgendepagina",
+  },
+  ["precedingpage"]={
+   ["en"]="followingpage",
+   ["nl"]="voorafgaandepagina",
+  },
   ["math"]={
    ["en"]="math",
   },
@@ -11509,21 +11549,27 @@ return {
   },
   ["maxheight"]={
    ["en"]="maxheight",
+   ["nl"]="maxhoogte",
   },
   ["maxdepth"]={
    ["en"]="maxdepth",
+   ["nl"]="maxdiepte",
   },
   ["maxwidth"]={
    ["en"]="maxwidth",
+   ["nl"]="maxbreedte",
   },
   ["minheight"]={
    ["en"]="minheight",
+   ["nl"]="minhoogte",
   },
   ["mindepth"]={
    ["en"]="mindepth",
+   ["nl"]="mindiepte",
   },
   ["minwidth"]={
    ["en"]="minwidth",
+   ["nl"]="minbreedte",
   },
   ["short"]={
    ["nl"]="kort",
@@ -14378,6 +14424,16 @@ return {
    ["pe"]="مونو",
    ["ro"]="mono",
   },
+  ["monobold"]={
+   ["cs"]="monotucne",
+   ["de"]="monofett",
+   ["en"]="monobold",
+   ["fr"]="monogras",
+   ["it"]="monograssetto",
+   ["nl"]="monovet",
+   ["pe"]="monobold",
+   ["ro"]="monoaldin",
+  },
   ["month"]={
    ["cs"]="mesic",
    ["de"]="monat",
@@ -15474,16 +15530,6 @@ return {
    ["nl"]="aanelkaar",
    ["pe"]="تنگ‌هم",
    ["ro"]="serried",
-  },
-  ["setups"]={
-   ["cs"]="einstellungen",
-   ["de"]="impostazioni",
-   ["en"]="setups",
-   ["fr"]="reglages",
-   ["it"]="nastaveni",
-   ["nl"]="instellingen",
-   ["pe"]="بارگذاریها",
-   ["ro"]="setari",
   },
   ["sheet"]={
    ["cs"]="sheet",

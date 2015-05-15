@@ -22,4 +22,13 @@ function figures.mergegoodies(optionlist)
     if all or options[variables.layer] then
         codeinjections.mergeviewerlayers()
     end
+    if all or options[variables.bookmark] then
+        codeinjections.mergebookmarks()
+    end
 end
+
+interfaces.implement {
+    name      = "figure_mergegoodies",
+    actions   = figures.mergegoodies,
+    arguments = "string"
+}

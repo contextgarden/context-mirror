@@ -19,7 +19,7 @@
 %D functionality from \type {core-pos}.
 %D
 %D \starttyping
-%D \definesidebar[whow][rulecolor=green,distance=]
+%D \definesidebar[whow][rulecolor=green,distance=0pt]
 %D
 %D \input tufte \par
 %D \startsidebar
@@ -81,9 +81,6 @@
 \let\setupsidebars\setupsidebar
 
 \unexpanded\def\startsidebar
-  {\dosingleempty\anch_sidebars_start}
-
-\unexpanded\def\startsidebar
   {\dodoubleempty\anch_sidebars_start}
 
 \def\anch_sidebars_start[#1][#2]%
@@ -92,7 +89,7 @@
    \advance\c_anch_sidebars_level\plusone
    \global\advance\c_anch_sidebars_n\plusone
    \c_anch_sidebars_current\c_anch_sidebars_n\relax % relax needed
-   \doifassignmentelse{#1}
+   \doifelseassignment{#1}
      {\edef\currentsidebar{\the\c_anch_sidebars_level}%
       \checksidebarparent
       \setupcurrentsidebar[#1]}
@@ -123,7 +120,7 @@
        \d_anch_sidebars_distance\dimexpr\scratchdimen+\numexpr\m_level-\plusone\relax\dimexpr\scratchdistance\relax\relax
      \fi
    \fi
-   \startpositionoverlay{text-1}%
+   \startpositionoverlay{\v!text-1}%
      \normalexpanded{\setMPpositiongraphicrange % maybe expand in definition
        {b:sidebar:\the\c_anch_sidebars_n}%
        {e:sidebar:\the\c_anch_sidebars_n}%
@@ -211,15 +208,12 @@
 \unexpanded\def\startmarginrule
   {\dosingleempty\anch_marginrules_start}
 
-\unexpanded\def\startmarginrule
-  {\dosingleempty\anch_marginrules_start}
-
 \def\anch_marginrules_start[#1]% pretty inefficient checking
   {\edef\m_anch_marginrules_kind{#1}%
    \ifx\m_anch_marginrules_kind\empty
      \anch_sidebars_start[\v!margin][]%
    \else
-     \doifassignmentelse\m_anch_marginrules_kind
+     \doifelseassignment\m_anch_marginrules_kind
        {\anch_sidebars_start[\v!margin][#1]}%
        {\anch_marginrules_check{#1}%
         \anch_sidebars_start[\v!margin:#1][\c!level=#1]}%

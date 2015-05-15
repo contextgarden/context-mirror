@@ -114,11 +114,6 @@
     end
 }
 
-%D Handy.
-
-\suppresslongerror  = 1
-\suppressoutererror = 1
-
 %D \ETEX\ has a not so handy way of telling you the version number, i.e. the revision
 %D number has a period in it:
 
@@ -198,7 +193,7 @@
 \countdef   \c_syst_last_allocated_language  =    41 \c_syst_last_allocated_language  = \c_syst_min_allocated_language    % not used in context
 \countdef   \c_syst_last_allocated_insertion =    42 \c_syst_last_allocated_insertion = \c_syst_min_allocated_insert
 \countdef   \c_syst_last_allocated_family    =    43 \c_syst_last_allocated_family    = \c_syst_min_allocated_family      % not used in context
-\countdef   \c_syst_last_allocated_attribute =    44 \c_syst_last_allocated_attribute = \c_syst_min_allocated_attribute
+\countdef   \c_syst_last_allocated_attribute =    44 \c_syst_last_allocated_attribute = \c_syst_min_allocated_attribute   % not used in context
 
 \countdef   \c_syst_min_counter_value =   125 \c_syst_min_counter_value = -"7FFFFFFF % beware, we use index 125 at the lua end
 \countdef   \c_syst_max_counter_value =   126 \c_syst_max_counter_value =  "7FFFFFFF % beware, we use index 126 at the lua end
@@ -246,9 +241,10 @@
 % Watch out, for the moment we disable the check for already being defined
 % later we will revert this but first all chardefs must be replaced.
 
-\normalprotected\def\newconstant   #1{\ifdefined#1\let#1\undefined\fi\newcount#1}
-\normalprotected\def\setnewconstant#1{\ifdefined#1\let#1\undefined\fi\newcount#1#1} % just a number
-\normalprotected\def\setconstant     {}                                             % dummy, no checking, so it warns
+\normalprotected\def\newconstant       #1{\ifdefined#1\let#1\undefined\fi\newcount#1}
+\normalprotected\def\setnewconstant    #1{\ifdefined#1\let#1\undefined\fi\newcount#1#1} % just a number
+\normalprotected\def\setconstant         {}                                             % dummy, no checking, so it warns
+\normalprotected\def\setconstantvalue#1#2{\csname#1\endcsname\numexpr#2\relax}
 
 % maybe setconstant with check
 
@@ -300,7 +296,7 @@
 %D 128-1023 are private and should not be touched.
 
 \let\attributeunsetvalue\c_syst_min_counter_value % used to be \minusone
-\normalprotected\def\newattribute{\syst_basics_allocate\c_syst_min_allocated_attribute\attribute\attributedef\c_syst_max_allocated_register}
+\normalprotected\def\newattribute{\syst_basics_allocate\c_syst_last_allocated_attribute\attribute\attributedef\c_syst_max_allocated_register}
 
 %D Not used by \CONTEXT\ but for instance \PICTEX\ needs it. It's a trick to force
 %D strings instead of tokens that take more memory. It's a trick to trick to force
@@ -326,8 +322,8 @@
 
 \newcount\scratchcounterone  \newcount\scratchcountertwo  \newcount\scratchcounterthree
 \newdimen  \scratchdimenone  \newdimen  \scratchdimentwo  \newdimen  \scratchdimenthree
-\newdimen   \scratchskipone  \newdimen   \scratchskiptwo  \newdimen   \scratchskipthree
-\newbox   \scratchmuskipone  \newbox   \scratchmuskiptwo  \newbox   \scratchmuskipthree
+\newskip    \scratchskipone  \newskip    \scratchskiptwo  \newskip    \scratchskipthree
+\newmuskip\scratchmuskipone  \newmuskip\scratchmuskiptwo  \newmuskip\scratchmuskipthree
 \newtoks    \scratchtoksone  \newtoks    \scratchtokstwo  \newtoks    \scratchtoksthree
 \newbox      \scratchboxone  \newbox      \scratchboxtwo  \newbox      \scratchboxthree
 
@@ -385,6 +381,8 @@
 \newmuskip\zeromuskip    \zeromuskip    = 0mu
 \newmuskip\onemuskip     \onemuskip     = 1mu
 
+\newmuskip\muquad        \muquad        = 18mu
+
 \let\points   \onepoint
 \let\halfpoint\halfapoint
 
@@ -416,6 +414,7 @@
 \chardef    \plustwentythousand = 20000
 \chardef    \medcard            = 32768
 \chardef    \maxcard            = 65536 % pdftex has less mathchars
+\chardef    \maxcardminusone    = 65535
 
 %D \macros
 %D   {doubleexpandafter,tripleexpandafter,expanded,startexpanded}
@@ -630,6 +629,8 @@
 %D
 %D In \LUATEX\ we have ways around this.
 
+% no longer \errorstopmode cf. plain tex 3.141592653
+
 \normalprotected\def\tracingall
   {\tracingonline    \plusone
    \tracingcommands  \plusthree
@@ -646,8 +647,7 @@
    \tracingifs       \plusone
    \tracingscantokens\plusone
    \tracingnesting   \plusone
-   \tracingassigns   \plustwo
-   \errorstopmode}
+   \tracingassigns   \plustwo}
 
 \normalprotected\def\loggingall
   {\tracingall
@@ -744,6 +744,9 @@
 \normalprotected\def\settrue #1{\let#1\conditionaltrue }
 \normalprotected\def\setfalse#1{\let#1\conditionalfalse}
 
+\normalprotected\def\settruevalue #1{\expandafter\let\csname#1\endcsname\conditionaltrue }
+\normalprotected\def\setfalsevalue#1{\expandafter\let\csname#1\endcsname\conditionalfalse}
+
 \let\newconditional\setfalse
 \let\ifconditional \ifcase
 
@@ -762,8 +765,8 @@
 
 \normalprotected\def\newfraction#1{\let#1\!!plusone}
 
-%D It would be handy to have a primitive \unless\ifcase because then we could
-%D use nicer values. Anyhow, this conditional code used to be in the \type
+%D It would be handy to have a primitive \type {\unless\ifcase} because then we
+%D could use nicer values. Anyhow, this conditional code used to be in the \type
 %D {syst-aux} module but is now promoted to here.
 
 %D \macros
@@ -1012,12 +1015,18 @@
 % \bindprimitive ifabsnum       ifpdfabsnum
 
 %D We need to make sure that we start up in \DVI\ mode, so, after testing for running
-%D \PDFTEX, we default to \DVI.
+%D \PDFTEX, we default to \DVI. Why?
 
-\pdfoutput            \zerocount
-\pdfminorversion      \plusfive
-\pdfgentounicode      \plusone
-\pdfinclusioncopyfonts\plusone
+\pdfoutput              \zerocount
+\pdfminorversion        \plusseven
+\pdfgentounicode        \plusone
+\pdfinclusioncopyfonts  \plusone
+\pdfinclusionerrorlevel \zerocount
+\pdfdecimaldigits       \plusten
+\pdfhorigin             1 true in
+\pdfvorigin             \pdfhorigin
+\pdfimageresolution     300
+\pdfpkresolution        600
 
 \normalprotected\def\nopdfcompression     {\pdfobjcompresslevel\zerocount \pdfcompresslevel\zerocount}
 \normalprotected\def\maximumpdfcompression{\pdfobjcompresslevel\plusnine  \pdfcompresslevel\plusnine }
@@ -1080,6 +1089,12 @@
 \voffset\zeropoint \let\voffset\relax \newdimen\voffset % prevent messing up
 \hoffset\zeropoint \let\hoffset\relax \newdimen\hoffset % prevent messing up
 
+%D Handy.
+
+\suppresslongerror    \plusone
+\suppressoutererror   \plusone
+\suppressmathparerror \plusone
+
 %D While cleaning this code up a bit I was listening to Heather Nova's \CD\ Redbird.
 %D The first song on that \CD\ ends with a few lines suitable for ending this
 %D initialization module:
@@ -1096,5 +1111,22 @@
 %D \stoplines
 %D
 %D So let's see what \TEX\ can do now that we've opened up the basic machinery.
+
+%D Now we define a few helpers that we need in a very early stage. We hav eno message system
+%D yet but redundant definitions are fatal anyway.
+
+\newcount\c_syst_helpers_n_of_namespaces \c_syst_helpers_n_of_namespaces\pluseight % 1-8 reserved for catcodes
+
+\def\v_interfaces_prefix_template_system{\number    \c_syst_helpers_n_of_namespaces>>}
+%def\v_interfaces_prefix_template_system{\characters\c_syst_helpers_n_of_namespaces>>} % no \characters yet
+
+\normalprotected\def\installsystemnamespace#1%
+  {\ifcsname ??#1\endcsname
+     \immediate\write16{fatal error: duplicate system namespace '#1'}%
+     \expandafter\normalend
+   \else
+     \global\advance\c_syst_helpers_n_of_namespaces\plusone
+     \expandafter\edef\csname ??#1\endcsname{\v_interfaces_prefix_template_system}%
+   \fi}
 
 \protect \endinput

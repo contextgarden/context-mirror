@@ -154,9 +154,9 @@ local disccodes = allocate {
     [0] = "discretionary", -- \discretionary
     [1] = "explicit",      -- \-
     [2] = "automatic",     -- following a -
-    [3] = "regular",       -- simple
-    [4] = "first",         -- hard first item
-    [5] = "second",        -- hard second item
+    [3] = "regular",       -- by hyphenator: simple
+    [4] = "first",         -- by hyphenator: hard first item
+    [5] = "second",        -- by hyphenator: hard second item
 }
 
 local accentcodes = allocate {
@@ -206,7 +206,7 @@ nodes.whatcodes    = whatcodes     nodes.whatsitcodes = whatcodes -- more offici
 nodes.listcodes    = listcodes
 nodes.glyphcodes   = glyphcodes
 nodes.kerncodes    = kerncodes
-nodes.penaltycodes = kerncodes
+nodes.penaltycodes = penaltycodes
 nodes.mathcodes    = mathcodes
 nodes.fillcodes    = fillcodes
 nodes.margincodes  = margincodes
@@ -219,6 +219,8 @@ listcodes.column           = listcodes.alignment
 
 kerncodes.italiccorrection = kerncodes.userkern
 kerncodes.kerning          = kerncodes.fontkern
+
+whatcodes.textdir          = whatcodes.dir
 
 nodes.codes = allocate { -- mostly for listing
     glue    = skipcodes,

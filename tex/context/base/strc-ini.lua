@@ -38,13 +38,18 @@ local txtcatcodes       = catcodenumbers.txtcatcodes
 local context           = context
 local commands          = commands
 
-local pushcatcodes = context.pushcatcodes
-local popcatcodes  = context.popcatcodes
-
 local trace_processors  = false
 local report_processors = logs.reporter("processors","structure")
 
 trackers.register("typesetters.processors", function(v) trace_processors = v end)
+
+local xmlconvert = lxml.convert
+local xmlstore   = lxml.store
+
+local ctx_pushcatcodes     = context.pushcatcodes
+local ctx_popcatcodes      = context.popcatcodes
+local ctx_xmlsetup         = context.xmlsetup
+local ctx_xmlprocessbuffer = context.xmlprocessbuffer
 
 -- -- -- namespace -- -- --
 
@@ -68,7 +73,7 @@ structures.itemgroups   = structures.itemgroups   or { }
 structures.specials     = structures.specials     or { }
 structures.counters     = structures.counters     or { }
 structures.tags         = structures.tags         or { }
-structures.formulas     = structures.formulas     or { }
+structures.formulas     = structures.formulas     or { } -- not used but reserved
 structures.sets         = structures.sets         or { }
 structures.marks        = structures.marks        or { }
 structures.floats       = structures.floats       or { }
@@ -151,11 +156,17 @@ local function simplify(d,nodefault)
         for k, v in next, d do
             local tv = type(v)
             if tv == "table" then
-                if next(v) then t[k] = simplify(v) end
+                if next(v) then
+                    t[k] = simplify(v)
+                end
             elseif tv == "string" then
-                if v ~= "" and v ~= "default" then t[k] = v end
+                if v ~= "" then
+                    t[k] = v
+                end
             elseif tv == "boolean" then
-                if v then t[k] = v end
+                if v then
+                    t[k] = v
+                end
             else
                 t[k] = v
             end
@@ -167,6 +178,34 @@ local function simplify(d,nodefault)
         return { }
     end
 end
+
+-- we only care about the tuc file so this would do too:
+--
+-- local function simplify(d,nodefault)
+--     if d then
+--         for k, v in next, d do
+--             local tv = type(v)
+--             if tv == "string" then
+--                 if v == "" or v == "default" then
+--                     d[k] = nil
+--                 end
+--             elseif tv == "table" then
+--                 if next(v) then
+--                     simplify(v)
+--                 end
+--             elseif tv == "boolean" then
+--                 if not v then
+--                     d[k] = nil
+--                 end
+--             end
+--         end
+--         return d
+--     elseif nodefault then
+--         return nil
+--     else
+--         return { }
+--     end
+-- end
 
 helpers.simplify = simplify
 
@@ -211,19 +250,19 @@ function helpers.title(title,metadata) -- coding is xml is rather old and not th
                     report_processors("putting xml data in buffer: %s",xmldata)
                     report_processors("processing buffer with setup %a and tag %a",xmlsetup,tag)
                 end
-            if experiment then
-                -- the question is: will this be forgotten ... better store in a via file
-                local xmltable = lxml.convert("temp",xmldata or "")
-                lxml.store("temp",xmltable)
-                context.xmlsetup("temp",xmlsetup or "")
-            else
-                context.xmlprocessbuffer("dummy",tag,xmlsetup or "")
-            end
+                if experiment then
+                    -- the question is: will this be forgotten ... better store in a via file
+                    local xmltable = xmlconvert("temp",xmldata or "")
+                    xmlstore("temp",xmltable)
+                    ctx_xmlsetup("temp",xmlsetup or "")
+                else
+                    ctx_xmlprocessbuffer("dummy",tag,xmlsetup or "")
+                end
             elseif xmlsetup then -- title is reference to node (so \xmlraw should have been used)
                 if trace_processors then
                     report_processors("feeding xmlsetup %a using node %a",xmlsetup,title)
                 end
-                context.xmlsetup(title,metadata.xmlsetup)
+                ctx_xmlsetup(title,metadata.xmlsetup)
             else
                 local catcodes = metadata.catcodes
                 if catcodes == notcatcodes or catcodes == xmlcatcodes then
@@ -241,9 +280,9 @@ function helpers.title(title,metadata) -- coding is xml is rather old and not th
                     -- doesn't work when a newline is in there \section{Test\ A} so we do
                     -- it this way:
                     --
-                    pushcatcodes(catcodes)
+                    ctx_pushcatcodes(catcodes)
                     context(title)
-                    popcatcodes()
+                    ctx_popcatcodes()
                 end
             end
         else
@@ -297,7 +336,8 @@ function sets.getall(namespace,block,name)
     end
 end
 
--- messy (will be another keyword, fixedconversion)
+-- messy (will be another keyword, fixedconversion) .. needs to be documented too
+-- maybe we should cache
 
 local splitter = lpeg.splitat("::")
 
@@ -337,4 +377,8 @@ end
 
 -- interface
 
-commands.definestructureset = sets.define
+interfaces.implement {
+    name      = "definestructureset",
+    actions   = sets.define,
+    arguments = { "string", "string", "string", "string", "boolean" }
+}

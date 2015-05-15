@@ -45,6 +45,8 @@ local tohpackfast     = typesetters.tohpackfast
 local tovpack         = typesetters.tovpack
 local tovpackfast     = typesetters.tovpackfast
 
+local implement       = interfaces.implement
+
 blobs = blobs or  { }
 
 -- provide copies here (nicer for manuals)
@@ -195,18 +197,7 @@ blobs.strht = strht
 blobs.strdp = strdp
 blobs.strhd = strhd
 
-function commands.strwd(str) context(strwd(str)) end
-function commands.strht(str) context(strht(str)) end
-function commands.strdp(str) context(strdp(str)) end
-function commands.strhd(str) context(strhd(str)) end
-
--- less efficient:
---
--- function commands.widthof(str)
---     local b = blobs.new()
---     blobs.append(b,str)
---     blobs.pack(b)
---     local w = blobs.dimensions(b)
---     context(number.todimen(w))
---     blobs.dispose(b)
--- end
+implement { name = "strwd", arguments = "string", actions = { strwd, context } }
+implement { name = "strht", arguments = "string", actions = { strht, context } }
+implement { name = "strdp", arguments = "string", actions = { strdp, context } }
+implement { name = "strhd", arguments = "string", actions = { strhd, context } }

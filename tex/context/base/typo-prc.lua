@@ -6,20 +6,24 @@ if not modules then modules = { } end modules ['typo-prc'] = {
     license   = "see context related readme files"
 }
 
--- moved from strc-ini.lua
-
-local context, commands = context, commands
-local formatters = string.formatters
 local lpegmatch, patterns, P, C, Cs = lpeg.match, lpeg.patterns, lpeg.P, lpeg.C, lpeg.Cs
 
 -- processors: syntax: processor->data ... not ok yet
 
-typesetters.processors = typesetters.processors   or { }
-local processors       = typesetters.processors
+local context           = context
+local implement         = interfaces.implement
+
+local formatters        = string.formatters
+
+typesetters.processors  = typesetters.processors   or { }
+local processors        = typesetters.processors
 
 local trace_processors  = false
 local report_processors = logs.reporter("processors")
 local registered        = { }
+
+local ctx_applyprocessor      = context.applyprocessor
+local ctx_firstofoneargument  = context.firstofoneargument
 
 trackers.register("typesetters.processors", function(v) trace_processors = v end)
 
@@ -55,7 +59,7 @@ function processors.apply(p,s)
         if trace_processors then
             report_processors("applying %s processor %a, argument: %s","known",p,s)
         end
-        context.applyprocessor(p,s)
+        ctx_applyprocessor(p,s)
     elseif s then
         if trace_processors then
             report_processors("applying %s processor %a, argument: %s","unknown",p,s)
@@ -78,21 +82,21 @@ function processors.startapply(p,s)
         if trace_processors then
             report_processors("start applying %s processor %a","known",p)
         end
-        context.applyprocessor(p)
+        ctx_applyprocessor(p)
         context("{")
         return s
     elseif p then
         if trace_processors then
             report_processors("start applying %s processor %a","unknown",p)
         end
-        context.firstofoneargument()
+        ctx_firstofoneargument()
         context("{")
         return s
     else
         if trace_processors then
             report_processors("start applying %s processor","ignored")
         end
-        context.firstofoneargument()
+        ctx_firstofoneargument()
         context("{")
         return str
     end
@@ -121,5 +125,5 @@ end
 
 -- interface
 
-commands.registerstructureprocessor = processors.register
-commands.resetstructureprocessor    = processors.reset
+implement { name = "registerstructureprocessor", actions = processors.register, arguments = "string" }
+implement { name = "resetstructureprocessor",    actions = processors.reset,    arguments = "string" }

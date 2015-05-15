@@ -310,7 +310,7 @@ local ch, CH = utfchar(replacementoffset + 1), utfchar(replacementoffset + 11)
 
 definitions["cz"] = {
     replacements = {
-        { "ch", ch }, { "CH", CH }
+        { "ch", ch }, { "Ch", ch }, { "CH", ch }
     },
     entries = {
         ["a"] = "a", ["á"] = "a", ["b"] = "b", ["c"] = "c",  ["č"] = "č",

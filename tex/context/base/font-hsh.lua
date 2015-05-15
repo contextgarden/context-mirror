@@ -35,6 +35,8 @@ local italics       = hashes.italics      or allocate()
 local lastmathids   = hashes.lastmathids  or allocate()
 local dynamics      = hashes.dynamics     or allocate()
 local unicodes      = hashes.unicodes     or allocate()
+local originals     = hashes.originals    or allocate()
+local modes         = hashes.modes        or allocate()
 
 hashes.characters   = characters
 hashes.descriptions = descriptions
@@ -52,6 +54,8 @@ hashes.italics      = italics
 hashes.lastmathids  = lastmathids
 hashes.dynamics     = dynamics
 hashes.unicodes     = unicodes
+hashes.originals    = originals
+hashes.modes        = modes
 
 local nodepool      = nodes.pool
 local dummyglyph    = nodepool.register(nodepool.glyph())
@@ -261,21 +265,41 @@ setmetatableindex(dynamics, function(t,k)
     end
 end)
 
-setmetatableindex(unicodes, function(t,k)
+setmetatableindex(unicodes, function(t,k) -- always a unicode
+    if k == true then
+        return unicodes[currentfont()]
+    else
+        local resources = resources[k]
+        local unicodes  = resources and resources.unicodes or { }
+        t[k] = unicodes
+        return unicodes
+    end
+end)
+
+setmetatableindex(originals, function(t,k) -- always a unicode
     if k == true then
         return originals[currentfont()]
     else
-        local resources  = resources[k]
-        local originals  = resources and resources.originals or { }
-        local characters = characters[k]
-        local unicodes   = { }
-        setmetatableindex(unicodes,function(t,k)
-            local v = originals[characters[k].index] or k
-            t[k] = v
+        local resolved = { }
+        setmetatableindex(resolved,function(t,name)
+            local u = unicodes[k][name]
+            local d = u and descriptions[k][u]
+            local v = d and d.unicode or u or 0 -- so we return notdef (at least for the moment)
+            t[name] = u
             return v
         end)
-        t[k] = unicodes
-        return unicodes
+        t[k] = resolved
+        return resolved
+    end
+end)
+
+setmetatableindex(modes, function(t,k)
+    if k == true then
+        return modes[currentfont()]
+    else
+        local mode = properties[k].mode or "base"
+        t[k] = mode
+        return mode
     end
 end)
 

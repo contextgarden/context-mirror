@@ -20,6 +20,8 @@ local setmetatableindex = table.setmetatableindex
 local trace_counters    = false  trackers.register("structures.counters", function(v) trace_counters = v end)
 local report_counters   = logs.reporter("structure","counters")
 
+local implement         = interfaces.implement
+
 local structures        = structures
 local helpers           = structures.helpers
 local sections          = structures.sections
@@ -199,6 +201,24 @@ local function allocate(name,i) -- can be metatable
     return ci
 end
 
+local pattern   = lpeg.P(variables.by)^-1 * lpeg.C(lpeg.P(1)^1)
+local lpegmatch = lpeg.match
+
+function counters.way(way)
+    if not way or way == "" then
+        return ""
+    else
+        return lpegmatch(pattern,way)
+    end
+end
+
+implement {
+    name      = "way",
+    actions   = { counters.way, context },
+    arguments = "string"
+}
+
+
 function counters.record(name,i)
     return allocate(name,i or 1)
 end
@@ -376,10 +396,8 @@ local function check(name,data,start,stop)
     end
 end
 
-counters.reset = reset
-counters.set   = set
 
-function counters.setown(name,n,value)
+local function setown(name,n,value)
     local cd = counterdata[name]
     if cd then
         local d = allocate(name,n)
@@ -397,14 +415,14 @@ function counters.setown(name,n,value)
     end
 end
 
-function counters.restart(name,n,newstart,noreset)
+local function restart(name,n,newstart,noreset)
     local cd = counterdata[name]
     if cd then
         newstart = tonumber(newstart)
         if newstart then
             local d = allocate(name,n)
             d.start = newstart
-            if not noreset then
+            if not noreset then  -- why / when needed ?
                 reset(name,n) -- hm
             end
         end
@@ -425,7 +443,7 @@ function counters.restore(name)
     end
 end
 
-function counters.add(name,n,delta)
+local function add(name,n,delta)
     local cd = counterdata[name]
     if cd and (cd.state == v_start or cd.state == "") then
         local data = cd.data
@@ -494,7 +512,12 @@ local function get(name,n,key)
     end
 end
 
-counters.get = get
+counters.reset   = reset
+counters.set     = set
+counters.add     = add
+counters.get     = get
+counters.setown  = setown
+counters.restart = restart
 
 function counters.value(name,n) -- what to do with own
     return get(name,n or 1,'number') or 0
@@ -553,24 +576,7 @@ end
 
 -- interfacing
 
-commands.definecounter  = counters.define
-commands.setcounter     = counters.set
-commands.setowncounter  = counters.setown
-commands.resetcounter   = counters.reset
-commands.restartcounter = counters.restart
-commands.savecounter    = counters.save
-commands.restorecounter = counters.restore
-commands.addcounter     = counters.add
-
-commands.rawcountervalue   = function(...) context(counters.raw     (...)) end
-commands.countervalue      = function(...) context(counters.value   (...)) end
-commands.lastcountervalue  = function(...) context(counters.last    (...)) end
-commands.firstcountervalue = function(...) context(counters.first   (...)) end
-commands.nextcountervalue  = function(...) context(counters.next    (...)) end
-commands.prevcountervalue  = function(...) context(counters.previous(...)) end
-commands.subcountervalues  = function(...) context(counters.subs    (...)) end
-
-function commands.showcounter(name)
+local function showcounter(name)
     local cd = counterdata[name]
     if cd then
         context("[%s:",name)
@@ -583,18 +589,81 @@ function commands.showcounter(name)
     end
 end
 
-function commands.doifelsecounter(name) commands.doifelse(counterdata[name]) end
-function commands.doifcounter    (name) commands.doif    (counterdata[name]) end
-function commands.doifnotcounter (name) commands.doifnot (counterdata[name]) end
+-- the noreset is somewhat messy ... always false messes up e.g. itemize but true the pagenumbers
+--
+-- if this fails i'll clean up this still somewhat experimental mechanism (but i need use cases)
 
-function commands.incrementedcounter(...) context(counters.add(...)) end
-
-function commands.checkcountersetup(name,level,start,state)
-    counters.restart(name,1,start,true) -- no reset
+local function checkcountersetup(name,level,start,state)
+    local noreset = true -- level > 0 -- was true
+    counters.restart(name,1,start,noreset) -- was true
     counters.setstate(name,state)
     counters.setlevel(name,level)
     sections.setchecker(name,level,counters.reset)
 end
+
+--
+
+implement { name = "addcounter",              actions = add,     arguments = { "string", "integer", "integer" } }
+implement { name = "setcounter",              actions = set,     arguments = { "string", 1, "integer" } }
+implement { name = "setowncounter",           actions = setown,  arguments = { "string", 1, "string" } }
+implement { name = "restartcounter",          actions = restart, arguments = { "string", 1, "integer" } }
+implement { name = "resetcounter",            actions = reset,   arguments = { "string", 1 } }
+implement { name = "incrementcounter",        actions = add,     arguments = { "string", 1,  1 } }
+implement { name = "decrementcounter",        actions = add,     arguments = { "string", 1, -1 } }
+
+implement { name = "setsubcounter",           actions = set,     arguments = { "string", "integer", "integer" } }
+implement { name = "setownsubcounter",        actions = setown,  arguments = { "string", "integer", "string" } }
+implement { name = "restartsubcounter",       actions = restart, arguments = { "string", "integer", "integer" } }
+implement { name = "resetsubcounter",         actions = reset,   arguments = { "string", "integer" } }
+implement { name = "incrementsubcounter",     actions = add,     arguments = { "string", "integer",  1 } }
+implement { name = "decrementsubcounter",     actions = add,     arguments = { "string", "integer", -1 } }
+
+implement { name = "rawcountervalue",         actions = { counters.raw     , context }, arguments = { "string", 1 } }
+implement { name = "countervalue",            actions = { counters.value   , context }, arguments = { "string", 1 } }
+implement { name = "lastcountervalue",        actions = { counters.last    , context }, arguments = { "string", 1 } }
+implement { name = "firstcountervalue",       actions = { counters.first   , context }, arguments = { "string", 1 } }
+implement { name = "nextcountervalue",        actions = { counters.next    , context }, arguments = { "string", 1 } }
+implement { name = "prevcountervalue",        actions = { counters.previous, context }, arguments = { "string", 1 } }
+implement { name = "subcountervalues",        actions = { counters.subs    , context }, arguments = { "string", 1 } }
+
+implement { name = "rawsubcountervalue",      actions = { counters.raw     , context }, arguments = { "string", "integer" } }
+implement { name = "subcountervalue",         actions = { counters.value   , context }, arguments = { "string", "integer" } }
+implement { name = "lastsubcountervalue",     actions = { counters.last    , context }, arguments = { "string", "integer" } }
+implement { name = "firstsubcountervalue",    actions = { counters.first   , context }, arguments = { "string", "integer" } }
+implement { name = "nextsubcountervalue",     actions = { counters.next    , context }, arguments = { "string", "integer" } }
+implement { name = "previoussubcountervalue", actions = { counters.previous, context }, arguments = { "string", "integer" } }
+implement { name = "subsubcountervalues",     actions = { counters.subs    , context }, arguments = { "string", "integer" } }
+
+implement { name = "savecounter",             actions = counters.save,    arguments = "string" }
+implement { name = "restorecounter",          actions = counters.restore, arguments = "string" }
+
+implement { name = "incrementedcounter",      actions = { add, context }, arguments = { "string", 1,  1 } }
+implement { name = "decrementedcounter",      actions = { add, context }, arguments = { "string", 1, -1 } }
+
+implement { name = "showcounter",             actions = showcounter,       arguments = "string" }  -- todo
+implement { name = "checkcountersetup",       actions = checkcountersetup, arguments = { "string", "integer", "integer", "string" } }
+
+table.setmetatablecall(counterdata,function(t,k) return t[k] end)
+
+implement { name = "doifelsecounter", actions = { counterdata, commands.doifelse }, arguments = "string" }
+implement { name = "doifcounter",     actions = { counterdata, commands.doif     }, arguments = "string" }
+implement { name = "doifnotcounter",  actions = { counterdata, commands.doifnot  }, arguments = "string" }
+
+implement {
+    name      = "definecounter",
+    actions   = counters.define,
+    arguments = {
+        {
+            { "name" } ,
+            { "start", "integer" },
+            { "counter" },
+            { "method" },
+        }
+    }
+}
+
+------------------------------------------------------------------
+------------------------------------------------------------------
 
 -- -- move to strc-pag.lua
 --

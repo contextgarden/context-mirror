@@ -29,8 +29,8 @@
 \installframedcommandhandler \??pageinjection            {pageinjection}            \??pageinjection
 \installcommandhandler       \??pageinjectionalternative {pageinjectionalternative} \??pageinjectionalternative
 
-\def\page_boxes_flush_before{\ctxcommand{page_injections_flush_before()}}
-\def\page_boxes_flush_after {\ctxcommand{page_injections_flush_after ()}}
+\let\page_boxes_flush_before\clf_flushpageinjectionsbefore
+\let\page_boxes_flush_after \clf_flushpageinjectionsafter
 
 \def\page_injections_flush_saved#name#parameters%
   {\begingroup
@@ -47,11 +47,11 @@
    \dodoubleempty\page_injections_direct}
 
 \def\page_injections_direct[#1][#2]% name parameters | settings parameters | name | parameters
-  {\doifassignmentelse{#1}
-     {\doifassignmentelse{#2}
+  {\doifelseassignment{#1}
+     {\doifelseassignment{#2}
         {\page_injections_direct_settings_parameters{#1}{#2}}
         {\page_injections_direct_parameters         {#1}}}
-     {\doifassignmentelse{#2}
+     {\doifelseassignment{#2}
         {\page_injections_direct_name_parameters    {#1}{#2}}
         {\page_injections_direct_name               {#1}}}}
 
@@ -87,11 +87,11 @@
    \fi}
 
 \def\page_injections_direct_indeed_yes#parameters%
-  {\ctxcommand{page_injections_save{
-        name  = "\currentpageinjection",
-        state = "\p_page_injections_state",
-     userdata = \!!bs\normalunexpanded{#parameters}\!!es
-   }}%
+  {\clf_savepageinjections
+        name  {\currentpageinjection}%
+        state {\p_page_injections_state}%
+     userdata {\normalunexpanded{#parameters}}%
+   \relax
    \endgroup}
 
 \def\page_injections_direct_indeed_nop#parameters%

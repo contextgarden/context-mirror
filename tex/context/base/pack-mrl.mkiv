@@ -40,7 +40,7 @@
 
 \unexpanded\def\blackrule
   {\hbox\bgroup
-   \doifnextoptionalelse\pack_black_rule_pickup\pack_black_rule_indeed}
+   \doifelsenextoptionalcs\pack_black_rule_pickup\pack_black_rule_indeed}
 
 \def\pack_black_rule_pickup[#1]%
   {\setupcurrentblackrules[#1]%
@@ -96,7 +96,7 @@
 
 \unexpanded\def\blackrules % probably never used
   {\hbox\bgroup
-   \doifnextoptionalelse\pack_black_rules_pickup\pack_black_rules_indeed}
+   \doifelsenextoptionalcs\pack_black_rules_pickup\pack_black_rules_indeed}
 
 \def\pack_black_rules_pickup[#1]%
   {\setupcurrentblackrules[#1]%
@@ -145,7 +145,8 @@
 %D \showsetup{hl}
 
 \unexpanded\def\pack_rule_vl_indeed#1#2#3%
-  {\bgroup
+  {\dontleavehmode
+   \begingroup
    \setbox\scratchbox\hbox
      {\vrule
         \s!width #1\linewidth
@@ -154,13 +155,14 @@
    \dp\scratchbox\strutdp
    \ht\scratchbox\strutht
    \box\scratchbox
-   \egroup}
+   \endgroup}
 
 \def\pack_rule_vl[#1]%
   {\pack_rule_vl_indeed{#1}{#1}{#1}}
 
 \def\pack_rule_hl[#1]%
-  {\hbox
+  {\dontleavehmode
+   \hbox
      {\vrule
         \s!width #1\emwidth
         \s!height\linewidth
@@ -614,7 +616,7 @@
       \fi
       \doifelse{\directtextrulesparameter\c!depthcorrection}\v!on\pack_textrule_correct_depth_yes\pack_textrule_correct_depth_nop
       \nointerlineskip
-      \dontleavehmode\vbox
+      \noindent\vbox % was \dontleavehmode
         {\color[\directtextrulesparameter\c!rulecolor]
            {\hrule\s!depth\directtextrulesparameter\c!rulethickness\s!height\zeropoint\s!width\availablehsize}}}
      {\pack_textrule_with_text{#1}}%
@@ -629,7 +631,7 @@
    \def\pack_textrule_nop_indeed{\csname\??textrulealternatives\v!middle\endcsname}%
    \csname\??textrulealternatives\v!top\endcsname{#1}%
    \bgroup
-   \doifsomething{\directtextrulesparameter\c!bodyfont}{\switchtobodyfont[\directtextrulesparameter\c!bodyfont]}}
+   \usebodyfontparameter\directtextrulesparameter}
 
 \unexpanded\def\stoptextrule
   {\par

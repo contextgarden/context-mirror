@@ -13,7 +13,7 @@ return {
         --
         "zerocount", "minusone", "minustwo", "plusone", "plustwo", "plusthree", "plusfour", "plusfive",
         "plussix", "plusseven", "pluseight", "plusnine", "plusten", "plussixteen", "plushundred",
-        "plusthousand", "plustenthousand", "plustwentythousand", "medcard", "maxcard",
+        "plusthousand", "plustenthousand", "plustwentythousand", "medcard", "maxcard", "maxcardminusone",
         "zeropoint", "onepoint", "halfapoint", "onebasepoint", "maxdimen", "scaledpoint", "thousandpoint",
         "points", "halfpoint",
         "zeroskip",
@@ -31,7 +31,9 @@ return {
         --
         "fmtname", "fmtversion", "texengine", "texenginename", "texengineversion",
         "luatexengine", "pdftexengine", "xetexengine", "unknownengine",
-        "etexversion", "pdftexversion", "xetexversion", "xetexrevision",
+     -- "etexversion",
+     -- "pdftexversion", "pdftexrevision",
+     -- "xetexversion", "xetexrevision",
         --
         "activecatcode",
         --
@@ -47,7 +49,7 @@ return {
         "inicatcodes",
         "ctxcatcodes", "texcatcodes", "notcatcodes", "txtcatcodes", "vrbcatcodes",
         "prtcatcodes", "nilcatcodes", "luacatcodes", "tpacatcodes", "tpbcatcodes",
-        "xmlcatcodes",
+        "xmlcatcodes", "ctdcatcodes",
         --
         "escapecatcode", "begingroupcatcode", "endgroupcatcode", "mathshiftcatcode", "alignmentcatcode",
         "endoflinecatcode", "parametercatcode", "superscriptcatcode", "subscriptcatcode", "ignorecatcode",
@@ -60,7 +62,7 @@ return {
         "lessthanasciicode", "morethanasciicode", "doublecommentsignal",
         "atsignasciicode", "exclamationmarkasciicode", "questionmarkasciicode",
         "doublequoteasciicode", "singlequoteasciicode", "forwardslashasciicode",
-        "primeasciicode",
+        "primeasciicode", "hyphenasciicode",
         --
         "activemathcharcode",
         --
@@ -85,23 +87,27 @@ return {
         "fontexheight", "fontemwidth", "fontextraspace", "slantperpoint",
         "interwordspace", "interwordstretch", "interwordshrink", "exheight", "emwidth", "extraspace",
         "mathsupdisplay", "mathsupnormal", "mathsupcramped", "mathsubnormal", "mathsubcombined",  "mathaxisheight",
+        "muquad",
         --
         -- maybe a different class
         --
         "startmode", "stopmode", "startnotmode", "stopnotmode", "startmodeset", "stopmodeset",
-        "doifmode", "doifmodeelse", "doifnotmode",
-        "startallmodes", "stopallmodes", "startnotallmodes", "stopnotallmodes", "doifallmodes", "doifallmodeselse", "doifnotallmodes",
+        "doifmode", "doifelsemode", "doifmodeelse", "doifnotmode",
+        "startmodeset","stopmodeset",
+        "startallmodes", "stopallmodes", "startnotallmodes", "stopnotallmodes",
+        "doifallmodes", "doifelseallmodes", "doifallmodeselse", "doifnotallmodes",
         "startenvironment", "stopenvironment", "environment",
         "startcomponent", "stopcomponent", "component",
         "startproduct", "stopproduct", "product",
         "startproject", "stopproject", "project",
         "starttext", "stoptext", "startnotext", "stopnotext","startdocument", "stopdocument", "documentvariable", "setupdocument",
         "startmodule", "stopmodule", "usemodule", "usetexmodule", "useluamodule","setupmodule","currentmoduleparameter","moduleparameter",
+        "everystarttext", "everystoptext",
         --
         "startTEXpage", "stopTEXpage",
     --  "startMPpage", "stopMPpage", -- already catched by nested lexer
         --
-        "enablemode", "disablemode", "preventmode",
+        "enablemode", "disablemode", "preventmode", "definemode",
         "globalenablemode", "globaldisablemode", "globalpreventmode",
         "pushmode", "popmode",
         --
@@ -119,11 +125,12 @@ return {
         --
         "lefttorightmark", "righttoleftmark",
         --
-        "breakablethinspace", "nobreakspace", "narrownobreakspace", "zerowidthnobreakspace",
+        "breakablethinspace", "nobreakspace", "nonbreakablespace", "narrownobreakspace", "zerowidthnobreakspace",
         "ideographicspace", "ideographichalffillspace",
         "twoperemspace", "threeperemspace", "fourperemspace", "fiveperemspace", "sixperemspace",
         "figurespace", "punctuationspace", "hairspace",
         "zerowidthspace", "zerowidthnonjoiner", "zerowidthjoiner", "zwnj", "zwj",
+        "optionalspace", "asciispacechar",
     },
     ["helpers"] = {
         --
@@ -136,9 +143,11 @@ return {
         "starttexdefinition", "stoptexdefinition",
         "starttexcode", "stoptexcode",
         "startcontextcode", "stopcontextcode",
+        "startcontextdefinitioncode", "stopcontextdefinitioncode",
+        "texdefinition",
         --
-        "doifsetupselse", "doifsetups", "doifnotsetups", "setup", "setups", "texsetup", "xmlsetup", "luasetup", "directsetup",
-        "doifelsecommandhandler","doifnotcommandhandler","doifcommandhandler",
+        "doifelsesetups", "doifsetupselse", "doifsetups", "doifnotsetups", "setup", "setups", "texsetup", "xmlsetup", "luasetup", "directsetup", "fastsetup",
+        "doifelsecommandhandler", "doifcommandhandlerelse", "doifnotcommandhandler", "doifcommandhandler",
         --
         "newmode", "setmode", "resetmode",
         "newsystemmode", "setsystemmode", "resetsystemmode", "pushsystemmode", "popsystemmode",
@@ -150,7 +159,7 @@ return {
         "then",
         "begcsname",
         --
-        "strippedcsname",
+        "strippedcsname","checkedstrippedcsname",
         --
         "firstargumentfalse", "firstargumenttrue",
         "secondargumentfalse", "secondargumenttrue",
@@ -164,6 +173,8 @@ return {
         "donothing", "dontcomplain", "forgetall",
         --
         "donetrue", "donefalse",
+        --
+        "inlineordisplaymath","indisplaymath","forcedisplaymath","startforceddisplaymath","stopforceddisplaymath","reqno",
         --
         "htdp",
         "unvoidbox",
@@ -196,7 +207,7 @@ return {
         --
         "normalbaselineskip", "normallineskip", "normallineskiplimit",
         --
-        "availablehsize", "localhsize", "setlocalhsize",
+        "availablehsize", "localhsize", "setlocalhsize", "distributedhsize", "hsizefraction",
         --
         "nextbox", "dowithnextbox", "dowithnextboxcs", "dowithnextboxcontent", "dowithnextboxcontentcs",
         --
@@ -218,23 +229,36 @@ return {
         "scratchleftskip", "scratchrightskip", "scratchtopskip", "scratchbottomskip",
         --
         "doif", "doifnot", "doifelse",
-        "doifinset", "doifnotinset", "doifinsetelse",
-        "doifnextcharelse", "doifnextoptionalelse", "doifnextbgroupelse", "doifnextparenthesiselse", "doiffastoptionalcheckelse",
-        "doifundefinedelse", "doifdefinedelse", "doifundefined", "doifdefined",
+        "doifinset", "doifnotinset",
+        "doifelseinset", "doifinsetelse",
+        "doifelsenextchar", "doifnextcharelse",
+        "doifelsenextoptional", "doifnextoptionalelse",
+        "doifelsenextoptionalcs", "doifnextoptionalcselse",
+        "doifelsefastoptionalcheck", "doiffastoptionalcheckelse",
+        "doifelsenextbgroup", "doifnextbgroupelse",
+        "doifelsenextbgroupcs", "doifnextbgroupcselse",
+        "doifelsenextparenthesis", "doifnextparenthesiselse",
+        "doifelseundefined", "doifundefinedelse",
+        "doifelsedefined", "doifdefinedelse",
+        "doifundefined", "doifdefined",
         "doifelsevalue", "doifvalue", "doifnotvalue",
-        "doifnothing", "doifsomething", "doifelsenothing", "doifsomethingelse",
-        "doifvaluenothing", "doifvaluesomething", "doifelsevaluenothing",
-        "doifdimensionelse", "doifnumberelse", "doifnumber", "doifnotnumber",
-        "doifcommonelse", "doifcommon", "doifnotcommon",
-        "doifinstring", "doifnotinstring", "doifinstringelse",
-        "doifassignmentelse", "docheckassignment",
+        "doifnothing", "doifsomething",
+        "doifelsenothing", "doifnothingelse",
+        "doifelsesomething", "doifsomethingelse",
+        "doifvaluenothing", "doifvaluesomething",
+        "doifelsevaluenothing", "doifvaluenothingelse",
+        "doifelsedimension", "doifdimensionelse",
+        "doifelsenumber", "doifnumberelse", "doifnumber", "doifnotnumber",
+        "doifelsecommon", "doifcommonelse", "doifcommon", "doifnotcommon",
+        "doifinstring", "doifnotinstring", "doifelseinstring", "doifinstringelse",
+        "doifelseassignment", "doifassignmentelse", "docheckassignment",
         --
         "tracingall", "tracingnone", "loggingall",
         --
         "removetoks", "appendtoks", "prependtoks", "appendtotoks", "prependtotoks", "to",
         --
-        "endgraf", "endpar", "everyendpar", "reseteverypar", "finishpar", "empty", "null", "space", "quad", "enspace",
-        "obeyspaces", "obeylines", "obeyedspace", "obeyedline",
+        "endgraf", "endpar", "everyendpar", "reseteverypar", "finishpar", "empty", "null", "space", "quad", "enspace", "nbsp",
+        "obeyspaces", "obeylines", "obeyedspace", "obeyedline", "obeyedtab", "obeyedpage",
         "normalspace",
         --
         "executeifdefined",
@@ -273,13 +297,17 @@ return {
         "firstofsixarguments", "secondofsixarguments", "thirdofsixarguments", "fourthofsixarguments", "fifthofsixarguments", "sixthofsixarguments",
         --
         "firstofoneunexpanded",
+        "firstoftwounexpanded", "secondoftwounexpanded",
+        "firstofthreeunexpanded", "secondofthreeunexpanded", "thirdofthreeunexpanded",
         --
         "gobbleoneargument", "gobbletwoarguments", "gobblethreearguments", "gobblefourarguments", "gobblefivearguments", "gobblesixarguments", "gobblesevenarguments", "gobbleeightarguments", "gobbleninearguments", "gobbletenarguments",
         "gobbleoneoptional", "gobbletwooptionals", "gobblethreeoptionals", "gobblefouroptionals", "gobblefiveoptionals",
         --
         "dorecurse", "doloop", "exitloop", "dostepwiserecurse", "recurselevel", "recursedepth", "dofastloopcs", "dowith",
         --
-        "newconstant", "setnewconstant", "newconditional", "settrue", "setfalse", "setconstant",
+        "newconstant", "setnewconstant", "setconstant", "setconstantvalue",
+        "newconditional", "settrue", "setfalse", "settruevalue", "setfalsevalue",
+        --
         "newmacro", "setnewmacro", "newfraction",
         "newsignal",
         --
@@ -292,7 +320,7 @@ return {
         --
         "modulonumber", "dividenumber",
         --
-        "getfirstcharacter", "doiffirstcharelse",
+        "getfirstcharacter", "doifelsefirstchar", "doiffirstcharelse",
         --
         "startnointerference", "stopnointerference",
         --
@@ -300,7 +328,9 @@ return {
         --
         "leftorright",
         --
-        "strut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "struthtdp", "begstrut", "endstrut", "lineheight",
+        "offinterlineskip", "oninterlineskip", "nointerlineskip",
+        --
+        "strut", "halfstrut", "quarterstrut", "depthstrut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "struthtdp", "begstrut", "endstrut", "lineheight",
         --
         "ordordspacing", "ordopspacing", "ordbinspacing", "ordrelspacing",
         "ordopenspacing", "ordclosespacing", "ordpunctspacing", "ordinnerspacing",
@@ -334,13 +364,17 @@ return {
         "uncramped", "cramped", "triggermathstyle", "mathstylefont", "mathsmallstylefont", "mathstyleface", "mathsmallstyleface", "mathstylecommand", "mathpalette",
         "mathstylehbox", "mathstylevbox", "mathstylevcenter", "mathstylevcenteredhbox", "mathstylevcenteredvbox",
         "mathtext", "setmathsmalltextbox", "setmathtextbox",
+        "pushmathstyle", "popmathstyle",
         --
         "triggerdisplaystyle", "triggertextstyle", "triggerscriptstyle", "triggerscriptscriptstyle",
         "triggeruncrampedstyle", "triggercrampedstyle",
         "triggersmallstyle", "triggeruncrampedsmallstyle", "triggercrampedsmallstyle",
         "triggerbigstyle", "triggeruncrampedbigstyle", "triggercrampedbigstyle",
         --
-        "luaexpr", "expdoifelse", "expdoif", "expdoifnot", "expdoifcommonelse", "expdoifinsetelse",
+        "luaexpr",
+        "expelsedoif", "expdoif", "expdoifnot",
+        "expdoifelsecommon", "expdoifcommonelse",
+        "expdoifelseinset", "expdoifinsetelse",
         --
         "ctxdirectlua", "ctxlatelua", "ctxsprint", "ctxwrite", "ctxcommand", "ctxdirectcommand", "ctxlatecommand", "ctxreport",
         "ctxlua", "luacode", "lateluacode", "directluacode",
@@ -351,6 +385,8 @@ return {
         "definenamedlua",
         "obeylualines", "obeyluatokens",
         "startluacode", "stopluacode", "startlua", "stoplua",
+        "startctxfunction","stopctxfunction","ctxfunction",
+        "startctxfunctiondefinition","stopctxfunctiondefinition", "installctxfunction",
         --
         "carryoverpar",
         --
@@ -365,5 +401,8 @@ return {
         --
         "lesshyphens", "morehyphens", "nohyphens", "dohyphens",
         --
+        "Ucheckedstartdisplaymath", "Ucheckedstopdisplaymath",
+        --
+        "nobreak", "allowbreak", "goodbreak",
     }
 }

@@ -19,7 +19,7 @@
 \registerctxluafile{font-log}{1.001}
 \registerctxluafile{font-con}{1.001}
 \registerctxluafile{font-enc}{1.001}
-%registerctxluafile{font-agl}{1.001} % loaded when needed, saves 100K in format
+\registerctxluafile{font-agl}{1.001} % if needed we can comment this and delay loading
 \registerctxluafile{font-cid}{1.001} % cid maps
 \registerctxluafile{font-map}{1.001}
 \registerctxluafile{font-syn}{1.001}
@@ -38,9 +38,14 @@
 \registerctxluafile{font-ott}{1.001} % otf tables (first)
 \registerctxluafile{font-otf}{1.001} % otf main
 \registerctxluafile{font-otb}{1.001} % otf main base
-\registerctxluafile{node-inj}{1.001} % we might split it off
-%registerctxluafile{font-ota}{1.001} % otf analyzers
-\registerctxluafile{font-otx}{1.001} % otf analyzers
+
+% \doiffileelse{font-inj.lua}
+%   {\registerctxluafile{font-inj}{1.001}} % new method (for the moment only local)
+%   {\registerctxluafile{node-inj}{1.001}} % old method
+
+\registerctxluafile{font-inj}{1.001} % the old method (lacks some features)
+
+\registerctxluafile{font-ota}{1.001} % otf analyzers
 \registerctxluafile{font-otn}{1.001} % otf main node
 \registerctxluafile{font-otd}{1.001} % otf dynamics (does an overload)
 \registerctxluafile{font-otp}{1.001} % otf pack
@@ -86,17 +91,14 @@
 %D \stoptyping
 
 % we can also move the lookups to the fonts.namespace (of commands)
+% one can also directly use the clf calls when speed is needed
 
-% these will be renamed but it needs synchronization with WS
+           \def\dolookupfontbyspec     #1{\clf_fontlookupinitialize{#1}}
+           \def\dolookupnoffound         {\clf_fontlookupnoffound}
+           \def\dolookupgetkeyofindex#1#2{\clf_fontlookupgetkeyofindex{#1}\numexpr#2\relax}
+           \def\dolookupgetkey         #1{\clf_fontlookupgetkey{#1}}
+           \def\cleanfontname          #1{\clf_cleanfontname{#1}}
+\unexpanded\def\setfontofid            #1{\clf_setfontofid\numexpr#1\relax}
 
-\def\dolookupfontbyspec     #1{\ctxcommand{fontlookupinitialize("#1")}}
-\def\dolookupnoffound         {\ctxcommand{fontlookupnoffound()}}
-\def\dolookupgetkeyofindex#1#2{\ctxcommand{fontlookupgetkeyofindex("#1",#2)}}
-\def\dolookupgetkey         #1{\ctxcommand{fontlookupgetkey("#1")}}
-\def\cleanfontname          #1{\ctxcommand{cleanfontname("#1")}}
-
-% new:
-
-\unexpanded\def\setfontofid#1{\ctxcommand{setfontofid(#1)}}
 
 \protect \endinput

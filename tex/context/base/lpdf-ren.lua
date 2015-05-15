@@ -15,47 +15,66 @@ local settings_to_array = utilities.parsers.settings_to_array
 
 local backends, lpdf, nodes, node = backends, lpdf, nodes, node
 
-local nodeinjections   = backends.pdf.nodeinjections
-local codeinjections   = backends.pdf.codeinjections
-local registrations    = backends.pdf.registrations
-local viewerlayers     = attributes.viewerlayers
+local nodeinjections      = backends.pdf.nodeinjections
+local codeinjections      = backends.pdf.codeinjections
+local registrations       = backends.pdf.registrations
+local viewerlayers        = attributes.viewerlayers
 
-local references       = structures.references
+local references          = structures.references
 
-references.executers   = references.executers or { }
-local executers        = references.executers
+references.executers      = references.executers or { }
+local executers           = references.executers
 
-local variables        = interfaces.variables
+local variables           = interfaces.variables
 
-local v_no             = variables.no
-local v_yes            = variables.yes
-local v_start          = variables.start
-local v_stop           = variables.stop
-local v_reset          = variables.reset
-local v_auto           = variables.auto
-local v_random         = variables.random
+local v_no                = variables.no
+local v_yes               = variables.yes
+local v_start             = variables.start
+local v_stop              = variables.stop
+local v_reset             = variables.reset
+local v_auto              = variables.auto
+local v_random            = variables.random
 
-local pdfconstant      = lpdf.constant
-local pdfdictionary    = lpdf.dictionary
-local pdfarray         = lpdf.array
-local pdfreference     = lpdf.reference
-local pdfflushobject   = lpdf.flushobject
-local pdfreserveobject = lpdf.reserveobject
+local pdfconstant         = lpdf.constant
+local pdfdictionary       = lpdf.dictionary
+local pdfarray            = lpdf.array
+local pdfreference        = lpdf.reference
+local pdfflushobject      = lpdf.flushobject
+local pdfreserveobject    = lpdf.reserveobject
 
-local nodepool         = nodes.pool
-local register         = nodepool.register
-local pdfliteral       = nodepool.pdfliteral
+local addtopageattributes = lpdf.addtopageattributes
+local addtopageresources  = lpdf.addtopageresources
+local addtocatalog        = lpdf.addtocatalog
 
-local pdf_ocg          = pdfconstant("OCG")
-local pdf_ocmd         = pdfconstant("OCMD")
-local pdf_off          = pdfconstant("OFF")
-local pdf_on           = pdfconstant("ON")
-local pdf_toggle       = pdfconstant("Toggle")
-local pdf_setocgstate  = pdfconstant("SetOCGState")
+local nodepool            = nodes.pool
+local register            = nodepool.register
+local pdfliteral          = nodepool.pdfliteral
 
-local copy_node        = node.copy
+local pdf_ocg             = pdfconstant("OCG")
+local pdf_ocmd            = pdfconstant("OCMD")
+local pdf_off             = pdfconstant("OFF")
+local pdf_on              = pdfconstant("ON")
+local pdf_view            = pdfconstant("View")
+local pdf_design          = pdfconstant("Design")
+local pdf_toggle          = pdfconstant("Toggle")
+local pdf_setocgstate     = pdfconstant("SetOCGState")
 
-local lpdf_usage = pdfdictionary { Print = pdfdictionary { PrintState = pdf_off } }
+local copy_node           = node.copy
+
+local pdf_print = {
+    [v_yes] = pdfdictionary { PrintState = pdf_on  },
+    [v_no ] = pdfdictionary { PrintState = pdf_off },
+}
+
+local pdf_intent = {
+    [v_yes] = pdf_view,
+    [v_no]  = pdf_design,
+}
+
+local pdf_export = {
+    [v_yes] = pdf_on,
+    [v_no]  = pdf_off,
+}
 
 -- We can have references to layers before they are places, for instance from
 -- hide and vide actions. This is why we need to be able to force usage of layers
@@ -95,10 +114,13 @@ local function useviewerlayer(name) -- move up so that we can use it as local
             local nn = pdfreserveobject()
             local nr = pdfreference(nn)
             local nd = pdfdictionary {
-                Type   = pdf_ocg,
-                Name   = specification.title or "unknown",
-                Intent = ((specification.editable  ~= v_no) and pdf_design) or nil, -- disable layer hiding by user
-                Usage  = ((specification.printable == v_no) and lpdf_usage) or nil, -- printable or not
+                Type  = pdf_ocg,
+                Name  = specification.title or "unknown",
+                Usage = {
+                    Intent = pdf_intent[specification.editable  or v_yes], -- disable layer hiding by user (useless)
+                    Print  = pdf_print [specification.printable or v_yes], -- printable or not
+                    Export = pdf_export[specification.export    or v_yes], -- export or not
+                },
             }
             cache[#cache+1] = { nn, nd }
             pdfln[tag] = nr -- was n
@@ -161,9 +183,17 @@ local function flushtextlayers()
                     ON        = videlayers,
                     OFF       = hidelayers,
                     BaseState = pdf_on,
+
+AS = pdfarray {
+    pdfdictionary {
+        Category = pdfarray { pdfconstant("Print") },
+        Event    = pdfconstant("Print"),
+        OCGs     = (viewerlayers.hasorder and sortedlayers) or nil,
+    }
+},
                 },
             }
-            lpdf.addtocatalog("OCProperties",d)
+            addtocatalog("OCProperties",d)
             textlayers = nil
         end
     end
@@ -171,7 +201,7 @@ end
 
 local function flushpagelayers() -- we can share these
     if pagelayers then
-        lpdf.addtopageresources("Properties",pdfreference(pagelayersreference)) -- we could cache this
+        addtopageresources("Properties",pdfreference(pagelayersreference)) -- we could cache this
     end
 end
 
@@ -342,8 +372,8 @@ function codeinjections.setpagetransition(specification)
         end
         delay = tonumber(delay)
         if delay and delay > 0 then
-            lpdf.addtopageattributes("Dur",delay)
+            addtopageattributes("Dur",delay)
         end
-        lpdf.addtopageattributes("Trans",d)
+        addtopageattributes("Trans",d)
     end
 end

@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['lpdf-grp'] = {
     license   = "see context related readme files"
 }
 
-local format, gsub = string.format, string.gsub
+local formatters, gsub = string.formatters, string.gsub
 local concat = table.concat
 local round = math.round
 
@@ -118,7 +118,7 @@ function nodeinjections.injectbitmap(t)
         height = width  * yresolution / xresolution
     end
     local image = img.new {
-        stream = format(template,d(),t.data),
+        stream = formatters[template](d(),t.data),
         width  = width,
         height = height,
         bbox   = { 0, 0, urx, ury },
@@ -236,7 +236,7 @@ function img.package(image) -- see lpdf-u3d **
     local height = boundingbox[4]
     local xform = img.scan {
         attr   = resources(),
-        stream = format("%f 0 0 %f 0 0 cm /%s Do",width,height,imagetag),
+        stream = formatters["%F 0 0 %F 0 0 cm /%s Do"](width,height,imagetag),
         bbox   = { 0, 0, width/factor, height/factor },
     }
     img.immediatewrite(xform)

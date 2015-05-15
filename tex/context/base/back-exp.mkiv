@@ -38,8 +38,8 @@
      \doubleexpandafter\back_export_set_element_tag_b
    \fi\fi}
 
-\def\back_export_set_element_tag_a[#1][#2][#3]{\taggedctxcommand{settagproperty("#1","#2","#3")}}
-\def\back_export_set_element_tag_b[#1][#2][#3]{\taggedctxcommand{settagproperty("#1","export","#2")}}
+\def\back_export_set_element_tag_a[#1][#2][#3]{\clf_settagproperty{#1}{#2}{#3}}
+\def\back_export_set_element_tag_b[#1][#2][#3]{\clf_settagproperty{#1}{export}{#2}}
 
 % todo: no need for calls when trialtypesetting
 
@@ -53,12 +53,25 @@
 \newcount\tagparcounter
 
 \let\dotagsetparcounter\relax
+\let\doresetparcounter \relax
 
 \appendtoks
+    \doresetparcounter
+\to \everyflushatnextpar
+
+% \appendtoks
+%     \dotagsetparcounter
+% \to \everypar
+
+\prependtoks
     \dotagsetparcounter
 \to \everypar
 
-\appendtoks
+% \appendtoks
+%     \dotagsetparcounter
+% \to \neverypar
+
+\prependtoks
     \dotagsetparcounter
 \to \neverypar
 
@@ -67,54 +80,117 @@
 \to \everytabulatepar % tricky, maybe this should be neverypar
 
 \appendtoks
-    \unexpanded\def\dotagTABLEcell  {\taggedctxcommand{settagtablecell(\number\tablecellrows,\number\tablecellcolumns,\number\raggedstatus)}}%
-    \unexpanded\def\dotagTABLEsignal{\char\zerocount}% brrr, we need to tag empty cells (unless we start numbering)
+    \unexpanded\def\dotagTABLEcell
+      {\iftrialtypesetting\else
+         \clf_settagtablecell
+           \numexpr\tablecellrows\relax
+           \numexpr\tablecellcolumns\relax
+           \numexpr\raggedstatus\relax
+       \fi}%
+    % brrr, we need to tag empty cells (unless we start numbering)
+    \unexpanded\def\dotagTABLEsignal
+      {\char\zerocount}%
 \to \everyenableelements
 
 \appendtoks
-    \unexpanded\def\dotagtabulatecell  {\taggedctxcommand{settagtabulatecell(\number\c_tabl_tabulate_align)}}%
-    \unexpanded\def\dotagtabulatesignal{\dontleavehmode\char\zerocount\ignorespaces}%
+    \unexpanded\def\dotagtabulatecell
+      {\iftrialtypesetting\else\clf_settagtabulatecell\c_tabl_tabulate_align\fi}%
+    \unexpanded\def\dotagtabulatesignal
+      {\dontleavehmode\char\zerocount\ignorespaces}%
 \to \everyenableelements
 
 \appendtoks
-    \unexpanded\def\dotagsynonym{\taggedctxcommand{settagsynonym("\currentsynonym","\currentsynonymtag")}}%
+    \unexpanded\def\dotagsynonym
+      {\iftrialtypesetting\else\clf_settagsynonym{\currentsynonymtag}\fi}%
+\to \everyenableelements
+
+\appendtoks
+    \unexpanded\def\dotagsorting
+      {\iftrialtypesetting\else\clf_settagsorting{\currentsortingtag}\fi}%
 \to \everyenableelements
 
 \appendtoks % frozen and assumed global per highlight class
-    \unexpanded\def\dotaghighlight{\taggedctxcommand{settaghighlight("\currenthighlight",\!!bs\highlightparameter\c!style\!!es,\number\attribute\colorattribute)}}%
+    \unexpanded\def\dotaghighlight
+      {\iftrialtypesetting\else
+         \clf_settaghighlight{\highlightparameter\c!style}\attribute\colorattribute\relax
+       \fi}%
 \to \everyenableelements
 
 \appendtoks % we can have differently scaled images
-    \unexpanded\def\dotagfigure{\taggedctxcommand{settagfigure("\figurefileoriginal","\figurefilepage",\number\dimexpr\figurewidth,\number\dimexpr\figureheight)}}%
+    \unexpanded\def\dotagfigure
+      {\iftrialtypesetting\else
+         \clf_settagfigure
+           {\figurefileoriginal}%
+           {\figurefullname}%
+           {\figurefilepage}%
+           \dimexpr\figurewidth\relax
+           \dimexpr\figureheight\relax
+       \fi}%
 \to \everyenableelements
 
 \appendtoks
-    \unexpanded\def\dotagcombination{\taggedctxcommand{settagcombination(\combinationparameter\c!nx,\combinationparameter\c!ny)}}%
-   %\unexpanded\def\dotagcombination{\taggedctxcommand{settagcombination(\number\horcombination,\number\totcombination)}}%
+    \unexpanded\def\dotagcombination
+      {\iftrialtypesetting\else
+         \clf_settagcombination
+            \numexpr\combinationparameter\c!nx\relax
+            \numexpr\combinationparameter\c!ny\relax
+       \fi}%
 \to \everyenableelements
 
 \appendtoks
-    \unexpanded\def\dotagsorting{\taggedctxcommand{settagsorting("\currentsorting","\currentsortingtag")}}%
+    \unexpanded\def\dotagsetparcounter
+      {\global\advance\tagparcounter\plusone\attribute\taggedparattribute\tagparcounter}%
+    \unexpanded\def\doresetparcounter
+      {\attribute\taggedparattribute\attributeunsetvalue}%
 \to \everyenableelements
 
 \appendtoks
-    \unexpanded\def\dotagsetparcounter{\global\advance\tagparcounter\plusone\attribute\taggedparattribute\tagparcounter}%
+    \unexpanded\def\dotagsetitemgroup
+      {\iftrialtypesetting\else
+         \clf_settagitemgroup
+           \ifconditional\c_strc_itemgroups_pack true\else false\fi\space
+           \numexpr\currentitemlevel\relax
+           {\currentitemgroupsymbol}%
+       \fi}%
+    \unexpanded\def\dotagsetitem#1%
+      {\iftrialtypesetting\else
+         \clf_settagitem{#1}%
+       \fi}%
 \to \everyenableelements
 
 \appendtoks
-    \unexpanded\def\dotagsetitemgroup{\taggedctxcommand{settagitemgroup("\currentitemgroup",\ifconditional\c_strc_itemgroups_pack true\else false\fi,"\currentitemgroupsymbol")}}%
+    \unexpanded\def\dotagsetdescription
+      {\iftrialtypesetting\else
+         \clf_settagdescription{\currentdescription}\currentdescriptionnumberentry\relax
+       \fi}%
 \to \everyenableelements
 
 \appendtoks
-    \unexpanded\def\dotagsetdescription{\taggedctxcommand{settagdescription("\currentdescription",\currentdescriptionnumberentry)}}%
+    \unexpanded\def\dotagsetnotesymbol
+      {\iftrialtypesetting\else
+         \clf_settagdescriptionsymbol{\currentnote}\currentnotenumber\relax
+       \fi}%
 \to \everyenableelements
 
 \appendtoks
-    \unexpanded\def\dotagsetnotesymbol{\taggedctxcommand{settagdescriptionsymbol("\currentnote",\currentnotenumber)}}%
+    \unexpanded\def\dotagregisterlocation
+      {\iftrialtypesetting\else
+         \clf_settagregister{\currentregister}\currentregisternumber\relax
+       \fi}%
 \to \everyenableelements
 
 \appendtoks
-    \unexpanded\def\doverbatimspace{\char32\relax}% will be done permanently
+    \unexpanded\def\dotaglistlocation
+      {\iftrialtypesetting\else
+         \clf_settaglist\currentlistindex\relax
+       \fi}%
+\to \everyenableelements
+
+\appendtoks
+    \let\specialfixedspace    \explicitfixedspace
+    \let\specialobeyedspace   \explicitobeyedspace
+    \let\specialstretchedspace\explicitstretchedspace
+    \let\specialcontrolspace  \explicitcontrolspace
 \to \everyenableelements
 
 % The action: \setupbackend[export=yes] % or filename
@@ -137,36 +213,51 @@
    \c!author={\directinteractionparameter\c!author},
  % \c!firstpage=, % imagename
  % \c!lastpage=,  % imagename
-   \c!hyphen=\v!no]
+   \c!alternative=, % html, div
+   \c!properties=\v!no, % no: ignore, yes: as attribute, otherwise: use as prefix
+   \c!hyphen=\v!no,
+   \c!svgstyle=,
+   \c!cssfile=]
 
 \def\dosynchronizeexport
   {\let\currentexport\empty
-   \ctxcommand{setupexport{
-       align     = "\exportparameter\c!align",
-       bodyfont  = \number\dimexpr\exportparameter\c!bodyfont,
-       width     = \number\dimexpr\exportparameter\c!width,
-       hyphen    = "\exportparameter\c!hyphen",
-       title     = \!!bs\exportparameter\c!title\!!es,
-       subtitle  = \!!bs\exportparameter\c!subtitle\!!es,
-       author    = \!!bs\exportparameter\c!author\!!es,
-       firstpage = "\exportparameter\c!firstpage",
-       lastpage  = "\exportparameter\c!lastpage",
-   }}}
+   \clf_setupexport
+       align      {\exportparameter\c!align}%
+       bodyfont   \dimexpr\exportparameter\c!bodyfont\relax
+       width      \dimexpr\exportparameter\c!width\relax
+       properties {\exportparameter\c!properties}%
+       hyphen     {\exportparameter\c!hyphen}%
+       title      {\exportparameter\c!title}%
+       subtitle   {\exportparameter\c!subtitle}%
+       author     {\exportparameter\c!author}%
+       firstpage  {\exportparameter\c!firstpage}%
+       lastpage   {\exportparameter\c!lastpage}%
+       svgstyle   {\exportparameter\c!svgstyle}%
+       cssfile    {\exportparameter\c!cssfile}%
+   \relax}
 
 \appendtoks
     \doifsomething{\backendparameter\c!export}\dosynchronizeexport
 \to \everystarttext
 
+% better (before pdf gets closed, so we can embed), but it needs testing:
+
+\appendtoks
+    \clf_finishexport
+\to \everystoptext
+
 \appendtoks
     \doifsomething{\backendparameter\c!export}\dosynchronizeexport % in case it is done inside \starttext
 \to \everysetupdocument
 
-\appendtoks
-    \doifsomething{\backendparameter\c!xhtml}
-      {\enabledirectives[backend.export.xhtml=\backendparameter\c!xhtml]}%
-    \doifsomething{\backendparameter\c!css}
-      {\enabledirectives[backend.export.css={\backendparameter\c!css}]}%
-\to \everysetupbackend
+% \appendtoks
+%     \doifsomething{\backendparameter\c!xhtml}
+%       {\enabledirectives[backend.export.xhtml=\backendparameter\c!xhtml]}%
+%     \doifsomething{\backendparameter\c!css}
+%       {\enabledirectives[backend.export.css={\backendparameter\c!css}]}%
+%     \doifsomething{\backendparameter\c!alternative}
+%       {\enabledirectives[backend.export.alternative={\backendparameter\c!alternative}]}%
+% \to \everysetupbackend
 
 \appendtoks
     \doifelsenothing{\backendparameter\c!export}

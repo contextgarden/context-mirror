@@ -1,4 +1,4 @@
-.TH "mtx-epub" "1" "01-01-2014" "version 0.12" "ConTeXt EPUB Helpers"
+.TH "mtx-epub" "1" "01-01-2015" "version 1.10" "ConTeXt EPUB Helpers"
 .SH NAME
 .B mtx-epub
 .SH SYNOPSIS
@@ -13,6 +13,21 @@
 .TP
 .B --make
 create epub zip file
+.TP
+.B --purge
+remove obsolete files
+.TP
+.B --rename
+rename images to sane names
+.TP
+.B --svgmath
+convert mathml to svg
+.TP
+.B --svgstyle
+use given tex style for svg generation (overloads style in specification)
+.TP
+.B --all
+assume: --purge --rename --svgmath (for fast testing)
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

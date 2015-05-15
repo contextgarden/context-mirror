@@ -18,8 +18,8 @@
 \registerctxluafile{lpdf-nod}{1.001}
 \registerctxluafile{lpdf-col}{1.000}
 \registerctxluafile{lpdf-xmp}{1.001}
-\registerctxluafile{lpdf-mis}{1.001}
 \registerctxluafile{lpdf-ano}{1.001}
+\registerctxluafile{lpdf-mis}{1.001}
 \registerctxluafile{lpdf-ren}{1.001}
 \registerctxluafile{lpdf-grp}{1.001}
 \registerctxluafile{lpdf-wid}{1.001}
@@ -41,17 +41,31 @@
 %D
 %D Here we initialize some internal quantities. We also protect them.
 
-\pdfoutput  1         \let\pdfoutput \undefined \newcount\pdfoutput  \pdfoutput  1
-\pdfhorigin 1 true in \let\pdfhorigin\undefined \newdimen\pdfhorigin \pdfhorigin 1 true in
-\pdfvorigin 1 true in \let\pdfvorigin\undefined \newdimen\pdfvorigin \pdfvorigin 1 true in
+\pdfoutput  \plusone    \let\pdfoutput \undefined \newcount\pdfoutput  \pdfoutput  \plusone
 
-% most of these will be protected as well
+%D These are already set:
 
+\pdfhorigin 1 true in   \let\pdfhorigin\undefined \newdimen\pdfhorigin \pdfhorigin 1 true in
+\pdfvorigin \pdfhorigin \let\pdfvorigin\undefined \newdimen\pdfvorigin \pdfvorigin \pdfhorigin
+
+%D These too and most of them will be protected as well:
+
+\pdfminorversion        \plusseven
+\pdfgentounicode        \plusone    \let\pdfgentounicode       \undefined \newcount\pdfgentounicode
+\pdfinclusioncopyfonts  \plusone    \let\pdfinclusioncopyfonts \undefined \newcount\pdfinclusioncopyfonts
+\pdfinclusionerrorlevel \zerocount  \let\pdfinclusionerrorlevel\undefined \newcount\pdfinclusionerrorlevel
+\pdfdecimaldigits       \plusten    \let\pdfdecimaldigits      \undefined \newcount\pdfdecimaldigits
 \pdfimageresolution     300
 \pdfpkresolution        600
-\pdfdecimaldigits        10
-\pdfinclusionerrorlevel   0
-\pdfminorversion          6 % use setupbackend for changes
+
+%D Let's block these (we could share a dummy:
+
+\let\pdfcatalog      \relax  \newtoks\pdfcatalog
+\let\pdfinfo         \relax  \newtoks\pdfinfo
+\let\pdfnames        \relax  \newtoks\pdfnames
+\let\pdfpageresources\relax  \newtoks\pdfpageresources
+\let\pdfpageattr     \relax  \newtoks\pdfpageattr
+\let\pdfpagesattr    \relax  \newtoks\pdfpagesattr
 
 %D This one can be consulted by users although the suffix is also
 %D a system mode.
@@ -65,20 +79,20 @@
 
 \appendtoks
     \doifsomething{\backendparameter{xmpfile}}
-      {\ctxcommand{setxmpfile("\backendparameter{xmpfile}")}}%
+      {\clf_setxmpfile{\backendparameter{xmpfile}}}%
 \to \everysetupbackend
 
 % \doifsomething{\backendparameter\c!format} .. at the lua end
 
 \appendtoks
-    \ctxcommand{setformat {
-         format  = "\backendparameter\c!format",
-         level   = "\backendparameter\c!level",
-         option  = "\backendparameter\c!option",
-         profile = "\backendparameter\c!profile",
-         intent  = "\backendparameter\c!intent",
-         file    = "\backendparameter\c!file",
-    }}%
+    \clf_setformat
+         format  {\backendparameter\c!format}%
+         level   {\backendparameter\c!level}%
+         option  {\backendparameter\c!option}%
+         profile {\backendparameter\c!profile}%
+         intent  {\backendparameter\c!intent}%
+         file    {\backendparameter\c!file}%
+    \relax
 \to \everysetupbackend
 
 %D For the moment we keep these.
@@ -88,30 +102,22 @@
 
 %D These are the only official methods to add stuff to the resources.
 
-\unexpanded\def\pdfbackendsetcatalog       #1#2{\ctxlua{lpdf.addtocatalog        ("#1",\!!bs#2\!!es)}}
-\unexpanded\def\pdfbackendsetinfo          #1#2{\ctxlua{lpdf.addtoinfo           ("#1",\!!bs#2\!!es)}}
-\unexpanded\def\pdfbackendsetname          #1#2{\ctxlua{lpdf.addtonames          ("#1",\!!bs#2\!!es)}}
+\unexpanded\def\pdfbackendsetcatalog       #1#2{\clf_lpdf_addtocatalog        {#1}{#2}}
+\unexpanded\def\pdfbackendsetinfo          #1#2{\clf_lpdf_addtoinfo           {#1}{#2}}
+\unexpanded\def\pdfbackendsetname          #1#2{\clf_lpdf_addtonames          {#1}{#2}}
 
-\unexpanded\def\pdfbackendsetpageattribute #1#2{\ctxlua{lpdf.addtopageattributes ("#1",\!!bs#2\!!es)}}
-\unexpanded\def\pdfbackendsetpagesattribute#1#2{\ctxlua{lpdf.addtopagesattributes("#1",\!!bs#2\!!es)}}
-\unexpanded\def\pdfbackendsetpageresource  #1#2{\ctxlua{lpdf.addtopageresources  ("#1",\!!bs#2\!!es)}}
+\unexpanded\def\pdfbackendsetpageattribute #1#2{\clf_lpdf_addtopageattributes  {#1}{#2}}
+\unexpanded\def\pdfbackendsetpagesattribute#1#2{\clf_lpdf_addtopagesattributes {#1}{#2}}
+\unexpanded\def\pdfbackendsetpageresource  #1#2{\clf_lpdf_addtopageresources   {#1}{#2}}
 
-\unexpanded\def\pdfbackendsetextgstate     #1#2{\ctxlua{lpdf.adddocumentextgstate ("#1",lpdf.verbose(\!!bs#2\!!es))}}
-\unexpanded\def\pdfbackendsetcolorspace    #1#2{\ctxlua{lpdf.adddocumentcolorspace("#1",lpdf.verbose(\!!bs#2\!!es))}}
-\unexpanded\def\pdfbackendsetpattern       #1#2{\ctxlua{lpdf.adddocumentpattern   ("#1",lpdf.verbose(\!!bs#2\!!es))}}
-\unexpanded\def\pdfbackendsetshade         #1#2{\ctxlua{lpdf.adddocumentshade     ("#1",lpdf.verbose(\!!bs#2\!!es))}}
+\unexpanded\def\pdfbackendsetextgstate     #1#2{\clf_lpdf_adddocumentextgstate {#1}{#2}}
+\unexpanded\def\pdfbackendsetcolorspace    #1#2{\clf_lpdf_adddocumentcolorspace{#1}{#2}}
+\unexpanded\def\pdfbackendsetpattern       #1#2{\clf_lpdf_adddocumentpattern   {#1}{#2}}
+\unexpanded\def\pdfbackendsetshade         #1#2{\clf_lpdf_adddocumentshade     {#1}{#2}}
 
-           \def\pdfbackendcurrentresources     {\cldcontext{lpdf.collectedresources()}}
-           \def\pdfcolor                     #1{\ctxlua{lpdf.pdfcolor(\thecolorattribute{#1})}} \let\PDFcolor\pdfcolor
-
-%D Let's block these:
-
-\let\pdfcatalog      \relax  \newtoks\pdfcatalog
-\let\pdfinfo         \relax  \newtoks\pdfinfo
-\let\pdfnames        \relax  \newtoks\pdfnames
-\let\pdfpageresources\relax  \newtoks\pdfpageresources
-\let\pdfpageattr     \relax  \newtoks\pdfpageattr
-\let\pdfpagesattr    \relax  \newtoks\pdfpagesattr
+           \def\pdfbackendcurrentresources     {\clf_lpdf_collectedresources}
+           \def\pdfcolor                     #1{\clf_lpdf_color\numexpr\thecolorattribute{#1}\relax}
+           \let\PDFcolor\pdfcolor
 
 %D An example of usage is:
 
@@ -120,99 +126,85 @@
     \pdfbackendsetinfo{ConTeXt.Time}   {\number\normalyear.\twodigits\normalmonth.\twodigits\normalday\space \twodigits\currenthour:\twodigits\currentminute}%
     \pdfbackendsetinfo{ConTeXt.Jobname}{\jobname}%
     \pdfbackendsetinfo{ConTeXt.Url}    {www.pragma-ade.com}%
+    \pdfbackendsetinfo{ConTeXt.Support}{contextgarden.net}%
 \to \everylastbackendshipout
 
 %D Transformations. Some day we will use primitives (once they're fixed).
+
 % todo: inject at the lua end cq. deal with #5 and #6 too
 
 % % % rotation % % %
 
-\unexpanded\def\dostartrotation#1% grouped
-  {\advance\backendtransformlevel\plusone
-   \forcecolorhack
-   \pdfsave
-   \pdfsetmatrix{\ctxcommand{pdfrotation(#1)}}}
-
-\unexpanded\def\dostoprotation
-  {\pdfrestore
-   \forcecolorhack
-   \advance\backendtransformlevel\minusone}
-
 % \unexpanded\def\dostartrotation#1% grouped
 %   {\forcecolorhack
-%    \advance\backendtransformlevel\plusone
-%    \ctxcommand{pdfstartrotation(#1)}}
+%    \pdfsave
+%    \pdfsetmatrix{\clf_pdfrotation#1}}
 
 % \unexpanded\def\dostoprotation
-%   {\ctxcommand{pdfstoprotation()}%
-%    \advance\backendtransformlevel\minusone}
+%   {\pdfrestore
+%    \forcecolorhack}
+
+\unexpanded\def\dostartrotation#1%
+  {\forcecolorhack
+   \clf_pdfstartrotation#1\relax}
+
+\unexpanded\def\dostoprotation
+  {\clf_pdfstoprotation}
 
 % % % scaling % % %
 
-\unexpanded\def\dostartscaling#1#2% the test is needed because acrobat is bugged!
-  {\advance\backendtransformlevel\plusone
-   \forcecolorhack % maybe use signal instead
-   \pdfsave
-   \pdfsetmatrix
-     {\ifdim#1\points=\zeropoint.0001\else#1\fi\space 0 0
-      \ifdim#2\points=\zeropoint.0001\else#2\fi\space}}% 0 0
-
-\unexpanded\def\dostopscaling
-  {\pdfrestore
-   \forcecolorhack
-   \advance\backendtransformlevel\minusone}
-
 % \unexpanded\def\dostartscaling#1#2% the test is needed because acrobat is bugged!
-%   {\forcecolorhack
-%    \advance\backendtransformlevel\plusone
-%    \ctxcommand{pdfstartscaling(#1,#2)}}
+%   {\forcecolorhack % maybe use signal instead
+%    \pdfsave
+%    \pdfsetmatrix
+%      {\ifdim#1\points=\zeropoint.0001\else#1\fi\space 0 0
+%       \ifdim#2\points=\zeropoint.0001\else#2\fi\space}}% 0 0
 
 % \unexpanded\def\dostopscaling
-%   {\ctxcommand{pdfstopscaling()}%
-%    \advance\backendtransformlevel\minusone}
+%   {\pdfrestore
+%    \forcecolorhack}
+
+\unexpanded\def\dostartscaling#1#2%
+  {\forcecolorhack
+   \clf_pdfstartscaling sx #1 sy #2\relax}
+
+\unexpanded\def\dostopscaling
+  {\clf_pdfstopscaling}
 
 % % % mirroring % % %
 
-\unexpanded\def\dostartmirroring
-  {\advance\backendtransformlevel\plusone
-   \forcecolorhack
-   \pdfsave
-   \pdfsetmatrix{-1 0 0 1}} % 0 0
-
-\unexpanded\def\dostopmirroring
-  {\pdfrestore
-   \forcecolorhack
-   \advance\backendtransformlevel\minusone}
-
 % \unexpanded\def\dostartmirroring
-%   {\advance\backendtransformlevel\plusone
-%    \ctxcommand{pdfstartmirroring()}}
+%   {\forcecolorhack
+%    \pdfsave
+%    \pdfsetmatrix{-1 0 0 1}} % 0 0
 
 % \unexpanded\def\dostopmirroring
-%   {\ctxcommand{pdfstopmirroring()}%
-%    \advance\backendtransformlevel\minusone}
+%   {\pdfrestore
+%    \forcecolorhack}
+
+\unexpanded\def\dostartmirroring
+  {\clf_pdfstartmirroring}
+
+\unexpanded\def\dostopmirroring
+  {\clf_pdfstopmirroring}
 
 % % % transform % % %
 
-\unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
-  {\advance\backendtransformlevel\plusone
-   % fixing ht/dp/wd should happen elsewhere
-   \dowithnextbox{\dodotransformnextbox{#5}{#6}{#1 #2 #3 #4}}}
+% \unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
+%   {\dowithnextbox{\dodotransformnextbox{#5}{#6}{#1 #2 #3 #4}}}
 
-\unexpanded\def\dodotransformnextbox#1#2#3%
-  {%\forcecolorhack
-   \hbox
-     {\kern#1\onebasepoint
-      \raise#2\onebasepoint\hbox
-        {\pdfsave
-         \pdfsetmatrix{#3}% 0 0 (no #5 #6 yet)
-         \box\nextbox
-         \pdfrestore
-         \advance\backendtransformlevel\minusone}}}
+% \unexpanded\def\dodotransformnextbox#1#2#3%
+%   {\hbox
+%      {\kern#1\onebasepoint
+%       \raise#2\onebasepoint\hbox
+%         {\pdfsave
+%          \pdfsetmatrix{#3}% 0 0 (no #5 #6 yet)
+%          \box\nextbox
+%          \pdfrestore
+%          }}}
 
 % \unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
-%   {\advance\backendtransformlevel\plusone
-%    % fixing ht/dp/wd should happen elsewhere
+%   {% fixing ht/dp/wd should happen elsewhere
 %    \dowithnextbox{\dodotransformnextbox{#1}{#2}{#3}{#4}{#5}{#6}}}
 
 % \unexpanded\def\dodotransformnextbox#1#2#3#4#5#6%
@@ -220,17 +212,67 @@
 %      {\kern #5\onebasepoint
 %       \raise#6\onebasepoint
 %       \hbox
-%         {\ctxcommand{pdfstartmatrix(#1,#2,#3,#4)}%
+%         {\clf_pdfstartmatrix sx #1 rx #2 ry #3 sy #4\relax
 %          \box\nextbox
-%          \ctxcommand{pdfstopmatrix()}%
-%          \advance\backendtransformlevel\minusone}}}
+%          \clf_pdfstopmatrix}}}
+
+\unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
+  {\dowithnextbox{\dodotransformnextbox{#1}{#2}{#3}{#4}{#5}{#6}}}
+
+\unexpanded\def\dodotransformnextbox#1#2#3#4#5#6%
+  {\hbox
+     {\kern #5\onebasepoint
+      \raise#6\onebasepoint
+      \hbox
+        {\clf_pdfstartmatrix sx #1 rx #2 ry #3 sy #4\relax
+         \box\nextbox
+         \clf_pdfstopmatrix}}}
+
+% somehow the shift is not happening .. bug in luatex?
+%
+% \unexpanded\def\dodotransformnextbox#1#2#3#4#5#6%
+%   {\ctxcommand{pdftransformbox(\number\nextbox,#1,#2,#3,#4,\number\dimexpr#5\onebasepoint,\number\dimexpr#6\onebasepoint)}%
+%    \box\nextbox}
+%
+% \startluacode
+%     function commands.pdftransformbox(box,sx,rx,ry,sy,tx,ty)
+%         if sx == 1 and rx == 0 and ry == 0 and sy == 1 then
+%             if tx == 0 and ty == 0 then
+%                 local b = nodes.hpack(nodes.concat {
+%                     nodes.pool.kern(tx),
+%                     nodes.takebox(box),
+%                 })
+%                 b.shift = -ty
+%                 tex.setbox(box,b)
+%             else
+%                 -- no need to transform
+%             end
+%         else
+%             local b = nodes.hpack(nodes.concat {
+%                 nodes.pool.kern(tx),
+%                 nodes.pool.pdfsave(),
+%                 nodes.pool.pdfsetmatrix(sx,rx,ry,sy),
+%                 nodes.takebox(box),
+%                 nodes.pool.pdfsetmatrix(-sx,-rx,-ry,-sy),
+%                 nodes.pool.pdfrestore(),
+%             })
+%             b.shift = -ty
+%             tex.setbox(box,b)
+%         end
+%     end
+% \stopluacode
 
 % % % clipping % % %
 
 \unexpanded\def\dostartclipping#1#2#3% we can move this to lua and only set a box here
   {\PointsToBigPoints{#2}\width
    \PointsToBigPoints{#3}\height
-   \meta_grab_clip_path{#1}\width\height{0 0 m \width\space 0 l \width \height l 0 \height l}%
+   \meta_grab_clip_path{#1}\width\height{%
+     0            0             m %
+     \width\space 0             l %
+     \width\space \height\space l %
+     0            \height\space l%
+   }%
    \pdfliteral{q 0 w \MPclippath\space W n}}
 
 \unexpanded\def\dostopclipping
@@ -238,7 +280,7 @@
 
 %D The following will move to the backend \LUA\ code:
 
-\appendtoks \ctxlua{backends.codeinjections.finalizepage    ()}\to \everybackendshipout       % is immediate
+%appendtoks \ctxlua{backends.codeinjections.finalizepage    ()}\to \everybackendshipout       % is immediate
 %appendtoks \ctxlua{backends.codeinjections.finalizedocument()}\to \everylastbackendshipout   % is immediate
 
 %D Temporary hack, will be removed or improved or default.
@@ -270,13 +312,13 @@
   {\the\pdfbackendeveryxform
    \finalizeobjectbox\objectbox
    \immediate\pdfxform resources {\pdfbackendcurrentresources}\objectbox
-   \dosetobjectreference{#1}{#2}{\the\pdflastxform}}
+   \dosetobjectreference{#1}{#2}\pdflastxform}
 
 \let\m_back_object_reference\empty
 
-\def\doinsertobject#1#2%
+\unexpanded\def\doinsertobject#1#2%
   {\begingroup
-   \doifobjectreferencefoundelse{#1}{#2}
+   \doifelseobjectreferencefound{#1}{#2}
      {\dogetobjectreference{#1}{#2}\m_back_object_reference
       \pdfrefxform\m_back_object_reference}%
      \donothing
@@ -284,12 +326,12 @@
 
 \let\lastpredefinedsymbol\empty % some day we can do more at the lua end
 
-\def\predefinesymbol[#1]%
+\unexpanded\def\predefinesymbol[#1]%
   {\begingroup
    \xdef\lastpredefinedsymbol{#1}%
    \settightobject{SYM}{#1}\hbox{\symbol[#1]}% to be checked ... maybe only fitting
    \dogetobjectreference{SYM}{#1}\m_back_object_reference
-   \ctxlua{backends.codeinjections.registersymbol("#1",\m_back_object_reference)}%
+   \clf_registerbackendsymbol{#1}\m_back_object_reference\relax
    \endgroup}
 
 % for the moment here
@@ -527,7 +569,7 @@
              \xmin \space \ymin \space \xmin \space \yymin\space y
            \or % 28
            \fi
-           \ifnum\mode>8\space
+           \ifnum\mode>\pluseight\space
                                        S
            \else
              \ifnum\dostroke=\plusone  S \fi
@@ -541,13 +583,15 @@
    \box\scratchbox
    \egroup}
 
-\unexpanded\def\pdfactualtext#1#2% not interfaced
-  {\pdfliteral direct{/Span <</ActualText \ctxlua{tex.write(lpdf.tosixteen("#2"))} >> BDC}%
+\unexpanded\def\pdfbackendactualtext#1#2% not interfaced
+  {\clf_startactualtext{#2}%
    #1%
-   \pdfliteral direct{EMC}}
+   \clf_stopactualtext}
+
+\let\pdfactualtext\pdfbackendactualtext
 
 % \starttext
-%     text \pdfactualtext{Meier}{Müller} text
+%     text \pdfbackendactualtext{Meier}{Müller} text
 % \stoptext
 
 \protect \endinput

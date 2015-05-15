@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D This module as a more modern variant in xtables but as we follow a bit
+%D This module has a more modern variant in xtables but as we follow a bit
 %D different approach with settings there, this mechanism will stay. In fact
 %D each of them has its advantages. This module could be sped up a bit and made
 %D more efficient by delegating some housekeeping to \LUA\ but it's not worth
@@ -19,8 +19,14 @@
 %D real purpose in it. If needed I can squeeze out a few more percentages
 %D runtime.
 
+% columndistance 'optimized' ... needs checking
+%
+% we don't need the alignment mechanism .. we can just pack the row in a box
+
 \writestatus{loading}{ConTeXt Table Macros / Natural Tables}
 
+% sometimes this helps (with nc going wild): \setupTABLE[maxwidth=100cm]
+%
 % bug: width 3cm is not honored and column becomes too wide
 % as given width is added to distributed width
 %
@@ -98,7 +104,7 @@
 \to \t_tabl_ntb_cell_start
 
 \unexpanded\def\tabl_ntb_cell_start
-  {\inhibitblank
+  {% \inhibitblank
    \dotagTABLEcell
   %\tabl_ntb_next_level
    \usenaturaltablelocalstyleandcolor\c!style\c!color
@@ -145,6 +151,9 @@
 \newcount\c_tabl_ntb_maximum_row_span
 \newcount\c_tabl_ntb_maximum_col_span
 
+\newcount\c_tabl_ntb_encountered_col
+\newcount\c_tabl_ntb_encountered_max
+
 \newtoks\t_tabl_ntb
 \newtoks\t_tabl_ntb_row
 
@@ -161,6 +170,11 @@
 
 \newdimen\d_tabl_ntb_height
 \newdimen\d_tabl_ntb_width
+
+\newdimen\d_tabl_ntb_leftmargindistance
+\newdimen\d_tabl_ntb_rightmargindistance
+\newdimen\d_tabl_ntb_columndistance
+\newdimen\d_tabl_ntb_maxwidth
 
 \newtoks\everyTABLEpass    % public
 
@@ -208,6 +222,8 @@
 \installdirectcommandhandler       \??naturaltable      {naturaltable}      % \??naturaltable
 \installsimpleframedcommandhandler \??naturaltablelocal {naturaltablelocal} \??naturaltablelocal
 
+\installcorenamespace{naturaltabletal}
+\installcorenamespace{naturaltablegal}
 \installcorenamespace{naturaltablenob}
 \installcorenamespace{naturaltabletag}
 \installcorenamespace{naturaltablecol}
@@ -219,11 +235,26 @@
 \installcorenamespace{naturaltablehei}
 \installcorenamespace{naturaltabledis}
 \installcorenamespace{naturaltableaut}
+%installcorenamespace{naturaltablefwd} % forcedwidth
 \installcorenamespace{naturaltabletxt}
 \installcorenamespace{naturaltablespn}
 \installcorenamespace{naturaltableref}
 \installcorenamespace{naturaltableset}
 \installcorenamespace{naturaltablecell}
+\installcorenamespace{naturaltablesqueeze}
+\installcorenamespace{naturaltabletok}
+
+\letvalue{\??naturaltablesqueeze        }\donefalse
+\letvalue{\??naturaltablesqueeze\v!fit  }\donetrue
+\letvalue{\??naturaltablesqueeze\v!fixed}\donetrue
+\letvalue{\??naturaltablesqueeze\v!broad}\donetrue
+\letvalue{\??naturaltablesqueeze\v!local}\donetrue
+
+\def\tabl_ntb_let_gal{\global\expandafter\let\csname\??naturaltablegal\m_tabl_tbl_level\endcsname}
+\def\tabl_ntb_get_gal{\csname\??naturaltablegal\m_tabl_tbl_level\endcsname}
+
+\def\tabl_ntb_let_tal#1{\global\expandafter\let\csname\??naturaltabletal\m_tabl_tbl_level:\number#1\endcsname}
+\def\tabl_ntb_get_tal#1{\csname\??naturaltabletal\m_tabl_tbl_level:\number#1\endcsname}
 
 \def\tabl_ntb_set_nob#1{\expandafter\let\csname\??naturaltablenob\m_tabl_tbl_level:\number#1\endcsname\plusone}
 \def\tabl_ntb_get_nob#1{\ifcsname\??naturaltablenob\m_tabl_tbl_level:\number#1\endcsname\plusone\else\zerocount\fi}
@@ -281,15 +312,22 @@
 % \def\tabl_ntb_row_state#1#2{\ifcsname\??naturaltablerow\m_tabl_tbl_level:\number#1:\number#2\endcsname\zerocount\else\plusone\fi}
 % \def\tabl_ntb_col_state#1#2{\ifcsname\??naturaltablecol\m_tabl_tbl_level:\number#1:\number#2\endcsname\zerocount\else\plusone\fi}
 
+%def\tabl_ntb_set_spn     #1{\expandafter\let\csname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname \!!plusone}
+%def\tabl_ntb_spn_doifelse#1{\doifelse      {\csname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname}\!!plusone}
+
+%def\tabl_ntb_set_spn     #1{\setvalue     {\??naturaltablespn\m_tabl_tbl_level:\number#1}{1}}
+%def\tabl_ntb_spn_doifelse#1{\doifelsevalue{\??naturaltablespn\m_tabl_tbl_level:\number#1}{1}}
+
+\def\tabl_ntb_let_ref   #1#2{\expandafter\glet\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_set_ref   #1#2{\expandafter\xdef\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_get_ref   #1#2{\ifcsname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname\fi}
+
 \def\tabl_ntb_set_spn     #1{\expandafter\let\csname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname \!!plusone}
-\def\tabl_ntb_spn_doifelse#1{\doifelse      {\csname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname}\!!plusone}
-
-\def\tabl_ntb_set_spn     #1{\setvalue     {\??naturaltablespn\m_tabl_tbl_level:\number#1}{1}}
-\def\tabl_ntb_spn_doifelse#1{\doifelsevalue{\??naturaltablespn\m_tabl_tbl_level:\number#1}{1}}
-
-\def\tabl_ntb_let_ref#1#2{\expandafter\glet\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
-\def\tabl_ntb_set_ref#1#2{\expandafter\xdef\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
-\def\tabl_ntb_get_ref#1#2{\ifcsname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname\fi}
+\def\tabl_ntb_spn_doifelse#1{\ifcase0\csname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname\relax % could be inlined
+                               \expandafter\secondoftwoarguments % unset
+                             \else
+                               \expandafter\firstoftwoarguments  % a span
+                             \fi}
 
 % keep for a while:
 %
@@ -317,6 +355,7 @@
 \newif\ifenableTBLbreak     \enableTBLbreakfalse
 \newif\ifmultipleTBLheads   \multipleTBLheadsfalse
 \newif\iftightTBLrowspan    \tightTBLrowspantrue
+\newif\iftightTBLcolspan    \tightTBLcolspanfalse
 
 \newif\iftraceTABLE         \traceTABLEfalse
 
@@ -549,7 +588,6 @@
    % local
    \ifcsname\m_tabl_ntb_prefix\c!y++\m_tabl_ntb_positive_row\endcsname\csname\m_tabl_ntb_prefix\c!y++\m_tabl_ntb_positive_row\endcsname\fi
    % done
-   \xdef\m_tabl_ntb_after_split{\naturaltablelocalparameter\c!after}% to be checked
    \relax}
 
 % we cannot use +n (checking on number/last/first would slow down too much)
@@ -565,7 +603,9 @@
 % \dorecurse{10}{\bTR \dorecurse{6}{\bTD xxx \eTD} \eTR}
 % \eTABLE
 
-\let\m_tabl_ntb_after_split\relax
+\let\m_tabl_ntb_before_split\empty
+\let\m_tabl_ntb_after_split \empty
+\let\m_tabl_ntb_same_page   \empty
 
 % split + page:
 %
@@ -577,6 +617,7 @@
 
 \unexpanded\def\tabl_ntb_tr
   {\c_tabl_ntb_running_col\zerocount
+   \c_tabl_ntb_encountered_col\zerocount
    \advance\c_tabl_ntb_maximum_row\plusone
    \iffirstargument
      \expandafter\tabl_ntb_tr_yes
@@ -591,7 +632,8 @@
 \def\m_tabl_ntb_default_nc{\naturaltableparameter\c!nc}
 
 \unexpanded\def\tabl_ntb_td
-  {\iffirstargument
+  {\advance\c_tabl_ntb_encountered_col\plusone
+   \iffirstargument
      \expandafter\tabl_ntb_td_yes
    \else
      \expandafter\tabl_ntb_td_nop
@@ -651,7 +693,10 @@
    % save text
    \normalexpanded
      {\tabl_ntb_set_txt_process\c_tabl_ntb_maximum_row\c_tabl_ntb_running_col{\the\c_tabl_ntb_maximum_row}{\the\c_tabl_ntb_running_col}}%
-     {#1}{#2}}
+     {#1}{#2}%
+   \ifnum\c_tabl_ntb_encountered_col>\c_tabl_ntb_encountered_max
+     \c_tabl_ntb_encountered_max\c_tabl_ntb_encountered_col
+   \fi}
 
 \def\tabl_ntb_td_nop[#1]#2\eTD
   {\global\advance\c_tabl_ntb_spn\plusone\relax
@@ -671,7 +716,10 @@
    \tabl_ntb_let_ref\c_tabl_ntb_maximum_row\c_tabl_ntb_running_col\empty
    \normalexpanded
      {\tabl_ntb_set_txt_process\c_tabl_ntb_maximum_row\c_tabl_ntb_running_col{\the\c_tabl_ntb_maximum_row}{\the\c_tabl_ntb_running_col}}%
-     {#1}{#2}}
+     {#1}{#2}%
+   \ifnum\c_tabl_ntb_encountered_col>\c_tabl_ntb_encountered_max
+     \c_tabl_ntb_encountered_max\c_tabl_ntb_encountered_col
+   \fi}
 
 \def\tabl_ntb_td_pass_n#1%
   {\scratchcounter\numexpr\m_tabl_ntb_n-\c_tabl_ntb_running_col+\minusone-\c_tabl_ntb_spn\relax
@@ -850,10 +898,20 @@
    \ifhmode\kern\zeropoint\fi  % blocks \removeunwantedspaces: check this on icare handelingsschema
    \resetcharacteralign % new
    \setupcurrentnaturaltablelocal[\c!align={\v!right,\v!broad,\v!high},#1]%
+   %
+   \d_tabl_ntb_leftmargindistance \naturaltablelocalparameter\c!leftmargindistance\relax
+   \d_tabl_ntb_rightmargindistance\naturaltablelocalparameter\c!rightmargindistance\relax
+   \d_tabl_ntb_columndistance     \naturaltablelocalparameter\c!columndistance\relax
+   \d_tabl_ntb_maxwidth           \naturaltablelocalparameter\c!maxwidth\relax
+   %
    \usesetupsparameter\naturaltablelocalparameter
    \doifelse{\naturaltablelocalparameter\c!textwidth}\v!local
      {\hsize\availablehsize}
      {\hsize\naturaltablelocalparameter\c!textwidth}%
+   \enableTBLbreakfalse
+   \multipleTBLheadsfalse
+   \autoTBLspreadfalse
+   \tightTBLcolspanfalse
    \processaction
      [\naturaltablelocalparameter\c!split]
      [     \v!yes=>\enableTBLbreaktrue,
@@ -865,7 +923,8 @@
    \tabl_ntb_preset_parameters
    \processallactionsinset
      [\naturaltablelocalparameter\c!option]
-     [\v!stretch=>\autoTBLspreadtrue]%
+     [\v!stretch=>\autoTBLspreadtrue,%
+        \v!tight=>\tightTBLcolspantrue]%
    \linewidth\naturaltablelocalparameter\c!rulethickness % needs to be frozen
    \dontcomplain
    \c_tabl_ntb_running_col     \zerocount
@@ -905,10 +964,10 @@
 
 \unexpanded\def\eTABLE % beware, we need to get rid of spurious spaces when in hmode
   {% tricky and dirty order -)
-   \doifsometokselse\t_tabl_ntb_head % slow, better a flag
+   \doifelsesometoks\t_tabl_ntb_head % slow, better a flag
      {\the\t_tabl_ntb_head
       \c_tabl_ntb_n_of_head_lines\c_tabl_ntb_maximum_row\relax
-      \doifsometokselse\t_tabl_ntb_next
+      \doifelsesometoks\t_tabl_ntb_next
         {\the\t_tabl_ntb_next
          \c_tabl_ntb_n_of_next_lines\numexpr\c_tabl_ntb_maximum_row-\c_tabl_ntb_n_of_head_lines\relax}%
         {\c_tabl_ntb_n_of_next_lines\zerocount}% was 1
@@ -1013,7 +1072,7 @@
    \ifautoTBLemptycell
       \normalexpanded
          {\tabl_ntb_set_txt_process\c_tabl_ntb_current_row\c_tabl_ntb_current_col{\the\c_tabl_ntb_current_row}{\the\c_tabl_ntb_current_col}}%
-         {}{\strut}%
+         {\c!option=\v!tight}{\strut\kern\scaledpoint}% the kern forces the tight
    \fi}
 
 \def\tabl_ntb_loop_two
@@ -1045,79 +1104,179 @@
 
 \newcount\c_tabl_prelocated_rows % \prelocateTBLrows{1000} may speed up large tables
 
-\def\tabl_ntb_row_start{\t_tabl_ntb_row\emptytoks}
-\def\tabl_ntb_row_stop {\normalexpanded{\t_tabl_ntb{\the\t_tabl_ntb\noexpand\tabl_ntb_row_align_start\the\t_tabl_ntb_row\tabl_ntb_row_align_stop}}}
+% \def\tabl_ntb_row_start{\t_tabl_ntb_row\emptytoks}
+% \def\tabl_ntb_row_stop {\normalexpanded{\t_tabl_ntb{\the\t_tabl_ntb\noexpand\tabl_ntb_row_align_start\the\t_tabl_ntb_row\tabl_ntb_row_align_stop}}}
+
+\def\tabl_ntb_row_start
+  {\t_tabl_ntb_row\emptytoks}
+
+\def\tabl_ntb_row_stop
+  {\ifenableTBLbreak
+     \tabl_ntb_row_stop_split
+   \else
+     \tabl_ntb_row_stop_boxed
+   \fi}
+
+\def\tabl_ntb_row_stop_boxed
+  {% \noindent % no, else double leftskip in narrower
+   \normalexpanded
+     {\t_tabl_ntb
+        {\the\t_tabl_ntb
+         % no need for init
+         \tabl_ntb_row_align_start
+         \the\t_tabl_ntb_row
+         \tabl_ntb_row_align_stop}}}
+
+\def\tabl_ntb_row_stop_split
+  {\ifcsname\??naturaltableset\m_tabl_tbl_level:\c!y++\the\c_tabl_ntb_current_row\endcsname
+     \tabl_ntb_row_stop_split_yes
+   \else
+     \tabl_ntb_row_stop_split_nop
+   \fi}
+
+\def\tabl_ntb_row_stop_split_nop
+  {\normalexpanded
+     {\t_tabl_ntb
+        {\the\t_tabl_ntb
+         \tabl_ntb_row_align_reset
+         \tabl_ntb_row_align_start
+         \the\t_tabl_ntb_row
+         \tabl_ntb_row_align_stop}}}
+
+\def\tabl_ntb_row_stop_split_yes
+  {\begingroup
+   \csname\??naturaltableset\m_tabl_tbl_level:\c!y++\the\c_tabl_ntb_current_row\endcsname
+   \xdef\m_tabl_ntb_before_split{\naturaltablelocalparameter\c!before}% to be checked
+   \xdef\m_tabl_ntb_after_split {\naturaltablelocalparameter\c!after}% to be checked
+   \xdef\m_tabl_ntb_same_page   {\naturaltablelocalparameter\c!samepage}%
+   \endgroup
+   \normalexpanded
+     {\t_tabl_ntb
+        {\the\t_tabl_ntb
+         \tabl_ntb_row_align_set{\m_tabl_ntb_before_split}{\m_tabl_ntb_after_split}{\m_tabl_ntb_same_page}%
+         \tabl_ntb_row_align_start
+         \the\t_tabl_ntb_row
+         \tabl_ntb_row_align_stop}}}
+
+\unexpanded\def\tabl_ntb_row_align_set#1#2#3%
+  {\xdef\m_tabl_ntb_before_split{#1}%
+   \xdef\m_tabl_ntb_after_split {#2}%
+   \xdef\m_tabl_ntb_same_page   {#3}}
+
+\unexpanded\def\tabl_ntb_row_align_reset
+  {\global\let\m_tabl_ntb_before_split\empty
+   \global\let\m_tabl_ntb_after_split \empty
+   \global\let\m_tabl_ntb_same_page   \empty}
 
 \def\tabl_ntb_prelocate_error
   {\writestatus\m!system{fatal error: use \string\prelocateTBLrows\space to increase table memory (now: \the\c_tabl_prelocated_rows)}}
 
 % \prelocateTBLrows{1000} % may speed up large tables
 
-\installcorenamespace{naturaltabletok}
-
 \def\prelocateTBLrows#1% we start at zero so we have one to much, better play safe anyway
-  {\dostepwiserecurse\c_tabl_prelocated_rows{#1}\plusone{\expandafter\newtoks\csname\??naturaltabletok\recurselevel\endcsname}%
+  {\dostepwiserecurse\c_tabl_prelocated_rows{#1}\plusone
+     {\expandafter\newtoks\csname\??naturaltabletok\recurselevel\endcsname}%
    \def\tabl_ntb_row_start
      {\ifnum\c_tabl_ntb_row<\c_tabl_prelocated_rows\relax
-        \expandafter\let\expandafter\t_tabl_ntb_row\csname\??naturaltabletok\the\c_tabl_ntb_row\endcsname\t_tabl_ntb_row\emptytoks
+        \tabl_ntb_prelocate_okay
       \else
         \tabl_ntb_prelocate_error
       \fi}%
    \def\tabl_ntb_row_stop
-     {\normalexpanded{\t_tabl_ntb{\the\t_tabl_ntb\noexpand\tabl_ntb_row_align_start\the\csname\??naturaltabletok\the\c_tabl_ntb_row\endcsname\tabl_ntb_row_align_stop}}}%
+     {\normalexpanded
+        {\t_tabl_ntb
+           {\the\t_tabl_ntb
+            \tabl_ntb_row_align_start
+            \the\csname\??naturaltabletok\the\c_tabl_ntb_row\endcsname
+            \tabl_ntb_row_align_stop}}}%
    \global\c_tabl_prelocated_rows#1\relax}
+
+\def\tabl_ntb_prelocate_okay
+  {\expandafter\let\expandafter\t_tabl_ntb_row\csname\??naturaltabletok\the\c_tabl_ntb_row\endcsname\t_tabl_ntb_row\emptytoks}
 
 % We use aligments to handle the empty (skipped) columns, so
 % that we don't have to (re|)|calculate these.
 
-\def\tabl_ntb_column_skip
-  {\global\advance\c_tabl_ntb_col\plusone}
-
-\def\tabl_ntb_column_next
-  {\global\advance\c_tabl_ntb_col\plusone
-   \kern\naturaltablelocalparameter\c!columndistance
-   \aligntab}
-
-\def\tabl_ntb_column_span
-  {\span}
-
 \let\m_tabl_ntb_saved_row\!!zerocount
 \let\m_tabl_ntb_saved_col\!!zerocount
 
-\def\tabl_ntb_row_align_start
-  {\noalign{\tabl_ntb_row_align_reset}%
-   \tabl_ntb_column_next
-   \kern\dimexpr\naturaltablelocalparameter\c!leftmargindistance-\naturaltablelocalparameter\c!columndistance\relax}
-
-\unexpanded\def\tabl_ntb_row_align_reset
+\unexpanded\def\tabl_ntb_row_align_start
   {\global\advance\c_tabl_ntb_row\plusone
-   \global\c_tabl_ntb_col\zerocount
-   \global\c_tabl_ntb_spn\zerocount}
+   \global\c_tabl_ntb_col\plusone
+   \global\c_tabl_ntb_spn\zerocount
+   \tabl_ntb_row_align_start_inject
+   \dostarttagged\t!tablerow\empty
+   \hbox\bgroup
+   \kern\dimexpr\d_tabl_ntb_leftmargindistance\relax}
 
 \unexpanded\def\tabl_ntb_row_align_stop
-  {\kern\dimexpr\naturaltablelocalparameter\c!rightmargindistance-\naturaltablelocalparameter\c!columndistance\relax
-   \crcr
-   \noalign
-     {\nointerlineskip
-      \ifnum\c_tabl_ntb_row>\c_tabl_ntb_n_of_head_lines
-        \ifnum\tabl_ntb_get_nob\c_tabl_ntb_row=\zerocount
-          \allowbreak
-        \fi
-      \else
-        \allowbreak % else no proper head split off
-      \fi
-      \bgroup % protect local vars
-        \m_tabl_ntb_after_split
-      \egroup
-      \bgroup % protect local vars
-        \scratchcounter\numexpr\c_tabl_ntb_row+\plusone\relax
-        \ifnum\scratchcounter>\c_tabl_ntb_n_of_hdnx_lines\relax
-          \ifnum\scratchcounter<\c_tabl_ntb_maximum_row\relax
-            \doifsomething{\naturaltablelocalparameter\c!spaceinbetween}
-               {\blank[\naturaltablelocalparameter\c!spaceinbetween]}%
-          \fi
-        \fi
-      \egroup}}
+  {\kern\dimexpr\d_tabl_ntb_rightmargindistance-\d_tabl_ntb_columndistance\relax
+   \egroup
+   \dostoptagged
+   \tabl_ntb_row_align_stop_inject}
+
+\unexpanded\def\tabl_ntb_before_page
+  {\ifx\m_tabl_ntb_same_page\v!before
+   % \blank[\v!samepage,\v!strong]%
+     \unpenalty
+     \nobreak
+   \else\ifx\m_tabl_ntb_same_page\v!both
+   % \blank[\v!samepage,\v!strong]%
+     \unpenalty
+     \nobreak
+   \fi\fi}
+
+\unexpanded\def\tabl_ntb_after_page
+  {\ifnum\c_tabl_ntb_row>\c_tabl_ntb_n_of_head_lines
+     \ifnum\tabl_ntb_get_nob\c_tabl_ntb_row=\zerocount
+       \unpenalty
+       \ifx\m_tabl_ntb_same_page\v!after
+       % \blank[\v!samepage,\v!strong]%
+         \nobreak
+       \else\ifx\m_tabl_ntb_same_page\v!both
+       % \blank[\v!samepage,\v!strong]%
+         \nobreak
+       \else
+       % \blank[\v!preference,\v!weak]%
+         \allowbreak
+       \fi\fi
+     \fi
+   \else
+   % \blank[\v!preference,\v!weak]%
+     \allowbreak % else no proper head split off
+   \fi}
+
+\unexpanded\def\tabl_ntb_inbetween
+  {\scratchcounter\numexpr\c_tabl_ntb_row+\plusone\relax
+   \ifnum\scratchcounter>\c_tabl_ntb_n_of_hdnx_lines\relax
+     \ifnum\scratchcounter<\c_tabl_ntb_maximum_row\relax
+       \edef\p_spaceinbetween{\naturaltablelocalparameter\c!spaceinbetween}%
+       \ifx\p_spaceinbetween\empty\else
+         \blank[\p_spaceinbetween]%
+       \fi
+     \fi
+   \fi}
+
+\unexpanded\def\tabl_ntb_row_align_start_inject
+  {\bgroup % protect local vars
+     \m_tabl_ntb_before_split
+   \egroup
+   \ifenableTBLbreak
+     \tabl_ntb_before_page
+   \fi}
+
+\unexpanded\def\tabl_ntb_row_align_stop_inject
+  {\par
+   \nointerlineskip
+   \ifenableTBLbreak
+     \tabl_ntb_after_page
+   \fi
+   \bgroup % protect local vars
+     \m_tabl_ntb_after_split
+   \egroup
+   \bgroup % protect local vars
+     \tabl_ntb_inbetween
+   \egroup}
 
 \def\tabl_ntb_flush_content
   {\the\everyTABLEpass
@@ -1125,46 +1284,55 @@
    \global\c_tabl_ntb_col\zerocount
    \global\c_tabl_ntb_row\zerocount
    \global\advance\c_tabl_ntb_row\minusone
-   \tabskip\zeropoint
-   \dostarttagged\t!table\empty
-   \dostarttagged\t!tablerow\empty
-   \appendtoks\dostoptagged\dostarttagged\t!tablerow\empty\to\everycr
-   \halign\bgroup
-     \registerparoptions
-     % watch out: tagging the cell happens at the outer level (faster)
-     \ignorespaces\alignmark\alignmark\unskip
-     \aligntab\aligntab
-     \ignorespaces\alignmark\alignmark\unskip
-     \cr % one too many
-     \the\t_tabl_ntb
-     \dostoptagged
-   \egroup
+   \dostarttaggedchained\t!table\empty\??naturaltable
+  %\registerparoptions % (*) triggers max hsize
+   \the\t_tabl_ntb
    \dostoptagged}
+
+\unexpanded\def\tabl_ntb_span#1%
+  {\dorecurse{#1}
+     {\hskip\tabl_ntb_get_wid\c_tabl_ntb_col\relax
+      \global\advance\c_tabl_ntb_col\plusone}}
+
+\unexpanded\def\tabl_ntb_skip#1%
+  {\global\advance\c_tabl_ntb_col#1\relax}
+
+\unexpanded\def\tabl_ntb_plus
+  {\global\advance\c_tabl_ntb_col\plusone
+   \kern\d_tabl_ntb_columndistance}
+
+% \setvalue{\??naturaltablecell\the\c_tabl_ntb_none}#1#2%
+%   {\scratchcounter\tabl_ntb_get_col{#1}{#2}\relax
+%    \ifnum\scratchcounter>\zerocount
+%      \normalexpanded
+%        {\t_tabl_ntb_row
+%           {\the\t_tabl_ntb_row
+%            \tabl_ntb_span{\the\scratchcounter}%
+%            \tabl_ntb_plus}}%
+%    \fi}
 
 \setvalue{\??naturaltablecell\the\c_tabl_ntb_none}#1#2%
   {\scratchcounter\tabl_ntb_get_col{#1}{#2}\relax
    \ifnum\scratchcounter>\zerocount
-     \advance\scratchcounter\minusone
-     \ifnum\scratchcounter>\zerocount
-       \tabl_ntb_span
-     \fi
-     \t_tabl_ntb_row\expandafter{\the\t_tabl_ntb_row\tabl_ntb_column_next}
+     \normalexpanded
+       {\t_tabl_ntb_row
+          {\the\t_tabl_ntb_row
+           \tabl_ntb_span{\the\scratchcounter}}}%
    \fi}
 
 \setvalue{\??naturaltablecell\the\c_tabl_ntb_cell}#1#2%
   {\t_tabl_ntb_row\expandafter{\the\t_tabl_ntb_row\tabl_ntb_pass #1 #2 }% space delimited -> less tokens
    \scratchcounter\tabl_ntb_get_col{#1}{#2}\relax
    \ifnum\scratchcounter>\zerocount
-     \advance\scratchcounter\minusone
-     \ifnum\scratchcounter>\zerocount
-       \tabl_ntb_span
-     \fi
-     \t_tabl_ntb_row\expandafter{\the\t_tabl_ntb_row\tabl_ntb_column_next}
+     \normalexpanded
+       {\t_tabl_ntb_row
+          {\the\t_tabl_ntb_row
+           \ifnum\scratchcounter=\plusone
+             \tabl_ntb_plus
+           \else
+             \tabl_ntb_skip{\the\scratchcounter}%
+           \fi}}%
    \fi}
-
-\def\tabl_ntb_span
-  {\dorecurse\scratchcounter{\t_tabl_ntb_row\expandafter{\the\t_tabl_ntb_row\tabl_ntb_column_span}}%
-   \dorecurse\scratchcounter{\t_tabl_ntb_row\expandafter{\the\t_tabl_ntb_row\tabl_ntb_column_skip}}}
 
 \unexpanded\def\tabl_ntb_cell#1#2%
   {\csname\??naturaltablecell\the\tabl_ntb_get_tag{#1}{#2}\endcsname{#1}{#2}}
@@ -1183,16 +1351,22 @@
   {\d_tabl_ntb_width\zeropoint
    \scratchcounter\c_tabl_ntb_col
    \!!counta\tabl_ntb_get_col{#1}{#2}\relax
-   \dorecurse\!!counta
-     {\advance\d_tabl_ntb_width\dimexpr
-        \tabl_ntb_get_wid\scratchcounter
-       +\naturaltablelocalparameter\c!columndistance
-        \ifnum\recurselevel<\!!counta
-          +\tabl_ntb_get_dis\scratchcounter
-        \fi
-      \relax
-      \advance\scratchcounter\plusone}%
-   \advance\d_tabl_ntb_width-\naturaltablelocalparameter\c!columndistance\relax
+   \ifcase\!!counta\or
+     \advance\d_tabl_ntb_width\dimexpr
+       \tabl_ntb_get_wid\scratchcounter
+     \relax
+     \advance\scratchcounter\plusone
+   \else
+     \dorecurse\!!counta
+       {\advance\d_tabl_ntb_width\dimexpr
+          \tabl_ntb_get_wid\scratchcounter
+          \ifnum\recurselevel<\!!counta
+            +\d_tabl_ntb_columndistance
+            +\tabl_ntb_get_dis\scratchcounter
+          \fi
+        \relax
+        \advance\scratchcounter\plusone}%
+   \fi
    \setbox\scratchbox\hbox{\tabl_ntb_get_txt{#1}{#2}}%
    \tabl_ntb_set_ht{#1}{#2}{\the\ht\scratchbox}%
    \tabl_ntb_set_wd{#1}{#2}{\the\wd\scratchbox}%
@@ -1223,16 +1397,22 @@
    % width
    \d_tabl_ntb_width\zeropoint
    \scratchcounter\c_tabl_ntb_col
-   \dorecurse\!!counta
-     {\advance\d_tabl_ntb_width\dimexpr
-         \tabl_ntb_get_wid\scratchcounter
-        +\naturaltablelocalparameter\c!columndistance
-         \ifnum\recurselevel<\!!counta
-           +\tabl_ntb_get_dis\scratchcounter
-         \fi
-      \relax
-      \advance\scratchcounter\plusone}%
-   \advance\d_tabl_ntb_width-\naturaltablelocalparameter\c!columndistance\relax
+   \ifcase\!!counta\or
+     \advance\d_tabl_ntb_width\dimexpr
+       \tabl_ntb_get_wid\scratchcounter
+     \relax
+     \advance\scratchcounter\plusone
+   \else
+     \dorecurse\!!counta
+       {\advance\d_tabl_ntb_width\dimexpr
+          \tabl_ntb_get_wid\scratchcounter
+          \ifnum\recurselevel<\!!counta
+            +\d_tabl_ntb_columndistance
+            +\tabl_ntb_get_dis\scratchcounter
+          \fi
+        \relax
+        \advance\scratchcounter\plusone}%
+   \fi
    % cell
    \setbox\scratchbox\hbox attr \taggedattribute \attribute\taggedattribute \bgroup
       \dotagTABLEsignal % maybe we need to add some packaging in this case
@@ -1255,18 +1435,40 @@
    \fi
    \dostoptagged} % right spot
 
+% \def\tabl_ntb_cell_finalize
+%   {\doifnotinset\localwidth{\v!fit,\v!broad}% user set
+%      {\scratchdimen\tabl_ntb_get_aut\c_tabl_ntb_col\relax
+%       \ifdim\localwidth>\scratchdimen
+%         \tabl_ntb_set_aut\c_tabl_ntb_col{\the\dimexpr\localwidth}%
+%       \fi}}
+
 \def\tabl_ntb_cell_finalize
-  {\doifnotinset\localwidth{\v!fit,\v!broad}% user set
-     {\scratchdimen\tabl_ntb_get_aut\c_tabl_ntb_col\relax
-      \ifdim\localwidth>\scratchdimen
-        \tabl_ntb_set_aut\c_tabl_ntb_col{\the\dimexpr\localwidth}%
-      \fi}}
+  {\ifx\localwidth\v!fit
+      % nothing
+   \else\ifx\localwidth\v!broad
+      % nothing
+   \else\ifx\localwidth\empty
+      % nothing (safeguard)
+   \else
+     \tabl_ntb_cell_finalize_indeed
+   \fi\fi\fi}
+
+\def\tabl_ntb_cell_finalize_indeed
+  {\scratchdimen\tabl_ntb_get_aut\c_tabl_ntb_col\relax
+   \ifdim\localwidth>\scratchdimen
+     \tabl_ntb_set_aut\c_tabl_ntb_col{\the\dimexpr\localwidth}%
+   \fi}
+
+\let\tabl_ntb_preroll\relax
 
 \def\tabl_ntb_table_stop
-  {\setbox\scratchbox\hbox
-     {\setupcurrentnaturaltablelocal[\c!frame=\v!off,\c!background=,\c!align=\v!no]%
-      \inheritednaturaltablelocalframed{\strut}}%
-   \edef\minimalcellheight{\the\ht\scratchbox}% not used
+  {\forgetall % new, here see narrower-004.tex
+  %\setbox\scratchbox\hbox
+  %  {\letnaturaltablelocalparameter\c!frame\v!off
+  %   \letnaturaltablelocalparameter\c!background\empty
+  %   \letnaturaltablelocalparameter\c!align\v!no
+  %   \inheritednaturaltablelocalframed{\strut}}%
+  %\edef\minimalcellheight{\the\ht\scratchbox}% not used
    \dorecurse\c_tabl_ntb_maximum_col
      {\tabl_ntb_let_aut\recurselevel\zeropoint
       % new
@@ -1275,14 +1477,23 @@
         {\tabl_ntb_let_wd\recurselevel\c_tabl_ntb_current_col_one\zeropoint
          \tabl_ntb_let_ht\recurselevel\c_tabl_ntb_current_col_one\zeropoint}%
       % till here
+      \tabl_ntb_let_tal\recurselevel\zerocount
       \tabl_ntb_let_wid\recurselevel\zeropoint
       \tabl_ntb_let_dis\recurselevel\zeropoint}%
    \dorecurse\c_tabl_ntb_maximum_row
      {\tabl_ntb_let_hei\recurselevel\maxdimen}%
+   \tabl_ntb_let_gal\zerocount
+\tabl_ntb_preroll\relax
    \c_tabl_tbl_pass\plusone
    \let\tabl_ntb_pass\tabl_ntb_pass_one
    \let\tabl_ntb_cell_process\tabl_ntb_cell_process_a
-   \setbox0\vbox{\settrialtypesetting \tabl_ntb_flush_content}%
+   \setbox\scratchbox\vbox{\settrialtypesetting \tabl_ntb_flush_content}%
+   \ifcase\tabl_ntb_get_gal\or
+    % \c_tabl_tbl_pass\plusone
+    % \let\tabl_ntb_pass\tabl_ntb_pass_one
+      \let\tabl_ntb_cell_process\tabl_ntb_cell_process_a_extra
+      \setbox\scratchbox\vbox{\settrialtypesetting \tabl_ntb_flush_content}%
+   \fi
    \tabl_ntb_let_dis\c_tabl_ntb_maximum_col\zeropoint
    \ifautoTBLspread
      % experimental, stretch non fixed cells to \hsize
@@ -1291,21 +1502,24 @@
      \tabl_ntb_stretch_widths
      \let\tabl_ntb_cell_process\tabl_ntb_cell_process_b
      \setbox\scratchbox\vbox{\settrialtypesetting \tabl_ntb_flush_content}%
-   \else\ifdim\wd0>\hsize
+   \else\ifdim\wd\scratchbox>\hsize
      \ifautoTBLhsize
        \tabl_ntb_check_widths_one % trial run
        \tabl_ntb_check_widths_two % real run
        \let\tabl_ntb_cell_process\tabl_ntb_cell_process_b
        \setbox\scratchbox\vbox{\settrialtypesetting \tabl_ntb_flush_content}%
      \fi
-   \else\ifautoTBLrowspan\ifnum\c_tabl_ntb_maximum_row_span>1 % max ?
+   \else\ifautoTBLrowspan\ifnum\c_tabl_ntb_maximum_row_span>\plusone % max ?
      % added jan 2002 because nx=* did no longer work
+     \ifnum\c_tabl_ntb_encountered_max<\c_tabl_ntb_maximum_col
+       % added jun 2014 because someone had less columns than nx .. sigh / see *nx*
+       \writestatus\m!TABLE{missing\space\number\numexpr\c_tabl_ntb_maximum_col-\c_tabl_ntb_encountered_max\relax\space column(s), guessing widths}%
+     \fi
      \edef\savedhsize{\the\hsize}%
-     \hsize\wd0\relax % new per 17/04/2006
+     \hsize\wd\scratchbox\relax % new per 17/04/2006
      \tabl_ntb_check_widths_one % trial run
      \tabl_ntb_check_widths_two % real run
      \hsize\savedhsize
-     %
      \let\tabl_ntb_cell_process\tabl_ntb_cell_process_c
      \setbox\scratchbox\vbox{\settrialtypesetting \tabl_ntb_flush_content}%
    \fi\fi\fi\fi
@@ -1319,39 +1533,56 @@
    \c_tabl_tbl_pass\plusthree
    \let\tabl_ntb_pass\tabl_ntb_pass_three
    \ifnum\m_tabl_tbl_level>\plusone
-     \expandafter\tabl_tbl_split_nop
+     \tabl_tbl_split_nop
    \else\ifenableTBLbreak
-     \doubleexpandafter\tabl_tbl_split_yes
+     \tabl_tbl_split_yes
    \else
-     \doubleexpandafter\tabl_tbl_split_nop
-   \fi\fi{\tabl_ntb_flush_content}}
+     \tabl_tbl_split_nop
+   \fi\fi}
 
 \def\tabl_ntb_stretch_widths % more variants, e.g. a max to \dimend
   {\ifcase\c_tabl_ntb_maximum_col\else % else division by zero
      \!!dimend\zeropoint
-     \!!dimene\hsize
+     \!!dimene\dimexpr
+        \hsize
+       -\d_tabl_ntb_leftmargindistance
+       -\d_tabl_ntb_rightmargindistance
+       +\d_tabl_ntb_columndistance
+     \relax
      \dorecurse\c_tabl_ntb_maximum_col
-       {\advance\!!dimend\dimexpr\tabl_ntb_get_wid\recurselevel+\naturaltablelocalparameter\c!columndistance\relax
-        \advance\!!dimene-\tabl_ntb_get_dis\recurselevel}%
-     \advance\!!dimend\dimexpr-\naturaltablelocalparameter\c!columndistance+\naturaltablelocalparameter\c!leftmargindistance+\naturaltablelocalparameter\c!rightmargindistance\relax
+       {\advance\!!dimend\dimexpr
+          \tabl_ntb_get_wid\recurselevel
+        \relax
+        \advance\!!dimene\dimexpr
+          -\tabl_ntb_get_dis\recurselevel
+          -\d_tabl_ntb_columndistance
+        \relax}%
+     \relax
      % distribute width (stretch)
      \ifdim\!!dimend<\!!dimene
        \advance\!!dimend-\!!dimene
-       \!!dimend-\!!dimend
        \divide\!!dimend\c_tabl_ntb_maximum_col
        \dorecurse\c_tabl_ntb_maximum_col
-         {\tabl_ntb_set_wid\recurselevel{\the\dimexpr\tabl_ntb_get_wid\recurselevel+\!!dimend\relax}}%
+         {\tabl_ntb_set_wid\recurselevel{\the\dimexpr\tabl_ntb_get_wid\recurselevel-\!!dimend\relax}}%
      \fi
    \fi}
 
-\def\tabl_tbl_split_nop#1%
-  {\setbox\b_tabl_ntb_final\vbox{#1}%
+\def\tabl_tbl_split_nop
+  {\setbox\b_tabl_ntb_final\vbox{\tabl_ntb_flush_content}%
    \postprocessTABLEbox\b_tabl_ntb_final
    \beforeTABLEbox
+ % packaging prevents max hsized box
+ % \hbox{\registerparoptions\box\b_tabl_ntb_final}% (*) better here
+ % better :
+   \ifinsidefloat
+     % nothing, else we get a \hsized box
+   \else
+     \registerparoptions % (*) better here
+   \fi
    \box\b_tabl_ntb_final
    \afterTABLEbox}
 
-\def\tabl_tbl_split_yes % #1
+\def\tabl_tbl_split_yes
   {\ifinsidesplitfloat
      \donetrue
    \else\ifinsidefloat
@@ -1369,14 +1600,15 @@
 
 \let\extratblsplitheight\zeropoint % additional space taken by before/afterTABLEsplitbox
 
-\def\tabl_ntb_split_box#1%
+\def\tabl_ntb_split_box
   {\resettsplit
    \def\tsplitminimumfreelines{2}%
    \def\tsplitminimumfreespace{\dimexpr\extratblsplitheight+\naturaltablelocalparameter\c!splitoffset\relax}%
    \def\tsplitbeforeresult    {\beforeTABLEsplitbox}%
    \def\tsplitafterresult     {\afterTABLEsplitbox}%
    \def\tsplitafter           {\m_tabl_ntb_after_split}%
-   \setbox\tsplitcontent\vbox{#1}%
+   \def\tsplitbefore          {\m_tabl_ntb_before_split}% supported ?
+   \setbox\tsplitcontent\vbox{\tabl_ntb_flush_content}%
    \ifmultipleTBLheads
      \dorecurse\c_tabl_ntb_n_of_head_lines
        {\setbox\scratchbox\vsplit\tsplitcontent to \lineheight
@@ -1385,8 +1617,10 @@
        {\setbox\scratchbox\vsplit\tsplitcontent to \lineheight
         \setbox\tsplitnext\vbox{\unvcopy\tsplitnext\unvcopy\scratchbox}}%
    \fi
-   \doifsomething{\naturaltablelocalparameter\c!spaceinbetween}
-     {\def\tsplitinbetween{\blank[\naturaltablelocalparameter\c!spaceinbetween]}}%
+   \edef\p_spaceinbetween{\naturaltablelocalparameter\c!spaceinbetween}%
+   \ifx\p_spaceinbetween\empty\else
+     \blank[\p_spaceinbetween]%
+   \fi
    \def\postprocesstsplit{\postprocessTABLEsplitbox{\box\tsplitresult}}%
    \handletsplit}
 
@@ -1406,15 +1640,23 @@
 \def\tabl_ntb_check_widths_indeed#1%
   {\iftraceTABLE\tabl_ntb_show_widths{B#1}\fi
    \!!counta\zerocount
-   \!!dimena\dimexpr\hsize-\naturaltablelocalparameter\c!leftmargindistance-\naturaltablelocalparameter\c!rightmargindistance-\naturaltablelocalparameter\c!columndistance\relax
+   \!!dimena\dimexpr
+     \hsize
+    -\d_tabl_ntb_leftmargindistance
+    -\d_tabl_ntb_rightmargindistance
+    -\d_tabl_ntb_columndistance
+   \relax
    \dorecurse\c_tabl_ntb_maximum_col
      {\scratchdimen\tabl_ntb_get_aut\recurselevel\relax
-      \advance\!!dimena-\tabl_ntb_get_dis\recurselevel\relax
+      \advance\!!dimena\dimexpr
+        -\tabl_ntb_get_dis\recurselevel
+        -\d_tabl_ntb_columndistance
+      \relax
       \ifdim\scratchdimen>\zeropoint\relax
         \advance\!!dimena -\scratchdimen
       \else
         \scratchdimen\tabl_ntb_get_wid\recurselevel\relax
-        \ifdim\scratchdimen>\naturaltablelocalparameter\c!maxwidth\relax
+        \ifdim\scratchdimen>\d_tabl_ntb_maxwidth\relax
           \ifcase#1\else\tabl_ntb_let_wid\recurselevel\zeropoint\fi
           \advance\!!counta \plusone
         \else
@@ -1423,7 +1665,9 @@
           \else
             % eigenlijk moet dit alleen als de kolom wordt overspannen door een
             % vorige, maw extra dubbele loop en status var
-            \advance\!!counta \plusone
+            \ifnum\c_tabl_ntb_encountered_max=\c_tabl_ntb_maximum_col % *nx* bah
+              \advance\!!counta \plusone % setting maxwidth to a large value also works
+            \fi
           \fi
         \fi
       \fi}%
@@ -1500,7 +1744,6 @@
      \fi
    \fi}
 
-
 \def\tabl_ntb_check_heights_one
   {\dorecurse\c_tabl_ntb_maximum_row
      {\c_tabl_ntb_current_row_three\recurselevel\relax
@@ -1515,7 +1758,9 @@
 
 \def\tabl_ntb_show_widths#1%
   {\vbox
-     {\forgetall\tttf[#1]\dorecurse\c_tabl_ntb_maximum_col
+     {\forgetall
+      \tttf[#1]%
+      \dorecurse\c_tabl_ntb_maximum_col
         {\scratchdimen\tabl_ntb_get_wid\recurselevel\relax
          [\recurselevel:\the\scratchdimen]}}}
 
@@ -1532,46 +1777,124 @@
 %    \setsecondpasscharacteralign \checkalignment{#3}% {\strut#2\unskip}%
 %    \ignorespaces}
 
-\def\tabl_ntb_char_align
-  {\doifelse{\naturaltablelocalparameter\c!aligncharacter}\v!yes
-     \tabl_ntb_char_align_indeed
-     \gobbletwoarguments}
+\def\tabl_ntb_char_align % called often
+  {\edef\p_characteralign{\naturaltablelocalparameter\c!aligncharacter}%
+   \ifx\p_characteralign\v!yes
+     \ifcase\c_tabl_tbl_pass\or
+       \tabl_ntb_let_tal\currentTABLEcolumn\plusone
+       \tabl_ntb_let_gal\plusone
+     \fi
+     \expandafter\tabl_ntb_char_align_indeed
+   \else
+     \expandafter\gobbletwoarguments
+   \fi}
 
 \def\tabl_ntb_char_align_indeed#1#2% row column
   {\ifcase\c_tabl_tbl_pass \or
-     \setcharacteralign{#2}{\naturaltablelocalparameter\c!alignmentcharacter}%
+     \setcharacteralign{#2}{\naturaltablelocalparameter\c!alignmentcharacter}% we could store the character in tal
    \fi
    \typo_charalign_adapt_font
    \signalcharacteralign{#2}{#1}}
 
+\unexpanded\def\tabl_ntb_cell_process_a_extra#1#2%
+  {\ifcase\tabl_ntb_get_tal{#2}\relax
+     \expandafter\tabl_ntb_cell_process_x
+   \else
+     \expandafter\tabl_ntb_cell_process_a
+   \fi{#1}{#2}}
+
+\unexpanded\def\tabl_ntb_cell_process_x#1#2[#3]#4%
+  {}
+
+% problem: when span doesn't break we can have a span that is the sum of
+% cells but still to small .. chicken egg problem ... for that we should
+% also have a smallest width run
+%
+% nilling the background makes a run upto 25% faster
+
+\def\tabl_ntb_cell_process_a_check_span_one
+  {\ifautosqueezeTBLspan
+     \edef\p_width{\naturaltablelocalparameter\c!width}%
+     \csname\??naturaltablesqueeze\ifcsname\??naturaltablesqueeze\p_width\endcsname\p_width\fi\endcsname
+   \else
+     \donetrue
+   \fi
+   \ifdone % brr, 0
+     \ifnum\scratchcounter>\plusone
+       \tabl_ntb_set_spn\c_tabl_ntb_col
+     \fi
+   \fi}
+
+% \def\tabl_ntb_cell_process_a_check_span_two_yes
+%   {\iftightTBLcolspan
+%      \donefalse
+%    \else
+%      \ifnum\scratchcounter>\plusone
+%        \begingroup
+%        \edef\p_width{\naturaltablelocalparameter\c!width}%
+%        \csname\??naturaltablesqueeze\ifcsname\??naturaltablesqueeze\p_width\endcsname\p_width\fi\endcsname
+%        \ifdone
+%          \endgroup
+%          \edef\p_option{\naturaltablelocalparameter\c!option}%
+%          \ifx\p_option\v!tight\donefalse\else\donetrue\fi
+%        \else
+%          % a dimension
+%          \endgroup
+%          \donefalse
+%        \fi
+%      \else
+%        \edef\p_option{\naturaltablelocalparameter\c!option}%
+%        \ifx\p_option\v!tight\donefalse\else\donetrue\fi
+%      \fi
+%    \fi
+%    \ifdone
+%      \ifdim\tabl_ntb_get_wid\c_tabl_ntb_col<\wd\scratchbox
+%         \tabl_ntb_set_wid\c_tabl_ntb_col{\the\wd\scratchbox}%
+%       \fi
+%    \fi}
+
+% \def\tabl_ntb_cell_process_a_check_span_two_nop
+%   {\ifnum\scratchcounter>\plusone
+%      \edef\p_width{\naturaltablelocalparameter\c!width}%
+%      \csname\??naturaltablesqueeze\ifcsname\??naturaltablesqueeze\p_width\endcsname\p_width\fi\endcsname
+%    \else
+%      \donetrue
+%    \fi
+%    \ifdone
+%      \ifdim\tabl_ntb_get_wid\c_tabl_ntb_col<\wd\scratchbox
+%         \tabl_ntb_set_wid\c_tabl_ntb_col{\the\wd\scratchbox}%
+%       \fi
+%    \fi}
+
+\let\tabl_ntb_cell_process_a_check_span_two_yes\relax
+
+\def\tabl_ntb_cell_process_a_check_span_two_nop
+  {\ifdim\tabl_ntb_get_wid\c_tabl_ntb_col<\wd\scratchbox
+     \tabl_ntb_set_wid\c_tabl_ntb_col{\the\wd\scratchbox}%
+   \fi}
+
 \unexpanded\def\tabl_ntb_cell_process_a#1#2[#3]#4% grouping added ! ! !
   {\bgroup
+   \letnaturaltablelocalparameter\c!option\empty
    \tabl_ntb_setup_cell{#1}{#2}%
+   \setupcurrentnaturaltablelocal[#3]%
+   \letnaturaltablelocalparameter\c!background\empty
+   \letnaturaltablelocalparameter\c!frame\v!off
+   \scratchcounter\tabl_ntb_get_col{#1}{#2}\relax
    \setbox\scratchbox\hbox
      {\scratchdimen\naturaltablelocalparameter\c!distance\relax
       \ifdim\scratchdimen>\tabl_ntb_get_dis{#2}\relax
         \tabl_ntb_set_dis{#2}{\the\scratchdimen}%
       \fi
-      \setupcurrentnaturaltablelocal[#3,\c!background=,\c!frame=\v!off]% 25% faster
       \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#1}{#2}#4\tabl_ntb_cell_stop\tabl_ntb_cell_finalize}}%
    \scratchdimen\tabl_ntb_get_wid\c_tabl_ntb_col\relax
    \ifdim\wd\scratchbox>\scratchdimen
      \ifsqueezeTBLspan
-       \ifautosqueezeTBLspan
-         \doifinsetelse{\naturaltablelocalparameter\c!width}{\v!fit,\v!fixed,\v!broad,\v!local}
-           \donetrue \donefalse
-       \else
-         \donetrue
-       \fi
-       \ifdone % brr, 0
-         \ifnum\tabl_ntb_get_col{#1}{#2}>\plusone \tabl_ntb_set_spn\c_tabl_ntb_col\fi
-       \fi
+       \tabl_ntb_cell_process_a_check_span_one
      \fi
      \tabl_ntb_spn_doifelse\c_tabl_ntb_col
-       \donothing
-       {\ifdim\tabl_ntb_get_wid\c_tabl_ntb_col<\wd\scratchbox
-          \tabl_ntb_set_wid\c_tabl_ntb_col{\the\wd\scratchbox}%
-        \fi}% auto set
+       \tabl_ntb_cell_process_a_check_span_two_yes
+       \tabl_ntb_cell_process_a_check_span_two_nop
    \fi
    \scratchcounter\numexpr\c_tabl_ntb_row+\plusone\relax
    \scratchdimen\tabl_ntb_get_hei\scratchcounter\relax
@@ -1592,8 +1915,7 @@
            % unless span
            \tabl_ntb_set_aut\c_tabl_ntb_col{\the\wd\scratchbox}%
            % to be translated
-           \writestatus\m!TABLE
-             {no auto width in (\number#1,\number#2)\space\the\wd\scratchbox/\the\hsize}%
+           \writestatus\m!TABLE{no auto width in (\number#1,\number#2)\space\the\wd\scratchbox/\the\hsize}%
          \fi\fi
        \fi
      \fi
@@ -1608,7 +1930,9 @@
 \unexpanded\def\tabl_ntb_cell_process_b_c#1#2#3[#4]#5%
   {\setbox\scratchbox\hbox
      {\tabl_ntb_setup_cell{#2}{#3}%
-      \setupcurrentnaturaltablelocal[#4,#1,\c!frame=\v!off,\c!background=]%
+      \setupcurrentnaturaltablelocal[#4,#1]%
+      \letnaturaltablelocalparameter\c!background\empty
+      \letnaturaltablelocalparameter\c!frame\v!off
       \inheritednaturaltablelocalframed{\tabl_ntb_cell_start#5\tabl_ntb_cell_stop}}%
    \setbox2\emptyhbox
    \wd2\wd\scratchbox
@@ -1647,7 +1971,10 @@
 \unexpanded\def\tabl_ntb_cell_process_d#1#2[#3]#4%
   {\tabl_ntb_setup_cell{#1}{#2}%
    \bgroup
-   \setupcurrentnaturaltablelocal[#3,\c!width=\d_tabl_ntb_width,\c!background=,\c!frame=\v!off]% 25% faster
+   \setupcurrentnaturaltablelocal[#3]%
+   \letnaturaltablelocalparameter\c!background\empty
+   \letnaturaltablelocalparameter\c!frame\v!off
+   \setnaturaltablelocalparameter\c!width{\d_tabl_ntb_width}%
    \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#1}{#2}#4\tabl_ntb_cell_stop}%
    \egroup}
 
@@ -1656,10 +1983,11 @@
    \setupcurrentnaturaltablelocal[#3]% to get the color right, the way we
    \color % handle color here prevents interference due to whatsit nodes
      [\naturaltablelocalparameter\c!color] % as well as permits local colors to take precedence
-     {\ifdim\d_tabl_ntb_height=\zeropoint\relax % case: nc=maxcolumns
-        \setupcurrentnaturaltablelocal[\c!color=,\c!width=\d_tabl_ntb_width]%
+     {\letnaturaltablelocalparameter\c!color\empty
+      \setnaturaltablelocalparameter\c!width{\d_tabl_ntb_width}%
+      \ifdim\d_tabl_ntb_height=\zeropoint\relax % case: nc=maxcolumns
       \else
-        \setupcurrentnaturaltablelocal[\c!color=,\c!width=\d_tabl_ntb_width,\c!height=\d_tabl_ntb_height]%
+        \setnaturaltablelocalparameter\c!height{\d_tabl_ntb_height}%
       \fi
       \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#1}{#2}#4\tabl_ntb_cell_stop}}%
    \hskip\tabl_ntb_get_dis{#2}}
@@ -1667,7 +1995,7 @@
 \setupTABLE
   [\c!frameoffset=.5\linewidth,
    \c!backgroundoffset=\v!frame,
-   \c!framecolor=\s!black,
+ % \c!framecolor=\s!black,
    \c!width=\v!fit,
    \c!height=\v!fit,
    \c!autowidth=\v!yes,
@@ -1712,14 +2040,14 @@
 
 \newconditional\resetTABLEmode \settrue\resetTABLEmode
 
-\def\tabl_ntb_parameters_reset
+\def\tabl_ntb_parameters_reset % we can use setters instead
   {\ifnum\m_tabl_tbl_level>\plusone % in ieder geval
      \ifconditional\resetTABLEmode
        % not ok yet
        \setupTABLE
          [\c!frameoffset=.5\linewidth,
           \c!backgroundoffset=\v!frame,
-          \c!framecolor=\s!black,
+        % \c!framecolor=\s!black,
           \c!width=\v!fit,
           \c!height=\v!fit,
           \c!autowidth=\v!yes,

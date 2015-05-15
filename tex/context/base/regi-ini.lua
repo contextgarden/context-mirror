@@ -15,7 +15,7 @@ runtime.</p>
 local commands, context = commands, context
 
 local utfchar = utf.char
-local P, Cs, lpegmatch = lpeg.P, lpeg.Cs, lpeg.match
+local P, Cs, Cc, lpegmatch = lpeg.P, lpeg.Cs, lpeg.Cc, lpeg.match
 local char, gsub, format, gmatch, byte, match = string.char, string.gsub, string.format, string.gmatch, string.byte, string.match
 local next = next
 local insert, remove, fastcopy = table.insert, table.remove, table.fastcopy
@@ -26,6 +26,9 @@ local allocate          = utilities.storage.allocate
 local sequencers        = utilities.sequencers
 local textlineactions   = resolvers.openers.helpers.textlineactions
 local setmetatableindex = table.setmetatableindex
+
+local implement         = interfaces.implement
+local setmacro          = interfaces.setmacro
 
 --[[ldx--
 <p>We will hook regime handling code into the input methods.</p>
@@ -99,6 +102,8 @@ local synonyms = { -- backward compatibility list
 
     ["windows"]      = "cp1252",
 
+    ["pdf"]          = "pdfdoc",
+
 }
 
 local currentregime = "utf"
@@ -132,7 +137,7 @@ end
 setmetatableindex(mapping,    loadregime)
 setmetatableindex(backmapping,loadreverse)
 
-local function translate(line,regime)
+local function fromregime(regime,line)
     if line and #line > 0 then
         local map = mapping[regime and synonyms[regime] or regime or currentregime]
         if map then
@@ -178,12 +183,15 @@ local function toregime(vector,str,default) -- toregime('8859-1',"abcde Ä","?")
     local r = c[d]
     if not r then
         local t = fastcopy(backmapping[vector])
-        setmetatableindex(t, function(t,k)
-            local v = d
-            t[k] = v
-            return v
-        end)
-        r = utf.remapper(t)
+     -- r = utf.remapper(t) -- not good for defaults here
+        local pattern = Cs((lpeg.utfchartabletopattern(t)/t + lpeg.patterns.utf8character/d + P(1)/d)^0)
+        r = function(str)
+            if not str or str == "" then
+                return ""
+            else
+                return lpegmatch(pattern,str)
+            end
+        end
         c[d]  = r
     end
     return r(str)
@@ -192,6 +200,7 @@ end
 local function disable()
     currentregime = "utf"
     sequencers.disableaction(textlineactions,"regimes.process")
+    return currentregime
 end
 
 local function enable(regime)
@@ -202,12 +211,14 @@ local function enable(regime)
         currentregime = regime
         sequencers.enableaction(textlineactions,"regimes.process")
     end
+    return currentregime
 end
 
-regimes.toregime  = toregime
-regimes.translate = translate
-regimes.enable    = enable
-regimes.disable   = disable
+regimes.toregime   = toregime
+regimes.fromregime = fromregime
+regimes.translate  = function(str,regime) return fromregime(regime,str) end
+regimes.enable     = enable
+regimes.disable    = disable
 
 -- The following function can be used when we want to make sure that
 -- utf gets passed unharmed. This is needed for modules.
@@ -216,7 +227,7 @@ local level = 0
 
 function regimes.process(str,filename,currentline,noflines,coding)
     if level == 0 and coding ~= "utf-8" then
-        str = translate(str,currentregime)
+        str = fromregime(currentregime,str)
         if trace_translating then
             report_translating("utf: %s",str)
         end
@@ -243,40 +254,62 @@ end
 regimes.push = push
 regimes.pop  = pop
 
-sequencers.prependaction(textlineactions,"system","regimes.process")
-sequencers.disableaction(textlineactions,"regimes.process")
+if sequencers then
+
+    sequencers.prependaction(textlineactions,"system","regimes.process")
+    sequencers.disableaction(textlineactions,"regimes.process")
+
+end
 
 -- interface:
 
-commands.enableregime  = enable
-commands.disableregime = disable
+implement {
+    name      = "enableregime",
+    arguments = "string",
+    actions   = function(regime) setmacro("currentregime",enable(regime)) end
+}
 
-commands.pushregime    = push
-commands.popregime     = pop
+implement {
+    name      = "disableregime",
+    actions   = function() setmacro("currentregime",disable()) end
+}
 
-function commands.currentregime()
-    context(currentregime)
-end
+implement {
+    name      = "pushregime",
+    actions   = push
+}
+
+implement {
+    name      = "popregime",
+    actions   = pop
+}
 
 local stack = { }
 
-function commands.startregime(regime)
-    insert(stack,currentregime)
-    if trace_translating then
-        report_translating("start using %a",regime)
-    end
-    enable(regime)
-end
-
-function commands.stopregime()
-    if #stack > 0 then
-        local regime = remove(stack)
+implement {
+    name      = "startregime",
+    arguments = "string",
+    actions   = function(regime)
+        insert(stack,currentregime)
         if trace_translating then
-            report_translating("stop using %a",regime)
+            report_translating("start using %a",regime)
         end
-        enable(regime)
+        setmacro("currentregime",enable(regime))
     end
-end
+}
+
+implement {
+    name      = "stopregime",
+    actions   = function()
+        if #stack > 0 then
+            local regime = remove(stack)
+            if trace_translating then
+                report_translating("stop using %a",regime)
+            end
+            setmacro("currentregime",enable(regime))
+        end
+    end
+}
 
 -- Next we provide some hacks. Unfortunately we run into crappy encoded
 -- (read : mixed) encoded xml files that have these Ã« Ã¤ Ã¶ Ã¼ sequences
@@ -311,48 +344,82 @@ local patterns = { }
 --
 -- twice as fast and much less lpeg bytecode
 
+-- function regimes.cleanup(regime,str)
+--     if not str or str == "" then
+--         return str
+--     end
+--     local p = patterns[regime]
+--     if p == nil then
+--         regime = regime and synonyms[regime] or regime or currentregime
+--         local vector = regime ~= "utf" and regime ~= "utf-8" and mapping[regime]
+--         if vector then
+--             local utfchars = { }
+--             local firsts = { }
+--             for k, uchar in next, vector do
+--                 local stream = { }
+--                 local split = totable(uchar)
+--                 local nofsplits = #split
+--                 if nofsplits > 1 then
+--                     local first
+--                     for i=1,nofsplits do
+--                         local u = vector[split[i]]
+--                         if not first then
+--                             first = firsts[u]
+--                             if not first then
+--                                 first = { }
+--                                 firsts[u] = first
+--                             end
+--                         end
+--                         stream[i] = u
+--                     end
+--                     local nofstream = #stream
+--                     if nofstream > 1 then
+--                         first[#first+1] = concat(stream,2,nofstream)
+--                         utfchars[concat(stream)] = uchar
+--                     end
+--                 end
+--             end
+--             p = P(false)
+--             for k, v in next, firsts do
+--                 local q = P(false)
+--                 for i=1,#v do
+--                     q = q + P(v[i])
+--                 end
+--                 p = p + P(k) * q
+--             end
+--             p = Cs(((p+1)/utfchars)^1)
+--          -- lpeg.print(p) -- size: 1042
+--         else
+--             p = false
+--         end
+--         patterns[regime] = p
+--     end
+--     return p and lpegmatch(p,str) or str
+-- end
+--
+-- 5 times faster:
+
 function regimes.cleanup(regime,str)
+    if not str or str == "" then
+        return str
+    end
     local p = patterns[regime]
     if p == nil then
         regime = regime and synonyms[regime] or regime or currentregime
-        local vector = regime ~= "utf" and mapping[regime]
+        local vector = regime ~= "utf" and regime ~= "utf-8" and mapping[regime]
         if vector then
-            local utfchars = { }
-            local firsts = { }
-            for k, uchar in next, vector do
-                local stream = { }
-                local split = totable(uchar)
-                local nofsplits = #split
-                if nofsplits > 1 then
-                    local first
-                    for i=1,nofsplits do
-                        local u = vector[split[i]]
-                        if not first then
-                            first = firsts[u]
-                            if not first then
-                                first = { }
-                                firsts[u] = first
-                            end
-                        end
-                        stream[i] = u
-                    end
-                    local nofstream = #stream
-                    if nofstream > 1 then
-                        first[#first+1] = concat(stream,2,nofstream)
-                        utfchars[concat(stream)] = uchar
-                    end
+            local mapping = { }
+            for k, v in next, vector do
+                local split = totable(v)
+                for i=1,#split do
+                    split[i] = utfchar(byte(split[i]))
+                end
+                split = concat(split)
+                if v ~= split then
+                    mapping[split] = v
                 end
             end
-            p = P(false)
-            for k, v in next, firsts do
-                local q = P(false)
-                for i=1,#v do
-                    q = q + P(v[i])
-                end
-                p = p + P(k) * q
-            end
-            p = Cs(((p+1)/utfchars)^1)
-         -- lpeg.print(p) -- size: 1042
+            p = Cs((lpeg.utfchartabletopattern(mapping)/mapping+P(1))^0)
         else
             p = false
         end
@@ -361,28 +428,9 @@ function regimes.cleanup(regime,str)
     return p and lpegmatch(p,str) or str
 end
 
--- local map = require("regi-cp1252")
 -- local old = [[test Ã« Ã¤ Ã¶ Ã¼ crap]]
--- local new = correctencoding(map,old)
---
--- print(old,new)
-
--- obsolete:
---
--- function regimes.setsynonym(synonym,target)
---     synonyms[synonym] = target
--- end
---
--- function regimes.truename(regime)
---     return regime and synonyms[regime] or regime or currentregime
--- end
---
--- commands.setregimesynonym = regimes.setsynonym
---
--- function commands.trueregimename(regime)
---     context(regimes.truename(regime))
--- end
---
--- function regimes.load(regime)
---     return mapping[synonyms[regime] or regime]
--- end
+-- local new = regimes.cleanup("cp1252",old)
+-- report_translating("%s -> %s",old,new)
+-- local old = "Pozn" .. char(0xE1) .. "mky"
+-- local new = fromregime("cp1250",old)
+-- report_translating("%s -> %s",old,new)

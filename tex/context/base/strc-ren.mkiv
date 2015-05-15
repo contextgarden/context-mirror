@@ -135,7 +135,7 @@
 \unexpanded\def\strc_rendering_place_head_number_and_text
   {\strc_rendering_start_placement
    \setheadmarking
-   \doiftextelse\getheadnumber
+   \doifelsetext\getheadnumber
      \dosettructureheadnumbercontent
      \doresettructureheadnumbercontent
    \ifconditional\c_strc_sectioning_empty
@@ -422,7 +422,7 @@
   {\dodoubleargument\strc_rendering_define_placement}
 
 \def\strc_rendering_define_placement[#1][#2]%
-  {\doifnextbgroupelse
+  {\doifelsenextbgroup
      {\strc_rendering_define_placement_yes[#1][#2]}%
      {\strc_rendering_define_placement_nop[#1][#2]}}
 
@@ -516,6 +516,11 @@
      \fi
    \endgroup}
 
+\def\fakedheadnumber{\vphantom{0}} % needed for mathplus
+
+\unexpanded\def\fakeheadnumbercontent
+  {\hbox to \zeropoint{\let\getheadnumber\fakedheadnumber\headnumbercontent}}
+
 \unexpanded\def\strc_rendering_inject_number_and_text
   {\edef\p_command{\headparameter\c!command}% assumes \unexpanded definition
    \ifx\p_command\empty
@@ -608,6 +613,7 @@
                 \hsize\headtextwidth
             \fi
             \noindent
+            \fakeheadnumbercontent % will also be done in the other ones (force consistency with numbered)
         \fi
         \headtextcontent
     }
@@ -629,7 +635,7 @@
                 \hbox {
                     \hfill
                     \headnumbercontent
-                    \doifrightpageelse{
+                    \doifelserightpage{
                         \scratchdistance\leftmargindistance
                     } {
                         \scratchdistance\rightmargindistance
@@ -637,6 +643,8 @@
                     \hskip\dimexpr\d_strc_rendering_local_leftoffset+\scratchdistance\relax
                 }
             }
+        \else
+            \fakeheadnumbercontent % will also be done in the other ones (force consistency with numbered)
         \fi
         \headtextcontent
     }
@@ -649,6 +657,30 @@
 % \startsetups[\??headrenderings:\v!vertical:\v!margin]
 %     \directsetup{\??headrenderings:\v!vertical:\v!inmargin}
 % \stopsetups
+
+%D This one is for head based numbering usage: foo 1.2 and so:
+
+\defineheadalternative
+  [\v!reverse]
+  [\c!alternative=\v!vertical,
+   \c!renderingsetup=\??headrenderings:\v!reverse]
+
+\startsetups[\??headrenderings:\v!reverse]
+    \vbox {
+        \headsetupspacing
+        \noindent
+        \begstrut
+        \setfalse\headisdisplay % so a kind of mix
+        \headtextcontent
+        \ifconditional\headshownumber
+            \kern\headnumberdistance
+            \headnumbercontent
+        \else
+            \fakeheadnumbercontent
+        \fi
+        \endstrut
+    }
+\stopsetups
 
 \defineheadalternative
   [\v!middle]
@@ -665,6 +697,8 @@
             \strut
             \headnumbercontent
             \par
+        \else
+            \fakeheadnumbercontent % will also be done in the other ones (force consistency with numbered)
         \fi
         \begstrut
         \headtextcontent

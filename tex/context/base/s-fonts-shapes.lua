@@ -16,24 +16,32 @@ local NC, NR = context.NC, context.NR
 local space, dontleavehmode, glyph, getvalue = context.space, context.dontleavehmode, context.glyph, context.getvalue
 local formatters = string.formatters
 
+function char(id,k)
+    dontleavehmode()
+    glyph(id,k)
+end
+
+local function special(id,specials)
+    if specials and #specials > 1 then
+        context("%s:",specials[1])
+        if #specials > 5 then
+            space() char(id,specials[2])
+            space() char(id,specials[3])
+            space() context("...")
+            space() char(id,specials[#specials-1])
+            space() char(id,specials[#specials])
+        else
+            for i=2,#specials do
+                space() char(id,specials[i])
+            end
+        end
+    end
+end
+
 function moduledata.fonts.shapes.showlist(specification) -- todo: ranges
     specification = interfaces.checkedspecification(specification)
     local id, cs = fonts.definers.internal(specification,"<module:fonts:shapes:font>")
     local chrs = fontdata[id].characters
-    function char(k)
-        dontleavehmode()
-        glyph(id,k)
-    end
-    local function special(v)
-        local specials = v.specials
-        if specials and #specials > 1 then
-            context("%s:",specials[1])
-            for i=2,#specials do
-                space()
-                char(specials[i])
-            end
-        end
-    end
     context.begingroup()
     context.tt()
     context.starttabulate { "|l|c|c|c|c|l|l|" }
@@ -50,11 +58,11 @@ function moduledata.fonts.shapes.showlist(specification) -- todo: ranges
         for k, v in next, characters.data do
             if chrs[k] then
                 NC() context("0x%05X",k)
-                NC() char(k) -- getvalue(cs) context.char(k)
-                NC() char(v.shcode)
-                NC() char(v.lccode or k)
-                NC() char(v.uccode or k)
-                NC() special(v)
+                NC() char(id,k) -- getvalue(cs) context.char(k)
+                NC() char(id,v.shcode)
+                NC() char(id,v.lccode or k)
+                NC() char(id,v.uccode or k)
+                NC() special(id,v.specials)
                 NC() context.tx(v.description)
                 NC() NR()
             end
@@ -67,20 +75,6 @@ function moduledata.fonts.shapes.showlist(specification) -- todo: ranges
     specification = interfaces.checkedspecification(specification)
     local id, cs = fonts.definers.internal(specification,"<module:fonts:shapes:font>")
     local chrs = fontdata[id].characters
-    function char(k)
-        dontleavehmode()
-        glyph(id,k)
-    end
-    local function special(v)
-        local specials = v.specials
-        if specials and #specials > 1 then
-            context("%s:",specials[1])
-            for i=2,#specials do
-                space()
-                char(specials[i])
-            end
-        end
-    end
     context.begingroup()
     context.tt()
     context.starttabulate { "|l|c|c|c|c|l|l|" }
@@ -97,11 +91,11 @@ function moduledata.fonts.shapes.showlist(specification) -- todo: ranges
         for k, v in next, characters.data do
             if chrs[k] then
                 NC() context("0x%05X",k)
-                NC() char(k)
-                NC() char(v.shcode)
-                NC() char(v.lccode or k)
-                NC() char(v.uccode or k)
-                NC() special(v)
+                NC() char(id,k)
+                NC() char(id,v.shcode)
+                NC() char(id,v.lccode or k)
+                NC() char(id,v.uccode or k)
+                NC() special(id,v.specials)
                 NC() context.tx(v.description)
                 NC() NR()
             end
@@ -137,7 +131,8 @@ local function showglyphshape(specification)
         local top_accent, bot_accent = (d.top_accent or 0)*factor, (d.bot_accent or 0)*factor
         local anchors, math = d.anchors, d.math
         context.startMPcode()
-        context("pickup pencircle scaled .25bp ;")
+        context("numeric lw ; lw := .125bp ;")
+        context("pickup pencircle scaled lw ;")
         context('picture p ; p := image(draw textext.drt("\\getuvalue{%s}\\gray\\char%s");); draw p ;',cs,charnum)
         context('draw (%s,%s)--(%s,%s)--(%s,%s)--(%s,%s)--cycle withcolor green ;',llx,lly,urx,lly,urx,ury,llx,ury)
         context('draw (%s,%s)--(%s,%s) withcolor green ;',llx,0,urx,0)
@@ -153,11 +148,11 @@ local function showglyphshape(specification)
                         l[#l+1] = formatters["((%s,%s) shifted (%s,%s))"](xsign*k*factor,ysign*h*factor,dx,dy)
                     end
                 end
-                context("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled .25) withcolor .5white;", xsign*v[1].kern*factor,lly,dx,dy,l[1])
+                context("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled 1/16) withcolor .5white;", xsign*v[1].kern*factor,lly,dx,dy,l[1])
                 context("draw laddered (%s) withcolor .5white ;",table.concat(l,".."))
-                context("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled .25) withcolor .5white;", xsign*v[#v].kern*factor,ury,dx,dy,l[#l])
+                context("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled 1/16) withcolor .5white;", xsign*v[#v].kern*factor,ury,dx,dy,l[#l])
                 for k, v in ipairs(l) do
-                    context("draw %s withcolor blue  withpen pencircle scaled 1bp;",v)
+                    context("draw %s withcolor blue withpen pencircle scaled 2lw ;",v)
                 end
             end
         end
@@ -203,7 +198,7 @@ local function showglyphshape(specification)
         end
         local function show(x,y,txt)
             local xx, yy = x*factor, y*factor
-            context("draw (%s,%s) withcolor blue withpen pencircle scaled 1bp;",xx,yy)
+            context("draw (%s,%s) withcolor blue withpen pencircle scaled 2lw ;",xx,yy)
             context('label.top("\\type{%s}",(%s,%s-2bp)) ;',txt,xx,yy)
             context('label.bot("(%s,%s)",(%s,%s+2bp)) ;',x,y,xx,yy)
         end
@@ -242,9 +237,9 @@ local function showglyphshape(specification)
             end
         end
         if italic ~= 0 then
-            context('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue;',width,ury,width,ury)
-            context('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue;',width+italic,ury,width+italic,ury)
-            context('draw (%s,%s-1bp)--(%s,%s-1bp) withcolor blue;',width,ury,width+italic,ury)
+            context('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue ;',width,ury,width,ury)
+            context('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue ;',width+italic,ury,width+italic,ury)
+            context('draw (%s,%s-1bp)--(%s,%s-1bp) withcolor blue ;',width,ury,width+italic,ury)
             context('label.lft("\\type{%s}",(%s+2bp,%s-1bp));',"italic",width,ury)
             context('label.rt("%s",(%s-2bp,%s-1bp));',d.italic,width+italic,ury)
         end
@@ -258,7 +253,7 @@ local function showglyphshape(specification)
             context('label.top("\\type{%s}",(%s,%s-1bp));',"bot_accent",top_accent,ury)
             context('label.bot("%s",(%s,%s+1bp));',d.bot_accent,bot_accent,lly)
         end
-        context('draw origin withcolor red withpen pencircle scaled 1bp;')
+        context('draw origin withcolor red withpen pencircle scaled 2lw;')
         context("setbounds currentpicture to boundingbox currentpicture enlarged 1bp ;")
         context("currentpicture := currentpicture scaled 8 ;")
         context.stopMPcode()

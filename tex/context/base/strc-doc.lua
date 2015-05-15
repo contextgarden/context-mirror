@@ -17,14 +17,17 @@ if not modules then modules = { } end modules ['strc-doc'] = {
 
 local next, type, tonumber, select = next, type, tonumber, select
 local format, gsub, find, gmatch, match = string.format, string.gsub, string.find, string.gmatch, string.match
-local concat, fastcopy = table.concat, table.fastcopy
+local concat, fastcopy, insert, remove = table.concat, table.fastcopy, table.insert, table.remove
 local max, min = math.max, math.min
 local allocate, mark, accesstable = utilities.storage.allocate, utilities.storage.mark, utilities.tables.accesstable
 local setmetatableindex = table.setmetatableindex
+local lpegmatch, P, C = lpeg.match, lpeg.P, lpeg.C
 
 local catcodenumbers      = catcodes.numbers
 local ctxcatcodes         = catcodenumbers.ctxcatcodes
 local variables           = interfaces.variables
+
+local implement           = interfaces.implement
 
 local v_last              = variables.last
 local v_first             = variables.first
@@ -59,7 +62,13 @@ local startapplyprocessor = processors.startapply
 local stopapplyprocessor  = processors.stopapply
 local strippedprocessor   = processors.stripped
 
+local convertnumber       = converters.convert
+
 local a_internal          = attributes.private('internal')
+
+local ctx_convertnumber   = context.convertnumber
+local ctx_sprint          = context.sprint
+local ctx_finalizeauto    = context.finalizeautostructurelevel
 
 -- -- -- document -- -- --
 
@@ -124,28 +133,48 @@ local registered    = sections.registered
 
 storage.register("structures/sections/registered", registered, "structures.sections.registered")
 
+local function update(name,level,section)
+    for k, v in next, registered do
+        if k ~= name and v.coupling == name then
+            report_structure("updating section level %a to level of %a",k,name)
+            context.doredefinehead(k,name)
+            update(k,level,section)
+        end
+    end
+end
+
 function sections.register(name,specification)
     registered[name] = specification
+    local level   = specification.level
+    local section = specification.section
+    update(name,level,section)
 end
 
 function sections.currentid()
     return #tobesaved
 end
 
+local lastsaved = 0
+
 function sections.save(sectiondata)
 --  local sectionnumber = helpers.simplify(section.sectiondata) -- maybe done earlier
     local numberdata = sectiondata.numberdata
     local ntobesaved = #tobesaved
     if not numberdata or sectiondata.metadata.nolist then
-        return ntobesaved
+        -- stay
     else
         ntobesaved = ntobesaved + 1
         tobesaved[ntobesaved] = numberdata
         if not collected[ntobesaved] then
             collected[ntobesaved] = numberdata
         end
-        return ntobesaved
     end
+    lastsaved = ntobesaved
+    return ntobesaved
+end
+
+function sections.currentsectionindex()
+    return lastsaved -- only for special controlled situations
 end
 
 function sections.load()
@@ -210,7 +239,7 @@ end
 function sections.pushblock(name,settings)
     counters.check(0) -- we assume sane usage of \page between blocks
     local block = name or data.block
-    data.blocks[#data.blocks+1] = block
+    insert(data.blocks,block)
     data.block = block
     sectionblockdata[block] = settings
     documents.reset()
@@ -218,16 +247,17 @@ function sections.pushblock(name,settings)
 end
 
 function sections.popblock()
-    data.blocks[#data.blocks] = nil
-    local block = data.blocks[#data.blocks] or data.block
+    local block = remove(data.blocks) or data.block
     data.block = block
     documents.reset()
     return block
 end
 
-function sections.currentblock()
+local function getcurrentblock()
     return data.block or data.blocks[#data.blocks] or "unknown"
 end
+
+sections.currentblock = getcurrentblock
 
 function sections.currentlevel()
     return data.depth
@@ -239,18 +269,36 @@ end
 
 local saveset = { } -- experiment, see sections/tricky-001.tex
 
-function sections.somelevel(given)
+function sections.setentry(given)
     -- old number
     local numbers     = data.numbers
+    --
+    local metadata    = given.metadata
+    local numberdata  = given.numberdata
+    local references  = given.references
+    local directives  = given.directives
+    local userdata    = given.userdata
+
+    if not metadata then
+        metadata       = { }
+        given.metadata = metadata
+    end
+    if not numberdata then
+        numberdata = { }
+        given.numberdata = numberdata
+    end
+    if not references then
+        references       = { }
+        given.references = references
+    end
 
     local ownnumbers  = data.ownnumbers
     local forced      = data.forced
     local status      = data.status
     local olddepth    = data.depth
-    local givenname   = given.metadata.name
+    local givenname   = metadata.name
     local mappedlevel = levelmap[givenname]
     local newdepth    = tonumber(mappedlevel or (olddepth > 0 and olddepth) or 1) -- hm, levelmap only works for section-*
-    local directives  = given.directives
     local resetset    = directives and directives.resetset or ""
  -- local resetter = sets.getall("structure:resets",data.block,resetset)
     -- a trick to permit userdata to overload title, ownnumber and reference
@@ -260,14 +308,13 @@ function sections.somelevel(given)
         report_structure("name %a, mapped level %a, old depth %a, new depth %a, reset set %a",
             givenname,mappedlevel,olddepth,newdepth,resetset)
     end
-    local u = given.userdata
-    if u then
-        -- kind of obsolete as we can pass them directly anyway
-        if u.reference and u.reference ~= "" then given.metadata.reference   = u.reference ; u.reference = nil end
-        if u.ownnumber and u.ownnumber ~= "" then given.numberdata.ownnumber = u.ownnumber ; u.ownnumber = nil end
-        if u.title     and u.title     ~= "" then given.titledata.title      = u.title     ; u.title     = nil end
-        if u.bookmark  and u.bookmark  ~= "" then given.titledata.bookmark   = u.bookmark  ; u.bookmark  = nil end
-        if u.label     and u.label     ~= "" then given.titledata.label      = u.label     ; u.label     = nil end
+    if userdata then
+        -- kind of obsolete as we can pass them directly anyway ... NEEDS CHECKING !
+        if userdata.reference and userdata.reference ~= "" then given.metadata.reference   = userdata.reference ; userdata.reference = nil end
+        if userdata.ownnumber and userdata.ownnumber ~= "" then given.numberdata.ownnumber = userdata.ownnumber ; userdata.ownnumber = nil end
+        if userdata.title     and userdata.title     ~= "" then given.titledata.title      = userdata.title     ; userdata.title     = nil end
+        if userdata.bookmark  and userdata.bookmark  ~= "" then given.titledata.bookmark   = userdata.bookmark  ; userdata.bookmark  = nil end
+        if userdata.label     and userdata.label     ~= "" then given.titledata.label      = userdata.label     ; userdata.label     = nil end
     end
     -- so far for the trick
     if saveset then
@@ -305,12 +352,12 @@ function sections.somelevel(given)
         end
     end
     counters.check(newdepth)
-    ownnumbers[newdepth] = given.numberdata.ownnumber or ""
-    given.numberdata.ownnumber = nil
+    ownnumbers[newdepth] = numberdata.ownnumber or ""
+    numberdata.ownnumber = nil
     data.depth = newdepth
     -- new number
     olddepth = newdepth
-    if given.metadata.increment then
+    if metadata.increment then
         local oldn, newn = numbers[newdepth] or 0, 0
         local fd = forced[newdepth]
         if fd then
@@ -340,40 +387,31 @@ function sections.somelevel(given)
             v[2](k)
         end
     end
-    local numberdata= given.numberdata
-    if not numberdata then
-        -- probably simplified to nothing
-        numberdata = { }
-        given.numberdata = numberdata
-    end
-
     local n = { }
     for i=1,newdepth do
         n[i] = numbers[i]
     end
     numberdata.numbers = n
---     numberdata.numbers = fastcopy(numbers)
-
+    if not numberdata.block then
+        numberdata.block = getcurrentblock() -- also in references
+    end
     if #ownnumbers > 0 then
         numberdata.ownnumbers = fastcopy(ownnumbers)
     end
     if trace_detail then
         report_structure("name %a, numbers % a, own numbers % a",givenname,numberdata.numbers,numberdata.ownnumbers)
     end
-
-    local metadata   = given.metadata
-    local references = given.references
-
+    if not references.block then
+        references.block = getcurrentblock() -- also in numberdata
+    end
     local tag = references.tag or tags.getid(metadata.kind,metadata.name)
     if tag and tag ~= "" and tag ~= "?" then
         references.tag = tag
     end
-
     local setcomponent = structures.references.setcomponent
     if setcomponent then
         setcomponent(given) -- might move to the tex end
     end
-
     references.section = sections.save(given)
  -- given.numberdata = nil
 end
@@ -456,7 +494,7 @@ function sections.structuredata(depth,key,default,honorcatcodetable) -- todo: sp
     local data = data.status[depth]
     local d
     if data then
-        if find(key,"%.") then
+        if find(key,".",1,true) then
             d = accesstable(key,data)
         else
             d = data.titledata
@@ -468,7 +506,7 @@ function sections.structuredata(depth,key,default,honorcatcodetable) -- todo: sp
             local metadata = data.metadata
             local catcodes = metadata and metadata.catcodes
             if catcodes then
-                context.sprint(catcodes,d)
+                ctx_sprint(catcodes,d)
             else
                 context(d)
             end
@@ -477,7 +515,7 @@ function sections.structuredata(depth,key,default,honorcatcodetable) -- todo: sp
         else
             local catcodes = catcodenumbers[honorcatcodetable]
             if catcodes then
-                context.sprint(catcodes,d)
+                ctx_sprint(catcodes,d)
             else
                 context(d)
             end
@@ -512,15 +550,17 @@ function sections.current()
     return data.status[data.depth]
 end
 
-function sections.depthnumber(n)
+local function depthnumber(n)
     local depth = data.depth
     if not n or n == 0 then
         n = depth
     elseif n < 0 then
         n = depth + n
     end
-    return context(data.numbers[n] or 0)
+    return data.numbers[n] or 0
 end
+
+sections.depthnumber = depthnumber
 
 function sections.autodepth(numbers)
     for i=#numbers,1,-1 do
@@ -547,10 +587,9 @@ end
 -- sign=positive => also zero
 -- sign=hang     => llap sign
 
---~ todo: test this
---~
+-- this can be a local function
 
-local function process(index,numbers,ownnumbers,criterium,separatorset,conversion,conversionset,index,entry,result,preceding,done)
+local function process(index,numbers,ownnumbers,criterium,separatorset,conversion,conversionset,entry,result,preceding,done,language)
     -- todo: too much (100 steps)
     local number = numbers and (numbers[index] or 0)
     local ownnumber = ownnumbers and ownnumbers[index] or ""
@@ -571,20 +610,20 @@ local function process(index,numbers,ownnumbers,criterium,separatorset,conversio
             if ownnumber ~= "" then
                 result[#result+1] = ownnumber
             elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups) .. inherited!
-                result[#result+1] = converters.convert(conversion,number)
+                result[#result+1] = convertnumber(conversion,number,language)
             else
                 local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
-                result[#result+1] = converters.convert(theconversion,number)
+                result[#result+1] = convertnumber(theconversion,number,language)
             end
         else
             if ownnumber ~= "" then
                 applyprocessor(ownnumber)
             elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups)
-                context.convertnumber(conversion,number)
+                ctx_convertnumber(conversion,number)
             else
                 local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
                 local data = startapplyprocessor(theconversion)
-                context.convertnumber(data or "numbers",number)
+                ctx_convertnumber(data or "numbers",number)
                 stopapplyprocessor()
             end
         end
@@ -606,6 +645,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
         local set           = ""
         local segments      = ""
         local criterium     = ""
+        local language      = ""
         for d=1,select("#",...) do
             local data = select(d,...) -- can be multiple parametersets
             if data then
@@ -619,6 +659,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                 if set           == "" then set           = data.set           or "" end
                 if segments      == "" then segments      = data.segments      or "" end
                 if criterium     == "" then criterium     = data.criterium     or "" end
+                if language      == "" then language      = data.language      or "" end
             end
         end
         if separatorset  == "" then separatorset  = "default"  end
@@ -630,6 +671,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
         if connector     == "" then connector     = nil        end
         if set           == "" then set           = "default"  end
         if segments      == "" then segments      = nil        end
+        if language      == "" then language      = nil        end
         --
         if criterium == v_strict then
             criterium = 0
@@ -641,10 +683,10 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
             criterium = 0
         end
         --
-        local firstprefix, lastprefix = 0, 16
+        local firstprefix, lastprefix = 0, 16 -- too much, could max found level
         if segments then
             local f, l = match(tostring(segments),"^(.-):(.+)$")
-            if l == "*" then
+            if l == "*" or l == v_all then
                 l = 100 -- new
             end
             if f and l then
@@ -678,7 +720,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                     applyprocessor(starter)
                 end
             end
-            if prefixlist and (kind == 'section' or kind == 'prefix' or kind == 'direct') then
+            if prefixlist and (kind == "section" or kind == "prefix" or kind == "direct") then
                 -- find valid set (problem: for sectionnumber we should pass the level)
                 -- no holes
                 local b, e, bb, ee = 1, #prefixlist, 0, 0
@@ -722,15 +764,13 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                     local prefix = prefixlist[k]
                     local index = sections.getlevel(prefix) or k
                     if index >= firstprefix and index <= lastprefix then
-                     -- process(index,result)
-                        preceding, done = process(index,numbers,ownnumbers,criterium,separatorset,conversion,conversionset,index,entry,result,preceding,done)
+                        preceding, done = process(index,numbers,ownnumbers,criterium,separatorset,conversion,conversionset,entry,result,preceding,done,language)
                     end
                 end
             else
                 -- also holes check
                 for index=firstprefix,lastprefix do
-                 -- process(index,result)
-                    preceding, done = process(index,numbers,ownnumbers,criterium,separatorset,conversion,conversionset,index,entry,result,preceding,done)
+                    preceding, done = process(index,numbers,ownnumbers,criterium,separatorset,conversion,conversionset,entry,result,preceding,done,language)
                 end
             end
             --
@@ -746,7 +786,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                         if result then
                             result[#result+1] = strippedprocessor(groupsuffix)
                         else
-                            applyprocessor(groupsuffix)
+                           applyprocessor(groupsuffix)
                         end
                     end
                     if stopper then
@@ -891,34 +931,21 @@ end
 
 function sections.getnumber(depth,what) -- redefined here
     local sectiondata = sections.findnumber(depth,what)
-    context((sectiondata and sectiondata.numbers[depth]) or 0)
+    local askednumber = 0
+    if sectiondata then
+        local numbers = sectiondata.numbers
+        if numbers then
+            askednumber = numbers[depth] or 0
+        end
+    end
+    context(askednumber)
 end
 
 -- experimental
 
 local levels = { }
 
---~ function commands.autonextstructurelevel(level)
---~     if level > #levels then
---~         for i=#levels+1,level do
---~             levels[i] = ""
---~         end
---~     end
---~     local finish = concat(levels,"\n",level) or ""
---~     for i=level+1,#levels do
---~         levels[i] = ""
---~     end
---~     levels[level] = [[\finalizeautostructurelevel]]
---~     context(finish)
---~ end
-
---~ function commands.autofinishstructurelevels()
---~     local finish = concat(levels,"\n") or ""
---~     levels = { }
---~     context(finish)
---~ end
-
-function commands.autonextstructurelevel(level)
+local function autonextstructurelevel(level)
     if level > #levels then
         for i=#levels+1,level do
             levels[i] = false
@@ -926,7 +953,7 @@ function commands.autonextstructurelevel(level)
     else
         for i=level,#levels do
             if levels[i] then
-                context.finalizeautostructurelevel()
+                ctx_finalizeauto()
                 levels[i] = false
             end
         end
@@ -934,39 +961,141 @@ function commands.autonextstructurelevel(level)
     levels[level] = true
 end
 
-function commands.autofinishstructurelevels()
+local function autofinishstructurelevels()
     for i=1,#levels do
         if levels[i] then
-            context.finalizeautostructurelevel()
+            ctx_finalizeauto()
         end
     end
     levels = { }
 end
 
+implement {
+    name      = "autonextstructurelevel",
+    actions   = autonextstructurelevel,
+    arguments = "integer",
+}
+
+implement {
+    name      = "autofinishstructurelevels",
+    actions   = autofinishstructurelevels,
+}
+
 -- interface (some are actually already commands, like sections.fullnumber)
 
-commands.structurenumber            = function()             sections.fullnumber()                        end
-commands.structuretitle             = function()             sections.title     ()                        end
+implement {
+    name     = "depthnumber",
+    actions  = { depthnumber, context },
+    arguments = "integer",
+}
 
-commands.structurevariable          = function(name)         sections.structuredata(nil,name)             end
-commands.structureuservariable      = function(name)         sections.userdata     (nil,name)             end
-commands.structurecatcodedget       = function(name)         sections.structuredata(nil,name,nil,true)    end
-commands.structuregivencatcodedget  = function(name,catcode) sections.structuredata(nil,name,nil,catcode) end
-commands.structureautocatcodedget   = function(name,catcode) sections.structuredata(nil,name,nil,catcode) end
+implement { name = "structurenumber",            actions = sections.fullnumber }
+implement { name = "structuretitle",             actions = sections.title }
 
-commands.namedstructurevariable     = function(depth,name)   sections.structuredata(depth,name)           end
-commands.namedstructureuservariable = function(depth,name)   sections.userdata     (depth,name)           end
+implement { name = "structurevariable",          actions = sections.structuredata, arguments = { false, "string" } }
+implement { name = "structureuservariable",      actions = sections.userdata,      arguments = { false, "string" } }
+implement { name = "structurecatcodedget",       actions = sections.structuredata, arguments = { false, "string", false, true } }
+implement { name = "structuregivencatcodedget",  actions = sections.structuredata, arguments = { false, "string", false, "integer" } }
+implement { name = "structureautocatcodedget",   actions = sections.structuredata, arguments = { false, "string", false, "string" } }
 
---
+implement { name = "namedstructurevariable",     actions = sections.structuredata, arguments = { "string", "string" }  }
+implement { name = "namedstructureuservariable", actions = sections.userdata,      arguments = { "string", "string" }  }
 
-commands.setsectionblock  = sections.setblock
-commands.pushsectionblock = sections.pushblock
-commands.popsectionblock  = sections.popblock
+implement { name = "setstructurelevel",          actions = sections.setlevel,        arguments = { "string", "string" } }
+implement { name = "getstructurelevel",          actions = sections.getcurrentlevel, arguments = { "string" } }
+implement { name = "setstructurenumber",         actions = sections.setnumber,       arguments = { "integer", "string" } }
+implement { name = "getstructurenumber",         actions = sections.getnumber,       arguments = { "integer" } }
+implement { name = "getsomestructurenumber",     actions = sections.getnumber,       arguments = { "integer", "string" } }
+implement { name = "getfullstructurenumber",     actions = sections.fullnumber,      arguments = { "integer" } }
+implement { name = "getsomefullstructurenumber", actions = sections.fullnumber,      arguments = { "integer", "string" } }
+implement { name = "getspecificstructuretitle",  actions = sections.structuredata,   arguments = { "string", "'titledata.title'",false,"string" } }
 
---
+implement { name = "reportstructure",            actions = sections.reportstructure }
 
-local byway = "^" .. v_by -- ugly but downward compatible
+implement {
+    name      = "registersection",
+    actions   = sections.register,
+    arguments = {
+        "string",
+        {
+            { "coupling" },
+            { "section" },
+            { "level", "integer" },
+            { "parent" },
+        }
+    }
+}
 
-function commands.way(way)
-    context((gsub(way,byway,"")))
-end
+implement {
+    name      = "setsectionentry",
+    actions   = sections.setentry,
+    arguments = {
+        {
+            { "references", {
+                    { "internal", "integer" },
+                    { "block" },
+                    { "backreference" },
+                    { "prefix" },
+                    { "reference" },
+                }
+            },
+            { "directives", {
+                    { "resetset" }
+                }
+            },
+            { "metadata", {
+                    { "kind" },
+                    { "name" },
+                    { "catcodes", "integer" },
+                    { "coding" },
+                    { "xmlroot" },
+                    { "xmlsetup" },
+                    { "nolist", "boolean" },
+                    { "increment" },
+                }
+            },
+            { "titledata", {
+                    { "label" },
+                    { "title" },
+                    { "bookmark" },
+                    { "marking" },
+                    { "list" },
+                }
+            },
+            { "numberdata", {
+                    { "block" },
+                    { "hidenumber", "boolean" },
+                    { "separatorset" },
+                    { "conversionset" },
+                    { "conversion" },
+                    { "starter" },
+                    { "stopper" },
+                    { "set" },
+                    { "segments" },
+                    { "ownnumber" },
+                    { "language" },
+                },
+            },
+            { "userdata" },
+        }
+    }
+}
+
+-- os.exit()
+
+implement {
+    name      = "setsectionblock",
+    actions   = sections.setblock,
+    arguments = { "string", { { "bookmark" } } }
+}
+
+implement {
+    name      = "pushsectionblock",
+    actions   = sections.pushblock,
+    arguments = { "string", { { "bookmark" } } }
+}
+
+implement {
+    name      = "popsectionblock",
+    actions   = sections.popblock,
+}

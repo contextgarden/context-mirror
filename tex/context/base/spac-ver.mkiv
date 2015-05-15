@@ -17,6 +17,8 @@
 
 \registerctxluafile{spac-ver}{1.001}
 
+% todo: use usernodes ?
+
 % todo: itemize : intro ... only when there is one or two lines preceding and then
 % keep these together i.e. \blank[intro]
 
@@ -120,7 +122,7 @@
 \setvalue{\??interlinespacerelative\v!auto }{\let\setrelativeinterlinespace\spac_linespacing_set_relative_interlinespace}
 
 \def\spac_linespacing_set_specified_relative_interlinespace#1% fragile?
-  {\doifdimenstringelse{#1}
+  {\doifelsedimenstring{#1}
      {\setupspecifiedinterlinespace[\c!line=#1]}
      {\assignvalue{#1}\currentrelativeinterlinespace{1.00}{1.25}{1.50}%
       \spacing\currentrelativeinterlinespace}}
@@ -140,6 +142,20 @@
      \spacing\currentrelativeinterlinespace
    \fi}
 
+\unexpanded\def\spac_linespacing_setup_use
+  {\ifcsname\namedinterlinespacehash\m_spac_interlinespace\s!parent\endcsname
+      \let\currentinterlinespace\m_spac_interlinespace
+      \spac_linespacing_setup_specified_interline_space
+ % \else
+     % we only support named interlinespaces
+   \fi}
+
+\unexpanded\def\useinterlinespaceparameter#1% see footnotes
+  {\edef\m_spac_interlinespace{#1\c!interlinespace}%
+   \ifx\m_spac_interlinespace\empty \else
+     \spac_linespacing_setup_use
+   \fi}
+
 \newtoks\everysetupglobalinterlinespace
 \newtoks\everysetuplocalinterlinespace
 
@@ -152,10 +168,14 @@
 \unexpanded\def\setupinterlinespace
   {\dodoubleempty\spac_linespacing_setup}
 
+\ifdefined\setupinterlinespace_double \else
+    \let\setupinterlinespace_double\setup_interlinespace % for a while
+\fi
+
 \def\spac_linespacing_setup[#1][#2]%
   {\settrue\interlinespaceisset % reset has to be done when needed
    \ifsecondargument
-     \setup_interlinespace[#1][#2]%
+     \setupinterlinespace_double[#1][#2]%
    \else\iffirstargument
      \ifcsname\namedinterlinespacehash{#1}\s!parent\endcsname
         \edef\currentinterlinespace{#1}%
@@ -170,7 +190,7 @@
    \fi\fi}
 
 \def\spac_linespacing_setup_specified_or_relative[#1]%
-  {\doifassignmentelse{#1}\setupspecifiedinterlinespace\setuprelativeinterlinespace[#1]%
+  {\doifelseassignment{#1}\setupspecifiedinterlinespace\setuprelativeinterlinespace[#1]%
    \the\iflocalinterlinespace\everysetuplocalinterlinespace\else\everysetupglobalinterlinespace\fi}
 
 \def\spac_linespacing_synchronize_local % adapts to the font
@@ -197,7 +217,7 @@
      \fi
      \popmacro\currentinterlinespace
    \else
-     \normalexpanded{\noexpand\doifassignmentelse{\p_spac_checked_interlinespace}%
+     \normalexpanded{\noexpand\doifelseassignment{\p_spac_checked_interlinespace}%
        \setupspecifiedinterlinespace\setuprelativeinterlinespace[\p_spac_checked_interlinespace]}%
      \iflocalinterlinespace
        \the\everysetuplocalinterlinespace
@@ -330,7 +350,7 @@
 \let\v_spac_whitespace_current\v!none
 
 \unexpanded\def\setupwhitespace
-  {\doifnextoptionalelse\spac_whitespace_setup_yes\spac_whitespace_setup_nop}
+  {\doifelsenextoptionalcs\spac_whitespace_setup_yes\spac_whitespace_setup_nop}
 
 \def\spac_whitespace_setup_nop
   {\ifx\v_spac_whitespace_current\v!none\else
@@ -542,6 +562,8 @@
    \ignorespaces
    \let\spac_lines_stop_correction\spac_lines_stop_correction_yes}
 
+% still not ok ... will move to the lua end ... needs a final solution
+
 \unexpanded\def\spac_lines_stop_correction_yes
   {\removeunwantedspaces
    \egroup
@@ -549,6 +571,11 @@
      \blank[\v!white]%
      \snaptogrid\hbox{\box\scratchbox}%
    \else
+\blank[\v!nowhite]%
+\ifdim\parskip>\zeropoint
+     % too fuzzy otherwise
+\else
+     % doesn't like whitespace
      \ifdim\d_spac_prevdepth<\maxdimen
        \unless\ifdim\d_spac_prevdepth<\zeropoint
          \ifdim\d_spac_prevdepth<\strutdp \relax
@@ -562,6 +589,7 @@
          \fi
        \fi
      \fi
+\fi
      \ifdim\pagegoal<\maxdimen
        \blank[\v!white,\the\d_spac_lines_correction_before]% \blank[\v!white]\dotopbaselinecorrection
      \fi
@@ -853,11 +881,11 @@
        \strutheightfactor\dimexpr\normallineheight
      \fi
    \strutdp\spacingfactor\dimexpr
-       \ifdim\minimumstrutdepth>\zeropoint
-         \minimumstrutdepth
-       \else
-         \strutdepthfactor\dimexpr\normallineheight
-       \fi
+     \ifdim\minimumstrutdepth>\zeropoint
+       \minimumstrutdepth
+     \else
+       \strutdepthfactor\dimexpr\normallineheight
+     \fi
    \dosetstrut}
 
 \unexpanded\def\setcharstrut#1%
@@ -896,7 +924,9 @@
    \ifabsnum\dimexpr\strutht+\strutdp-\lineheight\relax<\plustwo
      % compensate rounding error /- 1sp to avoid too many
      % 1sp baselineskips in for instance verbatim
-     \strutht\dimexpr\lineheight-\strutdp\relax
+     % \strutht\dimexpr\lineheight-\strutdp\relax
+     % better:
+     \strutdp\dimexpr\lineheight-\strutht\relax
      \struttotal\lineheight
    \else
      \struttotal\dimexpr\strutht+\strutdp\relax
@@ -916,15 +946,47 @@
         \s!height\strutht
         \s!depth \strutdp}}
 
+\newconstant\c_strut_visual_mode
+
 \def\spac_struts_set_vide
   {\setbox\strutbox\hbox  % at some time this extra wrapping was needed
      {\spac_struts_vide_hbox to \zeropoint
-        {% \hss % new, will be option
-         \vrule
-           \s!width \strutwidth
-           \s!height\strutht
-           \s!depth \strutdp
-         \hss}}}
+        {\ifcase\c_strut_visual_mode
+           \spac_struts_black
+         \or
+           \spac_struts_color
+         \else
+           \spac_struts_black
+         \fi}}}
+
+\def\spac_struts_black
+  {\vrule
+     \s!width \strutwidth
+     \s!height\strutht
+     \s!depth \strutdp
+   \hss}
+
+\def\spac_struts_color
+  {\hss % new, will be option
+   \scratchwidth.1\struthtdp
+   \begingroup
+   \directcolor[f:b:t]%
+   \vrule
+     \s!width \scratchwidth
+     \s!height\strutht
+     \s!depth \strutdp
+   \kern-\scratchwidth
+   \vrule
+     \s!width \scratchwidth
+     \s!height\zeropoint
+     \s!depth \strutdp
+   \endgroup
+   \kern-.625\scratchwidth
+   \vrule
+     \s!width .25\scratchwidth
+     \s!height\strutht
+     \s!depth \strutdp
+   \hss}
 
 \let\spac_struts_vide_hbox\hbox % overloaded in trac-vis.mkiv
 
@@ -947,6 +1009,35 @@
    \copy\strutbox}
 
 \let\normalstrut\strut
+
+\unexpanded\def\halfstrut
+  {\relax
+   \dontleavehmode
+   \begingroup
+   \setbox\scratchbox\copy\strutbox
+   \ht\scratchbox\dimexpr\strutht/\plustwo\relax
+   \dp\scratchbox\dimexpr\strutdp/\plustwo\relax
+   \box\scratchbox
+   \endgroup}
+
+\unexpanded\def\quarterstrut
+  {\relax
+   \dontleavehmode
+   \begingroup
+   \setbox\scratchbox\copy\strutbox
+   \ht\scratchbox\dimexpr\strutht/\plusfour\relax
+   \dp\scratchbox\dimexpr\strutdp/\plusfour\relax
+   \box\scratchbox
+   \endgroup}
+
+\unexpanded\def\depthstrut
+  {\relax
+   \dontleavehmode
+   \begingroup
+   \setbox\scratchbox\copy\strutbox
+   \ht\scratchbox\dimexpr\strutht-\struthtdp/\plustwo\relax % assumes that ht > lineheight/2
+   \box\scratchbox
+   \endgroup}
 
 %D Sometimes a capstrut comes in handy
 %D
@@ -989,7 +1080,13 @@
    \fi}
 
 \unexpanded\def\showstruts % adapts .. is wrong
-  {\setteststrut
+  {\c_strut_visual_mode\zerocount
+   \setteststrut
+   \settestcrlf}
+
+\unexpanded\def\showcolorstruts % adapts .. is wrong
+  {\c_strut_visual_mode\plusone
+   \setteststrut
    \settestcrlf}
 
 \unexpanded\def\setteststrut
@@ -1020,12 +1117,17 @@
 
 \newbox\nostrutbox \setbox\nostrutbox\emptyhbox
 
+\newtoks\everysetnostrut
+
 \unexpanded\def\setnostrut
-  {\setbox\strutbox\copy\nostrutbox
-   \let\strut\empty
-   \let\endstrut\empty
-   \let\begstrut\empty
-   \let\crlfplaceholder\empty}
+  {\the\everysetnostrut}
+
+\appendtoks
+    \setbox\strutbox\copy\nostrutbox
+    \let\strut\empty
+    \let\endstrut\empty
+    \let\begstrut\empty
+\to \everysetnostrut
 
 % when enabled, sigstruts will remove themselves if nothing
 % goes inbetween
@@ -1153,6 +1255,10 @@
   {\prevdepth-\thousandpoint}
 
 \let\normaloffinterlineskip\offinterlineskip % knuth's original
+
+\appendtoks
+    \ifvmode\clf_resetprevdepth\fi % a nasty hack (tested for a while now)
+\to \everyafteroutput
 
 %D My own one:
 
@@ -1325,9 +1431,19 @@
 \unexpanded\def\installsnapvalues#1#2% todo: a proper define
   {\edef\currentsnapper{#1:#2}%
    \ifcsname\??gridsnapperattributes\currentsnapper\endcsname \else
-     \setevalue{\??gridsnapperattributes\currentsnapper}{\ctxlua{builders.vspacing.definesnapmethod("#1","#2")}}%
+     \setevalue{\??gridsnapperattributes\currentsnapper}{\clf_definesnapmethod{#1}{#2}}%
    \fi
    \setevalue{\??gridsnappers#1}{\attribute\snapmethodattribute\csname\??gridsnapperattributes\currentsnapper\endcsname\space}}
+
+\unexpanded\def\usegridparameter#1% no checking here
+  {\edef\m_spac_grid_asked{#1\c!grid}%
+   \ifx\m_spac_grid_asked\empty
+     \attribute \snapvboxattribute\attributeunsetvalue
+   \else
+     \spac_grids_snap_value_set\m_spac_grid_asked
+     \attribute \snapvboxattribute\attribute\snapmethodattribute
+   \fi}
+
 
 \unexpanded\def\definegridsnapping
   {\dodoubleargument\spac_grids_define}
@@ -1394,6 +1510,9 @@
 \definegridsnapping[\v!none]     [\v!none]
 \definegridsnapping[\v!line]     [\v!line]
 \definegridsnapping[\v!strut]    [\v!strut]
+\definegridsnapping[\v!box]      [\v!box] % centers a box rounded upwards (box:.5 -> tolerance)
+\definegridsnapping[\v!min]      [\v!min] % centers a box rounded downwards
+\definegridsnapping[\v!max]      [\v!max] % centers a box rounded upwards
 
 \definegridsnapping[\v!max]      [\v!maxdepth,\v!maxheight,\v!strut]
 \definegridsnapping[\v!min]      [\v!mindepth,\v!minheight,\v!strut]
@@ -1402,13 +1521,13 @@
 
 \unexpanded\def\synchronizelocallinespecs
   {\bodyfontlineheight \normallineheight
-   \bodyfontstrutheight\strutheight
-   \bodyfontstrutdepth \strutdepth}
+   \bodyfontstrutheight\strutht
+   \bodyfontstrutdepth \strutdp}
 
 \unexpanded\def\synchronizegloballinespecs
   {\global\globalbodyfontlineheight \normallineheight
-   \global\globalbodyfontstrutheight\strutheight
-   \global\globalbodyfontstrutdepth \strutdepth}
+   \global\globalbodyfontstrutheight\strutht
+   \global\globalbodyfontstrutdepth \strutdp}
 
 \appendtoks
     \synchronizegloballinespecs
@@ -1479,10 +1598,10 @@
 
 \def\spac_grids_snap_to_finish#1%
   {\ifvbox\nextbox % this will go away
-     \ctxcommand{vspacingcollapse(\number\nextbox)}% isn't that already done?
+     \clf_vspacingcollapse\nextbox\relax % isn't that already done?
    \fi
    \doifelsenothing{#1}{\spac_grids_snap_value_set\v!normal}{\spac_grids_snap_value_set{#1}}%
-   \ctxcommand{vspacingsnap(\number\nextbox,\number\attribute\snapmethodattribute)}%
+   \clf_vspacingsnap\nextbox\attribute\snapmethodattribute\relax
    \ifvbox\nextbox\vbox\else\hbox\fi attr \snapmethodattribute \zerocount {\box\nextbox}%
    \egroup}
 
@@ -1632,7 +1751,7 @@
 
 \def\spac_vspacing_define_amount[#1][#2][#3]% can be combined
   {\setvalue{\??vspacingamount#1}{\ifgridsnapping#3\else#2\fi}%
-   \ctxcommand{vspacingsetamount("#1")}}
+   \clf_vspacingsetamount{#1}}
 
 % \installcorenamespace{vspacingamountnormal}
 % \installcorenamespace{vspacingamountgrid}
@@ -1644,13 +1763,13 @@
 %    \fi
 %    \csname n>#1\endcsname{#2}%
 %    \csname g>#1\endcsname{#3}%
-%    \ctxcommand{vspacingsetamount("#1")}}
+%    \clf_vspacingsetamount{#1}}
 
 \unexpanded\def\definevspacing
   {\dodoubleempty\spac_vspacing_define}
 
 \def\spac_vspacing_define[#1][#2]%
-  {\ctxcommand{vspacingdefine("#1","#2")}}
+  {\clf_vspacingdefine{#1}{#2}}
 
 %D The injector code (generated at the \LUA\ end):
 
@@ -1751,7 +1870,7 @@
 % The main spacer:
 
 \unexpanded\def\vspacing
-  {\doifnextoptionalelse\spac_vspacing_yes\spac_vspacing_nop}
+  {\doifelsenextoptionalcs\spac_vspacing_yes\spac_vspacing_nop}
 
 \def\spac_vspacing_yes
   {\ifinpagebody % somewhat weird
@@ -1772,21 +1891,21 @@
    \fi\fi}
 
 \def\spac_vspacing_yes_indeed[#1]%
-  {\ifmmode\else\par\ctxcommand{vspacing("#1")}\fi}
+  {\ifmmode\else\par\clf_vspacing{#1}\fi}
 
 \def\spac_vspacing_yes_ignore[#1]%
   {\ifmmode\else\par\fi}
 
 \def\spac_vspacing_nop_indeed
-  {\ifmmode\else\par\ctxcommand{vspacing("\currentvspacing")}\fi}
+  {\ifmmode\else\par\clf_vspacing{\currentvspacing}\fi}
 
 \def\spac_vspacing_nop_ignore
   {\ifmmode\else\par\fi}
 
 \def\directvspacing#1%
-  {\par\ctxcommand{vspacing("#1")}}
+  {\par\clf_vspacing{#1}}
 
-% handy (and faste):
+% handy (and faster):
 
 \unexpanded\def\directvpenalty#1%
   {\begingroup
@@ -1807,7 +1926,7 @@
 % these depend on bigskipamount cum suis so we'd better sync them
 
 \unexpanded\def\setupvspacing
-  {\doifnextoptionalelse\setupvspacing_yes\setupvspacing_nop}
+  {\doifelsenextoptionalcs\setupvspacing_yes\setupvspacing_nop}
 
 \let\currentvspacing\s!default % hm, default, standard ...
 
@@ -1829,7 +1948,7 @@
 
 % category:4 is default
 
-% this interface might change (into an \install, buw we will then keep this one hidden)
+% this interface might change (into an \install, but we will then keep this one hidden)
 
 \definevspacingamount[\v!none]        [\zeropoint]         [\zeropoint]
 \definevspacingamount[\v!big]         [\bigskipamount]     [\bodyfontlineheight]
@@ -1840,8 +1959,8 @@
 \definevspacingamount[\v!quarterline] [.25\openlineheight] [.25\bodyfontlineheight]
 \definevspacingamount[\v!formula]     [\medskipamount]     [.5\bodyfontlineheight]
 \definevspacingamount[\v!white]       [\parskip]           [\bodyfontwhitespace]
-\definevspacingamount[\v!height]      [\strutheight]       [\bodyfontstrutheight]
-\definevspacingamount[\v!depth]       [\strutdepth]        [\bodyfontstrutdepth]
+\definevspacingamount[\v!height]      [\strutht]           [\bodyfontstrutheight]
+\definevspacingamount[\v!depth]       [\strutdp]           [\bodyfontstrutdepth]
 
 \definevspacingamount[-\v!line]       [-\openlineheight]   [-\bodyfontlineheight]
 \definevspacingamount[-\v!halfline]   [-.5\openlineheight] [-.5\bodyfontlineheight]
@@ -1860,6 +1979,32 @@
      \fi\fi
    \relax}
 
+% used in itemize ... always test this
+
+\newdimen\d_spac_overlay
+
+\def\spac_overlay_lines
+  {\blank[\v!back,\v!overlay]%
+   \nointerlineskip}
+
+% \startitemize[n]
+%     \item \input zapf
+%     \item \startitemize[a]
+%         \item \input knuth
+%     \stopitemize
+% \stopitemize
+%
+% \strut \hfill first line \blank[overlay] second line \hfill \strut
+%
+% \ruledvbox {
+%     \strut \hfill line 1 \blank[overlay]
+%     line 2 \hfill \strut \blank[overlay]
+%     \strut \hfill line 3 \hfill \strut
+% }
+%
+% \dorecurse{50}
+%   {\startitemize[n] \startitem \startitemize[a] \item #1 \stopitemize \stopitem \stopitemize}
+
 \definevspacing[\v!preference][penalty:-500]  % goodbreak
 \definevspacing[\v!samepage]  [penalty:10000] % nobreak
 \definevspacing[\v!max]       [category:1]
@@ -1867,7 +2012,9 @@
 \definevspacing[\v!disable]   [category:5]
 \definevspacing[\v!nowhite]   [category:6]
 \definevspacing[\v!back]      [category:7]
-\definevspacing[\v!always]    [category:0]
+%               together      [category:8]
+\definevspacing[\v!overlay]   [category:9]
+\definevspacing[\v!always]    [category:0] % hm, internally it's discard
 \definevspacing[\v!weak]      [order:0]
 \definevspacing[\v!strong]    [order:100]
 
@@ -1894,8 +2041,20 @@
 %D \type {\blank} (we needed the first one while playing with the
 %D new code).
 
+% We keep this one as reference
+%
+% \unexpanded\def\inhibitblank
+%   {\vspacing[\v!disable]}
+%
+% but use the following more efficient variant instead:
+
 \unexpanded\def\inhibitblank
-  {\vspacing[\v!disable]} % can be made faster
+  {\ifvmode
+     \begingroup
+     \attribute\skipcategoryattribute\plusfive
+     \vskip\zeropoint
+     \endgroup
+   \fi}
 
 \let\doinhibitblank\inhibitblank % keep this command, used in styles
 
@@ -1980,7 +2139,7 @@
 \let\m_spac_hanging_location\empty
 
 \def\spac_hanging_start[#1]%
-  {\doifassignmentelse{#1}
+  {\doifelseassignment{#1}
      {\let\m_spac_hanging_location\empty
       \setupcurrenthanging[#1]}%
      {\edef\m_spac_hanging_location{#1}}%
@@ -2109,7 +2268,7 @@
 % as encountered in forced blank skips (see lua code)
 %
 % \appendtoks
-%     \ifvmode\ctxcommand{resetprevdepth()}\fi
+%     \ifvmode\clf_resetprevdepth\fi
 % \to \everyafteroutput
 %
 % this should only happen when there is nothing left over (how to detemine that) .. testcase:

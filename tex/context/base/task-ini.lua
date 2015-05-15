@@ -18,11 +18,14 @@ if not modules then modules = { } end modules ['task-ini'] = {
 -- not apply the font handler, we can remove all checks for subtypes 255
 
 local tasks           = nodes.tasks
+local prependaction   = tasks.prependaction
 local appendaction    = tasks.appendaction
 local disableaction   = tasks.disableaction
+local enableaction    = tasks.enableaction
 local freezegroup     = tasks.freezegroup
 local freezecallbacks = callbacks.freeze
 
+appendaction("processors",   "normalizers", "typesetters.wrappers.handler")                      -- disabled
 appendaction("processors",   "normalizers", "typesetters.characters.handler")                    -- always on
 appendaction("processors",   "normalizers", "fonts.collections.process")                         -- disabled
 appendaction("processors",   "normalizers", "fonts.checkers.missing")                            -- disabled
@@ -35,11 +38,14 @@ appendaction("processors",   "characters",  "typesetters.cases.handler")        
 appendaction("processors",   "characters",  "typesetters.breakpoints.handler")                   -- disabled
 appendaction("processors",   "characters",  "scripts.injectors.handler")                         -- disabled
 
-appendaction("processors",   "words",       "builders.kernel.hyphenation")                       -- always on
+appendaction("processors",   "words",       "languages.replacements.handler")                    -- disabled
+
+appendaction("processors",   "words",       "languages.hyphenators.handler")                     -- always on
+
 appendaction("processors",   "words",       "languages.words.check")                             -- disabled  -- might move up, no disc check needed then
 
 appendaction("processors",   "words",       "typesetters.initials.handler")                      -- disabled  -- might move up
-appendaction("processors",   "words",       "typesetters.firstlines.handler")                    -- disabled  -- might move up
+appendaction("processors",   "words",       "typesetters.firstlines.handler")                    -- disabled  -- might move down
 
 appendaction("processors",   "fonts",       "builders.paragraphs.solutions.splitters.split")     -- experimental
 appendaction("processors",   "fonts",       "nodes.handlers.characters")                         -- maybe todo
@@ -55,9 +61,12 @@ appendaction("processors",   "lists",       "typesetters.spacings.handler")     
 appendaction("processors",   "lists",       "typesetters.kerns.handler")                         -- disabled
 appendaction("processors",   "lists",       "typesetters.digits.handler")                        -- disabled (after otf handling)
 appendaction("processors",   "lists",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
-------------("processors",   "lists",       "typesetters.initials.handler")                      -- disabled
+appendaction("processors",   "lists",       "languages.visualizediscretionaries")                -- disabled
+
+-- appendaction("processors",   "lists",       "typesetters.initials.handler")                   -- disabled
 
 appendaction("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled
+appendaction("shipouts",     "normalizers", "builders.paragraphs.expansion.trace")               -- disabled
 appendaction("shipouts",     "normalizers", "typesetters.alignments.handler")
 appendaction("shipouts",     "normalizers", "nodes.references.handler")                          -- disabled
 appendaction("shipouts",     "normalizers", "nodes.destinations.handler")                        -- disabled
@@ -99,27 +108,35 @@ appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist")   
 ------------("math",         "builders",    "noads.handlers.italics",  nil, "nohead")            -- disabled
 appendaction("math",         "builders",    "typesetters.directions.processmath")                -- disabled (has to happen pretty late)
 
--- quite experimental (nodes.handlers.graphicvadjust might go away)
-
 appendaction("finalizers",   "lists",       "builders.paragraphs.keeptogether")
-appendaction("finalizers",   "lists",       "nodes.handlers.graphicvadjust")                     -- todo
+------------("finalizers",   "lists",       "nodes.handlers.graphicvadjust")                     -- todo
 appendaction("finalizers",   "fonts",       "builders.paragraphs.solutions.splitters.optimize")  -- experimental
 appendaction("finalizers",   "lists",       "builders.paragraphs.tag")
 
 -- still experimental
 
-appendaction("mvlbuilders",  "normalizers", "nodes.handlers.migrate")                            --
-appendaction("mvlbuilders",  "normalizers", "builders.vspacing.pagehandler")                     -- last !
+appendaction("mvlbuilders",  "normalizers", "nodes.handlers.migrate")
 
-appendaction("vboxbuilders", "normalizers", "builders.vspacing.vboxhandler")                     --
+appendaction("mvlbuilders",  "normalizers", "builders.vspacing.pagehandler")                     -- last !
+appendaction("mvlbuilders",  "normalizers", "builders.profiling.pagehandler")                        -- here !
+
+appendaction("vboxbuilders", "normalizers", "builders.vspacing.vboxhandler")
+appendaction("vboxbuilders", "normalizers", "builders.profiling.vboxhandler")                        -- here !
 
 -- experimental too
 
-appendaction("mvlbuilders", "normalizers","typesetters.checkers.handler")
-appendaction("vboxbuilders","normalizers","typesetters.checkers.handler")
+appendaction("mvlbuilders",  "normalizers", "typesetters.checkers.handler")
+appendaction("vboxbuilders", "normalizers", "typesetters.checkers.handler")
+
+-- rather special (this might get hardcoded):
+
+prependaction("processors",  "before",      "nodes.properties.attach")  -- enabled but optimized for quick abort
+appendaction ("shipouts",    "normalizers", "nodes.properties.delayed") -- enabled but optimized for quick abort
 
 -- speedup: only kick in when used
 
+disableaction("processors",  "typesetters.wrappers.handler")
+disableaction("processors",  "languages.replacements.handler")
 disableaction("processors",  "typesetters.characteralign.handler")
 disableaction("processors",  "scripts.autofontfeature.handler")
 disableaction("processors",  "scripts.splitters.handler")
@@ -138,8 +155,10 @@ disableaction("processors",  "typesetters.firstlines.handler")
 disableaction("processors",  "typesetters.spacings.handler")
 disableaction("processors",  "typesetters.kerns.handler")
 disableaction("processors",  "typesetters.italics.handler")
+disableaction("processors",  "languages.visualizediscretionaries")
 disableaction("processors",  "nodes.handlers.stripping")
 
+disableaction("shipouts",    "builders.paragraphs.expansion.trace")
 disableaction("shipouts",    "typesetters.alignments.handler")
 disableaction("shipouts",    "nodes.rules.handler")
 disableaction("shipouts",    "nodes.shifts.handler")
@@ -154,7 +173,6 @@ disableaction("shipouts",    "nodes.visualizers.handler")
 disableaction("shipouts",    "nodes.handlers.accessibility")
 disableaction("shipouts",    "nodes.handlers.backgrounds")
 disableaction("shipouts",    "nodes.handlers.alignbackgrounds")
-disableaction("shipouts",    "nodes.handlers.cleanuppage")
 
 disableaction("shipouts",    "nodes.references.handler")
 disableaction("shipouts",    "nodes.destinations.handler")
@@ -167,7 +185,7 @@ disableaction("processors",  "builders.paragraphs.solutions.splitters.split")
 
 disableaction("finalizers",  "builders.paragraphs.keeptogether")
 disableaction("finalizers",  "builders.paragraphs.solutions.splitters.optimize")
-disableaction("finalizers",  "nodes.handlers.graphicvadjust") -- sort of obsolete
+-------------("finalizers",  "nodes.handlers.graphicvadjust") -- sort of obsolete
 disableaction("finalizers",  "builders.paragraphs.tag")
 
 disableaction("math",        "noads.handlers.showtree")
@@ -177,7 +195,10 @@ disableaction("math",        "noads.handlers.classes")
 disableaction("math",        "typesetters.directions.processmath")
 
 disableaction("mvlbuilders", "typesetters.checkers.handler")
+disableaction("mvlbuilders", "builders.profiling.pagehandler")
+
 disableaction("vboxbuilders","typesetters.checkers.handler")
+disableaction("vboxbuilders","builders.profiling.vboxhandler")
 
 freezecallbacks("find_.*_file", "find file using resolver")
 freezecallbacks("read_.*_file", "read file at once")
@@ -206,3 +227,18 @@ freezegroup("vboxbuilders", "normalizers")
 
 freezegroup("math",         "normalizers")
 freezegroup("math",         "builders")
+
+-- new: disabled here
+
+disableaction("processors", "builders.kernel.ligaturing")
+disableaction("processors", "builders.kernel.kerning")
+
+directives.register("nodes.basepass", function(v)
+    if v then
+         disableaction("processors", "builders.kernel.ligaturing")
+         disableaction("processors", "builders.kernel.kerning")
+    else
+         enableaction("processors", "builders.kernel.ligaturing")
+         enableaction("processors", "builders.kernel.kerning")
+    end
+end)

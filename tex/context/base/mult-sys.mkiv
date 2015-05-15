@@ -124,7 +124,7 @@
 \definesystemconstant {SansSlanted}
 \definesystemconstant {SansBoldSlanted}
 \definesystemconstant {SansCaps}
-% \definesystemconstant {SansCapsSlanted}
+%definesystemconstant {SansCapsSlanted}
 
 \definesystemconstant {Mono}
 \definesystemconstant {MonoBold}
@@ -133,8 +133,8 @@
 \definesystemconstant {MonoSlanted}
 \definesystemconstant {MonoBoldSlanted}
 \definesystemconstant {MonoCaps}
-% \definesystemconstant {MonoCapsSlanted}
-% \definesystemconstant {MonoVariable}
+%definesystemconstant {MonoCapsSlanted}
+%definesystemconstant {MonoVariable}
 
 \definesystemconstant {DefaultFont}
 
@@ -261,6 +261,20 @@
 \definesystemconstant {single}
 \definesystemconstant {multi}
 \definesystemconstant {indeed}
+\definesystemconstant {internal}
+\definesystemconstant {current}
+\definesystemconstant {chain}
+
+% translating setups is asking for a mess so we keep them as-is:
+
+\definesystemconstant {setups}
+
+\definesystemconstant {cite}
+\definesystemconstant {nocite}
+\definesystemconstant {list}
+\definesystemconstant {register}
+\definesystemconstant {author}
+\definesystemconstant {numbering}
 
 % \def\s!parent{->} % 1% faster / => does not work in assignments
 % \def\s!child {<-} % 1% faster / <= does not work in assignments
@@ -279,11 +293,15 @@
 \definesystemconstant {bold}
 \definesystemconstant {italic}
 \definesystemconstant {slanted}
-
-\definesystemconstant {default}
 \definesystemconstant {smallcaps}
+\definesystemconstant {lcgreek}
+\definesystemconstant {ucgreek}
+\definesystemconstant {sygreek}
+\definesystemconstant {italics}
 
 \definesystemconstant {run}
+
+\definesystemconstant {default}
 
 \definesystemconstant {mode}
 \definesystemconstant {setup}
@@ -298,10 +316,21 @@
 \definesystemconstant {uncramped}
 \definesystemconstant {cramped}
 
+\definesystemconstant {hyphenmin}
 \definesystemconstant {lefthyphenmin}
 \definesystemconstant {righthyphenmin}
 \definesystemconstant {lefthyphenchar}
 \definesystemconstant {righthyphenchar}
+
+\definesystemconstant {head}
+\definesystemconstant {symbol}
+\definesystemconstant {sub}
+\definesystemconstant {margin}
+\definesystemconstant {edge}
+
+\definesystemconstant {double}
+\definesystemconstant {decimal}
+\definesystemconstant {binary}
 
 %definesystemconstant {skewchar}
 %definesystemconstant {hyphenchar}
@@ -322,6 +351,12 @@
 \definesystemconstant {designsize}
 %definesystemconstant {background}
 %definesystemconstant {ucmap}
+\definesystemconstant {level}
+\definesystemconstant {integral}
+\definesystemconstant {insert} % maybe insertclass
+\definesystemconstant {marker}
+
+\definesystemconstant {mixedcolumn}
 
 %definesystemconstant {property}
 %definesystemconstant {overprint}
@@ -382,7 +417,12 @@
 \definesystemconstant {size}
 
 \definesystemconstant {depth}
+\definesystemconstant {height}
+\definesystemconstant {noheight}
 \definesystemconstant {nodepth}
+
+\definesystemconstant {rel}
+\definesystemconstant {ord}
 
 %D Just to be complete we define the standard \TEX\ units.
 
@@ -537,6 +577,13 @@
 \defineinterfacevariable {b} {b}
 \defineinterfacevariable {c} {c}
 \defineinterfacevariable {d} {d}
+
+%D For tagging:
+
+\definesystemconstant {subtype}
+\definesystemconstant {top}
+\definesystemconstant {bottom}
+\definesystemconstant {both}
 
 %D Special purpose variables:
 

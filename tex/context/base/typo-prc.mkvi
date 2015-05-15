@@ -13,7 +13,11 @@
 
 \writestatus{loading}{ConTeXt Typesetting Macros / Processors}
 
+%D For the moment manipulators are loaded here too, as they're in the same
+%D category as processors. This might change. (They are used in publications.)
+
 \registerctxluafile{typo-prc}{1.001}
+\registerctxluafile{typo-man}{1.001}
 
 \unprotect
 
@@ -51,7 +55,7 @@
 
 \appendtoks
     \letvalue{\??processorcheck\currentprocessor}\relax
-    \ctxcommand{registerstructureprocessor("\currentprocessor")}% global, but it permits using processor that are yet undefined
+    \clf_registerstructureprocessor{\currentprocessor}% global, but it permits using processor that are yet undefined
 \to \everydefineprocessor
 
 %D The following command can be used by users but normally it will be
@@ -68,9 +72,12 @@
    \fi}
 
 \def\typo_processor_apply
-  {\doifelse{\processorparameter\c!state}\v!stop
-     \firstofoneargument
-     \typo_processor_apply_indeed}
+  {\edef\p_state{\processorparameter\c!state}%
+   \ifx\p_state\v!stop
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\typo_processor_apply_indeed
+   \fi}
 
 \def\typo_processor_apply_indeed#content%
   {\begingroup

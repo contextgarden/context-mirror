@@ -20,16 +20,24 @@
 % --sort                : sort filenames first
 % --topspace=dimension  : distance above first line
 % --backspace=dimension : distance before left margin
-% --pretty              : pretty print comform suffix (temporarily disabled)
+% --pretty              : pretty print comform suffix
+% --scite               : pretty print comform suffix using scite lexer
 % --bodyfont=list       : additional bodyfont settings
 % --paperformat=spec    : paper*print or paperxprint
+% --compact             : small margins, small font
 %
 % end help
 
 \input mtx-context-common.tex
 
+\doifdocumentargument {compact} {
+    \setdocumentargument{topspace} {5mm}
+    \setdocumentargument{backspace}{5mm}
+    \setdocumentargument{bodyfont} {8pt}
+}
+
 \setupbodyfont
-  [11pt,tt,\getdocumentargument{bodyfont}]
+  [dejavu,11pt,tt,\getdocumentargument{bodyfont}] % dejavu is more complete
 
 \setuptyping
   [lines=yes]
@@ -70,16 +78,22 @@
     }
 
     local pattern = document.arguments.pattern
+    local scite   = document.arguments.scite
 
     if pattern then
         document.files = dir.glob(pattern)
+    end
+
+    if scite then
+        context.usemodule { "scite" }
     end
 
     if #document.files > 0 then
         if document.arguments.sort then
             table.sort(document.files)
         end
-        for _, filename in ipairs(document.files) do
+        for i=1,#document.files do
+            local filename = document.files[i]
             if not string.find(filename,"^mtx%-context%-") then
                 local pretty = document.arguments.pretty
                 if pretty == true then
@@ -94,19 +108,24 @@
                     { function() context.detokenize(pattern and filename or file.basename(filename)) return true end },
                     { function() context.pagenumber() return true end }
                 )
-                if pretty then
+                if scite then
+                    context.scitefile { filename } -- here { }
+                elseif pretty then
                     if type(pretty) ~= "string" or pretty == "" then
                         context.setuptyping { option = "color" }
                     else
                         context.setuptyping { option = types[pretty] or pretty }
                     end
+                    context.typefile(filename)
+                else
+                    context.typefile(filename)
                 end
-                context.typefile(filename)
             end
         end
     else
         context("no files given")
     end
+
 \stopluacode
 
 \stoptext

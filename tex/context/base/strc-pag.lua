@@ -25,6 +25,7 @@ local counterdata         = counters.data
 local variables           = interfaces.variables
 local context             = context
 local commands            = commands
+local implement           = interfaces.implement
 
 local processors          = typesetters.processors
 local applyprocessor      = processors.apply
@@ -34,34 +35,42 @@ local stopapplyprocessor  = processors.stopapply
 local texsetcount         = tex.setcount
 local texgetcount         = tex.getcount
 
+local ctx_convertnumber   = context.convertnumber
+
 -- storage
 
 local collected, tobesaved = allocate(), allocate()
 
 pages.collected = collected
 pages.tobesaved = tobesaved
+pages.nofpages  = 0
 
 local function initializer()
     collected = pages.collected
     tobesaved = pages.tobesaved
+    pages.nofpages = #collected
 end
 
 job.register('structures.pages.collected', tobesaved, initializer)
 
 local specification = { } -- to be checked
 
-function pages.save(prefixdata,numberdata)
+function pages.save(prefixdata,numberdata,extradata)
     local realpage = texgetcount("realpageno")
     local userpage = texgetcount("userpageno")
     if realpage > 0 then
         if trace_pages then
             report_pages("saving page %s.%s",realpage,userpage)
         end
+        local viewerprefix = extradata.viewerprefix
+        local state = extradata.state
         local data = {
-            number     = userpage,
-            block      = sections.currentblock(),
-            prefixdata = prefixdata and helpers.simplify(prefixdata),
-            numberdata = numberdata and helpers.simplify(numberdata),
+            number       = userpage,
+            viewerprefix = viewerprefix ~= "" and viewerprefix or nil,
+            state        = state ~= "" and state or nil, -- maybe let "start" be default
+            block        = sections.currentblock(),
+            prefixdata   = prefixdata and helpers.simplify(prefixdata),
+            numberdata   = numberdata and helpers.simplify(numberdata),
         }
         tobesaved[realpage] = data
         if not collected[realpage] then
@@ -97,11 +106,11 @@ function counters.specials.userpage()
     end
 end
 
-local f_convert = string.formatters["\\convertnumber{%s}{%s}"]
-
-local function convertnumber(str,n)
-    return f_convert(str or "numbers",n)
-end
+-- local f_convert = string.formatters["\\convertnumber{%s}{%s}"]
+--
+-- local function convertnumber(str,n)
+--     return f_convert(str or "numbers",n)
+-- end
 
 function pages.number(realdata,pagespec)
     local userpage, block = realdata.number, realdata.block or "" -- sections.currentblock()
@@ -114,12 +123,12 @@ function pages.number(realdata,pagespec)
         applyprocessor(starter)
     end
     if conversion ~= "" then
-        context.convertnumber(conversion,userpage)
+        ctx_convertnumber(conversion,userpage)
     else
         if conversionset == "" then conversionset = "default" end
         local theconversion = sets.get("structure:conversions",block,conversionset,1,"numbers") -- to be checked: 1
         local data = startapplyprocessor(theconversion)
-        context.convertnumber(data or "number",userpage)
+        ctx_convertnumber(data or "number",userpage)
         stopapplyprocessor()
     end
     if stopper ~= "" then
@@ -263,6 +272,24 @@ function pages.is_odd(n)
     end
 end
 
+function pages.on_right(n)
+    local pagemode = texgetcount("pageduplexmode")
+    if pagemode == 2 or pagemode == 1 then
+        n = n or texgetcount("realpageno")
+        if texgetcount("pagenoshift") % 2 == 0 then
+            return n % 2 == 0
+        else
+            return n % 2 ~= 0
+        end
+    else
+        return true
+    end
+end
+
+function pages.in_body(n)
+    return texgetcount("pagebodymode") > 0
+end
+
 -- move to strc-pag.lua
 
 function counters.analyze(name,counterspecification)
@@ -314,3 +341,61 @@ function sections.prefixedconverted(name,prefixspec,numberspec)
         counters.converted(name,numberspec)
     end
 end
+
+--
+
+implement {
+    name      = "savepagedata",
+    actions   = pages.save,
+    arguments = {
+        {
+            { "prefix" },
+            { "separatorset" },
+            { "conversionset" },
+            { "conversion" },
+            { "set" },
+            { "segments" },
+            { "connector" },
+        },
+        {
+            { "conversionset" },
+            { "conversion" },
+            { "starter" },
+            { "stopper" },
+        },
+        {
+            { "viewerprefix" },
+            { "state" },
+        }
+    }
+}
+
+implement { -- weird place
+    name      = "prefixedconverted",
+    actions   = sections.prefixedconverted,
+    arguments = {
+        "string",
+        {
+            { "prefix" },
+            { "separatorset" },
+            { "conversionset" },
+            { "conversion" },
+            { "starter" },
+            { "stopper" },
+            { "set" },
+            { "segments" },
+            { "connector" },
+        },
+        {
+            { "order" },
+            { "separatorset" },
+            { "conversionset" },
+            { "conversion" },
+            { "starter" },
+            { "stopper" },
+            { "segments" },
+            { "type" },
+            { "criterium" },
+        }
+    }
+}

@@ -9,8 +9,9 @@ if not modules then modules = { } end modules ['typo-itc'] = {
 local utfchar = utf.char
 
 local trace_italics       = false  trackers.register("typesetters.italics", function(v) trace_italics = v end)
-
 local report_italics      = logs.reporter("nodes","italics")
+
+local threshold           = 0.5   trackers.register("typesetters.threshold", function(v) threshold = v == true and 0.5 or tonumber(v) end)
 
 typesetters.italics       = typesetters.italics or { }
 local italics             = typesetters.italics
@@ -24,21 +25,41 @@ local math_code           = nodecodes.math
 
 local tasks               = nodes.tasks
 
-local insert_node_after   = node.insert_after
-local delete_node         = nodes.delete
-local end_of_math         = node.end_of_math
+local nuts                = nodes.nuts
+local nodepool            = nuts.pool
+
+local tonode              = nuts.tonode
+local tonut               = nuts.tonut
+
+local getfield            = nuts.getfield
+local getprev             = nuts.getprev
+local getnext             = nuts.getnext
+local getid               = nuts.getid
+local getfont             = nuts.getfont
+local getchar             = nuts.getchar
+local getattr             = nuts.getattr
+local setattr             = nuts.setattr
+local setfield            = nuts.setfield
+
+local insert_node_after   = nuts.insert_after
+local delete_node         = nuts.delete
+local end_of_math         = nuts.end_of_math
+local find_tail           = nuts.tail
 
 local texgetattribute     = tex.getattribute
 local texsetattribute     = tex.setattribute
 local a_italics           = attributes.private("italics")
 local unsetvalue          = attributes.unsetvalue
 
-local new_correction_kern = nodes.pool.fontkern
-local new_correction_glue = nodes.pool.glue
+local new_correction_kern = nodepool.fontkern
+local new_correction_glue = nodepool.glue
 
 local fonthashes          = fonts.hashes
 local fontdata            = fonthashes.identifiers
 local italicsdata         = fonthashes.italics
+local exheights           = fonthashes.exheights
+
+local implement           = interfaces.implement
 
 local forcedvariant       = false
 
@@ -82,105 +103,369 @@ end
 
 -- todo: clear attribute
 
+local function okay(data,current,font,prevchar,previtalic,char,what)
+    if not data then
+        if trace_italics then
+            report_italics("ignoring %p between %s italic %C and italic %C",previtalic,what,prevchar,char)
+        end
+        return false
+    end
+    if threshold then
+        local ht = getfield(current,"height")
+        local ex = exheights[font]
+        local th = threshold * ex
+        if ht <= th then
+            if trace_italics then
+                report_italics("ignoring correction between %s italic %C and regular %C, height %p less than threshold %p",prevchar,what,char,ht,th)
+            end
+            return false
+        end
+    end
+    if trace_italics then
+        report_italics("inserting %p between %s italic %C and regular %C",previtalic,what,prevchar,char)
+    end
+    return true
+end
+
+-- maybe: with_attributes(current,n) :
+--
+-- local function correction_kern(kern,n)
+--     return with_attributes(new_correction_kern(kern),n)
+-- end
+
+local function correction_kern(kern,n)
+    local k = new_correction_kern(kern)
+    if n then
+        local a = getfield(n,"attr")
+        if a then -- maybe not
+            setfield(k,"attr",a) -- can be a marked content (border case)
+        end
+    end
+    return k
+end
+
+local function correction_glue(glue,n)
+    local g = new_correction_glue(glue)
+    if n then
+        local a = getfield(n,"attr")
+        if a then -- maybe not
+            setfield(g,"attr",a) -- can be a marked content (border case)
+        end
+    end
+    return g
+end
+
 function italics.handler(head)
-    local done     = false
-    local italic   = 0
-    local lastfont = nil
-    local lastattr = nil
-    local previous = nil
-    local prevchar = nil
-    local current  = head
-    local inserted = nil
+
+    local prev            = nil
+    local prevchar        = nil
+    local prevhead        = tonut(head)
+    local previtalic      = 0
+    local previnserted    = nil
+
+    local replace         = nil
+    local replacechar     = nil
+    local replacehead     = nil
+    local replaceitalic   = 0
+    local replaceinserted = nil
+
+    local post            = nil
+    local postchar        = nil
+    local posthead        = nil
+    local postitalic      = 0
+    local postinserted    = nil
+
+    local current         = prevhead
+    local done            = false
+    local lastfont        = nil
+    local lastattr        = nil
+
     while current do
-        local id = current.id
+        local id = getid(current)
         if id == glyph_code then
-            local font = current.font
-            local char = current.char
+            local font = getfont(current)
+            local char = getchar(current)
             local data = italicsdata[font]
             if font ~= lastfont then
-                if italic ~= 0 then
-                    if data then
-                        if trace_italics then
-                            report_italics("ignoring %p between italic %C and italic %C",italic,prevchar,char)
-                        end
-                    else
-                        if trace_italics then
-                            report_italics("inserting %p between italic %C and regular %C",italic,prevchar,char)
-                        end
-                        insert_node_after(head,previous,new_correction_kern(italic))
+                if previtalic ~= 0 then
+                    if okay(data,current,font,prevchar,previtalic,char,"glyph") then
+                        insert_node_after(prevhead,prev,correction_kern(previtalic,current))
                         done = true
                     end
-                elseif inserted and data then
+                elseif previnserted and data then
                     if trace_italics then
-                        report_italics("deleting last correction before %C",char)
+                        report_italics("deleting last correction before %s %C",char,"glyph")
                     end
-                    delete_node(head,inserted)
+                    delete_node(prevhead,previnserted)
                 else
-                    -- nothing
+                    --
+                    if replaceitalic ~= 0 then
+                        if okay(data,replace,font,replacechar,replaceitalic,char,"replace") then
+                            insert_node_after(replacehead,replace,correction_kern(replaceitalic,current))
+                            done = true
+                        end
+                        replaceitalic = 0
+                    elseif replaceinserted and data then
+                        if trace_italics then
+                            report_italics("deleting last correction before %s %C","replace",char)
+                        end
+                        delete_node(replacehead,replaceinserted)
+                    end
+                    --
+                    if postitalic ~= 0 then
+                        if okay(data,post,font,postchar,postitalic,char,"post") then
+                            insert_node_after(posthead,post,correction_kern(postitalic,current))
+                            done = true
+                        end
+                        postitalic = 0
+                    elseif postinserted and data then
+                        if trace_italics then
+                            report_italics("deleting last correction before %s %C","post",char)
+                        end
+                        delete_node(posthead,postinserted)
+                    end
                 end
+                --
                 lastfont = font
             end
             if data then
-                local attr = forcedvariant or current[a_italics]
+                local attr = forcedvariant or getattr(current,a_italics)
                 if attr and attr > 0 then
                     local cd = data[char]
                     if not cd then
                         -- this really can happen
-                        italic = 0
+                        previtalic = 0
                     else
-                        italic = cd.italic or cd.italic_correction
-                        if not italic then
-                            italic = setitalicinfont(font,char) -- calculated once
-                         -- italic = 0
+                        previtalic = cd.italic or cd.italic_correction
+                        if not previtalic then
+                            previtalic = setitalicinfont(font,char) -- calculated once
+                         -- previtalic = 0
                         end
-                        if italic ~= 0 then
+                        if previtalic ~= 0 then
                             lastfont = font
                             lastattr = attr
-                            previous = current
+                            prev     = current
+                         -- prevhead = head
                             prevchar = char
                         end
                     end
                 else
-                    italic = 0
+                    previtalic = 0
                 end
             else
-                italic = 0
+                previtalic = 0
             end
-            inserted = nil
+            previnserted    = nil
+            replaceinserted = nil
+            postinserted    = nil
         elseif id == disc_code then
-            -- skip
-        elseif id == kern_code then
-            inserted = nil
-            italic = 0
-        elseif id == glue_code then
-            if italic ~= 0 then
-                if trace_italics then
-                    report_italics("inserting %p between italic %C and glue",italic,prevchar)
+            previnserted    = nil
+            previtalic      = 0
+            replaceinserted = nil
+            replaceitalic   = 0
+            postinserted    = nil
+            postitalic      = 0
+            replace = getfield(current,"replace")
+            if replace then
+                local current = find_tail(replace)
+                if getid(current) ~= glyph_code then
+                    current = getprev(current)
                 end
-                inserted = new_correction_glue(italic) -- maybe just add ? else problem with penalties
-                insert_node_after(head,previous,inserted)
-                italic = 0
-                done = true
+                if current and getid(current) == glyph_code then
+                    local font = getfont(current)
+                    local char = getchar(current)
+                    local data = italicsdata[font]
+                    if data then
+                        local attr = forcedvariant or getattr(current,a_italics)
+                        if attr and attr > 0 then
+                            local cd = data[char]
+                            if not cd then
+                                -- this really can happen
+                                replaceitalic = 0
+                            else
+                                replaceitalic = cd.italic or cd.italic_correction
+                                if not replaceitalic then
+                                    replaceitalic = setitalicinfont(font,char) -- calculated once
+                                 -- replaceitalic = 0
+                                end
+                                if replaceitalic ~= 0 then
+                                    lastfont    = font
+                                    lastattr    = attr
+                                    replacechar = char
+                                    replacehead = replace
+                                    replace     = current
+                                end
+                            end
+--                         else
+--                             replaceitalic = 0
+                        end
+--                     else
+--                         replaceitalic = 0
+                    end
+--                 else
+--                     replaceitalic = 0
+                end
+--                 replaceinserted = nil
+-- else
+--     replaceitalic   = 0
+--     replaceinserted = nil
+            end
+            post = getfield(current,"post")
+            if post then
+                local current = find_tail(post)
+                if getid(current) ~= glyph_code then
+                    current = getprev(current)
+                end
+                if current and getid(current) == glyph_code then
+                    local font = getfont(current)
+                    local char = getchar(current)
+                    local data = italicsdata[font]
+                    if data then
+                        local attr = forcedvariant or getattr(current,a_italics)
+                        if attr and attr > 0 then
+                            local cd = data[char]
+                            if not cd then
+                                -- this really can happen
+--                                 postitalic = 0
+                            else
+                                postitalic = cd.italic or cd.italic_correction
+                                if not postitalic then
+                                    postitalic = setitalicinfont(font,char) -- calculated once
+                                 -- postitalic = 0
+                                end
+                                if postitalic ~= 0 then
+                                    lastfont = font
+                                    lastattr = attr
+                                    postchar = char
+                                    posthead = post
+                                    post     = current
+                                end
+                            end
+--                         else
+--                             postitalic = 0
+                        end
+--                     else
+--                         postitalic = 0
+                    end
+--                 else
+--                     postitalic = 0
+                end
+--                 postinserted = nil
+-- else
+--     postitalic   = 0
+--     postinserted = nil
+            end
+        elseif id == kern_code then -- how about fontkern ?
+            previnserted    = nil
+            previtalic      = 0
+            replaceinserted = nil
+            replaceitalic   = 0
+            postinserted    = nil
+            postitalic      = 0
+        elseif id == glue_code then
+            if previtalic ~= 0 then
+                if trace_italics then
+                    report_italics("inserting %p between %s italic %C and glue",previtalic,"glyph",prevchar)
+                end
+                previnserted = correction_glue(previtalic,current) -- maybe just add ? else problem with penalties
+                previtalic   = 0
+                done         = true
+                insert_node_after(prevhead,prev,previnserted)
+            else
+                if replaceitalic ~= 0 then
+                    if trace_italics then
+                        report_italics("inserting %p between %s italic %C and glue",replaceitalic,"replace",replacechar)
+                    end
+                    replaceinserted = correction_kern(replaceitalic,current) -- needs to be a kern
+                    replaceitalic   = 0
+                    done            = true
+                    insert_node_after(replacehead,replace,replaceinserted)
+                end
+                if postitalic ~= 0 then
+                    if trace_italics then
+                        report_italics("inserting %p between %s italic %C and glue",postitalic,"post",postchar)
+                    end
+                    postinserted = correction_kern(postitalic,current) -- needs to be a kern
+                    postitalic   = 0
+                    done         = true
+                    insert_node_after(posthead,post,postinserted)
+                end
             end
         elseif id == math_code then
             current = end_of_math(current)
-        elseif italic ~= 0 then
-            if trace_italics then
-                report_italics("inserting %p between italic %C and whatever",italic,prevchar)
+            previnserted    = nil
+            previtalic      = 0
+            replaceinserted = nil
+            replaceitalic   = 0
+            postinserted    = nil
+            postitalic      = 0
+        else
+            if previtalic ~= 0 then
+                if trace_italics then
+                    report_italics("inserting %p between %s italic %C and whatever",previtalic,"glyph",prevchar)
+                end
+                insert_node_after(prevhead,prev,correction_kern(previtalic,current))
+                previnserted    = nil
+                previtalic      = 0
+                replaceinserted = nil
+                replaceitalic   = 0
+                postinserted    = nil
+                postitalic      = 0
+                done            = true
+            else
+                if replaceitalic ~= 0 then
+                    if trace_italics then
+                        report_italics("inserting %p between %s italic %C and whatever",replaceritalic,"replace",replacechar)
+                    end
+                    insert_node_after(replacehead,replace,correction_kern(replaceitalic,current))
+                    previnserted    = nil
+                    previtalic      = 0
+                    replaceinserted = nil
+                    replaceitalic   = 0
+                    postinserted    = nil
+                    postitalic      = 0
+                    done            = true
+                end
+                if postitalic ~= 0 then
+                    if trace_italics then
+                        report_italics("inserting %p between %s italic %C and whatever",postitalic,"post",postchar)
+                    end
+                    insert_node_after(posthead,post,correction_kern(postitalic,current))
+                    previnserted    = nil
+                    previtalic      = 0
+                    replaceinserted = nil
+                    replaceitalic   = 0
+                    postinserted    = nil
+                    postitalic      = 0
+                    done            = true
+                end
             end
-            inserted = nil
-            insert_node_after(head,previous,new_correction_kern(italic))
-            italic = 0
-            done = true
         end
-        current = current.next
+        current = getnext(current)
     end
-    if italic ~= 0 and lastattr > 1 then -- more control is needed here
-        if trace_italics then
-            report_italics("inserting %p between italic %C and end of list",italic,prevchar)
+    if lastattr and lastattr > 1 then -- more control is needed here
+        if previtalic ~= 0 then
+            if trace_italics then
+                report_italics("inserting %p between %s italic %C and end of list",previtalic,"glyph",prevchar)
+            end
+            insert_node_after(prevhead,prev,correction_kern(previtalic,current))
+            done = true
+        else
+            if replaceitalic ~= 0 then
+                if trace_italics then
+                    report_italics("inserting %p between %s italic %C and end of list",replaceitalic,"replace",replacechar)
+                end
+                insert_node_after(replacehead,replace,correction_kern(replaceitalic,current))
+                done = true
+            end
+            if postitalic ~= 0 then
+                if trace_italics then
+                    report_italics("inserting %p between %s italic %C and end of list",postitalic,"post",postchar)
+                end
+                insert_node_after(posthead,post,correction_kern(postitalic,current))
+                done = true
+            end
         end
-        insert_node_after(head,previous,new_correction_kern(italic))
-        done = true
     end
     return head, done
 end
@@ -210,10 +495,21 @@ function italics.reset()
     texsetattribute(a_italics,unsetvalue)
 end
 
+implement {
+    name      = "setitaliccorrection",
+    actions   = italics.set,
+    arguments = "string"
+}
+
+implement {
+    name      = "resetitaliccorrection",
+    actions   = italics.reset,
+}
+
 local variables        = interfaces.variables
 local settings_to_hash = utilities.parsers.settings_to_hash
 
-function commands.setupitaliccorrection(option) -- no grouping !
+local function setupitaliccorrection(option) -- no grouping !
     if enable then
         enable()
     end
@@ -224,6 +520,7 @@ function commands.setupitaliccorrection(option) -- no grouping !
     elseif options[variables.always] then
         variant = 2
     end
+    -- maybe also keywords for threshold
     if options[variables.global] then
         forcedvariant = variant
         texsetattribute(a_italics,unsetvalue)
@@ -236,16 +533,28 @@ function commands.setupitaliccorrection(option) -- no grouping !
     end
 end
 
+implement {
+    name      = "setupitaliccorrection",
+    actions   = setupitaliccorrection,
+    arguments = "string"
+}
+
 -- for manuals:
 
 local stack = { }
 
-function commands.pushitaliccorrection()
-    table.insert(stack,{forcedvariant, texgetattribute(a_italics) })
-end
+implement {
+    name    = "pushitaliccorrection",
+    actions = function()
+        table.insert(stack,{forcedvariant, texgetattribute(a_italics) })
+    end
+}
 
-function commands.popitaliccorrection()
-    local top = table.remove(stack)
-    forcedvariant = top[1]
-    texsetattribute(a_italics,top[2])
-end
+implement {
+    name    = "popitaliccorrection",
+    actions = function()
+        local top = table.remove(stack)
+        forcedvariant = top[1]
+        texsetattribute(a_italics,top[2])
+    end
+}

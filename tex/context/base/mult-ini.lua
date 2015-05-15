@@ -12,6 +12,7 @@ local serialize = table.serialize
 
 local context             = context
 local commands            = commands
+local implement           = interfaces.implement
 
 local allocate            = utilities.storage.allocate
 local mark                = utilities.storage.mark
@@ -240,8 +241,16 @@ function interfaces.setuserinterface(interface,response)
         end
         report_interface("definitions: %a constants, %a variables, %a elements, %a commands, %a formats, %a translations",
             nofconstants,nofvariables,nofelements,nofcommands,nofformats,noftranslations)
+    else
+        report_interface("the language(s) can only be set when making the format")
     end
 end
+
+interfaces.implement {
+    name      = "setuserinterface",
+    actions   = interfaces.setuserinterface,
+    arguments = { "string", "string" }
+}
 
 interfaces.cachedsetups = interfaces.cachedsetups or { }
 interfaces.hashedsetups = interfaces.hashedsetups or { }
@@ -265,9 +274,15 @@ function interfaces.cachesetup(t)
     end
 end
 
-function interfaces.is_command(str)
-    return (str and str ~= "" and token.csname_name(token.create(str)) ~= "") or false -- there will be a proper function for this
-end
+-- if token.lookup then
+--     interfaces.is_command = token.lookup
+-- else
+
+    function interfaces.is_command(str)
+        return (str and str ~= "" and token.csname_name(token.create(str)) ~= "") or false -- there will be a proper function for this
+    end
+
+-- end
 
 function interfaces.interfacedcommand(name)
     local command = complete.commands[name]
@@ -276,40 +291,55 @@ end
 
 -- interface
 
-function commands.writestatus(category,message,...)
-    local r = reporters[category]
-    if r then
-        r(message,...)
-    end
+function interfaces.writestatus(category,message)
+    reporters[category](message) -- could also be a setmetatablecall
 end
 
-commands.registernamespace    = interfaces.registernamespace
-commands.setinterfaceconstant = interfaces.setconstant
-commands.setinterfacevariable = interfaces.setvariable
-commands.setinterfaceelement  = interfaces.setelement
-commands.setinterfacemessage  = interfaces.setmessage
-commands.setinterfacemessages = interfaces.setmessages
-commands.showmessage          = interfaces.showmessage
+implement { name = "registernamespace",    actions = interfaces.registernamespace, arguments = { "integer", "string" } }
+implement { name = "setinterfaceconstant", actions = interfaces.setconstant,       arguments = { "string", "string" } }
+implement { name = "setinterfacevariable", actions = interfaces.setvariable,       arguments = { "string", "string" } }
+implement { name = "setinterfaceelement",  actions = interfaces.setelement,        arguments = { "string", "string" } }
+implement { name = "setinterfacemessage",  actions = interfaces.setmessage,        arguments = { "string", "string", "string" } }
+implement { name = "setinterfacemessages", actions = interfaces.setmessages,       arguments = { "string", "string" } }
+implement { name = "showmessage",          actions = interfaces.showmessage,       arguments = { "string", "string", "string" } }
 
-function commands.doifelsemessage(category,tag)
-    commands.doifelse(interfaces.doifelsemessage(category,tag))
-end
+implement {
+    name      = "doifelsemessage",
+    actions   = { interfaces.doifelsemessage, commands.doifelse },
+    arguments = { "string", "string" },
+}
 
-function commands.getmessage(category,tag,default)
-    context(interfaces.getmessage(category,tag,default))
-end
+implement {
+    name      = "getmessage",
+    actions   = { interfaces.getmessage, context },
+    arguments = { "string", "string", "string" },
+}
 
-function commands.showassignerror(namespace,key,value,line)
-    local ns, instance = match(namespace,"^(%d+)[^%a]+(%a+)")
+implement {
+    name      = "writestatus",
+    overload  = true,
+    actions   = interfaces.writestatus,
+    arguments = { "string", "string" },
+}
+
+local function showassignerror(namespace,key,line)
+    local ns, instance = match(namespace,"^(%d+)[^%a]+(%a*)")
     if ns then
         namespace = corenamespaces[tonumber(ns)] or ns
     end
-    if instance then
+    -- injected in the stream for timing:
+    if instance and instance ~= "" then
         context.writestatus("setup",formatters["error in line %a, namespace %a, instance %a, key %a"](line,namespace,instance,key))
     else
         context.writestatus("setup",formatters["error in line %a, namespace %a, key %a"](line,namespace,key))
     end
 end
+
+implement {
+    name      = "showassignerror",
+    actions   = showassignerror,
+    arguments = { "string", "string", "integer" },
+}
 
 -- a simple helper
 

@@ -181,6 +181,11 @@ data.labels={
     sk="cotg",
    },
   },
+  diff={
+   labels={
+    en="d",
+   },
+  },
   deg={
    labels={
     cz="deg",
@@ -415,6 +420,27 @@ data.labels={
   },
  },
  texts={
+  ["year"]={
+   labels={
+    en="year",
+    nl="jaar",
+    kr="년",
+   },
+  },
+  ["month"]={
+   labels={
+    en="month",
+    nl="maand",
+    kr="월",
+   },
+  },
+  ["day"]={
+   labels={
+    en="day",
+    nl="dag",
+    kr="일",
+   },
+  },
   ["and"]={
    labels={
     af="",
@@ -506,7 +532,7 @@ data.labels={
     hu="április",
     it="aprile",
     ja="4",
-    kr="4월",
+    kr="4",
     la="Aprilis",
     lt="balandžio",
     nb="april",
@@ -613,7 +639,7 @@ data.labels={
     hu="augusztus",
     it="agosto",
     ja="8",
-    kr="8월",
+    kr="8",
     la="Augustus",
     lt="rugpjūčio",
     nb="august",
@@ -681,7 +707,7 @@ data.labels={
     fr="Chapitre ",
     gr="Κεφάλαιο",
     hr="Poglavlje ",
-    hu=",. fejezet:",
+    hu={""," fejezet"},
     it="",
     ja={"第","章"},
     kr={"제","장"},
@@ -756,7 +782,7 @@ data.labels={
     hu="december",
     it="dicembre",
     ja="12",
-    kr="12월",
+    kr="12",
     la="December",
     lt="gruodžio",
     nb="desember",
@@ -828,7 +854,7 @@ data.labels={
     hu="február",
     it="febbraio",
     ja="2",
-    kr="2월",
+    kr="2",
     la="Februarius",
     lt="vasario",
     nb="februar",
@@ -895,12 +921,12 @@ data.labels={
     fr="Figure ",
     gr="Σχήμα",
     hr="Slika ",
-    hu=",. ábra:",
+    hu={""," ábra"},
     it="Fig. ",
     ja="図",
-    kr="그림",
+    kr="그림 ",
     la="Imago ",
-    lt=", pav.",
+    lt={""," pav."},
     nb="Figur ",
     nl="Figuur ",
     nn="Figur ",
@@ -969,7 +995,7 @@ data.labels={
     fr="Illustration ",
     gr="Γραφικό",
     hr="Slika ",
-    hu=",. kép:",
+    hu={""," kép"},
     it="Grafico ",
     ja="イラスト",
     la="Typus ",
@@ -988,6 +1014,18 @@ data.labels={
     tr="Grafik",
     ua="График ",
     vi="Đồ thị",
+   },
+  },
+  precedingpage={
+   labels={
+    en="on a preceding page",
+    nl="op een voorgaande bladzijde",
+   },
+  },
+  followingpage={
+   labels={
+    en="on a following page",
+    nl="op een volgende bladzijde",
    },
   },
   hencefore={
@@ -1041,6 +1079,7 @@ data.labels={
     hr="vidi ispod",
     hu="lásd lejjebb",
     it="come mostrato sotto",
+    kr="이후로",
     la="",
     lt="kaip parodyta žemiau",
     nb="som vist under",
@@ -1074,7 +1113,7 @@ data.labels={
     fr="Intermède ",
     gr="Παύση",
     hr="Intermeco ",
-    hu=",. intermezzo:",
+    hu={""," intermezzo"},
     it="Intermezzo ",
     ja="間奏曲",
     kr="간주곡",
@@ -1116,7 +1155,7 @@ data.labels={
     hu="január",
     it="gennaio",
     ja="1",
-    kr="1월",
+    kr="1",
     la="Ianuarius",
     lt="sausio",
     nb="januar",
@@ -1189,7 +1228,7 @@ data.labels={
     hu="július",
     it="luglio",
     ja="7",
-    kr="7월",
+    kr="7",
     la="Iulius",
     lt="liepos",
     nb="juli",
@@ -1261,7 +1300,7 @@ data.labels={
     hu="június",
     it="giugno",
     ja="6",
-    kr="6월",
+    kr="6",
     la="Iunius",
     lt="birželio",
     nb="juni",
@@ -1328,7 +1367,7 @@ data.labels={
     fr="ligne ",
     gr="Γραμμή",
     hr="redak ",
-    hu=",. sor:",
+    hu={""," sor"},
     it="riga ",
     ja="線",
     kr="행",
@@ -1406,7 +1445,7 @@ data.labels={
     hu="március",
     it="marzo",
     ja="3",
-    kr="3월",
+    kr="3",
     la="Martius",
     lt="kovo",
     nb="mars",
@@ -1479,7 +1518,7 @@ data.labels={
     hu="május",
     it="maggio",
     ja="5",
-    kr="5월",
+    kr="5",
     la="Maius",
     lt="gegužės",
     nb="mai",
@@ -1588,7 +1627,7 @@ data.labels={
     hu="november",
     it="novembre",
     ja="11",
-    kr="11월",
+    kr="11",
     la="November",
     lt="lapkričio",
     nb="november",
@@ -1659,7 +1698,7 @@ data.labels={
     hu="október",
     it="ottobre",
     ja="10",
-    kr="10월",
+    kr="10",
     la="October",
     lt="spalio",
     nb="oktober",
@@ -1761,12 +1800,12 @@ data.labels={
     fr="Partie ",
     gr="Μέρος",
     hr="Dio ",
-    hu=",. rész:",
+    hu={""," rész"},
     it="Parte ",
     ja={"第","パート"},
     kr={"제","부"},
     la="Pars ",
-    lt=", dalis",
+    lt={""," dalis"},
     nb="Del",
     nl="Deel ",
     nn="Del",
@@ -1913,7 +1952,7 @@ data.labels={
     hu="szeptember",
     it="settembre",
     ja="9",
-    kr="9월",
+    kr="9",
     la="September",
     lt="rugsėjo",
     nb="september",
@@ -2128,12 +2167,12 @@ data.labels={
     fr="Tableau ",
     gr="Πίνακας",
     hr="Tablica ",
-    hu=",. táblázat:",
+    hu={""," táblázat"},
     it="Tabella ",
     ja="表",
-    kr="표",
+    kr="표 ",
     la="Tabula ",
-    lt=", lentelė.",
+    lt={""," lentelė."},
     nb="Tabell ",
     nl="Tabel ",
     nn="Tabell ",
@@ -2355,7 +2394,7 @@ data.labels={
     hu="Ábrák",
     it="Figure",
     ja="図",
-    kr="그림",
+    kr="그림 ",
     la="Imagines",
     lt="Iliustracijos",
     nb="Figurer",
@@ -2392,7 +2431,7 @@ data.labels={
     hu="Grafikák",
     it="Grafici",
     ja="グラフ",
-    kr="그래픽",
+    kr="그래픽 ",
     la="Typi",
     lt="Graphics",
     nb="Bilde",
@@ -2429,7 +2468,7 @@ data.labels={
     hu="Index",
     it="Indice",
     ja="目次",
-    kr="색인",
+    kr="찾아보기",
     la="Indices",
     lt="Rodyklė",
     nb="Register",
@@ -2537,6 +2576,7 @@ data.labels={
     hr="Literatura",
     hu="Bibliográfia",
     it="Bibliografia",
+    kr="참고문헌",
     la="",
     lt="Literatūra",
     nb="",
@@ -2573,7 +2613,7 @@ data.labels={
     hu="Táblázatok",
     it="Tabelle",
     ja="机",
-    kr="표",
+    kr="표 ",
     la="Tabulae",
     lt="Lentelės",
     nb="Tabeller",
@@ -2630,4 +2670,135 @@ data.labels={
    },
   },
  },
+ btx = {
+  ["mastersthesis"] = {
+   labels = {
+    en = "Master's thesis",
+    fr = "Thèse de master (DEA, DESS, master)",
+    de = "Masterarbeit",
+   },
+  },
+  ["phdthesis"] = {
+   labels = {
+    en = "PhD thesis",
+    fr = "Thèse de doctorat",
+    de = "Dissertation",
+   },
+  },
+  ["technicalreport"] = {
+   labels = {
+    en = "Technical report",
+    fr = "Rapport technique",
+    de = "Technischer Bericht",
+   },
+  },
+  --
+  ["editor"] = {
+   labels = {
+    en = "editor",
+    fr = "éditeur",
+    de = "Herausgeber",
+   },
+  },
+  ["editors"] = {
+   labels = {
+    en = "editors",
+    fr = "éditeurs",
+    de = "Herausgeber",
+   },
+  },
+  ["edition"] = {
+   labels = {
+    en = "edition",
+    fr = "édition",
+    de = "Auflage",
+   },
+  },
+  --
+  ["volume"] = {
+   labels = {
+    en = "volume",
+    de = "Band",
+   },
+  },
+  ["Volume"] = {
+   labels = {
+    en = "Volume",
+    de = "Band",
+   },
+  },
+  ["number"] = {
+   labels = {
+    en = "number",
+    fr = "numéro",
+    de = "Numer",
+   },
+  },
+  ["Number"] = {
+   labels = {
+    en = "Number",
+    fr = "Numéro",
+    de = "Numer",
+   },
+  },
+  ["in"] = {
+   labels = {
+    en = "in",
+    fr = "dans",
+    de = "in",
+   },
+  },
+  ["of"] = {
+   labels = {
+    en = "of",
+    fr = "de",
+    de = "von",
+   },
+  },
+  --
+  ["In"] = {
+   labels = {
+    en = "In",
+    fr = "Dans",
+    de = "In",
+   },
+  },
+  --
+  ["p"] = {
+   labels = {
+    en = "p",
+    de = "S",
+   },
+  },
+  ["pp"] = {
+   labels = {
+    en = "pp",
+    de = "S",
+   },
+  },
+  ["pages"] = {
+   labels = {
+    en = "pages",
+    de = "Seiten",
+   },
+  },
+  --
+  ["and"] = {
+   labels = {
+    en = "and",
+    de = "und",
+   },
+  },
+  ["others"] = {
+   labels = {
+    en = "et al.",
+   },
+  },
+ }
 }
+
+local functions = data.labels.functions
+
+functions.asin = functions.arcsin
+functions.acos = functions.arccos
+functions.atan = functions.arctan

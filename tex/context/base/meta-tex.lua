@@ -6,11 +6,14 @@ if not modules then modules = { } end modules ['meta-tex'] = {
     license   = "see context related readme files"
 }
 
+local tostring = tostring
 local format, gsub, find, match = string.format, string.gsub, string.find, string.match
 local formatters = string.formatters
 local P, S, R, C, Cs, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cs, lpeg.match
 
 metapost = metapost or { }
+
+local implement = interfaces.implement
 
 -- local left     = P("[")
 -- local right    = P("]")
@@ -38,6 +41,12 @@ local pattern = Cs((P([[\"]]) + P([["]])/"\\quotedbl{}" + P(1))^0) -- or \char
 function metapost.escaped(str)
     context(lpegmatch(pattern,str))
 end
+
+implement {
+    name      = "metapostescaped",
+    actions   = metapost.escaped,
+    arguments = "string"
+}
 
 local simplify = true
 
@@ -108,10 +117,6 @@ local enumber = number * S("eE") * number
 
 local cleaner = Cs((P("@@")/"@" + P("@")/"%%" + P(1))^0)
 
-function format_n(fmt,...)
-    return
-end
-
 context = context or { exponent = function(...) print(...) end }
 
 function metapost.format_string(fmt,...)
@@ -142,6 +147,9 @@ function metapost.nvformat(fmt,str)
     metapost.format_number(fmt,metapost.untagvariable(str,false))
 end
 
+implement { name =  "metapostformatted",   actions = metapost.svformat, arguments = { "string", "string" } }
+implement { name =  "metapostgraphformat", actions = metapost.nvformat, arguments = { "string", "string" } }
+
 -- local function test(fmt,n)
 --     logs.report("mp format test","fmt: %s, n: %s, result: %s, \\exponent{%s}{%s}",fmt,n,
 --         formatters[lpegmatch(cleaner,fmt)](n),
@@ -167,3 +175,34 @@ end
 -- test("@j","1.2e+102")
 -- test("@j","1.23e+102")
 -- test("@j","1.234e+102")
+
+local f_textext = formatters[ [[textext("%s")]] ]
+local f_mthtext = formatters[ [[textext("\mathematics{%s}")]] ]
+local f_exptext = formatters[ [[textext("\mathematics{%s\times10^{%s}}")]] ]
+
+local mpprint   = mp.print
+
+function mp.format(fmt,str)
+    fmt = lpegmatch(cleaner,fmt)
+    mpprint(f_textext(formatters[fmt](metapost.untagvariable(str,false))))
+end
+
+function mp.formatted(fmt,num) -- svformat
+    fmt = lpegmatch(cleaner,fmt)
+    mpprint(f_textext(formatters[fmt](tonumber(num) or num)))
+end
+
+function mp.graphformat(fmt,num) -- nvformat
+    fmt = lpegmatch(cleaner,fmt)
+    local number = tonumber(num)
+    if number then
+        local base, exponent = lpegmatch(enumber,number)
+        if base and exponent then
+            mpprint(f_exptext(base,exponent))
+        else
+            mpprint(f_mthtext(num))
+        end
+    else
+        mpprint(f_textext(tostring(num)))
+    end
+end

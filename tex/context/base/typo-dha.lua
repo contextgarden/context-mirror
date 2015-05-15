@@ -49,13 +49,30 @@ local trace_directions   = false  trackers.register("typesetters.directions.defa
 
 local report_directions  = logs.reporter("typesetting","text directions")
 
+local nuts               = nodes.nuts
+local tonut              = nuts.tonut
+local tonode             = nuts.tonode
+local nutstring          = nuts.tostring
 
-local insert_node_before = nodes.insert_before
-local insert_node_after  = nodes.insert_after
-local remove_node        = nodes.remove
-local end_of_math        = nodes.end_of_math
+local getnext            = nuts.getnext
+local getprev            = nuts.getprev
+local getfont            = nuts.getfont
+local getchar            = nuts.getchar
+local getid              = nuts.getid
+local getsubtype         = nuts.getsubtype
+local getlist            = nuts.getlist
+local getfield           = nuts.getfield
+local setfield           = nuts.setfield
+local getattr            = nuts.getattr
+local getprop            = nuts.getprop
+local setprop            = nuts.setprop
 
-local nodepool           = nodes.pool
+local insert_node_before = nuts.insert_before
+local insert_node_after  = nuts.insert_after
+local remove_node        = nuts.remove
+local end_of_math        = nuts.end_of_math
+
+local nodepool           = nuts.pool
 
 local nodecodes          = nodes.nodecodes
 local whatcodes          = nodes.whatcodes
@@ -108,7 +125,7 @@ end
 
 local function process(start)
 
-    local head     = start
+    local head     = tonut(start) -- we have a global head
 
     local current  = head
     local inserted = nil
@@ -167,9 +184,9 @@ local function process(start)
             finidir  = finish
         end
         if embedded <= 0 then
-            finish, autodir, done = "TRT", -1
+            finish, autodir = "TRT", -1
         else
-            finish, autodir, done = "TLT",  1
+            finish, autodir = "TLT",  1
         end
         done = true
         if finidir == finish then
@@ -180,31 +197,31 @@ local function process(start)
     end
 
     local function nextisright(current)
-        current = current.next
-        local id = current.id
+        current = getnext(current)
+        local id = getid(current)
         if id == glyph_code then
-            local character = current.char
+            local character = getchar(current)
             local direction = chardirections[character]
             return direction == "r" or direction == "al" or direction == "an"
         end
     end
 
     local function previsright(current)
-        current = current.prev
-        local id = current.id
+        current = getprev(current)
+        local id = getid(current)
         if id == glyph_code then
-            local char = current.char
+            local character = getchar(current)
             local direction = chardirections[character]
             return direction == "r" or direction == "al" or direction == "an"
         end
     end
 
     while current do
-        local id = current.id
+        local id = getid(current)
         if id == math_code then
-            current = end_of_math(current.next).next
+            current = getnext(end_of_math(getnext(current)))
         else
-            local attr = current[a_directions]
+            local attr = getattr(current,a_directions)
             if attr and attr > 0 and attr ~= prevattr then
                 if not getglobal(a) then
                     lro, rlo = false, false
@@ -213,7 +230,7 @@ local function process(start)
             end
             if id == glyph_code then
                 if attr and attr > 0 then
-                    local character = current.char
+                    local character = getchar(current)
                     local direction = chardirections[character]
                     local reversed  = false
                     if rlo or override > 0 then
@@ -223,24 +240,24 @@ local function process(start)
                         end
                     elseif lro or override < 0 then
                         if direction == "r" or direction == "al" then
-                            current[a_state] = s_isol
+                            setprop(current,a_state,s_isol)
                             direction = "l"
                             reversed = true
                         end
                     end
                     if direction == "on" then
                         local mirror = charmirrors[character]
-                        if mirror and fontchar[current.font][mirror] then
+                        if mirror and fontchar[getfont(current)][mirror] then
                             local class = charclasses[character]
                             if class == "open" then
                                 if nextisright(current) then
                                     if autodir >= 0 then
                                         force_auto_right_before(direction)
                                     end
-                                    current.char = mirror
+                                    setfield(current,"char",mirror)
                                     done = true
                                 elseif autodir < 0 then
-                                    current.char = mirror
+                                    setfield(current,"char",mirror)
                                     done = true
                                 else
                                     mirror = false
@@ -251,14 +268,14 @@ local function process(start)
                                 local fencedir = fences[#fences]
                                 fences[#fences] = nil
                                 if fencedir < 0 then
-                                    current.char = mirror
+                                    setfield(current,"char",mirror)
                                     done = true
                                     force_auto_right_before(direction)
                                 else
                                     mirror = false
                                 end
                             elseif autodir < 0 then
-                                current.char = mirror
+                                setfield(current,"char",mirror)
                                 done = true
                             else
                                 mirror = false
@@ -329,16 +346,16 @@ local function process(start)
                             top = top - 1
                         end
                         obsolete[#obsolete+1] = current
-                    else
+                    elseif trace_directions then
                         setcolor(current)
                     end
                 else
                     -- we do nothing
                 end
             elseif id == whatsit_code then
-                local subtype = current.subtype
+                local subtype = getsubtype(current)
                 if subtype == localpar_code then
-                    local dir = current.dir
+                    local dir = getfield(current,"dir")
                     if dir == 'TRT' then
                         autodir = -1
                     elseif dir == 'TLT' then
@@ -351,7 +368,7 @@ local function process(start)
                     if finish then
                         finish_auto_before()
                     end
-                    local dir = current.dir
+                    local dir = getfield(current,"dir")
                     if dir == "+TRT" then
                         finish, autodir = "TRT", -1
                     elseif dir == "-TRT" then
@@ -370,7 +387,7 @@ local function process(start)
             elseif finish then
                 finish_auto_before()
             end
-            local cn = current.next
+            local cn = getnext(current)
             if cn then
                 -- we're okay
             elseif finish then
@@ -390,7 +407,7 @@ local function process(start)
         end
     end
 
-    return head, done
+    return tonode(head), done
 
 end
 

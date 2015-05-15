@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['font-otp'] = {
 -- todo: pack math (but not that much to share)
 --
 -- pitfall 5.2: hashed tables can suddenly become indexed with nil slots
+--
+-- unless we sort all hashes we can get a different pack order (no big deal but size can differ)
 
 local next, type = next, type
 local sort, concat = table.sort, table.concat
@@ -139,6 +141,11 @@ end
 --     print(b)
 --     return b
 -- end
+
+-- beware: we cannot unpack and repack the same table because then sharing
+-- interferes (we could catch this if needed) .. so for now: save, reload
+-- and repack in such cases (never needed anyway) .. a tricky aspect is that
+-- we then need to sort more thanks to random hashing
 
 local function packdata(data)
     if data then
@@ -406,6 +413,14 @@ local function packdata(data)
                         for script, feature in next, features do
                             features[script] = pack_normal(feature)
                         end
+                    end
+                    local order = sequence.order
+                    if order then
+                        sequence.order = pack_indexed(order)
+                    end
+                    local markclass = sequence.markclass
+                    if markclass then
+                        sequence.markclass = pack_boolean(markclass)
                     end
                 end
             end
@@ -742,27 +757,28 @@ local function unpackdata(data)
                                     rule.replacements = tv
                                 end
                             end
-                            local fore = rule.fore
-                            if fore then
-                                local tv = tables[fore]
-                                if tv then
-                                    rule.fore = tv
-                                end
-                            end
-                            local back = rule.back
-                            if back then
-                                local tv = tables[back]
-                                if tv then
-                                    rule.back = tv
-                                end
-                            end
-                            local names = rule.names
-                            if names then
-                                local tv = tables[names]
-                                if tv then
-                                    rule.names = tv
-                                end
-                            end
+                         -- local fore = rule.fore
+                         -- if fore then
+                         --     local tv = tables[fore]
+                         --     if tv then
+                         --         rule.fore = tv
+                         --     end
+                         -- end
+                         -- local back = rule.back
+                         -- if back then
+                         --     local tv = tables[back]
+                         --     if tv then
+                         --         rule.back = tv
+                         --     end
+                         -- end
+                         -- local names = rule.names
+                         -- if names then
+                         --     local tv = tables[names]
+                         --     if tv then
+                         --         rule.names = tv
+                         --     end
+                         -- end
+                            --
                             local lookups = rule.lookups
                             if lookups then
                                 local tv = tables[lookups]
@@ -825,6 +841,20 @@ local function unpackdata(data)
                             end
                         end
                     end
+                    local order = feature.order
+                    if order then
+                        local tv = tables[order]
+                        if tv then
+                            feature.order = tv
+                        end
+                    end
+                    local markclass = feature.markclass
+                    if markclass then
+                        local tv = tables[markclass]
+                        if tv then
+                            feature.markclass = tv
+                        end
+                    end
                 end
             end
             local lookups = resources.lookups
@@ -875,3 +905,4 @@ if otf.enhancers.register then
 end
 
 otf.enhancers.unpack = unpackdata -- used elsewhere
+otf.enhancers.pack   = packdata   -- used elsewhere

@@ -10,23 +10,37 @@ if not modules then modules = { } end modules ['strc-mar'] = {
 -- todo: only commands.* print to tex, native marks return values
 
 local insert, concat = table.insert, table.concat
-local tostring, next, rawget = tostring, next, rawget
+local tostring, next, rawget, type = tostring, next, rawget, type
 local lpegmatch = lpeg.match
 
 local context            = context
 local commands           = commands
 
+local implement          = interfaces.implement
+
 local allocate           = utilities.storage.allocate
 local setmetatableindex  = table.setmetatableindex
 
-local traversenodes      = nodes.traverse
+local nuts               = nodes.nuts
+local tonut              = nuts.tonut
+
+local getfield           = nuts.getfield
+local setfield           = nuts.setfield
+local getnext            = nuts.getnext
+local getprev            = nuts.getprev
+local getid              = nuts.getid
+local getlist            = nuts.getlist
+local getattr            = nuts.getattr
+local getbox             = nuts.getbox
+
+local traversenodes      = nuts.traverse
+
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 
 local texsetattribute    = tex.setattribute
-local texgetbox          = tex.getbox
 
 local a_marks            = attributes.private("structure","marks")
 
@@ -106,9 +120,9 @@ end
 
 local function sweep(head,first,last)
     for n in traversenodes(head) do
-        local id = n.id
+        local id = getid(n)
         if id == glyph_code then
-            local a = n[a_marks]
+            local a = getattr(n,a_marks)
             if not a then
                 -- next
             elseif first == 0 then
@@ -118,7 +132,7 @@ local function sweep(head,first,last)
             end
         elseif id == hlist_code or id == vlist_code then
             if boxes_too then
-                local a = n[a_marks]
+                local a = getattr(n,a_marks)
                 if not a then
                     -- next
                 elseif first == 0 then
@@ -127,7 +141,7 @@ local function sweep(head,first,last)
                     last = a
                 end
             end
-            local list = n.list
+            local list = getlist(n)
             if list then
                 first, last = sweep(list,first,last)
             end
@@ -143,9 +157,9 @@ setmetatableindex(classes, function(t,k) local s = settings_to_array(k) t[k] = s
 local lasts = { }
 
 function marks.synchronize(class,n,option)
-    local box = texgetbox(n)
+    local box = getbox(n)
     if box then
-        local first, last = sweep(box.list,0,0)
+        local first, last = sweep(getlist(box),0,0)
         if option == v_keep and first == 0 and last == 0 then
             if trace_marks_get or trace_marks_set then
                 report_marks("action %a, class %a, box %a","retain at synchronize",class,n)
@@ -204,7 +218,11 @@ local function resolve(t,k)
 end
 
 function marks.define(name,settings)
-    settings = settings or { }
+    if not settings then
+        settings = { }
+    elseif type(settings) == "string" then
+        settings = { parent = settings }
+    end
     data[name] = settings
     local parent = settings.parent
     if parent == nil or parent == "" or parent == name then
@@ -699,17 +717,17 @@ end
 
 -- interface
 
-commands.definemarking      = marks.define
-commands.relatemarking      = marks.relate
-commands.setmarking         = marks.set
-commands.resetmarking       = marks.reset
-commands.synchronizemarking = marks.synchronize
-commands.getmarking         = marks.fetch
-commands.fetchonemark       = marks.fetchonemark
-commands.fetchtwomarks      = marks.fetchtwomarks
-commands.fetchallmarks      = marks.fetchallmarks
+implement { name = "markingtitle",       actions = marks.title,         arguments = { "string", "string" } }
+implement { name = "markingnumber",      actions = marks.number,        arguments = { "string", "string" } }
 
-function commands.doifelsemarking(str) -- can be shortcut
-    commands.doifelse(marks.exists(str))
-end
+implement { name = "definemarking",      actions = marks.define,        arguments = { "string", "string" } }
+implement { name = "relatemarking",      actions = marks.relate,        arguments = { "string", "string" } }
+implement { name = "setmarking",         actions = marks.set,           arguments = { "string", "string" } }
+implement { name = "resetmarking",       actions = marks.reset,         arguments = { "string" } }
+implement { name = "synchronizemarking", actions = marks.synchronize,   arguments = { "string", "integer", "string" } }
+implement { name = "getmarking",         actions = marks.fetch,         arguments = { "string", "string", "string" } }
+implement { name = "fetchonemark",       actions = marks.fetchonemark,  arguments = { "string", "string", "string" } }
+implement { name = "fetchtwomarks",      actions = marks.fetchtwomarks, arguments = { "string", "string" } }
+implement { name = "fetchallmarks",      actions = marks.fetchallmarks, arguments = { "string", "string" } }
 
+implement { name = "doifelsemarking",    actions = { marks.exists, commands.doifelse }, arguments = "string" }

@@ -39,6 +39,7 @@ if not modules then modules = { } end modules ['phys-dim'] = {
 --  RevPerSec                   = [[RPS]],
 --  RevPerMin                   = [[RPM]],
 
+local rawset, next = rawset, next
 local V, P, S, R, C, Cc, Cs, matchlpeg = lpeg.V, lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.match
 local format, lower = string.format, string.lower
 local appendlpeg = lpeg.append
@@ -49,12 +50,11 @@ local utfchar = utf.char
 physics            = physics or { }
 physics.units      = physics.units or { }
 
-local variables    = interfaces.variables
-local v_reverse    = variables.reverse
 local allocate     = utilities.storage.allocate
 
 local context      = context
 local commands     = commands
+local implement    = interfaces.implement
 
 local trace_units  = false
 local report_units = logs.reporter("units")
@@ -172,8 +172,8 @@ local p_c = (ddigitspace^1 * dskipperiod)^0                   -- ___.
 local p_c_dparser = math_one + math_two + dleader * p_c * dtrailer * dfinal
 local c_p_dparser = math_one + math_two + dleader * c_p * dtrailer * dfinal
 
-function commands.digits(str,p_c)
-    if p_c == v_reverse then
+local function makedigits(str,reverse)
+    if reverse then
         matchlpeg(p_c_dparser,str)
     else
         matchlpeg(c_p_dparser,str)
@@ -286,17 +286,28 @@ local long_units = {
 
     -- synonyms
 
-    ["Metric Ton"]              = "tonne",
+    MetricTon                   = "tonne",
     Litre                       = "liter",
+
+    ["Metric Ton"]              = "tonne",
 
     -- non-SI units whose values must be obtained experimentally (Table 7)
 
-    ["Electron Volt"]           = "electronvolt",
+    AtomicMassUnit              = "atomicmassunit",
+    AstronomicalUnit            = "astronomicalunit",
+    ElectronVolt                = "electronvolt",
     Dalton                      = "dalton",
+
     ["Atomic Mass Unit"]        = "atomicmassunit",
     ["Astronomical Unit"]       = "astronomicalunit",
+    ["Electron Volt"]           = "electronvolt",
 
     -- special cases (catch doubles, okay, a bit over the top)
+
+    DegreesCelsius              = "celsius",
+    DegreesFahrenheit           = "fahrenheit",
+    DegreeCelsius               = "celsius",
+    DegreeFahrenheit            = "fahrenheit",
 
     ["Degrees Celsius"]         = "celsius",
     ["Degrees Fahrenheit"]      = "fahrenheit",
@@ -322,11 +333,13 @@ local long_units = {
     Hg                          = "mercury",
  -- ["Millimetre Of Mercury"]   = [[mmHg]],
     Angstrom                    = "angstrom", -- strictly Ångström
-    ["Nautical Mile"]           = "nauticalmile",
+    NauticalMile                = "nauticalmile",
     Barn                        = "barn",
     Knot                        = "knot",
     Neper                       = "neper",
     Bel                         = "bel", -- in practice only decibel used
+
+    ["Nautical Mile"]           = "nauticalmile",
 
     -- other non-SI units from CGS system (Table 9)
 
@@ -506,20 +519,20 @@ local packaged_units = {
 
 -- rendering:
 
-local unitsPUS    = context.unitsPUS
-local unitsPU     = context.unitsPU
-local unitsPS     = context.unitsPS
-local unitsP      = context.unitsP
-local unitsUS     = context.unitsUS
-local unitsU      = context.unitsU
-local unitsS      = context.unitsS
-local unitsO      = context.unitsO
-local unitsN      = context.unitsN
-local unitsC      = context.unitsC
-local unitsQ      = context.unitsQ
-local unitsNstart = context.unitsNstart
-local unitsNstop  = context.unitsNstop
-local unitsNspace = context.unitsNspace
+local ctx_unitsPUS    = context.unitsPUS
+local ctx_unitsPU     = context.unitsPU
+local ctx_unitsPS     = context.unitsPS
+local ctx_unitsP      = context.unitsP
+local ctx_unitsUS     = context.unitsUS
+local ctx_unitsU      = context.unitsU
+local ctx_unitsS      = context.unitsS
+local ctx_unitsO      = context.unitsO
+local ctx_unitsN      = context.unitsN
+local ctx_unitsC      = context.unitsC
+local ctx_unitsQ      = context.unitsQ
+local ctx_unitsNstart = context.unitsNstart
+local ctx_unitsNstop  = context.unitsNstop
+local ctx_unitsNspace = context.unitsNspace
 
 local labels = languages.data.labels
 
@@ -600,7 +613,7 @@ labels.units = allocate {
     electronvolt                = { labels = { en = [[eV]]                       } },
     dalton                      = { labels = { en = [[Da]]                       } },
     atomicmassunit              = { labels = { en = [[u]]                        } },
-    astronomicalunit            = { labels = { en = [[ua]]                       } },
+    astronomicalunit            = { labels = { en = [[au]]                       } },
     bar                         = { labels = { en = [[bar]]                      } },
     angstrom                    = { labels = { en = [[Å]]                        } }, -- strictly Ångström
     nauticalmile                = { labels = { en = [[M]]                        } },
@@ -664,28 +677,28 @@ local function dimpus(p,u,s)
     if p ~= "" then
         if u ~= ""  then
             if s ~= ""  then
-                unitsPUS(p,u,s)
+                ctx_unitsPUS(p,u,s)
             else
-                unitsPU(p,u)
+                ctx_unitsPU(p,u)
             end
         elseif s ~= ""  then
-            unitsPS(p,s)
+            ctx_unitsPS(p,s)
         else
-            unitsP(p)
+            ctx_unitsP(p)
         end
     else
         if u ~= ""  then
             if s ~= ""  then
-                unitsUS(u,s)
+                ctx_unitsUS(u,s)
          -- elseif c then
-         --     unitsC(u)
+         --     ctx_unitsC(u)
             else
-                unitsU(u)
+                ctx_unitsU(u)
             end
         elseif s ~= ""  then
-            unitsS(s)
+            ctx_unitsS(s)
         else
-            unitsP(p)
+            ctx_unitsP(p)
         end
     end
 end
@@ -699,7 +712,7 @@ local function dimop(o)
         report_units("operator %a",o)
     end
     if o then
-        unitsO(o)
+        ctx_unitsO(o)
     end
 end
 
@@ -709,7 +722,7 @@ local function dimsym(s)
     end
     s = symbol_units[s] or s
     if s then
-        unitsC(s)
+        ctx_unitsC(s)
     end
 end
 
@@ -719,7 +732,7 @@ local function dimpre(p)
     end
     p = packaged_units[p] or p
     if p then
-        unitsU(p)
+        ctx_unitsU(p)
     end
 end
 
@@ -789,7 +802,7 @@ local function update_parsers() -- todo: don't remap utf sequences
                       * (V("packaged") / dimpre)
                       * V("somespace"),
      -- someunknown   = V("somespace")
-     --               * (V("nospace")/unitsU)
+     --               * (V("nospace")/ctx_unitsU)
      --               * V("somespace"),
         --
         combination   = V("longprefix")  * V("longunit")   -- centi meter
@@ -798,22 +811,32 @@ local function update_parsers() -- todo: don't remap utf sequences
                       + V("nothing")     * V("shortunit")
                       + V("longprefix")  * V("shortunit")  -- centi m
                       + V("shortprefix") * V("longunit"),  -- c meter
+
+--         combination   = (   V("longprefix")   -- centi meter
+--                           + V("nothing")
+--                         ) * V("longunit")
+--                       + (   V("shortprefix")  -- c m
+--                           + V("nothing")
+--                           + V("longprefix")
+--                         ) * V("shortunit")    -- centi m
+--                       + (   V("shortprefix")  -- c meter
+--                         ) * V("longunit"),
+
+
         dimension     = V("somespace")
                       * (
                             V("packaged") / dimpre
                           + (V("longsuffix") * V("combination")) / dimspu
                           + (V("combination") * (V("shortsuffix") + V("nothing"))) / dimpus
                         )
-                      * (V("qualifier") / unitsQ)^-1
+                      * (V("qualifier") / ctx_unitsQ)^-1
                       * V("somespace"),
         operator      = V("somespace")
                       * ((V("longoperator") + V("shortoperator")) / dimop)
                       * V("somespace"),
         snippet       = V("dimension")
                       + V("somesymbol"),
-        unit          = (
-                            V("snippet")
-                          * (V("operator") * V("snippet"))^0
+        unit          = (   V("snippet") * (V("operator") * V("snippet"))^0
                           + V("somepackaged")
                         )^1,
     }
@@ -824,13 +847,13 @@ local function update_parsers() -- todo: don't remap utf sequences
     local number = Cs( P("$")     * (1-P("$"))^1 * P("$")
                      + P([[\m{]]) * (1-P("}"))^1 * P("}")
                      + (1-R("az","AZ")-P(" "))^1 -- todo: catch { } -- not ok
-                   ) / unitsN
+                   ) / ctx_unitsN
 
-    local start  = Cc(nil) / unitsNstart
-    local stop   = Cc(nil) / unitsNstop
-    local space  = Cc(nil) / unitsNspace
+    local start  = Cc(nil) / ctx_unitsNstart
+    local stop   = Cc(nil) / ctx_unitsNstop
+    local space  = Cc(nil) / ctx_unitsNspace
 
-    -- todo: avoid \unitsNstart\unitsNstop (weird that it can happen .. now catched at tex end)
+    -- todo: avoid \ctx_unitsNstart\ctx_unitsNstop (weird that it can happen .. now catched at tex end)
 
     local p_c_combinedparser  = P { "start",
         number = start * dleader * (p_c_dparser + number) * stop,
@@ -853,7 +876,7 @@ local p_c_parser = nil
 local c_p_parser = nil
 local dirty      = true
 
-function commands.unit(str,p_c)
+local function makeunit(str,reverse)
     if dirty then
         if trace_units then
             report_units("initializing parser")
@@ -862,7 +885,7 @@ function commands.unit(str,p_c)
         dirty = false
     end
     local ok
-    if p_c == v_reverse then
+    if reverse then
         ok = matchlpeg(p_c_parser,str)
     else
         ok = matchlpeg(c_p_parser,str)
@@ -908,7 +931,7 @@ local mapping = {
     packaged = "packaged",
 }
 
-function commands.registerunit(category,list)
+local function registerunit(category,list)
     if not list or list == "" then
         list = category
         category = "unit"
@@ -921,3 +944,11 @@ function commands.registerunit(category,list)
     end
  -- inspect(tables)
 end
+
+physics.units.registerunit = registerunit
+
+implement { name = "digits_normal",  actions = makedigits,   arguments = "string" }
+implement { name = "digits_reverse", actions = makedigits,   arguments = { "string", true } }
+implement { name = "unit_normal",    actions = makeunit,     arguments = "string"}
+implement { name = "unit_reverse",   actions = makeunit,     arguments = { "string", true } }
+implement { name = "registerunit",   actions = registerunit, arguments = { "string", "string" } }

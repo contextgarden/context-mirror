@@ -9,46 +9,13 @@ if not modules then modules = { } end modules ['core-sys'] = {
 local lower, format, gsub = string.lower, string.format, string.gsub
 local suffixonly, basename, removesuffix = file.suffix, file.basename, file.removesuffix
 
-local environment = environment
+local environment  = environment
+local context      = context
+local implement    = interfaces.implement
 
 local report_files = logs.reporter("system","files")
 
--- function commands.updatefilenames(jobname,fulljobname,inputfilename,outputfilename)
---     --
---     environment.jobname             = jobname
---     --
---     local       jobfilename         = gsub(fulljobname or jobname or inputfilename or tex.jobname or "","%./","")
---     --
---     environment.jobfilename         = jobfilename
---     environment.jobfilesuffix       = lower(suffixonly(environment.jobfilename))
---     --
---     local       inputfilename       = gsub(inputfilename or "","%./","")
---     environment.inputfilename       = inputfilename
---     environment.inputfilebarename   = removesuffix(basename(inputfilename))
---     --
---     local       inputfilerealsuffix = suffixonly(inputfilename)
---     environment.inputfilerealsuffix = inputfilerealsuffix
---     --
---     local       inputfilesuffix     = inputfilerealsuffix == "" and "tex" or lower(inputfilerealsuffix)
---     environment.inputfilesuffix     = inputfilesuffix
---     --
---     local       outputfilename      = outputfilename or environment.inputfilebarename or ""
---     environment.outputfilename      = outputfilename
---     --
---     local runpath                   = resolvers.cleanpath(lfs.currentdir())
---     environment.runpath             = runpath
---     --
---     statistics.register("running on path", function()
---         return environment.runpath
---     end)
---     --
---     statistics.register("job file properties", function()
---         return format("jobname %a, input %a, suffix %a",jobfilename,inputfilename,inputfilesuffix)
---     end)
---     --
--- end
-
-function environment.initializefilenames() -- commands.updatefilenames(jobname,fulljobname,input,result)
+function environment.initializefilenames()
 
     local arguments      = environment.arguments
 
@@ -90,12 +57,31 @@ function environment.initializefilenames() -- commands.updatefilenames(jobname,f
     function environment.initializefilenames() end
 end
 
+-- we could set a macro (but will that work when we're expanding? needs testing!)
+
+implement { name = "operatingsystem",     actions = function() context(os.platform)                     end }
+implement { name = "jobfilename",         actions = function() context(environment.jobfilename)         end }
+implement { name = "jobfilesuffix",       actions = function() context(environment.jobfilesuffix)       end }
+implement { name = "inputfilebarename",   actions = function() context(environment.inputfilebarename)   end }
+implement { name = "inputfilerealsuffix", actions = function() context(environment.inputfilerealsuffix) end }
+implement { name = "inputfilesuffix",     actions = function() context(environment.inputfilesuffix)     end }
+implement { name = "inputfilename",       actions = function() context(environment.inputfilename)       end }
+implement { name = "outputfilename",      actions = function() context(environment.outputfilename)      end }
+
 statistics.register("result saved in file", function()
     -- suffix will be fetched from backend
     local outputfilename = environment.outputfilename or environment.jobname or tex.jobname or "<unset>"
     if tex.pdfoutput > 0 then
-        return format("%s.%s, compresslevel %s, objectcompreslevel %s",outputfilename,"pdf",tex.pdfcompresslevel, tex.pdfobjcompresslevel)
+        return format("%s.%s, compresslevel %s, objectcompresslevel %s",outputfilename,"pdf",tex.pdfcompresslevel, tex.pdfobjcompresslevel)
     else
         return format("%s.%s",outputfilename,"dvi") -- hard to imagine
     end
 end)
+
+implement {
+    name      = "systemlog",
+    arguments = { "string", "string", "string" },
+    actions   = function(whereto,category,text)
+        logs.system(whereto,"context",tex.jobname,category,text)
+    end,
+}

@@ -11,27 +11,42 @@ if not modules then modules = { } end modules ['file-ini'] = {
 <l n='tex'/>. These methods have counterparts at the <l n='tex'/> end.</p>
 --ldx]]--
 
-resolvers.jobs = resolvers.jobs or { }
 
-local texsetcount = tex.setcount
-local setvalue    = context.setvalue
+local implement         = interfaces.implement
+local setmacro          = interfaces.setmacro
+local setcount          = interfaces.setcount
 
-function commands.splitfilename(fullname)
-    local t = file.nametotable(fullname)
-    local path = t.path
-    texsetcount("splitoffkind",(path == "" and 0) or (path == '.' and 1) or 2)
-    setvalue("splitofffull",fullname)
-    setvalue("splitoffpath",path)
-    setvalue("splitoffname",t.name)
-    setvalue("splitoffbase",t.base)
-    setvalue("splitofftype",t.suffix)
+resolvers.jobs          = resolvers.jobs or { }
+
+local filenametotable   = file.nametotable
+local findtexfile       = resolvers.findtexfile
+
+local commands_doifelse = commands.doifelse
+
+local function splitfilename(full)
+    local split = filenametotable(full)
+    local path  = split.path
+    setcount("splitoffkind",(path == "" and 0) or (path == '.' and 1) or 2)
+    setmacro("splitofffull",full or "")
+    setmacro("splitoffpath",path or "")
+    setmacro("splitoffname",split.name or "")
+    setmacro("splitoffbase",split.base or "")
+    setmacro("splitofftype",split.suffix or "")
 end
 
-function commands.doifparentfileelse(n)
-    commands.doifelse(n == environment.jobname or n == environment.jobname .. '.tex' or n == environment.outputfilename)
+local function isparentfile(name)
+    return
+        name == environment.jobname
+     or name == environment.jobname .. '.tex'
+     or name == environment.outputfilename
 end
 
-function commands.doiffileexistelse(name)
-    local foundname = resolvers.findtexfile(name)
-    commands.doifelse(foundname and foundname ~= "")
+local function istexfile(name)
+    local name = name and findtexfile(name)
+    return name ~= "" and name
 end
+
+implement { name = "splitfilename",      actions = splitfilename,                       arguments = "string" }
+implement { name = "doifelseparentfile", actions = { isparentfile, commands_doifelse }, arguments = "string" }
+implement { name = "doifelsepathexist",  actions = { lfs.isdir,    commands_doifelse }, arguments = "string" }
+implement { name = "doifelsefileexist",  actions = { istexfile,    commands_doifelse }, arguments = "string" }

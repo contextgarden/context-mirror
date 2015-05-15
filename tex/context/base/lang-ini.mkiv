@@ -111,6 +111,44 @@
      \csname\??language\s!default#2\endcsname
    \fi\fi\fi}
 
+\def\mainlanguageparameter#1%
+  {\ifcsname\??language\currentmainlanguage#1\endcsname
+     \csname\??language\currentmainlanguage#1\endcsname
+   \else\ifcsname\??language\currentmainlanguage\s!default\endcsname
+     \expandafter\specificlanguageparameter\csname\??language\currentmainlanguage\s!default\endcsname{#1}%
+   \else\ifcsname\??language\s!default#1\endcsname
+     \csname\??language\s!default#1\endcsname
+   \fi\fi\fi}
+
+\def\currentusedlanguage{\currentlanguage}
+
+\let\usedlanguageparameter\languageparameter
+
+\def\askedlanguageparameter#1% assumes \currentusedlanguage being set
+  {\ifcsname\??language\currentusedlanguage#1\endcsname
+     \csname\??language\currentusedlanguage#1\endcsname
+   \else\ifcsname\??language\currentusedlanguage\s!default\endcsname
+     \expandafter\specificlanguageparameter\csname\??language\currentusedlanguage\s!default\endcsname{#1}%
+   \else\ifcsname\??language\s!default#1\endcsname
+     \csname\??language\s!default#1\endcsname
+   \fi\fi\fi}
+
+\unexpanded\def\setlanguageparameter#1%
+  {\edef\currentusedlanguage{\reallanguagetag{#1\c!language}}%
+  %\let\setlanguageparameter\gobbleoneargument
+   \ifx\currentusedlanguage\empty
+     \let\currentusedlanguage  \currentlanguage
+     \let\usedlanguageparameter\languageparameter
+   \else\ifx\currentusedlanguage\v!global
+     \let\currentusedlanguage  \currentmainlanguage
+     \let\usedlanguageparameter\mainlanguageparameter
+   \else\ifx\currentusedlanguage\v!local
+     \let\currentusedlanguage  \currentlanguage
+     \let\usedlanguageparameter\languageparameter
+   \else
+     \let\usedlanguageparameter\askedlanguageparameter
+   \fi\fi\fi}
+
 \unexpanded\def\setupcurrentlanguage[#1]%
   {\setcurrentlanguage\currentmainlanguage{#1}}
 
@@ -162,7 +200,6 @@
 %D implementations support run time addition of patterns to a
 %D preloaded format).
 
-
 %D \macros
 %D   {preloadlanguages}
 %D
@@ -174,14 +211,16 @@
 
 \newtoks \everysetuplanguage
 
-\def\installedlanguages{\ctxcommand{installedlanguages()}}
+\def\installedlanguages{\clf_installedlanguages}
 
-\unexpanded\def\doiflanguageelse#1%
+\unexpanded\def\doifelselanguage#1%
   {\ifcsname\??language#1\c!state\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
+
+\let\doiflanguageelse\doifelselanguage
 
 \def\reallanguagetag#1%
   {\ifcsname\??languagelinked#1\endcsname\csname\??languagelinked#1\endcsname\else#1\fi}
@@ -192,17 +231,17 @@
   {\dodoubleargument\lang_basics_install}
 
 \def\lang_basics_install[#1][#2]%
-  {\doifassignmentelse{#2}
-     {\doiflanguageelse{#1}
+  {\doifelseassignment{#2}
+     {\doifelselanguage{#1}
         {\getparameters[\??language#1][#2]}
         {\setvalue{\??languagelinked#1}{#1}%
          \lang_basics_install_indeed{#1}{#1}%
          \getparameters[\??language#1][\c!state=\v!start,#2]}%
       \edef\currentsetuplanguage{#1}%
-      \ctxcommand{definelanguage("#1","\specificlanguageparameter{#1}\s!default")}%
+      \clf_definelanguage{#1}{\specificlanguageparameter{#1}\s!default}%
       \the\everysetuplanguage}
      {\setvalue{\??languagelinked#1}{#2}%
-      \ctxcommand{setlanguagesynonym("#1","#2")}%
+      \clf_setlanguagesynonym{#1}{#2}%
       \lang_basics_install_indeed{#1}{#2}}}
 
 \def\lang_basics_install_indeed#1#2%
@@ -213,7 +252,7 @@
 %D used dutch mnemonics in the dutch version, but nowadays
 %D conform a standard.
 
-\unexpanded\def\doifpatternselse#1%
+\unexpanded\def\doifelsepatterns#1%
   {\begingroup % will change
    \lang_basics_set_current[#1]%
    \ifnum\normallanguage>\zerocount
@@ -221,6 +260,8 @@
    \else
      \endgroup\expandafter\secondoftwoarguments
    \fi}
+
+\let\doifpatternselse\doifelsepatterns
 
 %D \macros
 %D   {setuplanguage}
@@ -254,7 +295,7 @@
    \lang_basics_synchronize}
 
 \appendtoks
-    \ctxcommand{unloadlanguage("\currentsetuplanguage")}%
+    \clf_unloadlanguage{\currentsetuplanguage}%
 \to \everysetuplanguage
 
 \setuplanguage
@@ -354,13 +395,58 @@
 
 \newtoks \everylanguage
 
+% \def\lang_basics_synchronize% assumes that \currentlanguage is set                   % % % use different name as complex
+%   {\normallanguage\ctxcommand{languagenumber(%
+%      "\currentlanguage",%
+%      "\defaultlanguage\currentlanguage",%
+%      "\languageparameter\s!patterns"%
+%    )}\relax
+%    \the\everylanguage\relax}
+
+% (some 20%) faster but code jungle (the publication code can have excessive
+% switching
+
+\installcorenamespace{languagenumbers}
+
+\appendtoks
+    % we need to reassign the number because new patterns can be defined later on
+    % so let's hope not that many \setups happen during a run
+    \global\expandafter\let\csname\??languagenumbers\currentlanguage\endcsname\undefined
+\to \everysetuplanguage
+
+\def\lang_basics_synchronize_yes
+  {\zerocount % see below
+   \global\expandafter\chardef\csname\??languagenumbers\currentlanguage\endcsname
+      \clf_languagenumber
+        {\currentlanguage}%
+        {\defaultlanguage\currentlanguage}%
+        {\languageparameter\s!patterns}%
+      \relax
+   \normallanguage\csname\??languagenumbers\currentlanguage\endcsname}
+
+\let\lang_basics_synchronize_nop\zerocount % not loaded anyway
+
+\letvalue{\??languagenumbers}\lang_basics_synchronize_nop % initime
+
+\appendtoks
+    \letvalue{\??languagenumbers}\lang_basics_synchronize_yes % runtime
+\to \everydump
+
 \def\lang_basics_synchronize% assumes that \currentlanguage is set                   % % % use different name as complex
-  {\normallanguage\ctxcommand{languagenumber(%
-     "\currentlanguage",%
-     "\defaultlanguage\currentlanguage",%
-     "\languageparameter\s!patterns"%
-   )}\relax
-   \the\everylanguage\relax}
+  {\normallanguage\csname\??languagenumbers
+     \ifcsname\??languagenumbers\currentlanguage\endcsname
+       \currentlanguage
+     \fi
+   \endcsname
+   \relax
+   \the\everylanguage
+   \relax}
+
+% experimental
+
+\newcount\hyphenstate
+
+% so far
 
 \newcount\hyphenminoffset
 
@@ -479,7 +565,11 @@
    \lang_basics_switch_asked}
 
 \unexpanded\def\language
-  {\doifnextoptionalelse\lang_basics_set_current\normallanguage}
+  {\doifelsenextoptionalcs\lang_basics_set_current\normallanguage}
+
+\let\setlanguage\language % we make these synonyms
+
+\let\patterns\gobbleoneargument
 
 \newcount\mainlanguagenumber
 
@@ -505,7 +595,7 @@
     \normallanguage\mainlanguagenumber
 \to \everybeforepagebody
 
-%D New (see nomarking and nolist):
+%D Used at all?
 
 \def\splitsequence#1#2%
   {\doifelse{#1}\v!no{#2}{\doifelse{#1}\v!yes{\languageparameter\c!limittext}{#1}}}
@@ -647,12 +737,26 @@
    \ifx\askedlanguage\empty
      \let\askedlanguage\currentlanguage
    \fi
-   \ctxcommand{setlanguageexceptions("\askedlanguage",\!!bs#2\!!es)}%
+   \clf_setlanguageexceptions{\askedlanguage}{#2}%
    \endgroup}
 
 %D For the moment here:
 
 \uchyph        1 % also treat uppercase
 \exhyphenchar 45 % to permit breaking at explicit hyphens
+
+%D New:
+
+\unexpanded\def\traceddiscretionary#1#2#3%
+  {\dontleavehmode
+   \discretionary{\darkred#1}{\darkgreen#2}{\darkblue#3}}
+
+\unexpanded\def\samplediscretionary
+  {\traceddiscretionary
+     {pre\clf_currentprehyphenchar}%
+     {\clf_currentposthyphenchar post}%
+     {replace}}
+
+% todo: make this configurable
 
 \protect \endinput

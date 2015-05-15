@@ -29,6 +29,7 @@
 % wide floats
 % move floats
 % offsets (inner ones, so we change the hsize  ... needed with backgrounds
+% when no content we currently loose the page
 
 % luatex buglet:
 %
@@ -68,6 +69,7 @@
    \c!maxheight=\textheight,
    \c!maxwidth=\makeupwidth,
    \c!grid=\v!tolerant,
+   \c!internalgrid=\v!line,
    \c!step=.25\lineheight, % needs some experimenting
   %\c!splitmethod=\v!fixed, % will be default
    \c!method=\ifinner\s!box\else\s!otr\fi] % automatic as suggested by WS
@@ -75,7 +77,7 @@
 \let\startmixedcolumns\relax % defined later
 \let\stopmixedcolumns \relax % defined later
 
-\appendtoks
+\appendtoks % could become an option
     \setuevalue{\e!start\currentmixedcolumns}{\startmixedcolumns[\currentmixedcolumns]}%
     \setuevalue{\e!stop \currentmixedcolumns}{\stopmixedcolumns}%
 \to \everydefinemixedcolumns
@@ -166,7 +168,17 @@
   [\c!n=\itemgroupparameter\c!n,
    \c!separator=\v!none,
    \c!splitmethod=\v!none,
+   \c!grid=\v!tolerant,
+   \c!internalgrid=\v!halfline, % new, we may still revert to \v!line
    \c!balance=\v!yes]
+
+% better
+
+\setupmixedcolumns
+  [\s!itemgroupcolumns]
+  [\c!splitmethod=\v!fixed,
+   \c!grid=\v!yes,
+   \c!internalgrid=\v!line]
 
 \unexpanded\def\strc_itemgroups_start_columns
   {\startmixedcolumns[\s!itemgroupcolumns]} % we could have a fast one
@@ -195,11 +207,6 @@
 
 %D The interceptor is quite simple, at least for the moment.
 
-% \def\page_mix_routine_intercept
-%   {\global\setbox\b_page_mix_preceding\vbox
-%      {\page_otr_command_flush_top_insertions
-%       \unvbox\normalpagebox}}
-
 \def\page_mix_routine_intercept
   {\ifdim\pagetotal>\pagegoal
      % testcase: preceding-001 ... if we don't do this, text can disappear as
@@ -208,7 +215,7 @@
    \fi
    \global\setbox\b_page_mix_preceding\vbox
      {\page_otr_command_flush_top_insertions
-      \ifdim\ht\b_page_mix_preceding=\zeropoint \else
+      \ifdim\htdp\b_page_mix_preceding=\zeropoint \else
         \writestatus\m!columns{preceding error}%
         \unvbox\b_page_mix_preceding
       \fi
@@ -288,18 +295,32 @@
 
 \installcorenamespace{mixedcolumnsseparator}
 
-\setvalue{\??mixedcolumnsseparator\v!rule}%
-  {\starttextproperties
-   \usemixedcolumnscolorparameter\c!rulecolor
-   \vrule\s!width\mixedcolumnsparameter\c!rulethickness
-   \stoptextproperties}
+\unexpanded\def\installmixedcolumnseparator#1#2%
+  {\setvalue{\??mixedcolumnsseparator#1}{#2}}
+
+\installmixedcolumnseparator\v!rule
+  {\vrule
+     \s!width \mixedcolumnsparameter\c!rulethickness
+     \s!height\mixedcolumnseparatorheight
+     \s!depth \mixedcolumnseparatordepth
+   \relax}
 
 \unexpanded\def\page_mix_command_inject_separator
-  {\bgroup
+  {\begingroup
+   \setbox\scratchbox\hbox to \zeropoint \bgroup
+     \hss
+     \starttextproperties
+     \usemixedcolumnscolorparameter\c!rulecolor
+     \csname\??mixedcolumnsseparator\p_separator\endcsname % was \c!rule
+     \stoptextproperties
+     \hss
+   \egroup
+   \ht\scratchbox\zeropoint
+   \dp\scratchbox\zeropoint
    \hss
-   \csname\??mixedcolumnsseparator\mixedcolumnsparameter\c!separator\endcsname % was \c!rule
+   \box\scratchbox
    \hss
-   \egroup}
+   \endgroup}
 
 %D We've now arrived at the real code. The start command mostly sets up the
 %D environment and variables that are used in the splitter. One of the last
@@ -347,13 +368,13 @@
    \csname\??mixedcolumnsstart\currentmixedcolumnsmethod\endcsname}
 
 \def\page_mix_start_columns_b[#1][#2]%
-  {\doifassignmentelse{#1}%
+  {\doifelseassignment{#1}%
      {\let\currentmixedcolumns\empty
       \page_mix_error_b}
      {\edef\currentmixedcolumns{#1}%
       \firstargumentfalse}%
    \edef\currentmixedcolumnsmethod{\mixedcolumnsparameter\c!method}%
-   \mixedcolumnsparameter\c!before\relax % so, it doesn't list to local settings !
+   \mixedcolumnsparameter\c!before\relax % so, it doesn't listen to local settings !
    \csname\??mixedcolumnsbefore\currentmixedcolumnsmethod\endcsname\relax
    \begingroup
    \iffirstargument
@@ -425,8 +446,7 @@
   [\s!itemgroupcolumns]
   [\c!grid=\itemgroupparameter\c!grid]
 
-\setupitemgroups
-  [\c!grid=\v!tolerant]
+% better
 
 %D The common initialization:
 
@@ -451,6 +471,10 @@
    %
    \usemixedcolumnscolorparameter\c!color
    %
+   \insidecolumnstrue % new
+   %
+   \useprofileparameter\mixedcolumnsparameter % new
+   %
    \nofcolumns\c_page_mix_n_of_columns} % public
 
 %D The otr method related hooks are defined next:
@@ -464,23 +488,44 @@
 
 \newcount\c_page_mix_otr_nesting
 
+% \setvalue{\??mixedcolumnsbefore\s!otr}%
+%   {\par
+%    \global\advance\c_page_mix_otr_nesting\plusone
+%    \ifcase\c_page_mix_otr_nesting\or
+%      \ifdim\pagetotal=\zeropoint \else
+%        \obeydepth % we could handle this in pre material
+%      \fi
+%    \fi}
+
 \setvalue{\??mixedcolumnsbefore\s!otr}%
   {\par
    \global\advance\c_page_mix_otr_nesting\plusone
    \ifcase\c_page_mix_otr_nesting\or
      \ifdim\pagetotal=\zeropoint \else
-       \obeydepth % we could handle this in pre material
+       % make sure that whitespace an dblanks are done
+       \strut
+       \vskip-\lineheight
+      % no, bad spacing: \obeydepth % we could handle this in pre material
      \fi
    \fi}
 
 \setvalue{\??mixedcolumnsstart\s!otr}%
   {\ifcase\c_page_mix_otr_nesting\or
+     \scratchwidth\textwidth
      \setupoutputroutine[\s!mixedcolumn]%
      \c_page_mix_routine\c_page_mix_routine_intercept
      \page_otr_trigger_output_routine
      %
      \holdinginserts\maxdimen
      %
+     \ifvoid\b_page_mix_preceding \else
+       % moved here, before the packaging
+       \page_postprocessors_linenumbers_deepbox\b_page_mix_preceding
+       % we need to avoid unvboxing with successive balanced on one page
+       \global\setbox\b_page_mix_preceding\vbox{\box\b_page_mix_preceding}%
+       \wd\b_page_mix_preceding\scratchwidth % \makeupwidth
+       \page_grids_add_to_one\b_page_mix_preceding
+     \fi
      \global\d_page_mix_preceding_height\ht\b_page_mix_preceding
      \c_page_mix_routine\c_page_mix_routine_continue
      %
@@ -500,8 +545,14 @@
 \setvalue{\??mixedcolumnsstop\s!otr}%
   {\par
    \ifcase\c_page_mix_otr_nesting\or
-     \doif{\mixedcolumnsparameter\c!balance}\v!yes{\c_page_mix_routine\c_page_mix_routine_balance}%
+     \doifelse{\mixedcolumnsparameter\c!balance}\v!yes
+       {\c_page_mix_routine\c_page_mix_routine_balance}%
+       {\penalty-\plustenthousand}% weird hack, we need to trigger the otr sometimes (new per 20140306, see balancing-001.tex)
      \page_otr_trigger_output_routine
+     \ifvoid\b_page_mix_preceding \else
+        % empty columns so we need to make sure pending content is flushed
+        \unvbox\b_page_mix_preceding % new per 2014.10.25
+     \fi
    \fi}
 
 \setvalue{\??mixedcolumnsafter\s!otr}%
@@ -517,54 +568,76 @@
 %D footnotes. Eventually we will have multiple strategies available.
 
 \unexpanded\def\page_mix_routine_construct#1%
-  {\ctxcommand{mixsetsplit {
-       box         = \number\b_page_mix_collected,
-       nofcolumns  = \number\c_page_mix_n_of_columns,
-       maxheight   = \number\d_page_mix_max_height,
-       step        = \number\d_page_mix_balance_step,
-       cycles      = \number\c_page_mix_balance_cycles,
-       preheight   = \number\d_page_mix_preceding_height,
-       prebox      = \number\b_page_mix_preceding,
-       strutht     = \number\strutht,
-       strutdp     = \number\strutdp,
-       threshold   = \number\d_page_mix_threshold,
-       splitmethod = "\mixedcolumnsparameter\c!splitmethod",
-       balance     = "#1",
-       alternative = "\mixedcolumnsparameter\c!alternative",
-       grid        = \ifgridsnapping true\else false\fi,
-   }}%
+  {\d_page_mix_max_height\mixedcolumnsparameter\c!maxheight % can have changed due to header=high
+   \clf_mixsetsplit
+       box          \b_page_mix_collected
+       nofcolumns   \c_page_mix_n_of_columns
+       maxheight    \d_page_mix_max_height
+       step         \d_page_mix_balance_step
+       cycles       \c_page_mix_balance_cycles
+       preheight    \d_page_mix_preceding_height
+       prebox       \b_page_mix_preceding
+       strutht      \strutht
+       strutdp      \strutdp
+       threshold    \d_page_mix_threshold
+       splitmethod  {\mixedcolumnsparameter\c!splitmethod}%
+       balance      {#1}%
+       alternative  {\mixedcolumnsparameter\c!alternative}%
+       internalgrid {\mixedcolumnsparameter\c!internalgrid}%
+       grid         \ifgridsnapping true\else false\fi
+   \relax
    \deadcycles\zerocount}
 
+\newdimen\mixedcolumnseparatorheight
+\newdimen\mixedcolumnseparatordepth
+\newdimen\mixedcolumnseparatorwidth
+
+\def\page_mix_routine_package_step
+  {% needs packaging anyway
+   \setbox\scratchbox\page_mix_command_package_column
+   \page_marks_synchronize_column\plusone\c_page_mix_n_of_columns\recurselevel\scratchbox
+   % backgrounds
+   \anch_mark_column_box\scratchbox
+   % for the moment a quick and dirty patch .. we need to go into the box (hence the \plusone) .. a slowdowner
+   % moved to start: \page_lines_add_numbers_to_box\scratchbox\recurselevel\c_page_mix_n_of_columns\plusone
+   % the framed needs a reset of strut, align, setups etc
+   \mixedcolumnseparatorheight\ht\scratchbox
+   \mixedcolumnseparatordepth \dp\scratchbox
+   \inheritedmixedcolumnsframedbox\currentmixedcolumns\scratchbox
+   % optional
+   \ifnum\recurselevel<\c_page_mix_n_of_columns
+     \ifcsname\??mixedcolumnsseparator\p_separator\endcsname
+       \page_mix_command_inject_separator
+     \else
+       \hss
+     \fi
+   \fi}
+
 \unexpanded\def\page_mix_routine_package
-  {\ctxcommand{mixfinalize()}%
+  {\clf_mixfinalize
    \setbox\b_page_mix_collected\vbox \bgroup
      \ifvoid\b_page_mix_preceding \else
-       \box\b_page_mix_preceding
+       \page_postprocessors_linenumbers_deepbox\b_page_mix_preceding
+       \vbox\bgroup
+         \box\b_page_mix_preceding
+       \egroup
        \global\d_page_mix_preceding_height\zeropoint
        \nointerlineskip
+       % no no:
+       % \prevdepth\strutdepth
      \fi
      \hskip\d_page_mix_leftskip
      \page_mix_hbox to \d_page_mix_max_width \bgroup
-       \dorecurse\c_page_mix_n_of_columns{%
-         % needs packaging anyway
-         \setbox\scratchbox\page_mix_command_package_column
-         \page_marks_synchronize_column\plusone\c_page_mix_n_of_columns\recurselevel\scratchbox
-         % for the moment a quick and dirty patch .. we need to go into the box (hence the \plusone) .. a slowdowner
-         \page_lines_add_numbers_to_box\scratchbox\recurselevel\c_page_mix_n_of_columns\plusone
-         % the framed needs a reset of strut, align, setups etc
-         \inheritedmixedcolumnsframedbox\currentmixedcolumns\scratchbox
-         % optional
-         \ifnum\recurselevel<\c_page_mix_n_of_columns
-           \page_mix_command_inject_separator
-         \fi
-       }%
+       \edef\p_separator{\mixedcolumnsparameter\c!separator}%
+       \mixedcolumnseparatorwidth\d_page_mix_distance % \mixedcolumnsparameter\c!rulethickness\relax
+       \dorecurse\c_page_mix_n_of_columns\page_mix_routine_package_step
      \egroup
    \egroup}
 
 \unexpanded\def\page_mix_command_package_column
   {\page_mix_hbox to \d_page_mix_column_width \bgroup
      % maybe intercept empty
-     \ctxcommand{mixgetsplit(\recurselevel)}%
+     \clf_mixgetsplit\recurselevel\relax
      \hskip-\d_page_mix_column_width
      \page_mix_hbox to \d_page_mix_column_width \bgroup
        \placenoteinserts
@@ -580,8 +653,8 @@
    \page_mix_routine_construct\v!no
    \page_mix_routine_package
    \page_otr_construct_and_shipout\box\b_page_mix_collected
-   \ctxcommand{mixflushrest()}%
-   \ctxcommand{mixcleanup()}%
+   \clf_mixflushrest
+   \clf_mixcleanup
    \egroup}
 
 \unexpanded\def\page_mix_routine_balance
@@ -592,9 +665,9 @@
    \doloop
      {%writestatus\m!columns{construct continue (\the\htdp\b_page_mix_collected)}%
       \page_mix_routine_construct\v!no
-      \ifcase\ctxcommand{mixstate()}\relax
+      \ifcase\clf_mixstate\relax
         % 0 = okay, we can balance
-        \setbox\b_page_mix_collected\vbox{\ctxcommand{mixflushlist()}}% we could avoid this
+        \setbox\b_page_mix_collected\vbox{\clf_mixflushlist}% we could avoid this
         %writestatus\m!columns{construct balance}%
         \page_mix_routine_construct\v!yes
         \page_mix_routine_package
@@ -604,21 +677,22 @@
         \page_otr_command_set_hsize
         \par
         %writestatus\m!columns{flush balance}%
+        \page_grids_add_to_mix\b_page_mix_collected % no linenumbers here
         \box\b_page_mix_collected
         \vskip\zeropoint % triggers recalculation of page stuff (weird that this is needed but it *is* needed, see mixed-001.tex)
         \par
         \nointerlineskip
         \prevdepth\strutdp
-        \ctxcommand{mixflushrest()}% rubish
-        \ctxcommand{mixcleanup()}%   rubish
+        \clf_mixflushrest% rubish
+        \clf_mixcleanup  % rubish
         \exitloop
       \or
         % 1 = we have stuff left, so flush and rebalance
         %writestatus\m!columns{flush continue}%
         \page_mix_routine_package
         \page_otr_construct_and_shipout\box\b_page_mix_collected
-        \setbox\b_page_mix_collected\vbox{\ctxcommand{mixflushrest()}}% we could avoid this
-        \ctxcommand{mixcleanup()}%
+        \setbox\b_page_mix_collected\vbox{\clf_mixflushrest}% we could avoid this
+        \clf_mixcleanup
         \ifdim\ht\b_page_mix_collected=\zeropoint
             \exitloop
         \fi
@@ -686,11 +760,32 @@
 \letvalue{\??mixedcolumnsbefore\s!box}\donothing
 \letvalue{\??mixedcolumnsafter \s!box}\donothing
 
+% \setvalue{\??mixedcolumnsstart\s!box}%
+%   {\edef\p_page_mix_strut{\mixedcolumnsparameter\c!strut}%
+%    \setbox\b_page_mix_collected\vbox\bgroup
+%      \let\currentoutputroutine\s!mixedcolumn % makes \column work
+%      \forgetall
+%      \page_mix_command_set_hsize
+%      \ifx\p_page_mix_strut\v!yes
+%        \begstrut
+%        \ignorespaces
+%      \fi}
+%
+% \setvalue{\??mixedcolumnsstop\s!box}%
+%   {\ifx\p_page_mix_strut\v!yes
+%      \removeunwantedspaces
+%      \endstrut
+%    \fi
+%    \egroup
+%    \page_mix_box_balance}
+
 \setvalue{\??mixedcolumnsstart\s!box}%
   {\edef\p_page_mix_strut{\mixedcolumnsparameter\c!strut}%
-   \setbox\b_page_mix_collected\vbox\bgroup
+   \setbox\b_page_mix_collected\vbox \bgroup
      \let\currentoutputroutine\s!mixedcolumn % makes \column work
      \forgetall
+     \usegridparameter\mixedcolumnsparameter
+   % \useprofileparameter\mixedcolumnsparameter
      \page_mix_command_set_hsize
      \ifx\p_page_mix_strut\v!yes
        \begstrut
@@ -703,6 +798,16 @@
      \endstrut
    \fi
    \egroup
+   \edef\p_profile{\mixedcolumnsparameter\c!profile}%
+   \ifx\p_profile\empty \else
+      % this can never be ok because we cheat with depth and height
+      % and glue in between and when we're too large we run into issues
+      % so mayb best limit correction to one line
+      \profilegivenbox\p_profile\b_page_mix_collected
+      \setbox\b_page_mix_collected\vbox{\unvbox\b_page_mix_collected}%
+      % tracing
+      % \addprofiletobox\b_page_mix_collected
+   \fi
    \page_mix_box_balance}
 
 %D The related balancer is only a few lines:
@@ -713,8 +818,8 @@
    \page_mix_routine_construct\v!yes
    \page_mix_routine_package
    \dontleavehmode\box\b_page_mix_collected
-   \ctxcommand{mixflushrest()}%
-   \ctxcommand{mixcleanup()}%
+   \clf_mixflushrest
+   \clf_mixcleanup
    \egroup}
 
 %D As usual, floats complicates matters and this is where experimental code
@@ -755,11 +860,11 @@
 % \unexpanded\def\page_mix_command_flush_top_insertions
 %   {\page_one_command_flush_top_insertions}
 
-% \unexpanded\def\page_mix_place_float_top
-%   {\showmessage\m!columns4\empty\page_one_place_float_here}
+\unexpanded\def\page_mix_place_float_top
+  {\showmessage\m!columns4\empty\page_one_place_float_here}
 
-% \unexpanded\def\page_mix_place_float_bottom
-%   {\showmessage\m!columns5\empty\page_one_place_float_here}
+\unexpanded\def\page_mix_place_float_bottom
+  {\showmessage\m!columns5\empty\page_one_place_float_here}
 
 \unexpanded\def\page_mix_place_float_here
   {\page_one_place_float_here}

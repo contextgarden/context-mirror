@@ -360,7 +360,7 @@
 
 \def\strc_formulas_handle_sub_numbering_indeed
   {\let\strc_formulas_handle_sub_numbering\relax % else error: see math/numbering-001.tex
-   \doiftextelse\currentsubformulasuffix
+   \doifelsetext\currentsubformulasuffix
      {\strc_counters_setown_sub\v!formula\plustwo\currentsubformulasuffix}
      {\strc_counters_increment_sub\v!formula\plustwo}%
    \placecurrentformulanumber}
@@ -528,7 +528,7 @@
 \unexpanded\def\strc_formulas_start_formula_indeed[#1][#2]% setting leftskip adaption is slow !
   {\bgroup % HERE
    \def\currentformula{#1}%
-   \dostarttagged\t!formula\currentformula
+   \dostarttaggedchained\t!formula\currentformula\??formula
    \the\everybeforedisplayformula
    \d_strc_formulas_display_skip_par\parskip\relax
   %\formulastrutdp\strutdepth
@@ -564,7 +564,7 @@
 \unexpanded\def\strc_formulas_start_formula_nested#1%
   {\bgroup
    \let\strc_formulas_stop_formula\strc_formulas_stop_formula_nested
-   \dostarttagged\t!subformula}
+   \dostarttagged\t!subformula\empty}
 
 \unexpanded\def\strc_formulas_stop_formula_nested
   {\dostoptagged
@@ -630,13 +630,13 @@
 %      \prevdepth-\maxdimen % texbook pagina 79-80
 %    \fi
 %    \noindent % else funny hlist with funny baselineskip
-%    $$% \Ustartdisplaymath
+%    $$% \Ucheckedstartdisplaymath
 %    \setdisplaydimensions
 %    \startinnermath}
 %
 % \unexpanded\def\stopdisplaymath
 %   {\stopinnermath
-%    $$% \Ustopdisplaymath
+%    $$% \Ucheckedstopdisplaymath
 %    \par
 %    \afterdisplayspace
 %    \par
@@ -663,13 +663,13 @@
      \fi
    \fi
    \noindent % else funny hlist with funny baselineskip
-   $$% \Ustartdisplaymath
+   \Ucheckedstartdisplaymath
    \setdisplaydimensions
    \startinnermath}
 
 \unexpanded\def\stopdisplaymath
   {\stopinnermath
-   $$% \Ustopdisplaymath
+   \Ucheckedstopdisplaymath
    \par
    \ifvmode
      \ifcase\c_strc_formulas_space_model
@@ -835,14 +835,14 @@
 \def\strc_formulas_place[#1]%
   {\def\currentplaceformulareference{#1}%
    \let\currentplaceformulasuffix\empty
-   \doifnextbgroupelse\strc_formulas_place_yes\strc_formulas_place_nop\strc_formulas_place_nop} % [ref]{}
+   \doifelsenextbgroup\strc_formulas_place_yes\strc_formulas_place_nop\strc_formulas_place_nop} % [ref]{}
 
 \def\strc_formulas_place_yes#1%
   {\def\currentplaceformulasuffix{#1}%
    \strc_formulas_place_nop}
 
 \def\strc_formulas_place_nop
-  {\doifnextcharelse$\strc_formulas_place_pickup\strc_formulas_place_indeed} % [ref]$$ [ref]\start
+  {\doifelsenextchar$\strc_formulas_place_pickup\strc_formulas_place_indeed} % [ref]$$ [ref]\start
 
 \def\strc_formulas_place_indeed
   {\strc_formulas_place_numbering}

@@ -10,20 +10,23 @@ if not modules then modules = { } end modules ['lxml-aux'] = {
 -- compatibility reasons
 
 local trace_manipulations = false  trackers.register("lxml.manipulations", function(v) trace_manipulations = v end)
+local trace_inclusions    = false  trackers.register("lxml.inclusions",    function(v) trace_inclusions    = v end)
 
 local report_xml = logs.reporter("xml")
 
 local xml = xml
 
-local xmlconvert, xmlcopy, xmlname = xml.convert, xml.copy, xml.name
+local xmlcopy, xmlname = xml.copy, xml.name
 local xmlinheritedconvert = xml.inheritedconvert
 local xmlapplylpath = xml.applylpath
 local xmlfilter = xml.filter
 
-local type, setmetatable, getmetatable = type, setmetatable, getmetatable
+local type, next, setmetatable, getmetatable = type, next, setmetatable, getmetatable
 local insert, remove, fastcopy, concat = table.insert, table.remove, table.fastcopy, table.concat
 local gmatch, gsub, format, find, strip = string.gmatch, string.gsub, string.format, string.find, string.strip
 local utfbyte = utf.byte
+local lpegmatch = lpeg.match
+local striplinepatterns = utilities.strings.striplinepatterns
 
 local function report(what,pattern,c,e)
     report_xml("%s element %a, root %a, position %a, index %a, pattern %a",what,xmlname(e),xmlname(e.__p__),c,e.ni,pattern)
@@ -83,13 +86,15 @@ end
 function xml.each(root,pattern,handle,reverse)
     local collected = xmlapplylpath(root,pattern)
     if collected then
-        if reverse then
-            for c=#collected,1,-1 do
-                handle(collected[c])
-            end
-        else
-            for c=1,#collected do
-                handle(collected[c])
+        if handle then
+            if reverse then
+                for c=#collected,1,-1 do
+                    handle(collected[c])
+                end
+            else
+                for c=1,#collected do
+                    handle(collected[c])
+                end
             end
         end
         return collected
@@ -162,6 +167,8 @@ local function redo_ni(d)
     end
 end
 
+xml.reindex = redo_ni
+
 local function xmltoelement(whatever,root)
     if not whatever then
         return nil
@@ -221,8 +228,18 @@ function xml.delete(root,pattern)
                         report('deleting',pattern,c,e)
                     end
                     local d = p.dt
-                    remove(d,e.ni)
-                    redo_ni(d) -- can be made faster and inlined
+                    local ni = e.ni
+                    if ni <= #d then
+                        if false then
+                            p.dt[ni] = ""
+                        else
+                            -- what if multiple deleted in one set
+                            remove(d,ni)
+                            redo_ni(d) -- can be made faster and inlined
+                        end
+                    else
+                        -- disturbing
+                    end
                 end
             end
         end
@@ -353,46 +370,71 @@ xml.insertbefore    = function(r,p,e) insert_element(r,p,e,true) end
 xml.injectafter     =                 inject_element
 xml.injectbefore    = function(r,p,e) inject_element(r,p,e,true) end
 
-local function include(xmldata,pattern,attribute,recursive,loaddata)
-    -- parse="text" (default: xml), encoding="" (todo)
-    -- attribute = attribute or 'href'
-    pattern = pattern or 'include'
-    loaddata = loaddata or io.loaddata
+local function include(xmldata,pattern,attribute,recursive,loaddata,level)
+ -- attribute = attribute or 'href'
+    pattern   = pattern or 'include'
+    loaddata  = loaddata or io.loaddata
     local collected = xmlapplylpath(xmldata,pattern)
     if collected then
+        if not level then
+            level = 1
+        end
         for c=1,#collected do
             local ek = collected[c]
             local name = nil
             local ekdt = ek.dt
             local ekat = ek.at
-            local epdt = ek.__p__.dt
+            local ekrt = ek.__p__
+            local epdt = ekrt.dt
             if not attribute or attribute == "" then
                 name = (type(ekdt) == "table" and ekdt[1]) or ekdt -- check, probably always tab or str
             end
             if not name then
                 for a in gmatch(attribute or "href","([^|]+)") do
                     name = ekat[a]
-                    if name then break end
+                    if name then
+                        break
+                    end
                 end
             end
-            local data = (name and name ~= "" and loaddata(name)) or ""
-            if data == "" then
+            local data = nil
+            if name and name ~= "" then
+                data = loaddata(name) or ""
+                if trace_inclusions then
+                    report_xml("including %s bytes from %a at level %s by pattern %a and attribute %a (%srecursing)",#data,name,level,pattern,attribute or "",recursive and "" or "not ")
+                end
+            end
+            if not data or data == "" then
                 epdt[ek.ni] = "" -- xml.empty(d,k)
             elseif ekat["parse"] == "text" then
                 -- for the moment hard coded
                 epdt[ek.ni] = xml.escaped(data) -- d[k] = xml.escaped(data)
             else
---~                 local settings = xmldata.settings
---~                 settings.parent_root = xmldata -- to be tested
---~                 local xi = xmlconvert(data,settings)
                 local xi = xmlinheritedconvert(data,xmldata)
                 if not xi then
                     epdt[ek.ni] = "" -- xml.empty(d,k)
                 else
                     if recursive then
-                        include(xi,pattern,attribute,recursive,loaddata)
+                        include(xi,pattern,attribute,recursive,loaddata,level+1)
                     end
-                    epdt[ek.ni] = xml.body(xi) -- xml.assign(d,k,xi)
+                    local child = xml.body(xi) -- xml.assign(d,k,xi)
+                    child.__p__ = ekrt
+                    child.__f__ = name -- handy for tracing
+                    epdt[ek.ni] = child
+                    local inclusions = xmldata.settings.inclusions
+                    if inclusions then
+                        inclusions[#inclusions+1] = name
+                    else
+                        xmldata.settings.inclusions = { name }
+                    end
+                    if child.er then
+                        local badinclusions = xmldata.settings.badinclusions
+                        if badinclusions then
+                            badinclusions[#badinclusions+1] = name
+                        else
+                            xmldata.settings.badinclusions = { name }
+                        end
+                    end
                 end
             end
         end
@@ -401,68 +443,108 @@ end
 
 xml.include = include
 
+function xml.inclusion(e,default)
+    while e do
+        local f = e.__f__
+        if f then
+            return f
+        else
+            e = e.__p__
+        end
+    end
+    return default
+end
+
+local function getinclusions(key,e,sorted)
+    while e do
+        local settings = e.settings
+        if settings then
+            local inclusions = settings[key]
+            if inclusions then
+                inclusions = table.unique(inclusions) -- a copy
+                if sorted then
+                    table.sort(inclusions) -- so we sort the copy
+                end
+                return inclusions -- and return the copy
+            else
+                e = e.__p__
+            end
+        else
+            e = e.__p__
+        end
+    end
+end
+
+function xml.inclusions(e,sorted)
+    return getinclusions("inclusions",e,sorted)
+end
+
+function xml.badinclusions(e,sorted)
+    return getinclusions("badinclusions",e,sorted)
+end
+
+local b_collapser  = lpeg.patterns.b_collapser
+local m_collapser  = lpeg.patterns.m_collapser
+local e_collapser  = lpeg.patterns.e_collapser
+
+local b_stripper   = lpeg.patterns.b_stripper
+local m_stripper   = lpeg.patterns.m_stripper
+local e_stripper   = lpeg.patterns.e_stripper
+
+local lpegmatch    = lpeg.match
+
 local function stripelement(e,nolines,anywhere)
     local edt = e.dt
     if edt then
-        if anywhere then
-            local t, n = { }, 0
-            for e=1,#edt do
+        local n = #edt
+        if n == 0 then
+            return e -- convenient
+        elseif anywhere then
+            local t = { }
+            local m = 0
+            for e=1,n do
                 local str = edt[e]
                 if type(str) ~= "string" then
-                    n = n + 1
-                    t[n] = str
+                    m = m + 1
+                    t[m] = str
                 elseif str ~= "" then
-                    -- todo: lpeg for each case
                     if nolines then
-                        str = gsub(str,"%s+"," ")
+                        str = lpegmatch((n == 1 and b_collapser) or (n == m and e_collapser) or m_collapser,str)
+                    else
+                        str = lpegmatch((n == 1 and b_stripper) or (n == m and e_stripper) or m_stripper,str)
                     end
-                    str = gsub(str,"^%s*(.-)%s*$","%1")
                     if str ~= "" then
-                        n = n + 1
-                        t[n] = str
+                        m = m + 1
+                        t[m] = str
                     end
                 end
             end
             e.dt = t
         else
-            -- we can assume a regular sparse xml table with no successive strings
-            -- otherwise we should use a while loop
-            if #edt > 0 then
-                -- strip front
-                local str = edt[1]
-                if type(str) ~= "string" then
-                    -- nothing
-                elseif str == "" then
+            local str = edt[1]
+            if type(str) == "string" then
+                if str ~= "" then
+                    str = lpegmatch(nolines and b_collapser or b_stripper,str)
+                end
+                if str == "" then
                     remove(edt,1)
+                    n = n - 1
                 else
-                    if nolines then
-                        str = gsub(str,"%s+"," ")
-                    end
-                    str = gsub(str,"^%s+","")
-                    if str == "" then
-                        remove(edt,1)
-                    else
-                        edt[1] = str
-                    end
+                    edt[1] = str
                 end
             end
-            local nedt = #edt
-            if nedt > 0 then
-                -- strip end
-                local str = edt[nedt]
-                if type(str) ~= "string" then
-                    -- nothing
-                elseif str == "" then
-                    remove(edt)
-                else
-                    if nolines then
-                        str = gsub(str,"%s+"," ")
-                    end
-                    str = gsub(str,"%s+$","")
+            if n > 0 then
+                str = edt[n]
+                if type(str) == "string" then
                     if str == "" then
                         remove(edt)
                     else
-                        edt[nedt] = str
+                        str = lpegmatch(nolines and e_collapser or e_stripper,str)
+                        if str == "" then
+                            remove(edt)
+                        else
+                            edt[n] = str
+                        end
                     end
                 end
             end
@@ -702,8 +784,8 @@ function xml.finalizers.xml.cdata(collected)
     return ""
 end
 
-function xml.insertcomment(e,str,n) -- also insertcdata
-    table.insert(e.dt,n or 1,{
+function xml.insertcomment(e,str,n)
+    insert(e.dt,n or 1,{
         tg      = "@cm@",
         ns      = "",
         special = true,
@@ -712,7 +794,27 @@ function xml.insertcomment(e,str,n) -- also insertcdata
     })
 end
 
-function xml.setcdata(e,str) -- also setcomment
+function xml.insertcdata(e,str,n)
+    insert(e.dt,n or 1,{
+        tg      = "@cd@",
+        ns      = "",
+        special = true,
+        at      = { },
+        dt      = { str },
+    })
+end
+
+function xml.setcomment(e,str,n)
+    e.dt = { {
+        tg      = "@cm@",
+        ns      = "",
+        special = true,
+        at      = { },
+        dt      = { str },
+    } }
+end
+
+function xml.setcdata(e,str)
     e.dt = { {
         tg      = "@cd@",
         ns      = "",
@@ -790,7 +892,7 @@ local function recurse(e,action)
         for i=1,#edt do
             local str = edt[i]
             if type(str) ~= "string" then
-                recurse(str,action,recursive)
+                recurse(str,action) -- ,recursive
             elseif str ~= "" then
                 edt[i] = action(str)
             end
@@ -809,3 +911,91 @@ function helpers.recursetext(collected,action,recursive)
         end
     end
 end
+
+-- on request ... undocumented ...
+--
+-- _tag       : element name
+-- _type      : node type (_element can be an option)
+-- _namespace : only if given
+--
+-- [1..n]     : text or table
+-- key        : value or attribite 'key'
+--
+-- local str = [[
+-- <?xml version="1.0" ?>
+-- <a one="1">
+--     <!-- rubish -->
+--   <b two="1"/>
+--   <b two="2">
+--     c &gt; d
+--   </b>
+-- </a>
+-- ]]
+--
+-- inspect(xml.totable(xml.convert(str)))
+-- inspect(xml.totable(xml.convert(str),true))
+-- inspect(xml.totable(xml.convert(str),true,true))
+
+local specials = {
+    ["@rt@"] = "root",
+    ["@pi@"] = "instruction",
+    ["@cm@"] = "comment",
+    ["@dt@"] = "declaration",
+    ["@cd@"] = "cdata",
+}
+
+local function convert(x,strip,flat)
+    local ns = x.ns
+    local tg = x.tg
+    local at = x.at
+    local dt = x.dt
+    local node = flat and {
+        [0] = (not x.special and (ns ~= "" and ns .. ":" .. tg or tg)) or nil,
+    } or {
+        _namespace = ns ~= "" and ns or nil,
+        _tag       = not x.special and tg or nil,
+        _type      = specials[tg] or "_element",
+    }
+    if at then
+        for k, v in next, at do
+            node[k] = v
+        end
+    end
+    local n = 0
+    for i=1,#dt do
+        local di = dt[i]
+        if type(di) == "table" then
+            if flat and di.special then
+                -- ignore
+            else
+                di = convert(di,strip,flat)
+                if di then
+                    n = n + 1
+                    node[n] = di
+                end
+            end
+        elseif strip then
+            di = lpegmatch(strip,di)
+            if di ~= "" then
+                n = n + 1
+                node[n] = di
+            end
+        else
+            n = n + 1
+            node[n] = di
+        end
+    end
+    if next(node) then
+        return node
+    end
+end
+
+function xml.totable(x,strip,flat)
+    if type(x) == "table" then
+        if strip then
+            strip = striplinepatterns[strip]
+        end
+        return convert(x,strip,flat)
+    end
+end
+

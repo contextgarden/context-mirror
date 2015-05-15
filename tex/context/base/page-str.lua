@@ -17,10 +17,12 @@ local nodes, node = nodes, node
 local nodepool          = nodes.pool
 local tasks             = nodes.tasks
 
+local implement         = interfaces.implement
+
 local new_kern          = nodepool.kern
 local new_glyph         = nodepool.glyph
 
-local find_tail         = node.slide
+local slide_nodelist    = node.slide
 local write_node        = node.write
 local free_node         = node.free
 local copy_nodelist     = node.copy_list
@@ -73,7 +75,7 @@ function streams.collect(head,where)
         end
         local last = dana[#dana]
         if last then
-            local tail = find_tail(last)
+            local tail = slide_nodelist(last)
             tail.next, head.prev = head, tail
         elseif last == false then
             dana[#dana] = head
@@ -202,7 +204,7 @@ function streams.synchronize(list) -- this is an experiment !
                     else
                         -- this is not yet ok as we also need to keep an eye on vertical spacing
                         -- so we might need to do some splitting or whatever
-                        local tail = vbox.list and find_tail(vbox.list)
+                        local tail = vbox.list and slide_nodelist(vbox.list)
                         local n, delta = 0, delta_height -- for tracing
                         while delta > 0 do
                             -- we need to add some interline penalties
@@ -235,6 +237,60 @@ tasks.disableaction("mvlbuilders", "streams.collect")
 
 function streams.initialize()
     tasks.enableaction ("mvlbuilders", "streams.collect")
+    function streams.initialize() end
 end
 
 -- todo: remove empty last { }'s
+-- todo: better names, enable etc
+
+implement {
+    name    = "initializestream",
+    actions = streams.initialize,
+    onlyonce = true,
+}
+
+implement {
+    name      = "enablestream",
+    actions   = streams.enable,
+    arguments = "string"
+}
+
+implement {
+    name      = "disablestream",
+    actions   = streams.disable
+}
+
+implement {
+    name      = "startstream",
+    actions   = streams.start,
+    arguments = "string"
+}
+
+implement {
+    name      = "stopstream",
+    actions   = streams.stop
+}
+
+implement {
+    name      = "flushstream",
+    actions   = streams.flush,
+    arguments = "string"
+}
+
+implement {
+    name      = "flushstreamcopy",
+    actions   = streams.flush,
+    arguments = { "string", true }
+}
+
+implement {
+    name      = "synchronizestream",
+    actions   = streams.synchronize,
+    arguments = "string"
+}
+
+implement {
+    name      = "pushstream",
+    actions   = streams.push,
+    arguments = "string"
+}

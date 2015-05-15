@@ -1,6 +1,6 @@
 %D \module
 %D   [     file=font-sel,
-%D      version=2013.10.19,
+%D      version=2014.07.27,
 %D        title=\CONTEXT\ User Module,
 %D     subtitle=Selectfont,
 %D       author=Wolfgang Schuster,
@@ -27,51 +27,49 @@
    \fi
    \setexpandedselectfontparameter\c!style      {\expandnamespaceparameter\??selectfontstyle      \selectfontparameter\c!style      \s!rm     }%
    \setexpandedselectfontparameter\c!alternative{\expandnamespaceparameter\??selectfontalternative\selectfontparameter\c!alternative\v!default}%
-   \xdef\selectfont_index{\ctxcommand{
-        defineselectfont {
-            metadata = {
-                typeface    = "\selectfontparameter\c!name",
-                style       = "\selectfontparameter\c!style",
-                family      = "\selectfontparameter\c!family",
-            },
-            options = {
-                opticals    = "\selectfontparameter\c!opticalsize",
-                scale       = "\selectfontparameter\c!scale",
-                goodies     = "\selectfontparameter\c!goodies",
-                alternative = "\selectfontparameter\c!alternative",
-                range       = "\selectfontparameter\c!range",  % fallback only
-                offset      = "\selectfontparameter\c!offset", % fallback only
-                check       = "\selectfontparameter\c!check",  % fallback only
-                force       = "\selectfontparameter\c!force",  % fallback only
-            },
-            alternatives = {
-                ["tf"]      = "\selectfontparameter\s!tf",
-                ["bf"]      = "\selectfontparameter\s!bf",
-                ["it"]      = "\selectfontparameter\s!it",
-                ["sl"]      = "\selectfontparameter\s!sl",
-                ["bi"]      = "\selectfontparameter\s!bi",
-                ["bs"]      = "\selectfontparameter\s!bs",
-                ["sc"]      = "\selectfontparameter\s!sc",
-            },
-            files = {
-                ["tf"]      = "\selectfontparameter\c!regularfont",
-                ["bf"]      = "\selectfontparameter\c!boldfont",
-                ["it"]      = "\selectfontparameter\c!italicfont",
-                ["sl"]      = "\selectfontparameter\c!slantedfont",
-                ["bi"]      = "\selectfontparameter\c!bolditalicfont",
-                ["bs"]      = "\selectfontparameter\c!boldslantedfont",
-                ["sc"]      = "\selectfontparameter\c!smallcapsfont",
-            },
-            features = {
-                ["tf"]      = "\selectfontparameter\c!regularfeatures",
-                ["bf"]      = "\selectfontparameter\c!boldfeatures",
-                ["it"]      = "\selectfontparameter\c!italicfeatures",
-                ["sl"]      = "\selectfontparameter\c!slantedfeatures",
-                ["bi"]      = "\selectfontparameter\c!bolditalicfeatures",
-                ["bs"]      = "\selectfontparameter\c!boldslantedfeatures",
-                ["sc"]      = "\selectfontparameter\c!smallcapsfeatures",
-            }
-   }}}%
+   \xdef\selectfont_index{\clf_defineselectfont
+        metadata {%
+            typeface    {\selectfontparameter\c!name}%
+            style       {\selectfontparameter\c!style}%
+            family      {\selectfontparameter\c!family}%
+        }
+        options {%
+            opticals    {\selectfontparameter\c!opticalsize}%
+            scale       {\selectfontparameter\c!scale}%
+            goodies     {\selectfontparameter\c!goodies}%
+            alternative {\selectfontparameter\c!alternative}%
+            range       {\selectfontparameter\c!range}%  fallback only
+            offset      {\selectfontparameter\c!offset}% fallback only
+            check       {\selectfontparameter\c!check}%  fallback only
+            force       {\selectfontparameter\c!force}%  fallback only
+        }
+        alternatives {%
+            tf {\selectfontparameter\s!tf}%
+            bf {\selectfontparameter\s!bf}%
+            it {\selectfontparameter\s!it}%
+            sl {\selectfontparameter\s!sl}%
+            bi {\selectfontparameter\s!bi}%
+            bs {\selectfontparameter\s!bs}%
+            sc {\selectfontparameter\s!sc}%
+        }
+        files {%
+            tf {\selectfontparameter\c!regularfont}%
+            bf {\selectfontparameter\c!boldfont}%
+            it {\selectfontparameter\c!italicfont}%
+            sl {\selectfontparameter\c!slantedfont}%
+            bi {\selectfontparameter\c!bolditalicfont}%
+            bs {\selectfontparameter\c!boldslantedfont}%
+            sc {\selectfontparameter\c!smallcapsfont}%
+        }
+        features {%
+            tf {\selectfontparameter\c!regularfeatures}%
+            bf {\selectfontparameter\c!boldfeatures}%
+            it {\selectfontparameter\c!italicfeatures}%
+            sl {\selectfontparameter\c!slantedfeatures}%
+            bi {\selectfontparameter\c!bolditalicfeatures}%
+            bs {\selectfontparameter\c!boldslantedfeatures}%
+            sc {\selectfontparameter\c!smallcapsfeatures}%
+        }}%
    \endgroup}
 
 %D \macros
@@ -104,7 +102,7 @@
   {\dodoubleargument\selectfont_preset_define}
 
 \def\selectfont_preset_define[#name][#settings]%
-  {\doifassignmentelse{#settings}
+  {\doifelseassignment{#settings}
      {\setvalue{\??selectfontpreset#name}{\setupcurrentselectfont[#settings]}}
      {\setvalue{\??selectfontpreset#name}{\csname\??selectfontpreset#settings\endcsname}}}
 
@@ -115,11 +113,74 @@
      % unknown preset
    \fi}
 
-\definefontfamilypreset [range:chinese]  [\c!range={cjkcompatibilityforms,cjkcompatibilityideographs,cjkcompatibilityideographssupplement,cjkradicalssupplement,cjkstrokes,cjksymbolsandpunctuation,cjkunifiedideographs,cjkunifiedideographsextensiona,cjkunifiedideographsextensionb,halfwidthandfullwidthforms,verticalforms,bopomofo,bopomofoextended}]
-\definefontfamilypreset [range:japanese] [\c!range={cjkcompatibilityforms,cjkcompatibilityideographs,cjkcompatibilityideographssupplement,cjkradicalssupplement,cjkstrokes,cjksymbolsandpunctuation,cjkunifiedideographs,cjkunifiedideographsextensiona,cjkunifiedideographsextensionb,halfwidthandfullwidthforms,verticalforms,hiragana,katakana}]
-\definefontfamilypreset [range:korean]   [\c!range={cjkcompatibilityforms,cjkcompatibilityideographs,cjkcompatibilityideographssupplement,cjkradicalssupplement,cjkstrokes,cjksymbolsandpunctuation,cjkunifiedideographs,cjkunifiedideographsextensiona,cjkunifiedideographsextensionb,halfwidthandfullwidthforms,verticalforms,hangulcompatibilityjamo,hanguljamo,hanguljamoextendeda,hanguljamoextendedb,hangulsyllables}]
-\definefontfamilypreset [range:cyrillic] [\c!range={cyrillic,cyrillicextendeda,cyrillicextendedb,cyrillicsupplement}]
-\definefontfamilypreset [range:greek]    [\c!range={greekandcoptic,greekextended,ancientgreeknumbers}]
+\definefontfamilypreset
+  [range:chinese]
+  [\c!range={cjkcompatibilityforms,
+             cjkcompatibilityideographs,
+             cjkcompatibilityideographssupplement,
+             cjkradicalssupplement,
+             cjkstrokes,
+             cjksymbolsandpunctuation,
+             cjkunifiedideographs,
+             cjkunifiedideographsextensiona,
+             cjkunifiedideographsextensionb,
+             halfwidthandfullwidthforms,
+             verticalforms,
+             bopomofo,
+             bopomofoextended}]
+
+\definefontfamilypreset
+  [range:japanese]
+  [\crange={cjkcompatibilityforms,
+            cjkcompatibilityideographs,
+            cjkcompatibilityideographssupplement,
+            cjkradicalssupplement,
+            cjkstrokes,
+            cjksymbolsandpunctuation,
+            cjkunifiedideographs,
+            cjkunifiedideographsextensiona,
+            cjkunifiedideographsextensionb,
+            halfwidthandfullwidthforms,
+            verticalforms,
+            hiragana,
+            katakana}]
+
+\definefontfamilypreset
+  [range:korean]
+  [\c!range={cjkcompatibilityforms,
+             cjkcompatibilityideographs,
+             cjkcompatibilityideographssupplement,
+             cjkradicalssupplement,
+             cjkstrokes,
+             cjksymbolsandpunctuation,
+             cjkunifiedideographs,
+             cjkunifiedideographsextensiona,
+             cjkunifiedideographsextensionb,
+             halfwidthandfullwidthforms,
+             verticalforms,
+             hangulcompatibilityjamo,
+             hanguljamo,
+             hanguljamoextendeda,
+             hanguljamoextendedb,
+             hangulsyllables}]
+
+\definefontfamilypreset
+  [range:cyrillic]
+  [\c!range={cyrillic,
+             cyrillicextendeda,
+             cyrillicextendedb,
+             cyrillicsupplement}]
+
+\definefontfamilypreset
+  [range:greek]
+  [\c!range={greekandcoptic,
+             greekextended,
+             ancientgreeknumbers}]
+
+\definefontfamilypreset
+  [range:hebrew]
+  [\c!range={hebrew,
+             alphabeticpresentationforms}]
 
 \definefontfamilypreset [math:digitsnormal]             [\c!range=digitsnormal]
 \definefontfamilypreset [math:digitsbold]               [\c!range=digitsnormal,\c!offset=digitsbold,\s!tf=style:bold]
@@ -225,7 +286,7 @@
 %D the \tex{definefontfamily} command.
 %D
 %D \starttyping
-%D \definefallbackfamily [mainface] [serif] [DejaVu Serif] [range=cyrillic,force=yes]
+%D \definefallbackfamily [mainface] [serif] [DejaVu Serif] [range=cyrillic]
 %D \definefontfamily     [mainface] [serif] [TeX Gyre Pagella]
 %D
 %D \setupbodyfont[mainface]
@@ -264,20 +325,20 @@
   {\doquadrupleempty\selectfont_family_define}
 
 \def\selectfont_family_define[#typeface][#style][#family][#settings]%
-  {\doifassignmentelse{#settings}
+  {\doifelseassignment{#settings}
      {\selectfont_setparameters[\c!name={#typeface},\c!style={#style},\c!family={#family},#settings]}
      {\selectfont_setparameters[\c!name={#typeface},\c!style={#style},\c!family={#family},\c!preset={#settings}]}%
-   \ctxcommand{definefontfamily(\selectfont_index)}}
+   \clf_definefontfamily\selectfont_index\relax}
 
 \unexpanded\def\definefallbackfamily
   {\doquadrupleempty\selectfont_fallback_define}
 
 \def\selectfont_fallback_define[#typeface][#style][#family][#settings]%
-  {\doifassignmentelse{#settings}
+  {\doifelseassignment{#settings}
      {\selectfont_setparameters[\c!name={#typeface},\c!style={#style},\c!family={#family},#settings]}
      {\selectfont_setparameters[\c!name={#typeface},\c!style={#style},\c!family={#family},\c!preset={#settings}]}%
    \edef\p_selectfont_style{\expandnamespacevalue\??selectfontstyle{#style}\s!rm}%
-   \ctxcommand{definefallbackfamily("#typeface","\p_selectfont_style",\selectfont_index)}}
+   \clf_definefallbackfamily{#typeface}{\p_selectfont_style}\selectfont_index\relax}
 
 %D \macros
 %D   {setupfontfamily,setupfallbackfamily}
@@ -325,7 +386,8 @@
 \unexpanded\def\selectfont_set_default
   {\selectfont_set_font_family[\v!serif][Latin Modern Roman][\c!opticalsize=\v!yes]%
    \selectfont_set_font_family[\v!sans] [Latin Modern Sans] [\c!opticalsize=\v!yes]%
-   \selectfont_set_font_family[\v!mono] [Latin Modern Mono] [\c!opticalsize=\v!yes,\c!features=\s!none]}
+   \selectfont_set_font_family[\v!mono] [Latin Modern Mono] [\c!opticalsize=\v!yes,\c!features=\s!none]%
+   \selectfont_set_font_family[\v!math] [Latin Modern Math] [\c!opticalsize=\v!yes]}
 
 \unexpanded\def\setupfallbackfamily
   {\dotripleempty\selectfont_fallback_setup}

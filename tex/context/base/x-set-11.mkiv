@@ -57,7 +57,7 @@
             2:  -- wordt verwerkt
             3:  -- is niet gedefinieerd
             4:  -- wordt nogmaals verwerkt
-     optional:  optioneel
+     optional:  opt
   displaymath:  formule
         index:  ingang
          math:  formule
@@ -95,7 +95,7 @@
             2:  -- is processed
             3:  -- is undefined
             4:  -- is processed again
-     optional:  optional
+     optional:  opt
   displaymath:  formula
         index:  entry
          math:  formula
@@ -133,7 +133,7 @@
             2:  -- wird verarbeitet
             3:  -- ist undefiniert
             4:  -- ist mehrmals verarbeitet
-     optional:  optioneel
+     optional:  opt
   displaymath:  formula
         index:  entry
          math:  formula
@@ -171,7 +171,7 @@
             2:  -- je zpracovano
             3:  -- je nedefinovano
             4:  -- je zpracovano znovu
-     optional:  optioneel
+     optional:  opt
   displaymath:  formula
         index:  entry
          math:  formula
@@ -209,7 +209,7 @@
             2:  -- is processed
             3:  -- is undefined
             4:  -- is processed again
-     optional:  optioneel
+     optional:  opt
   displaymath:  formula
         index:  entry
          math:  formula
@@ -247,7 +247,7 @@
             2:  este procesat --
             3:  -- este nedefinit
             4:  -- este procesat din nou
-     optional:  optioneel
+     optional:  opt
   displaymath:  formula
         index:  entry
          math:  formula
@@ -285,7 +285,7 @@
             2:  -- est traité
             3:  -- n'est pas défini
             4:  -- est traité de nouveau
-     optional:  optionel
+     optional:  opt
   displaymath:  formule
         index:  entrée
          math:  formule
@@ -369,7 +369,8 @@
     } {
         \let\currentSETUPprefix\empty
     }
-    \edef\currentSETUPname{\xmlatt{#1}{name}}
+  % \edef\currentSETUPname{\xmlatt{#1}{name}}
+    \edef\currentSETUPname{\xmlattribute{#1}{/sequence/string[1]}{value}}%
     \doifelse {\xmlatt{#1}{generated}} {yes} {
         \def\currentSETUPgenerated{*}
     } {
@@ -448,8 +449,18 @@
 % \def\showsetupindeed#1%
 %   {\xmlfilterlist{\loadedsetups}{interface/command[@name='#1']/command(xml:setups:typeset)}}
 
+% \def\showsetupindeed#1%
+%   {\xmlfilterlist{\loadedsetups}{/interface/command['#1' == (@type=='environment' and 'start' or '') .. @name]/command(xml:setups:typeset)}}
+
+% \setelementnature[setup][display]
+% \setelementnature[setup][mixed]
+
 \def\showsetupindeed#1%
-  {\xmlfilterlist{\loadedsetups}{/interface/command['#1' == (@type=='environment' and 'start' or '') .. @name]/command(xml:setups:typeset)}}
+  {\startelement[setup][name=#1]%
+     \startelement[noexport][comment={setup definition #1}]
+       \xmlfilterlist{\loadedsetups}{/interface/command['#1' == (@type=='environment' and '\e!start' or '') .. @name]/command(xml:setups:typeset)}%
+     \stopelement
+   \stopelement}
 
 \unexpanded\def\placesetup    {\placelistofsorts[texcommand][\c!criterium=\v!used]}
 \unexpanded\def\placeallsetups{\placelistofsorts[texcommand][\c!criterium=\v!all ]}
@@ -459,7 +470,7 @@
 %D Typesetting:
 
 \setupxml
-  [\c!method=mkiv,       % mixed mode
+  [%\c!method=mkiv,       % mixed mode
    \c!default=\v!hidden, % ignore elements that are not defined
    \c!compress=\v!yes,   % strip comment
    \c!entities=\v!yes]   % replace entities
@@ -489,37 +500,41 @@
             \xmlfilter{#1}{/sequence/first()}
             \ignorespaces
         \egroup
-        \xmldoif{#1}{/arguments} {
-            \bgroup
-                \enablemode[setups-pass-one]
-                \doglobal\newcounter\currentSETUPargument
-                \ignorespaces
-                \xmlfilter{#1}{/arguments/text()}
-            \egroup
-        }
-        \doif {\xmlatt{#1}{type}} {environment} {
-            \bgroup
-                \enablemode[setups-pass-one]%
-                \hskip.5em\unknown\hskip.5em
-                \doif {\xmlatt{#1}{generated}} {yes} {
-                    \ttsl
-                }
-                \tex{\e!stop}
-                \xmlfilter{#1}{/sequence/first()}
-                \ignorespaces
-            \egroup
-        }
-        \endgraf
-        \xmldoif{#1}{/arguments} {
-            \bgroup
-                \enablemode[setups-pass-two]
-                \doglobal\newcounter\currentSETUPargument
-               %\blank[\v!line] % packed mode (we could do \startunpacked ...)
-                \godown[.75\lineheight]
-                \switchtobodyfont[\v!small]
-                \ignorespaces\xmlfilter{#1}{/arguments/text()}\endgraf
-            \egroup
-        }
+        \ifshortsetup
+            % nothing
+        \else
+            \xmldoif{#1}{/arguments} {
+                \bgroup
+                    \enablemode[setups-pass-one]
+                    \doglobal\newcounter\currentSETUPargument
+                    \ignorespaces
+                    \xmlfilter{#1}{/arguments/text()}
+                \egroup
+            }
+            \doif {\xmlatt{#1}{type}} {environment} {
+                \bgroup
+                    \enablemode[setups-pass-one]%
+                    \hskip.5em\unknown\hskip.5em
+                    \doif {\xmlatt{#1}{generated}} {yes} {
+                        \ttsl
+                    }
+                    \tex{\e!stop}
+                    \xmlfilter{#1}{/sequence/first()}
+                    \ignorespaces
+                \egroup
+            }
+            \endgraf
+            \xmldoif{#1}{/arguments} {
+                \bgroup
+                    \enablemode[setups-pass-two]
+                    \doglobal\newcounter\currentSETUPargument
+                   %\blank[\v!line] % packed mode (we could do \startunpacked ...)
+                    \godown[.75\lineheight]
+                    \switchtobodyfont[\v!small]
+                    \ignorespaces\xmlfilter{#1}{/arguments/text()}\endgraf
+                \egroup
+            }
+        \fi
     \getvalue{\e!stop setuptext}
 \stopxmlsetups
 
@@ -562,7 +577,7 @@
 \startxmlsetups xml:setups:word        \showSETUPcomponent{#1}{word}       {word}        \stopxmlsetups
 
 \def\showSETUPcomponent#1#2#3%
-  {\doifmodeelse{setups-pass-one}
+  {\doifelsemode{setups-pass-one}
      {\getvalue{showSETUP#2}{#1}}
      {\simpleSETUPargument{#3}}}
 
@@ -597,7 +612,7 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:assignments
-    \doifmodeelse{setups-pass-one} {
+    \doifelsemode{setups-pass-one} {
         \showSETUPassignment{#1}
     } {
         \xdef\currentSETUPwidth{0pt}%
@@ -619,7 +634,7 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:keywords
-    \doifmodeelse{setups-pass-one} {
+    \doifelsemode{setups-pass-one} {
         \showSETUPkeyword{#1}
     } {
         \startfirstSETUPcolumn{\showSETUPnumber}%
@@ -638,11 +653,16 @@
         \xmlflush{#1}
         \doifmode{interface:setup:defaults} {
             \ifx\currentSETUPhash\empty \else
-               \edef\currentSETUPvalue{\csname named\currentSETUPhash parameter\endcsname\empty{\xmlatt{#1}{name}}}
-               \ifx\currentSETUPvalue\empty
-                 \space=\space
-                 \detokenize\expandafter{\currentSETUPvalue}
-               \fi
+                \begingroup
+                    % todo, make a one level expansion of parameter
+                    \let\emwidth \relax
+                    \let\exheight\relax
+                    \edef\currentSETUPvalue{\csname named\currentSETUPhash parameter\endcsname\empty{\xmlatt{#1}{name}}}
+                    \ifx\currentSETUPvalue\empty \else
+                        =\space
+                        \detokenize\expandafter{\currentSETUPvalue}
+                    \fi
+                \endgroup
             \fi
         }
     \stopsecondSETUPcolumn
@@ -650,7 +670,7 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:constant
-    \doifmodeelse {setups-pass-one} {
+    \doifelsemode {setups-pass-one} {
     } {
         \doif {\xmlatt{#1}{default}} {yes} {
             \underbar % next needs to be {braced}
@@ -662,7 +682,7 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:variable
-    \doifmodeelse {setups-pass-one} {
+    \doifelsemode {setups-pass-one} {
         \expanded{\setupintfont{\xmlatt{#1}{value}}}\ignorespaces
     } {
         \c!setup!reserved!{\xmlatt{#1}{value}}
@@ -817,7 +837,6 @@
         \fi
     \stoptabulate
 \stopxmlsetups
-
 
 \starttexdefinition showrootvalues [#1]
     \edef\currentsetupparametercategory{#1}

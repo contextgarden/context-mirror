@@ -19,6 +19,9 @@ local report_labels = logs.reporter("languages","labels")
 languages.labels        = languages.labels or { }
 local labels            = languages.labels
 
+local context           = context
+local implement         = interfaces.implement
+
 local variables         = interfaces.variables
 local settings_to_array = utilities.parsers.settings_to_array
 
@@ -30,19 +33,27 @@ end
 
 labels.split = split
 
-local contextsprint = context.sprint
+local contextsprint      = context.sprint
+
+local f_setlabeltextpair = formatters["\\setlabeltextpair{%s}{%s}{%s}{%s}{%s}"]
+local f_key_key          = formatters["\\v!%s:\\v!%s"]
+local f_key_raw          = formatters["\\v!%s:%s"]
+local f_raw_key          = formatters["%s:\\v!%s"]
+local f_raw_raw          = formatters["%s:%s"]
+local f_key              = formatters["\\v!%s"]
+local f_raw              = formatters["%s"]
 
 local function definelanguagelabels(data,class,tag,rawtag)
     for language, text in next, data.labels do
         if text == "" then
             -- skip
         elseif type(text) == "table" then
-            contextsprint(prtcatcodes,"\\setlabeltextpair{",class,"}{",language,"}{",tag,"}{",text[1],"}{",text[2],"}")
+            contextsprint(prtcatcodes,f_setlabeltextpair(class,language,tag,text[1],text[2]))
             if trace_labels then
                 report_labels("language %a, defining label %a as %a and %a",language,rawtag,text[1],text[2])
             end
         else
-            contextsprint(prtcatcodes,"\\setlabeltextpair{",class,"}{",language,"}{",tag,"}{",text,"}{}")
+            contextsprint(prtcatcodes,f_setlabeltextpair(class,language,tag,text,""))
             if trace_labels then
                 report_labels("language %a, defining label %a as %a",language,rawtag,text)
             end
@@ -55,6 +66,7 @@ function labels.define(class,name,prefixed)
     if list then
         report_labels("defining label set %a",name)
         for tag, data in next, list do
+            tag = variables[tag] or tag
             if data.hidden then
                 -- skip
             elseif prefixed then
@@ -62,17 +74,17 @@ function labels.define(class,name,prefixed)
                 if second then
                     if rawget(variables,first) then
                         if rawget(variables,second) then
-                            definelanguagelabels(data,class,formatters["\\v!%s:\\v!%s"](first,second),tag)
+                            definelanguagelabels(data,class,f_key_key(first,second),tag)
                         else
-                            definelanguagelabels(data,class,formatters["\\v!%s:%s"](first,second),tag)
+                            definelanguagelabels(data,class,f_key_raw(first,second),tag)
                         end
                      elseif rawget(variables,second) then
-                        definelanguagelabels(data,class,formatters["%s:\\v!%s"](first,second),tag)
+                        definelanguagelabels(data,class,f_raw_key(first,second),tag)
                     else
-                        definelanguagelabels(data,class,formatters["%s:%s"](first,second),tag)
+                        definelanguagelabels(data,class,f_raw_raw(first,second),tag)
                     end
                 elseif rawget(variables,rawtag) then
-                    definelanguagelabels(data,class,formatters["\\v!%s"](tag),tag)
+                    definelanguagelabels(data,class,f_key(tag),tag)
                 else
                     definelanguagelabels(data,class,tag,tag)
                 end
@@ -102,7 +114,11 @@ end
 
 -- interface
 
-commands.definelabels = labels.define
+interfaces.implement {
+    name      = "definelabels",
+    actions   = labels.define,
+    arguments = { "string",  "string", "boolean" }
+}
 
 -- function commands.setstrippedtextprefix(str)
 --     context(string.strip(str))
@@ -115,7 +131,7 @@ commands.definelabels = labels.define
 -- text       : "a,b,c"
 -- separators : "{, },{ and }"
 
-function commands.concatcommalist(settings) -- it's too easy to forget that this one is there
+local function concatcommalist(settings) -- it's too easy to forget that this one is there
     local list = settings.list or settings_to_array(settings.text or "")
     local size = #list
     local command = settings.command and context[settings.command] or context
@@ -140,3 +156,16 @@ function commands.concatcommalist(settings) -- it's too easy to forget that this
         command(list[size])
     end
 end
+
+implement {
+    name      = "concatcommalist",
+    actions   = concatcommalist,
+    arguments = {
+        {
+            { "text" },
+            { "separators" },
+            { "first" },
+            { "second" },
+        }
+    }
+}

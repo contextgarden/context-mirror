@@ -25,8 +25,6 @@ if not modules then modules = { } end modules ['l-os'] = {
 -- os.sleep() => socket.sleep()
 -- math.randomseed(tonumber(string.sub(string.reverse(tostring(math.floor(socket.gettime()*10000))),1,6)))
 
--- maybe build io.flush in os.execute
-
 local os = os
 local date, time = os.date, os.time
 local find, format, gsub, upper, gmatch = string.find, string.format, string.gsub, string.upper, string.gmatch
@@ -118,15 +116,11 @@ end
 
 -- end of environment hack
 
-local execute, spawn, exec, iopopen, ioflush = os.execute, os.spawn or os.execute, os.exec or os.execute, io.popen, io.flush
-
-function os.execute(...) ioflush() return execute(...) end
-function os.spawn  (...) ioflush() return spawn  (...) end
-function os.exec   (...) ioflush() return exec   (...) end
-function io.popen  (...) ioflush() return iopopen(...) end
+local execute = os.execute
+local iopopen = io.popen
 
 function os.resultof(command)
-    local handle = io.popen(command,"r")
+    local handle = iopopen(command,"r") -- already has flush
     if handle then
         local result = handle:read("*all") or ""
         handle:close()
@@ -137,7 +131,7 @@ function os.resultof(command)
 end
 
 if not io.fileseparator then
-    if find(os.getenv("PATH"),";") then
+    if find(os.getenv("PATH"),";",1,true) then
         io.fileseparator, io.pathseparator, os.type = "\\", ";", os.type or "mswin"
     else
         io.fileseparator, io.pathseparator, os.type = "/" , ":", os.type or "unix"
@@ -160,7 +154,7 @@ local launchers = {
 }
 
 function os.launch(str)
-    os.execute(format(launchers[os.name] or launchers.unix,str))
+    execute(format(launchers[os.name] or launchers.unix,str))
 end
 
 if not os.times then -- ?
@@ -236,7 +230,7 @@ elseif os.type == "windows" then
 
     function resolvers.platform(t,k)
         local platform, architecture = "", os.getenv("PROCESSOR_ARCHITECTURE") or ""
-        if find(architecture,"AMD64") then
+        if find(architecture,"AMD64",1,true) then
          -- platform = "mswin-64"
             platform = "win64"
         else
@@ -252,9 +246,9 @@ elseif name == "linux" then
     function resolvers.platform(t,k)
         -- we sometimes have HOSTTYPE set so let's check that first
         local platform, architecture = "", os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
-        if find(architecture,"x86_64") then
+        if find(architecture,"x86_64",1,true) then
             platform = "linux-64"
-        elseif find(architecture,"ppc") then
+        elseif find(architecture,"ppc",1,true) then
             platform = "linux-ppc"
         else
             platform = "linux"
@@ -285,9 +279,9 @@ elseif name == "macosx" then
         if architecture == "" then
          -- print("\nI have no clue what kind of OSX you're running so let's assume an 32 bit intel.\n")
             platform = "osx-intel"
-        elseif find(architecture,"i386") then
+        elseif find(architecture,"i386",1,true) then
             platform = "osx-intel"
-        elseif find(architecture,"x86_64") then
+        elseif find(architecture,"x86_64",1,true) then
             platform = "osx-64"
         else
             platform = "osx-ppc"
@@ -301,7 +295,7 @@ elseif name == "sunos" then
 
     function resolvers.platform(t,k)
         local platform, architecture = "", os.resultof("uname -m") or ""
-        if find(architecture,"sparc") then
+        if find(architecture,"sparc",1,true) then
             platform = "solaris-sparc"
         else -- if architecture == 'i86pc'
             platform = "solaris-intel"
@@ -315,7 +309,7 @@ elseif name == "freebsd" then
 
     function resolvers.platform(t,k)
         local platform, architecture = "", os.resultof("uname -m") or ""
-        if find(architecture,"amd64") then
+        if find(architecture,"amd64",1,true) then
             platform = "freebsd-amd64"
         else
             platform = "freebsd"
@@ -330,7 +324,7 @@ elseif name == "kfreebsd" then
     function resolvers.platform(t,k)
         -- we sometimes have HOSTTYPE set so let's check that first
         local platform, architecture = "", os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
-        if find(architecture,"x86_64") then
+        if find(architecture,"x86_64",1,true) then
             platform = "kfreebsd-amd64"
         else
             platform = "kfreebsd-i386"
@@ -355,8 +349,10 @@ else
 
 end
 
+os.newline = name == "windows" and "\013\010" or "\010" -- crlf or lf
+
 function resolvers.bits(t,k)
-    local bits = find(os.platform,"64") and 64 or 32
+    local bits = find(os.platform,"64",1,true) and 64 or 32
     os.bits = bits
     return bits
 end

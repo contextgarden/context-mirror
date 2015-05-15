@@ -6,23 +6,30 @@ if not modules then modules = { } end modules ['file-res'] = {
     license   = "see context related readme files"
 }
 
-local format = string.format
+local format, find = string.format, string.find
 local isfile = lfs.isfile
 local is_qualified_path = file.is_qualified_path
-local hasscheme = url.hasscheme
+local hasscheme, urlescape = url.hasscheme, url.escape
 
-local trace_files  = false  trackers.register("resolvers.readfile", function(v) trace_files = v end)
-local report_files = logs.reporter("files","readfile")
+local trace_files   = false  trackers.register("resolvers.readfile",         function(v) trace_files   = v end)
+local trace_details = false  trackers.register("resolvers.readfile.details", function(v) trace_details = v end)
+local report_files  = logs.reporter("files","readfile")
 
 resolvers.maxreadlevel = 2
 
-directives.register("resolvers.maxreadlevel", function(v) resolvers.maxreadlevel = tonumber(v) or resolvers.maxreadlevel end)
+directives.register("resolvers.maxreadlevel", function(v)
+ -- resolvers.maxreadlevel = (v == false and 0) or (v == true and 2) or tonumber(v) or 2
+    resolvers.maxreadlevel = v == false and 0 or tonumber(v) or 2
+end)
 
 local finders, loaders, openers = resolvers.finders, resolvers.loaders, resolvers.openers
 
 local found = { } -- can best be done in the resolver itself
 
 local function readfilename(specification,backtrack,treetoo)
+    if trace_details then
+        report_files(table.serialize(specification,"specification"))
+    end
     local name = specification.filename
     local fnd = name and found[name]
     if not fnd then
@@ -127,29 +134,39 @@ openers.fix = openers.file loaders.fix = loaders.file
 openers.set = openers.file loaders.set = loaders.file
 openers.any = openers.file loaders.any = loaders.file
 
-function getreadfilename(scheme,path,name) -- better do a split and then pass table
+local function getreadfilename(scheme,path,name) -- better do a split and then pass table
     local fullname
     if hasscheme(name) or is_qualified_path(name) then
         fullname = name
     else
+        if not find(name,"%",1,true) then
+            name = urlescape(name) -- if no % in names
+        end
         fullname = ((path == "") and format("%s:///%s",scheme,name)) or format("%s:///%s/%s",scheme,path,name)
     end
---~ print(">>>",fullname)
     return resolvers.findtexfile(fullname) or "" -- can be more direct
 end
 
 resolvers.getreadfilename = getreadfilename
 
-function commands.getreadfilename(scheme,path,name)
-    context(getreadfilename(scheme,path,name))
-end
-
 -- a name belonging to the run but also honoring qualified
 
-function commands.locfilename(name)
-    context(getreadfilename("loc",".",name))
-end
+local implement = interfaces.implement
 
-function commands.doiflocfileelse(name)
-    commands.doifelse(isfile(getreadfilename("loc",".",name)))
-end
+implement {
+    name      = "getreadfilename",
+    actions   = { getreadfilename, context },
+    arguments = { "string", "string", "string" }
+}
+
+implement {
+    name      = "locfilename",
+    actions   = { getreadfilename, context },
+    arguments = { "'loc'","'.'", "string" },
+}
+
+implement {
+    name      = "doifelselocfile",
+    actions   = { getreadfilename, isfile, commands.doifelse },
+    arguments = { "'loc'","'.'", "string" },
+}

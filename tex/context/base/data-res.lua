@@ -18,7 +18,7 @@ if not modules then modules = { } end modules ['data-res'] = {
 -- todo: cache:/// home:/// selfautoparent:/// (sometime end 2012)
 
 local gsub, find, lower, upper, match, gmatch = string.gsub, string.find, string.lower, string.upper, string.match, string.gmatch
-local concat, insert, sortedkeys = table.concat, table.insert, table.sortedkeys
+local concat, insert, remove, sortedkeys, sortedhash = table.concat, table.insert, table.remove, table.sortedkeys, table.sortedhash
 local next, type, rawget = next, type, rawget
 local os = os
 
@@ -29,34 +29,48 @@ local formatters        = string.formatters
 local filedirname       = file.dirname
 local filebasename      = file.basename
 local suffixonly        = file.suffixonly
+local addsuffix         = file.addsuffix
+local removesuffix      = file.removesuffix
 local filejoin          = file.join
 local collapsepath      = file.collapsepath
 local joinpath          = file.joinpath
+local is_qualified_path = file.is_qualified_path
+
 local allocate          = utilities.storage.allocate
 local settings_to_array = utilities.parsers.settings_to_array
+
+local getcurrentdir     = lfs.currentdir
+local isfile            = lfs.isfile
+local isdir             = lfs.isdir
+
 local setmetatableindex = table.setmetatableindex
 local luasuffixes       = utilities.lua.suffixes
-local getcurrentdir     = lfs.currentdir
 
-local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
-local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
-local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
+local trace_locating    = false  trackers  .register("resolvers.locating",   function(v) trace_locating    = v end)
+local trace_detail      = false  trackers  .register("resolvers.details",    function(v) trace_detail      = v end)
+local trace_expansions  = false  trackers  .register("resolvers.expansions", function(v) trace_expansions  = v end)
+local trace_paths       = false  trackers  .register("resolvers.paths",      function(v) trace_paths       = v end)
+local resolve_otherwise = true   directives.register("resolvers.otherwise",  function(v) resolve_otherwise = v end)
 
 local report_resolving = logs.reporter("resolvers","resolving")
 
-local resolvers = resolvers
+local resolvers              = resolvers
 
 local expandedpathfromlist   = resolvers.expandedpathfromlist
 local checkedvariable        = resolvers.checkedvariable
 local splitconfigurationpath = resolvers.splitconfigurationpath
 local methodhandler          = resolvers.methodhandler
+local filtered               = resolvers.filtered_from_content
+local lookup                 = resolvers.get_from_content
+local cleanpath              = resolvers.cleanpath
+local resolveprefix          = resolvers.resolve
 
-local initializesetter = utilities.setters.initialize
+local initializesetter       = utilities.setters.initialize
 
 local ostype, osname, osenv, ossetenv, osgetenv = os.type, os.name, os.env, os.setenv, os.getenv
 
-resolvers.cacheversion  = '1.0.1'
-resolvers.configbanner  = ''
+resolvers.cacheversion  = "1.100"
+resolvers.configbanner  = ""
 resolvers.homedir       = environment.homedir
 resolvers.criticalvars  = allocate { "SELFAUTOLOC", "SELFAUTODIR", "SELFAUTOPARENT", "TEXMFCNF", "TEXMF", "TEXOS" }
 resolvers.luacnfname    = "texmfcnf.lua"
@@ -133,6 +147,7 @@ local unset_variable = "unset"
 
 local formats   = resolvers.formats
 local suffixes  = resolvers.suffixes
+local usertypes = resolvers.usertypes
 local dangerous = resolvers.dangerous
 local suffixmap = resolvers.suffixmap
 
@@ -154,7 +169,7 @@ function resolvers.setenv(key,value,raw)
         -- we feed back into the environment, and as this is used
         -- by other applications (via os.execute) we need to make
         -- sure that prefixes are resolve
-        ossetenv(key,raw and value or resolvers.resolve(value))
+        ossetenv(key,raw and value or resolveprefix(value))
     end
 end
 
@@ -177,7 +192,7 @@ resolvers.env    = getenv
 -- We are going to use some metatable trickery where we backtrack from
 -- expansion to variable to environment.
 
-local function resolve(k)
+local function resolvevariable(k)
     return instance.expansions[k]
 end
 
@@ -190,12 +205,12 @@ local somekey          = C(R("az","AZ","09","__","--")^1)
 local somethingelse    = P(";") * ((1-S("!{}/\\"))^1 * P(";") / "")
                        + P(";") * (P(";") / "")
                        + P(1)
-local variableexpander = Cs( (somevariable * (somekey/resolve) + somethingelse)^1 )
+local variableexpander = Cs( (somevariable * (somekey/resolvevariable) + somethingelse)^1 )
 
 local cleaner          = P("\\") / "/" + P(";") * S("!{}/\\")^0 * P(";")^1 / ";"
 local variablecleaner  = Cs((cleaner  + P(1))^0)
 
-local somevariable     = R("az","AZ","09","__","--")^1 / resolve
+local somevariable     = R("az","AZ","09","__","--")^1 / resolvevariable
 local variable         = (P("$")/"") * (somevariable + (P("{")/"") * somevariable * (P("}")/""))
 local variableresolver = Cs((variable + P(1))^0)
 
@@ -205,9 +220,12 @@ end
 
 function resolvers.newinstance() -- todo: all vars will become lowercase and alphanum only
 
-     if trace_locating then
+    -- normally we only need one instance but for special cases we can (re)load one so
+    -- we stick to this model.
+
+    if trace_locating then
         report_resolving("creating instance")
-     end
+    end
 
     local environment, variables, expansions, order = allocate(), allocate(), allocate(), allocate()
 
@@ -222,6 +240,7 @@ function resolvers.newinstance() -- todo: all vars will become lowercase and alp
         foundintrees    = allocate(),
         hashes          = allocate(),
         hashed          = allocate(),
+        pathlists       = false,-- delayed
         specification   = allocate(),
         lists           = allocate(),
         data            = allocate(), -- only for loading
@@ -234,6 +253,7 @@ function resolvers.newinstance() -- todo: all vars will become lowercase and alp
         savelists       = true,
         pattern         = nil, -- lists
         force_suffixes  = true,
+        pathstack       = { },
     }
 
     setmetatableindex(variables,function(t,k)
@@ -290,8 +310,14 @@ function resolvers.reset()
 end
 
 local function reset_hashes()
-    instance.lists = { }
-    instance.found = { }
+    instance.lists     = { }
+    instance.pathlists = false
+    instance.found     = { }
+end
+
+local function reset_caches()
+    instance.lists     = { }
+    instance.pathlists = false
 end
 
 local slash = P("/")
@@ -355,14 +381,14 @@ local function identify_configuration_files()
         for i=1,#cnfpaths do
             local filepath = cnfpaths[i]
             local filename = collapsepath(filejoin(filepath,luacnfname))
-            local realname = resolvers.resolve(filename) -- can still have "//" ... needs checking
+            local realname = resolveprefix(filename) -- can still have "//" ... needs checking
             -- todo: environment.skipweirdcnfpaths directive
             if trace_locating then
-                local fullpath  = gsub(resolvers.resolve(collapsepath(filepath)),"//","/")
-                local weirdpath = find(fullpath,"/texmf.+/texmf") or not find(fullpath,"/web2c")
+                local fullpath  = gsub(resolveprefix(collapsepath(filepath)),"//","/")
+                local weirdpath = find(fullpath,"/texmf.+/texmf") or not find(fullpath,"/web2c",1,true)
                 report_resolving("looking for %a on %s path %a from specification %a",luacnfname,weirdpath and "weird" or "given",fullpath,filepath)
             end
-            if lfs.isfile(realname) then
+            if isfile(realname) then
                 specification[#specification+1] = filename -- unresolved as we use it in matching, relocatable
                 if trace_locating then
                     report_resolving("found configuration file %a",realname)
@@ -385,7 +411,7 @@ local function load_configuration_files()
             local filename = specification[i]
             local pathname = filedirname(filename)
             local filename = filejoin(pathname,luacnfname)
-            local realname = resolvers.resolve(filename) -- no shortcut
+            local realname = resolveprefix(filename) -- no shortcut
             local blob = loadfile(realname)
             if blob then
                 local setups = instance.setups
@@ -393,7 +419,7 @@ local function load_configuration_files()
                 local parent = data and data.parent
                 if parent then
                     local filename = filejoin(pathname,parent)
-                    local realname = resolvers.resolve(filename) -- no shortcut
+                    local realname = resolveprefix(filename) -- no shortcut
                     local blob = loadfile(realname)
                     if blob then
                         local parentdata = blob()
@@ -418,7 +444,7 @@ local function load_configuration_files()
                         elseif variables[k] == nil then
                             if trace_locating and not warning then
                                 report_resolving("variables like %a in configuration file %a should move to the 'variables' subtable",
-                                    k,resolvers.resolve(filename))
+                                    k,resolveprefix(filename))
                                 warning = true
                             end
                             variables[k] = v
@@ -491,7 +517,7 @@ local function locate_file_databases()
             local stripped = lpegmatch(inhibitstripper,path) -- the !! thing
             if stripped ~= "" then
                 local runtime = stripped == path
-                path = resolvers.cleanpath(path)
+                path = cleanpath(path)
                 local spec = resolvers.splitmethod(stripped)
                 if runtime and (spec.noscheme or spec.scheme == "file") then
                     stripped = "tree:///" .. stripped
@@ -557,8 +583,8 @@ function resolvers.renew(hashname)
                 report_resolving("identifying tree %a",hashname)
             end
         end
-        local realpath = resolvers.resolve(hashname)
-        if lfs.isdir(realpath) then
+        local realpath = resolveprefix(hashname)
+        if isdir(realpath) then
             if trace_locating then
                 report_resolving("using path %a",realpath)
             end
@@ -680,25 +706,62 @@ function resolvers.unexpandedpath(str)
     return joinpath(resolvers.unexpandedpathlist(str))
 end
 
+function resolvers.pushpath(name)
+    local pathstack = instance.pathstack
+    local lastpath  = pathstack[#pathstack]
+    local pluspath  = filedirname(name)
+    if lastpath then
+        lastpath = collapsepath(filejoin(lastpath,pluspath))
+    else
+        lastpath = collapsepath(pluspath)
+    end
+    insert(pathstack,lastpath)
+    if trace_paths then
+        report_resolving("pushing path %a",lastpath)
+    end
+end
+
+function resolvers.poppath()
+    local pathstack = instance.pathstack
+    if trace_paths and #pathstack > 0 then
+        report_resolving("popping path %a",pathstack[#pathstack])
+    end
+    remove(pathstack)
+end
+
+function resolvers.stackpath()
+    local pathstack   = instance.pathstack
+    local currentpath = pathstack[#pathstack]
+    return currentpath ~= "" and currentpath or nil
+end
+
 local done = { }
 
 function resolvers.resetextrapath()
     local ep = instance.extra_paths
     if not ep then
-        ep, done = { }, { }
-        instance.extra_paths = ep
+        done                 = { }
+        instance.extra_paths = { }
     elseif #ep > 0 then
-        instance.lists, done = { }, { }
+        done = { }
+        reset_caches()
     end
 end
 
 function resolvers.registerextrapath(paths,subpaths)
-    paths = settings_to_array(paths)
-    subpaths = settings_to_array(subpaths)
-    local ep = instance.extra_paths or { }
-    local oldn = #ep
-    local newn = oldn
-    local nofpaths = #paths
+    if not subpaths or subpaths == "" then
+        if not paths or path == "" then
+            return -- invalid spec
+        elseif done[paths] then
+            return -- already done
+        end
+    end
+    local paths       = settings_to_array(paths)
+    local subpaths    = settings_to_array(subpaths)
+    local ep          = instance.extra_paths or { }
+    local oldn        = #ep
+    local newn        = oldn
+    local nofpaths    = #paths
     local nofsubpaths = #subpaths
     if nofpaths > 0 then
         if nofsubpaths > 0 then
@@ -709,7 +772,7 @@ function resolvers.registerextrapath(paths,subpaths)
                     local ps = p .. "/" .. s
                     if not done[ps] then
                         newn = newn + 1
-                        ep[newn] = resolvers.cleanpath(ps)
+                        ep[newn] = cleanpath(ps)
                         done[ps] = true
                     end
                 end
@@ -719,7 +782,7 @@ function resolvers.registerextrapath(paths,subpaths)
                 local p = paths[i]
                 if not done[p] then
                     newn = newn + 1
-                    ep[newn] = resolvers.cleanpath(p)
+                    ep[newn] = cleanpath(p)
                     done[p] = true
                 end
             end
@@ -731,7 +794,7 @@ function resolvers.registerextrapath(paths,subpaths)
                 local ps = ep[i] .. "/" .. s
                 if not done[ps] then
                     newn = newn + 1
-                    ep[newn] = resolvers.cleanpath(ps)
+                    ep[newn] = cleanpath(ps)
                     done[ps] = true
                 end
             end
@@ -740,57 +803,80 @@ function resolvers.registerextrapath(paths,subpaths)
     if newn > 0 then
         instance.extra_paths = ep -- register paths
     end
-    if newn > oldn then
-        instance.lists = { } -- erase the cache
+    if newn ~= oldn then
+        reset_caches()
     end
 end
 
-local function made_list(instance,list)
-    local ep = instance.extra_paths
-    if not ep or #ep == 0 then
-        return list
+function resolvers.pushextrapath(path)
+    local paths = settings_to_array(path)
+    if instance.extra_stack then
+        insert(instance.extra_stack,1,paths)
     else
-        local done, new, newn = { }, { }, 0
-        -- honour . .. ../.. but only when at the start
-        for k=1,#list do
-            local v = list[k]
-            if not done[v] then
-                if find(v,"^[%.%/]$") then
-                    done[v] = true
-                    newn = newn + 1
-                    new[newn] = v
-                else
-                    break
-                end
-            end
-        end
-        -- first the extra paths
-        for k=1,#ep do
-            local v = ep[k]
-            if not done[v] then
-                done[v] = true
-                newn = newn + 1
-                new[newn] = v
-            end
-        end
-        -- next the formal paths
-        for k=1,#list do
-            local v = list[k]
-            if not done[v] then
-                done[v] = true
-                newn = newn + 1
-                new[newn] = v
-            end
-        end
-        return new
+        instance.extra_stack = { paths }
     end
+    reset_caches()
+end
+
+function resolvers.popextrapath()
+    if instance.extra_stack then
+        reset_caches()
+        return remove(instance.extra_stack,1)
+    end
+end
+
+local function made_list(instance,list,extra_too)
+    local done = { }
+    local new  = { }
+    local newn = 0
+    -- a helper
+    local function add(p)
+        for k=1,#p do
+            local v = p[k]
+            if not done[v] then
+                done[v] = true
+                newn = newn + 1
+                new[newn] = v
+            end
+        end
+    end
+    -- honour . .. ../.. but only when at the start
+    for k=1,#list do
+        local v = list[k]
+        if done[v] then
+            -- skip
+        elseif find(v,"^[%.%/]$") then
+            done[v] = true
+            newn = newn + 1
+            new[newn] = v
+        else
+            break
+        end
+    end
+    if extra_too then
+        -- first the stacked paths
+        local es = instance.extra_stack
+        if es and #es > 0 then
+            for k=1,#es do
+                add(es[k])
+            end
+        end
+        -- then the extra paths
+        local ep = instance.extra_paths
+        if ep and #ep > 0 then
+            add(ep)
+        end
+    end
+    -- last the formal paths
+    add(list)
+    return new
 end
 
 function resolvers.cleanpathlist(str)
     local t = resolvers.expandedpathlist(str)
     if t then
         for i=1,#t do
-            t[i] = collapsepath(resolvers.cleanpath(t[i]))
+            t[i] = collapsepath(cleanpath(t[i]))
         end
     end
     return t
@@ -800,22 +886,22 @@ function resolvers.expandpath(str)
     return joinpath(resolvers.expandedpathlist(str))
 end
 
-function resolvers.expandedpathlist(str)
+function resolvers.expandedpathlist(str,extra_too)
     if not str then
         return { }
-    elseif instance.savelists then
+    elseif instance.savelists then -- hm, what if two cases, with and without extra_too
         str = lpegmatch(dollarstripper,str)
         local lists = instance.lists
         local lst = lists[str]
         if not lst then
-            local l = made_list(instance,resolvers.splitpath(resolvers.expansion(str)))
+            local l = made_list(instance,resolvers.splitpath(resolvers.expansion(str)),extra_too)
             lst = expandedpathfromlist(l)
             lists[str] = lst
         end
         return lst
     else
         local lst = resolvers.splitpath(resolvers.expansion(str))
-        return made_list(instance,expandedpathfromlist(lst))
+        return made_list(instance,expandedpathfromlist(lst),extra_too)
     end
 end
 
@@ -827,6 +913,14 @@ end
 
 function resolvers.expandpathfromvariable(str)
     return joinpath(resolvers.expandedpathlistfromvariable(str))
+end
+
+function resolvers.cleanedpathlist(v) -- can be cached if needed
+    local t = resolvers.expandedpathlist(v)
+    for i=1,#t do
+        t[i] = resolvers.resolve(resolvers.cleanpath(t[i]))
+    end
+    return t
 end
 
 function resolvers.expandbraces(str) -- output variable and brace expansion of STRING
@@ -850,7 +944,7 @@ function resolvers.registerfilehash(name,content,someerror)
 end
 
 local function isreadable(name)
-    local readable = lfs.isfile(name) -- not file.is_readable(name) asit can be a dir
+    local readable = isfile(name) -- not file.is_readable(name) asit can be a dir
     if trace_detail then
         if readable then
             report_resolving("file %a is readable",name)
@@ -861,75 +955,59 @@ local function isreadable(name)
     return readable
 end
 
--- name
--- name/name
+-- name | name/name
 
-local function collect_files(names)
-    local filelist, noffiles = { }, 0
-    for k=1,#names do
-        local fname = names[k]
-        if trace_detail then
-            report_resolving("checking name %a",fname)
+local function collect_files(names) -- potential files .. sort of too much when asking for just one file
+    local filelist = { }            -- but we need it for pattern matching later on
+    local noffiles = 0
+    local function check(hash,root,pathname,path,name)
+        if not pathname or find(path,pathname) then
+            local variant = hash.type
+            local search  = filejoin(root,path,name) -- funny no concatinator
+            local result  = methodhandler('concatinators',variant,root,path,name)
+            if trace_detail then
+                report_resolving("match: variant %a, search %a, result %a",variant,search,result)
+            end
+            noffiles = noffiles + 1
+            filelist[noffiles] = { variant, search, result }
         end
-        local bname = filebasename(fname)
-        local dname = filedirname(fname)
-        if dname == "" or find(dname,"^%.") then
-            dname = false
+    end
+    for k=1,#names do
+        local filename = names[k]
+        if trace_detail then
+            report_resolving("checking name %a",filename)
+        end
+        local basename = filebasename(filename)
+        local pathname = filedirname(filename)
+        if pathname == "" or find(pathname,"^%.") then
+            pathname = false
         else
-            dname = gsub(dname,"%*",".*")
-            dname = "/" .. dname .. "$"
+            pathname = gsub(pathname,"%*",".*")
+            pathname = "/" .. pathname .. "$"
         end
         local hashes = instance.hashes
         for h=1,#hashes do
-            local hash = hashes[h]
-            local blobpath = hash.name
-            local files = blobpath and instance.files[blobpath]
-            if files then
+            local hash     = hashes[h]
+            local hashname = hash.name
+            local content  = hashname and instance.files[hashname]
+            if content then
                 if trace_detail then
-                    report_resolving("deep checking %a, base %a, pattern %a",blobpath,bname,dname)
+                    report_resolving("deep checking %a, base %a, pattern %a",hashname,basename,pathname)
                 end
-                local blobfile = files[bname]
-                if not blobfile then
-                    local rname = "remap:"..bname
-                    blobfile = files[rname]
-                    if blobfile then
-                        bname = files[rname]
-                        blobfile = files[bname]
-                    end
-                end
-                if blobfile then
-                    local blobroot = files.__path__ or blobpath
-                    if type(blobfile) == 'string' then
-                        if not dname or find(blobfile,dname) then
-                            local variant = hash.type
-                         -- local search  = filejoin(blobpath,blobfile,bname)
-                            local search  = filejoin(blobroot,blobfile,bname)
-                            local result  = methodhandler('concatinators',hash.type,blobroot,blobfile,bname)
-                            if trace_detail then
-                                report_resolving("match: variant %a, search %a, result %a",variant,search,result)
-                            end
-                            noffiles = noffiles + 1
-                            filelist[noffiles] = { variant, search, result }
-                        end
+                local path, name = lookup(content,basename)
+                if path then
+                    local metadata = content.metadata
+                    local realroot = metadata and metadata.path or hashname
+                    if type(path) == "string" then
+                        check(hash,realroot,pathname,path,name)
                     else
-                        for kk=1,#blobfile do
-                            local vv = blobfile[kk]
-                            if not dname or find(vv,dname) then
-                                local variant = hash.type
-                             -- local search  = filejoin(blobpath,vv,bname)
-                                local search  = filejoin(blobroot,vv,bname)
-                                local result  = methodhandler('concatinators',hash.type,blobroot,vv,bname)
-                                if trace_detail then
-                                    report_resolving("match: variant %a, search %a, result %a",variant,search,result)
-                                end
-                                noffiles = noffiles + 1
-                                filelist[noffiles] = { variant, search, result }
-                            end
+                        for i=1,#path do
+                            check(hash,realroot,pathname,path[i],name)
                         end
                     end
                 end
             elseif trace_locating then
-                report_resolving("no match in %a (%s)",blobpath,bname)
+                report_resolving("no match in %a (%s)",hashname,basename)
             end
         end
     end
@@ -960,7 +1038,7 @@ end
 local function can_be_dir(name) -- can become local
     local fakepaths = instance.fakepaths
     if not fakepaths[name] then
-        if lfs.isdir(name) then
+        if isdir(name) then
             fakepaths[name] = 1 -- directory
         else
             fakepaths[name] = 2 -- no directory
@@ -986,10 +1064,11 @@ local function find_analyze(filename,askedformat,allresults)
     if askedformat == "" then
         if ext == "" or not suffixmap[ext] then
             local defaultsuffixes = resolvers.defaultsuffixes
+            local formatofsuffix  = resolvers.formatofsuffix
             for i=1,#defaultsuffixes do
                 local forcedname = filename .. '.' .. defaultsuffixes[i]
                 wantedfiles[#wantedfiles+1] = forcedname
-                filetype = resolvers.formatofsuffix(forcedname)
+                filetype = formatofsuffix(forcedname)
                 if trace_locating then
                     report_resolving("forcing filetype %a",filetype)
                 end
@@ -1027,11 +1106,11 @@ local function find_direct(filename,allresults)
 end
 
 local function find_wildcard(filename,allresults)
-    if find(filename,'%*') then
+    if find(filename,'*',1,true) then
         if trace_locating then
             report_resolving("checking wildcard %a", filename)
         end
-        local method, result = resolvers.findwildcardfiles(filename)
+        local result = resolvers.findwildcardfiles(filename)
         if result then
             return "wildcard", result
         end
@@ -1039,7 +1118,7 @@ local function find_wildcard(filename,allresults)
 end
 
 local function find_qualified(filename,allresults,askedformat,alsostripped) -- this one will be split too
-    if not file.is_qualified_path(filename) then
+    if not is_qualified_path(filename) then
         return
     end
     if trace_locating then
@@ -1135,50 +1214,91 @@ local function check_subpath(fname)
     end
 end
 
-local function find_intree(filename,filetype,wantedfiles,allresults)
+-- this caching is not really needed (seldom accessed) but more readable
+-- we could probably move some to a higher level but then we need to adapt
+-- more code ... maybe some day
+
+local function makepathlist(list,filetype)
     local typespec = resolvers.variableofformat(filetype)
-    local pathlist = resolvers.expandedpathlist(typespec)
-    local method = "intree"
+    local pathlist = resolvers.expandedpathlist(typespec,filetype and usertypes[filetype]) -- only extra path with user files
+    local entry    = { }
     if pathlist and #pathlist > 0 then
+        for k=1,#pathlist do
+            local path       = pathlist[k]
+            local prescanned = find(path,'^!!')
+            local resursive  = find(path,'//$')
+            local pathname   = lpegmatch(inhibitstripper,path)
+            local expression = makepathexpression(pathname)
+            local barename   = gsub(pathname,"/+$","")
+            barename         = resolveprefix(barename)
+            local scheme     = url.hasscheme(barename)
+            local schemename = gsub(barename,"%.%*$",'') -- after scheme
+         -- local prescanned = path ~= pathname -- ^!!
+         -- local resursive  = find(pathname,'//$')
+            entry[k] = {
+                path       = path,
+                pathname   = pathname,
+                prescanned = prescanned,
+                recursive  = recursive,
+                expression = expression,
+                barename   = barename,
+                scheme     = scheme,
+                schemename = schemename,
+            }
+        end
+        entry.typespec = typespec
+        list[filetype] = entry
+    else
+        list[filetype] = false
+    end
+    return entry
+end
+
+-- pathlist : resolved
+-- dirlist  : unresolved or resolved
+-- filelist : unresolved
+
+local function find_intree(filename,filetype,wantedfiles,allresults)
+    local pathlists = instance.pathlists
+    if not pathlists then
+        pathlists = setmetatableindex(allocate(),makepathlist)
+        instance.pathlists = pathlists
+    end
+    local pathlist = pathlists[filetype]
+    if pathlist then
         -- list search
-        local filelist = collect_files(wantedfiles)
-        local dirlist = { }
+        local method   = "intree"
+        local filelist = collect_files(wantedfiles) -- okay, a bit over the top when we just look relative to the current path
+        local dirlist  = { }
+        local result   = { }
         if filelist then
             for i=1,#filelist do
                 dirlist[i] = filedirname(filelist[i][3]) .. "/" -- was [2] .. gamble
             end
         end
         if trace_detail then
-            report_resolving("checking filename %a",filename)
+            report_resolving("checking filename %a in tree",filename)
         end
-        local resolve = resolvers.resolve
-        local result = { }
-        -- pathlist : resolved
-        -- dirlist  : unresolved or resolved
-        -- filelist : unresolved
         for k=1,#pathlist do
-            local path = pathlist[k]
-            local pathname = lpegmatch(inhibitstripper,path)
-            local doscan = path == pathname -- no ^!!
-            if not find (pathname,'//$') then
-                doscan = false -- we check directly on the path
-            end
-            local done = false
+            local entry    = pathlist[k]
+            local path     = entry.path
+            local pathname = entry.pathname
+            local done     = false
             -- using file list
             if filelist then -- database
                 -- compare list entries with permitted pattern -- /xx /xx//
-                local expression = makepathexpression(pathname)
+                local expression = entry.expression
                 if trace_detail then
                     report_resolving("using pattern %a for path %a",expression,pathname)
                 end
                 for k=1,#filelist do
                     local fl = filelist[k]
-                    local f = fl[2]
-                    local d = dirlist[k]
+                    local f  = fl[2]
+                    local d  = dirlist[k]
                     -- resolve is new:
-                    if find(d,expression) or find(resolve(d),expression) then
+                    if find(d,expression) or find(resolveprefix(d),expression) then
                         -- todo, test for readable
-                        result[#result+1] = resolve(fl[3]) -- no shortcut
+                        result[#result+1] = resolveprefix(fl[3]) -- no shortcut
                         done = true
                         if allresults then
                             if trace_detail then
@@ -1198,61 +1318,74 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
             if done then
                 method = "database"
             else
-                method = "filesystem" -- bonus, even when !! is specified
-                pathname = gsub(pathname,"/+$","")
-                pathname = resolve(pathname)
-                local scheme = url.hasscheme(pathname)
+                -- beware: we don't honor allresults here in a next attempt (done false)
+                -- but that is kind of special anyway
+                method       = "filesystem" -- bonus, even when !! is specified
+                local scheme = entry.scheme
                 if not scheme or scheme == "file" then
-                    local pname = gsub(pathname,"%.%*$",'')
-                    if not find(pname,"%*") then
+                    local pname = entry.schemename
+                    if not find(pname,"*",1,true) then
                         if can_be_dir(pname) then
-                            -- quick root scan first
-                            for k=1,#wantedfiles do
-                                local w = wantedfiles[k]
-                                local fname = check_subpath(filejoin(pname,w))
-                                if fname then
-                                    result[#result+1] = fname
-                                    done = true
-                                    if not allresults then
-                                        break
-                                    end
+                            -- hm, rather useless as we don't go deeper and if we would we could also
+                            -- auto generate the file database .. however, we need this for extra paths
+                            -- that are not hashed (like sources on my machine) .. so, this is slightly
+                            -- out of order but at least fast (and we seldom end up here, only when a file
+                            -- is not already found
+-- inspect(entry)
+                            if not done and not entry.prescanned then
+                                if trace_detail then
+                                    report_resolving("quick root scan for %a",pname)
                                 end
-                            end
-                            if not done and doscan then
-                                -- collect files in path (and cache the result)
-                                local files = resolvers.simplescanfiles(pname,false,true)
                                 for k=1,#wantedfiles do
                                     local w = wantedfiles[k]
-                                    local subpath = files[w]
-                                    if not subpath or subpath == "" then
-                                        -- rootscan already done
-                                    elseif type(subpath) == "string" then
-                                        local fname = check_subpath(filejoin(pname,subpath,w))
-                                        if fname then
-                                            result[#result+1] = fname
-                                            done = true
-                                            if not allresults then
-                                                break
-                                            end
+                                    local fname = check_subpath(filejoin(pname,w))
+                                    if fname then
+                                        result[#result+1] = fname
+                                        done = true
+                                        if not allresults then
+                                            break
                                         end
-                                    else
-                                        for i=1,#subpath do
-                                            local sp = subpath[i]
-                                            if sp == "" then
-                                                -- roottest already done
-                                            else
-                                                local fname = check_subpath(filejoin(pname,sp,w))
-                                                if fname then
-                                                    result[#result+1] = fname
-                                                    done = true
-                                                    if not allresults then
-                                                        break
+                                    end
+                                end
+                                if not done and entry.recursive then -- maybe also when allresults
+                                    -- collect files in path (and cache the result)
+                                    if trace_detail then
+                                        report_resolving("scanning filesystem for %a",pname)
+                                    end
+                                    local files = resolvers.simplescanfiles(pname,false,true)
+                                    for k=1,#wantedfiles do
+                                        local w = wantedfiles[k]
+                                        local subpath = files[w]
+                                        if not subpath or subpath == "" then
+                                            -- rootscan already done
+                                        elseif type(subpath) == "string" then
+                                            local fname = check_subpath(filejoin(pname,subpath,w))
+                                            if fname then
+                                                result[#result+1] = fname
+                                                done = true
+                                                if not allresults then
+                                                    break
+                                                end
+                                            end
+                                        else
+                                            for i=1,#subpath do
+                                                local sp = subpath[i]
+                                                if sp == "" then
+                                                    -- roottest already done
+                                                else
+                                                    local fname = check_subpath(filejoin(pname,sp,w))
+                                                    if fname then
+                                                        result[#result+1] = fname
+                                                        done = true
+                                                        if not allresults then
+                                                            break
+                                                        end
                                                     end
                                                 end
                                             end
-                                        end
-                                        if done and not allresults then
-                                            break
+                                            if done and not allresults then
+                                                break
+                                            end
                                         end
                                     end
                                 end
@@ -1260,6 +1393,20 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
                         end
                     else
                         -- no access needed for non existing path, speedup (esp in large tree with lots of fake)
+                    end
+                else
+                    -- we can have extra_paths that are urls
+                    for k=1,#wantedfiles do
+                        -- independent url scanner
+                        local pname = entry.barename
+                        local fname = methodhandler('finders',pname .. "/" .. wantedfiles[k])
+                        if fname then
+                            result[#result+1] = fname
+                            done = true
+                            if not allresults then
+                                break
+                            end
+                        end
                     end
                 end
             end
@@ -1298,7 +1445,7 @@ local function find_otherwise(filename,filetype,wantedfiles,allresults) -- other
     local filelist = collect_files(wantedfiles)
     local fl = filelist and filelist[1]
     if fl then
-        return "otherwise", { resolvers.resolve(fl[3]) } -- filename
+        return "otherwise", { resolveprefix(fl[3]) } -- filename
     end
 end
 
@@ -1306,6 +1453,9 @@ end
 -- always analyze .. todo: use url split
 
 collect_instance_files = function(filename,askedformat,allresults) -- uses nested
+    if not filename or filename == "" then
+        return { }
+    end
     askedformat = askedformat or ""
     filename = collapsepath(filename,".")
 
@@ -1343,7 +1493,11 @@ collect_instance_files = function(filename,askedformat,allresults) -- uses neste
     else
         local method, result, stamp, filetype, wantedfiles
         if instance.remember then
-            stamp = formatters["%s--%s"](filename,askedformat)
+            if askedformat == "" then
+                stamp = formatters["%s::%s"](suffixonly(filename),filename)
+            else
+                stamp = formatters["%s::%s"](askedformat,filename)
+            end
             result = stamp and instance.found[stamp]
             if result then
                 if trace_locating then
@@ -1362,7 +1516,8 @@ collect_instance_files = function(filename,askedformat,allresults) -- uses neste
                     method, result = find_intree(filename,filetype,wantedfiles)
                     if not result then
                         method, result = find_onpath(filename,filetype,wantedfiles)
-                        if not result then
+                        if resolve_otherwise and not result then
+                            -- this will search everywhere in the tree
                             method, result = find_otherwise(filename,filetype,wantedfiles)
                         end
                     end
@@ -1378,7 +1533,7 @@ collect_instance_files = function(filename,askedformat,allresults) -- uses neste
         end
         if stamp then
             if trace_locating then
-                report_resolving("remembering file %a",filename)
+                report_resolving("remembering file %a using hash %a",filename,stamp)
             end
             instance.found[stamp] = result
         end
@@ -1389,6 +1544,9 @@ end
 -- -- -- end of main file search routing -- -- --
 
 local function findfiles(filename,filetype,allresults)
+    if not filename or filename == "" then
+        return { }
+    end
     local result, status = collect_instance_files(filename,filetype or "",allresults)
     if not result or #result == 0 then
         local lowered = lower(filename)
@@ -1412,44 +1570,39 @@ function resolvers.findpath(filename,filetype)
 end
 
 local function findgivenfiles(filename,allresults)
-    local bname, result = filebasename(filename), { }
-    local hashes = instance.hashes
-    local noffound = 0
-    for k=1,#hashes do
-        local hash = hashes[k]
-        local files = instance.files[hash.name] or { }
-        local blist = files[bname]
-        if not blist then
-            local rname = "remap:"..bname
-            blist = files[rname]
-            if blist then
-                bname = files[rname]
-                blist = files[bname]
-            end
+    local base    = filebasename(filename)
+    local result  = { }
+    local hashes  = instance.hashes
+    --
+    local function okay(hash,path,name)
+        local found = methodhandler('concatinators',hash.type,hash.name,path,name)
+        if found and found ~= "" then
+            result[#result+1] = resolveprefix(found)
+            return not allresults
         end
-        if blist then
-            if type(blist) == 'string' then
-                local found = methodhandler('concatinators',hash.type,hash.name,blist,bname) or ""
-                if found ~= "" then
-                    noffound = noffound + 1
-                    result[noffound] = resolvers.resolve(found)
-                    if not allresults then
-                        break
-                    end
+    end
+    --
+    for k=1,#hashes do
+        local hash    = hashes[k]
+        local content = instance.files[hash.name]
+        if content then
+            local path, name = lookup(content,base)
+            if not path then
+                -- no match
+            elseif type(path) == "string" then
+                if okay(hash,path,name) then
+                    return result
                 end
             else
-                for kk=1,#blist do
-                    local vv = blist[kk]
-                    local found = methodhandler('concatinators',hash.type,hash.name,vv,bname) or ""
-                    if found ~= "" then
-                        noffound = noffound + 1
-                        result[noffound] = resolvers.resolve(found)
-                        if not allresults then break end
+                for i=1,#path do
+                    if okay(hash,path[i],name) then
+                        return result
                     end
                 end
             end
         end
     end
+    --
     return result
 end
 
@@ -1461,37 +1614,6 @@ function resolvers.findgivenfile(filename)
     return findgivenfiles(filename,false)[1] or ""
 end
 
-local function doit(path,blist,bname,tag,variant,result,allresults)
-    local done = false
-    if blist and variant then
-        local resolve = resolvers.resolve -- added
-        if type(blist) == 'string' then
-            -- make function and share code
-            if find(lower(blist),path) then
-                local full = methodhandler('concatinators',variant,tag,blist,bname) or ""
-                result[#result+1] = resolve(full)
-                done = true
-            end
-        else
-            for kk=1,#blist do
-                local vv = blist[kk]
-                if find(lower(vv),path) then
-                    local full = methodhandler('concatinators',variant,tag,vv,bname) or ""
-                    result[#result+1] = resolve(full)
-                    done = true
-                    if not allresults then break end
-                end
-            end
-        end
-    end
-    return done
-end
-
---~ local makewildcard = Cs(
---~     (P("^")^0 * P("/") * P(-1) + P(-1)) /".*"
---~   + (P("^")^0 * P("/") / "") * (P("*")/".*" + P("-")/"%%-" + P("?")/"."+ P("\\")/"/" + P(1))^0
---~ )
-
 local makewildcard = Cs(
     (P("^")^0 * P("/") * P(-1) + P(-1)) /".*"
   + (P("^")^0 * P("/") / "")^0 * (P("*")/".*" + P("-")/"%%-" + P(".")/"%%." + P("?")/"."+ P("\\")/"/" + P(1))^0
@@ -1501,37 +1623,80 @@ function resolvers.wildcardpattern(pattern)
     return lpegmatch(makewildcard,pattern) or pattern
 end
 
-local function findwildcardfiles(filename,allresults,result) -- todo: remap: and lpeg
-    result = result or { }
---~     local path = lower(lpegmatch(makewildcard,filedirname (filename)))
---~     local name = lower(lpegmatch(makewildcard,filebasename(filename)))
-    local base = filebasename(filename)
-    local dirn = filedirname(filename)
-    local path = lower(lpegmatch(makewildcard,dirn) or dirn)
-    local name = lower(lpegmatch(makewildcard,base) or base)
-    local files, done = instance.files, false
-    if find(name,"%*") then
+-- we use more function calls than before but we also have smaller trees so
+-- why bother
+
+local function findwildcardfiles(filename,allresults,result)
+    local result  = result or { }
+    local base    = filebasename(filename)
+    local dirn    = filedirname(filename)
+    local path    = lower(lpegmatch(makewildcard,dirn) or dirn)
+    local name    = lower(lpegmatch(makewildcard,base) or base)
+    local files   = instance.files
+    --
+    if find(name,"*",1,true) then
         local hashes = instance.hashes
+        local function okay(found,path,base,hashname,hashtype)
+            if find(found,path) then
+                local full = methodhandler('concatinators',hashtype,hashname,found,base)
+                if full and full ~= "" then
+                    result[#result+1] = resolveprefix(full)
+                    return not allresults
+                end
+            end
+        end
         for k=1,#hashes do
-            local hash = hashes[k]
-            local hashname, hashtype = hash.name, hash.type
-            for kk, hh in next, files[hashname] do
-                if not find(kk,"^remap:") then
-                    if find(lower(kk),name) then
-                        if doit(path,hh,kk,hashname,hashtype,result,allresults) then done = true end
-                        if done and not allresults then break end
+            local hash     = hashes[k]
+            local hashname = hash.name
+            local hashtype = hash.type
+            if hashname and hashtype then
+                for found, base in filtered(files[hashname],name) do
+                    if type(found) == 'string' then
+                        if okay(found,path,base,hashname,hashtype) then
+                            break
+                        end
+                    else
+                        for i=1,#found do
+                            if okay(found[i],path,base,hashname,hashtype) then
+                                break
+                            end
+                        end
                     end
                 end
             end
         end
     else
+        local function okayokay(found,path,base,hashname,hashtype)
+            if find(found,path) then
+                local full = methodhandler('concatinators',hashtype,hashname,found,base)
+                if full and full ~= "" then
+                    result[#result+1] = resolveprefix(full)
+                    return not allresults
+                end
+            end
+        end
+        --
         local hashes = instance.hashes
--- inspect(hashes)
         for k=1,#hashes do
-            local hash = hashes[k]
-            local hashname, hashtype = hash.name, hash.type
-            if doit(path,files[hashname][base],base,hashname,hashtype,result,allresults) then done = true end
-            if done and not allresults then break end
+            local hash     = hashes[k]
+            local hashname = hash.name
+            local hashtype = hash.type
+            if hashname and hashtype then
+                local found, base = lookup(content,base)
+                if not found then
+                    -- nothing
+                elseif type(found) == 'string' then
+                    if okay(found,path,base,hashname,hashtype) then
+                        break
+                    end
+                else
+                    for i=1,#found do
+                        if okay(found[i],path,base,hashname,hashtype) then
+                            break
+                        end
+                    end
+                end
+            end
         end
     end
     -- we can consider also searching the paths not in the database, but then
@@ -1624,7 +1789,7 @@ end
 function resolvers.dowithpath(name,func)
     local pathlist = resolvers.expandedpathlist(name)
     for i=1,#pathlist do
-        func("^"..resolvers.cleanpath(pathlist[i]))
+        func("^"..cleanpath(pathlist[i]))
     end
 end
 
@@ -1634,23 +1799,23 @@ end
 
 function resolvers.locateformat(name)
     local engine = environment.ownmain or "luatex"
-    local barename = file.removesuffix(name)
-    local fullname = file.addsuffix(barename,"fmt")
+    local barename = removesuffix(name)
+    local fullname = addsuffix(barename,"fmt")
     local fmtname = caches.getfirstreadablefile(fullname,"formats",engine) or ""
     if fmtname == "" then
         fmtname = resolvers.findfile(fullname)
-        fmtname = resolvers.cleanpath(fmtname)
+        fmtname = cleanpath(fmtname)
     end
     if fmtname ~= "" then
-        local barename = file.removesuffix(fmtname)
-        local luaname = file.addsuffix(barename,luasuffixes.lua)
-        local lucname = file.addsuffix(barename,luasuffixes.luc)
-        local luiname = file.addsuffix(barename,luasuffixes.lui)
-        if lfs.isfile(luiname) then
+        local barename = removesuffix(fmtname)
+        local luaname = addsuffix(barename,luasuffixes.lua)
+        local lucname = addsuffix(barename,luasuffixes.luc)
+        local luiname = addsuffix(barename,luasuffixes.lui)
+        if isfile(luiname) then
             return barename, luiname
-        elseif lfs.isfile(lucname) then
+        elseif isfile(lucname) then
             return barename, lucname
-        elseif lfs.isfile(luaname) then
+        elseif isfile(luaname) then
             return barename, luaname
         end
     end
@@ -1669,35 +1834,29 @@ end
 
 function resolvers.dowithfilesintree(pattern,handle,before,after) -- will move, can be a nice iterator instead
     local instance = resolvers.instance
-    local hashes = instance.hashes
+    local hashes   = instance.hashes
     for i=1,#hashes do
-        local hash = hashes[i]
+        local hash     = hashes[i]
         local blobtype = hash.type
         local blobpath = hash.name
-        if blobpath then
+        if blobtype and blobpath then
+            local total   = 0
+            local checked = 0
+            local done    = 0
             if before then
                 before(blobtype,blobpath,pattern)
             end
-            local files = instance.files[blobpath]
-            local total, checked, done = 0, 0, 0
-            if files then
-                for k, v in table.sortedhash(files) do -- next, files do, beware: this is not the resolve order
-                    total = total + 1
-                    if find(k,"^remap:") then
-                        -- forget about these
-                    elseif find(k,pattern) then
-                        if type(v) == "string" then
-                            checked = checked + 1
-                            if handle(blobtype,blobpath,v,k) then
-                                done = done + 1
-                            end
-                        else
-                            checked = checked + #v
-                            for i=1,#v do
-                                if handle(blobtype,blobpath,v[i],k) then
-                                    done = done + 1
-                                end
-                            end
+            for path, name in filtered(instance.files[blobpath],pattern) do
+                if type(path) == "string" then
+                    checked = checked + 1
+                    if handle(blobtype,blobpath,path,name) then
+                        done = done + 1
+                    end
+                else
+                    checked = checked + #path
+                    for i=1,#path do
+                        if handle(blobtype,blobpath,path[i],name) then
+                            done = done + 1
                         end
                     end
                 end
@@ -1709,8 +1868,8 @@ function resolvers.dowithfilesintree(pattern,handle,before,after) -- will move, 
     end
 end
 
-resolvers.obsolete = resolvers.obsolete or { }
-local obsolete     = resolvers.obsolete
+local obsolete     = resolvers.obsolete or { }
+resolvers.obsolete = obsolete
 
 resolvers.find_file  = resolvers.findfile    obsolete.find_file  = resolvers.findfile
 resolvers.find_files = resolvers.findfiles   obsolete.find_files = resolvers.findfiles

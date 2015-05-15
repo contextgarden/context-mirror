@@ -6,48 +6,96 @@ if not modules then modules = { } end modules ['syst-lua'] = {
     license   = "see context related readme files"
 }
 
-local format, find, match, rep = string.format, string.find, string.match, string.rep
+local find, match = string.find, string.match
 local tonumber = tonumber
-local S, lpegmatch, lpegtsplitat = lpeg.S, lpeg.match, lpeg.tsplitat
+local S, C, P, lpegmatch, lpegtsplitat = lpeg.S, lpeg.C, lpeg.P, lpeg.match, lpeg.tsplitat
 
-commands       = commands or { }
-local commands = commands
 
-local context  = context
+commands          = commands or { }
+local commands    = commands
 
-function commands.writestatus(...) logs.status(...) end -- overloaded later
+local implement   = interfaces.implement
 
-local firstoftwoarguments  = context.firstoftwoarguments  -- context.constructcsonly("firstoftwoarguments" )
-local secondoftwoarguments = context.secondoftwoarguments -- context.constructcsonly("secondoftwoarguments")
-local firstofoneargument   = context.firstofoneargument   -- context.constructcsonly("firstofoneargument"  )
-local gobbleoneargument    = context.gobbleoneargument    -- context.constructcsonly("gobbleoneargument"   )
+local two_strings = interfaces.strings[2]
 
--- contextsprint(prtcatcodes,[[\ui_fo]]) -- firstofonearguments
--- contextsprint(prtcatcodes,[[\ui_go]]) -- gobbleonearguments
--- contextsprint(prtcatcodes,[[\ui_ft]]) -- firstoftwoarguments
--- contextsprint(prtcatcodes,[[\ui_st]]) -- secondoftwoarguments
+local context     = context
+local csprint     = context.sprint
+
+local prtcatcodes = tex.prtcatcodes
+
+implement { -- will b eoverloaded later
+    name      = "writestatus",
+    arguments = two_strings,
+    actions   = logs.status,
+}
+
+local ctx_firstoftwoarguments  = context.firstoftwoarguments  -- context.constructcsonly("firstoftwoarguments" )
+local ctx_secondoftwoarguments = context.secondoftwoarguments -- context.constructcsonly("secondoftwoarguments")
+local ctx_firstofoneargument   = context.firstofoneargument   -- context.constructcsonly("firstofoneargument"  )
+local ctx_gobbleoneargument    = context.gobbleoneargument    -- context.constructcsonly("gobbleoneargument"   )
+
+-- contextsprint(prtcatcodes,[[\ui_fo]]) -- ctx_firstofonearguments
+-- contextsprint(prtcatcodes,[[\ui_go]]) -- ctx_gobbleonearguments
+-- contextsprint(prtcatcodes,[[\ui_ft]]) -- ctx_firstoftwoarguments
+-- contextsprint(prtcatcodes,[[\ui_st]]) -- ctx_secondoftwoarguments
 
 function commands.doifelse(b)
     if b then
-        firstoftwoarguments()
+        ctx_firstoftwoarguments()
+-- csprint(prtcatcodes,[[\ui_ft]]) -- ctx_firstoftwoarguments
     else
-        secondoftwoarguments()
+        ctx_secondoftwoarguments()
+-- csprint(prtcatcodes,[[\ui_st]]) -- ctx_secondoftwoarguments
+    end
+end
+
+function commands.doifelsesomething(b)
+    if b and b ~= "" then
+        ctx_firstoftwoarguments()
+-- csprint(prtcatcodes,[[\ui_ft]]) -- ctx_firstoftwoarguments
+    else
+        ctx_secondoftwoarguments()
+-- csprint(prtcatcodes,[[\ui_st]]) -- ctx_secondoftwoarguments
     end
 end
 
 function commands.doif(b)
     if b then
-        firstofoneargument()
+        ctx_firstofoneargument()
+-- context.__flushdirect(prtcatcodes,[[\ui_fo]]) -- ctx_firstofonearguments
     else
-        gobbleoneargument()
+        ctx_gobbleoneargument()
+-- context.__flushdirect(prtcatcodes,[[\ui_go]]) -- ctx_gobbleonearguments
+    end
+end
+
+function commands.doifsomething(b)
+    if b and b ~= "" then
+        ctx_firstofoneargument()
+-- context.__flushdirect(prtcatcodes,[[\ui_fo]]) -- ctx_firstofonearguments
+    else
+        ctx_gobbleoneargument()
+-- context.__flushdirect(prtcatcodes,[[\ui_go]]) -- ctx_gobbleonearguments
     end
 end
 
 function commands.doifnot(b)
     if b then
-        gobbleoneargument()
+        ctx_gobbleoneargument()
+-- csprint(prtcatcodes,[[\ui_go]]) -- ctx_gobbleonearguments
     else
-        firstofoneargument()
+        ctx_firstofoneargument()
+-- csprint(prtcatcodes,[[\ui_fo]]) -- ctx_firstofonearguments
+    end
+end
+
+function commands.doifnotthing(b)
+    if b and b ~= "" then
+        ctx_gobbleoneargument()
+-- csprint(prtcatcodes,[[\ui_go]]) -- ctx_gobbleonearguments
+    else
+        ctx_firstofoneargument()
+-- csprint(prtcatcodes,[[\ui_fo]]) -- ctx_firstofonearguments
     end
 end
 
@@ -59,16 +107,16 @@ end
 
 function commands.doifelsespaces(str)
     if find(str,"^ +$") then
-        firstoftwoarguments()
+        ctx_firstoftwoarguments()
     else
-        secondoftwoarguments()
+        ctx_secondoftwoarguments()
     end
 end
 
 local s = lpegtsplitat(",")
 local h = { }
 
-function commands.doifcommonelse(a,b) -- often the same test
+local function doifelsecommon(a,b) -- often the same test
     local ha = h[a]
     local hb = h[b]
     if not ha then
@@ -84,41 +132,112 @@ function commands.doifcommonelse(a,b) -- often the same test
     for i=1,na do
         for j=1,nb do
             if ha[i] == hb[j] then
-                firstoftwoarguments()
+                ctx_firstoftwoarguments()
                 return
             end
         end
     end
-    secondoftwoarguments()
+    ctx_secondoftwoarguments()
 end
 
-function commands.doifinsetelse(a,b)
+local function doifelseinset(a,b)
     local hb = h[b]
     if not hb then hb = lpegmatch(s,b) h[b] = hb end
     for i=1,#hb do
         if a == hb[i] then
-            firstoftwoarguments()
+            ctx_firstoftwoarguments()
             return
         end
     end
-    secondoftwoarguments()
+    ctx_secondoftwoarguments()
 end
+
+implement {
+    name      = "doifelsecommon",
+    arguments = two_strings,
+    actions   = doifelsecommon
+}
+
+implement {
+    name      = "doifelseinset",
+    arguments = two_strings,
+    actions   = doifelseinset
+}
 
 local pattern = lpeg.patterns.validdimen
 
-function commands.doifdimenstringelse(str)
+function commands.doifelsedimenstring(str)
     if lpegmatch(pattern,str) then
-        firstoftwoarguments()
+        ctx_firstoftwoarguments()
     else
-        secondoftwoarguments()
+        ctx_secondoftwoarguments()
     end
 end
 
-function commands.firstinset(str)
-    local first = match(str,"^([^,]+),")
-    context(first or str)
-end
+local p_first = C((1-P(",")-P(-1))^0)
 
-function commands.ntimes(str,n)
-    context(rep(str,n or 1))
-end
+implement {
+    name      = "firstinset",
+    arguments = "string",
+    actions   = function(str) context(lpegmatch(p_first,str or "")) end
+}
+
+implement {
+    name      = "ntimes",
+    arguments = { "string", "integer" },
+    actions   = { string.rep, context }
+}
+
+implement {
+    name      = "execute",
+    arguments = "string",
+    actions   = os.execute -- wrapped in sandbox
+}
+
+-- function commands.write(n,str)
+--     if n == 18 then
+--         os.execute(str)
+--     elseif n == 16 then
+--         -- immediate
+--         logs.report(str)
+--     else
+--         -- at the tex end we can still drop the write / also delayed vs immediate
+--         context.writeviatex(n,str)
+--     end
+-- end
+
+implement {
+    name      = "doifelsesame",
+    arguments = two_strings,
+    actions   = function(a,b)
+        if a == b then
+            ctx_firstoftwoarguments()
+        else
+            ctx_secondoftwoarguments()
+        end
+    end
+}
+
+implement {
+    name      = "doifsame",
+    arguments = two_strings,
+    actions   = function(a,b)
+        if a == b then
+            ctx_firstofoneargument()
+        else
+            ctx_gobbleoneargument()
+        end
+    end
+}
+
+implement {
+    name      = "doifnotsame",
+    arguments = two_strings,
+    actions   = function(a,b)
+        if a == b then
+            ctx_gobbleoneargument()
+        else
+            ctx_firstofoneargument()
+        end
+    end
+}

@@ -70,11 +70,16 @@ function string.limit(str,n,sentinel) -- not utf proof
 end
 
 local stripper     = patterns.stripper
+local fullstripper = patterns.fullstripper
 local collapser    = patterns.collapser
 local longtostring = patterns.longtostring
 
 function string.strip(str)
     return lpegmatch(stripper,str) or ""
+end
+
+function string.fullstrip(str)
+    return lpegmatch(fullstripper,str) or ""
 end
 
 function string.collapsespaces(str)
@@ -89,7 +94,7 @@ end
 --     return not find(str,"%S")
 -- end
 
-local pattern = P(" ")^0 * P(-1)
+local pattern = P(" ")^0 * P(-1) -- maybe also newlines
 
 -- patterns.onlyspaces = pattern
 

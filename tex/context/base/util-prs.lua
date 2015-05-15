@@ -21,6 +21,8 @@ parsers.patterns  = patterns
 
 local setmetatableindex = table.setmetatableindex
 local sortedhash        = table.sortedhash
+local sortedkeys        = table.sortedkeys
+local tohash            = table.tohash
 
 -- we share some patterns
 
@@ -94,9 +96,7 @@ patterns.settings_to_hash_b = pattern_b_s
 patterns.settings_to_hash_c = pattern_c_s
 
 function parsers.make_settings_to_hash_pattern(set,how)
-    if type(str) == "table" then
-        return set
-    elseif how == "strict" then
+    if how == "strict" then
         return (pattern_c/set)^1
     elseif how == "tolerant" then
         return (pattern_b/set)^1
@@ -106,7 +106,9 @@ function parsers.make_settings_to_hash_pattern(set,how)
 end
 
 function parsers.settings_to_hash(str,existing)
-    if type(str) == "table" then
+    if not str or str == "" then
+        return { }
+    elseif type(str) == "table" then
         if existing then
             for k, v in next, str do
                 existing[k] = v
@@ -115,17 +117,17 @@ function parsers.settings_to_hash(str,existing)
         else
             return str
         end
-    elseif str and str ~= "" then
+    else
         hash = existing or { }
         lpegmatch(pattern_a_s,str)
         return hash
-    else
-        return { }
     end
 end
 
 function parsers.settings_to_hash_tolerant(str,existing)
-    if type(str) == "table" then
+    if not str or str == "" then
+        return { }
+    elseif type(str) == "table" then
         if existing then
             for k, v in next, str do
                 existing[k] = v
@@ -134,17 +136,17 @@ function parsers.settings_to_hash_tolerant(str,existing)
         else
             return str
         end
-    elseif str and str ~= "" then
+    else
         hash = existing or { }
         lpegmatch(pattern_b_s,str)
         return hash
-    else
-        return { }
     end
 end
 
 function parsers.settings_to_hash_strict(str,existing)
-    if type(str) == "table" then
+    if not str or str == "" then
+        return nil
+    elseif type(str) == "table" then
         if existing then
             for k, v in next, str do
                 existing[k] = v
@@ -157,8 +159,6 @@ function parsers.settings_to_hash_strict(str,existing)
         hash = existing or { }
         lpegmatch(pattern_c_s,str)
         return next(hash) and hash
-    else
-        return nil
     end
 end
 
@@ -167,24 +167,24 @@ local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)
                 + C((nestedbraces + (1-comma))^0)
 local pattern   = spaces * Ct(value*(separator*value)^0)
 
--- "aap, {noot}, mies" : outer {} removes, leading spaces ignored
+-- "aap, {noot}, mies" : outer {} removed, leading spaces ignored
 
 patterns.settings_to_array = pattern
 
 -- we could use a weak table as cache
 
 function parsers.settings_to_array(str,strict)
-    if type(str) == "table" then
-        return str
-    elseif not str or str == "" then
+    if not str or str == "" then
         return { }
+    elseif type(str) == "table" then
+        return str
     elseif strict then
-        if find(str,"{") then
+        if find(str,"{",1,true) then
             return lpegmatch(pattern,str)
         else
             return { str }
         end
-    elseif find(str,",") then
+    elseif find(str,",",1,true) then
         return lpegmatch(pattern,str)
     else
         return { str }
@@ -195,12 +195,40 @@ end
 --
 -- "{123} , 456  " -> "123" "456"
 
-local separator = space^0 * comma * space^0
-local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)
-                + C((nestedbraces + (1-(space^0*(comma+P(-1)))))^0)
-local withvalue = Carg(1) * value / function(f,s) return f(s) end
-local pattern_a = spaces * Ct(value*(separator*value)^0)
-local pattern_b = spaces * withvalue * (separator*withvalue)^0
+-- local separator = space^0 * comma * space^0
+-- local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)
+--                 + C((nestedbraces + (1-(space^0*(comma+P(-1)))))^0)
+-- local withvalue = Carg(1) * value / function(f,s) return f(s) end
+-- local pattern_a = spaces * Ct(value*(separator*value)^0)
+-- local pattern_b = spaces * withvalue * (separator*withvalue)^0
+
+local cache_a = { }
+local cache_b = { }
+
+function parsers.groupedsplitat(symbol,withaction)
+    if not symbol then
+        symbol = ","
+    end
+    local pattern = (withaction and cache_b or cache_a)[symbol]
+    if not pattern then
+        local symbols   = S(symbol)
+        local separator = space^0 * symbols * space^0
+        local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)
+                        + C((nestedbraces + (1-(space^0*(symbols+P(-1)))))^0)
+        if withaction then
+            local withvalue = Carg(1) * value / function(f,s) return f(s) end
+            pattern = spaces * withvalue * (separator*withvalue)^0
+            cache_b[symbol] = pattern
+        else
+            pattern = spaces * Ct(value*(separator*value)^0)
+            cache_a[symbol] = pattern
+        end
+    end
+    return pattern
+end
+
+local pattern_a = parsers.groupedsplitat(",",false)
+local pattern_b = parsers.groupedsplitat(",",true)
 
 function parsers.stripped_settings_to_array(str)
     if not str or str == "" then
@@ -221,8 +249,6 @@ end
 -- parsers.process_stripped_settings("{123} , 456  ",function(s) print("["..s.."]") end)
 -- parsers.process_stripped_settings("123 , 456  ",function(s) print("["..s.."]") end)
 
---
-
 local function set(t,v)
     t[#t+1] = v
 end
@@ -236,8 +262,8 @@ end
 
 function parsers.hash_to_string(h,separator,yes,no,strict,omit)
     if h then
-        local t, tn, s = { }, 0, table.sortedkeys(h)
-        omit = omit and table.tohash(omit)
+        local t, tn, s = { }, 0, sortedkeys(h)
+        omit = omit and tohash(omit)
         for i=1,#s do
             local key = s[i]
             if not omit or not omit[key] then
@@ -275,14 +301,24 @@ function parsers.array_to_string(a,separator)
     end
 end
 
-function parsers.settings_to_set(str,t) -- tohash? -- todo: lpeg -- duplicate anyway
-    t = t or { }
---  for s in gmatch(str,"%s*([^, ]+)") do -- space added
-    for s in gmatch(str,"[^, ]+") do -- space added
-        t[s] = true
-    end
-    return t
+-- function parsers.settings_to_set(str,t) -- tohash? -- todo: lpeg -- duplicate anyway
+--     if str then
+--         t = t or { }
+--         for s in gmatch(str,"[^, ]+") do -- space added
+--             t[s] = true
+--         end
+--         return t
+--     else
+--         return { }
+--     end
+-- end
+
+local pattern = Cf(Ct("") * Cg(C((1-S(", "))^1) * S(", ")^0 * Cc(true))^1,rawset)
+
+function utilities.parsers.settings_to_set(str,t)
+    return str and lpegmatch(pattern,str) or { }
 end
+
 
 function parsers.simple_hash_to_string(h, separator)
     local t, tn = { }, 0
@@ -297,12 +333,18 @@ end
 
 -- for mtx-context etc: aaaa bbbb cccc=dddd eeee=ffff
 
-local str      = C((1-whitespace-equal)^1)
+local str      = Cs(lpegpatterns.unquoted) + C((1-whitespace-equal)^1)
 local setting  = Cf( Carg(1) * (whitespace^0 * Cg(str * whitespace^0 * (equal * whitespace^0 * str + Cc(""))))^1,rawset)
 local splitter = setting^1
 
 function utilities.parsers.options_to_hash(str,target)
     return str and lpegmatch(splitter,str,1,target or { }) or { }
+end
+
+local splitter = lpeg.tsplitat(" ")
+
+function utilities.parsers.options_to_array(str)
+    return str and lpegmatch(splitter,str) or { }
 end
 
 -- for chem (currently one level)
@@ -436,7 +478,7 @@ local defaultspecification = { separator = ",", quote = '"' }
 -- database module
 
 function parsers.csvsplitter(specification)
-    specification   = specification and table.setmetatableindex(specification,defaultspecification) or defaultspecification
+    specification   = specification and setmetatableindex(specification,defaultspecification) or defaultspecification
     local separator = specification.separator
     local quotechar = specification.quote
     local separator = S(separator ~= "" and separator or ",")
@@ -475,7 +517,7 @@ end
 -- local list, names = mycsvsplitter(crap)        inspect(list) inspect(names)
 
 function parsers.rfc4180splitter(specification)
-    specification     = specification and table.setmetatableindex(specification,defaultspecification) or defaultspecification
+    specification     = specification and setmetatableindex(specification,defaultspecification) or defaultspecification
     local separator   = specification.separator --> rfc: COMMA
     local quotechar   = P(specification.quote)  -->      DQUOTE
     local dquotechar  = quotechar * quotechar   -->      2DQUOTE
@@ -488,7 +530,7 @@ function parsers.rfc4180splitter(specification)
     local field       = escaped + non_escaped + Cc("")
     local record      = Ct(field * (separator * field)^1)
     local headerline  = record * Cp()
-    local wholeblob   = Ct((newline^-1 * record)^0)
+    local wholeblob   = Ct((newline^(specification.strict and -1 or 1) * record)^0)
     return function(data,getheader)
         if getheader then
             local header, position = lpegmatch(headerline,data)
@@ -542,8 +584,8 @@ end
 
 --
 
-local pattern_math = Cs((P("%")/"\\percent " +  P("^")           * Cc("{") * lpegpatterns.integer * Cc("}") + P(1))^0)
-local pattern_text = Cs((P("%")/"\\percent " + (P("^")/"\\high") * Cc("{") * lpegpatterns.integer * Cc("}") + P(1))^0)
+local pattern_math = Cs((P("%")/"\\percent " +  P("^")           * Cc("{") * lpegpatterns.integer * Cc("}") + anything)^0)
+local pattern_text = Cs((P("%")/"\\percent " + (P("^")/"\\high") * Cc("{") * lpegpatterns.integer * Cc("}") + anything)^0)
 
 patterns.unittotex = pattern
 
@@ -551,7 +593,7 @@ function parsers.unittotex(str,textmode)
     return lpegmatch(textmode and pattern_text or pattern_math,str)
 end
 
-local pattern = Cs((P("^") / "<sup>" * lpegpatterns.integer * Cc("</sup>") + P(1))^0)
+local pattern = Cs((P("^") / "<sup>" * lpegpatterns.integer * Cc("</sup>") + anything)^0)
 
 function parsers.unittoxml(str)
     return lpegmatch(pattern,str)
@@ -560,10 +602,10 @@ end
 -- print(utilities.parsers.unittotex("10^-32 %"),utilities.parsers.unittoxml("10^32 %"))
 
 local cache   = { }
-local spaces  = lpeg.patterns.space^0
+local spaces  = lpegpatterns.space^0
 local dummy   = function() end
 
-table.setmetatableindex(cache,function(t,k)
+setmetatableindex(cache,function(t,k)
     local separator = P(k)
     local value     = (1-separator)^0
     local pattern   = spaces * C(value) * separator^0 * Cp()
@@ -648,3 +690,27 @@ function utilities.parsers.runtime(time)
     local seconds = mod(time,60)
     return days, hours, minutes, seconds
 end
+
+--
+
+local spacing = whitespace^0
+local apply   = P("->")
+local method  = C((1-apply)^1)
+local token   = lbrace * C((1-rbrace)^1) * rbrace + C(anything^1)
+
+local pattern = spacing * (method * spacing * apply + Carg(1)) * spacing * token
+
+function utilities.parsers.splitmethod(str,default)
+    if str then
+        return lpegmatch(pattern,str,1,default or false)
+    else
+        return default or false, ""
+    end
+end
+
+-- print(utilities.parsers.splitmethod(" foo -> {bar} "))
+-- print(utilities.parsers.splitmethod("foo->{bar}"))
+-- print(utilities.parsers.splitmethod("foo->bar"))
+-- print(utilities.parsers.splitmethod("foo"))
+-- print(utilities.parsers.splitmethod("{foo}"))
+-- print(utilities.parsers.splitmethod())

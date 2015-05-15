@@ -505,6 +505,9 @@ local function apply_expression(list,expression,order)
     return collected
 end
 
+-- this one can be made faster but there are not that many conversions so it doesn't
+-- really pay of
+
 local P, V, C, Cs, Cc, Ct, R, S, Cg, Cb = lpeg.P, lpeg.V, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Ct, lpeg.R, lpeg.S, lpeg.Cg, lpeg.Cb
 
 local spaces     = S(" \n\r\t\f")^0
@@ -541,12 +544,11 @@ local lp_builtin = P (
 
 local lp_attribute = (P("@") + P("attribute::")) / "" * Cc("(ll.at and ll.at['") * ((R("az","AZ") + S("-_:"))^1) * Cc("'])")
 
--- lp_fastpos_p = (P("+")^0 * R("09")^1 * P(-1)) / function(s) return "l==" .. s end
--- lp_fastpos_n = (P("-")   * R("09")^1 * P(-1)) / function(s) return "(" .. s .. "<0 and (#list+".. s .. "==l))" end
+----- lp_fastpos_p = (P("+")^0 * R("09")^1 * P(-1)) / function(s) return "l==" .. s end
+----- lp_fastpos_n = (P("-")   * R("09")^1 * P(-1)) / function(s) return "(" .. s .. "<0 and (#list+".. s .. "==l))" end
 
-lp_fastpos_p = P("+")^0 * R("09")^1 * P(-1) / "l==%0"
-lp_fastpos_n = P("-")   * R("09")^1 * P(-1) / "(%0<0 and (#list+%0==l))"
-
+local lp_fastpos_p = P("+")^0 * R("09")^1 * P(-1) / "l==%0"
+local lp_fastpos_n = P("-")   * R("09")^1 * P(-1) / "(%0<0 and (#list+%0==l))"
 local lp_fastpos   = lp_fastpos_n + lp_fastpos_p
 
 local lp_reserved  = C("and") + C("or") + C("not") + C("div") + C("mod") + C("true") + C("false")
@@ -806,7 +808,7 @@ local function nodesettostring(set,nodetest)
         if not ns or ns == "" then ns = "*" end
         if not tg or tg == "" then tg = "*" end
         tg = (tg == "@rt@" and "[root]") or format("%s:%s",ns,tg)
-        t[i] = (directive and tg) or format("not(%s)",tg)
+        t[#t+1] = (directive and tg) or format("not(%s)",tg)
     end
     if nodetest == false then
         return format("not(%s)",concat(t,"|"))
@@ -1039,37 +1041,6 @@ local function normal_apply(list,parsed,nofparsed,order)
     return collected
 end
 
---~ local function applylpath(list,pattern)
---~     -- we avoid an extra call
---~     local parsed = cache[pattern]
---~     if parsed then
---~         lpathcalls = lpathcalls + 1
---~         lpathcached = lpathcached + 1
---~     elseif type(pattern) == "table" then
---~         lpathcalls = lpathcalls + 1
---~         parsed = pattern
---~     else
---~         parsed = lpath(pattern) or pattern
---~     end
---~     if not parsed then
---~         return
---~     end
---~     local nofparsed = #parsed
---~     if nofparsed == 0 then
---~         return -- something is wrong
---~     end
---~     local one = list[1] -- we could have a third argument: isroot and list or list[1] or whatever we like ... todo
---~     if not one then
---~         return -- something is wrong
---~     elseif not trace_lpath then
---~         return normal_apply(list,parsed,nofparsed,one.mi)
---~     elseif trace_lprofile then
---~         return profiled_apply(list,parsed,nofparsed,one.mi)
---~     else
---~         return traced_apply(list,parsed,nofparsed,one.mi)
---~     end
---~ end
-
 local function applylpath(list,pattern)
     if not list then
         return
@@ -1163,7 +1134,6 @@ expressions.print = function(...)
     return true
 end
 
-expressions.contains  = find
 expressions.find      = find
 expressions.upper     = upper
 expressions.lower     = lower
@@ -1185,6 +1155,10 @@ function expressions.contains(str,pattern)
         end
     end
     return false
+end
+
+function xml.expressions.idstring(str)
+    return type(str) == "string" and gsub(str,"^#","") or ""
 end
 
 -- user interface
@@ -1384,8 +1358,13 @@ function xml.elements(root,pattern,reverse) -- r, d, k
     local collected = applylpath(root,pattern)
     if not collected then
         return dummy
-    elseif reverse then
-        local c = #collected + 1
+    end
+    local n = #collected
+    if n == 0 then
+        return dummy
+    end
+    if reverse then
+        local c = n + 1
         return function()
             if c > 1 then
                 c = c - 1
@@ -1395,7 +1374,7 @@ function xml.elements(root,pattern,reverse) -- r, d, k
             end
         end
     else
-        local n, c = #collected, 0
+        local c = 0
         return function()
             if c < n then
                 c = c + 1
@@ -1411,8 +1390,13 @@ function xml.collected(root,pattern,reverse) -- e
     local collected = applylpath(root,pattern)
     if not collected then
         return dummy
-    elseif reverse then
-        local c = #collected + 1
+    end
+    local n = #collected
+    if n == 0 then
+        return dummy
+    end
+    if reverse then
+        local c = n + 1
         return function()
             if c > 1 then
                 c = c - 1
@@ -1420,7 +1404,7 @@ function xml.collected(root,pattern,reverse) -- e
             end
         end
     else
-        local n, c = #collected, 0
+        local c = 0
         return function()
             if c < n then
                 c = c + 1
@@ -1441,7 +1425,7 @@ end
 
 -- texy (see xfdf):
 
-local function split(e)
+local function split(e) -- todo: use helpers / lpeg
     local dt = e.dt
     if dt then
         for i=1,#dt do

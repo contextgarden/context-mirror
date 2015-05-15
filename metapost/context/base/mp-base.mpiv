@@ -195,7 +195,8 @@ yellow     := (1,1,0) ;
 background := white ; % obsolete
 
 let graypart  = greypart  ;
-let graycolor = greycolor ;
+let greycolor = numeric ;
+let graycolor = numeric ;
 
 % color part (will be overloaded)
 
@@ -323,7 +324,7 @@ primarydef w dotprod z =
 enddef ;
 
 primarydef x**y =
-    if y=2 :
+    if y = 2 :
         x*x
     else :
         takepower y of x
@@ -348,10 +349,45 @@ def takepower expr y of x =
                 endfor
             fi
         else :
-            hide(errmessage "Undefined power: " & decimal x&"**"&decimal y)
+            hide(errmessage "Undefined power: " & decimal x & "**" & decimal y)
         fi
     fi
 enddef ;
+
+% for big number systems:
+%
+% primarydef x**y =
+%     if y = 1 :
+%         x
+%     elseif y = 2 :
+%         x*x
+%     elseif y = 3 :
+%         x*x*x
+%     else :
+%         takepower y of x
+%     fi
+% enddef ;
+%
+% vardef takepower expr y of x =
+%     if (x=0) and (y>0) :
+%         0
+%     else :
+%         1
+%         if y = floor y :
+%             if y >= 0 :
+%                 for n=1 upto y :
+%                     *x
+%                 endfor
+%             else :
+%                 for n=-1 downto y :
+%                     /x
+%                 endfor
+%             fi
+%         else :
+%             hide(errmessage "Undefined power: " & decimal x & "**" & decimal y)
+%         fi
+%     fi
+% enddef ;
 
 vardef direction expr t of p =
     postcontrol t of p - precontrol t of p
@@ -594,8 +630,36 @@ def filldraw expr c =
     addto currentpicture contour c withpen currentpen _op_
 enddef ;
 
-def drawdot expr z =
-    addto currentpicture contour makepath currentpen shifted z _op_
+% def drawdot expr z =
+%     addto currentpicture contour makepath currentpen shifted z _op_
+% enddef ;
+%
+% testcase DEK:
+%
+% for j=1 upto 9 :
+%     pickup pencircle xscaled .4 yscaled .2 ;
+%     drawdot (10j,0) withpen pencircle xscaled .5j yscaled .25j rotated 45 ;
+%     pickup pencircle xscaled .5j yscaled .25j rotated 45 ;
+%     drawdot (10j,10);
+% endfor ;
+%
+% or:
+%
+%\startMPpage
+%
+% def drawdot expr z =
+%     addto currentpicture contour (makepath currentpen shifted z) _op_
+% enddef;
+%
+% drawdot origin shifted (0,-3cm) withpen pencircle scaled 2cm ;
+% pickup pencircle scaled 2cm ; drawdot origin withcolor red ;
+
+def drawdot expr p =
+    if pair p :
+        addto currentpicture doublepath p withpen currentpen _op_
+    else :
+        errmessage("drawdot only accepts a pair expression")
+    fi
 enddef ;
 
 def unfill     expr c = fill     c withcolor background enddef ;
@@ -651,10 +715,10 @@ enddef ;
 
 def pen_pickup_ primary q =
     currentpen := q ;
-    pen_lft :=xpart penoffset down  of currentpen ;
-    pen_rt  :=xpart penoffset up    of currentpen ;
-    pen_top :=ypart penoffset left  of currentpen ;
-    pen_bot :=ypart penoffset right of currentpen ;
+    pen_lft := xpart penoffset down  of currentpen ;
+    pen_rt  := xpart penoffset up    of currentpen ;
+    pen_top := ypart penoffset left  of currentpen ;
+    pen_bot := ypart penoffset right of currentpen ;
     path currentpen_path ;
 enddef ;
 
@@ -670,7 +734,8 @@ vardef savepen =
     pen_count_
 enddef ;
 
-def clearpen = currentpen:=nullpen;
+def clearpen =
+    currentpen := nullpen;
     pen_lft := pen_rt := pen_top := pen_bot := 0 ;
     path currentpen_path ;
 enddef ;
@@ -801,7 +866,7 @@ vardef labels@#(text t) =
     endfor
 enddef ;
 
-% til lhere
+% till lhere
 
 vardef dotlabels@#(text t) =
     forsuffixes $=t:
@@ -817,17 +882,19 @@ vardef penlabels@#(text t) =
     endfor
 enddef ;
 
+% range 4 thru 10
+
 def range expr x =
-    numtok[x]
+    _numtok_[x]
 enddef ;
 
-def numtok suffix x =
+def _numtok_ suffix x =
     x
 enddef ;
 
 tertiarydef m thru n =
     m for x=m+1 step 1 until n :
-        , numtok[x]
+        , _numtok_[x]
     endfor
 enddef ;
 

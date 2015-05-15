@@ -18,24 +18,41 @@ if not modules then modules = { } end modules ['file-mod'] = {
 at the <l n='tex'/> side.</p>
 --ldx]]--
 
-local format, concat, tonumber = string.format, table.concat, tonumber
+local format, find, concat, tonumber = string.format, string.find, table.concat, tonumber
 
-local trace_modules  = false  trackers.register("modules.loading", function(v) trace_modules = v end)
+local trace_modules     = false  trackers  .register("modules.loading",          function(v) trace_modules     = v end)
+local permit_unprefixed = false  directives.register("modules.permitunprefixed", function(v) permit_unprefixed = v end)
 
-local report_modules = logs.reporter("resolvers","modules")
+local report_modules    = logs.reporter("resolvers","modules")
 
-commands             = commands or { }
-local commands       = commands
+local commands          = commands
+local context           = context
+local implement         = interfaces.implement
 
-local context        = context
-
-local findbyscheme   = resolvers.finders.byscheme -- use different one
-local iterator       = utilities.parsers.iterator
+local findbyscheme      = resolvers.finders.byscheme -- use different one
+local iterator          = utilities.parsers.iterator
 
 -- modules can have a specific suffix or can specify one
 
-local prefixes  = { "m", "p", "s", "x", "v", "t" }
-local suffixes  = { "mkvi", "mkiv", "tex", "cld", "lua" } -- order might change and how about cld
+local prefixes  = {
+    "m", -- module, extends functionality
+    "p", -- private code
+    "s", -- styles
+    "x", -- xml specific modules
+ -- "v", -- an old internal one for examples
+    "t", -- third party extensions
+}
+
+-- the order might change and how about cld
+
+local suffixes  = {
+    "mkvi", -- proprocessed mkiv files
+    "mkiv", -- mkiv files
+    "tex",  -- normally source code files
+    "cld",  -- context lua documents (often stand alone)
+    "lua",  -- lua files
+}
+
 local modstatus = { }
 
 local function usemodule(name,hasscheme)
@@ -79,11 +96,11 @@ local function usemodule(name,hasscheme)
     end
 end
 
-function commands.usemodules(prefix,askedname,truename)
+function environment.usemodules(prefix,askedname,truename)
     local truename = truename or environment.truefilename(askedname)
     local hasprefix = prefix and prefix ~= ""
     local hashname = ((hasprefix and prefix) or "*") .. "-" .. truename
-    local status = modstatus[hashname]
+    local status = modstatus[hashname] or false -- yet unset
     if status == 0 then
         -- not found
     elseif status == 1 then
@@ -117,7 +134,12 @@ function commands.usemodules(prefix,askedname,truename)
             end
             if status then
                 -- ok, don't change
-            elseif usemodule(truename) then
+            elseif find(truename,"%-") and usemodule(truename) then
+                -- assume a user namespace
+                report_modules("using user prefixed file %a",truename)
+                status = 1
+            elseif permit_unprefixed and usemodule(truename) then
+                report_modules("using unprefixed file %a",truename)
                 status = 1
             else
                 status = 0
@@ -161,23 +183,60 @@ end)
 
 -- moved from syst-lua.lua:
 
-local splitter = lpeg.tsplitter(lpeg.S(". "),tonumber)
+local lpegmatch = lpeg.match
+local splitter  = lpeg.tsplitter(lpeg.S(". "),tonumber)
 
-function commands.doifolderversionelse(one,two) -- one >= two
-    if not two then
+function environment.comparedversion(one,two) -- one >= two
+    if not two or two == "" then
         one, two = environment.version, one
     elseif one == "" then
         one = environment.version
     end
-    one = lpeg.match(splitter,one)
-    two = lpeg.match(splitter,two)
+    one = lpegmatch(splitter,one)
+    two = lpegmatch(splitter,two)
     one = (one[1] or 0) * 10000 + (one[2] or 0) * 100 + (one[3] or 0)
     two = (two[1] or 0) * 10000 + (two[2] or 0) * 100 + (two[3] or 0)
-    commands.doifelse(one>=two)
+    if one < two then
+        return -1
+    elseif one > two then
+        return 1
+    else
+        return 0
+    end
 end
 
-function commands.useluamodule(list)
+environment.comparedversion = comparedversion
+
+
+function environment.useluamodule(list)
     for filename in iterator(list) do
         environment.loadluafile(filename)
     end
 end
+
+local strings = interfaces.strings
+
+implement {
+    name      = "usemodules",
+    actions   = environment.usemodules,
+    arguments = strings[2]
+}
+
+implement {
+    name      = "doifelseolderversion",
+    actions   = function(one,two) commands.doifelse(comparedversion(one,two) >= 0) end,
+    arguments = strings[2]
+}
+
+implement {
+    name      = "useluamodule",
+    actions   = environment.useluamodule,
+    arguments = "string"
+}
+
+implement {
+    name      = "loadluamodule",
+    actions   = function(name) dofile(resolvers.findctxfile(name)) end, -- hack
+    arguments = "string"
+}
+

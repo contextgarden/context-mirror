@@ -183,6 +183,7 @@
 		<cd:variable name='flushleft' value='flushleft'/>
 		<cd:variable name='flushouter' value='flushouter'/>
 		<cd:variable name='flushright' value='flushright'/>
+		<cd:variable name='followingpage' value='followingpage'/>
 		<cd:variable name='footer' value='piedipagina'/>
 		<cd:variable name='footnote' value='notapdp'/>
 		<cd:variable name='force' value='forza'/>
@@ -304,6 +305,7 @@
 		<cd:variable name='mirrored' value='riflesso'/>
 		<cd:variable name='monday' value='lunedi'/>
 		<cd:variable name='mono' value='mono'/>
+		<cd:variable name='monobold' value='monograssetto'/>
 		<cd:variable name='month' value='mese'/>
 		<cd:variable name='more' value='more'/>
 		<cd:variable name='morehyphenation' value='morehyphenation'/>
@@ -363,6 +365,7 @@
 		<cd:variable name='positive' value='positivo'/>
 		<cd:variable name='postponing' value='posporre'/>
 		<cd:variable name='postscript' value='postscript'/>
+		<cd:variable name='precedingpage' value='followingpage'/>
 		<cd:variable name='preference' value='preferenza'/>
 		<cd:variable name='preview' value='anteprima'/>
 		<cd:variable name='previous' value='precedente'/>
@@ -422,7 +425,7 @@
 		<cd:variable name='september' value='settembre'/>
 		<cd:variable name='serif' value='serif'/>
 		<cd:variable name='serried' value='vicino'/>
-		<cd:variable name='setups' value='nastaveni'/>
+		<cd:variable name='setups' value='setups'/>
 		<cd:variable name='sheet' value='sheet'/>
 		<cd:variable name='short' value='short'/>
 		<cd:variable name='simplefonts' value='simplefonts'/>
@@ -657,7 +660,7 @@
 		<cd:constant name='coupling' value='accoppiamento'/>
 		<cd:constant name='couplingway' value='modoaccoppiamento'/>
 		<cd:constant name='criterium' value='criterio'/>
-		<cd:constant name='css' value='css'/>
+		<cd:constant name='cssfile' value='cssfile'/>
 		<cd:constant name='current' value='corrente'/>
 		<cd:constant name='cutspace' value='cutspace'/>
 		<cd:constant name='dash' value='dash'/>
@@ -692,7 +695,7 @@
 		<cd:constant name='equalwidth' value='equalwidth'/>
 		<cd:constant name='escape' value='escape'/>
 		<cd:constant name='evenmargin' value='marginepari'/>
-		<cd:constant name='exitoffset' value='labeloffset'/>
+		<cd:constant name='exitoffset' value='exitoffset'/>
 		<cd:constant name='expansion' value='espansione'/>
 		<cd:constant name='export' value='export'/>
 		<cd:constant name='extras' value='extras'/>
@@ -707,6 +710,7 @@
 		<cd:constant name='file' value='file'/>
 		<cd:constant name='filtercommand' value='filtercommand'/>
 		<cd:constant name='finalnamesep' value='finalnamesep'/>
+		<cd:constant name='finalpubsep' value='finalpubsep'/>
 		<cd:constant name='firstnamesep' value='firstnamesep'/>
 		<cd:constant name='firstpage' value='primapagina'/>
 		<cd:constant name='focus' value='focus'/>
@@ -758,6 +762,7 @@
 		<cd:constant name='indenting' value='rientro'/>
 		<cd:constant name='indentnext' value='rientrasuccessivo'/>
 		<cd:constant name='indicator' value='indicatore'/>
+		<cd:constant name='initialsep' value='initialsep'/>
 		<cd:constant name='inner' value='interno'/>
 		<cd:constant name='innermargin' value='margineinterno'/>
 		<cd:constant name='inputfile' value='inputfile'/>
@@ -839,7 +844,7 @@
 		<cd:constant name='middletext' value='testocentro'/>
 		<cd:constant name='midsentence' value='midsentence'/>
 		<cd:constant name='min' value='min'/>
-		<cd:constant name='mindepth' value='mindeoth'/>
+		<cd:constant name='mindepth' value='mindepth'/>
 		<cd:constant name='minheight' value='altezzamin'/>
 		<cd:constant name='minwidth' value='ampiezzamin'/>
 		<cd:constant name='moffset' value='moffset'/>
@@ -863,6 +868,7 @@
 		<cd:constant name='nright' value='ndestra'/>
 		<cd:constant name='ntop' value='ncima'/>
 		<cd:constant name='number' value='numero'/>
+		<cd:constant name='numberalign' value='numberalign'/>
 		<cd:constant name='numbercolor' value='colorenumero'/>
 		<cd:constant name='numbercommand' value='comandonumero'/>
 		<cd:constant name='numberconversion' value='numberconversion'/>
@@ -1051,6 +1057,8 @@
 		<cd:constant name='suffix' value='suffix'/>
 		<cd:constant name='suffixseparator' value='suffixseparator'/>
 		<cd:constant name='suffixstopper' value='suffixstopper'/>
+		<cd:constant name='surnamefirstnamesep' value='surnamefirstnamesep'/>
+		<cd:constant name='surnameinitialsep' value='surnameinitialsep'/>
 		<cd:constant name='surnamesep' value='surnamesep'/>
 		<cd:constant name='sx' value='sx'/>
 		<cd:constant name='sy' value='sy'/>
@@ -1290,6 +1298,7 @@
 		<cd:command name='definetabletemplate' value='definiscimodellotabella'/>
 		<cd:command name='definetabulate' value='definiscitabulato'/>
 		<cd:command name='definetext' value='definiscitesto'/>
+		<cd:command name='definetextbackground' value='definetextbackground'/>
 		<cd:command name='definetextposition' value='definisciposizionetesto'/>
 		<cd:command name='definetextvariable' value='definiscivariabiletesto'/>
 		<cd:command name='definetype' value='definiscitype'/>
@@ -1450,7 +1459,6 @@
 		<cd:command name='paperheight' value='altezzacarta'/>
 		<cd:command name='paperwidth' value='ampiezzacarta'/>
 		<cd:command name='periods' value='punti'/>
-		<cd:command name='plaatsruwelijst' value='placerawlist'/>
 		<cd:command name='placebookmarks' value='mettisegnalibro'/>
 		<cd:command name='placecombinedlist' value='mettielencocombinato'/>
 		<cd:command name='placefloat' value='placefloat'/>
@@ -1460,11 +1468,13 @@
 		<cd:command name='placeheadtext' value='posizionatestotesta'/>
 		<cd:command name='placelegend' value='mettilegenda'/>
 		<cd:command name='placelist' value='mettielenco'/>
+		<cd:command name='placelistofsynonyms' value='placelistofsynonyms'/>
 		<cd:command name='placelocalfootnotes' value='mettinotepdplocali'/>
 		<cd:command name='placelogos' value='mettiloghi'/>
 		<cd:command name='placeongrid' value='mettiingriglia'/>
 		<cd:command name='placeontopofeachother' value='mettiunosullaltro'/>
 		<cd:command name='placepagenumber' value='mettinumeropagina'/>
+		<cd:command name='placerawlist' value='placerawlist'/>
 		<cd:command name='placereferencelist' value='placereferencelist'/>
 		<cd:command name='placeregister' value='mettiregistro'/>
 		<cd:command name='placerule' value='mettilinea'/>
@@ -1611,7 +1621,6 @@
 		<cd:command name='setupregister' value='impostaregistro'/>
 		<cd:command name='setuprotate' value='impostarotazione'/>
 		<cd:command name='setuprule' value='impostalinea'/>
-		<cd:command name='setups' value='impostazioni'/>
 		<cd:command name='setupscreens' value='impostaschermi'/>
 		<cd:command name='setupsection' value='impostasezione'/>
 		<cd:command name='setupsectionblock' value='impostabloccosezione'/>
@@ -1629,6 +1638,7 @@
 		<cd:command name='setuptables' value='impostatabelle'/>
 		<cd:command name='setuptabulate' value='impostatabulato'/>
 		<cd:command name='setuptext' value='impostatesto'/>
+		<cd:command name='setuptextbackground' value='setuptextbackground'/>
 		<cd:command name='setuptextposition' value='impostaposizionetesto'/>
 		<cd:command name='setuptextrules' value='impostalineetesto'/>
 		<cd:command name='setuptexttexts' value='impostatestotesti'/>
@@ -1675,6 +1685,7 @@
 		<cd:command name='startdocument' value='iniziadocumento'/>
 		<cd:command name='startenvironment' value='iniziaambiente'/>
 		<cd:command name='startfigure' value='iniziafigura'/>
+		<cd:command name='startframed' value='startframed'/>
 		<cd:command name='startglobal' value='iniziaglobale'/>
 		<cd:command name='startline' value='iniziariga'/>
 		<cd:command name='startlinecorrection' value='iniziacorrezioneriga'/>
@@ -1701,6 +1712,7 @@
 		<cd:command name='starttable' value='iniziatabella'/>
 		<cd:command name='starttables' value='iniziatabelle'/>
 		<cd:command name='starttext' value='iniziatesto'/>
+		<cd:command name='starttextbackground' value='starttextbackground'/>
 		<cd:command name='starttextrule' value='inizialineatesto'/>
 		<cd:command name='startunpacked' value='iniziaunpacked'/>
 		<cd:command name='startversion' value='iniziaversione'/>
@@ -1715,6 +1727,7 @@
 		<cd:command name='stopcomponent' value='terminacomponente'/>
 		<cd:command name='stopdocument' value='terminadocumento'/>
 		<cd:command name='stopenvironment' value='terminaambiente'/>
+		<cd:command name='stopframed' value='stopframed'/>
 		<cd:command name='stopglobal' value='terminaglobale'/>
 		<cd:command name='stopline' value='terminariga'/>
 		<cd:command name='stoplinecorrection' value='terminacorrezioneriga'/>
@@ -1740,6 +1753,7 @@
 		<cd:command name='stoptable' value='terminatabella'/>
 		<cd:command name='stoptables' value='terminatabelle'/>
 		<cd:command name='stoptext' value='terminatesto'/>
+		<cd:command name='stoptextbackground' value='stoptextbackground'/>
 		<cd:command name='stoptextrule' value='terminalineatesto'/>
 		<cd:command name='stopunpacked' value='terminaunpacked'/>
 		<cd:command name='stopversion' value='terminaversioni'/>
