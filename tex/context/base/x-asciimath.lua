@@ -711,9 +711,11 @@ local reserved = {
 for k, v in next, characters.data do
     local name = v.mathname
     if name and not reserved[name] then
-        reserved[name] = { true, utfchar(k) }
+        local char = { true, utfchar(k) }
+        reserved[        name] = char
+     -- reserved["\\" .. name] = char
     end
-    local spec = v.mathspec
+ -- local spec = v.mathspec
  -- if spec then
  --     for i=1,#spec do
  --         local name = spec[i].name
@@ -957,8 +959,10 @@ for k, v in sortedhash(reserved) do
             k_reserved_different[#k_reserved_different+1] = k
         end
     end
-    if not find(k,"[^[a-zA-Z]+$]") then
-        k_unicode["\\"..k] = k -- dirty trick, no real unicode
+    if find(k,"^[a-zA-Z]+$") then
+        k_unicode["\\"..k] = replacement
+    else
+        k_unicode["\\"..k] = k  -- dirty trick, no real unicode (still needed ?)
     end
     if not find(k,"[^a-zA-Z]") then
         k_reserved_words[#k_reserved_words+1] = k
@@ -970,9 +974,8 @@ local p_reserved =
     lpeg.utfchartabletopattern(k_reserved_different) / k_commands
 
 local p_unicode =
-    lpeg.utfchartabletopattern(table.keys(k_unicode)) / k_unicode
-
--- inspect(k_reserved_different)
+--     lpeg.utfchartabletopattern(table.keys(k_unicode)) / k_unicode
+    lpeg.utfchartabletopattern(k_unicode) / k_unicode
 
 local p_texescape = patterns.texescape
 
@@ -1817,7 +1820,7 @@ local uncrapped = {
     ["_"] = "\\underline{\\enspace}",
 }
 
-local function convert(str)
+local function convert(str,nowrap)
     if #str > 0 then
         local unicoded = lpegmatch(u_parser,str) or str
         if lpegmatch(p_onechar,unicoded) then
@@ -1834,6 +1837,8 @@ local function convert(str)
                 if message then
                     report_asciimath("%s: %s : %s",message,str,texcoded)
                     ctx_type(formatters["<%s>"](message))
+                elseif nowrap then
+                     context(texcoded)
                 else
                     ctx_mathematics(texcoded)
                 end
@@ -1855,6 +1860,7 @@ if not context then
 --     report_asciimath(cleanedup([[a "α" b]]))
 --     report_asciimath(cleanedup([[//4]]))
 
+convert("leq\\leq")
 -- convert([[\^{1/5}log]])
 -- convert("sqrt")
 -- convert("^")
@@ -1936,9 +1942,15 @@ if not context then
 end
 
 interfaces.implement {
-    name      = "asciimath", -- module_asciimath_convert
+    name      = "asciimath",
     actions   = convert,
     arguments = "string"
+}
+
+interfaces.implement {
+    name      = "justasciimath",
+    actions   = convert,
+    arguments = { "string", true },
 }
 
 local ctx_typebuffer  = context.typebuffer

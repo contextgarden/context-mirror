@@ -1203,6 +1203,13 @@
 
 % these need to be sort of protected:
 
+% methods:
+%
+% hidden : mark for list, don't show in text
+% list   : mark for list, show in text only when in list
+% text   : not to list, show in text
+% always : mark for list, show in text
+
 \let\p_publ_cite_before   \empty
 \let\p_publ_cite_after    \empty
 \let\p_publ_cite_lefttext \empty
@@ -1279,6 +1286,7 @@
 \newconditional\btxcitecompress
 
 \let\currentbtxreference\empty
+\let\currentbtxcitemethod\v!hidden
 
 \def\publ_cite_variant
   {\begingroup
@@ -1295,7 +1303,7 @@
   {\clf_btxhandlecite
      dataset          {\currentbtxdataset}%
      reference        {\currentbtxreference}%
-     markentry        \iftrialtypesetting\s!false\else\s!true\fi\space
+     method           {\currentbtxcitemethod}%
      variant          {\currentbtxcitealternative}%
      sorttype         {\btxparameter\c!sorttype}%
      compress         {\btxparameter\c!compress}%
@@ -1306,7 +1314,9 @@
      before           {\p_publ_cite_before}%
      after            {\p_publ_cite_after}%
    \relax
-   \clf_btxflushmarked} % maybe: \iftrialtypesetting\else ... \fi
+   \iftrialtypesetting\else
+     \clf_btxflushmarked
+   \fi}
 
 \let\dobtxcitevariantblob\publ_cite_handle_variant_blob % command can use it via lua
 
@@ -1320,9 +1330,23 @@
    \btxparameter\c!right
    \endgroup}
 
-\unexpanded\def\btxcitation
+\unexpanded\def\btxlistcitation
   {\dontleavehmode
    \begingroup
+   \let\currentbtxcitemethod\v!list
+   \dodoubleempty\publ_citation}
+
+\unexpanded\def\btxtextcitation
+  {\dontleavehmode
+   \begingroup
+   \let\btxcitereference\relax % a bit of a hack but ok
+   \let\currentbtxcitemethod\v!text
+   \dodoubleempty\publ_citation}
+
+\unexpanded\def\btxalwayscitation
+  {\dontleavehmode
+   \begingroup
+   \let\currentbtxcitemethod\v!always
    \dodoubleempty\publ_citation}
 
 \def\publ_citation[#1][#2]% could be made more efficient but not now
@@ -1332,19 +1356,20 @@
      \publ_cite_tags_indeed{#1}%
    \fi}
 
-\unexpanded\def\btxnocitation
-  {\dosingleempty\publ_cite_no}
+\unexpanded\def\btxhiddencitation
+  {\dosingleempty\publ_cite_hidden}
 
-\unexpanded\def\publ_cite_no[#1]%
+\unexpanded\def\publ_cite_hidden[#1]%
   {\iftrialtypesetting \else
      \begingroup
+     \let\currentbtxcitemethod\v!hidden
      \edef\currentbtxreference{#1}%
      \clf_btxhandlenocite
+       method    {\currentbtxcitemethod}%
        dataset   {\currentbtxdataset}%
        reference {\currentbtxreference}%
-       markentry true%
      \relax
-   % \clf_btxflushmarked
+     \clf_btxflushmarked
      \endgroup
    \fi}
 
@@ -1353,16 +1378,27 @@
 
 %D Compatibility:
 
-\let\cite      \btxcitation
-\let\citation  \btxcitation
-\let\nocite    \btxnocitation
-\let\nocitation\btxnocitation
+\let\hiddencitation\btxhiddencitation  \let\hiddencite\hiddencitation
+\let\listcitation  \btxlistcitation    \let\listcite  \listcitation
+\let\textcitation  \btxtextcitation    \let\textcite  \textcitation
+\let\alwayscitation\btxalwayscitation  \let\alwayscite\alwayscitation
 
-\unexpanded\def\cite  {\doifelsenextoptionalcs\btxcitation  \btxdirectcite}
-\unexpanded\def\nocite{\doifelsenextoptionalcs\btxnocitation\btxdirectnocite}
+\unexpanded\def\citation  {\doifelsenextoptionalcs\btxlistcitation  \btxdirectlistcite}
+\unexpanded\def\nocitation{\doifelsenextoptionalcs\btxhiddencitation\btxdirecthiddencite}
 
-\unexpanded\def\btxdirectcite  #1{\btxcitation  [#1]\relax} % no optional arguments
-\unexpanded\def\btxdirectnocite#1{\btxnocitation[#1]\relax} % no optional arguments
+\let\citation  \listcitation \let\cite  \citation
+\let\nocitation\nocitation   \let\nocite\nocitation
+
+\unexpanded\def\publ_entry_citation  {\doifelsenextoptionalcs\btxlistcitation  \btxdirectlistcite}
+\unexpanded\def\publ_entry_nocitation{\doifelsenextoptionalcs\btxhiddencitation\btxdirecthiddencite}
+
+\appendtoks
+    \let\cite  \publ_entry_citation
+    \let\nocite\publ_entry_nocitation
+\to \everybtxlistrendering
+
+\unexpanded\def\btxdirectlistcite  #1{\btxlistcitation  [#1]\relax} % no optional arguments
+\unexpanded\def\btxdirecthiddencite#1{\btxhiddencitation[#1]\relax} % no optional arguments
 
 %D Setup helpers, beware, we need to wrap this .. now we need to know
 %D how setups are implemented.
@@ -1658,7 +1694,7 @@
     \clf_btxtoregister{\currentbtxdataset}{\currentbtxtag}%
 \to \t_btx_reference_inject
 
-\unexpanded\def\btxindexedauthor#1#2#3#4#5#6% alternative von last first junior
+\unexpanded\def\btxindexedauthor#1#2#3#4#5#6% alternative von last initials first junior
   {\begingroup
    \def\currentbtxcitealternative{#1}%
    \ifx\currentbtxcitealternative\empty
@@ -1674,6 +1710,16 @@
    \setbtxparameterset\s!cite\currentbtxcitealternative
    \fastsetup{\s!btx:\s!cite:\s!author:\currentbtxcitealternative}%
    \endgroup}
+
+\unexpanded\def\btxregisterauthor
+  {\doifelsenextoptionalcs\publ_register_author_yes\publ_register_author_nop}
+
+\def\publ_register_author_yes[#1]#2%
+  {\clf_btxauthortoregister{#1}{#2}\relax}
+
+\def\publ_register_author_nop#1%
+  {\clf_btxauthortoregister{\currentbtxdataset}{#1}\relax}
+
 
 %D We hook some setters in the definition sets:
 
@@ -1739,9 +1785,10 @@
    \c!refcommand=authoryears,  % todo
    \c!numbering=\v!yes,
   %\c!saveinlist=\v!no, % maybe for before/after
+   \c!pagestate=\v!stop,
    \c!textstate=\v!start,
    \c!width=\v!auto,
-   \c!separator={;\space},
+   \c!separator={\btxsemicolon},
    \c!distance=1.5\emwidth]
 
 % Quite some interpunction and labels are the same of at least consistent within
@@ -1750,30 +1797,29 @@
 
 \setupbtx
   [\c!interaction=\v!start,
-   \c!alternative=num, % default cite form
-   \c!inbetween=\space,
+   \c!alternative=num, % default cite form, normally defined in the cite namespace
+   \c!inbetween=\btxspace,
    \c!range=\endash,   % separator:range?
    \c!compress=\v!yes, % was no?
    \c!authorconversion=normal,
    \c!sorttype=normal, % normal, reverse or none
    \c!etallimit=3,
    \c!etaldisplay=\btxparameter\c!etallimit,
-   \c!otherstext={\space et al.},
-   \c!separator:firstnames={\space},
-   \c!separator:juniors={\space},
-   \c!separator:vons={\space},
-   \c!separator:initials={\space},
+   \c!otherstext={\btxspace et al.},
+   \c!separator:firstnames={\btxspace},
+   \c!separator:juniors={\btxspace},
+   \c!separator:vons={\btxspace},
+   \c!separator:initials={\btxspace},
    \c!stopper:initials={.},
-  %\c!surnamesep={,\space}, % is this used anywhere?
-   \c!separator:invertedinitials={,\space},
-   \c!separator:invertedfirstnames={,\space},
-   \c!separator:names:2={,\space}, % separates multiple names
+  %\c!surnamesep={\btxcomma}, % is this used anywhere?
+   \c!separator:invertedinitials={\btxcomma},
+   \c!separator:invertedfirstnames={\btxcomma},
+   \c!separator:names:2={\btxcomma}, % separates multiple names
    \c!separator:names:3=\btxparameter{\c!separator:2}, % before last name in a list
    \c!separator:names:4=\btxparameter{\c!separator:2}, % between only two names
-   \c!separator:2={;\space}, % aka pubsep - separates multiple objects
+   \c!separator:2={\btxsemicolon}, % aka pubsep - separates multiple objects
    \c!separator:3=\btxparameter{separator:2}, % before last object in a list
-   \c!separator:4=\btxparameter{separator:2}, % between only two objects
-   \c!pagestate=\v!stop]
+   \c!separator:4=\btxparameter{separator:2}] % between only two objects
 
 % Do we want these in the format? Loading them delayed is somewhat messy.
 
