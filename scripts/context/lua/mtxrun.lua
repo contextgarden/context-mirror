@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 3888, stripped down to: 2197
+-- original size: 4355, stripped down to: 2467
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -111,21 +111,33 @@ if not package.loaders then
 end
 local print,select,tostring=print,select,tostring
 local inspectors={}
-function setinspector(inspector) 
-  inspectors[#inspectors+1]=inspector
+function setinspector(kind,inspector) 
+  inspectors[kind]=inspector
 end
 function inspect(...) 
   for s=1,select("#",...) do
     local value=select(s,...)
-    local done=false
-    for i=1,#inspectors do
-      done=inspectors[i](value)
-      if done then
-        break
+    if value==nil then
+      print("nil")
+    else
+      local done=false
+      local kind=type(value)
+      local inspector=inspectors[kind]
+      if inspector then
+        done=inspector(value)
+        if done then
+          break
+        end
       end
-    end
-    if not done then
-      print(tostring(value))
+      for kind,inspector in next,inspectors do
+        done=inspector(value)
+        if done then
+          break
+        end
+      end
+      if not done then
+        print(tostring(value))
+      end
     end
   end
 end
@@ -444,7 +456,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 36977, stripped down to: 20349
+-- original size: 36984, stripped down to: 20356
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -461,7 +473,7 @@ local floor=math.floor
 local P,R,S,V,Ct,C,Cs,Cc,Cp,Cmt=lpeg.P,lpeg.R,lpeg.S,lpeg.V,lpeg.Ct,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg.Cp,lpeg.Cmt
 local lpegtype,lpegmatch,lpegprint=lpeg.type,lpeg.match,lpeg.print
 if setinspector then
-  setinspector(function(v) if lpegtype(v) then lpegprint(v) return true end end)
+  setinspector("lpeg",function(v) if lpegtype(v) then lpegprint(v) return true end end)
 end
 lpeg.patterns=lpeg.patterns or {} 
 local patterns=lpeg.patterns
@@ -1267,7 +1279,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-string"] = package.loaded["l-string"] or true
 
--- original size: 5694, stripped down to: 2827
+-- original size: 5770, stripped down to: 2894
 
 if not modules then modules={} end modules ['l-string']={
   version=1.001,
@@ -1354,9 +1366,10 @@ function string.valid(str,default)
   return (type(str)=="string" and str~="" and str) or default or nil
 end
 string.itself=function(s) return s end
-local pattern=Ct(C(1)^0) 
-function string.totable(str)
-  return lpegmatch(pattern,str)
+local pattern_c=Ct(C(1)^0) 
+local pattern_b=Ct((C(1)/byte)^0)
+function string.totable(str,bytes)
+  return lpegmatch(bytes and pattern_b or pattern_c,str)
 end
 local replacer=lpeg.replacer("@","%%") 
 function string.tformat(fmt,...)
@@ -1372,7 +1385,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 35724, stripped down to: 21525
+-- original size: 35732, stripped down to: 21533
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -2248,7 +2261,7 @@ function table.print(t,...)
   end
 end
 if setinspector then
-  setinspector(function(v) if type(v)=="table" then serialize(print,v,"table") return true end end)
+  setinspector("table",function(v) if type(v)=="table" then serialize(print,v,"table") return true end end)
 end
 function table.sub(t,i,j)
   return { unpack(t,i,j) }
@@ -5197,7 +5210,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 34513, stripped down to: 18943
+-- original size: 34893, stripped down to: 19218
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -5368,7 +5381,13 @@ function string.autosingle(s,sep)
   end
   return ("'"..tostring(s).."'")
 end
-local tracedchars={}
+local tracedchars={ [0]=
+  "[null]","[soh]","[stx]","[etx]","[eot]","[enq]","[ack]","[bel]",
+  "[bs]","[ht]","[lf]","[vt]","[ff]","[cr]","[so]","[si]",
+  "[dle]","[dc1]","[dc2]","[dc3]","[dc4]","[nak]","[syn]","[etb]",
+  "[can]","[em]","[sub]","[esc]","[fs]","[gs]","[rs]","[us]",
+  "[space]",
+}
 string.tracedchars=tracedchars
 strings.tracers=tracedchars
 function string.tracedchar(b)
@@ -5885,7 +5904,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 25338, stripped down to: 16247
+-- original size: 27822, stripped down to: 18037
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -6314,6 +6333,7 @@ local f_val_str=formatters["%w%q,"]
 local f_val_boo=formatters["%w%l,"]
 local f_val_not=formatters["%w{},"]
 local f_val_seq=formatters["%w{ %, t },"]
+local f_fin_seq=formatters[" %, t }"]
 local f_table_return=formatters["return {"]
 local f_table_name=formatters["%s={"]
 local f_table_direct=formatters["{"]
@@ -6321,12 +6341,13 @@ local f_table_entry=formatters["[%q]={"]
 local f_table_finish=formatters["}"]
 local spaces=utilities.strings.newrepeater(" ")
 local serialize=table.serialize
-function table.serialize(root,name,specification)
+local function serialize(root,name,specification)
   if type(specification)=="table" then
     return serialize(root,name,specification) 
   end
-  local t 
+  local t  
   local n=1
+  local unknown=false
   local function simple_table(t)
     local nt=#t
     if nt>0 then
@@ -6337,6 +6358,7 @@ function table.serialize(root,name,specification)
           return nil
         end
       end
+      local haszero=t[0]
       if n==nt then
         local tt={}
         for i=1,nt do
@@ -6352,6 +6374,23 @@ function table.serialize(root,name,specification)
             return nil
           end
         end
+        return tt
+      elseif haszero and (n==nt+1) then
+        local tt={}
+        for i=0,nt do
+          local v=t[i]
+          local tv=type(v)
+          if tv=="number" then
+            tt[i+1]=v 
+          elseif tv=="string" then
+            tt[i+1]=format("%q",v) 
+          elseif tv=="boolean" then
+            tt[i+1]=v and "true" or "false"
+          else
+            return nil
+          end
+        end
+        tt[1]="[0] = "..tt[1]
         return tt
       end
     end
@@ -6401,7 +6440,7 @@ function table.serialize(root,name,specification)
           elseif tv=="string" then
             n=n+1 t[n]=f_val_str(depth,v)
           elseif tv=="table" then
-            if next(v)==nil then
+            if next(v)==nil then 
               n=n+1 t[n]=f_val_not(depth)
             else
               local st=simple_table(v)
@@ -6413,6 +6452,8 @@ function table.serialize(root,name,specification)
             end
           elseif tv=="boolean" then
             n=n+1 t[n]=f_val_boo(depth,v)
+          elseif unknown then
+            n=n+1 t[n]=f_val_str(depth,tostring(v))
           end
         elseif tv=="number" then
           if tk=="number" then
@@ -6421,6 +6462,8 @@ function table.serialize(root,name,specification)
             n=n+1 t[n]=f_key_str_value_num(depth,k,v)
           elseif tk=="boolean" then
             n=n+1 t[n]=f_key_boo_value_num(depth,k,v)
+          elseif unknown then
+            n=n+1 t[n]=f_key_str_value_num(depth,tostring(k),v)
           end
         elseif tv=="string" then
           if tk=="number" then
@@ -6429,6 +6472,8 @@ function table.serialize(root,name,specification)
             n=n+1 t[n]=f_key_str_value_str(depth,k,v)
           elseif tk=="boolean" then
             n=n+1 t[n]=f_key_boo_value_str(depth,k,v)
+          elseif unknown then
+            n=n+1 t[n]=f_key_str_value_str(depth,tostring(k),v)
           end
         elseif tv=="table" then
           if next(v)==nil then
@@ -6438,6 +6483,8 @@ function table.serialize(root,name,specification)
               n=n+1 t[n]=f_key_str_value_not(depth,k)
             elseif tk=="boolean" then
               n=n+1 t[n]=f_key_boo_value_not(depth,k)
+            elseif unknown then
+              n=n+1 t[n]=f_key_str_value_not(depth,tostring(k))
             end
           else
             local st=simple_table(v)
@@ -6449,6 +6496,8 @@ function table.serialize(root,name,specification)
               n=n+1 t[n]=f_key_str_value_seq(depth,k,st)
             elseif tk=="boolean" then
               n=n+1 t[n]=f_key_boo_value_seq(depth,k,st)
+            elseif unknown then
+              n=n+1 t[n]=f_key_str_value_seq(depth,tostring(k),st)
             end
           end
         elseif tv=="boolean" then
@@ -6458,6 +6507,18 @@ function table.serialize(root,name,specification)
             n=n+1 t[n]=f_key_str_value_boo(depth,k,v)
           elseif tk=="boolean" then
             n=n+1 t[n]=f_key_boo_value_boo(depth,k,v)
+          elseif unknown then
+            n=n+1 t[n]=f_key_str_value_boo(depth,tostring(k),v)
+          end
+        else
+          if tk=="number" then
+            n=n+1 t[n]=f_key_num_value_str(depth,k,tostring(v))
+          elseif tk=="string" then
+            n=n+1 t[n]=f_key_str_value_str(depth,k,tostring(v))
+          elseif tk=="boolean" then
+            n=n+1 t[n]=f_key_boo_value_str(depth,k,tostring(v))
+          elseif unknown then
+            n=n+1 t[n]=f_key_str_value_str(depth,tostring(k),tostring(v))
           end
         end
       end
@@ -6490,12 +6551,120 @@ function table.serialize(root,name,specification)
       root._w_h_a_t_e_v_e_r_=nil
     end
     if next(root)~=nil then
-      do_serialize(root,name,1,0)
+      local st=simple_table(root)
+      if st then
+        return t[1]..f_fin_seq(st) 
+      else
+        do_serialize(root,name,1,0)
+      end
     end
   end
   n=n+1
   t[n]=f_table_finish()
   return concat(t,"\n")
+end
+table.serialize=serialize
+if setinspector then
+  setinspector("table",function(v) if type(v)=="table" then print(serialize(v,"table")) return true end end)
+end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["util-fil"] = package.loaded["util-fil"] or true
+
+-- original size: 2521, stripped down to: 1962
+
+if not modules then modules={} end modules ['util-fil']={
+  version=1.001,
+  comment="companion to luat-lib.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+local byte=string.byte
+local extract=bit32.extract
+utilities=utilities or {}
+local files={}
+utilities.files=files
+function files.readbyte(f)
+  return byte(f:read(1))
+end
+function files.readchar(f)
+  return f:read(1)
+end
+function files.readbytes(f,n)
+  return byte(f:read(n),1,n)
+end
+function files.skipbytes(f,n)
+  f:read(n or 1) 
+end
+function files.readinteger1(f) 
+  local n=byte(f:read(1))
+  if n>=0x80 then
+    return n-0xFF-1
+  else
+    return n
+  end
+end
+files.readcardinal1=files.readbyte 
+files.readcardinal=files.readcardinal1
+files.readinteger=files.readinteger1
+function files.readcardinal2(f)
+  local a,b=byte(f:read(2),1,2)
+  return 0x100*a+b
+end
+function files.readinteger2(f)
+  local a,b=byte(f:read(2),1,2)
+  local n=0x100*a+b
+  if n>=0x8000 then
+    return n-0xFFFF-1
+  else
+    return n
+  end
+end
+function files.readcardinal3(f)
+  local a,b,c=byte(f:read(3),1,3)
+  return 0x10000*a+0x100*b+c
+end
+function files.readcardinal4(f)
+  local a,b,c,d=byte(f:read(4),1,4)
+  return 0x1000000*a+0x10000*b+0x100*c+d
+end
+function files.readinteger4(f)
+  local a,b,c,d=byte(f:read(4),1,4)
+  local n=0x1000000*a+0x10000*b+0x100*c+d
+  if n>=0x8000000 then
+    return n-0xFFFFFFFF-1
+  else
+    return n
+  end
+end
+function files.readfixed4(f)
+  local a,b,c,d=byte(f:read(4),1,4)
+  local n=0x100*a+b
+  if n>=0x8000 then
+    return n-0xFFFF-1+(0x100*c+d)/0xFFFF
+  else
+    return n+(0x100*c+d)/0xFFFF
+  end
+end
+function files.readstring(f,n)
+  return f:read(n or 1)
+end
+function files.read2dot14(f)
+  local a,b=byte(f:read(2),1,2)
+  local n=0x100*a+b
+  local m=extract(n,0,30)
+  if n>0x7FFF then
+    n=extract(n,30,2)
+    return m/0x4000-4
+  else
+    n=extract(n,30,2)
+    return n+m/0x4000
+  end
 end
 
 
@@ -13402,7 +13571,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-exp"] = package.loaded["data-exp"] or true
 
--- original size: 17216, stripped down to: 10657
+-- original size: 18067, stripped down to: 10726
 
 if not modules then modules={} end modules ['data-exp']={
   version=1.001,
@@ -13413,6 +13582,7 @@ if not modules then modules={} end modules ['data-exp']={
 }
 local format,find,gmatch,lower,char,sub=string.format,string.find,string.gmatch,string.lower,string.char,string.sub
 local concat,sort=table.concat,table.sort
+local sortedkeys=table.sortedkeys
 local lpegmatch,lpegpatterns=lpeg.match,lpeg.patterns
 local Ct,Cs,Cc,Carg,P,C,S=lpeg.Ct,lpeg.Cs,lpeg.Cc,lpeg.Carg,lpeg.P,lpeg.C,lpeg.S
 local type,next=type,next
@@ -13758,14 +13928,16 @@ local nothing=function() end
 function resolvers.filtered_from_content(content,pattern)
   if content and type(pattern)=="string" then
     local pattern=lower(pattern)
-    local files=content.files
+    local files=content.files 
     local remap=content.remap
     if files and remap then
-      local n=next(files)
+      local f=sortedkeys(files)
+      local n=#f
+      local i=0
       local function iterator()
-        while n do
-          local k=n
-          n=next(files,k)
+        while i<n do
+          i=i+1
+          local k=f[i]
           if find(k,pattern) then
             return files[k],remap and remap[k] or k
           end
@@ -17935,10 +18107,10 @@ end
 
 end -- of closure
 
--- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
+-- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 745793
--- stripped bytes    : 269308
+-- original bytes    : 752587
+-- stripped bytes    : 271654
 
 -- end library merge
 
@@ -17982,6 +18154,7 @@ local ownlibs = { -- order can be made better
 
     'util-str.lua', -- code might move to l-string
     'util-tab.lua',
+    'util-fil.lua',
     'util-sto.lua',
     'util-prs.lua',
     'util-fmt.lua',

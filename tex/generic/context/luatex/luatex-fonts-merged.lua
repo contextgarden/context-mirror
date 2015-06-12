@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/24/15 12:42:55
+-- merge date  : 06/12/15 10:06:12
 
 do -- begin closure to overcome local limits and interference
 
@@ -57,21 +57,33 @@ if not package.loaders then
 end
 local print,select,tostring=print,select,tostring
 local inspectors={}
-function setinspector(inspector) 
-  inspectors[#inspectors+1]=inspector
+function setinspector(kind,inspector) 
+  inspectors[kind]=inspector
 end
 function inspect(...) 
   for s=1,select("#",...) do
     local value=select(s,...)
-    local done=false
-    for i=1,#inspectors do
-      done=inspectors[i](value)
-      if done then
-        break
+    if value==nil then
+      print("nil")
+    else
+      local done=false
+      local kind=type(value)
+      local inspector=inspectors[kind]
+      if inspector then
+        done=inspector(value)
+        if done then
+          break
+        end
       end
-    end
-    if not done then
-      print(tostring(value))
+      for kind,inspector in next,inspectors do
+        done=inspector(value)
+        if done then
+          break
+        end
+      end
+      if not done then
+        print(tostring(value))
+      end
     end
   end
 end
@@ -112,7 +124,7 @@ local floor=math.floor
 local P,R,S,V,Ct,C,Cs,Cc,Cp,Cmt=lpeg.P,lpeg.R,lpeg.S,lpeg.V,lpeg.Ct,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg.Cp,lpeg.Cmt
 local lpegtype,lpegmatch,lpegprint=lpeg.type,lpeg.match,lpeg.print
 if setinspector then
-  setinspector(function(v) if lpegtype(v) then lpegprint(v) return true end end)
+  setinspector("lpeg",function(v) if lpegtype(v) then lpegprint(v) return true end end)
 end
 lpeg.patterns=lpeg.patterns or {} 
 local patterns=lpeg.patterns
@@ -995,9 +1007,10 @@ function string.valid(str,default)
   return (type(str)=="string" and str~="" and str) or default or nil
 end
 string.itself=function(s) return s end
-local pattern=Ct(C(1)^0) 
-function string.totable(str)
-  return lpegmatch(pattern,str)
+local pattern_c=Ct(C(1)^0) 
+local pattern_b=Ct((C(1)/byte)^0)
+function string.totable(str,bytes)
+  return lpegmatch(bytes and pattern_b or pattern_c,str)
 end
 local replacer=lpeg.replacer("@","%%") 
 function string.tformat(fmt,...)
@@ -1884,7 +1897,7 @@ function table.print(t,...)
   end
 end
 if setinspector then
-  setinspector(function(v) if type(v)=="table" then serialize(print,v,"table") return true end end)
+  setinspector("table",function(v) if type(v)=="table" then serialize(print,v,"table") return true end end)
 end
 function table.sub(t,i,j)
   return { unpack(t,i,j) }
@@ -2937,7 +2950,13 @@ function string.autosingle(s,sep)
   end
   return ("'"..tostring(s).."'")
 end
-local tracedchars={}
+local tracedchars={ [0]=
+  "[null]","[soh]","[stx]","[etx]","[eot]","[enq]","[ack]","[bel]",
+  "[bs]","[ht]","[lf]","[vt]","[ff]","[cr]","[so]","[si]",
+  "[dle]","[dc1]","[dc2]","[dc3]","[dc4]","[nak]","[syn]","[etb]",
+  "[can]","[em]","[sub]","[esc]","[fs]","[gs]","[rs]","[us]",
+  "[space]",
+}
 string.tracedchars=tracedchars
 strings.tracers=tracedchars
 function string.tracedchar(b)
@@ -7176,7 +7195,7 @@ local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
 otf.glists={ "gsub","gpos" }
-otf.version=2.812 
+otf.version=2.814 
 otf.cache=containers.define("fonts","otf",otf.version,true)
 local hashes=fonts.hashes
 local definers=fonts.definers
@@ -7353,10 +7372,11 @@ local ordered_enhancers={
   "reorganize subtables",
   "check glyphs",
   "check metadata",
-  "check extra features",
   "prepare tounicode",
   "check encoding",
   "add duplicates",
+  "expand lookups",
+  "check extra features",
   "cleanup tables",
   "compact lookups",
   "purge names",
@@ -7526,6 +7546,7 @@ function otf.load(filename,sub,featurefile)
       data={
         size=size,
         time=time,
+        subfont=sub,
         format=otf_format(filename),
         featuredata=featurefiles,
         resources={
@@ -7810,25 +7831,25 @@ actions["prepare glyphs"]=function(data,filename,raw)
                   glyph=glyph,
                 }
                 descriptions[unicode]=description
-local altuni=glyph.altuni
-if altuni then
-  for i=1,#altuni do
-    local a=altuni[i]
-    local u=a.unicode
-    if u~=unicode then
-      local v=a.variant
-      if v then
-        local vv=variants[v]
-        if vv then
-          vv[u]=unicode
-        else 
-          vv={ [u]=unicode }
-          variants[v]=vv
-        end
-      end
-    end
-  end
-end
+                local altuni=glyph.altuni
+                if altuni then
+                  for i=1,#altuni do
+                    local a=altuni[i]
+                    local u=a.unicode
+                    if u~=unicode then
+                      local v=a.variant
+                      if v then
+                        local vv=variants[v]
+                        if vv then
+                          vv[u]=unicode
+                        else 
+                          vv={ [u]=unicode }
+                          variants[v]=vv
+                        end
+                      end
+                    end
+                  end
+                end
               end
             end
           else
@@ -8353,12 +8374,15 @@ local function r_uncover(splitter,cache,cover,replacements)
 end
 actions["reorganize lookups"]=function(data,filename,raw)
   if data.lookups then
-    local splitter=data.helpers.tounicodetable
+    local helpers=data.helpers
+    local duplicates=data.resources.duplicates
+    local splitter=helpers.tounicodetable
     local t_u_cache={}
     local s_u_cache=t_u_cache 
     local t_h_cache={}
     local s_h_cache=t_h_cache 
     local r_u_cache={} 
+    helpers.matchcache=t_h_cache
     for _,lookup in next,data.lookups do
       local rules=lookup.rules
       if rules then
@@ -8498,6 +8522,44 @@ actions["reorganize lookups"]=function(data,filename,raw)
                 end
               end
             end
+          end
+        end
+      end
+    end
+  end
+end
+actions["expand lookups"]=function(data,filename,raw) 
+  if data.lookups then
+    local cache=data.helpers.matchcache
+    if cache then
+      local duplicates=data.resources.duplicates
+      for key,hash in next,cache do
+        local done=nil
+        for key in next,hash do
+          local unicode=duplicates[key]
+          if not unicode then
+          elseif type(unicode)=="table" then
+            for i=1,#unicode do
+              local u=unicode[i]
+              if hash[u] then
+              elseif done then
+                done[u]=key
+              else
+                done={ [u]=key }
+              end
+            end
+          else
+            if hash[unicode] then
+            elseif done then
+              done[unicode]=key
+            else
+              done={ [unicode]=key }
+            end
+          end
+        end
+        if done then
+          for u in next,done do
+            hash[u]=true
           end
         end
       end
@@ -12871,9 +12933,9 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
           end
          else
           local i=1
-          while true do
+          while start and true do
             if skipped then
-              while true do
+              while true do 
                 local char=getchar(start)
                 local ccd=descriptions[char]
                 if ccd then
@@ -12902,17 +12964,20 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                 head,start,ok,n=cp(head,start,last,kind,chainname,ck,lookuphash,chainlookup,chainlookupname,i,sequence)
                 if ok then
                   done=true
-                  i=i+(n or 1)
-                else
-                  i=i+1
+                  if n and n>1 then
+                    if i+n>nofchainlookups then
+                      break
+                    else
+                    end
+                  end
                 end
+                i=i+1
               end
             end
-            if i>nofchainlookups then
+            if i>nofchainlookups or not start then
               break
             elseif start then
               start=getnext(start)
-            else
             end
           end
         end

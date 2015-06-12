@@ -9,6 +9,11 @@ if not modules then modules = { } end modules ['font-syn'] = {
 -- todo: subs in lookups requests
 -- todo: see if the (experimental) lua reader (on my machine) be used (it's a bit slower so maybe wait till lua 5.3)
 
+-- identifying ttf/otf/ttc/afm : 2200 fonts:
+--
+-- old ff  loader: 140 sec
+-- new lua loader:   5 sec
+
 local next, tonumber, type, tostring = next, tonumber, type, tostring
 local sub, gsub, lower, match, find, lower, upper = string.sub, string.gsub, string.lower, string.match, string.find, string.lower, string.upper
 local find, gmatch = string.find, string.gmatch
@@ -17,6 +22,7 @@ local serialize, sortedhash = table.serialize, table.sortedhash
 local lpegmatch = lpeg.match
 local unpack = unpack or table.unpack
 local formatters, topattern = string.formatters, string.topattern
+local round = math.round
 
 local allocate             = utilities.storage.allocate
 local sparse               = utilities.storage.sparse
@@ -48,6 +54,7 @@ local settings_to_hash     = utilities.parsers.settings_to_hash_tolerant
 local trace_names          = false  trackers.register("fonts.names",          function(v) trace_names          = v end)
 local trace_warnings       = false  trackers.register("fonts.warnings",       function(v) trace_warnings       = v end)
 local trace_specifications = false  trackers.register("fonts.specifications", function(v) trace_specifications = v end)
+local trace_rejections     = false  trackers.register("fonts.rejections",     function(v) trace_rejections     = v end)
 
 local report_names         = logs.reporter("fonts","names")
 
@@ -354,9 +361,9 @@ filters.dfont = get_font_info
 --             pfminfo             = fields.pfminfo             and ff.pfminfo,
 --             top_side_bearing    = fields.top_side_bearing    and ff.top_side_bearing,
 --         }
---         setmetatableindex(d,function(t,k)
---             report_names("warning, trying to access field %a in font table of %a",k,name)
---         end)
+--      -- setmetatableindex(d,function(t,k)
+--      --     report_names("warning, trying to access field %a in font table of %a",k,name)
+--      -- end)
 --         close_font(ff)
 --         return d
 --     else
@@ -390,9 +397,12 @@ local function get_full_info(name)
             pfminfo             = fields.pfminfo             and ff.pfminfo,
             top_side_bearing    = fields.top_side_bearing    and ff.top_side_bearing, -- not there
         }
-        setmetatableindex(d,function(t,k)
-            report_names("warning, trying to access field %a in font table of %a",k,name)
-        end)
+        if d.italicangle then
+            d.italicangle = round(1000*d.italicangle)/1000
+        end
+     -- setmetatableindex(d,function(t,k)
+     --     report_names("warning, trying to access field %a in font table of %a",k,name)
+     -- end)
         close_font(ff)
         return d
     else
@@ -461,6 +471,8 @@ filters.list = {
     "otf", "ttf", "ttc", "dfont", "afm",
  -- "ttc",  "otf", "ttf", "dfont", "afm",
 }
+
+-- to be considered: loop over paths per list entry (so first all otf ttf etc)
 
 names.fontconfigfile    = "fonts.conf" -- a bit weird format, bonus feature
 names.osfontdirvariable = "OSFONTDIR"  -- the official way, in minimals etc
@@ -555,6 +567,10 @@ local function cleanfilename(fullname,defaultsuffix)
     end
 end
 
+local sorter = function(a,b)
+    return a > b -- to be checked
+end
+
 names.cleanname     = cleanname
 names.cleanfilename = cleanfilename
 
@@ -568,6 +584,7 @@ local function check_names(result)
             end
         end
     end
+    return result
 end
 
 local function walk_tree(pathlist,suffix,identify)
@@ -588,21 +605,33 @@ local function walk_tree(pathlist,suffix,identify)
     end
 end
 
+-- "typographicfamily",    -- preffamilyname
+-- "typographicsubfamily", -- prefmodifiers
+
 local function check_name(data,result,filename,modification,suffix,subfont)
     -- shortcuts
     local specifications = data.specifications
     -- prepare
     local names = check_names(result)
     -- fetch
-    local familyname    = names and names.preffamilyname or result.familyname
-    local fullname      = names and names.fullname or result.fullname
+-- if string.find(string.lower(filename),"ebgaramond") then
+--     inspect(result)
+--     inspect(names)
+-- end
+
+if string.find(filename,"avkv") then
+    inspect(result)
+end
+
+    local familyname    = names and names.preffamilyname    or result.familyname
+    local fullname      = names and names.fullname          or result.fullname
     local fontname      = result.fontname
-    local subfamily     = names and names.subfamily
-    local modifiers     = names and names.prefmodifiers
-    local weight        = names and names.weight or result.weight
+    local subfamily     = names and names.subfamily         or result.subfamily
+    local modifiers     = names and names.prefmodifiers     or result.modifiers
+    local weight        = names and names.weight            or result.weight
     local italicangle   = tonumber(result.italicangle)
-    local subfont       = subfont or nil
-    local rawname       = fullname or fontname or familyname
+    local subfont       = subfont                           or nil
+    local rawname       = fullname or fontname              or familyname
     local filebase      = removesuffix(basename(filename))
     local cleanfilename = cleanname(filebase) -- for WS
     -- normalize
@@ -637,15 +666,15 @@ local function check_name(data,result,filename,modification,suffix,subfont)
     fontname   = fontname   or fullname or familyname or filebase -- maybe cleanfilename
     fullname   = fullname   or fontname
     familyname = familyname or fontname
-    -- we do these sparse
-    local units      = result.units_per_em or 1000 -- can be zero too
-    local minsize    = result.design_range_bottom or 0
-    local maxsize    = result.design_range_top or 0
-    local designsize = result.design_size or 0
-    local angle      = result.italicangle or 0
+    -- we do these sparse -- todo: check table type or change names in ff loader
+    local units      = result.units_per_em          or result.emunits       or 1000 -- can be zero too
+    local minsize    = result.design_range_bottom   or result.mindesignsize or 0
+    local maxsize    = result.design_range_top      or result.maxdesignsize or 0
+    local designsize = result.design_size           or result.designsize    or 0
+    local angle      = result.italicangle                                   or 0
     local pfminfo    = result.pfminfo
-    local pfmwidth   = pfminfo and pfminfo.width  or 0
-    local pfmweight  = pfminfo and pfminfo.weight or 0
+    local pfmwidth   = (pfminfo and pfminfo.width ) or result.pfmwidth      or 0
+    local pfmweight  = (pfminfo and pfminfo.weight) or result.pfmweight     or 0
     --
     specifications[#specifications + 1] = {
         filename      = filename, -- unresolved
@@ -908,10 +937,6 @@ local function checkduplicates()
     checkduplicate("fallbacks")
 end
 
-local sorter = function(a,b)
-    return a > b -- to be checked
-end
-
 local function sorthashes()
     local data             = names.data
     local list             = filters.list
@@ -936,23 +961,28 @@ local function unpackreferences()
     local data           = names.data
     local specifications = data.specifications
     if specifications then
-        for k, v in next, data.families do
+--         for k, v in next, data.families do
+        for k, v in sortedhash(data.families) do
             for i=1,#v do
                 v[i] = specifications[v[i]]
             end
         end
         local mappings = data.mappings
         if mappings then
-            for _, m in next, mappings do
-                for k, v in next, m do
+--             for _, m in next, mappings do
+            for _, m in sortedhash(mappings) do
+--                 for k, v in next, m do
+                for k, v in sortedhash(m) do
                     m[k] = specifications[v]
                 end
             end
         end
         local fallbacks = data.fallbacks
         if fallbacks then
-            for _, f in next, fallbacks do
-                for k, v in next, f do
+--             for _, f in next, fallbacks do
+            for _, f in sortedhash(fallbacks) do
+--                 for k, v in next, f do
+                for k, v in sortedhash(f) do
                     f[k] = specifications[v]
                 end
             end
@@ -979,31 +1009,34 @@ local function analyzefiles(olddata)
     local oldspecifications  = olddata and olddata.specifications or { }
     local oldrejected        = olddata and olddata.rejected       or { }
     local treatmentdata      = treatments.data or { } -- when used outside context
+
     local function identify(completename,name,suffix,storedname)
         local pathpart, basepart = splitbase(completename)
         nofread = nofread + 1
         local treatment = treatmentdata[completename] or treatmentdata[basepart]
         if treatment and treatment.ignored then
-            if trace_names then
+            if trace_names or trace_rejections then
                 report_names("%s font %a is ignored, reason %a",suffix,completename,treatment.comment or "unknown")
             end
             nofskipped = nofskipped + 1
         elseif done[name] then
-            -- already done (avoid otf afm clash)
-            if trace_names then
-                report_names("%s font %a already done",suffix,completename)
+            if lower(completename) ~= lower(done[name]) then
+                -- already done (avoid otf afm clash)
+                if trace_names or trace_rejections then
+                    report_names("%s font %a already done as %a",suffix,completename,done[name])
+                end
+                nofduplicates = nofduplicates + 1
+                nofskipped = nofskipped + 1
             end
-            nofduplicates = nofduplicates + 1
-            nofskipped = nofskipped + 1
         elseif not exists(completename) then
             -- weird error
-            if trace_names then
+            if trace_names or trace_rejections then
                 report_names("%s font %a does not really exist",suffix,completename)
             end
             nofskipped = nofskipped + 1
         elseif not is_qualified_path(completename) and findfile(completename,suffix) == "" then
             -- not locatable by backend anyway
-            if trace_names then
+            if trace_names or trace_rejections then
                 report_names("%s font %a cannot be found by backend",suffix,completename)
             end
             nofskipped = nofskipped + 1
@@ -1011,7 +1044,7 @@ local function analyzefiles(olddata)
             if #skip_paths > 0 then
                 for i=1,#skip_paths do
                     if find(pathpart,skip_paths[i]) then
-                        if trace_names then
+                        if trace_names or trace_rejections then
                             report_names("rejecting path of %s font %a",suffix,completename)
                         end
                         nofskipped = nofskipped + 1
@@ -1023,7 +1056,7 @@ local function analyzefiles(olddata)
                 for i=1,#skip_paths do
                     if find(basepart,skip_names[i]) then
                         done[name] = true
-                        if trace_names then
+                        if trace_names or trace_rejections then
                             report_names("rejecting name of %s font %a",suffix,completename)
                         end
                         nofskipped = nofskipped + 1
@@ -1078,7 +1111,7 @@ local function analyzefiles(olddata)
                     report_names("error when identifying %s font %a, %s",suffix,completename,message or "unknown")
                 end
             end
-            done[name] = true
+            done[name] = completename
         end
         logs.flush() --  a bit overkill for each font, maybe not needed here
     end
@@ -1881,7 +1914,7 @@ local lastlookups, lastpattern = { }, ""
 -- end
 
 local function look_them_up(lookups,specification)
-    for key, value in next, specification do
+    for key, value in sortedhash(specification) do
         local t, n = { }, 0
         if find(value,"*",1,true) then
             value = topattern(value)
@@ -2003,7 +2036,7 @@ function names.register(files)
         local list, commonname = files.list, files.name
         if list then
             local n, m = 0, 0
-            for filename, filespec in next, list do
+            for filename, filespec in sortedhash(list) do
                 local name = lower(filespec.name or commonname)
                 if name and name ~= "" then
                     local style    = normalized_styles  [lower(filespec.style   or "normal")]
@@ -2115,3 +2148,17 @@ end
 -- end
 --
 -- inspect(newhash)
+
+-- example made for luatex list (unlikely to be used):
+--
+-- local command = [[reg QUERY "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"]]
+-- local pattern = ".-[\n\r]+%s+(.-)%s%(([^%)]+)%)%s+REG_SZ%s+(%S+)%s+"
+--
+-- local function getnamesfromregistry()
+--     local data = os.resultof(command)
+--     local list = { }
+--     for name, format, filename in string.gmatch(data,pattern) do
+--         list[name] = filename
+--     end
+--     return list
+-- end

@@ -12,6 +12,12 @@ if not modules then modules = { } end modules ['font-otf'] = {
 -- to_table -> totable
 -- ascent descent
 
+-- to be checked: combinations like:
+--
+-- current="ABCD" with [A]=nothing, [BC]=ligature, [D]=single (applied to result of BC so funny index)
+--
+-- unlikely but possible
+
 -- more checking against low level calls of functions
 
 local utfbyte = utf.byte
@@ -54,7 +60,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.812 -- beware: also sync font-mis.lua
+otf.version              = 2.814 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local hashes             = fonts.hashes
@@ -283,12 +289,16 @@ local ordered_enhancers = {
 
     "check glyphs",
     "check metadata",
-    "check extra features", -- after metadata
+--     "check extra features", -- after metadata
 
     "prepare tounicode",
 
     "check encoding", -- moved
     "add duplicates",
+
+    "expand lookups", -- a temp hack awaiting the lua loader
+
+    "check extra features", -- after metadata and duplicates
 
     "cleanup tables",
 
@@ -386,6 +396,7 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
     if featurefile then
         name = name .. "@" .. file.removesuffix(file.basename(featurefile))
     end
+    -- or: sub = tonumber(sub)
     if sub == "" then
         sub = false
     end
@@ -476,6 +487,7 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
             data = {
                 size        = size,
                 time        = time,
+                subfont     = sub,
                 format      = otf_format(filename),
                 featuredata = featurefiles,
                 resources   = {
@@ -819,35 +831,35 @@ actions["prepare glyphs"] = function(data,filename,raw)
                                     glyph       = glyph,
                                 }
                                 descriptions[unicode] = description
-local altuni = glyph.altuni
-if altuni then
- -- local d
-    for i=1,#altuni do
-        local a = altuni[i]
-        local u = a.unicode
-        if u ~= unicode then
-            local v = a.variant
-            if v then
-                -- tricky: no addition to d? needs checking but in practice such dups are either very simple
-                -- shapes or e.g cjk with not that many features
-                local vv = variants[v]
-                if vv then
-                    vv[u] = unicode
-                else -- xits-math has some:
-                    vv = { [u] = unicode }
-                    variants[v] = vv
-                end
-         -- elseif d then
-         --     d[#d+1] = u
-         -- else
-         --     d = { u }
-            end
-        end
-    end
- -- if d then
- --     duplicates[unicode] = d -- is this needed ?
- -- end
-end
+                                local altuni = glyph.altuni
+                                if altuni then
+                                 -- local d
+                                    for i=1,#altuni do
+                                        local a = altuni[i]
+                                        local u = a.unicode
+                                        if u ~= unicode then
+                                            local v = a.variant
+                                            if v then
+                                                -- tricky: no addition to d? needs checking but in practice such dups are either very simple
+                                                -- shapes or e.g cjk with not that many features
+                                                local vv = variants[v]
+                                                if vv then
+                                                    vv[u] = unicode
+                                                else -- xits-math has some:
+                                                    vv = { [u] = unicode }
+                                                    variants[v] = vv
+                                                end
+                                         -- elseif d then
+                                         --     d[#d+1] = u
+                                         -- else
+                                         --     d = { u }
+                                            end
+                                        end
+                                    end
+                                 -- if d then
+                                 --     duplicates[unicode] = d -- is this needed ?
+                                 -- end
+                                end
                             end
                         end
                     else
@@ -1494,12 +1506,16 @@ end
 actions["reorganize lookups"] = function(data,filename,raw) -- we could check for "" and n == 0
     -- we prefer the before lookups in a normal order
     if data.lookups then
-        local splitter = data.helpers.tounicodetable
-        local t_u_cache = { }
-        local s_u_cache = t_u_cache -- string keys
-        local t_h_cache = { }
-        local s_h_cache = t_h_cache -- table keys (so we could use one cache)
-        local r_u_cache = { } -- maybe shared
+        local helpers      = data.helpers
+        local duplicates   = data.resources.duplicates
+        local splitter     = helpers.tounicodetable
+        local t_u_cache    = { }
+        local s_u_cache    = t_u_cache -- string keys
+        local t_h_cache    = { }
+        local s_h_cache    = t_h_cache -- table keys (so we could use one cache)
+        local r_u_cache    = { } -- maybe shared
+        helpers.matchcache = t_h_cache -- so that we can add duplicates
+        --
         for _, lookup in next, data.lookups do
             local rules = lookup.rules
             if rules then
@@ -1646,6 +1662,50 @@ actions["reorganize lookups"] = function(data,filename,raw) -- we could check fo
                                 end
                             end
                         end
+                    end
+                end
+            end
+        end
+    end
+end
+
+actions["expand lookups"] = function(data,filename,raw) -- we could check for "" and n == 0
+    if data.lookups then
+        local cache = data.helpers.matchcache
+        if cache then
+            local duplicates = data.resources.duplicates
+            for key, hash in next, cache do
+                local done = nil
+                for key in next, hash do
+                    local unicode = duplicates[key]
+                    if not unicode then
+                        -- no duplicate
+                    elseif type(unicode) == "table" then
+                        -- multiple duplicates
+                        for i=1,#unicode do
+                            local u = unicode[i]
+                            if hash[u] then
+                                -- already in set
+                            elseif done then
+                                done[u] = key
+                            else
+                                done = { [u] = key }
+                            end
+                        end
+                    else
+                        -- one duplicate
+                        if hash[unicode] then
+                            -- already in set
+                        elseif done then
+                            done[unicode] = key
+                        else
+                            done = { [unicode] = key }
+                        end
+                    end
+                end
+                if done then
+                    for u in next, done do
+                        hash[u] = true
                     end
                 end
             end
