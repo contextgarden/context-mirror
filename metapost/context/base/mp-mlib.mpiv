@@ -768,6 +768,8 @@ vardef mfun_do_outline_text_flush (expr kind, n, x, y) (text t) =
         mfun_do_outline_text_b (n, x, y) (t)
     elseif kind = "r" :
         mfun_do_outline_text_r (n, x, y) (t)
+    elseif kind = "p" :
+        mfun_do_outline_text_p (n, x, y) (t)
     else :
         mfun_do_outline_text_n (n, x, y) (t)
     fi ;
@@ -790,6 +792,12 @@ enddef ;
 vardef mfun_do_outline_text_d (expr n, x, y) (text t) =
     for i=t :
         draw i shifted(x,y) mfun_do_outline_options_d ;
+    endfor ;
+enddef ;
+
+vardef mfun_do_outline_text_p (expr n, x, y) (text t) =
+    for i=t :
+        draw i shifted(x,y) ;
     endfor ;
 enddef ;
 
@@ -857,6 +865,9 @@ vardef mfun_do_outline_text_set_n text r =
     def mfun_do_outline_options_r = r enddef ;
 enddef ;
 
+vardef mfun_do_outline_text_set_p =
+enddef ;
+
 def mfun_do_outline_options_d = enddef ;
 def mfun_do_outline_options_f = enddef ;
 def mfun_do_outline_options_r = enddef ;
@@ -882,6 +893,8 @@ vardef outlinetext@# (expr t) text rest =
                 mfun_do_outline_text_set_b rest ;
             elseif kind = "r" :
                 mfun_do_outline_text_set_r rest ;
+            elseif kind = "p" :
+                mfun_do_outline_text_set_p ;
             else :
                 mfun_do_outline_text_set_n rest ;
             fi ;

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 06/12/15 10:06:12
+-- merge date  : 06/13/15 09:52:29
 
 do -- begin closure to overcome local limits and interference
 
@@ -4380,6 +4380,7 @@ function constructors.scale(tfmdata,specification)
   local hdelta=delta
   local vdelta=delta
   target.designsize=parameters.designsize 
+  target.units=units
   target.units_per_em=units
   local direction=properties.direction or tfmdata.direction or 0 
   target.direction=direction
@@ -4781,11 +4782,20 @@ function constructors.finalize(tfmdata)
   if not parameters.slantfactor then
     parameters.slantfactor=tfmdata.slant or 0
   end
-  if not parameters.designsize then
-    parameters.designsize=tfmdata.designsize or (factors.pt*10)
+  local designsize=parameters.designsize
+  if designsize then
+    parameters.minsize=tfmdata.minsize or designsize
+    parameters.maxsize=tfmdata.maxsize or designsize
+  else
+    designsize=factors.pt*10
+    parameters.designsize=designsize
+    parameters.minsize=designsize
+    parameters.maxsize=designsize
   end
+  parameters.minsize=tfmdata.minsize or parameters.designsize
+  parameters.maxsize=tfmdata.maxsize or parameters.designsize
   if not parameters.units then
-    parameters.units=tfmdata.units_per_em or 1000
+    parameters.units=tfmdata.units or tfmdata.units_per_em or 1000
   end
   if not tfmdata.descriptions then
     local descriptions={} 
@@ -4848,6 +4858,7 @@ function constructors.finalize(tfmdata)
   tfmdata.auto_protrude=nil
   tfmdata.extend=nil
   tfmdata.slant=nil
+  tfmdata.units=nil
   tfmdata.units_per_em=nil
   tfmdata.cache=nil
   properties.finalized=true
@@ -6086,7 +6097,7 @@ local keys={}
 function keys.FontName  (data,line) data.metadata.fontname=strip  (line) 
                    data.metadata.fullname=strip  (line) end
 function keys.ItalicAngle (data,line) data.metadata.italicangle=tonumber (line) end
-function keys.IsFixedPitch(data,line) data.metadata.isfixedpitch=toboolean(line,true) end
+function keys.IsFixedPitch(data,line) data.metadata.monospaced=toboolean(line,true) end
 function keys.CharWidth  (data,line) data.metadata.charwidth=tonumber (line) end
 function keys.XHeight   (data,line) data.metadata.xheight=tonumber (line) end
 function keys.Descender  (data,line) data.metadata.descender=tonumber (line) end
@@ -6508,7 +6519,7 @@ local function copytotfm(data)
     local emdash=0x2014
     local spacer="space"
     local spaceunits=500
-    local monospaced=metadata.isfixedpitch
+    local monospaced=metadata.monospaced
     local charwidth=metadata.charwidth
     local italicangle=metadata.italicangle
     local charxheight=metadata.xheight and metadata.xheight>0 and metadata.xheight
@@ -7195,7 +7206,7 @@ local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
 otf.glists={ "gsub","gpos" }
-otf.version=2.814 
+otf.version=2.815 
 otf.cache=containers.define("fonts","otf",otf.version,true)
 local hashes=fonts.hashes
 local definers=fonts.definers
@@ -9165,9 +9176,13 @@ local function copytotfm(data,cache_id)
     local spaceunits=500
     local spacer="space"
     local designsize=metadata.designsize or metadata.design_size or 100
+    local minsize=metadata.minsize or metadata.design_range_bottom or designsize
+    local maxsize=metadata.maxsize or metadata.design_range_top  or designsize
     local mathspecs=metadata.math
     if designsize==0 then
       designsize=100
+      minsize=100
+      maxsize=100
     end
     if mathspecs then
       for name,value in next,mathspecs do
@@ -9227,13 +9242,13 @@ local function copytotfm(data,cache_id)
     local fontname=metadata.fontname
     local fullname=metadata.fullname or fontname
     local psname=fontname or fullname
-    local units=metadata.units_per_em or 1000
+    local units=metadata.units or metadata.units_per_em or 1000
     if units==0 then 
       units=1000 
-      metadata.units_per_em=1000
+      metadata.units=1000
       report_otf("changing %a units to %a",0,units)
     end
-    local monospaced=metadata.isfixedpitch or (pfminfo.panose and pfminfo.panose.proportion=="Monospaced")
+    local monospaced=metadata.monospaced or metadata.isfixedpitch or (pfminfo.panose and pfminfo.panose.proportion=="Monospaced")
     local charwidth=pfminfo.avgwidth 
     local charxheight=pfminfo.os2_xheight and pfminfo.os2_xheight>0 and pfminfo.os2_xheight
     local italicangle=metadata.italicangle
@@ -9298,8 +9313,10 @@ local function copytotfm(data,cache_id)
       end
     end
     parameters.designsize=(designsize/10)*65536
-    parameters.ascender=abs(metadata.ascent or 0)
-    parameters.descender=abs(metadata.descent or 0)
+    parameters.minsize=(minsize/10)*65536
+    parameters.maxsize=(maxsize/10)*65536
+    parameters.ascender=abs(metadata.ascender or metadata.ascent or 0)
+    parameters.descender=abs(metadata.descender or metadata.descent or 0)
     parameters.units=units
     properties.space=spacer
     properties.encodingbytes=2

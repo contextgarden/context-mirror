@@ -60,7 +60,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.814 -- beware: also sync font-mis.lua
+otf.version              = 2.815 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local hashes             = fonts.hashes
@@ -2394,10 +2394,14 @@ local function copytotfm(data,cache_id)
         local spaceunits     = 500
         local spacer         = "space"
         local designsize     = metadata.designsize or metadata.design_size or 100
+        local minsize        = metadata.minsize or metadata.design_range_bottom or designsize
+        local maxsize        = metadata.maxsize or metadata.design_range_top    or designsize
         local mathspecs      = metadata.math
         --
         if designsize == 0 then
             designsize = 100
+            minsize    = 100
+            maxsize    = 100
         end
         if mathspecs then
             for name, value in next, mathspecs do
@@ -2474,15 +2478,15 @@ local function copytotfm(data,cache_id)
         local fontname = metadata.fontname
         local fullname = metadata.fullname or fontname
         local psname   = fontname or fullname
-        local units    = metadata.units_per_em or 1000
+        local units    = metadata.units or metadata.units_per_em or 1000
         --
         if units == 0 then -- catch bugs in fonts
             units = 1000 -- maybe 2000 when ttf
-            metadata.units_per_em = 1000
+            metadata.units = 1000
             report_otf("changing %a units to %a",0,units)
         end
         --
-        local monospaced  = metadata.isfixedpitch or (pfminfo.panose and pfminfo.panose.proportion == "Monospaced")
+        local monospaced  = metadata.monospaced or metadata.isfixedpitch or (pfminfo.panose and pfminfo.panose.proportion == "Monospaced")
         local charwidth   = pfminfo.avgwidth -- or unset
         local charxheight = pfminfo.os2_xheight and pfminfo.os2_xheight > 0 and pfminfo.os2_xheight
 -- charwidth = charwidth * units/1000
@@ -2552,17 +2556,16 @@ local function copytotfm(data,cache_id)
             end
         end
         --
-        parameters.designsize = (designsize/10)*65536
-        parameters.ascender   = abs(metadata.ascent  or 0)
-        parameters.descender  = abs(metadata.descent or 0)
-        parameters.units      = units
+        parameters.designsize    = (designsize/10)*65536
+        parameters.minsize       = (minsize   /10)*65536
+        parameters.maxsize       = (maxsize   /10)*65536
+        parameters.ascender      = abs(metadata.ascender  or metadata.ascent  or 0)
+        parameters.descender     = abs(metadata.descender or metadata.descent or 0)
+        parameters.units         = units
         --
         properties.space         = spacer
         properties.encodingbytes = 2
         properties.format        = data.format or otf_format(filename) or formats.otf
--- if units ~= 1000 and format ~= "truetype" then
---     properties.format = "truetype"
--- end
         properties.noglyphnames  = true
         properties.filename      = filename
         properties.fontname      = fontname

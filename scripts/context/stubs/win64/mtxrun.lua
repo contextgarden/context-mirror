@@ -5904,7 +5904,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 27822, stripped down to: 18037
+-- original size: 27840, stripped down to: 18055
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -6340,10 +6340,10 @@ local f_table_direct=formatters["{"]
 local f_table_entry=formatters["[%q]={"]
 local f_table_finish=formatters["}"]
 local spaces=utilities.strings.newrepeater(" ")
-local serialize=table.serialize
+local original_serialize=table.serialize
 local function serialize(root,name,specification)
   if type(specification)=="table" then
-    return serialize(root,name,specification) 
+    return original_serialize(root,name,specification) 
   end
   local t  
   local n=1
@@ -10772,7 +10772,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 48229, stripped down to: 30684
+-- original size: 48172, stripped down to: 30632
 
 if not modules then modules={} end modules ['lxml-lpt']={
   version=1.001,
@@ -11362,13 +11362,12 @@ local function tagstostring(list)
 end
 xml.nodesettostring=nodesettostring
 local lpath 
-local lshowoptions={ functions=false }
 local function lshow(parsed)
   if type(parsed)=="string" then
     parsed=lpath(parsed)
   end
   report_lpath("%s://%s => %s",parsed.protocol or xml.defaultprotocol,parsed.pattern,
-    table.serialize(parsed,false,lshowoptions))
+    table.serialize(parsed,false))
 end
 xml.lshow=lshow
 local function add_comment(p,str)
@@ -18109,8 +18108,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 752587
--- stripped bytes    : 271654
+-- original bytes    : 752548
+-- stripped bytes    : 271649
 
 -- end library merge
 

@@ -15,14 +15,15 @@ if not modules then modules = { } end modules ['font-syn'] = {
 -- new lua loader:   5 sec
 
 local next, tonumber, type, tostring = next, tonumber, type, tostring
-local sub, gsub, lower, match, find, lower, upper = string.sub, string.gsub, string.lower, string.match, string.find, string.lower, string.upper
-local find, gmatch = string.find, string.gmatch
-local concat, sort, format = table.concat, table.sort, string.format
+local sub, gsub, match, find, lower, upper = string.sub, string.gsub, string.match, string.find, string.lower, string.upper
+local concat, sort = table.concat, table.sort
 local serialize, sortedhash = table.serialize, table.sortedhash
 local lpegmatch = lpeg.match
 local unpack = unpack or table.unpack
 local formatters, topattern = string.formatters, string.topattern
 local round = math.round
+local P, R, S, C, Cc, Ct, Cs = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Ct, lpeg.Cs
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local allocate             = utilities.storage.allocate
 local sparse               = utilities.storage.sparse
@@ -42,12 +43,8 @@ local findfile             = resolvers.findfile
 local cleanpath            = resolvers.cleanpath
 local resolveprefix        = resolvers.resolve
 
-local fontloader           = fontloader
-local font_to_table        = fontloader.to_table
-local open_font            = fontloader.open
-local get_font_info        = fontloader.info
-local close_font           = fontloader.close
-local font_fields          = fontloader.fields
+----- fontloader           = fontloader -- still needed for pfb (now)
+----- get_font_info        = fontloader.info
 
 local settings_to_hash     = utilities.parsers.settings_to_hash_tolerant
 
@@ -76,7 +73,7 @@ fonts.treatments           = treatments
 
 names.data                 = names.data or allocate { }
 
-names.version              = 1.123
+names.version              = 1.125
 names.basename             = "names"
 names.saved                = false
 names.loaded               = false
@@ -93,8 +90,6 @@ directives.register("fonts.usesystemfonts", function(v) usesystemfonts = toboole
 --[[ldx--
 <p>A few helpers.</p>
 --ldx]]--
-
-local P, C, Cc, Cs = lpeg.P, lpeg.C, lpeg.Cc, lpeg.Cs
 
 -- -- what to do with these -- --
 --
@@ -313,122 +308,54 @@ end
 but to keep the overview, we define them here.</p>
 --ldx]]--
 
-filters.otf   = get_font_info
-filters.ttf   = get_font_info
-filters.ttc   = get_font_info
-filters.dfont = get_font_info
+-- filters.dfont = get_font_info
 
--- We had this as temporary solution because we needed a bit more info but in the
--- meantime it got an interesting side effect: currently luatex delays loading of e.g.
--- glyphs so here we first load and then discard which is a waste. In the past it did
--- free memory because a full load was done. One of these things that goes unnoticed.
---
--- missing: names, units_per_em, design_range_bottom, design_range_top, design_size,
--- pfminfo, top_side_bearing
+filters.otf = fonts.handlers.otf.readers.getinfo
+filters.ttf = filters.otf
+filters.ttc = filters.otf
 
--- local function get_full_info(...) -- check with taco what we get / could get
---     local ff = open_font(...)
---     if ff then
---         local d = ff -- and font_to_table(ff)
---         d.glyphs, d.subfonts, d.gpos, d.gsub, d.lookups = nil, nil, nil, nil, nil
---         close_font(ff)
---         return d
---     else
---         return nil, "error in loading font"
---     end
--- end
-
--- Phillip suggested this faster variant but it's still a hack as fontloader.info should
--- return these keys/values (and maybe some more) but at least we close the loader which
--- might save some memory in the end.
-
--- local function get_full_info(name)
---     local ff = open_font(name)
---     if ff then
---         local fields = table.tohash(font_fields(ff),true) -- isn't that one stable
---         local d   = {
---             names               = fields.names               and ff.names,
---             familyname          = fields.familyname          and ff.familyname,
---             fullname            = fields.fullname            and ff.fullname,
---             fontname            = fields.fontname            and ff.fontname,
---             weight              = fields.weight              and ff.weight,
---             italicangle         = fields.italicangle         and ff.italicangle,
---             units_per_em        = fields.units_per_em        and ff.units_per_em,
---             design_range_bottom = fields.design_range_bottom and ff.design_range_bottom,
---             design_range_top    = fields.design_range_top    and ff.design_range_top,
---             design_size         = fields.design_size         and ff.design_size,
---             italicangle         = fields.italicangle         and ff.italicangle,
---             pfminfo             = fields.pfminfo             and ff.pfminfo,
---             top_side_bearing    = fields.top_side_bearing    and ff.top_side_bearing,
---         }
---      -- setmetatableindex(d,function(t,k)
---      --     report_names("warning, trying to access field %a in font table of %a",k,name)
---      -- end)
---         close_font(ff)
---         return d
---     else
---         return nil, "error in loading font"
---     end
--- end
-
--- more efficient:
-
-local fields = nil
-
-local function get_full_info(name)
-    local ff = open_font(name)
-    if ff then
-        if not fields then
-            fields = table.tohash(font_fields(ff),true)
+local function normalize(t)
+    local boundingbox = t.fontbbox
+    if boundingbox then
+        for i=1,#boundingbox do
+            boundingbox[i] = tonumber(boundingbox[i])
         end
-        --  unfortunately luatex aborts when a field is not available
-        local d   = {
-            names               = fields.names               and ff.names,
-            familyname          = fields.familyname          and ff.familyname,
-            fullname            = fields.fullname            and ff.fullname,
-            fontname            = fields.fontname            and ff.fontname,
-            weight              = fields.weight              and ff.weight,
-            italicangle         = fields.italicangle         and ff.italicangle,
-            units_per_em        = fields.units_per_em        and ff.units_per_em,
-            design_range_bottom = fields.design_range_bottom and ff.design_range_bottom,
-            design_range_top    = fields.design_range_top    and ff.design_range_top,
-            design_size         = fields.design_size         and ff.design_size,
-            italicangle         = fields.italicangle         and ff.italicangle,
-            pfminfo             = fields.pfminfo             and ff.pfminfo,
-            top_side_bearing    = fields.top_side_bearing    and ff.top_side_bearing, -- not there
-        }
-        if d.italicangle then
-            d.italicangle = round(1000*d.italicangle)/1000
-        end
-     -- setmetatableindex(d,function(t,k)
-     --     report_names("warning, trying to access field %a in font table of %a",k,name)
-     -- end)
-        close_font(ff)
-        return d
     else
-        return nil, "error in loading font"
+        boundingbox = { 0, 0, 0, 0 }
     end
+    return {
+        copyright   = t.copyright,
+        fontname    = t.fontname,
+        fullname    = t.fullname,
+        familyname  = t.familyname,
+        weight      = t.weight,
+        widtht      = t.width,
+        italicangle = tonumber(t.italicangle) or 0,
+        monospaced  = toboolean(t.isfixedpitch) or false,
+        boundingbox = boundingbox,
+        version     = t.version,
+        capheight   = tonumber(t.capheight),
+        xheight     = tonumber(t.xheight),
+        ascender    = tonumber(t.ascender),
+        descender   = tonumber(t.descender),
+    }
 end
 
--- As we have lazy loading anyway, this one still is full and with less code than
--- the previous one. But this depends on the garbage collector to kick in and in the
--- current version that somehow happens not that often (on my machine I end up with
--- soem 3 GB extra before that happens).
+local p_spaces  = lpegpatterns.whitespace
+local p_number  = (R("09")+S(".-+"))^1 / tonumber
+local p_boolean = P("false") * Cc(false)
+                + P("false") * Cc(false)
+local p_string  = P("(") * C((lpegpatterns.nestedparents + 1 - P(")"))^1) * P(")")
+local p_array   = P("[") * Ct((p_number + p_boolean + p_string + p_spaces^1)^1) * P("]")
+                + P("{") * Ct((p_number + p_boolean + p_string + p_spaces^1)^1) * P("}")
 
--- local function get_full_info(...)
---     local ff = open_font(...)
---     if ff then
---         local d = { } -- ff is userdata so [1] or # fails on it
---         setmetatableindex(d,ff)
---         return d -- garbage collection will do the close_font(ff)
---     else
---         return nil, "error in loading font"
---     end
--- end
+local p_key     = P("/") * C(R("AZ","az")^1)
+local p_value   = p_string
+                + p_number
+                + p_boolean
+                + p_array
 
-fontloader.fullinfo = get_full_info
-filters   .otf      = get_full_info
-filters   .ttf      = get_full_info
+local p_entry   = p_key * p_spaces^0 * p_value
 
 function filters.afm(name)
     -- we could parse the afm file as well, and then report an error but
@@ -441,24 +368,46 @@ function filters.afm(name)
         local f = io.open(name)
         if f then
             local hash = { }
-            for line in f:lines() do -- slow
-                local key, value = match(line,"^(.+)%s+(.+)%s*$")
-                if key and #key > 0 then
-                    hash[lower(key)] = value
-                end
+            local okay = false
+            for line in f:lines() do -- slow but only a few lines at the beginning
                 if find(line,"StartCharMetrics",1,true) then
                     break
+                else
+                    local key, value = match(line,"^(.+)%s+(.+)%s*$")
+                    if key and #key > 0 then
+                        hash[lower(key)] = value
+                    end
                 end
             end
             f:close()
-            return hash
+            return normalize(hash)
         end
     end
     return nil, "no matching pfb file"
 end
 
 function filters.pfb(name)
-    return get_font_info(name)
+    local f = io.open(name)
+    if f then
+        local hash = { }
+        local okay = false
+        for line in f:lines() do -- slow but only a few lines at the beginning
+            if find(line,"dict begin") then
+                okay = true
+            elseif not okay then
+                -- go on
+            elseif find(line,"currentdict end") then
+                break
+            else
+                local key, value = lpegmatch(p_entry,line)
+                if key and value then
+                    hash[lower(key)] = value
+                end
+            end
+        end
+        f:close()
+        return normalize(hash)
+    end
 end
 
 --[[ldx--
@@ -468,8 +417,7 @@ for combination with the weight of a font.</p>
 --ldx]]--
 
 filters.list = {
-    "otf", "ttf", "ttc", "dfont", "afm",
- -- "ttc",  "otf", "ttf", "dfont", "afm",
+    "otf", "ttf", "ttc", "afm", -- no longer dfont support (for now)
 }
 
 -- to be considered: loop over paths per list entry (so first all otf ttf etc)
@@ -574,18 +522,18 @@ end
 names.cleanname     = cleanname
 names.cleanfilename = cleanfilename
 
-local function check_names(result)
-    local names = result.names
-    if names then
-        for i=1,#names do
-            local name = names[i]
-            if name.lang == "English (US)" then
-                return name.names
-            end
-        end
-    end
-    return result
-end
+-- local function check_names(result)
+--     local names = result.names
+--     if names then
+--         for i=1,#names do
+--             local name = names[i]
+--             if name.lang == "English (US)" then
+--                 return name.names
+--             end
+--         end
+--     end
+--     return result
+-- end
 
 local function walk_tree(pathlist,suffix,identify)
     if pathlist then
@@ -611,27 +559,16 @@ end
 local function check_name(data,result,filename,modification,suffix,subfont)
     -- shortcuts
     local specifications = data.specifications
-    -- prepare
-    local names = check_names(result)
     -- fetch
--- if string.find(string.lower(filename),"ebgaramond") then
---     inspect(result)
---     inspect(names)
--- end
-
-if string.find(filename,"avkv") then
-    inspect(result)
-end
-
-    local familyname    = names and names.preffamilyname    or result.familyname
-    local fullname      = names and names.fullname          or result.fullname
+    local familyname    = result.familyname
+    local fullname      = result.fullname
     local fontname      = result.fontname
-    local subfamily     = names and names.subfamily         or result.subfamily
-    local modifiers     = names and names.prefmodifiers     or result.modifiers
-    local weight        = names and names.weight            or result.weight
+    local subfamily     = result.subfamily
+    local modifiers     = result.modifiers
+    local weight        = result.weight
     local italicangle   = tonumber(result.italicangle)
-    local subfont       = subfont                           or nil
-    local rawname       = fullname or fontname              or familyname
+    local subfont       = subfont
+    local rawname       = fullname or fontname or familyname
     local filebase      = removesuffix(basename(filename))
     local cleanfilename = cleanname(filebase) -- for WS
     -- normalize
@@ -667,18 +604,18 @@ end
     fullname   = fullname   or fontname
     familyname = familyname or fontname
     -- we do these sparse -- todo: check table type or change names in ff loader
-    local units      = result.units_per_em          or result.emunits       or 1000 -- can be zero too
-    local minsize    = result.design_range_bottom   or result.mindesignsize or 0
-    local maxsize    = result.design_range_top      or result.maxdesignsize or 0
-    local designsize = result.design_size           or result.designsize    or 0
-    local angle      = result.italicangle                                   or 0
-    local pfminfo    = result.pfminfo
-    local pfmwidth   = (pfminfo and pfminfo.width ) or result.pfmwidth      or 0
-    local pfmweight  = (pfminfo and pfminfo.weight) or result.pfmweight     or 0
+    local units      = result.units       or 1000 -- can be zero too
+    local designsize = result.designsize  or 0
+    local minsize    = result.mindesign   or 0
+    local maxsize    = result.maxdesign   or 0
+    local angle      = result.italicangle or 0
+    local pfmwidth   = result.pfmwidth    or 0
+    local pfmweight  = result.pfmweight   or 0
     --
     specifications[#specifications + 1] = {
         filename      = filename, -- unresolved
         cleanfilename = cleanfilename,
+     -- subfontindex  = subfont,
         format        = lower(suffix),
         subfont       = subfont,
         rawname       = rawname,
@@ -700,9 +637,6 @@ end
         designsize    = designsize   ~=    0 and designsize   or nil,
         modification  = modification ~=    0 and modification or nil,
     }
--- inspect(filename)
--- inspect(result)
--- inspect(specifications[#specifications])
 end
 
 local function cleanupkeywords()
