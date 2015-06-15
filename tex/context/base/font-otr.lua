@@ -1544,6 +1544,13 @@ local function readdata(f,offset,specification)
     readers["gpos"](f,fontdata,specification)
     readers["math"](f,fontdata,specification)
     --
+    if readers.filterkerns then
+        readers.filterkerns(fontdata)
+    end
+    if readers.splitlookups then
+        readers.splitlookups(fontdata)
+    end
+    --
     fontdata.locations    = nil
     fontdata.tables       = nil
     fontdata.cidmaps      = nil
