@@ -1305,7 +1305,7 @@ local function checkcmap(f,fontdata,records,platform,encoding,format)
     if not reader then
         return
     end
- -- report("checking cmap: platform %a, encoding %a, format %a",platform,encoding,format)
+    report("checking cmap: platform %a, encoding %a, format %a",platform,encoding,format)
     reader(f,fontdata,data)
     return true
 end
@@ -1360,15 +1360,27 @@ function readers.cmap(f,fontdata,specification)
                 end
             end
             --
-            checkcmap(f,fontdata,records,3, 1, 4)
-            checkcmap(f,fontdata,records,3,10,12)
-         -- checkcmap(f,fontdata,records,0, 3, 4)
-         -- checkcmap(f,fontdata,records,1, 0, 6)
-            checkcmap(f,fontdata,records,0, 5,14)
-         -- variantcid = records[0] and records[0][5]
-         -- if variantcid then
-         --     formatreaders[14](f,fontdata,offset,variantcid[14])
-         -- end
+            local ok = false
+            ok = checkcmap(f,fontdata,records,3, 1, 4) or ok
+            ok = checkcmap(f,fontdata,records,3,10,12) or ok
+            ok = checkcmap(f,fontdata,records,0, 3, 4) or ok
+            ok = checkcmap(f,fontdata,records,0, 1, 4) or ok
+            ok = checkcmap(f,fontdata,records,1, 0, 6) or ok
+         -- ok = checkcmap(f,fontdata,records,3, 0, 4) or ok -- maybe
+            -- 1 0 0
+            if not ok then
+                local list = { }
+                for k1, v1 in next, records do
+                    for k2, v2 in next, v1 do
+                        for k3, v3 in next, v2 do
+                            list[#list+1] = formatters["%s.%s.%s"](k1,k2,k3)
+                        end
+                    end
+                end
+                table.sort(list)
+                report("no unicode cmap record loaded, found tables: % t",list)
+            end
+            checkcmap(f,fontdata,records,0, 5,14) -- variants
             --
             fontdata.cidmaps = {
                 version   = version,
@@ -1412,14 +1424,14 @@ function readers.kern(f,fontdata,specification)
                 local length   = readushort(f)
                 local coverage = readushort(f)
                 -- bit 8-15 of coverage: format 0 or 2
-                local format = bit32.rshift(coverage,8) -- is this ok?
+                local format   = bit32.rshift(coverage,8) -- is this ok?
                 if format == 0 then
                     local nofpairs      = readushort(f)
                     local searchrange   = readushort(f)
                     local entryselector = readushort(f)
                     local rangeshift    = readushort(f)
-                    local kerns         = { }
-                    local glyphs        = fontdata.glyphs
+                    local kerns  = { }
+                    local glyphs = fontdata.glyphs
                     for i=1,nofpairs do
                         local left  = readushort(f)
                         local right = readushort(f)
@@ -1432,7 +1444,6 @@ function readers.kern(f,fontdata,specification)
                             glyph.kerns = { [right] = kern }
                         end
                     end
-                 -- fontdata.kerns = kerns
                 elseif format == 2 then
                     report("todo: kern classes")
                 else
@@ -1609,7 +1620,7 @@ local function getinfo(maindata,sub)
         local weight     = getname(fontdata,"weight") or cffinfo.weight or metrics.weight
         local width      = getname(fontdata,"width")  or cffinfo.width  or metrics.width
         return { -- we inherit some inconsistencies/choices from ff
-            subfontindex = sub or 0,
+            subfontindex = fontdata.subfontindex or sub or 0,
          -- filename     = filename,
          -- version      = name("version"),
          -- format       = fontdata.format,
@@ -1767,7 +1778,7 @@ local function loadfontdata(specification)
             for i=1,nofsubfonts do
                 offsets[i] = readulong(f)
             end
-            if subfont then
+            if subfont then -- a number of not
                 if subfont >= 1 and subfont <= nofsubfonts then
                     fontdata = readdata(f,offsets[subfont],specification)
                 else
@@ -1780,6 +1791,7 @@ local function loadfontdata(specification)
                     for i=1,nofsubfonts do
                         fontdata = readdata(f,offsets[i],specification)
                         if fontdata then
+                            fontdata.subfontindex = i
                             report("subfont named %a has index %a",subfont,i)
                             break
                         end
@@ -1873,6 +1885,7 @@ function readers.loadfont(filename,n)
         glyphs   = true,
         shapes   = false,
         lookups  = true,
+     -- kerns    = true,
         subfont  = n,
     }
     if fontdata then
@@ -1891,16 +1904,15 @@ function readers.loadfont(filename,n)
                 hasitalics = fontdata.hasitalics or false,
             },
             resources     = {
-                duplicates    = { }, -- todo
-                features      = fontdata.features,
                 filename      = fontdata.filename,
-                sublookups    = fontdata.sublookups,
-                subtables     = fontdata.subtables,
-                marks         = fontdata.marks or { },
-                markclasses   = fontdata.markclasses or { },
-                marksets      = fontdata.marksets or { },
                 private       = privateoffset,
-                sequences     = fontdata.sequences,
+                duplicates    = { }, -- todo
+                features      = fontdata.features    or { }, -- we need to add these in the loader
+                sublookups    = fontdata.sublookups  or { }, -- we need to add these in the loader
+                marks         = fontdata.marks       or { }, -- we need to add these in the loader
+                markclasses   = fontdata.markclasses or { }, -- we need to add these in the loader
+                marksets      = fontdata.marksets    or { }, -- we need to add these in the loader
+                sequences     = fontdata.sequences   or { }, -- we need to add these in the loader
                 variants      = fontdata.variants, -- variant -> unicode -> glyph
                 version       = getname(fontdata,"version"),
                 cidinfo       = fontdata.cidinfo,
