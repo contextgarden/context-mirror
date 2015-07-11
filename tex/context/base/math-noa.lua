@@ -6,9 +6,10 @@ if not modules then modules = { } end modules ['math-noa'] = {
     license   = "see context related readme files"
 }
 
--- beware: this is experimental code and there will be a more
--- generic (attribute value driven) interface too but for the
--- moment this is ok
+-- beware: this is experimental code and there will be a more generic (attribute value
+-- driven) interface too but for the moment this is ok (sometime in 2015-2016 i will
+-- start cleaning up as by then the bigger picture is clear and code has been used for
+-- years; the main handlers will get some extensions)
 --
 -- we will also make dedicated processors (faster)
 --
@@ -21,6 +22,7 @@ if not modules then modules = { } end modules ['math-noa'] = {
 local utfchar, utfbyte = utf.char, utf.byte
 local formatters = string.formatters
 local sortedhash = table.sortedhash
+local insert, remove = table.insert, table.remove
 local div = math.div
 
 local fonts, nodes, node, mathematics = fonts, nodes, node, mathematics
@@ -65,6 +67,7 @@ local a_exportstatus      = privateattribute("exportstatus")
 local nuts                = nodes.nuts
 local nodepool            = nuts.pool
 local tonut               = nuts.tonut
+local tonode              = nuts.tonode
 local nutstring           = nuts.tostring
 
 local getfield            = nuts.getfield
@@ -83,6 +86,7 @@ local insert_node_before  = nuts.insert_before
 local free_node           = nuts.free
 local new_node            = nuts.new -- todo: pool: math_noad math_sub
 local copy_node           = nuts.copy
+local slide_nodes         = nuts.slide
 
 local mlist_to_hlist      = nodes.mlist_to_hlist
 
@@ -119,6 +123,7 @@ local tasks               = nodes.tasks
 
 local nodecodes           = nodes.nodecodes
 local noadcodes           = nodes.noadcodes
+local fencecodes          = nodes.fencecodes
 
 local noad_ord            = noadcodes.ord
 local noad_rel            = noadcodes.rel
@@ -126,6 +131,7 @@ local noad_punct          = noadcodes.punct
 local noad_opdisplaylimits= noadcodes.opdisplaylimits
 local noad_oplimits       = noadcodes.oplimits
 local noad_opnolimits     = noadcodes.opnolimits
+local noad_inner          = noadcodes.inner
 
 local math_noad           = nodecodes.noad           -- attr nucleus sub sup
 local math_accent         = nodecodes.accent         -- attr nucleus sub sup accent
@@ -143,12 +149,24 @@ local math_fence          = nodecodes.fence          -- attr subtype
 local hlist_code          = nodecodes.hlist
 local glyph_code          = nodecodes.glyph
 
-local left_fence_code     = 1
-local right_fence_code    = 3
+local left_fence_code     = fencecodes.left
+local middle_fence_code   = fencecodes.middle
+local right_fence_code    = fencecodes.right
+
+-- this initial stuff is tricky as we can have removed and new nodes with the same address
+-- the only way out is a free-per-page list of nodes (not bad anyway)
 
 local function process(start,what,n,parent)
-    if n then n = n + 1 else n = 0 end
-    local prev = nil
+    if n then
+        n = n + 1
+    else
+        n = 0
+    end
+    --
+    local initial = start
+    --
+    slide_nodes(start) -- we still miss a prev in noads -- fences test code
+    --
     while start do
         local id = getid(start)
         if trace_processing then
@@ -166,21 +184,27 @@ local function process(start,what,n,parent)
         local proc = what[id]
         if proc then
          -- report_processing("start processing")
-            local done, newstart = proc(start,what,n,parent) -- prev is bugged:  or getprev(start)
-            if newstart then
-                start = newstart
-             -- report_processing("stop processing (new start)")
+            local done, newstart, newinitial = proc(start,what,n,parent) -- prev is bugged:  or getprev(start)
+            if newinitial then
+                initial = newinitial -- temp hack .. we will make all return head
+                if newstart then
+                    start = newstart
+                 -- report_processing("stop processing (new start)")
+                else
+                 -- report_processing("quit processing (done)")
+                    break
+                end
             else
-             -- report_processing("stop processing")
+                if newstart then
+                    start = newstart
+                 -- report_processing("stop processing (new start)")
+                else
+                 -- report_processing("stop processing")
+                end
             end
         elseif id == math_char or id == math_textchar or id == math_delim then
             break
         elseif id == math_noad then
-if prev then
-    -- we have no proper prev in math nodes yet
-    setfield(start,"prev",prev)
-end
-
             local noad = getfield(start,"nucleus")      if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"sup")          if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"sub")          if noad then process(noad,what,n,start) end -- list
@@ -210,27 +234,69 @@ end
                   noad = getfield(start,"sub")          if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"accent")       if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"bot_accent")   if noad then process(noad,what,n,start) end -- list
-        elseif id == math_style then
-            -- has a next
-        else
-            -- glue, penalty, etc
+     -- elseif id == math_style then
+     --     -- has a next
+     -- else
+     --     -- glue, penalty, etc
         end
-prev = start
         start = getnext(start)
+    end
+    if not parent then
+        return initial, true -- only first level -- for now
+    end
+end
+
+local function processnested(current,what)
+    local noad = nil
+    local id   = getid(current)
+    if id == math_noad then
+        noad = getfield(current,"nucleus")      if noad then return process(noad,what,n,current) end -- list
+        noad = getfield(current,"sup")          if noad then return process(noad,what,n,current) end -- list
+        noad = getfield(current,"sub")          if noad then return process(noad,what,n,current) end -- list
+    elseif id == math_box or id == math_sub then
+        noad = getfield(current,"list")         if noad then return process(noad,what,n,current) end -- list (not getlist !)
+    elseif id == math_fraction then
+        noad = getfield(current,"num")          if noad then return process(noad,what,n,current) end -- list
+        noad = getfield(current,"denom")        if noad then return process(noad,what,n,current) end -- list
+        noad = getfield(current,"left")         if noad then return process(noad,what,n,current) end -- delimiter
+        noad = getfield(current,"right")        if noad then return process(noad,what,n,current) end -- delimiter
+    elseif id == math_choice then
+        noad = getfield(current,"display")      if noad then return process(noad,what,n,current) end -- list
+        noad = getfield(current,"text")         if noad then return process(noad,what,n,current) end -- list
+        noad = getfield(current,"script")       if noad then return process(noad,what,n,current) end -- list
+        noad = getfield(current,"scriptscript") if noad then return process(noad,what,n,current) end -- list
+    elseif id == math_fence then
+        noad = getfield(current,"delim")        if noad then return process(noad,what,n,current) end -- delimiter
+    elseif id == math_radical then
+        noad = getfield(current,"nucleus")      if noad then return process(noad,what,n,current) end -- list
+        noad = getfield(current,"sup")          if noad then return process(noad,what,n,current) end -- list
+        noad = getfield(current,"sub")          if noad then return process(noad,what,n,current) end -- list
+        noad = getfield(current,"left")         if noad then return process(noad,what,n,current) end -- delimiter
+        noad = getfield(current,"degree")       if noad then return process(noad,what,n,current) end -- list
+    elseif id == math_accent then
+        noad = getfield(current,"nucleus")      if noad then return process(noad,what,n,current) end -- list
+        noad = getfield(current,"sup")          if noad then return process(noad,what,n,current) end -- list
+        noad = getfield(current,"sub")          if noad then return process(noad,what,n,current) end -- list
+        noad = getfield(current,"accent")       if noad then return process(noad,what,n,current) end -- list
+        noad = getfield(current,"bot_accent")   if noad then return process(noad,what,n,current) end -- list
     end
 end
 
 local function processnoads(head,actions,banner)
+    local h, d
     if trace_processing then
         report_processing("start %a",banner)
-        process(tonut(head),actions)
+        h, d = process(tonut(head),actions)
         report_processing("stop %a",banner)
     else
-        process(tonut(head),actions)
+        h, d = process(tonut(head),actions)
     end
+    return h and tonode(h) or head, d == nil and true or d
 end
 
-noads.process = processnoads
+noads.process       = processnoads
+noads.processnested = processnested
+noads.processouter  = process
 
 --
 
@@ -539,7 +605,7 @@ end
 -- todo: just replace the character by an ord noad
 -- and remove the right delimiter as well
 
-local mathsize = privateattribute("mathsize")
+local mathsize = privateattribute("mathsize") -- this might move into other fence code
 
 local resize = { } processors.resize = resize
 
@@ -790,8 +856,8 @@ alternate[math_char] = function(pointer)
     end
 end
 
-function handlers.check(head,style,penalties)
-    processnoads(head,alternate,"check")
+function handlers.alternates(head,style,penalties)
+    processnoads(head,alternate,"alternate")
     return true
 end
 
