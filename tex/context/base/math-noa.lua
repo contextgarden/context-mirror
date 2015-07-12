@@ -605,17 +605,17 @@ end
 -- todo: just replace the character by an ord noad
 -- and remove the right delimiter as well
 
-local mathsize = privateattribute("mathsize") -- this might move into other fence code
-
-local resize = { } processors.resize = resize
+local a_mathsize  = privateattribute("mathsize") -- this might move into other fence code
+local resize      = { }
+processors.resize = resize
 
 resize[math_fence] = function(pointer)
     local subtype = getsubtype(pointer)
     if subtype == left_fence_code or subtype == right_fence_code then
-        local a = getattr(pointer,mathsize)
+        local a = getattr(pointer,a_mathsize)
         if a and a > 0 then
             local method, size = div(a,100), a % 100
-            setattr(pointer,mathsize,0)
+            setattr(pointer,a_mathsize,0)
             local delimiter = getfield(pointer,"delim")
             local chr = getfield(delimiter,"small_char")
             if chr > 0 then
@@ -634,9 +634,9 @@ function handlers.resize(head,style,penalties)
     return true
 end
 
-
-local a_autofence = privateattribute("mathautofence")
-local autofences  = { }
+local a_autofence     = privateattribute("mathautofence")
+local autofences      = { }
+processors.autofences = autofences
 
 local function makefence(what,char)
     local d = new_node(math_delim)
