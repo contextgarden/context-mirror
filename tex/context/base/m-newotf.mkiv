@@ -23,17 +23,18 @@
         "font-otl", "font-ots", "font-oto", "font-otd", "font-otc",
         "font-osd", "font-map", "font-fbk", "font-gds",
     }
-
-    logs.report("fonts")
-    if tex.modes.atpragma then
-        logs.report("fonts","replacing font loader code by experimental code (at pragma)")
-        logs.report("fonts")
-        for i=1,#files do require(file.join("t:/sources",files[i])) end
-    else
-        logs.report("fonts","replacing font loader code by experimental code")
-        logs.report("fonts")
-        for i=1,#files do require(files[i]) end
+    local report    = logs.reporter("newotf")
+    local findfile  = resolvers.findfile
+    local addsuffix = file.addsuffix
+    report()
+    report("replacing font loader code by experimental code")
+    report()
+    for i=1,#files do
+        local foundfile = findfile(addsuffix(files[i],"lua"))
+        report("loading %a",foundfile)
+        dofile(foundfile)
     end
+    report()
 \stopluacode
 
 \protect \endinput

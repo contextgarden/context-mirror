@@ -634,6 +634,180 @@ function handlers.resize(head,style,penalties)
     return true
 end
 
+
+local a_autofence = privateattribute("mathautofence")
+local autofences  = { }
+
+local function makefence(what,char)
+    local d = new_node(math_delim)
+    local f = new_node(math_fence)
+    if char then
+        local c = getfield(char,"nucleus")
+        setfield(d,"small_char",getfield(c,"char"))
+        setfield(d,"small_fam", getfield(c,"fam"))
+        free_node(c)
+    end
+    setfield(f,"subtype",what)
+    setfield(f,"delim",d)
+    return f
+end
+
+local function makelist(noad,f_o,o_next,c_prev,f_c,middle)
+    local list = new_node(math_sub)
+    setfield(list,"head",f_o)
+    setfield(noad,"subtype",noad_inner)
+    setfield(noad,"nucleus",list)
+    setfield(f_o,"next",o_next)
+    setfield(o_next,"prev",f_o)
+    setfield(f_c,"prev",c_prev)
+    setfield(c_prev,"next",f_c)
+    if middle and next(middle) then
+        local prev    = f_o
+        local current = o_next
+        while current ~= f_c do
+            if middle[current] then
+                local next  = getnext(current)
+                local fence = makefence(middle_fence_code,current)
+                setfield(current,"nucleus",nil)
+                free_node(current)
+                middle[current] = nil
+                -- replace_node
+                setfield(prev,"next",fence)
+                setfield(fence,"prev",prev)
+                setfield(next,"prev",fence)
+                setfield(fence,"next",next)
+                prev    = fence
+                current = next
+            else
+                prev = current
+                current = getnext(current)
+            end
+        end
+    end
+end
+
+local function convert_both(open,close,middle)
+    local f_o = makefence(left_fence_code,open)
+    local f_c = makefence(right_fence_code,close)
+    local o_next = getnext(open)
+ -- local o_prev = getprev(open)
+    local c_next = getnext(close)
+    local c_prev = getprev(close)
+    makelist(open,f_o,o_next,c_prev,f_c,middle)
+    setfield(close,"nucleus",nil)
+    free_node(close)
+    if c_next then
+        setfield(c_next,"prev",open)
+    end
+    setfield(open,"next",c_next)
+    return open
+end
+
+local function convert_open(open,last,middle)
+    local f_o = makefence(left_fence_code,open)
+    local f_c = makefence(right_fence_code)
+    local o_next = getnext(open)
+ -- local o_prev = getprev(open)
+    local l_next = getnext(last)
+ -- local l_prev = getprev(last)
+    makelist(open,f_o,o_next,last,f_c,middle)
+    if l_next then
+        setfield(l_next,"prev",open)
+    end
+    setfield(open,"next",l_next)
+    return open
+end
+
+local function convert_close(close,first,middle)
+    local f_o = makefence(left_fence_code)
+    local f_c = makefence(right_fence_code,close)
+    local c_prev = getprev(close)
+    makelist(close,f_o,first,c_prev,f_c,middle)
+    return close
+end
+
+autofences[math_noad] = function(pointer,what,n,parent)
+    -- can we do a fast check?
+    local current = pointer
+    local last    = pointer
+    local start   = pointer
+    local done    = false
+    local initial = pointer
+    local noad    = nil
+    local stack   = nil
+    local middle  = nil -- todo: use properties
+    while current do
+        local id = getid(current)
+        if id == math_noad then
+            local a = getattr(current,a_autofence)
+            if a and a > 0 then
+                setattr(current,a_autofence,0)
+                if a == 1 or (a == 4 and (not stack or #stack == 0)) then
+                    if stack then
+                        insert(stack,current)
+                    else
+                        stack = { current }
+                    end
+                elseif a == 2 or a == 4 then
+                    local open = stack and remove(stack)
+                    if open then
+                        current = convert_both(open,current,middle)
+                    elseif current == start then
+                        -- skip
+                    else
+                        current = convert_close(current,initial,middle)
+                        if not parent then
+                            initial = current
+                        end
+                    end
+                elseif a == 3 then
+                    if middle then
+                        middle[current] = true
+                    else
+                        middle = { [current] = true }
+                    end
+                end
+                done = true
+            else
+                -- make a helper for this
+                noad = getfield(current,"nucleus") if noad then process(noad,what,n,current) end -- list
+                noad = getfield(current,"sup")     if noad then process(noad,what,n,current) end -- list
+                noad = getfield(current,"sub")     if noad then process(noad,what,n,current) end -- list
+            end
+        else
+            process(current,autofences)
+        end
+        last    = current
+        current = getnext(current)
+    end
+    if done then
+        if stack then
+            local n = #stack
+            if n > 0 then
+                for i=1,n do
+                    last = convert_open(remove(stack),last,middle)
+                end
+            end
+        end
+        if not parent then
+            return true, current, initial
+        end
+    end
+end
+
+-- we can have a first changed node .. an option is to have a leading dummy node in math
+-- lists like the par node as it can save a  lot of mess
+
+function handlers.autofences(head,style,penalties)
+ -- if tex.modes.c_math_fences_auto then
+        local h, d = processnoads(head,autofences,"autofence")
+     -- inspect(nodes.totree(h))
+        return h or head, d
+ -- else
+ --     return head, false
+ -- end
+end
+
 -- normalize scripts
 
 local unscript     = { }  noads.processors.unscript = unscript

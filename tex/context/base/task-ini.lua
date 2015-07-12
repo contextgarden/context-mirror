@@ -97,6 +97,7 @@ appendaction("math",         "normalizers", "noads.handlers.families",  nil, "no
 
 appendaction("math",         "normalizers", "noads.handlers.render",    nil, "nohead")            -- always on
 appendaction("math",         "normalizers", "noads.handlers.collapse",  nil, "nohead")            -- always on
+appendaction("math",         "normalizers", "noads.handlers.autofences")               -- head !  -- always on
 appendaction("math",         "normalizers", "noads.handlers.resize",    nil, "nohead")            -- always on
 ------------("math",         "normalizers", "noads.handlers.respace",   nil, "nohead")            -- always on
 appendaction("math",         "normalizers", "noads.handlers.alternates",nil, "nohead")            -- always on

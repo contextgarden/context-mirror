@@ -646,12 +646,15 @@ function readers.addunicodetable(fontdata)
     local resources = fontdata.resources
     local unicodes  = resources.unicodes
     if not unicodes then
-        unicodes = { }
-        resources.unicodes = unicodes
-        for u, d in next, fontdata.descriptions do
-            local n = d.name
-            if n then
-                unicodes[n] = u
+        local descriptions = fontdata.descriptions
+        if descriptions then
+            unicodes = { }
+            resources.unicodes = unicodes
+            for u, d in next, descriptions do
+                local n = d.name
+                if n then
+                    unicodes[n] = u
+                end
             end
         end
     end
