@@ -134,6 +134,9 @@ local fencecodes          = nodes.fencecodes
 
 local noad_ord            = noadcodes.ord
 local noad_rel            = noadcodes.rel
+local noad_bin            = noadcodes.bin
+local noad_open           = noadcodes.open
+local noad_close          = noadcodes.close
 local noad_punct          = noadcodes.punct
 local noad_opdisplaylimits= noadcodes.opdisplaylimits
 local noad_oplimits       = noadcodes.oplimits
@@ -1304,7 +1307,7 @@ implement {
 
 local collapse = { } processors.collapse = collapse
 
-local mathpairs = characters.mathpairs
+local mathpairs = characters.mathpairs -- next will move to char-def
 
 mathpairs[0x2032] = { [0x2032] = 0x2033, [0x2033] = 0x2034, [0x2034] = 0x2057 } -- (prime,prime) (prime,doubleprime) (prime,tripleprime)
 mathpairs[0x2033] = { [0x2032] = 0x2034, [0x2033] = 0x2057 }                    -- (doubleprime,prime) (doubleprime,doubleprime)
@@ -1334,6 +1337,8 @@ local movesub = {
 local validpair = {
     [noad_rel]             = true,
     [noad_ord]             = true,
+    [noad_bin]             = true, -- new
+    [noad_punct]           = true, -- new
     [noad_opdisplaylimits] = true,
     [noad_oplimits]        = true,
     [noad_opnolimits]      = true,
@@ -1507,19 +1512,19 @@ end
 local classes = { }
 
 local colors = {
-    [noadcodes.rel]             = "trace:dr",
-    [noadcodes.ord]             = "trace:db",
-    [noadcodes.bin]             = "trace:dg",
-    [noadcodes.open]            = "trace:dm",
-    [noadcodes.close]           = "trace:dm",
-    [noadcodes.punct]           = "trace:dc",
- -- [noadcodes.opdisplaylimits] = "",
- -- [noadcodes.oplimits]        = "",
- -- [noadcodes.opnolimits]      = "",
- -- [noadcodes.inner            = "",
- -- [noadcodes.under            = "",
- -- [noadcodes.over             = "",
- -- [noadcodes.vcenter          = "",
+    [noad_rel]             = "trace:dr",
+    [noad_ord]             = "trace:db",
+    [noad_bin]             = "trace:dg",
+    [noad_open]            = "trace:dm",
+    [noad_close]           = "trace:dm",
+    [noad_punct]           = "trace:dc",
+ -- [noad_opdisplaylimits] = "",
+ -- [noad_oplimits]        = "",
+ -- [noad_opnolimits]      = "",
+ -- [noad_inner            = "",
+ -- [noad_under            = "",
+ -- [noad_over             = "",
+ -- [noad_vcenter          = "",
 }
 
 classes[math_char] = function(pointer,what,n,parent)
@@ -1559,11 +1564,11 @@ do
     mathematics.domains = categories
 
     local permitted     = {
-        ordinary    = noadcodes.ord,
-        binary      = noadcodes.bin,
-        relation    = noadcodes.rel,
-        punctuation = noadcodes.punct,
-        inner       = noadcodes.inner,
+        ordinary    = noad_ord,
+        binary      = noad_bin,
+        relation    = noad_rel,
+        punctuation = noad_punct,
+        inner       = noad_inner,
     }
 
     function mathematics.registerdomain(data)
