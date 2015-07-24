@@ -91,6 +91,7 @@ appendaction("shipouts",     "finishers",   "attributes.viewerlayers.handler")  
 appendaction("math",         "normalizers", "noads.handlers.showtree",  nil, "nohead")
 
 appendaction("math",         "normalizers", "noads.handlers.unscript",  nil, "nohead")            -- always on (maybe disabled)
+appendaction("math",         "normalizers", "noads.handlers.domains",   nil, "nohead")            -- disabled
 appendaction("math",         "normalizers", "noads.handlers.variants",  nil, "nohead")            -- always on
 appendaction("math",         "normalizers", "noads.handlers.relocate",  nil, "nohead")            -- always on
 appendaction("math",         "normalizers", "noads.handlers.families",  nil, "nohead")            -- always on
@@ -192,6 +193,7 @@ disableaction("finalizers",  "builders.paragraphs.tag")
 disableaction("math",        "noads.handlers.showtree")
 disableaction("math",        "noads.handlers.tags")
 disableaction("math",        "noads.handlers.italics")
+disableaction("math",        "noads.handlers.domains")
 disableaction("math",        "noads.handlers.classes")
 disableaction("math",        "typesetters.directions.processmath")
 
