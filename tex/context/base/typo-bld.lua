@@ -179,12 +179,15 @@ end)
 nodes.builders = nodes.builder or { }
 local builders = nodes.builders
 
+local normalize = typesetters.paragraphs.normalize
+
 local vboxactions = nodes.tasks.actions("vboxbuilders")
 
 function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
     local done = false
     if head then
         starttiming(builders)
+        normalize(head,true) -- a bit weird place
         if trace_vpacking then
             local before = nodes.count(head)
             head, done = vboxactions(head,groupcode,size,packtype,maxdepth,direction)
@@ -227,8 +230,6 @@ local build_par_codes = {
     pre_adjust = true,
     adjust     = true,
 }
-
-local normalize = typesetters.paragraphs.normalize
 
 function builders.buildpage_filter(groupcode)
     -- the next check saves 1% runtime on 1000 tufte pages
