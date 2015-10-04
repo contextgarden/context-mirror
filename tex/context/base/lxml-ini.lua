@@ -33,9 +33,9 @@ implement { name = "xmldoifelsetext",         actions = lxml.doifelsetext,      
 implement { name = "xmldoifempty",            actions = lxml.doifempty,         arguments = { "string", "string" } }
 implement { name = "xmldoifnotempty",         actions = lxml.doifnotempty,      arguments = { "string", "string" } }
 implement { name = "xmldoifelseempty",        actions = lxml.doifelseempty,     arguments = { "string", "string" } }
-implement { name = "xmldoifselfempty",        actions = lxml.doifempty,         arguments = "string" }
-implement { name = "xmldoifnotselfempty",     actions = lxml.doifnotempty,      arguments = "string" }
-implement { name = "xmldoifelseselfempty",    actions = lxml.doifelseempty,     arguments = "string" }
+implement { name = "xmldoifselfempty",        actions = lxml.doifempty,         arguments = "string" } -- second arg is not passed (used)
+implement { name = "xmldoifnotselfempty",     actions = lxml.doifnotempty,      arguments = "string" } -- second arg is not passed (used)
+implement { name = "xmldoifelseselfempty",    actions = lxml.doifelseempty,     arguments = "string" } -- second arg is not passed (used)
 
 --------- { name = "xmlcontent",              actions = lxml.content,           arguments = "string" }
 --------- { name = "xmlflushstripped",        actions = lxml.strip,             arguments = { "string", true } }
@@ -76,12 +76,12 @@ implement { name = "xmlbadinclusions",        actions = lxml.badinclusions,     
 implement { name = "xmlindex",                actions = lxml.index,             arguments = { "string", "string", "string" } } -- can be integer but now we can alias
 implement { name = "xmlinfo",                 actions = lxml.info,              arguments = "string" }
 implement { name = "xmlinlineverbatim",       actions = lxml.inlineverbatim,    arguments = "string" }
-implement { name = "xmllast",                 actions = lxml.last,              arguments = "string" }
-implement { name = "xmlload",                 actions = lxml.load,              arguments = { "string", "string", "string", "string" } }
-implement { name = "xmlloadbuffer",           actions = lxml.loadbuffer,        arguments = { "string", "string", "string", "string" } }
-implement { name = "xmlloaddata",             actions = lxml.loaddata,          arguments = { "string", "string", "string", "string" } }
+implement { name = "xmllast",                 actions = lxml.last,              arguments = { "string", "string" } }
+implement { name = "xmlload",                 actions = lxml.load,              arguments = { "string", "string", "string" } }
+implement { name = "xmlloadbuffer",           actions = lxml.loadbuffer,        arguments = { "string", "string", "string" } }
+implement { name = "xmlloaddata",             actions = lxml.loaddata,          arguments = { "string", "string", "string" } }
 implement { name = "xmlloaddirectives",       actions = lxml.directives.load,   arguments = "string" }
-implement { name = "xmlloadregistered",       actions = lxml.loadregistered,    arguments = { "string", "string", "string" } }
+implement { name = "xmlloadregistered",       actions = lxml.loadregistered,    arguments = "string" }
 implement { name = "xmlmain",                 actions = lxml.main,              arguments = "string" }
 implement { name = "xmlmatch",                actions = lxml.match,             arguments = "string" }
 implement { name = "xmlname",                 actions = lxml.name,              arguments = "string" }
