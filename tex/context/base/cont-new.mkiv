@@ -11,15 +11,20 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2015.10.07 12:03}
+\newcontextversion{2015.10.09 10:59}
 
 %D This file is loaded at runtime, thereby providing an excellent place for
 %D hacks, patches, extensions and new features.
 
 % \usemodule[newotf]
-\usemodule[oldotf]
+% \usemodule[oldotf]
 
 \unprotect
+
+\ifdefined\pdfxform     \else \let\pdfxform    \saveboxresource   \fi
+\ifdefined\pdfrefxform  \else \let\pdfrefxform \useboxresource    \fi
+\ifdefined\pdfrefximage \else \let\pdfrefximage\useimageresource  \fi
+\ifdefined\pdfximage    \else \let\pdfximage   \saveimageresource \fi
 
 % \writestatus\m!system{beware: some patches loaded from cont-new.mkiv}
 
