@@ -731,26 +731,31 @@ local function get_alternative_glyph(start,alternatives,value)
         return alternatives[1], trace_alternatives and formatters["value %a, taking %a"](value,1)
     elseif value == "last" then
         return alternatives[n], trace_alternatives and formatters["value %a, taking %a"](value,n)
-    else
-        value = value == true and 1 or tonumber(value)
-        if type(value) ~= "number" then
-            return alternatives[1], trace_alternatives and formatters["invalid value %s, taking %a"](value,1)
-        elseif value > n then
-            local defaultalt = otf.defaultnodealternate
-            if defaultalt == "first" then
-                return alternatives[n], trace_alternatives and formatters["invalid value %s, taking %a"](value,1)
-            elseif defaultalt == "last" then
-                return alternatives[1], trace_alternatives and formatters["invalid value %s, taking %a"](value,n)
-            else
-                return false, trace_alternatives and formatters["invalid value %a, %s"](value,"out of range")
-            end
-        elseif value == 0 then
-            return getchar(start), trace_alternatives and formatters["invalid value %a, %s"](value,"no change")
-        elseif value < 1 then
-            return alternatives[1], trace_alternatives and formatters["invalid value %a, taking %a"](value,1)
+    end
+    value = value == true and 1 or tonumber(value)
+    if type(value) ~= "number" then
+        return alternatives[1], trace_alternatives and formatters["invalid value %s, taking %a"](value,1)
+    end
+ -- local a = alternatives[value]
+ -- if a then
+ --     -- some kind of hash
+ --     return a, trace_alternatives and formatters["value %a, taking %a"](value,a)
+ -- end
+    if value > n then
+        local defaultalt = otf.defaultnodealternate
+        if defaultalt == "first" then
+            return alternatives[n], trace_alternatives and formatters["invalid value %s, taking %a"](value,1)
+        elseif defaultalt == "last" then
+            return alternatives[1], trace_alternatives and formatters["invalid value %s, taking %a"](value,n)
         else
-            return alternatives[value], trace_alternatives and formatters["value %a, taking %a"](value,value)
+            return false, trace_alternatives and formatters["invalid value %a, %s"](value,"out of range")
         end
+    elseif value == 0 then
+        return getchar(start), trace_alternatives and formatters["invalid value %a, %s"](value,"no change")
+    elseif value < 1 then
+        return alternatives[1], trace_alternatives and formatters["invalid value %a, taking %a"](value,1)
+    else
+        return alternatives[value], trace_alternatives and formatters["value %a, taking %a"](value,value)
     end
 end
 
