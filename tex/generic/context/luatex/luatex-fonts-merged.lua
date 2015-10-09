@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/09/15 19:42:14
+-- merge date  : 10/09/15 21:28:28
 
 do -- begin closure to overcome local limits and interference
 
@@ -15769,10 +15769,11 @@ end
 function resolvers.name(specification)
   local resolve=fonts.names.resolve
   if resolve then
-    local resolved,sub=resolve(specification.name,specification.sub,specification) 
+    local resolved,sub,subindex=resolve(specification.name,specification.sub,specification) 
     if resolved then
       specification.resolved=resolved
       specification.sub=sub
+      specification.subindex=subindex
       local suffix=lower(suffixonly(resolved))
       if fonts.formats[suffix] then
         specification.forced=suffix
@@ -15789,10 +15790,11 @@ end
 function resolvers.spec(specification)
   local resolvespec=fonts.names.resolvespec
   if resolvespec then
-    local resolved,sub=resolvespec(specification.name,specification.sub,specification) 
+    local resolved,sub,subindex=resolvespec(specification.name,specification.sub,specification) 
     if resolved then
       specification.resolved=resolved
       specification.sub=sub
+      specification.subindex=subindex
       specification.forced=lower(suffixonly(resolved))
       specification.forcedname=resolved
       specification.name=removesuffix(resolved)
