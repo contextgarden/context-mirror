@@ -36,12 +36,16 @@ local tonode        = nuts.tonode
 local getfield      = nuts.getfield
 local getnext       = nuts.getnext
 local getprev       = nuts.getprev
+local getdisc       = nuts.getdisc
 local getid         = nuts.getid
 local getlist       = nuts.getlist
 local getattribute  = nuts.getattribute
 local getbox        = nuts.getbox
 
 local setfield      = nuts.setfield
+local setlink       = nuts.setlink
+local setboth       = nuts.setboth
+local setnext       = nuts.setnext
 local setbox        = nuts.setbox
 
 local free_node     = nuts.free
@@ -75,9 +79,7 @@ local function hyphenatedlist(head,usecolor)
         local next = getnext(current)
         local prev = getprev(current)
         if id == disc_code then
-            local pre     = getfield(current,"pre")
-            local post    = getfield(current,"post")
-            local replace = getfield(current,"replace")
+            local pre, post, replace = getdisc(current)
             if pre then
                 setfield(current,"pre",nil)
             end
@@ -99,8 +101,7 @@ local function hyphenatedlist(head,usecolor)
                 setfield(current,"replace",nil)
             end
          -- setfield(current,"replace",new_rule(65536)) -- new_kern(65536*2))
-            setfield(current,"next",nil)
-            setfield(current,"prev",nil)
+            setboth(current)
             local list = link_nodes (
                 pre and new_penalty(10000),
                 pre,
@@ -110,12 +111,10 @@ local function hyphenatedlist(head,usecolor)
             )
             local tail = find_tail(list)
             if prev then
-                setfield(prev,"next",list)
-                setfield(list,"prev",prev)
+                setlink(prev,list)
             end
             if next then
-                setfield(tail,"next",next)
-                setfield(next,"prev",tail)
+                setlink(tail,next)
             end
          -- free_node(current)
         elseif id == vlist_code or id == hlist_code then
@@ -315,12 +314,10 @@ implement {
                 if head then
                     if inbetween > 0 then
                         local n = new_glue(0,0,inbetween)
-                        setfield(tail,"next",n)
-                        setfield(n,"prev",tail)
+                        setlink(tail,n)
                         tail = n
                     end
-                    setfield(tail,"next",list)
-                    setfield(list,"prev",tail)
+                    setlink(tail,list)
                 else
                     head = list
                 end
@@ -331,8 +328,7 @@ implement {
                     local prev = getprev(tail)
                     if next then
                         local list = getlist(tail)
-                        setfield(prev,"next",list)
-                        setfield(list,"prev",prev)
+                        setlink(prev,list)
                         setfield(tail,"list",nil)
                         tail = find_tail(list)
                     else
@@ -341,7 +337,7 @@ implement {
                     free_node(temp)
                 end
                 -- done
-                setfield(tail,"next",nil)
+                setnext(tail)
                 setfield(current,"list",nil)
             end
             current = next

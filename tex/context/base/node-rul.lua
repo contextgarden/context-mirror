@@ -19,6 +19,9 @@ local tonut        = nuts.tonut
 
 local getfield     = nuts.getfield
 local setfield     = nuts.setfield
+local setnext      = nuts.setnext
+local setprev      = nuts.setprev
+local setlink      = nuts.setlink
 local getnext      = nuts.getnext
 local getprev      = nuts.getprev
 local getid        = nuts.getid
@@ -106,7 +109,6 @@ local v_foreground       = variables.foreground
 
 local nodecodes          = nodes.nodecodes
 local skipcodes          = nodes.skipcodes
-local whatcodes          = nodes.whatcodes
 local kerncodes          = nodes.kerncodes
 
 local glyph_code         = nodecodes.glyph
@@ -117,8 +119,7 @@ local kern_code          = nodecodes.kern
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local rule_code          = nodecodes.rule
-local dir_code           = nodecodes.dir or whatcodes.dir
-local whatsit_code       = nodecodes.whatsit
+local dir_code           = nodecodes.dir
 
 local userskip_code      = skipcodes.userskip
 local spaceskip_code     = skipcodes.spaceskip
@@ -187,8 +188,6 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                     end
                     f, l, a = nil, nil, nil
                 end
---             elseif f and (id == disc_code or (id == kern_code and getsubtype(n) == kerning_code)) then
---                 l = n
             elseif id == disc_code then
                 if f then
                     l = n
@@ -206,7 +205,7 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                 if list then
                     setfield(n,"list",(processwords(attribute,data,flush,list,n))) -- watch ()
                 end
-            elseif checkdir and (id == dir_code or (id == whatsit_code and getsubtype(n) == dir_code)) then -- only changes in dir, we assume proper boundaries
+            elseif checkdir and id == dir_code then -- only changes in dir, we assume proper boundaries
                 if f and a then
                     l = n
                 end
@@ -391,20 +390,18 @@ local function flush_shifted(head,first,last,data,level,parent,strip) -- not tha
     end
     local prev = getprev(first)
     local next = getnext(last)
-    setfield(first,"prev",nil)
-    setfield(last,"next",nil)
+    setprev(first)
+    setnext(last)
     local width, height, depth = list_dimensions(getfield(parent,"glue_set"),getfield(parent,"glue_sign"),getfield(parent,"glue_order"),first,next)
     local list = hpack_nodes(first,width,"exactly")
     if first == head then
         head = list
     end
     if prev then
-       setfield(prev,"next",list)
-       setfield(list,"prev",prev)
+       setlink(prev,list)
     end
     if next then
-        setfield(next,"prev",list)
-        setfield(list,"next",next)
+        setlink(next,list)
     end
     local raise = data.dy * dimenfactor(data.unit,fontdata[getfont(first)])
     setfield(list,"shift",raise)

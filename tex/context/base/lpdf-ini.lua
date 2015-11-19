@@ -72,6 +72,29 @@ if pdf.setinfo then
     -- the getters are harmless
 end
 
+do
+
+    local texget = tex.get
+    local texset = tex.set
+
+    if pdf.setminorversion then
+        function pdf.setmajorversion (n) texset("global","pdfmajorversion", n) end
+        function pdf.getmajorversion ( ) return texget("pdfmajorversion") end
+    else
+        --
+        function pdf.setmajorversion    (n) texset("global","pdfmajorversion",n) end
+        function pdf.setminorversion    (n) texset("global","pdfminorversion",n) end
+        function pdf.setcompresslevel   (n) texset("global","pdfcompresslevel",n) end
+        function pdf.setobjcompresslevel(n) texset("global","pdfobjcompresslevel",n) end
+        --
+        function pdf.getmajorversion    ( ) return texget("pdfmajorversion") end
+        function pdf.getminorversion    ( ) return texget("pdfminorversion") end
+        function pdf.getcompresslevel   ( ) return texget("pdfcompresslevel") end
+        function pdf.getobjcompresslevel( ) return texget("pdfobjcompresslevel") end
+    end
+
+end
+
 if not pdf.setinfo then
     function pdf.setinfo   (s) pdf.info    = s end
     function pdf.setcatalog(s) pdf.catalog = s end
@@ -80,10 +103,10 @@ if not pdf.setinfo then
 end
 
 if not pdf.getpos then
-    function pdf.getpos   () return pdf.h, pdf.v     end
-    function pdf.gethpos  () return pdf.h            end
-    function pdf.getvpos  () return pdf.v            end
-    function pdf.hasmatrix() return false            end
+    function pdf.getpos   () return pdf.h, pdf.v end
+    function pdf.gethpos  () return pdf.h end
+    function pdf.getvpos  () return pdf.v end
+    function pdf.hasmatrix() return false end
     function pdf.getmatrix() return 1, 0, 0, 1, 0, 0 end
 end
 
@@ -161,44 +184,50 @@ codeinjections.getvpos   = pdfgetvpos    lpdf.getvpos   = pdfgetvpos
 codeinjections.hasmatrix = pdfhasmatrix  lpdf.hasmatrix = pdfhasmatrix
 codeinjections.getmatrix = pdfgetmatrix  lpdf.getmatrix = pdfgetmatrix
 
-function lpdf.transform(llx,lly,urx,ury)
+-- local function transform(llx,lly,urx,ury,rx,sx,sy,ry)
+--     local x1 = llx * rx + lly * sy
+--     local y1 = llx * sx + lly * ry
+--     local x2 = llx * rx + ury * sy
+--     local y2 = llx * sx + ury * ry
+--     local x3 = urx * rx + lly * sy
+--     local y3 = urx * sx + lly * ry
+--     local x4 = urx * rx + ury * sy
+--     local y4 = urx * sx + ury * ry
+--     llx = min(x1,x2,x3,x4);
+--     lly = min(y1,y2,y3,y4);
+--     urx = max(x1,x2,x3,x4);
+--     ury = max(y1,y2,y3,y4);
+--     return llx, lly, urx, ury
+-- end
+
+function lpdf.transform(llx,lly,urx,ury) -- not yet used so unchecked
     if pdfhasmatrix() then
         local sx, rx, ry, sy = pdfgetmatrix()
         local w, h = urx - llx, ury - lly
         return llx, lly, llx + sy*w - ry*h, lly + sx*h - rx*w
+     -- return transform(llx,lly,urx,ury,sx,rx,ry,sy)
     else
         return llx, lly, urx, ury
     end
 end
 
--- function lpdf.rectangle(width,height,depth)
---     local h, v = pdfgetpos()
---     local llx, lly, urx, ury
---     if pdfhasmatrix() then
---         local sx, rx, ry, sy = pdfgetmatrix()
---         llx = 0
---         lly = -depth
---      -- llx =                ry * depth
---      -- lly = -sx * depth
---         urx =  sy * width  - ry * height
---         ury =  sx * height - rx * width
---     else
---         llx = 0
---         lly = -depth
---         urx = width
---         ury = height
---         return (h+llx)*factor, (v+lly)*factor, (h+urx)*factor, (v+ury)*factor
---     end
--- end
+-- funny values for tx and ty
 
 function lpdf.rectangle(width,height,depth)
-    local h, v = pdfgetpos()
+    local tx, ty = pdfgetpos()
     if pdfhasmatrix() then
-        local sx, rx, ry, sy = pdfgetmatrix()
-     -- return (h+ry*depth)*factor, (v-sx*depth)*factor, (h+sy*width-ry*height)*factor, (v+sx*height-rx*width)*factor
-        return h           *factor, (v-   depth)*factor, (h+sy*width-ry*height)*factor, (v+sx*height-rx*width)*factor
+        local rx, sx, sy, ry = pdfgetmatrix()
+        return
+            factor *  tx,
+            factor * (ty - ry*depth  + sx*width),
+            factor * (tx + rx*width  - sy*height),
+            factor * (ty + ry*height - sx*width)
     else
-        return h           *factor, (v-   depth)*factor, (h+   width          )*factor, (v+   height         )*factor
+        return
+            factor *  tx,
+            factor * (ty - depth),
+            factor * (tx + width),
+            factor * (ty + height)
     end
 end
 

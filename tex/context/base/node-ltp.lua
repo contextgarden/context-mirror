@@ -194,15 +194,23 @@ local tonut                = nuts.tonut
 local tonode               = nuts.tonode
 
 local getfield             = nuts.getfield
-local setfield             = nuts.setfield
 local getid                = nuts.getid
 local getsubtype           = nuts.getsubtype
 local getnext              = nuts.getnext
 local getprev              = nuts.getprev
+local getboth              = nuts.getboth
 local getlist              = nuts.getlist
 local getfont              = nuts.getfont
 local getchar              = nuts.getchar
 local getattr              = nuts.getattr
+local getdisc              = nuts.getdisc
+
+local setfield             = nuts.setfield
+local setlink              = nuts.setlink
+local setboth              = nuts.setboth
+local setnext              = nuts.setnext
+local setprev              = nuts.setprev
+local setdisc              = nuts.setdisc
 
 local slide_nodelist       = nuts.slide -- get rid of this, probably ok > 78.2
 local find_tail            = nuts.tail
@@ -223,7 +231,6 @@ local setnodecolor         = nodes.tracers.colors.set
 local nodepool             = nuts.pool
 
 local nodecodes            = nodes.nodecodes
-local whatcodes            = nodes.whatcodes
 local kerncodes            = nodes.kerncodes
 local glyphcodes           = nodes.glyphcodes
 local gluecodes            = nodes.gluecodes
@@ -238,7 +245,6 @@ local ins_code             = nodecodes.ins
 local mark_code            = nodecodes.mark
 local adjust_code          = nodecodes.adjust
 local penalty_code         = nodecodes.penalty
-local whatsit_code         = nodecodes.whatsit
 local disc_code            = nodecodes.disc
 local math_code            = nodecodes.math
 local kern_code            = nodecodes.kern
@@ -247,13 +253,11 @@ local hlist_code           = nodecodes.hlist
 local vlist_code           = nodecodes.vlist
 local unset_code           = nodecodes.unset
 local marginkern_code      = nodecodes.marginkern
-local dir_code             = nodecodes.dir or whatcodes.dir
+local dir_code             = nodecodes.dir
 
 local leaders_code         = gluecodes.leaders
 
-local localpar_code        = nodecodes.localpar or whatcodes.localpar
-local pdfrefximage_code    = whatcodes.pdfrefximage
-local pdfrefxform_code     = whatcodes.pdfrefxform
+local localpar_code        = nodecodes.localpar
 
 local kerning_code         = kerncodes.kerning -- font kern
 local userkern_code        = kerncodes.userkern
@@ -356,7 +360,7 @@ local function inject_dirs_at_end_of_line(stack,current,start,stop)
     local h = nil
     while start and start ~= stop do
         local id = getid(start)
-        if id == dir_code or (id == whatsit_code and getsubtype(start) == dir_code) then
+        if id == dir_code then
             if not dir_pops[getfield(start,"dir")] then -- weird, what is this #
                 n = n + 1
                 stack[n] = start
@@ -407,11 +411,6 @@ local function register_statistics(par)
     nofprotrudedlines = nofprotrudedlines + statistics.nofprotrudedlines
     nofadjustedlines  = nofadjustedlines  + statistics.nofadjustedlines
 end
-
--- resolvers --
-
-local get_whatsit_width      = nodes.whatsitters.getters.width
-local get_whatsit_dimensions = nodes.whatsitters.getters.dimensions
 
 -- expansion etc --
 
@@ -502,18 +501,18 @@ local function kern_stretch_shrink(p,d)
     return 0, 0
 end
 
-local expand_kerns = false
------ expand_kerns = "both"
+local expand_kerns_mode = false
+local expand_kerns      = false
 
 directives.register("builders.paragraphs.adjusting.kerns",function(v)
     if not v then
-        expand_kerns = false
+        expand_kerns_mode = false
     elseif v == "stretch" or v == "shrink" then
-        expand_kerns = v
+        expand_kerns_mode = v
     elseif v == "both" then
-        expand_kerns = true
+        expand_kerns_mode = true
     else
-        expand_kerns = toboolean(v,true) or false
+        expand_kerns_mode = toboolean(v,true) or false
     end
 end)
 
@@ -749,14 +748,13 @@ local function compute_break_width(par,break_type,p) -- split in two
         local break_size           = break_width.size           + disc_width.size
         local break_adjust_stretch = break_width.adjust_stretch + disc_width.adjust_stretch
         local break_adjust_shrink  = break_width.adjust_shrink  + disc_width.adjust_shrink
-        local replace = getfield(p,"replace")
+        local pre, post, replace = getdisc(p)
         if replace then
             local size, adjust_stretch, adjust_shrink = add_to_width(line_break_dir,checked_expansion,replace)
             break_size           = break_size           - size
             break_adjust_stretch = break_adjust_stretch - adjust_stretch
             break_adjust_shrink  = break_adjust_shrink  - adjust_shrink
         end
-        local post = getfield(p,"post")
         if post then
             local size, adjust_stretch, adjust_shrink = add_to_width(line_break_dir,checked_expansion,post)
             break_size           = break_size           + size
@@ -816,8 +814,7 @@ local function append_to_vlist(par, b)
             local head_field = par.head_field
             if head_field then
                 local n = slide_nodelist(head_field) -- todo: find_tail
-                setfield(n,"next",s)
-                setfield(s,"prev",n)
+                setlink(n,s)
             else
                 par.head_field = s
             end
@@ -826,8 +823,7 @@ local function append_to_vlist(par, b)
     local head_field = par.head_field
     if head_field then
         local n = slide_nodelist(head_field) -- todo: find_tail
-        setfield(n,"next",b)
-        setfield(b,"prev",n)
+        setlink(n,b)
     else
         par.head_field = b
     end
@@ -842,8 +838,7 @@ local function append_list(par, b)
     local head_field = par.head_field
     if head_field then
         local n = slide_nodelist(head_field) -- todo: find_tail
-        setfield(n,"next",b)
-        setfield(b,"prev",n)
+        setlink(n,b)
     else
         par.head_field = b
     end
@@ -874,7 +869,7 @@ local function initialize_line_break(head,display)
     local last_line_fit  = tex.lastlinefit
 
     local newhead = new_temp()
-    setfield(newhead,"next",head)
+    setnext(newhead,head)
 
     local adjust_spacing_status = adjust_spacing > 1 and -1 or 0
 
@@ -1037,6 +1032,8 @@ local function initialize_line_break(head,display)
             par.tolerance = hztolerance
         end
 
+        expand_kerns = expand_kerns_mode or (adjust_spacing == 2)
+
     end
 
     -- we need par for the error message
@@ -1198,42 +1195,33 @@ local function post_line_break(par)
                 local prevlast = getprev(lastnode)
                 local nextlast = getnext(lastnode)
                 local subtype  = getsubtype(lastnode)
-                local pre      = getfield(lastnode,"pre")
-                local post     = getfield(lastnode,"post")
-                local replace  = getfield(lastnode,"replace")
+                local pre, post, replace = getdisc(lastnode)
                 if subtype == second_disc_code then
                     if not (getid(prevlast) == disc_code and getsubtype(prevlast) == first_disc_code) then
                         report_parbuilders('unsupported disc at location %a',3)
                     end
                     if pre then
                         flush_nodelist(pre)
-                        setfield(lastnode,"pre",nil)
                         pre = nil -- signal
                     end
                     if replace then
                         local n = find_tail(replace)
-                        setfield(prevlast,"next",replace)
-                        setfield(replace,"prev",prevlast)
-                        setfield(n,"next",lastnode)
-                        setfield(lastnode,"prev",n)
-                        setfield(lastnode,"replace",nil)
+                        setlink(prevlast,replace)
+                        setlink(n,lastnode)
                         replace = nil -- signal
                     end
-                    local pre     = getfield(prevlast,"pre")
-                    local post    = getfield(prevlast,"post")
-                    local replace = getfield(prevlast,"replace")
+                    setdisc(pre,post,replace)
+                    local pre, post, replace = getdisc(prevlast)
                     if pre then
                         flush_nodelist(pre)
-                        setfield(prevlast,"pre",nil)
                     end
                     if replace then
                         flush_nodelist(replace)
-                        setfield(prevlast,"replace",nil)
                     end
                     if post then
                         flush_nodelist(post)
-                        setfield(prevlast,"post",nil)
                     end
+                    setdisc(prevlast) -- nil,nil,nil
                 elseif subtype == first_disc_code then
                     -- what is v ... next probably
                     if not (getid(v) == disc_code and getsubtype(v) == second_disc_code) then
@@ -1241,29 +1229,23 @@ local function post_line_break(par)
                     end
                     setfield(nextlast,"subtype",regular_disc_code)
                     setfield(nextlast,"replace",post)
-                    setfield(lastnode,"post",nil)
+                    setfield(lastnode,"post")
                 end
                 if replace then
-                    setfield(lastnode,"replace",nil) -- free
                     flush_nodelist(replace)
                 end
                 if pre then
                     local n = find_tail(pre)
-                    setfield(prevlast,"next",pre)
-                    setfield(pre,"prev",prevlast)
-                    setfield(n,"next",lastnode)
-                    setfield(lastnode,"prev",n)
-                    setfield(lastnode,"pre",nil)
+                    setlink(prevlast,pre)
+                    setlink(n,lastnode)
                 end
                 if post then
                     local n = find_tail(post)
-                    setfield(lastnode,"next",post)
-                    setfield(post,"prev",lastnode)
-                    setfield(n,"next",nextlast)
-                    setfield(nextlast,"prev",n)
-                    setfield(lastnode,"post",nil)
+                    setlink(lastnode,post)
+                    setlink(n,nextlast)
                     post_disc_break = true
                 end
+                setdisc(lastnode) -- nil, nil, nil
                 disc_break = true
             elseif id == kern_code then
                 setfield(lastnode,"kern",0)
@@ -1293,7 +1275,7 @@ local function post_line_break(par)
         end
         -- we finish the line
         local r = getnext(lineend)
-        setfield(lineend,"next",nil)
+        setnext(lineend)
         if not glue_break then
             if rightskip then
                 insert_node_after(lineend,lineend,new_rightskip(right_skip)) -- lineend moves on as pseudo head
@@ -1301,10 +1283,7 @@ local function post_line_break(par)
         end
         -- each time ?
         local q = getnext(head)
-        setfield(head,"next",r)
-        if r then
-            setfield(r,"prev",head)
-        end
+        setlink(head,r)
         -- insert leftbox (if needed after parindent)
         local leftbox = current_break.passive_left_box
         if leftbox then
@@ -1429,7 +1408,7 @@ local function post_line_break(par)
                 end
                 local id      = getid(next)
                 local subtype = getsubtype(next)
-                if (id == localpar_code) or (id == whatsit_code and subtype == localpar_code) then
+                if id == localpar_code then
                     -- nothing
                 elseif id < math_code then
                     -- messy criterium
@@ -1445,12 +1424,9 @@ local function post_line_break(par)
                 current = next
             end
             if current ~= head then
-                setfield(current,"next",nil)
+                setnext(current)
                 flush_nodelist(getnext(head))
-                setfield(head,"next",next)
-                if next then
-                    setfield(next,"prev",head)
-                end
+                setlink(head,next)
             end
         end
     end
@@ -2152,7 +2128,7 @@ function constructors.methods.basic(head,d)
         par.pass_number             = 0
 --         par.auto_breaking           = true
 
-        setfield(temp_head,"next",head)
+        setnext(temp_head,head)
 
         local current               = head
         local first_p               = current
@@ -2163,7 +2139,7 @@ function constructors.methods.basic(head,d)
 
         if current then
             local id = getid(current)
-            if (id == localpar_code) or (id == whatsit_code and getsubtype(current) == localpar_code) then
+            if id == localpar_code then
                 par.init_internal_left_box       = getfield(current,"box_left")
                 par.init_internal_left_box_width = getfield(current,"box_left_width")
                 par.internal_pen_inter           = getfield(current,"pen_inter")
@@ -2231,9 +2207,9 @@ function constructors.methods.basic(head,d)
                     local prev_p = getprev(current)
                     if prev_p and prev_p ~= temp_head then
                         local id = getid(prev_p)
-                        if id == glyph_code or -- dir_code is < math
-                            (id < math_code and (id ~= whatsit_code or getsubtype(prev_p) ~= dir_code)) or -- was: precedes_break(prev_p)
-                            (id == kern_code and getsubtype(prev_p) ~= userkern_code) then
+                        if (id == glyph_code) or -- dir_code is < math
+                           (id < math_code) or -- was: precedes_break(prev_p)
+                           (id == kern_code and getsubtype(prev_p) ~= userkern_code) then
                             p_active, n_active = try_break(0, unhyphenated_code, par, first_p, current, checked_expansion)
                         end
                     end
@@ -2371,23 +2347,6 @@ function constructors.methods.basic(head,d)
                 par.internal_left_box_width  = getfield(current,"box_left_width")
                 par.internal_right_box       = getfield(current,"box_right")
                 par.internal_right_box_width = getfield(current,"box_right_width")
-            elseif id == whatsit_code then
-                local subtype = getsubtype(current)
-                if subtype == localpar_code then
-                    par.internal_pen_inter       = getfield(current,"pen_inter")
-                    par.internal_pen_broken      = getfield(current,"pen_broken")
-                    par.internal_left_box        = getfield(current,"box_left")
-                    par.internal_left_box_width  = getfield(current,"box_left_width")
-                    par.internal_right_box       = getfield(current,"box_right")
-                    par.internal_right_box_width = getfield(current,"box_right_width")
-                elseif subtype == dir_code then
-                    par.line_break_dir = checked_line_dir(dirstack) or par.line_break_dir
-                else
-                    local get_width = get_whatsit_width[subtype]
-                    if get_width then
-                        active_width.size = active_width.size + get_width(current,par.line_break_dir)
-                    end
-                end
             elseif trace_unsupported then
                 if id == mark_code or id == ins_code or id == adjust_code then
                     -- skip
@@ -2557,10 +2516,10 @@ function diagnostics.feasible_break(par, current, r, b, pi, d, artificial_demeri
             par.font_in_short_display = short_display("log",getnext(printed_node),par.font_in_short_display)
         else
             local save_link = getnext(current)
-            setfield(current,"next",nil)
+            setnext(current)
             write_nl("log","")
             par.font_in_short_display = short_display("log",getnext(printed_node),par.font_in_short_display)
-            setfield(current,"next",save_link)
+            setnext(current,save_link)
         end
         par.printed_node = current
     end
@@ -2957,52 +2916,27 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                     depth = ds
                 end
             elseif id == ins_code or id == mark_code then
-                local prev = getprev(current)
-                local next = getnext(current)
+                local prev, next = getboth(current)
                 if adjust_tail then -- todo
-                    if next then
-                        setfield(next,"prev",prev)
-                    end
-                    if prev then
-                        setfield(prev,"next",next)
-                    end
-                    setfield(current,"prev",adjust_tail)
-                    setfield(current,"next",nil)
-                    adjust_setfield(tail,"next",current)
+                    setlink(prev,next)
+                    setlink(adjust_tail,current)
+                    setnext(current)
                     adjust_tail = current
                 else
                     adjust_head = current
                     adjust_tail = current
-                    setfield(current,"prev",nil)
-                    setfield(current,"next",nil)
+                    setboth(current)
                 end
             elseif id == adjust_code then
                 local list = getlist(current)
                 if adjust_tail then
-                    adjust_setfield(tail,"next",list)
+                    setnext(adjust_tail,list)
                 else
                     adjust_head = list
                 end
                 adjust_tail = slide_nodelist(list) -- find_tail(list)
-           elseif id == dir_code then
+            elseif id == dir_code then
                 hpack_dir = checked_line_dir(stack,current) or hpack_dir
-            elseif id == whatsit_code then
-                local subtype = getsubtype(current)
-                if subtype == dir_code then
-                    hpack_dir = checked_line_dir(stack,current) or hpack_dir
-                else
-                    local get_dimensions = get_whatsit_dimensions[subtype]
-                    if get_dimensions then
-                        local wd, ht, dp = get_dimensions(current,hpack_dir)
-                        natural = natural + wd
-                        if ht > height then
-                            height = ht
-                        end
-                        if dp > depth then
-                            depth = dp
-                        end
-                    end
-                end
             elseif id == marginkern_code then
                 local width = getfield(current,"width")
                 if cal_expand_ratio then

@@ -45,6 +45,7 @@ local getid            = nuts.getid
 local getchar          = nuts.getchar
 local getsubtype       = nuts.getsubtype
 local getlist          = nuts.getlist
+local getdisc          = nuts.getdisc
 
 local setattr          = nuts.setattr
 
@@ -71,8 +72,8 @@ local disc_code        = nodecodes.disc
 local glue_code        = nodecodes.glue
 local kern_code        = nodecodes.kern
 local rule_code        = nodecodes.rule
-local dir_code         = nodecodes.dir or whatcodes.dir
-local localpar_code    = nodecodes.localpar or whatcodes.localpar
+local dir_code         = nodecodes.dir
+local localpar_code    = nodecodes.localpar
 local whatsit_code     = nodecodes.whatsit
 local gluespec_code    = nodecodes.gluespec
 
@@ -149,8 +150,6 @@ local function tosequence(start,stop,compact)
                 end
             elseif id == dir_code or id == localpar_code then
                 t[#t+1] = "[" .. getfield(start,"dir") .. "]"
-            elseif id == whatsit_code and (getsubtype(start) == localpar_code or getsubtype(start) == dir_code) then
-                t[#t+1] = "[" .. getfield(start,"dir") .. "]"
             elseif compact then
                 t[#t+1] = "[]"
             else
@@ -176,7 +175,7 @@ nodes.tosequence = tosequence
 nuts .tosequence = tosequence
 
 function nodes.report(t,done)
-    report_nodes("output %a, %changed %a, %s nodes",status.output_active,done,count_nodes(tonut(t)))
+    report_nodes("output %a, changed %a, %s nodes",status.output_active,done,count_nodes(tonut(t)))
 end
 
 function nodes.packlist(head)
@@ -291,7 +290,7 @@ end
 
 nodes.showsimplelist = function(h,depth) showsimplelist(h,depth,0) end
 
-local function listtoutf(h,joiner,textonly,last)
+local function listtoutf(h,joiner,textonly,last,nodisc)
     local w = { }
     while h do
         local id = getid(h)
@@ -302,14 +301,16 @@ local function listtoutf(h,joiner,textonly,last)
                 w[#w+1] = joiner
             end
         elseif id == disc_code then
-            local pre = getfield(h,"pre")
-            local pos = getfield(h,"post")
-            local rep = getfield(h,"replace")
-            w[#w+1] = formatters["[%s|%s|%s]"] (
-                pre and listtoutf(pre,joiner,textonly) or "",
-                pos and listtoutf(pos,joiner,textonly) or "",
-                rep and listtoutf(rep,joiner,textonly) or ""
-            )
+            local pre, pos, rep = getdisc(h)
+            if not nodisc then
+                w[#w+1] = formatters["[%s|%s|%s]"] (
+                    pre and listtoutf(pre,joiner,textonly) or "",
+                    pos and listtoutf(pos,joiner,textonly) or "",
+                    rep and listtoutf(rep,joiner,textonly) or ""
+                )
+            elseif rep then
+                w[#w+1] = listtoutf(rep,joiner,textonly) or ""
+            end
         elseif textonly then
             if id == glue_code then
                 local spec = getfield(h,"spec")
@@ -331,10 +332,10 @@ local function listtoutf(h,joiner,textonly,last)
     return concat(w)
 end
 
-function nodes.listtoutf(h,joiner,textonly,last)
+function nodes.listtoutf(h,joiner,textonly,last,nodisc)
     if h then
         local joiner = joiner == true and utfchar(0x200C) or joiner -- zwnj
-        return listtoutf(tonut(h),joiner,textonly,last and tonut(last))
+        return listtoutf(tonut(h),joiner,textonly,last and tonut(last),nodisc)
     else
         return ""
     end

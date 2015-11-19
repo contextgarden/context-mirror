@@ -88,6 +88,7 @@ local ntostring           = nuts.tostring
 local getfield            = nuts.getfield
 local setfield            = nuts.setfield
 local getnext             = nuts.getnext
+local setlink             = nuts.setlink
 local getprev             = nuts.getprev
 local getid               = nuts.getid
 local getlist             = nuts.getlist
@@ -125,14 +126,13 @@ local new_gluespec        = nodepool.gluespec
 
 local nodecodes           = nodes.nodecodes
 local skipcodes           = nodes.skipcodes
-local whatsitcodes        = nodes.whatsitcodes
 
 local penalty_code        = nodecodes.penalty
 local kern_code           = nodecodes.kern
 local glue_code           = nodecodes.glue
 local hlist_code          = nodecodes.hlist
 local vlist_code          = nodecodes.vlist
-local whatsit_code        = nodecodes.whatsit
+local localpar_code       = nodecodes.localpar
 
 local vspacing            = builders.vspacing or { }
 builders.vspacing         = vspacing
@@ -229,7 +229,7 @@ end
 local function validvbox(parentid,list)
     if parentid == hlist_code then
         local id = getid(list)
-        if id == whatsit_code then -- check for initial par subtype
+        if id == localpar_code then -- check for initial par subtype
             list = getnext(list)
             if not next then
                 return nil
@@ -264,7 +264,7 @@ local function already_done(parentid,list,a_snapmethod) -- todo: done when only 
     -- problem: any snapped vbox ends up in a line
     if list and parentid == hlist_code then
         local id = getid(list)
-        if id == whatsit_code then -- check for initial par subtype
+        if id == localpar_code then -- check for initial par subtype
             list = getnext(list)
             if not next then
                 return false
@@ -281,7 +281,7 @@ local function already_done(parentid,list,a_snapmethod) -- todo: done when only 
                 elseif a == 0 then
                     return true -- already snapped
                 end
-            elseif id == glue_code or id == penalty_code then -- whatsit is weak spot
+            elseif id == glue_code or id == penalty_code then
                 -- go on
             else
                 return false -- whatever
@@ -1042,9 +1042,6 @@ local function check_experimental_overlay(head,current)
     local p = nil
     local c = current
     local n = nil
-
- -- setfield(head,"prev",nil) -- till we have 0.79 **
-
     local function overlay(p,n,mvl)
         local p_ht  = getfield(p,"height")
         local p_dp  = getfield(p,"depth")
@@ -1690,8 +1687,7 @@ function vspacing.pagehandler(newhead,where)
         if flush then
             if stackhead then
                 if trace_collect_vspacing then report("appending %s nodes to stack (final): %s",newhead) end
-                setfield(stacktail,"next",newhead)
-                setfield(newhead,"prev",stacktail)
+                setlink(stacktail,newhead)
                 newhead = stackhead
                 stackhead, stacktail = nil, nil
             end
@@ -1708,8 +1704,7 @@ function vspacing.pagehandler(newhead,where)
         else
             if stackhead then
                 if trace_collect_vspacing then report("appending %s nodes to stack (intermediate): %s",newhead) end
-                setfield(stacktail,"next",newhead)
-                setfield(newhead,"prev",stacktail)
+                setlink(stacktail,newhead)
             else
                 if trace_collect_vspacing then report("storing %s nodes in stack (initial): %s",newhead) end
                 stackhead = newhead

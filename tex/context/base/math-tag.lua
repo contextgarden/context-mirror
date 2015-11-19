@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['math-tag'] = {
 }
 
 -- todo: have a local list with local tags that then get appended
+-- todo: use tex.getmathcodes (no table)
 
 -- use lpeg matchers
 
@@ -22,8 +23,10 @@ local tonut               = nuts.tonut
 local getnext             = nuts.getnext
 local getid               = nuts.getid
 local getchar             = nuts.getchar
+local getfont             = nuts.getfont
 local getlist             = nuts.getlist
 local getfield            = nuts.getfield
+local getdisc             = nuts.getdisc
 local getsubtype          = nuts.getsubtype
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
@@ -88,7 +91,6 @@ local ordinary_code       = mathcodes.ordinary
 local variable_code       = mathcodes.variable
 
 local fromunicode16       = fonts.mappings.fromunicode16
-local font_of_family      = node.family_font
 local fontcharacters      = fonts.hashes.characters
 
 local report_tags         = logs.reporter("structure","tags")
@@ -150,7 +152,8 @@ local fencesstack = { }
 
 local function getunicode(n) -- instead of getchar
     local char = getchar(n)
-    local font = font_of_family(getfield(n,"fam")) -- font_of_family
+ -- local font = font_of_family(getfield(n,"fam")) -- font_of_family
+    local font = getfont(n)
     local data = fontcharacters[font][char]
     return data.unicode or char
 end
@@ -316,9 +319,10 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                                 elseif id == glyph_code then
                                     runner(getfield(n,"components"),depth+1) -- this should not be needed
                                 elseif id == disc_code then
-                                    runner(getfield(n,"pre"),depth+1)        -- idem
-                                    runner(getfield(n,"post"),depth+1)       -- idem
-                                    runner(getfield(n,"replace"),depth+1)    -- idem
+                                    local pre, post, replace = getdisc(n)
+                                    runner(pre,depth+1)     -- idem
+                                    runner(post,depth+1)    -- idem
+                                    runner(replace,depth+1) -- idem
                                 end
                                 if mth == 1 then
                                     stop_tagged()

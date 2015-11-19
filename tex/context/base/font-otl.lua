@@ -53,7 +53,7 @@ local report_otf         = logs.reporter("fonts","otf loading")
 local fonts              = fonts
 local otf                = fonts.handlers.otf
 
-otf.version              = 3.004 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version              = 3.006 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                = containers.define("fonts", "otl", otf.version, true)
 
 local otfreaders         = otf.readers
@@ -254,7 +254,7 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
         report_otf("loading %a, hash %a",filename,hash)
         --
         starttiming(otfreaders)
-        data = otfreaders.loadfont(filename,sub or 1)
+        data = otfreaders.loadfont(filename,sub or 1) -- we can pass the number instead (if it comes from a name search)
         --
         -- if featurefiles then
         --     for i=1,#featurefiles do
@@ -377,6 +377,7 @@ local function copytotfm(data,cache_id)
                     -- watch out: luatex uses horiz_variants for the parts
                     --
                     local italic   = m.italic
+                    local vitalic  = m.vitalic
                     --
                     local variants = m.hvariants
                     local parts    = m.hparts
@@ -407,16 +408,19 @@ local function copytotfm(data,cache_id)
                         c.vert_variants = parts
                     elseif parts then
                         character.vert_variants = parts
-                        italic = m.vitalic
                     end
                     --
                     if italic and italic ~= 0 then
                         character.italic = italic
                     end
                     --
+                    if vitalic and vitalic ~= 0 then
+                        character.vert_italic = vitalic
+                    end
+                    --
                     local accent = m.accent -- taccent?
                     if accent then
-                        character.top_accent = accent
+                        character.accent = accent
                     end
                     --
                     local kerns = m.kerns

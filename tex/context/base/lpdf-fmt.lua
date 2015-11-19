@@ -36,8 +36,6 @@ local pdfstring                = lpdf.string
 local pdfverbose               = lpdf.verbose
 local pdfflushstreamfileobject = lpdf.flushstreamfileobject
 
-local texset                   = tex.set
-
 local addtoinfo                = lpdf.addtoinfo
 local injectxmpinfo            = lpdf.injectxmpinfo
 local insertxmpinfo            = lpdf.insertxmpinfo
@@ -337,6 +335,75 @@ local formats = utilities.storage.allocate {
         internal_icc_profiles   = true,
         inject_metadata         = function()
             injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>1</pdfaid:part><pdfaid:conformance>B</pdfaid:conformance></rdf:Description>",false)
+        end
+    },
+    ["pdf/a-2a"] = { -- untested; only PDF/A Attachments are allowed
+        pdf_version             = 1.7,
+        format_name             = "pdf/a-2a",
+        xmp_file                = "lpdf-pda.xml",
+        gts_flag                = "GTS_PDFA2",
+        gray_scale              = true,
+        cmyk_colors             = true,
+        rgb_colors              = true,
+        spot_colors             = true,
+        calibrated_rgb_colors   = true, -- unknown
+        cielab_colors           = true, -- unknown
+        include_intents         = true,
+        forms                   = true,
+        tagging                 = true,
+        internal_icc_profiles   = true,
+        transparency            = true, -- NEW
+        jbig2_compression       = true,
+        jpeg2000_compression    = true, -- NEW
+        object_compression      = true,
+        inject_metadata         = function()
+            injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>2</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
+        end
+    },
+    ["pdf/a-3a"] = { -- untested; NEW: any type of attachment is allowed
+        pdf_version             = 1.7,
+        format_name             = "pdf/a-3a",
+        xmp_file                = "lpdf-pda.xml",
+        gts_flag                = "GTS_PDFA3",
+        gray_scale              = true,
+        cmyk_colors             = true,
+        rgb_colors              = true,
+        spot_colors             = true,
+        calibrated_rgb_colors   = true, -- unknown
+        cielab_colors           = true, -- unknown
+        include_intents         = true,
+        forms                   = true,
+        tagging                 = true,
+        internal_icc_profiles   = true,
+        transparency            = true,
+        jbig2_compression       = true,
+        jpeg2000_compression    = true,
+        object_compression      = true,
+        inject_metadata         = function()
+            injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>3</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
+        end
+    },
+    ["pdf/ua-1"] = { -- based on PDF/A-3a, but no 'gts_flag'
+        pdf_version             = 1.7,
+        format_name             = "pdf/ua-1",
+        xmp_file                = "lpdf-pua.xml",
+        gray_scale              = true,
+        cmyk_colors             = true,
+        rgb_colors              = true,
+        spot_colors             = true,
+        calibrated_rgb_colors   = true, -- unknown
+        cielab_colors           = true, -- unknown
+        include_intents         = true,
+        forms                   = true,
+        tagging                 = true,
+        internal_icc_profiles   = true,
+        transparency            = true,
+        jbig2_compression       = true,
+        jpeg2000_compression    = true,
+        object_compression      = true,
+        inject_metadata         = function()
+            injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>3</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
+            injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfuaid='http://www.aiim.org/pdfua/ns/id/'><pdfuaid:part>1</pdfuaid:part></rdf:Description>",false)
         end
     },
 }
@@ -654,11 +721,11 @@ function codeinjections.setformat(s)
             local minorversion = math.mod(pdf_version,10)
             local objectcompression = spec.object_compression and pdf_version >= 15
             local compresslevel = level or tex.pdfcompresslevel -- keep default
-            local objectcompresslevel = (objectcompression and (level or tex.pdfobjcompresslevel)) or 0
-            texset("global","pdfcompresslevel",compresslevel)
-            texset("global","pdfobjcompresslevel",objectcompresslevel)
-            texset("global","pdfmajorversion",majorversion)
-            texset("global","pdfminorversion",minorversion)
+            local objectcompresslevel = (objectcompression and (level or pdf.getobjcompresslevel())) or 0
+            pdf.setcompresslevel   (compresslevel)
+            pdf.setobjcompresslevel(objectcompresslevel)
+            pdf.setmajorversion    (majorversion)
+            pdf.setminorversion    (minorversion)
             if objectcompression then
                 report_backend("forcing pdf version %s.%s, compression level %s, object compression level %s",
                     majorversion,minorversion,compresslevel,objectcompresslevel)
@@ -718,8 +785,8 @@ function codeinjections.setformat(s)
             report_backend("error, format %a is not supported",format)
         end
     elseif level then
-        texset("global","pdfcompresslevel",level)
-        texset("global","pdfobjcompresslevel",level)
+        pdf.setcompresslevel(level)
+        pdf.setobjcompresslevel(level)
     else
         -- we ignore this as we hook it in \everysetupbackend
     end

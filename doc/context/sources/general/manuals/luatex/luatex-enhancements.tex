@@ -618,7 +618,7 @@ This new integer parameter allows you to alter the number of the box that will b
 used to store the page sent to the output routine. Its default value is 255, and
 the acceptable range is from 0 to 65535.
 
-\section{\type {\fontid}}
+\section{\type {\fontid} and \type {\setfontid}}
 
 \startsyntax
 \fontid\font
@@ -640,12 +640,23 @@ order of loading fonts. For instance, when in \CONTEXT\ virtual math \UNICODE\
 fonts are used, we can easily get over a hundred ids in use. Not all ids have to
 be bound to a real font, after all it's just a number.
 
+The primitive \type {\setfontid} can be used to enable a font with the given id
+(which of course needs to be a valid one).
+
 \section{\type {\gleaders}}
 
 This type of leaders is anchored to the origin of the box to be shipped out. So
 they are like normal \type {\leaders} in that they align nicely, except that the
 alignment is based on the {\it largest\/} enclosing box instead of the {\it
 smallest\/}. The \type {g} stresses this global nature.
+
+\section{\type {\nohrule} and \type {\novrule}}
+
+Because internally box resources and image resources are now stored as a special
+kind of rule, we also introduced an empty rule variant. Because introducing a new
+keyword can cause incompatibilities, two new primitives were introduced: \type
+{\nohrule} and \type {\novrule}. These can be used to reserve space. This is
+often more efficient than creating an empty box with fake dimensions).
 
 \section{\type {\Uchar}}
 
@@ -659,6 +670,21 @@ of~$5$ means that only words of 6 characters and more will be hyphenated, of cou
 within the constraints of the \type {\lefthyphenmin} and \type {\righthyphenmin}
 values (as stored in the glyph node). This primitive accepts a number and stores
 the value with the language.
+
+\section{\type {\boundary} and \type {\noboundary}}
+
+The \type {\noboundary} commands used to inject a whatsit node but now injects a normal
+node with type \type {boundary} and subtype~0. In addition you can say:
+
+\starttyping
+x\boundary 123\relax y
+\stoptyping
+
+This has the same effect but the subtype is now~1 and the value~123 is stored. The
+traditional ligature builder still sees this as a cancel boundary directive but at the
+\LUA\ end you can implement different behaviour. The added benefit of passing this
+value is a side effect of the generalization.
+
 
 \section{Debugging}
 
@@ -700,6 +726,19 @@ optional parameters are not implemented for \type {\saveboxresource}.
 \pdfrefxform  width 20mm height 10mm depth 5mm \pdflastxform
 \stoptyping
 
+\section{\type {\outputmode} and \type {\draftmode}}
+
+The \type {\outputmode} variable tells \LUATEX\ what it has to produce:
+
+\starttabulate[|l|l|]
+\NC \type {0} \NC \DVI\ code \NC \NR
+\NC \type {1} \NC \PDF\ code \NC \NR
+\stoptabulate
+
+The value of the \type {\draftmode} counter signals the backend if it should
+output less. The \PDF\ backend accepts a value of~$1$, while the \DVI\ backend
+ignores the value.
+
 \section{File syntax}
 
 \LUATEX\ will accept a braced argument as a file name:
@@ -722,6 +761,12 @@ expansion takes place inside the argument.
 
 This allows for embedded spaces, without the need for double quotes. Macro
 expansion takes place inside the argument.
+
+\section{Writing to file}
+
+You can now open upto 127 files with \type {\openout}. When no file is open
+writes will go to the console and log. As a consequence a system command is
+no longer possible but one can use \type {os.execute} to do the same.
 
 \stopchapter
 

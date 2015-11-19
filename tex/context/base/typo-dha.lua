@@ -31,7 +31,6 @@ if not modules then modules = { } end modules ['typo-dha'] = {
 -- elseif d == "ws"  then -- Whitespace
 -- elseif d == "on"  then -- Other Neutrals
 
--- beware: math adds whatsits afterwards so that will mess things up
 -- todo  : use new dir functions
 -- todo  : make faster
 -- todo  : move dir info into nodes
@@ -59,10 +58,12 @@ local getid              = nuts.getid
 local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
 local getfield           = nuts.getfield
-local setfield           = nuts.setfield
 local getattr            = nuts.getattr
 local getprop            = nuts.getprop
+
+local setfield           = nuts.setfield
 local setprop            = nuts.setprop
+local setchar            = nuts.setchar
 
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
@@ -76,7 +77,6 @@ local whatcodes          = nodes.whatcodes
 local mathcodes          = nodes.mathcodes
 
 local glyph_code         = nodecodes.glyph
-local whatsit_code       = nodecodes.whatsit
 local math_code          = nodecodes.math
 local penalty_code       = nodecodes.penalty
 local kern_code          = nodecodes.kern
@@ -207,10 +207,10 @@ local function process(start)
                                 local class = charclasses[character]
                                 if class == "open" then
                                     if nextisright(current) then
-                                        setfield(current,"char",mirror)
+                                        setchar(current,mirror)
                                         setprop(current,"direction","r")
                                     elseif autodir < 0 then
-                                        setfield(current,"char",mirror)
+                                        setchar(current,mirror)
                                         setprop(current,"direction","r")
                                     else
                                         mirror = false
@@ -222,14 +222,14 @@ local function process(start)
                                     local fencedir = fences[#fences]
                                     fences[#fences] = nil
                                     if fencedir < 0 then
-                                        setfield(current,"char",mirror)
+                                        setchard(current,mirror)
                                         setprop(current,"direction","r")
                                     else
                                         setprop(current,"direction","l")
                                         mirror = false
                                     end
                                 elseif autodir < 0 then
-                                    setfield(current,"char",mirror)
+                                    setchar(current,mirror)
                                     setprop(current,"direction","r")
                                 else
                                     setprop(current,"direction","l")
@@ -338,35 +338,6 @@ local function process(start)
                 end
                 pardir  = autodir
                 textdir = pardir
-                setprop(current,"direction",true)
-            elseif id == whatsit_code then
-                local subtype = getsubtype(current)
-                if subtype == localpar_code then
-                    local dir = getfield(current,"dir")
-                    if dir == 'TRT' then
-                        autodir = -1
-                    elseif dir == 'TLT' then
-                        autodir = 1
-                    end
-                    pardir  = autodir
-                    textdir = pardir
-                elseif subtype == dir_code then
-                    local dir = getfield(current,"dir")
-                    if dir == "+TRT" then
-                        autodir = -1
-                    elseif dir == "+TLT" then
-                        autodir = 1
-                    elseif dir == "-TRT" or dir == "-TLT" then
-                        if embedded and embedded~= 0 then
-                            autodir = embedded
-                        else
-                            autodir = 0
-                        end
-                    else
-                        -- message
-                    end
-                    textdir = autodir
-                end
                 setprop(current,"direction",true)
             else
                 setprop(current,"direction",true)

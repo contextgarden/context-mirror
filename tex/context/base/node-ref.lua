@@ -52,6 +52,9 @@ local tonut               = nuts.tonut
 
 local getfield            = nuts.getfield
 local setfield            = nuts.setfield
+local setlink             = nuts.setlink
+local setnext             = nuts.setnext
+local setprev             = nuts.setprev
 local getnext             = nuts.getnext
 local getprev             = nuts.getprev
 local getid               = nuts.getid
@@ -68,7 +71,6 @@ local find_node_tail      = nuts.tail
 
 local nodecodes           = nodes.nodecodes
 local skipcodes           = nodes.skipcodes
-local whatcodes           = nodes.whatcodes
 local listcodes           = nodes.listcodes
 
 local hlist_code          = nodecodes.hlist
@@ -76,9 +78,8 @@ local vlist_code          = nodecodes.vlist
 local glue_code           = nodecodes.glue
 local glyph_code          = nodecodes.glyph
 local rule_code           = nodecodes.rule
-local whatsit_code        = nodecodes.whatsit
-local dir_code            = nodecodes.dir or whatcodes.dir
-local localpar_code       = nodecodes.localpar or whatcodes.localpar
+local dir_code            = nodecodes.dir
+local localpar_code       = nodecodes.localpar
 
 local leftskip_code       = skipcodes.leftskip
 local rightskip_code      = skipcodes.rightskip
@@ -96,14 +97,14 @@ local tosequence          = nodes.tosequence
 local implement           = interfaces.implement
 
 -- Normally a (destination) area is a box or a simple stretch if nodes but when it is
--- a paragraph we hav ea problem: we cannot calculate the height well. This happens
+-- a paragraph we have a problem: we cannot calculate the height well. This happens
 -- with footnotes or content broken across a page.
 
 local function vlist_dimensions(start,stop)
     local temp
     if stop then
         temp = getnext(stop)
-        setfield(stop,"next",nil)
+        setnext(stop,nil)
     end
     local v = vpack_list(start)
     local w = getfield(v,"width")
@@ -112,7 +113,7 @@ local function vlist_dimensions(start,stop)
     setfield(v,"list",nil)
     free_node(v)
     if temp then
-        setfield(stop,"next",temp)
+        setnext(stop,temp)
     end
     return w, h, d
 end
@@ -133,7 +134,15 @@ local function dimensions(parent,start,stop) -- in principle we could move some 
             if trace_areas then
                 report_area("dimensions taken of %a",nodecodes[id])
             end
-            return getfield(start,"width"), getfield(parent,"height"), getfield(parent,"depth")
+            -- hm, parent can be zero
+            local width  = getfield(start,"width")
+            local height = getfield(parent,"height")
+            local depth  = getfield(parent,"depth")
+            if height == 0 and depth == 0 then
+                height = getfield(start,"height")
+                depth  = getfield(start,"depth")
+            end
+            return width, height, depth
         else
             if trace_areas then
                 report_area("dimensions calculated of %a",nodecodes[id])
@@ -198,35 +207,34 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
             local l = getlist(line)
             if trace_areas then
                 report_area("%s: %04i %s %s %s => w=%p, h=%p, d=%p, c=%S","line",
-                    reference,pardir or "---",txtdir or "---",tosequence(l,nil,true),width,height,depth,resolved)
+                    reference,pardir or "---",txtdir or "---",
+                    tosequence(l,nil,true),width,height,depth,resolved)
             end
             setfield(line,"list",result)
-            setfield(result,"next",l)
-            setfield(l,"prev",result)
+            setlink(result,l)
             return head, last
         else
             if head == first then
                 if trace_areas then
                     report_area("%s: %04i %s %s %s => w=%p, h=%p, d=%p, c=%S","head",
-                        reference,pardir or "---",txtdir or "---",tosequence(first,last,true),width,height,depth,resolved)
+                        reference,pardir or "---",txtdir or "---",
+                        tosequence(first,last,true),width,height,depth,resolved)
                 end
-                setfield(result,"next",first)
-                setfield(first,"prev",result)
+                setlink(result,first)
                 return result, last
             else
                 if trace_areas then
                     report_area("%s: %04i %s %s %s => w=%p, h=%p, d=%p, c=%S","middle",
-                        reference,pardir or "---",txtdir or "---",tosequence(first,last,true),width,height,depth,resolved)
+                        reference,pardir or "---",txtdir or "---",
+                        tosequence(first,last,true),width,height,depth,resolved)
                 end
                 local prev = getprev(first)
                 if prev then
-                    setfield(prev,"next",result)
-                    setfield(result,"prev",prev)
+                    setlink(prev,result)
                 end
-                setfield(result,"next",first)
-                setfield(first,"prev",result)
+                setlink(result,first)
              -- if first == getnext(head) then
-             --     setfield(head,"next",result) -- hm, weird
+             --     setnext(head,result) -- hm, weird
              -- end
                 return head, last
             end
@@ -290,16 +298,14 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
         elseif moveright then -- brr no prevs done
             -- result after first
             local n = getnext(first)
-            setfield(result,"next",n)
-            setfield(first,"next",result)
-            setfield(result,"prev",first)
+            setnext(result,n)
+            setlink(first,first)
             if n then
-                setfield(n,"prev",result)
+                setprev(n,result)
             end
         else
             -- first after result
-            setfield(result,"next",first)
-            setfield(first,"prev",result)
+            setlink(result,first)
             setfield(current,"list",result)
         end
     end
@@ -354,13 +360,6 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
                 txtdir = getfield(current,"dir")
             elseif id == localpar_code then
                 pardir = getfield(current,"dir")
-            elseif id == whatsit_code then
-                local subtype = getsubtype(current)
-                if subtype == localpar_code then
-                    pardir = getfield(current,"dir")
-                elseif subtype == dir_code then
-                    txtdir = getfield(current,"dir")
-                end
             elseif id == glue_code and getsubtype(current) == leftskip_code then -- any glue at the left?
                 --
             else
@@ -410,13 +409,6 @@ local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) 
                 txtdir = getfield(current,"dir")
             elseif id == localpar_code then
                 pardir = getfield(current,"dir")
-            elseif id == whatsit_code then
-                local subtype = getsubtype(current)
-                if subtype == localpar_code then
-                    pardir = getfield(current,"dir")
-                elseif subtype == dir_code then
-                    txtdir = getfield(current,"dir")
-                end
             else
                 local r = getattr(current,attribute)
                 if r and not done[r] then
@@ -500,8 +492,8 @@ local function colorize(width,height,depth,n,reference,what,sr,offset)
     if width < 0 then
         local kern = new_kern(width)
         setfield(rule,"width",-width)
-        setfield(kern,"next",rule)
-        setfield(rule,"prev",kern)
+        setnext(kern,rule)
+        setprev(rule,kern)
         return kern
     else
 
@@ -509,10 +501,8 @@ if sr and sr ~= "" then
     local text = addstring(what,sr,shift)
     if text then
         local kern = new_kern(-getfield(text,"width"))
-        setfield(kern,"next",text)
-        setfield(text,"prev",kern)
-        setfield(text,"next",rule)
-        setfield(rule,"prev",text)
+        setlink(kern,text)
+        setlink(text,rule)
         return kern
     end
 end
@@ -526,10 +516,8 @@ local function justadd(what,sr,shift)
         local text = addstring(what,sr,shift)
         if text then
             local kern = new_kern(-getfield(text,"width"))
-            setfield(kern,"next",text)
-            setfield(text,"prev",kern)
-            setfield(text,"next",rule)
-            setfield(rule,"prev",text)
+            setlink(kern,text)
+            setlink(text,rule)
             return kern
         end
     end
@@ -616,8 +604,7 @@ local function makereference(width,height,depth,reference) -- height and depth a
                 end
             end
             if current then
-                setfield(current,"next",annot)
-                setfield(annot,"prev",current)
+                setlink(current,annot)
             else
                 result = annot
             end
@@ -727,8 +714,7 @@ local function makedestination(width,height,depth,reference)
             if not result then
                 result, current = rule, rule
             else
-                setfield(current,"next",rule)
-                setfield(rule,"prev",current)
+                setlink(current,rule)
                 current = rule
             end
             width, height = width - step, height - step
@@ -747,8 +733,7 @@ local function makedestination(width,height,depth,reference)
         if annot then
             annot = tonut(annot) -- obsolete soon
             if result then
-                setfield(current,"next",annot)
-                setfield(annot,"prev",current)
+                setlink(current,annot)
             else
                 result  = annot
             end

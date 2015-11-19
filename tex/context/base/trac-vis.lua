@@ -68,19 +68,24 @@ local nuts                = nodes.nuts
 local tonut               = nuts.tonut
 local tonode              = nuts.tonode
 
-local getfield            = nuts.getfield
-local getnext             = nuts.getnext
-local getprev             = nuts.getprev
-local getid               = nuts.getid
 local setfield            = nuts.setfield
-local getattr             = nuts.getattr
+local setboth             = nuts.setboth
+local setlink             = nuts.setlink
+local setdisc             = nuts.setdisc
 local setattr             = nuts.setattr
+
+local getfield            = nuts.getfield
+local getid               = nuts.getid
 local getfont             = nuts.getfont
+local getattr             = nuts.getattr
 local getsubtype          = nuts.getsubtype
 local getchar             = nuts.getchar
 local getbox              = nuts.getbox
 local getlist             = nuts.getlist
 local getleader           = nuts.getleader
+local getnext             = nuts.getnext
+local getprev             = nuts.getprev
+local getdisc             = nuts.getdisc
 
 local hpack_nodes         = nuts.hpack
 local vpack_nodes         = nuts.vpack
@@ -116,6 +121,8 @@ local new_rule            = nodepool.rule
 local new_kern            = nodepool.kern
 local new_glue            = nodepool.glue
 local new_penalty         = nodepool.penalty
+local new_hlist           = nodepool.hlist
+local new_vlist           = nodepool.vlist
 
 local tracers             = nodes.tracers
 local visualizers         = nodes.visualizers
@@ -392,35 +399,29 @@ end
 
 local w_cache = { }
 local tags    = {
-    open           = "FIC",
-    write          = "FIW",
-    close          = "FIC",
-    special        = "SPE",
-    localpar       = "PAR",
-    dir            = "DIR",
-    savepos        = "POS",
-    pdfliteral     = "PDF",
-    pdfrefobj      = "PDF",
-    pdfrefxform    = "PDF",
-    pdfrefximage   = "PDF",
-    pdfannot       = "PDF",
-    pdfstartlink   = "PDF",
-    pdfendlink     = "PDF",
-    pdfdest        = "PDF",
-    pdfthread      = "PDF",
-    pdfstartthread = "PDF",
-    pdfendthread   = "PDF",
-    pdfsavepos     = "PDF", -- obsolete
-    pdfthreaddata  = "PDF",
-    pdflinkdata    = "PDF",
-    pdfcolorstack  = "PDF",
-    pdfsetmatrix   = "PDF",
-    pdfsave        = "PDF",
-    pdfrestore     = "PDF",
-    latelua        = "LUA",
-    closelua       = "LUA",
-    cancelboundary = "CBD",
-    userdefined    = "USR",
+    open             = "FIC",
+    write            = "FIW",
+    close            = "FIC",
+    special          = "SPE",
+    latelua          = "LUA",
+    savepos          = "POS",
+    userdefined      = "USR",
+ -- backend stuff
+    pdfliteral       = "PDF",
+    pdfrefobj        = "PDF",
+    pdfannot         = "PDF",
+    pdfstartlink     = "PDF",
+    pdfendlink       = "PDF",
+    pdfdest          = "PDF",
+    pdfthread        = "PDF",
+    pdfstartthread   = "PDF",
+    pdfendthread     = "PDF",
+    pdfthreaddata    = "PDF",
+    pdflinkdata      = "PDF",
+    pdfcolorstack    = "PDF",
+    pdfsetmatrix     = "PDF",
+    pdfsave          = "PDF",
+    pdfrestore       = "PDF",
 }
 
 local function whatsit(head,current)
@@ -487,8 +488,7 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous)
         local next = getnext(current)
         local prev = previous
      -- local prev = getprev(current) -- prev can be wrong in math mode < 0.78.3
-        setfield(current,"next",nil)
-        setfield(current,"prev",nil)
+        setboth(current)
         local linewidth = emwidth/fraction
         local baseline, baseskip
         if dp ~= 0 and ht ~= 0 then
@@ -549,50 +549,24 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous)
         if baseskip then
             info = linked_nodes(info,baseskip,baseline) -- could be in previous linked
         end
-        local shft
-        if shift == 0 then
-            shift = nil
-        else
-            local sh = shift > 0 and   shift or 0
-            local sd = shift < 0 and - shift or 0
-            shft = fast_hpack(new_rule(2*emwidth/fraction,sh,sd))
-            setfield(shft,"width",0)
-            if sh > 0 then
-                setfield(shft,"height",0)
-            end
-            if sd > 0 then
-                setfield(shft,"depth",0)
-            end
-        end
         setlisttransparency(info,c_text)
         info = fast_hpack(info)
         setfield(info,"width",0)
         setfield(info,"height",0)
         setfield(info,"depth",0)
         setattr(info,a_layer,layer)
-        local info = linked_nodes(shft,current,new_kern(-wd),info)
-        info = fast_hpack(info,wd)
-        if vertical then
-            info = vpack_nodes(info)
-        end
-        if shift then
-            setfield(current,"shift",0)
-            setfield(info,"width",wd)
-            setfield(info,"height",ht)
-            setfield(info,"depth",dp)
-            setfield(info,"shift",shift)
-        end
+        local info = linked_nodes(current,new_kern(-wd),info)
+        setfield(current,"shift",0)
+        info = (vertical and new_vlist or new_hlist)(info,wd,ht,dp,shift)
         if next then
-            setfield(info,"next",next)
-            setfield(next,"prev",info)
+            setlink(info,next)
         end
         if prev then
             if getid(prev) == gluespec_code then
                 report_visualize("ignoring invalid prev")
                 -- weird, how can this happen, an inline glue-spec, probably math
             else
-                setfield(info,"prev",prev)
-                setfield(prev,"next",info)
+                setlink(prev,info)
             end
         end
         if head == current then
@@ -607,14 +581,13 @@ end
 
 local function ruledglyph(head,current,previous)
     local wd = getfield(current,"width")
- -- local wd = chardata[getfield(current,"font")][getfield(current,"char")].width
+ -- local wd = chardata[getfont(current)][getchar(current)].width
     if wd ~= 0 then
         local ht = getfield(current,"height")
         local dp = getfield(current,"depth")
         local next = getnext(current)
         local prev = previous
-        setfield(current,"next",nil)
-        setfield(current,"prev",nil)
+        setboth(current)
         local linewidth = emwidth/(2*fraction)
         local baseline
      -- if dp ~= 0 and ht ~= 0 then
@@ -632,14 +605,14 @@ local function ruledglyph(head,current,previous)
             new_kern(-wd+doublelinewidth),
             baseline
         )
-local char = chardata[getfield(current,"font")][getfield(current,"char")]
-if char and char.tounicode and #char.tounicode > 4 then -- hack test
-        setlistcolor(info,c_ligature)
-        setlisttransparency(info,c_ligature_d)
-else
-        setlistcolor(info,c_glyph)
-        setlisttransparency(info,c_glyph_d)
-end
+        local char = chardata[getfont(current)][getchar(current)]
+        if char and char.tounicode and #char.tounicode > 4 then -- hack test
+            setlistcolor(info,c_ligature)
+            setlisttransparency(info,c_ligature_d)
+        else
+            setlistcolor(info,c_glyph)
+            setlisttransparency(info,c_glyph_d)
+        end
         info = fast_hpack(info)
         setfield(info,"width",0)
         setfield(info,"height",0)
@@ -649,12 +622,10 @@ end
         info = fast_hpack(info)
         setfield(info,"width",wd)
         if next then
-            setfield(info,"next",next)
-            setfield(next,"prev",info)
+            setlink(info,next)
         end
         if prev then
-            setfield(info,"prev",prev)
-            setfield(prev,"next",info)
+            setlink(prev,info)
         end
         if head == current then
             return info, info
@@ -875,18 +846,17 @@ local function visualize(head,vertical,forced,parent)
                 head, current = ruledglyph(head,current,previous)
             end
         elseif id == disc_code then
-            local pre = getfield(current,"pre")
+            local pre, post, replace = getdisc(current)
             if pre then
-                setfield(current,"pre",visualize(pre,false,a,parent))
+                pre = visualize(pre,false,a,parent)
             end
-            local post = getfield(current,"post")
             if post then
-                setfield(current,"post",visualize(post,false,a,parent))
+                post = visualize(post,false,a,parent)
             end
-            local replace = getfield(current,"replace")
             if replace then
-                setfield(current,"replace",visualize(replace,false,a,parent))
+                replace = visualize(replace,false,a,parent)
             end
+            setdisc(current,pre,post,replace)
         elseif id == kern_code then
             local subtype = getsubtype(current)
             -- tricky ... we don't copy the trace attribute in node-inj (yet)

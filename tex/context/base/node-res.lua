@@ -67,9 +67,11 @@ local tonode    = nuts.tonode
 
 local getbox    = nuts.getbox
 local getfield  = nuts.getfield
-local setfield  = nuts.setfield
 local getid     = nuts.getid
 local getlist   = nuts.getlist
+
+local setfield  = nuts.setfield
+local setchar   = nuts.setchar
 
 local copy_nut  = nuts.copy
 local new_nut   = nuts.new
@@ -140,13 +142,7 @@ local glue              = register_nut(new_nut("glue")) -- glue.spec = nil
 local glue_spec         = register_nut(new_nut("glue_spec"))
 local glyph             = register_nut(new_nut("glyph",0))
 
-local textdir           = nil
-
-if nodes.nativedir then
-    textdir = register_nut(new_nut("dir"))
-else
-    textdir = register_nut(new_nut("whatsit",whatsitcodes.dir))
-end
+local textdir           = register_nut(new_nut("dir"))
 
 local latelua           = register_nut(new_nut("whatsit",whatsitcodes.latelua))
 local special           = register_nut(new_nut("whatsit",whatsitcodes.special))
@@ -183,7 +179,7 @@ end
 function nutpool.glyph(fnt,chr)
     local n = copy_nut(glyph)
     if fnt then setfield(n,"font",fnt) end
-    if chr then setfield(n,"char",chr) end
+    if chr then setchar(n,chr) end
     return n
 end
 
@@ -432,7 +428,7 @@ function nutpool.noad()
     return copy_nut(noad)
 end
 
-function nutpool.hlist(list,width,height,depth)
+function nutpool.hlist(list,width,height,depth,shift)
     local n = copy_nut(hlist)
     if list then
         setfield(n,"list",list)
@@ -446,10 +442,13 @@ function nutpool.hlist(list,width,height,depth)
     if depth then
         setfield(n,"depth",depth)
     end
+    if shift then
+        setfield(n,"shift",shift)
+    end
     return n
 end
 
-function nutpool.vlist(list,width,height,depth)
+function nutpool.vlist(list,width,height,depth,shift)
     local n = copy_nut(vlist)
     if list then
         setfield(n,"list",list)
@@ -462,6 +461,9 @@ function nutpool.vlist(list,width,height,depth)
     end
     if depth then
         setfield(n,"depth",depth)
+    end
+    if shift then
+        setfield(n,"shift",shift)
     end
     return n
 end

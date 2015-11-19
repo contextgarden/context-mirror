@@ -72,6 +72,12 @@
 \def\Umathbotaccent{\Umathaccent \s!bottom }
 \def\Umathaccents  {\Umathaccent \s!both   }
 
+\ifdefined\Umathcharclass \else
+    \def\Umathcharclass{\cldcontext{tex.getmathcode(token.scan_int())[1]}}
+    \def\Umathcharfam  {\cldcontext{tex.getmathcode(token.scan_int())[2]}}
+    \def\Umathcharslot {\cldcontext{tex.getmathcode(token.scan_int())[3]}}
+\fi
+
 %D The attributes that we will use:
 
 \definesystemattribute[mathalphabet]   [public]
@@ -675,6 +681,8 @@
 % Once this is stable we can store the number at the tex end which is
 % faster. Functions getnumbers >= 1000.
 
+% \setupmathematics[functionstyle=normal] % will give ligatures and kerning
+
 \setupmathematics
   [\c!textstyle=,     % rm ss etc i.e. known alternatives, otherwise math
    \c!textcolor=,
@@ -784,6 +792,8 @@
 %       \let\mfunction         \math_function_style_mfunction
 %       \let\mfunctionlabeltext\math_function_style_mfunctionlabeltext}}
 
+\def\currentmscaledstyle{rm} % will be plugged into the typeface text=ss option
+
 \unexpanded\def\mscaledtext#1%
   {\mathchoice
      {\hbox{\csname\currentmscaledstyle\endcsname\tf  #1}}
@@ -793,21 +803,6 @@
 
 \unexpanded\def\setmathfunctionstyle#1%
   {\setupmathematics[\c!functionstyle=#1]} % for old times sake
-
-%D We can force the way functions are typeset by manipulating the text option:
-%D
-%D \starttyping
-%D \definetypeface[iwona][ss][sans][iwona][default][encoding=texnansi]
-%D \definetypeface[iwona][mm][math][iwona][default][encoding=texnansi,text=ss]
-%D \stoptyping
-%D
-%D This hooks into the math handler with:
-
-% no longer supported this way, has to be done with \setupmathematics
-%
-% \appendtoks
-%     \setmathfunctionstyle\currentmathtextstyle
-% \to \everybodyfont
 
 %D Usage:
 %D
@@ -1165,7 +1160,6 @@
     \attribute\mathbidiattribute\ifconditional\c_math_right_to_left\c_math_bidi\else\attributeunsetvalue\fi
 \to \everyswitchmathematics
 
-
 %D Delayed: greek.
 %D
 %D \starttyping
@@ -1482,13 +1476,13 @@
 
 \def\triggermathstyle#1% #1 is number
   {\ifcase\numexpr#1\relax
-     \displaystyle             \or
-     \crampeddisplaystyle      \or
-     \textstyle                \or
-     \crampedtextstyle         \or
-     \scriptstyle              \or
-     \crampedscriptstyle       \or
-     \scriptscriptstyle        \or
+     \displaystyle             \or % 0
+     \crampeddisplaystyle      \or % 1
+     \textstyle                \or % 2
+     \crampedtextstyle         \or % 3
+     \scriptstyle              \or % 4
+     \crampedscriptstyle       \or % 5
+     \scriptscriptstyle        \or % 6
      \crampedscriptscriptstyle \else
      % error
    \fi}

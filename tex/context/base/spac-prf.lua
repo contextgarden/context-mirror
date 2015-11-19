@@ -27,7 +27,6 @@ local hlist_code        = nodecodes.hlist
 local vlist_code        = nodecodes.vlist
 local unset_code        = nodecodes.unset
 local math_code         = nodecodes.math
-local whatsit_code      = nodecodes.whatsit
 local rule_code         = nodecodes.rule
 local marginkern_code   = nodecodes.marginkern
 
@@ -46,8 +45,7 @@ local taketexbox        = tex.takebox
 local nuts              = nodes.nuts
 local tonut             = nodes.tonut
 local tonode            = nuts.tonode
-local setfield          = nuts.setfield
-local setattr           = nuts.setattr
+
 local getfield          = nuts.getfield
 local getattr           = nuts.getattr
 local getid             = nuts.getid
@@ -56,6 +54,10 @@ local getprev           = nuts.getprev
 local getsubtype        = nuts.getsubtype
 local getlist           = nuts.getlist
 local gettexbox         = nuts.getbox
+
+local setfield          = nuts.setfield
+local setlink           = nuts.setlink
+local setattr           = nuts.setattr
 
 local theprop           = nuts.theprop
 
@@ -70,8 +72,6 @@ local link_nodes        = nuts.link
 local find_node_tail    = nuts.tail
 
 local properties        = nodes.properties.data
-
-local get_dimensions    = nodes.whatsitters.getters.dimensions
 
 local a_visual          = attributes.private("visual")
 local a_snapmethod      = attributes.private("snapmethod")
@@ -227,14 +227,6 @@ local function getprofile(line,step)
                 ht = 0
                 dp = 0
                 progress()
-            elseif id == whatsit_code then
-                local subtype  = getsubtype(current)
-                local getdimen = get_dimensions[subtype]
-                if getdimen then
-                    -- unlikely to happen as we always wrap images etc in a box
-                    wd, ht, dp = get_dimensions(current)
-                    progress()
-                end
             elseif id == marginkern_code then
                 wd = getfield(current,"width")
                 ht = 0
@@ -367,8 +359,7 @@ local function addprofile(node,profile,step)
             settransparency(what,visual)
         end
         if tail then
-            setfield(tail,"next",what)
-            setfield(what,"prev",tail)
+            setlink(tail,what)
         else
             head = what
         end
@@ -406,15 +397,13 @@ local function addprofile(node,profile,step)
  --         formatters["%0.4f"](getfield(rule,"depth") /65536)
  --     )
  --
- --     setfield(text,"next",rule)
- --     setfield(rule,"prev",text)
+ --     setlink(text,rule)
  --
  --     rule = text
  --
  -- end
 
-    setfield(rule,"next",list)
-    setfield(list,"prev",rule)
+    setlink(rule,list)
     setfield(line,"list",rule)
 
 end
@@ -477,10 +466,8 @@ local function inject(top,bot,amount) -- todo: look at penalties
     setattr(glue,a_profilemethod,0)
     setattr(glue,a_visual,getattr(top,a_visual))
     --
-    setfield(bot,"prev",glue)
-    setfield(glue,"next",bot)
-    setfield(glue,"prev",top)
-    setfield(top,"next",glue)
+    setlink(glue,bot)
+    setlink(top,glue)
 end
 
 methods[v_none] = function()

@@ -35,9 +35,13 @@ local getlist            = nuts.getlist
 local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 local getattr            = nuts.getattr
-local setfield           = nuts.setfield
 local getfield           = nuts.getfield
+
+local setfield           = nuts.setfield
 local setattr            = nuts.setattr
+local setlink            = nuts.setlink
+local setnext            = nuts.setnext
+local setprev            = nuts.setprev
 
 local traverse_nodes     = nuts.traverse
 local traverse_id        = nuts.traverse_id
@@ -171,22 +175,6 @@ nuts.setunsetattributes  = set_unset_attributes              nodes.setunsetattri
 nuts.unsetattributes     = unset_attributes                  nodes.unsetattributes    = vianuts(unset_attributes)
 
 -- history:
---
--- function nodes.is_skipable(a,id)  -- skipable nodes at the margins during character protrusion
---     return (
---             id ~= glyph_node
---         or  id == ins_node
---         or  id == mark_node
---         or  id == adjust_node
---         or  id == penalty_node
---         or (id == glue_node    and a.spec.writable)
---         or (id == disc_node    and getfield(a,"pre") == nil and getfield(a,"post") == nil and getfield(a,"replace") == nil)
---         or (id == math_node    and getfield(a,"surround") == 0)
---         or (id == kern_node    and (getfield(a,"kern") == 0 or getsubtype(subtype) == NORMAL))
---         or (id == hlist_node   and getfield(a,"width") == 0 and getfield(a,"height") == 0 and getfield(a,"depth") == 0 and getlist(a) == nil)
---         or (id == whatsit_node and getsubtype(a) ~= pdf_refximage_node and getsubtype(a) ~= pdf_refxform_node)
---     )
--- end
 --
 -- local function glyph_width(a)
 --     local ch = chardata[getfont(a)][getchar(a)]
@@ -468,8 +456,8 @@ local function link(list,currentfont,currentattr,head,tail) -- an oldie, might b
                     elseif not head then
                         head, tail = h, t
                     else
-                        setfield(tail,"next",h)
-                        setfield(h,"prev",t)
+                        setnext(tail,h)
+                        setprev(h,t)
                         tail = t
                     end
                 end
@@ -492,8 +480,7 @@ local function link(list,currentfont,currentattr,head,tail) -- an oldie, might b
                 end
                 os.exit()
             else
-                setfield(tail,"next",n)
-                setfield(n,"prev",tail)
+                setlink(tail,n)
                 if getnext(n) then
                     tail = find_tail(n)
                 else

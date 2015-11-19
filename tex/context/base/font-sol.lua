@@ -57,16 +57,19 @@ local tonut              = nuts.tonut
 local tonode             = nuts.tonode
 
 local getfield           = nuts.getfield
-local setfield           = nuts.setfield
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getid              = nuts.getid
 local getattr            = nuts.getattr
-local setattr            = nuts.setattr
 local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getchar            = nuts.getchar
 local getlist            = nuts.getlist
+
+local setfield           = nuts.setfield
+local setattr            = nuts.setattr
+local setlink            = nuts.setlink
+local setnext            = nuts.setnext
 
 local find_node_tail     = nuts.tail
 local free_node          = nuts.free
@@ -95,8 +98,8 @@ local glyph_code         = nodecodes.glyph
 local disc_code          = nodecodes.disc
 local kern_code          = nodecodes.kern
 local hlist_code         = nodecodes.hlist
-local dir_code           = nodecodes.dir or whatsitcodes.dir
-local localpar_code      = nodecodes.localpar or whatsitcodes.localpar
+local dir_code           = nodecodes.dir
+local localpar_code      = nodecodes.localpar
 
 local whatsit_code       = nodecodes.whatsit
 
@@ -367,8 +370,7 @@ function splitters.split(head)
         end
         if rlmode == "TRT" or rlmode == "+TRT" then
             local dirnode = new_textdir("+TRT")
-            setfield(list,"prev",dirnode)
-            setfield(dirnode,"next",list)
+            setlink(dirnode,list)
             list = dirnode
         end
         local c = {
@@ -420,14 +422,6 @@ function splitters.split(head)
                 flush()
             end
             rlmode = getfield(current,"dir")
-        elseif id == whatsit_code then
-            if start then
-                flush()
-            end
-            local subtype = getsubtype(current)
-            if subtype == dir_code or subtype == localpar_code then
-                rlmode = getfield(current,"dir")
-            end
         else
             if start then
                 flush()
@@ -620,11 +614,9 @@ first = tonut(first)
                 -- replace [u]h->t by [u]first->last
                 local prev = getprev(h)
                 local next = getnext(t)
-                setfield(prev,"next",first)
-                setfield(first,"prev",prev)
+                setlink(prev,first)
                 if next then
-                    setfield(last,"next",next)
-                    setfield(next,"prev",last)
+                    setlink(last,next)
                 end
                 -- check new pack
                 local temp, b = repack_hlist(list,width,'exactly',listdir)
@@ -633,22 +625,20 @@ first = tonut(first)
                         report_optimizers("line %a, badness before %a, after %a, criterium %a, verdict %a",line,badness,b,criterium,"quit")
                     end
                     -- remove last insert
-                    setfield(prev,"next",h)
-                    setfield(h,"prev",prev)
+                    setlink(prev,h)
                     if next then
-                        setfield(t,"next",next)
-                        setfield(next,"prev",t)
+                        setlink(t,next)
                     else
-                        setfield(t,"next",nil)
+                        setnext(t)
                     end
-                    setfield(last,"next",nil)
+                    setnext(last)
                     free_nodelist(first)
                 else
                     if trace_optimize then
                         report_optimizers("line %a, badness before: %a, after %a, criterium %a, verdict %a",line,badness,b,criterium,"continue")
                     end
                     -- free old h->t
-                    setfield(t,"next",nil)
+                    setnext(t)
                     free_nodelist(h) -- somhow fails
                     if not encapsulate then
                         word[2] = first

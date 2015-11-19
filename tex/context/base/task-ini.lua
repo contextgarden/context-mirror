@@ -66,7 +66,7 @@ appendaction("processors",   "lists",       "languages.visualizediscretionaries"
 -- appendaction("processors",   "lists",       "typesetters.initials.handler")                   -- disabled
 
 appendaction("shipouts",     "normalizers", "typesetters.margins.finalhandler")                  -- disabled
-appendaction("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled
+------------("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled
 appendaction("shipouts",     "normalizers", "builders.paragraphs.expansion.trace")               -- disabled
 appendaction("shipouts",     "normalizers", "typesetters.alignments.handler")
 appendaction("shipouts",     "normalizers", "nodes.references.handler")                          -- disabled
@@ -243,10 +243,10 @@ disableaction("processors", "builders.kernel.kerning")
 
 directives.register("nodes.basepass", function(v)
     if v then
-         disableaction("processors", "builders.kernel.ligaturing")
-         disableaction("processors", "builders.kernel.kerning")
-    else
          enableaction("processors", "builders.kernel.ligaturing")
          enableaction("processors", "builders.kernel.kerning")
+    else
+         disableaction("processors", "builders.kernel.ligaturing")
+         disableaction("processors", "builders.kernel.kerning")
     end
 end)

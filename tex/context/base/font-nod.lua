@@ -42,7 +42,6 @@ local step_tracers     = tracers.steppers or { }
 tracers.steppers       = step_tracers
 
 local nodecodes        = nodes.nodecodes
-local whatcodes        = nodes.whatcodes
 
 local glyph_code       = nodecodes.glyph
 local hlist_code       = nodecodes.hlist
@@ -51,16 +50,14 @@ local disc_code        = nodecodes.disc
 local glue_code        = nodecodes.glue
 local kern_code        = nodecodes.kern
 local rule_code        = nodecodes.rule
-local dir_code         = nodecodes.dir or whatcodes.dir
-local localpar_code    = nodecodes.localpar or whatcodes.localpar
-local whatsit_code     = nodecodes.whatsit
+local dir_code         = nodecodes.dir
+local localpar_code    = nodecodes.localpar
 
 local nuts             = nodes.nuts
 local tonut            = nuts.tonut
 local tonode           = nuts.tonode
 
 local getfield         = nuts.getfield
-local setfield         = nuts.setfield
 local getnext          = nuts.getnext
 local getprev          = nuts.getprev
 local getid            = nuts.getid
@@ -68,7 +65,11 @@ local getfont          = nuts.getfont
 local getsubtype       = nuts.getsubtype
 local getchar          = nuts.getchar
 local getlist          = nuts.getlist
+local getdisc          = nuts.getdisc
+
+local setfield         = nuts.setfield
 local setbox           = nuts.setbox
+local setchar          = nuts.setchar
 
 local copy_node_list   = nuts.copy_list
 local hpack_node_list  = nuts.hpack
@@ -134,19 +135,17 @@ function char_tracers.collect(head,list,tag,n)
             l[#l+1] = { c, f }
         elseif id == disc_code then
             -- skip
---             local replace = getfield(head,"replace")
+--             local pre, post, replace = getdisc(head)
 --             if replace then
 --                 for n in traverse_id(glyph_code,replace) do
 --                     l[#l+1] = { c, f }
 --                 end
 --             end
---             local pre = getfield(head,"pre")
 --             if pre then
 --                 for n in traverse_id(glyph_code,pre) do
 --                     l[#l+1] = { c, f }
 --                 end
 --             end
---             local post = getfield(head,"post")
 --             if post then
 --                 for n in traverse_id(glyph_code,post) do
 --                     l[#l+1] = { c, f }
@@ -327,7 +326,7 @@ end
 function tracers.fontchar(font,char)
     local n = new_glyph()
     setfield(n,"font",font)
-    setfield(n,"char",char)
+    setchar(n,"char",char)
     setfield(n,"subtype",256)
     context(tonode(n))
 end
@@ -395,12 +394,8 @@ function step_tracers.codes(i,command,space)
             showchar(c)
         elseif id == dir_code or id == localpar_code then
             context("[%s]",getfield(c,"dir"))
-        elseif id == whatsit_code and (getsubtype(c) == localpar_code or getsubtype(c) == dir_code) then
-            context("[%s]",getfield(c,"dir"))
         elseif id == disc_code then
-            local pre     = getfield(c,"pre")
-            local post    = getfield(c,"post")
-            local replace = getfield(c,"replace")
+            local pre, post, replace = getdisc(c)
             if pre or post or replace then
                 context("[")
                 context[space]()

@@ -1961,9 +1961,11 @@ dimenfactors.pct  = nil
 to scale virtual characters.</p>
 --ldx]]--
 
+-- in versions > 0.82 0 is supported as equivalent of self
+
 function constructors.checkvirtualids(tfmdata)
     -- begin of experiment: we can use { "slot", 0, number } in virtual fonts
-    local fonts = tfmdata.fonts
+    local fonts  = tfmdata.fonts
     local selfid = font.nextid()
     if fonts and #fonts > 0 then
         for i=1,#fonts do
@@ -2212,7 +2214,7 @@ do
     local copy_node = nuts.copy
     local kern      = nuts.pool.register(nuts.pool.kern())
 
-    setattr(kern,attributes.private('fontkern'),1) -- we can have several, attributes are shared
+    setattr(kern,attributes.private('fontkern'),1)
 
     nodes.injections.installnewkern(function(k)
         local c = copy_node(kern)
