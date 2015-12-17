@@ -49,7 +49,6 @@ local vpack               = nuts.vpack
 local freenode            = nuts.free
 local concatnodes         = nuts.concat
 local slidenodes          = nuts.slide -- ok here as we mess with prev links intermediately
-local traversenodes       = nuts.traverse
 
 local getfield            = nuts.getfield
 local setfield            = nuts.setfield
@@ -169,7 +168,7 @@ local function discardtopglue(current,discarded)
     while current do
         local id = getid(current)
         if id == glue_code then
-            size = size + getfield(getfield(current,"spec"),"width")
+            size = size + getfield(current,"width")
             discarded[#discarded+1] = current
             current = getnext(current)
         elseif id == penalty_code then
@@ -177,7 +176,7 @@ local function discardtopglue(current,discarded)
                 discarded[#discarded+1] = current
                 current = getnext(current)
                 while current and getid(current) == glue_code do
-                    size = size + getfield(getfield(current,"spec"),"width")
+                    size = size + getfield(current,"width")
                     discarded[#discarded+1] = current
                     current = getnext(current)
                 end
@@ -216,7 +215,7 @@ local function stripbottomglue(results,discarded)
                 end
             elseif id == glue_code then
                 discarded[#discarded+1] = t
-                local width = getfield(getfield(t,"spec"),"width")
+                local width = getfield(t,"width")
                 if trace_state then
                     report_state("columns %s, discarded bottom glue %p",i,width)
                 end
@@ -478,7 +477,7 @@ local function preparesplit(specification) -- a rather large function
     head = current
 
     local function process_skip(current,nxt)
-        local advance = getfield(getfield(current,"spec"),"width")
+        local advance = getfield(current,"width")
         if advance ~= 0 then
             local state, skipped = checked(advance,"glue")
             if trace_state then

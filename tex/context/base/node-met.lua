@@ -86,13 +86,13 @@ nodes.new                  = node.new
 nodes.tail                 = node.tail
 nodes.traverse             = node.traverse
 nodes.traverse_id          = node.traverse_id
+nodes.traverse_char        = node.traverse_char
 nodes.slide                = node.slide
 nodes.vpack                = node.vpack
 nodes.fields               = node.fields
 nodes.is_node              = node.is_node
 
 nodes.first_glyph          = node.first_glyph
-nodes.first_character      = node.first_character
 nodes.has_glyph            = node.has_glyph or node.first_glyph
 
 nodes.current_attr         = node.current_attr
@@ -108,6 +108,7 @@ nodes.set_attribute        = node.set_attribute
 nodes.unset_attribute      = node.unset_attribute
 
 nodes.protect_glyphs       = node.protect_glyphs
+nodes.protect_glyph        = node.protect_glyph
 nodes.unprotect_glyphs     = node.unprotect_glyphs
 nodes.kerning              = node.kerning
 nodes.ligaturing           = node.ligaturing
@@ -126,7 +127,7 @@ nodes.tonut  = function(n) return n end
 local getfield          = node.getfield
 local setfield          = node.setfield
 
-local getattr           = getfield
+local getattr           = node.get_attribute or node.has_attribute or getfield
 local setattr           = setfield
 
 local getnext           = node.getnext    or function(n) return getfield(n,"next")    end
@@ -173,14 +174,6 @@ local n_insert_before   = nodes.insert_before
 local n_slide           = nodes.slide
 
 local n_remove_node     = node.remove -- not yet nodes.remove
-
--- if t.id == glue_code then
---     local s = t.spec
---     if s and s.writable then
---         free_node(s)
---     end
---     t.spec = nil
--- end
 
 local function remove(head,current,free_too)
     local t = current
@@ -317,6 +310,8 @@ glue being a noticeable one). So, next we wrap this into a function
 and hide it for the user. And yes, LuaTeX now gives a warning as
 well.</p>
 ]]--
+
+-- writable will go away
 
 function nodes.writable_spec(n) -- not pool
     local spec = n_getfield(n,"spec")
@@ -688,34 +683,3 @@ end
 
 nodes.keys   = keys       -- [id][subtype]
 nodes.fields = nodefields -- (n)
-
--- one issue solved in flush_node:
---
--- case glue_spec_node:
---     if (glue_ref_count(p)!=null) {
---         decr(glue_ref_count(p));
---         return ;
---     /*
---     } else if (! valid_node(p)) {
---          return ;
---     */
---     /*
---     } else {
---         free_node(p, get_node_size(type(p), subtype(p)));
---         return ;
---     */
---     }
---     break ;
---
--- or:
---
--- case glue_spec_node:
---     if (glue_ref_count(p)!=null) {
---         decr(glue_ref_count(p));
---         return ;
---     } else if (valid_node(p)) {
---         free_node(p, get_node_size(type(p), subtype(p)));
---         return ;
---     } else {
---         break ;
---     }

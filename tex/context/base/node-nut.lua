@@ -123,7 +123,7 @@ nuts.getfield             = direct.getfield
 nuts.getnext              = direct.getnext
 nuts.getprev              = direct.getprev
 nuts.getid                = direct.getid
-nuts.getattr              = direct.has_attribute or direct.getfield
+nuts.getattr              = direct.get_attribute or direct.has_attribute or direct.getfield
 nuts.getchar              = direct.getchar
 nuts.getfont              = direct.getfont
 nuts.getsubtype           = direct.getsubtype
@@ -173,6 +173,7 @@ nuts.new                  = direct.new
 nuts.tail                 = direct.tail
 nuts.traverse             = direct.traverse
 nuts.traverse_id          = direct.traverse_id
+nuts.traverse_char        = direct.traverse_char
 nuts.slide                = direct.slide
 nuts.writable_spec        = direct.writable_spec
 nuts.vpack                = direct.vpack
@@ -180,7 +181,6 @@ nuts.is_node              = direct.is_node
 nuts.is_direct            = direct.is_direct
 nuts.is_nut               = direct.is_direct
 nuts.first_glyph          = direct.first_glyph
-nuts.first_character      = direct.first_character
 nuts.has_glyph            = direct.has_glyph or direct.first_glyph
 
 nuts.current_attr         = direct.current_attr
@@ -196,8 +196,10 @@ nuts.set_attribute        = direct.set_attribute
 nuts.unset_attribute      = direct.unset_attribute
 
 nuts.protect_glyphs       = direct.protect_glyphs
+nuts.protect_glyph        = direct.protect_glyph
 nuts.unprotect_glyphs     = direct.unprotect_glyphs
-
+nuts.ligaturing           = direct.ligaturing
+nuts.kerning              = direct.kerning
 nuts.effective_glue       = direct.effective_glue
 
 if not nuts.effective_glue then
@@ -226,7 +228,7 @@ end
 
 -- placeholders
 
-if not direct.kerning then
+if not nuts.kerning then
 
     local n_kerning = node.kerning
 
@@ -236,7 +238,7 @@ if not direct.kerning then
 
 end
 
-if not direct.ligaturing then
+if not nuts.ligaturing then
 
     local n_ligaturing = node.ligaturing
 
@@ -256,102 +258,6 @@ if not direct.mlist_to_hlist then
 
 end
 
--- new, a few experimental extra helpers that can speed up font handling 15%
--- especially a mix of complex (latin) features and discretionaries or complex
--- scripts with lots of contextual chains (for other use there is not that
--- much gain)
-
-if not direct.getdisc then
-
-    local getid      = nuts.getid
-    local getsubtype = nuts.getsubtype
-    local getfont    = nuts.getfont
-    local getfield   = nuts.getfield
-    local setfield   = nuts.setfield
-    local findtail   = nuts.tail
-
-    local glyph_code = nodecodes.glyph
-
-    -- this one saves finding tails (i.e. extra calls and passes)
-
-    function direct.getdisc(n,tailtoo)
-        local pre     = getfield(n,"pre")
-        local post    = getfield(n,"post")
-        local replace = getfield(n,"replace")
-        if tailtoo then
-            return pre, post, replace,
-                pre     and findtail(pre),
-                post    and findtail(post),
-                replace and findtail(replace)
-
-        else
-            return pre, post, replace
-        end
-    end
-
-    -- this one is more efficient than three assignments and we need to
-    -- do it in order to updat ethe internal tail data (will change)
-
-    function direct.setdisc(n,pre,post,replace,subtype,penalty)
-        setfield(n,"pre",pre)
-        setfield(n,"post",post)
-        setfield(n,"replace",replace)
-        if subtype then
-            setfield(n,"subtype",subtype)
-        end
-        if penalty then
-         -- setfield(n,"penalty",penalty)
-        end
-    end
-
-    -- very small speedup but more convenient
-
-    function direct.setchar(n,chr)
-        setfield(n,"char",chr)
-    end
-
-    function direct.setnext(n,next)
-        setfield(n,"next",next)
-    end
-
-    function direct.setprev(g,prev)
-        setfield(n,"prev",prev)
-    end
-
-    function direct.setboth(n,prev,next)
-        if n then
-            setfield(n,"next",next)
-            setfield(n,"prev",prev)
-        end
-    end
-
-    function direct.getboth(n)
-        if n then
-            return getfield(n,"prev"), getfield(n,"prev")
-        end
-    end
-
-    function direct.setlink(a,b)
-        if a then
-            if b then
-                setfield(a,"next",b)
-                setfield(b,"prev",a)
-            else
-                setfield(a,"next",nil)
-            end
-        elseif b then
-            setfield(b,"prev",nil)
-        end
-    end
-
-    -- this one saves a lot (one call instead of 3)
-
-    function direct.is_char(g,font)
-        return getid(g) == glyph_code and getsubtype(g) < 256 and (not font or getfont(g) == font)
-    end
-
-end
-
 nuts.getdisc = direct.getdisc
 nuts.setdisc = direct.setdisc
 nuts.setchar = direct.setchar
@@ -361,8 +267,6 @@ nuts.setboth = direct.setboth
 nuts.getboth = direct.getboth
 nuts.setlink = direct.setlink
 nuts.is_char = direct.is_char
-
---
 
 local d_remove_node     = direct.remove
 local d_free_node       = direct.free

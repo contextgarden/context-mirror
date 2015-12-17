@@ -132,7 +132,7 @@ results in different tables.</p>
 -- gpos_context              ok          --
 -- gpos_contextchain         ok          --
 --
--- todo: contextpos and contextsub and class stuff
+-- todo: contextpos
 --
 -- actions:
 --
@@ -243,7 +243,6 @@ local wildcard           = "*"
 local default            = "dflt"
 
 local nodecodes          = nodes.nodecodes
-local whatcodes          = nodes.whatcodes
 local glyphcodes         = nodes.glyphcodes
 local disccodes          = nodes.disccodes
 
@@ -314,8 +313,6 @@ local sweepnext           = nil
 local notmatchpre         = { }
 local notmatchpost        = { }
 local notmatchreplace     = { }
-
--- head is always a whatsit so we can safely assume that head is not changed
 
 -- we use this for special testing and documentation
 
@@ -2702,25 +2699,48 @@ otf.chainhandlers = {
     verbose = verbose_handle_contextchain,
 }
 
+local handle_contextchain = nil
+
+-- normal_handle_contextchain(head,start,kind,chainname,contexts,sequence,lookuphash)
+
+function chained_contextchain(head,start,stop,...)
+    local steps    = currentlookup.steps
+    local nofsteps = currentlookup.nofsteps
+    if nofsteps > 1 then
+        reportmoresteps(dataset,sequence)
+    end
+    return handle_contextchain(head,start,...)
+end
+
 function otf.setcontextchain(method)
     if not method or method == "normal" or not otf.chainhandlers[method] then
-        if handlers.contextchain then -- no need for a message while making the format
+        if handle_contextchain then -- no need for a message while making the format
             logwarning("installing normal contextchain handler")
         end
-        handlers.contextchain = normal_handle_contextchain
+        handle_contextchain = normal_handle_contextchain
     else
         logwarning("installing contextchain handler %a",method)
         local handler = otf.chainhandlers[method]
-        handlers.contextchain = function(...)
+        handle_contextchain = function(...)
             return handler(currentfont,...) -- hm, get rid of ...
         end
     end
-    handlers.gsub_context             = handlers.contextchain
-    handlers.gsub_contextchain        = handlers.contextchain
-    handlers.gsub_reversecontextchain = handlers.contextchain
-    handlers.gpos_contextchain        = handlers.contextchain
-    handlers.gpos_context             = handlers.contextchain
+
+    handlers.gsub_context             = handle_contextchain
+    handlers.gsub_contextchain        = handle_contextchain
+    handlers.gsub_reversecontextchain = handle_contextchain
+    handlers.gpos_contextchain        = handle_contextchain
+    handlers.gpos_context             = handle_contextchain
+
+    handlers.contextchain = handle_contextchain
+
 end
+
+chainprocs.gsub_context             = chained_contextchain
+chainprocs.gsub_contextchain        = chained_contextchain
+chainprocs.gsub_reversecontextchain = chained_contextchain
+chainprocs.gpos_contextchain        = chained_contextchain
+chainprocs.gpos_context             = chained_contextchain
 
 otf.setcontextchain()
 
@@ -2761,20 +2781,33 @@ end)
 
 -- fonts.hashes.lookups = lookuphashes
 
-local autofeatures = fonts.analyzers.features -- was: constants
+local autofeatures    = fonts.analyzers.features
+local featuretypes    = otf.tables.featuretypes
+local defaultscript   = otf.features.checkeddefaultscript
+local defaultlanguage = otf.features.checkeddefaultlanguage
 
-local function initialize(sequence,script,language,enabled)
+local function initialize(sequence,script,language,enabled,autoscript,autolanguage)
     local features = sequence.features
     if features then
         local order = sequence.order
         if order then
-            for i=1,#order do --
-                local kind  = order[i] --
+            local featuretype = featuretypes[sequence.type or "unknown"]
+            for i=1,#order do
+                local kind  = order[i]
                 local valid = enabled[kind]
                 if valid then
-                    local scripts = features[kind] --
-                    local languages = scripts[script] or scripts[wildcard]
-                    if languages and (languages[language] or languages[wildcard]) then
+                    local scripts   = features[kind]
+                    local languages = scripts and (
+                        scripts[script] or
+                        scripts[wildcard] or
+                        (autoscript and defaultscript(featuretype,autoscript,scripts))
+                    )
+                    local enabled = languages and (
+                        languages[language] or
+                        languages[wildcard] or
+                        (autolanguage and defaultlanguage(featuretype,autolanguage,languages))
+                    )
+                    if enabled then
                         return { valid, autofeatures[kind] or false, sequence, kind }
                     end
                 end
@@ -2787,11 +2820,13 @@ local function initialize(sequence,script,language,enabled)
 end
 
 function otf.dataset(tfmdata,font) -- generic variant, overloaded in context
-    local shared     = tfmdata.shared
-    local properties = tfmdata.properties
-    local language   = properties.language or "dflt"
-    local script     = properties.script   or "dflt"
-    local enabled    = shared.features
+    local shared       = tfmdata.shared
+    local properties   = tfmdata.properties
+    local language     = properties.language or "dflt"
+    local script       = properties.script   or "dflt"
+    local enabled      = shared.features
+    local autoscript   = enabled and enabled.autoscript
+    local autolanguage = enabled and enabled.autolanguage
     local res = resolved[font]
     if not res then
         res = { }
@@ -2810,7 +2845,7 @@ function otf.dataset(tfmdata,font) -- generic variant, overloaded in context
         rs[language] = rl
         local sequences = tfmdata.resources.sequences
         for s=1,#sequences do
-            local v = enabled and initialize(sequences[s],script,language,enabled)
+            local v = enabled and initialize(sequences[s],script,language,enabled,autoscript,autolanguage)
             if v then
                 rl[#rl+1] = v
             end
@@ -3794,10 +3829,10 @@ local function split(replacement,original)
     return result
 end
 
-local valid = {
-    coverage        = { chainsub = true, chainpos = true, contextsub = true },
+local valid = { -- does contextpos work?
+    coverage        = { chainsub = true, chainpos = true, contextsub = true, contextpos = true },
     reversecoverage = { reversesub = true },
-    glyphs          = { chainsub = true, chainpos = true },
+    glyphs          = { chainsub = true, chainpos = true, contextsub = true, contextpos = true },
 }
 
 local function prepare_contextchains(tfmdata)

@@ -46,10 +46,10 @@
    \v_page_target_left}
 
 \def\page_boxes_apply_center_indeed#box% we could test for a difference (saves packing)
-  {\setbox#box\vbox to \printpaperheight
+  {\setbox#box\vpack to \printpaperheight
      {\v_page_target_top
       \v_page_target_top_fill
-      \hbox to \printpaperwidth
+      \hpack to \printpaperwidth
         {\ifconditional\c_page_target_print_doublesided
            \doifbothsides
              {\page_boxes_apply_center_indeed_l_r#box}%
@@ -77,7 +77,7 @@
   {\scratchwidth \wd#box%
    \scratchheight\ht#box%
    \scratchdepth \dp#box%
-   \setbox#box\vbox
+   \setbox#box\vpack
      {\offinterlineskip
       \vskip\topoffset
       \hskip\doifbothsides\backoffset\backoffset{-\backoffset}%
@@ -96,10 +96,10 @@
    \fi\fi}
 
 \def\page_boxes_apply_replicate_indeed#box%
-  {\setbox#box\vbox
+  {\setbox#box\vpack
      {\offinterlineskip
       \dorecurse{\layoutparameter\c!ny}
-        {\hbox{\dorecurse{\layoutparameter\c!nx}{\copy#box\kern\layoutparameter\c!dx}\unskip}%
+        {\hpack{\dorecurse{\layoutparameter\c!nx}{\copy#box\kern\layoutparameter\c!dx}\unskip}%
          \vskip\layoutparameter\c!dy}
       \unskip}}
 
@@ -114,12 +114,12 @@
    \fi}
 
 \def\page_boxes_apply_orientate_indeed#odd#even#box%
-  {\setbox#box\vbox
+  {\setbox#box\vpack
      {\edef\somerotation{\number\ifdoublesided\ifodd\realpageno#odd\else#even\fi\else#odd\fi}%
-      \dorotatebox\somerotation\hbox{\box#box}}}
+      \dorotatebox\somerotation\hpack{\box#box}}}
 
 \def\page_boxes_apply_mirror#box%
-  {\setbox#box\vbox{\mirror{\box#box}}}
+  {\setbox#box\vpack{\mirror{\box#box}}}
 
 \def\page_boxes_apply_mirror_paper#box{\ifconditional\c_page_target_paper_mirror\page_boxes_apply_mirror{#box}\fi}
 \def\page_boxes_apply_mirror_print#box{\ifconditional\c_page_target_print_mirror\page_boxes_apply_mirror{#box}\fi}
@@ -152,7 +152,7 @@
    \fi}
 
 \def\page_boxes_apply_scale_indeed#sx#sy#box%
-  {\setbox#box\vbox{\scale[\c!sx=#sx,\c!sy=#sy]{\box#box}}% can be a fast one
+  {\setbox#box\vpack{\scale[\c!sx=#sx,\c!sy=#sy]{\box#box}}% can be a fast one
    \paperwidth #sx\paperwidth
    \paperheight#sy\paperheight}
 
@@ -189,7 +189,7 @@
    \scratchwidth \wd#box%
    \scratchheight\ht#box%
    \scratchdepth \dp#box%
-   \setbox#box\hbox
+   \setbox#box\hpack
      {\advance\scratchheight\dimexpr\scratchdepth+2\scratchoffset\relax
       \advance\scratchwidth \scratchoffset
       \ifconditional#right\relax
@@ -198,7 +198,7 @@
       \else
          \scratchdimen\zeropoint
       \fi
-      \lower\scratchoffset\hbox
+      \lower\scratchoffset\hpack
         {\clip
            [\c!hoffset=\scratchdimen,
             \c!voffset=-\scratchoffset,
@@ -221,7 +221,7 @@
   {\scratchwidth \wd#box%
    \scratchheight\ht#box%
    \scratchdepth \dp#box%
-   \setbox#box\hbox
+   \setbox#box\hpack
      {\advance\scratchheight\dimexpr\scratchdepth+2\scratchoffset\relax
       \advance\scratchwidth \scratchoffset
       \doifbothsides
@@ -231,7 +231,7 @@
         {\scratchdimen\zeropoint}
         {\scratchdimen-\scratchoffset
          \kern\scratchdimen}%
-      \lower\scratchoffset\hbox
+      \lower\scratchoffset\hpack
         {\clip
            [\c!hoffset=\scratchdimen,
             \c!voffset=-\scratchoffset,
@@ -245,7 +245,7 @@
 % nearly always some displacement so no speedup test needed
 
 \def\page_boxes_apply_offsets#1%
-  {\setbox#1\vbox to \paperheight
+  {\setbox#1\vpack to \paperheight
      {\hsize\paperwidth
       \vskip\topspace
       \doifbothsides
@@ -282,9 +282,9 @@
 
 \def\page_areas_register_boxed#1%
   {\begingroup
-   \setbox\scratchbox\vbox{#1}%
+   \setbox\scratchbox\vpack{#1}%
    \wd\scratchbox\makeupwidth % somehow a space creeps in
-   \vbox{\page_areas_registered_box00\scratchbox}% 0 0 will go
+   \vpack{\page_areas_registered_box00\scratchbox}% 0 0 will go
    \endgroup}
 
 % \def\page_areas_register_direct#1%

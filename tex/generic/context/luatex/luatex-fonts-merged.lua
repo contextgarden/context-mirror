@@ -1,6 +1,6 @@
--- merged file : luatex-fonts-merged.lua
--- parent file : luatex-fonts.lua
--- merge date  : 11/19/15 19:13:15
+-- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
+-- parent file : c:/data/develop/context/sources/luatex-fonts.lua
+-- merge date  : 12/17/15 15:57:11
 
 do -- begin closure to overcome local limits and interference
 
@@ -3901,15 +3901,21 @@ end
 nodes={}
 nodes.pool={}
 nodes.handlers={}
-local nodecodes={} for k,v in next,node.types  () do nodecodes[string.gsub(v,"_","")]=k end
-local whatcodes={} for k,v in next,node.whatsits() do whatcodes[string.gsub(v,"_","")]=k end
-local glyphcodes={ [0]="character","glyph","ligature","ghost","left","right" }
-local disccodes={ [0]="discretionary","explicit","automatic","regular","first","second" }
-for i=0,#glyphcodes do glyphcodes[glyphcodes[i]]=i end
-for i=0,#disccodes do disccodes [disccodes [i]]=i end
+local nodecodes={}
+local glyphcodes=node.subtypes("glyph")
+local disccodes=node.subtypes("disc")
+for k,v in next,node.types() do
+  v=string.gsub(v,"_","")
+  nodecodes[k]=v
+  nodecodes[v]=k
+end
+for i=0,#glyphcodes do
+  glyphcodes[glyphcodes[i]]=i
+end
+for i=0,#disccodes do
+  disccodes[disccodes[i]]=i
+end
 nodes.nodecodes=nodecodes
-nodes.whatcodes=whatcodes
-nodes.whatsitcodes=whatcodes
 nodes.glyphcodes=glyphcodes
 nodes.disccodes=disccodes
 local free_node=node.free
@@ -3973,7 +3979,6 @@ nodes.traverse_id=node.traverse_id
 nodes.slide=node.slide
 nodes.vpack=node.vpack
 nodes.first_glyph=node.first_glyph
-nodes.first_character=node.first_character
 nodes.has_glyph=node.has_glyph or node.first_glyph
 nodes.current_attr=node.current_attr
 nodes.do_ligature_n=node.do_ligature_n
@@ -4004,7 +4009,7 @@ nuts.setfield=setfield
 nuts.getnext=direct.getnext
 nuts.getprev=direct.getprev
 nuts.getid=direct.getid
-nuts.getattr=getfield
+nuts.getattr=direct.get_attribute or direct.has_attribute or getfield
 nuts.setattr=setfield
 nuts.getfont=direct.getfont
 nuts.getsubtype=direct.getsubtype
@@ -4022,6 +4027,9 @@ nuts.is_node=direct.is_node
 nuts.end_of_math=direct.end_of_math
 nuts.traverse=direct.traverse
 nuts.traverse_id=direct.traverse_id
+nuts.traverse_char=direct.traverse_char
+nuts.ligaturing=direct.ligaturing
+nuts.kerning=direct.kerning
 nuts.getprop=nuts.getattr
 nuts.setprop=nuts.setattr
 local new_nut=direct.new
@@ -7048,8 +7056,9 @@ local fonts=fonts
 local constructors=fonts.constructors
 local otf=constructors.newhandler("otf")
 local otffeatures=constructors.newfeatures("otf")
-local otftables=otf.tables
 local registerotffeature=otffeatures.register
+local otftables=otf.tables or {}
+otf.tables=otftables
 local allocate=utilities.storage.allocate
 registerotffeature {
   name="features",
@@ -7113,6 +7122,64 @@ registerotffeature {
     node=setscript,
   }
 }
+otftables.featuretypes=allocate {
+  gpos_single="position",
+  gpos_pair="position",
+  gpos_cursive="position",
+  gpos_mark2base="position",
+  gpos_mark2ligature="position",
+  gpos_mark2mark="position",
+  gpos_context="position",
+  gpos_contextchain="position",
+  gsub_single="substitution",
+  gsub_multiple="substitution",
+  gsub_alternate="substitution",
+  gsub_ligature="substitution",
+  gsub_context="substitution",
+  gsub_contextchain="substitution",
+  gsub_reversecontextchain="substitution",
+  gsub_reversesub="substitution",
+}
+function otffeatures.checkeddefaultscript(featuretype,autoscript,scripts)
+  if featuretype=="position" then
+    local default=scripts.dflt
+    if default then
+      if autoscript=="position" or autoscript==true then
+        return default
+      else
+        report_otf("script feature %s not applied, enable default positioning")
+      end
+    else
+    end
+  elseif featuretype=="substitution" then
+    local default=scripts.dflt
+    if default then
+      if autoscript=="substitution" or autoscript==true then
+        return default
+      end
+    end
+  end
+end
+function otffeatures.checkeddefaultlanguage(featuretype,autolanguage,languages)
+  if featuretype=="position" then
+    local default=languages.dflt
+    if default then
+      if autolanguage=="position" or autolanguage==true then
+        return default
+      else
+        report_otf("language feature %s not applied, enable default positioning")
+      end
+    else
+    end
+  elseif featuretype=="substitution" then
+    local default=languages.dflt
+    if default then
+      if autolanguage=="substitution" or autolanguage==true then
+        return default
+      end
+    end
+  end
+end
 
 end -- closure
 
@@ -10224,8 +10291,10 @@ function injections.resetcounts()
 end
 function injections.reset(n)
   local p=rawget(properties,n)
-  if p and rawget(p,"injections") then
-    p.injections=nil
+  if p then
+    p.injections=false 
+  else
+    properties[n]=false 
   end
 end
 function injections.copy(target,source)
@@ -10242,10 +10311,17 @@ function injections.copy(target,source)
           injections=si,
         }
       end
+    elseif tp then
+      tp.injections=false 
     else
-      if tp then
-        tp.injections=nil
-      end
+      properties[target]={ injections={} }
+    end
+  else
+    local tp=rawget(properties,target)
+    if tp then
+      tp.injections=false 
+    else
+      properties[target]=false 
     end
   end
 end
@@ -10480,10 +10556,11 @@ local function show(n,what,nested,symbol)
         local markx=i.markx   or 0
         local marky=i.marky   or 0
         local markdir=i.markdir  or 0
-        local markbase=i.markbase or 0 
+        local markbase=i.markbase or 0
         local cursivex=i.cursivex or 0
         local cursivey=i.cursivey or 0
         local ligaindex=i.ligaindex or 0
+        local cursbase=i.cursiveanchor
         local margin=nested and 4 or 2
         if rightkern~=0 or yoffset~=0 then
           report_injections("%w%s pair: lx %p, rx %p, dy %p",margin,symbol,leftkern,rightkern,yoffset)
@@ -10494,7 +10571,13 @@ local function show(n,what,nested,symbol)
           report_injections("%w%s mark: dx %p, dy %p, dir %s, base %s",margin,symbol,markx,marky,markdir,markbase~=0 and "yes" or "no")
         end
         if cursivex~=0 or cursivey~=0 then
-          report_injections("%w%s curs: dx %p, dy %p",margin,symbol,cursivex,cursivey)
+          if cursbase then
+            report_injections("%w%s curs: base dx %p, dy %p",margin,symbol,cursivex,cursivey)
+          else
+            report_injections("%w%s curs: dx %p, dy %p",margin,symbol,cursivex,cursivey)
+          end
+        elseif cursbase then
+          report_injections("%w%s curs: base",margin,symbol)
         end
         if ligaindex~=0 then
           report_injections("%w%s liga: index %i",margin,symbol,ligaindex)
@@ -11177,7 +11260,7 @@ end -- closure
 
 do -- begin closure to overcome local limits and interference
 
-if not modules then modules={} end modules ['font-otx']={
+if not modules then modules={} end modules ['luatex-fonts-ota']={
   version=1.001,
   comment="companion to font-otf.lua (analysing)",
   author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -11194,7 +11277,6 @@ local initializers=allocate()
 local methods=allocate()
 analyzers.initializers=initializers
 analyzers.methods=methods
-analyzers.useunicodemarks=false
 local a_state=attributes.private('state')
 local nuts=nodes.nuts
 local tonut=nuts.tonut
@@ -11250,6 +11332,7 @@ local features={
 }
 analyzers.states=states
 analyzers.features=features
+analyzers.useunicodemarks=false
 function analyzers.setstate(head,font)
   local useunicodemarks=analyzers.useunicodemarks
   local tfmdata=fontdata[font]
@@ -11263,7 +11346,10 @@ function analyzers.setstate(head,font)
       local char=getchar(current)
       local d=descriptions[char]
       if d then
-        if d.class=="mark" or (useunicodemarks and categories[char]=="mn") then
+        if d.class=="mark" then
+          done=true
+          setprop(current,a_state,s_mark)
+        elseif useunicodemarks and categories[char]=="mn" then
           done=true
           setprop(current,a_state,s_mark)
         elseif n==0 then
@@ -11639,15 +11725,14 @@ local zwj=0x200D
 local wildcard="*"
 local default="dflt"
 local nodecodes=nodes.nodecodes
-local whatcodes=nodes.whatcodes
 local glyphcodes=nodes.glyphcodes
 local disccodes=nodes.disccodes
 local glyph_code=nodecodes.glyph
 local glue_code=nodecodes.glue
 local disc_code=nodecodes.disc
 local math_code=nodecodes.math
-local dir_code=whatcodes.dir
-local localpar_code=whatcodes.localpar
+local dir_code=nodecodes.dir
+local localpar_code=nodecodes.localpar
 local discretionary_code=disccodes.discretionary
 local ligature_code=glyphcodes.ligature
 local privateattribute=attributes.private
@@ -13761,25 +13846,40 @@ otf.chainhandlers={
   normal=normal_handle_contextchain,
   verbose=verbose_handle_contextchain,
 }
+local handle_contextchain=nil
+function chained_contextchain(head,start,stop,...)
+  local steps=currentlookup.steps
+  local nofsteps=currentlookup.nofsteps
+  if nofsteps>1 then
+    reportmoresteps(dataset,sequence)
+  end
+  return handle_contextchain(head,start,...)
+end
 function otf.setcontextchain(method)
   if not method or method=="normal" or not otf.chainhandlers[method] then
-    if handlers.contextchain then 
+    if handle_contextchain then 
       logwarning("installing normal contextchain handler")
     end
-    handlers.contextchain=normal_handle_contextchain
+    handle_contextchain=normal_handle_contextchain
   else
     logwarning("installing contextchain handler %a",method)
     local handler=otf.chainhandlers[method]
-    handlers.contextchain=function(...)
+    handle_contextchain=function(...)
       return handler(currentfont,...) 
     end
   end
-  handlers.gsub_context=handlers.contextchain
-  handlers.gsub_contextchain=handlers.contextchain
-  handlers.gsub_reversecontextchain=handlers.contextchain
-  handlers.gpos_contextchain=handlers.contextchain
-  handlers.gpos_context=handlers.contextchain
+  handlers.gsub_context=handle_contextchain
+  handlers.gsub_contextchain=handle_contextchain
+  handlers.gsub_reversecontextchain=handle_contextchain
+  handlers.gpos_contextchain=handle_contextchain
+  handlers.gpos_context=handle_contextchain
+  handlers.contextchain=handle_contextchain
 end
+chainprocs.gsub_context=chained_contextchain
+chainprocs.gsub_contextchain=chained_contextchain
+chainprocs.gsub_reversecontextchain=chained_contextchain
+chainprocs.gpos_contextchain=chained_contextchain
+chainprocs.gpos_context=chained_contextchain
 otf.setcontextchain()
 local missing={} 
 local function logprocess(...)
@@ -13807,19 +13907,32 @@ setmetatableindex(lookuphashes,function(t,font)
   t[font]=lookuphash
   return lookuphash
 end)
-local autofeatures=fonts.analyzers.features 
-local function initialize(sequence,script,language,enabled)
+local autofeatures=fonts.analyzers.features
+local featuretypes=otf.tables.featuretypes
+local defaultscript=otf.features.checkeddefaultscript
+local defaultlanguage=otf.features.checkeddefaultlanguage
+local function initialize(sequence,script,language,enabled,autoscript,autolanguage)
   local features=sequence.features
   if features then
     local order=sequence.order
     if order then
-      for i=1,#order do 
-        local kind=order[i] 
+      local featuretype=featuretypes[sequence.type or "unknown"]
+      for i=1,#order do
+        local kind=order[i]
         local valid=enabled[kind]
         if valid then
-          local scripts=features[kind] 
-          local languages=scripts[script] or scripts[wildcard]
-          if languages and (languages[language] or languages[wildcard]) then
+          local scripts=features[kind]
+          local languages=scripts and (
+            scripts[script] or
+            scripts[wildcard] or
+            (autoscript and defaultscript(featuretype,autoscript,scripts))
+          )
+          local enabled=languages and (
+            languages[language] or
+            languages[wildcard] or
+            (autolanguage and defaultlanguage(featuretype,autolanguage,languages))
+          )
+          if enabled then
             return { valid,autofeatures[kind] or false,sequence,kind }
           end
         end
@@ -13835,6 +13948,8 @@ function otf.dataset(tfmdata,font)
   local language=properties.language or "dflt"
   local script=properties.script  or "dflt"
   local enabled=shared.features
+  local autoscript=enabled and enabled.autoscript
+  local autolanguage=enabled and enabled.autolanguage
   local res=resolved[font]
   if not res then
     res={}
@@ -13852,7 +13967,7 @@ function otf.dataset(tfmdata,font)
     rs[language]=rl
     local sequences=tfmdata.resources.sequences
     for s=1,#sequences do
-      local v=enabled and initialize(sequences[s],script,language,enabled)
+      local v=enabled and initialize(sequences[s],script,language,enabled,autoscript,autolanguage)
       if v then
         rl[#rl+1]=v
       end
@@ -14281,6 +14396,40 @@ local function featuresprocessor(head,font,attr)
               end
             elseif id==math_code then
               start=getnext(end_of_math(start))
+            elseif id==dir_code then
+              local dir=getfield(start,"dir")
+              if dir=="+TLT" then
+                topstack=topstack+1
+                dirstack[topstack]=dir
+                rlmode=1
+              elseif dir=="+TRT" then
+                topstack=topstack+1
+                dirstack[topstack]=dir
+                rlmode=-1
+              elseif dir=="-TLT" or dir=="-TRT" then
+                topstack=topstack-1
+                rlmode=dirstack[topstack]=="+TRT" and -1 or 1
+              else
+                rlmode=rlparmode
+              end
+              if trace_directions then
+                report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,rlparmode,rlmode,topstack,newdir)
+              end
+              start=getnext(start)
+            elseif id==localpar_code then
+              local dir=getfield(start,"dir")
+              if dir=="TRT" then
+                rlparmode=-1
+              elseif dir=="TLT" then
+                rlparmode=1
+              else
+                rlparmode=0
+              end
+              rlmode=rlparmode
+              if trace_directions then
+                report_process("directions after pardir %a: parmode %a, txtmode %a",dir,rlparmode,rlmode)
+              end
+              start=getnext(start)
             else
               start=getnext(start)
             end
@@ -14501,6 +14650,40 @@ local function featuresprocessor(head,font,attr)
             end
           elseif id==math_code then
             start=getnext(end_of_math(start))
+          elseif id==dir_code then
+            local dir=getfield(start,"dir")
+            if dir=="+TLT" then
+              topstack=topstack+1
+              dirstack[topstack]=dir
+              rlmode=1
+            elseif dir=="+TRT" then
+              topstack=topstack+1
+              dirstack[topstack]=dir
+              rlmode=-1
+            elseif dir=="-TLT" or dir=="-TRT" then
+              topstack=topstack-1
+              rlmode=dirstack[topstack]=="+TRT" and -1 or 1
+            else
+              rlmode=rlparmode
+            end
+            if trace_directions then
+              report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,rlparmode,rlmode,topstack,newdir)
+            end
+            start=getnext(start)
+          elseif id==localpar_code then
+            local dir=getfield(start,"dir")
+            if dir=="TRT" then
+              rlparmode=-1
+            elseif dir=="TLT" then
+              rlparmode=1
+            else
+              rlparmode=0
+            end
+            rlmode=rlparmode
+            if trace_directions then
+              report_process("directions after pardir %a: parmode %a, txtmode %a",dir,rlparmode,rlmode)
+            end
+            start=getnext(start)
           else
             start=getnext(start)
           end
@@ -14636,10 +14819,10 @@ local function split(replacement,original)
   end
   return result
 end
-local valid={
-  coverage={ chainsub=true,chainpos=true,contextsub=true },
+local valid={ 
+  coverage={ chainsub=true,chainpos=true,contextsub=true,contextpos=true },
   reversecoverage={ reversesub=true },
-  glyphs={ chainsub=true,chainpos=true },
+  glyphs={ chainsub=true,chainpos=true,contextsub=true,contextpos=true },
 }
 local function prepare_contextchains(tfmdata)
   local rawdata=tfmdata.shared.rawdata
@@ -15952,7 +16135,7 @@ end -- closure
 
 do -- begin closure to overcome local limits and interference
 
-if not modules then modules={} end modules ['luatex-font-def']={
+if not modules then modules={} end modules ['luatex-fonts-def']={
   version=1.001,
   comment="companion to luatex-*.tex",
   author="Hans Hagen, PRAGMA-ADE, Hasselt NL",

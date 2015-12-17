@@ -148,7 +148,7 @@
    \let\currentnote\currentnotation
    \letnotationparameter\c!numbercommand\linenotelinenumber% todo: deep hook
    \letnoteparameter    \c!textcommand  \gobbleoneargument % todo: deep hook
-   \getvalue{\??linenote\currentnotation}{#3}%
+   \csname\??linenote\currentnotation\endcsname{#3}%
    \expandafter\glet\csname\??linenotespreviousfrom\currentnotation\endcsname\m_page_lines_current_from
    \expandafter\glet\csname\??linenotespreviousto  \currentnotation\endcsname\m_page_lines_current_to
    \endgroup}
@@ -256,14 +256,14 @@
 \unexpanded\def\tracelinenotes
   {\let\strc_linenotes_traced\strc_linenotes_traced_indeed}
 
+% We predefine one, namely \type {\linenote} cum suis.
+
+\definelinenote[\v!linenote]
+
 %D Use these when not properly nested:
 
 \let\fromlinenote\startlinenote
 \let\tolinenote  \stoplinenote
-
-% We predefine one, namely \type {\linenote} cum suis.
-
-\definelinenote[\v!linenote]
 
 % beware: line numbers are added later on so grouping setups is a bad idea
 %

@@ -25,6 +25,7 @@ local report_fonts      = logs.reporter("fonts","processing")
 local fonthashes        = fonts.hashes
 local fontdata          = fonthashes.identifiers
 local fontvariants      = fonthashes.variants
+local fontmodes         = fonthashes.modes
 
 local otf               = fonts.handlers.otf
 
@@ -49,9 +50,12 @@ local getfield          = nuts.getfield
 ----- getdisc           = nuts.getdisc
 local setchar           = nuts.setchar
 local setlink           = nuts.setlink
+local setfield          = nuts.setfield
 
 local traverse_id       = nuts.traverse_id
+local traverse_char     = nuts.traverse_char
 local delete_node       = nuts.delete
+local protect_glyph     = nuts.protect_glyph
 
 local glyph_code        = nodecodes.glyph
 local disc_code         = nodecodes.disc
@@ -126,8 +130,8 @@ fonts.hashes.processes   = fontprocesses
 -- we need to deal with the basemode fonts here and can only run over ranges as we
 -- otherwise get luatex craches due to all kind of asserts in the disc/lig builder
 
-local ligaturing = node.ligaturing
-local kerning    = node.kerning
+local ligaturing = nuts.ligaturing
+local kerning    = nuts.kerning
 
 local expanders
 
@@ -158,6 +162,7 @@ function handlers.characters(head)
     local basefont  = nil
     local prevfont  = nil
     local prevattr  = 0
+    local mode      = nil
     local done      = false
     local variants  = nil
     local redundant = nil
@@ -185,13 +190,20 @@ function handlers.characters(head)
 
     local nuthead = tonut(head)
 
-    for n in traverse_id(glyph_code,nuthead) do
-        if getsubtype(n) < 256 then -- all are 1
-            local font = getfont(n)
-            local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
-            if font ~= prevfont or attr ~= prevattr then
+    for n in traverse_char(nuthead) do
+        local font = getfont(n)
+        local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
+        if font ~= prevfont or attr ~= prevattr then
+            prevfont = font
+            prevattr = attr
+            mode     = fontmodes[font] -- we can also avoid the attr check
+            variants = fontvariants[font]
+            if mode == "none" then
+                -- skip
+                protect_glyph(n)
+            else
                 if basefont then
-                    basefont[2] = tonode(getprev(n)) -- todo, save p
+                    basefont[2] = getprev(n)
                 end
                 if attr > 0 then
                     local used = attrfonts[font]
@@ -206,7 +218,7 @@ function handlers.characters(head)
                             a = a + 1
                         elseif force_basepass then
                             b = b + 1
-                            basefont = { tonode(n), nil }
+                            basefont = { n, nil }
                             basefonts[b] = basefont
                         end
                     end
@@ -219,34 +231,31 @@ function handlers.characters(head)
                             u = u + 1
                         elseif force_basepass then
                             b = b + 1
-                            basefont = { tonode(n), nil }
+                            basefont = { n, nil }
                             basefonts[b] = basefont
                         end
                     end
                 end
-                prevfont = font
-                prevattr = attr
-                variants = fontvariants[font]
             end
-            if variants then
-                local char = getchar(n)
-                if char >= 0xFE00 and (char <= 0xFE0F or (char >= 0xE0100 and char <= 0xE01EF)) then
-                    local hash = variants[char]
-                    if hash then
-                        local p = getprev(n)
-                        if p and getid(p) == glyph_code then
-                            local char    = getchar(p)
-                            local variant = hash[char]
-                            if variant then
-                                if trace_variants then
-                                    report_fonts("replacing %C by %C",char,variant)
-                                end
-                                setchar(p,variant)
-                                if not redundant then
-                                    redundant = { n }
-                                else
-                                    redundant[#redundant+1] = n
-                                end
+        end
+        if variants then
+            local char = getchar(n)
+            if char >= 0xFE00 and (char <= 0xFE0F or (char >= 0xE0100 and char <= 0xE01EF)) then
+                local hash = variants[char]
+                if hash then
+                    local p = getprev(n)
+                    if p and getid(p) == glyph_code then
+                        local char    = getchar(p)
+                        local variant = hash[char]
+                        if variant then
+                            if trace_variants then
+                                report_fonts("replacing %C by %C",char,variant)
+                            end
+                            setchar(p,variant)
+                            if not redundant then
+                                redundant = { n }
+                            else
+                                redundant[#redundant+1] = n
                             end
                         end
                     end
@@ -279,40 +288,38 @@ function handlers.characters(head)
             -- we could use first_glyph
             local r = getfield(d,"replace") -- good enough
             if r then
-                for n in traverse_id(glyph_code,r) do
-                    if getsubtype(n) < 256 then -- all are 1
-                        local font = getfont(n)
-                        local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
-                        if font ~= prevfont or attr ~= prevattr then
-                            if attr > 0 then
-                                local used = attrfonts[font]
-                                if not used then
-                                    used = { }
-                                    attrfonts[font] = used
-                                end
-                                if not used[attr] then
-                                    local fd = setfontdynamics[font]
-                                    if fd then
-                                        used[attr] = fd[attr]
-                                        a = a + 1
-                                    end
-                                end
-                            else
-                                local used = usedfonts[font]
-                                if not used then
-                                    local fp = fontprocesses[font]
-                                    if fp then
-                                        usedfonts[font] = fp
-                                        u = u + 1
-                                    end
+                for n in traverse_char(r) do
+                    local font = getfont(n)
+                    local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
+                    if font ~= prevfont or attr ~= prevattr then
+                        if attr > 0 then
+                            local used = attrfonts[font]
+                            if not used then
+                                used = { }
+                                attrfonts[font] = used
+                            end
+                            if not used[attr] then
+                                local fd = setfontdynamics[font]
+                                if fd then
+                                    used[attr] = fd[attr]
+                                    a = a + 1
                                 end
                             end
-                            prevfont = font
-                            prevattr = attr
+                        else
+                            local used = usedfonts[font]
+                            if not used then
+                                local fp = fontprocesses[font]
+                                if fp then
+                                    usedfonts[font] = fp
+                                    u = u + 1
+                                end
+                            end
                         end
+                        prevfont = font
+                        prevattr = attr
                     end
-                    break
                 end
+                break
             elseif expanders then
                 local subtype = getsubtype(d)
                 if subtype == discretionary_code then
@@ -393,7 +400,7 @@ function handlers.characters(head)
         local start = range[1]
         local stop  = range[2]
         if (start or stop) and (start ~= stop) then
-            local front = head == start
+            local front = nuthead == start
             if stop then
                 start, stop = ligaturing(start,stop)
                 start, stop = kerning(start,stop)
@@ -402,12 +409,12 @@ function handlers.characters(head)
                 start = kerning(start)
             end
             if front then
-                head = start
+                head = tonode(start)
             end
         end
     else
         -- multiple fonts
-        local front = head == start
+        local front = nuthead == start
         for i=1,b do
             local range = basefonts[i]
             local start = range[1]
@@ -430,14 +437,17 @@ function handlers.characters(head)
                     setlink(stop,next)
                 end
                 if front then
-                    head  = start
+                    nuthead  = start
                     front = nil -- we assume a proper sequence
                 end
             end
             if front then
                 -- shouldn't happen
-                head = start
+                nuthead = start
             end
+        end
+        if front then
+            head = tonode(nuthead)
         end
     end
     stoptiming(nodes)

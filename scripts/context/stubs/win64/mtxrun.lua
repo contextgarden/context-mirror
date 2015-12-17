@@ -7044,7 +7044,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 22496, stripped down to: 15539
+-- original size: 22839, stripped down to: 15769
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -7068,6 +7068,8 @@ local setmetatableindex=table.setmetatableindex
 local sortedhash=table.sortedhash
 local sortedkeys=table.sortedkeys
 local tohash=table.tohash
+local hashes={}
+utilities.parsers.hashes=hashes
 local digit=R("09")
 local space=P(' ')
 local equal=P("=")
@@ -7286,9 +7288,15 @@ function parsers.array_to_string(a,separator)
   end
 end
 local pattern=Cf(Ct("")*Cg(C((1-S(", "))^1)*S(", ")^0*Cc(true))^1,rawset)
-function utilities.parsers.settings_to_set(str,t)
+function utilities.parsers.settings_to_set(str)
   return str and lpegmatch(pattern,str) or {}
 end
+hashes.settings_to_set=table.setmetatableindex(function(t,k) 
+  local v=k and lpegmatch(pattern,k) or {}
+  t[k]=v
+  return v
+end)
+getmetatable(hashes.settings_to_set).__mode="kv" 
 function parsers.simple_hash_to_string(h,separator)
   local t,tn={},0
   for k,v in sortedhash(h) do
@@ -7959,7 +7967,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 30685, stripped down to: 21298
+-- original size: 30753, stripped down to: 21355
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -8002,6 +8010,9 @@ setmetatableindex(logs,function(t,k) t[k]=ignore;return ignore end)
 local report,subreport,status,settarget,setformats,settranslations
 local direct,subdirect,writer,pushtarget,poptarget,setlogfile,settimedlog,setprocessor,setformatters,newline
 if tex and (tex.jobname or tex.formatname) then
+  if texio.setescape then
+    texio.setescape(0)
+  end
   local function useluawrites()
     local texio_write_nl=texio.write_nl
     local texio_write=texio.write
@@ -8749,7 +8760,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 6913, stripped down to: 5481
+-- original size: 6916, stripped down to: 5484
 
 if not modules then modules={} end modules ['trac-inf']={
   version=1.001,
@@ -8870,13 +8881,13 @@ function statistics.show()
       end
     end
     register("lua properties",function()
-      local list=status.list()
-      local hashchar=tonumber(list.luatex_hashchars)
+      local hashchar=tonumber(status.luatex_hashchars)
+      local hashtype=status.luatex_hashtype
       local mask=lua.mask or "ascii"
       return format("engine: %s, used memory: %s, hash type: %s, hash chars: min(%s,40), symbol mask: %s (%s)",
         jit and "luajit" or "lua",
         statistics.memused(),
-        list.luatex_hashtype or "default",
+        hashtype or "default",
         hashchar and 2^hashchar or "unknown",
         mask,
         mask=="utf" and "τεχ" or "tex")
@@ -18349,8 +18360,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 781900
--- stripped bytes    : 283302
+-- original bytes    : 782314
+-- stripped bytes    : 283426
 
 -- end library merge
 

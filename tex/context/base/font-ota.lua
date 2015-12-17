@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['font-otx'] = {
+if not modules then modules = { } end modules ['font-ota'] = {
     version   = 1.001,
     comment   = "companion to font-otf.lua (analysing)",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -26,7 +26,6 @@ local methods             = allocate()
 
 analyzers.initializers    = initializers
 analyzers.methods         = methods
----------.useunicodemarks = false
 
 local a_state             = attributes.private('state')
 
@@ -108,7 +107,7 @@ analyzers.useunicodemarks = false
 -- todo: analyzers per script/lang, cross font, so we need an font id hash -> script
 -- e.g. latin -> hyphenate, arab -> 1/2/3 analyze -- its own namespace
 
-function analyzers.setstate(head,font) -- we can skip math
+function analyzers.setstate(head,font)
     local useunicodemarks  = analyzers.useunicodemarks
     local tfmdata = fontdata[font]
     local descriptions = tfmdata.descriptions

@@ -132,7 +132,8 @@
 
 \def\spac_linespacing_setup_relative_interlinespace#1%
   {\ifcsname\??interlinespacerelative#1\endcsname
-     \csname\??interlinespacerelative#1\endcsname
+    %\csname\??interlinespacerelative#1\endcsname
+     \lastnamedcs
    \else
      \spac_linespacing_set_specified_relative_interlinespace{#1}%
    \fi}
@@ -370,7 +371,8 @@
 
 \def\spac_whitespace_setup % quick test for no list
   {\ifcsname\??whitespacemethod\v_spac_whitespace_current\endcsname
-     \csname\??whitespacemethod\v_spac_whitespace_current\endcsname
+    %\csname\??whitespacemethod\v_spac_whitespace_current\endcsname
+     \lastnamedcs
    \else
      \expandafter\processcommalist\expandafter[\v_spac_whitespace_current]\spac_whitespace_setup_method % can be raw
    \fi\relax
@@ -418,11 +420,12 @@
 \installwhitespacemethod \v!medium      {\s_spac_whitespace_parskip   \medskipamount}
 \installwhitespacemethod \v!small       {\s_spac_whitespace_parskip   \smallskipamount}
 
-\installwhitespacemethod \s!default     {\spac_whitespace_setup_nop}
+\installwhitespacemethod \s!default     {\spac_whitespace_setup_nop} % also covers none
 
 \def\spac_whitespace_setup_method#1%
   {\ifcsname\??whitespacemethod#1\endcsname
-     \csname\??whitespacemethod#1\endcsname
+    %\csname\??whitespacemethod#1\endcsname
+     \lastnamedcs
    \else
      \s_spac_whitespace_parskip#1\fi
    \relax}
@@ -441,8 +444,8 @@
 % \def\spac_whitespace_setup_method#1%
 %   {\csname\??whitespacemethod\ifcsname\??whitespacemethod#1\endcsname#1\else\s!unknown\endcsname\relax}
 
-\unexpanded\def\nowhitespace{\vspacing[\v!nowhite]}
-\unexpanded\def\whitespace  {\vspacing[\v!white]}
+\unexpanded\def\nowhitespace{\directcheckedvspacing\v!nowhite} % {\vspacing[\v!nowhite]}
+\unexpanded\def\whitespace  {\directcheckedvspacing\v!white}   % {\vspacing[\v!white]}
 
 \setupwhitespace
   [\v!none]
@@ -463,9 +466,9 @@
    \ifnum\c_spac_packed_level=\plusone \ifvmode
      \begingroup
      \whitespace % not combined
-     \blank[\v!disable]%
+     \directcheckedvspacing\v!disable % \blank[\v!disable]% or \inhibitblank
      \doifelse{#1}\v!blank\settrue\setfalse\c_spac_packed_blank
-     \setupwhitespace[\v!none]%
+     \setupwhitespace[\v!none]% or \forgetparskip
    \fi \fi}
 
 \unexpanded\def\stoppacked
@@ -476,12 +479,12 @@
    \global\advance\c_spac_packed_level\minusone}
 
 \unexpanded\def\startunpacked
-  {\blank
+  {\directdefaultvspacing % \blank
    \begingroup}
 
 \unexpanded\def\stopunpacked
   {\endgroup
-   \blank}
+   \directdefaultvspacing}% \blank}
 
 % \prevdepth crosses pageboundaries!
 %
@@ -506,7 +509,7 @@
 
 \setvalue{\??linesaround\v!blank  }{\blank}
 \letvalue{\??linesaround\empty    }\relax
-\setvalue{\??linesaround\s!unknown}{\blank[\m_spac_lines_around]}
+\setvalue{\??linesaround\s!unknown}{\directcheckedvspacing\m_spac_lines_around} % \blank[\m_spac_lines_around]}
 
 \def\spac_lines_action_around % we used to let this one but it's cleaner this way
   {\csname\??linesaround      % i.e. do it twice
@@ -555,11 +558,11 @@
    \endgroup}
 
 \unexpanded\def\spac_lines_stop_correction_ongrid
-  {\blank[\v!white]%
-   \snaptogrid\hbox{\box\scratchbox}}
+  {\directcheckedvspacing\v!white % \blank[\v!white]%
+   \snaptogrid\hpack{\box\scratchbox}}
 
 \unexpanded\def\spac_lines_stop_correction_normal
-  {\blank[\v!nowhite]%
+  {\directcheckedvspacing\v!nowhite % \blank[\v!nowhite]%
    \ifdim\parskip>\zeropoint
       % too fuzzy otherwise
    \else
@@ -579,7 +582,8 @@
      \fi
    \fi
    \ifdim\pagegoal<\maxdimen
-     \blank[\v!white,\the\d_spac_lines_correction_before]% \blank[\v!white]\dotopbaselinecorrection
+    %\blank[\v!white,\the\d_spac_lines_correction_before]% \blank[\v!white]\dotopbaselinecorrection
+     \directcheckedvspacing{\v!white,\the\d_spac_lines_correction_before}% \blank[\v!white]\dotopbaselinecorrection
    \fi
    \nointerlineskip % new
    \noindent % not \dontleavehmode !
@@ -593,7 +597,8 @@
    \fi
    \box\scratchbox
    \endgraf
-   \blank[\the\d_spac_lines_correction_after]% \dobotbaselinecorrection
+  %\blank[\the\d_spac_lines_correction_after]% \dobotbaselinecorrection
+   \directcheckedvspacing{\the\d_spac_lines_correction_after}% \dobotbaselinecorrection
  % \allowbreak % new, otherwise problems when many in a row
    \prevdepth\strutdp
    \spac_lines_action_around}
@@ -612,8 +617,8 @@
    \flushnextbox
    \stopbaselinecorrection}
 
-\unexpanded\def\verticalstrut  {\vbox{\hsize\zeropoint\forgetall\strut}}
-\unexpanded\def\horizontalstrut{\hbox                          {\strut}}
+\unexpanded\def\verticalstrut  {\vpack{\hsize\zeropoint\forgetall\strut}}
+\unexpanded\def\horizontalstrut{\hpack                          {\strut}}
 
 % Hieronder volgen enkele instellingen en macro's ten behoeve
 % van de interlinie en \strut. De waarden 2.8, 0.07, 0.72 en
@@ -833,7 +838,7 @@
 
 \newbox\strutbox
 
-\setbox\strutbox\hbox{\vrule\s!height8.5pt\s!depth3.5pt\s!width\zeropoint} % just a start
+\setbox\strutbox\hpack{\vrule\s!height8.5pt\s!depth3.5pt\s!width\zeropoint} % just a start
 
 \def\strut{\relax\ifmmode\copy\else\unhcopy\fi\strutbox}
 
@@ -887,7 +892,7 @@
    \dosetstrut}
 
 \unexpanded\def\setcharstrut#1%
-  {\setbox\strutbox\hbox{#1}%
+  {\setbox\strutbox\hbox{#1}% hm, maybe hpack i.e. why apply fonts .. conceptual choice
    \strutht\ht\strutbox
    \strutdp\dp\strutbox
    \dosetstrut}
@@ -938,7 +943,7 @@
    \fi}
 
 \def\spac_struts_set_hide
-  {\setbox\strutbox\hbox
+  {\setbox\strutbox\hpack
      {\vrule
         \s!width \zeropoint
         \s!height\strutht
@@ -947,7 +952,7 @@
 \newconstant\c_strut_visual_mode
 
 \def\spac_struts_set_vide
-  {\setbox\strutbox\hbox  % at some time this extra wrapping was needed
+  {\setbox\strutbox\hpack  % at some time this extra wrapping was needed
      {\spac_struts_vide_hbox to \zeropoint
         {\ifcase\c_strut_visual_mode
            \spac_struts_black
@@ -1061,7 +1066,8 @@
 \def\spac_struts_setup[#1]%
   {\edef\m_strut{#1}%
    \ifcsname\??struts\m_strut\endcsname
-     \csname\??struts\m_strut\endcsname % these are defined later
+    %\csname\??struts\m_strut\endcsname % these are defined later
+     \lastnamedcs
    \else
      \setcharstrut\m_strut
    \fi}
@@ -1069,16 +1075,18 @@
 \unexpanded\def\synchronizestrut#1% no [] parsing, faster for internal
   {\edef\m_strut{#1}%
    \ifcsname\??struts\m_strut\endcsname
-     \csname\??struts\m_strut\endcsname
+    %\csname\??struts\m_strut\endcsname
+     \lastnamedcs
    \else
      \setcharstrut\m_strut
    \fi}
 
 \unexpanded\def\dosynchronizestrut#1% no [] parsing, faster for internal
   {\ifcsname\??struts#1\endcsname
-     \csname\??struts#1\endcsname
+    %\csname\??struts#1\endcsname
+     \lastnamedcs
    \else
-     \setcharstrut\m_strut
+     \setcharstrut{#1}%
    \fi}
 
 \unexpanded\def\showstruts % adapts .. is wrong
@@ -1459,11 +1467,13 @@
 
 \def\spac_grids_snap_value_set#1%
   {%\gridsnappingtrue
-   \ifcsname\??gridsnappers#1\endcsname\csname\??gridsnappers#1\endcsname\fi}
+  %\ifcsname\??gridsnappers#1\endcsname\csname\??gridsnappers#1\endcsname\fi}
+   \begincsname\??gridsnappers#1\endcsname}
 
 \def\spac_grids_snap_value_auto#1%
   {\ifcsname\??gridsnappers#1\endcsname
-     \csname\??gridsnappers#1\endcsname
+    %\csname\??gridsnappers#1\endcsname
+     \lastnamedcs
    \else
      \installsnapvalues\s!dummy{#1}%
      \csname\??gridsnappers\s!dummy\endcsname
@@ -1604,7 +1614,7 @@
    \fi
    \doifelsenothing{#1}{\spac_grids_snap_value_set\v!normal}{\spac_grids_snap_value_set{#1}}%
    \clf_vspacingsnap\nextbox\attribute\snapmethodattribute\relax
-   \ifvbox\nextbox\vbox\else\hbox\fi attr \snapmethodattribute \zerocount {\box\nextbox}%
+   \ifvbox\nextbox\vbox\else\hbox\fi attr \snapmethodattribute \zerocount {\box\nextbox}% pack ?
    \egroup}
 
 \def\spac_grids_check_nop
@@ -1668,6 +1678,7 @@
 \unexpanded\def\setgridbox#1#2#3% maybe ifgridsnapping at outer level
   {\setbox#1\gridboxvbox to #3 % given size
      {\forgetall
+      \resetvisualizers
       \resetteststrut
       \offinterlineskip
       \hsize#2%
@@ -1907,6 +1918,22 @@
 \def\directvspacing#1%
   {\par\clf_vspacing{#1}}
 
+\def\directcheckedvspacing
+  {\ifinpagebody % somewhat weird
+     \expandafter\directvspacing
+   \else\ifconditional\c_spac_packed_blank
+     \doubleexpandafter\directvspacing
+   \else
+     \doubleexpandafter\gobbleoneargument
+   \fi\fi}
+
+\def\directdefaultvspacing
+  {\ifinpagebody % somewhat weird
+     \clf_vspacing{\currentvspacing}%
+   \else\ifconditional\c_spac_packed_blank
+     \clf_vspacing{\currentvspacing}%
+   \fi\fi}
+
 % handy (and faster):
 
 \unexpanded\def\directvpenalty#1%
@@ -1986,7 +2013,7 @@
 \newdimen\d_spac_overlay
 
 \def\spac_overlay_lines
-  {\blank[\v!back,\v!overlay]%
+  {\directcheckedvspacing{\v!back,\v!overlay}% \blank[\v!back,\v!overlay]%
    \nointerlineskip}
 
 % \startitemize[n]
@@ -2087,34 +2114,66 @@
 \unexpanded\def\vspace
   {\dodoubleempty\spac_vspace_inject}
 
-\def\spac_vspace_inject[#1][#2]%
+% \def\spac_vspace_inject[#1][#2]% use \lastnamedcs
+%   {\par
+%    \ifvmode
+%      \removelastskip
+%      \vskip
+%        \csname\??vspace
+%          \ifsecondargument
+%            \ifcsname\??vspace#1:#2\endcsname
+%              #1:#2%
+%            \else\ifcsname\??vspace:#2\endcsname
+%              :#2%
+%            \else
+%              :\s!unknown
+%            \fi\fi
+%          \else\iffirstargument
+%            \ifcsname\??vspace:#1\endcsname
+%              :#1%
+%            \else
+%              :\s!unknown
+%            \fi
+%          \else
+%            \ifcsname\??vspace:\s!default\endcsname
+%              :\s!default
+%            \else
+%              :\s!unknown
+%            \fi
+%          \fi\fi
+%        \endcsname
+%      \relax
+%    \fi}
+
+\def\spac_vspace_unknown
+  {\csname\??vspace:\s!unknown\endcsname}
+
+\def\spac_vspace_inject[#1][#2]% use \lastnamedcs
   {\par
    \ifvmode
      \removelastskip
      \vskip
-       \csname\??vspace
-         \ifsecondargument
-           \ifcsname\??vspace#1:#2\endcsname
-             #1:#2%
-           \else\ifcsname\??vspace:#2\endcsname
-             :#2%
-           \else
-             :\s!unknown
-           \fi\fi
-         \else\iffirstargument
-           \ifcsname\??vspace:#1\endcsname
-             :#1%
-           \else
-             :\s!unknown
-           \fi
+       \ifsecondargument
+         \ifcsname\??vspace#1:#2\endcsname
+           \lastnamedcs
+         \else\ifcsname\??vspace:#2\endcsname
+           \lastnamedcs
          \else
-           \ifcsname\??vspace:\s!default\endcsname
-             :\s!default
-           \else
-             :\s!unknown
-           \fi
+           \spac_vspace_unknown
          \fi\fi
-       \endcsname
+       \else\iffirstargument
+         \ifcsname\??vspace:#1\endcsname
+           \lastnamedcs
+         \else
+           \spac_vspace_unknown
+         \fi
+       \else
+         \ifcsname\??vspace:\s!default\endcsname
+           \lastnamedcs
+         \else
+           \spac_vspace_unknown
+         \fi
+       \fi\fi
      \relax
    \fi}
 
