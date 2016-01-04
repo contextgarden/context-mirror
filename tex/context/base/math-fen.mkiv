@@ -263,7 +263,11 @@
 
 \unexpanded\def\installmathfencepair#1#2#3#4%
   {\expandafter\let\csname\??mathleft \meaning#1\endcsname#2%
-   \expandafter\let\csname\??mathright\meaning#3\endcsname#4}
+   \expandafter\let\csname\??mathright\meaning#3\endcsname#4%
+%    \writestatus{!}{\meaning#1=\meaning#2}%
+%    \writestatus{!}{\meaning#3=\meaning#4}%
+%    \wait
+   }
 
 \def\math_unknown_left  {\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalleft  \nexttoken\fi}
 \def\math_unknown_right {\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalright \nexttoken\fi}
@@ -372,18 +376,12 @@
     \ignorediscretionaries % so $\mtext{a|b}$ works, this is ok because it's an \hbox
 \to \everymathematics
 
-% todo paren parent
-
-\let\lbrack\lbracket
-\let\rbrack\rbracket
-
 \installmathfencepair \lbrace     \Lbrace       \rbrace     \Rbrace
 \installmathfencepair \lbracket   \Lbracket     \rbracket   \Rbracket
-\installmathfencepair \lparen     \Lparen       \rparen     \Rparen
 \installmathfencepair \lparent    \Lparent      \rparent    \Rparent
 \installmathfencepair \langle     \Langle       \rangle     \Rangle
-\installmathfencepair \lrangle    \Ldoubleangle \rrangle    \Rdoubleangle
-\installmathfencepair \lbar       \Lbar         \rbar       \Rbar
+\installmathfencepair \llangle    \Ldoubleangle \rrangle    \Rdoubleangle
+%installmathfencepair \lbar       \Lbar         \rbar       \Rbar
 \installmathfencepair \lVert      \Ldoublebar   \rVert      \Rdoublebar
 \installmathfencepair \vert       \Lbar         \vert       \Rbar
 \installmathfencepair \solidus    \Lsolidus     \solidus    \Rsolidus
@@ -393,8 +391,22 @@
 \installmathfencepair \ulcorner   \Luppercorner \urcorner   \Ruppercorner
 \installmathfencepair \llcorner   \Llowercorner \lrcorner   \Rlowercorner
 \installmathfencepair \lmoustache \Lmoustache   \rmoustache \Rmoustache
-\installmathfencepair \llbracket  \Lopenbracket \lrbracket  \Ropenbracket
+\installmathfencepair \llbracket  \Lopenbracket \rrbracket  \Ropenbracket
 \installmathfencepair \lgroup     \Lgroup       \rgroup     \Rgroup
+
+% unofficial and only there for some fuzzy web related math:
+
+\let\textlbar\lbar \let\mathlbar\Lbar
+\let\textrbar\lbar \let\mathrbar\Rbar
+
+\unexpanded\def\lbar{\mathortext\mathlbar\textlbar}
+\unexpanded\def\rbar{\mathortext\mathrbar\textrbar}
+
+\let\lbrack\lbracket
+\let\rbrack\rbracket
+
+\let\lparen\lparent
+\let\rparen\rparent
 
 % \setupmathfences[color=darkgreen]
 
