@@ -28,6 +28,7 @@ local normalized = {
     alternate         = "alternate",
     multiple          = "multiple",
     kern              = "kern",
+    pair              = "pair",
     chainsubstitution = "chainsubstitution",
     chainposition     = "chainposition",
 }
@@ -38,6 +39,7 @@ local types = {
     alternate         = "gsub_alternate",
     multiple          = "gsub_multiple",
     kern              = "gpos_pair",
+    pair              = "gpos_pair",
     chainsubstitution = "gsub_contextchain",
     chainposition     = "gpos_contextchain",
 }
@@ -57,10 +59,15 @@ local function addfeature(data,feature,specifications)
     if not features or not sequences then
         return
     end
-    local gsubfeatures = features.gsub
-    if gsubfeatures and gsubfeatures[feature] then
-        return -- already present
-    end
+    -- feature has to be unique but the name entry wins eventually
+ -- local gsubfeatures = features.gsub
+ -- if gsubfeatures and gsubfeatures[feature] then
+ --     return -- already present
+ -- end
+ -- local gposfeatures = features.gpos
+ -- if gposfeatures and gposfeatures[feature] then
+ --     return -- already present
+ -- end
 
     -- todo alse gpos
 
@@ -236,7 +243,34 @@ local function addfeature(data,feature,specifications)
                 skip = skip + 1
             end
         end
-        return coverage, "kern"
+        return coverage
+    end
+
+    local function prepare_pair(list,featuretype)
+        local coverage = { }
+        local cover    = coveractions[featuretype]
+        for code, replacement in next, list do
+            local unicode     = tounicode(code)
+            local description = descriptions[unicode]
+            if description and type(replacement) == "table" then
+                local r = { }
+                for k, v in next, replacement do
+                    local u = tounicode(k)
+                    if u then
+                        r[u] = v
+                    end
+                end
+                if next(r) then
+                    cover(coverage,unicode,r)
+                    done = done + 1
+                else
+                    skip = skip + 1
+                end
+            else
+                skip = skip + 1
+            end
+        end
+        return coverage
     end
 
     local function prepare_chain(list,featuretype,sublookups)
@@ -332,6 +366,7 @@ local function addfeature(data,feature,specifications)
     for s=1,#specifications do
         local specification = specifications[s]
         local valid         = specification.valid
+        local feature       = specification.name or feature
         if not valid or valid(data,specification,feature) then
             local initialize = specification.initialize
             if initialize then
@@ -347,6 +382,7 @@ local function addfeature(data,feature,specifications)
             local nofsteps      = 0
             local steps         = { }
             local sublookups    = specification.lookups
+            local category      = nil
             if sublookups then
                 local s = { }
                 for i=1,#sublookups do
@@ -361,15 +397,19 @@ local function addfeature(data,feature,specifications)
                         local coverage = nil
                         local format   = nil
                         if featuretype == "substitution" then
-                            coverage, format = prepare_substitution(list,featuretype)
+                            coverage = prepare_substitution(list,featuretype)
                         elseif featuretype == "ligature" then
-                            coverage, format = prepare_ligature(list,featuretype)
+                            coverage = prepare_ligature(list,featuretype)
                         elseif featuretype == "alternate" then
-                            coverage, format = prepare_alternate(list,featuretype)
+                            coverage = prepare_alternate(list,featuretype)
                         elseif featuretype == "multiple" then
-                            coverage, format = prepare_multiple(list,featuretype)
+                            coverage = prepare_multiple(list,featuretype)
                         elseif featuretype == "kern" then
-                            coverage, format = prepare_kern(list,featuretype)
+                            format   = "kern"
+                            coverage = prepare_kern(list,featuretype)
+                        elseif featuretype == "pair" then
+                            format   = "pair"
+                            coverage = prepare_pair(list,featuretype)
                         end
                         if coverage and next(coverage) then
                             nofsteps = nofsteps + 1
@@ -389,17 +429,31 @@ local function addfeature(data,feature,specifications)
                 local coverage = nil
                 local format   = nil
                 if featuretype == "substitution" then
-                    coverage, format = prepare_substitution(list,featuretype)
+                    category = "gsub"
+                    coverage = prepare_substitution(list,featuretype)
                 elseif featuretype == "ligature" then
-                    coverage, format = prepare_ligature(list,featuretype)
+                    category = "gsub"
+                    coverage = prepare_ligature(list,featuretype)
                 elseif featuretype == "alternate" then
-                    coverage, format = prepare_alternate(list,featuretype)
+                    category = "gsub"
+                    coverage = prepare_alternate(list,featuretype)
                 elseif featuretype == "multiple" then
-                    coverage, format = prepare_multiple(list,featuretype)
+                    category = "gsub"
+                    coverage = prepare_multiple(list,featuretype)
                 elseif featuretype == "kern" then
-                    coverage, format = prepare_kern(list,featuretype)
-                elseif featuretype == "chainsubstitution" or featuretype == "chainposition" then
-                    coverage, format = prepare_chain(list,featuretype,sublookups)
+                    category = "gpos"
+                    format   = kern
+                    coverage = prepare_kern(list,featuretype)
+                elseif featuretype == "pair" then
+                    category = "gpos"
+                    format   = "pair"
+                    coverage = prepare_pair(list,featuretype)
+                elseif featuretype == "chainsubstitution" then
+                    category = "gsub"
+                    coverage = prepare_chain(list,featuretype,sublookups)
+                elseif featuretype == "chainposition" then
+                    category = "gpos"
+                    coverage = prepare_chain(list,featuretype,sublookups)
                 end
                 if coverage and next(coverage) then
                     nofsteps = nofsteps + 1
@@ -420,26 +474,40 @@ local function addfeature(data,feature,specifications)
                     chain     = featurechain,
                     features  = { [feature] = askedfeatures },
                     flags     = featureflags,
-                    name      = feature, -- not needed
+                    name      = feature, -- redundant
                     order     = featureorder,
                     [stepkey] = steps,
                     nofsteps  = nofsteps,
                     type      = types[featuretype],
                 }
+                -- todo : before|after|index
                 if specification.prepend then
                     insert(sequences,1,sequence)
                 else
                     insert(sequences,sequence)
                 end
                 -- register in metadata (merge as there can be a few)
-                if not gsubfeatures then
-                    gsubfeatures  = { }
-                    fontfeatures.gsub = gsubfeatures
-                end
-                local k = gsubfeatures[feature]
-                if not k then
-                    k = { }
-                    gsubfeatures[feature] = k
+                local k = nil
+                if category == "gpos" then
+                    if not gposfeatures then
+                        gposfeatures  = { }
+                        fontfeatures.gpos = gposfeatures
+                    end
+                    k = gposfeatures[feature]
+                    if not k then
+                        k = { }
+                        gposfeatures[feature] = k
+                    end
+                else
+                    if not gsubfeatures then
+                        gsubfeatures  = { }
+                        fontfeatures.gsub = gsubfeatures
+                    end
+                    k = gsubfeatures[feature]
+                    if not k then
+                        k = { }
+                        gsubfeatures[feature] = k
+                    end
                 end
                 for script, languages in next, askedfeatures do
                     local kk = k[script]
