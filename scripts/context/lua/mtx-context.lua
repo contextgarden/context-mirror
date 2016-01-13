@@ -34,7 +34,7 @@ local formatters    = string.formatters
 
 local application = logs.application {
     name     = "mtx-context",
-    banner   = "ConTeXt Process Management 0.62",
+    banner   = "ConTeXt Process Management 0.63",
  -- helpinfo = helpinfo, -- table with { category_a = text_1, category_b = text_2 } or helpstring or xml_blob
     helpinfo = "mtx-context.xml",
 }
@@ -1556,7 +1556,7 @@ function scripts.context.update()
         report("quiting, no 'context.mkiv' found")
         return
     end
-    local basetree = basepath.match(basepath,"^(.-)tex/context/base/context.mkiv$") or ""
+    local basetree = basepath.match(basepath,"^(.-)tex/context/base/.*context.mkiv$") or ""
     if basetree == "" then
         report("quiting, no proper tds structure (%s)",basepath)
         return
@@ -1598,7 +1598,7 @@ function scripts.context.update()
             report("quiting, unable to open '%s'",zipname)
             return
         end
-        local newfile = zip.loaddata(zipfile,"tex/context/base/context.mkiv")
+        local newfile = zip.loaddata(zipfile,"tex/context/base/mkiv/context.mkiv")
         if not newfile then
             report("quiting, unable to open '%s'","context.mkiv")
             return
