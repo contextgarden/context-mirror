@@ -39,6 +39,8 @@
 
 \registerctxluafile{x-mathml}{}
 
+\setupxml[\c!entities=\v!yes] % load big entities table
+
 \def\ctxmodulemathml#1{\ctxlua{moduledata.mathml.#1}}
 
 \startxmlsetups xml:mml:define
@@ -1018,7 +1020,7 @@
 \stopxmlsetups
 
 \startxmlsetups mml:minus:body
-    % we can slso use concat here
+    % we can also use concat here
     \advance\mmlminuscounter\plusone
     \ifnum\mmlminuscounter>\plusone
         -

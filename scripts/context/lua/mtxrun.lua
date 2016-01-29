@@ -4552,7 +4552,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 38659, stripped down to: 16287
+-- original size: 38699, stripped down to: 16321
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -4781,9 +4781,10 @@ if not utf.sub then
     end
   end
 end
-function utf.remapper(mapping,option) 
+function utf.remapper(mapping,option,action) 
   local variant=type(mapping)
   if variant=="table" then
+    action=action or mapping
     if option=="dynamic" then
       local pattern=false
       table.setmetatablenewindex(mapping,function(t,k,v) rawset(t,k,v) pattern=false end)
@@ -4792,15 +4793,15 @@ function utf.remapper(mapping,option)
           return ""
         else
           if not pattern then
-            pattern=Cs((tabletopattern(mapping)/mapping+p_utf8char)^0)
+            pattern=Cs((tabletopattern(mapping)/action+p_utf8char)^0)
           end
           return lpegmatch(pattern,str)
         end
       end
     elseif option=="pattern" then
-      return Cs((tabletopattern(mapping)/mapping+p_utf8char)^0)
+      return Cs((tabletopattern(mapping)/action+p_utf8char)^0)
     else
-      local pattern=Cs((tabletopattern(mapping)/mapping+p_utf8char)^0)
+      local pattern=Cs((tabletopattern(mapping)/action+p_utf8char)^0)
       return function(str)
         if not str or str=="" then
           return ""
@@ -5904,7 +5905,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 28677, stripped down to: 18633
+-- original size: 28680, stripped down to: 18636
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -6565,7 +6566,7 @@ local function serialize(root,name,specification)
 end
 table.serialize=serialize
 if setinspector then
-  setinspector("table",function(v) if type(v)=="table" then print(serialize(v,"table")) return true end end)
+  setinspector("table",function(v) if type(v)=="table" then print(serialize(v,"table",{})) return true end end)
 end
 
 
@@ -9984,7 +9985,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 47426, stripped down to: 28810
+-- original size: 55622, stripped down to: 34927
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -9993,7 +9994,7 @@ if not modules then modules={} end modules ['lxml-tab']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local trace_entities=false trackers.register("xml.entities",function(v) trace_entities=v end)
+local trace_entities=false trackers .register("xml.entities",function(v) trace_entities=v end)
 local report_xml=logs and logs.reporter("xml","core") or function(...) print(string.format(...)) end
 if lpeg.setmaxstack then lpeg.setmaxstack(1000) end 
 xml=xml or {}
@@ -10005,6 +10006,7 @@ local utfchar=utf.char
 local lpegmatch,lpegpatterns=lpeg.match,lpeg.patterns
 local P,S,R,C,V,C,Cs=lpeg.P,lpeg.S,lpeg.R,lpeg.C,lpeg.V,lpeg.C,lpeg.Cs
 local formatters=string.formatters
+do 
 xml.xmlns=xml.xmlns or {}
 local check=P(false)
 local parse=check
@@ -10021,24 +10023,68 @@ end
 function xml.resolvens(url)
    return lpegmatch(parse,lower(url)) or ""
 end
+end
 local nsremap,resolvens=xml.xmlns,xml.resolvens
-local stack={}
-local top={}
-local dt={}
-local at={}
-local xmlns={}
-local errorstr=nil
-local entities={}
-local strip=false
-local cleanup=false
-local utfize=false
-local resolve=false
-local resolve_predefined=false
-local unify_predefined=false
-local dcache={}
-local hcache={}
-local acache={}
-local mt={}
+local stack,level,top,at,xmlnms,errorstr
+local entities,parameters
+local strip,utfize,resolve,cleanup,resolve_predefined,unify_predefined
+local dcache,hcache,acache
+local mt,dt,nt
+local function preparexmlstate(settings)
+  if settings then
+    stack={}
+    level=0
+    top={}
+    at={}
+    mt={}
+    dt={}
+    nt=0  
+    xmlns={}
+    errorstr=nil
+    strip=settings.strip_cm_and_dt
+    utfize=settings.utfize_entities
+    resolve=settings.resolve_entities      
+    resolve_predefined=settings.resolve_predefined_entities 
+    unify_predefined=settings.unify_predefined_entities  
+    cleanup=settings.text_cleanup
+    entities=settings.entities or {}
+    parameters={}
+    reported_at_errors={}
+    dcache={}
+    hcache={}
+    acache={}
+    if utfize==nil then
+      settings.utfize_entities=true
+      utfize=true
+    end
+    if resolve_predefined==nil then
+      settings.resolve_predefined_entities=true
+      resolve_predefined=true
+    end
+  else
+    stack=nil
+    level=nil
+    top=nil
+    at=nil
+    mt=nil
+    dt=nil
+    nt=nil
+    xmlns=nil
+    errorstr=nil
+    strip=nil
+    utfize=nil
+    resolve=nil
+    resolve_predefined=nil
+    unify_predefined=nil
+    cleanup=nil
+    entities=nil
+    parameters=nil
+    reported_at_errors=nil
+    dcache=nil
+    hcache=nil
+    acache=nil
+  end
+end
 local function initialize_mt(root)
   mt={ __index=root } 
 end
@@ -10048,8 +10094,9 @@ end
 function xml.checkerror(top,toclose)
   return "" 
 end
+local checkns=xml.checkns
 local function add_attribute(namespace,tag,value)
-  if cleanup and #value>0 then
+  if cleanup and value~="" then
     value=cleanup(value) 
   end
   if tag=="xmlns" then
@@ -10058,21 +10105,30 @@ local function add_attribute(namespace,tag,value)
   elseif namespace=="" then
     at[tag]=value
   elseif namespace=="xmlns" then
-    xml.checkns(tag,value)
+    checkns(tag,value)
     at["xmlns:"..tag]=value
   else
     at[namespace..":"..tag]=value
   end
 end
 local function add_empty(spacing,namespace,tag)
-  if #spacing>0 then
-    dt[#dt+1]=spacing
+  if spacing~="" then
+    nt=nt+1
+    dt[nt]=spacing
   end
   local resolved=namespace=="" and xmlns[#xmlns] or nsremap[namespace] or namespace
-  top=stack[#stack]
+  top=stack[level]
   dt=top.dt
-  local t={ ns=namespace or "",rn=resolved,tg=tag,at=at,dt={},__p__=top }
-  dt[#dt+1]=t
+  nt=#dt+1
+  local t={
+    ns=namespace or "",
+    rn=resolved,
+    tg=tag,
+    at=at,
+    dt={},
+    __p__=top
+  }
+  dt[nt]=t
   setmetatable(t,mt)
   if at.xmlns then
     remove(xmlns)
@@ -10080,23 +10136,35 @@ local function add_empty(spacing,namespace,tag)
   at={}
 end
 local function add_begin(spacing,namespace,tag)
-  if #spacing>0 then
-    dt[#dt+1]=spacing
+  if spacing~="" then
+    nt=nt+1
+    dt[nt]=spacing
   end
   local resolved=namespace=="" and xmlns[#xmlns] or nsremap[namespace] or namespace
-  top={ ns=namespace or "",rn=resolved,tg=tag,at=at,dt={},__p__=stack[#stack] }
+  top={
+    ns=namespace or "",
+    rn=resolved,
+    tg=tag,
+    at=at,
+    dt={},
+    __p__=stack[level]
+  }
   setmetatable(top,mt)
   dt=top.dt
-  stack[#stack+1]=top
+  nt=#dt
+  level=level+1
+  stack[level]=top
   at={}
 end
 local function add_end(spacing,namespace,tag)
-  if #spacing>0 then
-    dt[#dt+1]=spacing
+  if spacing~="" then
+    nt=nt+1
+    dt[nt]=spacing
   end
-  local toclose=remove(stack)
-  top=stack[#stack]
-  if #stack<1 then
+  local toclose=stack[level]
+  level=level-1
+  top=stack[level]
+  if level<1 then
     errorstr=formatters["unable to close %s %s"](tag,xml.checkerror(top,toclose) or "")
     report_xml(errorstr)
   elseif toclose.tg~=tag then 
@@ -10104,195 +10172,229 @@ local function add_end(spacing,namespace,tag)
     report_xml(errorstr)
   end
   dt=top.dt
-  dt[#dt+1]=toclose
+  nt=#dt+1
+  dt[nt]=toclose
   if toclose.at.xmlns then
     remove(xmlns)
   end
 end
-local spaceonly=lpegpatterns.whitespace^0*P(-1)
 local function add_text(text)
-  local n=#dt
-  if cleanup and #text>0 then
-    if n>0 then
-      local s=dt[n]
+  if text=="" then
+    return
+  end
+  if cleanup then
+    if nt>0 then
+      local s=dt[nt]
       if type(s)=="string" then
-        dt[n]=s..cleanup(text)
+        dt[nt]=s..cleanup(text)
       else
-        dt[n+1]=cleanup(text)
+        nt=nt+1
+        dt[nt]=cleanup(text)
       end
     else
+      nt=1
       dt[1]=cleanup(text)
     end
   else
-    if n>0 then
-      local s=dt[n]
+    if nt>0 then
+      local s=dt[nt]
       if type(s)=="string" then
-        dt[n]=s..text
+        dt[nt]=s..text
       else
-        dt[n+1]=text
+        nt=nt+1
+        dt[nt]=text
       end
     else
+      nt=1
       dt[1]=text
     end
   end
 end
 local function add_special(what,spacing,text)
-  if #spacing>0 then
-    dt[#dt+1]=spacing
+  if spacing~="" then
+    nt=nt+1
+    dt[nt]=spacing
   end
   if strip and (what=="@cm@" or what=="@dt@") then
   else
-    dt[#dt+1]={ special=true,ns="",tg=what,dt={ text } }
+    nt=nt+1
+    dt[nt]={ special=true,ns="",tg=what,dt={ text } }
   end
 end
 local function set_message(txt)
   errorstr="garbage at the end of the file: "..gsub(txt,"([ \n\r\t]*)","")
 end
-local reported_attribute_errors={}
 local function attribute_value_error(str)
-  if not reported_attribute_errors[str] then
+  if not reported_at_errors[str] then
     report_xml("invalid attribute value %a",str)
-    reported_attribute_errors[str]=true
+    reported_at_errors[str]=true
     at._error_=str
   end
   return str
 end
 local function attribute_specification_error(str)
-  if not reported_attribute_errors[str] then
+  if not reported_at_errors[str] then
     report_xml("invalid attribute specification %a",str)
-    reported_attribute_errors[str]=true
+    reported_at_errors[str]=true
     at._error_=str
   end
   return str
 end
-local badentity="&error;"
-local badentity="&"
-xml.placeholders={
-  unknown_dec_entity=function(str) return str=="" and badentity or formatters["&%s;"](str) end,
-  unknown_hex_entity=function(str) return formatters["&#x%s;"](str) end,
-  unknown_any_entity=function(str) return formatters["&#x%s;"](str) end,
-}
-local placeholders=xml.placeholders
-local function fromhex(s)
-  local n=tonumber(s,16)
-  if n then
-    return utfchar(n)
-  else
-    return formatters["h:%s"](s),true
-  end
-end
-local function fromdec(s)
-  local n=tonumber(s)
-  if n then
-    return utfchar(n)
-  else
-    return formatters["d:%s"](s),true
-  end
-end
-local p_rest=(1-P(";"))^0
-local p_many=P(1)^0
-local p_char=lpegpatterns.utf8character
-local parsedentity=P("&")*(P("#x")*(p_rest/fromhex)+P("#")*(p_rest/fromdec))*P(";")*P(-1)+(P("#x")*(p_many/fromhex)+P("#")*(p_many/fromdec))
-local predefined_unified={
-  [38]="&amp;",
-  [42]="&quot;",
-  [47]="&apos;",
-  [74]="&lt;",
-  [76]="&gt;",
-}
-local predefined_simplified={
-  [38]="&",amp="&",
-  [42]='"',quot='"',
-  [47]="'",apos="'",
-  [74]="<",lt="<",
-  [76]=">",gt=">",
-}
-local nofprivates=0xF0000 
-local privates_u={ 
-  [ [[&]] ]="&amp;",
-  [ [["]] ]="&quot;",
-  [ [[']] ]="&apos;",
-  [ [[<]] ]="&lt;",
-  [ [[>]] ]="&gt;",
-}
-local privates_p={}
-local privates_n={
-}
-local escaped=utf.remapper(privates_u,"dynamic")
-local unprivatized=utf.remapper(privates_p,"dynamic")
-xml.unprivatized=unprivatized
-local function unescaped(s)
-  local p=privates_n[s]
-  if not p then
-    nofprivates=nofprivates+1
-    p=utfchar(nofprivates)
-    privates_n[s]=p
-    s="&"..s..";" 
-    privates_u[p]=s
-    privates_p[p]=s
-  end
-  return p
-end
-xml.privatetoken=unescaped
-xml.privatecodes=privates_n
-local function handle_hex_entity(str)
-  local h=hcache[str]
-  if not h then
-    local n=tonumber(str,16)
-    h=unify_predefined and predefined_unified[n]
-    if h then
-      if trace_entities then
-        report_xml("utfize, converting hex entity &#x%s; into %a",str,h)
-      end
-    elseif utfize then
-      h=(n and utfchar(n)) or xml.unknown_hex_entity(str) or ""
-      if not n then
-        report_xml("utfize, ignoring hex entity &#x%s;",str)
-      elseif trace_entities then
-        report_xml("utfize, converting hex entity &#x%s; into %a",str,h)
-      end
+local grammar_parsed_text_one
+local grammar_parsed_text_two
+local handle_hex_entity
+local handle_dec_entity
+local handle_any_entity_dtd
+local handle_any_entity_text
+do
+  local badentity="&" 
+  xml.placeholders={
+    unknown_dec_entity=function(str) return str=="" and badentity or formatters["&%s;"](str) end,
+    unknown_hex_entity=function(str) return formatters["&#x%s;"](str) end,
+    unknown_any_entity=function(str) return formatters["&#x%s;"](str) end,
+  }
+  local function fromhex(s)
+    local n=tonumber(s,16)
+    if n then
+      return utfchar(n)
     else
-      if trace_entities then
-        report_xml("found entity &#x%s;",str)
-      end
-      h="&#x"..str..";"
+      return formatters["h:%s"](s),true
     end
-    hcache[str]=h
   end
-  return h
-end
-local function handle_dec_entity(str)
-  local d=dcache[str]
-  if not d then
-    local n=tonumber(str)
-    d=unify_predefined and predefined_unified[n]
-    if d then
-      if trace_entities then
-        report_xml("utfize, converting dec entity &#%s; into %a",str,d)
-      end
-    elseif utfize then
-      d=(n and utfchar(n)) or placeholders.unknown_dec_entity(str) or ""
-      if not n then
-        report_xml("utfize, ignoring dec entity &#%s;",str)
-      elseif trace_entities then
-        report_xml("utfize, converting dec entity &#%s; into %a",str,d)
-      end
+  local function fromdec(s)
+    local n=tonumber(s)
+    if n then
+      return utfchar(n)
     else
-      if trace_entities then
-        report_xml("found entity &#%s;",str)
-      end
-      d="&#"..str..";"
+      return formatters["d:%s"](s),true
     end
-    dcache[str]=d
   end
-  return d
-end
-xml.parsedentitylpeg=parsedentity
-local function handle_any_entity(str)
-  if resolve then
-    local a=acache[str] 
-    if not a then
-      a=resolve_predefined and predefined_simplified[str]
+  local p_rest=(1-P(";"))^0
+  local p_many=P(1)^0
+  local p_char=lpegpatterns.utf8character
+  local parsedentity=P("&#")*(P("x")*(p_rest/fromhex)+(p_rest/fromdec))*P(";")*P(-1)+P ("#")*(P("x")*(p_many/fromhex)+(p_many/fromdec))
+  xml.parsedentitylpeg=parsedentity
+  local predefined_unified={
+    [38]="&amp;",
+    [42]="&quot;",
+    [47]="&apos;",
+    [74]="&lt;",
+    [76]="&gt;",
+  }
+  local predefined_simplified={
+    [38]="&",amp="&",
+    [42]='"',quot='"',
+    [47]="'",apos="'",
+    [74]="<",lt="<",
+    [76]=">",gt=">",
+  }
+  local nofprivates=0xF0000 
+  local privates_u={ 
+    [ [[&]] ]="&amp;",
+    [ [["]] ]="&quot;",
+    [ [[']] ]="&apos;",
+    [ [[<]] ]="&lt;",
+    [ [[>]] ]="&gt;",
+  }
+  local privates_p={ 
+  }
+  local privates_s={ 
+    [ [["]] ]="&U+22;",
+    [ [[#]] ]="&U+23;",
+    [ [[$]] ]="&U+24;",
+    [ [[%]] ]="&U+25;",
+    [ [[&]] ]="&U+26;",
+    [ [[']] ]="&U+27;",
+    [ [[<]] ]="&U+3C;",
+    [ [[>]] ]="&U+3E;",
+    [ [[\]] ]="&U+5C;",
+    [ [[{]] ]="&U+7B;",
+    [ [[|]] ]="&U+7C;",
+    [ [[}]] ]="&U+7D;",
+    [ [[~]] ]="&U+7E;",
+  }
+  local privates_n={ 
+  }
+  local escaped=utf.remapper(privates_u,"dynamic")
+  local unprivatized=utf.remapper(privates_p,"dynamic")
+  local unspecialized=utf.remapper(privates_s,"dynamic")
+  xml.unprivatized=unprivatized
+  xml.unspecialized=unspecialized
+  xml.escaped=escaped
+  local function unescaped(s)
+    local p=privates_n[s]
+    if not p then
+      nofprivates=nofprivates+1
+      p=utfchar(nofprivates)
+      privates_n[s]=p
+      s="&"..s..";" 
+      privates_u[p]=s
+      privates_p[p]=s
+      privates_s[p]=s
+    end
+    return p
+  end
+  xml.privatetoken=unescaped
+  xml.privatecodes=privates_n
+  xml.specialcodes=privates_s
+  function xml.addspecialcode(key,value)
+    privates_s[key]=value or "&"..s..";"
+  end
+  handle_hex_entity=function(str)
+    local h=hcache[str]
+    if not h then
+      local n=tonumber(str,16)
+      h=unify_predefined and predefined_unified[n]
+      if h then
+        if trace_entities then
+          report_xml("utfize, converting hex entity &#x%s; into %a",str,h)
+        end
+      elseif utfize then
+        h=(n and utfchar(n)) or xml.unknown_hex_entity(str) or ""
+        if not n then
+          report_xml("utfize, ignoring hex entity &#x%s;",str)
+        elseif trace_entities then
+          report_xml("utfize, converting hex entity &#x%s; into %a",str,h)
+        end
+      else
+        if trace_entities then
+          report_xml("found entity &#x%s;",str)
+        end
+        h="&#x"..str..";"
+      end
+      hcache[str]=h
+    end
+    return h
+  end
+  handle_dec_entity=function(str)
+    local d=dcache[str]
+    if not d then
+      local n=tonumber(str)
+      d=unify_predefined and predefined_unified[n]
+      if d then
+        if trace_entities then
+          report_xml("utfize, converting dec entity &#%s; into %a",str,d)
+        end
+      elseif utfize then
+        d=(n and utfchar(n)) or placeholders.unknown_dec_entity(str) or ""
+        if not n then
+          report_xml("utfize, ignoring dec entity &#%s;",str)
+        elseif trace_entities then
+          report_xml("utfize, converting dec entity &#%s; into %a",str,d)
+        end
+      else
+        if trace_entities then
+          report_xml("found entity &#%s;",str)
+        end
+        d="&#"..str..";"
+      end
+      dcache[str]=d
+    end
+    return d
+  end
+  handle_any_entity_dtd=function(str)
+    if resolve then
+      local a=resolve_predefined and predefined_simplified[str] 
       if a then
         if trace_entities then
           report_xml("resolving entity &%s; to predefined %a",str,a)
@@ -10335,40 +10437,161 @@ local function handle_any_entity(str)
           end
         end
       end
-      acache[str]=a
-    elseif trace_entities then
-      if not acache[str] then
-        report_xml("converting entity &%s; to %a",str,a)
-        acache[str]=a
+      return a
+    else
+      local a=acache[str]
+      if not a then
+        a=resolve_predefined and predefined_simplified[str]
+        if a then
+          acache[str]=a
+          if trace_entities then
+            report_xml("entity &%s; becomes %a",str,a)
+          end
+        elseif str=="" then
+          if trace_entities then
+            report_xml("invalid entity &%s;",str)
+          end
+          a=badentity
+          acache[str]=a
+        else
+          if trace_entities then
+            report_xml("entity &%s; is made private",str)
+          end
+          a=unescaped(str)
+          acache[str]=a
+        end
       end
+      return a
     end
-    return a
-  else
-    local a=acache[str]
-    if not a then
-      a=resolve_predefined and predefined_simplified[str]
-      if a then
-        acache[str]=a
-        if trace_entities then
-          report_xml("entity &%s; becomes %a",str,a)
-        end
-      elseif str=="" then
-        if trace_entities then
-          report_xml("invalid entity &%s;",str)
-        end
-        a=badentity
-        acache[str]=a
-      else
-        if trace_entities then
-          report_xml("entity &%s; is made private",str)
-        end
-        a=unescaped(str)
-        acache[str]=a
-      end
-    end
-    return a
   end
+  handle_any_entity_text=function(str)
+    if resolve then
+      local a=resolve_predefined and predefined_simplified[str]
+      if a then
+        if trace_entities then
+          report_xml("resolving entity &%s; to predefined %a",str,a)
+        end
+      else
+        if type(resolve)=="function" then
+          a=resolve(str,entities) or entities[str]
+        else
+          a=entities[str]
+        end
+        if a then
+          if type(a)=="function" then
+            if trace_entities then
+              report_xml("expanding entity &%s; to function call",str)
+            end
+            a=a(str) or ""
+          end
+          a=lpegmatch(grammar_parsed_text_two,a) or a
+          if type(a)=="number" then
+            return ""
+          else
+            a=lpegmatch(parsedentity,a) or a 
+            if trace_entities then
+              report_xml("resolving entity &%s; to internal %a",str,a)
+            end
+          end
+          if trace_entities then
+            report_xml("resolving entity &%s; to internal %a",str,a)
+          end
+        else
+          local unknown_any_entity=placeholders.unknown_any_entity
+          if unknown_any_entity then
+            a=unknown_any_entity(str) or ""
+          end
+          if a then
+            if trace_entities then
+              report_xml("resolving entity &%s; to external %s",str,a)
+            end
+          else
+            if trace_entities then
+              report_xml("keeping entity &%s;",str)
+            end
+            if str=="" then
+              a=badentity
+            else
+              a="&"..str..";"
+            end
+          end
+        end
+      end
+      return a
+    else
+      local a=acache[str]
+      if not a then
+        a=resolve_predefined and predefined_simplified[str]
+        if a then
+          acache[str]=a
+          if trace_entities then
+            report_xml("entity &%s; becomes %a",str,a)
+          end
+        elseif str=="" then
+          if trace_entities then
+            report_xml("invalid entity &%s;",str)
+          end
+          a=badentity
+          acache[str]=a
+        else
+          if trace_entities then
+            report_xml("entity &%s; is made private",str)
+          end
+          a=unescaped(str)
+          acache[str]=a
+        end
+      end
+      return a
+    end
+  end
+  local p_rest=(1-P(";"))^1
+  local spec={
+    [0x23]="\\Ux{23}",
+    [0x24]="\\Ux{24}",
+    [0x25]="\\Ux{25}",
+    [0x5C]="\\Ux{5C}",
+    [0x7B]="\\Ux{7B}",
+    [0x7C]="\\Ux{7C}",
+    [0x7D]="\\Ux{7D}",
+    [0x7E]="\\Ux{7E}",
+  }
+  local hash=table.setmetatableindex(spec,function(t,k)
+    local v=utfchar(k)
+    t[k]=v
+    return v
+  end)
+  local function fromuni(s)
+    local n=tonumber(s,16)
+    if n then
+      return hash[n]
+    else
+      return formatters["u:%s"](s),true
+    end
+  end
+  local function fromhex(s)
+    local n=tonumber(s,16)
+    if n then
+      return hash[n]
+    else
+      return formatters["h:%s"](s),true
+    end
+  end
+  local function fromdec(s)
+    local n=tonumber(s)
+    if n then
+      return hash[n]
+    else
+      return formatters["d:%s"](s),true
+    end
+  end
+  local reparsedentity=P("U+")*(p_rest/fromuni)+P("#")*(
+      P("x")*(p_rest/fromhex)+p_rest/fromdec
+    )
+  xml.reparsedentitylpeg=reparsedentity
 end
+local escaped=xml.escaped
+local unescaped=xml.unescaped
+local placeholders=xml.placeholders
 local function handle_end_entity(str)
   report_xml("error in entity, %a found without ending %a",str,";")
   return str
@@ -10399,10 +10622,14 @@ local hexentitycontent=R("AF","af","09")^1
 local decentitycontent=R("09")^1
 local parsedentity=P("#")/""*(
                 P("x")/""*(hexentitycontent/handle_hex_entity)+(decentitycontent/handle_dec_entity)
-              )+(anyentitycontent/handle_any_entity)
+              )+(anyentitycontent/handle_any_entity_dtd) 
+local parsedentity_text=P("#")/""*(
+                P("x")/""*(hexentitycontent/handle_hex_entity)+(decentitycontent/handle_dec_entity)
+              )+(anyentitycontent/handle_any_entity_text)
 local entity=(ampersand/"")*parsedentity*(semicolon/"")+ampersand*(anyentitycontent/handle_end_entity)
+local entity_text=(ampersand/"")*parsedentity_text*(semicolon/"")+ampersand*(anyentitycontent/handle_end_entity)
 local text_unparsed=C((1-open)^1)
-local text_parsed=Cs(((1-open-ampersand)^1+entity)^1)
+local text_parsed=(Cs((1-open-ampersand)^1)/add_text+Cs(entity_text)/add_text)^1
 local somespace=space^1
 local optionalspace=space^0
 local value=(squote*Cs((entity+(1-squote))^0)*squote)+(dquote*Cs((entity+(1-dquote))^0)*dquote) 
@@ -10412,7 +10639,7 @@ local wrongvalue=Cs(P(entity+(1-space-endofattributes))^1)/attribute_value_error
 local attributevalue=value+wrongvalue
 local attribute=(somespace*name*optionalspace*equal*optionalspace*attributevalue)/add_attribute
 local attributes=(attribute+somespace^-1*(((1-endofattributes)^1)/attribute_specification_error))^0
-local parsedtext=text_parsed/add_text
+local parsedtext=text_parsed  
 local unparsedtext=text_unparsed/add_text
 local balanced=P { "["*((1-S"[]")+V(1))^0*"]" } 
 local emptyelement=(spacing*open*name*attributes*optionalspace*slash*close)/add_empty
@@ -10427,21 +10654,52 @@ local endcdata=P("]]")*close
 local someinstruction=C((1-endinstruction)^0)
 local somecomment=C((1-endcomment  )^0)
 local somecdata=C((1-endcdata   )^0)
-local function normalentity(k,v ) entities[k]=v end
-local function systementity(k,v,n) entities[k]=v end
-local function publicentity(k,v,n) entities[k]=v end
+local function weirdentity(k,v)
+  if trace_entities then
+    report_xml("registering %s entity %a as %a","weird",k,v)
+  end
+  parameters[k]=v
+end
+local function normalentity(k,v)
+  if trace_entities then
+    report_xml("registering %s entity %a as %a","normal",k,v)
+  end
+  entities[k]=v
+end
+local function systementity(k,v,n)
+  if trace_entities then
+    report_xml("registering %s entity %a as %a","system",k,v)
+  end
+  entities[k]=v
+end
+local function publicentity(k,v,n)
+  if trace_entities then
+    report_xml("registering %s entity %a as %a","public",k,v)
+  end
+  entities[k]=v
+end
 local begindoctype=open*P("!DOCTYPE")
 local enddoctype=close
 local beginset=P("[")
 local endset=P("]")
+local wrdtypename=C((1-somespace-P(";"))^1)
 local doctypename=C((1-somespace-close)^0)
 local elementdoctype=optionalspace*P("<!ELEMENT")*(1-close)^0*close
 local basiccomment=begincomment*((1-endcomment)^0)*endcomment
+local weirdentitytype=P("%")*(somespace*doctypename*somespace*value)/weirdentity
 local normalentitytype=(doctypename*somespace*value)/normalentity
 local publicentitytype=(doctypename*somespace*P("PUBLIC")*somespace*value)/publicentity
 local systementitytype=(doctypename*somespace*P("SYSTEM")*somespace*value*somespace*P("NDATA")*somespace*doctypename)/systementity
-local entitydoctype=optionalspace*P("<!ENTITY")*somespace*(systementitytype+publicentitytype+normalentitytype)*optionalspace*close
-local doctypeset=beginset*optionalspace*P(elementdoctype+entitydoctype+basiccomment+space)^0*optionalspace*endset
+local entitydoctype=optionalspace*P("<!ENTITY")*somespace*(systementitytype+publicentitytype+normalentitytype+weirdentitytype)*optionalspace*close
+local function weirdresolve(s)
+  lpegmatch(entitydoctype,parameters[s])
+end
+local function normalresolve(s)
+  lpegmatch(entitydoctype,entities[s])
+end
+local entityresolve=P("%")*(wrdtypename/weirdresolve )*P(";")+P("&")*(wrdtypename/normalresolve)*P(";")
+entitydoctype=entitydoctype+entityresolve
+local doctypeset=beginset*optionalspace*P(elementdoctype+entitydoctype+entityresolve+basiccomment+space)^0*optionalspace*endset
 local definitiondoctype=doctypename*somespace*doctypeset
 local publicdoctype=doctypename*somespace*P("PUBLIC")*somespace*value*somespace*value*somespace*doctypeset
 local systemdoctype=doctypename*somespace*P("SYSTEM")*somespace*value*somespace*doctypeset
@@ -10453,11 +10711,15 @@ local cdata=(spacing*begincdata*somecdata*endcdata   )/function(...) add_special
 local doctype=(spacing*begindoctype*somedoctype*enddoctype  )/function(...) add_special("@dt@",...) end
 local crap_parsed=1-beginelement-endelement-emptyelement-begininstruction-begincomment-begincdata-ampersand
 local crap_unparsed=1-beginelement-endelement-emptyelement-begininstruction-begincomment-begincdata
-local parsedcrap=Cs((crap_parsed^1+entity)^1)/handle_crap_error
-local unparsedcrap=Cs((crap_unparsed     )^1)/handle_crap_error
+local parsedcrap=Cs((crap_parsed^1+entity_text)^1)/handle_crap_error
+local parsedcrap=Cs((crap_parsed^1+entity_text)^1)/handle_crap_error
+local unparsedcrap=Cs((crap_unparsed       )^1)/handle_crap_error
 local trailer=space^0*(text_unparsed/set_message)^0
-local grammar_parsed_text=P { "preamble",
-  preamble=utfbom^0*instruction^0*(doctype+comment+instruction)^0*V("parent")*trailer,
+grammar_parsed_text_one=P { "preamble",
+  preamble=utfbom^0*instruction^0*(doctype+comment+instruction)^0,
+}
+grammar_parsed_text_two=P { "followup",
+  followup=V("parent")*trailer,
   parent=beginelement*V("children")^0*endelement,
   children=parsedtext+V("parent")+emptyelement+comment+cdata+instruction+parsedcrap,
 }
@@ -10467,37 +10729,26 @@ local grammar_unparsed_text=P { "preamble",
   children=unparsedtext+V("parent")+emptyelement+comment+cdata+instruction+unparsedcrap,
 }
 local function _xmlconvert_(data,settings)
-  settings=settings or {}
-  strip=settings.strip_cm_and_dt
-  utfize=settings.utfize_entities
-  resolve=settings.resolve_entities
-  resolve_predefined=settings.resolve_predefined_entities 
-  unify_predefined=settings.unify_predefined_entities 
-  cleanup=settings.text_cleanup
-  entities=settings.entities or {}
-  if utfize==nil then
-    settings.utfize_entities=true
-    utfize=true
-  end
-  if resolve_predefined==nil then
-    settings.resolve_predefined_entities=true
-    resolve_predefined=true
-  end
-  stack,top,at,xmlns,errorstr={},{},{},{},nil
-  acache,hcache,dcache={},{},{} 
-  reported_attribute_errors={}
+  settings=settings or {} 
+  preparexmlstate(settings)
   if settings.parent_root then
     mt=getmetatable(settings.parent_root)
   else
     initialize_mt(top)
   end
-  stack[#stack+1]=top
+  level=level+1
+  stack[level]=top
   top.dt={}
   dt=top.dt
+  nt=0
   if not data or data=="" then
     errorstr="empty xml file"
   elseif utfize or resolve then
-    if lpegmatch(grammar_parsed_text,data) then
+    local m=lpegmatch(grammar_parsed_text_one,data)
+    if m then
+      m=lpegmatch(grammar_parsed_text_two,data,m)
+    end
+    if m then
     else
       errorstr="invalid xml file - parsed text"
     end
@@ -10513,8 +10764,8 @@ local function _xmlconvert_(data,settings)
   local result
   if errorstr and errorstr~="" then
     result={ dt={ { ns="",tg="error",dt={ errorstr },at={},er=true } } }
-setmetatable(result,mt)
-setmetatable(result.dt[1],mt)
+    setmetatable(result,mt)
+    setmetatable(result.dt[1],mt)
     setmetatable(stack,mt)
     local errorhandler=settings.error_handler
     if errorhandler==false then
@@ -10556,13 +10807,10 @@ setmetatable(result.dt[1],mt)
       decimals=dcache,
       hexadecimals=hcache,
       names=acache,
+      intermediates=parameters,
     }
   }
-  strip,utfize,resolve,resolve_predefined=nil,nil,nil,nil
-  unify_predefined,cleanup,entities=nil,nil,nil
-  stack,top,at,xmlns,errorstr=nil,nil,nil,nil,nil
-  acache,hcache,dcache=nil,nil,nil
-  reported_attribute_errors,mt,errorhandler=nil,nil,nil
+  preparexmlstate() 
   return result
 end
 local function xmlconvert(data,settings)
@@ -10624,15 +10872,15 @@ function xml.toxml(data)
     return data
   end
 end
-local function copy(old,tables)
+local function copy(old)
   if old then
-    tables=tables or {}
     local new={}
-    if not tables[old] then
-      tables[old]=new
-    end
     for k,v in next,old do
-      new[k]=(type(v)=="table" and (tables[v] or copy(v,tables))) or v
+      if type(v)=="table" then
+        new[k]=table.copy(v)
+      else
+        new[k]=v
+      end
     end
     local mt=getmetatable(old)
     if mt then
@@ -10731,7 +10979,7 @@ local function verbose_cdata(e,handlers)
   handlers.handle("<![CDATA[",e.dt[1],"]]>")
 end
 local function verbose_doctype(e,handlers)
-  handlers.handle("<!DOCTYPE ",e.dt[1],">")
+  handlers.handle("<!DOCTYPE",e.dt[1],">") 
 end
 local function verbose_root(e,handlers)
   handlers.serialize(e.dt,handlers)
@@ -11013,7 +11261,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 50461, stripped down to: 31497
+-- original size: 51229, stripped down to: 31529
 
 if not modules then modules={} end modules ['lxml-lpt']={
   version=1.001,
@@ -11390,13 +11638,27 @@ local lp_noequal=P("!=")/"~="+P("<=")+P(">=")+P("==")
 local lp_doequal=P("=")/"=="
 local lp_or=P("|")/" or "
 local lp_and=P("&")/" and "
-local lp_builtin=P (
-    P("text")/"(ll.dt[1] or '')"+
-    P("content")/"ll.dt"+
-    P("name")/"((ll.ns~='' and ll.ns..':'..ll.tg) or ll.tg)"+P("tag")/"ll.tg"+P("position")/"l"+
-    P("firstindex")/"1"+P("lastindex")/"(#ll.__p__.dt or 1)"+P("firstelement")/"1"+P("lastelement")/"(ll.__p__.en or 1)"+P("first")/"1"+P("last")/"#list"+P("rootposition")/"order"+P("order")/"order"+P("element")/"(ll.ei or 1)"+P("index")/"(ll.ni or 1)"+P("match")/"(ll.mi or 1)"+
-    P("ns")/"ll.ns"
-  )*((spaces*P("(")*spaces*P(")"))/"")
+local builtin={
+  text="(ll.dt[1] or '')",
+  content="ll.dt",
+  name="((ll.ns~='' and ll.ns..':'..ll.tg) or ll.tg)",
+  tag="ll.tg",
+  position="l",
+  firstindex="1",
+  firstelement="1",
+  first="1",
+  lastindex="(#ll.__p__.dt or 1)",
+  lastelement="(ll.__p__.en or 1)",
+  last="#list",
+  rootposition="order",
+  order="order",
+  element="(ll.ei or 1)",
+  index="(ll.ni or 1)",
+  match="(ll.mi or 1)",
+  namespace="ll.ns",
+  ns="ll.ns",
+}
+local lp_builtin=lpeg.utfchartabletopattern(builtin)/builtin*((spaces*P("(")*spaces*P(")"))/"")
 local lp_attribute=(P("@")+P("attribute::"))/""*Cc("(ll.at and ll.at['")*((R("az","AZ")+S("-_:"))^1)*Cc("'])")
 local lp_fastpos_p=P("+")^0*R("09")^1*P(-1)/"l==%0"
 local lp_fastpos_n=P("-")*R("09")^1*P(-1)/"(%0<0 and (#list+%0==l))"
@@ -14196,7 +14458,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-env"] = package.loaded["data-env"] or true
 
--- original size: 9518, stripped down to: 7037
+-- original size: 9649, stripped down to: 7131
 
 if not modules then modules={} end modules ['data-env']={
   version=1.001,
@@ -14331,6 +14593,11 @@ local relations=allocate {
     fontconfig={
       names={ 'fontconfig','fontconfig file','fontconfig files' },
       variable='FONTCONFIG_PATH',
+    },
+    pk={
+      names={ "pk" },
+      variable='PKFONTS',
+      suffixes={ 'pk' },
     },
   },
   obsolete={
@@ -14970,7 +15237,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 67003, stripped down to: 46291
+-- original size: 67241, stripped down to: 46427
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -16240,10 +16507,18 @@ local function findfiles(filename,filetype,allresults)
   return result or {},status
 end
 function resolvers.findfiles(filename,filetype)
-  return findfiles(filename,filetype,true)
+  if not filename or filename=="" then
+    return ""
+  else
+    return findfiles(filename,filetype,true)
+  end
 end
 function resolvers.findfile(filename,filetype)
-  return findfiles(filename,filetype,false)[1] or ""
+  if not filename or filename=="" then
+    return ""
+  else
+    return findfiles(filename,filetype,false)[1] or ""
+  end
 end
 function resolvers.findpath(filename,filetype)
   return filedirname(findfiles(filename,filetype,false)[1] or "")
@@ -18363,8 +18638,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 782445
--- stripped bytes    : 283493
+-- original bytes    : 791821
+-- stripped bytes    : 286453
 
 -- end library merge
 

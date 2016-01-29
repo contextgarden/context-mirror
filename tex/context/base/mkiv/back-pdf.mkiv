@@ -46,18 +46,18 @@
 
 %D These are already set:
 
-\pdfhorigin 1in
-\pdfvorigin \pdfhorigin
+% \pdfhorigin 1in
+% \pdfvorigin \pdfhorigin
 
 %D These too and most of them will be protected as well:
 
-\pdfminorversion        \plusseven
-\pdfgentounicode        \plusone    % \let\pdfgentounicode       \undefined \newcount\pdfgentounicode
-\pdfinclusioncopyfonts  \plusone    % \let\pdfinclusioncopyfonts \undefined \newcount\pdfinclusioncopyfonts
-\pdfinclusionerrorlevel \zerocount  % \let\pdfinclusionerrorlevel\undefined \newcount\pdfinclusionerrorlevel
-\pdfdecimaldigits       \plussix    % \let\pdfdecimaldigits      \undefined \newcount\pdfdecimaldigits
-\pdfimageresolution     300
-\pdfpkresolution        600
+% \pdfminorversion        \plusseven
+% \pdfgentounicode        \plusone    % \let\pdfgentounicode       \undefined \newcount\pdfgentounicode
+% \pdfinclusioncopyfonts  \plusone    % \let\pdfinclusioncopyfonts \undefined \newcount\pdfinclusioncopyfonts
+% \pdfinclusionerrorlevel \zerocount  % \let\pdfinclusionerrorlevel\undefined \newcount\pdfinclusionerrorlevel
+% \pdfdecimaldigits       \plussix    % \let\pdfdecimaldigits      \undefined \newcount\pdfdecimaldigits
+% \pdfimageresolution     300
+% \pdfpkresolution        600
 
 %D Let's block these (we could share a dummy:
 
@@ -289,7 +289,7 @@
    \edef\dofill{\number#7}%
    \edef\mode{\number#8}%
    % no \ifcase, else \relax in pdfcode
-   \setbox\scratchbox\hpack
+   \setbox\scratchbox\naturalhpack
      {\ifnum\dostroke\dofill>\zerocount
         \pdfliteral
           {q
