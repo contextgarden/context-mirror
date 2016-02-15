@@ -132,7 +132,7 @@ return {
         "zerowidthspace", "zerowidthnonjoiner", "zerowidthjoiner", "zwnj", "zwj",
         "optionalspace", "asciispacechar",
         --
-        "Ux",
+        "Ux", "eUx",
     },
     ["helpers"] = {
         --
@@ -416,5 +416,7 @@ return {
         "nospace", "nospacing", "dospacing",
         --
         "naturalhbox", "naturalvbox", "naturalhpack", "naturalvpack",
+        --
+        "frule",
     }
 }

@@ -11,6 +11,7 @@ if not modules then modules = { } end modules ['node-rul'] = {
 --
 -- todo: make robust for layers ... order matters
 
+
 local attributes, nodes, node = attributes, nodes, node
 
 local nuts         = nodes.nuts
@@ -35,6 +36,9 @@ local setlist      = nuts.setlist
 
 local nodecodes    = nodes.nodecodes
 local tasks        = nodes.tasks
+
+local properties   = nodes.properties
+local attribs      = node.current_attr
 
 local glyph_code   = nodecodes.glyph
 local disc_code    = nodecodes.disc
@@ -106,6 +110,7 @@ local dimenfactor        = fonts.helpers.dimenfactor
 local splitdimen         = number.splitdimen
 
 local v_yes              = variables.yes
+local v_all              = variables.all
 local v_foreground       = variables.foreground
 
 local nodecodes          = nodes.nodecodes
@@ -125,12 +130,14 @@ local dir_code           = nodecodes.dir
 local userskip_code      = skipcodes.userskip
 local spaceskip_code     = skipcodes.spaceskip
 local xspaceskip_code    = skipcodes.xspaceskip
+local leader_code        = skipcodes.leaders
 
 local kerning_code       = kerncodes.kern
 
 local nodepool           = nuts.pool
 
 local new_rule           = nodepool.rule
+local new_userrule       = nodepool.userrule
 local new_kern           = nodepool.kern
 local new_glue           = nodepool.glue
 
@@ -152,11 +159,13 @@ local checkdir = true
 
 -- todo: switching inside math
 
+-- handlers
+
 local function processwords(attribute,data,flush,head,parent) -- we have hlistdir and local dir
     local n = head
     if n then
         local f, l, a, d, i, class
-        local continue, done, strip, level = false, false, true, -1
+        local continue, leaders, done, strip, level = false, false, false, true, -1
         while n do
             local id = getid(n)
             if id == glyph_code or id == rule_code then
@@ -181,7 +190,9 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                         f, l, a = n, n, aa
                         level, class = newlevel, newclass
                         d = data[class]
-                        continue = d.continue == v_yes
+                        local c = d.continue
+                        leaders = c == v_all
+                        continue = leaders or c == v_yes
                     end
                 else
                     if f then
@@ -219,7 +230,7 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                     elseif id == glue_code then
                         -- catch \underbar{a} \underbar{a} (subtype test is needed)
                         local subtype = getsubtype(n)
-                        if getattr(n,attribute) and (subtype == userskip_code or subtype == spaceskip_code or subtype == xspaceskip_code) then
+                        if getattr(n,attribute) and (subtype == userskip_code or subtype == spaceskip_code or subtype == xspaceskip_code or (leaders and subtype >= leader_code)) then
                             l = n
                         else
                             head, done = flush(head,f,l,d,level,parent,strip), true
@@ -255,14 +266,40 @@ end
 
 --
 
-nodes.rules      = nodes.rules      or { }
-nodes.rules.data = nodes.rules.data or { }
+local rules = nodes.rules or { }
+nodes.rules = rules
+rules.data  = rules.data  or { }
 
-storage.register("nodes/rules/data", nodes.rules.data, "nodes.rules.data")
+storage.register("nodes/rules/data", rules.data, "nodes.rules.data")
 
-local data = nodes.rules.data
+local data = rules.data
 
-function nodes.rules.define(settings)
+-- we implement user rules here as it takes less code this way
+
+local function userrule(t)
+    local r = new_userrule(t.width or 0,t.height or 0,t.depth or 0)
+    setfield(r,"attr",attribs())
+    properties[r] = t
+    return tonode(r)
+end
+
+rules.userrule    = userrule
+local ruleactions = { }
+rules.ruleactions = ruleactions
+
+callback.register("process_rule",function(n,h,v)
+    local n = tonut(n)
+    local p = properties[n]
+    local i = p.type or "draw"
+    local a = ruleactions[i]
+    if a then
+        a(p,h,v,i,n)
+    end
+end)
+
+--
+
+function rules.define(settings)
     data[#data+1] = settings
     context(#data)
 end
@@ -288,18 +325,26 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     if not f then
         return head
     end
-    local w = list_dimensions(getfield(parent,"glue_set"),getfield(parent,"glue_sign"),getfield(parent,"glue_order"),f,getnext(l))
-    local method, offset, continue, dy, order, max = d.method, d.offset, d.continue, d.dy, d.order, d.max
-    local rulethickness, unit = d.rulethickness, d.unit
-    local ma, ca, ta = d.ma, d.ca, d.ta
-    local colorspace   = ma > 0 and ma or getattr(f,a_colorspace) or 1
-    local color        = ca > 0 and ca or getattr(f,a_color)
-    local transparency = ta > 0 and ta or getattr(f,a_transparency)
-    local foreground = order == v_foreground
-
-    local e = dimenfactor(unit,getfont(f)) -- what if no glyph node
-
-    local rt = tonumber(rulethickness)
+    local w, ht, dp     = list_dimensions(getfield(parent,"glue_set"),getfield(parent,"glue_sign"),getfield(parent,"glue_order"),f,getnext(l))
+    local method        = d.method
+    local offset        = d.offset
+    local continue      = d.continue
+    local dy            = d.dy
+    local order         = d.order
+    local max           = d.max
+    local mp            = d.mp
+    local rulethickness = d.rulethickness
+    local unit          = d.unit
+    local ma            = d.ma
+    local ca            = d.ca
+    local ta            = d.ta
+    local colorspace    = ma > 0 and ma or getattr(f,a_colorspace) or 1
+    local color         = ca > 0 and ca or getattr(f,a_color)
+    local transparency  = ta > 0 and ta or getattr(f,a_transparency)
+    local foreground    = order == v_foreground
+    local layer         = getattr(f,a_viewerlayer)
+    local e             = dimenfactor(unit,getfont(f)) -- what if no glyph node
+    local rt            = tonumber(rulethickness)
     if rt then
         rulethickness = e * rulethickness / 2
     else
@@ -310,7 +355,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
             rulethickness = 1/5
         end
     end
-
+    --
     if level > max then
         level = max
     end
@@ -320,22 +365,10 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     else
         m = 0
     end
-    for i=1,level do
-        local ht =  (offset+(i-1)*dy)*e + rulethickness - m
-        local dp = -(offset+(i-1)*dy)*e + rulethickness + m
-        local r = new_rule(w,ht,dp)
-        local v = getattr(f,a_viewerlayer)
-        -- quick hack
-        if v then
-            setattr(r,a_viewerlayer,v)
-        end
-        --
-        if color then
-            setattr(r,a_colorspace,colorspace)
-            setattr(r,a_color,color)
-        end
-        if transparency then
-            setattr(r,a_transparency,transparency)
+
+    local function inject(r,w,ht,dp)
+        if layer then
+            setattr(r,a_viewerlayer,layer)
         end
         local k = new_kern(-w)
         if foreground then
@@ -351,14 +384,45 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
                 level,w,ht,dp,n_tostring(f,l),n_tosequence(f,l,true))
         end
     end
+
+    if mp and mp ~= "" then
+        local r = userrule {
+            width  = w,
+            height = ht,
+            depth  = dp,
+            type   = "mp",
+            factor = e,
+            offset = offset,
+            line   = rulethickness,
+            data   = mp,
+            ma     = colorspace,
+            ca     = color,
+            ta     = transparency,
+        }
+        inject(tonut(r),w,ht,dp)
+    else
+        for i=1,level do
+            local ht =  (offset+(i-1)*dy)*e + rulethickness - m
+            local dp = -(offset+(i-1)*dy)*e + rulethickness + m
+            local r = new_rule(w,ht,dp)
+            if color then
+                setattr(r,a_colorspace,colorspace)
+                setattr(r,a_color,color)
+            end
+            if transparency then
+                setattr(r,a_transparency,transparency)
+            end
+            inject(r,w,ht,dp)
+        end
+    end
     return head
 end
 
 local process = nodes.processwords
 
-nodes.rules.handler = function(head) return process(a_ruled,data,flush_ruled,head) end
+rules.handler = function(head) return process(a_ruled,data,flush_ruled,head) end
 
-function nodes.rules.enable()
+function rules.enable()
     tasks.enableaction("shipouts","nodes.rules.handler")
 end
 
@@ -428,7 +492,7 @@ local implement = interfaces.implement
 
 implement {
     name      = "definerule",
-    actions   = { nodes.rules.define, context },
+    actions   = { rules.define, context },
     arguments = {
         {
             { "continue" },
@@ -442,6 +506,7 @@ implement {
             { "ma", "integer" },
             { "ca", "integer" },
             { "ta", "integer" },
+            { "mp", "string" },
         }
     }
 }
@@ -449,7 +514,7 @@ implement {
 implement {
     name     = "enablerules",
     onlyonce = true,
-    actions  = nodes.rules.enable
+    actions  = rules.enable
 }
 
 implement {

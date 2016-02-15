@@ -5459,6 +5459,15 @@ unknown):
 local w, h, d = tex.getboxresourcedimensions(n)
 \stoptyping
 
+You can split a box:
+
+\starttyping
+local vlist = tex.splitbox(n,height)
+\stoptyping
+
+The remainder is kept in the original box and a packaged vlist is returned. This
+operation is comparable to the \type {\vsplit} operation.
+
 \subsection{Math parameters}
 
 It is possible to set and query the internal math parameters using:
@@ -6478,6 +6487,22 @@ The results are like:
 \gdef\csname{content}
  \def\csname{}
 \stoptyping
+
+There is a (for now) experimental putter:
+
+\starttyping
+local t1 = token.get_next()
+local t2 = token.get_next()
+local t3 = token.get_next()
+local t4 = token.get_next()
+-- watch out, we flush in sequence
+token.put_next { t1, t2 }
+-- but this one gets pushed in front
+token.put_next ( t3, t4 )
+\stoptyping
+
+When we scan \type {wxyz!} we get \type {yzwx!} back. The argument is either a table
+with tokens or a list of tokens.
 
 \stopchapter
 

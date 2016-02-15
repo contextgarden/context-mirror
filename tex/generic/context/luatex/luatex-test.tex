@@ -1,4 +1,4 @@
-% texformat=luatex-plain
+texformat=luatex-plain
 
 %D \module
 %D   [       file=luatex-test,
@@ -130,5 +130,21 @@ Inline $\sqrt{x}{1.2}$ math. % same for $\root n of x$
 $\root3\of x$
 
 $\sin{x}$
+
+\bgroup
+
+    % drawback: no features (so use basemode)
+
+    \font\crapa=lmroman12-regular:mode=base;liga=yes;kern=yes; at 12pt
+    \font\crapb=lmsans12-regular:mode=base;liga=yes;kern=yes;  at 30pt
+   %\font\mine=file:luatex-fonts-demo-vf-4.lua:1=lmroman12-regular;2=lmsans12-regular{0x41-0x5A+0x30-0x39+0x21}; at 12pt
+    \font\mine=file:luatex-fonts-demo-vf-4.lua:1=\fontid\crapa;2=\fontid\crapb{0x41-0x5A+0x30-0x39+0x21}; at 12pt
+
+    \crapa Test\par
+    \crapb Test\par
+
+    \mine Zomaar een eindje fiets! En dan weer terug.
+
+\egroup
 
 \end
