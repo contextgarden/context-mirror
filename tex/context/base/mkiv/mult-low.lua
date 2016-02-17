@@ -132,7 +132,7 @@ return {
         "zerowidthspace", "zerowidthnonjoiner", "zerowidthjoiner", "zwnj", "zwj",
         "optionalspace", "asciispacechar",
         --
-        "Ux", "eUx",
+        "Ux", "eUx", "Umathaccents",
     },
     ["helpers"] = {
         --
@@ -366,6 +366,7 @@ return {
         --
         "startimath", "stopimath", "normalstartimath", "normalstopimath",
         "startdmath", "stopdmath", "normalstartdmath", "normalstopdmath",
+        "normalsuperscript", "normalsubscript",
         --
         "uncramped", "cramped", "triggermathstyle", "mathstylefont", "mathsmallstylefont", "mathstyleface", "mathsmallstyleface", "mathstylecommand", "mathpalette",
         "mathstylehbox", "mathstylevbox", "mathstylevcenter", "mathstylevcenteredhbox", "mathstylevcenteredvbox",
