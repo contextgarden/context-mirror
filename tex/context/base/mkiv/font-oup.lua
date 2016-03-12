@@ -26,7 +26,8 @@ local privateoffset     = fonts.constructors and fonts.constructors.privateoffse
 local f_private         = formatters["P%05X"]
 local f_unicode         = formatters["U%05X"]
 local f_index           = formatters["I%05X"]
-local f_character       = formatters["%C"]
+local f_character_y     = formatters["%C"]
+local f_character_n     = formatters["[ %C ]"]
 
 local doduplicates      = true -- can become an option (pseudo feature)
 
@@ -137,7 +138,7 @@ local function unifyresources(fontdata,indices)
     end
     --
     -- the duplicates need checking (probably only in cjk fonts): currently we only check
-    -- gsub_single, gsub_alternate and gsub_multiple
+    -- gsub_single, gsub_alternate, gsub_multiple, gpos_single and gpos_cursive
     --
     local function unifythem(sequences)
         if not sequences then
@@ -269,14 +270,56 @@ local function unifyresources(fontdata,indices)
                                 done[c] = c
                             end
                         end
-                    elseif kind == "gpos_single" or kind == "gpos_cursive" then
+                    elseif kind == "gpos_single" then
                         local c = step.coverage
                         if c then
                             local t1 = done[c]
                             if not t1 then
                                 t1 = { }
-                                for g1, d1 in next, c do
-                                    t1[indices[g1]] = d1
+                                if duplicates then
+                                    for g1, d1 in next, c do
+                                        local ug1 = indices[g1]
+                                        t1[ug1] = d1
+                                        --
+                                        local dg1 = duplicates[ug1]
+                                        if dg1 then
+                                            for u in next, dg1 do
+                                                t1[u] = d1
+                                            end
+                                        end
+                                    end
+                                else
+                                    for g1, d1 in next, c do
+                                        t1[indices[g1]] = d1
+                                    end
+                                end
+                                done[c] = t1
+                            end
+                            step.coverage = t1
+                        end
+                    elseif kind == "gpos_cursive" then
+                        local c = step.coverage
+                        if c then
+                            local t1 = done[c]
+                            if not t1 then
+                                t1 = { }
+                                if duplicates then
+                                    for g1, d1 in next, c do
+                                        local ug1 = indices[g1]
+                                        t1[ug1] = d1
+                                        --
+                                        local dg1 = duplicates[ug1]
+                                        if dg1 then
+                                            -- probably needs a bit more
+                                            for u in next, dg1 do
+                                                t1[u] = copy(d1)
+                                            end
+                                        end
+                                    end
+                                else
+                                    for g1, d1 in next, c do
+                                        t1[indices[g1]] = d1
+                                    end
                                 end
                                 done[c] = t1
                             end
@@ -324,10 +367,16 @@ local function copyduplicates(fontdata)
             for u, d in next, duplicates do
                 local du = descriptions[u]
                 if du then
-                    local t  = { f_character(u) }
+                    local t  = { f_character_y(u), "@", f_index(du.index), "->" }
                     for u in next, d do
-                        descriptions[u] = copy(du)
-                        t[#t+1] = f_character(u)
+                        if descriptions[u] then
+                            t[#t+1] = f_character_n(u)
+                        else
+                            local c = copy(du)
+                         -- c.unicode = u -- maybe
+                            descriptions[u] = c
+                            t[#t+1] = f_character_y(u)
+                        end
                     end
                     report("duplicates: % t",t)
                 else
@@ -600,7 +649,7 @@ local function unifyglyphs(fontdata,usenames)
             private = private + 1
         elseif descriptions[unicode] then
             -- real weird
-report("assigning private unicode %U to glyph indexed %05X (%C)",private,index,unicode)
+            report("assigning private unicode %U to glyph indexed %05X (%C)",private,index,unicode)
             unicode = private
             -- glyph.unicode  = -1
             if names then

@@ -72,7 +72,7 @@ end
 local next, type, unpack = next, type, unpack
 local byte, lower, char, strip, gsub = string.byte, string.lower, string.char, string.strip, string.gsub
 local bittest = bit32.btest
-local concat, remove = table.concat, table.remove
+local concat, remove, unpack = table.concat, table.remov, table.unpack
 local floor, mod, abs, sqrt, round = math.floor, math.mod, math.abs, math.sqrt, math.round
 local P, R, S, C, Cs, Cc, Ct, Carg, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Ct, lpeg.Carg, lpeg.Cmt
 local lpegmatch = lpeg.match
@@ -133,7 +133,7 @@ local function readlongdatetime(f)
     return 0x100000000 * d + 0x1000000 * e + 0x10000 * f + 0x100 * g + h
 end
 
-local tableversion      = 0.002
+local tableversion      = 0.004
 local privateoffset     = fonts.constructors and fonts.constructors.privateoffset or 0xF0000 -- 0x10FFFF
 
 readers.tableversion    = tableversion
@@ -909,7 +909,7 @@ readers.head = function(f,fontdata)
     else
         fontdata.fontheader = { }
     end
-    fontdata.nofglyphs  = 0
+    fontdata.nofglyphs = 0
 end
 
 -- This table is a rather simple one. No treatment of values is needed here. Most
@@ -1116,6 +1116,47 @@ end
 local formatreaders = { }
 local duplicatestoo = true
 
+local sequence = {
+    { 3,  1,  4 },
+    { 3, 10, 12 },
+    { 0,  3,  4 },
+    { 0,  1,  4 },
+ -- { 0,  4, 12 },
+    { 0,  0,  6 },
+    { 3,  0,  6 },
+    -- variants
+    { 0,  5, 14 },
+}
+
+-- local sequence = {
+--     { 0,  1,  4 },
+--     { 0,  4, 12 },
+--     { 0,  3,  4 },
+--     { 3,  1,  4 },
+--     { 3, 10, 12 },
+--     { 0,  0,  6 },
+--     { 3,  0,  6 },
+--     -- variants
+--     { 0,  5, 14 },
+-- }
+
+local supported = {  }
+
+for i=1,#sequence do
+    local sp, se, sf = unpack(sequence[i])
+    local p = supported[sp]
+    if not p then
+        p = { }
+        supported[sp] = p
+    end
+    local e = p[se]
+    if not e then
+        e = { }
+        p[se] = e
+    end
+    e[sf] = true
+end
+
 formatreaders[4] = function(f,fontdata,offset)
     setposition(f,offset+2) -- skip format
     --
@@ -1133,6 +1174,7 @@ formatreaders[4] = function(f,fontdata,offset)
     local mapping    = fontdata.mapping
     local glyphs     = fontdata.glyphs
     local duplicates = fontdata.duplicates
+    local nofdone    = 0
     --
     for i=1,nofsegments do
         endchars[i] = readushort(f)
@@ -1159,19 +1201,24 @@ formatreaders[4] = function(f,fontdata,offset)
         local offset    = offsets[segment]
         local delta     = deltas[segment]
         if startchar == 0xFFFF and endchar == 0xFFFF then
-            break
+            -- break
+        elseif startchar == 0xFFFF and offset == 0 then
+            -- break
+        elseif offset == 0xFFFF then
+            -- bad encoding
         elseif offset == 0 then
             if trace_cmap then
-                report("format 4.%i from %C to %C at index %H",1,startchar,endchar,mod(startchar + delta,65536))
+                report("format 4.%i segment %2i from %C upto %C at index %H",1,segment,startchar,endchar,mod(startchar + delta,65536))
             end
             for unicode=startchar,endchar do
-                index = mod(unicode + delta,65536)
+                local index = mod(unicode + delta,65536)
                 if index and index > 0 then
                     local glyph = glyphs[index]
                     if glyph then
                         local gu = glyph.unicode
                         if not gu then
                             glyph.unicode = unicode
+                            nofdone = nofdone + 1
                         elseif gu ~= unicode then
                             if duplicatestoo then
                                 local d = duplicates[gu]
@@ -1194,7 +1241,7 @@ formatreaders[4] = function(f,fontdata,offset)
         else
             local shift = (segment-nofsegments+offset/2) - startchar
             if trace_cmap then
-                report("format 4.%i from %C to %C at index %H",2,startchar,endchar,mod(indices[shift+startchar]+delta,65536))
+                report("format 4.%i segment %2i from %C upto %C at index %H",0,segment,startchar,endchar,mod(startchar + delta,65536))
             end
             for unicode=startchar,endchar do
                 local slot  = shift + unicode
@@ -1206,6 +1253,7 @@ formatreaders[4] = function(f,fontdata,offset)
                         local gu = glyph.unicode
                         if not gu then
                             glyph.unicode = unicode
+                            nofdone = nofdone + 1
                         elseif gu ~= unicode then
                             if duplicatestoo then
                                 local d = duplicates[gu]
@@ -1227,7 +1275,7 @@ formatreaders[4] = function(f,fontdata,offset)
             end
         end
     end
-
+    return nofdone
 end
 
 formatreaders[6] = function(f,fontdata,offset)
@@ -1241,6 +1289,7 @@ formatreaders[6] = function(f,fontdata,offset)
     local start      = readushort(f)
     local count      = readushort(f)
     local stop       = start+count-1
+    local nofdone    = 0
     if trace_cmap then
         report("format 6 from %C to %C",2,start,stop)
     end
@@ -1252,6 +1301,7 @@ formatreaders[6] = function(f,fontdata,offset)
                 local gu = glyph.unicode
                 if not gu then
                     glyph.unicode = unicode
+                    nofdone = nofdone + 1
                 elseif gu ~= unicode then
                     -- report("format 6 overloading %C to %C",gu,unicode)
                     -- glyph.unicode = unicode
@@ -1263,6 +1313,7 @@ formatreaders[6] = function(f,fontdata,offset)
             end
         end
     end
+    return nofdone
 end
 
 formatreaders[12] = function(f,fontdata,offset)
@@ -1271,6 +1322,7 @@ formatreaders[12] = function(f,fontdata,offset)
     local glyphs     = fontdata.glyphs
     local duplicates = fontdata.duplicates
     local nofgroups  = readulong(f)
+    local nofdone    = 0
     for i=1,nofgroups do
         local first = readulong(f)
         local last  = readulong(f)
@@ -1284,6 +1336,7 @@ formatreaders[12] = function(f,fontdata,offset)
                 local gu = glyph.unicode
                 if not gu then
                     glyph.unicode = unicode
+                    nofdone = nofdone + 1
                 elseif gu ~= unicode then
                     -- e.g. sourcehan fonts need this
                     local d = duplicates[gu]
@@ -1298,8 +1351,9 @@ formatreaders[12] = function(f,fontdata,offset)
                 end
             end
             index = index + 1
-         end
+        end
     end
+    return nofdone
 end
 
 formatreaders[14] = function(f,fontdata,offset)
@@ -1310,6 +1364,7 @@ formatreaders[14] = function(f,fontdata,offset)
         local nofrecords  = readulong(f)
         local records     = { }
         local variants    = { }
+        local nofdone     = 0
         fontdata.variants = variants
         for i=1,nofrecords do
             records[i] = {
@@ -1345,32 +1400,38 @@ formatreaders[14] = function(f,fontdata,offset)
                 for i=1,count do
                     mapping[readuint(f)] = readushort(f)
                 end
+                nofdone = nofdone + count
                 variants[selector] = mapping
             end
         end
+        return nofdone
+    else
+        return 0
     end
 end
 
 local function checkcmap(f,fontdata,records,platform,encoding,format)
     local data = records[platform]
     if not data then
-        return
+        return 0
     end
     data = data[encoding]
     if not data then
-        return
+        return 0
     end
     data = data[format]
     if not data then
-        return
+        return 0
     end
     local reader = formatreaders[format]
     if not reader then
-        return
+        return 0
     end
-    report("checking cmap: platform %a, encoding %a, format %a",platform,encoding,format)
-    reader(f,fontdata,data)
-    return true
+    local p = platforms[platform]
+    local e = encodings[p]
+    local n = reader(f,fontdata,data) or 0
+    report("cmap checked: platform %i (%s), encoding %i (%s), format %i, new unicodes %i",platform,p,encoding,e and e[encoding] or "?",format,n)
+    return n
 end
 
 function readers.cmap(f,fontdata,specification)
@@ -1412,8 +1473,25 @@ function readers.cmap(f,fontdata,specification)
                     end
                 end
             end
-            for platform, record in next, records do
-                for encoding, subtables in next, record do
+            report("found cmaps:")
+            for platform, record in sortedhash(records) do
+                local p  = platforms[platform]
+                local e  = encodings[p]
+                local sp = supported[platform]
+                local ps = p or "?"
+                if sp then
+                    report("  platform %i: %s",platform,ps)
+                else
+                    report("  platform %i: %s (unsupported)",platform,ps)
+                end
+                for encoding, subtables in sortedhash(record) do
+                    local se = sp and sp[encoding]
+                    local es = e and e[encoding] or "?"
+                    if se then
+                        report("    encoding %i: %s",encoding,es)
+                    else
+                        report("    encoding %i: %s (unsupported)",encoding,es)
+                    end
                     local offsets = subtables.offsets
                     local formats = subtables.formats
                     for i=1,#offsets do
@@ -1422,31 +1500,26 @@ function readers.cmap(f,fontdata,specification)
                         formats[readushort(f)] = offset
                     end
                     record[encoding] = formats
+                    local list = sortedkeys(formats)
+                    for i=1,#list do
+                        if not (se and se[list[i]]) then
+                            list[i] = list[i] .. " (unsupported)"
+                        end
+                    end
+                    report("      formats: % t",list)
                 end
             end
             --
             local ok = false
-            ok = checkcmap(f,fontdata,records,3, 1, 4) or ok
-            ok = checkcmap(f,fontdata,records,3,10,12) or ok
-            ok = checkcmap(f,fontdata,records,0, 3, 4) or ok
-            ok = checkcmap(f,fontdata,records,0, 1, 4) or ok
-            ok = checkcmap(f,fontdata,records,0, 0, 6) or ok
-            ok = checkcmap(f,fontdata,records,3, 0, 6) or ok
-         -- ok = checkcmap(f,fontdata,records,3, 0, 4) or ok -- maybe
-            -- 1 0 0
-            if not ok then
-                local list = { }
-                for k1, v1 in next, records do
-                    for k2, v2 in next, v1 do
-                        for k3, v3 in next, v2 do
-                            list[#list+1] = formatters["%s.%s.%s"](k1,k2,k3)
-                        end
-                    end
+            for i=1,#sequence do
+                local sp, se, sf = unpack(sequence[i])
+                if checkcmap(f,fontdata,records,sp,se,sf) > 0 then
+                    ok = true
                 end
-                table.sort(list)
-                report("no unicode cmap record loaded, found tables: % t",list)
             end
-            checkcmap(f,fontdata,records,0,5,14) -- variants
+            if not ok then
+                report("no useable unicode cmap found")
+            end
             --
             fontdata.cidmaps = {
                 version   = version,

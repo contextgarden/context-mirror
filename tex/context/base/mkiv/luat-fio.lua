@@ -12,8 +12,8 @@ local sequenced = table.sequenced
 
 texconfig.kpse_init      = false
 texconfig.shell_escape   = 't'
-texconfig.max_in_open    = 127
 texconfig.max_print_line = 100000
+texconfig.max_in_open    = 1000
 
 if not resolvers.instance then
 
@@ -80,7 +80,7 @@ if not resolvers.instance then
         register('find_data_file'      , function(name) return findbinfile(name,"tex")    end, true)
         register('find_enc_file'       , function(name) return findbinfile(name,"enc")    end, true)
         register('find_font_file'      , function(name) return findbinfile(name,"tfm")    end, true)
-        register('find_format_file'    , function(name) return findbinfile(name,"fmt")    end, true)
+     -- register('find_format_file'    , function(name) return findbinfile(name,"fmt")    end, true)
         register('find_image_file'     , function(name) return findbinfile(name,"tex")    end, true)
         register('find_map_file'       , function(name) return findbinfile(name,"map")    end, true)
         register('find_opentype_file'  , function(name) return findbinfile(name,"otf")    end, true)

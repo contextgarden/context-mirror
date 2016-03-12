@@ -667,8 +667,64 @@
 % quite special and don't apply to multiple. So, being strict saves
 % us resets.
 
-\setuplistalternative
-  [\c!command=\strictlistparameter\c!command]
+% \installcorenamespace{listfiller}
+%
+% \unexpanded\def\installlistfiller#1#2%
+%   {\setuvalue{\??listfiller#1}{#2}}
+%
+% \unexpanded\def\listfiller#1%
+%   {\begincsname\??listfiller#1\endcsname}
+%
+% \unexpanded\def\currentlistfiller
+%   {\begingroup
+%    \edef\p_filler{\listalternativeparameter\c!filler}%
+%    \ifcsname\??listfiller\p_filler\endcsname
+%      \lastnamedcs
+%    \else
+%      \p_filler
+%    \fi
+%    \endgroup}
+%
+% \installlistfiller\v!sym % original one
+%   {\begingroup
+%    \scratchdimen.5\emwidth
+%    \hskip\scratchdimen
+%    \gleaders
+%      \hbox to \scratchdimen
+%        {\hss
+%         \uselistalternativestyleandcolor\c!symstyle\c!symcolor
+%         \listalternativeparameter\c!symbol
+%         \hss}%
+%      \hfill
+%    \hskip\scratchdimen
+%    \endgroup}
+%
+% \installlistfiller\v!symbol % new one (make that default?)
+%   {\begingroup
+%    \scratchdimen.5\emwidth
+%    \hskip\scratchdimen
+%    \gleaders
+%      \hbox spread .5\scratchdimen
+%        {\hss
+%         \uselistalternativestyleandcolor\c!symstyle\c!symcolor
+%         \listalternativeparameter\c!symbol
+%         \hss}%
+%      \hfill
+%    \hskip\scratchdimen
+%    \endgroup}
+%
+% \installlistfiller\v!width
+%   {\hfill}
+%
+% \installlistfiller\v!space
+%   {\hskip.25\emwidth\relax}
+%
+% \setuplistalternative
+%   [\c!command=\strictlistparameter\c!command,
+%    \c!symbol=.]
+
+\unexpanded\def\currentlistfiller
+  {\checkedfiller{\listalternativeparameter\c!filler}}
 
 \definelistalternative
   [a]
@@ -1064,7 +1120,7 @@
                 \endgroup
                 \ifdim\wd\b_strc_lists_page=\zeropoint\else
                     \nobreak
-                    \listalternativeparameter\c!filler
+                    \currentlistfiller
                     \box\b_strc_lists_page
                 \fi
             }
@@ -1269,7 +1325,7 @@
 
 \definelistalternative
   [\v!paragraph]
-  [\c!filler=\hskip.25\emwidth,
+  [\c!filler=\v!space,
    \c!renderingsetup=\??listrenderings:\v!paragraph]
 
 \startsetups[\??listrenderings:\v!paragraph]
@@ -1331,7 +1387,7 @@
     \ifconditional\c_lists_has_page
         \ifconditional\c_lists_show_page
             \nobreak
-            \listalternativeparameter\c!filler\relax
+            \currentlistfiller
             \begingroup
                 \useliststyleandcolor\c!pagestyle\c!pagecolor
                 \currentlistentrypagenumber

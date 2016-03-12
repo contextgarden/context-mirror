@@ -26,7 +26,7 @@ local type, next, tonumber, tostring = type, next, tonumber, tostring
 local abs = math.abs
 local reversed, concat, insert, remove, sortedkeys = table.reversed, table.concat, table.insert, table.remove, table.sortedkeys
 local ioflush = io.flush
-local fastcopy, tohash, derivetable = table.fastcopy, table.tohash, table.derive
+local fastcopy, tohash, derivetable, copy = table.fastcopy, table.tohash, table.derive, table.copy
 local formatters = string.formatters
 local P, R, S, C, Ct, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Ct, lpeg.match
 
@@ -58,7 +58,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.820 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version              = 2.823 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local hashes             = fonts.hashes
@@ -232,6 +232,7 @@ local valid_fields = table.tohash {
  -- "lookups",
     "macstyle",
  -- "modificationtime",
+    "notdef_loc",
     "onlybitmaps",
     "origname",
     "os2_version",
@@ -259,6 +260,7 @@ local valid_fields = table.tohash {
     "weight",
     "weight_width_slope_only",
  -- "xuid",
+ -- "truetype", -- maybe as check
 }
 
 local ordered_enhancers = {
@@ -645,9 +647,6 @@ actions["add dimensions"] = function(data,filename)
                 report_otf("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
              -- d.width  = -wd
             end
-         -- if forcenotdef and not d.name then
-         --     d.name = ".notdef"
-         -- end
             if bb then
                 local ht =  bb[4]
                 local dp = -bb[2]
@@ -710,7 +709,6 @@ end
 -- not setting hasitalics and class (when nil) during table construction can save some mem
 
 actions["prepare glyphs"] = function(data,filename,raw)
-    local tableversion = tonumber(raw.table_version) or 0
     local rawglyphs    = raw.glyphs
     local rawsubfonts  = raw.subfonts
     local rawcidinfo   = raw.cidinfo
@@ -724,6 +722,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
     local indices      = resources.indices  -- index to unicode
     local duplicates   = resources.duplicates
     local variants     = resources.variants
+    local notdefindex  = -1
 
     if rawsubfonts then
 
@@ -746,16 +745,12 @@ actions["prepare glyphs"] = function(data,filename,raw)
                     if includesubfonts then
                         metadata.subfonts[cidindex] = somecopy(subfont)
                     end
-                    local cidcnt, cidmin, cidmax
-                    if tableversion > 0.3 then
-                        -- we have delayed loading so we cannot use next
-                        cidcnt = subfont.glyphcnt
-                        cidmin = subfont.glyphmin
-                        cidmax = subfont.glyphmax
-                    else
-                        cidcnt = subfont.glyphcnt
-                        cidmin = 0
-                        cidmax = cidcnt - 1
+                    local cidcnt = subfont.glyphcnt
+                    local cidmin = subfont.glyphmin
+                    local cidmax = subfont.glyphmax
+                    local notdef = (tonumber(raw.table_version) or 0) > 0.4 and subfont.notdef_loc or -1
+                    if notdeffound == -1 and notdef >= 0 then
+                        notdeffound = notdef
                     end
                     if trace_subfonts then
                         local cidtot = cidmax - cidmin + 1
@@ -763,10 +758,9 @@ actions["prepare glyphs"] = function(data,filename,raw)
                         report_otf("subfont: %i, min: %i, max: %i, cnt: %i, n: %i",cidindex,cidmin,cidmax,cidtot,cidcnt)
                     end
                     if cidcnt > 0 then
-                        for cidslot=cidmin,cidmax do
-                            local glyph = cidglyphs[cidslot]
+                        for index=cidmin,cidmax do
+                            local glyph = cidglyphs[index]
                             if glyph then
-                                local index = tableversion > 0.3 and glyph.orig_pos or cidslot
                                 if trace_subfonts then
                                     unique[index] = true
                                 end
@@ -797,7 +791,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
                                     if trace_private then
                                         report_otf("glyph %a at index %H is moved to private unicode slot %U",name,index,private)
                                     end
-                                    private = private + 1
+                                    private  = private + 1
                                     nofnames = nofnames + 1
                                 else
                                  -- if unicode > criterium then
@@ -824,8 +818,8 @@ actions["prepare glyphs"] = function(data,filename,raw)
                                     boundingbox = glyph.boundingbox,
                                  -- name        = glyph.name or name or "unknown", -- uniXXXX
                                     name        = name or "unknown", -- uniXXXX
-                                    cidindex    = cidindex,
-                                    index       = cidslot,
+                                 -- cidindex    = cidindex,
+                                    index       = index,
                                     glyph       = glyph,
                                 }
                                 descriptions[unicode] = description
@@ -880,10 +874,10 @@ actions["prepare glyphs"] = function(data,filename,raw)
     else
 
         local cnt = raw.glyphcnt or 0
-        local min = tableversion > 0.3 and raw.glyphmin or 0
-        local max = tableversion > 0.3 and raw.glyphmax or (raw.glyphcnt - 1)
+        local min = raw.glyphmin or 0
+        local max = raw.glyphmax or (raw.glyphcnt - 1)
+        notdeffound = (tonumber(raw.table_version) or 0) > 0.4 and raw.notdef_loc or -1
         if cnt > 0 then
---             for index=0,cnt-1 do
             for index=min,max do
                 local glyph = rawglyphs[index]
                 if glyph then
@@ -973,6 +967,13 @@ actions["prepare glyphs"] = function(data,filename,raw)
         end
 
     end
+
+    if notdeffound == -1 then
+        report_otf("warning: no .notdef found in %a",filename)
+    elseif notdeffound ~= 0 then
+        report_otf("warning: .notdef found at position %a in %a",notdeffound,filename)
+    end
+    metadata.notdef = notdeffound
 
     resources.private = private
 
@@ -1071,7 +1072,8 @@ actions["add duplicates"] = function(data,filename,raw)
     local unicodes     = resources.unicodes -- name to unicode
     local indices      = resources.indices  -- index to unicodes
     local duplicates   = resources.duplicates
-    for unicode, d in next, duplicates do
+ -- for unicode, d in next, duplicates do
+    for unicode, d in table.sortedhash(duplicates) do -- nicer for log
         local nofduplicates = #d
         if nofduplicates > 4 then
             if trace_loading then
@@ -1098,12 +1100,12 @@ actions["add duplicates"] = function(data,filename,raw)
                         -- todo: lookups etc
                     end
                     if u > 0 then -- and
-                        local duplicate = table.copy(description) -- else packing problem
+                        local duplicate = copy(description) -- else packing problem
                         duplicate.comment = formatters["copy of %U"](unicode)
                         descriptions[u] = duplicate
                      -- validduplicates[#validduplicates+1] = u
                         if trace_loading then
-                            report_otf("duplicating %U to %U with index %H (%s kerns)",unicode,u,description.index,n)
+                            report_otf("duplicating %06U to %06U with index %H (%s kerns)",unicode,u,description.index,n)
                         end
                     end
                 end
@@ -2131,9 +2133,10 @@ actions["check metadata"] = function(data,filename,raw)
         end
     end
     --
+    local state = metadata.validation_state
     local names = raw.names
     --
-    if metadata.validation_state and table.contains(metadata.validation_state,"bad_ps_fontname") then
+    if state and table.contains(state,"bad_ps_fontname") then
         -- the ff library does a bit too much (and wrong) checking ... so we need to catch this
         -- at least for now
         local function valid(what)
@@ -2196,6 +2199,9 @@ actions["check metadata"] = function(data,filename,raw)
         metadata.psname = psname
     end
     --
+    if state and table.contains(state,"bad_cmap_table") then
+        report_otf("fontfile %a has bad cmap tables",filename)
+    end
 end
 
 actions["cleanup tables"] = function(data,filename,raw)
