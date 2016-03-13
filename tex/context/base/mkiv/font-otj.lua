@@ -1320,7 +1320,7 @@ local function inject_everything(head,where)
                 end
             end
             if done then
-                setdisc(current,pre,post.replace)
+                setdisc(current,pre,post,replace)
             end
             prevglyph = nil
             prevdisc  = current
