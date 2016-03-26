@@ -541,6 +541,7 @@
 \definefontstyle [\v!teletype,\v!type,\v!mono]     [\s!tt]
 \definefontstyle [\v!handwritten]                  [\s!hw]
 \definefontstyle [\v!calligraphic]                 [\s!cg]
+\definefontstyle [\v!math,\v!mathematics]          [\s!mm]
 
 \definefontalternative[\s!tf]
 \definefontalternative[\s!bf]
@@ -558,7 +559,6 @@
 \definealternativestyle [\v!bold]                                   [\bf]    []
 \definealternativestyle [\v!type]                                   [\tt]    []
 \definealternativestyle [\v!mono]                                   [\tt]    []
-\definealternativestyle [\v!monobold]                               [\tt\bf] []
 \definealternativestyle [\v!slanted]                                [\sl]    []
 \definealternativestyle [\v!italic]                                 [\it]    []
 \definealternativestyle [\v!boldslanted,\v!slantedbold]             [\bs]    []
@@ -567,7 +567,7 @@
 \definealternativestyle [\v!small,\v!smallnormal]                   [\setsmallbodyfont\tf] []
 \definealternativestyle [\v!smallbold]                              [\setsmallbodyfont\bf] []
 \definealternativestyle [\v!smalltype]                              [\setsmallbodyfont\tt] []
-\definealternativestyle [\v!smallslanted]                           [\setsmallbodyfont\sl] []
+\definealternativestyle [\v!smallitalic,\v!smallslanted]            [\setsmallbodyfont\sl] []
 \definealternativestyle [\v!smallboldslanted,\v!smallslantedbold]   [\setsmallbodyfont\bs] []
 \definealternativestyle [\v!smallbolditalic,\v!smallitalicbold]     [\setsmallbodyfont\bi] []
 
@@ -585,6 +585,13 @@
 \definealternativestyle [\v!serifbold]   [\rm\bf] []
 \definealternativestyle [\v!mononormal]  [\tt\tf] []
 \definealternativestyle [\v!monobold]    [\tt\bf] []
+
+% For Alan:
+
+\definealternativestyle
+  [\v!camel]
+  [{\setcharactercasing[\v!camel]}]
+  [{\setcharactercasing[\v!camel]}]
 
 % % maybe we need interface neutral as well (for use in cld):
 %

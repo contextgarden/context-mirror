@@ -142,9 +142,7 @@ nuts.getleader            = direct.getleader
 --     end
 -- end
 
--- track("getsubtype")
-
--- local dgf = direct.getfield  function nuts.getlist(n) return dgf(n,"list") end
+-- track("getfield")
 
 -- setters
 
@@ -268,7 +266,20 @@ if not direct.setlist then
 
 end
 
+-- if not direct.getpre then
+--
+--     local getfield = nuts.getfield
+--
+--     function direct.getpre    (n) local h, _, _, t       = getdisc(n,true) return h, t end
+--     function direct.getpost   (n) local _, h, _, _, t    = getdisc(n,true) return h, t end
+--     function direct.getreplace(n) local _, _, h, _, _, t = getdisc(n,true) return h, t end
+--
+-- end
+
 nuts.getdisc    = direct.getdisc
+----.getpre     = direct.getpre
+----.getpost    = direct.getpost
+----.getreplace = direct.getreplace
 nuts.setdisc    = direct.setdisc
 nuts.setchar    = direct.setchar
 nuts.setnext    = direct.setnext
@@ -279,7 +290,50 @@ nuts.setlink    = direct.setlink
 nuts.setlist    = direct.setlist
 nuts.setleader  = direct.setleader
 nuts.setsubtype = direct.setsubtype
+
+if not direct.is_glyph then
+
+    local getchar    = direct.getchar
+    local getid      = direct.getid
+    local getfont    = direct.getfont
+    local getsubtype = direct.getsubtype
+
+    local glyph_code = nodes.nodecodes.glyph
+
+    function direct.is_glyph(n,f)
+        local id   = getid(n)
+        if id == glyph_code then
+            if f and getfont(n) == f then
+                return getchar(n)
+            else
+                return false
+            end
+        else
+            return nil, id
+        end
+    end
+
+    function direct.is_char(n,f)
+        local id = getid(n)
+        if id == glyph_code then
+            if getsubtype(n) >= 256 then
+                return false
+            elseif f and getfont(n) == f then
+                return getchar(n)
+            else
+                return false
+            end
+        else
+            return nil, id
+        end
+    end
+
+end
+
 nuts.is_char    = direct.is_char
+nuts.ischar     = direct.is_char
+nuts.is_glyph   = direct.is_glyph
+nuts.isglyph    = direct.is_glyph
 
 local d_remove_node     = direct.remove
 local d_free_node       = direct.free

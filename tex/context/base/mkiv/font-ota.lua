@@ -35,19 +35,20 @@ local tonut               = nuts.tonut
 local getfield            = nuts.getfield
 local getnext             = nuts.getnext
 local getprev             = nuts.getprev
-local getid               = nuts.getid
+local getprev             = nuts.getprev
 local getprop             = nuts.getprop
 local setprop             = nuts.setprop
 local getfont             = nuts.getfont
 local getsubtype          = nuts.getsubtype
 local getchar             = nuts.getchar
+local ischar              = nuts.is_char
 
 local traverse_id         = nuts.traverse_id
 local traverse_node_list  = nuts.traverse
 local end_of_math         = nuts.end_of_math
 
 local nodecodes           = nodes.nodecodes
-local glyph_code          = nodecodes.glyph
+----- glyph_code          = nodecodes.glyph
 local disc_code           = nodecodes.disc
 local math_code           = nodecodes.math
 
@@ -75,7 +76,10 @@ local s_rest = 6
 local states = {
     init = s_init,
     medi = s_medi,
+    med2 = s_medi,
     fina = s_fina,
+    fin2 = s_fina,
+    fin3 = s_fina,
     isol = s_isol,
     mark = s_mark,
     rest = s_rest,
@@ -89,7 +93,10 @@ local states = {
 local features = {
     init = s_init,
     medi = s_medi,
+    med2 = s_medi,
     fina = s_fina,
+    fin2 = s_fina,
+    fin3 = s_fina,
     isol = s_isol,
  -- mark = s_mark,
  -- rest = s_rest,
@@ -114,10 +121,9 @@ function analyzers.setstate(head,font)
     local first, last, current, n, done = nil, nil, head, 0, false -- maybe make n boolean
     current = tonut(current)
     while current do
-        local id = getid(current)
-        if id == glyph_code and getfont(current) == font then
+        local char, id = ischar(current,font)
+        if char and not getprop(current,a_state) then
             done = true
-            local char = getchar(current)
             local d = descriptions[char]
             if d then
                 if d.class == "mark" then
@@ -140,6 +146,17 @@ function analyzers.setstate(head,font)
                     setprop(last,a_state,s_fina)
                 end
                 first, last, n = nil, nil, 0
+            end
+        elseif char == false then
+            -- other font
+            if first and first == last then
+                setprop(last,a_state,s_isol)
+            elseif last then
+                setprop(last,a_state,s_fina)
+            end
+            first, last, n = nil, nil, 0
+            if id == math_code then
+                current = end_of_math(current)
             end
         elseif id == disc_code then
             -- always in the middle .. it doesn't make much sense to assign a property
@@ -240,38 +257,43 @@ local mappers = {
     u = s_isol,  -- nonjoiner
 }
 
-local classifiers = { } -- we can also use this trick for devanagari
+-- we can also use this trick for devanagari
 
-local first_arabic,  last_arabic  = characters.blockrange("arabic")
-local first_syriac,  last_syriac  = characters.blockrange("syriac")
-local first_mandiac, last_mandiac = characters.blockrange("mandiac")
-local first_nko,     last_nko     = characters.blockrange("nko")
+local classifiers = characters.classifiers
 
-table.setmetatableindex(classifiers,function(t,k)
-    local c = chardata[k]
-    local v = false
-    if c then
-        local arabic = c.arabic
-        if arabic then
-            v = mappers[arabic]
-            if not v then
-                log.report("analyze","error in mapping arabic %C",k)
-                --  error
-                v = false
+if not classifiers then
+
+    local first_arabic,  last_arabic  = characters.blockrange("arabic")
+    local first_syriac,  last_syriac  = characters.blockrange("syriac")
+    local first_mandiac, last_mandiac = characters.blockrange("mandiac")
+    local first_nko,     last_nko     = characters.blockrange("nko")
+
+    classifiers = table.setmetatableindex(function(t,k)
+        local c = chardata[k]
+        local v = false
+        if c then
+            local arabic = c.arabic
+            if arabic then
+                v = mappers[arabic]
+                if not v then
+                    log.report("analyze","error in mapping arabic %C",k)
+                    --  error
+                    v = false
+                end
+            elseif k >= first_arabic  and k <= last_arabic  or k >= first_syriac  and k <= last_syriac  or
+                   k >= first_mandiac and k <= last_mandiac or k >= first_nko     and k <= last_nko     then
+                if categories[k] == "mn" then
+                    v = s_mark
+                else
+                    v = s_rest
+                end
             end
-        elseif k >= first_arabic  and k <= last_arabic  or k >= first_syriac  and k <= last_syriac  or
-               k >= first_mandiac and k <= last_mandiac or k >= first_nko     and k <= last_nko     then
-            if categories[k] == "mn" then
-                v = s_mark
-            else
-                v = s_rest
-            end
-        else
         end
-    end
-    t[k] = v
-    return v
-end)
+        t[k] = v
+        return v
+    end)
+
+end
 
 function methods.arab(head,font,attr)
     local first, last = nil, nil
@@ -279,10 +301,9 @@ function methods.arab(head,font,attr)
     local current, done = head, false
     current = tonut(current)
     while current do
-        local id = getid(current)
-        if id == glyph_code and getfont(current) == font and getsubtype(current)<256 and not getprop(current,a_state) then
+        local char, id = ischar(current,font)
+        if char and not getprop(current,a_state) then
             done = true
-            local char = getchar(current)
             local classifier = classifiers[char]
             if not classifier then
                 if last then

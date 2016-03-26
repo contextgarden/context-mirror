@@ -203,8 +203,11 @@ local getboth              = nuts.getboth
 local getlist              = nuts.getlist
 local getfont              = nuts.getfont
 local getchar              = nuts.getchar
+local getdisc              = nuts.getdisc
 local getattr              = nuts.getattr
 local getdisc              = nuts.getdisc
+
+local isglyph              = nuts.isglyph
 
 local setfield             = nuts.setfield
 local setlink              = nuts.setlink
@@ -486,20 +489,23 @@ end)
 
 local function kern_stretch_shrink(p,d)
     local left = getprev(p)
-    if left and getid(left) == glyph_code then -- how about disc nodes?
-        local data = expansions[getfont(left)][getchar(left)]
-        if data then
-            local stretch = data.stretch
-            local shrink  = data.shrink
-            if stretch ~= 0 then
-             -- stretch = data.factor * (d *  stretch - d)
-                stretch = data.factor *  d * (stretch - 1)
+    if left then
+        local char = isglyph(left)
+        if char then
+            local data = expansions[getfont(left)][char]
+            if data then
+                local stretch = data.stretch
+                local shrink  = data.shrink
+                if stretch ~= 0 then
+                 -- stretch = data.factor * (d *  stretch - d)
+                    stretch = data.factor *  d * (stretch - 1)
+                end
+                if shrink ~= 0 then
+                 -- shrink = data.factor * (d *  shrink - d)
+                    shrink = data.factor *  d * (shrink - 1)
+                end
+                return stretch, shrink
             end
-            if shrink ~= 0 then
-             -- shrink = data.factor * (d *  shrink - d)
-                shrink = data.factor *  d * (shrink - 1)
-            end
-            return stretch, shrink
         end
     end
     return 0, 0
@@ -694,8 +700,8 @@ local function add_to_width(line_break_dir,checked_expansion,s) -- split into tw
     local adjust_stretch = 0
     local adjust_shrink  = 0
     while s do
-        local id = getid(s)
-        if id == glyph_code then
+        local char, id = isglyph(s)
+        if char then
             if is_rotated[line_break_dir] then -- can be shared
                 size = size + getfield(s,"height") + getfield(s,"depth")
             else
@@ -704,7 +710,7 @@ local function add_to_width(line_break_dir,checked_expansion,s) -- split into tw
             if checked_expansion then
                 local data = checked_expansion[getfont(s)]
                 if data then
-                    data = data[getchar(s)]
+                    data = data[char]
                     if data then
                         adjust_stretch = adjust_stretch + data.glyphstretch
                         adjust_shrink  = adjust_shrink  + data.glyphshrink
@@ -1200,7 +1206,7 @@ local function post_line_break(par)
                 local prevlast = getprev(lastnode)
                 local nextlast = getnext(lastnode)
                 local subtype  = getsubtype(lastnode)
-                local pre, post, replace = getdisc(lastnode)
+                local pre, post, replace, pretail, posttail, replacetail = getdisc(lastnode)
                 if subtype == second_disc_code then
                     if not (getid(prevlast) == disc_code and getsubtype(prevlast) == first_disc_code) then
                         report_parbuilders('unsupported disc at location %a',3)
@@ -1210,12 +1216,11 @@ local function post_line_break(par)
                         pre = nil -- signal
                     end
                     if replace then
-                        local n = find_tail(replace)
                         setlink(prevlast,replace)
-                        setlink(n,lastnode)
+                        setlink(replacetail,lastnode)
                         replace = nil -- signal
                     end
-                    setdisc(pre,post,replace)
+                    setdisc(lastnode,pre,post,replace)
                     local pre, post, replace = getdisc(prevlast)
                     if pre then
                         flush_nodelist(pre)
@@ -1234,20 +1239,18 @@ local function post_line_break(par)
                     end
                     setsubtype(nextlast,regular_disc_code)
                     setfield(nextlast,"replace",post)
-                    setfield(lastnode,"post")
+                    setfield(lastnode,"post") -- nil
                 end
                 if replace then
                     flush_nodelist(replace)
                 end
                 if pre then
-                    local n = find_tail(pre)
                     setlink(prevlast,pre)
-                    setlink(n,lastnode)
+                    setlink(pretail,lastnode)
                 end
                 if post then
-                    local n = find_tail(post)
                     setlink(lastnode,post)
-                    setlink(n,nextlast)
+                    setlink(posttail,nextlast)
                     post_disc_break = true
                 end
                 setdisc(lastnode) -- nil, nil, nil
@@ -1882,8 +1885,13 @@ local function try_break(pi, break_type, par, first_p, current, checked_expansio
                 local b = r.break_node
                 local l = b and b.cur_break or first_p
                 local o = current and getprev(current)
-                if current and getid(current) == disc_code and getfield(current,"pre") then
-                    o = find_tail(getfield(current,"pre"))
+                if current and getid(current) == disc_code then
+                    local pre, _, _, pretail = getdisc(current)
+                    if pre then
+                        o = pretail
+                    else
+                        o = find_protchar_right(l,o)
+                    end
                 else
                     o = find_protchar_right(l,o)
                 end
@@ -2176,8 +2184,8 @@ function constructors.methods.basic(head,d)
         trialcount = 0
 
         while current and p_active ~= n_active do
-            local id = getid(current)
-            if id == glyph_code then
+            local char, id = isglyph(current)
+            if char then
                 if is_rotated[par.line_break_dir] then
                     active_width.size = active_width.size + getfield(current,"height") + getfield(current,"depth")
                 else
@@ -2185,14 +2193,14 @@ function constructors.methods.basic(head,d)
                 end
                 if checked_expansion then
                     local currentfont = getfont(current)
-                    local data= checked_expansion[currentfont]
+                    local data = checked_expansion[currentfont]
                     if data then
                         if currentfont ~= lastfont then
                             fontexps = checked_expansion[currentfont] -- a bit redundant for the par line packer
                             lastfont = currentfont
                         end
                         if fontexps then
-                            local expansion = fontexps[getchar(current)]
+                            local expansion = fontexps[char]
                             if expansion then
                                 active_width.adjust_stretch = active_width.adjust_stretch + expansion.glyphstretch
                                 active_width.adjust_shrink  = active_width.adjust_shrink  + expansion.glyphshrink
@@ -2238,7 +2246,7 @@ function constructors.methods.basic(head,d)
                         -- 0.81 :
                         -- local actual_pen = getfield(current,"penalty")
                         --
-                        local pre = getfield(current,"pre")
+                        local pre, post, replace = getdisc(current)
                         if not pre then    --  trivial pre-break
                             disc_width.size = 0
                             if checked_expansion then
@@ -2297,7 +2305,6 @@ function constructors.methods.basic(head,d)
                             end
                         end
                     end
-                    local replace = getfield(current,"replace")
                     if replace then
                         local size, adjust_stretch, adjust_shrink = add_to_width(line_break_dir,checked_expansion,replace)
                         active_width.size = active_width.size + size
@@ -2453,8 +2460,8 @@ local verbose    = false -- true
 
 local function short_display(target,a,font_in_short_display)
     while a do
-        local id = getid(a)
-        if id == glyph_code then
+        local char, id = isglyph(a)
+        if char then
             local font = getfont(a)
             if font ~= font_in_short_display then
                 write(target,tex.fontidentifier(font) .. ' ')
@@ -2463,11 +2470,12 @@ local function short_display(target,a,font_in_short_display)
             if getsubtype(a) == ligature_code then
                 font_in_short_display = short_display(target,getfield(a,"components"),font_in_short_display)
             else
-                write(target,utfchar(getchar(a)))
+                write(target,utfchar(char))
             end
         elseif id == disc_code then
-            font_in_short_display = short_display(target,getfield(a,"pre"),font_in_short_display)
-            font_in_short_display = short_display(target,getfield(a,"post"),font_in_short_display)
+            local pre, post, replace = getdisc(a)
+            font_in_short_display = short_display(target,pre,font_in_short_display)
+            font_in_short_display = short_display(target,post,font_in_short_display)
         elseif verbose then
             write(target,format("[%s]",nodecodes[id]))
         elseif id == rule_code then
@@ -2822,8 +2830,8 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
     local function process(current) -- called nested in disc replace
 
         while current do
-            local id = getid(current)
-            if id == glyph_code then
+            local char, id = isglyph(current)
+            if char then
                 if cal_expand_ratio then
                     local currentfont = getfont(current)
                     if currentfont ~= lastfont then
@@ -2831,7 +2839,7 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                         lastfont = currentfont
                     end
                     if fontexps then
-                        local expansion = fontexps[getchar(current)]
+                        local expansion = fontexps[char]
                         if expansion then
                             font_stretch = font_stretch + expansion.glyphstretch
                             font_shrink  = font_shrink  + expansion.glyphshrink
@@ -3004,15 +3012,16 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
 
             local fontexps, lastfont
             for i=1,expansion_index do
-                local g = expansion_stack[i]
-                local e
-                if getid(g) == glyph_code then
+                local g    = expansion_stack[i]
+                local e    = 0
+                local char = isglyph(g)
+                if char then
                     local currentfont = getfont(g)
                     if currentfont ~= lastfont then
                         fontexps = expansions[currentfont]
                         lastfont = currentfont
                     end
-                    local data = fontexps[getchar(g)]
+                    local data = fontexps[char]
                     if trace_expansion then
                         setnodecolor(g,"hz:positive")
                     end
@@ -3060,15 +3069,16 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
 
             local fontexps, lastfont
             for i=1,expansion_index do
-                local g = expansion_stack[i]
-                local e
-                if getid(g) == glyph_code then
+                local g    = expansion_stack[i]
+                local e    = 0
+                local char = isglyph(g)
+                if char then
                     local currentfont = getfont(g)
                     if currentfont ~= lastfont then
                         fontexps = expansions[currentfont]
                         lastfont = currentfont
                     end
-                    local data = fontexps[getchar(g)]
+                    local data = fontexps[char]
                     if trace_expansion then
                         setnodecolor(g,"hz:negative")
                     end

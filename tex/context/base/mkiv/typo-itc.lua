@@ -37,9 +37,12 @@ local getnext             = nuts.getnext
 local getid               = nuts.getid
 local getfont             = nuts.getfont
 local getchar             = nuts.getchar
+local getdisc             = nuts.getdisc
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
 local setfield            = nuts.setfield
+local setdisc             = nuts.setdisc
+local isglyph             = nuts.isglyph
 
 local insert_node_after   = nuts.insert_after
 local delete_node         = nuts.delete
@@ -173,17 +176,22 @@ function italics.handler(head)
     local previtalic      = 0
     local previnserted    = nil
 
-    local replace         = nil
-    local replacechar     = nil
-    local replacehead     = nil
-    local replaceitalic   = 0
-    local replaceinserted = nil
+    local pre             = nil
+    local pretail          = nil
 
     local post            = nil
+    local posttail        = nil
     local postchar        = nil
     local posthead        = nil
     local postitalic      = 0
     local postinserted    = nil
+
+    local replace         = nil
+    local replacetail     = nil
+    local replacechar     = nil
+    local replacehead     = nil
+    local replaceitalic   = 0
+    local replaceinserted = nil
 
     local current         = prevhead
     local done            = false
@@ -191,10 +199,9 @@ function italics.handler(head)
     local lastattr        = nil
 
     while current do
-        local id = getid(current)
-        if id == glyph_code then
+        local char, id = isglyph(current)
+        if char then
             local font = getfont(current)
-            local char = getchar(current)
             local data = italicsdata[font]
             if font ~= lastfont then
                 if previtalic ~= 0 then
@@ -275,95 +282,84 @@ function italics.handler(head)
             replaceitalic   = 0
             postinserted    = nil
             postitalic      = 0
-            replace = getfield(current,"replace")
+            updated         = false
+            pre, post, replace, pretail, posttail, replacetail = getdisc(current)
             if replace then
-                local current = find_tail(replace)
-                if getid(current) ~= glyph_code then
-                    current = getprev(current)
-                end
-                if current and getid(current) == glyph_code then
-                    local font = getfont(current)
-                    local char = getchar(current)
-                    local data = italicsdata[font]
-                    if data then
-                        local attr = forcedvariant or getattr(current,a_italics)
-                        if attr and attr > 0 then
-                            local cd = data[char]
-                            if not cd then
-                                -- this really can happen
-                                replaceitalic = 0
-                            else
-                                replaceitalic = cd.italic
-                                if not replaceitalic then
-                                    replaceitalic = setitalicinfont(font,char) -- calculated once
-                                 -- replaceitalic = 0
-                                end
-                                if replaceitalic ~= 0 then
-                                    lastfont    = font
-                                    lastattr    = attr
-                                    replacechar = char
-                                    replacehead = replace
-                                    replace     = current
+                local current = replacetail
+                while current do
+                    local char, id = isglyph(current)
+                    if char then
+                        local font = getfont(current)
+                        local data = italicsdata[font]
+                        if data then
+                            local attr = forcedvariant or getattr(current,a_italics)
+                            if attr and attr > 0 then
+                                local cd = data[char]
+                                if not cd then
+                                    -- this really can happen
+                                    replaceitalic = 0
+                                else
+                                    replaceitalic = cd.italic
+                                    if not replaceitalic then
+                                        replaceitalic = setitalicinfont(font,char) -- calculated once
+                                     -- replaceitalic = 0
+                                    end
+                                    if replaceitalic ~= 0 then
+                                        lastfont    = font
+                                        lastattr    = attr
+                                        replacechar = char
+                                        replacehead = replace
+                                        replace     = current
+                                        updated     = true
+                                    end
                                 end
                             end
---                         else
---                             replaceitalic = 0
                         end
---                     else
---                         replaceitalic = 0
+                        break
+                    else
+                        current = getprev(current)
                     end
---                 else
---                     replaceitalic = 0
                 end
---                 replaceinserted = nil
--- else
---     replaceitalic   = 0
---     replaceinserted = nil
             end
-            post = getfield(current,"post")
             if post then
-                local current = find_tail(post)
-                if getid(current) ~= glyph_code then
-                    current = getprev(current)
-                end
-                if current and getid(current) == glyph_code then
-                    local font = getfont(current)
-                    local char = getchar(current)
-                    local data = italicsdata[font]
-                    if data then
-                        local attr = forcedvariant or getattr(current,a_italics)
-                        if attr and attr > 0 then
-                            local cd = data[char]
-                            if not cd then
-                                -- this really can happen
---                                 postitalic = 0
-                            else
-                                postitalic = cd.italic
-                                if not postitalic then
-                                    postitalic = setitalicinfont(font,char) -- calculated once
-                                 -- postitalic = 0
-                                end
-                                if postitalic ~= 0 then
-                                    lastfont = font
-                                    lastattr = attr
-                                    postchar = char
-                                    posthead = post
-                                    post     = current
+                local current = posttail
+                while current do
+                    local char, id = isglyph(current)
+                    if char then
+                        local font = getfont(current)
+                        local data = italicsdata[font]
+                        if data then
+                            local attr = forcedvariant or getattr(current,a_italics)
+                            if attr and attr > 0 then
+                                local cd = data[char]
+                                if not cd then
+                                        -- this really can happen
+                                    -- postitalic = 0
+                                else
+                                    postitalic = cd.italic
+                                    if not postitalic then
+                                        postitalic = setitalicinfont(font,char) -- calculated once
+                                     -- postitalic = 0
+                                    end
+                                    if postitalic ~= 0 then
+                                        lastfont = font
+                                        lastattr = attr
+                                        postchar = char
+                                        posthead = post
+                                        post     = current
+                                        updated     = true
+                                    end
                                 end
                             end
---                         else
---                             postitalic = 0
                         end
---                     else
---                         postitalic = 0
+                        break
+                    else
+                        current = getprev(current)
                     end
---                 else
---                     postitalic = 0
                 end
---                 postinserted = nil
--- else
---     postitalic   = 0
---     postinserted = nil
+            end
+            if updated then
+                setdisc(current,pre,post,replace)
             end
         elseif id == kern_code then -- how about fontkern ?
             previnserted    = nil
@@ -410,9 +406,9 @@ function italics.handler(head)
             postinserted    = nil
             postitalic      = 0
             local next = getnext(current)
-            if next and getid(next) == glyph_code then
-                local char = getchar(next)
-                if is_punctuation[char] then
+            if next then
+                local char, id = isglyph(next)
+                if char and is_punctuation[char] then
                     local kern = getprev(current)
                     if kern and getid(kern) == kern_code then
                         local glyph = getprev(kern)

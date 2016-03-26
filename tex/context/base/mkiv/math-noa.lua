@@ -170,9 +170,6 @@ local math_style           = nodecodes.style          -- attr style
 local math_choice          = nodecodes.choice         -- attr display text script scriptscript
 local math_fence           = nodecodes.fence          -- attr subtype
 
-local hlist_code           = nodecodes.hlist
-local glyph_code           = nodecodes.glyph
-
 local left_fence_code      = fencecodes.left
 local middle_fence_code    = fencecodes.middle
 local right_fence_code     = fencecodes.right
@@ -198,8 +195,8 @@ local function process(start,what,n,parent)
                 report_processing("%w%S, class %a",n*2,nutstring(start),noadcodes[getsubtype(start)])
             elseif id == math_char then
                 local char = getchar(start)
+                local font = getfont(start)
                 local fam  = getfield(start,"fam")
-                local font = font_of_family(fam)
                 report_processing("%w%S, family %a, font %a, char %a, shape %c",n*2,nutstring(start),fam,font,char,char)
             else
                 report_processing("%w%S",n*2,nutstring(start))
@@ -531,8 +528,6 @@ do
 
     local function checked(pointer)
         local char = getchar(pointer)
-     -- local fam  = getfield(pointer,"fam")
-     -- local font = font_of_family(fam)
         local font = getfont(pointer)
         local data = fontcharacters[font]
         if not data[char] then
@@ -556,8 +551,6 @@ do
         local g          = getattr(pointer,a_mathgreek) or 0
         local a          = getattr(pointer,a_mathalphabet) or 0
         local char       = getchar(pointer)
-     -- local fam        = getfield(pointer,"fam")
-     -- local font       = font_of_family(fam)
         local font       = getfont(pointer)
         local characters = fontcharacters[font]
         if a > 0 or g > 0 then
@@ -648,8 +641,6 @@ processors.render[math_char] = function(pointer)
         if renderset then
             local newchar = renderset[char]
             if newchar then
-             -- local fam        = getfield(pointer,"fam")
-             -- local font       = font_of_family(fam)
                 local font       = getfont(pointer)
                 local characters = fontcharacters[font]
                 if characters and characters[newchar] then
@@ -1110,7 +1101,6 @@ alternate[math_char] = function(pointer)
     local a = getattr(pointer,a_mathalternate)
     if a and a > 0 then
         setattr(pointer,a_mathalternate,0)
-     -- local tfmdata   = fontdata[font_of_family(getfield(pointer,"fam"))]
         local tfmdata   = fontdata[getfont(pointer)]
         local resources = tfmdata.resources -- was tfmdata.shared
         if resources then
@@ -1239,7 +1229,6 @@ italics[math_char] = function(pointer,what,n,parent)
     local method = getattr(pointer,a_mathitalics)
     if method and method > 0 and method < 100 then
         local char = getchar(pointer)
-     -- local font = font_of_family(getfield(pointer,"fam")) -- todo: table
         local font = getfont(pointer)
         local correction, visual = getcorrection(method,font,char)
         if correction and correction ~= 0 then
@@ -1357,7 +1346,7 @@ local validpair = {
 }
 
 local function movesubscript(parent,current_nucleus,current_char)
-    local prev = getfield(parent,"prev")
+    local prev = getprev(parent)
     if prev and getid(prev) == math_noad then
         if not getfield(prev,"sup") and not getfield(prev,"sub") then
             -- {f} {'}_n => f_n^'
@@ -1407,8 +1396,6 @@ local function collapsepair(pointer,what,n,parent,nested) -- todo: switch to tur
                                 if getid(next_nucleus) == math_char then
                                     local newchar = mathpair[next_char]
                                     if newchar then
-                                     -- local fam        = getfield(current_nucleus,"fam")
-                                     -- local id         = font_of_family(fam)
                                         local id         = getfont(current_nucleus)
                                         local characters = fontcharacters[id]
                                         if characters and characters[newchar] then
@@ -1487,7 +1474,6 @@ variants[math_char] = function(pointer,what,n,parent) -- also set export value
             local nucleus = getfield(next,"nucleus")
             if nucleus and getid(nucleus) == math_char and getchar(nucleus) == selector then
                 local variant
-             -- local tfmdata = fontdata[font_of_family(getfield(pointer,"fam"))] -- we can also have a famdata
                 local tfmdata = fontdata[getfont(pointer)]
                 local mathvariants = tfmdata.resources.variants -- and variantdata
                 if mathvariants then

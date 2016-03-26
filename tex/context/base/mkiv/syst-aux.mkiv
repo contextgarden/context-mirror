@@ -7148,7 +7148,7 @@
   {\csname#1\ifcsname#1#2\endcsname#2\else#3\fi\endcsname}
 
 %D Signal. Some fonts have a char0 rendering so we need to make sure that it
-%D is not set in the font!
+%D is not set in the font! (THis will be overloaded)
 
 \unexpanded\def\signalcharacter{\char\zerocount} % \zwj
 
@@ -7356,6 +7356,15 @@
 
 %def\ntimes#1#2{\ifnum#2>\zerocount#1\ntimes{#1}{\numexpr#2-\plusone\relax}\fi} % 1.72
 \def\ntimes#1#2{\clf_ntimes{#1}\numexpr#2\relax}                                % 0.33
+
+%D Not that useful:
+
+% \unexpanded\def\doifelsestringbefore{\clf_doifelsestringbefore}
+% \unexpanded\def\doifelsestringafter {\clf_doifelsestringafter}
+
+% Could have been useful but not faster that addtocommalist and also expansion mess:
+%
+% \def\additemtolist#1#2{\normalexpanded{\noexpand\clf_additemtolist{#1}{#2}}}
 
 \protect \endinput
 
