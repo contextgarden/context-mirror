@@ -3658,7 +3658,7 @@ local function spaceinitializer(tfmdata,value) -- attr
                                 for k, v in next, coverage do
                                     local kern = v[32]
                                     if kern then
-                                        if type(v) == "table" then
+                                        if type(kern) == "table" then
                                             left[k] = kern[3] -- needs checking
                                         else
                                             left[k] = kern
