@@ -170,7 +170,7 @@ end
 
 function fonts.names.simple(alsotypeone)
     local simpleversion = 1.001
-    local simplelist = { "ttf", "otf", "ttc", "dfont", alsotypeone and "afm" or nil }
+    local simplelist = { "ttf", "otf", "ttc", alsotypeone and "afm" or nil }
     local name = "luatex-fonts-names.lua"
     local path = collapsepath(caches.getwritablepath("..","..","generic","fonts","data"))
     fonts.names.filters.list = simplelist
