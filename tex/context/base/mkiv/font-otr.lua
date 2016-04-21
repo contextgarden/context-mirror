@@ -1081,7 +1081,7 @@ readers.hmtx = function(f,fontdata,specification)
             end
             -- The next can happen in for instance a monospace font or in a cjk font
             -- with fixed widths.
-            for i=nofmetrics,nofglyphs do
+            for i=nofmetrics,nofglyphs-1 do
                 local glyph = glyphs[i]
                 if width ~= 0 then
                     glyph.width = width

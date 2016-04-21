@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/21/16 10:10:19
+-- merge date  : 04/21/16 12:13:25
 
 do -- begin closure to overcome local limits and interference
 
@@ -5653,9 +5653,13 @@ function constructors.scale(tfmdata,specification)
     elseif autoitalicamount then 
       local vi=description.italic
       if not vi then
-        local vi=description.boundingbox[3]-description.width+autoitalicamount
-        if vi>0 then 
-          chr.italic=vi*hdelta
+        local bb=description.boundingbox
+        if bb then
+          local vi=bb[3]-description.width+autoitalicamount
+          if vi>0 then 
+            chr.italic=vi*hdelta
+          end
+        else
         end
       elseif vi~=0 then
         chr.italic=vi*hdelta
@@ -8809,7 +8813,7 @@ readers.hmtx=function(f,fontdata,specification)
           glyph.width=width
         end
       end
-      for i=nofmetrics,nofglyphs do
+      for i=nofmetrics,nofglyphs-1 do
         local glyph=glyphs[i]
         if width~=0 then
           glyph.width=width
@@ -15587,7 +15591,7 @@ local trace_defining=false registertracker("fonts.defining",function(v) trace_de
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.017 
+otf.version=3.018 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 local otfreaders=otf.readers
 local hashes=fonts.hashes
