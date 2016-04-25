@@ -263,12 +263,23 @@ function helpers.prefix(data,prefixspec)
     end
 end
 
+function helpers.pageofinternal(n,prefixspec,pagespec)
+    local data = structures.references.internals[n]
+    if not data then
+        -- error
+    elseif prefixspec then
+        helpers.prefixpage(data,prefixspec,pagespec)
+    else
+        helpers.prefix(data,pagespec)
+    end
+end
+
 function pages.is_odd(n)
     n = n or texgetcount("realpageno")
     if texgetcount("pagenoshift") % 2 == 0 then
-        return n % 2 == 0
-    else
         return n % 2 ~= 0
+    else
+        return n % 2 == 0
     end
 end
 
@@ -277,9 +288,9 @@ function pages.on_right(n)
     if pagemode == 2 or pagemode == 1 then
         n = n or texgetcount("realpageno")
         if texgetcount("pagenoshift") % 2 == 0 then
-            return n % 2 == 0
-        else
             return n % 2 ~= 0
+        else
+            return n % 2 == 0
         end
     else
         return true
@@ -398,4 +409,10 @@ implement { -- weird place
             { "criterium" },
         }
     }
+}
+
+interfaces.implement {
+    name      = "pageofinternal",
+    arguments = { "integer" },
+    actions   = helpers.pageofinternal,
 }
