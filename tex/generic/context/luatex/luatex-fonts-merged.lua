@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/13/16 16:21:29
+-- merge date  : 05/14/16 02:20:40
 
 do -- begin closure to overcome local limits and interference
 
@@ -22287,7 +22287,7 @@ local otfreaders=otf.readers
 local otfenhancers=otf.enhancers
 local afmfeatures=constructors.newfeatures("afm")
 local registerafmfeature=afmfeatures.register
-afm.version=1.510 
+afm.version=1.511 
 afm.cache=containers.define("fonts","afm",afm.version,true)
 afm.autoprefixed=true 
 afm.helpdata={} 
@@ -22352,7 +22352,9 @@ do
     end
     binary=decrypt(binary,4)
     local vector=lpegmatch(p_filternames,binary)
-    vector[0]=table.remove(vector,1)
+    if vector[1]==".notdef" then
+      vector[0]=table.remove(vector,1)
+    end
     if not vector then
       print("no vector",filename)
       return
@@ -22383,7 +22385,7 @@ local readafm
 do 
   local spacing=patterns.spacer
   local lineend=patterns.newline
-  local number=spacing*(R("09")+S("."))^1/tonumber
+  local number=spacing*S("+-")^-1*(R("09")+S("."))^1/tonumber
   local name=spacing*C((1-spacing)^1)
   local words=spacing*(1-lineend)^1/strip
   local rest=(1-lineend)^0

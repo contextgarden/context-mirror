@@ -55,7 +55,7 @@ local otfenhancers       = otf.enhancers
 local afmfeatures        = constructors.newfeatures("afm")
 local registerafmfeature = afmfeatures.register
 
-afm.version              = 1.510 -- incrementing this number one up will force a re-cache
+afm.version              = 1.511 -- incrementing this number one up will force a re-cache
 afm.cache                = containers.define("fonts", "afm", afm.version, true)
 afm.autoprefixed         = true -- this will become false some day (catches texnansi-blabla.*)
 
@@ -91,6 +91,11 @@ and <l n='otf'/> reader.</p>
 <p>We now use a new (unfinished) pfb loader but I see no differences between the old
 and new vectors (we actually had one bad vector with the old loader).</p>
 --ldx]]--
+
+-- StartComposites 55
+-- CC Aacute 2 ; PCC A 0 0 ; PCC acute 83 157 ;
+-- CC Acircumflex 2 ; PCC A 0 0 ; PCC circumflex 71 157 ;
+-- CC Adieresis 2 ; PCC A 0 0 ; PCC dieresis 71 157 ;
 
 local get_indexes
 
@@ -183,7 +188,10 @@ do
 
         local vector = lpegmatch(p_filternames,binary)
 
-        vector[0] = table.remove(vector,1)
+        if vector[1] == ".notdef" then
+            -- tricky
+            vector[0] = table.remove(vector,1)
+        end
 
         if not vector then
             print("no vector",filename)
@@ -245,7 +253,7 @@ do -- no need for a further speedup with locals
 
     local spacing   = patterns.spacer
     local lineend   = patterns.newline
-    local number    = spacing * (R("09") + S("."))^1 / tonumber
+    local number    = spacing * S("+-")^-1 * (R("09") + S("."))^1 / tonumber
     local name      = spacing * C((1-spacing)^1)
     local words     = spacing * (1 - lineend)^1 / strip
     local rest      = (1 - lineend)^0
