@@ -1,0 +1,334 @@
+%D \module
+%D   [       file=file-job, % copied from main-001, later core-job
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Job Handling,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module is still to be split and documented.
+
+\writestatus{loading}{ConTeXt File Macros / Job Handling}
+
+\unprotect
+
+\registerctxluafile{file-job}{1.001}
+
+% processing
+
+\unexpanded\def\doifelseinputfile#name%
+  {\clf_doifelseinputfile{#name}}
+
+\let\doifinputfileelse\doifelseinputfile
+
+\unexpanded\def\processfile#name%
+  {\clf_processfile{#name}}
+
+% path control
+
+%D In the following example the lookup order is \type {.}, {/foo}, \type
+%D {foo/bar} as one can always explicitly prefix a wanted file.
+%D
+%D \starttyping
+%D \pushpath[foo]
+%D     \pushpath[foo/bar]
+%D         \input test
+%D     \poppath
+%D \poppath
+%D \stoptyping
+
+\unexpanded\def\usepath[#path]%
+  {\clf_usepath{#path}}
+
+\unexpanded\def\usesubpath[#path]%
+  {\clf_usesubpath{#path}}
+
+\unexpanded\def\pushpath[#path]%
+  {\clf_pushpath{#path}}
+
+\unexpanded\def\poppath
+  {\clf_poppath}
+
+\unexpanded\def\resetpath % not the pushed paths
+  {\clf_resetpath}
+
+\def\allinputpaths
+  {\clf_allinputpaths}
+
+% helper (not really needed nowadays)
+
+\let\locatedfilepath\empty
+
+\unexpanded\def\locatefilepath#name% no [] ?
+  {\edef\locatedfilepath{\clf_locatefilepath{#name}}}
+
+% % maybe:
+%
+% % \dirlist{c:/data/temporary/foo}{images/bar.jpg}
+% % \dirfile{c:/data/temporary/foo}{images/bar.jpg}
+%
+% \def\dirlist#1#2{dirlist://#1/**/#2}
+% \def\dirfile#1#2{dirlist://#1/**/#2?option=fileonly}
+
+% zip files are tree'd
+
+\unexpanded\def\usezipfile
+  {\dodoubleempty\syst_files_use_zip_file}
+
+\def\syst_files_use_zip_file[#zipname][#subtree]%
+  {\clf_usezipfile{#zipname}{#subtree}}
+
+% exa stuff might become obsolete:
+
+\unexpanded\def\loadexamodes
+  {\dosingleempty\syst_files_load_exa_modes}
+
+\def\syst_files_load_exa_modes[#name]%
+  {\clf_loadexamodes{#name}}
+
+% runtime files (maybe also do this in lua?)
+
+% \def\doloadsystemfile#1% only mkiv files
+%   {\readfile{sys:///#1.\mksuffix}{\showmessage\m!system2{#1.\mksuffix}}\donothing}
+
+\unexpanded\def\syst_files_load
+  {\syst_files_load_indeed\f!newfilename  % new code, to be integrated at some point, plus fixes posted on the list
+   \syst_files_load_indeed\f!locfilename  % new code, somewhat experimental, not distributed (outside the dev group)
+   \syst_files_load_indeed\f!expfilename  % new code, very experimental, can be engine specific, mostly for me only
+   \syst_files_load_indeed\f!sysfilename  % local settings, but probably not that good an idea to use
+  %\syst_files_load_indeed\f!fntfilename  % maybe some day, can load goodies and patches
+  }
+
+\def\syst_files_load_indeed#name% from now on we assume a suffix to be part of the name
+  {\readsysfile{#name}{\showmessage\m!system2{#name}}\donothing}
+
+% document structure
+
+\ifdefined\textlevel                         \else \newcount\textlevel                          \fi % might go away
+\ifdefined\strc_pagenumbers_flush_final_page \else \let\strc_pagenumbers_flush_final_page\relax \fi % ugly
+
+\unexpanded\def\dostarttext
+  {\glet\dostarttext\relax
+   \the\everystarttext
+   \global\everystarttext\emptytoks}
+
+\unexpanded\def\dostoptext
+  {\glet\dostoptext\relax
+   \strc_pagenumbers_flush_final_page
+   \page % hm, bonus
+   \the\everystoptext
+   \global\everystoptext\emptytoks
+   \the\everybye
+   \global\everybye\emptytoks
+   \the\everygoodbye
+   \global\everygoodbye\emptytoks
+   \doifelsesometoks\everynotabene{\writeline\the\everynotabene\writeline}\donothing
+   \normalend}           % tex's \end
+
+\unexpanded\def\starttext    {\clf_starttext}
+\unexpanded\def\stoptext     {\clf_stoptext}
+\unexpanded\def\forcequitjob {\clf_forcequitjob}
+\unexpanded\def\end          {\clf_forceendjob}
+\unexpanded\def\autostarttext{\clf_autostarttext}
+\unexpanded\def\autostoptext {\clf_autostoptext}
+
+\unexpanded\def\finishjob{\stoptext} % nicer in luatex call commandline
+
+\newtoks\everystartnotext
+\newtoks\everystopnotext
+
+\unexpanded\def\startnotext  {\the\everystartnotext}
+\unexpanded\def\stopnotext   {\the\everystopnotext \normalend}
+
+% protect structure
+
+\unexpanded\def\processfilemany#name{\clf_processfilemany{#name}}
+\unexpanded\def\processfileonce#name{\clf_processfileonce{#name}}
+\unexpanded\def\processfilenone#name{\clf_processfilenone{#name}}
+
+\unexpanded\def\project    {\doifelsenextoptionalcs\useproject    \syst_structure_arg_project}
+\unexpanded\def\product    {\doifelsenextoptionalcs\useproduct    \syst_structure_arg_product}
+\unexpanded\def\component  {\doifelsenextoptionalcs\usecomponent  \syst_structure_arg_component}
+\unexpanded\def\environment{\doifelsenextoptionalcs\useenvironment\syst_structure_arg_environment}
+
+\def\syst_structure_arg_project    #name {\clf_useproject    {#name}}
+\def\syst_structure_arg_product    #name {\clf_useproduct    {#name}}
+\def\syst_structure_arg_component  #name {\clf_usecomponent  {#name}}
+\def\syst_structure_arg_environment#name {\clf_useenvironment{#name}}
+
+\unexpanded\def\startproject    {\doifelsenextoptionalcs\syst_structure_start_opt_project    \syst_structure_start_arg_project    }
+\unexpanded\def\startproduct    {\doifelsenextoptionalcs\syst_structure_start_opt_product    \syst_structure_start_arg_product    }
+\unexpanded\def\startcomponent  {\doifelsenextoptionalcs\syst_structure_start_opt_component  \syst_structure_start_arg_component  }
+\unexpanded\def\startenvironment{\doifelsenextoptionalcs\syst_structure_start_opt_environment\syst_structure_start_arg_environment}
+
+\def\syst_structure_start_arg_project    #name {\clf_startproject    {#name}}
+\def\syst_structure_start_arg_product    #name {\clf_startproduct    {#name}}
+\def\syst_structure_start_arg_component  #name {\clf_startcomponent  {#name}}
+\def\syst_structure_start_arg_environment#name {\clf_startenvironment{#name}}
+
+\unexpanded\def\useproject    [#name]{\clf_useproject    {#name}}
+\unexpanded\def\useproduct    [#name]{\clf_useproduct    {#name}}
+\unexpanded\def\usecomponent  [#name]{\clf_usecomponent  {#name}}
+\unexpanded\def\useenvironment[#name]{\clf_useenvironment{#name}}
+
+\unexpanded\def\syst_structure_start_opt_project    [#name]{\clf_startproject    {#name}}
+\unexpanded\def\syst_structure_start_opt_product    [#name]{\clf_startproduct    {#name}}
+\unexpanded\def\syst_structure_start_opt_component  [#name]{\clf_startcomponent  {#name}}
+\unexpanded\def\syst_structure_start_opt_environment[#name]{\clf_startenvironment{#name}}
+
+\newconditional\endofinput % hack, needed because \endinput happens one level down in the input when we write from lua
+
+\unexpanded\def\signalendofinput#1% argument just for tracing
+  {\global\settrue\endofinput}
+
+\unexpanded\def\honorendofinput
+  {\ifconditional\endofinput
+     \global\setfalse\endofinput
+     \endinput
+   \fi}
+
+\unexpanded\def\stopproject              {\clf_stopproject    \honorendofinput}
+\unexpanded\def\stopproduct              {\clf_stopproduct    \honorendofinput}
+\unexpanded\def\stopcomponent            {\clf_stopcomponent  \honorendofinput}
+\unexpanded\def\stopenvironment          {\clf_stopenvironment\honorendofinput}
+
+           \let\currentproject            \clf_currentproject
+           \let\currentproduct            \clf_currentproduct
+           \let\currentcomponent          \clf_currentcomponent
+           \let\currentenvironment        \clf_currentenvironment
+           \let\processedfile             \clf_processedfile
+           \let\processedfiles            \clf_processedfiles
+
+\unexpanded\def\dostarttextfile     #name{\clf_dostarttextfile{name}}
+\unexpanded\def\dostoptextfile           {\clf_dostoptextfile}
+
+\unexpanded\def\loadtexfile       [#name]{\clf_usetexfile{#name}}
+\unexpanded\def\loadluafile       [#name]{\clf_useluafile{#name}}
+\unexpanded\def\loadcldfile       [#name]{\clf_usecldfile{#name}}
+\unexpanded\def\loadanyfile       [#name]{\clf_useanyfile{#name}}
+
+\unexpanded\def\loadtexfileonce   [#name]{\clf_usetexfileonce{#name}}
+\unexpanded\def\loadluafileonce   [#name]{\clf_useluafileonce{#name}}
+\unexpanded\def\loadcldfileonce   [#name]{\clf_usecldfileonce{#name}}
+\unexpanded\def\loadanyfileonce   [#name]{\clf_useanyfileonce{#name}}
+
+%D Handy for modules that have a test/demo appended (true added).
+
+\unexpanded\def\continueifinputfile#name%
+  {\clf_doifelsecontinuewithfile{#name}\relax\endinput} % we cannot do \endinput via lua
+
+% \startproject test
+%     1: \startmode[*project] project \stopmode \endgraf
+%     2: \startmode[*product] product \stopmode \endgraf
+% \stopproject
+
+% replaced by modes:
+%
+% \setvalue{\e!start\v!localenvironment}[#1]%
+%   {\let\loadedlocalenvironments\empty
+%    \def\docommand##1%
+%      {\beforesplitstring##1\at.\to\someevironment
+%       \addtocommalist\someevironment\loadedlocalenvironments}%
+%    \processcommalist[#1]\docommand
+%    \doifcommonelse{\currentproject,\currentproduct,\currentcomponent,\currentenvironment}\loadedlocalenvironments
+%      {\letvalue{\e!stop\v!localenvironment}\relax}
+%      {\grabuntil{\e!stop\v!localenvironment}\gobbleoneargument}}
+%
+% \setvalue{\v!localenvironment}{\doifnextoptionalcselse\uselocalenvironment\redolocalenvironment}
+%
+% \def\redolocalenvironment#1 {\uselocalenvironment[#1]}
+% \def\uselocalenvironment[#1]{\doexecutefileonce{#1}}
+
+% weird place:
+
+\neverypar\emptytoks
+
+%D Wrappers (the signal is a synchronization with lua hack):
+
+\newsystemmode\v!project
+\newsystemmode\v!product
+\newsystemmode\v!component
+\newsystemmode\v!environment
+
+\unexpanded\def\startprojectindeed
+  {%starttext
+   \pushsystemmode\v!project
+   \setsystemmode\v!project}
+
+\unexpanded\def\stopprojectindeed
+  {\popsystemmode\v!project
+   %stoptext
+   \signalendofinput\v!project}
+
+\unexpanded\def\startproductindeed
+  {\starttext
+   \pushsystemmode\v!product
+   \setsystemmode\v!product}
+
+\unexpanded\def\stopproductindeed
+  {\popsystemmode\v!product
+   \stoptext
+   \signalendofinput\v!product}
+
+\unexpanded\def\startcomponentindeed
+  {\starttext
+   \pushreferenceprefix\currentcomponent
+   \pushsystemmode\v!component
+   \setsystemmode\v!component}
+
+\unexpanded\def\stopcomponentindeed
+  {\popsystemmode\v!component
+   \popreferenceprefix
+   \stoptext
+   \signalendofinput\v!component}
+
+\unexpanded\def\startenvironmentindeed
+  {\pushsystemmode\v!environment
+   \setsystemmode\v!environment}
+
+\unexpanded\def\stopenvironmentindeed
+  {\popsystemmode\v!environment
+   \signalendofinput\v!environment}
+
+%D Relatively new (might move as it depends on setups):
+
+%newtoks\everysetupdocument
+
+\unexpanded\def\startdocument % todo: dostarttagged\t!document
+  {\dosingleargument\syst_structure_document_start}
+
+\unexpanded\def\syst_structure_document_start[#settings]%
+  {\setvariables[\s!document][#settings]%
+   \the\everysetupdocument\relax
+   \starttext
+   \documentvariable\c!before}
+
+\unexpanded\def\stopdocument % todo: dostoptagged\t!document
+  {\documentvariable\c!after
+   \stoptext}
+
+\def\documentvariable#name%
+  {\getvariable\s!document{#name}}
+
+\unexpanded\def\setupdocument[#settings]%
+  {\setvariables[\s!document][#settings]%
+   \the\everysetupdocument\relax}
+
+\unexpanded\def\presetdocument[#settings]%
+  {\checkvariables[\s!document][#settings]}
+
+% metadata:author  metadata:title  metadata:subject
+
+\setvariables
+  [document]
+  [\c!before=\directsetup{\s!document:start},
+   \c!after=\directsetup{\s!document:stop}]
+
+%S The document: namespace will be used elsewhere too.
+
+\protect \endinput

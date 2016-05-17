@@ -1,0 +1,159 @@
+%D \module
+%D   [       file=spac-lin,
+%D        version=2012.01.08, % 2009.10.16 (core-ver) 1997.03.31 (core-spa)
+%D          title=\CONTEXT\ Spacing Macros,
+%D       subtitle=Vertical,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Spacing Macros / Lines}
+
+\unprotect
+
+%D When spacing is active we need to handle commands in
+%D a special way:
+%D
+%D \starttyping
+%D \setuplines[space=on]
+%D
+%D \startlines
+%D Let's talk about this{\ttsl\gobbleoneargument or}that.
+%D \stoplines
+%D
+%D \startlines
+%D Let's talk about this{\getvalue{ttsl}or}that.
+%D \stoplines
+%D \stoptyping
+%D
+%D One can indent in several ways:
+%D
+%D \starttyping
+%D \setupindenting[medium] \setuplines[indenting=odd] % no yes odd even
+%D
+%D \startlines
+%D first
+%D second
+%D third
+%D fourth
+%D \stoplines
+%D \stoptyping
+
+%D Contrary to \MKII\ we can now define classes of lines (generalized by
+%D Wolfgang). I will probably rewrite bits in \LUA.
+
+\installcorenamespace{lines}
+
+\installcommandhandler \??lines {lines} \??lines
+
+\setuplines
+  [\c!option=,
+   \c!command=,
+   \c!before=\blank,
+   \c!after=\blank,
+   \c!inbetween=\blank,
+   \c!indenting=\v!no,
+   \c!space=\v!default]
+
+\appendtoks
+   \setuevalue{\e!start\currentlines}{\spac_lines_start[\currentlines]}%
+   \setuevalue{\e!stop \currentlines}{\spac_lines_stop}%
+\to \everydefinelines
+
+\unexpanded\def\spac_lines_start[#1]%
+  {\bgroup
+   \edef\currentlines{#1}%
+   \obeylines
+   \dosingleempty\spac_lines_start_indeed}
+
+\let\p_lines_option\empty
+
+\let\spac_lines_break            \relax
+\let\spac_after_first_obeyed_line\relax
+
+\def\spac_lines_start_indeed[#1]% new: optional second argument (WS)
+  {\iffirstargument
+     \setupcurrentlines[#1]%
+   \fi
+   \edef\p_lines_option{\linesparameter\c!option}%
+   \ifx\p_lines_option\v!packed
+     \let\spac_lines_break\nobreak
+   \else
+     \let\spac_lines_break\relax
+   \fi
+   \linesparameter\c!before
+   \pushmacro\checkindentation
+   \whitespace
+   \dostarttaggedchained\t!lines\currentlines\??lines
+   \begingroup
+   \uselinesstyleandcolor\c!style\c!color
+   \useindentingparameter\linesparameter
+   \usealignparameter\linesparameter
+   \typesettinglinestrue
+   \setupwhitespace[\v!none]% todo use fast variant
+   %\obeylines % move upwards to keep spaces in the first line due to optional argument
+   \ignorespaces
+   \glet\spac_after_first_obeyed_line\spac_lines_after_first_obeyed_line_a
+   \let\obeyedline\spac_lines_obeyed_line
+   \activatespacehandler{\linesparameter\c!space}%
+   \dostarttagged\t!line\empty
+   \GotoPar} % this will become a nice lowercased helper
+
+% we could have states instead and handle option in there
+
+\def\spac_lines_after_first_obeyed_line_a % tzt two pass, like itemize
+  {\linesparameter\c!command
+   \glet\spac_after_first_obeyed_line\spac_lines_after_first_obeyed_line_b}
+
+\def\spac_lines_after_first_obeyed_line_b
+  {\spac_lines_break
+   \linesparameter\c!command}
+
+\def\spac_lines_obeyed_line
+  {\dostoptagged
+   \par
+   \dostarttagged\t!line\empty
+   \futurelet\next\spac_lines_between}
+
+\unexpanded\def\spac_lines_stop
+  {\dostoptagged
+   \endgroup
+   \dostoptagged
+   \popmacro\checkindentation
+   \linesparameter\c!after
+   \egroup}
+
+\def\spac_lines_between
+  {\doifelsemeaning\next\obeyedline % brrr
+     {\linesparameter\c!inbetween}
+     {\spac_after_first_obeyed_line}}
+
+\definelines[\v!lines]
+
+\unexpanded\def\emptylines
+  {\dosingleempty\spac_lines_empty}
+
+% \def\spac_lines_empty[#1]%
+%   {\endgraf
+%    \dorecurse{\iffirstargument#1\else3\fi}\crlf}
+
+\def\spac_lines_empty[#1]%
+  {\endgraf
+   \begingroup
+  %\forgetall % debatable
+   \ifhmode
+      \crlf % finish the current line
+   \fi
+   \dorecurse{\iffirstargument#1\else3\fi}{\strut\crlf}%
+   \endgroup}
+
+\ifdefined\startlines \else
+    \expandafter\let\expandafter\startlines\csname\e!start\v!lines\endcsname
+    \expandafter\let\expandafter\stoplines \csname\e!stop \v!lines\endcsname
+\fi
+
+\protect \endinput

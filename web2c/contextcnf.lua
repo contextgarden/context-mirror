@@ -83,6 +83,7 @@ return {
             ENCFONTS        = ".;$TEXMF/fonts/data//;$TEXMF/fonts/enc/{dvips,pdftex}//",
             VFFONTS         = ".;$TEXMF/fonts/{data,vf}//",
             TFMFONTS        = ".;$TEXMF/fonts/{data,tfm}//",
+            PKFONTS         = ".;$TEXMF/fonts/{data,pk}//",
             T1FONTS         = ".;$TEXMF/fonts/{data,type1}//;$OSFONTDIR",
             AFMFONTS        = ".;$TEXMF/fonts/{data,afm}//;$OSFONTDIR",
             TTFONTS         = ".;$TEXMF/fonts/{data,truetype}//;$OSFONTDIR",
@@ -139,7 +140,7 @@ return {
             ["luatex.expanddepth"]       =  "10000", -- 10000
             ["luatex.hashextra"]         = "100000", --     0
             ["luatex.nestsize"]          =   "1000", --    50
-            ["luatex.maxinopen"]         =    "500", --    15
+            ["luatex.maxinopen"]         =   "1000", --    15
             ["luatex.maxprintline"]      = " 10000", --    79
             ["luatex.maxstrings"]        = "500000", -- 15000 -- obsolete
             ["luatex.paramsize"]         =  "25000", --    60

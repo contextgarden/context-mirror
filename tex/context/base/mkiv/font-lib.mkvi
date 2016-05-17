@@ -1,0 +1,117 @@
+%D \module
+%D   [       file=font-lib,
+%D        version=2011.01.13, % (copied fron font-ini)
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Libraries,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Font Macros / Libraries}
+
+\unprotect
+
+\registerctxluafile{font-ini}{1.001}
+\registerctxluafile{font-log}{1.001}
+\registerctxluafile{font-con}{1.001}
+\registerctxluafile{font-enc}{1.001}
+\registerctxluafile{font-agl}{1.001} % if needed we can comment this and delay loading
+\registerctxluafile{font-cid}{1.001} % cid maps
+\registerctxluafile{font-map}{1.001}
+
+% the otf font loader:
+
+\registerctxluafile{font-otr}{1.001} % opentype fontloader
+\registerctxluafile{font-cff}{1.001} % quadratic outlines
+\registerctxluafile{font-ttf}{1.001} % cubic outlines
+%registerctxluafile{font-tmp}{1.001} % temporary placeholder
+\registerctxluafile{font-dsp}{1.001} % ... for this one
+\registerctxluafile{font-off}{1.001} % the old loader
+
+\registerctxluafile{font-tfm}{1.001}
+
+\registerctxluafile{font-hsh}{1.001} % hashes used by context
+\registerctxluafile{font-nod}{1.001}
+
+\registerctxluafile{font-oti}{1.001} % otf initialization
+\registerctxluafile{font-ott}{1.001} % otf tables (first)
+
+\registerctxluafile{font-otl}{1.001}
+\registerctxluafile{font-oto}{1.001}
+\registerctxluafile{font-otj}{1.001}
+\registerctxluafile{font-oup}{1.001}
+\registerctxluafile{font-ota}{1.001}
+\registerctxluafile{font-ots}{1.001}
+\registerctxluafile{font-otd}{1.001}
+\registerctxluafile{font-otc}{1.001}
+\registerctxluafile{font-oth}{1.001}
+\registerctxluafile{font-osd}{1.001}
+
+% we use otf code for type one
+
+\registerctxluafile{font-onr}{1.001}
+\registerctxluafile{font-one}{1.001}
+%registerctxluafile{font-afm}{1.001}
+\registerctxluafile{font-afk}{1.001}
+
+% name database
+
+\registerctxluafile{font-syn}{1.001}
+\registerctxluafile{font-trt}{1.001}
+
+% so far
+
+\registerctxluafile{font-pat}{1.001} % patchers
+
+\registerctxluafile{node-fnt}{1.001} % here
+
+\registerctxluafile{font-mps}{1.001} % outline fun
+
+\registerctxluafile{font-lua}{1.001}
+
+\registerctxluafile{font-vf} {1.001}
+\registerctxluafile{font-enh}{1.001}
+
+\registerctxluafile{font-gds}{1.001}
+
+\registerctxluafile{font-def}{1.001}
+\registerctxluafile{font-ctx}{1.001} % after def as it overloads
+
+\registerctxluafile{font-ext}{1.001}
+\registerctxluafile{font-fbk}{1.001}
+
+\registerctxluafile{font-aux}{1.001}
+
+%D Some low level helpers
+%D
+%D \starttyping
+%D \def\TestLookup#specification%
+%D   {\dolookupfontbyspec{#specification}
+%D     pattern: #specification, found: \dolookupnoffound
+%D    \blank
+%D    \dorecurse {\dolookupnoffound} {%
+%D      \recurselevel:~\dolookupgetkeyofindex{fontname}{\recurselevel}\quad
+%D    }%
+%D    \blank}
+%D
+%D \TestLookup{familyname=helveticaneue}
+%D \TestLookup{familyname=helveticaneue,weight=bold}
+%D \TestLookup{familyname=helveticaneue,weight=bold,style=italic}
+%D \stoptyping
+
+% we can also move the lookups to the fonts.namespace (of commands)
+% one can also directly use the clf calls when speed is needed
+
+           \def\dolookupfontbyspec     #1{\clf_fontlookupinitialize{#1}}
+           \def\dolookupnoffound         {\clf_fontlookupnoffound}
+           \def\dolookupgetkeyofindex#1#2{\clf_fontlookupgetkeyofindex{#1}\numexpr#2\relax}
+           \def\dolookupgetkey         #1{\clf_fontlookupgetkey{#1}}
+           \def\cleanfontname          #1{\clf_cleanfontname{#1}}
+\unexpanded\def\setfontofid            #1{\clf_setfontofid\numexpr#1\relax}
+
+
+\protect \endinput

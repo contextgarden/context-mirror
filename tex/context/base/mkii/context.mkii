@@ -1,0 +1,439 @@
+    %D \module
+%D   [       file=context,
+%D        version=2008.28.10, % 1995.10.10,
+%D          title=\CONTEXT,
+%D       subtitle=\CONTEXT\ Format Generation,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\catcode`\{=1 \catcode`\}=2 \catcode`\#=6
+
+%D From the next string (which is set by the script that assembles the
+%D distribution) later on we will calculate a number that can be used
+%D by use modules to identify the feature level. Starting with version
+%D 2004.8.30 the low level interface is english. Watch out and adapt
+%D your styles an modules.
+
+\edef\contextformat {\jobname}
+\edef\contextversion{2013.06.07 17:34}
+
+%D For those who want to use this:
+
+\let\fmtname   \contextformat
+\let\fmtversion\contextversion
+
+%D Loading:
+
+\edef\mksuffix   {mkii}
+\edef\contextmark{MKII}
+
+\ifx\normalinput\undefined \let\normalinput\input \fi
+
+\def\loadcorefile#1{\normalinput#1\relax}
+\def\loadmarkfile#1{\normalinput#1.\mksuffix\relax}
+\def\loadmkiifile#1{\normalinput#1\relax}
+\def\loadmkivfile#1{}
+
+%D First we load the system modules. These implement a lot of
+%D manipulation macros. The first one loads \PLAIN\ \TEX, as
+%D minimal as possible.
+
+\loadmarkfile{syst-ini}
+
+%D Some checking (more primitives are now defined):
+
+\ifdefined\defaultinterface   \else \def\defaultinterface  {english}         \fi
+%ifdefined\messageinterface   \else \let\messageinterface  \defaultinterface \fi
+\ifdefined\defaultlanguagetag \else \def\defaultlanguagetag{en}              \fi
+
+%D More core code.
+
+\loadmarkfile{syst-pln}
+
+\loadmarkfile{norm-tex}
+\loadmarkfile{norm-etx}
+\loadmarkfile{norm-ptx}
+\loadmarkfile{norm-xtx}
+\loadmarkfile{norm-ctx}
+
+\loadmarkfile{catc-ini}
+\loadmarkfile{catc-act}
+\loadmarkfile{catc-def}
+\loadmarkfile{catc-ctx}
+\loadmarkfile{catc-sym}
+\loadmarkfile{catc-xml}
+
+\loadmarkfile{syst-gen}
+\loadmarkfile{syst-ext}
+\loadmarkfile{syst-new}
+\loadmarkfile{syst-con}
+\loadmarkfile{thrd-trg}  % based on: David Carlisle
+
+\loadmarkfile{syst-fnt}
+\loadmarkfile{syst-str}
+\loadmarkfile{syst-rtp}
+
+\ifnum\texengine=\xetexengine
+    \loadmarkfile{xetx-ini}
+    \loadmarkfile{xetx-utf}
+    \loadmarkfile{xetx-chr}
+    \loadmarkfile{xetx-cls}
+\fi
+
+
+%D To enable selective loading, we say:
+
+\newif\ifCONTEXT \CONTEXTtrue % will disappear
+
+%D In order to conveniently load files, we need a few
+%D support modules.
+
+\loadmarkfile{supp-fil}
+\loadmarkfile{supp-dir}
+
+%D This is for mkii bibtex users who expect \LATEX\ commands.
+
+\loadmarkfile{supp-lat}
+
+%D After this we're ready for the multi||lingual interface
+%D modules.
+
+\loadmarkfile{mult-ini}
+\loadmarkfile{mult-fst}
+\loadmarkfile{mult-sys}
+\loadmarkfile{mult-def}
+\loadmarkfile{mult-chk}
+\loadmarkfile{mult-aux}
+
+%D Now we're ready for some general support modules. These
+%D modules implement some basic typesetting functionality.
+
+\loadmarkfile{core-var}
+\loadmarkfile{core-env}
+
+\loadmarkfile{supp-box}
+\loadmarkfile{supp-mrk}
+\loadmarkfile{supp-vis}
+\loadmarkfile{supp-fun}
+%loadmarkfile{supp-eps}
+\loadmarkfile{supp-spe}
+\loadmarkfile{supp-ran}
+\loadmarkfile{supp-mps}
+\loadmarkfile{supp-tpi}
+\loadmarkfile{supp-mat}
+\loadmarkfile{supp-ali}
+\loadmarkfile{supp-num}
+
+%D Verbatim typesetting is implemented in a separate class of
+%D modules. The pretty typesetting modules are loaded at run
+%D time.
+
+\loadmarkfile{verb-ini}
+
+%D The following modules are not sequentially dependent,
+%D i.e. they have ugly dependencies, which will be cleaned
+%D up by adding more overloading.
+
+%D When loading the font, color and special modules, we need a
+%D bit more advanced file handling as well as some general
+%D variables, and features, so next we load:
+
+\loadmarkfile{page-ins}
+\loadmarkfile{core-fil}
+\loadmarkfile{core-con}
+
+%D We already need some synonyms (patterns).
+
+\loadmarkfile{cont-fil}
+
+%D \CONTEXT\ does not implement its own table handling. We
+%D just go for the best there is and load \TABLE. Just to be
+%D sure we do it here, before we redefine \type{|}.
+
+\loadmarkfile{thrd-tab} % based on: Michael Wichura's TaBlE
+
+%D Here comes the last support modules. They take care of
+%D some language specific things.
+
+\loadmarkfile{supp-pat}
+
+%D The next few modules do what their names state. They
+%D load additional definition modules when needed.
+
+\loadmarkfile{regi-ini}
+\loadmarkfile{regi-syn}
+\loadmarkfile{enco-ini}
+%loadmarkfile{filt-ini}
+\loadmarkfile{hand-ini}
+
+\loadmarkfile{lang-ini}
+\loadmarkfile{lang-spe}
+\loadmarkfile{lang-lab}
+
+\loadmarkfile{unic-ini}
+
+\loadmarkfile{core-gen}
+\loadmarkfile{core-uti}
+\loadmarkfile{core-two}
+\loadmarkfile{core-stg}
+
+\loadmarkfile{spec-ini}
+\loadmarkfile{spec-mis}
+\loadmarkfile{spec-def}
+\loadmarkfile{spec-var}
+
+\loadmarkfile{colo-ini}
+\loadmarkfile{colo-ext}
+
+%D For the moment we load a lot of languages. In the future
+%D we'll have to be more space conservative.
+
+\loadmarkfile{lang-mis}
+\loadmarkfile{lang-url}
+
+\loadmarkfile{lang-ger}
+\loadmarkfile{lang-ita}
+\loadmarkfile{lang-sla}
+\loadmarkfile{lang-alt}
+\loadmarkfile{lang-ana}
+\loadmarkfile{lang-art}
+\loadmarkfile{lang-bal}
+\loadmarkfile{lang-cel}
+\loadmarkfile{lang-grk}
+\loadmarkfile{lang-ind}
+\loadmarkfile{lang-ura}
+\loadmarkfile{lang-vn}
+\loadmarkfile{lang-cyr}
+
+\loadmarkfile{typo-ini}
+
+%D All kind of symbols are handled in:
+
+\loadmarkfile{symb-ini}
+
+%D Sorting:
+
+\loadmarkfile{sort-ini}
+
+%D Next we load some core macro's. These implement the
+%D macros' that are seen by the users. The order of loading
+%D is important, due to dependancies.
+
+\loadmarkfile{spac-gen}
+\loadmarkfile{spac-grd}
+
+\loadmarkfile{strc-mar}
+\loadmarkfile{anch-pos}
+
+\loadmarkfile{buff-ver}
+\loadmarkfile{buff-ini}
+
+\loadmarkfile{pack-rul}
+\loadmarkfile{trac-vis}
+\loadmarkfile{strc-num}
+\loadmarkfile{tabl-com}
+\loadmarkfile{tabl-pln}
+\loadmarkfile{tabl-tab}
+\loadmarkfile{tabl-tsp}
+\loadmarkfile{scrn-nav}
+\loadmarkfile{strc-ref}
+\loadmarkfile{pack-obj}
+\loadmarkfile{strc-lst}
+\loadmarkfile{strc-itm}
+\loadmarkfile{strc-des}
+\loadmarkfile{strc-mat} % should come after math-pln etc
+\loadmarkfile{strc-syn}
+\loadmarkfile{core-sys}
+
+\loadmarkfile{page-ini}
+\loadmarkfile{page-bck}
+\loadmarkfile{page-not}
+\loadmarkfile{page-one}
+\loadmarkfile{page-lay}
+\loadmarkfile{page-log}
+\loadmarkfile{page-txt}
+\loadmarkfile{page-sid}
+\loadmarkfile{strc-flt}
+\loadmarkfile{page-mis}
+\loadmarkfile{page-mul}
+\loadmarkfile{page-set}
+\loadmarkfile{pack-lyr}
+\loadmarkfile{page-mak}
+\loadmarkfile{strc-pag}
+\loadmarkfile{page-lin}
+\loadmarkfile{page-par}
+\loadmarkfile{page-mar}
+
+\loadmarkfile{core-job} % why so late?
+
+% so far
+
+\loadmarkfile{strc-sec}
+\loadmarkfile{strc-swd}
+\loadmarkfile{strc-blk}
+
+\loadmarkfile{page-imp}
+\loadmarkfile{tabl-tbl}
+\loadmarkfile{scrn-int}
+\loadmarkfile{tabl-ntb}
+\loadmarkfile{tabl-nte}
+\loadmarkfile{tabl-ltb}
+
+%D A few more languages, that have specifics using core
+%D functionality:
+
+%loadmarkfile{lang-ara} % undefined
+\loadmarkfile{lang-chi}
+\loadmarkfile{lang-jap}
+
+%D How about fill||in fields and related stuff?
+
+\loadmarkfile{java-ini}
+\loadmarkfile{scrn-fld}
+\loadmarkfile{scrn-hlp}
+
+%D Registers can depend on fields, so we load that now.
+
+\loadmarkfile{strc-reg}
+
+%D Of course we do need fonts. There are no \TFM\ files
+%D loaded yet, so the format file is independant of their
+%D content. Here we also redefine \type{\it} as {\it italic}
+%D instead of italian.
+
+\loadmarkfile{font-ini}
+
+\ifnum\texengine=\xetexengine
+    \loadmarkfile{font-xtx}
+\fi
+
+\loadmarkfile{font-unk}
+\loadmarkfile{font-uni}
+\loadmarkfile{font-bfm}
+
+\loadmarkfile{enco-pfr}
+
+\loadmarkfile{type-ini}
+\loadmarkfile{type-set}
+\loadmarkfile{type-def}
+
+%D Properties. Don't ask.
+
+\loadmarkfile{prop-ini}
+\loadmarkfile{prop-lay}
+\loadmarkfile{prop-mis}
+
+%D Like languages, fonts, encodings and symbols, \METAPOST\
+%D support is also organized in its own class of modules.
+
+\loadmarkfile{meta-ini}
+\loadmarkfile{meta-tex}
+\loadmarkfile{meta-pdf}
+
+\loadmarkfile{meta-pag}
+
+%D Special page handling (maybe even later)
+
+\loadmarkfile{page-flw}
+\loadmarkfile{page-spr}
+\loadmarkfile{page-plg}
+\loadmarkfile{page-str}
+
+%D Anchoring graphics:
+
+\loadmarkfile{anch-pgr}
+\loadmarkfile{anch-bar}
+\loadmarkfile{anch-snc}
+
+%D Math.
+
+\loadmarkfile{math-pln}
+\loadmarkfile{math-ini}
+\loadmarkfile{math-arr}
+\loadmarkfile{math-frc}
+
+%D Now we're ready for more core modules.
+
+\loadmarkfile{core-fnt}
+\loadmarkfile{strc-not}
+\loadmarkfile{strc-lnt}
+
+\loadmarkfile{core-mis}
+
+\loadmarkfile{grph-trf}
+\loadmarkfile{grph-inc}
+\loadmarkfile{grph-fig}
+
+\loadmarkfile{core-par}
+
+\loadmarkfile{pack-box}
+\loadmarkfile{page-app}
+\loadmarkfile{meta-fig}
+
+%D Language specific spacing.
+
+\loadmarkfile{lang-spa}
+
+%D Bibliographies:
+
+\loadmarkfile{bibl-tra}
+
+%D Only the basic XML parser and remapper are part of the core.
+%D These macros are loaded last since they overload and|/|or
+%D extend previously defined ones.
+
+\loadmarkfile{xtag-ini}
+\loadmarkfile{xtag-ext}
+\loadmarkfile{xtag-exp}
+\loadmarkfile{xtag-pre}
+\loadmarkfile{xtag-xsd}
+\loadmarkfile{xtag-rng}
+
+%D How about this:
+
+\loadmarkfile{meta-xml}
+
+%D \TEX\ related logo's are always typeset in a special way.
+%D Here they come:
+
+\loadmarkfile{cont-log}
+
+%D This one overloads af few things:
+
+\loadmarkfile{core-ctx}
+
+%D Defaults go here (more will be moved to this module
+%D later):
+
+\loadmarkfile{core-ini}
+\loadmarkfile{core-def}
+
+%D Preloaded modules (some need xml support):
+
+%usemodule[x][res-04] % xml resource libraries
+%usemodule[x][res-08] % rlx runtime conversion
+\usemodule[x][res-12] % rli external indentification
+
+%D At run time, a few more files are loaded, like:
+%D
+%D \startitemize[packed]
+%D \item \type{cont-sys}: local (system dependant) defaults
+%D \item \type{cont-old}: substitutes for old (obsolete) macros
+%D \item \type{cont-new}: new macro implementations (for testing)
+%D \item \type{cont-fil}: filename and module synonyms
+%D \stopitemize
+
+\setupcurrentlanguage[\defaultlanguagetag]
+
+\setupencoding[default=ec]
+
+\usetypescript[fallback][\defaultencoding]
+
+\setupbodyfont[rm,12pt]
+
+\errorstopmode \dump \endinput

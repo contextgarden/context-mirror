@@ -1,0 +1,293 @@
+%D \module
+%D   [       file=file-mod, % was core-fil,
+%D        version=20110701, % 1997.11.15,
+%D          title=\CONTEXT\ File Macros,
+%D       subtitle=Module Support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt File Macros / Modules}
+
+\unprotect
+
+\registerctxluafile{file-mod}{1.001}
+
+%D \macros
+%D   {usemodule}
+%D
+%D Most of \CONTEXT is preloaded in the format file. Some very domain specific
+%D typesetting topics are however dealt with in separate modules, e.g. typesetting
+%D of chemical structure formulas. These modules are loaded by:
+%D
+%D \showsetup{usemodule}
+%D
+%D More information on the specific modules can be found in their dedicated manuals.
+%D We use \type {\next} so that we can \type {\end} in modules.
+
+\unexpanded\def\usemodules
+  {\dotripleempty\strc_modules_use}
+
+\let\usemodule   \usemodules
+\let\usetexmodule\usemodules
+
+\def\strc_modules_use[#category][#name][#parameters]% category=t|m|x|p|...
+  {\pushmacro\currentmodule
+   \pushmacro\currentmodulecategory
+   \pushmacro\currentmoduleparameters
+   \ifthirdargument
+     \edef\currentmodulecategory  {#category}%
+     \edef\currentmodule          {#name}%
+     \def \currentmoduleparameters{#parameters}%
+   \else\ifsecondargument
+     \doifelseassignment{#name}
+       {\let\currentmodulecategory   \empty
+        \edef\currentmodule          {#category}%
+        \edef\currentmoduleparameters{#name}}
+       {\edef\currentmodulecategory  {#category}%
+        \edef\currentmodule          {#name}%
+        \let \currentmoduleparameters\empty}%
+   \else
+     \let \currentmodulecategory  \empty
+     \edef\currentmodule          {#category}%
+     \let \currentmoduleparameters\empty
+   \fi\fi
+   \processcommacommand[\currentmodule]{\strc_modules_use_indeed\currentmodulecategory}%
+   \popmacro\currentmoduleparameters
+   \popmacro\currentmodulecategory
+   \popmacro\currentmodule}
+
+\def\strc_modules_use_indeed#category#name%
+  {\ifx\currentmoduleparameters\empty\else
+     \scratchtoks\expandafter{\currentmoduleparameters}%
+     \normalexpanded{\getparameters[\??module#name:][\the\scratchtoks]}%
+   \fi
+   \clf_usemodules{#category}{#name}}
+
+\installcorenamespace{module}
+
+\let\currentmoduleparameters\empty
+\let\currentmodule          \s!unknown
+
+\newtoks\everysetupmodule
+
+\unexpanded\def\startmodule
+  {\doifelsenextoptionalcs\syst_modules_start_yes\syst_modules_start_nop}
+
+\def\syst_modules_start_yes[#name]%
+  {\pushmacro\currentmodule
+   \pushmacro\currentmoduleparameters
+   \def\currentmodule{#name}}
+
+\def\syst_modules_start_nop#name %
+  {\syst_modules_start_yes[#name]}
+
+\unexpanded\def\stopmodule
+  {\popmacro\currentmoduleparameters
+   \popmacro\currentmodule}
+
+\unexpanded\def\setupmodule
+  {\dodoubleempty\syst_modules_setup}
+
+\def\syst_modules_setup
+  {\ifx\currentmoduleparameters\empty
+      \expandafter\syst_modules_setup_nop
+   \else
+      \expandafter\syst_modules_setup_yes
+   \fi}
+
+\def\syst_modules_setup_nop[#name][#parameters]%
+  {\ifsecondargument
+     \getparameters[\??module#name:][#parameters]% internal (defaults)
+   \else\iffirstargument
+     \doifassignmentelse{#name}{\getparameters[\??module\currentmodule:][#name]}\donothing
+   \fi\fi
+   \the\everysetupmodule}
+
+\def\syst_modules_setup_yes[#name][#parameters]%
+  {\scratchtoks\expandafter{\currentmoduleparameters}%
+   \ifsecondargument
+     \getparameters[\??module#name:][#parameters]% internal (defaults)
+     \normalexpanded{\getparameters[\??module#name:][\the\scratchtoks]}% loadtime (user)
+   \else\iffirstargument
+     \doifassignmentelse{#name}
+       {\getparameters[\??module\currentmodule:][#name]% internal (defaults)
+        \normalexpanded{\getparameters[\??module\currentmodule:][\the\scratchtoks]}}% loadtime (user)
+       {\normalexpanded{\getparameters[\??module#1:][\the\scratchtoks]}}% loadtime (user)
+   \else
+     \normalexpanded{\getparameters[\??module\currentmodule:][\the\scratchtoks]}%
+   \fi\fi
+   \let\currentmoduleparameters\empty
+   \the\everysetupmodule}
+
+% to be tested:
+%
+% \def\syst_modules_setup[#name][#parameters]%
+%   {\ifsecondargument
+%      \getparameters[\??module#name:][#parameters]% internal (defaults)
+%      \normalexpanded{\getparameters[\??module#name:][\normalunexpanded\expandafter{\currentmoduleparameters}]}% loadtime (user)
+%    \else
+%      \getparameters[\??module\currentmodule:][#name]% internal (defaults)
+%      \normalexpanded{\getparameters[\??module\currentmodule:][\normalunexpanded\expandafter{\currentmoduleparameters}]}% loadtime (user)
+%    \fi
+%    \let\currentmoduleparameters\empty}
+
+\def\moduleparameter#name#parameter% should have been \namedmoduleparameter
+  {\begincsname\??module#name:#parameter\endcsname}
+
+\letvalue\??module\empty % so we default to empty as with all parameters
+
+\def\currentmoduleparameter{\moduleparameter\currentmodule} % no need for inlining
+
+\unexpanded\def\useluamodule  [#name]{\clf_loadluamodule{#1}} % why not use useluamodule
+\unexpanded\def\luaenvironment #name {\clf_loadluamodule{#1}}
+
+% \usemodule[newmml]
+% \usemodule[newmml][a=b]
+% \usemodule[x][newmml]
+% \usemodule[x][newmml][a=b]
+%
+% \startmodule [mathml]
+%   \setupmodule[a=c] \relax [\currentmoduleparameter{a}] % user vars will be set afterwards
+%   \setupmodule[a=c] \relax [\currentmoduleparameter{a}] % user vars are now forgotten
+% \stopmodule
+
+% one can introduce test sections with:
+%
+% \enablemode[newmml:test:\currentmoduleparameter{test}]
+% \startmode[newmml:test:yes} ... \stopmode
+%
+% these will be ignored unless test=yes
+%
+% however, a better way is:
+
+\unexpanded\def\startmoduletestsection
+  {\begingroup
+   \setupmodule % we need to make sure that the vars are set
+   \doifelse{\currentmoduleparameter\v!test}\v!yes
+     {\endgroup
+      \writestatus\currentmodule{loading experimental code}}
+     {\endgroup
+      \writestatus\currentmodule{skipping experimental code}%
+      \gobbleuntil\stopmoduletestsection}}
+
+\let\stopmoduletestsection\donothing
+
+% will become file-run
+
+%D To save memory, we implement some seldomly used commands in a lazy way. Nota
+%D bene: such runtime definitions are to be defined global.
+%D
+%D \starttyping
+%D \fetchruntimecommand\showaccents{\f!colorprefix ...}
+%D \stoptyping
+
+\installcorenamespace{runtimeloaded}
+
+\unexpanded\def\fetchruntimecommand#1#2%
+  {\unexpanded\def#1{\dofetchruntimecommand#1{#2}}}
+
+\def\dofetchruntimecommand#1#2% actually a test on #1 being define would be ok as well
+  {\ifcsname\??runtimeloaded#2\endcsname
+     % already loaded
+   \else
+     \global\let#1\undefined
+     \startreadingfile
+     \startnointerference % \bgroup
+     \cleanupfeatures % better \setnormalcatcodes / test first
+     \readfile{#2.\mksuffix}\donothing\donothing
+     \stopnointerference  % \egroup
+     \stopreadingfile
+     \letgvalue{\??runtimeloaded#2}\empty
+   \fi
+   \ifx#1\undefined
+     \writestatus\m!system{command \string#1 not found in file #2}%
+     \unexpanded\gdef#1{{\infofont[unknown command \string#1]}}%
+   \fi
+   #1}
+
+%D \macros
+%D   {doifolderversionelse}
+%D
+%D We start with a macro specially for Aditya who wants to be able
+%D to use development versions of \MKIV\ for real documents.
+%D
+%D \starttyping
+%D \doifolderversionelse\contextversion{1010.10.10} {OLDER} {OKAY} => OLDER
+%D \doifolderversionelse\contextversion{2020.20.20} {OLDER} {OKAY} => OKAY
+%D \doifolderversionelse\contextversion{2020}       {OLDER} {OKAY} => OKAY
+%D \stoptyping
+%D
+%D The version pattern is \type {yyyy.mm.dd} (with mm and dd being optional).
+
+\unexpanded\def\doifelseolderversion#parent#child{\clf_doifelseolderversion{#parent}{#child}}
+\unexpanded\def\doifelseoldercontext       #child{\clf_doifelseolderversion{#child}{}}
+
+\let\doifolderversionelse\doifelseolderversion
+\let\doifoldercontextelse\doifelseoldercontext
+
+%D Relatively new (no need for a speedup here):
+
+\unexpanded\def\syst_modules_direct_lua#1#2%
+  {\edef\m_module_command_command {#1}%
+   \edef\m_module_command_function{#2}%
+   \directsetup{module:\m_module_command_command:start}%
+   \ctxlua{\m_module_command_function()}%
+   \directsetup{module:\m_module_command_command:stop}}
+
+\unexpanded\def\syst_modules_single_lua#1#2%
+  {\edef\m_module_command_command {#1}%
+   \edef\m_module_command_function{#2}%
+   \dosingleempty\syst_modules_single_lua_indeed}
+
+\unexpanded\def\syst_modules_single_lua_indeed[#1]%
+  {\directsetup{module:\m_module_command_command:start}%
+   \ctxlua{\m_module_command_function(\!!bs#1\!!es)}%
+   \directsetup{module:\m_module_command_command:stop}}
+
+\unexpanded\def\syst_modules_double_lua#1#2%
+  {\edef\m_module_command_command {#1}%
+   \edef\m_module_command_function{#2}%
+   \dodoubleempty\syst_modules_double_lua_indeed}
+
+\unexpanded\def\syst_modules_double_lua_indeed[#1][#2]%
+  {\directsetup{module:\m_module_command_command:start}%
+   \ctxlua{\m_module_command_function(\!!bs#1\!!es,\!!bs#2\!!es)}%
+   \directsetup{module:\m_module_command_command:stop}}
+
+\def\installmodulecommandlua      #1#2{\unexpanded\def#1{\normalexpanded{\syst_modules_direct_lua{\strippedcsname#1}{#2}}}}
+\def\installmodulecommandluasingle#1#2{\unexpanded\def#1{\normalexpanded{\syst_modules_single_lua{\strippedcsname#1}{#2}}}}
+\def\installmodulecommandluadouble#1#2{\unexpanded\def#1{\normalexpanded{\syst_modules_double_lua{\strippedcsname#1}{#2}}}}
+
+\unexpanded\def\syst_modules_one_lua#1#2#3%
+  {\directsetup{module:#1:start}%
+   \ctxlua{#2(\!!bs#3\!!es)}%
+   \directsetup{module:#1:stop}}
+
+\unexpanded\def\syst_modules_two_lua#1#2#3#4%
+  {\directsetup{module:#1:start}%
+   \ctxlua{#2(\!!bs#3\!!es,\!!bs#4\!!es)}%
+   \directsetup{module:#1:stop}}
+
+\def\installmodulecommandluaone#1#2{\unexpanded\def#1{\normalexpanded{\syst_modules_one_lua{\strippedcsname#1}{#2}}}}
+\def\installmodulecommandluatwo#1#2{\unexpanded\def#1{\normalexpanded{\syst_modules_two_lua{\strippedcsname#1}{#2}}}}
+
+% obsolete
+%
+% \def\documentresources{\@@erurl}
+%
+% \unexpanded\def\setupexternalresources
+%   {\dodoubleargument\getparameters[\??er]}
+%
+% \setupexternalresources
+%   [url=]
+
+% new:
+
+\unexpanded\def\useluamodule[#1]{\clf_useluamodule{#1}}
+
+\protect \endinput

@@ -1,0 +1,337 @@
+%D \module
+%D   [       file=colo-rgb,
+%D        version=1995.01.01,
+%D          title=\CONTEXT\ Color Macros,
+%D       subtitle=RGB,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Just to give users a start we define some colors. While
+%D switching fonts is as international as can be, thanks to the
+%D mnemonics, naming colors is very interface dependant. To
+%D support international setups, we define both english and
+%D interface dependant colors. We use the color inheritance
+%D mechanisms to implement the interface dependant ones.
+
+%D For historic reasons all colors are defined in \RGB\ color
+%D space and there is no reason to change this.
+
+\definecolor [red]           [r=1,   g=0,   b=0]
+\definecolor [green]         [r=0,   g=1,   b=0]
+\definecolor [blue]          [r=0,   g=0,   b=1]
+
+\definecolor [cyan]          [r=0,   g=1,   b=1]
+\definecolor [magenta]       [r=1,   g=0,   b=1]
+\definecolor [yellow]        [r=1,   g=1,   b=0]
+
+\definecolor [white]         [s=1] % [r=1,   g=1,   b=1]
+\definecolor [black]         [s=0]
+\definecolor [gray]          [s=.9]
+
+% adapted per 2011.10.28
+
+\definecolor [lightred]      [r=1,   g=0,   b=0]
+\definecolor [lightgreen]    [r=0,   g=1,   b=0]
+\definecolor [lightblue]     [r=0,   g=0,   b=1]
+\definecolor [lightcyan]     [r=0,   g=1,   b=1]
+\definecolor [lightmagenta]  [r=1,   g=0,   b=1]
+\definecolor [lightyellow]   [r=1,   g=1,   b=0]
+
+\definecolor [middlered]     [r=.8,  g=0,   b=0]
+\definecolor [middlegreen]   [r=0,   g=.8,  b=0]
+\definecolor [middleblue]    [r=0,   g=0,   b=.8]
+\definecolor [middlecyan]    [r=0,   g=.6,  b=.6]
+\definecolor [middlemagenta] [r=.6,  g=0,   b=.6]
+\definecolor [middleyellow]  [r=.6,  g=.6,  b=.0]
+
+\definecolor [darkred]       [r=.6,  g=0,   b=0]
+\definecolor [darkgreen]     [r=0,   g=.6,  b=0]
+\definecolor [darkblue]      [r=0,   g=0,   b=.6]
+\definecolor [darkcyan]      [r=0,   g=.4,  b=.4]
+\definecolor [darkmagenta]   [r=.4,  g=0,   b=.4]
+\definecolor [darkyellow]    [r=.4,  g=.4,  b=0]
+
+\definecolor [darkgray]      [s=.40]
+\definecolor [middlegray]    [s=.625]
+\definecolor [lightgray]     [s=.85]
+
+%D These colors are mapped to interface dependant colornames.
+
+\startinterface dutch
+
+  \definecolor [rood]          [red]
+  \definecolor [groen]         [green]
+  \definecolor [blauw]         [blue]
+
+  \definecolor [cyaan]         [cyan]
+  \definecolor [magenta]       [magenta]
+  \definecolor [geel]          [yellow]
+
+  \definecolor [wit]           [white]
+  \definecolor [grijs]         [gray]
+  \definecolor [zwart]         [black]
+
+  \definecolor [donkerrood]    [darkred]
+  \definecolor [middelrood]    [middlered]
+  \definecolor [lichtrood]     [lightred]
+
+  \definecolor [donkergroen]   [darkgreen]
+  \definecolor [middelgroen]   [middlegreen]
+  \definecolor [lichtgroen]    [lightgreen]
+
+  \definecolor [donkerblauw]   [darkblue]
+  \definecolor [middelblauw]   [middleblue]
+  \definecolor [lichtblauw]    [lightblue]
+
+  \definecolor [donkercyaan]   [darkcyan]
+  \definecolor [middelcyaan]   [middlecyan]
+  \definecolor [lichtcyaan]    [lightcyan]
+
+  \definecolor [donkermagenta] [darkmagenta]
+  \definecolor [middelmagenta] [middlemagenta]
+  \definecolor [lichtmagenta]  [lightmagenta]
+
+  \definecolor [donkergeel]    [darkyellow]
+  \definecolor [middelgeel]    [middleyellow]
+  \definecolor [lichtgeel]     [lightyellow]
+
+  \definecolor [donkergrijs]   [darkgray]
+  \definecolor [middengrijs]   [middlegray]
+  \definecolor [lichtgrijs]    [lightgray]
+
+\stopinterface
+
+\startinterface german
+
+  \definecolor [rot]           [red]
+  \definecolor [gruen]         [green]
+  \definecolor [blau]          [blue]
+
+  \definecolor [cyan]          [cyan]
+  \definecolor [magenta]       [magenta]
+  \definecolor [gelb]          [yellow]
+
+  \definecolor [weiss]         [white]
+  \definecolor [grau]          [gray]
+  \definecolor [schwarz]       [black]
+
+  \definecolor [dunkelrot]     [darkred]
+  \definecolor [mittelrot]     [middlered]
+  \definecolor [hellrot]       [lightred]
+
+  \definecolor [dunkelgruen]   [darkgreen]
+  \definecolor [mittelgruen]   [middlegreen]
+  \definecolor [hellgruen]     [lightgreen]
+
+  \definecolor [dunkelblau]    [darkblue]
+  \definecolor [mittelblau]    [middleblue]
+  \definecolor [hellblau]      [lightblue]
+
+  \definecolor [dunkelcyan]    [darkcyan]
+  \definecolor [mittelcyan]    [middlecyan]
+  \definecolor [hellcyan]      [lightcyan]
+
+  \definecolor [dunkelmagenta] [darkmagenta]
+  \definecolor [mittelmagenta] [middlemagenta]
+  \definecolor [hellmagenta]   [lightmagenta]
+
+  \definecolor [dunkelgelb]    [darkyellow]
+  \definecolor [mittelgelb]    [middleyellow]
+  \definecolor [hellgelb]      [lightyellow]
+
+  \definecolor [dunkelgrau]    [darkgray]
+  \definecolor [mittelgrau]    [middlegray]
+  \definecolor [hellgrau]      [lightgray]
+
+\stopinterface
+
+\startinterface czech
+
+  \definecolor [cervena]        [red]
+  \definecolor [zelena]         [green]
+  \definecolor [modra]          [blue]
+
+  \definecolor [azurova]        [cyan]
+  \definecolor [fialova]        [magenta]
+  \definecolor [zluta]          [yellow]
+
+  \definecolor [bila]           [white]
+  \definecolor [cerna]          [black]
+
+  \definecolor [tmavecervena]   [darkred]
+  \definecolor [strednecervena] [middlered]
+  \definecolor [svetlecervena]  [lightred]
+
+  \definecolor [tmavezelena]    [darkgreen]
+  \definecolor [strednezelena]  [middlegreen]
+  \definecolor [svetlezelena]   [lightgreen]
+
+  \definecolor [tmavemodra]     [darkblue]
+  \definecolor [strednemodra]   [middleblue]
+  \definecolor [svetlemodra]    [lightblue]
+
+  \definecolor [tmaveazurova]   [darkcyan]
+  \definecolor [stredneazurova] [middlecyan]
+  \definecolor [svelteazurova]  [lightcyan]
+
+  \definecolor [tmavefialova]   [darkmagenta]
+  \definecolor [strednefialova] [middlemagenta]
+  \definecolor [sveltefialova]  [lightmagenta]
+
+  \definecolor [tmavezluta]     [darkyellow]
+  \definecolor [strednezluta]   [middleyellow]
+  \definecolor [sveltezluta]    [lightyellow]
+
+  \definecolor [tmaveseda]      [darkgray]
+  \definecolor [stredneseda]    [middlegray]
+  \definecolor [svetleseda]     [lightgray]
+
+\stopinterface
+
+\startinterface italian
+
+  \definecolor [rosso]         [red]
+  \definecolor [verde]         [green]
+  \definecolor [blu]           [blue]
+
+  \definecolor [azzurro]       [cyan]
+  \definecolor [turchino]      [cyan]
+  \definecolor [ciano]         [cyan]
+  \definecolor [cremisi]       [magenta]
+  \definecolor [giallo]        [yellow]
+
+  \definecolor [bianco]        [white]
+  \definecolor [grigio]        [gray]
+  \definecolor [nero]          [black]
+
+  \definecolor [rossoscuro]    [darkred]
+  \definecolor [rossomedio]    [middlered]
+  \definecolor [rossochiaro]   [lightred]
+
+  \definecolor [verdescuro]    [darkgreen]
+  \definecolor [verdemedio]    [middlegreen]
+  \definecolor [verdechiaro]   [lightgreen]
+
+  \definecolor [bluscuro]      [darkblue]
+  \definecolor [blumedio]      [middleblue]
+  \definecolor [bluchiaro]     [lightblue]
+
+  \definecolor [azzurroscuro]  [darkcyan]
+  \definecolor [azzurromedio]  [middlecyan]
+  \definecolor [azzurrochiaro] [lightcyan]
+
+  \definecolor [cremisiscuro]  [darkmagenta]
+  \definecolor [cremisimedio]  [middlemagenta]
+  \definecolor [cremisichiaro] [lightmagenta]
+
+  \definecolor [gialloscuro]     [darkyellow]
+  \definecolor [giallomedio]     [middleyellow]
+  \definecolor [giallochiaro]    [lightyellow]
+
+  \definecolor [grigioscuro]     [darkgray]
+  \definecolor [grigiomedio]     [middlegray]
+  \definecolor [grigiochiaro]    [lightgray]
+
+\stopinterface
+
+\startinterface french
+
+  \definecolor [rouge]         [red]
+  \definecolor [vert]          [green]
+  \definecolor [bleu]          [blue]
+
+  \definecolor [cyan]          [cyan]
+  \definecolor [magenta]       [magenta]
+  \definecolor [jaune]         [yellow]
+
+  \definecolor [blanche]       [white]
+  \definecolor [gris]          [gray]
+  \definecolor [noir]          [black]
+
+  \definecolor [rougefoncé]    [darkred]
+  \definecolor [rougemoyen]    [middlered]
+  \definecolor [rougeclair]    [lightred]
+
+  \definecolor [vertfoncé]     [darkgreen]
+  \definecolor [vertmoyen]     [middlegreen]
+  \definecolor [vertclair]     [lightgreen]
+
+  \definecolor [bleufoncé]     [darkblue]
+  \definecolor [bleumoyen]     [middleblue]
+  \definecolor [bleuclair]     [lightblue]
+
+  \definecolor [cyanfoncé]     [darkcyan]
+  \definecolor [cyanmoyen]     [middlecyan]
+  \definecolor [cyanclair]     [lightcyan]
+
+  \definecolor [magentafoncé]  [darkmagenta]
+  \definecolor [magentamoyen]  [middlemagenta]
+  \definecolor [magentaclair]  [lightmagenta]
+
+  \definecolor [jaunefoncé]    [darkyellow]
+  \definecolor [jaunemoyen]    [middleyellow]
+  \definecolor [jauneclair]    [lightyellow]
+
+  \definecolor [grisfoncé]     [darkgray]
+  \definecolor [grismoyen]     [middlegray]
+  \definecolor [grisclair]     [lightgray]
+
+\stopinterface
+
+\startinterface romanian
+
+  \definecolor [rosu]            [red]
+  \definecolor [verde]           [green]
+  \definecolor [albastru]        [blue]
+
+  \definecolor [cian]            [cyan]
+  \definecolor [magenta]         [magenta]
+  \definecolor [galben]          [yellow]
+
+  \definecolor [alb]             [white]
+  \definecolor [gri]             [gray]
+  \definecolor [negru]           [black]
+
+  \definecolor [rosuinchis]      [darkred]
+  \definecolor [rosumediu]       [middlered]
+  \definecolor [rosudeschis]     [lightred]
+
+  \definecolor [verdeinchis]     [darkgreen]
+  \definecolor [verdemediu]      [middlegreen]
+  \definecolor [verdedeschis]    [lightgreen]
+
+  \definecolor [albastruinchis]  [darkblue]
+  \definecolor [albastrumediu]   [middleblue]
+  \definecolor [albastrudeschis] [lightblue]
+
+  \definecolor [cianinchis]      [darkcyan]
+  \definecolor [cianmediu]       [middlecyan]
+  \definecolor [ciandeschis]     [lightcyan]
+
+  \definecolor [magentainchis]   [darkmagenta]
+  \definecolor [magentamediu]    [middlemagenta]
+  \definecolor [magentadeschis]  [lightmagenta]
+
+  \definecolor [galbeninchis]    [darkyellow]
+  \definecolor [galbenmediu]     [middleyellow]
+  \definecolor [galbendeschis]   [lightyellow]
+
+  \definecolor [griinchis]       [darkgray]
+  \definecolor [grimediu]        [middlegray]
+  \definecolor [grideschis]      [lightgray]
+
+\stopinterface
+
+%D Bonus (needed for FO test):
+
+\definecolor [orange]       [r=1, g=.5]
+\definecolor [lightorange]  [r=1, g=.5]
+\definecolor [middleorange] [r=.6,g=.3]
+\definecolor [darkorange]   [r=.4,g=.2]
+
+\endinput

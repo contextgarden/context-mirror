@@ -1,0 +1,523 @@
+%D \module
+%D   [       file=strc-tag,
+%D        version=2010.07.16,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Tags,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% labels: no language needed
+% key/values and other names might change (and probably will)
+
+\writestatus{loading}{ConTeXt Structure Macros / Tags}
+
+\registerctxluafile{strc-tag}{1.001}
+
+\unprotect
+
+%D Eventually these labels will either move to the modules
+%D where they're used, or they will en dup in mult-tag.
+
+\def\t!document              {document}               % Div
+
+\def\t!division              {division}               % Div
+\def\t!paragraph             {paragraph}              % P
+\def\t!p                     {p}                      % P
+\def\t!construct             {construct}              % Span
+\def\t!highlight             {highlight}              % Span
+
+\def\t!section               {section}                % Sect
+\def\t!sectiontitle          {sectiontitle}           % H
+\def\t!sectionnumber         {sectionnumber}          % H
+\def\t!sectioncontent        {sectioncontent}         % Div
+
+\def\t!itemgroup             {itemgroup}              % L
+\def\t!item                  {item}                   % Li
+\def\t!itemtag               {itemtag}                % Lbl
+\def\t!itemcontent           {itemcontent}            % LBody
+\def\t!itemhead              {itemhead}               % Div
+\def\t!itembody              {itembody}               % Div
+
+\def\t!description           {description}            % Li
+\def\t!descriptiontag        {descriptiontag}         % Lbl
+\def\t!descriptioncontent    {descriptioncontent}     % LBody
+\def\t!descriptionsymbol     {descriptionsymbol}      % Span
+
+\let\t!construction          \t!description
+\let\t!constructiontag       \t!descriptiontag
+\let\t!constructioncontent   \t!descriptioncontent
+\let\t!constructionsymbol    \t!descriptionsymbol
+
+\def\t!verbatimblock         {verbatimblock}          % Code
+\def\t!verbatimlines         {verbatimlines}          % Code
+\def\t!verbatimline          {verbatimline}           % Code
+\def\t!verbatim              {verbatim}               % Code
+
+\def\t!lines                 {lines}                  % Code
+\def\t!line                  {line}                   % Code
+
+\def\t!sorting               {sorting}                % Span
+\def\t!synonym               {synonym}                % Span
+
+\def\t!register              {register}               % Div
+\def\t!registerlocation      {registerlocation}       % Span
+\def\t!registersection       {registersection}        % Div
+\def\t!registertag           {registertag}            % Span
+\def\t!registerentries       {registerentries}        % Div
+\def\t!registerentry         {registerentry}          % Span
+\def\t!registercontent       {registercontent}        % Span
+\def\t!registersee           {registersee}            % Span
+\def\t!registerpages         {registerpages}          % Span
+\def\t!registerpage          {registerpage}           % Span
+\def\t!registerpagerange     {registerpagerange}      % Span
+\def\t!registerfrompage      {registerfrompage}       % Span
+\def\t!registertopage        {registertopage}         % Span
+\def\t!registerseparator     {registerseparator}      % Span
+
+\def\t!table                 {table}                  % Table
+\def\t!tablerow              {tablerow}               % TR
+\def\t!tablecell             {tablecell}              % TD
+\def\t!tabulate              {tabulate}               % Table
+\def\t!tabulaterow           {tabulaterow}            % TR
+\def\t!tabulatecell          {tabulatecell}           % TD
+
+\def\t!math                  {math}                   % math
+\def\t!mathtable             {mtable}                 % Table
+\def\t!mathtablerow          {mtr}                    % TR
+\def\t!mathtablecell         {mtd}                    % TD
+\def\t!mathaction            {maction}                %
+\def\t!mathstacker           {mstacker}
+\def\t!mathstackertop        {mstackertop}
+\def\t!mathstackermid        {mstackermid}
+\def\t!mathstackerbot        {mstackerbot}
+
+\def\t!munderover            {munderover}             % special cases
+\def\t!munder                {munder}                 % special cases
+\def\t!mover                 {mover}                  % special cases
+
+\def\t!list                  {list}                   % TOC
+\def\t!listitem              {listitem}               % TOCI
+\def\t!listtag               {listtag}                % Lbl
+\def\t!listcontent           {listcontent}            % P
+\def\t!listdata              {listdata}               % P
+\def\t!listpage              {listpage}               % Reference
+
+\def\t!delimitedblock        {delimited}              % BlockQuote
+\def\t!delimited             {delimited}              % Quote
+\def\t!delimitedsymbol       {delimitedsymbol}        % Span
+\def\t!delimitedcontent      {delimitedcontent}       % Span
+\def\t!subsentence           {subsentence}            % Span
+\def\t!subsentencecontent    {subsentencecontent}     % Span
+\def\t!subsentencesymbol     {subsentencesymbol}      % Span
+
+\def\t!float                 {float}                  % Div
+\def\t!floatcaption          {floatcaption}           % Caption
+\def\t!floatlabel            {floatlabel}             % Span
+\def\t!floattext             {floattext}              % Span
+\def\t!floatnumber           {floatnumber}            % Span
+\def\t!floatcontent          {floatcontent}           % P
+
+\def\t!image                 {image}                  % P
+
+\def\t!mpgraphic             {mpgraphic}              % P
+
+\def\t!formulaset            {formulaset}             % Div
+\def\t!formula               {formula}                % Div
+\def\t!formulacaption        {formulacaption}         % Span
+\def\t!formulalabel          {formulalabel}           % Span
+\def\t!formulanumber         {formulanumber}          % P
+\def\t!formulacontent        {formulacontent}         % P
+\def\t!subformula            {subformula}             % Div
+
+\def\t!link                  {link}                   % Link
+
+\def\t!margintext            {margintext}             % Span
+\def\t!margintextblock       {margintextblock}        % Div
+
+% we might opt for verbose variants so this is experimental:
+
+\def\t!label                 {label}                  % Span
+\def\t!number                {number}                 % Span
+
+\def\t!ignore                {ignore}                 % Span
+\def\t!private               {private}                % Span
+
+\def\t!mid                   {mid}                    % Span
+\def\t!sub                   {sub}                    % Span
+\def\t!sup                   {sup}                    % Span
+\def\t!subsup                {subsup}                 % Span
+
+\def\t!unit                  {unit}                   % Span
+\def\t!quantity              {quantity}               % Span
+\def\t!number                {number}                 % Span
+
+\def\t!combination           {combination}            % Span
+\def\t!combinationpair       {combinationpair}        % Span
+\def\t!combinationcontent    {combinationcontent}     % Span
+\def\t!combinationcaption    {combinationcaption}     % Span
+
+% \setuptaglabeltext
+%   [en]
+%   [\t!document=document]
+
+% the real code
+
+\definesystemattribute[tagged][public]
+\definesystemattribute[image] [public]
+
+\unexpanded\def\setelementbackendtag{\dodoubleargument\strc_tags_set_backend}
+\unexpanded\def\setelementnature    {\dodoubleargument\strc_tags_set_nature}
+
+\def\strc_tags_set_backend[#1][#2]{\clf_settagproperty_b{#1}{#2}} % todo: ignore when no export
+\def\strc_tags_set_nature [#1][#2]{\clf_settagproperty_n{#1}{#2}} % todo: ignore when no export
+
+\unexpanded\def\strc_tags_set_aspect_nop#1#2{}
+\unexpanded\def\strc_tags_set_aspect_yes#1#2{\clf_settagaspect{#1}{#2}} % todo: ignore when no export / also \let
+
+\installcorenamespace{tagging}
+
+\installsetuponlycommandhandler \??tagging {tagging}
+
+\unexpanded\def\strc_tags_element_start_yes{\dodoubleempty\strc_tags_element_start_yes_indeed}
+\unexpanded\def\strc_tags_element_start_nop{\dodoubleempty\strc_tags_element_start_nop_indeed}
+
+\unexpanded\def\strc_tags_element_start_yes_indeed
+  {\iftrialtypesetting
+     \expandafter\strc_tags_element_start_nop_indeed
+   \else
+     \expandafter\strc_tags_element_start_yes_indeed_yes
+   \fi}
+
+\unexpanded\def\strc_tags_element_stop
+  {\iftrialtypesetting
+     \expandafter\strc_tags_element_stop_nop
+   \else
+     \expandafter\strc_tags_element_stop_yes
+   \fi}
+
+% it makes no sense to have labels ... maybe some day as a last 'replace' in the export
+% which might be more efficient then ... okay, we now cannot overload but who cares
+
+\unexpanded\def\strc_tags_element_start_yes_indeed_yes[#1][#2]%
+  {\clf_starttag_u{#1}{#2}}
+
+\unexpanded\def\strc_tags_element_stop_yes
+  {\clf_stoptag}
+
+\unexpanded\def\strc_tags_element_start_nop_indeed[#1][#2]%
+  {}
+
+\unexpanded\def\strc_tags_element_stop_nop
+  {}
+
+\unexpanded\def\strc_tags_enable_elements
+  {\setuplanguage[\s!default][\s!righthyphenchar="AD]% for the moment here
+   \let\startelement\strc_tags_element_start_yes
+   \let\stopelement \strc_tags_element_stop_yes
+   \let\dosettagproperty\strc_tags_set_aspect_yes}
+
+\unexpanded\def\strc_tags_disable_elements
+  {\let\startelement\strc_tags_element_start_nop
+   \let\stopelement \strc_tags_element_stop_nop
+   \let\dosettagproperty\strc_tags_set_aspect_nop}
+
+% beware: making these unexpanded spoils tables (noalign problem)
+
+\def\strc_tags_enabled_start_no_detail
+  {\iftrialtypesetting
+     \expandafter\strc_tags_start_nop_no_detail
+   \else
+     \expandafter\strc_tags_start_yes_no_detail
+   \fi}
+
+\def\strc_tags_enabled_start_detail
+  {\iftrialtypesetting
+     \expandafter\strc_tags_start_nop_detail
+   \else
+     \expandafter\strc_tags_start_yes_detail
+   \fi}
+
+\def\strc_tags_enabled_start_chained
+  {\iftrialtypesetting
+     \expandafter\strc_tags_start_nop_chained
+   \else
+     \expandafter\strc_tags_start_yes_chained
+   \fi}
+
+\def\strc_tags_enabled_stop
+  {\iftrialtypesetting
+     \expandafter\strc_tags_stop_nop
+   \else
+     \expandafter\strc_tags_stop_yes
+  \fi}
+
+\def\strc_tags_start_yes_no_detail    #1{\clf_starttag{#1}}
+\def\strc_tags_start_yes_detail     #1#2{\clf_starttag_d{#1}{#2}}
+\def\strc_tags_start_yes_chained  #1#2#3{\clf_starttag_c{#1}{#2}{\getcurrentparentchain#3{#2}}}
+\def\strc_tags_stop_yes                 {\clf_stoptag}
+
+\let\strc_tags_start_nop_no_detail\gobbleoneargument
+\let\strc_tags_start_nop_detail   \gobbletwoarguments
+\let\strc_tags_start_nop_chained  \gobblethreearguments
+\let\strc_tags_stop_nop           \donothing
+
+\def\strc_tags_start_yes_ignore{\clf_starttag{\t!ignore}}
+\let\strc_tags_stop_yes_ignore \strc_tags_stop_yes
+\let\strc_tags_start_nop_ignore\donothing
+\let\strc_tags_stop_nop_ignore \donothing
+
+% more efficient:
+
+% \dostarttagged         % {tag} {detail}
+% \dostarttaggedchained  % {tag} {detail} \??hash
+% \dostarttaggednodetail % {tag}
+
+% \unexpanded\def\strc_tags_enable
+%   {\let\dostarttagged\strc_tags_start_yes
+%    \let\dostoptagged \strc_tags_stop_yes}
+
+\unexpanded\def\strc_tags_enable
+  {\let\dostarttagged        \strc_tags_enabled_start_detail
+   \let\dostarttaggednodetail\strc_tags_enabled_start_no_detail
+   \let\dostarttaggedchained \strc_tags_enabled_start_chained
+   \let\dostoptagged         \strc_tags_enabled_stop
+   \let\dostartignoretagging \strc_tags_start_yes_ignore
+   \let\dostopignoretagging  \strc_tags_stop_yes_ignore}
+
+\unexpanded\def\strc_tags_disable
+  {\let\dostarttagged        \strc_tags_start_nop_detail
+   \let\dostarttaggednodetail\strc_tags_start_nop_no_detail
+   \let\dostarttaggedchained \strc_tags_start_nop_chained
+   \let\dostoptagged         \strc_tags_stop_nop
+   \let\dostartignoretagging \strc_tags_start_nop_ignore
+   \let\dostopignoretagging  \strc_tags_stop_nop_ignore}
+
+% for luigi (beware: fully expandable):
+
+\def\strc_tags_get_element_tag_yes{\clf_getelementtag}
+\let\strc_tags_get_element_tag_nop\donothing
+
+\unexpanded\def\strc_tags_setup_element_user_properties_yes
+  {\dodoubleempty\strc_tags_setup_element_user_properties_indeed}
+
+\unexpanded\def\strc_tags_setup_element_user_properties_nop
+  {\dodoubleempty\strc_tags_setup_element_user_properties_indeed_nop}
+
+\def\strc_tags_setup_element_user_properties_indeed
+  {\iftrialtypesetting
+     \expandafter\strc_tags_setup_element_user_properties_indeed_nop
+   \else
+     \expandafter\strc_tags_setup_element_user_properties_indeed_yes
+   \fi}
+
+\def\strc_tags_setup_element_user_properties_indeed_nop[#1][#2]{}
+\def\strc_tags_setup_element_user_properties_indeed_yes[#1][#2]{\clf_setelementuserproperties{#1}{#2}}
+
+\unexpanded\def\strc_tags_enable_properties
+  {\let\getelementtag             \strc_tags_get_element_tag_yes
+   \let\setupelementuserproperties\strc_tags_setup_element_user_properties_yes}
+
+\unexpanded\def\strc_tags_disable_properties
+  {\let\getelementtag             \strc_tags_get_element_tag_nop
+   \let\setupelementuserproperties\strc_tags_setup_element_user_properties_nop}
+
+%D The triggers:
+
+\newtoks\everyenableelements
+\newtoks\everydisableelements
+
+\appendtoks
+    \strc_tags_enable_elements
+    \strc_tags_enable_properties
+    \doifelse{\taggingparameter\c!method}\v!auto\strc_tags_enable\strc_tags_disable
+\to \everyenableelements
+
+\appendtoks
+    \strc_tags_disable_elements
+    \strc_tags_disable_properties
+    \strc_tags_disable
+\to \everydisableelements
+
+\appendtoks
+   \doifelse{\taggingparameter\c!state}\v!start{\the\everyenableelements}{\the\everydisableelements}%
+\to \everysetuptagging
+
+\setuptagging
+  [\c!state=\v!stop,
+   \c!method=\v!auto]
+
+% \unexpanded\def\startparagraph
+%   {\dostarttagged\t!paragraph\empty}
+%
+% \unexpanded\def\stopparagraph
+%   {% \removeunwantedspaces % yes or no
+%    \dostoptagged
+%    \par}
+
+% Cf suggestion by Wolfgang we now have named paragraphs. Watch out, the content
+% is grouped but only when we have an instance.
+%
+% \defineparagraph[red] [color=red]
+% \defineparagraph[bold][style=bold]
+%
+% \startparagraph       \input ward \stopparagraph
+% \startparagraph[red]  \input ward \stopparagraph
+% \startparagraph[bold] \input ward \stopparagraph
+
+\installcorenamespace               {paragraph}
+\installcommandhandler \??paragraph {paragraph} \??paragraph
+
+\setupparagraph % someday maybe also strut (beg/end) and align
+  [\c!color=,
+   \c!style=]
+
+\unexpanded\def\startparagraph
+  {\dodoubleempty\paragraph_start}
+
+\def\paragraph_start
+  {\endgraf % we end before the group
+   \begingroup
+   \iffirstargument
+     \ifsecondargument
+       \doubleexpandafter\paragraph_start_two
+     \else
+       \doubleexpandafter\paragraph_start_one
+     \fi
+   \else
+     \expandafter\paragraph_start_zero
+   \fi}
+
+\def\paragraph_start_two[#1][#2]%
+  {\edef\currentparagraph{#1}%
+   \setupcurrentparagraph[#2]%
+   \paragraph_start_indeed}
+
+\def\paragraph_start_one[#1][#2]%
+  {\doifelseassignment{#1}
+     {\let\currentparagraph\empty
+      \setupcurrentparagraph[#1]}
+     {\edef\currentparagraph{#1}}%
+   \paragraph_start_indeed}
+
+\def\paragraph_start_zero[#1][#2]%
+  {\let\currentparagraph\empty
+   \paragraph_start_indeed}
+
+\def\paragraph_start_indeed
+  {\useparagraphstyleandcolor\c!style\c!color
+   \usealignparameter\paragraphparameter
+   \usesetupsparameter\paragraphparameter
+   \dostarttagged\t!paragraph\currentparagraph}
+
+\unexpanded\def\stopparagraph
+  {\dostoptagged
+   \endgraf % we end inside the group
+   \endgroup}
+
+\let\startpar\startparagraph
+\let\stoppar \stopparagraph
+
+\def\strc_tags_document_start_indeed
+  {\glet\strc_tags_document_start_indeed\relax
+   \dostarttagged\t!document\empty}
+
+\def\strc_tags_document_stop_indeed
+  {\glet\strc_tags_document_stop_indeed\relax
+   \dostoptagged}
+
+\appendtoks
+    \strc_tags_document_start_indeed % here because otherwise products don't get a root (starttext before env)
+\to \everyenableelements
+
+% \appendtoks
+%     \strc_tags_document_start_indeed
+% \to \everystarttext
+
+\appendtoks
+    \strc_tags_document_stop_indeed
+\to \everystoptext
+
+\appendtoks
+    \strc_tags_disable_elements
+    \strc_tags_disable
+\to \everybeforepagebody
+
+%D This will only work well with sane use.
+
+\appendtoks
+   \dostartignoretagging
+\to \everybeforepagebody
+
+\appendtoks
+    \dostopignoretagging
+\to \everyafterpagebody
+
+% \doifelseinelement{structure:section}            {yes} {no}
+% \doifelseinelement{structure:chapter}            {yes} {no}
+% \doifelseinelement{division:*-structure:chapter} {yes} {no}
+
+\unexpanded\def\doifelseinelement#1%
+  {\clf_doifelseinelement{#1}}
+
+\let\doifinelementelse\doifelseinelement
+
+\unexpanded\def\taggedlabeltexts#1#2#3% experimental: label, numberdetail, numbercontent
+  {\begingroup
+   \dostarttagged\t!label{#1}%
+   \labeltexts{#1}%
+     {\dostoptagged
+      \dostarttagged\t!number{#2}%
+      #3%
+      \dostoptagged
+      \dostarttagged\t!label{#1}}%
+   \dostoptagged
+   \endgroup}
+
+\unexpanded\def\namedtaggedlabeltexts#1#2#3#4#5% experimental: labeltag label numbertag numberdetail numbercontent
+  {\begingroup
+   \dostarttagged{#1}{#2}%
+   \labeltexts{#2}%
+     {\dostoptagged
+      \dostarttagged{#3}{#4}%
+      #5%
+      \dostoptagged
+      \dostarttagged{#1}{#2}}%
+   \dostoptagged
+   \endgroup}
+
+%D Metadata is added after the following structure element so
+%D here we get some as child of the document root and some as child
+%D of the chapter element.
+%D
+%D \settaggedmetadata[title=Hello World!,author=Hans Hagen]
+%D
+%D \starttyping
+%D \starttext
+%D   \startelement[ignore]
+%D     \input tufte
+%D   \stopelement
+%D   \par \input ward \par
+%D   \settaggedmetadata[whatever=Again and Again]
+%D   \startchapter[title=test]
+%D     \input ward
+%D   \stopchapter
+%D \stoptext
+%D \stoptyping
+
+\unexpanded\def\settaggedmetadata[#1]%
+  {\clf_settaggedmetadata{#1}}
+
+%D An overload:
+
+\let\strc_tagged_saved_bpar\bpar
+\let\strc_tagged_saved_epar\epar
+
+\unexpanded\def\bpar{\dostarttagged\t!paragraph\empty\strc_tagged_saved_bpar}
+\unexpanded\def\epar{\strc_tagged_saved_epar\dostoptagged}
+
+\protect

@@ -1,0 +1,163 @@
+%D \module
+%D   [       file=pack-cut, % comes from core-vis/trac-vis
+%D        version=1996.06.01,
+%D          title=\CONTEXT\ Packaging Macros,
+%D       subtitle=Cut boxes,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D \macros
+%D   {makecutbox, cuthbox, cutvbox, cutvtop}
+%D
+%D Although mainly used for marking the page, these macros can
+%D also serve local use.
+%D
+%D \startbuffer
+%D \setbox0=\vbox{a real \crlf vertical box} \makecutbox0
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D This marked \type{\vbox} shows up as:
+%D
+%D \startlinecorrection
+%D \getbuffer
+%D \stoplinecorrection
+%D
+%D The alternative macros are used as:
+%D
+%D \startbuffer
+%D \cuthbox{a made cut box}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D This is typeset as:
+%D
+%D \startlinecorrection
+%D \getbuffer
+%D \stoplinecorrection
+%D
+%D By setting the next macros one can influence the length of
+%D the marks as well as the horizontal and vertical divisions.
+
+\newdimen\d_pack_cutmarks_width
+\newdimen\d_pack_cutmarks_height
+\newdimen\d_pack_cutmarks_depth
+
+\newcount\horizontalcutmarks \horizontalcutmarks \plustwo
+\newcount\verticalcutmarks   \verticalcutmarks   \plustwo
+\newcount\cutmarkoffset      \cutmarkoffset      \plusone
+
+\let\cutmarksymbol       \relax
+\let\cutmarktoptext      \empty
+\let\cutmarkbottomtext   \empty
+\let\cutmarkhoffset      \empty
+\let\cutmarkvoffset      \empty
+\def\cutmarklength       {2\bodyfontsize}
+\def\cutmarkrulethickness{\onepoint}
+
+\unexpanded\def\horizontalcuts
+  {\normalhbox to \d_pack_cutmarks_width
+     {\dorecurse\horizontalcutmarks{\vrule\s!width\cutmarkrulethickness\s!height\cutmarklength\normalhfill}%
+      \unskip}}
+
+\unexpanded\def\verticalcuts
+  {\normalvbox to \dimexpr\d_pack_cutmarks_height+\d_pack_cutmarks_depth\relax
+     {\hsize\cutmarklength
+      \dorecurse\verticalcutmarks{\vrule\s!height\cutmarkrulethickness\s!width\hsize\normalvfill}%
+      \unskip}}
+
+\unexpanded\def\baselinecuts
+  {\ifdim\d_pack_cutmarks_depth>\zeropoint
+     \normalvbox to \dimexpr\d_pack_cutmarks_height+\d_pack_cutmarks_depth\relax
+       {\hsize\dimexpr\cutmarklength/2\relax
+        \normalvskip\zeropoint\s!plus\d_pack_cutmarks_height
+        \vrule\s!height\cutmarkrulethickness\s!width\hsize
+        \normalvskip\zeropoint\s!plus\d_pack_cutmarks_depth}%
+   \fi}
+
+\unexpanded\def\cutmarksymbols#1%
+  {\normalhbox to \d_pack_cutmarks_width
+     {\setbox\scratchbox\normalhbox to \cutmarklength
+        {\normalhss\infofont\cutmarksymbol\normalhss}%
+      \normalhss
+      \normalvbox to \cutmarklength
+        {\scratchdimen\dimexpr\cutmarklength/2\relax
+         \scratchskip \ifx\cutmarkhoffset\empty\cutmarkoffset\scratchdimen\else\cutmarkhoffset\fi
+         \normalvss
+         \hpack to \d_pack_cutmarks_width
+           {\llap{\copy\scratchbox\normalhskip\scratchskip}%
+            \normalhskip\scratchdimen\hss\infofont#1\hss\normalhskip\scratchdimen
+            \rlap{\normalhskip\scratchskip\copy\scratchbox}}%
+         \normalvss}%
+      \normalhss}}
+
+\unexpanded\def\makecutbox#1%
+  {\bgroup
+   \d_pack_cutmarks_height\ht#1%
+   \d_pack_cutmarks_depth \dp#1%
+   \d_pack_cutmarks_width \wd#1%
+   \setbox#1\normalhbox
+     {\dontcomplain
+      \forgetall
+      \boxmaxdepth\maxdimen
+      \offinterlineskip
+      \scratchdimen\dimexpr\cutmarklength/2\relax
+      \hsize\d_pack_cutmarks_width
+      \setbox\scratchbox\normalvbox
+        {\setbox\scratchbox\normalhbox{\horizontalcuts}%
+         \scratchskip\ifx\cutmarkvoffset\empty\cutmarkoffset\scratchdimen\else\cutmarkvoffset\fi
+         \tlap{\copy\scratchbox\normalvskip\scratchskip}%
+         \hpack to \d_pack_cutmarks_width
+           {\scratchskip\ifx\cutmarkhoffset\empty\cutmarkoffset\scratchdimen\else\cutmarkhoffset\fi
+            \setbox\scratchbox\normalhbox{\verticalcuts}%
+            \llap{\copy\scratchbox\normalhskip\scratchskip}%
+            \ifdim\d_pack_cutmarks_depth=\zeropoint
+              \normalhfill
+            \else
+              \bgroup
+              \setbox\scratchbox\normalhbox{\baselinecuts}%
+              \llap{\copy\scratchbox\normalhskip\scratchskip}%
+              \normalhfill
+              \rlap{\normalhskip\scratchskip\copy\scratchbox}%
+              \egroup
+            \fi
+            \rlap{\normalhskip\scratchskip\copy\scratchbox}}%
+         \blap{\normalvskip\scratchskip\copy\scratchbox}}%
+      \ht\scratchbox\d_pack_cutmarks_height
+      \dp\scratchbox\d_pack_cutmarks_depth
+      \wd\scratchbox\zeropoint
+      \startcolor[\defaulttextcolor]%
+      \box\scratchbox
+      \ifx\cutmarksymbol\relax \else
+        \setbox\scratchbox\normalvbox
+          {\scratchskip\ifx\cutmarkvoffset\empty\cutmarkoffset\scratchdimen\else\cutmarkvoffset\fi
+           \vskip-\dimexpr\scratchskip+\cutmarklength\relax
+           \normalhbox{\cutmarksymbols\cutmarktoptext}%
+           \vskip\dimexpr\scratchskip+\d_pack_cutmarks_height+\d_pack_cutmarks_depth+\scratchskip\relax
+           \normalhbox{\cutmarksymbols\cutmarkbottomtext}}%
+        \ht\scratchbox\d_pack_cutmarks_height
+        \dp\scratchbox\d_pack_cutmarks_depth
+        \wd\scratchbox\zeropoint
+        \box\scratchbox
+      \fi
+      \stopcolor
+      \box#1}%
+   \wd#1\d_pack_cutmarks_width
+   \ht#1\d_pack_cutmarks_height
+   \dp#1\d_pack_cutmarks_depth
+   \egroup}
+
+\unexpanded\def\cuthbox{\normalhbox\bgroup\dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\normalhbox}
+\unexpanded\def\cutvbox{\normalvbox\bgroup\dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\normalvbox}
+\unexpanded\def\cutvtop{\normalvtop\bgroup\dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\normalvtop}
+
+\protect \endinput

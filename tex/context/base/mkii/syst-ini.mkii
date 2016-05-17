@@ -1,0 +1,1063 @@
+%D \module
+%D   [       file=syst-ini,
+%D        version=2008.11.04, % 2001.11.16, % 1999.03.17,  % an oldie: 1995.10.10
+%D          title=\CONTEXT\ System Macros,
+%D       subtitle=Bootstrapping \TEX,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D We used to load plain \TEX\ in a special way, but redefining
+%D a couple of primitives so that for instance font loading was
+%D ignored. For those interested, this loader is found in
+%D \type {syst-tex.tex}. Some of the comment's are Don Knuth's
+%D and more of it can be found in the plain \TEX\ format.
+
+%D Characters can have special states, that can be triggered
+%D by setting their category coded. Some are preset, others
+%D are to be set as soon as possible, otherwise we cannot
+%D define any useful macros.
+
+%catcode`\^^@   =  9 % ascii null is ignored
+%catcode`\\     =  0 % backslash is TeX escape character
+
+\catcode`\{     =  1 % left brace is begin-group character
+\catcode`\}     =  2 % right brace is end-group character
+\catcode`\$     =  3 % dollar sign is math shift
+\catcode`\&     =  4 % ampersand is alignment tab
+\catcode`\#     =  6 % hash mark is macro parameter character
+\catcode`\^     =  7 % circumflex and uparrow are for superscripts
+\catcode`\_     =  8 % underline and downarrow are for subscripts
+\catcode`\^^I   = 10 % ascii tab is a blank space
+
+%catcode`\^^M   =  5 % ascii return is end-line
+%catcode`\%     = 14 % percent sign is comment character
+%catcode`\      = 10 % ascii space is blank space
+%catcode`\^^?   = 15 % ascii delete is invalid
+
+\catcode`\~     = 13 % tilde is active
+\catcode`\^^L   = 13 % ascii form-feed
+
+%catcode`\A     = 11
+%.......
+%catcode`\Z     = 11
+
+%catcode`\a     = 11
+%.......
+%catcode`\z     = 11
+
+\chardef\activecatcode = 13 % later this will become a counter
+
+\def ^^L{\par}
+\def\^^M{\   } % control <return> = control <space>
+\def\^^I{\   } % same for <tab>
+
+%D In \CONTEXT, we simply ignore end||of||file tokens:
+
+\catcode`\^^Z=9
+
+%D It makes sense to know what engine we're running so let's
+%D try to deduce it.
+
+\chardef\unknownengine = 0
+\chardef\pdftexengine  = 1
+\chardef\xetexengine   = 2
+\chardef\luatexengine  = 3
+
+\ifx\directlua\undefined
+    \ifx\XeTeXversion\undefined
+        \ifx\pdftexversion\undefined
+            \let\texengine\unknownengine
+        \else
+            \let\texengine\pdftexengine
+        \fi
+    \else
+        \let\texengine\xetexengine
+    \fi
+\else
+    \let\texengine\luatexengine
+\fi
+
+\ifnum\texengine=\unknownengine
+    \immediate\write16{>>>}
+    \immediate\write16{>>> only pdftex, xetex and luatex are supported}
+    \immediate\write16{>>>}
+    \let\dump\relax
+    \expandafter\end
+\fi
+
+\ifnum\texengine=\luatexengine
+    \directlua 0 { % this info is stored in the format
+      % kpse.set_program_name("context")
+        lua.name[0] = "main ctx instance"
+        local extraprimitives  = tex.extraprimitives
+        local enableprimitives = tex.enableprimitives
+        local core   = extraprimitives('core')
+        local btex   = extraprimitives('tex')
+        local etex   = extraprimitives('etex')
+        local pdftex = extraprimitives('pdftex')
+        local luatex = extraprimitives('luatex')
+        local omega = {
+            "textdir", "pagedir", "mathdir", "pardir", "bodydir",
+            "leftghost", "rightghost", "localleftbox", "localrightbox",
+            "localinterlinepenalty", "localbrokenpenalty",
+        }
+        local aleph = {
+            "boxdir", "pagebottomoffset", "pagerightoffset",
+        }
+        for _, subset in next, { etex, pdftex, luatex, omega, aleph } do
+            enableprimitives('',subset)
+        end
+        for _, subset in next, { core, btex, etex, pdftex, luatex, omega, aleph } do
+            enableprimitives('normal',subset)
+        end
+    }
+\fi
+
+\ifdefined\pdfextension
+
+    % promoted
+
+    \let\pdfpagewidth      \pagewidth
+    \let\pdfpageheight     \pageheight
+
+    \let\pdfadjustspacing  \adjustspacing
+    \let\pdfprotrudechars  \protrudechars
+    \let\pdfnoligatures    \ignoreligaturesinfont
+    \let\pdffontexpand     \expandglyphsinfont
+    \let\pdfcopyfont       \copyfont
+
+    \let\pdfxform          \saveboxresource
+    \let\pdflastxform      \lastsavedboxresourceindex
+    \let\pdfrefxform       \useboxresource
+
+    \let\pdfximage         \saveimageresource
+    \let\pdflastximage     \lastsavedimageresourceindex
+    \let\pdflastximagepages\lastsavedimageresourcepages
+    \let\pdfrefximage      \useimageresource
+
+    \let\pdfsavepos        \savepos
+    \let\pdflastxpos       \lastxpos
+    \let\pdflastypos       \lastypos
+
+  % \let\pdftexversion     \luatexversion
+  % \let\pdftexrevision    \luatexrevision
+    \let\pdftexbanner      \luatexbanner
+
+    \let\pdfoutput         \outputmode
+    \let\pdfdraftmode      \draftmode
+
+    \let\pdfpxdimen        \pxdimen
+
+    \let\pdfinsertht       \insertht
+
+    % also promoted
+
+  % \let\pdfnormaldeviate  \normaldeviate
+  % \let\pdfuniformdeviate \uniformdeviate
+  % \let\pdfsetrandomseed  \setrandomseed
+  % \let\pdfrandomseed     \randomseed
+  %
+  % \let\pdfprimitive      \primitive
+  %
+  % \let\expandafter\csname    ifpdfabsnum\expandafter\endcsname\csname    ifabsnum\endcsname
+  % \let\expandafter\csname    ifpdfabsdim\expandafter\endcsname\csname    ifabsdim\endcsname
+  % \let\expandafter\csname ifpdfprimitive\expandafter\endcsname\csname ifprimitive\endcsname
+
+    % removed (also some others but already long ago)
+
+    \newdimen\pdfeachlineheight
+    \newdimen\pdfeachlinedepth
+    \newdimen\pdflastlinedepth
+    \newdimen\pdffirstlineheight
+    \newdimen\pdfignoreddimen
+
+    % grouped
+
+    \protected\def\pdfliteral        {\pdfextension literal}
+    \protected\def\pdfcolorstack     {\pdfextension colorstack}
+    \protected\def\pdfsetmatrix      {\pdfextension setmatrix}
+    \protected\def\pdfsave           {\pdfextension save\relax}
+    \protected\def\pdfrestore        {\pdfextension restore\relax}
+    \protected\def\pdfobj            {\pdfextension obj }
+    \protected\def\pdfrefobj         {\pdfextension refobj }
+    \protected\def\pdfannot          {\pdfextension annot }
+    \protected\def\pdfstartlink      {\pdfextension startlink }
+    \protected\def\pdfendlink        {\pdfextension endlink\relax}
+    \protected\def\pdfoutline        {\pdfextension outline }
+    \protected\def\pdfdest           {\pdfextension dest }
+    \protected\def\pdfthread         {\pdfextension thread }
+    \protected\def\pdfstartthread    {\pdfextension startthread }
+    \protected\def\pdfendthread      {\pdfextension endthread\relax}
+    \protected\def\pdfinfo           {\pdfextension info }
+    \protected\def\pdfcatalog        {\pdfextension catalog }
+    \protected\def\pdfnames          {\pdfextension names }
+    \protected\def\pdfincludechars   {\pdfextension includechars }
+    \protected\def\pdffontattr       {\pdfextension fontattr }
+    \protected\def\pdfmapfile        {\pdfextension mapfile }
+    \protected\def\pdfmapline        {\pdfextension mapline }
+    \protected\def\pdftrailer        {\pdfextension trailer }
+    \protected\def\pdfglyphtounicode {\pdfextension glyphtounicode }
+
+    % grouped
+
+    \def\pdftexversion     {\numexpr\pdffeedback version}
+    \def\pdftexrevision            {\pdffeedback revision}
+    \def\pdflastlink       {\numexpr\pdffeedback lastlink}
+    \def\pdfretval         {\numexpr\pdffeedback retval}
+    \def\pdflastobj        {\numexpr\pdffeedback lastobj}
+    \def\pdflastannot      {\numexpr\pdffeedback lastannot}
+    \def\pdfxformname      {\numexpr\pdffeedback xformname}
+    \def\pdfcreationdate           {\pdffeedback creationdate}
+    \def\pdffontname       {\numexpr\pdffeedback fontname}
+    \def\pdffontobjnum     {\numexpr\pdffeedback fontobjnum}
+    \def\pdffontsize       {\dimexpr\pdffeedback fontsize}
+    \def\pdfpageref        {\numexpr\pdffeedback pageref}
+    \def\pdfcolorstackinit         {\pdffeedback colorstackinit}
+
+    % used when defined
+
+    \edef\pdfcompresslevel       {\pdfvariable compresslevel}       \pdfcompresslevel         9
+    \edef\pdfobjcompresslevel    {\pdfvariable objcompresslevel}    \pdfobjcompresslevel      1
+    \edef\pdfdecimaldigits       {\pdfvariable decimaldigits}       \pdfdecimaldigits         3
+    \edef\pdfgamma               {\pdfvariable gamma}               \pdfgamma              1000
+    \edef\pdfimageresolution     {\pdfvariable imageresolution}     \pdfimageresolution      71
+    \edef\pdfimageapplygamma     {\pdfvariable imageapplygamma}     \pdfimageapplygamma       0
+    \edef\pdfimagegamma          {\pdfvariable imagegamma}          \pdfimagegamma         2200
+    \edef\pdfimagehicolor        {\pdfvariable imagehicolor}        \pdfimagehicolor          1
+    \edef\pdfimageaddfilename    {\pdfvariable imageaddfilename}    \pdfimageaddfilename      1
+    \edef\pdfpkresolution        {\pdfvariable pkresolution}        \pdfpkresolution         72
+    \edef\pdfinclusioncopyfonts  {\pdfvariable inclusioncopyfonts}  \pdfinclusioncopyfonts    0
+    \edef\pdfinclusionerrorlevel {\pdfvariable inclusionerrorlevel} \pdfinclusionerrorlevel   0
+    \edef\pdfgentounicode        {\pdfvariable gentounicode}        \pdfgentounicode          0
+    \edef\pdfpagebox             {\pdfvariable pagebox}             \pdfpagebox               0
+    \edef\pdfminorversion        {\pdfvariable minorversion}        \pdfminorversion          4
+    \edef\pdfuniqueresname       {\pdfvariable uniqueresname}       \pdfuniqueresname         0
+
+    \edef\pdfhorigin             {\pdfvariable horigin}             \pdfhorigin             1in
+    \edef\pdfvorigin             {\pdfvariable vorigin}             \pdfvorigin             1in
+    \edef\pdflinkmargin          {\pdfvariable linkmargin}          \pdflinkmargin          0pt
+    \edef\pdfdestmargin          {\pdfvariable destmargin}          \pdfdestmargin          0pt
+    \edef\pdfthreadmargin        {\pdfvariable threadmargin}        \pdfthreadmargin        0pt
+
+    \edef\pdfpagesattr           {\pdfvariable pagesattr}
+    \edef\pdfpageattr            {\pdfvariable pageattr}
+    \edef\pdfpageresources       {\pdfvariable pageresources}
+    \edef\pdfxformattr           {\pdfvariable xformattr}
+    \edef\pdfxformresources      {\pdfvariable xformresources}
+    \edef\pdfpkmode              {\pdfvariable pkmode}
+
+\fi
+
+%D \ETEX\ has a not so handy way of telling you the version number,
+%D i.e. the revision number has a period in it:
+
+\long\def\gobbleoneargument#1{} % will be defined later on anyway
+
+\mathchardef\etexversion =
+    \numexpr\eTeXversion*100+\expandafter\gobbleoneargument\eTeXrevision\relax
+
+%D First we define a simplified version of the \CONTEXT\
+%D protection mechanism.
+
+\def\unprotect{\catcode`@=11 }
+\def\protect  {\catcode`@=12 }
+
+\unprotect
+
+%D Some pretty important definitions:
+
+\let\bgroup={
+\let\egroup=}
+
+%D Allocation of registers is done slightly different than in plain
+%D \TEX. First of all we use different reserved counters. We also
+%D don't implement a family handler because users are not supposed
+%D to implement their own math. We reserve the lowest 31 registers
+%D for scratch purposes. Keep in mind that in the core engine
+%D some registers are reserved: counters 0 upto 9, and counter 255.
+%D
+%D As with plain \TEX\ we recommend that macro designers always use
+%D \type {\global} assignments with respect to registers numbered 1,
+%D 3, 5 \unknown\ 31, and always non||\type {\global} assignments
+%D with respect to registers 0, 2, 4, \unknown\ 30. This will prevent
+%D \quote {save stack buildup} that might otherwise occur.
+%D
+%D We reserve some registers for special (management) purposes:
+
+%   0 -  20 : scratch
+%  21 - 127 : internal
+% 128 - 254 : inserts
+% 255       : page
+% 256 -     : user
+
+\countdef   \minallocatedregister   =    52 \minallocatedregister   =   256
+\countdef   \maxallocatedregister   =    53 \maxallocatedregister   = 32767
+\countdef   \minallocatediochannel  =    54 \minallocatediochannel  =    -1
+\countdef   \maxallocatediochannel  =    55 \maxallocatediochannel  =    16
+\countdef   \minallocatedlanguage   =    56 \minallocatedlanguage   =     0
+\countdef   \maxallocatedlanguage   =    57 \maxallocatedlanguage   =   255
+\countdef   \maxallocatedinsert     =    58 \maxallocatedinsert     =   254
+\countdef   \minallocatedinsert     =    59 \minallocatedinsert     =   128
+\countdef   \minallocatedfamily     =    60 \minallocatedfamily     =   128
+\countdef   \maxallocatedfamily     =    61 \maxallocatedfamily     =   255
+
+\countdef   \lastallocatedcount     =    32 \lastallocatedcount     = \minallocatedregister
+\countdef   \lastallocateddimen     =    33 \lastallocateddimen     = \minallocatedregister
+\countdef   \lastallocatedskip      =    34 \lastallocatedskip      = \minallocatedregister
+\countdef   \lastallocatedmuskip    =    35 \lastallocatedmuskip    = \minallocatedregister
+\countdef   \lastallocatedbox       =    36 \lastallocatedbox       = \minallocatedregister
+\countdef   \lastallocatedtoks      =    37 \lastallocatedtoks      = \minallocatedregister
+\countdef   \lastallocatedread      =    38 \lastallocatedread      = \minallocatediochannel
+\countdef   \lastallocatedwrite     =    39 \lastallocatedwrite     = \minallocatediochannel
+\countdef   \lastallocatedmarks     =    40 \lastallocatedmarks     = \minallocatedregister
+\countdef   \lastallocatedlanguage  =    41 \lastallocatedlanguage  = \minallocatedlanguage    % not used in context
+\countdef   \lastallocatedinsertion =    42 \lastallocatedinsertion = \minallocatedinsert
+\countdef   \lastallocatedfamily    =    43 \lastallocatedfamily    = \minallocatedfamily      % not used in context
+\countdef   \lastallocatedattribute =    44 \lastallocatedattribute = \minallocatedregister
+
+\countdef   \mincountervalue        =   125 \mincountervalue        = -"7FFFFFFF % beware, we use index 125 at the lua end
+\countdef   \maxcountervalue        =   126 \maxcountervalue        =  "7FFFFFFF % beware, we use index 126 at the lua end
+
+%countdef   \minusone               =   127 \minusone               = -1
+%chardef    \zerocount              =     0
+%chardef    \plusone                =     1
+
+\countdef   \zerocount              =   120 \zerocount              =  0
+\countdef   \plusone                =   121 \plusone                =  1
+\countdef   \minusone               =   122 \minusone               = -1
+
+%chardef    \normalpagebox                                          = 255
+\countdef   \normalpagebox          =   127 \normalpagebox          = 255  % hardcoded in pdftex/xetex
+
+% A few traditional allocations:
+
+\countdef   \count@                 =   255 % hm, used in \newif .. todo: replace it there
+\dimendef   \dimen@                 =     0
+\dimendef   \dimen@i                =     1 % global only
+\dimendef   \dimen@ii               =     2
+
+%D So, effectively we start allocating from 256 and upwards. The
+%D inserts sit in the range 128 upto 254. Page numbers use the
+%D counters 0 upto 9 and the pagebox is 255. Users can use the
+%D scratch registers upto 31 without problem but all others are
+%D reserved.
+
+\def\wlog#1{} % \def\wlog{\immediate\write\minusone} % write on log file (only)
+
+%D The allocators share a common helper macro.
+
+\def\newcount   {\allocateregister\lastallocatedcount    \count   \countdef   \maxallocatedregister}
+\def\newdimen   {\allocateregister\lastallocateddimen    \dimen   \dimendef   \maxallocatedregister}
+\def\newskip    {\allocateregister\lastallocatedskip     \skip    \skipdef    \maxallocatedregister}
+\def\newmuskip  {\allocateregister\lastallocatedmuskip   \muskip  \muskipdef  \maxallocatedregister}
+\def\newbox     {\allocateregister\lastallocatedbox      \box     \mathchardef\maxallocatedregister}
+\def\newtoks    {\allocateregister\lastallocatedtoks     \toks    \toksdef    \maxallocatedregister}
+\def\newread    {\allocateregister\lastallocatedread     \read    \chardef    \maxallocatediochannel}
+\def\newwrite   {\allocateregister\lastallocatedwrite    \write   \chardef    \maxallocatediochannel}
+\def\newmarks   {\allocateregister\lastallocatedmarks    \marks   \mathchardef\maxallocatedregister}
+\def\newinsert  {\allocateregister\lastallocatedinsertion\insert  \chardef    \maxallocatedinsert}
+
+%D We don't need these in \CONTEXT:
+
+\def\newlanguage{\allocateregister\lastallocatedlanguage \language\chardef    \maxallocatedlanguage}
+\def\newfamily  {\allocateregister\lastallocatedfamily   \fam     \chardef    \maxallocatedfamily}
+
+\let\newfam\newfamily
+
+% Watch out, for the moment we disable the check for already being defined
+% later we will revert this but first all chardefs must be replaced.
+
+\def\newconstant   #1{\ifdefined#1\let#1\undefined\fi\newcount#1}
+\def\setnewconstant#1{\ifdefined#1\let#1\undefined\fi\newcount#1#1} % just a number
+
+% maybe setconstant with check
+
+% %D The next definitions are really needed (in \CONTEXT):
+
+%newlinechar=10   \def\outputnewlinechar{\rawcharacter{10}}
+\newlinechar=10  \edef\outputnewlinechar{^^J}
+
+%D One reason to start high with allocation is that it permits us to
+%D allocate consecutive ranges more easily, for instance in \MPLIB\
+%D we want to allocate a continuous range of boxes. It also permits us
+%D to do a proper upward allocation for inserts. The current code
+%D evolved from code that dealt with older engines but as all engines
+%D now provide many registers we removed all traces.
+
+\def\writestatus#1#2{\immediate\write16{#1: #2}} \def\space { }
+
+\def\allocateregisteryes#1#2#3#4#5% last class method max name
+  {\ifnum#1<#4\relax
+     \global\advance#1\plusone
+     \global#3#5=#1\relax
+   \else
+     \writestatus{warning}{no room for \string#2\space \string#5\space (max: \number#4)}%
+   \fi}
+
+\def\allocateregisternop#1#2#3#4#5% last class method max name
+  {\writestatus{warning}{\string#2 \string#5 is already defined (\string\relax\space it first)}}
+
+\def\allocateregister#1#2#3#4#5% last class method max name
+  {\ifx#5\undefined
+     \expandafter\allocateregisteryes
+   \else\ifx#5\relax
+     \expandafter\expandafter\expandafter\allocateregisteryes
+   \else
+     \expandafter\expandafter\expandafter\allocateregisternop
+   \fi\fi
+   #1#2#3#4#5}
+
+%D Goodie:
+
+\ifnum\texengine=\luatexengine
+    \input luatex-pdf \relax
+\fi
+
+%D Since the number of chars exceed 256 now, we can use \type
+%D {\chardef} instead of the more limited \type {\mathchardef}.
+
+\ifnum\texengine>\pdftexengine
+    \def\newbox  {\allocateregister\lastallocatedbox  \box  \chardef\maxallocatedregister}
+    \def\newmarks{\allocateregister\lastallocatedmarks\marks\chardef\maxallocatedregister}
+\fi
+
+%D Attributes are something very \LUATEX. In \CONTEXT\ you are not
+%D supposed to use the attributes directly but always allocate then
+%D first. For instance attribute~0 is reserved for special purposes
+%D (this might change).
+
+\ifnum\texengine=\luatexengine
+    \let\attributeunsetvalue\mincountervalue % used to be \minusone
+    \def\newattribute{\allocateregister\lastallocatedattribute\attribute\attributedef\maxallocatedregister}
+\fi
+
+%D Not used by \CONTEXT\ but for instance \PICTEX\ needs it. It's a
+%D trick to force strings instead of tokens that take more memory.
+%D It's a trick to trick to force strings.
+
+\def\newhelp#1#2{\newtoks#1#1\expandafter{\csname#2\endcsname}}
+
+%D \macros
+%D   {scratchcounter,
+%D    scratchdimen,scratchskip,scratchmuskip,
+%D    scratchbox,
+%D    scratchtoks}
+%D
+%D We now define a few scratch registers, so that successive
+%D loads at least have some available.
+
+\newcount   \scratchcounter   \newcount  \globalscratchcounter
+\newdimen   \scratchdimen     \newdimen  \globalscratchdimen
+\newskip    \scratchskip      \newskip   \globalscratchskip
+\newmuskip  \scratchmuskip    \newmuskip \globalscratchmuskip
+\newtoks    \scratchtoks      \newtoks   \globalscratchtoks
+\newbox     \scratchbox       \newbox    \globalscratchbox
+
+\newcount\scratchcounterone  \newcount\scratchcountertwo  \newcount\scratchcounterthree
+\newdimen  \scratchdimenone  \newdimen  \scratchdimentwo  \newdimen  \scratchdimenthree
+\newdimen   \scratchskipone  \newdimen   \scratchskiptwo  \newdimen   \scratchskipthree
+\newbox   \scratchmuskipone  \newbox   \scratchmuskiptwo  \newbox   \scratchmuskipthree
+\newtoks    \scratchtoksone  \newtoks    \scratchtokstwo  \newtoks    \scratchtoksthree
+\newbox      \scratchboxone  \newbox      \scratchboxtwo  \newbox      \scratchboxthree
+
+%D More allocations:
+
+\newskip \zeroskip     \zeroskip     = 0pt plus 0pt minus 0pt
+\newdimen\zeropoint    \zeropoint    = 0pt
+\newdimen\onepoint     \onepoint     = 1pt
+\newdimen\maxdimen     \maxdimen     = 16383.99999pt
+\newdimen\onebasepoint \onebasepoint = 1bp
+\newdimen\scaledpoint  \scaledpoint  = 1sp
+\newdimen\thousandpoint\thousandpoint= 1000pt
+
+\let\points\onepoint
+
+\newtoks \emptytoks
+
+%D And even more: (todo: countdefs 60+)
+
+%newcount   \minusone \minusone =    -1
+\newcount   \minustwo \minustwo =    -2
+%chardef    \zerocount          =     0
+%chardef    \plusone            =     1
+\chardef    \plustwo            =     2
+\chardef    \plusthree          =     3
+\chardef    \plusfour           =     4
+\chardef    \plusfive           =     5
+\chardef    \plussix            =     6
+\chardef    \plusseven          =     7
+\chardef    \pluseight          =     8
+\chardef    \plusnine           =     9
+\chardef    \plusten            =    10
+\chardef    \plussixteen        =    16
+\chardef    \plushundred        =   100
+\chardef    \pluscxxvii         =   127
+\chardef    \pluscxxviii        =   128
+\chardef    \pluscclv           =   255
+
+\ifnum\texengine=\luatexengine
+    \chardef    \pluscclvi          =   256
+    \chardef    \plusthousand       =  1000
+    \chardef    \plustenthousand    = 10000
+    \chardef    \plustwentythousand = 20000
+    \chardef    \medcard            = 32768
+    \chardef    \maxcard            = 65536 % pdftex has less mathchars
+\else
+    \mathchardef\pluscclvi          =   256
+    \mathchardef\plusthousand       =  1000
+    \mathchardef\plustenthousand    = 10000
+    \mathchardef\plustwentythousand = 20000
+    \newcount   \medcard \medcard   = 32768 % pdftex has less mathchars
+    \newcount   \maxcard \maxcard   = 65536 % pdftex has less mathchars
+\fi
+
+%D We prefer the more readable variant than in plain
+%D \TEX. User should only use \type {\emptybox}:
+
+\newbox\voidbox  % public
+
+\let\normalhbox\hbox
+\let\normalvbox\vbox
+
+\def\unvoidbox{\unhbox\voidbox}
+\def\emptybox {\box   \voidbox}  % used in initializations so no attributes
+\def\emptyvbox{\normalvbox{}}    % no copy as we need to set attributes
+\def\emptyhbox{\normalhbox{}}    % no copy as we need to set attributes
+
+\let\leavevmode\unvoidbox % we prefer to use \dontleavehmode
+
+%D Some expected plain variants follow. We don't reuse registers
+%D because we don't want clashes.
+
+\newdimen\p@       \p@   \onepoint
+\newcount\m@ne     \m@ne \minusone
+\newdimen\z@       \z@   \zeropoint
+\let     \@ne            \plusone
+\let     \tw@            \plustwo
+\let     \thr@@          \plusthree
+\let     \sixt@@n        \sixteen
+\let     \@cclv          \pluscclv
+\let     \@cclvi         \pluscclvi
+\newbox  \voidb@x
+\newtoks \toks@
+
+%D We define \type {\newif} a la plain \TEX, but will
+%D redefine it later. As Knuth says:
+%D
+%D \startnarrower
+%D And here's a different sort of allocation: for example,
+%D
+%D \starttyping
+%D \newif\iffoo
+%D \stoptyping
+%D
+%D creates \type {\footrue}, \type {\foofalse} to go
+%D with \type {\iffoo}.
+%D \stopnarrower
+
+\def\newif#1%
+  {\count@\escapechar
+   \escapechar\minusone
+   \expandafter\expandafter\expandafter\def\@if #1{true}{\let#1\iftrue }%
+   \expandafter\expandafter\expandafter\def\@if#1{false}{\let#1\iffalse}%
+   \@if#1{false}% the condition starts out false
+   \escapechar\count@}
+
+\def\@if#1#2%
+  {\csname\expandafter\if@\string#1#2\endcsname}
+
+\bgroup % `if' is required
+
+  \uccode`1=`i \uccode`2=`f \uppercase{\gdef\if@12{}}
+
+\egroup
+
+%D Let's test this one:
+
+\newif\ifdone
+
+%D Potential primitive in \LUATEX:
+
+\ifdefined\htdp \else \def\htdp#1{\dimexpr\ht#1+\dp#1\relax} \fi
+
+%D \macros
+%D   {@@escape,@@begingroup,@@endgroup,@@mathshift,@@alignment,
+%D    @@endofline,@@parameter,@@superscript,@@subscript,
+%D    @@ignore,@@space,@@letter,@@other,@@active,@@comment}
+%D
+%D In \CONTEXT\ we sometimes manipulate the \CATCODES\ of certain
+%D characters. Because we are not that good at remembering numbers,
+%D we introduce some symbolic names.
+
+%D As we now have catc-* files, we also have more readable names but
+%D We will keep the following around for a while.
+
+\chardef\@@escape      =  0
+\chardef\@@begingroup  =  1
+\chardef\@@endgroup    =  2
+\chardef\@@mathshift   =  3
+\chardef\@@alignment   =  4
+\chardef\@@endofline   =  5
+\chardef\@@parameter   =  6
+\chardef\@@superscript =  7
+\chardef\@@subscript   =  8
+\chardef\@@ignore      =  9
+\chardef\@@space       = 10
+\chardef\@@letter      = 11
+\chardef\@@other       = 12
+\chardef\@@active      = 13
+\chardef\@@comment     = 14
+
+%D Constants to be used with \type {\currentgrouptype}.
+
+\chardef\@@bottomlevelgroup   =  0
+\chardef\@@simplegroup        =  1
+\chardef\@@hboxgroup          =  2
+\chardef\@@adjustedhboxgroup  =  3
+\chardef\@@vboxgroup          =  4
+\chardef\@@vtopgroup          =  5
+\chardef\@@aligngroup         =  6
+\chardef\@@noaligngroup       =  7
+\chardef\@@outputgroup        =  8
+\chardef\@@mathgroup          =  9
+\chardef\@@discretionarygroup = 10
+\chardef\@@insertgroup        = 11
+\chardef\@@vcentergroup       = 12
+\chardef\@@mathchoicegroup    = 13
+\chardef\@@semisimplegroup    = 14
+\chardef\@@mathshiftgroup     = 15
+\chardef\@@mathleftgroup      = 16
+
+\chardef\@@vadjustgroup       = \@@insertgroup
+
+%D Constants to be used with \type {\interactionmode}.
+
+\chardef\@@batchmode     = 0
+\chardef\@@nonstopmode   = 1
+\chardef\@@scrollmode    = 2
+\chardef\@@errorstopmode = 3
+
+%D Constants to be used with \type {\lastnodetype}. The \type
+%D {\lastnodetype} primitive is \ETEX\ compliant. The valid range is
+%D still -1 .. 15 and glyph nodes have number 0 (used to be char
+%D node) and ligature nodes are mapped to 7. That way macro packages
+%D can use the same symbolic names as in traditional \ETEX. Keep in
+%D mind that the internal node numbers are different and that there
+%D are more node types that 15.
+
+\chardef\@@charnode          =  0
+\chardef\@@hlistnode         =  1
+\chardef\@@vlistnode         =  2
+\chardef\@@rulenode          =  3
+\chardef\@@insertnode        =  4
+\chardef\@@marknode          =  5
+\chardef\@@adjustnode        =  6
+\chardef\@@ligaturenode      =  7
+\chardef\@@discretionarynode =  8
+\chardef\@@whatsitnode       =  9
+\chardef\@@mathnode          = 10
+\chardef\@@gluenode          = 11
+\chardef\@@kernnode          = 12
+\chardef\@@penaltynode       = 13
+\chardef\@@unsetnode         = 14
+\chardef\@@mathsnode         = 15
+
+%D Constants to be used with \type {\currentiftype}.
+
+\chardef\@@charif     =  1
+\chardef\@@catif      =  2
+\chardef\@@numif      =  3
+\chardef\@@dimif      =  4
+\chardef\@@oddif      =  5
+\chardef\@@vmodeif    =  6
+\chardef\@@hmodeif    =  7
+\chardef\@@mmodeif    =  8
+\chardef\@@innerif    =  9
+\chardef\@@voidif     = 10
+\chardef\@@hboxif     = 11
+\chardef\@@vboxif     = 12
+\chardef\@@xif        = 13
+\chardef\@@eofif      = 14
+\chardef\@@trueif     = 15
+\chardef\@@falseif    = 16
+\chardef\@@caseif     = 17
+\chardef\@@definedif  = 18
+\chardef\@@csnameif   = 19
+\chardef\@@fontcharif = 20
+
+%D Of course we want even bigger log files, so we copied this
+%D from the \ETEX\ source files.
+%D
+%D When watching such logs, beware of nasty side effects of
+%D \type {\scantokens}, as in:
+%D
+%D \starttyping
+%D \bgroup
+%D   \lccode`a=12\lowercase{\xdef\whatever{a}}\egroup
+%D   \def\whatever{test \whatever test}
+%D   \scantokens\expandafter{\whatever}
+%D \egroup
+%D \stoptyping
+%D
+%D In \LUATEX\ we have ways around this.
+
+\def\tracingall
+  {\tracingonline    \plusone
+   \tracingcommands  \plusthree
+   \tracingstats     \plustwo
+   \tracingpages     \plusone
+   \tracingoutput    \plusone
+   \tracinglostchars \plustwo
+   \tracingmacros    \plustwo
+   \tracingparagraphs\plusone
+   \tracingrestores  \plusone
+   \showboxbreadth   \maxdimen
+   \showboxdepth     \maxdimen
+   \tracinggroups    \plusone
+   \tracingifs       \plusone
+   \tracingscantokens\plusone
+   \tracingnesting   \plusone
+   \tracingassigns   \plustwo
+   \errorstopmode}
+
+\def\loggingall
+  {\tracingall
+   \tracingonline    \zerocount}
+
+\def\tracingnone
+  {\tracingassigns   \zerocount
+   \tracingnesting   \zerocount
+   \tracingscantokens\zerocount
+   \tracingifs       \zerocount
+   \tracinggroups    \zerocount
+   \showboxdepth     \plusthree
+   \showboxbreadth   \plusfive
+   \tracingrestores  \zerocount
+   \tracingparagraphs\zerocount
+   \tracingmacros    \zerocount
+   \tracinglostchars \plusone
+   \tracingoutput    \zerocount
+   \tracingpages     \zerocount
+   \tracingstats     \zerocount
+   \tracingcommands  \zerocount
+   \tracingonline    \zerocount}
+
+%D Just for tracing purposes we set:
+
+\tracingstats\plusone
+
+%D Here we also save \type {\input}, more will be saved later.
+
+\ifdefined\normalinput \else \let\normalinput\input \fi
+
+%D We don't like outer commands, and we always want access
+%D to the original \type {\input} primitive.
+
+\let\normalouter\outer  \def\outer{} % no longer \relax
+
+%D To circumvent dependencies, we can postpone certain
+%D initializations to dumping time, by appending them to the
+%D \type {\everydump} token register.
+
+\ifdefined\normaldump \else \let\normaldump\dump \fi
+
+\newtoks\everydump
+
+\def\dump{\the\everydump\normaldump}
+
+%D The same applies for the startup actions.
+
+\ifdefined\normaleveryjob \else \let\normaleveryjob\everyjob \fi
+
+\let\everyjob\relax \newtoks\everyjob
+
+\normaleveryjob{\the\everyjob}
+
+\def\appendtotoks #1{\def\temp{#1}\afterassignment\doappendtotoks \scratchtoks=}
+\def\prependtotoks#1{\def\temp{#1}\afterassignment\doprependtotoks\scratchtoks=}
+
+\def\doappendtotoks {\expandafter\expandafter\expandafter{\expandafter\the\expandafter\temp\the\scratchtoks}}
+\def\doprependtotoks{\expandafter\expandafter\expandafter{\expandafter\the\expandafter\scratchtoks\the\temp}}
+
+%D \macros
+%D   {begcsname}
+%D
+%D Handy for \ETEX-only usage (avoids making \type {\relax}'s:
+
+\def\begcsname#1\endcsname{\ifcsname#1\endcsname\csname#1\endcsname\fi}
+
+%D Now come a few macros that might be needed in successive loading:
+
+\let\endgraf\par
+\let\endline\cr
+
+\def\space{ }
+\def\empty{}
+\def\null {\hbox{}}
+
+%D The following two might be overloaded later on but some modules need
+%D then earlier. These functionality is reflected in the name and will not
+%D change.
+
+\bgroup
+    \catcode`\^^M=\activecatcode%
+    \gdef\obeylines{\catcode`\^^M\activecatcode \let^^M\par}%
+    \global\let^^M\par%
+\egroup
+
+\bgroup
+    \gdef\obeyspaces{\catcode`\ \activecatcode}%
+    \obeyspaces\global\let =\space%
+\egroup
+
+%D A constant:
+
+\let\endoflinetoken=^^M
+
+%D Also needed might be a simple loop structure and we borrow
+%D plain \TEX's one as it is often expected to be present and
+%D it is about the fastest you can get. Beware: this macro
+%D does not support nested loops. We use a namespace prefix
+%D \type {@@pln}.
+
+\long\def\loop#1\repeat{\long\def\@@plnbody{#1}\@@plniterate}
+
+%D The following makes \type {\loop} \unknown\ \type {\if}
+%D \unknown\ \type {\repeat} skippable (clever trick):
+
+\let\repeat\fi % so both \loop and \repeat are reserved words!
+
+%D The original (no \type {@@pln} there):
+%D
+%D \starttyping
+%D \def\@@plniterate{\@@plnbody\let\next\@@plniterate\else\let\next\relax\fi\next}
+%D \stoptyping
+%D
+%D A more efficient alternative:
+%D
+%D \starttyping
+%D \def\@@plniterate{\@@plnbody\expandafter\@@plniterate\else\expandafter\relax\fi}
+%D \stoptyping
+%D
+%D An even more efficient one:
+
+\def\@@plniterate{\@@plnbody\expandafter\@@plniterate\else\fi}
+
+%D We don't define a real output routine yet but at least get rid
+%D of pages:
+
+\output{\shipout\box\normalpagebox}
+
+%D Although we don't add pagenumbers yet we alias the default
+%D register used for counting pages:
+
+\countdef\pageno=0 \pageno=1 % first page is number 1
+
+%D Beside the raw counter \type {\pageno} the \type {\folio}
+%D macro provides the value.
+
+\def\folio{\the\pageno} % kind of expected and therefore reserved
+
+%D The following registers are kind of standard and (for the moment)
+%D we define them here. This might change.
+
+\newskip  \bigskipamount          \bigskipamount       = 12pt plus 4pt minus 4pt
+\newskip  \medskipamount          \medskipamount       =  6pt plus 2pt minus 2pt
+\newskip  \smallskipamount        \smallskipamount     =  3pt plus 1pt minus 1pt
+
+\baselineskip  = 12pt
+\lineskip      =  1pt
+\lineskiplimit =  0pt
+
+%D Again a few kind-of-extensions the core:
+
+\newskip \hideskip   \hideskip  = -1000pt plus 1fill
+\newskip \centering  \centering = 0pt plus 1000pt minus 1000pt
+
+\def\hidewidth % for alignment entries that can stick out
+  {\hskip\hideskip}
+
+\def\ialign % initialized \halign
+  {\everycr{}%
+   \tabskip\zeroskip
+   \halign}
+
+\newcount \mscount
+
+\def\spanomit{\span\omit} % bypass error message
+
+\def\multispan#1%
+  {\omit
+   \mscount#1\relax
+   \loop
+     \ifnum\mscount>\plusone
+       \spanomit \advance\mscount\minusone
+   \repeat}
+
+%D The next section deals with selective definitions in
+%D later modules. One can of course use the \type {\texengine}
+%D number that we defined earlier instead.
+
+\bgroup \obeylines
+    \gdef\pickupSOMETEX#1%
+      {\expandafter\gdef\csname begin#1\endcsname{\bgroup\obeylines\dopickupSOMETEX{#1}}}
+    \gdef\dopickupSOMETEX#1#2
+    % {\egroup\immediate\write16{special code for #1 -> [line \the\inputlineno] \detokenize{#2}}}
+      {\egroup}
+\egroup
+
+\let\endTEX   \relax \long\def\beginTEX   #1\endTEX   {}
+\let\endETEX  \relax \long\def\beginETEX  #1\endETEX  {}
+\let\endXETEX \relax \long\def\beginXETEX #1\endXETEX {}
+\let\endLUATEX\relax \long\def\beginLUATEX#1\endLUATEX{}
+\let\endOLDTEX\relax \long\def\beginOLDTEX#1\endOLDTEX{}
+\let\endNEWTEX\relax \long\def\beginNEWTEX#1\endNEWTEX{}
+
+\pickupSOMETEX{ETEX}
+
+\ifnum\texengine=\xetexengine
+    \pickupSOMETEX{XETEX}
+\fi
+\ifnum\texengine=\luatexengine
+    \pickupSOMETEX{LUATEX}
+\fi
+\ifnum\texengine<\xetexengine
+    \pickupSOMETEX{OLDTEX}
+\else
+    \pickupSOMETEX{NEWTEX}
+\fi
+
+%D \macros
+%D    {bindprimitive}
+%D
+%D We can remap primitives (which is needed because of changes in
+%D for instance \PDFTEX).
+
+\def\bindprimitive#1 #2 % new old
+  {\ifcsname#1\endcsname \else \ifcsname#2\endcsname
+     \expandafter\let\csname#1\expandafter\endcsname\csname#2\endcsname
+   \fi \fi}
+
+%D Because \XETEX\ also implements some \PDFTEX\ functionality, we take
+%D care of this here instead of a dedicated module. Later modules need
+%D to handle the undefined cases.
+
+%D These messy checks will disappear.
+
+% new after 1.10, watch the change in prefix
+
+\bindprimitive quitvmode      ptexquitvmode
+\bindprimitive noligatures    ptexnoligatures
+\bindprimitive setrandomseed  ptexsetrandomseed
+\bindprimitive uniformdeviate ptexuniformdeviate
+
+\bindprimitive quitvmode      pdfquitvmode
+\bindprimitive noligatures    pdfnoligatures
+\bindprimitive setrandomseed  pdfsetrandomseed
+\bindprimitive uniformdeviate pdfuniformdeviate
+
+\bindprimitive resettimer     pdfresettimer
+\bindprimitive elapsedtime    pdfelapsedtime
+
+% new per 1.40
+
+\bindprimitive ifprimitive    ifpdfprimitive
+\bindprimitive primitive      pdfprimitive
+\bindprimitive ifabsdim       ifpdfabsdim
+\bindprimitive ifabsnum       ifpdfabsnum
+
+\ifnum\texengine=\xetexengine \else % this test might disappear some day
+
+    \pdfminorversion \plusfive
+
+    \ifdefined\pdfcompresslevel     \else \newcount\pdfcompresslevel      \fi
+    \ifdefined\pdfobjcompresslevel  \else \newcount\pdfobjcompresslevel   \fi
+    \ifdefined\pdfgentounicode      \else \newcount\pdfgentounicode       \fi \pdfgentounicode      \plusone
+    \ifdefined\pdfinclusioncopyfonts\else \newcount\pdfinclusioncopyfonts \fi \pdfinclusioncopyfonts\plusone
+
+    \def\nopdfcompression     {\pdfobjcompresslevel\zerocount \pdfcompresslevel\zerocount}
+    \def\maximumpdfcompression{\pdfobjcompresslevel\plusnine  \pdfcompresslevel\plusnine }
+    \def\normalpdfcompression {\pdfobjcompresslevel\plusthree \pdfcompresslevel\plusthree}
+
+    \normalpdfcompression
+
+    \let\normalsetrandomseed \setrandomseed
+    \let\normaluniformdeviate\uniformdeviate
+
+\fi
+
+%D Handy.
+
+\ifnum\texengine=\luatexengine
+    \ifdefined\suppresslongerror % for the moment test
+        \suppresslongerror\plusone
+    \fi
+\fi
+
+%D Basic status stuff.
+
+\newif\ifproductionrun
+
+%D We need to make sure that we start up in \DVI\ mode, so,
+%D after testing for running \PDFTEX, we default to \DVI.
+
+\ifx\pdftexversion\undefined \newcount\pdfoutput \fi \pdfoutput=0
+
+%D For those who expect this \unknown
+
+\ifx\fmtname   \undefined \def\fmtname   {ConTeXt Minimized Plain TeX} \fi
+\ifx\fmtversion\undefined \def\fmtversion{3.1415926}                   \fi
+
+\let\normalfmtversion\fmtversion
+
+%D A few bonus macros:
+
+\def\modulonumber#1#2{\the\numexpr#2-((((#2+(#1/2))/#1)-1)*#1)\relax}
+\def\dividonumber#1#2{\the\numexpr(#2-(#1/2))/#1\relax}
+
+\ifnum\texengine=\xetexengine
+    \edef\xetexversion   {\numexpr\XeTeXversion*100+(\expandafter\gobbleoneargument\XeTeXrevision-5)/10\relax}
+    \edef\xetexrevision  {\the\numexpr(\expandafter\gobbleoneargument\XeTeXrevision-50)/100\relax}
+\fi
+
+\ifcase\texengine
+    \def\texenginename    {impossible}
+    \edef\texengineversion{0}
+\or
+    \def\texenginename    {pdfTeX}
+    \edef\texengineversion{\dividonumber{100}\pdftexversion.\modulonumber{100}\pdftexversion.\pdftexrevision}
+\or
+    \def\texenginename    {XeTeX}
+    \edef\texengineversion{\dividonumber{100}\xetexversion .\modulonumber{100}\xetexversion .\xetexrevision}
+\or
+    \def\texenginename    {LuaTeX}
+    \edef\texengineversion{\dividonumber{100}\luatexversion.\modulonumber{100}\luatexversion.\luatexrevision}
+\else
+    \def\texenginename    {impossible}
+    \edef\texengineversion{0}
+\fi
+
+%D While cleaning this code up a bit I was listening to Heather
+%D Nova's \CD\ Redbird. The first song on that \CD\ ends with
+%D a few lines suitable for ending this initialization module:
+%D
+%D \startlines
+%D And there's so much I can do for you
+%D Given time I know that I can prove
+%D Now my world is opened up to you
+%D Come inside
+%D
+%D Welcome to my life
+%D Welcome to my world
+%D Come inside
+%D \stoplines
+%D
+%D So let's see what \TEX\ can do now that we've opened up
+%D the basic machinery.
+
+\protect \endinput

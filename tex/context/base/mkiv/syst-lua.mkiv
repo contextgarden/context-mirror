@@ -1,0 +1,63 @@
+%D \module
+%D   [       file=syst-lua,
+%D        version=2008.01.25,
+%D          title=\CONTEXT\ System Macros,
+%D       subtitle=Helper macros based on \LUA,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\registerctxluafile{syst-lua}{1.001}
+
+\unprotect
+
+\def\expdoifelse#1#2{\clf_doifelsesame{#1}{#2}}
+\def\expdoif    #1#2{\clf_doifsame    {#1}{#2}}
+\def\expdoifnot #1#2{\clf_doifnotsame {#1}{#2}}
+
+% \testfeatureonce{100000}{\doifelse{hello world}{here i am}{}}           % 0.3
+% \testfeatureonce{100000}{\expandabledoifelse{hello world}{here i am}{}} % 1.5
+
+\def\expdoifelsecommon#1#2{\clf_doifelsecommon{#1}{#2}}
+\def\expdoifelseinset #1#2{\clf_doifelseinset {#1}{#2}}
+
+\def\expdoifcommonelse\expdoifelsecommon
+\def\expdoifinsetelse \expdoifelseinset
+
+% we define these here, just in case ...
+
+\def\luastringsep{===} % this permits \typefile{self} otherwise nested b/e sep problems
+
+\edef\!!bs{[\luastringsep[}
+\edef\!!es{]\luastringsep]}
+
+\unexpanded\def\writestatus#1#2{\clf_writestatus{#1}{#2}}
+
+% A handy helper:
+
+% \def\luaexpr#1{\ctxlua{context(tostring(#1))}} % more efficient:
+
+% We can omit the tex.ctxcatcodes here as nowadays we seldom
+% change the regime at the \TEX\ end:
+
+\def\luaexpr#1{\ctxlua{tex.print(tostring(#1))}} % no use is shortcutting has to be compiled
+
+% helpers:
+
+\def\ui_fo  #1{#1}
+\def\ui_go  #1{}
+\def\ui_ft#1#2{#1}
+\def\ui_st#1#2{#2}
+
+
+%D But as we only use write 16 we could as well do all in \LUA\
+%D and ignore the rest. Okay, we still can do writes here but only
+%D when not blocked.
+
+\let\syst_write_execute\clf_execute % always {...}
+
+\protect \endinput

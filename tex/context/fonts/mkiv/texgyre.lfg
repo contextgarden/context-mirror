@@ -1,0 +1,41 @@
+-- In order to be ale to use beta math fonts, we use our own file name and
+-- always remap.
+
+return {
+    name = "tex gyre",
+    version = "1.00",
+    comment = "Goodies that complement tex gyre.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    filenames = {
+        ["texgyre-pagella-math-regular.otf"] = {
+            "texgyrepagella-math.otf", -- beta
+            "texgyrepagellamath-regular.otf",
+            "tgpagellamath-regular.otf",
+            "tgpagella-math.otf",
+        },
+        ["texgyre-termes-math-regular.otf"] = {
+            "texgyretermes-math.otf", -- beta
+            "texgyretermesmath-regular.otf",
+            "tgtermesmath-regular.otf",
+            "tgtermes-math.otf",
+        },
+        ["texgyre-bonum-math-regular.otf"] = {
+            "texgyrebonum-math.otf", -- beta
+            "texgyrebonummath-regular.otf",
+            "tgbonummath-regular.otf",
+            "tgbonum-math.otf",
+        },
+        ["texgyre-schola-math-regular.otf"] = {
+            "texgyreschola-math.otf", -- beta
+            "texgyrescholamath-regular.otf",
+            "tgscholamath-regular.otf",
+            "tgschola-math.otf",
+        },
+    },
+    mathematics = {
+        alternates = {
+            dotless = { feature = 'dtls', value = 1, comment = "Mathematical Dotless Forms" },
+        },
+    },
+}

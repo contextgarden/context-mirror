@@ -1,0 +1,59 @@
+%D \module
+%D   [       file=symb-run,
+%D        version=2010.12.08, % 1998.07.20,
+%D          title=\CONTEXT\ Symbol Libraries,
+%D       subtitle=Runtime Macros,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startluacode
+    function commands.showsymbolset(collection,symbols)
+        if type(symbols) == "string" then
+            symbols = utilities.parsers.settings_to_array(symbols)
+        end
+        context.start()
+        context.forcesymbolset { collection }
+        context.starttabulate { "|lT|l|l|" }
+        local options = { framecolor = "orange", rulethickness = ".8pt", offset = interfaces.variables.overlay }
+        for i=1,#symbols do
+            local symbol = symbols[i]
+            context.NC()
+            context(symbol)
+            context.NC()
+            context.symbol(symbol)
+            context.NC()
+            context.framed(options,context.nested.symbol(symbol))
+            context.NC()
+            context.NR()
+        end
+        context.stoptabulate()
+        context.stop()
+    end
+\stopluacode
+
+\unprotect
+
+\unexpanded\gdef\showsymbolset
+  {\dosingleargument\symb_show_set}
+
+\gdef\symb_show_set[#1]%
+  {\ctxcommand{showsymbolset("#1","\symbolset{#1}")}}
+
+\protect
+
+\continueifinputfile{symb-run.mkiv}
+
+\usesymbols[cc]
+
+\starttext
+
+    \showsymbolset[cc]
+
+    \symbol[cc][cc-by-sa-nc]
+
+\stoptext

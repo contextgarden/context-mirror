@@ -1,0 +1,870 @@
+%D \module
+%D   [       file=grph-inc, % moved from core-fig
+%D        version=2006.08.26, % overhaul of 1997.03.31
+%D          title=\CONTEXT\ Graphic Macros,
+%D       subtitle=Figure Inclusion,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% \enabledirectives[graphics.conversion.eps.cleanup.ai]
+
+% \setupexternalfigures[directory=dirfile://./test/**]
+% \externalfigure[crappname(2).eps][frame=on]
+
+% todo: messages
+
+\writestatus{loading}{ConTeXt Graphic Macros / Figure Inclusion}
+
+\registerctxluafile{grph-inc}{1.001}
+\registerctxluafile{grph-fil}{1.001}
+\registerctxluafile{grph-u3d}{1.001} % this will change
+\registerctxluafile{grph-swf}{1.001} % this will change
+
+\unprotect
+
+%D Including graphics is complicated by the fact that  we need to locate them first,
+%D optionally manipulate them and scale then next. Lookups are to be done as efficient
+%D as possible and inclusion of the data might happens only once. In \MKIV\ much of this
+%D is delegated to the \LUA\ end. There is nor so much less code as in \MKII\ but it's
+%D more powerful, flexible, pluggable and some of the extended functionality has been
+%D moved from modules to the core. The overall functionality is rather stable and has
+%D not changed much over the years.
+
+\ifdefined\dotagfigure \else \let\dotagfigure\relax \fi
+
+\installcorenamespace{externalfigure}
+\installcorenamespace{externalfigureinstance}
+\installcorenamespace{externalfigurecollection}
+
+\installframedcommandhandler \??externalfigure {externalfigure} \??externalfigure
+
+\let\setupexternalfigures\setupexternalfigure
+
+\setupexternalfigures[% we really need the defaults
+   \c!method         =,
+   \c!label          =,
+   \c!size           =,
+   \c!conversion     =,
+   \c!resolution     =,
+   \c!prefix         =,
+   \c!cache          =,
+   \c!page           =\zerocount,
+   \c!display        =,
+   \c!mask           =,
+   \c!preset         =\v!yes,
+   \c!split          =,
+   \c!color          =,
+   \c!symbol         =\v!no,
+   \c!controls       =\v!no,
+   \c!resources      =,
+   \c!preview        =\v!no
+   \c!repeat         =\v!no
+   \c!foregroundcolor=,
+   \c!interaction    =\v!none,
+   \c!hfactor        =,
+   \c!wfactor        =,
+   \c!factor         =,
+   \c!maxwidth       =\externalfigureparameter\c!width,
+   \c!maxheight      =\externalfigureparameter\c!height,
+   \c!xscale         =,
+   \c!yscale         =,
+   \c!scale          =,
+   \c!sx             =\externalfigureparameter\c!s,
+   \c!sy             =\externalfigureparameter\c!s,
+   \c!s              =1,
+   \c!width          =,
+   \c!height         =,
+   \c!lines          =,
+   \c!grid           =,
+   \c!bodyfont       =\bodyfontsize,
+   \c!object         =\v!yes,
+   \c!corner         =\v!rectangular,
+   \c!frame          =\v!off,
+   \c!option         =,
+   \c!reset          =\v!no,
+   \c!directory      =,
+   \c!radius         =.5\bodyfontsize,
+   \c!background     =,
+   \c!splitcolor     =\s!white,
+   \c!order          =,
+   \c!equalwidth     =,
+   \c!equalheight    =,
+   \c!location       ={\v!local,\v!global},
+   \c!frames         =\v!off,
+   \c!ymax           =24,
+   \c!xmax           =,
+   \c!align          =\v!none, % New, for Tacos extremely large graphics.
+   \c!crossreference =\v!no,
+  ]
+
+%D Defining figures.
+
+\newcount\c_grph_include_nesting
+
+\newtoks \everyexternalfigureresets % for the moment still public
+\newtoks \everyexternalfigurechecks % for the moment still public
+
+% \useexternalfigure[alpha][koe]
+% \useexternalfigure[beta] [koe]       [breedte=1cm]
+% \useexternalfigure[gamma][koe][alpha]
+% \useexternalfigure[delta][koe][alpha][breedte=2cm]
+%
+% volle breedte: \externalfigure[koe]                 \par
+% 3cm breed:     \externalfigure[koe]  [breedte=3cm]  \par
+% volle breedte: \externalfigure[alpha]               \par
+% 1cm breed:     \externalfigure[beta]                \par
+% volle breedte: \externalfigure[gamma]               \par
+% 2cm breed:     \externalfigure[delta]               \par
+% 4cm breed:     \externalfigure[beta] [breedte=4cm]  \par
+% 5cm breed:     \externalfigure[gamma][breedte=5cm]  \par
+%
+% \defineexternalfigure[a][width=10cm]
+% \defineexternalfigure[b][width=5cm]
+% \externalfigure[cow][a]
+% \externalfigure[cow][b][height=8cm]
+%
+% \useexternalfigure[x][cow][width=10cm,height=1cm]
+% \externalfigure[x]
+% \externalfigure[x][width=3cm]
+%
+% [label] [filename]
+% [label] [filename] [parent]
+% [label] [filename] [parent] [settings]
+% [label] [filename]          [settings]
+%
+% new: more convenient/efficient than
+%
+%   \use..[a][a][setting] \externalfigure[b][a]
+%
+% is equivalent to:
+%
+%   \def..[a][setting]    \externalfigure[b][a]
+%
+% see x-res modules for usage:
+%
+% \defineexternalfigure[name][settings]
+
+%D Defining is persistent, i.e.\ when you redefine an instance,
+%D the already set parameters need to be set again or otherwise
+%D the old values will be used.
+
+%D New: \type {method=auto}: strips suffix and uses \quote {order} which is handy in
+%D some of four workflows where sources are used for web and print and where
+%D the web tools need a suffix (like gif) which we don't want as we want a high
+%D quality format.
+
+\newconditional\c_grph_include_trace_inheritance
+
+\installtextracker
+  {graphics.inheritance}
+  {\settrue \c_grph_include_trace_inheritance}
+  {\setfalse\c_grph_include_trace_inheritance}
+
+\installcorenamespace{externalfiguredefinition}
+
+% \unexpanded\def\defineexternalfigure
+%   {\dodoubleargument\grph_include_define}
+%
+% \def\grph_include_define[#1][#2]%
+%   {\setvalue{\??externalfiguredefinition#1}{\setupcurrentexternalfigure[#2]}}
+
+\let\defineexternalfigures\defineexternalfigure
+
+\unexpanded\def\useexternalfigure
+  {\doquadrupleempty\grph_include_use}
+
+% label file parent settings
+% label file settings
+% label file parent
+
+\def\grph_include_use[#1][#2][#3][#4]%
+  {\doifelsenothing{#1}
+     {\doifsomething{#2}
+        {\doifelseassignment{#3}
+           {\grph_include_use_indeed{#2}{#2}{#3}{#4}}
+           {\grph_include_use_indeed{#2}{#2}\empty{#4}}}}
+     {\doifelsenothing{#2}
+        {\doifelseassignment{#3}
+           {\grph_include_use_indeed{#1}{#1}\empty{#3}}
+           {\grph_include_use_indeed{#1}{#1}{#3}{#4}}}
+        {\doifelseassignment{#3}
+           {\grph_include_use_indeed{#1}{#2}\empty{#3}}
+           {\grph_include_use_indeed{#1}{#2}{#3}{#4}}}}}
+
+\def\grph_include_use_indeed#1#2#3#4%
+  {\setvalue{\??externalfigureinstance#1}{\grph_include_setup{#2}{#3}{#4}}%
+   \grph_include_analyze_collection[#2][#4]}
+
+% inclusion
+
+\unexpanded\def\externalfigure
+  {\dotripleempty\grph_include_figure}
+
+\def\grph_include_figure[#1][#2][#3]%
+  {\docheckassignment{#2}%
+   \ifassignment
+     \grph_include_place[#1][][#2]%
+   \else
+     \grph_include_place[#1][#2][#3]%
+   \fi}
+
+% todo: chain them
+
+\def\grph_include_setup#1#2#3% name parent settings
+  {\edef\m_grph_include_name  {#1}%
+   \edef\m_grph_include_parent{#2}%
+   \ifx\m_grph_include_name\empty \else
+     \let\p_grph_include_name\m_grph_include_name
+   \fi
+   \ifx\m_grph_include_parent\empty \else
+     \grph_include_inherit_from_parent\m_grph_include_parent
+   \fi
+   \setupcurrentexternalfigure[#3]}
+
+% \def\grph_include_inherit_from_parent#1%
+%   {\ifcsname\??externalfiguredefinition#1\endcsname
+%      \ifconditional\c_grph_include_trace_inheritance\c_grph_include_trace_inheritance\writestatus\m!figures{inheriting from definition: #1}\fi
+%      \csname\??externalfiguredefinition#1\endcsname
+%    \fi
+%    \ifcsname\??externalfigureinstance#1\endcsname
+%      \ifconditional\c_grph_include_trace_inheritance\c_grph_include_trace_inheritance\writestatus\m!figures{inheriting from instance: #1}\fi
+%      \csname\??externalfigureinstance#1\endcsname
+%    \fi}
+
+\def\grph_include_inherit_from_parent#1%
+  {%\ifcsname\??externalfiguredefinition#1\endcsname
+   %  \ifconditional\c_grph_include_trace_inheritance\writestatus\m!figures{inheriting from definition: #1}\fi
+   %  \csname\??externalfiguredefinition#1\endcsname
+   %\fi
+   \ifcsname\??externalfigure#1:\s!parent\endcsname
+     \let\currentexternalfigure#1%
+   \fi
+   \ifcsname\??externalfigureinstance#1\endcsname
+     \ifconditional\c_grph_include_trace_inheritance\writestatus\m!figures{inheriting from instance: #1}\fi
+     \csname\??externalfigureinstance#1\endcsname
+   \fi}
+
+\newtoks\t_grph_include_local_settings
+
+\appendtoks
+   \let\textunderscore\letterunderscore % {\string _} % space needed as _ is now letter in unprotected mode (probably no longer needed)
+   %
+   \dontcomplain
+   \restorecatcodes
+   \forgetall
+\to \t_grph_include_local_settings
+
+\def\grph_include_place_inherit
+  {\ifconditional\c_grph_include_trace_inheritance
+     \writestatus\m!figures{label: \p_grph_include_label, name: \p_grph_include_name, parent: \p_grph_include_parent}%
+   \fi
+   \ifx\p_grph_include_parent\empty
+     % nothing to be done
+   \else\ifx\p_grph_include_parent\p_grph_include_label
+     % redundant
+   \else
+     \grph_include_inherit_from_parent\p_grph_include_parent
+   \fi\fi
+   \ifx\p_grph_include_label\empty
+     % nothing to be done
+   \else
+     \grph_include_inherit_from_parent\p_grph_include_label
+   \fi}
+
+\def\grph_include_place[#1][#2][#3]% [label][file][settings] | [file][settings] | [file][parent][settings]
+  {\bgroup
+   \advance\c_grph_include_nesting\plusone
+   \edef\currentexternalfigure{\the\c_grph_include_nesting}%
+   \checkexternalfigureparent % each inherits from the root
+   %
+   \the\everyexternalfigureresets
+   %
+   \edef\p_grph_include_label{#1}%
+   \let\p_grph_include_name\p_grph_include_label
+   \docheckassignment{#2}%
+   \ifassignment
+     % [label] [settings]
+     \let\p_grph_include_parent\p_grph_include_label
+     \grph_include_place_inherit
+     \setupcurrentexternalfigure[#2]%
+   \else
+     % [label] [parent] [settings]
+     \edef\p_grph_include_parent{#2}%
+     \ifx\p_grph_include_parent\empty
+        \let\p_grph_include_parent\p_grph_include_label
+     \fi
+     \grph_include_place_inherit
+     \setupcurrentexternalfigure[#3]%
+   \fi
+   %
+   \the\everyexternalfigurechecks
+   %
+   \the\t_grph_include_local_settings
+   %
+   \edef\p_width    {\externalfigureparameter\c!width}%
+   \edef\p_height   {\externalfigureparameter\c!height}%
+   \edef\p_label    {\externalfigureparameter\c!label}%
+   \edef\p_reference{\externalfigureparameter\c!reference}%
+   %
+   \dostarttagged\t!image\empty
+   \clf_figure_push
+        name       {\p_grph_include_name}%
+        label      {\ifx\p_label\empty\p_grph_include_label\else\p_label\fi}%
+        page       {\externalfigureparameter\c!page}%
+        size       {\externalfigureparameter\c!size}%
+        object     {\externalfigureparameter\c!object}%
+        prefix     {\externalfigureparameter\c!prefix}%
+        cache      {\externalfigureparameter\c!cache}%
+        format     {\externalfigureparameter\c!method}%
+        preset     {\externalfigureparameter\c!prefix}%
+        controls   {\externalfigureparameter\c!controls}%
+        resources  {\externalfigureparameter\c!resources}%
+        preview    {\externalfigureparameter\c!preview}%
+        display    {\externalfigureparameter\c!display}%
+        mask       {\externalfigureparameter\c!mask}%
+        conversion {\externalfigureparameter\c!conversion}%
+        resolution {\externalfigureparameter\c!resolution}%
+        color      {\internalspotcolorparent{\externalfigureparameter\c!color}}% hack is needed
+        repeat     {\externalfigureparameter\c!repeat}%
+    \ifx\p_width\empty \else
+        width      \dimexpr\p_width\relax
+    \fi
+    \ifx\p_height\empty \else
+        height     \dimexpr\p_height\relax
+    \fi
+   \relax
+   \clf_figure_identify
+   \relax
+   \ifconditional\c_grph_include_test_only
+      \ifcase\figurestatus \else
+        \clf_figure_check
+        \clf_figure_dummy
+        \clf_figure_scale
+        \clf_figure_done
+      \fi
+      \grph_include_set_mode
+   \else
+      \ifcase\figurestatus
+        \clf_figure_dummy
+        \clf_figure_scale
+      \else
+        \clf_figure_check
+        \clf_figure_include
+        \clf_figure_scale
+      \fi
+      \clf_figure_done
+      \grph_include_set_mode
+      \grph_include_finalize
+   \fi
+   \clf_figure_pop
+   \dotagfigure
+   %
+   \scratchcounter\zerocount
+   \edef\p_crossreference{\externalfigureparameter\c!crossreference}%
+   \iflocation\iftrialtypesetting\else
+     \ifx\p_crossreference\empty
+        % nothing
+     \else\ifx\p_crossreference\v!no
+        % nothing
+     \else\ifx\p_crossreference\v!yes
+       \ifassignment
+         \scratchcounter\clf_figure_register_page{#1}{}{#2}\relax
+       \else
+         \scratchcounter\clf_figure_register_page{#1}{#2}{#3}\relax
+       \fi
+     \else
+       \scratchcounter-\p_crossreference % passed by repeater
+     \fi\fi\fi
+   \fi\fi
+   \naturalvpack
+     attr \imageattribute \plustwo
+   \ifnum\scratchcounter>\zerocount
+     {\strc_references_cross_forward {ex:\number \scratchcounter}{\box\foundexternalfigure}}%
+   \else\ifnum\scratchcounter<\zerocount
+     {\strc_references_cross_backward{ex:\number-\scratchcounter}{\box\foundexternalfigure}}%
+   \else
+     {\box\foundexternalfigure}%
+   \fi\fi
+   %
+   \dostoptagged
+   \egroup}
+
+%D Next we provide a cross referenced scale-up mechanism:
+
+\def\strc_references_cross_forward#1#2%
+  {\begingroup
+   \strc_references_set_simple_internal_reference{cross:b:#1}%
+   \naturalhpack
+      attr \destinationattribute\number\lastdestinationattribute
+      {\naturalhpack{\strc_references_flush_destination_nodes\directgotodumbbox{#2}[cross:f:#1]}}%
+   \endgroup}
+
+\def\strc_references_cross_backward#1#2%
+  {\begingroup
+   \strc_references_set_simple_internal_reference{cross:f:#1}%
+   \naturalhpack
+      attr \destinationattribute\number\lastdestinationattribute
+      {\naturalhpack{\strc_references_flush_destination_nodes\directgotodumbbox{#2}[cross:b:#1]}}%
+   \endgroup}
+
+\let\doexternalfigurerepeat\gobblefourarguments % called from lua end
+
+\unexpanded\def\placeregisteredexternalfigures
+  {\dosingleempty\grph_include_place_registered}
+
+\unexpanded\def\grph_include_place_registered[#1]%
+  {\page
+   \begingroup
+   \unexpanded\def\doexternalfigurerepeat{\grph_include_place_registered_indeed{#1}}%
+   \dorecurse\clf_figure_nof_registered_pages
+    {\page
+     \clf_figure_flush_registered_pages\recurselevel
+     \page}%
+   \endgroup
+   \page}
+
+\unexpanded\def\grph_include_place_registered_indeed#1#2#3#4#5% called from lua end
+  {\grph_include_place[#2][#3][#4,%
+     \c!hfactor=,\c!wfactor=,\c!factor=,%
+     \c!maxwidth=,\c!maxheight=,%
+     \c!xscale=,\c!yscale=,\c!scale=,%
+     \c!sx=,\c!sy=,\c!s=,%
+     \c!width=,\c!height=,%
+     \c!crossreference=#5,%
+     #1]}
+
+%D Scaling:
+
+\let\dowithfigure\relax % name might change (into a proper hook)
+
+\unexpanded\def\doscalefigure % used at lua end
+  {\global\setbox\foundexternalfigure\vpack{\scale[\v!figure]{\dowithfigure{\box\foundexternalfigure}}}}
+
+\definescale % some day we will inherit
+  [\v!figure]
+  [\c!hfactor    =\externalfigureparameter\c!hfactor,
+   \c!wfactor    =\externalfigureparameter\c!wfactor,
+   \c!factor     =\externalfigureparameter\c!factor,
+   \c!maxwidth   =\externalfigureparameter\c!maxwidth ,
+   \c!maxheight  =\externalfigureparameter\c!maxheight,
+   \c!equalwidth =\externalfigureparameter\c!equalwidth ,
+   \c!equalheight=\externalfigureparameter\c!equalheight,
+   \c!xscale     =\externalfigureparameter\c!xscale,
+   \c!yscale     =\externalfigureparameter\c!yscale,
+   \c!scale      =\externalfigureparameter\c!scale,
+   \c!sx         =\externalfigureparameter\c!sx,
+   \c!sy         =\externalfigureparameter\c!sy,
+   \c!s          =\externalfigureparameter\c!s,
+   \c!width      =\externalfigureparameter\c!width,
+   \c!height     =\externalfigureparameter\c!height,
+   \c!lines      =\externalfigureparameter\c!lines]
+
+% % this will become:
+%
+% \unexpanded\def\doscalefigure % used at lua end
+%   {\global\setbox\foundexternalfigure\vbox\bgroup
+%      \bgroup
+%        \let\currentscale\currentexternalfigure
+%        \let\scaleparameter\externalfigureparameter
+%        \dowithnextboxcs\grph_scale_finish\hbox{\dowithfigure{\box\foundexternalfigure}}%
+%    \egroup}
+%
+% % or even better:
+%
+% \def\grph_scale_inherited#1%
+%   {\bgroup
+%    \expandafter\let\expandafter\currentscale  \csname current#1\endcsname
+%    \expandafter\let\expandafter\scaleparameter\csname #1parameter\endcsname
+%    \dowithnextboxcs\grph_scale_finish\hbox}
+%
+% \unexpanded\def\doscalefigure % used at lua end
+%   {\global\setbox\foundexternalfigure\vbox\bgroup
+%      \grph_scale_inherited{externalfigure}{\dowithfigure{\box\foundexternalfigure}}%
+%    \egroup}
+
+%D You can register additional suffixes with the following command:
+%D
+%D \starttyping
+%D \definegraphictypesynonym[jbig] [jb2]
+%D \definegraphictypesynonym[jbig2][jb2]
+%D \definegraphictypesynonym[jbg]  [jb2]
+%D \stoptyping
+
+\unexpanded\def\definegraphictypesynonym
+  {\dodoubleargument\grph_include_set_type_synonym}
+
+\def\grph_include_set_type_synonym[#1][#2]%
+  {\clf_registerfiguresuffix{#1}{#2}}
+
+%D Additional paths can be installed with the regular setup command. The next
+%D macro picks up the list.
+
+\unexpanded\def\setfigurepathlist
+  {\clf_setfigurepaths{\externalfigureparameter\c!location}{\externalfigureparameter\c!directory}}
+
+%D Variables:
+
+\newbox \foundexternalfigure
+\newtoks\externalfigurepostprocessors
+
+\def\defaultfigurewidth  {8\lineheight}
+\def\defaultfigureheight {6\lineheight}
+
+\def\figurestatus        {\numexpr\clf_figurestatus{status}{0}\relax} % number: 0 = not found
+\def\figurewidth         {\clf_figurestatus{width}{0}sp}
+\def\figureheight        {\clf_figurestatus{height}{0}sp}
+\def\figurexscale        {\clf_figurestatus{xscale}{1}}
+\def\figureyscale        {\clf_figurestatus{yscale}{1}}
+
+\def\figuresize          {\clf_figurerequest{size}{}}
+\def\figurelabel         {\clf_figurerequest{label}{}}
+\def\figurefileoriginal  {\clf_figurerequest{name}{}}
+\def\figurefilepage      {\clf_figurerequest{page}{1}}
+\def\figurefileoptions   {\clf_figurerequest{options}{}}
+\def\figurefileconversion{\clf_figurerequest{conversion}{}}
+\def\figurefilecache     {\clf_figurerequest{cache}{}}
+\def\figurefileprefix    {\clf_figurerequest{prefix}{}}
+
+\def\figurenaturalwidth  {\clf_figureused{width}{\number\dimexpr\defaultfigurewidth\relax}sp}
+\def\figurenaturalheight {\clf_figureused{height}{\number\dimexpr\defaultfigureheight\relax}sp}
+\def\figurexresolution   {\clf_figureused{xresolution}{0}}
+\def\figureyresolution   {\clf_figureused{yresolution}{0}}
+\def\figurexsize         {\clf_figureused{xsize}{0}}
+\def\figureysize         {\clf_figureused{ysize}{0}}
+\def\figurecolordepth    {\clf_figureused{colordepth}{0}}
+\def\figuredepth         {\clf_figureused{depth}{0}}
+
+\def\figurefullname      {\clf_figureused{fullname}{}}
+\def\noffigurepages      {\clf_figureused{pages}{0}}
+
+\def\figurefilepath      {\clf_figurefilepath}
+\def\figurefilename      {\clf_figurefilename}
+\def\figurefiletype      {\clf_figurefiletype}
+
+\let\naturalfigurewidth  \figurenaturalwidth
+\let\naturalfigureheight \figurenaturalheight
+
+\let\figurescalewidth    \figurewidth
+\let\figurescaleheight   \figureheight
+\let\figurescalexscale   \figurexscale
+\let\figurescaleyscale   \figureyscale
+
+%D Abuse:
+%D
+%D \starttyping
+%D \externalfigure[rubish.pdf] \ifcase\figurestatus\relax \ctxlua{os.exit(999)} \fi
+%D \stoptyping
+
+%D Calculating:
+
+% \enabletrackers[figures.conversion]
+% \externalfigure[demo.svg]
+% \externalfigure[demo.svg][conversion=png]
+
+%D The following registers are used (if only to be downward compatible).
+
+\newconditional\c_grph_include_skip
+\newconditional\c_grph_include_test_only
+\newconditional\c_grph_include_level      \setfalse\c_grph_include_level  % true=background false=normal
+\newconditional\c_grph_include_flush      \settrue \c_grph_include_flush  % true=place      false=ignore
+
+\newsystemmode\v!figure
+
+\def\grph_include_set_mode
+  {\ifcase\figurestatus
+     \global\resetsystemmode\v!figure % todo, also: \v!resource
+   \else
+     \global\setsystemmode  \v!figure % todo, also: \v!resource
+   \fi}
+
+\appendtoks
+    \clf_setfigurepaths
+      {\externalfigureparameter\c!location}%
+      {\externalfigureparameter\c!directory}%
+    \clf_figure_reset
+      \foundexternalfigure
+      \defaultfigurewidth
+      \defaultfigureheight
+    \relax
+\to \everyexternalfigureresets
+
+\appendtoks
+    \edef\p_option{\externalfigureparameter\c!option}%
+    \ifx\p_option\v!frame
+      \setfalse\c_grph_include_skip
+      \letexternalfigureparameter\c!frame\v!on
+    \else\ifx\p_option\v!empty
+      \settrue\c_grph_include_skip
+      \letexternalfigureparameter\c!frame\v!off
+    \else
+      \setfalse\c_grph_include_skip
+    \fi\fi
+    % fake color in gray bitmaps, assumes that
+    % a transparent color is used
+    \edef\p_foregroundcolor{\externalfigureparameter\c!foregroundcolor}%
+    \ifx\p_foregroundcolor\empty \else
+        \setexternalfigureparameter\c!background{\v!foreground,\v!color}%
+        \letexternalfigureparameter\c!backgroundcolor\p_foregroundcolor
+    \fi
+\to \everyexternalfigurechecks
+
+%D Internal graphics are handled at the \TEX\ end:
+
+\def\grph_include_process_tex#1%
+  {\framed
+     [\c!strut=\v!no,\c!align=\v!normal,\c!frame=\v!off,
+      \c!offset=\v!overlay,\c!width=\v!fit,\c!height=\v!fit]
+     {\blank[\v!disable]#1\endgraf\removelastskip}} % disable should stay here!
+
+% used al lua end:
+
+\unexpanded\def\docheckfigurebuffer  #1{\global\setbox\foundexternalfigure\vpack{\grph_include_process_tex{\getbuffer[#1]}}}
+\unexpanded\def\docheckfiguretex     #1{\global\setbox\foundexternalfigure\vpack{\grph_include_process_tex{\input{#1}}}}
+\unexpanded\def\docheckfigurecld     #1{\global\setbox\foundexternalfigure\vbox {\cldprocessfile{#1}}}
+\unexpanded\def\docheckfiguremps     #1{\global\setbox\foundexternalfigure\vpack{\convertMPtoPDF{#1}11}}
+\unexpanded\def\docheckfiguremprun #1#2{\global\setbox\foundexternalfigure\vpack{\useMPrun{#1}{#2}}}
+
+\unexpanded\def\relocateexternalfigure % easier here than in lua
+  {\global\setbox\foundexternalfigure\vpack to \ht\foundexternalfigure\bgroup
+     \vss
+     \ht\foundexternalfigure\zeropoint
+     \hpack to \wd\foundexternalfigure\bgroup
+        \box\foundexternalfigure
+        \hss
+     \egroup
+   \egroup}
+
+\unexpanded\def\startfoundexternalfigure#1#2% ht wd
+  {\global\setbox\foundexternalfigure\vbox to #2\bgroup\vss\hbox to #1\bgroup}
+
+\unexpanded\def\stopfoundexternalfigure
+  {\hss\egroup\egroup}
+
+\unexpanded\def\emptyfoundexternalfigure % sort of obsolete
+  {\startfoundexternalfigure\defaultfigurewidth\defaultfigureheight
+   \stopfoundexternalfigure}
+
+% \doifmodeelse{*\v!last}
+%   {\settrue \c_grph_include_flush}
+%   {\setfalse\c_grph_include_flush}%
+
+\def\grph_include_finalize
+  {\global\setbox\foundexternalfigure\vbox
+     {\ifcase\figurestatus
+        \letexternalfigureparameter\c!frame\v!on
+      \fi
+      \ifconditional\c_grph_include_flush
+        \ifconditional\c_grph_include_level % probably background
+          \ifconditional\c_grph_include_skip
+            % nothing
+            \fakebox\foundexternalfigure
+          \else\ifcase\figurestatus
+            % nothing
+          \else
+            \the\externalfigurepostprocessors
+            \box\foundexternalfigure
+          \fi\fi
+        \else
+          \iftrialtypesetting \else \feedbackexternalfigure \fi
+          \settrue\c_grph_include_level
+          \ifconditional\c_grph_include_skip
+            \ifcase\figurestatus
+              \grph_include_replacement\figurelabel\figurefileoriginal{unknown}%
+            \else
+              \grph_include_replacement\figurelabel\figurefullname{skipped}%
+            \fi
+          \else\ifcase\figurestatus
+            \grph_include_replacement\figurelabel\figurefileoriginal{unknown}%
+          \else
+            \the\externalfigurepostprocessors
+            \edef\p_reset{\externalfigureparameter\c!reset}%
+            \ifx\p_reset\v!yes
+              \wd\foundexternalfigure\figurewidth
+              \ht\foundexternalfigure\figureheight
+              \dp\foundexternalfigure\zeropoint
+              \box\foundexternalfigure
+            \else
+              \letexternalfigureparameter\c!offset\v!overlay
+              \letexternalfigureparameter\c!width \figurewidth
+              \letexternalfigureparameter\c!height\figureheight
+%               \letexternalfigureparameter\c!align \v!middle
+%               \letexternalfigureparameter\c!autowidth\v!no
+              \inheritedexternalfigureframed{\box\foundexternalfigure}%
+            \fi
+          \fi\fi
+        \fi
+      \else
+        % maybe also \the\externalfigurepostprocessors
+        \iftrialtypesetting \else \feedbackexternalfigure \fi
+      \fi}}
+
+\let\feedbackexternalfigure\relax % hook
+
+\unexpanded\def\getfiguredimensions
+  {\dodoubleempty\grph_include_get_dimensions}
+
+\def\grph_include_get_dimensions[#1][#2]%
+  {\startnointerference
+     \settrue\c_grph_include_test_only
+     \externalfigure[#1][#2,\c!display=,\c!mask=,\c!object=\v!no]%
+   \stopnointerference}
+
+\unexpanded\def\doifelsefigure#1%
+  {\getfiguredimensions[#1]% so data is available !
+   \ifcase\figurestatus
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
+
+\let\doiffigureelse\doifelsefigure
+
+% No placement, handy for preprocessing:
+
+\unexpanded\def\registerexternalfigure
+  {\dotripleempty\grph_include_register}
+
+\def\grph_include_register[#1][#2][#3]%
+  {\startnointerference
+     \c_grph_include_test_only
+     \setfalse\c_grph_include_flush % == test ?
+     \externalfigure[#1][#2][#3]% or
+     \externalfigure[#1][#2,\c!display=,\c!mask=,\c!object=\v!no]%
+   \stopnointerference}
+
+% Helpers will be replaced when xforms are accessible at the lua end but then
+% we need to do the object offset there too.
+
+\unexpanded\def\dosetfigureobject#1#2%
+  {\setobject{#1}{#2}\vpack{\box\foundexternalfigure}}
+
+\unexpanded\def\doboxfigureobject#1#2%
+  {\global\setbox\foundexternalfigure\vpack{\getobject{#1}{#2}}} % probably one vbox too many
+
+% Figure bases
+
+\unexpanded\def\usefigurebase[#1]%
+  {\clf_usefigurebase{#1}}
+
+\appendtoks
+   \setfigurepathlist  % the path may be used elsewhere too (as in x-res-04)
+\to \everysetupexternalfigure
+
+\appendtoks
+    \clf_setfigurelookuporder{\externalfigureparameter\c!order}%
+\to \everysetupexternalfigure
+
+\definecolor[missingfigurecolor][s=.8]
+
+\def\grph_include_replacement#1#2#3%
+  {\bgroup
+   \letexternalfigureparameter\c!width\figurewidth
+   \letexternalfigureparameter\c!height\figureheight
+   \letexternalfigureparameter\c!background\v!color
+   \setexternalfigureparameter\c!backgroundcolor{missingfigurecolor}%
+   \setexternalfigureparameter\c!align{\v!middle,\v!lohi}% we default to \v!none
+   \inheritedexternalfigureframed
+     {\tt\tfxx \nohyphens
+      name:  \expanded{\verbatimstring{#1}}\\%
+      file:  \expanded{\verbatimstring{#2}}\\%
+      state: \expanded{\verbatimstring{#3}}}%
+   \egroup}
+
+% maybe setuphandler
+
+\newconditional\c_grph_include_in_collection
+
+\newdimen\d_grph_include_collection_minwidth
+\newdimen\d_grph_include_collection_maxwidth
+\newdimen\d_grph_include_collection_minheight
+\newdimen\d_grph_include_collection_maxheight
+
+\def\grph_include_analyze_collection[#1][#2]%
+  {\ifconditional\c_grph_include_in_collection
+      \setfalse\c_grph_include_in_collection
+      \getfiguredimensions[#1][#2]%
+      \settrue\c_grph_include_in_collection
+      \scratchdimen\naturalfigurewidth
+      \ifdim\scratchdimen>\d_grph_include_collection_maxwidth  \d_grph_include_collection_maxwidth \scratchdimen \fi
+      \ifdim\scratchdimen<\d_grph_include_collection_minwidth  \d_grph_include_collection_minwidth \scratchdimen \fi
+      \scratchdimen\naturalfigureheight
+      \ifdim\scratchdimen>\d_grph_include_collection_maxheight \d_grph_include_collection_maxheight\scratchdimen \fi
+      \ifdim\scratchdimen<\d_grph_include_collection_minheight \d_grph_include_collection_minheight\scratchdimen \fi
+   \fi}
+
+\unexpanded\def\startexternalfigurecollection[#1]%
+  {\begingroup
+   \def\currentexternalfigurecollection{#1}%
+   \settrue\c_grph_include_in_collection
+   \d_grph_include_collection_minwidth \maxdimen
+   \d_grph_include_collection_maxwidth \zeropoint
+   \d_grph_include_collection_minheight\maxdimen
+   \d_grph_include_collection_maxheight\zeropoint}
+
+\unexpanded\def\stopexternalfigurecollection
+  {\setxvalue{\??externalfigurecollection\currentexternalfigurecollection:\c!minwidth }{\the\d_grph_include_collection_minwidth }%
+   \setxvalue{\??externalfigurecollection\currentexternalfigurecollection:\c!maxwidth }{\the\d_grph_include_collection_maxwidth }%
+   \setxvalue{\??externalfigurecollection\currentexternalfigurecollection:\c!minheight}{\the\d_grph_include_collection_minheight}%
+   \setxvalue{\??externalfigurecollection\currentexternalfigurecollection:\c!maxheight}{\the\d_grph_include_collection_maxheight}%
+   \endgroup}
+
+\def\externalfigurecollectionparameter#1#2%
+  {\csname
+     \ifcsname\??externalfigurecollection#1:#2\endcsname
+       \??externalfigurecollection#1:#2%
+     \else
+       \s!empty
+     \fi
+   \endcsname}
+
+\def\externalfigurecollectionminwidth #1{\externalfigurecollectionparameter{#1}\c!minwidth }
+\def\externalfigurecollectionmaxwidth #1{\externalfigurecollectionparameter{#1}\c!maxwidth }
+\def\externalfigurecollectionminheight#1{\externalfigurecollectionparameter{#1}\c!minheight}
+\def\externalfigurecollectionmaxheight#1{\externalfigurecollectionparameter{#1}\c!maxheight}
+
+\let\efcparameter\externalfigurecollectionparameter % still needed ?
+\let\efcminwidth \externalfigurecollectionminwidth  % still needed ?
+\let\efcmaxwidth \externalfigurecollectionmaxwidth  % still needed ?
+\let\efcminheight\externalfigurecollectionminheight % still needed ?
+\let\efcmaxheight\externalfigurecollectionmaxheight % still needed ?
+
+% \startexternalfigurecollection[name]
+%     \useexternalfigure[cow] [cow.pdf]
+%     \useexternalfigure[mill][mill.png]
+% \stopexternalfigurecollection
+% \starttext
+% \bTABLE
+%     \bTR
+%         \bTD \externalfigure[cow] [height=\externalfigurecollectionmaxheight{name}] \eTD
+%         \bTD \externalfigure[mill][height=\externalfigurecollectionmaxheight{name}] \eTD
+%     \eTR
+% \eTABLE
+% \stoptext
+
+\unexpanded\def\showexternalfigures
+  {\writestatus\m!system{the \string\showexternalfigures\space command is not (yet) implemented in mkiv}}
+
+\unexpanded\def\overlayfigure#1%
+  {\externalfigure[#1][\c!width=\d_overlay_width,\c!height=\d_overlay_height]}
+
+% Bonus:
+
+\useexternalfigure
+  [\v!buffer]
+  [\jobname.buffer]
+  [\c!object=\v!no]
+
+% Another one:
+
+\defineexternalfigure
+  [\v!inline]
+  [\c!height=\lineheight]
+
+\unexpanded\def\inlinefigure[#1]{\dontleavehmode\sbox{\externalfigure[#1][\v!inline]}}
+
+\protect \endinput

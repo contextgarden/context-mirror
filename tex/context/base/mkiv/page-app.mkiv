@@ -1,0 +1,219 @@
+%D \module
+%D   [       file=page-app, % from meta-fig
+%D        version=1998.01.15,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Independent page building,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Applications}
+
+%D This needs an update with a proper define and inheritance.
+
+\unprotect
+
+\installcorenamespace{fittingpage}
+
+\installframedcommandhandler \??fittingpage {fittingpage} \??fittingpage
+
+\newdimen\d_page_fitting_width
+\newdimen\d_page_fitting_height
+\newbox  \b_page_fitting
+
+\definepapersize
+  [fittingpage]
+  [\c!width=\d_page_fitting_width,
+   \c!height=\d_page_fitting_height]
+
+\definemakeup
+  [fittingpage]
+  [\c!textstate=\v!empty,
+   \c!doublesided=\v!no,
+   \c!location=\v!top, % no topskip
+   \c!pagestate=\fittingpageparameter\c!pagestate]%
+
+\definelayout
+  [fittingpage]
+  [\v!page]
+  [\c!width=\d_page_fitting_width,
+   \c!height=\d_page_fitting_height,
+   \c!location=\v!middle]
+
+\appendtoks
+    \setuevalue{\e!start\currentfittingpage}{\startfittingpage[\currentfittingpage]}%
+    \setuevalue{\e!stop \currentfittingpage}{\stopfittingpage}%
+\to \everydefinefittingpage
+
+\unexpanded\def\startfittingpage
+   {\dodoubleempty\page_fitting_start}
+
+\def\page_fitting_start[#1][#2]%
+  {\page % this is kind of tricky! there can be preceding page refs
+   \autostarttext
+   \bgroup % resulting in a zero height page; test fig-make !
+   \setupinterlinespace[\v!top=0]% no topskip
+   \def\currentfittingpage{#1}%
+   \dontcomplain
+   % runs under current page regime, i.e. page variables passed to mp
+   \setupcurrentfittingpage[\c!paper=,#2]% auto or size or nothing
+   \doifelsenothing{\fittingpageparameter\c!command}
+     \page_fitting_start_normal
+     \page_fitting_start_command}
+
+\def\page_fitting_start_command
+  {\grabuntil{\e!stop\currentfittingpage}\page_fitting_stop_command}
+
+\def\page_fitting_stop_command#1%
+  {\page_fitting_start_normal
+   \fittingpageparameter\c!command{#1}%
+   \page_fitting_stop_normal}
+
+\def\page_fitting_start_normal
+   {\setbox\b_page_fitting\hbox
+      \bgroup
+      \inheritedfittingpageframed
+      \bgroup
+      \gobblespacetokens}
+
+\unexpanded\def\page_fitting_stop_normal % todo: figure out why a small mp image gets shifted
+  {\removeunwantedspaces
+   \egroup
+   \egroup
+   % finalize
+   \doif{\fittingpageparameter\c!margin}\v!page
+     {\setbox\b_page_fitting\hpack\bgroup
+        \offsetbox
+          [\c!leftoffset=\backspace,
+           \c!rightoffset=\cutspace,
+           \c!topoffset=\topspace,
+           \c!bottomoffset=\bottomspace]
+          {\box\b_page_fitting}%
+       \egroup}%
+   \doifsomething{\fittingpageparameter\c!scale}
+     {\setbox\b_page_fitting\hpack\bgroup
+        \scale[\c!scale=\fittingpageparameter\c!scale]{\box\b_page_fitting}%
+      \egroup}%
+   \ifdim\ht\b_page_fitting=\zeropoint
+     \ht\b_page_fitting\onepoint
+   \fi
+   \ifdim\wd\b_page_fitting=\zeropoint
+     \wd\b_page_fitting\onepoint
+   \fi
+   \d_page_fitting_width \wd\b_page_fitting
+   \d_page_fitting_height\ht\b_page_fitting
+   \startlocallayout % hm, we change the papersize so we still need it
+   \let\checkcurrentlayout\relax % else interference with odd/even layout
+   \processaction
+     [\fittingpageparameter\c!paper]
+     [   \v!auto=>\def\fittingpapersize{\printpapersize},
+      \s!unknown=>\let\fittingpapersize\commalistelement,
+      \s!default=>\def\fittingpapersize{fittingpage}]%
+   \expanded{\setuppapersize[fittingpage][\fittingpapersize]}%
+   \startmakeup[fittingpage]%
+     \box\b_page_fitting
+   \stopmakeup
+   \stoplocallayout % we need to get rid of this and use the built-in
+   \egroup
+   \autostoptext}
+
+\let\stopfittingpage\page_fitting_stop_normal
+
+\setupfittingpage
+  [%\c!scale=1000,
+   %\c!pagestate=,
+   \c!strut=\v!no,
+   \c!align=\v!normal,
+   \c!offset=\v!overlay,
+   \c!width=\v!fit,
+   \c!height=\v!fit,
+   \c!frame=\v!off]
+
+%D \TEX\ pages (for \METAPOST\ pages, see \type {meta-fig}):
+
+\definefittingpage
+  [TEXpage]
+  [\c!align=\v!normal] % needed, else problems !
+
+\unexpanded\def\setupTEXpage
+  {\setupfittingpage[TEXpage]}
+
+%D For Mojca:
+%D
+%D \starttyping
+%D \startTEXstream \chapter{Bla} Hello world!\crlf Hello world! \stopTEXstream
+%D \startTEXpage   \chapter{Bla} Hello world!\crlf Hello world! \stopTEXpage
+%D \stoptyping
+%D
+%D maybe I should support stream=yes in framed.
+
+\unexpanded\def\startTEXstream
+  {\dosingleempty\page_streams_TEX_start}
+
+\def\page_streams_TEX_start[#1]% old code, to be redone
+  {\page
+   \enableoutputstream[tex]}
+
+\unexpanded\def\stopTEXstream
+  {\disableoutputstream
+   \startTEXpage
+     \outputstreamunvbox[tex]%
+   \stopTEXpage}
+
+%D Application pages, a quick \MKIV\ hack:
+
+\definetypesetting[TEXapplication]
+\definebuffer[TEXapplication]
+
+% we could use a counter and saves runs on numbering them.
+
+\def\TEXapplicationfilename{\jobname-texapplication.tex}
+
+\unexpanded\def\stopTEXapplication
+  {\savebuffer[\thedefinedbuffer{TEXapplication}][\TEXapplicationfilename]%
+   \typesetfile[TEXapplication][\TEXapplicationfilename]\relax}
+
+%D \macros
+%D   {startpagefigure}
+%D
+%D \starttyping
+%D \starttext \pagefigure[two.1] \stoptext
+%D \stoptyping
+
+\defineexternalfigure[\v!page:\v!figure][\c!offset=\v!overlay] % we force a parent
+
+\unexpanded\def\startpagefigure
+  {\dodoubleempty\page_figures_start}
+
+% this one:
+%
+% \def\page_figures_start[#1][#2]%
+%   {\bgroup
+%    \def\currentexternalfigure{\v!page:\v!figure}%
+%    \setupcurrentexternalfigure[\c!offset=\v!overlay,#2]%
+%    \startTEXpage[\c!offset=\externalfigureparameter\c!offset]%
+%      \externalfigure[#1]\ignorespaces} % so we can put some text below the graphic
+%
+% or this one:
+
+\def\page_figures_start[#1][#2]%
+  {\bgroup
+   \setupexternalfigure[\v!page:\v!figure][\c!offset=\v!overlay,#2]%
+   \startTEXpage[\c!offset=\namedexternalfigureparameter{\v!page:\v!figure}\c!offset]%
+     \externalfigure[#1]\ignorespaces} % so we can put some text below the graphic
+
+\unexpanded\def\stoppagefigure
+  {\stopTEXpage
+   \egroup}
+
+\unexpanded\def\pagefigure
+  {\dodoubleempty\page_figure}
+
+\def\page_figure[#1][#2]%
+  {\page_figures_start[#1][#2]\stoppagefigure}
+
+\protect \endinput

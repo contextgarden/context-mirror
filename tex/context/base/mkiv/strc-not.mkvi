@@ -1,0 +1,1934 @@
+%D \module
+%D   [       file=strc-not,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Note Handling,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Note Handling}
+
+\registerctxluafile{strc-not}{1.001}
+
+\unprotect
+
+% todo: finish local rendering
+% todo: more p_strc_notations_* (outside trial loop)
+% todo: see if we can now use \insertpenalties (>0 == some left)
+
+\ifdefined\dotagsetnotesymbol \else \let\dotagsetnotesymbol\relax \fi
+\ifdefined\dotagsetnotation   \else \let\dotagsetnotation  \relax \fi
+
+\unexpanded\def\unvboxed {\ifvmode\unvbox \else\box \fi} % will change or used more often
+\unexpanded\def\unvcopied{\ifvmode\unvcopy\else\copy\fi} % will change or used more often
+
+%D Notes have two handlers: notations and notes. Although notations can
+%D be defined independently it makes not much sense. In principle we can
+%D treat notes as lists but they are currently done as a variant on
+%D enumerations. I will provide a list variant as well. One complication is
+%D that for page related notes inserts are used and therefore notes are
+%D typeset immediately and descriptions are better suited for that. For
+%D instance endnotes can as well be typeset using lists.
+
+% textcommand/textstyle/textcolor : set by note commandhandler and used for inline number
+
+%D \macros
+%D   {setupnote,setupnotation}
+%D
+%D We can influence footnote typesetting with the setup
+%D command:
+%D
+%D \showsetup{setupnotation}
+%D \showsetup{setupnote}
+%D
+%D The definition command indicate that we can frame the footnote
+%D area. The footnotes themselves are treated as descriptions.
+%D
+%D \showsetup{definenote}
+%D
+%D It's sort of a custom to precede footnotes by a horizontal
+%D rule and although fancy rules like
+%D
+%D \starttyping
+%D \hbox to 10em{\hskip-3em\dotfill}
+%D \stoptyping
+%D
+%D Are quite ligitimate, we default to a simple one 20\% of the
+%D text width.
+
+%    \c!headstyle=\noteparameter\c!style,
+%    \c!headcolor=\noteparameter\c!color,
+
+\installcorenamespace{notation}
+
+\installcommandhandler \??notation {notation} \??notation
+
+\installcounterassociation{notation}
+
+\let\setupnotations\setupnotation
+
+\definesymbol[\v!note:\v!previouspage][\llap{\low{\symbol[\v!previouspage]}}]
+\definesymbol[\v!note:\v!nextpage    ][\llap{\low{\symbol[\v!nextpage    ]}}]
+
+\setupnotations % check with old
+  [\c!alternative=\v!note,
+  %\c!headstyle=,
+  %\c!titlestyle=,
+  %\c!style=,
+  %\c!color=,
+  %\c!headcolor=,
+  %\c!titlecolor=,
+   \c!numbercommand=\high,
+  %\c!symbolcommand=\lowllap, % experiment
+  %\c!indicator=\v!no, % was \v!yes in mkii for page notes
+   \c!width=\v!fit,
+   \c!titledistance=.5em,
+   \c!distance=.5em,
+  %\c!hang=,
+  %\c!sample=,
+  %\c!align=,
+  %\c!headalign=,
+   \c!margin=\v!no,
+   \c!before=,
+   \c!inbetween=,
+   \c!after=,
+   \c!indentnext=\v!yes,
+   \c!indenting=\v!never,
+   \c!titleleft=(,
+   \c!titleright=),
+  %\c!closesymbol=,
+   \c!closecommand=\wordright,
+   \c!display=\v!yes,
+  %\c!command=,
+   \c!titlecommand=,
+   \c!expansion=\v!no,
+  %\c!xmlsetup=,
+  %\s!catcodes=,
+   \c!way=\v!by\v!text,
+   \c!prefix=\v!no,
+   \c!prefixconnector=.,
+  %\c!starter=,
+  %\c!stopper=,
+   \c!number=\v!yes,
+   \c!text=,
+   \c!start=0,
+   \c!state=\v!start,
+   \c!levels=3]
+
+%D The code here is mostly the same as enumersations but we want to keep them
+%D isolated and at some point we might differentiate.
+
+% \installcorenamespace{noteclass}
+
+\unexpanded\def\strc_define_commands_notation#tag#level#parent%
+  {\doifelsenothing{#parent}
+     {\normalexpanded{\defineconstruction[#tag][\s!handler=\v!notation,\c!level=#level]}%
+      \setevalue{\??notation#tag:\s!parent}{\??notation}}%
+     {\normalexpanded{\defineconstruction[#tag][#parent][\s!handler=\v!notation,\c!level=#level]}%
+      \setevalue{\??note#tag:\s!parent}{\??note#parent}% see later for \s!note
+      \setevalue{\??notation#tag:\s!parent}{\??notation#parent}}%
+   \setuevalue{\e!next #tag}{\strc_notations_next   {#tag}{\number#level}}% obsolete
+   \setuevalue{\c!reset#tag}{\strc_notations_reset  {#tag}{\number#level}}% obsolete
+   %setuevalue{\c!set  #tag}{\strc_notations_set    {#tag}{\number#level}}% obsolete
+   \setuevalue        {#tag}{\strc_notations_command{#tag}}%
+   \setuevalue{\e!start#tag}{\strc_notations_start  {#tag}{#tag}}% okay?
+   \setuevalue{\e!stop #tag}{\strc_notations_stop   }}
+
+\appendtoks
+    \ifx\currentnotationparent\empty
+       % clone => parent | subclone => clone | subsubclone => subclone
+       \let\currentnotationsub\empty
+       \strc_define_commands_notation
+         {\currentnotationsub\currentnotation}%
+         \plusone
+         \empty
+       \edef\p_levels{\notationparameter\c!levels}%
+       \dostepwiserecurse\plustwo\p_levels\plusone
+         {\strc_define_commands_notation
+            {\v!sub\currentnotationsub\currentnotation}%
+            \recurselevel
+            {\currentnotationsub\currentnotation}%
+          \edef\currentnotationsub{\v!sub\currentnotationsub}}%
+        \definelist[\currentnotation]% goodie
+   \else
+       % clone => parent | subclone => subparent | subsubclone => subsubparent
+       \let\currentnotationsub\empty
+       \edef\p_levels{\notationparameter\c!levels}%
+       \dorecurse\p_levels
+         {\strc_define_commands_notation
+            {\currentnotationsub\currentnotation}%
+            \recurselevel
+            {\currentnotationsub\currentnotationparent}%
+          \edef\currentnotationsub{\v!sub\currentnotationsub}}%
+        \definelist[\currentnotation][\currentnotationparent]% goodie
+   \fi
+   \edef\p_counter{\notationparameter\s!counter}% can inherit from parent
+   \ifx\p_counter\empty %
+       \let\p_counter\currentnotation
+   \fi
+   \doifelsecounter\p_counter\donothing{\strc_notes_define_counter\p_counter}%
+   \letnotationparameter\s!counter\p_counter
+  %\strc_notes_setup_counter\currentnotation
+\to \everydefinenotation
+
+\let\p_strc_constructions_title \empty
+\let\p_strc_constructions_number\empty
+
+\unexpanded\setvalue{\??constructioninitializer\v!notation}%
+  {\let\currentnotation                 \currentconstruction
+   \let\constructionparameter           \notationparameter
+   \let\constructionnamespace           \??notation
+   \let\detokenizedconstructionparameter\detokenizednotationparameter
+   \let\letconstructionparameter        \letnotationparameter
+   \let\useconstructionstyleandcolor    \usenotationstyleandcolor
+   \let\setupcurrentconstruction        \setupcurrentnotation
+   \edef\p_strc_constructions_number{\constructionparameter\c!number}%
+   \ifx\p_strc_constructions_number\v!yes
+     \settrue\c_strc_constructions_number_state
+     \iftrialtypesetting
+       \strc_counters_save\currentconstructionnumber
+     \fi
+%      \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
+   \else
+     \setfalse\c_strc_constructions_number_state
+   \fi
+   \edef\p_strc_constructions_title{\constructionparameter\c!title}%
+   \ifx\p_strc_constructions_title\v!yes
+     \settrue\c_strc_constructions_title_state
+   \else
+     \setfalse\c_strc_constructions_title_state
+   \fi}
+
+\unexpanded\setvalue{\??constructionfinalizer\v!notation}%
+  {\ifconditional\c_strc_constructions_number_state
+     \iftrialtypesetting
+       \strc_counters_restore\currentconstructionnumber
+     \fi
+   \fi}
+
+%D Notations (we simply needed a word that relates to notes and is
+%D and sounds like description and enumeration) are a special case
+%D in the sense that they are stored, rendered elsewhere and referered
+%D to from where they are specified. For that reason they have a different
+%D set op main commands.
+
+% \notation[ref]{title}
+% \notation[reference=,title=]
+% \startnotation[ref] title \stopnotation
+
+\unexpanded\def\strc_notations_next {\strc_constructions_next_indeed \namednotationparameter} % #1#2
+\unexpanded\def\strc_notations_reset{\strc_constructions_reset_indeed\namednotationparameter} % #1#2
+%unexpanded\def\strc_notations_set  {\strc_constructions_set_indeed  \namednotationparameter} % #1#2
+
+\newconditional\c_strc_notations_anchored_next
+
+\def\strc_notations_finalize
+  {\ifconditional\c_strc_notations_anchored_next
+     \expandafter\strc_notations_finalize_next
+   \else
+     \expandafter\strc_notations_finalize_previous
+   \fi}
+
+\def\strc_notations_finalize_previous
+  {\normalexpanded{\endgroup\noteparameter\c!next}}
+
+\def\strc_notations_finalize_next
+  {\endgroup\ignorespaces}
+
+\unexpanded\def\strc_notations_command#tag%
+  {\begingroup
+   \edef\currentnote{#tag}%
+   \strc_constructions_initialize{#tag}%
+   \strc_notes_synchronize
+   \edef\p_next{\noteparameter\c!anchor}%
+   \ifx\p_next\v!next % for now only two states
+     \settrue \c_strc_notations_anchored_next
+   \else
+     \setfalse\c_strc_notations_anchored_next
+   \fi
+   \ifnotesenabled
+     \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
+   \fi
+   \doifelsenextoptionalcs\strc_notations_command_yes\strc_notations_command_nop}
+
+\unexpanded\def\strc_notations_command_nop#title%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#title},\c!bookmark=,\c!list=]%
+   \csname\??constructionnotehandler\currentconstructionhandler\endcsname
+   \strc_constructions_finalize
+   \strc_notations_finalize}
+
+\unexpanded\def\strc_notations_command_yes[#optional]%
+  {\doifelseassignment{#optional}\strc_notations_command_assignment\strc_notations_command_argument[#optional]}
+
+\unexpanded\def\strc_notations_command_assignment[#settings]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,#settings]%
+   \csname\??constructionnotehandler\currentconstructionhandler\endcsname
+   \strc_constructions_finalize
+   \strc_notations_finalize}
+
+\unexpanded\def\strc_notations_command_argument[#reference]#title%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#reference},\c!title={#title},\c!bookmark=,\c!list=]%
+   \csname\??constructionnotehandler\currentconstructionhandler\endcsname
+   \strc_constructions_finalize
+   \strc_notations_finalize}
+
+\unexpanded\def\strc_notations_start#tag#stoptag%
+  {\begingroup
+   \edef\currentnote{#tag}%
+   \strc_constructions_initialize{#tag}%
+   \strc_notes_synchronize
+   \ifnotesenabled
+     \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
+   \fi
+   \normalexpanded % not that efficient but also not that frequently used (\normaldef for parser)
+     {\def\noexpand\strc_pickup_yes[#one]#two\csname\e!stop#stoptag\endcsname{\strc_notations_command_yes[#one]{#two}}%
+      \def\noexpand\strc_pickup_nop      #one\csname\e!stop#stoptag\endcsname{\strc_notations_command_nop      {#one}}}%
+   \doifelsenextoptionalcs\strc_pickup_yes\strc_pickup_nop}
+
+\unexpanded\def\strc_notations_start_yes[#reference]#title%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#reference},\c!title={#title},\c!bookmark=,\c!list=]%
+   \csname\??constructionnotehandler\currentconstructionhandler\endcsname
+   \strc_constructions_finalize
+   \strc_notations_finalize}
+
+\unexpanded\def\strc_notations_start_nop#title%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#title},\c!bookmark=,\c!list=]%
+   \csname\??constructionnotehandler\currentconstructionhandler\endcsname
+   \strc_constructions_finalize
+   \strc_notations_finalize}
+
+\unexpanded\def\strc_notations_stop
+  {}
+
+%D A complication is that we need to set up rather specific properties
+%D of e.g. footnotes. It is for this reason that we introduce an extra
+%D level of indirectness. This way notations don't bark on undefined
+%D macros when used in combination.
+
+\unexpanded\setvalue{\??constructionnotehandler\v!notation}%
+  {\csname\??constructionnotehandler\currentconstructionhandler:\constructionparameter\c!type\endcsname}
+
+\unexpanded\setvalue{\??constructionnotehandler\v!notation:}% empty case
+  {[\currentconstructionhandler:\currentconstruction]}
+
+%D Here is a simple renderer for notes
+
+\defineconstructionalternative
+  [\v!note]
+  [\c!renderingsetup=\??constructionrenderings:\v!note]
+
+\startsetups[\??constructionrenderings:\v!note]
+    \noindent
+    \leftboundary % experiment, to be done in more places
+    \llap{\box\constructionheadbox\hskip\constructionparameter\c!distance}%
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+%D We now implement the note definer.
+
+\installcorenamespace{note}
+
+\installframedcommandhandler \??note {note} \??note
+
+\let\setupnotes\setupnote
+
+% These only concern the inline symbol/number and wrapping of the
+% whole list.
+
+\setupnotes % not all make sense here
+  [\c!location=\v!page,
+  %\c!conversion=,
+   \c!rule=\v!on,
+   \c!before=\blank,
+   \c!bodyfont=\v!small,
+   \c!anchor=, % can also be v!next
+  %\c!style=,
+  %\c!color=,
+  %\c!after=,
+  %\c!rulecolor=,
+  %\c!rulecommand=,
+   \c!rulethickness=\linewidth,
+   \c!frame=\v!off,
+   \c!distance=.125em, % in the text between symbols
+ % \c!textseparator={,}, % optional separator
+   \c!columndistance=1em,
+ % \c!margindistance=.5em,
+   \c!align=, % also use instead of \c!tolerance
+   \c!split=\v!tolerant,
+   \c!width=\makeupwidth, % \ifdim\hsize<\makeupwidth\hsize\else\makeupwidth\fi
+   \c!height=\textheight,
+   \c!command=, % \noteparameter\c!numbercommand, % (command in enumeration) too messy, called twice
+   \c!separator=,%
+   \c!textcommand=\high,
+   \c!textstyle=\tx,
+  %\c!textcolor=,
+   \c!interaction=\v!yes,
+  %\c!factor=,
+  %\c!scope=, % \v!text \v!page
+   \c!prefixconnector=.,
+  %\c!next=\autoinsertnextspace,
+   \c!prefix=\v!no,
+  %\c!continue=\v!no,
+   \c!paragraph=\v!no,
+   \c!inbetween=\hskip\emwidth,
+   \c!symbol=\mathematics{*},
+   \c!n=1]
+
+\setupnotes
+  [\c!expansion=\v!no,
+   \c!xmlsetup=,
+   \s!catcodes=]
+
+%D Insertions are part of notes.
+
+% \installcorenamespace{noteinsertion}
+
+\def\currentnoteinsertion      {\noteparameter\s!insert}
+\def\currentnoteinsertionnumber{\namedinsertionnumber{\noteparameter\s!insert}}
+
+\appendtoks
+    \ifx\currentnoteparent\empty
+        \doifelseinsertion\currentnote
+          \donothing
+          {\defineinsertion[\currentnote]% could be an option
+           \normalexpanded{\t_strc_notes{\the\t_strc_notes\noexpand\strc_notes_process_list{\currentnote}}}}%
+        \letnoteparameter\s!insert\currentnote
+        \definenotation[\currentnote][\c!type=\v!note]%
+    \else
+        \setexpandednoteparameter\s!insert{\namednoteparameter\currentnoteparent\s!insert}%
+        \definenotation[\currentnote][\currentnoteparent][\c!type=\v!note]%
+    \fi
+    \clf_definenote{\currentnote}{insert}\currentnoteinsertionnumber\relax
+\to \everydefinenote
+
+% maybe we will share this at some point:
+
+\def\strc_notes_define_counter#tag% todo: move inline
+  {\definecounter[#tag]%
+   \registerenumerationcounter{#tag}}
+
+\appendtoks
+    \synchronizenotationcounters
+\to \everysetupnotation
+
+\appendtoks
+    \synchronizenotationcounters
+\to \everydefinenotation
+
+% so far
+
+%expandafter\let\csname\??constructionstarthandler  \v!notation\expandafter\endcsname\csname\??constructionstarthandler  \v!enumeration\endcsname
+\expandafter\let\csname\??constructionstarthandler  \v!notation\expandafter\endcsname\csname\??constructionstarthandler  \v!construction\endcsname % no par mess
+\expandafter\let\csname\??constructionstophandler   \v!notation\expandafter\endcsname\csname\??constructionstophandler   \v!enumeration \endcsname
+\expandafter\let\csname\??constructioncommandhandler\v!notation\expandafter\endcsname\csname\??constructioncommandhandler\v!enumeration \endcsname
+\expandafter\let\csname\??constructiontexthandler   \v!notation\expandafter\endcsname\csname\??constructiontexthandler   \v!enumeration \endcsname
+
+\unexpanded\setvalue{\??constructionmainhandler\v!notation}#following%
+  {\iftrialtypesetting \else
+     \begingroup
+     \currentconstructionsynchronize
+     \attribute\destinationattribute\currentconstructionattribute\relax % todo, whole text
+     \signalcharacter
+     \endgroup
+   \fi#following}
+
+\unexpanded\setvalue{\??constructionnotehandler\v!notation:\v!note}% in the running text
+  {\ifnotesenabled
+     % do be done elsewhere
+     %
+     %let\currentnote\currentconstructionmain
+     \let\currentnote\currentconstruction % else wrong inheritance
+     %
+     \iftrialtypesetting
+        \strc_notes_inject_dummy
+     \else
+       \begingroup
+       \edef\currentnotenumber{\clf_storenote{\currentnote}\currentconstructionlistentry}%
+       \settrue\processingnote
+       \ifconditional\c_strc_notes_skip
+         \globallet\lastnotesymbol\strc_notes_inject_symbol_nop
+       \else
+         \iftypesettinglines % otherwise problems with \type <crlf> {xxx}
+           \ignorelines % makes footnotes work in \startlines ... \stoplines
+         \fi
+         \ifconditional\c_strc_notes_symbol
+           \strc_notes_inject_symbol_yes
+         \else
+           \unskip\unskip
+           \globallet\lastnotesymbol\strc_notes_inject_symbol_yes
+         \fi
+       \fi
+       \ifconditional\postponingnotes % todo: per note class
+         \global\settrue\postponednote
+       \else\ifconditional\inlocalnotes % todo: per note class
+         \global\settrue\postponednote
+       \else\ifconditional\c_strc_notes_delayed
+         % probably end notes
+       \else
+         \handlenoteinsert\currentnote\currentnotenumber % either an insert or just delayed
+       \fi\fi\fi
+       \endgroup
+     \fi
+   \fi
+   \ifconditional\c_strc_notes_skip
+     \global\setfalse\c_strc_notes_skip
+   \else
+     \kern\notesignal\relax % \relax is needed to honor spaces
+   \fi}
+
+%D Interaction in notes is somewhat complex due to the way notes get
+%D flushed. In principle it is more or less the same as lists but where
+%D in lists we pack whole entries, in notes this doesn't happen. Okay,
+%D in retrospect we could have made descriptions lists but that will be
+%D a backward compatibility mess. At some point a completely new mechanism
+%D might show up, but not now. Also, as notes are inserts there is some
+%D extra mess to be kept in mind and it's easier to maintain two mechanisms
+%D than to combine too much.
+%D
+%D Interaction is also complicated because we want to provide several variants.
+%D For simple reference there is no need for anything special, as page references
+%D will do and we store them in the list anyway. But if we want a destination with
+%D dimensions we will use an additional destination because we can have only
+%D one with the same name and we always have the number as one.
+
+% interaction:
+%
+% all       : text and number
+% number|yes: only number
+% text      : only text
+%
+% \dogetsimple : injects
+
+\installcorenamespace{noteinteractioninline}
+\installcorenamespace{noteinteractiondisplay}
+
+\newconstant\a_strc_notes_symbol_reference
+\newconstant\a_strc_notes_number_reference
+\newconstant\a_strc_notes_text_reference
+\newconstant\a_strc_notes_text_destination
+
+\let\strc_notes_get_reference_attribute_symbol  \empty
+\let\strc_notes_get_destination_attribute_symbol\empty
+
+\def\strc_notes_interaction_check_inline
+  {\edef\p_interaction{\noteparameter\c!interaction}%
+   \csname\??noteinteractioninline
+     \ifcsname\??noteinteractioninline\p_interaction\endcsname\p_interaction\else\v!no\fi
+   \endcsname}
+
+\def\strc_notes_interaction_check_display
+  {\edef\p_interaction{\noteparameter\c!interaction}%
+   \csname\??noteinteractiondisplay
+     \ifcsname\??noteinteractiondisplay\p_interaction\endcsname\p_interaction\else\v!no\fi
+   \endcsname}
+
+\def\currentnotenumber{0}
+
+\let\strc_notes_get_reference_attribute_symbol  \empty
+\let\strc_notes_get_destination_attribute_symbol\empty
+
+\let\strc_notes_set_reference_attribute_number\donothing
+\let\strc_notes_set_reference_attribute_text  \donothing
+\let\strc_notes_set_destination_attribute_text\donothing
+
+% inline
+
+\def\strc_references_prepare_inline_references_nop
+  {\let\strc_notes_get_reference_attribute_symbol\empty
+   \let\strc_notes_get_destination_attribute_symbol\empty
+   \let\strc_notes_set_style_color_inline\strc_notes_set_style_color_inline_nop}
+
+% \def\strc_references_prepare_inline_references_yes
+%   {\strc_references_set_simple_reference{symb:\currentnote:\currentnotenumber}% destination
+%    \strc_references_get_simple_reference{internal(\clf_noteinternal{\currentnote}\currentnotenumber)}% reference
+%    \edef\strc_notes_get_destination_attribute_symbol{attr\destinationattribute\currentdestinationattribute}%
+%    \edef\strc_notes_get_reference_attribute_symbol{attr\referenceattribute\currentreferenceattribute}%
+%    \let\strc_notes_set_style_color_inline\strc_notes_set_style_color_inline_yes}
+
+\def\strc_references_prepare_inline_references_yes
+  {\edef\currentnoteinternal{\clf_noteinternal{\currentnote}\currentnotenumber}%
+   \strc_references_set_simple_reference{*\currentnoteinternal}% destination
+   \strc_references_get_simple_reference{internal(\currentnoteinternal)}% reference
+   \edef\strc_notes_get_destination_attribute_symbol{attr\destinationattribute\currentdestinationattribute}%
+   \edef\strc_notes_get_reference_attribute_symbol{attr\referenceattribute\currentreferenceattribute}%
+   \let\strc_notes_set_style_color_inline\strc_notes_set_style_color_inline_yes}
+
+\letvalue{\??noteinteractioninline\v!no    }\strc_references_prepare_inline_references_nop
+\letvalue{\??noteinteractioninline\v!all   }\strc_references_prepare_inline_references_yes
+\letvalue{\??noteinteractioninline\v!number}\strc_references_prepare_inline_references_yes
+\letvalue{\??noteinteractioninline\v!text  }\strc_references_prepare_inline_references_yes
+\letvalue{\??noteinteractioninline\v!yes   }\strc_references_prepare_inline_references_yes
+
+% display (for 'all' we need unique text and number attributes so we resolve twice
+% as we otherwise don't get the number one which is lapped in the margin so we need
+% to explicitly visit it)
+
+\def\strc_references_prepare_display_references_nop
+  {\let\strc_notes_set_reference_attribute_number\donothing
+   \let\strc_notes_set_reference_attribute_text\donothing
+   \let\strc_notes_set_destination_attribute_text\donothing
+   \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_nop}
+
+% \def\strc_references_prepare_display_references_yes_number
+%   {\let\strc_notes_set_reference_attribute_text\donothing
+%    \strc_references_get_simple_reference{symb:\currentnote:\currentnotenumber}% reference
+%    \edef\strc_notes_set_reference_attribute_number{\attribute\referenceattribute\currentreferenceattribute}%
+%    \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes}
+
+% \def\strc_references_prepare_display_references_yes_text
+%   {\strc_references_get_simple_reference{symb:\currentnote:\currentnotenumber}% reference
+%    \edef\strc_notes_set_reference_attribute_text{\attribute\referenceattribute\currentreferenceattribute}%
+%    \let\strc_notes_set_reference_attribute_number\donothing
+%    \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes}
+
+% \def\strc_references_prepare_display_references_yes_all
+%   {\strc_references_get_simple_reference{symb:\currentnote:\currentnotenumber}% reference
+%    \edef\strc_notes_set_reference_attribute_text{\attribute\referenceattribute\currentreferenceattribute}%
+%    \strc_references_get_simple_reference{symb:\currentnote:\currentnotenumber}% reference
+%    \edef\strc_notes_set_reference_attribute_number{\attribute\referenceattribute\currentreferenceattribute}%
+%    \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes}
+
+\def\strc_references_prepare_display_references_yes_number
+  {\edef\currentnoteinternal{\clf_noteinternal{\currentnote}\currentnotenumber}%
+   \ifcase\currentnoteinternal\relax
+     \strc_references_prepare_display_references_nop
+   \else
+     \let\strc_notes_set_reference_attribute_text\donothing
+     \strc_references_get_simple_reference{*\currentnoteinternal}% reference
+     \edef\strc_notes_set_reference_attribute_number{\attribute\referenceattribute\currentreferenceattribute}%
+     \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes
+   \fi}
+
+\def\strc_references_prepare_display_references_yes_text
+  {\edef\currentnoteinternal{\clf_noteinternal{\currentnote}\currentnotenumber}%
+   \ifcase\currentnoteinternal\relax
+     \strc_references_prepare_display_references_nop
+   \else
+     \strc_references_get_simple_reference{*\currentnoteinternal}% reference
+     \edef\strc_notes_set_reference_attribute_text{\attribute\referenceattribute\currentreferenceattribute}%
+     \let\strc_notes_set_reference_attribute_number\donothing
+     \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes
+   \fi}
+
+\def\strc_references_prepare_display_references_yes_all
+  {\edef\currentnoteinternal{\clf_noteinternal{\currentnote}\currentnotenumber}%
+   \ifcase\currentnoteinternal\relax
+     \strc_references_prepare_display_references_nop
+   \else
+     \strc_references_get_simple_reference{*\currentnoteinternal}% reference
+     \edef\strc_notes_set_reference_attribute_text{\attribute\referenceattribute\currentreferenceattribute}%
+     \strc_references_get_simple_reference{*\currentnoteinternal}% reference
+     \edef\strc_notes_set_reference_attribute_number{\attribute\referenceattribute\currentreferenceattribute}%
+     \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes
+   \fi}
+
+\letvalue{\??noteinteractiondisplay\v!no    }\strc_references_prepare_display_references_nop
+\letvalue{\??noteinteractiondisplay\v!all   }\strc_references_prepare_display_references_yes_all
+\letvalue{\??noteinteractiondisplay\v!number}\strc_references_prepare_display_references_yes_number
+\letvalue{\??noteinteractiondisplay\v!text  }\strc_references_prepare_display_references_yes_text
+\letvalue{\??noteinteractiondisplay\v!yes   }\strc_references_prepare_display_references_yes_number
+
+\let\strc_notes_set_style_color_inline_nop \usenotestyleandcolor
+\let\strc_notes_set_style_color_display_nop\usenotationstyleandcolor
+
+\unexpanded\def\strc_notes_set_style_color_inline_yes#style#color%
+  {\usenotestyleandcolor#style#color%
+   \iflocation\strc_notes_set_style_color_special\fi}
+
+\unexpanded\def\strc_notes_set_style_color_display_yes#style#color%
+  {\usenotationstyleandcolor#style#color%
+   \iflocation\strc_notes_set_style_color_special\fi}
+
+\def\strc_notes_set_style_color_special
+  {\iftrialtypesetting
+      % keep
+   \else\ifx\currentcolorparameter\empty
+     \scratchcounter\clf_notedeltapage{\currentnote}\currentnotenumber\relax % todo calculate once
+     \setlocationcolorspecified\scratchcounter
+   \fi\fi}
+
+\setvalue{\??constructiontexthandler\v!notation}%
+  {\begingroup
+   % we need to retrigger the reference as otherwise it gets lost because we don't do nested
+   % references with the same id ... maybe some day if we can figure out a nice heuristic ...
+   % the problem is that normally it's no issue but here we lap into the margin, so maybe that's
+   % a criterium
+ % \strc_notes_interaction_check_display
+   \strc_notes_set_reference_attribute_number
+   \dotagsetnotation
+   \strc_notes_set_style_color_display\c!headstyle\c!headcolor
+   \strc_enumerations_text
+   \endgroup}
+
+% in mkii the pointer only showed up in pagewise notes
+
+\unexpanded\def\strc_notes_inject_pointer % todo calculate once
+  {\ifcase\clf_notedeltapage{\currentnote}\currentnotenumber\relax\relax
+     % unknown
+   \or
+     % same page
+   \or
+     \noteparameter\c!symbolcommand{\symbol[\v!note:\v!nextpage]}%
+   \or
+     \noteparameter\c!symbolcommand{\symbol[\v!note:\v!previouspage]}%
+   \fi}
+
+\unexpanded\def\strc_notes_inject_symbol_yes
+  {\strc_notes_inject_symbol_indeed\conditionaltrue}
+
+\unexpanded\def\strc_notes_inject_symbol_nop
+  {\strc_notes_inject_symbol_indeed\conditionalfalse}
+
+\definemargindata
+  [strc_notes_destination_margin]
+  [\v!left]
+  [\c!margin=\zeropoint,
+   \c!width=\zeropoint,
+   \c!style=,
+   \c!color=]
+
+% \unexpanded\def\strc_notes_destination_hack
+%   {\ifx\strc_notes_get_destination_attribute_symbol\empty\else
+%      \strc_notes_destination_hack_indeed
+%    \fi}
+%
+% \unexpanded\def\strc_notes_destination_hack_indeed % can be a helper
+%   {\strc_notes_destination_margin
+%      {\setbox\scratchbox\hpack \strc_notes_get_destination_attribute_symbol{}%
+%       \wd\scratchbox\makeupwidth
+%       \ht\scratchbox\strutht
+%       \dp\scratchbox\strutdp
+%       \hpack to \zeropoint{\box\scratchbox\hss}}}
+
+\unexpanded\def\strc_notes_inject_symbol_indeed#synchronize%
+  {\ifconditional\c_strc_notations_anchored_next\else
+     \removeunwantedspaces
+     \doifelseitalic\/\donothing % Charles IV \footnote{the fourth}
+   \fi
+   \ifdim\lastkern=\notesignal
+   % \kern\noteparameter\c!distance % yes or no note font? or main text
+     \strc_notes_inject_separator
+   \fi
+   \nobreak
+   \begingroup
+   \strc_notes_interaction_check_inline
+   \strc_notes_set_style_color_inline\c!textstyle\c!textcolor
+   \hbox \strc_notes_get_reference_attribute_symbol \strc_notes_get_destination_attribute_symbol \bgroup
+  % \hbox \strc_notes_get_reference_attribute_symbol \bgroup \strc_notes_destination_hack
+     \strc_references_flush_destination_nodes % a bit late but ok
+     \dostarttagged\t!descriptionsymbol\currentnote
+     \dotagsetnotesymbol
+     \noteparameter\c!textcommand{\clf_noteprefixednumber{\currentnote}\currentnotenumber\relax}%
+     % the next one can cycle so we need to make sure it has no advance width
+     \doif{\noteparameter\c!indicator}\v!yes\strc_notes_inject_pointer
+     \dostoptagged
+   \egroup
+   \endgroup
+   \globallet\lastnotesymbol\relax}
+
+\unexpanded\def\strc_notes_inject_dummy % temp hack
+  {\removeunwantedspaces
+   \doifelseitalic\/\donothing % Charles IV \footnote{the fourth}
+   \ifdim\lastkern=\notesignal
+   % \kern\noteparameter\c!distance % yes or no note font? or main text
+     \strc_notes_inject_separator
+   \fi
+   \nobreak
+   \hpack to .5\emwidth{}%
+   \globallet\lastnotesymbol\relax}
+
+\unexpanded\def\strc_notes_inject_separator % patch by WS due to request on list
+  {\edef\p_textseparator{\noteparameter\c!textseparator}%
+   \ifx\p_textseparator\empty
+     \kern\noteparameter\c!distance
+   \else
+     % skip or kern
+     \nobreak
+     \hbox\bgroup
+       \strc_notes_interaction_check_inline
+       \strc_notes_set_style_color_inline\c!textstyle\c!textcolor
+       \noteparameter\c!textcommand{\p_textseparator}%
+       \kern\noteparameter\c!distance
+     \egroup
+     \nobreak
+   \fi}
+
+% this needs a further cleanup ... soon as it's a slow mechanism
+%
+% -- set breakpoint in descriptions
+% -- reset after trialtypesetting
+% -- that way we can trick the symbol space
+
+% removed:
+%
+% \pushsomestates
+%
+% core-ins -> obsolete
+%
+% saveinsertiondata
+% restoreinsertiondata
+% saveinsertionbox
+% eraseinsertionbackup
+% restoreinsertionbackup
+
+\def\savenotedata      {} % \writestatus{todo}{save    note data}}
+\def\restorenotedata   {} % \writestatus{todo}{restore note data}}
+\def\savenotecontent   {} % \writestatus{todo}{save    note content}}
+\def\restorenotecontent{} % \writestatus{todo}{restore note content}}
+\def\erasenotebackup   {} % \writestatus{todo}{erase   note backup}}
+
+% page-set:
+
+\def\enablenotes    {\writestatus{todo}{enable  notes}}
+\def\disablenotes   {\writestatus{todo}{disable notes}}
+\def\savenotes      {\writestatus{todo}{save    notes}}
+\def\flushsavednotes{\writestatus{todo}{flush   notes}}
+
+% experiment: (compare scope=text and scope=page)
+%
+% \definenote[mynote][way=bytext,location=text,width=\leftmarginwidth,scope=page,rule=,before=,after=,factor=0]
+% \setuptexttexts[margin][\vbox to \textheight{\placenotes[mynote]\vfill}][]
+
+%D Footnotes are can be characterized by three components:
+%D
+%D \startitemize[packed]
+%D \item a small number \footnote {a footnote number} or
+%D      symbol {\setupfootnotes [conversion=set 2]\footnote
+%D      {a footnote}}
+%D \item and a similar mark at the bottom of the page
+%D \item followed by some additional text
+%D \stopitemize
+%D
+%D Because footnotes are declared at the location of their
+%D reference they can be seen as a special kind of
+%D floating bodies. Their placement is postponed but has to be
+%D taken into account in the pagebreak calculations. This kind
+%D of calculations are forced by using \type{\insert}s and dealing
+%D with all cases is not trivial.
+
+%D \macros
+%D   {notesenabled}
+%D
+%D We need a couple of states because at some moments we don't want
+%D to mess around with inserts at all. Take for instance a table
+%D of contents. And so we can temporary disable footnotes by saying
+%D
+%D \starttyping
+%D \notesenabledfalse
+%D \stoptyping
+
+\newif\ifnotesenabled \notesenabledtrue
+
+% better mark a note .. once flushed no more flushing
+
+%appendtoks \notesenabledfalse \to \everymarking
+\appendtoks \notesenabledfalse \to \everybeforepagebody
+\appendtoks \notesenabledfalse \to \everystructurelist    % quick hack
+\appendtoks \notesenabledfalse \to \everysimplifycommands % quick hack
+\appendtoks \notesenabledfalse \to \everypreroll          % quick hack
+
+%D Often we need to process the whole set of notes and to make that
+%D fast, we use a token register:
+
+% we have several synchronizers:
+%
+% - after a definition
+% - after a specific setup
+% - after a general setup (inheritance of dimensions)
+% - just before a note is typeset
+
+\newtoks\t_strc_notes
+
+\let\strc_notes_process_list\gobbleoneargument
+
+\unexpanded\def\strc_notes_process#action% argument is a \macro that uses \currentnote
+  {\def\strc_notes_process_list##1{\edef\currentnote{##1}\let\currentdescription\currentnote#action}%
+   \the\t_strc_notes}
+
+\newtoks\everychecknote       % just before a note is typeset
+\newtoks\everysynchronizenote % after a general setup has happened
+
+\appendtoks
+    \ifx\currentnote\empty \else
+        \setupnotations[\currentnote][]% also a synchronize
+    \fi
+\to \everysynchronizenote
+
+\def\strc_notes_synchronize
+  {\the\everysynchronizenote} % we can speed this one up if needed by avoiding the commalist
+
+\appendtoks
+    \strc_notes_process\strc_notes_synchronize
+\to \everysetupnoteroot
+
+\appendtoks
+    \the\everysynchronizenote
+\to \everydefinenote
+
+% \starttext
+%     text \startfootnote Test.\stopfootnote
+%     test \footnote{xxxx} \subfootnote{xxxx}
+%     test \footnote{xxxx} \subfootnote{xxxx}
+% \stoptext
+
+\installcorenamespace{notecommand}
+\installcorenamespace{notealign}
+\installcorenamespace{notepenalty}
+\installcorenamespace{noterule}
+
+\def\currentnoterulecommand{\begincsname\??notecommand\currentnote\endcsname}
+\def\currentnoterulealign  {\begincsname\??notealign  \currentnote\endcsname}
+
+\def\currentnoterulecommandcommand{\noteparameter\c!rulecommand}
+\def\currentnoterulecommandnormal {\normalnoterule} % no let as it can be changed afterwards
+%def\currentnoterulecommandunknown{\noteparameter\c!rule}
+
+\def\letcurrentnoterulecommand{\expandafter\let\csname\??notecommand\currentnote\endcsname}
+\def\letcurrentnoterulealign  {\expandafter\let\csname\??notealign  \currentnote\endcsname}
+
+\appendtoks
+    \letvalue{\??notecommand\currentnote}\currentnoterulecommandnormal
+    \letvalue{\??notealign  \currentnote}\lefttoright
+\to \everysynchronizenote
+
+\def\strc_notes_set_rule
+  {\letcurrentnoterulecommand\relax % so we default to nothing
+   \letcurrentnoterulealign  \relax
+   \processcommacommand[\noteparameter\c!rule]\strc_notes_set_rule_step}
+
+\def\strc_notes_set_rule_step#alternative%
+  {\begincsname\??noterule#alternative\endcsname}
+
+\def\strc_notes_set_rule_autodir
+  {\doifelserighttoleftinbox\currentnoteinsertionnumber\righttoleft\lefttoright}
+
+\setvalue{\??noterule  \v!command}{\letcurrentnoterulecommand\currentnoterulecommandcommand}
+\setvalue{\??noterule       \v!on}{\letcurrentnoterulecommand\currentnoterulecommandnormal}
+\setvalue{\??noterule   \v!normal}{\letcurrentnoterulecommand\currentnoterulecommandnormal}
+\setvalue{\??noterule     \v!left}{\letcurrentnoterulecommand\currentnoterulecommandnormal
+                                   \letcurrentnoterulealign  \lefttoright}
+\setvalue{\??noterule    \v!right}{\letcurrentnoterulecommand\currentnoterulecommandnormal
+                                   \letcurrentnoterulealign  \righttoleft}
+\setvalue{\??noterule\v!paragraph}{\letcurrentnoterulecommand\currentnoterulecommandnormal
+                                   \letcurrentnoterulealign  \strc_notes_set_rule_autodir}
+\setvalue{\??noterule      \v!off}{\letcurrentnoterulecommand\relax}
+
+\appendtoks
+    \strc_notes_set_rule
+\to \everysynchronizenote
+
+\def\currentnotepenalty
+  {\ifcsname\??notepenalty\noteparameter\c!split\endcsname
+     \lastnamedcs
+   \else
+     \numexpr\noteparameter\c!split\relax
+   \fi}
+
+\setnewconstant\notepenaltytolerant  \zerocount
+\setnewconstant\notepenaltystrict    9999
+\setnewconstant\notepenaltyverystrict\maxdimen
+
+\letvalue{\??notepenalty\v!tolerant  }\notepenaltytolerant
+\letvalue{\??notepenalty\v!strict    }\notepenaltystrict
+\letvalue{\??notepenalty\v!verystrict}\notepenaltyverystrict
+\letvalue{\??notepenalty             }\notepenaltytolerant
+
+\def\strc_notes_set_width
+  {\edef\p_width{\noteparameter\c!width}%
+   \ifx\p_width\empty
+     \setnoteparameter\c!width{\hsize}%
+   \fi}
+
+\appendtoks
+    \strc_notes_set_width
+\to \everysynchronizenote
+
+%D The following switch can be used to disable limiting the height of the footnote
+%D area, something that is needed in multi column balancing. Use this switch with
+%D care.
+
+\newif\ifnotelimit \notelimittrue % shared
+
+\def\strc_notes_set_factor
+  {\edef\p_factor{\noteparameter\c!factor}%
+   \ifx\p_factor\empty \else
+     \ifnum\p_factor<\zerocount \else
+%        \global
+       \count\currentnoteinsertionnumber\p_factor % new: global
+     \fi
+   \fi}
+
+\appendtoks
+    \strc_notes_set_factor
+\to \everysynchronizenote
+
+% locations:
+
+\installcorenamespace{notelocationvariant}
+\installcorenamespace{notepositionvariant}
+\installcorenamespace{notedelayedvariant}
+\installcorenamespace{notelocation}
+
+\newconditional\c_strc_notes_delayed
+
+\unexpanded\def\strc_notes_set_delayed_yes{\settrue \c_strc_notes_delayed}
+\unexpanded\def\strc_notes_set_delayed_nop{\setfalse\c_strc_notes_delayed}
+
+\setvalue{\??notelocation\v!page       }{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_nop
+                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_page}
+\setvalue{\??notelocation\v!columns    }{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_nop
+                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_columns}
+\setvalue{\??notelocation\v!lastcolumn }{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_nop
+                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_lastcolumn}
+\setvalue{\??notelocation\v!firstcolumn}{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_nop
+                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_firstcolumn}
+\setvalue{\??notelocation\v!none       }{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_yes
+                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_none}
+\setvalue{\??notelocation\v!text       }{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_yes
+                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_text}
+\setvalue{\??notelocation\v!high       }{\letvalue{\??notepositionvariant\currentnote}\strc_notes_set_position_high}
+\setvalue{\??notelocation\v!bottom     }{\letvalue{\??notepositionvariant\currentnote}\strc_notes_set_position_bottom}
+
+\setvalue{\??notedelayedvariant \??notedelayedvariant }{\strc_notes_set_delayed_nop}      % not let
+\setvalue{\??notepositionvariant\??notepositionvariant}{\strc_notes_set_position_bottom}  % not let
+\setvalue{\??notelocationvariant\??notelocationvariant}{\strc_notes_set_location_page}    % not let
+
+\unexpanded\def\strc_notes_set_delayed
+  {\csname\??notedelayedvariant
+     \ifcsname\??notedelayedvariant\currentnote\endcsname
+       \currentnote
+     \else
+       \??notedelayedvariant
+     \fi
+   \endcsname}
+
+% \let\strc_notes_set_delayed_yes\truecondition
+% \let\strc_notes_set_delayed_nop\falsecondition
+%
+% \def\c_strc_notes_delayed
+%   {\csname\??notedelayedvariant
+%      \ifcsname\??notedelayedvariant\currentnote\endcsname
+%        \currentnote
+%      \else
+%        \??notedelayedvariant
+%      \fi
+%    \endcsname}
+
+\unexpanded\def\strc_notes_set_position
+  {\csname\??notepositionvariant
+     \ifcsname\??notepositionvariant\currentnote\endcsname
+       \currentnote
+     \else
+       \??notepositionvariant
+     \fi
+   \endcsname}
+
+\unexpanded\def\strc_notes_set_location
+  {\csname\??notelocationvariant
+     \ifcsname\??notelocationvariant\currentnote\endcsname
+       \currentnote
+     \else
+       \??notelocationvariant
+     \fi
+   \endcsname}
+
+\unexpanded\def\strc_notes_set_variants
+  {\normalexpanded{\rawprocesscommalist[\noteparameter\c!location]\strc_notes_set_location_step}}
+
+\unexpanded\def\strc_notes_set_location_step#alternative% the insert related one
+ %{\ifcsname\??notelocation#alternative\endcsname\csname\??notelocation#alternative\endcsname\fi}
+  {\begincsname\??notelocation#alternative\endcsname}
+
+\appendtoks
+    \strc_notes_set_variants
+    \strc_notes_set_delayed
+\to \everysynchronizenote
+
+\newskip \s_strc_notes_distance % we need to implement stretch
+\newcount\c_strc_notes_columns
+
+\def\strc_notes_set_distance
+  {\begingroup
+   \setbox\scratchbox\vbox % no reuse as it can mirror
+     {\forgetall
+    % \strc_notes_set_bodyfont
+      \dontcomplain
+      \noteparameter\c!before
+      \placenoterule
+      \noteparameter\c!after}%
+   \expandafter\endgroup\expandafter
+   \s_strc_notes_distance\the\ht\scratchbox\relax}
+
+\def\strc_notes_set_columns
+  {\c_strc_notes_columns\noteparameter\c!n\relax
+   \ifcase\c_strc_notes_columns
+     \c_strc_notes_columns\plusone
+   \fi}
+
+\def\strc_notes_set_location_page
+  {\setfalse\c_strc_notes_delayed
+   \strc_notes_set_distance
+   \strc_notes_set_columns
+   \page_inserts_set_location\currentnoteinsertion\v!page % \setupinsertion[\currentnote][\c!location=\v!page]%
+   \global\count\currentnoteinsertionnumber\numexpr\plusthousand/\c_strc_notes_columns\relax
+   \global\dimen\currentnoteinsertionnumber\ifnotelimit\dimexpr\noteparameter\c!height*\c_strc_notes_columns\relax\else\maxdimen\fi
+   \global\skip \currentnoteinsertionnumber\s_strc_notes_distance}
+
+\def\strc_notes_set_location_columns
+  {\setfalse\c_strc_notes_delayed
+   \strc_notes_set_distance
+   \strc_notes_set_columns
+   \ifnum\currentnofcolumns=\zerocount
+     \c_strc_notes_columns\plusone
+   \fi
+   \page_inserts_set_location\currentnoteinsertion\v!columns % \setupinsertion[\currentnote][\c!location=\v!columns]%
+   \global\count\currentnoteinsertionnumber\numexpr\plusthousand/\c_strc_notes_columns\relax
+   \global\dimen\currentnoteinsertionnumber\ifnotelimit\dimexpr\noteparameter\c!height*\c_strc_notes_columns\relax\else\maxdimen\fi
+   \global\skip \currentnoteinsertionnumber\s_strc_notes_distance}
+
+\def\strc_notes_set_location_somecolumn#whatcolumn%
+  {\setfalse\c_strc_notes_delayed
+   \strc_notes_set_distance
+   \strc_notes_set_columns
+   \page_inserts_set_location\currentnoteinsertion#whatcolumn% \setupinsertion[\currentnote][\c!location=#whatcolumn]%
+   \global\count\currentnoteinsertionnumber\plusthousand
+   \global\dimen\currentnoteinsertionnumber\ifnotelimit\noteparameter\c!height\else\maxdimen\fi
+   \global\skip \currentnoteinsertionnumber\s_strc_notes_distance}
+
+\def\strc_notes_set_location_firstcolumn{\strc_notes_set_location_somecolumn\v!firstcolumn}
+\def\strc_notes_set_location_lastcolumn {\strc_notes_set_location_somecolumn\v!lastcolumn }
+
+\def\strc_notes_set_location_text % we don't use inserts anyway (e.g. endnotes)
+  {\settrue\c_strc_notes_delayed
+   \clf_setnotestate{\currentnote}{store}%
+   \page_inserts_set_location\currentnoteinsertion\v!text % \setupinsertion[\currentnote][\c!location=\v!text]%
+   \global\count\currentnoteinsertionnumber\zerocount
+   \global\dimen\currentnoteinsertionnumber\maxdimen
+   \global\skip \currentnoteinsertionnumber\zeropoint}
+
+\let\strc_notes_set_location_none\strc_notes_set_location_text
+
+\def\strc_notes_set_properties
+  {\strc_notes_set_columns
+   \strc_notes_set_distance
+   \strc_notes_set_location
+   \strc_notes_set_delayed}
+
+\let\strc_notes_set_position_high\relax
+
+\def\strc_notes_set_position_bottom
+  {\settrue\c_notes_bottom_present}
+
+\appendtoks
+    \strc_notes_set_properties
+\to \everysynchronizenote
+
+%D A fast checker for bottom notes being used:
+
+\newconditional\c_notes_bottom_present
+
+\def\strc_notes_check_if_bottom_present_indeed % in otr !
+  {\ifvoid\currentnoteinsertionnumber\else
+     \strc_notes_set_position
+   \fi}
+
+\def\strc_notes_check_if_bottom_present_step
+  {\ifconditional\c_notes_bottom_present\else\strc_notes_check_if_bottom_present_indeed\fi}
+
+\def\strc_notes_check_if_bottom_present
+  {\setfalse\c_notes_bottom_present
+   \strc_notes_process\strc_notes_check_if_bottom_present_step}
+
+% Example of using factor:
+%
+% \definenote[mynote][way=bypage,location=text,width=\marginwidth,rule=,before=,factor=0]
+% \setuplayout[backspace=5cm,margin=3cm,margindistance=.5cm,width=middle]
+% \setuptexttexts[margin][\vbox to \textheight{\placenotes[mynote]\vfill}][]
+% \starttext
+% \dorecurse{10}{test \mynote{one one one one one one} \input zapf \mynote{one one one one one one} }
+% \stoptext
+
+%D The noterule can be a graphic and therefore calling this
+%D setup macro at every skipswitch is tricky (many many MP
+%D runs). Let's just reserve a few points, that probably match
+%D those of the stretch component.
+
+%D A bit messy:
+
+\unexpanded\def\placenoterule
+  {\begingroup
+   \currentnoterulealign
+   \currentnoterulecommand
+   \par
+   \endgroup}
+
+\unexpanded\def\normalnoterule
+  {\ifvmode
+     \dontleavehmode \blackrule
+       [\c!color=\noteparameter\c!rulecolor,
+        \c!width=.2\hsize,
+        \c!height=\noteparameter\c!rulethickness,
+        \c!depth=\zeropoint]%
+     \endgraf
+     \kern\strutdepth
+   \fi}
+
+\ifdefined\setnotehsize \else
+
+  \unexpanded\def\setnotehsize{\hsize\noteparameter\c!width\relax} % can be overloaded
+
+\fi
+
+%D The formatting depends on the width of the table, so we
+%D have to set \type {n} to zero.
+%D
+%D \starttyping
+%D \startbuffer
+%D \bTABLE
+%D \bTR \bTD one \footnote{\dorecurse{10}{abcd }} \eTD \bTD two \eTD \eTR
+%D \bTR \bTD three fout five six seven eight nine \eTD \bTD ten \eTD \eTR
+%D \eTABLE
+%D \stopbuffer
+%D
+%D \startlocalfootnotes[n=0,location={text,none}]
+%D \placelegend[n=2]{\getbuffer}{\placelocalfootnotes}
+%D \stoplocalfootnotes
+%D \stoptyping
+
+%D \macros
+%D   {footnote}
+%D
+%D A footnote can have a reference as optional argument and
+%D therefore its formal specification looks like:
+%D
+%D \showsetup{footnote}
+%D
+%D This command has one optional command: the reference. By
+%D saying \type{[-]} the number is omitted. The footnote
+%D command is not that sensitive to spacing, so it's quite
+%D legal to say:
+%D
+%D \startbuffer
+%D Users of \CONTEXT\ must keep both feet \footnote{Given they
+%D have two.} on the ground and not get confused \footnote{Or
+%D even crazy.} by all those obscure \footnote{But fortunately
+%D readable.} parameters.
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D When setting the \type{conversion} to \type{set 2} we get
+%D something like:
+%D
+%D \bgroup
+%D \startnarrower
+%D \setupfootnotes[conversion=set 1]
+%D \getbuffer
+%D \stopnarrower
+%D \egroup
+%D
+%D Typesetting footnotes is, at least for the moment, disabled
+%D when reshaping boxes.
+%D
+%D The additional macro \type {\footnotetext} and the
+%D associated \type {\note} macro were implemented at
+%D request of users on the mailing list and a suggestion by
+%D taco to split of the symbol placement. I decided to
+%D merge this functionality with the existing \type {\note}
+%D functionality.
+
+\newconditional\c_strc_notes_symbol \settrue\c_strc_notes_symbol % not used
+\newconditional\c_strc_notes_skip
+
+\unexpanded\def\setnote    [#tag]{\csname#tag\endcsname}
+\unexpanded\def\setnotetext[#tag]{\global\settrue\c_strc_notes_skip\csname#tag\endcsname}
+
+\unexpanded\def\handlenoteinsert#tag#id%
+  {\begingroup
+   \edef\currentnote{#tag}%
+   \strc_constructions_initialize{#tag}%
+   \strc_notes_synchronize
+   \the\everybeforenoteinsert
+   \insert\currentnoteinsertionnumber\bgroup
+     \the\everyinsidenoteinsert\relax
+     \usesetupsparameter\noteparameter % experimental
+     \useinterlinespaceparameter\noteparameter
+     \doifelse{\noteparameter\c!paragraph}\v!yes
+        {\nointerlineskip
+         \startvboxtohboxseparator
+           \noteparameter\c!inbetween
+         \stopvboxtohboxseparator
+         \startvboxtohbox
+           \handlenoteitself{#tag}{#id}%
+         \stopvboxtohbox}
+        {\handlenoteitself{#tag}{#id}}%
+   \egroup
+   \the\everyafternoteinsert
+   \endgroup}
+
+\unexpanded\def\betweennoteitself#tag% used ?
+  {\edef\currentnote{#tag}%
+   \doif{\noteparameter\c!paragraph}\v!yes{\noteparameter\c!inbetween}}
+
+\unexpanded\def\handlenoteitself#tag#id%
+  {\edef\currentnotenumber{#id}%
+   \edef\currentnote{#tag}%
+   \strc_constructions_initialize{#tag}%
+   \strc_notes_synchronize
+   \edef\currentconstructionlistentry{\clf_notelistindex{\currentnote}#id}% index in list cache
+   % as we can have collected notes (e.g. in tables) we need to recover
+   % \currentdescriptionattribute and \currentdescriptionsynchronize
+   %
+   \reinstatecachedconstructionnumberentry\currentconstructionlistentry % we could store the number in the entry (e.g. needed when local notes in table)
+   %
+   \dontcomplain
+   %begingroup
+   \strc_notes_interaction_check_display
+   \strc_notes_set_reference_attribute_text
+   \strc_constructions_stored_start
+   \begstrut
+   \strc_references_flush_destination_nodes
+   \strc_notes_set_destination_attribute_text
+   \strc_notes_inject_text\relax
+   \ifvmode\obeydepth\else\endstrut\fi % \obeydepth is new per 2015-01-10
+   \strc_constructions_stored_stop
+   %endgroup
+   }
+
+\unexpanded\def\strc_notes_inject_text % hm main?
+  {\clf_savedlisttitle{\currentconstructionmain}\currentconstructionlistentry\relax}
+
+\let\startpushnote\relax
+\let\stoppushnote \relax
+
+\newsignal\notesignal
+
+\newconditional\processingnote
+\newconditional\postponednote
+
+\newtoks\everybeforenoteinsert
+\newtoks\everyinsidenoteinsert
+\newtoks\everyafternoteinsert
+
+\appendtoks
+   \let\flushnotes\relax
+   \let\postponenotes\relax
+   \forgetall
+   \resetallattributes   % new, we don't want color bleed into notes
+   \inheritmaintextcolor % but we do want to obey the textcolor
+\to \everybeforenoteinsert
+
+\appendtoks
+  \doif{\noteparameter\c!scope}\v!page{\floatingpenalty\maxdimen}% experiment
+  \penalty\currentnotepenalty
+ %\interlinepenalty\maxdimen % todo
+  \forgetall
+  \strc_notes_set_bodyfont
+  \redoconvertfont % to undo \undo calls in in headings etc
+  \splittopskip\strutht  % not actually needed here
+  \splitmaxdepth\strutdp % not actually needed here
+  % brrr
+%   \leftmargindistance \noteparameter\c!margindistance
+%   \rightmargindistance\leftmargindistance
+%   \ifnum\noteparameter\c!n=\zerocount % no ifcase new 31-07-99 ; always ?
+%     \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize % ?
+%   \fi
+\to \everyinsidenoteinsert
+
+\appendtoks % only needed when columns
+    \setsimplecolumnshsize[\c!distance=\noteparameter\c!columndistance,\c!n=\noteparameter\c!n,\c!width=\noteparameter\c!width]%
+\to \everyinsidenoteinsert
+
+% not: \appendtoks \setnotehsize \to \everyinsidenoteinsert (spoils columns)
+
+%D Normally footnotes are saved as inserts that are called upon
+%D as soon as the pagebody is constructed. The footnote
+%D insertion routine looks just like the \PLAIN\ \TEX\ one,
+%D except that we check for the end note state.
+
+% testcase for split bottom alignment see (a) below
+%
+% \dorecurse{6}{\input tufte\footnote{\input ward \input tufte \relax}}
+
+\unexpanded\def\placenoteinserts
+  {\strc_notes_process\strc_notes_place_inserts}
+
+\def\strc_notes_place_inserts
+  {\strc_notes_set_delayed % \strc_notes_synchronize % we need to know if it's delayed
+   \ifconditional\c_strc_notes_delayed \else
+     \ifdim\ht\currentnoteinsertionnumber>\zeropoint % or a faster delayed test
+       \strc_notes_place_inserts_indeed
+     \fi
+   \fi}
+
+\def\strc_notes_place_inserts_indeed
+  {\relax
+   \ifdim\ht\currentnoteinsertionnumber>\zeropoint
+     \endgraf
+     \ifvmode
+       \whitespace
+       \noteparameter\c!before
+     \fi
+     \placenoterule
+     \bgroup
+     \strc_notes_set_bodyfont
+     \setbox\scratchbox\hbox
+       {\strc_notes_flush_inserts}%
+     \page_postprocessors_linenumbers_deepbox\scratchbox
+     \setbox\scratchbox\hbox
+       {\setupcurrentnote
+          [\c!location=,
+           \c!width=\v!fit,
+           \c!height=\v!fit,
+           \c!strut=\v!no,
+           \c!offset=\v!overlay]%
+        \inheritednoteframed
+          {\ifdim\dp\scratchbox=\zeropoint          % this hack is needed because \vadjust
+             \hpack{\lower\strutdp\box\scratchbox}% % in margin number placement
+           \else                                    % hides the (always) present depth
+             \box\scratchbox
+           \fi}}%
+     \setbox\scratchbox\hpack{\lower\strutdepth\box\scratchbox}%
+     \dp\scratchbox\strutdepth % so we know that it has the note bodyfont depth
+     \ifvmode
+       \nointerlineskip % else sometimes empty line
+     \fi
+     \box\scratchbox
+     \egroup
+     \endgraf
+     \ifvmode
+       \noteparameter\c!after
+     \fi
+   \fi}
+
+\def\strc_notes_flush_inserts
+  {\ifcase\noteparameter\c!n\relax
+     % should not happen
+   \or
+     \strc_notes_flush_inserts_normal
+   \else
+     \strc_notes_flush_inserts_columns
+   \fi}
+
+\def\strc_notes_flush_inserts_normal
+  {\strc_notes_flush_global
+   \obeydepth} % (a) added , since split footnotes will not align properly
+
+\def\strc_notes_flush_inserts_columns
+  {\startsimplecolumns[\c!distance=\noteparameter\c!columndistance,\c!n=\noteparameter\c!n,\c!width=\noteparameter\c!width]%
+     \strc_notes_flush_global
+   \stopsimplecolumns}
+
+% idea: tag with attr and then just flush them again
+
+\def\strc_notes_flush_global
+  {\begingroup
+   \useinterlinespaceparameter\noteparameter
+   \doifelse{\noteparameter\c!paragraph}\v!yes
+     {\leftorrightvbox % cf mail from ws to list
+        {\starthboxestohbox
+           \iftrialtypesetting\unvcopy\else\unvbox\fi\currentnoteinsertionnumber
+         \stophboxestohbox}}
+     {\iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteinsertionnumber}%
+   \endgroup}
+
+%D Supporting end notes is surprisingly easy. Even better, we
+%D can combine this feature with solving the common \TEX\
+%D problem of disappearing inserts when they're called for in
+%D deeply nested boxes. The general case looks like:
+%D
+%D \starttyping
+%D \postponenotes
+%D \.box{whatever we want with footnotes}
+%D \flushnotes
+%D \stoptyping
+%D
+%D This alternative can be used in headings, captions, tables
+%D etc. The latter one sometimes calls for notes local to
+%D the table, which can be realized by saying
+%D
+%D \starttyping
+%D \setlocalfootnotes
+%D some kind of table with local footnotes
+%D \placelocalfootnotes
+%D \stoptyping
+%D
+%D Postponing is accomplished by simply redefining the (local)
+%D insert operation. A not too robust method uses the
+%D \type{\insert} primitive when possible. This method fails in
+%D situations where it's not entirely clear in what mode \TEX\
+%D is. Therefore the auto method can is to be overruled when
+%D needed.
+
+\newconditional\postponingnotes
+
+% we need a proper state: normal, postponing, flushing
+
+\unexpanded\def\postponenotes
+  {\ifconditional\postponingnotes\else
+     \global\settrue\postponingnotes
+     \global\let\flushnotes\doflushnotes
+     \clf_postponenotes
+   \fi}
+
+\let\flushnotes\relax
+
+\unexpanded\def\doflushnotes
+  {\ifconditional\postponingnotes
+     \begingroup
+     \let\flushnotes   \relax
+     \let\postponenotes\relax
+     \clf_flushpostponednotes% this also resets the states !
+     \global\setfalse\postponednote
+     \global\setfalse\postponingnotes
+     \global\let\flushnotes\relax
+     \endgroup
+   \fi}
+
+%D \macros
+%D   {startlocalfootnotes,placelocalfootnotes}
+%D
+%D The next two macros can be used in for instance tables, as
+%D we'll demonstrate later on.
+%D
+%D \showsetup{startlocalfootnotes}
+%D \showsetup{placelocalfootnotes}
+
+% todo: compatibility mode: when first arg is assignment or missing, then all
+
+\newtoks\everyplacelocalnotes
+
+\appendtoks
+    \let\flushnotes   \relax
+    \let\postponenotes\relax
+\to \everyplacelocalnotes
+
+\newconditional\inlocalnotes
+
+\unexpanded\def\startlocalnotes
+  {\dosingleempty\strc_notes_local_start}
+
+\def\strc_notes_local_start[#list]% grouping ? (we used to have a second argument ... settings)
+  {\def\localnoteslist{#list}%
+   \settrue\inlocalnotes
+   \processcommacommand[\localnoteslist]\strc_notes_local_start_step}
+
+\unexpanded\def\stoplocalnotes
+  {\processcommacommand[\localnoteslist]\strc_notes_local_stop_step
+   \setfalse\inlocalnotes}
+
+\let\p_strc_notes_continue\empty
+
+\def\strc_notes_local_start_step#tag%
+  {\p_strc_notes_continue{\noteparameter\c!continue}%
+   \ifx\p_strc_notes_continue\v!yes \else
+      \strc_counters_save{#tag}%
+      \strc_counters_reset{#tag}%
+   \fi
+   \clf_savenote{#tag}{store}}
+
+\def\strc_notes_local_stop_step#tag%
+  {\p_strc_notes_continue{\noteparameter\c!continue}%
+   \ifx\p_strc_notes_continue\v!yes \else
+     \strc_counters_restore{#tag}%
+   \fi
+   \clf_restorenote{#tag}}
+
+\unexpanded\def\placelocalnotes
+  {\dodoubleempty\strc_notes_local_place}
+
+\def\strc_notes_local_place[#tag][#settings]%
+  {\doif{\clf_getnotestate{#tag}}{store}{\strc_notes_local_place_indeed{#settings}{#tag}}}
+
+\def\strc_notes_local_place_indeed#settings#tag%
+  {\begingroup
+   \edef\currentnote{#tag}% is already set?
+   \the\everyplacelocalnotes
+   % beware, we cannot trust setting \currentnote here
+   \setupcurrentnote[#settings]% later we set height etc for framed
+   \strc_notes_place_local_alternative
+   \strc_notes_set_properties % restore globals (if needed)
+   \endgroup
+  }% TODO: just restore properties \the\everychecknote} % we need to restore the old state
+
+%D These commands can be used like:
+%D
+%D \startbuffer
+%D \startlocalnotes[footnote]
+%D   \placetable
+%D     {Some Table}
+%D     \placeontopofeachother
+%D       {\starttable[|l|r|]
+%D        \HL
+%D        \VL Nota\footnote{Bene} \VL Bene\footnote{Nota} \VL\SR
+%D        \VL Bene\footnote{Nota} \VL Nota\footnote{Bene} \VL\SR
+%D        \HL
+%D        \stoptable}
+%D       {\setupnotation[footnote][alternative={serried},distance=.5em,after=\hskip1em]%
+%D        \placelocalnotes[footnote]}
+%D \stoplocalnotes
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Because this table placement macro expect box content, and
+%D thanks to the grouping of the local footnotes, we don't need
+%D additional braces.
+%D
+%D \getbuffer
+
+%D \macros
+%D   {placefootnotes}
+%D
+%D We still have no decent command for placing footnotes
+%D somewhere else than at the bottom of the page (for which no
+%D user action is needed). Footnotes (endnotes) can be
+%D placed by using
+%D
+%D \showsetup{placefootnotes}
+
+\unexpanded\def\placebottomnotes
+  {\strc_notes_process\strc_notes_place_inserts}
+
+\unexpanded\def\placenotes
+  {\dodoubleempty\strc_notes_place}
+
+\def\strc_notes_place[#list][#settings]%
+  {\processcommalist[#list]{\strc_notes_place_indeed{#settings}}}
+
+\def\strc_notes_place_indeed#settings#tag% settings note
+  {\edef\currentnote{#tag}% grouping ?
+   \doifelse{\clf_getnotestate{#tag}}{store}
+     \strc_notes_local_place_indeed
+     \strc_notes_global_place_indeed
+     {#settings}{#tag}}
+
+\def\strc_notes_global_place_indeed#settings#tag%
+  {\begingroup
+   \setupnote[#tag][#settings]%
+   \strc_notes_place_inserts
+   \endgroup
+   \the\everysetupnote} % to be checked .. synchronize
+
+%D Placement
+
+\installcorenamespace{notealternative}
+
+\unexpanded\def\installnotealternative#alternative#command%
+  {\setvalue{\??notealternative#alternative}{#command}}
+
+\unexpanded\def\doifnotescollected#tag%
+  {\clf_doifnotecontent{#tag}}
+
+\def\strc_notes_place_local_alternative % will be a setup (wrapper)
+  {\doifnotescollected\currentnote
+     {\endgraf
+      \ifvmode
+        \whitespace
+        \noteparameter\c!before
+      \fi
+      \begingroup
+      \strc_notes_set_bodyfont
+      \csname\??notealternative\noteparameter\c!alternative\endcsname
+      \endgroup
+      \ifvmode
+        \noteparameter\c!after
+      \fi}}
+
+%D A stupid alternative is also provided:
+%D
+%D \starttyping
+%D \setupfootnotes[location=text,alternative=none]
+%D \stoptyping
+
+% setups ?
+
+\def\flushlocalnotes#tag{\clf_flushnotes{#tag}{store}{\noteparameter\c!criterium}}
+
+\installnotealternative \v!none
+  {\flushlocalnotes\currentnote}
+
+\installnotealternative \empty
+  {\flushlocalnotes\currentnote}
+
+\installnotealternative \v!grid % test if n > 0
+  {\begingroup
+   \setupcurrentnote[\c!location=]%
+   \snaptogrid\hbox
+     {\inheritednoteframed
+        {\flushlocalnotes\currentnote}}%
+   \endgroup}
+
+\installnotealternative \v!fixed % test if n > 0
+  {\begingroup
+   \setupcurrentnote[\c!location=]%
+   \inheritednoteframed
+     {\flushlocalnotes\currentnote}%
+   \endgroup}
+
+\installnotealternative \v!columns % redundant
+  {\begingroup
+   \setupcurrentnote[\c!location=]%
+   \inheritednoteframed
+     {\edef\currentnotewidth{\noteparameter\c!width}%
+      \doifelsedimension\currentnotewidth\donothing
+        {\edef\currentnotewidth{\the\hsize}}%
+      \startsimplecolumns[\c!distance=\noteparameter\c!columndistance,\c!n=\noteparameter\c!n,\c!width=\currentnotewidth]%
+        \flushlocalnotes\currentnote
+      \stopsimplecolumns}%
+   \endgroup}
+
+% 0:page 1:firstcolumn 2:lastcolumn
+
+\newconstant\c_strc_notes_page_location
+
+\unexpanded\def\strc_notes_check_locations
+  {\edef\p_strc_notes_location{\rootnoteparameter\c!location}%
+   \c_strc_notes_page_location
+      \ifx\p_strc_notes_location\v!firstcolumn\plusone  \else
+      \ifx\p_strc_notes_location\v!lastcolumn \plustwo  \else
+                                              \zerocount\fi\fi}
+
+\appendtoks
+    \strc_notes_check_locations
+\to \everysynchronizenote
+
+% still semi public (but will change)
+
+\newif\ifnotespresent
+
+\unexpanded\def\checknotepresence
+  {\notespresentfalse
+   \strc_notes_process\strc_notes_check_presence}
+
+\def\strc_notes_check_presence
+  {\ifdim\ht\currentnoteinsertionnumber>\zeropoint
+     \notespresenttrue
+   \fi}
+
+%D \macros
+%D   {fakenotes}
+
+    % used in page-mul
+
+    \ifdefined\currentnofcolumns\else \def\currentnofcolumns{\nofcolumns} \fi
+
+    \unexpanded\def\fakenotes
+      {\ifhmode\endgraf\fi\ifvmode
+         \calculatetotalclevernoteheight
+         \ifdim\totalnoteheight>\zeropoint \kern\totalnoteheight \fi
+       \fi}
+
+    \unexpanded\def\fakepagenotes
+      {\ifhmode\endgraf\fi\ifvmode
+         \calculatetotalpagenoteheight
+         \ifdim\totalnoteheight>\zeropoint \kern\totalnoteheight \fi
+       \fi}
+
+    % used in page-not but not yet ok
+
+    \newdimen\totalnoteheight
+
+    \unexpanded\def\additionaltotalnoteheight#insert% temp hacks anyway
+      {\dimexpr
+         \ifdim\ht#insert>\zeropoint
+           \ifcase\count#insert %
+             \zeropoint
+           \else % todo: divide by count
+             \ht#insert+\skip#insert% hm, no stretch but a dimen anyway
+           \fi
+         \else
+           \zeropoint
+         \fi
+      \relax}
+
+    \def\docalculatetotalnoteheight
+      {\ifcase\c_strc_notes_page_location % tricky here ! ! ! to be sorted out ! ! !
+         \advance\totalnoteheight\normalexpanded{\additionaltotalnoteheight\currentnoteinsertionnumber}%
+       \fi}
+
+    \def\docalculatetotalclevernoteheight
+      {\ifcase\c_strc_notes_page_location \else % tricky here ! ! ! to be sorted out ! ! !
+         \advance\totalnoteheight\normalexpanded{\additionaltotalnoteheight\currentnoteinsertionnumber}%
+       \fi}
+
+    \def\docalculatetotalpagenoteheight
+      {\advance\totalnoteheight\normalexpanded{\additionaltotalnoteheight\currentnoteinsertionnumber}}
+
+    \def\calculatetotalnoteheight      {\totalnoteheight\zeropoint\strc_notes_process\docalculatetotalnoteheight}
+    \def\calculatetotalclevernoteheight{\totalnoteheight\zeropoint\strc_notes_process\docalculatetotalclevernoteheight}
+    \def\calculatetotalpagenoteheight  {\totalnoteheight\zeropoint\strc_notes_process\docalculatetotalpagenoteheight}
+
+%D Now how can this mechanism be hooked into \CONTEXT\ without
+%D explictly postponing footnotes? The solution turned out to
+%D be rather simple:
+%D
+%D \starttyping
+%D \everypar  {...\flushnotes...}
+%D \neverypar {...\postponenotes}
+%D \stoptyping
+%D
+%D We can use \type{\neverypar} because in most commands
+%D sensitive to footnote gobbling we disable \type{\everypar}
+%D in favor for \type{\neverypar}. In fact, this footnote
+%D implementation is the first to use this scheme.
+
+%D This is a nasty and new secondary footnote flusher. It
+%D can be hooked into \type {\everypar} like:
+%D
+%D \starttyping
+%D \appendtoks \synchronizenotes \to \everypar
+%D \stoptyping
+
+% \def\dosynchronizenotes
+%   {\ifvoid\currentnoteinsertionnumber\else\insert\currentnoteinsertionnumber{\unvbox\currentnoteinsertionnumber}\fi}
+%
+% \def\synchronizenotes
+%   {\strc_notes_process\dosynchronizenotes}
+
+\let\synchronizenotes\relax
+
+%D When typesetting footnotes, we have to return to the
+%D footnote specific bodyfont size, which is in most cases derived
+%D from the global document bodyfont size. In the previous macros
+%D we already used a footnote specific font setting macro.
+
+\def\strc_notes_set_bodyfont
+  {\let\strc_notes_set_bodyfont\relax
+   \restoreglobalbodyfont
+   \usebodyfontparameter\noteparameter
+   \usealignparameter\noteparameter}
+
+%D The footnote mechanism defaults to a traditional one
+%D column way of showing them. By default we precede them by
+%D a small line.
+
+\definenote [\v!footnote]
+\definenote [\v!endnote ] [\c!location=\v!none] % else no break
+
+%D Compatibility macros:
+
+\unexpanded\def\setupfootnotedefinition{\setupnotation                                 [\v!footnote]}
+\unexpanded\def\setupfootnotes         {\setupnote                                     [\v!footnote]}
+           \def\footnotetext           {\setnotetext                                   [\v!footnote]}
+\unexpanded\def\placefootnotes         {\dodoubleempty\strc_notes_place_footnotes      [\v!footnote]}
+\unexpanded\def\placelocalfootnotes    {\dodoubleempty\strc_notes_place_local_footnotes[\v!footnote]}
+\unexpanded\def\startlocalfootnotes    {\startlocalnotes                               [\v!footnote]} %  alleen footnote
+\unexpanded\def\stoplocalfootnotes     {\stoplocalnotes }
+
+\def\strc_notes_place_footnotes[#list][#settings]%
+  {\ifsecondargument
+     \placenotes[#list][#settings,\c!height=\textheight]%
+   \else
+     \placenotes[#list][\c!height=\textheight]%
+   \fi}
+
+\def\strc_notes_place_local_footnotes[#list][#settings]%
+  {\ifsecondargument
+     \placelocalnotes[#list][#settings,\c!height=\textheight]%
+   \else
+     \placelocalnotes[#list][\c!height=\textheight]%
+   \fi}
+
+%D Goodies:
+%D
+%D \starttyping
+%D \dorecurse {100} {
+%D     test \footnote{\doifnoteonsamepageelse[footnote]{ibidem}{aaa}}
+%D }
+%D \stoptyping
+
+\def\doifelsenoteonsamepage#tag{\clf_doifnoteonsamepageasprevious{#tag}}
+
+\let\doifnoteonsamepageelse\doifelsenoteonsamepage
+
+%D New trickery:
+
+%D \macros
+%D   {note}
+%D
+%D Refering to a note is accomplished by the rather short
+%D command:
+%D
+%D \showsetup{note}
+%D
+%D This command is implemented rather straightforward as:
+
+\installcorenamespace{notesymbol}
+
+\let\lastnotesymbol\relax % todo: per class
+
+\unexpanded\def\notesymbol
+  {\dodoubleempty\strc_notes_symbol}
+
+\def\strc_notes_symbol[#tag][#reference]%
+  {\ifnotesenabled
+     \dontleavehmode
+     \begingroup
+     \edef\currentnote{#tag}%
+     \usenotestyleandcolor\c!textstyle\c!textcolor
+     \ifsecondargument
+       \unskip
+       \noteparameter\c!textcommand{\in[#reference]}% command here?
+     \else
+       \noteparameter\c!textcommand\lastnotesymbol % check if command double
+     \fi
+     \endgroup
+   \fi}
+
+\unexpanded\def\note
+  {\dodoubleempty\strc_notes_note}
+
+\def\strc_notes_note[#tag][#reference]%
+  {\ifsecondargument
+     \strc_notes_symbol[#tag][#reference]%
+   \else
+     \secondargumenttrue
+     \strc_notes_symbol[\v!footnote][#tag]%
+   \fi}
+
+% will be redone if needed
+%
+% \def\ownnotesymbol#1% #1 gets number passed
+%   {\executeifdefined{\??notesymbol\currentnote}\empty}
+%
+% \unexpanded\def\setnotesymbol[#1]#2#3%
+%   {\prewordbreak % prevent lookback
+%    \setgvalue{\??notesymbol#1}{#3}
+%    \strc_notes_inject_symbol}
+%
+% \unexpanded\def\ownnote[#1]#2#3#4%
+%   {\setnotesymbol[#1]{#2}{#3}%
+%    \setnotetext  [#1]{#4}}
+%
+% \defineconversion
+%   [ownnote]
+%   [\ownnotesymbol]
+
+% tricky:
+%
+% \enabletrackers[nodes.areas]
+% \enabletrackers[nodes.references]
+% \enabletrackers[nodes.destinations]
+%
+% \setupnotes[interaction=all,rule=no]
+% \setupinteraction[state=start,focus=standard]
+%
+% \starttext
+%     \goto{\input tufte\relax}[page(2)] \par
+%     \ruledhbox{\gotobox{\vtop{\input tufte\relax}}[page(2)]} \par
+%     \ruledhbox{\gotobox{\vbox{\input tufte\relax}}[page(2)]} \par
+%     % \completecontent
+%     % \chapter{Chapter}
+%     % \dorecurse{5}{\input knuth}
+%     a\footnote{\input tufte\par\input ward\relax}
+% \stoptext
+
+\protect \endinput
+

@@ -1,0 +1,847 @@
+%D \module
+%D   [       file=core-env, % was core-new
+%D        version=1995.01.01, % wrong
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=New ones,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Core Macros / Environments}
+
+\registerctxluafile{core-env}{1.001}
+
+\unprotect
+
+%D Modes:
+%D
+%D \starttyping
+%D \enablemode[screen,paper,bound]
+%D
+%D \doifmodeelse {paper}        {this} {that}
+%D \doifmode     {paper,screen} {this}
+%D \doifnotmode  {paper,bound}  {that}
+%D
+%D \startmode [list]
+%D \stopmode
+%D
+%D \startnotmode [list]
+%D \stopnotmode
+%D \stoptyping
+%D
+%D system modes have a * as prefix
+%D
+%D Sometimes, we want to prevent a mode for being set. Think
+%D of situations where a style enables a mode, but an outer
+%D level style does not want that. Preventing can be
+%D considered a permanent disabling on forehand.
+
+\def\systemmodeprefix{*}
+
+% we will have \installcorenamespace{mode} but need some hackery at the lua end then
+
+\installcorenamespace{modestack}
+
+\setnewconstant\disabledmode \zerocount
+\setnewconstant\enabledmode  \plusone
+\setnewconstant\preventedmode\plustwo
+
+% fast internal ones
+
+\def\??mode{mode>} % special namespace, also used at lua end
+
+\def\syst_modes_new#1%
+  {\expandafter\newcount\csname\??mode#1\endcsname}
+
+\unexpanded\def\newmode#1% so, no change of already set modes !
+  {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi}
+
+\unexpanded\def\setmode#1%
+  {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
+   \lastnamedcs\enabledmode}
+
+\unexpanded\def\resetmode#1%
+  {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
+   \lastnamedcs\disabledmode}
+
+\unexpanded\def\newsystemmode#1%
+  {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi}
+
+\unexpanded\def\setsystemmode#1%
+  {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
+   \lastnamedcs\enabledmode}
+
+\unexpanded\def\resetsystemmode#1%
+  {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
+   \lastnamedcs\disabledmode}
+
+% \def\dosetsystemmode#1%
+%   {\csname\??mode\systemmodeprefix#1\endcsname\enabledmode}
+%
+% \def\doresetsystemmode#1%
+%   {\csname\??mode\systemmodeprefix#1\endcsname\disabledmode}
+
+% demo: trialtypesetting is a systemmode as well as an if
+
+\newsystemmode{trialtypesetting} % the name of \@@trialtypesetting might change (also at the lua end)
+
+\expandafter\let\expandafter\@@trialtypesetting\csname\??mode\systemmodeprefix trialtypesetting\endcsname % private !
+
+\appendtoks
+    \@@trialtypesetting\enabledmode
+\to \everysettrialtypesetting
+
+\appendtoks
+    \@@trialtypesetting\disabledmode
+\to \everyresettrialtypesetting
+
+% user ones
+
+\let\syst_mode_prefix\relax
+
+\unexpanded\def\preventmode{\unprotect\syst_modes_prevent}
+\unexpanded\def\enablemode {\unprotect\syst_modes_enable }
+\unexpanded\def\disablemode{\unprotect\syst_modes_disable}
+
+\unexpanded\def\globalpreventmode{\let\syst_mode_prefix\global\unprotect\syst_modes_prevent}
+\unexpanded\def\globalenablemode {\let\syst_mode_prefix\global\unprotect\syst_modes_enable }
+\unexpanded\def\globaldisablemode{\let\syst_mode_prefix\global\unprotect\syst_modes_disable}
+
+\def\syst_modes_prevent[#1]{\protect\rawprocesscommacommand[#1]\syst_modes_prevent_indeed\let\syst_mode_prefix\relax}
+\def\syst_modes_enable [#1]{\protect\rawprocesscommacommand[#1]\syst_modes_enable_indeed \let\syst_mode_prefix\relax}
+\def\syst_modes_disable[#1]{\protect\rawprocesscommacommand[#1]\syst_modes_disable_indeed\let\syst_mode_prefix\relax}
+
+\def\syst_modes_prevent_indeed#1%
+  {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
+   \syst_mode_prefix\lastnamedcs\preventedmode}
+
+\def\syst_modes_enable_indeed#1% we can speed it up by moving the new outside
+  {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
+   \ifnum\csname\??mode#1\endcsname=\preventedmode \else
+     \syst_mode_prefix\lastnamedcs\enabledmode
+   \fi}
+
+\def\syst_modes_disable_indeed#1%
+  {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
+   \ifnum\csname\??mode#1\endcsname=\preventedmode \else
+     \syst_mode_prefix\lastnamedcs\disabledmode
+   \fi}
+
+%D If you do a lot of mode testing, it makes sense to define modes (or disable them
+%D explicitly if unset. This makes testing twice as fast. Often one enables modes
+%D beforehand, in which case \type {\definemode} would reset the mode. The optional
+%D second argument \type {keep} will prevent changing the already set mode but defines
+%D it when undefined.
+
+\unexpanded\def\definemode
+  {\unprotect
+   \dodoubleempty\syst_modes_define}
+
+\def\syst_modes_define[#1][#2]%
+  {\protect
+   \edef\m_modes_asked{#2}%
+   \rawprocesscommacommand[#1]\syst_modes_define_indeed}
+
+\def\syst_modes_define_indeed#1%
+  {\ifcsname\??mode#1\endcsname
+     % already set
+   \else
+     \syst_modes_new{#1}
+   \fi
+   \ifx\m_modes_asked\v!keep
+     % not changes, disabled when undefined
+   \else
+     \csname\??mode#1\endcsname\ifx\m_modes_asked\v!yes\enabledmode\else\disabledmode\fi
+   \fi}
+
+% handy for mp
+
+\def\booleanmodevalue#1%
+  {\ifcsname\??mode#1\endcsname
+     \ifcase\lastnamedcs
+       \s!false
+     \or
+       \s!true
+     \else
+       \s!false
+     \fi
+   \else
+     \s!false
+   \fi}
+
+% check macros
+
+\newconditional\c_checked_mode
+
+% one
+
+\def\syst_modes_check_indeed#1%
+  {\ifcsname\??mode#1\endcsname
+     \ifcase\lastnamedcs\else
+       \let\syst_modes_check_step\gobbleoneargument
+     \fi
+   \fi}
+
+\def\syst_modes_check_nop#1#2#3%
+  {\let\syst_modes_check_step\syst_modes_check_indeed
+   \rawprocesscommacommand[#3]\syst_modes_check_step
+   \ifx\syst_modes_check_step\gobbleoneargument
+     \expandafter#1%
+   \else
+     \expandafter#2%
+   \fi}
+
+\def\syst_modes_check_yes#1#2#3%
+  {\ifcase\lastnamedcs
+     \expandafter#2%
+   \or
+     \expandafter#1%
+   \else
+     \expandafter#2%
+   \fi}
+
+\def\syst_modes_check_lr#1#2#3%
+  {\ifcsname\??mode#3\endcsname
+     \expandafter\syst_modes_check_yes
+   \else
+     \expandafter\syst_modes_check_nop
+   \fi#1#2{#3}}
+
+\def\syst_modes_check_ss#1#2[#3]%
+  {\ifcsname\??mode#3\endcsname
+     \expandafter\syst_modes_check_yes
+   \else
+     \expandafter\syst_modes_check_nop
+   \fi#1#2{#3}}
+
+% all
+
+\def\syst_modes_check_all_indeed#1%
+  {\ifcsname\??mode#1\endcsname
+     \ifcase\lastnamedcs
+       \let\syst_modes_check_all_step\gobbleoneargument
+     \or
+       % enabled
+     \else
+       \let\syst_modes_check_all_step\gobbleoneargument
+     \fi
+   \else
+     \let\syst_modes_check_all_step\gobbleoneargument
+   \fi}
+
+\def\syst_modes_check_all_lr#1#2#3%
+  {\let\syst_modes_check_all_step\syst_modes_check_all_indeed
+   \rawprocesscommacommand[#3]\syst_modes_check_all_step
+   \ifx\syst_modes_check_all_step\gobbleoneargument
+     \expandafter#2%
+   \else
+     \expandafter#1%
+   \fi}
+
+\def\syst_modes_check_all_ss#1#2[#3]%
+  {\let\syst_modes_check_all_step\syst_modes_check_all_indeed
+   \rawprocesscommacommand[#3]\syst_modes_check_all_step
+   \ifx\syst_modes_check_all_step\gobbleoneargument
+     \expandafter#2%
+   \else
+     \expandafter#1%
+   \fi}
+
+\unexpanded\def\doifelsemode    {\syst_modes_check_lr\firstoftwoarguments\secondoftwoarguments}
+\unexpanded\def\doifmode        {\syst_modes_check_lr\firstofoneargument\gobbleoneargument}
+\unexpanded\def\doifnotmode     {\syst_modes_check_lr\gobbleoneargument\firstofoneargument}
+\unexpanded\def\startmode       {\syst_modes_check_ss\donothing\syst_modes_stop_yes}
+\unexpanded\def\startnotmode    {\syst_modes_check_ss\syst_modes_stop_nop\donothing}
+\unexpanded\def\doifelseallmodes{\syst_modes_check_all_lr\firstoftwoarguments\secondoftwoarguments}
+\unexpanded\def\doifallmodes    {\syst_modes_check_all_lr\firstofoneargument\gobbleoneargument}
+\unexpanded\def\doifnotallmodes {\syst_modes_check_all_lr\gobbleoneargument\firstofoneargument}
+\unexpanded\def\startallmodes   {\syst_modes_check_all_ss\donothing\syst_modes_stop_all_yes}
+\unexpanded\def\startnotallmodes{\syst_modes_check_all_ss\syst_modes_stop_all_nop\donothing}
+
+\let\doifmodeelse     \doifelsemode
+\let\doifallmodeselse \doifelseallmodes
+
+\unexpanded\def\stopmode         {} % no relax
+\unexpanded\def\stopnotmode      {} % no relax
+\unexpanded\def\stopallmodes     {} % no relax
+\unexpanded\def\stopnotallmodes  {} % no relax
+
+\def\syst_modes_stop_yes    #1\stopmode       {}
+\def\syst_modes_stop_nop    #1\stopnotmode    {}
+\def\syst_modes_stop_all_yes#1\stopallmodes   {}
+\def\syst_modes_stop_all_nop#1\stopnotallmodes{}
+
+%D Pushing/popping:
+
+% \unexpanded\def\pushmode[#1]%
+%   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
+%    \expandafter\edef\csname\??modestack#1\endcsname{\number\csname\??mode#1\endcsname}%
+%    \expandafter\pushmacro\csname\??modestack#1\endcsname}
+%
+% \unexpanded\def\popmode[#1]%
+%   {\ifcsname\??modestack#1\endcsname
+%      \expandafter\popmacro\csname\??modestack#1\endcsname
+%      \csname\??mode#1\endcsname\csname\??modestack#1\endcsname\relax
+%    \fi}
+%
+% \def\pushsystemmode#1%
+%   {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
+%    \expandafter\edef\csname\??modestack\systemmodeprefix#1\endcsname{\number\csname\??mode\systemmodeprefix#1\endcsname}%
+%    \expandafter\pushmacro\csname\??modestack\systemmodeprefix#1\endcsname}
+%
+% \def\popsystemmode#1%
+%   {\ifcsname\??modestack\systemmodeprefix#1\endcsname
+%      \expandafter\popmacro\csname\??modestack\systemmodeprefix#1\endcsname
+%      \csname\??mode\systemmodeprefix#1\endcsname\csname\??modestack\systemmodeprefix#1\endcsname\relax
+%    \fi}
+
+\unexpanded\def\pushmode[#1]%
+  {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
+   \expandafter\edef\csname\??modestack#1\expandafter\endcsname\expandafter{\number\lastnamedcs}%
+   \expandafter\pushmacro\lastnamedcs}
+
+\unexpanded\def\popmode[#1]%
+  {\ifcsname\??modestack#1\endcsname
+     \expandafter\popmacro\lastnamedcs
+     \csname\??mode#1\endcsname\csname\??modestack#1\endcsname\relax
+   \fi}
+
+\def\pushsystemmode#1%
+  {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
+   \expandafter\edef\csname\??modestack\systemmodeprefix#1\expandafter\endcsname\expandafter{\number\lastnamedcs}%
+   \expandafter\pushmacro\lastnamedcs}
+
+\def\popsystemmode#1%
+  {\ifcsname\??modestack\systemmodeprefix#1\endcsname
+     \expandafter\popmacro\lastnamedcs
+     \csname\??mode\systemmodeprefix#1\endcsname\csname\??modestack\systemmodeprefix#1\endcsname\relax
+   \fi}
+
+%D Here is a relatively new variant of mode checking:
+%D
+%D \starttyping
+%D \enablemode[two]
+%D
+%D \startmodeset
+%D     [one]     {1}
+%D     [two]     {2}
+%D     [two]     {2}
+%D     [three]   {3}
+%D     [default] {?}
+%D \stopmodeset
+%D
+%D \startmodeset
+%D     [one]     {1}
+%D     [three]   {3}
+%D     [default] {?}
+%D \stopmodeset
+%D
+%D \startmodeset
+%D     [one] {
+%D         \input tufte
+%D     }
+%D     [two] {
+%D         \startmodes
+%D             [one]     {1}
+%D             [two]     {2}
+%D             [two]     {2}
+%D             [three]   {3}
+%D             [default] {?}
+%D         \stopmodes
+%D     }
+%D     [three] {
+%D         \input zapf
+%D     }
+%D     [default] {
+%D         \input ward
+%D     }
+%D \stopmodeset
+%D \stoptyping
+
+\newconditional\c_syst_modes_set_done % conditionals can be pushed/popped
+
+\unexpanded\def\startmodeset
+  {\pushmacro\c_syst_modes_set_done
+   \setfalse\c_syst_modes_set_done
+   \doifelsenextoptionalcs\syst_modes_set_start\syst_modes_set_quit}
+
+\def\syst_modes_set_start[#1]%
+  {\edef\m_mode_case{#1}%
+   \ifx\m_mode_case\s!default
+     \ifconditional\c_syst_modes_set_done
+       \doubleexpandafter\syst_modes_set_quit
+     \else
+       \doubleexpandafter\syst_modes_set_yes
+     \fi
+   \else
+     \singleexpandafter\syst_modes_set_check
+   \fi}
+
+\def\syst_modes_set_check
+  {\syst_modes_check_lr\syst_modes_set_yes\syst_modes_set_nop\m_mode_case}
+
+\def\syst_modes_set_yes#1%
+  {\settrue\c_syst_modes_set_done
+   #1%
+   \doifelsenextoptionalcs\syst_modes_set_start\syst_modes_set_quit}
+
+\def\syst_modes_set_nop#1%
+  {\doifelsenextoptionalcs\syst_modes_set_start\syst_modes_set_quit}
+
+\def\syst_modes_set_quit#1\stopmodeset
+  {\popmacro\c_syst_modes_set_done}
+
+\let\stopmodeset\relax
+
+%D Lets now set a mode:
+
+\enablemode[mkiv] \newsystemmode{mkiv} \setsystemmode{mkiv}
+
+%D Setups:
+
+\installcorenamespace{setup} % we can probably get rid of some :'s later on
+
+\unexpanded\def\startsetups{} % to please dep checker
+\unexpanded\def\stopsetups {} % to please dep checker
+
+% \expanded % will become obsolete
+%   {\def\expandafter\noexpand\csname\e!start\v!setups\endcsname
+%      {\begingroup\noexpand\doifnextoptionalcselse
+%         {\noexpand\dostartsetupsA\expandafter\noexpand\csname\e!stop\v!setups\endcsname}
+%         {\noexpand\dostartsetupsB\expandafter\noexpand\csname\e!stop\v!setups\endcsname}}}
+%
+% \letvalue{\e!stop\v!setups}\relax
+
+\unexpanded\def\setups{\doifelsenextbgroup\syst_setups_a\syst_setups_b} % {..} or [..]
+\unexpanded\def\setup {\doifelsenextbgroup\syst_setups  \syst_setups_c} % {..} or [..]
+
+\def\syst_setups_a  #1{\processcommacommand[#1]\syst_setups} % {..}
+\def\syst_setups_b[#1]{\processcommacommand[#1]\syst_setups} % [..]
+\def\syst_setups_c[#1]{\syst_setups{#1}} % [..]
+
+\letvalue{\??setup:\??empty}\gobbleoneargument
+
+\def\syst_setups#1% the grid option will be extended to other main modes
+  {\csname\??setup
+     \ifgridsnapping
+       \ifcsname\??setup\v!grid:#1\endcsname\v!grid:#1\else:\ifcsname\??setup:#1\endcsname#1\else\??empty\fi\fi
+     \else
+                                                           :\ifcsname\??setup:#1\endcsname#1\else\??empty\fi
+     \fi
+   \endcsname\empty} % takes one argument
+
+% no checking and we assume it being defined:
+
+\def\fastsetup                     #1{\csname\??setup:#1\endcsname\empty}
+\def\fastsetupwithargument         #1{\csname\??setup:#1\endcsname}    % swapped per 2015-08-30
+\def\fastsetupwithargumentswapped#1#2{\csname\??setup:#2\endcsname{#1}}% swapped per 2015-09-05
+
+% the next one is meant for \c!setups situations, hence the check for
+% a shortcut
+
+\let\m_syst_setups_asked\empty
+
+\def\doprocesslocalsetups#1% sort of public, fast local variant
+  {\edef\m_syst_setups_asked{#1}%
+   \ifx\m_syst_setups_asked\empty\else
+     \expandafter\syst_setups_process_local
+   \fi}
+
+\unexpanded\def\usesetupsparameter#1%
+  {\edef\m_syst_setups_asked{#1\c!setups}%
+   \ifx\m_syst_setups_asked\empty\else
+     \expandafter\syst_setups_process_local
+   \fi}
+
+% \def\syst_setups_process_local
+%   {\expandafter\processcommalist\expandafter[\m_syst_setups_asked]\syst_setups}
+
+% setups=S1
+% setups=lua(S2)
+% setups=S3
+% setups={S1,lua(S2),xml(test{123}),S3}
+
+\def\syst_setups_process_local
+  {\clf_autosetups{\m_syst_setups_asked}%
+   \relax} % let's prevent lookahead
+
+\def\autosetups#1%
+  {\clf_autosetups{#1}}
+
+\edef\setupwithargument#1% saves a few expansions
+  {\noexpand\csname\??setup:\noexpand\ifcsname\??setup:#1\endcsname#1\noexpand\else\??empty\noexpand\fi\endcsname}
+
+\edef\setupwithargumentswapped#1#2% saves a few expansions (can be \let)
+  {\noexpand\csname\??setup:\noexpand\ifcsname\??setup:#2\endcsname#2\noexpand\else\??empty\noexpand\fi\endcsname{#1}}
+
+\let\directsetup\syst_setups
+\let\texsetup   \syst_setups % nicer than \directsetup and more en par with xmlsetup and luasetup
+
+\unexpanded\def\doifelsesetups#1% to be done: grid
+  {\ifcsname\??setup:#1\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\let\doifsetupselse\doifelsesetups
+
+\unexpanded\def\doifsetups#1% to be done: grid
+  {\ifcsname\??setup:#1\endcsname
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\unexpanded\def\doifnotsetups#1% to be done: grid
+  {\ifcsname\??setup:#1\endcsname
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+% maybe some day:
+%
+% \unexpanded\def\fastsetupfallback#1#2%
+%   {\ifcsname\??setup:#1\endcsname
+%      \expandafter\lastnamedcs
+%    \else
+%      \csname\??setup:#2\expandafter\endcsname
+%    \fi}
+%
+% or
+%
+% \unexpanded\def\fastsetupfallback#1#2#3% prefix preferred fallback
+%   {\ifcsname\??setup:#1#2\endcsname
+%      \expandafter\lastnamedcs
+%    \else
+%      \csname\??setup:#1#3\expandafter\endcsname
+%    \fi}
+
+% \startluasetups oeps
+%     context("DONE")
+%     a = 1
+%     b = 1
+% \stopluasetups
+%
+% \luasetup{oeps}
+%
+% \startsetups xxx
+%     ziezo
+% \stopsetups
+%
+% \directsetup{xxx}
+%
+% \startxmlsetups zzz
+%     [[#1]]
+% \stopxmlsetups
+%
+% \xmlsetup{123}{zzz}
+%
+% \startbuffer[what]
+%     context("DONE")
+% \stopbuffer
+%
+% \startbuffer
+%     context("MORE")
+% \stopbuffer
+%
+% \ctxluabuffer[what]
+%
+% \ctxluabuffer
+
+\newtoks\t_syst_setups_tex \appendtoks
+    \catcode\endoflineasciicode \ignorecatcode
+\to \t_syst_setups_tex
+
+\newtoks\t_syst_setups_loc \appendtoks
+    \catcode\endoflineasciicode \ignorecatcode
+\to \t_syst_setups_loc
+
+\newtoks\t_syst_setups_raw \appendtoks
+    % nothing
+\to \t_syst_setups_raw
+
+\newtoks\t_syst_setups_xml \appendtoks
+    \catcode\endoflineasciicode\ignorecatcode
+    \catcode\barasciicode      \othercatcode
+\to \t_syst_setups_xml
+
+\newtoks\t_syst_setups_lua \appendtoks
+    \obeylualines
+    \obeyluatokens
+\to \t_syst_setups_lua
+
+% Is doglobal still relevant? Maybe always global? Or never? Anyway, it will become obsolete.
+
+\unexpanded\def\startluasetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_lua_a\syst_setups_start_lua_b} \let\stopluasetups              \relax
+\unexpanded\def\startxmlsetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_xml_a\syst_setups_start_xml_b} \let\stopxmlsetups              \relax
+\unexpanded\def\startrawsetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_raw_a\syst_setups_start_raw_b} \let\stoprawsetups              \relax
+\unexpanded\def\startlocalsetups{\begingroup\doifelsenextoptionalcs\syst_setups_start_loc_a\syst_setups_start_loc_b} \let\stoplocalsetups            \relax
+\unexpanded\def\startsetups     {\begingroup\doifelsenextoptionalcs\syst_setups_start_tex_a\syst_setups_start_tex_b} \let\stopsetups                 \relax
+
+\def\syst_setups_start_lua_indeed#1#2#3\stopluasetups  {\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
+\def\syst_setups_start_xml_indeed#1#2#3\stopxmlsetups  {\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
+\def\syst_setups_start_raw_indeed#1#2#3\stoprawsetups  {\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
+\def\syst_setups_start_loc_indeed#1#2#3\stoplocalsetups{\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
+\def\syst_setups_start_tex_indeed#1#2#3\stopsetups     {\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
+
+\def\syst_setups_start_lua{\ifsecondargument\expandafter\syst_setups_start_lua_c\else\expandafter\syst_setups_start_lua_d\fi}
+\def\syst_setups_start_xml{\ifsecondargument\expandafter\syst_setups_start_xml_c\else\expandafter\syst_setups_start_xml_d\fi}
+\def\syst_setups_start_raw{\ifsecondargument\expandafter\syst_setups_start_raw_c\else\expandafter\syst_setups_start_raw_d\fi}
+\def\syst_setups_start_loc{\ifsecondargument\expandafter\syst_setups_start_loc_c\else\expandafter\syst_setups_start_loc_d\fi}
+\def\syst_setups_start_tex{\ifsecondargument\expandafter\syst_setups_start_tex_c\else\expandafter\syst_setups_start_tex_d\fi}
+
+\def\syst_setups_start_lua_a{\the\t_syst_setups_lua\dodoubleempty\syst_setups_start_lua} % [ ] delimited
+\def\syst_setups_start_xml_a{\the\t_syst_setups_xml\dodoubleempty\syst_setups_start_xml} % [ ] delimited
+\def\syst_setups_start_raw_a{\the\t_syst_setups_raw\dodoubleempty\syst_setups_start_raw} % [ ] delimited
+\def\syst_setups_start_loc_a{\the\t_syst_setups_loc\dodoubleempty\syst_setups_start_loc} % [ ] delimited
+\def\syst_setups_start_tex_a{\the\t_syst_setups_tex\dodoubleempty\syst_setups_start_tex} % [ ] delimited
+
+% empty preserves inner {} (is removed by the \expandafter{#3})
+
+\def\syst_setups_start_lua_b#1 {\the\t_syst_setups_lua\syst_setups_start_lua_indeed\empty{#1}\empty} % space delimited
+\def\syst_setups_start_xml_b#1 {\the\t_syst_setups_xml\syst_setups_start_xml_indeed\empty{#1}\empty} % space delimited
+\def\syst_setups_start_raw_b#1 {\the\t_syst_setups_raw\syst_setups_start_raw_indeed\empty{#1}\empty} % space delimited
+\def\syst_setups_start_loc_b#1 {\the\t_syst_setups_loc\syst_setups_start_loc_indeed\empty{#1}\empty} % space delimited
+\def\syst_setups_start_tex_b#1 {\the\t_syst_setups_tex\syst_setups_start_tex_indeed\empty{#1}\empty} % space delimited
+
+\def\syst_setups_start_lua_c[#1][#2]{\the\t_syst_setups_lua\syst_setups_start_lua_indeed{#1}{#2}\empty} % [..] [..]
+\def\syst_setups_start_xml_c[#1][#2]{\the\t_syst_setups_xml\syst_setups_start_xml_indeed{#1}{#2}\empty} % [..] [..]
+\def\syst_setups_start_raw_c[#1][#2]{\the\t_syst_setups_raw\syst_setups_start_raw_indeed{#1}{#2}\empty} % [..] [..]
+\def\syst_setups_start_loc_c[#1][#2]{\the\t_syst_setups_loc\syst_setups_start_loc_indeed{#1}{#2}\empty} % [..] [..]
+\def\syst_setups_start_tex_c[#1][#2]{\the\t_syst_setups_tex\syst_setups_start_tex_indeed{#1}{#2}\empty} % [..] [..]
+
+\def\syst_setups_start_lua_d[#1][#2]{\the\t_syst_setups_lua\syst_setups_start_lua_indeed\empty{#1}\empty} % [..]
+\def\syst_setups_start_xml_d[#1][#2]{\the\t_syst_setups_xml\syst_setups_start_xml_indeed\empty{#1}\empty} % [..]
+\def\syst_setups_start_raw_d[#1][#2]{\the\t_syst_setups_raw\syst_setups_start_raw_indeed\empty{#1}\empty} % [..]
+\def\syst_setups_start_loc_d[#1][#2]{\the\t_syst_setups_loc\syst_setups_start_loc_indeed\empty{#1}\empty} % [..]
+\def\syst_setups_start_tex_d[#1][#2]{\the\t_syst_setups_tex\syst_setups_start_tex_indeed\empty{#1}\empty} % [..]
+
+\def\luasetup#1{\ctxlua{\syst_setups{#1}}}
+
+% % % %
+
+\def\systemsetupsprefix{*}
+
+\def\systemsetups#1{\syst_setups{\systemsetupsprefix#1}}
+
+\unexpanded\def\resetsetups[#1]% see x-fo for usage
+  {\ifcsname\??setup\ifgridsnapping\v!grid\fi:#1\endcsname
+     \dodoglobal\undefinevalue{\??setup\ifgridsnapping\v!grid\fi:#1}%
+   \else
+     \dodoglobal\undefinevalue{\??setup:#1}%
+   \fi}
+
+\unexpanded\def\showsetupsdefinition[#1]%
+  {\showvalue{\??setup:#1}} % temp hack for debugging
+
+%D \macros
+%D   {setvariables,getvariable,getvariabledefault}
+%D
+%D \starttyping
+%D \setvariables[xx][title=]
+%D \setvariables[xx][title=test test]
+%D \setvariables[xx][title=test $x=1$ test]   % fatal error reported
+%D \setvariables[xx][title=test {$x=1$} test]
+%D \setvariables[xx][title]                   % fatal error reported
+%D \setvariables[xx][titletitel=e]
+%D \stoptyping
+
+\installcorenamespace{variables}
+
+\unexpanded\def\setvariables {\dotripleargument\syst_variables_set[\getrawparameters ]}
+\unexpanded\def\setevariables{\dotripleargument\syst_variables_set[\getraweparameters]}
+\unexpanded\def\setgvariables{\dotripleargument\syst_variables_set[\getrawgparameters]}
+\unexpanded\def\setxvariables{\dotripleargument\syst_variables_set[\getrawxparameters]}
+
+\unexpanded\def\globalsetvariables % obsolete
+  {\dotripleargument\syst_variables_set[\globalgetrawparameters]}
+
+\def\syst_variables_set[#1][#2][#3]% tricky, test on s-pre-60
+  {\errorisfataltrue
+   \doifelse{#2}\currentvariableclass
+     {#1[\??variables#2:][#3]}%
+     {\pushmacro\currentvariableclass
+      \def\currentvariableclass{#2}%
+      \getvariable{#2}\s!reset
+      #1[\??variables#2:][#3]%
+      \getvariable{#2}\s!set
+      \popmacro\currentvariableclass}%
+   \errorisfatalfalse}
+
+\unexpanded\def\setvariable #1#2#3{\expandafter\def \csname\??variables#1:#2\endcsname{#3}}
+\unexpanded\def\setevariable#1#2#3{\expandafter\edef\csname\??variables#1:#2\endcsname{#3}}
+\unexpanded\def\setgvariable#1#2#3{\expandafter\gdef\csname\??variables#1:#2\endcsname{#3}}
+\unexpanded\def\setxvariable#1#2#3{\expandafter\xdef\csname\??variables#1:#2\endcsname{#3}}
+
+% \def\getvariable#1#2%
+%   {\csname
+%      \ifcsname\??variables#1:#2\endcsname\??variables#1:#2\else\s!empty\fi
+%    \endcsname}
+
+\def\getvariable#1#2%
+  {\begincsname\??variables#1:#2\endcsname}
+
+\def\showvariable#1#2%
+  {\showvalue{\begincsname\??variables#1:#2\endcsname}}
+
+\let\currentvariableclass\empty
+
+%D \macros
+%D   {checkvariables}
+%D
+%D I'll probably forget that this on exists.
+
+\let\m_syst_variables_temp\empty
+
+\def\checkvariables
+  {\dodoubleargument\syst_variables_check}
+
+\def\syst_variables_check
+  {\dogetparameters\syst_variables_check_value}
+
+\def\syst_variables_check_value#1#2#3%
+  {\ifcsname\??variables#1:#2\endcsname
+    %\edef\m_syst_variables_temp{\csname\??variables#1:#2\endcsname}%
+     \edef\m_syst_variables_temp{\lastnamedcs}%
+     \ifx\m_syst_variables_temp\empty
+       \expandafter\def\csname\??variables#1:#2\endcsname{#3}%
+     \fi
+   \else
+     \expandafter\def\csname\??variables#1:#2\endcsname{#3}%
+   \fi}
+
+%D \macros
+%D   {doifelsevariable,doifvariable,doifnotvariable}
+%D
+%D A few trivial macros:
+
+\unexpanded\def\doifelsevariable#1#2%
+  {\ifcsname\??variables#1:#2\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\let\doifvariableelse\doifelsevariable
+
+\unexpanded\def\doifvariable#1#2%
+  {\ifcsname\??variables#1:#2\endcsname
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\unexpanded\def\doifnotvariable#1#2%
+  {\ifcsname\??variables#1:#2\endcsname
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+%D A few more (we could use a public test variable so that we only need
+%D to expand once, assuming expandable variables):
+
+\letvalue{\??variables:}\empty
+
+\unexpanded\def\doifelseemptyvariable#1#2%
+ %{\edef\m_syst_string_one{\csname\??variables\ifcsname\??variables#1:#2\endcsname#1:#2\else:\fi\endcsname}%
+  {\edef\m_syst_string_one{\begincsname\??variables#1:#2\endcsname}%
+   \ifx\m_syst_string_one\empty
+     \expandafter\firstoffourarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\let\doifemptyvariableelse\doifelseemptyvariable
+
+\unexpanded\def\doifemptyvariable#1#2%
+ %{\edef\m_syst_string_one{\csname\??variables\ifcsname\??variables#1:#2\endcsname#1:#2\else:\fi\endcsname}%
+  {\edef\m_syst_string_one{\begincsname\??variables#1:#2\endcsname}%
+   \ifx\m_syst_string_one\empty
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\unexpanded\def\doifnotemptyvariable#1#2%
+ %{\edef\m_syst_string_one{\csname\??variables\ifcsname\??variables#1:#2\endcsname#1:#2\else:\fi\endcsname}%
+  {\edef\m_syst_string_one{\begincsname\??variables#1:#2\endcsname}%
+   \ifx\m_syst_string_one\empty
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+\def\getvariabledefault#1#2% #3% can be command
+ %{\executeifdefined{\??variables#1:#2}}% {#3}
+  {\ifcsname\??variables#1:#2\endcsname
+     \expandafter\expandafter\expandafter\lastnamedcs\expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+\unexpanded\def\setupenv
+  {\dotripleargument\syst_variables_set[\getrawparameters][\s!environment]}
+
+\unexpanded\def\doifelseenv{\doifelsevariable  \s!environment}
+\unexpanded\def\doifenv    {\doifvariable      \s!environment}
+\unexpanded\def\doifnotenv {\doifnotvariable   \s!environment}
+\def\env                   {\getvariable       \s!environment}
+\def\envvar                {\getvariabledefault\s!environment}
+
+\let\doifenvelse\doifelseenv
+
+%D \macros
+%D   {defineselector,setupselector,select,directselect}
+%D
+%D \starttyping
+%D \defineselector[caption][max=2,n=2]
+%D
+%D \start
+%D     \setupselector[caption][n=1]
+%D     \placelist[figure][criterium=all]
+%D \stop
+%D
+%D \starttext
+%D     \placefigure
+%D       {\select{caption}{zapf}{\input zapf \relax}}
+%D       {}
+%D \stoptext
+%D \stoptyping
+
+\installcorenamespace{selector}
+
+\unexpanded\def\defineselector{\dodoubleargument\syst_selectors_define}
+\unexpanded\def\setupselector {\dodoubleargument\syst_selectors_setup}
+
+% \def\syst_selectors_define[#1][#2]{\getparameters[\??selector#1][\c!max=\plusone,\c!n=\plusone,#2]}
+% \def\syst_selectors_setup [#1][#2]{\getparameters[\??selector#1][#2]}
+
+\def\syst_selectors_define[#1][{\getparameters[\??selector#1][\c!max=\plustwo,\c!n=\plusone,}
+\def\syst_selectors_setup [#1][{\getparameters[\??selector#1][}
+
+\unexpanded\def\select % unexpandable
+  {\directselect}
+
+% \def\directselect#1% expandable
+%   {\filterfromnext % maybe add an \expanded
+%      {\csname\??selector\ifcsname\??selector#1\c!max\endcsname#1\fi\c!max\endcsname}%
+%      {\csname\??selector\ifcsname\??selector#1\c!n  \endcsname#1\fi\c!n  \endcsname}}
+%
+% this is more efficient when the arguments are used a few times (or passed along):
+
+\def\directselect#1% expandable
+  {\expandafter\filterfromnext
+     \csname\??selector\ifcsname\??selector#1\c!max\endcsname#1\fi\c!max\expandafter\endcsname
+     \csname\??selector\ifcsname\??selector#1\c!n  \endcsname#1\fi\c!n  \endcsname}
+
+\letvalue{\??selector\c!max}\plusone
+\letvalue{\??selector\c!n  }\plusone
+
+\protect \endinput

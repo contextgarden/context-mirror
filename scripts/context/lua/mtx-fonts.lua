@@ -10,6 +10,13 @@ local getargument = environment.getargument
 local setargument = environment.setargument
 local givenfiles  = environment.files
 
+local suffix, addsuffix, removesuffix, replacesuffix = file.suffix, file.addsuffix, file.removesuffix, file.replacesuffix
+local nameonly, basename, joinpath, collapsepath = file.nameonly, file.basename, file.join, file.collapsepath
+local lower = string.lower
+
+local otfversion  = 2.825
+local otlversion  = 3.020
+
 local helpinfo = [[
 <?xml version="1.0"?>
 <application>
@@ -21,7 +28,8 @@ local helpinfo = [[
  <flags>
   <category name="basic">
    <subcategory>
-    <flag name="save"><short>save open type font in raw table</short></flag>
+    <flag name="save"><short>save open type font in raw table (ff format)</short></flag>
+    <flag name="convert"><short>save open type font in raw table (ctx format)</short></flag>
     <flag name="unpack"><short>save a tma file in a more readable format</short></flag>
    </subcategory>
    <subcategory>
@@ -40,6 +48,8 @@ local helpinfo = [[
     <flag name="info"><short>give more details</short></flag>
     <flag name="trackers" value="list"><short>enable trackers</short></flag>
     <flag name="statistics"><short>some info about the database</short></flag>
+    <flag name="names"><short>use name instead of unicodes</short></flag>
+    <flag name="cache" value="str"><short>use specific cache (otl or otf)</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -67,6 +77,11 @@ local helpinfo = [[
     <example><command>mtxrun --script font --list --file --all somename</command></example>
     <example><command>mtxrun --script font --list --file --pattern=*somename*</command></example>
    </subcategory>
+   <subcategory>
+    <example><command>mtxrun --script font --save texgyrepagella-regular.otf</command></example>
+    <example><command>mtxrun --script font --convert texgyrepagella-regular.otf</command></example>
+    <example><command>mtxrun --script font --convert --names texgyrepagella-regular.otf</command></example>
+   </subcategory>
   </category>
  </examples>
 </application>
@@ -84,10 +99,35 @@ local report = application.report
 
 if not fontloader then fontloader = fontforge end
 
-dofile(resolvers.findfile("font-otp.lua","tex")) -- we need to unpack the font for analysis
-dofile(resolvers.findfile("font-syn.lua","tex"))
-dofile(resolvers.findfile("font-trt.lua","tex"))
-dofile(resolvers.findfile("font-mis.lua","tex"))
+local function loadmodule(filename)
+    local fullname = resolvers.findfile(filename,"tex")
+    if fullname and fullname ~= "" then
+        dofile(fullname)
+    end
+end
+
+-- old loader code
+
+loadmodule("font-otp.lua") -- we need to unpack the font for analysis
+
+-- new loader code
+
+loadmodule("char-def.lua")
+
+loadmodule("font-otr.lua")
+loadmodule("font-cff.lua")
+loadmodule("font-ttf.lua")
+loadmodule("font-tmp.lua")
+loadmodule("font-dsp.lua") -- not yet in distribution
+loadmodule("font-oup.lua") -- not yet in distribution
+
+loadmodule("font-onr.lua")
+
+-- extra code
+
+loadmodule("font-syn.lua")
+loadmodule("font-trt.lua")
+loadmodule("font-mis.lua")
 
 scripts       = scripts       or { }
 scripts.fonts = scripts.fonts or { }
@@ -134,9 +174,9 @@ end
 
 function fonts.names.simple(alsotypeone)
     local simpleversion = 1.001
-    local simplelist = { "ttf", "otf", "ttc", "dfont", alsotypeone and "afm" or nil }
+    local simplelist = { "ttf", "otf", "ttc", alsotypeone and "afm" or nil }
     local name = "luatex-fonts-names.lua"
-    local path = file.collapsepath(caches.getwritablepath("..","..","generic","fonts","data"))
+    local path = collapsepath(caches.getwritablepath("..","..","generic","fonts","data"))
     fonts.names.filters.list = simplelist
     fonts.names.version = simpleversion -- this number is the same as in font-dum.lua
     report("generating font database for 'luatex-fonts' version %s",fonts.names.version)
@@ -154,7 +194,7 @@ function fonts.names.simple(alsotypeone)
             local format = simplelist[i]
             for tag, index in next, data.mappings[format] do
                 local s = specifications[index]
-                simplemappings[tag] = { s.rawname, s.filename, s.subfont }
+                simplemappings[tag] = { s.rawname or nameonly(s.filename), s.filename, s.subfont }
             end
         end
         if environment.arguments.nocache then
@@ -163,7 +203,7 @@ function fonts.names.simple(alsotypeone)
             dir.mkdirs(path)
             if lfs.isdir(path) then
                 report("saving names on cache path %a",path)
-                name = file.join(path,name)
+                name = joinpath(path,name)
             else
                 report("invalid cache path %a",path)
             end
@@ -204,21 +244,28 @@ local function fontweight(fw)
     end
 end
 
+local function indeed(f,s)
+    if s and s ~= "" then
+        report(f,s)
+    end
+end
+
 local function showfeatures(tag,specification)
     report()
-    report("mapping : %s",tag)
-    report("fontname: %s",specification.fontname)
-    report("fullname: %s",specification.fullname)
-    report("filename: %s",specification.filename)
-    report("family  : %s",specification.familyname or "<nofamily>")
-    report("weight  : %s",specification.weight or "<noweight>")
-    report("style   : %s",specification.style or "<nostyle>")
-    report("width   : %s",specification.width or "<nowidth>")
-    report("variant : %s",specification.variant or "<novariant>")
-    report("subfont : %s",subfont(specification.subfont))
-    report("fweight : %s",fontweight(specification.fontweight))
+    indeed("mapping   : %s",tag)
+    indeed("fontname  : %s",specification.fontname)
+    indeed("fullname  : %s",specification.fullname)
+    indeed("filename  : %s",specification.filename)
+    indeed("family    : %s",specification.familyname or "<nofamily>")
+ -- indeed("subfamily : %s",specification.subfamilyname or "<nosubfamily>")
+    indeed("weight    : %s",specification.weight or "<noweight>")
+    indeed("style     : %s",specification.style or "<nostyle>")
+    indeed("width     : %s",specification.width or "<nowidth>")
+    indeed("variant   : %s",specification.variant or "<novariant>")
+    indeed("subfont   : %s",subfont(specification.subfont))
+    indeed("fweight   : %s",fontweight(specification.fontweight))
     -- maybe more
-    local features = fonts.helpers.getfeatures(specification.filename,specification.format)
+    local features = fonts.helpers.getfeatures(specification.filename,not getargument("nosave"))
     if features then
         for what, v in table.sortedhash(features) do
             local data = features[what]
@@ -270,11 +317,12 @@ local function list_specifications(t,info)
                 local v = s[k]
                 local entry = t[v]
                 s[k] = {
-                    entry.familyname  or "<nofamily>",
-                    entry.weight      or "<noweight>",
-                    entry.style       or "<nostyle>",
-                    entry.width       or "<nowidth>",
-                    entry.variant     or "<novariant>",
+                    entry.familyname    or "<nofamily>",
+                 -- entry.subfamilyname or "<nosubfamily>",
+                    entry.weight        or "<noweight>",
+                    entry.style         or "<nostyle>",
+                    entry.width         or "<nowidth>",
+                    entry.variant       or "<novariant>",
                     entry.fontname,
                     entry.filename,
                     subfont(entry.subfont),
@@ -392,18 +440,23 @@ function scripts.fonts.justload()
 end
 
 function scripts.fonts.unpack()
-    local name = file.removesuffix(file.basename(givenfiles[1] or ""))
+    local name = removesuffix(basename(givenfiles[1] or ""))
     if name and name ~= "" then
-        local cache = containers.define("fonts", "otf", 2.742, true)
+        local cacheid   = getargument("cache") or "otl"
+        local cache     = containers.define("fonts", cacheid, otlversion, true) -- cache is temp
         local cleanname = containers.cleanname(name)
         local data = containers.read(cache,cleanname)
         if data then
-            local savename = file.addsuffix(cleanname .. "-unpacked","tma")
+            local savename = addsuffix(cleanname .. "-unpacked","tma")
             report("fontsave, saving data in %s",savename)
-            fonts.handlers.otf.enhancers.unpack(data)
+            if data.creator == "context mkiv" then
+                fonts.handlers.otf.readers.unpack(data)
+            else
+                fonts.handlers.otf.enhancers.unpack(data)
+            end
             io.savedata(savename,table.serialize(data,true))
         else
-            report("unknown file %a",name)
+            report("unknown file %a in cache %a",name,cacheid)
         end
     end
 end
@@ -415,9 +468,9 @@ function scripts.fonts.save()
         if fontblob then
             if fontblob.validation_state and table.contains(fontblob.validation_state,"bad_ps_fontname") then
                 report("ignoring bad fontname for %a",name)
-                savename = file.nameonly(name) .. "-bad-ps-name"
+                savename = nameonly(name) .. "-bad-ps-name"
             end
-            savename = file.addsuffix(string.lower(savename),"lua")
+            savename = addsuffix(lower(savename),"lua")
             report("fontsave, saving data in %a",savename)
             table.tofile(savename,fontloader.to_table(fontblob),"return")
             fontloader.close(fontblob)
@@ -426,7 +479,7 @@ function scripts.fonts.save()
     if name and name ~= "" then
         local filename = resolvers.findfile(name) -- maybe also search for opentype
         if filename and filename ~= "" then
-            local suffix = string.lower(file.suffix(filename))
+            local suffix = lower(suffix(filename))
             if suffix == 'ttf' or suffix == 'otf' or suffix == 'ttc' or suffix == "dfont" then
                 local fontinfo = fontloader.info(filename)
                 if fontinfo then
@@ -453,6 +506,36 @@ function scripts.fonts.save()
     end
 end
 
+function scripts.fonts.convert() -- new save
+    local name = givenfiles[1] or ""
+    local sub  = givenfiles[2] or ""
+    if name and name ~= "" then
+        local filename = resolvers.findfile(name) -- maybe also search for opentype
+        if filename and filename ~= "" then
+            local suffix = lower(suffix(filename))
+            if suffix == 'ttf' or suffix == 'otf' or suffix == 'ttc' then
+                local data = fonts.handlers.otf.readers.loadfont(filename,sub)
+                if data then
+                    fonts.handlers.otf.readers.compact(data)
+                    fonts.handlers.otf.readers.rehash(data,getargument("names") and "names" or "unicodes")
+                    local savename = replacesuffix(lower(data.metadata.fullname or filename),"lua")
+                    table.save(savename,data)
+                    report("font: %a saved as %a",filename,savename)
+                else
+                    report("font: %a not loaded",filename)
+                end
+            else
+                report("font: %a not saved",filename)
+            end
+        else
+            report("font: %a not found",name)
+        end
+    else
+        report("font: no name given")
+    end
+end
+
+
 if getargument("names") then
     setargument("reload",true)
     setargument("simple",true)
@@ -464,6 +547,8 @@ elseif getargument("reload") then
     scripts.fonts.reload()
 elseif getargument("save") then
     scripts.fonts.save()
+elseif getargument("convert") then
+    scripts.fonts.convert()
 elseif getargument("justload") then
     scripts.fonts.justload()
 elseif getargument("unpack") then

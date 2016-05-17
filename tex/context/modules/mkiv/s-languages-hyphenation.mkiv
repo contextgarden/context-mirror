@@ -1,0 +1,108 @@
+%D \module
+%D   [      file=s-languages-hyphenation, % s-lan-04,
+%D        version=2011.05.01,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Language Hyphenation,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D For Mojca.
+
+\startmodule[languages-hyphenation]
+
+\registerctxluafile{s-languages-hyphenation}{}
+
+\unprotect
+
+\unexpanded\def\startcomparepatterns
+  {\dosingleempty\module_languages_hyphenation_start}
+
+\unexpanded\def\module_languages_hyphenation_start[#1]%
+  {\begingroup
+   \par
+ % \language\zerocount
+ % \setupalign[\v!nothyphenated]%
+   \ctxlua{moduledata.languages.hyphenation.startcomparepatterns("#1")}}
+
+\unexpanded\def\stopcomparepatterns
+  {\par
+   \ctxlua{moduledata.languages.hyphenation.stopcomparepatterns()}%
+   \endgroup}
+
+\appendtoks
+    \clf_storelanguagestate % global
+\to \everylanguage
+
+\clf_storelanguagestate % initialize
+
+\installmodulecommandluasingle \showcomparepatternslegend {moduledata.languages.hyphenation.showcomparelegend}
+
+\protect
+
+\definecolor[hyphenation:1] [r=.8]
+\definecolor[hyphenation:2] [g=.8]
+\definecolor[hyphenation:3] [b=.8]
+\definecolor[hyphenation:4] [r=.4,g=.4]
+\definecolor[hyphenation:5] [r=.4,b=.4]
+
+\definecolor[hyphenation:en] [hyphenation:1]
+\definecolor[hyphenation:de] [hyphenation:2]
+\definecolor[hyphenation:nl] [hyphenation:3]
+\definecolor[hyphenation:fr] [hyphenation:4]
+\definecolor[hyphenation:sl] [hyphenation:5]
+
+\stopmodule
+
+\continueifinputfile{s-languages-hyphenation.mkiv}
+
+\usemodule[art-01]
+
+\starttext
+
+    \startcomparepatterns[en,sl]
+        {For Mojca Miklavec}
+        {For Mojca Miklavec}
+    \stopcomparepatterns
+
+    \startcomparepatterns[en]
+        {For Mojca Miklavec}
+        {For Mojca Miklavec}
+    \stopcomparepatterns
+
+    \startcomparepatterns[sl]
+        {For Mojca Miklavec}
+        {For Mojca Miklavec}
+    \stopcomparepatterns
+
+    \startcomparepatterns[en,sl]
+        {For Mojca Miklavec}\crlf
+        {For Mojca Miklavec}\crlf
+        {\de For Mojca Miklavec}\crlf
+        {For Mojca Miklavec}\crlf
+        {\fr For Mojca Miklavec}
+    \stopcomparepatterns
+
+    \page
+
+    \startsubject{Normal text}
+        \input tufte
+    \stopsubject
+
+    \startsubject{Compare hyphenation points of \showcomparepatternslegend[en,de]}
+        \startcomparepatterns
+           \input tufte \quad (\showcomparepatternslegend)
+        \stopcomparepatterns
+    \stopsubject
+
+    \startsubject{Compare hyphenation points}
+        \startcomparepatterns[de,nl,en,fr]
+            \input tufte \quad (\showcomparepatternslegend)
+        \stopcomparepatterns
+    \stopsubject
+
+\stoptext

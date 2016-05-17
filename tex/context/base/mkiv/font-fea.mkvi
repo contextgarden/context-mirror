@@ -1,0 +1,356 @@
+%D \module
+%D   [       file=font-sty,
+%D        version=2011.01.13, % (copied fron font-ini)
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=features,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Font Macros / Features}
+
+\unprotect
+
+%D Feature management.
+%D
+%D \starttyping
+%D \definefontfeature[smallcaps][smcp=yes,script=latn]
+%D \definefontfeature[smallcaps][SmallCapitals=yes,script=latn]
+%D \definefontfeature[smallcaps][Small Capitals=yes,script=latn]
+%D \definefontfeature[smallcaps][small capitals=yes,script=latn]
+%D \definefontfeature[smallcaps][smallcapitals=yes,script=latn]
+%D
+%D \definedfont[cambria*smallcaps] test
+%D
+%D \starttext
+%D \definefontfeature[basekerned][default][mode=base]
+%D \definefontfeature[nodekerned][default][mode=node]
+%D \definefontfeature[nonekerned][default][mode=base,kern=no]
+%D \setupcolors[state=start]
+%D \startoverlay
+%D     {\vbox{\red  \definedfont[Serif*nonekerned at 12pt]\input tufte }}
+%D     {\vbox{\blue \definedfont[Serif*basekerned at 12pt]\input tufte }}
+%D     {\vbox{\green\definedfont[Serif*nodekerned at 12pt]\input tufte }}
+%D \stopoverlay
+%D \stoptext
+%D
+%D \enabletrackers[otf.kerns]
+%D
+%D \definefontfeature[withkern][default][mode=node]
+%D \definefontfeature[nokern]  [default][mode=node,kern=no]
+%D \definefontfeature[single]  [default][mode=node,cpsp=yes]
+%D \definefontfeature[simple]  [default][mode=node,cpsp=yes,kern=no]
+%D
+%D {\definedfont[Serif*default] [FGFGFGFGFGFGFGFGFGFGFGFGFG ABCDEFGHIJKLMNOPQRSTUVWXYZ] \par}
+%D {\definedfont[Serif*nokern]  [FGFGFGFGFGFGFGFGFGFGFGFGFG ABCDEFGHIJKLMNOPQRSTUVWXYZ] \par}
+%D {\definedfont[Serif*single]  [FGFGFGFGFGFGFGFGFGFGFGFGFG ABCDEFGHIJKLMNOPQRSTUVWXYZ] \par}
+%D {\definedfont[Serif*simple]  [FGFGFGFGFGFGFGFGFGFGFGFGFG ABCDEFGHIJKLMNOPQRSTUVWXYZ] \par}
+%D \stoptyping
+
+% \definefontfeature[slanted]  [default][slant=.25]
+% \definefontfeature[stretched][default][stretch=2]
+%
+% \start \definedfont[SerifBold*slanted   at 20pt] \ruledhbox{Test!} \stop
+% \start \definedfont[SerifBold*stretched at 20pt] \ruledhbox{Test!} \stop
+%
+% \definefontfeature[default]     [liga=yes,texligatures=yes,texquotes=yes]
+% \definefontfeature[default-caps][liga=yes,texligatures=yes,texquotes=yes,smcp=yes,script=latn]
+%
+% \starttypescript [serif] [palatino-nova-regular] [name]
+%     \definefontsynonym[Serif]    [palatinonova-regular][features=default]
+%     \definefontsynonym[SerifCaps][palatinonova-regular][features=default-caps] % also sets Serif
+% \stoptypescript
+%
+% \starttypescript [serif] [palatino-nova-regular] [name]
+%     \definefontsynonym[Serif]          [palatinonova-regular*default]
+%     \definefontsynonym[SerifCaps]      [palatinonova-regular*default-caps]
+% \stoptypescript
+%
+% \definetypeface[mainface][rm][serif][palatino-nova-regular][default] \setupbodyfont[mainface]
+%
+% \starttext
+%   ``Test'' -- --- ff fi fl \sc ``Test'' -- --- ff fi fl
+% \stoptext
+%
+% \definefontfeature
+%   [default-base]
+%   [script=latn,language=dflt,liga=yes,kern=yes,tlig=yes,trep=yes]
+% \definefontfeature
+%   [default-node]
+%   [script=latn,language=dflt,liga=yes,kern=yes,tlig=yes,trep=yes,mode=node]
+% \definefontfeature
+%   [default-none]
+%   [script=latn,language=dflt,liga=yes,kern=no, tlig=yes,trep=yes]
+%
+% \startoverlay
+%     {\vtop{\color[red]  {\font\test=name:lmroman12regular*default-node \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[green]{\font\test=name:lmroman12regular*default-base \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[blue] {\font\test=name:lmroman12regular*default-none \test \input ward \input zapf \input linden }}}
+% \stopoverlay
+%
+% \blank
+%
+% \startoverlay
+%     {\vtop{\color[red]  {\font\test=name:texgyrepagella*default-node \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[green]{\font\test=name:texgyrepagella*default-base \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[blue] {\font\test=name:texgyrepagella*default-none \test \input ward \input zapf \input linden }}}
+% \stopoverlay
+%
+% \blank
+%
+% \startoverlay
+%     {\vtop{\color[red]  {\font\test=name:palatinonovaregular*default-node \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[green]{\font\test=name:palatinonovaregular*default-base \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[blue] {\font\test=name:palatinonovaregular*default-none \test \input ward \input zapf \input linden }}}
+% \stopoverlay
+%
+% \startoverlay
+%     {\vtop{\color[red]  {\font\test=name:OfficinaSerifBookITC*default-node \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[green]{\font\test=name:OfficinaSerifBookITC*default-base \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[blue] {\font\test=name:OfficinaSerifBookITC*default-none \test \input ward \input zapf \input linden }}}
+% \stopoverlay
+%
+% \definefontfeature[superdefault][default][compose=yes]
+%
+% {\font\oeps=name:lmroman10regular*default      at 30pt \oeps test \char7683}
+% {\font\oeps=name:lmroman10regular*superdefault at 30pt \oeps test \char7683}
+
+\unexpanded\def\definefontfeature
+  {\dotripleargument\font_basics_define_font_feature}
+
+\def\font_basics_define_font_feature[#featureset][#parent][#settings]%
+  {\clf_definefontfeature{#featureset}{#parent}{#settings}}
+
+\unexpanded\def\fontfeatureslist
+  {\dodoubleargument\font_basics_features_list}
+
+\def\font_basics_features_list[#name][#separator]% todo: arg voor type
+  {\clf_featurelist{#name}{\detokenize{#separator}}}
+
+\attribute\zerocount\zerocount % first in list, so fast match
+
+% beware: these are global features on top of existing font features
+
+\let\currentfeature      \s!current
+\let\m_font_feature_list \s!current
+\let\m_font_feature_asked\empty
+
+\newconstant\c_font_feature_state
+
+% hashing at this end is slower
+
+\unexpanded\def\addfeature        {\doifelsenextoptionalcs\font_feature_add_yes      \font_feature_add_nop      }
+\unexpanded\def\subtractfeature   {\doifelsenextoptionalcs\font_feature_subtract_yes \font_feature_subtract_nop }
+\unexpanded\def\replacefeature    {\doifelsenextoptionalcs\font_feature_replace_yes  \font_feature_replace_nop  }
+\unexpanded\def\resetandaddfeature{\doifelsenextoptionalcs\font_feature_reset_add_yes\font_feature_reset_add_nop}
+\unexpanded\def\feature           {\doifelsenextoptionalcs\font_feature_yes          \font_feature_nop          }
+
+\unexpanded\def\font_feature_add_yes      [#feature]{\edef\m_font_feature_asked{#feature}\font_feature_add}
+\unexpanded\def\font_feature_add_nop        #feature{\edef\m_font_feature_asked{#feature}\font_feature_add}
+
+\unexpanded\def\font_feature_subtract_yes [#feature]{\edef\m_font_feature_asked{#feature}\font_feature_subtract}
+\unexpanded\def\font_feature_subtract_nop   #feature{\edef\m_font_feature_asked{#feature}\font_feature_subtract}
+
+\unexpanded\def\font_feature_replace_yes  [#feature]{\edef\m_font_feature_asked{#feature}\font_feature_replace}
+\unexpanded\def\font_feature_replace_nop    #feature{\edef\m_font_feature_asked{#feature}\font_feature_replace}
+
+\unexpanded\def\font_feature_reset_add_yes[#feature]{\edef\m_font_feature_asked{#feature}\font_feature_reset_add}
+\unexpanded\def\font_feature_reset_add_nop  #feature{\edef\m_font_feature_asked{#feature}\font_feature_reset_add}
+
+\let\doaddfeature        \font_feature_add_nop       % low level faster ones
+\let\dosubtractfeature   \font_feature_subtract_nop
+\let\doreplacefeature    \font_feature_replace_nop
+\let\doresetandaddfeature\font_feature_reset_add_nop
+
+\unexpanded\def\font_feature_add
+  {\ifnum\c_font_feature_state=\plusone
+     \ifx\m_font_feature_asked\currentfeature\else
+       \font_feature_add_indeed
+     \fi
+   \else
+     \font_feature_add_indeed
+   \fi}
+
+\unexpanded\def\font_feature_add_indeed
+  {\clf_addfeature{\m_font_feature_list}{\m_font_feature_asked}%
+   \edef\m_font_feature_list{\m_font_feature_list+\m_font_feature_asked}% also + at the lua end
+   \c_font_feature_state\plusone
+   \let\currentfeature\m_font_feature_asked}
+
+\unexpanded\def\font_feature_subtract
+  {\ifnum\c_font_feature_state=\minusone
+     \ifx\m_font_feature_asked\currentfeature\else
+       \font_feature_subtract_indeed
+     \fi
+   \else
+     \font_feature_subtract_indeed
+   \fi}
+
+\unexpanded\def\font_feature_subtract_indeed
+  {\clf_subtractfeature{\m_font_feature_list}{\m_font_feature_asked}%
+   \edef\m_font_feature_list{\m_font_feature_list-\m_font_feature_asked}% also - at the lua end
+   \c_font_feature_state\minusone
+   \let\currentfeature\m_font_feature_asked}
+
+\unexpanded\def\font_feature_replace
+  {\ifnum\c_font_feature_state=\zerocount
+     \ifx\m_font_feature_asked\currentfeature\else
+       \font_feature_replace_indeed
+     \fi
+   \else
+     \font_feature_replace_indeed
+   \fi}
+
+\unexpanded\def\font_feature_replace_indeed
+  {\clf_replacefeature{\m_font_feature_list}{\m_font_feature_asked}%
+   \edef\m_font_feature_list{\m_font_feature_list=\m_font_feature_asked}% also = at the lua end
+   \c_font_feature_state\zerocount
+   \let\currentfeature\m_font_feature_asked}
+
+\unexpanded\def\resetfeature
+  {\ifx\currentfeature\s!current \else
+     \font_feature_reset_indeed
+   \fi}
+
+\unexpanded\def\font_feature_reset_indeed
+  {\let\m_font_feature_asked\empty
+   \let\currentfeature      \s!current
+   \let\m_font_feature_list \s!current
+   \clf_resetfeature}
+
+\unexpanded\def\revivefeature
+  {\ifx\currentfeature\s!current \else
+     \font_feature_revive_indeed
+   \fi}
+
+\unexpanded\def\font_feature_revive_indeed
+  {\clf_revivefeature{\m_font_feature_list}}
+
+\unexpanded\def\font_feature_reset_add
+  {\ifnum\c_font_feature_state=\plusone
+     \ifx\m_font_feature_asked\currentfeature\else
+       \font_feature_reset_add_indeed
+     \fi
+   \else
+     \font_feature_reset_add_indeed
+   \fi}
+
+\unexpanded\def\font_feature_reset_add_indeed
+  {\clf_addfeature{\s!current}{\m_font_feature_asked}%
+   \edef\m_font_feature_list{\s!current+\m_font_feature_asked}% also + at the lua end
+   \c_font_feature_state\plusone
+   \let\currentfeature\m_font_feature_asked}
+
+\installcorenamespace{featureyes}
+\installcorenamespace{featurenop}
+
+%\unexpanded\def\font_feature_yes[#method]{\csname\??featureyes\ifcsname\??featureyes#method\endcsname#method\else\s!unknown\fi\endcsname}
+%\unexpanded\def\font_feature_nop  #method{\csname\??featurenop\ifcsname\??featurenop#method\endcsname#method\else\s!unknown\fi\endcsname}
+
+\unexpanded\def\font_feature_yes[#method]{\begincsname\??featureyes#method\endcsname}
+\unexpanded\def\font_feature_nop  #method{\begincsname\??featurenop#method\endcsname}
+
+\letvalue{\??featureyes +}\addfeature
+\letvalue{\??featurenop +}\addfeature
+\letvalue{\??featureyes -}\subtractfeature
+\letvalue{\??featurenop -}\subtractfeature
+\letvalue{\??featureyes =}\replacefeature
+\letvalue{\??featurenop =}\replacefeature
+\letvalue{\??featureyes !}\resetandaddfeature
+\letvalue{\??featurenop !}\resetandaddfeature
+\letvalue{\??featureyes >}\revivefeature
+\letvalue{\??featurenop >}\revivefeature
+\letvalue{\??featureyes <}\resetfeature
+\letvalue{\??featurenop <}\resetfeature
+
+\letvalue{\??featureyes\v!more   }\addfeature      % add set to previous set and combine with font set
+\letvalue{\??featurenop\v!more   }\addfeature
+\letvalue{\??featureyes\v!less   }\subtractfeature % subtract set from previous set and combine with font set
+\letvalue{\??featurenop\v!less   }\subtractfeature
+\letvalue{\??featureyes\v!new    }\replacefeature  % replace font set
+\letvalue{\??featurenop\v!new    }\replacefeature
+\letvalue{\??featureyes\v!reset  }\resetfeature    % forget sets and revert to font set
+\letvalue{\??featurenop\v!reset  }\resetfeature
+\letvalue{\??featureyes\v!default}\revivefeature   % make sure the current set is used on top of the font set
+\letvalue{\??featurenop\v!default}\revivefeature
+\letvalue{\??featureyes\v!old    }\revivefeature
+\letvalue{\??featurenop\v!old    }\revivefeature
+\letvalue{\??featureyes\v!local  }\resetandaddfeature
+\letvalue{\??featurenop\v!local  }\resetandaddfeature
+\letvalue{\??featureyes\s!unknown}\empty
+\letvalue{\??featurenop\s!unknown}\empty
+
+% just for old times sake:
+
+\unexpanded\def\featureattribute#feature%
+  {\clf_featureattribute{#feature}}
+
+\unexpanded\def\setfontfeature#feature%
+  {\edef\currentfeature{#feature}%
+   \let\m_font_feature_list\currentfeature
+   \clf_setfontfeature{\currentfeature}}
+
+\let\resetfontfeature\resetfeature
+
+%  these are obsolete (don't use them any longer)
+
+\let\addfontfeaturetoset        \font_feature_add_nop
+\let\subtractfontfeaturefromset \font_feature_subtract_nop
+\let\addfontfeaturetofont       \font_feature_add_nop
+\let\subtractfontfeaturefromfont\font_feature_subtract_nop
+
+\let\setff\setfontfeature
+\let\addfs\addfontfeaturetoset
+\let\subfs\subtractfontfeaturefromset
+\let\addff\addfontfeaturetofont
+\let\subff\subtractfontfeaturefromfont
+
+%D \macros
+%D   {os}
+%D
+%D In good old \TEX, the old style numerals were often taken
+%D from the math fonts. No longer.
+
+\definefontfeature
+  [just-os]
+  [mode=node,onum=yes]
+
+%unexpanded\def\sc{\setfontfeature{smallcaps}}
+\unexpanded\def\os{\setfontfeature{just-os}}
+
+% \doifelsecurrentfonthasfeature{smcp}{YES}{NO}
+% \doifelsecurrentfonthasfeature{crap}{YES}{NO}
+% \doifelsecurrentfonthasfeature{kern}{YES}{NO}
+
+\def\doifelsecurrentfonthasfeature#feature%
+  {\clf_doifelsecurrentfonthasfeature{#feature}}
+
+\let\doifcurrentfonthasfeatureelse\doifelsecurrentfonthasfeature
+
+% new:
+
+\clf_registerlanguagefeatures
+
+% also new
+
+\unexpanded\def\useaddfontfeatureparameter#namespace% faster local variant
+  {\edef\m_font_feature_asked{#namespace\c!features}%
+   \ifx\m_font_feature_asked\empty\else
+     \font_feature_add
+   \fi}
+
+% let's put this here:
+
+\unexpanded\def\slashedzero
+  {\dontleavehmode
+   \begingroup
+  %\addff{zero}
+   \font_feature_add_nop{zero}%
+   0%
+   \endgroup}
+
+\protect \endinput

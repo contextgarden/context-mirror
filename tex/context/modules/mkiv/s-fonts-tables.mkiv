@@ -1,0 +1,38 @@
+%D \module
+%D   [      file=s-fonts-tables,
+%D        version=2011.10.10,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Basic Font Data Tables,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% todo: make a mtxrun --script font <name> option
+
+\startmodule[fonts-tables]
+
+\registerctxluafile{s-fonts-tables}{}
+
+\installmodulecommandluasingle \showfonttables         {moduledata.fonts.tables.showall}
+\installmodulecommandluasingle \showfontproperties     {moduledata.fonts.tables.showproperties}
+\installmodulecommandluasingle \showfontparameters     {moduledata.fonts.tables.showparameters}
+\installmodulecommandluasingle \showfontpositionings   {moduledata.fonts.tables.showpositionings}
+\installmodulecommandluasingle \showfontsubstitutions  {moduledata.fonts.tables.showsubstitutions}
+\installmodulecommandluasingle \showfontunicodevariants{moduledata.fonts.tables.showunicodevariants}
+
+\stopmodule
+
+\continueifinputfile{s-fonts-tables.mkiv}
+
+\usemodule[art-01]
+
+\setupbodyfont
+  [cambria]
+
+\starttext
+    \showfonttables[title=Cambria]
+\stoptext

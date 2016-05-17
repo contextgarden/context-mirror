@@ -1,0 +1,814 @@
+%D \module
+%D   [       file=m-visual,
+%D        version=2000.01.10,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Visualization and Faking,
+%D         author={Hans Hagen \& Ton Otten},
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D Much will probably be replaced by \LUA\ based solutions which is
+%D rather trivial and fun doing.
+
+%D This module collect a few more visual debugger features. I
+%D needed them for manuals and styles. The macros are documented
+%D in a my way document.
+
+\definecolor[fakerulecolor]     [black]
+\definecolor[fakebaselinecolor] [green]
+\definecolor[fakeparindentcolor][blue]
+
+\newif\iffakebaseline \fakebaselinetrue
+\newif\iffaketrigger  \faketriggerfalse
+
+\unexpanded\def\fakerule#1%
+  {\strut
+   \begingroup
+   \directcolored[fakerulecolor]%
+   \iffakebaseline
+     \vrule\s!height1.25\exheight\s!depth-.05\exheight\s!width#1%
+     \kern-#1%
+     \vrule\s!height-.05\exheight\s!depth .25\exheight\s!width#1%
+   \else
+     \vrule\s!height1.25\exheight\s!depth .25\exheight\s!width#1%
+   \fi
+   \endgroup
+   \allowbreak}
+
+\unexpanded\def\dorandomrecurse#1%
+  {\getrandomcount\scratchcounter{1}{#1}%
+   \dorecurse\scratchcounter}
+
+% can be used in hbox, so %'s are really needed
+
+\unexpanded\def\fakelines#1#2% min max / 3 10
+  {\fakeparindent
+   \scratchdimen\hsize
+   \ifindentation
+     \advance\scratchdimen -\parindent
+   \fi
+   \fakerule\scratchdimen\break
+   \getrandomcount\scratchcounter{\ifcase0#1 3\else#1\fi}{\ifcase0#2 10\else#2\fi}%
+   \dorecurse\scratchcounter{\fakerule\hsize}%
+   \getrandomdimen\scratchdimen{.25\hsize}\hsize
+   \fakerule\scratchdimen
+   \par} % indeed
+
+\unexpanded\def\fakewords
+  {\ifvmode\fakeparindent\fi\onlyfakewords}
+
+\definepalet
+  [fakerule]
+  [fr1c=darkred,
+   fr2c=darkgreen,
+   fr3c=darkblue,
+   fr4c=darkyellow,
+   fr5c=darkgray,
+   fr6c=darkmagenta,
+   fr7c=darkcyan,
+   fr8c=darkorange]
+
+\unexpanded\def\onlyfakewords#1#2% min max / 10 40
+  {\getrandomcount\scratchcounter{\ifcase0#1 10\else#1\fi}{\ifcase0#2 40\else#2\fi}%
+   \dofakewords\scratchcounter
+   } % no \par
+
+\unexpanded\def\fakenwords#1#2% words seed
+  {\fakeparindent
+   \getrandomseed\fakedwordseed
+   \setrandomseed{\ifcase0#2 #1\else#2\fi}%
+   \dofakewords{#1}%
+   \setrandomseed\fakedwordseed
+   } % no \par
+
+\def\dofakewords#1%
+  {\bgroup
+   \dorecurse{#1}
+     {\iffaketrigger\signalcharacter\fi % so that e.g. line numbering works
+      \getrandomcount\scratchcounter{1}{5}%
+      \dorecurse\scratchcounter
+        {\getrandomdimen\scratchdimen{.5em}{1.25em}%
+         \fakerule\scratchdimen}%
+      \space}%
+   \removeunwantedspaces
+   \egroup}
+
+\def\doshowfakewords#1%
+  {\bgroup
+   \setuppalet[fakerule]%
+   \definecolor[fakerulecolor]%
+   \dorecurse{#1}
+     {\getrandomcount\scratchcounter{1}{5}%
+      \dorecurse\scratchcounter
+        {\getrandomdimen\scratchdimen{.5em}{1.25em}%
+         \color[fr\recurselevel c]{\fakerule\scratchdimen}}%
+      \space}%
+   \removeunwantedspaces
+   \egroup}
+
+\unexpanded\def\showfakewords
+  {\let\dofakewords\doshowfakewords}
+
+\unexpanded\def\fakeword
+  {\fakewords{1}{1}} % no \plusone
+
+\unexpanded\def\fakeparindent
+  {\noindent
+   \ifindentation
+     \ifx\dofakedroppedcaps\relax
+       {\fakeparindentcolor
+        \vrule
+          \s!height \strutheight % not longer .5ex
+          \s!depth  \strutdepth  % not longer 0pt
+          \s!width  \parindent}%
+     \else
+       \dofakedroppedcaps \let\dofakedroppedcaps\relax
+     \fi
+%    \else
+%      \dontleavehmode
+   \fi}
+
+\let\dofakedroppedcaps\relax
+
+\unexpanded\def\fakedroppedcaps#1%
+  {\ifnum#1>0
+     \def\dofakedroppedcaps
+       {\setbox\scratchbox\hpack
+          {\setbox\scratchbox\hpack{W}%
+           \scratchdimen#1\lineheight
+           \advance\scratchdimen -\lineheight
+           \advance\scratchdimen \dp\strutbox
+           \vrule
+             \s!width#1\wd\scratchbox
+             \s!height\ht\scratchbox
+             \s!depth\scratchdimen}%
+        \ht\scratchbox\ht\strutbox
+        \dp\scratchbox\dp\strutbox
+        \hangindent\wd\scratchbox
+        \advance\hangindent .5em
+        \wd\scratchbox\hangindent
+        \hangafter-#1\noindent
+        \llap{\fakeparindentcolor\box\scratchbox}}%
+   \fi}
+
+\unexpanded\def\fakefigure
+  {\dodoubleempty\dofakefigure}
+
+\def\dofakefigure[#1][#2]#3#4#5#6% [] [] minwidth maxwidth minheight maxheight
+  {\getvalue{\e!place\v!figure}
+     [#1][#2]%
+     {\freezerandomseed
+      \let\endstrut\relax
+      \let\begstrut\relax
+      \doifelseinset{#1}{\v!left,\v!right}
+        {\fakewords{2}{4}}
+        {\fakewords{4}{10}}}%
+     {\doifinset{#1}{\v!left,\v!right}
+        {\dimen0=.75\dimen0
+         \ifdim\dimen0>.6\hsize \dimen0=.5\hsize\fi
+         \ifdim\dimen0<.3\hsize \dimen0=.3\hsize\fi}%
+      \framed
+        [\c!width=\dimen0,
+         \c!height=\dimen2,
+         \c!frame=\v!off,
+         \c!background=\v!color,
+         \c!backgroundcolor=fakeparindentcolor]
+        {\bf\white#1}}%
+   \defrostrandomseed}
+
+\unexpanded\def\fakeimage#1#2#3#4%
+  {\getrandomdimen{\dimen0}{#1}{#3}%
+   \getrandomdimen{\dimen2}{#2}{#4}%
+   \framed
+     [\c!width=\dimen0,
+      \c!height=\dimen2,
+      \c!frame=\v!off,
+      \c!background=\v!color,
+      \c!backgroundcolor=fakeparindentcolor]
+     {}}
+
+\unexpanded\def\fakeformula
+  {\dimen0\zeropoint
+   \getrandomcount\scratchcounter{3}{6}%
+   \dorecurse\scratchcounter
+     {\getrandomdimen\scratchdimen{0.5em}{1.5em}%
+      \mathord{\red\fakerule\scratchdimen}%
+      \ifnum\recurselevel<\scratchcounter+\fi
+      \advance\scratchdimen\dimen0}%
+   =\mathinner{\red\fakerule\scratchdimen}}
+
+\unexpanded\def\fakespacingformula
+  {\color[fakebaselinecolor]{\ruledbaseline}\fakeformula}
+
+%D test \type{\bodyfontgrid}\space test
+%D test \type{\emexgrid}    \space test
+
+\unexpanded\def\smashedgrid
+  {\dosingleempty\dosmashedgrid}
+
+\def\dosmashedgrid[#1]%
+  {\hsmashed
+     {\setbox\scratchbox=\hpack
+        {\basegrid
+           [\c!nx=10,\c!ny=10,\c!dx=1,\c!dy=1,
+            \c!unit=\bodyfontsize,#1]}%
+      \hpack to \zeropoint
+        {\hss\lower.5\ht\scratchbox\box\scratchbox\hss}%
+      \hpack to \zeropoint
+        {\hss
+         \black\vrule\s!width6\linewidth\s!height3\linewidth\s!depth3\linewidth
+         \hss}}}
+
+\unexpanded\def\bodyfontgrid
+  {\hpack
+     {{\linewidth.1pt\yellow\smashedgrid[\c!nx=30,\c!ny=30,\c!scale=.3333]}%
+      {\linewidth.2pt\green \smashedgrid[\c!nx=20,\c!ny=20,\c!scale=.5]}%
+      {\linewidth.3pt\red   \smashedgrid[\c!nx=10,\c!ny=10,\c!scale=1]}}}
+
+\unexpanded\def\emexgrid
+  {\hpack
+     {{\linewidth.15pt\green\smashedgrid[\c!nx=20,\c!ny=20,\c!unit=ex]}%
+      {\linewidth.15pt\red  \smashedgrid[\c!nx=10,\c!ny=10,\c!unit=em]}}}
+
+%D For Mojca:
+
+\unexpanded\def\simplethesis
+  {\setupsystem[random=1234]
+   \title{\fakewords{3}{4}}
+   \placelist[chapter,section]
+   \dorecurse{6}
+     {\chapter{\fakewords{5}{10}}
+      \dorecurse{5}
+        {\section{\fakewords{2}{5}}
+         \dorecurse{2}
+           {\dorecurse{3}{\fakewords{100}{200}\endgraf}
+            \placefigure{\fakewords{8}{15}}{\fakeimage{5cm}{3cm}{10cm}{5cm}}
+            \dorecurse{2}{\fakewords{100}{200}\endgraf}}}}}
+
+%D Moved code:
+
+%D \module
+%D   [       file=trac-vis, % was core-vis,
+%D        version=1996.06.01,
+%D          title=\CONTEXT\ Tracking Macros,
+%D       subtitle=Visualization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module adds some more visualization cues to the ones
+%D supplied in the support module.
+%D
+%D %\everypar   dual character, \the\everypar and \everypar=
+%D %\hrule      cannot be grabbed in advance, switches mode
+%D %\vrule      cannot be grabbed in advance, switches mode
+%D %
+%D %\indent     only explicit ones
+%D %\noindent   only explicit ones
+%D %\par        only explicit ones
+%D
+%D %\leftskip   only if explicit one
+%D %\rightskip  only if explicit one
+
+\writestatus{loading}{ConTeXt Tracking Macros / Visualization}
+
+\unprotect
+
+%D \macros
+%D   {indent, noindent, par}
+%D
+%D \TeX\ acts upon paragraphs. In mosts documents paragraphs
+%D are separated by empty lines, which internally are handled as
+%D \type{\par}. Paragraphs can be indented or not, depending on
+%D the setting of \type{\parindent}, the first token of a
+%D paragraph and/or user suppressed or forced indentation.
+%D
+%D Because the actual typesetting is based on both explicit
+%D user and implicit system actions, visualization is only
+%D possible for the user supplied \type{\indent},
+%D \type{\noindent}, and \type{\par}. Other
+%D 'clever' tricks will quite certainly lead to more failures
+%D than successes, so we only support these three explicit
+%D primitives and one macro:
+
+\unexpanded\def\showparagraphcue#1#2#3#4#5%
+  {\bgroup
+   \scratchdimen#1\relax
+   \dontinterfere
+   \dontcomplain
+   %boxrulewidth5\testrulewidth
+   #3#4\relax
+   \setbox\scratchbox\normalhbox to \scratchdimen
+     {#2{\ruledhbox to \scratchdimen
+           {\vrule #5 20\testrulewidth \s!width \zeropoint
+            \normalhss}}}%
+   \smashbox\scratchbox
+   \normalpenalty\plustenthousand
+   \box\scratchbox
+   \egroup}
+
+\unexpanded\def\ruledhanging
+  {\ifdim\hangindent>\zeropoint
+     \ifnum\hangafter<\zerocount
+       \normalhbox
+         {%boxrulewidth5\testrulewidth
+          \setbox\scratchbox\ruledhbox to \hangindent
+            {\scratchdimen\strutht
+             \advance\scratchdimen \strutdp
+             \vrule
+               \s!width  \zeropoint
+               \s!height \zeropoint
+               \s!depth -\hangafter\scratchdimen}%
+          \normalhskip-\hangindent
+          \smashbox\scratchbox
+          \raise\strutht\box\scratchbox}%
+     \fi
+   \fi}
+
+\unexpanded\def\ruledparagraphcues
+  {\bgroup
+   \dontcomplain
+   \normalhbox to \zeropoint
+     {\ifdim\leftskip>\zeropoint\relax
+        \showparagraphcue\leftskip\llap\relax\relax\!!depth
+        \normalhskip-\leftskip
+      \fi
+      \ruledhanging
+      \normalhskip\hsize
+      \ifdim\rightskip>\zeropoint\relax
+        \normalhskip-\rightskip
+        \showparagraphcue\rightskip\relax\relax\relax\!!depth
+      \fi}%
+   \egroup}
+
+\unexpanded\def\ruledpar
+  {\relax
+   \ifhmode
+     \showparagraphcue{40\testrulewidth}\relax\rightrulefalse\relax\s!height
+   \fi
+   \normalpar}
+
+\unexpanded\def\rulednoindent
+  {\relax
+   \normalnoindent
+   \ruledparagraphcues
+   \showparagraphcue{40\testrulewidth}\llap\leftrulefalse\relax\s!height}
+
+\unexpanded\def\ruledindent
+  {\relax
+   \normalnoindent
+   \ruledparagraphcues
+   \ifdim\parindent>\zeropoint
+     \showparagraphcue\parindent\relax\relax\relax\s!height
+   \else
+     \showparagraphcue{40\testrulewidth}\llap\relax\relax\s!height
+   \fi
+   \normalhskip\parindent}
+
+\unexpanded\def\dontshowimplicits
+  {\let\noindent   \normalnoindent
+   \let\indent     \normalindent
+   \let\par        \normalpar}
+
+\unexpanded\def\showimplicits
+  {\testrulewidth  \defaulttestrulewidth
+   \let\noindent   \rulednoindent
+   \let\indent     \ruledindent
+   \let\par        \ruledpar}
+
+%D The next few||line examples show the four cues. Keep in
+%D mind that we only see them when we explicitly open or close
+%D a paragraph.
+%D
+%D \bgroup
+%D \def\voorbeeld#1%
+%D   {#1Visualizing some \TeX\ primitives and Plain \TeX\
+%D    macros can be very instructive, at least it is to me.
+%D    Here we see {\tt\string#1} and {\tt\string\ruledpar} in
+%D    action, while {\tt\string\parindent} equals
+%D    {\tt\the\parindent}.\ruledpar}
+%D
+%D \showimplicits
+%D
+%D \voorbeeld \indent
+%D \voorbeeld \noindent
+%D
+%D \parindent=60pt
+%D
+%D \voorbeeld \indent
+%D \voorbeeld \noindent
+%D
+%D \startnarrower
+%D \voorbeeld \indent
+%D \voorbeeld \noindent
+%D \stopnarrower
+%D \egroup
+%D
+%D These examples also demonstrate the visualization of
+%D \type {\leftskip} and \type {\rightskip}. The macro
+%D \type {\nofruledbaselines} determines the number of lines
+%D shown.
+
+\newcounter\ruledbaselines
+
+\def\nofruledbaselines{3}
+
+\unexpanded\def\ruledbaseline
+  {\vrule \s!width \zeropoint
+   \bgroup
+   \dontinterfere
+   \doglobal\increment\ruledbaselines
+   \scratchdimen\nofruledbaselines\baselineskip
+   \setbox\scratchbox\normalvbox to 2\scratchdimen
+     {\leaders
+        \normalhbox
+          {\strut
+           \vrule
+             \s!height \testrulewidth
+             \s!depth \testrulewidth
+             \s!width 120\points}
+      \normalvfill}%
+   \smashbox\scratchbox
+   \advance\scratchdimen \strutheightfactor\baselineskip
+   \setbox\scratchbox\normalhbox
+     {\normalhskip -48\points
+      \normalhbox to 24\points
+        {\normalhss
+         {\ttxx\ruledbaselines}%
+         \normalhskip6\points}%
+      \raise\scratchdimen\box\scratchbox}%
+   \smashbox\scratchbox
+   \box\scratchbox
+   \egroup}
+
+\unexpanded\def\showbaselines
+  {\testrulewidth\defaulttestrulewidth
+   \EveryPar{\ruledbaseline}}
+
+%D \macros
+%D   {showpagebuilder}
+%D
+%D The next tracing option probaly is only of use to me and a
+%D few \CONTEXT\ hackers.
+
+\unexpanded\def\showpagebuilder
+  {\EveryPar{\doshowpagebuilder}}
+
+\unexpanded\def\doshowpagebuilder
+  {\strut\llap
+     {\startcolor[blue]\vl
+      \high{\infofont v:\the\vsize    }\vl
+      \high{\infofont g:\the\pagegoal }\vl
+      \high{\infofont t:\the\pagetotal}\vl
+      \stopcolor}}
+
+%D \macros
+%D   {colormarkbox,rastermarkbox}
+%D
+%D This macro is used in the pagebody routine. No other use
+%D is advocated here.
+%D
+%D \starttyping
+%D \colormarkbox0
+%D \stoptyping
+
+\def\colormarkoffset{\cutmarkoffset}
+\def\colormarklength{\cutmarklength}
+
+\def\dodocolorrangeA#1%
+  {\fastcolored[#1]{\hrule\s!width3em\s!height\scratchdimen\s!depth\zeropoint}}
+
+\def\docolorrangeA#1 #2 %
+  {\vpack
+     {\hsize3em % \scratchdimen
+      \ifcase#1\or
+        \dodocolorrangeA{c=#2}\or
+        \dodocolorrangeA{m=#2}\or
+        \dodocolorrangeA{y=#2}\or
+        \dodocolorrangeA{m=#2,y=#2}\or
+        \dodocolorrangeA{c=#2,y=#2}\or
+        \dodocolorrangeA{c=#2,m=#2}\fi
+      \ifdim\scratchdimen>1ex
+        \vskip-\scratchdimen
+        \vpack to \scratchdimen
+          {\vss\hpack to 3em{\hss#2\hss}\vss}%
+      \fi}}
+
+\def\colorrangeA#1%
+  {\vpack
+     {\startcolor[\s!white]%
+      \scratchdimen\dimexpr(-\colormarklength*4+\tractempheight+\tractempdepth)/21\relax
+      \offinterlineskip
+      \docolorrangeA #1 1.00 \docolorrangeA #1 0.95
+      \docolorrangeA #1 0.75
+      \docolorrangeA #1 0.50
+      \docolorrangeA #1 0.25 \docolorrangeA #1 0.05
+      \docolorrangeA #1 0.00
+      \stopcolor}}
+
+\def\docolorrangeB #1 #2 #3 #4 #5 %
+  {\fastcolored
+    [\c!c=#2,\c!m=#3,\c!y=#4,\c!k=#5]
+    {\vrule\s!width\scratchdimen\s!height\colormarklength\s!depth\zeropoint}%
+   \ifdim\scratchdimen>2em
+     \hskip-\scratchdimen
+     \vpack to \colormarklength
+       {\vss\hpack to \scratchdimen{\hss#1\hss}\vss}%
+   \fi}
+
+\def\colorrangeB
+  {\hpack
+     {\startcolor[\s!white]%
+      \scratchdimen\dimexpr(-\colormarklength*\plustwo+\tractempwidth)/11\relax
+      \docolorrangeB .5~C .5  0  0  0
+      \docolorrangeB .5~M  0 .5  0  0
+      \docolorrangeB .5~Y  0  0 .5  0
+      \docolorrangeB .5~K  0  0  0 .5
+      \docolorrangeB    C  1  0  0  0
+      \docolorrangeB    G  1  0  1  0
+      \docolorrangeB    Y  0  0  1  0
+      \docolorrangeB    R  0  1  1  0
+      \docolorrangeB    M  0  1  0  0
+      \docolorrangeB    B  1  1  0  0
+      \docolorrangeB    K  0  0  0  1
+      \stopcolor}}
+
+\def\docolorrangeC#1 %
+  {\fastcolored
+     [\c!s=#1]%
+     {\vrule\s!width\scratchdimen\s!height\colormarklength\s!depth\zeropoint}%
+   \ifdim\scratchdimen>2em
+     \hskip-\scratchdimen
+     \vpack to \colormarklength
+       {\vss\hpack to \scratchdimen{\hss#1\hss}\vss}%
+   \fi}
+
+\def\colorrangeC
+  {\hpack
+     {\startcolor[\s!white]%
+      \scratchdimen\dimexpr(-\colormarklength*2+\tractempwidth)/14\relax
+      \docolorrangeC  1  \docolorrangeC .95
+      \docolorrangeC .9  \docolorrangeC .85
+      \docolorrangeC .8  \docolorrangeC .75
+      \docolorrangeC .7
+      \docolorrangeC .6
+      \docolorrangeC .5
+      \docolorrangeC .4
+      \docolorrangeC .3
+      \docolorrangeC .2
+      \docolorrangeC .1
+      \docolorrangeC  0
+      \stopcolor}}
+
+\def\docolormarkbox#1#2%
+  {\tractempheight\ht#2%
+   \tractempdepth \dp#2%
+   \tractempwidth \wd#2%
+   \setbox#2\hpack
+     {\scratchdimen\dimexpr\colormarklength/2\relax
+      \forgetall
+      \ssxx
+      \setbox\scratchbox\vpack
+        {\offinterlineskip
+         \vskip\dimexpr-\colormarkoffset\scratchdimen-2\scratchdimen\relax
+         \ifcase#1\relax
+           \vskip\dimexpr\colormarklength+\scratchdimen+\tractempheight\relax
+         \else
+           \hpack to \tractempwidth{\hss\hpack{\colorrangeB}\hss}%
+           \vskip\colormarkoffset\scratchdimen
+           \vpack to \tractempheight
+             {\vss
+              \hpack to \tractempwidth
+                {\llap{\colorrangeA1\hskip\colormarkoffset\scratchdimen}\hfill
+                 \rlap{\hskip\colormarkoffset\scratchdimen\colorrangeA4}}%
+              \vss
+              \hpack to \tractempwidth
+                {\llap{\colorrangeA2\hskip\colormarkoffset\scratchdimen}\hfill
+                 \rlap{\hskip\colormarkoffset\scratchdimen\colorrangeA5}}%
+              \vss
+              \hpack to \tractempwidth
+                {\llap{\colorrangeA3\hskip\colormarkoffset\scratchdimen}\hfill
+                 \rlap{\hskip\colormarkoffset\scratchdimen\colorrangeA6}}%
+              \vss}%
+         \fi
+         \vskip\colormarkoffset\scratchdimen
+         \hpack to \tractempwidth
+           {\hss\lower\tractempdepth\hpack{\colorrangeC}\hss}}%
+      \ht\scratchbox\tractempheight
+      \dp\scratchbox\tractempdepth
+      \wd\scratchbox\zeropoint
+      \box\scratchbox
+      \box#2}%
+   \wd#2\tractempwidth
+   \ht#2\tractempheight
+   \dp#2\tractempdepth}
+
+\unexpanded\def\colormarkbox {\docolormarkbox\plusone  } % #1
+\unexpanded\def\rastermarkbox{\docolormarkbox\zerocount} % #1
+
+%D \macros
+%D   {showwhatsits, dontshowwhatsits}
+%D
+%D \TEX\ has three so called whatsits: \type {\mark}, \type
+%D {\write} and \type {\special}. The first one keeps track of
+%D the current state at page boundaries, the last two are used
+%D to communicate to the outside world. Due to fact that
+%D especially \type {\write} is often used in conjunction with
+%D \type {\edef}, we can only savely support that one in \ETEX.
+%D
+%D \bgroup \showwhatsits \setupcolors[state=start]
+%D
+%D Whatsits show up \color[blue]{in color} and are
+%D characterized bij their first character.\footnote [some note]
+%D {So we may encounter \type {w}, \type {m} and \type{s}.}
+%D They are \writestatus{dummy}{demo}\color[yellow]{stacked}.
+%D
+%D \egroup
+
+\newif\ifimmediatewrite
+
+\let\supernormalmark  \normalmark  % mark may already been superseded
+\let\supernormalmarks \normalmarks % mark may already been superseded
+
+\unexpanded\def\showwhatsits
+  {\protected\def\normalmark {\visualwhatsit100+m\supernormalmark }%
+   \protected\def\normalmarks{\visualwhatsit100+m\supernormalmarks}%
+   \protected\def\special    {\visualwhatsit0100s\normalspecial   }%
+   \protected\def\write      {\visualwhatsit001-w\normalwrite     }%
+   \let\immediate\immediatewhatsit
+   \appendtoks\dontshowwhatsits\to\everystoptext}
+
+\unexpanded\def\immediatewhatsit
+  {\bgroup\futurelet\next\doimmediatewhatsit}
+
+\unexpanded\def\doimmediatewhatsit
+  {\ifx\next\write
+     \egroup\immediatewritetrue
+   \else
+     \egroup\expandafter\normalimmediate
+   \fi}
+
+\unexpanded\def\dontshowwhatsits
+  {\let\immediate \normalimmediate
+   \let\normalmark\supernormalmark
+   \let\special   \normalspecial
+   \let\write     \normalwrite}
+
+\unexpanded\def\visualwhatsit#1#2#3#4#5%
+  {\bgroup
+   \pushwhatsit
+   \dontinterfere
+   \dontcomplain
+   \dontshowcomposition
+   \dontshowwhatsits
+   \ttx
+   \ifvmode\donetrue\else\donefalse\fi
+   \setbox\scratchbox\hpack
+     {\ifdone
+        \colored[r=#1,g=#2,b=#3]{#5}% temp hack
+      \else
+        \colored[s=0]{#5}% temp hack
+      \fi}%
+   \setbox\scratchbox\hpack
+     {\ifdone
+        \colored[r=#1,g=#2,b=#3]{\vrule\s!width\wd\scratchbox}% temp hack
+      \else
+        \colored[s=0]{\vrule\s!width\wd\scratchbox}% temp hack
+      \fi
+      \hskip-\wd\scratchbox\box\scratchbox}%
+   \scratchdimen1ex
+   \setbox\scratchbox\hpack
+     {\ifdone\hskip\else\raise#4\fi\scratchdimen\box\scratchbox}%
+   \smashbox\scratchbox
+   \ifdone\nointerlineskip\fi
+   \box\scratchbox
+   \ifvmode\nointerlineskip\fi
+   \popwhatsit
+   \egroup
+   \ifimmediatewrite
+     \immediatewritefalse
+     \expandafter\normalimmediate
+   \fi}
+
+\unexpanded\def\pushwhatsit
+  {\ifzeropt\lastskip
+     \ifcase\lastpenalty
+       \ifzeropt\lastkern
+         \ifhmode
+           \let\popwhatsit\relax
+         \else
+           \edef\popwhatsit{\prevdepth\the\prevdepth}%
+         \fi
+       \else
+         \ifhmode
+           \edef\popwhatsit{\kern\the\lastkern}\unkern
+         \else
+           \edef\popwhatsit{\kern\the\lastkern\prevdepth\the\prevdepth}%
+           \kern-\lastkern
+         \fi
+       \fi
+     \else
+       \ifhmode
+         \edef\popwhatsit{\the\lastpenalty}%
+         \unpenalty
+       \else
+         \edef\popwhatsit{\penalty\the\lastpenalty\prevdepth\the\prevdepth}%
+        %\nobreak
+       \fi
+     \fi
+   \else
+     \ifhmode
+       \edef\popwhatsit{\hskip\the\lastskip}\unskip
+     \else
+       \edef\popwhatsit{\vskip\the\lastskip\prevdepth\the\prevdepth}%
+       \vskip-\lastskip
+     \fi
+   \fi}
+
+%D The next macro can be used to keep track of classes of
+%D boxes (handy for development cq.\ tracing).
+
+\def\dodotagbox#1#2#3% can be reimplemented
+  {\def\next##1##2##3##4%
+     {\vpack to \ht#2{##3\hpack to \wd#2{##1#3##2}##4}}%
+   \processaction
+     [#1]
+     [        l=>\next\relax\hfill\vfill\vfill,
+              r=>\next\hfill\relax\vfill\vfill,
+              t=>\next\hfill\hfill\relax\vfill,
+              b=>\next\hfill\hfill\vfill\relax,
+             lt=>\next\relax\hfill\relax\vfill,
+             lb=>\next\relax\hfill\vfill\relax,
+             rt=>\next\hfill\relax\relax\vfill,
+             rb=>\next\hfill\relax\vfill\relax,
+             tl=>\next\relax\hfill\relax\vfill,
+             bl=>\next\relax\hfill\vfill\relax,
+             tr=>\next\hfill\relax\relax\vfill,
+             br=>\next\hfill\relax\vfill\relax,
+     \s!default=>\next\hfill\hfill\vfill\vfill,
+     \s!unknown=>\next\hfill\hfill\vfill\vfill]}
+
+\def\dotagbox[#1]#2%
+  {\bgroup
+   \dowithnextbox
+     {\setbox\scratchbox\flushnextbox
+      \setbox\nextbox\ifhbox\nextbox\hpack\else\vpack\fi
+        \bgroup
+          \startoverlay
+            {\copy\scratchbox}
+            {\dodotagbox{#1}\scratchbox{\framed
+               [\c!background=\v!color,\c!backgroundcolor=\v!gray]{#2}}}
+          \stopoverlay
+        \egroup
+      \nextboxwd\the\wd\scratchbox
+      \nextboxht\the\ht\scratchbox
+      \nextboxdp\the\dp\scratchbox
+      \flushnextbox
+      \egroup}}
+
+\unexpanded\def\tagbox
+  {\dosingleempty\dotagbox}
+
+%D \macros
+%D   {coloredhbox,coloredvbox,coloredvtop,
+%D    coloredstrut}
+%D
+%D The following visualizations are used in some of the manuals:
+
+\definecolor[boxcolor:ht][r=.5,g=.75,b=.5]
+\definecolor[boxcolor:dp][r=.5,g=.5,b=.75]
+\definecolor[boxcolor:wd][r=.75,g=.5,b=.5]
+\definecolor[strutcolor] [r=.5,g=.25,b=.25]
+
+\unexpanded\def\coloredbox#1%
+  {\dowithnextbox{#1{\hpack
+     {\blackrule[\c!width=\nextboxwd,\c!height=\nextboxht,\c!depth=\zeropoint,\c!color=boxcolor:ht]%
+      \hskip-\nextboxwd
+      \blackrule[\c!width=\nextboxwd,\c!height=\zeropoint,\c!depth=\nextboxdp,\c!color=boxcolor:dp]%
+      \hskip-\nextboxwd
+      \box\nextbox}}}#1}
+
+\unexpanded\def\coloredhbox{\coloredbox\hpack}
+\unexpanded\def\coloredvbox{\coloredbox\vpack}
+\unexpanded\def\coloredvtop{\coloredbox\tpack}
+
+\unexpanded\def\coloredstrut
+  {\color[strutcolor]{\def\strutwidth{2\points}\setstrut\strut}}
+
+\protect
+
+\continueifinputfile{m-visual.mkiv}
+
+\starttext
+    \simplethesis
+\stoptext

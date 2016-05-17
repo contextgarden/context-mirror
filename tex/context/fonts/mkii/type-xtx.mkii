@@ -1,0 +1,570 @@
+%D \module
+%D   [       file=type-xtx,
+%D        version=2004.11.15, % prereleased earlier
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=\XETEX's font treasures,
+%D         author=Adam T. Lindsay etc,
+%D           date=\currentdate,
+%D      copyright={Adam Lindsay \& Hans Hagen \& ...}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Note HH: this file probably needs to be adapted to the current names and
+%D so but as I don't use \XETEX\ myself others have to provide information.
+
+%D Here are some fonts definitions that can get you started with
+%D \XETEX\ (for more details see Adam's MyWay documents).
+%D
+%D Most typescripts in this file are mostly independent of the other
+%D typescript files. Generally, you can speed things up a lot by
+%D eliminating all but one of \CONTEXT's typescript files:
+%D
+%D \starttyping
+%D \usetypescriptfiles[reset]     % HH: watch out, new feature, since
+%D \usetypescriptfiles[type-siz]  % I disliked the low level redef.
+%D \stoptyping
+%D
+%D The exceptions are the \quotation {legacy} fonts Times, Palatino,
+%D Courier, and Helvetica, which also depend on \type {type-syn}.
+%D
+%D These following six typescripts call the basic four variants on any
+%D given font, given the name of the \quotation {Regular} variant in the
+%D name slot. These typescripts default to a Unicode encoding,
+%D accepts sizes \quotation {default} and \quotation {dtp}, and are
+%D activated with the identifiers \quotation {Xserif}, \quotation {Xsans},
+%D and \quotation {Xmono}. They can have relative scaling within the
+%D typeface. Any of the following work:
+%D
+%D \starttyping
+%D \definetypeface[basic][rm][Xserif][Baskerville]
+%D \definetypeface[basic][ss][Xsans] [Optima Regular][default][features=default,rscale=0.87]
+%D \definetypeface[basic][tt][Xmono] [Courier]       [default]
+%D \stoptyping
+%D
+%D Activate the typeface with:
+%D
+%D \starttyping
+%D \setupbodyfont[basic]
+%D \stoptyping
+
+%D This file is hacked by Taco Hoekwater in an attempt to figure out the right approach
+%D to font loading in \XeTeX.  (jun19,2007)
+
+%D The General \XeTeX\ low-level font syntax is (at least) as follows.
+%D
+%D Named font:
+%D \starttyping
+%D \font\x = "<fontname><engine-options>:<featurelist>" <at or scaled>
+%D \stoptyping
+%D \type{<fontname>} = Font name as seen in a system font menu or the output of fc-list
+%D
+%D \type{<engine-options>} = \type{/B} or \type{/I} or \tupe{/BI}, and||or \type{/S=<X>}.
+%D That last one selects an optical scaled variant for size \type{<X>}
+%D (it is a bare number, the unit is points).
+%D
+%D \type{<featurelist>} = comma- or semicolon- separated list of font features.
+%D
+%D Opentype features are selected using \type{+<tag>}, and deselected using \type{-<tag>},
+%D except that key||value pairs are used for \type{script=<tag>} and \type{language=<tag>}
+%D
+%D AAT features are always key||value pairs, often including spaces.
+%D
+%D \XETEX's own features are key||value pairs, and can be applied to both OpenType
+%D and AAT fonts:
+%D \type{mapping=<font map>} for glyph remapping
+%D \type{color=RRGGBB[TT]} for color (hex numbers, with  optional transparancy),
+%D \type{letterspace=<x>} to add \type{<x>/<fontsize>}  intercharacter spacing.
+%D
+%D Full example showing all parts of the syntax for an OTF font:
+%D \starttyping
+%D \font\f= "Warnock Pro/I/S=5:+smcp,-liga,mapping=tex-text,script=latn"
+%D \stoptyping
+
+%D Non-installed (filename-based) fonts :
+%D
+%D \starttyping
+%D \font\x = "[<fontname>]:<featurelist>" <at or scaled>
+%D \stoptyping
+%D
+%D Here, there are no \type{<engine-options>}, because there is no
+%D font discovery engine available to be queried.
+
+%D TH: This \type{\xetexcolon} definition seems needed because the name/file \
+%D parser otherwise drops the rest of the argument into oblivion.
+
+\unexpanded\def\xetexcolon{:}
+
+\starttypescriptcollection[xetex]
+
+\starttypescript[Xserif][all][name]
+
+%D TH: I removed all single quotes because they don't seem to add anything. And I added
+%D the \type{name:} everywhere, because passing that information on \type{\typescripttwo}
+%D doesn't work either (maybe  \type{\typescripttwo} is expanded incorrectly)
+%D
+%D And even if that would have worked, \type{file:} will not work properly anyway
+%D in this case since tricks like \type{/I} will never, ever work for local fonts,
+%D so there is really only one choice.
+
+%D HH: todo, define feature set switch mapping=tex-tex
+
+\definefontsynonym[Dummy]          [name:\typescripttwo]   [features=default]
+\definefontsynonym[DummyItalic]    [name:\typescripttwo/I] [features=default]
+\definefontsynonym[DummyBold]      [name:\typescripttwo/B] [features=default]
+\definefontsynonym[DummyBoldItalic][name:\typescripttwo/BI][features=default]
+
+\definefontsynonym[DummyCaps]      [name:\typescripttwo]   [features=smallcaps]
+
+\definefontsynonym[Serif]           [Dummy]
+\definefontsynonym[SerifBold]       [DummyBold]
+\definefontsynonym[SerifItalic]     [DummyItalic]
+\definefontsynonym[SerifBoldItalic] [DummyBoldItalic]
+\definefontsynonym[SerifSlanted]    [DummyItalic]
+\definefontsynonym[SerifBoldSlanted][DummyBoldItalic]
+\definefontsynonym[SerifCaps]       [DummyCaps]
+
+\stoptypescript
+
+\starttypescript[Xsans][all][name]
+
+\definefontsynonym[DummySans]          [name:\typescripttwo]   [features=default]
+\definefontsynonym[DummySansItalic]    [name:\typescripttwo/I] [features=default]
+\definefontsynonym[DummySansBold]      [name:\typescripttwo/B] [features=default]
+\definefontsynonym[DummySansBoldItalic][name:\typescripttwo/BI][features=default]
+
+\definefontsynonym[DummySansCaps]      [name:\typescripttwo]   [features=smallcaps]
+
+\definefontsynonym[Sans]           [DummySans]
+\definefontsynonym[SansBold]       [DummySansBold]
+\definefontsynonym[SansItalic]     [DummySansItalic]
+\definefontsynonym[SansBoldItalic] [DummySansBoldItalic]
+\definefontsynonym[SansSlanted]    [DummySansItalic]
+\definefontsynonym[SansBoldSlanted][DummySansBoldItalic]
+\definefontsynonym[SansCaps]       [DummySansCaps]
+
+\stoptypescript
+
+\starttypescript[Xmono][all][name]
+
+\definefontsynonym[DummyMono]          [name:\typescripttwo]
+\definefontsynonym[DummyMonoItalic]    [name:\typescripttwo/I]
+\definefontsynonym[DummyMonoBold]      [name:\typescripttwo/B]
+\definefontsynonym[DummyMonoBoldItalic][name:\typescripttwo/BI]
+
+% TODO: smallcaps without other features
+
+\definefontsynonym[Mono]           [DummyMono]
+\definefontsynonym[MonoBold]       [DummyMonoBold]
+\definefontsynonym[MonoItalic]     [DummyMonoItalic]
+\definefontsynonym[MonoBoldItalic] [DummyMonoBoldItalic]
+\definefontsynonym[MonoSlanted]    [DummyMonoItalic]
+\definefontsynonym[MonoBoldSlanted][DummyMonoBoldItalic]
+\definefontsynonym[MonoCaps]       [DummyMono]
+
+\stoptypescript
+
+\starttypescript[Xserif][default][size]
+  \definebodyfont
+  [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt] [rm]
+  [default]
+\stoptypescript
+
+\starttypescript[Xsans][default][size]
+  \definebodyfont
+    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt]
+    [ss] [default]
+\stoptypescript
+
+\starttypescript [Xmono][default][size]
+  \definebodyfont
+    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt]
+    [tt] [default]
+\stoptypescript
+
+\starttypescript[Xserif][dtp][size]
+  \definebodyfont
+    [5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,13pt,14pt,16pt,18pt,22pt,28pt]
+    [rm] [default]
+\stoptypescript
+
+\starttypescript[Xsans][dtp][size]
+  \definebodyfont
+    [5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,13pt,14pt,16pt,18pt,22pt,28pt]
+    [ss] [default]
+\stoptypescript
+
+\starttypescript[Xmono][dtp][size]
+  \definebodyfont
+    [5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,13pt,14pt,16pt,18pt,22pt,28pt]
+    [tt] [default]
+\stoptypescript
+
+%D The following are \quotation {legacy} named fonts. Times, Palatino,
+%D and Helvetica are familiar to most users of modern \TEX\
+%D systems. These versions are accessed via the Unicode encoding
+%D enabled by \XETEX. There is no attempt to match metrics with
+%D the actual legacy fonts. These are simply familiar names.
+
+%D These typescripts, unlike others in this file, depend on those in
+%D \type{type-pre}.
+
+\starttypescript[serif][times][uc]
+
+\definefontsynonym[Times-Roman]     [name:Times Roman]      [features=default]
+\definefontsynonym[Times-Italic]    [name:Times Italic]     [features=default]
+\definefontsynonym[Times-Bold]      [name:Times Bold]       [features=default]
+\definefontsynonym[Times-BoldItalic][name:Times Bold Italic][features=default]
+
+\stoptypescript
+
+%D Book Antiqua is Mac OS X's Palatino clone.
+
+\starttypescript[serif][palatino][uc]
+
+\definefontsynonym[Palatino]            [name:Book Antiqua]            [features=default]
+\definefontsynonym[Palatino-Italic]     [name:Book Antiqua Italic]     [features=default]
+\definefontsynonym[Palatino-Bold]       [name:Book Antiqua Bold]       [features=default]
+\definefontsynonym[Palatino-BoldItalic] [name:Book Antiqua Bold Italic][features=default]
+
+\definefontsynonym[Palatino-Slanted]     [Palatino-Italic]
+\definefontsynonym[Palatino-BoldSlanted] [Palatino-BoldItalic]
+\definefontsynonym[Palatino-Caps]        [Palatino]
+
+\stoptypescript
+
+%D The default Helvetica doesn't have an oblique variant, so we'll
+%D go ahead and name Helvertica Neue here.
+
+\starttypescript[sans][helvetica][uc]
+
+\definefontsynonym[Helvetica]            [name:Helvetica Neue]            [features=default]
+\definefontsynonym[Helvetica-Oblique]    [name:Helvetica Neue Italic]     [features=default]
+\definefontsynonym[Helvetica-Bold]       [name:Helvetica Neue Bold]       [features=default]
+\definefontsynonym[Helvetica-BoldOblique][name:Helvetica Neue Bold Italic][features=default]
+
+\stoptypescript
+
+%D Courier, as delivered on MacOSX 10.3, doesn't have an oblique
+%D variant, either. Unfortunately, none of the default Mono fonts in
+%D MacOSX have oblique|/|italic versions!
+
+\starttypescript[mono][courier][uc]
+
+\definefontsynonym[Courier]            [name:Courier]
+\definefontsynonym[Courier-Oblique]    [Courier]
+\definefontsynonym[Courier-Bold]       [name:Courier Bold]
+\definefontsynonym[Courier-BoldOblique][Courier-Bold]
+
+\stoptypescript
+
+%D The following fonts go beyond the usual four variants that
+%D are accessible via the above wildcard typescripts, so they
+%D get a more expanded treatment here\xetexcolon
+
+\starttypescript[serif][hoefler][uc]
+
+\definefontsynonym[Hoefler]      [name:Hoefler Text\xetexcolon mapping=tex-text;%
+                   Ligatures=Diphthongs]  [encoding=uc]
+\definefontsynonym[HoeflerItalic][name:Hoefler Text Italic\xetexcolon mapping=tex-text;%
+                   Ligatures=Diphthongs]  [encoding=uc]
+\definefontsynonym[HoeflerBlack] [name:Hoefler Text Black\xetexcolon mapping=tex-text;%
+                   Ligatures=Diphthongs]  [encoding=uc]
+\definefontsynonym[HoeflerBlackItalic][name:Hoefler Text Black Italic\xetexcolon mapping=tex-text;%
+                   Ligatures=Diphthongs]  [encoding=uc]
+\definefontsynonym[HoeflerSmCap] [name:Hoefler Text\xetexcolon mapping=tex-text;%
+                   Ligatures=Diphthongs;%
+                   Letter Case=Small Caps][encoding=uc]
+\stoptypescript
+
+\starttypescript[serif][hoefler][name]
+
+\definefontsynonym[Serif]           [Hoefler]
+\definefontsynonym[SerifBold]       [HoeflerBlack]
+\definefontsynonym[SerifItalic]     [HoeflerItalic]
+\definefontsynonym[SerifBoldItalic] [HoeflerBlackItalic]
+\definefontsynonym[SerifSlanted]    [HoeflerItalic]
+\definefontsynonym[SerifBoldSlanted][HoeflerBlackItalic]
+\definefontsynonym[SerifCaps]       [HoeflerSmCap]
+
+\stoptypescript
+
+\starttypescript[sans][lucidagrande][uc]
+
+\definefontsynonym[LucidaGrande]    [name:Lucida Grande]     [features=default]
+\definefontsynonym[LucidaGrandeBold][name:Lucida Grande Bold][features=default]
+
+\stoptypescript
+
+\starttypescript[sans][lucidagrande][name]
+
+\definefontsynonym[Sans]           [LucidaGrande]
+\definefontsynonym[SansBold]       [LucidaGrandeBold]
+\definefontsynonym[SansItalic]     [LucidaGrande]
+\definefontsynonym[SansBoldItalic] [LucidaGrandeBold]
+\definefontsynonym[SansSlanted]    [LucidaGrande]
+\definefontsynonym[SansBoldSlanted][LucidaGrandeBold]
+\definefontsynonym[SansCaps]       [LucidaGrande]
+
+\stoptypescript
+
+\starttypescript[sans][optima][uc]
+\definefontsynonym[Optima]          [name:Optima Regular]    [features=default]
+\definefontsynonym[OptimaItalic]    [name:Optima Italic]     [features=default]
+\definefontsynonym[OptimaBold]      [name:Optima Bold]       [features=default]
+\definefontsynonym[OptimaBoldItalic][name:Optima Bold Italic][features=default]
+\definefontsynonym[OptimaBlack]     [name:Optima ExtraBlack] [features=default]
+\stoptypescript
+
+\starttypescript[sans][optima][name]
+
+\definefontsynonym[Sans]           [Optima]
+\definefontsynonym[SansBold]       [OptimaBold]
+\definefontsynonym[SansItalic]     [OptimaItalic]
+\definefontsynonym[SansBoldItalic] [OptimaBoldItalic]
+\definefontsynonym[SansSlanted]    [OptimaItalic]
+\definefontsynonym[SansBoldSlanted][OptimaBoldItalic]
+\definefontsynonym[SansCaps]       [Optima]
+
+\stoptypescript
+
+\starttypescript[sans][gillsans,gillsanslt][uc]
+
+\definefontsynonym[GillSans]           [name:Gill Sans]             [features=default]
+\definefontsynonym[GillSansItalic]     [name:Gill Sans Italic]      [features=default]
+\definefontsynonym[GillSansBold]       [name:Gill Sans Bold]        [features=default]
+\definefontsynonym[GillSansBoldItalic] [name:Gill Sans Bold Italic] [features=default]
+\definefontsynonym[GillSansLight]      [name:Gill Sans Light]       [features=default]
+\definefontsynonym[GillSansLightItalic][name:Gill Sans Light Italic][features=default]
+
+\stoptypescript
+
+\starttypescript[sans][gillsans][name]
+
+\definefontsynonym[Sans]           [GillSans]
+\definefontsynonym[SansBold]       [GillSansBold]
+\definefontsynonym[SansItalic]     [GillSansItalic]
+\definefontsynonym[SansBoldItalic] [GillSansBoldItalic]
+\definefontsynonym[SansSlanted]    [GillSansItalic]
+\definefontsynonym[SansBoldSlanted][GillSansBoldItalic]
+\definefontsynonym[SansCaps]       [GillSans]
+
+\stoptypescript
+
+\starttypescript[sans][gillsanslt][name]
+
+\definefontsynonym[Sans]           [GillSansLight]
+\definefontsynonym[SansBold]       [GillSans]
+\definefontsynonym[SansItalic]     [GillSansLightItalic]
+\definefontsynonym[SansBoldItalic] [GillSansItalic]
+\definefontsynonym[SansSlanted]    [GillSansLightItalic]
+\definefontsynonym[SansBoldSlanted][GillSansItalic]
+\definefontsynonym[SansCaps]       [GillSansLight]
+
+\stoptypescript
+
+\starttypescript[serif,handwriting][zapfino][uc]
+
+\definefontsynonym[ZapfinoOne]  [name:Zapfino\xetexcolon mapping=tex-text]   [encoding=uc]
+\definefontsynonym[ZapfinoTwo]  [name:Zapfino\xetexcolon mapping=tex-text;%
+                                 Stylistic Variants=First variant glyph set] [encoding=uc]
+\definefontsynonym[ZapfinoThree][name:Zapfino\xetexcolon mapping=tex-text;%
+                                 Stylistic Variants=Second variant glyph set][encoding=uc]
+\definefontsynonym[ZapfinoFour] [name:Zapfino\xetexcolon mapping=tex-text;%
+                                 Stylistic Variants=Third variant glyph set] [encoding=uc]
+\stoptypescript
+
+\starttypescript[handwriting][zapfino][name]
+
+\definefontsynonym[Handwriting][ZapfinoOne]
+
+\stoptypescript
+
+\starttypescript[serif][zapfino][name]
+
+\definefontsynonym[Serif]           [ZapfinoOne]
+\definefontsynonym[SerifBold]       [ZapfinoThree]
+\definefontsynonym[SerifItalic]     [ZapfinoTwo]
+\definefontsynonym[SerifBoldItalic] [ZapfinoTwo]
+\definefontsynonym[SerifSlanted]    [ZapfinoThree]
+\definefontsynonym[SerifBoldSlanted][ZapfinoThree]
+\definefontsynonym[SerifCaps]       [ZapfinoOne]
+
+\stoptypescript
+
+\starttypescript[serif,calligraphy][applechancery][uc]
+
+\definefontsynonym[AppleChanceryOne]    [name:Apple Chancery\xetexcolon mapping=tex-text;%
+                   Number Case=Old Styles]                [encoding=uc]
+\definefontsynonym[AppleChanceryTwo]    [name:Apple Chancery\xetexcolon mapping=tex-text;%
+                   Number Case=Old Styles;%
+                   Design Complexity=Elegant Design Level][encoding=uc]
+\definefontsynonym[AppleChanceryThree]  [name:Apple Chancery\xetexcolon mapping=tex-text;%
+                   Number Case=Old Styles;%
+                   Design Complexity=Flourishes Set A]    [encoding=uc]
+\definefontsynonym[AppleChanceryFour]   [name:Apple Chancery\xetexcolon mapping=tex-text;%
+                   Number Case=Old Styles;%
+                   Design Complexity=Flourishes Set B]    [encoding=uc]
+\definefontsynonym[AppleChanceryCaps]   [name:Apple Chancery\xetexcolon mapping=tex-text;%
+                   Number Case=Old Styles;%
+                   Letter Case=Small Caps]                [encoding=uc]
+\definefontsynonym[AppleChanceryCapsTwo][name:Apple Chancery\xetexcolon mapping=tex-text;%
+                   Number Case=Old Styles;%
+                   Letter Case=Small Caps;%
+                   Design Complexity=Flourishes Set B]    [encoding=uc]
+\stoptypescript
+
+\starttypescript[calligraphy][applechancery][name]
+
+\definefontsynonym[Calligraphy][AppleChanceryOne]
+
+\stoptypescript
+
+\starttypescript[serif][applechancery][name]
+
+\definefontsynonym[Serif]           [AppleChanceryOne]
+\definefontsynonym[SerifBold]       [AppleChanceryThree]
+\definefontsynonym[SerifItalic]     [AppleChanceryTwo]
+\definefontsynonym[SerifBoldItalic] [AppleChanceryFour]
+\definefontsynonym[SerifSlanted]    [AppleChanceryThree]
+\definefontsynonym[SerifBoldSlanted][AppleChanceryFour]
+\definefontsynonym[SerifCaps]       [AppleChanceryCaps]
+
+\stoptypescript
+
+% MS Office 2004 for Mac has impressive Unicode coverage in many of its fonts.
+
+\starttypescript[serif][timesnewroman][uc]
+
+\definefontsynonym[MSTimes]          [name:Times New Roman]            [features=default]
+\definefontsynonym[MSTimesItalic]    [name:Times New Roman Italic]     [features=default]
+\definefontsynonym[MSTimesBold]      [name:Times New Roman Bold]       [features=default]
+\definefontsynonym[MSTimesBoldItalic][name:Times New Roman Bold Italic][features=default]
+
+\stoptypescript
+
+\starttypescript[serif][timesnewroman][name]
+
+\definefontsynonym[Serif]           [MSTimes]
+\definefontsynonym[SerifBold]       [MSTimesBold]
+\definefontsynonym[SerifItalic]     [MSTimesItalic]
+\definefontsynonym[SerifBoldItalic] [MSTimesBoldItalic]
+\definefontsynonym[SerifSlanted]    [MSTimesItalic]
+\definefontsynonym[SerifBoldSlanted][MSTimesBoldItalic]
+\definefontsynonym[SerifCaps]       [MSTimes]
+
+\stoptypescript
+
+\starttypescript[sans][arial][uc]
+
+\definefontsynonym[Arial]          [name:Arial]            [features=default]
+\definefontsynonym[ArialItalic]    [name:Arial Italic]     [features=default]
+\definefontsynonym[ArialBold]      [name:Arial Bold]       [features=default]
+\definefontsynonym[ArialBoldItalic][name:Arial Bold Italic][features=default]
+
+\stoptypescript
+
+\starttypescript[sans][arial][name]
+
+\definefontsynonym[Sans]           [Arial]
+\definefontsynonym[SansBold]       [ArialBold]
+\definefontsynonym[SansItalic]     [ArialItalic]
+\definefontsynonym[SansBoldItalic] [ArialBoldItalic]
+\definefontsynonym[SansSlanted]    [ArialItalic]
+\definefontsynonym[SansBoldSlanted][ArialBoldItalic]
+\definefontsynonym[SansCaps]       [Arial]
+
+\stoptypescript
+
+%D MS Office comes with an installation of the Lucida family in TrueType form. It's nice,
+%D except\dots\ no math, no slanted, no caps and some other auxiliary fonts.
+
+\starttypescript [serif] [lucida] [uc]
+
+  \definefontsynonym [LucidaBright]              [name:Lucida Bright]         [features=default]
+  \definefontsynonym [LucidaBright-Demi]         [name:Lucida Bright Demibold][features=default]
+  \definefontsynonym [LucidaBright-DemiItalic]   [name:Lucida Bright Demibold][features=default]
+  \definefontsynonym [LucidaBright-Italic]       [name:Lucida Bright]         [features=default]
+
+  \definefontsynonym [LucidaBrightSmallcaps]     [LucidaBright]
+  \definefontsynonym [LucidaBrightSmallcaps-Demi][LucidaBright-Demi]
+  \definefontsynonym [LucidaBright-Oblique]      [LucidaBright-Italic]
+
+\stoptypescript
+
+\starttypescript [sans] [lucida] [uc]
+  \definefontsynonym [LucidaSans]           [name:Lucida Sans Regular]        [features=default]
+  \definefontsynonym [LucidaSans-Demi]      [name:Lucida Sans Demibold Roman] [features=default]
+  \definefontsynonym [LucidaSans-DemiItalic][name:Lucida Sans Demibold Italic][features=default]
+  \definefontsynonym [LucidaSans-Italic]    [name:Lucida Sans Italic]         [features=default]
+
+  \definefontsynonym [LucidaSans-Bold]      [LucidaSans-Demi]
+  \definefontsynonym [LucidaSans-BoldItalic][LucidaSans-DemiItalic]
+
+\stoptypescript
+
+\starttypescript [mono] [lucida] [uc]
+
+  \definefontsynonym [LucidaSans-Typewriter]           [name:Lucida Sans Typewriter Regular]     [encoding=uc]
+  \definefontsynonym [LucidaSans-TypewriterBold]       [name:Lucida Sans Typewriter Bold]        [encoding=uc]
+  \definefontsynonym [LucidaSans-TypewriterBoldOblique][name:Lucida Sans Typewriter Bold Oblique][encoding=uc]
+  \definefontsynonym [LucidaSans-TypewriterOblique]    [name:Lucida Sans Typewriter Oblique]     [encoding=uc]
+
+\stoptypescript
+
+\starttypescript [calligraphy] [lucida] [uc]
+
+  \definefontsynonym[LucidaCalligraphy-Italic][name:Lucida Calligraphy Italic][features=default]
+
+\stoptypescript
+
+% No casual that I know of
+
+\starttypescript[handwriting][lucida][uc]
+
+  \definefontsynonym[LucidaHandwriting-Italic][name:Lucida Handwriting Italic][features=default]
+
+\stoptypescript
+
+\starttypescript[fax][lucida][uc]
+
+  \definefontsynonym[LucidaFax]           [name:Lucida Fax Regular]        [features=default]
+  \definefontsynonym[LucidaFax-Demi]      [name:Lucida Fax Demibold]       [features=default]
+  \definefontsynonym[LucidaFax-DemiItalic][name:Lucida Fax Demibold Italic][features=default]
+  \definefontsynonym[LucidaFax-Italic]    [name:Lucida Fax Italic]         [features=default]
+
+\stoptypescript
+
+%D Gentium is from SIL, the fine makers of \XETEX, and it's not only very complete with
+%D Roman and Italic Unicode support, but very attractive.
+
+\starttypescript [serif] [gentium]
+    \definefontsynonym [Gentium-Roman]       [file:GentiumPlus-R] [features=default]
+    \definefontsynonym [Gentium-Italic]      [file:GentiumPlus-I] [features=default]
+    \definefontsynonym [Gentium-Bold]        [file:GenBasB]       [features=default]
+    \definefontsynonym [Gentium-BoldItalic]  [file:GenBasBI]      [features=default]
+    \definefontsynonym [Gentium-Slanted]     [Gentium-Italic]
+    \definefontsynonym [Gentium-BoldSlanted] [Gentium-BoldItalic]
+    \definefontsynonym [Gentium-RomanCaps]   [file:GentiumPlus-R] [features=smallcaps]
+\stoptypescript
+
+\starttypescript [serif] [gentium] [name]
+    \definefontsynonym [Serif]            [Gentium-Roman]
+    \definefontsynonym [SerifItalic]      [Gentium-Italic]
+    \definefontsynonym [SerifBold]        [Gentium-Bold]
+    \definefontsynonym [SerifBoldItalic]  [Gentium-BoldItalic]
+    \definefontsynonym [SerifSlanted]     [Gentium-Slanted]
+    \definefontsynonym [SerifBoldSlanted] [Gentium-BoldSlanted]
+    \definefontsynonym [SerifCaps]        [Serif]
+    \definefontsynonym [OldStyle]         [Serif]
+    \definefontsynonym [SerifCaps]        [Gentium-RomanCaps]
+\stoptypescript
+
+\starttypescript [gentium]
+    \definetypeface [gentium] [rm] [serif] [gentium] [default] [features=default]
+\stoptypescript
+
+\stoptypescriptcollection
+
+\endinput

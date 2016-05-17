@@ -1,4 +1,4 @@
-.TH "mtx-interface" "1" "01-01-2015" "version 0.13" "ConTeXt Interface Related Goodies"
+.TH "mtx-interface" "1" "01-01-2016" "version 0.13" "ConTeXt Interface Related Goodies"
 .SH NAME
 .B mtx-interface
 .SH SYNOPSIS
@@ -12,13 +12,7 @@
 .SH OPTIONS
 .TP
 .B --interfaces
-generate context interface files
-.TP
-.B --messages
-generate context message files
-.TP
-.B --labels
-generate context label files
+generate context mkii interface files
 .TP
 .B --context
 equals --interfaces --messages --languages

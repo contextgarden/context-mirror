@@ -1,0 +1,353 @@
+%D \module
+%D   [       file=supp-tpi,
+%D        version=1997.07.05,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=\TPIC\ Conversion,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This modules implements the conversion of graphic \TPIC\
+%D specials using \METAPOST.
+%D
+%D We reimplement the \TPIC\ specials using the special
+%D mimmicking mechanism implemented in the support module
+%D \type{supp-spe} as well as the \METAPOST\ run||time support
+%D implemented in \type{supp-mps}.
+
+\ifnum\texengine=\luatexengine
+    \expandafter \endinput
+\fi
+
+\ifx\undefined\writestatus         \input supp-mis.mkii \relax \fi
+\ifx\undefined\mimmickspecials     \input supp-spe.mkii \relax \fi
+\ifx\undefined\MPgraphicbox        \input supp-mps.mkii \relax \fi
+\ifx\undefined\dogetEPSboundingbox \input supp-eps.mkii \relax \fi
+
+\writestatus{loading}{ConTeXt Support Macros / TPIC Conversion}
+
+%D Beware: we haven't activated both mechanism yet. This is
+%D to be done in the calling module.
+
+\unprotect
+
+%D When we want to mimmick \TPIC\ specials in \PDFTEX, we need
+%D to map its graphic primitives into \PDF\ ones. The main
+%D problem in doing so is that \PDF\ does not support b-splines
+%D directly and also does not offer us something to draw arcs.
+%D Of course all this scan be implemented in \TEX, and the
+%D first implementation of this module did so, but the results
+%D were not that satisfying. Not having used these specials
+%D before, I had for instance to find out that the \TPIC\
+%D specials were not that unambiguesly defined.
+%D
+%D Then, while discussing something else, Sebastian Ratz told
+%D me that the Web2c implementation that \PDFTEX\ is base upon,
+%D offers some rather discutable, but nevertheless handy
+%D feature:
+%D
+%D \starttyping
+%D \write18{execute program with arguments}
+%D \stoptyping
+%D
+%D Knowing this, I immediatelly decided to throw away the old
+%D conversion macros and use the marvelous \METAPOST, \TEX\
+%D related, drawing program to do the conversion in as high a
+%D quality as possible.
+%D
+%D implementation we're going to present here, not only uses
+%D for drawing purposes, but also uses the more efficient
+%D \METAPOST\ features to store the path.
+%D
+%D \in{Table}[tab:TPIC specials] lists the \TPIC\ specials as
+%D mentioned in the \LATEX\ Graphics Companion and the
+%D relevant part of the \DVIPS\ source. This list shows us
+%D that we have to store the path before we can use it, simply
+%D because we don't know in advance what actions to apply on
+%D it.
+%D
+%D \placetable[here][tab:TPIC specials]{The \TPIC\ special syntax.}
+%D \starttable[|||l|]
+%D \HL
+%D \NC \bf tag \NC \bf arguments               \NC \bf meaning        \NC\SR
+%D \HL
+%D \NC pn      \NC $w$                         \NC set linewidth      \NC\FR
+%D \NC pa      \NC $x$ $y$                     \NC add point to path  \NC\MR
+%D \NC fp      \NC                             \NC draw/fill path     \NC\MR
+%D \NC ip      \NC                             \NC fill path          \NC\MR
+%D \NC da      \NC $l$                         \NC draw dashed path   \NC\MR
+%D \NC dt      \NC $l$                         \NC draw doted path    \NC\MR
+%D \NC sp      \NC $d$                         \NC draw spline        \NC\MR
+%D \NC ar      \NC $x$ $y$ $r_x$ $r_y$ $b$ $e$ \NC draw (partial) arc \NC\MR
+%D \NC ia      \NC $x$ $y$ $r_x$ $r_y$ $b$ $e$ \NC fill (partial) arc \NC\MR
+%D \NC sh      \NC $s$                         \NC fill next path     \NC\LR
+%D \HL
+%D \stoptable
+
+%D The first problem we have to take care of is the fact that
+%D there is no decent begin or end of the drawing process
+%D defined. We can however be quite sure that writers of
+%D packages using these specials will put them into a box,
+%D simply because else this is the most common used way to
+%D treat something \TEX\ as as a whole, like:
+%D
+%D \starttyping
+%D \hbox{\special{}\special{}...}
+%D \stoptyping
+%D
+%D We just start a picture as soon as the first special is
+%D encountered, so this becomes:
+%D
+%D \starttyping
+%D \hbox{\openpicture\newspecial{}\newspecial{}...
+%D \stoptyping
+
+%D The first step in opening the picture is to start a group.
+%D Now we can savely use the egroup that closes the box to also
+%D end the picture.
+
+% BETER: check for context and include mp-tool.mp
+
+\def\startTPICspecials
+  {\bgroup
+   \let\startTPICspecials\relax
+   \aftergroup\stopTPICspecials
+   \resetMPdrawing
+   \startMPdrawing
+     input mp-tool.mpii ;
+     pair p[];
+   \stopMPdrawing}
+
+%D As soon as we begin a picture, we inhibit nesting by
+%D relaxing the start macro. The first \METAPOST\ action we
+%D take is declaring an array of pairs named $p$.
+
+%D Ending the picture is invoked by closing the current group.
+%D Because the \TPIC\ picture comes out mirrored, we have to
+%D reflect the current \METAPOST\ picture, stored in the system
+%D variable {\it currentpicture}, around the $x$-axis.
+
+\def\stopTPICspecials
+  {\startMPdrawing
+     currentpicture:=currentpicture reflectedabout ((0,0),(4095,0));
+   \stopMPdrawing
+   \MPdrawingdonetrue
+   \setbox\MPgraphicbox\hbox
+     {\getMPdrawing}%
+   \setbox\MPgraphicbox\hbox to \zeropoint
+     {\kern-\wd\MPgraphicbox
+      \vbox to \zeropoint{\box\MPgraphicbox\vss}\hss}%
+   \ht\MPgraphicbox\zeropoint
+   \wd\MPgraphicbox\zeropoint
+   \dp\MPgraphicbox\zeropoint
+   \box\MPgraphicbox
+   \egroup}
+
+%D Here the macro \type{\stopwritingMPgraphic} has to take care
+%D of executing and including the \METAPOST\ code.
+
+%D We need to keep track of the number of elements that form
+%D the path. This is needed because we don't know in advance
+%D how the points are to be connected.
+
+\newcount\TPICcounter
+
+%D When a path is draw, we can connect the points using a
+%D smooth curve of drawing straight lines. A closed path can be
+%D drawn or filled.
+
+\newif\ifTPICdraw
+\newif\ifTPICfill
+\newif\ifTPICcurve
+
+%D The \TPIC\ specials permit specifying the line and fill
+%D color as well as the linetype, which can be solid, dashed or
+%D dotted. We'll save those specifications as a \METAPOST\
+%D string, using:
+
+\let\TPIClinetype =\empty
+\let\TPICgrayscale=\empty
+
+%D The magic reduction factor $.07227$ is needed to map the
+%D \TPIC\ $1/1000$ of an inch to \POSTSCRIPT\ points. We cannot
+%D delegate this task to \METAPOST\ because this program does
+%D not accept values greater than 4095.
+
+%D I won't discuss all the specifics used in implementing
+%D the specials. The \METAPOST\ part is rather trivial. Many
+%D specials have much in common, so the amout of code is not
+%D that large.
+
+\redefinespecial pa \using#1 #2\endspecial
+  {\startTPICspecials
+   \bgroup
+   \global\advance\TPICcounter 1
+   \dimen0=#1pt \dimen0=.07227\dimen0
+   \dimen2=#2pt \dimen2=.07227\dimen2
+   \startMPdrawing
+     p[\the\TPICcounter]:=(\the\dimen0,\the\dimen2);
+   \stopMPdrawing
+   \egroup}
+
+\redefinespecial pn \using#1\endspecial
+  {\startTPICspecials
+   \bgroup
+   \dimen0=#1pt \dimen0=.07227\dimen0
+   \startMPdrawing
+     pickup pencircle scaled \the\dimen0;
+   \stopMPdrawing
+   \egroup}
+
+\redefinespecial sh \using#1\endspecial
+  {\startTPICspecials
+   \bgroup
+   \edef\g{#1}%
+   \edef\g{\ifx\g\empty.5\else#1\fi}%
+   \xdef\TPICgrayscale{withcolor (\g,\g,\g)}%
+   \egroup}
+
+\redefinespecial wh \using#1\endspecial
+  {\mimmickspecial sh \using0\endspecial}
+
+\redefinespecial bk \using#1\endspecial
+  {\mimmickspecial sh \using1\endspecial}
+
+\redefinespecial da \using#1\endspecial
+  {\startTPICspecials
+   \bgroup
+   \edef\l{#1}%
+   \ifx\l\empty
+     \gdef\TPIClinetype{dashed evenly}%
+   \else
+     \dimen0=#1in
+     \ifdim\dimen0<\!!zeropoint \dimen0=-\dimen0\fi
+     \edef\f{\the\dimen0 \space}%
+     \dimen0=.5\dimen0
+     \edef\h{\the\dimen0 \space}%
+     \xdef\TPIClinetype{dashed dashpattern (on \h off \f on \h)}%
+   \fi
+   \egroup
+   \TPICcurvefalse\TPICdrawtrue
+   \drawTPICpath\using#1\endspecial}
+
+\redefinespecial dt \using#1\endspecial
+  {\startTPICspecials
+   \bgroup
+   \edef\l{#1}%
+   \xdef\TPIClinetype{dashed withdots \ifx\l\empty\else scaled #1in\fi}%
+   \egroup
+   \TPICcurvefalse\TPICdrawtrue
+   \drawTPICpath\using#1\endspecial}
+
+\redefinespecial fp \using#1\endspecial
+  {\startTPICspecials
+   \TPICcurvefalse\TPICdrawtrue
+   \ifdim0#1pt=\!!zeropoint
+     \drawTPICpath\using#1\endspecial
+   \else\ifdim0#1pt<\!!zeropoint
+     \mimmickspecial dt\using#1\endspecial
+   \else
+     \mimmickspecial da\using#1\endspecial
+   \fi\fi}
+
+\redefinespecial sp
+  {\startTPICspecials\TPICdrawtrue\TPICcurvetrue\drawTPICpath}
+
+\redefinespecial ip
+  {\startTPICspecials\TPICfilltrue\drawTPICpath}
+
+\redefinespecial ar
+  {\startTPICspecials\TPICdrawtrue\drawTPICarc}
+
+\redefinespecial ia
+  {\startTPICspecials\TPICfilltrue\drawTPICarc}
+
+%D These substitutes use two auxiliary macros that take care of
+%D actually drawing the shape or arc. Here we use the stored
+%D linetype (solid, dashed, dotted) and color (grayscale).
+
+\def\drawTPICpath\using#1\endspecial
+  {\bgroup
+   \ifTPICdraw
+     \def\TPICgrayscale{}%
+   \fi
+   \startMPdrawing
+     \ifTPICfill fill\fi\ifTPICdraw draw\fi\space
+     for i:=1 upto \the\TPICcounter-1:
+       p[i]\ifTPICcurve..\else--\fi
+     endfor
+     p[\the\TPICcounter]
+     \ifTPICfill\ifTPICcurve..\else--\fi cycle \fi
+     \TPIClinetype\space\TPICgrayscale;
+   \stopMPdrawing
+   \resetTPICvariables
+   \egroup}
+
+%D I have to admit that at the moment I wrote this macro, I
+%D could not write this piece of \METAPOST. Fortunately
+%D Thortsen Ohl promptly answered the question I posted to the
+%D \METAFONT\ discussion list.
+
+\def\drawTPICarc\using#1 #2 #3 #4 #5 #6\endspecial
+  {\bgroup
+   \ifTPICdraw
+     \def\TPICgrayscale{}%
+   \fi
+   \dimen 0=#1pt\dimen 0=.07227\dimen 0
+   \dimen 2=#2pt\dimen 2=.07227\dimen 2
+   \dimen10=#3pt\dimen10=.14454\dimen10
+   \dimen12=#4pt\dimen12=.14454\dimen12
+   \dimen20=#5pt
+   \dimen22=#6pt
+   \startMPdrawing
+     \ifTPICfill fill\fi\ifTPICdraw draw\fi \space
+     \ifTPICfill\else subpath 4/3.14159*(\the\dimen20,\the\dimen22) of \fi
+     fullcircle xscaled \the\dimen10 \space yscaled \the\dimen12 \space
+     shifted (\the\dimen0,\the\dimen2)
+     \TPIClinetype \space \TPICgrayscale;
+   \stopMPdrawing
+   \resetTPICvariables
+   \egroup}
+
+%D Resetting the variables need to be done globally because we
+%D cannot be sure if any further grouping is used by the
+%D envelopping macros.
+
+\def\resetTPICvariables
+  {\global\TPICcounter\zerocount
+   \global\TPICfillfalse
+   \global\TPICdrawfalse
+   \global\let\TPIClinetype\empty
+   \global\let\TPICgrayscale\empty}
+
+%D I have to admit that by using the \METAPOST\ Bzier cubics
+%D routines these implementation does produce better curves
+%D then most \DVI\ drivers do using the \TPIC\ prescribed
+%D b-splines. Take for instance the sequence:
+%D
+%D \starttyping
+%D \special{pa 2000 1000}
+%D \special{pa 1000 2000}
+%D \special{pa 0000 1000}
+%D \special{pa 1000 0000}
+%D \special{pa 2000 1000}
+%D \special{sp}
+%D \stoptyping
+%D
+%D One would expect that this code produced a closed circle,
+%D but the curve that comes out using b-splines is far from
+%D round. We can however savely asume that the arc producing
+%D specials will be used for drawing circle fragments, while
+%D the path specials will be used for arbitraty curves. And for
+%D b-splines to produce nice curves, one will often use many
+%D points to get the desired results. Therefore, using the
+%D \METAPOST\ Bzier curves will certainly produce similar and
+%D even better graphics, except in those rare cases where one
+%D uses delinberately the not that accurate features of
+%D b-splines. Hereby the user is warned.
+
+\protect \endinput

@@ -1,0 +1,1049 @@
+%D \module
+%D   [       file=strc-con,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Constructions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Constructions}
+
+\registerctxluafile{strc-con}{1.001}
+
+% todo: check why \copy .. probably mkii leftover
+%
+% todo: check if commands similar to lists
+% todo: \strc_constructions_setup_counter\strc_constructions_setup_counter{#1} in setup ... synchronization
+%
+% ? : \def\showdnlisttext{\constructionparameter\c!listtext}   % space in default
+%
+% maybe: pickup text and store in buffer ...
+%
+% \@@notemakeconstruction[##1]{}{##2}%
+% \expandafter\endgroup\noteparameter\c!next}}
+%
+% todo: \currentconstructionattribute : can be a counter instead
+
+%D Constructions are just descriptions but a bit more abstract so that we can
+%D conveniently build upon them. They are not really meant for users but module
+%D writers might find them useful. We mention a couple of parameters but these are
+%D only mentioned because in the shared code we map all resolvers to constructions.
+%D
+%D On top of constructions we build descriptions, enumerations, notes, labels and
+%D maybe some day more.
+
+\unprotect
+
+%D Todo:
+
+\installcorenamespace{construction}
+
+\installcommandhandler \??construction {construction} \??construction
+
+\let\setupconstructions\setupconstruction
+
+\setupconstructions[%
+    %c!title=,
+    %c!text=,
+    %
+    %c!style=,
+    %c!color=,
+    %c!command=,
+    %c!align=,
+    %
+    %c!headstyle=,
+    %c!headcolor=,
+    %c!headalign=,
+    %
+    %c!titlestyle=,
+    %c!titlecolor=,
+    %c!titlecommand=,
+    %c!titleleft=,
+    %c!titleright=,
+    %
+    %c!closesymbol=,
+    %c!closecommand=,
+    %
+    \c!alternative=\v!left,
+    \c!display=\v!yes,
+    \c!width=7\emwidth,
+    \c!distance=\emwidth,
+    \c!titledistance=.5\emwidth,
+    %c!hang=,
+    %c!sample=,
+    \c!margin=\v!no,
+    \c!before=\blank,
+    \c!inbetween=\blank,
+    \c!after=\blank,
+    %c!indentnext=,
+    %c!indenting=,
+    %
+    \c!expansion=\v!no,
+    %c!xmlsetup=,
+    %s!catcodes=,
+]
+
+%D Constructions and alike uses similar structures. In order to prevent issues
+%D we freeze some states. There is some overhead in the intermediate define
+%D step (as we could set them directly) but this is more flexible (and looks
+%D nicer). Keep in mind that descriptions, enumeration and notations are all
+%D independent and that we just remap the resolvers.
+
+% \defineconstruction[test][handler=description,level=1]
+% \defineconstruction[test][parent][handler=description,level=3]
+
+\installcorenamespace{constructionmain}  % frozen after definition
+\installcorenamespace{constructionlevel} % frozen after definition
+\installcorenamespace{constructionclass} % frozen after definition
+
+\let\currentconstructionmain   \empty
+\let\currentconstructionlevel  \empty
+\let\currentconstructionhandler\empty
+
+\settrue\c_strc_constructions_define_commands % use with care, might become a proper key
+
+\appendtoks
+    \ifx\currentconstructionparent\empty
+        \letvalue{\??constructionmain\currentconstruction}\currentconstruction
+        \definelist[\currentconstruction]% goodie
+    \else
+        \letvalue{\??constructionmain\currentconstruction}\currentconstructionparent
+        \definelist[\currentconstruction][\currentconstructionparent]% goodie
+    \fi
+    \setevalue{\??constructionlevel\currentconstruction}{\number\constructionparameter\c!level}%
+    \setevalue{\??constructionclass\currentconstruction}{\constructionparameter\s!handler}%
+\to \everydefineconstruction
+
+\appendtoks
+    \ifconditional\c_strc_constructions_define_commands
+        \setuevalue{\e!start\currentconstruction}{\strc_constructions_start{\currentconstruction}}%
+        \setuevalue{\e!stop \currentconstruction}{\strc_constructions_stop}%
+    \fi
+\to \everydefineconstruction
+
+%D Just a basic environment (mostly for testing). We will provide a 'setup' based
+%D plugin once the rest is sorted out.
+
+\unexpanded\def\strc_constructions_start#1%
+  {\begingroup
+   \strc_constructions_initialize{#1}%
+   \dodoubleempty\strc_constructions_start_regular}
+
+\unexpanded\def\strc_constructions_start_regular[#1][#2]%
+  {\strc_constructions_register[#2][\c!label={\constructionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,#1]%
+   \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
+
+\unexpanded\def\strc_constructions_stop
+  {\csname\??constructionstophandler\currentconstructionhandler\endcsname
+   \endgroup}
+
+%D As we will build on top of the generic construction mechanism we have handlers
+%D as a sort of plug in mechanism. In order to have some consistency we share
+%D some namespaces.
+
+\installcorenamespace{constructioninitializer}
+\installcorenamespace{constructionfinalizer}
+
+\installcorenamespace{constructionmainhandler}
+\installcorenamespace{constructioncommandhandler}
+\installcorenamespace{constructionstarthandler}
+\installcorenamespace{constructionstophandler}
+
+\installcorenamespace{constructiontexthandler}
+\installcorenamespace{constructionnotehandler}
+
+\unexpanded\def\strc_constructions_initialize#1% class instance
+  {\edef\currentconstruction{#1}%
+   \let\currentconstructionhash\??construction
+   \let\currentconstructionlistentry\!!zerocount
+   \expandafter\let\expandafter\currentconstructionmain   \csname\??constructionmain \currentconstruction\endcsname
+   \expandafter\let\expandafter\currentconstructionlevel  \csname\??constructionlevel\currentconstruction\endcsname
+   \expandafter\let\expandafter\currentconstructionhandler\csname\??constructionclass\currentconstruction\endcsname
+   \csname\??constructioninitializer\currentconstructionhandler\endcsname}
+
+\unexpanded\def\strc_constructions_finalize
+  {\csname\??constructionfinalizer\currentconstructionhandler\endcsname
+   \strc_constructions_discard}
+
+\newconditional\c_strc_constructions_number_state
+\newconditional\c_strc_constructions_title_state
+
+\unexpanded\setvalue{\??constructioninitializer\v!construction}%
+  {\setfalse\c_strc_constructions_number_state
+   \setfalse\c_strc_constructions_title_state}
+
+\unexpanded\setvalue{\??constructionfinalizer\v!construction}%
+  {}
+
+%D We keep the command variant around but rather would move to the start-stop one.
+%D Also, passing the title as argument has some history so we need to keep that as
+%D well.
+
+% \ifdefined\dotagsetconstruction \else \let\dotagsetconstruction\relax \fi
+
+\newtoks\everyconstruction
+
+\unexpanded\def\currentconstructiontext
+  {\begstrut
+   \csname\??constructiontexthandler\currentconstructionhandler\endcsname
+   \endstrut}
+
+\unexpanded\def\currentconstructionsample
+  {\begstrut
+   \constructionparameter\c!text
+   \p_strc_constructions_sample
+   \endstrut}
+
+\unexpanded\setvalue{\??constructionmainhandler\v!construction}#1%
+  {\iftrialtypesetting \else
+     \begingroup
+     \currentconstructionsynchronize % reinstated
+     \attribute\destinationattribute\currentconstructionattribute\relax % todo, whole text
+     \signalcharacter
+     \endgroup
+   \fi#1}
+
+\unexpanded\setvalue{\??constructiontexthandler\v!construction}%
+  {\begingroup
+   \useconstructionstyleandcolor\c!headstyle\c!headcolor % move to \currentconstructiontext
+   \the\everyconstruction
+   \constructionparameter\c!headcommand
+     {\strut
+      \constructionparameter\c!text
+      \clf_savedlisttitle{\currentconstructionmain}\currentconstructionlistentry\relax}%
+   \endgroup}
+
+\unexpanded\def\strc_constructions_stored_start
+  {\begingroup % brrr \endgroup elsewhere ... will be sorted out
+   \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
+
+\unexpanded\def\strc_constructions_stored_stop
+  {\csname\??constructionstophandler\currentconstructionhandler\endcsname}
+
+\newconstant\c_strc_constructions_nested_state % to be redone
+
+\def\resetconstructions % to be used in e.g. footnotes
+  {\c_strc_constructions_nested_state\zerocount}
+
+\unexpanded\setvalue{\??constructioncommandhandler\v!construction}%
+  {\endgroup}
+
+\let\p_strc_constructions_sample        \empty
+\let\p_strc_constructions_align         \empty
+\let\p_strc_constructions_indenting     \empty
+\let\p_strc_constructions_width         \empty
+\let\p_strc_constructions_aligntitle    \empty
+\let\p_strc_constructions_renderingsetup\empty
+\let\p_strc_constructions_headalign     \empty
+\let\p_strc_constructions_hang          \empty
+\let\p_strc_constructions_inbetween     \empty
+\let\p_strc_constructions_closesymbol   \empty
+\let\p_strc_constructions_distance      \empty
+
+\newconditional\c_strc_constructions_distance_none
+
+\def\strc_constructions_set_width_and_distance
+  {\assignwidth
+     \p_strc_constructions_width
+     \constructionsheadwidth
+     {\unhcopy\constructionheadbox}
+     \constructionsheaddistance}
+
+\def\strc_constructions_preroll_head#content%
+  {\setbox\constructionheadbox\hbox
+     {\forgetall
+      \dontcomplain
+      \settrialtypesetting
+      \csname\??constructionmainhandler\currentconstructionhandler\endcsname#content}}
+
+\def\strc_constructions_ignore_head
+  {\constructionsheaddistance\zeropoint
+   \constructionsheadwidth   \zeropoint
+   % we also need to make sure that no stretch creeps in (new per 2015-02-02, for Alan)
+   \settrue\c_strc_constructions_distance_none}
+
+\let\currentconstructionhash\??construction
+
+\unexpanded\setvalue{\??constructionstarthandler\v!construction}% this will be redone (reorganized) .. too much boxing
+  {\dostarttaggedchained\t!construction\currentconstruction\currentconstructionhash
+%    \dotagsetconstruction
+   \constructionparameter\c!before
+   \begingroup
+   \edef\currentconstructionalternative{\constructionparameter\c!alternative}%
+   \edef\p_strc_constructions_renderingsetup{\constructionalternativeparameter\c!renderingsetup}%
+   % catch fuzzyness
+   \ifx\p_strc_constructions_renderingsetup\empty
+      \letconstructionparameter\c!alternative\v!left
+      \let\currentconstructionalternative\v!left
+      \edef\p_strc_constructions_renderingsetup{\constructionalternativeparameter\c!renderingsetup}%
+   \else
+     \doifnotsetups\p_strc_constructions_renderingsetup
+       {\letconstructionparameter\c!alternative\v!left
+        \let\currentconstructionalternative\v!left
+        \edef\p_strc_constructions_renderingsetup{\constructionalternativeparameter\c!renderingsetup}}%
+   \fi
+   %
+   \doadaptleftskip{\constructionparameter\c!margin}%
+   \setlocalhsize % so we can use \localhsize in width assignments
+   \edef\p_strc_constructions_distance{\constructionalternativeparameter\c!distance}%
+   \edef\p_strc_constructions_width{\constructionalternativeparameter\c!width}%
+   \ifx\p_strc_constructions_distance\v!none
+     \settrue\c_strc_constructions_distance_none
+     \constructionsheaddistance\zeropoint
+   \else
+     \setfalse\c_strc_constructions_distance_none
+     \constructionsheaddistance\p_strc_constructions_distance\relax
+     \ifdim\constructionsheaddistance=\zeropoint
+       \ifx\p_strc_constructions_width\v!broad
+         \constructionsheaddistance\emwidth
+       \else\ifx\p_strc_constructions_width\v!line
+         \constructionsheaddistance\emwidth
+       \fi\fi
+     \fi
+   \fi
+   % inefficient and not always needed, for instance not with margins so we will make checkers
+   % per alternative some day (especially in labels this is unwanted overhead)
+   %
+   % maybe we should have an option as i cannot oversee the consequences now
+   %
+   % \edef\p_strc_constructions_sample{\constructionparameter\c!sample}%
+   % \ifx\p_strc_constructions_sample\empty
+   %   \strc_constructions_preroll_head\currentconstructiontext
+   % \else
+   %   \strc_constructions_preroll_head\currentconstructiontextsample
+   % \fi
+   % \strc_constructions_set_width_and_distance
+   %
+   \strc_constructions_preroll_head\currentconstructiontext
+   \ifzeropt\wd\constructionheadbox
+     \strc_constructions_ignore_head
+   \else
+     \edef\p_strc_constructions_sample{\constructionparameter\c!sample}%
+     \ifx\p_strc_constructions_sample\empty
+       \strc_constructions_set_width_and_distance
+     \else
+       \strc_constructions_preroll_head\currentconstructionsample
+       \ifzeropt\wd\constructionheadbox
+         \strc_constructions_ignore_head
+       \else
+         \strc_constructions_set_width_and_distance
+       \fi
+     \fi
+   \fi
+   %
+   \dostarttagged\t!constructiontag\empty % todo
+   \setbox\constructionheadbox\hbox
+     {\forgetall
+      \dontcomplain
+      \ifx\currentconstructionalternative\v!serried % brrr, hack, will change
+        \csname\??constructionmainhandler\currentconstructionhandler\endcsname\currentconstructiontext
+      \else
+        \csname\??constructionmainhandler\currentconstructionhandler\endcsname{\boxedconstructionhead\currentconstructiontext}%
+      \fi}%
+   \edef\p_strc_constructions_aligntitle{\constructionparameter\c!aligntitle}%
+   \ifx\p_strc_constructions_aligntitle\v!no
+     \leftconstructionskip \leftskip
+     \rightconstructionskip\rightskip
+   \else
+     \ifcase\c_strc_constructions_nested_state
+       \leftconstructionskip \leftskip
+       \rightconstructionskip\rightskip
+     \fi
+   \fi
+   \edef\p_strc_constructions_align{\constructionparameter\c!align}%
+   \ifx\p_strc_constructions_align\empty \else
+     \setupalign[\p_strc_constructions_align]% \use...
+   \fi
+   \ifcase\c_strc_constructions_nested_state
+     \c_strc_constructions_nested_state\plusone
+   \or
+     \c_strc_constructions_nested_state\plustwo
+   \fi
+   \strc_constructions_close_symbol_reset
+   %
+   \edef\p_strc_constructions_headalign{\constructionparameter\c!headalign}%
+   %
+   \directsetup\p_strc_constructions_renderingsetup\relax
+   % moved to here 2014-07-03
+   \edef\p_strc_constructions_indenting{\constructionparameter\c!indenting}%
+   \ifx\p_strc_constructions_indenting\empty \else
+     \indenting[\p_strc_constructions_indenting]% \use...
+   \fi
+   %
+   \dostoptagged % tag
+   \dostarttagged\t!constructioncontent\empty
+   \ignorespaces} % args not needed
+
+\unexpanded\setvalue{\??constructionstophandler\v!construction}%
+  {\strc_constructions_close_symbol_place
+   \doifnot{\constructionparameter\c!display}\v!no\par
+   \dostoptagged % content
+   \dostoptagged % construction
+   \endgroup
+   \constructionparameter\c!after
+   \useindentnextparameter\constructionparameter
+   \strc_constructions_finalize
+%   \endgroup
+   \dorechecknextindentation}
+
+\unexpanded\def\boxedconstructionhead#1%
+  {\vtop
+     {\hsize\constructionsheadwidth
+      \edef\p_strc_constructions_headalign{\constructionparameter\c!headalign}%
+      \ifx\p_strc_constructions_headalign\empty \else
+        \setupalign[\p_strc_constructions_headalign]% \use...
+      \fi
+      #1}}
+
+\installcorenamespace{constructionalternative}
+\installcorenamespace{constructionrenderings}
+
+% see lists: alternativemethods ... todo
+%
+% there will be a proper interface to variables
+
+\installcommandhandler \??constructionalternative {constructionalternative} \??constructionalternative
+
+\setupconstructionalternative
+  [\c!width=\constructionparameter\c!width,
+   \c!distance=\constructionparameter\c!distance]
+
+\defineconstructionalternative
+  [\v!left]
+  [%\c!width=7em,
+   %\c!distance=1em,
+   \c!renderingsetup=\??constructionrenderings:\v!left]
+
+\defineconstructionalternative
+  [\v!right]
+  [%\c!width=7em,
+   %\c!distance=1em,
+   \c!renderingsetup=\??constructionrenderings:\v!right]
+
+\defineconstructionalternative
+  [\v!inmargin]
+  [\c!renderingsetup=\??constructionrenderings:\v!inmargin]
+
+\defineconstructionalternative
+  [\v!inleft]
+  [\c!renderingsetup=\??constructionrenderings:\v!inleft]
+
+\defineconstructionalternative
+  [\v!inright]
+  [\c!renderingsetup=\??constructionrenderings:\v!inright]
+
+\defineconstructionalternative
+  [\v!margin]
+  [\c!renderingsetup=\??constructionrenderings:\v!margin]
+
+\defineconstructionalternative
+  [\v!leftmargin]
+  [\c!renderingsetup=\??constructionrenderings:\v!leftmargin]
+
+\defineconstructionalternative
+  [\v!rightmargin]
+  [\c!renderingsetup=\??constructionrenderings:\v!rightmargin]
+
+\defineconstructionalternative
+  [\v!innermargin]
+  [\c!renderingsetup=\??constructionrenderings:\v!innermargin]
+
+\defineconstructionalternative
+  [\v!outermargin]
+  [\c!renderingsetup=\??constructionrenderings:\v!outermargin]
+
+\defineconstructionalternative
+  [\v!serried]
+  [\c!renderingsetup=\??constructionrenderings:\v!serried]
+
+\defineconstructionalternative
+  [\v!hanging]
+  [%\c!width=\v!fit,
+   \c!renderingsetup=\??constructionrenderings:\v!hanging]
+
+\defineconstructionalternative
+  [\v!top]
+  [\c!renderingsetup=\??constructionrenderings:\v!top,
+   \c!width=\localhsize]
+
+\defineconstructionalternative
+  [\v!command]
+  [\c!renderingsetup=\??constructionrenderings:\v!command]
+
+\newbox   \constructionheadbox
+\newskip  \leftconstructionskip
+\newskip  \rightconstructionskip
+\newdimen \constructionsheadwidth    % replaces \!!widtha % TODO: proper namespace dimens
+\newdimen \constructionsheaddistance % replaces \!!widthb % TODO: proper namespace dimens
+
+\def\strc_constructions_set_hang_box#1% messy left/rightskip
+  {\setbox\constructionheadbox\vtop   % \vbox gaat fout in hang
+     {\forgetall
+      \dontcomplain
+      \hsize\constructionsheadwidth\relax
+      \ifx\p_strc_constructions_headalign\empty
+        \setupalign[#1]% use fast one
+      \else
+        \setupalign[\p_strc_constructions_headalign]% use fast one
+      \fi
+      \ifconditional\c_strc_constructions_distance_none \else
+        \advance\ifx#1\v!flushleft\rightskip\else\leftskip\fi\constructionsheaddistance % only difference and wrong anyway
+      \fi
+      \flushconstructionheadbox}%
+   \setbox\constructionheadbox\hpack{\box\constructionheadbox}% needed in case of e.g. a real big head font, see descriptions-006.tex
+   \ht\constructionheadbox\strutht
+   \dp\constructionheadbox\strutdp}
+
+\def\strc_constructions_set_pure_box#1% default ... better set up differently
+  {\setbox\constructionheadbox\vtop
+     {\forgetall
+      \dontcomplain
+      \hsize\constructionsheadwidth\relax
+      \ifx\p_strc_constructions_headalign\empty
+        \setupalign[#1]% use fast one
+      \else
+        \setupalign[\p_strc_constructions_headalign]% use fast one
+      \fi
+      \flushconstructionheadbox}%
+   \setbox\constructionheadbox\hpack{\box\constructionheadbox}% needed in case of e.g. a real big head font, see descriptions-006.tex
+   \ht\constructionheadbox\strutht
+   \dp\constructionheadbox\strutdp}
+
+\def\strc_constructions_set_hang#1%
+  {\ifx\p_strc_constructions_hang\empty
+     % nothing
+   \else\ifx\p_strc_constructions_hang\v!fit
+     \scratchdimen\htdp\constructionheadbox
+     \getnoflines\scratchdimen
+     \hangafter-\noflines
+   \else\ifx\p_strc_constructions_hang\v!broad
+     \scratchdimen\dimexpr\htdp\constructionheadbox+.5\strutht\relax
+     \getnoflines\scratchdimen
+     \hangafter-\noflines
+   \else
+     \hangafter-\p_strc_constructions_hang
+   \fi\fi\fi
+   \relax
+   \hangindent\ifx#1\v!right-\fi\constructionsheadwidth}
+
+% \unexpanded\def\flushconstructionheadbox
+%   {\ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox}
+
+\unexpanded\def\flushconstructionheadbox
+  {\ifhbox\constructionheadbox\unhbox\else\box\fi\constructionheadbox}
+
+% The setups. These only deal with placement of the descriptor and initializing the
+% environment. The wrapping happens elsewhere.
+
+% todo: optimize the setups with
+%
+% \ifconditional\c_strc_constructions_distance_none : no need for skip
+% \ifzeropt\wd\constructionheadbox : no need for box and skips
+
+\startsetups[\??constructionrenderings:\v!left]
+    \edef\p_strc_constructions_hang{\constructionparameter\c!hang}%
+    \doifelsesetups{\??constructionrenderings:\v!left:\p_strc_constructions_hang} {
+        \directsetup{\??constructionrenderings:\v!left:\p_strc_constructions_hang}
+    } {
+        \directsetup{\??constructionrenderings:\v!left:\v!hanging}
+    }
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!right]
+    \edef\p_strc_constructions_hang{\constructionparameter\c!hang}
+    \doifelsesetups{\??constructionrenderings:\v!right:\p_strc_constructions_hang} {
+        \directsetup{\??constructionrenderings:\v!right:\p_strc_constructions_hang}
+    } {
+        \directsetup{\??constructionrenderings:\v!right:\v!hanging}
+    }
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!left:\v!none]
+    \let\\=\crlf
+    \noindent
+    \strc_constructions_set_pure_box\v!flushleft
+    \leftskip\dimexpr\leftconstructionskip+\constructionsheadwidth+\constructionsheaddistance\relax
+    \rightskip\rightconstructionskip\relax
+    \llap {
+        \hpack to \leftskip {
+            \hskip\leftconstructionskip
+            \box\constructionheadbox % was copy
+            \hss
+        }
+    }
+    \nobreak
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!left:0]
+    \directsetup{\??constructionrenderings:\v!left:\v!none}
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!left:]
+    \directsetup{\??constructionrenderings:\v!left:\v!none}
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!right:\v!none]
+    \let\\=\crlf
+    \noindent
+    \leftskip\leftconstructionskip
+    \rightskip\dimexpr\rightconstructionskip+\constructionsheadwidth\relax
+   %\strc_constructions_pure_hang_box\raggedleft
+    \strc_constructions_set_pure_box\v!flushright
+    \rlap {
+        \hskip\dimexpr\hsize-\leftskip-\rightskip\relax
+        \copy\constructionheadbox
+        \hskip\rightconstructionskip
+    }
+    \nobreak
+    \advance\rightskip \constructionsheaddistance
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!right:0]
+    \directsetup{\??constructionrenderings:\v!right:\v!none}
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!right:]
+    \directsetup{\??constructionrenderings:\v!right:\v!none}
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!left:\v!margin]%
+    \let\\=\crlf
+    \noindent
+    \strc_constructions_set_pure_box\v!flushleft
+    \llap {
+        \hpack to \constructionsheadwidth {
+            \box\constructionheadbox % was copy
+            \hss
+        }
+        \hskip\constructionsheaddistance
+    }
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!right:\v!margin]%
+    \let\\=\crlf
+    \noindent
+    \strc_constructions_set_pure_box\v!flushright
+    \rlap {
+        \hskip\constructionsheaddistance
+        \hpack to \constructionsheadwidth {
+            \box\constructionheadbox % was copy
+            \hss
+        }
+    }
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!left:\v!hanging]%
+    \let\\=\crlf
+    \dontcomplain
+    \advance\constructionsheadwidth \constructionsheaddistance
+    \strc_constructions_set_hang_box\v!flushleft
+    \strc_constructions_set_hang\v!left
+    \noindent
+    \llap {
+        \tpack to \zeropoint {
+            \box\constructionheadbox
+        }
+    }
+    \nobreak
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!right:\v!hanging]%
+    \let\\=\crlf
+    \dontcomplain
+    \advance\constructionsheadwidth \constructionsheaddistance
+    \strc_constructions_set_hang_box\v!flushright
+    \strc_constructions_set_hang\v!right
+    \noindent
+    \rlap {
+        \hpack to \dimexpr\hsize-\leftskip-\rightskip\relax {
+            \hss
+            \tpack to \zeropoint {
+                \box\constructionheadbox
+            }
+        }
+    }
+    \nobreak
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!top]
+    \strc_sectioning_prevent_page_break\plusone
+    \let\\=\space
+    \noindent
+    \copy\constructionheadbox % why copy ?
+    \par
+    \nobreak
+    \edef\p_strc_constructions_inbetween{\constructionparameter\c!inbetween}%
+    \ifx\p_strc_constructions_inbetween\empty \else
+      \p_strc_constructions_inbetween
+      \par
+      \nobreak
+    \fi
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+% why copy? historic reason?
+
+\startsetups[\??constructionrenderings:\v!margin]
+    \let\\=\crlf
+    \noindent
+    \inmargin[\c!scope=\v!local]{\flushconstructionheadbox}%
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!leftmargin]
+    \let\\=\crlf
+    \noindent
+    \inleft[\c!scope=\v!local]{\flushconstructionheadbox}%
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!rightmargin]
+    \let\\=\crlf
+    \noindent
+    \inright[\c!scope=\v!local]{\flushconstructionheadbox}%
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!innermargin]
+    \let\\=\crlf
+    \noindent
+    \ininner[\c!scope=\v!local]{\flushconstructionheadbox}%
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!outermargin]
+    \let\\=\crlf
+    \noindent
+    \inouter[\c!scope=\v!local]{\flushconstructionheadbox}%
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!inmargin]
+    \directsetup{\??constructionrenderings:\v!margin}
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!inleft]
+    \directsetup{\??constructionrenderings:\v!leftmargin}
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!inright]
+    \directsetup{\??constructionrenderings:\v!rightmargin}
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!serried]
+    % already set?
+    \edef\p_strc_constructions_width{\constructionparameter\c!width}% CHECK ! ! ! wrong parameter namespace
+    \doifelsesetups{\??constructionrenderings:\v!serried:\p_strc_constructions_width} {
+        \directsetup{\??constructionrenderings:\v!serried:\p_strc_constructions_width}
+    } {
+        \directsetup{\??constructionrenderings:\v!serried:\v!wide}
+    }
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!serried:\v!fit]
+    \let\\=\crlf
+    \noindent
+    \flushconstructionheadbox
+    \nobreak
+    \hskip\constructionsheaddistance\relax
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!serried:\v!broad]
+    \let\\=\crlf
+    \noindent
+    \flushconstructionheadbox
+    \ifconditional\c_strc_constructions_distance_none \else
+        \nobreak
+        \hskip\constructionsheaddistance \s!plus .5\constructionsheaddistance \s!minus .25\constructionsheaddistance\relax
+    \fi
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!serried:]
+    \directsetup{\??constructionrenderings:\v!serried:\v!broad}
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!serried:\v!wide]
+    \let\\=\crlf
+    \noindent
+    \hbox to \constructionsheadwidth {
+        \flushconstructionheadbox
+        \hss
+    }
+    \nobreak
+    \hskip\constructionsheaddistance\relax
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!hanging]
+    % tricky: leftskipadaption is somewhat unpredictable
+    \let\\=\crlf
+    \noindent
+    \advance\leftskip-\leftskipadaption\relax
+    \ifdim\leftskipadaption=\zeropoint
+        \leftskipadaption1.5\emwidth\relax % just some default
+        \ifnum\c_strc_constructions_nested_state=\plusone
+            \ifdim\leftskip>\zeropoint \relax
+                \leftskipadaption\leftskip
+            \fi
+        \fi
+    \fi
+    \ifnum\c_strc_constructions_nested_state>\zerocount % was \ifnum\c_strc_constructions_nested_state=\plusone
+        \advance\leftskip\leftskipadaption % but we're already further on
+    \fi
+    \hskip-\leftskipadaption\relax
+    \ifhbox\constructionheadbox \unhbox\else\box\fi\constructionheadbox
+    \ifconditional\c_strc_constructions_distance_none \else
+      % we used to have just a kern, but long lines look bad then
+      \scratchdistance\ifdim\constructionsheaddistance=\zeropoint .75\emwidth\else\constructionsheaddistance\fi
+      \hskip     \scratchdistance
+      \s!plus .25\scratchdistance
+      \s!minus.25\scratchdistance
+    \fi
+    \ifhmode
+        \ifx\p_strc_constructions_width\v!line
+            \hfill\break
+        \else
+            \allowbreak
+        \fi
+    \fi
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+%D \starttyping
+%D \setupfootnotation[location=command,headcommand=\llap]
+%D \stoptyping
+
+\startsetups[\??constructionrenderings:\v!command]
+    \noindent
+    \constructionparameter\c!headcommand{\flushconstructionheadbox}
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+% you can use \placeclosesymbol or \qed to place a symbol at the end of a
+% construction
+
+\installcorenamespace{constructionclosesymbol}
+
+\let\placeclosesymbol\donothing
+\let\qed             \donothing
+
+\def\strc_constructions_close_symbol_reset % no need for global
+  {\global\expandafter\settrue\csname\??constructionclosesymbol\currentconstruction\endcsname
+   \let\placeclosesymbol\strc_constructions_close_symbol_place
+   \let\qed             \strc_constructions_close_symbol_place}
+
+\unexpanded\def\strc_constructions_close_symbol_place
+  {\ifconditional\csname\??constructionclosesymbol\currentconstruction\endcsname
+     \global\expandafter\setfalse\csname\??constructionclosesymbol\currentconstruction\endcsname
+     \edef\p_strc_constructions_closesymbol{\constructionparameter\c!closesymbol}%
+     \ifx\p_strc_constructions_closesymbol\empty \else
+       \constructionparameter\c!closecommand{\p_strc_constructions_closesymbol}% hm why {} maybe because box expected
+     \fi
+   \fi}
+
+\newif\ifnoconstructioncaption
+
+%D The storage macros:
+
+\let\currentconstructionlistentry\!!zerocount
+
+\unexpanded\def\strc_constructions_register
+  {\clf_doifelselisthasentry\numexpr\currentconstructionlistentry\relax
+     \strc_constructions_register_nop
+     \strc_constructions_register_yes}
+
+% \def\strc_constructions_register{\strc_constructions_register_yes}
+
+\def\strc_constructions_register_nop[#1][#2]% #1=optional user data #2=interfaced-settings
+ %{\writestatus{constructions}{reusing \currentconstruction: \number\currentconstructionlistentry}}
+  {}
+
+\def\strc_constructions_discard
+  {\iftrialtypesetting
+   % \writestatus{constructions}{discarding \currentconstruction: \number\currentconstructionlistentry}%
+     \clf_discardfromlist\currentconstructionlistentry\relax
+   \fi}
+
+\let\currentconstructionlistnumber \!!zerocount
+\let\currentconstructionsynchronize\relax
+\let\currentconstructionattribute  \attributeunsetvalue
+
+\def\strc_constructions_register_yes[#1][#2]% #1=optional user data #2=interfaced-settings
+  {\begingroup                              % similar to structure so we might generalize this
+   \setupcurrentconstruction[#2]%           % xdef's will become edef's
+   \xdef\currentconstructionexpansion      {\constructionparameter\c!expansion}%
+   \xdef\currentconstructionxmlsetup       {\constructionparameter\c!xmlsetup}%
+   \xdef\currentconstructioncatcodes       {\constructionparameter\s!catcodes}%
+   \xdef\currentconstructionlabel          {\constructionparameter\c!label}%
+   \xdef\currentconstructionreference      {\constructionparameter\c!reference}%
+   \xdef\currentconstructionreferenceprefix{\constructionparameter\c!referenceprefix}%
+   %xdef\currentconstructionshownumber     {\constructionparameter\c!number}%
+   \xdef\currentconstructionincrementnumber{\constructionparameter\c!incrementnumber}%
+   %
+   \ifx\currentconstructionexpansion\empty
+     \global\let\currentconstructionexpansion\v!no
+   \fi
+   %
+   \ifx\currentconstructionexpansion\s!xml
+     \xmlstartraw
+       \xdef\currentconstructiontitle   {\constructionparameter\c!title}%
+       \xdef\currentconstructionbookmark{\constructionparameter\c!bookmark}%
+       \xdef\currentconstructionmarking {\constructionparameter\c!marking}%
+       \xdef\currentconstructionlist    {\constructionparameter\c!list}%
+     \xmlstopraw
+     \ifx\currentconstructionlist\empty
+       \global\let\currentconstructionlist\currentconstructiontitle
+     \fi
+     \global\let\currentconstructioncoding\s!xml
+   \else
+     \ifx\currentconstructionexpansion\v!yes
+       \xdef\currentconstructiontitle   {\constructionparameter\c!title}%
+       \xdef\currentconstructionbookmark{\constructionparameter\c!bookmark}%
+       \xdef\currentconstructionmarking {\constructionparameter\c!marking}%
+       \xdef\currentconstructionlist    {\constructionparameter\c!list}%
+     \else
+       \xdef\currentconstructiontitle   {\detokenizedconstructionparameter\c!title}%
+       \xdef\currentconstructionbookmark{\detokenizedconstructionparameter\c!bookmark}%
+       \xdef\currentconstructionmarking {\detokenizedconstructionparameter\c!marking}%
+       \xdef\currentconstructionlist    {\detokenizedconstructionparameter\c!list}%
+       \iflocation \ifx\currentconstructionbookmark\empty
+         \begingroup
+         \simplifycommands
+         \xdef\currentconstructionbookmark{\detokenize\expandafter{\normalexpanded{\constructionparameter\c!title}}}%
+        \endgroup
+       \fi \fi
+     \fi
+     \ifx\currentconstructionlist\empty
+       \globallet\currentconstructionlist\currentconstructiontitle
+     \fi
+     \globallet\currentconstructioncoding\s!tex
+   \fi
+   %
+   \ifx\currentconstructiontitle\v!none % will become obsolete
+     \global\noconstructioncaptiontrue\global\noconstructionnumbertrue
+   \fi
+   %
+   \ifnoconstructioncaption % then why analyze anyway?
+     \endgroup
+     \let\currentconstructionlistnumber \relax
+     \let\currentconstructionsynchronize\relax
+     \let\currentconstructionattribute  \relax
+   \else
+     \setnextinternalreferences{construction}\currentconstructionmain % plural
+     \relax
+     \scratchcounter\clf_addtolist
+        metadata {
+            kind     {construction}
+            name     {\currentconstructionmain}
+          % level    structures.sections.currentlevel()
+            catcodes \catcodetable
+        }
+        references {
+            internal  \nextinternalreference
+            order     \nextinternalorderreference
+            reference {\currentconstructionreference}
+            prefix    {\referenceprefix}
+          % block     {\currentsectionblock}
+          % section   structures.sections.currentid(),
+        }
+        titledata  {
+            label    {\detokenize\expandafter{\currentconstructionlabel}}
+            title    {\detokenize\expandafter{\currentconstructiontitle}}
+        \ifx\currentconstructionbookmark\currentconstructiontitle \else
+            bookmark {\detokenize\expandafter{\currentconstructionbookmark}}
+        \fi
+        \ifx\currentconstructionlist\currentconstructiontitle \else
+            list     {\detokenize\expandafter{\currentconstructionlist}}
+        \fi
+        }
+    \ifconditional\c_strc_constructions_number_state
+        prefixdata {
+            prefix        {\constructionparameter\c!prefix}
+            separatorset  {\constructionparameter\c!prefixseparatorset}
+            conversion    {\constructionparameter\c!prefixconversion}
+            conversionset {\constructionparameter\c!prefixconversionset}
+            set           {\constructionparameter\c!prefixset}
+            segments      {\constructionparameter\c!prefixsegments}
+            connector     {\constructionparameter\c!prefixconnector}
+        }
+        numberdata {
+            numbers       {\currentconstructionnumber}
+            separatorset  {\constructionparameter\c!numberseparatorset}
+            conversion    {\constructionparameter\c!numberconversion}
+            conversionset {\constructionparameter\c!numberconversionset}
+            starter       {\constructionparameter\c!numberstarter}
+            stopper       {\constructionparameter\c!numberstopper}
+            segments      {\constructionparameter\c!numbersegments}
+        }
+    \or
+       % symbol
+    \fi
+        userdata {\detokenize{#1}}
+     \relax
+   % \writestatus{constructions}{registering \currentconstruction: \number\scratchcounter}%
+     \clf_setinternalreference
+       prefix    {\referenceprefix}%
+       reference {\currentconstructionreference}%
+       internal  \nextinternalreference
+       view      {\interactionparameter\c!focus}%
+     \relax
+     \normalexpanded{%
+       \endgroup
+       \edef\noexpand\currentconstructionlistentry  {\the\scratchcounter}%
+       \edef\noexpand\currentconstructionattribute  {\the\lastdestinationattribute}%
+       \edef\noexpand\currentconstructionsynchronize{\ctxlatecommand{enhancelist(\the\scratchcounter)}}%
+     }%
+   \fi}
+
+% This is not so nice, some day I'll just store the number with the entry
+% and deal with all at the Lua end, but first we need to be able to set
+% macros.
+
+\def\reinstateconstructionnumberentry#1% was xdef
+  {\edef\currentconstructionattribute  {\clf_getinternallistreference#1}%
+   \edef\currentconstructionsynchronize{\ctxlatecommand{enhancelist(#1)}}}
+
+\def\reinstatecachedconstructionnumberentry#1% was xdef | #1 = cached index can be different from real
+  {\edef\currentconstructionattribute  {\clf_getinternalcachedlistreference#1}% destination
+   \edef\currentconstructionsynchronize{\ctxlatecommand{enhancelist(#1)}}}
+
+\installstructurelistprocessor{construction}{\usestructurelistprocessor{number+title}}
+
+% Helpers:
+
+\def\currentconstructionnumber{\constructionparameter\s!counter}
+
+\unexpanded\def\strc_constructions_next_indeed #get#tag#level{\strc_counters_increment_sub{#get{#tag}\s!counter}{#level}}
+\unexpanded\def\strc_constructions_reset_indeed#get#tag#level{\strc_counters_reset_sub    {#get{#tag}\s!counter}{#level}}
+
+\protect \endinput

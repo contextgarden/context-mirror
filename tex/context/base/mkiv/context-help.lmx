@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<!--
+    filename : comm-deb.xml
+    comment  : companion to comm-xml.tex
+    author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
+    copyright: PRAGMA ADE / ConTeXt Development Team
+    license  : see context related readme files
+-->
+
+<html>
+    <head>
+        <script type='text/javascript'>
+            <!--
+                window.focus();
+            -->
+        </script>
+        <title><?lua pv('title') ?></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <!-- <base target="context-help" /> -->
+        <style type="text/css">
+            <?lmx-include context.css ?>
+        </style>
+        <style type="text/css">
+            #main-left {
+                position: absolute;
+                left: 0% ;
+                top: 0% ;
+                right: 0% ;
+                bottom: 0% ;
+                z-index: 2 ;
+                width: 75% ;
+                height: 100% ;
+                padding: 0% ;
+                margin: 0% ;
+                overflow: auto ;
+                border-style: none ;
+                border-width: 0 ;
+                background-color: <?lua pv('color-background-main-left')?> ;
+            }
+            #main-right {
+                position: absolute;
+                left: 75% ;
+                top: 0% ;
+                right: 0% ;
+                bottom: 0% ;
+                z-index: 2 ;
+                width: 25% ;
+                height: 100% ;
+                padding: 0% ;
+                margin: 0% ;
+                overflow: auto ;
+                border-style: none ;
+                border-width: 0 ;
+                background-color: <?lua pv('color-background-main-right')?> ;
+            }
+            #main-common-settings {
+                padding: 1em ;
+            }
+        </style>
+        <style type="text/css">
+            #main-left {
+                background-color: #C0C0C0 ;
+                color: black;
+            }
+            a.setupmenuurl {
+                color: #FFFFFF ;
+                text-decoration: none ;
+                font-weight: bold ;
+            }
+            a.setupmenucmd {
+                color: #FFFFFF ;
+                text-decoration: underline ;
+                font-weight: bold ;
+            }
+            a.setuplisturl {
+                color: #000000 ;
+                text-decoration: none ;
+                font-weight: bold ;
+            }
+            .setupmenugroup {
+                text-decoration: none ;
+            }
+            .setupinstances {
+                margin-top: 3ex ;
+            }
+            .setupmenucategory {
+                font-weight: bold ;
+                font-size: 2.5ex ;
+                margin-bottom: 1ex ;
+            }
+            <?lua
+                if utilities and utilities.scite and utilities.scite.css then
+p(utilities.scite.css())
+                end
+            ?>
+        </style>
+    </head>
+    <body>
+        <div id="top"><div id="top-one"><div id="top-two">
+<?lua pv('title') ?>
+        </div></div></div>
+        <div id="left"><div id="left-one"><div id="left-two">
+<!-- empty -->
+        </div></div></div>
+        <div id="right"><div id="right-safari"><div id="right-one"><div id="right-two"><div id="right-three"><div id="right-four"><div id="right-five">
+<?lua pv('interfaces') ?>
+        </div></div></div></div></div></div></div>
+        <div id="main"><div id='main-settings'>
+            <div id="main-left"><div id="main-common-settings">
+<h1><?lua pv('maintitle') ?></h1>
+<?lua pv('maintext') ?>
+            </div></div>
+            <div id="main-right"><div id="main-common-settings">
+<?lua pv('names') ?>
+<script type='text/javascript'>
+    <!--
+        document.getElementById("#current").scrollIntoView();
+    -->
+</script>
+            </div></div>
+        </div></div>
+        <div id="bottom"><div id="bottom-one"><div id="bottom-two">
+<?lua pv('extra') ?>
+        </div></div></div>
+    </body>
+</html>

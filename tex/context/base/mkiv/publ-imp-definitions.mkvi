@@ -1,0 +1,123 @@
+%D \module
+%D   [       file=publ-imp-def,
+%D        version=2013.12.24,
+%D          title=\CONTEXT\ Publication Support,
+%D       subtitle=Definitions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Here we collect some helper setups. We assume that checking of a field
+%D happens in the calling setup, if only because that is the place where
+%D fences are also dealt with.
+
+% These will become texdefinitions
+
+\unprotect
+
+\startxmlsetups btx:format:crossref
+    \cite[\btxfield{crossref}]
+\stopxmlsetups
+
+\startxmlsetups btx:format:key
+    \btxfield{short}
+\stopxmlsetups
+
+\starttexdefinition unexpanded btx:format:inject #link #content
+    \ifx\currentbtxinternal\empty
+        #content
+    \else\ifconditional\btxinteractive
+        \goto {#content} [#link]
+    \else
+        #content
+    \fi\fi
+\stoptexdefinition
+
+\startxmlsetups btx:format:doi
+    \edef\currentbtxfielddoi{\btxfield{doi}}
+    \ifx\currentbtxfielddoi\empty
+        {\tttf no-doi}
+    \else\ifconditional\btxinteractive
+        \goto{\hyphenatedurl{\currentbtxfielddoi}}[url(http://dx.doi.org/\currentbtxfielddoi)]
+    \else
+        \hyphenatedurl{\currentbtxfielddoi}
+    \fi\fi
+\stopxmlsetups
+
+\startxmlsetups btx:format:url
+    \edef\currentbtxfieldurl{\btxfield{url}}
+    \ifx\currentbtxfieldurl\empty
+        {\tttf no-url}
+    \else\ifconditional\btxinteractive
+        \goto{\hyphenatedurl{\currentbtxfieldurl}}[url(\currentbtxfieldurl)]
+    \else
+        \hyphenatedurl{\currentbtxfieldurl}
+    \fi\fi
+\stopxmlsetups
+
+\startxmlsetups btx:format:year
+    \edef\currentbtxfieldyear{\btxfield{year}}
+    \ifx\currentbtxfieldyear\empty
+        \btxlabeltext{\currentbtxspecification:nd}
+    \fi
+\stopxmlsetups
+
+\startxmlsetups btx:format:month
+    \edef\currentbtxfieldmonth{\btxfield{month}}
+    \ifx\currentbtxfieldmonth\empty
+        {\tttf no-month}
+    \else
+        \edef\p_monthconversion{\btxparameter\c!monthconversion}
+        \ifx\p_monthconversion\empty % month month:mnem
+            \currentbtxfieldmonth
+        \else
+            \doifelsenumber \currentbtxfieldmonth {
+                \convertnumber\p_monthconversion\currentbtxfieldmonth
+            } {
+                \currentbtxfieldmonth
+            }
+        \fi
+    \fi
+\stopxmlsetups
+
+% macros:
+
+\starttexdefinition unexpanded btx:style:italic #content
+    \dontleavehmode
+    \begingroup
+        \it
+        #content
+        \italiccorrection
+    \endgroup
+\stoptexdefinition
+
+\starttexdefinition unexpanded btx:style:bold #content
+    \dontleavehmode
+    \begingroup
+        \bf
+        #content
+    \endgroup
+\stoptexdefinition
+
+\starttexdefinition unexpanded btx:style:quote #content
+    \dontleavehmode
+    \startquote
+        #content
+    \stopquote
+\stoptexdefinition
+
+\starttexdefinition unexpanded btx:style #style #content
+    \doifelsedefined {btx:style:#style} {
+        \texdefinition{btx:style:#style} {
+            #content
+        }
+    } {
+        #content
+    }
+\stoptexdefinition
+
+\protect

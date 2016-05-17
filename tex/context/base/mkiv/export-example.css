@@ -1,0 +1,864 @@
+/*
+
+	author    : Hans Hagen, PRAGMA-ADE, Hasselt NL
+	copyright : PRAGMA ADE / ConTeXt Development Team
+	license   : see context related readme files
+	comment   : companion to context.mkiv
+
+*/
+
+/*
+
+	Because empty div elements are not seen we put a comment in them so that empty
+	table cells etc work ok.
+
+	We can style individual elements in several ways and we support in this css file
+	meaningful elements as well as divs. If needed you can use the chain field as well
+	as chain elements in the div class for styling groups.
+
+	\definefloat[myfloata]
+	\definefloat[myfloatb][myfloatbs][figure]
+
+	context|div.float.myfloata { }           float[detail='myfloata'] { }
+	context|div.float.myfloatb { }           float[detail='myfloatb'] { }
+	context|div.float.figure { }             float[detail='figure']   { }
+	context|div.float.figure.myfloatb { }    float[chain~='figure'][detail='myfloata'] { }
+	context|div.myfloata { }                 *[detail='myfloata'] { }
+	context|div.myfloatb { }                 *[detail='myfloatb'] { }
+	context|div.figure { }                   *[chain~='figure'] { }
+	context|div.figure.myfloatb { }          *[chain~='figure'][detail='myfloatb'] { }
+
+*/
+
+@namespace context url('http://www.pragma-ade.com/context/export') ;
+
+/* ignore  : mixed   */
+/* metadata: display */
+
+ignore, context|div.ignore {
+	display : none ;
+}
+
+ignore, context|div.private {
+	display : none ;
+}
+
+xmetadata, context|div.xmetadata {
+	display : none ;
+}
+
+xmetavariable, context|div.xmetavariable {
+	display : none ;
+}
+
+/* document : display */
+
+document:before, context|div.document:before {
+	content       : attr(title) ;
+	font-size     : 44pt ;
+	font-weight   : bold ;
+	margin-bottom : 1em ;
+}
+
+document, context|div.document {
+	font-family  : "DejaVu Serif", "Lucida Bright", serif ;
+	font-size    : 12pt ;
+	line-height  : 14.4pt;
+	max-width    : 50em ;
+	padding      : 1em ;
+ /* text-align   : justify ;    */
+    text-align   : justify ;
+ /*	hyphens      : manual ;     */
+ /* text-justify : inter-word ; */
+}
+
+document>metadata, context|div.document context|div.metadata {
+	font-family   : "DejaVu Sans Mono", "Lucida Console", monospace ;
+	margin-bottom : 2em ;
+}
+
+document>metadata>metavariable[name="title"]:before,
+		context|div.document context|div.metadata context|div.metavariable.name-title:before {
+	content : "title\00A0\00A0\00A0:\00A0" ;
+}
+
+document>metadata>metavariable[name="author"]:before,
+		context|div.document context|div.metadata context|div.metavariable.name-author:before {
+	content : "author\00A0\00A0:\00A0" ;
+}
+
+document>metadata>metavariable[name="version"]:before,
+		context|div.document context|div.metadata context|div.metavariable.name-version:before {
+	content : "version\00A0:\00A0" ;
+}
+
+document>metadata>metavariable[name="title"], document>metadata>metavariable[name="author"], document>metadata>metavariable[name="version"],
+		context|div.document context|div.metadata context|div.metavariable.name-title, context|div.document context|div.metadata context|div.metavariable.name-author, context|div.document context|div.metadata context|div.metavariable.name-version {
+	display : block ;
+}
+
+/* paragraph : mixed */
+/* p         : mixed */
+
+paragraph, p, context|div.paragraph, context|div.p {
+	display       : block ;
+	margin-top    : 0.5em ;
+	margin-bottom : 0.5em ;
+}
+
+/* break : display */
+
+break, context|div.break {
+	display       : block ;
+	margin-bottom : 0.5em ;
+}
+
+/* construct : inline */
+/* highlight : inline */
+
+construct, context|div.construct {
+}
+
+construct[detail="important"], context|div.construct.important {
+	font-weight : bold ;
+}
+
+highlight, context|div.highlight { /* todo: style and color */
+	display : inline ;
+}
+
+/* section        : display */
+/* sectiontitle   : mixed   */
+/* sectionnumber  : mixed   */
+/* sectioncontent : display */
+
+section, context|div.section {
+	display : block ;
+}
+
+sectioncontent, context|div.sectioncontent {
+	display       : block ;
+	margin-top    : 1em ;
+	margin-bottom : 1em ;
+}
+
+section[detail="chapter"], section[detail="title"],
+		context|div.section.chapter, context|div.section.title {
+	page-break-before : always ;
+	page-break-after  : avoid ;
+	margin-top        : 3em ;
+	margin-bottom     : 2em ;
+}
+
+section[detail="section"], section[detail="subject"],
+		context|div.section.section, context|div.section.subject {
+	page-break-after : avoid ;
+	margin-top       : 2.5em ;
+	margin-bottom    : 2.5em ;
+}
+
+section[detail="subsection"], section[detail="subsubject"],
+		context|div.section.subsection, context|div.section.subsubject {
+	page-break-after : avoid ;
+	margin-top       : 2em ;
+	margin-bottom    : 2em ;
+}
+
+section[detail="subsubsection"], section[detail="subsubsubject"],
+		context|div.section.subsubsection, context|div.section.subsubsubject {
+	page-break-after : avoid ;
+	margin-top       : 1em ;
+	margin-bottom    : 0em ;
+}
+
+section[detail="summary"], section[detail="subsummary"],
+		context|div.section.summary, context|div.section.subsummary {
+	margin-top    : 1em ;
+	margin-bottom : 1em ;
+}
+
+section[detail="chapter"]>sectionnumber,
+		context|div.section.chapter context|div.sectionnumber {
+	display      : inline-block ;
+	margin-right : 1em ;
+	font-size    : 3em ;
+	font-weight  : bold ;
+}
+
+section[detail="chapter"]>sectiontitle, section[detail="title"]>sectiontitle,
+		context|div.section.chapter context|div.sectiontitle, context|div.section.title context|div.sectiontitle {
+	display     : inline-block ;
+	font-size   : 3em ;
+	font-weight : bold ;
+}
+
+section[detail="section"]>sectiontitle, section[detail="subject"]>sectiontitle,
+		context|div.section.section context|div.sectiontitle, context|div.section.subject context|div.sectiontitle {
+	display     : inline-block ;
+	font-size   : 2.5em ;
+	font-weight : bold ;
+}
+
+section[detail="subsection"]>sectiontitle, section[detail="subsubject"]>sectiontitle,
+		context|div.section.subsection context|div.sectiontitle, context|div.section.subsubject context|div.sectiontitle {
+	display     : inline-block ;
+	font-size   : 2em ;
+	font-weight : bold ;
+}
+
+section[detail="subsubsection"]>sectiontitle, section[detail="subsubsubject"]>sectiontitle,
+		context|div.section.subsubsection context|div.sectiontitle, context|div.section.subsubsubject context|div.sectiontitle {
+	display     : inline-block ;
+	font-size   : 1em ;
+	font-weight : bold ;
+}
+
+section[detail="section"]>sectionnumber, context|div.section.section context|div.sectionnumber {
+	display      : inline-block ;
+	margin-right : 1em ;
+	font-size    : 2.5em ;
+	font-weight  : bold ;
+}
+
+section[detail="summary"]>sectiontitle, context|div.section.summary context|div.sectiontitle {
+	display             : block ;
+	margin-top          : 1em ;
+	margin-bottom       : 1em ;
+	font-weight         : bold ;
+	border-bottom-style : solid ;
+	border-color        : rgb(50%,50%,100%) ;
+	border-width        : .15em;
+}
+
+section[detail="subsection"]>sectionnumber, context|div.section.subsection context|div.sectionnumber {
+	display      : inline-block ;
+	margin-right : 1em ;
+	font-size    : 1em ;
+	font-weight  : bold ;
+}
+
+section[detail="subsummary"]>sectiontitle, context|div.section.subsummary context|div.sectiontitle {
+	display             : block ;
+	margin-top          : 1em ;
+	margin-bottom       : 1em ;
+	font-weight         : bold ;
+	border-color        : rgb(50%,50%,100%) ;
+	border-bottom-style : dotted ;
+	border-width        : .15em ;
+}
+
+/* itemgroup   : display */
+/* item        : display */
+/* itemtag     : mixed   */
+/* itemcontent : mixed   */
+
+/* type   : alphabetic ; */
+/* suffix : '.' ;        */
+
+@counter-style lower-greek { /* css 3 */
+    type   : non-repeating ;
+    glyphs : 'α' 'β' 'γ' 'δ' 'ε' 'ζ' 'η' 'θ' 'ι' 'κ' 'λ' 'μ' 'ν' 'ξ' 'ο' 'π' 'ρ' 'σ' 'τ' 'υ' 'φ' 'χ' 'ψ' 'ω' ;
+}
+
+@counter-style upper-greek { /* css 3 */
+    type   : non-repeating ;
+    glyphs : 'Α' 'B' 'Γ' 'Δ' 'Ε' 'Ζ' 'Η' 'Θ' 'Ι' 'Κ' 'Λ' 'Μ' 'Ν' 'Ξ' 'Ο' 'Π' 'Ρ' 'Σ' 'Τ' 'Υ' 'Φ' 'Χ' 'Ψ' 'Ω' ;
+}
+
+itemgroup, context|div.itemgroup {
+	display       : block ;
+	margin-bottom : 0.5em ;
+	margin-top    : 0.5em ;
+}
+
+itemgroup[symbol="1"], context|div.itemgroup.symbol-1 { list-style-type : disc ; }
+itemgroup[symbol="2"], context|div.itemgroup.symbol-2 { list-style-type : square ; }
+itemgroup[symbol="3"], context|div.itemgroup.symbol-3 { list-style-type : square ; }
+itemgroup[symbol="4"], context|div.itemgroup.symbol-4 { list-style-type : square ; }
+itemgroup[symbol="5"], context|div.itemgroup.symbol-5 { list-style-type : circ ; }
+itemgroup[symbol="a"], context|div.itemgroup.symbol-a { list-style-type : lower-alpha ; }
+itemgroup[symbol="A"], context|div.itemgroup.symbol-A { list-style-type : alpha ; }
+itemgroup[symbol="r"], context|div.itemgroup.symbol-r { list-style-type : lower-roman ; }
+itemgroup[symbol="R"], context|div.itemgroup.symbol-R { list-style-type : upper-roman ; }
+itemgroup[symbol="n"], context|div.itemgroup.symbol-n { list-style-type : decimal ; }
+itemgroup[symbol="g"], context|div.itemgroup.symbol-g { list-style-type : lower-greek ; }
+itemgroup[symbol="G"], context|div.itemgroup.symbol-G { list-style-type : upper-greek ; }
+
+item, context|div.item {
+	display       : list-item ;
+	margin-left   : 1em ;
+	margin-bottom : 0.5em ;
+	margin-top    : 0.5em ;
+}
+
+itemtag, context|div.item {
+	display: none ;
+}
+
+itemcontent, context|div.itemcontent {
+}
+
+/* description        : display */
+/* descriptiontag     : mixed   */
+/* descriptioncontent : mixed   */
+/* descriptionsymbol  : inline  */
+
+description, context|div.description {
+	display       : block ;
+	margin-bottom : 1em ;
+	margin-top    : 1em ;
+}
+
+descriptiontag, context|div.descriptiontag {
+	display      : inline ;
+    float        : left ;
+    clear        : left ;
+	margin-right : 1em ;
+    text-align   : left ;
+    font-weight  : bold ;
+}
+
+descriptioncontent, context|div.descriptioncontent {
+}
+
+descriptionsymbol, context|div.descriptionsymbol {
+	display : inline ;
+}
+
+/* verbatimblock      : display */
+/* verbatimlines      : display */
+/* verbatimline       : mixed   */
+/* verbatim           : inline  */
+
+verbatimblock, context|div.verbatimblock {
+	background-color : rgb(50%,50%,100%) ;
+	display          : block ;
+	padding          : 1em ;
+	margin-bottom    : 1em ;
+	margin-top       : 1em ;
+	font-family      : "DejaVu Sans Mono", "Lucida Console", monospace ;
+}
+
+verbatimlines+verbatimlines, context|div.verbatimlines+context|div.verbatimlines {
+	display    : block ;
+	margin-top : 1em ;
+}
+
+verbatimline, context|div.verbatimline {
+	display     : block ;
+	white-space : pre-wrap ;
+}
+
+verbatim, context|div.verbatim {
+	display     : inline ;
+	white-space : pre-wrap ;
+	color       : rgb(60%,60%,0%) ;
+	font-family : "DejaVu Sans Mono", "Lucida Console", monospace ;
+}
+
+/* lines : display */
+/* line  : mixed   */
+
+lines, context|div.lines {
+	display       : block ;
+	margin-bottom : 1em ;
+	margin-top    : 1em ;
+}
+
+lines+lines, context|div.lines+context|div.lines {
+	display    : block ;
+	margin-top : 1em ;
+}
+
+line, context|div.line {
+	display     : block ;
+	white-space : pre-wrap ;
+}
+
+/* synonym : inline  */
+/* sorting : inline  */
+
+sorting, synonym, context|div.sorting, context|div.synonym {
+	display      : inline ;
+	font-variant : small-caps ;
+}
+
+/* register          : display */
+/* registersection   : display */
+/* registertag       : mixed   */
+/* registerentries   : display */
+/* registerentry     : mixed   */
+/* registersee       : mixed   */
+/* registerpages     : mixed   */
+/* registerpage      : inline  */
+/* registerpagerange : mixed   */
+
+register, context|div.register {
+	display: none ;
+}
+
+registerlocation, context|div.registerlocation {
+	display: inline ;
+}
+
+registerlocation:after, context|div.registerlocation:after {
+	content        : "\25B6\00A0\00A0" ;
+	color          : rgb(40%,40%,40%) ;
+	font-size      : x-small ;
+    line-height    : 0 ;
+    padding-top    : 0.5ex ;
+	vertical-align : top ;
+}
+
+/* table     : display */
+/* tablerow  : display */
+/* tablecell : mixed   */
+
+table, context|div.table {
+	display : table ;
+}
+
+tablerow, context|div.tablerow {
+	display : table-row ;
+}
+
+tablecell[align="middle"], context|div.tablecell.align-middle {
+	display    : table-cell ;
+	text-align : center ;
+	padding    : .1em ;
+}
+
+tablecell[align="flushleft"], context|div.tablecell.align-flushleft {
+	display    : table-cell ;
+	text-align : left ;
+	padding    : .1em ;
+}
+
+tablecell[align="flushright"], context|div.tablecell.align-flushright {
+	display    : table-cell ;
+	text-align : right ;
+	padding    : .1em ;
+}
+
+tablecell, context|div.tablecell {
+	display    : table-cell ;
+	text-align : left ;
+	padding    : .1em ;
+}
+
+/* tabulate     : display */
+/* tabulaterow  : display */
+/* tabulatecell : mixed   */
+
+tabulate, context|div.tabulate {
+	display       : table ;
+	margin-top    : 1em ;
+	margin-bottom : 1em ;
+	margin-left   : 2.5em ;
+}
+
+floatcontent>tabulate, context|div.floatcontent context|div.tabulate {
+	margin-left   : 0em ;
+}
+
+tabulaterow, context|div.tabulaterow {
+	display : table-row ;
+}
+
+tabulatecell[align="middle"], context|div.tabulatecell.align-middle {
+	display       : table-cell ;
+	text-align    : center ;
+	padding-right : 1em ;
+}
+
+tabulatecell[align="flushleft"], context|div.tabulatecell.align-flushleft {
+	display       : table-cell ;
+	text-align    : left ;
+	padding-right : 1em ;
+}
+
+tabulatecell[align="flushright"], context|div.tabulatecell.align-flushright {
+	display       : table-cell ;
+	text-align    : right ;
+	padding-right : 1em ;
+}
+
+tabulatecell, context|div.tabulatecell {
+	display       : table-cell ;
+	text-align    : left ;
+	padding-right : 1em ;
+}
+
+/* combination        : display */
+/* combinationpair    : display */
+/* combinationcontent : mixed   */
+/* combinationcaption : mixed   */
+
+combination, context|div.combination {
+	display       : table ;
+	margin-top    : 0em ;
+	margin-bottom : 0em ;
+}
+
+combinationpair, context|div.combinationpair {
+	display       : table-cell ;
+	padding-right : 1em ;
+}
+
+combinationcontent, context|div.combinationcontent {
+	display    : table-row ;
+	text-align : center ;
+}
+
+combinationcaption, context|div.combinationcaption {
+	display     : table-row ;
+	padding-top : 1ex ;
+	text-align  : center ;
+}
+
+
+/* list        : display */
+/* listitem    : display */
+/* listtag     : mixed   */
+/* listcontent : mixed   */
+/* listdata    : mixed   */
+/* listpage    : mixed   */
+
+list, context|div.list {
+	display : block ;
+}
+
+listitem[detail="chapter"], context|div.listitem.chapter {
+	display     : block ;
+	margin-top  : 1em ;
+	font-weight : bold ;
+}
+
+listitem[detail="section"], context|div.listitem.section {
+	display : block ;
+}
+
+listitem[detail="subsection"], context|div.listitem.subsection {
+	display : block ;
+	display : inline-block ;
+}
+
+listtag, context|div.listtag {
+	display : inline-block ;
+	width   : 5em ;
+}
+
+listcontent, context|div.listcontent {
+	display : inline-block ;
+}
+
+listdata, context|div.listdata {
+	display : inline-block ;
+}
+
+listpage, context|div.listpage {
+	display : none ;
+}
+
+/* delimitedblock     : display */
+/* delimited          : inline  */
+/* delimitedsymbol    : inline  */
+/* delimitedcontent   : inline  */
+/* subsentence        : inline  */
+/* subsentencesymbol  : inline  */
+/* subsentencecontent : inline  */
+
+/* :lang(en) */
+
+delimited[detail="quotation"]:before, delimitedblock[detail="quotation"]:before,
+	context|div.delimited.quotation:before, context|div.delimitedblock.quotation:before {
+	/* content : "\201C" ; */
+	font-style : italic ;
+}
+
+delimited[detail="quotation"]:after, delimitedblock[detail="quotation"]:after,
+	context|div.delimited.quotation:after, context|div.delimitedblock.quotation:after {
+	/* content : "\201D" ; */
+	font-style : italic ;
+}
+
+delimited[detail="quote"]:before, delimitedblock[detail="quote"]:before,
+	context|div.delimited.quote:before, context|div.delimitedblock.quote:before {
+	/* content : "\2018" ; */
+	font-style : italic ;
+}
+
+delimited[detail="quote"]:after, delimitedblock[detail="quote"]:after,
+	context|div.delimited.quote:after, context|div.delimitedblock.quote:after {
+	/* content : "\2019" ; */
+	font-style : italic ;
+}
+
+delimited, context|div.delimited {
+    display : inline
+}
+
+delimitedcontent, context|div.delimitedcontent {
+    display : inline
+}
+
+delimitedsymbol, context|div.delimitedsymbol {
+    display : inline
+}
+
+delimitedblock, context|div.delimitedblock {
+    display : block
+}
+
+subsentence:before, subsentence:after, context|div.subsentence:before, context|div.subsentence:after {
+	content : "\2014" ;
+}
+
+subsentence, context|div.subsentence {
+    display : inline
+}
+
+subsentencecontent, context|div.subsentencecontent {
+    display : inline
+}
+
+subsentencesymbol, context|div.subsentencesymbol {
+    display : inline
+}
+
+/* label  : mixed   */
+/* number : mixed   */
+
+/* float        : display */
+/* floatcaption : mixed   */
+/* floatlabel   : inline  */
+/* floatnumber  : inline  */
+/* floattext    : mixed   */
+/* floatcontent : mixed   */
+
+float, context|div.float {
+	display       : block ;
+	margin-top    : 1em ;
+	margin-bottom : 1em ;
+	margin-left   : 2.5em ;
+}
+
+floatcaption, context|div.floatcaption {
+	display    : block ;
+	margin-top : 0.5em ;
+	color      : rgb(60%,60%,0%) ;
+}
+
+floatlabel, context|div.floatlabel {
+	display      : inline-block ;
+	font-weight  : bold ;
+	margin-right : 0.25em ;
+}
+
+floatnumber, context|div.floatnumber {
+	display      : inline ;
+	font-weight  : bold ;
+	margin-right : 0.25em ;
+}
+
+floattext, context|div.floattext {
+	display      : inline ;
+}
+
+floatcontent, context|div.floatcontent {
+}
+
+/* image     : mixed */
+/* mpgraphic : mixed */
+
+/* image {
+    display         : block ;
+    background      : url(hacker.jpg) ;
+    background-size : 100% auto ;
+    width           : 8.992cm ;
+    height          : 5.994cm ;
+} */
+
+mpgraphic:before, context|div.mpgraphic:before { /* does not work with empty element */
+	content : "[runtime metapost graphic]" ;
+}
+
+mpgraphic, context|div.mpgraphic {
+	display : inline ;
+}
+
+/* formula        : display */
+/* subformula     : display */
+/* formulaset     : display */
+/* formulacaption : mixed   */
+/* formulalabel   : mixed   */
+/* formulanumber  : mixed   */
+/* formulacontent : display */
+
+formula, context|div.formula {
+	display       : block ;
+	margin-top    : 1em ;
+	margin-bottom : 1em ;
+	margin-left   : 2.5em ;
+}
+
+subformula, context|div.subformula { /* todo */
+	display       : block ;
+	margin-top    : 1em ;
+	margin-bottom : 1em ;
+	margin-left   : 2.5em ;
+}
+
+formulaset, context|div.formulaset { /* todo */
+	display       : block ;
+	margin-top    : 1em ;
+	margin-bottom : 1em ;
+	margin-left   : 2.5em ;
+}
+
+formulacaption, context|div.formulacaption { /* todo */
+	display    : block ;
+	margin-top : 0.5em ;
+	color      : rgb(60%,60%,0%) ;
+}
+
+formulalabel, context|div.formulalabel {
+	display      : inline ;
+	font-weight  : bold ;
+	margin-right : .25em ;
+}
+
+formulanumber, context|div.formulanumber {
+	display     : inline ;
+	font-weight : bold ;
+}
+
+formulacontent, context|div.formulacontent {
+	display : block ;
+}
+
+link, context|div.link {
+	display : inline ;
+}
+
+/* margintextblock : inline  */
+/* margintext      : inline  */
+
+margintext, context|div.margintext {
+	display       : block ;
+	font-weight   : bold ;
+	margin-top    : 1em ;
+	margin-bottom : 1em ;
+}
+
+margintext:before, context|div.margintext:before {
+	content : "\25B6\00A0\00A0" ;
+	color   : rgb(40%,40%,40%) ;
+}
+
+/* math       : inline | display */
+/* mn         : mixed   */
+/* mi         : mixed   */
+/* mo         : mixed   */
+/* ms         : mixed   */
+/* mrow       : display */
+/* msubsup    : display */
+/* msub       : display */
+/* msup       : display */
+/* merror     : mixed   */
+/* munderover : display */
+/* munder     : display */
+/* mover      : display */
+/* mtext      : mixed   */
+/* mfrac      : display */
+/* mroot      : display */
+/* msqrt      : display */
+/* mfenced    : display */
+/* maction    : display */
+/* mtable     : display */
+/* mtr        : display */
+/* mtd        : display */
+
+context|div.math-inline {
+	display        : inline ;
+	vertical-align : 0 ; /* this will be set directly */
+}
+
+context|div.math-display {
+	display : block ;
+	margin  : 1ex 0ex 1em 3em ;
+}
+
+/* quantity : inline */
+/* unit     : inline */
+/* number   : inline */
+
+quantity, context|div.quantity {
+	display : inline-block ;
+}
+
+quantity>unit, context|div.quantity>context|div.unit {
+	display : inline ;
+}
+
+quantity>number, context|div.quantity>context|div.number {
+	display : inline ;
+}
+
+/* sub    : inline */
+/* sup    : inline */
+/* subsup : inline */
+
+sup, context|div.sup {
+	display        : inline-block ;
+	font-size      : xx-small ;
+	vertical-align : super ;
+}
+
+sub, context|div.sub {
+	display        : inline-block ;
+	font-size      : xx-small ;
+	vertical-align : sub ;
+}
+
+subsup>sup, context|div.subsup>context|div.sup {
+	display        : inline ;
+	vertical-align : top ;
+}
+
+subsup>sub, context|div.subsup>context|div.sub {
+	display        : inline ;
+	vertical-align : bottom ;
+}
+
+/* links */
+
+context|div[href]:hover {
+	color            : rgb(50%,0%,0%) ;
+	background-color : rgb(85%,85%,85%) ;
+}
+
+/* setups */
+
+setup, context|div.setup {
+	display : block ;
+}
+
+comment, context|div.comment {
+	background-color : rgb(50%,75%,100%) ;
+	display          : block ;
+	padding          : 1em ;
+	margin-bottom    : 2ex ;
+	margin-top       : 2ex ;
+	font-family      : "DejaVu Sans Mono", "Lucida Console", monospace ;
+}
+
+/* special */
+
+c, context|div.c {
+	display : inline ;
+}
+
+warning, context|div.warning {
+	display : none ;
+}

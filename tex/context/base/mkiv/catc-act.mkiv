@@ -1,0 +1,74 @@
+%D \module
+%D   [       file=catc-act,
+%D        version=2006.09.18,
+%D          title=\CONTEXT\ Catcode Macros,
+%D       subtitle=Default Catcode Tables,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module deals with some active character handling. Use
+%D with care.
+
+\unprotect
+
+% todo: \letcharcode<number>=\something
+
+%D \macros
+%D   {installactivecharacter}
+
+\let\m_syst_catcodes_temp\empty
+
+\normalprotected\def\installactivecharacter#1 %
+  {\edef\m_syst_catcodes_temp{\detokenize{#1}}%
+   \c_syst_catcodes_c\expandafter`\m_syst_catcodes_temp\relax % relax needed
+   \expandafter\startextendcatcodetable
+      \expandafter\ctxcatcodes\expandafter\catcode\the\c_syst_catcodes_c\activecatcode
+   \stopextendcatcodetable
+   \letcatcodecommand \ctxcatcodes \c_syst_catcodes_c \m_syst_catcodes_temp \relax
+   \ifnum\currentcatcodetable=\ctxcatcodes \setcatcodetable\ctxcatcodes \fi
+   \let\m_syst_catcodes_temp\empty}
+
+%D \macros
+%D   {defineactivecharacter}
+%D
+%D Use this one with care, esp in combination with catcode
+%D vectors. There are better ways now.
+
+\setnewconstant\c_syst_catcodes_hack\tildeasciicode % also defined in catc-ini.mkiv
+
+\normalprotected\def\defineactivecharacter #1#2 #3% uses \doifelsenumber which is not yet defined
+  {\c_syst_catcodes_c\uccode\c_syst_catcodes_hack
+   \if#1"\uccode\c_syst_catcodes_hack\expandafter\doifelsenumber\expandafter{\string#1#2}\empty #1#2\else
+         \uccode\c_syst_catcodes_hack\expandafter\doifelsenumber\expandafter{\string#1#2}\empty`#1#2\fi
+   \catcode\uccode\c_syst_catcodes_hack\activecatcode
+   \uppercase{\def\m_syst_catcodes_temp{~}}% brrr
+   \uccode\c_syst_catcodes_hack\c_syst_catcodes_c
+   \expandafter\expandafter\expandafter\def\expandafter\m_syst_catcodes_temp\expandafter
+     {\expandafter\syst_catcodes_handle\m_syst_catcodes_temp{#3}}%
+   \let\m_syst_catcodes_temp\empty}
+
+\chardef\activecharactermode\plusone % overloading still backward compatible
+
+\def\syst_catcodes_handle
+  {\ifcase\activecharactermode
+     \expandafter\syst_catcodes_handle_nop
+   \else
+     \expandafter\syst_catcodes_handle_yes
+   \fi}
+
+\def\syst_catcodes_handle_yes#1#2{#2}
+\def\syst_catcodes_handle_nop#1#2{\noexpand#1}
+
+\normalprotected\def\makecharacteractive #1 %
+  {\catcode`#1\activecatcode}
+
+\normalprotected\def\installanddefineactivecharacter #1 % #2%
+  {\normalexpanded{\noexpand\installactivecharacter \utfchar{#1} }%
+   \defineactivecharacter #1 }% {#2}}
+
+\protect \endinput

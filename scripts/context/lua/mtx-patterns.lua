@@ -9,7 +9,8 @@ if not modules then modules = { } end modules ['mtx-patterns'] = {
 local format, find, concat, gsub, match, gmatch = string.format, string.find, table.concat, string.gsub, string.match, string.gmatch
 local byte, char = utf.byte, utf.char
 local addsuffix = file.addsuffix
-local lpegmatch, validutf8 = lpeg.match, lpeg.patterns.validutf8
+local lpegmatch, lpegsplit, lpegpatterns, validutf8 = lpeg.match, lpeg.split, lpeg.patterns, lpeg.patterns.validutf8
+local P, V, Cs = lpeg.P, lpeg.V, lpeg.Cs
 
 local helpinfo = [[
 <?xml version="1.0"?>
@@ -105,7 +106,7 @@ scripts.patterns.list = {
  -- { "gr",  "hyph-el-polyton",    "greek" },
     { "agr", "hyph-grc",           "ancient greek", ignored_ancient_greek },
     { "gb",  "hyph-en-gb",         "british english" },
-    { "us",  "hyph-en-us",	       "american english" },
+    { "us",  "hyph-en-us",         "american english" },
  -- { "eo",  "hyph-eo",            "esperanto" },
     { "es",  "hyph-es",            "spanish" },
     { "et",  "hyph-et",            "estonian" },
@@ -128,6 +129,7 @@ scripts.patterns.list = {
  -- { "??",  "hyph-kmr",           "kurmanji" },
  -- { "kn",  "hyph-kn",            "kannada" },
     { "la",  "hyph-la",            "latin" },
+    { "ala", "hyph-la-x-classic",  "ancient latin" },
  -- { "lo",  "hyph-lo",            "lao" },
     { "lt",  "hyph-lt",            "lithuanian" },
     { "lv",  "hyph-lv",            "latvian" },
@@ -164,7 +166,7 @@ scripts.patterns.list = {
 local utf = unicode.utf8
 
 function utf.check(str)
-    return lpeg.match(lpeg.patterns.validutf8,str)
+    return lpegmatch(lpegpatterns.validutf8,str)
 end
 
 -- *.tex
@@ -213,9 +215,9 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
     end
     if okay then
         -- split into lines
-        local how = lpeg.patterns.whitespace^1
-        splitpatternsnew = lpeg.split(how,patterns)
-        splithyphenationsnew = lpeg.split(how,hyphenations)
+        local how = lpegpatterns.whitespace^1
+        splitpatternsnew = lpegsplit(how,patterns)
+        splithyphenationsnew = lpegsplit(how,hyphenations)
     end
     if okay then
         -- remove comments
@@ -315,23 +317,23 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
             if ignored then
                 for k, v in next, ignored do
                     if p then
-                        p = p + lpeg.P(char(k))
+                        p = p + P(char(k))
                     else
-                        p = lpeg.P(char(k))
+                        p = P(char(k))
                     end
                 end
-                p = lpeg.P{ p + 1 * lpeg.V(1) } -- anywhere
+                p = P{ p + 1 * V(1) } -- anywhere
             end
             -- replaced (all languages)
             local r = nil
             for k, v in next, replaced_whatever do
                 if r then
-                    r = r + lpeg.P(k)/v
+                    r = r + P(k)/v
                 else
-                    r = lpeg.P(k)/v
+                    r = P(k)/v
                 end
             end
-            r = lpeg.Cs((r + 1)^0)
+            r = Cs((r + 1)^0)
             local result = { }
             for i=1,#what do
                 local line = what[i]
@@ -440,13 +442,13 @@ function scripts.patterns.save(destination,mnemonic,name,patternsnew,hyphenation
         if nofpatternsnew > 0 then
             local data = concat(patternsnew," ")
             patterndata = {
-                n            = nofpatternsnew,
-                compression  = compression,
-                length       = #data,
-                data         = compression and zlib.compress(data,9) or data,
-                characters   = concat(table.sortedkeys(pusednew),""),
-                minhyphenmin = 1, -- determined by pattern author
-                minhyphenmax = 1, -- determined by pattern author
+                n              = nofpatternsnew,
+                compression    = compression,
+                length         = #data,
+                data           = compression and zlib.compress(data,9) or data,
+                characters     = concat(table.sortedkeys(pusednew),""),
+                lefthyphenmin  = 1, -- determined by pattern author
+                righthyphenmax = 1, -- determined by pattern author
             }
         else
             patterndata = {

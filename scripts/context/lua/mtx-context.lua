@@ -34,7 +34,7 @@ local formatters    = string.formatters
 
 local application = logs.application {
     name     = "mtx-context",
-    banner   = "ConTeXt Process Management 0.61",
+    banner   = "ConTeXt Process Management 0.63",
  -- helpinfo = helpinfo, -- table with { category_a = text_1, category_b = text_2 } or helpstring or xml_blob
     helpinfo = "mtx-context.xml",
 }
@@ -44,6 +44,8 @@ local application = logs.application {
 --     ["default-translate-file"]      = true, -- ignored, input is assumed to be in UTF-8 encoding
 --     ["translate-file"]              = true, -- ignored, input is assumed to be in UTF-8 encoding
 --     ["etex"]                        = true, -- ignored, the etex extensions are always active
+--     ["parse-first-line"]            = true, -- ignored, enable parsing of the first line of the input file
+--     ["no-parse-first-line"]         = true, -- ignored, disable parsing of the first line of the input file
 --
 --     ["credits"]                     = true, -- display credits and exit
 --     ["debug-format"]                = true, -- enable format debugging
@@ -68,14 +70,14 @@ local application = logs.application {
 --     ["output-comment"]              = true, -- use STRING for DVI file comment instead of date (no effect for PDF)
 --     ["output-directory"]            = true, -- use existing DIR as the directory to write files in
 --     ["output-format"]               = true, -- use FORMAT for job output; FORMAT is 'dvi' or 'pdf'
---     ["parse-first-line"]            = true, -- enable parsing of the first line of the input file
---     ["no-parse-first-line"]         = true, -- disable parsing of the first line of the input file
 --     ["progname"]                    = true, -- set the program name to STRING
 --     ["recorder"]                    = true, -- enable filename recorder
 --     ["safer"]                       = true, -- disable easily exploitable lua commands
 --     ["shell-escape"]                = true, -- enable \write18{SHELL COMMAND}
 --     ["no-shell-escape"]             = true, -- disable \write18{SHELL COMMAND}
 --     ["shell-restricted"]            = true, -- restrict \write18 to a list of commands given in texmf.cnf
+--     ["nodates"]                     = true, -- no production dates in pdf file
+--     ["trailerid"]                   = true, -- alternative trailer id
 --     ["synctex"]                     = true, -- enable synctex
 --     ["version"]                     = true, -- display version and exit
 --     ["luaonly"]                     = true, -- run a lua file, then exit
@@ -106,7 +108,7 @@ local function restart(engine_old,engine_new)
     local command = format("%s --luaonly %q %s --redirected",engine_new,environment.ownname,environment.reconstructcommandline())
     report(format("redirect %s -> %s: %s",engine_old,engine_new,command))
     local result = os.execute(command)
-    os.exit(result)
+    os.exit(result == 0 and 0 or 1)
 end
 
 if getargument("redirected") then
@@ -173,7 +175,7 @@ end
 
 function ctxrunner.checkfile(ctxdata,ctxname,defaultname)
 
-    if not ctxdata.jobname or ctxdata.jobname == "" then
+    if not ctxdata.jobname or ctxdata.jobname == "" or getargument("noctx") then
         return
     end
 
@@ -284,7 +286,7 @@ end
 
 local f_tempfile = formatters["%s-%s-%02d.tmp"]
 
-local function backup(run,kind,filename)
+local function backup(jobname,run,kind,filename)
     if run == 1 then
         for i=1,10 do
             local tmpname = f_tempfile(jobname,kind,i)
@@ -307,7 +309,7 @@ local function multipass_copyluafile(jobname,run)
     local tuaname, tucname = jobname..".tua", jobname..".tuc"
     if validfile(tuaname) then
         if run then
-            backup(run,"tuc",tucname)
+            backup(jobname,run,"tuc",tucname)
             report("copying %a into %a",tuaname,tucname)
             report()
         end
@@ -320,7 +322,7 @@ local function multipass_copylogfile(jobname,run)
     local logname = jobname..".log"
     if validfile(logname) then
         if run then
-            backup(run,"log",logname)
+            backup(jobname,run,"log",logname)
             report()
         end
     end
@@ -570,26 +572,30 @@ function scripts.context.run(ctxdata,filename)
         return
     end
     --
-    local a_mkii        = getargument("mkii") or getargument("pdftex") or getargument("xetex")
-    local a_purge       = getargument("purge")
-    local a_purgeall    = getargument("purgeall")
-    local a_purgeresult = getargument("purgeresult")
-    local a_global      = getargument("global")
-    local a_timing      = getargument("timing")
-    local a_profile     = getargument("profile")
-    local a_batchmode   = getargument("batchmode")
-    local a_nonstopmode = getargument("nonstopmode")
-    local a_scollmode   = getargument("scrollmode")
-    local a_once        = getargument("once")
-    local a_synctex     = getargument("synctex")
-    local a_backend     = getargument("backend")
-    local a_arrange     = getargument("arrange")
-    local a_noarrange   = getargument("noarrange")
-    local a_jiton       = getargument("jiton")
-    local a_jithash     = getargument("jithash")
-    local a_texformat   = getargument("texformat")
-    local a_keeptuc     = getargument("keeptuc")
-    local a_keeplog     = getargument("keeplog")
+    local a_mkii          = getargument("mkii") or getargument("pdftex") or getargument("xetex")
+    local a_purge         = getargument("purge")
+    local a_purgeall      = getargument("purgeall")
+    local a_purgeresult   = getargument("purgeresult")
+    local a_global        = getargument("global")
+    local a_timing        = getargument("timing")
+    local a_profile       = getargument("profile")
+    local a_batchmode     = getargument("batchmode")
+    local a_nonstopmode   = getargument("nonstopmode")
+    local a_scollmode     = getargument("scrollmode")
+    local a_once          = getargument("once")
+    local a_synctex       = getargument("synctex")
+    local a_backend       = getargument("backend")
+    local a_arrange       = getargument("arrange")
+    local a_noarrange     = getargument("noarrange")
+    local a_jiton         = getargument("jiton")
+    local a_jithash       = getargument("jithash")
+    local a_texformat     = getargument("texformat")
+    local a_keeptuc       = getargument("keeptuc")
+    local a_keeplog       = getargument("keeplog")
+    local a_export        = getargument("export")
+    local a_nodates       = getargument("nodates")
+    local a_trailerid     = getargument("trailerid")
+    local a_nocompression = getargument("nocompression")
 
     -- the following flag is not officially supported because i cannot forsee
     -- side effects (so no bug reports please) .. we provide --sandbox that
@@ -702,20 +708,23 @@ function scripts.context.run(ctxdata,filename)
                     scripts.context.make(formatname)
                 end
                 --
-                local oldhash    = multipass_hashfiles(jobname)
-                local newhash    = { }
-                local maxnofruns = once and 1 or multipass_nofruns
+                local oldhash     = multipass_hashfiles(jobname)
+                local newhash     = { }
+                local maxnofruns  = once and 1 or multipass_nofruns
+                local fulljobname = validstring(filename)
                 --
                 local c_flags = {
-                    directives  = directives,   -- gets passed via mtxrun
-                    trackers    = trackers,     -- gets passed via mtxrun
-                    experiments = experiments,  -- gets passed via mtxrun
+                    directives     = directives,   -- gets passed via mtxrun
+                    trackers       = trackers,     -- gets passed via mtxrun
+                    experiments    = experiments,  -- gets passed via mtxrun
                     --
-                    result      = validstring(resultname),
-                    input       = validstring(getargument("input") or filename), -- alternative input
-                    fulljobname = validstring(filename),
-                    files       = concat(files,","),
-                    ctx         = validstring(ctxname),
+                    result         = validstring(resultname),
+                    input          = validstring(getargument("input") or filename), -- alternative input
+                    fulljobname    = fulljobname,
+                    files          = concat(files,","),
+                    ctx            = validstring(ctxname),
+                    export         = a_export and true or nil,
+                    nocompression  = a_nocompression and true or nil,
                 }
                 --
                 for k, v in next, environment.arguments do
@@ -725,11 +734,12 @@ function scripts.context.run(ctxdata,filename)
                     end
                 end
                 --
+                -- todo: --output-file=... in luatex
                 --
                 local l_flags = {
                     ["interaction"]           = a_batchmode,
                     ["synctex"]               = a_synctex,
-                    ["no-parse-first-line"]   = true,
+                    ["no-parse-first-line"]   = true, -- obsolete
                     ["safer"]                 = a_safer,
                  -- ["no-mktex"]              = true,
                  -- ["file-line-error-style"] = true,
@@ -748,21 +758,26 @@ function scripts.context.run(ctxdata,filename)
                     c_flags.usemodule = "timing"
                 end
                 --
-                if not a_profile then
-                    -- okay
-                elseif c_flags.directives then
-                    c_flags.directives = format("system.profile,%s",c_flags.directives)
-                else
-                    c_flags.directives = "system.profile"
+                local directives = { }
+                --
+                if a_nodates then
+                    directives[#directives+1] = format("backend.date=%s",type(a_nodates) == "string" and a_nodates or " no")
+                end
+                --
+                if a_trailerid then
+                    directives[#directives+1] = format("backend.trailerid=%s",a_trailerid)
+                end
+                --
+                if a_profile then
+                    directives[#directives+1] = "system.profile"
                 end
                 --
                 if a_synctex then
                     report("warning: synctex is enabled") -- can add upto 5% runtime
-                    if c_flags.directives then
-                        c_flags.directives = format("system.synctex=%s,%s",a_synctex,c_flags.directives)
-                    else
-                        c_flags.directives = format("system.synctex=%s",a_synctex)
-                    end
+                    directives[#directives+1] = format("system.synctex=%s",a_synctex)
+                end
+                if #directives > 0 then
+                    c_flags.directives = concat(directives,",")
                 end
                 --
                 -- kindofrun: 1:first run, 2:successive run, 3:once, 4:last of maxruns
@@ -836,9 +851,9 @@ function scripts.context.run(ctxdata,filename)
                 end
                 --
                 if a_purge then
-                    scripts.context.purge_job(jobname)
+                    scripts.context.purge_job(jobname,false,false,fulljobname)
                 elseif a_purgeall then
-                    scripts.context.purge_job(jobname,true)
+                    scripts.context.purge_job(jobname,true,false,fulljobname)
                 end
                 --
                 if resultname then
@@ -852,11 +867,13 @@ function scripts.context.run(ctxdata,filename)
                     report("result renamed to: %s",newbase)
                 end
                 --
-                if purge then
-                    scripts.context.purge_job(resultname)
-                elseif purgeall then
-                    scripts.context.purge_job(resultname,true)
-                end
+             -- -- needs checking
+             --
+             -- if a_purge then
+             --     scripts.context.purge_job(resultname)
+             -- elseif a_purgeall then
+             --     scripts.context.purge_job(resultname,true)
+             -- end
                 --
                 local pdfview = getargument("autopdf")
                 if pdfview then
@@ -958,13 +975,122 @@ function scripts.context.pipe() -- still used?
 end
 
 local function make_mkiv_format(name,engine)
-    environment.make_format(name) -- jit is picked up later
+    environment.make_format(name,environment.arguments.silent) -- jit is picked up later
 end
 
-local function make_mkii_format(name,engine)
-    local command = format("mtxrun texexec.rb --make %s --%s",name,engine)
-    report("running command: %s",command)
-    os.spawn(command)
+local make_mkii_format
+
+do -- more or less copied from mtx-plain.lua:
+
+    local function mktexlsr()
+        if environment.arguments.silent then
+            local result = os.execute("mktexlsr --quiet > temp.log")
+            if result ~= 0 then
+                print("mktexlsr silent run > fatal error") -- we use a basic print
+            else
+                print("mktexlsr silent run") -- we use a basic print
+            end
+            os.remove("temp.log")
+        else
+            report("running mktexlsr")
+            os.execute("mktexlsr")
+        end
+    end
+
+    local function engine(texengine,texformat)
+        local command = string.format('%s --ini --etex --8bit %s \\dump',texengine,file.addsuffix(texformat,"mkii"))
+        if environment.arguments.silent then
+            statistics.starttiming()
+            local command = format("%s > temp.log",command)
+            local result  = os.execute(command)
+            local runtime = statistics.stoptiming()
+            if result ~= 0 then
+                print(format("%s silent make > fatal error when making format %q",texengine,texformat)) -- we use a basic print
+            else
+                print(format("%s silent make > format %q made in %.3f seconds",texengine,texformat,runtime)) -- we use a basic print
+            end
+            os.remove("temp.log")
+        else
+            report("running command: %s",command)
+            os.execute(command)
+        end
+    end
+
+    local function resultof(...)
+        local command = string.format(...)
+        report("running command %a",command)
+        return string.strip(os.resultof(command) or "")
+    end
+
+    local function make(texengine,texformat)
+        report("generating kpse file database")
+        mktexlsr()
+        local fmtpathspec = resultof("kpsewhich --var-value=TEXFORMATS --engine=%s",texengine)
+        if fmtpathspec ~= "" then
+            report("using path specification %a",fmtpathspec)
+            fmtpathspec = resultof('kpsewhich -expand-braces="%s"',fmtpathspec)
+        end
+        if fmtpathspec ~= "" then
+            report("using path expansion %a",fmtpathspec)
+        else
+            report("no valid path reported, trying alternative")
+            fmtpathspec = resultof("kpsewhich --show-path=fmt --engine=%s",texengine)
+            if fmtpathspec ~= "" then
+                report("using path expansion %a",fmtpathspec)
+            else
+                report("no valid path reported, falling back to current path")
+                fmtpathspec = "."
+            end
+        end
+        fmtpathspec = string.splitlines(fmtpathspec)[1] or fmtpathspec
+        fmtpathspec = fmtpathspec and file.splitpath(fmtpathspec)
+        local fmtpath = nil
+        if fmtpathspec then
+            for i=1,#fmtpathspec do
+                local path = fmtpathspec[i]
+                if path ~= "." then
+                    dir.makedirs(path)
+                    if lfs.isdir(path) and file.is_writable(path) then
+                        fmtpath = path
+                        break
+                    end
+                end
+            end
+        end
+        if not fmtpath or fmtpath == "" then
+            fmtpath = "."
+        else
+            lfs.chdir(fmtpath)
+        end
+        engine(texengine,texformat)
+        report("generating kpse file database")
+        mktexlsr()
+        report("format %a saved on path %a",texformat,fmtpath)
+    end
+
+    local function run(texengine,texformat,filename)
+        local t = { }
+        for k, v in next, environment.arguments do
+            t[#t+1] = string.format("--mtx:%s=%s",k,v)
+        end
+        execute('%s --fmt=%s %s "%s"',texengine,file.removesuffix(texformat),table.concat(t," "),filename)
+    end
+
+    make_mkii_format = function(name,engine)
+
+        -- let the binary sort it out
+
+        os.setenv('SELFAUTOPARENT', "")
+        os.setenv('SELFAUTODIR',    "")
+        os.setenv('SELFAUTOLOC',    "")
+        os.setenv('TEXROOT',        "")
+        os.setenv('TEXOS',          "")
+        os.setenv('TEXMFOS',        "")
+        os.setenv('TEXMFCNF',       "")
+
+        make(engine,name)
+    end
+
 end
 
 function scripts.context.generate()
@@ -1122,6 +1248,9 @@ local temporary_runfiles = {
     "aux", "blg",                      -- bibtex
 }
 
+local temporary_suffixes = {
+    "prep",                            -- context preprocessed
+}
 local synctex_runfiles = {
     "synctex", "synctex.gz",           -- synctex
 }
@@ -1150,7 +1279,7 @@ local function purge_file(dfile,cfile)
     end
 end
 
-function scripts.context.purge_job(jobname,all,mkiitoo)
+function scripts.context.purge_job(jobname,all,mkiitoo,fulljobname)
     if jobname and jobname ~= "" then
         jobname = filebasename(jobname)
         local filebase = removesuffix(jobname)
@@ -1163,6 +1292,11 @@ function scripts.context.purge_job(jobname,all,mkiitoo)
             end
             for i=1,#temporary_runfiles do
                 deleted[#deleted+1] = purge_file(fileaddsuffix(filebase,temporary_runfiles[i]))
+            end
+            if fulljobname and fulljobname ~= jobname then
+                for i=1,#temporary_suffixes do
+                    deleted[#deleted+1] = purge_file(fileaddsuffix(fulljobname,temporary_suffixes[i],true))
+                end
             end
             if not environment.argument("synctex") then
                 -- special case: not deleted when --synctex is given, but what if given in preamble
@@ -1445,7 +1579,7 @@ function scripts.context.update()
         report("quiting, no 'context.mkiv' found")
         return
     end
-    local basetree = basepath.match(basepath,"^(.-)tex/context/base/context.mkiv$") or ""
+    local basetree = basepath.match(basepath,"^(.-)tex/context/base/.*context.mkiv$") or ""
     if basetree == "" then
         report("quiting, no proper tds structure (%s)",basepath)
         return
@@ -1487,7 +1621,7 @@ function scripts.context.update()
             report("quiting, unable to open '%s'",zipname)
             return
         end
-        local newfile = zip.loaddata(zipfile,"tex/context/base/context.mkiv")
+        local newfile = zip.loaddata(zipfile,"tex/context/base/mkiv/context.mkiv")
         if not newfile then
             report("quiting, unable to open '%s'","context.mkiv")
             return
@@ -1600,7 +1734,7 @@ elseif getargument("make") then
     scripts.context.timed(function() scripts.context.make() end)
 elseif getargument("generate") then
     scripts.context.timed(function() scripts.context.generate() end)
-elseif getargument("ctx") then
+elseif getargument("ctx") and not getargument("noctx") then
     scripts.context.timed(scripts.context.ctx)
 -- elseif getargument("mp") or getargument("metapost") then
 --     scripts.context.timed(scripts.context.metapost)

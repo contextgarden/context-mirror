@@ -1,0 +1,263 @@
+%D \module
+%D   [       file=setups-basics, % x-set-12,
+%D        version=2016.04.05, % 2004.10.31,
+%D         remark=setupx.tex: 1998.07.20 and later,
+%D          title=\CONTEXT\ Setup Definitions,
+%D       subtitle=Macro Definitions,
+%D         author={Hans Hagen & Wolfgang Schuster},
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% context --interface=en --global --result=setup-en x-setups-overview.mkiv
+
+\usemodule[setups-basics]
+
+\unprotect
+
+\definecolor[TitleColor][r=.375,g=.125,b=.125]
+\definecolor[TitleColor][r=.125,g=.375,b=.125]
+\definecolor[TitleColor][r=.125,g=.125,b=.375]
+\definecolor[TitleColor][r=.375,g=.375,b=.125]
+\definecolor[TitleColor][r=.375,g=.125,b=.375]
+\definecolor[TitleColor][r=.125,g=.375,b=.375]
+
+\definecolor[TitleColor][r=.25,g=.20,b=.15]
+\definecolor[TitleColor][r=.25,g=.15,b=.20]
+\definecolor[TitleColor][r=.20,g=.15,b=.25]
+\definecolor[TitleColor][r=.20,g=.25,b=.15]
+\definecolor[TitleColor][r=.15,g=.20,b=.25]
+\definecolor[TitleColor][r=.15,g=.25,b=.20]
+
+\doifelsemode {setups:traditional} {
+
+    \startinterface english  \loadsetups[cont-en.xml] \stopinterface
+    \startinterface dutch    \loadsetups[cont-nl.xml] \stopinterface
+    \startinterface german   \loadsetups[cont-de.xml] \stopinterface
+    \startinterface french   \loadsetups[cont-fr.xml] \stopinterface
+    \startinterface italian  \loadsetups[cont-it.xml] \stopinterface
+    \startinterface czech    \loadsetups[cont-cs.xml] \stopinterface
+    \startinterface romanian \loadsetups[cont-ro.xml] \stopinterface
+
+} {
+
+    \loadsetups[i-context.xml]
+
+}
+
+\startinterface dutch    \definecolor[LocalColor][r=.75,g=.25,b=.25]    \stopinterface
+\startinterface english  \definecolor[LocalColor][r=.25,g=.75,b=.25]    \stopinterface
+\startinterface german   \definecolor[LocalColor][r=.25,g=.25,b=.75]    \stopinterface
+\startinterface french   \definecolor[LocalColor][r=.75,g=.75,b=.25]    \stopinterface
+\startinterface czech    \definecolor[LocalColor][r=.75,g=.25,b=.75]    \stopinterface
+\startinterface italian  \definecolor[LocalColor][r=.25,g=.75,b=.75]    \stopinterface
+\startinterface romanian \definecolor[LocalColor][r=.5,g=.4,b=.3]       \stopinterface
+%                        \definecolor[LocalColor][r=.5,g=.3,b=.4]
+%                        \definecolor[LocalColor][r=.4,g=.3,b=.5]
+%                        \definecolor[LocalColor][r=.4,g=.5,b=.3]
+%                        \definecolor[LocalColor][r=.3,g=.4,b=.5]
+%                        \definecolor[LocalColor][r=.3,g=.5,b=.4]
+
+\startinterface english  \definecolor[TitleColor][r=.375,g=.125,b=.125] \stopinterface
+\startinterface dutch    \definecolor[TitleColor][r=.125,g=.375,b=.125] \stopinterface
+\startinterface german   \definecolor[TitleColor][r=.125,g=.125,b=.375] \stopinterface
+\startinterface french   \definecolor[TitleColor][r=.375,g=.375,b=.125] \stopinterface
+\startinterface italian  \definecolor[TitleColor][r=.375,g=.125,b=.375] \stopinterface
+\startinterface czech    \definecolor[TitleColor][r=.125,g=.375,b=.375] \stopinterface
+\startinterface romanian \definecolor[TitleColor][r=.25,g=.20,b=.15]    \stopinterface
+%                        \definecolor[TitleColor][r=.25,g=.15,b=.20]
+%                        \definecolor[TitleColor][r=.20,g=.15,b=.25]
+%                        \definecolor[TitleColor][r=.20,g=.25,b=.15]
+%                        \definecolor[TitleColor][r=.15,g=.20,b=.25]
+%                        \definecolor[TitleColor][r=.15,g=.25,b=.20]
+
+\definecolor [lightgray] [s=.9]
+\definecolor [darkgray]  [s=.1]
+
+\usetypescript[palatino]
+\setupbodyfont[palatino,9pt]
+
+\defineoverlay
+  [cover]
+  [\hbox to \paperwidth{\hss\reuseMPgraphic{cover+back}}]
+
+\defineoverlay
+  [back]
+  [\hbox to \paperwidth{\reuseMPgraphic{cover+back}\hss}]
+
+\startreusableMPgraphic{cover+back}
+    numeric h, w ; path p, q, r ; color f, d ; pair s ;
+    h := OverlayHeight ; w := 2*OverlayWidth ;
+    r := unitsquare xyscaled (w,h) ;
+    fill r withcolor \MPcolor{lightgray} ;
+    set_grid(w,h,w/8,w/16) ;
+    forever :
+        s := center r randomized (w,h) ;
+        if new_on_grid(xpart s, ypart s) :
+            s := (dx,dy) ;
+            p := fullsquare xyscaled(w/4,w/8) ;
+            q := (-4w,ypart ulcorner p) -- .5[ulcorner p, urcorner p] -- (4w,ypart urcorner p) ;
+            q := q shifted (0,-w/24) ;
+            p := p randomized (w/40,w/40) ;
+            q := q randomized (0,w/100) ;
+            q := q cutafter  (p cutafter  point 3 of p) ;
+            q := q cutbefore (p cutbefore point 3 of p) ;
+            d := .5[\MPcolor{LocalColor},\MPcolor{lightgray}] randomized (.5,.9) ;
+            f := \MPcolor{lightgray} randomized (.5,.9) ;
+            pickup pencircle scaled (w/100) ;
+            fill p shifted s withcolor f ;
+            draw p shifted s withcolor d ;
+            draw q shifted s withcolor d ;
+        fi ;
+        exitif grid_full ;
+    endfor ;
+    setbounds currentpicture to r ;
+\stopreusableMPgraphic
+
+\definelayout
+  [titlepage]
+  [\c!backspace=1cm,
+   \c!topspace=1cm,
+   \c!width=\v!middle,
+   \c!height=\v!middle,
+   \c!header=0pt,
+   \c!footer=0pt]
+
+\setuplayout
+  [\c!backspace=2cm,
+   \c!topspace=1.5cm,
+   \c!bottomspace=0.5cm,
+   \c!header=0cm,
+   \c!footer=1cm,
+   \c!width=\v!middle,
+   \c!height=\v!middle]
+
+\setuppagenumbering
+  [\c!location=\v!footer,
+   \c!alternative=\v!doublesided]
+
+\setupsetup
+  [\c!criterium=\v!all]
+
+\setupframedtexts
+  [setuptext]
+  [\c!before=\blank,
+   \c!after=\blank,
+   \c!frame=\v!on,
+   \c!rulethickness=1pt,
+   \c!framecolor=TitleColor]
+
+\setupunderbar
+  [\c!rulethickness=1pt,
+   \c!rulecolor=TitleColor]
+
+\dontcomplain
+
+\starttext
+
+\setupbackgrounds
+  [\v!rightpage]
+  [\c!background=cover]
+
+\setuplayout
+  [titlepage]
+
+\startsetups text:commands
+    \startinterface dutch    \strut commando's   \par \stopinterface
+    \startinterface english  \strut commands     \par \stopinterface
+    \startinterface german   \strut befehle      \par \stopinterface
+    \startinterface french   \strut commandes    \par \stopinterface
+    \startinterface czech    \strut p\v{r}ikazy  \par \stopinterface
+    \startinterface italian  \strut comandi      \par \stopinterface
+    \startinterface romanian \strut comenzile    \par \stopinterface
+\stopsetups
+
+\startsetups text:uppercase
+    \startinterface dutch    NL\stopinterface
+    \startinterface english  EN\stopinterface
+    \startinterface german   DE\stopinterface
+    \startinterface french   FR\stopinterface
+    \startinterface czech    CS\stopinterface
+    \startinterface italian  IT\stopinterface
+    \startinterface romanian RO\stopinterface
+\stopsetups
+
+\startsetups text:lowercase
+    \startinterface dutch    \strut nl / nederlands     \par \stopinterface
+    \startinterface english  \strut en / english        \par \stopinterface
+    \startinterface german   \strut de / deutsch        \par \stopinterface
+    \startinterface french   \strut fr / fran\c{c}ais   \par \stopinterface
+    \startinterface czech    \strut cs / \v{c}esk\'y    \par \stopinterface
+    \startinterface italian  \strut it / italiano       \par \stopinterface
+    \startinterface romanian \strut ro / rom\^{a}n\u{a} \par \stopinterface
+\stopsetups
+
+\startmakeup[\v!standard]
+    \dontcomplain
+    \setupalign[\v!left]
+    \startcolor[TitleColor]
+    \definedfont[RegularBold at 100pt]\setstrut
+    \strut Con\TeX t \par
+    \definedfont[RegularBold at 50pt]\setstrut
+    \setups[text:commands]
+    \vfill
+    \definedfont[RegularBold at 150pt]\setstrut
+    \setups[text:uppercase]
+    \stopcolor
+\stopmakeup
+
+\setuplayout % needed ?
+
+\setupbackgrounds
+  [\v!rightpage]
+  [\c!background=]
+
+\startmakeup[\v!standard]
+    \dontcomplain
+    \startcolor[TitleColor]
+    \definedfont[RegularBold at 100pt]\setstrut
+    \setupalign[\v!left]
+    \strut Con\TeX t \par
+    \definedfont[RegularBold at 50pt]\setstrut
+    \setups[text:commands]
+    \vfill
+    \definedfont[RegularBold at 24pt]\setupinterlinespace
+    \setups[text:lowercase]
+    \par \strut \currentdate \par
+    \stopcolor
+\stopmakeup
+
+\protect
+
+\placeeverysetup
+
+\unprotect
+
+\page[\v!yes,\v!blank,\v!right,\v!left]
+
+\setuplayout
+  [titlepage]
+
+\setupbackgrounds
+  [\v!leftpage]
+  [\c!background=back]
+
+\startmakeup[\v!standard][\c!page=]
+    \dontcomplain
+    \startcolor[TitleColor]
+    \definedfont[RegularBold at 24pt]\setupinterlinespace
+    \setupalign[\v!left]
+    \vfill
+    PRAGMA ADE \par
+    Ridderstraat 27 \par
+    8061GH Hasselt NL \par
+    www.pragma-ade.com \par
+    \stopcolor
+\stopmakeup
+
+\protect
+
+\stoptext
