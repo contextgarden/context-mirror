@@ -34,13 +34,9 @@ local leaders_code      = gluecodes.leaders
 local lineskip_code     = gluecodes.lineskip
 local baselineskip_code = gluecodes.baselineskip
 local line_code         = listcodes.line
-local parskip_code      = listcodes.parskip
 
 local texlists          = tex.lists
-local gettexdimen       = tex.getdimen
 local settexattribute   = tex.setattribute
-local settexbox         = tex.setbox
-local taketexbox        = tex.takebox
 
 local nuts              = nodes.nuts
 local tonut             = nodes.tonut
@@ -60,6 +56,9 @@ local setlink           = nuts.setlink
 local setlist           = nuts.setlist
 local setattr           = nuts.setattr
 
+local properties        = nodes.properties.data
+local setprop           = nuts.setprop
+local getprop           = nuts.getprop
 local theprop           = nuts.theprop
 
 local floor             = math.floor
@@ -69,16 +68,13 @@ local new_rule          = nuts.pool.rule
 local new_glue          = nuts.pool.glue
 local new_kern          = nuts.pool.kern
 local hpack_nodes       = nuts.hpack
-local link_nodes        = nuts.link
 local find_node_tail    = nuts.tail
 local setglue           = nuts.setglue
-
-local properties        = nodes.properties.data
 
 local a_visual          = attributes.private("visual")
 local a_snapmethod      = attributes.private("snapmethod")
 local a_profilemethod   = attributes.private("profilemethod")
-local a_specialcontent  = attributes.private("specialcontent")
+----- a_specialcontent  = attributes.private("specialcontent")
 
 local variables         = interfaces.variables
 local v_none            = variables.none
@@ -203,7 +199,8 @@ local function getprofile(line,step)
                 -- we could do a nested check .. but then we need to push / pop glue
                 local shift = getfield(current,"shift")
                 wd = getfield(current,"width")
-                if getattr(current,a_specialcontent) then
+             -- if getattr(current,a_specialcontent) then
+                if getprop(current,"specialcontent") then
                     -- like a margin note, maybe check for wd
                     ht = 0
                     dp = 0
@@ -887,12 +884,12 @@ function profiling.profilebox(specification)
 
 end
 
-local ignore = table.tohash {
-    "split_keep",
-    "split_off",
- -- "vbox",
-}
-
+-- local ignore = table.tohash {
+--     "split_keep",
+--     "split_off",
+--  -- "vbox",
+-- }
+--
 -- function profiling.vboxhandler(head,where)
 --     if head and not ignore[where] then
 --         local h = tonut(head)

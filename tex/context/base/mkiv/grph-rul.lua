@@ -168,12 +168,19 @@ interfaces.implement {
         { "name",   "string" },
     } } ,
     actions = function(t)
-        if t.type == "mp" then
-            t.ma = getattribute(a_colorspace) or 1
-            t.ca = getattribute(a_color)
-            t.ta = getattribute(a_transparency)
-        end
         local r = userrule(t)
+        local ma = getattribute(a_colorspace) or 1
+        local ca = getattribute(a_color)
+        local ta = getattribute(a_transparency)
+        if t.type == "mp" then
+            t.ma = ma
+            t.ca = ca
+            t.ta = ta
+        else
+            r[a_colorspace]   = ma
+            r[a_color]        = ca
+            r[a_transparency] = ta
+        end
         context(r)
     end
 }
