@@ -340,8 +340,8 @@ local function preparesplit(specification) -- a rather large function
                 if trace_state then
                     report_state("backtracking over %s in column %s","glue",column)
                 end
-            elseif id == penalty_code then
                 current = getprev(current)
+            elseif id == penalty_code then
                 if trace_state then
                     report_state("backtracking over %s in column %s","penalty",column)
                 end
