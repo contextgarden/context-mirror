@@ -44,7 +44,6 @@ local vpack               = nuts.vpack
 local freenode            = nuts.free
 local concatnodes         = nuts.concat
 local slidenodes          = nuts.slide -- ok here as we mess with prev links intermediately
-local findtail            = nuts.tail
 
 local getfield            = nuts.getfield
 local setfield            = nuts.setfield
@@ -62,8 +61,6 @@ local getsubtype          = nuts.getsubtype
 local getbox              = nuts.getbox
 local getskip             = nuts.getskip
 local getattribute        = nuts.getattribute
-
-local texgetskip          = tex.getskip
 
 local theprop             = nuts.theprop
 
