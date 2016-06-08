@@ -66,7 +66,7 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
                 colorvalues[i] = { "special", f_color_start(p[1]/255,p[2]/255,p[3]/255) }
             end
             --
-            local stop = { "special", "pdf:direct:" .. stopactualtext() }
+            local stop = { "special", "pdf:direct:" .. stopactualtext() .. " Q" }
             --
             for unicode, character in next, characters do
                 local description = descriptions[unicode]
@@ -77,7 +77,7 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
                         local s = #colorlist
                         local n = 1
                         local t = {
-                            { "special", "pdf:direct:" .. startactualtext(unicode) }
+                            { "special", "pdf:direct: q " .. startactualtext(unicode) }
                         }
                         for i=1,s do
                             local entry = colorlist[i]
