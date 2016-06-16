@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/16/16 11:48:28
+-- merge date  : 06/16/16 23:49:06
 
 do -- begin closure to overcome local limits and interference
 
@@ -4161,7 +4161,7 @@ end
 function files.readinteger1(f) 
   local n=byte(f:read(1))
   if n>=0x80 then
-    return n-0xFF-1
+    return n-0x100
   else
     return n
   end
@@ -4177,7 +4177,7 @@ function files.readinteger2(f)
   local a,b=byte(f:read(2),1,2)
   local n=0x100*a+b
   if n>=0x8000 then
-    return n-0xFFFF-1
+    return n-0x10000
   else
     return n
   end
@@ -4185,6 +4185,15 @@ end
 function files.readcardinal3(f)
   local a,b,c=byte(f:read(3),1,3)
   return 0x10000*a+0x100*b+c
+end
+function files.readinteger3(f)
+  local a,b,c=byte(f:read(3),1,3)
+  local n=0x10000*a+0x100*b+c
+  if n>=0x80000 then
+    return n-0x1000000
+  else
+    return n
+  end
 end
 function files.readcardinal4(f)
   local a,b,c,d=byte(f:read(4),1,4)
@@ -4194,7 +4203,7 @@ function files.readinteger4(f)
   local a,b,c,d=byte(f:read(4),1,4)
   local n=0x1000000*a+0x10000*b+0x100*c+d
   if n>=0x8000000 then
-    return n-0xFFFFFFFF-1
+    return n-0x100000000
   else
     return n
   end
@@ -4203,7 +4212,7 @@ function files.readfixed4(f)
   local a,b,c,d=byte(f:read(4),1,4)
   local n=0x100*a+b
   if n>=0x8000 then
-    return n-0xFFFF-1+(0x100*c+d)/0xFFFF
+    return n-0x10000+(0x100*c+d)/0xFFFF
   else
     return n+(0x100*c+d)/0xFFFF
   end
