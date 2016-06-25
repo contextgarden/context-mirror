@@ -74,6 +74,8 @@ def stop_predefined_shape_definition =
 
 enddef ;
 
+% this can be delayed
+
 start_predefined_shape_definition ;
 
     predefined_shapes[ 0] := (origin--cycle) ;
@@ -143,7 +145,7 @@ start_predefined_shape_definition ;
 stop_predefined_shape_definition ;
 
 vardef some_shape_path (expr type) =
-    if known predefined_shapes[type] : predefined_shapes[type] else : predefined_shapes[0] fi
+    if known predefined_shapes[type] : predefined_shapes[type] else : predefined_shapes[24] fi
 enddef ;
 
 def some_shape (expr shape_type, shape_width, shape_height, shape_linewidth, shape_linecolor, shape_fillcolor) =
@@ -155,6 +157,14 @@ def some_shape (expr shape_type, shape_width, shape_height, shape_linewidth, sha
         draw p withcolor shape_linecolor ;
     endgroup ;
 enddef ;
+
+% maybe:
+%
+%     if t>1 : % normal shape
+%         path pp ; pp := some_shape_path(t) xyscaled(bbwidth(p), bbheight(p)) ;
+%         pp := pp shifted - center pp shifted center p ;
+%         fill pp withcolor fc ;
+%         draw pp withpen pencircle scaled lw withcolor lc ;
 
 vardef drawpredefinedshape (expr t, p, lw, lc, fc) =
     save pp ;

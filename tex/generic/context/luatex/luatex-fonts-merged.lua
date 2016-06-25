@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/20/16 22:14:55
+-- merge date  : 06/25/16 14:38:07
 
 do -- begin closure to overcome local limits and interference
 
@@ -4327,6 +4327,7 @@ local remapper={
   cidmap="cid maps",
   pfb="type1 fonts",
   afm="afm",
+  enc="enc files",
 }
 function resolvers.findfile(name,fileformat)
   name=string.gsub(name,"\\","/")
@@ -5849,15 +5850,17 @@ end
 local psfake=0
 local function fixedpsname(psname,fallback)
   local usedname=psname
-  if not psname or psname=="" then
-    psname=fallback
-    usedname=gsub(psname,"[^a-zA-Z0-9]+","-")
-  elseif find(psname," ") then
-    usedname=gsub(psname,"[%s]+","-")
-  end
-  if not psname or psname=="" then
+  if psname and psname~="" then
+    if find(psname," ") then
+      usedname=gsub(psname,"[%s]+","-")
+    else
+    end
+  elseif not fallback or fallback=="" then
     psfake=psfake+1
     psname="fakename-"..psfake
+  else
+    psname=fallback
+    usedname=gsub(psname,"[^a-zA-Z0-9]+","-")
   end
   return usedname,psname~=usedname
 end
@@ -6796,19 +6799,61 @@ if context then
   os.exit()
 end
 local fonts=fonts
-fonts.encodings={}
-fonts.encodings.agl={}
-fonts.encodings.known={}
-setmetatable(fonts.encodings.agl,{ __index=function(t,k)
+local encodings={}
+fonts.encodings=encodings
+encodings.agl={}
+encodings.known={}
+setmetatable(encodings.agl,{ __index=function(t,k)
   if k=="unicodes" then
     texio.write(" <loading (extended) adobe glyph list>")
     local unicodes=dofile(resolvers.findfile("font-age.lua"))
-    fonts.encodings.agl={ unicodes=unicodes }
+    encodings.agl={ unicodes=unicodes }
     return unicodes
   else
     return nil
   end
 end })
+encodings.cache=containers.define("fonts","enc",encodings.version,true)
+function encodings.load(filename)
+  local name=file.removesuffix(filename)
+  local data=containers.read(encodings.cache,name)
+  if data then
+    return data
+  end
+  local vector,tag,hash,unicodes={},"",{},{}
+  local foundname=resolvers.findfile(filename,'enc')
+  if foundname and foundname~="" then
+    local ok,encoding,size=resolvers.loadbinfile(foundname)
+    if ok and encoding then
+      encoding=string.gsub(encoding,"%%(.-)\n","")
+      local unicoding=encodings.agl.unicodes
+      local tag,vec=string.match(encoding,"/(%w+)%s*%[(.*)%]%s*def")
+      local i=0
+      for ch in string.gmatch(vec,"/([%a%d%.]+)") do
+        if ch~=".notdef" then
+          vector[i]=ch
+          if not hash[ch] then
+            hash[ch]=i
+          else
+          end
+          local u=unicoding[ch]
+          if u then
+            unicodes[u]=i
+          end
+        end
+        i=i+1
+      end
+    end
+  end
+  local data={
+    name=name,
+    tag=tag,
+    vector=vector,
+    hash=hash,
+    unicodes=unicodes
+  }
+  return containers.write(encodings.cache,name,data)
+end
 
 end -- closure
 
@@ -11302,10 +11347,15 @@ local function readcoverage(f,offset,simple)
   end
   return coverage
 end
-local function readclassdef(f,offset)
+local function readclassdef(f,offset,preset)
   setposition(f,offset)
   local classdefformat=readushort(f)
   local classdef={}
+  if type(preset)=="number" then
+    for k=0,preset-1 do
+      classdef[k]=1
+    end
+  end
   if classdefformat==1 then
     local index=readushort(f)
     local nofclassdef=readushort(f)
@@ -11326,6 +11376,13 @@ local function readclassdef(f,offset)
     end
   else
     report("unknown classdef format %a ",classdefformat)
+  end
+  if type(preset)=="table" then
+    for k in next,preset do
+      if not classdef[k] then
+        classdef[k]=1
+      end
+    end
   end
   return classdef
 end
@@ -11491,7 +11548,7 @@ local function unchainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,n
     local rules={}
     if subclasssets then
       coverage=readcoverage(f,tableoffset+coverage)
-      currentclassdef=readclassdef(f,tableoffset+currentclassdef)
+      currentclassdef=readclassdef(f,tableoffset+currentclassdef,coverage)
       local currentclasses=classtocoverage(currentclassdef,fontdata.glyphs)
       for class=1,#subclasssets do
         local offset=subclasssets[class]
@@ -11615,9 +11672,9 @@ local function chainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,nof
     local rules={}
     if subclasssets then
       local coverage=readcoverage(f,tableoffset+coverage)
-      local beforeclassdef=readclassdef(f,tableoffset+beforeclassdef)
-      local currentclassdef=readclassdef(f,tableoffset+currentclassdef)
-      local afterclassdef=readclassdef(f,tableoffset+afterclassdef)
+      local beforeclassdef=readclassdef(f,tableoffset+beforeclassdef,nofglyphs)
+      local currentclassdef=readclassdef(f,tableoffset+currentclassdef,coverage)
+      local afterclassdef=readclassdef(f,tableoffset+afterclassdef,nofglyphs)
       local beforeclasses=classtocoverage(beforeclassdef,fontdata.glyphs)
       local currentclasses=classtocoverage(currentclassdef,fontdata.glyphs)
       local afterclasses=classtocoverage(afterclassdef,fontdata.glyphs)
@@ -12008,8 +12065,8 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
     local nofclasses2=readushort(f) 
     local classlist=readpairclasssets(f,nofclasses1,nofclasses2,format1,format2)
        coverage=readcoverage(f,tableoffset+coverage)
-       classdef1=readclassdef(f,tableoffset+classdef1)
-       classdef2=readclassdef(f,tableoffset+classdef2)
+       classdef1=readclassdef(f,tableoffset+classdef1,coverage)
+       classdef2=readclassdef(f,tableoffset+classdef2,nofglyphs)
     local usedcoverage={}
     for g1,c1 in next,classdef1 do
       if coverage[g1] then
@@ -15310,7 +15367,7 @@ local trace_defining=false registertracker("fonts.defining",function(v) trace_de
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.024 
+otf.version=3.025 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pdfcache=containers.define("fonts","pdf",otf.version,true)
