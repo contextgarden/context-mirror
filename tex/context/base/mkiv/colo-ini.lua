@@ -65,6 +65,12 @@ storage.register("attributes/colors/sets",   colorsets, "attributes.colors.sets"
 storage.register("attributes/colors/valid",  valid,     "attributes.colors.valid")
 storage.register("attributes/colors/counts", counts,    "attributes.colors.counts")
 
+local function currentmodel()
+    return texgetattribute(a_colormodel)
+end
+
+colors.currentmodel = currentmodel
+
 local function synccolor(name)
     valid[name] = true
 end
@@ -223,11 +229,16 @@ local transparent = {
     luminosity = 16,
 }
 
-local gray_okay, rgb_okay, cmyk_okay, spot_okay, multichannel_okay, forced = true, true, true, true, true, false
+local gray_okay   = true
+local rgb_okay    = true
+local cmyk_okay   = true
+local spot_okay   = true
+local multi_okay  = true
+local forced      = false
 
-function colors.forcesupport(gray,rgb,cmyk,spot,multichannel) -- pdfx driven
-    gray_okay, rgb_okay, cmyk_okay, spot_okay, multichannel_okay, forced = gray, rgb, cmyk, spot, multichannel, true
-    report_colors("supported models: gray %a, rgb %a, cmyk %a, spot %a",gray,rgb,cmyk,spot) -- multichannel=%l multichannel
+function colors.forcesupport(gray,rgb,cmyk,spot,multi) -- pdfx driven
+    gray_okay, rgb_okay, cmyk_okay, spot_okay, multi_okay, forced = gray, rgb, cmyk, spot, multi, true
+    report_colors("supported models: gray %a, rgb %a, cmyk %a, spot %a",gray,rgb,cmyk,spot)
 end
 
 local function forcedmodel(model) -- delayed till the backend but mp directly
@@ -289,7 +300,7 @@ local function do_registerspotcolor(parent,parentnumber,e,f,d,p)
     if not registered[parent] then
         local v = colorvalues[parentnumber]
         if v then
-            local model = colors.default -- else problems with shading etc
+            local model = currentmodel()
             if model == 1 then
                 model = v[1]
             end
@@ -312,7 +323,7 @@ end
 --     if not registered[parent] then
 --         local v = colorvalues[parentnumber]
 --         if v then
---             local model = colors.default -- else problems with shading etc
+--             local model = currentmodel()
 --             if model == 1 then
 --                 model = v[1]
 --             end
@@ -333,8 +344,8 @@ function colors.definesimplegray(name,s)
 end
 
 local hexdigit    = R("09","AF","af")
-local hexnumber   = hexdigit * hexdigit / function(s) return tonumber(s,16)/255 end + Cc(0)
-local hexpattern  = hexnumber^-3 * P(-1)
+local hexnumber   = hexdigit * hexdigit / function(s) return tonumber(s,16)/255 end
+local hexpattern  = hexnumber * (P(-1) + hexnumber * hexnumber * P(-1))
 local hexcolor    = Cc("H") * P("#") * hexpattern
 
 local left        = P("(")
@@ -397,7 +408,11 @@ local function defineprocesscolor(name,str,global,freeze) -- still inconsistent 
                         local x = settings.x or h
                         if x then
                             r, g, b = lpegmatch(hexpattern,x) -- can be inlined
-                            definecolor(name, register_color(name,'rgb',r,g,b), global)
+                            if r and g and b then
+                                definecolor(name, register_color(name,'rgb',r,g,b), global)
+                            else
+                                definecolor(name, register_color(name,'gray',r or 0), global)
+                            end
                         else
                             definecolor(name, register_color(name,'gray',tonumber(s) or 0), global)
                         end
@@ -615,10 +630,6 @@ end
 
 local colornamespace  = getnamespace("colornumber")
 local paletnamespace  = getnamespace("colorpalet")
-
-function colors.currentmodel()
-    return texgetattribute(a_colormodel)
-end
 
 local function namedcolorattributes(name)
     local space  = texgetattribute(a_colormodel)
