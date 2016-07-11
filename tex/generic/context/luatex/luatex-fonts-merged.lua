@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/08/16 17:19:16
+-- merge date  : 07/11/16 13:44:22
 
 do -- begin closure to overcome local limits and interference
 
@@ -17149,6 +17149,10 @@ local function inject_everything(head,where)
               nofmarks=nofmarks+1
               marks[nofmarks]=current
             else
+local yoffset=i.yoffset
+if yoffset and yoffset~=0 then
+  setfield(current,"yoffset",yoffset)
+end
               if hascursives then
                 local cursivex=i.cursivex
                 if cursivex then
@@ -17199,10 +17203,6 @@ local function inject_everything(head,where)
                   end
                   cursiveanchor=nil
                 end
-              end
-              local yoffset=i.yoffset
-              if yoffset and yoffset~=0 then
-                setfield(current,"yoffset",yoffset)
               end
               local leftkern=i.leftkern
               if leftkern and leftkern~=0 then
