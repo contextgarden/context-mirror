@@ -410,7 +410,7 @@ local function defineprocesscolor(name,str,global,freeze) -- still inconsistent 
      -- return defineintermediatecolor(name,two,l_color[one],l_color[three],l_transparency[one],l_transparency[three],"",global,freeze)
         local c1, t1 = resolvedname(one)
         local c2, t2 = resolvedname(three)
-        return defineintermediatecolor(name,two,c1,c1,t1,t2,"",global,freeze)
+        return defineintermediatecolor(name,two,c1,c2,t1,t2,"",global,freeze)
     else
         local settings = settings_to_hash_strict(str)
         if settings then
@@ -517,8 +517,15 @@ end
 
 local function f(i,colors,fraction)
     local otf = 0
-    for c=1,#colors do
-        otf = otf + (tonumber(fraction[c]) or 1) * colors[c][i]
+    if type(fraction) == "table" then
+        for c=1,#colors do
+            otf = otf + (tonumber(fraction[c]) or 1) * colors[c][i]
+        end
+    else
+        fraction = tonumber(fraction)
+        for c=1,#colors do
+            otf = otf + fraction * colors[c]
+        end
     end
     if otf > 1 then
         otf = 1
