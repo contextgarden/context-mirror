@@ -79,7 +79,7 @@ local setlist    = nuts.setlist
 
 local copy_nut   = nuts.copy
 local new_nut    = nuts.new
-local free_nut   = nuts.free
+local flush_nut  = nuts.flush
 
 local copy_node  = nodes.copy
 local new_node   = nodes.new
@@ -418,43 +418,22 @@ function nutpool.latelua(code)
     return n
 end
 
-if context and _cldo_ then
+----- latelua_node  = register_node(new_node("whatsit",whatsitcodes.latelua))
+local latelua_nut   = register_nut (new_nut ("whatsit",whatsitcodes.latelua))
 
-    -- a typical case where we have more nodes than nuts
+-- local setfield_node = nodes.setfield
+-- local setfield_nut  = nuts .setfield
 
-    local context  = context
-    local register = context.registerfunction
+-- function nodepool.lateluafunction(f)
+--     local n = copy_node(latelua_node)
+--     setfield_node(n,"string",f)
+--     return n
+-- end
 
-    local latelua_node  = register_node(new_node("whatsit",whatsitcodes.latelua))
-    local latelua_nut   = register_nut (new_nut ("whatsit",whatsitcodes.latelua))
-
-    local setfield_node = nodes.setfield
-    local setfield_nut  = nuts .setfield
-
-    function nodepool.lateluafunction(f)
-        local n = copy_node(latelua_node)
-        setfield_node(n,"string",f)
-        return n
-    end
-
-    function nutpool.lateluafunction(f)
-        local n = copy_nut(latelua_nut)
-        setfield_nut(n,"string",f)
-        return n
-    end
-
- -- function context.lateluafunction(f)
- --     local n = copy_node(latelua_node)
- --     setfield_node(n,"string",f)
- --     contextsprint(ctxcatcodes,"\\cldl",storenode(n)," ")
- -- end
-
-    local new_latelua_node = nodes.pool.latelua
-
-    function context.lateluafunction(f) -- not used anyway
-        context(new_latelua_node(f))
-    end
-
+function nutpool.lateluafunction(f)
+    local n = copy_nut(latelua_nut)
+    setfield(n,"string",f)
+    return n
 end
 
 function nutpool.leftmarginkern(glyph,width)
@@ -631,13 +610,13 @@ local function cleanup(nofboxes) -- todo
     local nr = nofreserved
     for i=1,nofreserved do
         local ri = reserved[i]
-        free_nut(reserved[i])
+        flush_nut(reserved[i])
     end
     if nofboxes then
         for i=0,nofboxes do
             local l = getbox(i)
             if l then
-                free_nut(l) -- also list ?
+                flush_nut(l) -- also list ?
                 nl = nl + 1
             end
         end
