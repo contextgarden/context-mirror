@@ -38,6 +38,7 @@ if not modules then modules = { } end modules ['lang-txt'] = {
 -- nb    Norwegian      Hans Fredrik Nordhaug, ...
 -- nn    Norwegian      Hans Fredrik Nordhaug, ...
 -- nl    Dutch          Hans Hagen
+-- pe    Persian        Mohammad Hossein Bateni
 -- pl    Polish         Grzegorz Sapijaszko
 -- pt    Portuguese     Pedro F. M. Mendonça
 -- ro    Romanian       Dan Seracu, ...
@@ -423,6 +424,7 @@ data.labels={
   ["year"]={
    labels={
     en="year",
+    pe="سال",
     nl="jaar",
     kr="년",
    },
@@ -430,6 +432,7 @@ data.labels={
   ["month"]={
    labels={
     en="month",
+    pe="ماه"
     nl="maand",
     kr="월",
    },
@@ -437,6 +440,7 @@ data.labels={
   ["day"]={
    labels={
     en="day",
+    pe="روز",
     nl="dag",
     kr="일",
    },
@@ -450,6 +454,7 @@ data.labels={
     de="und",
     en="and",
     es="y",
+    pe="و",
     fi="",
     fr="",
     gr="",
@@ -486,6 +491,7 @@ data.labels={
     de="Anhang ",
     en="Appendix ",
     es="Apéndice ",
+    pe="پیوست ",
     fi="",
     fr="Annexe ",
     gr="Παράρτημα",
@@ -525,6 +531,7 @@ data.labels={
     de="April",
     en="April",
     es="abril",
+    pe="آوریل",
     fi="huhtikuu",
     fr="avril",
     gr="Απρίλιος",
@@ -552,7 +559,7 @@ data.labels={
    },
   },
   ["april:mnem"]={
-   labels={
+  labels={
     af="",
     ca="",
     cs="dub.",
@@ -594,6 +601,7 @@ data.labels={
     de="auf Seite ",
     en="at page ",
     es="en la página ",
+    pe="در صفحه ",
     fi="",
     fr="à la page ",
     gr="",
@@ -632,6 +640,7 @@ data.labels={
     de="August",
     en="August",
     es="agosto",
+    pe="اوت",
     fi="elokuu",
     fr="août",
     gr="Αύγουστος",
@@ -703,6 +712,7 @@ data.labels={
     de="Kapitel ",
     en="Chapter ",
     es="Capítulo ",
+    pe="فصل ",
     fi="",
     fr="Chapitre ",
     gr="Κεφάλαιο",
@@ -738,6 +748,7 @@ data.labels={
     de="",
     en=" (continued)",
     es=" (continúa)",
+    pe="(ادامه دارد)",
     fi="",
     fr="",
     gr="",
@@ -775,6 +786,7 @@ data.labels={
     de="Dezember",
     en="December",
     es="diciembre",
+    pe="دسامبر",
     fi="joulukuu",
     fr="décembre",
     gr="Δεκέμβριος",
@@ -847,6 +859,7 @@ data.labels={
     de="Februar",
     en="February",
     es="febrero",
+    pe="فوریه",
     fi="helmikuu",
     fr="février",
     gr="Φεβρουάριος",
@@ -917,6 +930,7 @@ data.labels={
     de="Abbildung ",
     en="Figure ",
     es="Figura ",
+    pe="شکل ",
     fi="Kuva ",
     fr="Figure ",
     gr="Σχήμα",
@@ -954,6 +968,7 @@ data.labels={
     de="Freitag",
     en="Friday",
     es="viernes",
+    pe="جمعه",
     fi="perjantai",
     fr="vendredi",
     gr="Παρασκευή",
@@ -991,6 +1006,7 @@ data.labels={
     de="Graphik ",
     en="Graphic ",
     es="Gráfico ",
+    pe="طرح ",
     fi="Grafiikka ",
     fr="Illustration ",
     gr="Γραφικό",
@@ -1019,12 +1035,14 @@ data.labels={
   precedingpage={
    labels={
     en="on a preceding page",
+    pe="در صفحات گذشته",
     nl="op een voorgaande bladzijde",
    },
   },
   followingpage={
    labels={
     en="on a following page",
+    pe="در صفحات آینده",
     nl="op een volgende bladzijde",
    },
   },
@@ -1038,6 +1056,7 @@ data.labels={
     de="siehe oben",
     en="as we show above",
     es="como se muestra arriba",
+    pe="چنان‌که شرح دادیم",
     fi="",
     fr="ci-dessus",
     gr="",
@@ -1073,6 +1092,7 @@ data.labels={
     de="siehe unten",
     en="as we show below",
     es="como se muestra abajo",
+    pe="چنان‌که شرح خواهیم داد",
     fi="",
     fr="ci-dessous",
     gr="",
@@ -1148,6 +1168,7 @@ data.labels={
     de="Januar",
     en="January",
     es="enero",
+    pe="ژانویه",
     fi="tammikuu",
     fr="janvier",
     gr="Ιανουάριος",
@@ -1221,6 +1242,7 @@ data.labels={
     de="Juli",
     en="July",
     es="julio",
+    pe="ژوئیه",
     fi="heinäkuu",
     fr="juillet",
     gr="Ιούλιος",
@@ -1293,6 +1315,7 @@ data.labels={
     de="Juni",
     en="June",
     es="junio",
+    pe="ژوئن",
     fi="kesäkuu",
     fr="juin",
     gr="Ιούνιος",
@@ -1363,6 +1386,7 @@ data.labels={
     de="Zeile ",
     en="line ",
     es="línea ",
+    pe="سطر ",
     fi="rivi ",
     fr="ligne ",
     gr="Γραμμή",
@@ -1400,6 +1424,7 @@ data.labels={
     de="Zeilen ",
     en="lines ",
     es="líneas ",
+    pe="سطرهای ",
     fi="rivie ",
     fr="lignes ",
     gr="Γραμμές",
@@ -1438,6 +1463,7 @@ data.labels={
     de="März",
     en="March",
     es="marzo",
+    pe="مارس",
     fi="maaliskuu",
     fr="mars",
     gr="Μάρτιος",
@@ -1511,6 +1537,7 @@ data.labels={
     de="Mai",
     en="May",
     es="mayo",
+    pe="مه",
     fi="toukokuu",
     fr="mai",
     gr="Μάιος",
@@ -1581,6 +1608,7 @@ data.labels={
     de="Montag",
     en="Monday",
     es="lunes",
+    pe="دوشنبه",
     fi="maanantai",
     fr="lundi",
     gr="Δευτέρα",
@@ -1620,6 +1648,7 @@ data.labels={
     de="November",
     en="November",
     es="noviembre",
+    pe="نوامبر",
     fi="marraskuu",
     fr="novembre",
     gr="Νοέμβριος",
@@ -1691,6 +1720,7 @@ data.labels={
     de="Oktober",
     en="October",
     es="octubre",
+    pe="اکتبر",
     fi="lokakuu",
     fr="octobre",
     gr="Οκτώβριος",
@@ -1760,6 +1790,7 @@ data.labels={
     de="Seite ",
     en="page ",
     es="página ",
+    pe="صفحه ",
     fi="",
     fr="page ",
     gr="",
@@ -1796,6 +1827,7 @@ data.labels={
     de="Teil ",
     en="Part ",
     es="Parte ",
+    pe="قسمت ",
     fi="Osa ",
     fr="Partie ",
     gr="Μέρος",
@@ -1833,6 +1865,7 @@ data.labels={
     de="Samstag",
     en="Saturday",
     es="sábado",
+    pe="شنبه",
     fi="lauantai",
     fr="samedi",
     gr="Σάββατο",
@@ -1871,6 +1904,7 @@ data.labels={
     de="",
     en="",
     es="Sección ",
+    pe="بخش ",
     fi="",
     fr="Section ",
     gr="Ενότητα",
@@ -1907,6 +1941,7 @@ data.labels={
     de="siehe ",
     en="see ",
     es="ver: ",
+    pe="نگاه کنید به ",
     fi="",
     fr="cf. ",
     gr="",
@@ -1945,6 +1980,7 @@ data.labels={
     de="September",
     en="September",
     es="septiembre",
+    pe="سپتامبر",
     fi="syyskuu",
     fr="septembre",
     gr="Σεπτέμβριος",
@@ -2016,6 +2052,7 @@ data.labels={
     de="",
     en="",
     es="Subsección ",
+    pe="زیربخش ",
     fi="",
     fr="Soussection ",
     gr="Υπόενότητα",
@@ -2045,7 +2082,7 @@ data.labels={
    hidden=true,
    labels={
     af="",
-    ar="فصل أ دنى أدنى ",
+    ar="فصل أدنى أدنى ",
     ca="Subsubsecció ",
     cn="",
     cs="Podpodsekce ",
@@ -2053,6 +2090,7 @@ data.labels={
     de="",
     en="",
     es="Subsubsección ",
+    pe="زیرزیربخش ",
     fi="",
     fr="Soussoussection ",
     gr="",
@@ -2090,6 +2128,7 @@ data.labels={
     de="",
     en="",
     es="Subsubsubsección ",
+    pe="زیرزیرزیربخش ",
     fi="",
     fr="Soussoussoussection ",
     gr="",
@@ -2126,6 +2165,7 @@ data.labels={
     de="Sonntag",
     en="Sunday",
     es="domingo",
+    pe="یکشنبه",
     fi="sunnuntai",
     fr="dimanche",
     gr="Κυριακή",
@@ -2163,6 +2203,7 @@ data.labels={
     de="Tabelle ",
     en="Table ",
     es="Tabla ",
+    pe="جدول ",
     fi="Taulukko ",
     fr="Tableau ",
     gr="Πίνακας",
@@ -2200,6 +2241,7 @@ data.labels={
     de="Donnerstag",
     en="Thursday",
     es="jueves",
+    pe="پنج‌شنبه",
     fi="torstai",
     fr="jeudi",
     gr="Πέμπτη",
@@ -2237,6 +2279,7 @@ data.labels={
     de="Dienstag",
     en="Tuesday",
     es="martes",
+    pe="سه‌شنبه",
     fi="tiistai",
     fr="mardi",
     gr="Τρίτη",
@@ -2274,6 +2317,7 @@ data.labels={
     de="Mittwoch",
     en="Wednesday",
     es="miércoles",
+    pe="چهارشنبه",
     fi="keskiviikko",
     fr="mercredi",
     gr="Τετάρτη",
@@ -2385,6 +2429,7 @@ data.labels={
     de="Abkürzungen",
     en="Abbreviations",
     es="Abreviaturas",
+    pe="نشانه‌های اختصاری",
     fi="Lyhennyksi",
     fr="Abréviations",
     gr="Συντομογραφίες",
@@ -2422,6 +2467,7 @@ data.labels={
     de="Inhalt",
     en="Contents",
     es="Contenido",
+    pe="فهرست مطالب",
     fi="Sisällys",
     fr="Table des matières",
     gr="Περιεχόμενα",
@@ -2459,6 +2505,7 @@ data.labels={
     de="Abbildungen",
     en="Figures",
     es="Figuras",
+    pe="فهرست اشکال",
     fi="Kuvi",
     fr="Figures",
     gr="Σχήματα",
@@ -2496,6 +2543,7 @@ data.labels={
     de="Graphiken",
     en="Graphics",
     es="Gráficos",
+    pe="فهرست طرح‌ها",
     fi="Grafiikkaoi",
     fr="Graphiques",
     gr="Γραφικά",
@@ -2533,6 +2581,7 @@ data.labels={
     de="Index",
     en="Index",
     es="Índice",
+    pe="نمایه",
     fi="Indeksiluku",
     fr="Index",
     gr="Ευρετήριο",
@@ -2607,6 +2656,7 @@ data.labels={
     de="Logos",
     en="Logos",
     es="Logotipos",
+    pe="فهرست لوگوها",
     fi="Vertauskuva",
     fr="Logos",
     gr="Λογότυπα",
@@ -2642,6 +2692,7 @@ data.labels={
     de="Literatur",
     en="References",
     es="Bibliografía",
+    pe="کتاب‌نامه",
     fi="",
     fr="Bibliographie",
     gr="",
@@ -2678,6 +2729,7 @@ data.labels={
     de="Tabellen",
     en="Tables",
     es="Tablas",
+    pe="فهرست جداول",
     fi="Taulukkoj",
     fr="Tableaux",
     gr="Πίνακες",
@@ -2715,6 +2767,7 @@ data.labels={
     de="Einheiten",
     en="Units",
     es="Unidades",
+    pe="واحدها",
     fi="Yksiköt",
     fr="Unités",
     gr="Μονάδες",
@@ -2742,173 +2795,188 @@ data.labels={
    },
   },
  },
- btx = {
-  ["mastersthesis"] = {
+ btx={
+  ["mastersthesis"]={
    labels = {
-    en = "Master's thesis",
-    fr = "Thèse de master (DEA, DESS, master)",
-    nl = "Masterproef",
-    de = "Masterarbeit",
-    it = "Tesi di laurea",
-    es = "Tesis de maestría",
+    en="Master's thesis",
+    fr="Thèse de master (DEA, DESS, master)",
+    nl="Masterproef",
+    de="Masterarbeit",
+    it="Tesi di laurea",
+    es="Tesis de maestría",
+    pe="پایان‌نامه کارشناسی ارشد",
    },
   },
-  ["phdthesis"] = {
-   labels = {
-    en = "PhD thesis",
-    fr = "Thèse de doctorat",
-    de = "Dissertation",
-    nl = "Proefschrift",
-    it = "Tesi di dottorato",
-    es = "Tesis doctoral",
+  ["phdthesis"]={
+   labels={
+    en="PhD thesis",
+    fr="Thèse de doctorat",
+    de="Dissertation",
+    nl="Proefschrift",
+    it="Tesi di dottorato",
+    es="Tesis doctoral",
+    pe="رساله دکتری",
    },
   },
-  ["technicalreport"] = {
-   labels = {
-    en = "Technical report",
-    fr = "Rapport technique",
-    de = "Technischer Bericht",
-    nl = "Technisch rapport",
-    it = "Relazione tecnica",
-    es = "Informe técnico",
+  ["technicalreport"]={
+   labels={
+    en="Technical report",
+    fr="Rapport technique",
+    de="Technischer Bericht",
+    nl="Technisch rapport",
+    it="Relazione tecnica",
+    es="Informe técnico",
+    pe="گزارش فنی",
    },
   },
-  ["patent"] = {
-   labels = {
-    en = "Patent",
-    nl = "Octrooi",
-    fr = "Brevet",
-    de = "Patent",
-    it = "Brevetto",
-    es = "Patente",
-   },
-  },
-  --
-  ["editor"] = {
-   labels = {
-    en = "editor",
-    fr = "éditeur",
-    de = "Herausgeber",
-    it = "a cura di",
-   },
-  },
-  ["editors"] = {
-   labels = {
-    en = "editors",
-    fr = "éditeurs",
-    de = "Herausgeber",
-    it = "a cura di",
-    es = "editores",
-   },
-  },
-  ["edition"] = {
-   labels = {
-    en = "edition",
-    fr = "édition",
-    de = "Auflage",
-    nl = "editie", 
-    it = "edizione",
-    es = "edición",
-    },
-  },
-  --
-  ["volume"] = {
-   labels = {
-    en = "volume",
-    de = "Band",
-    nl = "deel",   
-   },
-  },
-  ["Volume"] = {
-   labels = {
-    en = "Volume",
-    de = "Band",
-    nl = "Deel",   
-   },
-  },
-  ["number"] = {
-   labels = {
-    en = "number",
-    fr = "numéro",
-    de = "Numer",
-    nl = "nummer",   
-   },
-  },
-  ["Number"] = {
-   labels = {
-    en = "Number",
-    fr = "Numéro",
-    de = "Numer",
-    nl = "Nummer",   
-   },
-  },
-  ["in"] = {
-   labels = {
-    en = "in",
-    fr = "dans",
-    es = "en",
-   },
-  },
-  ["of"] = {
-   labels = {
-    en = "of",
-    fr = "de",
-    de = "von",
-    nl = "van", 
+  ["patent"]={
+   labels={
+    en="Patent",
+    nl="Octrooi",
+    fr="Brevet",
+    de="Patent",
+    it="Brevetto",
+    es="Patente",
    },
   },
   --
-  ["In"] = {
-   labels = {
-    en = "In",
-    fr = "Dans",
-    es = "En",
+  ["editor"]={
+   labels={
+    en="editor",
+    fr="éditeur",
+    de="Herausgeber",
+    it="a cura di",
+    pe="ویراستار",
+   },
+  },
+  ["editors"]={
+   labels={
+    en="editors",
+    fr="éditeurs",
+    de="Herausgeber",
+    it="a cura di",
+    es="editores",
+   },
+  },
+  ["edition"]={
+   labels={
+    en="edition",
+    fr="édition",
+    de="Auflage",
+    nl="editie",
+    it="edizione",
+    es="edición",
+    pe="ویرایش",
    },
   },
   --
-  ["p"] = {
-   labels = {
-    en = "p.",
-    de = "S.",
+  ["volume"]={
+   labels={
+    en="volume",
+    de="Band",
+    nl="deel",
+    pe="جلد",
    },
   },
-  ["pp"] = {
-   labels = {
-    en = "pp.",
-    de = "S.",
+  ["Volume"]={
+   labels={
+    en="Volume",
+    de="Band",
+    nl="Deel",
+    pe="جلد",
    },
   },
-  ["pages"] = {
-   labels = {
-    en = "pages",
-    de = "Seiten",
-    nl = "paginas"
+  ["number"]={
+   labels={
+    en="number",
+    fr="numéro",
+    de="Numer",
+    nl="nummer",
+    pe="شماره",
+   },
+  },
+  ["Number"]={
+   labels={
+    en="Number",
+    fr="Numéro",
+    de="Numer",
+    nl="Nummer",
+    pe="شماره",
+   },
+  },
+  ["in"]={
+   labels={
+    en="in",
+    fr="dans",
+    es="en",
+    pe="در",
+   },
+  },
+  ["of"]={
+   labels={
+    en="of",
+    fr="de",
+    de="von",
+    nl="van",
    },
   },
   --
-  ["and"] = {
-   labels = {
-    en = "and",
-    fr = "et",
-    de = "und",
-    nl = "en",
-    it = "e",
-    es = "y",
+  ["In"]={
+   labels={
+    en="In",
+    fr="Dans",
+    es="En",
+    pe="در",
    },
   },
-  ["with"] = {
-   labels = {
-    en = "with",
-    nl = "met",
-    fr = "avec",
-    de = "mit",
-    it = "con",
-    es = "con",
+  --
+  ["p"]={
+   labels={
+    en="p.",
+    de="S.",
+    pe="ص",
    },
   },
-  ["others"] = {
-   labels = {
-    en = "et al.",
+  ["pp"]={
+   labels={
+    en="pp.",
+    de="S.",
+    pe="صص",
+   },
+  },
+  ["pages"]={
+   labels={
+    en="pages",
+    de="Seiten",
+    nl="paginas"
+    pe="صفحات",
+   },
+  },
+  --
+  ["and"]={
+   labels={
+    en="and",
+    fr="et",
+    de="und",
+    nl="en",
+    it="e",
+    es="y",
+    pe="و",
+   },
+  },
+  ["with"]={
+   labels={
+    en="with",
+    nl="met",
+    fr="avec",
+    de="mit",
+    it="con",
+    es="con",
+   },
+  },
+  ["others"]={
+   labels={
+    en="et al.",
    },
   },
  }
