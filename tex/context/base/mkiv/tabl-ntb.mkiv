@@ -1595,9 +1595,9 @@
    \ifinsidefloat
      % nothing, else we get a \hsized box
    \else
-     \registerparoptions % (*) better here
+     \registerparoptions % (*) better here (also does a \dontleavehmode)
    \fi
-   \box\b_tabl_ntb_final
+   \dontleavehmode\box\b_tabl_ntb_final
    \afterTABLEbox}
 
 \def\tabl_tbl_split_yes
