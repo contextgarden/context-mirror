@@ -2047,37 +2047,57 @@
       \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#1}{#2}#4\tabl_ntb_cell_stop}}%
    \hskip\tabl_ntb_get_dis{#2}}
 
-\setupTABLE
-  [\c!frameoffset=.5\linewidth,
-   \c!backgroundoffset=\v!frame,
- % \c!framecolor=\s!black,
-   \c!width=\v!fit,
-   \c!height=\v!fit,
-   \c!autowidth=\v!yes,
-   \c!rulethickness=\linewidth,
-   \c!strut=\v!yes,
-   \c!autostrut=\v!no,
-   %
-   \c!color=,
-   \c!style=,
-   \c!headstyle=\v!bold,
-   \c!headcolor=,
-   \c!aligncharacter=\v!no,
-   \c!alignmentcharacter={,},
-   \c!option=, % \v!stretch
-   \c!header=,
-   \c!spaceinbetween=,
-   \c!maxwidth=8\emwidth,
-   \c!textwidth=\v!local, % was \hsize
-   \c!split=\v!auto,
-   \c!splitoffset=\zeropoint,
-   \c!distance=\zeropoint,           % individual column
-   \c!columndistance=\zeropoint,     % each column (whole table)
-   \c!leftmargindistance=\zeropoint, % whole table
-   \c!rightmargindistance=\zeropoint,% whole table
-   \c!left=,
-   \c!right=,
-   \c!setups=]
+\newtoks\everyresetTABLEyes
+\newtoks\everyresetTABLEnop
+
+\appendtoks
+    \setupTABLE [%
+        \c!frameoffset=.5\linewidth,%
+        \c!backgroundoffset=\v!frame,%
+      % \c!framecolor=\s!black,%
+        \c!frame=\v!on,%
+        \c!leftframe=\v!on,%
+        \c!rightframe=\v!on,%
+        \c!topframe=\v!on,%
+        \c!bottomframe=\v!on,%
+        \c!width=\v!fit,%
+        \c!height=\v!fit,%
+        \c!autowidth=\v!yes,%
+        \c!rulethickness=\linewidth,%
+        \c!strut=\v!yes,%
+        \c!autostrut=\v!no,%
+        %
+        \c!color=,%
+        \c!style=,%
+        \c!headstyle=\v!bold,%
+        \c!headcolor=,%
+        \c!aligncharacter=\v!no,%
+        \c!alignmentcharacter={,},%
+        \c!option=,%                         \v!stretch
+        \c!header=,%
+        \c!spaceinbetween=,%
+        \c!maxwidth=8\emwidth,%
+        \c!textwidth=\v!local,%              was \hsize
+        \c!split=\v!auto,%
+        \c!splitoffset=\zeropoint,%
+        \c!distance=\zeropoint,%             individual column
+        \c!columndistance=\zeropoint,%       each column (whole table)
+        \c!leftmargindistance=\zeropoint,%   whole table
+        \c!rightmargindistance=\zeropoint,%  whole table
+        \c!left=,%
+        \c!right=,%
+        \c!setups=%
+    ]%
+\to \everyresetTABLEyes
+
+\appendtoks
+    \setupTABLE [%
+        \c!width=\v!fit,%
+        \c!height=\v!fit%
+    ]%
+\to \everyresetTABLEnop
+
+\the\everyresetTABLEyes
 
 % \bgroup
 % \setupTABLE[column][1][aligncharacter=yes, alignmentcharacter={,}]
@@ -2098,29 +2118,9 @@
 \def\tabl_ntb_parameters_reset % we can use setters instead
   {\ifnum\m_tabl_tbl_level>\plusone % in ieder geval
      \ifconditional\resetTABLEmode
-       % not ok yet
-       \setupTABLE
-         [\c!frameoffset=.5\linewidth,
-          \c!backgroundoffset=\v!frame,
-        % \c!framecolor=\s!black,
-          \c!width=\v!fit,
-          \c!height=\v!fit,
-          \c!autowidth=\v!yes,
-        % \c!rulethickness=\linewidth,
-          \c!strut=\v!no,
-          \c!strut=\v!yes, % needed for mathml, but ... maybe we need another resetTABLEmode
-          \c!autostrut=\v!no,
-          \c!color=,
-          \c!style=,
-          \c!headstyle=,
-          \c!headcolor=,
-          \c!aligncharacter=\v!no,
-          \c!alignmentcharacter={,},
-          \c!maxwidth=8\emwidth]%
+        \the\everyresetTABLEyes
      \else
-       \setupTABLE
-         [\c!width=\v!fit,
-          \c!height=\v!fit]%
+        \the\everyresetTABLEnop
      \fi
   \fi}
 
