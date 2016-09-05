@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 09/04/16 13:46:35
+-- merge date  : 09/05/16 10:28:36
 
 do -- begin closure to overcome local limits and interference
 
@@ -7166,6 +7166,7 @@ local match,format,find,concat,gsub,lower=string.match,string.format,string.find
 local P,R,S,C,Ct,Cc,lpegmatch=lpeg.P,lpeg.R,lpeg.S,lpeg.C,lpeg.Ct,lpeg.Cc,lpeg.match
 local floor=math.floor
 local formatters=string.formatters
+local sortedhash=table.sortedhash
 local trace_loading=false trackers.register("fonts.loading",function(v) trace_loading=v end)
 local trace_mapping=false trackers.register("fonts.mapping",function(v) trace_mapping=v end)
 local report_fonts=logs.reporter("fonts","loading") 
@@ -7473,7 +7474,7 @@ function mappings.addtounicode(data,filename,checklookups)
     report_fonts("%n ligature tounicode mappings deduced from gsub ligature features",unicoded)
   end
   if trace_mapping then
-    for unic,glyph in table.sortedhash(descriptions) do
+    for unic,glyph in sortedhash(descriptions) do
       local name=glyph.name or "-"
       local index=glyph.index or 0
       local unicode=glyph.unicode
