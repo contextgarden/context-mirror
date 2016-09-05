@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 09/05/16 10:28:36
+-- merge date  : 09/06/16 00:28:22
 
 do -- begin closure to overcome local limits and interference
 
@@ -7166,7 +7166,7 @@ local match,format,find,concat,gsub,lower=string.match,string.format,string.find
 local P,R,S,C,Ct,Cc,lpegmatch=lpeg.P,lpeg.R,lpeg.S,lpeg.C,lpeg.Ct,lpeg.Cc,lpeg.match
 local floor=math.floor
 local formatters=string.formatters
-local sortedhash=table.sortedhash
+local sortedhash,sortedkeys=table.sortedhash,table.sortedkeys
 local trace_loading=false trackers.register("fonts.loading",function(v) trace_loading=v end)
 local trace_mapping=false trackers.register("fonts.mapping",function(v) trace_mapping=v end)
 local report_fonts=logs.reporter("fonts","loading") 
@@ -7258,28 +7258,32 @@ mappings.fromunicode16=fromunicode16
 local ligseparator=P("_")
 local varseparator=P(".")
 local namesplitter=Ct(C((1-ligseparator-varseparator)^1)*(ligseparator*C((1-ligseparator-varseparator)^1))^0)
-local overloads=allocate {
-  IJ={ name="I_J",unicode={ 0x49,0x4A },mess=0x0132 },
-  ij={ name="i_j",unicode={ 0x69,0x6A },mess=0x0133 },
-  ff={ name="f_f",unicode={ 0x66,0x66 },mess=0xFB00 },
-  fi={ name="f_i",unicode={ 0x66,0x69 },mess=0xFB01 },
-  fl={ name="f_l",unicode={ 0x66,0x6C },mess=0xFB02 },
-  ffi={ name="f_f_i",unicode={ 0x66,0x66,0x69 },mess=0xFB03 },
-  ffl={ name="f_f_l",unicode={ 0x66,0x66,0x6C },mess=0xFB04 },
-  fj={ name="f_j",unicode={ 0x66,0x6A } },
-  fk={ name="f_k",unicode={ 0x66,0x6B } },
-}
-for k,v in next,overloads do
-  local name=v.name
-  local mess=v.mess
-  if name then
-    overloads[name]=v
+do
+  local overloads=allocate {
+    IJ={ name="I_J",unicode={ 0x49,0x4A },mess=0x0132 },
+    ij={ name="i_j",unicode={ 0x69,0x6A },mess=0x0133 },
+    ff={ name="f_f",unicode={ 0x66,0x66 },mess=0xFB00 },
+    fi={ name="f_i",unicode={ 0x66,0x69 },mess=0xFB01 },
+    fl={ name="f_l",unicode={ 0x66,0x6C },mess=0xFB02 },
+    ffi={ name="f_f_i",unicode={ 0x66,0x66,0x69 },mess=0xFB03 },
+    ffl={ name="f_f_l",unicode={ 0x66,0x66,0x6C },mess=0xFB04 },
+    fj={ name="f_j",unicode={ 0x66,0x6A } },
+    fk={ name="f_k",unicode={ 0x66,0x6B } },
+  }
+  local o={}
+  for k,v in next,overloads do
+    local name=v.name
+    local mess=v.mess
+    if name then
+      o[name]=v
+    end
+    if mess then
+      o[mess]=v
+    end
+    o[k]=v
   end
-  if mess then
-    overloads[mess]=v
-  end
+  mappings.overloads=o
 end
-mappings.overloads=overloads
 function mappings.addtounicode(data,filename,checklookups)
   local resources=data.resources
   local unicodes=resources.unicodes
@@ -7291,6 +7295,7 @@ function mappings.addtounicode(data,filename,checklookups)
   end
   local properties=data.properties
   local descriptions=data.descriptions
+  local overloads=mappings.overloads
   unicodes['space']=unicodes['space'] or 32
   unicodes['hyphen']=unicodes['hyphen'] or 45
   unicodes['zwj']=unicodes['zwj']  or 0x200D
@@ -7313,10 +7318,13 @@ function mappings.addtounicode(data,filename,checklookups)
   end
   local ns=0
   local nl=0
-  for du,glyph in next,descriptions do
+  local dlist=sortedkeys(descriptions)
+  for i=1,#dlist do
+    local du=dlist[i]
+    local glyph=descriptions[du]
     local name=glyph.name
     if name then
-      local overload=overloads[name]
+      local overload=overloads[name] or overloads[du]
       if overload then
         glyph.unicode=overload.unicode
       else
@@ -7435,6 +7443,11 @@ function mappings.addtounicode(data,filename,checklookups)
           end
         end
       end
+    else
+      local overload=overloads[du]
+      if overload then
+        glyph.unicode=overload.unicode
+      end
     end
   end
   if type(checklookups)=="function" then
@@ -7442,7 +7455,9 @@ function mappings.addtounicode(data,filename,checklookups)
   end
   local collected=false
   local unicoded=0
-  for unicode,glyph in next,descriptions do
+  for i=1,#dlist do
+    local du=dlist[i]
+    local glyph=descriptions[du]
     if glyph.class=="ligature" and (force_ligatures or not glyph.unicode) then
       if not collected then
         collected=fonts.handlers.otf.readers.getcomponents(data)
@@ -7450,7 +7465,7 @@ function mappings.addtounicode(data,filename,checklookups)
           break
         end
       end
-      local u=collected[unicode] 
+      local u=collected[du] 
       if u then
         local n=#u
         for i=1,n do
@@ -7474,7 +7489,9 @@ function mappings.addtounicode(data,filename,checklookups)
     report_fonts("%n ligature tounicode mappings deduced from gsub ligature features",unicoded)
   end
   if trace_mapping then
-    for unic,glyph in sortedhash(descriptions) do
+    for i=1,#dlist do
+      local du=dlist[i]
+      local glyph=descriptions[du]
       local name=glyph.name or "-"
       local index=glyph.index or 0
       local unicode=glyph.unicode
@@ -7484,12 +7501,12 @@ function mappings.addtounicode(data,filename,checklookups)
           for i=1,#unicode do
             unicodes[i]=formatters("%U",unicode[i])
           end
-          report_fonts("internal slot %U, name %a, unicode %U, tounicode % t",index,name,unic,unicodes)
+          report_fonts("internal slot %U, name %a, unicode %U, tounicode % t",index,name,du,unicodes)
         else
-          report_fonts("internal slot %U, name %a, unicode %U, tounicode %U",index,name,unic,unicode)
+          report_fonts("internal slot %U, name %a, unicode %U, tounicode %U",index,name,du,unicode)
         end
       else
-        report_fonts("internal slot %U, name %a, unicode %U",index,name,unic)
+        report_fonts("internal slot %U, name %a, unicode %U",index,name,du)
       end
     end
   end
@@ -15322,7 +15339,7 @@ local trace_defining=false registertracker("fonts.defining",function(v) trace_de
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.026 
+otf.version=3.027 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pdfcache=containers.define("fonts","pdf",otf.version,true)
@@ -26611,6 +26628,19 @@ otffeatures.register {
   manipulators={
     base=reencode,
     node=reencode,
+  }
+}
+local function ignore(tfmdata,key,value)
+  if value then
+    tfmdata.mathparameters=nil
+  end
+end
+otffeatures.register {
+  name="ignoremathconstants",
+  description="ignore math constants table",
+  initializers={
+    base=ignore,
+    node=ignore,
   }
 }
 
