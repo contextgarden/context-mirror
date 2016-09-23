@@ -2462,6 +2462,21 @@
 \setupmathematics
   [\s!italics=3] % for the moment only this one makes sense .. still experimental
 
+%D For special purposed we set this one:
+
+\installcorenamespace{mathrules}
+
+\unexpanded\def\enablemathrules{\global\letvalue{\??mathrules\fontclass}\plusone}
+
+\appendtoks
+    \mathrulesmode\ifcsname\??mathrules\fontclass\endcsname
+      \lastnamedcs
+    \else
+      \zerocount
+    \fi
+    \mathrulesfam\fam\textstyle
+\to \everymathematics
+
 \protect \endinput
 
 % % not used (yet)
