@@ -11137,6 +11137,10 @@ return {
   ["totalnumber"]={
    ["en"]="totalnumber",
   },
+  ["transform"]={
+    ["en"]="transform",
+    ["nl"]="transformatie",
+  },
   ["translate"]={
    ["en"]="translate",
   },
@@ -14193,6 +14197,10 @@ return {
    ["nl"]="aansluitend",
    ["pe"]="متصل‌بالا",
    ["ro"]="unit",
+  },
+  ["notjoinedup"]={
+   ["en"]="notjoinedup",
+   ["nl"]="nietaansluitend",
   },
   ["july"]={
    ["cs"]="cervenec",
@@ -17655,16 +17663,15 @@ return {
   ["cd:csname-l"]                  = { en = "\\..." },
   ["cd:noargument-s"]              = { en = "\\..." },
   ["cd:noargument-l"]              = { en = "\\..." },
-  ["cd:oneargument-s"]             = { en = "\\...#1" },
-  ["cd:oneargument-l"]             = { en = "\\...#1" },
-  ["cd:twoarguments-s"]            = { en = "\\...#1#2" },
-  ["cd:twoarguments-l"]            = { en = "\\...#1#2" },
-  ["cd:threearguments-s"]          = { en = "\\...#1#2#3" },
-  ["cd:threearguments-l"]          = { en = "\\...#1#2#3" },
+  ["cd:oneargument"]               = { en = "\\...#1" },
+  ["cd:twoarguments"]              = { en = "\\...#1#2" },
+  ["cd:threearguments"]            = { en = "\\...#1#2#3" },
   ["cd:braces-s"]                  = { en = "{...}", lua = '"..."' },
   ["cd:braces-l"]                  = { en = "{...,...}", lua = '".. ... .."' },
   ["cd:brackets-s"]                = { en = "[...]", lua = "{ ... }" },
   ["cd:brackets-l"]                = { en = "[...,...]", lua = "{..., ...}" },
+  ["cd:parenthesis-s"]             = { en = "(...)" },
+  ["cd:parenthesis-l"]             = { en = "(...,...)" },
   ["cd:index-s"]                   = { en = "[...]" },
   ["cd:index-l"]                   = { en = "[..+...+..]" },
   ["cd:math-s"]                    = { en = "$...$" },

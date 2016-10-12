@@ -382,6 +382,7 @@
 		<cd:variable name='note' value='note'/>
 		<cd:variable name='nothanging' value='بدون‌آویزان‌کردن'/>
 		<cd:variable name='nothyphenated' value='بدون‌شکست'/>
+		<cd:variable name='notjoinedup' value='notjoinedup'/>
 		<cd:variable name='november' value='نوامبر'/>
 		<cd:variable name='nowhere' value='هیچ‌حا'/>
 		<cd:variable name='nowhite' value='سفید‌نه'/>
@@ -1238,6 +1239,7 @@
 		<cd:constant name='topspace' value='فضای‌بالا'/>
 		<cd:constant name='topstate' value='وضعیت‌بالا'/>
 		<cd:constant name='totalnumber' value='totalnumber'/>
+		<cd:constant name='transform' value='transform'/>
 		<cd:constant name='translate' value='translate'/>
 		<cd:constant name='trimoffset' value='trimoffset'/>
 		<cd:constant name='type' value='تایپ'/>

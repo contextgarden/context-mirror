@@ -23,6 +23,11 @@
    ss01=yes]
 
 \definefontfeature
+  [mathsheepdigits]
+  [sheepdigits]
+  [mode=base]
+
+\definefontfeature
   [cowslogos]
   [mode=node,
    script=latn,
@@ -37,7 +42,8 @@
 
 \definefontfeature
   [cowscolors]
-  [colr=yes,
+  [mode=node,
+   colr=yes,
    ss02=yes,
    dlig=yes]
 
@@ -72,7 +78,7 @@
     \starttypescript [\s!all] [koeielettersotf,sheepotf]
         \definefontsynonym [Sheep]         [koeielettersot][\s!features=sheepdefault]
         \definefontsynonym [SheepLogo]     [koeielettersot][\s!features=cowslogos]
-        \definefontsynonym [SheepMathRoman][koeielettersot][\s!features=sheepdigits,\s!goodies=koeielettersot]
+        \definefontsynonym [SheepMathRoman][koeielettersot][\s!features=mathsheepdigits,\s!goodies=koeielettersot]
     \stoptypescript
 
 %   \definefontsynonym[\s!MathRoman][file:texgyredejavu-math][\s!features=\s!math\mathsizesuffix,\s!goodies=dejavu-math]
@@ -86,7 +92,7 @@
     \starttypescript [\s!all] [coloredsheepotf]
         \definefontsynonym [Sheep]         [koeielettersot][\s!features=sheepcolored]
         \definefontsynonym [SheepLogo]     [koeielettersot][\s!features=cowslogos]
-        \definefontsynonym [SheepMathRoman][koeielettersot][\s!features=sheepdigits,\s!goodies=koeielettersot]
+        \definefontsynonym [SheepMathRoman][koeielettersot][\s!features=mathsheepdigits,\s!goodies=koeielettersot]
     \stoptypescript
 
     \starttypescript [\s!serif] [cowsotf,coloredcowsotf]
@@ -126,21 +132,29 @@
 
 \starttext
 
-% \loadtypescriptfile[cowotf]
+\setupbodyfont[sheep]
+
+$1^1$
+
+\stoptext
+
+\starttext
+
+\loadtypescriptfile[cowotf]
 
 \definecolor[cowred]   [r=.50]
 \definecolor[cowgreen] [g=.50]
 \definecolor[cowblue]  [b=.50]
 \definecolor[cowyellow][y=.25]
 
-% \startluacode
-%     fonts.handlers.otf.registerpalette("demo", {
-%         { g = .50 },
-%         { y = .25 },
-%         { b = .50 },
-%         { r = .50 },
-%     })
-% \stopluacode
+\startluacode
+    fonts.handlers.otf.registerpalette("demo", {
+        { g = .50 },
+        { y = .25 },
+        { b = .50 },
+        { r = .50 },
+    })
+\stopluacode
 
 \definefontcolorpalette[cows][cowgreen,cowyellow,cowblue,cowred]
 
@@ -149,5 +163,17 @@
 \setupbodyfont[coloredcows,12pt]
 
 \input zapf
+
+\definefontsynonym
+  [CowsColored]
+  [koeielettersot]
+
+\showotfcomposition
+  {koeielettersot*default,cowscolors}
+  {1}
+  {context}
+
+\scale[width=\textwidth]{\getnamedglyphdirect{CowsColored*default,cowscolors}{contextlogo}}
+\scale[width=\textwidth]{\definedfont[CowsColored*default,cowscolors]context}
 
 \stoptext
