@@ -41,11 +41,9 @@ local getprev              = nuts.getprev
 local getid                = nuts.getid
 local getfont              = nuts.getfont
 local getchar              = nuts.getchar
-local getfield             = nuts.getfield
 local getattr              = nuts.getattr
 local isglyph              = nuts.isglyph
 
-local setfield             = nuts.setfield
 local setattr              = nuts.setattr
 local setchar              = nuts.setchar
 
@@ -63,6 +61,8 @@ local new_kern             = nodepool.kern
 local tracers              = nodes.tracers
 local setcolor             = tracers.colors.set
 local tracedrule           = tracers.pool.nuts.rule
+
+local enableaction         = nodes.tasks.enableaction
 
 local characteralign       = { }
 typesetters.characteralign = characteralign
@@ -102,7 +102,7 @@ local validsigns = {
 
 local function setcharacteralign(column,separator)
     if not enabled then
-        nodes.tasks.enableaction("processors","typesetters.characteralign.handler")
+        enableaction("processors","typesetters.characteralign.handler")
         enabled = true
     end
     if not datasets then

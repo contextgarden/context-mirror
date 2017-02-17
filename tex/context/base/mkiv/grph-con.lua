@@ -16,7 +16,6 @@ local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash  = utilities.parsers.settings_to_hash
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
-local replacetemplate   = utilities.templates.replace
 
 local codeinjections    = backends.codeinjections
 local nodeinjections    = backends.nodeinjections
@@ -34,7 +33,6 @@ local converters        = figures.converters
 local programs          = figures.programs
 
 local runprogram        = programs.run
-local makeuptions       = programs.makeoptions
 
 do -- eps | ps
 
@@ -47,15 +45,16 @@ do -- eps | ps
     local epsconverter = converters.eps
     converters.ps      = epsconverter
 
-    local epstopdf = {
-        resolutions = {
-            [v_low]    = "screen",
-            [v_medium] = "ebook",
-            [v_high]   = "prepress",
-        },
-        command = os.type == "windows" and { "gswin64c", "gswin32c" } or "gs",
-        -- -dProcessDSCComments=false
-        argument = longtostring [[
+    local resolutions = {
+        [v_low]    = "screen",
+        [v_medium] = "ebook",
+        [v_high]   = "prepress",
+    }
+
+    local runner = sandbox.registerrunner {
+        name     = "eps to pdf",
+        program  = { windows = "gswin64c", unix = "gs" },
+        template = longtostring [[
             -q
             -sDEVICE=pdfwrite
             -dNOPAUSE
@@ -70,10 +69,17 @@ do -- eps | ps
             "%oldname%"
             -c quit
         ]],
+        checkers = {
+            oldname    = "readable",
+            newname    = "writable",
+            presets    = "string",
+            level      = "string",
+            colorspace = "string",
+        },
     }
 
-    programs.epstopdf = epstopdf
-    programs.gs       = epstopdf
+    programs.epstopdf = { resolutions = epstopdf, runner = runner  }
+    programs.gs       = programs.epstopdf
 
     local cleanups    = { }
     local cleaners    = { }
@@ -85,9 +91,9 @@ do -- eps | ps
                       * P("%AI3_Cropmarks:")     * quadruple
                       * P("%%CropBox:")          * quadruple
                       / function(b,h,m,c)
-                             return formatters["%%%%BoundingBox: %i %i %i %i\n%%%%HiResBoundingBox: %F %F %F %F\n%%%%CropBox: %F %F %F %F\n"](
-                                 m[1],m[2],m[3],m[4],
-                                 m[1],m[2],m[3],m[4],
+                             return formatters["%%%%BoundingBox: %r %r %r %r\n%%%%HiResBoundingBox: %F %F %F %F\n%%%%CropBox: %F %F %F %F\n"](
+                                 m[1],m[2],m[3],m[4], -- rounded integer
+                                 m[1],m[2],m[3],m[4], -- real number
                                  m[1],m[2],m[3],m[4]
                              )
                          end
@@ -108,8 +114,7 @@ do -- eps | ps
     end
 
     function epsconverter.pdf(oldname,newname,resolution,colorspace) -- the resolution interface might change
-        local epstopdf = programs.epstopdf -- can be changed
-        local presets  = epstopdf.resolutions[resolution or "high"] or epstopdf.resolutions.high
+        local presets  = resolutions[resolution or "high"] or resolutions.high
         local level    = codeinjections.getformatoption("pdf_level") or "1.3"
         local tmpname  = oldname
         if not tmpname or tmpname == "" or not lfs.isfile(tmpname) then
@@ -124,13 +129,13 @@ do -- eps | ps
         else
             colorspace = nil
         end
-        runprogram(epstopdf.command, epstopdf.argument, {
+        runner {
             newname    = newname,
             oldname    = tmpname,
             presets    = presets,
             level      = tostring(level),
             colorspace = colorspace,
-        } )
+        }
         if tmpname ~= oldname then
             os.remove(tmpname)
         end
@@ -144,29 +149,36 @@ do -- eps | ps
 
 end
 
-do -- pdf
-
-    local pdfconverter = converters.pdf
-
-    -- programs.pdftoeps = {
-    --     command  = "pdftops",
-    --     argument = [[-eps "%oldname%" "%newname%"]],
-    -- }
-    --
-    -- pdfconverter.stripped = function(oldname,newname)
-    --     local pdftoeps = programs.pdftoeps -- can be changed
-    --     local epstopdf = programs.epstopdf -- can be changed
-    --     local presets  = epstopdf.resolutions[resolution or ""] or epstopdf.resolutions.high
-    --     local level    = codeinjections.getformatoption("pdf_level") or "1.3"
-    --     local tmpname  = newname .. ".tmp"
-    --     runprogram(pdftoeps.command, pdftoeps.argument, { oldname = oldname, newname = tmpname, presets = presets, level = level })
-    --     runprogram(epstopdf.command, epstopdf.argument, { oldname = tmpname, newname = newname, presets = presets, level = level })
-    --     os.remove(tmpname)
-    -- end
-    --
-    -- figures.registersuffix("stripped","pdf")
-
-end
+-- do -- pdf
+--
+--     local pdfconverter = converters.pdf
+--
+--     programs.pdftoeps = {
+--         runner = sandbox.registerrunner {
+--             name     = "pdf to ps",
+--             command  = "pdftops",
+--             template = [[-eps "%oldname%" "%newname%"]],
+--             checkers = {
+--                 oldname = "readable",
+--                 newname = "writable",
+--             }
+--         }
+--     }
+--
+--     pdfconverter.stripped = function(oldname,newname)
+--         local pdftoeps = programs.pdftoeps -- can be changed
+--         local epstopdf = programs.epstopdf -- can be changed
+--         local presets  = epstopdf.resolutions[resolution or ""] or epstopdf.resolutions.high
+--         local level    = codeinjections.getformatoption("pdf_level") or "1.3"
+--         local tmpname  = newname .. ".tmp"
+--         pdftoeps.runner { oldname = oldname, newname = tmpname, presets = presets, level = level }
+--         epstopdf.runner { oldname = tmpname, newname = newname, presets = presets, level = level }
+--         os.remove(tmpname)
+--     end
+--
+--     figures.registersuffix("stripped","pdf")
+--
+-- end
 
 do -- svg
 
@@ -177,34 +189,46 @@ do -- svg
     -- arguments change again? Ok, it's weirder, with -A then it's a name only when
     -- not . (current)
 
+    local runner = sandbox.registerrunner {
+        name     = "svg to something",
+        program  = "inkscape",
+        template = longtostring [[
+            "%oldname%"
+            --export-dpi=%resolution%
+            --export-%format%="%newname%"
+        ]],
+        checkers = {
+            oldname    = "readable",
+            newname    = "writable",
+            format     = "string",
+            resolution = "string",
+        },
+        defaults = {
+            format     = "pdf",
+            resolution = "600",
+        }
+    }
+
     programs.inkscape = {
-        command  = "inkscape",
-        pdfargument = longtostring [[
-            "%oldname%"
-            --export-dpi=600
-            --export-pdf="%newname%"
-        ]],
-        pngargument = longtostring [[
-            "%oldname%"
-            --export-dpi=600
-            --export-png="%newname%"
-        ]],
+        runner = runner,
     }
 
     function svgconverter.pdf(oldname,newname)
-        local inkscape = programs.inkscape -- can be changed
-        runprogram(inkscape.command, inkscape.pdfargument, {
-            newname = expandfilename(newname),
-            oldname = expandfilename(oldname),
-        } )
+        runner {
+            format     = "pdf",
+            resolution = "600",
+            newname    = expandfilename(newname),
+            oldname    = expandfilename(oldname),
+        }
     end
 
     function svgconverter.png(oldname,newname)
-        local inkscape = programs.inkscape
-        runprogram(inkscape.command, inkscape.pngargument, {
-            newname = expandfilename(newname),
-            oldname = expandfilename(oldname),
-        } )
+        runner {
+            format     = "png",
+            resolution = "600",
+            newname    = expandfilename(newname),
+            oldname    = expandfilename(oldname),
+        }
     end
 
     svgconverter.default = svgconverter.pdf
@@ -280,81 +304,115 @@ do -- png | jpg | profiles
         return rgbprofile, cmykprofile
     end
 
-    programs.pngtocmykpdf = {
-        command  = "gm",
-        argument = [[convert -compress Zip  -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -sampling-factor 1x1 "%oldname%" "%newname%"]],
+    local checkers = {
+        oldname     = "readable",
+        newname     = "writable",
+        rgbprofile  = "string",
+        cmykprofile = "string",
+        resolution  = "string",
+        color       = "string",
     }
 
-    programs.jpgtocmykpdf = {
-        command  = "gm",
-        argument = [[convert -compress JPEG -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -sampling-factor 1x1 "%oldname%" "%newname%"]],
+    local defaults = {
+        resolution = "600",
     }
 
-    programs.pngtograypdf = {
-        command  = "gm",
-        argument = [[convert -colorspace gray -compress Zip -sampling-factor 1x1 "%oldname%" "%newname%"]],
+    local pngtocmykpdf = sandbox.registerrunner {
+        name     = "png to cmyk pdf",
+        program  = "gm",
+        template = [[convert -compress Zip  -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -sampling-factor 1x1 "%oldname%" "%newname%"]],
+        checkers = checkers,
+        defaults = defaults,
     }
 
-    programs.jpgtograypdf = {
-        command  = "gm",
-        argument = [[convert -colorspace gray -compress Zip -sampling-factor 1x1 "%oldname%" "%newname%"]],
+    local jpgtocmykpdf = sandbox.registerrunner {
+        name     = "jpg to cmyk pdf",
+        program  = "gm",
+        template = [[convert -compress JPEG -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -sampling-factor 1x1 "%oldname%" "%newname%"]],
+        checkers = checkers,
+        defaults = defaults,
     }
+
+    local pngtograypdf = sandbox.registerrunner {
+        name     = "png to gray pdf",
+        program  = "gm",
+        template = [[convert -colorspace gray -compress Zip -sampling-factor 1x1 "%oldname%" "%newname%"]],
+        checkers = checkers,
+        defaults = defaults,
+    }
+
+    local jpgtograypdf = sandbox.registerrunner {
+        name     = "jpg to gray pdf",
+        program  = "gm",
+        template = [[convert -colorspace gray -compress Zip -sampling-factor 1x1 "%oldname%" "%newname%"]],
+        checkers = checkers,
+        defaults = defaults,
+    }
+
+    programs.pngtocmykpdf = { runner = pngtocmykpdf }
+    programs.jpgtocmykpdf = { runner = jpgtocmykpdf }
+    programs.pngtograypdf = { runner = pngtograypdf }
+    programs.jpgtograypdf = { runner = jpgtograypdf }
 
     pngconverters["cmyk.pdf"] = function(oldname,newname,resolution)
         local rgbprofile, cmykprofile = profiles()
-        runprogram(programs.pngtocmykpdf.command, programs.pngtocmykpdf.argument, {
-     -- runprogram(programs.pngtocmykpdf, {
-            rgbprofile  = rgbprofile,
-            cmykprofile = cmykprofile,
+        pngtocmykpdf {
             oldname     = oldname,
             newname     = newname,
-        } )
+            rgbprofile  = rgbprofile,
+            cmykprofile = cmykprofile,
+            resolution  = resolution,
+        }
     end
 
     pngconverters["gray.pdf"] = function(oldname,newname,resolution)
-        runprogram(programs.pngtograypdf.command, programs.pngtograypdf.argument, {
-     -- runprogram(programs.pngtograypdf, {
-            oldname = oldname,
-            newname = newname,
-        } )
+        pngtograypdf {
+            oldname    = oldname,
+            newname    = newname,
+            resolution = resolution,
+        }
     end
 
     jpgconverters["cmyk.pdf"] = function(oldname,newname,resolution)
         local rgbprofile, cmykprofile = profiles()
-        runprogram(programs.jpgtocmykpdf.command, programs.jpgtocmykpdf.argument, {
-     -- runprogram(programs.jpgtocmykpdf, {
-            rgbprofile  = rgbprofile,
-            cmykprofile = cmykprofile,
+        jpgtocmykpdf {
             oldname     = oldname,
             newname     = newname,
-        } )
+            rgbprofile  = rgbprofile,
+            cmykprofile = cmykprofile,
+            resolution  = resolution,
+        }
     end
 
     jpgconverters["gray.pdf"] = function(oldname,newname,resolution)
-        runprogram(programs.jpgtograypdf.command, programs.jpgtograypdf.argument, {
-     -- runprogram(programs.jpgtograypdf, {
-            oldname = oldname,
-            newname = newname,
-        } )
+        jpgtograypdf {
+            oldname    = oldname,
+            newname    = newname,
+            resolution = resolution,
+        }
     end
 
     -- recolor
 
-    programs.recolor = {
-        command  = "gm",
-        argument = [[convert -recolor "%color%" "%oldname%" "%newname%"]],
+    local recolorpng = sandbox.registerrunner {
+        name     = "recolor png",
+        program  = "gm",
+        template = [[convert -recolor "%color%" "%oldname%" "%newname%"]],
+        checkers = checkers,
+        defaults = defaults,
     }
 
+    -- this is now built in so not really needed any more
+
+    programs.recolor = { runner = recolorpng }
+
     pngconverters["recolor.png"] = function(oldname,newname,resolution,arguments)
-        runprogram (
-            programs.recolor.command,
-            programs.recolor.argument,
-            {
-                oldname = oldname,
-                newname = newname,
-                color   = arguments or ".5 0 0 .7 0 0 .9 0 0",
-            }
-        )
+        recolorpng {
+            oldname    = oldname,
+            newname    = newname,
+            resolution = resolution,
+            color      = arguments or ".5 0 0 .7 0 0 .9 0 0",
+        }
     end
 
 end

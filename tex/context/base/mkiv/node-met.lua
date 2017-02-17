@@ -63,12 +63,7 @@ end
 nodes                       = nodes or { }
 local nodes                 = nodes
 
------ gonuts                = type(node.direct) == "table"
------.gonuts                = gonuts
-
 local nodecodes             = nodes.nodecodes
-local hlist_code            = nodecodes.hlist
-local vlist_code            = nodecodes.vlist
 
 nodes.tostring              = node.tostring or tostring
 nodes.copy                  = node.copy
@@ -107,8 +102,12 @@ nodes.protrusion_skippable  = node.protrusion_skippable
 nodes.check_discretionaries = node.check_discretionaries
 nodes.write                 = node.write
 
+nodes.count                 = node.count
+nodes.length                = node.length
+
 nodes.has_attribute         = node.has_attribute
 nodes.set_attribute         = node.set_attribute
+nodes.find_attribute        = node.find_attribute
 nodes.unset_attribute       = node.unset_attribute
 
 nodes.protect_glyphs        = node.protect_glyphs
@@ -117,34 +116,6 @@ nodes.unprotect_glyphs      = node.unprotect_glyphs
 nodes.kerning               = node.kerning
 nodes.ligaturing            = node.ligaturing
 nodes.mlist_to_hlist        = node.mlist_to_hlist
-
-if LUATEXVERSION < 0.97 then
-
-    local getglue = node.getglue
-
-    function node.is_zero_glue(n)
-        local width, stretch, shrink = getglue(n)
-        return width == 0 and stretch == 0 and shrink == 0
-    end
-
-end
-
-if not node.rangedimensions then -- LUATEXVERSION < 0.99
-
-    local dimensions = node.dimensions
-    local getfield   = node.getfield
-    local find_tail  = node.tail
-
-    function node.rangedimensions(parent,first,last)
-        return dimensions(
-            getfield(parent,"glue_set"), getfield(parent,"glue_sign"), getfield(parent,"glue_order"),
-            first, last or find_tail(first), getfield(parent,"dir")
-        )
-    end
-
-    nodes.rangedimensions = node.rangedimensions
-
-end
 
 if not node.getwhd then
     local getfield = node.getfield
@@ -196,69 +167,82 @@ local n_getfield        = node.getfield
 local n_setattr         = node.setattr
 local n_getattr         = node.getattr
 local n_getdisc         = node.getdisc
-local n_getwhd          = node.getwhd
 local n_getleader       = node.getleader
 
-local n_setnext         = node.setnext or
+local n_setnext         = node.setnext or -- always
     function(c,next)
         setfield(c,"next",n)
     end
-local n_setprev         = node.setprev or
+local n_setprev         = node.setprev or -- always
     function(c,prev)
         setfield(c,"prev",p)
     end
-local n_setlink         = node.setlink or
-    function(c1,c2)
-        if c1 then setfield(c1,"next",c2) end
-        if c2 then setfield(c2,"prev",c1) end
+local n_setlink         = node.setlink or -- always
+--     function(c1,c2)
+--         if c1 then setfield(c1,"next",c2) end
+--         if c2 then setfield(c2,"prev",c1) end
+--     end
+    function(...)
+        -- not that fast but not used often anyway
+        local h = nil
+        for i=1,select("#",...) do
+            local n = (select(i,...))
+            if not n then
+                -- go on
+            elseif h then
+                setfield(h,"next",n)
+                setfield(n,"prev",h)
+            else
+                h = n
+            end
+        end
+        return h
     end
-local n_setboth         = node.setboth or
+local n_setboth         = node.setboth or -- always
     function(c,p,n)
         setfield(c,"prev",p)
         setfield(c,"next",n)
     end
 
-node.setnext            = n_setnext
-node.setprev            = n_setprev
-node.setlink            = n_setlink
-node.setboth            = n_setboth
+node.setnext          = n_setnext
+node.setprev          = n_setprev
+node.setlink          = n_setlink
+node.setboth          = n_setboth
 
-nodes.getfield          = n_getfield
-nodes.setfield          = n_setfield
-nodes.getattr           = n_getattr
-nodes.setattr           = n_setattr
+nodes.getfield        = n_getfield
+nodes.setfield        = n_setfield
+nodes.getattr         = n_getattr
+nodes.setattr         = n_setattr
+nodes.takeattr        = nodes.unset_attribute
 
-nodes.getnext           = n_getnext
-nodes.getprev           = n_getprev
-nodes.getid             = n_getid
-nodes.getchar           = n_getchar
-nodes.getfont           = n_getfont
-nodes.getsubtype        = n_getsubtype
-nodes.getlist           = n_getlist
-nodes.getleader         = n_getleader
-nodes.getdisc           = n_getdisc
------.getpre            = node.getpre     or function(n) local h, _, _, t       = n_getdisc(n,true) return h, t end
------.getpost           = node.getpost    or function(n) local _, h, _, _, t    = n_getdisc(n,true) return h, t end
------.getreplace        = node.getreplace or function(n) local _, _, h, _, _, t = n_getdisc(n,true) return h, t end
+nodes.getnext         = n_getnext
+nodes.getprev         = n_getprev
+nodes.getid           = n_getid
+nodes.getchar         = n_getchar
+nodes.getfont         = n_getfont
+nodes.getsubtype      = n_getsubtype
+nodes.getlist         = n_getlist
+nodes.getleader       = n_getleader
+nodes.getdisc         = n_getdisc
 
-nodes.is_char           = node.is_char
-nodes.ischar            = node.is_char
+nodes.is_char         = node.is_char
+nodes.ischar          = node.is_char
 
-nodes.is_glyph          = node.is_glyph
-nodes.isglyph           = node.is_glyph
+nodes.is_glyph        = node.is_glyph
+nodes.isglyph         = node.is_glyph
 
-nodes.getbox            = node.getbox or tex.getbox
-nodes.setbox            = node.setbox or tex.setbox
+nodes.getbox          = node.getbox or tex.getbox
+nodes.setbox          = node.setbox or tex.setbox
 
-local n_flush_node      = nodes.flush
-local n_copy_node       = nodes.copy
-local n_copy_list       = nodes.copy_list
-local n_find_tail       = nodes.tail
-local n_insert_after    = nodes.insert_after
-local n_insert_before   = nodes.insert_before
-local n_slide           = nodes.slide
+local n_flush_node    = nodes.flush
+local n_copy_node     = nodes.copy
+local n_copy_list     = nodes.copy_list
+local n_find_tail     = nodes.tail
+local n_insert_after  = nodes.insert_after
+local n_insert_before = nodes.insert_before
+local n_slide         = nodes.slide
 
-local n_remove_node     = node.remove -- not yet nodes.remove
+local n_remove_node   = node.remove -- not yet nodes.remove
 
 local function remove(head,current,free_too)
     local t = current
@@ -311,26 +295,7 @@ function nodes.replace(head,current,new) -- no head returned if false
     end
 end
 
-local function count(stack,flat)
-    local n = 0
-    while stack do
-        local id = n_getid(stack)
-        if not flat and id == hlist_code or id == vlist_code then
-            local list = n_getlist(stack)
-            if list then
-                n = n + 1 + count(list) -- self counts too
-            else
-                n = n + 1
-            end
-        else
-            n = n + 1
-        end
-        stack = n_getnext(stack)
-    end
-    return n
-end
-
-nodes.count = count
+-- nodes.countall : see node-nut.lua
 
 function nodes.append(head,current,...)
     for i=1,select("#",...) do
@@ -662,7 +627,7 @@ local messyhack    = table.tohash { -- temporary solution
 }
 
 table.setmetatableindex(keys,function(t,k)
-    v = (k == "attributelist" or k == nodecodes.attributelist) and { } or getfields(k)
+    local v = (k == "attributelist" or k == nodecodes.attributelist) and { } or getfields(k)
     if messyhack[k] then
         for i=1,#v do
             if v[i] == "subtype" then

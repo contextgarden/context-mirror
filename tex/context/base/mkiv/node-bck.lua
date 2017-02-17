@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['node-bck'] = {
 
 local attributes, nodes, node = attributes, nodes, node
 
-local tasks             = nodes.tasks
+local enableaction      = nodes.tasks.enableaction
 
 local nodecodes         = nodes.nodecodes
 local listcodes         = nodes.listcodes
@@ -35,7 +35,6 @@ local getattr           = nuts.getattr
 local getsubtype        = nuts.getsubtype
 local getwhd            = nuts.getwhd
 
-local setfield          = nuts.setfield
 local setattr           = nuts.setattr
 local setlink           = nuts.setlink
 local setlist           = nuts.setlist
@@ -85,11 +84,12 @@ local function add_backgrounds(head) -- rather old code .. to be redone
                         if transparency then
                             setattr(rule,a_transparency,transparency)
                         end
-                        setlink(rule,glue)
-                        if list then
-                            setlink(glue,list)
-                        end
-                        setlist(current,rule)
+--                         setlink(rule,glue)
+--                         if list then
+--                             setlink(glue,list)
+--                         end
+--                         setlist(current,rule)
+                        setlist(current,rule,glue,list)
                     end
                 end
             end
@@ -172,21 +172,16 @@ end
 nodes.handlers.backgrounds      = function(head) local head, done = add_backgrounds     (tonut(head)) return tonode(head), done end
 nodes.handlers.alignbackgrounds = function(head) local head, done = add_alignbackgrounds(tonut(head)) return tonode(head), done end
 
--- elsewhere: needs checking
-
--- tasks.appendaction("shipouts","normalizers","nodes.handlers.backgrounds")
--- tasks.appendaction("shipouts","normalizers","nodes.handlers.alignbackgrounds")
-
 interfaces.implement {
     name      = "enablebackgroundboxes",
     onlyonce  = true,
-    actions   = nodes.tasks.enableaction,
+    actions   = enableaction,
     arguments = { "'shipouts'", "'nodes.handlers.backgrounds'" }
 }
 
 interfaces.implement {
     name      = "enablebackgroundalign",
     onlyonce  = true,
-    actions   = nodes.tasks.enableaction,
+    actions   = enableaction,
     arguments = { "'shipouts'", "'nodes.handlers.alignbackgrounds'" }
 }

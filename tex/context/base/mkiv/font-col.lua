@@ -24,7 +24,7 @@ local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 
 local setfield           = nuts.setfield
-local setchar            = nuts.setchar
+local setfont            = nuts.setfont
 
 local traverse_id        = nuts.traverse_id
 local traverse_char      = nuts.traverse_char
@@ -34,6 +34,9 @@ local settings_to_hash   = utilities.parsers.settings_to_hash
 local trace_collecting   = false  trackers.register("fonts.collecting", function(v) trace_collecting = v end)
 
 local report_fonts       = logs.reporter("fonts","collections")
+
+local enableaction       = nodes.tasks.enableaction
+local disableaction      = nodes.tasks.disableaction
 
 local collections        = fonts.collections or { }
 fonts.collections        = collections
@@ -60,12 +63,12 @@ local function checkenabled()
     -- a bit ugly but nicer than a fuzzy state while defining math
     if next(vectors) then
         if not enabled then
-            nodes.tasks.enableaction("processors","fonts.collections.process")
+            enableaction("processors","fonts.collections.process")
             enabled = true
         end
     else
         if enabled then
-            nodes.tasks.disableaction("processors","fonts.collections.process")
+            disableaction("processors","fonts.collections.process")
             enabled = false
         end
     end
@@ -272,8 +275,7 @@ function collections.process(head) -- this way we keep feature processing
                         char,font,newchar,newfont,not chardata[newfont][newchar] and " (missing)" or ""
                     )
                 end
-                setfield(n,"font",newfont)
-                setchar(n,newchar)
+                setfont(n,newfont,newchar)
                 done = true
             else
                 if trace_collecting then
@@ -281,7 +283,7 @@ function collections.process(head) -- this way we keep feature processing
                         font,vect,char,not chardata[vect][char] and " (missing)" or ""
                     )
                 end
-                setfield(n,"font",vect)
+                setfont(n,vect)
                 done = true
             end
         end

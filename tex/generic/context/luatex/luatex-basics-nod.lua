@@ -171,6 +171,8 @@ nodes.mlist_to_hlist       = node.mlist_to_hlist
 -- we can go nuts (e.g. experimental); this split permits us us keep code
 -- used elsewhere stable but at the same time play around in context
 
+-- much of this will go away
+
 local direct             = node.direct
 local nuts               = { }
 nodes.nuts               = nuts
@@ -201,16 +203,39 @@ nuts.setattr             = setfield
 nuts.getfont             = direct.getfont
 nuts.setfont             = direct.setfont
 nuts.getsubtype          = direct.getsubtype
-nuts.setsubtype          = direct.setsubtype or function(n,s) setfield(n,"subtype",s) end
+nuts.setsubtype          = direct.setsubtype
 nuts.getchar             = direct.getchar
 nuts.setchar             = direct.setchar
 nuts.getdisc             = direct.getdisc
 nuts.setdisc             = direct.setdisc
 nuts.setlink             = direct.setlink
 nuts.getlist             = direct.getlist
-nuts.setlist             = direct.setlist    or function(n,l) setfield(n,"list",l) end
-nuts.getleader           = direct.getleader
-nuts.setleader           = direct.setleader  or function(n,l) setfield(n,"leader",l) end
+nuts.setlist             = direct.setlist
+
+nuts.getoffsets          = direct.getoffsets or
+    function(n)
+        return getfield(n,"xoffset"), getfield(n,"yoffset")
+    end
+nuts.setoffsets          = direct.setoffsets or
+    function(n,x,y)
+        if x then setfield(n,"xoffset",x) end
+        if y then setfield(n,"xoffset",y) end
+    end
+
+nuts.getleader     = direct.getleader     or function(n)   return getfield(n,"leader")       end
+nuts.setleader     = direct.setleader     or function(n,l)        setfield(n,"leader",l)     end
+nuts.getcomponents = direct.getcomponents or function(n)   return getfield(n,"components")   end
+nuts.setcomponents = direct.setcomponents or function(n,c)        setfield(n,"components",c) end
+nuts.getkern       = direct.getkern       or function(n)   return getfield(n,"kern")         end
+nuts.setkern       = direct.setkern       or function(n,k)        setfield(n,"kern",k)       end
+nuts.getdir        = direct.getkern       or function(n)   return getfield(n,"dir")          end
+nuts.setdir        = direct.setkern       or function(n,d)        setfield(n,"dir",d)        end
+nuts.getwidth      = direct.getwidth      or function(n)   return getfield(n,"width")        end
+nuts.setwidth      = direct.setwidth      or function(n,w) return setfield(n,"width",w)      end
+nuts.getheight     = direct.getheight     or function(n)   return getfield(n,"height")       end
+nuts.setheight     = direct.setheight     or function(n,h) return setfield(n,"height",h)     end
+nuts.getdepth      = direct.getdepth      or function(n)   return getfield(n,"depth")        end
+nuts.setdepth      = direct.setdepth      or function(n,d) return setfield(n,"depth",d)      end
 
 if not direct.is_glyph then
     local getchar    = direct.getchar
@@ -312,3 +337,128 @@ end
 
 nodes.setprop = nodes.setproperty
 nodes.getprop = nodes.getproperty
+
+-- a few helpers (we need to keep 'm in sync with context) .. some day components
+-- might go so here we isolate them
+
+local setprev       = nuts.setprev
+local setnext       = nuts.setnext
+local getnext       = nuts.getnext
+local setlink       = nuts.setlink
+local getfield      = nuts.getfield
+local setfield      = nuts.setfield
+local getcomponents = nuts.getcomponents
+local setcomponents = nuts.setcomponents
+
+local find_tail     = nuts.tail
+local flush_list    = nuts.flush_list
+local flush_node    = nuts.flush_node
+local traverse_id   = nuts.traverse_id
+local copy_node     = nuts.copy_node
+
+local glyph_code    = nodes.nodecodes.glyph
+
+function nuts.set_components(target,start,stop)
+    local head = getcomponents(target)
+    if head then
+        flush_list(head)
+        head = nil
+    end
+    if start then
+        setprev(start)
+    else
+        return nil
+    end
+    if stop then
+        setnext(stop)
+    end
+    local tail = nil
+    while start do
+        local c = getcomponents(start)
+        local n = getnext(start)
+        if c then
+            if head then
+                setlink(tail,c)
+            else
+                head = c
+            end
+            tail = find_tail(c)
+            setcomponents(start)
+            flush_node(start)
+        else
+            if head then
+                setlink(tail,start)
+            else
+                head = start
+            end
+            tail = start
+        end
+        start = n
+    end
+    setcomponents(target,head)
+    -- maybe also upgrade the subtype but we don't use it anyway
+    return head
+end
+
+nuts.get_components = nuts.getcomponents
+
+function nuts.take_components(target)
+    local c = getcomponents(target)
+    setcomponents(target)
+    -- maybe also upgrade the subtype but we don't use it anyway
+    return c
+end
+
+function nuts.count_components(n,marks)
+    local components = getcomponents(n)
+    if components then
+        if marks then
+            local i = 0
+            for g in traverse_id(glyph_code,components) do
+                if not marks[getchar(g)] then
+                    i = i + 1
+                end
+            end
+            return i
+        else
+            return count(glyph_code,components)
+        end
+    else
+        return 0
+    end
+end
+
+function nuts.copy_no_components(g,copyinjection)
+    local components = getcomponents(g)
+    if components then
+        setcomponents(g)
+        local n = copy_node(g)
+        if copyinjection then
+            copyinjection(n,g)
+        end
+        setcomponents(g,components)
+        -- maybe also upgrade the subtype but we don't use it anyway
+        return n
+    else
+        local n = copy_node(g)
+        if copyinjection then
+            copyinjection(n,g)
+        end
+        return n
+    end
+end
+
+function nuts.copy_only_glyphs(current)
+    local head     = nil
+    local previous = nil
+    for n in traverse_id(glyph_code,current) do
+        n = copy_node(n)
+        if head then
+            setlink(previous,n)
+        else
+            head = n
+        end
+        previous = n
+    end
+    return head
+end

@@ -34,14 +34,21 @@ local getnext             = nuts.getnext
 local getprev             = nuts.getprev
 local getid               = nuts.getid
 local getattr             = nuts.getattr
+local takeattr            = nuts.takeattr
 local setattr             = nuts.setattr
 local getwhd              = nuts.getwhd
+local getkern             = nuts.getkern
+local setpenalty          = nuts.setpenalty
+local getwidth            = nuts.getwidth
+local getdepth            = nuts.getdepth
 
 local insert_node_after   = nuts.insert_after
 local new_penalty         = nuts.pool.penalty
 
 local trace_keeptogether  = false
 local report_keeptogether = logs.reporter("parbuilders","keeptogether")
+
+local enableaction        = nodes.tasks.enableaction
 
 local cache               = { }
 local last                = 0
@@ -57,7 +64,7 @@ function parbuilders.registertogether(line,specification) -- might change
         return
     end
     if not enabled then
-        nodes.tasks.enableaction("finalizers","builders.paragraphs.keeptogether")
+        enableaction("finalizers","builders.paragraphs.keeptogether")
     end
     local a = getattr(line,a_keeptogether)
     local c = a and cache[a]
@@ -110,7 +117,7 @@ local function keeptogether(start,a)
         if a then
             local current = getnext(start)
             local previous = start
-            local total = getfield(previous,"depth")
+            local total = getdepth(previous)
             local slack = specification.slack
             local threshold = specification.depth - slack
             if trace_keeptogether then
@@ -126,7 +133,7 @@ local function keeptogether(start,a)
                     end
                     if total <= threshold then
                         if getid(previous) == penalty_code then
-                            setfield(previous,"penalty",10000)
+                            setpenalty(previous,10000)
                         else
                             insert_node_after(head,previous,new_penalty(10000))
                         end
@@ -135,13 +142,13 @@ local function keeptogether(start,a)
                     end
                 elseif id == glue_code then
                     -- hm, breakpoint, maybe turn this into kern
-                    total = total + getfield(current,"width")
+                    total = total + getwidth(current)
                     if trace_keeptogether then
                         report_keeptogether("%s, index %s, total %p, threshold %p","glue",a,total,threshold)
                     end
                     if total <= threshold then
                         if getid(previous) == penalty_code then
-                            setfield(previous,"penalty",10000)
+                            setpenalty(previous,10000)
                         else
                             insert_node_after(head,previous,new_penalty(10000))
                         end
@@ -149,13 +156,13 @@ local function keeptogether(start,a)
                         break
                     end
                 elseif id == kern_code then
-                    total = total + getfield(current,"kern")
+                    total = total + getkern(current)
                     if trace_keeptogether then
                         report_keeptogether("%s, index %s, total %s, threshold %s","kern",a,total,threshold)
                     end
                     if total <= threshold then
                         if getid(previous) == penalty_code then
-                            setfield(previous,"penalty",10000)
+                            setpenalty(previous,10000)
                         else
                             insert_node_after(head,previous,new_penalty(10000))
                         end
@@ -165,9 +172,9 @@ local function keeptogether(start,a)
                 elseif id == penalty_code then
                     if total <= threshold then
                         if getid(previous) == penalty_code then
-                            setfield(previous,"penalty",10000)
+                            setpenalty(previous,10000)
                         end
-                        setfield(current,"penalty",10000)
+                        setpenalty(current,10000)
                     else
                         break
                     end
@@ -186,10 +193,9 @@ function parbuilders.keeptogether(head)
     local current = tonut(head)
     while current do
         if getid(current) == hlist_code then
-            local a = getattr(current,a_keeptogether)
+            local a = takeattr(current,a_keeptogether)
             if a and a > 0 then
                 keeptogether(current,a)
-                setattr(current,a_keeptogether,unsetvalue)
                 cache[a] = nil
                 done = true
             end

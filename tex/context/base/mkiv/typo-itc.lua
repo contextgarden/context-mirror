@@ -23,7 +23,7 @@ local glue_code           = nodecodes.glue
 local disc_code           = nodecodes.disc
 local math_code           = nodecodes.math
 
-local tasks               = nodes.tasks
+local enableaction        = nodes.tasks.enableaction
 
 local nuts                = nodes.nuts
 local nodepool            = nuts.pool
@@ -40,9 +40,14 @@ local getchar             = nuts.getchar
 local getdisc             = nuts.getdisc
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
+local getattrlist         = nuts.getattrlist
+local setattrlist         = nuts.setattrlist
 local setfield            = nuts.setfield
 local setdisc             = nuts.setdisc
 local isglyph             = nuts.isglyph
+local setkern             = nuts.setkern
+local getkern             = nuts.getkern
+local getheight           = nuts.getheight
 
 local insert_node_after   = nuts.insert_after
 local delete_node         = nuts.delete
@@ -124,7 +129,7 @@ local function okay(data,current,font,prevchar,previtalic,char,what)
         return false
     end
     if threshold then
-        local ht = getfield(current,"height")
+        local ht = getheight(current)
         local ex = exheights[font]
         local th = threshold * ex
         if ht <= th then
@@ -149,9 +154,9 @@ end
 local function correction_kern(kern,n)
     local k = new_correction_kern(kern)
     if n then
-        local a = getfield(n,"attr")
+        local a = getattrlist(n)
         if a then -- maybe not
-            setfield(k,"attr",a) -- can be a marked content (border case)
+            setattrlist(k,a) -- can be a marked content (border case)
         end
     end
     return k
@@ -160,9 +165,9 @@ end
 local function correction_glue(glue,n)
     local g = new_correction_glue(glue)
     if n then
-        local a = getfield(n,"attr")
+        local a = getattrlist(n)
         if a then -- maybe not
-            setfield(g,"attr",a) -- can be a marked content (border case)
+            setattrlist(g,a) -- can be a marked content (border case)
         end
     end
     return g
@@ -195,10 +200,10 @@ local function domath(head,current, done)
                             else
                                 a = a + 100
                             end
-                            local i = getfield(kern,"kern")
+                            local i = getkern(kern)
                             local f = getfont(glyph)
                             local c = getchar(glyph)
-                            if getfield(next,"height") < 1.25*exheights[f] then
+                            if getheight(next) < 1.25*exheights[f] then
                                 if i == 0 then
                                     if trace_italics then
                                         report_italics("%s italic %p between math %C and punctuation %C","ignoring",i,c,char)
@@ -207,7 +212,7 @@ local function domath(head,current, done)
                                     if trace_italics then
                                         report_italics("%s italic between math %C and punctuation %C","removing",i,c,char)
                                     end
-                                    setfield(kern,"kern",0) -- or maybe a small value or half the ic
+                                    setkern(kern,0) -- or maybe a small value or half the ic
                                     done = true
                                 end
                             elseif i == 0 then
@@ -218,7 +223,7 @@ local function domath(head,current, done)
                                         report_italics("%s italic %p between math %C and punctuation %C","ignoring",i,c,char)
                                     end
                                 else
-                                    setfield(kern,"kern",i)
+                                    setkern(kern,i)
                                     if trace_italics then
                                         report_italics("%s italic %p between math %C and punctuation %C","setting",i,c,char)
                                     end
@@ -593,7 +598,7 @@ function italics.handler(head)
 end
 
 enabletext = function()
-    tasks.enableaction("processors","typesetters.italics.handler")
+    enableaction("processors","typesetters.italics.handler")
     if trace_italics then
         report_italics("enabling text/text italics")
     end
@@ -602,7 +607,7 @@ enabletext = function()
 end
 
 enablemath = function()
-    tasks.enableaction("processors","typesetters.italics.handler")
+    enableaction("processors","typesetters.italics.handler")
     if trace_italics then
         report_italics("enabling math/text italics")
     end

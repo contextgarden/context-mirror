@@ -38,6 +38,8 @@ local getid           = nuts.getid
 local getlist         = nuts.getlist
 local getattribute    = nuts.getattribute
 local getbox          = nuts.getbox
+local getdir          = nuts.getdir
+local getwidth        = nuts.getwidth
 local takebox         = nuts.takebox
 
 local setfield        = nuts.setfield
@@ -46,6 +48,10 @@ local setboth         = nuts.setboth
 local setnext         = nuts.setnext
 local setbox          = nuts.setbox
 local setlist         = nuts.setlist
+local setdisc         = nuts.setdisc
+local setwidth        = nuts.setwidth
+local setheight       = nuts.setheight
+local setdepth        = nuts.setdepth
 
 local flush_node      = nuts.flush_node
 local flush_list      = nuts.flush_list
@@ -53,7 +59,6 @@ local copy_node       = nuts.copy
 local copy_list       = nuts.copy_list
 local find_tail       = nuts.tail
 local traverse_id     = nuts.traverse_id
-local link_nodes      = nuts.linked
 local list_dimensions = nuts.dimensions
 local hpack           = nuts.hpack
 
@@ -78,12 +83,6 @@ local function hyphenatedlist(head,usecolor)
         local prev = getprev(current)
         if id == disc_code then
             local pre, post, replace = getdisc(current)
-            if pre then
-                setfield(current,"pre",nil)
-            end
-            if post then
-                setfield(current,"post",nil)
-            end
             if not usecolor then
                 -- nothing fancy done
             elseif pre and post then
@@ -96,23 +95,32 @@ local function hyphenatedlist(head,usecolor)
             end
             if replace then
                 flush_list(replace)
-                setfield(current,"replace",nil)
             end
+            setdisc(current)
             setboth(current)
-            local list = link_nodes (
+--             local list = setlink (
+--                 pre and new_penalty(10000),
+--                 pre,
+--                 current,
+--                 post,
+--                 post and new_penalty(10000)
+--             )
+--             local tail = find_tail(list)
+--             if prev then
+--                 setlink(prev,list)
+--             end
+--             if next then
+--                 setlink(tail,next)
+--             end
+            setlink (
+                prev, -- there had better be one
                 pre and new_penalty(10000),
                 pre,
                 current,
                 post,
-                post and new_penalty(10000)
+                post and new_penalty(10000),
+                next
             )
-            local tail = find_tail(list)
-            if prev then
-                setlink(prev,list)
-            end
-            if next then
-                setlink(tail,next)
-            end
          -- flush_node(current)
         elseif id == vlist_code or id == hlist_code then
             hyphenatedlist(getlist(current))
@@ -351,8 +359,8 @@ implement {
     actions   = function(n)
         local b = getbox(n)
         local factor = texget("baselineskip",false) / texget("hsize")
-        setfield(b,"depth",0)
-        setfield(b,"height",getfield(b,"width") * factor)
+        setdepth(b,0)
+        setheight(b,getwidth(b) * factor)
     end
 }
 
@@ -426,7 +434,7 @@ local function firstdirinbox(n)
         local l = getlist(b)
         if l then
             for h in traverse_id(hlist_code,l) do
-                return getfield(h,"dir")
+                return getdir(h)
             end
         end
     end
@@ -552,48 +560,57 @@ do
         end
     end
 
-    interfaces.implement {
+    implement {
         name      = "putboxincache",
         arguments = { "string", "string", "integer" },
         actions   = boxes.save,
     }
 
-    interfaces.implement {
+    implement {
         name      = "getboxfromcache",
         arguments = { "string", "string", "integer" },
         actions   = boxes.restore,
     }
 
-    interfaces.implement {
+    implement {
         name      = "directboxfromcache",
         arguments = { "string", "string" },
         actions   = { boxes.direct, context },
      -- actions   = function(category,name) local b = boxes.direct(category,name) if b then context(b) end end,
     }
 
-    interfaces.implement {
+    implement {
         name      = "directcopyboxfromcache",
         arguments = { "string", "string", true },
         actions   = { boxes.direct, context },
      -- actions   = function(category,name) local b = boxes.direct(category,name,true) if b then context(b) end end,
     }
 
-    interfaces.implement {
+    implement {
         name      = "copyboxfromcache",
         arguments = { "string", "string", "integer", true },
         actions   = boxes.restore,
     }
 
-    interfaces.implement {
+    implement {
         name      = "doifelseboxincache",
         arguments = { "string", "string" },
         actions   = { boxes.found, doifelse },
     }
 
-    interfaces.implement {
+    implement {
         name      = "resetboxesincache",
         arguments = { "string" },
         actions   = boxes.reset,
+    }
+
+    implement {
+        name    = "lastlinewidth",
+        actions = function()
+            local head = tex.lists.page_head
+            -- list dimensions returns 3 value but we take the first
+            context(head and list_dimensions(getlist(find_tail(tonut(tex.lists.page_head)))) or 0)
+        end
     }
 
 end

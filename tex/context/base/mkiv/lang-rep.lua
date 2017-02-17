@@ -52,11 +52,13 @@ local getchar            = nuts.getchar
 local isglyph            = nuts.isglyph
 
 local setfield           = nuts.setfield
+local getfield           = nuts.getfield
 local setattr            = nuts.setattr
 local setlink            = nuts.setlink
 local setnext            = nuts.setnext
 local setprev            = nuts.setprev
 local setchar            = nuts.setchar
+local setattrlist        = nuts.setattrlist
 
 local insert_node_before = nuts.insert_before
 local remove_node        = nuts.remove
@@ -69,6 +71,8 @@ local new_disc           = nodepool.disc
 
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
+
+local enableaction       = nodes.tasks.enableaction
 
 local v_reset            = interfaces.variables.reset
 
@@ -222,34 +226,35 @@ function replacements.handler(head)
                         local i = 1
                         while i <= newlength do
                             local codes = newcodes[i]
-                            local new = nil
                             if type(codes) == "table" then
                                 local method = codes[1]
                                 if method == "discretionary" then
                                     local pre, post, replace = codes[2], codes[3], codes[4]
-                                    new = new_disc()
                                     if pre then
-                                        setfield(new,"pre",tonodes(pre,last))
+                                        pre = tonodes(pre,last)
                                     end
                                     if post then
-                                        setfield(new,"post",tonodes(post,last))
+                                        post = tonodes(post,last)
                                     end
                                     if replace then
-                                        setfield(new,"replace",tonodes(replace,last))
+                                        replace = tonodes(replace,last)
                                     end
+                                    -- todo: also set attr
+                                    local new = new_disc(pre,post,replace)
+                                    setattrlist(new,last)
                                     head, current = insert_after(head,current,new)
                                 elseif method == "noligature" then
                                     -- not that efficient to copy but ok for testing
                                     local list = codes[2]
                                     if list then
                                         for i=1,#list do
-                                            new = copy_node(last)
+                                            local new = copy_node(last)
                                             setchar(new,list[i])
                                             setattr(new,a_noligature,1)
                                             head, current = insert_after(head,current,new)
                                         end
                                     else
-                                        new = copy_node(last)
+                                        local new = copy_node(last)
                                         setchar(new,zwnj)
                                         head, current = insert_after(head,current,new)
                                     end
@@ -257,7 +262,7 @@ function replacements.handler(head)
                                     -- todo
                                 end
                             else
-                                new = copy_node(last)
+                                local new = copy_node(last)
                                 setchar(new,codes)
                                 head, current = insert_after(head,current,new)
                             end
@@ -310,7 +315,7 @@ function replacements.set(n)
     else
         n = lists[n].attribute
         if not enabled then
-            nodes.tasks.enableaction("processors","languages.replacements.handler")
+            enableaction("processors","languages.replacements.handler")
             if trace_replacements then
                 report_replacement("enabling replacement handler")
             end

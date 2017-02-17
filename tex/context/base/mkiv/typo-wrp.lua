@@ -23,8 +23,10 @@ local find_node_tail    = nuts.tail
 local getprev           = nuts.getprev
 local getid             = nuts.getid
 local getsubtype        = nuts.getsubtype
-local getfield          = nuts.getfield
+local getpenalty        = nuts.getpenalty
 local remove            = nuts.remove
+
+local enableaction      = nodes.tasks.enableaction
 
 local wrappers          = { }
 typesetters.wrappers    = wrappers
@@ -39,9 +41,9 @@ local report            = logs.reporter("paragraphs","wrappers")
 local function remove_dangling_crlf(head,tail)
     if tail and getid(tail) == glue_code and getsubtype(tail) == parfill_skip_code then
         tail = getprev(tail)
-        if tail and getid(tail) == penalty_code and getsubtype(tail) == user_penalty_code and getfield(tail,"penalty") == 10000 then
+        if tail and getid(tail) == penalty_code and getsubtype(tail) == user_penalty_code and getpenalty(tail) == 10000 then
             tail = getprev(tail)
-            if tail and getid(tail) == penalty_code and getsubtype(tail) == user_penalty_code and getfield(tail,"penalty") == -10000 then
+            if tail and getid(tail) == penalty_code and getsubtype(tail) == user_penalty_code and getpenalty(tail) == -10000 then
                 if tail == head then
                     -- can't happen
                 else
@@ -71,6 +73,6 @@ interfaces.implement {
     name     = "enablecrlf",
     onlyonce = true,
     actions  = function()
-        nodes.tasks.enableaction("processors","typesetters.wrappers.handler")
+        enableaction("processors","typesetters.wrappers.handler")
     end
 }

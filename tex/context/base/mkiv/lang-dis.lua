@@ -13,6 +13,9 @@ local nodes              = nodes
 local tasks              = nodes.tasks
 local nuts               = nodes.nuts
 
+local enableaction       = tasks.enableaction
+local setaction          = tasks.setaction
+
 local tonode             = nuts.tonode
 local tonut              = nuts.tonut
 
@@ -29,12 +32,17 @@ local getchar            = nuts.getchar
 local setchar            = nuts.setchar
 local getdisc            = nuts.getdisc
 local setdisc            = nuts.setdisc
+local getlang            = nuts.setlang
+local getboth            = nuts.getboth
+local setlist            = nuts.setlist
+local setlink            = nuts.setlink
 local isglyph            = nuts.isglyph
 
 local copy_node          = nuts.copy
 local remove_node        = nuts.remove
 local traverse_id        = nuts.traverse_id
 local flush_list         = nuts.flush_list
+local flush_node         = nuts.flush_node
 
 local nodecodes          = nodes.nodecodes
 local disccodes          = nodes.disccodes
@@ -83,7 +91,7 @@ local expanders = {
             -- todo: take existing penalty
             setdisc(d,pre,post,replace,explicit_code,tex.exhyphenpenalty)
         else
-            setfield(d,"subtype",explicit_code)
+            setsubtype(d,explicit_code)
         end
         return template
     end,
@@ -141,7 +149,7 @@ local expanders = {
                 end
             end
             if template then
-                local language = template and getfield(template,"lang")
+                local language = template and getlang(template)
                 local data     = getlanguagedata(language)
                 local prechar  = data.prehyphenchar
                 local postchar = data.posthyphenchar
@@ -214,7 +222,7 @@ function languages.showdiscretionaries(v)
         setattribute(a_visualize,unsetvalue)
     else -- also nil
         if not enabled then
-            nodes.tasks.enableaction("processors","languages.visualizediscretionaries")
+            enableaction("processors","languages.visualizediscretionaries")
             enabled = true
         end
         setattribute(a_visualize,1)
@@ -237,3 +245,71 @@ function languages.serializediscretionary(d) -- will move to tracer
     )
 end
 
+-- --
+
+local wiped = 0
+
+local function wipe(head,delayed)
+    local p, n = getboth(delayed)
+    local _, _, h, _, _, t = getdisc(delayed,true)
+    if p or n then
+        if h then
+            setlink(p,h)
+            setlink(t,n)
+            setfield(delayed,"replace")
+        else
+            setlink(p,n)
+        end
+    end
+    if head == delayed then
+        head = h
+    end
+    wiped = wiped + 1
+    flush_node(delayed)
+    return head
+end
+
+function languages.flatten(head)
+    local nuthead = tonut(head)
+    local delayed = nil
+    for d in traverse_id(disc_code,nuthead) do
+        if delayed then
+            nuthead = wipe(nuthead,delayed)
+        end
+        delayed = d
+    end
+    if delayed then
+        return tonode(wipe(nuthead,delayed)), true
+    else
+        return head, false
+    end
+end
+
+function languages.nofflattened()
+    return wiped -- handy for testing
+end
+
+-- experiment
+
+local flatten = languages.flatten
+local getlist = nodes.getlist
+
+function nodes.handlers.flattenline(head)
+    local list = getlist(head)
+    if list then
+        flatten(list)
+    end
+    return head
+end
+
+function nodes.handlers.flatten(head,where)
+    if head and (where == "box" or where == "adjusted_hbox") then
+        return flatten(head)
+    end
+    return true
+end
+
+directives.register("hyphenator.flatten",function(v)
+    setaction("processors","nodes.handlers.flatten",v)
+    setaction("contributers","nodes.handlers.flattenline",v)
+end)

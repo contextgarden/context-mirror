@@ -47,7 +47,6 @@ local concat, insert, remove = table.concat, table.insert, table.remove
 local todimen = string.todimen
 local collapsepath = file.collapsepath
 local formatters = string.formatters
-local expandfilename = dir.expandname
 local formatcolumns = utilities.formatters.formatcolumns
 
 local P, R, S, Cc, C, Cs, Ct, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.Cc, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.match
@@ -97,16 +96,12 @@ end
 local report_inclusion  = logs.reporter("graphics","inclusion")
 local report_figures    = logs.reporter("system","graphics")
 local report_figure     = logs.reporter("used graphic")
-local report_status     = logs.reporter("graphics","status")
 local report_newline    = logs.newline
 
 local f_hash_part       = formatters["%s->%s->%s->%s"]
 local f_hash_full       = formatters["%s->%s->%s->%s->%s->%s->%s->%s"]
 
 local v_yes             = variables.yes
-local v_low             = variables.low
-local v_medium          = variables.medium
-local v_high            = variables.high
 local v_global          = variables["global"]
 local v_local           = variables["local"]
 local v_default         = variables.default
@@ -1636,13 +1631,15 @@ includers.cld = includers.nongeneric
 
 setmetatableindex(converters,"table")
 
+-- We keep this helper because it has been around for a while and therefore it can
+-- be a depedency in an existing workflow.
+
 function programs.makeoptions(options)
     local to = type(options)
     return (to == "table" and concat(options," ")) or (to == "string" and options) or ""
 end
 
 function programs.run(binary,argument,variables)
-    -- move this check to the runner code
     local found = nil
     if type(binary) == "table" then
         for i=1,#binary do

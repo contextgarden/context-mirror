@@ -77,10 +77,13 @@ local getlist             = nuts.getlist
 local getchar             = nuts.getchar
 local getfield            = nuts.getfield
 local getprop             = nuts.getprop
+local getdir              = nuts.getdir
 
 local setfield            = nuts.setfield
 local setprop             = nuts.setprop
 local setchar             = nuts.setchar
+local setdir              = nuts.setdir
+----- setattrlist         = nuts.setattrlist
 
 local remove_node         = nuts.remove
 local insert_node_after   = nuts.insert_after
@@ -232,7 +235,7 @@ local function build_list(head) -- todo: store node pointer ... saves loop
             list[size] = { char = 0x0020, direction = "ws", original = "ws", level = 0 }
             current = getnext(current)
         elseif id == dir_code then
-            local dir = getfield(current,"dir")
+            local dir = getdir(current)
             if dir == "+TLT" then
                 list[size] = { char = 0x202A, direction = "lre", original = "lre", level = 0 }
             elseif dir == "+TRT" then
@@ -324,7 +327,7 @@ end
 local function get_baselevel(head,list,size) -- todo: skip if first is object (or pass head and test for localpar)
     local id = getid(head)
     if id == localpar_code then
-        if getfield(head,"dir") == "TRT" then
+        if getdir(head) == "TRT" then
             return 1, "TRT", true
         else
             return 0, "TLT", true
@@ -747,13 +750,13 @@ local function apply_to_list(list,size,head,pardir)
                 setcolor(current,direction,false,mirror)
             end
         elseif id == hlist_code or id == vlist_code then
-            setfield(current,"dir",pardir) -- is this really needed?
+            setdir(current,pardir) -- is this really needed?
         elseif id == glue_code then
             if enddir and getsubtype(current) == parfillskip_code then
                 -- insert the last enddir before \parfillskip glue
                 local d = new_textdir(enddir)
                 setprop(d,"directions",true)
-             -- setfield(d,"attr",getfield(current,"attr"))
+             -- setattrlist(d,current)
                 head = insert_node_before(head,current,d)
                 enddir = false
                 done = true
@@ -763,7 +766,7 @@ local function apply_to_list(list,size,head,pardir)
                 -- localpar should always be the 1st node
                 local d = new_textdir(begindir)
                 setprop(d,"directions",true)
-             -- setfield(d,"attr",getfield(current,"attr"))
+             -- setattrlist(d,current)
                 head, current = insert_node_after(head,current,d)
                 begindir = nil
                 done = true
@@ -772,7 +775,7 @@ local function apply_to_list(list,size,head,pardir)
         if begindir then
             local d = new_textdir(begindir)
             setprop(d,"directions",true)
-         -- setfield(d,"attr",getfield(current,"attr"))
+         -- setattrlist(d,current)
             head = insert_node_before(head,current,d)
             done = true
         end
@@ -786,7 +789,7 @@ local function apply_to_list(list,size,head,pardir)
         if enddir then
             local d = new_textdir(enddir)
             setprop(d,"directions",true)
-         -- setfield(d,"attr",getfield(current,"attr"))
+         -- setattrlist(d,current)
             head, current = insert_node_after(head,current,d)
             done = true
         end

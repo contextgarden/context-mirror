@@ -38,6 +38,7 @@ local getid           = nuts.getid
 local getsubtype      = nuts.getsubtype
 local getchar         = nuts.getchar
 local setattr         = nuts.setattr
+local getlang         = nuts.getlang
 local isglyph         = nuts.isglyph
 
 local traverse_nodes  = nuts.traverse
@@ -45,7 +46,7 @@ local traverse_ids    = nuts.traverse_id
 
 local wordsdata       = words.data
 local chardata        = characters.data
-local tasks           = nodes.tasks
+local enableaction    = nodes.tasks.enableaction
 
 local unsetvalue      = attributes.unsetvalue
 
@@ -161,7 +162,7 @@ local function mark_words(head,whenfound) -- can be optimized and shared
     while current do
         local code, id = isglyph(current)
         if code then
-            local a = getfield(current,"lang")
+            local a = getlang(current)
             if a then
                 if a ~= language then
                     if s > 0 then
@@ -234,7 +235,7 @@ function words.enable(settings)
     if e then
         e(settings)
     end
-    tasks.enableaction("processors","languages.words.check")
+    enableaction("processors","languages.words.check")
     enabled = true
 end
 

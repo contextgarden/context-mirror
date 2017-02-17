@@ -32,7 +32,7 @@ local cleanupdestinations  = true
 local transparencies       = attributes.transparencies
 local colors               = attributes.colors
 local references           = structures.references
-local tasks                = nodes.tasks
+local enableaction         = nodes.tasks.enableaction
 
 local trace_references     = false  trackers.register("nodes.references",        function(v) trace_references   = v end)
 local trace_destinations   = false  trackers.register("nodes.destinations",      function(v) trace_destinations = v end)
@@ -60,10 +60,15 @@ local getprev              = nuts.getprev
 local getid                = nuts.getid
 local getlist              = nuts.getlist
 local setlist              = nuts.setlist
+local getwidth             = nuts.getwidth
+local setwidth             = nuts.setwidth
+local getheight            = nuts.getheight
 local getattr              = nuts.getattr
 local setattr              = nuts.setattr
 local getsubtype           = nuts.getsubtype
 local getwhd               = nuts.getwhd
+local getdir               = nuts.getdir
+local setshift             = nuts.setshift
 
 local hpack_list           = nuts.hpack
 local vpack_list           = nuts.vpack
@@ -212,7 +217,7 @@ local function dimensions(parent,start,stop) -- in principle we could move some 
                         report_area("dimensions taken of vlist")
                     end
                     local w, h, d = vlist_dimensions(first,last,parent)
-                    local ht = getfield(first,"height")
+                    local ht = getheight(first)
                     return w, ht, d + h - ht, first
                 else
                  -- return hlist_dimensions(start,stop,parent)
@@ -286,8 +291,9 @@ if first == last and getid(parent) == vlist_code and getid(first) == hlist_code 
     setlink(result,getlist(first))
     setlist(first,result)
 else
-            setlink(getprev(first),result)
-            setlink(result,first)
+         -- setlink(getprev(first),result)
+         -- setlink(result,first)
+            setlink(getprev(first),result,first)
 end
             return head, last
         end
@@ -345,8 +351,9 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
             setlist(current,result)
         elseif moveright then -- brr no prevs done
             -- result after first
-            setlink(result,getnext(first))
-            setlink(first,result)
+         -- setlink(result,getnext(first))
+         -- setlink(first,result)
+            setlink(first,result,getnext(first))
         else
             -- first after result
             setlink(result,first)
@@ -405,9 +412,9 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
                     done[r] = done[r] - 1
                 end
             elseif id == dir_code then
-                txtdir = getfield(current,"dir")
+                txtdir = getdir(current)
             elseif id == localpar_code then
-                pardir = getfield(current,"dir")
+                pardir = getdir(current)
             elseif id == glue_code and getsubtype(current) == leftskip_code then -- any glue at the left?
                 --
             else
@@ -457,9 +464,9 @@ local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) 
                     end
                 end
             elseif id == dir_code then
-                txtdir = getfield(current,"dir")
+                txtdir = getdir(current)
             elseif id == localpar_code then
-                pardir = getfield(current,"dir")
+                pardir = getdir(current)
             else
                 local r = getattr(current,attribute)
                 if r and not done[r] then
@@ -501,8 +508,8 @@ local function addstring(what,str,shift) --todo make a pluggable helper (in font
             end
             local text = typesetters.tohpack(str,infofont)
             local rule = new_rule(emwidth/5,4*exheight,3*exheight)
-            setfield(text,"shift",shift)
-            return hpack_list(nuts.linked(text,rule))
+            setshift(text,shift)
+            return hpack_list(setlink(text,rule))
         end
     end
 end
@@ -540,30 +547,30 @@ local function colorize(width,height,depth,n,reference,what,sr,offset)
     setattr(rule,a_transparency,u_transparency)
     if width < 0 then
         local kern = new_kern(width)
-        setfield(rule,"width",-width)
+        setwidth(rule,-width)
         setnext(kern,rule)
         setprev(rule,kern)
         return kern
     elseif sr and sr ~= "" then
         local text = addstring(what,sr,shift)
         if text then
-            local kern = new_kern(-getfield(text,"width"))
-            setlink(kern,text)
-            setlink(text,rule)
+            local kern = new_kern(-getwidth(text))
+         -- setlink(kern,text)
+         -- setlink(text,rule)
+            setlink(kern,text,rule)
             return kern
         end
     end
     return rule
 end
 
-local function justadd(what,sr,shift)
+local function justadd(what,sr,shift,current) -- needs testing
     if sr and sr ~= "" then
         local text = addstring(what,sr,shift)
         if text then
-            local kern = new_kern(-getfield(text,"width"))
-            setlink(kern,text)
-            setlink(text,rule)
-            return kern
+            local kern = new_kern(-getwidth(text))
+            setlink(kern,text,current)
+            return new_hlist(kern)
         end
     end
 end
@@ -637,17 +644,12 @@ local function makereference(width,height,depth,reference) -- height and depth a
             end
             if trace_references then
                 local step = 65536
---                 result = hpack_list(colorize(width,height-step,depth-step,2,reference,"reference",texts,show_references)) -- step subtracted so that we can see seperate links
---                 setfield(result,"width",0)
-result = new_hlist(colorize(width,height-step,depth-step,2,reference,"reference",texts,show_references)) -- step subtracted so that we can see seperate links
+                result = new_hlist(colorize(width,height-step,depth-step,2,reference,"reference",texts,show_references)) -- step subtracted so that we can see seperate links
                 current = result
             elseif texts then
-                texts = justadd("reference",texts,show_references)
+                texts = justadd("reference",texts,show_references,current)
                 if texts then
---                     result = hpack_list(texts)
---                     setfield(result,"width",0)
-result = new_hlist(texts)
-                    current = result
+                    current = texts
                 end
             end
             if current then
@@ -656,11 +658,7 @@ result = new_hlist(texts)
                 result = annot
             end
             references.registerpage(n)
---             result = hpack_list(result,0)
---             setfield(result,"width",0)
---             setfield(result,"height",0)
---             setfield(result,"depth",0)
-result = new_hlist(result)
+            result = new_hlist(result)
             if cleanupreferences then stack[reference] = nil end
             return result, resolved
         elseif trace_references then
@@ -757,9 +755,7 @@ local function makedestination(width,height,depth,reference)
                 step = 4*65536
                 width, height, depth = 5*step, 5*step, 0
             end
---             local rule = hpack_list(colorize(width,height,depth,3,reference,"destination",texts,show_destinations))
---             setfield(rule,"width",0)
-local rule = new_list(colorize(width,height,depth,3,reference,"destination",texts,show_destinations))
+            local rule = new_hlist(colorize(width,height,depth,3,reference,"destination",texts,show_destinations))
             if not result then
                 result, current = rule, rule
             else
@@ -768,15 +764,9 @@ local rule = new_list(colorize(width,height,depth,3,reference,"destination",text
             end
             width, height = width - step, height - step
         elseif texts then
-            texts = justadd("destination",texts,show_destinations)
+            texts = justadd("destination",texts,show_destinations,current)
             if texts then
---                 result = hpack_list(texts)
---                 if result then
---                     setfield(result,"width",0)
---                     current = result
---                 end
-result = new_list(texts)
-current = result
+                current = texts
             end
         end
         nofdestinations = nofdestinations + 1
@@ -791,12 +781,7 @@ current = result
             current = find_node_tail(annot)
         end
         if result then
-            -- some internal error
---             result = hpack_list(result,0)
---             setfield(result,"width",0)
---             setfield(result,"height",0)
---             setfield(result,"depth",0)
-result = new_hlist(result)
+            result = new_hlist(result)
         end
         if cleanupdestinations then stack[reference] = nil end
         return result, resolved
@@ -932,8 +917,8 @@ statistics.register("interactive elements", function()
 end)
 
 function references.enableinteraction()
-    tasks.enableaction("shipouts","nodes.references.handler")
-    tasks.enableaction("shipouts","nodes.destinations.handler")
+    enableaction("shipouts","nodes.references.handler")
+    enableaction("shipouts","nodes.destinations.handler")
     function references.enableinteraction() end
 end
 

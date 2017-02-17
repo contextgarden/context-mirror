@@ -188,7 +188,7 @@ if lua then
     lua.mask = load([[τεχ = 1]]) and "utf" or "ascii"
 end
 
-local flush   = io.flush
+local flush = io.flush
 
 if flush then
 
@@ -199,3 +199,85 @@ if flush then
 
 end
 
+-- new
+
+if ffi and ffi.number then
+    -- already loaded
+else
+    local okay
+
+    okay, ffi = pcall(require,"ffi")
+
+    if not ffi then
+        -- an old version
+    elseif ffi.os == "" or ffi.arch == "" then
+        -- no ffi support
+        ffi = nil
+    elseif ffi.number then
+        -- luatex
+    else
+        -- luajittex
+        ffi.number = tonumber
+    end
+end
+
+-- done differently in context
+--
+-- if ffi then
+--     local load    = ffi.load
+--     local select  = select
+--     local type    = type
+--     local next    = next
+--     local sort    = table.sort
+--     local gmatch  = string.gmatch
+--     local okay    = true
+--     local control = { }
+--     function ffi.load(name,...)
+--         if okay == true or okay[name] then
+--             return load(name,...)
+--         else
+--             return nil
+--         end
+--     end
+--     function control.permit(...)
+--         if okay == true then
+--             okay = { }
+--         end
+--         for i=1,select("#",...) do
+--             local n = select(i,...)
+--             local t = type(n)
+--             if t == "table" then
+--                 for i=1,#n do
+--                     control.permit(n[i])
+--                 end
+--             elseif t == "string" then
+--                 for s in gmatch(n,"[^,%s]+") do
+--                     okay[n] = true
+--                 end
+--             end
+--         end
+--     end
+--     function control.freeze(none)
+--         control.permit = function() end
+--         control.freeze = function() end
+--         if none then
+--             okay = { }
+--         end
+--     end
+--     function control.permitted(name)
+--         if okay == true then
+--             return true
+--         elseif type(name) == "string" then
+--             return okay[name] or false
+--         else
+--             -- no helpers yet
+--             local t = { }
+--             for k, v in next, okay do
+--                 t[#t+1] = k
+--             end
+--             sort(t)
+--             return t
+--         end
+--     end
+--     ffi.control = control
+-- end

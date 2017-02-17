@@ -79,13 +79,17 @@ local setchar    = nuts.setchar
 local setlist    = nuts.setlist
 local setwhd     = nuts.setwhd
 local setglue    = nuts.setglue
+local setdisc    = nuts.setdisc
+local setfont    = nuts.setfont
+local setkern    = nuts.setkern
+local setpenalty = nuts.setpenalty
+local setdir     = nuts.setdir
+local setshift   = nuts.setshift
+local setwidth   = nuts.setwidth
 
 local copy_nut   = nuts.copy
 local new_nut    = nuts.new
 local flush_nut  = nuts.flush
-
-local copy_node  = nodes.copy
-local new_node   = nodes.new
 
 -- at some point we could have a dual set (the overhead of tonut is not much larger than
 -- metatable associations at the lua/c end esp if we also take assignments into account
@@ -181,23 +185,26 @@ local wordboundary      = register_nut(new_nut("boundary",boundarycodes.word))
 
 -- the dir field needs to be set otherwise crash:
 
-local rule              = register_nut(new_nut("rule"))                  setfield(rule, "dir","TLT")
-local emptyrule         = register_nut(new_nut("rule",rulecodes.empty))  setfield(rule, "dir","TLT")
-local userrule          = register_nut(new_nut("rule",rulecodes.user))   setfield(rule, "dir","TLT")
-local hlist             = register_nut(new_nut("hlist"))                 setfield(hlist,"dir","TLT")
-local vlist             = register_nut(new_nut("vlist"))                 setfield(vlist,"dir","TLT")
+local rule              = register_nut(new_nut("rule"))                  setdir(rule, "TLT")
+local emptyrule         = register_nut(new_nut("rule",rulecodes.empty))  setdir(rule, "TLT")
+local userrule          = register_nut(new_nut("rule",rulecodes.user))   setdir(rule, "TLT")
+local hlist             = register_nut(new_nut("hlist"))                 setdir(hlist,"TLT")
+local vlist             = register_nut(new_nut("vlist"))                 setdir(vlist,"TLT")
 
 function nutpool.glyph(fnt,chr)
     local n = copy_nut(glyph)
-    if fnt then setfield(n,"font",fnt) end
-    if chr then setchar(n,chr) end
+    if fnt then
+        setfont(n,fnt,chr)
+    elseif chr then
+        setchar(n,chr)
+    end
     return n
 end
 
 function nutpool.penalty(p)
     local n = copy_nut(penalty)
     if p and p ~= 0 then
-        setfield(n,"penalty",p)
+        setpenalty(n,p)
     end
     return n
 end
@@ -205,7 +212,7 @@ end
 function nutpool.kern(k)
     local n = copy_nut(kern)
     if k and k ~= 0 then
-        setfield(n,"kern",k)
+        setkern(n,k)
     end
     return n
 end
@@ -228,38 +235,19 @@ end
 
 function nutpool.fontkern(k)
     local n = copy_nut(fontkern)
-    setfield(n,"kern",k)
+    if k and k ~= 0 then
+        setkern(n,k)
+    end
     return n
 end
 
 function nutpool.italickern(k)
     local n = copy_nut(italickern)
     if k and k ~= 0 then
-        setfield(n,"kern",k)
+        setkern(n,k)
     end
     return n
 end
-
--- function nutpool.gluespec(width,stretch,shrink,stretch_order,shrink_order)
---     -- maybe setglue
---     local s = copy_nut(glue_spec)
---     if width and width ~= 0 then
---         setfield(s,"width",width)
---     end
---     if stretch and stretch ~= 0 then
---         setfield(s,"stretch",stretch)
---     end
---     if shrink and shrink ~= 0 then
---         setfield(s,"shrink",shrink)
---     end
---     if stretch_order and stretch_order ~= 0 then
---         setfield(s,"stretch_order",stretch_order)
---     end
---     if shrink_order and shrink_order ~= 0 then
---         setfield(s,"shrink_order",shrink_order)
---     end
---     return s
--- end
 
 function nutpool.gluespec(width,stretch,shrink,stretch_order,shrink_order)
     -- maybe setglue
@@ -270,27 +258,6 @@ function nutpool.gluespec(width,stretch,shrink,stretch_order,shrink_order)
     return s
 end
 
--- local function someskip(skip,width,stretch,shrink,stretch_order,shrink_order)
---     -- maybe setglue
---     local n = copy_nut(skip)
---     if width and width ~= 0 then
---         setfield(n,"width",width)
---     end
---     if stretch and stretch ~= 0 then
---         setfield(n,"stretch",stretch)
---     end
---     if shrink and shrink ~= 0 then
---         setfield(n,"shrink",shrink)
---     end
---     if stretch_order and stretch_order ~= 0 then
---         setfield(n,"stretch_order",stretch_order)
---     end
---     if shrink_order and shrink_order ~= 0 then
---         setfield(n,"shrink_order",shrink_order)
---     end
---     return n
--- end
-
 local function someskip(skip,width,stretch,shrink,stretch_order,shrink_order)
     -- maybe setglue
     local n = copy_nut(skip)
@@ -299,18 +266,6 @@ local function someskip(skip,width,stretch,shrink,stretch_order,shrink_order)
     end
     return n
 end
-
--- function nutpool.stretch(a,b)
---     local n = copy_nut(glue)
---     if b then
---         setfield(n,"stretch",a)
---         setfield(n,"stretch_order",b)
---     else
---         setfield(n,"stretch",1)
---         setfield(n,"stretch_order",a or 1)
---     end
---     return n
--- end
 
 function nutpool.stretch(a,b)
     -- width stretch shrink stretch_order shrink_order
@@ -321,18 +276,6 @@ function nutpool.stretch(a,b)
     setglue(n,0,a,0,b,0)
     return n
 end
-
--- function nutpool.shrink(a,b)
---     local n = copy_nut(glue)
---     if b then
---         setfield(n,"shrink",a)
---         setfield(n,"shrink_order",b)
---     else
---         setfield(n,"shrink",1)
---         setfield(n,"shrink_order",a or 1)
---     end
---     return n
--- end
 
 function nutpool.shrink(a,b)
     local n = copy_nut(glue)
@@ -346,23 +289,6 @@ end
 function nutpool.glue(width,stretch,shrink,stretch_order,shrink_order)
     return someskip(glue,width,stretch,shrink,stretch_order,shrink_order)
 end
-
--- function nutpool.negatedglue(glue)
---     local n = copy_nut(glue)
---     local width   = getfield(n,"width")
---     local stretch = getfield(n,"stretch")
---     local shrink  = getfield(n,"shrink")
---     if width and width ~= 0 then
---         setfield(n,"width",  -width)
---     end
---     if stretch and stretch ~= 0 then
---         setfield(n,"stretch",-stretch)
---     end
---     if shrink and shrink ~= 0 then
---         setfield(n,"shrink", -shrink)
---     end
---     return n
--- end
 
 function nutpool.negatedglue(glue)
     local n = copy_nut(glue)
@@ -387,13 +313,19 @@ function nutpool.baselineskip(width,stretch,shrink)
     return someskip(baselineskip,width,stretch,shrink)
 end
 
-function nutpool.disc()
-    return copy_nut(disc)
+function nutpool.disc(pre,post,replace)
+    local d = copy_nut(disc)
+    if pre or post or replace then
+        setdisc(d,pre,post,replace)
+    end
+    return d
 end
 
 function nutpool.textdir(dir)
     local t = copy_nut(textdir)
-    setfield(t,"dir",dir)
+    if dir then
+        setdir(t,dir)
+    end
     return t
 end
 
@@ -403,7 +335,7 @@ function nutpool.rule(width,height,depth,dir) -- w/h/d == nil will let them adap
         setwhd(n,width,height,depth)
     end
     if dir then
-        setfield(n,"dir",dir)
+        setdir(n,dir)
     end
     return n
 end
@@ -414,7 +346,7 @@ function nutpool.emptyrule(width,height,depth,dir) -- w/h/d == nil will let them
         setwhd(n,width,height,depth)
     end
     if dir then
-        setfield(n,"dir",dir)
+        setdir(n,dir)
     end
     return n
 end
@@ -425,7 +357,7 @@ function nutpool.userrule(width,height,depth,dir) -- w/h/d == nil will let them 
         setwhd(n,width,height,depth)
     end
     if dir then
-        setfield(n,"dir",dir)
+        setdir(n,dir)
     end
     return n
 end
@@ -448,7 +380,7 @@ function nutpool.leftmarginkern(glyph,width)
         setfield(n,"glyph",glyph)
     end
     if width and width ~= 0 then
-        setfield(n,"width",width)
+        setwidth(n,width)
     end
     return n
 end
@@ -463,7 +395,7 @@ function nutpool.rightmarginkern(glyph,width)
         setfield(n,"glyph",glyph)
     end
     if width and width ~= 0 then
-        setfield(n,"width",width)
+        setwidth(n,width)
     end
     return n
 end
@@ -485,7 +417,7 @@ local function new_hlist(list,width,height,depth,shift)
         setwhd(n,width,height,depth)
     end
     if shift and shift ~= 0 then
-        setfield(n,"shift",shift)
+        setshift(n,shift)
     end
     return n
 end
@@ -499,7 +431,7 @@ local function new_vlist(list,width,height,depth,shift)
         setwhd(n,width,height,depth)
     end
     if shift and shift ~= 0 then
-        setfield(n,"shift",shift)
+        setshift(n,shift)
     end
     return n
 end

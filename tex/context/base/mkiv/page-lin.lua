@@ -56,7 +56,7 @@ local line_code          = listcodes.line
 local a_displaymath      = attributes.private('displaymath')
 local a_linenumber       = attributes.private('linenumber')
 local a_linereference    = attributes.private('linereference')
-local a_verbatimline     = attributes.private('verbatimline')
+----- a_verbatimline     = attributes.private('verbatimline')
 
 local current_list       = { }
 local cross_references   = { }
@@ -72,6 +72,10 @@ local setattr            = nuts.setattr
 local getlist            = nuts.getlist
 local getbox             = nuts.getbox
 local getfield           = nuts.getfield
+----- getdir             = nuts.getdir
+----- getwidth           = nuts.getwidth
+local getheight          = nuts.getheight
+local getdepth           = nuts.getdepth
 
 local setprop            = nuts.setprop
 local getprop            = nuts.getprop
@@ -386,7 +390,7 @@ function boxed.stage_one(n,nested)
             local subtype = getsubtype(n)
             if subtype ~= line_code then
                 -- go on
-            elseif getfield(n,"height") == 0 and getfield(n,"depth") == 0 then
+            elseif getheight(n) == 0 and getdepth(n) == 0 then
                 -- skip funny hlists -- todo: check line subtype
             else
                 local a = lineisnumbered(n)
@@ -410,14 +414,14 @@ function boxed.stage_one(n,nested)
                             check_number(n,a,skip)
                         end
                     else
--- -- we now prevent nesting anyway .. maybe later we need to check again
---                         local v = getattr(list,a_verbatimline)
---                         if not v or v ~= last_v then
---                             last_v = v
+                     -- -- we now prevent nesting anyway .. maybe later we need to check again
+                     -- local v = getattr(list,a_verbatimline)
+                     -- if not v or v ~= last_v then
+                     --     last_v = v
                             check_number(n,a,skip)
---                         else
---                             check_number(n,a,skip,true)
---                         end
+                     -- else
+                     --     check_number(n,a,skip,true)
+                     -- end
                     end
                     skip = false
                 end
@@ -480,10 +484,10 @@ function boxed.stage_two(n,m)
             local li = current_list[i]
             local n, m, ti = li[1], li[2], t[i]
             if ti then
-             -- local d = getfield(n,"dir")
+             -- local d = getdir(n)
              -- local l = getlist(n)
              -- if d == "TRT" then
-             --     local w = getfield(n,"width")
+             --     local w = getwidth(n)
              --     ti = hpack_nodes(linked_nodes(new_kern(-w),ti,new_kern(w)))
              -- end
              -- setnext(ti,l)

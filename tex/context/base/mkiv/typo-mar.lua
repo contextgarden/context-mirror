@@ -64,7 +64,6 @@ local tonut              = nuts.tonut
 local hpack_nodes        = nuts.hpack
 local traverse_id        = nuts.traverse_id
 local flush_node_list    = nuts.flush_list
-local linked_nodes       = nuts.linked
 
 local getfield           = nuts.getfield
 local setfield           = nuts.setfield
@@ -78,6 +77,11 @@ local getlist            = nuts.getlist
 local getwhd             = nuts.getwhd
 local setlist            = nuts.setlist
 local setlink            = nuts.setlink
+local getshift           = nuts.getshift
+local setshift           = nuts.setshift
+local getwidth           = nuts.getwidth
+local setwidth           = nuts.setwidth
+local getheight          = nuts.getheight
 
 local getbox             = nuts.getbox
 local takebox            = nuts.takebox
@@ -94,8 +98,6 @@ local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local whatsit_code       = nodecodes.whatsit
 local userdefined_code   = whatsitcodes.userdefined
-
-local n_flush_node       = nodes.flush
 
 local nodepool           = nuts.pool
 
@@ -486,10 +488,9 @@ local function markovershoot(current) -- todo: alleen als offset > line
     v_anchors = v_anchors + 1
     cache[v_anchors] = fastcopy(stacked)
     local anchor = setanchor(v_anchors)
- -- local list = hpack_nodes(linked_nodes(anchor,getlist(current))) -- not ok, we need to retain width
-    local list = hpack_nodes(linked_nodes(anchor,getlist(current)),getfield(current,"width"),"exactly")--
- -- why not:
- -- local list = linked_nodes(anchor,getlist(current))
+ -- local list = hpack_nodes(setlink(anchor,getlist(current))) -- not ok, we need to retain width
+ -- local list = setlink(anchor,getlist(current)) -- why not this ... better play safe
+    local list = hpack_nodes(setlink(anchor,getlist(current)),getwidth(current),"exactly")--
     if trace_marginstack then
         report_margindata("marking anchor %a",v_anchors)
     end
@@ -503,7 +504,7 @@ local function inject(parent,head,candidate)
     end
     local width, height, depth
                        = getwhd(box)
-    local shift        = getfield(box,"shift")
+    local shift        = getshift(box)
     local stack        = candidate.stack
     local stackname    = candidate.stackname
     local location     = candidate.location
@@ -544,7 +545,7 @@ local function inject(parent,head,candidate)
         end
     end
     candidate.width     = width
-    candidate.hsize     = getfield(parent,"width") -- we can also pass textwidth
+    candidate.hsize     = getwidth(parent) -- we can also pass textwidth
     candidate.psubtype  = psubtype
     candidate.stackname = stackname
     if trace_margindata then
@@ -617,7 +618,7 @@ local function inject(parent,head,candidate)
     -- following which we don't know yet ... so, consider stacking partially
     -- experimental.
     if method == v_top then
-        local delta = height - getfield(parent,"height")
+        local delta = height - getheight(parent)
         if trace_margindata then
             report_margindata("top aligned by %p",delta)
         end
@@ -671,8 +672,8 @@ local function inject(parent,head,candidate)
         shift  = shift + delta
         offset = offset + delta
     end
-    setfield(box,"shift",shift)
-    setfield(box,"width",0) -- not needed when wrapped
+    setshift(box,shift)
+    setwidth(box,0) -- not needed when wrapped
     --
     if isstacked then
         setlink(box,addtoanchor(v_anchor,nofinjected))
@@ -785,7 +786,7 @@ local function flushed(scope,parent) -- current is hlist
     if done then
         local a = getattr(head,a_linenumber) -- hack .. we need a more decent critical attribute inheritance mechanism
         if false then
-            local l = hpack_nodes(head,getfield(parent,"width"),"exactly")
+            local l = hpack_nodes(head,getwidth(parent),"exactly")
             setlist(parent,l)
             if a then
                 setattr(l,a_linenumber,a)
@@ -946,14 +947,6 @@ end
 
 -- Somehow the vbox builder (in combinations) gets pretty confused and decides to
 -- go horizontal. So this needs more testing.
-
-prependaction("finalizers",  "lists",       "typesetters.margins.localhandler")
-prependaction("mvlbuilders", "normalizers", "typesetters.margins.globalhandler")
-prependaction("shipouts",    "normalizers", "typesetters.margins.finalhandler")
-
-disableaction("finalizers",  "typesetters.margins.localhandler")
-disableaction("mvlbuilders", "typesetters.margins.globalhandler")
-disableaction("shipouts",    "typesetters.margins.finalhandler")
 
 enablelocal = function()
     enableaction("finalizers", "typesetters.margins.localhandler")

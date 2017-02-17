@@ -56,6 +56,7 @@ local trace_goodies        = false  registertracker("math.goodies",     function
 local trace_variants       = false  registertracker("math.variants",    function(v) trace_variants    = v end)
 local trace_alternates     = false  registertracker("math.alternates",  function(v) trace_alternates  = v end)
 local trace_italics        = false  registertracker("math.italics",     function(v) trace_italics     = v end)
+local trace_kernpairs      = false  registertracker("math.kernpairs",   function(v) trace_kernpairs   = v end)
 local trace_domains        = false  registertracker("math.domains",     function(v) trace_domains     = v end)
 local trace_families       = false  registertracker("math.families",    function(v) trace_families    = v end)
 local trace_fences         = false  registertracker("math.fences",      function(v) trace_fences      = v end)
@@ -71,6 +72,7 @@ local report_goodies       = logreporter("mathematics","goodies")
 local report_variants      = logreporter("mathematics","variants")
 local report_alternates    = logreporter("mathematics","alternates")
 local report_italics       = logreporter("mathematics","italics")
+local report_kernpairs     = logreporter("mathematics","kernpairs")
 local report_domains       = logreporter("mathematics","domains")
 local report_families      = logreporter("mathematics","families")
 local report_fences        = logreporter("mathematics","fences")
@@ -86,6 +88,7 @@ local nutstring            = nuts.tostring
 
 local setfield             = nuts.setfield
 local setlink              = nuts.setlink
+local setlist              = nuts.setlist
 local setnext              = nuts.setnext
 local setprev              = nuts.setprev
 local setchar              = nuts.setchar
@@ -101,6 +104,15 @@ local getsubtype           = nuts.getsubtype
 local getchar              = nuts.getchar
 local getfont              = nuts.getfont
 local getattr              = nuts.getattr
+local getlist              = nuts.getlist
+
+local getnucleus           = nuts.getnucleus
+local getsub               = nuts.getsub
+local getsup               = nuts.getsup
+
+local setnucleus           = nuts.setnucleus
+local setsub               = nuts.setsub
+local setsup               = nuts.setsup
 
 local flush_node           = nuts.flush
 local new_node             = nuts.new -- todo: pool: math_noad math_sub
@@ -139,6 +151,8 @@ noads.handlers             = noads.handlers   or { }
 local handlers             = noads.handlers
 
 local tasks                = nodes.tasks
+local enableaction         = tasks.enableaction
+local setaction            = tasks.setaction
 
 local nodecodes            = nodes.nodecodes
 local noadcodes            = nodes.noadcodes
@@ -174,6 +188,9 @@ local right_fence_code     = fencecodes.right
 
 -- this initial stuff is tricky as we can have removed and new nodes with the same address
 -- the only way out is a free-per-page list of nodes (not bad anyway)
+
+-- local gf = getfield local gt = setmetatableindex("number") getfield = function(n,f)   gt[f] = gt[f] + 1 return gf(n,f)   end mathematics.GETFIELD = gt
+-- local sf = setfield local st = setmetatableindex("number") setfield = function(n,f,v) st[f] = st[f] + 1        sf(n,f,v) end mathematics.SETFIELD = st
 
 local function process(start,what,n,parent)
     if n then
@@ -223,13 +240,13 @@ local function process(start,what,n,parent)
             end
         elseif id == math_noad then
             -- single characters are like this
-            local noad = getfield(start,"nucleus")      if noad then process(noad,what,n,start) end -- list
-                  noad = getfield(start,"sup")          if noad then process(noad,what,n,start) end -- list
-                  noad = getfield(start,"sub")          if noad then process(noad,what,n,start) end -- list
+            local noad = getnucleus(start)              if noad then process(noad,what,n,start) end -- list
+                  noad = getsup    (start)              if noad then process(noad,what,n,start) end -- list
+                  noad = getsub    (start)              if noad then process(noad,what,n,start) end -- list
         elseif id == math_char or id == math_textchar or id == math_delim then
             break
         elseif id == math_box or id == math_sub then
-            local noad = getfield(start,"list")         if noad then process(noad,what,n,start) end -- list (not getlist !)
+            local noad = getlist(start)                 if noad then process(noad,what,n,start) end -- list (not getlist !)
         elseif id == math_fraction then
             local noad = getfield(start,"num")          if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"denom")        if noad then process(noad,what,n,start) end -- list
@@ -243,15 +260,15 @@ local function process(start,what,n,parent)
         elseif id == math_fence then
             local noad = getfield(start,"delim")        if noad then process(noad,what,n,start) end -- delimiter
         elseif id == math_radical then
-            local noad = getfield(start,"nucleus")      if noad then process(noad,what,n,start) end -- list
-                  noad = getfield(start,"sup")          if noad then process(noad,what,n,start) end -- list
-                  noad = getfield(start,"sub")          if noad then process(noad,what,n,start) end -- list
+            local noad = getnucleus(start)              if noad then process(noad,what,n,start) end -- list
+                  noad = getsup    (start)              if noad then process(noad,what,n,start) end -- list
+                  noad = getsub    (start)              if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"left")         if noad then process(noad,what,n,start) end -- delimiter
                   noad = getfield(start,"degree")       if noad then process(noad,what,n,start) end -- list
         elseif id == math_accent then
-            local noad = getfield(start,"nucleus")      if noad then process(noad,what,n,start) end -- list
-                  noad = getfield(start,"sup")          if noad then process(noad,what,n,start) end -- list
-                  noad = getfield(start,"sub")          if noad then process(noad,what,n,start) end -- list
+            local noad = getnucleus(start)              if noad then process(noad,what,n,start) end -- list
+                  noad = getsup    (start)              if noad then process(noad,what,n,start) end -- list
+                  noad = getsub    (start)              if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"accent")       if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"bot_accent")   if noad then process(noad,what,n,start) end -- list
      -- elseif id == math_style then
@@ -270,11 +287,11 @@ local function processnested(current,what,n)
     local noad = nil
     local id   = getid(current)
     if id == math_noad then
-        noad = getfield(current,"nucleus")      if noad then process(noad,what,n,current) end -- list
-        noad = getfield(current,"sup")          if noad then process(noad,what,n,current) end -- list
-        noad = getfield(current,"sub")          if noad then process(noad,what,n,current) end -- list
+        noad = getnucleus(current)              if noad then process(noad,what,n,current) end -- list
+        noad = getsup    (current)              if noad then process(noad,what,n,current) end -- list
+        noad = getsub    (current)              if noad then process(noad,what,n,current) end -- list
     elseif id == math_box or id == math_sub then
-        noad = getfield(current,"list")         if noad then process(noad,what,n,current) end -- list (not getlist !)
+        noad = getlist(current)                 if noad then process(noad,what,n,current) end -- list (not getlist !)
     elseif id == math_fraction then
         noad = getfield(current,"num")          if noad then process(noad,what,n,current) end -- list
         noad = getfield(current,"denom")        if noad then process(noad,what,n,current) end -- list
@@ -288,15 +305,15 @@ local function processnested(current,what,n)
     elseif id == math_fence then
         noad = getfield(current,"delim")        if noad then process(noad,what,n,current) end -- delimiter
     elseif id == math_radical then
-        noad = getfield(current,"nucleus")      if noad then process(noad,what,n,current) end -- list
-        noad = getfield(current,"sup")          if noad then process(noad,what,n,current) end -- list
-        noad = getfield(current,"sub")          if noad then process(noad,what,n,current) end -- list
+        noad = getnucleus(current)              if noad then process(noad,what,n,current) end -- list
+        noad = getsup    (current)              if noad then process(noad,what,n,current) end -- list
+        noad = getsub    (current)              if noad then process(noad,what,n,current) end -- list
         noad = getfield(current,"left")         if noad then process(noad,what,n,current) end -- delimiter
         noad = getfield(current,"degree")       if noad then process(noad,what,n,current) end -- list
     elseif id == math_accent then
-        noad = getfield(current,"nucleus")      if noad then process(noad,what,n,current) end -- list
-        noad = getfield(current,"sup")          if noad then process(noad,what,n,current) end -- list
-        noad = getfield(current,"sub")          if noad then process(noad,what,n,current) end -- list
+        noad = getnucleus(current)              if noad then process(noad,what,n,current) end -- list
+        noad = getsup    (current)              if noad then process(noad,what,n,current) end -- list
+        noad = getsub    (current)              if noad then process(noad,what,n,current) end -- list
         noad = getfield(current,"accent")       if noad then process(noad,what,n,current) end -- list
         noad = getfield(current,"bot_accent")   if noad then process(noad,what,n,current) end -- list
     end
@@ -306,11 +323,11 @@ local function processstep(current,process,n,id)
     local noad = nil
     local id   = id or getid(current)
     if id == math_noad then
-        noad = getfield(current,"nucleus")      if noad then process(noad,n,current) end -- list
-        noad = getfield(current,"sup")          if noad then process(noad,n,current) end -- list
-        noad = getfield(current,"sub")          if noad then process(noad,n,current) end -- list
+        noad = getnucleus(current)              if noad then process(noad,n,current) end -- list
+        noad = getsup    (current)              if noad then process(noad,n,current) end -- list
+        noad = getsub    (current)              if noad then process(noad,n,current) end -- list
     elseif id == math_box or id == math_sub then
-        noad = getfield(current,"list")         if noad then process(noad,n,current) end -- list (not getlist !)
+        noad = getlist(current)                 if noad then process(noad,n,current) end -- list (not getlist !)
     elseif id == math_fraction then
         noad = getfield(current,"num")          if noad then process(noad,n,current) end -- list
         noad = getfield(current,"denom")        if noad then process(noad,n,current) end -- list
@@ -324,15 +341,15 @@ local function processstep(current,process,n,id)
     elseif id == math_fence then
         noad = getfield(current,"delim")        if noad then process(noad,n,current) end -- delimiter
     elseif id == math_radical then
-        noad = getfield(current,"nucleus")      if noad then process(noad,n,current) end -- list
-        noad = getfield(current,"sup")          if noad then process(noad,n,current) end -- list
-        noad = getfield(current,"sub")          if noad then process(noad,n,current) end -- list
+        noad = getnucleus(current)              if noad then process(noad,n,current) end -- list
+        noad = getsup    (current)              if noad then process(noad,n,current) end -- list
+        noad = getsub    (current)              if noad then process(noad,n,current) end -- list
         noad = getfield(current,"left")         if noad then process(noad,n,current) end -- delimiter
         noad = getfield(current,"degree")       if noad then process(noad,n,current) end -- list
     elseif id == math_accent then
-        noad = getfield(current,"nucleus")      if noad then process(noad,n,current) end -- list
-        noad = getfield(current,"sup")          if noad then process(noad,n,current) end -- list
-        noad = getfield(current,"sub")          if noad then process(noad,n,current) end -- list
+        noad = getnucleus(current)              if noad then process(noad,n,current) end -- list
+        noad = getsup    (current)              if noad then process(noad,n,current) end -- list
+        noad = getsub    (current)              if noad then process(noad,n,current) end -- list
         noad = getfield(current,"accent")       if noad then process(noad,n,current) end -- list
         noad = getfield(current,"bot_accent")   if noad then process(noad,n,current) end -- list
     end
@@ -703,8 +720,8 @@ local function makefence(what,char)
     local d = new_node(math_delim)
     local f = new_node(math_fence)
     if char then
-        local sym = getfield(char,"nucleus")
-        local chr = getfield(sym,"char")
+        local sym = getnucleus(char)
+        local chr = getchar(sym)
         local fam = getfield(sym,"fam")
         if chr == dummyfencechar then
             chr = 0
@@ -720,9 +737,9 @@ end
 
 local function makelist(noad,f_o,o_next,c_prev,f_c,middle)
     local list = new_node(math_sub)
-    setfield(list,"head",f_o)
+    setlist(list,f_o)
     setsubtype(noad,noad_inner)
-    setfield(noad,"nucleus",list)
+    setnucleus(noad,list)
     setlink(f_o,o_next)
     setlink(c_prev,f_c)
     if middle and next(middle) then
@@ -733,12 +750,11 @@ local function makelist(noad,f_o,o_next,c_prev,f_c,middle)
             if m then
                 local next  = getnext(current)
                 local fence = makefence(middle_fence_code,current)
-                setfield(current,"nucleus",nil)
+                setnucleus(current)
                 flush_node(current)
                 middle[current] = nil
                 -- replace_node
-                setlink(prev,fence)
-                setlink(fence,next)
+                setlink(prev,fence,next)
                 prev    = fence
                 current = next
             else
@@ -758,7 +774,7 @@ local function convert_both(open,close,middle)
         local f_o = makefence(left_fence_code,open)
         local f_c = makefence(right_fence_code,close)
         makelist(open,f_o,o_next,c_prev,f_c,middle)
-        setfield(close,"nucleus",nil)
+        setnucleus(close)
         flush_node(close)
         if c_next then
             setprev(c_next,open)
@@ -877,7 +893,7 @@ implement {
     name     = "enableautofences",
     onlyonce = true,
     actions  = function()
-        tasks.enableaction("math","noads.handlers.autofences")
+        enableaction("math","noads.handlers.autofences")
         enabled = true
     end
 }
@@ -904,8 +920,8 @@ local function replace(pointer,what,n,parent)
     local start_super, stop_super, start_sub, stop_sub
     local mode = "unset"
     while next and getid(next) == math_noad do
-        local nextnucleus = getfield(next,"nucleus")
-        if nextnucleus and getid(nextnucleus) == math_char and not getfield(next,"sub") and not getfield(next,"sup") then
+        local nextnucleus = getnucleus(next)
+        if nextnucleus and getid(nextnucleus) == math_char and not getsub(next) and not getsup(next) then
             local char = getchar(nextnucleus)
             local s = superscripts[char]
             if s then
@@ -948,11 +964,11 @@ local function replace(pointer,what,n,parent)
     end
     if start_super then
         if start_super == stop_super then
-            setfield(pointer,"sup",getfield(start_super,"nucleus"))
+            setsup(pointer,getnucleus(start_super))
         else
             local list = new_node(math_sub) -- todo attr
-            setfield(list,"list",start_super)
-            setfield(pointer,"sup",list)
+            setlist(list,start_super)
+            setsup(pointer,list)
         end
         if mode == "super" then
             setnext(pointer,getnext(stop_super))
@@ -961,11 +977,11 @@ local function replace(pointer,what,n,parent)
     end
     if start_sub then
         if start_sub == stop_sub then
-            setfield(pointer,"sub",getfield(start_sub,"nucleus"))
+            setsub(pointer,getnucleus(start_sub))
         else
             local list = new_node(math_sub) -- todo attr
-            setfield(list,"list",start_sub)
-            setfield(pointer,"sub",list)
+            setlist(list,start_sub)
+            setsub(pointer,list)
         end
         if mode == "sub" then
             setnext(pointer,getnext(stop_sub))
@@ -1237,9 +1253,9 @@ local c_negative_d = "trace:dr"
 local function insert_kern(current,kern)
     local sub  = new_node(math_sub)  -- todo: pool
     local noad = new_node(math_noad) -- todo: pool
-    setfield(sub,"list",kern)
+    setlist(sub,kern)
     setnext(kern,noad)
-    setfield(noad,"nucleus",current)
+    setnucleus(noad,current)
     return sub
 end
 
@@ -1341,7 +1357,7 @@ end
 local enable
 
 enable = function()
-    tasks.enableaction("math", "noads.handlers.italics")
+    enableaction("math", "noads.handlers.italics")
     if trace_italics then
         report_italics("enabling math italics")
     end
@@ -1393,6 +1409,80 @@ implement {
     actions   = mathematics.resetitalics
 }
 
+do
+
+    -- math kerns (experiment) in goodies:
+    --
+    -- mathematics = {
+    --     kernpairs = {
+    --         [0x1D44E] = {
+    --             [0x1D44F] = 400, -- 𝑎𝑏
+    --         }
+    --     },
+    -- }
+
+    local a_kernpairs = privateattribute("mathkernpairs")
+    local kernpairs   = { }
+
+    local function enable()
+        enableaction("math", "noads.handlers.kernpairs")
+        if trace_kernpairs then
+            report_kernpairs("enabling math kern pairs")
+        end
+        enable = false
+    end
+
+    implement {
+        name      = "initializemathkernpairs",
+        actions   = enable,
+        onlyonce  = true,
+    }
+
+    local hash = setmetatableindex(function(t,font)
+        local g = fontdata[font].goodies
+        local m = g and g[1].mathematics
+        local k = m and m.kernpairs
+        t[font] = k
+        return k
+    end)
+
+    kernpairs[math_char] = function(pointer,what,n,parent)
+        if getattr(pointer,a_kernpairs) == 1 then
+            local font = getfont(pointer)
+            local list = hash[font]
+            if list then
+                local first = getchar(pointer)
+                local found = list[first]
+                if found then
+                    local next = getnext(parent)
+                    if next and getid(next) == math_noad then
+                        pointer = getnucleus(next)
+                        if pointer then
+                            if getfont(pointer) == font then
+                                local second = getchar(pointer)
+                                local kern   = found[second]
+                                if kern then
+                                    kern = kern * fonts.hashes.parameters[font].hfactor
+                                    if trace_kernpairs then
+                                        report_kernpairs("adding %p kerning between %C and %C",kern,first,second)
+                                    end
+                                    setlink(parent,new_kern(kern),getnext(parent))
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    function handlers.kernpairs(head,style,penalties)
+        processnoads(head,kernpairs,"kernpairs")
+        return true
+    end
+
+end
+
 -- primes and such
 
 local collapse = { } processors.collapse = collapse
@@ -1437,30 +1527,30 @@ local validpair = {
 local function movesubscript(parent,current_nucleus,current_char)
     local prev = getprev(parent)
     if prev and getid(prev) == math_noad then
-        if not getfield(prev,"sup") and not getfield(prev,"sub") then
+        if not getsup(prev) and not getsub(prev) then
             -- {f} {'}_n => f_n^'
             setchar(current_nucleus,movesub[current_char or getchar(current_nucleus)])
-            local nucleus = getfield(parent,"nucleus")
-            local sub     = getfield(parent,"sub")
-            local sup     = getfield(parent,"sup")
-            setfield(prev,"sup",nucleus)
-            setfield(prev,"sub",sub)
+            local nucleus = getnucleus(parent)
+            local sub     = getsub(parent)
+            local sup     = getsup(parent)
+            setsup(prev,nucleus)
+            setsub(prev,sub)
             local dummy = copy_node(nucleus)
             setchar(dummy,0)
-            setfield(parent,"nucleus",dummy)
-            setfield(parent,"sub",nil)
+            setnucleus(parent,dummy)
+            setsub(parent)
             if trace_collapsing then
                 report_collapsing("fixing subscript")
             end
-        elseif not getfield(prev,"sup") then
+        elseif not getsup(prev) then
             -- {f} {'}_n => f_n^'
             setchar(current_nucleus,movesub[current_char or getchar(current_nucleus)])
-            local nucleus = getfield(parent,"nucleus")
-            local sup     = getfield(parent,"sup")
-            setfield(prev,"sup",nucleus)
+            local nucleus = getnucleus(parent)
+            local sup     = getsup(parent)
+            setsup(prev,nucleus)
             local dummy = copy_node(nucleus)
             setchar(dummy,0)
-            setfield(parent,"nucleus",dummy)
+            setnucleus(parent,dummy)
             if trace_collapsing then
                 report_collapsing("fixing subscript")
             end
@@ -1471,16 +1561,16 @@ end
 local function collapsepair(pointer,what,n,parent,nested) -- todo: switch to turn in on and off
     if parent then
         if validpair[getsubtype(parent)] then
-            local current_nucleus = getfield(parent,"nucleus")
+            local current_nucleus = getnucleus(parent)
             if getid(current_nucleus) == math_char then
                 local current_char = getchar(current_nucleus)
-                if not getfield(parent,"sub") and not getfield(parent,"sup") then
+                if not getsub(parent) and not getsup(parent) then
                     local mathpair = mathpairs[current_char]
                     if mathpair then
                         local next_noad = getnext(parent)
                         if next_noad and getid(next_noad) == math_noad then
                             if validpair[getsubtype(next_noad)] then
-                                local next_nucleus = getfield(next_noad,"nucleus")
+                                local next_nucleus = getnucleus(next_noad)
                                 local next_char    = getchar(next_nucleus)
                                 if getid(next_nucleus) == math_char then
                                     local newchar = mathpair[next_char]
@@ -1498,10 +1588,10 @@ local function collapsepair(pointer,what,n,parent,nested) -- todo: switch to tur
                                             else
                                                 setnext(parent)
                                             end
-                                            setfield(parent,"sup",getfield(next_noad,"sup"))
-                                            setfield(parent,"sub",getfield(next_noad,"sub"))
-                                            setfield(next_noad,"sup",nil)
-                                            setfield(next_noad,"sub",nil)
+                                            setsup(parent,getsup(next_noad))
+                                            setsub(parent,getsub(next_noad))
+                                            setsup(next_noad)
+                                            setsub(next_noad)
                                             flush_node(next_noad)
                                             collapsepair(pointer,what,n,parent,true)
                                          -- if not nested and movesub[current_char] then
@@ -1560,7 +1650,7 @@ variants[math_char] = function(pointer,what,n,parent) -- also set export value
     if selector then
         local next = getnext(parent)
         if next and getid(next) == math_noad then
-            local nucleus = getfield(next,"nucleus")
+            local nucleus = getnucleus(next)
             if nucleus and getid(nucleus) == math_char and getchar(nucleus) == selector then
                 local variant
                 local tfmdata = fontdata[getfont(pointer)]
@@ -1630,7 +1720,7 @@ function handlers.classes(head,style,penalties)
 end
 
 registertracker("math.classes",function(v)
-    tasks.setaction("math","noads.handlers.classes",v)
+    setaction("math","noads.handlers.classes",v)
 end)
 
 -- experimental
@@ -1676,7 +1766,7 @@ do
     local enable
 
     enable = function()
-        tasks.enableaction("math", "noads.handlers.domains")
+        enableaction("math", "noads.handlers.domains")
         if trace_domains then
             report_domains("enabling math domains")
         end
@@ -1799,7 +1889,7 @@ function handlers.showtree(head,style,penalties)
 end
 
 registertracker("math.showtree",function(v)
-    tasks.setaction("math","noads.handlers.showtree",v)
+    setaction("math","noads.handlers.showtree",v)
 end)
 
 -- also for me
@@ -1813,7 +1903,7 @@ end
 
 registertracker("math.makeup",function(v)
     visual = v
-    tasks.setaction("math","noads.handlers.makeup",v)
+    setaction("math","noads.handlers.makeup",v)
 end)
 
 -- the normal builder

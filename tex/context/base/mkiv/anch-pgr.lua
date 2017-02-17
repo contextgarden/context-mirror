@@ -17,7 +17,7 @@ if not modules then modules = { } end modules ['anch-pgr'] = {
 -- will discuss this issue.
 
 local abs, div, floor, round = math.abs, math.div, math.floor, math.round
-local concat, sort, copy = table.concat, table.sort, table.copy
+local concat = table.concat
 local splitter = lpeg.splitat(":")
 local lpegmatch = lpeg.match
 
@@ -46,7 +46,7 @@ local f_tag_two         = formatters["%s:%s"]
 local f_point           = formatters["%p"]
 local f_pair            = formatters["(%p,%p)"]
 local f_path            = formatters["%--t--cycle"]
-local f_pair_i          = formatters["(%i,%i)"]
+local f_pair_i          = formatters["(%r,%r)"] -- rounded
 
 graphics                = graphics or { }
 local backgrounds       = { }
@@ -55,7 +55,6 @@ graphics.backgrounds    = backgrounds
 -- -- --
 
 local texsetattribute   = tex.setattribute
-local texgetcount       = tex.getcount
 local pdfgetpos         = pdf.getpos  -- why not a generic name !
 
 local a_textbackground  = attributes.private("textbackground")
@@ -72,8 +71,7 @@ local insert_after      = nuts.insert_after
 
 local processranges     = nodes.processranges
 
-local v_yes             = interfaces.variables.yes
-local v_always          = interfaces.variables.always
+local unsetvalue        = attributes.unsetvalue
 
 local jobpositions      = job.positions
 
@@ -107,7 +105,7 @@ local function registerbackground(name)
         texsetattribute(a_textbackground,n)
         enabled = true
     else
-        texsetattribute(a_textbackground,attributes.unsetvalue)
+        texsetattribute(a_textbackground,unsetvalue)
     end
 end
 

@@ -21,7 +21,10 @@ typesetters.firstlines   = typesetters.firstlines or { }
 local firstlines         = typesetters.firstlines
 
 local nodes              = nodes
+
 local tasks              = nodes.tasks
+local enableaction       = tasks.enableaction
+local disableaction      = tasks.disableaction
 
 local context            = context
 local implement          = interfaces.implement
@@ -45,6 +48,7 @@ local getbox             = nuts.getbox
 local getdisc            = nuts.getdisc
 local setdisc            = nuts.setdisc
 local setlink            = nuts.setlink
+local setfont            = nuts.setfont
 
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
@@ -87,7 +91,7 @@ local settings           = nil
 
 function firstlines.set(specification)
     settings = specification or { }
-    tasks.enableaction("processors","typesetters.firstlines.handler")
+    enableaction("processors","typesetters.firstlines.handler")
     if trace_firstlines then
         report_firstlines("enabling firstlines")
     end
@@ -131,7 +135,7 @@ actions[v_line] = function(head,setting)
             if dynamic > 0 then
                 setattr(g,0,dynamic)
             end
-            setfield(g,"font",font)
+            setfont(g,font)
         end
     end
 
@@ -207,7 +211,7 @@ actions[v_line] = function(head,setting)
         if dynamic > 0 then
             setattr(start,0,dynamic)
         end
-        setfield(start,"font",font)
+        setfont(start,font)
         if ca and ca > 0 then
             setattr(start,a_colormodel,ma == 0 and 1 or ma)
             setattr(start,a_color,ca)
@@ -311,7 +315,7 @@ actions[v_word] = function(head,setting)
             if dynamic > 0 then
                 setattr(start,0,dynamic)
             end
-            setfield(start,"font",font)
+            setfont(start,font)
         elseif id == disc_code then
             -- continue
         elseif id == kern_code then -- todo: fontkern
@@ -345,7 +349,7 @@ function firstlines.handler(head)
     end
     if attr then
         -- here as we can process nested boxes first so we need to keep state
-        tasks.disableaction("processors","typesetters.firstlines.handler")
+        disableaction("processors","typesetters.firstlines.handler")
      -- texsetattribute(attribute,unsetvalue)
         local alternative = settings.alternative or v_default
         local action = actions[alternative] or actions[v_default]

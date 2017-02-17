@@ -65,9 +65,7 @@ local getbox            = nuts.getbox
 local getid             = nuts.getid
 local getwhd            = nuts.getwhd
 
-local n_flush_node      = nodes.flush
-
-local hlist_code        = nodes.listcodes.hlist
+----- hlist_code        = nodes.listcodes.hlist
 
 local find_tail         = nuts.tail
 
@@ -781,6 +779,13 @@ end
 function jobpositions.depth(id)
     local jpi = collected[id]
     return jpi and jpi.d
+end
+
+function jobpositions.whd(id)
+    local jpi = collected[id]
+    if jpi then
+        return jpi.h, jpi.h, jpi.d
+    end
 end
 
 function jobpositions.leftskip(id)

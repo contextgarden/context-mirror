@@ -35,6 +35,10 @@ local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 local getattr            = nuts.getattr
 local getfield           = nuts.getfield
+local getboth            = nuts.getboth
+local getcomponents      = nuts.getcomponents
+local getwidth           = nuts.getwidth
+local setwidth           = nuts.setwidth
 
 local setfield           = nuts.setfield
 local setattr            = nuts.setattr
@@ -42,18 +46,21 @@ local setlink            = nuts.setlink
 local setlist            = nuts.setlist
 local setnext            = nuts.setnext
 local setprev            = nuts.setprev
+local setcomponents      = nuts.setcomponents
+local setattrlist        = nuts.setattrlist
 
 local traverse_nodes     = nuts.traverse
 local traverse_id        = nuts.traverse_id
 local flush_node         = nuts.flush
+local flush_list         = nuts.flush_list
 local hpack_nodes        = nuts.hpack
 local unset_attribute    = nuts.unset_attribute
 local first_glyph        = nuts.first_glyph
 local copy_node          = nuts.copy
 ----- copy_node_list     = nuts.copy_list
 local find_tail          = nuts.tail
-local insert_node_after  = nuts.insert_after
 local getbox             = nuts.getbox
+local count              = nuts.count
 
 local nodepool           = nuts.pool
 local new_glue           = nodepool.glue
@@ -341,11 +348,10 @@ local function tonodes(str,fnt,attr) -- (str,template_glyph) -- moved from blob-
             n = new_glyph(fnt,s)
         end
         if attr then -- normally false when template
-         -- setfield(n,"attr",copy_node_list(attr))
-            setfield(n,"attr",attr)
+            setattrlist(n,attr)
         end
         if head then
-            insert_node_after(head,tail,n)
+            setlink(tail,n)
         else
             head = n
         end
@@ -447,9 +453,9 @@ end
 
 local function rehpack(n,width)
     local head = getlist(n)
-    local size = width or getfield(n,"width")
+    local size = width or getwidth(n)
     local temp = hpack_nodes(head,size,"exactly")
-    setfield(n,"width",     size)
+    setwidth(n,size)
     setfield(n,"glue_set",  getfield(temp,"glue_set"))
     setfield(n,"glue_sign", getfield(temp,"glue_sign"))
     setfield(n,"glue_order",getfield(temp,"glue_order"))
@@ -480,5 +486,179 @@ end
 --         return skip.width + (badness and (badness/100)^(1/3) or 1) * skip.stretch
 --     else
 --         return 0
+--     end
+-- end
+
+-- these component helpers might move to another module
+
+-- nodemode helper: here we also flatten components, no check for disc here
+
+function nuts.set_components(target,start,stop)
+    local head = getcomponents(target)
+    if head then
+        flush_list(head)
+        head = nil
+    end
+    if start then
+        setprev(start)
+    else
+        return nil
+    end
+    if stop then
+        setnext(stop)
+    end
+    local tail = nil
+    while start do
+        local c = getcomponents(start)
+        local n = getnext(start)
+        if c then
+            if head then
+                setlink(tail,c)
+            else
+                head = c
+            end
+            tail = find_tail(c)
+            setcomponents(start)
+            flush_node(start)
+        else
+            if head then
+                setlink(tail,start)
+            else
+                head = start
+            end
+            tail = start
+        end
+        start = n
+    end
+    setcomponents(target,head)
+    -- maybe also upgrade the subtype but we don't use it anyway
+    return head
+end
+
+function nuts.get_components(target)
+    return getcomponents(target)
+end
+
+nuts.get_components = getcomponents
+
+function nuts.take_components(target)
+    local c = getcomponents(target)
+    setcomponents(target)
+    -- maybe also upgrade the subtype but we don't use it anyway
+    return c
+end
+
+-- nodemode helper: we assume a glyph and a flat components list (basemode can
+-- have nested components)
+
+function nuts.count_components(n,marks)
+    local components = getcomponents(n)
+    if components then
+        if marks then
+            local i = 0
+            for g in traverse_id(glyph_code,components) do
+                if not marks[getchar(g)] then
+                    i = i + 1
+                end
+            end
+            return i
+        else
+            return count(glyph_code,components)
+        end
+    else
+        return 0
+    end
+end
+
+-- nodemode helper: the next and prev pointers are untouched
+
+function nuts.copy_no_components(g,copyinjection)
+    local components = getcomponents(g)
+    if components then
+        setcomponents(g)
+        local n = copy_node(g)
+        if copyinjection then
+            copyinjection(n,g)
+        end
+        setcomponents(g,components)
+        -- maybe also upgrade the subtype but we don't use it anyway
+        return n
+    else
+        local n = copy_node(g)
+        if copyinjection then
+            copyinjection(n,g)
+        end
+        return n
+    end
+end
+
+function nuts.copy_only_glyphs(current)
+    local head     = nil
+    local previous = nil
+    for n in traverse_id(glyph_code,current) do
+        n = copy_node(n)
+        if head then
+            setlink(previous,n)
+        else
+            head = n
+        end
+        previous = n
+    end
+    return head
+end
+
+-- node- and basemode helper
+
+function nuts.use_components(head,current)
+    local components = getcomponents(current)
+    if not components then
+        return head, current, current
+    end
+    local prev, next = getboth(current)
+    local first = current
+    local last  = next
+    while components do
+        local gone = current
+        local tail = find_tail(components)
+        if prev then
+            setlink(prev,components)
+        end
+        if next then
+            setlink(tail,next)
+        end
+        if first == current then
+            first = components
+        end
+        if head == current then
+            head = components
+        end
+        current = components
+        setcomponents(gone)
+        flush_node(gone)
+        while true do
+            components = getcomponents(current)
+            if components then
+                next = getnext(current)
+                break -- current is composed
+            end
+            if next == last then
+                last = current
+                break -- components is false
+            end
+            prev    = current
+            current = next
+            next    = getnext(current)
+        end
+    end
+    return head, first, last
+end
+
+-- function nuts.current_tail()
+--     local whatever = texnest[texnest.ptr]
+--     if whatever then
+--         local tail = whatever.tail
+--         if tail then
+--             return tonut(tail)
+--         end
 --     end
 -- end

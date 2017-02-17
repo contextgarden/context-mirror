@@ -175,6 +175,7 @@ interfaces.implement {
         { "name",   "string" },
     } } ,
     actions = function(t)
+        -- no nuts !
         local rule = userrule(t)
         local ma = getattribute(a_colormodel) or 1
         local ca = getattribute(a_color)

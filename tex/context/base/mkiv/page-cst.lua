@@ -52,6 +52,10 @@ local setsubtype          = nuts.setsubtype
 local setbox              = nuts.setbox
 local getwhd              = nuts.getwhd
 local setwhd              = nuts.setwhd
+local getkern             = nuts.getkern
+local getpenalty          = nuts.getpenalty
+local getwidth            = nuts.getwidth
+local getheight           = nuts.getheight
 
 local getnext             = nuts.getnext
 local getprev             = nuts.getprev
@@ -337,11 +341,7 @@ function columnsets.prepareflush(name)
         for r=1,nofrows-1 do
             setlink(column[r],column[r+1])
         end
-        local v = new_vlist(column[1])
-        setfield(v,"height",height)
-     -- setfield(v,"depth",linedepth)
-        setfield(v,"width",widths[c])
-        columns[c] = v
+        columns[c] = new_vlist(column[1],widths[c],height,0) -- linedepth
     end
     --
     texsetcount("c_page_grid_first_column",firstcolumn)
@@ -774,9 +774,9 @@ end
 --             if line then
 --                 break
 --             end
---             used = used + getfield(head,"width")
+--             used = used + getwidth(head)
 --         elseif id == kern_code then
---             used = used +  getfield(head,"kern")
+--             used = used +  getkern(head)
 --         elseif id == penalty_code then
 --         end
 --         if used > available then
@@ -813,18 +813,18 @@ local function checkroom(head,available,row)
             if line then
                 break
             end
-            used = used + getfield(head,"width")
+            used = used + getwidth(head)
             if used > available then
                 break
             end
         elseif id == kern_code then
-            used = used +  getfield(head,"kern")
+            used = used + getkern(head)
             if used > available then
                 break
             end
         elseif id == penalty_code then
             -- not good enough ... we need to look bakck too
-            if getfield(head,"penalty") >= 10000 then
+            if getpenalty(head) >= 10000 then
                 line = false
             else
                 break
@@ -862,9 +862,9 @@ end
 --         if id == hlist_code or id == vlist_code or id == rule_code then -- <= rule_code
 --             hd = getfield(head,"height") + getfield(head,"depth")
 --         elseif id == glue_code then
---             hd = getfield(head,"width")
+--             hd = getwidth(head)
 --         elseif id == kern_code then
---             hd = getfield(head,"kern")
+--             hd = getkern(head)
 --         elseif id == penalty_code then
 --         end
 --         if used + hd > available then
@@ -919,7 +919,7 @@ local function findslice(dataset,head,available,column,row)
         attempts = attempts + 1
         texsetbox("scratchbox",tonode(new_vlist(copy)))
         local done = splitbox("scratchbox",usedsize,"additional")
-        local used = getfield(done,"height")
+        local used = getheight(done)
         local rest = takebox("scratchbox")
         if used > (usedsize+slack) then
             if trace_detail then
@@ -943,7 +943,7 @@ local function findslice(dataset,head,available,column,row)
             texsetbox("scratchbox",tonode(new_vlist(head)))
             done  = splitbox("scratchbox",usedsize,"additional")
             rest  = takebox("scratchbox")
-            used  = getfield(done,"height")
+            used  = getheight(done)
             if attempts > 1 then
                 used = available
             end
@@ -1237,9 +1237,7 @@ function columnsets.setarea(t)
     local column  = t.c
     local row     = t.r
     if column and row then
-        setfield(box,"height",dataset.lineheight)
-        setfield(box,"depth",dataset.linedepth)
-        setfield(box,"width",dataset.widths[column])
+        setwhd(box,dataset.widths[column],dataset.lineheight,dataset.linedepth)
         cells[column][row] = box
     end
 end

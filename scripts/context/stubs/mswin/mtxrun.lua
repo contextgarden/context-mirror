@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 4736, stripped down to: 2625
+-- original size: 6883, stripped down to: 2843
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -161,6 +161,18 @@ if flush then
   local exec=os.exec  if exec  then function os.exec  (...) flush() return exec  (...) end end
   local spawn=os.spawn  if spawn  then function os.spawn (...) flush() return spawn (...) end end
   local popen=io.popen  if popen  then function io.popen (...) flush() return popen (...) end end
+end
+if ffi and ffi.number then
+else
+  local okay
+  okay,ffi=pcall(require,"ffi")
+  if not ffi then
+  elseif ffi.os=="" or ffi.arch=="" then
+    ffi=nil
+  elseif ffi.number then
+  else
+    ffi.number=tonumber
+  end
 end
 
 
@@ -460,7 +472,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 38185, stripped down to: 20990
+-- original size: 38840, stripped down to: 20646
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -1027,27 +1039,7 @@ function lpeg.append(list,pp,delayed,checked)
 end
 local p_false=P(false)
 local p_true=P(true)
-local function make(t)
-  local function making(t)
-    local p=p_false
-    local keys=sortedkeys(t)
-    for i=1,#keys do
-      local k=keys[i]
-      if k~="" then
-        local v=t[k]
-        if v==true then
-          p=p+P(k)*p_true
-        elseif v==false then
-        else
-          p=p+P(k)*making(v)
-        end
-      end
-    end
-    if t[""] then
-      p=p+p_true
-    end
-    return p
-  end
+local function make(t,rest)
   local p=p_false
   local keys=sortedkeys(t)
   for i=1,#keys do
@@ -1058,9 +1050,12 @@ local function make(t)
         p=p+P(k)*p_true
       elseif v==false then
       else
-        p=p+P(k)*making(v)
+        p=p+P(k)*make(v,v[""])
       end
     end
+  end
+  if rest then
+    p=p+p_true
   end
   return p
 end
@@ -3014,7 +3009,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 16390, stripped down to: 9734
+-- original size: 16520, stripped down to: 9519
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -3090,7 +3085,7 @@ if not os.__getenv__ then
 end
 local execute=os.execute
 local iopopen=io.popen
-function os.resultof(command)
+local function resultof(command)
   local handle=iopopen(command,"r") 
   if handle then
     local result=handle:read("*all") or ""
@@ -3100,9 +3095,13 @@ function os.resultof(command)
     return ""
   end
 end
+os.resultof=resultof
+function os.pipeto(command)
+  return iopopen(command,"w") 
+end
 if not io.fileseparator then
   if find(os.getenv("PATH"),";",1,true) then
-    io.fileseparator,io.pathseparator,os.type="\\",";",os.type or "mswin"
+    io.fileseparator,io.pathseparator,os.type="\\",";",os.type or "windows"
   else
     io.fileseparator,io.pathseparator,os.type="/",":",os.type or "unix"
   end
@@ -3145,17 +3144,6 @@ setmetatable(os,{ __index=function(t,k)
   return r and r(t,k) or nil 
 end })
 local name,platform=os.name or "linux",os.getenv("MTX_PLATFORM") or ""
-local function guess()
-  local architecture=os.resultof("uname -m") or ""
-  if architecture~="" then
-    return architecture
-  end
-  architecture=os.getenv("HOSTTYPE") or ""
-  if architecture~="" then
-    return architecture
-  end
-  return os.resultof("echo $HOSTTYPE") or ""
-end
 if platform~="" then
   os.platform=platform
 elseif os.type=="windows" then
@@ -3172,7 +3160,7 @@ elseif os.type=="windows" then
   end
 elseif name=="linux" then
   function resolvers.platform(t,k)
-    local platform,architecture="",os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
+    local platform,architecture="",os.getenv("HOSTTYPE") or resultof("uname -m") or ""
     if find(architecture,"x86_64",1,true) then
       platform="linux-64"
     elseif find(architecture,"ppc",1,true) then
@@ -3186,7 +3174,7 @@ elseif name=="linux" then
   end
 elseif name=="macosx" then
   function resolvers.platform(t,k)
-    local platform,architecture="",os.resultof("echo $HOSTTYPE") or ""
+    local platform,architecture="",resultof("echo $HOSTTYPE") or ""
     if architecture=="" then
       platform="osx-intel"
     elseif find(architecture,"i386",1,true) then
@@ -3202,7 +3190,7 @@ elseif name=="macosx" then
   end
 elseif name=="sunos" then
   function resolvers.platform(t,k)
-    local platform,architecture="",os.resultof("uname -m") or ""
+    local platform,architecture="",resultof("uname -m") or ""
     if find(architecture,"sparc",1,true) then
       platform="solaris-sparc"
     else 
@@ -3214,7 +3202,7 @@ elseif name=="sunos" then
   end
 elseif name=="freebsd" then
   function resolvers.platform(t,k)
-    local platform,architecture="",os.resultof("uname -m") or ""
+    local platform,architecture="",resultof("uname -m") or ""
     if find(architecture,"amd64",1,true) then
       platform="freebsd-amd64"
     else
@@ -3226,7 +3214,7 @@ elseif name=="freebsd" then
   end
 elseif name=="kfreebsd" then
   function resolvers.platform(t,k)
-    local platform,architecture="",os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
+    local platform,architecture="",os.getenv("HOSTTYPE") or resultof("uname -m") or ""
     if find(architecture,"x86_64",1,true) then
       platform="kfreebsd-amd64"
     else
@@ -4703,7 +4691,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 38699, stripped down to: 16321
+-- original size: 39567, stripped down to: 16816
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -5313,6 +5301,23 @@ function utf.chrlen(u)
     (u<0xF8 and 4) or
     (u<0xFC and 5) or
     (u<0xFE and 6) or 0
+end
+local extract=bit32.extract
+local char=string.char
+function unicode.toutf32string(n)
+  if n<=0xFF then
+    return
+      char(n).."\000\000\000"
+  elseif n<=0xFFFF then
+    return
+      char(extract(n,0,8))..char(extract(n,8,8)).."\000\000"
+  elseif n<=0xFFFFFF then
+    return
+      char(extract(n,0,8))..char(extract(n,8,8))..char(extract(n,16,8)).."\000"
+  else
+    return
+      char(extract(n,0,8))..char(extract(n,8,8))..char(extract(n,16,8))..char(extract(n,24,8))
+  end
 end
 
 
@@ -6742,7 +6747,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fil"] = package.loaded["util-fil"] or true
 
--- original size: 5809, stripped down to: 4470
+-- original size: 6316, stripped down to: 4866
 
 if not modules then modules={} end modules ['util-fil']={
   version=1.001,
@@ -6845,6 +6850,14 @@ function files.readinteger2(f)
     return n
   end
 end
+  function files.readinteger2(f)
+    local a,b=byte(f:read(2),1,2)
+    if a>=0x80 then
+      return 0x100*a+b-0x10000
+    else
+      return 0x100*a+b
+    end
+  end
 function files.readinteger2le(f)
   local b,a=byte(f:read(2),1,2)
   local n=0x100*a+b
@@ -6897,6 +6910,14 @@ function files.readinteger4(f)
     return n
   end
 end
+  function files.readinteger4(f)
+    local a,b,c,d=byte(f:read(4),1,4)
+    if a>=0x80 then
+      return 0x1000000*a+0x10000*b+0x100*c+d-0x100000000
+    else
+      return 0x1000000*a+0x10000*b+0x100*c+d
+    end
+  end
 function files.readinteger4le(f)
   local d,c,b,a=byte(f:read(4),1,4)
   local n=0x1000000*a+0x10000*b+0x100*c+d
@@ -9034,7 +9055,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 7055, stripped down to: 5524
+-- original size: 8320, stripped down to: 5709
 
 if not modules then modules={} end modules ['trac-inf']={
   version=1.001,
@@ -9066,11 +9087,13 @@ end
 local function resettiming(instance)
   timers[instance or "notimer"]={ timing=0,loadtime=0 }
 end
+local ticks=clock
+local seconds=function(n) return n or 0 end
 local function starttiming(instance)
   local timer=timers[instance or "notimer"]
   local it=timer.timing or 0
   if it==0 then
-    timer.starttime=clock()
+    timer.starttime=ticks()
     if not timer.loadtime then
       timer.loadtime=0
     end
@@ -9085,7 +9108,7 @@ local function stoptiming(instance)
   else
     local starttime=timer.starttime
     if starttime and starttime>0 then
-      local stoptime=clock()
+      local stoptime=ticks()
       local loadtime=stoptime-starttime
       timer.stoptime=stoptime
       timer.loadtime=timer.loadtime+loadtime
@@ -9101,7 +9124,7 @@ local function elapsed(instance)
     return instance or 0
   else
     local timer=timers[instance or "notimer"]
-    return timer and timer.loadtime or 0
+    return timer and seconds(timer.loadtime) or 0
   end
 end
 local function elapsedtime(instance)
@@ -9149,10 +9172,13 @@ function statistics.show()
       local total,indirect=status.callbacks or 0,status.indirect_callbacks or 0
       return format("%s direct, %s indirect, %s total",total-indirect,indirect,total)
     end)
-    if jit then
-      local jitstatus={ jit.status() }
-      if jitstatus[1] then
-        register("luajit options",concat(jitstatus," ",2))
+    if TEXENGINE=="luajittex" and JITSUPPORTED then
+      local jitstatus=jit.status
+      if jitstatus then
+        local jitstatus={ jitstatus() }
+        if jitstatus[1] then
+          register("luajit options",concat(jitstatus," ",2))
+        end
       end
     end
     register("lua properties",function()
@@ -11628,7 +11654,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 54794, stripped down to: 33223
+-- original size: 54930, stripped down to: 33354
 
 if not modules then modules={} end modules ['lxml-lpt']={
   version=1.001,
@@ -12186,29 +12212,30 @@ local pathparser=Ct { "patterns",
   special=special_1+special_2+special_3,
   initial=(P("/")*spaces*Cc(register_initial_child))^-1,
   error=(P(1)^1)/register_error,
-  shortcuts_a=V("s_descendant_or_self")+V("s_descendant")+V("s_child")+V("s_parent")+V("s_self")+V("s_root")+V("s_ancestor"),
+  shortcuts_a=V("s_descendant_or_self")+V("s_descendant")+V("s_child")+V("s_parent")+V("s_self")+V("s_root")+V("s_ancestor")+V("s_lastmatch"),
   shortcuts=V("shortcuts_a")*(spaces*"/"*spaces*V("shortcuts_a"))^0,
   s_descendant_or_self=(P("***/")+P("/"))*Cc(register_descendant_or_self),
   s_descendant=P("**")*Cc(register_descendant),
-  s_child=P("*")*no_nextcolon*Cc(register_child   ),
-  s_parent=P("..")*Cc(register_parent  ),
-  s_self=P("." )*Cc(register_self   ),
-  s_root=P("^^")*Cc(register_root   ),
-  s_ancestor=P("^")*Cc(register_ancestor ),
-  descendant=P("descendant::")*Cc(register_descendant     ),
-  child=P("child::")*Cc(register_child       ),
-  parent=P("parent::")*Cc(register_parent       ),
-  self=P("self::")*Cc(register_self        ),
-  root=P('root::')*Cc(register_root        ),
-  ancestor=P('ancestor::')*Cc(register_ancestor      ),
-  descendant_or_self=P('descendant-or-self::')*Cc(register_descendant_or_self ),
-  ancestor_or_self=P('ancestor-or-self::')*Cc(register_ancestor_or_self  ),
-  following=P('following::')*Cc(register_following     ),
-  following_sibling=P('following-sibling::')*Cc(register_following_sibling ),
-  preceding=P('preceding::')*Cc(register_preceding     ),
-  preceding_sibling=P('preceding-sibling::')*Cc(register_preceding_sibling ),
-  reverse_sibling=P('reverse-sibling::')*Cc(register_reverse_sibling  ),
-  last_match=P('last-match::')*Cc(register_last_match     ),
+  s_child=P("*")*no_nextcolon*Cc(register_child),
+  s_parent=P("..")*Cc(register_parent),
+  s_self=P("." )*Cc(register_self),
+  s_root=P("^^")*Cc(register_root),
+  s_ancestor=P("^")*Cc(register_ancestor),
+  s_lastmatch=P("=")*Cc(register_last_match),
+  descendant=P("descendant::")*Cc(register_descendant),
+  child=P("child::")*Cc(register_child),
+  parent=P("parent::")*Cc(register_parent),
+  self=P("self::")*Cc(register_self),
+  root=P('root::')*Cc(register_root),
+  ancestor=P('ancestor::')*Cc(register_ancestor),
+  descendant_or_self=P('descendant-or-self::')*Cc(register_descendant_or_self),
+  ancestor_or_self=P('ancestor-or-self::')*Cc(register_ancestor_or_self),
+  following=P('following::')*Cc(register_following),
+  following_sibling=P('following-sibling::')*Cc(register_following_sibling),
+  preceding=P('preceding::')*Cc(register_preceding),
+  preceding_sibling=P('preceding-sibling::')*Cc(register_preceding_sibling),
+  reverse_sibling=P('reverse-sibling::')*Cc(register_reverse_sibling),
+  last_match=P('last-match::')*Cc(register_last_match),
   selector=P("{")*C((1-P("}"))^1)*P("}")/register_selector,
   nodes=(V("nodefunction")*spaces*P("(")*V("nodeset")*P(")")+V("nodetest")*V("nodeset"))/register_nodes,
   expressions=expression/register_expression,
@@ -12493,6 +12520,13 @@ do
   end
   function xml.lastmatch()
     return lastmatch
+  end
+  local stack={}
+  function xml.pushmatch()
+    insert(stack,lastmatch)
+  end
+  function xml.popmatch()
+    lastmatch=remove(stack)
   end
 end
 local applylpath=xml.applylpath
@@ -18149,7 +18183,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-sch"] = package.loaded["data-sch"] or true
 
--- original size: 6779, stripped down to: 5444
+-- original size: 6871, stripped down to: 5622
 
 if not modules then modules={} end modules ['data-sch']={
   version=1.001,
@@ -18195,11 +18229,21 @@ function resolvers.schemes.cleanname(specification)
   end
   return hash
 end
-local cached,loaded,reused,thresholds,handlers={},{},{},{},{}
-local function runcurl(name,cachename) 
-  local command="curl --silent --insecure --create-dirs --output "..cachename.." "..name
-  os.execute(command)
-end
+local cached={}
+local loaded={}
+local reused={}
+local thresholds={}
+local handlers={}
+local runner=sandbox.registerrunner {
+  name="curl resolver",
+  method="execute",
+  program="curl",
+  template="--silent -- insecure --create-dirs --output %cachename% %original%",
+  checkers={
+    cachename="cache",
+    original="url",
+  }
+}
 local function fetch(specification)
   local original=specification.original
   local scheme=specification.scheme
@@ -18221,7 +18265,10 @@ local function fetch(specification)
           report_schemes("fetching %a, protocol %a, method %a",original,scheme,"curl")
         end
         logs.flush()
-        runcurl(original,cachename)
+        runner {
+          original=original,
+          cachename=cachename,
+        }
       end
     end
     if io.exists(cachename) then
@@ -18929,7 +18976,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-fmt"] = package.loaded["luat-fmt"] or true
 
--- original size: 7413, stripped down to: 6012
+-- original size: 8391, stripped down to: 6761
 
 if not modules then modules={} end modules ['luat-fmt']={
   version=1.001,
@@ -18976,6 +19023,31 @@ local function secondaryflags()
   end
   return concat(flags," ")
 end
+local template=[[--ini %primaryflags% --lua="%luafile%" "%texfile%" %secondaryflags% %dump% %redirect%]]
+local checkers={
+  primaryflags="string",
+  secondaryflags="string",
+  luafile="readable",
+  texfile="readable",
+  redirect="string",
+  dump="string",
+}
+local runners={
+  luatex=sandbox.registerrunner {
+    name="make luatex format",
+    program="luatex",
+    template=template,
+    checkers=checkers,
+    reporter=report_format,
+  },
+  luajittex=sandbox.registerrunner {
+    name="make luajittex format",
+    program="luajittex",
+    template=template,
+    checkers=checkers,
+    reporter=report_format,
+  },
+}
 function environment.make_format(name,arguments)
   local engine=environment.ownmain or "luatex"
   local silent=environment.arguments.silent
@@ -19034,13 +19106,20 @@ function environment.make_format(name,arguments)
     lfs.chdir(olddir)
     return
   end
-  local dump=os.platform=="unix" and "\\\\dump" or "\\dump"
-  local command=format("%s --ini %s --lua=%s %s %s %s",
-    engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),secondaryflags(),dump)
-  if silent then
+  local specification={
+    primaryflags=primaryflags(),
+    secondaryflags=secondaryflags(),
+    luafile=usedluastub,
+    texfile=fulltexsourcename,
+    dump=os.platform=="unix" and "\\\\dump" or "\\dump",
+  }
+  local runner=runners[engine]
+  if not runner then
+    report_format("format %a cannot be generated, no runner available for engine %a",name,engine)
+  elseif silent then
     statistics.starttiming()
-    local command=format("%s > temp.log",command)
-    local result=os.execute(command)
+    specification.redirect="> temp.log"
+    local result=makeformat(specification)
     local runtime=statistics.stoptiming()
     if result~=0 then
       print(format("%s silent make > fatal error when making format %q",engine,name)) 
@@ -19049,8 +19128,7 @@ function environment.make_format(name,arguments)
     end
     os.remove("temp.log")
   else
-    report_format("running command: %s\n",command)
-    os.execute(command)
+    makeformat(specification)
   end
   local pattern=file.removesuffix(file.basename(usedluastub)).."-*.mem"
   local mp=dir.glob(pattern)
@@ -19097,8 +19175,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 810090
--- stripped bytes    : 294025
+-- original bytes    : 816868
+-- stripped bytes    : 299010
 
 -- end library merge
 

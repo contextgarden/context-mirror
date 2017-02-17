@@ -19,8 +19,9 @@ if not modules then modules = { } end modules ['node-rul'] = {
 
 local attributes         = attributes
 local nodes              = nodes
-local tasks              = nodes.tasks
 local properties         = nodes.properties
+
+local enableaction       = nodes.tasks.enableaction
 
 local nuts               = nodes.nuts
 local tonode             = nuts.tonode
@@ -39,6 +40,12 @@ local setattr            = nuts.setattr
 local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
+local setwhd             = nuts.setwhd
+local setdir             = nuts.setdir
+local setattrlist        = nuts.setattrlist
+local setshift           = nuts.setshift
+local getwidth           = nuts.getwidth
+local setwidth           = nuts.setwidth
 
 local flushlist          = nuts.flush_list
 local effective_glue     = nuts.effective_glue
@@ -58,15 +65,9 @@ local listcodes          = nodes.listcodes
 local kerncodes          = nodes.kerncodes
 
 local glyph_code         = nodecodes.glyph
-local disc_code          = nodecodes.disc
-local rule_code          = nodecodes.rule
-local boundary_code      = nodecodes.boundary
 local localpar_code      = nodecodes.localpar
 local dir_code           = nodecodes.dir
-local math_code          = nodecodes.math
 local glue_code          = nodecodes.glue
-local penalty_code       = nodecodes.penalty
-local kern_code          = nodecodes.kern
 local hlist_code         = nodecodes.hlist
 
 local indent_code        = listcodes.indent
@@ -103,13 +104,10 @@ local v_left             = variables.left
 local v_right            = variables.right
 local v_local            = variables["local"]
 local v_yes              = variables.yes
-local v_all              = variables.all
 local v_foreground       = variables.foreground
 
 local fonthashes         = fonts.hashes
 local fontdata           = fonthashes.identifiers
-local fontunicodes       = fonthashes.unicodes
-local fontcharacters     = fonthashes.characters
 local fontresources      = fonthashes.resources
 
 local dimenfactor        = fonts.helpers.dimenfactor
@@ -139,7 +137,7 @@ local function userrule(t,noattributes)
     if noattributes == false or noattributes == nil then
         -- avoid fuzzy ones
     else
-        setfield(r,"attr",current_attr())
+        setattrlist(r,current_attr())
     end
     properties[r] = t
     return tonode(r)
@@ -349,13 +347,8 @@ rules.handler = function(head)
 end
 
 function rules.enable()
-    tasks.enableaction("shipouts","nodes.rules.handler")
+    enableaction("shipouts","nodes.rules.handler")
 end
-
--- elsewhere:
---
--- tasks.appendaction ("shipouts", "normalizers", "nodes.rules.handler")
--- tasks.disableaction("shipouts",                "nodes.rules.handler") -- only kick in when used
 
 local trace_shifted = false  trackers.register("nodes.shifting", function(v) trace_shifted = v end)
 
@@ -384,7 +377,7 @@ local function flush_shifted(head,first,last,data,level,parent,strip) -- not tha
     setprev(first)
     setnext(last)
     local width, height, depth = list_dimensions(parent,first,next)
-    local list = hpack_nodes(first,width,"exactly")
+    local list = hpack_nodes(first,width,"exactly") -- we can use a simple pack
     if first == head then
         head = list
     end
@@ -395,9 +388,8 @@ local function flush_shifted(head,first,last,data,level,parent,strip) -- not tha
         setlink(list,next)
     end
     local raise = data.dy * dimenfactor(data.unit,fontdata[getfont(first)])
-    setfield(list,"shift",raise)
-    setfield(list,"height",height)
-    setfield(list,"depth",depth)
+    setshift(list,raise)
+    setwhd(list,width,height,depth)
     if trace_shifted then
         report_shifted("width %p, nodes %a, text %a",width,n_tostring(first,last),n_tosequence(first,last,true))
     end
@@ -409,7 +401,7 @@ local process = nodes.processwords
 nodes.shifts.handler = function(head) return process(a_shifted,data,flush_shifted,head) end
 
 function nodes.shifts.enable()
-    tasks.enableaction("shipouts","nodes.shifts.handler")
+    enableaction("shipouts","nodes.shifts.handler")
 end
 
 -- linefillers
@@ -445,7 +437,7 @@ local function linefiller(current,data,width,location)
             ca        = ca,
             ta        = ta,
             option    = location,
-            direction = getfield(current,"dir"),
+            direction = getdir(current),
         })
     else
         local linefiller = new_rule(width,height,depth)
@@ -471,6 +463,7 @@ local function find_attr(head,attr)
 end
 
 function nodes.linefillers.handler(head)
+-- local current = tonut(head) -- when we hook into the contributers
     for current in traverse_id(hlist_code,tonut(head)) do
         if getsubtype(current) == line_code then
             local list = getlist(current)
@@ -523,16 +516,16 @@ function nodes.linefillers.handler(head)
                                 head = getnext(head)
                             end
                             if head then
-                                local indentation = iskip and getfield(iskip,"width") or 0
-                                local leftfixed   = lskip and getfield(lskip,"width") or 0
+                                local indentation = iskip and getwidth(iskip) or 0
+                                local leftfixed   = lskip and getwidth(lskip) or 0
                                 local lefttotal   = lskip and effective_glue(lskip,current) or 0
                                 local width = lefttotal - (leftlocal and leftfixed or 0) + indentation - distance
                                 if width > threshold then
                                     if iskip then
-                                        setfield(iskip,"width",0)
+                                        setwidth(iskip,0)
                                     end
                                     if lskip then
-                                        setglue(lskip,leftlocal and getfield(lskip,"width") or nil)
+                                        setglue(lskip,leftlocal and getwidth(lskip) or nil)
                                         if distance > 0 then
                                             insert_node_after(list,lskip,new_kern(distance))
                                         end
@@ -563,9 +556,9 @@ function nodes.linefillers.handler(head)
                                 tail = getprev(tail)
                             end
                             if tail then
-                                local rightfixed = rskip and getfield(rskip,"width") or 0
+                                local rightfixed = rskip and getwidth(rskip) or 0
                                 local righttotal = rskip and effective_glue(rskip,current) or 0
-                                local parfixed   = pskip and getfield(pskip,"width") or 0
+                                local parfixed   = pskip and getwidth(pskip) or 0
                                 local partotal   = pskip and effective_glue(pskip,current) or 0
                                 local width = righttotal - (rightlocal and rightfixed or 0) + partotal - distance
                                 if width > threshold then
@@ -573,7 +566,7 @@ function nodes.linefillers.handler(head)
                                         setglue(pskip)
                                     end
                                     if rskip then
-                                        setglue(rskip,rightlocal and getfield(rskip,"width") or nil)
+                                        setglue(rskip,rightlocal and getwidth(rskip) or nil)
                                         if distance > 0 then
                                             insert_node_before(list,rskip,new_kern(distance))
                                         end
@@ -600,7 +593,7 @@ local enable = false
 function nodes.linefillers.enable()
     if not enable then
     -- we could now nil it
-        tasks.enableaction("finalizers","nodes.linefillers.handler")
+        enableaction("finalizers","nodes.linefillers.handler")
         enable = true
     end
 end
