@@ -188,7 +188,7 @@ local function registerbackground(name)
         }
         texsetattribute(a_textbackground,n)
         if not enabled then
-            nodes.tasks.enableaction("contributers", "nodes.handlers.bck")
+            nodes.tasks.enableaction("contributers", "nodes.handlers.textbackgrounds")
             enabled = true
         end
     else
@@ -196,35 +196,28 @@ local function registerbackground(name)
     end
 end
 
-local function collectbackgrounds(r,n)
+-- local function collectbackgrounds(r,n)
 --     if enabled then
 --         local parent = getbox(n)
 --         local head   = getlist(parent)
 --         realpage     = r
 --         processranges(a_textbackground,flush,head) -- ,parent)
 --     end
-end
+-- end
+--
+-- interfaces.implement {
+--     name      = "collectbackgrounds",
+--     actions   = collectbackgrounds,
+--     arguments = { "integer", "integer" }
+-- }
 
-interfaces.implement {
-    name      = "collectbackgrounds",
-    actions   = collectbackgrounds,
-    arguments = { "integer", "integer" }
-}
-
-----------------------------------------------------------------------------------------
-
-nodes.handlers.bck = function(head,where,parent) -- we have hlistdir and local dir
+nodes.handlers.textbackgrounds = function(head,where,parent) -- we have hlistdir and local dir
     -- todo enable action in register
     head = tonut(head)
     index = index + 1
     local head, done = processranges(a_textbackground,flush,head,parent)
     return tonode(head), done
 end
-
-nodes.tasks.appendaction("contributers", "normalizers", "nodes.handlers.bck")
-nodes.tasks.disableaction("contributers", "nodes.handlers.bck")
-
-----------------------------------------------------------------------------------------
 
 interfaces.implement {
     name      = "registerbackground",

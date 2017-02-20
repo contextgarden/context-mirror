@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/20/17 15:10:11
+-- merge date  : 02/20/17 17:55:09
 
 do -- begin closure to overcome local limits and interference
 
@@ -20997,8 +20997,17 @@ local function testrun(disc,t_run,c_run,...)
       end
       setlink(disc,next)
     else
-      setnext(posttail)
+      if posttail then
+        setnext(posttail)
+      else
+        post=nil
+      end
       setnext(replacetail)
+      if replacetail then
+        setnext(replacetail)
+      else
+        replace=nil
+      end
       setprev(next,disc)
     end
   end

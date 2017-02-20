@@ -3194,8 +3194,17 @@ local function testrun(disc,t_run,c_run,...)
             setlink(disc,next)
         else
             -- we stay inside the disc
-            setnext(posttail)
+            if posttail then
+                setnext(posttail)
+            else
+                post = nil
+            end
             setnext(replacetail)
+            if replacetail then
+                setnext(replacetail)
+            else
+                replace = nil
+            end
             setprev(next,disc)
         end
      -- pre, post, replace, pretail, posttail, replacetail = getdisc(disc,true)
