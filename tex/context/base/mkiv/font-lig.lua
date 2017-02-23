@@ -12,14 +12,10 @@ if not modules then modules = { } end modules ['font-lig'] = {
 local standalone = not characters
 
 if standalone then
-    require("char-def")
     require("char-utf")
-    if characters.initialize then
-        characters.initialize()
-    end
 end
 
-local data = { } -- if we ever preload this i'll cache it
+local data = { }
 
 for first, seconds in next, characters.graphemes do
     for second, combined in next, seconds do

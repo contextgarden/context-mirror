@@ -281,7 +281,6 @@ local function addfeature(data,feature,specifications)
                 end
             end
         end
-        inspect(coverage)
         return coverage
     end
 

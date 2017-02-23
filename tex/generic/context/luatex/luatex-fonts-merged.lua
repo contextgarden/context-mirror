@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/23/17 17:07:53
+-- merge date  : 02/23/17 18:37:07
 
 do -- begin closure to overcome local limits and interference
 
@@ -24573,7 +24573,6 @@ local function addfeature(data,feature,specifications)
         end
       end
     end
-    inspect(coverage)
     return coverage
   end
   local function prepare_ligature(list,featuretype,nocheck)
