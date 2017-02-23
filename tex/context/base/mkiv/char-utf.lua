@@ -409,8 +409,8 @@ function utffilters.addgrapheme(result,first,second) -- can be U+ 0x string or u
         graphemes[first][second] = result
     end
     local pair = first .. second
-    if not composed[pair] then
-        composed[pair] = result
+    if not collapsed[pair] then
+        collapsed[pair] = result
         p_composed = nil
     end
 end
@@ -498,7 +498,8 @@ local function prepare()
     for k, v in sortedhash(characters.data) do
         local combining = v.combining -- v.ordering or v.combining
         if combining then
-            hash[utfchar(k)] = { utfchar(k), combining, 0 } -- slot 3 can be used in sort
+            local u = utfchar(k)
+            hash[u] = { u, combining, 0 } -- slot 3 can be used in sort
         end
     end
     local e = utfchartabletopattern(exceptions)
@@ -522,7 +523,7 @@ end
 
 -- local collapse   = utffilters.collapse
 -- local decompose  = utffilters.decompose
--- local preprocess = utffilters.preprocess
+-- local reorder    = utffilters.reorder
 --
 -- local c1, c2, c3 = "a", "̂", "̃"
 -- local r2, r3 = "â", "ẫ"
@@ -540,7 +541,7 @@ end
 --     for i=1,10000 do
 --         collapse(data)
 --         decompose(data)
---      -- preprocess(data)
+--      -- reorder(data)
 --     end
 --     print(os.clock()-t,decompose(collapse(data))==okay,decompose(collapse(str)))
 -- end
