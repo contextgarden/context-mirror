@@ -51,6 +51,7 @@ local getlist         = nuts.getlist
 local getkern         = nuts.getkern
 local getpenalty      = nuts.getpenalty
 local getwidth        = nuts.getwidth
+local getwhd          = nuts.getwhd
 local isglyph         = nuts.isglyph
 
 local setattr         = nuts.setattr

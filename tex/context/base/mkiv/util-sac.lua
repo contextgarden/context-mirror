@@ -82,6 +82,13 @@ function streams.readbytes(f,n)
     return byte(f[1],i,j-1)
 end
 
+function streams.readbytetable(f,n)
+    local i = f[2]
+    local j = i + n
+    f[2] = j
+    return { byte(f[1],i,j-1) }
+end
+
 function streams.skipbytes(f,n)
     f[2] = f[2] + n
 end
@@ -104,7 +111,8 @@ function streams.readinteger1(f)  -- one byte
     f[2] = i + 1
     local n = byte(f[1],i)
     if n  >= 0x80 then
-        return n - 0xFF - 1
+     -- return n - 0xFF - 1
+        return n - 0x100
     else
         return n
     end
@@ -129,7 +137,8 @@ function streams.readinteger2(f)
     local a, b = byte(f[1],i,j)
     local n = 0x100 * a + b
     if n  >= 0x8000 then
-        return n - 0xFFFF - 1
+     -- return n - 0xFFFF - 1
+        return n - 0x10000
     else
         return n
     end
@@ -158,7 +167,8 @@ function streams.readinteger4(f)
     local a, b, c, d = byte(f[1],i,j)
     local n = 0x1000000 * a + 0x10000 * b + 0x100 * c + d
     if n  >= 0x8000000 then
-        return n - 0xFFFFFFFF - 1
+     -- return n - 0xFFFFFFFF - 1
+        return n - 0x100000000
     else
         return n
     end
@@ -171,7 +181,8 @@ function streams.readfixed4(f)
     local a, b, c, d = byte(f[1],i,j)
     local n = 0x100 * a + b
     if n  >= 0x8000 then
-        return n - 0xFFFF - 1 + (0x100 * c + d)/0xFFFF
+     -- return n - 0xFFFF - 1 + (0x100 * c + d)/0xFFFF
+        return n - 0x10000    + (0x100 * c + d)/0xFFFF
     else
         return n              + (0x100 * c + d)/0xFFFF
     end
