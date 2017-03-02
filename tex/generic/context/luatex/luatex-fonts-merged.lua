@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 03/01/17 13:40:58
+-- merge date  : 03/02/17 10:05:26
 
 do -- begin closure to overcome local limits and interference
 
@@ -2124,7 +2124,7 @@ function io.savedata(filename,data,joiner)
     return false
   end
 end
-if fio.readline then
+if fio and fio.readline then
   local readline=fio.readline
   function io.loadlines(filename,n) 
     local f=open(filename,'r')
