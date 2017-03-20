@@ -15,7 +15,7 @@ local nameonly, basename, joinpath, collapsepath = file.nameonly, file.basename,
 local lower = string.lower
 
 local otfversion  = 2.826
-local otlversion  = 3.027
+local otlversion  = 3.028
 
 local helpinfo = [[
 <?xml version="1.0"?>
@@ -265,6 +265,11 @@ local function showfeatures(tag,specification)
     indeed("subfont   : %s",subfont(specification.subfont))
     indeed("fweight   : %s",fontweight(specification.fontweight))
     -- maybe more
+    local instancenames = specification.instancenames
+    if instancenames then
+        report()
+        indeed("instances : % t",instancenames)
+    end
     local features = fonts.helpers.getfeatures(specification.filename,not getargument("nosave"))
     if features then
         for what, v in table.sortedhash(features) do

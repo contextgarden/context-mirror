@@ -184,11 +184,30 @@ end
 function resolvers.name(specification)
     local resolve = fonts.names.resolve
     if resolve then
-        local resolved, sub, subindex = resolve(specification.name,specification.sub,specification) -- we pass specification for overloaded versions
+        local resolved, sub, subindex, instance = resolve(specification.name,specification.sub,specification) -- we pass specification for overloaded versions
         if resolved then
             specification.resolved = resolved
             specification.sub      = sub
             specification.subindex = subindex
+            -- new, needed for experiments
+            if instance then
+                specification.instance = instance
+                local features = specification.features
+                if not features then
+                    features = { }
+                    specification.features = features
+                end
+                local normal = features.normal
+                if not normal then
+                    normal = { }
+                    features.normal = normal
+                end
+                normal.instance = instance
+if not callbacks.supported.glyph_stream_provider then
+    normal.variableshapes = true -- for the moment
+end
+            end
+            --
             local suffix = lower(suffixonly(resolved))
             if fonts.formats[suffix] then
                 specification.forced     = suffix
@@ -296,6 +315,7 @@ end
 
 function definers.loadfont(specification)
     local hash = constructors.hashinstance(specification)
+    -- todo: also hash by instance / factors
     local tfmdata = loadedfonts[hash] -- hashes by size !
     if not tfmdata then
         local forced = specification.forced or ""

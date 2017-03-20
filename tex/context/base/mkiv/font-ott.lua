@@ -1082,6 +1082,8 @@ table.setmetatableindex(usedfeatures, function(t,k) if k then local v = { } t[k]
 
 storage.register("fonts/otf/usedfeatures", usedfeatures, "fonts.handlers.otf.statistics.usedfeatures" )
 
+local normalizedaxis = otf.readers.helpers.normalizedaxis or function(s) return s end
+
 function otffeatures.normalize(features)
     if features then
         local h = { }
@@ -1093,6 +1095,11 @@ function otffeatures.normalize(features)
             elseif k == "script" then
                 local v = gsub(lower(value),"[^a-z0-9]","")
                 h.script = rawget(verbosescripts,v) or (scripts[v] and v) or "dflt" -- auto adds
+            elseif k == "axis" then
+                h[k] = normalizedaxis(value)
+if not callbacks.supported.glyph_stream_provider then
+    h.variableshapes = true -- for the moment
+end
             else
                 local uk = usedfeatures[key]
                 local uv = uk[value]
