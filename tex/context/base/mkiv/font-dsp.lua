@@ -3024,6 +3024,195 @@ function readers.svg(f,fontdata,specification)
     fontdata.hascolor = true
 end
 
+function readers.sbix(f,fontdata,specification)
+    local tableoffset = gotodatatable(f,fontdata,"sbix",specification.glyphs)
+    if tableoffset then
+        local version    = readushort(f)
+        local flags      = readushort(f)
+        local nofstrikes = readulong(f)
+        local strikes    = { }
+        local nofglyphs  = fontdata.nofglyphs
+        for i=1,nofstrikes do
+            strikes[i] = readulong(f)
+        end
+     -- if true then
+            local shapes = { }
+            local done   = 0
+            for i=1,nofstrikes do
+                local strikeoffset = strikes[i] + tableoffset
+                setposition(f,strikeoffset)
+                strikes[i] = {
+                    ppem   = readushort(f),
+                    ppi    = readushort(f),
+                    offset = strikeoffset
+                }
+            end
+            -- highest first
+            sort(strikes,function(a,b)
+                if b.ppem == a.ppem then
+                    return b.ppi < a.ppi
+                else
+                    return b.ppem < a.ppem
+                end
+            end)
+            local glyphs = { }
+            for i=1,nofstrikes do
+                local strike = strikes[i]
+                local strikeppem   = strike.ppem
+                local strikeppi    = strike.ppi
+                local strikeoffset = strike.offset
+                setposition(f,strikeoffset)
+                for i=0,nofglyphs do
+                    glyphs[i] = readulong(f)
+                end
+                local glyphoffset = glyphs[0]
+                for i=0,nofglyphs-1 do
+                    local nextoffset = glyphs[i+1]
+                    if not shapes[i] then
+                        local datasize = nextoffset - glyphoffset
+                        if datasize > 0 then
+                            setposition(f,strikeoffset + glyphoffset)
+                            shapes[i] = {
+                                x    = readshort(f),
+                                y    = readshort(f),
+                                tag  = readtag(f), -- maybe for tracing
+                                data = readstring(f,datasize-8),
+                                ppem = strikeppem, -- not used, for tracing
+                                ppi  = strikeppi,  -- not used, for tracing
+                            }
+                            done = done + 1
+                            if done == nofglyphs then
+                                break
+                            end
+                        end
+                    end
+                    glyphoffset = nextoffset
+                end
+            end
+            fontdata.sbixshapes = shapes
+     -- else
+     --     for i=1,nofstrikes do
+     --         local strikeoffset = strikes[i] + tableoffset
+     --         setposition(f,strikeoffset)
+     --         local glyphs = { }
+     --         strikes[i] = {
+     --             ppem   = readushort(f),
+     --             ppi    = readushort(f),
+     --             glyphs = glyphs,
+     --         }
+     --         for i=0,nofglyphs do
+     --             glyphs[i] = readulong(f)
+     --         end
+     --         local glyphoffset = glyphs[0]
+     --         for i=0,nofglyphs-1 do
+     --             local nextoffset = glyphs[i+1]
+     --             local datasize   = nextoffset - glyphoffset
+     --             if datasize > 0 then
+     --                 setposition(f,strikeoffset + glyphoffset)
+     --                 glyphs[i] = {
+     --                     x    = readshort(f),
+     --                     y    = readshort(f),
+     --                     tag  = readtag(f),
+     --                     data = readstring(f,datasize-8)
+     --                 }
+     --                 glyphoffset = nextoffset
+     --             end
+     --         end
+     --     end
+     --     fontdata.sbixshapes = strikes
+     -- end
+    end
+end
+
+-- function readers.cblc(f,fontdata,specification)
+--     local tableoffset = gotodatatable(f,fontdata,"cblc",specification.glyphs)
+--     if tableoffset then
+--     end
+-- end
+--
+-- function readers.cbdt(f,fontdata,specification)
+--     local tableoffset = gotodatatable(f,fontdata,"ctdt",specification.glyphs)
+--     if tableoffset then
+--
+--         local function getmetrics(f)
+--             return {
+--                 ascender              = readinteger(f),
+--                 descender             = readinteger(f),
+--                 widthmax              = readcardinal(f),
+--                 caretslopedumerator   = readinteger(f),
+--                 caretslopedenominator = readinteger(f),
+--                 caretoffset           = readinteger(f),
+--                 minorigin             = readinteger(f),
+--                 minadvance            = readinteger(f),
+--                 maxbefore             = readinteger(f),
+--                 minafter              = readinteger(f),
+--                 pad1                  = readinteger(f),
+--                 pad2                  = readinteger(f),
+--             }
+--         end
+--
+--         local majorversion  = readushort(f)
+--         local minorversion  = readushort(f)
+--         local nofsizetables = readulong(f)
+--         local sizetable     = { }
+--         for i=1,nofsizetables do
+--             sizetable[i] = {
+--                 subtables    = readulong(f),
+--                 indexsize    = readulong(f),
+--                 nofsubtables = readulong(f),
+--                 colorref     = readulong(f),
+--                 hormetrics   = getmetrics(f),
+--                 vermetrics   = getmetrics(f),
+--                 firstindex   = readushort(f),
+--                 lastindex    = readushort(f),
+--                 ppemx        = readbyte(f),
+--                 ppemy        = readbyte(f),
+--                 bitdepth     = readbyte(f),
+--                 flags        = readbyte(f),
+--             }
+--         end
+--
+--         sort(sizetable,function(a,b)
+--             if b.ppemx == a.ppemx then
+--                 return b.bitdepth < a.bitdepth
+--             else
+--                 return b.ppemx < a.ppemx
+--             end
+--         end)
+--
+--         local shapes = { }
+--
+--         for i=1,nofsizetables do
+--             local s = sizetables[i]
+--             for j=firstindex,lastindex do
+--                 if not shapes[j] then
+--                     shapes[j] = {
+--                         i
+--                     }
+--                 end
+--             end
+--         end
+--
+--         inspect(shapes)
+--
+--     end
+-- end
+
+-- function readers.ebdt(f,fontdata,specification)
+--     if specification.glyphs then
+--     end
+-- end
+
+-- function readers.ebsc(f,fontdata,specification)
+--     if specification.glyphs then
+--     end
+-- end
+
+-- function readers.eblc(f,fontdata,specification)
+--     if specification.glyphs then
+--     end
+-- end
+
 -- + AVAR : optional
 -- + CFF2 : otf outlines
 -- - CVAR : ttf hinting, not needed
