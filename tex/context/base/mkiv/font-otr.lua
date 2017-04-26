@@ -83,6 +83,9 @@ local report            = logs.reporter("otf reader")
 local trace_cmap        = false -- only for checking issues
 local trace_cmap_detail = false -- only for checking issues
 
+-- local trace_cmap        = true
+-- local trace_cmap_detail = true
+
 fonts                   = fonts or { }
 local handlers          = fonts.handlers or { }
 fonts.handlers          = handlers
@@ -1275,6 +1278,7 @@ local sequence = {
     -- variants
     { 0,  5, 14 },
     -- last resort ranges
+{ 0,  4, 12 },
     { 3, 10, 13 },
 }
 
@@ -2075,19 +2079,27 @@ local function readdata(f,offset,specification)
             local instance = specification.instance
             if type(instance) == "string" then
                 local factors = helpers.getfactors(fontdata,instance)
-                specification.factors = factors
-                fontdata.factors  = factors
-                fontdata.instance = instance
-                report("user instance: %s, factors: % t",instance,factors)
+                if factors then
+                    specification.factors = factors
+                    fontdata.factors  = factors
+                    fontdata.instance = instance
+                    report("user instance: %s, factors: % t",instance,factors)
+                else
+                    report("user instance: %s, bad factors",instance)
+                end
             end
         end
         if not fontdata.factors then
             if fontdata.variabledata then
                 local factors = helpers.getfactors(fontdata,true)
-                specification.factors = factors
-                fontdata.factors  = factors
-                fontdata.instance = instance
-                report("font instance: %s, factors: % t",instance,factors)
+                if factors then
+                    specification.factors = factors
+                    fontdata.factors  = factors
+                    fontdata.instance = instance
+                    report("font instance: %s, factors: % t",instance,factors)
+                else
+                    report("user instance: %s, bad factors",instance)
+                end
             end
         end
 

@@ -891,7 +891,7 @@ function readers.rehash(fontdata,hashmethod) -- TODO: combine loops in one
         unifymissing(fontdata)
      -- stripredundant(fontdata)
     else
-        fontdata.hashmethod = "unicode"
+        fontdata.hashmethod = "unicodes"
         local indices = unifyglyphs(fontdata)
         unifyresources(fontdata,indices)
         copyduplicates(fontdata)
@@ -908,10 +908,10 @@ function readers.checkhash(fontdata)
     elseif hashmethod == "names" and fontdata.names then
         unifyresources(fontdata,fontdata.names)
         copyduplicates(fontdata)
-        fontdata.hashmethod = "unicode"
+        fontdata.hashmethod = "unicodes"
         fontdata.names = nil -- no need for it
     else
-        readers.rehash(fontdata,"unicode")
+        readers.rehash(fontdata,"unicodes")
     end
 end
 
@@ -1332,7 +1332,7 @@ function readers.pack(data)
                                     local r = rule.before       if r then for i=1,#r do r[i] = pack_boolean(r[i]) end end
                                     local r = rule.after        if r then for i=1,#r do r[i] = pack_boolean(r[i]) end end
                                     local r = rule.current      if r then for i=1,#r do r[i] = pack_boolean(r[i]) end end
-                                    local r = rule.lookups      if r then rule.lookups       = pack_mixed  (r)    end
+                                 -- local r = rule.lookups      if r then rule.lookups       = pack_mixed  (r)    end
                                     local r = rule.replacements if r then rule.replacements  = pack_flat   (r)    end
                                 end
                             end
@@ -1795,13 +1795,13 @@ function readers.unpack(data)
                                             end
                                         end
                                     end
-                                    local lookups = rule.lookups
-                                    if lookups then
-                                        local tv = tables[lookups]
-                                        if tv then
-                                            rule.lookups = tv
-                                        end
-                                    end
+                                 -- local lookups = rule.lookups
+                                 -- if lookups then
+                                 --     local tv = tables[lookups]
+                                 --     if tv then
+                                 --         rule.lookups = tv
+                                 --     end
+                                 -- end
                                     local replacements = rule.replacements
                                     if replacements then
                                         local tv = tables[replacements]
@@ -2334,16 +2334,20 @@ function readers.expand(data)
                                 local lookups = rule.lookups or false
                                 local subtype = nil
                                 if lookups then
-                                    -- is now indexed
-                                    for k, v in next, lookups do
-                                        local lookup = sublookups[v]
-                                        if lookup then
-                                            lookups[k] = lookup
-                                            if not subtype then
-                                                subtype = lookup.type
+                                    for i=1,#lookups do
+                                        local lookups = lookups[i]
+                                        if lookups then
+                                            for k, v in next, lookups do
+                                                local lookup = sublookups[v]
+                                                if lookup then
+                                                    lookups[k] = lookup
+                                                    if not subtype then
+                                                        subtype = lookup.type
+                                                    end
+                                                else
+                                                    -- already expanded
+                                                end
                                             end
-                                        else
-                                            -- already expanded
                                         end
                                     end
                                 end
