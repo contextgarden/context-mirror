@@ -239,9 +239,9 @@ function streams.readfixed4(f)
     f[2] = j + 1
     local a, b, c, d = byte(f[1],i,j)
     if a >= 0x80 then
-        return (0x1000000 * a + 0x10000 * b + 0x100 * c + d - 0x100000000)/65536.0
+        return (0x100 * a + b - 0x10000) + (0x100 * c + d)/0x10000
     else
-        return (0x1000000 * a + 0x10000 * b + 0x100 * c + d)/65536.0
+        return (0x100 * a + b          ) + (0x100 * c + d)/0x10000
     end
 end
 
@@ -251,9 +251,9 @@ function streams.readfixed2(f)
     f[2] = j + 1
     local a, b = byte(f[1],i,j)
     if a >= 0x80 then
-        return (0x100 * a + b - 0x10000)/256.0
+        return (a - 0x100) + b/0x100
     else
-        return (0x100 * a + b)/256.0
+        return (a        ) + b/0x100
     end
 end
 
@@ -300,7 +300,7 @@ if sio and sio.readcardinal2 then
     local readfixed4     = sio.readfixed4
     local read2dot14     = sio.read2dot14
     local readbytes      = sio.readbytes
-    local readbytetable = sio.readbytetable
+    local readbytetable  = sio.readbytetable
 
     function streams.readcardinal1(f)
         local i = f[2]
@@ -342,16 +342,16 @@ if sio and sio.readcardinal2 then
         f[2] = i + 4
         return readinteger4(f[1],i)
     end
-    function streams.readfixed2(f)
-        local i = f[2]
-        f[2] = i + 2
-        return readfixed2(f[1],i)
-    end
-    function streams.readfixed4(f)
-        local i = f[2]
-        f[2] = i + 4
-        return readfixed4(f[1],i)
-    end
+ -- function streams.readfixed2(f) -- needs recent luatex
+ --     local i = f[2]
+ --     f[2] = i + 2
+ --     return readfixed2(f[1],i)
+ -- end
+ -- function streams.readfixed4(f) -- needs recent luatex
+ --     local i = f[2]
+ --     f[2] = i + 4
+ --     return readfixed4(f[1],i)
+ -- end
     function streams.read2dot4(f)
         local i = f[2]
         f[2] = i + 2
