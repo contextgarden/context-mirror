@@ -31,6 +31,7 @@ local pen_info        = mplib.pen_info
 local object_fields   = mplib.fields
 
 local save_table      = false
+local force_stroke    = false
 
 metapost              = metapost or { }
 local metapost        = metapost
@@ -66,6 +67,10 @@ directives.register("metapost.savetable",function(v)
     else
         save_table = false
     end
+end)
+
+trackers.register("metapost.forcestroke",function(v)
+    force_stroke = v
 end)
 
 local pdfliteral = function(pdfcode)
@@ -136,15 +141,13 @@ function pdfflusher.comment(message)
         message = formatters["%% mps graphic %s: %s"](metapost.n,message)
         if experiment then
             context(pdfliteral(message))
+        elseif savedliterals then
+            local last = #savedliterals + 1
+            savedliterals[last] = message
+            context.MPLIBtoPDF(last)
         else
-            if savedliterals then
-                local last = #savedliterals + 1
-                savedliterals[last] = message
-                context.MPLIBtoPDF(last)
-            else
-                savedliterals = { message }
-                context.MPLIBtoPDF(1)
-            end
+            savedliterals = { message }
+            context.MPLIBtoPDF(1)
         end
     end
 end
@@ -342,7 +345,7 @@ local variable =
 
 local pattern_lst = (variable * newline^0)^0
 
-metapost.variables  = { } -- to be stacked
+metapost.variables  = { } -- currently across instances
 metapost.properties = { } -- to be stacked
 
 function metapost.untagvariable(str,variables) -- will be redone
@@ -387,11 +390,9 @@ local function setproperties(figure)
     return properties
 end
 
-local function setvariables(figure)
-    local variables = { }
-    metapost.variables = variables
-    return variables
-end
+local function nocomment() end
+
+metapost.comment = nocomment
 
 function metapost.flush(result,flusher,askedfig)
     if result then
@@ -407,7 +408,7 @@ function metapost.flush(result,flusher,askedfig)
             local flushfigure = flusher.flushfigure
             local textfigure = flusher.textfigure
             local processspecial = flusher.processspecial or metapost.processspecial
-            local variables  = setvariables(figure) -- also resets then in case of not found
+            metapost.comment = flusher.comment or nocomment
             for index=1,#figures do
                 local figure = figures[index]
                 local properties = setproperties(figure)
@@ -564,11 +565,13 @@ function metapost.flush(result,flusher,askedfig)
                                             else
                                                 flushnormalpath(path,result,open)
                                             end
-                                            if objecttype == "fill" then
+                                            if force_stroke then
+                                                result[#result+1] = open and "S" or "h S"
+                                            elseif objecttype == "fill" then
                                                 result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
                                             elseif objecttype == "outline" then
                                                 if both then
-                                                    result[#result+1] = evenodd and "h B*" or "h B" -- f* = eo
+                                                    result[#result+1] = evenodd and "h B*" or "h B" -- B* = eo
                                                 else
                                                     result[#result+1] = open and "S" or "h S"
                                                 end
@@ -601,7 +604,9 @@ function metapost.flush(result,flusher,askedfig)
                                             else
                                                 flushnormalpath(path,result,open)
                                             end
-                                            if objecttype == "fill" then
+                                            if force_stroke then
+                                                result[#result+1] = open and "S" or "h S"
+                                            elseif objecttype == "fill" then
                                                 result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
                                             elseif objecttype == "outline" then
                                                 result[#result+1] = open and "S" or "h S"
@@ -632,6 +637,7 @@ function metapost.flush(result,flusher,askedfig)
                     end
                 end
             end
+            metapost.comment = nocomment
         end
     end
 end

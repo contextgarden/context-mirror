@@ -15,7 +15,6 @@ local lpeg = lpeg
 
 local type, next, tostring = type, next, tostring
 local concat = table.concat
-local utfchar = utf.char
 local utfsub = utf.sub
 local formatters = string.formatters
 
@@ -27,7 +26,6 @@ local context         = context
 ----- commands        = commands
 
 local implement       = interfaces.implement
-local ctx_setmacro    = interfaces.setmacro
 
 local publications    = publications
 
@@ -82,13 +80,13 @@ local andsplitter   = Ct { "start",
 
 local commasplitter = Ct { "start",
     start = Cs(V("outer")) + (p_empty + Cs((V("inner") + (1-p_comma))^1) + p_comma)^1,
-    outer = (P("{")/"") * ((V("inner") + P(1-P("}")))^1) * (P("}")/""),
+    outer = (P("{")/"") * ((V("inner") + P(1-P("}")))^1) * ((P("}") * P(-1))/""),
     inner = P("{") * ((V("inner") + P(1-P("}")))^1) * P("}"),
 }
 
 local spacesplitter = Ct { "start",
     start = Cs(V("outer")) + (Cs((V("inner") + (1-p_space))^1) + p_space)^1,
-    outer = (P("{")/"") * ((V("inner") + P(1-P("}")))^1) * (P("}")/""),
+    outer = (P("{")/"") * ((V("inner") + P(1-P("}")))^1) * ((P("}") * P(-1))/""),
     inner = P("{") * ((V("inner") + P(1-P("}")))^1) * P("}"),
 }
 
@@ -347,7 +345,6 @@ local currentauthorsymbol = nil
 local manipulators       = typesetters.manipulators
 local splitmanipulation  = manipulators.splitspecification
 local applymanipulation  = manipulators.applyspecification
-local manipulatormethods = manipulators.methods
 
 local function value(i,field)
     if currentauthordata then

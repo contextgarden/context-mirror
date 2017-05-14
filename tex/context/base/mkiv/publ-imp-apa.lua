@@ -162,11 +162,13 @@ categories.standard = {
 categories.book = {
     sets = {
         author     = { "author", "editor", "publisher", "title" },
+        ineditor   = { "editor" },
         editionset = generic.editionset,
         doi        = generic.doi,
     },
     required = { "author" },
     optional = {
+        "ineditor",
         "withauthor", "translator",
         "year", "month", "day",
         "subtitle", "type",  "file",
@@ -181,6 +183,7 @@ categories.book = {
 categories.inbook = {
     sets = {
         author     = { "author", "editor", "publisher", "title", },
+        ineditor   = { "editor" },
         editionset = generic.editionset,
         doi        = generic.doi,
     },
@@ -189,9 +192,10 @@ categories.inbook = {
         "year" ,
     },
     optional = {
+        "ineditor",
         "withauthor", "translator",
         "subtitle", "type", "file",
-        "booktitle",
+        "booktitle", "subbooktitle",
         -- APA ignores this: "chapter",
         "editionset", "series",
         "month",
@@ -206,6 +210,7 @@ categories.inbook = {
 categories.incollection = {
     sets = {
         author     = { "author", "editor", "publisher", "title", },
+        ineditor   = { "editor" },
         editionset = generic.editionset,
         doi        = generic.doi,
     },
@@ -215,8 +220,10 @@ categories.incollection = {
         "year",
     },
     optional = {
+        "ineditor",
         "withauthor", "translator",
         "subtitle", "type", "file",
+        "subbooktitle",
         "editionset", "series",
         -- APA ignores this: "chapter",
         "month",
@@ -449,7 +456,7 @@ categories.electronic = {
 categories.film = {
     sets = {
         doi = generic.doi,
-        author = { "producer", "director", },
+        author = { "author", "producer", "director", },
     },
     required = {
         "author",

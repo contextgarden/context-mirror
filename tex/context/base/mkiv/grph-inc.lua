@@ -40,14 +40,14 @@ run TeX code from within Lua. Some more functionality will move to Lua.
 
 -- todo: store loaded pages per pdf file someplace
 
-local format, lower, find, match, gsub, gmatch = string.format, string.lower, string.find, string.match, string.gsub, string.gmatch
+local format, lower, find, match, gsub = string.format, string.lower, string.find, string.match, string.gsub
+local longtostring = string.longtostring
 local contains = table.contains
 local concat, insert, remove = table.concat, table.insert, table.remove
 local todimen = string.todimen
 local collapsepath = file.collapsepath
 local formatters = string.formatters
-local longtostring = string.longtostring
-local expandfilename = dir.expandname
+local formatcolumns = utilities.formatters.formatcolumns
 
 local P, R, S, Cc, C, Cs, Ct, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.Cc, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.match
 
@@ -84,34 +84,44 @@ local trace_bases       = false  trackers.register  ("graphics.bases",      func
 local trace_programs    = false  trackers.register  ("graphics.programs",   function(v) trace_programs   = v end)
 local trace_conversion  = false  trackers.register  ("graphics.conversion", function(v) trace_conversion = v end)
 local trace_inclusion   = false  trackers.register  ("graphics.inclusion",  function(v) trace_inclusion  = v end)
+local trace_usage       = false  trackers.register  ("graphics.usage",      function(v) trace_usage      = v end)
 
-local extra_check       = false  directives.register("graphics.extracheck", function(v) extra_check      = v end)
+local extra_check       = false  directives.register("graphics.extracheck",    function(v) extra_check    = v end)
+local auto_transform    = true   directives.register("graphics.autotransform", function(v) auto_transform = v end)
+
+if LUATEXVERSION <= 1 then
+    auto_transform = false
+end
 
 local report_inclusion  = logs.reporter("graphics","inclusion")
 local report_figures    = logs.reporter("system","graphics")
 local report_figure     = logs.reporter("used graphic")
+local report_newline    = logs.newline
 
-local f_hash_part = formatters["%s->%s->%s"]
-local f_hash_full = formatters["%s->%s->%s->%s->%s->%s->%s"]
+local f_hash_part       = formatters["%s->%s->%s->%s"]
+local f_hash_full       = formatters["%s->%s->%s->%s->%s->%s->%s->%s"]
 
-local v_yes     = variables.yes
-local v_low     = variables.low
-local v_medium  = variables.medium
-local v_high    = variables.high
-local v_global  = variables["global"]
-local v_local   = variables["local"]
-local v_default = variables.default
-local v_auto    = variables.auto
+local v_yes             = variables.yes
+local v_global          = variables["global"]
+local v_local           = variables["local"]
+local v_default         = variables.default
+local v_auto            = variables.auto
 
-local maxdimen = 2^30-1
+local maxdimen          = 2^30-1
+
+local ctx_doscalefigure            = context.doscalefigure
+local ctx_relocateexternalfigure   = context.relocateexternalfigure
+local ctx_startfoundexternalfigure = context.startfoundexternalfigure
+local ctx_stopfoundexternalfigure  = context.stopfoundexternalfigure
+local ctx_dosetfigureobject        = context.dosetfigureobject
+local ctx_doboxfigureobject        = context.doboxfigureobject
 
 function images.check(figure)
     if figure then
         local width  = figure.width
         local height = figure.height
         if width <= 0 or height <= 0 then
-            report_inclusion("image %a has bad dimensions (%p,%p), discarding",
-                figure.filename,width,height)
+            report_inclusion("image %a has bad dimensions (%p,%p), discarding",figure.filename,width,height)
             return false, "bad dimensions"
         end
         local xres    = figure.xres
@@ -295,39 +305,31 @@ function figures.badname(name)
     end
 end
 
-local trace_names = false
-
-trackers.register("graphics.lognames", function(v)
-    if v and not trace_names then
-        luatex.registerstopactions(function()
-            if figures.nofprocessed > 0 then
-                local report_newline = logs.newline
-                logs.pushtarget("logfile")
-                report_newline()
-                report_figures("start names")
-                for _, data in table.sortedhash(figures_found) do
-                    report_newline()
-                    report_figure("asked   : %s",data.askedname)
-                    if data.found then
-                        report_figure("format  : %s",data.format)
-                        report_figure("found   : %s",data.foundname)
-                        report_figure("used    : %s",data.fullname)
-                        if data.badname then
-                            report_figure("comment : %s","bad name")
-                        elseif data.comment then
-                            report_figure("comment : %s",data.comment)
-                        end
-                    else
-                        report_figure("comment : %s","not found")
-                    end
+luatex.registerstopactions(function()
+    if trace_usage and figures.nofprocessed > 0 then
+        logs.pushtarget("logfile")
+        report_newline()
+        report_figures("start names")
+        for _, data in table.sortedhash(figures_found) do
+            report_newline()
+            report_figure("asked   : %s",data.askedname)
+            if data.found then
+                report_figure("format  : %s",data.format)
+                report_figure("found   : %s",data.foundname)
+                report_figure("used    : %s",data.fullname)
+                if data.badname then
+                    report_figure("comment : %s","bad name")
+                elseif data.comment then
+                    report_figure("comment : %s",data.comment)
                 end
-                report_newline()
-                report_figures("stop names")
-                report_newline()
-                logs.poptarget()
+            else
+                report_figure("comment : %s","not found")
             end
-        end)
-        trace_names = true
+        end
+        report_newline()
+        report_figures("stop names")
+        report_newline()
+        logs.poptarget()
     end
 end)
 
@@ -495,6 +497,8 @@ local function new() -- we could use metatables status -> used -> request but it
         mask       = false,
         conversion = false,
         resolution = false,
+        color      = false,
+        arguments  = false,
         cache      = false,
         prefix     = false,
         size       = false,
@@ -642,6 +646,14 @@ local function rejected(specification)
     end
 end
 
+local function wipe(str)
+    if str == "" or str == "default" or str == "unknown" then
+        return nil
+    else
+        return str
+    end
+end
+
 local function register(askedname,specification)
     if not specification then
         specification = { askedname = askedname, comment = "invalid specification" }
@@ -656,24 +668,26 @@ local function register(askedname,specification)
     elseif not rejected(specification) then
         local format = specification.format
         if format then
-            local conversion = specification.conversion
-            local resolution = specification.resolution
-            if conversion == "" then
-                conversion = nil
-            end
-            if resolution == "" then
-                resolution = nil
-            end
-            local newformat = conversion
+            local conversion = wipe(specification.conversion)
+            local resolution = wipe(specification.resolution)
+            local arguments  = wipe(specification.arguments)
+            local newformat  = conversion
             if not newformat or newformat == "" then
                 newformat = defaultformat
             end
             if trace_conversion then
-                report_inclusion("checking conversion of %a, fullname %a, old format %a, new format %a, conversion %a, resolution %a",
-                    askedname,specification.fullname,format,newformat,conversion or "default",resolution or "default")
+                report_inclusion("checking conversion of %a, fullname %a, old format %a, new format %a, conversion %a, resolution %a, arguments %a",
+                    askedname,
+                    specification.fullname,
+                    format,
+                    newformat,
+                    conversion or "default",
+                    resolution or "default",
+                    arguments  or ""
+                )
             end
             -- quick hack
-            local converter = (newformat ~= format or resolution) and converters[format]
+            local converter = (newformat ~= format or resolution or arguments) and converters[format]
             if converter then
                 if converter[newformat] then
                     converter = converter[newformat]
@@ -729,8 +743,15 @@ local function register(askedname,specification)
                 if prefix and prefix ~= "" then
                     newbase = prefix .. newbase
                 end
-                if resolution and resolution ~= "" then -- the order might change
-                    newbase = newbase .. "_" .. resolution
+                local hash = ""
+                if resolution then
+                    hash = hash .. "[r:" .. resolution .. "]"
+                end
+                if arguments then
+                    hash = hash .. "[a:" .. arguments .. "]"
+                end
+                if hash ~= "" then
+                    newbase = newbase .. "_" .. md5.hex(hash)
                 end
                 --
                 -- see *, we had:
@@ -744,7 +765,6 @@ local function register(askedname,specification)
                 -- sticking around)
                 --
                 local newbase = newbase .. "." .. newformat
-                --
                 local newname = file.join(newpath,newbase)
                 oldname = collapsepath(oldname)
                 newname = collapsepath(newname)
@@ -754,7 +774,7 @@ local function register(askedname,specification)
                     if trace_conversion then
                         report_inclusion("converting %a (%a) from %a to %a",askedname,oldname,format,newformat)
                     end
-                    converter(oldname,newname,resolution or "")
+                    converter(oldname,newname,resolution or "", arguments or "")
                 else
                     if trace_conversion then
                         report_inclusion("no need to convert %a (%a) from %a to %a",askedname,oldname,format,newformat)
@@ -817,7 +837,12 @@ local function register(askedname,specification)
         specification.foundname = nil
     end
     specification.badname   = figures.badname(askedname)
-    local askedhash = f_hash_part(askedname,specification.conversion or "default",specification.resolution or "default")
+    local askedhash = f_hash_part(
+        askedname,
+        specification.conversion or "default",
+        specification.resolution or "default",
+        specification.arguments  or ""
+    )
     figures_found[askedhash] = specification
     return specification
 end
@@ -834,16 +859,22 @@ local internalschemes = {
 local function locate(request) -- name, format, cache
     -- not resolvers.cleanpath(request.name) as it fails on a!b.pdf and b~c.pdf
     -- todo: more restricted cleanpath
-    local askedname = request.name or ""
-    local askedhash = f_hash_part(askedname,request.conversion or "default",request.resolution or "default")
-    local foundname = figures_found[askedhash]
+    local askedname       = request.name or ""
+    local askedcache      = request.cache
+    local askedconversion = request.conversion
+    local askedresolution = request.resolution
+    local askedarguments  = request.arguments
+    local askedhash       = f_hash_part(
+        askedname,
+        askedconversion or "default",
+        askedresolution or "default",
+        askedarguments  or ""
+    )
+    local foundname       = figures_found[askedhash]
     if foundname then
         return foundname
     end
     --
-    local askedcache      = request.cache
-    local askedconversion = request.conversion
-    local askedresolution = request.resolution
     --
     local askedformat = request.format
     if not askedformat or askedformat == "" or askedformat == "unknown" then
@@ -892,6 +923,7 @@ local function locate(request) -- name, format, cache
                 cache      = askedcache,
                 conversion = askedconversion,
                 resolution = askedresolution,
+                arguments  = askedarguments,
             })
         end
     end
@@ -927,6 +959,7 @@ local function locate(request) -- name, format, cache
                  -- foundname  = foundname, -- no
                     conversion = askedconversion,
                     resolution = askedresolution,
+                    arguments  = askedarguments,
                     internal   = internal,
                 })
             elseif quitscanning then
@@ -947,6 +980,7 @@ local function locate(request) -- name, format, cache
                     cache      = askedcache,
                     conversion = askedconversion,
                     resolution = askedresolution,
+                    arguments  = askedarguments,
                 })
             end
         else
@@ -965,6 +999,7 @@ local function locate(request) -- name, format, cache
                         cache      = askedcache,
                         conversion = askedconversion,
                         resolution = askedresolution,
+                        arguments  = askedarguments,
                     })
                 end
             end
@@ -978,6 +1013,7 @@ local function locate(request) -- name, format, cache
                         cache      = askedcache,
                         conversion = askedconversion,
                         resolution = askedresolution,
+                        arguments  = askedarguments,
                     })
                 end
             end
@@ -1001,6 +1037,7 @@ local function locate(request) -- name, format, cache
                         cache      = askedcache,
                         conversion = askedconversion,
                         resolution = askedresolution,
+                        arguments  = askedarguments,
                     })
                 end
             end
@@ -1035,6 +1072,7 @@ local function locate(request) -- name, format, cache
                                     cache      = askedcache,
                                     conversion = askedconversion,
                                     resolution = askedresolution,
+                                    arguments  = askedarguments
                                 })
                             end
                         end
@@ -1062,6 +1100,7 @@ local function locate(request) -- name, format, cache
                                 cache      = askedcache,
                                 conversion = askedconversion,
                                 resolution = askedresolution,
+                                arguments  = askedarguments,
                             })
                         end
                     end
@@ -1086,6 +1125,7 @@ local function locate(request) -- name, format, cache
                             cache      = askedcache,
                             conversion = askedconversion,
                             resolution = askedresolution,
+                            arguments  = askedarguments,
                         })
                     end
                 end
@@ -1095,6 +1135,7 @@ local function locate(request) -- name, format, cache
     return register(askedname, { -- these two are needed for hashing 'found'
         conversion = askedconversion,
         resolution = askedresolution,
+        arguments  = askedarguments,
     })
 end
 
@@ -1117,12 +1158,14 @@ end
 
 function figures.identify(data)
     data = data or callstack[#callstack] or lastfiguredata
-    local list = identifiers.list -- defined at the end
-    for i=1,#list do
-        local identifier = list[i]
-        local data = identifier(data)
-        if data and (not data.status and data.status.status > 0) then
-            break
+    if data then
+        local list = identifiers.list -- defined at the end
+        for i=1,#list do
+            local identifier = list[i]
+            local data = identifier(data)
+            if data and (not data.status and data.status.status > 0) then
+                break
+            end
         end
     end
     return data
@@ -1137,18 +1180,18 @@ function figures.check(data)
     return (checkers[data.status.format] or checkers.generic)(data)
 end
 
-local trace_usage = false
 local used_images = { }
 
-trackers.register("graphics.usage", function(v)
-    if v and not trace_usage then
-        luatex.registerstopactions(function()
+statistics.register("used graphics",function()
+    if trace_usage then
+        local filename = file.nameonly(environment.jobname) .. "-figures-usage.lua"
+        if next(figures_found) then
             local found = { }
-            for _, t in table.sortedhash(figures_found) do
-                found[#found+1] = t
-                for k, v in next, t do
+            for _, data in table.sortedhash(figures_found) do
+                found[#found+1] = data
+                for k, v in next, data do
                     if v == false or v == "" then
-                        t[k] = nil
+                        data[k] = nil
                     end
                 end
             end
@@ -1163,18 +1206,20 @@ trackers.register("graphics.usage", function(v)
                 end
                 for _, t in next, u do
                     for k, v in next, t do
-                        if v == false or v == "" then
+                        if v == false or v == "" or k == "private" then
                             t[k] = nil
                         end
                     end
                 end
             end
-            table.save(file.nameonly(environment.jobname) .. "-figures-usage.lua",{
+            table.save(filename,{
                 found = found,
                 used  = used_images,
             } )
-        end)
-        trace_usage = true
+            return format("log saved in '%s'",filename)
+        else
+            os.remove(filename)
+        end
     end
 end)
 
@@ -1188,7 +1233,7 @@ end
 
 function figures.scale(data) -- will become lua code
     data = data or callstack[#callstack] or lastfiguredata
-    context.doscalefigure()
+    ctx_doscalefigure()
     return data
 end
 
@@ -1199,9 +1244,22 @@ function figures.done(data)
     local box = texgetbox(nr)
     ds.width  = box.width
     ds.height = box.height
-    ds.xscale = ds.width /(du.width  or 1)
-    ds.yscale = ds.height/(du.height or 1)
-    ds.page   = ds.page or du.page or dr.page -- sort of redundant but can be limited
+    -- somehow this fails on some of tacos files
+ -- ds.xscale = ds.width /(du.width  or 1)
+ -- ds.yscale = ds.height/(du.height or 1)
+    -- du.width and du.height can be false
+    if du.width and du.height and du.width > 0 and du.height > 0 then
+        ds.xscale = ds.width /du.width
+        ds.yscale = ds.height/du.height
+    elseif du.xsize and du.ysize and du.xsize > 0 and du.ysize > 0 then
+        ds.xscale = ds.width /du.xsize
+        ds.yscale = ds.height/du.ysize
+    else
+        ds.xscale = 1
+        ds.yscale = 1
+    end
+    -- sort of redundant but can be limited
+    ds.page   = ds.page or du.page or dr.page
     return data
 end
 
@@ -1244,22 +1302,72 @@ function existers.generic(askedname,resolve)
     return result
 end
 
+-- pdf : 0-3: 0 90 180 270
+-- jpeg: 0 unset 1-4: 0 90 180 270 5-8: flipped r/c
+
+local transforms = setmetatableindex (
+    {
+        ["orientation-1"] = 0, ["R0"]     = 0,
+        ["orientation-2"] = 4, ["R0MH"]   = 4,
+        ["orientation-3"] = 2, ["R180"]   = 2,
+        ["orientation-4"] = 6, ["R0MV"]   = 6,
+        ["orientation-5"] = 5, ["R270MH"] = 5,
+        ["orientation-6"] = 3, ["R90"]    = 3,
+        ["orientation-7"] = 7, ["R90MH"]  = 7,
+        ["orientation-8"] = 1, ["R270"]   = 1,
+    },
+    function(t,k) -- transforms are 0 .. 7
+        local v = tonumber(k) or 0
+        if v < 0 or v > 7 then
+            v = 0
+        end
+        t[k] = v
+        return v
+    end
+)
+
+local function checktransform(figure,forced)
+    if auto_transform then
+        local orientation = (forced ~= "" and forced ~= v_auto and forced) or figure.orientation or 0
+        local transform   = transforms["orientation-"..orientation]
+        figure.transform = transform
+        if math.odd(transform) then
+            return figure.height, figure.width
+        else
+            return figure.width, figure.height
+        end
+    end
+end
+
 function checkers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
-    local name  = du.fullname or "unknown generic"
-    local page  = du.page or dr.page
-    local size  = dr.size or "crop"
-    local color = dr.color or "natural"
-    local mask  = dr.mask or "none"
+    local name       = du.fullname or "unknown generic"
+    local page       = du.page or dr.page
+    local size       = dr.size or "crop"
+    local color      = dr.color or "natural"
+    local mask       = dr.mask or "none"
     local conversion = dr.conversion
     local resolution = dr.resolution
+    local arguments  = dr.arguments
     if not conversion or conversion == "" then
-        conversion = "unknown"
+        conversion = "default"
     end
     if not resolution or resolution == "" then
-        resolution = "unknown"
+        resolution = "default"
     end
-    local hash = f_hash_full(name,page,size,color,conversion,resolution,mask)
+    if not arguments or arguments == "" then
+        arguments = "default"
+    end
+    local hash = f_hash_full(
+        name,
+        page,
+        size,
+        color,
+        mask,
+        conversion,
+        resolution,
+        arguments
+    )
     local figure = figures_loaded[hash]
     if figure == nil then
         figure = images.new {
@@ -1292,8 +1400,10 @@ function checkers.generic(data)
         end
     end
     if figure then
-        du.width       = figure.width
-        du.height      = figure.height
+        local width, height = checktransform(figure,dr.transform)
+        --
+        du.width       = width
+        du.height      = height
         du.pages       = figure.pages
         du.depth       = figure.depth or 0
         du.colordepth  = figure.colordepth or 0
@@ -1301,6 +1411,8 @@ function checkers.generic(data)
         du.yresolution = figure.yres or 0
         du.xsize       = figure.xsize or 0
         du.ysize       = figure.ysize or 0
+        du.rotation    = figure.rotation or 0    -- in pdf multiples or 90% in jpeg 1
+        du.orientation = figure.orientation or 0 -- jpeg 1 2 3 4 (0=unset)
         ds.private     = figure
         ds.hash        = hash
     end
@@ -1350,7 +1462,7 @@ function includers.generic(data)
         box.width, box.height, box.depth = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
         texsetbox(nr,box)
         ds.objectnumber = figure.objnum
-        context.relocateexternalfigure()
+        ctx_relocateexternalfigure()
     end
     return data
 end
@@ -1367,9 +1479,9 @@ local function checkers_nongeneric(data,command) -- todo: macros and context.*
             if type(command) == "function" then
                 command()
             end
-            context.dosetfigureobject("FIG",hash)
+            ctx_dosetfigureobject("FIG",hash)
         end
-        context.doboxfigureobject("FIG",hash)
+        ctx_doboxfigureobject("FIG",hash)
     elseif type(command) == "function" then
         command()
     end
@@ -1396,7 +1508,7 @@ function checkers.mov(data)
         report_inclusion("including movie %a, width %p, height %p",foundname,width,height)
     end
     -- we need to push the node.write in between ... we could make a shared helper for this
-    context.startfoundexternalfigure(width .. "sp",height .. "sp")
+    ctx_startfoundexternalfigure(width .. "sp",height .. "sp")
     context(function()
         nodeinjections.insertmovie {
             width      = width,
@@ -1409,7 +1521,7 @@ function checkers.mov(data)
             foundname  = foundname,
         }
     end)
-    context.stopfoundexternalfigure()
+    ctx_stopfoundexternalfigure()
     return data
 end
 
@@ -1420,6 +1532,9 @@ includers.mov = includers.nongeneric
 internalschemes.mprun = true
 
 -- mprun.foo.1 mprun.6 mprun:foo.2
+
+local ctx_docheckfiguremprun = context.docheckfiguremprun
+local ctx_docheckfiguremps   = context.docheckfiguremps
 
 local function internal(askedname)
     local spec, mprun, mpnum = match(lower(askedname),"mprun([:%.]?)(.-)%.(%d+)")
@@ -1442,9 +1557,9 @@ end
 function checkers.mps(data)
     local mprun, mpnum = internal(data.used.fullname)
     if mpnum then
-        return checkers_nongeneric(data,function() context.docheckfiguremprun(mprun,mpnum) end)
+        return checkers_nongeneric(data,function() ctx_docheckfiguremprun(mprun,mpnum) end)
     else
-        return checkers_nongeneric(data,function() context.docheckfiguremps(data.used.fullname) end)
+        return checkers_nongeneric(data,function() ctx_docheckfiguremps(data.used.fullname) end)
     end
 end
 
@@ -1452,18 +1567,22 @@ includers.mps = includers.nongeneric
 
 -- -- -- tex -- -- --
 
+local ctx_docheckfiguretex = context.docheckfiguretex
+
 function existers.tex(askedname)
     askedname = resolvers.findfile(askedname)
     return askedname ~= "" and askedname or false, true, "tex", true
 end
 
 function checkers.tex(data)
-    return checkers_nongeneric(data,function() context.docheckfiguretex(data.used.fullname) end)
+    return checkers_nongeneric(data,function() ctx_docheckfiguretex(data.used.fullname) end)
 end
 
 includers.tex = includers.nongeneric
 
 -- -- -- buffer -- -- --
+
+local ctx_docheckfigurebuffer = context.docheckfigurebuffer
 
 function existers.buffer(askedname)
     local name = file.nameonly(askedname)
@@ -1472,7 +1591,7 @@ function existers.buffer(askedname)
 end
 
 function checkers.buffer(data)
-    return checkers_nongeneric(data,function() context.docheckfigurebuffer(file.nameonly(data.used.fullname)) end)
+    return checkers_nongeneric(data,function() ctx_docheckfigurebuffer(file.nameonly(data.used.fullname)) end)
 end
 
 includers.buffers = includers.nongeneric
@@ -1495,28 +1614,32 @@ includers.auto = includers.generic
 
 -- -- -- cld -- -- --
 
+local ctx_docheckfigurecld = context.docheckfigurecld
+
 function existers.cld(askedname)
     askedname = resolvers.findfile(askedname)
     return askedname ~= "" and askedname or false, true, "cld", true
 end
 
 function checkers.cld(data)
-    return checkers_nongeneric(data,function() context.docheckfigurecld(data.used.fullname) end)
+    return checkers_nongeneric(data,function() ctx_docheckfigurecld(data.used.fullname) end)
 end
 
 includers.cld = includers.nongeneric
 
 -- -- -- converters -- -- --
 
-local function makeoptions(options)
+setmetatableindex(converters,"table")
+
+-- We keep this helper because it has been around for a while and therefore it can
+-- be a depedency in an existing workflow.
+
+function programs.makeoptions(options)
     local to = type(options)
     return (to == "table" and concat(options," ")) or (to == "string" and options) or ""
 end
 
--- programs.makeoptions = makeoptions
-
-local function runprogram(binary,argument,variables)
-    -- move this check to the runner code
+function programs.run(binary,argument,variables)
     local found = nil
     if type(binary) == "table" then
         for i=1,#binary do
@@ -1551,306 +1674,7 @@ local function runprogram(binary,argument,variables)
     end
 end
 
-programs.run = runprogram
-
--- -- -- eps & pdf -- -- --
---
--- \externalfigure[cow.eps]
--- \externalfigure[cow.pdf][conversion=stripped]
-
-local epsconverter = converters.eps or { }
-converters.eps     = epsconverter
-converters.ps      = epsconverter
-
--- todo: colorspace
-
-local epstopdf = {
-    resolutions = {
-        [v_low]    = "screen",
-        [v_medium] = "ebook",
-        [v_high]   = "prepress",
-    },
-    command = os.type == "windows" and { "gswin64c", "gswin32c" } or "gs",
-    -- -dProcessDSCComments=false
-    argument = [[
-        -q
-        -sDEVICE=pdfwrite
-        -dNOPAUSE
-        -dNOCACHE
-        -dBATCH
-        -dAutoRotatePages=/None
-        -dPDFSETTINGS=/%presets%
-        -dEPSCrop
-        -dCompatibilityLevel=%level%
-        -sOutputFile="%newname%"
-        %colorspace%
-        "%oldname%"
-        -c quit
-    ]],
-}
-
-programs.epstopdf = epstopdf
-programs.gs       = epstopdf
-
-local cleanups    = { }
-local cleaners    = { }
-
-local whitespace  = lpeg.patterns.whitespace
-local quadruple   = Ct((whitespace^0 * lpeg.patterns.number/tonumber * whitespace^0)^4)
-local betterbox   = P("%%BoundingBox:")      * quadruple
-                  * P("%%HiResBoundingBox:") * quadruple
-                  * P("%AI3_Cropmarks:")     * quadruple
-                  * P("%%CropBox:")          * quadruple
-                  / function(b,h,m,c)
-                         return formatters["%%%%BoundingBox: %i %i %i %i\n%%%%HiResBoundingBox: %F %F %F %F\n%%%%CropBox: %F %F %F %F\n"](
-                             m[1],m[2],m[3],m[4],
-                             m[1],m[2],m[3],m[4],
-                             m[1],m[2],m[3],m[4]
-                         )
-                     end
-local nocrap      = P("%") / "" * (
-                         (P("AI9_PrivateDataBegin") * P(1)^0)                            / "%%%%EOF"
-                       + (P("%EOF") * whitespace^0 * P("%AI9_PrintingDataEnd") * P(1)^0) / "%%%%EOF"
-                       + (P("AI7_Thumbnail") * (1-P("%%EndData"))^0 * P("%%EndData"))    / ""
-                    )
-local whatever    = nocrap + P(1)
-local pattern     = Cs((betterbox * whatever^1 + whatever)^1)
-
-directives.register("graphics.conversion.eps.cleanup.ai",function(v) cleanups.ai = v end)
-
-cleaners.ai = function(name)
-    local tmpname = name .. ".tmp"
-    io.savedata(tmpname,lpegmatch(pattern,io.loaddata(name) or ""))
-    return tmpname
-end
-
-function epsconverter.pdf(oldname,newname,resolution,colorspace) -- the resolution interface might change
-    local epstopdf = programs.epstopdf -- can be changed
-    local presets  = epstopdf.resolutions[resolution or "high"] or epstopdf.resolutions.high
-    local level    = codeinjections.getformatoption("pdf_level") or "1.3"
-    local tmpname  = oldname
-    if not tmpname or tmpname == "" or not lfs.isfile(tmpname) then
-        return
-    end
-    if cleanups.ai then
-        tmpname = cleaners.ai(oldname)
-    end
-    if colorspace == "gray" then
-        colorspace = "-sColorConversionStrategy=Gray -sProcessColorModel=DeviceGray"
-     -- colorspace = "-sColorConversionStrategy=Gray"
-    else
-        colorspace = nil
-    end
-    runprogram(epstopdf.command, epstopdf.argument, {
-        newname    = newname,
-        oldname    = tmpname,
-        presets    = presets,
-        level      = tostring(level),
-        colorspace = colorspace,
-    } )
-    if tmpname ~= oldname then
-        os.remove(tmpname)
-    end
-end
-
-epsconverter["gray.pdf"] = function(oldname,newname,resolution) -- the resolution interface might change
-    epsconverter.pdf(oldname,newname,resolution,"gray")
-end
-
-epsconverter.default = epsconverter.pdf
-
-local pdfconverter = converters.pdf or { }
-converters.pdf     = pdfconverter
-
--- programs.pdftoeps = {
---     command  = "pdftops",
---     argument = [[-eps "%oldname%" "%newname%"]],
--- }
---
--- pdfconverter.stripped = function(oldname,newname)
---     local pdftoeps = programs.pdftoeps -- can be changed
---     local epstopdf = programs.epstopdf -- can be changed
---     local presets  = epstopdf.resolutions[resolution or ""] or epstopdf.resolutions.high
---     local level    = codeinjections.getformatoption("pdf_level") or "1.3"
---     local tmpname  = newname .. ".tmp"
---     runprogram(pdftoeps.command, pdftoeps.argument, { oldname = oldname, newname = tmpname, presets = presets, level = level })
---     runprogram(epstopdf.command, epstopdf.argument, { oldname = tmpname, newname = newname, presets = presets, level = level })
---     os.remove(tmpname)
--- end
---
--- figures.registersuffix("stripped","pdf")
-
--- -- -- svg -- -- --
-
-local svgconverter = { }
-converters.svg     = svgconverter
-converters.svgz    = svgconverter
-
--- inkscape on windows only works with complete paths
-
-programs.inkscape = {
-    command  = "inkscape",
-    pdfargument = [[
-        "%oldname%"
-        --export-dpi=600
-        -A
-        "%newname%"
-    ]],
-    pngargument = [[
-        "%oldname%"
-        --export-dpi=600
-        --export-png="%newname%"
-    ]],
-}
-
-function svgconverter.pdf(oldname,newname)
-    local inkscape = programs.inkscape -- can be changed
-    runprogram(inkscape.command, inkscape.pdfargument, {
-        newname = expandfilename(newname),
-        oldname = expandfilename(oldname),
-    } )
-end
-
-function svgconverter.png(oldname,newname)
-    local inkscape = programs.inkscape
-    runprogram(inkscape.command, inkscape.pngargument, {
-        newname = expandfilename(newname),
-        oldname = expandfilename(oldname),
-    } )
-end
-
-svgconverter.default = svgconverter.pdf
-
--- -- -- gif -- -- --
--- -- -- tif -- -- --
-
-local gifconverter = converters.gif or { }
-local tifconverter = converters.tif or { }
-local bmpconverter = converters.bmp or { }
-
-converters.gif     = gifconverter
-converters.tif     = tifconverter
-converters.bmp     = bmpconverter
-
-programs.convert = {
-    command  = "gm", -- graphicmagick
-    argument = [[convert "%oldname%" "%newname%"]],
-}
-
-local function converter(oldname,newname)
-    local convert = programs.convert
-    runprogram(convert.command, convert.argument, {
-        newname = newname,
-        oldname = oldname,
-    } )
-end
-
-tifconverter.pdf = converter
-gifconverter.pdf = converter
-bmpconverter.pdf = converter
-
-gifconverter.default = converter
-tifconverter.default = converter
-bmpconverter.default = converter
-
--- todo: lowres
-
--- cmyk conversion
-
--- ecirgb_v2.icc
--- ecirgb_v2_iccv4.icc
--- isocoated_v2_300_eci.icc
--- isocoated_v2_eci.icc
--- srgb.icc
--- srgb_v4_icc_preference.icc
-
--- [[convert %?colorspace: -colorspace "%colorspace%" ?%]]
-
-local rgbprofile  = "srgb_v4_icc_preference.icc" -- srgb.icc
-local cmykprofile = "isocoated_v2_300_eci.icc"   -- isocoated_v2_eci.icc
-
-directives.register("graphics.conversion.rgbprofile", function(v) rgbprofile  = type(v) == "string" and v or rgbprofile  end)
-directives.register("graphics.conversion.cmykprofile",function(v) cmykprofile = type(v) == "string" and v or cmykprofile end)
-
-local function profiles()
-    if not lfs.isfile(rgbprofile) then
-        local found = resolvers.findfile(rgbprofile)
-        if found and found ~= "" then
-            rgbprofile = found
-        else
-            report_figures("unknown profile %a",rgbprofile)
-        end
-    end
-    if not lfs.isfile(cmykprofile) then
-        local found = resolvers.findfile(cmykprofile)
-        if found and found ~= "" then
-            cmykprofile = found
-        else
-            report_figures("unknown profile %a",cmykprofile)
-        end
-    end
-    return rgbprofile, cmykprofile
-end
-
-programs.pngtocmykpdf = {
-    command  = "gm",
-    argument = [[convert -compress Zip  -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -sampling-factor 1x1 "%oldname%" "%newname%"]],
-}
-
-programs.jpgtocmykpdf = {
-    command  = "gm",
-    argument = [[convert -compress JPEG -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -sampling-factor 1x1 "%oldname%" "%newname%"]],
-}
-
-programs.pngtograypdf = {
-    command  = "gm",
-    argument = [[convert -colorspace gray -compress Zip -sampling-factor 1x1 "%oldname%" "%newname%"]],
-}
-
-programs.jpgtograypdf = {
-    command  = "gm",
-    argument = [[convert -colorspace gray -compress Zip -sampling-factor 1x1 "%oldname%" "%newname%"]],
-}
-
-figures.converters.png = {
-    ["cmyk.pdf"] = function(oldname,newname,resolution)
-        local rgbprofile, cmykprofile = profiles()
-        runprogram(programs.pngtocmykpdf.command, programs.pngtocmykpdf.argument, {
-     -- runprogram(programs.pngtocmykpdf, {
-            rgbprofile  = rgbprofile,
-            cmykprofile = cmykprofile,
-            oldname     = oldname,
-            newname     = newname,
-        } )
-    end,
-    ["gray.pdf"] = function(oldname,newname,resolution)
-        runprogram(programs.pngtograypdf.command, programs.pngtograypdf.argument, {
-     -- runprogram(programs.pngtograypdf, {
-            oldname = oldname,
-            newname = newname,
-        } )
-    end,
-}
-
-figures.converters.jpg = {
-    ["cmyk.pdf"] = function(oldname,newname,resolution)
-        local rgbprofile, cmykprofile = profiles()
-        runprogram(programs.jpgtocmykpdf.command, programs.jpgtocmykpdf.argument, {
-     -- runprogram(programs.jpgtocmykpdf, {
-            rgbprofile  = rgbprofile,
-            cmykprofile = cmykprofile,
-            oldname     = oldname,
-            newname     = newname,
-        } )
-    end,
-    ["gray.pdf"] = function(oldname,newname,resolution)
-        runprogram(programs.jpgtograypdf.command, programs.jpgtograypdf.argument, {
-     -- runprogram(programs.jpgtograypdf, {
-            oldname = oldname,
-            newname = newname,
-        } )
-    end,
-}
+-- the rest of the code has been moved to grph-con.lua
 
 -- -- -- bases -- -- --
 
@@ -2072,7 +1896,9 @@ implement {
             { "conversion" },
             { "resolution" },
             { "color" },
+            { "arguments" },
             { "repeat" },
+            { "transform" },
             { "width", "dimen" },
             { "height", "dimen" },
         }
@@ -2122,6 +1948,8 @@ implement {
 
 local registered = { }
 
+local ctx_doexternalfigurerepeat = context.doexternalfigurerepeat
+
 interfaces.implement {
     name      = "figure_register_page",
     arguments = { "string", "string", "string" },
@@ -2144,7 +1972,7 @@ interfaces.implement {
     actions   = function(n)
         local f = registered[tonumber(n)]
         if f then
-            context.doexternalfigurerepeat(f[1],f[2],f[3],n)
+            ctx_doexternalfigurerepeat(f[1],f[2],f[3],n)
         end
     end
 }

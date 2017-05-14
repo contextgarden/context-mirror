@@ -575,7 +575,7 @@
 % future let but just pick up the key.
 
 % \installtabulatepreambleoption \s!unknown %
-%   {\writestatus{tabulate}{unknown preamble key [\meaning\next]}%
+%   {\writestatus{tabulate}{unknown preamble key [\normalmeaning\next]}%
 %    \tabl_tabulate_set_preamble}
 %
 % \def\tabl_tabulate_set_preamble
@@ -787,7 +787,7 @@
      \global\d_tabl_tabulate_vrulethickness\d_tabl_tabulate_vrulethickness_default
      \rawprocesscommalist[#1]\tabl_tabulate_set_vrule_command
    \fi
-      \tabl_tabulate_set_preamble#2\relax\relax % permits i without n
+     \tabl_tabulate_set_preamble#2\relax\relax % permits i without n
    \ifcase\c_tabl_tabulate_modus\relax
      \tabl_tabulate_set_width_normal
    \or % fixed width
@@ -1213,10 +1213,89 @@
 
 % todo: spacing around tabulate when bodyfont is set
 
-\unexpanded\def\tabl_tabulate_start_building
-  {\ifinsidefloat \else
+% \let\tabl_tabulate_inside_before   \relax
+% \let\tabl_tabulate_inside_after    \relax
+% \let\tabl_tabulate_inside_inbetween\relax
+%
+% \def\tabl_tabulate_outside_before
+%   {\whitespace
+%    \tabulationparameter\c!before}
+%
+% \def\tabl_tabulate_outside_after
+%   {\tabulationparameter\c!after}
+
+% \showboxes
+%
+% \startcombination
+%     {\insidefloattrue \starttabulate[|||] \NC test \NC test \NC \NR \stoptabulate} {}
+%     {\insidefloattrue \starttabulate[|||] \NC test \NC test \NC \NR \stoptabulate} {}
+% \stopcombination
+%
+% \startcombination
+%     {\vbox{\starttabulate[|||] \NC test \NC test \NC \NR \stoptabulate}} {}
+%     {\vbox{\starttabulate[|||] \NC test \NC test \NC \NR \stoptabulate}} {}
+% \stopcombination
+%
+% \startcombination
+%     {\starttabulate[|||] \NC test \NC test \NC \NR \stoptabulate} {}
+%     {\starttabulate[|||] \NC test \NC test \NC \NR \stoptabulate} {}
+% \stopcombination
+
+\let\tabl_tabulate_inside_after     \relax
+\let\tabl_tabulate_outside_after    \relax
+\let\tabl_tabulate_inside_inbetween \relax
+\let\tabl_tabulate_outside_inbetween\relax
+
+\unexpanded\def\tabl_tabulate_inside_before
+  {\ifhmode\par\fi
+   \ifhmode
+     \ifinsidesplitfloat
+       \let\tabl_tabulate_inside_after\relax
+     \else
+       \vbox\bgroup
+       \let\tabl_tabulate_inside_after\egroup
+     \fi
+   \else
+     \let\tabl_tabulate_inside_after\relax
+   \fi}
+
+\unexpanded\def\tabl_tabulate_outside_before
+  {\ifhmode\par\fi
+   \ifhmode
+     \vbox\bgroup
+     \let\tabl_tabulate_outside_after    \egroup
+     \let\tabl_tabulate_outside_inbetween\relax
+   \else\ifinner
+     \let\tabl_tabulate_outside_after    \relax
+     \let\tabl_tabulate_outside_inbetween\relax
+   \else
      \whitespace
      \tabulationparameter\c!before
+     \relax
+     \let\tabl_tabulate_outside_after    \tabl_tabulate_outside_after_indeed
+     \let\tabl_tabulate_outside_inbetween\tabl_tabulate_outside_inbetween_indeed
+   \fi\fi}
+
+\def\tabl_tabulate_outside_after_indeed
+  {\tabulationparameter\c!after}%
+
+\def\tabl_tabulate_outside_inbetween_indeed
+  {\doifempty{\tabulationparameter\c!after}
+     {\vskip\strutdp
+      \verticalstrut
+      \vskip-\struttotal}}
+
+\def\tabl_tabulate_inside_inbetween % needs checking
+  {\doifempty{\tabulationparameter\c!after}
+     {\vskip\strutdp
+      \verticalstrut
+      \vskip-\struttotal}}
+
+\unexpanded\def\tabl_tabulate_start_building
+  {\ifinsidefloat
+     \tabl_tabulate_inside_before
+   \else
+     \tabl_tabulate_outside_before
    \fi
    \bgroup % settings
    %
@@ -1232,6 +1311,15 @@
    \edef\p_rulethickness{\tabulationparameter\c!rulethickness}%
    \edef\p_bodyfont     {\tabulationparameter\c!bodyfont}
    \edef\p_indenting    {\tabulationparameter\c!indenting}%
+   \edef\p_keeptogether {\tabulationparameter\c!keeptogether}%
+   %
+   \ifx\p_keeptogether\v!no
+     \settrue \c_tabl_tabulate_tolerant_break
+    %\setfalse\c_tabl_tabulate_handlepbreak
+   \else
+     \setfalse\c_tabl_tabulate_tolerant_break
+    %\settrue \c_tabl_tabulate_handlepbreak
+   \fi
    %
    \settrue\c_tabl_tabulate_split
    \csname\??tabulatesplit\tabulationparameter\c!split\endcsname
@@ -1958,11 +2046,10 @@
    \tabl_tabulate_column_rule_separator_inject
    \tabl_tabulate_nobreak_inject
    \tabl_tabulate_hrule_inject
-   \ifinsidefloat\else
-     \doifempty{\tabulationparameter\c!after}
-       {\vskip\strutdp
-        \verticalstrut
-        \vskip-\struttotal}%
+   \ifinsidefloat
+     \tabl_tabulate_inside_inbetween
+   \else
+     \tabl_tabulate_outside_inbetween
    \fi
    \stoptabulatenoalign}
 
@@ -2072,6 +2159,14 @@
 
 \let\v_tabl_tabulate_align\!!zerocount
 
+\def\tabl_tabulate_check_side_float % new per 29-07-2016
+  {\ifdefined\page_sides_check_floats_indeed
+     \page_sides_check_floats_indeed
+     \ifdim\hangindent>\zeropoint
+       \advance\d_tabl_tabulate_indent\hangindent
+     \fi
+   \fi}
+
 \def\tabl_tabulate_set_local_hsize
   {\setlocalhsize
    \hsize\localhsize}
@@ -2159,23 +2254,30 @@
    \ifinsidefloat
      \d_tabl_tabulate_indent\zeropoint
    \else
+     \tabl_tabulate_check_side_float
      \tabl_tabulate_set_local_hsize
    \fi
    \dontcomplain
    \forgetall % hm, interference with preceding \forgetparindent probably bug, to be solved
    \everypar\everytabulatepar
-   \setbox0\vbox % outside \if because of line counting
+   \setbox\scratchbox\vbox % outside \if because of line counting
      {\notesenabledfalse
       \d_tabl_tabulate_indent\zeropoint
       \settrialtypesetting % very important
+\anch_backgrounds_text_level_start
       \expandafter\halign\expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}}%
+\anch_backgrounds_text_level_stop
+\ifcase\c_anch_backgrounds_text_state\else
+  \global\settrue\tablehaspositions
+\fi
    \ifnum\c_tabl_tabulate_nofauto>\zerocount
      % so, even if the natural size is larger, in the final run, we force the calculated width
-     \d_tabl_tabulate_width\dimexpr\hsize-\wd0-\d_tabl_tabulate_width_p-\d_tabl_tabulate_width_w\relax
+     \d_tabl_tabulate_width\dimexpr\hsize-\wd\scratchbox-\d_tabl_tabulate_width_p-\d_tabl_tabulate_width_w\relax
      \ifnum\c_tabl_tabulate_nofauto>\zerocount
        \divide\d_tabl_tabulate_width \c_tabl_tabulate_nofauto\relax
      \fi
    \fi
+   \setbox\scratchbox\emptybox % free memory
    \ifconditional\c_tabl_tabulate_split
      \splittopskip\strutht
      \glet\tabl_tabulate_flush_collected_indeed\empty
@@ -2232,8 +2334,10 @@
      \tabl_split_box\b_tabl_tabulate
    \fi
    %
-   \ifinsidefloat \else
-     \tabulationparameter\c!after
+   \ifinsidefloat
+     \tabl_tabulate_inside_after
+   \else
+     \tabl_tabulate_outside_after
    \fi
    \egroup} % whole thing
 
@@ -2490,5 +2594,35 @@
 %D are done with \LUA\ only work in the english interface anyway.
 
 \definetabulate[tabulate] \setuptabulate[tabulate][\c!format=\v!none] % so no \v! here
+
+%D The following helpers are just there because we also have them at the \LUA\ end:
+%D
+%D \startbuffer
+%D \starttabulate[|l|c|r|]
+%D     \tabulaterow    {a,b,c}
+%D     \tabulaterowbold{aa,bb,cc}
+%D     \tabulaterowtype{aaa,bbb,ccc}
+%D     \tabulaterowtyp {aaaa,bbbb,cccc}
+%D \stoptabulate
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\def\tabl_tabulate_compact_row#1#2%
+  {\NC\tabl_tabulate_compact_step#1#2,\end,}
+
+\def\tabl_tabulate_compact_step#1#2#3,%
+  {\ifx#2\end
+     \NR
+     \expandafter\gobbleoneargument
+   \else
+     #1{#2#3}\NC
+     \expandafter\tabl_tabulate_compact_step
+   \fi#1}
+
+\unexpanded\def\tabulaterow    {\tabl_tabulate_compact_row\relax}
+\unexpanded\def\tabulaterowbold{\tabl_tabulate_compact_row\bold}
+\unexpanded\def\tabulaterowtype{\tabl_tabulate_compact_row\type}
+\unexpanded\def\tabulaterowtyp {\tabl_tabulate_compact_row\typ}
 
 \protect \endinput

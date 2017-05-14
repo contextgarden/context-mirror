@@ -15,8 +15,10 @@
 
 \unprotect
 
-%D We will implement a sidebar mechanism using the
-%D functionality from \type {core-pos}.
+%D This can be done better now ...
+
+%D We will implement a sidebar mechanism using the functionality from
+%D \type {core-pos}.
 %D
 %D \starttyping
 %D \definesidebar[whow][rulecolor=green,distance=0pt]
@@ -96,10 +98,10 @@
      {\def\currentsidebar{#1}%
       \setupcurrentsidebar[#2]}%
    \scratchdistance\sidebarparameter\c!distance\relax
+   \scratchdimen\sidebarparameter\c!leftmargindistance\relax
    \edef\m_level{\sidebarparameter\c!level}%
    \ifx\m_level\empty
      \ifnum\c_anch_sidebars_level=\plusone
-       \scratchdimen\sidebarparameter\c!leftmargindistance\relax
        \ifdim\scratchdimen=\zeropoint
          \advance\d_anch_sidebars_distance\scratchdistance\relax
        \else
@@ -110,7 +112,6 @@
      \fi
    \else
      \ifnum\m_level=\plusone
-       \scratchdimen\sidebarparameter\c!leftmargindistance\relax
        \ifdim\scratchdimen=\zeropoint
          \advance\d_anch_sidebars_distance\scratchdistance\relax
        \else
@@ -147,7 +148,6 @@
 
 \startMPpositionmethod{mpos:sidebar}
     \startMPpositiongraphic{mpos:sidebar}{linecolor,linewidth,distance,alternative}%
-        if unknown context_apos : input mp-apos.mpiv ; fi ;
         anch_sidebars_draw (
             \MPp\MPbself,\MPp\MPeself,\MPy\MPbself,\MPy\MPeself,\MPh\MPbself,\MPd\MPeself,
             \MPx{\textanchor},\MPy{\textanchor},\MPw{\textanchor},\MPh{\textanchor},

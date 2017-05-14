@@ -8,30 +8,34 @@ if not modules then modules = { } end modules ['lpdf-nod'] = {
 
 local type = type
 
-local formatters     = string.formatters
+local formatters       = string.formatters
 
-local whatsitcodes   = nodes.whatsitcodes
-local nodeinjections = backends.nodeinjections
+local whatsitcodes     = nodes.whatsitcodes
+local nodeinjections   = backends.nodeinjections
 
-local nuts           = nodes.nuts
-local tonut          = nuts.tonut
+local nuts             = nodes.nuts
+local tonut            = nuts.tonut
 
-local setfield       = nuts.setfield
+local setfield         = nuts.setfield
 
-local copy_node      = nuts.copy
-local new_node       = nuts.new
+local copy_node        = nuts.copy
+local new_node         = nuts.new
 
-local nodepool       = nuts.pool
-local register       = nodepool.register
+local nodepool         = nuts.pool
+local register         = nodepool.register
 
-local pdfliteral     = register(new_node("whatsit", whatsitcodes.pdfliteral))    setfield(pdfliteral,"mode",1)
-local pdfsave        = register(new_node("whatsit", whatsitcodes.pdfsave))
-local pdfrestore     = register(new_node("whatsit", whatsitcodes.pdfrestore))
-local pdfsetmatrix   = register(new_node("whatsit", whatsitcodes.pdfsetmatrix))
------ pdfdest        = register(new_node("whatsit", whatsitcodes.pdfdest))       setfield(pdfdest,"named_id",1) -- xyz_zoom untouched
------ pdfannot       = register(new_node("whatsit", whatsitcodes.pdfannot))
+local pdforiginliteral = register(new_node("whatsit", whatsitcodes.pdfliteral))    setfield(pdforiginliteral,"mode",0) -- set_origin_code
+local pdfpageliteral   = register(new_node("whatsit", whatsitcodes.pdfliteral))    setfield(pdfpageliteral,  "mode",1) -- page_code
+local pdfdirectliteral = register(new_node("whatsit", whatsitcodes.pdfliteral))    setfield(pdfdirectliteral,"mode",2) -- direct_code
+local pdfrawliteral    = register(new_node("whatsit", whatsitcodes.pdfliteral))    setfield(pdfrawliteral,   "mode",3) -- raw_code
 
-local variables      = interfaces.variables
+local pdfsave          = register(new_node("whatsit", whatsitcodes.pdfsave))
+local pdfrestore       = register(new_node("whatsit", whatsitcodes.pdfrestore))
+local pdfsetmatrix     = register(new_node("whatsit", whatsitcodes.pdfsetmatrix))
+----- pdfdest          = register(new_node("whatsit", whatsitcodes.pdfdest))       setfield(pdfdest,"named_id",1) -- xyz_zoom untouched
+----- pdfannot         = register(new_node("whatsit", whatsitcodes.pdfannot))
+
+local variables = interfaces.variables
 
 local views = { -- beware, we do support the pdf keys but this is *not* official
     xyz   = 0, [variables.standard]  = 0,
@@ -44,18 +48,12 @@ local views = { -- beware, we do support the pdf keys but this is *not* official
     fitr  = 7,
 }
 
-function nodepool.pdfliteral(str)
-    local t = copy_node(pdfliteral)
-    setfield(t,"data",str)
-    return t
-end
+function nodepool.pdforiginliteral(str) local t = copy_node(pdforiginliteral) setfield(t,"data",str) return t end
+function nodepool.pdfpageliteral  (str) local t = copy_node(pdfpageliteral  ) setfield(t,"data",str) return t end
+function nodepool.pdfdirectliteral(str) local t = copy_node(pdfdirectliteral) setfield(t,"data",str) return t end
+function nodepool.pdfrawliteral   (str) local t = copy_node(pdfrawliteral   ) setfield(t,"data",str) return t end
 
-function nodepool.pdfdirect(str)
-    local t = copy_node(pdfliteral)
-    setfield(t,"data",str)
-    setfield(t,"mode",1)
-    return t
-end
+nodepool.pdfliteral = nodepool.pdfpageliteral
 
 function nodepool.pdfsave()
     return copy_node(pdfsave)

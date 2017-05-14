@@ -24,7 +24,7 @@ local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 
 local setfield           = nuts.setfield
-local setchar            = nuts.setchar
+local setfont            = nuts.setfont
 
 local traverse_id        = nuts.traverse_id
 local traverse_char      = nuts.traverse_char
@@ -34,6 +34,9 @@ local settings_to_hash   = utilities.parsers.settings_to_hash
 local trace_collecting   = false  trackers.register("fonts.collecting", function(v) trace_collecting = v end)
 
 local report_fonts       = logs.reporter("fonts","collections")
+
+local enableaction       = nodes.tasks.enableaction
+local disableaction      = nodes.tasks.disableaction
 
 local collections        = fonts.collections or { }
 fonts.collections        = collections
@@ -46,7 +49,6 @@ collections.vectors      = vectors
 
 local fontdata           = fonts.hashes.identifiers
 local chardata           = fonts.hashes.characters
-local glyph_code         = nodes.nodecodes.glyph
 local currentfont        = font.current
 
 local fontpatternhassize = fonts.helpers.fontpatternhassize
@@ -61,12 +63,12 @@ local function checkenabled()
     -- a bit ugly but nicer than a fuzzy state while defining math
     if next(vectors) then
         if not enabled then
-            nodes.tasks.enableaction("processors","fonts.collections.process")
+            enableaction("processors","fonts.collections.process")
             enabled = true
         end
     else
         if enabled then
-            nodes.tasks.disableaction("processors","fonts.collections.process")
+            disableaction("processors","fonts.collections.process")
             enabled = false
         end
     end
@@ -102,7 +104,7 @@ function collections.define(name,font,ranges,details)
     details = settings_to_hash(details)
     -- todo, combine per font start/stop as arrays
     for s in gmatch(ranges,"[^, ]+") do
-        local start, stop, description, gaps = characters.getrange(s)
+        local start, stop, description, gaps = characters.getrange(s,true)
         if start and stop then
             if trace_collecting then
                 if description then
@@ -117,20 +119,21 @@ function collections.define(name,font,ranges,details)
             end
             local offset = details.offset
             if type(offset) == "string" then
-                local start = characters.getrange(offset)
+                local start = characters.getrange(offset,true)
                 offset = start or false
             else
                 offset = tonumber(offset) or false
             end
             d[#d+1] = {
-                font   = font,
-                start  = start,
-                stop   = stop,
-                gaps   = gaps,
-                offset = offset,
-                rscale = tonumber (details.rscale) or 1,
-                force  = toboolean(details.force,true),
-                check  = toboolean(details.check,true),
+                font     = font,
+                start    = start,
+                stop     = stop,
+                gaps     = gaps,
+                offset   = offset,
+                rscale   = tonumber (details.rscale) or 1,
+                force    = toboolean(details.force,true),
+                check    = toboolean(details.check,true),
+                features = details.features,
             }
         end
     end
@@ -257,7 +260,6 @@ end
 
 function collections.process(head) -- this way we keep feature processing
     local done = false
- -- for n in traverse_id(glyph_code,tonut(head)) do
     for n in traverse_char(tonut(head)) do
         local font   = getfont(n)
         local vector = vectors[font]
@@ -274,8 +276,7 @@ function collections.process(head) -- this way we keep feature processing
                         char,font,newchar,newfont,not chardata[newfont][newchar] and " (missing)" or ""
                     )
                 end
-                setfield(n,"font",newfont)
-                setchar(n,newchar)
+                setfont(n,newfont,newchar)
                 done = true
             else
                 if trace_collecting then
@@ -283,7 +284,7 @@ function collections.process(head) -- this way we keep feature processing
                         font,vect,char,not chardata[vect][char] and " (missing)" or ""
                     )
                 end
-                setfield(n,"font",vect)
+                setfont(n,vect)
                 done = true
             end
         end

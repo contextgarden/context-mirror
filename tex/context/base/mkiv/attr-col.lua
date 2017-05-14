@@ -12,10 +12,9 @@ if not modules then modules = { } end modules ['attr-col'] = {
 -- list could as well refer to the tables (instead of numbers that
 -- index into another table) .. depends on what we need
 
-local type = type
-local format = string.format
+local type, tonumber = type, tonumber
 local concat = table.concat
-local min, max, floor = math.min, math.max, math.floor
+local min, max, floor, mod = math.min, math.max, math.floor, math.mod
 
 local attributes            = attributes
 local nodes                 = nodes
@@ -25,6 +24,14 @@ local backends              = backends
 local storage               = storage
 local context               = context
 local tex                   = tex
+
+local variables             = interfaces.variables
+local v_yes                 = variables.yes
+local v_no                  = variables.no
+
+local p_split_comma         = lpeg.tsplitat(",")
+local p_split_colon         = lpeg.splitat(":")
+local lpegmatch             = lpeg.match
 
 local allocate              = utilities.storage.allocate
 local setmetatableindex     = table.setmetatableindex
@@ -40,10 +47,12 @@ local report_transparencies = logs.reporter("transparencies","support")
 -- nb. too many "0 g"s
 
 local states          = attributes.states
-local tasks           = nodes.tasks
 local nodeinjections  = backends.nodeinjections
 local registrations   = backends.registrations
 local unsetvalue      = attributes.unsetvalue
+
+local enableaction    = nodes.tasks.enableaction
+local setaction       = nodes.tasks.setaction
 
 local registerstorage = storage.register
 local formatters      = string.formatters
@@ -145,10 +154,14 @@ end
 local function rgbtogray(r,g,b)
     if not r then
         return 0
-    elseif colors.weightgray then
+    end
+    local w = colors.weightgray
+    if w == true then
         return .30*r + .59*g + .11*b
-    else
+    elseif not w then
         return r/3 + g/3 + b/3
+    else
+        return w[1]*r + w[2]*g + w[3]*b
     end
 end
 
@@ -156,27 +169,34 @@ local function cmyktogray(c,m,y,k)
     return rgbtogray(cmyktorgb(c,m,y,k))
 end
 
--- not critical so not needed:
---
--- local function cmyktogray(c,m,y,k)
---     local r, g, b = 1.0 - min(1.0,c+k), 1.0 - min(1.0,m+k), 1.0 - min(1.0,y+k)
---     if colors.weightgray then
---         return .30*r + .59*g + .11*b
---     else
---         return r/3 + g/3 + b/3
---     end
--- end
-
 -- http://en.wikipedia.org/wiki/HSI_color_space
 -- http://nl.wikipedia.org/wiki/HSV_(kleurruimte)
 
+-- 	h /= 60;        // sector 0 to 5
+-- 	i = floor( h );
+-- 	f = h - i;      // factorial part of h
+
 local function hsvtorgb(h,s,v)
- -- h = h % 360
-    local hd = h/60
-    local hf = floor(hd)
-    local hi = hf % 6
- -- local f =  hd - hi
-    local f =  hd - hf
+    if s > 1 then
+        s = 1
+    elseif s < 0 then
+        s = 0
+    elseif s == 0 then
+        return v, v, v
+    end
+    if v > 1 then
+        s = 1
+    elseif v < 0 then
+        v = 0
+    end
+    if h < 0 then
+        h = 0
+    elseif h >= 360 then
+        h = mod(h,360)
+    end
+    local hd = h / 60
+    local hi = floor(hd)
+    local f =  hd - hi
     local p = v * (1 - s)
     local q = v * (1 - f * s)
     local t = v * (1 - (1 - f) * s)
@@ -193,7 +213,8 @@ local function hsvtorgb(h,s,v)
     elseif hi == 5 then
         return v, p, q
     else
-        print("error in hsv -> rgb",hi,h,s,v)
+        print("error in hsv -> rgb",h,s,v)
+        return 0, 0, 0
     end
 end
 
@@ -264,9 +285,6 @@ end
 --~     return { 5, .5, .5, .5, .5, 0, 0, 0, .5, parent, f, d, p }
 --~ end
 
-local p_split   = lpeg.tsplitat(",")
-local lpegmatch = lpeg.match
-
 function colors.spot(parent,f,d,p)
  -- inspect(parent) inspect(f) inspect(d) inspect(p)
     if type(p) == "number" then
@@ -283,8 +301,8 @@ function colors.spot(parent,f,d,p)
         end
     else
         -- todo, multitone (maybe p should be a table)
-        local ps = lpegmatch(p_split,p)
-        local ds = lpegmatch(p_split,d)
+        local ps = lpegmatch(p_split_comma,p)
+        local ds = lpegmatch(p_split_comma,d)
         local c, m, y, k = 0, 0, 0, 0
         local done = false
         for i=1,#ps do
@@ -364,10 +382,31 @@ function colors.filter(n)
     return concat(data[n],":",5)
 end
 
+-- unweighted (flat) gray could be another model but a bit work as we need to check:
+--
+--   attr-col colo-ini colo-run
+--   grph-inc grph-wnd
+--   lpdf-col lpdf-fmt lpdf-fld lpdf-grp
+--   meta-pdf meta-pdh mlib-pps
+--
+-- but as we never needed it we happily delay that.
+
 function colors.setmodel(name,weightgray)
-    colors.model = name
-    colors.default = models[name] or 1
-    colors.weightgray = weightgray ~= false
+    if weightgray == true or weightgray == v_yes then
+        weightgray = true
+    elseif weightgray == false or weightgray == v_no then
+        weightgray = false
+    else
+        local r, g, b = lpegmatch(p_split_colon,weightgray)
+        if r and g and b then
+            weightgray = { r, g, b }
+        else
+            weightgray = true
+        end
+    end
+    colors.model      = name              -- global, not useful that way
+    colors.default    = models[name] or 1 -- global
+    colors.weightgray = weightgray        -- global
     return colors.default
 end
 
@@ -400,11 +439,7 @@ attributes.colors.handler = nodes.installattributehandler {
 }
 
 function colors.enable(value)
-    if value == false or not colors.supported then
-        tasks.disableaction("shipouts","attributes.colors.handler")
-    else
-        tasks.enableaction("shipouts","attributes.colors.handler")
-    end
+    setaction("shipouts","attributes.colors.handler",not (value == false or not colors.supported))
 end
 
 function colors.forcesupport(value) -- can move to attr-div
@@ -492,8 +527,8 @@ local function reviver(data,n)
     end
 end
 
-setmetatableindex(transparencies, extender)
-setmetatableindex(transparencies.data, reviver) -- register if used
+setmetatableindex(transparencies,extender)
+setmetatableindex(transparencies.data,reviver) -- register if used
 
 -- check if there is an identity
 
@@ -510,11 +545,7 @@ attributes.transparencies.handler = nodes.installattributehandler {
 }
 
 function transparencies.enable(value) -- nil is enable
-    if value == false or not transparencies.supported then
-        tasks.disableaction("shipouts","attributes.transparencies.handler")
-    else
-        tasks.enableaction("shipouts","attributes.transparencies.handler")
-    end
+    setaction("shipouts","attributes.transparencies.handler",not (value == false or not transparencies.supported))
 end
 
 function transparencies.forcesupport(value) -- can move to attr-div
@@ -573,7 +604,7 @@ colorintents.handler = nodes.installattributehandler {
 }
 
 function colorintents.enable()
-    tasks.enableaction("shipouts","attributes.colorintents.handler")
+    enableaction("shipouts","attributes.colorintents.handler")
 end
 
 -- interface

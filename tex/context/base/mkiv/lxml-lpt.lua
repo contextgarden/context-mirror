@@ -518,6 +518,15 @@ local function apply_expression(list,expression,order)
     return collected
 end
 
+local function apply_selector(list,specification)
+    if xml.applyselector then
+        apply_selector = xml.applyselector
+        return apply_selector(list,specification)
+    else
+        return list
+    end
+end
+
 -- this one can be made faster but there are not that many conversions so it doesn't
 -- really pay of
 
@@ -717,6 +726,10 @@ local function register_nodes(nodetest,nodes)
     return { kind = "nodes", nodetest = nodetest, nodes = nodes }
 end
 
+local function register_selector(specification)
+    return { kind = "selector", specification = specification }
+end
+
 local function register_expression(expression)
     local converted = lpegmatch(converter,expression)
     local runner = load(format(template_e,converted))
@@ -775,7 +788,7 @@ local pathparser = Ct { "patterns", -- can be made a bit faster by moving some p
  -- the / is needed for // as descendant or self is somewhat special
  --
  -- step                 = (V("shortcuts") + V("axis") * spaces * V("nodes")^0 + V("error")) * spaces * V("expressions")^0 * spaces * V("finalizer")^0,
-    step                 = ((V("shortcuts") + P("/") + V("axis")) * spaces * V("nodes")^0 + V("error")) * spaces * V("expressions")^0 * spaces * V("finalizer")^0,
+    step                 = ((V("shortcuts") + V("selector") + P("/") + V("axis")) * spaces * V("nodes")^0 + V("error")) * spaces * V("expressions")^0 * spaces * V("finalizer")^0,
 
     axis                 = V("last_match")
                          + V("descendant")
@@ -807,36 +820,40 @@ local pathparser = Ct { "patterns", -- can be made a bit faster by moving some p
                          + V("s_parent")
                          + V("s_self")
                          + V("s_root")
-                         + V("s_ancestor"),
+                         + V("s_ancestor")
+                         + V("s_lastmatch"),
 
     shortcuts            = V("shortcuts_a") * (spaces * "/" * spaces * V("shortcuts_a"))^0,
 
     s_descendant_or_self = (P("***/") + P("/"))  * Cc(register_descendant_or_self), --- *** is a bonus
     s_descendant         = P("**")               * Cc(register_descendant),
-    s_child              = P("*") * no_nextcolon * Cc(register_child     ),
-    s_parent             = P("..")               * Cc(register_parent    ),
-    s_self               = P("." )               * Cc(register_self      ),
-    s_root               = P("^^")               * Cc(register_root      ),
-    s_ancestor           = P("^")                * Cc(register_ancestor  ),
+    s_child              = P("*") * no_nextcolon * Cc(register_child),
+    s_parent             = P("..")               * Cc(register_parent),
+    s_self               = P("." )               * Cc(register_self),
+    s_root               = P("^^")               * Cc(register_root),
+    s_ancestor           = P("^")                * Cc(register_ancestor),
+    s_lastmatch          = P("=")                * Cc(register_last_match),
 
     -- we can speed this up when needed but we cache anyway so ...
 
-    descendant           = P("descendant::")         * Cc(register_descendant         ),
-    child                = P("child::")              * Cc(register_child              ),
-    parent               = P("parent::")             * Cc(register_parent             ),
-    self                 = P("self::")               * Cc(register_self               ),
-    root                 = P('root::')               * Cc(register_root               ),
-    ancestor             = P('ancestor::')           * Cc(register_ancestor           ),
-    descendant_or_self   = P('descendant-or-self::') * Cc(register_descendant_or_self ),
-    ancestor_or_self     = P('ancestor-or-self::')   * Cc(register_ancestor_or_self   ),
- -- attribute            = P('attribute::')          * Cc(register_attribute          ),
- -- namespace            = P('namespace::')          * Cc(register_namespace          ),
-    following            = P('following::')          * Cc(register_following          ),
-    following_sibling    = P('following-sibling::')  * Cc(register_following_sibling  ),
-    preceding            = P('preceding::')          * Cc(register_preceding          ),
-    preceding_sibling    = P('preceding-sibling::')  * Cc(register_preceding_sibling  ),
-    reverse_sibling      = P('reverse-sibling::')    * Cc(register_reverse_sibling    ),
-    last_match           = P('last-match::')         * Cc(register_last_match         ),
+    descendant           = P("descendant::")         * Cc(register_descendant),
+    child                = P("child::")              * Cc(register_child),
+    parent               = P("parent::")             * Cc(register_parent),
+    self                 = P("self::")               * Cc(register_self),
+    root                 = P('root::')               * Cc(register_root),
+    ancestor             = P('ancestor::')           * Cc(register_ancestor),
+    descendant_or_self   = P('descendant-or-self::') * Cc(register_descendant_or_self),
+    ancestor_or_self     = P('ancestor-or-self::')   * Cc(register_ancestor_or_self),
+ -- attribute            = P('attribute::')          * Cc(register_attribute),
+ -- namespace            = P('namespace::')          * Cc(register_namespace),
+    following            = P('following::')          * Cc(register_following),
+    following_sibling    = P('following-sibling::')  * Cc(register_following_sibling),
+    preceding            = P('preceding::')          * Cc(register_preceding),
+    preceding_sibling    = P('preceding-sibling::')  * Cc(register_preceding_sibling),
+    reverse_sibling      = P('reverse-sibling::')    * Cc(register_reverse_sibling),
+    last_match           = P('last-match::')         * Cc(register_last_match),
+
+    selector             = P("{") * C((1-P("}"))^1) * P("}") / register_selector,
 
     nodes                = (V("nodefunction") * spaces * P("(") * V("nodeset") * P(")") + V("nodetest") * V("nodeset")) / register_nodes,
 
@@ -1026,6 +1043,8 @@ do
                 collected = apply_nodes(collected,pi.nodetest,pi.nodes)
             elseif kind == "expression" then
                 collected = apply_expression(collected,pi.evaluator,order)
+            elseif kind == "selector" then
+                collected = apply_selector(collected,pi.specification)
             elseif kind == "finalizer" then
                 collected = pi.finalizer(collected) -- no check on # here
                 p.matched = p.matched + 1
@@ -1068,6 +1087,9 @@ do
             elseif kind == "expression" then
                 collected = apply_expression(collected,pi.evaluator,order)
                 report_lpath("% 10i : ex : %s -> %s",(collected and #collected) or 0,pi.expression,pi.converted)
+            elseif kind == "selector" then
+                collected = apply_selector(collected,pi.specification)
+                report_lpath("% 10i : se : %s ",(collected and #collected) or 0,pi.specification)
             elseif kind == "finalizer" then
                 collected = pi.finalizer(collected)
                 report_lpath("% 10i : fi : %s : %s(%s)",(type(collected) == "table" and #collected) or 0,parsed.protocol or xml.defaultprotocol,pi.name,pi.arguments or "")
@@ -1100,6 +1122,8 @@ do
                 collected = apply_nodes(collected,pi.nodetest,pi.nodes)
             elseif kind == "expression" then
                 collected = apply_expression(collected,pi.evaluator,order)
+            elseif kind == "selector" then
+                collected = apply_selector(collected,pi.specification)
             elseif kind == "finalizer" then
                 return pi.finalizer(collected)
             end
@@ -1173,6 +1197,16 @@ do
 
     function xml.lastmatch()
         return lastmatch
+    end
+
+    local stack  = { }
+
+    function xml.pushmatch()
+        insert(stack,lastmatch)
+    end
+
+    function xml.popmatch()
+        lastmatch = remove(stack)
     end
 
 end

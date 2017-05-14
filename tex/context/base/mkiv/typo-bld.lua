@@ -37,6 +37,7 @@ local texnest            = tex.nest
 local texlists           = tex.lists
 
 local nodes              = nodes
+local nodeidstostring    = nodes.idstostring
 local nodepool           = nodes.pool
 local new_baselineskip   = nodepool.baselineskip
 local new_lineskip       = nodepool.lineskip
@@ -45,6 +46,8 @@ local hpack_node         = nodes.hpack
 
 local starttiming        = statistics.starttiming
 local stoptiming         = statistics.stoptiming
+
+local registercallback   = callbacks.register
 
 storage.register("builders/paragraphs/constructors/names",   names,   "builders.paragraphs.constructors.names")
 storage.register("builders/paragraphs/constructors/numbers", numbers, "builders.paragraphs.constructors.numbers")
@@ -172,7 +175,7 @@ end
 function constructors.enable () enabled = true  end
 function constructors.disable() enabled = false end
 
-callbacks.register('linebreak_filter', processor, "breaking paragraps into lines")
+registercallback('linebreak_filter', processor, "breaking paragraps into lines")
 
 statistics.register("linebreak processing time", function()
     return statistics.elapsedseconds(parbuilders)
@@ -182,8 +185,6 @@ end)
 
 nodes.builders = nodes.builder or { }
 local builders = nodes.builders
-
-local normalize = typesetters.paragraphs.normalize
 
 local vboxactions = nodes.tasks.actions("vboxbuilders")
 
@@ -227,9 +228,8 @@ end
 -- check why box is called before after_linebreak .. maybe make categories and
 -- call 'm less
 
-
 -- this will be split into contribute_filter for these 4 so at some point
--- thecheck can go away
+-- the check can go away
 
 function builders.buildpage_filter(groupcode)
     -- the next check saves 1% runtime on 1000 tufte pages
@@ -257,9 +257,9 @@ function builders.buildpage_filter(groupcode)
     end
 end
 
-callbacks.register('vpack_filter',      builders.vpack_filter,      "vertical spacing etc")
-callbacks.register('buildpage_filter',  builders.buildpage_filter,  "vertical spacing etc (mvl)")
----------.register('contribute_filter', builders.contribute_filter, "adding content to lists")
+registercallback('vpack_filter',      builders.vpack_filter,      "vertical spacing etc")
+registercallback('buildpage_filter',  builders.buildpage_filter,  "vertical spacing etc (mvl)")
+----------------('contribute_filter', builders.contribute_filter, "adding content to lists")
 
 statistics.register("v-node processing time", function()
     return statistics.elapsedseconds(builders)
@@ -298,7 +298,7 @@ local function vpack_quality(how,n,detail,first,last)
 end
 
 trackers.register("builders.vpack.quality",function(v)
-    callback.register("vpack_quality",v and report_vpack_quality or nil)
+    registercallback("vpack_quality",v and report_vpack_quality or nil,"check vpack quality")
 end)
 
 local report, show = false, false
@@ -349,37 +349,40 @@ end
 
 trackers.register("builders.hpack.quality",function(v)
     report = v
-    callback.register("hpack_quality",(report or show) and hpack_quality or nil)
+    registercallback("hpack_quality",(report or show) and hpack_quality or nil,"check hpack quality")
 end)
 
 trackers.register("builders.hpack.overflow",function(v)
     show = v
-    callback.register("hpack_quality",(report or show) and hpack_quality or nil)
+    registercallback("hpack_quality",(report or show) and hpack_quality or nil,"check hpack quality")
 end)
 
 -- local ignoredepth = - 65536000
 --
--- callback.register("append_to_vlist_filter", function(box,location,prevdepth,mirrored)
---     if prevdepth > ignoredepth then
---         local b = tex.baselineskip
---         local d = b.width - prevdepth
---         local g = nil
---         if mirrored then
---             d = d - box.depth
+-- registercallback(
+--     "append_to_vlist_filter",
+--     function(box,location,prevdepth,mirrored),
+--         if prevdepth > ignoredepth then
+--             local b = tex.baselineskip
+--             local d = b.width - prevdepth
+--             local g = nil
+--             if mirrored then
+--                 d = d - box.depth
+--             else
+--                 d = d - box.height
+--             end
+--             if d < tex.lineskiplimit then
+--                 g = nodes.pool.glue()
+--                 g.spec = tex.lineskip
+--             else
+--                 g = nodes.pool.baselineskip(d)
+--             end
+--             g.next = box
+--             box.prev = g
+--             return g, mirrored and box.height or box.depth
 --         else
---             d = d - box.height
+--             return box, mirrored and box.height or box.depth
 --         end
---         if d < tex.lineskiplimit then
---             g = nodes.pool.glue()
---             g.spec = tex.lineskip
---         else
---             g = nodes.pool.baselineskip(d)
---         end
---         g.next = box
---         box.prev = g
---         return g, mirrored and box.height or box.depth
---     else
---         return box, mirrored and box.height or box.depth
---     end
--- end)
---
+--     end,
+--     "experimental prevdepth checking"
+-- )

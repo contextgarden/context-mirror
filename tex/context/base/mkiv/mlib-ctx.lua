@@ -23,6 +23,8 @@ local mplib              = mplib
 metapost                 = metapost or {}
 local metapost           = metapost
 
+local context            = context
+
 local setters            = tokens.setters
 local setmacro           = setters.macro
 local implement          = interfaces.implement
@@ -177,6 +179,7 @@ implement {
 
 implement {
     name      = "mprunset",
+    arguments = { "string", "string" },
     actions   = function(name,connector)
         local value = metapost.variables[name]
         if value ~= nil then
@@ -213,6 +216,7 @@ implement {
             { "definitions" },
             { "figure" },
             { "method" },
+            { "namespace" },
         }
     }
 }
@@ -282,7 +286,6 @@ end
 function metapost.theclippath(...)
     local result = metapost.getclippath(...)
     if result then -- we could just print the table
---         return concat(metapost.flushnormalpath(result),"\n")
         return concat(metapost.flushnormalpath(result)," ")
     else
         return ""
@@ -303,6 +306,7 @@ implement {
             { "useextensions" },
             { "inclusions" },
             { "method" },
+            { "namespace" },
         },
     }
 }
@@ -351,6 +355,16 @@ end
 function mptex.reset()
     environments = { }
 end
+
+implement {
+    name      = "mppushvariables",
+    actions   = metapost.pushvariables,
+}
+
+implement {
+    name      = "mppopvariables",
+    actions   = metapost.popvariables,
+}
 
 implement {
     name      = "mptexset",

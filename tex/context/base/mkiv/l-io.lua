@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['l-io'] = {
 }
 
 local io = io
+local open, flush, write, read = io.open, io.flush, io.write, io.read
 local byte, find, gsub, format = string.byte, string.find, string.gsub, string.format
 local concat = table.concat
 local floor = math.floor
@@ -18,59 +19,136 @@ else
     io.fileseparator, io.pathseparator = "/" , ":"
 end
 
-local function readall(f)
-    return f:read("*all")
-end
+-- local function readall(f)
+--     return f:read("*all")
+-- end
 
 -- The next one is upto 50% faster on large files and less memory consumption due
 -- to less intermediate large allocations. This phenomena was discussed on the
 -- luatex dev list.
 
+local large  = 2^24        -- 16 MB
+local medium = large  / 16 --  1 MB
+local small  = medium /  8
+
+-- local function readall(f)
+--     local size = f:seek("end")
+--     if size == 0 then
+--         return ""
+--     end
+--     f:seek("set",0)
+--     if size < medium then
+--         return f:read('*all')
+--     else
+--         local step = (size > large) and large or (floor(size/(medium)) * small)
+--         local data = { }
+--         while true do
+--             local r = f:read(step)
+--             if not r then
+--                 return concat(data)
+--             else
+--                 data[#data+1] = r
+--             end
+--         end
+--     end
+-- end
+
 local function readall(f)
+--     return f:read("*all")
     local size = f:seek("end")
-    if size == 0 then
-        return ""
-    elseif size < 1024*1024 then
+    if size > 0 then
         f:seek("set",0)
-        return f:read('*all')
+        return f:read(size)
     else
-        local done = f:seek("set",0)
-        local step
-        if size < 1024*1024 then
-            step = 1024 * 1024
-        elseif size > 16*1024*1024 then
-            step = 16*1024*1024
-        else
-            step = floor(size/(1024*1024)) * 1024 * 1024 / 8
-        end
-        local data = { }
-        while true do
-            local r = f:read(step)
-            if not r then
-                return concat(data)
-            else
-                data[#data+1] = r
-            end
-        end
+        return ""
     end
 end
 
 io.readall = readall
 
 function io.loaddata(filename,textmode) -- return nil if empty
-    local f = io.open(filename,(textmode and 'r') or 'rb')
+    local f = open(filename,(textmode and 'r') or 'rb')
     if f then
-     -- local data = f:read('*all')
-        local data = readall(f)
-        f:close()
-        if #data > 0 then
-            return data
+        local size = f:seek("end")
+        local data = nil
+        if size > 0 then
+         -- data = f:read("*all")
+            f:seek("set",0)
+            data = f:read(size)
         end
+        f:close()
+        return data
+    end
+end
+
+-- function io.copydata(source,target,action)
+--     local f = open(source,"rb")
+--     if f then
+--         local g = open(target,"wb")
+--         if g then
+--             local size = f:seek("end")
+--             if size == 0 then
+--                 -- empty
+--             else
+--                 f:seek("set",0)
+--                 if size < medium then
+--                     local data = f:read('*all')
+--                     if action then
+--                         data = action(data)
+--                     end
+--                     if data then
+--                         g:write(data)
+--                     end
+--                 else
+--                     local step = (size > large) and large or (floor(size/(medium)) * small)
+--                     while true do
+--                         local data = f:read(step)
+--                         if data then
+--                             if action then
+--                                 data = action(data)
+--                             end
+--                             if data then
+--                                 g:write(data)
+--                             end
+--                         else
+--                             break
+--                         end
+--                     end
+--                 end
+--             end
+--             g:close()
+--         end
+--         f:close()
+--         flush()
+--     end
+-- end
+
+function io.copydata(source,target,action)
+    local f = open(source,"rb")
+    if f then
+        local g = open(target,"wb")
+        if g then
+            local size = f:seek("end")
+            if size > 0 then
+             -- local data = f:read('*all')
+                f:seek("set",0)
+                local data = f:read(size)
+                if action then
+                    data = action(data)
+                end
+                if data then
+                    g:write(data)
+                end
+            end
+            g:close()
+        end
+        f:close()
+        flush()
     end
 end
 
 function io.savedata(filename,data,joiner)
-    local f = io.open(filename,"wb")
+    local f = open(filename,"wb")
     if f then
         if type(data) == "table" then
             f:write(concat(data,joiner or ""))
@@ -80,7 +158,7 @@ function io.savedata(filename,data,joiner)
             f:write(data or "")
         end
         f:close()
-        io.flush()
+        flush()
         return true
     else
         return false
@@ -89,36 +167,74 @@ end
 
 -- we can also chunk this one if needed: io.lines(filename,chunksize,"*l")
 
-function io.loadlines(filename,n) -- return nil if empty
-    local f = io.open(filename,'r')
-    if not f then
-        -- no file
-    elseif n then
-        local lines = { }
-        for i=1,n do
-            local line = f:read("*lines")
-            if line then
-                lines[#lines+1] = line
-            else
-                break
+-- ffi.readline
+
+if fio and fio.readline then
+
+    local readline = fio.readline
+
+    function io.loadlines(filename,n) -- return nil if empty
+        local f = open(filename,'r')
+        if not f then
+            -- no file
+        elseif n then
+            local lines = { }
+            for i=1,n do
+                local line = readline(f)
+                if line then
+                    lines[i] = line
+                else
+                    break
+                end
+            end
+            f:close()
+            lines = concat(lines,"\n")
+            if #lines > 0 then
+                return lines
+            end
+        else
+            local line = readline(f)
+            f:close()
+            if line and #line > 0 then
+                return line
             end
         end
-        f:close()
-        lines = concat(lines,"\n")
-        if #lines > 0 then
-            return lines
-        end
-    else
-        local line = f:read("*line") or ""
-        f:close()
-        if #line > 0 then
-            return line
+    end
+
+else
+
+    function io.loadlines(filename,n) -- return nil if empty
+        local f = open(filename,'r')
+        if not f then
+            -- no file
+        elseif n then
+            local lines = { }
+            for i=1,n do
+                local line = f:read("*lines")
+                if line then
+                    lines[i] = line
+                else
+                    break
+                end
+            end
+            f:close()
+            lines = concat(lines,"\n")
+            if #lines > 0 then
+                return lines
+            end
+        else
+            local line = f:read("*line") or ""
+            f:close()
+            if #line > 0 then
+                return line
+            end
         end
     end
+
 end
 
 function io.loadchunk(filename,n)
-    local f = io.open(filename,'rb')
+    local f = open(filename,'rb')
     if f then
         local data = f:read(n or 1024)
         f:close()
@@ -129,7 +245,7 @@ function io.loadchunk(filename,n)
 end
 
 function io.exists(filename)
-    local f = io.open(filename)
+    local f = open(filename)
     if f == nil then
         return false
     else
@@ -139,7 +255,7 @@ function io.exists(filename)
 end
 
 function io.size(filename)
-    local f = io.open(filename)
+    local f = open(filename)
     if f == nil then
         return 0
     else
@@ -149,17 +265,18 @@ function io.size(filename)
     end
 end
 
-function io.noflines(f)
+local function noflines(f)
     if type(f) == "string" then
-        local f = io.open(filename)
+        local f = open(filename)
         if f then
-            local n = f and io.noflines(f) or 0
+            local n = f and noflines(f) or 0
             f:close()
             return n
         else
             return 0
         end
     else
+        -- todo: load and lpeg
         local n = 0
         for _ in f:lines() do
             n = n + 1
@@ -168,6 +285,10 @@ function io.noflines(f)
         return n
     end
 end
+
+io.noflines = noflines
+
+-- inlined is faster ... beware, better use util-fil
 
 local nextchar = {
     [ 4] = function(f)
@@ -250,16 +371,16 @@ end
 
 function io.ask(question,default,options)
     while true do
-        io.write(question)
+        write(question)
         if options then
-            io.write(format(" [%s]",concat(options,"|")))
+            write(format(" [%s]",concat(options,"|")))
         end
         if default then
-            io.write(format(" [%s]",default))
+            write(format(" [%s]",default))
         end
-        io.write(format(" "))
-        io.flush()
-        local answer = io.read()
+        write(format(" "))
+        flush()
+        local answer = read()
         answer = gsub(answer,"^%s*(.*)%s*$","%1")
         if answer == "" and default then
             return default
@@ -282,7 +403,7 @@ function io.ask(question,default,options)
     end
 end
 
-local function readnumber(f,n,m)
+local function readnumber(f,n,m) -- to be replaced
     if m then
         f:seek("set",n)
         n = m
@@ -291,38 +412,32 @@ local function readnumber(f,n,m)
         return byte(f:read(1))
     elseif n == 2 then
         local a, b = byte(f:read(2),1,2)
-        return 256 * a + b
+        return 0x100 * a + b
     elseif n == 3 then
         local a, b, c = byte(f:read(3),1,3)
-        return 256*256 * a + 256 * b + c
+        return 0x10000 * a + 0x100 * b + c
     elseif n == 4 then
         local a, b, c, d = byte(f:read(4),1,4)
-        return 256*256*256 * a + 256*256 * b + 256 * c + d
+        return 0x1000000 * a + 0x10000 * b + 0x100 * c + d
     elseif n == 8 then
         local a, b = readnumber(f,4), readnumber(f,4)
-        return 256 * a + b
+        return 0x100 * a + b
     elseif n == 12 then
         local a, b, c = readnumber(f,4), readnumber(f,4), readnumber(f,4)
-        return 256*256 * a + 256 * b + c
+        return 0x10000 * a + 0x100 * b + c
     elseif n == -2 then
         local b, a = byte(f:read(2),1,2)
-        return 256*a + b
+        return 0x100 * a + b
     elseif n == -3 then
         local c, b, a = byte(f:read(3),1,3)
-        return 256*256 * a + 256 * b + c
+        return 0x10000 * a + 0x100 * b + c
     elseif n == -4 then
         local d, c, b, a = byte(f:read(4),1,4)
-        return 256*256*256 * a + 256*256 * b + 256*c + d
+        return 0x1000000 * a + 0x10000 * b + 0x100*c + d
     elseif n == -8 then
         local h, g, f, e, d, c, b, a = byte(f:read(8),1,8)
-        return 256*256*256*256*256*256*256 * a +
-                   256*256*256*256*256*256 * b +
-                       256*256*256*256*256 * c +
-                           256*256*256*256 * d +
-                               256*256*256 * e +
-                                   256*256 * f +
-                                       256 * g +
-                                             h
+        return 0x100000000000000 * a + 0x1000000000000 * b + 0x10000000000 * c + 0x100000000 * d +
+                       0x1000000 * e +         0x10000 * f +         0x100 * g +               h
     else
         return 0
     end

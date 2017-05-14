@@ -65,7 +65,7 @@ local hlist_code        = nodecodes.hlist
 local glue_code         = nodecodes.glue
 local kern_code         = nodecodes.kern
 local line_code         = listcodes.line
-local localpar_code     = nodecodes.localpar
+----- localpar_code     = nodecodes.localpar
 local leftskip_code     = gluecodes.leftskip
 local rightskip_code    = gluecodes.rightskip
 local parfillskip_code  = gluecodes.parfillskip
@@ -77,6 +77,7 @@ local traverse_id       = nuts.traverse_id
 local insert_before     = nuts.insert_before
 local insert_after      = nuts.insert_after
 local find_tail         = nuts.tail
+local rehpack           = nuts.rehpack
 ----- remove_node       = nuts.remove
 
 local getsubtype        = nuts.getsubtype
@@ -88,6 +89,14 @@ local getprev           = nuts.getprev
 local getboth           = nuts.getboth
 local getfield          = nuts.getfield
 local setfield          = nuts.setfield
+local setlink           = nuts.setlink
+local setkern           = nuts.setkern
+local getkern           = nuts.getkern
+local getdir            = nuts.getdir
+local getshift          = nuts.getshift
+local setshift          = nuts.setshift
+local getwidth          = nuts.getwidth
+local setwidth          = nuts.setwidth
 
 local setprop           = nuts.setprop
 local getprop           = nuts.rawprop -- getprop
@@ -95,16 +104,15 @@ local getprop           = nuts.rawprop -- getprop
 local effectiveglue     = nuts.effective_glue
 
 local nodepool          = nuts.pool
-local new_glue          = nodepool.glue
 local new_kern          = nodepool.kern
 local new_leftskip      = nodepool.leftskip
 local new_rightskip     = nodepool.rightskip
 local new_hlist         = nodepool.hlist
-local new_vlist         = nodepool.vlist
 local new_rule          = nodepool.rule
-local new_latelua       = nodepool.latelua
+local new_glue          = nodepool.glue
 
 local texgetcount       = tex.getcount
+local texgetglue        = tex.getglue
 local setmetatableindex = table.setmetatableindex
 local formatters        = string.formatters
 
@@ -135,8 +143,8 @@ local function finalize(prop,key) -- delayed calculations
     local line     = prop.line
     local hsize    = prop.hsize
     local width    = prop.width
-    local shift    = getfield(line,"shift") -- dangerous as it can be vertical as well
-    local reverse  = getfield(line,"dir") == "TRT" or false
+    local shift    = getshift(line) -- dangerous as it can be vertical as well
+    local reverse  = getdir(line) == "TRT" or false
     local pack     = new_hlist()
     local head     = getlist(line)
     local delta    = 0
@@ -168,7 +176,7 @@ local function normalize(line,islocal) -- assumes prestine lines, nothing pre/ap
     local head      = oldhead
     local leftskip  = nil
     local rightskip = nil
-    local width     = getfield(line,"width")
+    local width     = getwidth(line)
     local hsize     = islocal and width or tex.hsize
     local lskip     = 0
     local rskip     = 0
@@ -179,7 +187,7 @@ local function normalize(line,islocal) -- assumes prestine lines, nothing pre/ap
         local subtype = getsubtype(head)
         if subtype == leftskip_code then
             leftskip = head
-            lskip    = getfield(head,"width") or 0
+            lskip    = getwidth(head) or 0
         end
         current = getnext(head)
         id      = getid(current)
@@ -194,7 +202,7 @@ local function normalize(line,islocal) -- assumes prestine lines, nothing pre/ap
     if id == glue_code then
         if getsubtype(current) == rightskip_code then
             rightskip  = tail
-            rskip      = getfield(current,"width") or 0
+            rskip      = getwidth(current) or 0
             current    = getprev(tail)
             id         = getid(current)
         end
@@ -241,9 +249,47 @@ function paragraphs.normalize(head,islocal)
         -- can be an option, maybe we need a proper state in lua itself ... is this check still needed?
         return head, false
     end
+    -- this can become a separate handler but it makes sense to integrate it here
+    local l_width, l_stretch, l_shrink = texgetglue("parfillleftskip")
+    if l_width ~= 0 or l_stretch ~= 0 or l_shrink ~= 0 then
+        local last = nil -- a nut
+        local done = false
+        for line in traverse_id(hlist_code,tonut(head)) do
+            if getsubtype(line) == line_code and not getprop(line,"line") then
+                if done then
+                    last = line
+                else
+                    done = true
+                end
+            end
+        end
+        if last then -- only if we have more than one line
+            local head    = getlist(last)
+            local current = head
+            if current then
+                if getid(current) == glue_code and getsubtype(current,leftskip_code) then
+                    current = getnext(current)
+                end
+                if current then
+                    head, current = insert_before(head,current,new_glue(l_width,l_stretch,l_shrink))
+                    if head == current then
+                        setlist(last,head)
+                    end
+                    -- can be a 'rehpack(h  )'
+                    rehpack(last)
+                end
+            end
+        end
+    end
+    -- normalizer
     for line in traverse_id(hlist_code,tonut(head)) do
         if getsubtype(line) == line_code and not getprop(line,"line") then
             normalize(line)
+            if done then
+                last = line
+            else
+                done = true
+            end
         end
     end
     return head, true
@@ -317,12 +363,14 @@ local function addanchortoline(n,anchor)
         local anchor = tonut(anchor)
         local where  = line.where
         if trace_anchors then
-            local rule1 = new_rule(65536/2,4*65536,4*65536)
-            local rule2 = new_rule(8*65536,65536/4,65536/4)
-            local kern1 = new_kern(-65536/4)
-            local kern2 = new_kern(-65536/4-4*65536)
-            anchor = new_hlist(nuts.link { anchor, kern1, rule1, kern2, rule2 })
-            setfield(anchor,"width",0)
+            anchor = new_hlist(setlink(
+                anchor,
+                new_kern(-65536/4),
+                new_rule(65536/2,4*65536,4*65536),
+                new_kern(-65536/4-4*65536),
+                new_rule(8*65536,65536/4,65536/4)
+            ))
+            setwidth(anchor,0)
         end
         if where.tail then
             local head = where.head
@@ -355,15 +403,15 @@ function paragraphs.moveinline(n,blob,dx,dy)
             if dx ~= 0 then
                 local prev, next = getboth(blob)
                 if prev and getid(prev) == kern_code then
-                    setfield(prev,"kern",getfield(prev,"kern") + dx)
+                    setkern(prev,getkern(prev) + dx)
                 end
                 if next and getid(next) == kern_code then
-                    setfield(next,"kern",getfield(next,"kern") - dx)
+                    setkern(next,getkern(next) - dx)
                 end
             end
             if dy ~= 0 then
                 if getid(blob) == hlist_code then
-                    setfield(blob,"shift",getfield(blob,"shift") + dy)
+                    setshift(blob,getshift(blob) + dy)
                 end
             end
         else
@@ -371,13 +419,6 @@ function paragraphs.moveinline(n,blob,dx,dy)
         end
     end
 end
-
--- local f_anchor = formatters["_plib_.set('md:h',%i,{x=true,c=true})"]
--- local s_anchor = 'md:h'
---
--- local function setanchor(h_anchor)
---     return new_latelua(f_anchor(h_anchor))
--- end
 
 local lateluafunction = nodepool.lateluafunction
 local setposition     = job.positions.set

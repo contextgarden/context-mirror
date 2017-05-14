@@ -23,6 +23,10 @@
    \c!sorttype=\v!default,
    \c!numbering=num]
 
+\setupbtxlist
+  [default]
+  [\c!align={normal,verytolerant,stretch}]
+
 \definebtx
   [\s!default]
   [\c!default=, % we do not want to fall|-|back on ourself.
@@ -275,6 +279,18 @@
   [\c!left={(},
    \c!right={)}]
 
+\definebtx
+  [\s!default:\s!cite:lefttext]
+  [\s!default:\s!cite]
+  [\c!left=,
+   \c!right=]
+
+\definebtx
+  [\s!default:\s!cite:righttext]
+  [\s!default:\s!cite]
+  [\c!left=,
+   \c!right=]
+
 % Multilingual text strings
 
 \setupbtxlabeltext
@@ -496,12 +512,14 @@
 
 %D Experiment:
 
-\startsetups btx:default:lefttext
-    \currentbtxlefttext
-\stopsetups
+%D See publ-imp-cite.mkvi
+%
+%\startsetups btx:default:cite:lefttext
+%    \currentbtxlefttext
+%\stopsetups
 
-\startsetups btx:default:righttext
-    \currentbtxrighttext
-\stopsetups
+%\startsetups btx:default:cite:righttext
+%    \currentbtxrighttext
+%\stopsetups
 
 \stopbtxrenderingdefinitions

@@ -20,6 +20,7 @@ local rawget, tonumber, type = rawget, tonumber, type
 local lpegmatch = lpeg.match
 local insert, remove, copytable = table.insert, table.remove, table.copy
 local formatters = string.formatters
+local P, Cs, lpegmatch = lpeg.P, lpeg.Cs, lpeg.match
 
 local allocate           = utilities.storage.allocate
 local mark               = utilities.storage.mark
@@ -33,9 +34,7 @@ local trace_empty        = false  trackers.register("structures.referencing.empt
 
 local check_duplicates   = true
 
-directives.register("structures.referencing.checkduplicates", function(v)
-    check_duplicates = v
-end)
+directives.register("structures.referencing.checkduplicates", function(v) check_duplicates = v end)
 
 local report_references  = logs.reporter("references")
 local report_unknown     = logs.reporter("references","unknown")
@@ -44,10 +43,6 @@ local report_importing   = logs.reporter("references","importing")
 local report_empty       = logs.reporter("references","empty")
 
 local variables          = interfaces.variables
-local v_default          = variables.default
-local v_url              = variables.url
-local v_file             = variables.file
-local v_unknown          = variables.unknown
 local v_page             = variables.page
 local v_auto             = variables.auto
 local v_yes              = variables.yes
@@ -127,20 +122,18 @@ local componentsplitter  = references.componentsplitter
 local currentreference   = nil
 
 local txtcatcodes        = catcodes.numbers.txtcatcodes -- or just use "txtcatcodes"
-local context_delayed    = context.delayed
 
-local ctx_pushcatcodes                = context.pushcatcodes
-local ctx_popcatcodes                 = context.popcatcodes
-local ctx_dofinishreference           = context.dofinishreference
-local ctx_dofromurldescription        = context.dofromurldescription
-local ctx_dofromurlliteral            = context.dofromurlliteral
-local ctx_dofromfiledescription       = context.dofromfiledescription
-local ctx_dofromfileliteral           = context.dofromfileliteral
-local ctx_expandreferenceoperation    = context.expandreferenceoperation
-local ctx_expandreferencearguments    = context.expandreferencearguments
-local ctx_getreferencestructureprefix = context.getreferencestructureprefix
-local ctx_convertnumber               = context.convertnumber
-local ctx_emptyreference              = context.emptyreference
+local ctx_pushcatcodes             = context.pushcatcodes
+local ctx_popcatcodes              = context.popcatcodes
+local ctx_dofinishreference        = context.dofinishreference
+local ctx_dofromurldescription     = context.dofromurldescription
+local ctx_dofromurlliteral         = context.dofromurlliteral
+local ctx_dofromfiledescription    = context.dofromfiledescription
+local ctx_dofromfileliteral        = context.dofromfileliteral
+local ctx_expandreferenceoperation = context.expandreferenceoperation
+local ctx_expandreferencearguments = context.expandreferencearguments
+local ctx_convertnumber            = context.convertnumber
+local ctx_emptyreference           = context.emptyreference
 
 storage.register("structures/references/defined", references.defined, "structures.references.defined")
 
@@ -586,13 +579,24 @@ end)
 
 -- urls
 
-local urls      = references.urls or { }
-references.urls = urls
-local urldata   = urls.data or { }
-urls.data       = urldata
+local urls       = references.urls or { }
+references.urls  = urls
+local urldata    = urls.data or { }
+urls.data        = urldata
+
+local p_untexurl = Cs ( (
+    P("\\")/"" * (P("%")/"%%" + P(1))
+  + P(" ")/"%%20"
+  + P(1)
+)^1 )
+
+function urls.untex(url)
+    return lpegmatch(p_untexurl,url) or url
+end
 
 function urls.define(name,url,file,description)
     if name and name ~= "" then
+     -- url = lpegmatch(replacer,url)
         urldata[name] = { url or "", file or "", description or url or file or ""}
     end
 end
@@ -790,10 +794,6 @@ implement {
 
 -- shared by urls and files
 
--- function references.whatfrom(name)
---     context((urldata[name] and v_url) or (filedata[name] and v_file) or v_unknown)
--- end
-
 function references.from(name)
     local u = urldata[name]
     if u then
@@ -896,6 +896,26 @@ local function resolve(prefix,reference,args,set) -- we start with prefix,refere
                 if var then
                     var.reference = ri
                     local vo, vi = var.outer, var.inner
+                    -- we catch this here .. it's a way to pass references with commas
+                    if vi == "name" then
+                        local arguments = var.arguments
+                        if arguments then
+                            vi            = arguments
+                            var.inner     = arguments
+                            var.reference = arguments
+                            var.arguments = nil
+                        end
+                    elseif var.special == "name" then
+                        local operation = var.operation
+                        if operation then
+                            vi            = operation
+                            var.inner     = operation
+                            var.reference = operation
+                            var.operation = nil
+                            var.special   = nil
+                        end
+                    end
+                    -- end of catch
                     if not vo and vi then
                         -- to be checked
                         d = defined[prefix][vi] or defined[""][vi]
@@ -2507,8 +2527,8 @@ implement {
     arguments = { "string", "boolean", "boolean" }
 }
 
-local function referencerealpage(actions)
-    actions = actions or references.currentset
+local function referencerealpage()
+    local actions = references.currentset
     return not actions and 0 or actions.realpage or setreferencerealpage(actions)
 end
 

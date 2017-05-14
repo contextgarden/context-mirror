@@ -41,18 +41,16 @@ local getprev              = nuts.getprev
 local getid                = nuts.getid
 local getfont              = nuts.getfont
 local getchar              = nuts.getchar
-local getfield             = nuts.getfield
 local getattr              = nuts.getattr
 local isglyph              = nuts.isglyph
 
-local setfield             = nuts.setfield
 local setattr              = nuts.setattr
 local setchar              = nuts.setchar
 
 local insert_node_before   = nuts.insert_before
 local insert_node_after    = nuts.insert_after
 local traverse_list_by_id  = nuts.traverse_id
-local dimensions_of_list   = nuts.dimensions
+local list_dimensions      = nuts.dimensions
 local first_glyph          = nuts.first_glyph
 
 local setglue              = nuts.setglue
@@ -63,6 +61,8 @@ local new_kern             = nodepool.kern
 local tracers              = nodes.tracers
 local setcolor             = tracers.colors.set
 local tracedrule           = tracers.pool.nuts.rule
+
+local enableaction         = nodes.tasks.enableaction
 
 local characteralign       = { }
 typesetters.characteralign = characteralign
@@ -102,7 +102,7 @@ local validsigns = {
 
 local function setcharacteralign(column,separator)
     if not enabled then
-        nodes.tasks.enableaction("processors","typesetters.characteralign.handler")
+        enableaction("processors","typesetters.characteralign.handler")
         enabled = true
     end
     if not datasets then
@@ -381,8 +381,8 @@ function characteralign.handler(originalhead,where)
         end
     else
         entry = {
-            before = b_start and dimensions_of_list(b_start,getnext(b_stop)) or 0,
-            after  = a_start and dimensions_of_list(a_start,getnext(a_stop)) or 0,
+            before = b_start and list_dimensions(b_start,getnext(b_stop)) or 0,
+            after  = a_start and list_dimensions(a_start,getnext(a_stop)) or 0,
         }
         list[row] = entry
     end

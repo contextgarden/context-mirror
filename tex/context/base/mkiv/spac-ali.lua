@@ -19,18 +19,18 @@ local tonode           = nuts.tonode
 local tonut            = nuts.tonut
 
 local getfield         = nuts.getfield
-local setfield         = nuts.setfield
 local getnext          = nuts.getnext
 local getprev          = nuts.getprev
 local getid            = nuts.getid
 local getlist          = nuts.getlist
 local setlist          = nuts.setlist
-local getattr          = nuts.getattr
-local setattr          = nuts.setattr
+local setlink          = nuts.setlink
+local takeattr         = nuts.takeattr
 local getsubtype       = nuts.getsubtype
+local getwidth         = nuts.getwidth
+local findtail         = nuts.tail
 
 local hpack_nodes      = nuts.hpack
-local linked_nodes     = nuts.linked
 
 local unsetvalue       = attributes.unsetvalue
 
@@ -71,7 +71,7 @@ local function handler(head,leftpage,realpageno)
         local id = getid(current)
         if id == hlist_code then
             if getsubtype(current) == line_code then
-                local a = getattr(current,a_realign)
+                local a = takeattr(current,a_realign)
                 if not a or a == 0 then
                     -- skip
                 else
@@ -87,12 +87,16 @@ local function handler(head,leftpage,realpageno)
                             action = leftpage and 2 or 1
                         end
                         if action == 1 then
-                            setlist(current,hpack_nodes(linked_nodes(getlist(current),new_stretch(3)),getfield(current,"width"),"exactly"))
+                            local head = getlist(current)
+                            setlink(findtail(head),new_stretch(3)) -- append
+                            setlist(current,hpack_nodes(head,getwidth(current),"exactly"))
                             if trace_realign then
                                 report_realign("flushing left, align %a, page %a, realpage %a",align,pageno,realpageno)
                             end
                         elseif action == 2 then
-                            setlist(current,hpack_nodes(linked_nodes(new_stretch(3),getlist(current)),getfield(current,"width"),"exactly"))
+                            local list = getlist(current)
+                            local head = setlink(new_stretch(3),list) -- prepend
+                            setlist(current,hpack_nodes(head,getwidth(current),"exactly"))
                             if trace_realign then
                                 report_realign("flushing right. align %a, page %a, realpage %a",align,pageno,realpageno)
                             end
@@ -102,7 +106,6 @@ local function handler(head,leftpage,realpageno)
                         done = true
                         nofrealigned = nofrealigned + 1
                     end
-                    setattr(current,a_realign,unsetvalue)
                 end
             end
             handler(getlist(current),leftpage,realpageno)
@@ -115,7 +118,7 @@ local function handler(head,leftpage,realpageno)
 end
 
 function alignments.handler(head)
-    local leftpage = isleftpage(true,false)
+    local leftpage = isleftpage()
     local realpageno = texgetcount("realpageno")
     local head, done = handler(tonut(head),leftpage,realpageno)
     return tonode(head), done

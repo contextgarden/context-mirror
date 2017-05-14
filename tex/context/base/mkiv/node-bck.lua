@@ -11,14 +11,13 @@ if not modules then modules = { } end modules ['node-bck'] = {
 
 local attributes, nodes, node = attributes, nodes, node
 
-local tasks             = nodes.tasks
+local enableaction      = nodes.tasks.enableaction
 
 local nodecodes         = nodes.nodecodes
 local listcodes         = nodes.listcodes
 
 local hlist_code        = nodecodes.hlist
 local vlist_code        = nodecodes.vlist
-local glyph_code        = nodecodes.glyph
 local cell_code         = listcodes.cell
 
 local nuts              = nodes.nuts
@@ -34,8 +33,8 @@ local getid             = nuts.getid
 local getlist           = nuts.getlist
 local getattr           = nuts.getattr
 local getsubtype        = nuts.getsubtype
+local getwhd            = nuts.getwhd
 
-local setfield          = nuts.setfield
 local setattr           = nuts.setattr
 local setlink           = nuts.setlink
 local setlist           = nuts.setlist
@@ -48,7 +47,7 @@ local new_glue          = nodepool.glue
 
 local a_color           = attributes.private('color')
 local a_transparency    = attributes.private('transparency')
-local a_colorspace      = attributes.private('colormodel')
+local a_colormodel      = attributes.private('colormodel')
 local a_background      = attributes.private('background')
 local a_alignbackground = attributes.private('alignbackground')
 
@@ -65,33 +64,32 @@ local function add_backgrounds(head) -- rather old code .. to be redone
                     list = head
                 end
             end
-            local width = getfield(current,"width")
+            local width, height, depth = getwhd(current)
             if width > 0 then
                 local background = getattr(current,a_background)
                 if background then
                     -- direct to hbox
                     -- colorspace is already set so we can omit that and stick to color
-                    local mode = getattr(current,a_colorspace)
+                    local mode = getattr(current,a_colormodel)
                     if mode then
-                        local height = getfield(current,"height")
-                        local depth = getfield(current,"depth")
                         local skip = id == hlist_code and width or (height + depth)
                         local glue = new_glue(-skip)
                         local rule = new_rule(width,height,depth)
                         local color = getattr(current,a_color)
                         local transparency = getattr(current,a_transparency)
-                        setattr(rule,a_colorspace,mode)
+                        setattr(rule,a_colormodel,mode)
                         if color then
                             setattr(rule,a_color,color)
                         end
                         if transparency then
                             setattr(rule,a_transparency,transparency)
                         end
-                        setlink(rule,glue)
-                        if list then
-                            setlink(glue,list)
-                        end
-                        setlist(current,rule)
+--                         setlink(rule,glue)
+--                         if list then
+--                             setlink(glue,list)
+--                         end
+--                         setlist(current,rule)
+                        setlist(current,rule,glue,list)
                     end
                 end
             end
@@ -131,15 +129,15 @@ local function add_alignbackgrounds(head)
                 --
                 if background then
                     -- current has subtype 5 (cell)
-                    local width = getfield(current,"width")
+                    local width, height, depth = getwhd(current)
                     if width > 0 then
-                        local mode = getattr(found,a_colorspace)
+                        local mode = getattr(found,a_colormodel)
                         if mode then
                             local glue = new_glue(-width)
-                            local rule = new_rule(width,getfield(current,"height"),getfield(current,"depth"))
+                            local rule = new_rule(width,height,depth)
                             local color = getattr(found,a_color)
                             local transparency = getattr(found,a_transparency)
-                            setattr(rule,a_colorspace,mode)
+                            setattr(rule,a_colormodel,mode)
                             if color then
                                 setattr(rule,a_color,color)
                             end
@@ -174,21 +172,16 @@ end
 nodes.handlers.backgrounds      = function(head) local head, done = add_backgrounds     (tonut(head)) return tonode(head), done end
 nodes.handlers.alignbackgrounds = function(head) local head, done = add_alignbackgrounds(tonut(head)) return tonode(head), done end
 
--- elsewhere: needs checking
-
--- tasks.appendaction("shipouts","normalizers","nodes.handlers.backgrounds")
--- tasks.appendaction("shipouts","normalizers","nodes.handlers.alignbackgrounds")
-
 interfaces.implement {
     name      = "enablebackgroundboxes",
     onlyonce  = true,
-    actions   = nodes.tasks.enableaction,
+    actions   = enableaction,
     arguments = { "'shipouts'", "'nodes.handlers.backgrounds'" }
 }
 
 interfaces.implement {
     name      = "enablebackgroundalign",
     onlyonce  = true,
-    actions   = nodes.tasks.enableaction,
+    actions   = enableaction,
     arguments = { "'shipouts'", "'nodes.handlers.alignbackgrounds'" }
 }

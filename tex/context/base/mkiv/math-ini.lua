@@ -24,8 +24,7 @@ local context               = context
 local commands              = commands
 local implement             = interfaces.implement
 
-local context_sprint        = context.sprint
------ context_fprint        = context.fprint -- a bit inefficient
+local ctx_sprint            = context.sprint
 local ctx_doifelsesomething = commands.doifelsesomething
 
 local trace_defining        = false  trackers.register("math.defining", function(v) trace_defining = v end)
@@ -142,49 +141,49 @@ mathematics.families        = families
 -- there will be proper functions soon (and we will move this code in-line)
 -- no need for " in class and family (saves space)
 
-local function mathchar(class,family,slot)
-    return formatters['\\Umathchar "%X "%X "%X '](class,family,slot)
-end
-
-local function mathaccent(class,family,slot)
-    return formatters['\\Umathaccent "%X "%X "%X '](0,family,slot) -- no class
-end
-
-local function delimiter(class,family,slot)
-    return formatters['\\Udelimiter "%X "%X "%X '](class,family,slot)
-end
-
-local function radical(family,slot)
-    return formatters['\\Uradical "%X "%X '](family,slot)
-end
-
-local function root(family,slot)
-    return formatters['\\Uroot "%X "%X '](family,slot)
-end
-
-local function mathchardef(name,class,family,slot)
-    return formatters['\\Umathchardef\\%s "%X "%X "%X '](name,class,family,slot)
-end
-
-local function mathcode(target,class,family,slot)
-    return formatters['\\Umathcode%s="%X "%X "%X '](target,class,family,slot)
-end
-
-local function mathtopaccent(class,family,slot)
-    return formatters['\\Umathaccent "%X "%X "%X '](0,family,slot) -- no class
-end
-
-local function mathbotaccent(class,family,slot)
-    return formatters['\\Umathaccent bottom "%X "%X "%X '](0,family,slot) -- no class
-end
-
-local function mathtopdelimiter(class,family,slot)
-    return formatters['\\Udelimiterover "%X "%X '](family,slot) -- no class
-end
-
-local function mathbotdelimiter(class,family,slot)
-    return formatters['\\Udelimiterunder "%X "%X '](family,slot) -- no class
-end
+-- local function mathchar(class,family,slot)
+--     return formatters['\\Umathchar "%X "%X "%X '](class,family,slot)
+-- end
+--
+-- local function mathaccent(class,family,slot)
+--     return formatters['\\Umathaccent "%X "%X "%X '](0,family,slot) -- no class
+-- end
+--
+-- local function delimiter(class,family,slot)
+--     return formatters['\\Udelimiter "%X "%X "%X '](class,family,slot)
+-- end
+--
+-- local function radical(family,slot)
+--     return formatters['\\Uradical "%X "%X '](family,slot)
+-- end
+--
+-- local function root(family,slot)
+--     return formatters['\\Uroot "%X "%X '](family,slot)
+-- end
+--
+-- local function mathchardef(name,class,family,slot)
+--     return formatters['\\Umathchardef\\%s "%X "%X "%X '](name,class,family,slot)
+-- end
+--
+-- local function mathcode(target,class,family,slot)
+--     return formatters['\\Umathcode%s="%X "%X "%X '](target,class,family,slot)
+-- end
+--
+-- local function mathtopaccent(class,family,slot)
+--     return formatters['\\Umathaccent "%X "%X "%X '](0,family,slot) -- no class
+-- end
+--
+-- local function mathbotaccent(class,family,slot)
+--     return formatters['\\Umathaccent bottom "%X "%X "%X '](0,family,slot) -- no class
+-- end
+--
+-- local function mathtopdelimiter(class,family,slot)
+--     return formatters['\\Udelimiterover "%X "%X '](family,slot) -- no class
+-- end
+--
+-- local function mathbotdelimiter(class,family,slot)
+--     return formatters['\\Udelimiterunder "%X "%X '](family,slot) -- no class
+-- end
 
 local escapes = characters.filters.utf.private.escapes
 
@@ -192,11 +191,11 @@ local escapes = characters.filters.utf.private.escapes
 
 local setmathcharacter = function(class,family,slot,unicode,mset,dset)
     if mset and codes[class] then -- regular codes < 7
-        setmathcode("global",slot,{class,family,unicode})
+        setmathcode("global",slot,class,family,unicode)
         mset = false
     end
     if dset and class == open_class or class == close_class or class == middle_class then
-        setdelcode("global",slot,{family,unicode,0,0})
+        setdelcode("global",slot,family,unicode,0,0)
         dset = false
     end
     return mset, dset
@@ -216,28 +215,28 @@ local f_char      = formatters[ [[\Umathchardef\%s "%X "%X "%X ]] ]
 
 local setmathsymbol = function(name,class,family,slot) -- hex is nicer for tracing
     if class == classes.accent then
-        context_sprint(f_accent(name,family,slot))
+        ctx_sprint(f_accent(name,family,slot))
     elseif class == classes.topaccent then
-        context_sprint(f_topaccent(name,family,slot))
+        ctx_sprint(f_topaccent(name,family,slot))
     elseif class == classes.botaccent then
-        context_sprint(f_botaccent(name,family,slot))
+        ctx_sprint(f_botaccent(name,family,slot))
     elseif class == classes.over then
-        context_sprint(f_over(name,family,slot))
+        ctx_sprint(f_over(name,family,slot))
     elseif class == classes.under then
-        context_sprint(f_under(name,family,slot))
+        ctx_sprint(f_under(name,family,slot))
     elseif class == open_class or class == close_class or class == middle_class then
         setdelcode("global",slot,{family,slot,0,0})
-        context_sprint(f_fence(name,class,family,slot))
+        ctx_sprint(f_fence(name,class,family,slot))
     elseif class == classes.delimiter then
         setdelcode("global",slot,{family,slot,0,0})
-        context_sprint(f_delimiter(name,family,slot))
+        ctx_sprint(f_delimiter(name,family,slot))
     elseif class == classes.radical then
-        context_sprint(f_radical(name,family,slot))
+        ctx_sprint(f_radical(name,family,slot))
     elseif class == classes.root then
-        context_sprint(f_root(name,family,slot))
+        ctx_sprint(f_root(name,family,slot))
     else
         -- beware, open/close and other specials should not end up here
-        context_sprint(f_char(name,class,family,slot))
+        ctx_sprint(f_char(name,class,family,slot))
     end
 end
 
@@ -364,6 +363,11 @@ end)
 local function utfmathclass(chr, default)
     local cd = somechar[chr]
     return cd and cd.mathclass or default or "unknown"
+end
+
+local function utfmathlimop(chr)
+    local cd = somechar[chr]
+    return cd and cd.mathclass == "limop" or false
 end
 
 local function utfmathaccent(chr,default,asked1,asked2)
@@ -514,6 +518,7 @@ implement {
     actions   = { utfmathcommand, context },
     arguments = { "string", false, "'botaccent'","'under'" }
 }
+
 implement {
     name      = "utfmathcommandfiller",
     actions   = { utfmathfiller, context },
@@ -543,6 +548,12 @@ implement {
 implement {
     name      = "doifelseutfmathfiller",
     actions   = { utfmathfiller, ctx_doifelsesomething },
+    arguments = "string",
+}
+
+implement {
+    name      = "doifelseutfmathlimop",
+    actions   = { utfmathlimop, ctx_doifelsesomething },
     arguments = "string",
 }
 

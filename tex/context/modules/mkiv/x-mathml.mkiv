@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=x-mathml,
-%D        version=2008.05.29,
+%D        version=2008.05.29, (evolved from pre 2000 code)
 %D          title=\CONTEXT\ XML Modules,
 %D       subtitle=\MATHML,
 %D         author=Hans Hagen,
@@ -13,20 +13,14 @@
 
 % \xmlfilter{#1}{/*/name()} -> \xmltag
 
-% This module is under construction and will be cleaned up. We use a funny mix of
-% xml, tex and lua. I could rewrite the lot but it also shows how context evolves.
+% This implementation looks like a hack ... this is because we deal with all weird
+% cases we ran into, including abuse that was supposed to render ok (even if it
+% didn't in other renderers) .. it was simply expected to work that way.
 %
-% I might end up with a lua-only implementation some day. I must find a good reason
-% to spend time on it. In fact, it might even be more messy.
-%
-% no m:text strip (needs checking, maybe nbsp is mandate
-%
-% todo: more will be moved to lua (less hassle)
-% todo: move left/right to the lua end
-%
-% this implememation looks like a hack ... this is because we deal with all weird cases we
-% ran into, including abuse that was supposed to render ok (even if it didn't in other
-% renderers) .. it was simply expected to work that way.
+% So, consider this module to be under constant construction and clean up. We still
+% use a funny mix of xml, tex and lua. I could rewrite the lot but it also shows how
+% context evolves. I might end up with a lua-only implementation some day, but I must
+% find a real good reason to spend time on it as so far it never paid back.
 
 \writestatus{loading}{ConTeXt XML Macros / MathML Renderer}
 
@@ -210,7 +204,7 @@
 %D The second implementation expanded the whole math sequence
 %D into an internal \TEX\ representation. This is a rather clean
 %D and fast process. Filtering and testing takes place by
-%D redefining teh internal representation macros.
+%D redefining the internal representation macros.
 %D
 %D The third implementation may look a bit more messy in some
 %D respects. This is because in \TEX\ it's not that trivial to
@@ -1855,9 +1849,13 @@
                                                \let\mmlfrac\frac
 \xmlmapvalue {mml:l} {+}                      {\let\mmlfrac\sfrac}
 
+\xmlmapvalue {mml:d} {true}                   {\displaystyle}
+\xmlmapvalue {mml:d} {false}                  {\textstyle} % or whatever
+
 % todo: displaystyle=true/false (or whatever else shows up)
 
 \starttexdefinition setmmlmathstyle #1
+    \xmlval{mml:d}{\xmlatt{#1}{displaystyle}}\empty % was: \mmmr
     \xmlval{mml:s}{\xmlatt{#1}{mathvariant}}\empty % was: \mmmr
 \stoptexdefinition
 
@@ -2042,7 +2040,11 @@
                                         \expanded{\doifelseinset {mml:enclose:radical} {\mmlmenclosenotation}} {
                                             \sqrt{\xmlflush{#1}}
                                         } {
-                                            \xmlflush{#1}
+                                            \expanded{\doifelseinset {mml:enclose:rule} {\mmlmenclosenotation}} {
+                                                \overline{\strut\xmlflush{#1}}
+                                            } {
+                                                \xmlflush{#1}
+                                            }
                                         }
                                     }
                                 }
@@ -2270,9 +2272,9 @@
 
 \def\mmlextensible#1{\ctxmodulemathml{extensible(\!!bs#1\!!es)}}
 
-\definemathtriplet   [\v!mathematics]  [mmlovertriplet]   % or will we use a special instance
-\definemathtriplet   [\v!mathematics]  [mmlundertriplet]  % or will we use a special instance
-\definemathtriplet   [\v!mathematics]  [mmldoubletriplet] % or will we use a special instance
+\definemathtriplet [\v!mathematics] [mmlovertriplet]   % or will we use a special instance
+\definemathtriplet [\v!mathematics] [mmlundertriplet]  % or will we use a special instance
+\definemathtriplet [\v!mathematics] [mmldoubletriplet] % or will we use a special instance
 
 % common to munder/mover/munderover : will become core helper (speed up too)
 
@@ -2321,8 +2323,14 @@
 
 \startxmlsetups mml:mover
     \edef\mmlbasetoken{\mmlextensible{\xmlraw{#1}{/mml:*[1]}}}% /text()
-    \doifelseutfmathfiller\mmlbasetoken \mmloverbasefiller \mmloveraccentchecker {#1}
+    \doifelseutfmathlimop\mmlbasetoken
+      {\mmllimopover{#1}}
+      {\doifelseutfmathfiller\mmlbasetoken \mmloverbasefiller \mmloveraccentchecker {#1}}
 \stopxmlsetups
+
+\starttexdefinition mmllimopover #1
+    \mmlbasetoken ^{\mmlfencedsecond{#1}}
+\stoptexdefinition
 
 % munder
 
@@ -2353,8 +2361,14 @@
 
 \startxmlsetups mml:munder
     \edef\mmlbasetoken{\mmlextensible{\xmlraw{#1}{/mml:*[1]}}}% /text()
-    \doifelseutfmathfiller\mmlbasetoken \mmlunderbasefiller \mmlunderaccentchecker {#1}
+    \doifelseutfmathlimop\mmlbasetoken
+      {\mmllimopunder{#1}}
+      {\doifelseutfmathfiller\mmlbasetoken \mmlunderbasefiller \mmlunderaccentchecker {#1}}
 \stopxmlsetups
+
+\starttexdefinition mmllimopunder #1
+    \mmlbasetoken _{\mmlfencedsecond{#1}}
+\stoptexdefinition
 
 % munderover
 
@@ -2414,10 +2428,17 @@
     \edef\mmlbasecommand{e\utfmathcommandfiller\mmlbasetoken}%
     \mmlexecuteifdefined\mmlbasecommand \relax {\mmlfencedthird{#1}} {\mmlfencedsecond{#1}}
 \stoptexdefinition
+
 \startxmlsetups mml:munderover
     \edef\mmlbasetoken{\mmlextensible{\xmlraw{#1}{/mml:*[1]}}}% /text()
-    \doifelseutfmathfiller\mmlbasetoken \mmlunderoverbasefiller \mmlunderoveraccentchecker {#1}
+    \doifelseutfmathlimop\mmlbasetoken
+      {\mmllimopunderover{#1}}
+      {\doifelseutfmathfiller\mmlbasetoken \mmlunderoverbasefiller \mmlunderoveraccentchecker {#1}}
 \stopxmlsetups
+
+\starttexdefinition mmllimopunderover #1
+    \mmlbasetoken ^{\mmlfencedthird{#1}}_{\mmlfencedsecond{#1}}
+\stoptexdefinition
 
 % tables (mml:mtable, mml:mtr, mml:mlabledtr, mml:mtd)
 
@@ -2430,7 +2451,7 @@
 \stopxmlsetups
 
 \startxmlsetups mml:mcolumn
-    \ctxmodulemathml{mcolumn("#1")}
+    \vbox{\ctxmodulemathml{mcolumn("#1")}}% needs checking
 \stopxmlsetups
 
 \def\mmlsetfakewidth#1{\setbox\scratchbox\hbox{#1}\scratchdimen\wd\scratchbox}

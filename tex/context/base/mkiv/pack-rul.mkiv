@@ -142,7 +142,7 @@
   [\c!width=\v!fit,
    \c!height=\v!broad,
   %\c!lines=,
-   \c!offset=.25ex,  % \defaultframeoffset
+   \c!offset=.25\exheight,  % \defaultframeoffset
    \c!empty=\v!no,
    \c!frame=\v!on,
   %\c!topframe=,
@@ -176,7 +176,7 @@
    \c!location=\v!normal,
   %\c!orientation=,
    \c!autowidth=\v!yes,
-  %\c!setups=
+  %\c!setups=,
    \c!loffset=\zeropoint,
    \c!roffset=\zeropoint,
    \c!toffset=\zeropoint,
@@ -607,7 +607,11 @@
   {\vpack to \framedbackgroundheight{\vss\box\b_framed_normal\vss}} % vertical shift \backgroundheight
 
 \def\pack_framed_add_region % experiment
-  {\anch_mark_region_box\b_framed_normal}
+  {\ifx\p_framed_region\v!yes
+     \anch_mark_region_box\b_framed_normal
+   \else
+     \anch_mark_tagged_box\b_framed_normal\p_framed_region
+   \fi}
 
 \def\pack_framed_add_background
   {\setbox\b_framed_normal\hbox % was vbox % see also *1*
@@ -809,11 +813,12 @@
 \newconditional\c_framed_has_width
 \newconditional\c_framed_has_height
 \newconditional\c_framed_has_format
-\newconditional\c_framed_has_strut
 \newconditional\c_framed_is_overlaid
 \newconditional\c_framed_has_frame
 \newconditional\c_framed_has_extra_offset
 \newconditional\c_framed_text_location_none
+
+\newconstant   \c_framed_has_strut  % 0=relaxes 1=pseudostruts 2=realstruts
 
 %D \macros
 %D   {framed, setupframed}
@@ -936,7 +941,9 @@
 \def\pack_framed_start_framed_nop_indeed[#1]%
   {\pack_framed_initialize
    \bgroup
-   \setupcurrentframed[#1]% here !
+   \iffirstargument
+     \setupcurrentframed[#1]% here !
+   \fi
    \pack_framed_process_indeed
    \bgroup
    \ignorespaces}
@@ -1030,7 +1037,7 @@
 \unexpanded\def\pack_framed_process_box_indeed#1#2% component box (assumes parameters set and grouped usage)
   {\setbox\b_framed_normal\box#2% could actually be \let\b_framed_normal#2
    \edef\p_framed_region{\framedparameter\c!region}%
-   \ifx\p_framed_region\v!yes % maybe later named
+   \ifx\p_framed_region\empty\else
      \pack_framed_add_region
    \fi
    \edef\p_framed_rulethickness{\framedparameter\c!rulethickness}% also used in backgrounds
@@ -1226,18 +1233,18 @@
      \framed_offset_alternative_unknown
    \fi
    % the next check could move to strutalternative
-   \ifconditional\c_framed_has_strut
+   \ifcase\c_framed_has_strut % none (not even noindent)
+     \let\localbegstrut\relax
+     \let\localendstrut\relax
+     \let\localstrut   \relax
+   \or % no / overlay
+     \let\localbegstrut\pseudobegstrut
+     \let\localendstrut\pseudoendstrut
+     \let\localstrut   \pseudostrut
+   \else
      \let\localbegstrut\begstrut
      \let\localendstrut\endstrut
      \let\localstrut   \strut
-   \else
-     \let\localbegstrut\pseudobegstrut % was: \relax
-     \let\localendstrut\pseudoendstrut % was: \relax
-     \let\localstrut   \pseudostrut    % was: \relax
-    %\ifconditional\c_framed_has_height\ifdim\d_framed_height<\strutht % saveguard
-    %  \let\localbegstrut\relax               % but not that
-    %  \let\localstrut   \relax               % save after all
-    %\fi\fi
    \fi
    \ifx\p_framed_autostrut\v!yes
      \let\delayedbegstrut\relax
@@ -1390,7 +1397,7 @@
 % struts (use let instead?)
 
 \setvalue{\??framedstrutalternative\v!no}%
-  {\setfalse\c_framed_has_strut}
+  {\c_framed_has_strut\plusone}
 
 \setvalue{\??framedstrutalternative\v!global}%
   {\setstrut}
@@ -1407,48 +1414,46 @@
 \def\framed_strut_alternative_unknown
   {\setstrut}
 
+\setvalue{\??framedstrutalternative\v!none}% not even pseudo struts
+  {\c_framed_has_strut\zerocount}
+
 % offsets
 
 \setvalue{\??framedoffsetalternative\v!none}%
   {\setfalse\c_framed_has_offset
-   \setfalse\c_framed_has_strut
+   \c_framed_has_strut\plusone
    \setfalse\c_framed_is_overlaid
    \d_framed_local_offset\d_framed_linewidth}
 
 \setvalue{\??framedoffsetalternative\v!overlay}%
   {% \ifx\p_framed_frame\v!no \setfalse\c_framed_has_frame \fi % test first
    \setfalse\c_framed_has_offset
-   \setfalse\c_framed_has_strut
-   \settrue \c_framed_is_overlaid
+   \c_framed_has_strut\plusone
+   \settrue\c_framed_is_overlaid
    \d_framed_local_offset\zeropoint}
 
 % \setvalue{\??framedoffsetalternative\v!strut}%
 %   {\setfalse\c_framed_has_offset
-%    \settrue \c_framed_has_strut
-%    \settrue \c_framed_is_overlaid
+%    \c_framed_has_strut\plustwo
+%    \settrue\c_framed_is_overlaid
 %    \d_framed_local_offset\zeropoint}
 
 \setvalue{\??framedoffsetalternative\v!default}% new per 2-6-2000
   {\settrue \c_framed_has_offset
-   \settrue \c_framed_has_strut
+   \c_framed_has_strut\plustwo
    \setfalse\c_framed_is_overlaid
    \let\localoffset\defaultframeoffset
    \letframedparameter\c!offset\defaultframeoffset % brrr
    \d_framed_local_offset\dimexpr\localoffset+\d_framed_linewidth\relax}
 
-\setvalue{\??framedoffsetalternative\s!unknown}%
+\def\framed_offset_alternative_unknown
   {\settrue \c_framed_has_offset
-   \settrue \c_framed_has_strut
+   \c_framed_has_strut\plustwo
    \setfalse\c_framed_is_overlaid
    \let\defaultframeoffset\localoffset
    \d_framed_local_offset\dimexpr\localoffset+\d_framed_linewidth\relax}
 
-\def\framed_offset_alternative_unknown
-  {\settrue \c_framed_has_offset
-   \settrue \c_framed_has_strut
-   \setfalse\c_framed_is_overlaid
-   \let\defaultframeoffset\localoffset
-   \d_framed_local_offset\dimexpr\localoffset+\d_framed_linewidth\relax}
+\letvalue{\??framedoffsetalternative\s!unknown}\framed_offset_alternative_unknown
 
 % so far for alternatives
 
@@ -1599,9 +1604,9 @@
    \pack_framed_stop_orientation % moved here at 2014-05-25
    \iftrialtypesetting \else
      \edef\p_framed_region{\framedparameter\c!region}%
-     \ifx\p_framed_region\v!yes % maybe later named
+     \ifx\p_framed_region\empty\else
        \pack_framed_add_region
-    \fi
+     \fi
    \fi
    \d_framed_applied_offset
      \ifconditional\c_framed_is_overlaid
@@ -1669,15 +1674,36 @@
 
 \newdimen\d_framed_locator_ht
 \newdimen\d_framed_locator_dp
+\newdimen\d_framed_locator_lo
+\newdimen\d_framed_locator_ro
 
-\def\pack_framed_locater_set#1%
+\def\pack_framed_locator_set#1%
   {\d_framed_locator_ht\dimexpr
      #1+\d_framed_linewidth
      \ifconditional\c_framed_has_offset
        +\framedparameter\c!offset
      \fi
+     +\framedparameter\c!toffset
    \relax
    \d_framed_locator_dp\dimexpr\ht\b_framed_normal-\d_framed_locator_ht\relax}
+
+\def\pack_framed_locator_set_lo
+  {\global\d_framed_locator_lo\dimexpr
+     \d_framed_linewidth
+     \ifconditional\c_framed_has_offset
+       +\framedparameter\c!offset
+     \fi
+     +\framedparameter\c!loffset
+   \relax}
+
+\def\pack_framed_locator_set_ro
+  {\global\d_framed_locator_ro\dimexpr
+     \d_framed_linewidth
+     \ifconditional\c_framed_has_offset
+       +\framedparameter\c!offset
+     \fi
+     +\framedparameter\c!roffset
+   \relax}
 
 % \ruledhbox
 %   {A
@@ -1743,11 +1769,11 @@
 
 \installframedlocator \v!high
   {}
-  {\pack_framed_locater_set\strutht
+  {\pack_framed_locator_set\strutht
    \setbox\b_framed_normal\hpack{\lower\d_framed_locator_dp\box\b_framed_normal}%
    \ht\b_framed_normal\strutht
    \dp\b_framed_normal\strutdp
-   \hpack{\box\b_framed_normal}}
+   \hpack{\box\b_framed_normal}} % why pack
 
 \installframedlocator \v!line
   {}
@@ -1758,7 +1784,7 @@
 
 \installframedlocator \v!low
   {}
-  {\pack_framed_locater_set\strutdp
+  {\pack_framed_locator_set\strutdp
    \setbox\b_framed_normal\hpack{\lower\d_framed_locator_ht\box\b_framed_normal}%
    \ht\b_framed_normal\strutht
    \dp\b_framed_normal\strutdp
@@ -1766,7 +1792,7 @@
 
 \installframedlocator \v!top
   {}
-  {\pack_framed_locater_set\strutht
+  {\pack_framed_locator_set\strutht
    \setbox\b_framed_normal\hpack{\lower\d_framed_locator_dp\box\b_framed_normal}%
    \ht\b_framed_normal\d_framed_locator_ht
    \dp\b_framed_normal\d_framed_locator_dp
@@ -1786,7 +1812,7 @@
 
 \installframedlocator \v!bottom
   {}
-  {\pack_framed_locater_set\strutdp
+  {\pack_framed_locator_set\strutdp
    \setbox\b_framed_normal\hpack{\lower\d_framed_locator_ht\box\b_framed_normal}%
    \ht\b_framed_normal\d_framed_locator_dp
    \dp\b_framed_normal\d_framed_locator_ht
@@ -1795,6 +1821,16 @@
 \installframedlocator \v!keep % retains height/depth
   {\pack_framed_remove_depth}
   {\pack_framed_restore_depth}
+
+\newdimen\d_framed_formula
+
+\installframedlocator \v!formula % private, will become a more generic name
+  {}
+  {\pack_framed_locator_set\d_framed_formula
+   \setbox\b_framed_normal\hpack{\lower\d_framed_locator_dp\box\b_framed_normal}%
+   \ht\b_framed_normal\d_framed_locator_ht
+   \dp\b_framed_normal\d_framed_locator_dp
+   \hpack{\box\b_framed_normal}}
 
 % also used in fastlocalframed
 
@@ -1952,12 +1988,13 @@
 %    \inheritedmathframedframed{\Ustartmath\triggermathstyle\c_framed_mstyle#2\Ustopmath}%
 %    \endgroup}
 
-\newcount\c_pack_framed_mc
+\newcount\c_pack_framed_mathframed
+\newtoks \t_pack_framed_mathframed
 
 \def\pack_framed_math_pos
-  {\global\advance\c_pack_framed_mc\plusone
-   \xdef\pack_framed_mc_one{mcf:1:\number\c_pack_framed_mc}%
-   \xdef\pack_framed_mc_two{mcf:2:\number\c_pack_framed_mc}%
+  {\global\advance\c_pack_framed_mathframed\plusone
+   \xdef\pack_framed_mc_one{mcf:1:\number\c_pack_framed_mathframed}%
+   \xdef\pack_framed_mc_two{mcf:2:\number\c_pack_framed_mathframed}%
    \xypos\pack_framed_mc_two}
 
 \def\pack_framed_mathframed_indeed[#1]#2% no fancy nesting supported here
@@ -1971,8 +2008,19 @@
    \else\ifx\m_framed_location\v!low\else
      \let\normalstrut\pack_framed_math_strut
    \fi\fi
-   \inheritedmathframedframed{\Ustartmath\triggermathstyle\c_framed_mstyle#2\Ustopmath}%
+   \inheritedmathframedframed\bgroup
+     \Ustartmath
+     \triggermathstyle\c_framed_mstyle
+     \the\t_pack_framed_mathframed
+     #2%
+     \Ustopmath
+   \egroup
    \endgroup}
+
+\appendtoks
+    \mathraggedstatus\plustwo   % makes \startalign work
+    \eqalignmode     \zerocount % makes \startalign fit
+\to \t_pack_framed_mathframed
 
 \installframedlocator \v!mathematics
   {}
@@ -2861,7 +2909,7 @@
    \iffirstargument
      \setupcurrentframedtext[#1]%
    \fi
-   \edef\p_framed_text_strut{\letframedtextparameter\c!strut}%
+   \edef\p_framed_text_strut{\framedtextparameter\c!strut}%
    \letframedtextparameter\c!strut\v!no
    \inheritedframedtextframed\bgroup
      \blank[\v!disable]%
@@ -3007,6 +3055,7 @@
    \ifx\currentframedcontent\v!off
      \let\stopframedcontent\egroup
    \else
+     \checkframedcontentparent
      \let\stopframedcontent\pack_framed_stop_content_indeed
      \expandafter\pack_framed_start_content_indeed
    \fi}

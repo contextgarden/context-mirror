@@ -14,7 +14,7 @@ return {
         "zerocount", "minusone", "minustwo", "plusone", "plustwo", "plusthree", "plusfour", "plusfive",
         "plussix", "plusseven", "pluseight", "plusnine", "plusten", "plussixteen", "plushundred", "plustwohundred",
         "plusthousand", "plustenthousand", "plustwentythousand", "medcard", "maxcard", "maxcardminusone",
-        "zeropoint", "onepoint", "halfapoint", "onebasepoint", "maxdimen", "scaledpoint", "thousandpoint",
+        "zeropoint", "onepoint", "halfapoint", "onebasepoint", "maxcount", "maxdimen", "scaledpoint", "thousandpoint",
         "points", "halfpoint",
         "zeroskip",
         "zeromuskip", "onemuskip",
@@ -100,7 +100,7 @@ return {
         "startcomponent", "stopcomponent", "component",
         "startproduct", "stopproduct", "product",
         "startproject", "stopproject", "project",
-        "starttext", "stoptext", "startnotext", "stopnotext","startdocument", "stopdocument", "documentvariable", "setupdocument", "presetdocument",
+        "starttext", "stoptext", "startnotext", "stopnotext","startdocument", "stopdocument", "documentvariable", "unexpandeddocumentvariable", "setupdocument", "presetdocument",
         "startmodule", "stopmodule", "usemodule", "usetexmodule", "useluamodule","setupmodule","currentmoduleparameter","moduleparameter",
         "everystarttext", "everystoptext",
         --
@@ -133,6 +133,8 @@ return {
         "optionalspace", "asciispacechar",
         --
         "Ux", "eUx", "Umathaccents",
+        --
+        "parfillleftskip", "parfillrightskip",
     },
     ["helpers"] = {
         --
@@ -203,12 +205,12 @@ return {
         --
         "filledhboxb", "filledhboxr", "filledhboxg", "filledhboxc", "filledhboxm", "filledhboxy", "filledhboxk",
         --
-        "scratchcounter", "globalscratchcounter",
-        "scratchdimen", "globalscratchdimen",
-        "scratchskip", "globalscratchskip",
-        "scratchmuskip", "globalscratchmuskip",
-        "scratchtoks", "globalscratchtoks",
-        "scratchbox", "globalscratchbox",
+        "scratchcounter", "globalscratchcounter", "privatescratchcounter",
+        "scratchdimen", "globalscratchdimen", "privatescratchdimen",
+        "scratchskip", "globalscratchskip", "privatescratchskip",
+        "scratchmuskip", "globalscratchmuskip", "privatescratchmuskip",
+        "scratchtoks", "globalscratchtoks", "privatescratchtoks",
+        "scratchbox", "globalscratchbox", "privatescratchbox",
         --
         "normalbaselineskip", "normallineskip", "normallineskiplimit",
         --
@@ -399,6 +401,7 @@ return {
         "cldprocessfile", "cldloadfile", "cldcontext", "cldcommand",
         --
         "carryoverpar",
+        "lastlinewidth",
         --
         "assumelongusagecs",
         --
@@ -421,5 +424,7 @@ return {
         "naturalhbox", "naturalvbox", "naturalhpack", "naturalvpack",
         --
         "frule",
+        --
+        "compoundhyphenpenalty",
     }
 }

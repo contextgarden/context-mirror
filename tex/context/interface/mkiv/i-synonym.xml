@@ -80,15 +80,18 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="synonym" generated="yes" variant="generated" file="strc-syn.mkiv">
+    <cd:command name="synonym" generated="yes" variant="instance" file="strc-syn.mkiv">
         <cd:sequence>
-            <cd:variable value="synonym"/>
+            <cd:instance value="synonym"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-text"/>
             <cd:content/>
         </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-synonym"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="definesynonym" file="strc-syn.mkiv">
@@ -104,28 +107,34 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placelistofsynonyms" generated="yes" variant="generated" file="strc-syn.mkiv">
+    <cd:command name="placelistofsynonyms" generated="yes" variant="instance" file="strc-syn.mkiv">
         <cd:sequence>
             <cd:string value="placelistof"/>
-            <cd:variable value="synonyms"/>
+            <cd:instance value="synonyms"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupsynonyms"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-synonymlist"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="completelistofsynonyms" generated="yes" variant="generated" file="strc-syn.mkiv">
+    <cd:command name="completelistofsynonyms" generated="yes" variant="instance" file="strc-syn.mkiv">
         <cd:sequence>
             <cd:string value="completelistof"/>
-            <cd:variable value="synonyms"/>
+            <cd:instance value="synonyms"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupsynonyms"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-synonymlist"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="registersynonym" file="strc-syn.mkiv">
@@ -179,34 +188,38 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="abbreviation" file="strc-syn.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-name-optional"/>
-            <cd:resolve name="argument-text"/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
     <cd:command name="infull" file="strc-syn.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placelistofabbreviations" file="strc-syn.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupsynonyms"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+    <!--
 
-    <cd:command name="completelistofabbreviations" file="strc-syn.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupsynonyms"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="abbreviation" file="strc-syn.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:resolve name="argument-text"/>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="placelistofabbreviations" file="strc-syn.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupsynonyms"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="completelistofabbreviations" file="strc-syn.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupsynonyms"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
 </cd:interface>

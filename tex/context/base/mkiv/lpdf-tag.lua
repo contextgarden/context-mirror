@@ -9,8 +9,8 @@ if not modules then modules = { } end modules ['lpdf-tag'] = {
 local next = next
 local format, match, concat = string.format, string.match, table.concat
 local lpegmatch, P, S, C = lpeg.match, lpeg.P, lpeg.S, lpeg.C
-local utfchar = utf.char
 local settings_to_hash = utilities.parsers.settings_to_hash
+local sortedhash = table.sortedhash
 local formatters = string.formatters
 
 local trace_tags = false  trackers.register("structures.tags", function(v) trace_tags = v end)
@@ -24,7 +24,7 @@ local nodes               = nodes
 local nodeinjections      = backends.pdf.nodeinjections
 local codeinjections      = backends.pdf.codeinjections
 
-local tasks               = nodes.tasks
+local enableaction        = nodes.tasks.enableaction
 
 local pdfdictionary       = lpdf.dictionary
 local pdfarray            = lpdf.array
@@ -32,7 +32,6 @@ local pdfboolean          = lpdf.boolean
 local pdfconstant         = lpdf.constant
 local pdfreference        = lpdf.reference
 local pdfunicode          = lpdf.unicode
-local pdfstring           = lpdf.string
 local pdfflushobject      = lpdf.flushobject
 local pdfreserveobject    = lpdf.reserveobject
 local pdfpagereference    = lpdf.pagereference
@@ -70,7 +69,6 @@ local setlist             = nuts.setlist
 
 local traverse_nodes      = nuts.traverse
 local tosequence          = nuts.tosequence
-local slide_nodelist      = nuts.slide
 local insert_before       = nuts.insert_before
 local insert_after        = nuts.insert_after
 
@@ -88,7 +86,6 @@ local taglist             = structurestags.taglist
 local specifications      = structurestags.specifications
 local usedlabels          = structurestags.labels
 local properties          = structurestags.properties
-local lasttaginchain      = structurestags.lastinchain
 local usewithcare         = structurestags.usewithcare
 
 local usedmapping         = { }
@@ -148,7 +145,7 @@ local function finishstructure()
             K          = pdfreference(pdfflushobject(structure_kids)),
             ParentTree = pdfreference(pdfflushobject(parent_ref,parenttree)),
             IDTree     = #names > 0 and pdfreference(pdfflushobject(idtree)) or nil,
-            RoleMap    = rolemap,
+            RoleMap    = rolemap, -- sorted ?
         }
         pdfflushobject(structure_ref,structuretree)
         addtocatalog("StructTreeRoot",pdfreference(structure_ref))
@@ -161,7 +158,7 @@ local function finishstructure()
         }
         addtocatalog("MarkInfo",pdfreference(pdfflushobject(markinfo)))
         --
-        for fulltag, element in next, elements do
+        for fulltag, element in sortedhash(elements) do -- sorting is easier on comparing pdf
             pdfflushobject(element.knum,element.kids)
         end
     end
@@ -194,7 +191,7 @@ local pdf_userproperties = pdfconstant("UserProperties")
 local function makeattribute(t)
     if t and next(t) then
         local properties = pdfarray()
-        for k, v in next, t do
+        for k, v in sortedhash(t) do -- easier on comparing pdf
             properties[#properties+1] = pdfdictionary {
                 N = pdfunicode(k),
                 V = pdfunicode(v),
@@ -348,7 +345,6 @@ function nodeinjections.addtags(head)
                     last = nil
                 else
                     local nl = getlist(n)
-                 -- slide_nodelist(nl) -- temporary hack till math gets slided (tracker item)
                     collectranges(nl,n)
                 end
             end
@@ -482,7 +478,6 @@ end
 --                     last = nil
 --                 else
 --                     local nl = getlist(n)
---                  -- slide_nodelist(nl) -- temporary hack till math gets slided (tracker item)
 --                     collectranges(nl,n)
 --                 end
 --             end
@@ -607,9 +602,9 @@ end
 
 function codeinjections.enabletags(tg,lb)
     structures.tags.handler = nodeinjections.addtags
-    tasks.enableaction("shipouts","structures.tags.handler")
-    tasks.enableaction("shipouts","nodes.handlers.accessibility")
-    tasks.enableaction("math","noads.handlers.tags")
+    enableaction("shipouts","structures.tags.handler")
+    enableaction("shipouts","nodes.handlers.accessibility")
+    enableaction("math","noads.handlers.tags")
     -- maybe also textblock
     if trace_tags then
         report_tags("enabling structure tags")

@@ -248,8 +248,8 @@
 \def\meta_flush_current_initializations
   {\ifconditional\c_meta_include_initializations
      \the\t_meta_initializations
-   \fi
-   \theMPrandomseed;}
+   \fi}
+ % \theMPrandomseed;}
 
 \def\meta_flush_current_inclusions
   {\the\t_meta_inclusions}
@@ -262,7 +262,7 @@
    \meta_enable_include
    \the\everyMPgraphic
    \meta_preset_definitions
-   \setMPrandomseed % this has to change
+  %\setMPrandomseed % this has to change
    \edef\p_initializations{\MPinstanceparameter\s!initializations}%
    \ifx\p_initializations\v!yes
      \settrue \c_meta_include_initializations
@@ -315,6 +315,7 @@
          definitions     {\meta_flush_current_definitions}%
          figure          {\MPaskedfigure}%
          method          {\MPinstanceparameter\c!method}%
+         namespace       {\??graphicvariable\currentmpvariableclass:}%
     \relax}%
    \meta_process_graphic_stop
    \meta_stop_current_graphic}
@@ -334,16 +335,16 @@
    \meta_process_graphic{input "#1" ;}%
    \endgroup}
 
-\newif\ifsetMPrandomseed \setMPrandomseedtrue % false by default
-
-\let\theMPrandomseed\empty
-
-\def\setMPrandomseed
-  {\ifsetMPrandomseed
-     \def\theMPrandomseed{randomseed:=\mprandomnumber;}%
-   \else
-     \let\theMPrandomseed\empty
-   \fi}
+% \newif\ifsetMPrandomseed \setMPrandomseedtrue % false by default
+%
+% \let\theMPrandomseed\empty
+%
+% \def\setMPrandomseed
+%   {\ifsetMPrandomseed
+%      \def\theMPrandomseed{randomseed:=\mprandomnumber;}%
+%    \else
+%      \let\theMPrandomseed\empty
+%    \fi}
 
 %D Calling up previously defined graphics.
 
@@ -521,10 +522,7 @@
 
 \installcorenamespace{graphicvariable}
 
-\def \meta_prepare_variable_default   {\MPcolor{black}} % just to be sure we use a color but ...
-\edef\meta_unknown_variable_template  {\??graphicvariable:\s!unknown}
-
-\letvalue{\??graphicvariable:\s!unknown}\empty
+\def\meta_prepare_variable_default{\MPcolor{black}} % just to be sure we use a color but ...
 
 \unexpanded\def\setupMPvariables
   {\dodoubleempty\meta_setup_variables}
@@ -545,11 +543,9 @@
    \fi}
 
 \def\MPrawvar#1#2% no checking
- %{\csname\??graphicvariable#1:#2\endcsname}
   {\begincsname\??graphicvariable#1:#2\endcsname}
 
 \def\MPvariable#1% todo: could be a framed chain
- %{\csname\??graphicvariable\currentmpvariableclass:#1\endcsname}
   {\begincsname\??graphicvariable\currentmpvariableclass:#1\endcsname}
 
 \unexpanded\def\useMPvariables
@@ -566,9 +562,9 @@
   {\edef\m_meta_current_variable_template
      {\??graphicvariable\currentmpvariableclass:#1}%
    \edef\m_meta_current_variable
-     {\csname\ifcsname\m_meta_current_variable_template\endcsname
-        \m_meta_current_variable_template\else\meta_unknown_variable_template
-      \fi\endcsname}%
+     {\ifcsname\m_meta_current_variable_template\endcsname
+        \lastnamedcs
+      \fi}%
    \ifx\m_meta_current_variable\empty
      \expandafter\meta_prepare_variable_nop
    \else
@@ -582,15 +578,11 @@
   {\edef\m_meta_current_variable_template
      {\??graphicvariable\currentmpvariableclass:#1}%
    \edef\m_meta_current_variable
-     {\csname
-        \ifcsname\m_meta_current_variable_template\endcsname
-          \m_meta_current_variable_template
-        \else\ifcsname\??graphicvariable\currentMPgraphicname:#1\endcsname
-          \??graphicvariable\currentMPgraphicname:#1%
-        \else
-          \meta_unknown_variable_template
-        \fi\fi
-      \endcsname}%
+     {\ifcsname\m_meta_current_variable_template\endcsname
+         \lastnamedcs
+      \else\ifcsname\??graphicvariable\currentMPgraphicname:#1\endcsname
+         \lastnamedcs
+      \fi\fi}%
    \ifx\m_meta_current_variable\empty
      \expandafter\meta_prepare_variable_nop
    \else
@@ -620,6 +612,10 @@
       \else
         \endgroup\meta_prepare_variable_dimension
       \fi}}
+
+% \def\meta_prepare_variable_yes
+%   {\expandafter\edef\csname\m_meta_current_variable_template\endcsname
+%      {\clf_prepareMPvariable {\m_meta_current_variable}}}
 
 \let\MPvar         \MPvariable
 \let\setMPvariables\setupMPvariables
@@ -710,16 +706,18 @@
   {\setunreferencedobject{MP}}
 
 \def\meta_handle_unique_graphic#1#2#3% when there are too many, we can store data at the lua end, although,
-  {\begingroup                  % when there are that many they're probably not that unique anyway
+  {\begingroup                       % when there are that many they're probably not that unique anyway
    \edef\currentmpvariableclass{#1}%
    \extendMPoverlaystamp{#2}% incl prepare
-   \ifcsname\??mpgraphic\overlaystamp:#1\endcsname\else
+   \ifcsname\??mpgraphic\overlaystamp:#1\endcsname
+     \lastnamedcs
+   \else
      \meta_enable_include % redundant
      \global\advance\c_meta_object_counter\plusone
      \meta_use_box{\number\c_meta_object_counter}\hpack{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
      \setxvalue{\??mpgraphic\overlaystamp:#1}{\meta_reuse_box{\number\c_meta_object_counter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
+     \csname\??mpgraphic\overlaystamp:#1\endcsname\empty
    \fi
-   \csname\??mpgraphic\overlaystamp:#1\endcsname\empty
    \endgroup}
 
 \unexpanded\def\startuniqueMPgraphic
@@ -1494,6 +1492,12 @@
 \def\MPrunvar  #1{\clf_mprunvar{#1}}         \let\mprunvar\MPrunvar
 \def\MPruntab#1#2{\clf_mpruntab{#1}#2\relax} \let\mpruntab\MPruntab % #2 is number
 \def\MPrunset#1#2{\clf_mprunset{#1}{#2}}     \let\mprunset\MPrunset
+
+\prependtoks \clf_mppushvariables \to \everybeforepagebody
+\appendtoks  \clf_mppopvariables  \to \everyafterpagebody
+
+\let\MPpushvariables\clf_mppushvariables
+\let\MPpopvariables \clf_mppopvariables
 
 %D We also provide an outputless run:
 

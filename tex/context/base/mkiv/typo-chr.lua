@@ -90,11 +90,10 @@ local insert, remove = table.insert, table.remove
 
 local nodecodes       = nodes.nodecodes
 local glyph_code      = nodecodes.glyph
-local whatsit_code    = nodecodes.whatsit
 local localpar_code   = nodecodes.localpar
 
 local texnest         = tex.nest
-local free_node       = node.free
+local flush_node      = node.flush_node
 local flush_list      = node.flush_list
 
 local settexattribute = tex.setattribute
@@ -135,7 +134,7 @@ local actions = {
     remove = function(specification)
         local n = pickup()
         if n then
-            free_node(n)
+            flush_node(n)
         end
     end,
     push = function(specification)

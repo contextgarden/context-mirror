@@ -15,22 +15,24 @@ return {
         "metapostversion",
         "maxdimensions",
         "drawoptionsfactor",
+        "dq", "sq",
+        "crossingscale", "crossingoption",
     },
     commands = {
-        "transparency",
+        "loadmodule", "dispose", "nothing", "transparency", "tolist", "topath", "tocycle",
         --
         "sqr", "log", "ln", "exp", "inv", "pow", "pi", "radian",
         "tand", "cotd", "sin", "cos", "tan", "cot", "atan", "asin", "acos",
         "invsin", "invcos", "invtan", "acosh", "asinh", "sinh", "cosh",
         "zmod",
         "paired", "tripled",
-        "unitcircle", "fulldiamond", "unitdiamond", "fullsquare",
+        "unitcircle", "fulldiamond", "unitdiamond", "fullsquare", "unittriangle", "fulltriangle",
      -- "halfcircle", "quartercircle",
         "llcircle", "lrcircle", "urcircle", "ulcircle",
         "tcircle", "bcircle", "lcircle", "rcircle",
         "lltriangle", "lrtriangle", "urtriangle", "ultriangle",
         "uptriangle", "downtriangle", "lefttriangle", "righttriangle", "triangle",
-        "smoothed", "cornered", "superellipsed", "randomized", "squeezed", "enlonged", "shortened",
+        "smoothed", "cornered", "superellipsed", "randomized", "randomizedcontrols", "squeezed", "enlonged", "shortened",
         "punked", "curved", "unspiked", "simplified", "blownup", "stretched",
         "enlarged", "leftenlarged", "topenlarged", "rightenlarged", "bottomenlarged",
         "crossed", "laddered", "randomshifted", "interpolated", "paralleled", "cutends", "peepholed",
@@ -38,6 +40,8 @@ return {
         "llmoved", "lrmoved", "urmoved", "ulmoved",
         "rightarrow", "leftarrow", "centerarrow",
         "boundingbox", "innerboundingbox", "outerboundingbox", "pushboundingbox", "popboundingbox",
+        "boundingradius", "boundingcircle", "boundingpoint",
+        "crossingunder", "insideof", "outsideof",
         "bottomboundary", "leftboundary", "topboundary", "rightboundary",
         "xsized", "ysized", "xysized", "sized", "xyscaled",
         "intersection_point", "intersection_found", "penpoint",
@@ -45,8 +49,10 @@ return {
         "withshade", "withcircularshade", "withlinearshade", -- old but kept
         "defineshade", "shaded",
      -- "withshading", "withlinearshading", "withcircularshading", "withfromshadecolor", "withtoshadecolor",
-        "shadedinto", "withshadecolors", "withshadedomain", "withshademethod", "withshadefactor", "withshadevector",
-        "withshadecenter", "withshadedirection", "withshadestep", "withshadefraction",
+        "shadedinto", "withshadecolors",
+        "withshadedomain", "withshademethod", "withshadefactor", "withshadevector",
+        "withshadecenter", "withshadedirection", "withshaderadius", "withshadetransform",
+        "withshadestep", "withshadefraction",
         "cmyk", "spotcolor", "multitonecolor", "namedcolor",
         "drawfill", "undrawfill",
         "inverted", "uncolored", "softened", "grayed", "greyed",
@@ -55,8 +61,8 @@ return {
         "graphictext", "loadfigure", "externalfigure", "figure", "register", "outlinetext", -- "lua",
         "checkedbounds", "checkbounds", "strut", "rule",
         "withmask", "bitmapimage",
-        "colordecimals", "ddecimal", "dddecimal", "ddddecimal",
-        "textext", "thetextext", "rawtextext", "textextoffset",
+        "colordecimals", "ddecimal", "dddecimal", "ddddecimal", "colordecimalslist",
+        "textext", "thetextext", "rawtextext", "textextoffset", "texbox", "thetexbox", "rawtexbox",
         "verbatim",
         "thelabel", "label",
         "autoalign",
@@ -71,7 +77,7 @@ return {
      -- "define_sampled_linear_shade", "define_sampled_circular_shade",
         "space", "crlf", "dquote", "percent", "SPACE", "CRLF", "DQUOTE", "PERCENT",
         "grayscale", "greyscale", "withgray", "withgrey",
-        "colorpart",
+        "colorpart", "colorlike",
         "readfile",
         "clearxy", "unitvector", "center", -- redefined
         "epsed", "anchored",
@@ -92,7 +98,7 @@ return {
         --
         "pushcurrentpicture", "popcurrentpicture",
         --
-        "arrowpath",
+        "arrowpath", "resetarrows",
      -- "colorlike",  "dowithpath", "rangepath", "straightpath", "addbackground",
      -- "cleanstring", "asciistring", "setunstringed", "getunstringed", "unstringed",
      -- "showgrid",
@@ -107,6 +113,7 @@ return {
      -- "recolor", "refill", "redraw", "retext", "untext", "restroke", "reprocess", "repathed",
         "tensecircle", "roundedsquare",
         "colortype", "whitecolor", "blackcolor", "basiccolors", "complementary", "complemented",
+        "resolvedcolor",
         --
      -- "swappointlabels",
         "normalfill", "normaldraw", "visualizepaths", "detailpaths", "naturalizepaths",
@@ -119,11 +126,11 @@ return {
         "drawlineoptions", "drawpointoptions", "drawcontroloptions", "drawlabeloptions",
         "draworiginoptions", "drawboundoptions", "drawpathoptions", "resetdrawoptions",
         --
-        "undashed",
+        "undashed", "pencilled",
         --
         "decorated", "redecorated", "undecorated",
         --
-        "passvariable", "passarrayvariable", "tostring", "format", "formatted",
+        "passvariable", "passarrayvariable", "tostring", "topair", "format", "formatted", "quotation", "quote",
         "startpassingvariable", "stoppassingvariable",
         --
         "eofill", "eoclip", "nofill", "fillup", "eofillup",
@@ -132,5 +139,9 @@ return {
         "addbackground",
         --
         "shadedup", "shadeddown", "shadedleft", "shadedright",
+        --
+        "sortlist", "copylist", "shapedlist", "listtocurves", "listtolines", "listsize", "listlast", "uniquelist",
+        --
+        "circularpath", "squarepath", "linearpath",
     },
 }

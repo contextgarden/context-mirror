@@ -47,7 +47,6 @@ local context      = context
 local implement    = interfaces.implement
 
 local formatters   = string.formatters
-local texgetcount  = tex.getcount
 
 local v_default    = variables.default
 local v_small      = variables.small
@@ -58,7 +57,6 @@ local v_fit        = variables.fit
 local v_on         = variables.on
 local v_none       = variables.none
 
-local mpnamedcolor = attributes.colors.mpnamedcolor
 local topoints     = number.topoints
 local todimen      = string.todimen
 
@@ -289,6 +287,8 @@ end
 local remapper = {
     ["+"] = "p",
     ["-"] = "m",
+    ["--"] = "mm",
+    ["++"] = "pp",
 }
 
 local dchrs     = R("09")
@@ -301,7 +301,7 @@ local set       = Ct(digit^2)
 local colon     = P(":")
 local equal     = P("=")
 local other     = 1 - digit - colon - equal
-local remapped  = sign / remapper
+local remapped  = (sign * sign + sign) / remapper
 local operation = Cs(other^1)
 local special   = (colon * C(other^1)) + Cc("")
 local text      = (equal * C(P(1)^0)) + Cc(false)
@@ -325,20 +325,19 @@ local pattern   =
 -- print(lpegmatch(pattern,"RZ13=x"))      -- 1 RZ false false table x
 
 local f_initialize       = 'if unknown context_chem : input mp-chem.mpiv ; fi ;'
-local f_start_structure  = formatters['chem_start_structure(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);']
+local f_start_structure  = formatters['chem_start_structure(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%q);']
 local f_set_trace_bounds = formatters['chem_trace_boundingbox := %l ;']
 local f_stop_structure   = 'chem_stop_structure;'
 local f_start_component  = 'chem_start_component;'
 local f_stop_component   = 'chem_stop_component;'
-local f_line             = formatters['chem_%s%s(%s,%s,%s,%s,%s);']
+local f_line             = formatters['chem_%s%s(%s,%s,%s,%s,%q);']
 local f_set              = formatters['chem_set(%s);']
 local f_number           = formatters['chem_%s%s(%s,%s,"\\chemicaltext{%s}");']
 local f_text             = f_number
 local f_empty_normal     = formatters['chem_%s(%s,%s,"");']
 local f_empty_center     = formatters['chem_c%s(%s,%s,"");']
 local f_transform        = formatters['chem_%s(%s,%s,%s);']
-
-local prepareMPvariable = commands and commands.prepareMPvariable
+local f_fixed            = formatters['chem_%s(%s,%s,%q);']
 
 local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_variant)
     insert(stack,{ spec = spec, text = text, n = n })
@@ -380,7 +379,7 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                 if t == v_default or t == v_normal or t == "" then
                     rulecolor = saved_rulecolor
                 elseif t then
-                    rulecolor = mpnamedcolor(t)
+                    rulecolor = t
                 end
             elseif operation == "rulethickness" then
                 local t = text
@@ -604,7 +603,7 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                         m = m + 1 ; metacode[m] = f_transform(operation,variant,index or 1,factor)
                     end
                 elseif what == "fixed" then
-                    m = m + 1 ; metacode[m] = f_transform(operation,variant,rulethickness,rulecolor)
+                    m = m + 1 ; metacode[m] = f_fixed(operation,variant,rulethickness,rulecolor)
                 elseif trace_structure then
                     report_chemistry("level %a, ignoring undefined operation %s",level,operation)
                 end
@@ -686,8 +685,8 @@ function chemistry.start(settings)
     local unit           = settings.unit          or 655360
     local bondlength     = settings.factor        or 3
     local rulethickness  = settings.rulethickness or 65536
-    local rulecolor      = settings.rulecolor     or ""
-    local axiscolor      = settings.framecolor    or ""
+    local rulecolor      = settings.rulecolor     or "black"
+    local axiscolor      = settings.framecolor    or "black"
     local scale          = settings.scale         or "normal"
     local rotation       = settings.rotation      or 0
     local offset         = settings.offset        or 0
@@ -735,7 +734,7 @@ function chemistry.start(settings)
         if trace_structure then
             report_chemistry("skipping trial run")
         end
-        context.hrule(sp_width,sp_height,0) -- maybe depth
+        context.rule(sp_width,sp_height,0) -- maybe depth
         return
     end
     --
@@ -752,7 +751,7 @@ function chemistry.start(settings)
         chemistry.structures,
         left, right, top, bottom,
         rotation, topoints(unit), bondlength, scale, topoints(offset),
-        tostring(settings.axis == v_on), topoints(rulethickness), tostring(axiscolor)
+        tostring(settings.axis == v_on), topoints(rulethickness), axiscolor
     )
     metacode[#metacode+1] = f_set_trace_bounds(trace_boundingbox) ;
     --

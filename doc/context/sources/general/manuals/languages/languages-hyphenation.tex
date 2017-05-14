@@ -1,8 +1,8 @@
 % language=uk
 
-\environment languages-environment
-
 \startcomponent languages-hyphenation
+
+\environment languages-environment
 
 \startchapter[title=Hyphenation][color=darkmagenta]
 
@@ -339,7 +339,7 @@ aaaaabbbbb \par
 
 \typebuffer
 
-\noindentation This code is self explaining and results in:
+This code is self explaining and results in:
 
 \blank
 
@@ -347,8 +347,7 @@ aaaaabbbbb \par
 \setupindenting[no]\hsize 1mm \lefthyphenmin 1 \righthyphenmin 1 \getbuffer
 \stophyphenation
 
-\noindentation There can be multiple hyphens and even multiple words in such a
-specification:
+There can be multiple hyphens and even multiple words in such a specification:
 
 \startbuffer
 \registerhyphenationexception[aaaaa-bbbbb cc-ccc-ddd-dd]
@@ -358,7 +357,7 @@ cccccddddd \par
 
 \typebuffer
 
-\noindentation We get:
+We get:
 
 \blank
 
@@ -385,8 +384,8 @@ whatever-whatever \par
 \typebuffer[demo]
 
 These lines will hyphenate differently and in traditional \TEX\ you need to
-insert penalties and|/|or glue to get around it. In the \LUA\ variant we can
-enable that limitation.
+insert penalties and|/|or glue to get around it unless you instruct \LUATEX\ to
+be more. In the \LUA\ variant we can enable that limitation.
 
 \startbuffer
 \definehyphenationfeatures
@@ -446,7 +445,7 @@ extensions as mentioned. However, you can plug in your own code, given that it
 does return a proper hyphenation result. One reason for providing this plug is
 that there are users who want to play with hyphenators based  on a different
 logic. In \CONTEXT\ we already have some methods to deal with languages that
-(for instance) have no spaces but split on words or syllabes. A more tight
+(for instance) have no spaces but split on words or syllables. A more tight
 integration with the hyphenator can have advantages so I will explore these
 options when there is demand.
 
@@ -520,7 +519,7 @@ When applied to one the tufte example we get:
 \starthyphenation[traditional]
     \setuptolerance[tolerant]
     \sethyphenationfeatures[demo]
-    \noindentation % \dontleavehmode
+    \dontleavehmode
     \input tufte\relax
 \stophyphenation
 \stopbuffer
@@ -626,7 +625,7 @@ So, we only break a line after symbols.
     \stophyphenation
 \stoplinecorrection
 
-\noindentation A quick test can look as follows:
+A quick test can look as follows:
 
 \startbuffer
 \starthyphenation[traditional]
@@ -663,7 +662,7 @@ superef\zwnj fective
 
 \typebuffer[sample]
 
-\noindentation and define two featuresets:
+and define two featuresets:
 
 \startbuffer
 \definehyphenationfeatures
@@ -678,7 +677,7 @@ superef\zwnj fective
 
 \typebuffer \getbuffer
 
-\noindentation We limit the width to 1mm and get:
+We limit the width to 1mm and get:
 
 \startlinecorrection[blank]
 \bTABLE[option=stretch,offset=.5ex]
@@ -748,7 +747,7 @@ same as the breakpoints mechanism (compounds).
 \starthyphenation[traditional]
     \sethyphenationfeatures[demo-3]
     \dontcomplain
-    \hsize 1mm \noindentation
+    \hsize 1mm
     we use (super)special(ized) patterns
 \stophyphenation
 \stopbuffer
@@ -764,11 +763,11 @@ We can make this more clever by adding patterns:
 
 \typebuffer \blank \getbuffer \blank
 
-\noindentation This gives:
+This gives:
 
 \blank \getbuffer[demo] \blank
 
-\noindentation A detailed trace shows that these patterns get applied:
+A detailed trace shows that these patterns get applied:
 
 \starthyphenation[traditional]
     \ttx
@@ -778,8 +777,75 @@ We can make this more clever by adding patterns:
 \unregisterhyphenationpattern[en][)9]
 \unregisterhyphenationpattern[en][9(]
 
-\noindentation The somewhat weird hyphens at the edges will in practice not show
-up because there is always one regular character there.
+The somewhat weird hyphens at the edges will in practice not show up because
+there is always one regular character there.
+
+\stopsection
+
+\startsection[title=Counting]
+
+There is not much you can do about patterns. It's a craft to make them and so
+they are shipped with the distribution. In order to hyphenate well, \TEX\ looks
+at some character properties. In \CONTEXT\ only the characters used in the
+patterns of a language get tagged as valid in a word.
+
+The following example illustrates that there can be corner cases. In fact, this
+example might render differently depending on the patterns available. First we
+define an extra language, based on French.
+
+\startbuffer
+\installlanguage[frf][default=fr,patterns=fr,factor=yes]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Here we set the \type {factor} parameter which tells the loader that it should
+look at the characters used in a special way: some count for none, and some count
+for more than one when determining the min values used to determine if and where
+hyphenation is to be applied.
+
+\startbuffer
+\startmixedcolumns[n=3,balance=yes]
+    \hsize 1mm \dontcomplain
+    \language[fr]  aesop oedipus æsop œdipus \column
+    \hsize 1mm \dontcomplain
+    \language[frf] aesop oedipus æsop œdipus \column
+    \startexceptions æ-sop \stopexceptions
+    \hsize 1mm \dontcomplain
+    \language[frf] aesop oedipus æsop œdipus
+\stopmixedcolumns
+\stopbuffer
+
+\typebuffer
+
+We get three (when writing this manual) different columns:
+
+\getbuffer
+
+The trick is in the \type {factor}: when set to \type {yes} an \type {æ} is
+counted as two characters. Combining marks count as zero but you will not
+find them being used as we already resolve them in an earlier stage.
+
+\startluacode
+context.startcolumns { n = 2 }
+context.starttabulate { "|Tc|c|c|l|" }
+for u, data in table.sortedhash(languages.hjcounts) do
+    if data.category ~= "combining" then
+        context.NC() context("%05U",u)
+        context.NC() context("%c",u)
+        context.NC() context(data.count)
+        context.NC() context(data.category)
+        context.NC() context.NR()
+    end
+end
+context.stoptabulate()
+context.stopcolumns()
+\stopluacode
+
+It is very unlikely to find an \type {ﬃ} in the input and even an \type {ĳ} is
+rare. The \type {æ} is marked as character and the \type {œ} a ligatyure in
+\UNICODE. Maybe all the characters here are dubious but al least we provide a
+way to experiment with them.
 
 \stopsection
 

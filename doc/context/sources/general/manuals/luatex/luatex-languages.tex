@@ -147,6 +147,38 @@ hyphenation happens is (normally) when the paragraph or a horizontal box is
 constructed. When \type {\savinghyphcodes} was zero when the language got
 initialized you start out with nothing, otherwise you already have a set.
 
+When a \type {\hjcode} is larger than $0$ but smaller than $32$ is indicates the
+to be used length. In the following example we map a character (\type {x}) onto
+another one in the patterns and tell the engine that \type {œ} counts as one
+character. Because traditionally zero itself is reserved for inhibiting
+hyphenation, a value of $32$ counts as zero.
+
+\starttyping
+% assuming french patterns:
+foobar % foo-bar
+
+\hjcode`x=`o
+
+fxxbar % fxx-bar
+
+\lefthyphenmin3
+
+œdipus % œdi-pus
+
+\lefthyphenmin4
+
+œdipus % œdipus
+
+\hjcode`œ=2
+
+œdipus % œdi-pus
+
+\hjcode`i=32
+\hjcode`d=32
+
+œdipus % œdipus
+\stoptyping
+
 Carrying all this information with each glyph would give too much overhead and
 also make the process of setting up thee codes more complex. A solution with
 \type {hjcode} sets was considered but rejected because in practice the current
@@ -179,6 +211,134 @@ as trigger. Here are a few examples of usage:
     discrete\wordboundary\discretionary{---}{}{}\wordboundary discrete
 \stopbuffer
 \typebuffer \start \dontcomplain \hsize 1pt \getbuffer \par \stop
+
+We only accept an explicit hyphen when there is a preceding glyph and we skip a
+sequence of explicit hyphens as that normally indicates a \type {--} or \type
+{---} ligature in which case we can in a worse case usage get bad node lists
+later on due to messed up ligature building as these dashes are ligatures in base
+fonts. This is a side effect of the separating the hyphenation, ligaturing and
+kerning steps.
+
+The start and end of a characters is signalled by a glue, penalty, kern or boundary
+node. But by default also a hlist, vlist, rule, dir, whatsit, ins, and adjust node
+indicate a start or end. You can omit the last set from the test by setting
+\type {\hyphenationbounds} to a non|-|zero value:
+
+\starttabulate[|Tl|l|]
+\NC 0 \NC not strict \NC \NR
+\NC 1 \NC strict start \NC \NR
+\NC 2 \NC strict end \NC \NR
+\NC 3 \NC strict start and strict end \NC \NR
+\stoptabulate
+
+The word start is determined as follows:
+
+\starttabulate[|Bl|l|]
+\NC boundary  \NC yes when wordboundary \NC \NR
+\NC hlist     \NC when hyphenationbounds 1 or 3 \NC \NR
+\NC vlist     \NC when hyphenationbounds 1 or 3 \NC \NR
+\NC rule      \NC when hyphenationbounds 1 or 3 \NC \NR
+\NC dir       \NC when hyphenationbounds 1 or 3 \NC \NR
+\NC whatsit   \NC when hyphenationbounds 1 or 3 \NC \NR
+\NC glue      \NC yes \NC \NR
+\NC math      \NC skipped \NC \NR
+\NC glyph     \NC exhyphenchar (one only) : yes (so no -- ---) \NC \NR
+\NC otherwise \NC yes \NC \NR
+\stoptabulate
+
+The word end is determined as follows:
+
+\starttabulate[|Bl|l|]
+\NC boundary  \NC yes \NC \NR
+\NC glyph     \NC yes when different language \NC \NR
+\NC glue      \NC yes \NC \NR
+\NC penalty   \NC yes \NC \NR
+\NC kern      \NC yes when not italic (for some historic reason) \NC \NR
+\NC hlist     \NC when hyphenationbounds 2 or 3 \NC \NR
+\NC vlist     \NC when hyphenationbounds 2 or 3 \NC \NR
+\NC rule      \NC when hyphenationbounds 2 or 3 \NC \NR
+\NC dir       \NC when hyphenationbounds 2 or 3 \NC \NR
+\NC whatsit   \NC when hyphenationbounds 2 or 3 \NC \NR
+\NC ins       \NC when hyphenationbounds 2 or 3 \NC \NR
+\NC adjust    \NC when hyphenationbounds 2 or 3 \NC \NR
+\stoptabulate
+
+% (Future versions of \LUATEX\ might provide more granularity.)
+
+In traditional \TEX\ ligature building and hyphenation are interwoven with the
+line break mechanism. In \LUATEX\ these phases are isolated. As a consequence we
+deal differently with (a sequence of) explicit hyphens. We already have added
+some control over aspects of the hyphenation and yet another one concerns
+automatic hyphens (e.g.\ \type {-} characters in the input).
+
+When \type {\automatichyphenmode} has a value of 0, a hyphen will be turned into
+an automatic discretionary. The snippets before and after it will not be
+hyphenated. A side effect is that a leading hyphen can lead to a split but one
+will seldom run into that situation. Setting a pre and post character makes this
+more prominent. A value of 1 will prevent this side effect and a value of 2 will
+not turn the hyphen into a discretionary. Experiments with other options, like
+permitting hyphenation, of the words on both sides were discarded.
+
+\startbuffer[a]
+before-after \par
+before--after \par
+before---after \par
+\stopbuffer
+
+\startbuffer[b]
+-before \par
+after- \par
+--before \par
+after-- \par
+---before \par
+after--- \par
+\stopbuffer
+
+\startbuffer[c]
+before-after \par
+before--after \par
+before---after \par
+\stopbuffer
+
+We show three samples:
+
+Input A: \typebuffer[a]
+Input B: \typebuffer[b]
+Input C: \typebuffer[c]
+
+\startbuffer[demo]
+\startcombination[nx=4,ny=3,location=top]
+    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\zerocount \hsize6em \getbuffer[a]}} {A~0~6em}
+    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\zerocount \hsize2pt \getbuffer[a]}} {A~0~2pt}
+    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\plusone   \hsize2pt \getbuffer[a]}} {A~1~2pt}
+    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\plustwo   \hsize2pt \getbuffer[a]}} {A~2~2pt}
+    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\zerocount \hsize6em \getbuffer[b]}} {B~0~6em}
+    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\zerocount \hsize2pt \getbuffer[b]}} {B~0~2pt}
+    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\plusone   \hsize2pt \getbuffer[b]}} {B~1~2pt}
+    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\plustwo   \hsize2pt \getbuffer[b]}} {B~2~2pt}
+    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\zerocount \hsize6em \getbuffer[c]}} {C~0~6em}
+    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\zerocount \hsize2pt \getbuffer[c]}} {C~0~2pt}
+    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\plusone   \hsize2pt \getbuffer[c]}} {C~1~2pt}
+    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\plustwo   \hsize2pt \getbuffer[c]}} {C~2~2pt}
+\stopcombination
+\stopbuffer
+
+\startplacefigure[reference=automatic:1,title={The automatic modes \type {0} (default), \type {1} and \type {2}, with a \type {\hsize}
+of 6em and 2pt (which triggers a linebreak).}]
+    \dontcomplain \tt \getbuffer[demo]
+\stopplacefigure
+
+\startplacefigure[reference=automatic:2,title={The automatic modes \type {0} (default), \type {1} and \type {2}, with \type
+{\preexhyphenchar} and \type {\postexhyphenchar} set to characters \type {A} and \type {B}.}]
+    \postexhyphenchar`A\relax
+    \preexhyphenchar `B\relax
+    \dontcomplain \tt \getbuffer[demo]
+\stopplacefigure
+
+As with primitive companions of other single character commands, the \type {\-}
+command has a more verbose primitive version in \type {\explicitdiscretionary}
+and the normally intercepted in the hyphenator character \type {-} (or whatever
+is configured) is available as \type {\automaticdiscretionary}.
 
 \section{The main control loop}
 
@@ -259,6 +419,34 @@ need for that (all hard work is done later), and the (now very small) bits of
 character|-|handling code have been moved back inline. When \type
 {\tracingcommands} is on, this is visible because the full word is reported,
 instead of just the initial character.
+
+Because we tend to make hard codes behaviour configurable a few new primitives
+have been added:
+
+\starttyping
+\hyphenpenaltymode
+\automatichyphenpenalty
+\explicithyphenpenalty
+\stoptyping
+
+The first parameter has the following consequences for automatic discs (the ones
+resulting from an \type {\exhyphenchar}:
+
+\starttabulate[|Tc|l|l|]
+\BC mode \BC automatic disc \type{-}         \BC explicit disc \type{\-}         \NC \NR
+\HL
+\NC 0    \NC \type {\exhyphenpenalty}        \NC \type {\exhyphenpenalty}        \NC \NR
+\NC 1    \NC \type {\hyphenpenalty}          \NC \type {\hyphenpenalty}          \NC \NR
+\NC 2    \NC \type {\exhyphenpenalty}        \NC \type {\hyphenpenalty}          \NC \NR
+\NC 3    \NC \type {\hyphenpenalty}          \NC \type {\exhyphenpenalty}        \NC \NR
+\NC 4    \NC \type {\automatichyphenpenalty} \NC \type {\explicithyphenpenalty}  \NC \NR
+\NC 5    \NC \type {\exhyphenpenalty}        \NC \type {\explicithyphenpenalty}  \NC \NR
+\NC 6    \NC \type {\hyphenpenalty}          \NC \type {\explicithyphenpenalty}  \NC \NR
+\NC 7    \NC \type {\automatichyphenpenalty} \NC \type {\exhyphenpenalty}        \NC \NR
+\NC 8    \NC \type {\automatichyphenpenalty} \NC \type {\hyphenpenalty}          \NC \NR
+\stoptabulate
+
+other values do what we always did in \LUATEX: insert \type {\exhyphenpenalty}.
 
 \section[patternsexceptions]{Loading patterns and exceptions}
 
@@ -703,3 +891,17 @@ initialized due to \type {\savinghyphcodes} being larger than zero.
 \stopchapter
 
 \stopcomponent
+
+% \parindent0pt \hsize=1.1cm
+% 12-34-56 \par
+% 12-34-\hbox{56} \par
+% 12-34-\vrule width 1em height 1.5ex \par
+% 12-\hbox{34}-56 \par
+% 12-\vrule width 1em height 1.5ex-56 \par
+% \hjcode`\1=`\1 \hjcode`\2=`\2 \hjcode`\3=`\3 \hjcode`\4=`\4 \vskip.5cm
+% 12-34-56 \par
+% 12-34-\hbox{56} \par
+% 12-34-\vrule width 1em height 1.5ex \par
+% 12-\hbox{34}-56 \par
+% 12-\vrule width 1em height 1.5ex-56 \par
+

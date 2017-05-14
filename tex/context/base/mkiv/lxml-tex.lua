@@ -10,7 +10,6 @@ if not modules then modules = { } end modules ['lxml-tex'] = {
 -- interface and not the context one. If we ever do that there will
 -- be an cldf-xml helper library.
 
-local utfchar = utf.char
 local concat, insert, remove, sortedkeys, reversed = table.concat, table.insert, table.remove, table.sortedkeys, table.reverse
 local format, sub, gsub, find, gmatch, match = string.format, string.sub, string.gsub, string.find, string.gmatch, string.match
 local type, next, tonumber, tostring, select = type, next, tonumber, tostring, select
@@ -46,6 +45,7 @@ local xmltext           = xml.text
 local xmltostring       = xml.tostring
 local xmlapplylpath     = xml.applylpath
 local xmlunspecialized  = xml.unspecialized
+local xmldespecialized  = xml.despecialized -- nicer in expanded xml
 local xmlprivatetoken   = xml.privatetoken
 local xmlstripelement   = xml.stripelement
 local xmlinclusion      = xml.inclusion
@@ -53,6 +53,8 @@ local xmlinclusions     = xml.inclusions
 local xmlbadinclusions  = xml.badinclusions
 local xmlcontent        = xml.content
 local xmllastmatch      = xml.lastmatch
+local xmlpushmatch      = xml.pushmatch
+local xmlpopmatch       = xml.popmatch
 
 directives.enable("xml.path.keeplastmatch")
 
@@ -309,14 +311,6 @@ function lxml.stopraw()
     forceraw = false
 end
 
-function lxml.startraw()
-    forceraw = true
-end
-
-function lxml.stopraw()
-    forceraw = false
-end
-
 function lxml.rawroot()
     return rawroot
 end
@@ -524,6 +518,8 @@ local function entityconverter(id,str,ent) -- todo: disable tex entities when ra
     return xmlprivatetoken(str)
 end
 
+lxml.preprocessor = nil
+
 local function lxmlconvert(id,data,compress,currentresource)
     local settings = { -- we're now roundtrip anyway
         unify_predefined_entities   = false, -- is also default
@@ -531,6 +527,7 @@ local function lxmlconvert(id,data,compress,currentresource)
         resolve_predefined_entities = true,  -- is also default
         resolve_entities            = function(str,ent) return entityconverter(id,str,ent) end,
         currentresource             = tostring(currentresource or id),
+        preprocessor                = lxml.preprocessor,
     }
     if compress and compress == variables.yes then
         settings.strip_cm_and_dt = true
@@ -909,7 +906,8 @@ local function sprint(root) -- check rawroot usage
             if forceraw then
                 rawroot = root
              -- contextsprint(ctxcatcodes,xmltostring(root)) -- goes wrong with % etc
-                root = xmlunspecialized(xmltostring(root))
+             -- root = xmlunspecialized(xmltostring(root))   -- we loose < > &
+                root = xmldespecialized(xmltostring(root))
                 lpegmatch(xmltextcapture,root) -- goes to toc
             else
                 xmlserialize(root,xmltexhandler)
@@ -1402,7 +1400,7 @@ local function attribute(collected,a,default)
     end
 end
 
-local function chainattribute(collected,arguments) -- todo: optional levels
+local function chainattribute(collected,arguments,default) -- todo: optional levels
     if collected and #collected > 0 then
         local e = collected[1]
         while e do
@@ -1411,12 +1409,16 @@ local function chainattribute(collected,arguments) -- todo: optional levels
                 local a = at[arguments]
                 if a then
                     contextsprint(notcatcodes,a)
+                    return
                 end
             else
                 break -- error
             end
             e = e.__p__
         end
+    end
+    if default then
+        contextsprint(notcatcodes,default)
     end
 end
 
@@ -1942,6 +1944,9 @@ function lxml.lastmatch()
     end
 end
 
+lxml.pushmatch = xmlpushmatch
+lxml.popmatch  = xmlpopmatch
+
 function lxml.snippet(id,i)
     local e = getid(id)
     if e then
@@ -2204,7 +2209,11 @@ local pattern = P("context-") * C((1-patterns.whitespace)^1) * C(P(1)^1)
 function lxml.applyselectors(id)
     local root = getid(id)
     local function filter(e)
-        local dt   = e.dt
+        local dt = e.dt
+        if not dt then
+            report_lxml("error in selector, no data in %a",e.tg or "?")
+            return
+        end
         local ndt  = #dt
         local done = false
         local i = 1
@@ -2310,7 +2319,7 @@ function lxml.applyselectors(id)
                                 end
                             end
                         end
-                    else
+                    elseif dti then
                         filter(dti)
                     end
                 end

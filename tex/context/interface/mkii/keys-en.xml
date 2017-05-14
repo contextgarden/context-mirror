@@ -79,6 +79,7 @@
 		<cd:variable name='all' value='all'/>
 		<cd:variable name='alphabetic' value='alphabetic'/>
 		<cd:variable name='always' value='always'/>
+		<cd:variable name='anchor' value='anchor'/>
 		<cd:variable name='and' value='and'/>
 		<cd:variable name='answerarea' value='answerarea'/>
 		<cd:variable name='appendices' value='appendices'/>
@@ -172,9 +173,11 @@
 		<cd:variable name='down' value='down'/>
 		<cd:variable name='each' value='each'/>
 		<cd:variable name='edge' value='edge'/>
+		<cd:variable name='effective' value='effective'/>
 		<cd:variable name='eight' value='eight'/>
 		<cd:variable name='embed' value='embed'/>
 		<cd:variable name='empty' value='empty'/>
+		<cd:variable name='enable' value='enable'/>
 		<cd:variable name='end' value='end'/>
 		<cd:variable name='endnote' value='endnote'/>
 		<cd:variable name='enumeration' value='enumeration'/>
@@ -209,9 +212,10 @@
 		<cd:variable name='force' value='force'/>
 		<cd:variable name='foreground' value='foreground'/>
 		<cd:variable name='formula' value='formula'/>
-		<cd:variable name='formulae' value='formulae'/>
+		<cd:variable name='formulas' value='formulas'/>
 		<cd:variable name='forward' value='forward'/>
 		<cd:variable name='four' value='four'/>
+		<cd:variable name='fractions' value='fractions'/>
 		<cd:variable name='frame' value='frame'/>
 		<cd:variable name='framedtext' value='framedtext'/>
 		<cd:variable name='friday' value='friday'/>
@@ -236,6 +240,7 @@
 		<cd:variable name='here' value='here'/>
 		<cd:variable name='hereafter' value='hereafter'/>
 		<cd:variable name='hidden' value='hidden'/>
+		<cd:variable name='hiddenbar' value='hiddenbar'/>
 		<cd:variable name='hiding' value='hiding'/>
 		<cd:variable name='high' value='high'/>
 		<cd:variable name='horizontal' value='horizontal'/>
@@ -379,6 +384,7 @@
 		<cd:variable name='note' value='note'/>
 		<cd:variable name='nothanging' value='nothanging'/>
 		<cd:variable name='nothyphenated' value='nothyphenated'/>
+		<cd:variable name='notjoinedup' value='notjoinedup'/>
 		<cd:variable name='november' value='november'/>
 		<cd:variable name='nowhere' value='nowhere'/>
 		<cd:variable name='nowhite' value='nowhite'/>
@@ -627,6 +633,7 @@
 		<cd:constant name='anchor' value='anchor'/>
 		<cd:constant name='andtext' value='andtext'/>
 		<cd:constant name='apa' value='apa'/>
+		<cd:constant name='arguments' value='arguments'/>
 		<cd:constant name='arrow' value='arrow'/>
 		<cd:constant name='artauthor' value='artauthor'/>
 		<cd:constant name='artauthoretaldisplay' value='artauthoretaldisplay'/>
@@ -727,6 +734,7 @@
 		<cd:constant name='controls' value='controls'/>
 		<cd:constant name='conversion' value='conversion'/>
 		<cd:constant name='convertfile' value='convertfile'/>
+		<cd:constant name='copies' value='copies'/>
 		<cd:constant name='corner' value='corner'/>
 		<cd:constant name='coupling' value='coupling'/>
 		<cd:constant name='couplingway' value='couplingway'/>
@@ -775,6 +783,7 @@
 		<cd:constant name='etaloption' value='etaloption'/>
 		<cd:constant name='etaltext' value='etaltext'/>
 		<cd:constant name='evenmargin' value='evenmargin'/>
+		<cd:constant name='exact' value='exact'/>
 		<cd:constant name='exitoffset' value='exitoffset'/>
 		<cd:constant name='expansion' value='expansion'/>
 		<cd:constant name='export' value='export'/>
@@ -817,6 +826,7 @@
 		<cd:constant name='frameoffset' value='frameoffset'/>
 		<cd:constant name='frameradius' value='frameradius'/>
 		<cd:constant name='frames' value='frames'/>
+		<cd:constant name='freeregion' value='freeregion'/>
 		<cd:constant name='from' value='from'/>
 		<cd:constant name='functioncolor' value='functioncolor'/>
 		<cd:constant name='functionstyle' value='functionstyle'/>
@@ -1166,6 +1176,7 @@
 		<cd:constant name='splitoffset' value='splitoffset'/>
 		<cd:constant name='spot' value='spot'/>
 		<cd:constant name='stack' value='stack'/>
+		<cd:constant name='stackname' value='stackname'/>
 		<cd:constant name='start' value='start'/>
 		<cd:constant name='starter' value='starter'/>
 		<cd:constant name='state' value='state'/>
@@ -1176,6 +1187,7 @@
 		<cd:constant name='strip' value='strip'/>
 		<cd:constant name='strut' value='strut'/>
 		<cd:constant name='style' value='style'/>
+		<cd:constant name='stylealternative' value='stylealternative'/>
 		<cd:constant name='sub' value='sub'/>
 		<cd:constant name='subtitle' value='subtitle'/>
 		<cd:constant name='suffix' value='suffix'/>
@@ -1231,6 +1243,7 @@
 		<cd:constant name='topspace' value='topspace'/>
 		<cd:constant name='topstate' value='topstate'/>
 		<cd:constant name='totalnumber' value='totalnumber'/>
+		<cd:constant name='transform' value='transform'/>
 		<cd:constant name='translate' value='translate'/>
 		<cd:constant name='trimoffset' value='trimoffset'/>
 		<cd:constant name='type' value='type'/>
@@ -1317,6 +1330,7 @@
 		<cd:command name='Words' value='Words'/>
 		<cd:command name='about' value='about'/>
 		<cd:command name='adaptlayout' value='adaptlayout'/>
+		<cd:command name='alignment' value='alignment'/>
 		<cd:command name='arg' value='arg'/>
 		<cd:command name='at' value='at'/>
 		<cd:command name='atleftmargin' value='atleftmargin'/>
@@ -1533,11 +1547,13 @@
 		<cd:command name='leftmargindistance' value='leftmargindistance'/>
 		<cd:command name='leftmarginwidth' value='leftmarginwidth'/>
 		<cd:command name='leg' value='leg'/>
+		<cd:command name='linecorrection' value='linecorrection'/>
 		<cd:command name='linewidth' value='linethickness'/>
 		<cd:command name='listheight' value='listheight'/>
 		<cd:command name='listlength' value='listlength'/>
 		<cd:command name='listsymbol' value='listsymbol'/>
 		<cd:command name='listwidth' value='listwidth'/>
+		<cd:command name='localfootnotes' value='localfootnotes'/>
 		<cd:command name='logfields' value='logfields'/>
 		<cd:command name='lohi' value='lohi'/>
 		<cd:command name='low' value='low'/>
@@ -1546,6 +1562,7 @@
 		<cd:command name='makeupheight' value='makeupheight'/>
 		<cd:command name='makeupwidth' value='makeupwidth'/>
 		<cd:command name='mar' value='mar'/>
+		<cd:command name='marginblock' value='marginblock'/>
 		<cd:command name='margindistance' value='margindistance'/>
 		<cd:command name='marginrule' value='marginrule'/>
 		<cd:command name='margintext' value='margintext'/>
@@ -1645,6 +1662,7 @@
 		<cd:command name='rightmarginwidth' value='rightmarginwidth'/>
 		<cd:command name='romannumerals' value='romannumerals'/>
 		<cd:command name='rotate' value='rotate'/>
+		<cd:command name='savebuffer' value='savebuffer'/>
 		<cd:command name='scale' value='scale'/>
 		<cd:command name='screen' value='screen'/>
 		<cd:command name='selectblocks' value='selectblocks'/>
@@ -1680,7 +1698,9 @@
 		<cd:command name='setupcombinations' value='setupcombinations'/>
 		<cd:command name='setupcombinedlist' value='setupcombinedlist'/>
 		<cd:command name='setupcomment' value='setupcomment'/>
+		<cd:command name='setupdescription' value='setupdescription'/>
 		<cd:command name='setupdescriptions' value='setupdescriptions'/>
+		<cd:command name='setupenumeration' value='setupenumeration'/>
 		<cd:command name='setupenumerations' value='setupenumerations'/>
 		<cd:command name='setupexternalfigures' value='setupexternalfigures'/>
 		<cd:command name='setupfield' value='setupfield'/>
@@ -1695,8 +1715,10 @@
 		<cd:command name='setupfootnotedefinition' value='setupfootnotedefinition'/>
 		<cd:command name='setupfootnotes' value='setupfootnotes'/>
 		<cd:command name='setupforms' value='setupforms'/>
+		<cd:command name='setupformula' value='setupformula'/>
 		<cd:command name='setupformulas' value='setupformulae'/>
 		<cd:command name='setupframed' value='setupframed'/>
+		<cd:command name='setupframedtext' value='setupframedtext'/>
 		<cd:command name='setupframedtexts' value='setupframedtexts'/>
 		<cd:command name='setuphead' value='setuphead'/>
 		<cd:command name='setupheader' value='setupheader'/>
@@ -1725,7 +1747,9 @@
 		<cd:command name='setuplinewidth' value='setuplinewidth'/>
 		<cd:command name='setuplist' value='setuplist'/>
 		<cd:command name='setupmakeup' value='setupmakeup'/>
+		<cd:command name='setupmarginblock' value='setupmarginblock'/>
 		<cd:command name='setupmarginblocks' value='setupmarginblocks'/>
+		<cd:command name='setupmargindata' value='setupmargindata'/>
 		<cd:command name='setupmarginrules' value='setupmarginrules'/>
 		<cd:command name='setupmarking' value='setupmarking'/>
 		<cd:command name='setupmathalignment' value='setupmathalignment'/>
@@ -1904,6 +1928,7 @@
 		<cd:command name='testcolumn' value='testcolumn'/>
 		<cd:command name='testpage' value='testpage'/>
 		<cd:command name='tex' value='tex'/>
+		<cd:command name='textbackground' value='textbackground'/>
 		<cd:command name='textheight' value='textheight'/>
 		<cd:command name='textreference' value='textreference'/>
 		<cd:command name='textrule' value='textrule'/>

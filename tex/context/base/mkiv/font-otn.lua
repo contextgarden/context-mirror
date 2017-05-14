@@ -192,7 +192,6 @@ local report_subchain = logs.reporter("fonts","otf subchain")
 local report_chain    = logs.reporter("fonts","otf chain")
 local report_process  = logs.reporter("fonts","otf process")
 local report_prepare  = logs.reporter("fonts","otf prepare")
-local report_warning  = logs.reporter("fonts","otf warning")
 local report_run      = logs.reporter("fonts","otf run")
 
 registertracker("otf.verbose_chain", function(v) otf.setcontextchain(v and "verbose") end)
@@ -226,15 +225,12 @@ local setsubtype         = nuts.setsubtype
 local getchar            = nuts.getchar
 local setchar            = nuts.setchar
 
-local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
-local delete_node        = nuts.delete
-local remove_node        = nuts.remove
 local copy_node          = nuts.copy
 local copy_node_list     = nuts.copy_list
 local find_node_tail     = nuts.tail
 local flush_node_list    = nuts.flush_list
-local free_node          = nuts.free
+local flush_node         = nuts.flush_node
 local end_of_math        = nuts.end_of_math
 local traverse_nodes     = nuts.traverse
 local traverse_id        = nuts.traverse_id
@@ -251,7 +247,6 @@ local glyphcodes         = nodes.glyphcodes
 local disccodes          = nodes.disccodes
 
 local glyph_code         = nodecodes.glyph
-local glue_code          = nodecodes.glue
 local disc_code          = nodecodes.disc
 local math_code          = nodecodes.math
 local dir_code           = nodecodes.dir
@@ -286,10 +281,12 @@ local cursonce           = true
 local fonthashes         = fonts.hashes
 local fontdata           = fonthashes.identifiers
 
-local otffeatures        = fonts.constructors.newfeatures("otf")
+local otffeatures        = fonts.constructors.features.otf
 local registerotffeature = otffeatures.register
 
 local onetimemessage     = fonts.loggers.onetimemessage or function() end
+
+local getrandom          = utilities and utilities.randomizer and utilities.randomizer.get
 
 otf.defaultnodealternate = "none" -- first last
 
@@ -409,7 +406,7 @@ end
 local function flattendisk(head,disc)
     local replace = getfield(disc,"replace")
     setfield(disc,"replace",nil)
-    free_node(disc)
+    flush_node(disc)
     if head == disc then
         local next = getnext(disc)
         if replace then
@@ -687,7 +684,7 @@ end
 local function get_alternative_glyph(start,alternatives,value,trace_alternatives)
     local n = #alternatives
     if value == "random" then
-        local r = random(1,n)
+        local r = getrandom and getrandom("glyph",1,n) or random(1,n)
         return alternatives[r], trace_alternatives and formatters["value %a, taking %a"](value,r)
     elseif value == "first" then
         return alternatives[1], trace_alternatives and formatters["value %a, taking %a"](value,1)
@@ -1227,41 +1224,6 @@ example, the following is valid:</p>
 <typing>
 <line>xxxabcdexxx [single a->A][multiple b->BCD][ligature cde->E] xxxABCDExxx</line>
 </typing>
-
-<p>Therefore we we don't really do the replacement here already unless we have the
-single lookup case. The efficiency of the replacements can be improved by deleting
-as less as needed but that would also make the code even more messy.</p>
---ldx]]--
-
--- local function delete_till_stop(head,start,stop,ignoremarks) -- keeps start
---     local n = 1
---     if start == stop then
---         -- done
---     elseif ignoremarks then
---         repeat -- start x x m x x stop => start m
---             local next = getnext(start)
---             if not marks[getchar(next)] then
---                 local components = getnext(next,"components")
---                 if components then -- probably not needed
---                     flush_node_list(components)
---                 end
---                 head = delete_node(head,next)
---             end
---             n = n + 1
---         until next == stop
---     else -- start x x x stop => start
---         repeat
---             local next = getnext(start)
---             local components = getfield(next,"components")
---             if components then -- probably not needed
---                 flush_node_list(components)
---             end
---             head = delete_node(head,next)
---             n = n + 1
---         until next == stop
---     end
---     return head, n
--- end
 
 --[[ldx--
 <p>Here we replace start by a single variant.</p>
@@ -2850,10 +2812,12 @@ function otf.dataset(tfmdata,font) -- generic variant, overloaded in context
         }
         rs[language] = rl
         local sequences = tfmdata.resources.sequences
-        for s=1,#sequences do
-            local v = enabled and initialize(sequences[s],script,language,enabled,autoscript,autolanguage)
-            if v then
-                rl[#rl+1] = v
+        if sequences then
+            for s=1,#sequences do
+                local v = enabled and initialize(sequences[s],script,language,enabled,autoscript,autolanguage)
+                if v then
+                    rl[#rl+1] = v
+                end
             end
         end
     end

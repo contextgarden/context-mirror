@@ -36,7 +36,9 @@ The top|-|level keys in the table are as follows:
 \NC fonts            \NC yes \NC no  \NC yes \NC table  \NC locally used fonts \NC \NR
 \NC psname           \NC no  \NC no  \NC yes \NC string \NC This is the \POSTSCRIPT\ fontname in the incoming font
                                                             source, and it's used as fontname identifier in the \PDF\
-                                                            output. \NC \NR
+                                                            output. This has to be a valid string, e.g.\ no spaces
+                                                            and such, as the backend will not do a cleanup. This gives
+                                                            complete control to the loader. \NC \NR
 \NC fullname         \NC no  \NC no  \NC yes \NC string \NC output font name, used as a fallback in the \PDF\ output
                                                             if the \type {psname} is not set \NC \NR
 \NC header           \NC yes \NC no  \NC no  \NC string \NC header comments, if any \NC \NR
@@ -75,6 +77,8 @@ The top|-|level keys in the table are as follows:
 \NC nomath           \NC no  \NC no  \NC yes \NC boolean\NC This key allows a minor speedup for text fonts. If it
                                                             is present and true, then \LUATEX\ will not check the
                                                             character entries for math|-|specific keys. \NC \NR
+\NC oldmath          \NC no  \NC no  \NC yes \NC boolean\NC This key flags a font as representing an old school \TEX\
+                                                            math font and disables the \OPENTYPE\ code path. \NC \NR
 \NC slant            \NC no  \NC no  \NC yes \NC number \NC This has the same semantics as the \type {SlantFont}
                                                             operator in font map files. \NC \NR
 \NC extent           \NC no  \NC no  \NC yes \NC number \NC This has the same semantics as the \type {ExtendFont}

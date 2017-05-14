@@ -905,7 +905,7 @@
    \ifzeropt\ht\oldshapebox % \ifdim\ht\oldshapebox=\zeropoint
      \setbox\newshapebox\emptyvbox
    \else
-     \setbox\newshapebox\vbox
+     \setbox\newshapebox\vbox % can be \vpack
        {\unvcopy\oldshapebox
         \setbox\newshapebox\emptybox
         \shapecounter\zerocount
@@ -915,7 +915,7 @@
 
 \ifx\originalshapebox\undefined \let\originalshapebox\oldshapebox \fi
 
-% We will turn this into a \MKIV\ variant.
+% We will turn this into a \MKIV\ variant (we can use \type {\vpack} too).
 
 \unexpanded\def\insertshapesignal
   {\hpack to \shapesignal{\strut\hss}% plus \strut
@@ -1313,8 +1313,7 @@
    \egroup}
 
 \unexpanded\def\limitatetext#1#2#3% \expanded added 2003/01/16
-  {\expanded{\beforesplitstring#2}\at,\to\leftlimit
-   \expanded{\aftersplitstring #2}\at,\to\rightlimit
+  {\splitatcomma{#2}\leftlimit\rightlimit
    \ifx\rightlimit\empty
      \normallimitatetext {#1}\leftlimit           {#3}%
    \else
@@ -1727,7 +1726,7 @@
   {\ifnum\rigidcolumns=1 % tzt ook h/d correctie
      \ifinner\ifhmode\box\else\unvbox\fi\else\unvbox\fi#1\relax
    \else
-     \vbox
+     \vbox % \vpack
        {\forgetall
         \nopenalties
         \dontcomplain
@@ -2550,9 +2549,15 @@
    \fi
    \setstackbox{#1}{#2}}
 
+\unexpanded\def\flushbox#1#2% unwrapped
+  {\ifcsname\??stackbox#1:#2\endcsname
+     \box\lastnamedcs
+   \else
+     \emptybox
+   \fi}
+
 \unexpanded\def\restorebox#1#2% unwrapped
   {\ifcsname\??stackbox#1:#2\endcsname
-    %\copy\csname\??stackbox#1:#2\endcsname
      \copy\lastnamedcs
    \else
      \emptybox
@@ -2561,16 +2566,18 @@
 \unexpanded\def\foundbox#1#2% wrapped
   {\vpack
      {\ifcsname\??stackbox#1:#2\endcsname
-       %\copy\csname\??stackbox#1:#2\endcsname
         \copy\lastnamedcs
       \fi}}
 
-\unexpanded\def\doifelsebox#1#2#3#4%
+\unexpanded\def\doifelsebox#1#2%
   {\ifcsname\??stackbox#1:#2\endcsname
-    %\ifvoid\csname\??stackbox#1:#2\endcsname#4\else#3\fi
-     \ifvoid\lastnamedcs#4\else#3\fi
+     \ifvoid\lastnamedcs
+       \doubleexpandafter\secondoftwoarguments
+     \else
+       \doubleexpandafter\firstoftwoarguments
+     \fi
    \else
-     #4%
+     \expandafter\secondoftwoarguments
    \fi}
 
 \let\doifboxelse\doifelsebox
@@ -2604,6 +2611,33 @@
 \unexpanded\def\globalpushbox{\syst_boxes_push\global}
 \unexpanded\def\globalpopbox {\syst_boxes_pop \global}
 
+%D And here is a more modern one (not yet in i-*):
+%D
+%D \starttyping
+%D \dorecurse {100} {
+%D     \setbox\zerocount\hbox{test \recurselevel}
+%D     \putboxincache{foo}{\recurselevel}\zerocount
+%D     \copyboxfromcache{foo}{\recurselevel}\zerocount
+%D     \iftrue
+%D         \setbox\zerocount\hbox{\directboxfromcache{foo}{\recurselevel}}%
+%D     \else
+%D         \getboxfromcache{foo}{\recurselevel}\zerocount
+%D     \fi
+%D }
+%D \resetboxesincache{foo}
+%D \stoptyping
+
+\unexpanded\def\putboxincache       #1#2#3{\clf_putboxincache         {#1}{#2}#3\relax}
+\unexpanded\def\getboxfromcache     #1#2#3{\clf_getboxfromcache       {#1}{#2}#3\relax}
+\unexpanded\def\doifelseboxincache    #1#2{\clf_doifelseboxincache    {#1}{#2}}
+\unexpanded\def\copyboxfromcache    #1#2#3{\clf_copyboxfromcache      {#1}{#2}#3\relax}
+\unexpanded\def\directboxfromcache    #1#2{\clf_directboxfromcache    {#1}{#2}}
+\unexpanded\def\directcopyboxfromcache#1#2{\clf_directcopyboxfromcache{#1}{#2}}
+\unexpanded\def\resetboxesincache       #1{\clf_resetboxesincache     {#1}}
+
+\unexpanded\def\putnextboxincache#1#2%
+  {\dowithnextbox{\putboxincache{#1}{#2}\nextbox}}
+
 %D \macros
 %D   {removedepth, obeydepth}
 %D
@@ -2619,13 +2653,11 @@
    \fi}
 
 \unexpanded\def\obeydepth
-  {\par
-  \ifvmode
-     \ifdim\prevdepth>\zeropoint
-       \kern-\prevdepth
-     \fi
-     \kern\strutdp
-   \fi}
+  {\par % watch out for changes in math formulas
+   \ifvmode\ifdim\prevdepth<\zeropoint\else\ifdim\prevdepth<\strutdp
+     \kern\dimexpr\strutdp-\prevdepth\relax
+     \prevdepth\strutdp
+   \fi\fi\fi}
 
 \unexpanded\def\undepthed
   {\dowithnextbox{\dp\nextbox\zeropoint\box\nextbox}\hbox}
@@ -2885,9 +2917,63 @@
 \let\getnaturaldimensions\clf_getnaturaldimensions % sets three dimensions
 \let\naturalwd           \clf_naturalwd            % calculates and returns wd
 
+\let\getnaturalwd\clf_getnaturalwd % no intermediate
+\let\setnaturalwd\clf_setnaturalwd % no intermediate
+
 \unexpanded\def\doifelserighttoleftinbox{\clf_doifelserighttoleftinbox}
 
 \let\doifrighttoleftinboxelse\doifelserighttoleftinbox
+
+%D New, used in high/low:
+
+\definesystemattribute [runningtext] [public]
+
+%unexpanded\def\runninghbox{\hbox attr \runningtextattribute \plusone}     % not yet in i-*
+\unexpanded\def\runninghbox{\hbox attr \runningtextattribute \fontid\font} % not yet in i-*
+
+%D To complement lua (yet undocumented):
+
+\unexpanded\def\beginhbox{\hbox\bgroup}  \let\endhbox\egroup
+\unexpanded\def\beginvbox{\vbox\bgroup}  \let\endvbox\egroup
+\unexpanded\def\beginvtop{\vtop\bgroup}  \let\endvtop\egroup
+
+\unexpanded\def\sethboxregister#1{\setbox#1\hbox}
+\unexpanded\def\setvboxregister#1{\setbox#1\vbox}
+\unexpanded\def\setvtopregister#1{\setbox#1\vtop}
+
+\unexpanded\def\flushboxregister#1{\box\numexpr#1\relax}
+
+\unexpanded\def\starthboxregister#1{\setbox#1\hbox\bgroup}  \let\stophboxregister\egroup
+\unexpanded\def\startvboxregister#1{\setbox#1\vbox\bgroup}  \let\stopvboxregister\egroup
+\unexpanded\def\startvtopregister#1{\setbox#1\vtop\bgroup}  \let\stopvtopregister\egroup
+
+%D For whatever third party package needs it:
+%D
+%D \starttyping
+%D \newlocalbox\BoxOne
+%D \newlocalbox\BoxTwo
+%D
+%D \setbox\BoxOne\hbox{Box One}
+%D \setbox\BoxTwo\hbox{Box Two}
+%D
+%D [\box\BoxTwo] [\box\BoxOne]
+%D \stoptyping
+
+\installcorenamespace{localbox}
+
+\unexpanded\def\newlocalbox#1%
+  {\expandafter\let\expandafter#1\csname\??localbox\string#1\endcsname
+   \ifx#1\relax
+     \syst_aux_new_localbox#1%
+   \fi}
+
+\def\syst_aux_new_localbox#1%
+  {\expandafter\newbox\csname\??localbox\string#1\endcsname
+   \newlocalbox#1}
+
+%D Who knows when this comes in handy:
+
+\unexpanded\def\lastlinewidth{\dimexpr\clf_lastlinelength\scaledpoint\relax}
 
 \protect \endinput
 

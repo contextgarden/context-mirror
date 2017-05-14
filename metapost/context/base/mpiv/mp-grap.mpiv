@@ -17,9 +17,8 @@ boolean context_grap ; context_grap := true ;
 
 % Below is a modified graph.mp
 
-show numbersystem, numberprecision ;
+message ("using number system " & numbersystem & " with precision " & decimal numberprecision) ;
 
-%if epsilon/4 = 0 :
 if numbersystem <> "double" :
     errmessage "The graph macros require the double precision number system." ;
     endinput ;
@@ -161,7 +160,6 @@ enddef ;
 % New :
 
 save graph_background ; color graph_background ; % if defined, fill the frame.
-save graph_close_file ; boolean graph_close_file ; graph_close_file = false ;
 
 def begingraph(expr w, h) =
   begingroup
@@ -475,9 +473,9 @@ enddef ;
 % String manipulation routines for MetaPost
 % It is harmless to input this file more than once.
 
-vardef isdigit primary d =
-    ("0"<=d)and(d<="9")
-enddef ;
+% vardef isdigit primary d =
+%     ("0"<=d)and(d<="9")
+% enddef ;
 
 % Number of initial characters of string s where `c <character>' is true
 
@@ -527,15 +525,18 @@ enddef ;
 % line with no data.  Commands c can use line number i and tokens $1, $2, ...
 % and j is the number of fields.
 
+% def gdata(expr f)(suffix $)(text c) =
+%   for i=1 upto largestmantissa :
+%     exitunless graph_read_line$(f) ;
+%     c
+%   endfor ;
+% enddef ;
+
 def gdata(expr f)(suffix $)(text c) =
-  %boolean flag ; % not used?
   for i=1 upto largestmantissa :
     exitunless graph_read_line$(f) ;
     c
   endfor
-  if graph_close_file :
-    closefrom f ;
-  fi
 enddef ;
 
 % Read a path from file f. The path is terminated by blank line or EOF.
@@ -1259,7 +1260,6 @@ def plotsymbol(expr n, f) text t =
             fg := if known graph_foreground : graph_foreground else : black fi ;
             save p ; path p ; p = graph_shape[n] scaled graph_shapesize ;
             draw p withcolor bg withpen currentpen scaled 2 ; % halo
-            currentpen := currentpen scaled .5 ;
             if cycle p :
                 fill p withcolor
                     if known f :

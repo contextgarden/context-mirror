@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['strc-num'] = {
 local format = string.format
 local next, type = next, type
 local min, max = math.min, math.max
+local insert, remove, copy = table.insert, table.remove, table.copy
 local texsetcount = tex.setcount
 
 -- Counters are managed here. They can have multiple levels which makes it easier to synchronize
@@ -16,6 +17,7 @@ local texsetcount = tex.setcount
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
+local setmetatablecall  = table.setmetatablecall
 
 local trace_counters    = false  trackers.register("structures.counters", function(v) trace_counters = v end)
 local report_counters   = logs.reporter("structure","counters")
@@ -38,9 +40,6 @@ local v_previous        = variables.previous
 local v_prev            = variables.prev
 local v_last            = variables.last
 ----- v_no              = variables.no
-local v_backward        = variables.backward
-local v_forward         = variables.forward
------ v_subs            = variables.subs or "subs"
 
 -- states: start stop none reset
 
@@ -166,7 +165,7 @@ local function enhance()
     enhance = nil
 end
 
-local function allocate(name,i) -- can be metatable
+local function allocate(name,i) -- can be metatable but it's a bit messy
     local cd = counterdata[name]
     if not cd then
         cd = {
@@ -183,20 +182,24 @@ local function allocate(name,i) -- can be metatable
     cd = cd.data
     local ci = cd[i]
     if not ci then
-        ci = {
-            number = 0,
-            start  = 0,
-            saved  = 0,
-            step   = 1,
-            range  = 1,
-            offset = false,
-            stop   = 0, -- via metatable: last, first, stop only for tracing
-        }
-        setmetatableindex(ci, function(t,s) return constructor[s](t,name,i) end)
-        cd[i] = ci
-        tobesaved[name][i] = { }
-    else
-        if enhance then enhance() end -- not stored in bytecode
+        for i=1,i do
+            if not cd[i] then
+                ci = {
+                    number = 0,
+                    start  = 0,
+                    saved  = 0,
+                    step   = 1,
+                    range  = 1,
+                    offset = false,
+                    stop   = 0, -- via metatable: last, first, stop only for tracing
+                }
+                setmetatableindex(ci, function(t,s) return constructor[s](t,name,i) end)
+                cd[i] = ci
+                tobesaved[name][i] = { }
+            end
+        end
+    elseif enhance then
+        enhance() -- not stored in bytecode
     end
     return ci
 end
@@ -432,14 +435,23 @@ end
 function counters.save(name) -- or just number
     local cd = counterdata[name]
     if cd then
-        table.insert(cd.saved,table.copy(cd.data))
+        insert(cd.saved,copy(cd.data))
     end
 end
 
 function counters.restore(name)
     local cd = counterdata[name]
-    if cd and cd.saved then
-        cd.data = table.remove(cd.saved)
+    if not cd then
+        report_counters("invalid restore, no counter %a",name)
+        return
+    end
+    local saved = cd.saved
+    if not saved then
+        -- is ok
+    elseif #saved > 0 then
+        cd.data = remove(saved)
+    else
+        report_counters("restore without save for counter %a",name)
     end
 end
 
@@ -623,7 +635,7 @@ implement { name = "countervalue",            actions = { counters.value   , con
 implement { name = "lastcountervalue",        actions = { counters.last    , context }, arguments = { "string", 1 } }
 implement { name = "firstcountervalue",       actions = { counters.first   , context }, arguments = { "string", 1 } }
 implement { name = "nextcountervalue",        actions = { counters.next    , context }, arguments = { "string", 1 } }
-implement { name = "prevcountervalue",        actions = { counters.previous, context }, arguments = { "string", 1 } }
+implement { name = "previouscountervalue",    actions = { counters.previous, context }, arguments = { "string", 1 } }
 implement { name = "subcountervalues",        actions = { counters.subs    , context }, arguments = { "string", 1 } }
 
 implement { name = "rawsubcountervalue",      actions = { counters.raw     , context }, arguments = { "string", "integer" } }
@@ -643,7 +655,7 @@ implement { name = "decrementedcounter",      actions = { add, context }, argume
 implement { name = "showcounter",             actions = showcounter,       arguments = "string" }  -- todo
 implement { name = "checkcountersetup",       actions = checkcountersetup, arguments = { "string", "integer", "integer", "string" } }
 
-table.setmetatablecall(counterdata,function(t,k) return t[k] end)
+setmetatablecall(counterdata,function(t,k) return t[k] end)
 
 implement { name = "doifelsecounter", actions = { counterdata, commands.doifelse }, arguments = "string" }
 implement { name = "doifcounter",     actions = { counterdata, commands.doif     }, arguments = "string" }

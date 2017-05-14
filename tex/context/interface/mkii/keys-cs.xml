@@ -79,6 +79,7 @@
 		<cd:variable name='all' value='vse'/>
 		<cd:variable name='alphabetic' value='alphabetic'/>
 		<cd:variable name='always' value='vzdy'/>
+		<cd:variable name='anchor' value='anchor'/>
 		<cd:variable name='and' value='and'/>
 		<cd:variable name='answerarea' value='answerarea'/>
 		<cd:variable name='appendices' value='dodatky'/>
@@ -172,9 +173,11 @@
 		<cd:variable name='down' value='down'/>
 		<cd:variable name='each' value='kazdy'/>
 		<cd:variable name='edge' value='hrana'/>
+		<cd:variable name='effective' value='effective'/>
 		<cd:variable name='eight' value='eight'/>
 		<cd:variable name='embed' value='embed'/>
 		<cd:variable name='empty' value='prazdne'/>
+		<cd:variable name='enable' value='enable'/>
 		<cd:variable name='end' value='end'/>
 		<cd:variable name='endnote' value='endnote'/>
 		<cd:variable name='enumeration' value='vycet'/>
@@ -209,9 +212,10 @@
 		<cd:variable name='force' value='sila'/>
 		<cd:variable name='foreground' value='popredi'/>
 		<cd:variable name='formula' value='rovnice'/>
-		<cd:variable name='formulae' value='rovnice'/>
+		<cd:variable name='formulas' value='rovnice'/>
 		<cd:variable name='forward' value='vpred'/>
 		<cd:variable name='four' value='ctyri'/>
+		<cd:variable name='fractions' value='fractions'/>
 		<cd:variable name='frame' value='ramecek'/>
 		<cd:variable name='framedtext' value='oramovanytext'/>
 		<cd:variable name='friday' value='patek'/>
@@ -236,6 +240,7 @@
 		<cd:variable name='here' value='zde'/>
 		<cd:variable name='hereafter' value='nize'/>
 		<cd:variable name='hidden' value='skryte'/>
+		<cd:variable name='hiddenbar' value='hiddenbar'/>
 		<cd:variable name='hiding' value='skryt'/>
 		<cd:variable name='high' value='vysoko'/>
 		<cd:variable name='horizontal' value='horizontalne'/>
@@ -379,6 +384,7 @@
 		<cd:variable name='note' value='note'/>
 		<cd:variable name='nothanging' value='nothanging'/>
 		<cd:variable name='nothyphenated' value='nothyphenated'/>
+		<cd:variable name='notjoinedup' value='notjoinedup'/>
 		<cd:variable name='november' value='listopad'/>
 		<cd:variable name='nowhere' value='nikde'/>
 		<cd:variable name='nowhite' value='zadnabila'/>
@@ -627,6 +633,7 @@
 		<cd:constant name='anchor' value='anchor'/>
 		<cd:constant name='andtext' value='andtext'/>
 		<cd:constant name='apa' value='apa'/>
+		<cd:constant name='arguments' value='arguments'/>
 		<cd:constant name='arrow' value='sipka'/>
 		<cd:constant name='artauthor' value='artauthor'/>
 		<cd:constant name='artauthoretaldisplay' value='artauthoretaldisplay'/>
@@ -727,6 +734,7 @@
 		<cd:constant name='controls' value='controls'/>
 		<cd:constant name='conversion' value='konverze'/>
 		<cd:constant name='convertfile' value='konverzesouboru'/>
+		<cd:constant name='copies' value='copies'/>
 		<cd:constant name='corner' value='roh'/>
 		<cd:constant name='coupling' value='propojeni'/>
 		<cd:constant name='couplingway' value='zpusobpropojeni'/>
@@ -775,6 +783,7 @@
 		<cd:constant name='etaloption' value='etaloption'/>
 		<cd:constant name='etaltext' value='etaltext'/>
 		<cd:constant name='evenmargin' value='sudamarginalie'/>
+		<cd:constant name='exact' value='exact'/>
 		<cd:constant name='exitoffset' value='exitoffset'/>
 		<cd:constant name='expansion' value='expanzen'/>
 		<cd:constant name='export' value='export'/>
@@ -817,6 +826,7 @@
 		<cd:constant name='frameoffset' value='offsetramecku'/>
 		<cd:constant name='frameradius' value='polomerramecku'/>
 		<cd:constant name='frames' value='ramecky'/>
+		<cd:constant name='freeregion' value='freeregion'/>
 		<cd:constant name='from' value='z'/>
 		<cd:constant name='functioncolor' value='functioncolor'/>
 		<cd:constant name='functionstyle' value='functionstyle'/>
@@ -1166,6 +1176,7 @@
 		<cd:constant name='splitoffset' value='splitoffset'/>
 		<cd:constant name='spot' value='spot'/>
 		<cd:constant name='stack' value='stack'/>
+		<cd:constant name='stackname' value='stackname'/>
 		<cd:constant name='start' value='start'/>
 		<cd:constant name='starter' value='starter'/>
 		<cd:constant name='state' value='status'/>
@@ -1176,6 +1187,7 @@
 		<cd:constant name='strip' value='strip'/>
 		<cd:constant name='strut' value='strut'/>
 		<cd:constant name='style' value='pismeno'/>
+		<cd:constant name='stylealternative' value='stylealternative'/>
 		<cd:constant name='sub' value='pod'/>
 		<cd:constant name='subtitle' value='podtitulek'/>
 		<cd:constant name='suffix' value='suffix'/>
@@ -1231,6 +1243,7 @@
 		<cd:constant name='topspace' value='svrchnimezera'/>
 		<cd:constant name='topstate' value='statusvrsku'/>
 		<cd:constant name='totalnumber' value='totalnumber'/>
+		<cd:constant name='transform' value='transform'/>
 		<cd:constant name='translate' value='translate'/>
 		<cd:constant name='trimoffset' value='trimoffset'/>
 		<cd:constant name='type' value='typ'/>
@@ -1317,6 +1330,7 @@
 		<cd:command name='Words' value='Slova'/>
 		<cd:command name='about' value='oref'/>
 		<cd:command name='adaptlayout' value='prizpusobvzhled'/>
+		<cd:command name='alignment' value='alignment'/>
 		<cd:command name='arg' value='arg'/>
 		<cd:command name='at' value='pref'/>
 		<cd:command name='atleftmargin' value='atleftmargin'/>
@@ -1533,11 +1547,13 @@
 		<cd:command name='leftmargindistance' value='vzdalenostlevemarginalie'/>
 		<cd:command name='leftmarginwidth' value='sirkalevemarginalie'/>
 		<cd:command name='leg' value='leg'/>
+		<cd:command name='linecorrection' value='linecorrection'/>
 		<cd:command name='linewidth' value='tloustkacary'/>
 		<cd:command name='listheight' value='vyskaseznamu'/>
 		<cd:command name='listlength' value='delkaseznamu'/>
 		<cd:command name='listsymbol' value='listsymbol'/>
 		<cd:command name='listwidth' value='sirkaseznamu'/>
+		<cd:command name='localfootnotes' value='localfootnotes'/>
 		<cd:command name='logfields' value='zaznamovepole'/>
 		<cd:command name='lohi' value='nivy'/>
 		<cd:command name='low' value='nizky'/>
@@ -1546,6 +1562,7 @@
 		<cd:command name='makeupheight' value='vyskasazby'/>
 		<cd:command name='makeupwidth' value='sirkasazby'/>
 		<cd:command name='mar' value='okr'/>
+		<cd:command name='marginblock' value='marginblock'/>
 		<cd:command name='margindistance' value='vzdalenostmarginalie'/>
 		<cd:command name='marginrule' value='marginalnilinka'/>
 		<cd:command name='margintext' value='marginalnitext'/>
@@ -1645,6 +1662,7 @@
 		<cd:command name='rightmarginwidth' value='sirkapravemarginalie'/>
 		<cd:command name='romannumerals' value='rimskecislice'/>
 		<cd:command name='rotate' value='otocit'/>
+		<cd:command name='savebuffer' value='savebuffer'/>
 		<cd:command name='scale' value='meritko'/>
 		<cd:command name='screen' value='obrazovka'/>
 		<cd:command name='selectblocks' value='vyberbloky'/>
@@ -1680,7 +1698,9 @@
 		<cd:command name='setupcombinations' value='nastavspojeni'/>
 		<cd:command name='setupcombinedlist' value='nastavkombinovanyseznam'/>
 		<cd:command name='setupcomment' value='nastavkomentar'/>
+		<cd:command name='setupdescription' value='setupdescription'/>
 		<cd:command name='setupdescriptions' value='nastavpopisy'/>
+		<cd:command name='setupenumeration' value='setupenumeration'/>
 		<cd:command name='setupenumerations' value='nastavvycty'/>
 		<cd:command name='setupexternalfigures' value='nastavexterniobrazy'/>
 		<cd:command name='setupfield' value='nastavpole'/>
@@ -1695,8 +1715,10 @@
 		<cd:command name='setupfootnotedefinition' value='nastavdefinicipoznamekpodcarou'/>
 		<cd:command name='setupfootnotes' value='nastavpoznamkypodcarou'/>
 		<cd:command name='setupforms' value='setupforms'/>
+		<cd:command name='setupformula' value='setupformula'/>
 		<cd:command name='setupformulas' value='nastavrovnice'/>
 		<cd:command name='setupframed' value='nastavoramovani'/>
+		<cd:command name='setupframedtext' value='setupframedtext'/>
 		<cd:command name='setupframedtexts' value='nastavoramovanetexty'/>
 		<cd:command name='setuphead' value='nastavnadpis'/>
 		<cd:command name='setupheader' value='nastavzahlavi'/>
@@ -1725,7 +1747,9 @@
 		<cd:command name='setuplinewidth' value='nastavsirkucary'/>
 		<cd:command name='setuplist' value='nastavseznam'/>
 		<cd:command name='setupmakeup' value='nastavupravu'/>
+		<cd:command name='setupmarginblock' value='setupmarginblock'/>
 		<cd:command name='setupmarginblocks' value='nastavmarginalniblok'/>
+		<cd:command name='setupmargindata' value='setupmargindata'/>
 		<cd:command name='setupmarginrules' value='nastavmarginalnilinky'/>
 		<cd:command name='setupmarking' value='nastavznaceni'/>
 		<cd:command name='setupmathalignment' value='setupmathalignment'/>
@@ -1904,6 +1928,7 @@
 		<cd:command name='testcolumn' value='testcolumn'/>
 		<cd:command name='testpage' value='testpage'/>
 		<cd:command name='tex' value='tex'/>
+		<cd:command name='textbackground' value='textbackground'/>
 		<cd:command name='textheight' value='vyskatextu'/>
 		<cd:command name='textreference' value='odkaznatext'/>
 		<cd:command name='textrule' value='textovalinka'/>

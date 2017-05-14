@@ -97,13 +97,13 @@
 
 \appendtoks
     \ifcsname\??barindex\currentbar\endcsname
-        \lastnamedcs
+        \lastnamedcs\zerocount
     \else
         \expandafter\newcount\csname\??barindex\currentbar\endcsname
     \fi
-%     \normalexpanded{\t_node_rules_checklist{\node_rules_redefine{\currentbar}\the\t_node_rules_checklist}}%
-    \normalexpanded{\t_node_rules_checklist{\the\t_node_rules_checklist\node_rules_redefine{\currentbar}}}%
-%     \etoksapp\t_node_rules_checklist{\node_rules_redefine{\currentbar}}%
+  % \normalexpanded{\t_node_rules_checklist{\node_rules_redefine{\currentbar}\the\t_node_rules_checklist}}%
+    \normalexpanded{\t_node_rules_checklist{\the\t_node_rules_checklist\relax\node_rules_redefine{\currentbar}}}%
+  % \etoksapp\t_node_rules_checklist{\node_rules_redefine{\currentbar}}%
     \node_rules_define
     \setuevalue\currentbar{\node_rules_direct{\currentbar}}%
 \to \everydefinebar
@@ -124,13 +124,16 @@
         ta            \thetransparencyattribute\p_node_rules_color
         offset        \barparameter\c!offset\space % number
         dy            \barparameter\c!dy\space % number
+        empty        {\barparameter\c!empty}%
      \relax}}
 
 \unexpanded\def\node_rules_redefine#1%
   {\def\currentbar{#1}\node_rules_define}
 
 \unexpanded\def\node_rules_direct#1%
-  {\groupedcommand{\node_rules_set{#1}}\relax}
+  {\groupedcommand
+     {\node_rules_set{#1}\barparameter\c!left}%
+     {\relax\barparameter\c!right}}
 
 \unexpanded\def\node_rules_set#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
   {\edef\currentbar{#1}%
@@ -146,13 +149,23 @@
      +\csname\??barattribute#1\ifcsname\??bar#1:\number\c_node_rules_index\s!parent\endcsname:\number\c_node_rules_index\fi\endcsname
    \relax}
 
+\unexpanded\def\resetbar
+  {\attribute\ruledattribute\attributeunsetvalue}
+
+\unexpanded\def\nobar
+  {\groupedcommand
+     {\resetbar\barparameter\c!left}%
+     {\relax\barparameter\c!right}}
+
 \unexpanded\def\startbar[#1]%
   {\begingroup
    \node_rules_set{#1}%
-   \ignorespaces}
+   \ignorespaces
+   \barparameter\c!left}
 
 \unexpanded\def\stopbar
   {\removeunwantedspaces
+   \barparameter\c!right
    \endgroup}
 
 \unexpanded\def\setbar[#1]%
@@ -176,6 +189,7 @@
 \setupbars
   [\c!method=0,                 % new: 0=center nested, 1=stack nested
    \c!continue=\v!no,
+   \c!empty=,                   % new: yes = hide text
    \c!offset=0,                 % upwards, replaces: topoffset bottomoffset
    \c!dy=0,
    \c!max=3,
@@ -210,6 +224,14 @@
 \definebar[\v!underbars]   [\v!underbar]   [\c!continue=\v!no]
 \definebar[\v!overstrikes] [\v!overstrike] [\c!continue=\v!no]
 \definebar[\v!understrikes][\v!understrike][\c!continue=\v!no]
+
+\definebar
+  [\v!hiddenbar]
+  [\v!underbar]
+  [\c!continue=\v!yes,
+   \c!empty=\v!yes,
+   \c!left=\zwj,
+   \c!right=\zwj]
 
 % \setupbar[\v!overstrike][continue=all]
 
@@ -335,7 +357,7 @@
     \else
         \expandafter\newcount\csname\??shiftindex\currentshift\endcsname
     \fi
-    \normalexpanded{\t_node_shifts_checklist{\node_shifts_redefine{\currentshift}\the\t_node_shifts_checklist}}%
+    \normalexpanded{\t_node_shifts_checklist{\the\t_node_shifts_checklist\node_shifts_redefine{\currentshift}}}% order ?
     \node_shifts_define
     \setuevalue\currentshift{\node_shifts_direct{\currentshift}}%
 \to \everydefineshift
@@ -419,5 +441,123 @@
   {\groupedcommand
      {\begingroup\dostartisolation\begingroup#1}
      {#2\endgroup\dostopisolation\endgroup}}
+
+%D More rules.
+
+% The following code rocks and was written with the Toto Live in Poland bluray
+% in loop mode on my 5.1 surround development setup (the Toto lineup with Simon
+% Phillips on drums). The Amsterdam concert is equally energizing.
+
+\installcorenamespace{linefiller}
+\installcorenamespace{linefillerindex}
+\installcorenamespace{linefillerattribute}
+
+\installcommandhandler \??linefiller {linefiller} \??linefiller
+
+\definesystemattribute[linefiller][public]
+
+\newtoks\t_node_linefiller_checklist
+
+\let\c_node_linefiller_index\relax % temporary synonym
+
+\let\setuplinefillers\setuplinefiller
+
+\appendtoks
+    \ifsecondargument
+        \node_linefiller_define
+    \else
+        \the\t_node_linefiller_checklist
+    \fi
+\to \everysetuplinefiller
+
+\appendtoks
+    \ifcsname\??linefillerindex\currentlinefiller\endcsname
+        \lastnamedcs\zerocount
+    \else
+        \expandafter\newcount\csname\??linefillerindex\currentlinefiller\endcsname
+    \fi
+    \etoksapp\t_node_linefiller_checklist{\t_node_linefiller_checklist\node_linefiller_redefine{\currentlinefiller}}%
+    \node_linefiller_define
+\to \everydefinelinefiller
+
+\unexpanded\def\node_linefiller_define
+  {\edef\p_node_rules_color{\linefillerparameter\c!color}%
+   \setevalue{\??linefillerattribute\currentlinefiller}{\number
+   \clf_definelinefiller
+    %method         \linefillerparameter\c!method
+     location      {\linefillerparameter\c!location}%
+     scope         {\linefillerparameter\c!scope}%
+     mp            {\includeMPgraphic{\linefillerparameter\c!mp}}%
+     ma             \thecolormodelattribute
+     ca             \thecolorattribute\p_node_rules_color
+     ta             \thetransparencyattribute\p_node_rules_color
+     height         \dimexpr\linefillerparameter\c!height\relax
+     depth          \dimexpr\linefillerparameter\c!depth\relax
+     distance       \dimexpr\linefillerparameter\c!distance\relax
+     threshold      \dimexpr\linefillerparameter\c!threshold\relax
+     rulethickness  \dimexpr\linefillerparameter\c!rulethickness\relax
+   \relax}}
+
+\unexpanded\def\node_linefiller_redefine#1%
+  {\def\currentlinefiller{#1}\node_linefiller_define}
+
+\unexpanded\def\node_linefiller_set#1% todo: check parent ! todo: move attr etc to lua
+  {\def\currentlinefiller{#1}%
+   \expandafter\let\expandafter\c_node_linefiller_index\csname\??linefillerindex#1\endcsname
+   \advance\c_node_linefiller_index\plusone
+   \clf_enablelinefillers
+   \attribute\linefillerattribute\numexpr
+      \plusthousand*\c_node_linefiller_index
+     +\csname\??linefillerattribute#1\ifcsname\??linefiller#1:\number\c_node_linefiller_index\s!parent\endcsname:\number\c_node_linefiller_index\fi\endcsname
+   \relax}
+
+\unexpanded\def\startlinefiller
+  {\dodoubleempty\node_linefiller_start}
+
+\unexpanded\def\node_linefiller_start[#1][#2]%
+  {\begingroup
+   \par
+   \def\currentlinefiller{#1}%
+   \ifsecondargument
+     % we need to update settings
+     \setuplinefiller[#1][#2]% no \setupcurrentlinefiller as we need to update settings
+   \fi
+   \node_linefiller_set{#1}%
+   \linefillerparameter\c!before
+   \usealignparameter\linefillerparameter
+   \uselinefillerstyleandcolor\c!textstyle\c!textcolor} % bars have foregroundcolor
+
+\unexpanded\def\stoplinefiller
+  {\par
+   \linefillerparameter\c!after
+   \endgroup}
+
+\unexpanded\def\setlinefiller[#1]%
+  {\node_linefiller_set{#1}}
+
+\setuplinefillers
+  [%c!method=0,
+   %c!mp=,
+   \c!location=\v!both,
+   \c!scope=\v!local,
+   \c!distance=\zeropoint,
+   \c!threshold=\zeropoint,
+   \c!rulethickness=\linewidth,
+   \c!height=\linewidth,
+   \c!depth=\zeropoint,
+  %\c!textcolor=,
+  %\c!textstyle=,
+  %\c!align=,
+  %\c!before=,
+  %\c!after=,
+   \c!color=]
+
+\definelinefiller
+  [filler]
+  [\c!height=.75\exheight,
+  %\c!mp=rules:filler:demo,
+  %\c!threshold=.25\emwidth,
+   \c!distance=.25\emwidth,
+   \c!rulethickness=.25\exheight]
 
 \protect \endinput

@@ -65,8 +65,6 @@ local P, S, V, C, Cs, Ct, Cc, Cg, Cf, patterns, lpegmatch = lpeg.P, lpeg.S, lpeg
 local concat = table.concat
 
 local osuuid            = os.uuid
-local osclock           = os.clock or os.time
-local ostime            = os.time
 local setmetatableindex = table.setmetatableindex
 
 local trace_sql     = false  trackers.register("sql.trace",  function(v) trace_sql     = v end)
@@ -242,8 +240,9 @@ local function validspecification(specification)
         setmetatable(specification,defaults)
     end
     local templatefile = specification.templatefile or "query"
-    local queryfile    = specification.queryfile  or presets.queryfile  or file.nameonly(templatefile) .. "-temp.sql"
-    local resultfile   = specification.resultfile or presets.resultfile or file.nameonly(templatefile) .. "-temp.dat"
+    local name         = file.nameonly(templatefile)
+    local queryfile    = specification.queryfile  or presets.queryfile  or format("%s-temp.sql",name)
+    local resultfile   = specification.resultfile or presets.resultfile or format("%s-temp.dat",name)
     specification.queryfile  = queryfile
     specification.resultfile = resultfile
     if trace_sql then
@@ -313,21 +312,36 @@ sql.setserver("mysql")
 
 -- helper:
 
+local sqlmethods = sql.methods
+
 function sql.usedatabase(presets,datatable)
     local name = datatable or presets.datatable
     if name then
-        local method    = presets.method and sql.methods[presets.method] or sql.methods.client
+        local usedmethod = presets.method
+        local method     = usedmethod and sqlmethods[usedmethod]
+        if not method then
+            usedmethod = currentmethod
+            method     = usedmethod and sqlmethods[usedmethod]
+        end
+        if not method then
+            usedmethod = sql.methods.client
+            method     = usedmethod and sqlmethods[usedmethod]
+        end
         local base      = presets.database or "test"
         local basename  = format("`%s`.`%s`",base,name)
         local execute   = nil
         local m_execute = method.execute
-        if method.usesfiles then
+        if not m_execute then
+            execute = function()
+                report_state("no valid execute handler")
+            end
+        elseif method.usesfiles then
             local queryfile   = presets.queryfile  or format("%s-temp.sql",name)
             local resultfile  = presets.resultfile or format("%s-temp.dat",name)
             execute = function(specification) -- variables template
-                if not specification.presets    then specification.presets    = presets   end
-                if not specification.queryfile  then specification.queryfile  = queryfile end
-                if not specification.resultfile then specification.resultfile = queryfile end
+                if not specification.presets    then specification.presets    = presets    end
+                if not specification.queryfile  then specification.queryfile  = queryfile  end
+                if not specification.resultfile then specification.resultfile = resultfile end
                 return m_execute(specification)
             end
         else
@@ -349,6 +363,7 @@ function sql.usedatabase(presets,datatable)
             end
         end
         return {
+            usedmethod  = usedmethod,
             presets     = preset,
             base        = base,
             name        = name,

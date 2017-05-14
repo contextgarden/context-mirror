@@ -14,20 +14,21 @@ more efficient.</p>
 
 -- plus (extra) is obsolete but we will keep it for a while
 
--- context(new_latelua_node(f_enhance(tag)))
---     =>
--- context.lateluafunction(function() f_enhance(tag) end)
-
 -- maybe replace texsp by our own converter (stay at the lua end)
 -- eventually mp will have large numbers so we can use sp there too
 
-local tostring, next, rawget, setmetatable = tostring, next, rawget, setmetatable
-local sort = table.sort
-local format, gmatch, match = string.format, string.gmatch, string.match
+-- this is one of the first modules using scanners and we need to replace
+-- it by implement and friends
+
+local tostring, next, rawget, rawset, setmetatable, tonumber = tostring, next, rawget, rawset, setmetatable, tonumber
+local sort, sortedhash, sortedkeys = table.sort, table.sortedhash, table.sortedkeys
+local format, gmatch, match, find = string.format, string.gmatch, string.match, string.find
 local rawget = rawget
 local lpegmatch = lpeg.match
 local insert, remove = table.insert, table.remove
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+
+local report            = logs.reporter("positions")
 
 local scanners          = tokens.scanners
 local scanstring        = scanners.string
@@ -39,6 +40,7 @@ local scanners          = interfaces.scanners
 
 local commands          = commands
 local context           = context
+local ctxnode           = context.nodes.flush
 
 local tex               = tex
 local texgetcount       = tex.getcount
@@ -49,7 +51,8 @@ local texsp             = tex.sp
 
 local pdf               = pdf -- h and v are variables
 
-local setmetatableindex = table.setmetatableindex
+local setmetatableindex    = table.setmetatableindex
+local setmetatablenewindex = table.setmetatablenewindex
 
 local nuts              = nodes.nuts
 
@@ -59,7 +62,10 @@ local setlink           = nuts.setlink
 local getlist           = nuts.getlist
 local setlist           = nuts.setlist
 local getbox            = nuts.getbox
-local getskip           = nuts.getskip
+local getid             = nuts.getid
+local getwhd            = nuts.getwhd
+
+----- hlist_code        = nodes.listcodes.hlist
 
 local find_tail         = nuts.tail
 
@@ -84,24 +90,23 @@ local jobpositions = {
 
 job.positions = jobpositions
 
-_plib_ = jobpositions -- might go
-
 local default = { -- not r and paragraphs etc
     __index = {
-        x  = 0,     -- x position baseline
-        y  = 0,     -- y position baseline
-        w  = 0,     -- width
-        h  = 0,     -- height
-        d  = 0,     -- depth
-        p  = 0,     -- page
-        n  = 0,     -- paragraph
-        ls = 0,     -- leftskip
-        rs = 0,     -- rightskip
-        hi = 0,     -- hangindent
-        ha = 0,     -- hangafter
-        hs = 0,     -- hsize
-        pi = 0,     -- parindent
-        ps = false, -- parshape
+        x   = 0,     -- x position baseline
+        y   = 0,     -- y position baseline
+        w   = 0,     -- width
+        h   = 0,     -- height
+        d   = 0,     -- depth
+        p   = 0,     -- page
+        n   = 0,     -- paragraph
+        ls  = 0,     -- leftskip
+        rs  = 0,     -- rightskip
+        hi  = 0,     -- hangindent
+        ha  = 0,     -- hangafter
+        hs  = 0,     -- hsize
+        pi  = 0,     -- parindent
+        ps  = false, -- parshape
+        dir = 0,
     }
 }
 
@@ -115,87 +120,201 @@ local f_region    = formatters["region:%s"]
 local f_tag_three = formatters["%s:%s:%s"]
 local f_tag_two   = formatters["%s:%s"]
 
------ f_enhance   = formatters["_plib_.enhance(%q)"]
+jobpositions.used = false
 
------ f_b_column  = formatters["_plib_.b_column(%q)"]
------ f_e_column  = formatters["_plib_.e_column()"]
-
------ f_b_region  = formatters["_plib_.b_region(%q)"]
------ f_e_region  = formatters["_plib_.e_region(%s)"]
-
-local function sorter(a,b)
-    return a.y > b.y
-end
-
-local nofusedregions    = 0
-local nofmissingregions = 0
-local nofregular        = 0
-
-jobpositions.used       = false
-
--- todo: register subsets and count them indepently
+local nofregular  = 0
+local nofspecial  = 0
+local splitter    = lpeg.splitat(":",true)
 
 local function initializer()
     tobesaved = jobpositions.tobesaved
     collected = jobpositions.collected
-    -- add sparse regions
-    local pages = structures.pages.collected
-    if pages  then
-        local last = nil
-        for p=1,#pages do
-            local region = "page:" .. p
-            local data   = collected[region]
-            if data then
-                last   = data
-                last.p = nil -- no need for a page
-            elseif last then
-                collected[region] = last
-            end
-        end
-    end
-    -- enhance regions with paragraphs
+    local pagedata = { }
+    local freedata = setmetatableindex("table")
     for tag, data in next, collected do
-        local region = data.r
-        if region then
-            local r = collected[region]
-            if r then
-                local paragraphs = r.paragraphs
-                if not paragraphs then
-                    r.paragraphs = { data }
-                else
-                    paragraphs[#paragraphs+1] = data
-                end
-                nofusedregions = nofusedregions + 1
-            else
-                nofmissingregions = nofmissingregions + 1
-            end
-        else
+        local prefix, rest = lpegmatch(splitter,tag)
+        if prefix == "p" then
             nofregular = nofregular + 1
+        elseif prefix == "page" then
+            nofregular = nofregular + 1
+            pagedata[tonumber(rest) or 0] = data
+        elseif prefix == "free" then
+            nofspecial = nofspecial + 1
+            local t = freedata[data.p or 0]
+            t[#t+1] = data
         end
         setmetatable(data,default)
     end
-    -- add metatable
- -- for tag, data in next, collected do
- --     setmetatable(data,default)
- -- end
-    -- sort this data
-    for tag, data in next, collected do
-        local region = data.r
-        if region then
-            local r = collected[region]
-            if r then
-                local paragraphs = r.paragraphs
-                if paragraphs and #paragraphs > 1 then
-                    sort(paragraphs,sorter)
+    --
+    local pages = structures.pages.collected
+    if pages then
+        local last = nil
+        for p=1,#pages do
+            local region = "page:" .. p
+            local data   = pagedata[p]
+            local free   = freedata[p]
+            if free then
+                sort(free,function(a,b) return b.y < a.y end) -- order matters !
+            end
+            if data then
+                last      = data
+                last.free = free
+            elseif last then
+                local t = setmetatableindex({ free = free, p = p },last)
+                if not collected[region] then
+                    collected[region] = t
+                else
+                    -- something is wrong
                 end
+                pagedata[p] = t
             end
         end
-        -- so, we can be sparse and don't need 'or 0' code
     end
+    jobpositions.page = pagedata
+    jobpositions.free = freedata
     jobpositions.used = next(collected)
 end
 
-job.register('job.positions.collected', tobesaved, initializer)
+-- -- we can gain a little when we group positions but then we still have to
+-- -- deal with regions and cells so we either end up with lots of extra small
+-- -- tables pointing to them and/or assembling/disassembling so in the end
+-- -- it makes no sense to do it (now) and still have such a mix
+--
+-- local splitter = lpeg.splitat(":",true)
+--
+-- local function setpos(t,k,v)
+--     local class, tag = lpegmatch(splitter,k)
+--     if tag then
+--         local c = rawget(t,class)
+--         if c then
+--             c[tonumber(tag) or tag] = v
+--         else
+--             rawset(t,class,{ [tonumber(tag) or tag] = v })
+--         end
+--     else
+--         t.default[tonumber(k) or k] = v
+--     end
+-- end
+--
+-- local function getpos(t,k)
+--     local class, tag = lpegmatch(splitter,k)
+--     if tag then
+--         local c = rawget(t,class)
+--         if c then
+--             return c[tonumber(tag) or tag]
+--         end
+--     else
+--         return c.default[tonumber(k) or k]
+--     end
+-- end
+--
+-- tobesaved.default = tobesaved.default or { }
+-- setmetatablenewindex(tobesaved,setpos)
+-- setmetatableindex   (tobesaved,getpos)
+--
+-- local function initializer()
+--     tobesaved = jobpositions.tobesaved
+--     collected = jobpositions.collected
+--
+--     tobesaved.default = tobesaved.default or { }
+--     collected.default = collected.default or { }
+--
+--     setmetatablenewindex(tobesaved,setpos)
+--     setmetatableindex   (collected,getpos)
+--     setmetatableindex   (tobesaved,getpos)
+--
+--     for class, list in next, collected do
+--         for tag, data in next, list do
+--             setmetatable(data,default)
+--             nofregular = nofregular + 1
+--         end
+--     end
+--
+--     local pagedata = collected.page or { }
+--     local freedata = setmetatableindex("table")
+--
+--     for tag, data in next, collected.free or { } do
+--         local t = freedata[data.p or 0]
+--         t[#t+1] = data
+--     end
+--
+--     --
+--     local pages = structures.pages.collected
+--     if pages then
+--         local last = nil
+--         for p=1,#pages do
+--             local data = pagedata[p]
+--             local free = freedata[p]
+--             if free then
+--                 sort(free,function(a,b) return b.y < a.y end) -- order matters !
+--             end
+--             if data then
+--                 last      = data
+--                 last.free = free
+--             elseif last then
+--                 local t = setmetatableindex({ free = free, p = p },last)
+--                 if not pagedata[p] then
+--                     pagedata[p] = t
+--                 end
+--             end
+--         end
+--     end
+--     jobpositions.page = pagedata
+--     jobpositions.free = freedata
+--     jobpositions.used = next(collected)
+-- end
+--
+-- function jobpositions.getcollected(class,tag) if tag then return collected[class..tag] else return collected[class] end end
+-- function jobpositions.gettobesaved(class,tag) if tag then return tobesaved[class..tag] else return tobesaved[class] end end
+
+local function finalizer()
+    -- We make the (possible extensive) shape lists sparse working
+    -- from the end. We could also drop entries here that have l and
+    -- r the same which saves testing later on.
+    for k, v in next, tobesaved do
+        local s = v.s
+        if s then
+            for p, data in next, s do
+                local n = #data
+                if n > 1 then
+                    local ph = data[1][2]
+                    local pd = data[1][3]
+                    local xl = data[1][4]
+                    local xr = data[1][5]
+                    for i=2,n do
+                        local di = data[i]
+                        local h = di[2]
+                        local d = di[3]
+                        local l = di[4]
+                        local r = di[5]
+                        if r == xr then
+                            di[5] = nil
+                            if l == xl then
+                                di[4] = nil
+                                if d == pd then
+                                    di[3] = nil
+                                    if h == ph then
+                                        di[2] = nil
+                                    else
+                                        ph = h
+                                    end
+                                else
+                                    pd, ph = d, h
+                                end
+                            else
+                                ph, pd, xl = h, d, l
+                            end
+                        else
+                            ph, pd, xl, xr = h, d, l, r
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+job.register('job.positions.collected', tobesaved, initializer, finalizer)
 
 local regions    = { }
 local nofregions = 0
@@ -213,46 +332,18 @@ local getpos  = function() getpos  = backends.codeinjections.getpos  return getp
 local gethpos = function() gethpos = backends.codeinjections.gethpos return gethpos() end
 local getvpos = function() getvpos = backends.codeinjections.getvpos return getvpos() end
 
-local function setdim(name,w,h,d,extra) -- will be used when we move to sp allover
-    local x, y = getpos()
-    if x == 0 then x = nil end
-    if y == 0 then y = nil end
-    if w == 0 then w = nil end
-    if h == 0 then h = nil end
-    if d == 0 then d = nil end
-    if extra == "" then extra = nil end
-    -- todo: sparse
-    tobesaved[name] = {
-        p = texgetcount("realpageno"),
-        x = x,
-        y = y,
-        w = w,
-        h = h,
-        d = d,
-        e = extra,
-        r = region,
-        c = column,
-    }
-end
-
 local function setall(name,p,x,y,w,h,d,extra)
-    if x == 0 then x = nil end
-    if y == 0 then y = nil end
-    if w == 0 then w = nil end
-    if h == 0 then h = nil end
-    if d == 0 then d = nil end
-    if extra == "" then extra = nil end
-    -- todo: sparse
     tobesaved[name] = {
         p = p,
-        x = x,
-        y = y,
-        w = w,
-        h = h,
-        d = d,
-        e = extra,
+        x = x ~= 0 and x or nil,
+        y = y ~= 0 and y or nil,
+        w = w ~= 0 and w or nil,
+        h = h ~= 0 and h or nil,
+        d = d ~= 0 and d or nil,
+        e = extra ~= "" and extra or nil,
         r = region,
         c = column,
+        r2l = texgetcount("inlinelefttoright") == 1 and true or nil,
     }
 end
 
@@ -265,12 +356,16 @@ local function enhance(data)
     end
     if data.x == true then
         if data.y == true then
-            data.x, data.y = getpos()
+            local x, y = getpos()
+            data.x = x ~= 0 and x or nil
+            data.y = y ~= 0 and y or nil
         else
-            data.x = gethpos()
+            local x = gethpos()
+            data.x = x ~= 0 and x or nil
         end
     elseif data.y == true then
-        data.y = getvpos()
+        local y = getvpos()
+        data.y = y ~= 0 and y or nil
     end
     if data.p == true then
         data.p = texgetcount("realpageno") -- we should use a variable set in otr
@@ -296,9 +391,6 @@ end
 local function set(name,index,val) -- ,key
     local data = enhance(val or index)
     if val then
--- if data[key] and not next(next(data)) then
---     data = data[key]
--- end
         container = tobesaved[name]
         if not container then
             tobesaved[name] = {
@@ -321,7 +413,7 @@ local function get(id,index)
     end
 end
 
-jobpositions.setdim = setdim
+------------.setdim = setdim
 jobpositions.setall = setall
 jobpositions.set    = set
 jobpositions.get    = get
@@ -353,10 +445,11 @@ scanners.dosavepositionplus = compilescanner {
 -- not much gain in keeping stack (inc/dec instead of insert/remove)
 
 local function b_column(tag)
+    local x = gethpos()
     tobesaved[tag] = {
         r = true,
-        x = gethpos(),
-        w = 0,
+        x = x ~= 0 and x or nil,
+     -- w = 0,
     }
     insert(columns,tag)
     column = tag
@@ -367,7 +460,8 @@ local function e_column(tag)
     if not t then
         -- something's wrong
     else
-        t.w = gethpos() - t.x
+        local x = gethpos() - t.x
+        t.w = x ~= 0 and x or nil
         t.r = region
     end
     remove(columns)
@@ -387,8 +481,7 @@ scanners.bposcolumnregistered = function() -- tag
     local tag = scanstring()
     insert(columns,tag)
     column = tag
- -- context(new_latelua_node(f_b_column(tag)))
-    context(new_latelua_node(function() b_column(tag) end))
+    ctxnode(new_latelua_node(function() b_column(tag) end))
 end
 
 scanners.eposcolumn = function()
@@ -397,8 +490,7 @@ scanners.eposcolumn = function()
 end
 
 scanners.eposcolumnregistered = function()
- -- context(new_latelua_node(f_e_column()))
-    context(new_latelua_node(e_column))
+    ctxnode(new_latelua_node(e_column))
     remove(columns)
     column = columns[#columns]
 end
@@ -407,7 +499,9 @@ end
 
 local function b_region(tag)
     local last = tobesaved[tag]
-    last.x, last.y = getpos()
+    local x, y = getpos()
+    last.x = x ~= 0 and x or nil
+    last.y = y ~= 0 and y or nil
     last.p = texgetcount("realpageno")
     insert(regions,tag)
     region = tag
@@ -415,11 +509,12 @@ end
 
 local function e_region(correct)
     local last = tobesaved[region]
-    local v = getvpos()
+    local y = getvpos()
     if correct then
-        last.h = last.y - v
+        local h = (last.y or 0) - y
+        last.h = h ~= 0 and h or nil
     end
-    last.y = v
+    last.y = y ~= 0 and y or nil
     remove(regions)
     region = regions[#regions]
 end
@@ -427,35 +522,42 @@ end
 jobpositions.b_region = b_region
 jobpositions.e_region = e_region
 
-local function setregionbox(n,tag)
+local function setregionbox(n,tag,k,lo,ro,to,bo) -- kind
     if not tag or tag == "" then
         nofregions = nofregions + 1
         tag = f_region(nofregions)
     end
     local box = getbox(n)
-    local w = getfield(box,"width")
-    local h = getfield(box,"height")
-    local d = getfield(box,"depth")
+    local w, h, d = getwhd(box)
+    local x, y = getpos() -- hm, makes no sense here
     tobesaved[tag] = {
-        p = true,      -- not enhanced
-        x = true,      -- not enhanced
-        y = getvpos(), -- true,
+     -- p = texgetcount("realpageno"), -- we copy them
+        x = x ~= 0 and x or nil,       -- was true
+        y = y ~= 0 and y or nil,
         w = w ~= 0 and w or nil,
         h = h ~= 0 and h or nil,
         d = d ~= 0 and d or nil,
+        k = k ~= 0 and k or nil,
+        lo = lo ~= 0 and lo or nil,
+        ro = ro ~= 0 and ro or nil,
+        to = to ~= 0 and to or nil,
+        bo = bo ~= 0 and bo or nil,
     }
     return tag, box
 end
 
-local function markregionbox(n,tag,correct) -- correct needs checking
-    local tag, box = setregionbox(n,tag)
+local function markregionbox(n,tag,correct,...) -- correct needs checking
+    local tag, box = setregionbox(n,tag,...)
      -- todo: check if tostring is needed with formatter
- -- local push = new_latelua(f_b_region(tag))
- -- local pop  = new_latelua(f_e_region(tostring(correct)))
     local push = new_latelua(function() b_region(tag) end)
-    local pop  = new_latelua(function() e_region(tostring(correct)) end)
+    local pop  = new_latelua(function() e_region(correct) end)
     -- maybe we should construct a hbox first (needs experimenting) so that we can avoid some at the tex end
     local head = getlist(box)
+ -- no :
+ -- if getid(box) ~= hlist_code then
+ --  -- report("mark region box assumes a hlist, fix this for %a",tag)
+ --     head = nuts.hpack(head)
+ -- end
     if head then
         local tail = find_tail(head)
         setlink(push,head)
@@ -473,30 +575,34 @@ function jobpositions.enhance(name)
     enhance(tobesaved[name])
 end
 
--- scanners.pos = function(name,t) -- name t
---     local name = scanstring()
---     tobesaved[name] = scanstring()
---     context(new_latelua_node(f_enhance(name)))
--- end
+function jobpositions.gettobesaved(name,tag)
+    local t = tobesaved[name]
+    if t and tag then
+        return t[tag]
+    else
+        return t
+    end
+end
 
 local nofparagraphs = 0
 
 scanners.parpos = function() -- todo: relate to localpar (so this is an intermediate variant)
     nofparagraphs = nofparagraphs + 1
     texsetcount("global","c_anch_positions_paragraph",nofparagraphs)
-    local strutbox = getbox("strutbox")
+    local box = getbox("strutbox")
+    local w, h, d = getwhd(box)
     local t = {
         p  = true,
         c  = true,
         r  = true,
         x  = true,
         y  = true,
-        h  = getfield(strutbox,"height"),
-        d  = getfield(strutbox,"depth"),
-        hs = texget("hsize"),
+        h  = h,
+        d  = d,
+        hs = texget("hsize"),             -- never 0
     }
-    local leftskip   = getfield(getskip("leftskip"),"width")
-    local rightskip  = getfield(getskip("rightskip"),"width")
+    local leftskip   = texget("leftskip",false)
+    local rightskip  = texget("rightskip",false)
     local hangindent = texget("hangindent")
     local hangafter  = texget("hangafter")
     local parindent  = texget("parindent")
@@ -521,8 +627,7 @@ scanners.parpos = function() -- todo: relate to localpar (so this is an intermed
     end
     local tag = f_p_tag(nofparagraphs)
     tobesaved[tag] = t
- -- context(new_latelua_node(f_enhance(tag)))
-    context(new_latelua_node(function() enhance(tobesaved[tag]) end))
+    ctxnode(new_latelua_node(function() enhance(tobesaved[tag]) end))
 end
 
 scanners.dosetposition = function() -- name
@@ -534,79 +639,107 @@ scanners.dosetposition = function() -- name
         x = true,
         y = true,
         n = nofparagraphs > 0 and nofparagraphs or nil,
+        r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
- -- context(new_latelua_node(f_enhance(name)))
-    context(new_latelua_node(function() enhance(tobesaved[name]) end))
+    ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
 end
 
 scanners.dosetpositionwhd = function() -- name w h d extra
     local name = scanstring()
+    local w = scandimen()
+    local h = scandimen()
+    local d = scandimen()
     tobesaved[name] = {
         p = true,
         c = column,
         r = true,
         x = true,
         y = true,
-        w = scandimen(),
-        h = scandimen(),
-        d = scandimen(),
+        w = w ~= 0 and w or nil,
+        h = h ~= 0 and h or nil,
+        d = d ~= 0 and d or nil,
         n = nofparagraphs > 0 and nofparagraphs or nil,
+        r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
- -- context(new_latelua_node(f_enhance(name)))
-    context(new_latelua_node(function() enhance(tobesaved[name]) end))
+    ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
 end
 
 scanners.dosetpositionbox = function() -- name box
     local name = scanstring()
     local box  = getbox(scaninteger())
+    local w, h, d = getwhd(box)
     tobesaved[name] = {
         p = true,
         c = column,
         r = true,
         x = true,
         y = true,
-        w = getfield(box,"width"),
-        h = getfield(box,"height"),
-        d = getfield(box,"depth"),
+        w = w ~= 0 and w or nil,
+        h = h ~= 0 and h or nil,
+        d = d ~= 0 and d or nil,
         n = nofparagraphs > 0 and nofparagraphs or nil,
+        r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
- -- context(new_latelua_node(f_enhance(name)))
-    context(new_latelua_node(function() enhance(tobesaved[name]) end))
+    ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
 end
 
 scanners.dosetpositionplus = function() -- name w h d extra
     local name = scanstring()
+    local w = scandimen()
+    local h = scandimen()
+    local d = scandimen()
     tobesaved[name] = {
         p = true,
         c = column,
         r = true,
         x = true,
         y = true,
-        w = scandimen(),
-        h = scandimen(),
-        d = scandimen(),
+        w = w ~= 0 and w or nil,
+        h = h ~= 0 and h or nil,
+        d = d ~= 0 and d or nil,
         n = nofparagraphs > 0 and nofparagraphs or nil,
         e = scanstring(),
+        r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
- -- context(new_latelua_node(f_enhance(name)))
-    context(new_latelua_node(function() enhance(tobesaved[name]) end))
+    ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
 end
 
 scanners.dosetpositionstrut = function() -- name
     local name = scanstring()
-    local strutbox = getbox("strutbox")
+    local box  = getbox("strutbox")
+    local w, h, d = getwhd(box)
     tobesaved[name] = {
         p = true,
         c = column,
         r = true,
         x = true,
         y = true,
-        h = getfield(strutbox,"height"),
-        d = getfield(strutbox,"depth"),
+        h = h ~= 0 and h or nil,
+        d = d ~= 0 and d or nil,
         n = nofparagraphs > 0 and nofparagraphs or nil,
+        r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
- -- context(new_latelua_node(f_enhance(name)))
-    context(new_latelua_node(function() enhance(tobesaved[name]) end))
+    ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
+end
+
+scanners.dosetpositionstrutkind = function() -- name
+    local name = scanstring()
+    local kind = scaninteger()
+    local box  = getbox("strutbox")
+    local w, h, d = getwhd(box)
+    tobesaved[name] = {
+        k = kind,
+        p = true,
+        c = column,
+        r = true,
+        x = true,
+        y = true,
+        h = h ~= 0 and h or nil,
+        d = d ~= 0 and d or nil,
+        n = nofparagraphs > 0 and nofparagraphs or nil,
+        r2l = texgetcount("inlinelefttoright") == 1 or nil,
+    }
+    ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
 end
 
 function jobpositions.getreserved(tag,n)
@@ -693,6 +826,13 @@ function jobpositions.depth(id)
     return jpi and jpi.d
 end
 
+function jobpositions.whd(id)
+    local jpi = collected[id]
+    if jpi then
+        return jpi.h, jpi.h, jpi.d
+    end
+end
+
 function jobpositions.leftskip(id)
     local jpi = collected[id]
     return jpi and jpi.ls
@@ -776,6 +916,8 @@ function jobpositions.position(id)
         return 0, 0, 0, 0, 0, 0
     end
 end
+
+local splitter = lpeg.splitat(",")
 
 function jobpositions.extra(id,n,default) -- assume numbers
     local jpi = collected[id]
@@ -955,6 +1097,20 @@ scanners.MPxy = function() -- name
     end
 end
 
+scanners.MPwhd = function() -- name
+    local jpi = collected[scanstring()]
+    if jpi then
+        local w = jpi.w or 0
+        local h = jpi.h or 0
+        local d = jpi.d or 0
+        if w ~= 0 or h ~= 0 or d ~= 0 then
+            context("%.5Fpt,%.5Fpt,%.5Fpt",w*pt,h*pt,d*pt)
+            return
+        end
+    end
+    context('0pt,0pt,0pt')
+end
+
 scanners.MPll = function() -- name
     local jpi = collected[scanstring()]
     if jpi then
@@ -1056,6 +1212,7 @@ scanners.MPr = function() -- name
         local r = jpi.r
         if r and r ~= true  then
             context(r)
+            return
         end
         local p = jpi.p
         if p then
@@ -1168,6 +1325,13 @@ scanners.doifposition = function() -- name
     doif(collected[scanstring()])
 end
 
+-- local ctx_iftrue  = context.protected.cs.iftrue
+-- local ctx_iffalse = context.protected.cs.iffalse
+--
+-- scanners.ifknownposition = function() -- name
+--     (collected[scanstring()] and ctx_iftrue or ctx_iffalse)()
+-- end
+
 scanners.doifelsepositiononpage = function() -- name page -- probably always realpageno
     local c = collected[scanstring()]
     local p = scaninteger()
@@ -1210,13 +1374,27 @@ scanners.markregionboxcorrected = function() -- box tag
     markregionbox(scaninteger(),scanstring(),true)
 end
 
+scanners.markregionboxtaggedkind = function() -- box tag kind
+    markregionbox(scaninteger(),scanstring(),nil,
+        scaninteger(),scandimen(),scandimen(),scandimen(),scandimen())
+end
+
 -- statistics (at least for the moment, when testing)
 
+-- statistics.register("positions", function()
+--     local total = nofregular + nofusedregions + nofmissingregions
+--     if total > 0 then
+--         return format("%s collected, %s regulars, %s regions, %s unresolved regions",
+--             total, nofregular, nofusedregions, nofmissingregions)
+--     else
+--         return nil
+--     end
+-- end)
+
 statistics.register("positions", function()
-    local total = nofregular + nofusedregions + nofmissingregions
+    local total = nofregular + nofspecial
     if total > 0 then
-        return format("%s collected, %s regulars, %s regions, %s unresolved regions",
-            total, nofregular, nofusedregions, nofmissingregions)
+        return format("%s collected, %s regular, %s special",total,nofregular,nofspecial)
     else
         return nil
     end

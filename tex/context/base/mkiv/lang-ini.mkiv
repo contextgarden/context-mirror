@@ -24,6 +24,7 @@
 
 \registerctxluafile{lang-ini}{1.001}
 \registerctxluafile{lang-def}{1.001}
+\registerctxluafile{lang-cnt}{1.001}
 
 \unprotect
 
@@ -169,9 +170,9 @@
      \lastnamedcs
    \fi\fi\fi}
 
-\unexpanded\def\setlanguageparameter#1%
-  {\edef\currentusedlanguage{\reallanguagetag{#1\c!language}}%
-  %\let\setlanguageparameter\gobbleoneargument
+\unexpanded\def\setusedlanguage#1%
+% {\edef\currentusedlanguage{\reallanguagetag{#1\c!language}}%
+  {\edef\currentusedlanguage{\reallanguagetag{#1}}%
    \ifx\currentusedlanguage\empty
      \let\currentusedlanguage  \currentlanguage
      \let\usedlanguageparameter\languageparameter
@@ -458,6 +459,7 @@
         {\currentlanguage}%
         {\defaultlanguage\currentlanguage}%
         {\languageparameter\s!patterns}%
+        {\languageparameter\c!factor}%
       \relax
    \normallanguage\csname\??languagenumbers\currentlanguage\endcsname}
 
@@ -496,16 +498,6 @@
      \advance\hyphenminoffset\minusone
    \fi
    \lang_basics_synchronize_min_max}
-
-% \unexpanded\def\nohyphens % % % % % not clever, we still hyphenate but supress application
-%   {\ifx\dohyphens\relax
-%      \unexpanded\edef\dohyphens
-%        {\hyphenpenalty  \the\hyphenpenalty
-%         \exhyphenpenalty\the\exhyphenpenalty
-%         \relax}%
-%    \fi
-%    \hyphenpenalty  \plustenthousand
-%    \exhyphenpenalty\plustenthousand}
 
 \unexpanded\def\nohyphens % nicer for url's
   {\ifx\dohyphens\relax
@@ -583,36 +575,26 @@
 
 %D Fast switcher
 
-% \def\lang_basics_switch_asked
-%   {\ifx\askedlanguage\empty \else
-%      \ifcsname\??languagelinked\askedlanguage\endcsname
-%        \edef\askedlanguage{\csname\??languagelinked\askedlanguage\endcsname}%
-%        \ifx\currentlanguage\askedlanguage \else
-%          \setcurrentlanguage\currentmainlanguage\askedlanguage
-%          \lang_basics_synchronize
-%        \fi
-%      \fi
-%    \fi}
-
 \def\lang_basics_switch_asked
-  {\ifx\askedlanguage\empty \else
-     \ifcsname\??languagelinked\askedlanguage\endcsname
-      %\edef\askedlanguage{\csname\??languagelinked\askedlanguage\endcsname}%
-       \edef\askedlanguage{\lastnamedcs}%
-       \ifx\currentlanguage\askedlanguage \else
-         \setcurrentlanguage\currentmainlanguage\askedlanguage
-         \lang_basics_synchronize
-       \fi
+  {\ifcsname\??languagelinked\askedlanguage\endcsname
+     \edef\askedlanguage{\lastnamedcs}%
+     \ifx\currentlanguage\askedlanguage \else
+       \setcurrentlanguage\currentmainlanguage\askedlanguage
+       \lang_basics_synchronize
      \fi
    \fi}
 
 \unexpanded\def\uselanguageparameter#1%
   {\edef\askedlanguage{#1\c!language}%
-   \lang_basics_switch_asked}
+   \ifx\askedlanguage\empty\else\lang_basics_switch_asked\fi}
+
+\unexpanded\def\douselanguageparameter#1% fast setter
+  {\edef\askedlanguage{#1}%
+   \ifx\askedlanguage\empty\else\lang_basics_switch_asked\fi}
 
 \unexpanded\def\lang_basics_set_current[#1]%
   {\edef\askedlanguage{#1}%
-   \lang_basics_switch_asked}
+   \ifx\askedlanguage\empty\else\lang_basics_switch_asked\fi}
 
 \unexpanded\def\language
   {\doifelsenextoptionalcs\lang_basics_set_current\normallanguage}
@@ -808,6 +790,9 @@
    \fi
    \clf_setlanguageexceptions{\askedlanguage}{#2}%
    \endgroup}
+
+\unexpanded\def\hyphenation
+  {\clf_setlanguageexceptions{\currentlanguage}}
 
 %D For the moment here:
 

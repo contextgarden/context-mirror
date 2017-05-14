@@ -19,7 +19,7 @@
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
                 <cd:parameter name="grid">
-                    <cd:inherit name="setupgrid"/>
+                    <cd:inherit name="definegridsnapping"/>
                 </cd:parameter>
                 <cd:parameter name="rulethickness">
                     <cd:constant type="cd:dimension"/>
@@ -105,23 +105,30 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mixedcolumns" type="environment" generated="yes" variant="generated" file="page-mix.mkiv">
+    <cd:command name="mixedcolumns" type="environment" generated="yes" variant="instance" file="page-mix.mkiv">
         <cd:sequence>
-            <cd:variable value="mixedcolumns"/>
+            <cd:instance value="mixedcolumns"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupmixedcolumns"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-mixedcolumns"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="boxedcolumns" type="environment" file="page-mix.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmixedcolumns"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+    <!--
+
+        <cd:command name="boxedcolumns" type="environment" file="page-mix.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmixedcolumns"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
 </cd:interface>

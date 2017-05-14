@@ -49,13 +49,16 @@ appendaction("processors",   "words",       "typesetters.firstlines.handler")   
 
 appendaction("processors",   "fonts",       "builders.paragraphs.solutions.splitters.split")     -- experimental
 appendaction("processors",   "fonts",       "nodes.handlers.characters")                         -- maybe todo
-appendaction("processors",   "fonts",       "nodes.injections.handler")                          -- maybe todo
+appendaction("processors",   "fonts",       "nodes.injections.handler")
+appendaction("processors",   "fonts",       "typesetters.fontkerns.handler")
 appendaction("processors",   "fonts",       "nodes.handlers.protectglyphs", nil, "nohead")       -- maybe todo
 appendaction("processors",   "fonts",       "builders.kernel.ligaturing")                        -- always on (could be selective: if only node mode)
 appendaction("processors",   "fonts",       "builders.kernel.kerning")                           -- always on (could be selective: if only node mode)
 appendaction("processors",   "fonts",       "nodes.handlers.stripping")                          -- disabled (might move)
 ------------("processors",   "fonts",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
+appendaction("processors",   "fonts",       "nodes.handlers.flatten")
 
+appendaction("processors",   "lists",       "typesetters.rubies.check")                          -- disabled (maybe someplace else)
 appendaction("processors",   "lists",       "typesetters.characteralign.handler")                -- disabled (we need to to this after otf appliance)
 appendaction("processors",   "lists",       "typesetters.spacings.handler")                      -- disabled
 appendaction("processors",   "lists",       "typesetters.kerns.handler")                         -- disabled
@@ -63,8 +66,9 @@ appendaction("processors",   "lists",       "typesetters.digits.handler")       
 appendaction("processors",   "lists",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
 appendaction("processors",   "lists",       "languages.visualizediscretionaries")                -- disabled
 
--- appendaction("processors",   "lists",       "typesetters.initials.handler")                   -- disabled
+appendaction ("processors",  "after",       "typesetters.marksuspects")
 
+appendaction("shipouts",     "normalizers", "typesetters.showsuspects")
 appendaction("shipouts",     "normalizers", "typesetters.margins.finalhandler")                  -- disabled
 ------------("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled
 appendaction("shipouts",     "normalizers", "builders.paragraphs.expansion.trace")               -- disabled
@@ -78,6 +82,7 @@ appendaction("shipouts",     "normalizers", "nodes.handlers.accessibility")     
 appendaction("shipouts",     "normalizers", "nodes.handlers.backgrounds")                        -- disabled
 appendaction("shipouts",     "normalizers", "nodes.handlers.alignbackgrounds")                   -- disabled
 ------------("shipouts",     "normalizers", "nodes.handlers.export")                             -- disabled
+appendaction("shipouts",     "normalizers", "typesetters.rubies.attach")                         -- disabled
 
 appendaction("shipouts",     "finishers",   "nodes.visualizers.handler")                         -- disabled
 appendaction("shipouts",     "finishers",   "attributes.colors.handler")                         -- disabled
@@ -105,11 +110,13 @@ appendaction("math",         "normalizers", "noads.handlers.resize",    nil, "no
 appendaction("math",         "normalizers", "noads.handlers.alternates",nil, "nohead")           -- always on
 appendaction("math",         "normalizers", "noads.handlers.tags",      nil, "nohead")           -- disabled
 appendaction("math",         "normalizers", "noads.handlers.italics",   nil, "nohead")           -- disabled
+appendaction("math",         "normalizers", "noads.handlers.kernpairs", nil, "nohead")           -- disabled
 appendaction("math",         "normalizers", "noads.handlers.classes",   nil, "nohead")           -- disabled
 
 appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist")                    -- always on
-------------("math",         "builders",    "noads.handlers.italics",  nil, "nohead")            -- disabled
+------------("math",         "builders",    "noads.handlers.italics",   nil, "nohead")           -- disabled
 appendaction("math",         "builders",    "typesetters.directions.processmath")                -- disabled (has to happen pretty late)
+appendaction("math",         "builders",    "noads.handlers.makeup",    nil, "nohead")           -- disabled (has to happen last)
 
 appendaction("finalizers",   "lists",       "typesetters.paragraphs.normalize")                  -- moved here
 appendaction("finalizers",   "lists",       "typesetters.margins.localhandler")                  -- disabled
@@ -117,7 +124,13 @@ appendaction("finalizers",   "lists",       "builders.paragraphs.keeptogether")
 ------------("finalizers",   "lists",       "nodes.handlers.graphicvadjust")                     -- todo
 appendaction("finalizers",   "fonts",       "builders.paragraphs.solutions.splitters.optimize")  -- experimental
 appendaction("finalizers",   "lists",       "builders.paragraphs.tag")
+
+-- the next can also be in contributers normalizers (when we remove the loop in the handler)
+
 appendaction("finalizers",   "lists",       "nodes.linefillers.handler")
+
+appendaction("contributers", "normalizers", "nodes.handlers.flattenline")
+appendaction("contributers", "normalizers", "nodes.handlers.textbackgrounds")
 
 -- still experimental
 
@@ -166,7 +179,12 @@ disableaction("processors",  "typesetters.italics.handler")
 disableaction("processors",  "languages.visualizediscretionaries")
 disableaction("processors",  "nodes.handlers.stripping")
 disableaction("processors",  "builders.paragraphs.solutions.splitters.split")
+disableaction("processors",  "typesetters.rubies.check")
+disableaction("processors",  "typesetters.fontkerns.handler")
+disableaction("processors",  "nodes.handlers.flatten")
+disableaction("processors",  "typesetters.marksuspects")
 
+disableaction("shipouts",    "typesetters.showsuspects")
 disableaction("shipouts",    "typesetters.margins.finalhandler")
 disableaction("shipouts",    "builders.paragraphs.expansion.trace")
 disableaction("shipouts",    "typesetters.alignments.handler")
@@ -186,6 +204,7 @@ disableaction("shipouts",    "nodes.handlers.alignbackgrounds")
 disableaction("shipouts",    "nodes.references.handler")
 disableaction("shipouts",    "nodes.destinations.handler")
 -------------("shipouts",    "nodes.handlers.export")
+disableaction("shipouts",    "typesetters.rubies.attach")
 
 disableaction("finalizers",  "typesetters.margins.localhandler")
 disableaction("finalizers",  "builders.paragraphs.keeptogether")
@@ -194,12 +213,17 @@ disableaction("finalizers",  "builders.paragraphs.solutions.splitters.optimize")
 disableaction("finalizers",  "builders.paragraphs.tag")
 disableaction("finalizers",  "nodes.linefillers.handler")
 
+disableaction("contributers","nodes.handlers.flattenline")
+disableaction("contributers","nodes.handlers.textbackgrounds")
+
 disableaction("math",        "noads.handlers.showtree")
 disableaction("math",        "noads.handlers.tags")
 disableaction("math",        "noads.handlers.italics")
+disableaction("math",        "noads.handlers.kernpairs")
 disableaction("math",        "noads.handlers.domains")
 disableaction("math",        "noads.handlers.classes")
 disableaction("math",        "noads.handlers.autofences")
+disableaction("math",        "noads.handlers.makeup")
 disableaction("math",        "typesetters.directions.processmath")
 
 disableaction("mvlbuilders", "typesetters.margins.globalhandler")

@@ -22,9 +22,6 @@ if not characters then
     dofile(resolvers.findfile("char-tex.lua"))
 end
 
-local chardata  = characters.data
-local lowercase = characters.lower
-
 local lower, find, sub = string.lower, string.find, string.sub
 local concat, copy, tohash = table.concat, table.copy, table.tohash
 local next, type, rawget = next, type, rawget
@@ -46,9 +43,11 @@ local p_utf8character   = lpegpatterns.utf8character
 
 local trace             = false  trackers.register("publications",            function(v) trace = v end)
 local trace_duplicates  = true   trackers.register("publications.duplicates", function(v) trace = v end)
+local trace_strings     = false  trackers.register("publications.strings",    function(v) trace = v end)
 
 local report            = logs.reporter("publications")
 local report_duplicates = logs.reporter("publications","duplicates")
+local report_strings    = logs.reporter("publications","strings")
 
 local allocate          = utilities.storage.allocate
 
@@ -191,8 +190,7 @@ local defaultshortcuts = allocate {
 
 local space      = p_whitespace^0
 local separator  = space * "+" * space
-local l_splitter = lpeg.tsplitat(separator)
-local d_splitter = lpeg.splitat (separator)
+local p_splitter = lpeg.tsplitat(separator)
 
 local unknownfield = function(t,k)
     local v = "extra"
@@ -323,7 +321,7 @@ function publications.parenttag(dataset,tag)
     if not dataset or not tag then
         report("error in specification, dataset %a, tag %a",dataset,tag)
     elseif find(tag,"%+") then
-        local tags    = lpegmatch(l_splitter,tag)
+        local tags    = lpegmatch(p_splitter,tag)
         local parent  = tags[1]
         local current = datasets[dataset]
         local luadata = current.luadata
@@ -541,8 +539,28 @@ do
         luadata[hashtag] = entries
     end
 
+    local f_invalid = formatters["<invalid: %s>"]
+
     local function resolve(s,dataset)
-        return dataset.shortcuts[s] or defaultshortcuts[s] or s -- can be number
+        local e = dataset.shortcuts[s]
+        if e then
+            if trace_strings then
+                report_strings("%a resolves to %a",s,e)
+            end
+            return e
+        end
+        e = defaultshortcuts[s]
+        if e then
+            if trace_strings then
+                report_strings("%a resolves to default %a",s,e)
+            end
+            return e
+        end
+        if tonumber(s) then
+            return s
+        end
+        report("error in database, invalid value %a",s)
+        return f_invalid(s)
     end
 
     local pattern = p_whitespace^0
@@ -582,8 +600,18 @@ do
     local p_left     = (p_whitespace^0 * left) / ""
     local p_right    = (right * p_whitespace^0) / ""
 
+    local keyword    = C((R("az","AZ","09") + S("@_:-"))^1)
+    local key        = C((1-space-equal)^1)
+    local tag        = C((1-space-comma)^0)
+    local category   = C((1-space-left)^1)
+    local s_quoted   = ((escape*single) + collapsed + (1-single))^0
+    local d_quoted   = ((escape*double) + collapsed + (1-double))^0
+
+    local reference  = P("@{") * C((R("az","AZ","09") + S("_:-"))^1) * P("}")
+    local r_value    = reference * Carg(1) / resolve
+
     local balanced   = P {
-        [1] = ((escape * (left+right)) + (collapsed + 1 - (left+right))^1 + V(2))^0,
+        [1] = ((escape * (left+right)) + (collapsed + r_value + 1 - (left+right))^1 + V(2))^0,
         [2] = left * V(1) * right,
     }
 
@@ -594,26 +622,23 @@ do
 
     local unbalanced = (left/"") * balanced * (right/"") * P(-1)
 
-    local keyword    = C((R("az","AZ","09") + S("@_:-"))^1)
-    local key        = C((1-space-equal)^1)
-    local tag        = C((1-space-comma)^0)
-    local reference  = keyword
-    local category   = C((1-space-left)^1)
-    local s_quoted   = ((escape*single) + collapsed + (1-single))^0
-    local d_quoted   = ((escape*double) + collapsed + (1-double))^0
-
+    local reference  = C((R("az","AZ","09") + S("_:-"))^1)
     local b_value    = p_left * balanced * p_right
- -- local u_value    = p_left * unbalanced * p_right -- get rid of outer { }
- -- local s_value    = (single/"") * (u_value + s_quoted) * (single/"")
- -- local d_value    = (double/"") * (u_value + d_quoted) * (double/"")
     local s_value    = (single/"") * (unbalanced + s_quoted) * (single/"")
     local d_value    = (double/"") * (unbalanced + d_quoted) * (double/"")
-    local r_value    = reference * Carg(1) /resolve
+    local r_value    = P("@") * reference * Carg(1) / resolve
+                     +          reference * Carg(1) / resolve
+    local n_value    = C(R("09")^1)
 
-    local somevalue  = d_value + b_value + s_value + r_value
+    local e_value    = Cs((left * balanced * right + (1 - S(",}")))^0) * Carg(1) / function(s,dataset)
+        return resolve(s,dataset)
+    end
+
+    local somevalue  = d_value + b_value + s_value + r_value + n_value + e_value
     local value      = Cs((somevalue * ((spacing * hash * spacing)/"" * somevalue)^0))
 
-    value = value / function(s) return lpegmatch(lpegpatterns.stripper,s) end
+    local stripper   = lpegpatterns.stripper
+          value      = value / function(s) return lpegmatch(stripper,s) end
 
     local forget     = percent^1 * (1-lineending)^0
     local spacing    = spacing * forget^0 * spacing
@@ -635,6 +660,9 @@ do
     -- loadluadata  -> dataset.luadata
 
     -- converttoxml -> dataset.xmldata from dataset.luadata
+
+    -- author = "al-" # @AHSAI # "," # @SHAYKH # " " # @AHMAD # " Ibn " # @ZAYNIDDIN
+    -- author = {al-@{AHSAI}, @{SHAYKH} @{AHMAD} Ibn @{ZAYNIDDIN}}
 
     function publications.loadbibdata(dataset,content,source,kind)
         if not source then
@@ -1189,7 +1217,12 @@ do
         end
     end
 
-    local pagessplitter = lpeg.splitat(P("-")^1)
+    local pagessplitter = lpeg.splitat((
+        P("-") + -- hyphen
+        P("—") + -- U+2014
+        P("–") + -- U+2013
+        P("‒")   -- U+2012
+    )^1)
 
     casters.range = function(str)
         local first, last = lpegmatch(pagessplitter,str)

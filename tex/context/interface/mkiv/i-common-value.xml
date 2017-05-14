@@ -1,14 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?context-directive job ctxfile x-setups.ctx ?>
-
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <!-- background = ... -->
+
+    <cd:define name="value-background">
+        <cd:constant type="foreground"/>
+        <cd:constant type="color"/>
+        <cd:constant type="cd:name"/>
+    </cd:define>
 
     <!-- style = ... -->
 
     <cd:define name="value-style">
         <cd:constant type="cd:style"/>
         <cd:constant type="cd:command"/>
+    </cd:define>
+
+    <!-- a = ... -->
+
+    <cd:define name="value-transparency">
+        <cd:constant type="cd:number"/>
+        <cd:constant type="none"/>
+        <cd:constant type="normal"/>
+        <cd:constant type="multiply"/>
+        <cd:constant type="screen"/>
+        <cd:constant type="overlay"/>
+        <cd:constant type="softlight"/>
+        <cd:constant type="hardlight"/>
+        <cd:constant type="colordodge"/>
+        <cd:constant type="colorburn"/>
+        <cd:constant type="darken"/>
+        <cd:constant type="lighten"/>
+        <cd:constant type="difference"/>
+        <cd:constant type="exclusion"/>
+        <cd:constant type="hue"/>
+        <cd:constant type="saturation"/>
+        <cd:constant type="color"/>
+        <cd:constant type="luminosity"/>
     </cd:define>
 
     <!-- mathstyle = ... -->
@@ -267,7 +296,10 @@
         <cd:constant type="page"/>
         <cd:constant type="leftpage"/>
         <cd:constant type="rightpage"/>
+        <cd:constant type="header"/>
+        <cd:constant type="footer"/>
         <cd:constant type="somewhere"/>
+        <cd:constant type="effective"/>
     </cd:define>
 
     <!-- sortorder = ... -->
@@ -541,6 +573,24 @@
     <cd:define name="value-btxauthor">
         <cd:constant type="author"/>
         <cd:constant type="editor"/>
+    </cd:define>
+
+    <!-- formula = ... -->
+
+    <cd:define name="value-formula">
+        <cd:constant type="packed"/>
+        <cd:constant type="tight"/>
+        <cd:constant type="middle"/>
+        <cd:constant type="frame"/>
+        <cd:inherit name="setupbodyfont"/>
+    </cd:define>
+
+    <!-- formula = ... -->
+
+    <cd:define name="value-formulareference">
+        <cd:constant type="+"/>
+        <cd:constant type="-"/>
+        <cd:constant type="cd:reference"/>
     </cd:define>
 
 </cd:interface>

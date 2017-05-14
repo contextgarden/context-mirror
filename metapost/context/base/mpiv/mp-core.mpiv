@@ -513,9 +513,6 @@ def do_initialize_par (expr fpos, tpos, mpos, ppos, rw,rl,rr,rh,ra,ri) =
 
 enddef ;
 
-TopSkip     := 0 ; % will move
-StrutHeight := 0 ; % will move
-
 pair last_multi_par_shift ; last_multi_par_shift := origin ;
 
 def relocate_multipars (expr xy) =
@@ -1187,10 +1184,10 @@ numeric boxfilloffset    ; boxfilloffset    := 0pt ;
 numeric boxgriddistance  ; boxgriddistance  := .5cm ;
 numeric boxgridshift     ; boxgridshift     := 0pt ;
 
-def draw_box =
-    draw pxy        boxlineoptions withpen pencircle scaled boxlinewidth ;
-    draw lxy -- rxy boxlineoptions withpen pencircle scaled boxgridwidth ;
-enddef ;
+% def draw_box =
+%     draw pxy        boxlineoptions withpen pencircle scaled boxlinewidth ;
+%     draw lxy -- rxy boxlineoptions withpen pencircle scaled boxgridwidth ;
+% enddef ;
 
 def draw_par  = % 1 2 3 11 12
     do_draw_par(pxy) ; do_draw_par(txy) ; do_draw_par(bxy) ;

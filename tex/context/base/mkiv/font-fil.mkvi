@@ -234,6 +234,24 @@
      #name%
    \fi\fi\fi}
 
+% ok when the last lookup is not stripped .. we ned to be able to define synonyms for symbols
+%
+% \def\truefontname#name%
+%  %{\normalexpanded{\noexpand\font_helpers_true_fontname{\clf_truefontname{#name}}}}
+%   {\expandafter\expandafter\expandafter\font_helpers_true_fontname\expandafter\expandafter\expandafter{\clf_truefontname{#name}}}
+%
+% \def\font_helpers_true_fontname#name%
+%   {\ifcsname\??fontfile\fontclass#name\endcsname
+%      \expandafter\font_helpers_true_fontname\expandafter{\lastnamedcs}%
+%    \else\ifcsname\??fontfile\defaultfontclass#name\endcsname
+%      \expandafter\font_helpers_true_fontname\expandafter{\lastnamedcs}%
+%    \else\ifcsname\??fontfile#name\endcsname
+%      \expandafter\font_helpers_true_fontname\expandafter{\lastnamedcs}%
+%    \else
+%    % \clf_truefontname{#name}%
+%      #name% so the last one can have features !
+%    \fi\fi\fi}
+
 \def\expandfontsynonym#command#name% one level expansion
   {\ifcsname\??fontfile\fontclass#name\endcsname
     %\expandafter\normaldef\expandafter#command\expandafter{\csname\??fontfile\fontclass#name\endcsname}%
@@ -450,5 +468,9 @@
    \setxvalue{\??fontclass\fontclass#style\s!goodies   }{#goodies}%
    \setxvalue{\??fontclass\fontclass#style\s!designsize}{#designsize}%
    \setxvalue{\??fontclass\fontclass#style\s!direction }{#direction}}
+
+% bonus
+
+\let\currentfontinstancespec\clf_currentfontinstancespec % expandable
 
 \protect \endinput

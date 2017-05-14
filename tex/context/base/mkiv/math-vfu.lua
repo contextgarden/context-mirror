@@ -25,7 +25,6 @@ if not modules then modules = { } end modules ['math-vfu'] = {
 local type, next = type, next
 local max = math.max
 local format = string.format
-local utfchar = utf.char
 local fastcopy = table.copy
 
 local fonts, nodes, mathematics = fonts, nodes, mathematics
@@ -564,6 +563,10 @@ function vfmath.addmissing(main,id,size)
         raise(main,characters,id,size,0x2032,0xFE325,1,id_of_smaller) -- prime
         raise(main,characters,id,size,0x2033,0xFE325,2,id_of_smaller) -- double prime
         raise(main,characters,id,size,0x2034,0xFE325,3,id_of_smaller) -- triple prime
+        -- to satisfy the prime resolver
+        characters[0xFE932] = characters[0x2032]
+        characters[0xFE933] = characters[0x2033]
+        characters[0xFE934] = characters[0x2034]
     end
 
     -- there are more (needs discussion first):
@@ -1080,6 +1083,7 @@ function vfmath.define(specification,set,goodies)
         report_virtual("loading and virtualizing font %a at size %p took %0.3f seconds",name,size,os.clock()-start)
     end
     --
+    main.oldmath = true
     return main
 end
 

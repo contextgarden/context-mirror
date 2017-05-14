@@ -149,6 +149,9 @@
                     <cd:constant type="no" default="yes"/>
                     <cd:constant type="xml"/>
                 </cd:parameter>
+                <cd:parameter name="referenceprefix">
+                    <cd:resolve name="value-referenceprefix"/>
+                </cd:parameter>
                 <cd:parameter name="sample">
                     <cd:constant type="cd:text"/>
                 </cd:parameter>
@@ -186,7 +189,7 @@
 
     -->
 
-    <cd:command name="label" generated="yes" variant="generated" file="strc-lab.mkiv">
+    <cd:command name="label" generated="yes" variant="example" file="strc-lab.mkiv">
         <cd:sequence>
             <cd:variable value="label"/>
         </cd:sequence>
@@ -196,7 +199,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="currentlabel" generated="yes" variant="generated" file="strc-lab.mkiv">
+    <cd:command name="currentlabel" generated="yes" variant="example" file="strc-lab.mkiv">
         <cd:sequence>
             <cd:string value="current"/>
             <cd:variable value="label"/>

@@ -13,7 +13,7 @@ local P, R, S, C, Cmt, Cp = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cmt, lpeg.Cp
 local match, find = string.match, string.find
 local setmetatable = setmetatable
 
-local lexer       = require("lexer")
+local lexer       = require("scite-context-lexer")
 local context     = lexer.context
 local patterns    = context.patterns
 
@@ -25,7 +25,7 @@ local lualexer    = lexer.new("lua","scite-context-lexer-lua")
 local whitespace  = lualexer.whitespace
 
 local stringlexer = lexer.load("scite-context-lexer-lua-longstring")
-local labellexer  = lexer.load("scite-context-lexer-lua-labelstring")
+----- labellexer  = lexer.load("scite-context-lexer-lua-labelstring")
 
 local directives  = { } -- communication channel
 
@@ -80,7 +80,8 @@ local depricated = {
 local csnames = { -- todo: option
     "commands",
     "context",
-    "ctx",
+--     "ctxcmd",
+--     "ctx",
     "metafun",
     "metapost",
 }
@@ -211,17 +212,17 @@ local p_constants   = lexer.helpers.utfchartabletopattern(constants) * p_finish 
 local p_internals   = P("__")
                     * lexer.helpers.utfchartabletopattern(internals) * p_finish -- exact_match(internals)
 
-local p_csnames     = lexer.helpers.utfchartabletopattern(csnames) * p_finish -- just_match(csnames)
+local p_csnames     = lexer.helpers.utfchartabletopattern(csnames) -- * p_finish -- just_match(csnames)
+local p_ctnames     = P("ctx") * R("AZ","az","__")^0
 local keyword       = token("keyword", p_keywords)
 local builtin       = token("plain",   p_functions)
 local constant      = token("data",    p_constants)
 local internal      = token("data",    p_internals)
-local csname        = token("user",    p_csnames)
-                    * (
-                        optionalspace * hasargument
-                      + ( optionalspace * token("special", S(".:")) * optionalspace * token("user", validword  ) )^1
-                      + token("user", P("_") * validsuffix)
-                    )
+local csname        = token("user",    p_csnames + p_ctnames)
+                    * p_finish * optionalspace * (
+                        hasargument
+                      + ( token("special", S(".:")) * optionalspace * token("user", validword) )^1
+                      )^-1
 
 local identifier    = token("default", validword)
                     * ( optionalspace * token("special", S(".:")) * optionalspace * (

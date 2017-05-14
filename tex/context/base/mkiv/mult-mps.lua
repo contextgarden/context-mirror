@@ -12,7 +12,7 @@ return {
         "tracingmacros", "tracingonline", "tracingoutput", "tracingrestores",
         "tracingspecs", "tracingstats", "tracingtitles", "truecorners",
         "warningcheck", "year",
-        "false", "nullpicture", "pencircle", "true",
+        "false", "nullpicture", "pencircle", "penspec", "true",
         "and", "angle", "arclength", "arctime", "ASCII", "boolean", "bot",
         "char", "color", "cosd", "cycle", "decimal", "directiontime", "floor", "fontsize",
         "hex", "infont", "intersectiontimes", "known", "length", "llcorner",
@@ -33,6 +33,7 @@ return {
         "randomseed", "also", "contour", "doublepath",
         "withcolor", "withcmykcolor", "withpen",
         "dashed",
+        "envelope",
         "if", "else", "elseif", "fi", "for", "endfor", "forever", "exitif", "within",
         "forsuffixes", "step", "until",
         "charlist", "extensible", "fontdimen", "headerbyte", "kern", "ligtable",
@@ -76,7 +77,7 @@ return {
         "arrowhead",
         "currentpen", "currentpicture", "cuttings",
         "defaultfont", "extra_beginfig", "extra_endfig",
-        "ditto", "EOF", "down",
+        "down",
         "evenly", "fullcircle", "halfcircle", "identity", "in", "left",
         "pensquare",  "penrazor",  "penspec",
         "origin", "quartercircle", "right",
@@ -128,6 +129,8 @@ return {
         "defaultpen", "defaultscale",
         "join_radius",
         "charscale", -- actually a mult-fun one
+        --
+        "ditto", "EOF", -- maybe also down etc
         --
         "pen_lft", "pen_rt", "pen_top", "pen_bot", -- "pen_count_",
     },

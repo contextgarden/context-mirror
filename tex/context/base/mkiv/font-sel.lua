@@ -1,64 +1,63 @@
 if not modules then modules = { } end modules ['font-sel'] = {
-    version   = 1.000,
+    version   = 1.001,
     comment   = "companion to font-sel.mkvi",
     author    = "Wolfgang Schuster",
     copyright = "Wolfgang Schuster",
     license   = "GNU General Public License"
 }
 
-local context                 = context
-local cleanname               = fonts.names.cleanname
-local gsub, splitup, find     = string.gsub, string.splitup, string.find
-local concat, sortedkeys      = table.concat, table.sortedkeys
-local merge, remove           = table.merge, table.remove
-local splitbase, removesuffix = file.splitbase, file.removesuffix
-local splitat, lpegmatch      = lpeg.splitat, lpeg.match
+local context                    = context
+local cleanname                  = fonts.names.cleanname
+local gsub, splitup, find, lower = string.gsub, string.splitup, string.find, string.lower
+local concat, sortedkeys         = table.concat, table.sortedkeys
+local merge, remove              = table.merge, table.remove
+local splitbase, removesuffix    = file.splitbase, file.removesuffix
+local splitat, lpegmatch         = lpeg.splitat, lpeg.match
 
-local formatters              = string.formatters
-local settings_to_array       = utilities.parsers.settings_to_array
-local settings_to_hash        = utilities.parsers.settings_to_hash
+local formatters                 = string.formatters
+local settings_to_array          = utilities.parsers.settings_to_array
+local settings_to_hash           = utilities.parsers.settings_to_hash
+local allocate                   = utilities.storage.allocate
 
-local v_yes                   = interfaces.variables.yes
-local v_default               = interfaces.variables.default
+local v_default                  = interfaces.variables.default
 
-local implement               = interfaces.implement
+local implement                  = interfaces.implement
 
-local selectfont              = fonts.select or { }
-fonts.select                  = selectfont
+local fonts                      = fonts
 
-local data                    = selectfont.data or { }
-selectfont.data               = data
+local getlookups                 = fonts.names.getlookups
+local registerdesignsizes        = fonts.goodies.designsizes.register
+local bodyfontsizes              = storage.shared.bodyfontsizes
 
-local fallbacks               = selectfont.fallbacks or { }
-selectfont.fallbacks          = fallbacks
+fonts.select                     = fonts.select or { }
+local selectfont                 = fonts.select
 
-local methods                 = selectfont.methods or { }
-selectfont.methods            = methods
+selectfont.data                  = selectfont.data         or allocate()
+selectfont.fallbacks             = selectfont.fallbacks    or allocate()
+selectfont.methods               = selectfont.methods      or allocate()
+selectfont.extras                = selectfont.extras       or allocate()
+selectfont.alternatives          = selectfont.alternatives or allocate()
+selectfont.presets               = selectfont.presets      or allocate()
+selectfont.defaults              = selectfont.defaults     or allocate()
 
-local extras                  = selectfont.extras or { }
-selectfont.extras             = extras
+storage.register("fonts/select/presets", selectfont.presets, "fonts.select.presets")
 
-local alternatives            = selectfont.alternatives or { }
-selectfont.alternatives       = alternatives
+local data                       = selectfont.data
+local fallbacks                  = selectfont.fallbacks
+local methods                    = selectfont.methods
+local extras                     = selectfont.extras
+local alternatives               = selectfont.alternatives
+local presets                    = selectfont.presets
+local defaults                   = selectfont.defaults
 
-local presets                 = selectfont.presets or { }
-selectfont.presets            = presets
-
-local defaults                = selectfont.defaults or { }
-selectfont.defaults           = defaults
-
-local getlookups              = fonts.names.getlookups
-local registerdesignsizes     = fonts.goodies.designsizes.register
-local bodyfontsizes           = storage.shared.bodyfontsizes
-
-local ctx_definefontsynonym   = context.definefontsynonym
-local ctx_resetfontfallback   = context.resetfontfallback
-local ctx_startfontclass      = context.startfontclass
-local ctx_stopfontclass       = context.stopfontclass
-local ctx_loadfontgoodies     = context.loadfontgoodies
-local ctx_definefontfallback  = context.definefontfallback
-local ctx_definetypeface      = context.definetypeface
-local ctx_definebodyfont      = context.definebodyfont
+local ctx_definefontsynonym      = context.definefontsynonym
+local ctx_resetfontfallback      = context.resetfontfallback
+local ctx_startfontclass         = context.startfontclass
+local ctx_stopfontclass          = context.stopfontclass
+local ctx_loadfontgoodies        = context.loadfontgoodies
+local ctx_definefontfallback     = context.definefontfallback
+local ctx_definetypeface         = context.definetypeface
+local ctx_definebodyfont         = context.definebodyfont
 
 local trace_register     = false  trackers.register("selectfont.register",     function(v) trace_register     = v end)
 local trace_files        = false  trackers.register("selectfont.files",        function(v) trace_files        = v end)
@@ -71,7 +70,6 @@ local report_selectfont   = logs.reporter("selectfont")
 local report_files        = logs.reporter("selectfont","files")
 local report_features     = logs.reporter("selectfont","features")
 local report_goodies      = logs.reporter("selectfont","goodies")
-local report_alternatives = logs.reporter("selectfont","alternatives")
 local report_typescript   = logs.reporter("selectfont","typescripts")
 
 defaults["rm"] = { features = { ["sc"] = "*,f:smallcaps" } }
@@ -83,6 +81,8 @@ defaults["dejavumath"]         = { options = { extras = "dejavu",               
 defaults["neoeuler"]           = { options = { extras = "euler-math",           features = "math\\mathsizesuffix"                                           } }
 defaults["latinmodernmath"]    = { options = { extras = "lm,lm-math",           features = "math\\mathsizesuffix,lm-math", goodies = "lm"                   } }
 defaults["lucidabrightmathot"] = { options = { extras = "lucida-opentype-math", features = "math\\mathsizesuffix",         goodies = "lucida-opentype-math" } }
+defaults["minionmath"]         = { options = { extras = "minion-math",          features = "math\\mathsizesuffix",         goodies = "minion-math"          } }
+defaults["texgyredejavumath"]  = { options = { extras = "dejavu",               features = "math\\mathsizesuffix"                                           } }
 defaults["texgyrepagellamath"] = { options = { extras = "texgyre",              features = "math\\mathsizesuffix"                                           } }
 defaults["texgyrebonummath"]   = { options = { extras = "texgyre",              features = "math\\mathsizesuffix"                                           } }
 defaults["texgyrescholamath"]  = { options = { extras = "texgyre",              features = "math\\mathsizesuffix"                                           } }
@@ -148,9 +148,9 @@ methods["name"] = function(data,alternative,name)
     local fontname = getlookups{ fontname = filename }
     local fullname = getlookups{ fullname = filename }
     if #fontname > 0 then
-        selectfont_savefile(data,alternative,0,"default",fullname[1])
-    elseif #fullname > 0 then
         selectfont_savefile(data,alternative,0,"default",fontname[1])
+    elseif #fullname > 0 then
+        selectfont_savefile(data,alternative,0,"default",fullname[1])
     else
         if trace_alternatives then
             report_selectfont("Alternative '%s': No font was found for the requested name '%s'",alternative,filename)
@@ -227,7 +227,7 @@ local m_alternative = {
     ["sl"] = "italic",
     ["bi"] = "bolditalic",
     ["bs"] = "bolditalic",
-    ["sc"] = "regular"
+    ["sc"] = "smallcaps"
 }
 
 --~ methods["style"] = function(data,alternative,style)
@@ -292,6 +292,20 @@ local function m_style_family(family)
     else
         return nil
     end
+end
+
+local function m_style_subfamily(entries,style,family)
+    local t      = { }
+    local style  = cleanname(style)
+    local family = cleanname(family)
+    for index, entry in next, entries do
+        if entry["familyname"] == family and entry["subfamilyname"] == style then -- familyname + subfamilyname
+            t[#t+1] = entry
+        elseif entry["family"] == family and entry["subfamily"] == style then -- family + subfamily
+            t[#t+1] = entry
+        end
+    end
+    return #t ~= 0 and t or nil
 end
 
 local function m_style_weight(entries,style)
@@ -396,13 +410,18 @@ methods["style"] = function(data,alternative,style)
     local fontstyle  = m_alternative[style] or style
     local entries    = m_style_family(fontfamily)
     if entries then
-        entries = m_style_weight(entries,fontstyle)
-        if entries then
-            entries = m_style_style(entries,fontstyle)
+        local subfamily = m_style_subfamily(entries,fontstyle,fontfamily)
+        if subfamily then
+            entries = subfamily
+        else
+            entries = m_style_weight(entries,fontstyle)
             if entries then
-                entries = m_style_variant(entries,fontstyle)
-                if entries and #entries > 1 and designsize == "default" then
-                    entries = m_style_width(entries,fontstyle)
+                entries = m_style_style(entries,fontstyle)
+                if entries then
+                    entries = m_style_variant(entries,fontstyle)
+                    if entries and #entries > 1 and designsize == "default" then
+                        entries = m_style_width(entries,fontstyle)
+                    end
                 end
             end
         end
@@ -543,7 +562,7 @@ function selectfont.registerfontalternative(alternative)
 end
 
 function selectfont.registerfallback(index)
-    local data     = data[index]
+    local data      = data[index]
     local fontclass = data.metadata.typeface
     local fontstyle = data.metadata.style
     local fallback  = fallbacks[fontclass]
@@ -640,18 +659,19 @@ function selectfont.fontsynonym(data,class,style,alternative,index)
     local fontfiles    = data.files[alternative] or data.files["tf"]
     local fontsizes    = sortedkeys(fontfiles)
     local fallback     = index ~= 0
+    local fontclass    = lower(class)
     --~ local fontfeature  = data.features and data.features[alternative] or data.options.features
     --~ local fontgoodie   = data.goodies  and data.goodies [alternative] or data.options.goodies
     local fontfeature  = selectfont.features(data,style,alternative)
     local fontgoodie   = selectfont.goodies (data,style,alternative)
     local synonym      = m_synonym[style] and m_synonym[style][alternative]
-    local fontfile     = formatters    ["file-%s-%s-%s"](class,style,alternative)
-    local fontsynonym  = formatters ["synonym-%s-%s-%s"](class,style,alternative)
+    local fontfile     = formatters    ["file-%s-%s-%s"](fontclass,style,alternative)
+    local fontsynonym  = formatters ["synonym-%s-%s-%s"](fontclass,style,alternative)
     if fallback then
-        fontfile     = formatters    ["file-%s-%s-%s-%s"](class,style,alternative,index)
-        fontsynonym  = formatters ["synonym-%s-%s-%s-%s"](class,style,alternative,index)
+        fontfile     = formatters    ["file-%s-%s-%s-%s"](fontclass,style,alternative,index)
+        fontsynonym  = formatters ["synonym-%s-%s-%s-%s"](fontclass,style,alternative,index)
     end
-    local fontfallback = formatters["fallback-%s-%s-%s"](class,style,alternative)
+    local fontfallback = formatters["fallback-%s-%s-%s"](fontclass,style,alternative)
     for _, fontsize in next, fontsizes do
         --~ if trace_typescript then
         --~     report_typescript("Synonym: '%s', Size: '%s', File: '%s'",fontfile,fontfiles[fontsize][1],fontfiles[fontsize][2])
@@ -678,13 +698,14 @@ function selectfont.fontsynonym(data,class,style,alternative,index)
 end
 
 function selectfont.fontfallback(data,class,style,alternative,index)
-    local range = data.options.range
-    local scale = data.options.rscale ~= "" and data.options.rscale or 1
-    local check = data.options.check  ~= "" and data.options.check  or "yes"
-    local force = data.options.force  ~= "" and data.options.force  or "no"
-    local fontfeature = data.features and data.features[alternative] or data.options.features
-    local fontsynonym  =  formatters["synonym-%s-%s-%s-%s"](class,style,alternative,index)
-    local fontfallback = formatters["fallback-%s-%s-%s"]   (class,style,alternative)
+    local range        = data.options.range
+    local scale        = data.options.rscale ~= "" and data.options.rscale or 1
+    local check        = data.options.check  ~= "" and data.options.check  or ""
+    local force        = data.options.force  ~= "" and data.options.force  or ""
+    local fontfeature  = data.features and data.features[alternative] or data.options.features
+    local fontclass    = lower(class)
+    local fontsynonym  = formatters ["synonym-%s-%s-%s-%s"](fontclass,style,alternative,index)
+    local fontfallback = formatters["fallback-%s-%s-%s"]   (fontclass,style,alternative)
     if index == 1 then
         ctx_resetfontfallback( { fontfallback } )
     end
@@ -702,7 +723,8 @@ function selectfont.filefallback(data,class,style,alternative,index)
     local force        = data.options.force  ~= "" and data.options.force  or "yes"
     local fontfile     = data.files[alternative] and data.files[alternative][0] or data.files["tf"][0]
     local fontfeature  = data.features and data.features[alternative] or data.options.features
-    local fontfallback = formatters["fallback-%s-%s-%s"](class,style,alternative)
+    local fontclass    = lower(class)
+    local fontfallback = formatters["fallback-%s-%s-%s"](fontclass,style,alternative)
     if index == 1 then
         ctx_resetfontfallback( { fontfallback } )
     end
@@ -713,7 +735,7 @@ function selectfont.filefallback(data,class,style,alternative,index)
 end
 
 function selectfont.mathfallback(index,entry,class,style)
-    local data     = data[entry]
+    local data = data[entry]
     ctx_startfontclass( { class } )
         for alternative, _ in next, alternatives do
             if alternative == "tf" or alternative == "bf" then
@@ -724,7 +746,7 @@ function selectfont.mathfallback(index,entry,class,style)
 end
 
 function selectfont.textfallback(index,entry,class,style)
-    local data     = data[entry]
+    local data = data[entry]
     ctx_startfontclass( { class } )
         for alternative, _ in next, alternatives do
             selectfont.fontsynonym (data,class,style,alternative,index)
@@ -780,8 +802,9 @@ function selectfont.typescript(data)
 end
 
 function selectfont.bodyfont(data)
-    local fontclass   = data.metadata.typeface
+    local class       = data.metadata.typeface
     local fontstyle   = data.metadata.style
+    local fontclass   = lower(class)
     local fontsizes   = concat(sortedkeys(bodyfontsizes),",")
     local fontsynonym = nil
     local fontlist    = { }
@@ -793,7 +816,7 @@ function selectfont.bodyfont(data)
         --~ end
     end
     fontlist = concat(fontlist,",")
-    ctx_definebodyfont( { fontclass }, { fontsizes }, { fontstyle }, { fontlist } )
+    ctx_definebodyfont( { class }, { fontsizes }, { fontstyle }, { fontlist } )
 end
 
 local m_style = {
@@ -814,11 +837,7 @@ function selectfont.typeface(data)
     --~ if trace_typescript then
     --~     report_typescript("Class: '%s', Style: '%s', Size: '%s', Scale: '%s'",fontclass,fontstyle,size,scale)
     --~ end
-    if fontstyle == "mm" then -- math uses the default bodyfont settings because it uses 'ma' and 'mb' as alternative names
-        ctx_definetypeface( { fontclass }, { fontstyle }, { style }, { "" }, { "default" }, { designsize = size, rscale = scale } )
-    else
-        ctx_definetypeface( { fontclass }, { fontstyle }, { "" }, { "" }, { "" }, { designsize = size, rscale = scale } )
-    end
+    ctx_definetypeface( { fontclass }, { fontstyle }, { style }, { "" }, { "default" }, { designsize = size, rscale = scale } )
 end
 
 function selectfont.default(data)

@@ -10,16 +10,18 @@ local tonumber, next, type = tonumber, next, type
 
 local match, format, find, concat, gsub, lower = string.match, string.format, string.find, table.concat, string.gsub, string.lower
 local P, R, S, C, Ct, Cc, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.match
-local utfbyte = utf.byte
 local floor = math.floor
 local formatters = string.formatters
+local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 
-local trace_loading = false  trackers.register("fonts.loading", function(v) trace_loading    = v end)
-local trace_mapping = false  trackers.register("fonts.mapping", function(v) trace_unimapping = v end)
+local trace_loading = false  trackers.register("fonts.loading", function(v) trace_loading = v end)
+local trace_mapping = false  trackers.register("fonts.mapping", function(v) trace_mapping = v end)
 
 local report_fonts  = logs.reporter("fonts","loading") -- not otf only
 
-local force_ligatures = false  directives.register("fonts.mapping.forceligatures",function(v) force_ligatures = v end)
+-- force_ligatures is true per 2017-04-20 so that these emoji's with bad names work too
+
+local force_ligatures = true  directives.register("fonts.mapping.forceligatures",function(v) force_ligatures = v end)
 
 local fonts         = fonts or { }
 local mappings      = fonts.mappings or { }
@@ -140,7 +142,7 @@ local f_double = formatters["%04X%04X"]
 --     end
 -- end
 
-local function tounicode16(unicode,name)
+local function tounicode16(unicode)
     if unicode < 0xD7FF or (unicode > 0xDFFF and unicode <= 0xFFFF) then
         return f_single(unicode)
     else
@@ -149,7 +151,7 @@ local function tounicode16(unicode,name)
     end
 end
 
-local function tounicode16sequence(unicodes,name)
+local function tounicode16sequence(unicodes)
     local t = { }
     for l=1,#unicodes do
         local u = unicodes[l]
@@ -186,6 +188,32 @@ local function tounicode(unicode,name)
     end
 end
 
+-- no real gain on runs
+--
+-- local hash = setmetatableindex(function(t,u)
+--     local v
+--     if u < 0xD7FF or (u > 0xDFFF and u <= 0xFFFF) then
+--         v = f_single(u)
+--     else
+--         u = u - 0x10000
+--         v = f_double(floor(u/1024)+0xD800,u%1024+0xDC00)
+--     end
+--     t[u] = v
+--     return v
+-- end)
+--
+-- local function tounicode(unicode,name)
+--     if type(unicode) == "table" then
+--         local t = { }
+--         for l=1,#unicode do
+--             t[l] = hash[u]
+--         end
+--         return concat(t)
+--     else
+--         return hash[unicode]
+--     end
+-- end
+
 local function fromunicode16(str)
     if #str == 4 then
         return tonumber(str,16)
@@ -216,6 +244,8 @@ mappings.tounicode16         = tounicode16
 mappings.tounicode16sequence = tounicode16sequence
 mappings.fromunicode16       = fromunicode16
 
+-- mozilla emoji has bad lig names: name = gsub(name,"(u[a-f0-9_]+)%-([a-f0-9_]+)","%1_%2")
+
 local ligseparator = P("_")
 local varseparator = P(".")
 local namesplitter = Ct(C((1 - ligseparator - varseparator)^1) * (ligseparator * C((1 - ligseparator - varseparator)^1))^0)
@@ -237,39 +267,50 @@ local namesplitter = Ct(C((1 - ligseparator - varseparator)^1) * (ligseparator *
 -- to be completed .. for fonts that use unicodes for ligatures which
 -- is a actually a bad thing and should be avoided in the first place
 
-local overloads = allocate {
-    IJ  = { name = "I_J",   unicode = { 0x49, 0x4A },       mess = 0x0132 },
-    ij  = { name = "i_j",   unicode = { 0x69, 0x6A },       mess = 0x0133 },
-    ff  = { name = "f_f",   unicode = { 0x66, 0x66 },       mess = 0xFB00 },
-    fi  = { name = "f_i",   unicode = { 0x66, 0x69 },       mess = 0xFB01 },
-    fl  = { name = "f_l",   unicode = { 0x66, 0x6C },       mess = 0xFB02 },
-    ffi = { name = "f_f_i", unicode = { 0x66, 0x66, 0x69 }, mess = 0xFB03 },
-    ffl = { name = "f_f_l", unicode = { 0x66, 0x66, 0x6C }, mess = 0xFB04 },
-    fj  = { name = "f_j",   unicode = { 0x66, 0x6A } },
-    fk  = { name = "f_k",   unicode = { 0x66, 0x6B } },
-}
+do
 
-for k, v in next, overloads do
-    local name = v.name
-    local mess = v.mess
-    if name then
-        overloads[name] = v
+    local overloads = allocate {
+        IJ  = { name = "I_J",   unicode = { 0x49, 0x4A },       mess = 0x0132 },
+        ij  = { name = "i_j",   unicode = { 0x69, 0x6A },       mess = 0x0133 },
+        ff  = { name = "f_f",   unicode = { 0x66, 0x66 },       mess = 0xFB00 },
+        fi  = { name = "f_i",   unicode = { 0x66, 0x69 },       mess = 0xFB01 },
+        fl  = { name = "f_l",   unicode = { 0x66, 0x6C },       mess = 0xFB02 },
+        ffi = { name = "f_f_i", unicode = { 0x66, 0x66, 0x69 }, mess = 0xFB03 },
+        ffl = { name = "f_f_l", unicode = { 0x66, 0x66, 0x6C }, mess = 0xFB04 },
+        fj  = { name = "f_j",   unicode = { 0x66, 0x6A } },
+        fk  = { name = "f_k",   unicode = { 0x66, 0x6B } },
+    }
+
+    local o = { }
+
+    for k, v in next, overloads do
+        local name = v.name
+        local mess = v.mess
+        if name then
+            o[name] = v
+        end
+        if mess then
+            o[mess] = v
+        end
+        o[k] = v
     end
-    if mess then
-        overloads[mess] = v
-    end
+
+    mappings.overloads = o
+
 end
-
-mappings.overloads = overloads
 
 function mappings.addtounicode(data,filename,checklookups)
     local resources = data.resources
     local unicodes  = resources.unicodes
     if not unicodes then
+        if trace_mapping then
+            report_fonts("no unicode list, quitting tounicode for %a",filename)
+        end
         return
     end
     local properties    = data.properties
     local descriptions  = data.descriptions
+    local overloads     = mappings.overloads
     -- we need to move this code
     unicodes['space']   = unicodes['space']  or 32
     unicodes['hyphen']  = unicodes['hyphen'] or 45
@@ -288,17 +329,25 @@ function mappings.addtounicode(data,filename,checklookups)
     local usedmap       = cidinfo and fonts.cid.getmap(cidinfo)
     local uparser       = makenameparser() -- hm, every time?
     if usedmap then
-          oparser       = usedmap and makenameparser(cidinfo.ordering)
-          cidnames      = usedmap.names
-          cidcodes      = usedmap.unicodes
+          oparser  = usedmap and makenameparser(cidinfo.ordering)
+          cidnames = usedmap.names
+          cidcodes = usedmap.unicodes
     end
-    local ns            = 0
-    local nl            = 0
+    local ns = 0
+    local nl = 0
     --
-    for du, glyph in next, descriptions do
-        local name = glyph.name
+    -- in order to avoid differences between runs due to hash randomization we
+    -- run over a sorted list
+    --
+    local dlist = sortedkeys(descriptions)
+    --
+ -- for du, glyph in next, descriptions do
+    for i=1,#dlist do
+        local du    = dlist[i]
+        local glyph = descriptions[du]
+        local name  = glyph.name
         if name then
-            local overload = overloads[name]
+            local overload = overloads[name] or overloads[du]
             if overload then
                 -- get rid of weird ligatures
              -- glyph.name    = overload.name
@@ -434,52 +483,71 @@ function mappings.addtounicode(data,filename,checklookups)
                     end
                 end
             end
+        else
+            local overload = overloads[du]
+            if overload then
+                glyph.unicode = overload.unicode
+            end
         end
     end
     if type(checklookups) == "function" then
         checklookups(data,missing,nofmissing)
     end
 
-    -- todo: go lowercase
-
-    local collected = false
     local unicoded  = 0
-    for unicode, glyph in next, descriptions do
-        if glyph.class == "ligature" and (force_ligatures or not glyph.unicode) then
-            if not collected then
-                collected = fonts.handlers.otf.readers.getcomponents(data)
-                if not collected then
-                    break
-                end
+    local collected = fonts.handlers.otf.readers.getcomponents(data) -- neglectable overhead
+
+    local function resolve(glyph,u)
+        local n = #u
+        for i=1,n do
+            if u[i] > private then
+                n = 0
+                break
             end
-            local u = collected[unicode] -- always tables
+        end
+        if n > 0 then
+            if n > 1 then
+                glyph.unicode = u
+            else
+                glyph.unicode = u[1]
+            end
+            unicoded = unicoded + 1
+        end
+    end
+
+    if not collected then
+        -- move on
+    elseif force_ligatures then
+        for i=1,#dlist do
+            local du = dlist[i]
+            local u  = collected[du] -- always tables
             if u then
-                local n = #u
-                for i=1,n do
-                    if u[i] > private then
-                        n = 0
-                        break
-                    end
-                end
-                if n > 0 then
-                    if n > 1 then
-                        glyph.unicode = u
-                    else
-                        glyph.unicode = u[1]
-                    end
-                    unicoded = unicoded + 1
+                resolve(descriptions[du],u)
+            end
+        end
+    else
+        for i=1,#dlist do
+            local du    = dlist[i]
+            local glyph = descriptions[du]
+            if glyph.class == "ligature" and not glyph.unicode then
+                local u = collected[du] -- always tables
+                if u then
+                     resolve(glyph,u)
                 end
             end
         end
     end
+
     if trace_mapping and unicoded > 0 then
         report_fonts("%n ligature tounicode mappings deduced from gsub ligature features",unicoded)
     end
-
     if trace_mapping then
-        for unic, glyph in table.sortedhash(descriptions) do
-            local name    = glyph.name
-            local index   = glyph.index
+     -- for unic, glyph in sortedhash(descriptions) do
+        for i=1,#dlist do
+            local du      = dlist[i]
+            local glyph   = descriptions[du]
+            local name    = glyph.name or "-"
+            local index   = glyph.index or 0
             local unicode = glyph.unicode
             if unicode then
                 if type(unicode) == "table" then
@@ -487,12 +555,12 @@ function mappings.addtounicode(data,filename,checklookups)
                     for i=1,#unicode do
                         unicodes[i] = formatters("%U",unicode[i])
                     end
-                    report_fonts("internal slot %U, name %a, unicode %U, tounicode % t",index,name,unic,unicodes)
+                    report_fonts("internal slot %U, name %a, unicode %U, tounicode % t",index,name,du,unicodes)
                 else
-                    report_fonts("internal slot %U, name %a, unicode %U, tounicode %U",index,name,unic,unicode)
+                    report_fonts("internal slot %U, name %a, unicode %U, tounicode %U",index,name,du,unicode)
                 end
             else
-                report_fonts("internal slot %U, name %a, unicode %U",index,name,unic)
+                report_fonts("internal slot %U, name %a, unicode %U",index,name,du)
             end
         end
     end

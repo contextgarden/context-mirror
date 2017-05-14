@@ -32,7 +32,7 @@ local match, gmatch, lower, gsub, strip, find = string.match, string.gmatch, str
 local char, byte, sub = string.char, string.byte, string.sub
 local abs = math.abs
 local bxor, rshift = bit32.bxor, bit32.rshift
-local P, S, R, Cmt, C, Ct, Cs, lpegmatch, patterns = lpeg.P, lpeg.S, lpeg.R, lpeg.Cmt, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.match, lpeg.patterns
+local P, S, R, Cmt, C, Ct, Cs, Cg, Cf, lpegmatch, patterns = lpeg.P, lpeg.S, lpeg.R, lpeg.Cmt, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Cg, lpeg.Cf, lpeg.match, lpeg.patterns
 local derivetable = table.derive
 
 local trace_features     = false  trackers.register("afm.features",   function(v) trace_features = v end)
@@ -41,6 +41,7 @@ local trace_loading      = false  trackers.register("afm.loading",    function(v
 local trace_defining     = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 
 local report_afm         = logs.reporter("fonts","afm loading")
+local report_pfb         = logs.reporter("fonts","pfb loading")
 
 local setmetatableindex  = table.setmetatableindex
 
@@ -50,10 +51,10 @@ local definers           = fonts.definers
 local readers            = fonts.readers
 local constructors       = fonts.constructors
 
-local afm                = constructors.newhandler("afm")
-local pfb                = constructors.newhandler("pfb")
+local afm                = constructors.handlers.afm
+local pfb                = constructors.handlers.pfb
 
-local afmfeatures        = constructors.newfeatures("afm")
+local afmfeatures        = constructors.features.afm
 local registerafmfeature = afmfeatures.register
 
 afm.version              = 1.501 -- incrementing this number one up will force a re-cache
@@ -293,19 +294,35 @@ do
 
     local initialize = function(str,position,size)
         n = 0
-        m = tonumber(size)
+        m = size -- % tonumber(size)
         return position + 1
     end
 
-    local charstrings = P("/CharStrings")
-    local name        = P("/") * C((R("az")+R("AZ")+R("09")+S("-_."))^1)
-    local size        = C(R("09")^1)
-    local spaces      = P(" ")^1
+    local charstrings   = P("/CharStrings")
+    local encoding      = P("/Encoding")
+    local dup           = P("dup")
+    local put           = P("put")
+    local array         = P("array")
+    local name          = P("/") * C((R("az")+R("AZ")+R("09")+S("-_."))^1)
+    local digits        = R("09")^1
+    local cardinal      = digits / tonumber
+    local spaces        = P(" ")^1
+    local spacing       = patterns.whitespace^0
 
     local p_filternames = Ct (
-        (1-charstrings)^0 * charstrings * spaces * Cmt(size,initialize)
-      * (Cmt(name * P(" ")^1 * C(R("09")^1), progress) + P(1))^1
+        (1-charstrings)^0 * charstrings * spaces * Cmt(cardinal,initialize)
+      * (Cmt(name * spaces * cardinal, progress) + P(1))^1
     )
+
+    -- /Encoding 256 array
+    -- 0 1 255 {1 index exch /.notdef put} for
+    -- dup 0 /Foo put
+
+    local p_filterencoding =
+        (1-encoding)^0 * encoding * spaces * digits * spaces * array * (1-dup)^0
+      * Cf(
+            Ct("") * Cg(spacing * dup * spaces * cardinal * spaces * name * spaces * put)^1
+        ,rawset)
 
     -- if one of first 4 not 0-9A-F then binary else hex
 
@@ -343,20 +360,20 @@ do
 
         local data = io.loaddata(resolvers.findfile(filename))
 
-        if not find(data,"!PS%-AdobeFont%-") then
-            print("no font",filename)
+        if not data then
+            report_pfb("no data in %a",filename)
             return
         end
 
-        if not data then
-            print("no data",filename)
+        if not (find(data,"!PS%-AdobeFont%-") or find(data,"%%!FontType1")) then
+            report_pfb("no font in %a",filename)
             return
         end
 
         local ascii, binary = match(data,"(.*)eexec%s+......(.*)")
 
         if not binary then
-            print("no binary",filename)
+            report_pfb("no binary data in %a",filename)
             return
         end
 
@@ -364,16 +381,25 @@ do
 
         local vector = lpegmatch(p_filternames,binary)
 
-        vector[0] = table.remove(vector,1)
+        if vector[1] == ".notdef" then
+            -- tricky
+            vector[0] = table.remove(vector,1)
+        end
 
         if not vector then
-            print("no vector",filename)
+            report_pfb("no vector in %a",filename)
             return
         end
 
-        return vector
+        local encoding = lpegmatch(p_filterencoding,ascii)
+
+        return vector, encoding
 
     end
+
+    local pfb      = handlers.pfb or { }
+    handlers.pfb   = pfb
+    pfb.loadvector = loadpfbvector
 
     get_indexes = function(data,pfbname)
         local vector = loadpfbvector(pfbname)
@@ -409,6 +435,7 @@ do
         end
 
     end
+
 
 end
 
@@ -1141,8 +1168,6 @@ registerafmfeature {
 
 -- readers
 
-local check_tfm   = readers.check_tfm
-
 fonts.formats.afm = "type1"
 fonts.formats.pfb = "type1"
 
@@ -1178,7 +1203,8 @@ function readers.afm(specification,method)
             tfmdata = check_afm(specification,specification.name .. "." .. forced)
         end
         if not tfmdata then
-            method = method or definers.method or "afm or tfm"
+            local check_tfm = readers.check_tfm
+            method = (check_tfm and (method or definers.method or "afm or tfm")) or "afm"
             if method == "tfm" then
                 tfmdata = check_tfm(specification,specification.name)
             elseif method == "afm" then

@@ -1,0 +1,227 @@
+%D \module
+%D   [      file=s-present-stepper, % was s-pre-61
+%D        version=2004.03.15,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Stepper,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Optima
+
+\startmodule[present-stepper]
+
+\usemodule[pre-60]
+
+\doifmodeelse {atpragma,asintended} {
+    \usetypescriptfile[ghz]
+    \definetypeface[mainface][ss][sans][optima-nova][default]
+} {
+    \usetypescriptfile[type-ghz]
+    \definetypeface[mainface][ss][sans][optima-nova][default][encoding=\defaultencoding]
+}
+
+\setupbodyfont[mainface,ss,18pt]
+
+\setupinterlinespace
+  [line=3.25ex]
+
+\setuppapersize
+  [S6][S6]
+
+% \setuppapersize
+%   [SW][SW]
+
+\setuplayout
+  [topspace=10pt,
+   header=30pt,
+   headerdistance=20pt,
+   height=middle,
+   footerdistance=20pt,
+   footer=0pt,
+   bottomdistance=20pt,
+   bottom=20pt,
+   bottomspace=50pt,
+   backspace=30pt,
+   width=middle]
+
+\setupinteraction
+  [state=start,
+   click=off,
+   menu=on,
+   style=,
+   color=interactioncolor,
+   contrastcolor=interactioncolor]
+
+\setupinteractionscreen
+  [option=max]
+
+\setupinteractionmenu
+  [bottom]
+  [color=maincolor,
+   contrastcolor=maincolor,
+   style=\tfa, % acceptable
+   left=\hfill,
+   middle=,
+   right=,
+   height=\bottomheight,
+   width=2\bottomheight,
+   offset=overlay,
+   frame=off]
+
+\startinteractionmenu[bottom]
+  \but [firstpage]               \symbol[firstpage]      \\
+  \but [previouspage]            \symbol[previouspage]   \\
+  \but [InvokeStepper] \StartBusy\symbol[PauseRendering]\StopBusy \\
+  \but [nextpage]                \symbol[nextpage]       \\
+  \but [lastpage]                \symbol[lastpage]       \\
+  \but [CloseDocument]           \symbol[CloseDocument]  \\
+\stopinteractionmenu
+
+% maybe in colo-sjk : \setupcolor[sjk]
+
+\definecolor [dark]      [s=.4]
+\definecolor [bright]    [s=.9]
+
+\definecolor [red]       [r=.4,g=.2,b=.2]
+\definecolor [green]     [r=.2,g=.4,b=.2]
+\definecolor [blue]      [r=.2,g=.2,b=.4]
+
+\definecolor [cyan]      [r=.2,g=.4,b=.4]
+\definecolor [magenta]   [r=.4,g=.2,b=.4]
+\definecolor [yellow]    [r=.4,g=.4,b=.2]
+
+\definecolor [pagecolor] [dark]
+\definecolor [maincolor] [bright]
+\definecolor [textcolor] [red]
+
+\definecolor [interactioncolor] [r=.8,g=.8,b=.6]
+
+\setupcolors
+  [textcolor=maincolor]
+
+\setupbackgrounds
+  [page]
+  [background=page,
+   backgroundcolor=textcolor]
+
+\setupbackgrounds
+  [text]% [text]
+  [background={comments,text,invoke}]
+
+\definelayer
+  [text]
+  [width=\textwidth,
+   height=\textheight]
+
+\defineoverlay
+  [comments]
+  [{\setlayer[text][preset=middle]{\placecomments}}]
+
+\defineoverlay[page][\uniqueMPgraphic{page-\ifcase\realpageno\or one\else plus\fi}]
+
+\startuniqueMPgraphic{page-one}
+    StartPage ;
+        fill Page
+            enlarged 4pt
+            withcolor \MPcolor{pagecolor} ;
+        fill Field[Text][Text]
+            enlarged 10pt
+          % topenlarged   (HeaderHeight+HeaderDistance)
+            leftenlarged  (BackSpace+4pt)
+            rightenlarged (CutSpace +4pt)
+            withcolor OverlayColor ;
+    StopPage ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{page-plus}
+    StartPage ;
+        fill Page
+            enlarged 4pt
+            withcolor \MPcolor{pagecolor} ;
+        fill Field[Text][Text]
+            enlarged 10pt
+            leftenlarged  (BackSpace+4pt)
+            rightenlarged (CutSpace+4pt)
+            withcolor OverlayColor ;
+    StopPage ;
+\stopuniqueMPgraphic
+
+\startsetups fonts:normalize
+    \definefont[HeadFont]        [SansBold*default ht \the\dimexpr0.750\headerheight\relax]
+    \definefont[TitleFont]       [SansBold*default ht \the\dimexpr1.500\headerheight\relax]
+    \definefont[SubTitleFont]    [SansBold*default ht \the\dimexpr0.375\headerheight\relax]
+    \definefont[SubSubTitleFont] [SansBold*default ht \the\dimexpr0.750\headerheight\relax]
+\stopsetups
+
+\setuphead
+  [chapter]
+  [placehead=empty,
+   after={\blank[medium]},
+   color=maincolor,
+   placenumber=no,
+   style=\HeadFont]
+
+\setupheadertexts
+  [\doiftextelse{\currentheadnumber}{\placeheadtext[Topic]}{\placeheadtext[Nopic]}]
+  []
+
+\setuppagenumbering
+  [location=]
+
+\definesymbol
+  [emdash]
+  [\emdash]
+
+\setupitemize
+  [each]
+  [loose,serried,joinedup,broad]
+  [symbol=emdash]
+
+\setupalign
+  [broad,right]
+
+\def\doTitlePage#1#2#3%
+  {\setups[fonts:normalize]
+   \resetsetups[fonts:normalize]
+   \startstandardmakeup[headerstate=high]
+     \def\\{\def\\{\endgraf\quad\quad}\endgraf\quad\ignorespaces#2}%
+     #1\setstrut\setupinterlinespace\vfil#3\vfil\vfil
+   \stopstandardmakeup}
+
+\unexpanded\def\TitlePage   {\doTitlePage\TitleFont\relax}
+\unexpanded\def\SubTitlePage{\doTitlePage\TitleFont\SubTitleFont}
+
+\definehead[Topic][chapter]
+\definehead[Nopic][title]
+
+\unexpanded\def\Topics#1%
+  {\Nopic[topics]{#1}
+   \startcolumns
+     \placelist[Topic]
+   \stopcolumns}
+
+\setuplist
+  [Topic]
+  [alternative=f,
+   color=maincolor,
+   contrastcolor=maincolor,
+   criterium=all]
+
+\defineoverlay[topics][\overlaybutton{topics}]
+
+\setupbackgrounds
+  [bottom] [text]
+  [background=topics]
+
+\stopmodule
+
+\continueifinputfile{s-present-stepper.mkiv}
+
+\usemodule[present-common]
+
+\inputpresentationfile{examples/present-stepper-001.tex}

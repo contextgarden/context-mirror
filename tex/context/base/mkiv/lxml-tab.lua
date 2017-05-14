@@ -34,7 +34,7 @@ local xml = xml
 --~ local xml = xml
 
 local concat, remove, insert = table.concat, table.remove, table.insert
-local type, next, setmetatable, getmetatable, tonumber, rawset = type, next, setmetatable, getmetatable, tonumber, rawset
+local type, next, setmetatable, getmetatable, tonumber, rawset, select = type, next, setmetatable, getmetatable, tonumber, rawset, select
 local lower, find, match, gsub = string.lower, string.find, string.match, string.gsub
 local sort = table.sort
 local utfchar = utf.char
@@ -264,6 +264,7 @@ local function add_empty(spacing, namespace, tag)
         tg = tag,
         at = at,
         dt = { },
+        ni = nt, -- set slot, needed for css filtering
         __p__ = top
     }
     dt[nt] = t
@@ -285,7 +286,8 @@ local function add_begin(spacing, namespace, tag)
         rn = resolved,
         tg = tag,
         at = at,
-        dt = {},
+        dt = { },
+        ni = nil, -- preset slot, needed for css filtering
         __p__ = stack[level]
     }
     setmetatable(top, mt)
@@ -314,7 +316,7 @@ local function add_end(spacing, namespace, tag)
     dt = top.dt
     nt = #dt + 1
     dt[nt] = toclose
- -- dt[0] = top -- nasty circular reference when serializing table
+    toclose.ni = nt -- update slot, needed for css filtering
     if toclose.at.xmlns then
         remove(xmlns)
     end
@@ -324,7 +326,7 @@ end
 --
 -- will be an option: dataonly
 --
--- if #text == 0 or lpegmatch(spaceonly,text) then
+-- if #text == 0 or     lpegmatch(spaceonly,text) then
 --     return
 -- end
 
@@ -370,7 +372,13 @@ local function add_special(what, spacing, text)
         -- forget it
     else
         nt = nt + 1
-        dt[nt] = { special=true, ns="", tg=what, dt={ text } }
+        dt[nt] = {
+            special = true,
+            ns      = "",
+            tg      = what,
+            ni      = nil, -- preset slot
+            dt      = { text },
+        }
     end
 end
 
@@ -439,7 +447,6 @@ do
 
     local p_rest = (1-P(";"))^0
     local p_many = P(1)^0
-    local p_char = lpegpatterns.utf8character
 
     local parsedentity =
         P("&#") * (P("x")*(p_rest/fromhex) + (p_rest/fromdec)) * P(";") * P(-1) +
@@ -494,15 +501,30 @@ do
         [ [[~]] ] = "&U+7E;",
     }
 
+    local privates_x = { -- for xml
+        [ [["]] ] = "&U+22;",
+        [ [[#]] ] = "&U+23;",
+        [ [[$]] ] = "&U+24;",
+        [ [[%]] ] = "&U+25;",
+        [ [[']] ] = "&U+27;",
+        [ [[\]] ] = "&U+5C;",
+        [ [[{]] ] = "&U+7B;",
+        [ [[|]] ] = "&U+7C;",
+        [ [[}]] ] = "&U+7D;",
+        [ [[~]] ] = "&U+7E;",
+    }
+
     local privates_n = { -- keeps track of defined ones
     }
 
     local escaped       = utf.remapper(privates_u,"dynamic")
     local unprivatized  = utf.remapper(privates_p,"dynamic")
     local unspecialized = utf.remapper(privates_s,"dynamic")
+    local despecialized = utf.remapper(privates_x,"dynamic")
 
     xml.unprivatized  = unprivatized
     xml.unspecialized = unspecialized
+    xml.despecialized = despecialized
     xml.escaped       = escaped
 
     local function unescaped(s)
@@ -1050,9 +1072,13 @@ local grammar_unparsed_text = P { "preamble",
 
 -- maybe we will add settings to result as well
 
-local function _xmlconvert_(data, settings)
+local function _xmlconvert_(data,settings)
     settings = settings or { } -- no_root strip_cm_and_dt given_entities parent_root error_handler
     preparexmlstate(settings)
+    local preprocessor = settings.preprocessor
+    if data and data ~= "" and type(preprocessor) == "function" then
+        data = preprocessor(data,settings) or data -- settings.currentresource
+    end
     if settings.parent_root then
         mt = getmetatable(settings.parent_root)
     else
@@ -1240,17 +1266,15 @@ generic table copier. Since we know what we're dealing with we
 can speed up things a bit. The second argument is not to be used!</p>
 --ldx]]--
 
--- local function copy(old,tables)
+-- local function copy(old)
 --     if old then
---         if not tables then
---             tables = { }
---         end
 --         local new = { }
---         if not tables[old] then
---             tables[old] = new
---         end
 --         for k,v in next, old do
---             new[k] = (type(v) == "table" and (tables[v] or copy(v, tables))) or v
+--             if type(v) == "table" then
+--                 new[k] = table.copy(v)
+--             else
+--                 new[k] = v
+--             end
 --         end
 --         local mt = getmetatable(old)
 --         if mt then
@@ -1261,15 +1285,27 @@ can speed up things a bit. The second argument is not to be used!</p>
 --         return { }
 --     end
 -- end
+--
+-- We need to prevent __p__ recursio, so:
 
-local function copy(old)
+local function copy(old,p)
     if old then
         local new = { }
-        for k,v in next, old do
-            if type(v) == "table" then
-                new[k] = table.copy(v)
-            else
+        for k, v in next, old do
+            local t = type(v) == "table"
+            if k == "at" then
+                local t = { }
+                for k, v in next, v do
+                    t[k] = v
+                end
+                new[k] = t
+            elseif k == "dt" then
+                v.__p__ = nil
+                v = copy(v,new)
                 new[k] = v
+                v.__p__ = p
+            else
+                new[k] = v -- so we also share entities, etc in root
             end
         end
         local mt = getmetatable(old)
@@ -1317,7 +1353,9 @@ and then handle the lot.</p>
 
 local f_attribute = formatters['%s=%q']
 
--- we could reuse ats
+-- we could reuse ats .. for high performance we could also
+-- have a multiple handle calls instead of multiple arguments
+-- but it's not that critical
 
 local function verbose_element(e,handlers,escape) -- options
     local handle = handlers.handle
@@ -1480,7 +1518,7 @@ local function newhandlers(settings)
         for k,v in next, settings do
             if type(v) == "table" then
                 local tk = t[k] if not tk then tk = { } t[k] = tk end
-                for kk,vv in next, v do
+                for kk, vv in next, v do
                     tk[kk] = vv
                 end
             else
@@ -1580,19 +1618,43 @@ function xml.save(root,name)
     serialize(root,xmlfilehandler,name)
 end
 
-local result
+-- local result
+--
+-- local xmlstringhandler = newhandlers {
+--     name       = "string",
+--     initialize = function()
+--         result = { }
+--         return result
+--     end,
+--     finalize   = function()
+--         return concat(result)
+--     end,
+--     handle     = function(...)
+--         result[#result+1] = concat { ... }
+--     end,
+-- }
+
+local result, r, threshold = { }, 0, 512
 
 local xmlstringhandler = newhandlers {
     name       = "string",
     initialize = function()
-        result = { }
+        r = 0
         return result
     end,
     finalize   = function()
-        return concat(result)
+        local done = concat(result,"",1,r)
+        r = 0
+        if r > threshold then
+            result = { }
+        end
+        return done
     end,
     handle     = function(...)
-        result[#result+1] = concat { ... }
+        for i=1,select("#",...) do
+            r = r + 1
+            result[r] = select(i,...)
+        end
     end,
 }
 

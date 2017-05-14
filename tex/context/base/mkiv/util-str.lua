@@ -10,7 +10,7 @@ utilities         = utilities or { }
 utilities.strings = utilities.strings or { }
 local strings     = utilities.strings
 
-local format, gsub, rep, sub = string.format, string.gsub, string.rep, string.sub
+local format, gsub, rep, sub, find = string.format, string.gsub, string.rep, string.sub, string.find
 local load, dump = load, string.dump
 local tonumber, type, tostring = tonumber, type, tostring
 local unpack, concat = table.unpack, table.concat
@@ -141,6 +141,7 @@ local pattern =
   )^1)
 
 function strings.tabtospace(str,tab)
+    -- no real gain in first checking if a \t is there
     return lpegmatch(pattern,str,1,tab or 7)
 end
 
@@ -385,6 +386,43 @@ function number.signed(i)
     end
 end
 
+-- maybe to util-num
+
+local digit  = patterns.digit
+local period = patterns.period
+local three  = digit * digit * digit
+
+local splitter = Cs (
+    (((1 - (three^1 * period))^1 + C(three)) * (Carg(1) * three)^1 + C((1-period)^1))
+  * (P(1)/"" * Carg(2)) * C(2)
+)
+
+patterns.formattednumber = splitter
+
+function number.formatted(n,sep1,sep2)
+    local s = type(s) == "string" and n or format("%0.2f",n)
+    if sep1 == true then
+        return lpegmatch(splitter,s,1,".",",")
+    elseif sep1 == "." then
+        return lpegmatch(splitter,s,1,sep1,sep2 or ",")
+    elseif sep1 == "," then
+        return lpegmatch(splitter,s,1,sep1,sep2 or ".")
+    else
+        return lpegmatch(splitter,s,1,sep1 or ",",sep2 or ".")
+    end
+end
+
+-- print(number.formatted(1))
+-- print(number.formatted(12))
+-- print(number.formatted(123))
+-- print(number.formatted(1234))
+-- print(number.formatted(12345))
+-- print(number.formatted(123456))
+-- print(number.formatted(1234567))
+-- print(number.formatted(12345678))
+-- print(number.formatted(12345678,true))
+-- print(number.formatted(1234.56,"!","?"))
+
 local zero      = P("0")^1 / ""
 local plus      = P("+")   / ""
 local minus     = P("-")
@@ -410,6 +448,31 @@ function number.sparseexponent(f,n)
         return lpegmatch((f == "%e" or f == "%E") and pattern_a or pattern_b,format(f,n))
     end
     return tostring(n)
+end
+
+local hf = { }
+local hs = { }
+
+setmetatable(hf, { __index = function(t,k)
+    local v = "%." .. k .. "f"
+    t[k] = v
+    return v
+end } )
+
+setmetatable(hs, { __index = function(t,k)
+    local v = "%" .. k .. "s"
+    t[k] = v
+    return v
+end } )
+
+function number.formattedfloat(n,b,a)
+    local s = format(hf[a],n)
+    local l = (b or 0) + (a or 0) + 1
+    if #s < l then
+        return format(hs[l],s)
+    else
+        return s
+    end
 end
 
 local template = [[
@@ -442,6 +505,7 @@ local autodouble=string.autodouble
 local sequenced=table.sequenced
 local formattednumber=number.formatted
 local sparseexponent=number.sparseexponent
+local formattedfloat=number.formattedfloat
     ]]
 
 else
@@ -467,6 +531,7 @@ else
         sequenced       = table.sequenced,
         formattednumber = number.formatted,
         sparseexponent  = number.sparseexponent,
+        formattedfloat  = number.formattedfloat
     }
 
 end
@@ -484,6 +549,9 @@ setmetatable(arguments, { __index =
 })
 
 local prefix_any = C((S("+- .") + R("09"))^0)
+local prefix_sub = (C((S("+-") + R("09"))^0) + Cc(0))
+                 * P(".")
+                 * (C((S("+-") + R("09"))^0) + Cc(0))
 local prefix_tab = P("{") * C((1-P("}"))^0) * P("}") + C((1-R("az","AZ","09","%%"))^0)
 
 -- we've split all cases as then we can optimize them (let's omit the fuzzy u)
@@ -555,6 +623,11 @@ local format_F = function(f) -- beware, no cast to number
     else
         return format("format((a%s %% 1 == 0) and '%%i' or '%%%sf',a%s)",n,f,n)
     end
+end
+
+local format_k = function(b,a) -- slow
+    n = n + 1
+    return format("formattedfloat(a%s,%i,%i)",n,b or 0, a or 0)
 end
 
 local format_g = function(f)
@@ -732,43 +805,6 @@ local format_W = function(f) -- handy when doing depth related indent
     return format("nspaces[%s]",tonumber(f) or 0)
 end
 
--- maybe to util-num
-
-local digit  = patterns.digit
-local period = patterns.period
-local three  = digit * digit * digit
-
-local splitter = Cs (
-    (((1 - (three^1 * period))^1 + C(three)) * (Carg(1) * three)^1 + C((1-period)^1))
-  * (P(1)/"" * Carg(2)) * C(2)
-)
-
-patterns.formattednumber = splitter
-
-function number.formatted(n,sep1,sep2)
-    local s = type(s) == "string" and n or format("%0.2f",n)
-    if sep1 == true then
-        return lpegmatch(splitter,s,1,".",",")
-    elseif sep1 == "." then
-        return lpegmatch(splitter,s,1,sep1,sep2 or ",")
-    elseif sep1 == "," then
-        return lpegmatch(splitter,s,1,sep1,sep2 or ".")
-    else
-        return lpegmatch(splitter,s,1,sep1 or ",",sep2 or ".")
-    end
-end
-
--- print(number.formatted(1))
--- print(number.formatted(12))
--- print(number.formatted(123))
--- print(number.formatted(1234))
--- print(number.formatted(12345))
--- print(number.formatted(123456))
--- print(number.formatted(1234567))
--- print(number.formatted(12345678))
--- print(number.formatted(12345678,true))
--- print(number.formatted(1234.56,"!","?"))
-
 local format_m = function(f)
     n = n + 1
     if not f or f == "" then
@@ -801,9 +837,16 @@ end
 local format_extension = function(extensions,f,name)
     local extension = extensions[name] or "tostring(%s)"
     local f = tonumber(f) or 1
+    local w = find(extension,"%.%.%.")
     if f == 0 then
+        if w then
+            extension = gsub(extension,"%.%.%.","")
+        end
         return extension
     elseif f == 1 then
+        if w then
+            extension = gsub(extension,"%.%.%.","%%s")
+        end
         n = n + 1
         local a = "a" .. n
         return format(extension,a,a) -- maybe more times?
@@ -811,10 +854,16 @@ local format_extension = function(extensions,f,name)
         local a = "a" .. (n + f + 1)
         return format(extension,a,a)
     else
+        if w then
+            extension = gsub(extension,"%.%.%.",rep("%%s,",f-1).."%%s")
+        end
+        -- we could fill an array and then n = n + 1 unpack(t,n,n+f) but as we
+        -- cache we don't save much and there are hardly any extensions anyway
         local t = { }
         for i=1,f do
             n = n + 1
-            t[#t+1] = "a" .. n
+         -- t[#t+1] = "a" .. n
+            t[i] = "a" .. n
         end
         return format(extension,unpack(t))
     end
@@ -823,6 +872,8 @@ end
 -- aA b cC d eE f gG hH iI jJ lL mM N o p qQ r sS tT uU wW xX z
 
 -- extensions : %!tag!
+
+-- can be made faster but not called that often
 
 local builder = Cs { "start",
     start = (
@@ -840,6 +891,7 @@ local builder = Cs { "start",
               + V("S") -- new
               + V("Q") -- new
               + V("N") -- new
+              + V("k") -- new
               --
               + V("r")
               + V("h") + V("H") + V("u") + V("U")
@@ -852,10 +904,10 @@ local builder = Cs { "start",
               + V("a") -- new
               + V("A") -- new
               + V("j") + V("J") -- stripped e E
-              + V("m") + V("M") -- new
+              + V("m") + V("M") -- new (formatted number)
               + V("z") -- new
               --
-           -- + V("?") -- ignores probably messed up %
+           -- + V("?") -- ignored, probably messed up %
             )
           + V("*")
         )
@@ -879,6 +931,7 @@ local builder = Cs { "start",
     ["S"] = (prefix_any * P("S")) / format_S, -- %S => %s (tostring)
     ["Q"] = (prefix_any * P("Q")) / format_S, -- %Q => %q (tostring)
     ["N"] = (prefix_any * P("N")) / format_N, -- %N => tonumber (strips leading zeros)
+    ["k"] = (prefix_sub * P("k")) / format_k, -- %k => like f but with n.m
     ["c"] = (prefix_any * P("c")) / format_c, -- %c => utf character (extension to regular)
     ["C"] = (prefix_any * P("C")) / format_C, -- %c => U+.... utf character
     --
@@ -1064,10 +1117,6 @@ patterns.luaquoted = Cs(Cc('"') * ((1-S('"\n'))^1 + P('"')/'\\"' + P('\n')/'\\n"
 
 -- escaping by lpeg is faster for strings without quotes, slower on a string with quotes, but
 -- faster again when other q-escapables are found (the ones we don't need to escape)
-
--- add(formatters,"xml", [[lpegmatch(xmlescape,%s)]],[[local xmlescape = lpeg.patterns.xmlescape]])
--- add(formatters,"tex", [[lpegmatch(texescape,%s)]],[[local texescape = lpeg.patterns.texescape]])
--- add(formatters,"lua", [[lpegmatch(luaescape,%s)]],[[local luaescape = lpeg.patterns.luaescape]])
 
 if _LUAVERSION < 5.2  then
 

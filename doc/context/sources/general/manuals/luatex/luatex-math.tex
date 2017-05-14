@@ -38,6 +38,99 @@ be used as numeric values, so you can write code like this:
 \fi \fi
 \stoptyping
 
+Sometimes you won't get what you expect so a bit of explanation might help to
+understand what happens. When math is parsed and expanded it gets turned into a
+linked list. In a second pass the formula will be build. This has to do with the
+fact that in order to determine the automatically chosen sizes (in for instance
+fractions) following content can influence preceding sizes. A side effect of this
+is for instance that one cannot change the definition of a font family (and
+thereby reusing numbers) because the number that got used is stored and used in
+the second pass (so changing \type {\fam 12} mid|-|formula spoils over to
+preceding use of that family).
+
+The style switching primitives like \type {\textstyle} are turned into nodes so
+the styles set there are frozen. The \type {\mathchoice} primitive results in
+four lists being constructed of which one is used in the second pass. The fact
+that some automatic styles are not yet known also means that the \type
+{\mathstyle} primitive expands to the current style which can of course be
+different from the one really used. It's a snapshot of the first pass state. As a
+consequence in the following example you get a style number (first pass) typeset
+that can actually differ from the used style (second pass). In the case of a math
+choice used ungrouped, the chosen style is used after the choice too, unless you
+group.
+
+\startbuffer[1]
+    [a:\mathstyle]\quad
+    \bgroup
+    \mathchoice
+        {\bf \scriptstyle       (x:d :\mathstyle)}
+        {\bf \scriptscriptstyle (x:t :\mathstyle)}
+        {\bf \scriptscriptstyle (x:s :\mathstyle)}
+        {\bf \scriptscriptstyle (x:ss:\mathstyle)}
+    \egroup
+    \quad[b:\mathstyle]\quad
+    \mathchoice
+        {\bf \scriptstyle       (y:d :\mathstyle)}
+        {\bf \scriptscriptstyle (y:t :\mathstyle)}
+        {\bf \scriptscriptstyle (y:s :\mathstyle)}
+        {\bf \scriptscriptstyle (y:ss:\mathstyle)}
+    \quad[c:\mathstyle]\quad
+    \bgroup
+    \mathchoice
+        {\bf \scriptstyle       (z:d :\mathstyle)}
+        {\bf \scriptscriptstyle (z:t :\mathstyle)}
+        {\bf \scriptscriptstyle (z:s :\mathstyle)}
+        {\bf \scriptscriptstyle (z:ss:\mathstyle)}
+    \egroup
+    \quad[d:\mathstyle]
+\stopbuffer
+
+\startbuffer[2]
+    [a:\mathstyle]\quad
+    \begingroup
+    \mathchoice
+        {\bf \scriptstyle       (x:d :\mathstyle)}
+        {\bf \scriptscriptstyle (x:t :\mathstyle)}
+        {\bf \scriptscriptstyle (x:s :\mathstyle)}
+        {\bf \scriptscriptstyle (x:ss:\mathstyle)}
+    \endgroup
+    \quad[b:\mathstyle]\quad
+    \mathchoice
+        {\bf \scriptstyle       (y:d :\mathstyle)}
+        {\bf \scriptscriptstyle (y:t :\mathstyle)}
+        {\bf \scriptscriptstyle (y:s :\mathstyle)}
+        {\bf \scriptscriptstyle (y:ss:\mathstyle)}
+    \quad[c:\mathstyle]\quad
+    \begingroup
+    \mathchoice
+        {\bf \scriptstyle       (z:d :\mathstyle)}
+        {\bf \scriptscriptstyle (z:t :\mathstyle)}
+        {\bf \scriptscriptstyle (z:s :\mathstyle)}
+        {\bf \scriptscriptstyle (z:ss:\mathstyle)}
+    \endgroup
+    \quad[d:\mathstyle]
+\stopbuffer
+
+\typebuffer[1]
+
+% \typebuffer[2]
+
+This gives:
+
+\blank $\displaystyle \getbuffer[1]$ \blank
+\blank $\textstyle    \getbuffer[1]$ \blank
+
+Using \type {\begingroup} \unknown\ \type {\endgroup} instead gives:
+
+\blank $\displaystyle \getbuffer[2]$ \blank
+\blank $\textstyle    \getbuffer[2]$ \blank
+
+This might look wrong but it's just a side effect of \type {\mathstyle} expanding
+to the current (first pass) style and the number being injected in the list that
+gets converted in the second pass. It all makes sense and it illustrates the
+importance of grouping. In fact, the math choice style being effective afterwards
+has advantages. It would be hard to get it otherwise.
+
 \subsection{\type {\Ustack}}
 
 There are a few math commands in \TEX\ where the style that will be used is not
@@ -174,7 +267,7 @@ are described as follows:
 \startitemize
 \startitem
     In any style superscripts and subscripts are taken from the next smaller style.
-    Exception: in display style they are taken in script style.
+    Exception: in display style they are in script style.
 \stopitem
 \startitem
     Subscripts are always in the cramped variant of the style; superscripts are only
@@ -314,7 +407,7 @@ needed.
 
 The injection of \type {\abovedisplayskip} and \type {\belowdisplayskip} is not
 symmetrical. An above one is always inserted, also when zero, but the below is
-only inserted when larger than zero. Especially the later mkes it sometimes hard
+only inserted when larger than zero. Especially the later makes it sometimes hard
 to fully control spacing. Therefore \LUATEX\ comes with a new directive: \type
 {\mathdisplayskipmode}. The following values apply:
 
@@ -464,6 +557,86 @@ Note 9: \type {FractionDelimiterDisplayStyleSize} and \type
 {FractionDelimiterSize} do not actually exist in the \quote {standard} \OPENTYPE\
 math font Cambria, but were useful enough to be added.
 
+\section{Nolimit correction}
+
+There are two extra math parameters \type {\Umathnolimitsupfactor} and \type
+{\Umathnolimitsubfactor} that were added to provide some control over how limits
+are spaced (for example the position of super and subscripts after integral
+operators). They relate to an extra parameter \type {\mathnolimitsmode}. The half
+corrections are what happens when scripts are placed on above and below. The
+problem with italic corrections is that officially that correction italic is used
+for above|/|below placement while advanced kerns are used for placement at the
+right end. The question is: how often is this implemented, and if so, does the
+kerns assume correction too. Anyway, with this parameter one can control it.
+
+\starttabulate[|l|ck1|ck1|ck1|ck1|ck1|ck1|]
+    \NC
+        \NC \mathnolimitsmode0    $\displaystyle\int\nolimits^0_1$
+        \NC \mathnolimitsmode1    $\displaystyle\int\nolimits^0_1$
+        \NC \mathnolimitsmode2    $\displaystyle\int\nolimits^0_1$
+        \NC \mathnolimitsmode3    $\displaystyle\int\nolimits^0_1$
+        \NC \mathnolimitsmode4    $\displaystyle\int\nolimits^0_1$
+        \NC \mathnolimitsmode8000 $\displaystyle\int\nolimits^0_1$
+    \NC \NR
+    \TB
+    \NC \bf mode
+        \NC \tttf 0
+        \NC \tttf 1
+        \NC \tttf 2
+        \NC \tttf 3
+        \NC \tttf 4
+        \NC \tttf 8000
+    \NC \NR
+    \NC \bf superscript
+        \NC 0
+        \NC font
+        \NC 0
+        \NC 0
+        \NC +ic/2
+        \NC 0
+    \NC \NR
+    \NC \bf subscript
+        \NC -ic
+        \NC font
+        \NC 0
+        \NC -ic/2
+        \NC -ic/2
+        \NC 8000ic/1000
+    \NC \NR
+\stoptabulate
+
+When the mode is set to one, the math parameters are used. This way a macro
+package writer can decide what looks best. Given the current state of fonts in
+\CONTEXT\ we currently use mode 1 with factor 0 for the superscript and 750 for
+the subscripts. Positive values are used for both parameters but the subscript
+shifts to the left. A \type {\mathnolimitsmode} larger that 15 is considered to
+be a factor for the subscript correction. This feature can be handy when
+experimenting.
+
+\section{Math italic mess}
+
+The \type {\mathitalicsmode} parameter can be set to~1 to force italic correction
+before noads that represent some more complex structure (read: everything
+that is not an ord, bin, rel, open, close, punct or inner).
+
+\starttexdefinition Whatever #1
+    \NC \type{\mathitalicsmode=#1}
+    \NC \mathitalicsmode#1\ruledhbox{$\left|T^1\right|$}
+    \NC \mathitalicsmode#1\ruledhbox{$\left|T\right|$}
+    \NC \mathitalicsmode#1\ruledhbox{$T+1$}
+    \NC \mathitalicsmode#1\ruledhbox{$T{1\over2}$}
+    \NC \mathitalicsmode#1\ruledhbox{$T\sqrt{1}$}
+    \NR \NR
+\stoptexdefinition
+
+\starttabulate[|c|c|c|c|c|c|]
+    \Whatever0
+    \Whatever1
+\stoptabulate
+
+This kind of parameters relate to the fact that italic correction in \OPENTYPE\
+math is bound to fuzzy rules. So, control is the solution.
+
 \section{Math spacing setting}
 
 Besides the parameters mentioned in the previous sections, there are also 64 new
@@ -603,7 +776,7 @@ correction takes place.
 Possible locations are \type {top}, \type {bottom}, \type {both} and \type
 {center}. When no location is given \type {top} is assumed. An additional
 parameter \type {fraction} can be specified followed by a number; a value of for
-instance 1200 means that the criterium is 1.2 times the width of the nuclues. The
+instance 1200 means that the criterium is 1.2 times the width of the nucleus. The
 fraction only applies to the stepwise selected shapes and is mostly meant for the
 \type {overlay} location. It also works for the other locations but then it
 concerns the width.
@@ -831,12 +1004,34 @@ For Latin Modern The result looks as follows:
     \stoptabulate
 \stop
 
+\section {Last lines}
+
+There is a new primitive to control the overshoot in the calculation of the
+previous line in mid|-|paragraph display math. The default value is 2 times
+the em width of the current font:
+
+\starttyping
+\predisplaygapfactor=2000
+\stoptyping
+
+If you want to have the length of the last line independent of math i.e.\ you don't
+want to revert to a hack where you insert a fake display math formula in order to
+get the length of the last line, the following will often work too:
+
+\starttyping
+\def\lastlinelength{\dimexpr
+    \directlua {tex.sprint (
+        (nodes.dimensions(node.tail(tex.lists.page_head).list))
+    )}sp
+\relax}
+\stoptyping
+
 \section {Other Math changes}
 
 \subsection {Verbose versions of single-character math commands}
 
 \LUATEX\ defines six new primitives that have the same function as
-\type {^}, \type {_}, \type {$}, and \type {$$}: %$
+\type {^}, \type {_}, \type {$}, and \type {$$}:
 
 \starttabulate[|l|l|l|l|]
 \NC \bf primitive           \NC \bf explanation \NC \NR
@@ -869,7 +1064,57 @@ Inline math is surrounded by (optional) \type {\mathsurround} spacing but that i
 dimension. There is now an additional parameter \type {\mathsurroundskip}. When set to a
 non|-|zero value (or zero with some stretch or shrink) this parameter will replace
 \type {\mathsurround}. By using an additional parameter instead of changing the nature
-of \type {\mathsurround}, we can remain compatible.
+of \type {\mathsurround}, we can remain compatible. In the meantime a bit more
+control has been added via \type {\mathsurroundmode}. This directive can take 6 values
+with zero being the default behaviour.
+
+\start
+
+\def\OneLiner#1#2%
+  {\NC #1
+%    \NC \ruledhbox{\mathsurroundmode#1\relax\hsize 100pt   x$x$x}
+%    \NC \ruledhbox{\mathsurroundmode#1\relax\hsize 100pt x $x$ x}
+   \NC \dontleavehmode\inframed[align=normal,offset=0pt,frame=off]{\mathsurroundmode#1\relax\hsize 100pt   x$x$x}
+   \NC \dontleavehmode\inframed[align=normal,offset=0pt,frame=off]{\mathsurroundmode#1\relax\hsize 100pt x $x$ x}
+   \NC #2
+   \NC \NR}
+
+\startbuffer
+\mathsurround    10pt
+\mathsurroundskip20pt
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\starttabulate[|Tc|c|c|pl|]
+\HL
+\BC mode \BC \type {x$x$x} \BC \type {x $x$ x} \BC effect \NC \NR
+\HL
+\OneLiner{0}{obey \type {\mathsurround} when \type {\mathsurroundskip} is 0pt}
+\OneLiner{1}{only add skip to the left}
+\OneLiner{2}{only add skip to the right}
+\OneLiner{3}{add skip to the left and right}
+\OneLiner{4}{ignore the skip setting, obey \type {\mathsurround}}
+\OneLiner{5}{disable all spacing around math}
+\OneLiner{6}{only apply \type {\mathsurroundskip} when also spacing}
+\OneLiner{7}{only apply \type {\mathsurroundskip} when no spacing}
+\HL
+\stoptabulate
+
+\stop
+
+Method six omits the surround glue when there is (x)spacing glue present while
+method seven does the opposite, the glue is only applied when there is (x)space
+glue present too. Anything more fance, like checking the begining or end of a
+paragraph (or edges of a box) would not be robust anyway. If you want that you
+can write a callback that runs over a list and analyzes a paragraph. Actually, in
+that case you could also inject glue (or set the properties of a math node)
+explicitly. So, these modes are in practice mostly useful for special purposes
+and experiments (they originate in a tracker item). Keep in mind that this glue
+is part of the math node and not always treated as normal glue: it travels with
+the begin and end math nodes. Also, method 6 and 7 will zero the skip related
+fields in a node when applicable in the first occasion that checks them
+(linebreaking or packaging).
 
 % \section{Math todo}
 %
@@ -979,6 +1224,21 @@ some variations in the implementation will be driven by options for which a new
 primitive \type {\mathoption} has been introduced (so that we don't end up with
 many new commands). The approach of options also permits us to see what effect a
 specific solution has.
+
+\subsubsection {\type {\mathoption old}}
+
+This option was introduced for testing purposes when the math engine got split
+code paths and it forces the engine to treat new fonts as old ones with respect
+to italic correction etc. There are no guarantees given with respect to the final
+result and unexpected side effects are not seens as bugs as they relate to font
+properties.
+
+\startbuffer
+\mathoption old 1
+\stopbuffer
+
+The \type {oldmath} boolean flag in the \LUA\ font table is the official way to
+force old treatment as it's bound to fonts.
 
 \subsubsection {\type {\mathoption noitaliccompensation}}
 

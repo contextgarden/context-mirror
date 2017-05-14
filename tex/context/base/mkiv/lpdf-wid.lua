@@ -10,6 +10,7 @@ local gmatch, gsub, find, lower, format = string.gmatch, string.gsub, string.fin
 local stripstring = string.strip
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash = utilities.parsers.settings_to_hash
+local sortedhash = table.sortedhash
 
 local report_media             = logs.reporter("backend","media")
 local report_attachment        = logs.reporter("backend","attachment")
@@ -29,11 +30,10 @@ local executers                = structures.references.executers
 local variables                = interfaces.variables
 
 local v_hidden                 = variables.hidden
-local v_normal                 = variables.normal
 local v_auto                   = variables.auto
 local v_embed                  = variables.embed
-local v_unknown                = variables.unknown
 local v_max                    = variables.max
+local v_yes                    = variables.yes
 
 local pdfconstant              = lpdf.constant
 local pdfdictionary            = lpdf.dictionary
@@ -42,7 +42,6 @@ local pdfreference             = lpdf.reference
 local pdfunicode               = lpdf.unicode
 local pdfstring                = lpdf.string
 local pdfboolean               = lpdf.boolean
-local pdfcolorspec             = lpdf.colorspec
 local pdfflushobject           = lpdf.flushobject
 local pdfflushstreamobject     = lpdf.flushstreamobject
 local pdfflushstreamfileobject = lpdf.flushstreamfileobject
@@ -203,7 +202,7 @@ job.register('job.fileobjreferences.collected', tobesavedobjrefs, initializer)
 local function flushembeddedfiles()
     if next(filestreams) then
         local e = pdfarray()
-        for tag, reference in next, filestreams do
+        for tag, reference in sortedhash(filestreams) do
             if not reference then
                 report_attachment("unreferenced file, tag %a",tag)
             elseif referenced[tag] == "hidden" then
@@ -383,7 +382,7 @@ function codeinjections.attachmentid(filename) -- not used in context
     return filestreams[filename]
 end
 
-local nofcomments, usepopupcomments, stripleading = 0, false, true
+local nofcomments, usepopupcomments = 0, false
 
 local defaultattributes = {
     ["xmlns"]           = "http://www.w3.org/1999/xhtml",
@@ -417,10 +416,12 @@ end
 
 function nodeinjections.comment(specification) -- brrr: seems to be done twice
     nofcomments = nofcomments + 1
-    local text = stripstring(specification.data or "")
-    if stripleading then
+    local text = specification.data or ""
+    if specification.space ~= v_yes then
+        text = stripstring(text)
         text = gsub(text,"[\n\r] *","\n")
     end
+    text = gsub(text,"\r","\n")
     local name, appearance = analyzesymbol(specification.symbol,comment_symbols)
     local tag      = specification.tag      or "" -- this is somewhat messy as recent
     local title    = specification.title    or "" -- versions of acrobat see the title

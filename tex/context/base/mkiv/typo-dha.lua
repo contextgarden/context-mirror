@@ -48,7 +48,6 @@ local report_directions  = logs.reporter("typesetting","text directions")
 local nuts               = nodes.nuts
 local tonut              = nuts.tonut
 local tonode             = nuts.tonode
-local nutstring          = nuts.tostring
 
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
@@ -59,6 +58,7 @@ local getlist            = nuts.getlist
 local getfield           = nuts.getfield
 local getattr            = nuts.getattr
 local getprop            = nuts.getprop
+local getdir            = nuts.getdir
 local isglyph            = nuts.isglyph -- or ischar
 
 local setfield           = nuts.setfield
@@ -77,11 +77,8 @@ local skipcodes          = nodes.skipcodes
 
 local glyph_code         = nodecodes.glyph
 local math_code          = nodecodes.math
-local penalty_code       = nodecodes.penalty
 local kern_code          = nodecodes.kern
 local glue_code          = nodecodes.glue
-local hlist_code         = nodecodes.hlist
-local vlist_code         = nodecodes.vlist
 local dir_code           = nodecodes.dir
 local localpar_code      = nodecodes.localpar
 
@@ -94,7 +91,6 @@ local formatters         = string.formatters
 local insert             = table.insert
 
 local fonthashes         = fonts.hashes
-local fontdata           = fonthashes.identifiers
 local fontchar           = fonthashes.characters
 
 local chardirections     = characters.directions
@@ -317,7 +313,7 @@ local function process(start)
             elseif id == kern_code then
                 setprop(current,"direction",'k')
             elseif id == dir_code then
-                local dir = getfield(current,"dir")
+                local dir = getdir(current)
                 if dir == "+TRT" then
                     autodir = -1
                 elseif dir == "+TLT" then
@@ -334,7 +330,7 @@ local function process(start)
                 textdir = autodir
                 setprop(current,"direction",true)
             elseif id == localpar_code then
-                local dir = getfield(current,"dir")
+                local dir = getdir(current)
                 if dir == 'TRT' then
                     autodir = -1
                 elseif dir == 'TLT' then

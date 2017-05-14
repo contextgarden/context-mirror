@@ -1,0 +1,224 @@
+%D \module
+%D   [      file=s-pre-62,
+%D        version=2005.03.04,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment 62,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Melior
+
+\usemodule[pre-60]
+
+\usetypescriptfile
+  [type-ghz]
+
+\doifmodeelse {mkiv} {
+
+    \definetypeface[mainface][rm][serif][melior]  [default]
+    \definetypeface[mainface][tt][mono] [modern]  [default][rscale=1.05]
+    \definetypeface[mainface][ss][serif][melior]  [default]
+    \definetypeface[mainface][mm][math] [palatino][default][rscale=0.95]
+
+} {
+
+    \definetypeface[mainface][rm][serif][melior]  [default][encoding=texnansi]
+    \definetypeface[mainface][tt][mono] [modern]  [default][encoding=texnansi,rscale=1.05]
+    \definetypeface[mainface][ss][serif][melior]  [default][encoding=texnansi]
+    \definetypeface[mainface][mm][math] [palatino][default][encoding=texnansi,rscale=0.95]
+
+}
+
+\setupbodyfont
+  [mainface,14.4pt]
+
+\setuppapersize
+  [S6][S6]
+
+\setvariables[layout][dx=0,dy=1,nx=2,ny=2,step=64]
+
+\definemeasure[layoutwd][\dimexpr\paperwidth /\getvariable{layout}{step}\relax]
+\definemeasure[layoutht][\dimexpr\paperheight/\getvariable{layout}{step}\relax]
+
+\setuplayout
+  [      width=middle,
+        height=middle,
+        header=0pt,
+        footer=0pt,
+        margin=0pt,
+     backspace=5\measure{layoutwd},
+      topspace=5\measure{layoutht}]
+
+\definelayout
+  [step]
+  [  backspace=\numexpr2+                         \getvariable{layout}{dx}\relax\measure{layoutwd},
+      cutspace=\numexpr3+\getvariable{layout}{nx}-\getvariable{layout}{dx}\relax\measure{layoutwd},
+      topspace=\numexpr2+                         \getvariable{layout}{dy}\relax\measure{layoutht},
+   bottomspace=\numexpr3+\getvariable{layout}{ny}-\getvariable{layout}{dy}\relax\measure{layoutht}]
+
+\definecolor[layout:left]  [t=.5,a=1,b=1]
+\definecolor[layout:right] [t=.5,a=1,r=1]
+\definecolor[layout:top]   [t=.5,a=1,g=1]
+\definecolor[layout:bottom][t=.5,a=1,y=1]
+\definecolor[layout:page]  [s=.75]
+
+\definehspace[menu][\measure{layoutwd}]
+
+\setupinteraction
+  [state=start,
+   click=off,
+   style=,
+   color=interactioncolor,
+   contrastcolor=interactioncolor]
+
+\setupinteractionscreen
+  [option=max]
+
+\setupbuttons
+  [color=maincolor,
+   contrastcolor=maincolor,
+   style=\tf, % acceptable
+   height=2\measure{layoutht},
+   width=2\measure{layoutwd},
+   offset=overlay,
+   frame=off]
+
+\definecolor[interactioncolor][darkgray]
+\definecolor[maincolor]       [lightgray]
+
+\setuptexttexts
+  []
+  [\vbox to \textheight{\vfill\hfill\setups{menu:content}}]
+
+\startsetups menu:content
+
+  \button{\symbol[firstpage]}[firstpage]
+  \hspace[menu]
+  \button{\symbol[previouspage]}[previouspage]
+  \hspace[menu]
+  \button{\StartBusy\symbol[PauseRendering]\StopBusy}[InvokeStepper]
+  \hspace[menu]
+  \button{\symbol[nextpage]}[nextpage]
+  \hspace[menu]
+  \button{\symbol[lastpage]}[lastpage]
+  \hspace[menu]
+  \button{\symbol[CloseDocument]}[CloseDocument]
+
+\stopsetups
+
+\startuseMPgraphic{page}{step}
+  StartPage ;
+    numeric dx, dy ; dx := PaperWidth/\MPvar{step} ; dy := PaperHeight/\MPvar{step} ;
+    fill Page withcolor .5white ;
+    fill
+      ulcorner Page -- urcorner Page --
+      urcorner Page shifted (0,-TopSpace+dy) -- ulcorner Page shifted (0,-TopSpace+dy) -- cycle
+      withcolor \MPcolor{layout:top} ;
+    fill
+      llcorner Page -- lrcorner Page --
+      lrcorner Page shifted (0,BottomSpace-dy) -- llcorner Page shifted (0,BottomSpace-dy) -- cycle
+      withcolor \MPcolor{layout:bottom} ;
+    fill
+      ulcorner Page -- llcorner Page --
+      llcorner Page shifted (BackSpace-dx,0) -- ulcorner Page shifted (BackSpace-dx,0) -- cycle
+      withcolor \MPcolor{layout:left} ;
+    fill
+      urcorner Page -- lrcorner Page --
+      lrcorner Page shifted (-CutSpace+dx,0) -- urcorner Page shifted (-CutSpace+dx,0) -- cycle
+      withcolor \MPcolor{layout:right} ;
+    fill Field[Text][Text] enlarged (dx,dy) withcolor white ;
+    fill Field[Text][Text] enlarged (dx,dy) withcolor \MPcolor{layout:page} ;
+  StopPage ;
+\stopuseMPgraphic
+
+\defineoverlay[page][\useMPgraphic{page}{step=\getvariable{layout}{step}}]
+
+\setupbackgrounds
+  [page]
+  [background=page]
+
+\setupcolors
+  [state=start]
+
+\startsetups nextstep
+  % pagebreak handlers are grouped, so we need to set global
+  \ifnum\getvariable{layout}{dx}=\getvariable{layout}{nx}\relax
+    \ifnum\getvariable{layout}{dy}=\getvariable{layout}{ny}\relax
+      \setxvariables[layout][dy=1]
+    \else
+      \setxvariables[layout][dy=\the\numexpr\getvariable{layout}{dy}+1\relax]
+    \fi
+    \setxvariables[layout][dx=1]
+  \else
+    \setxvariables[layout][dx=\the\numexpr\getvariable{layout}{dx}+1\relax]
+  \fi
+  % global anyway
+  \setuplayout[step]
+\stopsetups
+
+\definefontsynonym[MainTitleFont][SerifBold]
+
+\definefont[ChapterTitleFont][MainTitleFont sa 2]
+
+\appendtoks
+  \NormalizeFontHeight \TitleFont         {\setstrut\strut\quad} {4\lineheight} {MainTitleFont}
+  \NormalizeFontHeight \SubTitleFont      {\setstrut\strut\quad} {3\lineheight} {MainTitleFont}
+  \NormalizeFontHeight \ChapterNumberFont {XVI}                  {4\lineheight} {MainTitleFont}
+\to \everystarttext
+
+\setupsection
+  [section-2]
+  [bodypartconversion=Romannumerals]
+
+\installpagebreakhandler {step} {\setups{nextstep}}
+
+\definepagebreak[chapter][yes,step]
+
+\setuphead
+  [chapter]
+  [page=chapter,
+   command=\MyChapterCommand]
+
+\definehead[Topic][chapter]
+\definehead[Nopic][title]
+
+\setuphead[chapter,Topic,Nopic]
+  [numberstyle=\ChapterNumberFont,
+   textstyle=\ChapterTitleFont,
+   numbercolor=lightgray,
+   textcolor=darkgray]
+
+\def\MyChapterCommand#1#2%
+  {\hbox \bgroup % we need to nil the strut added by the headplacement
+     \setupframed[frame=off,lines=4,offset=overlay]%
+     \rlap{\hskip2\lineheight\framed{\setnostrut#1}}\framed{#2}%
+   \egroup}
+
+\setupitemize
+  [each]
+  [R,broad]
+  [stopper=,
+   color=lightgray]
+
+\def\doTitlePage#1#2#3%
+  {\startstandardmakeup[headerstate=high,textstate=stop]
+     \setupalign[middle]
+     \def\\{\def\\{\endgraf}\endgraf\vfil\ignorespaces#2}%
+     \startcolor[darkgray]
+     #1\setstrut\setupinterlinespace\vfil#3\vfil
+     \stopcolor
+   \stopstandardmakeup}
+
+\def\TitlePage   {\doTitlePage\TitleFont\relax}
+\def\SubTitlePage{\doTitlePage\TitleFont\SubTitleFont}
+
+\long\def\StartTitlePage   #1\StopTitlePage   {\TitlePage   {#1}}
+\long\def\StartSubTitlePage#1\StopSubTitlePage{\SubTitlePage{#1}}
+
+\endinput
+

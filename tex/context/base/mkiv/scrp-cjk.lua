@@ -14,8 +14,6 @@ if not modules then modules = { } end modules ['scrp-cjk'] = {
 -- sense either because otherwise a wanted space at the end of a
 -- line would have to be a hard coded ones.
 
-local utfchar = utf.getchar
-
 local nuts               = nodes.nuts
 local tonut              = nodes.tonut
 local tonode             = nodes.tonode
@@ -33,6 +31,7 @@ local getchar            = nuts.getchar
 local getid              = nuts.getid
 local getattr            = nuts.getattr
 local getsubtype         = nuts.getsubtype
+local getwidth           = nuts.getwidth
 local getfield           = nuts.getfield
 
 local setchar            = nuts.setchar
@@ -59,7 +58,6 @@ local hash               = scripts.hash
 local numbertodataset    = scripts.numbertodataset
 
 local fonthashes         = fonts.hashes
-local fontdata           = fonthashes.identifiers
 local quaddata           = fonthashes.quads
 local spacedata          = fonthashes.spaces
 
@@ -534,7 +532,7 @@ end
 
 -- nodes.tasks.prependaction("processors","normalizers","scripts.decomposehangul")
 
-local otffeatures         = fonts.constructors.newfeatures("otf")
+local otffeatures         = fonts.constructors.features.otf
 local registerotffeature  = otffeatures.register
 
 registerotffeature {
@@ -961,7 +959,7 @@ local function process(head,first,last)
                                 local subtype = getsubtype(first)
                                 if subtype == userskip_code or subtype == spaceskip_code or subtype == xspaceskip_code then
                                     -- for the moment no distinction possible between space and userskip
-                                    local w = getfield(first,"width")
+                                    local w = getwidth(first)
                                     local s = spacedata[getfont(p)]
                                     if w == s then -- could be option
                                         if trace_details then

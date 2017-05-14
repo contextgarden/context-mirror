@@ -22,24 +22,25 @@ if not modules then modules = { } end modules ['cldf-bas'] = {
 --     flush(ctxcatcodes,"}")
 -- end
 
--- maybe use context.generics
-
 local type         = type
 local format       = string.format
 local utfchar      = utf.char
 local concat       = table.concat
 
 local context      = context
-local generics     = context.generics
+local ctxcore      = context.core
 local variables    = interfaces.variables
 
 local nodepool     = nodes.pool
 local new_rule     = nodepool.rule
 local new_glyph    = nodepool.glyph
+local current_attr = nodes.current_attr
 
 local current_font = font.current
 local texgetcount  = tex.getcount
 local texsetcount  = tex.setcount
+
+-- a set of basic fast ones
 
 function context.char(k) -- used as escape too, so don't change to utf
     if type(k) == "table" then
@@ -68,34 +69,15 @@ function context.utfchar(k)
     end
 end
 
--- plain variants
-
-function context.chardef(cs,u)
-    context([[\chardef\%s=%s\relax]],k)
-end
-
-function context.par()
-    context([[\par]]) -- no need to add {} there
-end
-
-function context.bgroup()
-    context("{")
-end
-
-function context.egroup()
-    context("}")
-end
-
-function context.space()
-    context("\\space") -- no " " as that gets intercepted
-end
-
-function context.hrule(w,h,d,dir)
+function context.rule(w,h,d,dir)
+    local rule
     if type(w) == "table" then
-        context(new_rule(w.width,w.height,w.depth,w.dir))
+        rule = new_rule(w.width,w.height,w.depth,w.dir)
     else
-        context(new_rule(w,h,d,dir))
+        rule = new_rule(w,h,d,dir)
     end
+    rule.attr = current_attr()
+    context(rule)
 end
 
 function context.glyph(id,k)
@@ -103,74 +85,63 @@ function context.glyph(id,k)
         if not k then
             id, k = current_font(), id
         end
-        context(new_glyph(id,k))
+        local glyph = new_glyph(id,k)
+        glyph.attr = current_attr()
+        context(glyph)
     end
 end
 
-context.vrule = context.hrule
+local function ctx_par  () context("\\par")   end
+local function ctx_space() context("\\space") end
 
---~ local hbox, bgroup, egroup = context.hbox, context.bgroup, context.egroup
+context.par   = ctx_par
+context.space = ctx_space
 
---~ function context.hbox(a,...)
---~     if type(a) == "table" then
---~         local s = { }
---~         if a.width then
---~             s[#s+1] = "to " .. a.width -- todo: check for number
---~         elseif a.spread then
---~             s[#s+1] = "spread " .. a.spread -- todo: check for number
---~         end
---~         -- todo: dir, attr etc
---~         hbox(false,table.concat(s," "))
---~         bgroup()
---~         context(string.format(...))
---~         egroup()
---~     else
---~         hbox(a,...)
---~     end
---~ end
+ctxcore.par   = ctx_par
+ctxcore.space = ctx_space
+
+local function ctx_bgroup() context("{") end
+local function ctx_egroup() context("}") end
+
+context.bgroup = ctx_bgroup
+context.egroup = ctx_egroup
+
+ctxcore.bgroup = ctx_bgroup
+ctxcore.egroup = ctx_egroup
 
 -- not yet used ... but will get variant at the tex end as well
 
-function context.sethboxregister(n) context([[\setbox %s\hbox]],n) end
-function context.setvboxregister(n) context([[\setbox %s\vbox]],n) end
-
-function context.starthboxregister(n)
-    if type(n) == "number" then
-        context([[\setbox%s\hbox{]],n)
-    else
-        context([[\setbox\%s\hbox{]],n)
-    end
+local function setboxregister(kind,n)
+    context(type(n) == "number" and [[\setbox%s\%s]] or [[\setbox\%s\%s]],n,kind)
 end
 
-function context.startvboxregister(n)
-    if type(n) == "number" then
-        context([[\setbox%s\vbox{]],n)
-    else
-        context([[\setbox\%s\vbox{]],n)
-    end
+function ctxcore.sethboxregister(n) setboxregister("hbox",n) end
+function ctxcore.setvboxregister(n) setboxregister("vbox",n) end
+function ctxcore.setvtopregister(n) setboxregister("vtop",n) end
+
+local function startboxregister(kind,n)
+    context(type(n) == "number" and [[\setbox%s\%s{]] or [[\setbox\%s\%s{]],n,kind)
 end
 
-context.stophboxregister = context.egroup
-context.stopvboxregister = context.egroup
+function ctxcore.starthboxregister(n) startboxregister("hbox",n) end
+function ctxcore.startvboxregister(n) startboxregister("vbox",n) end
+function ctxcore.startvtopregister(n) startboxregister("vtop",n) end
 
-function context.flushboxregister(n)
-    if type(n) == "number" then
-        context([[\box%s ]],n)
-    else
-        context([[\box\%s]],n)
-    end
+ctxcore.stophboxregister = ctx_egroup
+ctxcore.stopvboxregister = ctx_egroup
+ctxcore.stopvtopregister = ctx_egroup
+
+function ctxcore.flushboxregister(n)
+    context(type(n) == "number" and [[\box%s ]] or [[\box\%s]],n)
 end
 
-function context.beginvbox()
-    context([[\vbox{]]) -- we can do \bvbox ... \evbox (less tokens)
-end
+function ctxcore.beginhbox() context([[\hbox{]]) end
+function ctxcore.beginvbox() context([[\vbox{]]) end
+function ctxcore.beginvtop() context([[\vtop{]]) end
 
-function context.beginhbox()
-    context([[\hbox{]]) -- todo: use fast one
-end
-
-context.endvbox = context.egroup
-context.endhbox = context.egroup
+ctxcore.endhbox = ctx_egroup
+ctxcore.endvbox = ctx_egroup
+ctxcore.endvtop = ctx_egroup
 
 local function allocate(name,what,cmd)
     local a = format("c_syst_last_allocated_%s",what)
@@ -182,9 +153,14 @@ local function allocate(name,what,cmd)
     return n
 end
 
-function context.newdimen (name) return allocate(name,"dimen") end
-function context.newskip  (name) return allocate(name,"skip") end
-function context.newcount (name) return allocate(name,"count") end
-function context.newmuskip(name) return allocate(name,"muskip") end
-function context.newtoks  (name) return allocate(name,"toks") end
-function context.newbox   (name) return allocate(name,"box","mathchar") end
+context.registers = {
+    -- the number is available directly, the csname after the lua call
+    newdimen  = function(name) return allocate(name,"dimen") end,
+    newskip   = function(name) return allocate(name,"skip") end,
+    newcount  = function(name) return allocate(name,"count") end,
+    newmuskip = function(name) return allocate(name,"muskip") end,
+    newtoks   = function(name) return allocate(name,"toks") end,
+    newbox    = function(name) return allocate(name,"box","mathchar") end,
+    -- not really a register but kind of belongs here
+    newchar   = function(name,u) context([[\chardef\%s=%s\relax]],name,u) end,
+}

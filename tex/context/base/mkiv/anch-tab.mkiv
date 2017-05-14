@@ -23,22 +23,26 @@
 \unexpanded\def\tabl_tabulate_hook_b
   {\iftrialtypesetting\else
      \ifpositioning
+\ifconditional\tablehaspositions
        \ifcase\c_tabl_tabulate_noflines % \ifnum\c_tabl_tabulate_noflines=\c_tabl_tabulate_totalnoflines
          \tabl_tabulate_hook_b_first
        \else
          \tabl_tabulate_hook_b_next
        \fi
+\fi
      \fi
    \fi}
 
 \unexpanded\def\tabl_tabulate_hook_e
   {\iftrialtypesetting\else
      \ifpositioning
+\ifconditional\tablehaspositions
        \ifcase\c_tabl_tabulate_noflines % \ifnum\c_tabl_tabulate_noflines=\c_tabl_tabulate_totalnoflines
          \tabl_tabulate_hook_e_first
        \else
          \tabl_tabulate_hook_e_next
        \fi
+\fi
      \fi
    \fi}
 
@@ -58,6 +62,12 @@
 
 \appendtoks
     \global\advance\c_anch_tabs\plusone
+\to \everytabulate
+
+% for text backgrounds
+
+\appendtoks
+    \settrue\c_anch_backgrounds_pos_no_shape
 \to \everytabulate
 
 %D Beware, the following code is somewhat weird and experimental and might be
@@ -98,7 +108,7 @@
      \firstargumentfalse
    \fi}
 
-\def\anch_tables_XC [#1]{\anch_table_check_state\iffirstargument\anch_tables_indeed_XC [#1]\else\expandafter\fi\NC}
+\def\anch_tables_XC [#1]{\anch_table_check_state\iffirstargument\anch_tables_indeed_XC [#1]\else\expandafter\NC\fi}
 \def\anch_tables_GSC[#1]{\anch_table_check_state\iffirstargument\anch_tables_indeed_GSC[#1]\else\expandafter\NC\fi}
 \def\anch_tables_GFC[#1]{\anch_table_check_state\iffirstargument\anch_tables_indeed_GFC[#1]\else\expandafter\NC\fi}
 \def\anch_tables_GTC[#1]{\anch_table_check_state\iffirstargument\anch_tables_indeed_GTC[#1]\else\expandafter\NC\fi}

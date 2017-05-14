@@ -1,4 +1,4 @@
-.TH "mtx-grep" "1" "01-01-2016" "version 0.10" "Simple Grepper"
+.TH "mtx-grep" "1" "01-01-2017" "version 0.10" "Simple Grepper"
 .SH NAME
 .B mtx-grep
 .SH SYNOPSIS
@@ -19,6 +19,15 @@ count matches only
 .TP
 .B --nocomment
 skip lines that start with %% or #
+.TP
+.B --n
+show at most n matches
+.TP
+.B --first
+only show first match
+.TP
+.B --match
+return the match (if it is one)
 .TP
 .B --xml
 pattern is lpath expression

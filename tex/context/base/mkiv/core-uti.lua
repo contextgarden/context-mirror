@@ -22,25 +22,29 @@ local format, match = string.format, string.match
 local next, type, tostring = next, type, tostring
 local concat = table.concat
 
-local definetable   = utilities.tables.definetable
-local accesstable   = utilities.tables.accesstable
-local migratetable  = utilities.tables.migratetable
-local serialize     = table.serialize
-local packers       = utilities.packers
-local allocate      = utilities.storage.allocate
-local mark          = utilities.storage.mark
+local definetable    = utilities.tables.definetable
+local accesstable    = utilities.tables.accesstable
+local migratetable   = utilities.tables.migratetable
+local serialize      = table.serialize
+local packers        = utilities.packers
+local allocate       = utilities.storage.allocate
+local mark           = utilities.storage.mark
 
-local implement     = interfaces.implement
+local getrandom      = utilities.randomizer.get
+local setrandomseedi = utilities.randomizer.setseedi
+local getrandomseed  = utilities.randomizer.getseed
 
-local texgetcount   = tex.getcount
+local implement      = interfaces.implement
 
-local report_passes = logs.reporter("job","passes")
+local texgetcount    = tex.getcount
 
-job                 = job or { }
-local job           = job
+local report_passes  = logs.reporter("job","passes")
 
-job.version         = 1.30
-job.packversion     = 1.02
+job                  = job or { }
+local job            = job
+
+job.version          = 1.30
+job.packversion      = 1.02
 
 -- some day we will implement loading of other jobs and then we need
 -- job.jobs
@@ -132,11 +136,11 @@ local function initializer()
     --
     rvalue = collected.randomseed
     if not rvalue then
-        rvalue = math.random()
-        math.setrandomseedi(rvalue,"initialize")
+        rvalue = getrandom("initialize")
+        setrandomseedi(rvalue)
         rmethod = "initialized"
     else
-        math.setrandomseedi(rvalue,"previous run")
+        setrandomseedi(rvalue)
         rmethod = "resumed"
     end
     tobesaved.randomseed = rvalue
@@ -167,6 +171,10 @@ end
 
 function jobvariables.restore(cs)
     return collectedmacros[cs] or tobesavedmacros[cs]
+end
+
+function job.getrandomseed()
+    return tobesaved.randomseed or getrandomseed()
 end
 
 -- checksums
@@ -283,20 +291,26 @@ function job.load(filename)
     local utilitydata = load(filename)
     if utilitydata then
         local jobpacker = utilitydata.job.packed
-        for l=1,#savelist do
-            local list        = savelist[l]
+        local handlers  = { }
+        for i=1,#savelist do
+            local list        = savelist[i]
             local target      = list[1]
             local initializer = list[3]
             local result      = accesstable(target,utilitydata)
-            local done = packers.unpack(result,jobpacker,true)
+            local done        = packers.unpack(result,jobpacker,true)
             if done then
                 migratetable(target,mark(result))
                 if type(initializer) == "function" then
-                    initializer(result)
+                    handlers[#handlers+1] = { initializer, result }
                 end
             else
                 report_passes("pack version mismatch")
             end
+        end
+        -- so we have all tables available (unpacked)
+        for i=1,#handlers do
+            local handler = handlers[i]
+            handler[1](handler[2])
         end
     end
     statistics.stoptiming(_load_)
@@ -386,23 +400,25 @@ end)
 
 -- a sort of joke (for ctx meeting)
 
-local kg_per_watt_per_second  = 1 / 15000000
-local watts_per_core          = 50
-local speedup_by_other_engine = 1.2
-local used_wood_factor        = watts_per_core * kg_per_watt_per_second / speedup_by_other_engine
-local used_wood_factor        = (50 / 15000000) / 1.2
+-- local kg_per_watt_per_second  = 1 / 15000000
+-- local watts_per_core          = 50
+-- local speedup_by_other_engine = 1.2
+-- local used_wood_factor        = watts_per_core * kg_per_watt_per_second / speedup_by_other_engine
+-- local used_wood_factor        = (50 / 15000000) / 1.2
 
 function statistics.formatruntime(runtime)
     if not environment.initex then -- else error when testing as not counters yet
+     -- stoptiming(statistics) -- to be sure
         local shipped = texgetcount('nofshipouts')
         local pages = texgetcount('realpageno')
         if pages > shipped then
             pages = shipped
         end
         if shipped > 0 or pages > 0 then
-            local persecond = shipped / runtime
+            runtime = tonumber(runtime)
+            local persecond = (runtime > 0) and (shipped/runtime) or pages
             if pages == 0 then pages = shipped end
-         -- if jit then
+         -- if TEXENGINE == "luajittex" then
          --     local saved = watts_per_core * runtime * kg_per_watt_per_second / speedup_by_other_engine
          --     local saved = used_wood_factor * runtime
          --     return format("%s seconds, %i processed pages, %i shipped pages, %.3f pages/second, %f mg tree saved by using luajittex",runtime,pages,shipped,persecond,saved*1000*1000)

@@ -17,6 +17,9 @@
 
 \registerctxluafile{spac-hor}{1.001}
 
+\let    \parfillrightskip \parfillskip
+\newskip\parfillleftskip
+
 \let\v_spac_indentation_current\empty % amount/keyword
 
 \newdimen \d_spac_indentation_par
@@ -525,7 +528,7 @@
 % but, since not all fonts have .5em digits:
 
 \unexpanded\def\fixedspace
-  {\setbox\scratchbox\hbox{\mathortext{0}{0}}%
+  {\setbox\scratchbox\hpack{\mathortext{0}{0}}% was \hbox
    \hskip\wd\scratchbox\relax}
 
 \unexpanded\def\fixedspaces
@@ -604,6 +607,12 @@
 \let\emspace\quad
 
 \unexpanded\def\charspace{ } % the unexpandable \space (as space can also be delimiter for numbers)
+
+\unexpanded\def\quads
+  {\dosingleempty\spac_quads}
+
+\def\spac_quads[#1]%
+  {\zwj\dorecurse{\iffirstargument#1\else\plusthree\fi}{\hskip\emwidth\zwj}}
 
 % Suggested by GB (not the name -):
 
@@ -689,7 +698,7 @@
    \global\s_spac_narrower_left  \zeropoint
    \global\s_spac_narrower_right \zeropoint
    \global\s_spac_narrower_middle\zeropoint
-   \processcommalistwithparameters[#1]\spac_narrower_initialize
+   \normalexpanded{\processcommalistwithparameters[#1]}\spac_narrower_initialize
    \advance\leftskip \dimexpr\s_spac_narrower_left +\s_spac_narrower_middle\relax
    \advance\rightskip\dimexpr\s_spac_narrower_right+\s_spac_narrower_middle\relax
    \seteffectivehsize}
@@ -764,14 +773,14 @@
 \let\stopnarrow\spac_narrower_stop
 
 \newdimen\d_spac_effective_hsize     \def\effectivehsize    {\hsize}
-\newdimen\d_spac_effective_leftskip  \def\effectiveleftskip {\leftskip}
-\newdimen\d_spac_effective_rightskip \def\effectiverightskip{\rightskip}
+\newdimen\d_spac_effective_leftskip  \def\effectiveleftskip {\dimexpr\leftskip \relax}
+\newdimen\d_spac_effective_rightskip \def\effectiverightskip{\dimexpr\rightskip\relax}
 
 \unexpanded\def\seteffectivehsize
   {\setlocalhsize
    \d_spac_effective_hsize    \localhsize
-   \d_spac_effective_leftskip \leftskip
-   \d_spac_effective_rightskip\rightskip
+   \d_spac_effective_leftskip 1\leftskip
+   \d_spac_effective_rightskip1\rightskip
    \let\effectivehsize    \d_spac_effective_hsize
    \let\effectiveleftskip \d_spac_effective_leftskip
    \let\effectiverightskip\d_spac_effective_rightskip}
@@ -782,14 +791,18 @@
 \newskip\leftskipadaption
 \newskip\rightskipadaption
 
-\setvalue{\??skipadaptionleft \v!standard}{\ifdim\d_spac_indentation_par=\zeropoint\narrowerparameter\c!left\else\d_spac_indentation_par\fi}
-\setvalue{\??skipadaptionleft \v!yes     }{\ifdim\d_spac_indentation_par=\zeropoint\narrowerparameter\c!left\else\d_spac_indentation_par\fi}
+\setvalue{\??skipadaptionleft \v!yes     }{\ifzeropt\d_spac_indentation_par\narrowerparameter\c!left\else\d_spac_indentation_par\fi}
 \letvalue{\??skipadaptionleft \v!no      }\zeropoint
 \letvalue{\??skipadaptionleft \empty     }\zeropoint
-\setvalue{\??skipadaptionright\v!standard}{\narrowerparameter\c!right}
 \setvalue{\??skipadaptionright\v!yes     }{\narrowerparameter\c!right}
 \letvalue{\??skipadaptionright\v!no      }\zeropoint
 \letvalue{\??skipadaptionright\empty     }\zeropoint
+
+% \setvalue{\??skipadaptionleft \v!standard}{\ifdim\d_spac_indentation_par=\zeropoint\narrowerparameter\c!left\else\d_spac_indentation_par\fi}
+% \setvalue{\??skipadaptionright\v!standard}{\narrowerparameter\c!right}
+
+\letcsnamecsname\csname\??skipadaptionleft \v!standard\endcsname\csname\??skipadaptionleft \v!yes\endcsname
+\letcsnamecsname\csname\??skipadaptionright\v!standard\endcsname\csname\??skipadaptionright\v!yes\endcsname
 
 % \unexpanded\def\dosetleftskipadaption #1{\leftskipadaption \ifcsname\??skipadaptionleft #1\endcsname\csname\??skipadaptionleft #1\endcsname\else#1\fi\relax}
 % \unexpanded\def\dosetrightskipadaption#1{\rightskipadaption\ifcsname\??skipadaptionright#1\endcsname\csname\??skipadaptionright#1\endcsname\else#1\fi\relax}
@@ -1110,7 +1123,7 @@
   {\futurelet\nexttoken\spac_spaces_auto_insert_next}
 
 \def\spac_spaces_auto_insert_next
-  {\clf_autonextspace{\meaning\nexttoken}} % todo, just consult nexttoken at the lua end
+  {\clf_autonextspace{\normalmeaning\nexttoken}} % todo, just consult nexttoken at the lua end
 
 %D Moved from bib module:
 

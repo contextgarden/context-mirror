@@ -18,13 +18,12 @@ local report_unicoding   = logs.reporter("fonts","unicoding")
 local fonts              = fonts
 local constructors       = fonts.constructors
 
-local tfmfeatures        = constructors.newfeatures("tfm")
-local registertfmfeature = tfmfeatures.register
+----- tfmfeatures        = constructors.features.tfm
+local afmfeatures        = constructors.features.afm
+local otffeatures        = constructors.features.otf
 
-local afmfeatures        = fonts.constructors.newfeatures("afm")
+----- registertfmfeature = tfmfeatures.register
 local registerafmfeature = afmfeatures.register
-
-local otffeatures        = fonts.constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
 
 -- -- these will become goodies (when needed at all)
@@ -119,19 +118,16 @@ local registerotffeature = otffeatures.register
 local function initializeunicoding(tfmdata)
     local goodies   = tfmdata.goodies
     local newcoding = nil
- -- local tounicode = false
     for i=1,#goodies do
         local remapping = goodies[i].remapping
         if remapping and remapping.unicodes then
             newcoding = remapping.unicodes  -- names to unicodes
-         -- tounicode = remapping.tounicode -- not used
         end
     end
     if newcoding then
         local characters   = tfmdata.characters
         local descriptions = tfmdata.descriptions
         local oldcoding    = tfmdata.resources.unicodes
-     -- local tounicodes   = tfmdata.resources.tounicode -- index to unicode
         local originals    = { }
         for name, newcode in next, newcoding do
             local oldcode = oldcoding[name]
@@ -143,25 +139,21 @@ local function initializeunicoding(tfmdata)
             end
             if oldcode then
                 local original = originals[oldcode]
+                local character, description
                 if original then
-                    characters  [newcode] = original.character
-                    descriptions[newcode] = original.description
+                    character   = original.character
+                    description = original.description
                 else
-                    characters  [newcode] = characters  [oldcode]
-                    descriptions[newcode] = descriptions[oldcode]
+                    character   = characters  [oldcode]
+                    description = descriptions[oldcode]
                 end
+                characters  [newcode] = character
+                descriptions[newcode] = description
+                character  .unicode = newcode
+                description.unicode = newcode
             else
                 oldcoding[name] = newcode
             end
-         -- if tounicode then
-         --     local description = descriptions[newcode]
-         --     if description then
-         --         local index = description.index
-         --         if not tounicodes[index] then
-         --             tounicodes[index] = tosixteen(newcode) -- shared (we could have a metatable)
-         --         end
-         --     end
-         -- end
             if trace_unicoding then
                 if oldcode then
                     report_unicoding("aliasing glyph %a from %U to %U",name,oldcode,newcode)

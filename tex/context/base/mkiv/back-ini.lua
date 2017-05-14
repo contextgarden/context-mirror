@@ -16,15 +16,15 @@ if not modules then modules = { } end modules ['back-ini'] = {
 local next, type = next, type
 local format = string.format
 
-backends       = backends or { }
-local backends = backends
+backends                = backends or { }
+local backends          = backends
 
-local trace_backend = false  trackers.register("backend.initializers", function(v) trace_finalizers = v end)
-
-local report_backend = logs.reporter("backend","initializing")
+local trace_backend     = false  trackers.register("backend.initializers", function(v) trace_finalizers = v end)
+local report_backend    = logs.reporter("backend","initializing")
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
+local setaction         = nodes.tasks.setaction
 
 local function nothing() return nil end
 
@@ -117,6 +117,25 @@ interfaces.implement {
     name      = "setrealspaces",
     arguments = "string",
     actions   = function(v)
-        nodes.tasks.setaction("shipouts","nodes.handlers.accessibility",v == interfaces.variables.yes)
+        setaction("shipouts","nodes.handlers.accessibility",v == interfaces.variables.yes)
     end
 }
+
+-- moved to here
+
+local included = table.setmetatableindex( {
+    context  = true,
+    id       = true,
+    metadata = true,
+    date     = true,
+    id       = true,
+    pdf      = true,
+}, function(t,k)
+    return true
+end)
+
+backends.included = included
+
+function backends.timestamp()
+    return os.date("%Y-%m-%dT%X") .. os.timezone(true)
+end

@@ -53,7 +53,7 @@ tickets.statustags = statustags
 local s_unknown   = status.unknown
 local s_pending   = status.pending
 local s_busy      = status.busy
-local s_finished  = status.finished
+----- s_finished  = status.finished
 local s_dependent = status.dependent
 local s_error     = status.error
 local s_deleted   = status.deleted
@@ -398,7 +398,8 @@ local template_cleanup_nop =[[
 
 function tickets.cleanupdb(db,delta,nodata) -- maybe delta in db
 
-    local time = delta and (ostime() - delta) or 0
+    local now  = ostime()
+    local time = delta and (now - delta) or now
 
     local records, keys = db.execute {
         template  = nodata and template_cleanup_nop or template_cleanup_yes,

@@ -78,8 +78,8 @@ end
 
 local pdfsetinfo            = pdf.setinfo
 local pdfsetcatalog         = pdf.setcatalog
-local pdfsetnames           = pdf.setnames
-local pdfsettrailer         = pdf.settrailer
+----- pdfsetnames           = pdf.setnames
+----- pdfsettrailer         = pdf.settrailer
 
 local pdfsetpageresources   = pdf.setpageresources
 local pdfsetpageattributes  = pdf.setpageattributes
@@ -312,58 +312,7 @@ local f_array          = formatters["[ % t ]"]
 local f_key_number     = formatters["/%s %F"]
 local f_tonumber       = formatters["%F"]
 
--- local f_key_value      = formatters["/%s %s"]
--- local f_key_dictionary = formatters["/%s <<% t>>"]
--- local f_dictionary     = formatters["<<% t>>"]
--- local f_key_array      = formatters["/%s [% t]"]
--- local f_array          = formatters["[% t]"]
-
 local tostring_a, tostring_d
-
--- tostring_d = function(t,contentonly,key)
---     if next(t) then
---         local r, rn = { }, 0
---         for k, v in next, t do
---      -- for k, v in sortedhash(t) do -- can be an option
---             rn = rn + 1
---             local tv = type(v)
---             if tv == "string" then
---                 r[rn] = f_key_value(k,toeight(v))
---             elseif tv == "number" then
---                 r[rn] = f_key_number(k,v)
---          -- elseif tv == "unicode" then -- can't happen
---          --     r[rn] = f_key_value(k,tosixteen(v))
---             elseif tv == "table" then
---                 local mv = getmetatable(v)
---                 if mv and mv.__lpdftype then
---                  -- if v == t then
---                  --     report_objects("ignoring circular reference in dirctionary")
---                  --     r[rn] = f_key_null(k)
---                  -- else
---                         r[rn] = f_key_value(k,tostring(v))
---                  -- end
---                 elseif v[1] then
---                     r[rn] = f_key_value(k,tostring_a(v))
---                 else
---                     r[rn] = f_key_value(k,tostring_d(v))
---                 end
---             else
---                 r[rn] = f_key_value(k,tostring(v))
---             end
---         end
---         if contentonly then
---             return concat(r," ")
---         elseif key then
---             return f_key_dictionary(key,r)
---         else
---             return f_dictionary(r)
---         end
---     elseif contentonly then
---         return ""
---     else
---         return "<< >>"
---     end
--- end
 
 tostring_d = function(t,contentonly,key)
     if next(t) then
@@ -514,8 +463,15 @@ local mt_v = { __lpdftype = "verbose",    __tostring = tostring_v, __call = valu
 
 local function pdfstream(t) -- we need to add attributes
     if t then
-        for i=1,#t do
-            t[i] = tostring(t[i])
+        local tt = type(t)
+        if tt == "table" then
+            for i=1,#t do
+                t[i] = tostring(t[i])
+            end
+        elseif tt == "string" then
+            t= { t }
+        else
+            t= { tostring(t) }
         end
     end
     return setmetatable(t or { },mt_x)
@@ -1002,11 +958,20 @@ do
     local function flushpatterns   () if next(d_patterns   ) then trace_flush("patterns")    pdfimmediateobject(r_patterns,   tostring(d_patterns   )) end end
     local function flushshades     () if next(d_shades     ) then trace_flush("shades")      pdfimmediateobject(r_shades,     tostring(d_shades     )) end end
 
-    function lpdf.collectedresources()
+    -- patterns are special as they need resources to so we can get recursive references and in that case
+    -- acrobat doesn't show anything (other viewers handle it well)
+    --
+    -- todo: share them
+    -- todo: force when not yet set
+
+    function lpdf.collectedresources(options)
         local ExtGState  = next(d_extgstates ) and p_extgstates
         local ColorSpace = next(d_colorspaces) and p_colorspaces
         local Pattern    = next(d_patterns   ) and p_patterns
         local Shading    = next(d_shades     ) and p_shades
+        if options and options.patterns == false then
+            Pattern = nil
+        end
         if ExtGState or ColorSpace or Pattern or Shading then
             local collected = pdfdictionary {
                 ExtGState  = ExtGState,
@@ -1053,7 +1018,7 @@ end
 
 do
 
-    local timestamp = os.date("%Y-%m-%dT%X") .. os.timezone(true)
+    local timestamp = backends.timestamp()
 
     function lpdf.timestamp()
         return timestamp
@@ -1064,7 +1029,7 @@ do
             n = converters.totime(n)
             if n then
                 converters.settime(n)
-                timestamp = os.date("%Y-%m-%dT%X",os.time(n)) .. os.timezone(true)
+                timestamp = backends.timestamp()
             end
         end
         return timestamp
@@ -1223,12 +1188,17 @@ end
 
 do
 
-    local f_actual_text_one   = formatters["BT /Span << /ActualText <feff%04x> >> BDC [<feff>] TJ %s EMC ET"]
-    local f_actual_text_one_b = formatters["BT /Span << /ActualText <feff%04x> >> BDC [<feff>] TJ "]
-    local f_actual_text_two   = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC [<feff>] TJ %s EMC ET"]
-    local f_actual_text_two_b = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC [<feff>] TJ "]
-    local s_actual_text_e     = " EMC ET"
-    local f_actual_text       = formatters["/Span <</ActualText %s >> BDC"]
+    local f_actual_text_one       = formatters["BT /Span << /ActualText <feff%04x> >> BDC %s EMC ET"]
+    local f_actual_text_two       = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC %s EMC ET"]
+    local f_actual_text_one_b     = formatters["BT /Span << /ActualText <feff%04x> >> BDC"]
+    local f_actual_text_two_b     = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC"]
+    local f_actual_text_b         = formatters["BT /Span << /ActualText <feff%s> >> BDC"]
+    local s_actual_text_e         = "EMC ET"
+    local f_actual_text_b_not     = formatters["/Span << /ActualText <feff%s> >> BDC"]
+    local f_actual_text_one_b_not = formatters["/Span << /ActualText <feff%04x> >> BDC"]
+    local f_actual_text_two_b_not = formatters["/Span << /ActualText <feff%04x%04x> >> BDC"]
+    local s_actual_text_e_not     = "EMC"
+    local f_actual_text           = formatters["/Span <</ActualText %s >> BDC"]
 
     local context   = context
     local pdfdirect = nodes.pool.pdfdirect
@@ -1244,7 +1214,9 @@ do
     end
 
     function codeinjections.startunicodetoactualtext(unicode)
-        if unicode < 0x10000 then
+        if type(unicode) == "string" then
+            return f_actual_text_b(unicode)
+        elseif unicode < 0x10000 then
             return f_actual_text_one_b(unicode)
         else
             return f_actual_text_two_b(unicode/1024+0xD800,unicode%1024+0xDC00)
@@ -1253,6 +1225,20 @@ do
 
     function codeinjections.stopunicodetoactualtext()
         return s_actual_text_e
+    end
+
+    function codeinjections.startunicodetoactualtextdirect(unicode)
+        if type(unicode) == "string" then
+            return f_actual_text_b_not(unicode)
+        elseif unicode < 0x10000 then
+            return f_actual_text_one_b_not(unicode)
+        else
+            return f_actual_text_two_b_not(unicode/1024+0xD800,unicode%1024+0xDC00)
+        end
+    end
+
+    function codeinjections.stopunicodetoactualtextdirect()
+        return s_actual_text_e_not
     end
 
     implement {

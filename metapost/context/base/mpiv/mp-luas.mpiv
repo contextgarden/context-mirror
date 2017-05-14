@@ -57,6 +57,8 @@ vardef mlib_luas_luacall(text t) =
             & decimal s
         elseif boolean s :
             & if s : "true" else : "false" fi
+        else :
+            & ditto & tostring(s) & ditto
         fi endfor
     )
 enddef ;
@@ -75,6 +77,8 @@ vardef mlib_luas_lualist(expr c)(text t) =
             & decimal s
         elseif boolean s :
             & if s : "true" else : "false" fi
+        else :
+            & ditto & tostring(s) & ditto
         fi endfor & ")"
     )
 enddef ;
@@ -97,3 +101,65 @@ enddef ;
 vardef MP@#(text t) =
     mlib_luas_lualist("MP." & str @#,t)
 enddef ;
+
+def message expr t =
+    if t <> "" : lua.mp.report(t) fi ;
+enddef ;
+
+% a few helpers
+
+% A few helpers:
+
+vardef isarray suffix a =
+    lua.mp.isarray(str a)
+enddef ;
+
+vardef prefix suffix a =
+    lua.mp.prefix(str a)
+enddef ;
+
+vardef dimensions suffix a =
+    lua.mp.dimensions(str a)
+enddef ;
+
+% More access
+
+def getdimen(expr k)    = lua.mp._get_dimen_(k)   enddef ;
+def getcount(expr k)    = lua.mp._get_count_(k)   enddef ;
+def gettoks (expr k)    = lua.mp._get_toks_ (k)   enddef ;
+def setdimen(expr k, v) = lua.mp._set_dimen_(k,v) enddef ;
+def setcount(expr k, v) = lua.mp._set_count_(k,v) enddef ;
+def settoks (expr k, v) = lua.mp._set_toks_ (k,v) enddef ;
+
+% vardef getdimen(expr k)   = save getdimen ; lua.mp.getdimen(k) enddef ;
+% vardef getcount(expr k)   = save getcount ; lua.mp.getcount(k) enddef ;
+% vardef gettoks (expr k)   = save gettoks  ; lua.mp.gettoks (k) enddef ;
+% vardef setdimen(expr k,v) = save setdimen ; lua.mp.setdimen(k,v) enddef ;
+% vardef setcount(expr k,v) = save setcount ; lua.mp.setcount(k,v) enddef ;
+% vardef settoks (expr k,v) = save settoks  ; lua.mp.settoks (k,v) enddef ;
+
+vardef positionpath  (expr name) = lua.mp.positionpath  (name) enddef ;
+vardef positioncurve (expr name) = lua.mp.positioncurve (name) enddef ;
+vardef positionxy    (expr name) = lua.mp.positionxy    (name) enddef ;
+vardef positionpxy   (expr name) = lua.mp.positionpxy   (name) enddef ;
+vardef positionwhd   (expr name) = lua.mp.positionwhd   (name) enddef ;
+vardef positionpage  (expr name) = lua.mp.positionpage  (name) enddef ;
+vardef positionregion(expr name) = lua.mp.positionregion(name) enddef ;
+vardef positionbox   (expr name) = lua.mp.positionbox   (name) enddef ;
+vardef positionanchor            = lua.mp.positionanchor()     enddef ;
+
+let wdpart = redpart ;
+let htpart = greenpart ;
+let dppart = bluepart ;
+
+vardef positioninregion =
+    currentpicture := currentpicture shifted - positionxy(positionanchor) ;
+enddef ;
+
+vardef positionatanchor(expr name) =
+    currentpicture := currentpicture shifted - positionxy(name) ;
+enddef ;
+
+
+vardef texvar(expr name) = lua.mp.texvar(name) enddef ;
+vardef texstr(expr name) = lua.mp.texstr(name) enddef ;

@@ -16,7 +16,7 @@ if not modules then modules = { } end modules ['font-syn'] = {
 
 local next, tonumber, type, tostring = next, tonumber, type, tostring
 local sub, gsub, match, find, lower, upper = string.sub, string.gsub, string.match, string.find, string.lower, string.upper
-local concat, sort = table.concat, table.sort
+local concat, sort, fastcopy = table.concat, table.sort, table.fastcopy
 local serialize, sortedhash = table.serialize, table.sortedhash
 local lpegmatch = lpeg.match
 local unpack = unpack or table.unpack
@@ -128,8 +128,8 @@ local weights = Cs ( -- not extra
   + P("ultralight")
   + P("extralight")
   + P("bold")
-  + P("demi")
-  + P("semi")
+  + P("demi")  -- / "semibold"
+  + P("semi")  -- / "semibold"
   + P("light")
   + P("medium")
   + P("heavy")
@@ -140,15 +140,16 @@ local weights = Cs ( -- not extra
   + P("regular")  / "normal"
 )
 
--- numeric_weights = {
---     200 = "extralight",
---     300 = "light",
---     400 = "book",
---     500 = "medium",
---     600 = "demi",
---     700 = "bold",
---     800 = "heavy",
---     900 = "black",
+-- local weights = {
+--     [100] = "thin",
+--     [200] = "extralight",
+--     [300] = "light",
+--     [400] = "normal",
+--     [500] = "medium",
+--     [600] = "semibold", -- demi demibold
+--     [700] = "bold",
+--     [800] = "extrabold",
+--     [900] = "black",
 -- }
 
 local normalized_weights = sparse {
@@ -517,8 +518,10 @@ local function cleanfilename(fullname,defaultsuffix)
 end
 
 local sorter = function(a,b)
-    return a > b -- to be checked
+    return a > b -- longest first
 end
+
+-- local sorter = nil
 
 names.cleanname     = cleanname
 names.cleanfilename = cleanfilename
@@ -567,6 +570,7 @@ local function check_name(data,result,filename,modification,suffix,subfont)
  -- local compatiblename = result.compatiblename
  -- local cfffullname    = result.cfffullname
     local weight         = result.weight
+    local width          = result.width
     local italicangle    = tonumber(result.italicangle)
     local subfont        = subfont
     local rawname        = fullname or fontname or familyname
@@ -582,11 +586,12 @@ local function check_name(data,result,filename,modification,suffix,subfont)
  -- compatiblename = compatiblename and cleanname(compatiblename)
  -- cfffullname    = cfffullname    and cleanname(cfffullname)
     weight         = weight         and cleanname(weight)
+    width          = width          and cleanname(width)
     italicangle    = italicangle == 0 and nil
     -- analyze
     local a_name, a_weight, a_style, a_width, a_variant = analyzespec(fullname or fontname or familyname)
     -- check
-    local width   = a_width
+    local width   = width or a_width
     local variant = a_variant
     local style   = subfamilyname or subfamily -- can re really trust subfamilyname?
     if style then
@@ -618,7 +623,9 @@ local function check_name(data,result,filename,modification,suffix,subfont)
     local pfmwidth   = result.pfmwidth    or 0
     local pfmweight  = result.pfmweight   or 0
     --
-    specifications[#specifications + 1] = {
+    local instancenames = result.instancenames
+    --
+    specifications[#specifications+1] = {
         filename       = filename, -- unresolved
         cleanfilename  = cleanfilename,
      -- subfontindex   = subfont,
@@ -645,6 +652,7 @@ local function check_name(data,result,filename,modification,suffix,subfont)
         maxsize        = maxsize      ~=    0 and maxsize      or nil,
         designsize     = designsize   ~=    0 and designsize   or nil,
         modification   = modification ~=    0 and modification or nil,
+        instancenames  = instancenames or nil,
     }
 end
 
@@ -796,11 +804,13 @@ local function collecthashes()
     local noffallbacks   = 0
     if specifications then
         -- maybe multiple passes (for the compatible and cffnames so that they have less preference)
+        local conflicts = setmetatableindex("table")
         for index=1,#specifications do
             local specification  = specifications[index]
             local format         = specification.format
             local fullname       = specification.fullname
             local fontname       = specification.fontname
+         -- local rawname        = specification.rawname
          -- local compatiblename = specification.compatiblename
          -- local cfffullname    = specification.cfffullname
             local familyname     = specification.familyname or specification.family
@@ -809,6 +819,7 @@ local function collecthashes()
             local weight         = specification.weight
             local mapping        = mappings[format]
             local fallback       = fallbacks[format]
+            local instancenames  = specification.instancenames
             if fullname and not mapping[fullname] then
                 mapping[fullname] = index
                 nofmappings       = nofmappings + 1
@@ -816,6 +827,13 @@ local function collecthashes()
             if fontname and not mapping[fontname] then
                 mapping[fontname] = index
                 nofmappings       = nofmappings + 1
+            end
+            if instancenames then
+                for i=1,#instancenames do
+                    local instance = fullname .. instancenames[i]
+                    mapping[instance] = index
+                    nofmappings       = nofmappings + 1
+                end
             end
          -- if compatiblename and not mapping[compatiblename] then
          --     mapping[compatiblename] = index
@@ -847,9 +865,21 @@ local function collecthashes()
                         noffallbacks        = noffallbacks + 1
                     end
                 end
+                -- dangerous ... first match takes slot
                 if not mapping[familyname] and not fallback[familyname] then
                     fallback[familyname] = index
                     noffallbacks         = noffallbacks + 1
+                end
+                local conflict = conflicts[format]
+                conflict[familyname] = (conflict[familyname] or 0) + 1
+            end
+        end
+        for format, conflict in next, conflicts do
+            local fallback = fallbacks[format]
+            for familyname, n in next, conflict do
+                if n > 1 then
+                    fallback[familyname] = nil
+                    noffallbacks = noffallbacks - n
                 end
             end
         end
@@ -890,7 +920,6 @@ local function checkduplicate(where) -- fails on "Romantik" but that's a border 
                     local ok = true
                     local fn = s.filename
                     for i=1,#h do
-                        local hn = s.filename
                         if h[i] == fn then
                             ok = false
                             break
@@ -939,8 +968,9 @@ local function sorthashes()
         sort(sorted_mappings [l],sorter)
         sort(sorted_fallbacks[l],sorter)
     end
-    data.sorted_families = table.keys(data.families)
-    sort(data.sorted_families,sorter)
+    local sorted_families = table.keys(data.families)
+    data.sorted_families  = sorted_families
+    sort(sorted_families,sorter)
 end
 
 local function unpackreferences()
@@ -1076,16 +1106,10 @@ local function analyzefiles(olddata)
                 if result then
                     if #result > 0 then
                         for r=1,#result do
-                            local ok = check_name(data,result[r],storedname,modification,suffix,r) -- subfonts start at zero
-                         -- if not ok then
-                         --     nofskipped = nofskipped + 1
-                         -- end
+                            check_name(data,result[r],storedname,modification,suffix,r) -- subfonts start at zero
                         end
                     else
-                        local ok = check_name(data,result,storedname,modification,suffix)
-                     -- if not ok then
-                     --     nofskipped = nofskipped + 1
-                     -- end
+                        check_name(data,result,storedname,modification,suffix)
                     end
                     if trace_warnings and message and message ~= "" then
                         report_names("warning when identifying %s font %a, %s",suffix,completename,message)
@@ -1366,6 +1390,23 @@ end
 
 -- we could cache a lookup .. maybe some day ... (only when auto loaded!)
 
+local function checkinstance(found,askedname)
+    local instancenames = found.instancenames
+    if instancenames then
+        local fullname = found.fullname
+        for i=1,#instancenames do
+            local instancename = instancenames[i]
+            if fullname .. instancename == askedname then
+                local f = fastcopy(found)
+                f.instances = nil
+                f.instance  = instancename
+                return f
+            end
+        end
+    end
+    return found
+end
+
 local function foundname(name,sub) -- sub is not used currently
     local data             = names.data
     local mappings         = data.mappings
@@ -1383,7 +1424,7 @@ local function foundname(name,sub) -- sub is not used currently
             if trace_names then
                 report_names("resolved via direct name match: %a",name)
             end
-            return found
+            return checkinstance(found,name)
         end
     end
     for i=1,#list do
@@ -1393,7 +1434,7 @@ local function foundname(name,sub) -- sub is not used currently
             if trace_names then
                 report_names("resolved via fuzzy name match: %a onto %a",name,fname)
             end
-            return found
+            return checkinstance(found,name)
         end
     end
     for i=1,#list do
@@ -1403,7 +1444,7 @@ local function foundname(name,sub) -- sub is not used currently
             if trace_names then
                 report_names("resolved via direct fallback match: %a",name)
             end
-            return found
+            return checkinstance(found,name)
         end
     end
     for i=1,#list do
@@ -1413,7 +1454,7 @@ local function foundname(name,sub) -- sub is not used currently
             if trace_names then
                 report_names("resolved via fuzzy fallback match: %a onto %a",name,fname)
             end
-            return found
+            return checkinstance(found,name)
         end
     end
     if trace_names then
@@ -1436,7 +1477,7 @@ end
 function names.resolve(askedname,sub)
     local found = names.resolvedspecification(askedname,sub)
     if found then
-        return found.filename, found.subfont and found.rawname, found.subfont
+        return found.filename, found.subfont and found.rawname, found.subfont, found.instance
     end
 end
 

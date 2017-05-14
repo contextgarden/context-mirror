@@ -15,13 +15,57 @@ local concat, insert, remove = table.concat, table.insert, table.remove
 environment         = environment or { }
 local environment   = environment
 
--- precautions
+-- locales are a useless feature in and even dangerous for luatex
 
-os.setlocale(nil,nil) -- useless feature and even dangerous in luatex
+os.setlocale(nil,nil) -- setlocale("all","C")
 
 function os.setlocale()
     -- no way you can mess with it
 end
+
+-- do
+--
+--     local setlocale = os.setlocale
+--
+--     function os.resetlocale()
+--         setlocale(nil,nil)
+--     end
+--
+--     function os.pushlocale(l,...)
+--         insert(stack, {
+--             collate  = setlocale(nil,"collate"),
+--             ctype    = setlocale(nil,"ctype"),
+--             monetary = setlocale(nil,"monetary"),
+--             numeric  = setlocale(nil,"numeric"),
+--             time     = setlocale(nil,"time"),
+--         })
+--         if l then
+--             setlocale(l,...)
+--         else
+--             setlocale(status.lc_collate ,"collate"),
+--             setlocale(status.lc_ctype   ,"ctype"),
+--             setlocale(status.lc_monetary,"monetary"),
+--             setlocale(status.lc_numeric ,"numeric"),
+--             setlocale(status.lc_time    ,"time"),
+--         end
+--     end
+--
+--     function os.poplocale(...)
+--         local l = remove(stack)
+--         if l then
+--             setlocale(unpack(l))
+--         else
+--             resetlocale()
+--         end
+--     end
+--
+--     function os.setlocale()
+--         -- no way you can mess with it, use push/pop
+--     end
+--
+--     setlocale(nil,nil) -- setlocale("all","C")
+--
+-- end
 
 -- dirty tricks (we will replace the texlua call by luatex --luaonly)
 

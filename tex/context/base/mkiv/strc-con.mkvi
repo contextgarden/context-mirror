@@ -692,8 +692,7 @@
     \edef\p_strc_constructions_inbetween{\constructionparameter\c!inbetween}%
     \ifx\p_strc_constructions_inbetween\empty \else
       \p_strc_constructions_inbetween
-      \par
-      \nobreak
+      \directcheckedvspacing\v!samepage
     \fi
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
@@ -914,6 +913,9 @@
      \global\let\currentconstructionexpansion\v!no
    \fi
    %
+   \ifx\currentconstructionreferenceprefix\empty
+     \global\let\currentconstructionreferenceprefix\referenceprefix
+   \fi
    \ifx\currentconstructionexpansion\s!xml
      \xmlstartraw
        \xdef\currentconstructiontitle   {\constructionparameter\c!title}%
@@ -969,10 +971,10 @@
             catcodes \catcodetable
         }
         references {
-            internal  \nextinternalreference
-            order     \nextinternalorderreference
+            internal  \locationcount
+            order     \locationorder
             reference {\currentconstructionreference}
-            prefix    {\referenceprefix}
+            prefix    {\currentconstructionreferenceprefix}
           % block     {\currentsectionblock}
           % section   structures.sections.currentid(),
         }
@@ -1014,7 +1016,7 @@
      \clf_setinternalreference
        prefix    {\referenceprefix}%
        reference {\currentconstructionreference}%
-       internal  \nextinternalreference
+       internal  \locationcount
        view      {\interactionparameter\c!focus}%
      \relax
      \normalexpanded{%

@@ -1,0 +1,158 @@
+%D \module
+%D   [      file=s-present-punk,
+%D        version=2008.04.15,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Punk,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startmodule[present-punk]
+
+%D At the cost of more runtime and a larger output file, we
+%D turn on randomization. The instances are cached in the
+%D MkIV cache, so successive runs use the same shapes.
+
+% \usemodule[punk] \usetypescript[punk] \setupbodyfont[punk,20pt]
+%
+% \EnableRandomPunk
+
+\setupbodyfont[punknova,20pt] % we now use the opentype variant
+
+%D We use the regular screen size paper and layout setup.
+
+\setuppapersize
+  [S6][S6]
+
+\setuplayout
+  [topspace=30pt,
+   backspace=30pt,
+   width=middle,
+   height=fit,
+   header=0pt,
+   footer=0pt,
+   bottomdistance=24pt,
+   bottom=30pt,
+   bottom=18pt,
+   top=0pt]
+
+\setupinterlinespace
+  [top=height,
+   line=1.25\bodyfontsize]
+
+\setupcolors
+  [state=start,
+   textcolor=white]
+
+\setupinteraction
+  [state=start,
+  %click=off,
+   menu=on]
+
+%D We predefine a few palets. Of course you can define more.
+
+\definecolor[punkblue]  [r=.4,b=.8,g=.4]
+\definecolor[punkgreen] [r=.4,b=.4,g=.8]
+\definecolor[punkred]   [r=.8,b=.4,g=.4]
+\definecolor[punkyellow][r=.6,g=.6,b=.2]
+
+\definepalet [punk-one]           [textcolor=punkblue,pagecolor=punkgreen]
+\definepalet [punk-two]           [textcolor=punkred,pagecolor=punkyellow]
+\definepalet [punk-three]         [textcolor=punkblue,pagecolor=punkyellow]
+\definepalet [punk-one-reverse]   [textcolor=punkgreen,pagecolor=punkblue]
+\definepalet [punk-two-reverse]   [textcolor=punkyellow,pagecolor=punkred]
+\definepalet [punk-three-reverse] [textcolor=punkyellow,pagecolor=punkblue]
+
+\setuppalet[punk-one]
+
+%D We use a few backgrounds. The hyperlink that invokes the stepper is hooked
+%D into the text background.
+
+\definelayer
+  [page]
+  [width=\paperwidth,
+   height=\paperheight]
+
+\setupbackgrounds
+  [page]
+  [background={color,page},
+   backgroundcolor=pagecolor,
+   setups=pagestuff]
+
+\setupbackgrounds
+  [text]
+  [background={color,invoke},
+   backgroundoffset=12pt,
+   backgroundcolor=textcolor]
+
+%D We need different symbols for itemized lists.
+
+\definesymbol[1][\hbox{\lower1ex\hbox{*}}]
+\definesymbol[2][\endash]
+\definesymbol[3][\letterhash]
+\definesymbol[3][>]
+
+%D We don't want these reversed clicked areas in Acrobat.
+
+\setupinteraction
+  [click=no,
+   color=white, % pagecolor,
+   contrastcolor=white] % pagecolor,
+
+%D We define a rather simple navigational panel at the bottom
+
+\setupinteractionmenu
+  [bottom]
+  [color=white, % pagecolor,
+   contrastcolor=white, % pagecolor,
+   background=color,
+   backgroundcolor=textcolor,
+   frame=off,
+   height=24pt,
+   left=\hfill,
+   middle=\hskip12pt]
+
+\setupsubpagenumber
+  [state=start]
+
+\startinteractionmenu[bottom]
+    \starttxt
+        \interactionbar
+          [alternative=d,
+           symbol=yes,
+           color=white,
+           contrastcolor=textcolor]
+    \stoptxt
+    \hfilll
+    \startbut [previouspage] < < < \stopbut
+    \startbut [nextpage]     > > > \stopbut
+\stopinteractionmenu
+
+%D Instead of the normal symbols we use more punky ones.
+
+\startsymbolset [punk]
+    \definesymbol[previous]  [\string<\string<]
+    \definesymbol[somewhere] [\string^\string^]
+    \definesymbol[next]      [\string>\string>]
+\stopsymbolset
+
+\setupinteraction
+  [symbolset=punk]
+
+%D Because the font is rather large, we use less whitespace.
+
+\setuphead
+  [chapter]
+  [after={\blank[big]}]
+
+\stopmodule
+
+\continueifinputfile{s-present-punk.mkiv}
+
+\usemodule[present-common]
+
+\inputpresentationfile{examples/present-punk-001.tex}

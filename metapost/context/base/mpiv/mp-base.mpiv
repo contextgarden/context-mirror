@@ -66,8 +66,8 @@ def stop expr s =
     gobble readstring
 enddef ;
 
-warningcheck     :=1 ;
-tracinglostchars :=1 ;
+warningcheck     := 1 ;
+tracinglostchars := 1 ;
 
 def interact = % sets up to make "show" commands stop
     hide (
@@ -458,8 +458,8 @@ enddef ;
 
 % special operators
 
-vardef incr suffix $ = $:=$+1; $ enddef ;
-vardef decr suffix $ = $:=$-1; $ enddef ;
+vardef incr suffix $ = $ := $ + 1 ; $ enddef ;
+vardef decr suffix $ = $ := $ - 1 ; $ enddef ;
 
 def reflectedabout(expr w,z) = % reflects about the line w..z
     transformed

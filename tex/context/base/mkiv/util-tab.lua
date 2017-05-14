@@ -12,7 +12,7 @@ local tables     = utilities.tables
 
 local format, gmatch, gsub, sub = string.format, string.gmatch, string.gsub, string.sub
 local concat, insert, remove, sort = table.concat, table.insert, table.remove, table.sort
-local setmetatable, getmetatable, tonumber, tostring = setmetatable, getmetatable, tonumber, tostring
+local setmetatable, getmetatable, tonumber, tostring, rawget = setmetatable, getmetatable, tonumber, tostring, rawget
 local type, next, rawset, tonumber, tostring, load, select = type, next, rawset, tonumber, tostring, load, select
 local lpegmatch, P, Cs, Cc = lpeg.match, lpeg.P, lpeg.Cs, lpeg.Cc
 local sortedkeys, sortedpairs = table.sortedkeys, table.sortedpairs
@@ -169,7 +169,8 @@ function table.tocsv(t,specification)
                     r[f] = tostring(field)
                 end
             end
-            result[#result+1] = concat(r,separator)
+         -- result[#result+1] = concat(r,separator)
+            result[i+1] = concat(r,separator)
         end
         return concat(result,"\n")
     else
@@ -485,11 +486,12 @@ end
 
 local selfmapper = { __index = function(t,k) t[k] = k return k end }
 
-function table.twowaymapper(t)
-    if not t then
-        t = { }
-    else
-        for i=0,#t do
+function table.twowaymapper(t)    -- takes a 0/1 .. n indexed table and returns
+    if not t then                 -- it with  string-numbers as indices + reverse
+        t = { }                   -- mapping (all strings) .. used in cvs etc but
+    else                          -- typically a helper that one forgets about
+        local zero = rawget(t,0)  -- so it might move someplace else
+        for i=zero and 0 or 1,#t do
             local ti = t[i]       -- t[1]     = "one"
             if ti then
                 local i = tostring(i)
@@ -497,7 +499,6 @@ function table.twowaymapper(t)
                 t[ti]   = i       -- t["one"] = "1"
             end
         end
-        t[""] = t[0] or ""
     end
  -- setmetatableindex(t,"key")
     setmetatable(t,selfmapper)
@@ -563,6 +564,58 @@ local original_serialize = table.serialize -- the extensive one, the one we star
 -- latest lua for the value of #n (with holes) .. anyway for tracing purposes we want
 -- indices / keys being sorted, so it will never be real fast
 
+local is_simple_table = table.is_simple_table
+
+-- local function is_simple_table(t)
+--     local nt = #t
+--     if nt > 0 then
+--         local n = 0
+--         for _, v in next, t do
+--             n = n + 1
+--             if type(v) == "table" then
+--                 return nil
+--             end
+--         end
+--      -- local haszero = t[0]
+--         local haszero = rawget(t,0) -- don't trigger meta
+--         if n == nt then
+--             local tt = { }
+--             for i=1,nt do
+--                 local v = t[i]
+--                 local tv = type(v)
+--                 if tv == "number" then
+--                     tt[i] = v -- not needed tostring(v)
+--                 elseif tv == "string" then
+--                     tt[i] = format("%q",v) -- f_string(v)
+--                 elseif tv == "boolean" then
+--                     tt[i] = v and "true" or "false"
+--                 else
+--                     return nil
+--                 end
+--             end
+--             return tt
+--         elseif haszero and (n == nt + 1) then
+--             local tt = { }
+--             for i=0,nt do
+--                 local v = t[i]
+--                 local tv = type(v)
+--                 if tv == "number" then
+--                     tt[i+1] = v -- not needed tostring(v)
+--                 elseif tv == "string" then
+--                     tt[i+1] = format("%q",v) -- f_string(v)
+--                 elseif tv == "boolean" then
+--                     tt[i+1] = v and "true" or "false"
+--                 else
+--                     return nil
+--                 end
+--             end
+--             tt[1] = "[0] = " .. tt[1]
+--             return tt
+--         end
+--     end
+--     return nil
+-- end
+
 local function serialize(root,name,specification)
 
     if type(specification) == "table" then
@@ -572,88 +625,6 @@ local function serialize(root,name,specification)
     local t    -- = { }
     local n       = 1
     local unknown = false
-
---     local function simple_table(t)
---         local ts = #t
---         if ts > 0 then
---             local n = 0
---             for _, v in next, t do
---                 n = n + 1
---                 if type(v) == "table" then
---                     return nil
---                 end
---             end
---             if n == ts then
---                 local tt = { }
---                 local nt = 0
---                 for i=1,ts do
---                     local v = t[i]
---                     local tv = type(v)
---                     nt = nt + 1
---                     if tv == "number" then
---                         tt[nt] = v
---                     elseif tv == "string" then
---                         tt[nt] = format("%q",v) -- f_string(v)
---                     elseif tv == "boolean" then
---                         tt[nt] = v and "true" or "false"
---                     else
---                         return nil
---                     end
---                 end
---                 return tt
---             end
---         end
---         return nil
---     end
-
-    local function simple_table(t)
-        local nt = #t
-        if nt > 0 then
-            local n = 0
-            for _, v in next, t do
-                n = n + 1
-                if type(v) == "table" then
-                    return nil
-                end
-            end
-            local haszero = t[0]
-            if n == nt then
-                local tt = { }
-                for i=1,nt do
-                    local v = t[i]
-                    local tv = type(v)
-                    if tv == "number" then
-                        tt[i] = v -- not needed tostring(v)
-                    elseif tv == "string" then
-                        tt[i] = format("%q",v) -- f_string(v)
-                    elseif tv == "boolean" then
-                        tt[i] = v and "true" or "false"
-                    else
-                        return nil
-                    end
-                end
-                return tt
-            elseif haszero and (n == nt + 1) then
-                local tt = { }
-                for i=0,nt do
-                    local v = t[i]
-                    local tv = type(v)
-                    if tv == "number" then
-                        tt[i+1] = v -- not needed tostring(v)
-                    elseif tv == "string" then
-                        tt[i+1] = format("%q",v) -- f_string(v)
-                    elseif tv == "boolean" then
-                        tt[i+1] = v and "true" or "false"
-                    else
-                        return nil
-                    end
-                end
-                tt[1] = "[0] = " .. tt[1]
-                return tt
-            end
-        end
-        return nil
-    end
 
     local function do_serialize(root,name,depth,level,indexed)
         if level > 0 then
@@ -680,7 +651,8 @@ local function serialize(root,name,specification)
             local last  = 0
             last = #root
             for k=1,last do
-                if root[k] == nil then
+                if rawget(root,k) == nil then
+             -- if root[k] == nil then
                     last = k - 1
                     break
                 end
@@ -703,7 +675,7 @@ local function serialize(root,name,specification)
                         if next(v) == nil then -- tricky as next is unpredictable in a hash
                             n = n + 1 t[n] = f_val_not(depth)
                         else
-                            local st = simple_table(v)
+                            local st = is_simple_table(v)
                             if st then
                                 n = n + 1 t[n] = f_val_seq(depth,st)
                             else
@@ -747,7 +719,7 @@ local function serialize(root,name,specification)
                             n = n + 1 t[n] = f_key_str_value_not(depth,tostring(k))
                         end
                     else
-                        local st = simple_table(v)
+                        local st = is_simple_table(v)
                         if not st then
                             do_serialize(v,k,depth,level+1)
                         elseif tk == "number" then
@@ -810,14 +782,15 @@ local function serialize(root,name,specification)
 
     if root then
         -- The dummy access will initialize a table that has a delayed initialization
-        -- using a metatable. (maybe explicitly test for metatable)
+        -- using a metatable. (maybe explicitly test for metatable). This can crash on
+        -- metatables that check the index against a number.
         if getmetatable(root) then -- todo: make this an option, maybe even per subtable
-            local dummy = root._w_h_a_t_e_v_e_r_
+            local dummy = root._w_h_a_t_e_v_e_r_ -- needed
             root._w_h_a_t_e_v_e_r_ = nil
         end
         -- Let's forget about empty tables.
         if next(root) ~= nil then
-            local st = simple_table(root)
+            local st = is_simple_table(root)
             if st then
                 return t[1] .. f_fin_seq(st) -- todo: move up and in one go
             else
@@ -833,5 +806,10 @@ end
 table.serialize = serialize
 
 if setinspector then
-    setinspector("table",function(v) if type(v) == "table" then print(serialize(v,"table",{})) return true end end)
+    setinspector("table",function(v)
+        if type(v) == "table" then
+            print(serialize(v,"table",{ metacheck = false }))
+            return true
+        end
+    end)
 end

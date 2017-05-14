@@ -23,183 +23,88 @@ if not modules then modules = { } end modules ['font-otl'] = {
 
 -- todo: less tounicodes
 
-local gmatch, find, match, lower, strip = string.gmatch, string.find, string.match, string.lower, string.strip
+local lower = string.lower
 local type, next, tonumber, tostring, unpack = type, next, tonumber, tostring, unpack
 local abs = math.abs
-local ioflush = io.flush
 local derivetable = table.derive
 local formatters = string.formatters
 
-local setmetatableindex  = table.setmetatableindex
-local allocate           = utilities.storage.allocate
-local registertracker    = trackers.register
-local registerdirective  = directives.register
-local starttiming        = statistics.starttiming
-local stoptiming         = statistics.stoptiming
-local elapsedtime        = statistics.elapsedtime
-local findbinfile        = resolvers.findbinfile
+local setmetatableindex   = table.setmetatableindex
+local allocate            = utilities.storage.allocate
+local registertracker     = trackers.register
+local registerdirective   = directives.register
+local starttiming         = statistics.starttiming
+local stoptiming          = statistics.stoptiming
+local elapsedtime         = statistics.elapsedtime
+local findbinfile         = resolvers.findbinfile
 
------ trace_private      = false  registertracker("otf.private",        function(v) trace_private   = v end)
------ trace_subfonts     = false  registertracker("otf.subfonts",       function(v) trace_subfonts  = v end)
-local trace_loading      = false  registertracker("otf.loading",        function(v) trace_loading   = v end)
-local trace_features     = false  registertracker("otf.features",       function(v) trace_features  = v end)
------ trace_dynamics     = false  registertracker("otf.dynamics",       function(v) trace_dynamics  = v end)
------ trace_sequences    = false  registertracker("otf.sequences",      function(v) trace_sequences = v end)
------ trace_markwidth    = false  registertracker("otf.markwidth",      function(v) trace_markwidth = v end)
-local trace_defining     = false  registertracker("fonts.defining",     function(v) trace_defining  = v end)
+----- trace_private       = false  registertracker("otf.private",        function(v) trace_private   = v end)
+----- trace_subfonts      = false  registertracker("otf.subfonts",       function(v) trace_subfonts  = v end)
+local trace_loading       = false  registertracker("otf.loading",        function(v) trace_loading   = v end)
+local trace_features      = false  registertracker("otf.features",       function(v) trace_features  = v end)
+----- trace_dynamics      = false  registertracker("otf.dynamics",       function(v) trace_dynamics  = v end)
+----- trace_sequences     = false  registertracker("otf.sequences",      function(v) trace_sequences = v end)
+----- trace_markwidth     = false  registertracker("otf.markwidth",      function(v) trace_markwidth = v end)
+local trace_defining      = false  registertracker("fonts.defining",     function(v) trace_defining  = v end)
 
-local report_otf         = logs.reporter("fonts","otf loading")
+local report_otf          = logs.reporter("fonts","otf loading")
 
-local fonts              = fonts
-local otf                = fonts.handlers.otf
+local fonts               = fonts
+local otf                 = fonts.handlers.otf
 
-otf.version              = 3.020 -- beware: also sync font-mis.lua and in mtx-fonts
-otf.cache                = containers.define("fonts", "otl", otf.version, true)
+otf.version               = 3.029 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.cache                 = containers.define("fonts", "otl",  otf.version, true)
+otf.svgcache              = containers.define("fonts", "svg",  otf.version, true)
+otf.sbixcache             = containers.define("fonts", "sbix", otf.version, true)
+otf.pdfcache              = containers.define("fonts", "pdf",  otf.version, true)
 
-local otfreaders         = otf.readers
+otf.svgenabled            = false
+otf.sbixenabled           = false
 
-local hashes             = fonts.hashes
-local definers           = fonts.definers
-local readers            = fonts.readers
-local constructors       = fonts.constructors
+local otfreaders          = otf.readers
 
-local otffeatures        = constructors.newfeatures("otf")
-local registerotffeature = otffeatures.register
+local hashes              = fonts.hashes
+local definers            = fonts.definers
+local readers             = fonts.readers
+local constructors        = fonts.constructors
 
-local enhancers          = allocate()
-otf.enhancers            = enhancers
-local patches            = { }
-enhancers.patches        = patches
+local otffeatures         = constructors.features.otf
+local registerotffeature  = otffeatures.register
 
-local forceload          = false
-local cleanup            = 0     -- mk: 0=885M 1=765M 2=735M (regular run 730M)
-local syncspace          = true
-local forcenotdef        = false
+local otfenhancers        = constructors.enhancers.otf
+local registerotfenhancer = otfenhancers.register
 
-local applyruntimefixes  = fonts.treatments and fonts.treatments.applyfixes
+local forceload           = false
+local cleanup             = 0     -- mk: 0=885M 1=765M 2=735M (regular run 730M)
+local syncspace           = true
+local forcenotdef         = false
 
-local wildcard           = "*"
-local default            = "dflt"
+local applyruntimefixes   = fonts.treatments and fonts.treatments.applyfixes
 
-local formats            = fonts.formats
+local wildcard            = "*"
+local default             = "dflt"
 
-formats.otf              = "opentype"
-formats.ttf              = "truetype"
-formats.ttc              = "truetype"
+local formats             = fonts.formats
+
+formats.otf               = "opentype"
+formats.ttf               = "truetype"
+formats.ttc               = "truetype"
 
 registerdirective("fonts.otf.loader.cleanup",       function(v) cleanup       = tonumber(v) or (v and 1) or 0 end)
 registerdirective("fonts.otf.loader.force",         function(v) forceload     = v end)
 registerdirective("fonts.otf.loader.syncspace",     function(v) syncspace     = v end)
 registerdirective("fonts.otf.loader.forcenotdef",   function(v) forcenotdef   = v end)
 
--- local function load_featurefile(raw,featurefile)
---     if featurefile and featurefile ~= "" then
---         if trace_loading then
---             report_otf("using featurefile %a", featurefile)
---         end
---         -- TODO: apply_featurefile(raw, featurefile)
---     end
--- end
+-- otfenhancers.patch("before","migrate metadata","cambria",function() end)
 
--- Enhancers are used to apply fixes and extensions to fonts. For instance, we use them
--- to implement tlig and trep features. They are not neccessarily bound to opentype
--- fonts but can also apply to type one fonts, given that they obey the structure of an
--- opentype font. They are not to be confused with format specific features but maybe
--- some are so generic that they might eventually move to this mechanism.
+registerotfenhancer("check extra features", function() end) -- placeholder
 
-local ordered_enhancers = {
-    "check extra features",
-}
-
-local actions  = allocate()
-local before   = allocate()
-local after    = allocate()
-
-patches.before = before
-patches.after  = after
-
-local function enhance(name,data,filename,raw)
-    local enhancer = actions[name]
-    if enhancer then
-        if trace_loading then
-            report_otf("apply enhancement %a to file %a",name,filename)
-            ioflush()
-        end
-        enhancer(data,filename,raw)
-    else
-        -- no message as we can have private ones
-    end
-end
-
-function enhancers.apply(data,filename,raw)
-    local basename = file.basename(lower(filename))
-    if trace_loading then
-        report_otf("%s enhancing file %a","start",filename)
-    end
-    ioflush() -- we want instant messages
-    for e=1,#ordered_enhancers do
-        local enhancer = ordered_enhancers[e]
-        local b = before[enhancer]
-        if b then
-            for pattern, action in next, b do
-                if find(basename,pattern) then
-                    action(data,filename,raw)
-                end
-            end
-        end
-        enhance(enhancer,data,filename,raw)
-        local a = after[enhancer]
-        if a then
-            for pattern, action in next, a do
-                if find(basename,pattern) then
-                    action(data,filename,raw)
-                end
-            end
-        end
-        ioflush() -- we want instant messages
-    end
-    if trace_loading then
-        report_otf("%s enhancing file %a","stop",filename)
-    end
-    ioflush() -- we want instant messages
-end
-
--- patches.register("before","migrate metadata","cambria",function() end)
-
-function patches.register(what,where,pattern,action)
-    local pw = patches[what]
-    if pw then
-        local ww = pw[where]
-        if ww then
-            ww[pattern] = action
-        else
-            pw[where] = { [pattern] = action}
-        end
-    end
-end
-
-function patches.report(fmt,...)
-    if trace_loading then
-        report_otf("patching: %s",formatters[fmt](...))
-    end
-end
-
-function enhancers.register(what,action) -- only already registered can be overloaded
-    actions[what] = action
-end
-
-function otf.load(filename,sub,featurefile) -- second argument (format) is gone !
-    --
-    local featurefile = nil -- not supported (yet)
-    --
+function otf.load(filename,sub,instance)
     local base = file.basename(file.removesuffix(filename))
-    local name = file.removesuffix(base)
+    local name = file.removesuffix(base) -- already no suffix
     local attr = lfs.attributes(filename)
     local size = attr and attr.size or 0
     local time = attr and attr.modification or 0
-    if featurefile then
-        name = name .. "@" .. file.removesuffix(file.basename(featurefile))
-    end
     -- sub can be number of string
     if sub == "" then
         sub = false
@@ -208,68 +113,57 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
     if sub then
         hash = hash .. "-" .. sub
     end
-    hash = containers.cleanname(hash)
-    local featurefiles
-    if featurefile then
-        featurefiles = { }
-        for s in gmatch(featurefile,"[^,]+") do
-            local name = resolvers.findfile(file.addsuffix(s,'fea'),'fea') or ""
-            if name == "" then
-                report_otf("loading error, no featurefile %a",s)
-            else
-                local attr = lfs.attributes(name)
-                featurefiles[#featurefiles+1] = {
-                    name = name,
-                    size = attr and attr.size or 0,
-                    time = attr and attr.modification or 0,
-                }
-            end
-        end
-        if #featurefiles == 0 then
-            featurefiles = nil
-        end
+    if instance then
+        hash = hash .. "-" .. instance
     end
+    hash = containers.cleanname(hash)
     local data = containers.read(otf.cache,hash)
     local reload = not data or data.size ~= size or data.time ~= time or data.tableversion ~= otfreaders.tableversion
     if forceload then
         report_otf("forced reload of %a due to hard coded flag",filename)
         reload = true
     end
- -- if not reload then
- --     local featuredata = data.featuredata
- --     if featurefiles then
- --         if not featuredata or #featuredata ~= #featurefiles then
- --             reload = true
- --         else
- --             for i=1,#featurefiles do
- --                 local fi, fd = featurefiles[i], featuredata[i]
- --                 if fi.name ~= fd.name or fi.size ~= fd.size or fi.time ~= fd.time then
- --                     reload = true
- --                     break
- --                 end
- --             end
- --         end
- --     elseif featuredata then
- --         reload = true
- --     end
- --     if reload then
- --        report_otf("loading: forced reload due to changed featurefile specification %a",featurefile)
- --     end
- --  end
      if reload then
         report_otf("loading %a, hash %a",filename,hash)
         --
         starttiming(otfreaders)
-        data = otfreaders.loadfont(filename,sub or 1) -- we can pass the number instead (if it comes from a name search)
-        --
-        -- if featurefiles then
-        --     for i=1,#featurefiles do
-        --         load_featurefile(data,featurefiles[i].name)
-        --     end
-        -- end
-        --
-        --
+        data = otfreaders.loadfont(filename,sub or 1,instance) -- we can pass the number instead (if it comes from a name search)
         if data then
+            -- todo: make this a plugin
+            local resources  = data.resources
+            local svgshapes  = resources.svgshapes
+            local sbixshapes = resources.sbixshapes
+            if svgshapes then
+                resources.svgshapes = nil
+                if otf.svgenabled then
+                    local timestamp = os.date()
+                    -- work in progress ... a bit boring to do
+                    containers.write(otf.svgcache,hash, {
+                        svgshapes = svgshapes,
+                        timestamp = timestamp,
+                    })
+                    data.properties.svg = {
+                        hash      = hash,
+                        timestamp = timestamp,
+                    }
+                end
+            end
+            if sbixshapes then
+                resources.sbixshapes = nil
+                if otf.sbixenabled then
+                    local timestamp = os.date()
+                    -- work in progress ... a bit boring to do
+                    containers.write(otf.sbixcache,hash, {
+                        sbixshapes = sbixshapes,
+                        timestamp  = timestamp,
+                    })
+                    data.properties.sbix = {
+                        hash      = hash,
+                        timestamp = timestamp,
+                    }
+                end
+            end
+            --
             otfreaders.compact(data)
             otfreaders.rehash(data,"unicodes")
             otfreaders.addunicodetable(data)
@@ -282,7 +176,7 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
                 collectgarbage("collect")
             end
             stoptiming(otfreaders)
-            if elapsedtime then -- not in generic
+            if elapsedtime then
                 report_otf("loading, optimizing, packing and caching time %s", elapsedtime(otfreaders))
             end
             if cleanup > 3 then
@@ -306,7 +200,7 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
         otfreaders.expand(data) -- inline tables
         otfreaders.addunicodetable(data) -- only when not done yet
         --
-        enhancers.apply(data,filename,data)
+        otfenhancers.apply(data,filename,data)
         --
      -- constructors.addcoreunicodes(data.resources.unicodes) -- still needed ?
         --
@@ -315,8 +209,22 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
         end
         --
         data.metadata.math = data.resources.mathconstants
+        --
+        -- delayed tables (experiment)
+        --
+        local classes = data.resources.classes
+        if not classes then
+            local descriptions = data.descriptions
+            classes = setmetatableindex(function(t,k)
+                local d = descriptions[k]
+                local v = (d and d.class or "base") or false
+                t[k] = v
+                return v
+            end)
+            data.resources.classes = classes
+        end
+        --
     end
-
 
     return data
 end
@@ -346,7 +254,6 @@ end
 local function copytotfm(data,cache_id)
     if data then
         local metadata       = data.metadata
-        local resources      = data.resources
         local properties     = derivetable(data.properties)
         local descriptions   = derivetable(data.descriptions)
         local goodies        = derivetable(data.goodies)
@@ -485,14 +392,14 @@ local function copytotfm(data,cache_id)
                 spaceunits, spacer = charwidth, "charwidth"
             end
         end
-        spaceunits = tonumber(spaceunits) or 500 -- brrr
+        spaceunits = tonumber(spaceunits) or units/2
         --
         parameters.slant         = 0
-        parameters.space         = spaceunits          -- 3.333 (cmr10)
+        parameters.space         = spaceunits            -- 3.333 (cmr10)
         parameters.space_stretch = 1*units/2   --  500   -- 1.666 (cmr10)
-        parameters.space_shrink  = 1*units/3 --  333   -- 1.111 (cmr10)
-        parameters.x_height      = 2*units/5 --  400
-        parameters.quad          = units     -- 1000
+        parameters.space_shrink  = 1*units/3   --  333   -- 1.111 (cmr10)
+        parameters.x_height      = 2*units/5   --  400
+        parameters.quad          = units       -- 1000
         if spaceunits < 2*units/5 then
             -- todo: warning
         end
@@ -553,16 +460,55 @@ local function copytotfm(data,cache_id)
     end
 end
 
+-- These woff files are a kind of joke in a tex environment because one can simply convert
+-- them to ttf/otf and use them as such (after all, we cache them too). The successor format
+-- woff2 is more complex so there we can as well call an external converter which in the end
+-- makes this code kind of obsolete before it's even used. Although ... it might become a
+-- more general conversion plug in.
+
+local converters = {
+    woff = {
+        cachename = "webfonts",
+        action    = otf.readers.woff2otf,
+    }
+}
+
+local function checkconversion(specification)
+    local filename  = specification.filename
+    local converter = converters[lower(file.suffix(filename))]
+    if converter then
+        local base = file.basename(filename)
+        local name = file.removesuffix(base)
+        local attr = lfs.attributes(filename)
+        local size = attr and attr.size or 0
+        local time = attr and attr.modification or 0
+        if size > 0 then
+            local cleanname = containers.cleanname(name)
+            local cachename = caches.setfirstwritablefile(cleanname,converter.cachename)
+            if not io.exists(cachename) or (time ~= lfs.attributes(cachename).modification) then
+                report_otf("caching font %a in %a",filename,cachename)
+                converter.action(filename,cachename) -- todo infoonly
+                lfs.touch(cachename,time,time)
+            end
+            specification.filename = cachename
+        end
+    end
+end
+
 local function otftotfm(specification)
     local cache_id = specification.hash
     local tfmdata  = containers.read(constructors.cache,cache_id)
     if not tfmdata then
+
+        checkconversion(specification) -- for the moment here
+
         local name     = specification.name
         local sub      = specification.sub
         local subindex = specification.subindex
         local filename = specification.filename
         local features = specification.features.normal
-        local rawdata  = otf.load(filename,sub,features and features.featurefile)
+        local instance = specification.instance or (features and features.axis)
+        local rawdata  = otf.load(filename,sub,instance)
         if rawdata and next(rawdata) then
             local descriptions = rawdata.descriptions
             rawdata.lookuphash = { } -- to be done
@@ -702,7 +648,7 @@ local function getgsub(tfmdata,k,kind,value)
             local properties = tfmdata.properties
             local validlookups, lookuplist = otf.collectlookups(rawdata,kind,properties.script,properties.language)
             if validlookups then
-                local choice = tonumber(value) or 1 -- no random here (yet)
+             -- local choice = tonumber(value) or 1 -- no random here (yet)
                 for i=1,#lookuplist do
                     local lookup   = lookuplist[i]
                     local steps    = lookup.steps
@@ -725,7 +671,7 @@ end
 otf.getgsub = getgsub -- returns value, gsub_kind
 
 function otf.getsubstitution(tfmdata,k,kind,value)
-    local found, kind = getgsub(tfmdata,k,kind)
+    local found, kind = getgsub(tfmdata,k,kind,value)
     if not found then
         --
     elseif kind == "gsub_single" then
@@ -790,9 +736,14 @@ end
 
 readers.opentype = opentypereader -- kind of useless and obsolete
 
-function readers.otf  (specification) return opentypereader(specification,"otf") end
-function readers.ttf  (specification) return opentypereader(specification,"ttf") end
-function readers.ttc  (specification) return opentypereader(specification,"ttf") end
+function readers.otf(specification) return opentypereader(specification,"otf") end
+function readers.ttf(specification) return opentypereader(specification,"ttf") end
+function readers.ttc(specification) return opentypereader(specification,"ttf") end
+
+function readers.woff(specification)
+    checkconversion(specification)
+    opentypereader(specification,"")
+end
 
 -- this will be overloaded
 

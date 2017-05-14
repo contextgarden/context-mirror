@@ -34,12 +34,12 @@ if not modules then modules = { } end modules ['math-map'] = {
 
 local type, next = type, next
 local floor, div = math.floor, math.div
-local merged = table.merged
+local merged, sortedhash = table.merged, table.sortedhash
 local extract = bit32.extract
 
 local allocate            = utilities.storage.allocate
 
-local otffeatures         = fonts.constructors.newfeatures("otf")
+local otffeatures         = fonts.constructors.features.otf
 local registerotffeature  = otffeatures.register
 
 local setmetatableindex   = table.setmetatableindex
@@ -163,6 +163,10 @@ local function todigit (n) local t = { } for i=0, 9 do t[0x00030+i] = n+i end re
 local function toupper (n) local t = { } for i=0,25 do t[0x00041+i] = n+i end return t end
 local function tolower (n) local t = { } for i=0,25 do t[0x00061+i] = n+i end return t end
 local function tovector(t)                                                    return t end
+
+-- how about 0x2A (ast)    cq. 0x2217
+--           0x2D (hyphen) cq. 0x2212
+--           0x3A (colon)  cq. 0x2236
 
 local regular_tf = {
     digits    = todigit(0x00030),
@@ -553,10 +557,10 @@ mathematics.mapremap  = mathremap
 local boldmap         = allocate { }
 mathematics.boldmap   = boldmap
 
--- all math (a bit of redundancy here)
+-- all math (a bit of redundancy here) (sorted for tracing)
 
-for alphabet, styles in next, alphabets do -- per 9/6/2011 we also have attr for missing
-    for style, data in next, styles do
+for alphabet, styles in sortedhash(alphabets) do -- per 9/6/2011 we also have attr for missing
+    for style, data in sortedhash(styles) do
      -- let's keep the long names (for tracing)
         local n = #mathremap + 1
         local d = {

@@ -47,10 +47,14 @@ local getsubtype       = nuts.getsubtype
 local getlist          = nuts.getlist
 local getdisc          = nuts.getdisc
 local setattr          = nuts.setattr
+local getglue          = nuts.getglue
 local isglyph          = nuts.isglyph
+local getcomponents    = nuts.getcomponents
+local getdir           = nuts.getdir
+local getwidth         = nuts.getwidth
 
 local flush_list       = nuts.flush_list
-local count_nodes      = nuts.count
+local count_nodes      = nuts.countall
 local used_nodes       = nuts.usedlist
 
 local traverse_by_id   = nuts.traverse_id
@@ -75,7 +79,6 @@ local rule_code        = nodecodes.rule
 local dir_code         = nodecodes.dir
 local localpar_code    = nodecodes.localpar
 local whatsit_code     = nodecodes.whatsit
-local gluespec_code    = nodecodes.gluespec
 
 local dimenfactors     = number.dimenfactors
 local fillorders       = nodes.fillcodes
@@ -122,6 +125,7 @@ function nodes.handlers.checkforleaks(sparse)
 end
 
 local f_sequence = formatters["U+%04X:%s"]
+local f_subrange = formatters["[[ %s ][ %s ][ %s ]]"]
 
 local function tosequence(start,stop,compact)
     if start then
@@ -132,7 +136,7 @@ local function tosequence(start,stop,compact)
             local c, id = isglyph(start)
             if c then
                 if compact then
-                    local components = getfield(start,"components")
+                    local components = getcomponents(start)
                     if components then
                         t[#t+1] = tosequence(components,nil,compact)
                     else
@@ -141,6 +145,9 @@ local function tosequence(start,stop,compact)
                 else
                     t[#t+1] = f_sequence(c,utfchar(c))
                 end
+            elseif id == disc_code then
+                local pre, post, replace = getdisc(start)
+                t[#t+1] = f_subrange(pre and tosequence(pre),post and tosequence(post),replace and tosequence(replace))
             elseif id == rule_code then
                 if compact then
                     t[#t+1] = "|"
@@ -148,7 +155,7 @@ local function tosequence(start,stop,compact)
                     t[#t+1] = nodecodes[id]
                 end
             elseif id == dir_code or id == localpar_code then
-                t[#t+1] = "[" .. getfield(start,"dir") .. "]"
+                t[#t+1] = "[" .. getdir(start) .. "]"
             elseif compact then
                 t[#t+1] = "[]"
             else
@@ -280,11 +287,11 @@ local function showsimplelist(h,depth,n)
 end
 
 -- \startluacode
--- callback.register('buildpage_filter',function() nodes.show_simple_list(tex.lists.contrib_head) end)
+-- callbacks.register('buildpage_filter',function() nodes.show_simple_list(tex.lists.contrib_head) end)
 -- \stopluacode
 -- \vbox{b\footnote{n}a}
 -- \startluacode
--- callback.register('buildpage_filter',nil)
+-- callbacks.register('buildpage_filter',nil)
 -- \stopluacode
 
 nodes.showsimplelist = function(h,depth) showsimplelist(h,depth,0) end
@@ -311,7 +318,7 @@ local function listtoutf(h,joiner,textonly,last,nodisc)
             end
         elseif textonly then
             if id == glue_code then
-                if getfield(h,"width") > 0 then
+                if getwidth(h) > 0 then
                     w[#w+1] = " "
                 end
             elseif id == hlist_code or id == vlist_code then
@@ -376,7 +383,7 @@ local function nodetodimen(n)
     n = tonut(n)
     local id = getid(n)
     if id == kern_code then
-        local width = getfield(n,"width")
+        local width = getwidth(n)
         if width == 0 then
             return "0pt"
         else
@@ -385,11 +392,10 @@ local function nodetodimen(n)
     elseif id ~= glue_code then
         return "0pt"
     end
-    local stretch_order = getfield(n,"stretch_order")
-    local shrink_order  = getfield(n,"shrink_order")
-    local stretch       = getfield(n,"stretch") / 65536
-    local shrink        = getfield(n,"shrink")  / 65536
-    local width         = getfield(n,"width")   / 65536
+    local width, stretch, shrink, stretch_order, shrink_order = getglue(n)
+    stretch = stretch / 65536
+    shrink  = shrink  / 65536
+    width   = width   / 65536
     if stretch_order ~= 0 then
         if shrink_order ~= 0 then
             return f_f_f(width,stretch,fillorders[stretch_order],shrink,fillorders[shrink_order])
@@ -431,12 +437,12 @@ dimenfactors[""] = dimenfactors.pt
 
 local function numbertodimen(d,unit,fmt)
     if not d or d == 0 then
-        if not unit or unit == "pt" then
-            return "0pt"
-        elseif fmt then
-            return formatters[fmt](0,unit)
-        else
+        if fmt then
+            return formatters[fmt](0,unit or "pt")
+        elseif unit then
             return 0 .. unit
+        else
+            return "0pt"
         end
     elseif fmt then
         if not unit then

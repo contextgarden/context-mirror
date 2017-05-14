@@ -200,6 +200,16 @@
 
 \countdef   \normalpagebox            =   127 \normalpagebox            = 255  % hardcoded in pdftex/xetex
 
+% Only to be used by developers in very special cases!
+
+% \def\lastallocatedcount    {\the\c_syst_last_allocated_count}
+% \def\lastallocateddimen    {\the\c_syst_last_allocated_dimen}
+% \def\lastallocatedskip     {\the\c_syst_last_allocated_skip}
+% \def\lastallocatedmuskip   {\the\c_syst_last_allocated_muskip}
+% \def\lastallocatedbox      {\the\c_syst_last_allocated_dimen}
+% \def\lastallocatedtoks     {\the\c_syst_last_allocated_toks}
+% \def\lastallocatedattribute{\the\c_syst_last_allocated_attribute}
+
 % A few traditional allocations (these might go):
 
 \countdef   \count@                   =   255 % hm, used in \newif .. todo: replace it there
@@ -310,14 +320,15 @@
 %D    scratchtoks}
 %D
 %D We now define a few scratch registers, so that successive loads at least have
-%D some available.
+%D some available. The private ones are used in cases where we don't want to
+%D intrude on normal scratch ones.
 
-\newcount \scratchcounter  \newcount \globalscratchcounter
-\newdimen \scratchdimen    \newdimen \globalscratchdimen
-\newskip  \scratchskip     \newskip  \globalscratchskip
-\newmuskip\scratchmuskip   \newmuskip\globalscratchmuskip
-\newtoks  \scratchtoks     \newtoks  \globalscratchtoks
-\newbox   \scratchbox      \newbox   \globalscratchbox
+\newcount \scratchcounter  \newcount \globalscratchcounter  \newcount \privatescratchcounter
+\newdimen \scratchdimen    \newdimen \globalscratchdimen    \newdimen \privatescratchdimen
+\newskip  \scratchskip     \newskip  \globalscratchskip     \newskip  \privatescratchskip
+\newmuskip\scratchmuskip   \newmuskip\globalscratchmuskip   \newmuskip\privatescratchmuskip
+\newtoks  \scratchtoks     \newtoks  \globalscratchtoks     \newtoks  \privatescratchtoks
+\newbox   \scratchbox      \newbox   \globalscratchbox      \newbox   \privatescratchbox
 
 \newcount\scratchcounterone  \newcount\scratchcountertwo  \newcount\scratchcounterthree
 \newdimen  \scratchdimenone  \newdimen  \scratchdimentwo  \newdimen  \scratchdimenthree
@@ -384,6 +395,7 @@
 \newdimen \onepoint      \onepoint      = 1pt
 \newdimen \halfapoint    \halfapoint    = 0.5pt
 \newdimen \maxdimen      \maxdimen      = 16383.99999pt
+\newcount \maxcount      \maxcount      = 2147483647
 \newdimen \onebasepoint  \onebasepoint  = 1bp
 \newdimen \scaledpoint   \scaledpoint   = 1sp
 \newdimen \thousandpoint \thousandpoint = 1000pt
@@ -1153,7 +1165,20 @@
 
 %D For now:
 
-\ifdefined\protrusionboundary \else \let\protrusionboundary\boundary   \fi
-\ifdefined\wordboundary       \else \let\wordboundary      \noboundary \fi
+\ifdefined\protrusionboundary     \else \let\protrusionboundary\boundary   \fi
+\ifdefined\wordboundary           \else \let\wordboundary      \noboundary \fi
+
+\ifdefined\mathrulesfam           \else \newcount\mathrulesfam     \fi
+\ifdefined\mathrulesmode          \else \newcount\mathrulesmode    \fi
+\ifdefined\mathsurroundmode       \else \newcount\mathsurroundmode \fi
+\ifdefined\mathitalicsmode        \else \newcount\mathitalicsmode  \fi
+
+\ifdefined\hyphenpenaltymode      \else \newcount\hyphenpenaltymode      \fi
+\ifdefined\automatichyphenpenalty \else \newcount\automatichyphenpenalty \fi
+\ifdefined\automatichyphenmode    \else \newcount\automatichyphenmode    \fi
+\ifdefined\explicithyphenpenalty  \else \newcount\explicithyphenpenalty  \fi
+
+\ifdefined\explicitdiscretionary  \else \let\explicitdiscretionary  \-                   \fi
+\ifdefined\automaticdiscretionary \else \def\automaticdiscretionary{\Uchar\exhyphenchar} \fi
 
 \protect \endinput

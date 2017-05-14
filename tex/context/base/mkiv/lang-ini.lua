@@ -20,15 +20,16 @@ if not modules then modules = { } end modules ['lang-ini'] = {
 
 local type, tonumber = type, tonumber
 local utfbyte = utf.byte
-local format, gsub = string.format, string.gsub
-local concat, sortedkeys, sortedpairs = table.concat, table.sortedkeys, table.sortedpairs
-local utfbytes, strip = string.utfvalues, string.strip
+local format, gsub, gmatch, find = string.format, string.gsub, string.gmatch, string.find
+local concat, sortedkeys, sortedpairs, keys, insert = table.concat, table.sortedkeys, table.sortedpairs, table.keys, table.insert
+local utfbytes, strip, utfcharacters = string.utfvalues, string.strip, utf.characters
 
 local context   = context
 local commands  = commands
 local implement = interfaces.implement
 
 local settings_to_array = utilities.parsers.settings_to_array
+local settings_to_set = utilities.parsers.settings_to_set
 
 local trace_patterns = false  trackers.register("languages.patterns", function(v) trace_patterns = v end)
 
@@ -45,6 +46,7 @@ local postexhyphenchar = lang.postexhyphenchar -- global per language
 local sethjcode        = lang.sethjcode
 
 local uccodes          = characters.uccodes
+local lccodes          = characters.lccodes
 
 lang.exceptions        = lang.hyphenation
 local new_langage      = lang.new
@@ -70,6 +72,11 @@ storage.register("languages/registered",registered,"languages.registered")
 storage.register("languages/associated",associated,"languages.associated")
 storage.register("languages/numbers",   numbers,   "languages.numbers")
 storage.register("languages/data",      data,      "languages.data")
+
+local variables = interfaces.variables
+
+local v_reset   = variables.reset
+local v_yes     = variables.yes
 
 local nofloaded  = 0
 
@@ -119,7 +126,7 @@ local function validdata(loaded,what,tag)
     if dataset then
         local data = dataset.data
         if not data or data == "" then
-            return nil
+            -- nothing
         elseif dataset.compression == "zlib" then
             data = zlib.decompress(data)
             if dataset.length and dataset.length ~= #data then
@@ -132,38 +139,157 @@ local function validdata(loaded,what,tag)
     end
 end
 
-local function sethjcodes(instance,loaded,what)
+-- languages.hjcounts[unicode].count
+
+-- hjcode: 0       not to be hyphenated
+--         1--31   length
+--         32      zero length
+--         > 32    hyphenated with length 1
+
+local function sethjcodes(instance,loaded,what,factor)
     local l = loaded[what]
     local c = l and l.characters
     if c then
-        local h = l.codehash
+        local hjcounts = factor and languages.hjcounts or false
+        --
+        local h = loaded.codehash
         if not h then
             h = { }
-            l.codehash = h
+            loaded.codehash = h
         end
+        --
+        local function setcode(l)
+            local u = uccodes[l]
+            local s = l
+            if hjcounts then
+                local c = hjcounts[l]
+                if c then
+                    c = c.count
+                    if not c then
+                        -- error, keep as 1
+                    elseif c <= 0 then
+                        -- counts as 0 i.e. ignored
+                        s = 32
+                    elseif c >= 31 then
+                        -- counts as 31
+                        s = 31
+                    else
+                        -- count c times
+                        s = c
+                    end
+                end
+            end
+            sethjcode(instance,l,s)
+            h[l] = s
+            if u ~= l and type(u) == "number" then
+                sethjcode(instance,u,s)
+                h[u] = lccodes[l]
+            end
+        end
+        --
         local s = tex.savinghyphcodes
         tex.savinghyphcodes = 0
-        for l in utfbytes(c) do
-            local u = uccodes[l]
-            sethjcode(instance,l,l)
-            h[l] = l
-            if type(u) == "number" then
-                -- we don't want ß -> SS
-                sethjcode(instance,u,l)
-                h[u] = l
+        if type(c) == "table" then
+            for l in next, c do
+                setcode(utfbyte(l))
+            end
+        else
+            for l in utfbytes(c) do
+                setcode(l)
             end
         end
         tex.savinghyphcodes = s
     end
 end
 
+-- 2'2 conflicts with 4' ... and luatex barks on it
+
+local P, R, Cs, Ct, lpegmatch, lpegpatterns = lpeg.P, lpeg.R, lpeg.Cs, lpeg.Ct, lpeg.match, lpeg.patterns
+
+local utfsplit = utf.split
+
+local space       = lpegpatterns.space
+local whitespace  = lpegpatterns.whitespace^1
+local nospace     = lpegpatterns.utf8char - whitespace
+local digit       = lpegpatterns.digit
+----- endofstring = #whitespace + P(-1)
+local endofstring = #whitespace
+
+local word        = (digit/"")^0 * (digit/"" * endofstring + digit/" " + nospace)^1
+local anyword     = (1-whitespace)^1
+local analyze     = Ct((whitespace + Cs(word))^1)
+
+local function unique(tag,requested,loaded)
+    local nofloaded = #loaded
+    if nofloaded == 0 then
+        return ""
+    elseif nofloaded == 1 then
+        return loaded[1]
+    else
+        insert(loaded,1," ") -- no need then for special first word
+     -- insert(loaded,  " ")
+        loaded = concat(loaded," ")
+        local t = lpegmatch(analyze,loaded) or { }
+        local h = { }
+        local b = { }
+        for i=1,#t do
+            local ti = t[i]
+            local hi = h[ti]
+            if not hi then
+                h[ti] = 1
+            elseif hi == 1 then
+                h[ti] = 2
+                b[#b+1] = utfsplit(ti," ")
+            end
+        end
+        -- sort
+        local nofbad = #b
+        if nofbad > 0 then
+            local word
+            for i=1,nofbad do
+                local bi = b[i]
+                local p = P(bi[1])
+                for i=2,#bi do
+                    p = p * digit * P(bi[i])
+                end
+                if word then
+                    word = word + p
+                else
+                    word = p
+                end
+                report_initialization("language %a, patterns %a, discarding conflict (0-9)%{[0-9]}t(0-9)",tag,requested,bi)
+            end
+            t, h, b = nil, nil, nil -- permit gc
+            local someword = digit^0 * word * digit^0 * endofstring / ""
+         -- local strip    = Cs(someword^-1 * (someword + anyword + whitespace)^1)
+            local strip    = Cs((someword + anyword + whitespace)^1)
+            return lpegmatch(strip,loaded) or loaded
+        else
+            return loaded
+        end
+    end
+end
+
 local function loaddefinitions(tag,specification)
     statistics.starttiming(languages)
     local data, instance = resolve(tag)
-    local definitions = settings_to_array(specification.patterns or "")
+    local requested = specification.patterns or ""
+    local definitions = settings_to_array(requested)
     if #definitions > 0 then
         if trace_patterns then
             report_initialization("pattern specification for language %a: %s",tag,specification.patterns)
+        end
+        local ploaded = instance:patterns()
+        local eloaded = instance:hyphenation()
+        if not ploaded or ploaded == ""  then
+            ploaded = { }
+        else
+            ploaded = { ploaded }
+        end
+        if not eloaded or eloaded == ""  then
+            eloaded = { }
+        else
+            eloaded = { eloaded }
         end
         local dataused  = data.used
         local ok        = false
@@ -173,11 +299,14 @@ local function loaddefinitions(tag,specification)
             local definition = definitions[i]
             if definition == "" then
                 -- error
-            elseif definition == "reset" then -- interfaces.variables.reset
+            elseif definition == v_reset then
                 if trace_patterns then
                     report_initialization("clearing patterns for language %a",tag)
                 end
                 instance:clear_patterns()
+                instance:clear_hyphenation()
+                ploaded = { }
+                eloaded = { }
             elseif not dataused[definition] then
                 dataused[definition] = definition
                 local filename = "lang-" .. definition .. ".lua"
@@ -193,10 +322,16 @@ local function loaddefinitions(tag,specification)
                     local loaded = table.load(fullname,gzipped and gzip.load)
                     if loaded then -- todo: version test
                         ok, nofloaded = true, nofloaded + 1
-                        sethjcodes(instance,loaded,"patterns")
-                        sethjcodes(instance,loaded,"exceptions")
-                        instance:patterns   (validdata(loaded,"patterns",  tag) or "")
-                        instance:hyphenation(validdata(loaded,"exceptions",tag) or "")
+                        sethjcodes(instance,loaded,"patterns",specification.factor)
+                        sethjcodes(instance,loaded,"exceptions",specification.factor)
+                        local p = validdata(loaded,"patterns",tag)
+                        local e = validdata(loaded,"exceptions",tag)
+                        if p and p ~= "" then
+                            ploaded[#ploaded+1] = p
+                        end
+                        if e and e ~= "" then
+                            eloaded[#eloaded+1] = e
+                        end
                         resources[#resources+1] = loaded -- so we can use them otherwise
                     else
                         report_initialization("invalid definition %a for language %a in %a",definition,tag,filename)
@@ -207,6 +342,14 @@ local function loaddefinitions(tag,specification)
             elseif trace_patterns then
                 report_initialization("definition %a for language %a already loaded",definition,tag)
             end
+        end
+        if #ploaded > 0 then
+            instance:clear_patterns()
+            instance:patterns(unique(tag,requested,ploaded))
+        end
+        if #eloaded > 0 then
+            instance:clear_hyphenation()
+            instance:hyphenation(concat(eloaded," "))
         end
         return ok
     elseif trace_patterns then
@@ -259,7 +402,9 @@ function languages.associate(tag,script,language) -- not yet used
 end
 
 function languages.association(tag) -- not yet used
-    if type(tag) == "number" then
+    if not tag then
+        tag = numbers[tex.language]
+    elseif type(tag) == "number" then
         tag = numbers[tag]
     end
     local lat = tag and associated[tag]
@@ -295,10 +440,11 @@ if environment.initex then
 
 else
 
-    function languages.getnumber(tag,default,patterns)
+    function languages.getnumber(tag,default,patterns,factor)
         local l = registered[tag]
         if l then
             if l.dirty then
+                l.factor = factor == v_yes and true or false
                 if trace_patterns then
                     report_initialization("checking patterns for %a with default %a",tag,default)
                 end
@@ -353,19 +499,43 @@ function languages.postexhyphenchar(what) return postexhyphenchar(tolang(what)) 
 -- e['user-friendly'] = 'user=friend-ly'
 -- e['exceptionally-friendly'] = 'excep-tionally=friend-ly'
 
+local invalid = { "{", "}", "-" }
+
+local function collecthjcodes(data,str)
+    local found = data.extras and data.extras.characters or { }
+    for s in utfcharacters(str) do
+        if not found[s] then
+            found[s] = true
+        end
+    end
+    for i=1,#invalid do -- less checks this way
+        local c = invalid[i]
+        if found[c] then
+            found[c] = nil
+        end
+    end
+    data.extras = { characters = found }
+    sethjcodes(data.instance,data,"extras",data.factor)
+end
+
 function languages.loadwords(tag,filename)
     local data, instance = resolve(tag)
     if data then
         statistics.starttiming(languages)
-        instance:hyphenation(io.loaddata(filename) or "")
+        local str = io.loaddata(filename) or ""
+        collecthjcodes(data,str)
+        instance:hyphenation(str)
         statistics.stoptiming(languages)
     end
 end
 
+
 function languages.setexceptions(tag,str)
     local data, instance = resolve(tag)
     if data then
-        instance:hyphenation(strip(str)) -- we need to strip leading spaces
+        str = strip(str) -- we need to strip leading spaces
+        collecthjcodes(data,str)
+        instance:hyphenation(str)
     end
 end
 
@@ -422,7 +592,7 @@ end)
 implement {
     name      = "languagenumber",
     actions   = { languages.getnumber, context },
-    arguments = { "string", "string", "string" }
+    arguments = { "string", "string", "string", "string" }
 }
 
 implement {
@@ -453,7 +623,6 @@ implement {
     actions   = languages.setexceptions,
     arguments = { "string", "string" }
 }
-
 
 implement {
     name      = "currentprehyphenchar",

@@ -16,8 +16,7 @@ local backends, lpdf = backends, lpdf
 local nodeinjections = backends.pdf.nodeinjections
 
 local colors         = attributes.colors
-local basepoints     = number.dimenfactors["bp"]
-local inches         = number.dimenfactors["in"]
+local basepoints     = number.dimenfactors.bp
 
 local nodeinjections = backends.pdf.nodeinjections
 local codeinjections = backends.pdf.codeinjections
@@ -36,46 +35,31 @@ local pdfflushobject = lpdf.flushobject
 -- 22 : << /Bounds [ ] /Domain [ 0.0 1.0 ] /Encode [ 0.0 1.0 ] /FunctionType 3 /Functions [ 31 0 R ] >>
 -- 31 : << /C0 [ 1.0 0.0 ] /C1 [ 0.0 1.0 ] /Domain [ 0.0 1.0 ] /FunctionType 2 /N 1.0 >>
 
-local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates,separation,steps)
-    if steps then
-        color_a = color_a[1]
-        color_b = color_b[1]
-    end
-    local f = pdfdictionary {
-        FunctionType = 2,
-        Domain       = pdfarray(domain), -- domain is actually a string
-        C0           = pdfarray(color_a),
-        C1           = pdfarray(color_b),
-        N            = tonumber(n),
-    }
-    separation = separation and registrations.getspotcolorreference(separation)
-    local s = pdfdictionary {
-        ShadingType = stype,
-        ColorSpace  = separation and pdfreference(separation) or pdfconstant(colorspace),
-        Function    = pdfreference(pdfflushobject(f)),
-        Coords      = pdfarray(coordinates),
-        Extend      = pdfarray { true, true },
-        AntiAlias   = pdfboolean(true),
-    }
-    lpdf.adddocumentshade(name,pdfreference(pdfflushobject(s)))
-end
-
 local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates,separation,steps,fractions)
     local func = nil
+    --
+    -- domain has to be consistently added in all dictionaries here otherwise
+    -- acrobat fails with a drawing error
+    --
+    domain = pdfarray(domain)
+    n      = tonumber(n)
+    --
     if steps then
         local list   = pdfarray()
         local bounds = pdfarray()
         local encode = pdfarray()
         for i=1,steps do
-            bounds[i]     = fractions[i] or 1
+            if i < steps then
+                bounds[i] = fractions[i] or 1
+            end
             encode[2*i-1] = 0
             encode[2*i]   = 1
             list  [i]     = pdfdictionary {
                 FunctionType = 2,
-                Domain       = pdfarray(domain), -- domain is actually a string
+                Domain       = domain,
                 C0           = pdfarray(color_a[i]),
                 C1           = pdfarray(color_b[i]),
-                N            = tonumber(n),
+                N            = n,
             }
         end
         func = pdfdictionary {
@@ -83,21 +67,22 @@ local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates,
             Bounds       = bounds,
             Encode       = encode,
             Functions    = list,
-            Domain       = pdfarray(domain), -- domain is actually a string
+            Domain       = domain,
         }
     else
         func = pdfdictionary {
             FunctionType = 2,
-            Domain       = pdfarray(domain), -- domain is actually a string
+            Domain       = domain,
             C0           = pdfarray(color_a),
             C1           = pdfarray(color_b),
-            N            = tonumber(n),
+            N            = n,
         }
     end
     separation = separation and registrations.getspotcolorreference(separation)
     local s = pdfdictionary {
         ShadingType = stype,
         ColorSpace  = separation and pdfreference(separation) or pdfconstant(colorspace),
+        Domain      = domain,
         Function    = pdfreference(pdfflushobject(func)),
         Coords      = pdfarray(coordinates),
         Extend      = pdfarray { true, true },
@@ -267,8 +252,6 @@ end
 
 -- temp hack
 
-local factor = number.dimenfactors.bp
-
 function img.package(image) -- see lpdf-u3d **
     local boundingbox = image.bbox
     local imagetag    = "Im" .. image.index
@@ -288,8 +271,42 @@ function img.package(image) -- see lpdf-u3d **
     local xform = img.scan {
         attr   = resources(),
         stream = formatters["%F 0 0 %F 0 0 cm /%s Do"](width,height,imagetag),
-        bbox   = { 0, 0, width/factor, height/factor },
+        bbox   = { 0, 0, width/basepoints, height/basepoints },
     }
     img.immediatewrite(xform)
     return xform
+end
+
+-- experimental
+
+local nofpatterns = 0
+local f_pattern   = formatters["q /Pattern cs /%s scn 0 0 %F %F re f Q"] -- q Q is not really needed
+
+local texsavebox  = tex.saveboxresource
+
+function lpdf.registerpattern(specification)
+    nofpatterns = nofpatterns + 1
+    local d = pdfdictionary {
+        Type        = pdfconstant("Pattern"),
+        PatternType = 1,
+        PaintType   = 1,
+        TilingType  = 2,
+        XStep       = (specification.width  or 10) * basepoints,
+        YStep       = (specification.height or 10) * basepoints,
+        Matrix      = {
+            1, 0, 0, 1,
+            (specification.hoffset or 0) * basepoints,
+            (specification.voffset or 0) * basepoints,
+        },
+    }
+    local resources  = lpdf.collectedresources{ patterns = false }
+    local attributes = d()
+    local onlybounds = 1
+    local patternobj = texsavebox(specification.number,attributes,resources,true,onlybounds)
+    lpdf.adddocumentpattern("Pt" .. nofpatterns,lpdf.reference(patternobj ))
+    return nofpatterns
+end
+
+function lpdf.patternstream(n,width,height)
+    return f_pattern("Pt" .. n,width*basepoints,height*basepoints)
 end

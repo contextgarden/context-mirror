@@ -36,6 +36,7 @@ local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getattr            = nuts.getattr
 local setattr            = nuts.setattr
+local setattrlist        = nuts.setattrlist
 local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 local setsubtype         = nuts.setsubtype
@@ -46,7 +47,6 @@ local setcolor           = nodes.tracers.colors.set
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local remove_node        = nuts.remove
-local copy_node_list     = nuts.copy_list
 local traverse_id        = nuts.traverse_id
 
 local tasks              = nodes.tasks
@@ -60,7 +60,6 @@ local new_rule           = nodepool.rule
 local nodecodes          = nodes.nodecodes
 local skipcodes          = nodes.skipcodes
 local glyph_code         = nodecodes.glyph
-local glue_code          = nodecodes.glue
 
 local space_skip_code    = skipcodes["spaceskip"]
 
@@ -88,36 +87,33 @@ local c_zero   = byte('0')
 local c_period = byte('.')
 
 local function inject_quad_space(unicode,head,current,fraction)
-    local attr = getfield(current,"attr")
     if fraction ~= 0 then
         fraction = fraction * fontquads[getfont(current)]
     end
     local glue = new_glue(fraction)
-    setfield(glue,"attr",attr)
-    setfield(current,"attr",nil)
+    setattrlist(glue,current)
+    setattrlist(current) -- why reset all
     setattr(glue,a_character,unicode)
     head, current = insert_node_after(head,current,glue)
     return head, current
 end
 
 local function inject_char_space(unicode,head,current,parent)
-    local attr = getfield(current,"attr")
     local font = getfont(current)
     local char = fontcharacters[font][parent]
     local glue = new_glue(char and char.width or fontparameters[font].space)
-    setfield(glue,"attr",attr)
-    setfield(current,"attr",nil)
+    setattrlist(glue,current)
+    setattrlist(current) -- why reset all
     setattr(glue,a_character,unicode)
     head, current = insert_node_after(head,current,glue)
     return head, current
 end
 
 local function inject_nobreak_space(unicode,head,current,space,spacestretch,spaceshrink)
-    local attr    = getfield(current,"attr")
     local glue    = new_glue(space,spacestretch,spaceshrink)
     local penalty = new_penalty(10000)
-    setfield(glue,"attr",attr)
-    setfield(current,"attr",nil)
+    setattrlist(glue,current)
+    setattrlist(current) -- why reset all
     setattr(glue,a_character,unicode) -- bombs
     head, current = insert_node_after(head,current,penalty)
     if trace_nbsp then
@@ -179,7 +175,9 @@ local methods = {
     -- The next one uses an attribute assigned to the character but still we
     -- don't have the 'local' value.
 
-    [0x001F] = function(head,current)
+    -- maybe also 0x0008 : backspace
+
+    [0x001F] = function(head,current) -- kind of special
         local next = getnext(current)
         if next then
             local char = isglyph(next)

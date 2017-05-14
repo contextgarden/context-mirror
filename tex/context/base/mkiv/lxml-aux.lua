@@ -19,7 +19,6 @@ local xml = xml
 local xmlcopy, xmlname = xml.copy, xml.name
 local xmlinheritedconvert = xml.inheritedconvert
 local xmlapplylpath = xml.applylpath
-local xmlfilter = xml.filter
 
 local type, next, setmetatable, getmetatable = type, next, setmetatable, getmetatable
 local insert, remove, fastcopy, concat = table.insert, table.remove, table.fastcopy, table.concat
@@ -258,7 +257,17 @@ function xml.replace(root,pattern,whatever)
                     report('replacing',pattern,c,e)
                 end
                 local d = p.dt
-                d[e.ni] = copiedelement(element,p)
+                local n = e.ni
+                local t = copiedelement(element,p)
+                if type(t) == "table" then
+                    d[n] = t[1]
+                    for i=2,#t do
+                        n = n + 1
+                        insert(d,n,t[i])
+                    end
+                else
+                    d[n] = t
+                end
                 redo_ni(d) -- probably not needed
             end
         end
@@ -753,7 +762,7 @@ local obsolete = xml.obsolete
 xml.strip_whitespace           = xml.strip                 obsolete.strip_whitespace      = xml.strip
 xml.collect_elements           = xml.collect               obsolete.collect_elements      = xml.collect
 xml.delete_element             = xml.delete                obsolete.delete_element        = xml.delete
-xml.replace_element            = xml.replace               obsolete.replace_element       = xml.replacet
+xml.replace_element            = xml.replace               obsolete.replace_element       = xml.replace
 xml.each_element               = xml.each                  obsolete.each_element          = xml.each
 xml.process_elements           = xml.process               obsolete.process_elements      = xml.process
 xml.insert_element_after       = xml.insertafter           obsolete.insert_element_after  = xml.insertafter

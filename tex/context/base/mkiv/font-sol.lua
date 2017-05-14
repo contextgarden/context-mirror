@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['font-sol'] = { -- this was: node
     license   = "see context related readme files"
 }
 
+-- We can speed this up.
+
 -- This module is dedicated to the oriental tex project and for
 -- the moment is too experimental to be publicly supported.
 --
@@ -21,8 +23,7 @@ if not modules then modules = { } end modules ['font-sol'] = { -- this was: node
 local gmatch, concat, format, remove = string.gmatch, table.concat, string.format, table.remove
 local next, tostring, tonumber = next, tostring, tonumber
 local insert, remove = table.insert, table.remove
-local utfchar = utf.char
-local random = math.random
+local getrandom = utilities.randomizer.get
 
 local utilities, logs, statistics, fonts, trackers = utilities, logs, statistics, fonts, trackers
 local interfaces, commands, attributes = interfaces, commands, attributes
@@ -64,17 +65,18 @@ local getattr            = nuts.getattr
 local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
+local getdir             = nuts.getdir
+local getwidth           = nuts.getwidth
 
-local setfield           = nuts.setfield
 local setattr            = nuts.setattr
 local setlink            = nuts.setlink
 local setnext            = nuts.setnext
 local setlist            = nuts.setlist
 
 local find_node_tail     = nuts.tail
-local free_node          = nuts.free
-local free_nodelist      = nuts.flush_list
-local copy_nodelist      = nuts.copy_list
+local flush_node         = nuts.flush_node
+local flush_node_list    = nuts.flush_list
+local copy_node_list     = nuts.copy_list
 local traverse_nodes     = nuts.traverse
 local traverse_ids       = nuts.traverse_id
 local hpack_nodes        = nuts.hpack
@@ -121,9 +123,7 @@ local stoptiming         = statistics.stoptiming
 local inject_kerns       = nodes.injections.handler
 
 local fonthashes         = fonts.hashes
-local fontdata           = fonthashes.identifiers
 local setfontdynamics    = fonthashes.setdynamics
-local fontprocesses      = fonthashes.processes
 
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
@@ -166,9 +166,10 @@ local dummy              = {
 
 local function checksettings(r,settings)
     local s = r.settings
-    local method = settings_to_hash(settings.method or "")
+    local method = settings_to_array(settings.method or "")
     local optimize, preroll, splitwords
-    for k, v in next, method do
+    for i=1,#method do
+        local k = method[i]
         if k == v_preroll then
             preroll = true
         elseif k == v_split then
@@ -235,6 +236,7 @@ local function convert(featuresets,name,list)
                 fs = contextsetups[feature]
                 fn = fs and fs.number
             end
+-- inspect(fs)
             if fn then
                 nofnumbers = nofnumbers + 1
                 numbers[nofnumbers] = fn
@@ -350,7 +352,8 @@ function splitters.split(head)
     local function flush() -- we can move this
         local font = getfont(start)
         local last = getnext(stop)
-        local list = last and copy_nodelist(start,last) or copy_nodelist(start)
+--         local list = last and copy_node_list(start,last) or copy_node_list(start)
+        local list = last and copy_node_list(start,stop) or copy_node_list(start)
         local n = #cache + 1
         if encapsulate then
             local user_one = new_usernumber(splitter_one,n)
@@ -368,7 +371,8 @@ function splitters.split(head)
                 end
             end
         end
-        if rlmode == "TRT" or rlmode == "+TRT" then
+        local r2l = rlmode == "TRT" or rlmode == "+TRT"
+        if r2l then
             local dirnode = new_textdir("+TRT")
             setlink(dirnode,list)
             list = dirnode
@@ -376,16 +380,17 @@ function splitters.split(head)
         local c = {
             original  = list,
             attribute = attribute,
-            direction = rlmode,
+         -- direction = rlmode,
             font      = font
         }
         if trace_split then
             report_splitters("cached %4i: font %a, attribute %a, direction %a, word %a",
-                n, font, attribute, nodes_to_utf(list,true), rlmode and "r2l" or "l2r")
+                n, font, attribute, nodes_to_utf(list,true), r2l and "r2l" or "l2r")
         end
         cache[n] = c
         local solution = solutions[attribute]
-        local l, m = #solution.less, #solution.more
+        local l = #solution.less
+        local m = #solution.more
         if l > max_less then max_less = l end
         if m > max_more then max_more = m end
         start, stop, done = nil, nil, true
@@ -421,7 +426,7 @@ function splitters.split(head)
             if start then
                 flush()
             end
-            rlmode = getfield(current,"dir")
+            rlmode = getdir(current)
         else
             if start then
                 flush()
@@ -569,14 +574,15 @@ local function doit(word,list,best,width,badness,line,set,listdir)
                 return false, changed
             end
         end
-        local original, attribute, direction = found.original, found.attribute, found.direction
-        local solution = solutions[attribute]
-        local features = solution and solution[set]
+        local original  = found.original
+        local attribute = found.attribute
+        local solution  = solutions[attribute]
+        local features  = solution and solution[set]
         if features then
             local featurenumber = features[best] -- not ok probably
             if featurenumber then
                 noftries = noftries + 1
-                local first = copy_nodelist(original)
+                local first = copy_node_list(original)
                 if not trace_colors then
                     for n in traverse_nodes(first) do -- maybe fast force so no attr needed
                         setattr(n,0,featurenumber) -- this forces dynamics
@@ -608,7 +614,7 @@ first = tonut(first)
                 if getid(first) == whatsit_code then
                     local temp = first
                     first = getnext(first)
-                    free_node(temp)
+                    flush_node(temp)
                 end
                 local last = find_node_tail(first)
                 -- replace [u]h->t by [u]first->last
@@ -622,7 +628,7 @@ first = tonut(first)
                 local temp, b = repack_hlist(list,width,'exactly',listdir)
                 if b > badness then
                     if trace_optimize then
-                        report_optimizers("line %a, badness before %a, after %a, criterium %a, verdict %a",line,badness,b,criterium,"quit")
+                        report_optimizers("line %a, set %a, badness before %a, after %a, criterium %a, verdict %a",line,set or "?",badness,b,criterium,"quit")
                     end
                     -- remove last insert
                     setlink(prev,h)
@@ -632,14 +638,14 @@ first = tonut(first)
                         setnext(t)
                     end
                     setnext(last)
-                    free_nodelist(first)
+                    flush_node_list(first)
                 else
                     if trace_optimize then
-                        report_optimizers("line %a, badness before: %a, after %a, criterium %a, verdict %a",line,badness,b,criterium,"continue")
+                        report_optimizers("line %a, set %a, badness before: %a, after %a, criterium %a, verdict %a",line,set or "?",badness,b,criterium,"continue")
                     end
                     -- free old h->t
                     setnext(t)
-                    free_nodelist(h) -- somhow fails
+                    flush_node_list(h) -- somehow fails
                     if not encapsulate then
                         word[2] = first
                         word[3] = last
@@ -701,7 +707,7 @@ end
 variants[v_random] = function(words,list,best,width,badness,line,set,listdir)
     local changed = 0
     while #words > 0 do
-        local done, c = doit(remove(words,random(1,#words)),list,best,width,badness,line,set,listdir)
+        local done, c = doit(remove(words,getrandom("solution",1,#words)),list,best,width,badness,line,set,listdir)
         changed = changed + c
         if done then
             break
@@ -752,8 +758,8 @@ function splitters.optimize(head)
     for current in traverse_ids(hlist_code,tonut(head)) do
         line = line + 1
         local sign  = getfield(current,"glue_sign")
-        local dir   = getfield(current,"dir")
-        local width = getfield(current,"width")
+        local dir   = getdir(current)
+        local width = getwidth(current)
         local list  = getlist(current)
         if not encapsulate and getid(list) == glyph_code then
             -- nasty .. we always assume a prev being there .. future luatex will always have a leftskip set
@@ -786,9 +792,9 @@ function splitters.optimize(head)
                     local bb, base
                     for i=1,max do
                         if base then
-                            free_nodelist(base)
+                            flush_node_list(base)
                         end
-                        base = copy_nodelist(list)
+                        base = copy_node_list(list)
                         local words = collect_words(base) -- beware: words is adapted
                         for j=i,max do
                             local temp, done, changes, b = optimize(words,base,j,width,badness,line,set,dir)
@@ -814,7 +820,7 @@ function splitters.optimize(head)
                             break
                         end
                     end
-                    free_nodelist(base)
+                    flush_node_list(base)
                 end
                 local words = collect_words(list)
                 for best=lastbest or 1,max do
@@ -842,7 +848,7 @@ function splitters.optimize(head)
     end
     for i=1,nc do
         local ci = cache[i]
-        free_nodelist(ci.original)
+        flush_node_list(ci.original)
     end
     cache = { }
     tex.hbadness = tex_hbadness

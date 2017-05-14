@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?context-directive job ctxfile x-setups.ctx ?>
-
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
     <!--        *     -->
@@ -91,6 +89,32 @@
         </cd:keywords>
     </cd:define>
 
+    <!-- @WS: These were unresolved. Shouldn't they become text? -->
+
+    <cd:define name="argument-content">
+        <cd:keywords delimiters="braces" list="yes">
+            <cd:content/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-content-optional">
+        <cd:keywords delimiters="braces" optional="yes">
+            <cd:content/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-content-list">
+        <cd:keywords delimiters="braces" list="yes">
+            <cd:content/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-content-list-optional">
+        <cd:keywords delimiters="braces" list="yes" optional="yes">
+            <cd:content/>
+        </cd:keywords>
+    </cd:define>
+
     <!--        *   -->
     <!-- \... {...} -->
     <!--            -->
@@ -117,6 +141,35 @@
     <cd:define name="argument-file-list-optional">
         <cd:keywords delimiters="braces" list="yes" optional="yes">
             <cd:constant type="cd:file"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * PATH     -->
+
+    <cd:define name="argument-path">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:path"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-path-optional">
+        <cd:keywords delimiters="braces" optional="yes">
+            <cd:constant type="cd:path"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-path-list">
+        <cd:keywords delimiters="braces" list="yes">
+            <cd:constant type="cd:path"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-path-list-optional">
+        <cd:keywords delimiters="braces" list="yes" optional="yes">
+            <cd:constant type="cd:path"/>
         </cd:keywords>
     </cd:define>
 

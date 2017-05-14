@@ -1,6 +1,9 @@
 -- In order to be able to use beta math fonts, we use our own file name and
 -- always remap.
 
+local kern_150 = { bottomright = { { kern = -150 } } }
+local kern_200 = { bottomright = { { kern = -200 } } }
+
 return {
     name = "latin modern",
     version = "1.00",
@@ -14,11 +17,24 @@ return {
             --  mathematics.tweaks.fixoverline,
             },
         },
+        kerns = {
+            [0x1D449] = kern_150, --
+            [0x1D44A] = kern_200, -- 𝑊
+        },
         dimensions = {
             -- always applied
          -- default = {
          -- },
             -- driven by 'mathdimensions' feature
+            default = {
+                -- the root is quite displaced
+                [0x221A] = {
+                    -- 73, -960, 853, 40
+                    yoffset = 960 - 40,
+                    height  = 960,
+                    depth   =  40,
+                },
+            },
             signs   = {
                 -- set dimensions
              -- [0x00B1] = { -- ±

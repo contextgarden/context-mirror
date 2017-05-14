@@ -89,16 +89,30 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="linenumbering" type="environment" variant="1" file="page-lin.mkvi">
+    <cd:command name="linenumbering" type="environment" file="page-lin.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuplinenumbering"/>
+                <cd:parameter name="continue">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="start">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="step">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="method">
+                    <cd:constant type="page"/>
+                    <cd:constant type="first" default="yes"/>
+                    <cd:constant type="next"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="linenumbering" type="environment" variant="2" file="page-lin.mkvi">
+    <cd:command name="linenumbering" type="environment" variant="argument" file="page-lin.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:keywords optional="yes">

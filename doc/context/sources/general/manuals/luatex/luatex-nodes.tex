@@ -201,6 +201,26 @@ its internal link structure is correct, otherwise an error may be result.
 The subtype numbers~4 and~5 belong to the \quote {of-f-ice} explanation given
 elsewhere.
 
+These disc nodes are kind of special as at some point they also keep information
+about breakpoints and nested ligatures. The \type {pre}, \type {post} and \type
+{replace} fields at the \LUA\ end are in fact indirectly accessed and have a
+\type {prev} pointer that is not \type {nil}. This means that when you mess
+around with the head of these (three) lists, you also need to reassign them
+because that will restore the proper \type {prev} pointer, so:
+
+\starttyping
+pre = d.pre
+-- change the list starting with pre
+d.pre = pre
+\stoptyping
+
+Otherwise you can end up with an invalid internal perception of reality and
+\LUATEX\ might even decide to crash on you. It also means that running forward
+over for instance \type {pre} is ok but backward you need to stop at \type {pre}.
+And you definitely must not mess with the node that \type {prev} points to, if
+only because it is not really an node but part of the disc data structure (so
+freeing it again might crash \LUATEX).
+
 \subsubsection{math nodes}
 
 \starttabulate[|lT|l|p|]
@@ -281,10 +301,14 @@ a \type {userskip} with subtype zero).
 
 \starttabulate[|lT|l|p|]
 \NC \rmbf field  \NC \bf type \NC \bf explanation \NC \NR
-\NC subtype      \NC number   \NC not used \NC \NR
+\NC subtype      \NC number   \NC \showsubtypes{penalty} \NC \NR
 \NC attr         \NC node     \NC list of attributes \NC \NR
 \NC penalty      \NC number   \NC the penalty value \NC \NR
 \stoptabulate
+
+The subtypes are just informative and \TEX\ itself doesn't use them. When you
+run into an \type {linebreakpenalty} you need to keep in mind that it's a
+accumulation of \type {club}, \type{widow} and other relevant penalties.
 
 \subsubsection[glyphnodes]{glyph nodes}
 
@@ -512,6 +536,7 @@ into a single node type with separate subtypes for differentiation.
 \NC sup         \NC kernel node \NC superscript \NC \NR
 \NC accent      \NC kernel node \NC top accent \NC \NR
 \NC bot_accent  \NC kernel node \NC bottom accent \NC \NR
+\NC fraction    \NC number      \NC larger step criterium (divided by 1000) \NC \NR
 \stoptabulate
 
 \subsubsubsection{style nodes}
@@ -536,9 +561,9 @@ a trailing \type {'} to signify \quote {cramped} styles.
 \NC scriptscript \NC node     \NC list of scriptscriptsize alternatives \NC \NR
 \stoptabulate
 
-A warning: never assign a node list to the display, text, script, or
-scriptscript field unless you are sure its internal link structure is
-correct, otherwise an error may be result.
+Warning: never assign a node list to the \type {display}, \type {text}, \type
+{script}, or \type {scriptscript} field unless you are sure its internal link
+structure is correct, otherwise an error may be result.
 
 \subsubsubsection{radical nodes}
 
@@ -551,11 +576,13 @@ correct, otherwise an error may be result.
 \NC sup         \NC kernel node    \NC superscript \NC \NR
 \NC left        \NC delimiter node \NC \NC \NR
 \NC degree      \NC kernel node    \NC only set by \type {\Uroot} \NC \NR
+\NC width       \NC number         \NC required width \NC \NR
+\NC options     \NC number         \NC bitset of rendering options \NC \NR
 \stoptabulate
 
-A warning: never assign a node list to the nucleus, sub, sup, left, or degree
-field unless you are sure its internal link structure is correct, otherwise an
-error may be result.
+Warning: never assign a node list to the \type {nucleus}, \type {sub}, \type
+{sup}, \type {left}, or \type {degree} field unless you are sure its internal
+link structure is correct, otherwise an error may be result.
 
 \subsubsubsection{fraction nodes}
 
@@ -566,11 +593,14 @@ error may be result.
 \NC num         \NC kernel node     \NC numerator \NC \NR
 \NC denom       \NC kernel node     \NC denominator \NC \NR
 \NC left        \NC delimiter node  \NC left side symbol \NC \NR
-\NC right       \NC delimiter node  \NC right side symbol\NC \NR
+\NC right       \NC delimiter node  \NC right side symbol \NC \NR
+\NC middle      \NC delimiter node  \NC middle symbol \NC \NR
+\NC options     \NC number          \NC bitset of rendering options \NC \NR
 \stoptabulate
 
-A warning: never assign a node list to the num, or denom field unless you are
-sure its internal link structure is correct, otherwise an error may be result.
+Warning: never assign a node list to the \type {num}, or \type {denom} field
+unless you are sure its internal link structure is correct, otherwise an error
+may be result.
 
 \subsubsubsection{fence nodes}
 
@@ -579,7 +609,15 @@ sure its internal link structure is correct, otherwise an error may be result.
 \NC subtype     \NC number         \NC \showsubtypes{fence} \NC \NR
 \NC attr        \NC node           \NC list of attributes \NC \NR
 \NC delim       \NC delimiter node \NC delimiter specification \NC \NR
+\NC italic      \NC number         \NC italic correction \NC \NR
+\NC height      \NC number         \NC required height \NC \NR
+\NC depth       \NC number         \NC required depth \NC \NR
+\NC options     \NC number         \NC bitset of rendering options \NC \NR
+\NC class       \NC number         \NC spacing related class \NC \NR
 \stoptabulate
+
+Warning: some of these fields are used by the renderer and might get adapted in
+the process.
 
 \subsection{whatsit nodes}
 
@@ -595,7 +633,7 @@ Whatsit nodes come in many subtypes that you can ask for by running
 \stopluacode
 . % period
 
-\subsubsection{front|-|end whatits}
+\subsubsection{front|-|end whatsits}
 
 \subsubsubsection{open whatsits}
 
@@ -625,7 +663,7 @@ Whatsit nodes come in many subtypes that you can ask for by running
 \NC stream      \NC number   \NC \TEX's stream id number \NC \NR
 \stoptabulate
 
-\subsubsubsection{user_defined whatits}
+\subsubsubsection{user_defined whatsits}
 
 User|-|defined whatsit nodes can only be created and handled from \LUA\ code. In
 effect, they are an extension to the extension mechanism. The \LUATEX\ engine
@@ -677,9 +715,9 @@ The difference between \type {data} and \type {string} is that on assignment, th
 \type {data} field is converted to a token list, cf. use as \type {\latelua}. The
 \type {string} version is treated as a literal string.
 
-\subsubsection{\DVI\ backend whatits}
+\subsubsection{\DVI\ backend whatsits}
 
-\subsubsection{special whatits}
+\subsubsection{special whatsits}
 
 \starttabulate[|lT|l|p|]
 \NC \rmbf field \NC \bf type \NC \bf explanation \NC \NR
@@ -687,9 +725,9 @@ The difference between \type {data} and \type {string} is that on assignment, th
 \NC data        \NC string   \NC the \type {\special} information \NC \NR
 \stoptabulate
 
-\subsubsection{\PDF\ backend whatits}
+\subsubsection{\PDF\ backend whatsits}
 
-\subsubsubsection{pdf_literal whatits}
+\subsubsubsection{pdf_literal whatsits}
 
 \starttabulate[|lT|l|p|]
 \NC \rmbf field \NC \bf type \NC \bf explanation \NC \NR
@@ -705,9 +743,14 @@ Possible mode values are:
 \NC 0           \NC setorigin              \NC \NR
 \NC 1           \NC page                   \NC \NR
 \NC 2           \NC direct                 \NC \NR
+\NC 3           \NC raw                    \NC \NR
 \stoptabulate
 
-\subsubsubsection{pdf_refobj whatits}
+The higher the number, the less checking and the more you can run into troubles.
+Especially the \type {raw} variant can produce bad \PDF\ so you can best check
+what you generate.
+
+\subsubsubsection{pdf_refobj whatsits}
 
 \starttabulate[|lT|l|p|]
 \NC \rmbf field \NC \bf type \NC \bf explanation \NC \NR
@@ -715,7 +758,7 @@ Possible mode values are:
 \NC objnum      \NC number   \NC the referenced \PDF\ object number \NC \NR
 \stoptabulate
 
-\subsubsubsection{pdf_annot whatits}
+\subsubsubsection{pdf_annot whatsits}
 
 \starttabulate[|lT|l|p|]
 \NC \rmbf field \NC \bf type \NC \bf explanation \NC \NR
@@ -727,7 +770,7 @@ Possible mode values are:
 \NC data        \NC string   \NC the annotation data \NC \NR
 \stoptabulate
 
-\subsubsubsection{pdf_start_link whatits}
+\subsubsubsection{pdf_start_link whatsits}
 
 \starttabulate[|lT|l|p|]
 \NC \rmbf field \NC \bf type \NC \bf explanation \NC \NR
@@ -740,14 +783,14 @@ Possible mode values are:
 \NC action      \NC node     \NC the action to perform \NC \NR
 \stoptabulate
 
-\subsubsubsection{pdf_end_link whatits}
+\subsubsubsection{pdf_end_link whatsits}
 
 \starttabulate[|lT|l|p|]
 \NC \rmbf field \NC \bf type        \NC \bf explanation \NC \NR
 \NC attr        \NC node \NC \NC \NR
 \stoptabulate
 
-\subsubsubsection{pdf_dest whatits}
+\subsubsubsection{pdf_dest whatsits}
 
 \starttabulate[|lT|l|p|]
 \NC \rmbf field \NC \bf type \NC \bf explanation \NC \NR
@@ -763,7 +806,7 @@ Possible mode values are:
 \NC objnum      \NC number   \NC the \PDF\ object number \NC \NR
 \stoptabulate
 
-\subsubsubsection{pdf_action whatits}
+\subsubsubsection{pdf_action whatsits}
 
 These are a special kind of item that only appears inside \PDF\ start link
 objects.
@@ -795,7 +838,7 @@ Valid window types are:
 \NC 2 \NC nonew  \NC \NR
 \stoptabulate
 
-\subsubsubsection{pdf_thread whatits}
+\subsubsubsection{pdf_thread whatsits}
 
 \starttabulate[|lT|l|p|]
 \NC \rmbf field \NC \bf type \NC \bf explanation \NC \NR
@@ -809,7 +852,7 @@ Valid window types are:
 \NC thread_attr \NC number   \NC extra thread information \NC \NR
 \stoptabulate
 
-\subsubsubsection{pdf_start_thread whatits}
+\subsubsubsection{pdf_start_thread whatsits}
 
 \starttabulate[|lT|l|p|]
 \NC \rmbf field \NC \bf type \NC \bf explanation \NC \NR
@@ -823,14 +866,14 @@ Valid window types are:
 \NC thread_attr \NC number   \NC extra thread information \NC \NR
 \stoptabulate
 
-\subsubsubsection{pdf_end_thread whatits}
+\subsubsubsection{pdf_end_thread whatsits}
 
 \starttabulate[|lT|l|p|]
 \NC \rmbf field \NC \bf type \NC \bf explanation \NC \NR
 \NC attr        \NC node     \NC \NC \NR
 \stoptabulate
 
-\subsubsubsection{pdf_colorstack whatits}
+\subsubsubsection{pdf_colorstack whatsits}
 
 \starttabulate[|lT|l|p|]
 \NC \rmbf field \NC \bf type \NC \bf explanation \NC \NR
@@ -840,7 +883,7 @@ Valid window types are:
 \NC data        \NC string   \NC data \NC \NR
 \stoptabulate
 
-\subsubsubsection{pdf_setmatrix whatits}
+\subsubsubsection{pdf_setmatrix whatsits}
 
 \starttabulate[|lT|l|p|]
 \NC \rmbf field \NC \bf type \NC \bf explanation \NC \NR
@@ -848,225 +891,19 @@ Valid window types are:
 \NC data        \NC string   \NC data \NC \NR
 \stoptabulate
 
-\subsubsubsection{pdf_save whatits}
+\subsubsubsection{pdf_save whatsits}
 
 \starttabulate[|lT|l|p|]
 \NC \rmbf field \NC \bf type \NC \bf explanation \NC \NR
 \NC attr        \NC node     \NC list of attributes \NC \NR
 \stoptabulate
 
-\subsubsubsection{pdf_restore whatits}
+\subsubsubsection{pdf_restore whatsits}
 
 \starttabulate[|lT|l|p|]
 \NC \rmbf field \NC \bf type \NC \bf explanation \NC \NR
 \NC attr        \NC node     \NC list of attributes \NC \NR
 \stoptabulate
-
-\section{Two access models}
-
-Deep down in \TEX\ a node has a number which is an numeric entry in a memory
-table. In fact, this model, where \TEX\ manages memory is real fast and one of
-the reasons why plugging in callbacks that operate on nodes is quite fast too.
-Each node gets a number that is in fact an index in the memory table and that
-number often gets reported when you print node related information.
-
-There are two access models, a robust one using a so called user data object that
-provides a virtual interface to the internal nodes, and a more direct access which
-uses the node numbers directly. The first model provide key based access while
-the second always accesses fields via functions:
-
-\starttyping
-nodeobject.char
-getfield(nodenumber,"char")
-\stoptyping
-
-If you use the direct model, even if you know that you deal with numbers, you
-should not depend on that property but treat it an abstraction just like
-traditional nodes. In fact, the fact that we use a simple basic datatype has the
-penalty that less checking can be done, but less checking is also the reason why
-it's somewhat faster. An important aspect is that one cannot mix both methods,
-but you can cast both models. So, multiplying a node number makes no sense.
-
-So our advice is: use the indexed (table) approach when possible and investigate
-the direct one when speed might be an real issue. For that reason we also provide
-the \type {get*} and \type {set*} functions in the top level node namespace.
-There is a limited set of getters. When implementing this direct approach the
-regular index by key variant was also optimized, so direct access only makes
-sense when we're accessing nodes millions of times (which happens in some font
-processing for instance).
-
-We're talking mostly of getters because setters are less important. Documents
-have not that many content related nodes and setting many thousands of properties
-is hardly a burden contrary to millions of consultations.
-
-Normally you will access nodes like this:
-
-\starttyping
-local next = current.next
-if next then
-    -- do something
-end
-\stoptyping
-
-Here \type {next} is not a real field, but a virtual one. Accessing it results in
-a metatable method being called. In practice it boils down to looking up the node
-type and based on the node type checking for the field name. In a worst case you
-have a node type that sits at the end of the lookup list and a field that is last
-in the lookup chain. However, in successive versions of \LUATEX\ these lookups
-have been optimized and the most frequently accessed nodes and fields have a
-higher priority.
-
-Because in practice the \type {next} accessor results in a function call, there
-is some overhead involved. The next code does the same and performs a tiny bit
-faster (but not that much because it is still a function call but one that knows
-what to look up).
-
-\starttyping
-local next = node.next(current)
-if next then
-    -- do something
-end
-\stoptyping
-
-If performance matters you can use an function instead:
-
-\starttabulate[|T|p|]
-\NC getnext    \NC parsing nodelist always involves this one \NC \NR
-\NC getprev    \NC used less but is logical companion to \type {getnext} \NC \NR
-\NC getboth    \NC returns the next and prev pointer of a node \NC \NR
-\NC getid      \NC consulted a lot \NC \NR
-\NC getsubtype \NC consulted less but also a topper \NC \NR
-\NC getfont    \NC used a lot in \OPENTYPE\ handling (glyph nodes are consulted a lot) \NC \NR
-\NC getchar    \NC idem and also in other places \NC \NR
-\NC getdisc    \NC returns the \type {pre}, \type {post} and \type {replace} fields and
-                   optionally when true is passed also the tail fields. \NC \NR
-\NC getlist    \NC we often parse nested lists so this is a convenient one too
-                   (only works for hlist and vlist!) \NC \NR
-\NC getleader  \NC comparable to list, seldom used in \TEX\ (but needs frequent consulting
-                   like lists; leaders could have been made a dedicated node type) \NC \NR
-\NC getfield   \NC generic getter, sufficient for the rest (other field names are
-                   often shared so a specific getter makes no sense then) \NC \NR
-\stoptabulate
-
-The direct variants also have setters, where the discretionary setter takes three
-(optional) arguments plus an optional fourth indicating the subtype.
-
-It doesn't make sense to add getters for all fields, also because some are not
-unique to one node type. Profiling demonstrated that these fields can get
-accesses way more times than other fields. Even in complex documents, many node
-and fields types never get seen, or seen only a few times. Most functions in the
-\type {node} namespace have a companion in \type {node.direct}, but of course not
-the ones that don't deal with nodes themselves. The following table summarized
-this:
-
-% \startcolumns[balance=yes]
-
-\def\yes{$+$} \def\nop{$-$}
-
-\starttabulate[|T|c|c|]
-\HL
-\NC \bf function                 \NC \bf node \NC \bf direct \NC \NR
-\HL
-\NC \type {copy_list}            \NC \yes \NC \yes  \NC \NR
-\NC \type {copy}                 \NC \yes \NC \yes  \NC \NR
-\NC \type {count}                \NC \yes \NC \yes  \NC \NR
-\NC \type {current_attr}         \NC \yes \NC \yes  \NC \NR
-\NC \type {dimensions}           \NC \yes \NC \yes  \NC \NR
-\NC \type {do_ligature_n}        \NC \yes \NC \yes  \NC \NR
-\NC \type {effective_glue}       \NC \yes \NC \yes  \NC \NR
-\NC \type {end_of_math}          \NC \yes \NC \yes  \NC \NR
-\NC \type {family_font}          \NC \yes \NC \nop  \NC \NR
-\NC \type {fields}               \NC \yes \NC \nop  \NC \NR
-\NC \type {first_character}      \NC \yes \NC \nop  \NC \NR
-\NC \type {first_glyph}          \NC \yes \NC \yes  \NC \NR
-\NC \type {flush_list}           \NC \yes \NC \yes  \NC \NR
-\NC \type {flush_node}           \NC \yes \NC \yes  \NC \NR
-\NC \type {free}                 \NC \yes \NC \yes  \NC \NR
-\NC \type {getboth}              \NC \yes \NC \yes  \NC \NR
-\NC \type {getbox}               \NC \nop \NC \yes  \NC \NR
-\NC \type {getchar}              \NC \yes \NC \yes  \NC \NR
-\NC \type {getdisc}              \NC \yes \NC \yes  \NC \NR
-\NC \type {getfield}             \NC \yes \NC \yes  \NC \NR
-\NC \type {getfont}              \NC \yes \NC \yes  \NC \NR
-\NC \type {getid}                \NC \yes \NC \yes  \NC \NR
-\NC \type {getleader}            \NC \yes \NC \yes  \NC \NR
-\NC \type {getlist}              \NC \yes \NC \yes  \NC \NR
-\NC \type {getnext}              \NC \yes \NC \yes  \NC \NR
-\NC \type {getprev}              \NC \yes \NC \yes  \NC \NR
-\NC \type {getsubtype}           \NC \yes \NC \yes  \NC \NR
-\NC \type {has_attribute}        \NC \yes \NC \yes  \NC \NR
-\NC \type {get_attribute}        \NC \yes \NC \yes  \NC \NR
-\NC \type {find_attribute}       \NC \yes \NC \yes  \NC \NR
-\NC \type {has_field}            \NC \yes \NC \yes  \NC \NR
-\NC \type {has_glyph}            \NC \yes \NC \yes  \NC \NR
-\NC \type {hpack}                \NC \yes \NC \yes  \NC \NR
-\NC \type {id}                   \NC \yes \NC \nop  \NC \NR
-\NC \type {insert_after}         \NC \yes \NC \yes  \NC \NR
-\NC \type {insert_before}        \NC \yes \NC \yes  \NC \NR
-\NC \type {is_char}              \NC \yes \NC \yes  \NC \NR
-\NC \type {is_glyph}             \NC \yes \NC \yes  \NC \NR
-\NC \type {is_direct}            \NC \nop \NC \yes  \NC \NR
-\NC \type {is_node}              \NC \yes \NC \yes  \NC \NR
-\NC \type {kerning}              \NC \yes \NC \yes  \NC \NR
-\NC \type {last_node}            \NC \yes \NC \yes  \NC \NR
-\NC \type {length}               \NC \yes \NC \yes  \NC \NR
-\NC \type {ligaturing}           \NC \yes \NC \yes  \NC \NR
-\NC \type {mlist_to_hlist}       \NC \yes \NC \nop  \NC \NR
-\NC \type {new}                  \NC \yes \NC \yes  \NC \NR
-\NC \type {next}                 \NC \yes \NC \nop  \NC \NR
-\NC \type {prev}                 \NC \yes \NC \nop  \NC \NR
-\NC \type {protect_glyph}        \NC \yes \NC \yes  \NC \NR
-\NC \type {protect_glyphs}       \NC \yes \NC \yes  \NC \NR
-\NC \type {protrusion_skippable} \NC \yes \NC \yes  \NC \NR
-\NC \type {remove}               \NC \yes \NC \yes  \NC \NR
-\NC \type {set_attribute}        \NC \yes \NC \yes  \NC \NR
-\NC \type {setboth}              \NC \yes \NC \yes  \NC \NR
-\NC \type {setbox}               \NC \yes \NC \yes  \NC \NR
-\NC \type {setchar}              \NC \yes \NC \yes  \NC \NR
-\NC \type {setdisc}              \NC \yes \NC \yes  \NC \NR
-\NC \type {setfield}             \NC \yes \NC \yes  \NC \NR
-\NC \type {setlink}              \NC \yes \NC \yes  \NC \NR
-\NC \type {setnext}              \NC \yes \NC \yes  \NC \NR
-\NC \type {setprev}              \NC \yes \NC \yes  \NC \NR
-\NC \type {slide}                \NC \yes \NC \yes  \NC \NR
-\NC \type {subtype}              \NC \yes \NC \nop  \NC \NR
-\NC \type {subtypes}             \NC \yes \NC \nop  \NC \NR
-\NC \type {tail}                 \NC \yes \NC \yes  \NC \NR
-\NC \type {todirect}             \NC \yes \NC \yes  \NC \NR
-\NC \type {tonode}               \NC \yes \NC \yes  \NC \NR
-\NC \type {tostring}             \NC \yes \NC \yes  \NC \NR
-\NC \type {traverse_id}          \NC \yes \NC \yes  \NC \NR
-\NC \type {traverse_char}        \NC \yes \NC \yes  \NC \NR
-\NC \type {traverse}             \NC \yes \NC \yes  \NC \NR
-\NC \type {types}                \NC \yes \NC \nop  \NC \NR
-\NC \type {type}                 \NC \yes \NC \nop  \NC \NR
-\NC \type {unprotect_glyphs}     \NC \yes \NC \yes  \NC \NR
-\NC \type {unset_attribute}      \NC \yes \NC \yes  \NC \NR
-\NC \type {usedlist}             \NC \yes \NC \yes  \NC \NR
-\NC \type {vpack}                \NC \yes \NC \yes  \NC \NR
-\NC \type {whatsits}             \NC \yes \NC \nop  \NC \NR
-\NC \type {whatsitsubtypes}      \NC \yes \NC \nop  \NC \NR
-\NC \type {write}                \NC \yes \NC \yes  \NC \NR
-\NC \type {setglue}              \NC \yes \NC \yes  \NC \NR
-\NC \type {getglue}              \NC \yes \NC \yes  \NC \NR
-\NC \type {glue_is_zero}         \NC \yes \NC \yes  \NC \NR
-\stoptabulate
-
-% \stopcolumns
-
-The \type {node.next} and \type {node.prev} functions will stay but for
-consistency there are variants called \type {getnext} and \type {getprev}. We had
-to use \type {get} because \type {node.id} and \type {node.subtype} are already
-taken for providing meta information about nodes. Note: The getters do only basic
-checking for valid keys. You should just stick to the keys mentioned in the
-sections that describe node properties.
-
-Some nodes have indirect references. For instance a math character refers to a
-family instead of a font. In that case we provide a virtual font field as
-accessor. So, \type {getfont} and \type {.font} can be used on them. The same is
-true for the \type {width}, \type {height} and \type {depth} of glue nodes. These
-actually access the spec node properties, and here we can set as well as get the
-values.
 
 \section{The \type {node} library}
 
@@ -1234,15 +1071,20 @@ the \TEX\ level.
 
 This function accepts string \type {id} and \type {subtype} values as well.
 
-\subsubsection{\type {node.free}}
+\subsubsection{\type {node.free} and \type {node.flush_node}}
 
 \startfunctioncall
-node.free(<node> n)
+<node> next =
+    node.free(<node> n)
+flush_node(<node> n)
 \stopfunctioncall
 
 Removes the node \type {n} from \TEX's memory. Be careful: no checks are done on
 whether this node is still pointed to from a register or some \type {next} field:
 it is up to you to make sure that the internal data structures remain correct.
+
+The \type {free} function returns the next field of the freed node, while the
+\type {flush_node} alternative returns nothing.
 
 \subsubsection{\type {node.flush_list}}
 
@@ -1385,7 +1227,7 @@ The second return value is the badness of the generated box.
 
 See the description of \type {node.hpack()} for a few memory allocation caveats.
 
-\subsubsection{\type {node.dimensions}}
+\subsubsection{\type {node.dimensions}, \type {node.rangedimensions}}
 
 \startfunctioncall
 <number> w, <number> h, <number> d  =
@@ -1438,7 +1280,17 @@ example in code like this, which prints the width of the space in between the
 
 You need to keep in mind that this is one of the few places in \TEX\ where floats
 are used, which means that you can get small differences in rounding when you
-compare the width repported by \type {hpack} with \type {dimensions}.
+compare the width reported by \type {hpack} with \type {dimensions}.
+
+The second alternative saves a few lookups and can be more convenient in some
+cases:
+
+\startfunctioncall
+<number> w, <number> h, <number> d  =
+    node.rangedimensions(<node> parent, <node> first)
+<number> w, <number> h, <number> d  =
+    node.rangedimensions(<node> parent, <node> first, <node> last)
+\stopfunctioncall
 
 \subsubsection{\type {node.mlist_to_hlist}}
 
@@ -1574,6 +1426,25 @@ See the previous section for details. The change is in the local function \type
  end
 \stoptyping
 
+\subsubsection{\type {node.traverse_char}}
+
+This iterators loops over the glyph nodes in a list. Only nodes with a subtype
+less than 256 are seen.
+
+\startfunctioncall
+<node> n =
+    node.traverse_char(<node> n)
+\stopfunctioncall
+
+\subsubsection{\type {node.has_glyph}}
+
+This function returns the first glyph or disc node in the given list:
+
+\startfunctioncall
+<node> n =
+    node.has_glyph(<node> n)
+\stopfunctioncall
+
 \subsubsection{\type {node.end_of_math}}
 
 \startfunctioncall
@@ -1680,7 +1551,7 @@ Subtracts 256 from all glyph node subtypes. This and the next function are
 helpers to convert from \type {characters} to \type {glyphs} during node
 processing.
 
-\subsubsection{\type {node.protect_glyphs}}
+\subsubsection{\type {node.protect_glyphs} and \type {node.protect_glyph}}
 
 \startfunctioncall
 node.protect_glyphs(<node> n)
@@ -1688,7 +1559,8 @@ node.protect_glyphs(<node> n)
 
 Adds 256 to all glyph node subtypes in the node list starting at \type {n},
 except that if the value is 1, it adds only 255. The special handling of 1 means
-that \type {characters} will become \type {glyphs} after subtraction of 256.
+that \type {characters} will become \type {glyphs} after subtraction of 256. A
+single character can be marked by the singular call.
 
 \subsubsection{\type {node.last_node}}
 
@@ -1749,6 +1621,9 @@ The next call will return 5 values (or northing when no glue is passed).
 <integer> width, <integer> stretch, <integer> shrink, <integer> stretch_order,
     <integer> shrink_order = node.getglue(<node> n)
 \stopfunctioncall
+
+When the second argument is false, only the width is returned (this is consistent
+with \type {tex.get}).
 
 \subsubsection{\type {node.is_zero_glue}}
 
@@ -1823,6 +1698,306 @@ attributes or attribute|-|value pairs are ignored.
 
 If the attribute was actually deleted, returns its old value. Otherwise, returns
 \type {nil}.
+
+\subsubsection{\type {node.slide}}
+
+This helper makes sure that the node lists is double linked and returns the found
+tail node.
+
+\startfunctioncall
+<node> tail =
+    node.slide(<node> n)
+\stopfunctioncall
+
+After some callbacks automatic sliding takes place. This feature can be turned
+off with \type {node.fix_node_lists(false)} but you better make sure then that
+you don't mess up lists. In most cases \TEX\ itself only uses \type {next}
+pointers but your other callbacks might expect proper \type {prev} pointers too.
+Future versions of \LUATEX\ can add more checking but this will not influence
+usage.
+
+\subsubsection{\type {node.check_discretionary} and \type {node.check_discretionaries}}
+
+When you fool around with disc nodes you need to be aware of the fact that they
+have a special internal data structure. As long as you reassign the fields when
+you have extended the lists it's ok because then the tail pointers get updated,
+but when you add to list without reassigning you might end up in troubles when
+the linebreak routien kicks in. You can call this function to check the list for
+issues with disc nodes.
+
+\startfunctioncall
+node.check_discretionary(<node> n)
+node.check_discretionaries(<node> head)
+\stopfunctioncall
+
+The plural variant runs over all disc nodes in a list, the singular variant
+checks one node only (it also checks if the node is a disc node).
+
+\subsubsection{\type {node.family_font}}
+
+When you pass it a proper family identifier the next helper will return the font
+currently associated with it. You can normally also access the font with the normal
+font field or getter because it will resolve the family automatically for noads.
+
+\startfunctioncall
+<integer> id =
+    node.family_font(<integer> fam)
+\stopfunctioncall
+
+\section{Two access models}
+
+Deep down in \TEX\ a node has a number which is an numeric entry in a memory
+table. In fact, this model, where \TEX\ manages memory is real fast and one of
+the reasons why plugging in callbacks that operate on nodes is quite fast too.
+Each node gets a number that is in fact an index in the memory table and that
+number often gets reported when you print node related information.
+
+There are two access models, a robust one using a so called user data object that
+provides a virtual interface to the internal nodes, and a more direct access which
+uses the node numbers directly. The first model provide key based access while
+the second always accesses fields via functions:
+
+\starttyping
+nodeobject.char
+getfield(nodenumber,"char")
+\stoptyping
+
+If you use the direct model, even if you know that you deal with numbers, you
+should not depend on that property but treat it an abstraction just like
+traditional nodes. In fact, the fact that we use a simple basic datatype has the
+penalty that less checking can be done, but less checking is also the reason why
+it's somewhat faster. An important aspect is that one cannot mix both methods,
+but you can cast both models. So, multiplying a node number makes no sense.
+
+So our advice is: use the indexed (table) approach when possible and investigate
+the direct one when speed might be an real issue. For that reason we also provide
+the \type {get*} and \type {set*} functions in the top level node namespace.
+There is a limited set of getters. When implementing this direct approach the
+regular index by key variant was also optimized, so direct access only makes
+sense when we're accessing nodes millions of times (which happens in some font
+processing for instance).
+
+We're talking mostly of getters because setters are less important. Documents
+have not that many content related nodes and setting many thousands of properties
+is hardly a burden contrary to millions of consultations.
+
+Normally you will access nodes like this:
+
+\starttyping
+local next = current.next
+if next then
+    -- do something
+end
+\stoptyping
+
+Here \type {next} is not a real field, but a virtual one. Accessing it results in
+a metatable method being called. In practice it boils down to looking up the node
+type and based on the node type checking for the field name. In a worst case you
+have a node type that sits at the end of the lookup list and a field that is last
+in the lookup chain. However, in successive versions of \LUATEX\ these lookups
+have been optimized and the most frequently accessed nodes and fields have a
+higher priority.
+
+Because in practice the \type {next} accessor results in a function call, there
+is some overhead involved. The next code does the same and performs a tiny bit
+faster (but not that much because it is still a function call but one that knows
+what to look up).
+
+\starttyping
+local next = node.next(current)
+if next then
+    -- do something
+end
+\stoptyping
+
+Some accessors are used frequently and for these we provide more efficient helpers:
+
+\starttabulate[|T|p|]
+\NC getnext    \NC parsing nodelist always involves this one \NC \NR
+\NC getprev    \NC used less but is logical companion to \type {getnext} \NC \NR
+\NC getboth    \NC returns the next and prev pointer of a node \NC \NR
+\NC getid      \NC consulted a lot \NC \NR
+\NC getsubtype \NC consulted less but also a topper \NC \NR
+\NC getfont    \NC used a lot in \OPENTYPE\ handling (glyph nodes are consulted a lot) \NC \NR
+\NC getchar    \NC idem and also in other places \NC \NR
+\NC getwhd     \NC returns the \type {width}, \type {height} and \type {depth} of a list, rule or
+                   (unexpanded) glyph as well as glue (its spec is looked at) and unset nodes\NC \NR
+\NC getdisc    \NC returns the \type {pre}, \type {post} and \type {replace} fields and
+                   optionally when true is passed also the tail fields. \NC \NR
+\NC getlist    \NC we often parse nested lists so this is a convenient one too \NC \NR
+\NC getleader  \NC comparable to list, seldom used in \TEX\ (but needs frequent consulting
+                   like lists; leaders could have been made a dedicated node type) \NC \NR
+\NC getfield   \NC generic getter, sufficient for the rest (other field names are
+                   often shared so a specific getter makes no sense then) \NC \NR
+\NC getbox     \NC gets the given box (a list node) \NC \NR
+\stoptabulate
+
+In the direct namespace there are more such helpers and most of them are
+accompanied by setters. The getters and setters are clever enough to see what
+node is meant. We don't deal with whatsit nodes: their fields are always accessed
+by name. It doesn't make sense to add getters for all fields, we just identifier
+the most likely candidates. In complex documents, many node and fields types
+never get seen, or seen only a few times, but for instance glyphs are candidates
+for such optimization. The \type {node.direct} interface has some more helpers.
+\footnote {We can define the helpers in the node namespace with \type {getfield}
+which is about as efficient, so at some point we might provide that as module.}
+
+The \type {setdisc} helper takes three (optional) arguments plus an optional
+fourth indicating the subtype. Its \type {getdisc} takes an optional boolean;
+when its value is \type {true} the tail nodes will also be returned. The \type
+{setfont} helper takes an optional second argument, it being the character. The
+directmode setter \type {setlink} takes a list of nodes and will link them,
+thereby ignoring \type {nil} entries. The first valid node is returned (beware:
+for good reason it assumes single nodes). For rarely used fields no helpers are
+provided and there are a few that probably are used seldom too but were added for
+consistency. You can of course always define additional accessor using \type
+{getfield} and \type {setfield} with little overhead.
+
+% \startcolumns[balance=yes]
+
+\def\yes{$+$} \def\nop{$-$}
+
+\starttabulate[|T|c|c|]
+\HL
+\NC \bf function                 \NC \bf node \NC \bf direct \NC \NR
+\HL
+%NC \type {do_ligature_n}        \NC \yes \NC \yes  \NC \NR % was never documented and experimental
+\NC \type {check_discretionaries}\NC \yes \NC \yes  \NC \NR
+\NC \type {copy_list}            \NC \yes \NC \yes  \NC \NR
+\NC \type {copy}                 \NC \yes \NC \yes  \NC \NR
+\NC \type {count}                \NC \yes \NC \yes  \NC \NR
+\NC \type {current_attr}         \NC \yes \NC \yes  \NC \NR
+\NC \type {dimensions}           \NC \yes \NC \yes  \NC \NR
+\NC \type {effective_glue}       \NC \yes \NC \yes  \NC \NR
+\NC \type {end_of_math}          \NC \yes \NC \yes  \NC \NR
+\NC \type {family_font}          \NC \yes \NC \nop  \NC \NR
+\NC \type {fields}               \NC \yes \NC \nop  \NC \NR
+\NC \type {find_attribute}       \NC \yes \NC \yes  \NC \NR
+\NC \type {first_glyph}          \NC \yes \NC \yes  \NC \NR
+\NC \type {flush_list}           \NC \yes \NC \yes  \NC \NR
+\NC \type {flush_node}           \NC \yes \NC \yes  \NC \NR
+\NC \type {free}                 \NC \yes \NC \yes  \NC \NR
+\NC \type {get_attribute}        \NC \yes \NC \yes  \NC \NR
+\NC \type {getattributelist}     \NC \nop \NC \yes  \NC \NR
+\NC \type {getboth}              \NC \yes \NC \yes  \NC \NR
+\NC \type {getbox}               \NC \nop \NC \yes  \NC \NR
+\NC \type {getchar}              \NC \yes \NC \yes  \NC \NR
+\NC \type {getcomponents}        \NC \nop \NC \yes  \NC \NR
+\NC \type {getdepth}             \NC \nop \NC \yes  \NC \NR
+\NC \type {getdir}               \NC \nop \NC \yes  \NC \NR
+\NC \type {getdisc}              \NC \yes \NC \yes  \NC \NR
+\NC \type {getfield}             \NC \yes \NC \yes  \NC \NR
+\NC \type {getfont}              \NC \yes \NC \yes  \NC \NR
+\NC \type {getglue}              \NC \yes \NC \yes  \NC \NR
+\NC \type {getheight}            \NC \nop \NC \yes  \NC \NR
+\NC \type {getid}                \NC \yes \NC \yes  \NC \NR
+\NC \type {getkern}              \NC \nop \NC \yes  \NC \NR
+\NC \type {getlang}              \NC \nop \NC \yes  \NC \NR
+\NC \type {getleader}            \NC \yes \NC \yes  \NC \NR
+\NC \type {getlist}              \NC \yes \NC \yes  \NC \NR
+\NC \type {getnext}              \NC \yes \NC \yes  \NC \NR
+\NC \type {getnucleus}           \NC \nop \NC \yes  \NC \NR
+\NC \type {getoffsets}           \NC \nop \NC \yes  \NC \NR
+\NC \type {getpenalty}           \NC \nop \NC \yes  \NC \NR
+\NC \type {getprev}              \NC \yes \NC \yes  \NC \NR
+\NC \type {getproperty}          \NC \yes \NC \yes  \NC \NR
+\NC \type {getshift}             \NC \nop \NC \yes  \NC \NR
+\NC \type {getwidth}             \NC \nop \NC \yes  \NC \NR
+\NC \type {getwhd}               \NC \nop \NC \yes  \NC \NR
+\NC \type {getsub}               \NC \nop \NC \yes  \NC \NR
+\NC \type {getsubtype}           \NC \yes \NC \yes  \NC \NR
+\NC \type {getsup}               \NC \nop \NC \yes  \NC \NR
+\NC \type {has_attribute}        \NC \yes \NC \yes  \NC \NR
+\NC \type {has_field}            \NC \yes \NC \yes  \NC \NR
+\NC \type {has_glyph}            \NC \yes \NC \yes  \NC \NR
+\NC \type {hpack}                \NC \yes \NC \yes  \NC \NR
+\NC \type {id}                   \NC \yes \NC \nop  \NC \NR
+\NC \type {insert_after}         \NC \yes \NC \yes  \NC \NR
+\NC \type {insert_before}        \NC \yes \NC \yes  \NC \NR
+\NC \type {is_char}              \NC \yes \NC \yes  \NC \NR
+\NC \type {is_direct}            \NC \nop \NC \yes  \NC \NR
+\NC \type {is_glue_zero}         \NC \yes \NC \yes  \NC \NR
+\NC \type {is_glyph}             \NC \yes \NC \yes  \NC \NR
+\NC \type {is_node}              \NC \yes \NC \yes  \NC \NR
+\NC \type {kerning}              \NC \yes \NC \yes  \NC \NR
+\NC \type {last_node}            \NC \yes \NC \yes  \NC \NR
+\NC \type {length}               \NC \yes \NC \yes  \NC \NR
+\NC \type {ligaturing}           \NC \yes \NC \yes  \NC \NR
+\NC \type {mlist_to_hlist}       \NC \yes \NC \nop  \NC \NR
+\NC \type {new}                  \NC \yes \NC \yes  \NC \NR
+\NC \type {next}                 \NC \yes \NC \nop  \NC \NR
+\NC \type {prev}                 \NC \yes \NC \nop  \NC \NR
+\NC \type {protect_glyphs}       \NC \yes \NC \yes  \NC \NR
+\NC \type {protect_glyph}        \NC \yes \NC \yes  \NC \NR
+\NC \type {protrusion_skippable} \NC \yes \NC \yes  \NC \NR
+\NC \type {rangedimensions}      \NC \yes \NC \yes  \NC \NR
+\NC \type {remove}               \NC \yes \NC \yes  \NC \NR
+\NC \type {set_attribute}        \NC \nop \NC \yes  \NC \NR
+\NC \type {setattributelist}     \NC \nop \NC \yes  \NC \NR
+\NC \type {setboth}              \NC \nop \NC \yes  \NC \NR
+\NC \type {setbox}               \NC \nop \NC \yes  \NC \NR
+\NC \type {setchar}              \NC \nop \NC \yes  \NC \NR
+\NC \type {setcomponents}        \NC \nop \NC \yes  \NC \NR
+\NC \type {setdepth}             \NC \nop \NC \yes  \NC \NR
+\NC \type {setdir}               \NC \nop \NC \yes  \NC \NR
+\NC \type {setdisc}              \NC \nop \NC \yes  \NC \NR
+\NC \type {setfield}             \NC \yes \NC \yes  \NC \NR
+\NC \type {setfont}              \NC \nop \NC \yes  \NC \NR
+\NC \type {setglue}              \NC \yes \NC \yes  \NC \NR
+\NC \type {setheight}            \NC \nop \NC \yes  \NC \NR
+\NC \type {setid}                \NC \nop \NC \yes  \NC \NR
+\NC \type {setkern}              \NC \nop \NC \yes  \NC \NR
+\NC \type {setlang}              \NC \nop \NC \yes  \NC \NR
+\NC \type {setleader}            \NC \nop \NC \yes  \NC \NR
+\NC \type {setlist}              \NC \nop \NC \yes  \NC \NR
+\NC \type {setnext}              \NC \nop \NC \yes  \NC \NR
+\NC \type {setnucleus}           \NC \nop \NC \yes  \NC \NR
+\NC \type {setoffsets}           \NC \nop \NC \yes  \NC \NR
+\NC \type {setpenalty}           \NC \nop \NC \yes  \NC \NR
+\NC \type {setprev}              \NC \nop \NC \yes  \NC \NR
+\NC \type {setproperty}          \NC \nop \NC \yes  \NC \NR
+\NC \type {setshift}             \NC \nop \NC \yes  \NC \NR
+\NC \type {setwidth}             \NC \nop \NC \yes  \NC \NR
+\NC \type {setwhd}               \NC \nop \NC \yes  \NC \NR
+\NC \type {setsub}               \NC \nop \NC \yes  \NC \NR
+\NC \type {setsubtype}           \NC \nop \NC \yes  \NC \NR
+\NC \type {setsup}               \NC \nop \NC \yes  \NC \NR
+\NC \type {slide}                \NC \yes \NC \yes  \NC \NR
+\NC \type {subtypes}             \NC \yes \NC \nop  \NC \NR
+\NC \type {subtype}              \NC \yes \NC \nop  \NC \NR
+\NC \type {tail}                 \NC \yes \NC \yes  \NC \NR
+\NC \type {todirect}             \NC \yes \NC \yes  \NC \NR
+\NC \type {tonode}               \NC \yes \NC \yes  \NC \NR
+\NC \type {tostring}             \NC \yes \NC \yes  \NC \NR
+\NC \type {traverse_char}        \NC \yes \NC \yes  \NC \NR
+\NC \type {traverse_id}          \NC \yes \NC \yes  \NC \NR
+\NC \type {traverse}             \NC \yes \NC \yes  \NC \NR
+\NC \type {types}                \NC \yes \NC \nop  \NC \NR
+\NC \type {type}                 \NC \yes \NC \nop  \NC \NR
+\NC \type {unprotect_glyphs}     \NC \yes \NC \yes  \NC \NR
+\NC \type {unset_attribute}      \NC \yes \NC \yes  \NC \NR
+\NC \type {usedlist}             \NC \yes \NC \yes  \NC \NR
+\NC \type {vpack}                \NC \yes \NC \yes  \NC \NR
+\NC \type {whatsitsubtypes}      \NC \yes \NC \nop  \NC \NR
+\NC \type {whatsits}             \NC \yes \NC \nop  \NC \NR
+\NC \type {write}                \NC \yes \NC \yes  \NC \NR
+\stoptabulate
+
+% \stopcolumns
+
+The \type {node.next} and \type {node.prev} functions will stay but for
+consistency there are variants called \type {getnext} and \type {getprev}. We had
+to use \type {get} because \type {node.id} and \type {node.subtype} are already
+taken for providing meta information about nodes. Note: The getters do only basic
+checking for valid keys. You should just stick to the keys mentioned in the
+sections that describe node properties.
+
+Some nodes have indirect references. For instance a math character refers to a
+family instead of a font. In that case we provide a virtual font field as
+accessor. So, \type {getfont} and \type {.font} can be used on them. The same is
+true for the \type {width}, \type {height} and \type {depth} of glue nodes. These
+actually access the spec node properties, and here we can set as well as get the
+values.
 
 \stopchapter
 

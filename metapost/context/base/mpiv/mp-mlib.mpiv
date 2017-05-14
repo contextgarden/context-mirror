@@ -54,8 +54,8 @@ vardef transparency_alternative_to_number(expr name) =
     fi
 enddef ;
 
-def namedcolor (expr n) =
-    1
+def namedcolor expr n =
+    (1)
     withprescript "sp_type=named"
     withprescript "sp_name=" & n
 enddef ;
@@ -76,22 +76,22 @@ enddef ;
 %     withprescript "sp_value="      & value
 % enddef ;
 
-def spotcolor(expr n, v) =
-    1
+def spotcolor(expr name, v) =
+    (1)
     withprescript "sp_type=spot"
-    withprescript "sp_name="  & n
+    withprescript "sp_name="  & name
     withprescript "sp_value=" & colordecimals v
 enddef ;
 
 def multitonecolor(expr name)(text t) =
-    1
+    (1)
     withprescript "sp_type=multitone"
     withprescript "sp_name=" & name
     withprescript "sp_value=" & colordecimalslist(t)
 enddef ;
 
 def transparent(expr a, t)(text c) = % use withtransparency instead
-    1 % this permits withcolor x intoshade y
+    (1) % this permits withcolor x intoshade y
     withprescript "tr_alternative="  & decimal transparency_alternative_to_number(a)
     withprescript "tr_transparency=" & decimal t
     withcolor c
@@ -238,6 +238,32 @@ vardef rawtextext(expr s) = % todo: avoid currentpicture
         mfun_onetime_textext := false ;
         mfun_tt_c
     fi
+enddef ;
+
+vardef validtexbox(expr category, name) =
+    if category == "" :
+        false
+    elseif string name :
+        name <> ""
+    elseif numeric name :
+        name > 0
+    else :
+        true
+    fi
+enddef ;
+
+vardef rawtexbox(expr category, name) =
+    mfun_tt_c := nullpicture ;
+    if validtexbox(category,name) :
+        mfun_tt_b := lua.mp.tb_dimensions(category, name) ;
+        addto mfun_tt_c doublepath unitsquare
+            xscaled redpart mfun_tt_b
+            yscaled (greenpart mfun_tt_b + bluepart mfun_tt_b)
+            shifted (0,- bluepart mfun_tt_b)
+            withprescript "bx_category=" & if numeric category : decimal fi category
+            withprescript "bx_name=" & if numeric name : decimal fi name ;
+    fi
+    mfun_tt_c
 enddef ;
 
 % More text
@@ -403,6 +429,88 @@ vardef onetimetextext@#(expr p) = % no draw here
     thetextext@#(p,origin)
 enddef ;
 
+% formatted text
+
+pair mfun_tt_z ;
+
+vardef rawfmttext(text t) = % todo: avoid currentpicture
+    mfun_tt_n := mfun_tt_n + 1 ;
+    mfun_tt_c := nullpicture ;
+    if mfun_trial_run :
+        mfun_tt_o := nullpicture ;
+        addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
+        addto mfun_tt_c doublepath unitsquare
+            withprescript "tx_number=" & decimal mfun_tt_n
+            withprescript "tx_stage=trial"
+            withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
+            % begin of fmt specific
+            withprescript "tx_type=format"
+            for s = t :
+                        if string  s : withpostscript "s:" & s
+                    elseif numeric s : withpostscript "n:" & decimal s
+                    elseif boolean s : withpostscript "b:" & if s : "true" else : "false" fi
+                    elseif pair    s : hide(mfun_tt_z := s ; )
+                    fi
+            endfor ;
+            % end of fmt specific
+        if not mfun_onetime_textext :
+            addto mfun_tt_p also mfun_tt_c
+                withprescript "tx_global=yes" ;
+        fi ;
+    else :
+        mfun_tt_b := lua.mp.tt_dimensions(mfun_tt_n) ;
+        addto mfun_tt_c doublepath unitsquare
+            xscaled redpart mfun_tt_b
+            yscaled (greenpart mfun_tt_b + bluepart mfun_tt_b)
+            shifted (0,- bluepart mfun_tt_b)
+            withprescript "tx_number=" & decimal mfun_tt_n
+            withprescript "tx_stage=final" ;
+        % begin of fmt specific
+        for s = t :
+            if pair s : mfun_tt_z := s ; fi
+        endfor ;
+        % end of fmt specific
+    fi ;
+    mfun_onetime_textext := false ;
+    mfun_tt_c
+enddef ;
+
+vardef thefmttext@#(text t) =
+    mfun_tt_z := origin ;
+    save p ; picture p ; p := rawfmttext(t) ;
+    p
+        if (mfun_labtype@# >= 10) :
+            shifted (0,ypart center p)
+        fi
+        shifted (mfun_tt_z + textextoffset*mfun_laboff@# - (mfun_labxf@#*lrcorner p + mfun_labyf@#*ulcorner p + (1-mfun_labxf@#-mfun_labyf@#)*llcorner p))
+enddef ;
+
+vardef fmttext@#(text t) = % no draw here
+    thefmttext@#(t,origin)
+enddef ;
+
+% or just: def fmttext = thefmttext enddef ;
+
+vardef onetimefmttext@#(text t) = % no draw here
+    mfun_onetime_textext := true ;
+    thefmttext@#(t,origin)
+enddef ;
+
+% so much for formatted text
+
+vardef thetexbox@#(expr category, name, z) =
+    save p ; picture p ; p := rawtexbox(category,name) ;
+    p
+        if (mfun_labtype@# >= 10) :
+            shifted (0,ypart center p)
+        fi
+        shifted (z + textextoffset*mfun_laboff@# - (mfun_labxf@#*lrcorner p + mfun_labyf@#*ulcorner p + (1-mfun_labxf@#-mfun_labyf@#)*llcorner p))
+enddef ;
+
+vardef texbox@#(expr category, name) = % no draw here
+    thetexbox@#(category,name,origin)
+enddef ;
+
 vardef thelabel@#(expr p,z) =
     if string p :
         thelabel@#(rawtextext("\definedfont[" & defaultfont & "]" & p) scaled defaultscale,z)
@@ -507,16 +615,52 @@ def mfun_withshadestep (text t) =
     t
 enddef ;
 
+numeric mfun_shade_fx, mfun_shade_fy ;
+numeric mfun_shade_lx, mfun_shade_ly ;
+numeric mfun_shade_nx, mfun_shade_ny ;
+numeric mfun_shade_dx, mfun_shade_dy ;
+numeric mfun_shade_tx, mfun_shade_ty ;
+
+% first
+
+def mfun_with_shade_method_analyze(expr p) =
+    mfun_shade_path := p ;
+    mfun_shade_step := 1 ;
+    mfun_shade_fx   := xpart point 0 of p ;
+    mfun_shade_fy   := ypart point 0 of p ;
+    mfun_shade_lx   := mfun_shade_fx ;
+    mfun_shade_ly   := mfun_shade_fy ;
+    mfun_shade_nx   := 0 ;
+    mfun_shade_ny   := 0 ;
+    mfun_shade_dx   := abs(mfun_shade_fx - mfun_shade_lx) ;
+    mfun_shade_dy   := abs(mfun_shade_fy - mfun_shade_ly) ;
+    for i=1 upto length(p) :
+        mfun_shade_tx := abs(mfun_shade_fx - xpart point i of p) ;
+        mfun_shade_ty := abs(mfun_shade_fy - ypart point i of p) ;
+        if mfun_shade_tx > mfun_shade_dx :
+            mfun_shade_nx := i + 1 ;
+            mfun_shade_lx := xpart point i of p ;
+            mfun_shade_dx := mfun_shade_tx ;
+        fi ;
+        if mfun_shade_ty > mfun_shade_dy :
+            mfun_shade_ny := i + 1 ;
+            mfun_shade_ly := ypart point i of p ;
+            mfun_shade_dy := mfun_shade_ty ;
+        fi ;
+    endfor ;
+enddef ;
+
 primarydef p withshademethod m =
-    hide(
-        mfun_shade_path := p ;
-        mfun_shade_step := 1 ;
-    )
+    hide(mfun_with_shade_method_analyze(p))
     p
     withprescript "sh_domain=0 1"
+    withprescript "sh_transform=yes"
     withprescript "sh_color=into"
     withprescript "sh_color_a=" & colordecimals white
     withprescript "sh_color_b=" & colordecimals black
+    withprescript "sh_first=" & ddecimal point 0 of p % used for support scaling
+    withprescript "sh_set_x=" & ddecimal (mfun_shade_nx,mfun_shade_lx) %
+    withprescript "sh_set_y=" & ddecimal (mfun_shade_ny,mfun_shade_ly) %
     if m = "linear" :
         withprescript "sh_type=linear"
         withprescript "sh_factor=1"
@@ -537,6 +681,16 @@ primarydef p withshademethod m =
     fi
 enddef ;
 
+def withshaderadius expr a =
+    withprescript "sh_radius_a=" & decimal (xpart a)
+    withprescript "sh_radius_b=" & decimal (ypart a)
+enddef ;
+
+def withshadeorigin expr a =
+    withprescript "sh_center_a=" & ddecimal a
+    withprescript "sh_center_b=" & ddecimal a
+enddef ;
+
 def withshadevector expr a =
     withprescript "sh_center_a=" & ddecimal (point xpart a of mfun_shade_path)
     withprescript "sh_center_b=" & ddecimal (point ypart a of mfun_shade_path)
@@ -545,6 +699,10 @@ enddef ;
 def withshadedirection expr a =
     withprescript "sh_center_a=" & ddecimal (point xpart a of boundingbox(mfun_shade_path))
     withprescript "sh_center_b=" & ddecimal (point ypart a of boundingbox(mfun_shade_path))
+enddef ;
+
+def withshadetransform expr a = % yes | no
+    withprescript "sh_transform=" & a
 enddef ;
 
 pair shadedup    ; shadedup    := (0.5,2.5) ;
@@ -616,10 +774,47 @@ def shaded text s =
     s
 enddef ;
 
+% For me.
+
+primarydef p shownshadevector v =
+    image (
+        drawarrow (point xpart v of p) -- (point ypart v of p) ;
+        fill fullcircle scaled 2 shifted point xpart v of p ;
+        setbounds currentpicture to center currentpicture -- cycle ;
+    )
+enddef ;
+
+primarydef p shownshadedirection v =
+    image (
+        drawarrow (point xpart v of boundingbox p) -- (point ypart v of boundingbox p) ;
+        fill fullcircle scaled 2 shifted (point xpart v of boundingbox p) ;
+        setbounds currentpicture to center currentpicture -- cycle ;
+    )
+enddef ;
+
+primarydef p shownshadecenter v =
+    image (
+        fill fullcircle scaled 2
+            shifted center p shifted (
+            xpart v * bbwidth (p)/2,
+            ypart v * bbheight(p)/2
+        ) ;
+        setbounds currentpicture to center currentpicture -- cycle ;
+    )
+enddef ;
+
+primarydef p shownshadeorigin v =
+    image (
+        fill fullcircle scaled 2 shifted v ;
+        setbounds currentpicture to center currentpicture -- cycle ;
+    )
+enddef ;
+
 % Old macros:
 
 def withcircularshade (expr a, b, ra, rb, ca, cb) =
     withprescript "sh_type=circular"
+    withprescript "sh_transform=yes"
     withprescript "sh_domain=0 1"
     withprescript "sh_factor=1"
     withprescript "sh_color_a="  & colordecimals ca
@@ -632,6 +827,7 @@ enddef ;
 
 def withlinearshade (expr a, b, ca, cb) =
     withprescript "sh_type=linear"
+    withprescript "sh_transform=yes"
     withprescript "sh_domain=0 1"
     withprescript "sh_factor=1"
     withprescript "sh_color_a="  & colordecimals ca
@@ -830,9 +1026,15 @@ vardef mfun_do_outline_text_flush (expr kind, n, x, y) (text t) =
         mfun_do_outline_text_r (n, x, y) (t)
     elseif kind = "p" :
         mfun_do_outline_text_p (n, x, y) (t)
+    elseif kind = "u" :
+        mfun_do_outline_text_u (n, x, y) (t)
     else :
         mfun_do_outline_text_n (n, x, y) (t)
     fi ;
+enddef ;
+
+vardef mfun_do_outline_rule_flush (expr kind, x, y, w, h) =
+    mfun_do_outline_text_flush (kind, 1, x, y) (fullsquare xyscaled(w,h))
 enddef ;
 
 numeric mfun_do_outline_n ; mfun_do_outline_n := 0 ;
@@ -842,7 +1044,19 @@ vardef mfun_do_outline_text_f (expr n, x, y) (text t) =
     for i=t :
         mfun_do_outline_n := mfun_do_outline_n + 1 ;
         if mfun_do_outline_n = n :
-            fill   i shifted(x,y) mfun_do_outline_options_f
+            fill   i shifted(x,y) mfun_do_outline_options_f withpen pencircle scaled 0
+        else :
+            nofill i shifted(x,y)
+        fi ;
+    endfor ;
+enddef ;
+
+vardef mfun_do_outline_text_u (expr n, x, y) (text t) =
+    mfun_do_outline_n := 0 ;
+    for i=t :
+        mfun_do_outline_n := mfun_do_outline_n + 1 ;
+        if mfun_do_outline_n = n :
+            fillup i shifted(x,y) mfun_do_outline_options_f
         else :
             nofill i shifted(x,y)
         fi ;
@@ -935,6 +1149,9 @@ def mfun_do_outline_options_r = enddef ;
 vardef outlinetext@# (expr t) text rest =
     save kind ; string kind ; kind := str @# ;
     currentoutlinetext := currentoutlinetext + 1 ;
+    def mfun_do_outline_options_d = enddef ;
+    def mfun_do_outline_options_f = enddef ;
+    def mfun_do_outline_options_r = enddef ;
     image ( normaldraw image (
         if mfun_trial_run :
           % lua.mp.report("set outline text",currentoutlinetext);
@@ -951,6 +1168,8 @@ vardef outlinetext@# (expr t) text rest =
                 mfun_do_outline_text_set_d rest ;
             elseif kind = "b" :
                 mfun_do_outline_text_set_b rest ;
+            elseif kind = "u" :
+                mfun_do_outline_text_set_f rest ;
             elseif kind = "r" :
                 mfun_do_outline_text_set_r rest ;
             elseif kind = "p" :
@@ -1026,19 +1245,19 @@ vardef properties(text t) =
     image(draw unitcircle t)
 enddef ;
 
-if metapostversion < 1.770  :
-
-    def withproperties expr p =
-        if colormodel p = 3 :
-            withcolor greypart p
-        elseif colormodel p = 5 :
-            withcolor (redpart p,greenpart p,bluepart p)
-        elseif colormodel p = 7 :
-            withcolor (cyanpart p,magentapart p,yellowpart p,blackpart p)
-        fi
-    enddef ;
-
-else :
+% if metapostversion < 1.770  :
+%
+%     def withproperties expr p =
+%         if colormodel p = 3 :
+%             withcolor greypart p
+%         elseif colormodel p = 5 :
+%             withcolor (redpart p,greenpart p,bluepart p)
+%         elseif colormodel p = 7 :
+%             withcolor (cyanpart p,magentapart p,yellowpart p,blackpart p)
+%         fi
+%     enddef ;
+%
+% else :
 
     def withproperties expr p =
         if colormodel p = 3 :
@@ -1052,7 +1271,7 @@ else :
         withpostscript postscriptpart p
     enddef ;
 
-fi ;
+% fi ;
 
 % Experimental:
 
@@ -1065,11 +1284,7 @@ primarydef t asgroup s = % s = isolated|knockout
     wrappedpicture:= nullpicture ;
     addto wrappedpicture contour groupbounds
         withprescript "gr_state=start"
-        withprescript "gr_type=" & s
-        withprescript "gr_llx=" & decimal xpart llcorner groupbounds
-        withprescript "gr_lly=" & decimal ypart llcorner groupbounds
-        withprescript "gr_urx=" & decimal xpart urcorner groupbounds
-        withprescript "gr_ury=" & decimal ypart urcorner groupbounds ;
+        withprescript "gr_type=" & s ;
     addto wrappedpicture also grouppicture ;
     addto wrappedpicture contour groupbounds
         withprescript "gr_state=stop" ;
@@ -1166,31 +1381,30 @@ vardef mfun_boolean_to_string(expr b) =
     if b : "true" else : "false" fi
 enddef ;
 
-% def passvariable(expr key, value) =
-%     special
-%         if     numeric   value : "1:" & key & "=" & mfun_numeric_to_string(value)
-%         elseif pair      value : "4:" & key & "=" & mfun_pair_to_string(value)
-%         elseif rgbcolor  value : "5:" & key & "=" & mfun_rgbcolor_to_string(value)
-%         elseif cmykcolor value : "6:" & key & "=" & mfun_cmykcolor_to_string(value)
-%         elseif boolean   value : "3:" & key & "=" & mfun_boolean_to_string(value)
-%         elseif path      value : "7:" & key & "=" & mfun_path_to_string(value)
-%         elseif transform value : "8:" & key & "=" & mfun_transform_to_string(value)
-%         else                   : "2:" & key & "=" & value
-%         fi ;
-% enddef ;
-
-vardef tostring(expr value) =
-    if     numeric   value : mfun_numeric_to_string(value)
-    elseif pair      value : mfun_pair_to_string(value)
-    elseif rgbcolor  value : mfun_rgbcolor_to_string(value)
-    elseif cmykcolor value : mfun_cmykcolor_to_string(value)
-    elseif greycolor value : mfun_greycolor_to_string(value)
-    elseif boolean   value : mfun_boolean_to_string(value)
-    elseif path      value : mfun_path_to_string(value)
-    elseif transform value : mfun_transform_to_string(value)
-    else                   : value
+vardef tostring primary v =
+    if     numeric   v : mfun_numeric_to_string(v)
+    elseif pair      v : mfun_pair_to_string(v)
+    elseif rgbcolor  v : mfun_rgbcolor_to_string(v)
+    elseif cmykcolor v : mfun_cmykcolor_to_string(v)
+    elseif greycolor v : mfun_greycolor_to_string(v)
+    elseif boolean   v : mfun_boolean_to_string(v)
+    elseif path      v : mfun_path_to_string(v)
+    elseif transform v : mfun_transform_to_string(v)
+    else               : v
     fi
 enddef ;
+
+vardef topair primary p =
+    if     pair    p : "(" & decimal xpart p & "," & decimal ypart p & ")"
+    elseif numeric p : "(" & decimal       p & "," & decimal       p & ")"
+    else             : "" fi
+enddef ;
+
+string dq ; dq := char 92 & char 34 ;
+string sq ; sq := char 92 & char 39 ;
+
+vardef quote     primary s = sq & tostring(s) & sq enddef;
+vardef quotation primary s = dq & tostring(s) & dq enddef;
 
 vardef mfun_tagged_string(expr value) =
     if     numeric   value : "1:" & mfun_numeric_to_string(value)
@@ -1204,178 +1418,106 @@ vardef mfun_tagged_string(expr value) =
     fi
 enddef ;
 
-% amore flexible variant for passing data to context
+% A more flexible variant for passing data to context. We used to construct strings
+% but running lua is fast enough so we can gain on string construction in metapost
+% which is also not that efficient.
 
-vardef mfun_point_to_lua(expr p,i) =
-    "{" &
-    decimal xpart (point       i of p) & "," &
-    decimal ypart (point       i of p) & "," &
-    decimal xpart (precontrol  i of p) & "," &
-    decimal ypart (precontrol  i of p) & "," &
-    decimal xpart (postcontrol i of p) & "," &
-    decimal ypart (postcontrol i of p)
-    & "}"
+vardef mfun_key_to_lua(expr k) =
+    if numeric k : decimal k else : "'" & k & "'" fi
 enddef ;
 
-vardef mfun_transform_to_lua(expr t) =
-    "{" &
-    decimal xxpart t & "," &   % rx
-    decimal xypart t & "," &   % sx
-    decimal yxpart t & "," &   % sy
-    decimal yypart t & "," &   % ry
-    decimal xpart  t & "," &   % tx
-    decimal ypart  t           % ty
-    & "}"
+vardef mfun_point_to_lua(expr k,p,i) =
+    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & ",{" &
+        decimal xpart (point       i of p) & "," &
+        decimal ypart (point       i of p) & "," &
+        decimal xpart (precontrol  i of p) & "," &
+        decimal ypart (precontrol  i of p) & "," &
+        decimal xpart (postcontrol i of p) & "," &
+        decimal ypart (postcontrol i of p)
+    & "})" ) ;
 enddef ;
 
-vardef mfun_numeric_to_lua(expr n) =
-    decimal n
+vardef mfun_transform_to_lua(expr k,t) =
+    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & ",{" &
+        decimal xxpart t & "," &   % rx
+        decimal xypart t & "," &   % sx
+        decimal yxpart t & "," &   % sy
+        decimal yypart t & "," &   % ry
+        decimal xpart  t & "," &   % tx
+        decimal ypart  t           % ty
+    & "})" ) ;
 enddef ;
 
-vardef mfun_pair_to_lua(expr p) =
-    "{" &
-    decimal xpart p & "," &
-    decimal ypart p
-    & "}"
+vardef mfun_numeric_to_lua(expr k,n) =
+    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & "," & decimal n & ")" ) ;
 enddef ;
 
-vardef mfun_rgbcolor_to_lua(expr c) =
-    "{" &
-    decimal redpart   c & "," &
-    decimal greenpart c & "," &
-    decimal bluepart  c
-    & "}"
+vardef mfun_pair_to_lua(expr k,p) =
+    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & ",{" &
+        decimal xpart p & "," &
+        decimal ypart p
+    & "})" ) ;
 enddef ;
 
-vardef mfun_cmykcolor_to_lua(expr c) =
-    "{" &
-    decimal cyanpart    c & "," &
-    decimal magentapart c & "," &
-    decimal yellowpart  c & "," &
-    decimal blackpart   c
-    & "}"
+vardef mfun_rgbcolor_to_lua(expr k,c) =
+    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & ",{" &
+        decimal redpart   c & "," &
+        decimal greenpart c & "," &
+        decimal bluepart  c
+    & "})" ) ;
 enddef ;
 
-vardef mfun_path_to_lua(expr p) =
-    "{" &
-    mfun_point_to_lua(p,0) for i=1 upto length(p) : & "," & mfun_point_to_lua(p,i) endfor
-    & "}"
+vardef mfun_cmykcolor_to_lua(expr k,c) =
+    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & ",{" &
+        decimal cyanpart    c & "," &
+        decimal magentapart c & "," &
+        decimal yellowpart  c & "," &
+        decimal blackpart   c
+    & "})" ) ;
 enddef ;
 
-vardef mfun_boolean_to_lua(expr b) =
-    if b : "true" else : "false" fi
+vardef mfun_path_to_lua(expr k,p) =
+    runscript("metapost.pushvariable(" & mfun_key_to_lua(k) & ")") ;
+    for i=0 upto length(p) :
+        mfun_point_to_lua(i+1,p,i) ;
+    endfor ;
+    runscript("metapost.popvariable()") ;
 enddef ;
 
-vardef mfun_string_to_lua(expr s) =
-   "[==[" & s & "]==]"
+vardef mfun_boolean_to_lua(expr k,b) =
+    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & if b : ",true)" else : ",false)" fi ) ;
 enddef ;
 
-def mfun_to_lua(expr key)(expr value)(text t) =
-    special "metapost.variables['" & key & "']=" & t(value) ;
-enddef ;
-
-def mfun_array_to_lua(expr key)(suffix value)(expr first, last, stp)(text t) =
-    special
-        "metapost.variables['" & key & "']={"
-            for i=first step stp until last :
-                & "[" & decimal i & "]=" & t(value[i]) & ","
-            endfor
-        & "}" ;
+vardef mfun_string_to_lua(expr k,s) =
+    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & ",[==[" & s & "]==])" ) ;
 enddef ;
 
 def passvariable(expr key, value) =
-    if     numeric   value : mfun_to_lua(key,value,mfun_numeric_to_lua)
-    elseif pair      value : mfun_to_lua(key,value,mfun_pair_to_lua)
-    elseif string    value : mfun_to_lua(key,value,mfun_string_to_lua)
-    elseif boolean   value : mfun_to_lua(key,value,mfun_boolean_to_lua)
-    elseif path      value : mfun_to_lua(key,value,mfun_path_to_lua)
-    elseif rgbcolor  value : mfun_to_lua(key,value,mfun_rgbcolor_to_lua)
-    elseif cmykcolor value : mfun_to_lua(key,value,mfun_cmykcolor_to_lua)
-    elseif transform value : mfun_to_lua(key,value,mfun_transform_to_lua)
+    if     numeric   value : mfun_numeric_to_lua  (key,value) ;
+    elseif pair      value : mfun_pair_to_lua     (key,value) ;
+    elseif string    value : mfun_string_to_lua   (key,value) ;
+    elseif boolean   value : mfun_boolean_to_lua  (key,value) ;
+    elseif path      value : mfun_path_to_lua     (key,value) ;
+    elseif rgbcolor  value : mfun_rgbcolor_to_lua (key,value) ;
+    elseif cmykcolor value : mfun_cmykcolor_to_lua(key,value) ;
+    elseif transform value : mfun_transform_to_lua(key,value) ;
     fi ;
 enddef ;
 
 def passarrayvariable(expr key)(suffix values)(expr first, last, stp) =
-    if     numeric   values[first] : mfun_array_to_lua(key,values,first,last,stp,mfun_numeric_to_lua)
-    elseif pair      values[first] : mfun_array_to_lua(key,values,first,last,stp,mfun_pair_to_lua)
-    elseif string    values[first] : mfun_array_to_lua(key,values,first,last,stp,mfun_string_to_lua)
-    elseif boolean   values[first] : mfun_array_to_lua(key,values,first,last,stp,mfun_boolean_to_lua)
-    elseif path      values[first] : mfun_array_to_lua(key,values,first,last,stp,mfun_path_to_lua)
-    elseif rgbcolor  values[first] : mfun_array_to_lua(key,values,first,last,stp,mfun_rgbcolor_to_lua)
-    elseif cmykcolor values[first] : mfun_array_to_lua(key,values,first,last,stp,mfun_cmykcolor_to_lua)
-    elseif transform values[first] : mfun_array_to_lua(key,values,first,last,stp,mfun_transform_to_lua)
-    fi ;
+    runscript("metapost.pushvariable(" & mfun_key_to_lua(key) & ")") ;
+    for i=first step stp until last :
+        passvariable(i, values[i]) ;
+    endfor
+    runscript("metapost.popvariable()") ;
 enddef ;
 
 def startpassingvariable(expr k) =
-    begingroup ;
-    save stoppassingvariable, startarray, stoparray, starthash, stophash, index, key, value, slot, entry ;
-    let stoppassingvariable = mfun_stop_lua_variable ;
-    let startarray = mfun_start_lua_array ;
-    let stoparray = mfun_stop_lua_array ;
-    let starthash = mfun_start_lua_hash ;
-    let stophash = mfun_stop_lua_hash ;
-    let index = mfun_lua_index ;
-    let key = mfun_lua_key ;
-    let value = mfun_lua_value ;
-    let slot = mfun_lua_slot ;
-    let entry = mfun_lua_entry ;
-    save s ; string s ;
-    s := "metapost.variables['" & k & "']="
+    runscript("metapost.pushvariable(" & mfun_key_to_lua(k) & ")") ;
 enddef ;
 
-def mfun_stop_lua_variable =
-    ;
-    special substring(0,length(s)-1) of s ;
-    endgroup ;
-enddef ;
-
-% currently there is no difference between array and hash
-
-def mfun_start_lua_array =
-    & "{"
-enddef ;
-
-def mfun_stop_lua_array =
-    & "},"
-enddef ;
-
-def mfun_start_lua_hash =
-    & "{"
-enddef ;
-
-def mfun_stop_lua_hash =
-    & "},"
-enddef ;
-
-def mfun_lua_key(expr k) =
-    & "['" & k & "']="
-enddef ;
-
-def mfun_lua_index(expr k) =
-    & "[" & decimal k & "]="
-enddef ;
-
-def mfun_lua_value(expr v) =
-    if     numeric   v : & mfun_numeric_to_lua(v) & ","
-    elseif pair      v : & mfun_pair_to_lua(v) & ","
-    elseif string    v : & mfun_string_to_lua(v) & ","
-    elseif boolean   v : & mfun_boolean_to_lua(v) & ","
-    elseif path      v : & mfun_path_to_lua(v) & ","
-    elseif rgbcolor  v : & mfun_rgbcolor_to_lua(v) & ","
-    elseif cmykcolor v : & mfun_cmykcolor_to_lua(v) & ","
-    elseif transform v : & mfun_transform_to_lua(v) & ","
-    fi
-enddef ;
-
-def mfun_lua_entry(expr k, v) =
-    mfun_lua_key(k)
-    mfun_lua_value(v)
-enddef ;
-
-def mfun_lua_slot(expr k, v) =
-    mfun_lua_index(k)
-    mfun_lua_value(v)
+def stoppassingvariable =
+    runscript("metapost.popvariable()") ;
 enddef ;
 
 % moved here from mp-grap.mpiv
@@ -1449,6 +1591,9 @@ vardef formatted(expr f, x) = textext(varfmt(f, x)) enddef ;
 % def strfmt = format    enddef ; % old
 % def varfmt = formatted enddef ; % old
 
+
+% def fmttext = lua.mp.formatted enddef ;
+
 % new
 
 def fillup   text t = draw t withpostscript "both"    enddef ; % we use draw because we need the proper boundingbox
@@ -1460,3 +1605,52 @@ def nofill   text t = fill t withpostscript "collect" enddef ;
 % def withrule expr r =
 %     if (t = "even-odd") or (t = "evenodd") : withpostscript "evenodd" fi
 % enddef ;
+
+% so we can do: withcolor "red"
+
+vardef resolvedcolor primary s =
+  % lua.mp.namedcolor(s)   % conflicts with macro namedcolor
+  % lua.mp.NamedColor(s)   % okay but, can also be
+  % lua.mp("NamedColor",s) % which gives expansion mess
+    if string s :
+        runscript("mp.NamedColor('" & s & "')") % faster anyway
+    else :
+        s
+    fi
+enddef ;
+
+% A comment will end up on top of the graphic in the output. This can be handy for
+% locating a graphic: comment("test graphic").
+
+def comment expr str =
+    special "metapost.comment[[" & str & "]]" ;
+enddef ;
+
+% This overloads a dummy:
+
+vardef uniquelist(suffix list) =
+    % this can be optimized by passing all values at once and returning
+    % a result but for now this is ok .. we need an undef foo
+    save i, j, h ;
+    if known lis[0] :
+        i := 0 ;
+        j := -1 ;
+    else :
+        i := 1 ;
+        j := 0 ;
+    fi ;
+    h := lua.mp.newhash() ;
+    forever :
+        exitif unknown list[i] ;
+        if not lua.mp.inhash(h,list[i]) :
+            j := j + 1 ;
+            list[j] := list[i] ;
+            lua.mp.tohash(h,list[i]) ;
+        fi ;
+        i := i + 1 ;
+    endfor ;
+    for n = j+1 step 1 until i-1 :
+        dispose(list[n])
+    endfor ;
+    lua.mp.disposehash(h) ;
+enddef ;

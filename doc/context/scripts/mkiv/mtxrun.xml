@@ -3,7 +3,7 @@
  <metadata>
   <entry name="name">mtxrun</entry>
   <entry name="detail">ConTeXt TDS Runner Tool</entry>
-  <entry name="version">1.31</entry>
+  <entry name="version">1.32</entry>
  </metadata>
  <flags>
   <category name="basic">
@@ -66,6 +66,7 @@
    </subcategory>
    <subcategory>
     <flag name="expand-braces"><short>expand complex variable</short></flag>
+    <flag name="resolve-path"><short>expand variable (completely resolve paths)</short></flag>
     <flag name="expand-path"><short>expand variable (resolve paths)</short></flag>
     <flag name="expand-var"><short>expand variable (resolve references)</short></flag>
     <flag name="show-path"><short>show path expansion of ...</short></flag>

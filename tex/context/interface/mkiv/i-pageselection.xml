@@ -15,6 +15,9 @@
                 <cd:parameter name="n">
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
+                <cd:parameter name="category">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
@@ -34,6 +37,9 @@
                 </cd:parameter>
                 <cd:parameter name="n">
                     <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="category">
+                    <cd:constant type="cd:name"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>

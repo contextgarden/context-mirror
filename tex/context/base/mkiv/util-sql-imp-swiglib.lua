@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['util-sql-swiglib'] = {
+if not modules then modules = { } end modules ['util-sql-imp-swiglib'] = {
     version   = 1.001,
     comment   = "companion to util-sql.lua",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -132,31 +132,31 @@ end
 
 --
 
-local typemap = mysql.MYSQL_TYPE_VAR_STRING and {
-    [mysql.MYSQL_TYPE_VAR_STRING ]  = "string",
-    [mysql.MYSQL_TYPE_STRING     ]  = "string",
-    [mysql.MYSQL_TYPE_DECIMAL    ]  = "number",
-    [mysql.MYSQL_TYPE_SHORT      ]  = "number",
-    [mysql.MYSQL_TYPE_LONG       ]  = "number",
-    [mysql.MYSQL_TYPE_FLOAT      ]  = "number",
-    [mysql.MYSQL_TYPE_DOUBLE     ]  = "number",
-    [mysql.MYSQL_TYPE_LONGLONG   ]  = "number",
-    [mysql.MYSQL_TYPE_INT24      ]  = "number",
-    [mysql.MYSQL_TYPE_YEAR       ]  = "number",
-    [mysql.MYSQL_TYPE_TINY       ]  = "number",
-    [mysql.MYSQL_TYPE_TINY_BLOB  ]  = "binary",
-    [mysql.MYSQL_TYPE_MEDIUM_BLOB]  = "binary",
-    [mysql.MYSQL_TYPE_LONG_BLOB  ]  = "binary",
-    [mysql.MYSQL_TYPE_BLOB       ]  = "binary",
-    [mysql.MYSQL_TYPE_DATE       ]  = "date",
-    [mysql.MYSQL_TYPE_NEWDATE    ]  = "date",
-    [mysql.MYSQL_TYPE_DATETIME   ]  = "datetime",
-    [mysql.MYSQL_TYPE_TIME       ]  = "time",
-    [mysql.MYSQL_TYPE_TIMESTAMP  ]  = "time",
-    [mysql.MYSQL_TYPE_ENUM       ]  = "set",
-    [mysql.MYSQL_TYPE_SET        ]  = "set",
-    [mysql.MYSQL_TYPE_NULL       ]  = "null",
-}
+-- local typemap = mysql.MYSQL_TYPE_VAR_STRING and {
+--     [mysql.MYSQL_TYPE_VAR_STRING ]  = "string",
+--     [mysql.MYSQL_TYPE_STRING     ]  = "string",
+--     [mysql.MYSQL_TYPE_DECIMAL    ]  = "number",
+--     [mysql.MYSQL_TYPE_SHORT      ]  = "number",
+--     [mysql.MYSQL_TYPE_LONG       ]  = "number",
+--     [mysql.MYSQL_TYPE_FLOAT      ]  = "number",
+--     [mysql.MYSQL_TYPE_DOUBLE     ]  = "number",
+--     [mysql.MYSQL_TYPE_LONGLONG   ]  = "number",
+--     [mysql.MYSQL_TYPE_INT24      ]  = "number",
+--     [mysql.MYSQL_TYPE_YEAR       ]  = "number",
+--     [mysql.MYSQL_TYPE_TINY       ]  = "number",
+--     [mysql.MYSQL_TYPE_TINY_BLOB  ]  = "binary",
+--     [mysql.MYSQL_TYPE_MEDIUM_BLOB]  = "binary",
+--     [mysql.MYSQL_TYPE_LONG_BLOB  ]  = "binary",
+--     [mysql.MYSQL_TYPE_BLOB       ]  = "binary",
+--     [mysql.MYSQL_TYPE_DATE       ]  = "date",
+--     [mysql.MYSQL_TYPE_NEWDATE    ]  = "date",
+--     [mysql.MYSQL_TYPE_DATETIME   ]  = "datetime",
+--     [mysql.MYSQL_TYPE_TIME       ]  = "time",
+--     [mysql.MYSQL_TYPE_TIMESTAMP  ]  = "time",
+--     [mysql.MYSQL_TYPE_ENUM       ]  = "set",
+--     [mysql.MYSQL_TYPE_SET        ]  = "set",
+--     [mysql.MYSQL_TYPE_NULL       ]  = "null",
+-- }
 
 -- real_escape_string
 
@@ -436,7 +436,7 @@ local function datafetched(specification,query,converter)
         local q = query[i]
         local r, m = connection:execute(q)
         if m then
-            report_state("error in query, stage: %s",string.collapsespaces(q))
+            report_state("error in query, stage: %s",string.collapsespaces(q or "?"))
             message = message and format("%s\n%s",message,m) or m
         end
         if type(r) == "table" then

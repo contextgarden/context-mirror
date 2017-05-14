@@ -18,6 +18,7 @@
 \registerctxluafile{font-ini}{1.001}
 \registerctxluafile{font-log}{1.001}
 \registerctxluafile{font-con}{1.001}
+\registerctxluafile{font-cft}{1.001}
 \registerctxluafile{font-enc}{1.001}
 \registerctxluafile{font-agl}{1.001} % if needed we can comment this and delay loading
 \registerctxluafile{font-cid}{1.001} % cid maps
@@ -26,13 +27,14 @@
 % the otf font loader:
 
 \registerctxluafile{font-otr}{1.001} % opentype fontloader
+\registerctxluafile{font-web}{1.001} % opentype fontloader
 \registerctxluafile{font-cff}{1.001} % quadratic outlines
 \registerctxluafile{font-ttf}{1.001} % cubic outlines
 %registerctxluafile{font-tmp}{1.001} % temporary placeholder
 \registerctxluafile{font-dsp}{1.001} % ... for this one
 \registerctxluafile{font-off}{1.001} % the old loader
 
-\registerctxluafile{font-tfm}{1.001}
+% \registerctxluafile{font-tfm}{1.001}
 
 \registerctxluafile{font-hsh}{1.001} % hashes used by context
 \registerctxluafile{font-nod}{1.001}
@@ -50,6 +52,7 @@
 \registerctxluafile{font-otc}{1.001}
 \registerctxluafile{font-oth}{1.001}
 \registerctxluafile{font-osd}{1.001}
+\registerctxluafile{font-ocl}{1.001}
 
 % we use otf code for type one
 
@@ -58,10 +61,18 @@
 %registerctxluafile{font-afm}{1.001}
 \registerctxluafile{font-afk}{1.001}
 
+% tfm
+
+\registerctxluafile{font-tfm}{1.001}
+
 % name database
 
 \registerctxluafile{font-syn}{1.001}
 \registerctxluafile{font-trt}{1.001}
+
+% shapes
+
+\registerctxluafile{font-shp}{1.001}
 
 % so far
 
@@ -76,7 +87,10 @@
 \registerctxluafile{font-vf} {1.001}
 \registerctxluafile{font-enh}{1.001}
 
-\registerctxluafile{font-gds}{1.001}
+\registerctxluafile{good-ini}{1.001}
+\registerctxluafile{good-gen}{1.001}
+\registerctxluafile{good-ctx}{1.001}
+\registerctxluafile{good-mth}{1.001}
 
 \registerctxluafile{font-def}{1.001}
 \registerctxluafile{font-ctx}{1.001} % after def as it overloads
@@ -85,6 +99,8 @@
 \registerctxluafile{font-fbk}{1.001}
 
 \registerctxluafile{font-aux}{1.001}
+
+\registerctxluafile{font-lig}{1.001} % only for experiments so try to avoid it
 
 %D Some low level helpers
 %D

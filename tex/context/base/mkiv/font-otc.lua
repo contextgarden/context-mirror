@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['font-otc'] = {
 local format, insert, sortedkeys, tohash = string.format, table.insert, table.sortedkeys, table.tohash
 local type, next = type, next
 local lpegmatch = lpeg.match
-local utfbyte, utflen = utf.byte, utf.len
+local utfbyte, utflen, utfsplit = utf.byte, utf.len, utf.split
 
 -- we assume that the other otf stuff is loaded already
 
@@ -44,6 +44,24 @@ local types = {
     chainposition     = "gpos_contextchain",
 }
 
+local names = {
+    gsub_single              = "gsub",
+    gsub_multiple            = "gsub",
+    gsub_alternate           = "gsub",
+    gsub_ligature            = "gsub",
+    gsub_context             = "gsub",
+    gsub_contextchain        = "gsub",
+    gsub_reversecontextchain = "gsub",
+    gpos_single              = "gpos",
+    gpos_pair                = "gpos",
+    gpos_cursive             = "gpos",
+    gpos_mark2base           = "gpos",
+    gpos_mark2ligature       = "gpos",
+    gpos_mark2mark           = "gpos",
+    gpos_context             = "gpos",
+    gpos_contextchain        = "gpos",
+}
+
 setmetatableindex(types, function(t,k) t[k] = k return k end) -- "key"
 
 local everywhere = { ["*"] = { ["*"] = true } } -- or: { ["*"] = { "*" } }
@@ -51,18 +69,89 @@ local noflags    = { false, false, false, false }
 
 -- beware: shared, maybe we should copy the sequence
 
+local function getrange(sequences,category)
+    local count = #sequences
+    local first = nil
+    local last  = nil
+    for i=1,count do
+        local t = sequences[i].type
+        if t and names[t] == category then
+            if not first then
+                first = i
+            end
+            last  = i
+        end
+    end
+    return first or 1, last or count
+end
+
+local function validspecification(specification,name)
+    local dataset = specification.dataset
+    if dataset then
+        -- okay
+    elseif specification[1] then
+        dataset = specification
+        specification = { dataset = dataset }
+    else
+        dataset = { { data = specification.data } }
+        specification.data    = nil
+        specification.dataset = dataset
+    end
+    local first = dataset[1]
+    if first then
+        first = first.data
+    end
+    if not first then
+        report_otf("invalid feature specification, no dataset")
+        return
+    end
+    if type(name) ~= "string" then
+        name = specification.name or first.name
+    end
+    if type(name) ~= "string" then
+        report_otf("invalid feature specification, no name")
+        return
+    end
+    local n = #dataset
+    if n > 0 then
+        for i=1,n do
+            setmetatableindex(dataset[i],specification)
+        end
+        return specification, name
+    end
+end
+
 local function addfeature(data,feature,specifications)
 
     -- todo: add some validator / check code so that we're more tolerant to
     -- user errors
 
+    if not specifications then
+        report_otf("missing specification")
+        return
+    end
+
     local descriptions = data.descriptions
     local resources    = data.resources
     local features     = resources.features
     local sequences    = resources.sequences
+
     if not features or not sequences then
+        report_otf("missing specification")
         return
     end
+
+    local alreadydone = resources.alreadydone
+    if not alreadydone then
+        alreadydone = { }
+        resources.alreadydone = alreadydone
+    end
+    if alreadydone[specifications] then
+        return
+    else
+        alreadydone[specifications] = true
+    end
+
     -- feature has to be unique but the name entry wins eventually
 
     local fontfeatures = resources.features or everywhere
@@ -72,9 +161,10 @@ local function addfeature(data,feature,specifications)
     local skip         = 0
     local aglunicodes  = false
 
-    if not specifications[1] then
-        -- so we accept a one entry specification
-        specifications = { specifications }
+    local specifications = validspecification(specifications,feature)
+    if not specifications then
+     -- report_otf("invalid specification")
+        return
     end
 
     local function tounicode(code)
@@ -105,13 +195,15 @@ local function addfeature(data,feature,specifications)
     local stepkey      = coverup.stepkey
     local register     = coverup.register
 
-    local function prepare_substitution(list,featuretype)
+    local function prepare_substitution(list,featuretype,nocheck)
         local coverage = { }
         local cover    = coveractions[featuretype]
         for code, replacement in next, list do
             local unicode     = tounicode(code)
             local description = descriptions[unicode]
-            if description then
+            if not nocheck and not description then
+                skip = skip + 1
+            else
                 if type(replacement) == "table" then
                     replacement = replacement[1]
                 end
@@ -122,26 +214,24 @@ local function addfeature(data,feature,specifications)
                 else
                     skip = skip + 1
                 end
-            else
-                skip = skip + 1
             end
         end
         return coverage
     end
 
-    local function prepare_alternate(list,featuretype)
+    local function prepare_alternate(list,featuretype,nocheck)
         local coverage = { }
         local cover    = coveractions[featuretype]
         for code, replacement in next, list do
             local unicode     = tounicode(code)
             local description = descriptions[unicode]
-            if not description then
+            if not nocheck and not description then
                 skip = skip + 1
             elseif type(replacement) == "table" then
                 local r = { }
                 for i=1,#replacement do
                     local u = tounicode(replacement[i])
-                    r[i] = descriptions[u] and u or unicode
+                    r[i] = (nocheck or descriptions[u]) and u or unicode
                 end
                 cover(coverage,unicode,r)
                 done = done + 1
@@ -158,19 +248,19 @@ local function addfeature(data,feature,specifications)
         return coverage
     end
 
-    local function prepare_multiple(list,featuretype)
+    local function prepare_multiple(list,featuretype,nocheck)
         local coverage = { }
         local cover    = coveractions[featuretype]
         for code, replacement in next, list do
             local unicode     = tounicode(code)
             local description = descriptions[unicode]
-            if not description then
+            if not nocheck and not description then
                 skip = skip + 1
             elseif type(replacement) == "table" then
                 local r, n = { }, 0
                 for i=1,#replacement do
                     local u = tounicode(replacement[i])
-                    if descriptions[u] then
+                    if nocheck or descriptions[u] then
                         n = n + 1
                         r[n] = u
                     end
@@ -194,13 +284,15 @@ local function addfeature(data,feature,specifications)
         return coverage
     end
 
-    local function prepare_ligature(list,featuretype)
+    local function prepare_ligature(list,featuretype,nocheck)
         local coverage = { }
         local cover    = coveractions[featuretype]
         for code, ligature in next, list do
             local unicode     = tounicode(code)
             local description = descriptions[unicode]
-            if description then
+            if not nocheck and not description then
+                skip = skip + 1
+            else
                 if type(ligature) == "string" then
                     ligature = { lpegmatch(splitter,ligature) }
                 end
@@ -208,7 +300,7 @@ local function addfeature(data,feature,specifications)
                 for i=1,#ligature do
                     local l = ligature[i]
                     local u = tounicode(l)
-                    if descriptions[u] then
+                    if nocheck or descriptions[u] then
                         ligature[i] = u
                     else
                         present = false
@@ -221,16 +313,23 @@ local function addfeature(data,feature,specifications)
                 else
                     skip = skip + 1
                 end
-            else
-                skip = skip + 1
             end
         end
         return coverage
     end
 
+    local function resetspacekerns()
+        -- a bit of a hack, this nil setting but it forces a
+        -- rehash of the resources needed .. the feature itself
+        -- should be a kern (at least for now)
+        data.properties.hasspacekerns = true
+        data.resources .spacekerns    = nil
+    end
+
     local function prepare_kern(list,featuretype)
         local coverage = { }
         local cover    = coveractions[featuretype]
+        local isspace  = false
         for code, replacement in next, list do
             local unicode     = tounicode(code)
             local description = descriptions[unicode]
@@ -240,17 +339,26 @@ local function addfeature(data,feature,specifications)
                     local u = tounicode(k)
                     if u then
                         r[u] = v
+                        if u == 32 then
+                            isspace = true
+                        end
                     end
                 end
                 if next(r) then
                     cover(coverage,unicode,r)
                     done = done + 1
+                    if unicode == 32 then
+                        isspace = true
+                    end
                 else
                     skip = skip + 1
                 end
             else
                 skip = skip + 1
             end
+        end
+        if isspace then
+            resetspacekerns()
         end
         return coverage
     end
@@ -268,17 +376,26 @@ local function addfeature(data,feature,specifications)
                         local u = tounicode(k)
                         if u then
                             r[u] = v
+                            if u == 32 then
+                                isspace = true
+                            end
                         end
                     end
                     if next(r) then
                         cover(coverage,unicode,r)
                         done = done + 1
+                        if unicode == 32 then
+                            isspace = true
+                        end
                     else
                         skip = skip + 1
                     end
                 else
                     skip = skip + 1
                 end
+            end
+            if isspace then
+                resetspacekerns()
             end
         else
             report_otf("unknown cover type %a",featuretype)
@@ -326,14 +443,27 @@ local function addfeature(data,feature,specifications)
                 local subtype = nil
                 if lookups and sublookups then
                     for k, v in next, lookups do
-                        local lookup = sublookups[v]
-                        if lookup then
-                            lookups[k] = lookup
-                            if not subtype then
-                                subtype = lookup.type
+                        local t = type(v)
+                        if t == "table" then
+                            -- already ok
+                            for i=1,#v do
+                                local vi = v[i]
+                                if type(vi) ~= "table" then
+                                    v[i] = { vi }
+                                end
+                            end
+                        elseif t == "number" then
+                            local lookup = sublookups[v]
+                            if lookup then
+                                lookups[k] = { lookup }
+                                if not subtype then
+                                    subtype = lookup.type
+                                end
+                            else
+                                lookups[k] = false -- new
                             end
                         else
-                            -- already expanded
+                            lookups[k] = false -- new
                         end
                     end
                 end
@@ -376,11 +506,83 @@ local function addfeature(data,feature,specifications)
         return coverage
     end
 
-    for s=1,#specifications do
-        local specification = specifications[s]
-        local valid         = specification.valid
-        local feature       = specification.name or feature
-        if not valid or valid(data,specification,feature) then
+    local dataset = specifications.dataset
+
+    local function report(name,category,position,first,last,sequences)
+        report_otf("injecting name %a of category %a at position %i in [%i,%i] of [%i,%i]",
+            name,category,position,first,last,1,#sequences)
+    end
+
+    local function inject(specification,sequences,sequence,first,last,category,name)
+        local position = specification.position or false
+        if not position then
+            position = specification.prepend
+            if position == true then
+                if trace_loading then
+                    report(name,category,first,first,last,sequences)
+                end
+                insert(sequences,first,sequence)
+                return
+            end
+        end
+        if not position then
+            position = specification.append
+            if position == true then
+                if trace_loading then
+                    report(name,category,last+1,first,last,sequences)
+                end
+                insert(sequences,last+1,sequence)
+                return
+            end
+        end
+        local kind = type(position)
+        if kind == "string" then
+            local index = false
+            for i=first,last do
+                local s = sequences[i]
+                local f = s.features
+                if f then
+                    for k in next, f do
+                        if k == position then
+                                index = i
+                            break
+                        end
+                    end
+                    if index then
+                        break
+                    end
+                end
+            end
+            if index then
+                position = index
+            else
+                position = last + 1
+            end
+        elseif kind == "number" then
+            if position < 0 then
+                position = last - position + 1
+            end
+            if position > last then
+                position = last + 1
+            elseif position < first then
+                position = first
+            end
+        else
+            position = last + 1
+        end
+        if trace_loading then
+            report(name,category,position,first,last,sequences)
+        end
+        insert(sequences,position,sequence)
+    end
+
+    for s=1,#dataset do
+        local specification = dataset[s]
+        local valid = specification.valid -- nowhere used
+        local feature = specification.name or feature
+        if not feature or feature == "" then
+            report_otf("no valid name given for extra feature")
+        elseif not valid or valid(data,specification,feature) then -- anum uses this
             local initialize = specification.initialize
             if initialize then
                 -- when false is returned we initialize only once
@@ -390,6 +592,8 @@ local function addfeature(data,feature,specifications)
             local askedsteps    = specification.steps or specification.subtables or { specification.data } or { }
             local featuretype   = normalized[specification.type or "substitution"] or "substitution"
             local featureflags  = specification.flags or noflags
+            local nocheck       = specification.nocheck
+            local futuresteps   = specification.futuresteps
             local featureorder  = specification.order or { feature }
             local featurechain  = (featuretype == "chainsubstitution" or featuretype == "chainposition") and 1 or 0
             local nofsteps      = 0
@@ -410,13 +614,13 @@ local function addfeature(data,feature,specifications)
                         local coverage = nil
                         local format   = nil
                         if featuretype == "substitution" then
-                            coverage = prepare_substitution(list,featuretype)
+                            coverage = prepare_substitution(list,featuretype,nocheck)
                         elseif featuretype == "ligature" then
-                            coverage = prepare_ligature(list,featuretype)
+                            coverage = prepare_ligature(list,featuretype,nocheck)
                         elseif featuretype == "alternate" then
-                            coverage = prepare_alternate(list,featuretype)
+                            coverage = prepare_alternate(list,featuretype,nocheck)
                         elseif featuretype == "multiple" then
-                            coverage = prepare_multiple(list,featuretype)
+                            coverage = prepare_multiple(list,featuretype,nocheck)
                         elseif featuretype == "kern" then
                             format   = "kern"
                             coverage = prepare_kern(list,featuretype)
@@ -432,6 +636,7 @@ local function addfeature(data,feature,specifications)
                     s[i] = {
                         [stepkey] = steps,
                         nofsteps  = nofsteps,
+                        flags     = featureflags,
                         type      = types[featuretype],
                     }
                 end
@@ -443,16 +648,16 @@ local function addfeature(data,feature,specifications)
                 local format   = nil
                 if featuretype == "substitution" then
                     category = "gsub"
-                    coverage = prepare_substitution(list,featuretype)
+                    coverage = prepare_substitution(list,featuretype,nocheck)
                 elseif featuretype == "ligature" then
                     category = "gsub"
-                    coverage = prepare_ligature(list,featuretype)
+                    coverage = prepare_ligature(list,featuretype,nocheck)
                 elseif featuretype == "alternate" then
                     category = "gsub"
-                    coverage = prepare_alternate(list,featuretype)
+                    coverage = prepare_alternate(list,featuretype,nocheck)
                 elseif featuretype == "multiple" then
                     category = "gsub"
-                    coverage = prepare_multiple(list,featuretype)
+                    coverage = prepare_multiple(list,featuretype,nocheck)
                 elseif featuretype == "kern" then
                     category = "gpos"
                     format   = "kern"
@@ -486,6 +691,7 @@ local function addfeature(data,feature,specifications)
                 if featureflags[1] then featureflags[1] = "mark" end
                 if featureflags[2] then featureflags[2] = "ligature" end
                 if featureflags[3] then featureflags[3] = "base" end
+                local steptype = types[featuretype]
                 local sequence = {
                     chain     = featurechain,
                     features  = { [feature] = askedfeatures },
@@ -494,14 +700,11 @@ local function addfeature(data,feature,specifications)
                     order     = featureorder,
                     [stepkey] = steps,
                     nofsteps  = nofsteps,
-                    type      = types[featuretype],
+                    type      = steptype,
                 }
-                -- todo : before|after|index
-                if specification.prepend then
-                    insert(sequences,1,sequence)
-                else
-                    insert(sequences,sequence)
-                end
+                -- position | prepend | append
+                local first, last = getrange(sequences,category)
+                inject(specification,sequences,sequence,first,last,category,feature)
                 -- register in metadata (merge as there can be a few)
                 local features = fontfeatures[category]
                 if not features then
@@ -540,18 +743,28 @@ local knownfeatures = { }
 function otf.addfeature(name,specification)
     if type(name) == "table" then
         specification = name
-        name = specification.name
     end
-    if type(name) == "string" then
+    if type(specification) ~= "table" then
+        report_otf("invalid feature specification, no valid table")
+        return
+    end
+    specification, name = validspecification(specification,name)
+    if name and specification then
         local slot = knownfeatures[name]
-        if slot then
-            -- we overload one
-        else
+        if not slot then
+            -- we have a new one
             slot = #extrafeatures + 1
             knownfeatures[name] = slot
+        elseif specification.overload == false then
+            -- we add an extre one
+            slot = #extrafeatures + 1
+            knownfeatures[name] = slot
+        else
+            -- we overload a previous one
         end
         specification.name  = name -- to be sure
         extrafeatures[slot] = specification
+     -- report_otf("adding feature %a @ %i",name,slot)
     end
 end
 
@@ -566,7 +779,7 @@ local function enhance(data,filename,raw)
     end
 end
 
--- otf.enhancers.enhance = enhance
+otf.enhancers.enhance = enhance
 
 otf.enhancers.register("check extra features",enhance)
 
@@ -626,39 +839,39 @@ registerotffeature {
     description = 'tex replacements',
 }
 
--- tcom
+-- -- tcom (obsolete, was already not set for a while)
 
-if characters.combined then
-
-    local tcom = { }
-
-    local function initialize()
-        characters.initialize()
-        for first, seconds in next, characters.combined do
-            for second, combination in next, seconds do
-                tcom[combination] = { first, second }
-            end
-        end
-        -- return false
-    end
-
-    local tcom_specification = {
-        type       = "ligature",
-        features   = everywhere,
-        data       = tcom,
-        order     = { "tcom" },
-        flags      = noflags,
-        initialize = initialize,
-    }
-
-    otf.addfeature("tcom",tcom_specification)
-
-    registerotffeature {
-        name        = 'tcom',
-        description = 'tex combinations',
-    }
-
-end
+-- if characters.combined then
+--
+--     local tcom = { }
+--
+--     local function initialize()
+--         characters.initialize()
+--         for first, seconds in next, characters.combined do
+--             for second, combination in next, seconds do
+--                 tcom[combination] = { first, second }
+--             end
+--         end
+--         -- return false
+--     end
+--
+--     local tcom_specification = {
+--         type       = "ligature",
+--         features   = everywhere,
+--         data       = tcom,
+--         order      = { "tcom" },
+--         flags      = noflags,
+--         initialize = initialize,
+--     }
+--
+--     otf.addfeature("tcom",tcom_specification)
+--
+--     registerotffeature {
+--         name        = 'tcom',
+--         description = 'tex combinations',
+--     }
+--
+-- end
 
 -- anum
 
@@ -785,3 +998,96 @@ registerotffeature {
 --         a = { b = -500 },
 --     }
 -- }
+
+-- This is a quick and dirty hack.
+
+local lookups = { }
+local protect = { }
+local revert  = { }
+local zwj     = { 0x200C }
+
+otf.addfeature {
+    name    = "blockligatures",
+    type    = "chainsubstitution",
+    nocheck = true, -- because there is no 0x200C in the font
+    prepend = true, -- make sure we do it early
+    future  = true, -- avoid nilling due to no steps yet
+    lookups = {
+        {
+            type = "multiple",
+            data = lookups,
+        },
+    },
+    data = {
+        rules = protect,
+    }
+}
+
+otf.addfeature {
+    name     = "blockligatures",
+    type     = "chainsubstitution",
+    nocheck  = true,  -- because there is no 0x200C in the font
+    append   = true,  -- this is done late
+    overload = false, -- we don't want to overload the previous definition
+    lookups  = {
+        {
+            type = "ligature",
+            data = lookups,
+        },
+    },
+    data = {
+        rules = revert,
+    }
+}
+
+registerotffeature {
+    name        = 'blockligatures',
+    description = 'block certain ligatures',
+}
+
+local settings_to_array = utilities.parsers and utilities.parsers.settings_to_array
+                       or function(s) return string.split(s,",") end -- for generic
+
+local function blockligatures(str)
+
+    local t = settings_to_array(str)
+
+    for i=1,#t do
+        local ti = utfsplit(t[i])
+        if #ti > 1 then
+            local one = ti[1]
+            local two = ti[2]
+            lookups[one] = { one, 0x200C }
+            local one = { one }
+            local two = { two }
+            local new = #protect + 1
+            protect[new] = {
+                current = { one, two },
+                lookups = { 1 }, -- not shared !
+            }
+            revert[new] = {
+                current = { one, zwj },
+                after   = { two },
+                lookups = { 1 }, -- not shared !
+            }
+        end
+    end
+
+end
+
+-- blockligatures("\0\0")
+
+otf.helpers.blockligatures = blockligatures
+
+-- blockligatures("fi,ff")
+-- blockligatures("fl")
+
+if context then
+
+    interfaces.implement {
+        name      = "blockligatures",
+        arguments = "string",
+        actions   = blockligatures,
+    }
+
+end

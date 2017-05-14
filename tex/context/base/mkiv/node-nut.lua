@@ -93,8 +93,6 @@ local direct              = node.direct
 
 local fastcopy            = table.fastcopy
 
-local texget              = tex.get
-
 local nodecodes           = nodes.nodecodes
 local hlist_code          = nodecodes.hlist
 local vlist_code          = nodecodes.vlist
@@ -119,16 +117,113 @@ nodes.tonut               = tonut
 
 -- getters
 
-nuts.getfield             = direct.getfield
-nuts.getnext              = direct.getnext
-nuts.getprev              = direct.getprev
-nuts.getid                = direct.getid
-nuts.getattr              = direct.get_attribute or direct.has_attribute or direct.getfield
-nuts.getchar              = direct.getchar
-nuts.getfont              = direct.getfont
-nuts.getsubtype           = direct.getsubtype
-nuts.getlist              = direct.getlist -- only hlist and vlist !
-nuts.getleader            = direct.getleader
+if not direct.getwhd then
+    local getfield = direct.getfield
+    function direct.getwhd(n)
+        return getfield(n,"width"), getfield(n,"height"), getfield(n,"depth")
+    end
+end
+
+if not direct.setwhd then
+    local setfield = direct.setfield
+    function direct.setwhd(n,w,h,d)
+        setfield(n,"width",w or 0)
+        setfield(n,"height",h or 0)
+        setfield(n,"depth",d or 0)
+    end
+end
+
+if not direct.getcomponents then
+
+    local getfield   = direct.getfield
+    local setfield   = direct.setfield
+    local setsubtype = direct.setsubtype
+
+    local attributelist_code = nodecodes.attributelist
+
+    function direct.getcomponents(n)   return getfield(n,"components")   end
+    function direct.setcomponents(n,c)        setfield(n,"components",c) end
+    function direct.getkern(n)         return getfield(n,"kern")         end
+    function direct.getwidth(n)        return getfield(n,"width")        end
+    function direct.setwidth(n,w)      return setfield(n,"width",w)      end
+    function direct.getheight(n)       return getfield(n,"height")       end
+    function direct.setheight(n,h)     return setfield(n,"height",h)     end
+    function direct.getdepth(n)        return getfield(n,"depth")        end
+    function direct.setdepth(n,d)      return setfield(n,"depth",d)      end
+    function direct.getshift(n)        return getfield(n,"shift")        end
+    function direct.setshift(n,s)      return setfield(n,"shift",s)      end
+    function direct.getpenalty(n)      return getfield(n,"penalty")      end
+    function direct.setpenalty(n,p)           setfield(n,"penalty",p)    end
+    function direct.getdir(n)          return getfield(n,"dir")          end
+    function direct.setdir(n,p)               setfield(n,"dir",p)        end
+    function direct.getlanguage(n)     return getfield(n,"lang")         end
+    function direct.setlanguage(n,l)   return setfield(n,"lang",l)       end
+    function direct.getattributelist(n)       getfield(n,"attr")         end
+
+    function direct.getnucleus(n)      return getfield(n,"nucleus")      end
+    function direct.setnucleus(n,p)    return setfield(n,"nucleus",p)    end
+    function direct.getsup(n)          return getfield(n,"sup")          end
+    function direct.setsup(n,p)        return setfield(n,"sup",p)        end
+    function direct.getsub(n)          return getfield(n,"sub")          end
+    function direct.setsub(n,p)        return setfield(n,"sub",p)        end
+
+    function direct.setattributelist(n,a)
+        if a and type(a) ~= attributelist_code then
+            a = getfield(a,"attr")
+        end
+        setfield(n,"attr",a)
+    end
+
+    function direct.setkern(n,k,s)
+        setfield(n,"kern",k)
+        if s then
+            setsubtype(n,s)
+        end
+    end
+
+    function direct.setfont(n,f,c)
+        setfield(n,"font",f)
+        if c then
+            setfield(n,"char",f)
+        end
+    end
+
+    function direct.getoffsets(n)
+        return getfield(n,"xoffset"), getfield(n,"yoffset")
+    end
+
+    function direct.setoffsets(n,x,y)
+        if x then
+            setfield(n,"xoffset",x)
+        end
+        if y then
+            setfield(n,"yoffset",y)
+        end
+    end
+
+end
+
+if LUATEXVERSION < 1.005 then
+    local getfield = direct.getfield
+    function direct.getnucleus(n) return getfield(n,"nucleus") end
+    function direct.getsub    (n) return getfield(n,"sub") end
+    function direct.getsup    (n) return getfield(n,"sup") end
+end
+
+-- if LUATEXVERSION < 1.004 then
+--     local gc = direct.getcomponents
+--     getcomponents = function(n) local c = gc(n) return c ~= 0 and c or nil end
+-- end
+
+-- local hash = table.setmetatableindex("number")
+-- local ga = direct.get_attribute
+-- function direct.get_attribute(n,a)
+--     hash[a] = hash[a] + 1
+--     return ga(n,a)
+-- end
+-- function nuts.reportattr()
+--     inspect(hash)
+-- end
 
 -- local function track(name)
 --     local n = 0
@@ -146,59 +241,58 @@ nuts.getleader            = direct.getleader
 
 -- setters
 
-nuts.setfield             = direct.setfield
-nuts.setattr              = direct.set_attribute or setfield
-
-nuts.getbox               = direct.getbox
-nuts.setbox               = direct.setbox
-nuts.getskip              = direct.getskip or function(s) return tonut(texget(s)) end
-
 -- helpers
 
-nuts.tostring             = direct.tostring
-nuts.copy                 = direct.copy
-nuts.copy_list            = direct.copy_list
-nuts.delete               = direct.delete
-nuts.dimensions           = direct.dimensions
-nuts.end_of_math          = direct.end_of_math
-nuts.flush_list           = direct.flush_list
-nuts.flush_node           = direct.flush_node
-nuts.free                 = direct.free
-nuts.insert_after         = direct.insert_after
-nuts.insert_before        = direct.insert_before
-nuts.hpack                = direct.hpack
-nuts.new                  = direct.new
-nuts.tail                 = direct.tail
-nuts.traverse             = direct.traverse
-nuts.traverse_id          = direct.traverse_id
-nuts.traverse_char        = direct.traverse_char
-nuts.slide                = direct.slide
-nuts.writable_spec        = direct.writable_spec
-nuts.vpack                = direct.vpack
-nuts.is_node              = direct.is_node
-nuts.is_direct            = direct.is_direct
-nuts.is_nut               = direct.is_direct
-nuts.first_glyph          = direct.first_glyph
-nuts.has_glyph            = direct.has_glyph or direct.first_glyph
+nuts.tostring              = direct.tostring
+nuts.copy                  = direct.copy
+nuts.copy_node             = direct.copy
+nuts.copy_list             = direct.copy_list
+nuts.delete                = direct.delete
+nuts.dimensions            = direct.dimensions
+nuts.rangedimensions       = direct.rangedimensions
+nuts.end_of_math           = direct.end_of_math
+nuts.flush                 = direct.flush_node
+nuts.flush_node            = direct.flush_node
+nuts.flush_list            = direct.flush_list
+nuts.free                  = direct.free
+nuts.insert_after          = direct.insert_after
+nuts.insert_before         = direct.insert_before
+nuts.hpack                 = direct.hpack
+nuts.new                   = direct.new
+nuts.tail                  = direct.tail
+nuts.traverse              = direct.traverse
+nuts.traverse_id           = direct.traverse_id
+nuts.traverse_char         = direct.traverse_char
+nuts.slide                 = direct.slide
+nuts.writable_spec         = direct.writable_spec
+nuts.vpack                 = direct.vpack
+nuts.is_node               = direct.is_node
+nuts.is_direct             = direct.is_direct
+nuts.is_nut                = direct.is_direct
+nuts.first_glyph           = direct.first_glyph
+nuts.has_glyph             = direct.has_glyph or direct.first_glyph
+nuts.count                 = direct.count
+nuts.length                = direct.length
+nuts.find_attribute        = direct.find_attribute
+nuts.unset_attribute       = direct.unset_attribute
 
-nuts.current_attr         = direct.current_attr
-nuts.do_ligature_n        = direct.do_ligature_n
-nuts.has_field            = direct.has_field
-nuts.last_node            = direct.last_node
-nuts.usedlist             = direct.usedlist
-nuts.protrusion_skippable = direct.protrusion_skippable
-nuts.write                = direct.write
+nuts.current_attr          = direct.current_attr
+nuts.has_field             = direct.has_field
+nuts.last_node             = direct.last_node
+nuts.usedlist              = direct.usedlist
+nuts.protrusion_skippable  = direct.protrusion_skippable
+nuts.check_discretionaries = direct.check_discretionaries
+nuts.write                 = direct.write
 
-nuts.has_attribute        = direct.has_attribute
-nuts.set_attribute        = direct.set_attribute
-nuts.unset_attribute      = direct.unset_attribute
+nuts.has_attribute         = direct.has_attribute
+nuts.set_attribute         = direct.set_attribute
+nuts.unset_attribute       = direct.unset_attribute
 
-nuts.protect_glyphs       = direct.protect_glyphs
-nuts.protect_glyph        = direct.protect_glyph
-nuts.unprotect_glyphs     = direct.unprotect_glyphs
-nuts.ligaturing           = direct.ligaturing
-nuts.kerning              = direct.kerning
-nuts.effective_glue       = direct.effective_glue
+nuts.protect_glyphs        = direct.protect_glyphs
+nuts.protect_glyph         = direct.protect_glyph
+nuts.unprotect_glyphs      = direct.unprotect_glyphs
+nuts.ligaturing            = direct.ligaturing
+nuts.kerning               = direct.kerning
 
 if not direct.mlist_to_hlist then -- needed
 
@@ -210,84 +304,115 @@ if not direct.mlist_to_hlist then -- needed
 
 end
 
-local is_zero_glue = direct.is_zero_glue
-local setglue      = direct.setglue
-local getglue      = direct.getglue
+nuts.getfield              = direct.getfield
+nuts.setfield              = direct.setfield
 
-if not is_zero_glue then
-    is_zero_glue = function(n)
-        return not n or (
-            getfield(n,"width")   == 0 and
-            getfield(n,"stretch") == 0 and
-            getfield(n,"shrink")  == 0
-        )
-    end
-    setglue = function(n,width,stretch,shrink,stretch_order,shrink_order)
-        setfield(n,"width",        width         or 0)
-        setfield(n,"stretch",      stretch       or 0)
-        setfield(n,"shrink",       shrink        or 0)
-        setfield(n,"stretch_order",stretch_order or 0)
-        setfield(n,"shrink_order", shrink_order  or 0)
-    end
-    getglue = function(n)
-        return
-            getfield(n,"width"), getfield(n,"stretch"), getfield(n,"shrink"),
-            getfield(n,"stretch_order"), getfield(n,"shrink_order")
-    end
-end
+nuts.getnext               = direct.getnext
+nuts.setnext               = direct.setnext
 
-nuts.is_zero_glue = is_zero_glue
-nuts.setglue      = setglue
-nuts.getglue      = getglue
+nuts.getid                 = direct.getid
 
+nuts.getprev               = direct.getprev
+nuts.setprev               = direct.setprev
 
--- if not direct.getpre then
---
---     local getfield = nuts.getfield
---
---     function direct.getpre    (n) local h, _, _, t       = getdisc(n,true) return h, t end
---     function direct.getpost   (n) local _, h, _, _, t    = getdisc(n,true) return h, t end
---     function direct.getreplace(n) local _, _, h, _, _, t = getdisc(n,true) return h, t end
---
--- end
+nuts.getattr               = direct.get_attribute
+nuts.setattr               = direct.set_attribute
+nuts.takeattr              = direct.unset_attribute -- ?
 
-----.getpre     = direct.getpre
-----.getpost    = direct.getpost
-----.getreplace = direct.getreplace
+nuts.is_zero_glue          = direct.is_zero_glue
+nuts.effective_glue        = direct.effective_glue
 
-nuts.getdisc    = direct.getdisc
-nuts.setdisc    = direct.setdisc
-nuts.setchar    = direct.setchar
-nuts.setnext    = direct.setnext
-nuts.setprev    = direct.setprev
-nuts.setboth    = direct.setboth
-nuts.getboth    = direct.getboth
-nuts.setlink    = direct.setlink
-nuts.setlist    = direct.setlist
-nuts.setleader  = direct.setleader
-nuts.setsubtype = direct.setsubtype
+nuts.getglue               = direct.getglue
+nuts.setglue               = direct.setglue
 
-nuts.is_char    = direct.is_char
-nuts.ischar     = direct.is_char
-nuts.is_glyph   = direct.is_glyph
-nuts.isglyph    = direct.is_glyph
+nuts.getdisc               = direct.getdisc
+nuts.setdisc               = direct.setdisc
+nuts.getdiscretionary      = direct.getdisc
+nuts.setdiscretionary      = direct.setdisc
 
-local d_remove_node     = direct.remove
-local d_free_node       = direct.free
-local d_getfield        = direct.getfield
-local d_setfield        = direct.setfield
-local d_getnext         = direct.getnext
-local d_getprev         = direct.getprev
-local d_getid           = direct.getid
-local d_getlist         = direct.getlist
-local d_find_tail       = direct.tail
-local d_insert_after    = direct.insert_after
-local d_insert_before   = direct.insert_before
-local d_slide           = direct.slide
------ d_copy_node       = direct.copy
-local d_traverse        = direct.traverse
-local d_setlink         = direct.setlink
-local d_setboth         = direct.setboth
+nuts.getwhd                = direct.getwhd
+nuts.setwhd                = direct.setwhd
+nuts.getwidth              = direct.getwidth
+nuts.setwidth              = direct.setwidth
+nuts.getheight             = direct.getheight
+nuts.setheight             = direct.setheight
+nuts.getdepth              = direct.getdepth
+nuts.setdepth              = direct.setdepth
+nuts.getshift              = direct.getshift
+nuts.setshift              = direct.setshift
+
+nuts.getnucleus            = direct.getnucleus
+nuts.setnucleus            = direct.setnucleus
+nuts.getsup                = direct.getsup
+nuts.setsup                = direct.setsup
+nuts.getsub                = direct.getsub
+nuts.setsub                = direct.setsub
+
+nuts.getchar               = direct.getchar
+nuts.setchar               = direct.setchar
+nuts.getfont               = direct.getfont
+nuts.setfont               = direct.setfont
+
+nuts.getboth               = direct.getboth
+nuts.setboth               = direct.setboth
+nuts.setlink               = direct.setlink
+nuts.setsplit              = direct.setsplit
+
+nuts.getlist               = direct.getlist -- only hlist and vlist !
+nuts.setlist               = direct.setlist
+nuts.getleader             = direct.getleader
+nuts.setleader             = direct.setleader
+nuts.getcomponents         = direct.getcomponents
+nuts.setcomponents         = direct.setcomponents
+
+nuts.getsubtype            = direct.getsubtype
+nuts.setsubtype            = direct.setsubtype
+
+nuts.getlang               = direct.getlang
+nuts.setlang               = direct.setlang
+nuts.getlanguage           = direct.getlang
+nuts.setlanguage           = direct.setlang
+
+nuts.getattrlist           = direct.getattributelist
+nuts.setattrlist           = direct.setattributelist
+nuts.getattributelist      = direct.getattributelist
+nuts.setattributelist      = direct.setattributelist
+
+nuts.getoffsets            = direct.getoffsets
+nuts.setoffsets            = direct.setoffsets
+
+nuts.getkern               = direct.getkern
+nuts.setkern               = direct.setkern
+
+nuts.getdir                = direct.getdir
+nuts.setdir                = direct.setdir
+
+nuts.getpenalty            = direct.getpenalty
+nuts.setpenalty            = direct.setpenalty
+
+nuts.getbox                = direct.getbox
+nuts.setbox                = direct.setbox
+
+nuts.is_char               = direct.is_char
+nuts.ischar                = direct.is_char
+nuts.is_glyph              = direct.is_glyph
+nuts.isglyph               = direct.is_glyph
+
+local d_remove_node        = direct.remove
+local d_flush_node         = direct.flush_node
+local d_getnext            = direct.getnext
+local d_getprev            = direct.getprev
+local d_getid              = direct.getid
+local d_getlist            = direct.getlist
+local d_find_tail          = direct.tail
+local d_insert_after       = direct.insert_after
+local d_insert_before      = direct.insert_before
+local d_slide              = direct.slide
+----- d_copy_node          = direct.copy
+local d_traverse           = direct.traverse
+local d_setlink            = direct.setlink
+local d_setboth            = direct.setboth
+local d_getboth            = direct.getboth
 
 local function remove(head,current,free_too)
     local t = current
@@ -295,13 +420,18 @@ local function remove(head,current,free_too)
     if not t then
         -- forget about it
     elseif free_too then
-        d_free_node(t)
+        d_flush_node(t)
         t = nil
     else
         d_setboth(t) -- (t,nil,nil)
     end
     return head, current, t
 end
+
+-- alias
+
+nuts.getsurround = nuts.getkern
+nuts.setsurround = nuts.setkern
 
 -- bad: we can have prev's being glue_spec
 
@@ -316,32 +446,35 @@ function nuts.replace(head,current,new) -- no head returned if false
         head, current, new = false, head, current
     end
     local prev, next = d_getboth(current)
-    if next then
-        d_setlink(new,next)
-    end
-    if prev then
-        d_setlink(new,prev)
+--     if next then
+--         d_setlink(new,next)
+--     end
+--     if prev then
+--         d_setlink(prev,new)
+--     end
+    if prev or next then
+        d_setlink(prev,new,next)
     end
     if head then
         if head == current then
             head = new
         end
-        d_free_node(current)
+        d_flush_node(current)
         return head, new
     else
-        d_free_node(current)
+        d_flush_node(current)
         return new
     end
 end
 
-local function count(stack,flat)
+local function countall(stack,flat)
     local n = 0
     while stack do
         local id = d_getid(stack)
         if not flat and id == hlist_code or id == vlist_code then
             local list = d_getlist(stack)
             if list then
-                n = n + 1 + count(list) -- self counts too
+                n = n + 1 + countall(list) -- self counts too
             else
                 n = n + 1
             end
@@ -353,7 +486,11 @@ local function count(stack,flat)
     return n
 end
 
-nuts.count = count
+nuts.countall = countall
+
+function nodes.countall(stack,flat)
+    return countall(tonut(stack),flat)
+end
 
 function nuts.append(head,current,...)
     for i=1,select("#",...) do
@@ -369,7 +506,7 @@ function nuts.prepend(head,current,...)
     return head, current
 end
 
-function nuts.linked(...)
+function nuts.linked(...) -- slides !
     local head, last
     for i=1,select("#",...) do
         local next = select(i,...)
@@ -719,41 +856,10 @@ function nuts.copy_properties(source,target,what)
     return newprops -- for checking
 end
 
--- a bit special
+-- here:
 
-local getwidth      = { }
-local setwidth      = { }
-local getdimensions = { }
-local setdimensions = { }
+nodes.set_synctex_line  = node.set_synctex_line
+nodes.set_synctex_tag   = node.set_synctex_tag
 
-nodes.whatsitters = {
-    getters = { width = getwidth, dimensions = getdimensions },
-    setters = { width = setwidth, dimensions = setdimensions },
-}
-
--- obsolete
-
--- local function get_width(n,dir)
---     n = tonut(n)
---     return getfield(n,"width")
--- end
---
--- local function get_dimensions(n,dir)
---     n = tonut(n)
---     return getfield(n,"width"), getfield(n,"height"), getfield(n,"depth")
--- end
---
--- local whatcodes         = nodes.whatcodes
--- local pdfrefximage_code = whatcodes.pdfrefximage
--- local pdfrefxform_code  = whatcodes.pdfrefxform
---
--- if pdfrefxform_code then
---     getwidth     [pdfrefxform_code ] = get_width
---     getdimensions[pdfrefxform_code ] = get_dimensions
--- end
---
--- if pdfrefximage_code then
---     getwidth     [pdfrefximage_code] = get_width
---     getdimensions[pdfrefximage_code] = get_dimensions
--- end
-
+nuts.get_synctex_fields = direct.get_synctex_fields
+nuts.set_synctex_fields = direct.set_synctex_fields

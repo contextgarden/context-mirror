@@ -9,13 +9,14 @@ if not modules then modules = { } end modules ['font-con'] = {
 -- some names of table entries will be changed (no _)
 
 local next, tostring, rawget = next, tostring, rawget
-local format, match, lower, gsub = string.format, string.match, string.lower, string.gsub
-local utfbyte = utf.byte
-local sort, insert, concat, sortedkeys, serialize, fastcopy = table.sort, table.insert, table.concat, table.sortedkeys, table.serialize, table.fastcopy
+local format, match, lower, gsub, find = string.format, string.match, string.lower, string.gsub, string.find
+local sort, insert, concat = table.sort, table.insert, table.concat
+local sortedkeys, sortedhash, serialize, fastcopy = table.sortedkeys, table.sortedhash, table.serialize, table.fastcopy
 local derivetable = table.derive
+local ioflush = io.flush
 
-local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
-local trace_scaling  = false  trackers.register("fonts.scaling" , function(v) trace_scaling  = v end)
+local trace_defining  = false  trackers.register("fonts.defining",  function(v) trace_defining = v end)
+local trace_scaling   = false  trackers.register("fonts.scaling",   function(v) trace_scaling  = v end)
 
 local report_defining = logs.reporter("fonts","defining")
 
@@ -46,102 +47,6 @@ constructors.cache           = containers.define("fonts", "constructors", constr
 constructors.privateoffset   = 0xF0000 -- 0x10FFFF
 
 constructors.cacheintex      = true -- so we see the original table in fonts.font
-
--- Some experimental helpers (handy for tracing):
---
--- todo: extra:
---
--- extra_space       => space.extra
--- space             => space.width
--- space_stretch     => space.stretch
--- space_shrink      => space.shrink
-
--- We do keep the x-height, extra_space, space_shrink and space_stretch
--- around as these are low level official names.
-
-constructors.keys = {
-    properties = {
-        encodingbytes          = "number",
-        embedding              = "number",
-        cidinfo                = { },
-        format                 = "string",
-        fontname               = "string",
-        fullname               = "string",
-        filename               = "filename",
-        psname                 = "string",
-        name                   = "string",
-        virtualized            = "boolean",
-        hasitalics             = "boolean",
-        autoitalicamount       = "basepoints",
-        nostackmath            = "boolean",
-        noglyphnames           = "boolean",
-        mode                   = "string",
-        hasmath                = "boolean",
-        mathitalics            = "boolean",
-        textitalics            = "boolean",
-        finalized              = "boolean",
-    },
-    parameters = {
-        mathsize               = "number",
-        scriptpercentage       = "float",
-        scriptscriptpercentage = "float",
-        units                  = "cardinal",
-        designsize             = "scaledpoints",
-        expansion              = {
-                                    stretch = "integerscale", -- might become float
-                                    shrink  = "integerscale", -- might become float
-                                    step    = "integerscale", -- might become float
-                                    auto    = "boolean",
-                                 },
-        protrusion             = {
-                                    auto    = "boolean",
-                                 },
-        slantfactor            = "float",
-        extendfactor           = "float",
-        factor                 = "float",
-        hfactor                = "float",
-        vfactor                = "float",
-        size                   = "scaledpoints",
-        units                  = "scaledpoints",
-        scaledpoints           = "scaledpoints",
-        slantperpoint          = "scaledpoints",
-        spacing                = {
-                                    width   = "scaledpoints",
-                                    stretch = "scaledpoints",
-                                    shrink  = "scaledpoints",
-                                    extra   = "scaledpoints",
-                                 },
-        xheight                = "scaledpoints",
-        quad                   = "scaledpoints",
-        ascender               = "scaledpoints",
-        descender              = "scaledpoints",
-        synonyms               = {
-                                    space         = "spacing.width",
-                                    spacestretch  = "spacing.stretch",
-                                    spaceshrink   = "spacing.shrink",
-                                    extraspace    = "spacing.extra",
-                                    x_height      = "xheight",
-                                    space_stretch = "spacing.stretch",
-                                    space_shrink  = "spacing.shrink",
-                                    extra_space   = "spacing.extra",
-                                    em            = "quad",
-                                    ex            = "xheight",
-                                    slant         = "slantperpoint",
-                                  },
-    },
-    description = {
-        width                  = "basepoints",
-        height                 = "basepoints",
-        depth                  = "basepoints",
-        boundingbox            = { },
-    },
-    character = {
-        width                  = "scaledpoints",
-        height                 = "scaledpoints",
-        depth                  = "scaledpoints",
-        italic                 = "scaledpoints",
-    },
-}
 
 -- This might become an interface:
 
@@ -240,7 +145,9 @@ end
 local unscaled = {
     ScriptPercentScaleDown          = true,
     ScriptScriptPercentScaleDown    = true,
-    RadicalDegreeBottomRaisePercent = true
+    RadicalDegreeBottomRaisePercent = true,
+    NoLimitSupFactor                = true,
+    NoLimitSubFactor                = true,
 }
 
 function constructors.assignmathparameters(target,original) -- simple variant, not used in context
@@ -336,6 +243,41 @@ function constructors.enhanceparameters(parameters)
         shrink  = shrink,
         extra   = extra,
     }
+end
+
+local function mathkerns(v,vdelta)
+    local k = { }
+    for i=1,#v do
+        local entry  = v[i]
+        local height = entry.height
+        local kern   = entry.kern
+        k[i] = {
+            height = height and vdelta*height or 0,
+            kern   = kern   and vdelta*kern   or 0,
+        }
+    end
+    return k
+end
+
+local psfake = 0
+
+local function fixedpsname(psname,fallback)
+    local usedname = psname
+    if psname and psname ~= "" then
+        if find(psname," ") then
+            usedname = gsub(psname,"[%s]+","-")
+        else
+            -- we assume that the name is sane enough (we might sanitize completely some day)
+        end
+    elseif not fallback or fallback == "" then
+        psfake = psfake + 1
+        psname = "fakename-" .. psfake
+    else
+        -- filenames can be a mess so we do a drastic cleanup
+        psname   = fallback
+        usedname = gsub(psname,"[^a-zA-Z0-9]+","-")
+    end
+    return usedname, psname ~= usedname
 end
 
 function constructors.scale(tfmdata,specification)
@@ -440,22 +382,21 @@ function constructors.scale(tfmdata,specification)
     target.format        = properties.format
     target.cache         = constructors.cacheintex and "yes" or "renew"
     --
-    local fontname = properties.fontname or tfmdata.fontname -- for the moment we fall back on
-    local fullname = properties.fullname or tfmdata.fullname -- names in the tfmdata although
-    local filename = properties.filename or tfmdata.filename -- that is not the right place to
-    local psname   = properties.psname   or tfmdata.psname   -- pass them
+    local fontname = properties.fontname or tfmdata.fontname
+    local fullname = properties.fullname or tfmdata.fullname
+    local filename = properties.filename or tfmdata.filename
+    local psname   = properties.psname   or tfmdata.psname
     local name     = properties.name     or tfmdata.name
     --
-    if not psname or psname == "" then
-     -- name used in pdf file as well as for selecting subfont in ttc/dfont
-        psname = fontname or (fullname and fonts.names.cleanname(fullname))
-    end
+    -- the psname used in pdf file as well as for selecting subfont in ttc
+    --
+    local psname, psfixed = fixedpsname(psname,fontname or fullname or file.nameonly(filename))
+    --
     target.fontname = fontname
     target.fullname = fullname
     target.filename = filename
     target.psname   = psname
     target.name     = name
-    --
     --
     properties.fontname = fontname
     properties.fullname = fullname
@@ -507,12 +448,16 @@ function constructors.scale(tfmdata,specification)
     local haskerns         = properties.haskerns     or properties.mode == "base" -- we can have afm in node mode
     local hasligatures     = properties.hasligatures or properties.mode == "base" -- we can have afm in node mode
     local realdimensions   = properties.realdimensions
+    local writingmode      = properties.writingmode or "horizontal"
+    local identity         = properties.identity or "horizontal"
     --
     if changed and not next(changed) then
         changed = false
     end
     --
-    target.type = isvirtual and "virtual" or "real"
+    target.type        = isvirtual and "virtual" or "real"
+    target.writingmode = writingmode == "vertical" and "vertical" or "horizontal"
+    target.identity    = identity == "vertical" and "vertical" or "horizontal"
     --
     target.postprocessors = tfmdata.postprocessors
     --
@@ -552,13 +497,13 @@ function constructors.scale(tfmdata,specification)
     --
     if hasmath then
         constructors.assignmathparameters(target,tfmdata) -- does scaling and whatever is needed
-        properties.hasmath    = true
-        target.nomath         = false
-        target.MathConstants  = target.mathparameters
+        properties.hasmath      = true
+        target.nomath           = false
+        target.MathConstants    = target.mathparameters
     else
-        properties.hasmath    = false
-        target.nomath         = true
-        target.mathparameters = nil -- nop
+        properties.hasmath      = false
+        target.nomath           = true
+        target.mathparameters   = nil -- nop
     end
     --
     -- Here we support some context specific trickery (this might move to a plugin). During the
@@ -589,8 +534,9 @@ function constructors.scale(tfmdata,specification)
     -- end of context specific trickery
     --
     if trace_defining then
-        report_defining("defining tfm, name %a, fullname %a, filename %a, hscale %a, vscale %a, math %a, italics %a",
-            name,fullname,filename,hdelta,vdelta,hasmath and "enabled" or "disabled",hasitalics and "enabled" or "disabled")
+        report_defining("defining tfm, name %a, fullname %a, filename %a, %spsname %a, hscale %a, vscale %a, math %a, italics %a",
+            name,fullname,filename,psfixed and "(fixed) " or "",psname,hdelta,vdelta,
+            hasmath and "enabled" or "disabled",hasitalics and "enabled" or "disabled")
     end
     --
     constructors.beforecopyingcharacters(target,tfmdata)
@@ -749,22 +695,15 @@ function constructors.scale(tfmdata,specification)
                 chr.top_accent = vdelta*va
             end
             if stackmath then
-                local mk = character.mathkerns -- not in math ?
+                local mk = character.mathkerns
                 if mk then
-                    local kerns = { }
-                    local v = mk.top_right    if v then local k = { } for i=1,#v do local vi = v[i]
-                        k[i] = { height = vdelta*vi.height, kern = vdelta*vi.kern }
-                    end     kerns.top_right    = k end
-                    local v = mk.top_left     if v then local k = { } for i=1,#v do local vi = v[i]
-                        k[i] = { height = vdelta*vi.height, kern = vdelta*vi.kern }
-                    end     kerns.top_left     = k end
-                    local v = mk.bottom_left  if v then local k = { } for i=1,#v do local vi = v[i]
-                        k[i] = { height = vdelta*vi.height, kern = vdelta*vi.kern }
-                    end     kerns.bottom_left  = k end
-                    local v = mk.bottom_right if v then local k = { } for i=1,#v do local vi = v[i]
-                        k[i] = { height = vdelta*vi.height, kern = vdelta*vi.kern }
-                    end     kerns.bottom_right = k end
-                    chr.mathkern = kerns -- singular -> should be patched in luatex !
+                    local tr, tl, br, bl = mk.topright, mk.topleft, mk.bottomright, mk.bottomleft
+                    chr.mathkern = { -- singular -> should be patched in luatex !
+                        top_right    = tr and mathkerns(tr,vdelta) or nil,
+                        top_left     = tl and mathkerns(tl,vdelta) or nil,
+                        bottom_right = br and mathkerns(br,vdelta) or nil,
+                        bottom_left  = bl and mathkerns(bl,vdelta) or nil,
+                    }
                 end
             end
             if hasitalics then
@@ -960,6 +899,8 @@ function constructors.finalize(tfmdata)
             cidinfo       = tfmdata.cidinfo       or nil,
             format        = tfmdata.format        or "type1",
             direction     = tfmdata.direction     or 0,
+            writingmode   = tfmdata.writingmode   or "horizontal",
+            identity      = tfmdata.identity      or "horizontal",
         }
     end
     if not tfmdata.resources then
@@ -973,42 +914,42 @@ function constructors.finalize(tfmdata)
     -- tfmdata.unscaled
     --
     if not properties.hasmath then
-        properties.hasmath  = not tfmdata.nomath
+        properties.hasmath = not tfmdata.nomath
     end
     --
-    tfmdata.MathConstants  = nil
-    tfmdata.postprocessors = nil
+    tfmdata.MathConstants    = nil
+    tfmdata.postprocessors   = nil
     --
-    tfmdata.fontname       = nil
-    tfmdata.filename       = nil
-    tfmdata.fullname       = nil
-    tfmdata.name           = nil -- most tricky part
-    tfmdata.psname         = nil
+    tfmdata.fontname         = nil
+    tfmdata.filename         = nil
+    tfmdata.fullname         = nil
+    tfmdata.name             = nil -- most tricky part
+    tfmdata.psname           = nil
     --
-    tfmdata.encodingbytes  = nil
-    tfmdata.embedding      = nil
-    tfmdata.tounicode      = nil
-    tfmdata.cidinfo        = nil
-    tfmdata.format         = nil
-    tfmdata.direction      = nil
-    tfmdata.type           = nil
-    tfmdata.nomath         = nil
-    tfmdata.designsize     = nil
+    tfmdata.encodingbytes    = nil
+    tfmdata.embedding        = nil
+    tfmdata.tounicode        = nil
+    tfmdata.cidinfo          = nil
+    tfmdata.format           = nil
+    tfmdata.direction        = nil
+    tfmdata.type             = nil
+    tfmdata.nomath           = nil
+    tfmdata.designsize       = nil
     --
-    tfmdata.size           = nil
-    tfmdata.stretch        = nil
-    tfmdata.shrink         = nil
-    tfmdata.step           = nil
-    tfmdata.auto_expand    = nil
-    tfmdata.auto_protrude  = nil
-    tfmdata.extend         = nil
-    tfmdata.slant          = nil
-    tfmdata.units          = nil
-    tfmdata.units_per_em   = nil
+    tfmdata.size             = nil
+    tfmdata.stretch          = nil
+    tfmdata.shrink           = nil
+    tfmdata.step             = nil
+    tfmdata.auto_expand      = nil
+    tfmdata.auto_protrude    = nil
+    tfmdata.extend           = nil
+    tfmdata.slant            = nil
+    tfmdata.units            = nil
+    tfmdata.units_per_em     = nil
     --
-    tfmdata.cache          = nil
+    tfmdata.cache            = nil
     --
-    properties.finalized   = true
+    properties.finalized     = true
     --
     return tfmdata
 end
@@ -1023,20 +964,22 @@ constructors.hashmethods = hashmethods
 function constructors.hashfeatures(specification) -- will be overloaded
     local features = specification.features
     if features then
-        local t, tn = { }, 0
-        for category, list in next, features do
+        local t, n = { }, 0
+-- inspect(features)
+--         for category, list in next, features do
+        for category, list in sortedhash(features) do
             if next(list) then
                 local hasher = hashmethods[category]
                 if hasher then
                     local hash = hasher(list)
                     if hash then
-                        tn = tn + 1
-                        t[tn] = category .. ":" .. hash
+                        n = n + 1
+                        t[n] = category .. ":" .. hash
                     end
                 end
             end
         end
-        if tn > 0 then
+        if n > 0 then
             return concat(t," & ")
         end
     end
@@ -1053,15 +996,11 @@ hashmethods.normal = function(list)
             -- no need to add to hash (maybe we need a skip list)
         else
             n = n + 1
-            s[n] = k
+            s[n] = k .. '=' .. tostring(v)
         end
     end
     if n > 0 then
         sort(s)
-        for i=1,n do
-            local k = s[i]
-            s[i] = k .. '=' .. tostring(list[k])
-        end
         return concat(s,"+")
     end
 end
@@ -1136,127 +1075,267 @@ setmetatableindex(formats, function(t,k)
     return rawget(t,file.suffix(l))
 end)
 
-local locations = { }
+do
 
-local function setindeed(mode,target,group,name,action,position)
-    local t = target[mode]
-    if not t then
-        report_defining("fatal error in setting feature %a, group %a, mode %a",name,group,mode)
-        os.exit()
-    elseif position then
-        -- todo: remove existing
-        insert(t, position, { name = name, action = action })
-    else
-        for i=1,#t do
-            local ti = t[i]
-            if ti.name == name then
-                ti.action = action
-                return
+    local function setindeed(mode,source,target,group,name,position)
+        local action = source[mode]
+        if not action then
+            return
+        end
+        local t = target[mode]
+        if not t then
+            report_defining("fatal error in setting feature %a, group %a, mode %a",name,group,mode)
+            os.exit()
+        elseif position then
+            -- todo: remove existing
+            insert(t, position, { name = name, action = action })
+        else
+            for i=1,#t do
+                local ti = t[i]
+                if ti.name == name then
+                    ti.action = action
+                    return
+                end
+            end
+            insert(t, { name = name, action = action })
+        end
+    end
+
+    local function set(group,name,target,source)
+        target = target[group]
+        if not target then
+            report_defining("fatal target error in setting feature %a, group %a",name,group)
+            os.exit()
+        end
+        local source = source[group]
+        if not source then
+            report_defining("fatal source error in setting feature %a, group %a",name,group)
+            os.exit()
+        end
+        local position = source.position
+        setindeed("node",source,target,group,name,position)
+        setindeed("base",source,target,group,name,position)
+        setindeed("plug",source,target,group,name,position)
+    end
+
+    local function register(where,specification)
+        local name = specification.name
+        if name and name ~= "" then
+            local default      = specification.default
+            local description  = specification.description
+            local initializers = specification.initializers
+            local processors   = specification.processors
+            local manipulators = specification.manipulators
+            local modechecker  = specification.modechecker
+            if default then
+                where.defaults[name] = default
+            end
+            if description and description ~= "" then
+                where.descriptions[name] = description
+            end
+            if initializers then
+                set('initializers',name,where,specification)
+            end
+            if processors then
+                set('processors',  name,where,specification)
+            end
+            if manipulators then
+                set('manipulators',name,where,specification)
+            end
+            if modechecker then
+               where.modechecker = modechecker
             end
         end
-        insert(t, { name = name, action = action })
     end
-end
 
-local function set(group,name,target,source)
-    target = target[group]
-    if not target then
-        report_defining("fatal target error in setting feature %a, group %a",name,group)
-        os.exit()
-    end
-    local source = source[group]
-    if not source then
-        report_defining("fatal source error in setting feature %a, group %a",name,group)
-        os.exit()
-    end
-    local node     = source.node
-    local base     = source.base
-    local position = source.position
-    if node then
-        setindeed("node",target,group,name,node,position)
-    end
-    if base then
-        setindeed("base",target,group,name,base,position)
-    end
-end
+    constructors.registerfeature = register
 
-local function register(where,specification)
-    local name = specification.name
-    if name and name ~= "" then
-        local default      = specification.default
-        local description  = specification.description
-        local initializers = specification.initializers
-        local processors   = specification.processors
-        local manipulators = specification.manipulators
-        local modechecker  = specification.modechecker
-        if default then
-            where.defaults[name] = default
-        end
-        if description and description ~= "" then
-            where.descriptions[name] = description
-        end
-        if initializers then
-            set('initializers',name,where,specification)
-        end
-        if processors then
-            set('processors',  name,where,specification)
-        end
-        if manipulators then
-            set('manipulators',name,where,specification)
-        end
-        if modechecker then
-           where.modechecker = modechecker
-        end
-    end
-end
-
-constructors.registerfeature = register
-
-function constructors.getfeatureaction(what,where,mode,name)
-    what = handlers[what].features
-    if what then
-        where = what[where]
-        if where then
-            mode = where[mode]
-            if mode then
-                for i=1,#mode do
-                    local m = mode[i]
-                    if m.name == name then
-                        return m.action
+    function constructors.getfeatureaction(what,where,mode,name)
+        what = handlers[what].features
+        if what then
+            where = what[where]
+            if where then
+                mode = where[mode]
+                if mode then
+                    for i=1,#mode do
+                        local m = mode[i]
+                        if m.name == name then
+                            return m.action
+                        end
                     end
                 end
             end
         end
     end
+
+    local newfeatures        = { }
+    constructors.newfeatures = newfeatures -- downward compatible
+    constructors.features    = newfeatures
+
+    local function setnewfeatures(what)
+        local handler  = handlers[what]
+        local features = handler.features
+        if not features then
+            local tables     = handler.tables     -- can be preloaded
+            local statistics = handler.statistics -- can be preloaded
+            features = allocate {
+                defaults     = { },
+                descriptions = tables and tables.features or { },
+                used         = statistics and statistics.usedfeatures or { },
+                initializers = { base = { }, node = { }, plug = { } },
+                processors   = { base = { }, node = { }, plug = { } },
+                manipulators = { base = { }, node = { }, plug = { } },
+            }
+            features.register = function(specification) return register(features,specification) end
+            handler.features = features -- will also become hidden
+        end
+        return features
+    end
+
+    setmetatable(newfeatures, {
+        __call  = function(t,k) local v = t[k] return v end,
+        __index = function(t,k) local v = setnewfeatures(k) t[k] = v return v end,
+    })
+
 end
 
-function constructors.newhandler(what) -- could be a metatable newindex
-    local handler = handlers[what]
-    if not handler then
-        handler = { }
-        handlers[what] = handler
+do
+
+    local newhandler        = { }
+    constructors.handlers   = newhandler -- downward compatible
+    constructors.newhandler = newhandler
+
+    local function setnewhandler(what) -- could be a metatable newindex
+        local handler = handlers[what]
+        if not handler then
+            handler = { }
+            handlers[what] = handler
+        end
+        return handler
     end
-    return handler
+
+    setmetatable(newhandler, {
+        __call  = function(t,k) local v = t[k] return v end,
+        __index = function(t,k) local v = setnewhandler(k) t[k] = v return v end,
+    })
+
 end
 
-function constructors.newfeatures(what) -- could be a metatable newindex
-    local handler = handlers[what]
-    local features = handler.features
-    if not features then
-        local tables     = handler.tables     -- can be preloaded
-        local statistics = handler.statistics -- can be preloaded
-        features = allocate {
-            defaults     = { },
-            descriptions = tables and tables.features or { },
-            used         = statistics and statistics.usedfeatures or { },
-            initializers = { base = { }, node = { } },
-            processors   = { base = { }, node = { } },
-            manipulators = { base = { }, node = { } },
-        }
-        features.register = function(specification) return register(features,specification) end
-        handler.features = features -- will also become hidden
+do
+    -- a pitty that we need to be generic as we have nicer mechanisms for this ...
+
+    local newenhancer        = { }
+    constructors.enhancers   = newenhancer
+    constructors.newenhancer = newenhancer
+
+    local function setnewenhancer(format)
+
+        local handler   = handlers[format]
+        local enhancers = handler.enhancers
+
+        if not enhancers then
+
+            local actions = allocate()
+            local before  = allocate()
+            local after   = allocate()
+            local order   = allocate()
+            local patches = { before = before, after = after }
+
+            local trace   = false
+            local report  = logs.reporter("fonts",format .. " enhancing")
+
+            trackers.register(format .. ".loading", function(v) trace = v end)
+
+            local function enhance(name,data,filename,raw)
+                local enhancer = actions[name]
+                if enhancer then
+                    if trace then
+                        report("apply enhancement %a to file %a",name,filename)
+                        ioflush()
+                    end
+                    enhancer(data,filename,raw)
+                else
+                    -- no message as we can have private ones
+                end
+            end
+
+            local function apply(data,filename,raw)
+                local basename = file.basename(lower(filename))
+                if trace then
+                    report("%s enhancing file %a","start",filename)
+                end
+                ioflush() -- we want instant messages
+                for e=1,#order do
+                    local enhancer = order[e]
+                    local b = before[enhancer]
+                    if b then
+                        for pattern, action in next, b do
+                            if find(basename,pattern) then
+                                action(data,filename,raw)
+                            end
+                        end
+                    end
+                    enhance(enhancer,data,filename,raw)
+                    local a = after[enhancer]
+                    if a then
+                        for pattern, action in next, a do
+                            if find(basename,pattern) then
+                                action(data,filename,raw)
+                            end
+                        end
+                    end
+                    ioflush() -- we want instant messages
+                end
+                if trace then
+                    report("%s enhancing file %a","stop",filename)
+                end
+                ioflush() -- we want instant messages
+            end
+
+            local function register(what,action)
+                if action then
+                    if actions[what] then
+                        -- overloading, e.g."check extra features"
+                    else
+                        order[#order+1] = what
+                    end
+                    actions[what] = action
+                else
+                    report("bad enhancer %a",what)
+                end
+            end
+
+            -- fonts.constructors.otf.enhancers.patch("before","migrate metadata","cambria",function() end)
+
+            local function patch(what,where,pattern,action)
+                local pw = patches[what]
+                if pw then
+                    local ww = pw[where]
+                    if ww then
+                        ww[pattern] = action
+                    else
+                        pw[where] = { [pattern] = action}
+                    end
+                end
+            end
+
+            enhancers = {
+                register = register,
+                apply    = apply,
+                patch    = patch,
+                patches  = { register = patch }, -- for old times sake
+            }
+
+            handler.enhancers = enhancers
+        end
+        return enhancers
     end
-    return features
+
+    setmetatable(newenhancer, {
+        __call  = function(t,k) local v = t[k] return v end,
+        __index = function(t,k) local v = setnewenhancer(k) t[k] = v return v end,
+    })
+
 end
 
 --[[ldx--
@@ -1286,7 +1365,6 @@ function constructors.initializefeatures(what,tfmdata,features,trace,report)
         local properties       = tfmdata.properties or { } -- brrr
         local whathandler      = handlers[what]
         local whatfeatures     = whathandler.features
-        local whatinitializers = whatfeatures.initializers
         local whatmodechecker  = whatfeatures.modechecker
         -- properties.mode can be enforces (for instance in font-otd)
         local mode             = properties.mode or (whatmodechecker and whatmodechecker(tfmdata,features,features.mode)) or features.mode or "base"

@@ -78,28 +78,41 @@
                 <cd:parameter name="color">
                     <cd:constant type="cd:color"/>
                 </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lines" type="environment" generated="yes" variant="generated" file="spac-lin.mkiv">
+    <cd:command name="lines" type="environment" generated="yes" variant="instance" file="spac-lin.mkiv">
         <cd:sequence>
-            <cd:variable value="lines"/>
+            <cd:instance value="lines"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuplines"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-lines"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="lines" type="environment" file="spac-lin.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuplines"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+    <!--
+
+        <cd:command name="lines" type="environment" file="spac-lin.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuplines"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
     <cd:command name="emptylines" file="spac-lin.mkiv">
         <cd:arguments>

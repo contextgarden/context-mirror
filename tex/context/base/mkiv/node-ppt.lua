@@ -27,10 +27,8 @@ local getnext          = nuts.getnext
 local getprev          = nuts.getprev
 local getsubtype       = nuts.getsubtype
 local getfield         = nuts.getfield
-local setfield         = nuts.setfield
 local getlist          = nuts.getlist
 local setlist          = nuts.setlist
-local flushnode        = nuts.flush
 local removenode       = nuts.remove
 local traverse         = nuts.traverse
 local traverse_id      = nuts.traverse_id
@@ -45,9 +43,6 @@ local userdefined_code = whatsitcodes.userdefined
 
 local nodepool         = nodes.pool
 local new_usernumber   = nodepool.usernumber
-
-local nutpool          = nuts.pool
-local nut_usernumber   = nutpool.usernumber
 
 local variables        = interfaces.variables
 local v_before         = variables.before
@@ -89,13 +84,12 @@ local function register(where,data,...)
 end
 
 local writenode = node.write
-local flushnode = context.flushnode
+local flushnode = context.nodes.flush
 
 function commands.deferredproperty(...)
 --  context(register(...))
     flushnode(register(...))
 end
-
 
 function commands.immediateproperty(...)
     writenode(register(...))
@@ -107,8 +101,7 @@ local actions = { } properties.actions = actions
 
 table.setmetatableindex(actions,function(t,k)
     report("unknown property action %a",k)
-    local v = function() end
-    return v
+    return function() end
 end)
 
 local f_delayed   = formatters["return function(target,head,where,propdata,parent) %s end"]
@@ -179,6 +172,9 @@ end
 
 -- another experiment (a table or function closure are equally efficient); a function
 -- is easier when we want to experiment with different (compatible) implementations
+
+-- local nutpool          = nuts.pool
+-- local nut_usernumber = nutpool.usernumber
 
 -- function nodes.nuts.pool.deferredfunction(...)
 --     nofdelayed = nofdelayed + 1
@@ -316,7 +312,7 @@ local anchored = {
 }
 
 table.setmetatableindex(anchored,function(t,k)
-    v = anchored[v_after]
+    local v = anchored[v_after]
     t[k] = v
     return v
 end)

@@ -267,10 +267,67 @@
 
 \def\c_typo_delimited_nesting{\csname\??delimitedtextlevel\currentparentdelimitedtext\endcsname}
 
-\def\typo_delimited_push#1%
-  {\globalpushmacro\currentdelimitedtext
-   \def\currentdelimitedtext{#1}%
-   \setlanguageparameter\delimitedtextparameter
+% the \setlanguageparameter macro sets but we are ungrouped .. only used here
+%
+% \currentusedlanguage
+% \usedlanguageparameter
+
+%D The optional argument can be a language, a narrower spec, or a outer:inner language
+%D specification.
+%D
+%D \starttabulate
+%D     \NC [en]    \NC {\tttf en} \quotation[en]   {{\tttf <en=\currentlanguage>} something french} \NC \NR
+%D     \NC [fr]    \NC {\tttf en} \quotation[fr]   {{\tttf <fr=\currentlanguage>} something french} \NC \NR
+%D     \NC [fr:]   \NC {\tttf fr} \quotation[fr:]  {{\tttf <en=\currentlanguage>} something french} \NC \NR
+%D     \NC [:fr]   \NC {\tttf en} \quotation[:fr]  {{\tttf <fr=\currentlanguage>} something french} \NC \NR
+%D     \NC [fr:fr] \NC {\tttf fr} \quotation[fr:fr]{{\tttf <fr=\currentlanguage>} something french} \NC \NR
+%D     \NC [en:fr] \NC {\tttf en} \quotation[en:fr]{{\tttf <fr=\currentlanguage>} something french} \NC \NR
+%D     \NC [fr:en] \NC {\tttf fr} \quotation[fr:en]{{\tttf <en=\currentlanguage>} something french} \NC \NR
+%D \stoptabulate
+
+\let\currentdelimitedlanguage\empty
+
+\def\typo_delimited_set_language_nop
+  {\setusedlanguage{\delimitedtextparameter\c!language}}
+
+\def\typo_delimited_set_language_yes
+  {\doiflanguageelse\m_delimited_argument
+     \typo_delimited_set_language_yes_a
+     {\doifelseinstring:\m_delimited_argument
+        \typo_delimited_set_language_yes_b
+        \typo_delimited_set_language_nop}}
+
+\def\typo_delimited_set_language_yes_b
+  {\splitatcolon\m_delimited_argument\outerdelimitedlanguage\innerdelimitedlanguage
+   \ifx\outerdelimitedlanguage\empty
+     \typo_delimited_set_language_nop
+   \else
+     \doiflanguageelse\outerdelimitedlanguage
+       {\setusedlanguage\outerdelimitedlanguage}%
+       \typo_delimited_set_language_nop
+   \fi
+   \ifx\innerdelimitedlanguage\empty
+   \else
+     \doiflanguageelse\innerdelimitedlanguage
+       {\let\currentdelimitedlanguage\innerdelimitedlanguage}%
+       \donothing
+   \fi
+   \let\m_delimited_argument\empty}
+
+\def\typo_delimited_set_language_yes_a
+  {\let\currentdelimitedlanguage\m_delimited_argument
+   \let\m_delimited_argument\empty}
+
+\def\typo_delimited_push#1#2%
+  {\globalpushmacro\currentdelimitedtext     % can we combine these two
+   \globalpushmacro\currentdelimitedlanguage % the language used for hyphenation
+   \edef\currentdelimitedtext{#1}%
+   \edef\m_delimited_argument{#2}%
+   \ifx\m_delimited_argument\empty
+     \typo_delimited_set_language_nop
+   \else
+     \typo_delimited_set_language_yes
+   \fi
    \let\currentparentdelimitedtext\currentdelimitedtext
    \global\advance\c_typo_delimited_nesting\plusone
    \edef\delimitedtextlevel{\number\c_typo_delimited_nesting}%
@@ -279,6 +336,7 @@
 
 \def\typo_delimited_pop
   {\global\advance\c_typo_delimited_nesting\minusone
+   \globalpopmacro\currentdelimitedlanguage
    \globalpopmacro\currentdelimitedtext}
 
 \installcorenamespace{delimitedtext}
@@ -308,6 +366,7 @@
    \c!right=,
   %\c!level=0,
    \c!method=,
+  %\c!language=\v!local,
    \c!repeat=\v!no]
 
 \def\typo_delimited_repeat_ideed
@@ -317,9 +376,12 @@
 
 \let\typo_delimited_repeat\relax
 
-\unexpanded\def\startdelimitedtext[#1]%
+\unexpanded\def\startdelimitedtext
+  {\dodoubleempty\typo_delimited_text_start}
+
+\unexpanded\def\typo_delimited_text_start[#1][#2]%
   {\begingroup
-   \typo_delimited_push{#1}%
+   \typo_delimited_push{#1}{#2}%
    \dostarttaggedchained\t!delimitedblock\currentdelimitedtext\??delimitedtext
    \edef\p_delimited_method{\delimitedtextparameter\c!method}%
    \ifx\p_delimited_method\s!font
@@ -355,10 +417,38 @@
    \fi\fi}
 
 \def\typo_delimitedtexts_finish_font
-  {\removeunwantedspaces
+  {\removeunwantedspaces % again ?
    \dostarttagged\t!delimitedsymbol\empty
    \dotagsetdelimitedsymbol\s!right
    \delimitedtextparameter\c!right
+   \dostoptagged}
+
+\def\typo_delimited_show_language_indeed#1#2%
+  {\begingroup
+   \infofont
+   \setbox\scratchbox\hpack{\lower\strutht\hbox to \zeropoint{\darkred#1\currentlanguage:\currentdelimitedlanguage#2}}%
+   \vsmashbox\scratchbox
+   \box\scratchbox
+   \endgroup}
+
+\let\typo_delimited_show_language\gobbletwoarguments
+
+\installtextracker{delimited.language}
+  {\let\typo_delimited_show_language\typo_delimited_show_language_indeed}
+  {\let\typo_delimited_show_language\gobbletwoarguments}
+
+\def\typo_delimited_start_content
+  {\dostarttagged\t!delimitedcontent\empty
+   \begingroup
+   \douselanguageparameter\currentdelimitedlanguage
+   \typo_delimited_show_language<\hss
+   \ignorespaces}
+
+\def\typo_delimited_stop_content
+  {\removeunwantedspaces
+   \removelastskip % redundant
+   \typo_delimited_show_language\hss<%
+   \endgroup
    \dostoptagged}
 
 \def\typo_delimited_start_par
@@ -373,14 +463,19 @@
      \blank[\p_delimited_spacebefore]%
    \fi
    \delimitedtextparameter\c!before
-   \edef\m_typo_delimited_narrower{#1}%
-   \ifx\m_typo_delimited_narrower\empty
+   \iffirstargument
+     \edef\m_delimited_argument{#1}%
+   \fi
+   \ifx\m_delimited_argument\empty
+     \let\m_delimited_argument\m_delimited_argument
+   \fi
+   \ifx\m_delimited_argument\empty
      \endgraf
      \doadaptleftskip {\delimitedtextparameter\c!leftmargin}%
      \doadaptrightskip{\delimitedtextparameter\c!rightmargin}%
      \let\typo_delimited_stop_par_indeed\endgraf
    \else % backward compatible direct directive
-     \startnarrower[#1]%
+     \startnarrower[\m_delimited_argument]%
      \let\typo_delimited_stop_par_indeed\stopnarrower
    \fi
    % so far
@@ -400,13 +495,10 @@
    \setnextleftdelimitedtextmark
    \setnextrightdelimitedtextmark
    %
-   \ignorespaces
-   \dostarttagged\t!delimitedcontent\empty}
+   \typo_delimited_start_content}
 
 \def\typo_delimited_stop_par
-  {\removeunwantedspaces
-   \removelastskip
-   \dostoptagged
+  {\typo_delimited_stop_content
    \rightdelimitedtextmark
    \carryoverpar\endgroup % new per 2013-01-21 ... please left floats
    \popmacro\checkindentation
@@ -424,12 +516,10 @@
    \begingroup
    \usedelimitedtextstyleandcolor\c!style\c!color
    \typo_delimited_handle_left\c!left
-   \ignorespaces
-   \dostarttagged\t!delimitedcontent\empty}
+   \typo_delimited_start_content}
 
 \def\typo_delimited_stop_txt
-  {\removeunwantedspaces
-   \dostoptagged
+  {\typo_delimited_stop_content
    \typo_delimited_handle_right\c!right
    \endgroup}
 
@@ -439,9 +529,12 @@
    \typo_delimited_pop
    \endgroup}
 
-\unexpanded\def\delimitedtext[#1]%
+\unexpanded\def\delimitedtext
+  {\dodoubleempty\typo_delimited_text}
+
+\unexpanded\def\typo_delimited_text[#1][#2]%
   {\dontleavehmode % following ones can be omited
-   \typo_delimited_push{#1}%
+   \typo_delimited_push{#1}{#2}%
    \edef\p_delimited_method{\delimitedtextparameter\c!method}%
    \ifx\p_delimited_method\s!font
      \expandafter\typo_delimited_fontdriven
@@ -569,7 +662,7 @@
 % \stoptext
 
 \def\typo_delimited_handle_middle#1%
-  {\dostoptagged
+  {\typo_delimited_stop_content
    \begingroup
    \usedelimitedtextstyleandcolor\c!symstyle\c!symcolor
    \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
@@ -591,7 +684,7 @@
      \kern\d_typo_delimited_signal % +- \prewordbreak
    \fi
    \endgroup
-   \dostarttagged\t!delimitedcontent\empty}
+   \typo_delimited_start_content}
 
 \def\typo_delimited_handle_left#1%
   {\begingroup
@@ -652,10 +745,10 @@
      {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext % block?
       \usedelimitedtextstyleandcolor\c!style\c!color
       \typo_delimited_handle_left\c!left
-      \dostarttagged\t!delimitedcontent\empty}
-     {\dostoptagged
+      \typo_delimited_start_content}
+     {\typo_delimited_stop_content
       \typo_delimited_handle_right\c!right
-      \removelastskip
+      \removelastskip % hm
       \dostoptagged
       \typo_delimited_pop}}
 
@@ -667,52 +760,56 @@
      \expandafter\typo_delimited_quoted
    \fi}
 
-\def\typo_delimited_quoted_b
-  {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
+\def\typo_delimited_quoted
+  {\dontleavehmode
+   \begingroup
+   \dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
    \typo_delimited_handle_left\c!left
    \usedelimitedtextstyleandcolor\c!style\c!color
-   \dostarttagged\t!delimitedcontent\empty}
+   \typo_delimited_start_content
+   \bgroup
+   \aftergroup\typo_delimited_quoted_e
+   \let\next=}
 
 \def\typo_delimited_quoted_e
-  {\dostoptagged
+  {\typo_delimited_stop_content
    \typo_delimited_handle_right\c!right
    \removelastskip % ?
    \dostoptagged
-   \typo_delimited_pop}
+   \typo_delimited_pop
+   \endgroup}
 
-\def\typo_delimited_attributed_b
-  {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
+\def\typo_delimited_attributed
+  {\dontleavehmode
+   \begingroup
+   \dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
    \usedelimitedtextstyleandcolor\c!style\c!color
-   \dostarttagged\t!delimitedcontent\empty
-   \ignorespaces}
+   \typo_delimited_start_content
+   \typo_delimited_attributed_e
+   \let\next=}
 
 \def\typo_delimited_attributed_e
-  {\dostoptagged
+  {\typo_delimited_stop_content
    \dostoptagged
-   \typo_delimited_pop}
+   \typo_delimited_pop
+   \endgroup}
 
-\def\typo_delimited_fontdriven_b
-  {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
+\def\typo_delimited_fontdriven
+  {\dontleavehmode
+   \begingroup
+   \dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
    \usedlanguageparameter{\c!left\currentparentdelimitedtext}% was: \currentdelimitedtext
    \usedelimitedtextstyleandcolor\c!style\c!color
-   \dostarttagged\t!delimitedcontent\empty}
+   \typo_delimited_start_content
+   \aftergroup\typo_delimited_fontdriven_e
+   \let\next=}
 
 \def\typo_delimited_fontdriven_e
-  {\dostoptagged
+  {\typo_delimited_stop_content
    \usedlanguageparameter{\c!right\currentparentdelimitedtext}% was: \currentdelimitedtext
    \dostoptagged
-   \typo_delimited_pop}
-
-% We now assume proper argument usage (so no longer grouped
-% command).
-
-% \def\typo_delimited_quoted    {\groupedcommand      \typo_delimited_quoted_b    \typo_delimited_quoted_e    }
-% \def\typo_delimited_attributed{\groupedcommand      \typo_delimited_attributed_b\typo_delimited_attributed_e}
-% \def\typo_delimited_fontdriven{\simplegroupedcommand\typo_delimited_fontdriven_b\typo_delimited_fontdriven_e}
-
-\def\typo_delimited_quoted    {\bgroup\typo_delimited_quoted_b    \aftergroup\typo_delimited_quoted_e    \let\next=}
-\def\typo_delimited_attributed{\bgroup\typo_delimited_attributed_b\aftergroup\typo_delimited_attributed_e\let\next=}
-\def\typo_delimited_fontdriven{\bgroup\typo_delimited_fontdriven_b\aftergroup\typo_delimited_fontdriven_e\let\next=}
+   \typo_delimited_pop
+   \endgroup}
 
 % testcase for nesting:
 %

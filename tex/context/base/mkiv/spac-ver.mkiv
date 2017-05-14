@@ -527,6 +527,7 @@
 
 \unexpanded\def\spac_lines_start_correction[#1]%
   {\edef\m_spac_lines_around{#1}%
+   % todo: play with \fakenextstrutline
    \spac_lines_action_around
    \d_spac_prevdepth\prevdepth
    \spac_lines_initialize_corrections
@@ -556,7 +557,10 @@
 
 \unexpanded\def\spac_lines_stop_correction_ongrid
   {\directcheckedvspacing\v!white % \blank[\v!white]%
-   \snaptogrid\hpack{\box\scratchbox}}
+   \spac_lines_action_around
+   \snaptogrid\hpack{\box\scratchbox}%
+   \directcheckedvspacing\v!white
+   \spac_lines_action_around}
 
 \unexpanded\def\spac_lines_stop_correction_normal
   {\directcheckedvspacing\v!nowhite % \blank[\v!nowhite]%
@@ -1256,14 +1260,14 @@
 
 %D Keyword based strutting:
 
-\letvalue{\??struts\v!yes    }\setstrut     % \setvalue{\??struts\v!yes    }{\setstrut}
-\letvalue{\??struts\v!auto   }\setautostrut % \setvalue{\??struts\v!auto   }{\setautostrut}
-\letvalue{\??struts\v!no     }\setnostrut   % \setvalue{\??struts\v!no     }{\setnostrut}
-\letvalue{\??struts\v!cap    }\setcapstrut  % \setvalue{\??struts\v!cap    }{\setcapstrut}
-\letvalue{\??struts\v!fit    }\setfontstrut % \setvalue{\??struts\v!fit    }{\setfontstrut}
-\letvalue{\??struts\v!line   }\setstrut     % \setvalue{\??struts\v!line   }{\setstrut}
-\letvalue{\??struts\s!default}\setstrut     % \setvalue{\??struts\s!default}{\setstrut}
-\letvalue{\??struts\empty    }\setstrut     % \setvalue{\??struts\empty    }{\setstrut}
+\letvalue{\??struts\v!yes    }\setstrut
+\letvalue{\??struts\v!auto   }\setautostrut
+\letvalue{\??struts\v!no     }\setnostrut
+\letvalue{\??struts\v!cap    }\setcapstrut
+\letvalue{\??struts\v!fit    }\setfontstrut
+\letvalue{\??struts\v!line   }\setstrut
+\letvalue{\??struts\s!default}\setstrut
+\letvalue{\??struts\empty    }\setstrut
 
 %D Handy:
 
@@ -1439,12 +1443,13 @@
 
 \installcorenamespace{gridsnappers}
 \installcorenamespace{gridsnapperattributes}
+\installcorenamespace{gridsnappersets}
 
 \newskip  \bodyfontlineheight
 \newdimen \bodyfontstrutheight
 \newdimen \bodyfontstrutdepth
 
-\newskip  \globalbodyfontlineheight
+\newskip  \globalbodyfontlineheight % why a skip
 \newdimen \globalbodyfontstrutheight
 \newdimen \globalbodyfontstrutdepth
 
@@ -1458,12 +1463,34 @@
         \attribute \snapvboxattribute \attribute\snapmethodattribute}%
    \fi}
 
-\unexpanded\def\installsnapvalues#1#2% todo: a proper define
-  {\edef\currentsnapper{#1:#2}%
-   \ifcsname\??gridsnapperattributes\currentsnapper\endcsname \else
-     \setevalue{\??gridsnapperattributes\currentsnapper}{\clf_definesnapmethod{#1}{#2}}%
+% \unexpanded\def\installsnapvalues#1#2% todo: a proper define
+%   {\edef\currentsnapper{#1:#2}%
+%    \ifcsname\??gridsnapperattributes\currentsnapper\endcsname \else
+%      \setevalue{\??gridsnapperattributes\currentsnapper}{\clf_definesnapmethod{#1}{#2}}%
+%    \fi
+%    \setevalue{\??gridsnappers#1}{\attribute\snapmethodattribute\csname\??gridsnapperattributes\currentsnapper\endcsname\space}}
+
+\def\spac_grids_expand_snapper#1%
+  {\edef\m_spac_snapper
+     {\ifx\m_spac_snapper\empty\else\m_spac_snapper,\fi
+      \ifcsname\??gridsnappersets#1\endcsname
+        \lastnamedcs\else#1%
+      \fi}}
+
+\unexpanded\def\installsnapvalues#1#2%
+  {\let\m_spac_snapper\empty
+   \rawprocesscommacommand[#2]\spac_grids_expand_snapper
+   \edef\currentsnapper{#1:\m_spac_snapper}%
+   \ifcsname\??gridsnapperattributes\currentsnapper\endcsname
+     \scratchcounter\lastnamedcs % already defined
+   \else
+     \scratchcounter\clf_definesnapmethod{#1}{\m_spac_snapper}%
+     \setevalue{\??gridsnapperattributes\currentsnapper}{\the\scratchcounter}%
    \fi
-   \setevalue{\??gridsnappers#1}{\attribute\snapmethodattribute\csname\??gridsnapperattributes\currentsnapper\endcsname\space}}
+   \setevalue{\??gridsnappers#1}{\attribute\snapmethodattribute\the\scratchcounter\relax}%
+   \letvalue{\??gridsnappersets#1}\m_spac_snapper}
+
+\def\theexpandedsnapperset#1{\begincsname\??gridsnappersets#1\endcsname} % only for manuals
 
 \unexpanded\def\usegridparameter#1% no checking here
   {\edef\m_spac_grid_asked{#1\c!grid}%
@@ -1473,7 +1500,6 @@
      \spac_grids_snap_value_set\m_spac_grid_asked
      \attribute \snapvboxattribute\attribute\snapmethodattribute
    \fi}
-
 
 \unexpanded\def\definegridsnapping
   {\dodoubleargument\spac_grids_define}
@@ -1515,6 +1541,9 @@
 % offset:-3tp      vertical shift within box
 % bottom:lines
 % top:lines
+% box              centers a box rounded upwards (box:.5 -> tolerance)
+% min              centers a box rounded downwards
+% max              centers a box rounded upwards
 
 %D We're not downward compatible with \MKII !
 
@@ -1540,14 +1569,17 @@
 \definegridsnapping[\v!none]     [\v!none]
 \definegridsnapping[\v!line]     [\v!line]
 \definegridsnapping[\v!strut]    [\v!strut]
-\definegridsnapping[\v!box]      [\v!box] % centers a box rounded upwards (box:.5 -> tolerance)
-\definegridsnapping[\v!min]      [\v!min] % centers a box rounded downwards
-\definegridsnapping[\v!max]      [\v!max] % centers a box rounded upwards
-
-\definegridsnapping[\v!max]      [\v!maxdepth,\v!maxheight,\v!strut]
-\definegridsnapping[\v!min]      [\v!mindepth,\v!minheight,\v!strut]
+\definegridsnapping[\v!box]      [\v!box]
+\definegridsnapping[\v!min]      [\v!min]
+\definegridsnapping[\v!max]      [\v!max]
 
 \definegridsnapping[\v!middle]   [\v!maxheight,\v!maxdepth] % used in placement
+
+\definegridsnapping[\v!math]             [\v!maxdepth:1.05,\v!maxheight:1.05,\v!strut] % experimental, maybe 1.1
+\definegridsnapping[\v!math:\v!line]     [\v!math,\v!line,\v!split]
+\definegridsnapping[\v!math:\v!halfline] [\v!math,\v!halfline,\v!split]
+\definegridsnapping[\v!math:-\v!line]    [\v!math,-\v!line,\v!split]
+\definegridsnapping[\v!math:-\v!halfline][\v!math,-\v!halfline,\v!split]
 
 \unexpanded\def\synchronizelocallinespecs
   {\bodyfontlineheight \normallineheight
@@ -1572,20 +1604,12 @@
 
 \unexpanded\def\synchronizeskipamounts
   {\bigskipamount
-               \skipfactor\baselineskip
-       plus\skipgluefactor\baselineskip
-      minus\skipgluefactor\baselineskip
+                 \skipfactor\baselineskip
+      \s!plus\skipgluefactor\baselineskip
+     \s!minus\skipgluefactor\baselineskip
    \relax
    \medskipamount  \bigskipamount \divide\medskipamount  \plustwo
    \smallskipamount\bigskipamount \divide\smallskipamount\plusfour}
-
-\appendtoks
-    \synchronizeskipamounts
-\to \everysetupglobalinterlinespace
-
-\appendtoks
-    \synchronizeskipamounts
-\to \everysetuplocalinterlinespace
 
 %D Snapping.
 
@@ -1656,6 +1680,73 @@
    \else
      \spac_grids_check_yes
    \fi\fi\fi}
+
+\unexpanded\def\setupgridsnapping[#1]% less overhead than setuplayout (needs testing)
+  {\setlayoutparameter\c!grid{#1}\synchronizegridsnapping}
+
+\unexpanded\def\checkgridmethod#1%
+  {\edef\p_grid{#1}%
+   \ifx\p_grid\empty
+     \let\checkedgridmethod\empty
+     \let\checkedgridscope \v!local
+   \else
+     \splitatcolon\p_grid\checkedgridscope\checkedgridmethod
+     \ifx\checkedgridmethod\empty
+       \ifx\checkedgridscope\v!local\else\ifx\checkedgridscope\v!global\else
+         \let\checkedgridmethod\checkedgridscope
+         \let\checkedgridscope \v!local
+       \fi\fi
+     \fi
+   \fi}
+
+\unexpanded\def\applygridmethod#1#2#3% content localsettings (used in head rendering)
+   {\checkgridmethod{#1}%
+    \ifx\checkedgridscope\v!global
+      \ifx\checkedgridmethod\empty \else
+        % we assume that the call is grouped because grouping here has the side
+        % effect that the eventually constructed line will get the value outside
+        % the group
+        %
+        % overkill: \setupgridsnapping[\checkedgridmethod]%
+        % maybe   : \spac_grids_snap_value_auto\checkedgridmethod
+        \spac_grids_snap_value_set\checkedgridmethod
+      \fi
+      \hbox{#3}%
+    \else
+      % the extra hbox will trigger the global snapper on top of the local and
+      % we really need that in this case (compatibility etc etc) so here we don't
+      % het an already done hit (otherwise we would not snap)
+      \hbox\bgroup
+        \ifx\checkedgridmethod\empty\else
+          \ifconditional\headisdisplay
+            #2%
+          \fi
+        \fi
+        \snaptogrid[\checkedgridmethod]\hbox{#3}%
+      \egroup
+    \fi}
+
+\unexpanded\gdef\page_layouts_calculate_overshoot
+  {\ifgridsnapping\ifcase\layoutlines
+     \getnoflines\textheight
+     \textovershoot\dimexpr\noflines\globalbodyfontlineheight-\textheight\relax
+   \fi\fi}
+
+\unexpanded\def\page_layouts_report_overshoot
+  {\page_layouts_calculate_overshoot
+   \ifdim\textovershoot>\zeropoint
+     \writestatus\m!layouts{gridmode,\space
+       noflines: \the\noflines,\space
+       textheight: \the\textheight,\space
+       textovershoot: \the\textovershoot\space
+       (maybe set number of lines instead)%
+    }%
+  \fi
+  \glet\page_layouts_report_overshoot\page_layouts_calculate_overshoot}
+
+\appendtoks
+    \page_layouts_report_overshoot
+\to \everybeforepagebody
 
 %D Visualization:
 
@@ -2071,6 +2162,8 @@
 
 \definevspacing[\v!preference][penalty:-500]  % goodbreak
 \definevspacing[\v!samepage]  [penalty:10000] % nobreak
+
+\definevspacing[\v!always]    [category:0] % hm, internally it's discard
 \definevspacing[\v!max]       [category:1]
 \definevspacing[\v!force]     [category:2]
 \definevspacing[\v!disable]   [category:5]
@@ -2078,7 +2171,8 @@
 \definevspacing[\v!back]      [category:7]
 %               together      [category:8]
 \definevspacing[\v!overlay]   [category:9]
-\definevspacing[\v!always]    [category:0] % hm, internally it's discard
+\definevspacing[\v!enable]    [category:10]
+
 \definevspacing[\v!weak]      [order:0]
 \definevspacing[\v!strong]    [order:100]
 

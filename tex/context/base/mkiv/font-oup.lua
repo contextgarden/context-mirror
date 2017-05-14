@@ -29,7 +29,12 @@ local f_index           = formatters["I%05X"]
 local f_character_y     = formatters["%C"]
 local f_character_n     = formatters["[ %C ]"]
 
-local doduplicates      = true -- can become an option (pseudo feature)
+local check_duplicates  = true  -- can become an option (pseudo feature) / aways needed anyway
+local check_soft_hyphen = false -- can become an option (pseudo feature) / needed for tagging
+
+directives.register("otf.checksofthyphen",function(v)
+    check_soft_hyphen = v
+end)
 
 local function replaced(list,index,replacement)
     if type(list) == "number" then
@@ -106,7 +111,7 @@ local function unifyresources(fontdata,indices)
     --
     local done = { } -- we need to deal with shared !
     --
-    local duplicates = doduplicates and resources.duplicates
+    local duplicates = check_duplicates and resources.duplicates
     if duplicates and not next(duplicates) then
         duplicates = false
     end
@@ -359,12 +364,34 @@ local function unifyresources(fontdata,indices)
 end
 
 local function copyduplicates(fontdata)
-    if doduplicates then
+    if check_duplicates then
         local descriptions = fontdata.descriptions
         local resources    = fontdata.resources
         local duplicates   = resources.duplicates
+        if check_soft_hyphen then
+            -- ebgaramond has a zero width empty soft hyphen
+            local ds = descriptions[0xAD]
+            if not ds or ds.width == 0 then
+                if ds then
+                    descriptions[0xAD] = nil
+                    report("patching soft hyphen")
+                else
+                    report("adding soft hyphen")
+                end
+                if not duplicates then
+                    duplicates = { }
+                    resources.duplicates = duplicates
+                end
+                local dh = duplicates[0x2D]
+                if dh then
+                    dh[#dh+1] = { [0xAD] = true }
+                else
+                    duplicates[0x2D] = { [0xAD] = true }
+                end
+            end
+        end
         if duplicates then
-            for u, d in next, duplicates do
+           for u, d in next, duplicates do
                 local du = descriptions[u]
                 if du then
                     local t = { f_character_y(u), "@", f_index(du.index), "->" }
@@ -707,6 +734,19 @@ local function unifyglyphs(fontdata,usenames)
         end
     end
     --
+    local colorpalettes = resources.colorpalettes
+    if colorpalettes then
+        for index=1,#glyphs do
+            local colors = glyphs[index].colors
+            if colors then
+                for i=1,#colors do
+                    local c = colors[i]
+                    c.slot = indices[c.slot]
+                end
+            end
+        end
+    end
+    --
     fontdata.private      = private
     fontdata.glyphs       = nil
     fontdata.names        = names
@@ -835,6 +875,8 @@ function readers.getcomponents(fontdata) -- handy for resolving ligatures when n
     end
 end
 
+readers.unifymissing = unifymissing
+
 function readers.rehash(fontdata,hashmethod) -- TODO: combine loops in one
     if not (fontdata and fontdata.glyphs) then
         return
@@ -849,7 +891,7 @@ function readers.rehash(fontdata,hashmethod) -- TODO: combine loops in one
         unifymissing(fontdata)
      -- stripredundant(fontdata)
     else
-        fontdata.hashmethod = "unicode"
+        fontdata.hashmethod = "unicodes"
         local indices = unifyglyphs(fontdata)
         unifyresources(fontdata,indices)
         copyduplicates(fontdata)
@@ -866,10 +908,10 @@ function readers.checkhash(fontdata)
     elseif hashmethod == "names" and fontdata.names then
         unifyresources(fontdata,fontdata.names)
         copyduplicates(fontdata)
-        fontdata.hashmethod = "unicode"
+        fontdata.hashmethod = "unicodes"
         fontdata.names = nil -- no need for it
     else
-        readers.rehash(fontdata,"unicode")
+        readers.rehash(fontdata,"unicodes")
     end
 end
 
@@ -1159,6 +1201,8 @@ function readers.pack(data)
         local sequences  = resources.sequences
         local sublookups = resources.sublookups
         local features   = resources.features
+        local palettes   = resources.colorpalettes
+        local variable   = resources.variabledata
 
         local chardata     = characters and characters.data
         local descriptions = data.descriptions or data.glyphs
@@ -1191,6 +1235,14 @@ function readers.pack(data)
                         end
                     end
                 end
+             -- if palettes then
+             --     local color = description.color
+             --     if color then
+             --         for i=1,#color do
+             --             color[i] = pack_normal(color[i])
+             --         end
+             --     end
+             -- end
             end
 
             local function packthem(sequences)
@@ -1280,7 +1332,8 @@ function readers.pack(data)
                                     local r = rule.before       if r then for i=1,#r do r[i] = pack_boolean(r[i]) end end
                                     local r = rule.after        if r then for i=1,#r do r[i] = pack_boolean(r[i]) end end
                                     local r = rule.current      if r then for i=1,#r do r[i] = pack_boolean(r[i]) end end
-                                    local r = rule.replacements if r then rule.replacements  = pack_flat   (r)    end -- can have holes
+                                 -- local r = rule.lookups      if r then rule.lookups       = pack_mixed  (r)    end
+                                    local r = rule.replacements if r then rule.replacements  = pack_flat   (r)    end
                                 end
                             end
                         end
@@ -1313,6 +1366,63 @@ function readers.pack(data)
                         list[feature] = pack_normal(spec)
                     end
                 end
+            end
+
+            if palettes then
+                for i=1,#palettes do
+                    local p = palettes[i]
+                    for j=1,#p do
+                        p[j] = pack_indexed(p[j])
+                    end
+                end
+
+            end
+
+            if variable then
+
+                -- todo: segments
+
+                local instances = variable.instances
+                if instances then
+                    for i=1,#instances do
+                        local v = instances[i].values
+                        for j=1,#v do
+                            v[j] = pack_normal(v[j])
+                        end
+                    end
+                end
+
+                local function packdeltas(main)
+                    if main then
+                        local deltas = main.deltas
+                        if deltas then
+                            for i=1,#deltas do
+                                local di = deltas[i]
+                                local d  = di.deltas
+                                local r  = di.regions
+                                for j=1,#d do
+                                    d[j] = pack_indexed(d[j])
+                                end
+                                di.regions = pack_indexed(di.regions)
+                            end
+                        end
+                        local regions = main.regions
+                        if regions then
+                            for i=1,#regions do
+                                local r = regions[i]
+                                for j=1,#r do
+                                    r[j] = pack_normal(r[j])
+                                end
+                            end
+                        end
+                    end
+                end
+
+                packdeltas(variable.global)
+                packdeltas(variable.horizontal)
+                packdeltas(variable.vertical)
+                packdeltas(variable.metrics)
+
             end
 
             if not success(1,pass) then
@@ -1391,10 +1501,23 @@ function readers.pack(data)
                 if sublookups then
                     packthem(sublookups)
                 end
-                -- features
-                if not success(2,pass) then
-                 -- return
+                if variable then
+                    local function unpackdeltas(main)
+                        if main then
+                            local regions = main.regions
+                            if regions then
+                                main.regions = pack_normal(regions)
+                            end
+                        end
+                    end
+                    unpackdeltas(variable.global)
+                    unpackdeltas(variable.horizontal)
+                    unpackdeltas(variable.vertical)
+                    unpackdeltas(variable.metrics)
                 end
+             -- if not success(2,pass) then
+             --  -- return
+             -- end
             end
 
             for pass=1,2 do
@@ -1462,6 +1585,8 @@ function readers.unpack(data)
             local sequences    = resources.sequences
             local sublookups   = resources.sublookups
             local features     = resources.features
+            local palettes     = resources.colorpalettes
+            local variable     = resources.variabledata
             local unpacked     = { }
             setmetatable(unpacked,unpacked_mt)
             for unicode, description in next, descriptions do
@@ -1488,6 +1613,17 @@ function readers.unpack(data)
                         end
                     end
                 end
+             -- if palettes then
+             --     local color = description.color
+             --     if color then
+             --         for i=1,#color do
+             --             local tv = tables[color[i]]
+             --             if tv then
+             --                 color[i] = tv
+             --             end
+             --         end
+             --     end
+             -- end
             end
 
             local function unpackthem(sequences)
@@ -1659,9 +1795,16 @@ function readers.unpack(data)
                                             end
                                         end
                                     end
+                                 -- local lookups = rule.lookups
+                                 -- if lookups then
+                                 --     local tv = tables[lookups]
+                                 --     if tv then
+                                 --         rule.lookups = tv
+                                 --     end
+                                 -- end
                                     local replacements = rule.replacements
                                     if replacements then
-                                        local tv = tables[replace]
+                                        local tv = tables[replacements]
                                         if tv then
                                             rule.replacements = tv
                                         end
@@ -1715,6 +1858,82 @@ function readers.unpack(data)
                         end
                     end
                 end
+            end
+
+            if palettes then
+                for i=1,#palettes do
+                    local p = palettes[i]
+                    for j=1,#p do
+                        local tv = tables[p[j]]
+                        if tv then
+                            p[j] = tv
+                        end
+                    end
+                end
+            end
+
+            if variable then
+
+                -- todo: segments
+
+                local instances = variable.instances
+                if instances then
+                    for i=1,#instances do
+                        local v = instances[i].values
+                        for j=1,#v do
+                            local tv = tables[v[j]]
+                            if tv then
+                                v[j] = tv
+                            end
+                        end
+                    end
+                end
+
+                local function unpackdeltas(main)
+                    if main then
+                        local deltas = main.deltas
+                        if deltas then
+                            for i=1,#deltas do
+                                local di = deltas[i]
+                                local d  = di.deltas
+                                local r  = di.regions
+                                for j=1,#d do
+                                    local tv = tables[d[j]]
+                                    if tv then
+                                        d[j] = tv
+                                    end
+                                end
+                                local tv = di.regions
+                                if tv then
+                                    di.regions = tv
+                                end
+                            end
+                        end
+                        local regions = main.regions
+                        if regions then
+                            local tv = tables[regions]
+                            if tv then
+                                main.regions = tv
+                                regions = tv
+                            end
+                            for i=1,#regions do
+                                local r = regions[i]
+                                for j=1,#r do
+                                    local tv = tables[r[j]]
+                                    if tv then
+                                        r[j] = tv
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+
+                unpackdeltas(variable.global)
+                unpackdeltas(variable.horizontal)
+                unpackdeltas(variable.vertical)
+                unpackdeltas(variable.metrics)
+
             end
 
             data.tables = nil
@@ -2115,15 +2334,20 @@ function readers.expand(data)
                                 local lookups = rule.lookups or false
                                 local subtype = nil
                                 if lookups then
-                                    for k, v in next, lookups do
-                                        local lookup = sublookups[v]
-                                        if lookup then
-                                            lookups[k] = lookup
-                                            if not subtype then
-                                                subtype = lookup.type
+                                    for i=1,#lookups do
+                                        local lookups = lookups[i]
+                                        if lookups then
+                                            for k, v in next, lookups do
+                                                local lookup = sublookups[v]
+                                                if lookup then
+                                                    lookups[k] = lookup
+                                                    if not subtype then
+                                                        subtype = lookup.type
+                                                    end
+                                                else
+                                                    -- already expanded
+                                                end
                                             end
-                                        else
-                                            -- already expanded
                                         end
                                     end
                                 end

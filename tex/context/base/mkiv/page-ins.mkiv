@@ -55,17 +55,18 @@
 \unexpanded\def\page_inserts_synchronize_registers
   {\currentinsertionnumber\csname\??insertionnumber\currentinsertion\endcsname}
 
-% for practical reasone we still set these elsewhere but that might chaneg in the future
+% for practical reasons we still set these elsewhere but that might change in the future
 %
 % \global\count\currentinsertionnumber\numexpr\insertionparameter\c!factor/\insertionparameter\c!n\relax
 % \global\skip \currentinsertionnumber\insertionparameter\c!distance \relax
 % \global\dimen\currentinsertionnumber\insertionparameter\c!maxheight\relax}
+% \floatingpenalty\zerocount
 
 \appendtoks
     \page_inserts_synchronize_registers
 \to \everysetupinsertion
 
-\unexpanded\def\page_inserts_process#1% beware, this addapts currentinsertion !
+\unexpanded\def\page_inserts_process#1% beware, this adapts currentinsertion !
   {\edef\currentinsertion{#1}%
    \currentinsertionnumber\csname\??insertionnumber\currentinsertion\endcsname
    \doprocessinsert\currentinsertionnumber} % old method

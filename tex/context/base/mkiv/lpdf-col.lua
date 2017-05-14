@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['lpdf-col'] = {
 
 local type, next, tostring, tonumber = type, next, tostring, tonumber
 local char, byte, format, gsub, rep, gmatch = string.char, string.byte, string.format, string.gsub, string.rep, string.gmatch
+local settings_to_array, settings_to_numbers = utilities.parsers.settings_to_array, utilities.parsers.settings_to_numbers
 local concat = table.concat
 local round = math.round
 local formatters = string.formatters
@@ -26,7 +27,6 @@ local register                = nodepool.register
 local pdfliteral              = nodepool.pdfliteral
 
 local pdfconstant             = lpdf.constant
-local pdfstring               = lpdf.string
 local pdfdictionary           = lpdf.dictionary
 local pdfarray                = lpdf.array
 local pdfreference            = lpdf.reference
@@ -167,9 +167,9 @@ local pdf_device_cmyk = pdfconstant("DeviceCMYK")
 local pdf_device_gray = pdfconstant("DeviceGray")
 local pdf_extgstate   = pdfconstant("ExtGState")
 
-local pdf_rbg_range  = pdfarray { 0, 1, 0, 1, 0, 1 }
-local pdf_cmyk_range = pdfarray { 0, 1, 0, 1, 0, 1, 0, 1 }
-local pdf_gray_range = pdfarray { 0, 1 }
+local pdf_rgb_range   = pdfarray { 0, 1, 0, 1, 0, 1 }
+local pdf_cmyk_range  = pdfarray { 0, 1, 0, 1, 0, 1, 0, 1 }
+local pdf_gray_range  = pdfarray { 0, 1 }
 
 local f_rgb_function  = formatters["dup %s mul exch dup %s mul exch %s mul"]
 local f_cmyk_function = formatters["dup %s mul exch dup %s mul exch dup %s mul exch %s mul"]
@@ -305,13 +305,15 @@ local function registersomeindexcolor(name,noffractions,names,p,colorspace,range
     noffractions = tonumber(noffractions) or 1 -- to be checked
     local cnames = pdfarray()
     local domain = pdfarray()
-    if names == "" then
-        names = name .. ",None"
-    else
-        names = names .. ",None"
-    end
-    for n in gmatch(names,"[^,]+") do
-        cnames[#cnames+1] = pdfconstant(spotcolornames[n] or n)
+    local names  = settings_to_array(#names == 0 and name or names)
+    local values = settings_to_numbers(p)
+    names [#names +1] = "None"
+    values[#values+1] = 1
+    -- check for #names == #values
+    for i=1,#names do
+        local name = names[i]
+        local spot = spotcolornames[name]
+        cnames[#cnames+1] = pdfconstant(spot ~= "" and spot or name)
         domain[#domain+1] = 0
         domain[#domain+1] = 1
     end
@@ -327,19 +329,10 @@ local function registersomeindexcolor(name,noffractions,names,p,colorspace,range
         colorspace,
         pdfreference(n),
     }
-    if p == "" then
-        p = "1"
-    else
-        p = p .. ",1"
-    end
-    local pi = { }
-    for pp in gmatch(p,"[^,]+") do
-        pi[#pi+1] = tonumber(pp)
-    end
-    local vector, set, n = { }, { }, #pi
+    local vector, set, n = { }, { }, #values
     for i=255,0,-1 do
         for j=1,n do
-            set[j] = format("%02X",round(pi[j]*i))
+            set[j] = format("%02X",round(values[j]*i))
         end
         vector[#vector+1] = concat(set)
     end
@@ -357,21 +350,24 @@ local function delayindexcolor(name,names,func)
 end
 
 local function indexcolorref(name) -- actually, names (parent) is the hash
-    if not indexcolorhash[name] then
-        local delayedindexcolor = delayedindexcolors[name]
+    local parent = colors.spotcolorparent(name)
+    local data   = indexcolorhash[name]
+    if data == nil then
+        local delayedindexcolor = delayedindexcolors[parent]
         if type(delayedindexcolor) == "function" then
-            indexcolorhash[name] = delayedindexcolor()
-            delayedindexcolors[name] = true
+            data = delayedindexcolor()
+            delayedindexcolors[parent] = true
         end
+        indexcolorhash[parent] = data or false
     end
-    return indexcolorhash[name]
+    return data
 end
 
 function registrations.rgbspotcolor(name,noffractions,names,p,r,g,b)
     if noffractions == 1 then
-        registersomespotcolor(name,noffractions,names,p,pdf_device_rgb,pdf_rbg_range,f_rgb_function(r,g,b))
+        registersomespotcolor(name,noffractions,names,p,pdf_device_rgb,pdf_rgb_range,f_rgb_function(r,g,b))
     else
-        registersomespotcolor(name,noffractions,names,p,pdf_device_rgb,pdf_rbg_range,f_num_3(r,g,b))
+        registersomespotcolor(name,noffractions,names,p,pdf_device_rgb,pdf_rgb_range,f_num_3(r,g,b))
     end
     delayindexcolor(name,names,function()
         return registersomeindexcolor(name,noffractions,names,p,pdf_device_rgb,pdf_rgb_range,f_rgb_function(r,g,b))
@@ -414,7 +410,7 @@ end
 
 function codeinjections.setfigurecolorspace(data,figure)
     local color = data.request.color
-    if color then
+    if color then -- != v_default
         local ref = indexcolorref(color)
         if ref then
             figure.colorspace = ref
@@ -425,7 +421,7 @@ end
 
 -- transparency
 
-local transparencies = { [0] =
+local pdftransparencies = { [0] =
     pdfconstant("Normal"),
     pdfconstant("Normal"),
     pdfconstant("Multiply"),
@@ -457,7 +453,7 @@ function registrations.transparency(n,a,t)
               Type = pdf_extgstate,
               ca   = 1,
               CA   = 1,
-              BM   = transparencies[1],
+              BM   = pdftransparencies[1],
               AIS  = false,
             }
         local m = pdfflushobject(d)
@@ -472,7 +468,7 @@ function registrations.transparency(n,a,t)
               Type = pdf_extgstate,
               ca   = tonumber(t),
               CA   = tonumber(t),
-              BM   = transparencies[tonumber(a)] or transparencies[0],
+              BM   = pdftransparencies[tonumber(a)] or pdftransparencies[0],
               AIS  = false,
             }
         local m = pdfflushobject(d)

@@ -647,25 +647,70 @@
 \def\font_basics_check_math_bodyfont#style#alternative#size%
   {}
 
+% \def\font_basics_check_text_bodyfont#style#alternative#size% size can be empty (checking needed as \bf is already defined)
+%   {\setugvalue{#style#size}{\font_helpers_set_current_font_style_size{#style}{#size}}% \rma
+%    \setugvalue{#alternative#size}{\font_helpers_set_current_font_alternative_size{#alternative}{#size}}% \sla
+%    \setugvalue{#style#alternative#size}{\font_helpers_set_current_font_style_alternative_size{#style}{#alternative}{#size}}% \rmsla
+%    \ifcsname\s!normal#style\endcsname % text/math check
+%      \expandafter\let\csname#style\expandafter\endcsname\csname\s!normal#style\endcsname
+%    \else
+%      \setugvalue{#style}{\font_helpers_set_current_font_style{#style}}% \rm
+%    \fi
+%    \ifcsname\s!normal#alternative\endcsname % text/math check
+%      \expandafter\let\csname#alternative\expandafter\endcsname\csname\s!normal#alternative\endcsname
+%    \else
+%      \setugvalue{#alternative}{\font_helpers_set_current_font_alternative{#alternative}}% \sl
+%    \fi
+%    \setugvalue{#style\s!x}{\font_helpers_set_current_font_x_style_alternative{#style}}% \rmx
+%    \setugvalue{#style\s!xx}{\font_helpers_set_current_font_xx_style_alternative{#style}}% \rmxx
+%    \setugvalue{#alternative\s!x}{\font_helpers_set_current_font_x_alternative{#alternative}}% \slx
+%    \setugvalue{#alternative\s!xx}{\font_helpers_set_current_font_xx_alternative{#alternative}}% \slxx
+%    \setugvalue{#style#alternative}{\font_helpers_set_current_font_style_alternative{#style}{#alternative}}}% \rmsl
+
+% \def\font_basics_check_text_bodyfont#style#alternative#size% size can be empty (checking needed as \bf is already defined)
+%   {\ifcsname#style#size\endcsname\else
+%      \setugvalue{#style#size}{\font_helpers_set_current_font_style_size{#style}{#size}}% \rma
+%    \fi
+%    \ifcsname#alternative#size\endcsname\else
+%      \setugvalue{#alternative#size}{\font_helpers_set_current_font_alternative_size{#alternative}{#size}}% \sla
+%    \fi
+%    \ifcsname#style#alternative#size\endcsname\else
+%      \setugvalue{#style#alternative#size}{\font_helpers_set_current_font_style_alternative_size{#style}{#alternative}{#size}}% \rmsla
+%    \fi
+%    \ifcsname#style\endcsname\else
+%      \setugvalue{#style}{\font_helpers_set_current_font_style{#style}}% \rm
+%    \fi
+%    \ifcsname#alternative\endcsname\else
+%      \setugvalue{#alternative}{\font_helpers_set_current_font_alternative{#alternative}}% \sl
+%    \fi
+%    \ifcsname#style\s!x\endcsname\else
+%      \setugvalue{#style\s!x }{\font_helpers_set_current_font_x_style_alternative{#style}}% \rmx
+%      \setugvalue{#style\s!xx}{\font_helpers_set_current_font_xx_style_alternative{#style}}% \rmxx
+%    \fi
+%    \ifcsname#alternative\s!x\endcsname\else
+%      \setugvalue{#alternative\s!x }{\font_helpers_set_current_font_x_alternative{#alternative}}% \slx
+%      \setugvalue{#alternative\s!xx}{\font_helpers_set_current_font_xx_alternative{#alternative}}% \slxx
+%    \fi
+%    \ifcsname#style#alternative\endcsname\else
+%      \setugvalue{#style#alternative}{\font_helpers_set_current_font_style_alternative{#style}{#alternative}}% \rmsl
+%    \fi}
+
+\def\font_basics_check_text_bodyfont_step#whatever#body% size can be empty (checking needed as \bf is already defined)
+  {\ifcsname#whatever\endcsname\else
+     \setugvalue{#whatever}{#body}%
+   \fi}
+
 \def\font_basics_check_text_bodyfont#style#alternative#size% size can be empty (checking needed as \bf is already defined)
-  {\setugvalue{#style#size}{\font_helpers_set_current_font_style_size{#style}{#size}}% \rma
-   \setugvalue{#alternative#size}{\font_helpers_set_current_font_alternative_size{#alternative}{#size}}% \sla
-   \setugvalue{#style#alternative#size}{\font_helpers_set_current_font_style_alternative_size{#style}{#alternative}{#size}}% \rmsla
-   \ifcsname\s!normal#style\endcsname % text/math check
-     \expandafter\let\csname#style\expandafter\endcsname\csname\s!normal#style\endcsname
-   \else
-     \setugvalue{#style}{\font_helpers_set_current_font_style{#style}}% \rm
-   \fi
-   \ifcsname\s!normal#alternative\endcsname % text/math check
-     \expandafter\let\csname#alternative\expandafter\endcsname\csname\s!normal#alternative\endcsname
-   \else
-     \setugvalue{#alternative}{\font_helpers_set_current_font_alternative{#alternative}}% \sl
-   \fi
-   \setugvalue{#style\s!x}{\font_helpers_set_current_font_x_style_alternative{#style}}% \rmx
-   \setugvalue{#style\s!xx}{\font_helpers_set_current_font_xx_style_alternative{#style}}% \rmxx
-   \setugvalue{#alternative\s!x}{\font_helpers_set_current_font_x_alternative{#alternative}}% \slx
-   \setugvalue{#alternative\s!xx}{\font_helpers_set_current_font_xx_alternative{#alternative}}% \slxx
-   \setugvalue{#style#alternative}{\font_helpers_set_current_font_style_alternative{#style}{#alternative}}}% \rmsl
+  {\font_basics_check_text_bodyfont_step{#style#size}{\font_helpers_set_current_font_style_size{#style}{#size}}% \rma
+   \font_basics_check_text_bodyfont_step{#alternative#size}{\font_helpers_set_current_font_alternative_size{#alternative}{#size}}% \sla
+   \font_basics_check_text_bodyfont_step{#style#alternative#size}{\font_helpers_set_current_font_style_alternative_size{#style}{#alternative}{#size}}% \rmsla
+   \font_basics_check_text_bodyfont_step{#style}{\font_helpers_set_current_font_style{#style}}% \rm
+   \font_basics_check_text_bodyfont_step{#alternative}{\font_helpers_set_current_font_alternative{#alternative}}% \sl
+   \font_basics_check_text_bodyfont_step{#style\s!x }{\font_helpers_set_current_font_x_style_alternative{#style}}% \rmx
+   \font_basics_check_text_bodyfont_step{#style\s!xx}{\font_helpers_set_current_font_xx_style_alternative{#style}}% \rmxx
+   \font_basics_check_text_bodyfont_step{#alternative\s!x }{\font_helpers_set_current_font_x_alternative{#alternative}}% \slx
+   \font_basics_check_text_bodyfont_step{#alternative\s!xx}{\font_helpers_set_current_font_xx_alternative{#alternative}}% \slxx
+   \font_basics_check_text_bodyfont_step{#style#alternative}{\font_helpers_set_current_font_style_alternative{#style}{#alternative}}}% \rmsl
 
 %D Scaling macros:
 %D
@@ -879,6 +924,40 @@
 
 \let\fontfile\s!unknown
 
+%D Relatively new:
+
+\installcorenamespace{fonts}
+\installcorenamespace{fontslanguage}
+
+\installsetuponlycommandhandler \??fonts {fonts}
+
+\newconstant\c_fonts_auto_language
+
+\letvalue{\??fontslanguage\v!auto}\plusone % experimental
+%letvalue{\??fontslanguage\v!yes }\plustwo % less efficient, for experiments
+
+\appendtoks
+    \c_fonts_auto_language
+      \ifcsname\??fontslanguage\fontsparameter\c!language\endcsname
+        \lastnamedcs
+      \else
+        \zerocount
+      \fi
+\to \everysetupfonts
+
+\appendtoks
+    \ifcase\c_fonts_auto_language
+        % nothing
+    \or
+        \addfflanguage
+  % \or
+        % font
+    \fi
+\to \everylanguage
+
+% \setupfonts
+%   [\c!language=\v!auto]
+
 %D \macros
 %D  {everyfont,everyfontswitch}
 
@@ -886,6 +965,16 @@
 \ifdefined\everyfontswitch \else \newtoks\everyfontswitch \fi
 
 \def\setfontcharacteristics{\the\everyfont}
+
+% \appendtoks
+%     \ifcase\c_fonts_auto_language
+%         % nothing
+%     \or
+%         % auto
+%     \or
+%         \addfflanguage
+%     \fi
+% \to \everyfont
 
 %D \macros
 %D   {definefont}
@@ -2038,32 +2127,24 @@
      \font_helpers_set_current_xsize_alternative{#xsize}{#alternative}%
    \fi}
 
-\def\font_helpers_set_current_font_x_alternative#alternative%
-  {\font_helpers_set_current_font_xxx_alternative{#alternative}{4}\scriptstyle
-   \currentxfontsize\plusone
-   \let\tx\txx}
-
-\def\font_helpers_set_current_font_xx_alternative#alternative%
-  {\font_helpers_set_current_font_xxx_alternative{#alternative}{5}\scriptscriptstyle
-   \currentxfontsize\plustwo
-   \let\tx\empty
-   \let\txx\empty}
-
 \def\font_helpers_reset_x_fontsize
   {\ifcase\currentxfontsize\else
      \currentxfontsize\zerocount
-     \let\tx\normaltx
+     % also \sx and \sxx ?
+     \let\tx \normaltx
      \let\txx\normaltxx
    \fi}
 
-\def\font_helpers_check_nested_x_fontsize % option
+% \def\font_helpers_check_nested_x_fontsize % option
 %   {\ifcase\currentxfontsize\else\ifx\fontsize\empty\else
 %      \currentxfontsize\zerocount
 %      \let\fontsize\empty
 %      \let\tx\normaltx
 %      \let\txx\normaltxx
 %    \fi\fi}
-  {}
+%   {}
+
+\let\font_helpers_check_nested_x_fontsize\relax
 
 \def\font_helpers_set_current_font_x_alternative#alternative%
   {\font_helpers_check_nested_x_fontsize
@@ -2110,29 +2191,135 @@
 % \unexpanded\def\tx {\font_helpers_set_current_font_x_alternative \fontalternative}
 % \unexpanded\def\txx{\font_helpers_set_current_font_xx_alternative\fontalternative}
 
-\unexpanded\def\tx
-  {\ifmmode
-     \scriptstyle
-   \else
-     \let\fontface\!!plusfour
-     \let\fontalternative\fontalternative
-     \font_helpers_synchronize_font
-   \fi
+% \unexpanded\def\tx
+%   {\ifmmode
+%      \scriptstyle
+%    \else
+%      \let\fontface\!!plusfour
+%      \let\fontalternative\fontalternative
+%      \font_helpers_synchronize_font
+%    \fi
+%    \currentxfontsize\plusone
+%    \let\tx\txx}
+%
+% \unexpanded\def\txx
+%   {\ifmmode
+%      \scriptscriptstyle
+%    \else
+%      \let\fontface\!!plusfive
+%      \let\fontalternative\fontalternative
+%      \font_helpers_synchronize_font
+%    \fi
+%    \currentxfontsize\plustwo}
+
+\installcorenamespace{fontscalex}
+\installcorenamespace{fontscalexx}
+
+\newconditional\c_font_inherit_scale
+
+\def\font_scale_inherit#1%
+  {\begingroup
+   \scratchcounterone\fontid\font\relax
    \currentxfontsize\plusone
+   \normalexpanded{\definedfont[\clf_specifiedfont\scratchcounterone\font_currentfontscale\relax]}%
+   \scratchcountertwo\fontid\font\relax
+   \currentxfontsize\plustwo
+   \normalexpanded{\definedfont[\clf_specifiedfont\scratchcounterone\font_currentfontscale\relax]}%
+   \scratchcounterthree\fontid\font\relax
+   % parent -> x -> xx
+   % parent -> xx
+   \global\expandafter\chardef\csname\??fontscalex \number\scratchcounterone\endcsname\scratchcountertwo
+   \global\expandafter\chardef\csname\??fontscalexx\number\scratchcounterone\endcsname\scratchcounterthree
+   \global\expandafter\chardef\csname\??fontscalex \number\scratchcountertwo\endcsname\scratchcounterthree
+   \global\expandafter\chardef\csname\??fontscalexx\number\scratchcountertwo\endcsname\scratchcounterthree
+   \endgroup
+   \setfontid\csname#1\number\fontid\font\endcsname}
+
+\def\font_scale_inherit_x
+  {\ifcsname\??fontscalex\number\fontid\font\endcsname
+     \setfontid\lastnamedcs
+   \else
+     \font_scale_inherit\??fontscalex
+   \fi
+   \ifskipfontcharacteristics
+     \setfontcharacteristics
+     \the\everyfontswitch
+   \fi}
+
+\def\font_scale_inherit_xx
+  {\ifcsname\??fontscalexx\number\fontid\font\endcsname
+     \setfontid\lastnamedcs
+   \else
+     \font_scale_inherit\??fontscalexx
+   \fi
+   \ifskipfontcharacteristics
+     \setfontcharacteristics
+     \the\everyfontswitch
+   \fi}
+
+\def\font_scale_defined_x
+  {\let\fontface\!!plusfour
+   \let\fontalternative\fontalternative
+   \font_helpers_synchronize_font}
+
+\def\font_scale_defined_xx
+  {\let\fontface\!!plusfive
+   \let\fontalternative\fontalternative
+   \font_helpers_synchronize_font}
+
+\unexpanded\def\tx
+  {\currentxfontsize\plusone
+   \ifmmode
+     \scriptstyle
+   \else\ifconditional\c_font_inherit_scale
+     \font_scale_inherit_x
+   \else
+     \font_scale_defined_x
+   \fi\fi
    \let\tx\txx}
 
 \unexpanded\def\txx
-  {\ifmmode
+  {\currentxfontsize\plustwo
+   \ifmmode
+     \scriptscriptstyle
+   \else\ifconditional\c_font_inherit_scale
+     \font_scale_inherit_xx
+   \else
+     \font_scale_defined_xx
+   \fi\fi
+   \let\tx \empty
+   \let\txx\empty}
+
+\unexpanded\def\sx
+  {\currentxfontsize\plusone
+   \ifmmode
+     \scriptstyle
+   \else
+     \font_scale_inherit_x
+   \fi
+   \let\tx\txx
+   \let\sx\sxx}
+
+\unexpanded\def\sxx
+  {\currentxfontsize\plustwo
+   \ifmmode
      \scriptscriptstyle
    \else
-     \let\fontface\!!plusfive
-     \let\fontalternative\fontalternative
-     \font_helpers_synchronize_font
+     \font_scale_inherit_xx
    \fi
-   \currentxfontsize\plustwo}
+   \let\tx \empty
+   \let\txx\empty
+   \let\sx \empty
+   \let\sxx\empty}
+
+\unexpanded\def\useinheritxsizes{\settrue \c_font_inherit_scale} % not yet public, playground for WS and me
+\unexpanded\def\usedefinedxsizes{\setfalse\c_font_inherit_scale} % not yet public, playground for WS and me
 
 \let\normaltx \tx
 \let\normaltxx\txx
+
+\let\normalsx \sx
+\let\normalsxx\sxx
 
 %D When asking for a complete font switch, for instance from 10
 %D to 12~points, the next macro does the job. First we
@@ -2269,7 +2456,6 @@
 \unexpanded\def\switchtobodyfont[#specification]% could become an ifx
   {\doifsomething{#specification}{\font_basics_switchtobodyfont{#specification}}}
 
-
 \unexpanded\def\usebodyfontparameter#1%
   {\edef\m_font_bodyfont_asked{#1\c!bodyfont}%
    \ifx\m_font_bodyfont_asked\empty\else
@@ -2332,7 +2518,6 @@
 
 %D Handy for manuals:
 
-
 %D The \type {\tochar} commmand takes a specification:
 %D
 %D \starttabulate[|l|l|l|]
@@ -2343,6 +2528,8 @@
 %D \NC i \NC decimal index            \NC i:456    \NC \NR
 %D \NC n \NC name                     \NC n:eight  \NC \NR
 %D \NC c \NC name                     \NC c:x      \NC \NR
+%D \NC u \NC unicode descriptions     \NC u:dog    \NC \NR
+%D \NC a \NC all (also descriptions)  \NC a:rewind \NC \NR
 %D \stoptabulate
 %D
 %D This is an expandable command!
@@ -2525,6 +2712,32 @@
 
 \def\saveddefinedfontid  {\number\fontid\font}
 \def\saveddefinedfontname{\fontname\font}
+
+%D Handy for defining additional glyphs:
+
+\let\getprivateglyphslot\clf_getprivateglyphslot % kind of private macro
+
+\let\getprivatechar     \clf_getprivatechar     % gives back a utf !
+\let\getprivatemathchar \clf_getprivatemathchar % gives back a utf !
+\let\getprivateslot     \clf_getprivateslot     % companion to fonts.helpers.addprivate
+
+% \unexpanded\def\getprivatemathchar#1%
+%   {\begingroup\the\textfont\zerocount\getprivatechar{#1}\endgroup}
+
+\def\privatechar % the text variant gets expanded to utf
+  {\ifmmode
+     \expandafter\getprivatemathchar
+   \else
+     \expandafter\getprivatechar
+   \fi}
+
+% new
+
+\unexpanded\def\definefontcolorpalette
+  {\dodoubleargument\font_define_color_palette}
+
+\def\font_define_color_palette[#1][#2]%
+  {\clf_definefontcolorpalette{#1}{#2}}
 
 % yes or no:
 

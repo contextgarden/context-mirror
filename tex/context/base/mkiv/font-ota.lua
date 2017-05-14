@@ -32,7 +32,6 @@ local a_state             = attributes.private('state')
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
 
-local getfield            = nuts.getfield
 local getnext             = nuts.getnext
 local getprev             = nuts.getprev
 local getprev             = nuts.getprev
@@ -44,7 +43,6 @@ local getchar             = nuts.getchar
 local ischar              = nuts.is_char
 
 local traverse_id         = nuts.traverse_id
-local traverse_node_list  = nuts.traverse
 local end_of_math         = nuts.end_of_math
 
 local nodecodes           = nodes.nodecodes
@@ -56,7 +54,7 @@ local fontdata            = fonts.hashes.identifiers
 local categories          = characters and characters.categories or { } -- sorry, only in context
 local chardata            = characters and characters.data
 
-local otffeatures         = fonts.constructors.newfeatures("otf")
+local otffeatures         = fonts.constructors.features.otf
 local registerotffeature  = otffeatures.register
 
 --[[ldx--
@@ -263,35 +261,43 @@ local classifiers = characters.classifiers
 
 if not classifiers then
 
-    local first_arabic,  last_arabic  = characters.blockrange("arabic")
-    local first_syriac,  last_syriac  = characters.blockrange("syriac")
-    local first_mandiac, last_mandiac = characters.blockrange("mandiac")
-    local first_nko,     last_nko     = characters.blockrange("nko")
+    local f_arabic,  l_arabic  = characters.blockrange("arabic")
+    local f_syriac,  l_syriac  = characters.blockrange("syriac")
+    local f_mandiac, l_mandiac = characters.blockrange("mandiac")
+    local f_nko,     l_nko     = characters.blockrange("nko")
+    local f_ext_a,   l_ext_a   = characters.blockrange("arabicextendeda")
 
     classifiers = table.setmetatableindex(function(t,k)
-        local c = chardata[k]
-        local v = false
-        if c then
-            local arabic = c.arabic
-            if arabic then
-                v = mappers[arabic]
-                if not v then
-                    log.report("analyze","error in mapping arabic %C",k)
-                    --  error
-                    v = false
-                end
-            elseif k >= first_arabic  and k <= last_arabic  or k >= first_syriac  and k <= last_syriac  or
-                   k >= first_mandiac and k <= last_mandiac or k >= first_nko     and k <= last_nko     then
-                if categories[k] == "mn" then
-                    v = s_mark
-                else
-                    v = s_rest
+        if type(k) == "number" then
+            local c = chardata[k]
+            local v = false
+            if c then
+                local arabic = c.arabic
+                if arabic then
+                    v = mappers[arabic]
+                    if not v then
+                        log.report("analyze","error in mapping arabic %C",k)
+                        --  error
+                        v = false
+                    end
+                elseif (k >= f_arabic  and k <= l_arabic)  or
+                       (k >= f_syriac  and k <= l_syriac)  or
+                       (k >= f_mandiac and k <= l_mandiac) or
+                       (k >= f_nko     and k <= l_nko)     or
+                       (k >= f_ext_a   and k <= l_ext_a)   then
+                    if categories[k] == "mn" then
+                        v = s_mark
+                    else
+                        v = s_rest
+                    end
                 end
             end
+            t[k] = v
+            return v
         end
-        t[k] = v
-        return v
     end)
+
+    characters.classifiers = classifiers
 
 end
 

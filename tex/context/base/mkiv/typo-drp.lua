@@ -22,7 +22,10 @@ local initials          = typesetters.paragraphs or { }
 typesetters.initials    = initials or { }
 
 local nodes             = nodes
+
 local tasks             = nodes.tasks
+local enableaction      = tasks.enableaction
+local disableaction     = tasks.disableaction
 
 local nuts              = nodes.nuts
 local tonut             = nuts.tonut
@@ -35,13 +38,18 @@ local getid             = nuts.getid
 local getsubtype        = nuts.getsubtype
 local getfield          = nuts.getfield
 local getattr           = nuts.getattr
+local getwhd            = nuts.getwhd
 
 local setfield          = nuts.setfield
 local setattr           = nuts.setattr
 local setlink           = nuts.setlink
 local setprev           = nuts.setprev
 local setnext           = nuts.setnext
+local setfont           = nuts.setfont
 local setchar           = nuts.setchar
+local setwhd            = nuts.setwhd
+local setkern           = nuts.setkern
+local setoffsets        = nuts.setoffsets
 
 local hpack_nodes       = nuts.hpack
 
@@ -55,7 +63,6 @@ local insert_after      = nuts.insert_after
 local remove_node       = nuts.remove
 local traverse_id       = nuts.traverse_id
 local traverse          = nuts.traverse
-local free_node         = nuts.free
 
 local variables         = interfaces.variables
 local v_default         = variables.default
@@ -65,6 +72,7 @@ local v_first           = variables.first
 local v_last            = variables.last
 
 local texget            = tex.get
+local texset            = tex.set
 local texsetattribute   = tex.setattribute
 local unsetvalue        = attributes.unsetvalue
 
@@ -80,7 +88,7 @@ initials.actions        = actions
 local a_initial         = attributes.private("initial")
 local a_color           = attributes.private('color')
 local a_transparency    = attributes.private('transparency')
-local a_colorspace      = attributes.private('colormodel')
+local a_colormodel      = attributes.private('colormodel')
 
 local category          = characters.category
 
@@ -89,7 +97,7 @@ local settings          = nil
 function initials.set(specification)
     settings = specification or { }
     settings.enabled = true
-    tasks.enableaction("processors","typesetters.initials.handler")
+    enableaction("processors","typesetters.initials.handler")
     if trace_initials then
         report_initials("enabling initials")
     end
@@ -156,8 +164,8 @@ actions[v_default] = function(head,setting)
             local distance  = setting.distance or 0
             local voffset   = setting.voffset or 0
             local hoffset   = setting.hoffset or 0
-            local parindent = tex.parindent
-            local baseline  = texget("baselineskip").width
+            local parindent = texget("parindent")
+            local baseline  = texget("baselineskip",false)
             local lines     = tonumber(setting.n) or 0
             local dynamic   = setting.dynamic
             local font      = setting.font
@@ -248,11 +256,11 @@ actions[v_default] = function(head,setting)
             while true do
                 local id = getid(current)
                 if id == kern_code then
-                    setfield(current,"kern",0)
+                    setkern(current,0)
                 elseif id == glyph_code then
                     local next = getnext(current)
                     if font then
-                        setfield(current,"font",font)
+                        setfont(current,font)
                     end
                     if dynamic > 0 then
                         setattr(current,0,dynamic)
@@ -264,11 +272,11 @@ actions[v_default] = function(head,setting)
 -- nodes.handlers.characters(g)
 -- nodes.handlers.protectglyphs(g)
 -- setchar(current,g.char)
--- nodes.free(g)
+-- nodes.flush_node(g)
 
                     -- can be a helper
                     if ca and ca > 0 then
-                        setattr(current,a_colorspace,ma == 0 and 1 or ma)
+                        setattr(current,a_colormodel,ma == 0 and 1 or ma)
                         setattr(current,a_color,ca)
                     end
                     if ta and ta > 0 then
@@ -291,12 +299,8 @@ actions[v_default] = function(head,setting)
             setprev(first)
             setnext(last)
             local dropper = hpack_nodes(first)
-            local width   = getfield(dropper,"width")
-            local height  = getfield(dropper,"height")
-            local depth   = getfield(dropper,"depth")
-            setfield(dropper,"width",0)
-            setfield(dropper,"height",0)
-            setfield(dropper,"depth",0)
+            local width, height, depth = getwhd(dropper)
+            setwhd(dropper,0,0,0)
             --
             setlink(prev,dropper)
             setlink(dropper,next)
@@ -318,8 +322,7 @@ actions[v_default] = function(head,setting)
             --
             local hoffset = width + hoffset + distance + (indent and parindent or 0)
             for current in traverse_id(glyph_code,first) do
-                setfield(current,"xoffset",- hoffset )
-                setfield(current,"yoffset",- voffset) -- no longer - height here
+                setoffsets(current,-hoffset,-voffset) -- no longer - height here
                 if current == last then
                     break
                 end
@@ -340,8 +343,8 @@ actions[v_default] = function(head,setting)
                 if trace_initials then
                     report_initials("setting hangafter to %i and hangindent to %p",hangafter,hangindent)
                 end
-                tex.hangafter  = hangafter
-                tex.hangindent = hangindent
+                texset("hangafter",hangafter)
+                texset("hangindent",hangindent)
             end
             if indent then
                 insert_after(first,first,new_kern(-parindent))
@@ -368,7 +371,7 @@ function initials.handler(head)
     end
     if attr then
         -- here as we can process nested boxes first so we need to keep state
-        tasks.disableaction("processors","typesetters.initials.handler")
+        disableaction("processors","typesetters.initials.handler")
      -- texsetattribute(attribute,unsetvalue)
         local alternative = settings.alternative or v_default
         local action = actions[alternative] or actions[v_default]

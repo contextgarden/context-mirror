@@ -12,6 +12,10 @@
 %             with existing functionality and we cannot be held responsible for that. Many of
 %             the manuals contain characteristic graphics and personal notes or examples that
 %             make no sense when used out-of-context.
+%
+% comment   : Some chapters might have been published in TugBoat, the NTG Maps, the ConTeXt
+%             Group journal or otherwise. Thanks to the editors for corrections. Also thanks
+%             to users for testing, feedback and corrections.
 
 \usemodule[art-01,abr-02]
 
@@ -93,7 +97,7 @@ least currently) no \TEX\ interface. The examples shown here work in \CONTEXT,
 but you need to keep in mind that \LUA\ scripts can also use this interface.
 
 {\em Although this code is under construction the interfaces are unlikely to
-change, if only because we use it on production.}
+change, if only because we use it in production.}
 
 \stopsection
 
@@ -133,6 +137,15 @@ and then load it as follows:
 
 \starttyping
 local presets = table.load("presets.lua")
+\stoptyping
+
+A \type {sqlite} database has a much simpler preset. The default suffix of the
+file is \type {db}. The other fields are just ignored.
+
+\starttyping
+return {
+    database = "test",
+}
 \stoptyping
 
 If you really want, you can use some library to open a connection, execute a
@@ -232,7 +245,7 @@ local data, keys = utilities.sql.execute {
     presets   = presets,
     template  = template,
     variables = {
-        artist = "Dream Theater",
+        artist = "Porcupine Tree",
     },
 }
 \stoptyping
@@ -475,6 +488,94 @@ with the command:
 \starttyping
 context --extra=sql-tables --help
 \stoptyping
+
+\stopsection
+
+\startsection[title=Example]
+
+The distribution has a few examples, for instance a logger. The following code shows
+a bit of this (we assume that the swiglib sqlite module is present):
+
+\startbuffer
+require("util-sql")
+utilities.sql.setmethod("sqlite")
+require("util-sql-loggers")
+
+local loggers = utilities.sql.loggers
+
+local presets = {
+ -- method    = "sqlite",
+    database  = "loggertest",
+    datatable = "loggers",
+    id        = "loggers",
+}
+
+os.remove("loggertest.db") -- start fresh
+
+local db = loggers.createdb(presets)
+
+loggers.save(db, { -- variant 1: data subtable
+    type   = "error",
+    action = "process",
+    data   = { filename = "test-1", message = "whatever a" }
+} )
+
+loggers.save(db, { -- variant 2: flat table
+    type     = "warning",
+    action   = "process",
+    filename = "test-2",
+    message  = "whatever b"
+} )
+
+
+local result = loggers.collect(db, {
+    start = {
+        day   = 1,
+        month = 1,
+        year  = 2016,
+    },
+    stop = {
+        day   = 31,
+        month = 12,
+        year  = 2116,
+    },
+    limit  = 1000000,
+ -- type   = "error",
+    action = "process"
+})
+
+context.starttabulate { "||||||" }
+for i=1,#result do
+    local r = result[i]
+    context.NC() context(r.time)
+    context.NC() context(r.type)
+    context.NC() context(r.action)
+    if r.data then
+        context.NC() context(r.data.filename)
+        context.NC() context(r.data.message)
+    else
+        context.NC()
+        context.NC()
+    end
+    context.NC() context.NR()
+end
+context.stoptabulate()
+
+-- local result = loggers.cleanup(db, {
+--     before = {
+--         day   = 1,
+--         month = 1,
+--         year  = 2117,
+--     },
+-- })
+\stopbuffer
+
+\typebuffer
+
+In this example we typeset the (small) table):
+
+\ctxluabuffer
+
 
 \stopsection
 

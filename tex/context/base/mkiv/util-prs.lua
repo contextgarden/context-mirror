@@ -83,10 +83,6 @@ local pattern_b = spaces * comma^0 * spaces * (key * ((spaces * equal * spaces *
 
 -- "a=1, b=2, c=3, d={a{b,c}d}, e=12345, f=xx{a{b,c}d}xx, g={}" : outer {} removes, leading spaces ignored
 
--- todo: rewrite to fold etc
---
--- parse = lpeg.Cf(lpeg.Carg(1) * lpeg.Cg(key * equal * value) * separator^0,rawset)^0 -- lpeg.match(parse,"...",1,hash)
-
 local hash = { }
 
 local function set(key,value)
@@ -195,6 +191,23 @@ function parsers.settings_to_array(str,strict)
     else
         return { str }
     end
+end
+
+function parsers.settings_to_numbers(str)
+    if not str or str == "" then
+        return { }
+    end
+    if type(str) == "table" then
+        -- fall through
+    elseif find(str,",",1,true) then
+        str = lpegmatch(pattern,str)
+    else
+        return { tonumber(str) }
+    end
+    for i=1,#str do
+        str[i] = tonumber(str[i])
+    end
+    return str
 end
 
 local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)

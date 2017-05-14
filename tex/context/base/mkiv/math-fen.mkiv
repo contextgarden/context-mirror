@@ -43,7 +43,8 @@
    \c!middle=,
    \c!mathstyle=,
    \c!color=,
-   \c!command=]
+   \c!command=,
+   \c!factor=\v!auto]
 
 \appendtoks
     \edef\p_command{\mathfenceparameter\c!command}%
@@ -54,20 +55,68 @@
 
 % we need the direct use of \Udelimiter because of { etc
 
-\def\math_fenced_left  {\edef\p_left{\mathfenceparameter\c!left}%
-                        \math_fenced_color_push
-                        \normalleft\ifx\p_left\empty.\else\Udelimiter\plusfour\fam\p_left\relax\fi
-                        \math_fenced_color_pop}
-\def\math_fenced_middle{\edef\p_middle{\mathfenceparameter\c!middle}%
-                        \mskip\thinmuskip
-                        \math_fenced_color_push
-                        \normalmiddle\ifx\p_middle\empty.\else\Udelimiter\plusfour\fam\p_middle\relax\fi
-                        \math_fenced_color_pop
-                        \mskip\thinmuskip}
-\def\math_fenced_right {\edef\p_right{\mathfenceparameter\c!right}%
-                        \math_fenced_color_push
-                        \normalright\ifx\p_right\empty.\else\Udelimiter\plusfive\fam\p_right\relax\fi
-                        \math_fenced_color_pop}
+\newconditional\c_math_fenced_mirror \settrue\c_math_fenced_mirror
+
+\unexpanded\def\math_fenced_inject#1#2#3#4%
+  {\ifx#1\empty
+     #2.%
+   \else
+     \edef\p_factor{\mathfenceparameter\c!factor}%
+     \ifx\p_factor\empty
+       #2%
+     \else\ifx\p_factor\v!auto
+       #2%
+     \else\ifx\p_factor\v!none
+       #3\s!height\zeropoint\s!depth\zeropoint\s!axis
+       #2%
+     \else
+       \scratchdimen\dimexpr\p_factor\bodyfontsize/2\relax
+       #3\s!height\scratchdimen\s!depth\scratchdimen\s!axis
+     \fi\fi\fi
+     \Udelimiter#4\fam#1\relax
+   \fi}
+
+\def\math_fenced_left
+  {\edef\p_left
+     {\ifconditional\c_math_fenced_mirror
+        \ifconditional\c_math_right_to_left
+          \mathfenceparameter\c!right
+        \else
+          \mathfenceparameter\c!left
+        \fi
+      \else
+        \mathfenceparameter\c!left
+      \fi}%
+   \math_fenced_color_push
+ % \normalleft\ifx\p_left\empty.\else\Udelimiter\plusfour\fam\p_left\relax\fi
+   \math_fenced_inject\p_left\normalleft\Uleft\plusfour
+   \math_fenced_color_pop}
+
+\def\math_fenced_middle
+  {\edef\p_middle
+     {\mathfenceparameter\c!middle}%
+   \mskip\thinmuskip
+   \math_fenced_color_push
+ % \normalmiddle\ifx\p_middle\empty.\else\Udelimiter\plusfour\fam\p_middle\relax\fi
+   \math_fenced_inject\p_middle\normalmiddle\Umiddle\plusfour
+   \math_fenced_color_pop
+   \mskip\thinmuskip}
+
+\def\math_fenced_right
+  {\edef\p_right
+     {\ifconditional\c_math_fenced_mirror
+        \ifconditional\c_math_right_to_left
+          \mathfenceparameter\c!left
+        \else
+          \mathfenceparameter\c!right
+        \fi
+      \else
+        \mathfenceparameter\c!right
+      \fi}%
+   \math_fenced_color_push
+ % \normalright \ifx\p_right\empty.\else\Udelimiter\plusfive\fam\p_right\relax\fi
+   \math_fenced_inject\p_right\normalright\Uright\plusfive
+   \math_fenced_color_pop}
 
 \def\math_fenced_color_do_push{\pushcolor[\p_math_fenced_color]}
 \let\math_fenced_color_do_pop  \popcolor
@@ -80,11 +129,8 @@
 
 \newcount\c_math_fenced_nesting
 
-\unexpanded\def\math_fenced_fenced_start#1%
-  {\advance\c_math_fenced_nesting\plusone
-   \begingroup
-   \edef\currentmathfence{#1}%
-   \startusemathstyleparameter\mathfenceparameter
+\unexpanded\def\math_fenced_fenced_common
+  {\startusemathstyleparameter\mathfenceparameter
    \let\fence\math_fenced_middle
    \edef\p_math_fenced_color{\mathfenceparameter\c!color}%
    \ifx\p_math_fenced_color\empty
@@ -93,7 +139,13 @@
    \else
      \let\math_fenced_color_push\math_fenced_color_do_push
      \let\math_fenced_color_pop \math_fenced_color_do_pop
-   \fi
+   \fi}
+
+\unexpanded\def\math_fenced_fenced_start#1%
+  {\advance\c_math_fenced_nesting\plusone
+   \begingroup
+   \edef\currentmathfence{#1}%
+   \math_fenced_fenced_common
    \math_fenced_left}
 
 \unexpanded\def\math_fenced_fenced_stop#1%
@@ -103,8 +155,16 @@
    \endgroup
    \advance\c_math_fenced_nesting\minusone}
 
-\unexpanded\def\math_fenced_fenced[#1]#2%
-  {\math_fenced_fenced_start{#1}%
+\unexpanded\def\math_fenced_fenced[#1]%
+  {\advance\c_math_fenced_nesting\plusone
+   \begingroup
+   \edef\currentmathfence{#1}%
+   \dosingleempty\math_fenced_fenced_indeed}
+
+\unexpanded\def\math_fenced_fenced_indeed[#1]#2%
+  {\iffirstargument\setupcurrentmathfence[#1]\fi
+   \math_fenced_fenced_common
+   \math_fenced_left
    #2%
    \math_fenced_right
    \stopusemathstyleparameter
@@ -201,6 +261,21 @@
 \unexpanded\def\Lopenbracketmirrored {\math_fenced_fenced_stop {mirroredopenbracket}}  \unexpanded\def\Ropenbracketmirrored {\math_fenced_fenced_start{mirroredopenbracket}}
 \unexpanded\def\Lnothingmirrored     {\math_fenced_fenced_stop {mirrorednothing}}      \unexpanded\def\Rnothingmirrored     {\math_fenced_fenced_start{mirrorednothing}}
 
+\definemathfence [interval]                     [\c!left="2997,\c!right="2998]
+\definemathfence [openinterval]      [interval] [\c!left="2998,\c!right="2998]
+\definemathfence [leftopeninterval]  [interval] [\c!left="2997,\c!right="2997]
+\definemathfence [rightopeninterval] [interval] [\c!left="2998,\c!right="2998]
+
+\unexpanded\def\Linterval            {\math_fenced_fenced_start{interval}}
+\unexpanded\def\Lointerval           {\math_fenced_fenced_start{openinterval}}
+\unexpanded\def\Llointerval          {\math_fenced_fenced_start{leftopeninterval}}
+\unexpanded\def\Lrointerval          {\math_fenced_fenced_start{rightopeninterval}}
+
+\unexpanded\def\Rinterval            {\math_fenced_fenced_stop {interval}}
+\unexpanded\def\Rointerval           {\math_fenced_fenced_stop {openinterval}}
+\unexpanded\def\Rlointerval          {\math_fenced_fenced_stop {leftopeninterval}}
+\unexpanded\def\Rrointerval          {\math_fenced_fenced_stop {rightopeninterval}}
+
 % \startformula
 % \left{ \frac{1}{a} \right}
 % \left[ \frac{1}{b} \right]
@@ -230,40 +305,40 @@
 %
 % \def\math_left
 %   {\settrue\c_math_fenced_done
-%    \edef\m_math_left{\meaning\nexttoken}%
+%    \edef\m_math_left{\normalmeaning\nexttoken}%
 %    \csname\??mathleft\ifcsname\??mathleft\m_math_left\endcsname\m_math_left\else\s!unknown\fi\endcsname}
 %
 % \def\math_right
 %   {\settrue\c_math_fenced_done
-%    \edef\m_math_right{\meaning\nexttoken}%
+%    \edef\m_math_right{\normalmeaning\nexttoken}%
 %    \csname\??mathright\ifcsname\??mathright\m_math_right\endcsname\m_math_right\else\s!unknown\fi\endcsname}
 %
 % \def\math_middle
 %   {\settrue\c_math_fenced_done
-%    \edef\m_math_middle{\meaning\nexttoken}%
+%    \edef\m_math_middle{\normalmeaning\nexttoken}%
 %    \csname\??mathmiddle\ifcsname\??mathmiddle\m_math_middle\endcsname\m_math_middle\else\s!unknown\fi\endcsname}
 %
 % \unexpanded\def\lfence#1%
 %   {\settrue\c_math_fenced_done
 %    \let\nexttoken#1%
-%    \edef\m_math_left{\meaning#1}%
+%    \edef\m_math_left{\normalmeaning#1}%
 %    \csname\??mathleft\ifcsname\??mathleft\m_math_left\endcsname\m_math_left\else\s!unknown\fi\endcsname}
 %
 % \unexpanded\def\rfence#1%
 %   {\settrue\c_math_fenced_done
 %    \let\nexttoken#1%
-%    \edef\m_math_right{\meaning#1}%
+%    \edef\m_math_right{\normalmeaning#1}%
 %    \csname\??mathright\ifcsname\??mathright\m_math_right\endcsname\m_math_right\else\s!unknown\fi\endcsname}
 %
 % \unexpanded\def\mfence#1%
 %   {\settrue\c_math_fenced_done
 %    \let\nexttoken#1%
-%    \edef\m_math_middle{\meaning#1}%
+%    \edef\m_math_middle{\normalmeaning#1}%
 %    \csname\??mathmiddle\ifcsname\??mathmiddle\m_math_middle\endcsname\m_math_middle\else\s!unknown\fi\endcsname}
 
 \unexpanded\def\installmathfencepair#1#2#3#4%
-  {\expandafter\let\csname\??mathleft \meaning#1\endcsname#2%
-   \expandafter\let\csname\??mathright\meaning#3\endcsname#4}
+  {\expandafter\let\csname\??mathleft \normalmeaning#1\endcsname#2%
+   \expandafter\let\csname\??mathright\normalmeaning#3\endcsname#4}
 
 \def\math_unknown_left  {\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalleft  \nexttoken\fi}
 \def\math_unknown_right {\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalright \nexttoken\fi}
@@ -275,7 +350,7 @@
 
 \def\math_left
   {\settrue\c_math_fenced_done
-   \ifcsname\??mathleft\meaning\nexttoken\endcsname
+   \ifcsname\??mathleft\normalmeaning\nexttoken\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\math_unknown_left
@@ -283,7 +358,7 @@
 
 \def\math_right
   {\settrue\c_math_fenced_done
-   \ifcsname\??mathright\meaning\nexttoken\endcsname
+   \ifcsname\??mathright\normalmeaning\nexttoken\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\math_unknown_right
@@ -291,7 +366,7 @@
 
 \def\math_middle
   {\settrue\c_math_fenced_done
-   \ifcsname\??mathmiddle\meaning\nexttoken\endcsname
+   \ifcsname\??mathmiddle\normalmeaning\nexttoken\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\math_unknown_middle
@@ -300,7 +375,7 @@
 \unexpanded\def\lfence#1%
   {\settrue\c_math_fenced_done
    \let\nexttoken#1%
-   \ifcsname\??mathleft\meaning\nexttoken\endcsname
+   \ifcsname\??mathleft\normalmeaning\nexttoken\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\math_unknown_left
@@ -309,7 +384,7 @@
 \unexpanded\def\rfence#1%
   {\settrue\c_math_fenced_done
    \let\nexttoken#1%
-   \ifcsname\??mathright\meaning\nexttoken\endcsname
+   \ifcsname\??mathright\normalmeaning\nexttoken\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\math_unknown_right
@@ -318,7 +393,7 @@
 \unexpanded\def\mfence#1%
   {\settrue\c_math_fenced_done
    \let\nexttoken#1%
-   \ifcsname\??mathmiddle\meaning\nexttoken\endcsname
+   \ifcsname\??mathmiddle\normalmeaning\nexttoken\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\math_unknown_middle
@@ -370,6 +445,8 @@
 % \installmathfencepair { \Lbrace          } \Rbrace
 % \installmathfencepair } \Rbracemirrored  { \Lbracemirrored
 
+\installmathfencepair ⦗ \Linterv              ⦘ \Rinterv
+
 \appendtoks
     \ignorediscretionaries % so $\mtext{a|b}$ works, this is ok because it's an \hbox
 \to \everymathematics
@@ -417,6 +494,12 @@
 \installmathfencepair \lmoustache   \Lmoustache   \rmoustache   \Rmoustache
 \installmathfencepair \llbracket    \Lopenbracket \rrbracket    \Ropenbracket
 \installmathfencepair \lgroup       \Lgroup       \rgroup       \Rgroup
+
+\installmathfencepair \linterval    \Linterval    \rinterval    \Rinterval
+%installmathfencepair \linterv      \Linterval    \rinterv      \Rinterval
+\installmathfencepair \lointerval   \Linterval    \rointerval   \Rinterval
+\installmathfencepair \llointerval  \Llointerval  \rlointerval  \Rlointerval
+\installmathfencepair \lrointerval  \Lrointerval  \rrointerval  \Rrointerval
 
 \let\textlbar\lbar \let\mathlbar\Lbar
 \let\textrbar\lbar \let\mathrbar\Rbar
@@ -470,7 +553,7 @@
 \installcorenamespace{mathbig}
 
 \unexpanded\def\choosemathbig#1#2% so we accept \big{||} as well
-  {{\hbox\bgroup
+  {{\naturalhbox\bgroup
       \startimath
         \ifcase\bigmathdelimitermethod
           \math_fenced_step#2\relax

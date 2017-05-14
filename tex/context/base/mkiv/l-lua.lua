@@ -188,7 +188,7 @@ if lua then
     lua.mask = load([[τεχ = 1]]) and "utf" or "ascii"
 end
 
-local flush   = io.flush
+local flush = io.flush
 
 if flush then
 
@@ -197,4 +197,26 @@ if flush then
     local spawn   = os.spawn   if spawn   then function os.spawn  (...) flush() return spawn  (...) end end
     local popen   = io.popen   if popen   then function io.popen  (...) flush() return popen  (...) end end
 
+end
+
+-- new
+
+FFISUPPORTED = type(ffi) == "table" and ffi.os ~= "" and ffi.arch ~= "" and ffi.load
+
+if not FFISUPPORTED then
+
+    -- Maybe we should check for LUATEXENGINE but that's also a bti tricky as we still
+    -- can have a weird ffi library laying around. Checking for presence of 'jit' is
+    -- also not robust. So for now we hope for the best.
+
+    local okay ; okay, ffi = pcall(require,"ffi")
+
+    FFISUPPORTED = type(ffi) == "table" and ffi.os ~= "" and ffi.arch ~= "" and ffi.load
+
+end
+
+if not FFISUPPORTED then
+    ffi = nil
+elseif not ffi.number then
+    ffi.number = tonumber
 end

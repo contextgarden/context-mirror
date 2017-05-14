@@ -21,11 +21,9 @@ fonts               = fonts or { }
 local metapost      = fonts.metapost or { }
 fonts.metapost      = metapost
 
-local trace_skips   = false  trackers.register("metapost.outlines.skips",function(v) trace_skips = v end)
-
-local f_moveto      = formatters["(%.4F,%.4F)"]
-local f_lineto      = formatters["--(%.4F,%.4F)"]
-local f_curveto     = formatters["..controls(%.4F,%.4F)and(%.4F,%.4F)..(%.4F,%.4F)"]
+local f_moveto      = formatters["(%F,%F)"]
+local f_lineto      = formatters["--(%F,%F)"]
+local f_curveto     = formatters["..controls(%F,%F)and(%F,%F)..(%F,%F)"]
 local s_cycle       = "--cycle"
 
 local f_nofill      = formatters["nofill %s;"]
@@ -34,8 +32,8 @@ local f_dofill      = formatters["fill %s;"]
 local f_draw_trace  = formatters["drawpathonly %s;"]
 local f_draw        = formatters["draw %s;"]
 
-local f_boundingbox = formatters["((%.4F,%.4F)--(%.4F,%.4F)--(%.4F,%.4F)--(%.4F,%.4F)--cycle)"]
-local f_vertical    = formatters["((%.4F,%.4F)--(%.4F,%.4F))"]
+local f_boundingbox = formatters["((%F,%F)--(%F,%F)--(%F,%F)--(%F,%F)--cycle)"]
+local f_vertical    = formatters["((%F,%F)--(%F,%F))"]
 
 function metapost.boundingbox(d,factor)
     local bounds = d.boundingbox
@@ -238,39 +236,52 @@ function metapost.maxbounds(data,index,factor)
     )
 end
 
------ formatters   = string.formatters
------ concat       = table.concat
+-- This is a nice example of tex, metapost and lua working in tandem. Each kicks in at the
+-- right time. It's probably why I like watching https://www.youtube.com/watch?v=c5FqpddnJmc
+-- so much: precisely (and perfectly) timed too.
 
-local nodecodes    = nodes.nodecodes -- no nuts yet
+local nodecodes      = nodes.nodecodes -- no nuts yet
 
-local glyph_code   = nodecodes.glyph
-local disc_code    = nodecodes.disc
-local kern_code    = nodecodes.kern
-local glue_code    = nodecodes.glue
-local hlist_code   = nodecodes.hlist
-local vlist_code   = nodecodes.vlist
-local rule_code    = nodecodes.rule
-local penalty_code = nodecodes.penalty
+local glyph_code     = nodecodes.glyph
+local disc_code      = nodecodes.disc
+local kern_code      = nodecodes.kern
+local glue_code      = nodecodes.glue
+local hlist_code     = nodecodes.hlist
+local vlist_code     = nodecodes.vlist
+local rule_code      = nodecodes.rule
 
-local find_tail    = nodes.tail
+local normal_rule    = nodes.rulecodes.normal
 
------ metapost     = fonts.glyphs.metapost
+local nuts           = nodes.nuts
+local getnext        = nuts.getnext
+local getid          = nuts.getid
+local getlist        = nuts.getlist
+local getchar        = nuts.getchar
+local getfont        = nuts.getfont
+local getsubtype     = nuts.getsubtype
+local getfield       = nuts.getfield
+local getbox         = nuts.getbox
+local getwhd         = nuts.getwhd
+local getkern        = nuts.getkern
+local getshift       = nuts.getshift
+local getwidth       = nuts.getwidth
+local getheight      = nuts.getheight
+local getdepth       = nuts.getdepth
 
-local characters   = fonts.hashes.characters
-local quaddata     = fonts.hashes.emwidths
-local shapes       = fonts.hashes.shapes
-local topaths      = metapost.paths
+local effective_glue = nuts.effective_glue
 
-local f_code       = formatters["mfun_do_outline_text_flush(%q,%i,%.4F,%.4F)(%,t);"]
-local s_nothing    = "(origin scaled 10)"
-local f_trace_rule = formatters["draw rule(%6F,%6F,%6F) shifted (%6F,%6F) withcolor .5white;"]
-local f_strut      = formatters["strut(%6F,%6F);"]
-local f_hrule      = formatters["draw rule(%6F,%6F,%6F);"]
-local f_vrule      = formatters["draw rule(%6F,%6F,%6F) shifted (%6F,%6F);"]
-local f_bounds     = formatters["checkbounds(%6F,%6F,%6F,%6F);"]
+local characters     = fonts.hashes.characters
+local parameters     = fonts.hashes.parameters
+local shapes         = fonts.hashes.shapes
+local topaths        = metapost.paths
 
-local sc = 10
-local fc = number.dimenfactors.bp * sc / 10
+local f_code         = formatters["mfun_do_outline_text_flush(%q,%i,%F,%F)(%,t);"]
+local f_rule         = formatters["mfun_do_outline_rule_flush(%q,%F,%F,%F,%F);"]
+local f_bounds       = formatters["checkbounds(%F,%F,%F,%F);"]
+local s_nothing      = "(origin scaled 10)"
+
+local sc             = 10
+local fc             = number.dimenfactors.bp * sc / 10
 
 -- todo: make the next more efficient:
 
@@ -284,8 +295,8 @@ function metapost.output(kind,font,char,advance,shift,ex)
             if glyphs then
                 local glyf = glyphs[index]
                 if glyf then
-                    local units     = shapedata.units or 1000
-                    local yfactor   = sc/units
+                    local units     = 1000 -- factor already takes shapedata.units into account
+                    local yfactor   = (sc/units) * parameters[font].factor / 655.36
                     local xfactor   = yfactor
                     local shift     = shift or 0
                     local advance   = advance or 0
@@ -296,8 +307,12 @@ function metapost.output(kind,font,char,advance,shift,ex)
                         xfactor = xfactor * wfactor
                     end
                     local paths = topaths(glyf,xfactor,yfactor)
-                    local code  = f_code(kind,#paths,advance,shift,paths)
-                    return code, character.width * fc * wfactor
+                    if paths then
+                        local code = f_code(kind,#paths,advance,shift,paths)
+                        return code, character.width * fc * wfactor
+                    else
+                        return "", 0
+                    end
                 end
             end
         end
@@ -317,131 +332,111 @@ function fonts.metapost.boxtomp(n,kind)
 
     local llx, lly, urx, ury = 0, 0, 0, 0
 
-    local boxtomp
+    local horizontal, vertical
 
-    local function horizontal(current,shift,glue_sign,glue_set,glue_order,ht,dp)
-        shift = shift or 0
+    horizontal = function(parent,current,xoffset,yoffset)
+        local dx = 0
         while current do
-            local id = current.id
+            local id = getid(current)
             if id == glyph_code then
-                local code, width = metapost.output(kind,current.font,current.char,advance,-shift*fc,current.expansion_factor)
+                local code, width = metapost.output(kind,getfont(current),getchar(current),xoffset+dx,yoffset,getfield(current,"expansion_factor"))
                 result[#result+1] = code
-                advance = advance + width
+                dx = dx + width
             elseif id == disc_code then
-                local replace = current.replace
+                local replace = getfield(current,"replace")
                 if replace then
-                    horizontal(replace,shift,glue_sign,glue_set,glue_order,ht,dp)
+                    dx = dx + horizontal(parent,replace,xoffset+dx,yoffset)
                 end
             elseif id == kern_code then
-                local kern = current.kern * fc
-                if trace_skips then
-                    result[#result+1] = f_trace_rule(kern,0.8*ht*fc,0.8*dp*fc,advance,-shift*fc)
-                end
-                advance = advance + kern
+                dx = dx + getkern(current) * fc
             elseif id == glue_code then
-                local width = current.width
-                if glue_sign == 1 then
-                    if current.stretch_order == glue_order then
-                        width = (width + current.stretch * glue_set) * fc
-                    else
-                        width = width * fc
-                    end
-                elseif glue_sign == 2 then
-                    if current.shrink_order == glue_order then
-                        width = (width - current.shrink * glue_set) * fc
-                    else
-                        width = width * fc
-                    end
-                else
-                    width = width * fc
-                end
-                if trace_skips then
-                    result[#result+1] = f_trace_rule(width,0.1*ht*fc,0.1*dp*fc,advance,-shift*fc)
-                end
-                advance = advance + width
+                dx = dx + effective_glue(current,parent) * fc
             elseif id == hlist_code then
-                local a = advance
-                boxtomp(current,shift+current.shift,current.glue_sign,current.glue_set,current.glue_order)
-                advance = a + current.width * fc
-            elseif id == vlist_code then
-                boxtomp(current) -- ,distance + shift,current.glue_set*current.glue_sign)
-                advance = advance + current.width * fc
-            elseif id == rule_code then
-                local wd = current.width
-                local ht = current.height
-                local dp = current.depth
-                if not (ht == signal or dp == signal or wd == signal) then
-                    ht = ht - shift
-                    dp = dp - shift
-                    if wd == 0 then
-                        result[#result+1] = f_strut(ht*fc,-dp*fc)
-                    else
-                        result[#result+1] = f_hrule(wd*fc,ht*fc,-dp*fc)
-                    end
+                local list = getlist(current)
+                if list then
+                    horizontal(current,list,xoffset+dx,yoffset-getshift(current)*fc)
                 end
-                if wd ~= signal then
-                    advance = advance + wd * fc
+                dx = dx + getwidth(current) * fc
+            elseif id == vlist_code then
+                local list = getlist(current)
+                if list then
+                    vertical(current,list,xoffset+dx,yoffset-getshift(current)*fc)
+                end
+                dx = dx + getwidth(current) * fc
+            elseif id == rule_code then
+                local wd, ht, dp = getwhd(current)
+                if wd ~= 0 then
+                    wd = wd * fc
+                    if ht == signal then
+                        ht = getheight(parent)
+                    end
+                    if dp == signal then
+                        dp = getdepth(parent)
+                    end
+                    local hd = (ht + dp) * fc
+                    if hd ~= 0 and getsubtype(current) == normal_rule then
+                        result[#result+1] = f_rule(kind,xoffset+dx+wd/2,yoffset+hd/2,wd,hd)
+                    end
+                    dx = dx + wd
                 end
             end
-            current = current.next
+            current = getnext(current)
         end
+        return dx
     end
 
-    local function vertical(current,shift)
-        shift = shift or 0
-        current = find_tail(current) -- otherwise bad bbox
+    vertical = function(parent,current,xoffset,yoffset)
+        local dy = getheight(parent) * fc
         while current do
-            local id = current.id
+            local id = getid(current)
             if id == hlist_code then
-                distance = distance - current.depth
-                boxtomp(current,distance + shift,current.glue_set*current.glue_sign)
-                distance = distance - current.height
+                local _, ht, dp = getwhd(current)
+                dy = dy - ht * fc
+                local list = getlist(current)
+                if list then
+                    horizontal(current,list,xoffset+getshift(current)*fc,yoffset+dy)
+                end
+                dy = dy - dp * fc
             elseif id == vlist_code then
-                print("vertical >>>")
-                vertical(current.list,0)
+                local wd, ht, dp = getwhd(current)
+                dy = dy - ht * fc
+                local list = getlist(current)
+                if list then
+                    vertical(current,list,xoffset+getshift(current)*fc,yoffset+dy)
+                end
+                dy = dy - dp * fc
             elseif id == kern_code then
-                distance = distance - current.kern
-                advance  = 0
+                dy = dy - getkern(current) * fc
             elseif id == glue_code then
-                distance = distance - current.width
-                advance  = 0
+                dy = dy - effective_glue(current,parent) * fc
             elseif id == rule_code then
-                local wd = current.width
-                local ht = current.height
-                local dp = current.depth
-                if not (ht == signal or dp == signal or wd == signal) then
-                    distance = distance - dp
-                    if wd == 0 then
-                        result[#result+1] = f_strut(ht*fc,-dp*fc)
+                local wd, ht, dp = getwhd(current)
+                local hd = (ht + dp) * fc
+                if hd ~= 0  then
+                    if wd == signal then
+                        wd = getwidth(parent) * fc
                     else
-                        result[#result+1] = f_vrule(wd*fc,ht*fc,-dp*fc,0,distance+shift)
+                        wd = wd * fc
                     end
-                    distance = distance - ht
+                    dy = dy - ht * fc
+                    if wd ~= 0 and getsubtype(current) == 0 then
+                        result[#result+1] = f_rule(kind,xoffset+wd/2,yoffset+dy+hd/2,wd,hd)
+                    end
+                    dy = dy - dp * fc
                 end
             end
-            current = current.prev
+            current = getnext(current)
         end
+        return dy
     end
 
-    boxtomp = function(list,shift)
-        local current = list.list
-        if current then
-            if list.id == hlist_code then
-                horizontal(current,shift,list.glue_sign,list.glue_set,list.glue_order,list.height,list.depth)
-            else
-                vertical(current,shift)
-            end
-        end
+    local box  = getbox(n)
+    local list = box and getlist(box)
+    if list then
+        (getid(box) == hlist_code and horizontal or vertical)(box,list,0,0)
     end
 
-    local box = tex.box[n]
-
-    boxtomp(box,box.shift,box.glue_sign,box.glue_set,box.glue_order)
-
-    local wd = box.width
-    local ht = box.height
-    local dp = box.depth
-    local sh = box.shift
+    local wd, ht, dp = getwhd(box)
 
     result[#result+1] = f_bounds(0,-dp*fc,wd*fc,ht*fc)
 

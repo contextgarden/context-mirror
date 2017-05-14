@@ -1,0 +1,111 @@
+%D \module
+%D   [      file=s-fonts-variable,
+%D        version=2017.02.18,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Show Variable Font Properties ,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% begin info
+%
+% title   : variable information (experimental)
+%
+% comment : variable fonts contain extra information styles, axis, regions
+% status  : experimental, used for luatex testing
+%
+% end info
+
+\startmodule[fonts-variable]
+
+\registerctxluafile{s-fonts-variable}{}
+
+\installmodulecommandluasingle \showfontvariations {moduledata.fonts.variable.showvariations}
+
+\unexpanded\def\showfontspacing
+  {\begingroup
+   \scratchskip \interwordspace plus \interwordstretch minus \interwordshrink
+   \normalexpanded{\hpack\bgroup
+      \tttf
+      sp: \the\scratchskip   \hskip\emwidth
+      es: \the\extraspace\hskip\emwidth
+      ex: \the\exheight  \hskip\emwidth
+      em: \the\emwidth   \hskip\emwidth
+   \egroup}%
+   \endgroup}
+
+\stopmodule
+
+\continueifinputfile{s-fonts-variable.mkiv}
+
+\usemodule[art-01]
+
+\setuphead[section][before={\testpage[5]\blank[2*big]}]
+
+\enabletrackers[modules.fonts.variables.glyphs]
+\enabletrackers[modules.fonts.variables.kerns]
+
+\starttext
+
+    \startbuffer[zycon]
+        \char008986\relax\quad
+        \char009728\relax\quad
+        \char010031\relax\quad
+        \char010143\relax\quad
+        \char011044\relax\quad
+        \char127773\relax\quad
+        \char127989\relax\quad
+        \char128008\relax\quad
+        \char128021\relax\quad
+        \char128034\relax\quad
+        \char128161\relax\quad
+        \char128274\relax\quad
+        \char128347\relax\quad
+        \char128400\relax\quad
+        \char128692\relax\quad
+        \char129417\relax\quad
+        \char129422\relax\quad
+        \char983040\relax\par
+    \stopbuffer
+
+%     \showfontvariations
+%       [font=file:VotoSerifGX.ttf,
+%        max=6]
+
+    \showfontvariations
+      [font=file:adobevfprototype.otf]
+
+    \showfontvariations
+      [font=file:avenirnextvariable.ttf]
+
+    \showfontvariations
+      [font=file:DecoVar-VF.ttf]
+
+    \showfontvariations
+      [font=file:VotoSerifGX.ttf,
+       max=15]
+
+    \showfontvariations
+      [font=file:Selawik-Variable.ttf]
+
+    \showfontvariations
+      [font=file:LibreFranklinGX-Romans.ttf]
+
+    \showfontvariations
+      [font=file:Zycon.ttf,
+       sample={\getbuffer[zycon]}]
+
+   % \showfontvariations
+   %   [font=file:kairossansvariable.ttf]
+
+   %  \showfontvariations
+   %    [font=file:sourcecode-regular.otf]
+
+   %  \showfontvariations
+   %    [font=file:AmstelvarAlpha-VF.ttf]
+
+\stoptext

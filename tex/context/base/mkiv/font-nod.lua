@@ -16,8 +16,6 @@ local utfchar = utf.char
 local concat, fastcopy = table.concat, table.fastcopy
 local match, rep = string.match, string.rep
 
-local report_nodes = logs.reporter("fonts","tracing")
-
 fonts = fonts or { }
 nodes = nodes or { }
 
@@ -49,7 +47,6 @@ local vlist_code       = nodecodes.vlist
 local disc_code        = nodecodes.disc
 local glue_code        = nodecodes.glue
 local kern_code        = nodecodes.kern
-local rule_code        = nodecodes.rule
 local dir_code         = nodecodes.dir
 local localpar_code    = nodecodes.localpar
 
@@ -66,7 +63,11 @@ local getsubtype       = nuts.getsubtype
 local getchar          = nuts.getchar
 local getlist          = nuts.getlist
 local getdisc          = nuts.getdisc
+local getcomponents    = nuts.getcomponents
 local isglyph          = nuts.isglyph
+local getkern          = nuts.getkern
+local getdir           = nuts.getdir
+local getwidth         = nuts.getwidth
 
 local setfield         = nuts.setfield
 local setbox           = nuts.setbox
@@ -75,7 +76,7 @@ local setsubtype       = nuts.setsubtype
 
 local copy_node_list   = nuts.copy_list
 local hpack_node_list  = nuts.hpack
-local free_node_list   = nuts.flush_list
+local flush_node_list  = nuts.flush_list
 local traverse_nodes   = nuts.traverse
 local traverse_id      = nuts.traverse_id
 local protect_glyphs   = nuts.protect_glyphs
@@ -100,7 +101,6 @@ local properties = nodes.properties.data
 -- direct.set_properties_mode(true,true)  -- default
 
 local function freeze(h,where)
- -- report_nodes("freezing %s",where)
     for n in traverse_nodes(tonut(h)) do -- todo: disc but not traced anyway
         local p = properties[n]
         if p then
@@ -274,7 +274,7 @@ function step_tracers.reset()
     for i=1,#collection do
         local c = collection[i]
         if c then
-            free_node_list(c)
+            flush_node_list(c)
         end
     end
     collection, messages = { }, { }
@@ -392,7 +392,7 @@ function step_tracers.codes(i,command,space)
         if id == glyph_code then
             showchar(c)
         elseif id == dir_code or id == localpar_code then
-            context("[%s]",getfield(c,"dir"))
+            context("[%s]",getdir(c))
         elseif id == disc_code then
             local pre, post, replace = getdisc(c)
             if pre or post or replace then
@@ -439,7 +439,10 @@ function step_tracers.check(head)
         local n = copy_node_list(h)
         freeze(n,"check")
         injections.keepcounts(n) -- one-time
-        injections.handler(n,"trace")
+        local l = injections.handler(n,"trace")
+        if l then -- hm, can be false
+            n = tonut(l)
+        end
         protect_glyphs(n)
         collection[1] = n
     end
@@ -453,7 +456,10 @@ function step_tracers.register(head)
             local n = copy_node_list(h)
             freeze(n,"register")
             injections.keepcounts(n) -- one-time
-            injections.handler(n,"trace")
+            local l = injections.handler(n,"trace")
+            if l then -- hm, can be false
+                n = tonut(l)
+            end
             protect_glyphs(n)
             collection[nc] = n
         end
@@ -473,16 +479,16 @@ end
 
 --
 
-local threshold = 65536
+local threshold = 65536 -- 1pt
 
-local function toutf(list,result,nofresult,stopcriterium)
+local function toutf(list,result,nofresult,stopcriterium,nostrip)
     if list then
         for n in traverse_nodes(tonut(list)) do
             local c, id = isglyph(n)
             if c then
-                local components = getfield(n,"components")
+                local components = getcomponents(n)
                 if components then
-                    result, nofresult = toutf(components,result,nofresult)
+                    result, nofresult = toutf(components,result,nofresult,false,true)
                 elseif c > 0 then
                     local fc = fontcharacters[getfont(n)]
                     if fc then
@@ -514,20 +520,20 @@ local function toutf(list,result,nofresult,stopcriterium)
                     result[nofresult] = f_badcode(c)
                 end
             elseif id == disc_code then
-                result, nofresult = toutf(getfield(n,"replace"),result,nofresult) -- needed?
+                result, nofresult = toutf(getfield(n,"replace"),result,nofresult,false,true) -- needed?
             elseif id == hlist_code or id == vlist_code then
              -- if nofresult > 0 and result[nofresult] ~= " " then
              --     nofresult = nofresult + 1
              --     result[nofresult] = " "
              -- end
-                result, nofresult = toutf(getlist(n),result,nofresult)
+                result, nofresult = toutf(getlist(n),result,nofresult,false,true)
             elseif id == glue_code then
-                if nofresult > 0 and result[nofresult] ~= " " then
+                if nofresult > 0 and result[nofresult] ~= " " and getwidth(n) > threshold then
                     nofresult = nofresult + 1
                     result[nofresult] = " "
                 end
-            elseif id == kern_code and getfield(n,"kern") > threshold then
-                if nofresult > 0 and result[nofresult] ~= " " then
+            elseif id == kern_code then
+                if nofresult > 0 and result[nofresult] ~= " " and getkern(n) > threshold then
                     nofresult = nofresult + 1
                     result[nofresult] = " "
                 end
@@ -537,7 +543,7 @@ local function toutf(list,result,nofresult,stopcriterium)
             end
         end
     end
-    if nofresult > 0 and result[nofresult] == " " then
+    if not nostrip and nofresult > 0 and result[nofresult] == " " then
         result[nofresult] = nil
         nofresult = nofresult - 1
     end

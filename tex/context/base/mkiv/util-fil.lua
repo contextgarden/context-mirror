@@ -6,8 +6,10 @@ if not modules then modules = { } end modules ['util-fil'] = {
     license   = "see context related readme files"
 }
 
-local byte = string.byte
-local extract = bit32.extract
+local byte    = string.byte
+local char    = string.char
+local extract = bit32 and bit32.extract
+local floor   = math.floor
 
 -- Here are a few helpers (the starting point were old ones I used for parsing
 -- flac files). In Lua 5.3 we can probably do this better. Some code will move
@@ -35,6 +37,8 @@ end
 function files.size(f)
     return f:seek("end")
 end
+
+files.getsize = files.size
 
 function files.setposition(f,n)
     if zerobased[f] then
@@ -79,6 +83,12 @@ function files.readbytes(f,n)
     return byte(f:read(n),1,n)
 end
 
+function files.readbytetable(f,n)
+ -- return { byte(f:read(n),1,n) }
+    local s = f:read(n or 1)
+    return { byte(s,1,#s) } -- best use the real length
+end
+
 function files.readchar(f)
     return f:read(1)
 end
@@ -89,29 +99,43 @@ end
 
 function files.readinteger1(f)  -- one byte
     local n = byte(f:read(1))
-    if n  >= 0x80 then
-        return n - 0xFF - 1
+    if n >= 0x80 then
+        return n - 0x100
     else
         return n
     end
 end
 
-files.readcardinal1 = files.readbyte  -- one byte
-files.readcardinal  = files.readcardinal1
-files.readinteger   = files.readinteger1
+files.readcardinal1  = files.readbyte  -- one byte
+files.readcardinal   = files.readcardinal1
+files.readinteger    = files.readinteger1
+files.readsignedbyte = files.readinteger1
 
 function files.readcardinal2(f)
     local a, b = byte(f:read(2),1,2)
     return 0x100 * a + b
 end
 
+function files.readcardinal2le(f)
+    local b, a = byte(f:read(2),1,2)
+    return 0x100 * a + b
+end
+
 function files.readinteger2(f)
     local a, b = byte(f:read(2),1,2)
-    local n = 0x100 * a + b
-    if n >= 0x8000 then
-        return n - 0xFFFF - 1
+    if a >= 0x80 then
+        return 0x100 * a + b - 0x10000
     else
-        return n
+        return 0x100 * a + b
+    end
+end
+
+function files.readinteger2le(f)
+    local b, a = byte(f:read(2),1,2)
+    if a >= 0x80 then
+        return 0x100 * a + b - 0x10000
+    else
+        return 0x100 * a + b
     end
 end
 
@@ -120,42 +144,113 @@ function files.readcardinal3(f)
     return 0x10000 * a + 0x100 * b + c
 end
 
+function files.readcardinal3le(f)
+    local c, b, a = byte(f:read(3),1,3)
+    return 0x10000 * a + 0x100 * b + c
+end
+
+function files.readinteger3(f)
+    local a, b, c = byte(f:read(3),1,3)
+    if a >= 0x80 then
+        return 0x10000 * a + 0x100 * b + c - 0x1000000
+    else
+        return 0x10000 * a + 0x100 * b + c
+    end
+end
+
+function files.readinteger3le(f)
+    local c, b, a = byte(f:read(3),1,3)
+    if a >= 0x80 then
+        return 0x10000 * a + 0x100 * b + c - 0x1000000
+    else
+        return 0x10000 * a + 0x100 * b + c
+    end
+end
+
 function files.readcardinal4(f)
     local a, b, c, d = byte(f:read(4),1,4)
     return 0x1000000 * a + 0x10000 * b + 0x100 * c + d
 end
 
+function files.readcardinal4le(f)
+    local d, c, b, a = byte(f:read(4),1,4)
+    return 0x1000000 * a + 0x10000 * b + 0x100 * c + d
+end
+
 function files.readinteger4(f)
     local a, b, c, d = byte(f:read(4),1,4)
-    local n = 0x1000000 * a + 0x10000 * b + 0x100 * c + d
-    if n >= 0x8000000 then
-        return n - 0xFFFFFFFF - 1
+    if a >= 0x80 then
+        return 0x1000000 * a + 0x10000 * b + 0x100 * c + d - 0x100000000
     else
-        return n
+        return 0x1000000 * a + 0x10000 * b + 0x100 * c + d
     end
 end
+
+function files.readinteger4le(f)
+    local d, c, b, a = byte(f:read(4),1,4)
+    if a >= 0x80 then
+        return 0x1000000 * a + 0x10000 * b + 0x100 * c + d - 0x100000000
+    else
+        return 0x1000000 * a + 0x10000 * b + 0x100 * c + d
+    end
+end
+
+-- function files.readfixed2(f)
+--     local a, b = byte(f:read(2),1,2)
+--     if a >= 0x80 then
+--         return (0x100 * a + b - 0x10000)/256.0
+--     else
+--         return (0x100 * a + b)/256.0
+--     end
+-- end
+
+function files.readfixed2(f)
+    local a, b = byte(f:read(2),1,2)
+    if a >= 0x80 then
+        return (a - 0x100) + b/0x100
+    else
+        return (a        ) + b/0x100
+    end
+end
+
+-- (real) (n>>16) + ((n&0xffff)/65536.0))
+
+-- function files.readfixed4(f)
+--     local a, b, c, d = byte(f:read(4),1,4)
+--     if a >= 0x80 then
+--         return (0x1000000 * a + 0x10000 * b + 0x100 * c + d - 0x100000000)/65536.0
+--     else
+--         return (0x1000000 * a + 0x10000 * b + 0x100 * c + d)/65536.0
+--     end
+-- end
 
 function files.readfixed4(f)
     local a, b, c, d = byte(f:read(4),1,4)
-    local n = 0x100 * a + b
-    if n >= 0x8000 then
-        return n - 0xFFFF - 1 + (0x100 * c + d)/0xFFFF
+    if a >= 0x80 then
+        return (0x100 * a + b - 0x10000) + (0x100 * c + d)/0x10000
     else
-        return n              + (0x100 * c + d)/0xFFFF
+        return (0x100 * a + b          ) + (0x100 * c + d)/0x10000
     end
 end
 
-function files.read2dot14(f)
-    local a, b = byte(f:read(2),1,2)
-    local n = 0x100 * a + b
-    local m = extract(n,0,30)
-    if n > 0x7FFF then
-        n = extract(n,30,2)
-        return m/0x4000 - 4
-    else
-        n = extract(n,30,2)
-        return n + m/0x4000
+if extract then
+
+    local extract = bit32.extract
+    local band    = bit32.band
+
+    -- (real) ((n<<16)>>(16+14)) + ((n&0x3fff)/16384.0))
+
+    function files.read2dot14(f)
+        local a, b = byte(f:read(2),1,2)
+        if a >= 0x80 then
+            local n = -(0x100 * a + b)
+            return - (extract(n,14,2) + (band(n,0x3FFF) / 16384.0))
+        else
+            local n =   0x100 * a + b
+            return   (extract(n,14,2) + (band(n,0x3FFF) / 16384.0))
+        end
     end
+
 end
 
 function files.skipshort(f,n)
@@ -164,4 +259,69 @@ end
 
 function files.skiplong(f,n)
     f:read(4*(n or 1))
+end
+
+-- writers (kind of slow)
+
+function files.writecardinal2(f,n)
+    local a = char(n % 256)
+    n = floor(n/256)
+    local b = char(n % 256)
+    f:write(b,a)
+end
+
+function files.writecardinal4(f,n)
+    local a = char(n % 256)
+    n = floor(n/256)
+    local b = char(n % 256)
+    n = floor(n/256)
+    local c = char(n % 256)
+    n = floor(n/256)
+    local d = char(n % 256)
+    f:write(d,c,b,a)
+end
+
+function files.writestring(f,s)
+    f:write(char(byte(s,1,#s)))
+end
+
+function files.writebyte(f,b)
+    f:write(char(b))
+end
+
+if fio and fio.readcardinal1 then
+
+    files.readcardinal1  = fio.readcardinal1
+    files.readcardinal2  = fio.readcardinal2
+    files.readcardinal3  = fio.readcardinal3
+    files.readcardinal4  = fio.readcardinal4
+    files.readinteger1   = fio.readinteger1
+    files.readinteger2   = fio.readinteger2
+    files.readinteger3   = fio.readinteger3
+    files.readinteger4   = fio.readinteger4
+ -- files.readfixed2     = fio.readfixed2 -- needs recent luatex
+ -- files.readfixed4     = fio.readfixed4 -- needs recent luatex
+    files.read2dot14     = fio.read2dot14
+    files.setposition    = fio.setposition
+    files.getposition    = fio.getposition
+
+    files.readbyte       = files.readcardinal1
+    files.readsignedbyte = files.readinteger1
+    files.readcardinal   = files.readcardinal1
+    files.readinteger    = files.readinteger1
+
+    local skipposition   = fio.skipposition
+    files.skipposition   = skipposition
+
+    files.readbytes      = fio.readbytes
+    files.readbytetable  = fio.readbytetable
+
+    function files.skipshort(f,n)
+        skipposition(f,2*(n or 1))
+    end
+
+    function files.skiplong(f,n)
+        skipposition(f,4*(n or 1))
+    end
+
 end

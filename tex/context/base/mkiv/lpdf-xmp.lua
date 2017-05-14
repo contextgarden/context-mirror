@@ -8,7 +8,8 @@ if not modules then modules = { } end modules ['lpdf-xmp'] = {
 }
 
 local tostring, type = tostring, type
-local format, random, char, gsub, concat = string.format, math.random, string.char, string.gsub, table.concat
+local format, gsub = string.format, string.gsub
+local utfchar = utf.char
 local xmlfillin = xml.fillin
 
 local trace_xmp  = false  trackers.register("backend.xmp",  function(v) trace_xmp  = v end)
@@ -26,14 +27,15 @@ local pdfconstant          = lpdf.constant
 local pdfreference         = lpdf.reference
 local pdfflushstreamobject = lpdf.flushstreamobject
 
--- I wonder why this begin end is empty / w (no time now to look into it) / begin can also be "?"
+-- The XMP packet wrapper is kind of fixed, see page 10 of XMPSpecificationsPart1.pdf from
+-- XMP-Toolkit-SDK-CC201607.zip. So we hardcode the id.
 
-local xpacket = [[
-<?xpacket begin="﻿" id="%s"?>
+local xpacket = format ( [[
+<?xpacket begin="﻿%s" id="W5M0MpCehiHzreSzNTczkc9d"?>
 
-%s
+%%s
 
-<?xpacket end="w"?>]]
+<?xpacket end="w"?>]], utfchar(0xFEFF) )
 
 local mapping = {
     -- user defined keys (pdfx:)
@@ -94,16 +96,7 @@ pdf.setsuppressoptionalinfo(
  -- + 512 -- pdfnoid
 )
 
-local included = table.setmetatableindex( {
-    context  = true,
-    id       = true,
-    metadata = true,
-    date     = true,
-    id       = true,
-    pdf      = true,
-}, function(t,k)
-    return true
-end)
+local included = backends.included
 
 function lpdf.settrailerid(v)
     if v then
@@ -248,32 +241,23 @@ end
 
 -- flushing
 
-local function randomstring(n)
-    local t = { }
-    for i=1,n do
-        t[i] = char(96 + random(26))
-    end
-    return concat(t)
-end
-
-randomstring(26) -- kind of initializes and kicks off random
-
 local function flushxmpinfo()
     commands.pushrandomseed()
     commands.setrandomseed(os.time())
 
-    local packetid   = "no unique packet id here" -- 24 chars
+    local version    = status.luatex_version
+    local revision   = status.luatex_revision
+
     local documentid = "no unique document id here"
     local instanceid = "no unique instance id here"
-    local producer   = format("LuaTeX-%0.2f.%s",status.luatex_version/100,status.luatex_revision)
+    local producer   = format("LuaTeX-%i.%i.%s",math.div(version,100),math.mod(version,100),revision)
     local creator    = "LuaTeX + ConTeXt MkIV"
     local time       = lpdf.timestamp()
     local fullbanner = status.banner
 
     if included.id ~= "fake" then
-        packetid   = randomstring(24)
-        documentid = "uuid:%s" .. os.uuid()
-        instanceid = "uuid:%s" .. os.uuid()
+        documentid = "uuid:" .. os.uuid()
+        instanceid = "uuid:" .. os.uuid()
     end
 
     pdfaddxmpinfo("DocumentID",      documentid)
@@ -306,7 +290,7 @@ local function flushxmpinfo()
         report_xmp("stop xmp blob")
         logs.poptarget()
     end
-    blob = format(xpacket,packetid,blob)
+    blob = format(xpacket,blob)
     if not verbose and pdf.getcompresslevel() > 0 then
         blob = gsub(blob,">%s+<","><")
     end

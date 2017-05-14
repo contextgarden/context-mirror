@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['util-sql-client'] = {
+if not modules then modules = { } end modules ['util-sql-imp-client'] = {
     version   = 1.001,
     comment   = "companion to util-sql.lua",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -25,6 +25,8 @@ local replacetemplate    = utilities.templates.replace
 local serialize          = sql.serialize
 local deserialize        = sql.deserialize
 local getserver          = sql.getserver
+
+local osclock            = os.gettimeofday
 
 -- Experiments with an p/action demonstrated that there is not much gain. We could do a runtime
 -- capture but creating all the small tables is not faster and it doesn't work well anyway.
@@ -107,11 +109,11 @@ local function splitdata(data) -- todo: hash on first line ... maybe move to cli
             end
         end
         p = Cf(Ct("") * p,rawset) * newline^1
-if getserver() == "mssql" then
-        p = skipfirst * skipdashes * Ct(p^0)
-else
-        p = skipfirst * Ct(p^0)
-end
+        if getserver() == "mssql" then
+            p = skipfirst * skipdashes * Ct(p^0)
+        else
+            p = skipfirst * Ct(p^0)
+        end
         cache[first] = { parser = p, keys = keys }
         local entries = lpegmatch(p,data)
         return entries or { }, keys
@@ -132,6 +134,11 @@ local t_runner = {
     mssql = [[sqlcmd -S %host% %?U: -U "%username%" ?% %?P: -P "%password%" ?% -I -W -w 65535 -s"]] .. "\t" .. [[" -m 1 -i "%queryfile%" -o "%resultfile%"]],
 }
 
+local t_runner_login = {
+    mysql = [[mysql --login-path="%login%" --batch --database="%database%" --default-character-set=utf8 < "%queryfile%" > "%resultfile%"]],
+    mssql = [[sqlcmd -S %host% %?U: -U "%username%" ?% %?P: -P "%password%" ?% -I -W -w 65535 -s"]] .. "\t" .. [[" -m 1 -i "%queryfile%" -o "%resultfile%"]],
+}
+
 local t_preamble = {
     mysql = [[
 SET GLOBAL SQL_MODE=ANSI_QUOTES;
@@ -144,10 +151,10 @@ SET NOCOUNT ON;
     ]],
 }
 
-local function dataprepared(specification,client)
+local function dataprepared(specification)
     local query = preparetemplate(specification)
     if query then
-        local preamble = t_preamble[getserver()] or t_preamble.mysql
+        local preamble  = t_preamble[getserver()] or t_preamble.mysql
         if preamble then
             preamble = replacetemplate(preamble,specification.variables,'sql')
             query = preamble .. "\n" .. query
@@ -165,14 +172,16 @@ local function dataprepared(specification,client)
     end
 end
 
-local function datafetched(specification,client)
-    local runner  = t_runner[getserver()] or t_runner.mysql
+local function datafetched(specification)
+    local runner  = (specification.login and t_runner_login or t_runner)[getserver()] or t_runner.mysql
     local command = replacetemplate(runner,specification)
     if trace_sql then
         local t = osclock()
         report_state("command: %s",command)
+        -- for now we don't use sandbox.registerrunners as this module is
+        -- also used outside context
         local okay = os.execute(command)
-        report_state("fetchtime: %.3f sec",osclock()-t) -- not okay under linux
+        report_state("fetchtime: %.3f sec, return code: %i",osclock()-t,okay) -- not okay under linux
         return okay == 0
     else
         return os.execute(command) == 0
@@ -220,12 +229,12 @@ local function execute(specification)
         report_state("error in specification")
         return
     end
-    if not dataprepared(specification,methods.client) then
+    if not dataprepared(specification) then
         report_state("error in preparation")
         return
     end
-    if not datafetched(specification,methods.client) then
-        report_state("error in fetching, query: %s",string.collapsespaces(io.loaddata(specification.queryfile)))
+    if not datafetched(specification) then
+        report_state("error in fetching, query: %s",string.collapsespaces(io.loaddata(specification.queryfile) or "?"))
         return
     end
     local data = dataloaded(specification)

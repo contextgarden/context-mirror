@@ -42,11 +42,51 @@ local function resettiming(instance)
     timers[instance or "notimer"] = { timing = 0, loadtime = 0 }
 end
 
+local ticks   = clock
+local seconds = function(n) return n or 0 end
+
+-- if FFISUPPORTED and ffi and os.type == "windows" then
+--
+--     local okay, kernel = pcall(ffi.load,"kernel32")
+--
+--     if kernel then
+--
+--         local tonumber = ffi.number or tonumber
+--
+--         ffi.cdef[[
+--             int QueryPerformanceFrequency(int64_t *lpFrequency);
+--             int QueryPerformanceCounter(int64_t *lpPerformanceCount);
+--         ]]
+--
+--         local target = ffi.new("__int64[1]")
+--
+--         ticks = function()
+--             if kernel.QueryPerformanceCounter(target) == 1 then
+--                 return tonumber(target[0])
+--             else
+--                 return 0
+--             end
+--         end
+--
+--         local target = ffi.new("__int64[1]")
+--
+--         seconds = function(ticks)
+--             if kernel.QueryPerformanceFrequency(target) == 1 then
+--                 return ticks / tonumber(target[0])
+--             else
+--                 return 0
+--             end
+--         end
+--
+--     end
+--
+-- end
+
 local function starttiming(instance)
     local timer = timers[instance or "notimer"]
     local it = timer.timing or 0
     if it == 0 then
-        timer.starttime = clock()
+        timer.starttime = ticks()
         if not timer.loadtime then
             timer.loadtime = 0
         end
@@ -61,12 +101,13 @@ local function stoptiming(instance)
         timer.timing = it - 1
     else
         local starttime = timer.starttime
-        if starttime then
-            local stoptime = clock()
-            local loadtime = stoptime - starttime
-            timer.stoptime = stoptime
-            timer.loadtime = timer.loadtime + loadtime
-            timer.timing = 0
+        if starttime and starttime > 0 then
+            local stoptime  = ticks()
+            local loadtime  = stoptime - starttime
+            timer.stoptime  = stoptime
+            timer.loadtime  = timer.loadtime + loadtime
+            timer.timing    = 0
+            timer.starttime = 0
             return loadtime
         end
     end
@@ -78,7 +119,7 @@ local function elapsed(instance)
         return instance or 0
     else
         local timer = timers[instance or "notimer"]
-        return timer and timer.loadtime or 0
+        return timer and seconds(timer.loadtime) or 0
     end
 end
 
@@ -136,10 +177,13 @@ function statistics.show()
             local total, indirect = status.callbacks or 0, status.indirect_callbacks or 0
             return format("%s direct, %s indirect, %s total", total-indirect, indirect, total)
         end)
-        if jit then
-            local jitstatus = { jit.status() }
-            if jitstatus[1] then
-                register("luajit options", concat(jitstatus," ",2))
+        if TEXENGINE == "luajittex" and JITSUPPORTED then
+            local jitstatus = jit.status
+            if jitstatus then
+                local jitstatus = { jitstatus() }
+                if jitstatus[1] then
+                    register("luajit options", concat(jitstatus," ",2))
+                end
             end
         end
         -- so far
@@ -183,6 +227,7 @@ end
 
 function statistics.runtime()
     stoptiming(statistics)
+ --  stoptiming(statistics) -- somehow we can start the timer twice, but where
     return statistics.formatruntime(elapsedtime(statistics))
 end
 

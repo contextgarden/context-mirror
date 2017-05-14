@@ -41,31 +41,38 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathcases" type="environment" generated="yes" variant="generated" file="math-ali.mkiv">
+    <cd:command name="mathcases" type="environment" generated="yes" variant="instance" file="math-ali.mkiv">
         <cd:sequence>
-            <cd:variable value="mathcases"/>
+            <cd:instance value="mathcases"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupmathcases"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-mathcases"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="mathcases" type="environment" file="math-ali.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmathcases"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+    <!--
 
-    <cd:command name="cases" type="environment" file="math-ali.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmathcases"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="mathcases" type="environment" file="math-ali.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmathcases"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="cases" type="environment" file="math-ali.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmathcases"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
 </cd:interface>

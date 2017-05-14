@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['util-sac'] = {
 -- with bytes)
 
 local byte, sub = string.byte, string.sub
-local extract = bit32.extract
+local extract = bit32 and bit32.extract
 
 utilities         = utilities or { }
 local streams     = { }
@@ -82,6 +82,13 @@ function streams.readbytes(f,n)
     return byte(f[1],i,j-1)
 end
 
+function streams.readbytetable(f,n)
+    local i = f[2]
+    local j = i + n
+    f[2] = j
+    return { byte(f[1],i,j-1) }
+end
+
 function streams.skipbytes(f,n)
     f[2] = f[2] + n
 end
@@ -104,7 +111,7 @@ function streams.readinteger1(f)  -- one byte
     f[2] = i + 1
     local n = byte(f[1],i)
     if n  >= 0x80 then
-        return n - 0xFF - 1
+        return n - 0x100
     else
         return n
     end
@@ -122,16 +129,35 @@ function streams.readcardinal2(f)
     return 0x100 * a + b
 end
 
+function streams.readcardinal2LE(f)
+    local i = f[2]
+    local j = i + 1
+    f[2] = j + 1
+    local b, a = byte(f[1],i,j)
+    return 0x100 * a + b
+end
+
 function streams.readinteger2(f)
     local i = f[2]
     local j = i + 1
     f[2] = j + 1
     local a, b = byte(f[1],i,j)
-    local n = 0x100 * a + b
-    if n  >= 0x8000 then
-        return n - 0xFFFF - 1
+    if a >= 0x80 then
+        return 0x100 * a + b - 0x10000
     else
-        return n
+        return 0x100 * a + b
+    end
+end
+
+function streams.readinteger2le(f)
+    local i = f[2]
+    local j = i + 1
+    f[2] = j + 1
+    local b, a = byte(f[1],i,j)
+    if a >= 0x80 then
+        return 0x100 * a + b - 0x10000
+    else
+        return 0x100 * a + b
     end
 end
 
@@ -141,6 +167,38 @@ function streams.readcardinal3(f)
     f[2] = j + 1
     local a, b, c = byte(f[1],i,j)
     return 0x10000 * a + 0x100 * b + c
+end
+
+function streams.readcardinal3le(f)
+    local i = f[2]
+    local j = i + 2
+    f[2] = j + 1
+    local c, b, a = byte(f[1],i,j)
+    return 0x10000 * a + 0x100 * b + c
+end
+
+function streams.readinteger3(f)
+    local i = f[2]
+    local j = i + 3
+    f[2] = j + 1
+    local a, b, c = byte(f[1],i,j)
+    if a >= 0x80 then
+        return 0x10000 * a + 0x100 * b + c - 0x1000000
+    else
+        return 0x10000 * a + 0x100 * b + c
+    end
+end
+
+function streams.readinteger3le(f)
+    local i = f[2]
+    local j = i + 3
+    f[2] = j + 1
+    local c, b, a = byte(f[1],i,j)
+    if a >= 0x80 then
+        return 0x10000 * a + 0x100 * b + c - 0x1000000
+    else
+        return 0x10000 * a + 0x100 * b + c
+    end
 end
 
 function streams.readcardinal4(f)
@@ -156,11 +214,22 @@ function streams.readinteger4(f)
     local j = i + 3
     f[2] = j + 1
     local a, b, c, d = byte(f[1],i,j)
-    local n = 0x1000000 * a + 0x10000 * b + 0x100 * c + d
-    if n  >= 0x8000000 then
-        return n - 0xFFFFFFFF - 1
+    if a >= 0x80 then
+        return 0x1000000 * a + 0x10000 * b + 0x100 * c + d - 0x100000000
     else
-        return n
+        return 0x1000000 * a + 0x10000 * b + 0x100 * c + d
+    end
+end
+
+function streams.readinteger4le(f)
+    local i = f[2]
+    local j = i + 3
+    f[2] = j + 1
+    local d, c, b, a = byte(f[1],i,j)
+    if a >= 0x80 then
+        return 0x1000000 * a + 0x10000 * b + 0x100 * c + d - 0x100000000
+    else
+        return 0x1000000 * a + 0x10000 * b + 0x100 * c + d
     end
 end
 
@@ -169,28 +238,44 @@ function streams.readfixed4(f)
     local j = i + 3
     f[2] = j + 1
     local a, b, c, d = byte(f[1],i,j)
-    local n = 0x100 * a + b
-    if n  >= 0x8000 then
-        return n - 0xFFFF - 1 + (0x100 * c + d)/0xFFFF
+    if a >= 0x80 then
+        return (0x100 * a + b - 0x10000) + (0x100 * c + d)/0x10000
     else
-        return n              + (0x100 * c + d)/0xFFFF
+        return (0x100 * a + b          ) + (0x100 * c + d)/0x10000
     end
 end
 
-function streams.read2dot14(f)
+function streams.readfixed2(f)
     local i = f[2]
     local j = i + 1
     f[2] = j + 1
     local a, b = byte(f[1],i,j)
-    local n = 0x100 * a + b
-    local m = extract(n,0,30)
-    if n > 0x7FFF then
-        n = extract(n,30,2)
-        return m/0x4000 - 4
+    if a >= 0x80 then
+        return (a - 0x100) + b/0x100
     else
-        n = extract(n,30,2)
-        return n + m/0x4000
+        return (a        ) + b/0x100
     end
+end
+
+if extract then
+
+    local extract = bit32.extract
+    local band    = bit32.band
+
+    function streams.read2dot14(f)
+        local i = f[2]
+        local j = i + 1
+        f[2] = j + 1
+        local a, b = byte(f[1],i,j)
+        if a >= 0x80 then
+            local n = -(0x100 * a + b)
+            return - (extract(n,14,2) + (band(n,0x3FFF) / 16384.0))
+        else
+            local n =   0x100 * a + b
+            return   (extract(n,14,2) + (band(n,0x3FFF) / 16384.0))
+        end
+    end
+
 end
 
 function streams.skipshort(f,n)
@@ -199,4 +284,105 @@ end
 
 function streams.skiplong(f,n)
     f[2] = f[2] + 4*(n or 1)
+end
+
+if sio and sio.readcardinal2 then
+
+    local readcardinal1  = sio.readcardinal1
+    local readcardinal2  = sio.readcardinal2
+    local readcardinal3  = sio.readcardinal3
+    local readcardinal4  = sio.readcardinal4
+    local readinteger1   = sio.readinteger1
+    local readinteger2   = sio.readinteger2
+    local readinteger3   = sio.readinteger3
+    local readinteger4   = sio.readinteger4
+    local readfixed2     = sio.readfixed2
+    local readfixed4     = sio.readfixed4
+    local read2dot14     = sio.read2dot14
+    local readbytes      = sio.readbytes
+    local readbytetable  = sio.readbytetable
+
+    function streams.readcardinal1(f)
+        local i = f[2]
+        f[2] = i + 1
+        return readcardinal1(f[1],i)
+    end
+    function streams.readcardinal2(f)
+        local i = f[2]
+        f[2] = i + 2
+        return readcardinal2(f[1],i)
+    end
+    function streams.readcardinal3(f)
+        local i = f[2]
+        f[2] = i + 3
+        return readcardinal3(f[1],i)
+    end
+    function streams.readcardinal4(f)
+        local i = f[2]
+        f[2] = i + 4
+        return readcardinal4(f[1],i)
+    end
+    function streams.readinteger1(f)
+        local i = f[2]
+        f[2] = i + 1
+        return readinteger1(f[1],i)
+    end
+    function streams.readinteger2(f)
+        local i = f[2]
+        f[2] = i + 2
+        return readinteger2(f[1],i)
+    end
+    function streams.readinteger3(f)
+        local i = f[2]
+        f[2] = i + 3
+        return readinteger3(f[1],i)
+    end
+    function streams.readinteger4(f)
+        local i = f[2]
+        f[2] = i + 4
+        return readinteger4(f[1],i)
+    end
+ -- function streams.readfixed2(f) -- needs recent luatex
+ --     local i = f[2]
+ --     f[2] = i + 2
+ --     return readfixed2(f[1],i)
+ -- end
+ -- function streams.readfixed4(f) -- needs recent luatex
+ --     local i = f[2]
+ --     f[2] = i + 4
+ --     return readfixed4(f[1],i)
+ -- end
+    function streams.read2dot4(f)
+        local i = f[2]
+        f[2] = i + 2
+        return read2dot4(f[1],i)
+    end
+    function streams.readbytes(f,n)
+        local i = f[2]
+        local s = f[3]
+        local p = i + n
+        if p > s then
+            f[2] = s + 1
+        else
+            f[2] = p
+        end
+        return readbytes(f[1],i,n)
+    end
+    function streams.readbytetable(f,n)
+        local i = f[2]
+        local s = f[3]
+        local p = i + n
+        if p > s then
+            f[2] = s + 1
+        else
+            f[2] = p
+        end
+        return readbytetable(f[1],i,n)
+    end
+
+    streams.readbyte       = streams.readcardinal1
+    streams.readsignedbyte = streams.readinteger1
+    streams.readcardinal   = streams.readcardinal1
+    streams.readinteger    = streams.readinteger1
+
 end

@@ -8,8 +8,8 @@ if not modules then modules = { } end modules ['l-sandbox'] = {
 
 -- We use string instead of function variables, so 'io.open' instead of io.open. That
 -- way we can still intercept repetetive overloads. One complication is that when we use
--- sandboxed function sin helpers in the sanbox checkers, we can get a recursion loop
--- so for that vreason we need to keep originals around till we enable the sandbox.
+-- sandboxed functions in helpers in the sanbox checkers, we can get a recursion loop
+-- so for that reason we need to keep originals around till we enable the sandbox.
 
 -- if sandbox then return end
 
@@ -23,6 +23,8 @@ local format   = string.format -- no formatters yet
 local concat   = table.concat
 local sort     = table.sort
 local gmatch   = string.gmatch
+local gsub     = string.gsub
+local requiem  = require
 
 sandbox            = { }
 local sandboxed    = false
@@ -34,6 +36,7 @@ local originals    = { }
 local comments     = { }
 local trace        = false
 local logger       = false
+local blocked      = { }
 
 -- this comes real early, so that we can still alias
 
@@ -139,29 +142,59 @@ function sandbox.overload(func,overload,comment)
     return func
 end
 
-function sandbox.initializer(f)
-    if not sandboxed then
-        initializers[#initializers+1] = f
+local function whatever(specification,what,target)
+    if type(specification) ~= "table" then
+        report("%s needs a specification",what)
+    elseif type(specification.category) ~= "string" or type(specification.action) ~= "function" then
+        report("%s needs a category and action",what)
+    elseif not sandboxed then
+        target[#target+1] = specification
     elseif trace then
-        report("already enabled, discarding initializer")
+        report("already enabled, discarding %s",what)
     end
 end
 
-function sandbox.finalizer(f)
-    if not sandboxed then
-        finalizers[#finalizers+1] = f
-    elseif trace then
-        report("already enabled, discarding finalizer")
+function sandbox.initializer(specification)
+    whatever(specification,"initializer",initializers)
+end
+
+function sandbox.finalizer(specification)
+    whatever(specification,"finalizer",finalizers)
+end
+
+function require(name)
+    local n = gsub(name,"^.*[\\/]","")
+    local n = gsub(n,"[%.].*$","")
+    local b = blocked[n]
+    if b == false then
+        return nil -- e.g. ffi
+    elseif b then
+        if trace then
+            report("using blocked: %s",n)
+        end
+        return b
+    else
+        if trace then
+            report("requiring: %s",name)
+        end
+        return requiem(name)
     end
+end
+
+function blockrequire(name,lib)
+    if trace then
+        report("preventing reload of: %s",name)
+    end
+    blocked[name] = lib or _G[name] or false
 end
 
 function sandbox.enable()
     if not sandboxed then
         for i=1,#initializers do
-            initializers[i]()
+            initializers[i].action()
         end
         for i=1,#finalizers do
-            finalizers[i]()
+            finalizers[i].action()
         end
         local nnot = 0
         local nyes = 0
@@ -189,28 +222,36 @@ function sandbox.enable()
         end
         if #cyes > 0 then
             sort(cyes)
-            report("    overloaded known     : %s",concat(cyes," | "))
+            report("overloaded known: %s",concat(cyes," | "))
         end
         if nyes > 0 then
-            report("    overloaded unknown   : %s",nyes)
+            report("overloaded unknown: %s",nyes)
         end
         if #cnot > 0 then
             sort(cnot)
-            report("not overloaded known     : %s",concat(cnot," | "))
+            report("not overloaded known: %s",concat(cnot," | "))
         end
         if nnot > 0 then
-            report("not overloaded unknown   : %s",nnot)
+            report("not overloaded unknown: %s",nnot)
         end
         if #skip > 0 then
             sort(skip)
-            report("not overloaded redefined : %s",concat(skip," | "))
+            report("not overloaded redefined: %s",concat(skip," | "))
         end
+        --
         initializers = nil
         finalizers   = nil
         originals    = nil
         sandboxed    = true
     end
 end
+
+blockrequire("lfs",lfs)
+blockrequire("io",io)
+blockrequire("os",os)
+blockrequire("ffi",ffi)
+
+-- require = register(require,"require")
 
 -- we sandbox some of the built-in functions now:
 

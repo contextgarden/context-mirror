@@ -11,8 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% def loadfile(expr name) = scantokens("input " & name & ";") enddef ;
-
 if known context_tool : endinput ; fi ;
 
 boolean context_tool ; context_tool := true ;
@@ -28,13 +26,19 @@ let @## = @# ;
 
 if not known mpversion : string mpversion ; mpversion := "0.641" ; fi ;
 
-newinternal metapostversion ; metapostversion := scantokens(mpversion) ;
+% newinternal metapostversion ; metapostversion := scantokens(mpversion) ;
+
+newinternal metapostversion ; metapostversion := 2.0 ;
 
 %D We always want \EPS\ conforming output, so we say:
 
 prologues    := 1 ;
 warningcheck := 0 ;
 mpprocset    := 1 ;
+
+%D Handy:
+
+def nothing = enddef ;
 
 %D Namespace handling:
 
@@ -88,6 +92,47 @@ enddef ;
 
 let triplet    = rgbcolor ;
 let quadruplet = cmykcolor ;
+
+%D Image redefined, for Alan:
+
+vardef image@#(text t) =
+    save currentpicture ;
+    picture currentpicture ;
+    currentpicture := nullpicture ;
+    t ;
+    currentpicture
+    if str @# <> "" :
+        shifted (
+              mfun_labxf@#               * lrcorner p
+         +                 mfun_labyf@#  * ulcorner p
+         + (1-mfun_labxf@#-mfun_labyf@#) * llcorner p
+        )
+    fi
+enddef ;
+
+%D Variables
+
+def dispose suffix s =
+    if known s :
+        begingroup ;
+            save ss ;
+            if     numeric   s : numeric   ss
+            elseif boolean   s : boolean   ss
+            elseif pair      s : pair      ss
+            elseif path      s : path      ss
+            elseif picture   s : picture   ss
+            elseif string    s : string    ss
+            elseif transform s : transform ss
+            elseif color     s : color     ss
+            elseif rgbcolor  s : rgbcolor  ss
+            elseif cmykcolor s : cmykcolor ss
+            elseif pen       s : pen       ss
+            else             s : numeric   ss
+            fi ;
+            s := ss ;
+        endgroup ;
+    fi ;
+enddef ;
 
 %D Colors:
 
@@ -143,6 +188,8 @@ vardef colordecimals primary c =
         decimal cyanpart c & ":" & decimal magentapart c & ":" & decimal yellowpart c & ":" & decimal blackpart c
     elseif rgbcolor c :
         decimal redpart c & ":" & decimal greenpart c & ":" & decimal bluepart c
+    elseif string c:
+        colordecimals resolvedcolor(c)
     else :
         decimal c
     fi
@@ -335,6 +382,42 @@ enddef;
 %     mfun_a_b
 % enddef ;
 
+%D Here are some special ones, cooked up in the process of Alan's mp-node
+%D module:
+
+vardef boundingradius primary p =
+    if picture p :
+        max(
+            abs((llcorner p) shifted -center p),
+            abs((lrcorner p) shifted -center p),
+            abs((urcorner p) shifted -center p),
+            abs((ulcorner p) shifted -center p)
+        )
+    elseif pen p :
+        boundingradius image(draw makepath p ;)
+    elseif path p :
+        boundingradius image(draw p ;)
+    fi
+enddef ;
+
+vardef boundingcircle primary p =
+    fullcircle scaled 2boundingradius p shifted center p
+enddef ;
+
+vardef boundingpoint@#(expr p) =
+    if picture p : % pen?
+        (                 mfun_labxf@# *ulcorner p
+         +                mfun_labyf@# *lrcorner p
+         +(1-mfun_labxf@#-mfun_labyf@#)*urcorner p)
+    elseif path p :
+        boundingpoint@#(image(draw p ;))
+   %elseif pair p :
+   %    p
+   %else :
+   %    origin
+    fi
+enddef ;
+
 %D Some missing functions can be implemented rather straightforward (thanks to
 %D Taco and others):
 
@@ -373,6 +456,7 @@ vardef asinh  primary x = ln(x+(x++1))     enddef ;
 
 vardef sinh   primary x = save xx ; xx = exp x ; (xx-1/xx)/2 enddef ;
 vardef cosh   primary x = save xx ; xx = exp x ; (xx+1/xx)/2 enddef ;
+vardef tanh   primary x = save xx ; xx = exp x ; (xx-1/xx)/(xx+1/xx) enddef ;
 
 %D Like mod, but useful for anglesl it returns (-.5d,+.5d] and is used
 %D in for instance mp-chem.
@@ -715,7 +799,7 @@ primarydef p xyscaled q = % secundarydef does not work out well
     endgroup
 enddef ;
 
-%D Some personal code that might move to another module
+%D Some personal code that might move to another module (todo: save).
 
 def set_grid(expr w, h, nx, ny) =
     boolean grid[][] ; boolean grid_full ;
@@ -789,7 +873,7 @@ secondarydef p intersection_point q =
     begingroup
     save x_, y_ ;
     (x_,y_) = p intersectiontimes q ;
-    if x_<0 :
+    if x_< 0 :
         intersection_found := false ;
         center p % origin
     else :
@@ -817,36 +901,59 @@ enddef ;
 
 %D Some colors.
 
-def colortype(expr c) =
-    if cmykcolor c : cmykcolor elseif rgbcolor c : rgbcolor else : grayscale fi
+def resolvedcolor(expr s) =
+    .5white
 enddef ;
 
-vardef whitecolor(expr c) =
-    if cmykcolor c : (0,0,0,0) elseif rgbcolor c : (1,1,1)  else : 1 fi
+let normalwithcolor = withcolor ;
+
+def withcolor expr c =
+    normalwithcolor if string c : resolvedcolor(c) else : c fi
+enddef ;
+
+vardef colortype expr c =
+        if cmykcolor c : cmykcolor
+    elseif rgbcolor  c : rgbcolor
+    elseif numeric   c : grayscale
+        fi
+enddef ;
+
+vardef whitecolor expr c =
+        if cmykcolor c : (0,0,0,0)
+    elseif rgbcolor  c : (1,1,1)
+    elseif numeric   c : 1
+    elseif string    c : whitecolor resolvedcolor(c)
+        fi
 enddef ;
 
 vardef blackcolor expr c =
-    if cmykcolor c : (0,0,0,1) elseif rgbcolor c : (0,0,0)  else : 0 fi
+        if cmykcolor c : (0,0,0,1)
+    elseif rgbcolor  c : (0,0,0)
+    elseif numeric   c : 0
+    elseif string    c : blackcolor resolvedcolor(c)
+        fi
 enddef ;
 
-vardef complementary expr c = (
-        if cmykcolor c : (1,1,1,1) -
-    elseif rgbcolor  c : (1,1,1) -
-    elseif pair      c : (1,1) -
-    elseif numeric   c :  1 -
-        fi c
-) enddef ;
+vardef complementary expr c =
+        if cmykcolor c : (1,1,1,1) - c
+    elseif rgbcolor  c : (1,1,1) - c
+    elseif pair      c : (1,1) - c
+    elseif numeric   c :  1 - c
+    elseif string    c : complementary resolvedcolor(c)
+        fi
+enddef ;
 
 vardef complemented expr c =
     save m ;
         if cmykcolor c : m := max(cyanpart c, magentapart c, yellowpart c, blackpart c) ;
-                         ( (m,m,m,m) -
+                         (m,m,m,m) - c
     elseif rgbcolor  c : m := max(redpart c, greenpart c, bluepart c) ;
-                         ( (m,m,m) -
+                         (m,m,m) - c
     elseif pair      c : m := max(xpart c, ypart c) ;
-                         ( (m,m) -
-    elseif numeric   c : ( m -
-        fi c )
+                         (m,m) - c
+    elseif numeric   c : m - c
+    elseif string    c : complemented resolvedcolor(c)
+        fi
 enddef ;
 
 %D Well, this is the dangerous and naive version:
@@ -971,6 +1078,56 @@ primarydef p randomshifted s =
     endgroup
 enddef ;
 
+vardef mfun_randomized_path(expr p,s) =
+    for i=0 upto length(p)-1 :
+         (point       i    of p) .. controls
+        ((postcontrol i    of p) randomshifted s) and
+        ((precontrol (i+1) of p) randomshifted s) ..
+    endfor
+    if cycle p :
+        cycle
+    else :
+        (point length(p) of p)
+    fi
+enddef;
+
+vardef mfun_randomized_picture(expr p,s)(text rnd) =
+    save currentpicture ;
+    picture currentpicture ;
+    currentpicture := nullpicture ;
+    for i within p :
+        addto currentpicture
+            if stroked i :
+                doublepath pathpart i rnd s
+                dashed dashpart i
+                withpen penpart i
+                withcolor colorpart i
+                withprescript prescriptpart i
+                withpostscript postscriptpart i
+            elseif filled i :
+                contour pathpart i rnd s
+                withpen penpart i
+                withcolor colorpart i
+                withprescript prescriptpart i
+                withpostscript postscriptpart i
+            else :
+                also i
+            fi
+        ;
+    endfor ;
+    currentpicture
+enddef ;
+
+primarydef p randomizedcontrols s = (
+    if path p :
+        mfun_randomized_path(p,s)
+    elseif picture p :
+        mfun_randomized_picture(p,s)(randomizedcontrols)
+    else :
+        p randomized s
+    fi
+) enddef ;
+
 primarydef p randomized s = (
     if path p :
         for i=0 upto length(p)-1 :
@@ -1014,7 +1171,12 @@ primarydef p randomized s = (
         else :
             ((uniformdeviate s) * p)
         fi
+    elseif string p :
+        (resolvedcolor(p)) randomized s
+    elseif picture p :
+        mfun_randomized_picture(p,s)(randomized)
     else :
+      % p - s/2 + uniformdeviate s % would have been better but we want to be positive
         p + uniformdeviate s
     fi
 ) enddef ;
@@ -1163,6 +1325,15 @@ vardef arrowheadonpath (expr p, s) =
     autoarrows := true ;
     set_ahlength(scaled ahfactor) ; % added
     arrowhead p if s < 1 : cutafter (point (s*arclength(p) + (ahlength/2)) on p) fi
+enddef ;
+
+def resetarrows =
+    hide (
+        ahlength  := 4 ;
+        ahangle   := 45 ;
+        ahvariant := 0 ;
+        ahdimple  := 1/5 ;
+    )
 enddef ;
 
 %D Points.
@@ -1384,13 +1555,12 @@ extra_beginfig := extra_beginfig & " miterlimit  := 10 ; "   ; % restores
 extra_beginfig := extra_beginfig & " linejoin := rounded ; " ; % restores
 extra_beginfig := extra_beginfig & " linecap  := rounded ; " ; % restores
 
-%D Normally, arrowheads don't scale well. So we provide a
-%D hack.
+%D Normally, arrowheads don't scale well. So we provide a hack.
 
 boolean autoarrows ; autoarrows := false ;
 numeric ahfactor   ; ahfactor   := 2.5 ;
 
-def set_ahlength (text t) =
+def set_ahlength (text t) = % called to often
   % ahlength := (ahfactor*pen_size(_op_ t)) ; % _op_ added
   % problem: _op_ can contain color so a no-go, we could apply the transform
   % but i need to figure out the best way (fakepicture and take components).
@@ -1413,31 +1583,158 @@ vardef arrowpath expr p = % patch by Peter Rolf: supports squared pen and shifti
     ))
 enddef;
 
-% def _finarr text t =
-%     if autoarrows : set_ahlength (t) fi ;
-%     draw     arrowpath _apth t ; % arrowpath added
-%     filldraw arrowhead _apth t ;
-% enddef;
+% New experimental extension: also handling pictures:
+%
+% drawarrow fullsquare scaled 2cm withcolor green ;
+% drawarrow fullcircle scaled 3cm withcolor green ;
+% drawarrow image (
+%     draw fullsquare scaled 4cm withcolor red ;
+%     draw fullcircle scaled 5cm withcolor blue ;
+% ) ;
+% currentpicture := currentpicture shifted (-bbwidth(currentpicture)-1cm,0) ;
+% drawdblarrow fullsquare scaled 2cm withcolor green ;
+% drawdblarrow fullcircle scaled 3cm withcolor green ;
+% drawdblarrow image (
+%     draw fullsquare scaled 4cm withcolor red ;
+%     draw fullcircle scaled 5cm withcolor blue ;
+% ) ;
 
-% def _finarr text t =
-%     if autoarrows : set_ahlength (t) fi ;
-%     draw arrowpath _apth t ; % arrowpath added
-%     fill arrowhead _apth t ;
-%     draw arrowhead _apth t ;
-% enddef;
+vardef stroked_paths(expr p) =
+    save n ; numeric n ; n := 0 ;
+    for i within p :
+        if stroked i :
+            n := n + 1 ;
+        fi
+    endfor ;
+    n
+enddef ;
 
-% def _finarr text t =
-%     if autoarrows : set_ahlength (t) fi ;
-%     draw arrowpath _apth t ; % arrowpath added
-%     fill arrowhead _apth t ;
-%     draw arrowhead _apth t undashed ;
-% enddef;
+def mfun_decoration_i expr i =
+    withpen penpart i
+    withcolor colorpart i
+    withprescript prescriptpart i
+    withpostscript postscriptpart i
+enddef ;
 
-def _finarr text t =
-    if autoarrows : set_ahlength (t) fi ;
-    draw arrowpath _apth t ; % arrowpath added
-    fillup arrowhead _apth t ;
-enddef;
+% We could collapse all in one helper but in context we nowaways don't want
+% the added obscurity. Tokens come cheap.
+
+numeric mfun_arrow_snippets ;
+numeric mfun_arrow_count ;
+
+def drawarrow expr p =
+    begingroup ;
+    save mfun_arrow_path ;
+    path mfun_arrow_path ;
+    if path p :
+        mfun_arrow_path := p ;
+        expandafter mfun_draw_arrow_path
+    elseif picture p :
+        save mfun_arrow_picture ;
+        picture mfun_arrow_picture ;
+        mfun_arrow_picture := p ;
+        expandafter mfun_draw_arrow_picture
+    else :
+        expandafter mfun_draw_arrow_nothing
+    fi
+enddef ;
+
+def drawdblarrow expr p =
+    begingroup ;
+    save mfun_arrow_path ;
+    path mfun_arrow_path ;
+    if path p :
+        mfun_arrow_path := p ;
+        expandafter mfun_draw_arrow_path_double
+    elseif picture p :
+        save mfun_arrow_picture ;
+        picture mfun_arrow_picture ;
+        mfun_arrow_picture := p ;
+        expandafter mfun_draw_arrow_picture_double
+    else :
+        expandafter mfun_draw_arrow_nothing
+    fi
+enddef ;
+
+def mfun_draw_arrow_nothing text t =
+enddef ;
+
+% The path is shortened so that the arrow head extends it to the original
+% length. In case of a double arrow the path gets shortened twice.
+
+def mfun_draw_arrow_path text t =
+    if autoarrows :
+        set_ahlength(t) ;
+    fi
+    draw arrowpath mfun_arrow_path t ;
+    fillup arrowhead mfun_arrow_path t ;
+    endgroup ;
+enddef ;
+
+def mfun_draw_arrow_path_double text t =
+    if autoarrows :
+        set_ahlength(t) ;
+    fi
+    draw arrowpath (reverse arrowpath mfun_arrow_path) t ;
+    fillup arrowhead mfun_arrow_path t ;
+    fillup arrowhead reverse mfun_arrow_path t ;
+    endgroup ;
+enddef ;
+
+% The picture variant is not treating each path but only the first and
+% last path. This can be somewhat counterintuitive but is needed for Alan's
+% macros. So here the last and in case of a double path first paths in a
+% picture get the shortening.
+
+def mfun_with_arrow_picture (text t) =
+    mfun_arrow_count := 0 ;
+    mfun_arrow_snippets := stroked_paths(mfun_arrow_picture) ;
+    for i within mfun_arrow_picture :
+        if stroked i :
+            mfun_arrow_count := mfun_arrow_count + 1 ;
+            mfun_arrow_path := pathpart i ;
+            t
+        fi ;
+    endfor ;
+enddef ;
+
+def mfun_draw_arrow_picture text t =
+    if autoarrows :
+        set_ahlength(t) ;
+    fi
+    mfun_with_arrow_picture (
+        if mfun_arrow_count = mfun_arrow_snippets :
+            draw arrowpath mfun_arrow_path mfun_decoration_i i t ;
+            fillup arrowhead mfun_arrow_path mfun_decoration_i i t ;
+        else :
+            draw mfun_arrow_path mfun_decoration_i i t ;
+        fi ;
+    )
+    endgroup ;
+enddef ;
+
+def mfun_draw_arrow_picture_double text t =
+    if autoarrows :
+        set_ahlength(t) ;
+    fi
+    mfun_with_arrow_picture (
+        draw
+            if mfun_arrow_count = 1 :
+                arrowpath reverse
+            fi
+            if mfun_arrow_count = mfun_arrow_snippets :
+                arrowpath
+            fi
+            mfun_arrow_path mfun_decoration_i i t ;
+        if mfun_arrow_count = 1 :
+            fillup arrowhead reverse mfun_arrow_path mfun_decoration_i i t ;
+        fi
+        if mfun_arrow_count = mfun_arrow_snippets :
+            fillup arrowhead mfun_arrow_path mfun_decoration_i i t ;
+        fi
+    )
+    endgroup ;
+enddef ;
 
 %D Handy too ......
 
@@ -1487,9 +1784,7 @@ enddef ;
 
 %D To be documented.
 
-path freesquare ;
-
-freesquare := (
+path freesquare ; freesquare := (
     (-1,0) -- (-1,-1) -- (0,-1) -- (+1,-1) --
     (+1,0) -- (+1,+1) -- (0,+1) -- (-1,+1) -- cycle
 ) scaled .5 ;
@@ -1637,7 +1932,7 @@ enddef ;
 
 % nice: currentpicture := inverted currentpicture ;
 
-primarydef p uncolored c =
+primarydef p uncolored c = % not complete ... needs text and scripts and ...
     if color p :
         c - p
     else :
@@ -1699,6 +1994,8 @@ vardef grayed primary p =
         tripled(.30*(1-cyanpart i)+.59*(1-magentapart i)+.11*(1-yellowpart i)+blackpart i)
     elseif greycolor p :
         p
+    elseif string p :
+        grayed resolvedcolor(p)
     elseif picture p :
         image (
             for i within p :
@@ -1854,14 +2151,16 @@ inner end ;
 
 % this will be redone (when needed) using scripts and backend handling
 
-let normalwithcolor = withcolor ;
+let mfun_remap_colors_normalwithcolor = normalwithcolor ;
 
 def remapcolors =
-    def withcolor primary c = normalwithcolor remappedcolor(c) enddef ;
+    def normalwithcolor primary c =
+        mfun_remap_colors_normalwithcolor remappedcolor(c)
+    enddef ;
 enddef ;
 
 def normalcolors =
-    let withcolor = normalwithcolor ;
+    let normalwithcolor = mfun_remap_colors_normalwithcolor ;
 enddef ;
 
 def resetcolormap =
@@ -1912,7 +2211,7 @@ def reprocess suffix p = p := repathed (22,p) enddef ; % no attributes
 vardef repathed (expr mode, p) text t =
     begingroup ;
     if mode = 0 :
-        save withcolor ;
+        save normalwithcolor ;
         remapcolors ;
     fi ;
     save _p_, _pp_, _ppp_, _f_, _b_, _t_ ;
@@ -2138,8 +2437,22 @@ vardef mfun_straightened(expr sign, p) =
     _q_
 enddef ;
 
+% vardef mfun_straightened(expr sign, p) =
+%     save lp, lq, q ; path q ; q := p ;
+%     lp := length(p) ;
+%     forever :
+%         q := mfun_do_straightened(sign,q) ;
+%         lq := length(q) ;
+%         exitif lp = lq ;
+%         lp := lq ;
+%     endfor ;
+%     q
+% enddef ;
+
+% can be optimized:
+
 vardef mfun_do_straightened(expr sign, p) =
-    if length(p)>2 : % was 1, but straight lines are ok
+    if length(p) > 2 : % was 1, but straight lines are ok
         save pp ; path pp ;
         pp := point 0 of p ;
         for i=1 upto length(p)-1 :
@@ -2149,10 +2462,10 @@ vardef mfun_do_straightened(expr sign, p) =
         endfor ;
         save n, ok ; numeric n ; boolean ok ;
         n := length(pp) ; ok := false ;
-        if n>2 :
-            for i=0 upto n : % evt hier ook round
+        if n > 2 :
+            for i=0 upto n :
                 if unitvector(round(point i of pp - point if i=0 : n else : i-1 fi of pp)) <>
-                        sign * unitvector(round(point if i=n : 0 else : i+1 fi of pp - point i of pp)) :
+            sign * unitvector(round(point if i=n : 0 else : i+1 fi of pp - point i of pp)) :
                     if ok :
                         --
                     else :
@@ -2198,7 +2511,7 @@ vardef unspiked expr p = (
 path originpath ; originpath := origin -- cycle ;
 
 vardef unitvector primary z =
-    if abs z = abs origin : z else : z/abs z fi
+    if abs z = abs origin : z else : z/abs z fi % hm, abs origin is just origin
 enddef;
 
 % also new
@@ -2523,7 +2836,41 @@ vardef undecorated (text imagedata) text decoration =
     currentpicture
 enddef ;
 
-if metapostversion < 1.770  :
+% if metapostversion < 1.770  :
+%
+%     vardef decorated (text imagedata) text decoration =
+%         save mfun_decorated_path, currentpicture ;
+%         picture mfun_decorated_path, currentpicture ;
+%         currentpicture := nullpicture ;
+%         imagedata ;
+%         mfun_decorated_path := currentpicture ;
+%         currentpicture := nullpicture ;
+%         for i within mfun_decorated_path :
+%             addto currentpicture
+%                 if stroked i :
+%                     doublepath pathpart i
+%                     dashed dashpart i
+%                     withpen penpart i
+%                     withcolor colorpart i
+%                     decoration
+%                 elseif filled i :
+%                     contour pathpart i
+%                     withpen penpart i
+%                     withcolor colorpart i
+%                     decoration
+%                 elseif textual i :
+%                     also i
+%                     withcolor colorpart i
+%                     decoration
+%                 else :
+%                     also i
+%                 fi
+%             ;
+%         endfor ;
+%         currentpicture
+%     enddef ;
+%
+% else:
 
     vardef decorated (text imagedata) text decoration =
         save mfun_decorated_path, currentpicture ;
@@ -2539,40 +2886,6 @@ if metapostversion < 1.770  :
                     dashed dashpart i
                     withpen penpart i
                     withcolor colorpart i
-                    decoration
-                elseif filled i :
-                    contour pathpart i
-                    withpen penpart i
-                    withcolor colorpart i
-                    decoration
-                elseif textual i :
-                    also i
-                    withcolor colorpart i
-                    decoration
-                else :
-                    also i
-                fi
-            ;
-        endfor ;
-        currentpicture
-    enddef ;
-
-else:
-
-    vardef decorated (text imagedata) text decoration =
-        save mfun_decorated_path, currentpicture ;
-        picture mfun_decorated_path, currentpicture ;
-        currentpicture := nullpicture ;
-        imagedata ;
-        mfun_decorated_path := currentpicture ;
-        currentpicture := nullpicture ;
-        for i within mfun_decorated_path :
-            addto currentpicture
-                if stroked i :
-                    doublepath pathpart i
-                    dashed dashpart i
-                    withpen penpart i
-                    withcolor colorpart i
                     withprescript prescriptpart i
                     withpostscript postscriptpart i
                     decoration
@@ -2597,7 +2910,7 @@ else:
         currentpicture
     enddef ;
 
-fi ;
+% fi ;
 
 vardef redecorated (text imagedata) text decoration =
     save mfun_decorated_path, currentpicture ;
@@ -2726,4 +3039,431 @@ enddef;
 
 extra_endfig := extra_endfig & "mfun_apply_max_dimensions ;" ;
 
+%D Bonus shapes (need along):
+
+path unittriangle, fulltriangle ; % not really units but circle based
+
+unittriangle := point 0   along unitcircle
+             -- point 1/3 along unitcircle
+             -- point 2/3 along unitcircle
+             -- cycle ;
+fulltriangle := point 0   along fullcircle
+             -- point 1/3 along fullcircle
+             -- point 2/3 along fullcircle
+             -- cycle ;
+
+%D Kind of special and undocumented. On Wikipedia one can find examples
+%D of quick sort routines. Here we have a variant that permits a
+%D method.
+
+% vardef listsize(suffix list) =
+%     numeric len ; len := 0 ;
+%     forever :
+%         exitif unknown list[len+1] ;
+%         len := len + 1 ;
+%     endfor ;
+%     len
+% enddef ;
+
+vardef listsize(suffix list) =
+    numeric len ; len := 1 ;
+    forever :
+        exitif unknown list[len] ;
+        len := len + 1 ;
+    endfor ;
+    len if unknown list[0] : - 1 fi
+enddef ;
+
+vardef listlast(suffix list) =
+    numeric len ; len := if known list[0] : 0 else : 1 fi  ;
+    forever :
+        len := len + 1 ;
+        exitif unknown list[len] ;
+    endfor ;
+    len - 1
+enddef ;
+
+vardef mfun_quick_sort(suffix list)(expr _min_, _max_)(text what) =
+    save l, r, m ;
+    numeric l ; l := _min_ ;
+    numeric r ; r := _max_ ;
+    numeric m ; m := floor(.5[_min_,_max_]) ;
+    _mid_ := what list[m] ;
+    forever :
+        exitif l >= r ;
+        forever :
+            exitif l > _max_ ;
+          % exitif (what list[l]) >= (what list[m]) ;
+            exitif (what list[l]) >= _mid_ ;
+            l := l + 1 ;
+        endfor ;
+        forever :
+            exitif r < _min_ ;
+          % exitif (what list[m]) >= (what list[r]) ;
+            exitif _mid_ >= (what list[r]) ;
+            r := r - 1 ;
+        endfor ;
+        if l <= r :
+          temp := list[l] ;
+          list[l] := list[r] ;
+          list[r] := temp ;
+          l := l + 1 ;
+          r := r - 1 ;
+        fi ;
+    endfor ;
+    if _min_ < r :
+        mfun_quick_sort(list)(_min_,r)(what) ;
+    fi ;
+    if l < _max_ :
+        mfun_quick_sort(list)(l,_max_)(what) ;
+    fi ;
+enddef ;
+
+vardef sortlist(suffix list)(text what) =
+    save _max_ ; numeric _max_ ;
+    save _mid_ ; numeric _mid_ ;
+    save temp ;
+  % _max_ := listsize(list) ;
+    _max_ := listlast(list) ;
+    if pair list[_max_] :
+        pair temp ;
+    else :
+        numeric temp ;
+    fi ;
+    if pair what list[_max_] :
+        pair _mid_ ;
+    else :
+        numeric _mid_ ;
+    fi ;
+    if _max_ > 1 :
+      % mfun_quick_sort(list)(1,_max_)(what) ;
+        mfun_quick_sort(list)(if known list[0] : 0 else : 1 fi,_max_)(what) ;
+    fi ;
+enddef ;
+
+vardef uniquelist(suffix list) =
+    % this one will be defined later
+enddef ;
+
+vardef copylist(suffix list, target) =
+    save i ; i := 1 ;
+    forever :
+        exitif unknown list[i] ;
+        target[i] := list[i] ;
+        i := i + 1 ;
+    endfor ;
+enddef ;
+
+vardef listtolines(suffix list) =
+    list[1] for i=2 upto listsize(list) : -- list[i] endfor
+enddef ;
+
+vardef listtocurves(suffix list) =
+    list[1] for i=2 upto listsize(list) : .. list[i] endfor
+enddef ;
+
+%D The sorter is used in:
+
+% not yet ok
+
+vardef shapedlist(suffix p) = % takes a list of paths
+    save l ; pair l[] ;
+    save r ; pair r[] ;
+    save i ; i := 1 ;
+    save n ; n := 0 ;
+    forever :
+        exitif unknown p[i] ;
+        n := n + 1 ;
+        l[n] := ulcorner p[i] ;
+        r[n] := urcorner p[i] ;
+        n := n + 1 ;
+        l[n] := llcorner p[i] ;
+        r[n] := lrcorner p[i] ;
+        i := i + 1 ;
+    endfor ;
+    for i = 3 upto n :
+        if xpart r[i] < xpart r[i-1] :
+            r[i] := (xpart r[i],ypart r[i-1]) ;
+        elseif xpart r[i] > xpart r[i-1] :
+            r[i-1] := (xpart r[i-1],ypart r[i]) ;
+        fi ;
+        if xpart l[i] < xpart l[i-1] :
+            l[i-1] := (xpart l[i-1],ypart l[i]) ;
+        elseif xpart l[i] > xpart l[i-1] :
+            l[i] := (xpart l[i],ypart l[i-1]) ;
+        fi ;
+    endfor ;
+    if n > 0 :
+        simplified (
+            for i = 1 upto   n : r[i] -- endfor
+            for i = n downto 1 : l[i] -- endfor
+            cycle
+        )
+    else :
+        origin -- cycle
+    fi
+enddef ;
+
+%D Dumping is fake anyway but let's keep this:
+
 let dump = relax ;
+
+%D Loading modules can be done with:
+
+def loadmodule expr name = % no vardef
+    % input can't be used directly in a macro
+    if unknown scantokens("context_" & name) :
+        save s ; string s ;
+      % s := "mp-" & name & ".mpiv" ;
+      % message("loading module",s) ;
+      % s := "input " & s ;
+        s := "input " & "mp-" & name & ".mpiv" ;
+        expandafter scantokens expandafter s
+    fi ;
+enddef ;
+
+%D Handy for backgrounds:
+
+def drawpathwithpoints expr p =
+    do_drawpathwithpoints(p)
+enddef ;
+
+def do_drawpathwithpoints(expr p) text t =
+    draw p t ;
+    if length(p) > 2 :
+        begingroup ;
+        save _c_ ; path _c_ ;
+        save _p_; picture _p_ ;
+        _p_ := image (
+            _c_ := if cycle p : fullsquare else : fullcircle fi scaled 6pt ;
+            for i=0 upto length(p) if cycle p : -1 fi :
+                fill _c_ shifted point i of p withcolor white ;
+                draw _c_ shifted point i of p withcolor white/2 withpen pencircle scaled .5pt ;
+                if (i = 0) and cycle p :
+                    _c_ := fullcircle scaled 6pt ;
+                fi ;
+            endfor ;
+            for i=0 upto length(p) if cycle p : -1 fi :
+                draw textext("\infofont " & decimal i) ysized 2pt shifted point i of p ;
+            endfor ;
+        ) ;
+        setbounds _p_ to boundingbox p ;
+        draw _p_ ;
+    fi ;
+enddef ;
+
+%D These new helpers are by Alan and are used in for instance the mp-node
+%D module.
+
+newinternal crossingdebug     ; crossingdebug     := 0 ;
+newinternal crossingscale     ; crossingscale     := 10 ;
+newinternal crossingnumbermax ; crossingnumbermax := 1000 ;
+
+% primary, secondary or tertiary? always hard to decide but primary makes sense
+
+vardef infotext@#(expr txt, ysize) =
+    textext@#("\infofont " & if numeric txt : decimal fi txt) ysized ysize
+enddef ;
+
+primarydef p crossingunder q =
+    begingroup
+    save pic ; picture pic ; pic := nullpicture ;
+    if picture p :
+        for i within p :
+            if stroked i :
+                addto pic also image(draw pathpart i crossingunder q) ;
+            fi
+        endfor
+    elseif path p :
+        save n, t, a, b, c, r, bcuttings, hold ;
+        numeric n, t[], hold ;
+        path a, b, c, r, bcuttings, hold[] ;
+        c := makepath(currentpen scaled crossingscale) ;
+        r := if picture q : boundingbox fi q ;
+        t[0] := n := hold := 0 ;
+        a := p ;
+        % The cutbefore/cutafter using c below prevents endless loops!
+       %forever : % find all intersections
+        for i=1 upto crossingnumbermax : % safeguard
+            clearxy ; z = a intersectiontimes r ;
+            if x < 0 :
+                exitif hold < 1 ;
+                a := hold[hold] ; hold := hold - 1 ;
+                clearxy ; z = a intersectiontimes r ;
+            fi
+            (t[incr n], whatever) = p intersectiontimes point x of a ;
+            if x = 0 :
+                a := a cutbefore c shifted point x of a ;
+            elseif x = length a :
+                a := a cutafter  c shifted point x of a ;
+            else : % before or after?
+                b := subpath (0,x)        of a cutafter  c shifted point x of a ;
+                bcuttings := cuttings ;
+                a := subpath (x,length a) of a cutbefore c shifted point x of a ;
+                clearxy ; z = a intersectiontimes r ;
+                if x < 0 :
+                    a := b ;
+                    cuttings := bcuttings ;
+                else :
+                    if length bcuttings > 0 :
+                        clearxy ; z = b intersectiontimes r ;
+                        if x >= 0 :
+                            hold[incr hold] := b ;
+                        fi
+                    fi
+                fi
+            fi
+            if length cuttings = 0 : % a single point: nothing cut
+                exitif hold < 1 ;
+                a := hold[hold] ; hold := hold - 1 ;
+            fi
+            if i = crossingnumbermax :
+                message("crossingunder reached maximum " & decimal i &
+                        " intersections.");
+            fi
+        endfor
+
+        if n = 0 : % No crossings, we return the PATH
+            save pic ; path pic ; pic := p ;
+        else : % n>0
+            sortlist(t,) ;
+            % we add too much, maybe a test is needed
+            t[incr n] = length p if cycle p : + t[1] fi ;
+% save tt[] ; numeric tt[] ; uniquelist(t,tt) ; t := tt ;
+            % Now, n>1 !
+            % t[0] is the first point of the path and t[n] is the last point
+            % (or the first intersection beyond the length if cyclic)
+            save m ; m := 0 ;
+            for i=if cycle p: 2 else: 1 fi upto n :
+                % skip the first segment if cyclic
+                % as it gets repeated (fully) at the end.
+                if crossingdebug > 0 :
+                    if crossingdebug = 1 :
+                        addto pic doublepath c shifted point t[i] of p
+                        withpen currentpen withtransparency(1,.5) ;
+                    elseif crossingdebug = 2 :
+                        addto pic also
+                        infotext (incr m,crossingscale/5)
+                        shifted point t[i] of p ;
+                    fi
+                fi
+                a := subpath (t[i-1],t[i]) of p
+                    if i > 1 :
+                        cutbefore (c shifted point t[i-1] of p)
+                    fi
+                    if (i < n) or (cycle p) :
+                        cutafter  (c shifted point t[i]   of p)
+                    fi ;
+                if (not picture q) or (a outsideof q) :
+                    addto pic doublepath a withpen currentpen ;
+                fi
+            endfor
+        fi
+    fi
+    pic
+    endgroup
+enddef ;
+
+primarydef p insideof q =
+    begingroup
+        save pth, pic, t ;
+        path pth ; picture pic ;
+        pic := if path q : image(draw q;) else : q fi ;
+        pth := p -- center pic ;
+        (t, whatever) = pth intersectiontimes boundingbox pic ;
+        t < 0
+    endgroup
+enddef ;
+
+% primarydef p insideof q =
+%     if (path q or picture q) :
+%         if (path p or picture p) :
+%             (xpart llcorner p > xpart llcorner q) and
+%             (xpart urcorner p < xpart urcorner q) and
+%             (ypart llcorner p > ypart llcorner q) and
+%             (ypart urcorner p < ypart urcorner q)
+%         elseif pair p  :
+%             (xpart p > xpart llcorner q) and
+%             (xpart p < xpart urcorner q) and
+%             (ypart p > ypart llcorner q) and
+%             (ypart p < ypart urcorner q)
+%         fi
+%     elseif (numeric p and pair q) :
+%         % range check
+%         (p >= xpart q) and (p <= ypart q)
+%     else : % maybe triplets and such
+%         false
+%     fi
+% enddef ;
+
+primarydef p outsideof q =
+    not (p insideof q)
+enddef ;
+
+%D Also handy:
+
+vardef circularpath primary n =
+    reverse (for i=0 step 2/n until 8-2/n+2eps: point i of fullcircle .. endfor cycle) rotated 90
+enddef ;
+
+vardef squarepath primary n =
+    for i=0 step 1/n until 4-1/n + 2eps: point i of fullsquare -- endfor cycle
+enddef ;
+
+vardef linearpath primary n =
+    origin for i=1/n step 1/n until 1-1/n + 2eps: -- point i of (origin--(1,0)) endfor
+enddef ;
+
+%D  A nice tracing helper:
+
+color       pensilcolor ; pensilcolor := .5red ;
+newinternal pensilstep  ; pensilstep  := 1/25 ;
+
+vardef pensilled(expr p, q) =
+    image (
+        draw p withcolor pensilcolor withpen q ;
+        for i = 0 step pensilstep until length(p) + eps:
+            draw point i of p withcolor white withtransparency (1,.5) withpen q ;
+        endfor ;
+    )
+enddef ;
+
+%D Easy to forget but handy for manuals:
+
+vardef tolist(suffix l)(text t) =
+    save n ; n := 1 ;
+    for p = t :
+        if numeric p :
+            n := p ;
+            dispose(l[n])
+        elseif pair p :
+            l[n] := p ;
+            n := n + 1 ;
+        elseif path p :
+            for i=0 step 1 until length(p) :
+                l[n] := point i of p ;
+                n := n + 1 ;
+            endfor ;
+        else :
+            % ignore
+        fi ;
+    endfor ;
+    forever :
+        exitif unknown l[n] ;
+        dispose(l[n])
+        n := n + 1 ;
+    endfor ;
+enddef ;
+
+vardef topath(suffix p)(text t) =
+    save i ; i := if known p[1] : 2 ; p[1] elseif known p[0] : 1 ; p[0] else : 0 ; origin fi
+    forever :
+        exitif unknown p[i] ;
+        t p[i]
+        hide(i := i + 1)
+    endfor
+enddef ;
+
+vardef tocycle(suffix p)(text t) =
+    topath(p,t) t cycle
+enddef ;

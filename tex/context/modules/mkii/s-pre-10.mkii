@@ -1,0 +1,308 @@
+%D \module
+%D   [      file=s-pre-10,
+%D        version=unknown,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment 10,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This style is derived from the ninth style, which was
+%D used first at \EUROTEX\ 99 and later at \TUG\ 2000. This
+%D alternative build up a page.
+
+\startmode [demo]
+  \disablemode[demo] \usemodule[pre-09] \enablemode[demo]
+\stopmode
+
+\startnotmode [demo]
+  \usemodule[pre-09]
+\stopnotmode
+
+%D We use blue colors instead of yellow ones. Since we have
+%D used symbolic names, we can easily overload the existing
+%D scheme.
+
+\definecolor[LineColor][r=.40,g=.40,b=1.00]
+
+%D Here we don't use fixed dimensions, but fit the sample
+%D windows and derive the text windows's width from this one.
+
+\setupframedtexts
+  [SampleText]
+  [width=fit,height=fit,
+   background={background,nextpage}]
+
+%D The topic goes to the top right corner of the screen which
+%D means that it is positioned left down to the reference
+%D point. Watch how we make data on this layer (here only
+%D the topic but it can be more) persistent.
+
+\setuplayer
+  [topic]
+  [y=0pt,x=\makeupwidth,location=lb,state=repeat,
+   hoffset=-\FrameSkip,voffset=\FrameSkip]
+
+%D Clicking on the page brings us back.
+
+\setupbackgrounds
+  [page]
+  [background={previouspage,color,topic}]
+
+%D All layers end up on the text area. This could have been
+%D the page area too since these have the same dimensions.
+
+\setupbackgrounds
+  [text]
+  [background={common,sample,text}]
+
+%D Because we build up the text window step by step, we will
+%D separate the entries by white space.
+
+\startsetups [always]
+  \setupwhitespace[big]
+  \setupblank[big]
+\stopsetups
+
+%D The \type {\Topic} commands can be simplified to:
+
+\def\Topic#1%
+  {\resetlayer[topic]
+   \setlayer[topic]{\bfb\setstrut\color[TextColor]{#1}}}
+
+%D We also provide a way to erase the topic.
+
+\def\NoTopic
+  {\resetlayer[topic]}
+
+%D We have to redefine the structuring commands to support
+%D the resetting of buffer counters.
+
+\newcounter\TextN
+
+\def\StartSample
+  {\doglobal\newcounter\TextN
+   \dostartbuffer[sample][StartSample][StopSample]}
+
+\def\StartText
+  {\doglobal\newcounter\TextN
+   \dostartbuffer[text][StartText][StopText]}
+
+\def\StartSubText
+  {\doglobal\increment\TextN
+   \dostartbuffer[text-\TextN][StartSubText][StopSubText]}
+
+\def\StopText
+  {\startstandardmakeup
+     \DoSampleText{text}{common}{nextpage}
+   \stopstandardmakeup}
+
+\def\StopSubText
+  {\startstandardmakeup
+     \DoSampleText{text}{common}{nextpage}
+   \stopstandardmakeup}
+
+%D The \type {\DoSampleText} command is adapted to support
+%D addition of subtexts (each subtext goes into its own
+%D buffer).
+
+\def\DoSampleText#1#2#3%
+  {\setupframedtexts[SampleText][background={background,#3}]
+   \bgroup
+   \setups[#1]%
+   \setups[always]%
+   \setbox\nextbox=\hbox
+     {\startSampleText[none]
+        \getbuffer[#1]\par
+        \doif{#1}{text}
+          {\dorecurse{\TextN}{\getbuffer[text-\recurselevel]\par}}
+      \stopSampleText}
+   \xdef\SampleTextWidth{\the\wd\nextbox}
+   \setlayer[#2]{\box\nextbox}%
+   \egroup}
+
+%D Since we are no longer swapping windows, we end up with a
+%D much simplier \type {\Stopidea} macro. We don't reset
+%D samples at the inner level.
+
+\def\StartIdea%
+  {\bgroup
+   \let\StopSample \relax
+   \let\StopText   \relax
+   \let\StopSubText\relax
+   \def\StartSample{\dostartbuffer[sample][StartSample][StopSample]}}
+
+\def\StopIdea%
+  {\startstandardmakeup
+     \DoSampleText{sample}{sample}{nextpage}
+     \SetTextWidth
+     \DoSampleText{text}  {text}  {nextpage}
+   \stopstandardmakeup
+   \egroup}
+
+%D Here we determine the width of the text window. It is
+%D derived from the width of the sample and stays the same
+%D within a sequence.
+
+\def\SetTextWidth
+  {\ifnum\TextN<1 % yes or no, may change
+     \scratchdimen=\makeupwidth
+     \advance\scratchdimen by -\SampleTextWidth
+     \advance\scratchdimen by  \FrameSkip
+     \xdef\SampleWidth{\the\scratchdimen}%
+   \fi
+   \setupframedtexts
+     [SampleText]
+     [width=\SampleWidth]}
+
+%D We use the (already implemented) second alternative of
+%D the titlepage graphic. Please don't change this.
+
+\defineoverlay[joke] [\useMPgraphic{joke}{n=1}] % not to be changed !
+
+\doifnotmode{demo}{\endinput}
+
+%D The demo section. The original presentation uses proper
+%D graphics and has better spacing.
+
+\def\SomeSymbol#1#2{\definedfont[ContextNavigation at #1]\char#2}
+
+\setupcombinations[distance=\FrameOffset,inbetween=\vskip\FrameOffset]
+
+\starttext
+
+\TitlePage{Some Famous Symbols}
+
+\Topic{Symbols}
+
+\StartSample
+  \startcombination[2*2]
+    {\SomeSymbol{5cm}{1}} {}
+    {\SomeSymbol{5cm}{3}} {}
+    {\SomeSymbol{5cm}{2}} {}
+    {\SomeSymbol{5cm}{4}} {}
+  \stopcombination
+\StopSample
+
+\Topic{Previous}
+
+\StartIdea
+  \StartSample
+    \SomeSymbol{7cm}{1}
+  \StopSample
+  \StartText
+    This symbol can be used to indicate a hyperlink to a
+    previous page.
+  \StopText
+\StopIdea
+
+\StartIdea
+  \StartSubText
+    As one can expect there is also a symbol for going to
+    the next page.
+  \StopSubText
+\StopIdea
+
+\Topic{Previous}
+
+\StartIdea
+  \StartSample
+    \SomeSymbol{9cm}{2}
+  \StopSample
+  \StartText
+     This symbol is actually just a mirrored version of the
+     first symbol we showed.
+  \StopText
+\StopIdea
+
+\NoTopic
+
+\StartText
+  Is this nice or not?
+\StopText
+
+\Topic{First and Last}
+
+\StartSample
+  \SomeSymbol{11cm}{3}
+\StopSample
+
+\StartSample
+  \SomeSymbol{11cm}{4}
+\StopSample
+
+\StartIdea
+  \StartSample
+    \SomeSymbol{5cm}{3}
+  \StopSample
+  \StartText
+    A few screens back, we saw this symbol.
+  \StopText
+\StopIdea
+
+\StartIdea
+  \StartSubText
+    This symbol represents the beginning of something.
+  \StopSubText
+\StopIdea
+
+\StartIdea
+  \StartSample
+    \SomeSymbol{5cm}{4}
+  \StopSample
+  \StartSubText
+    Just like this one represents an end.
+  \StopSubText
+\StopIdea
+
+\StartIdea
+  \StartSubText
+    They look just like the symbols found on audio and
+    video players.
+  \StopSubText
+\StopIdea
+
+\Topic{Summary}
+
+\StartIdea
+  \StartSample
+    \SomeSymbol{6cm}{1}
+  \StopSample
+  \StartText
+    So we have a symbol for previous \unknown
+  \StopText
+\StopIdea
+
+\StartIdea
+  \StartSample
+    \SomeSymbol{6cm}{2}
+  \StopSample
+  \StartSubText
+    \unknown\ and one for next \unknown
+  \StopSubText
+\StopIdea
+
+\StartIdea
+  \StartSample
+    \SomeSymbol{6cm}{3}
+  \StopSample
+  \StartSubText
+    \unknown\ and yet another for first \unknown
+  \StopSubText
+\StopIdea
+
+\StartIdea
+  \StartSample
+    \SomeSymbol{6cm}{4}
+  \StopSample
+  \StartSubText
+    \unknown\ and of course for last.
+  \StopSubText
+\StopIdea
+
+\stoptext
+

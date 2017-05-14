@@ -14,8 +14,6 @@ local concat, unpack = table.concat, table.unpack
 local insert, remove = table.insert, table.remove
 local format, gmatch, gsub, find, match, lower, strip = string.format, string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
 local type, next, tonumber, tostring, rawget = type, next, tonumber, tostring, rawget
-local lpegmatch = lpeg.match
-local utfchar = utf.char
 
 local trace_baseinit         = false  trackers.register("otf.baseinit",         function(v) trace_baseinit         = v end)
 local trace_singles          = false  trackers.register("otf.singles",          function(v) trace_singles          = v end)
@@ -122,7 +120,7 @@ local function registerbasehash(tfmdata)
         basehash[hash] = base
     end
     properties.basehash = base
-    properties.fullname = properties.fullname .. "-" .. base
+    properties.fullname = (properties.fullname or properties.name) .. "-" .. base
  -- report_prepare("fullname base hash '%a, featureset %a",tfmdata.properties.fullname,hash)
     applied = { }
 end
@@ -227,6 +225,11 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
     local trace_alternatives = trace_baseinit and trace_alternatives
     local trace_ligatures    = trace_baseinit and trace_ligatures
 
+    if not changed then
+        changed = { }
+        tfmdata.changed = changed
+    end
+
     for i=1,#lookuplist do
         local sequence = lookuplist[i]
         local steps    = sequence.steps
@@ -234,12 +237,12 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
         if kind == "gsub_single" then
             for i=1,#steps do
                 for unicode, data in next, steps[i].coverage do
-                    if not changed[unicode] then
+                 -- if not changed[unicode] then -- fails for multiple subs in some math fonts
                         if trace_singles then
                             report_substitution(feature,sequence,descriptions,unicode,data)
                         end
                         changed[unicode] = data
-                    end
+                 -- end
                 end
             end
         elseif kind == "gsub_alternate" then
@@ -394,7 +397,8 @@ local function featuresinitializer(tfmdata,value)
             local properties        = tfmdata.properties
             local script            = properties.script
             local language          = properties.language
-            local rawfeatures       = rawdata.resources.features
+            local rawresources      = rawdata.resources
+            local rawfeatures       = rawresources and rawresources.features
             local basesubstitutions = rawfeatures and rawfeatures.gsub
             local basepositionings  = rawfeatures and rawfeatures.gpos
             --

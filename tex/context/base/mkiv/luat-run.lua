@@ -23,13 +23,19 @@ local report_tempfiles = logs.reporter("resolvers","tempfiles")
 luatex       = luatex or { }
 local luatex = luatex
 
+if not luatex.synctex then
+    luatex.synctex = table.setmetatableindex(function() return function() end end)
+end
+
 local startactions = { }
 local stopactions  = { }
 local dumpactions  = { }
+local pageactions  = { }
 
 function luatex.registerstartactions(...) insert(startactions, ...) end
 function luatex.registerstopactions (...) insert(stopactions,  ...) end
 function luatex.registerdumpactions (...) insert(dumpactions,  ...) end
+function luatex.registerpageactions (...) insert(pageactions,  ...) end
 
 local function start_run()
     if logs.start_run then
@@ -63,6 +69,10 @@ end
 
 local function stop_shipout_page()
     logs.stop_page_number()
+    for i=1,#pageactions do
+        pageactions[i]()
+    end
+    luatex.synctex.flush()
 end
 
 local function report_output_pages()
@@ -113,7 +123,11 @@ function luatex.registertempfile(name,extrasuffix,keep) -- namespace might chang
         name = name .. ".mkiv-tmp" -- maybe just .tmp
     end
     if trace_temp_files and not tempfiles[name] then
-        report_tempfiles("registering temporary file %a",name)
+        if keep then
+            report_tempfiles("%s temporary file %a","registering",name)
+        else
+            report_tempfiles("%s temporary file %a","unregistering",name)
+        end
     end
     tempfiles[name] = keep or false
     return name
@@ -123,7 +137,7 @@ function luatex.cleanuptempfiles()
     for name, keep in next, tempfiles do
         if not keep then
             if trace_temp_files then
-                report_tempfiles("removing temporary file %a",name)
+                report_tempfiles("%s temporary file %a","removing",name)
             end
             os.remove(name)
         end
@@ -132,27 +146,6 @@ function luatex.cleanuptempfiles()
 end
 
 luatex.registerstopactions(luatex.cleanuptempfiles)
-
--- for the moment here
-
-local report_system = logs.reporter("system")
-local synctex       = 0
-
-directives.register("system.synctex", function(v)
-    synctex = tonumber(v) or (toboolean(v,true) and 1) or (v == "zipped" and 1) or (v == "unzipped" and -1) or 0
-    if synctex ~= 0 then
-        report_system("synctex functionality is enabled (%s), expect runtime overhead!",tostring(synctex))
-    else
-        report_system("synctex functionality is disabled!")
-    end
-    tex.normalsynctex = synctex
-end)
-
-statistics.register("synctex tracing",function()
-    if synctex ~= 0 then
-        return "synctex has been enabled (extra log file generated)"
-    end
-end)
 
 -- filenames
 
@@ -175,12 +168,17 @@ local total = 0
 local stack = { }
 local all   = false
 
+function luatex.currentfile()
+    return stack[#stack] or tex.jobname
+end
+
 local function report_start(left,name)
     if not left then
         -- skip
     elseif left ~= 1 then
         if all then
-            report_load("%s > %s",types[left],name or "?")
+         -- report_load("%s > %s",types[left],name or "?")
+            report_load("type %a, name %a",types[left],name or "?")
         end
     elseif find(name,"virtual://") then
         insert(stack,false)
@@ -188,7 +186,9 @@ local function report_start(left,name)
         insert(stack,name)
         total = total + 1
         level = level + 1
-        report_open("%i > %i > %s",level,total,name or "?")
+     -- report_open("%i > %i > %s",level,total,name or "?")
+        report_open("level %i, order %i, name %a",level,total,name or "?")
+        luatex.synctex.setfilename(name)
     end
 end
 
@@ -196,7 +196,8 @@ local function report_stop(right)
     if level == 1 or not right or right == 1 then
         local name = remove(stack)
         if name then
-            report_close("%i > %i > %s",level,total,name or "?")
+         -- report_close("%i > %i > %s",level,total,name or "?")
+            report_close("level %i, order %i, name %a",level,total,name or "?")
             level = level - 1
         end
     end

@@ -72,10 +72,14 @@
 
 props = props or { } -- setmetatable(props,{ __index = function(k,v) props[k] = "unknown" return "unknown" end } )
 
-local byte, lower, upper, gsub, sub, find, rep, match, gmatch, format = string.byte, string.lower, string.upper, string.gsub, string.sub, string.find, string.rep, string.match, string.gmatch, string.format
+local byte, lower, upper, gsub, sub, find, rep, match, gmatch, format, char = string.byte, string.lower, string.upper, string.gsub, string.sub, string.find, string.rep, string.match, string.gmatch, string.format, string.char
 local sort, concat = table.sort, table.concat
 
 local crlf = "\n"
+
+if not trace then
+    trace = print
+end
 
 function traceln(str)
     trace(str .. crlf)
@@ -234,22 +238,41 @@ end
 
 do
 
-    print("loading scite-ctx.lua definition file\n")
-    print("-  see scite-ctx.properties for configuring info\n")
-    print("-  ctx.spellcheck.wordpath set to " .. props['ctx.spellcheck.wordpath'])
-    if find(lower(props['ctx.spellcheck.wordpath']),"ctxspellpath") then
-        if os.getenv('ctxspellpath') then
-            print("-  ctxspellpath set to " .. os.getenv('CTXSPELLPATH'))
-        else
-            print("-  'ctxspellpath is not set")
+    local wordpath = props['ctx.spellcheck.wordpath']
+
+    if wordpath and wordpath ~= "" then
+        print("loading scite-ctx.lua definition file\n")
+        print("-  see scite-ctx.properties for configuring info\n")
+        print("-  ctx.spellcheck.wordpath set to " .. wordpath)
+        if find(lower(wordpath),"ctxspellpath") then
+            if os.getenv('ctxspellpath') then
+                print("-  ctxspellpath set to " .. os.getenv('CTXSPELLPATH'))
+            else
+                print("-  'ctxspellpath is not set")
+            end
+            print("-  ctx.spellcheck.wordpath expands to " .. expand(wordpath))
         end
-        print("-  ctx.spellcheck.wordpath expands to " .. expand(props['ctx.spellcheck.wordpath']))
+    else
+        print("-  'ctxspellpath is not set")
     end
-    print("\n-  ctx.wraptext.length is set to " .. props['ctx.wraptext.length'])
-    if props['ctx.helpinfo'] ~= '' then
+
+    local wraplength = props['ctx.wraptext.length']
+
+    if wraplength and wraplength ~= "" then
+        print("\n-  ctx.wraptext.length is set to " .. wraplength)
+    else
+        print("\n-  ctx.wraptext.length is not set")
+    end
+
+    local helpinfo = props['ctx.helpinfo']
+
+    if helpinfo and helpinfo ~= "" then
         print("\n-  key bindings:\n")
-        print((gsub(strip(props['ctx.helpinfo']),"%s*|%s*","\n")))
+        print((gsub(strip(helpinfo),"%s*|%s*","\n")))
+    else
+        print("\n-  no extra key bindings")
     end
+
     print("\n-  recognized first lines:\n")
     print("xml   <?xml version='1.0' language='nl'")
     print("tex   % language=nl")
@@ -261,6 +284,30 @@ end
 -- written while listening to Talk Talk
 
 local magicstring = rep("<ctx-crlf/>", 2)
+
+local l2 = char(0xC0)
+local l3 = char(0xE0)
+local l4 = char(0xF0)
+
+local function utflen(str)
+    local n = 0
+    local l = 0
+    for s in gmatch(str,".") do
+        if l > 0 then
+            l = l - 1
+        else
+            n = n + 1
+            if s >= l4 then
+                l = 3
+            elseif s >= l3 then
+                l = 2
+            elseif s >= l2 then
+                l = 1
+            end
+        end
+    end
+    return n
+end
 
 function wrap_text()
 
@@ -295,6 +342,7 @@ function wrap_text()
 
     local replacement = { }
     local templine    = ''
+    local tempsize    = 0
     local indentation = rep(' ',startcolumn)
     local selection   = editor:GetSelText()
 
@@ -307,13 +355,20 @@ function wrap_text()
             replacement[#replacement+1] = templine
             replacement[#replacement+1] = ""
             templine = ''
-        elseif #templine + #snippet > length then
-            replacement[#replacement+1] = templine
-            templine = indentation .. snippet
-        elseif #templine == 0 then
-            templine = indentation .. snippet
+            tempsize = 0
         else
-            templine = templine .. ' ' .. snippet
+            local snipsize = utflen(snippet)
+            if tempsize + snipsize > length then
+                replacement[#replacement+1] = templine
+                templine = indentation .. snippet
+                tempsize = startcolumn + snipsize
+            elseif tempsize == 0 then
+                templine = indentation .. snippet
+                tempsize = tempsize + startcolumn + snipsize
+            else
+                templine = templine .. ' ' .. snippet
+                tempsize = tempsize + 1 + snipsize
+            end
         end
     end
 
@@ -489,7 +544,7 @@ end
 
 -- written while listening to Alanis Morissette's acoustic
 -- Jagged Little Pill and Tori Amos' Beekeeper after
--- reinstalling on my good old ATH-7
+-- reinstalling my good old ATH-7
 
 local language = props["ctx.spellcheck.language"]
 local wordsize = props["ctx.spellcheck.wordsize"]
@@ -1395,4 +1450,7 @@ function OnOpen(filename)
     editor:Colourise(0,editor.TextLength)
 end
 
--- output.LexerLanguage = ""
+-- Last time I checked the source the output pane errorlist lexer was still
+-- hardcoded and could not be turned off ... alas.
+
+-- output.Lexer = 0

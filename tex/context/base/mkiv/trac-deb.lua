@@ -185,6 +185,7 @@ local function processerror(offset)
     local lasttexerror = status.lasterrorstring or "?"
     local lastluaerror = status.lastluaerrorstring or lasttexerror
     local luaerrorline = match(lastluaerror,[[lua%]?:.-(%d+)]]) or (lastluaerror and find(lastluaerror,"?:0:",1,true) and 0)
+    local lastmpserror = match(lasttexerror,[[^.-mp%serror:%s*(.*)$]])
     resetmessages()
     lastluaerror = gsub(lastluaerror,"%[\\directlua%]","[ctxlua]")
     tracers.printerror {
@@ -192,6 +193,7 @@ local function processerror(offset)
         linenumber   = linenumber,
         offset       = tonumber(offset) or 10,
         lasttexerror = lasttexerror,
+        lastmpserror = lastmpserror,
         lastluaerror = lastluaerror,
         luaerrorline = luaerrorline,
         lastcontext  = lastcontext,
@@ -204,9 +206,11 @@ function tracers.printerror(specification)
     local filename     = specification.filename
     local linenumber   = specification.linenumber
     local lasttexerror = specification.lasttexerror
+    local lastmpserror = specification.lastmpserror
     local lastluaerror = specification.lastluaerror
     local lastcontext  = specification.lasterrorcontext
     local luaerrorline = specification.luaerrorline
+    local errortype    = specification.errortype
     local offset       = specification.offset
     local report       = errorreporter(luaerrorline)
     if not filename then
@@ -217,7 +221,8 @@ function tracers.printerror(specification)
         report_nl()
         if luaerrorline then
             report("lua error on line %s in file %s:\n\n%s",linenumber,filename,lastluaerror)
-         -- report("error on line %s in file %s:\n\n%s",linenumber,filename,lasttexerror)
+        elseif lastmpserror then
+            report("mp error on line %s in file %s:\n\n%s",linenumber,filename,lastmpserror)
         else
             report("tex error on line %s in file %s: %s",linenumber,filename,lasttexerror)
             if lastcontext then
@@ -321,18 +326,37 @@ end
 
 directives.register("system.showerror", lmx.overloaderror)
 
-local debugger = utilities.debugger
+-- local debugger = utilities.debugger
+--
+-- local function trace_calls(n)
+--     debugger.enable()
+--     luatex.registerstopactions(function()
+--         debugger.disable()
+--         debugger.savestats(tex.jobname .. "-luacalls.log",tonumber(n))
+--     end)
+--     trace_calls = function() end
+-- end
+--
+-- directives.register("system.tracecalls", function(n)
+--     trace_calls(n)
+-- end) -- indirect is needed for nilling
 
-local function trace_calls(n)
-    debugger.enable()
-    luatex.registerstopactions(function()
-        debugger.disable()
-        debugger.savestats(tex.jobname .. "-luacalls.log",tonumber(n))
-    end)
-    trace_calls = function() end
-end
+local editor = [[scite "-open:%filename%" -goto:%linenumber%]]
 
-directives.register("system.tracecalls", function(n) trace_calls(n) end) -- indirect is needed for nilling
+directives.register("system.editor",function(v)
+    editor = v
+end)
+
+callback.register("call_edit",function(filename,linenumber)
+    if editor then
+        editor = gsub(editor,"%%s",filename)
+        editor = gsub(editor,"%%d",linenumber)
+        editor = gsub(editor,"%%filename%%",filename)
+        editor = gsub(editor,"%%linenumber%%",linenumber)
+        logs.report("system","starting editor: %s",editor)
+        os.execute(editor)
+    end
+end)
 
 implement { name = "showtrackers",       actions = trackers.show }
 implement { name = "enabletrackers",     actions = trackers.enable,     arguments = "string" }
@@ -350,3 +374,17 @@ implement { name = "disableexperiments", actions = experiments.disable, argument
 implement { name = "showdebuginfo",      actions = lmx.showdebuginfo }
 implement { name = "overloaderror",      actions = lmx.overloaderror }
 implement { name = "showlogcategories",  actions = logs.show }
+
+local debugger = utilities.debugger
+
+directives.register("system.profile",function(n)
+    luatex.registerstopactions(function()
+        debugger.disable()
+        debugger.savestats("luatex-profile.log",tonumber(n) or 0)
+        report_nl()
+        logs.report("system","profiler stopped, log saved in %a","luatex-profile.log")
+        report_nl()
+    end)
+    logs.report("system","profiler started")
+    debugger.enable()
+end)

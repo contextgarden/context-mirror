@@ -12,7 +12,11 @@ local sub, format = string.sub, string.format
 local splitlines, validstring, replacenewlines = string.splitlines, string.valid, string.replacenewlines
 local P, Cs, patterns, lpegmatch = lpeg.P, lpeg.Cs, lpeg.patterns, lpeg.match
 local utfchar  = utf.char
+local nameonly = file.nameonly
 local totable  = string.totable
+local md5hex = md5.hex
+local isfile = lfs.isfile
+local savedata = io.savedata
 
 local trace_run         = false  trackers.register("buffers.run",       function(v) trace_run       = v end)
 local trace_grab        = false  trackers.register("buffers.grab",      function(v) trace_grab      = v end)
@@ -20,7 +24,7 @@ local trace_visualize   = false  trackers.register("buffers.visualize", function
 
 local report_buffers    = logs.reporter("buffers","usage")
 local report_typeset    = logs.reporter("buffers","typeset")
-local report_grabbing   = logs.reporter("buffers","grabbing")
+----- report_grabbing   = logs.reporter("buffers","grabbing")
 
 local context           = context
 local commands          = commands
@@ -32,12 +36,11 @@ local scanstring        = scanners.string
 local scaninteger       = scanners.integer
 local scanboolean       = scanners.boolean
 local scancode          = scanners.code
-local scantoken         = scanners.token
+----- scantoken         = scanners.token
 
 local getters           = tokens.getters
 local gettoken          = getters.token
 
-local compilescanner    = tokens.compile
 local scanners          = interfaces.scanners
 
 local variables         = interfaces.variables
@@ -61,6 +64,9 @@ local catcodenumbers    = catcodes.numbers
 
 local ctxcatcodes       = catcodenumbers.ctxcatcodes
 local txtcatcodes       = catcodenumbers.txtcatcodes
+
+local setdata           = job.datasets.setdata
+local getdata           = job.datasets.getdata
 
 buffers       = buffers or { }
 local buffers = buffers
@@ -484,23 +490,84 @@ implement {
 
 -- we can consider adding a size to avoid unlikely clashes
 
-local oldhashes = nil
-local newhashes = nil
+local olddata   = nil
+local newdata   = nil
+local getrunner = sandbox.getrunner
 
-local function runbuffer(name,encapsulate)
-    if not oldhashes then
-        oldhashes = job.datasets.getdata("typeset buffers","hashes") or { }
-        for hash, n in next, oldhashes do
-            local tag  = formatters["%s-t-b-%s"](tex.jobname,hash)
-            registertempfile(addsuffix(tag,"tmp")) -- to be sure
-            registertempfile(addsuffix(tag,"pdf"))
+local runner = sandbox.registerrunner {
+    name     = "run buffer",
+    program  = "context",
+    method   = "execute",
+    template = "--purgeall " .. (jit and "--jit" or "") .. " %filename%",
+    reporter = report_typeset,
+    checkers = {
+        filename = "readable",
+    }
+}
+
+local function runbuffer(name,encapsulate,runnername,suffixes)
+    if not runnername or runnername == "" then
+        runnername = "run buffer"
+    end
+    local suffix = "pdf"
+    if type(suffixes) == "table" then
+        suffix = suffixes[1]
+    elseif type(suffixes) == "string" and suffixes ~= "" then
+        suffix   = suffixes
+        suffixes = { suffix }
+    else
+        suffixes = { suffix }
+    end
+    local runner = getrunner(runnername)
+    if not runner then
+        report_typeset("unknown runner %a",runnername)
+        return
+    end
+    if not olddata then
+        olddata = getdata("buffers","runners") or { }
+        local suffixes = olddata.suffixes
+        local hashes   = olddata.hashes
+        if hashes and suffixes then
+            for k, hash in next, hashes do
+                for h, v in next, hash do
+                    for s, v in next, suffixes do
+                        local tmp = addsuffix(h,s)
+                     -- report_typeset("mark for deletion: %s",tmp)
+                        registertempfile(tmp)
+                    end
+                end
+            end
         end
-        newhashes = { }
-        job.datasets.setdata {
-            name = "typeset buffers",
-            tag  = "hashes",
-            data = newhashes,
+    end
+    if not newdata then
+        newdata = {
+            version  = environment.version,
+            suffixes = { },
+            hashes   = { },
         }
+        setdata {
+            name = "buffers",
+            tag  = "runners",
+            data = newdata,
+        }
+    end
+    local oldhashes = olddata.hashes or { }
+    local newhashes = newdata.hashes or { }
+    local old = oldhashes[suffix]
+    local new = newhashes[suffix]
+    if not old then
+        old = { }
+        oldhashes[suffix] = old
+        for hash, n in next, old do
+            local tag = formatters["%s-t-b-%s"](tex.jobname,hash)
+            local tmp = addsuffix(tag,"tmp")
+         -- report_typeset("mark for deletion: %s",tmp)
+            registertempfile(tmp) -- to be sure
+        end
+    end
+    if not new then
+        new = { }
+        newhashes[suffix] = new
     end
     local names   = getnames(name)
     local content = collectcontent(names,nil) or ""
@@ -511,29 +578,35 @@ local function runbuffer(name,encapsulate)
         content = formatters["\\starttext\n%s\n\\stoptext\n"](content)
     end
     --
-    local hash = md5.hex(content)
-    local tag  = formatters["%s-t-b-%s"](tex.jobname,hash)
+    local hash = md5hex(content)
+    local tag  = formatters["%s-t-b-%s"](nameonly(tex.jobname),hash) -- make sure we run on the local path
     --
     local filename   = addsuffix(tag,"tmp")
-    local resultname = addsuffix(tag,"pdf")
+    local resultname = addsuffix(tag,suffix)
     --
-    if newhashes[hash] then
+    if new[tag] then
         -- done
-    elseif not oldhashes[hash] or not lfs.isfile(resultname) then
+    elseif not old[tag] or olddata.version ~= newdata.version or not isfile(resultname) then
         if trace_run then
             report_typeset("changes in %a, processing forced",name)
         end
-        io.savedata(filename,content)
-        local command = formatters["context --purgeall %s %s"](jit and "--jit" or "",filename)
-        report_typeset("running: %s\n",command)
-        os.execute(command)
+        savedata(filename,content)
+        report_typeset("processing saved buffer %a\n",filename)
+        runner { filename = filename }
     end
-    newhashes[hash] = (newhashes[hash] or 0) + 1
+    new[tag] = (new[tag] or 0) + 1
     report_typeset("no changes in %a, processing skipped",name)
     registertempfile(filename)
-    registertempfile(resultname,nil,true)
+ -- report_typeset("mark for persistence: %s",filename)
+    for i=1,#suffixes do
+        local suffix = suffixes[i]
+        newdata.suffixes[suffix] = true
+        local tmp = addsuffix(tag,suffix)
+     -- report_typeset("mark for persistance: %s",tmp)
+        registertempfile(tmp,nil,true)
+    end
     --
-    return resultname
+    return resultname -- first result
 end
 
 local function getbuffer(name)
@@ -563,15 +636,23 @@ local function gettexbuffer(name)
     end
 end
 
+buffers.run = runbuffer
+
 implement { name = "getbufferctxlua", actions = loadcontent,   arguments = "string" }
 implement { name = "getbuffer",       actions = getbuffer,     arguments = "string" }
 implement { name = "getbuffermkvi",   actions = getbuffermkvi, arguments = "string" }
 implement { name = "gettexbuffer",    actions = gettexbuffer,  arguments = "string" }
 
 implement {
-    name      = "runbuffer",
+    name      = "typesetbuffer",
     actions   = { runbuffer, context },
     arguments = { "string", true }
+}
+
+implement {
+    name      = "runbuffer",
+    actions   = { runbuffer, context },
+    arguments = { "string", false, "string" }
 }
 
 implement {
@@ -590,18 +671,25 @@ implement {
     arguments = "string"
 }
 
-local startbuffer     = context.startbuffer
-local stopbuffer      = context.stopbuffer
+do
 
-local startcollecting = context.startcollecting
-local stopcollecting  = context.stopcollecting
+    local context         = context
+    local ctxcore         = context.core
 
-function context.startbuffer(...)
-    startcollecting()
-    startbuffer(...)
-end
+    local startbuffer     = ctxcore.startbuffer
+    local stopbuffer      = ctxcore.stopbuffer
 
-function context.stopbuffer()
-    stopbuffer()
-    stopcollecting()
+    local startcollecting = context.startcollecting
+    local stopcollecting  = context.stopcollecting
+
+    function ctxcore.startbuffer(...)
+        startcollecting()
+        startbuffer(...)
+    end
+
+    function ctxcore.stopbuffer()
+        stopbuffer()
+        stopcollecting()
+    end
+
 end

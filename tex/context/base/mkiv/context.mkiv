@@ -39,8 +39,8 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2016.05.19 13:43}
-\edef\contextkind   {current}
+\edef\contextversion{2017.05.14 19:09}
+\edef\contextkind   {beta}
 
 %D For those who want to use this:
 
@@ -145,6 +145,8 @@
 
 \loadmarkfile{cldf-int} % interface
 
+\loadmarkfile{trac-ctx} % maybe move up
+
 % \loadmarkfile{luat-ini}
 
 \loadmarkfile{toks-tra}
@@ -175,7 +177,6 @@
 
 \loadmarkfile{trac-tex}
 \loadmarkfile{trac-deb} % will move up
-\loadmarkfile{trac-ctx} % maybe move up
 
 %loadmarkfile{blob-ini} % not to be used, we only use a helper
 
@@ -402,6 +403,7 @@
 \loadmarkfile{tabl-ntb}
 \loadmarkfile{tabl-nte}
 \loadmarkfile{tabl-ltb}
+\loadmarkfile{tabl-frm}
 \loadmarkfile{tabl-tsp}
 \loadmkvifile{tabl-xtb}
 \loadmarkfile{tabl-mis}
@@ -433,11 +435,15 @@
 \loadmarkfile{typo-sus}
 \loadmarkfile{typo-lig}
 \loadmarkfile{typo-chr}
+\loadmarkfile{typo-rub}
+\loadmkivfile{typo-fkr}
 
 \loadmkvifile{type-ini}
 \loadmarkfile{type-set}
 
 \loadmarkfile{scrp-ini}
+
+\loadmarkfile{symb-emj}
 
 \loadmarkfile{lang-wrd} % can be optional (discussion with mm sideeffect)
 \loadmarkfile{lang-rep} % can be optional (bt 2013 side effect)
@@ -509,6 +515,7 @@
 \loadmarkfile{grph-fig}
 \loadmarkfile{grph-raw}
 \loadmarkfile{grph-rul}
+\loadmarkfile{grph-pat}
 
 \loadmarkfile{pack-box}
 \loadmarkfile{pack-bar}
@@ -571,7 +578,7 @@
 \to \everyjob
 
 \appendtoks
-    \ctxlua{statistics.savefmtstatus("\jobname","\contextversion","context.mkiv","\contextkind")}% can become automatic
+    \ctxlua{statistics.savefmtstatus("\jobname","\contextversion","context.mkiv","\contextkind","\contextbanner")}% can become automatic
 \to \everydump
 
 \errorstopmode \dump \endinput

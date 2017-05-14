@@ -26,6 +26,10 @@
                     <cd:constant type="no" default="yes"/>
                     <cd:constant type="all"/>
                 </cd:parameter>
+                <cd:parameter name="empty">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
                 <cd:parameter name="unit">
                     <cd:constant type="ex" default="yes"/>
                     <cd:constant type="em"/>
@@ -68,6 +72,12 @@
                 <cd:parameter name="mp">
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
@@ -85,13 +95,31 @@
 
     -->
 
-    <cd:command name="bar" generated="yes" variant="generated" file="node-rul.mkiv">
+    <cd:command name="bar" generated="yes" variant="example" file="node-rul.mkiv">
         <cd:sequence>
             <cd:variable value="bar"/>
         </cd:sequence>
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="overbar"/>
+            <cd:constant value="underbar"/>
+            <cd:constant value="overstrike"/>
+            <cd:constant value="understrike"/>
+            <cd:constant value="overbars"/>
+            <cd:constant value="underbars"/>
+            <cd:constant value="overstrikes"/>
+            <cd:constant value="understrikes"/>
+            <cd:constant value="underrandom"/>
+            <cd:constant value="underrandoms"/>
+            <cd:constant value="underdash"/>
+            <cd:constant value="underdashes"/>
+            <cd:constant value="underdot"/>
+            <cd:constant value="underdots"/>
+            <cd:constant value="nobar"/>
+            <cd:constant value="hiddenbar"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="bar" type="environment" file="node-rul.mkiv">
@@ -125,6 +153,12 @@
     </cd:command>
 
     <cd:command name="underbar" file="node-rul.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="hiddenbar" file="node-rul.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
@@ -201,5 +235,13 @@
             <cd:content/>
         </cd:arguments>
     </cd:command>
+
+    <cd:command name="nobar" file="node-rul.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="resetbar" file="node-rul.mkiv"/>
 
 </cd:interface>

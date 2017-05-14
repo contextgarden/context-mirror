@@ -16,7 +16,7 @@ local report_nodes = logs.reporter("nodes","migrations")
 
 local attributes    = attributes
 local nodes         = nodes
-local tasks         = nodes.tasks
+local enableaction  = nodes.tasks.enableaction
 
 local nuts          = nodes.nuts
 local tonut         = nuts.tonut
@@ -26,7 +26,6 @@ local getid         = nuts.getid
 local getlist       = nuts.getlist
 local getattr       = nuts.getattr
 
-local setfield      = nuts.setfield
 local setattr       = nuts.setattr
 local setlink       = nuts.setlink
 local setlist       = nuts.setlist
@@ -139,21 +138,21 @@ end
 
 experiments.register("marks.migrate", function(v)
     if v then
-        tasks.enableaction("mvlbuilders", "nodes.handlers.migrate")
+        enableaction("mvlbuilders", "nodes.handlers.migrate")
     end
     migrate_marks = v
 end)
 
 experiments.register("inserts.migrate", function(v)
     if v then
-        tasks.enableaction("mvlbuilders", "nodes.handlers.migrate")
+        enableaction("mvlbuilders", "nodes.handlers.migrate")
     end
     migrate_inserts = v
 end)
 
 experiments.register("inserts.migrate.nested", function(v)
     if v then
-        tasks.enableaction("mvlbuilders", "nodes.handlers.migrate")
+        enableaction("mvlbuilders", "nodes.handlers.migrate")
     end
     inserts_too = v
 end)

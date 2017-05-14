@@ -88,7 +88,7 @@
                     <cd:constant type="cd:command"/>
                 </cd:parameter>
                 <cd:parameter name="command">
-                    <cd:constant type="cd:threeargument"/>
+                    <cd:constant type="cd:threearguments"/>
                 </cd:parameter>
                 <cd:parameter name="numbercommand">
                     <cd:constant type="cd:oneargument"/>
@@ -409,65 +409,78 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcombinedlist" generated="yes" variant="generated" file="strc-lst.mkvi">
+    <cd:command name="setupcombinedlist" generated="yes" variant="instance" file="strc-lst.mkvi">
         <cd:sequence>
             <cd:string value="setup"/>
-            <cd:variable value="combinedlist"/>
+            <cd:instance value="combinedlist"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setuplist"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-combinedlist"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="placecombinedlist" generated="yes" variant="generated" file="strc-lst.mkvi">
+    <cd:command name="placecombinedlist" generated="yes" variant="instance" file="strc-lst.mkvi">
         <cd:sequence>
             <cd:string value="place"/>
-            <cd:variable value="combinedlist"/>
+            <cd:instance value="combinedlist"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuplist"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-combinedlist"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="completecombinedlist" generated="yes" variant="generated" file="strc-lst.mkvi">
+    <cd:command name="completecombinedlist" generated="yes" variant="instance" file="strc-lst.mkvi">
         <cd:sequence>
             <cd:string value="complete"/>
-            <cd:variable value="combinedlist"/>
+            <cd:instance value="combinedlist"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuplist"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-combinedlist"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="setupcontent" file="strc-lst.mkvi">
-        <cd:arguments>
-            <cd:assignments list="yes">
-                <cd:inherit name="setuplist"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+    <!--
 
-    <cd:command name="placecontent" file="strc-lst.mkvi">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuplist"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="setupcontent" file="strc-lst.mkvi">
+            <cd:arguments>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setuplist"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="completecontent" file="strc-lst.mkvi">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuplist"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="placecontent" file="strc-lst.mkvi">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuplist"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="completecontent" file="strc-lst.mkvi">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuplist"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
     <cd:command name="structurelistuservariable" file="strc-lst.mkvi">
         <cd:arguments>

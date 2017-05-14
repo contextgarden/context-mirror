@@ -6,12 +6,12 @@ if not modules then modules = { } end modules ['mlib-run'] = {
     license   = "see context related readme files",
 }
 
---~ cmyk       -> done, native
---~ spot       -> done, but needs reworking (simpler)
---~ multitone  ->
---~ shade      -> partly done, todo: cm
---~ figure     -> done
---~ hyperlink  -> low priority, easy
+-- cmyk       -> done, native
+-- spot       -> done, but needs reworking (simpler)
+-- multitone  ->
+-- shade      -> partly done, todo: cm
+-- figure     -> done
+-- hyperlink  -> low priority, easy
 
 -- new * run
 -- or
@@ -30,8 +30,10 @@ nears zero.</p>
 --ldx]]--
 
 local type, tostring, tonumber = type, tostring, tonumber
-local format, gsub, match, find = string.format, string.gsub, string.match, string.find
-local concat = table.concat
+local gsub, match, find = string.gsub, string.match, string.find
+local striplines = utilities.strings.striplines
+local concat, insert, remove = table.concat, table.insert, table.remove
+
 local emptystring = string.is_empty
 local P = lpeg.P
 
@@ -93,8 +95,7 @@ do
     local finders = { }
     mplib.finders = finders -- also used in meta-lua.lua
 
-    local new_instance  = mplib.new
-    local resolved_file = resolvers.findfile
+    local new_instance = mplib.new
 
     local function preprocessed(name)
         if not mpbasepath(name) then
@@ -160,14 +161,15 @@ function metapost.reporterror(result)
         report_metapost("error: no result object returned")
     elseif result.status > 0 then
         local t, e, l = result.term, result.error, result.log
+        local report = metapost.texerrors and texerrormessage or report_metapost
         if t and t ~= "" then
-            (metapost.texerrors and texerrormessage or report_metapost)("terminal: %s",t)
+            report("mp error: %s",striplines(t))
         end
         if e == "" or e == "no-error" then
             e = nil
         end
         if e then
-            (metapost.texerrors and texerrormessage or report_metapost)("error: %s",e)
+            report("mp error: %s",striplines(e))
         end
         if not t and not e and l then
             metapost.lastlog = metapost.lastlog .. "\n" .. l
@@ -185,6 +187,7 @@ local f_preamble = formatters [ [[
     boolean mplib ; mplib := true ;
     let dump = endinput ;
     input "%s" ;
+    randomseed:=%s;
 ]] ]
 
 local methods = {
@@ -217,8 +220,18 @@ function metapost.maketext(s,mode)
     end
 end
 
+local seed = nil
+
 function metapost.load(name,method)
     starttiming(mplib)
+    if not seed then
+        seed = job.getrandomseed()
+        if seed <= 1 then
+            seed = seed % 1000
+        elseif seed > 4095 then
+            seed = seed % 4096
+        end
+    end
     method = method and methods[method] or "scaled"
     local mpx = new_instance {
         ini_version  = true,
@@ -227,13 +240,14 @@ function metapost.load(name,method)
         script_error = metapost.scripterror,
         make_text    = metapost.maketext,
         extensions   = 1,
+     -- random_seed  = seed,
     }
     report_metapost("initializing number mode %a",method)
     local result
     if not mpx then
         result = { status = 99, error = "out of memory"}
     else
-        result = mpx:execute(f_preamble(file.addsuffix(name,"mp"))) -- addsuffix is redundant
+        result = mpx:execute(f_preamble(file.addsuffix(name,"mp"),seed)) -- addsuffix is redundant
     end
     stoptiming(mplib)
     metapost.reporterror(result)
@@ -241,9 +255,8 @@ function metapost.load(name,method)
 end
 
 function metapost.checkformat(mpsinput,method)
-    local mpsversion = environment.version or "unset version"
-    local mpsinput   = mpsinput or "metafun"
-    local foundfile  = ""
+    local mpsinput  = mpsinput or "metafun"
+    local foundfile = ""
     if file.suffix(mpsinput) ~= "" then
         foundfile  = find_file(mpsinput) or ""
     end
@@ -326,6 +339,46 @@ if not metapost.initializescriptrunner then
     function metapost.initializescriptrunner() end
 end
 
+do
+
+    local stack, top = { }, nil
+
+    function metapost.setvariable(k,v)
+        if top then
+            top[k] = v
+        else
+            metapost.variables[k] = v
+        end
+    end
+
+    function metapost.pushvariable(k)
+        local t = { }
+        if top then
+            insert(stack,top)
+            top[k] = t
+        else
+            metapost.variables[k] = t
+        end
+        top = t
+    end
+
+    function metapost.popvariable()
+        top = remove(stack)
+    end
+
+    local stack = { }
+
+    function metapost.pushvariables()
+        insert(stack,metapost.variables)
+        metapost.variables = { }
+    end
+
+    function metapost.popvariables()
+        metapost.variables = remove(stack) or metapost.variables
+    end
+
+end
+
 function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, askedfig)
     local converted, result = false, { }
     if type(mpx) == "string" then
@@ -334,6 +387,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
     if mpx and data then
         local tra = nil
         starttiming(metapost)
+        metapost.variables = { }
         metapost.initializescriptrunner(mpx,trialrun)
         if trace_graphics then
             tra = mp_tra[mpx]
@@ -376,75 +430,60 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
             end
             -- end of hacks
         end
+
+        local function process(d,i)
+         -- d = string.gsub(d,"\r","")
+            if d then
+                if trace_graphics then
+                    if i then
+                        tra.inp:write(formatters["\n%% begin snippet %s\n"](i))
+                    end
+                    tra.inp:write(d)
+                    if i then
+                        tra.inp:write(formatters["\n%% end snippet %s\n"](i))
+                    end
+                end
+                starttiming(metapost.exectime)
+                result = mpx:execute(d) -- some day we wil use a coroutine with textexts
+                stoptiming(metapost.exectime)
+                if trace_graphics and result then
+                    local str = result.log or result.error
+                    if str and str ~= "" then
+                        tra.log:write(str)
+                    end
+                end
+                if not metapost.reporterror(result) then
+                    if metapost.showlog then
+                        local str = result.term ~= "" and result.term or "no terminal output"
+                        if not emptystring(str) then
+                            metapost.lastlog = metapost.lastlog .. "\n" .. str
+                            report_metapost("log: %s",str)
+                        end
+                    end
+                    if result.fig then
+                        converted = metapost.convert(result, trialrun, flusher, multipass, askedfig)
+                    end
+                end
+            elseif i then
+                report_metapost("error: invalid graphic component %s",i)
+            else
+                report_metapost("error: invalid graphic")
+            end
+        end
+
         if type(data) == "table" then
             if trace_tracingall then
                 mpx:execute("tracingall;")
             end
          -- table.insert(data,2,"")
             for i=1,#data do
-                local d = data[i]
-             -- d = string.gsub(d,"\r","")
-                if d then
-                    if trace_graphics then
-                        tra.inp:write(formatters["\n%% begin snippet %s\n"](i))
-                        tra.inp:write(d)
-                        tra.inp:write(formatters["\n%% end snippet %s\n"](i))
-                    end
-                    starttiming(metapost.exectime)
-                    result = mpx:execute(d) -- some day we wil use a coroutine with textexts
-                    stoptiming(metapost.exectime)
-                    if trace_graphics and result then
-                        local str = result.log or result.error
-                        if str and str ~= "" then
-                            tra.log:write(str)
-                        end
-                    end
-                    if not metapost.reporterror(result) then
-                        if metapost.showlog then
-                            local str = result.term ~= "" and result.term or "no terminal output"
-                            if not emptystring(str) then
-                                metapost.lastlog = metapost.lastlog .. "\n" .. str
-                                report_metapost("log: %s",str)
-                            end
-                        end
-                        if result.fig then
-                            converted = metapost.convert(result, trialrun, flusher, multipass, askedfig)
-                        end
-                    end
-                else
-                    report_metapost("error: invalid graphic component %s",i)
-                end
+                process(data[i],i)
             end
        else
             if trace_tracingall then
                 data = "tracingall;" .. data
             end
-            if trace_graphics then
-                tra.inp:write(data)
-            end
-            starttiming(metapost.exectime)
-            result = mpx:execute(data)
-            stoptiming(metapost.exectime)
-            if trace_graphics and result then
-                local str = result.log or result.error
-                if str and str ~= "" then
-                    tra.log:write(str)
-                end
-            end
-            -- todo: error message
-            if not result then
-                report_metapost("error: no result object returned")
-            elseif result.status > 0 then
-                report_metapost("error: %s",(result.term or "no-term") .. "\n" .. (result.error or "no-error"))
-            else
-                if metapost.showlog then
-                    metapost.lastlog = metapost.lastlog .. "\n" .. result.term
-                    report_metapost("info: %s",result.term or "no-term")
-                end
-                 if result.fig then
-                    converted = metapost.convert(result, trialrun, flusher, multipass, askedfig)
-                end
-            end
+            process(data)
         end
         if trace_graphics then
             local banner = "\n% end graphic\n\n"

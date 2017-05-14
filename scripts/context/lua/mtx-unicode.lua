@@ -46,13 +46,15 @@ local application = logs.application {
     helpinfo = helpinfo,
 }
 
-local gmatch, match, gsub, find, lower, format = string.gmatch, string.match, string.gsub, string.find, string.lower, string.format
-local concat = table.concat
-local split = string.split
+local gmatch, match, gsub, find, lower, upper, format = string.gmatch, string.match, string.gsub, string.find, string.lower, string.upper, string.format
+local concat, sort = table.concat, table.sort
+local split, splitlines, strip = string.split, string.splitlines, string.strip
 local are_equal = table.are_equal
-local tonumber = tonumber
+local tonumber, tostring, rawget = tonumber, tostring, rawget
 local lpegmatch = lpeg.match
+local P, C, S, R, Cs, Ct, Cg, Cf, Cc = lpeg.P, lpeg.C, lpeg.S, lpeg.R, lpeg.Cs, lpeg.Ct, lpeg.Cg, lpeg.Cf, lpeg.Cc
 local formatters = string.formatters
+local utfchar = utf.char
 
 local report = application.report
 
@@ -73,8 +75,7 @@ local sparse = false
 local split_space_table = lpeg.tsplitat(" ")
 local split_space_two   = lpeg.splitat (" ")
 local split_range_two   = lpeg.splitat ("..")
-local split_colon_table = lpeg.tsplitat(lpeg.P(" ")^0 * lpeg.P(";") * lpeg.P(" ")^0)
-
+local split_colon_table = lpeg.tsplitat(P(" ")^0 * P(";") * P(" ")^0)
 
 local skipped = {
     [0x002C6] = true, -- MODIFIER LETTER CIRCUMFLEX ACCENT
@@ -91,6 +92,7 @@ function scripts.unicode.update()
     local eastasianwidth       = texttables.eastasianwidth
     local standardizedvariants = texttables.standardizedvariants
     local arabicshaping        = texttables.arabicshaping
+    local index                = texttables.index
     local characterdata        = characters.data
     --
     for unicode, ud in table.sortedpairs(unicodedata) do
@@ -331,7 +333,7 @@ function scripts.unicode.update()
     end
     for i=1,#standardizedvariants do
         local si = standardizedvariants[i]
-        local pair, addendum = si[1], string.strip(si[2])
+        local pair, addendum = si[1], strip(si[2])
         local first, second = lpegmatch(split_space_two,pair) -- string.splitup(pair," ")
         first = tonumber(first,16)
         second = tonumber(second,16)
@@ -362,7 +364,7 @@ end
 local preamble
 
 local function splitdefinition(str,index)
-    local l = string.splitlines(str)
+    local l = splitlines(str)
     local t = { }
     if index then
         for i=1,#l do
@@ -401,6 +403,22 @@ local function splitdefinition(str,index)
     return t
 end
 
+local function splitindex(str)
+    -- ok, quick and dirty ... could be a nice lpeg instead
+    local l = splitlines(str)
+    local n = { }
+    for i=1,#l do
+        local a, b, c = match(l[i],"([^%,]+)%,?(.-)\t(.*)")
+        if a and b and c then
+            local name = b .. " " .. a
+            name = strip(name)
+            name = gsub(name,"%s+"," ")
+            n[name] = tonumber(c,16)
+        end
+    end
+    return n
+end
+
 function scripts.unicode.load()
     local fullname = resolvers.findfile("char-def.lua")
     report("using: %s",fullname)
@@ -420,7 +438,7 @@ function scripts.unicode.load()
         report("using: %s",fullname)
         dofile(fullname)
         --
-        preamble = data:gsub("characters%.data%s*=%s*%{.*","")
+        preamble = gsub(data,"characters%.data%s*=%s*%{.*","")
         --
         textfiles = {
             unicodedata          = resolvers.findfile("unicodedata.txt")          or "",
@@ -429,6 +447,7 @@ function scripts.unicode.load()
             eastasianwidth       = resolvers.findfile("eastasianwidth.txt")       or "",
             standardizedvariants = resolvers.findfile("standardizedvariants.txt") or "",
             arabicshaping        = resolvers.findfile("arabicshaping.txt")        or "",
+            index                = resolvers.findfile("index.txt")                or "",
         }
         --
         textdata = {
@@ -438,6 +457,7 @@ function scripts.unicode.load()
             eastasianwidth       = textfiles.eastasianwidth       ~= "" and io.loaddata(textfiles.eastasianwidth)       or "",
             standardizedvariants = textfiles.standardizedvariants ~= "" and io.loaddata(textfiles.standardizedvariants) or "",
             arabicshaping        = textfiles.arabicshaping        ~= "" and io.loaddata(textfiles.arabicshaping)        or "",
+            index                = textfiles.index                ~= "" and io.loaddata(textfiles.index)                or "",
         }
         texttables = {
             unicodedata          = splitdefinition(textdata.unicodedata,true),
@@ -446,6 +466,7 @@ function scripts.unicode.load()
             eastasianwidth       = splitdefinition(textdata.eastasianwidth,true),
             standardizedvariants = splitdefinition(textdata.standardizedvariants,false),
             arabicshaping        = splitdefinition(textdata.arabicshaping,true),
+            index                = splitindex(textdata.index),
         }
         return true
     else
@@ -456,7 +477,9 @@ end
 
 function scripts.unicode.save(filename)
     if preamble then
-        io.savedata(filename,preamble .. table.serialize(characters.data,"characters.data", { hexify = true, noquotes = true } ))
+        local data = table.serialize(characters.data,"characters.data", { hexify = true, noquotes = true })
+        data = gsub(data,"%{%s+%[0xFE0E%]=\"text style\",%s+%[0xFE0F%]=\"emoji style\",%s+%}","variants_emoji")
+        io.savedata(filename,preamble .. data)
     end
 end
 
@@ -469,7 +492,7 @@ function scripts.unicode.extras() -- old code
     local fullname = resolvers.findfile("blocks.txt") or ""
     if fullname ~= "" then
         local data   = io.loaddata(fullname)
-        local lines  = string.splitlines(data)
+        local lines  = splitlines(data)
         local map    = { }
         local blocks = characters.blocks
         local result = { }
@@ -499,11 +522,11 @@ function scripts.unicode.extras() -- old code
                 end
             end
         end
-        table.sort(result)
+        sort(result)
         for i=1,#result do
             report(result[i])
         end
-        table.sort(map)
+        sort(map)
         for i=1,#map do
             local m = map[i]
             if not blocks[m] then
@@ -511,6 +534,128 @@ function scripts.unicode.extras() -- old code
             end
         end
     end
+    --
+    local index  = texttables.index
+    local blocks = characters.blocks
+    local data   = characters.data
+    for k, v in next, index do
+        if k ~= lower(k) then
+            index[k] = nil
+        end
+    end
+ -- for k, v in next, data do
+ --     v.synonym  = nil
+ --     v.synonyms = nil
+ -- end
+    for k, v in table.sortedhash(index) do
+        local d = data[v]
+        if d and d.description ~= upper(k) then
+            local synonyms = d.synonyms
+            if synonyms then
+                local n = #synonyms
+                local f = false
+                for i=1,n do
+                    if synonyms[i] == k then
+                        f = true
+                        break
+                    end
+                end
+                if not f then
+                    synonyms[n+1] = k
+                end
+             -- synonyms = table.unique(synonyms)
+             -- d.synonyms = synonyms
+                sort(synonyms)
+            else
+                d.synonyms = { k }
+            end
+        end
+    end
+end
+
+do
+
+    local space       = P(" ")
+    local spaces      = space^0
+    local semicolon   = P(";")
+    local hash        = P("#")
+    local newline     = S("\n\r")
+
+    local unicode     = Cs(R("09","AF")^1)/function(n) return tonumber(n,16) end
+                      * spaces
+    local components  = Ct (unicode^1)
+
+ -- local rubish_a    = semicolon
+ --                   * spaces
+ --                   * P("Emoji_ZWJ_Sequence")
+ --                   * spaces
+ --                   * semicolon
+ --                   * spaces
+ -- local description = C((1 - (spaces * (hash+newline)))^1)
+ -- local rubish_b    = (1-newline)^0
+ --                   * newline^1
+ --
+ -- local pattern_1   = Ct ( (
+ --     Cf ( Ct("") *
+ --         Cg (Cc("components") * components)
+ --       * rubish_a
+ --       * Cg (Cc("description") * description )
+ --       * rubish_b
+ --     , rawset)
+ --     + P(1) )^1 )
+
+    local rubish_a    = semicolon
+                      * spaces
+                      * P("non-")^0 * P("fully-qualified")
+                      * spaces
+                      * hash
+                      * spaces
+    local textstring  = C((1 - space)^1)
+                      * spaces
+    local description = ((1 - (spaces * newline))^1) / string.lower
+    local rubish_b    = (1-newline)^0
+                      * newline^1
+
+    local pattern_2   = Ct ( (
+        Cf ( Ct("") *
+            Cg (Cc("components") * components)
+          * rubish_a
+          * Cg (Cc("textstring") * textstring)
+          * Cg (Cc("description") * description )
+          * rubish_b
+        , rawset)
+        + P(1) )^1 )
+
+    function scripts.unicode.emoji(filename)
+
+        local name = resolvers.findfile("emoji-test.txt") or ""
+        if name == "" then
+            return
+        end
+        local l = io.loaddata(name)
+        local t = lpegmatch(pattern_2,l)
+
+        local hash = { }
+
+        local replace = lpeg.replacer {
+            ["#"] = "hash",
+            ["*"] = "asterisk"
+        }
+
+        for i=1,#t do
+            local v = t[i]
+            local d = v.description
+            local k = lpegmatch(replace,d) or d
+            hash[k] = v.components
+        end
+        local new = table.serialize(hash,"return", { hexify = true })
+        local old = io.loaddata(resolvers.findfile("char-emj.lua"))
+        if old and old ~= "" then
+            new = gsub(old,"^(.-)return .*$","%1" .. new)
+        end
+        io.savedata(filename,new)
+    end
+
 end
 
 -- the action
@@ -525,6 +670,7 @@ else
         scripts.unicode.update()
         scripts.unicode.extras()
         scripts.unicode.save("char-def-new.lua")
+        scripts.unicode.emoji("char-emj-new.lua")
     else
         report("nothing to do")
     end

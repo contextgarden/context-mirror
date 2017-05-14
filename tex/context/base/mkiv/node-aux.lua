@@ -20,7 +20,6 @@ local glyph_code         = nodecodes.glyph
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local attributelist_code = nodecodes.attributelist -- temporary
-local math_code          = nodecodes.math
 
 local nuts               = nodes.nuts
 local tonut              = nuts.tonut
@@ -36,6 +35,10 @@ local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 local getattr            = nuts.getattr
 local getfield           = nuts.getfield
+local getboth            = nuts.getboth
+local getcomponents      = nuts.getcomponents
+local getwidth           = nuts.getwidth
+local setwidth           = nuts.setwidth
 
 local setfield           = nuts.setfield
 local setattr            = nuts.setattr
@@ -43,22 +46,21 @@ local setlink            = nuts.setlink
 local setlist            = nuts.setlist
 local setnext            = nuts.setnext
 local setprev            = nuts.setprev
+local setcomponents      = nuts.setcomponents
+local setattrlist        = nuts.setattrlist
 
 local traverse_nodes     = nuts.traverse
 local traverse_id        = nuts.traverse_id
-local free_node          = nuts.free
+local flush_node         = nuts.flush
+local flush_list         = nuts.flush_list
 local hpack_nodes        = nuts.hpack
 local unset_attribute    = nuts.unset_attribute
 local first_glyph        = nuts.first_glyph
 local copy_node          = nuts.copy
-local copy_node_list     = nuts.copy_list
+----- copy_node_list     = nuts.copy_list
 local find_tail          = nuts.tail
-local insert_node_after  = nuts.insert_after
-local isnode             = nuts.is_node
 local getbox             = nuts.getbox
-
-local nodes_traverse_id  = nodes.traverse_id
-local nodes_first_glyph  = nodes.first_glyph
+local count              = nuts.count
 
 local nodepool           = nuts.pool
 local new_glue           = nodepool.glue
@@ -93,13 +95,13 @@ local report_error       = logs.reporter("node-aux:error")
 local function takebox(id)
     local box = getbox(id)
     if box then
-        local copy = copy_node(box)
         local list = getlist(box)
+        setlist(box,nil)
+        local copy = copy_node(box)
         if list then
             setlist(copy,list)
-            setlist(box,nil)
         end
-        texsetbox(id,nil)
+        texsetbox(id,false)
         return copy
     end
 end
@@ -125,7 +127,7 @@ end
 function nuts.takelist(n)
     local l = getlist(n)
     setlist(n)
-    free_node(n)
+    flush_node(n)
     return l
 end
 
@@ -138,7 +140,7 @@ local function repackhlist(list,...)
     local temp, b = hpack_nodes(list,...)
     list = getlist(temp)
     setlist(temp)
-    free_node(temp)
+    flush_node(temp)
     return list, b
 end
 
@@ -262,16 +264,6 @@ nuts.unsetattributes     = unset_attributes                  nodes.unsetattribut
 --     end
 -- end
 --
--- if not node.end_of_math then
---     function node.end_of_math(n)
---         for n in traverse_id(math_code,getnext(next)) do
---             return n
---         end
---     end
--- end
---
--- nodes.endofmath = node.end_of_math
---
 -- local function firstline(n)
 --     while n do
 --         local id = getid(n)
@@ -299,16 +291,6 @@ function nuts.firstcharacter(n,untagged) -- tagged == subtype > 255
         end
     end
 end
-
--- function nodes.firstcharacter(n,untagged) -- tagged == subtype > 255
---     if untagged then
---         return nodes_first_glyph(n)
---     else
---         for g in nodes_traverse_id(glyph_code,n) do
---             return g
---         end
---     end
--- end
 
 local function firstcharinbox(n)
     local l = getlist(getbox(n))
@@ -366,11 +348,10 @@ local function tonodes(str,fnt,attr) -- (str,template_glyph) -- moved from blob-
             n = new_glyph(fnt,s)
         end
         if attr then -- normally false when template
-         -- setfield(n,"attr",copy_node_list(attr))
-            setfield(n,"attr",attr)
+            setattrlist(n,attr)
         end
         if head then
-            insert_node_after(head,tail,n)
+            setlink(tail,n)
         else
             head = n
         end
@@ -385,79 +366,6 @@ nodes.tonodes = function(str,fnt,attr)
     local head, tail = tonodes(str,fnt,attr)
     return tonode(head), tonode(tail)
 end
-
--- local function link(list,currentfont,currentattr,head,tail)
---     for i=1,#list do
---         local n = list[i]
---         if n then
---             local tn = isnode(n)
---             if not tn then
---                 local tn = type(n)
---                 if tn == "number" then
---                     if not currentfont then
---                         currentfont = current_font()
---                     end
---                     local h, t = tonodes(tostring(n),currentfont,currentattr)
---                     if not h then
---                         -- skip
---                     elseif not head then
---                         head = h
---                         tail = t
---                     else
---                         setfield(tail,"next",h)
---                         setfield(h,"prev",t)
---                         tail = t
---                     end
---                 elseif tn == "string" then
---                     if #tn > 0 then
---                         if not currentfont then
---                             currentfont = current_font()
---                         end
---                         local h, t = tonodes(n,currentfont,currentattr)
---                         if not h then
---                             -- skip
---                         elseif not head then
---                             head, tail = h, t
---                         else
---                             setfield(tail,"next",h)
---                             setfield(h,"prev",t)
---                             tail = t
---                         end
---                     end
---                 elseif tn == "table" then
---                     if #tn > 0 then
---                         if not currentfont then
---                             currentfont = current_font()
---                         end
---                         head, tail = link(n,currentfont,currentattr,head,tail)
---                     end
---                 end
---             elseif not head then
---                 head = n
---                 tail = find_tail(n)
---             elseif getid(n) == attributelist_code then
---                 -- weird case
---                 report_error("weird node type in list at index %s:",i)
---                 for i=1,#list do
---                     local l = list[i]
---                     report_error("%3i: %s %S",i,getid(l) == attributelist_code and "!" or ">",l)
---                 end
---                 os.exit()
---             else
---                 setfield(tail,"next",n)
---                 setfield(n,"prev",tail)
---                 if getnext(n) then
---                     tail = find_tail(n)
---                 else
---                     tail = n
---                 end
---             end
---         else
---             -- permitting nil is convenient
---         end
---     end
---     return head, tail
--- end
 
 local function link(list,currentfont,currentattr,head,tail) -- an oldie, might be replaced
     for i=1,#list do
@@ -543,6 +451,25 @@ function nodes.locate(start,wantedid,wantedsubtype)
     return found and tonode(found)
 end
 
+local function rehpack(n,width)
+    local head = getlist(n)
+    local size = width or getwidth(n)
+    local temp = hpack_nodes(head,size,"exactly")
+    setwidth(n,size)
+    setfield(n,"glue_set",  getfield(temp,"glue_set"))
+    setfield(n,"glue_sign", getfield(temp,"glue_sign"))
+    setfield(n,"glue_order",getfield(temp,"glue_order"))
+    setlist(temp)
+    flush_node(temp)
+    return n
+end
+
+nuts.rehpack = rehpack
+
+function nodes.rehpack(n,...)
+    rehpack(tonut(n),...)
+end
+
 -- I have no use for this yet:
 --
 -- \skip0=10pt plus 2pt minus 2pt
@@ -559,5 +486,179 @@ end
 --         return skip.width + (badness and (badness/100)^(1/3) or 1) * skip.stretch
 --     else
 --         return 0
+--     end
+-- end
+
+-- these component helpers might move to another module
+
+-- nodemode helper: here we also flatten components, no check for disc here
+
+function nuts.set_components(target,start,stop)
+    local head = getcomponents(target)
+    if head then
+        flush_list(head)
+        head = nil
+    end
+    if start then
+        setprev(start)
+    else
+        return nil
+    end
+    if stop then
+        setnext(stop)
+    end
+    local tail = nil
+    while start do
+        local c = getcomponents(start)
+        local n = getnext(start)
+        if c then
+            if head then
+                setlink(tail,c)
+            else
+                head = c
+            end
+            tail = find_tail(c)
+            setcomponents(start)
+            flush_node(start)
+        else
+            if head then
+                setlink(tail,start)
+            else
+                head = start
+            end
+            tail = start
+        end
+        start = n
+    end
+    setcomponents(target,head)
+    -- maybe also upgrade the subtype but we don't use it anyway
+    return head
+end
+
+function nuts.get_components(target)
+    return getcomponents(target)
+end
+
+nuts.get_components = getcomponents
+
+function nuts.take_components(target)
+    local c = getcomponents(target)
+    setcomponents(target)
+    -- maybe also upgrade the subtype but we don't use it anyway
+    return c
+end
+
+-- nodemode helper: we assume a glyph and a flat components list (basemode can
+-- have nested components)
+
+function nuts.count_components(n,marks)
+    local components = getcomponents(n)
+    if components then
+        if marks then
+            local i = 0
+            for g in traverse_id(glyph_code,components) do
+                if not marks[getchar(g)] then
+                    i = i + 1
+                end
+            end
+            return i
+        else
+            return count(glyph_code,components)
+        end
+    else
+        return 0
+    end
+end
+
+-- nodemode helper: the next and prev pointers are untouched
+
+function nuts.copy_no_components(g,copyinjection)
+    local components = getcomponents(g)
+    if components then
+        setcomponents(g)
+        local n = copy_node(g)
+        if copyinjection then
+            copyinjection(n,g)
+        end
+        setcomponents(g,components)
+        -- maybe also upgrade the subtype but we don't use it anyway
+        return n
+    else
+        local n = copy_node(g)
+        if copyinjection then
+            copyinjection(n,g)
+        end
+        return n
+    end
+end
+
+function nuts.copy_only_glyphs(current)
+    local head     = nil
+    local previous = nil
+    for n in traverse_id(glyph_code,current) do
+        n = copy_node(n)
+        if head then
+            setlink(previous,n)
+        else
+            head = n
+        end
+        previous = n
+    end
+    return head
+end
+
+-- node- and basemode helper
+
+function nuts.use_components(head,current)
+    local components = getcomponents(current)
+    if not components then
+        return head, current, current
+    end
+    local prev, next = getboth(current)
+    local first = current
+    local last  = next
+    while components do
+        local gone = current
+        local tail = find_tail(components)
+        if prev then
+            setlink(prev,components)
+        end
+        if next then
+            setlink(tail,next)
+        end
+        if first == current then
+            first = components
+        end
+        if head == current then
+            head = components
+        end
+        current = components
+        setcomponents(gone)
+        flush_node(gone)
+        while true do
+            components = getcomponents(current)
+            if components then
+                next = getnext(current)
+                break -- current is composed
+            end
+            if next == last then
+                last = current
+                break -- components is false
+            end
+            prev    = current
+            current = next
+            next    = getnext(current)
+        end
+    end
+    return head, first, last
+end
+
+-- function nuts.current_tail()
+--     local whatever = texnest[texnest.ptr]
+--     if whatever then
+--         local tail = whatever.tail
+--         if tail then
+--             return tonut(tail)
+--         end
 --     end
 -- end

@@ -15,11 +15,14 @@ local userrule       = nodes.rules.userrule
 local bpfactor       = number.dimenfactors.bp
 local pdfprint       = pdf.print
 
+local current_attr   = nodes.current_attr
+local setfield       = nodes.setfield
+
 local getattribute   = tex.getattribute
 
 local a_color        = attributes.private('color')
 local a_transparency = attributes.private('transparency')
-local a_colorspace   = attributes.private('colormodel')
+local a_colormodel   = attributes.private('colormodel')
 
 local mpcolor        = attributes.colors.mpcolor
 
@@ -28,7 +31,7 @@ local trace_mp       = false  trackers.register("rules.mp", function(v) trace_mp
 local report_mp      = logs.reporter("rules","mp")
 
 local floor          = math.floor
-local random         = math.random
+local getrandom      = utilities.randomizer.get
 local formatters     = string.formatters
 
 do
@@ -77,6 +80,8 @@ RuleOption := "%option%" ;
 RuleWidth := %width% ;
 RuleHeight := %height% ;
 RuleDepth := %depth% ;
+RuleH := %h% ;
+RuleV := %v% ;
 RuleThickness := %line% ;
 RuleFactor := %factor% ;
 RuleOffset := %offset% ;
@@ -100,11 +105,13 @@ def RuleColor = %color% enddef ;
             color           = mpcolor(p.ma,p.ca,p.ta),
             option          = p.option or "",
             direction       = p.direction or "TLT",
+            h               = h * bpfactor,
+            v               = v * bpfactor,
 
         }
         if not initialized then
             initialized = true
-            simplemetapost("rulefun",formatters["randomseed := %s;"](random(0,4095)))
+            simplemetapost("rulefun",formatters["randomseed := %s;"](getrandom("rulefun",0,4095)))
         end
         local pdf = caching and cache[code] or simplemetapost("rulefun",code) -- w, h, d
         if trace_mp then
@@ -168,20 +175,22 @@ interfaces.implement {
         { "name",   "string" },
     } } ,
     actions = function(t)
-        local r = userrule(t)
-        local ma = getattribute(a_colorspace) or 1
+        -- no nuts !
+        local rule = userrule(t)
+        local ma = getattribute(a_colormodel) or 1
         local ca = getattribute(a_color)
         local ta = getattribute(a_transparency)
+        setfield(rule,"attr",current_attr())
         if t.type == "mp" then
             t.ma = ma
             t.ca = ca
             t.ta = ta
         else
-            r[a_colorspace]   = ma
-            r[a_color]        = ca
-            r[a_transparency] = ta
+            rule[a_colormodel]   = ma
+            rule[a_color]        = ca
+            rule[a_transparency] = ta
         end
-        context(r)
+        context(rule)
     end
 }
 
@@ -196,17 +205,19 @@ interfaces.implement {
     } } ,
     actions = function(t)
         local factor = t.factor or 0
+        local amount = getrandom("fakeword",t.min,t.max)
         local rule   = userrule {
             height = 1.25*factor,
             depth  = 0.25*factor,
-            width  = floor(random(t.min,t.max)/10000) * 10000,
+            width  = floor(amount/10000) * 10000,
             line   = 0.10*factor,
-            ma     = getattribute(a_colorspace) or 1,
+            ma     = getattribute(a_colormodel) or 1,
             ca     = getattribute(a_color),
             ta     = getattribute(a_transparency),
             type   = "mp",
             name   = t.name,
         }
+        setfield(rule,"attr",current_attr())
         context(rule)
     end
 }

@@ -50,15 +50,13 @@ local listcodes          = nodes.listcodes
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local whatsit_code       = nodecodes.whatsit
-local glue_code          = nodecodes.glue
 local glyph_code         = nodecodes.glyph
 local line_code          = listcodes.line
-local leftskip_code      = skipcodes.leftskip
 
 local a_displaymath      = attributes.private('displaymath')
 local a_linenumber       = attributes.private('linenumber')
 local a_linereference    = attributes.private('linereference')
-local a_verbatimline     = attributes.private('verbatimline')
+----- a_verbatimline     = attributes.private('verbatimline')
 
 local current_list       = { }
 local cross_references   = { }
@@ -74,6 +72,10 @@ local setattr            = nuts.setattr
 local getlist            = nuts.getlist
 local getbox             = nuts.getbox
 local getfield           = nuts.getfield
+----- getdir             = nuts.getdir
+----- getwidth           = nuts.getwidth
+local getheight          = nuts.getheight
+local getdepth           = nuts.getdepth
 
 local setprop            = nuts.setprop
 local getprop            = nuts.getprop
@@ -83,17 +85,12 @@ local setfield           = nuts.setfield
 local traverse_id        = nuts.traverse_id
 local traverse           = nuts.traverse
 local copy_node          = nuts.copy
-local hpack_nodes        = nuts.hpack
-local linked_nodes       = nuts.linked
-local insert_node_after  = nuts.insert_after
-local insert_node_before = nuts.insert_before
+----- hpack_nodes        = nuts.hpack
 local is_display_math    = nuts.is_display_math
 local leftmarginwidth    = nuts.leftmarginwidth
 
-local nodepool           = nuts.pool
-local negated_glue       = nodepool.negatedglue
-local new_hlist          = nodepool.hlist
-local new_kern           = nodepool.kern
+----- nodepool           = nuts.pool
+----- new_kern           = nodepool.kern
 
 local ctx_convertnumber  = context.convertnumber
 local ctx_makelinenumber = context.makelinenumber
@@ -393,7 +390,7 @@ function boxed.stage_one(n,nested)
             local subtype = getsubtype(n)
             if subtype ~= line_code then
                 -- go on
-            elseif getfield(n,"height") == 0 and getfield(n,"depth") == 0 then
+            elseif getheight(n) == 0 and getdepth(n) == 0 then
                 -- skip funny hlists -- todo: check line subtype
             else
                 local a = lineisnumbered(n)
@@ -412,17 +409,19 @@ function boxed.stage_one(n,nested)
                         end
                     end
                     if getattr(n,a_displaymath) then
+                        -- this probably needs to be adapted !
                         if is_display_math(n) then
                             check_number(n,a,skip)
                         end
                     else
-                        local v = getattr(list,a_verbatimline)
-                        if not v or v ~= last_v then
-                            last_v = v
+                     -- -- we now prevent nesting anyway .. maybe later we need to check again
+                     -- local v = getattr(list,a_verbatimline)
+                     -- if not v or v ~= last_v then
+                     --     last_v = v
                             check_number(n,a,skip)
-                        else
-                            check_number(n,a,skip,true)
-                        end
+                     -- else
+                     --     check_number(n,a,skip,true)
+                     -- end
                     end
                     skip = false
                 end
@@ -485,10 +484,10 @@ function boxed.stage_two(n,m)
             local li = current_list[i]
             local n, m, ti = li[1], li[2], t[i]
             if ti then
-             -- local d = getfield(n,"dir")
+             -- local d = getdir(n)
              -- local l = getlist(n)
              -- if d == "TRT" then
-             --     local w = getfield(n,"width")
+             --     local w = getwidth(n)
              --     ti = hpack_nodes(linked_nodes(new_kern(-w),ti,new_kern(w)))
              -- end
              -- setnext(ti,l)

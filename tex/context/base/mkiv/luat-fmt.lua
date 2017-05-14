@@ -13,18 +13,37 @@ local luasuffixes = utilities.lua.suffixes
 
 local report_format = logs.reporter("resolvers","formats")
 
-local function primaryflags() -- not yet ok
-    local trackers   = environment.argument("trackers")
-    local directives = environment.argument("directives")
-    local flags = { }
+local function primaryflags()
+    local arguments  = environment.arguments
+    local flags      = { }
+    if arguments.silent then
+        flags[#flags+1] = "--interaction=batchmode"
+    end
+    if arguments.jit then
+        flags[#flags+1] = "--jiton"
+    end
+    return concat(flags," ")
+end
+
+local function secondaryflags()
+    local arguments  = environment.arguments
+    local trackers   = arguments.trackers
+    local directives = arguments.directives
+    local flags      = { }
     if trackers and trackers ~= "" then
-        flags = { "--trackers=" .. quoted(trackers) }
+        flags[#flags+1] = "--c:trackers=" .. quoted(trackers)
     end
     if directives and directives ~= "" then
-        flags = { "--directives=" .. quoted(directives) }
+        flags[#flags+1] = "--c:directives=" .. quoted(directives)
     end
-    if environment.argument("jit") then
-        flags = { "--jiton" }
+    if arguments.silent then
+        flags[#flags+1] = "--c:silent"
+    end
+    if arguments.jit then
+        flags[#flags+1] = "--c:jiton"
+    end
+    if arguments.ansi then
+        flags[#flags+1] = "--c:ansi"
     end
     return concat(flags," ")
 end
@@ -32,8 +51,37 @@ end
 -- The silent option is Taco. It's a bit of a hack because we cannot yet mess
 -- with directives. In fact, I could probably clean up the maker a bit by now.
 
-function environment.make_format(name,silent)
+local template = [[--ini %primaryflags% --lua=%luafile% %texfile% %secondaryflags% %dump% %redirect%]]
+
+local checkers = {
+    primaryflags   = "string",
+    secondaryflags = "string",
+    luafile        = "readable", -- "cache"
+    texfile        = "readable", -- "cache"
+    redirect       = "string",
+    dump           = "string",
+}
+
+local runners = {
+    luatex = sandbox.registerrunner {
+        name     = "make luatex format",
+        program  = "luatex",
+        template = template,
+        checkers = checkers,
+        reporter = report_format,
+    },
+    luajittex = sandbox.registerrunner {
+        name     = "make luajittex format",
+        program  = "luajittex",
+        template = template,
+        checkers = checkers,
+        reporter = report_format,
+    },
+}
+
+function environment.make_format(name,arguments)
     local engine = environment.ownmain or "luatex"
+    local silent = environment.arguments.silent
     -- change to format path (early as we need expanded paths)
     local olddir = dir.current()
     local path = caches.getwritablepath("formats",engine) or "" -- maybe platform
@@ -96,11 +144,20 @@ function environment.make_format(name,silent)
         return
     end
     -- generate format
-    local dump = os.platform=="unix" and "\\\\dump" or "\\dump"
-    if silent then
+    local specification = {
+        primaryflags   = primaryflags(),
+        secondaryflags = secondaryflags(),
+        luafile        = quoted(usedluastub),
+        texfile        = quoted(fulltexsourcename),
+        dump           = os.platform == "unix" and "\\\\dump" or "\\dump",
+    }
+    local runner = runners[engine]
+    if not runner then
+        report_format("format %a cannot be generated, no runner available for engine %a",name,engine)
+    elseif silent then
         statistics.starttiming()
-        local command = format("%s --ini --interaction=batchmode %s --lua=%s %s %s > temp.log",engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),dump)
-        local result  = os.execute(command)
+        specification.redirect = "> temp.log"
+        local result  = runner(specification)
         local runtime = statistics.stoptiming()
         if result ~= 0 then
             print(format("%s silent make > fatal error when making format %q",engine,name)) -- we use a basic print
@@ -109,9 +166,7 @@ function environment.make_format(name,silent)
         end
         os.remove("temp.log")
     else
-        local command = format("%s --ini %s --lua=%s %s %sdump",engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),dump)
-        report_format("running command: %s\n",command)
-        os.execute(command)
+        runner(specification)
     end
     -- remove related mem files
     local pattern = file.removesuffix(file.basename(usedluastub)).."-*.mem"
@@ -126,6 +181,33 @@ function environment.make_format(name,silent)
     end
     lfs.chdir(olddir)
 end
+
+local template = [[%flags% --fmt=%fmtfile% --lua=%luafile% %texfile% %more%]]
+
+local checkers = {
+    flags    = "string",
+    more     = "string",
+    fmtfile  = "readable", -- "cache"
+    luafile  = "readable", -- "cache"
+    texfile  = "readable", -- "cache"
+}
+
+local runners = {
+    luatex = sandbox.registerrunner {
+        name     = "run luatex format",
+        program  = "luatex",
+        template = template,
+        checkers = checkers,
+        reporter = report_format,
+    },
+    luajittex = sandbox.registerrunner {
+        name     = "run luajittex format",
+        program  = "luajittex",
+        template = template,
+        checkers = checkers,
+        reporter = report_format,
+    },
+}
 
 function environment.run_format(name,data,more)
     if name and name ~= "" then
@@ -148,9 +230,18 @@ function environment.run_format(name,data,more)
                 report_format("using format name %a",fmtname)
                 report_format("no luc/lua file with name %a",barename)
             else
-                local command = format("%s %s --fmt=%s --lua=%s %s %s",engine,primaryflags(),quoted(barename),quoted(luaname),quoted(data),more ~= "" and quoted(more) or "")
-                report_format("running command: %s",command)
-                os.execute(command)
+                local runner = runners[engine]
+                if not runner then
+                    report_format("format %a cannot be run, no runner available for engine %a",name,engine)
+                else
+                    runner {
+                        flags   = primaryflags(),
+                        fmtfile = quoted(barename),
+                        luafile = quoted(luaname),
+                        texfile = quoted(data),
+                        more    = more,
+                    }
+                end
             end
         end
     end

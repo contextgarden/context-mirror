@@ -186,6 +186,7 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         loadmodule("l-file.lua")
         loadmodule("l-boolean.lua")
         loadmodule("l-math.lua")
+        loadmodule("l-unicode.lua")
 
         -- A few slightly higher level support modules:
 
@@ -229,7 +230,6 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
 
         loadmodule('luatex-fonts-syn.lua')
 
-        loadmodule('font-tfm.lua')
         loadmodule('font-oti.lua')
 
         -- These are the old loader and processing modules. These use the built-in font loader and
@@ -257,6 +257,9 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         loadmodule('font-ota.lua')
         loadmodule('font-ots.lua')
         loadmodule('font-osd.lua')
+        loadmodule('font-ocl.lua') -- svg needs 0.97 (for fix in memstreams)
+
+        loadmodule('font-otc.lua')
 
         -- type one code
 
@@ -264,12 +267,17 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         loadmodule('font-one.lua') -- was font-afm.lua
         loadmodule('font-afk.lua')
 
+        -- traditional code
+
+        loadmodule('font-tfm.lua')
+
         -- common code
 
         loadmodule('font-lua.lua')
         loadmodule('font-def.lua')
         loadmodule('font-xtx.lua')         -- xetex compatible specifiers (plain/latex only)
         loadmodule('luatex-fonts-ext.lua') -- some extensions
+     -- loadmodule('luatex-fonts-lig.lua') -- and another one
 
         -- We need to plug into a callback and the following module implements the handlers. Actual
         -- plugging in happens later.

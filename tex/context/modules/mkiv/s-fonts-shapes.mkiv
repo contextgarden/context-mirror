@@ -11,12 +11,14 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D I will redo this module (using outlines).
+
 \startmodule[fonts-shapes]
 
 \registerctxluafile{s-fonts-shapes}{}
 
 \installmodulecommandluasingle \showfontshapes          {moduledata.fonts.shapes.showlist}
-\installmodulecommandluasingle \showglyphshape          {moduledata.fonts.shapes.showglypshape}
+\installmodulecommandluasingle \showglyphshape          {moduledata.fonts.shapes.showglyphshape}
 \installmodulecommandluatwo    \showlastglyphshapefield {moduledata.fonts.shapes.showlastglyphshapefield}
 \installmodulecommandluasingle \showallglyphshapes      {moduledata.fonts.shapes.showallglypshapes}
 
@@ -107,9 +109,10 @@
 %     \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{50bp}{0x1D45D}\stopTEXpage
 %     \page
 
-  % \showallglyphshapes[name=name:cambria-math,size=100bp]
+\showallglyphshapes[name=name:cambria-math,size=100bp]
 % \showallglyphshapes[name=name:dejavuserif,size=100bp]
 
-\showallglyphshapes[name=file:brill.otf,size=100bp]
+% \showallglyphshapes[name=file:brill.otf,size=100bp]
+% \showallglyphshapes[name=file:minionmath-regular.otf,size=100bp]
 
 \stoptext

@@ -215,6 +215,8 @@
 
 \stoptypescriptcollection
 
+% tricky: we cannot mix now as the file is loaded only once
+
 \startmode[txmath]
 
     \starttypescriptcollection[texgyre-math-times]
@@ -234,8 +236,9 @@
     \starttypescriptcollection[texgyre-math-times]
 
         \starttypescript [\s!math][times,termes][\s!all]
-            \loadfontgoodies[texgyre]
-            \definefontsynonym[\s!MathRoman][file:texgyre-termes-math-regular.otf][\s!features=\s!math\mathsizesuffix,\s!goodies=texgyre]
+          % \loadfontgoodies[texgyre]
+          % \definefontsynonym[\s!MathRoman][file:texgyre-termes-math-regular.otf][\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=texgyre]
+            \definefontsynonym[\s!MathRoman][file:texgyretermes-math.otf][\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=termes-math]
         \stoptypescript
 
     \stoptypescriptcollection
@@ -261,8 +264,9 @@
     \starttypescriptcollection[texgyre-math-pagella]
 
         \starttypescript [\s!math][palatino,pagella][\s!all]
-            \loadfontgoodies[texgyre]
-            \definefontsynonym[\s!MathRoman][file:texgyre-pagella-math-regular.otf][\s!features=\s!math\mathsizesuffix,\s!goodies=texgyre]
+          % \loadfontgoodies[texgyre]
+          % \definefontsynonym[\s!MathRoman][file:texgyre-pagella-math-regular.otf][\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=texgyre]
+            \definefontsynonym[\s!MathRoman][file:texgyrepagella-math.otf][\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=pagella-math]
         \stoptypescript
 
     \stoptypescriptcollection
@@ -272,8 +276,9 @@
 \starttypescriptcollection[texgyre-math-bonum]
 
     \starttypescript [\s!math][bookman,bonum][\s!all]
-        \loadfontgoodies[texgyre]
-        \definefontsynonym[\s!MathRoman][file:texgyre-bonum-math-regular.otf][\s!features=\s!math\mathsizesuffix,\s!goodies=texgyre]
+      % \loadfontgoodies[texgyre]
+      % \definefontsynonym[\s!MathRoman][file:texgyre-bonum-math-regular.otf][\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=texgyre]
+        \definefontsynonym[\s!MathRoman][file:texgyrebonum-math.otf][\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=bonum-math]
     \stoptypescript
 
 \stoptypescriptcollection
@@ -281,8 +286,11 @@
 \starttypescriptcollection[texgyre-math-schola]
 
     \starttypescript [\s!math][schoolbook,schola][\s!all]
-        \loadfontgoodies[texgyre]
-        \definefontsynonym[\s!MathRoman][file:texgyre-schola-math-regular.otf][\s!features=\s!math\mathsizesuffix,\s!goodies=texgyre]
+      % \loadfontgoodies[texgyre]
+      % \definefontsynonym[\s!MathRoman][file:texgyre-schola-math-regular.otf][\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=texgyre]
+        \definefontsynonym[\s!MathRoman][file:texgyreschola-math.otf][\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=schola-math]
     \stoptypescript
 
 \stoptypescriptcollection
+
+

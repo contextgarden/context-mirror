@@ -6,8 +6,10 @@ if not modules then modules = { } end modules ['font-ext'] = {
     license   = "see context related readme files"
 }
 
-local next, type, byte = next, type, string.byte
-local utfbyte = utf.byte
+local next, type, tonumber = next, type, tonumber
+local formatters = string.formatters
+local byte = string.byte
+local utfchar = utf.char
 
 local context            = context
 local fonts              = fonts
@@ -18,7 +20,6 @@ local trace_expansion    = false  trackers.register("fonts.expansion",  function
 
 local report_expansions  = logs.reporter("fonts","expansions")
 local report_protrusions = logs.reporter("fonts","protrusions")
-local report_opbd        = logs.reporter("fonts","otf opbd")
 
 --[[ldx--
 <p>When we implement functions that deal with features, most of them
@@ -34,10 +35,13 @@ local registerotffeature = handlers.otf.features.register
 local registerafmfeature = handlers.afm.features.register
 
 local fontdata           = hashes.identifiers
+local fontproperties     = hashes.properties
 
 local allocate           = utilities.storage.allocate
 local settings_to_array  = utilities.parsers.settings_to_array
 local getparameters      = utilities.parsers.getparameters
+local gettexdimen        = tex.getdimen
+local family_font        = node.family_font
 
 local setmetatableindex  = table.setmetatableindex
 
@@ -77,6 +81,8 @@ expansions.classes = classes
 expansions.vectors = vectors
 
 -- beware, pdftex itself uses percentages * 10
+--
+-- todo: get rid of byte() here
 
 classes.preset = { stretch = 2, shrink = 2, step = .5, factor = 1 }
 
@@ -286,12 +292,11 @@ vectors['quality'] = table.merged(
     vectors['alpha']
 )
 
--- As this is experimental code, users should not depend on it. The
--- implications are still discussed on the ConTeXt Dev List and we're
--- not sure yet what exactly the spec is (the next code is tested with
--- a gyre font patched by / fea file made by Khaled Hosny). The double
--- trick should not be needed it proper hanging punctuation is used in
--- which case values < 1 can be used.
+-- As this is experimental code, users should not depend on it. The implications are still
+-- discussed on the ConTeXt Dev List and we're not sure yet what exactly the spec is (the
+-- next code is tested with a gyre font patched by / fea file made by Khaled Hosny). The
+-- double trick should not be needed it proper hanging punctuation is used in which case
+-- values < 1 can be used.
 --
 -- preferred (in context, usine vectors):
 --
@@ -339,17 +344,23 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
         if validlookups then
             for i=1,#lookuplist do
                 local lookup = lookuplist[i]
-                local data = lookuphash[lookup]
-                if data then
+                local steps  = lookup.steps
+                if steps then
                     if trace_protrusion then
-                        report_protrusions("setting left using lfbd lookup %a",lookuptags[lookup])
+                        report_protrusions("setting left using lfbd")
                     end
-                    for k, v in next, data do
-                    --  local p = - v[3] / descriptions[k].width-- or 1 ~= 0 too but the same
-                        local p = - (v[1] / 1000) * factor * left
-                        characters[k].left_protruding = p
-                        if trace_protrusion then
-                            report_protrusions("lfbd -> %s -> %C -> %0.03f (% t)",lookuptags[lookup],k,p,v)
+                    for i=1,#steps do
+                        local step     = steps[i]
+                        local coverage = step.coverage
+                        if coverage then
+                            for k, v in next, coverage do
+                            --  local p = - v[3] / descriptions[k].width-- or 1 ~= 0 too but the same
+                                local p = - (v[1] / 1000) * factor * left
+                                characters[k].left_protruding = p
+                                if trace_protrusion then
+                                    report_protrusions("lfbd -> %C -> %p",k,p)
+                                end
+                            end
                         end
                     end
                     done = true
@@ -362,17 +373,23 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
         if validlookups then
             for i=1,#lookuplist do
                 local lookup = lookuplist[i]
-                local data = lookuphash[lookup]
-                if data then
+                local steps  = lookup.steps
+                if steps then
                     if trace_protrusion then
-                        report_protrusions("setting right using rtbd lookup %a",lookuptags[lookup])
+                        report_protrusions("setting right using rtbd")
                     end
-                    for k, v in next, data do
-                    --  local p = v[3] / descriptions[k].width -- or 3
-                        local p = (v[1] / 1000) * factor * right
-                        characters[k].right_protruding = p
-                        if trace_protrusion then
-                            report_protrusions("rtbd -> %s -> %C -> %0.03f (% t)",lookuptags[lookup],k,p,v)
+                    for i=1,#steps do
+                        local step     = steps[i]
+                        local coverage = step.coverage
+                        if coverage then
+                            for k, v in next, coverage do
+                            --  local p = v[3] / descriptions[k].width -- or 3
+                                local p = (v[1] / 1000) * factor * right
+                                characters[k].right_protruding = p
+                                if trace_protrusion then
+                                    report_protrusions("rtbd -> %C -> %p",k,p)
+                                end
+                            end
                         end
                     end
                 end
@@ -391,10 +408,9 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
     end
 end
 
--- The opbd test is just there because it was discussed on the
--- context development list. However, the mentioned fxlbi.otf font
--- only has some kerns for digits. So, consider this feature not
--- supported till we have a proper test font.
+-- The opbd test is just there because it was discussed on the context development list. However,
+-- the mentioned fxlbi.otf font only has some kerns for digits. So, consider this feature not supported
+-- till we have a proper test font.
 
 local function initializeprotrusion(tfmdata,value)
     if value then
@@ -550,10 +566,10 @@ local textitalics_specification = {
 registerotffeature(textitalics_specification)
 registerafmfeature(textitalics_specification)
 
-local function initializemathitalics(tfmdata,value) -- yes no delay
-    tfmdata.properties.mathitalics = toboolean(value)
-end
-
+-- local function initializemathitalics(tfmdata,value) -- yes no delay
+--     tfmdata.properties.mathitalics = toboolean(value)
+-- end
+--
 -- local mathitalics_specification = {
 --     name         = "mathitalics",
 --     description  = "use alternative math italic correction",
@@ -627,12 +643,20 @@ local function manipulatedimensions(tfmdata,key,value)
     if type(value) == "string" and value ~= "" then
         local characters = tfmdata.characters
         local parameters = tfmdata.parameters
-        local emwidth = parameters.quad
-        local exheight = parameters.xheight
-        local spec = settings_to_array(value)
-        local width = (spec[1] or 0) * emwidth
-        local height = (spec[2] or 0) * exheight
-        local depth = (spec[3] or 0) * exheight
+        local emwidth    = parameters.quad
+        local exheight   = parameters.xheight
+        local width      = 0
+        local height     = 0
+        local depth      = 0
+        if value == "strut" then
+            height = gettexdimen("strutht")
+            depth  = gettexdimen("strutdp")
+        else
+            local spec = settings_to_array(value)
+            width  = (spec[1] or 0) * emwidth
+            height = (spec[2] or 0) * exheight
+            depth  = (spec[3] or 0) * exheight
+        end
         if width > 0 then
             local resources = tfmdata.resources
             local additions = { }
@@ -689,7 +713,7 @@ local function manipulatedimensions(tfmdata,key,value)
         elseif height > 0 and depth > 0 then
             for unicode, old_c in next, characters do
                 old_c.height = height
-                old_c.depth = depth
+                old_c.depth  = depth
             end
         elseif height > 0 then
             for unicode, old_c in next, characters do
@@ -822,6 +846,8 @@ registerotffeature {
 -- do
 --
 --     local v_local = interfaces and interfaces.variables and interfaces.variables["local"] or "local"
+--
+--     local utfbyte = utf.byte
 --
 --     local function initialize(tfmdata,key,value)
 --         local characters = tfmdata.characters
@@ -966,74 +992,307 @@ registerafmfeature(dimensions_specification)
 
 -- a handy helper (might change or be moved to another namespace)
 
-local nodepool    = nodes.pool
+local nodepool       = nodes.pool
+local new_glyph      = nodepool.glyph
 
-local new_special = nodepool.special
-local new_glyph   = nodepool.glyph
-local new_rule    = nodepool.rule
-local hpack_node  = node.hpack
+local helpers        = fonts.helpers
+local currentfont    = font.current
 
-local helpers     = fonts.helpers
-local currentfont = font.current
+local currentprivate = 0xE000
+local maximumprivate = 0xEFFF
+
+-- if we run out of space we can think of another range but by sharing we can
+-- use these privates for mechanisms like alignments-on-character and such
+
+local sharedprivates = setmetatableindex(function(t,k)
+    v = currentprivate
+    if currentprivate < maximumprivate then
+        currentprivate = currentprivate + 1
+    else
+        -- reuse last slot, todo: warning
+    end
+    t[k] = v
+    return v
+end)
 
 function helpers.addprivate(tfmdata,name,characterdata)
     local properties = tfmdata.properties
-    local privates = properties.privates
-    local lastprivate = properties.lastprivate
-    if lastprivate then
-        lastprivate = lastprivate + 1
-    else
-        lastprivate = 0xE000
-    end
+    local characters = tfmdata.characters
+    local privates   = properties.privates
     if not privates then
         privates = { }
         properties.privates = privates
     end
-    if name then
-        privates[name] = lastprivate
+    if not name then
+        name = formatters["anonymous_private_0x%05X"](currentprivate)
     end
-    properties.lastprivate = lastprivate
-    tfmdata.characters[lastprivate] = characterdata
-    if properties.finalized then
-        properties.lateprivates = true
+    local usedprivate = sharedprivates[name]
+    privates[name] = usedprivate
+    characters[usedprivate] = characterdata
+    return usedprivate
+end
+
+local function getprivateslot(id,name)
+    if not name then
+        name = id
+        id   = currentfont()
     end
-    return lastprivate
+    local properties = fontproperties[id]
+    local privates   = properties and properties.privates
+    return privates and privates[name]
 end
 
 local function getprivatenode(tfmdata,name)
+    if type(tfmdata) == "number" then
+        tfmdata = fontdata[tfmdata]
+    end
     local properties = tfmdata.properties
-    local privates = properties and properties.privates
-    if privates then
-        local p = privates[name]
-        if p then
-            local char     = tfmdata.characters[p]
-            local commands = char.commands
-            if commands then
-                local fake  = hpack_node(new_special(commands[1][2]))
-                fake.width  = char.width
-                fake.height = char.height
-                fake.depth  = char.depth
-                return fake
-            else
-                -- todo: set current attribibutes
-                return new_glyph(properties.id,p)
-            end
+    local font = properties.id
+    local slot = getprivateslot(font,name)
+    if slot then
+        -- todo: set current attribibutes
+        local char   = tfmdata.characters[slot]
+        local tonode = char.tonode
+        if tonode then
+            return tonode(font,char)
+        else
+            return new_glyph(font,slot)
         end
     end
 end
 
-helpers.getprivatenode = getprivatenode
+local function getprivatecharornode(tfmdata,name)
+    if type(tfmdata) == "number" then
+        tfmdata = fontdata[tfmdata]
+    end
+    local properties = tfmdata.properties
+    local font = properties.id
+    local slot = getprivateslot(font,name)
+    if slot then
+        -- todo: set current attribibutes
+        local char   = tfmdata.characters[slot]
+        local tonode = char.tonode
+        if tonode then
+            return "node", tonode(tfmdata,char)
+        else
+            return "char", slot
+        end
+    end
+end
+
+helpers.getprivateslot       = getprivateslot
+helpers.getprivatenode       = getprivatenode
+helpers.getprivatecharornode = getprivatecharornode
+
+function helpers.getprivates(tfmdata)
+    if type(tfmdata) == "number" then
+        tfmdata = fontdata[tfmdata]
+    end
+    local properties = tfmdata.properties
+    return properties and properties.privates
+end
 
 function helpers.hasprivate(tfmdata,name)
+    if type(tfmdata) == "number" then
+        tfmdata = fontdata[tfmdata]
+    end
     local properties = tfmdata.properties
     local privates = properties and properties.privates
     return privates and privates[name] or false
+end
+
+-- relatively new:
+
+do
+
+    local extraprivates = { }
+
+    function fonts.helpers.addextraprivate(name,f)
+        extraprivates[#extraprivates+1] = { name, f }
+    end
+
+    local function addextraprivates(tfmdata)
+        for i=1,#extraprivates do
+            local e = extraprivates[i]
+            local c = e[2](tfmdata)
+            if c then
+                fonts.helpers.addprivate(tfmdata, e[1], c)
+            end
+        end
+    end
+
+    fonts.constructors.newfeatures.otf.register {
+        name        = "extraprivates",
+        description = "extra privates",
+        default     = true,
+        manipulators = {
+            base = addextraprivates,
+            node = addextraprivates,
+        }
+    }
+
 end
 
 implement {
     name      = "getprivatechar",
     arguments = "string",
     actions   = function(name)
-        context(getprivatenode(fontdata[currentfont()],name))
+        local p = getprivateslot(name)
+        if p then
+            context(utfchar(p))
+        end
     end
 }
+
+implement {
+    name      = "getprivatemathchar",
+    arguments = "string",
+    actions   = function(name)
+        local p = getprivateslot(family_font(0),name)
+        if p then
+            context(utfchar(p))
+        end
+    end
+}
+
+implement {
+    name      = "getprivateslot",
+    arguments = "string",
+    actions   = function(name)
+        local p = getprivateslot(name)
+        if p then
+            context(p)
+        end
+    end
+}
+
+-- requested for latex but not supported unless really needed in context:
+--
+-- registerotffeature {
+--     name         = "ignoremathconstants",
+--     description  = "ignore math constants table",
+--     initializers = {
+--         base = function(tfmdata,value)
+--             if value then
+--                 tfmdata.mathparameters = nil
+--             end
+--         end
+--     }
+-- }
+
+-- tfmdata.properties.mathnolimitsmode = tonumber(value) or 0
+
+do
+
+    local splitter  = lpeg.splitat(",",tonumber)
+    local lpegmatch = lpeg.match
+
+    local function initialize(tfmdata,value)
+        local mathparameters = tfmdata.mathparameters
+        if mathparameters then
+            local sup, sub
+            if type(value) == "string" then
+                sup, sub = lpegmatch(splitter,value)
+                if not sup then
+                    sub, sup = 0, 0
+                elseif not sub then
+                    sub, sup = sup, 0
+                end
+            elseif type(value) == "number" then
+                sup, sub = 0, value
+            end
+            mathparameters.NoLimitSupFactor = sup
+            mathparameters.NoLimitSubFactor = sub
+        end
+    end
+
+    registerotffeature {
+        name         = "mathnolimitsmode",
+        description  = "influence nolimits placement",
+        initializers = {
+            base = initialize,
+            node = initialize,
+        }
+    }
+
+end
+
+do
+
+    local function initialize(tfmdata,value)
+        local properties = tfmdata.properties
+        if properties then
+            properties.identity = value == "vertical" and "vertical" or "horizontal"
+        end
+    end
+
+    registerotffeature {
+        name         = "identity",
+        description  = "set font identity",
+        initializers = {
+            base = initialize,
+            node = initialize,
+        }
+    }
+
+    local function initialize(tfmdata,value)
+        local properties = tfmdata.properties
+        if properties then
+            properties.writingmode = value == "vertical" and "vertical" or "horizontal"
+        end
+    end
+
+    registerotffeature {
+        name         = "writingmode",
+        description  = "set font direction",
+        initializers = {
+            base = initialize,
+            node = initialize,
+        }
+    }
+
+end
+
+do -- another hack for a crappy font
+
+    local function additalictowidth(tfmdata,key,value)
+        local characters = tfmdata.characters
+        local resources  = tfmdata.resources
+        local additions  = { }
+        local private    = resources.private
+        for unicode, old_c in next, characters do
+            -- maybe check for math
+            local oldwidth  = old_c.width
+            local olditalic = old_c.italic
+            if olditalic and olditalic ~= 0 then
+                private = private + 1
+                local new_c = {
+                    width    = oldwidth + olditalic,
+                    height   = old_c.height,
+                    depth    = old_c.depth,
+                    commands = {
+                        { "slot", 1, private },
+                        { "right", olditalic },
+                    },
+                }
+                setmetatableindex(new_c,old_c)
+                characters[unicode] = new_c
+                additions[private]  = old_c
+            end
+        end
+        for k, v in next, additions do
+            characters[k] = v
+        end
+        resources.private = private
+    end
+
+    registerotffeature {
+        name        = "italicwidths",
+        description = "add italic to width",
+        manipulators = {
+            base = additalictowidth,
+         -- node = additalictowidth, -- only makes sense for math
+        }
+    }
+
+end

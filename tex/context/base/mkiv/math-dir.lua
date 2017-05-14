@@ -41,7 +41,7 @@ local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 
 local nodecodes          = nodes.nodecodes
-local tasks              = nodes.tasks
+local enableaction       = nodes.tasks.enableaction
 
 local glyph_code         = nodecodes.glyph
 local hlist_code         = nodecodes.hlist
@@ -108,13 +108,13 @@ local function processmath(head)
             end
         elseif not start then
             -- nothing
-if id == hlist_code or id == vlist_code then
-    local list, d = processmath(getlist(current))
-    setlist(current,list)
-    if d then
-        done = true
-    end
-end
+            if id == hlist_code or id == vlist_code then
+                local list, d = processmath(getlist(current))
+                setlist(current,list)
+                if d then
+                    done = true
+                end
+            end
         elseif start == stop then
             start = nil
         else
@@ -160,7 +160,7 @@ function directions.setmath(n)
         if trace_directions then
             report_directions("enabling directions handler")
         end
-        tasks.enableaction("math","typesetters.directions.processmath")
+        enableaction("math","typesetters.directions.processmath")
         enabled = true
     end
 end

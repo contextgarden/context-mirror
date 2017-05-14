@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['mtx-context'] = {
+if not modules then modules = { } end modules['mtx-context'] = {
     version   = 1.001,
     comment   = "companion to mtxrun.lua",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['mtx-context'] = {
 local type, next, tostring, tonumber = type, next, tostring, tonumber
 local format, gmatch, match, gsub, find = string.format, string.gmatch, string.match, string.gsub, string.find
 local quote, validstring = string.quote, string.valid
-local concat = table.concat
+local sort, concat, insert, sortedhash = table.sort, table.concat, table.insert, table.sortedhash
 local settings_to_array = utilities.parsers.settings_to_array
 local appendtable = table.append
 local lpegpatterns, lpegmatch, Cs, P = lpeg.patterns, lpeg.match, lpeg.Cs, lpeg.P
@@ -34,7 +34,7 @@ local formatters    = string.formatters
 
 local application = logs.application {
     name     = "mtx-context",
-    banner   = "ConTeXt Process Management 0.63",
+    banner   = "ConTeXt Process Management 1.01",
  -- helpinfo = helpinfo, -- table with { category_a = text_1, category_b = text_2 } or helpstring or xml_blob
     helpinfo = "mtx-context.xml",
 }
@@ -158,6 +158,67 @@ local defaultformats = {
     "cont-en",
     "cont-nl",
 }
+
+-- purging files (we should have an mkii and mkiv variants)
+
+local generic_files = {
+    "texexec.tex", "texexec.tui", "texexec.tuo",
+    "texexec.tuc", "texexec.tua",
+    "texexec.ps", "texexec.pdf", "texexec.dvi",
+    "cont-opt.tex", "cont-opt.bak"
+}
+
+local obsolete_results = {
+    "dvi",
+}
+
+local temporary_runfiles = {
+    "tui",                             -- mkii two pass file
+    "tua",                             -- mkiv obsolete
+    "tup", "ted", "tes",               -- texexec
+    "top",                             -- mkii options file
+    "log",                             -- tex log file
+    "tmp",                             -- mkii buffer file
+    "run",                             -- mkii stub
+    "bck",                             -- backup (obsolete)
+    "rlg",                             -- resource log
+    "ctl",                             --
+    "mpt", "mpx", "mpd", "mpo", "mpb", -- metafun
+    "prep",                            -- context preprocessed
+    "pgf",                             -- tikz
+    "aux", "blg",                      -- bibtex
+}
+
+local temporary_suffixes = {
+    "prep",                            -- context preprocessed
+}
+local synctex_runfiles = {
+    "synctex", "synctex.gz", "syncctx" -- synctex
+}
+
+local persistent_runfiles = {
+    "tuo", -- mkii two pass file
+    "tub", -- mkii buffer file
+    "top", -- mkii options file
+    "tuc", -- mkiv two pass file
+    "bbl", -- bibtex
+}
+
+local special_runfiles = {
+    "%-mpgraph", "%-mprun", "%-temp%-"
+}
+
+local function purge_file(dfile,cfile)
+    if cfile and validfile(cfile) then
+        if removefile(dfile) then
+            return filebasename(dfile)
+        end
+    elseif dfile then
+        if removefile(dfile) then
+            return filebasename(dfile)
+        end
+    end
+end
 
 -- process information
 
@@ -520,10 +581,15 @@ local function run_texexec(filename,a_purge,a_purgeall)
     end
 end
 
---
+-- context mode will become the only method some day
 
-local function check_synctex(a_synctex)
-    return a_synctex and (tonumber(a_synctex) or (toboolean(a_synctex,true) and 1) or (a_synctex == "zipped" and 1) or (a_synctex == "unzipped" and -1)) or nil
+local function check_synctex(a_synctex) -- context is intercepted elsewhere
+    return a_synctex and (
+        tonumber(a_synctex) or
+        (toboolean(a_synctex,true) and 1) or
+        (a_synctex == "zipped" and 1) or
+        (a_synctex == "unzipped" and -1)
+    ) or nil
 end
 
 function scripts.context.run(ctxdata,filename)
@@ -583,7 +649,7 @@ function scripts.context.run(ctxdata,filename)
     local a_nonstopmode   = getargument("nonstopmode")
     local a_scollmode     = getargument("scrollmode")
     local a_once          = getargument("once")
-    local a_synctex       = getargument("synctex")
+    local a_synctex       = getargument("syncctx") and "context" or getargument("synctex")
     local a_backend       = getargument("backend")
     local a_arrange       = getargument("arrange")
     local a_noarrange     = getargument("noarrange")
@@ -609,11 +675,17 @@ function scripts.context.run(ctxdata,filename)
 
     --
     a_batchmode = (a_batchmode and "batchmode") or (a_nonstopmode and "nonstopmode") or (a_scrollmode and "scrollmode") or nil
-    a_synctex   = check_synctex(a_synctex)
+ -- a_synctex   = check_synctex(a_synctex)
     --
     for i=1,#filelist do
         --
         local filename = filelist[i]
+
+        if filename == "" then
+            report("warning: bad filename")
+            break
+        end
+
         local basename = filebasename(filename) -- use splitter
         local pathname = filepathpart(filename)
         --
@@ -630,7 +702,7 @@ function scripts.context.run(ctxdata,filename)
         --
         local analysis = preamble_analyze(filename)
         --
-        a_synctex = a_synctex or check_synctex(analysis.synctex)
+        a_synctex = a_synctex or analysis.synctex
         --
         if a_mkii or analysis.engine == 'pdftex' or analysis.engine == 'xetex' then
             run_texexec(filename,a_purge,a_purgeall)
@@ -738,9 +810,9 @@ function scripts.context.run(ctxdata,filename)
                 --
                 local l_flags = {
                     ["interaction"]           = a_batchmode,
-                    ["synctex"]               = a_synctex,
-                    ["no-parse-first-line"]   = true, -- obsolete
-                    ["safer"]                 = a_safer,
+                    ["synctex"]               = check_synctex(a_synctex), -- otherwise not working
+                    ["no-parse-first-line"]   = true,           -- obsolete
+                    ["safer"]                 = a_safer,        -- better use --sandbox
                  -- ["no-mktex"]              = true,
                  -- ["file-line-error-style"] = true,
                     ["fmt"]                   = formatfile,
@@ -769,13 +841,16 @@ function scripts.context.run(ctxdata,filename)
                 end
                 --
                 if a_profile then
-                    directives[#directives+1] = "system.profile"
+                    directives[#directives+1] = format("system.profile=%s",tonumber(a_profile) or 0)
                 end
                 --
+                for i=1,#synctex_runfiles do
+                    removefile(fileaddsuffix(jobname,synctex_runfiles[i]))
+                end
                 if a_synctex then
-                    report("warning: synctex is enabled") -- can add upto 5% runtime
                     directives[#directives+1] = format("system.synctex=%s",a_synctex)
                 end
+                --
                 if #directives > 0 then
                     c_flags.directives = concat(directives,",")
                 end
@@ -790,6 +865,7 @@ function scripts.context.run(ctxdata,filename)
                     c_flags.forcedruns = multipass_forcedruns and multipass_forcedruns > 0 and multipass_forcedruns or nil
                     c_flags.currentrun = currentrun
                     c_flags.noarrange  = a_noarrange or a_arrange or nil
+                    c_flags.profile    = a_profile and (tonumber(a_profile) or 0) or nil
                     --
                     local command = luatex_command(l_flags,c_flags,mainfile,a_engine)
                     --
@@ -829,6 +905,9 @@ function scripts.context.run(ctxdata,filename)
                     --
                 end
                 --
+                if a_synctex == "context" then
+                    renamefile(fileaddsuffix(jobname,"syncctx"),fileaddsuffix(jobname,"synctex"))
+                end
                 if a_arrange then
                     --
                     c_flags.final      = true
@@ -975,7 +1054,7 @@ function scripts.context.pipe() -- still used?
 end
 
 local function make_mkiv_format(name,engine)
-    environment.make_format(name,environment.arguments.silent) -- jit is picked up later
+    environment.make_format(name) -- jit is picked up later
 end
 
 local make_mkii_format
@@ -990,7 +1069,7 @@ do -- more or less copied from mtx-plain.lua:
             else
                 print("mktexlsr silent run") -- we use a basic print
             end
-            os.remove("temp.log")
+            removefile("temp.log")
         else
             report("running mktexlsr")
             os.execute("mktexlsr")
@@ -998,7 +1077,7 @@ do -- more or less copied from mtx-plain.lua:
     end
 
     local function engine(texengine,texformat)
-        local command = string.format('%s --ini --etex --8bit %s \\dump',texengine,file.addsuffix(texformat,"mkii"))
+        local command = string.format('%s --ini --etex --8bit %s \\dump',texengine,fileaddsuffix(texformat,"mkii"))
         if environment.arguments.silent then
             statistics.starttiming()
             local command = format("%s > temp.log",command)
@@ -1009,7 +1088,7 @@ do -- more or less copied from mtx-plain.lua:
             else
                 print(format("%s silent make > format %q made in %.3f seconds",texengine,texformat,runtime)) -- we use a basic print
             end
-            os.remove("temp.log")
+            removefile("temp.log")
         else
             report("running command: %s",command)
             os.execute(command)
@@ -1073,7 +1152,7 @@ do -- more or less copied from mtx-plain.lua:
         for k, v in next, environment.arguments do
             t[#t+1] = string.format("--mtx:%s=%s",k,v)
         end
-        execute('%s --fmt=%s %s "%s"',texengine,file.removesuffix(texformat),table.concat(t," "),filename)
+        execute('%s --fmt=%s %s "%s"',texengine,removesuffix(texformat),table.concat(t," "),filename)
     end
 
     make_mkii_format = function(name,engine)
@@ -1215,67 +1294,6 @@ function scripts.context.version()
         end
     else
         report("main context file: unknown, 'context.mkiv' not found")
-    end
-end
-
--- purging files (we should have an mkii and mkiv variants)
-
-local generic_files = {
-    "texexec.tex", "texexec.tui", "texexec.tuo",
-    "texexec.tuc", "texexec.tua",
-    "texexec.ps", "texexec.pdf", "texexec.dvi",
-    "cont-opt.tex", "cont-opt.bak"
-}
-
-local obsolete_results = {
-    "dvi",
-}
-
-local temporary_runfiles = {
-    "tui",                             -- mkii two pass file
-    "tua",                             -- mkiv obsolete
-    "tup", "ted", "tes",               -- texexec
-    "top",                             -- mkii options file
-    "log",                             -- tex log file
-    "tmp",                             -- mkii buffer file
-    "run",                             -- mkii stub
-    "bck",                             -- backup (obsolete)
-    "rlg",                             -- resource log
-    "ctl",                             --
-    "mpt", "mpx", "mpd", "mpo", "mpb", -- metafun
-    "prep",                            -- context preprocessed
-    "pgf",                             -- tikz
-    "aux", "blg",                      -- bibtex
-}
-
-local temporary_suffixes = {
-    "prep",                            -- context preprocessed
-}
-local synctex_runfiles = {
-    "synctex", "synctex.gz",           -- synctex
-}
-
-local persistent_runfiles = {
-    "tuo", -- mkii two pass file
-    "tub", -- mkii buffer file
-    "top", -- mkii options file
-    "tuc", -- mkiv two pass file
-    "bbl", -- bibtex
-}
-
-local special_runfiles = {
-    "-mpgraph", "-mprun", "-temp-"
-}
-
-local function purge_file(dfile,cfile)
-    if cfile and validfile(cfile) then
-        if removefile(dfile) then
-            return filebasename(dfile)
-        end
-    elseif dfile then
-        if removefile(dfile) then
-            return filebasename(dfile)
-        end
     end
 end
 
@@ -1438,6 +1456,7 @@ function scripts.context.modules(pattern)
         dir.glob(filejoinname(filepathpart(found,pattern)),list)
     end
     local done = { } -- todo : sort
+    local none = { x = { }, m = { }, s = { }, t = { } }
     for i=1,#list do
         local v = list[i]
         local base = filebasename(v)
@@ -1445,7 +1464,7 @@ function scripts.context.modules(pattern)
             done[base] = true
             local suffix = filesuffix(base)
             if suffix == "tex" or suffix == "mkiv" or suffix == "mkvi" or suffix == "mkix" or suffix == "mkxi" then
-                local prefix = match(base,"^([xmst])%-")
+                local prefix, rest = match(base,"^([xmst])%-(.*)")
                 if prefix then
                     v = resolvers.findfile(base) -- so that files on my dev path are seen
                     local data = io.loaddata(v) or ""
@@ -1465,10 +1484,25 @@ function scripts.context.modules(pattern)
                             end
                         end
                         report()
+                    else
+                        insert(none[prefix],rest)
                     end
                 end
             end
         end
+    end
+
+    local function show(k,v)
+        sort(v)
+        if #v > 0 then
+            report()
+            for i=1,#v do
+                report("%s : %s",k,v[i])
+            end
+        end
+    end
+    for k, v in sortedhash(none) do
+        show(k,v)
     end
 end
 
@@ -1693,6 +1727,10 @@ end
 
 -- getting it done
 
+if getargument("timedlog") then
+    logs.settimedlog()
+end
+
 if getargument("nostats") then
     setargument("nostatistics",true)
     setargument("nostat",nil)
@@ -1720,10 +1758,10 @@ do
 end
 
 if getargument("once") then
-    multipass_nofruns    = 1
+    multipass_nofruns = 1
 else
     if getargument("runs") then
-        multipass_nofruns    = tonumber(getargument("runs")) or nil
+        multipass_nofruns = tonumber(getargument("runs")) or nil
     end
     multipass_forcedruns = tonumber(getargument("forcedruns")) or nil
 end
@@ -1747,9 +1785,9 @@ elseif getargument("update") then
     scripts.context.update()
 elseif getargument("expert") then
     application.help("expert", "special")
-elseif getargument("modules") then
+elseif getargument("showmodules") or getargument("modules") then
     scripts.context.modules()
-elseif getargument("extras") then
+elseif getargument("showextras") or getargument("extras") then
     scripts.context.extras(environment.files[1] or getargument("extras"))
 elseif getargument("extra") then
     scripts.context.extra()

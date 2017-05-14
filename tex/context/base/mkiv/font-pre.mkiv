@@ -40,6 +40,10 @@
    trep=yes] % texligatures=yes,texquotes=yes
 
 \definefontfeature
+  [original] % a clone of default so we can revert
+  [default]
+
+\definefontfeature
   [smallcaps]
   [always]
   [smcp=yes,
@@ -125,6 +129,11 @@
   [arabic]
   [semitic-complete]
   [script=arab]
+
+\definefontfeature
+  [syriac]
+  [arabic]
+  [fin2=yes,fin3=yes,med2=yes]
 
 \definefontfeature
   [hebrew]
@@ -240,15 +249,27 @@
 \definefontfeature
   [mathematics]
   [mode=base,
-   liga=yes,
    kern=yes,
-   tlig=yes,
-   trep=yes,
+ % liga=yes, % makes no sense
+ % tlig=yes, % makes no sense
+ % trep=yes, % makes no sense
+   mathnolimitsmode={0,800}, % this looks okay on the average font
    mathalternates=yes,
    mathitalics=yes, % we pass them
+   mathdimensions=all,
  % mathgaps=yes,
    language=dflt,
    script=math]
+
+\ifdefined\mathnolimitsmode
+    \mathnolimitsmode\plusone % font driven (only opentype)
+\fi
+
+\ifdefined\mathitalicsmode
+    \mathitalicsmode\plusone % experiment
+\fi
+
+% \adaptfontfeature[*math*][mathnolimitsmode=1000] % only subscript
 
 \definefontfeature
   [mathematics-l2r]
@@ -266,7 +287,6 @@
   [mathematics-r2l]
   [mathematics]
   [rtlm=yes,
-  %dtls=yes,
    locl=yes]
 
 \definefontfeature[virtualmath]              [mathematics]      % downward compatibility
@@ -305,12 +325,25 @@
    protrusion=quality]
 
 \definefontfeature
+  [fullprotrusion]
+  [protrusion=pure]
+
+\definefontfeature
   [slanted]
   [slant=.2]
 
 \definefontfeature
   [boldened]
   [extend=1.2]
+
+%D Emoji:
+
+\definefontfeature[bandw:overlay][ccmp=yes,dist=yes]
+\definefontfeature[color:overlay][ccmp=yes,dist=yes,colr=yes]
+%definefontfeature[bandw:svg]    [ccmp=yes,dist=yes]
+\definefontfeature[color:svg]    [ccmp=yes,dist=yes,svg=yes]
+%definefontfeature[bandw:bitmap] [ccmp=yes,dist=yes,sbix=yes]
+\definefontfeature[color:bitmap] [ccmp=yes,dist=yes,sbix=yes]
 
 %D We define some colors that are used in tracing (for instance \OPENTYPE\
 %D features). We cannot yet inherit because no colors are predefined.
@@ -656,14 +689,27 @@
 \definefontfeature[f:oldstyle] [onum=yes]
 \definefontfeature[f:tabular]  [tnum=yes]
 \definefontfeature[f:superiors][sups=yes]
+\definefontfeature[f:fractions][frac=yes]
+\definefontfeature[f:kern]     [kern=yes]
+\definefontfeature[f:kerns]    [kern=yes]
 
 \definealternativestyle [\v!smallcaps] [\setsmallcaps] [\setsmallcaps]
 \definealternativestyle [\v!oldstyle]  [\setoldstyle ] [\setoldstyle ]
+\definealternativestyle [\v!fractions] [\setfractions\resetbreakpoints] [\setfractions\resetbreakpoints]
 
 \unexpanded\def\setsmallcaps{\doaddfeature{f:smallcaps}}
 \unexpanded\def\setoldstyle {\doaddfeature{f:oldstyle}}
 \unexpanded\def\settabular  {\doaddfeature{f:tabular}}
 \unexpanded\def\setsuperiors{\doaddfeature{f:superiors}}
+\unexpanded\def\setfractions{\doaddfeature{f:fractions}}
+
+% \unexpanded\def\frc#1#2%
+%   {\dontleavehmode
+%    \begingroup
+%    \addff{frac}%
+%    \resetbreakpoints
+%    #1/#2%
+%    \endgroup}
 
 %D \macros
 %D   {tinyfont}
@@ -676,7 +722,7 @@
 %D
 %D For tracing purposes we define:
 
-\definefont[tinyfont][dejavusansmono at 1ex]
+\definefont[tinyfont][file:dejavusansmono at 1ex]
 
 %D \macros
 %D   {infofont}
@@ -689,10 +735,11 @@
 \let\infofont    \relax % satisfy dep checker
 \let\infofontbold\relax % satisfy dep checker
 
-\definefont[infofont]    [dejavusansmono     at 6pt] % todo \the\everybodyfont
-\definefont[infofontbold][dejavusansmonobold at 6pt] % todo \the\everybodyfont
+\definefont[infofont]    [file:dejavusansmono      at 6pt] % todo \the\everybodyfont
+\definefont[infofontbold][file:dejavusansmono-bold at 6pt] % todo \the\everybodyfont
 
-%D Optimization (later we overload in math):
+%D Optimization (later we overload in math). Also needed in order to get \type {\ss}
+%D properly defined.
 
 \unexpanded\def\normaltf{\let\fontalternative\s!tf\font_helpers_synchronize_font}
 \unexpanded\def\normalbf{\let\fontalternative\s!bf\font_helpers_synchronize_font}
@@ -707,6 +754,14 @@
 \let\sl\normalsl
 \let\bi\normalbi
 \let\bs\normalbs
+
+\unexpanded\def\normalrm{\font_helpers_set_current_font_style{\s!rm}}
+\unexpanded\def\normalss{\font_helpers_set_current_font_style{\s!ss}}
+\unexpanded\def\normaltt{\font_helpers_set_current_font_style{\s!tt}}
+
+\let\rm\normalrm
+\let\ss\normalss
+\let\tt\normaltt
 
 \protect \endinput
 

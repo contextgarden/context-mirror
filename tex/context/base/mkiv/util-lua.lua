@@ -158,3 +158,21 @@ end
 -- luautilities.registerdatatype(lpeg.P("!"),"lpeg")
 --
 -- print(luautilities.datatype(lpeg.P("oeps")))
+
+-- These finalizers will only be invoked when we have a proper lua_close
+-- call (which is not happening in luatex tex node yes) or finish with an
+-- os.exit(n,true).
+
+local finalizers = { }
+
+setmetatable(finalizers, {
+    __gc = function(t)
+        for i=1,#t do
+            pcall(t[i]) -- let's not crash
+        end
+    end
+} )
+
+function luautilities.registerfinalizer(f)
+    finalizers[#finalizers+1] = f
+end

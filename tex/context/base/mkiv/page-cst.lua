@@ -24,7 +24,6 @@ local setmetatableindex   = table.setmetatableindex
 local properties          = nodes.properties
 
 local nodecodes           = nodes.nodecodes
-local gluecodes           = nodes.gluecodes
 local rulecodes           = nodes.rulecodes
 
 local hlist_code          = nodecodes.hlist
@@ -32,14 +31,7 @@ local vlist_code          = nodecodes.vlist
 local kern_code           = nodecodes.kern
 local glue_code           = nodecodes.glue
 local penalty_code        = nodecodes.penalty
-local insert_code         = nodecodes.ins
-local mark_code           = nodecodes.mark
 local rule_code           = nodecodes.rule
-
-local topskip_code        = gluecodes.topskip
-local lineskip_code       = gluecodes.lineskip
-local baselineskip_code   = gluecodes.baselineskip
-local userskip_code       = gluecodes.userskip
 
 local nuts                = nodes.nuts
 local tonode              = nuts.tonode
@@ -47,9 +39,8 @@ local tonut               = nuts.tonut
 
 local hpack               = nuts.hpack
 local vpack               = nuts.vpack
-local freenode            = nuts.free
 local flushlist           = nuts.flush_list
-local removenode          = nuts.remove
+----- removenode          = nuts.remove
 
 local getfield            = nuts.getfield
 local setfield            = nuts.setfield
@@ -59,6 +50,12 @@ local setnext             = nuts.setnext
 local setprev             = nuts.setprev
 local setsubtype          = nuts.setsubtype
 local setbox              = nuts.setbox
+local getwhd              = nuts.getwhd
+local setwhd              = nuts.setwhd
+local getkern             = nuts.getkern
+local getpenalty          = nuts.getpenalty
+local getwidth            = nuts.getwidth
+local getheight           = nuts.getheight
 
 local getnext             = nuts.getnext
 local getprev             = nuts.getprev
@@ -68,7 +65,6 @@ local getsubtype          = nuts.getsubtype
 local takebox             = nuts.takebox
 local takelist            = nuts.takelist
 local splitbox            = nuts.splitbox
-local getskip             = nuts.getskip
 local getattribute        = nuts.getattribute
 local copylist            = nuts.copy_list
 
@@ -84,9 +80,7 @@ local theprop             = nuts.theprop
 
 local nodepool            = nuts.pool
 
-local new_hlist           = nodepool.hlist
 local new_vlist           = nodepool.vlist
-local new_kern            = nodepool.kern
 local new_trace_rule      = nodepool.rule
 local new_empty_rule      = nodepool.emptyrule
 
@@ -99,13 +93,11 @@ local v_fixed             = variables.fixed
 local v_top               = variables.top
 local v_bottom            = variables.bottom
 local v_repeat            = variables["repeat"]
-local v_left              = variables.left
-local v_right             = variables.right
 local v_yes               = variables.yes
 local v_page              = variables.page
 local v_first             = variables.first
 local v_last              = variables.last
-local v_wide              = variables.wide
+----- v_wide              = variables.wide
 
 pagebuilders              = pagebuilders or { } -- todo: pages.builders
 pagebuilders.columnsets   = pagebuilders.columnsets or { }
@@ -349,11 +341,7 @@ function columnsets.prepareflush(name)
         for r=1,nofrows-1 do
             setlink(column[r],column[r+1])
         end
-        local v = new_vlist(column[1])
-        setfield(v,"height",height)
---         setfield(v,"depth",linedepth)
-        setfield(v,"width",widths[c])
-        columns[c] = v
+        columns[c] = new_vlist(column[1],widths[c],height,0) -- linedepth
     end
     --
     texsetcount("c_page_grid_first_column",firstcolumn)
@@ -634,8 +622,9 @@ function columnsets.check(t)
     if boxwidth > 0 and boxheight > 0 then
         -- we're ok
     elseif box then
-        boxwidth  = getfield(box,"width")
-        boxheight = getfield(box,"height") + getfield(box,"depth")
+        local wd, ht, dp = getwhd(box)
+        boxwidth  = wd
+        boxheight = ht + dp
     else
         report("empty box")
         return
@@ -722,9 +711,7 @@ function columnsets.put(t)
         end
     end
     cells[c][r] = box
-    setfield(box,"height",lineheight)
-    setfield(box,"depth",linedepth)
-    setfield(box,"width",widths[c])
+    setwhd(box,widths[c],lineheight,linedepth)
     dataset.reserved_c  = false
     dataset.reserved_r  = false
     dataset.reserved_nc = false
@@ -787,9 +774,9 @@ end
 --             if line then
 --                 break
 --             end
---             used = used + getfield(head,"width")
+--             used = used + getwidth(head)
 --         elseif id == kern_code then
---             used = used +  getfield(head,"kern")
+--             used = used +  getkern(head)
 --         elseif id == penalty_code then
 --         end
 --         if used > available then
@@ -816,7 +803,8 @@ local function checkroom(head,available,row)
     while head do
         local id = getid(head)
         if id == hlist_code or id == vlist_code or id == rule_code then -- <= rule_code
-            used = used + getfield(head,"height") + getfield(head,"depth")
+            local wd, ht, dp = getwhd(head)
+            used = used + ht + dp
             line = true
             if used > available then
                 break
@@ -825,18 +813,18 @@ local function checkroom(head,available,row)
             if line then
                 break
             end
-            used = used + getfield(head,"width")
+            used = used + getwidth(head)
             if used > available then
                 break
             end
         elseif id == kern_code then
-            used = used +  getfield(head,"kern")
+            used = used + getkern(head)
             if used > available then
                 break
             end
         elseif id == penalty_code then
             -- not good enough ... we need to look bakck too
-            if getfield(head,"penalty") >= 10000 then
+            if getpenalty(head) >= 10000 then
                 line = false
             else
                 break
@@ -874,9 +862,9 @@ end
 --         if id == hlist_code or id == vlist_code or id == rule_code then -- <= rule_code
 --             hd = getfield(head,"height") + getfield(head,"depth")
 --         elseif id == glue_code then
---             hd = getfield(head,"width")
+--             hd = getwidth(head)
 --         elseif id == kern_code then
---             hd = getfield(head,"kern")
+--             hd = getkern(head)
 --         elseif id == penalty_code then
 --         end
 --         if used + hd > available then
@@ -931,7 +919,7 @@ local function findslice(dataset,head,available,column,row)
         attempts = attempts + 1
         texsetbox("scratchbox",tonode(new_vlist(copy)))
         local done = splitbox("scratchbox",usedsize,"additional")
-        local used = getfield(done,"height")
+        local used = getheight(done)
         local rest = takebox("scratchbox")
         if used > (usedsize+slack) then
             if trace_detail then
@@ -955,7 +943,7 @@ local function findslice(dataset,head,available,column,row)
             texsetbox("scratchbox",tonode(new_vlist(head)))
             done  = splitbox("scratchbox",usedsize,"additional")
             rest  = takebox("scratchbox")
-            used  = getfield(done,"height")
+            used  = getheight(done)
             if attempts > 1 then
                 used = available
             end
@@ -1002,9 +990,7 @@ function columnsets.add(name,box)
                     -- getmetatable(v).columngap = nofcolumngaps
                     properties[v] = { columngap = nofcolumngaps }
                  -- report("setting gap %a at (%i,%i)",nofcolumngaps,foundc,foundr)
-                    setfield(v,"height",lineheight)
-                    setfield(v,"depth",linedepth)
-                    setfield(v,"width",widths[currentcolumn])
+                    setwhd(v,widths[currentcolumn],lineheight,linedepth)
                     local column = cells[foundc]
                     --
                     column[foundr] = v
@@ -1251,9 +1237,7 @@ function columnsets.setarea(t)
     local column  = t.c
     local row     = t.r
     if column and row then
-        setfield(box,"height",dataset.lineheight)
-        setfield(box,"depth",dataset.linedepth)
-        setfield(box,"width",dataset.widths[column])
+        setwhd(box,dataset.widths[column],dataset.lineheight,dataset.linedepth)
         cells[column][row] = box
     end
 end

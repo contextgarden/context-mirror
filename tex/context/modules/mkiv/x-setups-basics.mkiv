@@ -25,6 +25,8 @@
 %D Currently we load the \XML\ file and when not in the english interface we just
 %D remap the relevant words to their translation.
 
+%D Todo: use lua instead of synonyms
+
 \unprotect
 
 \defineregister
@@ -45,7 +47,7 @@
   [\c!width=\hsize,
    \c!height=\v!fit,
    \c!align=\v!right,
-   \c!offset=0.75\emwidth]
+   \c!offset=0.75\emwidth] % \exheight
 
 \popmacro\setuptext
 
@@ -69,7 +71,8 @@
 \unexpanded\def\setupalwcolor{}
 \unexpanded\def\setupoptcolor{darkgray}
 
-\unexpanded\def\setupvarword#1{{\sl\detokenize{#1}}}
+% \unexpanded\def\setupvarword#1{{\sl\detokenize{#1}}}
+\unexpanded\def\setupvarword#1{\detokenize{#1}}
 \unexpanded\def\setupintword#1{\WORD{\detokenize{#1}}}
 \unexpanded\def\setuptxtword#1{\detokenize{#1}}
 
@@ -119,15 +122,67 @@
     }
 \stopxmlsetups
 
+\startxmlsetups xml:setups:assemblename:instance
+    \doifelse {\xmlatt{#1}{type}} {environment} {
+        \doifsomethingelse {\xmlatt{#1}{begin}} {
+            \edef\currentSETUPprefix{\xmllastatt}%
+        } {
+            \let\currentSETUPprefix\e!start
+        }
+    } {
+        \let\currentSETUPprefix\empty
+    }
+%     \edef\currentSETUPname{\xmlatt{#1}{name}}
+    \let\currentSETUPgenerated\empty
+    \doifelsenothing {\xmlatt{#1}{variant}} {
+        \let\currentSETUPvariant\empty
+    } {
+        \def\currentSETUPvariant{:\xmllastatt}
+    }
+    \edef\currentSETUPfullname {
+        \currentSETUPprefix
+        \currentSETUPname
+        \currentSETUPvariant
+        \currentSETUPgenerated
+    }
+\stopxmlsetups
+
+% \startxmlsetups xml:setups:register
+%     \doifelse {\xmlatt{#1}{variant}} {instance} {
+%         \def\docommand##1%
+%           {\def\currentSETUPname{##1}%
+%            \xmlsetup{#1}{xml:setups:assemblename:instance}
+%            \expanded{\texcommand[stp:x:\currentSETUPfullname]{{#1}{##1}}}}%
+%         \processcommacommand[\clf_getinstances{#1}]\docommand
+%     } {
+%         \xmlsetup{#1}{xml:setups:assemblename}
+%         % not really needed if we just use setups
+%         \expanded{\texcommand[stp:x:\currentSETUPfullname]{{#1}{}}}
+%     }
+% \stopxmlsetups
+
 \startxmlsetups xml:setups:register
+    \doif {\xmlatt{#1}{variant}} {instance} {
+        \def\docommand##1%
+          {\xmlsetup{#1}{xml:setups:assemblename:instance}
+           \expanded{\texcommand[stp:x:\currentSETUPfullname:##1]{{#1}{##1}}}}%
+        \processcommacommand[\clf_getinstances{#1}]\docommand
+    }
     \xmlsetup{#1}{xml:setups:assemblename}
     % not really needed if we just use setups
-    \expanded{\texcommand[stp:x:\currentSETUPfullname]{#1}}
+    \expanded{\texcommand[stp:x:\currentSETUPfullname]{{#1}{}}}
 \stopxmlsetups
 
 \startluacode
 
     local find, gsub = string.find, string.gsub
+
+    local xmlcollected   = xml.collected
+    local xmlcount       = xml.count
+    local xmlfirst       = xml.first
+
+    local lxmlgetid      = lxml.getid
+    local lxmlflush      = lxml.flush
 
     local context        = context
 
@@ -146,12 +201,11 @@
     setups.definitions = definitions
 
     function xml.functions.setups_define(id)
-        local x = lxml.getid(id)
-        for c in xml.collected(x,"cd:interface/cd:define") do
+        local x = lxmlgetid(id)
+        for c in xmlcollected(x,"cd:interface/cd:define") do
             definitions[c.at.name] = c
         end
-
-        for c in xml.collected(x,"cd:interface/cd:interface") do
+        for c in xmlcollected(x,"cd:interface/cd:interface") do
             c.at.file = c.__f__
             c.at["xmlns:cd"] = nil
          -- c.dt[#c.dt+1] = "    "
@@ -166,22 +220,23 @@
             local commands   = interfaces.complete.commands
             local elements   = interfaces.complete.elements
 
-            local function replace(pattern,attribute,one,two)
-                for e in xml.collected(x,pattern) do
-                    local t = e.at[attribute]
+            local function replace(pattern,attribute,one,two,three)
+                for e in xmlcollected(x,pattern) do
+                    local a = e.at
+                    local t = a[attribute]
                     if t then
-                        local c = one[t] or (two and two[t])
+                        local c = one[t] or (two and two[t]) or (three and three[t])
                         if c then
                             local v = c[interface]
                             if v then
-                                e.at[attribute] = v
+                                a[attribute] = v
                             end
                         end
                     end
                 end
             end
 
-            replace('cd:command',   'name',    commands, elements)
+            replace('cd:command',   'name',    commands, elements, variables)
             replace('cd:string',    'value',   commands, elements)
             replace('cd:variable' , 'value',   variables)
 
@@ -191,19 +246,74 @@
             replace('cd:variable',  'type',    variables)
             replace('cd:inherit',   'name',    commands, elements)
 
+            replace('cd:instances/cd:constant', 'value', variables)
         end
 
         if tex.modes["setups:save"] and environment.currentrun == 1 then
-            local s = tostring(x)
-            s = gsub(s,"\n*%s*(</cd:interface>)%s+(<cd:interface)",  "\n\n    %1\n\n    %2")
-            s = gsub(s,"\n*%s*(</cd:interface>)%s+(</cd:interface>)","\n\n    %1\n\n    %2")
-            io.savedata("context-"..interface..".xml",s)
+            --
+            -- the reload is a hack .. we could make a handler instead
+            --
+            local filename = "context-" .. interface .. ".xml"
+            local xmlroot  = x
+            local xmlblob  = tostring(xmlroot)
+            io.savedata(filename,xmlblob)
+            xmlroot = xml.load(filename)
+            --
+            local definitions = { }
+            for e in xml.collected(xmlroot,"cd:interface/cd:define") do
+                definitions[e.at.name] = e.dt
+            end
+            local function resolve(root)
+                for e in xmlcollected(root,"*") do
+                    if e.tg == "resolve" then
+                        local name = e.at.name or ""
+                        local resolved = definitions[name]
+                        if resolved then
+                            e.__p__.dt[e.ni] = resolved
+                            resolve(resolved)
+                         -- logs.report("setups","resolved: %a",name)
+                        else
+                            logs.report("setups","unable to resolve: %a",name)
+                        end
+                    end
+                end
+            end
+            resolve(xmlroot)
+            for e in xml.collected(xmlroot,"cd:interface/cd:define") do
+                e.__p__.dt[e.ni] = ""
+            end
+            xml.delete(xmlroot,"/cd:interface/cd:interface/cd:interface/..")
+            --
+            xmlblob = xml.tostring(xmlroot)
+            io.savedata(filename,xmlblob)
+            xmlroot = xml.load(filename)
+            --
+            local spacer = utilities.strings.newrepeater(" ")
+            local function simplify(dt,n)
+                local nt, nn = { }, 0
+                for i=1,#dt do
+                    local d = dt[i]
+                    if d.special then
+                        --
+                    elseif type(d) ~= "string" then
+                        d.dt = simplify(d.dt,n+1)
+                        nn = nn + 1 nt[nn] = "\n" .. spacer[n]
+                        nn = nn + 1 nt[nn] = d
+                        nn = nn + 1 nt[nn] = "\n" .. spacer[n-1]
+                    end
+                end
+                return nn == 0 and "" or nt
+            end
+            xmlroot.dt = simplify(xmlroot.dt,0)
+            --
+            xmlblob = "<?xml version='1.0'?>\n<!-- expanded and compacted i-context.xml -->\n" .. xml.tostring(xmlroot)
+            xmlblob = gsub(xmlblob,"\n *\n","\n")
+            io.savedata(filename,xmlblob)
         end
-
     end
 
     function moduledata.setups.resolved(name)
-        lxml.flush(definitions[name])
+        lxmlflush(definitions[name])
     end
 
     function xml.finalizers.s_count(collected)
@@ -213,7 +323,7 @@
             local tg = c.tg
             if tg == "resolve" then
                 local d = definitions[c.at.name]
-                n = n + xml.count(d,"/*")
+                n = n + xmlcount(d,"/*")
             elseif tg == "delimiter" then
                 -- skip
             else
@@ -223,13 +333,30 @@
         context(n)
     end
 
+    local function getinstances(id)
+        local t = { }
+        local x = lxmlgetid(id)
+        local r = xmlfirst(x,"/instances/resolve")
+        if r then
+            local x = setups.definitions[r.at.name]
+            for c in xmlcollected(x,"constant") do
+                t[#t+1] = c.at.value
+            end
+        else
+            for c in xmlcollected(x,"/instances/constant") do
+                t[#t+1] = c.at.value
+            end
+        end
+        return t
+    end
+
     interfaces.implement {
         name      = "getsetupstring",
         actions   = function(s)
             local g = getsetupstring(s)
             if not find(s,"^cd:") then
                 setuptxtword(g)
-            elseif find(s,"%-.$") then
+            elseif find(s,"%-.$") then -- singular | plural
                 setupvarword(g)
             else
                 setupintword(g) -- cap
@@ -246,6 +373,12 @@
         arguments = "string",
     }
 
+    interfaces.implement {
+        name      = "getinstances",
+        actions   = { getinstances, function(t) context("%,t",t) end },
+        overload  = true,
+        arguments = { "string" },
+    }
 \stopluacode
 
 % <?xml version="1.0" encoding="UTF-8"?>
@@ -297,13 +430,20 @@
 \let           \m_cmd_current_hash      \empty
 \let           \m_cmd_current_file      \empty
 
+% todo: use different names (and a backward compatible extra module then)
+
 \unexpanded\def\basicsetup{\c_cmd_kind\zerocount\cmd_show_setup}
 \unexpanded\def\shortsetup{\c_cmd_kind\plusone  \cmd_show_setup}
 \unexpanded\def\setup     {\c_cmd_kind\plustwo  \cmd_show_setup}
 \unexpanded\def\showsetup {\c_cmd_kind\plustwo  \cmd_show_setup}
 
 \unexpanded\def\showsetupinlist#1#2#3%
-  {\c_cmd_kind\plustwo\xmlsetup{#3}{xml:setups:typeset}\par}
+  {%(#1)(#2)(#3)\par
+   \edef\m_cmd_instance{\secondoftwoarguments#3}%
+   \c_cmd_kind\plustwo
+   \xmlsetup{\firstoftwoarguments#3}{xml:setups:typeset}
+   \let\m_cmd_instance\empty
+   \par}
 
 \installtextracker
   {cmd.showsetup}
@@ -327,7 +467,12 @@
    \fi
    \startelement[setup][name=#1]%
      \startelement[noexport][comment={setup definition #1}]%
-       \xmlsetup{\rawsynonymname{texcommand}{stp:x:#1}}{xml:setups:typeset}
+       \edef\cmd_id{\rawsynonymname{texcommand}{stp:x:#1}}%
+       \ifx\cmd_id\empty
+          missing: stp:x:#1
+       \else
+         \xmlsetup{\expandafter\firstoftwoarguments\cmd_id}{xml:setups:typeset}
+       \fi
      \stopelement
    \stopelement}
 
@@ -358,8 +503,16 @@
     \xmlatt{#1}{value}
 \stopxmlsetups
 
+\startxmlsetups xml:setups:make:instance
+    \ifx\m_cmd_instance\empty
+        \setupintfont{\xmlatt{#1}{value}}
+    \else
+        \m_cmd_instance
+    \fi
+\stopxmlsetups
+
 \startxmlsetups xml:setups:make:variable
-    \xmlatt{#1}{value}
+    \setupintfont{\xmlatt{#1}{value}}
 \stopxmlsetups
 
 \let\m_cmd_current_hash\empty
@@ -368,6 +521,7 @@
 \let\m_cmd_name        \empty
 \let\m_cmd_start       \empty
 \let\m_cmd_stop        \empty
+\let\m_cmd_instance    \empty
 
 \startxmlsetups xml:setups:make:prepare
     \edef\m_cmd_current_hash{\xmlatt{#1}{hash}}
@@ -375,7 +529,7 @@
     \xmldoifelseempty{#1}{/sequence} {
         \edef\m_cmd_name{\xmlatt{#1}{name}}
     } {
-        \edef\m_cmd_name{\xmlfilter{#1}{/sequence/(string|variable)/command(xml:setups:make:*)}}
+        \edef\m_cmd_name{\xmlfilter{#1}{/sequence/(string|variable|instance)/command(xml:setups:make:*)}}
     }
     \doifelse {\xmlatt{#1}{type}} {environment} {
         \doifsomethingelse {\xmlatt{#1}{begin}} {
@@ -474,17 +628,23 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:instance
-    \xmlatt{#1}{value}\enspace
+    \doifelse {\xmltag{#1}} {resolve} {
+        \ctxlua{lxml.command(moduledata.setups.definitions['\xmlatt{#1}{name}'],"constant","xml:setups:instance")}
+    } {
+        \xmlatt{#1}{value}\enskip % we need a break
+    }
 \stopxmlsetups
 
 \startxmlsetups xml:setups:typeset:instances
-    \xmldoif{#1}{/instances} {
-        \godown[.75\lineheight]
-        {\ttbf instances:}
-        \enspace
-        \xmlfilter{#1}{/instances/constant/command(xml:setups:instance)}
-        \removeunwantedspaces
-    }
+    \ifx\m_cmd_instance\empty
+        \xmldoif{#1}{/instances} {
+            \godown[.75\lineheight]
+            {\ttbf instances:}
+            \enspace
+            \xmlfilter{#1}{/instances/(constant|resolve)/command(xml:setups:instance)}
+            \removeunwantedspaces
+        }
+    \fi
 \stopxmlsetups
 
 \startxmlsetups xml:setups:typeset:yes
@@ -742,26 +902,35 @@
 \unexpanded\def\show_setup_any#1#2%
   {\bgroup
    \global\advance\c_cmd_current_argument\plusone
+   \doifelse{\xmlatt{#1}{optional}}{yes}\donetrue\donefalse
    \setbox0=\hbox
-     {\doifelse{\xmlatt{#1}{list}}{yes}
+     {\ifdone\sl\fi
+      \doifelse{\xmlatt{#1}{list}}{yes}
         {\getsetupstring{cd:#2-l}}%
         {\getsetupstring{cd:#2-s}}}%
    \setbox2=\hbox to \wd0
      {\hss
-      \raise1.25\exheight\hbox
-        {\txx\ifcase\c_cmd_maximum_argument \relax
-           \or*\else\the\c_cmd_current_argument
-         \fi}%
+      \ifcase\c_cmd_kind\else
+        \ifcase\c_cmd_maximum_argument \relax
+        \or
+          \raise1.25\exheight\hbox
+            {\txx *}%
+        \else
+          \raise1.25\exheight\hbox
+            {\txx\the\c_cmd_current_argument}%
+         \fi
+      \fi
       \hss}%
    \setbox4=\hbox to \wd0
      {\hss
-      \lower2\exheight\hbox
-        \bgroup
-          \txx
-          \doif {\xmlatt{#1}{optional}} {yes}
-            {\getsetupstring{cd:optional}}%
-        \egroup
-      \hss}%
+      \ifdone
+        \lower2\exheight\hbox
+          \bgroup
+            \txx
+            \getsetupstring{cd:optional}%
+          \egroup
+        \hss
+      \fi}%
    \ht2\ht\strutbox
    \dp4\dp\strutbox
    \hskip.5\emwidth
@@ -871,9 +1040,10 @@
     }
     \blank[\v!big,\v!samepage]
     \starttabulate[|l|p|]
+        % no /interface here
         \xmlall
             {#1}
-            {/interface/command[@name=='\currentsetupparametercommand' or @handler=='\currentsetupparametercommand']/arguments/assignments/parameter/command(xml:setups:parameters:value)}
+            {interface/command[@name=='\currentsetupparametercommand' or @handler=='\currentsetupparametercommand']/arguments/assignments/parameter/command(xml:setups:parameters:value)}
         \ifnum\noftabulaterows = \zerocount
             \NC \parameterkey{no specific settings} \NC \NC \NR
         \fi
@@ -903,6 +1073,15 @@
 \let\cmdshortsetup\shortsetup
 \let\cmdfullsetup \showsetup
 
+\unexpanded\def\cmd_with_instance#1#2#3%
+  {\edef\m_cmd_instance{#3}%
+   #1{#2}%
+   \let\m_cmd_instance\empty}
+
+\unexpanded\def\cmdbasicsetupinstance{\cmd_with_instance\cmdbasicsetup}
+\unexpanded\def\cmdshortsetupinstance{\cmd_with_instance\cmdshortsetup}
+\unexpanded\def\cmdfullsetupinstance {\cmd_with_instance\cmdfullsetup }
+
 % bonus
 
 \definefloat
@@ -912,7 +1091,13 @@
   [definition]
   [align=flushright]
 
-\unexpanded\def\showdefinition#1%
+\unexpanded\def\showdefinition
+  {\doifelsenextoptional\cmd_show_definition_yes\cmd_show_definition_nop}
+
+\unexpanded\def\cmd_show_definition_nop#1%
+  {\cmd_show_definition_yes[#1]}
+
+\unexpanded\def\cmd_show_definition_yes[#1]%
   {\placedefinition[here][definition:#1]{\tex{#1}}{\showsetup{#1}}}
 
 \unexpanded\def\definition[#1]%

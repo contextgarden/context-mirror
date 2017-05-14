@@ -40,11 +40,16 @@
                 <cd:parameter name="state">
                     <cd:constant type="auto"/>
                 </cd:parameter>
+                <cd:parameter name="factor">
+                    <cd:constant type="auto" default="yes"/>
+                    <cd:constant type="none"/>
+                    <cd:constant type="number"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fence" generated="yes" variant="generated" file="math-fen.mkiv">
+    <cd:command name="fence" generated="yes" variant="example" file="math-fen.mkiv">
         <cd:sequence>
             <cd:variable value="fence"/>
         </cd:sequence>

@@ -126,6 +126,7 @@
    \c!strut=\v!no,
    \c!radius=.5\bodyfontsize,
    \c!corner=\v!rectangular,
+   \c!grid=,
   %\c!background=,
   %\c!backgroundcolor=,
    \c!backgroundoffset=\!!zeropoint,
@@ -153,12 +154,13 @@
    \c!outermargin=\zeropoint, % idem
    \c!leftmargindistance=\zeropoint,
    \c!rightmargindistance=\floatparameter\c!leftmargindistance,
-   \c!step=\v!big, % the flish side float step (big=line, medium=halfline, small=quarterline, depth=halfline with normaldepth)
+   \c!step=\v!big, % the flush side float step (big=line, medium=halfline, small=quarterline, depth=halfline with normaldepth)
    \c!ntop=2,
    \c!nbottom=0,
    \c!nlines=4, % used?
    \c!topoffset=\zeropoint,
    \c!bottomoffset=\zeropoint,
+   \c!freeregion=\v!yes,
   %\c!local=,
   %\c!bottombefore=, % e.g. \vfill
   %\c!bottomafter=,
@@ -584,9 +586,11 @@
    \edef\savedfloatlocation{\floatcaptionparameter\c!location}%
    \setexpandedfloatcaptionparameter\c!topoffset   {\floatparameter\c!topoffset}%
    \setexpandedfloatcaptionparameter\c!bottomoffset{\floatparameter\c!bottomoffset}%
+   \setexpandedfloatcaptionparameter\c!freeregion  {\floatparameter\c!freeregion}%
    \setupcurrentfloatcaption[\c!location=,\c!reference=,\c!title=,\c!marking=,\c!list=,\c!bookmark=,#settings]%
    \setexpandedfloatparameter\c!topoffset   {\floatcaptionparameter\c!topoffset}%
    \setexpandedfloatparameter\c!bottomoffset{\floatcaptionparameter\c!bottomoffset}%
+   \setexpandedfloatparameter\c!freeregion  {\floatcaptionparameter\c!freeregion}%
    \def\m_strc_floats_saved_userdata{#2}%
    \edef\floatlocation{\floatcaptionparameter\c!location}%
    \setfloatcaptionparameter\c!location{\savedfloatlocation}% not expanded
@@ -744,7 +748,7 @@
      \global\setfalse\c_strc_floats_par_float
    \else
      \doifelsecommon\floatlocation\flushfloatslist
-       {\global\settrue \c_strc_floats_par_float}
+       {\global\settrue \c_strc_floats_par_float}%
        {\global\setfalse\c_strc_floats_par_float}%
    \fi
    \global\d_page_sides_shift      \zeropoint
@@ -779,21 +783,26 @@
      \global\advance\d_page_sides_bottomskip\floatparameter\c!bottomoffset
    \else
      \processallactionsinset
-       [\floatlocation]
+       [\floatlocation]%
        [ 90=>\global\c_strc_floats_rotation\commalistelement\relax,%
         180=>\global\c_strc_floats_rotation\commalistelement\relax,%
         270=>\global\c_strc_floats_rotation\commalistelement\relax]%
    \fi
    \doifelseinset\v!nonumber\floatlocation
-     {\global\nofloatnumbertrue}
+     {\global\nofloatnumbertrue}%
      {\doifelse{\floatcaptionparameter\c!number}\v!yes
-        {\global\nofloatnumberfalse}
+        {\global\nofloatnumberfalse}%
         {\global\nofloatnumbertrue}}%
    \doifelseinset\v!none\floatlocation
-     {\global\nofloatcaptiontrue}
+     {\global\nofloatcaptiontrue}%
      {\global\nofloatcaptionfalse}%
    \doif{\floatcaptionparameter\c!number}\v!none % new
      {\global\nofloatcaptiontrue}%
+   \doifinset\v!effective\floatlocation
+     {\letfloatparameter       \c!leftmargin \effectiveleftskip
+      \letfloatparameter       \c!rightmargin\effectiverightskip
+      \letfloatcaptionparameter\c!leftmargin \effectiveleftskip
+      \letfloatcaptionparameter\c!rightmargin\effectiverightskip}%
    \ifemptyfloatcaption \ifnofloatnumber
      \global\nofloatcaptiontrue
    \fi \fi}
@@ -807,6 +816,8 @@
    \else
      \doifelseinset\v!local\floatlocation\settrue\setfalse\c_page_floats_center_box_local
    \fi
+   \doifelse{\floatparameter\c!freeregion}\v!yes
+     \settrue\setfalse\c_strc_floats_mark_as_free
    \doifnotcommon{\v!always,\v!here,\v!force}\floatlocation % ! ! ! ! ! !
      {\setfalse\c_page_floats_center_box_global
       \setfalse\c_page_floats_center_box_local}}
@@ -1173,8 +1184,8 @@
    \strc_floats_calculate_skip\d_page_sides_topskip   {\rootfloatparameter\c!sidespacebefore}%
    \strc_floats_calculate_skip\d_page_sides_bottomskip{\rootfloatparameter\c!sidespaceafter }%
    \global\d_strc_floats_margin     \rootfloatparameter\c!margin
-   \global\d_page_sided_leftshift   \floatparameter    \c!leftmargindistance
-   \global\d_page_sided_rightshift  \floatparameter    \c!rightmargindistance
+   \global\d_page_sides_leftshift   \floatparameter    \c!leftmargindistance
+   \global\d_page_sides_rightshift  \floatparameter    \c!rightmargindistance
    \global\c_page_floats_n_of_top   \rootfloatparameter\c!ntop
    \global\c_page_floats_n_of_bottom\rootfloatparameter\c!nbottom
    \endgroup}
@@ -1309,20 +1320,66 @@
 
 % minwidth=fit,width=max : no overshoot, as wide as graphic
 
+% keep these as reference:
+%
+% \def\strc_floats_align_content_indeed
+%   {\alignstrutmode\zerocount
+%    \doifnotcommon{\floatcaptionparameter\c!location}{\v!outermargin,\v!innermargin,\v!leftmargin,\v!rightmargin}
+%      {\shiftalignedline
+%         {\floatparameter\c!leftmargin }{\floatparameter\c!rightmargin}%
+%         {\floatparameter\c!innermargin}{\floatparameter\c!outermargin}}%
+%    \alignedline{\floatparameter\c!location}\v!middle}
+%
+% \def\strc_floats_align_caption_indeed
+%   {\alignstrutmode\zerocount
+%    \shiftalignedline
+%      {\floatcaptionparameter\c!leftmargin }{\floatcaptionparameter\c!rightmargin}%
+%      {\floatcaptionparameter\c!innermargin}{\floatcaptionparameter\c!outermargin}%
+%    \alignedline{\floatparameter\c!location}\v!middle}
+%
+% Test case:
+%
+% \setupfloats[location=left]
+% \setupfloatcaption[width=max]
+%
+% \startfloatcombination
+%     \placefigure{}{}
+%     \placefigure{}{}
+% \stopfloatcombination
+
+%D In a floatcombination we ignore the margins .. if that is ever needed we need another
+%D state (instead of local).
+
+\def\strc_floats_align_indeed
+  {\alignedline{\floatparameter\c!location}\v!middle}
+
+\def\strc_floats_shift_indeed#1%
+  {\shiftalignedline{#1\c!leftmargin}{#1\c!rightmargin}{#1\c!innermargin}{#1\c!outermargin}}
+
 \def\strc_floats_align_content_indeed
   {\alignstrutmode\zerocount
-   \doifnotcommon{\floatcaptionparameter\c!location}{\v!outermargin,\v!innermargin,\v!leftmargin,\v!rightmargin}
-     {\shiftalignedline
-        {\floatparameter\c!leftmargin }{\floatparameter\c!rightmargin}%
-        {\floatparameter\c!innermargin}{\floatparameter\c!outermargin}}%
-   \alignedline{\floatparameter\c!location}\v!middle}
+   \ifx\forcedfloatmethod\v!local \else
+     \doifnotcommon{\floatcaptionparameter\c!location}{\v!outermargin,\v!innermargin,\v!leftmargin,\v!rightmargin}
+       {\strc_floats_shift_indeed\floatparameter}%
+     \expandafter\strc_floats_align_indeed
+   \fi}
 
 \def\strc_floats_align_caption_indeed
   {\alignstrutmode\zerocount
-   \shiftalignedline
-     {\floatcaptionparameter\c!leftmargin }{\floatcaptionparameter\c!rightmargin}%
-     {\floatcaptionparameter\c!innermargin}{\floatcaptionparameter\c!outermargin}%
-   \alignedline{\floatparameter\c!location}\v!middle}
+   \ifx\forcedfloatmethod\v!local
+     \expandafter\strc_floats_align_indeed_local
+   \else
+     \strc_floats_shift_indeed\floatcaptionparameter
+     \expandafter\strc_floats_align_indeed
+   \fi}
+
+% \def\strc_floats_align_indeed_local#1%
+%   {\begingroup
+%    \hsize\wd\floatbox
+%    \strc_floats_align_indeed{#1}%
+%    \endgroup}
+
+\let\strc_floats_align_indeed_local\firstofoneargument
 
 \newdimen\d_strc_floats_content
 \newdimen\d_strc_float_temp_height
@@ -1330,6 +1387,8 @@
 
 \def\captionminwidth {15\bodyfontsize}
 \def\captionovershoot{2\emwidth}
+
+\let\strc_floats_mark_pag_as_free\relax
 
 \def\strc_floats_set_page_variant
   {\bgroup
@@ -1369,10 +1428,13 @@
    \fi
    \ifcase\c_strc_floats_rotation
      \doifnotinset\v!margin\floatlocation % brr, really needed! see wm
-       {\postcenterfloatbox\d_strc_floats_content}%
+       {\postcenterfloatbox\d_strc_floats_content
+        \strc_floats_mark_pag_as_free}%
+       % mark as free not done here
    \else
      \global\setbox\floatbox\vpack
        {\rotate[\c!rotation=\number\c_strc_floats_rotation]{\box\floatbox}}%
+     \strc_floats_mark_pag_as_free
    \fi
    \egroup}
 
@@ -1618,7 +1680,7 @@
   {\strc_floats_build_box_next_right_margin_indeed\rightmargindistance}
 
 \def\strc_floats_build_box_next_left_margin
-  {\strc_floats_build_box_next_left_margin_indeed \leftmargindistance }
+  {\strc_floats_build_box_next_left_margin_indeed \leftmargindistance}
 
 \def\strc_floats_build_box_next_outer_margin
   {\doifelserightpagefloat
@@ -1835,6 +1897,8 @@
 
 \unexpanded\def\installfloatboxbuilder#1#2{\setvalue{\??floatbuilder#1}{#2}}
 
+\let\strc_floats_mark_box_as_free\relax
+
 \def\strc_floats_build_box
   {\global\setbox\floatbox\vbox % pack ? probably not
      {\strc_floats_set_local_hsize
@@ -1865,17 +1929,28 @@
       \v!outer=>\doifelserightpagefloat{\let\next\strc_floats_relocate_caption_right}{\let\next\strc_floats_relocate_caption_left }]%
    \next}
 
-\installfloatboxbuilder \v!none    \strc_floats_build_box_default
-\installfloatboxbuilder \s!default \strc_floats_build_box_default
-\installfloatboxbuilder \v!high    \strc_floats_build_box_high
-\installfloatboxbuilder \v!low     \strc_floats_build_box_low
-\installfloatboxbuilder \v!middle  \strc_floats_build_box_middle
+\installfloatboxbuilder \v!none         \strc_floats_build_box_default
+\installfloatboxbuilder \s!default      \strc_floats_build_box_default
+\installfloatboxbuilder \v!high         \strc_floats_build_box_high
+\installfloatboxbuilder \v!low          \strc_floats_build_box_low
+\installfloatboxbuilder \v!middle       \strc_floats_build_box_middle
 
-\installfloatboxbuilder \v!left    \strc_floats_build_box_side
-\installfloatboxbuilder \v!right   \strc_floats_build_box_side
+\installfloatboxbuilder \v!rightmargin  \strc_floats_build_box_side % added 2016-08-23
+\installfloatboxbuilder \v!leftmargin   \strc_floats_build_box_side % added 2016-08-23
+\installfloatboxbuilder \v!innermargin  \strc_floats_build_box_side % added 2016-08-23
+\installfloatboxbuilder \v!outermargin  \strc_floats_build_box_side % added 2016-08-23
 
-\installfloatboxbuilder \v!top     \strc_floats_build_box_top
-\installfloatboxbuilder \v!bottom  \strc_floats_build_box_bottom
+\installfloatboxbuilder \v!left         \strc_floats_build_box_side
+\installfloatboxbuilder \v!right        \strc_floats_build_box_side
+\installfloatboxbuilder \v!inner        \strc_floats_build_box_side % added 2016-08-23
+\installfloatboxbuilder \v!outer        \strc_floats_build_box_side % added 2016-08-23
+
+\installfloatboxbuilder \v!lefthanging  \strc_floats_build_box_side % added 2016-08-23
+\installfloatboxbuilder \v!righthanging \strc_floats_build_box_side % added 2016-08-23
+\installfloatboxbuilder \v!hang         \strc_floats_build_box_side % added 2016-08-23
+
+\installfloatboxbuilder \v!top          \strc_floats_build_box_top
+\installfloatboxbuilder \v!bottom       \strc_floats_build_box_bottom
 
 % \setuplayout[grid=yes] \showgrid \setupcaptions[style=smallbodyfont,location=grid,inbetween=]
 %
@@ -1885,7 +1960,7 @@
 %     test \placefigure{}                 {\externalfigure[cow.pdf][frame=on,grid=depth]} test \page
 %     test \placefigure{\input zapf\relax}{\externalfigure[cow.pdf][frame=on,grid=depth]} test \page
 % \stoptext
-
+
 % This might move to page-flt:
 
 \newif\ifpostponecolumnfloats \postponecolumnfloatsfalse % don't change
@@ -1968,11 +2043,12 @@
 
 \def\strc_floats_prepare_side_caption_fit % or center when smaller
   {\ifdim\wd\b_strc_floats_caption>\wd\b_strc_floats_content\relax
-     \setbox\b_strc_floats_caption\vbox
+    \setbox\b_strc_floats_caption\vbox
        {\forgetall % needed?
         \hsize\wd\b_strc_floats_content
         \strc_floats_make_complete_caption}%
    \else
+     % maybe we should listen to the align option here (now side floats need the max option
      \setbox\b_strc_floats_caption\hpack to \wd\b_strc_floats_content
        {\hss\hbox{\strc_floats_make_complete_caption}\hss}%
    \fi}
@@ -2086,7 +2162,7 @@
 \let\floatlabel       \empty % set by lua
 \let\floatcolumn      \empty % set by lua
 \let\floatrow         \empty % set by lua
-\let\forcedfloatmethod\empty % set by lua
+\let\forcedfloatmethod\empty % set by lua and floatcombinations
 
 \def\setfloatmethodvariables#1% \floatmethod \floatlabel \floatrow \floatcolumn
   {\clf_analysefloatmethod{#1}}

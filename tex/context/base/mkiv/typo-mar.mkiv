@@ -122,6 +122,7 @@
    \c!scope=\v!global,
    \c!width=,
  % \c!stack=,
+ % \c!stackname=,
  % \c!option=, % \v!paragraph (follow shape)
    \c!line=0,
    \c!anchor=\v!text,
@@ -131,8 +132,8 @@
    \c!hoffset=\zeropoint,
    \c!voffset=\zeropoint]
 
-\setupmarginframed % so, align should be set with the data command
-  [\c!strut=\v!yes,
+\setupmarginframed  % so, align should be set with the data command
+  [\c!strut=\v!yes, % so by default we scale the strut to the font !
    \c!offset=\v!overlay,
    \c!fr!analyze=\v!yes,
    \c!frame=\v!off,
@@ -194,6 +195,8 @@
   {}
 
 % todo: naturalhbox
+
+% when name is set we overload
 
 \let\margindatahbox\naturalhbox % \hbox
 
@@ -301,6 +304,7 @@
    % \fi
        align       {\margindataparameter\c!align}%
        line        \numexpr\margindataparameter\c!line\relax
+       stackname   {\margindataparameter\c!stackname}%
        stack       {\margindataparameter\c!stack}%
      \relax
    \else
@@ -434,5 +438,47 @@
 % \def\dostartvanchoring#1{\dontleavehmode\latelua{anchors.startmove("#1","v")}}
 % \let\dostophanchoring    \dostopanchoring
 % \let\dostopvanchoring    \dostopanchoring
+
+%D Here because in strc-ren we are too early:
+
+% % \definemargindata
+% %   [margintext:chapter]
+% %   [margintext:section]
+% %
+% % \defineheadalternative
+% %   [margintext:chapter]
+% %   [margintext]
+% %   [margintext=margintext:chapter]
+% %
+% % \setuphead
+% %   [chapter]
+% %   [alternative=margintext:chapter]
+%
+% \setuphead
+%   [chapter]
+%   [alternative=margintext]
+
+\definemargindata
+  [\v!margintext:\v!section]
+  [\v!left]
+  [\c!margin=\v!margin,
+   \c!width=\leftmarginwidth,
+   \c!align=\v!flushright]
+
+\defineheadalternative
+  [\v!margintext]
+  [\c!alternative=\v!somewhere,
+   \c!margintext=\v!margintext:\v!section,
+   \c!renderingsetup=\??headrenderings:\v!margintext]
+
+\startsetups[\??headrenderings:\v!margintext]
+    \executeifdefined{\headalternativeparameter\c!margintext}\margintext {
+        \ifconditional\headshownumber
+            \headnumbercontent
+            \hskip\headnumberdistance
+        \fi
+        \headtextcontent
+    }
+\stopsetups
 
 \protect \endinput

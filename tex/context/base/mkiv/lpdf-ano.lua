@@ -25,7 +25,8 @@ local trace_references        = false  trackers.register("references.references"
 local trace_destinations      = false  trackers.register("references.destinations", function(v) trace_destinations = v end)
 local trace_bookmarks         = false  trackers.register("references.bookmarks",    function(v) trace_bookmarks    = v end)
 
-local log_destinations        = false  directives.register("destinations.log",      function(v) log_destinations   = v end)
+local log_destinations        = false  directives.register("destinations.log",     function(v) log_destinations = v end)
+local untex_urls              = true   directives.register("references.untexurls", function(v) untex_urls       = v end)
 
 local report_reference        = logs.reporter("backend","references")
 local report_destination      = logs.reporter("backend","destinations")
@@ -69,8 +70,7 @@ local nodepool                = nodes.pool
 
 ----- pdfannotation_node      = nodepool.pdfannotation
 ----- pdfdestination_node     = nodepool.pdfdestination
------ latelua_node            = nodepool.latelua
-local latelua_function_node   = nodepool.lateluafunction -- still node ... todo
+local new_latelua             = nodepool.latelua
 
 local texgetcount             = tex.getcount
 
@@ -228,7 +228,6 @@ luatex.registerstopactions(function()
         report_destination("%s destinations saved in log file",n)
     end
 end)
-
 
 local function pdfnametree(destinations)
     local slices = { }
@@ -503,7 +502,7 @@ function nodeinjections.destination(width,height,depth,names,view)
         end
     end
     if doview then
-        return latelua_function_node(function() flushdestination(width,height,depth,names,view) end)
+        return new_latelua(function() flushdestination(width,height,depth,names,view) end)
     end
 end
 
@@ -579,9 +578,14 @@ local function pdffilelink(filename,destination,page,actions)
     }
 end
 
+local untex = references.urls.untex
+
 local function pdfurllink(url,destination,page)
     if not url or url == "" then
         return false
+    end
+    if untex_urls then
+        url = untex(url) -- last minute cleanup of \* and spaces
     end
     if destination and destination ~= "" then
         url = url .. "#" .. destination
@@ -726,7 +730,7 @@ function nodeinjections.reference(width,height,depth,prerolled)
         if trace_references then
             report_reference("link: width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
         end
-        return latelua_function_node(function() finishreference(width,height,depth,prerolled) end)
+        return new_latelua(function() finishreference(width,height,depth,prerolled) end)
     end
 end
 
@@ -735,7 +739,7 @@ function nodeinjections.annotation(width,height,depth,prerolled,r)
         if trace_references then
             report_reference("special: width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
         end
-        return latelua_function_node(function() finishannotation(width,height,depth,prerolled,r or false) end)
+        return new_latelua(function() finishannotation(width,height,depth,prerolled,r or false) end)
     end
 end
 

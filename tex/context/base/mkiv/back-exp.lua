@@ -38,7 +38,7 @@ local sub, gsub = string.sub, string.gsub
 local validstring = string.valid
 local lpegmatch = lpeg.match
 local utfchar, utfvalues = utf.char, utf.values
-local concat, insert, remove, merge = table.concat, table.insert, table.remove, table.merge
+local concat, insert, remove, merge, sort = table.concat, table.insert, table.remove, table.merge, table.sort
 local sortedhash = table.sortedhash
 local formatters = string.formatters
 local todimen = number.todimen
@@ -71,6 +71,8 @@ local v_hidden          = variables.hidden
 
 local implement         = interfaces.implement
 
+local included          = backends.included
+
 local settings_to_array = utilities.parsers.settings_to_array
 
 local setmetatableindex = table.setmetatableindex
@@ -89,7 +91,6 @@ local glyph_code        = nodecodes.glyph
 local glue_code         = nodecodes.glue
 local kern_code         = nodecodes.kern
 local disc_code         = nodecodes.disc
-local insert_code       = nodecodes.insert
 
 local userskip_code     = skipcodes.userskip
 local rightskip_code    = skipcodes.rightskip
@@ -117,12 +118,16 @@ local getnext           = nuts.getnext
 local getsubtype        = nuts.getsubtype
 local getfont           = nuts.getfont
 local getdisc           = nuts.getdisc
+local getcomponents     = nuts.getcomponents
 local getlist           = nuts.getlist
 local getid             = nuts.getid
 local getfield          = nuts.getfield
 local getattr           = nuts.getattr
-local setattr           = nuts.setattr
+local setattr           = nuts.setattr -- maybe use properties
 local isglyph           = nuts.isglyph
+local getkern           = nuts.getkern
+local getwidth          = nuts.getwidth
+
 
 local traverse_id       = nuts.traverse_id
 local traverse_nodes    = nuts.traverse
@@ -543,27 +548,6 @@ local function makebreaknode(attributes) -- maybe no fulltag
     }
 end
 
-local function ignorebreaks(di,element,n,fulltag)
-    local data = di.data
-    for i=1,#data do
-        local d = data[i]
-        if d.content == " " then
-            d.content = ""
-        end
-    end
-end
-
-local function ignorespaces(di,element,n,fulltag)
-    local data = di.data
-    for i=1,#data do
-        local d = data[i]
-        local c = d.content
-        if type(c) == "string" then
-            d.content = lpegmatch(p_stripper,c)
-        end
-    end
-end
-
 do
 
     local fields = { "title", "subtitle", "author", "keywords" }
@@ -605,7 +589,9 @@ do
         setattribute(di,"language",languagenames[texgetcount("mainlanguagenumber")])
         if not less_state then
             setattribute(di,"file",tex.jobname)
-            setattribute(di,"date",os.date())
+            if included.date then
+                setattribute(di,"date",backends.timestamp())
+            end
             setattribute(di,"context",environment.version)
             setattribute(di,"version",exportversion)
             setattribute(di,"xmlns:m",mathmlns)
@@ -772,7 +758,7 @@ do
 
     function finalizers.descriptions(tree)
         local n = 0
-        for id, tag in next, descriptions do
+        for id, tag in sortedhash(descriptions) do
             local sym = symbols[id]
             if sym then
                 n = n + 1
@@ -1716,6 +1702,27 @@ do
         end
     end
 
+    local function ignorebreaks(di,element,n,fulltag)
+        local data = di.data
+        for i=1,#data do
+            local d = data[i]
+            if d.content == " " then
+                d.content = ""
+            end
+        end
+    end
+
+    local function ignorespaces(di,element,n,fulltag)
+        local data = di.data
+        for i=1,#data do
+            local d = data[i]
+            local c = d.content
+            if type(c) == "string" then
+                d.content = lpegmatch(p_stripper,c)
+            end
+        end
+    end
+
     extras.registerpages     = ignorebreaks
     extras.registerseparator = ignorespaces
 
@@ -1859,16 +1866,26 @@ do
     local f_metadata                   = formatters["%w<metavariable name=%q>%s</metavariable>\n"]
     local f_metadata_end               = formatters["%w</metadata>\n"]
 
-    --- we could share the r tables ... but it's fast enough anyway
-
     local function attributes(a)
-        local r = { } -- can be shared
+        local r = { }
         local n = 0
         for k, v in next, a do
             n = n + 1
             r[n] = f_attribute(k,v) -- lpegmatch(p_escaped,v)
         end
-        return concat(r,"",1,n)
+        sort(r)
+        return concat(r,"")
+    end
+
+    local function properties(a)
+        local r = { }
+        local n = 0
+        for k, v in next, a do
+            n = n + 1
+            r[n] = f_property(exportproperties,k,v)
+        end
+        sort(r)
+        return concat(r,"")
     end
 
     local depth  = 0
@@ -1960,23 +1977,15 @@ do
                 if not p then
                     -- skip
                 elseif exportproperties == v_yes then
-                    for k, v in next, p do
-                        n = n + 1
-                        r[n] = f_attribute(k,v)
-                    end
+                    r[n] = attributes(p)
                 else
-                    for k, v in next, p do
-                        n = n + 1
-                        r[n] = f_property(exportproperties,k,v)
-                    end
+                    r[n] = properties(p)
                 end
             end
             local a = di.attributes
             if a then
-                for k, v in next, a do
-                    n = n + 1
-                    r[n] = f_attribute(k,v)
-                end
+                n = n + 1
+                r[n] = attributes(a)
             end
             if n == 0 then
                 if nature == "inline" or inline > 0 then
@@ -2228,7 +2237,7 @@ do
                     for i=2,#trees do
                         local currenttree = trees[i]
                         local currentdata = currenttree.data
-                        local currentpar = currenttree.parnumber
+                        local currentpar  = currenttree.parnumber
                         local previouspar = trees[i-1].parnumber
                         currenttree.collapsed = true
                         -- is the next ok?
@@ -2544,7 +2553,7 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
              -- report_export("skipping character: %C (no attribute)",n.char)
             else
                 -- we could add tonunicodes for ligatures (todo)
-                local components = getfield(n,"components")
+                local components = getcomponents(n)
                 if components and (not characterdata[c] or overloads[c]) then -- we loose data
                     collectresults(components,nil,at) -- this assumes that components have the same attribute as the glyph ... we should be more tolerant (see math)
                 else
@@ -2694,7 +2703,7 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
             else
                 local subtype = getsubtype(n)
                 if subtype == userskip_code then
-                    if getfield(n,"width") > threshold then
+                    if getwidth(n) > threshold then
                         if last and not somespace[currentcontent[nofcurrentcontent]] then
                             local a = getattr(n,a_tagged) or pat
                             if a == last then
@@ -2802,7 +2811,7 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
                 end
             end
         elseif id == kern_code then
-            local kern = getfield(n,"kern")
+            local kern = getkern(n)
             if kern > 0 then
                 local limit = threshold
                 if p and getid(p) == glyph_code then
@@ -2906,7 +2915,7 @@ local xmlpreamble = [[
         return replacetemplate(xmlpreamble, {
             standalone     = standalone and "yes" or "no",
             filename       = tex.jobname,
-            date           = os.date(),
+            date           = included.date and backends.timestamp(),
             contextversion = environment.version,
             exportversion  = exportversion,
         })
@@ -3157,40 +3166,50 @@ local htmltemplate = [[
     end)
 
     local function makeclass(tg,at)
-        local detail = at.detail
-        local chain  = at.chain
-        local result
-        at.detail = nil
-        at.chain  = nil
+        local detail     = at.detail
+        local chain      = at.chain
+        local extra      = nil
+        local classes    = { }
+        local nofclasses = 0
+        at.detail        = nil
+        at.chain         = nil
+        for k, v in next, at do
+            if not private[k] then
+                nofclasses = nofclasses + 1
+                classes[nofclasses] = k .. "-" .. v
+            end
+        end
         if detail and detail ~= "" then
             if chain and chain ~= "" then
                 if chain ~= detail then
-                    result = { classes[tg .. " " .. chain .. " " .. detail] } -- we need to remove duplicates
+                    extra = classes[tg .. " " .. chain .. " " .. detail]
                 elseif tg ~= detail then
-                    result = { tg, detail }
-                else
-                    result = { tg }
+                    extra = detail
                 end
             elseif tg ~= detail then
-                result = { tg, detail }
-            else
-                result = { tg }
+                extra = detail
             end
         elseif chain and chain ~= "" then
             if tg ~= chain then
-                result = { tg, chain }
+                extra = chain
+            end
+        end
+        -- in this order
+        if nofclasses > 0 then
+            sort(classes)
+            classes = concat(classes," ")
+            if extra then
+                return tg .. " " .. extra .. " " .. classes
             else
-                result = { tg }
+                return tg .. " " .. classes
             end
         else
-            result = { tg }
-        end
-        for k, v in next, at do
-            if not private[k] then
-                result[#result+1] = k .. "-" .. v
+            if extra then
+                return tg .. " " .. extra
+            else
+                return tg
             end
         end
-        return concat(result, " ")
     end
 
     local function remap(specification,source,target)
@@ -3315,7 +3334,6 @@ local htmltemplate = [[
         -- ./jobname-export/styles/jobname-templates.css
 
         local basename  = file.basename(v)
-        local corename  = file.removesuffix(basename)
         local basepath  = basename .. "-export"
         local imagepath = joinfile(basepath,"images")
         local stylepath = joinfile(basepath,"styles")

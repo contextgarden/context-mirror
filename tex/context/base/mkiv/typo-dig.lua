@@ -28,13 +28,13 @@ local getprev            = nuts.getprev
 local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 local getid              = nuts.getid
+local getwidth           = nuts.getwidth
 local getfield           = nuts.getfield
-local getattr            = nuts.getattr
+local takeattr           = nuts.takeattr
 
 local setlink            = nuts.setlink
 local setnext            = nuts.setnext
 local setprev            = nuts.setprev
-local setattr            = nuts.setattr
 
 local hpack_node         = nuts.hpack
 local traverse_id        = nuts.traverse_id
@@ -48,14 +48,12 @@ local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
 
 local nodepool           = nuts.pool
-local tasks              = nodes.tasks
+local enableaction       = nodes.tasks.enableaction
 
 local new_glue           = nodepool.glue
 
 local fonthashes         = fonts.hashes
-local fontdata           = fonthashes.identifiers
 local chardata           = fonthashes.characters
-local quaddata           = fonthashes.quads
 
 local v_reset            = interfaces.variables.reset
 
@@ -106,7 +104,7 @@ actions[1] = function(head,start,attr)
     local char = getchar(start)
     local unic = chardata[font][char].unicode or char
     if charbase[unic].category == "nd" then -- ignore unic tables
-        local oldwidth = getfield(start,"width")
+        local oldwidth = getwidth(start)
         local newwidth = getdigitwidth(font)
         if newwidth ~= oldwidth then
             if trace_digits then
@@ -125,9 +123,8 @@ function digits.handler(head)
     local done, current, ok = false, head, false
     while current do
         if getid(current) == glyph_code then
-            local attr = getattr(current,a_digits)
+            local attr = takeattr(current,a_digits)
             if attr and attr > 0 then
-                setattr(current,a_digits,unsetvalue)
                 local action = actions[attr%100] -- map back to low number
                 if action then
                     head, current, ok = action(head,current,attr)
@@ -153,7 +150,7 @@ function digits.set(n) -- number or 'reset'
         n = tonumber(n)
         if n then
             if not enabled then
-                tasks.enableaction("processors","typesetters.digits.handler")
+                enableaction("processors","typesetters.digits.handler")
                 if trace_digits then
                     report_digits("enabling digit handler")
                 end

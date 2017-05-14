@@ -28,7 +28,6 @@ if not modules then modules = { } end modules ['typo-dir'] = {
 
 local next, type = next, type
 local format, insert, sub, find, match = string.format, table.insert, string.sub, string.find, string.match
-local utfchar = utf.char
 local formatters = string.formatters
 
 local nodes, node = nodes, node
@@ -38,14 +37,14 @@ local trace_mathdirections  = false  trackers.register("typesetters.directions.m
 local trace_directions      = false  trackers.register("typesetters.directions",      function(v) trace_textdirections = v trace_mathdirections = v end)
 
 local report_textdirections = logs.reporter("typesetting","text directions")
-local report_mathdirections = logs.reporter("typesetting","math directions")
+----- report_mathdirections = logs.reporter("typesetting","math directions")
 
 local hasbit                = number.hasbit
 
 local texsetattribute       = tex.setattribute
 local unsetvalue            = attributes.unsetvalue
 
-local tasks                 = nodes.tasks
+local enableaction          = nodes.tasks.enableaction
 local tracers               = nodes.tracers
 local setcolor              = tracers.colors.set
 local resetcolor            = tracers.colors.reset
@@ -181,16 +180,12 @@ statistics.register("text directions", function()
     end
 end)
 
--- function directions.enable()
---     tasks.enableaction("processors","directions.handler")
--- end
-
 function directions.set(n) -- todo: names and numbers
     if not enabled then
         if trace_textdirections then
             report_textdirections("enabling directions handler")
         end
-        tasks.enableaction("processors","typesetters.directions.handler")
+        enableaction("processors","typesetters.directions.handler")
         enabled = true
     end
     if not n or n == 0 then

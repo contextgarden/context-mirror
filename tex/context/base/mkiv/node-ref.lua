@@ -20,82 +20,90 @@ local concat = table.concat
 
 local attributes, nodes, node = attributes, nodes, node
 
-local allocate            = utilities.storage.allocate, utilities.storage.mark
-local mark                = utilities.storage.allocate, utilities.storage.mark
+local allocate             = utilities.storage.allocate, utilities.storage.mark
+local mark                 = utilities.storage.allocate, utilities.storage.mark
 
-local nodeinjections      = backends.nodeinjections
-local codeinjections      = backends.codeinjections
+local nodeinjections       = backends.nodeinjections
+local codeinjections       = backends.codeinjections
 
-local cleanupreferences   = false
-local cleanupdestinations = true
+local cleanupreferences    = false
+local cleanupdestinations  = true
 
-local transparencies      = attributes.transparencies
-local colors              = attributes.colors
-local references          = structures.references
-local tasks               = nodes.tasks
+local transparencies       = attributes.transparencies
+local colors               = attributes.colors
+local references           = structures.references
+local enableaction         = nodes.tasks.enableaction
 
-local trace_references    = false  trackers.register("nodes.references",        function(v) trace_references   = v end)
-local trace_destinations  = false  trackers.register("nodes.destinations",      function(v) trace_destinations = v end)
-local trace_areas         = false  trackers.register("nodes.areas",             function(v) trace_areas        = v end)
-local show_references     = false  trackers.register("nodes.references.show",   function(v) show_references    = tonumber(v) or (v and 2.25 or false) end)
-local show_destinations   = false  trackers.register("nodes.destinations.show", function(v) show_destinations  = tonumber(v) or (v and 2.00 or false) end)
+local trace_references     = false  trackers.register("nodes.references",        function(v) trace_references   = v end)
+local trace_destinations   = false  trackers.register("nodes.destinations",      function(v) trace_destinations = v end)
+local trace_areas          = false  trackers.register("nodes.areas",             function(v) trace_areas        = v end)
+local show_references      = false  trackers.register("nodes.references.show",   function(v) show_references    = tonumber(v) or (v and 2.25 or false) end)
+local show_destinations    = false  trackers.register("nodes.destinations.show", function(v) show_destinations  = tonumber(v) or (v and 2.00 or false) end)
 
-local report_reference    = logs.reporter("backend","references")
-local report_destination  = logs.reporter("backend","destinations")
-local report_area         = logs.reporter("backend","areas")
+local report_reference     = logs.reporter("backend","references")
+local report_destination   = logs.reporter("backend","destinations")
+local report_area          = logs.reporter("backend","areas")
 
-local nuts                = nodes.nuts
-local nodepool            = nuts.pool
+local nuts                 = nodes.nuts
+local nodepool             = nuts.pool
 
-local tonode              = nuts.tonode
-local tonut               = nuts.tonut
+local tonode               = nuts.tonode
+local tonut                = nuts.tonut
 
-local getfield            = nuts.getfield
-local setfield            = nuts.setfield
-local setlink             = nuts.setlink
-local setnext             = nuts.setnext
-local setprev             = nuts.setprev
-local getnext             = nuts.getnext
-local getprev             = nuts.getprev
-local getid               = nuts.getid
-local getlist             = nuts.getlist
-local setlist             = nuts.setlist
-local getattr             = nuts.getattr
-local setattr             = nuts.setattr
-local getsubtype          = nuts.getsubtype
+local getfield             = nuts.getfield
+local setfield             = nuts.setfield
+local setlink              = nuts.setlink
+local setnext              = nuts.setnext
+local setprev              = nuts.setprev
+local getnext              = nuts.getnext
+local getprev              = nuts.getprev
+local getid                = nuts.getid
+local getlist              = nuts.getlist
+local setlist              = nuts.setlist
+local getwidth             = nuts.getwidth
+local setwidth             = nuts.setwidth
+local getheight            = nuts.getheight
+local getattr              = nuts.getattr
+local setattr              = nuts.setattr
+local getsubtype           = nuts.getsubtype
+local getwhd               = nuts.getwhd
+local getdir               = nuts.getdir
+local setshift             = nuts.setshift
 
-local hpack_list          = nuts.hpack
-local vpack_list          = nuts.vpack
-local list_dimensions     = nuts.dimensions
-local traverse            = nuts.traverse
-local find_node_tail      = nuts.tail
+local hpack_list           = nuts.hpack
+local vpack_list           = nuts.vpack
+local list_dimensions      = nuts.dimensions
+local list_rangedimensions = nuts.rangedimensions
+local traverse             = nuts.traverse
+local find_node_tail       = nuts.tail
 
-local nodecodes           = nodes.nodecodes
-local skipcodes           = nodes.skipcodes
-local listcodes           = nodes.listcodes
+local nodecodes            = nodes.nodecodes
+local skipcodes            = nodes.skipcodes
+local listcodes            = nodes.listcodes
 
-local hlist_code          = nodecodes.hlist
-local vlist_code          = nodecodes.vlist
-local glue_code           = nodecodes.glue
-local glyph_code          = nodecodes.glyph
-local rule_code           = nodecodes.rule
-local dir_code            = nodecodes.dir
-local localpar_code       = nodecodes.localpar
+local hlist_code           = nodecodes.hlist
+local vlist_code           = nodecodes.vlist
+local glue_code            = nodecodes.glue
+local glyph_code           = nodecodes.glyph
+local rule_code            = nodecodes.rule
+local dir_code             = nodecodes.dir
+local localpar_code        = nodecodes.localpar
 
-local leftskip_code       = skipcodes.leftskip
-local rightskip_code      = skipcodes.rightskip
-local parfillskip_code    = skipcodes.parfillskip
+local leftskip_code        = skipcodes.leftskip
+local rightskip_code       = skipcodes.rightskip
+local parfillskip_code     = skipcodes.parfillskip
 
-local line_code           = listcodes.line
+local line_code            = listcodes.line
 
-local new_rule            = nodepool.rule
-local new_kern            = nodepool.kern
+local new_rule             = nodepool.rule
+local new_kern             = nodepool.kern
+local new_hlist            = nodepool.hlist
 
-local free_node           = nuts.free
+local flush_node           = nuts.flush
 
-local tosequence          = nodes.tosequence
+local tosequence           = nodes.tosequence
 
-local implement           = interfaces.implement
+local implement            = interfaces.implement
 
 -- Normally a (destination) area is a box or a simple stretch if nodes but when it is
 -- a paragraph we have a problem: we cannot calculate the height well. This happens
@@ -104,7 +112,7 @@ local implement           = interfaces.implement
 local function hlist_dimensions(start,stop,parent)
     local last = stop and getnext(stop)
     if parent then
-        return list_dimensions(getfield(parent,"glue_set"),getfield(parent,"glue_sign"),getfield(parent,"glue_order"),start,last)
+        return list_rangedimensions(parent,start,last)
     else
         return list_dimensions(start,last)
     end
@@ -117,33 +125,30 @@ local function vlist_dimensions(start,stop) -- also needs the stretch and so
         setnext(stop,nil)
     end
     local v = vpack_list(start)
-    local w = getfield(v,"width")
-    local h = getfield(v,"height")
-    local d = getfield(v,"depth")
+    local w, h, d = getwhd(v)
     setlist(v) -- not needed
-    free_node(v)
+    flush_node(v)
     if temp then
         setnext(stop,temp)
     end
     return w, h, d
 end
 
+-- not ok when vlist at mvl level
+
 local function dimensions(parent,start,stop) -- in principle we could move some to the caller
     local id = getid(start)
     if start == stop then
-        if id == hlist_code or id == vlist_code or id == glyph_code or id == rule_code then
+        if id == hlist_code or id == vlist_code or id == rule_code or id == glyph_code then
+            local sw, sh, sd = getwhd(start)
+            local pw, ph, pd = getwhd(parent)
+            local ht = sh == 0 and ph or sh -- changed
+            local dp = sd == 0 and pd or sd -- changed
             if trace_areas then
-                report_area("dimensions taken of %a",nodecodes[id])
+                report_area("dimensions taken of %a (%p,%p,%p) with parent (%p,%p,%p) -> (%p,%p,%p)",
+                    nodecodes[id],sw,sh,sd,pw,ph,pd,sw,ht,dp)
             end
-            -- hm, parent can be zero
-            local width  = getfield(start,"width")
-            local height = getfield(parent,"height")
-            local depth  = getfield(parent,"depth")
-            if height == 0 and depth == 0 then
-                height = getfield(start,"height")
-                depth  = getfield(start,"depth")
-            end
-            return width, height, depth
+            return sw, ht, dp
         else
             if trace_areas then
                 report_area("dimensions calculated of %a",nodecodes[id])
@@ -174,7 +179,8 @@ local function dimensions(parent,start,stop) -- in principle we could move some 
                     if trace_areas then
                         report_area("dimensions taken of first line in vlist")
                     end
-                    return getfield(c,"width"), getfield(c,"height"), getfield(c,"depth"), c
+                    local w, h, d = getwhd(c)
+                    return w, h, d, c
                 else
                     if trace_areas then
                         report_area("dimensions taken of vlist (probably wrong)")
@@ -211,7 +217,7 @@ local function dimensions(parent,start,stop) -- in principle we could move some 
                         report_area("dimensions taken of vlist")
                     end
                     local w, h, d = vlist_dimensions(first,last,parent)
-                    local ht = getfield(first,"height")
+                    local ht = getheight(first)
                     return w, ht, d + h - ht, first
                 else
                  -- return hlist_dimensions(start,stop,parent)
@@ -219,7 +225,8 @@ local function dimensions(parent,start,stop) -- in principle we could move some 
                         if trace_areas then
                             report_area("dimensions taken of first line in vlist")
                         end
-                        return getfield(first,"width"), getfield(first,"height"), getfield(first,"depth"), first
+                        local w, h, d = getwhd(first)
+                        return w, h, d, first
                     else
                         if trace_areas then
                             report_area("dimensions taken of vlist (probably wrong)")
@@ -255,35 +262,40 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
             -- special case, we only treat the first line in a vlist
             local l = getlist(line)
             if trace_areas then
-                report_area("%s: %i : %s %s %s => w=%p, h=%p, d=%p, c=%S","line",
+                report_area("%s: %i : %s %s %s => w=%p, h=%p, d=%p","line",
                     reference,pardir or "---",txtdir or "---",
-                    tosequence(l,nil,true),width,height,depth,resolved)
+                    tosequence(l,nil,true),width,height,depth)
             end
             setlist(line,result)
             setlink(result,l)
             return head, last
-        else
-            if head == first then
-                if trace_areas then
-                    report_area("%s: %i : %s %s %s => w=%p, h=%p, d=%p, c=%S","head",
-                        reference,pardir or "---",txtdir or "---",
-                        tosequence(first,last,true),width,height,depth,resolved)
-                end
-                setlink(result,first)
-                return result, last
-            else
-                if trace_areas then
-                    report_area("%s: %i : %s %s %s => w=%p, h=%p, d=%p, c=%S","middle",
-                        reference,pardir or "---",txtdir or "---",
-                        tosequence(first,last,true),width,height,depth,resolved)
-                end
-                local prev = getprev(first)
-                if prev then
-                    setlink(prev,result)
-                end
-                setlink(result,first)
-                return head, last
+        elseif head == first then
+            if trace_areas then
+                report_area("%s: %i : %s %s %s => w=%p, h=%p, d=%p","head",
+                    reference,pardir or "---",txtdir or "---",
+                    tosequence(first,last,true),width,height,depth)
             end
+            setlink(result,first)
+            return result, last
+        else
+            if trace_areas then
+                report_area("%s: %i : %s %s %s => w=%p, h=%p, d=%p","middle",
+                    reference,pardir or "---",txtdir or "---",
+                    tosequence(first,last,true),width,height,depth)
+            end
+if first == last and getid(parent) == vlist_code and getid(first) == hlist_code then
+    if trace_areas then
+        -- think of a button without \dontleavehmode in the mvl
+        report_area("compensating for link in vlist")
+    end
+    setlink(result,getlist(first))
+    setlist(first,result)
+else
+         -- setlink(getprev(first),result)
+         -- setlink(result,first)
+            setlink(getprev(first),result,first)
+end
+            return head, last
         end
     else
         return head, last
@@ -291,9 +303,7 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
 end
 
 local function inject_list(id,current,reference,make,stack,pardir,txtdir)
-    local width      = getfield(current,"width")
-    local height     = getfield(current,"height")
-    local depth      = getfield(current,"depth")
+    local width, height, depth = getwhd(current)
     local correction = 0
     local moveright  = false
     local first      = getlist(current)
@@ -341,12 +351,9 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
             setlist(current,result)
         elseif moveright then -- brr no prevs done
             -- result after first
-            local n = getnext(first)
-            setnext(result,n)
-            setlink(first,first)
-            if n then
-                setprev(n,result)
-            end
+         -- setlink(result,getnext(first))
+         -- setlink(first,result)
+            setlink(first,result,getnext(first))
         else
             -- first after result
             setlink(result,first)
@@ -405,9 +412,9 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
                     done[r] = done[r] - 1
                 end
             elseif id == dir_code then
-                txtdir = getfield(current,"dir")
+                txtdir = getdir(current)
             elseif id == localpar_code then
-                pardir = getfield(current,"dir")
+                pardir = getdir(current)
             elseif id == glue_code and getsubtype(current) == leftskip_code then -- any glue at the left?
                 --
             else
@@ -457,9 +464,9 @@ local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) 
                     end
                 end
             elseif id == dir_code then
-                txtdir = getfield(current,"dir")
+                txtdir = getdir(current)
             elseif id == localpar_code then
-                pardir = getfield(current,"dir")
+                pardir = getdir(current)
             else
                 local r = getattr(current,attribute)
                 if r and not done[r] then
@@ -501,8 +508,8 @@ local function addstring(what,str,shift) --todo make a pluggable helper (in font
             end
             local text = typesetters.tohpack(str,infofont)
             local rule = new_rule(emwidth/5,4*exheight,3*exheight)
-            setfield(text,"shift",shift)
-            return hpack_list(nuts.linked(text,rule))
+            setshift(text,shift)
+            return hpack_list(setlink(text,rule))
         end
     end
 end
@@ -540,42 +547,38 @@ local function colorize(width,height,depth,n,reference,what,sr,offset)
     setattr(rule,a_transparency,u_transparency)
     if width < 0 then
         local kern = new_kern(width)
-        setfield(rule,"width",-width)
+        setwidth(rule,-width)
         setnext(kern,rule)
         setprev(rule,kern)
         return kern
-    else
-
-if sr and sr ~= "" then
-    local text = addstring(what,sr,shift)
-    if text then
-        local kern = new_kern(-getfield(text,"width"))
-        setlink(kern,text)
-        setlink(text,rule)
-        return kern
+    elseif sr and sr ~= "" then
+        local text = addstring(what,sr,shift)
+        if text then
+            local kern = new_kern(-getwidth(text))
+         -- setlink(kern,text)
+         -- setlink(text,rule)
+            setlink(kern,text,rule)
+            return kern
+        end
     end
+    return rule
 end
 
-        return rule
-    end
-end
-
-local function justadd(what,sr,shift)
+local function justadd(what,sr,shift,current) -- needs testing
     if sr and sr ~= "" then
         local text = addstring(what,sr,shift)
         if text then
-            local kern = new_kern(-getfield(text,"width"))
-            setlink(kern,text)
-            setlink(text,rule)
-            return kern
+            local kern = new_kern(-getwidth(text))
+            setlink(kern,text,current)
+            return new_hlist(kern)
         end
     end
 end
 
 -- references:
 
-local texsetattribute = tex.setattribute
 local texsetcount     = tex.setcount
+----- texsetattribute = tex.setattribute
 
 local stack           = { }
 local done            = { }
@@ -624,7 +627,7 @@ local function makereference(width,height,depth,reference) -- height and depth a
             nofreferences = nofreferences + 1
             local result, current, texts
             if show_references then
-                local d = sr[1]
+                local d = resolved
                 if d then
                     local r = d.reference
                     local p = d.prefix
@@ -641,15 +644,12 @@ local function makereference(width,height,depth,reference) -- height and depth a
             end
             if trace_references then
                 local step = 65536
-                result = hpack_list(colorize(width,height-step,depth-step,2,reference,"reference",texts,show_references)) -- step subtracted so that we can see seperate links
-                setfield(result,"width",0)
+                result = new_hlist(colorize(width,height-step,depth-step,2,reference,"reference",texts,show_references)) -- step subtracted so that we can see seperate links
                 current = result
             elseif texts then
-                texts = justadd("reference",texts,show_references)
+                texts = justadd("reference",texts,show_references,current)
                 if texts then
-                    result = hpack_list(texts)
-                    setfield(result,"width",0)
-                    current = result
+                    current = texts
                 end
             end
             if current then
@@ -658,10 +658,7 @@ local function makereference(width,height,depth,reference) -- height and depth a
                 result = annot
             end
             references.registerpage(n)
-            result = hpack_list(result,0)
-            setfield(result,"width",0)
-            setfield(result,"height",0)
-            setfield(result,"depth",0)
+            result = new_hlist(result)
             if cleanupreferences then stack[reference] = nil end
             return result, resolved
         elseif trace_references then
@@ -758,8 +755,7 @@ local function makedestination(width,height,depth,reference)
                 step = 4*65536
                 width, height, depth = 5*step, 5*step, 0
             end
-            local rule = hpack_list(colorize(width,height,depth,3,reference,"destination",texts,show_destinations))
-            setfield(rule,"width",0)
+            local rule = new_hlist(colorize(width,height,depth,3,reference,"destination",texts,show_destinations))
             if not result then
                 result, current = rule, rule
             else
@@ -768,13 +764,9 @@ local function makedestination(width,height,depth,reference)
             end
             width, height = width - step, height - step
         elseif texts then
-            texts = justadd("destination",texts,show_destinations)
+            texts = justadd("destination",texts,show_destinations,current)
             if texts then
-                result = hpack_list(texts)
-                if result then
-                    setfield(result,"width",0)
-                    current = result
-                end
+                current = texts
             end
         end
         nofdestinations = nofdestinations + 1
@@ -789,11 +781,7 @@ local function makedestination(width,height,depth,reference)
             current = find_node_tail(annot)
         end
         if result then
-            -- some internal error
-            result = hpack_list(result,0)
-            setfield(result,"width",0)
-            setfield(result,"height",0)
-            setfield(result,"depth",0)
+            result = new_hlist(result)
         end
         if cleanupdestinations then stack[reference] = nil end
         return result, resolved
@@ -929,8 +917,8 @@ statistics.register("interactive elements", function()
 end)
 
 function references.enableinteraction()
-    tasks.enableaction("shipouts","nodes.references.handler")
-    tasks.enableaction("shipouts","nodes.destinations.handler")
+    enableaction("shipouts","nodes.references.handler")
+    enableaction("shipouts","nodes.destinations.handler")
     function references.enableinteraction() end
 end
 

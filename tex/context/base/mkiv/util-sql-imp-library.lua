@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['util-sql-library'] = {
+if not modules then modules = { } end modules ['util-sql-imp-library'] = {
     version   = 1.001,
     comment   = "companion to util-sql.lua",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -143,7 +143,7 @@ local function fetched(specification,query,converter)
         local q = query[i]
         local r, m = connection:execute(q)
         if m then
-            report_state("error in query to host %a: %s",specification.host,string.collapsespaces(q))
+            report_state("error in query to host %a: %s",specification.host,string.collapsespaces(q or "?"))
             if m then
                 report_state("message: %s",m)
             end

@@ -14,8 +14,9 @@ if not modules then modules = { } end modules ['char-ini'] = {
 local utfchar, utfbyte, utfvalues, ustring, utotable = utf.char, utf.byte, utf.values, utf.ustring, utf.totable
 local concat, unpack, tohash, insert = table.concat, table.unpack, table.tohash, table.insert
 local next, tonumber, type, rawget, rawset = next, tonumber, type, rawget, rawset
-local format, lower, gsub = string.format, string.lower, string.gsub
-local P, R, S, Cs = lpeg.P, lpeg.R, lpeg.S, lpeg.Cs
+local format, lower, gsub, find, match = string.format, string.lower, string.gsub, string.find, string.match
+local P, R, S, C, Cs, Ct, Cc, V = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.Cc, lpeg.V
+local formatters = string.formatters
 
 if not characters then require("char-def") end
 
@@ -178,6 +179,7 @@ insert(characters.ranges,{
 })
 
 local blocks = allocate {
+    ["adlam"]                                      = { first = 0x1E900, last = 0x1E95F,             description = "Adlam" },
     ["aegeannumbers"]                              = { first = 0x10100, last = 0x1013F,             description = "Aegean Numbers" },
     ["ahom"]                                       = { first = 0x11700, last = 0x1173F,             description = "Ahom" },
     ["alchemicalsymbols"]                          = { first = 0x1F700, last = 0x1F77F,             description = "Alchemical Symbols" },
@@ -202,6 +204,7 @@ local blocks = allocate {
     ["bassavah"]                                   = { first = 0x16AD0, last = 0x16AFF,             description = "Bassa Vah" },
     ["batak"]                                      = { first = 0x01BC0, last = 0x01BFF,             description = "Batak" },
     ["bengali"]                                    = { first = 0x00980, last = 0x009FF, otf="beng", description = "Bengali" },
+    ["bhaiksuki"]                                  = { first = 0x11C00, last = 0x11C6F,             description = "Bhaiksuki" },
     ["blockelements"]                              = { first = 0x02580, last = 0x0259F, otf="bopo", description = "Block Elements" },
     ["bopomofo"]                                   = { first = 0x03100, last = 0x0312F, otf="bopo", description = "Bopomofo" },
     ["bopomofoextended"]                           = { first = 0x031A0, last = 0x031BF, otf="bopo", description = "Bopomofo Extended" },
@@ -247,6 +250,7 @@ local blocks = allocate {
     ["cyrillic"]                                   = { first = 0x00400, last = 0x004FF, otf="cyrl", description = "Cyrillic" },
     ["cyrillicextendeda"]                          = { first = 0x02DE0, last = 0x02DFF, otf="cyrl", description = "Cyrillic Extended-A" },
     ["cyrillicextendedb"]                          = { first = 0x0A640, last = 0x0A69F, otf="cyrl", description = "Cyrillic Extended-B" },
+    ["cyrillicextendedc"]                          = { first = 0x01C80, last = 0x01C8F,             description = "Cyrillic Extended-C" },
     ["cyrillicsupplement"]                         = { first = 0x00500, last = 0x0052F, otf="cyrl", description = "Cyrillic Supplement" },
     ["deseret"]                                    = { first = 0x10400, last = 0x1044F, otf="dsrt", description = "Deseret" },
     ["devanagari"]                                 = { first = 0x00900, last = 0x0097F, otf="deva", description = "Devanagari" },
@@ -297,6 +301,7 @@ local blocks = allocate {
     ["georgian"]                                   = { first = 0x010A0, last = 0x010FF, otf="geor",  description = "Georgian" },
     ["georgiansupplement"]                         = { first = 0x02D00, last = 0x02D2F, otf="geor",  description = "Georgian Supplement" },
     ["glagolitic"]                                 = { first = 0x02C00, last = 0x02C5F, otf="glag",  description = "Glagolitic" },
+    ["glagoliticsupplement"]                       = { first = 0x1E000, last = 0x1E02F,              description = "Glagolitic Supplement" },
     ["gothic"]                                     = { first = 0x10330, last = 0x1034F, otf="goth",  description = "Gothic" },
     ["grantha"]                                    = { first = 0x11300, last = 0x1137F,              description = "Grantha" },
     ["greekandcoptic"]                             = { first = 0x00370, last = 0x003FF, otf="grek",  description = "Greek and Coptic" },
@@ -316,6 +321,7 @@ local blocks = allocate {
     ["highsurrogates"]                             = { first = 0x0D800, last = 0x0DB7F,              description = "High Surrogates" },
     ["hiragana"]                                   = { first = 0x03040, last = 0x0309F, otf="kana",  description = "Hiragana" },
     ["ideographicdescriptioncharacters"]           = { first = 0x02FF0, last = 0x02FFF,              description = "Ideographic Description Characters" },
+    ["ideographicsymbolsandpunctuation"]           = { first = 0x16FE0, last = 0x16FFF,              description = "Ideographic Symbols and Punctuation" },
     ["imperialaramaic"]                            = { first = 0x10840, last = 0x1085F,              description = "Imperial Aramaic" },
     ["inscriptionalpahlavi"]                       = { first = 0x10B60, last = 0x10B7F,              description = "Inscriptional Pahlavi" },
     ["inscriptionalparthian"]                      = { first = 0x10B40, last = 0x10B5F,              description = "Inscriptional Parthian" },
@@ -377,6 +383,7 @@ local blocks = allocate {
     ["malayalam"]                                  = { first = 0x00D00, last = 0x00D7F, otf="mlym",  description = "Malayalam" },
     ["mandaic"]                                    = { first = 0x00840, last = 0x0085F, otf="mand",  description = "Mandaic" },
     ["manichaean"]                                 = { first = 0x10AC0, last = 0x10AFF,              description = "Manichaean" },
+    ["marchen"]                                    = { first = 0x11C70, last = 0x11CBF,              description = "Marchen" },
     ["mathematicalalphanumericsymbols"]            = { first = 0x1D400, last = 0x1D7FF, math = true, description = "Mathematical Alphanumeric Symbols" },
     ["mathematicaloperators"]                      = { first = 0x02200, last = 0x022FF, math = true, description = "Mathematical Operators" },
     ["meeteimayek"]                                = { first = 0x0ABC0, last = 0x0ABFF,              description = "Meetei Mayek" },
@@ -394,6 +401,7 @@ local blocks = allocate {
     ["modi"]                                       = { first = 0x11600, last = 0x1165F,              description = "Modi" },
     ["modifiertoneletters"]                        = { first = 0x0A700, last = 0x0A71F,              description = "Modifier Tone Letters" },
     ["mongolian"]                                  = { first = 0x01800, last = 0x018AF, otf="mong",  description = "Mongolian" },
+    ["mongoliansupplement"]                        = { first = 0x11660, last = 0x1167F,              description = "Mongolian Supplement" },
     ["mro"]                                        = { first = 0x16A40, last = 0x16A6F,              description = "Mro" },
     ["multani"]                                    = { first = 0x11280, last = 0x112AF,              description = "Multani" },
     ["musicalsymbols"]                             = { first = 0x1D100, last = 0x1D1FF, otf="musc",  description = "Musical Symbols" },
@@ -401,6 +409,7 @@ local blocks = allocate {
     ["myanmarextendeda"]                           = { first = 0x0AA60, last = 0x0AA7F,              description = "Myanmar Extended-A" },
     ["myanmarextendedb"]                           = { first = 0x0A9E0, last = 0x0A9FF,              description = "Myanmar Extended-B" },
     ["nabataean"]                                  = { first = 0x10880, last = 0x108AF,              description = "Nabataean" },
+    ["newa"]                                       = { first = 0x11400, last = 0x1147F,              description = "Newa" },
     ["newtailue"]                                  = { first = 0x01980, last = 0x019DF,              description = "New Tai Lue" },
     ["nko"]                                        = { first = 0x007C0, last = 0x007FF, otf="nko",   description = "NKo" },
     ["numberforms"]                                = { first = 0x02150, last = 0x0218F,              description = "Number Forms" },
@@ -416,6 +425,7 @@ local blocks = allocate {
     ["opticalcharacterrecognition"]                = { first = 0x02440, last = 0x0245F,              description = "Optical Character Recognition" },
     ["oriya"]                                      = { first = 0x00B00, last = 0x00B7F, otf="orya",  description = "Oriya" },
     ["ornamentaldingbats"]                         = { first = 0x1F650, last = 0x1F67F,              description = "Ornamental Dingbats" },
+    ["osage"]                                      = { first = 0x104B0, last = 0x104FF,              description = "Osage" },
     ["osmanya"]                                    = { first = 0x10480, last = 0x104AF, otf="osma",  description = "Osmanya" },
     ["pahawhhmong"]                                = { first = 0x16B00, last = 0x16B8F,              description = "Pahawh Hmong" },
     ["palmyrene"]                                  = { first = 0x10860, last = 0x1087F,              description = "Palmyrene" },
@@ -466,6 +476,8 @@ local blocks = allocate {
     ["taixuanjingsymbols"]                         = { first = 0x1D300, last = 0x1D35F,              description = "Tai Xuan Jing Symbols" },
     ["takri"]                                      = { first = 0x11680, last = 0x116CF,              description = "Takri" },
     ["tamil"]                                      = { first = 0x00B80, last = 0x00BFF, otf="taml",  description = "Tamil" },
+    ["tangut"]                                     = { first = 0x17000, last = 0x187FF,              description = "Tangut" },
+    ["tangutcomponents"]                           = { first = 0x18800, last = 0x18AFF,              description = "Tangut Components" },
     ["telugu"]                                     = { first = 0x00C00, last = 0x00C7F, otf="telu",  description = "Telugu" },
     ["thaana"]                                     = { first = 0x00780, last = 0x007BF, otf="thaa",  description = "Thaana" },
     ["thai"]                                       = { first = 0x00E00, last = 0x00E7F, otf="thai",  description = "Thai" },
@@ -541,15 +553,34 @@ setmetatableindex(otfscripts,function(t,unicode)
     return "dflt"
 end)
 
-local splitter = lpeg.splitat(S(":-"))
+local splitter1 = lpeg.splitat(S(":-"))
+local splitter2 = lpeg.splitat(S(" +-"),true)
 
-function characters.getrange(name) -- used in font fallback definitions (name or range)
-    local range = blocks[name]
+function characters.getrange(name,expression) -- used in font fallback definitions (name or range)
+    local range = rawget(blocks,lower(gsub(name,"[^a-zA-Z0-9]","")))
     if range then
         return range.first, range.last, range.description, range.gaps
     end
     name = gsub(name,'"',"0x") -- goodie: tex hex notation
-    local start, stop = lpegmatch(splitter,name)
+    local start, stop
+    if expression then
+        local first, rest = lpegmatch(splitter2,name)
+        local range = rawget(blocks,lower(gsub(first,"[^a-zA-Z0-9]","")))
+        if range then
+            start = range.first
+            stop  = range.last
+            local s = loadstring("return 0 " .. rest)
+            if type(s) == "function" then
+                local d = s()
+                if type(d) == "number" then
+                    start = start + d
+                    stop  = stop  + d
+                    return start, stop, nil
+                end
+            end
+        end
+    end
+    start, stop = lpegmatch(splitter1,name)
     if start and stop then
         start, stop = tonumber(start,16) or tonumber(start), tonumber(stop,16) or tonumber(stop)
         if start and stop then
@@ -559,6 +590,9 @@ function characters.getrange(name) -- used in font fallback definitions (name or
     local slot = tonumber(name,16) or tonumber(name)
     return slot, slot, nil
 end
+
+-- print(characters.getrange("lowercaseitalic + 123",true))
+-- print(characters.getrange("lowercaseitalic + 124",true))
 
 local categorytags = allocate {
     lu = "Letter Uppercase",
@@ -674,16 +708,17 @@ characters.linebreaks = {
 
     -- non-tailorable line breaking classes
 
-    ["bk"] = "mandatory break",                              -- nl, ps : cause a line break (after)
-    ["cr"] = "carriage return",                              -- cr : cause a line break (after), except between cr and lf
-    ["lf"] = "line feed",                                    -- lf : cause a line break (after)
-    ["cm"] = "combining mark",                               -- combining marks, control codes : prohibit a line break between the character and the preceding character
-    ["nl"] = "next line",                                    -- nel : cause a line break (after)
-    ["sg"] = "surrogate",                                    -- surrogates :do not occur in well-formed text
-    ["wj"] = "word joiner",                                  -- wj : prohibit line breaks before and after
-    ["zw"] = "zero width space",                             -- zwsp : provide a break opportunity
-    ["gl"] = "non-breaking (glue)",                          -- cgj, nbsp, zwnbsp : prohibit line breaks before and after
-    ["sp"] = "space",                                        -- space : enable indirect line breaks
+    ["bk"]  = "mandatory break",                             -- nl, ps : cause a line break (after)
+    ["cr"]  = "carriage return",                             -- cr : cause a line break (after), except between cr and lf
+    ["lf"]  = "line feed",                                   -- lf : cause a line break (after)
+    ["cm"]  = "combining mark",                              -- combining marks, control codes : prohibit a line break between the character and the preceding character
+    ["nl"]  = "next line",                                   -- nel : cause a line break (after)
+    ["sg"]  = "surrogate",                                   -- surrogates :do not occur in well-formed text
+    ["wj"]  = "word joiner",                                 -- wj : prohibit line breaks before and after
+    ["zw"]  = "zero width space",                            -- zwsp : provide a break opportunity
+    ["gl"]  = "non-breaking (glue)",                         -- cgj, nbsp, zwnbsp : prohibit line breaks before and after
+    ["sp"]  = "space",                                       -- space : enable indirect line breaks
+    ["zwj"] = "zero width joiner",                           -- prohibit line breaks within joiner sequences
 
     -- break opportunities
 
@@ -716,6 +751,8 @@ characters.linebreaks = {
     ["ai"] = "ambiguous (alphabetic or ideographic)",        -- characters with ambiguous east asian width : act like al when the resolved eaw is n; otherwise, act as id
     ["al"] = "alphabetic",                                   -- alphabets and regular symbols : are alphabetic characters or symbols that are used with alphabetic characters
     ["cj"] = "conditional japanese starter",                 -- small kana : treat as ns or id for strict or normal breaking.
+    ["eb"] = "emoji base",                                   -- all emoji allowing modifiers, do not break from following emoji modifier
+    ["em"] = "emoji modifier",                               -- skin tone modifiers, do not break from preceding emoji base
     ["h2"] = "hangul lv syllable",                           -- hangul : form korean syllable blocks
     ["h3"] = "hangul lvt syllable",                          -- hangul : form korean syllable blocks
     ["hl"] = "hebrew letter",                                -- hebrew : do not break around a following hyphen; otherwise act as alphabetic
@@ -802,7 +839,7 @@ setmetatableindex(characters.directions,function(t,k)
         end
     end
     t[k] = false -- maybe 'l'
-    return v
+    return false
 end)
 
 characters.mirrors  = { }
@@ -817,7 +854,7 @@ setmetatableindex(characters.mirrors,function(t,k)
         end
     end
     t[k] = false
-    return v
+    return false
 end)
 
 characters.textclasses  = { }
@@ -832,7 +869,7 @@ setmetatableindex(characters.textclasses,function(t,k)
         end
     end
     t[k] = false
-    return v
+    return false
 end)
 
 --[[ldx--
@@ -928,6 +965,7 @@ end)
 
 local specialchars = allocate()  characters.specialchars = specialchars -- lazy table
 local descriptions = allocate()  characters.descriptions = descriptions -- lazy table
+local synonyms     = allocate()  characters.synonyms     = synonyms     -- lazy table
 
 setmetatableindex(specialchars, function(t,u)
     if u then
@@ -961,7 +999,9 @@ setmetatableindex(descriptions, function(t,k)
     for u, c in next, data do
         local d = c.description
         if d then
-            d = gsub(d," ","")
+            if find(d," ") then
+                d = gsub(d," ","")
+            end
             d = lower(d)
             t[d] = u
         end
@@ -971,6 +1011,24 @@ setmetatableindex(descriptions, function(t,k)
         t[k] = k
     end
     return d
+end)
+
+setmetatableindex(synonyms, function(t,k)
+    for u, c in next, data do
+        local s = c.synonyms
+        if s then
+            if find(s," ") then
+                s = gsub(s," ","")
+            end
+         -- s = lower(s) -- is already lowercase
+            t[s] = u
+        end
+    end
+    local s = rawget(t,k)
+    if not s then
+        t[s] = s
+    end
+    return s
 end)
 
 function characters.unicodechar(asked)
@@ -1350,6 +1408,184 @@ function characters.showstring(str)
     for i=1,#list do
         report_defining("split % 3i : %C",i,list[i])
     end
+end
+
+do
+
+    -- There is no need to preload this table.
+
+    local any       = P(1)
+    local special   = S([['".,:;-+()]])
+                    + P('“') + P('”')
+    local apostrofe = P("’") + P("'")
+
+    local pattern = Cs ( (
+        (P("medium light") / "medium-light" + P("medium dark")  / "medium-dark") * P(" skin tone")
+        + (apostrofe * P("s"))/""
+        + special/""
+        + any
+    )^1)
+
+    local function load()
+        local name = resolvers.find_file("char-emj.lua")
+        local data = name and name ~= "" and dofile(name) or { }
+        local hash = { }
+        for d, c in next, data do
+            local k = lpegmatch(pattern,d) or d
+            local u = { }
+            for i=1,#c do
+                u[i] = utfchar(c[i])
+            end
+            u = concat(u)
+            hash[k] = u
+        end
+        return data, hash
+    end
+
+    local data, hash = nil, nil
+
+    function characters.emojized(name)
+        local t = lpegmatch(pattern,name)
+        if t then
+            return t
+        else
+            return { name }
+        end
+    end
+
+    local start     = P(" ")
+    local finish    = P(-1) + P(" ")
+    local skintone  = P("medium ")^0 * (P("light ") + P("dark "))^0 * P("skin tone")
+    local gender    = P("woman") + P("man")
+    local expanded  = (
+                            P("m-l-")/"medium-light"
+                          + P("m-d-")/"medium-dark"
+                          + P("l-")  /"light"
+                          + P("m-")  /"medium"
+                          + P("d-")  /"dark"
+                      )
+                    * (P("s-t")/" skin tone")
+    local compacted = (
+                        (P("medium-")/"m-" * (P("light")/"l" + P("dark")/"d"))
+                      + (P("medium")/"m"   +  P("light")/"l" + P("dark")/"d")
+                      )
+                    * (P(" skin tone")/"-s-t")
+
+    local pattern_0 = Cs((expanded + any)^1)
+    local pattern_1 = Cs(((start * skintone + skintone * finish)/"" + any)^1)
+    local pattern_2 = Cs(((start * gender   + gender   * finish)/"" + any)^1)
+    local pattern_4 = Cs((compacted + any)^1)
+
+ -- print(lpegmatch(pattern_0,"kiss woman l-s-t man d-s-t"))
+ -- print(lpegmatch(pattern_0,"something m-l-s-t"))
+ -- print(lpegmatch(pattern_0,"something m-s-t"))
+ -- print(lpegmatch(pattern_4,"something medium-light skin tone"))
+ -- print(lpegmatch(pattern_4,"something medium skin tone"))
+
+    local skin =
+        P("light skin tone")        / utfchar(0x1F3FB)
+      + P("medium-light skin tone") / utfchar(0x1F3FC)
+      + P("medium skin tone")       / utfchar(0x1F3FD)
+      + P("medium-dark skin tone")  / utfchar(0x1F3FE)
+      + P("dark skin tone")         / utfchar(0x1F3FF)
+
+    local parent =
+        P("man")   / utfchar(0x1F468)
+      + P("woman") / utfchar(0x1F469)
+
+    local child =
+        P("baby")  / utfchar(0x1F476)
+      + P("boy")   / utfchar(0x1F466)
+      + P("girl")  / utfchar(0x1F467)
+
+    local zwj   = utfchar(0x200D)
+    local heart = utfchar(0x2764) .. utfchar(0xFE0F) .. zwj
+    local kiss  = utfchar(0x2764) .. utfchar(0xFE0F) .. utfchar(0x200D) .. utfchar(0x1F48B) .. zwj
+
+    ----- member = parent + child
+
+    local space = P(" ")
+    local final = P(-1)
+
+    local p_done   = (space^1/zwj) + P(-1)
+    local p_rest   = space/"" * (skin * p_done) + p_done
+    local p_parent = parent * p_rest
+    local p_child  = child  * p_rest
+
+    local p_family = Cs ( (P("family")            * space^1)/"" * p_parent^-2 * p_child^-2 )
+    local p_couple = Cs ( (P("couple with heart") * space^1)/"" * p_parent * Cc(heart) * p_parent )
+    local p_kiss   = Cs ( (P("kiss")              * space^1)/"" * p_parent * Cc(kiss)  * p_parent )
+
+    local p_special = p_family + p_couple + p_kiss
+
+ -- print(lpeg.match(p_special,"family man woman girl"))
+ -- print(lpeg.match(p_special,"family man dark skin tone woman girl girl"))
+
+ -- local p_special = P { "all",
+ --     all    = Cs (V("family") + V("couple") + V("kiss")),
+ --     family = C("family")            * space^1 * V("parent")^-2 * V("child")^-2,
+ --     couple = P("couple with heart") * space^1 * V("parent") * Cc(heart) * V("parent"),
+ --     kiss   = P("kiss")              * space^1 * V("parent") * Cc(kiss) * V("parent"),
+ --     parent = parent * V("rest"),
+ --     child  = child  * V("rest"),
+ --     rest   = (space * skin)^0/"" * ((space^1/zwj) + P(-1)),
+ -- }
+
+    local emoji      = { }
+    characters.emoji = emoji
+
+local cache = setmetatable({ }, { __mode = "k" } )
+
+    function emoji.resolve(name)
+        if not hash then
+            data, hash = load()
+        end
+        local h = hash[name]
+        if h then
+            return h
+        end
+local h = cache[name]
+if h then
+    return h
+elseif h == false then
+    return
+end
+        -- expand shortcuts
+        local name = lpegmatch(pattern_0,name) or name
+        -- expand some 25K variants
+        local h = lpegmatch(p_special,name)
+        if h then
+cache[name] = h
+            return h
+        end
+        -- simplify
+        local s = lpegmatch(pattern_1,name)
+        local h = hash[s]
+        if h then
+cache[name] = h
+            return h
+        end
+        -- simplify
+        local s = lpegmatch(pattern_2,name)
+        local h = hash[s]
+        if h then
+cache[name] = h
+            return h
+        end
+cache[name] = false
+    end
+
+    function emoji.known()
+        if not hash then
+            data, hash = load()
+        end
+        return hash, data
+    end
+
+    function emoji.compact(name)
+        return lpegmatch(pattern_4,name) or name
+    end
+
 end
 
 -- code moved to char-tex.lua

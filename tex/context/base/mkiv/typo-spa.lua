@@ -7,7 +7,6 @@ if not modules then modules = { } end modules ['typo-spa'] = {
 }
 
 local next, type = next, type
-local utfchar = utf.char
 
 local trace_spacing = false  trackers.register("typesetters.spacing", function(v) trace_spacing = v end)
 
@@ -15,10 +14,7 @@ local report_spacing = logs.reporter("typesetting","spacing")
 
 local nodes, fonts, node = nodes, fonts, node
 
-local tasks              = nodes.tasks
-
 local fonthashes         = fonts.hashes
-local fontdata           = fonthashes.identifiers
 local quaddata           = fonthashes.quads
 
 local texsetattribute    = tex.setattribute
@@ -33,8 +29,7 @@ local tonode             = nuts.tonode
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getfont            = nuts.getfont
-local getattr            = nuts.getattr
-local setattr            = nuts.setattr
+local takeattr           = nuts.takeattr
 local isglyph            = nuts.isglyph
 
 local insert_node_before = nuts.insert_before
@@ -47,11 +42,12 @@ local new_penalty        = nodepool.penalty
 local new_glue           = nodepool.glue
 
 local nodecodes          = nodes.nodecodes
-local glyph_code         = nodecodes.glyph
 local math_code          = nodecodes.math
 
 local somespace          = nodes.somespace
 local somepenalty        = nodes.somepenalty
+
+local enableaction       = nodes.tasks.enableaction
 
 typesetters              = typesetters or { }
 local typesetters        = typesetters
@@ -85,12 +81,11 @@ function spacings.handler(head)
     while start do
         local char, id = isglyph(start)
         if char then
-            local attr = getattr(start,a_spacings)
+            local attr = takeattr(start,a_spacings)
             if attr and attr > 0 then
                 local data = mapping[attr]
                 if data then
                     local map = data.characters[char]
-                    setattr(start,a_spacings,unsetvalue) -- needed?
                     if map then
                         local left = map.left
                         local right = map.right
@@ -213,7 +208,7 @@ function spacings.set(name)
         local data = numbers[name]
         if data then
             if not enabled then
-                tasks.enableaction("processors","typesetters.spacings.handler")
+                enableaction("processors","typesetters.spacings.handler")
                 enabled = true
             end
             n = data.number or unsetvalue

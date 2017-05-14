@@ -1,5 +1,22 @@
 % language=uk
 
+% author    : Hans Hagen
+% copyright : PRAGMA ADE & ConTeXt Development Team
+% license   : Creative Commons Attribution ShareAlike 4.0 International
+% reference : pragma-ade.nl | contextgarden.net | texlive (related) distributions
+% origin    : the ConTeXt distribution
+%
+% comment   : Because this manual is distributed with TeX distributions it comes with a rather
+%             liberal license. We try to adapt these documents to upgrades in the (sub)systems
+%             that they describe. Using parts of the content otherwise can therefore conflict
+%             with existing functionality and we cannot be held responsible for that. Many of
+%             the manuals contain characteristic graphics and personal notes or examples that
+%             make no sense when used out-of-context.
+%
+% comment   : Some chapters might have been published in TugBoat, the NTG Maps, the ConTeXt
+%             Group journal or otherwise. Thanks to the editors for corrections. Also thanks
+%             to users for testing, feedback and corrections.
+
 % to be checked:
 %
 % \Ux in index
@@ -21,7 +38,7 @@
 
 \usemodule[set-11]
 
-\loadsetups[i-en-xml.xml]
+\loadsetups[i-context]
 
 % \definehspace[squad][1em plus .25em minus .25em]
 
@@ -67,18 +84,21 @@
 
 \starttexdefinition unexpanded section:chapter:number #1
     \doifmode{*sectionnumber} {
+        \bf
         \llap{<\enspace}#1\enspace>
     }
 \stoptexdefinition
 
 \starttexdefinition unexpanded section:section:number #1
     \doifmode{*sectionnumber} {
+        \bf
         \llap{<<\enspace}#1\enspace>>
     }
 \stoptexdefinition
 
 \starttexdefinition unexpanded section:subsection:number #1
     \doifmode{*sectionnumber} {
+        \bf
         \llap{<<<\enspace}#1\enspace>>>
     }
 \stoptexdefinition
@@ -1759,6 +1779,222 @@ In addition, \type {=} equals \type {==} and \type {!=} is the same as \type
 
 \stopsection
 
+
+\startsection[title={css selectors}]
+
+\startbuffer[selector-001]
+<?xml version="1.0" ?>
+
+<a>
+    <b class="one">b.one</b>
+    <b class="two">b.two</b>
+    <b class="one two">b.one.two</b>
+    <b class="three">b.three</b>
+    <b id="first">b#first</b>
+    <c>c</c>
+    <d>d e</d>
+    <e>d e</e>
+    <e>d e e</e>
+    <d>d f</d>
+    <f foo="bar">@foo = bar</f>
+    <f bar="foo">@bar = foo</f>
+    <f bar="foo1">@bar = foo1</f>
+    <f bar="foo2">@bar = foo2</f>
+    <f bar="foo3">@bar = foo3</f>
+    <f bar="foo+4">@bar = foo+4</f>
+    <g>g</g>
+    <g><gg><d>g gg d</d></gg></g>
+    <g><gg><f>g gg f</f></gg></g>
+    <g><gg><f class="one">g gg f.one</f></gg></g>
+    <g>g</g>
+    <g><gg><f class="two">g gg f.two</f></gg></g>
+    <g><gg><f class="three">g gg f.three</f></gg></g>
+    <g><f class="one">g f.one</f></g>
+    <g><f class="three">g f.three</f></g>
+    <h whatever="four five six">@whatever = four five six</h>
+</a>
+\stopbuffer
+
+\xmlloadbuffer{selector-001}{selector-001}
+
+\startxmlsetups xml:selector:demo
+    \advance\scratchcounter\plusone
+    \inleftmargin{\the\scratchcounter}\ignorespaces\xmlverbatim{#1}\par
+\stopxmlsetups
+
+\unexpanded\def\showCSSdemo#1#2%
+  {\blank
+   \textrule{\tttf#2}
+   \startlines
+   \dontcomplain
+   \tttf \obeyspaces
+   \scratchcounter\zerocount
+   \xmlcommand{#1}{#2}{xml:selector:demo}
+   \stoplines
+   \blank}
+
+The \CSS\ approach to filtering is a bit different from the path based one and is
+supported too. In fact, you can combine both methods. Depending on what you
+select, the \CSS\ one can be a little bit faster too. It has the advantage that
+one can select more in one go but at the same time looks a bit less attractive.
+This method was added just to show that it can be done but might be useful too. A
+selector is gogen between curly braces (after all \CSS\ uses them and they have no
+function yet in the parser.
+
+\starttyping
+\xmlall{#1}{{foo bar .whatever, bar foo .whatever}}
+\stoptyping
+
+The following methods are supported:
+
+\starttabulate[|T||]
+\NC element                          \NC all tags element \NC \NR
+\NC element-1 > element-2            \NC all tags element-2 with parent tag element-1 \NC \NR
+\NC element-1 + element-2            \NC all tags element-2 preceded by tag element-1 \NC \NR
+\NC element-1 ~ element-2            \NC all tags element-2 preceded by tag element-1 \NC \NR
+\NC element-1 element-2              \NC all tags element-2 inside tag element-1 \NC \NR
+\NC [attribute]                      \NC has attribute \NC \NR
+\NC [attribute=value]                \NC attribute equals value\NC \NR
+\NC [attribute\lettertilde =value]   \NC attribute contains value (space is separator) \NC \NR
+\NC [attribute\letterhat   ="value"] \NC attribute starts with value \NC \NR
+\NC [attribute\letterdollar="value"] \NC attribute ends with value \NC \NR
+\NC [attribute*="value"]             \NC attribute contains value \NC \NR
+\NC .class                           \NC has class \NC \NR
+\NC \letterhash id                   \NC has id \NC \NR
+\NC :nth-child(n)                    \NC the child at index n \NC \NR
+\NC :nth-last-child(n)               \NC the child at index n from the end \NC \NR
+\NC :first-child                     \NC the first child \NC \NR
+\NC :last-child                      \NC the last child \NC \NR
+\NC :nth-of-type(n)                  \NC the match at index n \NC \NR
+\NC :nth-last-of-type(n)             \NC the match at index n from the end \NC \NR
+\NC :first-of-type                   \NC the first match \NC \NR
+\NC :last-of-type                    \NC the last match \NC \NR
+\NC :only-of-type                    \NC the only match or nothing \NC \NR
+\NC :only-child                      \NC the only child or nothing \NC \NR
+\NC :empty                           \NC only when empty \NC \NR
+\NC :root                            \NC the whole tree \NC \NR
+\stoptabulate
+
+The next pages show some examples. For that we use the demo file:
+
+\typebuffer[selector-001]
+
+The class and id selectors often only make sense in \HTML\ like documents but they
+are supported nevertheless. They are after all just shortcuts for filtering by
+attribute. The class filtering is special in the sense that it checks for a class
+in a list of classes given in an attribute.
+
+\showCSSdemo{selector-001}{{.one}}
+\showCSSdemo{selector-001}{{.one, .two}}
+\showCSSdemo{selector-001}{{.one, .two, \letterhash first}}
+
+Attributes can be filtered by presence, value, partial value and such. Quotes are
+optional but we advice to use them.
+
+\showCSSdemo{selector-001}{{[foo], [bar=foo]}}
+\showCSSdemo{selector-001}{{[bar\lettertilde=foo]}}
+\showCSSdemo{selector-001}{{[bar\letterhat="foo"]}}
+\showCSSdemo{selector-001}{{[whatever\lettertilde="five"]}}
+
+You can of course combine the methods as in:
+
+\showCSSdemo{selector-001}{{g f .one, g f .three}}
+\showCSSdemo{selector-001}{{g > f .one, g > f .three}}
+\showCSSdemo{selector-001}{{d + e}}
+\showCSSdemo{selector-001}{{d ~ e}}
+\showCSSdemo{selector-001}{{d ~ e, g f .one, g f .three}}
+
+You can also negate the result by using \type {:not} on a simple expression:
+
+\showCSSdemo{selector-001}{{:not([whatever\lettertilde="five"])}}
+\showCSSdemo{selector-001}{{:not(d)}}
+
+The child and match selectors are also supported:
+
+\showCSSdemo{selector-001}{{a:nth-child(3)}}
+\showCSSdemo{selector-001}{{a:nth-last-child(3)}}
+\showCSSdemo{selector-001}{{g:nth-of-type(3)}}
+\showCSSdemo{selector-001}{{g:nth-last-of-type(3)}}
+\showCSSdemo{selector-001}{{a:first-child}}
+\showCSSdemo{selector-001}{{a:last-child}}
+\showCSSdemo{selector-001}{{e:first-of-type}}
+\showCSSdemo{selector-001}{{gg d:only-of-type}}
+
+Instead of numbers you can also give the \type {an} and \type {an+b} formulas
+as well as the \type {odd} and \type {even} keywords:
+
+\showCSSdemo{selector-001}{{a:nth-child(even)}}
+\showCSSdemo{selector-001}{{a:nth-child(odd)}}
+\showCSSdemo{selector-001}{{a:nth-child(3n+1)}}
+\showCSSdemo{selector-001}{{a:nth-child(2n+3)}}
+
+There are a few special cases:
+
+\showCSSdemo{selector-001}{{g:empty}}
+\showCSSdemo{selector-001}{{g:root}}
+\showCSSdemo{selector-001}{{*}}
+
+Combining the \CSS\ methods with the regular ones is possible:
+
+\showCSSdemo{selector-001}{{g gg f .one}}
+\showCSSdemo{selector-001}{g/gg/f[@class='one']}
+\showCSSdemo{selector-001}{g/{gg f .one}}
+
+\startbuffer[selector-002]
+<?xml version="1.0" ?>
+
+<document>
+    <title class="one"  >title 1</title>
+    <title class="two"  >title 2</title>
+    <title class="one"  >title 3</title>
+    <title class="three">title 4</title>
+</document>
+\stopbuffer
+
+The next examples we use this file:
+
+\typebuffer[selector-002]
+
+\xmlloadbuffer{selector-002}{selector-002}
+
+When we filter from this (not too well structured) tree we can use both
+methods to achieve the same:
+
+\showCSSdemo{selector-002}{{document title .one, document title .three}}
+
+\showCSSdemo{selector-002}{/document/title[(@class='one') or (@class='three')]}
+
+However, imagine this file:
+
+\startbuffer[selector-003]
+<?xml version="1.0" ?>
+
+<document>
+    <title    class="one">title 1</title>
+    <subtitle class="sub">title 1.1</subtitle>
+    <title    class="two">title 2</title>
+    <subtitle class="sub">title 2.1</subtitle>
+    <title    class="one">title 3</title>
+    <subtitle class="sub">title 3.1</subtitle>
+    <title    class="two">title 4</title>
+    <subtitle class="sub">title 4.1</subtitle>
+</document>
+\stopbuffer
+
+\typebuffer[selector-003]
+
+\xmlloadbuffer{selector-003}{selector-003}
+
+The next filter in easier with the \CSS\ selector methods because these accumulate
+independent (simple) expressions:
+
+\showCSSdemo{selector-003}{{document title .one + subtitle, document title .two + subtitle}}
+
+Watch how we get an output in the document order. Because we render a sequential document
+a combined filter will trigger a sorting pass.
+
+\stopsection
+
 \startsection[title={functions as filters}]
 
 At the \LUA\ end a whole \cmdinternal {cd:lpath} expression results in a (set of) node(s)
@@ -2747,6 +2983,83 @@ Tags like \type {t7}, \type {t8} etc.\ can represent versions.
 
 \stopsection
 
+\startsection[title=preprocessing]
+
+% local match    = lpeg.match
+% local replacer = lpeg.replacer("BAD TITLE:","<bold>BAD TITLE:</bold>")
+%
+% function lxml.preprocessor(data,settings)
+%     return match(replacer,data)
+% end
+
+\startbuffer[pre-code]
+\startluacode
+    function lxml.preprocessor(data,settings)
+        return string.find(data,"BAD TITLE:")
+           and string.gsub(data,"BAD TITLE:","<bold>BAD TITLE:</bold>")
+            or data
+    end
+\stopluacode
+\stopbuffer
+
+\startbuffer[pre-xml]
+\startxmlsetups pre:demo:initialize
+    \xmlsetsetup{#1}{*}{pre:demo:*}
+\stopxmlsetups
+
+\xmlregisterdocumentsetup{pre:demo}{pre:demo:initialize}
+
+\startxmlsetups pre:demo:root
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups pre:demo:bold
+    \begingroup\bf\xmlflush{#1}\endgroup
+\stopxmlsetups
+
+\starttext
+    \xmlprocessbuffer{pre:demo}{demo}{}
+\stoptext
+\stopbuffer
+
+Say that you have the following \XML\ setup:
+
+\typebuffer[pre-xml]
+
+and that (such things happen) the input looks like this:
+
+\startbuffer[demo]
+<root>
+BAD TITLE: crap crap crap ...
+
+BAD TITLE: crap crap crap ...
+</root>
+\stopbuffer
+
+\typebuffer[demo]
+
+You can then clean up these \type {BAD TITLE}'s as follows:
+
+\typebuffer[pre-code]
+
+and get as result:
+
+\start \getbuffer[pre-code,pre-xml] \stop
+
+The preprocessor function gets as second argument the current settings, an d
+the field \type {currentresource} can be used to limit the actions to
+specific resources, in our case it's \type {buffer: demo}. Afterwards you can
+reset the proprocessor with:
+
+\startluacode
+lxml.preprocessor = nil
+\stopluacode
+
+Future versions might give some more control over preprocessors. For now consider
+it to be a quick hack.
+
+\stopsection
+
 \stopchapter
 
 \startchapter[title={Lookups using lpaths}]
@@ -2900,8 +3213,108 @@ visualizer to show the steps. Some are shown more than once as part of a set.
 \xmllshow{child::something/child::whatever/self::whatever}
 
 There is also \type {last-match::} that starts with the last found set of nodes.
-This can save some runtime when you do lots of tests combined with a same check
-afterwards.
+This can save some run time when you do lots of tests combined with a same check
+afterwards. There is however one pitfall: you never know what is done with that
+last match in the setup that gets called nested. Take the following example:
+
+\starttyping
+\startbuffer[test]
+<something>
+    <crap> <crapa> <crapb> <crapc> <crapd>
+        <crape>
+            done 1
+        </crape>
+    </crapd>  </crapc> </crapb>  </crapa>
+    <crap> <crapa> <crapb> <crapc> <crapd>
+        <crape>
+            done 2
+        </crape>
+    </crapd>  </crapc> </crapb>  </crapa>
+    <crap> <crapa> <crapb> <crapc> <crapd>
+        <crape>
+            done 3
+        </crape>
+    </crapd>  </crapc> </crapb>  </crapa>
+</something>
+\stopbuffer
+\stoptyping
+
+One way to filter the content is this:
+
+\starttyping
+\xmldoif {#1} {/crap/crapa/crapb/crapc/crapd/crape} {
+    some action
+}
+\stoptyping
+
+It is not unlikely that you will do something like this:
+
+\starttyping
+\xmlfirst {#1} {/crap/crapa/crapb/crapc/crapd/crape} {
+    \xmlfirst{#1}{/crap/crapa/crapb/crapc/crapd/crape}
+}
+\stoptyping
+
+This means that the path is resolved twice but that can be avoided as
+follows:
+
+\starttyping
+\xmldoif{#1}{/crap/crapa/crapb/crapc/crapd/crape}{
+    \xmlfirst{#1}{last-match::}
+}
+\stoptyping
+
+But the next is now guaranteed to work:
+
+\starttyping
+\xmldoif{#1}{/crap/crapa/crapb/crapc/crapd/crape}{
+    \xmlfirst{#1}{last-match::}
+    \xmllast{#1}{last-match::}
+}
+\stoptyping
+
+Because the first one can have done some lookup the last match can be replaced
+and the second call will give unexpected results. You can overcome this with:
+
+\starttyping
+\xmldoif{#1}{/crap/crapa/crapb/crapc/crapd/crape}{
+    \xmlpushmatch
+    \xmlfirst{#1}{last-match::}
+    \xmlpopmatch
+}
+\stoptyping
+
+Does it pay off? Here are some timings of a 10.000 times text and lookup
+like the previous (on a decent Januari 2016 laptop):
+
+\starttabulate[|r|l|]
+\NC 0.239 \NC \type {\xmldoif {...} {...}}                                     \NC \NR
+\NC 0.292 \NC \type {\xmlfirst {...} {...}}                                    \NC \NR
+\NC 0.538 \NC \type {\xmldoif {...} {...} + \xmlfirst {...} {...}}             \NC \NR
+\NC 0.338 \NC \type {\xmldoif {...} {...} + \xmlfirst {...} {last-match::}}    \NC \NR
+\NC 0.349 \NC \type {+ \xmldoif {...} {...} + \xmlfirst {...} {last-match::}-} \NC \NR
+\stoptabulate
+
+So, pushing and popping (the last row) is a bit slower than not doing that but it
+is still much faster than not using \type {last-match::} at all. As a shortcut
+you can use \type {=}, as in:
+
+\starttyping
+\xmlfirst{#1}{=}
+\stoptyping
+
+You can even do this:
+
+\starttyping
+\xmlall{#1}{last-match::/text()}
+\stoptyping
+
+or
+
+\starttyping
+\xmlall{#1}{=/text()}
+\stoptyping
+
 
 \stopsection
 
@@ -3725,6 +4138,175 @@ typesetting often takes relatively more time than the lookup.
 \startpacked
 \getbuffer
 \stoppacked
+
+\stopsection
+
+\startsection[title=Finalizers]
+
+The \XML\ parser is also available outside \TEX. Here is an example of its usage.
+We pipe the result to \TEX\ but you can do with \type {t} whatever you like.
+
+\startbuffer
+local x = xml.load("manual-demo-1.xml")
+local t = { }
+
+for c in xml.collected(x,"//*") do
+    if not c.special and not t[c.tg] then
+        t[c.tg] = true
+    end
+end
+
+context.tocontext(table.sortedkeys(t))
+\stopbuffer
+
+\typebuffer
+
+This returns:
+
+\ctxluabuffer
+
+We can wrap this in a finalizer:
+
+\startbuffer
+xml.finalizers.taglist = function(collected)
+    local t = { }
+    for i=1,#collected do
+        local c = collected[i]
+        if not c.special then
+            local tg = c.tg
+            if tg and not t[tg] then
+                t[tg] = true
+            end
+        end
+    end
+    return table.sortedkeys(t)
+end
+\stopbuffer
+
+\typebuffer
+
+Or in a more extensive one:
+
+\startbuffer
+xml.finalizers.taglist = function(collected,parenttoo)
+    local t = { }
+    for i=1,#collected do
+        local c = collected[i]
+        if not c.special then
+            local tg = c.tg
+            if tg and not t[tg] then
+                t[tg] = true
+            end
+            if parenttoo then
+                local p = c.__p__
+                if p and not p.special then
+                    local tg = p.tg .. ":" .. tg
+                    if tg and not t[tg] then
+                        t[tg] = true
+                    end
+                end
+            end
+        end
+    end
+    return table.sortedkeys(t)
+end
+\stopbuffer
+
+\typebuffer \ctxluabuffer
+
+Usage is as follows:
+
+\startbuffer
+local x = xml.load("manual-demo-1.xml")
+local t = xml.applylpath(x,"//*/taglist()")
+
+context.tocontext(t)
+\stopbuffer
+
+\typebuffer
+
+And indeed we get:
+
+\ctxluabuffer
+
+But we can also say:
+
+\startbuffer
+local x = xml.load("manual-demo-1.xml")
+local t = xml.applylpath(x,"//*/taglist(true)")
+
+context.tocontext(t)
+\stopbuffer
+
+\typebuffer
+
+Now we get:
+
+\ctxluabuffer
+
+\startsection[title=Pure xml]
+
+One might wonder how a \TEX\ macro package would look like when backslashes,
+dollars and percent signs would have no special meaning. In fact, it would be
+rather useless as interpreting commands are triggered by such characters. Any
+formatting or coding system needs such characters. Take \XML: angle brackets and
+ampersands are really special. So, no matter what system we use, we do have to
+deal with the (common) case where these characters need to be sees as they are.
+Normally escaping is the solution.
+
+The \CONTEXT\ interface for \XML\ suffers from this as well. You really don't
+want to know how many tricks are used for dealing with special characters and
+entities: there are several ways these travel through the system and it is
+possible to adapt and cheat. Especially roundtripped data (via tuc file) puts
+some demands on the system because when ts \XML\ can become \TEX\ and vise versa.
+The next example (derived from a mail on the list) demonstrates this:
+
+\starttyping
+\startbuffer[demo]
+<doc>
+    <pre><code>\ConTeXt\ is great</code></pre>
+
+    <pre><code>but you need to know some tricks</code></pre>
+</doc>
+\stopbuffer
+
+\startxmlsetups xml:initialize
+     \xmlsetsetup{#1}{doc|p|code}{xml:*}
+     \xmlsetsetup{#1}{pre/code}{xml:pre:code}
+\stopxmlsetups
+
+\xmlregistersetup{xml:initialize}
+
+\startxmlsetups xml:doc
+     \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:pre:code
+    no solution
+    \comment[symbol=Key, location=inmargin,color=yellow]{\xmlflush{#1}}
+    \par
+    solution one \begingroup
+        \expandUx
+        \comment[symbol=Key, location=inmargin,color=yellow]{\xmlflush{#1}}
+    \endgroup
+    \par
+    solution two
+    \comment[symbol=Key, location=inmargin,color=yellow]{\xmlpure{#1}}
+    \par
+    \xmlprettyprint{#1}{tex}
+\stopxmlsetups
+
+\xmlprocessbuffer{main}{demo}{}
+\stoptyping
+
+The first comment (an interactive feature of \PDF\ comes out as:
+
+\starttyping
+\Ux {5C}ConTeXt\Ux {5C} is great
+\stoptyping
+
+The second and third comment are okay. It's one of the reasons why we have \type
+{\xmlpure}.
 
 \stopsection
 

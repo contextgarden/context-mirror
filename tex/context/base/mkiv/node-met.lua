@@ -60,66 +60,86 @@ end
 -- We start with some helpers and provide all relevant basic functions in the
 -- node namespace as well.
 
-nodes                      = nodes or { }
-local nodes                = nodes
+nodes                       = nodes or { }
+local nodes                 = nodes
 
------ gonuts               = type(node.direct) == "table"
------.gonuts               = gonuts
+local nodecodes             = nodes.nodecodes
 
-local nodecodes            = nodes.nodecodes
-local hlist_code           = nodecodes.hlist
-local vlist_code           = nodecodes.vlist
+nodes.tostring              = node.tostring or tostring
+nodes.copy                  = node.copy
+nodes.copy_node             = node.copy
+nodes.copy_list             = node.copy_list
+nodes.delete                = node.delete
+nodes.dimensions            = node.dimensions
+nodes.rangedimensions       = node.rangedimensions
+nodes.end_of_math           = node.end_of_math
+nodes.flush                 = node.flush_node
+nodes.flush_node            = node.flush_node
+nodes.flush_list            = node.flush_list
+nodes.free                  = node.free
+nodes.insert_after          = node.insert_after
+nodes.insert_before         = node.insert_before
+nodes.hpack                 = node.hpack
+nodes.new                   = node.new
+nodes.tail                  = node.tail
+nodes.traverse              = node.traverse
+nodes.traverse_id           = node.traverse_id
+nodes.traverse_char         = node.traverse_char
+nodes.slide                 = node.slide
+nodes.vpack                 = node.vpack
+nodes.fields                = node.fields
+nodes.is_node               = node.is_node
+nodes.setglue               = node.setglue
 
-nodes.tostring             = node.tostring or tostring
-nodes.copy                 = node.copy
-nodes.copy_list            = node.copy_list
-nodes.delete               = node.delete
-nodes.dimensions           = node.dimensions
-nodes.end_of_math          = node.end_of_math
-nodes.flush_list           = node.flush_list
-nodes.flush_node           = node.flush_node
-nodes.free                 = node.free
-nodes.insert_after         = node.insert_after
-nodes.insert_before        = node.insert_before
-nodes.hpack                = node.hpack
-nodes.new                  = node.new
-nodes.tail                 = node.tail
-nodes.traverse             = node.traverse
-nodes.traverse_id          = node.traverse_id
-nodes.traverse_char        = node.traverse_char
-nodes.slide                = node.slide
-nodes.vpack                = node.vpack
-nodes.fields               = node.fields
-nodes.is_node              = node.is_node
-nodes.setglue              = node.setglue
+nodes.first_glyph           = node.first_glyph
+nodes.has_glyph             = node.has_glyph or node.first_glyph
 
-nodes.first_glyph          = node.first_glyph
-nodes.has_glyph            = node.has_glyph or node.first_glyph
+nodes.current_attr          = node.current_attr
+nodes.has_field             = node.has_field
+nodes.last_node             = node.last_node
+nodes.usedlist              = node.usedlist
+nodes.protrusion_skippable  = node.protrusion_skippable
+nodes.check_discretionaries = node.check_discretionaries
+nodes.write                 = node.write
 
-nodes.current_attr         = node.current_attr
-nodes.do_ligature_n        = node.do_ligature_n
-nodes.has_field            = node.has_field
-nodes.last_node            = node.last_node
-nodes.usedlist             = node.usedlist
-nodes.protrusion_skippable = node.protrusion_skippable
-nodes.write                = node.write
+nodes.count                 = node.count
+nodes.length                = node.length
 
-nodes.has_attribute        = node.has_attribute
-nodes.set_attribute        = node.set_attribute
-nodes.unset_attribute      = node.unset_attribute
+nodes.has_attribute         = node.has_attribute
+nodes.set_attribute         = node.set_attribute
+nodes.find_attribute        = node.find_attribute
+nodes.unset_attribute       = node.unset_attribute
 
-nodes.protect_glyphs       = node.protect_glyphs
-nodes.protect_glyph        = node.protect_glyph
-nodes.unprotect_glyphs     = node.unprotect_glyphs
-nodes.kerning              = node.kerning
-nodes.ligaturing           = node.ligaturing
-nodes.mlist_to_hlist       = node.mlist_to_hlist
+nodes.protect_glyphs        = node.protect_glyphs
+nodes.protect_glyph         = node.protect_glyph
+nodes.unprotect_glyphs      = node.unprotect_glyphs
+nodes.kerning               = node.kerning
+nodes.ligaturing            = node.ligaturing
+nodes.mlist_to_hlist        = node.mlist_to_hlist
+
+if not node.getwhd then
+    local getfield = node.getfield
+    function node.getwhd(n)
+        return getfield(n,"width"), getfield(n,"height"), getfield(n,"depth")
+    end
+end
+
+if not node.setwhd then
+    local setfield = node.setfield
+    function node.setwhd(n,w,h,d)
+        setfield(n,"width",w or 0)
+        setfield(n,"height",h or 0)
+        setfield(n,"depth",d or 0)
+    end
+end
+
+nodes.getwhd = node.getwhd
+nodes.setwhd = node.setwhd
 
 nodes.effective_glue       = node.effective_glue
-
+nodes.getglue              = node.getglue
+nodes.setglue              = node.setglue
 nodes.is_zero_glue         = node.is_zero_glue
-nodes.getglue              = node.getglue
-nodes.getglue              = node.getglue
 
 -- if not gonuts or not node.getfield then
 --     node.getfield = metatable.__index
@@ -149,68 +169,85 @@ local n_getattr         = node.getattr
 local n_getdisc         = node.getdisc
 local n_getleader       = node.getleader
 
-local n_setnext         = node.setnext or
-    function(c,next)
+local n_setnext         = node.setnext or -- always
+    function(c,n)
         setfield(c,"next",n)
     end
-local n_setprev         = node.setprev or
-    function(c,prev)
+local n_setprev         = node.setprev or -- always
+    function(c,p)
         setfield(c,"prev",p)
     end
-local n_setlink         = node.setlink or
-    function(c1,c2)
-        if c1 then setfield(c1,"next",c2) end
-        if c2 then setfield(c2,"prev",c1) end
+local n_setlist         = node.setlist or -- always
+    function(c,l)
+        setfield(c,"list",l)
     end
-local n_setboth         = node.setboth or
+local n_setlink         = node.setlink or -- always
+--     function(c1,c2)
+--         if c1 then setfield(c1,"next",c2) end
+--         if c2 then setfield(c2,"prev",c1) end
+--     end
+    function(...)
+        -- not that fast but not used often anyway
+        local h = nil
+        for i=1,select("#",...) do
+            local n = (select(i,...))
+            if not n then
+                -- go on
+            elseif h then
+                setfield(h,"next",n)
+                setfield(n,"prev",h)
+            else
+                h = n
+            end
+        end
+        return h
+    end
+local n_setboth         = node.setboth or -- always
     function(c,p,n)
         setfield(c,"prev",p)
         setfield(c,"next",n)
     end
 
-node.setnext            = n_setnext
-node.setprev            = n_setprev
-node.setlink            = n_setlink
-node.setboth            = n_setboth
+nodes.setnext         = n_setnext
+nodes.setprev         = n_setprev
+nodes.setlink         = n_setlink
+nodes.setboth         = n_setboth
+nodes.setlist         = n_setlist
 
-nodes.getfield          = n_getfield
-nodes.setfield          = n_setfield
-nodes.getattr           = n_getattr
-nodes.setattr           = n_setattr
+nodes.getfield        = n_getfield
+nodes.setfield        = n_setfield
+nodes.getattr         = n_getattr
+nodes.setattr         = n_setattr
+nodes.takeattr        = nodes.unset_attribute
 
-nodes.getnext           = n_getnext
-nodes.getprev           = n_getprev
-nodes.getid             = n_getid
-nodes.getchar           = n_getchar
-nodes.getfont           = n_getfont
-nodes.getsubtype        = n_getsubtype
-nodes.getlist           = n_getlist
-nodes.getleader         = n_getleader
-nodes.getdisc           = n_getdisc
------.getpre            = node.getpre     or function(n) local h, _, _, t       = n_getdisc(n,true) return h, t end
------.getpost           = node.getpost    or function(n) local _, h, _, _, t    = n_getdisc(n,true) return h, t end
------.getreplace        = node.getreplace or function(n) local _, _, h, _, _, t = n_getdisc(n,true) return h, t end
+nodes.getnext         = n_getnext
+nodes.getprev         = n_getprev
+nodes.getid           = n_getid
+nodes.getchar         = n_getchar
+nodes.getfont         = n_getfont
+nodes.getsubtype      = n_getsubtype
+nodes.getlist         = n_getlist
+nodes.getleader       = n_getleader
+nodes.getdisc         = n_getdisc
 
-nodes.is_char           = node.is_char
-nodes.ischar            = node.is_char
+nodes.is_char         = node.is_char
+nodes.ischar          = node.is_char
 
-nodes.is_glyph          = node.is_glyph
-nodes.isglyph           = node.is_glyph
+nodes.is_glyph        = node.is_glyph
+nodes.isglyph         = node.is_glyph
 
-nodes.getbox            = node.getbox  or tex.getbox
-nodes.setbox            = node.setbox  or tex.setbox
-nodes.getskip           = node.getskip or tex.get
+nodes.getbox          = node.getbox or tex.getbox
+nodes.setbox          = node.setbox or tex.setbox
 
-local n_new_node        = nodes.new
-local n_free_node       = nodes.free
-local n_copy_node       = nodes.copy
-local n_copy_list       = nodes.copy_list
-local n_find_tail       = nodes.tail
-local n_insert_after    = nodes.insert_after
-local n_insert_before   = nodes.insert_before
-local n_slide           = nodes.slide
+local n_flush_node    = nodes.flush
+local n_copy_node     = nodes.copy
+local n_copy_list     = nodes.copy_list
+local n_find_tail     = nodes.tail
+local n_insert_after  = nodes.insert_after
+local n_insert_before = nodes.insert_before
+local n_slide         = nodes.slide
 
-local n_remove_node     = node.remove -- not yet nodes.remove
+local n_remove_node   = node.remove -- not yet nodes.remove
 
 local function remove(head,current,free_too)
     local t = current
@@ -218,7 +255,7 @@ local function remove(head,current,free_too)
     if not t then
         -- forget about it
     elseif free_too then
-        n_free_node(t)
+        n_flush_node(t)
         t = nil
     else
         n_setboth(t)
@@ -255,34 +292,15 @@ function nodes.replace(head,current,new) -- no head returned if false
         if head == current then
             head = new
         end
-        n_free_node(current)
+        n_flush_node(current)
         return head, new
     else
-        n_free_node(current)
+        n_flush_node(current)
         return new
     end
 end
 
-local function count(stack,flat)
-    local n = 0
-    while stack do
-        local id = n_getid(stack)
-        if not flat and id == hlist_code or id == vlist_code then
-            local list = n_getlist(stack)
-            if list then
-                n = n + 1 + count(list) -- self counts too
-            else
-                n = n + 1
-            end
-        else
-            n = n + 1
-        end
-        stack = n_getnext(stack)
-    end
-    return n
-end
-
-nodes.count = count
+-- nodes.countall : see node-nut.lua
 
 function nodes.append(head,current,...)
     for i=1,select("#",...) do
@@ -455,7 +473,7 @@ metatable.__sub = function(first,second)
         local tail = n_find_tail(first)
         for i=1,second do
             local prev = n_getprev(tail)
-            n_free_node(tail) -- can become flushlist/flushnode
+            n_flush_node(tail) -- can become flushlist/flushnode
             if prev then
                 tail = prev
             else
@@ -490,7 +508,7 @@ metatable.__add = function(first,second)
         local head = second
         for i=1,first do
             local second = n_getnext(head)
-            n_free_node(head) -- can become flushlist/flushnode
+            n_flush_node(head) -- can become flushlist/flushnode
             if second then
                 head = second
             else
@@ -614,7 +632,7 @@ local messyhack    = table.tohash { -- temporary solution
 }
 
 table.setmetatableindex(keys,function(t,k)
-    local v = getfields(k)
+    local v = (k == "attributelist" or k == nodecodes.attributelist) and { } or getfields(k)
     if messyhack[k] then
         for i=1,#v do
             if v[i] == "subtype" then
@@ -651,3 +669,39 @@ end
 
 nodes.keys   = keys       -- [id][subtype]
 nodes.fields = nodefields -- (n)
+
+-- temporary hack
+
+if LUATEXVERSION <= 1.002 then
+
+    local get   = tex.get
+    local flush = node.free
+
+    function tex.get(name,split)
+        local s = get(name)
+        if split == true then
+            if s then
+                local width         = s.width
+                local stretch       = s.stretch
+                local shrink        = s.shrink
+                local stretch_order = s.stretch_order
+                local shrink_order  = s.shrink_order
+                flush(s)
+                return width, stretch, shrink, stretch_order, shrink_order
+            else
+                return 0, 0, 0, 0, 0
+            end
+        elseif split == false then
+            if s then
+                local width = s.width
+                flush(s)
+                return width
+            else
+                return 0
+            end
+        else
+            return s
+        end
+    end
+
+end
