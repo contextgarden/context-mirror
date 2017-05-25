@@ -205,7 +205,9 @@ end
 
 if LUATEXVERSION < 1.005 then
     local getfield = direct.getfield
-    function direct.getsup(n) return getfield(n,"sup") end
+    function direct.getnucleus(n) return getfield(n,"nucleus") end
+    function direct.getsub    (n) return getfield(n,"sub") end
+    function direct.getsup    (n) return getfield(n,"sup") end
 end
 
 -- if LUATEXVERSION < 1.004 then
@@ -856,8 +858,52 @@ end
 
 -- here:
 
-nodes.set_synctex_line  = node.set_synctex_line
-nodes.set_synctex_tag   = node.set_synctex_tag
-
 nuts.get_synctex_fields = direct.get_synctex_fields
 nuts.set_synctex_fields = direct.set_synctex_fields
+
+-- for now
+
+nodes.uses_font = nodes.uses_font
+nuts.uses_font  = direct.uses_font
+
+if not nuts.uses_font then
+
+    local glyph_code  = nodecodes.glyph
+    local getdisc     = nuts.getdisc
+    local getfont     = nuts.getfont
+    local traverse_id = nuts.traverse_id
+    local tonut       = nodes.tonut
+
+    function nuts.uses_font(n,font)
+        local pre, post, replace = getdisc(n)
+        if pre then
+            -- traverse_char
+            for n in traverse_id(glyph_code,pre) do
+                if getfont(n) == font then
+                    return true
+                end
+            end
+        end
+        if post then
+            for n in traverse_id(glyph_code,post) do
+                if getfont(n) == font then
+                    return true
+                end
+            end
+        end
+        if replace then
+            for n in traverse_id(glyph_code,replace) do
+                if getfont(n) == font then
+                    return true
+                end
+            end
+        end
+        return false
+    end
+
+    function nodes.uses_font(n,font)
+        return nuts.uses_font(tonut(n),font)
+    end
+
+end
+
