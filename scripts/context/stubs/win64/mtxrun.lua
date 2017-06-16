@@ -9541,7 +9541,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 8036, stripped down to: 5567
+-- original size: 8263, stripped down to: 5685
 
 if not modules then modules={} end modules ['trac-inf']={
   version=1.001,
@@ -9648,8 +9648,9 @@ function statistics.show()
       return format("%s, type: %s, binary subtree: %s",
         os.platform or "unknown",os.type or "unknown",environment.texos or "unknown")
     end)
-    register("luatex banner",function()
-      return lower(status.banner)
+    register("used engine",function()
+      return format("%s version %s with functionality level %s, banner: %s",
+        LUATEXENGINE,LUATEXVERSION,LUATEXFUNCTIONALITY,lower(status.banner))
     end)
     register("control sequences",function()
       return format("%s of %s + %s",status.cs_count,status.hash_size,status.hash_extra)
@@ -11104,7 +11105,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-env"] = package.loaded["util-env"] or true
 
--- original size: 9246, stripped down to: 5038
+-- original size: 9400, stripped down to: 5499
 
 if not modules then modules={} end modules ['util-env']={
   version=1.001,
@@ -11119,8 +11120,21 @@ local unquoted,quoted,optionalquoted=string.unquoted,string.quoted,string.option
 local concat,insert,remove=table.concat,table.insert,table.remove
 environment=environment or {}
 local environment=environment
-os.setlocale(nil,nil) 
-function os.setlocale()
+local setlocale=os.setlocale
+setlocale(nil,nil)
+local report=logs.reporter("system")
+function os.setlocale(a,b)
+  if a or b then
+    if report then
+      report()
+      report("You're messing with os.locale in a supposedly locale neutral enviroment. From")
+      report("now on are on your own and without support. Crashes or unexpected side effects")
+      report("can happen but don't bother the luatex and context developer team with it.")
+      report()
+      report=nil
+    end
+    setlocale(a,b)
+  end
 end
 local validengines=allocate {
   ["luatex"]=true,
@@ -19949,7 +19963,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lib"] = package.loaded["util-lib"] or true
 
--- original size: 13595, stripped down to: 7500
+-- original size: 14040, stripped down to: 7818
 
 if not modules then modules={} end modules ['util-lib']={
   version=1.001,
@@ -19968,6 +19982,7 @@ local pathpart=file.pathpart
 local nameonly=file.nameonly
 local joinfile=file.join
 local removesuffix=file.removesuffix
+local addsuffix=file.addsuffix
 local findfile=resolvers.findfile
 local findfiles=resolvers.findfiles
 local expandpaths=resolvers.expandedpathlistfromvariable
@@ -19987,13 +20002,20 @@ local function locate(required,version,trace,report,action)
   local required_path=pathpart(required_full)
   local required_base=nameonly(required_full)
   if qualifiedpath(required) then
-    if isfile(required) then
+    if isfile(addsuffix(required,os.libsuffix)) then
+      if trace then
+        report("qualified name %a found",required)
+      end
       found_library=required
+    else
+      if trace then
+        report("qualified name %a not found",required)
+      end
     end
   else
     local required_name=required_base.."."..os.libsuffix
     local version=type(version)=="string" and version~="" and version or false
-    local engine=environment.ownmain or false
+    local engine="luatex"
     if trace and not done then
       local list=expandpaths("lib") 
       for i=1,#list do
@@ -20053,8 +20075,9 @@ local function locate(required,version,trace,report,action)
       package.extralibpath(environment.ownpath)
       local paths=package.libpaths()
       for i=1,#paths do
+        required_path=paths[i]
         local found=check(lfs.isfile)
-        if found and (not checkpattern or find(found,checkpattern)) then
+        if type(found)=="string" and (not checkpattern or find(found,checkpattern)) then
           return found
         end
       end
@@ -20084,18 +20107,18 @@ local function locate(required,version,trace,report,action)
     if trace then
       report("found: %a",found_library)
     end
-    local message,result=action(found_library,required_base)
+    local result,message=action(found_library,required_base)
     if result then
       library=result
     else
       library=false
-      report("load error: message %a, library %a",tostring(message),found_library or "no library")
+      report("load error: message %a, library %a",tostring(message or "unknown"),found_library or "no library")
     end
   end
   if not library then
-    report("unknown: %a",required)
+    report("unknown library: %a",required)
   elseif trace then
-    report("stored: %a",required)
+    report("stored library: %a",required)
   end
   return library
 end
@@ -20122,13 +20145,12 @@ do
         local libtype=type(library)
         if libtype=="function" then
           library=library()
-          message=true
         else
           report_swiglib("load error: %a returns %a, message %a, library %a",opener,libtype,(string.gsub(message or "no message","[%s]+$","")),found_library or "no library")
           library=false
         end
         popdir()
-        return message,library
+        return library
       end)
       loadedlibs[required]=library or false
     end
@@ -20174,7 +20196,9 @@ if FFISUPPORTED and ffi and ffi.load then
   trackers.register("resolvers.ffilib",function(v) trace_ffilib=v end)
   local function locateindeed(name)
     local message,library=pcall(savedffiload,removesuffix(name))
-    if type(library)=="userdata" then
+    if type(message)=="userdata" then
+      return message
+    elseif type(library)=="userdata" then
       return library
     else
       return false
@@ -20540,8 +20564,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 845305
--- stripped bytes    : 306232
+-- original bytes    : 846131
+-- stripped bytes    : 306161
 
 -- end library merge
 
@@ -21600,6 +21624,42 @@ end
 
 -- joke .. reminds me of messing with gigi terminals
 
+do
+
+    local a_locale = e_argument("locale")
+
+    if a_locale then
+
+        -- I really hate this crap but am too tired of discussing it over and over
+        -- again so for the sake of usiage outside context we will provide ways to
+        -- use locales in an otherwise supposed to be locale agnostic system. And
+        -- forget about support in case of interferences.
+
+        report()
+        report(what == "force" and "forcing locale:" or "original locale:")
+        report()
+        report("  collate  : %s",status.lc_collate  or "<unset>")
+        report("  ctype    : %s",status.lc_ctype    or "<unset>")
+        report("  monetary : %s",status.lc_monetary or "<unset>")
+        report("  numeric  : %s",status.lc_numeric  or "<unset>")
+        report("  time     : %s",status.lc_time     or "<unset>")
+        report()
+
+    end
+
+    if a_locale == "force" then
+        os.setlocale(status.lc_collate ,"collate")
+        os.setlocale(status.lc_ctype   ,"ctype")
+        os.setlocale(status.lc_monetary,"monetary")
+        os.setlocale(status.lc_numeric ,"numeric")
+        os.setlocale(status.lc_time    ,"time")
+    else
+        function os.setlocale()
+        end
+    end
+
+end
+
 if e_argument("ansi") then
 
     logs.setformatters("ansi")
@@ -21933,6 +21993,10 @@ elseif e_argument("exporthelp") then
 elseif e_argument("systeminfo") then
 
     runners.systeminfo()
+
+elseif e_argument("locale") then
+
+    -- already done
 
 elseif e_argument("help") or filename=='help' or filename == "" then
 
