@@ -302,8 +302,8 @@ local function logwarning(...)
     report_direct(...)
 end
 
-local f_unicode = formatters["%U"]
-local f_uniname = formatters["%U (%s)"]
+local f_unicode = formatters["U+%X"]      -- was ["%U"]
+local f_uniname = formatters["U+%X (%s)"] -- was ["%U (%s)"]
 local f_unilist = formatters["% t (% t)"]
 
 local function gref(n) -- currently the same as in font-otb
@@ -932,8 +932,8 @@ function handlers.gpos_mark2base(head,start,dataset,sequence,markanchors,rlmode)
                     local ma = markanchors[2]
                     local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],false,checkmarks)
                     if trace_marks then
-                        logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%p,%p)",
-                            pref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
+                        logprocess("%s, bound %s, anchoring mark %s to basechar %s => (%p,%p)",
+                            pref(dataset,sequence),bound,gref(markchar),gref(basechar),dx,dy)
                     end
                     return head, start, true
                 elseif trace_bugs then
@@ -991,8 +991,8 @@ function handlers.gpos_mark2ligature(head,start,dataset,sequence,markanchors,rlm
                         if ba then
                             local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],false,checkmarks)
                             if trace_marks then
-                                logprocess("%s, anchor %s, index %s, bound %s: anchoring mark %s to baselig %s at index %s => (%p,%p)",
-                                    pref(dataset,sequence),anchor,index,bound,gref(markchar),gref(basechar),index,dx,dy)
+                                logprocess("%s, index %s, bound %s, anchoring mark %s to baselig %s at index %s => (%p,%p)",
+                                    pref(dataset,sequence),index,bound,gref(markchar),gref(basechar),index,dx,dy)
                             end
                             return head, start, true
                         else
@@ -1040,8 +1040,8 @@ function handlers.gpos_mark2mark(head,start,dataset,sequence,markanchors,rlmode)
                     local ma = markanchors[2]
                     local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],true,checkmarks)
                     if trace_marks then
-                        logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
-                            pref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
+                        logprocess("%s, bound %s, anchoring mark %s to basemark %s => (%p,%p)",
+                            pref(dataset,sequence),bound,gref(markchar),gref(basechar),dx,dy)
                     end
                     return head, start, true
                 end
@@ -1539,8 +1539,8 @@ function chainprocs.gpos_mark2base(head,start,stop,dataset,sequence,currentlooku
                             if ma then
                                 local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],false,checkmarks)
                                 if trace_marks then
-                                    logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%p,%p)",
-                                        cref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
+                                    logprocess("%s, bound %s, anchoring mark %s to basechar %s => (%p,%p)",
+                                        cref(dataset,sequence),bound,gref(markchar),gref(basechar),dx,dy)
                                 end
                                 return head, start, true
                             end
@@ -1610,8 +1610,8 @@ function chainprocs.gpos_mark2ligature(head,start,stop,dataset,sequence,currentl
                                 if ba then
                                     local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],false,checkmarks)
                                     if trace_marks then
-                                        logprocess("%s, anchor %s, bound %s: anchoring mark %s to baselig %s at index %s => (%p,%p)",
-                                            cref(dataset,sequence),anchor,a or bound,gref(markchar),gref(basechar),index,dx,dy)
+                                        logprocess("%s, bound %s, anchoring mark %s to baselig %s at index %s => (%p,%p)",
+                                            cref(dataset,sequence),a or bound,gref(markchar),gref(basechar),index,dx,dy)
                                     end
                                     return head, start, true
                                 end
@@ -1667,8 +1667,8 @@ function chainprocs.gpos_mark2mark(head,start,stop,dataset,sequence,currentlooku
                             if ma then
                                 local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],true,checkmarks)
                                 if trace_marks then
-                                    logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
-                                        cref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
+                                    logprocess("%s, bound %s, anchoring mark %s to basemark %s => (%p,%p)",
+                                        cref(dataset,sequence),bound,gref(markchar),gref(basechar),dx,dy)
                                 end
                                 return head, start, true
                             end
@@ -1776,13 +1776,26 @@ end
 -- order to handle that we need more complex code which also slows down even more. The main
 -- loop variant could deal with that: test, collapse, backtrack.
 
-local new_kern = nuts.pool.kern
+local userkern = nuts.pool and nuts.pool.newkern -- context
+
+do if not userkern then -- generic
+
+    local thekern = nuts.new("kern",1) -- userkern
+    local setkern = nuts.setkern       -- not injections.setkern
+
+    userkern = function(k)
+        local n = copy_node(thekern)
+        setkern(n,k)
+        return n
+    end
+
+end end
 
 local function checked(head)
     local current = head
     while current do
         if getid(current) == glue_code then
-            local kern = new_kern(getwidth(current))
+            local kern = userkern(getwidth(current))
             if head == current then
                 local next = getnext(current)
                 if next then

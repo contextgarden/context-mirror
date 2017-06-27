@@ -21,10 +21,10 @@ if not modules then modules = { } end modules ['font-otj'] = {
 -- The use_advance code was just a test and is meant for testing and manuals. There is no
 -- performance (or whatever) gain and using kerns is somewhat cleaner (at least for now).
 
--- Maybe: subtype fontkern when pure kerns.
-
 -- An alternative is to have a list per base of all marks and then do a run over the node
 -- list that resolves the accumulated l/r/x/y and then do an inject pass.
+
+-- if needed we can flag a kern node as immutable
 
 if not nodes.properties then return end
 
@@ -65,8 +65,6 @@ local glue_code          = nodecodes.glue
 local nuts               = nodes.nuts
 local nodepool           = nuts.pool
 
-local newkern            = nodepool.kern
-
 local tonode             = nuts.tonode
 local tonut              = nuts.tonut
 
@@ -96,9 +94,23 @@ local insert_node_after  = nuts.insert_after
 
 local properties         = nodes.properties.data
 
-function injections.installnewkern(nk)
-    newkern = nk or newkern
-end
+local fontkern           = nuts.pool and nuts.pool.fontkern -- context
+
+do if not fontkern then -- generic
+
+    local thekern   = nuts.new("kern",0) -- fontkern
+    local setkern   = nuts.setkern
+    local copy_node = nuts.copy_node
+
+    fontkern = function(k)
+        local n = copy_node(thekern)
+        setkern(n,k)
+        return n
+    end
+
+end end
+
+function injections.installnewkern() end -- obsolete
 
 local nofregisteredkerns    = 0
 local nofregisteredpairs    = 0
@@ -279,7 +291,7 @@ function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmne
     return dx, dy, nofregisteredcursives
 end
 
-function injections.setpair(current,factor,rlmode,r2lflag,spec,injection) -- r2lflag & tfmchr not used
+function injections.setpair(current,factor,rlmode,r2lflag,spec,injection) -- r2lflag not used
     local x = factor*spec[1]
     local y = factor*spec[2]
     local w = factor*spec[3]
@@ -354,22 +366,43 @@ function injections.setkern(current,factor,rlmode,x,injection)
         if not injection then
             injection = "injections"
         end
-        if p then
-         -- local i = rawget(p,injection)
-            local i = rawget(p,injection)
-            if i then
-                i.leftkern = dx + (i.leftkern or 0)
+        if rlmode and rlmode < 0 then
+            -- for kai to check: this branch is new
+            if p then
+             -- local i = rawget(p,injection)
+                local i = rawget(p,injection)
+                if i then
+                    i.rightkern = dx + (i.rightkern or 0)
+                else
+                    p[injection] = {
+                        rightkern = dx,
+                    }
+                end
             else
-                p[injection] = {
-                    leftkern = dx,
+                properties[current] = {
+                    [injection] = {
+                        rightkern = dx,
+                    },
                 }
             end
         else
-            properties[current] = {
-                [injection] = {
-                    leftkern = dx,
-                },
-            }
+            if p then
+             -- local i = rawget(p,injection)
+                local i = rawget(p,injection)
+                if i then
+                    i.leftkern = dx + (i.leftkern or 0)
+                else
+                    p[injection] = {
+                        leftkern = dx,
+                    }
+                end
+            else
+                properties[current] = {
+                    [injection] = {
+                        leftkern = dx,
+                    },
+                }
+            end
         end
         return dx, nofregisteredkerns
     else
@@ -579,7 +612,7 @@ local function inject_kerns_only(head,where)
                     -- left|glyph|right
                     local leftkern = i.leftkern
                     if leftkern and leftkern ~= 0 then
-                        head = insert_node_before(head,current,newkern(leftkern))
+                        head = insert_node_before(head,current,fontkern(leftkern))
                     end
                 end
                 if prevdisc then
@@ -590,7 +623,7 @@ local function inject_kerns_only(head,where)
                         if i then
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                setlink(posttail,newkern(leftkern))
+                                setlink(posttail,fontkern(leftkern))
                                 done = true
                             end
                         end
@@ -601,7 +634,7 @@ local function inject_kerns_only(head,where)
                         if i then
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                setlink(replacetail,newkern(leftkern))
+                                setlink(replacetail,fontkern(leftkern))
                                 done = true
                             end
                         end
@@ -612,7 +645,7 @@ local function inject_kerns_only(head,where)
                             -- glyph|disc|glyph (special case)
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                setfield(prev,"replace",newkern(leftkern)) -- maybe also leftkern
+                                setfield(prev,"replace",fontkern(leftkern)) -- maybe also leftkern
                             end
                         end
                     end
@@ -640,7 +673,7 @@ local function inject_kerns_only(head,where)
                         if i then
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                pre  = insert_node_before(pre,n,newkern(leftkern))
+                                pre  = insert_node_before(pre,n,fontkern(leftkern))
                                 done = true
                             end
                         end
@@ -657,7 +690,7 @@ local function inject_kerns_only(head,where)
                         if i then
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                post = insert_node_before(post,n,newkern(leftkern))
+                                post = insert_node_before(post,n,fontkern(leftkern))
                                 done = true
                             end
                         end
@@ -674,7 +707,7 @@ local function inject_kerns_only(head,where)
                         if i then
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                replace = insert_node_before(replace,n,newkern(leftkern))
+                                replace = insert_node_before(replace,n,fontkern(leftkern))
                                 done    = true
                             end
                         end
@@ -737,11 +770,11 @@ local function inject_pairs_only(head,where)
                     end
                     local leftkern = i.leftkern
                     if leftkern and leftkern ~= 0 then
-                        head = insert_node_before(head,current,newkern(leftkern))
+                        head = insert_node_before(head,current,fontkern(leftkern))
                     end
                     local rightkern = i.rightkern
                     if rightkern and rightkern ~= 0 then
-                        insert_node_after(head,current,newkern(rightkern))
+                        insert_node_after(head,current,fontkern(rightkern))
                     end
                 else
                  -- local i = rawget(p,"emptyinjections")
@@ -755,7 +788,7 @@ local function inject_pairs_only(head,where)
                                 if replace then
                                     -- error, we expect an empty one
                                 else
-                                    setfield(next,"replace",newkern(rightkern)) -- maybe also leftkern
+                                    setfield(next,"replace",fontkern(rightkern)) -- maybe also leftkern
                                 end
                             end
                         end
@@ -769,7 +802,7 @@ local function inject_pairs_only(head,where)
                         if i then
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                setlink(posttail,newkern(leftkern))
+                                setlink(posttail,fontkern(leftkern))
                                 done = true
                             end
                         end
@@ -780,7 +813,7 @@ local function inject_pairs_only(head,where)
                         if i then
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                setlink(replacetail,newkern(leftkern))
+                                setlink(replacetail,fontkern(leftkern))
                                 done = true
                             end
                         end
@@ -790,7 +823,7 @@ local function inject_pairs_only(head,where)
                             -- new .. okay?
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                setfield(prev,"replace",newkern(leftkern)) -- maybe also leftkern
+                                setfield(prev,"replace",fontkern(leftkern)) -- maybe also leftkern
                             end
                         end
                     end
@@ -821,12 +854,12 @@ local function inject_pairs_only(head,where)
                             end
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                pre  = insert_node_before(pre,n,newkern(leftkern))
+                                pre  = insert_node_before(pre,n,fontkern(leftkern))
                                 done = true
                             end
                             local rightkern = i.rightkern
                             if rightkern and rightkern ~= 0 then
-                                insert_node_after(pre,n,newkern(rightkern))
+                                insert_node_after(pre,n,fontkern(rightkern))
                                 done = true
                             end
                         end
@@ -847,12 +880,12 @@ local function inject_pairs_only(head,where)
                             end
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                post = insert_node_before(post,n,newkern(leftkern))
+                                post = insert_node_before(post,n,fontkern(leftkern))
                                 done = true
                             end
                             local rightkern = i.rightkern
                             if rightkern and rightkern ~= 0 then
-                                insert_node_after(post,n,newkern(rightkern))
+                                insert_node_after(post,n,fontkern(rightkern))
                                 done = true
                             end
                         end
@@ -873,12 +906,12 @@ local function inject_pairs_only(head,where)
                             end
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                replace = insert_node_before(replace,n,newkern(leftkern))
+                                replace = insert_node_before(replace,n,fontkern(leftkern))
                                 done    = true
                             end
                             local rightkern = i.rightkern
                             if rightkern and rightkern ~= 0 then
-                                insert_node_after(replace,n,newkern(rightkern))
+                                insert_node_after(replace,n,fontkern(rightkern))
                                 done = true
                             end
                         end
@@ -895,7 +928,7 @@ local function inject_pairs_only(head,where)
                             -- glyph|pre glyphs
                             local rightkern = i.rightkern
                             if rightkern and rightkern ~= 0 then
-                                pre  = insert_node_before(pre,pre,newkern(rightkern))
+                                pre  = insert_node_before(pre,pre,fontkern(rightkern))
                                 done = true
                             end
                         end
@@ -910,7 +943,7 @@ local function inject_pairs_only(head,where)
                             -- glyph|replace glyphs
                             local rightkern = i.rightkern
                             if rightkern and rightkern ~= 0 then
-                                replace = insert_node_before(replace,replace,newkern(rightkern))
+                                replace = insert_node_before(replace,replace,fontkern(rightkern))
                                 done    = true
                             end
                         end
@@ -1031,7 +1064,9 @@ local function inject_everything(head,where)
             if pn.markdir < 0 then
                 ox = px - pn.markx
 -- pair stuff: husayni needs it
-+ (pn.leftkern or 0)
+if not pn.markmark then -- check or not (no longer needed)
+    ox = ox + (pn.leftkern or 0)
+end
 --
              -- report_injections("r2l case 3: %p",ox)
             else
@@ -1053,14 +1088,16 @@ local function inject_everything(head,where)
                     -- -- we do it the ugly way (no checking if the previous is
                     -- -- already a kern) .. maybe we should fix the font instead
                     -- hm, no head ?
-                    insert_node_before(n,n,newkern(-wn))
-                    insert_node_after(n,n,newkern(-wn))
+                    insert_node_before(n,n,fontkern(-wn))
+                    insert_node_after(n,n,fontkern(-wn))
                 end
             end
         end
         local oy = ny + py + pn.marky
 -- pair stuff: husayni needs it
-oy = oy + (pn.yoffset or 0)
+if not pn.markmark then
+    oy = oy + (pn.yoffset or 0)
+end
 --
         setoffsets(n,ox,oy)
         if trace_marks then
@@ -1139,11 +1176,11 @@ oy = oy + (pn.yoffset or 0)
                         -- left|glyph|right
                         local leftkern = i.leftkern
                         if leftkern and leftkern ~= 0 then
-                            head = insert_node_before(head,current,newkern(leftkern))
+                            head = insert_node_before(head,current,fontkern(leftkern))
                         end
                         local rightkern = i.rightkern
                         if rightkern and rightkern ~= 0 then
-                            insert_node_after(head,current,newkern(rightkern))
+                            insert_node_after(head,current,fontkern(rightkern))
                         end
                     end
                 else
@@ -1158,7 +1195,7 @@ oy = oy + (pn.yoffset or 0)
                                 if replace then
                                     -- error, we expect an empty one
                                 else
-                                    setfield(next,"replace",newkern(rightkern)) -- maybe also leftkern
+                                    setfield(next,"replace",fontkern(rightkern)) -- maybe also leftkern
                                 end
                             end
                         end
@@ -1173,7 +1210,7 @@ oy = oy + (pn.yoffset or 0)
                             if i then
                                 local leftkern = i.leftkern
                                 if leftkern and leftkern ~= 0 then
-                                    setlink(posttail,newkern(leftkern))
+                                    setlink(posttail,fontkern(leftkern))
                                     done = true
                                 end
                             end
@@ -1184,7 +1221,7 @@ oy = oy + (pn.yoffset or 0)
                             if i then
                                 local leftkern = i.leftkern
                                 if leftkern and leftkern ~= 0 then
-                                    setlink(replacetail,newkern(leftkern))
+                                    setlink(replacetail,fontkern(leftkern))
                                     done = true
                                 end
                             end
@@ -1194,7 +1231,7 @@ oy = oy + (pn.yoffset or 0)
                             if i then
                                 local leftkern = i.leftkern
                                 if leftkern and leftkern ~= 0 then
-                                    setfield(prev,"replace",newkern(leftkern)) -- maybe also leftkern
+                                    setfield(prev,"replace",fontkern(leftkern)) -- maybe also leftkern
                                 end
                             end
                         end
@@ -1239,12 +1276,12 @@ oy = oy + (pn.yoffset or 0)
                             end
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                pre  = insert_node_before(pre,n,newkern(leftkern))
+                                pre  = insert_node_before(pre,n,fontkern(leftkern))
                                 done = true
                             end
                             local rightkern = i.rightkern
                             if rightkern and rightkern ~= 0 then
-                                insert_node_after(pre,n,newkern(rightkern))
+                                insert_node_after(pre,n,fontkern(rightkern))
                                 done = true
                             end
                             if hasmarks then
@@ -1271,12 +1308,12 @@ oy = oy + (pn.yoffset or 0)
                             end
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                post = insert_node_before(post,n,newkern(leftkern))
+                                post = insert_node_before(post,n,fontkern(leftkern))
                                 done = true
                             end
                             local rightkern = i.rightkern
                             if rightkern and rightkern ~= 0 then
-                                insert_node_after(post,n,newkern(rightkern))
+                                insert_node_after(post,n,fontkern(rightkern))
                                 done = true
                             end
                             if hasmarks then
@@ -1303,12 +1340,12 @@ oy = oy + (pn.yoffset or 0)
                             end
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                replace = insert_node_before(replace,n,newkern(leftkern))
+                                replace = insert_node_before(replace,n,fontkern(leftkern))
                                 done    = true
                             end
                             local rightkern = i.rightkern
                             if rightkern and rightkern ~= 0 then
-                                insert_node_after(replace,n,newkern(rightkern))
+                                insert_node_after(replace,n,fontkern(rightkern))
                                 done = true
                             end
                             if hasmarks then
@@ -1331,7 +1368,7 @@ oy = oy + (pn.yoffset or 0)
                             -- glyph|pre glyphs
                             local rightkern = i.rightkern
                             if rightkern and rightkern ~= 0 then
-                                pre  = insert_node_before(pre,pre,newkern(rightkern))
+                                pre  = insert_node_before(pre,pre,fontkern(rightkern))
                                 done = true
                             end
                         end
@@ -1346,7 +1383,7 @@ oy = oy + (pn.yoffset or 0)
                             -- glyph|replace glyphs
                             local rightkern = i.rightkern
                             if rightkern and rightkern ~= 0 then
-                                replace = insert_node_before(replace,replace,newkern(rightkern))
+                                replace = insert_node_before(replace,replace,fontkern(rightkern))
                                 done    = true
                             end
                         end
