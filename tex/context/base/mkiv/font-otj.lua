@@ -515,7 +515,7 @@ end
 
 local function showsub(n,what,where)
     report_injections("begin subrun: %s",where)
-    for n in traverse_id(glyph_code,n) do
+    for n in traverse_char(n) do
         showchar(n,where)
         show(n,what,where," ")
     end
@@ -593,7 +593,7 @@ local function inject_kerns_only(head,where)
     local prev        = nil
     local next        = nil
     local prevdisc    = nil
-    local prevglyph   = nil
+ -- local prevglyph   = nil
     local pre         = nil -- saves a lookup
     local post        = nil -- saves a lookup
     local replace     = nil -- saves a lookup
@@ -655,11 +655,11 @@ local function inject_kerns_only(head,where)
                 end
             end
             prevdisc  = nil
-            prevglyph = current
+         -- prevglyph = current
         elseif char == false then
             -- other font
             prevdisc  = nil
-            prevglyph = current
+         -- prevglyph = current
         elseif id == disc_code then
             pre, post, replace, pretail, posttail, replacetail = getdisc(current,true)
             local done = false
@@ -717,10 +717,10 @@ local function inject_kerns_only(head,where)
             if done then
                 setdisc(current,pre,post,replace)
             end
-            prevglyph = nil
+         -- prevglyph = nil
             prevdisc  = current
         else
-            prevglyph = nil
+         -- prevglyph = nil
             prevdisc  = nil
         end
         prev    = current
@@ -966,7 +966,7 @@ local function inject_pairs_only(head,where)
     if keepregisteredcounts then
         keepregisteredcounts = false
     else
-        nofregisteredkerns   = 0
+        nofregisteredpairs = 0
     end
     if trace_injections then
         show_result(head)
@@ -1548,7 +1548,8 @@ local function injectspaces(head)
         factor     = getthreshold(font)
     end
 
-    for n in traverse_id(glue_code,tonut(head)) do
+ -- for n in traverse_id(glue_code,tonut(head)) do
+    for n in traverse_char(tonut(head)) do
         local prev, next = getspaceboth(n)
         local prevchar = prev and ischar(prev)
         local nextchar = next and ischar(next)

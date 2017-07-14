@@ -19,6 +19,8 @@
 %D below should work in the generic loader too. It's anyhow an illustration of
 %D how \type {ffi} can work be used in a practical application.
 
+% \enabletrackers[resolvers.ffilib]
+
 \registerctxluafile{font-txt}{1.001} % generic text handler
 \registerctxluafile{font-phb}{1.001} % harfbuzz plugin
 
@@ -201,10 +203,11 @@
   [arabic-uniscribe]
   [mode=plug,
    features=harfbuzz,
-   script=arab,language=dflt,ccmp=yes,
-   init=yes,medi=yes,fina=yes,isol=yes,
-   liga=yes,dlig=yes,rlig=yes,clig=yes,calt=yes,
-   mark=yes,mkmk=yes,kern=yes,curs=yes,
+   script=arab,language=dflt,
+%    ccmp=yes,
+%    init=yes,medi=yes,fina=yes,isol=yes,
+%    liga=yes,dlig=yes,rlig=yes,clig=yes,calt=yes,
+%    mark=yes,mkmk=yes,kern=yes,curs=yes,
    shaper=uniscribe]
 
 \starttexdefinition RunLatinTest #1#2#3#4#5
@@ -320,7 +323,7 @@
         context.RunLatinTest (name, 100, "context",  "base",      "latin")
         context.RunLatinTest (name, 100, "context",  "node",      "latin")
         context.RunLatinTest (name, 100, "harfbuzz", "native",    "latin")
-     -- context.RunLatinTest (name, 100, "harfbuzz", "uniscribe", "latin")
+        context.RunLatinTest (name, 100, "harfbuzz", "uniscribe", "latin")
      -- context.RunLatinTest (name,   1, "context",  "text",      "latin")
      -- context.RunLatinTest (name,   1, "harfbuzz", "binary",    "latin")
 
@@ -336,7 +339,8 @@
     -- ARABIC
 
     local list = {
-        "arabtype"
+        "arabtype",
+        "husayni",
     }
 
     data.timings["arabic"] = {
@@ -353,7 +357,7 @@
         context.RunArabicTest (name, 100, "context",  "base",      "arabic")
         context.RunArabicTest (name, 100, "context",  "node",      "arabic")
         context.RunArabicTest (name, 100, "harfbuzz", "native",    "arabic")
-     -- context.RunArabicTest (name, 100, "harfbuzz", "uniscribe", "arabic")
+        context.RunArabicTest (name, 100, "harfbuzz", "uniscribe", "arabic")
      -- context.RunArabicTest (name,   1, "context",  "text",      "arabic")
      -- context.RunArabicTest (name,   1, "harfbuzz", "binary",    "arabic")
 
@@ -369,7 +373,8 @@
     -- MIXED
 
     local list = {
-        "arabtype"
+        "arabtype",
+        "husayni"
     }
 
     data.timings["mixed"] = {
@@ -386,7 +391,7 @@
         context.RunArabicTest (name, 100, "context",  "base",      "mixed")
         context.RunArabicTest (name, 100, "context",  "node",      "mixed")
         context.RunArabicTest (name, 100, "harfbuzz", "native",    "mixed")
-     -- context.RunArabicTest (name, 100, "harfbuzz", "uniscribe", "mixed")
+        context.RunArabicTest (name, 100, "harfbuzz", "uniscribe", "mixed")
      -- context.RunArabicTest (name,   1, "context",  "text",      "mixed")
      -- context.RunArabicTest (name,   1, "harfbuzz", "binary",    "mixed")
 

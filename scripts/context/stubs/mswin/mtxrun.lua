@@ -447,7 +447,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-package"] = package.loaded["l-package"] or true
 
--- original size: 10587, stripped down to: 7815
+-- original size: 11455, stripped down to: 8625
 
 if not modules then modules={} end modules ['l-package']={
   version=1.001,
@@ -461,6 +461,7 @@ local gsub,format,find=string.gsub,string.format,string.find
 local P,S,Cs,lpegmatch=lpeg.P,lpeg.S,lpeg.Cs,lpeg.match
 local package=package
 local searchers=package.searchers or package.loaders
+local insert,remove=table.insert,table.remove
 local filejoin=file and file.join    or function(path,name)  return path.."/"..name end
 local isreadable=file and file.is_readable or function(name)    local f=io.open(name) if f then f:close() return true end end
 local addsuffix=file and file.addsuffix  or function(name,suffix) return name.."."..suffix end
@@ -594,14 +595,42 @@ local function registerpath(tag,what,target,...)
       add(path)
     end
   end
-  return paths
+end
+local function pushpath(tag,what,target,path)
+  local path=helpers.cleanpath(path)
+  insert(target,1,path)
+  if helpers.trace then
+    helpers.report("pushing %s path in front: %s",tag,path)
+  end
+end
+local function poppath(tag,what,target)
+  local path=remove(target,1)
+  if helpers.trace then
+    if path then
+      helpers.report("popping %s path from front: %s",tag,path)
+    else
+      helpers.report("no %s path to pop",tag)
+    end
+  end
 end
 helpers.registerpath=registerpath
 function package.extraluapath(...)
   registerpath("extra lua","lua",extraluapaths,...)
 end
+function package.pushluapath(path)
+  pushpath("extra lua","lua",extraluapaths,path)
+end
+function package.popluapath()
+  poppath("extra lua","lua",extraluapaths)
+end
 function package.extralibpath(...)
   registerpath("extra lib","lib",extralibpaths,...)
+end
+function package.pushlibpath(path)
+  pushpath("extra lib","lib",extralibpaths,path)
+end
+function package.poplibpath()
+  poppath("extra lib","lua",extralibpaths)
 end
 local function loadedaslib(resolved,rawname) 
   local base=gsub(rawname,"%.","_")
@@ -5678,7 +5707,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 36148, stripped down to: 20179
+-- original size: 37003, stripped down to: 20839
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -5891,6 +5920,21 @@ function number.formatted(n,sep1,sep2)
   else
     return lpegmatch(splitter,s,1,sep1 or ",",sep2 or ".")
   end
+end
+local p=Cs(
+    P("-")^0*(P("0")^1/"")^0*(1-P("."))^0*(P(".")*P("0")^1*P(-1)/""+P(".")^0)*P(1-P("0")^1*P(-1))^0
+  )
+function number.compactfloat(n,fmt)
+  if n==0 then
+    return "0"
+  elseif n==1 then
+    return "1"
+  end
+  n=lpegmatch(p,format(fmt or "%0.3f",n))
+  if n=="." or n=="" or n=="-" then
+    return "0"
+  end
+  return n
 end
 local zero=P("0")^1/""
 local plus=P("+")/""
@@ -6404,6 +6448,21 @@ local pattern=Cs((newline/(os.newline or "\r")+1)^0)
 function string.replacenewlines(str)
   return lpegmatch(pattern,str)
 end
+function strings.newcollector()
+  local result,r={},0
+  return
+    function(fmt,str,...) 
+      r=r+1
+      result[r]=str==nil and fmt or formatters[fmt](str,...)
+    end,
+    function(connector) 
+      if result then
+        local str=concat(result,connector)
+        result,r={},0
+        return str
+      end
+    end
+end
 
 
 end -- of closure
@@ -6412,7 +6471,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 27407, stripped down to: 17116
+-- original size: 27638, stripped down to: 17116
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -10425,7 +10484,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sbx"] = package.loaded["util-sbx"] or true
 
--- original size: 20309, stripped down to: 13848
+-- original size: 20388, stripped down to: 13919
 
 if not modules then modules={} end modules ['util-sbx']={
   version=1.001,
@@ -10450,6 +10509,7 @@ local concat=string.concat
 local unquoted=string.unquoted
 local optionalquoted=string.optionalquoted
 local basename=file.basename
+local nameonly=file.nameonly
 local sandbox=sandbox
 local validroots={}
 local validrunners={}
@@ -10529,9 +10589,9 @@ local function registerlibrary(name)
       return
     end
     if validlibraries==true then
-      validlibraries={ [name]=true }
+      validlibraries={ [nameonly(name)]=true }
     else
-      validlibraries[name]=true
+      validlibraries[nameonly(name)]=true
     end
   elseif name==true then
     validlibraries={}
@@ -10856,15 +10916,15 @@ if FFISUPPORTED and ffi then
       end
     end
   end
-  local load=ffi.load
-  if load then
+  local fiiload=ffi.load
+  if fiiload then
     local reported={}
     function ffi.load(name,...)
       if validlibraries==false then
       elseif validlibraries==true then
-        return load(name,...)
-      elseif validlibraries[name] then
-        return load(name,...)
+        return fiiload(name,...)
+      elseif validlibraries[nameonly(name)] then
+        return fiiload(name,...)
       else
       end
       if not reported[name] then
@@ -19967,7 +20027,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lib"] = package.loaded["util-lib"] or true
 
--- original size: 14131, stripped down to: 7859
+-- original size: 14333, stripped down to: 7859
 
 if not modules then modules={} end modules ['util-lib']={
   version=1.001,
@@ -20571,8 +20631,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 846363
--- stripped bytes    : 306226
+-- original bytes    : 848598
+-- stripped bytes    : 306920
 
 -- end library merge
 

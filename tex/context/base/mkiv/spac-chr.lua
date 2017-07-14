@@ -48,6 +48,7 @@ local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local remove_node        = nuts.remove
 local traverse_id        = nuts.traverse_id
+local traverse_char      = nuts.traverse_char
 
 local tasks              = nodes.tasks
 
@@ -148,16 +149,37 @@ function characters.replacenbsp(head,original)
     return head, current
 end
 
+-- function characters.replacenbspaces(head)
+--     for current in traverse_id(glyph_code,head) do
+--         if getchar(current) == 0x00A0 then
+--             local h = nbsp(head,current)
+--             if h then
+--                 head = remove_node(h,current,true)
+--             end
+--         end
+--     end
+--     return head
+-- end
+
 function characters.replacenbspaces(head)
-    for current in traverse_id(glyph_code,head) do
+    local head = tonut(head)
+    local wipe = false
+    for current in traverse_id(glyph_code,head) do -- can be anytiem so no traverse_char
         if getchar(current) == 0x00A0 then
+            if wipe then
+                head = remove_node(h,current,true)
+                wipe = false
+            end
             local h = nbsp(head,current)
             if h then
-                head = remove_node(h,current,true)
+                wipe = current
             end
         end
     end
-    return head
+    if wipe then
+        head = remove_node(h,current,true)
+    end
+    return tonode(head)
 end
 
 -- This initialization might move someplace else if we need more of it. The problem is that
@@ -283,29 +305,60 @@ local methods = {
 
 characters.methods = methods
 
-function characters.handler(head) -- todo: use traverse_id
-    head = tonut(head)
-    local current = head
-    local done = false
-    while current do
-        local char, id = isglyph(current)
+-- function characters.handler(head) -- todo: use traverse_id
+--     head = tonut(head)
+--     local current = head
+--     local done = false
+--     while current do
+--         local char, id = isglyph(current)
+--         if char then
+--             local next   = getnext(current)
+--             local method = methods[char]
+--             if method then
+--                 if trace_characters then
+--                     report_characters("replacing character %C, description %a",char,lower(chardata[char].description))
+--                 end
+--                 local h = method(head,current)
+--                 if h then
+--                     head = remove_node(h,current,true)
+--                 end
+--                 done = true
+--             end
+--             current = next
+--         else
+--             current = getnext(current)
+--         end
+--     end
+--     return tonode(head), done
+-- end
+
+-- for current, char, font in traverse_char_data(head) will save 0.015 on a 300 page doc
+
+function characters.handler(head)
+    local head = tonut(head)
+    local wipe = false
+    for current in traverse_char(head) do
+        local char = getchar(current)
         if char then
-            local next   = getnext(current)
             local method = methods[char]
             if method then
+                if wipe then
+                    head = remove_node(head,wipe,true)
+                    wipe = false
+                end
                 if trace_characters then
                     report_characters("replacing character %C, description %a",char,lower(chardata[char].description))
                 end
                 local h = method(head,current)
                 if h then
-                    head = remove_node(h,current,true)
+                    wipe = current
                 end
                 done = true
             end
-            current = next
-        else
-            current = getnext(current)
         end
+    end
+    if wipe then
+        head = remove_node(head,wipe,true)
     end
     return tonode(head), done
 end

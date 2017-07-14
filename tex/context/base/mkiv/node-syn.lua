@@ -69,6 +69,7 @@ local kerncodes          = nodes.kerncodes
 local glyph_code         = nodecodes.glyph
 local disc_code          = nodecodes.disc
 local glue_code          = nodecodes.glue
+local penalty_code       = nodecodes.penalty
 local kern_code          = nodecodes.kern
 ----- rule_code          = nodecodes.rule
 local hlist_code         = nodecodes.hlist
@@ -81,7 +82,7 @@ local insert_after       = nuts.insert_after
 local nodepool           = nuts.pool
 local new_latelua        = nodepool.latelua
 local new_rule           = nodepool.rule
-local new_hlist          = nodepool.hlist
+local new_kern           = nodepool.kern
 
 local getdimensions      = nuts.dimensions
 local getrangedimensions = nuts.rangedimensions
@@ -321,7 +322,8 @@ local function inject(head,first,last,tag,line)
         d = depth
     end
     if trace then
-        head = insert_before(head,first,new_hlist(new_rule(w,fulltrace and h or traceheight,fulltrace and d or tracedepth)))
+        head = insert_before(head,first,new_rule(w,fulltrace and h or traceheight,fulltrace and d or tracedepth))
+        head = insert_before(head,first,new_kern(-w))
     end
     head = x_hlist(head,first,tag,line,w,h,d)
     return head
@@ -389,7 +391,8 @@ local function inject(parent,head,first,last,tag,line)
         d = depth
     end
     if trace then
-        head = insert_before(head,first,new_hlist(new_rule(w,fulltrace and h or traceheight,fulltrace and d or tracedepth)))
+        head = insert_before(head,first,new_rule(w,fulltrace and h or traceheight,fulltrace and d or tracedepth))
+        head = insert_before(head,first,new_kern(-w))
     end
     head = x_hlist(head,first,tag,line,w,h,d)
     return head
@@ -451,6 +454,8 @@ local function collect_max(head,parent)
                         break
                     end
                     id = nil -- so no test later on
+                elseif id == penalty_code then
+                    -- go on (and be nice for math)
                 else
                     if tag > 0 then
                         head = inject(parent,head,first,last,tag,line)
@@ -516,15 +521,27 @@ function synctex.stop()
     end
 end
 
+local enablers  = { }
+local disablers = { }
+
+function synctex.registerenabler(f)
+    enablers[#enablers+1] = f
+end
+function synctex.registerdisabler(f)
+    disablers[#disablers+1] = f
+end
+
 function synctex.enable()
     if not enabled then
         enabled = true
         set_synctex_mode(3) -- we want details
         if not used then
-            directives.enable("system.synctex.xml")
             nodes.tasks.appendaction("shipouts", "after", "luatex.synctex.collect")
             report_system("synctex functionality is enabled, expect 5-10 pct runtime overhead!")
             used = true
+        end
+        for i=1,#enablers do
+            enablers[i](true)
         end
     end
 end
@@ -534,6 +551,9 @@ function synctex.disable()
         set_synctex_mode(0)
         report_system("synctex functionality is disabled!")
         enabled = false
+        for i=1,#disablers do
+            disablers[i](false)
+        end
     end
 end
 
@@ -563,14 +583,6 @@ end
 
 luatex.registerstopactions(synctex.finish)
 
-directives.register("system.synctex", function(v)
-    if v then
-        synctex.enable()
-    else
-        synctex.disable()
-    end
-end)
-
 statistics.register("synctex tracing",function()
     if used then
         return string.format("%i referenced files, %i files ignored, %i objects flushed, logfile: %s",
@@ -595,26 +607,28 @@ interfaces.implement {
     actions   = synctex.resetfilename,
 }
 
+function synctex.setup(t)
+    if t.method == interfaces.variables.max then
+        collect = collect_max
+    else
+        collect = collect_min
+    end
+    if t.state == interfaces.variables.start then
+        synctex.enable()
+    else
+        synctex.disable()
+    end
+end
+
 interfaces.implement {
     name      = "setupsynctex",
+    actions   = synctex.setup,
     arguments = {
         {
             { "state" },
             { "method" },
         },
     },
-    actions   = function(t)
-        if t.method == interfaces.variables.max then
-            collect = collect_max
-        else
-            collect = collect_min
-        end
-        if t.state == interfaces.variables.start then
-            synctex.enable()
-        else
-            synctex.disable()
-        end
-    end
 }
 
 interfaces.implement {

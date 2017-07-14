@@ -749,15 +749,15 @@ registerafmfeature(dimensions_specification)
 --
 -- \definecolor[DummyColor][s=.75,t=.5,a=1] {\DummyColor test} \nopdfcompression
 --
--- local gray  = { "pdf", "/Tr1 gs .75 g" }
--- local black = { "pdf", "/Tr0 gs 0 g" }
+-- local gray  = { "pdf", "origin", "/Tr1 gs .75 g" }
+-- local black = { "pdf", "origin", "/Tr0 gs 0 g" }
 
 -- sort of obsolete as we now have \showglyphs
 
 local push  = { "push" }
 local pop   = { "pop" }
-local gray  = { "pdf", ".75 g" }
-local black = { "pdf", "0 g"   }
+local gray  = { "pdf", "origin", ".75 g" }
+local black = { "pdf", "origin", "0 g"   }
 
 local downcache = { } -- handy for huge cjk fonts
 local rulecache = { } -- handy for huge cjk fonts
@@ -1486,7 +1486,8 @@ do
                     report_reorder("stop swapping lookups, %i lookups swapped",swapped)
                     report_reorder()
                 end
-                tfmdata.resources.sequences = sequences
+--                 tfmdata.resources.sequences = sequences
+                tfmdata.shared.reorderedsequences = sequences
             end
         end
     end

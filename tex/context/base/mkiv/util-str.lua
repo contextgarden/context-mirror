@@ -423,6 +423,27 @@ end
 -- print(number.formatted(12345678,true))
 -- print(number.formatted(1234.56,"!","?"))
 
+local p = Cs(
+        P("-")^0
+      * (P("0")^1/"")^0
+      * (1-P("."))^0
+      * (P(".") * P("0")^1 * P(-1)/"" + P(".")^0)
+      * P(1-P("0")^1*P(-1))^0
+    )
+
+function number.compactfloat(n,fmt)
+    if n == 0 then
+        return "0"
+    elseif n == 1 then
+        return "1"
+    end
+    n = lpegmatch(p,format(fmt or "%0.3f",n))
+    if n == "." or n == "" or n == "-" then
+        return "0"
+    end
+    return n
+end
+
 local zero      = P("0")^1 / ""
 local plus      = P("+")   / ""
 local minus     = P("-")
@@ -1182,4 +1203,22 @@ local pattern = Cs((newline / (os.newline or "\r") + 1)^0)
 
 function string.replacenewlines(str)
     return lpegmatch(pattern,str)
+end
+
+--
+
+function strings.newcollector()
+    local result, r = { }, 0
+    return
+        function(fmt,str,...) -- write
+            r = r + 1
+            result[r] = str == nil and fmt or formatters[fmt](str,...)
+        end,
+        function(connector) -- flush
+            if result then
+                local str = concat(result,connector)
+                result, r = { }, 0
+                return str
+            end
+        end
 end
