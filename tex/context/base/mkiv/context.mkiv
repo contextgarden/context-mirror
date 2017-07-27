@@ -41,7 +41,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2017.07.17 00:20}
+\edef\contextversion{2017.07.27 16:17}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -184,13 +184,8 @@
 
 \loadmarkfile{supp-box}
 
-%loadmarkfile{supp-vis} % replaced by trac-vis
-%loadmarkfile{supp-fun} % mostly replaced
-
 \loadmarkfile{supp-ran}
 \loadmarkfile{supp-mat}
-%loadmarkfile{spac-cha} % obsolete
-%loadmarkfile{supp-num} % obsolete
 
 \loadmarkfile{core-uti}
 \loadmkvifile{file-job}
@@ -230,7 +225,7 @@
 
 \loadmarkfile{node-bck} % overloads anch-pgr (experimental and undocumented)
 
-\loadmarkfile{pack-cut} % leftovers from trac-vis
+\loadmarkfile{pack-cut}
 
 \loadmarkfile{lang-mis}
 \loadmarkfile{lang-url}
@@ -503,7 +498,7 @@
 \loadmarkfile{typo-scr}
 \loadmarkfile{phys-dim}
 
-\loadmarkfile{node-rul}
+\loadmarkfile{node-rul} % beware, defined \underbar so after math 
 \loadmkvifile{font-sol} % font solutions
 
 \loadmkvifile{strc-not}

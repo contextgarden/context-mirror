@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/17/17 00:20:46
+-- merge date  : 07/27/17 16:17:50
 
 do -- begin closure to overcome local limits and interference
 
@@ -7622,6 +7622,12 @@ function constructors.scaled(scaledpoints,designsize)
   else
     return scaledpoints
   end
+end
+function constructors.getprivate(tfmdata)
+  local properties=tfmdata.properties
+  local private=properties.private
+  properties.private=private+1
+  return private
 end
 function constructors.cleanuptable(tfmdata)
   if constructors.autocleanup and tfmdata.properties.virtualized then
@@ -15556,7 +15562,7 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
           if first or second then
             hash[other]={ first,second or nil } 
           else
-            hash[other]=nil
+            hash[other]=nil 
           end
         end
       end
@@ -17351,7 +17357,7 @@ local f_index=formatters["I%05X"]
 local f_character_y=formatters["%C"]
 local f_character_n=formatters["[ %C ]"]
 local check_duplicates=true 
-local check_soft_hyphen=false 
+local check_soft_hyphen=true 
 directives.register("otf.checksofthyphen",function(v)
   check_soft_hyphen=v
 end)
@@ -17911,7 +17917,6 @@ local function unifymissing(fontdata)
     require("font-agl")
   end
   local unicodes={}
-  local private=fontdata.private
   local resources=fontdata.resources
   resources.unicodes=unicodes
   for unicode,d in next,fontdata.descriptions do
@@ -19259,30 +19264,6 @@ end
 local function checkkerns(lookup)
   local steps=lookup.steps
   local nofsteps=lookup.nofsteps
-  for i=1,nofsteps do
-    local step=steps[i]
-    if step.format=="pair" then
-      local coverage=step.coverage
-      local kerns=true
-      for g1,d1 in next,coverage do
-        if d1[1]~=0 or d1[2]~=0 or d1[4]~=0 then
-          kerns=false
-          break
-        end
-      end
-      if kerns then
-        report("turning pairs of step %a of %a lookup %a into kerns",i,lookup.type,lookup.name)
-        for g1,d1 in next,coverage do
-          coverage[g1]=d1[3]
-        end
-        step.format="kern"
-      end
-    end
-  end
-end
-local function checkpairs(lookup)
-  local steps=lookup.steps
-  local nofsteps=lookup.nofsteps
   local kerned=0
   for i=1,nofsteps do
     local step=steps[i]
@@ -19290,31 +19271,66 @@ local function checkpairs(lookup)
       local coverage=step.coverage
       local kerns=true
       for g1,d1 in next,coverage do
-        for g2,d2 in next,d1 do
-          if d2[2] then
-            kerns=false
-            break
-          else
-            local v=d2[1]
-            if v==true then
-            elseif v and (v[1]~=0 or v[2]~=0 or v[4]~=0) then
-              kerns=false
-              break
-            end
-          end
+        if d1==true then
+        elseif not d1 then
+        elseif d1[1]~=0 or d1[2]~=0 or d1[4]~=0 then
+          kerns=false
+          break
         end
       end
       if kerns then
         report("turning pairs of step %a of %a lookup %a into kerns",i,lookup.type,lookup.name)
+        local c={}
         for g1,d1 in next,coverage do
+          if d1 and d1~=true then
+            c[g1]=d1[3]
+          end
+        end
+        step.coverage=c
+        step.format="kern"
+        kerned=kerned+1
+      end
+    end
+  end
+  return kerned
+end
+local function checkpairs(lookup)
+  local steps=lookup.steps
+  local nofsteps=lookup.nofsteps
+  local kerned=0
+  local function onlykerns(step)
+    local coverage=step.coverage
+    for g1,d1 in next,coverage do
+      for g2,d2 in next,d1 do
+        if d2[2] then
+          return false
+        else
+          local v=d2[1]
+          if v==true then
+          elseif v and (v[1]~=0 or v[2]~=0 or v[4]~=0) then
+            return false
+          end
+        end
+      end
+    end
+    return coverage
+  end
+  for i=1,nofsteps do
+    local step=steps[i]
+    if step.format=="pair" then
+      local coverage=onlykerns(step)
+      if coverage then
+        report("turning pairs of step %a of %a lookup %a into kerns",i,lookup.type,lookup.name)
+        for g1,d1 in next,coverage do
+          local d={}
           for g2,d2 in next,d1 do
             local v=d2[1]
             if v==true then
-              d1[g2]=nil
             elseif v then
-              d1[g2]=v[3]
+              d[g2]=v[3] 
             end
           end
+          coverage[g1]=d
         end
         step.format="kern"
         kerned=kerned+1
@@ -19339,9 +19355,9 @@ function readers.compact(data)
       for i=1,#lookups do
         local lookup=lookups[i]
         local nofsteps=lookup.nofsteps
+        local kind=lookup.type
         allsteps=allsteps+nofsteps
         if nofsteps>1 then
-          local kind=lookup.type
           local merg=merged
           if kind=="gsub_single" or kind=="gsub_alternate" or kind=="gsub_multiple" then
             merged=merged+mergesteps_1(lookup)
@@ -19349,7 +19365,7 @@ function readers.compact(data)
             merged=merged+mergesteps_4(lookup)
           elseif kind=="gpos_single" then
             merged=merged+mergesteps_1(lookup,true)
-            checkkerns(lookup)
+            kerned=kerned+checkkerns(lookup)
           elseif kind=="gpos_pair" then
             merged=merged+mergesteps_2(lookup,true)
             kerned=kerned+checkpairs(lookup)
@@ -19360,6 +19376,12 @@ function readers.compact(data)
           end
           if merg~=merged then
             lookup.merged=true
+          end
+        elseif nofsteps==1 then
+          if kind=="gpos_single" then
+            kerned=kerned+checkkerns(lookup)
+          elseif kind=="gpos_pair" then
+            kerned=kerned+checkpairs(lookup)
           end
         end
       end
@@ -19611,6 +19633,7 @@ local forceload=false
 local cleanup=0   
 local syncspace=true
 local forcenotdef=false
+local privateoffset=fonts.constructors and fonts.constructors.privateoffset or 0xF0000 
 local applyruntimefixes=fonts.treatments and fonts.treatments.applyfixes
 local wildcard="*"
 local default="dflt"
@@ -19775,7 +19798,7 @@ local function copytotfm(data,cache_id)
     end
     if mathspecs then
       for unicode,character in next,characters do
-        local d=descriptions[unicode]
+        local d=descriptions[unicode] 
         local m=d.math
         if m then
           local italic=m.italic
@@ -19915,6 +19938,7 @@ local function copytotfm(data,cache_id)
     properties.fullname=fullname
     properties.psname=psname
     properties.name=filename or fullname
+    properties.private=properties.private or data.private or privateoffset
     return {
       characters=characters,
       descriptions=descriptions,
@@ -20245,6 +20269,7 @@ local otf=fonts.handlers.otf
 local otffeatures=otf.features
 local registerotffeature=otffeatures.register
 otf.defaultbasealternate="none" 
+local getprivate=fonts.constructors.getprivate
 local wildcard="*"
 local default="dflt"
 local formatters=string.formatters
@@ -20335,13 +20360,11 @@ local function registerbasefeature(feature,value)
   applied[#applied+1]=feature.."="..tostring(value)
 end
 local function makefake(tfmdata,name,present)
-  local resources=tfmdata.resources
-  local private=resources.private
+  local private=getprivate(tfmdata)
   local character={ intermediate=true,ligatures={} }
   resources.unicodes[name]=private
   tfmdata.characters[private]=character
   tfmdata.descriptions[private]={ name=name }
-  resources.private=private+1
   present[name]=private
   return character
 end
@@ -25879,9 +25902,6 @@ do
   end
   function otf.featuresprocessor(head,font,attr,direction,n)
     local sequences=sequencelists[font] 
-    if not sequencelists then
-      return head,false
-    end
     nesting=nesting+1
     if nesting==1 then
       currentfont=font
@@ -26114,6 +26134,77 @@ do
     nesting=nesting-1
     head=tonode(head)
     return head,done
+  end
+  function otf.datasetpositionprocessor(head,font,direction,dataset)
+    currentfont=font
+    tfmdata=fontdata[font]
+    descriptions=tfmdata.descriptions 
+    characters=tfmdata.characters  
+ local resources=tfmdata.resources
+    marks=resources.marks
+    classes=resources.classes
+    threshold,
+    factor=getthreshold(font)
+    checkmarks=tfmdata.properties.checkmarks
+    if type(dataset)=="number" then
+      dataset=otfdataset(tfmdata,font,0)[dataset]
+    end
+    local sequence=dataset[3] 
+    local typ=sequence.type
+    local handler=handlers[typ] 
+    local steps=sequence.steps
+    local nofsteps=sequence.nofsteps
+    local head=tonut(head)
+    local done=false
+    local dirstack={} 
+    local start=head
+    local initialrl=direction=="TRT" and -1 or 0
+    local rlmode=initialrl
+    local rlparmode=initialrl
+    local topstack=0
+    local merged=steps.merged
+    local position=0
+    while start do
+      local char,id=ischar(start,font)
+      if char then
+        position=position+1
+        local m=merged[char]
+        if m then
+          for i=m[1],m[2] do
+            local step=steps[i]
+            local lookupcache=step.coverage
+            local lookupmatch=lookupcache[char]
+            if lookupmatch then
+              local ok
+              head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
+              if ok then
+                break
+              elseif not start then
+                break
+              end
+            end
+          end
+          if start then
+            start=getnext(start)
+          end
+        else
+          start=getnext(start)
+        end
+      elseif char==false then
+        start=getnext(start)
+      elseif id==glue_code then
+        start=getnext(start)
+      elseif id==math_code then
+        start=getnext(end_of_math(start))
+      elseif id==dir_code then
+        start,topstack,rlmode=txtdirstate(start,dirstack,topstack,rlparmode)
+      elseif id==localpar_code then
+        start,rlparmode,rlmode=pardirstate(start)
+      else
+        start=getnext(start)
+      end
+    end
+    return tonode(head) 
   end
 end
 local plugins={}
@@ -30020,6 +30111,7 @@ local report_afm=logs.reporter("fonts","afm loading")
 local setmetatableindex=table.setmetatableindex
 local derivetable=table.derive
 local findbinfile=resolvers.findbinfile
+local privateoffset=fonts.constructors and fonts.constructors.privateoffset or 0xF0000 
 local definers=fonts.definers
 local readers=fonts.readers
 local constructors=fonts.constructors
@@ -30090,7 +30182,7 @@ local function enhance_unify_names(data,filename)
   local unicodevector=fonts.encodings.agl.unicodes 
   local unicodes={}
   local names={}
-  local private=constructors.privateoffset
+  local private=data.private or privateoffset
   local descriptions=data.descriptions
   for name,blob in next,data.characters do
     local code=unicodevector[name] 
@@ -30129,12 +30221,12 @@ local function enhance_unify_names(data,filename)
     end
   end
   data.characters=nil
+  data.private=private
   local resources=data.resources
   local filename=resources.filename or file.removesuffix(file.basename(filename))
   resources.filename=resolvers.unresolve(filename) 
   resources.unicodes=unicodes 
   resources.marks={}
-  resources.private=private
 end
 local everywhere={ ["*"]={ ["*"]=true } } 
 local noflags={ false,false,false,false }
@@ -30488,6 +30580,7 @@ local function copytotfm(data)
     properties.fullname=fullname
     properties.psname=fullname
     properties.name=filename or fullname or fontname
+    properties.private=properties.private or data.private or privateoffset
     if next(characters) then
       return {
         characters=characters,
@@ -30990,6 +31083,7 @@ local function read_from_tfm(specification)
     parameters.quad=parameters.quad      or parameters[6] or 0
     parameters.extra_space=parameters.extra_space  or parameters[7] or 0
     constructors.enhanceparameters(parameters)
+    properties.private=properties.private or tfmdata.private or privateoffset
     if newtfmdata then
     elseif constructors.resolvevirtualtoo then
       fonts.loggers.register(tfmdata,file.suffix(filename),specification) 
@@ -31136,7 +31230,7 @@ do
     local originals=tfmdata.characters
     local indices={}
     local parentfont={ "font",1 }
-    local private=fonts.constructors.privateoffset
+    local private=tfmdata or fonts.constructors.privateoffset
     local reported=encdone[tfmfile][encfile]
     local backmap=vector and table.swapped(vector)
     local done={} 
@@ -31203,6 +31297,7 @@ do
     tfmdata.tounicode=1
     tfmdata.embedding="subset"
     tfmdata.usedbitmap=bitmap and virtualid
+    tfmdata.private=private
     return tfmdata
   end
 end
@@ -31914,6 +32009,7 @@ if context then
 end
 local fonts=fonts
 local otffeatures=fonts.constructors.features.otf
+local getprivate=fonts.constructors.getprivate
 local function initializeitlc(tfmdata,value)
   if value then
     local parameters=tfmdata.parameters
@@ -32131,14 +32227,12 @@ otffeatures.register {
 local setmetatableindex=table.setmetatableindex
 local function additalictowidth(tfmdata,key,value)
   local characters=tfmdata.characters
-  local resources=tfmdata.resources
   local additions={}
-  local private=resources.private
   for unicode,old_c in next,characters do
     local oldwidth=old_c.width
     local olditalic=old_c.italic
     if olditalic and olditalic~=0 then
-      private=private+1
+      local private=getprivate(tfmdata)
       local new_c={
         width=oldwidth+olditalic,
         height=old_c.height,
@@ -32156,7 +32250,6 @@ local function additalictowidth(tfmdata,key,value)
   for k,v in next,additions do
     characters[k]=v
   end
-  resources.private=private
 end
 otffeatures.register {
   name="italicwidths",

@@ -24,7 +24,7 @@ local registrations           = backends.pdf.registrations
 
 local nodepool                = nodes.nuts.pool
 local register                = nodepool.register
-local pdfliteral              = nodepool.pdfliteral
+local pdfpageliteral          = nodepool.pdfpageliteral
 
 local pdfconstant             = lpdf.constant
 local pdfdictionary           = lpdf.dictionary
@@ -42,13 +42,20 @@ local adddocumentcolorspace   = lpdf.adddocumentcolorspace
 local adddocumentextgstate    = lpdf.adddocumentextgstate
 
 local colors                  = attributes.colors
-local transparencies          = attributes.transparencies
-local registertransparancy    = transparencies.register
 local registercolor           = colors.register
 local colorsvalue             = colors.value
-local transparenciesvalue     = transparencies.value
 local forcedmodel             = colors.forcedmodel
 local getpagecolormodel       = colors.getpagecolormodel
+local colortoattributes       = colors.toattributes
+
+local transparencies          = attributes.transparencies
+local registertransparancy    = transparencies.register
+local transparenciesvalue     = transparencies.value
+local transparencytoattribute = transparencies.toattribute
+
+local unsetvalue              = attributes.unsetvalue
+
+local setmetatableindex       = table.setmetatableindex
 
 local c_transparency          = pdfconstant("Transparency")
 
@@ -81,7 +88,7 @@ local transparencygroups = { }
 lpdf.colorspaceconstants = colorspaceconstants
 lpdf.transparencygroups  = transparencygroups
 
-table.setmetatableindex(transparencygroups, function(transparencygroups,colormodel)
+setmetatableindex(transparencygroups, function(transparencygroups,colormodel)
     local cs = colorspaceconstants[colormodel]
     if cs then
         local d = pdfdictionary {
@@ -116,26 +123,26 @@ lpdf.registerpagefinalizer(addpagegroup,3,"pagegroup")
 -- color injection
 
 function nodeinjections.rgbcolor(r,g,b)
-    return register(pdfliteral(f_rgb(r,g,b,r,g,b)))
+    return register(pdfpageliteral(f_rgb(r,g,b,r,g,b)))
 end
 
 function nodeinjections.cmykcolor(c,m,y,k)
-    return register(pdfliteral(f_cmyk(c,m,y,k,c,m,y,k)))
+    return register(pdfpageliteral(f_cmyk(c,m,y,k,c,m,y,k)))
 end
 
 function nodeinjections.graycolor(s) -- caching 0/1 does not pay off
-    return register(pdfliteral(f_gray(s,s)))
+    return register(pdfpageliteral(f_gray(s,s)))
 end
 
 function nodeinjections.spotcolor(n,f,d,p)
     if type(p) == "string" then
         p = gsub(p,","," ") -- brr misuse of spot
     end
-    return register(pdfliteral(f_spot(n,n,p,p)))
+    return register(pdfpageliteral(f_spot(n,n,p,p)))
 end
 
 function nodeinjections.transparency(n)
-    return register(pdfliteral(f_tr_gs(n)))
+    return register(pdfpageliteral(f_tr_gs(n)))
 end
 
 -- a bit weird but let's keep it here for a while
@@ -154,7 +161,7 @@ function nodeinjections.effect(effect,stretch,rulethickness)
     -- always, no zero test (removed)
     rulethickness = bp * rulethickness
     effect = effects[effect] or effects['normal']
-    return register(pdfliteral(f_effect(stretch,rulethickness,effect))) -- watch order
+    return register(pdfpageliteral(f_effect(stretch,rulethickness,effect))) -- watch order
 end
 
 -- spot- and indexcolors
@@ -701,31 +708,113 @@ function lpdf.finishtransparencycode()
     end
 end
 
--- this will move to lpdf-spe.lua
+-- this will move to lpdf-spe.lua an dwe then can also add a metatable with
+-- normal context colors
 
-local f_slant = formatters["q 1 0 %F 1 0 0 cm"]
+do
 
-backends.pdf.tables.vfspecials = allocate { -- todo: distinguish between glyph and rule color
+    local pdfcolor        = lpdf.color
+    local pdftransparency = lpdf.transparency
 
-    red        = { "pdf", "origin", "1 0 0 rg 1 0 0 RG" },
-    green      = { "pdf", "origin", "0 1 0 rg 0 1 0 RG" },
-    blue       = { "pdf", "origin", "0 0 1 rg 0 0 1 RG" },
-    gray       = { "pdf", "origin", ".75 g .75 G" },
-    black      = { "pdf", "origin", "0 g 0 G" },
+    local f_slant = formatters["q 1 0 %F 1 0 0 cm"]
 
-    rulecolors = {
-            red        = { "pdf", "origin", '1 0 0 rg' },
-            green      = { "pdf", "origin", '0 1 0 rg' },
-            blue       = { "pdf", "origin", '0 0 1 rg' },
-            gray       = { "pdf", "origin", '.5 g' },
-            black      = { "pdf", "origin", '0 g' },
-            palered    = { "pdf", "origin", '1 .75 .75 rg' },
-            palegreen  = { "pdf", "origin", '.75 1 .75 rg' },
-            paleblue   = { "pdf", "origin", '.75 .75 1 rg' },
-            palegray   = { "pdf", "origin", '.75 g' },
-    },
+ -- local fillcolors = {
+ --     red        = { "pdf", "origin", "1 0 0 rg" },
+ --     green      = { "pdf", "origin", "0 1 0 rg" },
+ --     blue       = { "pdf", "origin", "0 0 1 rg" },
+ --     gray       = { "pdf", "origin", ".5 g" },
+ --     black      = { "pdf", "origin", "0 g" },
+ --     palered    = { "pdf", "origin", "1 .75 .75 rg" },
+ --     palegreen  = { "pdf", "origin", ".75 1 .75 rg" },
+ --     paleblue   = { "pdf", "origin", ".75 .75 1 rg" },
+ --     palegray   = { "pdf", "origin", ".75 g" },
+ -- }
+ --
+ -- local strokecolors = {
+ --     red        = { "pdf", "origin", "1 0 0 RG" },
+ --     green      = { "pdf", "origin", "0 1 0 RG" },
+ --     blue       = { "pdf", "origin", "0 0 1 RG" },
+ --     gray       = { "pdf", "origin", ".5 G" },
+ --     black      = { "pdf", "origin", "0 G" },
+ --     palered    = { "pdf", "origin", "1 .75 .75 RG" },
+ --     palegreen  = { "pdf", "origin", ".75 1 .75 RG" },
+ --     paleblue   = { "pdf", "origin", ".75 .75 1 RG" },
+ --     palegray   = { "pdf", "origin", ".75 G" },
+ -- }
+ --
+ -- backends.pdf.tables.vfspecials = allocate { -- todo: distinguish between glyph and rule color
+ --
+ --     red          = { "pdf", "origin", "1 0 0 rg 1 0 0 RG" },
+ --     green        = { "pdf", "origin", "0 1 0 rg 0 1 0 RG" },
+ --     blue         = { "pdf", "origin", "0 0 1 rg 0 0 1 RG" },
+ --     gray         = { "pdf", "origin", ".75 g .75 G" },
+ --     black        = { "pdf", "origin", "0 g 0 G" },
+ --
+ --  -- rulecolors   = fillcolors,
+ --  -- fillcolors   = fillcolors,
+ --  -- strokecolors = strokecolors,
+ --
+ --     startslant   = function(a) return { "pdf", "origin", f_slant(a) } end,
+ --     stopslant    = { "pdf", "origin", "Q" },
+ --
+ -- }
 
-    startslant = function(a) return { "pdf", "origin", f_slant(a) } end,
-    stopslant  = { "pdf", "origin", "Q" },
+    local slants = setmetatableindex(function(t,k)
+        local v = { "pdf", "origin", f_slant(a) }
+        t[k] = v
+        return k
+    end)
 
-}
+    local function startslant(a)
+        return slants[a]
+    end
+
+    local c_cache = setmetatableindex(function(t,m)
+        local v = setmetatableindex(function(t,c)
+            local p = { "pdf", "origin", "q " .. pdfcolor(m,c) }
+            t[c] = p
+            return p
+        end)
+        t[m] = v
+        return v
+    end)
+
+    -- we inherit the outer transparency
+
+    local t_cache = setmetatableindex(function(t,transparency)
+        local p = pdftransparency(transparency)
+        local v = setmetatableindex(function(t,colormodel)
+            local v = setmetatableindex(function(t,color)
+                local v = { "pdf", "origin", "q " .. pdfcolor(colormodel,color) .. " " .. p }
+                t[color] = v
+                return v
+            end)
+            t[colormodel] = v
+            return v
+        end)
+        t[transparency] = v
+        return v
+    end)
+
+    local function startcolor(k)
+        local m, c = colortoattributes(k)
+        local t = transparencytoattribute(k)
+        if t then
+            return t_cache[t][m][c]
+        else
+            return c_cache[m][c]
+        end
+    end
+
+    backends.pdf.tables.vfspecials = allocate { -- todo: distinguish between glyph and rule color
+
+        startcolor = startcolor,
+     -- stopcolor  = { "pdf", "origin", "0 g 0 G Q" },
+        stopcolor  = { "pdf", "origin", "Q" },
+
+        startslant = startslant,
+        stopslant  = { "pdf", "origin", "Q" },
+
+    }
+
+end
