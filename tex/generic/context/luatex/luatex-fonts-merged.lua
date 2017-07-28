@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/27/17 16:17:50
+-- merge date  : 07/28/17 14:24:44
 
 do -- begin closure to overcome local limits and interference
 
@@ -22535,6 +22535,7 @@ local take_components=nuts.take_components
 local count_components=nuts.count_components
 local copy_no_components=nuts.copy_no_components
 local copy_only_glyphs=nuts.copy_only_glyphs
+local setmetatable=setmetatable
 local setmetatableindex=table.setmetatableindex
 local nodecodes=nodes.nodecodes
 local glyphcodes=nodes.glyphcodes
@@ -22575,6 +22576,7 @@ local factor=0
 local threshold=0
 local checkmarks=false
 local discs=false
+local spaces=false
 local sweepnode=nil
 local sweephead={} 
 local notmatchpre={} 
@@ -24598,7 +24600,16 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                     end
                   end
                   prev=getprev(prev)
-                elseif id==glue_code and seq[n][32] and isspace(prev,threshold,id) then
+                elseif id==glue_code then
+                  local sn=seq[n]
+                  if (sn[32] and spaces[prev]) or sn[0xFFFC] then
+                    n=n-1
+                    prev=getprev(prev)
+                  else
+                    match=false
+                    break
+                  end
+                elseif seq[n][0xFFFC] then
                   n=n-1
                   prev=getprev(prev)
                 else
@@ -24730,7 +24741,16 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                 else
                 end
                 current=getnext(current)
-              elseif id==glue_code and seq[n][32] and isspace(current,threshold,id) then
+              elseif id==glue_code then
+                local sn=seq[n]
+                if (sn[32] and spaces[current]) or sn[0xFFFC] then
+                  n=n+1
+                  current=getnext(current)
+                else
+                  match=false
+                  break
+                end
+              elseif seq[n][0xFFFC] then
                 n=n+1
                 current=getnext(current)
               else
@@ -25057,7 +25077,15 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                     end
                   end
                   prev=getprev(prev)
-                elseif id==glue_code and seq[n][32] and isspace(prev,threshold,id) then
+                elseif id==glue_code then
+                  local sn=seq[n]
+                  if (sn[32] and spaces[prev]) or sn[0xFFFC] then
+                    n=n-1
+                    prev=getprev(prev)
+                  else
+                    goto next
+                  end
+                elseif seq[n][0xFFFC] then
                   n=n-1
                   prev=getprev(prev)
                 else
@@ -25184,7 +25212,15 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                 else
                 end
                 current=getnext(current)
-              elseif id==glue_code and seq[n][32] and isspace(current,threshold,id) then
+              elseif id==glue_code then
+                local sn=seq[n]
+                if (sn[32] and spaces[current]) or sn[0xFFFC] then
+                  n=n+1
+                  current=getnext(current)
+                else
+                  goto next
+                end
+              elseif seq[n][0xFFFC] then
                 n=n+1
                 current=getnext(current)
               else
@@ -25895,11 +25931,16 @@ do
   local fastdisc=true
   directives.register("otf.fastdisc",function(v) fastdisc=v end)
   local otfdataset=nil 
-  local getfastdics=function(t,k)
+  local getfastdisc={ __index=function(t,k)
     local v=usesfont(k,currentfont)
     t[k]=v
     return v
-  end
+  end }
+  local getfastspace={ __index=function(t,k)
+    local v=isspace(k,threshold) or false
+    t[k]=v
+    return v
+  end }
   function otf.featuresprocessor(head,font,attr,direction,n)
     local sequences=sequencelists[font] 
     nesting=nesting+1
@@ -25917,7 +25958,8 @@ do
       if not otfdataset then
         otfdataset=otf.dataset
       end
-      discs=fastdisc and n and n>1 and setmetatableindex(getfastdisc) 
+      discs=fastdisc and n and n>1 and setmetatable({},getfastdisc) 
+      spaces=setmetatable({},getfastspace)
     elseif currentfont~=font then
       report_warning("nested call with a different font, level %s, quitting",nesting)
       nesting=nesting-1
@@ -29255,10 +29297,10 @@ local function addfeature(data,feature,specifications)
                   subtype=lookup.type
                 end
               else
-                lookups[k]=false 
+                lookups[k]={ false } 
               end
             else
-              lookups[k]=false 
+              lookups[k]={ false } 
             end
           end
         end
