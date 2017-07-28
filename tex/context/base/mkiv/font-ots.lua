@@ -245,7 +245,8 @@ local injections         = nodes.injections
 local setmark            = injections.setmark
 local setcursive         = injections.setcursive
 local setkern            = injections.setkern
-local setpair            = injections.setpair
+local setmove            = injections.setmove
+local setposition        = injections.setposition
 local resetinjection     = injections.reset
 local copyinjection      = injections.copy
 local setligaindex       = injections.setligaindex
@@ -840,17 +841,16 @@ end
 
 function handlers.gpos_single(head,start,dataset,sequence,kerns,rlmode,step,i,injection)
     local startchar = getchar(start)
---     if step.format == "pair" then
-    if step.format == "pair" or type(kerns) == "table" then
-        local dx, dy, w, h = setpair(start,factor,rlmode,sequence.flags[4],kerns,injection)
+    local format    = step.format
+    if format == "single" or type(kerns) == "table" then -- the table check can go
+        local dx, dy, w, h = setposition(start,factor,rlmode,sequence.flags[4],kerns,injection)
         if trace_kerns then
-            logprocess("%s: shifting single %s by (%p,%p) and correction (%p,%p)",pref(dataset,sequence),gref(startchar),dx,dy,w,h)
+            logprocess("%s: shifting single %s by %s xy (%p,%p) and wh (%p,%p)",pref(dataset,sequence),gref(startchar),format,dx,dy,w,h)
         end
     else
-        -- needs checking .. maybe no kerns format for single
-        local k = setkern(start,factor,rlmode,kerns,injection)
+        local k = (format == "move" and setmove or setkern)(start,factor,rlmode,kerns,injection)
         if trace_kerns then
-            logprocess("%s: shifting single %s by %p",pref(dataset,sequence),gref(startchar),k)
+            logprocess("%s: shifting single %s by %s %p",pref(dataset,sequence),gref(startchar),format,k)
         end
     end
     return head, start, false
@@ -872,39 +872,42 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,step,i,inje
                     snext = getnext(snext)
                 elseif not krn then
                     break
-                elseif step.format == "pair" then
-                    local a, b = krn[1], krn[2]
-                    if a == true then
-                        -- zero
-                    elseif a then -- #a > 0
-                        local x, y, w, h = setpair(start,factor,rlmode,sequence.flags[4],a,injection)
-                        if trace_kerns then
-                            local startchar = getchar(start)
-                            logprocess("%s: shifting first of pair %s and %s by (%p,%p) and correction (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
+                else
+                    local format = step.format
+                    if format == "pair" then
+                        local a, b = krn[1], krn[2]
+                        if a == true then
+                            -- zero
+                        elseif a then -- #a > 0
+                            local x, y, w, h = setposition(start,factor,rlmode,sequence.flags[4],a,injection)
+                            if trace_kerns then
+                                local startchar = getchar(start)
+                                logprocess("%s: shifting first of pair %s and %s by xy (%p,%p) and wh (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
+                            end
                         end
-                    end
-                    if b == true then
-                        -- zero
-                        start = snext -- cf spec
-                    elseif b then -- #b > 0
-                        local x, y, w, h = setpair(snext,factor,rlmode,sequence.flags[4],b,injection)
-                        if trace_kerns then
-                            local startchar = getchar(snext)
-                            logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
+                        if b == true then
+                            -- zero
+                            start = snext -- cf spec
+                        elseif b then -- #b > 0
+                            local x, y, w, h = setposition(snext,factor,rlmode,sequence.flags[4],b,injection)
+                            if trace_kerns then
+                                local startchar = getchar(snext)
+                                logprocess("%s: shifting second of pair %s and %s by xy (%p,%p) and wh (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
+                            end
+                            start = snext -- cf spec
+                        elseif forcepairadvance then
+                            start = snext -- for testing, not cf spec
                         end
-                        start = snext -- cf spec
-                    elseif forcepairadvance then
-                        start = snext -- for testing, not cf spec
+                        return head, start, true
+                    elseif krn ~= 0 then
+                        local k = (format == "move" and setmove or setkern)(snext,factor,rlmode,krn,injection)
+                        if trace_kerns then
+                            logprocess("%s: inserting %s %p between %s and %s as %s",pref(dataset,sequence),format,k,gref(getchar(prev)),gref(nextchar),injection or "injections")
+                        end
+                        return head, start, true
+                    else -- can't happen
+                        break
                     end
-                    return head, start, true
-                elseif krn ~= 0 then
-                    local k = setkern(snext,factor,rlmode,krn,injection)
-                    if trace_kerns then
-                        logprocess("%s: inserting kern %p between %s and %s as %s",pref(dataset,sequence),k,gref(getchar(prev)),gref(nextchar),injection or "injections")
-                    end
-                    return head, start, true
-                else -- can't happen
-                    break
                 end
             else
                 break
@@ -1428,15 +1431,18 @@ function chainprocs.gpos_single(head,start,stop,dataset,sequence,currentlookup,r
         local kerns     = step.coverage[startchar]
         if not kerns then
             -- skip
-        elseif step.format == "pair" then
-            local dx, dy, w, h = setpair(start,factor,rlmode,sequence.flags[4],kerns) -- currentlookup.flags ?
-            if trace_kerns then
-                logprocess("%s: shifting single %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),dx,dy,w,h)
-            end
-        else -- needs checking .. maybe no kerns format for single
-            local k = setkern(start,factor,rlmode,kerns,injection)
-            if trace_kerns then
-                logprocess("%s: shifting single %s by %p",cref(dataset,sequence),gref(startchar),k)
+        else
+            local format = step.format
+            if format == "single" then
+                local dx, dy, w, h = setposition(start,factor,rlmode,sequence.flags[4],kerns) -- currentlookup.flags ?
+                if trace_kerns then
+                    logprocess("%s: shifting single %s by %s (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),format,dx,dy,w,h)
+                end
+            else -- needs checking .. maybe no kerns format for single
+                local k = (format == "move" and setmove or setkern)(start,factor,rlmode,kerns,injection)
+                if trace_kerns then
+                    logprocess("%s: shifting single %s by %s %p",cref(dataset,sequence),gref(startchar),format,k)
+                end
             end
         end
     end
@@ -1470,39 +1476,42 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
                         snext = getnext(snext)
                     elseif not krn then
                         break
-                    elseif step.format == "pair" then
-                        local a, b = krn[1], krn[2]
-                        if a == true then
-                            -- zero
-                        elseif a then
-                            local x, y, w, h = setpair(start,factor,rlmode,sequence.flags[4],a,"injections") -- currentlookups flags?
-                            if trace_kerns then
-                                local startchar = getchar(start)
-                                logprocess("%s: shifting first of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
-                            end
-                        end
-                        if b == true then
-                            -- zero
-                            start = snext -- cf spec
-                        elseif b then -- #b > 0
-                            local x, y, w, h = setpair(snext,factor,rlmode,sequence.flags[4],b,"injections")
-                            if trace_kerns then
-                                local startchar = getchar(start)
-                                logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
-                            end
-                            start = snext -- cf spec
-                        elseif forcepairadvance then
-                            start = snext -- for testing, not cf spec
-                        end
-                        return head, start, true
-                    elseif krn ~= 0 then
-                        local k = setkern(snext,factor,rlmode,krn)
-                        if trace_kerns then
-                            logprocess("%s: inserting kern %s between %s and %s",cref(dataset,sequence),k,gref(getchar(prev)),gref(nextchar))
-                        end
-                        return head, start, true
                     else
-                        break
+                        local format = step.format
+                        if format == "pair" then
+                            local a, b = krn[1], krn[2]
+                            if a == true then
+                                -- zero
+                            elseif a then
+                                local x, y, w, h = setposition(start,factor,rlmode,sequence.flags[4],a,"injections") -- currentlookups flags?
+                                if trace_kerns then
+                                    local startchar = getchar(start)
+                                    logprocess("%s: shifting first of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
+                                end
+                            end
+                            if b == true then
+                                -- zero
+                                start = snext -- cf spec
+                            elseif b then -- #b > 0
+                                local x, y, w, h = setposition(snext,factor,rlmode,sequence.flags[4],b,"injections")
+                                if trace_kerns then
+                                    local startchar = getchar(start)
+                                    logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
+                                end
+                                start = snext -- cf spec
+                            elseif forcepairadvance then
+                                start = snext -- for testing, not cf spec
+                            end
+                            return head, start, true
+                        elseif krn ~= 0 then
+                            local k = (format == "move" and setmove or setkern)(snext,factor,rlmode,krn)
+                            if trace_kerns then
+                                logprocess("%s: inserting %s %p between %s and %s",cref(dataset,sequence),format,k,gref(getchar(prev)),gref(nextchar))
+                            end
+                            return head, start, true
+                        else
+                            break
+                        end
                     end
                 end
             end
