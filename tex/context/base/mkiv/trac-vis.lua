@@ -36,7 +36,7 @@ local nuts                = nodes.nuts
 local tonut               = nuts.tonut
 local tonode              = nuts.tonode
 
-local setfield            = nuts.setfield
+----- setfield            = nuts.setfield
 local setboth             = nuts.setboth
 local setlink             = nuts.setlink
 local setdisc             = nuts.setdisc
