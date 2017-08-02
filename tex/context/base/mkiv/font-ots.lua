@@ -864,14 +864,24 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,step,i,inje
         while snext do
             local nextchar = ischar(snext,currentfont)
             if nextchar then
-                local krn = kerns[nextchar]
-                if not krn and marks[nextchar] then
-                    -- hm, needs checking i guess
-                    prev = snext
+             -- local krn = kerns[nextchar]
+             -- if not krn and marks[nextchar] then
+             --     prev = snext
+             --     snext = getnext(snext)
+             -- elseif not krn then
+             --     break
+             -- else
+                if marks[nextchar] and sequence.flags[1] then
+                    prev  = snext
                     snext = getnext(snext)
-                elseif not krn then
-                    break
+-- elseif sequence.markclass and sequence.markclass[nextchar] then
+--     prev  = snext
+--     snext = getnext(snext)
                 else
+                    local krn = kerns[nextchar]
+                    if not krn then
+                        break
+                    end
                     local format = step.format
                     if format == "pair" then
                         local a, b = krn[1], krn[2]
@@ -1089,8 +1099,8 @@ function handlers.gpos_cursive(head,start,dataset,sequence,exitanchors,rlmode,st
             local nextchar = ischar(nxt,currentfont)
             if not nextchar then
                 break
-            elseif marks[nextchar] then
-                nxt      = getnext(nxt)
+            elseif marks[nextchar] then -- always sequence.flags[1]
+                nxt = getnext(nxt)
             else
                 local exit = exitanchors[3]
                 if exit then
@@ -1469,13 +1479,24 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
                     if not nextchar then
                         break
                     end
-                    local krn = kerns[nextchar]
-                    if not krn and marks[nextchar] then
-                        prev = snext
+                 -- local krn = kerns[nextchar]
+                 -- if not krn and marks[nextchar] then
+                 --     prev = snext
+                 --     snext = getnext(snext)
+                 -- elseif not krn then
+                 --     break
+                 -- else
+                    if marks[nextchar] and sequence.flags[1] then
+                        prev  = snext
                         snext = getnext(snext)
-                    elseif not krn then
-                        break
+-- elseif sequence.markclass and sequence.markclass[nextchar] then
+--     prev  = snext
+--     snext = getnext(snext)
                     else
+                        local krn = kerns[nextchar]
+                        if not krn then
+                            break
+                        end
                         local format = step.format
                         if format == "pair" then
                             local a, b = krn[1], krn[2]
@@ -4089,7 +4110,7 @@ local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,datase
                     local lookupcache = step.coverage
                     local lookupmatch = lookupcache[char]
                     if lookupmatch then
-                        local h, d, ok = handler(head,n,dataset,sequence,lookupmatch,rlmode,step,i,injection)
+                        local h, d, ok = handler(sub,n,dataset,sequence,lookupmatch,rlmode,step,i,injection) -- sub was head
                         if ok then
                             return true
                         end

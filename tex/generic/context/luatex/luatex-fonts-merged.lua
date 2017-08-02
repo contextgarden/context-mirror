@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/01/17 18:10:43
+-- merge date  : 08/02/17 18:59:29
 
 do -- begin closure to overcome local limits and interference
 
@@ -19179,9 +19179,9 @@ local function mergesteps_2(lookup,strict)
     for k,v in next,steps[i].coverage do
       local tk=target[k]
       if tk then
-        for k,v in next,v do
-          if not tk[k] then
-            tk[k]=v
+        for kk,vv in next,v do
+          if tk[kk]==nil then
+            tk[kk]=vv
           end
         end
       else
@@ -19190,6 +19190,7 @@ local function mergesteps_2(lookup,strict)
     end
   end
   lookup.nofsteps=1
+  lookup.merged=true
   lookup.steps={ first }
   return nofsteps-1
 end
@@ -19224,6 +19225,7 @@ local function mergesteps_3(lookup,strict)
   first.baseclasses=baseclasses
   first.coverage=coverage
   lookup.nofsteps=1
+  lookup.merged=true
   lookup.steps={ first }
   return nofsteps-1
 end
@@ -19343,8 +19345,24 @@ local function checkpairs(lookup)
 end
 local compact_pairs=true
 local compact_singles=true
+local merge_pairs=true
+local merge_singles=true
+local merge_substitutions=true
+local merge_alternates=true
+local merge_multiples=true
+local merge_ligatures=true
+local merge_cursives=true
+local merge_marks=true
 directives.register("otf.compact.pairs",function(v) compact_pairs=v end)
 directives.register("otf.compact.singles",function(v) compact_singles=v end)
+directives.register("otf.merge.pairs",function(v) merge_pairs=v end)
+directives.register("otf.merge.singles",function(v) merge_singles=v end)
+directives.register("otf.merge.substitutions",function(v) merge_substitutions=v end)
+directives.register("otf.merge.alternates",function(v) merge_alternates=v end)
+directives.register("otf.merge.multiples",function(v) merge_multiples=v end)
+directives.register("otf.merge.ligatures",function(v) merge_ligatures=v end)
+directives.register("otf.merge.cursives",function(v) merge_cursives=v end)
+directives.register("otf.merge.marks",function(v) merge_marks=v end)
 function readers.compact(data)
   if not data or data.compacted then
     return
@@ -19365,24 +19383,44 @@ function readers.compact(data)
         allsteps=allsteps+nofsteps
         if nofsteps>1 then
           local merg=merged
-          if kind=="gsub_single" or kind=="gsub_alternate" or kind=="gsub_multiple" then
-            merged=merged+mergesteps_1(lookup)
+          if kind=="gsub_single" then
+            if merge_substitutions then
+              merged=merged+mergesteps_1(lookup)
+            end
+          elseif kind=="gsub_alternate" then
+            if merge_alternates then
+              merged=merged+mergesteps_1(lookup)
+            end
+          elseif kind=="gsub_multiple" then
+            if merge_multiples then
+              merged=merged+mergesteps_1(lookup)
+            end
           elseif kind=="gsub_ligature" then
-            merged=merged+mergesteps_4(lookup)
+            if merge_ligatures then
+              merged=merged+mergesteps_4(lookup)
+            end
           elseif kind=="gpos_single" then
-            merged=merged+mergesteps_1(lookup,true)
+            if merge_singles then
+              merged=merged+mergesteps_1(lookup,true)
+            end
             if compact_singles then
               kerned=kerned+checkkerns(lookup)
             end
           elseif kind=="gpos_pair" then
-            merged=merged+mergesteps_2(lookup,true)
+            if merge_pairs then
+              merged=merged+mergesteps_2(lookup,true)
+            end
             if compact_pairs then
               kerned=kerned+checkpairs(lookup)
             end
           elseif kind=="gpos_cursive" then
-            merged=merged+mergesteps_2(lookup)
+            if merge_cursives then
+              merged=merged+mergesteps_2(lookup)
+            end
           elseif kind=="gpos_mark2mark" or kind=="gpos_mark2base" or kind=="gpos_mark2ligature" then
-            merged=merged+mergesteps_3(lookup)
+            if merge_marks then
+              merged=merged+mergesteps_3(lookup)
+            end
           end
           if merg~=merged then
             lookup.merged=true
@@ -19627,7 +19665,7 @@ local trace_defining=false registertracker("fonts.defining",function(v) trace_de
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.100 
+otf.version=3.101 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.sbixcache=containers.define("fonts","sbix",otf.version,true)
@@ -20756,12 +20794,28 @@ local traverse_char=nuts.traverse_char
 local insert_node_before=nuts.insert_before
 local insert_node_after=nuts.insert_after
 local properties=nodes.properties.data
-local fontkern=nuts.pool and nuts.pool.fontkern 
+local fontkern=nuts.pool and nuts.pool.fontkern  
+local italickern=nuts.pool and nuts.pool.italickern 
+local useitalickerns=false
+directives.register("fonts.injections.useitalics",function(v)
+  if v then
+    report_injections("using italics for space kerns (tracing only)")
+  end
+  useitalickerns=v
+end)
 do if not fontkern then 
   local thekern=nuts.new("kern",0) 
   local setkern=nuts.setkern
   local copy_node=nuts.copy_node
   fontkern=function(k)
+    local n=copy_node(thekern)
+    setkern(n,k)
+    return n
+  end
+  local thekern=nuts.new("kern",3) 
+  local setkern=nuts.setkern
+  local copy_node=nuts.copy_node
+  italickern=function(k)
     local n=copy_node(thekern)
     setkern(n,k)
     return n
@@ -22019,6 +22073,7 @@ local function injectspaces(head)
   local threshold=0
   local leftkern=false
   local rightkern=false
+  local nuthead=tonut(head)
   local function updatefont(font,trig)
     leftkerns=trig.left
     rightkerns=trig.right
@@ -22026,7 +22081,7 @@ local function injectspaces(head)
     threshold,
     factor=getthreshold(font)
   end
-  for n in traverse_char(tonut(head)) do
+  for n in traverse_id(glue_code,nuthead) do
     local prev,next=getspaceboth(n)
     local prevchar=prev and ischar(prev)
     local nextchar=next and ischar(next)
@@ -22058,18 +22113,38 @@ local function injectspaces(head)
       local old=getwidth(n)
       if old>threshold then
         if rightkern then
-          local new=old+(leftkern+rightkern)*factor
-          if trace_spaces then
-            report_spaces("%C [%p -> %p] %C",prevchar,old,new,nextchar)
+          if useitalickerns then
+            local new=old+(leftkern+rightkern)*factor
+            if trace_spaces then
+              report_spaces("%C [%p -> %p] %C",prevchar,old,new,nextchar)
+            end
+            setwidth(n,new)
+          else
+            local new=(leftkern+rightkern)*factor
+            if trace_spaces then
+              report_spaces("%C [%p + %p] %C",prevchar,old,new,nextchar)
+            end
+            local h=insert_node_before(nuthead,n,italickern(new))
+            if h==nuthead then
+              head=tonode(h)
+              nuthead=h
+            end
           end
-          setwidth(n,new)
           leftkern=false
         else
-          local new=old+leftkern*factor
-          if trace_spaces then
-            report_spaces("%C [%p -> %p]",prevchar,old,new)
+          if useitalickerns then
+            local new=leftkern*factor
+            if trace_spaces then
+              report_spaces("%C [%p + %p]",prevchar,old,new)
+            end
+            insert_node_after(nuthead,n,italickern(new)) 
+          else
+            local new=old+leftkern*factor
+            if trace_spaces then
+              report_spaces("%C [%p -> %p]",prevchar,old,new)
+            end
+            setwidth(n,new)
           end
-          setwidth(n,new)
         end
       end
       leftkern=false
@@ -23139,13 +23214,14 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,step,i,inje
     while snext do
       local nextchar=ischar(snext,currentfont)
       if nextchar then
-        local krn=kerns[nextchar]
-        if not krn and marks[nextchar] then
+        if marks[nextchar] and sequence.flags[1] then
           prev=snext
           snext=getnext(snext)
-        elseif not krn then
-          break
         else
+          local krn=kerns[nextchar]
+          if not krn then
+            break
+          end
           local format=step.format
           if format=="pair" then
             local a,b=krn[1],krn[2]
@@ -23350,7 +23426,7 @@ function handlers.gpos_cursive(head,start,dataset,sequence,exitanchors,rlmode,st
       local nextchar=ischar(nxt,currentfont)
       if not nextchar then
         break
-      elseif marks[nextchar] then
+      elseif marks[nextchar] then 
         nxt=getnext(nxt)
       else
         local exit=exitanchors[3]
@@ -23644,13 +23720,14 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
           if not nextchar then
             break
           end
-          local krn=kerns[nextchar]
-          if not krn and marks[nextchar] then
+          if marks[nextchar] and sequence.flags[1] then
             prev=snext
             snext=getnext(snext)
-          elseif not krn then
-            break
           else
+            local krn=kerns[nextchar]
+            if not krn then
+              break
+            end
             local format=step.format
             if format=="pair" then
               local a,b=krn[1],krn[2]
@@ -25941,7 +26018,7 @@ local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,datase
           local lookupcache=step.coverage
           local lookupmatch=lookupcache[char]
           if lookupmatch then
-            local h,d,ok=handler(head,n,dataset,sequence,lookupmatch,rlmode,step,i,injection)
+            local h,d,ok=handler(sub,n,dataset,sequence,lookupmatch,rlmode,step,i,injection) 
             if ok then
               return true
             end
@@ -27728,7 +27805,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces)
             next=getnext(current)
             local tmp=getnext(next)
             local changestop=next==stop
-            setnext(next,nil)
+            setnext(next)
             setprop(current,a_state,s_pref)
             current=processcharacters(current,font)
             setprop(current,a_state,s_blwf)
