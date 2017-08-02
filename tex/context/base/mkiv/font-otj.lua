@@ -356,41 +356,21 @@ function injections.setkern(current,factor,rlmode,x,injection)
         if not injection then
             injection = "injections"
         end
-        if rlmode and rlmode < 0 then
-            -- was right kern but why ... we need to check this (kai)
-            if p then
-                local i = rawget(p,injection)
-                if i then
-                    i.leftkern = dx + (i.leftkern or 0)
-                else
-                    p[injection] = {
-                        leftkern = dx,
-                    }
-                end
+        if p then
+            local i = rawget(p,injection)
+            if i then
+                i.leftkern = dx + (i.leftkern or 0)
             else
-                properties[current] = {
-                    [injection] = {
-                        leftkern = dx,
-                    },
+                p[injection] = {
+                    leftkern = dx,
                 }
             end
         else
-            if p then
-                local i = rawget(p,injection)
-                if i then
-                    i.leftkern = dx + (i.leftkern or 0)
-                else
-                    p[injection] = {
-                        leftkern = dx,
-                    }
-                end
-            else
-                properties[current] = {
-                    [injection] = {
-                        leftkern = dx,
-                    },
-                }
-            end
+            properties[current] = {
+                [injection] = {
+                    leftkern = dx,
+                },
+            }
         end
         return dx, nofregisteredkerns
     else
@@ -410,40 +390,21 @@ function injections.setmove(current,factor,rlmode,x,injection)
         if not injection then
             injection = "injections"
         end
-        if rlmode and rlmode < 0 then
-            if p then
-                local i = rawget(p,injection)
-                if i then
-                    i.leftkern = dx + (i.leftkern or 0)
-                else
-                    p[injection] = {
-                        leftkern = dx,
-                    }
-                end
+        if p then
+            local i = rawget(p,injection)
+            if i then
+                i.leftkern = dx + (i.leftkern or 0)
             else
-                properties[current] = {
-                    [injection] = {
-                        leftkern = dx,
-                    },
+                p[injection] = {
+                    leftkern = dx,
                 }
             end
         else
-            if p then
-                local i = rawget(p,injection)
-                if i then
-                    i.leftkern = dx + (i.leftkern or 0)
-                else
-                    p[injection] = {
-                        leftkern = dx,
-                    }
-                end
-            else
-                properties[current] = {
-                    [injection] = {
-                        leftkern = dx,
-                    },
-                }
-            end
+            properties[current] = {
+                [injection] = {
+                    leftkern = dx,
+                },
+            }
         end
         return dx, nofregisteredkerns
     else

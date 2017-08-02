@@ -2146,6 +2146,9 @@ local function mergesteps_1(lookup,strict)
 end
 
 local function mergesteps_2(lookup,strict) -- pairs
+    -- this can be tricky as we can have a match on a mark with no marks skip flag
+    -- in which case with multiple steps a hit can prevent a next step while in the
+    -- merged case we can hit differently (a messy font then anyway)
     local steps    = lookup.steps
     local nofsteps = lookup.nofsteps
     local first    = steps[1]
@@ -2494,8 +2497,30 @@ local function mergesteps(t,k)
     end
 end
 
+local function checkflags(sequence,resources)
+    if not sequence.skipsome then
+        local flags = sequence.flags
+        if flags then
+            local skipmark     = flags[1]
+            local skipligature = flags[2]
+            local skipbase     = flags[3]
+            local markclass    = sequence.markclass
+            local skipsome     = skipmark or skipligature or skipbase or markclass or false
+            if skipsome then
+                sequence.skipsome = setmetatableindex(function(t,k)
+                    local c = resources.classes[k] -- delayed table
+                    local v = c == skipmark or (markclass and c == "mark" and not markclass[k]) or c == skipligature or c == skipbase
+                    t[k] = v or false
+                    return v
+                end)
+            end
+        end
+    end
+end
+
 if fonts.helpers then
     fonts.helpers.mergesteps = mergesteps
+    fonts.helpers.checkflags = checkflags
 end
 
 function readers.expand(data)
@@ -2565,14 +2590,9 @@ function readers.expand(data)
                             sequence.markclass = markclasses[markclass]
                         end
                     end
-                    local flags = sequence.flags
-                    if flags then
-                        flags[5] = flags[1] ~= false  -- otherwise "mark"
-                                or flags[2] ~= false  -- otherwise "base"
-                                or flags[3] ~= false  -- otherwise "ligature"
-                                or sequence.markclass
-                                or false
-                    end
+
+                    checkflags(sequence,resources)
+
                     for i=1,nofsteps do
                         local step = steps[i]
                         local baseclasses = step.baseclasses
