@@ -1595,7 +1595,7 @@ function gposhandlers.cursive(f,fontdata,lookupid,lookupoffset,offset,glyphs,nof
                 exit  ~= 0 and (tableoffset + exit ) or nil,
             }
         end
-        -- slot 1 will become hash after loading an dit must be unique because we
+        -- slot 1 will become hash after loading and it must be unique because we
         -- pack the tables (packed we turn the cc-* into a zero)
         local cc = (fontdata.temporary.cursivecount or 0) + 1
         fontdata.temporary.cursivecount = cc

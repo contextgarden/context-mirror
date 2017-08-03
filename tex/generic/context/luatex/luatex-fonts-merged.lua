@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/02/17 23:00:11
+-- merge date  : 08/03/17 11:02:54
 
 do -- begin closure to overcome local limits and interference
 
@@ -19160,7 +19160,7 @@ local function mergesteps_1(lookup,strict)
   lookup.steps={ first }
   return nofsteps-1
 end
-local function mergesteps_2(lookup,strict)
+local function mergesteps_2(lookup)
   local steps=lookup.steps
   local nofsteps=lookup.nofsteps
   local first=steps[1]
@@ -19262,6 +19262,38 @@ local function mergesteps_4(lookup)
     end
   end
   lookup.nofsteps=1
+  lookup.steps={ first }
+  return nofsteps-1
+end
+local function mergesteps_5(lookup) 
+  local steps=lookup.steps
+  local nofsteps=lookup.nofsteps
+  local first=steps[1]
+  report("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
+  local target=first.coverage
+  local hash=nil
+  for k,v in next,target do
+    hash=v[1]
+    break
+  end
+  for i=2,nofsteps do
+    for k,v in next,steps[i].coverage do
+      local tk=target[k]
+      if tk then
+        if not tk[2] then
+          tk[2]=v[2]
+        end
+        if not tk[3] then
+          tk[3]=v[3]
+        end
+      else
+        target[k]=v
+        v[1]=hash
+      end
+    end
+  end
+  lookup.nofsteps=1
+  lookup.merged=true
   lookup.steps={ first }
   return nofsteps-1
 end
@@ -19408,14 +19440,14 @@ function readers.compact(data)
             end
           elseif kind=="gpos_pair" then
             if merge_pairs then
-              merged=merged+mergesteps_2(lookup,true)
+              merged=merged+mergesteps_2(lookup)
             end
             if compact_pairs then
               kerned=kerned+checkpairs(lookup)
             end
           elseif kind=="gpos_cursive" then
             if merge_cursives then
-              merged=merged+mergesteps_2(lookup)
+              merged=merged+mergesteps_5(lookup)
             end
           elseif kind=="gpos_mark2mark" or kind=="gpos_mark2base" or kind=="gpos_mark2ligature" then
             if merge_marks then
@@ -19485,7 +19517,11 @@ local function checkflags(sequence,resources)
           t[k]=v or false
           return v
         end)
+      else
+        sequence.skipsome=false
       end
+    else
+      sequence.skipsome=false
     end
   end
 end
@@ -25605,7 +25641,7 @@ do
           while start do
             local char,id=ischar(start,font)
             if char then
-              if skipsome and skipsome[char] then
+              if skipsome and skipsome[char] then 
                 start=getnext(start)
               else
                 local lookupmatch=lookupcache[char]
@@ -25669,7 +25705,7 @@ do
             if char then
               local m=merged[char]
               if m then
-                if skipsome and skipsome[char] then
+                if skipsome and skipsome[char] then 
                   start=getnext(start)
                 else
                   local a 
@@ -25779,22 +25815,26 @@ do
         position=position+1
         local m=merged[char]
         if m then
-          for i=m[1],m[2] do
-            local step=steps[i]
-            local lookupcache=step.coverage
-            local lookupmatch=lookupcache[char]
-            if lookupmatch then
-              local ok
-              head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
-              if ok then
-                break
-              elseif not start then
-                break
+          if skipsome and skipsome[char] then 
+            start=getnext(start)
+          else
+            for i=m[1],m[2] do
+              local step=steps[i]
+              local lookupcache=step.coverage
+              local lookupmatch=lookupcache[char]
+              if lookupmatch then
+                local ok
+                head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
+                if ok then
+                  break
+                elseif not start then
+                  break
+                end
               end
             end
-          end
-          if start then
-            start=getnext(start)
+            if start then
+              start=getnext(start)
+            end
           end
         else
           start=getnext(start)

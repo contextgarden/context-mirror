@@ -855,6 +855,13 @@ function handlers.gpos_single(head,start,dataset,sequence,kerns,rlmode,step,i,in
     return head, start, false
 end
 
+-- elseif krn and step.format == "pair"
+--     and (not krn[1] or type(krn[1]) == "boolean")
+--     and (not krn[2] or type(krn[2]) == "boolean")
+--     and marks[nextchar] then	--KE
+-- prev = snext	--KE
+-- snext = getnext(snext)	--KE
+
 function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,step,i,injection)
     local snext = getnext(start)
     if not snext then
@@ -874,7 +881,7 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,step,i,inje
                 if marks[nextchar] and sequence.flags[1] then
                     prev  = snext
                     snext = getnext(snext)
--- elseif sequence.markclass and sequence.markclass[nextchar] then -- skipsome
+-- if sequence.skipsome and sequence.skipsome[nextchar] then
 --     prev  = snext
 --     snext = getnext(snext)
                 else
@@ -4050,278 +4057,6 @@ do
 
     directives.register("otf.fastdisc",function(v) fastdisc = v end)
 
-    -- we keep this as reference because the optimization below is sort of nasty
-
- -- function otf.featuresprocessor(head,font,attr,direction,n)
- --
- --     local sequences = sequencelists[font] -- temp hack
- --
- --     if not sequencelists then
- --         return head, false
- --     end
- --
- --     nesting = nesting + 1
- --
- --     if nesting == 1 then
- --         currentfont  = font
- --         tfmdata      = fontdata[font]
- --         descriptions = tfmdata.descriptions -- only needed in gref so we could pass node there instead
- --         characters   = tfmdata.characters   -- but this branch is not entered that often anyway
- --   local resources    = tfmdata.resources
- --         marks        = resources.marks
- --         classes      = resources.classes
- --         threshold,
- --         factor       = getthreshold(font)
- --         checkmarks   = tfmdata.properties.checkmarks
- --
- --     elseif currentfont ~= font then
- --
- --         report_warning("nested call with a different font, level %s, quitting",nesting)
- --         nesting = nesting - 1
- --         return head, false
- --
- --     end
- --
- --     -- some 10% faster when no dynamics but hardly measureable on real runs .. but: it only
- --     -- works when we have no other dynamics as otherwise the zero run will be applied to the
- --     -- whole stream for which we then need to pass another variable which we won't
- --
- --     -- if attr == 0 then
- --     --     attr = false
- --     -- end
- --
- --     head = tonut(head)
- --
- --     if trace_steps then
- --         checkstep(head)
- --     end
- --
- --     local initialrl = direction == "TRT" and -1 or 0
- --
- --     local done      = false
- --     local datasets  = otf.dataset(tfmdata,font,attr)
- --     local dirstack  = { } -- could move outside function but we can have local runs
- --     sweephead       = { }
- --
- --     -- Keeping track of the headnode is needed for devanagari. (I generalized it a bit
- --     -- so that multiple cases are also covered.) We could prepend a temp node.
- --
- --     -- We don't goto the next node when a disc node is created so that we can then treat
- --     -- the pre, post and replace. It's a bit of a hack but works out ok for most cases.
- --
- --     local discs = fastdisc and n and n > 1 and setmetatableindex(function(t,k)
- --         local v = usesfont(k,font)
- --         t[k] = v
- --         return v
- --     end)
- --
- --     for s=1,#datasets do
- --         local dataset      = datasets[s]
- --         ----- featurevalue = dataset[1] -- todo: pass to function instead of using a global
- --         local attribute    = dataset[2]
- --         local sequence     = dataset[3] -- sequences[s] -- also dataset[5]
- --         local rlparmode    = initialrl
- --         local topstack     = 0
- --         local typ          = sequence.type
- --         local gpossing     = typ == "gpos_single" or typ == "gpos_pair" -- store in dataset
- --         local handler      = handlers[typ]
- --         local steps        = sequence.steps
- --         local nofsteps     = sequence.nofsteps
- --         if not steps then
- --             -- this permits injection, watch the different arguments
- --             local h, d, ok = handler(head,head,dataset,sequence,nil,nil,nil,0,font,attr)
- --             if ok then
- --                 done = true
- --                 if h then
- --                     head = h
- --                 end
- --             end
- --         elseif typ == "gsub_reversecontextchain" then
- --             -- This might need a check: if we have #before or #after > 0 then we might need to reverse
- --             -- the before and after lists in the loader. But first I need to see a font that uses multiple
- --             -- matches.
- --             local start  = find_node_tail(head)
- --             local rlmode = 0 -- how important is this .. do we need to check for dir?
- --             while start do
- --                 local char = ischar(start,font)
- --                 if char then
- --                     local a -- happens often so no assignment is faster
- --                     if attr then
- --                         a = getattr(start,0)
- --                     end
- --                     if not a or (a == attr) then
- --                         for i=1,nofsteps do
- --                             local step = steps[i]
- --                             local lookupcache = step.coverage
- --                             local lookupmatch = lookupcache[char]
- --                             if lookupmatch then
- --                                 -- todo: disc?
- --                                 local ok
- --                                 head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
- --                                 if ok then
- --                                     done = true
- --                                     break
- --                                 end
- --                             end
- --                         end
- --                         if start then
- --                             start = getprev(start)
- --                         end
- --                     else
- --                         start = getprev(start)
- --                     end
- --                 else
- --                     start = getprev(start)
- --                 end
- --             end
- --         else
- --             local start  = head
- --             local rlmode = initialrl
- --             if nofsteps == 1 then -- happens often
- --                 local step = steps[1]
- --                 local lookupcache = step.coverage
- --                 while start do
- --                     local char, id = ischar(start,font)
- --                     if char then
- --                         local a -- happens often so no assignment is faster
- --                         if attr then
- --                             if getattr(start,0) == attr and (not attribute or getprop(start,a_state) == attribute) then
- --                                 a = true
- --                             end
- --                         elseif not attribute or getprop(start,a_state) == attribute then
- --                             a = true
- --                         end
- --                         if a then
- --                             local lookupmatch = lookupcache[char]
- --                             if lookupmatch then
- --                                 local ok
- --                                 head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,1)
- --                                 if ok then
- --                                     done = true
- --                                 end
- --                             end
- --                             if start then
- --                                 start = getnext(start)
- --                             end
- --                         else
- --                            start = getnext(start)
- --                         end
- --                     elseif char == false then
- --                        -- whatever glyph
- --                        start = getnext(start)
- --                     elseif id == glue_code then
- --                         -- happens often
- --                        start = getnext(start)
- --                     elseif id == disc_code then
- --                         if not discs or discs[start] == true then
- --                             local ok
- --                             if gpossing then
- --                                 start, ok = kernrun(start,k_run_single,             font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
- --                             elseif typ == "gsub_ligature" then
- --                                 start, ok = testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
- --                             else
- --                                 start, ok = comprun(start,c_run_single,             font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
- --                             end
- --                             if ok then
- --                                 done = true
- --                             end
- --                         else
- --                             start = getnext(start)
- --                         end
- --                     elseif id == math_code then
- --                         start = getnext(end_of_math(start))
- --                     elseif id == dir_code then
- --                         start, topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
- --                     elseif id == localpar_code then
- --                         start, rlparmode, rlmode = pardirstate(start)
- --                     else
- --                         start = getnext(start)
- --                     end
- --                 end
- --
- --             else
- --                 while start do
- --                     local char, id = ischar(start,font)
- --                     if char then
- --                         local a -- happens often so no assignment is faster
- --                         if attr then
- --                             if getattr(start,0) == attr and (not attribute or getprop(start,a_state) == attribute) then
- --                                 a = true
- --                             end
- --                         elseif not attribute or getprop(start,a_state) == attribute then
- --                             a = true
- --                         end
- --                         if a then
- --                             for i=1,nofsteps do
- --                                 local step        = steps[i]
- --                                 local lookupcache = step.coverage
- --                                 local lookupmatch = lookupcache[char]
- --                                 if lookupmatch then
- --                                     -- we could move all code inline but that makes things even more unreadable
- --                                     local ok
- --                                     head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
- --                                     if ok then
- --                                         done = true
- --                                         break
- --                                     elseif not start then
- --                                         -- don't ask why ... shouldn't happen
- --                                         break
- --                                     end
- --                                 end
- --                             end
- --                             if start then
- --                                 start = getnext(start)
- --                             end
- --                         else
- --                             start = getnext(start)
- --                         end
- --                     elseif char == false then
- --                        -- whatever glyph
- --                         start = getnext(start)
- --                     elseif id == glue_code then
- --                         -- happens often
- --                         start = getnext(start)
- --                     elseif id == disc_code then
- --                         if not discs or discs[start] == true then
- --                             local ok
- --                             if gpossing then
- --                                 start, ok = kernrun(start,k_run_multiple,               font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
- --                             elseif typ == "gsub_ligature" then
- --                                 start, ok = testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
- --                             else
- --                                 start, ok = comprun(start,c_run_multiple,               font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
- --                             end
- --                             if ok then
- --                                 done = true
- --                             end
- --                         else
- --                             start = getnext(start)
- --                         end
- --                     elseif id == math_code then
- --                         start = getnext(end_of_math(start))
- --                     elseif id == dir_code then
- --                         start, topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
- --                     elseif id == localpar_code then
- --                         start, rlparmode, rlmode = pardirstate(start)
- --                     else
- --                         start = getnext(start)
- --                     end
- --                 end
- --             end
- --         end
- --
- --         if trace_steps then -- ?
- --             registerstep(head)
- --         end
- --
- --     end
- --
- --     nesting = nesting - 1
- --     head    = tonode(head)
- --
- --     return head, done
- -- end
-
     -- using a merged combined hash as first test saves some 30% on ebgaramond and
     -- about 15% on arabtype .. then moving the a test also saves a bit (even when
     -- often a is not set at all so that one is a bit debatable
@@ -4404,7 +4139,6 @@ do
 
         for s=1,#datasets do
             local dataset      = datasets[s]
-            ----- featurevalue = dataset[1] -- todo: pass to function instead of using a global
             local attribute    = dataset[2]
             local sequence     = dataset[3] -- sequences[s] -- also dataset[5]
             local rlparmode    = initialrl
@@ -4482,7 +4216,7 @@ do
                     while start do
                         local char, id = ischar(start,font)
                         if char then
-                            if skipsome and skipsome[char] then
+                            if skipsome and skipsome[char] then -- we never needed it here but let's try
                                 start = getnext(start)
                             else
                                 local lookupmatch = lookupcache[char]
@@ -4547,7 +4281,7 @@ do
                         if char then
                             local m = merged[char]
                             if m then
-                                if skipsome and skipsome[char] then
+                                if skipsome and skipsome[char] then -- we never needed it here but let's try
                                     start = getnext(start)
                                 else
                                     local a -- happens often so no assignment is faster
@@ -4685,27 +4419,31 @@ do
                 position = position + 1
                 local m = merged[char]
                 if m then
-                    for i=m[1],m[2] do
-                        local step = steps[i]
-                        local lookupcache = step.coverage
-                        local lookupmatch = lookupcache[char]
-                        if lookupmatch then
-                            local ok
-                            head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
-                            if ok then
-                             -- if matches then
-                             --     matches[position] = i
-                             -- else
-                             --     matches = { [position] = i }
-                             -- end
-                                break
-                            elseif not start then
-                                break
+                    if skipsome and skipsome[char] then -- we never needed it here but let's try
+                        start = getnext(start)
+                    else
+                        for i=m[1],m[2] do
+                            local step = steps[i]
+                            local lookupcache = step.coverage
+                            local lookupmatch = lookupcache[char]
+                            if lookupmatch then
+                                local ok
+                                head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
+                                if ok then
+                                 -- if matches then
+                                 --     matches[position] = i
+                                 -- else
+                                 --     matches = { [position] = i }
+                                 -- end
+                                    break
+                                elseif not start then
+                                    break
+                                end
                             end
                         end
-                    end
-                    if start then
-                        start = getnext(start)
+                        if start then
+                            start = getnext(start)
+                        end
                     end
                 else
                     start = getnext(start)

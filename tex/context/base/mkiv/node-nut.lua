@@ -956,13 +956,13 @@ if LUATEXFUNCTIONALITY < 6384 then
         return
             getfield(n,"glue_set"),
             getfield(n,"glue_order"),
-            getfield(h,"glue_sign")
+            getfield(n,"glue_sign")
     end
 
     function nuts.setboxglue(n,glue_set,glue_order,glue_sign)
         setfield(n,"glue_set",  glue_set   or 0)
         setfield(n,"glue_order",glue_order or 0)
-        setfield(h,"glue_sign", glue_sign  or 0)
+        setfield(n,"glue_sign", glue_sign  or 0)
     end
 
 end
