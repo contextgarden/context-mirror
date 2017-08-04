@@ -1042,6 +1042,9 @@ local function inject_everything(head,where)
                 -- kern(w-x) glyph(p) kern(x) mark(n)
                 ox = px - pn.markx - rightkern
              -- report_injections("r2l case 1: %p",ox)
+if not pn.markmark then -- check or not (no longer needed)
+    ox = ox + (pn.leftkern or 0)
+end
             else
                 -- kern(x) glyph(p) kern(w-x) mark(n)
              -- ox = px - getwidth(p) + pn.markx - pp.leftkern

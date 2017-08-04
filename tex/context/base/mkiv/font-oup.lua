@@ -2534,8 +2534,15 @@ local function mergesteps(t,k)
     end
 end
 
+local function checkmerge(sequence)
+    local steps = sequence.steps
+    if steps then
+        setmetatableindex(steps,mergesteps)
+    end
+end
+
 local function checkflags(sequence,resources)
-    if not sequence.skipsome then
+    if not sequence.skiphash then
         local flags = sequence.flags
         if flags then
             local skipmark     = flags[1]
@@ -2544,24 +2551,38 @@ local function checkflags(sequence,resources)
             local markclass    = sequence.markclass
             local skipsome     = skipmark or skipligature or skipbase or markclass or false
             if skipsome then
-                sequence.skipsome = setmetatableindex(function(t,k)
+                sequence.skiphash = setmetatableindex(function(t,k)
                     local c = resources.classes[k] -- delayed table
                     local v = c == skipmark or (markclass and c == "mark" and not markclass[k]) or c == skipligature or c == skipbase
+-- local v = (skipmark     and c == "mark")
+--        or (markclass    and c == "mark" and not markclass[k])
+--        or (skipligature and c == "ligature")
+--        or (skipbase     and c == "base")
                     t[k] = v or false
                     return v
                 end)
             else
-                sequence.skipsome = false
+                sequence.skiphash = false
             end
         else
-            sequence.skipsome = false
+            sequence.skiphash = false
+        end
+    end
+end
+
+local function checksteps(sequence)
+    local steps = sequence.steps
+    if steps then
+        for i=1,#steps do
+            steps[i].index = i
         end
     end
 end
 
 if fonts.helpers then
-    fonts.helpers.mergesteps = mergesteps
+    fonts.helpers.checkmerge = checkmerge
     fonts.helpers.checkflags = checkflags
+    fonts.helpers.checksteps = checksteps -- has to happen last
 end
 
 function readers.expand(data)
@@ -2619,8 +2640,6 @@ function readers.expand(data)
                 if steps then
                     local nofsteps = sequence.nofsteps
 
-                    setmetatableindex(steps,mergesteps)
-
                     local kind = sequence.type
                     local markclass = sequence.markclass
                     if markclass then
@@ -2632,7 +2651,9 @@ function readers.expand(data)
                         end
                     end
 
+                    checkmerge(sequence)
                     checkflags(sequence,resources)
+                    checksteps(sequence)
 
                     for i=1,nofsteps do
                         local step = steps[i]

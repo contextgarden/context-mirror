@@ -2072,7 +2072,7 @@ do
                 local nofsubtables = #subtables
                 local order        = lookup.order
                 local flags        = lookup.flags
-                -- this is expected in th efont handler (faster checking)
+                -- this is expected in the font handler (faster checking)
                 if flags[1] then flags[1] = "mark" end
                 if flags[2] then flags[2] = "ligature" end
                 if flags[3] then flags[3] = "base" end
