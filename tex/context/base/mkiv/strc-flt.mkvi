@@ -154,7 +154,7 @@
    \c!outermargin=\zeropoint, % idem
    \c!leftmargindistance=\zeropoint,
    \c!rightmargindistance=\floatparameter\c!leftmargindistance,
-   \c!step=\v!big, % the flush side float step (big=line, medium=halfline, small=quarterline, depth=halfline with normaldepth)
+   \c!step=\v!small, % the flush side float step (big, medium, small : always depth)
    \c!ntop=2,
    \c!nbottom=0,
    \c!nlines=4, % used?
@@ -165,6 +165,7 @@
   %\c!bottombefore=, % e.g. \vfill
   %\c!bottomafter=,
   %\c!default=, % default location
+   \c!sidethreshold=.5\strutdp, % set to "old" to check with old method
    \c!numbering=\v!yes]
 
 %D Individial settings:
