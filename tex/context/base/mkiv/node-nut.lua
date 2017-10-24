@@ -224,6 +224,14 @@ nodes.tonut               = tonut
 
 -- helpers
 
+if not direct.getfam then
+    local getfield = direct.getfield
+    local setfield = direct.setfield
+
+    direct.getfam = function(n,f) getfield(n,"small_fam",f) end
+    direct.setfam = function(n,f) setfield(n,"small_fam",f) end
+end
+
 nuts.tostring              = direct.tostring
 nuts.copy                  = direct.copy
 nuts.copy_node             = direct.copy
@@ -336,6 +344,8 @@ nuts.getchar               = direct.getchar
 nuts.setchar               = direct.setchar
 nuts.getfont               = direct.getfont
 nuts.setfont               = direct.setfont
+nuts.getfam                = direct.getfam
+nuts.setfam                = direct.setfam
 
 nuts.getboth               = direct.getboth
 nuts.setboth               = direct.setboth
