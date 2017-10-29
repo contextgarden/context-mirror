@@ -22,7 +22,7 @@ local utfchar, utfbyte = utf.char, utf.byte
 
 local loadstripped = nil
 
-if _LUAVERSION < 5.2  then
+if LUAVERSION < 5.2 then
 
     loadstripped = function(str,shortcuts)
         return load(str)
@@ -504,7 +504,7 @@ return function(%s) return %s end
 
 local preamble, environment = "", { }
 
-if _LUAVERSION < 5.2  then
+if LUAVERSION < 5.2 then
 
     preamble = [[
 local lpeg=lpeg
@@ -1007,6 +1007,14 @@ local direct = Cs (
   * P(-1) / [[local format = string.format return function(str) return format("%0",str) end]]
 )
 
+-- local direct = Cs (
+--     P("%")
+--   * (S("+- .") + R("09"))^0
+--   * S("sqidfgGeExXo")
+--   * (1-P("%"))^0
+--   * P(-1) / [[local format = string.format return function(str) return format([==[%0]==],str) end]]
+-- )
+
 local function make(t,str)
     local f
     local p
@@ -1079,7 +1087,7 @@ strings.formatters = { }
 
 -- _connector_ is an experiment
 
-if _LUAVERSION < 5.2  then
+if LUAVERSION < 5.2 then
 
     function strings.formatters.new(noconcat)
         local t = { _type_ = "formatter", _connector_ = noconcat and "," or "..", _extensions_ = { }, _preamble_ = preamble, _environment_ = { } }
@@ -1139,7 +1147,7 @@ patterns.luaquoted = Cs(Cc('"') * ((1-S('"\n'))^1 + P('"')/'\\"' + P('\n')/'\\n"
 -- escaping by lpeg is faster for strings without quotes, slower on a string with quotes, but
 -- faster again when other q-escapables are found (the ones we don't need to escape)
 
-if _LUAVERSION < 5.2  then
+if LUAVERSION < 5.2 then
 
     add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],"local xmlescape = lpeg.patterns.xmlescape")
     add(formatters,"tex",[[lpegmatch(texescape,%s)]],"local texescape = lpeg.patterns.texescape")
