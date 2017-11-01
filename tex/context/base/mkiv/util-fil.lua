@@ -8,8 +8,9 @@ if not modules then modules = { } end modules ['util-fil'] = {
 
 local byte    = string.byte
 local char    = string.char
-local extract = bit32 and bit32.extract
-local floor   = math.floor
+local extract = bit32.extract
+local rshift  = bit32.rshift
+local band    = bit32.band
 
 -- Here are a few helpers (the starting point were old ones I used for parsing
 -- flac files). In Lua 5.3 we can probably do this better. Some code will move
@@ -236,24 +237,17 @@ function files.readfixed4(f)
     end
 end
 
-if extract then
+-- (real) ((n<<16)>>(16+14)) + ((n&0x3fff)/16384.0))
 
-    local extract = bit32.extract
-    local band    = bit32.band
-
-    -- (real) ((n<<16)>>(16+14)) + ((n&0x3fff)/16384.0))
-
-    function files.read2dot14(f)
-        local a, b = byte(f:read(2),1,2)
-        if a >= 0x80 then
-            local n = -(0x100 * a + b)
-            return - (extract(n,14,2) + (band(n,0x3FFF) / 16384.0))
-        else
-            local n =   0x100 * a + b
-            return   (extract(n,14,2) + (band(n,0x3FFF) / 16384.0))
-        end
+function files.read2dot14(f)
+    local a, b = byte(f:read(2),1,2)
+    if a >= 0x80 then
+        local n = -(0x100 * a + b)
+        return - (extract(n,14,2) + (band(n,0x3FFF) / 16384.0))
+    else
+        local n =   0x100 * a + b
+        return   (extract(n,14,2) + (band(n,0x3FFF) / 16384.0))
     end
-
 end
 
 function files.skipshort(f,n)
@@ -268,18 +262,18 @@ end
 
 function files.writecardinal2(f,n)
     local a = char(n % 256)
-    n = floor(n/256)
+    n = rshift(n,8)
     local b = char(n % 256)
     f:write(b,a)
 end
 
 function files.writecardinal4(f,n)
     local a = char(n % 256)
-    n = floor(n/256)
+    n = rshift(n,8)
     local b = char(n % 256)
-    n = floor(n/256)
+    n = rshift(n,8)
     local c = char(n % 256)
-    n = floor(n/256)
+    n = rshift(n,8)
     local d = char(n % 256)
     f:write(d,c,b,a)
 end
@@ -302,8 +296,8 @@ if fio and fio.readcardinal1 then
     files.readinteger2   = fio.readinteger2
     files.readinteger3   = fio.readinteger3
     files.readinteger4   = fio.readinteger4
- -- files.readfixed2     = fio.readfixed2 -- needs recent luatex
- -- files.readfixed4     = fio.readfixed4 -- needs recent luatex
+    files.readfixed2     = fio.readfixed2
+    files.readfixed4     = fio.readfixed4
     files.read2dot14     = fio.read2dot14
     files.setposition    = fio.setposition
     files.getposition    = fio.getposition

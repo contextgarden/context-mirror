@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 6056, stripped down to: 2916
+-- original size: 5427, stripped down to: 2974
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -172,6 +172,156 @@ if not FFISUPPORTED then
   ffi=nil
 elseif not ffi.number then
   ffi.number=tonumber
+end
+if not bit32 and utf8 then
+  bit32=require("l-bit32")
+end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["l-macro"] = package.loaded["l-macro"] or true
+
+-- original size: 6393, stripped down to: 3659
+
+if not modules then modules={} end modules ['l-macros']={
+  version=1.001,
+  comment="companion to luat-lib.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+local S,P,R,V,C,Cs,Cc,Ct,Carg=lpeg.S,lpeg.P,lpeg.R,lpeg.V,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg.Ct,lpeg.Carg
+local lpegmatch=lpeg.match
+local concat=table.concat
+local next=next
+local newline=S("\n\r")^1
+local continue=P("\\")*newline
+local spaces=S(" \t")+continue
+local name=R("az","AZ","__","09")^1
+local body=((1+continue/"")-newline)^1
+local lparent=P("(")
+local rparent=P(")")
+local noparent=1-(lparent+rparent)
+local nested=P { lparent*(noparent+V(1))^0*rparent }
+local escaped=P("\\")*P(1)
+local squote=P("'")
+local dquote=P('"')
+local quoted=dquote*(escaped+(1-dquote))^0*dquote+squote*(escaped+(1-squote))^0*squote
+local arguments=lparent*Ct((Cs((nested+(quoted+1-S("),")))^1)+S(", "))^0)*rparent
+local macros=lua.macros or {}
+lua.macros=macros
+local patterns={}
+local definitions={}
+local resolve
+local subparser
+resolve=C(C(name)*arguments^-1)/function(raw,s,a)
+  local d=definitions[s]
+  if d then
+    if a then
+      local n=#a
+      local p=patterns[s][n]
+      if p then
+        local d=d[n]
+        for i=1,n do
+          a[i]=lpegmatch(subparser,a[i]) or a[i]
+        end
+        return lpegmatch(p,d,1,a) or d
+      else
+        return raw
+      end
+    else
+      return d[0] or raw
+    end
+  elseif a then
+    for i=1,#a do
+      a[i]=lpegmatch(subparser,a[i]) or a[i]
+    end
+    return s.."("..concat(a,",")..")"
+  else
+    return raw
+  end
+end
+subparser=Cs((resolve+P(1))^1)
+local enddefine=P("#enddefine")/""
+local beginregister=(C(name)*spaces^0*(arguments+Cc(false))*C((1-enddefine)^1)*enddefine)/function(k,a,v)
+  local n=0
+  if a then
+    n=#a
+    local pattern=P(false)
+    for i=1,n do
+      pattern=pattern+(P(a[i])*Carg(1))/function(t) return t[i] end
+    end
+    pattern=Cs((pattern+P(1))^1)
+    local p=patterns[k]
+    if not p then
+      p={ [0]=false,false,false,false,false,false,false,false,false }
+      patterns[k]=p
+    end
+    p[n]=pattern
+  end
+  local d=definitions[k]
+  if not d then
+    d={ [0]=false,false,false,false,false,false,false,false,false }
+    definitions[k]=d
+  end
+  d[n]=lpegmatch(subparser,v) or v
+  return ""
+end
+local register=(C(name)*spaces^0*(arguments+Cc(false))*spaces^0*C(body))/function(k,a,v)
+  local n=0
+  if a then
+    n=#a
+    local pattern=P(false)
+    for i=1,n do
+      pattern=pattern+(P(a[i])*Carg(1))/function(t) return t[i] end
+    end
+    pattern=Cs((pattern+P(1))^1)
+    local p=patterns[k]
+    if not p then
+      p={ [0]=false,false,false,false,false,false,false,false,false }
+      patterns[k]=p
+    end
+    p[n]=pattern
+  end
+  local d=definitions[k]
+  if not d then
+    d={ [0]=false,false,false,false,false,false,false,false,false }
+    definitions[k]=d
+  end
+  d[n]=lpegmatch(subparser,v) or v
+  return ""
+end
+local unregister=(C(name)*spaces^0*(arguments+Cc(false)))/function(k,a)
+  local n=0
+  if a then
+    n=#a
+    local p=patterns[k]
+    if p then
+      p[n]=false
+    end
+  end
+  local d=definitions[k]
+  if d then
+    d[n]=false
+  end
+  return ""
+end
+local begindefine=(P("begindefine")*spaces^0/"")*beginregister
+local define=(P("define"   )*spaces^0/"")*register
+local undefine=(P("undefine"  )*spaces^0/"")*unregister
+local parser=Cs((((P("#")/"")*(define+begindefine+undefine)*(newline^0/"") )+resolve+P(1) )^0 )
+function macros.reset()
+  definitions={}
+  patterns={}
+end
+function macros.resolvestring(str)
+  return lpegmatch(parser,str) or str
+end
+function macros.resolving()
+  return next(patterns)
 end
 
 
@@ -448,7 +598,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-package"] = package.loaded["l-package"] or true
 
--- original size: 11455, stripped down to: 8625
+-- original size: 11545, stripped down to: 8606
 
 if not modules then modules={} end modules ['l-package']={
   version=1.001,
@@ -461,7 +611,7 @@ local type=type
 local gsub,format,find=string.gsub,string.format,string.find
 local P,S,Cs,lpegmatch=lpeg.P,lpeg.S,lpeg.Cs,lpeg.match
 local package=package
-local searchers=package.searchers or package.loaders
+local searchers=package.searchers
 local insert,remove=table.insert,table.remove
 local filejoin=file and file.join    or function(path,name)  return path.."/"..name end
 local isreadable=file and file.is_readable or function(name)    local f=io.open(name) if f then f:close() return true end end
@@ -3136,7 +3286,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-number"] = package.loaded["l-number"] or true
 
--- original size: 5358, stripped down to: 3177
+-- original size: 5645, stripped down to: 2253
 
 if not modules then modules={} end modules ['l-number']={
   version=1.001,
@@ -3152,33 +3302,6 @@ local lpegmatch=lpeg.match
 local floor=math.floor
 number=number or {}
 local number=number
-if bit32 then 
-  local btest,bor=bit32.btest,bit32.bor
-  function number.bit(p)
-    return 2^(p-1) 
-  end
-  number.hasbit=btest
-  number.setbit=bor
-  function number.setbit(x,p) 
-    return btest(x,p) and x or x+p
-  end
-  function number.clearbit(x,p)
-    return btest(x,p) and x-p or x
-  end
-else
-  function number.bit(p)
-    return 2^(p-1) 
-  end
-  function number.hasbit(x,p) 
-    return x%(p+p)>=p
-  end
-  function number.setbit(x,p)
-    return (x%(p+p)>=p) and x or x+p
-  end
-  function number.clearbit(x,p)
-    return (x%(p+p)>=p) and x-p or x
-  end
-end
 if bit32 then
   local bextract=bit32.extract
   local t={
@@ -3253,26 +3376,6 @@ function number.toevenhex(n)
   else
     return "0"..s
   end
-end
-local one=lpeg.C(1-lpeg.S('')/tonumber)^1
-function number.toset(n)
-  return lpegmatch(one,tostring(n))
-end
-local function bits(n,i,...)
-  if n>0 then
-    local m=n%2
-    local n=floor(n/2)
-    if m>0 then
-      return bits(n,i+1,i,...)
-    else
-      return bits(n,i+1,...)
-    end
-  else
-    return...
-  end
-end
-function number.bits(n)
-  return { bits(n,1) }
 end
 function number.bytetodecimal(b)
   local d=floor(b*100/255+0.5)
@@ -5059,7 +5162,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 39076, stripped down to: 16665
+-- original size: 38825, stripped down to: 16749
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -5075,6 +5178,8 @@ local type=type
 local char,byte,format,sub,gmatch=string.char,string.byte,string.format,string.sub,string.gmatch
 local concat=table.concat
 local P,C,R,Cs,Ct,Cmt,Cc,Carg,Cp=lpeg.P,lpeg.C,lpeg.R,lpeg.Cs,lpeg.Ct,lpeg.Cmt,lpeg.Cc,lpeg.Carg,lpeg.Cp
+local floor=math.floor
+local rshift=bit32.rshift
 local lpegmatch=lpeg.match
 local patterns=lpeg.patterns
 local tabletopattern=lpeg.utfchartabletopattern
@@ -5097,26 +5202,26 @@ end
 if not utf.char then
   utf.char=string.utfcharacter or (utf8 and utf8.char)
   if not utf.char then
-    local floor,char=math.floor,string.char
+    local char=string.char
     function utf.char(n)
       if n<0x80 then
         return char(n)
       elseif n<0x800 then
         return char(
-          0xC0+floor(n/0x40),
+          0xC0+rshift(n,6),
           0x80+(n%0x40)
         )
       elseif n<0x10000 then
         return char(
-          0xE0+floor(n/0x1000),
-          0x80+(floor(n/0x40)%0x40),
+          0xE0+rshift(n,12),
+          0x80+(rshift(n,6)%0x40),
           0x80+(n%0x40)
         )
       elseif n<0x200000 then
         return char(
-          0xF0+floor(n/0x40000),
-          0x80+(floor(n/0x1000)%0x40),
-          0x80+(floor(n/0x40)%0x40),
+          0xF0+rshift(n,18),
+          0x80+(rshift(n,12)%0x40),
+          0x80+(rshift(n,6)%0x40),
           0x80+(n%0x40)
         )
       else
@@ -5545,20 +5650,22 @@ function utf.utf32_to_utf8_t(t,endian)
 end
 local function little(b)
   if b<0x10000 then
-    return char(b%256,b/256)
+    return char(b%256,rshift(b,8))
   else
     b=b-0x10000
-    local b1,b2=b/1024+0xD800,b%1024+0xDC00
-    return char(b1%256,b1/256,b2%256,b2/256)
+    local b1=rshift(b,10)+0xD800
+    local b2=b%1024+0xDC00
+    return char(b1%256,rshift(b1,8),b2%256,rshift(b2,8))
   end
 end
 local function big(b)
   if b<0x10000 then
-    return char(b/256,b%256)
+    return char(rshift(b,8),b%256)
   else
     b=b-0x10000
-    local b1,b2=b/1024+0xD800,b%1024+0xDC00
-    return char(b1/256,b1%256,b2/256,b2%256)
+    local b1=rshift(b,10)+0xD800
+    local b2=b%1024+0xDC00
+    return char(rshift(b1,8),b1%256,rshift(b2,8),b2%256)
   end
 end
 local l_remap=Cs((p_utf8byte/little+P(1)/"")^0)
@@ -5704,7 +5811,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-math"] = package.loaded["l-math"] or true
 
--- original size: 974, stripped down to: 890
+-- original size: 2576, stripped down to: 1915
 
 if not modules then modules={} end modules ['l-math']={
   version=1.001,
@@ -5713,21 +5820,23 @@ if not modules then modules={} end modules ['l-math']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local floor,sin,cos,tan=math.floor,math.sin,math.cos,math.tan
 if not math.ceiling then
   math.ceiling=math.ceil
 end
 if not math.round then
+  local floor=math.floor
   function math.round(x) return floor(x+0.5) end
 end
 if not math.div then
+  local floor=math.floor
   function math.div(n,m) return floor(n/m) end
 end
 if not math.mod then
   function math.mod(n,m) return n%m end
 end
-local pipi=2*math.pi/360
 if not math.sind then
+  local sin,cos,tan=math.sin,math.cos,math.tan
+  local pipi=2*math.pi/360
   function math.sind(d) return sin(d*pipi) end
   function math.cosd(d) return cos(d*pipi) end
   function math.tand(d) return tan(d*pipi) end
@@ -5735,6 +5844,61 @@ end
 if not math.odd then
   function math.odd (n) return n%2~=0 end
   function math.even(n) return n%2==0 end
+end
+if not math.cosh then
+  local exp=math.exp
+  function math.cosh(x)
+    local xx=exp(x)
+    return (xx+1/xx)/2
+  end
+  function math.sinh(x)
+    local xx=exp(x)
+    return (xx-1/xx)/2
+  end
+  function math.tanh(x)
+    local xx=exp(x)
+    return (xx-1/xx)/(xx+1/xx)
+  end
+end
+if not math.pow then
+  function math.pow(x,y)
+    return x^y
+  end
+end
+if not math.atan2 then
+  math.atan2=math.atan
+end
+if not math.ldexp then
+  function math.ldexp(x,e)
+    return x*2.0^e
+  end
+end
+if not math.log10 then
+  local ln=math.ln
+  local lt=ln(10)
+  function math.log10(x)
+    return ln(x)/lt
+  end
+end
+if not math.type then
+  function math.type()
+    return "float"
+  end
+end
+if not math.tointeger then
+  math.mininteger=-0x4FFFFFFFFFFF
+  math.maxinteger=0x4FFFFFFFFFFF
+  local floor=math.floor
+  function math.tointeger(n)
+    local f=floor(n)
+    return f==n and f or nil
+  end
+end
+if not math.ult then
+  local floor=math.floor
+  function math.tointeger(m,n)
+    return floor(m)<floor(n) 
+  end
 end
 
 
@@ -7132,7 +7296,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fil"] = package.loaded["util-fil"] or true
 
--- original size: 7644, stripped down to: 5642
+-- original size: 7481, stripped down to: 5627
 
 if not modules then modules={} end modules ['util-fil']={
   version=1.001,
@@ -7143,8 +7307,9 @@ if not modules then modules={} end modules ['util-fil']={
 }
 local byte=string.byte
 local char=string.char
-local extract=bit32 and bit32.extract
-local floor=math.floor
+local extract=bit32.extract
+local rshift=bit32.rshift
+local band=bit32.band
 utilities=utilities or {}
 local files={}
 utilities.files=files
@@ -7314,18 +7479,14 @@ function files.readfixed4(f)
     return (0x100*a+b     )+(0x100*c+d)/0x10000
   end
 end
-if extract then
-  local extract=bit32.extract
-  local band=bit32.band
-  function files.read2dot14(f)
-    local a,b=byte(f:read(2),1,2)
-    if a>=0x80 then
-      local n=-(0x100*a+b)
-      return-(extract(n,14,2)+(band(n,0x3FFF)/16384.0))
-    else
-      local n=0x100*a+b
-      return  (extract(n,14,2)+(band(n,0x3FFF)/16384.0))
-    end
+function files.read2dot14(f)
+  local a,b=byte(f:read(2),1,2)
+  if a>=0x80 then
+    local n=-(0x100*a+b)
+    return-(extract(n,14,2)+(band(n,0x3FFF)/16384.0))
+  else
+    local n=0x100*a+b
+    return  (extract(n,14,2)+(band(n,0x3FFF)/16384.0))
   end
 end
 function files.skipshort(f,n)
@@ -7336,17 +7497,17 @@ function files.skiplong(f,n)
 end
 function files.writecardinal2(f,n)
   local a=char(n%256)
-  n=floor(n/256)
+  n=rshift(n,8)
   local b=char(n%256)
   f:write(b,a)
 end
 function files.writecardinal4(f,n)
   local a=char(n%256)
-  n=floor(n/256)
+  n=rshift(n,8)
   local b=char(n%256)
-  n=floor(n/256)
+  n=rshift(n,8)
   local c=char(n%256)
-  n=floor(n/256)
+  n=rshift(n,8)
   local d=char(n%256)
   f:write(d,c,b,a)
 end
@@ -7365,6 +7526,8 @@ if fio and fio.readcardinal1 then
   files.readinteger2=fio.readinteger2
   files.readinteger3=fio.readinteger3
   files.readinteger4=fio.readinteger4
+  files.readfixed2=fio.readfixed2
+  files.readfixed4=fio.readfixed4
   files.read2dot14=fio.read2dot14
   files.setposition=fio.setposition
   files.getposition=fio.getposition
@@ -10081,7 +10244,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lua"] = package.loaded["util-lua"] or true
 
--- original size: 6333, stripped down to: 4543
+-- original size: 6662, stripped down to: 4771
 
 if not modules then modules={} end modules ['util-lua']={
   version=1.001,
@@ -10143,11 +10306,19 @@ local function stupidcompile(luafile,lucfile,strip)
   end
   return false,0
 end
-function luautilities.loadedluacode(fullname,forcestrip,name)
+function luautilities.loadedluacode(fullname,forcestrip,name,macros)
   name=name or fullname
   local code,message
-  if environment.loadpreprocessedfile then
-    code,message=environment.loadpreprocessedfile(fullname)
+  if macros then
+    macros=lua.macros
+  end
+  if macros and macros.enabled then
+    local f=io.open(fullname,"rb") local c=f:read("*a") f:close()
+    local n=c and macros.resolvestring(c)
+    if n and #n~=#c then
+      report_lua("preprocessed file %a: %i => %i bytes",fullname,#c,#n)
+    end
+    code,message=load(n or c)
   else
     code,message=loadfile(fullname)
   end
@@ -11533,7 +11704,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-env"] = package.loaded["luat-env"] or true
 
--- original size: 6174, stripped down to: 4141
+-- original size: 5820, stripped down to: 4155
 
  if not modules then modules={} end modules ['luat-env']={
   version=1.001,
@@ -11607,11 +11778,11 @@ local function strippable(filename)
     return false
   end
 end
-function environment.luafilechunk(filename,silent) 
+function environment.luafilechunk(filename,silent,macros) 
   filename=file.replacesuffix(filename,"lua")
   local fullname=environment.luafile(filename)
   if fullname and fullname~="" then
-    local data=luautilities.loadedluacode(fullname,strippable,filename)
+    local data=luautilities.loadedluacode(fullname,strippable,filename,macros)
     if not silent then
       report_lua("loading file %a %s",fullname,not data and "failed" or "succeeded")
     end
@@ -19192,7 +19363,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-use"] = package.loaded["data-use"] or true
 
--- original size: 4007, stripped down to: 3072
+-- original size: 4272, stripped down to: 3289
 
 if not modules then modules={} end modules ['data-use']={
   version=1.001,
@@ -19246,6 +19417,7 @@ function statistics.savefmtstatus(texname,formatbanner,sourcefile,kind,banner)
       formatbanner=formatbanner,
       sourcehash=md5.hex(io.loaddata(resolvers.findfile(sourcefile)) or "unknown"),
       sourcefile=sourcefile,
+      luaversion=LUAVERSION,
     }
     io.savedata(luvname,table.serialize(luvdata,true))
     lua.registerfinalizer(function()
@@ -19269,6 +19441,10 @@ function statistics.checkfmtstatus(texname)
         local luvhash=luv.sourcehash or "?"
         if luvhash~=sourcehash then
           return format("source mismatch (luv: %s <> bin: %s)",luvhash,sourcehash)
+        end
+        local luvluaversion=luv.luaversion or 0
+        if luvluaversion~=LUAVERSION then
+          return format("lua mismatch (luv: %s <> bin: %s)",luvluaversion,LUAVERSION)
         end
       else
         return "invalid status file"
@@ -20801,10 +20977,10 @@ end
 
 end -- of closure
 
--- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
+-- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 858077
--- stripped bytes    : 311857
+-- original bytes    : 865646
+-- stripped bytes    : 315099
 
 -- end library merge
 
@@ -20828,6 +21004,7 @@ local owntree = environment and environment.ownpath or ownpath
 local ownlibs = { -- order can be made better
 
     'l-lua.lua',
+    'l-macro.lua',
     'l-sandbox.lua',
     'l-package.lua',
     'l-lpeg.lua',
