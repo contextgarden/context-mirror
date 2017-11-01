@@ -107,11 +107,10 @@ end
 
 if not math.log10 then
 
-    local ln = math.ln
-    local lt = ln(10)
+    local log = math.log
 
     function math.log10(x)
-        return ln(x) / lt
+        return log(x,10)
     end
 
 end

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 11/01/17 11:55:46
+-- merge date  : 11/01/17 15:59:00
 
 do -- begin closure to overcome local limits and interference
 
@@ -2976,10 +2976,9 @@ if not math.ldexp then
   end
 end
 if not math.log10 then
-  local ln=math.ln
-  local lt=ln(10)
+  local log=math.log
   function math.log10(x)
-    return ln(x)/lt
+    return log(x,10)
   end
 end
 if not math.type then

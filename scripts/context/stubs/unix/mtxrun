@@ -5811,7 +5811,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-math"] = package.loaded["l-math"] or true
 
--- original size: 2576, stripped down to: 1915
+-- original size: 2555, stripped down to: 1900
 
 if not modules then modules={} end modules ['l-math']={
   version=1.001,
@@ -5874,10 +5874,9 @@ if not math.ldexp then
   end
 end
 if not math.log10 then
-  local ln=math.ln
-  local lt=ln(10)
+  local log=math.log
   function math.log10(x)
-    return ln(x)/lt
+    return log(x,10)
   end
 end
 if not math.type then
@@ -20979,8 +20978,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 865646
--- stripped bytes    : 315099
+-- original bytes    : 865625
+-- stripped bytes    : 315093
 
 -- end library merge
 

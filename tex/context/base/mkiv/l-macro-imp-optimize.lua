@@ -13,12 +13,11 @@ if not modules then modules = { } end modules ['l-macro-imp-optimize'] = {
 -- There is no real gain as we hardly use these:
 --
 -- lua.macros.resolvestring [[
---     #define round(a)       ((a+0.5)//1)
---     #define div(a,b)       floor(a/b)
---     #define mod(a,b)       (a % b)
---     #define odd(a)         (a % 2 ~= 0)
---     #define even(a)        (a % 2 == 0)
---     #define pow(x,y)       (x^y)
+--     #define div(a,b) floor(a/b)
+--     #define mod(a,b) (a % b)
+--     #define odd(a)   (a % 2 ~= 0)
+--     #define even(a)  (a % 2 == 0)
+--     #define pow(x,y) (x^y)
 -- ]]
 
 if LUAVERSION >= 5.3 and lua.macros then
