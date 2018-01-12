@@ -1,11 +1,13 @@
+-- luatex-core security and io overloads ...........
+
 -- if not modules then modules = { } end modules ['luatex-core'] = {
---     version   = 1.001,
+--     version   = 1.005,
 --     comment   = 'companion to luatex',
 --     author    = 'Hans Hagen & Luigi Scarso',
 --     copyright = 'LuaTeX Development Team',
 -- }
 
-LUATEXCOREVERSION = 1.003
+LUATEXCOREVERSION = 1.005
 
 -- This file overloads some Lua functions. The readline variants provide the same
 -- functionality as LuaTeX <= 1.04 and doing it this way permits us to keep the
@@ -71,13 +73,38 @@ local function luatex_io_popen(name,...)
     end
 end
 
+-- local function luatex_io_lines(name,how)
+--     if name then
+--         local f = io_open(name,how or 'r')
+--         if f then
+--             return function()
+--                 return fio_readline(f)
+--             end
+--         end
+--     else
+--         return io_lines()
+--     end
+-- end
+
+-- For some reason the gc doesn't kick in so we need to close explitly
+-- so that the handle is flushed.
+
+local error, type = error, type
+
 local function luatex_io_lines(name,how)
-    if name then
+    if type(name) == "string" then
         local f = io_open(name,how or 'r')
         if f then
             return function()
-                return fio_readline(f)
+                local l = fio_readline(f)
+                if not l then
+                    f:close()
+                end
+                return l
             end
+        else
+            -- for those who like it this way:
+            error("patched 'io.lines' can't open '" .. name .. "'")
         end
     else
         return io_lines()
@@ -328,6 +355,17 @@ else
     -- hope for the best or fail
 
     bit32 = require("bit32")
+
+end
+
+-- this is needed for getting require("socket") right
+
+do
+
+    local loaded = package.loaded
+
+    if not loaded.socket then loaded.socket = loaded["socket.core"] end
+    if not loaded.mime   then loaded.mime   = loaded["mime.core"]   end
 
 end
 

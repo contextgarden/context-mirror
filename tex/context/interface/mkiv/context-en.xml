@@ -10078,6 +10078,14 @@
       <cd:constant type="none"/>
       <cd:inherit name="blank"/>
      </cd:parameter>
+     <cd:parameter name="spacebeforeside">
+      <cd:constant type="none"/>
+      <cd:inherit name="blank"/>
+     </cd:parameter>
+     <cd:parameter name="spaceafterside">
+      <cd:constant type="none"/>
+      <cd:inherit name="blank"/>
+     </cd:parameter>
      <cd:parameter name="sidethreshold">
       <cd:constant type="old"/>
       <cd:constant default="yes" type="dimension"/>
@@ -15744,7 +15752,7 @@
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command _error_="category=&quot;fonts&quot; file=&quot;typo-drp.mkiv&quot;" level="style" name="setupinitial">
+  <cd:command category="fonts" file="typo-drp.mkiv" level="style" name="setupinitial">
    <cd:arguments>
     <cd:keywords list="yes" optional="yes">
      <cd:constant type="cd:name"/>
@@ -17105,6 +17113,7 @@
      <cd:constant type="joinedup"/>
      <cd:constant type="serried"/>
      <cd:constant type="stopper"/>
+     <cd:constant type="nostopper"/>
      <cd:constant type="unpacked"/>
      <cd:constant type="repeat"/>
      <cd:constant type="norepeat"/>
@@ -34026,6 +34035,7 @@
       <cd:constant type="no"/>
       <cd:constant type="hidden"/>
       <cd:constant type="empty"/>
+      <cd:constant type="section"/>
      </cd:parameter>
      <cd:parameter name="number">
       <cd:constant default="yes" type="yes"/>
@@ -35808,6 +35818,7 @@
   <cd:command file="supp-box.mkiv" level="system" name="strutht"/>
   <cd:command file="supp-box.mkiv" level="system" name="strutwd"/>
   <cd:command file="supp-box.mkiv" level="system" name="struthtdp"/>
+  <cd:command file="supp-box.mkiv" level="system" name="strutgap"/>
   <cd:command file="spac-ver.mkiv" level="style" name="setupstruts">
    <cd:arguments>
     <cd:keywords optional="yes">

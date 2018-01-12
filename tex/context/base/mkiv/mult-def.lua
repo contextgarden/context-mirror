@@ -6589,6 +6589,18 @@ return {
    ["pe"]="حرف‌تنظیم",
    ["ro"]="aliniazacaracter",
   },
+  ["alignmentleftwidth"]={
+   ["en"]="alignmentleftwidth",
+  },
+  ["alignmentrightwidth"]={
+   ["en"]="alignmentrightwidth",
+  },
+  ["alignmentleftsample"]={
+   ["en"]="alignmentleftsample",
+  },
+  ["alignmentrightsample"]={
+   ["en"]="alignmentrightsample",
+  },
   ["alignmentcharacter"]={
    ["cs"]="alignmentcharacter",
    ["de"]="alignmentcharacter",
@@ -9271,6 +9283,11 @@ return {
   },
   ["note"]={
    ["en"]="note",
+   ["nl"]="noot",
+  },
+  ["notes"]={
+   ["en"]="notes",
+   ["nl"]="noten",
   },
   ["nr"]={
    ["cs"]="nr",
@@ -10278,6 +10295,12 @@ return {
    ["pe"]="همان‌صفحه",
    ["ro"]="aceeasipagina",
   },
+  ["leftsample"]={
+   ["en"]="leftsample",
+  },
+  ["rightsample"]={
+   ["en"]="rightsample",
+  },
   ["sample"]={
    ["cs"]="vzor",
    ["de"]="muster",
@@ -10456,6 +10479,14 @@ return {
    ["nl"]="zijvoorwit",
    ["pe"]="فضای‌کناری‌قبل",
    ["ro"]="spatiulateralinainte",
+  },
+  ["spaceafterside"]={
+   ["en"]="spaceafterside",
+   ["nl"]="witnazij",
+  },
+  ["spacebeforeside"]={
+   ["en"]="spacebeforeside",
+   ["nl"]="witvoorzij",
   },
   ["sign"]={
    ["cs"]="znak",
@@ -10719,6 +10750,14 @@ return {
    ["nl"]="strut",
    ["pe"]="بست",
    ["ro"]="strut",
+  },
+  ["numberstrut"]={
+   ["en"]="numberstrut",
+   ["nl"]="nummerstrut",
+  },
+  ["titlestrut"]={
+   ["en"]="titlestrut",
+   ["nl"]="titelstrut",
   },
   ["style"]={
    ["cs"]="pismeno",
@@ -16366,6 +16405,10 @@ return {
    ["nl"]="afsluiter",
    ["pe"]="ایست",
    ["ro"]="stopper",
+  },
+  ["nostopper"]={
+   ["en"]="nostopper",
+   ["nl"]="geenafsluiter",
   },
   ["stretch"]={
    ["cs"]="natahnout",

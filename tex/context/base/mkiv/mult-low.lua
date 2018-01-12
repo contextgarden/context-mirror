@@ -244,6 +244,7 @@ return {
         "doifelsenextoptional", "doifnextoptionalelse",
         "doifelsenextoptionalcs", "doifnextoptionalcselse",
         "doifelsefastoptionalcheck", "doiffastoptionalcheckelse",
+        "doifelsefastoptionalcheckcs", "doiffastoptionalcheckcselse",
         "doifelsenextbgroup", "doifnextbgroupelse",
         "doifelsenextbgroupcs", "doifnextbgroupcselse",
         "doifelsenextparenthesis", "doifnextparenthesiselse",
@@ -341,7 +342,7 @@ return {
         --
         "offinterlineskip", "oninterlineskip", "nointerlineskip",
         --
-        "strut", "halfstrut", "quarterstrut", "depthstrut", "halflinestrut", "noheightstrut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "struthtdp", "begstrut", "endstrut", "lineheight",
+        "strut", "halfstrut", "quarterstrut", "depthstrut", "halflinestrut", "noheightstrut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "struthtdp", "strutgap", "begstrut", "endstrut", "lineheight",
         "leftboundary", "rightboundary", "signalcharacter",
         --
         "ordordspacing", "ordopspacing", "ordbinspacing", "ordrelspacing",

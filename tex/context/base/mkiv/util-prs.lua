@@ -566,14 +566,16 @@ function parsers.rfc4180splitter(specification)
     local field       = escaped + non_escaped + Cc("")
     local record      = Ct(field * (separator * field)^1)
     local headerline  = record * Cp()
-    local wholeblob   = Ct((newline^(specification.strict and -1 or 1) * record)^0)
+    local morerecords = (newline^(specification.strict and -1 or 1) * record)^0
+    local headeryes   = Ct(morerecords)
+    local headernop   = Ct(record * morerecords)
     return function(data,getheader)
         if getheader then
             local header, position = lpegmatch(headerline,data)
-            local data = lpegmatch(wholeblob,data,position)
+            local data = lpegmatch(headeryes,data,position)
             return data, header
         else
-            return lpegmatch(wholeblob,data)
+            return lpegmatch(headernop,data)
         end
     end
 end
@@ -604,10 +606,10 @@ local cardinal    = lpegpatterns.cardinal / tonumber
 local spacers     = lpegpatterns.spacer^0
 local endofstring = lpegpatterns.endofstring
 
-local stepper  = spacers * ( C(cardinal) * ( spacers * S(":-") * spacers * ( C(cardinal) + Cc(true) ) + Cc(false) )
+local stepper  = spacers * ( cardinal * ( spacers * S(":-") * spacers * ( cardinal + Cc(true) ) + Cc(false) )
                * Carg(1) * Carg(2) / ranger * S(", ")^0 )^1
 
-local stepper  = spacers * ( C(cardinal) * ( spacers * S(":-") * spacers * ( C(cardinal) + (P("*") + endofstring) * Cc(true) ) + Cc(false) )
+local stepper  = spacers * ( cardinal * ( spacers * S(":-") * spacers * ( cardinal + (P("*") + endofstring) * Cc(true) ) + Cc(false) )
                * Carg(1) * Carg(2) / ranger * S(", ")^0 )^1 * endofstring -- we're sort of strict (could do without endofstring)
 
 function parsers.stepper(str,n,action)

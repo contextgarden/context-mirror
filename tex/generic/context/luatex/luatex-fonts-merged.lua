@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 11/22/17 13:35:39
+-- merge date  : 01/08/18 23:03:13
 
 do -- begin closure to overcome local limits and interference
 
@@ -11,6 +11,7 @@ if not modules then modules={} end modules ['l-lua']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
+local next,type,tonumber=next,type,tonumber
 LUAMAJORVERSION,LUAMINORVERSION=string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$")
 LUAMAJORVERSION=tonumber(LUAMAJORVERSION) or 5
 LUAMINORVERSION=tonumber(LUAMINORVERSION) or 1
@@ -3648,6 +3649,25 @@ function unicode.toutf32string(n)
       char(extract(n,0,8))..char(extract(n,8,8))..char(extract(n,16,8))..char(extract(n,24,8))
   end
 end
+local len=utf.len
+local rep=rep
+function string.utfpadd(s,n)
+  if n and n~=0 then
+    local l=len(s)
+    if n>0 then
+      local d=n-l
+      if d>0 then
+        return rep(c or " ",d)..s
+      end
+    else
+      local d=- n-l
+      if d>0 then
+        return s..rep(c or " ",d)
+      end
+    end
+  end
+  return s
+end
 
 end -- closure
 
@@ -3665,11 +3685,11 @@ utilities.strings=utilities.strings or {}
 local strings=utilities.strings
 local format,gsub,rep,sub,find=string.format,string.gsub,string.rep,string.sub,string.find
 local load,dump=load,string.dump
-local tonumber,type,tostring=tonumber,type,tostring
+local tonumber,type,tostring,next=tonumber,type,tostring,next
 local unpack,concat=table.unpack,table.concat
 local P,V,C,S,R,Ct,Cs,Cp,Carg,Cc=lpeg.P,lpeg.V,lpeg.C,lpeg.S,lpeg.R,lpeg.Ct,lpeg.Cs,lpeg.Cp,lpeg.Carg,lpeg.Cc
 local patterns,lpegmatch=lpeg.patterns,lpeg.match
-local utfchar,utfbyte=utf.char,utf.byte
+local utfchar,utfbyte,utflen=utf.char,utf.byte,utf.len
 local loadstripped=nil
 if LUAVERSION<5.2 then
   loadstripped=function(str,shortcuts)
@@ -3758,6 +3778,17 @@ local pattern=Carg(1)/function(t)
  )^1)
 function strings.tabtospace(str,tab)
   return lpegmatch(pattern,str,1,tab or 7)
+end
+function string.utfpadding(s,n)
+  if not n or n==0 then
+    return ""
+  end
+  local l=utflen(s)
+  if n>0 then
+    return nspaces[n-l]
+  else
+    return nspaces[-n-l]
+  end
 end
 local space=spacer^0
 local nospace=space/""
@@ -3947,6 +3978,7 @@ local utfchar=utf.char
 local utfbyte=utf.byte
 local lpegmatch=lpeg.match
 local nspaces=string.nspaces
+local utfpadding=string.utfpadding
 local tracedchar=string.tracedchar
 local autosingle=string.autosingle
 local autodouble=string.autodouble
@@ -3971,6 +4003,7 @@ else
     utfbyte=utf.byte,
     lpegmatch=lpeg.match,
     nspaces=string.nspaces,
+    utfpadding=string.utfpadding,
     tracedchar=string.tracedchar,
     autosingle=string.autosingle,
     autodouble=string.autodouble,
@@ -4004,6 +4037,29 @@ local format_S=function(f)
     return format("format('%%%ss',tostring(a%s))",f,n)
   else
     return format("tostring(a%s)",n)
+  end
+end
+local format_right=function(f)
+  n=n+1
+  f=tonumber(f)
+  if not f or f==0 then
+    return format("(a%s or '')",n)
+  elseif f>0 then
+    return format("utfpadding(a%s,%i)..a%s",n,f,n)
+  else
+    return format("a%s..utfpadding(a%s,%i)",n,n,f)
+  end
+end
+local format_left=function(f)
+  n=n+1
+  f=tonumber(f)
+  if not f or f==0 then
+    return format("(a%s or '')",n)
+  end
+  if f<0 then
+    return format("utfpadding(a%s,%i)..a%s",n,-f,n)
+  else
+    return format("a%s..utfpadding(a%s,%i)",n,n,-f)
   end
 end
 local format_q=function()
@@ -4260,6 +4316,8 @@ local builder=Cs { "start",
 +V("j")+V("J") 
 +V("m")+V("M") 
 +V("z")
++V(">") 
++V("<")
       )+V("*")
     )*(P(-1)+Carg(1))
   )^0,
@@ -4303,6 +4361,8 @@ local builder=Cs { "start",
   ["z"]=(prefix_any*P("z"))/format_z,
   ["a"]=(prefix_any*P("a"))/format_a,
   ["A"]=(prefix_any*P("A"))/format_A,
+  ["<"]=(prefix_any*P("<"))/format_left,
+  [">"]=(prefix_any*P(">"))/format_right,
   ["*"]=Cs(((1-P("%"))^1+P("%%")/"%%")^1)/format_rest,
   ["?"]=Cs(((1-P("%"))^1        )^1)/format_rest,
   ["!"]=Carg(2)*prefix_any*P("!")*C((1-P("!"))^1)*P("!")/format_extension,
@@ -7714,6 +7774,7 @@ local sortedkeys,sortedhash,serialize,fastcopy=table.sortedkeys,table.sortedhash
 local derivetable=table.derive
 local ioflush=io.flush
 local round=math.round
+local setmetatable,getmetatable,rawget,rawset=setmetatable,getmetatable,rawget,rawset
 local trace_defining=false trackers.register("fonts.defining",function(v) trace_defining=v end)
 local trace_scaling=false trackers.register("fonts.scaling",function(v) trace_scaling=v end)
 local report_defining=logs.reporter("fonts","defining")
@@ -7841,27 +7902,62 @@ function constructors.trytosharefont(target,tfmdata)
     end
   end
 end
+local synonyms={
+  exheight="x_height",
+  xheight="x_height",
+  ex="x_height",
+  emwidth="quad",
+  em="quad",
+  spacestretch="space_stretch",
+  stretch="space_stretch",
+  spaceshrink="space_shrink",
+  shrink="space_shrink",
+  extraspace="extra_space",
+  xspace="extra_space",
+  slantperpoint="slant",
+}
 function constructors.enhanceparameters(parameters)
-  local xheight=parameters.x_height
-  local quad=parameters.quad
-  local space=parameters.space
-  local stretch=parameters.space_stretch
-  local shrink=parameters.space_shrink
-  local extra=parameters.extra_space
-  local slant=parameters.slant
-  parameters.xheight=xheight
-  parameters.spacestretch=stretch
-  parameters.spaceshrink=shrink
-  parameters.extraspace=extra
-  parameters.em=quad
-  parameters.ex=xheight
-  parameters.slantperpoint=slant
-  parameters.spacing={
-    width=space,
-    stretch=stretch,
-    shrink=shrink,
-    extra=extra,
-  }
+  local mt=getmetatable(parameters)
+  local getter=function(t,k)
+    if not k then
+      return nil
+    end
+    local s=synonyms[k]
+    if s then
+      return rawget(t,s) or (mt and mt[s]) or nil
+    end
+    if k=="spacing" then
+      return {
+        width=t.space,
+        stretch=t.space_stretch,
+        shrink=t.space_shrink,
+        extra=t.extra_space,
+      }
+    end
+    return mt and mt[k] or nil
+  end
+  local setter=function(t,k,v)
+    if not k then
+      return 0
+    end
+    local s=synonyms[k]
+    if s then
+      rawset(t,s,v)
+    elseif k=="spacing" then
+      if type(v)=="table" then
+        rawset(t,"space",v.width or 0)
+        rawset(t,"space_stretch",v.stretch or 0)
+        rawset(t,"space_shrink",v.shrink or 0)
+        rawset(t,"extra_space",v.extra or 0)
+      end
+    else
+      rawset(t,k,v)
+    end
+  end
+  setmetatable(parameters,{
+    __index=getter,
+    __newindex=setter,
+  })
 end
 local function mathkerns(v,vdelta)
   local k={}
@@ -22959,7 +23055,6 @@ local trace_directions=false registertracker("otf.directions",function(v) trace_
 local trace_plugins=false registertracker("otf.plugins",function(v) trace_plugins=v end)
 local trace_chains=false registertracker("otf.chains",function(v) trace_chains=v end)
 local trace_kernruns=false registertracker("otf.kernruns",function(v) trace_kernruns=v end)
-local trace_discruns=false registertracker("otf.discruns",function(v) trace_discruns=v end)
 local trace_compruns=false registertracker("otf.compruns",function(v) trace_compruns=v end)
 local trace_testruns=false registertracker("otf.testruns",function(v) trace_testruns=v end)
 local forcediscretionaries=false
@@ -25154,7 +25249,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                     end
                   else
                     notmatchreplace[current]=true
-                    if not notmatchpre[current] then
+                    if notmatchpre[current] then
                       goto next
                     else
                       break
@@ -25869,9 +25964,14 @@ local function txtdirstate(start,stack,top,rlparmode)
     top=top+1
     stack[top]=dir
   elseif dir=="-TRT" or dir=="-TLT" then
-    top=top-1
-    if stack[top]=="+TRT" then
-      new=-1
+    if top==1 then
+      top=0
+      new=rlparmode
+    else
+      top=top-1
+      if stack[top]=="+TRT" then
+        new=-1
+      end
     end
   else
     new=rlparmode
@@ -28539,8 +28639,12 @@ local function convert(t,k)
   t[k]=v
   return v
 end
-local start={ "pdf","page","q" }
-local stop={ "pdf","raw","Q" }
+local start={ "pdf","mode","font" }
+local push={ "pdf","page","q" }
+local pop={ "pdf","page","Q" }
+if not LUATEXFUNCTIONALITY or LUATEXFUNCTIONALITY<6472 then
+  start={ "nop" }
+end
 local function initializecolr(tfmdata,kind,value) 
   if value then
     local resources=tfmdata.resources
@@ -28589,14 +28693,20 @@ local function initializecolr(tfmdata,kind,value)
             local goback=w~=0 and widths[w] or nil 
             local t={
               start,
-              not u and actualb or { "pdf","raw",getactualtext(tounicode(u)) }
+              not u and actualb or { "pdf","page",(getactualtext(tounicode(u))) }
             }
             local n=2
             local l=nil
+            local f=false
             for i=1,s do
               local entry=colorlist[i]
               local v=colorvalues[entry.class] or default
               if v and l~=v then
+                if f then
+                  n=n+1 t[n]=pop
+                end
+                n=n+1 t[n]=push
+                f=true
                 n=n+1 t[n]=v
                 l=v
               end
@@ -28605,8 +28715,10 @@ local function initializecolr(tfmdata,kind,value)
                 n=n+1 t[n]=goback
               end
             end
+            if f then
+              n=n+1 t[n]=pop
+            end
             n=n+1 t[n]=actuale
-            n=n+1 t[n]=stop
             character.commands=t
           end
         end
@@ -28654,6 +28766,9 @@ local function pdftovirtual(tfmdata,pdfshapes,kind)
   }
   local getactualtext=otf.getactualtext
   local storepdfdata=otf.storepdfdata
+  local b,e=getactualtext(tounicode(0xFFFD))
+  local actualb={ "pdf","page",b } 
+  local actuale={ "pdf","page",e }
   for unicode,character in sortedhash(characters) do 
     local index=character.index
     if index then
@@ -28674,16 +28789,16 @@ local function pdftovirtual(tfmdata,pdfshapes,kind)
       if data then
         local setcode,name,nilcode=storepdfdata(data)
         if name then
-          local bt,et=getactualtext(unicode)
+          local bt=unicode and getactualtext(unicode)
           local wd=character.width or 0
           local ht=character.height or 0
           local dp=character.depth or 0
           character.commands={
-            { "pdf","direct",bt },
+            not unicode and actualb or { "pdf","page",(getactualtext(unicode)) },
             { "down",dp+dy*hfactor },
             { "right",dx*hfactor },
             { "image",{ filename=name,width=wd,height=ht,depth=dp } },
-            { "pdf","direct",et },
+            actuale,
           }
           character[kind]=true
         end
@@ -34436,6 +34551,7 @@ if context then
   texio.write_nl("fatal error: this module is not for context")
   os.exit()
 end
+local next=next
 local fonts=fonts
 local nodes=nodes
 local nuts=nodes.nuts 

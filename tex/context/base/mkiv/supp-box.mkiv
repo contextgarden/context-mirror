@@ -79,6 +79,7 @@
 \def\strutht  {\ht\strutbox}
 \def\strutwd  {\wd\strutbox}
 \def\struthtdp{\dimexpr\ht\strutbox+\dp\strutbox\relax}
+\def\strutgap {\dimexpr\ht\strutbox-\dp\strutbox\relax}
 
 %D \macros
 %D   {voidbox,nextbox}
@@ -2668,7 +2669,7 @@
 %D A funny (but rather stupid) one, plus a redefinition.
 
 \unexpanded\def\removebottomthings
-  {\dorecurse5{\unskip\unkern\unpenalty}}
+  {\dorecurse\plusfive{\unskip\unkern\unpenalty}}
 
 \unexpanded\def\removelastskip % \ifvmode the plain tex one \fi
   {\ifvmode\ifzeropt\lastskip\else\vskip-\lastskip\fi\fi}

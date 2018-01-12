@@ -128,7 +128,7 @@ function xtables.create(settings)
     local widths         = { }
     local heights        = { }
     local depths         = { }
-    local spans          = { }
+ -- local spans          = { }
     local distances      = { }
     local autowidths     = { }
     local modes          = { }
@@ -143,7 +143,7 @@ function xtables.create(settings)
         widths         = widths,
         heights        = heights,
         depths         = depths,
-        spans          = spans,
+     -- spans          = spans,
         distances      = distances,
         modes          = modes,
         autowidths     = autowidths,
@@ -250,8 +250,23 @@ function xtables.set_reflow_width()
     local c = data.currentcolumn
     local rows = data.rows
     local row = rows[r]
+    local cold = c
     while row[c].span do -- can also be previous row ones
         c = c + 1
+    end
+    -- bah, we can have a span already
+    if c > cold then
+        local ro = row[cold]
+        local rx = ro.nx
+        local ry = ro.ny
+        if rx > 1 or ry > 1 then
+            local rn = row[c]
+            rn.nx = rx
+            rn.ny = ry
+            ro.nx = 1 -- or 0
+            ro.ny = 1 -- or 0
+            -- do we also need to set ro.span and rn.span
+        end
     end
     local tb = getbox("b_tabl_x")
     local drc = row[c]
@@ -290,6 +305,8 @@ function xtables.set_reflow_width()
  --     end
  -- end
     if drc.ny < 2 then
+     -- report_xtable("set width, old: ht=%p, dp=%p",heights[r],depths[r])
+     -- report_xtable("set width, new: ht=%p, dp=%p",height,depth)
         if height > heights[r] then
             heights[r] = height
         end
@@ -306,11 +323,11 @@ function xtables.set_reflow_width()
     local fixedcolumns = data.fixedcolumns
     local fixedrows = data.fixedrows
     if dimensionstate == 1 then
-    if cspan > 1 then
-        -- ignore width
-    elseif width > fixedcolumns[c] then -- how about a span here?
-        fixedcolumns[c] = width
-    end
+        if cspan > 1 then
+            -- ignore width
+        elseif width > fixedcolumns[c] then -- how about a span here?
+            fixedcolumns[c] = width
+        end
     elseif dimensionstate == 2 then
         fixedrows[r]    = height
     elseif dimensionstate == 3 then
@@ -360,7 +377,7 @@ function xtables.set_reflow_width()
     --
     local nx, ny = drc.nx, drc.ny
     if nx > 1 or ny > 1 then
-        local spans = data.spans
+     -- local spans = data.spans -- not used
         local self = true
         for y=1,ny do
             for x=1,nx do
@@ -369,9 +386,9 @@ function xtables.set_reflow_width()
                 else
                     local ry = r + y - 1
                     local cx = c + x - 1
-                    if y > 1 then
-                        spans[ry] = true
-                    end
+                 -- if y > 1 then
+                 --     spans[ry] = true -- not used
+                 -- end
                     rows[ry][cx].span = true
                 end
             end
@@ -432,13 +449,17 @@ function xtables.set_reflow_height()
     --
     if drc.ny < 2 then
         if data.fixedrows[r] == 0 then --  and drc.dimensionstate < 2
-            local heights = data.heights
-            local depths  = data.depths
-            if height > heights[r] then
-                heights[r] = height
-            end
-            if depth > depths[r] then
-                depths[r] = depth
+            if drc.ht + drc.dp <= height + depth then -- new per 2017-12-15
+                local heights = data.heights
+                local depths  = data.depths
+             -- report_xtable("set height, old: ht=%p, dp=%p",heights[r],depths[r])
+             -- report_xtable("set height, new: ht=%p, dp=%p",height,depth)
+                if height > heights[r] then
+                    heights[r] = height
+                end
+                if depth > depths[r] then
+                    depths[r] = depth
+                end
             end
         end
     end
@@ -471,7 +492,7 @@ function xtables.initialize_construct()
     --
     local width  = widths[c]
     local height = heights[r]
-    local depth  = depths[r]
+    local depth  = depths[r] -- problem: can be the depth of a one liner
     --
     for x=1,drc.nx-1 do
         width = width + widths[c+x]
@@ -518,7 +539,6 @@ function xtables.reflow_width()
     local nofrows = data.nofrows
     local nofcolumns = data.nofcolumns
     local rows = data.rows
--- inspect(rows)
     for r=1,nofrows do
         local row = rows[r]
         for c=1,nofcolumns do
@@ -550,8 +570,7 @@ function xtables.reflow_width()
         showwidths("stage 1",widths,autowidths)
     end
     local noffrozen = 0
--- here we can also check spans
- -- inspect(data.fixedcspans)
+    -- here we can also check spans
     if options[v_max] then
         for c=1,nofcolumns do
             width = width + widths[c]
@@ -676,8 +695,6 @@ function xtables.reflow_width()
     --
     data.currentrow = 0
     data.currentcolumn = 0
-    --
---     inspect(data)
 end
 
 function xtables.reflow_height()
@@ -738,8 +755,6 @@ function xtables.reflow_height()
             end
         end
     end
-    --
---     inspect(data)
 end
 
 local function showspans(data)
@@ -769,7 +784,7 @@ function xtables.construct()
     local heights = data.heights
     local depths = data.depths
     local widths = data.widths
-    local spans = data.spans
+ -- local spans = data.spans
     local distances = data.distances
     local modes = data.modes
     local settings = data.settings
@@ -1171,7 +1186,6 @@ function xtables.cleanup()
     --     end
     -- end
     -- data.result = nil
-    -- inspect(data)
 
     data = table.remove(stack)
 end

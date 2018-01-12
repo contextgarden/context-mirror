@@ -18,6 +18,9 @@ if not modules then modules = { } end modules ['l-unicode'] = {
 -- todo: utf.sub replacement (used in syst-aux)
 -- we put these in the utf namespace:
 
+-- used     : byte char gmatch len lower sub upper
+-- not used : dump find format gfind gsub match rep reverse
+
 utf = utf or (unicode and unicode.utf8) or { }
 
 utf.characters = utf.characters or string.utfcharacters
@@ -1309,4 +1312,27 @@ function unicode.toutf32string(n)
             char(extract(n,16,8)) ..
             char(extract(n,24,8))
     end
+end
+
+-- goodie:
+
+local len = utf.len
+local rep = rep
+
+function string.utfpadd(s,n)
+    if n and n ~= 0 then
+        local l = len(s)
+        if n > 0 then
+            local d = n - l
+            if d > 0 then
+                return rep(c or " ",d) .. s
+            end
+        else
+            local d = - n - l
+            if d > 0 then
+                return s .. rep(c or " ",d)
+            end
+        end
+    end
+    return s
 end

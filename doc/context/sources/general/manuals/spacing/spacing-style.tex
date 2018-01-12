@@ -1,5 +1,7 @@
 \startenvironment spacing-style
 
+\usemodule[abr-03]
+
 \setupbodyfont
   [pagella]
 
@@ -51,5 +53,12 @@
   [section]
   [style=\bfc,
    color=maincolor]
+
+\setuphead
+  [subsubsection]
+  [style=bold,
+   color=maincolor,
+   before=\blank,
+   after=\blank]
 
 \stopenvironment
