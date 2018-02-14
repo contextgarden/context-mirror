@@ -513,18 +513,32 @@
         \setugvalue{#name}{\switchtotypeface[#name][#style]}%
       \fi}}
 
+% \def\font_typefaces_defining_start#name#style#settings%
+%   {\let\@@tsrscale    \!!plusone % as we push/pop
+%    \let\@@tsfeatures  \empty
+%    \let\@@tsfallbacks \empty
+%    \let\@@tsgoodies   \empty
+%    \let\@@tsdirection \empty
+%    \let\@@tsdesignsize\empty
+%    \geteparameters[\??ts][#settings]% todo raw
+%    \pushmacro\fontclass
+%    \pushmacro\fontclassstyle
+%    \setcurrentfontclass{#name}%
+%    \savefontclassparameters{#style}\@@tsrscale\@@tsfeatures\@@tsfallbacks\@@tsgoodies\@@tsdesignsize\@@tsdirection
+%    \the\everybeforedefinetypeface}
+
 \def\font_typefaces_defining_start#name#style#settings%
-  {\let\@@tsrscale    \!!plusone % as we push/pop
-   \let\@@tsfeatures  \empty
-   \let\@@tsfallbacks \empty
-   \let\@@tsgoodies   \empty
-   \let\@@tsdirection \empty
-   \let\@@tsdesignsize\empty
+  {\let\p_rscale    \!!plusone % as we push/pop
+   \let\p_features  \empty
+   \let\p_fallbacks \empty
+   \let\p_goodies   \empty
+   \let\p_direction \empty
+   \let\p_designsize\empty
    \geteparameters[\??ts][#settings]% todo raw
    \pushmacro\fontclass
    \pushmacro\fontclassstyle
    \setcurrentfontclass{#name}%
-   \savefontclassparameters{#style}\@@tsrscale\@@tsfeatures\@@tsfallbacks\@@tsgoodies\@@tsdesignsize\@@tsdirection
+   \savefontclassparameters{#style}\p_rscale\p_features\p_fallbacks\p_goodies\p_designsize\p_direction
    \the\everybeforedefinetypeface}
 
 \def\tsvar#key#default% undocumented and unofficial

@@ -1,0 +1,239 @@
+% language=uk
+
+% \showglyphs
+
+\dontcomplain
+
+\startbuffer[preamble-fonts]
+\definefontfallback
+  [Serif] [scheherazaderegular*arabic sa 1.5]
+  [arabic] [force=yes]
+\definefontfallback
+  [SerifBold] [scheherazadebold*arabic sa 1.5]
+  [arabic] [force=yes]
+\definefontfallback
+  [SerifItalic] [scheherazaderegular*arabic sa 1.5]
+  [arabic] [force=yes]
+\definefontfallback
+  [SerifBoldItalic] [scheherazadebold*arabic sa 1.5]
+  [arabic] [force=yes]
+
+\definefontfallback
+  [Serif] [sileot*hebrew sa 1.0]
+  [hebrew] [force=yes]
+\definefontfallback
+  [SerifBold] [sileot*hebrew sa 1.0]
+  [hebrew] [force=yes]
+\definefontfallback
+  [SerifItalic] [sileot*hebrew sa 1.0]
+  [hebrew] [force=yes]
+\definefontfallback
+  [SerifBoldItalic] [sileot*hebrew sa 1.0]
+  [hebrew] [force=yes]
+
+\definefontfeature[fakemono][mode=node,fakemono=yes]
+
+% \definefontfallback
+%   [Mono] [scheherazaderegular*fakemono sa 1.5]
+%   [arabic] [force=yes,factor=1] % factor forces a monospace
+
+\definefontfallback
+  [Mono] [sileot*fakemono sa 1.0]
+  [hebrew] [force=yes,factor=1] % factor forces a monospace
+
+\setupbodyfont
+  [dejavu,10pt]
+\stopbuffer
+
+\startbuffer[preamble-languages]
+\setuplanguage[ar][font=arabic,bidi=right]
+\setuplanguage[he][font=hebrew,bidi=right]
+\stopbuffer
+
+\getbuffer[preamble-fonts]
+\getbuffer[preamble-languages]
+
+\setuplayout
+  [backspace=15mm,
+   topspace=15mm,
+   footer=0pt,
+   width=middle,
+   height=middle]
+
+\setuptyping
+  [color=middleblue]
+
+\setuptype
+  [color=middleblue]
+
+\definecolor
+  [maincolor]
+  [middleblue]
+
+\setupwhitespace
+  [big]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\startluacode
+    local report = logs.reporter("directions","check")
+    local line   = 0
+    function nodes.tracers.checkdirections(head)
+        line = line + 1
+        report("line: %i",line)
+        for n in nodes.traverse_id(nodes.nodecodes.dir,head) do
+            report("  %s (%i,%i)",n.dir,n.subtype,n.direction)
+        end
+        return head, false
+    end
+
+    nodes.tasks.appendaction("contributers","after","nodes.tracers.checkdirections")
+    nodes.tasks.disableaction("contributers","nodes.tracers.checkdirections")
+\stopluacode
+
+\installtextracker
+   {directions.check}
+   {\ctxlua{nodes.tasks.enableaction("contributers","nodes.tracers.checkdirections")}}
+   {\ctxlua{nodes.tasks.disableaction("contributers","nodes.tracers.checkdirections")}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\starttext
+
+\startMPpage
+
+    picture p, q, r, s ;
+
+    p := textext("l2r") xsized .9PaperWidth ;
+    q := textext("r2l") xsized .9PaperWidth ;
+    r := textext("a few tips") xsized .9PaperWidth ;
+    s := textext("hans\quad\quad hagen") xsized .5bbheight(p);
+
+    p := p shifted - llcorner p ;
+    q := q shifted - llcorner q ;
+    r := r shifted - llcorner r ;
+    s := s shifted - llcorner s ;
+
+    fill Page withcolor "darkyellow" ;
+
+    p := p shifted (.05PaperWidth,ypart .5[ulcorner Page, urcorner Page]-1.1bbheight(p)) ;
+    q := q shifted (.05PaperWidth,ypart .5[ulcorner Page, urcorner Page]-1.1bbheight(p)-1.15bbheight(q)) ;
+    r := r shifted (.05PaperWidth,ypart .5[llcorner Page, lrcorner Page]+0.3bbheight(r)) ;
+    s := s shifted (.66PaperWidth,ypart .5[llcorner Page, lrcorner Page]+1.5bbheight(s)) ;
+
+    draw p withcolor "lightgray" ;
+    draw q withcolor "lightgray" ;
+    draw r withcolor "middleblue" ;
+    draw s withcolor "middleblue" ;
+
+\stopMPpage
+
+\startchapter[title=Introduction]
+
+With \CONTEXT\ you can typeset in two directions: from left to right and from
+right to left. In fact you can also combine these two directions, like this:
+
+\startbuffer
+There are many {\righttoleft \maincolor \bf scripts in use} and some run into the
+other direction. However, there is {\righttoleft \maincolor \bf no fixed relation
+{\lefttoright \black \tf between the} direction of the script} and cars being
+driven left or right of the road.
+\stopbuffer
+
+\typebuffer
+
+% \enabletrackers[directions.check]
+
+\getbuffer
+
+% \disabletrackers[directions.check]
+
+This manual is written by a left to right user so don't expect a manual on
+semitic typesetting (Hebrew and Arabic). Also don't expect a (yet) complete
+manual. I'll add whatever comes to mind. So let's see how Arabic comes out:
+
+\startbuffer
+The sentence \quotation {I have no clue what this means.} is translated (by
+Google Translate) into \quotation {\ar \righttoleft ليس لدي أي فكرة عما يعنيه هذا.}
+which is then translated back to \quotation {I have no idea what this means.} so
+maybe arabic has no clue what a clue is. The suggested Arabic pronunciation is
+\quotation {\ar lays laday 'ayu fikrat eamaa yaenih hadha}. Hebrew also likes ideas
+more: \quotation {\hr \righttoleft אין לי מושג מה זה אומר}.
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+The \CONTEXT\ (or any \TEX) ecosystem deals with languages and fonts. Languages
+(that relate to scripts) have specific characteristics, like running from right
+to left, and fonts provide a repertoire of glyphs and features. There is no real
+(standard) relationship between these. In for instance browsers, there are
+automatic fallback systems for missing characters in a font: another font is
+taken. These fallbacks are often not easy to tweak.
+
+In this document we use Dejavu and although that font has Arabic shapes in its
+monospace variant, the serifs come without them (at least when I write this
+down). Before we actually define the bodyfont we hook in some fallbacks. The
+typescript for Dejavu has lines like this:
+
+\starttyping
+\definefontsynonym
+  [SerifBoldItalic]
+  [name:dejavuserifbolditalic]
+  [features=default,
+   fallbacks=SerifBoldItalic]
+\stoptyping
+
+This permits us to do this:
+
+\typebuffer[preamble-fonts]
+
+In addition we set up the languages:
+
+\typebuffer[preamble-languages]
+
+The following example demonstrates what the effects of these commands are:
+
+\startbuffer
+{ليس لدي أي فكرة عما يعنيه هذا.}
+{אין לי מושג מה זה אומר.}
+{\righttoleft ليس لدي أي فكرة عما يعنيه هذا.}
+{\righttoleft אין לי מושג מה זה אומר.}
+{\ar \righttoleft ليس لدي أي فكرة عما يعنيه هذا.}
+{\he \righttoleft אין לי מושג מה זה אומר.}
+{\ar ليس لدي أي فكرة عما يعنيه هذا.}
+{\he אין לי מושג מה זה אומר.}
+\stopbuffer
+
+\typebuffer
+
+\startlines
+\getbuffer
+\stoplines
+
+In principle you can also rely on automatic direction changes, for instance
+by using the following command:
+
+\starttyping
+\setupdirections
+  [bidi=global,
+   method=three]
+\stoptyping
+
+But that doesn't do a font switch for you, nor does it do any of the other
+language related settings. It really helps if you properly tag your
+document content, as in:
+
+\starttyping
+{\ar ليس لدي أي فكرة عما يعنيه هذا.}
+{\he אין לי מושג מה זה אומר.}
+\stoptyping
+
+One reason to set the \type {font} parameter for a language is that it will
+activate the right features in a font. Instead of falling back on some default,
+we can be very specific in what we want to enable.
+
+\stopchapter
+
+\stoptext

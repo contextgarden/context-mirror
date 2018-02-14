@@ -129,9 +129,9 @@ return {
         "breakablethinspace", "nobreakspace", "nonbreakablespace", "narrownobreakspace", "zerowidthnobreakspace",
         "ideographicspace", "ideographichalffillspace",
         "twoperemspace", "threeperemspace", "fourperemspace", "fiveperemspace", "sixperemspace",
-        "figurespace", "punctuationspace", "hairspace",
+        "figurespace", "punctuationspace", "hairspace", "enquad", "emquad",
         "zerowidthspace", "zerowidthnonjoiner", "zerowidthjoiner", "zwnj", "zwj",
-        "optionalspace", "asciispacechar",
+        "optionalspace", "asciispacechar", "softhyphen",
         --
         "Ux", "eUx", "Umathaccents",
         --
@@ -416,6 +416,7 @@ return {
         "autodirhbox", "autodirvbox", "autodirvtop",
         "leftorrighthbox", "leftorrightvbox", "leftorrightvtop",
         "lefttoright", "righttoleft","synchronizelayoutdirection","synchronizedisplaydirection","synchronizeinlinedirection",
+        "checkedlefttoright", "checkedrighttoleft",
         --
         "lesshyphens", "morehyphens", "nohyphens", "dohyphens",
         --
