@@ -15,6 +15,7 @@ local formatters        = string.formatters
 local sortedkeys        = table.sortedkeys
 local sortedhash        = table.sortedhash
 local tohash            = table.tohash
+local setmetatableindex = table.setmetatableindex
 
 local report            = logs.reporter("otf reader")
 
@@ -29,8 +30,8 @@ local f_index           = formatters["I%05X"]
 local f_character_y     = formatters["%C"]
 local f_character_n     = formatters["[ %C ]"]
 
-local check_duplicates  = true  -- can become an option (pseudo feature) / aways needed anyway
-local check_soft_hyphen = false -- can become an option (pseudo feature) / needed for tagging
+local check_duplicates  = true -- can become an option (pseudo feature) / aways needed anyway
+local check_soft_hyphen = true -- can become an option (pseudo feature) / needed for tagging
 
 directives.register("otf.checksofthyphen",function(v)
     check_soft_hyphen = v
@@ -370,6 +371,7 @@ local function copyduplicates(fontdata)
         local duplicates   = resources.duplicates
         if check_soft_hyphen then
             -- ebgaramond has a zero width empty soft hyphen
+            -- antykwatorunsks lacks a soft hyphen
             local ds = descriptions[0xAD]
             if not ds or ds.width == 0 then
                 if ds then
@@ -621,7 +623,7 @@ local function checklookups(fontdata,missing,nofmissing)
             end
         end
         if next(done) then
-            report("not unicoded: % t",table.sortedkeys(done))
+            report("not unicoded: % t",sortedkeys(done))
         end
     end
 end
@@ -632,7 +634,6 @@ local function unifymissing(fontdata)
         require("font-agl")
     end
     local unicodes     = { }
-    local private      = fontdata.private
     local resources    = fontdata.resources
     resources.unicodes = unicodes
     for unicode, d in next, fontdata.descriptions do
@@ -1066,13 +1067,14 @@ function readers.pack(data)
             end
         end
 
-        local function pack_flat(v)
-            local tag = tabstr_flat(v)
+        local function pack_normal_cc(v)
+            local tag = tabstr_normal(v)
             local ht = h[tag]
             if ht then
                 c[ht] = c[ht] + 1
                 return ht
             else
+                v[1] = 0
                 nt = nt + 1
                 t[nt] = v
                 h[tag] = nt
@@ -1081,8 +1083,8 @@ function readers.pack(data)
             end
         end
 
-        local function pack_boolean(v)
-            local tag = tabstr_boolean(v)
+        local function pack_flat(v)
+            local tag = tabstr_flat(v)
             local ht = h[tag]
             if ht then
                 c[ht] = c[ht] + 1
@@ -1126,7 +1128,104 @@ function readers.pack(data)
             end
         end
 
+        -- saves a lot on noto sans
+
+        -- can be made more clever
+
+        local function pack_boolean(v)
+            local tag = tabstr_boolean(v)
+            local ht = h[tag]
+            if ht then
+                c[ht] = c[ht] + 1
+                return ht
+            else
+                nt = nt + 1
+                t[nt] = v
+                h[tag] = nt
+                c[nt] = 1
+                return nt
+            end
+        end
+
+     -- -- This was an experiment to see if we can bypass the luajit limits but loading is
+     -- -- still an issue due to other limits so we don't use this ... actually it can
+     -- -- prevent a luajittex crash but i don't care too much about that as we can't use
+     -- -- that engine anyway then.
+     --
+     -- local function check(t)
+     --     if type(t) == "table" then
+     --         local s = sortedkeys(t)
+     --         local n = #s
+     --         if n <= 10 then
+     --             return
+     --         end
+     --         local ranges = { }
+     --         local first, last
+     --         for i=1,#s do
+     --             local ti = s[i]
+     --             if not first then
+     --                 first = ti
+     --                 last  = ti
+     --             elseif ti == last + 1 then
+     --                 last = ti
+     --             elseif last - first < 10 then
+     --                 -- we could permits a few exceptions
+     --                 return
+     --             else
+     --                 ranges[#ranges+1] = { first, last }
+     --                 first, last = nil, nil
+     --             end
+     --         end
+     --         if #ranges > 0 then
+     --             return {
+     --                 ranges = ranges
+     --             }
+     --         end
+     --     end
+     -- end
+     --
+     -- local function pack_boolean(v)
+     --     local tag
+     --     local r = check(v)
+     --     if r then
+     --         v = r
+     --         tag = tabstr_normal(v)
+     --     else
+     --         tag = tabstr_boolean(v)
+     --     end
+     --     local ht = h[tag]
+     --     if ht then
+     --         c[ht] = c[ht] + 1
+     --         return ht
+     --     else
+     --         nt = nt + 1
+     --         t[nt] = v
+     --         h[tag] = nt
+     --         c[nt] = 1
+     --         return nt
+     --     end
+     -- end
+
         local function pack_final(v)
+            -- v == number
+            if c[v] <= criterium then
+                return t[v]
+            else
+                -- compact hash
+                local hv = hh[v]
+                if hv then
+                    return hv
+                else
+                    ntt = ntt + 1
+                    tt[ntt] = t[v]
+                    hh[v] = ntt
+                    cc[ntt] = c[v]
+                    return ntt
+                end
+            end
+        end
+
+        local function pack_final_cc(v)
             -- v == number
             if c[v] <= criterium then
                 return t[v]
@@ -1191,9 +1290,9 @@ function readers.pack(data)
 
         local function packers(pass)
             if pass == 1 then
-                return pack_normal, pack_indexed, pack_flat, pack_boolean, pack_mixed
+                return pack_normal, pack_indexed, pack_flat, pack_boolean, pack_mixed, pack_normal_cc
             else
-                return pack_final, pack_final, pack_final, pack_final, pack_final
+                return pack_final, pack_final, pack_final, pack_final, pack_final, pack_final_cc
             end
         end
 
@@ -1211,15 +1310,13 @@ function readers.pack(data)
             return
         end
 
-        --
-
         for pass=1,2 do
 
             if trace_packing then
                 report_otf("start packing: stage 1, pass %s",pass)
             end
 
-            local pack_normal, pack_indexed, pack_flat, pack_boolean, pack_mixed = packers(pass)
+            local pack_normal, pack_indexed, pack_flat, pack_boolean, pack_mixed, pack_normal_cc = packers(pass)
 
             for unicode, description in next, descriptions do
                 local boundingbox = description.boundingbox
@@ -1259,28 +1356,30 @@ function readers.pack(data)
                             if kind == "gpos_pair" then
                                 local c = step.coverage
                                 if c then
-                                    if step.format == "kern" then
+                                    if step.format == "pair" then
                                         for g1, d1 in next, c do
-                                            c[g1] = pack_normal(d1)
+                                            for g2, d2 in next, d1 do
+                                                local f = d2[1] if f and f ~= true then d2[1] = pack_indexed(f) end
+                                                local s = d2[2] if s and s ~= true then d2[2] = pack_indexed(s) end
+                                            end
                                         end
                                     else
                                         for g1, d1 in next, c do
-                                            for g2, d2 in next, d1 do
-                                                local f = d2[1] if f then d2[1] = pack_indexed(f) end
-                                                local s = d2[2] if s then d2[2] = pack_indexed(s) end
-                                            end
+                                            c[g1] = pack_normal(d1)
                                         end
                                     end
                                 end
                             elseif kind == "gpos_single" then
                                 local c = step.coverage
                                 if c then
-                                    if step.format == "kern" then
-                                        step.coverage = pack_normal(c)
-                                    else
+                                    if step.format == "single" then
                                         for g1, d1 in next, c do
-                                            c[g1] = pack_indexed(d1)
+                                            if d1 and d1 ~= true then
+                                                c[g1] = pack_indexed(d1)
+                                            end
                                         end
+                                    else
+                                        step.coverage = pack_normal(c)
                                     end
                                 end
                             elseif kind == "gpos_cursive" then
@@ -1399,7 +1498,7 @@ function readers.pack(data)
                             for i=1,#deltas do
                                 local di = deltas[i]
                                 local d  = di.deltas
-                                local r  = di.regions
+                             -- local r  = di.regions
                                 for j=1,#d do
                                     d[j] = pack_indexed(d[j])
                                 end
@@ -1439,7 +1538,7 @@ function readers.pack(data)
                     report_otf("start packing: stage 2, pass %s",pass)
                 end
 
-                local pack_normal, pack_indexed, pack_flat, pack_boolean, pack_mixed = packers(pass)
+                local pack_normal, pack_indexed, pack_flat, pack_boolean, pack_mixed, pack_normal_cc = packers(pass)
 
                 for unicode, description in next, descriptions do
                     local math = description.math
@@ -1463,9 +1562,7 @@ function readers.pack(data)
                                 if kind == "gpos_pair" then
                                     local c = step.coverage
                                     if c then
-                                        if step.format == "kern" then
-                                            -- todo !
-                                        else
+                                        if step.format == "pair" then
                                             for g1, d1 in next, c do
                                                 for g2, d2 in next, d1 do
                                                     d1[g2] = pack_normal(d2)
@@ -1473,11 +1570,22 @@ function readers.pack(data)
                                             end
                                         end
                                     end
---                                 elseif kind == "gpos_mark2base" or kind == "gpos_mark2mark" or kind == "gpos_mark2ligature" then
--- local c = step.baseclasses
--- for k, v in next, c do
---     c[k] = pack_normal(v)
--- end
+                             -- elseif kind == "gpos_cursive" then
+                             --     local c = step.coverage -- new
+                             --     if c then
+                             --         for g1, d1 in next, c do
+                             --             c[g1] = pack_normal_cc(d1)
+                             --         end
+                             --     end
+                                elseif kind == "gpos_mark2ligature" then
+                                    local c = step.baseclasses -- new
+                                    if c then
+                                        for g1, d1 in next, c do
+                                            for g2, d2 in next, d1 do
+                                                d1[g2] = pack_normal(d2)
+                                            end
+                                        end
+                                    end
                                 end
                                 local rules = step.rules
                                 if rules then
@@ -1525,7 +1633,7 @@ function readers.pack(data)
                     report_otf("start packing: stage 3, pass %s",pass)
                 end
 
-                local pack_normal, pack_indexed, pack_flat, pack_boolean, pack_mixed = packers(pass)
+                local pack_normal, pack_indexed, pack_flat, pack_boolean, pack_mixed, pack_normal_cc = packers(pass)
 
                 local function packthem(sequences)
                     for i=1,#sequences do
@@ -1539,18 +1647,23 @@ function readers.pack(data)
                                 if kind == "gpos_pair" then
                                     local c = step.coverage
                                     if c then
-                                        if step.format == "kern" then
-                                            -- todo !
-                                        else
+                                        if step.format == "pair" then
                                             for g1, d1 in next, c do
                                                 c[g1] = pack_normal(d1)
                                             end
                                         end
                                     end
+                                elseif kind == "gpos_cursive" then
+                                    local c = step.coverage
+                                    if c then
+                                        for g1, d1 in next, c do
+                                            c[g1] = pack_normal_cc(d1)
+                                        end
+                                    end
                                 end
                             end
                         end
-                   end
+                    end
                 end
 
                 if sequences then
@@ -1626,6 +1739,15 @@ function readers.unpack(data)
              -- end
             end
 
+         -- local function expandranges(t,ranges)
+         --     for i=1,#ranges do
+         --         local r = ranges[i]
+         --         for k=r[1],r[2] do
+         --             t[k] = true
+         --         end
+         --     end
+         -- end
+
             local function unpackthem(sequences)
                 for i=1,#sequences do
                     local sequence  = sequences[i]
@@ -1635,20 +1757,26 @@ function readers.unpack(data)
                     local features  = sequence.features
                     local flags     = sequence.flags
                     local markclass = sequence.markclass
+                    if features then
+                        local tv = tables[features]
+                        if tv then
+                            sequence.features = tv
+                            features = tv
+                        end
+                        for script, feature in next, features do
+                            local tv = tables[feature]
+                            if tv then
+                                features[script] = tv
+                            end
+                        end
+                    end
                     if steps then
                         for i=1,#steps do
                             local step = steps[i]
                             if kind == "gpos_pair" then
                                 local c = step.coverage
                                 if c then
-                                    if step.format == "kern" then
-                                        for g1, d1 in next, c do
-                                            local tv = tables[d1]
-                                            if tv then
-                                                c[g1] = tv
-                                            end
-                                        end
-                                    else
+                                    if step.format == "pair" then
                                         for g1, d1 in next, c do
                                             local tv = tables[d1]
                                             if tv then
@@ -1665,16 +1793,6 @@ function readers.unpack(data)
                                                 local s = tables[d2[2]] if s then d2[2] = s end
                                             end
                                         end
-                                    end
-                                end
-                            elseif kind == "gpos_single" then
-                                local c = step.coverage
-                                if c then
-                                    if step.format == "kern" then
-                                        local tv = tables[c]
-                                        if tv then
-                                            step.coverage = tv
-                                        end
                                     else
                                         for g1, d1 in next, c do
                                             local tv = tables[d1]
@@ -1684,10 +1802,32 @@ function readers.unpack(data)
                                         end
                                     end
                                 end
+                            elseif kind == "gpos_single" then
+                                local c = step.coverage
+                                if c then
+                                    if step.format == "single" then
+                                        for g1, d1 in next, c do
+                                            local tv = tables[d1]
+                                            if tv then
+                                                c[g1] = tv
+                                            end
+                                        end
+                                    else
+                                        local tv = tables[c]
+                                        if tv then
+                                            step.coverage = tv
+                                        end
+                                    end
+                                end
                             elseif kind == "gpos_cursive" then
                                 local c = step.coverage
                                 if c then
                                     for g1, d1 in next, c do
+                                        local tv = tables[d1]
+                                        if tv then
+                                            d1 = tv
+                                            c[g1] = d1
+                                        end
                                         local f = tables[d1[2]] if f then d1[2] = f end
                                         local s = tables[d1[3]] if s then d1[3] = s end
                                     end
@@ -1695,12 +1835,6 @@ function readers.unpack(data)
                             elseif kind == "gpos_mark2base" or kind == "gpos_mark2mark" then
                                 local c = step.baseclasses
                                 if c then
--- for k, v in next, c do
---     local tv = tables[v]
---     if tv then
---         c[k] = tv
---     end
--- end
                                     for g1, d1 in next, c do
                                         for g2, d2 in next, d1 do
                                             local tv = tables[d2]
@@ -1722,14 +1856,13 @@ function readers.unpack(data)
                             elseif kind == "gpos_mark2ligature" then
                                 local c = step.baseclasses
                                 if c then
--- for k, v in next, c do
---     local tv = tables[v]
---     if tv then
---         c[k] = tv
---     end
--- end
                                     for g1, d1 in next, c do
                                         for g2, d2 in next, d1 do
+                                            local tv = tables[d2] -- new
+                                            if tv then
+                                                d2 = tv
+                                                d1[g2] = d2
+                                            end
                                             for g3, d3 in next, d2 do
                                                 local tv = tables[d2[g3]]
                                                 if tv then
@@ -1766,6 +1899,18 @@ function readers.unpack(data)
                                                 before[i] = tv
                                             end
                                         end
+                                     -- for i=1,#before do
+                                     --     local bi = before[i]
+                                     --     local tv = tables[bi]
+                                     --     if tv then
+                                     --         bi = tv
+                                     --         before[i] = bi
+                                     --     end
+                                     --     local ranges = bi.ranges
+                                     --     if ranges then
+                                     --         expandranges(bi,ranges)
+                                     --     end
+                                     -- end
                                     end
                                     local after = rule.after
                                     if after then
@@ -1780,6 +1925,18 @@ function readers.unpack(data)
                                                 after[i] = tv
                                             end
                                         end
+                                     -- for i=1,#after do
+                                     --     local ai = after[i]
+                                     --     local tv = tables[ai]
+                                     --     if tv then
+                                     --         ai = tv
+                                     --         after[i] = ai
+                                     --     end
+                                     --     local ranges = ai.ranges
+                                     --     if ranges then
+                                     --         expandranges(ai,ranges)
+                                     --     end
+                                     -- end
                                     end
                                     local current = rule.current
                                     if current then
@@ -1794,6 +1951,18 @@ function readers.unpack(data)
                                                 current[i] = tv
                                             end
                                         end
+                                     -- for i=1,#current do
+                                     --     local ci = current[i]
+                                     --     local tv = tables[ci]
+                                     --     if tv then
+                                     --         ci = tv
+                                     --         current[i] = ci
+                                     --     end
+                                     --     local ranges = ci.ranges
+                                     --     if ranges then
+                                     --         expandranges(ci,ranges)
+                                     --     end
+                                     -- end
                                     end
                                  -- local lookups = rule.lookups
                                  -- if lookups then
@@ -1810,19 +1979,6 @@ function readers.unpack(data)
                                         end
                                     end
                                 end
-                            end
-                        end
-                    end
-                    if features then
-                        local tv = tables[features]
-                        if tv then
-                            sequence.features = tv
-                            features = tv
-                        end
-                        for script, feature in next, features do
-                            local tv = tables[feature]
-                            if tv then
-                                features[script] = tv
                             end
                         end
                     end
@@ -1989,8 +2145,10 @@ local function mergesteps_1(lookup,strict)
     return nofsteps - 1
 end
 
-
-local function mergesteps_2(lookup,strict) -- pairs
+local function mergesteps_2(lookup) -- pairs
+    -- this can be tricky as we can have a match on a mark with no marks skip flag
+    -- in which case with multiple steps a hit can prevent a next step while in the
+    -- merged case we can hit differently (a messy font then anyway)
     local steps    = lookup.steps
     local nofsteps = lookup.nofsteps
     local first    = steps[1]
@@ -2009,9 +2167,9 @@ local function mergesteps_2(lookup,strict) -- pairs
         for k, v in next, steps[i].coverage do
             local tk = target[k]
             if tk then
-                for k, v in next, v do
-                    if not tk[k] then
-                        tk[k] = v
+                for kk, vv in next, v do
+                    if tk[kk] == nil then
+                        tk[kk] = vv
                     end
                 end
             else
@@ -2020,57 +2178,48 @@ local function mergesteps_2(lookup,strict) -- pairs
         end
     end
     lookup.nofsteps = 1
-    lookup.steps = { first }
+    lookup.merged   = true
+    lookup.steps    = { first }
     return nofsteps - 1
 end
 
+-- we could have a coverage[first][second] = { } already here (because eventually
+-- we also have something like that after loading)
 
 local function mergesteps_3(lookup,strict) -- marks
     local steps    = lookup.steps
     local nofsteps = lookup.nofsteps
-    local first    = steps[1]
     report("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
-    local baseclasses = { }
-    local coverage    = { }
-    local used        = { }
+    -- check first
+    local coverage = { }
     for i=1,nofsteps do
-        local offset = i*10
+        for k, v in next, steps[i].coverage do
+            local tk = coverage[k] -- { class, { x, y } }
+            if tk then
+                report("quitting merge due to multiple checks")
+                return nofsteps
+            else
+                coverage[k] = v
+            end
+        end
+    end
+    -- merge indeed
+    local first       = steps[1]
+    local baseclasses = { } -- let's assume sparse step.baseclasses
+    for i=1,nofsteps do
+        local offset = i*10  -- we assume max 10 classes per step
         local step   = steps[i]
         for k, v in sortedhash(step.baseclasses) do
             baseclasses[offset+k] = v
         end
         for k, v in next, step.coverage do
-            local tk = coverage[k]
-            if tk then
-                for k, v in next, v do
-                    if not tk[k] then
-                        tk[k] = v
-                        local c = offset + v[1]
-                        v[1] = c
-                        if not used[c] then
-                            used[c] = true
-                        end
-                    end
-                end
-            else
-                coverage[k] = v
-                local c = offset + v[1]
-                v[1] = c
-                if not used[c] then
-                    used[c] = true
-                end
-            end
-        end
-    end
-    for k, v in next, baseclasses do
-        if not used[k] then
-            baseclasses[k] = nil
-            report("discarding not used baseclass %i",k)
+            v[1] = offset + v[1]
         end
     end
     first.baseclasses = baseclasses
     first.coverage    = coverage
     lookup.nofsteps   = 1
+    lookup.merged     = true
     lookup.steps      = { first }
     return nofsteps - 1
 end
@@ -2113,32 +2262,44 @@ local function mergesteps_4(lookup) -- ligatures
     return nofsteps - 1
 end
 
-local function checkkerns(lookup)
+-- so we assume only one cursive entry and exit and even then the first one seems
+-- to win anyway: no exit or entry quite the lookup match and then we take the
+-- next step; this means that we can as well merge them
+
+local function mergesteps_5(lookup) -- cursive
     local steps    = lookup.steps
     local nofsteps = lookup.nofsteps
-    for i=1,nofsteps do
-        local step = steps[i]
-        if step.format == "pair" then
-            local coverage = step.coverage
-            local kerns    = true
-            for g1, d1 in next, coverage do
-                if d1[1] ~= 0 or d1[2] ~= 0 or d1[4] ~= 0 then
-                    kerns = false
-                    break
+    local first    = steps[1]
+    report("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
+    local target = first.coverage
+    local hash   = nil
+    for k, v in next, target do
+        hash = v[1]
+        break
+    end
+    for i=2,nofsteps do
+        for k, v in next, steps[i].coverage do
+            local tk = target[k]
+            if tk then
+                if not tk[2] then
+                    tk[2] = v[2]
                 end
-            end
-            if kerns then
-                report("turning pairs of step %a of %a lookup %a into kerns",i,lookup.type,lookup.name)
-                for g1, d1 in next, coverage do
-                    coverage[g1] = d1[3]
+                if not tk[3] then
+                    tk[3] = v[3]
                 end
-                step.format = "kern"
+            else
+                target[k] = v
+                v[1] = hash
             end
         end
     end
+    lookup.nofsteps = 1
+    lookup.merged   = true
+    lookup.steps    = { first }
+    return nofsteps - 1
 end
 
-local function checkpairs(lookup)
+local function checkkerns(lookup)
     local steps    = lookup.steps
     local nofsteps = lookup.nofsteps
     local kerned   = 0
@@ -2148,33 +2309,120 @@ local function checkpairs(lookup)
             local coverage = step.coverage
             local kerns    = true
             for g1, d1 in next, coverage do
-                for g2, d2 in next, d1 do
-                    if d2[2] then
-                        kerns = false
-                        break
-                    else
-                        local v = d2[1]
-                        if v[1] ~= 0 or v[2] ~= 0 or v[4] ~= 0 then
-                            kerns = false
-                            break
-                        end
-                    end
+                if d1 == true then
+                    -- all zero
+                elseif not d1 then
+                    -- null
+                elseif d1[1] ~= 0 or d1[2] ~= 0 or d1[4] ~= 0 then
+                    kerns = false
+                    break
                 end
             end
             if kerns then
                 report("turning pairs of step %a of %a lookup %a into kerns",i,lookup.type,lookup.name)
+                local c = { }
                 for g1, d1 in next, coverage do
-                    for g2, d2 in next, d1 do
-                        d1[g2] = d2[1][3]
+                    if d1 and d1 ~= true then
+                        c[g1] = d1[3]
                     end
                 end
-                step.format = "kern"
+                step.coverage = c
+                step.format = "move"
                 kerned = kerned + 1
             end
         end
     end
     return kerned
 end
+
+-- There are several options to optimize but we have this somewhat fuzzy aspect of
+-- advancing (depending on the second of a pair) so we need to retain that information.
+--
+-- We can have:
+--
+--     true, nil|false
+--
+-- which effectively means: nothing to be done and advance to next (so not next of
+-- next) and because coverage should be not overlapping we can wipe these. However,
+-- checking for (true,nil) (false,nil) and omitting them doesn't gain much.
+
+-- Because we pack we cannot mix tables and numbers so we can only turn a whole set in
+-- format kern instead of pair.
+
+local function checkpairs(lookup)
+    local steps    = lookup.steps
+    local nofsteps = lookup.nofsteps
+    local kerned   = 0
+
+    local function onlykerns(step)
+        local coverage = step.coverage
+        for g1, d1 in next, coverage do
+            for g2, d2 in next, d1 do
+                if d2[2] then
+                    --- true or { a, b, c, d }
+                    return false
+                else
+                    local v = d2[1]
+                    if v == true then
+                        -- all zero
+                    elseif v and (v[1] ~= 0 or v[2] ~= 0 or v[4] ~= 0) then
+                        return false
+                    end
+                end
+            end
+        end
+        return coverage
+    end
+
+    for i=1,nofsteps do
+        local step = steps[i]
+        if step.format == "pair" then
+            local coverage = onlykerns(step)
+            if coverage then
+                report("turning pairs of step %a of %a lookup %a into kerns",i,lookup.type,lookup.name)
+                for g1, d1 in next, coverage do
+                    local d = { }
+                    for g2, d2 in next, d1 do
+                        local v = d2[1]
+                        if v == true then
+                            -- ignore    -- d1[g2] = nil
+                        elseif v then
+                            d[g2] = v[3] -- d1[g2] = v[3]
+                        end
+                    end
+                    coverage[g1] = d
+                end
+                step.format = "move"
+                kerned = kerned + 1
+            end
+        end
+    end
+    return kerned
+end
+
+local compact_pairs       = true
+local compact_singles     = true
+
+local merge_pairs         = true
+local merge_singles       = true
+local merge_substitutions = true
+local merge_alternates    = true
+local merge_multiples     = true
+local merge_ligatures     = true
+local merge_cursives      = true
+local merge_marks         = true
+
+directives.register("otf.compact.pairs",       function(v) compact_pairs   = v end)
+directives.register("otf.compact.singles",     function(v) compact_singles = v end)
+
+directives.register("otf.merge.pairs",         function(v) merge_pairs         = v end)
+directives.register("otf.merge.singles",       function(v) merge_singles       = v end)
+directives.register("otf.merge.substitutions", function(v) merge_substitutions = v end)
+directives.register("otf.merge.alternates",    function(v) merge_alternates    = v end)
+directives.register("otf.merge.multiples",     function(v) merge_multiples     = v end)
+directives.register("otf.merge.ligatures",     function(v) merge_ligatures     = v end)
+directives.register("otf.merge.cursives",      function(v) merge_cursives      = v end)
+directives.register("otf.merge.marks",         function(v) merge_marks         = v end)
 
 function readers.compact(data)
     if not data or data.compacted then
@@ -2192,23 +2440,65 @@ function readers.compact(data)
             for i=1,#lookups do
                 local lookup   = lookups[i]
                 local nofsteps = lookup.nofsteps
+                local kind     = lookup.type
                 allsteps = allsteps + nofsteps
                 if nofsteps > 1 then
-                    local kind = lookup.type
-                    if kind == "gsub_single" or kind == "gsub_alternate" or kind == "gsub_multiple" then
-                        merged = merged + mergesteps_1(lookup)
+                    local merg = merged
+                    if kind == "gsub_single" then
+                        if merge_substitutions then
+                            merged = merged + mergesteps_1(lookup)
+                        end
+                    elseif kind == "gsub_alternate" then
+                        if merge_alternates then
+                            merged = merged + mergesteps_1(lookup)
+                        end
+                    elseif kind == "gsub_multiple" then
+                        if merge_multiples then
+                            merged = merged + mergesteps_1(lookup)
+                        end
                     elseif kind == "gsub_ligature" then
-                        merged = merged + mergesteps_4(lookup)
+                        if merge_ligatures then
+                            merged = merged + mergesteps_4(lookup)
+                        end
                     elseif kind == "gpos_single" then
-                        merged = merged + mergesteps_1(lookup,true)
-                        checkkerns(lookup)
+                        if merge_singles then
+                            merged = merged + mergesteps_1(lookup,true)
+                        end
+                        if compact_singles then
+                            kerned = kerned + checkkerns(lookup)
+                        end
                     elseif kind == "gpos_pair" then
-                        merged = merged + mergesteps_2(lookup,true)
-                        kerned = kerned + checkpairs(lookup)
+                        if merge_pairs then
+                            merged = merged + mergesteps_2(lookup)
+                        end
+                        if compact_pairs then
+                            kerned = kerned + checkpairs(lookup)
+                        end
                     elseif kind == "gpos_cursive" then
-                        merged = merged + mergesteps_2(lookup)
+                        if merge_cursives then
+                            merged = merged + mergesteps_5(lookup)
+                        end
                     elseif kind == "gpos_mark2mark" or kind == "gpos_mark2base" or kind == "gpos_mark2ligature" then
-                        merged = merged + mergesteps_3(lookup)
+                        if merge_marks then
+                            merged = merged + mergesteps_3(lookup)
+                        end
+                    end
+                    if merg ~= merged then
+                        lookup.merged = true
+                    end
+                elseif nofsteps == 1 then
+                    local kern = kerned
+                    if kind == "gpos_single" then
+                        if compact_singles then
+                            kerned = kerned + checkkerns(lookup)
+                        end
+                    elseif kind == "gpos_pair" then
+                        if compact_pairs then
+                            kerned = kerned + checkpairs(lookup)
+                        end
+                    end
+                    if kern ~= kerned then
+                     -- lookup.kerned = true
                     end
                 end
             end
@@ -2224,6 +2514,79 @@ function readers.compact(data)
     if kerned > 0 then
         report("%i steps of %i steps turned from pairs into kerns",kerned,allsteps)
     end
+end
+
+local function mergesteps(t,k)
+    if k == "merged" then
+        local merged = { }
+        for i=1,#t do
+            local step     = t[i]
+            local coverage = step.coverage
+            for k in next, coverage do
+                local m = merged[k]
+                if m then
+                    m[2] = i
+                 -- m[#m+1] = step
+                else
+                    merged[k] = { i, i }
+                 -- merged[k] = { step }
+                end
+            end
+        end
+        t.merged = merged
+        return merged
+    end
+end
+
+local function checkmerge(sequence)
+    local steps = sequence.steps
+    if steps then
+        setmetatableindex(steps,mergesteps)
+    end
+end
+
+local function checkflags(sequence,resources)
+    if not sequence.skiphash then
+        local flags = sequence.flags
+        if flags then
+            local skipmark     = flags[1]
+            local skipligature = flags[2]
+            local skipbase     = flags[3]
+            local markclass    = sequence.markclass
+            local skipsome     = skipmark or skipligature or skipbase or markclass or false
+            if skipsome then
+                sequence.skiphash = setmetatableindex(function(t,k)
+                    local c = resources.classes[k] -- delayed table
+                    local v = c == skipmark
+                           or (markclass and c == "mark" and not markclass[k])
+                           or c == skipligature
+                           or c == skipbase
+                           or false
+                    t[k] = v
+                    return v
+                end)
+            else
+                sequence.skiphash = false
+            end
+        else
+            sequence.skiphash = false
+        end
+    end
+end
+
+local function checksteps(sequence)
+    local steps = sequence.steps
+    if steps then
+        for i=1,#steps do
+            steps[i].index = i
+        end
+    end
+end
+
+if fonts.helpers then
+    fonts.helpers.checkmerge = checkmerge
+    fonts.helpers.checkflags = checkflags
+    fonts.helpers.checksteps = checksteps -- has to happen last
 end
 
 function readers.expand(data)
@@ -2267,6 +2630,11 @@ function readers.expand(data)
             end
         end
     end
+
+    -- using a merged combined hash as first test saves some 30% on ebgaramond and
+    -- about 15% on arabtype .. then moving the a test also saves a bit (even when
+    -- often a is not set at all so that one is a bit debatable
+
     local function expandlookups(sequences)
         if sequences then
             -- we also need to do sublookups
@@ -2274,6 +2642,8 @@ function readers.expand(data)
                 local sequence = sequences[i]
                 local steps    = sequence.steps
                 if steps then
+                    local nofsteps = sequence.nofsteps
+
                     local kind = sequence.type
                     local markclass = sequence.markclass
                     if markclass then
@@ -2284,7 +2654,8 @@ function readers.expand(data)
                             sequence.markclass = markclasses[markclass]
                         end
                     end
-                    for i=1,sequence.nofsteps do
+
+                    for i=1,nofsteps do
                         local step = steps[i]
                         local baseclasses = step.baseclasses
                         if baseclasses then
@@ -2300,13 +2671,14 @@ function readers.expand(data)
                         end
                         local rules = step.rules
                         if rules then
-                            local rulehash   = { }
+                            local rulehash   = { n = 0 } -- is contexts in font-ots
                             local rulesize   = 0
                             local coverage   = { }
                             local lookuptype = sequence.type
+                            local nofrules   = #rules
                             step.coverage    = coverage -- combined hits
-                            for nofrules=1,#rules do
-                                local rule         = rules[nofrules]
+                            for currentrule=1,nofrules do
+                                local rule         = rules[currentrule]
                                 local current      = rule.current
                                 local before       = rule.before
                                 local after        = rule.after
@@ -2337,7 +2709,7 @@ function readers.expand(data)
                                     for i=1,#lookups do
                                         local lookups = lookups[i]
                                         if lookups then
-                                            for k, v in next, lookups do
+                                            for k, v in next, lookups do -- actually this one is indexed
                                                 local lookup = sublookups[v]
                                                 if lookup then
                                                     lookups[k] = lookup
@@ -2352,9 +2724,9 @@ function readers.expand(data)
                                     end
                                 end
                                 if sequence[1] then -- we merge coverage into one
-                                    rulesize = rulesize + 1
-                                    rulehash[rulesize] = {
-                                        nofrules,     -- 1
+                                    sequence.n = #sequence -- tiny speedup
+                                    local ruledata = {
+                                        currentrule,  -- 1 -- original rule number, only use this for tracing!
                                         lookuptype,   -- 2
                                         sequence,     -- 3
                                         start,        -- 4
@@ -2363,20 +2735,61 @@ function readers.expand(data)
                                         replacements, -- 7
                                         subtype,      -- 8
                                     }
-                                    for unic in next, sequence[start] do
-                                        local cu = coverage[unic]
-                                        if not cu then
-                                            coverage[unic] = rulehash -- can now be done cleaner i think
+                                    --
+                                    -- possible optimization: per [unic] a rulehash, but beware:
+                                    -- contexts have unique coverage and chains can have multiple
+                                    -- hits (rules) per coverage entry
+                                    --
+                                    -- so: we can combine multiple steps as well as multiple rules
+                                    -- but that takes careful checking, in which case we can go the
+                                    -- step list approach and turn contexts into steps .. in fact,
+                                    -- if we turn multiple contexts into steps we're already ok as
+                                    -- steps gets a coverage hash by metatable
+                                    --
+                                    rulesize = rulesize + 1
+                                    rulehash[rulesize] = ruledata
+                                    rulehash.n = rulesize -- tiny speedup
+                                    --
+                                    if true then -- nofrules > 1
+
+                                        for unic in next, sequence[start] do
+                                            local cu = coverage[unic]
+                                            if cu then
+                                                local n = #cu+1
+                                                cu[n] = ruledata
+                                                cu.n = n
+                                            else
+                                                coverage[unic] = { ruledata, n = 1 }
+                                            end
                                         end
+
+                                    else
+
+                                        for unic in next, sequence[start] do
+                                            local cu = coverage[unic]
+                                            if cu then
+                                                -- we can have a contextchains with many matches which we
+                                                -- can actually optimize
+                                            else
+                                                coverage[unic] = rulehash
+                                            end
+                                        end
+
                                     end
                                 end
                             end
                         end
                     end
+
+                    checkmerge(sequence)
+                    checkflags(sequence,resources)
+                    checksteps(sequence)
+
                 end
             end
         end
     end
+
     expandlookups(sequences)
     expandlookups(sublookups)
 end

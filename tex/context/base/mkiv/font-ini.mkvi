@@ -835,7 +835,7 @@
    \fi
    \font_helpers_update_font_parameters
    \font_helpers_update_font_class_parameters
-   % \writestatus{fonts}{low level define: #csname/\somefontfile/\number\d_font_scaled_font_size/\fontface/\number\d_font_scaled_text_face}%
+  %\writestatus{fonts}{low level define: #csname/\somefontfile/\number\d_font_scaled_font_size/\fontface/\number\d_font_scaled_text_face}%
    \clf_definefont_two
       \ifx\fontclass\empty\s!false\else\s!true\fi
       {#csname}%
@@ -918,6 +918,8 @@
 % \normaldef\fntsetsomesize{\normaldef\somefontsize}  % takes argument
 
 \newif\ifskipfontcharacteristics \skipfontcharacteristicstrue
+
+\tracingfonts\plussix % <id: name @ size>
 
 %D When fontclasses are used, we define the font global, since namespaces are
 %D used. Otherwise we parse the specs each time.
@@ -2713,6 +2715,18 @@
 \def\saveddefinedfontid  {\number\fontid\font}
 \def\saveddefinedfontname{\fontname\font}
 
+%D Ugly helper:
+
+\unexpanded\def\saverunningstyleandcolor
+  {\unexpanded\edef\restorerunningstyleandcolor
+     {\setfontid                      \number\fontid\font
+      \attribute\colormodelattribute  \the\attribute\colormodelattribute
+      \attribute\colorattribute       \the\attribute\colorattribute
+      \attribute\transparencyattribute\the\attribute\transparencyattribute
+      \relax}}
+
+\let\restorerunningstyleandcolor\relax
+
 %D Handy for defining additional glyphs:
 
 \let\getprivateglyphslot\clf_getprivateglyphslot % kind of private macro
@@ -2817,5 +2831,13 @@
 %      {\let\fontstyle      #style%
 %       \let\fontalternative#alternative%
 %       \font_helpers_synchronize_font}}
+
+%D \macros
+%D   {addfontpath}
+%D
+%D A way to add a path at runtime (no need to generate database):
+
+\unexpanded\def\usefontpath[#1]%
+  {\clf_addfontpath{#1}}
 
 \protect \endinput

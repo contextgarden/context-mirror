@@ -22,6 +22,8 @@
 % on network shares cq. when no files are cached by the os it's of course
 % much worse. A zero run is .27 sec with luajittex.
 
+% http://build.contextgarden.net/waterfall?tag=c/luatex
+
 % Welcome to context, pronounced as kontekst (rather dutch) and not as
 % conτεχt.
 
@@ -36,10 +38,11 @@
 % \everypar{\writestatus{!!!!}{some spurious input in line \the\inputlineno}\wait}
 
 %D The order of loading will change when all modules have been cleaned
-%D up and the dependencies are more consistent.
+%D up and the dependencies are more consistent. beware, the version number
+%D has to match \type {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2017.05.15 21:48}
+\edef\contextversion{2018.03.15 15:27}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -74,8 +77,8 @@
 
 %D We just quit if new functionality is expected.
 
-\ifnum\luatexversion<70 % also change message
-    \writestatus{!!!!}{Your luatex binary is too old, you need at least version 0.70!}
+\ifnum\luatexversion<105 % also change message
+    \writestatus{!!!!}{Your luatex binary is too old, you need at least version 1.05!}
     \expandafter\end
 \fi
 
@@ -182,13 +185,8 @@
 
 \loadmarkfile{supp-box}
 
-%loadmarkfile{supp-vis} % replaced by trac-vis
-%loadmarkfile{supp-fun} % mostly replaced
-
 \loadmarkfile{supp-ran}
 \loadmarkfile{supp-mat}
-%loadmarkfile{spac-cha} % obsolete
-%loadmarkfile{supp-num} % obsolete
 
 \loadmarkfile{core-uti}
 \loadmkvifile{file-job}
@@ -228,7 +226,7 @@
 
 \loadmarkfile{node-bck} % overloads anch-pgr (experimental and undocumented)
 
-\loadmarkfile{pack-cut} % leftovers from trac-vis
+\loadmarkfile{pack-cut}
 
 \loadmarkfile{lang-mis}
 \loadmarkfile{lang-url}
@@ -272,7 +270,7 @@
 \loadmarkfile{spac-hor}
 \loadmarkfile{spac-ali}
 \loadmarkfile{spac-flr}
-\loadmarkfile{spac-ver}
+\loadmarkfile{spac-ver} % beware, hooks into strc-sec
 \loadmarkfile{spac-lin}
 \loadmarkfile{spac-pag}
 \loadmarkfile{spac-par}
@@ -308,7 +306,6 @@
 \loadmarkfile{page-brk}
 \loadmarkfile{page-col}
 \loadmarkfile{page-inf}
-\loadmarkfile{page-grd}
 \loadmarkfile{page-flt}
 \loadmarkfile{page-bck}
 \loadmarkfile{page-not}
@@ -325,6 +322,7 @@
 \loadmarkfile{page-mul} % partly overloaded
 \loadmarkfile{page-mix} % new
 \loadmarkfile{page-set}
+\loadmarkfile{page-pcl} % new
 \loadmarkfile{pack-lyr}
 \loadmarkfile{pack-pos}
 \loadmkvifile{page-mak}
@@ -437,6 +435,7 @@
 \loadmarkfile{typo-chr}
 \loadmarkfile{typo-rub}
 \loadmkivfile{typo-fkr}
+\loadmkivfile{typo-pnc}
 
 \loadmkvifile{type-ini}
 \loadmarkfile{type-set}
@@ -458,6 +457,8 @@
 \loadmarkfile{meta-pag}
 \loadmarkfile{meta-grd}
 \loadmarkfile{meta-fnt}
+\loadmarkfile{meta-nod}
+\loadmarkfile{meta-lua}
 
 \loadmarkfile{page-mrk} % depends on mp
 
@@ -501,7 +502,7 @@
 \loadmarkfile{typo-scr}
 \loadmarkfile{phys-dim}
 
-\loadmarkfile{node-rul}
+\loadmarkfile{node-rul} % beware, defined \underbar so after math
 \loadmkvifile{font-sol} % font solutions
 
 \loadmkvifile{strc-not}
@@ -522,7 +523,11 @@
 \loadmarkfile{page-app}
 \loadmarkfile{meta-fig}
 
+\loadmarkfile{page-ffl}
+
 \loadmarkfile{lang-spa} % will become obsolete
+
+\loadmarkfile{typo-ovl} % fuzzy project (tracing) code
 
 % old bibtex support: (will be m-oldbibtex.mkiv)
 

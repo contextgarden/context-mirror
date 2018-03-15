@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Core Macros / Conversion}
 
-\registerctxluafile{core-con}{1.001}
+\registerctxluafile{core-con}{}
 
 % todo: iso date ranges (from/to)
 
@@ -416,8 +416,7 @@
 \def\syst_converters_current_date[#1]%
   {\begingroup
    \the\everycurrentdate
-   \doifsomething{#1}{\edef\currentdatespecification{#1}}%
-   \clf_currentdate{\currentdatespecification}{\labellanguage}%
+   \clf_currentdate{#1}{\currentdatespecification}{\labellanguage}%
    \endgroup}
 
 \unexpanded\def\date
@@ -438,7 +437,7 @@
    \endgroup}
 
 \def\rawdate[#1]% expandable and no labels
-  {\clf_rawdate{\currentdatespecification}}
+  {\clf_currentdate{#1}{\currentdatespecification}{}}
 
 %D \macros
 %D   {currenttime}
@@ -874,5 +873,19 @@
 \defineconversion
   [\v!continued]
   [\continuednumber]
+
+%D Taken from x-asciimath (see digits-001.tex for an example):
+
+\let\spaceddigitsmethod   \empty % alternative methods   : 1 default, 2 and 3 only when > 4
+\let\spaceddigitssymbol   \empty % extra splitter symbol : {,}
+\let\spaceddigitsseparator\empty % separator symbol      : {\Uchar{"2008}}
+
+\unexpanded\def\spaceddigits#1%
+  {\clf_spaceddigits
+      method    {\spaceddigitsmethod}%
+      symbol    {\spaceddigitssymbol}%
+      separator {\spaceddigitsseparator}%
+      data      {#1}%
+   \relax}
 
 \protect \endinput

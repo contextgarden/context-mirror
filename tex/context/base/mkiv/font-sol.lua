@@ -67,6 +67,7 @@ local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
 local getdir             = nuts.getdir
 local getwidth           = nuts.getwidth
+local getboxglue         = nuts.getboxglue
 
 local setattr            = nuts.setattr
 local setlink            = nuts.setlink
@@ -336,7 +337,6 @@ local splitter_one = usernodeids["splitters.one"]
 local splitter_two = usernodeids["splitters.two"]
 
 local a_word       = attributes.private('word')
-local a_fontkern   = attributes.private('fontkern')
 
 local encapsulate  = false
 
@@ -395,7 +395,7 @@ function splitters.split(head)
         if m > max_more then max_more = m end
         start, stop, done = nil, nil, true
     end
-    while current do -- also nextid
+    while current do -- also ischar
         local next = getnext(current)
         local id = getid(current)
         if id == glyph_code then
@@ -500,7 +500,7 @@ local function collect_words(list) -- can be made faster for attributes
                         report_splitters("skipped: %C",current.char)
                     end
                 end
-            elseif id == kern_code and (getsubtype(current) == fontkern_code or getattr(current,a_fontkern)) then
+            elseif id == kern_code and getsubtype(current) == fontkern_code then
                 if first then
                     last = current
                 else
@@ -725,9 +725,7 @@ variants[v_random] = function(words,list,best,width,badness,line,set,listdir)
 end
 
 local function show_quality(current,what,line)
-    local set    = getfield(current,"glue_set")
-    local sign   = getfield(current,"glue_sign")
-    local order  = getfield(current,"glue_order")
+    local set, order, sign = getboxglue(current)
     local amount = set * ((sign == 2 and -1) or 1)
     report_optimizers("line %a, category %a, amount %a, set %a, sign %a, how %a, order %a",line,what,amount,set,sign,how,order)
 end

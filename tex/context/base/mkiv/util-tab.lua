@@ -478,11 +478,11 @@ end
 -- inspect(table.drop({ { a=2 }, {a=3} }))
 -- inspect(table.drop({ { a=2 }, {a=3} },true))
 
-function table.autokey(t,k)
-    local v = { }
-    t[k] = v
-    return v
-end
+-- function table.autokey(t,k) -- replaced
+--     local v = { }
+--     t[k] = v
+--     return v
+-- end
 
 local selfmapper = { __index = function(t,k) t[k] = k return k end }
 
@@ -615,6 +615,10 @@ local is_simple_table = table.is_simple_table
 --     end
 --     return nil
 -- end
+
+-- In order to overcome the luajit (65K constant) limitation I tried a split approach,
+-- i.e. outputting the first level tables as locals but that failed with large cjk
+-- fonts too so I removed that ... just use luatex instead.
 
 local function serialize(root,name,specification)
 

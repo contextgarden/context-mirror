@@ -91,8 +91,6 @@ function mathematics.scaleparameters(target,original)
     end
 end
 
-sequencers.appendaction("mathparameters","system","mathematics.scaleparameters")
-
 -- AccentBaseHeight vs FlattenedAccentBaseHeight
 
 function mathematics.checkaccentbaseheight(target,original)
@@ -101,8 +99,6 @@ function mathematics.checkaccentbaseheight(target,original)
         mathparameters.AccentBaseHeight = target.parameters.x_height -- needs checking
     end
 end
-
-sequencers.appendaction("mathparameters","system","mathematics.checkaccentbaseheight") -- should go in lfg instead
 
 function mathematics.checkprivateparameters(target,original)
     local mathparameters = target.mathparameters
@@ -130,8 +126,6 @@ function mathematics.checkprivateparameters(target,original)
         end
     end
 end
-
-sequencers.appendaction("mathparameters","system","mathematics.checkprivateparameters")
 
 function mathematics.overloadparameters(target,original)
     local mathparameters = target.mathparameters
@@ -176,8 +170,6 @@ function mathematics.overloadparameters(target,original)
     end
 end
 
-sequencers.appendaction("mathparameters","system","mathematics.overloadparameters")
-
 local function applytweaks(when,target,original)
     local goodies = original.goodies
     if goodies then
@@ -185,9 +177,9 @@ local function applytweaks(when,target,original)
             local goodie = goodies[i]
             local mathematics = goodie.mathematics
             local tweaks = mathematics and mathematics.tweaks
-            if tweaks then
+            if type(tweaks) == "table" then
                 tweaks = tweaks[when]
-                if tweaks then
+                if type(tweaks) == "table" then
                     if trace_defining then
                         report_math("tweaking math of %a @ %p (%s)",target.properties.fullname,target.parameters.size,when)
                     end
@@ -218,8 +210,15 @@ function mathematics.tweakaftercopyingfont(target,original)
     end
 end
 
+sequencers.appendaction("mathparameters","system","mathematics.scaleparameters")
+sequencers.appendaction("mathparameters","system","mathematics.checkaccentbaseheight")  -- should go in lfg instead
+sequencers.appendaction("mathparameters","system","mathematics.checkprivateparameters") -- after scaling !
+sequencers.appendaction("mathparameters","system","mathematics.overloadparameters")
+
 sequencers.appendaction("beforecopyingcharacters","system","mathematics.tweakbeforecopyingfont")
 sequencers.appendaction("aftercopyingcharacters", "system","mathematics.tweakaftercopyingfont")
+
+local virtualized = mathematics.virtualized
 
 function mathematics.overloaddimensions(target,original,set)
     local goodies = target.goodies
@@ -232,15 +231,26 @@ function mathematics.overloaddimensions(target,original,set)
                 if trace_defining then
                     report_math("overloading dimensions in %a @ %p",target.properties.fullname,target.parameters.size)
                 end
-                local characters = target.characters
-                local parameters = target.parameters
-                local factor     = parameters.factor
-                local hfactor    = parameters.hfactor
-                local vfactor    = parameters.vfactor
-                local addprivate = fonts.helpers.addprivate
+                local characters   = target.characters
+                local descriptions = target.descriptions
+                local parameters   = target.parameters
+                local factor       = parameters.factor
+                local hfactor      = parameters.hfactor
+                local vfactor      = parameters.vfactor
+                local addprivate   = fonts.helpers.addprivate
+                -- to be sure
+                target.type = "virtual"
+                target.properties.virtualized = true
+                --
                 local function overload(dimensions)
                     for unicode, data in next, dimensions do
                         local character = characters[unicode]
+                        if not character then
+                            local c = virtualized[unicode]
+                            if c then
+                                character = characters[c]
+                            end
+                        end
                         if character then
                             --
                             local width  = data.width
@@ -249,26 +259,43 @@ function mathematics.overloaddimensions(target,original,set)
                             if trace_defining and (width or height or depth) then
                                 report_math("overloading dimensions of %C, width %a, height %a, depth %a",unicode,width,height,depth)
                             end
-                            if width   then character.width  = width  * hfactor end
-                            if height  then character.height = height * vfactor end
-                            if depth   then character.depth  = depth  * vfactor end
+                            if width  then character.width  = width  * hfactor end
+                            if height then character.height = height * vfactor end
+                            if depth  then character.depth  = depth  * vfactor end
                             --
                             local xoffset = data.xoffset
                             local yoffset = data.yoffset
-                            if xoffset then
+                            if xoffset == "llx" then
+                                local d = descriptions[unicode]
+                                if d then
+                                    xoffset         = - d.boundingbox[1] * hfactor
+                                    character.width = character.width + xoffset
+                                    xoffset = { "right", xoffset }
+                                end
+                            elseif xoffset then
                                 xoffset = { "right", xoffset * hfactor }
                             end
                             if yoffset then
                                 yoffset = { "down", -yoffset * vfactor }
                             end
                             if xoffset or yoffset then
-                                local slot = { "slot", 1, addprivate(target,nil,fastcopy(character)) }
-                                if xoffset and yoffset then
-                                    character.commands = { xoffset, yoffset, slot }
-                                elseif xoffset then
-                                    character.commands = { xoffset, slot }
+                                if character.commands then
+                                    if yoffset then
+                                        insert(character.commands,1,yoffset)
+                                    end
+                                    if xoffset then
+                                        insert(character.commands,1,xoffset)
+                                    end
                                 else
-                                    character.commands = { yoffset, slot }
+                                 -- local slot = { "slot", 1, addprivate(target,nil,fastcopy(character)) }
+                                    local slot = { "slot", 0, addprivate(target,nil,fastcopy(character)) }
+                                    if xoffset and yoffset then
+                                        character.commands = { xoffset, yoffset, slot }
+                                    elseif xoffset then
+                                        character.commands = { xoffset, slot }
+                                    else
+                                        character.commands = { yoffset, slot }
+                                    end
                                 end
                                 character.index = nil
                             end
@@ -502,12 +529,14 @@ local function horizontalcode(family,unicode)
         end
     elseif kind == e_right then
         local charlist = data[3].horiz_variants
-        local right = charlist[#charlist]
-        roffset = abs((right["start"] or 0) - (right["end"] or 0))
+        if charlist then
+            local right = charlist[#charlist]
+            roffset = abs((right["start"] or 0) - (right["end"] or 0))
+        end
      elseif kind == e_horizontal then
         local charlist = data[3].horiz_variants
         if charlist then
-            local left = charlist[1]
+            local left  = charlist[1]
             local right = charlist[#charlist]
             loffset = abs((left ["start"] or 0) - (left ["end"] or 0))
             roffset = abs((right["start"] or 0) - (right["end"] or 0))
@@ -540,54 +569,6 @@ interfaces.implement {
 
 -- check: when true, only set when present in font
 -- force: when false, then not set when already set
-
-local blocks = characters.blocks -- this will move to char-ini
-
--- operators    : 0x02200
--- symbolsa     : 0x02701
--- symbolsb     : 0x02901
--- supplemental : 0x02A00
-
--- from mathematics.gaps:
-
-blocks["lowercaseitalic"].gaps = {
-    [0x1D455] = 0x0210E, -- ℎ h
-}
-
-blocks["uppercasescript"].gaps = {
-    [0x1D49D] = 0x0212C, -- ℬ script B
-    [0x1D4A0] = 0x02130, -- ℰ script E
-    [0x1D4A1] = 0x02131, -- ℱ script F
-    [0x1D4A3] = 0x0210B, -- ℋ script H
-    [0x1D4A4] = 0x02110, -- ℐ script I
-    [0x1D4A7] = 0x02112, -- ℒ script L
-    [0x1D4A8] = 0x02133, -- ℳ script M
-    [0x1D4AD] = 0x0211B, -- ℛ script R
-}
-
-blocks["lowercasescript"].gaps = {
-    [0x1D4BA] = 0x0212F, -- ℯ script e
-    [0x1D4BC] = 0x0210A, -- ℊ script g
-    [0x1D4C4] = 0x02134, -- ℴ script o
-}
-
-blocks["uppercasefraktur"].gaps = {
-    [0x1D506] = 0x0212D, -- ℭ fraktur C
-    [0x1D50B] = 0x0210C, -- ℌ fraktur H
-    [0x1D50C] = 0x02111, -- ℑ fraktur I
-    [0x1D515] = 0x0211C, -- ℜ fraktur R
-    [0x1D51D] = 0x02128, -- ℨ fraktur Z
-}
-
-blocks["uppercasedoublestruck"].gaps = {
-    [0x1D53A] = 0x02102, -- ℂ bb C
-    [0x1D53F] = 0x0210D, -- ℍ bb H
-    [0x1D545] = 0x02115, -- ℕ bb N
-    [0x1D547] = 0x02119, -- ℙ bb P
-    [0x1D548] = 0x0211A, -- ℚ bb Q
-    [0x1D549] = 0x0211D, -- ℝ bb R
-    [0x1D551] = 0x02124, -- ℤ bb Z
-}
 
 -- todo: tounicode
 
@@ -758,6 +739,7 @@ function mathematics.finishfallbacks(target,specification,fallbacks)
                     if gaps then
                         for unic, unicode in next, gaps do
                             remap(unic,unicode,true)
+                            remap(unicode,unicode,true)
                         end
                     end
                 end

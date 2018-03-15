@@ -16,13 +16,11 @@ local tonut              = nodes.tonut
 local tonode             = nodes.tonode
 
 local getid              = nuts.getid
-local getfield           = nuts.getfield
 local getattr            = nuts.getattr
 local getlist            = nuts.getlist
 local getchar            = nuts.getchar
 local getnext            = nuts.getnext
 
-local setfield           = nuts.setfield
 local setattr            = nuts.setattr
 local setlink            = nuts.setlink
 local setchar            = nuts.setchar
@@ -136,6 +134,8 @@ end)
 --
 -- tasks.appendaction("processors", "words", "nodes.injectspans")
 --
+-- local pdfpageliteral = nuts.pool.pdfpageliteral
+--
 -- local function injectspans(head)
 --     local done = false
 --     for n in traverse_nodes(tonut(head)) do
@@ -144,8 +144,8 @@ end)
 --             local a = getattr(n,a_hyphenated)
 --             if a then
 --                 local str = codes[a]
---                 local b = new_pdfliteral(format("/Span << /ActualText %s >> BDC", lpdf.tosixteen(str)))
---                 local e = new_pdfliteral("EMC")
+--                 local b = pdfpageliteral(format("/Span << /ActualText %s >> BDC", lpdf.tosixteen(str)))
+--                 local e = pdfpageliteral("EMC")
 --                 insert_before(head,n,b)
 --                 insert_after(head,n,e)
 --                 done = true

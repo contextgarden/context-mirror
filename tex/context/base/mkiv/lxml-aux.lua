@@ -24,7 +24,7 @@ local type, next, setmetatable, getmetatable = type, next, setmetatable, getmeta
 local insert, remove, fastcopy, concat = table.insert, table.remove, table.fastcopy, table.concat
 local gmatch, gsub, format, find, strip = string.gmatch, string.gsub, string.format, string.find, string.strip
 local utfbyte = utf.byte
-local lpegmatch = lpeg.match
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local striplinepatterns = utilities.strings.striplinepatterns
 
 local function report(what,pattern,c,e)
@@ -412,7 +412,9 @@ local function include(xmldata,pattern,attribute,recursive,loaddata,level)
                     end
                     local data = nil
                     if name and name ~= "" then
-                        data = loaddata(name) or ""
+                        local d, n = loaddata(name)
+                        data = d or ""
+                        name = n or name
                         if trace_inclusions then
                             report_xml("including %s bytes from %a at level %s by pattern %a and attribute %a (%srecursing)",#data,name,level,pattern,attribute or "",recursive and "" or "not ")
                         end
@@ -423,6 +425,9 @@ local function include(xmldata,pattern,attribute,recursive,loaddata,level)
                         -- for the moment hard coded
                         epdt[ek.ni] = xml.escaped(data) -- d[k] = xml.escaped(data)
                     else
+local settings = xmldata.settings
+local savedresource = settings.currentresource
+settings.currentresource = name
                         local xi = xmlinheritedconvert(data,xmldata)
                         if not xi then
                             epdt[ek.ni] = "" -- xml.empty(d,k)
@@ -433,6 +438,7 @@ local function include(xmldata,pattern,attribute,recursive,loaddata,level)
                             local child = xml.body(xi) -- xml.assign(d,k,xi)
                             child.__p__ = ekrt
                             child.__f__ = name -- handy for tracing
+child.cf = name
                             epdt[ek.ni] = child
                             local settings   = xmldata.settings
                             local inclusions = settings and settings.inclusions
@@ -453,6 +459,7 @@ local function include(xmldata,pattern,attribute,recursive,loaddata,level)
                                 end
                             end
                         end
+settings.currentresource = savedresource
                     end
                 end
             end
@@ -502,15 +509,13 @@ function xml.badinclusions(e,sorted)
     return getinclusions("badinclusions",e,sorted)
 end
 
-local b_collapser  = lpeg.patterns.b_collapser
-local m_collapser  = lpeg.patterns.m_collapser
-local e_collapser  = lpeg.patterns.e_collapser
+local b_collapser  = lpegpatterns.b_collapser
+local m_collapser  = lpegpatterns.m_collapser
+local e_collapser  = lpegpatterns.e_collapser
 
-local b_stripper   = lpeg.patterns.b_stripper
-local m_stripper   = lpeg.patterns.m_stripper
-local e_stripper   = lpeg.patterns.e_stripper
-
-local lpegmatch    = lpeg.match
+local b_stripper   = lpegpatterns.b_stripper
+local m_stripper   = lpegpatterns.m_stripper
+local e_stripper   = lpegpatterns.e_stripper
 
 local function stripelement(e,nolines,anywhere)
     local edt = e.dt
@@ -1016,4 +1021,30 @@ function xml.totable(x,strip,flat)
         end
         return convert(x,strip,flat)
     end
+end
+
+-- namespace, name, attributes
+-- name, attributes
+-- name
+
+function xml.rename(e,namespace,name,attributes)
+    if type(e) ~= "table" or not e.tg then
+        return
+    end
+    if type(name) == "table" then
+        attributes = name
+        name       = namespace
+        namespace  = ""
+    elseif type(name) ~= "string" then
+        attributes = { }
+        name       = namespace
+        namespace  = ""
+    end
+    if type(attributes) ~= "table" then
+        attributes = { }
+    end
+    e.ns = namespace
+    e.rn = namespace
+    e.tg = name
+    e.at = attributes
 end

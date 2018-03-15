@@ -17,7 +17,7 @@
     </ctx:flags>
     <ctx:process>
         <ctx:resources>
-            <ctx:module>mod-01</ctx:module>
+            <ctx:module>module-basic</ctx:module>
         </ctx:resources>
     </ctx:process>
 </ctx:job>

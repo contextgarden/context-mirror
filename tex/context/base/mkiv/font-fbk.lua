@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['font-fbk'] = {
 
 local cos, tan, rad, format = math.cos, math.tan, math.rad, string.format
 local utfbyte, utfchar = utf.byte, utf.char
+local next = next
 
 --[[ldx--
 <p>This is very experimental code!</p>
@@ -65,10 +66,10 @@ local function composecharacters(tfmdata)
         local vfspecials   = backends.tables.vfspecials --brr
         local red, green, blue, black
         if trace_combining_visualize then
-            red   = vfspecials.red
-            green = vfspecials.green
-            blue  = vfspecials.blue
-            black = vfspecials.black
+            red   = vfspecials.startcolor("red")
+            green = vfspecials.startcolor("green")
+            blue  = vfspecials.startcolor("blue")
+            black = vfspecials.stopcolor
         end
         local compose = fonts.goodies.getcompositions(tfmdata)
         if compose and trace_combining_visualize then
@@ -106,8 +107,9 @@ local function composecharacters(tfmdata)
                             end
                             local chr_t = cache[chr]
                             if not chr_t then
-                                chr_t = { "slot", 1, chr }
-                    -- will be: chr_t = { "slot", 0, chr }
+                             -- chr_t = { "slot", 1, chr }
+                             -- chr_t = { "slot", 0, chr }
+                                chr_t = { "char", chr }
                                 cache[chr] = chr_t
                             end
                             if charsacc then
@@ -116,8 +118,9 @@ local function composecharacters(tfmdata)
                                 end
                                 local acc_t = cache[acc]
                                 if not acc_t then
-                                    acc_t = { "slot", 1, acc }
-                        -- will be: acc_t = { "slot", 0, acc }
+                                 -- acc_t = { "slot", 1, acc }
+                                 -- acc_t = { "slot", 0, acc }
+                                    acc_t = { "char", acc }
                                     cache[acc] = acc_t
                                 end
                                 local cb = descriptions[chr].boundingbox
@@ -212,15 +215,15 @@ local function composecharacters(tfmdata)
                                                 dy = - deltaxheight + extraxheight
                                             end
                                             if trace_combining_visualize then
-                                                t.commands = { push, {"right", dx+dd}, {"down", dy}, green, acc_t, black, pop, chr_t }
+                                                t.commands = { push, { "right", dx+dd }, { "down", dy }, green, acc_t, black, pop, chr_t }
                                             else
-                                                t.commands = { push, {"right", dx+dd}, {"down", dy},        acc_t,        pop, chr_t }
+                                                t.commands = { push, { "right", dx+dd }, { "down", dy },        acc_t,        pop, chr_t }
                                             end
                                         else
                                             if trace_combining_visualize then
-                                                t.commands = { push, {"right", dx+dd},               blue,  acc_t, black, pop, chr_t }
+                                                t.commands = { push, { "right", dx+dd },                 blue,  acc_t, black, pop, chr_t }
                                             else
-                                                t.commands = { push, {"right", dx+dd},                      acc_t,        pop, chr_t }
+                                                t.commands = { push, { "right", dx+dd },                        acc_t,        pop, chr_t }
                                             end
                                         end
                                     end
@@ -298,11 +301,11 @@ end
 
 -- vf builder
 
--- {'special', 'pdf: q ' .. s .. ' 0 0 '.. s .. ' 0 0 cm'},
--- {'special', 'pdf: q 1 0 0 1 ' .. -w .. ' ' .. -h .. ' cm'},
--- {'special', 'pdf: /Fm\XX\space Do'},
--- {'special', 'pdf: Q'},
--- {'special', 'pdf: Q'},
+-- { "pdf", "origin", "q " .. s .. " 0 0 " .. s .. " 0 0 cm" },
+-- { "pdf", "origin", "q 1 0 0 1 " .. -w .. " " .. -h .. " cm" },
+-- { "pdf", "origin", "/Fm\XX\space Do" },
+-- { "pdf", "origin", "Q" },
+-- { "pdf", "origin", "Q" },
 
 -- new and experimental
 

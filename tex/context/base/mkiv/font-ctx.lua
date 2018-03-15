@@ -17,7 +17,7 @@ local context, commands = context, commands
 local format, gmatch, match, find, lower, upper, gsub, byte, topattern = string.format, string.gmatch, string.match, string.find, string.lower, string.upper, string.gsub, string.byte, string.topattern
 local concat, serialize, sort, fastcopy, mergedtable = table.concat, table.serialize, table.sort, table.fastcopy, table.merged
 local sortedhash, sortedkeys, sequenced = table.sortedhash, table.sortedkeys, table.sequenced
-local settings_to_hash, hash_to_string = utilities.parsers.settings_to_hash, utilities.parsers.hash_to_string
+local settings_to_hash, hash_to_string, settings_to_array = utilities.parsers.settings_to_hash, utilities.parsers.hash_to_string, utilities.parsers.settings_to_array
 local formatcolumns = utilities.formatters.formatcolumns
 local mergehashes = utilities.parsers.mergehashes
 local formatters = string.formatters
@@ -37,12 +37,12 @@ local trace_mapfiles      = false  trackers.register("fonts.mapfiles",   functio
 local trace_automode      = false  trackers.register("fonts.automode",   function(v) trace_automode   = v end)
 local trace_merge         = false  trackers.register("fonts.merge",      function(v) trace_merge      = v end)
 
+local report              = logs.reporter("fonts")
 local report_features     = logs.reporter("fonts","features")
 local report_cummulative  = logs.reporter("fonts","cummulative")
 local report_defining     = logs.reporter("fonts","defining")
 local report_status       = logs.reporter("fonts","status")
 local report_mapfiles     = logs.reporter("fonts","mapfiles")
-local report_newline      = logs.newline
 
 local setmetatableindex   = table.setmetatableindex
 
@@ -75,8 +75,6 @@ local aglunicodes         = nil -- delayed loading
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
 
-local getfield            = nuts.getfield
-local setfield            = nuts.setfield
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
 local getprop             = nuts.getprop
@@ -160,7 +158,7 @@ helpers.name = getfontname
 
 local addformatter = utilities.strings.formatters.add
 
-if _LUAVERSION < 5.2  then
+if LUAVERSION < 5.2  then
 
     addformatter(formatters,"font:name",    [["'"..fontname(%s).."'"]],          "local fontname  = fonts.helpers.name")
     addformatter(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]],"local sequenced = table.sequenced")
@@ -587,9 +585,10 @@ local function presetcontext(name,parent,features) -- will go to con and shared
             if s then
                 for k, v in next, s do
 -- no, as then we cannot overload: e.g. math,mathextra
---                     if features[k] == nil then
+-- reverted, so we only take from parent when not set
+                    if features[k] == nil then
                         features[k] = v
---                     end
+                    end
                 end
             else
                 -- just ignore an undefined one .. i.e. we can refer to not yet defined
@@ -1057,7 +1056,6 @@ do  -- else too many locals
     local scanboolean            = scanners.boolean
 
     local setmacro               = tokens.setters.macro
-
     local scanners               = interfaces.scanners
 
  -- function commands.definefont_one(str)
@@ -1262,7 +1260,6 @@ do  -- else too many locals
 --          -- characters[0x2007] = { width = characters[0x0030] and characters[0x0030].width or parameters.space } -- figure
 --          -- characters[0x2008] = { width = characters[0x002E] and characters[0x002E].width or parameters.space } -- period
 --             --
---             constructors.checkvirtualids(tfmdata) -- experiment, will become obsolete when slots can selfreference
 --             local id = definefont(tfmdata)
 --             csnames[id] = specification.cs
 --             tfmdata.properties.id = id
@@ -1298,6 +1295,8 @@ do  -- else too many locals
 --         --
 --         stoptiming(fonts)
 --     end
+
+    local busy = false
 
     scanners.definefont_two = function()
 
@@ -1420,48 +1419,61 @@ do  -- else too many locals
             -- setting the extra characters will move elsewhere
             local characters = tfmdata.characters
             local parameters = tfmdata.parameters
+            local properties = tfmdata.properties
             -- we use char0 as signal; cf the spec pdf can handle this (no char in slot)
             characters[0] = nil
          -- characters[0x00A0] = { width = parameters.space }
          -- characters[0x2007] = { width = characters[0x0030] and characters[0x0030].width or parameters.space } -- figure
          -- characters[0x2008] = { width = characters[0x002E] and characters[0x002E].width or parameters.space } -- period
             --
-            constructors.checkvirtualids(tfmdata) -- experiment, will become obsolete when slots can selfreference
             local fallbacks = specification.fallbacks
-            if fallbacks and fallbacks ~= "" and tfmdata.properties.hasmath then
+            local mathsize  = (mathsize == 1 or mathsize == 2 or mathsize == 3) and mathsize or nil -- can be unset so we test 1 2 3
+            if fallbacks and fallbacks ~= "" and mathsize and not busy then
+                busy = true
                 -- We need this ugly hack in order to resolve fontnames (at the \TEX end). Originally
                 -- math was done in Lua after loading (plugged into aftercopying).
                 --
-                -- After tl 2017 I'll also do text falbacks this way (although backups there are done
+                -- After tl 2017 I'll also do text fallbacks this way (although backups there are done
                 -- in a completely different way.
+                if trace_defining then
+                    report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a, step %a",
+                        name,id,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks,1)
+                end
                 mathematics.resolvefallbacks(tfmdata,specification,fallbacks)
                 context(function()
+                    busy = false
                     mathematics.finishfallbacks(tfmdata,specification,fallbacks)
                     local id = definefont(tfmdata)
                     csnames[id] = specification.cs
-                    tfmdata.properties.id = id
+                    properties.id = id
                     definers.register(tfmdata,id) -- to be sure, normally already done
                     texdefinefont(global,cs,id)
                     constructors.cleanuptable(tfmdata)
                     constructors.finalize(tfmdata)
                     if trace_defining then
-                        report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a",
-                            name,id,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks)
+                        report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a, step %a",
+                            name,id,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks,2)
                     end
                     -- resolved (when designsize is used):
-                    local size = tfmdata.parameters.size or 655360
+                    local size = round(tfmdata.parameters.size or 655360)
                     setmacro("somefontsize",size.."sp")
                  -- ctx_setsomefontsize(size .. "sp")
                     texsetcount("scaledfontsize",size)
                     lastfontid = id
                     --
+                    if trace_defining then
+                        report_defining("memory usage after: %s",statistics.memused())
+                        report_defining("stop stage two")
+                    end
+                    --
                     texsetcount("global","lastfontid",lastfontid)
                     specifiers[lastfontid] = { str, size }
                     if not mathsize then
-                        -- forget about it
+                        -- forget about it (can't happen here)
                     elseif mathsize == 0 then
-                        lastmathids[1] = lastfontid
+                        -- can't happen (here)
                     else
+                        -- maybe only 1 2 3 (we already test for this)
                         lastmathids[mathsize] = lastfontid
                     end
                     stoptiming(fonts)
@@ -1470,17 +1482,17 @@ do  -- else too many locals
             else
                 local id = definefont(tfmdata)
                 csnames[id] = specification.cs
-                tfmdata.properties.id = id
+                properties.id = id
                 definers.register(tfmdata,id) -- to be sure, normally already done
                 texdefinefont(global,cs,id)
                 constructors.cleanuptable(tfmdata)
                 constructors.finalize(tfmdata)
                 if trace_defining then
-                    report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a",
-                        name,id,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks)
+                    report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a, step %a",
+                        name,id,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks,"-")
                 end
                 -- resolved (when designsize is used):
-                local size = tfmdata.parameters.size or 655360
+                local size = round(tfmdata.parameters.size or 655360)
                 setmacro("somefontsize",size.."sp")
              -- ctx_setsomefontsize(size .. "sp")
                 texsetcount("scaledfontsize",size)
@@ -1494,7 +1506,7 @@ do  -- else too many locals
             csnames[tfmdata] = specification.cs
             texdefinefont(global,cs,tfmdata)
             -- resolved (when designsize is used):
-            local size = fontdata[tfmdata].parameters.size or 0
+            local size = round(fontdata[tfmdata].parameters.size or 0)
          -- ctx_setsomefontsize(size .. "sp")
             setmacro("somefontsize",size.."sp")
             texsetcount("scaledfontsize",size)
@@ -1515,8 +1527,9 @@ do  -- else too many locals
         if not mathsize then
             -- forget about it
         elseif mathsize == 0 then
-            lastmathids[1] = lastfontid
+            -- can't happen (here)
         else
+            -- maybe only 1 2 3
             lastmathids[mathsize] = lastfontid
         end
         --
@@ -1595,7 +1608,6 @@ do  -- else too many locals
                 end
                 return tfmdata, fontdata[tfmdata]
             else
-                constructors.checkvirtualids(tfmdata) -- experiment, will become obsolete when slots can selfreference
                 local id = definefont(tfmdata)
                 tfmdata.properties.id = id
                 definers.register(tfmdata,id)
@@ -1655,10 +1667,19 @@ do  -- else too many locals
 
     function fonts.infofont()
         if infofont == 0 then
-            infofont = definers.define { name = "dejavusansmono", size = tex.sp("6pt") }
+            infofont = definers.define { name = "dejavusansmono", size = texsp("6pt") }
         end
         return infofont
     end
+
+    -- abstract interfacing
+
+    implement { name = "tf", actions = function() setmacro("fontalternative","tf") end }
+    implement { name = "bf", actions = function() setmacro("fontalternative","bf") end }
+    implement { name = "it", actions = function() setmacro("fontalternative","it") end }
+    implement { name = "sl", actions = function() setmacro("fontalternative","sl") end }
+    implement { name = "bi", actions = function() setmacro("fontalternative","bi") end }
+    implement { name = "bs", actions = function() setmacro("fontalternative","bs") end }
 
 end
 
@@ -1704,7 +1725,7 @@ function constructors.calculatescale(tfmdata,scaledpoints,relativeid,specificati
  --         scaledpoints = rscale * scaledpoints
  --     end
  -- end
-    return scaledpoints, delta
+    return round(scaledpoints), round(delta)
 end
 
 local designsizes = constructors.designsizes
@@ -1722,17 +1743,19 @@ function constructors.hashinstance(specification,force)
     end
     if size < 1000 and designsizes[hash] then
         size = round(constructors.scaled(size,designsizes[hash]))
-        specification.size = size
+    else
+        size = round(size)
     end
+    specification.size = size
     if fallbacks then
-        return hash .. ' @ ' .. tostring(size) .. ' @ ' .. fallbacks
+        return hash .. ' @ ' .. size .. ' @ ' .. fallbacks
     else
         local scalemode = specification.scalemode
         local special   = scalemode and specialscale[scalemode]
         if special then
-            return hash .. ' @ ' .. tostring(size) .. ' @ ' .. special
+            return hash .. ' @ ' .. size .. ' @ ' .. special
         else
-            return hash .. ' @ ' .. tostring(size)
+            return hash .. ' @ ' .. size
         end
     end
 end
@@ -1774,7 +1797,7 @@ function definers.resolve(specification) -- overload function in font-con.lua
     end
     -- so far for goodie hacks
     local hash = hashfeatures(specification)
-    local name = specification.name
+    local name = specification.name or "badfont"
     local sub  = specification.sub
     if sub and sub ~= "" then
         specification.hash = lower(name .. " @ " .. sub .. ' @ ' .. hash)
@@ -2094,29 +2117,27 @@ function loggers.reportdefinedfonts()
             local parameters = data.parameters or { }
             tn = tn + 1
             t[tn] = {
-  format("%03i",id                    or 0),
-  format("%09i",parameters.size       or 0),
-                properties.type       or "real",
-                properties.format     or "unknown",
-                properties.name       or "",
-                properties.psname     or "",
-                properties.fullname   or "",
-                properties.sharedwith or "",
+  formatters["%03i"](id                    or 0),
+  formatters["%p"  ](parameters.size       or 0),
+                     properties.type       or "real",
+                     properties.format     or "unknown",
+                     properties.name       or "",
+                     properties.psname     or "",
+                     properties.fullname   or "",
+                     properties.sharedwith or "",
             }
         end
         formatcolumns(t,"  ")
-        logs.pushtarget("logfile")
-        report_newline()
-        report_status("defined fonts:")
-        report_newline()
+        --
+        logs.startfilelogging(report,"defined fonts")
         for k=1,tn do
-            report_status(t[k])
+            report(t[k])
         end
-        logs.poptarget()
+        logs.stopfilelogging()
     end
 end
 
-luatex.registerstopactions(loggers.reportdefinedfonts)
+logs.registerfinalactions(loggers.reportdefinedfonts)
 
 function loggers.reportusedfeatures()
     -- numbers, setups, merged
@@ -2131,18 +2152,15 @@ function loggers.reportusedfeatures()
             setup.number = n -- restore it (normally not needed as we're done anyway)
         end
         formatcolumns(t,"  ")
-        logs.pushtarget("logfile")
-        report_newline()
-        report_status("defined featuresets:")
-        report_newline()
+        logs.startfilelogging(report,"defined featuresets")
         for k=1,n do
-            report_status(t[k])
+            report(t[k])
         end
-        logs.poptarget()
+        logs.stopfilelogging()
     end
 end
 
-luatex.registerstopactions(loggers.reportusedfeatures)
+logs.registerfinalactions(loggers.reportusedfeatures)
 
 -- maybe move this to font-log.lua:
 
@@ -2366,65 +2384,6 @@ dimenfactors.pct  = nil
 to scale virtual characters.</p>
 --ldx]]--
 
--- in versions > 0.82 0 is supported as equivalent of self
-
-function constructors.checkvirtualids(tfmdata)
-    -- begin of experiment: we can use { "slot", 0, number } in virtual fonts
-    local fonts  = tfmdata.fonts
-    local selfid = font.nextid()
-    if fonts and #fonts > 0 then
-        for i=1,#fonts do
-            local fi = fonts[i]
-            if fi[2] == 0 then
-                fi[2] = selfid
-            elseif fi.id == 0 then
-                fi.id = selfid
-            end
-        end
-    else
-     -- tfmdata.fonts = { "id", selfid } -- conflicts with other next id's (vf math), too late anyway
-    end
-    -- end of experiment
-end
-
--- function constructors.getvirtualid(tfmdata)
---     --  since we don't know the id yet, we use 0 as signal
---     local tf = tfmdata.fonts
---     if not tf then
---         local properties = tfmdata.properties
---         if properties then
---             properties.virtualized = true
---         else
---             tfmdata.properties = { virtualized = true }
---         end
---         tf = { }
---         tfmdata.fonts = tf
---     end
---     local ntf = #tf + 1
---     tf[ntf] = { id = 0 }
---     return ntf
--- end
---
--- function constructors.checkvirtualid(tfmdata, id) -- will go
---     local properties = tfmdata.properties
---     if tfmdata and tfmdata.type == "virtual" or (properties and properties.virtualized) then
---         local vfonts = tfmdata.fonts
---         if not vffonts or #vfonts == 0 then
---             if properties then
---                 properties.virtualized = false
---             end
---             tfmdata.fonts = nil
---         else
---             for f=1,#vfonts do
---                 local fnt = vfonts[f]
---                 if fnt.id and fnt.id == 0 then
---                     fnt.id = id
---                 end
---             end
---         end
---     end
--- end
-
 do
 
     local setmacro = tokens.setters.macro
@@ -2587,25 +2546,7 @@ end
 
 -- a fontkern plug:
 
-do
-
-    local kerncodes = nodes.kerncodes
-    local copy_node = nuts.copy
-    local kern      = nuts.pool.register(nuts.pool.kern())
-
-    setattr(kern,attributes.private('fontkern'),1) -- no gain in setprop as it's shared
-
-    nodes.injections.installnewkern(function(k)
-        local c = copy_node(kern)
-        setfield(c,"kern",k)
-        return c
-    end)
-
-    directives.register("fonts.injections.fontkern", function(v)
-        setsubtype(kern,v and kerncodes.fontkern or kerncodes.userkern)
-    end)
-
-end
+-- nodes.injections.installnewkern(nuts.pool.fontkern)
 
 do
 
@@ -2661,7 +2602,7 @@ do
 
     local unsetvalue      = attributes.unsetvalue
 
-    local traverse_id     = nuts.traverse_id
+    local traverse_char   = nuts.traverse_char
 
     local a_color         = attributes.private('color')
     local a_colormodel    = attributes.private('colormodel')
@@ -2690,7 +2631,7 @@ do
         if head then
             head = tonut(head)
             local model = getattr(head,a_colormodel) or 1
-            for glyph in traverse_id(glyph_code,head) do
+            for glyph in traverse_char(head) do
                 local a = getprop(glyph,a_state)
                 if a then
                     local name = colornames[a]
@@ -2741,7 +2682,7 @@ do
 
 
     function methods.nocolor(head,font,attr)
-        for n in traverse_id(glyph_code,head) do
+        for n in traverse_char(head) do
             if not font or getfont(n) == font then
                 setattr(n,a_color,unsetvalue)
             end
@@ -3074,3 +3015,82 @@ do
     }
 
 end
+
+-- for the moment here (and not in font-con.lua):
+
+local identical     = table.identical
+local copy          = table.copy
+local fontdata      = fonts.hashes.identifiers
+local addcharacters = font.addcharacters
+
+-- This helper is mostly meant to add last-resort (virtual) characters
+-- or runtime generated fonts (so we forget about features and such). It
+-- will probably take a while before it get used.
+
+local trace_adding  = false
+local report_adding = logs.reporter("fonts","add characters")
+
+trackers.register("fonts.addcharacters",function(v) trace_adding = v end)
+
+if addcharacters then
+
+    function fonts.constructors.addcharacters(id,list)
+        local newchar = list.characters
+        if newchar then
+            local data    = fontdata[id]
+            local newfont = list.fonts
+            local oldchar = data.characters
+            local oldfont = data.fonts
+            addcharacters(id, {
+                characters = newchar,
+                fonts      = newfont,
+                nomath     = not data.properties.hasmath,
+            })
+            -- this is just for tracing, as the assignment only uses the fonts list
+            -- and doesn't store it otherwise
+            if newfont then
+                if oldfont then
+                    local oldn = #oldfont
+                    local newn = #newfont
+                    for n=1,newn do
+                        local ok = false
+                        local nf = newfont[n]
+                        for o=1,oldn do
+                            if identical(nf,oldfont[o]) then
+                                ok = true
+                                break
+                            end
+                        end
+                        if not ok then
+                            oldn = oldn + 1
+                            oldfont[oldn] = newfont[i]
+                        end
+                    end
+                else
+                    data.fonts = newfont
+                end
+            end
+            -- this is because we need to know what goes on and also might
+            -- want to access character data
+            for u, c in next, newchar do
+                if trace_adding then
+                    report_adding("adding character %U to font %!font:name!",u,id)
+                end
+                oldchar[u] = c
+            end
+        end
+    end
+
+else
+    function fonts.constructors.addcharacters(id,list)
+        report_adding("adding characters to %!font:name! is not yet supported",id)
+    end
+end
+
+implement {
+    name      = "addfontpath",
+    arguments = "string",
+    actions   = function(list)
+        names.addruntimepath(settings_to_array(list))
+    end
+}

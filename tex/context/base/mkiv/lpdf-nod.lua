@@ -24,10 +24,12 @@ local new_node         = nuts.new
 local nodepool         = nuts.pool
 local register         = nodepool.register
 
-local pdforiginliteral = register(new_node("whatsit", whatsitcodes.pdfliteral))    setfield(pdforiginliteral,"mode",0) -- set_origin_code
-local pdfpageliteral   = register(new_node("whatsit", whatsitcodes.pdfliteral))    setfield(pdfpageliteral,  "mode",1) -- page_code
-local pdfdirectliteral = register(new_node("whatsit", whatsitcodes.pdfliteral))    setfield(pdfdirectliteral,"mode",2) -- direct_code
-local pdfrawliteral    = register(new_node("whatsit", whatsitcodes.pdfliteral))    setfield(pdfrawliteral,   "mode",3) -- raw_code
+local literalvalues    = nodes.literalvalues
+
+local pdforiginliteral = register(new_node("whatsit", whatsitcodes.pdfliteral))  setfield(pdforiginliteral,"mode",literalvalues.origin)
+local pdfpageliteral   = register(new_node("whatsit", whatsitcodes.pdfliteral))  setfield(pdfpageliteral,  "mode",literalvalues.page)
+local pdfdirectliteral = register(new_node("whatsit", whatsitcodes.pdfliteral))  setfield(pdfdirectliteral,"mode",literalvalues.direct)
+local pdfrawliteral    = register(new_node("whatsit", whatsitcodes.pdfliteral))  setfield(pdfrawliteral,   "mode",literalvalues.raw)
 
 local pdfsave          = register(new_node("whatsit", whatsitcodes.pdfsave))
 local pdfrestore       = register(new_node("whatsit", whatsitcodes.pdfrestore))
@@ -37,23 +39,12 @@ local pdfsetmatrix     = register(new_node("whatsit", whatsitcodes.pdfsetmatrix)
 
 local variables = interfaces.variables
 
-local views = { -- beware, we do support the pdf keys but this is *not* official
-    xyz   = 0, [variables.standard]  = 0,
-    fit   = 1, [variables.fit]       = 1,
-    fith  = 2, [variables.width]     = 2,
-    fitv  = 3, [variables.height]    = 3,
-    fitb  = 4,
-    fitbh = 5, [variables.minwidth]  = 5,
-    fitbv = 6, [variables.minheight] = 6,
-    fitr  = 7,
-}
-
 function nodepool.pdforiginliteral(str) local t = copy_node(pdforiginliteral) setfield(t,"data",str) return t end
 function nodepool.pdfpageliteral  (str) local t = copy_node(pdfpageliteral  ) setfield(t,"data",str) return t end
 function nodepool.pdfdirectliteral(str) local t = copy_node(pdfdirectliteral) setfield(t,"data",str) return t end
 function nodepool.pdfrawliteral   (str) local t = copy_node(pdfrawliteral   ) setfield(t,"data",str) return t end
 
-nodepool.pdfliteral = nodepool.pdfpageliteral
+nodepool.pdfliteral = nodepool.pdfpageliteral -- best is to use a specific one: origin | page | direct | raw
 
 function nodepool.pdfsave()
     return copy_node(pdfsave)
@@ -137,6 +128,17 @@ end
 --     break ;
 --
 -- so we need to force a matrix.
+
+-- local views = { -- beware, we do support the pdf keys but this is *not* official
+--     xyz   = 0, [variables.standard]  = 0,
+--     fit   = 1, [variables.fit]       = 1,
+--     fith  = 2, [variables.width]     = 2,
+--     fitv  = 3, [variables.height]    = 3,
+--     fitb  = 4,
+--     fitbh = 5, [variables.minwidth]  = 5,
+--     fitbv = 6, [variables.minheight] = 6,
+--     fitr  = 7,
+-- }
 
 function nodepool.pdfdestination(w,h,d,name,view,n)
     report("don't use node based destinations!")

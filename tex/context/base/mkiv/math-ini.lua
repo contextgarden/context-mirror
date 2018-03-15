@@ -15,9 +15,11 @@ if not modules then modules = { } end modules ['math-ini'] = {
 -- to the fam when set ... we use other means .. ok, we could use it for spacing but
 -- then we also have to set the other characters (only a subset done now)
 
+local next, type = next, type
 local formatters, find = string.formatters, string.find
 local utfchar, utfbyte, utflength = utf.char, utf.byte, utf.length
-local floor = math.floor
+----- floor = math.floor
+local sortedhash = table.sortedhash
 local toboolean = toboolean
 
 local context               = context
@@ -132,11 +134,39 @@ local extensibles = allocate {
 
 table.setmetatableindex(extensibles,function(t,k) t[k] = 0 return 0 end)
 
-mathematics.extensibles     = extensibles
-mathematics.classes         = classes
-mathematics.codes           = codes
------------.accents         = codes
-mathematics.families        = families
+local virtualized = allocate {
+}
+
+function mathematics.virtualize(unicode,virtual)
+
+    local function virtualize(k,v)
+        local c = virtualized[k]
+        if c == v then
+            report_math("character %C is already virtualized to %C",k,v)
+        elseif c then
+            report_math("character %C is already virtualized to %C, ignoring mapping to %C",k,c,v)
+        else
+            virtualized[k] = v
+        end
+    end
+
+    if type(unicode) == "table" then
+        for k, v in next, unicode do
+            virtualize(k,v)
+        end
+    elseif type(unicode) == "number" and type(virtual) == "number" then
+        virtualize(unicode,virtual)
+ -- else
+        -- error
+    end
+end
+
+mathematics.extensibles = extensibles
+mathematics.classes     = classes
+mathematics.codes       = codes
+-----------.accents     = codes
+mathematics.families    = families
+mathematics.virtualized = virtualized
 
 -- there will be proper functions soon (and we will move this code in-line)
 -- no need for " in class and family (saves space)
@@ -257,7 +287,7 @@ function mathematics.define(family)
     family = family or 0
     family = families[family] or family
     local data = characters.data
-    for unicode, character in next, data do
+    for unicode, character in sortedhash(data) do
         local symbol = character.mathsymbol
         local mset, dset = true, true
         if symbol then
@@ -272,7 +302,8 @@ function mathematics.define(family)
             end
             local spec = other.mathspec
             if spec then
-                for i, m in next, spec do
+                for i=1,#spec do
+                    local m = spec[i]
                     local class = m.class
                     if class then
                         class = classes[class] or class -- no real checks needed
@@ -284,14 +315,29 @@ function mathematics.define(family)
         local mathclass = character.mathclass
         local mathspec = character.mathspec
         if mathspec then
-            for i, m in next, mathspec do
+            if mathclass then
+                local name = character.mathname
+                if name then
+                    report_math("fatal error, conlicting mathclass and mathspec for %C",unicode)
+                    os.exit()
+                else
+                    local class = classes[mathclass] or mathclass -- no real checks needed
+                    if not class then
+                        if trace_defining then
+                            report("unknown",family,unicode)
+                        end
+                    else
+                        if trace_defining then
+                            report(class,family,unicode)
+                        end
+                        mset, dset = setmathcharacter(class,family,unicode,unicode,mset,dset)
+                    end
+                end
+            end
+            for i=1,#mathspec do
+                local m = mathspec[i]
                 local name = m.name
                 local class = m.class
-                if not class then
-                    class = mathclass
-                elseif not mathclass then
-                    mathclass = class
-                end
                 if class then
                     class = classes[class] or class -- no real checks needed
                     if name then
@@ -300,7 +346,7 @@ function mathematics.define(family)
                         end
                         setmathsymbol(name,class,family,unicode)
                     else
-                        name = class == classes.variable or class == classes.number and character.adobename
+                        name = (class == classes.variable or class == classes.number) and character.adobename -- bad
                         if name and trace_defining then
                             report(class,family,unicode,name)
                         end
@@ -308,17 +354,22 @@ function mathematics.define(family)
                     mset, dset = setmathcharacter(class,family,unicode,m.unicode or unicode,mset,dset) -- see solidus
                 end
             end
-        end
-        if mathclass then
+        elseif mathclass then
             local name = character.mathname
             local class = classes[mathclass] or mathclass -- no real checks needed
-            if name == false then
+            if not class then
+                if trace_defining then
+                    report("unknown",family,unicode,name)
+                end
+            elseif name == false then
                 if trace_defining then
                     report(class,family,unicode,name)
                 end
-                mset, dset = setmathcharacter(class,family,unicode,mset,dset)
+                mset, dset = setmathcharacter(class,family,unicode,unicode,mset,dset)
             else
-                name = name or character.contextname
+             -- if not name then
+             --     name = character.contextname -- too dangerous, we loose textslash and a few more
+             -- end
                 if name then
                     if trace_defining then
                         report(class,family,unicode,name)

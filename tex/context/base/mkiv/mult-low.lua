@@ -29,7 +29,7 @@ return {
         --
         "bigskipamount", "medskipamount", "smallskipamount",
         --
-        "fmtname", "fmtversion", "texengine", "texenginename", "texengineversion",
+        "fmtname", "fmtversion", "texengine", "texenginename", "texengineversion", "texenginefunctionality",
         "luatexengine", "pdftexengine", "xetexengine", "unknownengine",
      -- "etexversion",
      -- "pdftexversion", "pdftexrevision",
@@ -85,6 +85,7 @@ return {
         --
         "fontslantperpoint", "fontinterwordspace", "fontinterwordstretch", "fontinterwordshrink",
         "fontexheight", "fontemwidth", "fontextraspace", "slantperpoint",
+        "mathexheight", "mathemwidth",
         "interwordspace", "interwordstretch", "interwordshrink", "exheight", "emwidth", "extraspace",
         "mathsupdisplay", "mathsupnormal", "mathsupcramped", "mathsubnormal", "mathsubcombined",  "mathaxisheight",
         "muquad",
@@ -123,14 +124,15 @@ return {
         --
         "luastringsep", "!!bs", "!!es",
         --
-        "lefttorightmark", "righttoleftmark",
+        "lefttorightmark", "righttoleftmark", "lrm", "rlm",
+        "bidilre", "bidirle", "bidipop", "bidilro", "bidirlo",
         --
         "breakablethinspace", "nobreakspace", "nonbreakablespace", "narrownobreakspace", "zerowidthnobreakspace",
         "ideographicspace", "ideographichalffillspace",
         "twoperemspace", "threeperemspace", "fourperemspace", "fiveperemspace", "sixperemspace",
-        "figurespace", "punctuationspace", "hairspace",
+        "figurespace", "punctuationspace", "hairspace", "enquad", "emquad",
         "zerowidthspace", "zerowidthnonjoiner", "zerowidthjoiner", "zwnj", "zwj",
-        "optionalspace", "asciispacechar",
+        "optionalspace", "asciispacechar", "softhyphen",
         --
         "Ux", "eUx", "Umathaccents",
         --
@@ -178,7 +180,7 @@ return {
         --
         "donetrue", "donefalse", "foundtrue", "foundfalse",
         --
-        "inlineordisplaymath","indisplaymath","forcedisplaymath","startforceddisplaymath","stopforceddisplaymath","reqno",
+        "inlineordisplaymath","indisplaymath","forcedisplaymath","startforceddisplaymath","stopforceddisplaymath","startpickupmath","stoppickupmath","reqno",
         --
         "mathortext",
         --
@@ -243,6 +245,7 @@ return {
         "doifelsenextoptional", "doifnextoptionalelse",
         "doifelsenextoptionalcs", "doifnextoptionalcselse",
         "doifelsefastoptionalcheck", "doiffastoptionalcheckelse",
+        "doifelsefastoptionalcheckcs", "doiffastoptionalcheckcselse",
         "doifelsenextbgroup", "doifnextbgroupelse",
         "doifelsenextbgroupcs", "doifnextbgroupcselse",
         "doifelsenextparenthesis", "doifnextparenthesiselse",
@@ -260,6 +263,7 @@ return {
         "doifelsecommon", "doifcommonelse", "doifcommon", "doifnotcommon",
         "doifinstring", "doifnotinstring", "doifelseinstring", "doifinstringelse",
         "doifelseassignment", "doifassignmentelse", "docheckassignment",
+        "doiftext", "doifelsetext", "doiftextelse", "doifnottext",
         --
         "tracingall", "tracingnone", "loggingall",
         --
@@ -274,7 +278,7 @@ return {
         "singleexpandafter", "doubleexpandafter", "tripleexpandafter",
         --
         "dontleavehmode", "removelastspace", "removeunwantedspaces", "keepunwantedspaces",
-        "removepunctuation",
+        "removepunctuation", "ignoreparskip", "forcestrutdepth",
         --
         "wait", "writestatus", "define", "defineexpandable", "redefine",
         --
@@ -312,7 +316,7 @@ return {
         "gobbleoneargument", "gobbletwoarguments", "gobblethreearguments", "gobblefourarguments", "gobblefivearguments", "gobblesixarguments", "gobblesevenarguments", "gobbleeightarguments", "gobbleninearguments", "gobbletenarguments",
         "gobbleoneoptional", "gobbletwooptionals", "gobblethreeoptionals", "gobblefouroptionals", "gobblefiveoptionals",
         --
-        "dorecurse", "doloop", "exitloop", "dostepwiserecurse", "recurselevel", "recursedepth", "dofastloopcs", "dowith",
+        "dorecurse", "doloop", "exitloop", "dostepwiserecurse", "recurselevel", "recursedepth", "dofastloopcs", "fastloopindex", "fastloopfinal", "dowith",
         --
         "newconstant", "setnewconstant", "setconstant", "setconstantvalue",
         "newconditional", "settrue", "setfalse", "settruevalue", "setfalsevalue",
@@ -339,7 +343,7 @@ return {
         --
         "offinterlineskip", "oninterlineskip", "nointerlineskip",
         --
-        "strut", "halfstrut", "quarterstrut", "depthstrut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "struthtdp", "begstrut", "endstrut", "lineheight",
+        "strut", "halfstrut", "quarterstrut", "depthstrut", "halflinestrut", "noheightstrut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "struthtdp", "strutgap", "begstrut", "endstrut", "lineheight",
         "leftboundary", "rightboundary", "signalcharacter",
         --
         "ordordspacing", "ordopspacing", "ordbinspacing", "ordrelspacing",
@@ -370,7 +374,8 @@ return {
         --
         "startimath", "stopimath", "normalstartimath", "normalstopimath",
         "startdmath", "stopdmath", "normalstartdmath", "normalstopdmath",
-        "normalsuperscript", "normalsubscript",
+        "normalsuperscript", "normalsubscript", "normalnosuperscript", "normalnosubscript",
+        "superscript", "subscript", "nosuperscript", "nosubscript",
         --
         "uncramped", "cramped", "triggermathstyle", "mathstylefont", "mathsmallstylefont", "mathstyleface", "mathsmallstyleface", "mathstylecommand", "mathpalette",
         "mathstylehbox", "mathstylevbox", "mathstylevcenter", "mathstylevcenteredhbox", "mathstylevcenteredvbox",
@@ -411,7 +416,9 @@ return {
         "rtlhbox", "ltrhbox", "rtlvbox", "ltrvbox", "rtlvtop", "ltrvtop",
         "autodirhbox", "autodirvbox", "autodirvtop",
         "leftorrighthbox", "leftorrightvbox", "leftorrightvtop",
-        "lefttoright", "righttoleft","synchronizelayoutdirection","synchronizedisplaydirection","synchronizeinlinedirection",
+        "lefttoright", "righttoleft", "checkedlefttoright", "checkedrighttoleft",
+        "synchronizelayoutdirection","synchronizedisplaydirection","synchronizeinlinedirection",
+        "dirlre", "dirrle", "dirlro", "dirrlo",
         --
         "lesshyphens", "morehyphens", "nohyphens", "dohyphens",
         --
@@ -421,10 +428,12 @@ return {
         --
         "nospace", "nospacing", "dospacing",
         --
-        "naturalhbox", "naturalvbox", "naturalhpack", "naturalvpack",
+        "naturalhbox", "naturalvbox", "naturalvtop", "naturalhpack", "naturalvpack",
         --
         "frule",
         --
         "compoundhyphenpenalty",
+        --
+        "start", "stop",
     }
 }

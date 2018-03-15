@@ -18,7 +18,7 @@
 %D packaging and expansion we also keep tracing reasonable. For instance, multiple
 %D stacked backgrounds can slow down a run if not optimized this way.
 
-\registerctxluafile{pack-rul}{1.001}
+\registerctxluafile{pack-rul}{}
 
 \unprotect
 
@@ -1127,6 +1127,12 @@
 \let\delayedendstrut\relax
 \let\delayedstrut   \relax
 
+\let\localoffset\empty
+\let\localwidth \empty
+\let\localheight\empty
+\let\localformat\empty
+\let\localstrut \empty
+
 \unexpanded\def\pack_framed_process_indeed
   {\d_framed_frameoffset\framedparameter\c!frameoffset
    \edef\p_framed_backgroundoffset{\framedparameter\c!backgroundoffset}%
@@ -1806,7 +1812,7 @@
    \dp\b_framed_normal\scratchdimen
    \hpack{\box\b_framed_normal}}
 
-\installframedlocator \v!lohi
+\installframedlocator \v!lohi % maybe also \v!center
   {\pack_framed_locator_before\v!middle}
   {\pack_framed_locator_after \v!middle}
 
@@ -2470,6 +2476,7 @@
 %D \dontcomplain
 %D
 %D \startbuffer
+%D \unprotect
 %D \vbox to \vsize
 %D   \bgroup
 %D     \startalignment[middle]
@@ -2503,6 +2510,7 @@
 %D     \vss
 %D     \stopalignment
 %D     \egroup
+%D \protect
 %D \stopbuffer
 %D
 %D \getbuffer \page

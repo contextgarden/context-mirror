@@ -52,7 +52,6 @@ if not modules then modules = { } end modules ['font-dsp'] = {
 -- multi-gig videos pass through our networks and storage and memory is abundant.
 
 local next, type = next, type
-local bittest = bit32.btest
 local band = bit32.band
 local extract = bit32.extract
 local bor = bit32.bor
@@ -273,7 +272,7 @@ local lookupnames = {
 -- local lookupstate = setmetatableindex(function(t,k)
 --     local v = { }
 --     for kk, vv in next, lookupbits do
---         if bittest(k,kk) then
+--         if band(k,kk) ~= 0 then
 --             v[vv] = true
 --         end
 --     end
@@ -283,10 +282,10 @@ local lookupnames = {
 
 local lookupflags = setmetatableindex(function(t,k)
     local v = {
-        bittest(k,0x0008) and true or false, -- ignoremarks
-        bittest(k,0x0004) and true or false, -- ignoreligatures
-        bittest(k,0x0002) and true or false, -- ignorebaseglyphs
-        bittest(k,0x0001) and true or false, -- r2l
+        band(k,0x0008) ~= 0 and true or false, -- ignoremarks
+        band(k,0x0004) ~= 0 and true or false, -- ignoreligatures
+        band(k,0x0002) ~= 0 and true or false, -- ignorebaseglyphs
+        band(k,0x0001) ~= 0 and true or false, -- r2l
     }
     t[k] = v
     return v
@@ -690,13 +689,13 @@ end
 
 local function readposition(f,format,mainoffset,getdelta)
     if format == 0 then
-        return
+        return false
     end
     -- a few happen often
     if format == 0x04 then
         local h = readshort(f)
         if h == 0 then
-            return
+            return true -- all zero
         else
             return { 0, 0, h, 0 }
         end
@@ -705,7 +704,7 @@ local function readposition(f,format,mainoffset,getdelta)
         local x = readshort(f)
         local h = readshort(f)
         if x == 0 and h == 0 then
-            return
+            return true -- all zero
         else
             return { x, 0, h, 0 }
         end
@@ -724,7 +723,7 @@ local function readposition(f,format,mainoffset,getdelta)
             skipshort(f,1)
         end
         if h == 0 then
-            return
+            return true -- all zero
         else
             return { 0, 0, h, 0 }
         end
@@ -738,15 +737,15 @@ local function readposition(f,format,mainoffset,getdelta)
     --     ....
     -- end
     --
-    local x = bittest(format,0x01) and readshort(f) or 0 -- x placement
-    local y = bittest(format,0x02) and readshort(f) or 0 -- y placement
-    local h = bittest(format,0x04) and readshort(f) or 0 -- h advance
-    local v = bittest(format,0x08) and readshort(f) or 0 -- v advance
+    local x = band(format,0x1) ~= 0 and readshort(f) or 0 -- x placement
+    local y = band(format,0x2) ~= 0 and readshort(f) or 0 -- y placement
+    local h = band(format,0x4) ~= 0 and readshort(f) or 0 -- h advance
+    local v = band(format,0x8) ~= 0 and readshort(f) or 0 -- v advance
     if format >= 0x10 then
-        local X = bittest(format,0x10) and skipshort(f) or 0
-        local Y = bittest(format,0x20) and skipshort(f) or 0
-        local H = bittest(format,0x40) and skipshort(f) or 0
-        local V = bittest(format,0x80) and skipshort(f) or 0
+        local X = band(format,0x10) ~= 0 and skipshort(f) or 0
+        local Y = band(format,0x20) ~= 0 and skipshort(f) or 0
+        local H = band(format,0x40) ~= 0 and skipshort(f) or 0
+        local V = band(format,0x80) ~= 0 and skipshort(f) or 0
         local s = skips[extract(format,4,4)]
         if s > 0 then
             skipshort(f,s)
@@ -779,7 +778,7 @@ local function readposition(f,format,mainoffset,getdelta)
         end
         return { x, y, h, v }
     elseif x == 0 and y == 0 and h == 0 and v == 0 then
-        return
+        return true -- all zero
     else
         return { x, y, h, v }
     end
@@ -1393,12 +1392,14 @@ function gsubhandlers.reversechainedcontextsingle(f,fontdata,lookupid,lookupoffs
         before  = readcoveragearray(f,tableoffset,before,true)
         after   = readcoveragearray(f,tableoffset,after,true)
         return {
-            coverage = {
-                format       = "reversecoverage", -- reversesub
-                before       = before,
-                current      = current,
-                after        = after,
-                replacements = replacements,
+            format = "reversecoverage", -- reversesub
+            rules  = {
+                {
+                    before       = before,
+                    current      = current,
+                    after        = after,
+                    replacements = replacements,
+                }
             }
         }, "reversechainedcontextsingle"
     else
@@ -1463,10 +1464,10 @@ function gposhandlers.single(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofg
         local value    = readposition(f,format,tableoffset,getdelta)
         local coverage = readcoverage(f,tableoffset+coverage)
         for index, newindex in next, coverage do
-            coverage[index] = value
+            coverage[index] = value -- will be packed and shared anyway
         end
         return {
-            format   = "pair",
+            format   = "single",
             coverage = coverage,
         }
     elseif subtype == 2 then
@@ -1482,7 +1483,7 @@ function gposhandlers.single(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofg
             coverage[index] = values[newindex+1]
         end
         return {
-            format   = "pair",
+            format   = "single",
             coverage = coverage,
         }
     else
@@ -1494,8 +1495,6 @@ end
 
 -- ValueFormat1 applies to the ValueRecord of the first glyph in each pair. ValueRecords for all first glyphs must use ValueFormat1. If ValueFormat1 is set to zero (0), the corresponding glyph has no ValueRecord and, therefore, should not be repositioned.
 -- ValueFormat2 applies to the ValueRecord of the second glyph in each pair. ValueRecords for all second glyphs must use ValueFormat2. If ValueFormat2 is set to null, then the second glyph of the pair is the “next” glyph for which a lookup should be performed.
-
--- !!!!! this needs checking: when both false, we have no hit so then we might need to fall through
 
 function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofglyphs)
     local tableoffset = lookupoffset + offset
@@ -1519,9 +1518,9 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
                     local first  = value[2]
                     local second = value[3]
                     if first or second then
-                        hash[other] = { first, second } -- needs checking
+                        hash[other] = { first, second or nil } -- needs checking
                     else
-                        hash[other] = nil
+                        hash[other] = nil -- what if set, maybe warning
                     end
                 end
             end
@@ -1555,7 +1554,7 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
                             local first  = offsets[1]
                             local second = offsets[2]
                             if first or second then
-                                hash[paired] = { first, second }
+                                hash[paired] = { first, second or nil }
                             else
                                 -- upto the next lookup for this combination
                             end
@@ -1589,18 +1588,27 @@ function gposhandlers.cursive(f,fontdata,lookupid,lookupoffset,offset,glyphs,nof
             local entry = readushort(f)
             local exit  = readushort(f)
             records[i] = {
-                entry = entry ~= 0 and (tableoffset + entry) or false,
-                exit  = exit  ~= 0 and (tableoffset + exit ) or false,
+             -- entry = entry ~= 0 and (tableoffset + entry) or false,
+             -- exit  = exit  ~= 0 and (tableoffset + exit ) or nil,
+                entry ~= 0 and (tableoffset + entry) or false,
+                exit  ~= 0 and (tableoffset + exit ) or nil,
             }
         end
+        -- slot 1 will become hash after loading and it must be unique because we
+        -- pack the tables (packed we turn the cc-* into a zero)
+        local cc = (fontdata.temporary.cursivecount or 0) + 1
+        fontdata.temporary.cursivecount = cc
+        cc = "cc-" .. cc
         coverage = readcoverage(f,coverage)
         for i=1,nofrecords do
             local r = records[i]
-            -- slot 1 will become hash after loading (must be unique per lookup when packed)
             records[i] = {
-                1,
-                readanchor(f,r.entry,getdelta) or nil,
-                readanchor(f,r.exit, getdelta) or nil,
+             -- 1,
+                cc,
+             -- readanchor(f,r.entry,getdelta) or false,
+             -- readanchor(f,r.exit, getdelta) or nil,
+                readanchor(f,r[1],getdelta) or false,
+                readanchor(f,r[2],getdelta) or nil,
             }
         end
         for index, newindex in next, coverage do
@@ -2011,7 +2019,7 @@ do
                 subtables[j] = offset + readushort(f) -- we can probably put lookupoffset here
             end
             -- which one wins?
-            local markclass = bittest(flagbits,0x0010) -- usemarkfilteringset
+            local markclass = band(flagbits,0x0010) ~= 0 -- usemarkfilteringset
             if markclass then
                 markclass = readushort(f) -- + 1
             end
@@ -2037,8 +2045,8 @@ do
 
     local function resolvelookups(f,lookupoffset,fontdata,lookups,lookuptypes,lookuphandlers,what,tableoffset)
 
-        local sequences      = fontdata.sequences   or { }
-        local sublookuplist  = fontdata.sublookups  or { }
+        local sequences      = fontdata.sequences  or { }
+        local sublookuplist  = fontdata.sublookups or { }
         fontdata.sequences   = sequences
         fontdata.sublookups  = sublookuplist
         local nofsublookups  = #sublookuplist
@@ -2053,6 +2061,8 @@ do
         local noflookups     = #lookups
         local lookupprefix   = sub(what,2,2) -- g[s|p][ub|os]
         --
+        local usedlookups    = false -- setmetatableindex("number")
+        --
         for lookupid=1,noflookups do
             local lookup     = lookups[lookupid]
             local lookuptype = lookup.type
@@ -2063,7 +2073,7 @@ do
                 local nofsubtables = #subtables
                 local order        = lookup.order
                 local flags        = lookup.flags
-                -- this is expected in th efont handler (faster checking)
+                -- this is expected in the font handler (faster checking)
                 if flags[1] then flags[1] = "mark" end
                 if flags[2] then flags[2] = "ligature" end
                 if flags[3] then flags[3] = "base" end
@@ -2091,10 +2101,11 @@ do
                             local rules = step.rules
                             if rules then
                                 for i=1,#rules do
-                                    local rule    = rules[i]
-                                    local before  = rule.before
-                                    local current = rule.current
-                                    local after   = rule.after
+                                    local rule         = rules[i]
+                                    local before       = rule.before
+                                    local current      = rule.current
+                                    local after        = rule.after
+                                    local replacements = rule.replacements
                                     if before then
                                         for i=1,#before do
                                             before[i] = tohash(before[i])
@@ -2103,13 +2114,42 @@ do
                                         rule.before = reversed(before)
                                     end
                                     if current then
-                                        for i=1,#current do
-                                            current[i] = tohash(current[i])
+                                        if replacements then
+                                            -- We have a reverse lookup and therefore only one current entry. We might need
+                                            -- to reverse the order in the before and after lists so that needs checking.
+                                            local first = current[1]
+                                            local hash  = { }
+                                            local repl  = { }
+                                            for i=1,#first do
+                                                local c = first[i]
+                                                hash[c] = true
+                                                repl[c] = replacements[i]
+                                            end
+                                            rule.current      = { hash }
+                                            rule.replacements = repl
+                                        else
+                                            for i=1,#current do
+                                                current[i] = tohash(current[i])
+                                            end
                                         end
+                                    else
+                                        -- weird lookup
                                     end
                                     if after then
                                         for i=1,#after do
                                             after[i] = tohash(after[i])
+                                        end
+                                    end
+                                    if usedlookups then
+                                        local lookups = rule.lookups
+                                        if lookups then
+                                            for k, v in next, lookups do
+                                                if v then
+                                                    for k, v in next, v do
+                                                        usedlookups[v] = usedlookups[v] + 1
+                                                    end
+                                                end
+                                            end
                                         end
                                     end
                                 end
@@ -2161,6 +2201,10 @@ do
             else
                 report("no handler for lookup %a with type %a",lookupid,lookuptype)
             end
+        end
+
+        if usedlookups then
+            report("used %s lookups: % t",what,sortedkeys(usedlookups))
         end
 
         -- When we have a context, we have sublookups that resolve into lookups for which we need to
@@ -2218,7 +2262,7 @@ do
                                                     if d then
                                                         nofsublookups = nofsublookups + 1
                                                      -- report("registering %i as sublookup %i",lookupid,nofsublookups)
-                                                        h = {
+                                                        local l = {
                                                             index     = nofsublookups, -- handy for tracing
                                                             name      = f_lookupname(lookupprefix,"d",lookupid+lookupidoffset),
                                                             derived   = true,          -- handy for tracing
@@ -2229,7 +2273,7 @@ do
                                                             flags     = d.flags,
                                                          -- chain     = d.chain,
                                                         }
-                                                        sublookuplist[nofsublookups] = copy(h) -- we repack later
+                                                        sublookuplist[nofsublookups] = copy(l) -- we repack later
                                                         sublookuphash[lookupid] = nofsublookups
                                                         sublookupcheck[lookupid] = 1
                                                         h = nofsublookups
@@ -2252,7 +2296,9 @@ do
                                             end
                                         end
                                     end
+-- report("before : % t",rlookups[index])
                                     rlookups[index] = noffound > 0 and found or false
+-- report("after  : % t",rlookups[index])
                                 else
                                     rlookups[index] = false
                                 end
@@ -2417,7 +2463,7 @@ do
                 local length   = readushort(f)
                 local coverage = readushort(f)
                 -- bit 8-15 of coverage: format 0 or 2
-                local format   = bit32.rshift(coverage,8) -- is this ok
+                local format   = rshift(coverage,8) -- is this ok
                 if format == 0 then
                     local nofpairs      = readushort(f)
                     local searchrange   = readushort(f)
@@ -2457,7 +2503,6 @@ do
                 },
                 nofsteps  = 1,
                 type      = "gpos_pair",
-             -- type      = "gpos_single", -- maybe better
                 flags     = { false, false, false, false },
                 order     = { name },
                 features  = { [name] = feature },
@@ -2493,12 +2538,12 @@ function readers.gdef(f,fontdata,specification)
         local tableoffset = datatable.offset
         setposition(f,tableoffset)
         local version          = readulong(f)
-        local classoffset      = tableoffset + readushort(f)
-        local attachmentoffset = tableoffset + readushort(f) -- used for bitmaps
-        local ligaturecarets   = tableoffset + readushort(f) -- used in editors (maybe nice for tracing)
-        local markclassoffset  = tableoffset + readushort(f)
-        local marksetsoffset   = version >= 0x00010002 and (tableoffset + readushort(f))
-        local varsetsoffset    = version >= 0x00010003 and (tableoffset + readulong(f))
+        local classoffset      = readushort(f)
+        local attachmentoffset = readushort(f) -- used for bitmaps
+        local ligaturecarets   = readushort(f) -- used in editors (maybe nice for tracing)
+        local markclassoffset  = readushort(f)
+        local marksetsoffset   = version >= 0x00010002 and readushort(f) or 0
+        local varsetsoffset    = version >= 0x00010003 and readulong(f) or 0
         local glyphs           = fontdata.glyphs
         local marks            = { }
         local markclasses      = setmetatableindex("table")
@@ -2507,56 +2552,61 @@ function readers.gdef(f,fontdata,specification)
         fontdata.markclasses   = markclasses
         fontdata.marksets      = marksets
         -- class definitions
-        setposition(f,classoffset)
-        local classformat = readushort(f)
-        if classformat == 1 then
-            local firstindex = readushort(f)
-            local lastindex  = firstindex + readushort(f) - 1
-            for index=firstindex,lastindex do
-                local class = classes[readushort(f)]
-                if class == "mark" then
-                    marks[index] = true
-                end
-                glyphs[index].class = class
-            end
-        elseif classformat == 2 then
-            local nofranges = readushort(f)
-            for i=1,nofranges do
+        if classoffset ~= 0 then
+            setposition(f,tableoffset + classoffset)
+            local classformat = readushort(f)
+            if classformat == 1 then
                 local firstindex = readushort(f)
-                local lastindex  = readushort(f)
-                local class      = classes[readushort(f)]
-                if class then
-                    for index=firstindex,lastindex do
-                        glyphs[index].class = class
-                        if class == "mark" then
-                            marks[index] = true
+                local lastindex  = firstindex + readushort(f) - 1
+                for index=firstindex,lastindex do
+                    local class = classes[readushort(f)]
+                    if class == "mark" then
+                        marks[index] = true
+                    end
+                    glyphs[index].class = class
+                end
+            elseif classformat == 2 then
+                local nofranges = readushort(f)
+                for i=1,nofranges do
+                    local firstindex = readushort(f)
+                    local lastindex  = readushort(f)
+                    local class      = classes[readushort(f)]
+                    if class then
+                        for index=firstindex,lastindex do
+                            glyphs[index].class = class
+                            if class == "mark" then
+                                marks[index] = true
+                            end
                         end
                     end
                 end
             end
         end
         -- mark classes
-        setposition(f,markclassoffset)
-        local classformat = readushort(f)
-        if classformat == 1 then
-            local firstindex = readushort(f)
-            local lastindex  = firstindex + readushort(f) - 1
-            for index=firstindex,lastindex do
-                markclasses[readushort(f)][index] = true
-            end
-        elseif classformat == 2 then
-            local nofranges = readushort(f)
-            for i=1,nofranges do
+        if markclassoffset ~= 0 then
+            setposition(f,tableoffset + markclassoffset)
+            local classformat = readushort(f)
+            if classformat == 1 then
                 local firstindex = readushort(f)
-                local lastindex  = readushort(f)
-                local class      = markclasses[readushort(f)]
+                local lastindex  = firstindex + readushort(f) - 1
                 for index=firstindex,lastindex do
-                    class[index] = true
+                    markclasses[readushort(f)][index] = true
+                end
+            elseif classformat == 2 then
+                local nofranges = readushort(f)
+                for i=1,nofranges do
+                    local firstindex = readushort(f)
+                    local lastindex  = readushort(f)
+                    local class      = markclasses[readushort(f)]
+                    for index=firstindex,lastindex do
+                        class[index] = true
+                    end
                 end
             end
         end
         -- mark sets : todo: just make the same as class sets above
-        if marksetsoffset and marksetsoffset > tableoffset then -- zero offset means no table
+        if marksetsoffset ~= 0 then
+            marksetsoffset = tableoffset + marksetsoffset
             setposition(f,marksetsoffset)
             local format = readushort(f)
             if format == 1 then
@@ -2576,9 +2626,9 @@ function readers.gdef(f,fontdata,specification)
 
         local factors = specification.factors
 
-        if (specification.variable or factors) and varsetsoffset and varsetsoffset > tableoffset then
+        if (specification.variable or factors) and varsetsoffset ~= 0 then
 
-            local regions, deltas = readvariationdata(f,varsetsoffset,factors)
+            local regions, deltas = readvariationdata(f,tableoffset+varsetsoffset,factors)
 
          -- setvariabledata(fontdata,"gregions",regions)
 
@@ -2866,7 +2916,7 @@ local function readmathvariants(f,fontdata,offset)
                                 advance = readushort(f),
                             }
                             local flags = readushort(f)
-                            if bittest(flags,0x0001) then
+                            if band(flags,0x0001) ~= 0 then
                                 p.extender = 1 -- true
                             end
                             parts[i] = p
@@ -3269,9 +3319,10 @@ function readers.stat(f,fontdata,specification)
         local values       = { }
         setposition(f,tableoffset+axisoffset)
         for i=1,nofaxis do
+            local tag = readtag(f)
             axis[i] = {
-                tag      = readtag(f),
-                name     = lower(extras[readushort(f)]),
+                tag      = tag,
+                name     = lower(extras[readushort(f)] or tag),
                 ordering = readushort(f), -- maybe gaps
                 variants = { }
             }
@@ -3291,7 +3342,7 @@ function readers.stat(f,fontdata,specification)
             local format  = readushort(f)
             local index   = readushort(f) + 1
             local flags   = readushort(f)
-            local name    = lower(extras[readushort(f)])
+            local name    = lower(extras[readushort(f)] or "no name")
             local value   = readfixed(f)
             local variant
             if format == 1 then

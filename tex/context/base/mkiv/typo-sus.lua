@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['typo-sus'] = {
     license   = "see context related readme files"
 }
 
+local next = next
+
 local punctuation = {
     po = true,
 }
@@ -44,7 +46,6 @@ local tonode          = nodes.tonode
 local getid           = nuts.getid
 local getprev         = nuts.getprev
 local getnext         = nuts.getnext
-local getfield        = nuts.getfield
 local getattr         = nuts.getattr
 local getfont         = nuts.getfont
 local getlist         = nuts.getlist

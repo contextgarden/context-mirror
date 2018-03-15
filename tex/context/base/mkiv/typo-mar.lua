@@ -13,18 +13,21 @@ if not modules then modules = { } end modules ['typo-mar'] = {
 
 local format, validstring = string.format, string.valid
 local insert, remove, sortedkeys, fastcopy = table.insert, table.remove, table.sortedkeys, table.fastcopy
-local setmetatable, next = setmetatable, next
+local setmetatable, next, tonumber = setmetatable, next, tonumber
 local formatters = string.formatters
 local toboolean = toboolean
 local settings_to_hash = utilities.parsers.settings_to_hash
 
-local attributes, nodes, node, variables = attributes, nodes, node, variables
+local attributes         = attributes
+local nodes              = nodes
+local variables          = variables
+local context            = context
 
-local trace_margindata  = false  trackers.register("typesetters.margindata",       function(v) trace_margindata  = v end)
-local trace_marginstack = false  trackers.register("typesetters.margindata.stack", function(v) trace_marginstack = v end)
-local trace_margingroup = false  trackers.register("typesetters.margindata.group", function(v) trace_margingroup = v end)
+local trace_margindata   = false  trackers.register("typesetters.margindata",       function(v) trace_margindata  = v end)
+local trace_marginstack  = false  trackers.register("typesetters.margindata.stack", function(v) trace_marginstack = v end)
+local trace_margingroup  = false  trackers.register("typesetters.margindata.group", function(v) trace_margingroup = v end)
 
-local report_margindata = logs.reporter("margindata")
+local report_margindata  = logs.reporter("margindata")
 
 local tasks              = nodes.tasks
 local prependaction      = tasks.prependaction
@@ -66,7 +69,6 @@ local traverse_id        = nuts.traverse_id
 local flush_node_list    = nuts.flush_list
 
 local getfield           = nuts.getfield
-local setfield           = nuts.setfield
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getid              = nuts.getid
@@ -165,7 +167,7 @@ setmetatable(displaystore,mt2)
 local defaults = {
     __index  = {
         location  = v_left,
-        align     = v_normal,
+        align     = v_normal, -- not used
         method    = "",
         name      = "",
         threshold = 0, -- .25ex

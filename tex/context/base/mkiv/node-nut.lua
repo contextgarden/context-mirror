@@ -115,106 +115,8 @@ nuts.tonut                = tonut
 nodes.tonode              = tonode
 nodes.tonut               = tonut
 
--- getters
-
-if not direct.getwhd then
-    local getfield = direct.getfield
-    function direct.getwhd(n)
-        return getfield(n,"width"), getfield(n,"height"), getfield(n,"depth")
-    end
-end
-
-if not direct.setwhd then
-    local setfield = direct.setfield
-    function direct.setwhd(n,w,h,d)
-        setfield(n,"width",w or 0)
-        setfield(n,"height",h or 0)
-        setfield(n,"depth",d or 0)
-    end
-end
-
-if not direct.getcomponents then
-
-    local getfield   = direct.getfield
-    local setfield   = direct.setfield
-    local setsubtype = direct.setsubtype
-
-    local attributelist_code = nodecodes.attributelist
-
-    function direct.getcomponents(n)   return getfield(n,"components")   end
-    function direct.setcomponents(n,c)        setfield(n,"components",c) end
-    function direct.getkern(n)         return getfield(n,"kern")         end
-    function direct.getwidth(n)        return getfield(n,"width")        end
-    function direct.setwidth(n,w)      return setfield(n,"width",w)      end
-    function direct.getheight(n)       return getfield(n,"height")       end
-    function direct.setheight(n,h)     return setfield(n,"height",h)     end
-    function direct.getdepth(n)        return getfield(n,"depth")        end
-    function direct.setdepth(n,d)      return setfield(n,"depth",d)      end
-    function direct.getshift(n)        return getfield(n,"shift")        end
-    function direct.setshift(n,s)      return setfield(n,"shift",s)      end
-    function direct.getpenalty(n)      return getfield(n,"penalty")      end
-    function direct.setpenalty(n,p)           setfield(n,"penalty",p)    end
-    function direct.getdir(n)          return getfield(n,"dir")          end
-    function direct.setdir(n,p)               setfield(n,"dir",p)        end
-    function direct.getlanguage(n)     return getfield(n,"lang")         end
-    function direct.setlanguage(n,l)   return setfield(n,"lang",l)       end
-    function direct.getattributelist(n)       getfield(n,"attr")         end
-
-    function direct.getnucleus(n)      return getfield(n,"nucleus")      end
-    function direct.setnucleus(n,p)    return setfield(n,"nucleus",p)    end
-    function direct.getsup(n)          return getfield(n,"sup")          end
-    function direct.setsup(n,p)        return setfield(n,"sup",p)        end
-    function direct.getsub(n)          return getfield(n,"sub")          end
-    function direct.setsub(n,p)        return setfield(n,"sub",p)        end
-
-    function direct.setattributelist(n,a)
-        if a and type(a) ~= attributelist_code then
-            a = getfield(a,"attr")
-        end
-        setfield(n,"attr",a)
-    end
-
-    function direct.setkern(n,k,s)
-        setfield(n,"kern",k)
-        if s then
-            setsubtype(n,s)
-        end
-    end
-
-    function direct.setfont(n,f,c)
-        setfield(n,"font",f)
-        if c then
-            setfield(n,"char",f)
-        end
-    end
-
-    function direct.getoffsets(n)
-        return getfield(n,"xoffset"), getfield(n,"yoffset")
-    end
-
-    function direct.setoffsets(n,x,y)
-        if x then
-            setfield(n,"xoffset",x)
-        end
-        if y then
-            setfield(n,"yoffset",y)
-        end
-    end
-
-end
-
-if LUATEXVERSION < 1.005 then
-    local getfield = direct.getfield
-    function direct.getnucleus(n) return getfield(n,"nucleus") end
-    function direct.getsub    (n) return getfield(n,"sub") end
-    function direct.getsup    (n) return getfield(n,"sup") end
-end
-
--- if LUATEXVERSION < 1.004 then
---     local gc = direct.getcomponents
---     getcomponents = function(n) local c = gc(n) return c ~= 0 and c or nil end
--- end
-
+-- -- some tracing:
+--
 -- local hash = table.setmetatableindex("number")
 -- local ga = direct.get_attribute
 -- function direct.get_attribute(n,a)
@@ -224,7 +126,7 @@ end
 -- function nuts.reportattr()
 --     inspect(hash)
 -- end
-
+--
 -- local function track(name)
 --     local n = 0
 --     local f = nuts[name]
@@ -236,12 +138,53 @@ end
 --         return f(...)
 --     end
 -- end
-
+--
 -- track("getfield")
 
--- setters
-
 -- helpers
+
+if not direct.getfam then -- LUATEXVERSION < 1.070
+
+    local getfield = direct.getfield
+    local setfield = direct.setfield
+
+    direct.getfam = function(n)   return getfield(n,"small_fam")   end
+    direct.setfam = function(n,f)        setfield(n,"small_fam",f) end
+
+end
+
+if not direct.getdirection then
+
+    local getdir = direct.getdir
+    local setdir = direct.setdir
+
+    direct.getdirection = function(n)
+        local d = getdir(n)
+        if d ==  "TLT" then return 0        end
+        if d == "+TLT" then return 0, false end
+        if d == "-TLT" then return 0, true  end
+        if d ==  "TRT" then return 1        end
+        if d == "+TRT" then return 1, false end
+        if d == "-TRT" then return 1, true  end
+        if d ==  "LTL" then return 2        end
+        if d == "+LTL" then return 2, false end
+        if d == "-LTL" then return 2, true  end
+        if d ==  "RTT" then return 3        end
+        if d == "+RTT" then return 3, false end
+        if d == "-RTT" then return 3, true  end
+    end
+
+    direct.setdirection = function(n,d,c)
+            if d == 0 then if c == true then setdir(n,"-TLT") elseif c == false then setdir(n,"+TLT") else setdir(n,"TLT") end
+        elseif d == 1 then if c == true then setdir(n,"-TRT") elseif c == false then setdir(n,"+TRT") else setdir(n,"TRT") end
+        elseif d == 2 then if c == true then setdir(n,"-LTL") elseif c == false then setdir(n,"+LTL") else setdir(n,"LTL") end
+        elseif d == 3 then if c == true then setdir(n,"-RTT") elseif c == false then setdir(n,"+RTT") else setdir(n,"RTT") end
+        else               if c == true then setdir(n,"-TLT") elseif c == false then setdir(n,"+TLT") else setdir(n,"TLT") end end
+    end
+
+end
+
+local nuts                 = nodes.nuts
 
 nuts.tostring              = direct.tostring
 nuts.copy                  = direct.copy
@@ -288,8 +231,9 @@ nuts.has_attribute         = direct.has_attribute
 nuts.set_attribute         = direct.set_attribute
 nuts.unset_attribute       = direct.unset_attribute
 
-nuts.protect_glyphs        = direct.protect_glyphs
 nuts.protect_glyph         = direct.protect_glyph
+nuts.protect_glyphs        = direct.protect_glyphs
+nuts.unprotect_glyph       = direct.unprotect_glyph
 nuts.unprotect_glyphs      = direct.unprotect_glyphs
 nuts.ligaturing            = direct.ligaturing
 nuts.kerning               = direct.kerning
@@ -324,6 +268,8 @@ nuts.effective_glue        = direct.effective_glue
 
 nuts.getglue               = direct.getglue
 nuts.setglue               = direct.setglue
+nuts.getboxglue            = direct.getglue
+nuts.setboxglue            = direct.setglue
 
 nuts.getdisc               = direct.getdisc
 nuts.setdisc               = direct.setdisc
@@ -352,6 +298,8 @@ nuts.getchar               = direct.getchar
 nuts.setchar               = direct.setchar
 nuts.getfont               = direct.getfont
 nuts.setfont               = direct.setfont
+nuts.getfam                = direct.getfam
+nuts.setfam                = direct.setfam
 
 nuts.getboth               = direct.getboth
 nuts.setboth               = direct.setboth
@@ -387,6 +335,9 @@ nuts.setkern               = direct.setkern
 nuts.getdir                = direct.getdir
 nuts.setdir                = direct.setdir
 
+nuts.getdirection          = direct.getdirection
+nuts.setdirection          = direct.setdirection
+
 nuts.getpenalty            = direct.getpenalty
 nuts.setpenalty            = direct.setpenalty
 
@@ -415,17 +366,17 @@ local d_setboth            = direct.setboth
 local d_getboth            = direct.getboth
 
 local function remove(head,current,free_too)
-    local t = current
-    head, current = d_remove_node(head,current)
-    if not t then
-        -- forget about it
-    elseif free_too then
-        d_flush_node(t)
-        t = nil
-    else
-        d_setboth(t) -- (t,nil,nil)
+    if current then
+        local h, c = d_remove_node(head,current)
+        if free_too then
+            d_flush_node(current)
+            return h, c
+        else
+            d_setboth(current)
+            return h, c, current
+        end
     end
-    return head, current, t
+    return head, current
 end
 
 -- alias
@@ -446,12 +397,6 @@ function nuts.replace(head,current,new) -- no head returned if false
         head, current, new = false, head, current
     end
     local prev, next = d_getboth(current)
---     if next then
---         d_setlink(new,next)
---     end
---     if prev then
---         d_setlink(prev,new)
---     end
     if prev or next then
         d_setlink(prev,new,next)
     end
@@ -782,7 +727,7 @@ nodes.properties = {
 }
 
 ------.set_properties_mode(true,false) -- shallow copy ... problem: in fonts we then affect the originals too
-direct.set_properties_mode(true,true)  -- create metatable, slower but needed for font-inj.lua (unless we use an intermediate table)
+direct.set_properties_mode(true,true)  -- create metatable, slower but needed for font-otj.lua (unless we use an intermediate table)
 
 -- todo:
 --
@@ -858,8 +803,113 @@ end
 
 -- here:
 
-nodes.set_synctex_line  = node.set_synctex_line
-nodes.set_synctex_tag   = node.set_synctex_tag
-
 nuts.get_synctex_fields = direct.get_synctex_fields
 nuts.set_synctex_fields = direct.set_synctex_fields
+
+-- for now
+
+nodes.uses_font = nodes.uses_font
+nuts.uses_font  = direct.uses_font
+
+if not nuts.uses_font then
+
+    local glyph_code  = nodecodes.glyph
+    local getdisc     = nuts.getdisc
+    local getfont     = nuts.getfont
+    local traverse_id = nuts.traverse_id
+    local tonut       = nodes.tonut
+
+    function nuts.uses_font(n,font)
+        local pre, post, replace = getdisc(n)
+        if pre then
+            -- traverse_char
+            for n in traverse_id(glyph_code,pre) do
+                if getfont(n) == font then
+                    return true
+                end
+            end
+        end
+        if post then
+            for n in traverse_id(glyph_code,post) do
+                if getfont(n) == font then
+                    return true
+                end
+            end
+        end
+        if replace then
+            for n in traverse_id(glyph_code,replace) do
+                if getfont(n) == font then
+                    return true
+                end
+            end
+        end
+        return false
+    end
+
+    function nodes.uses_font(n,font)
+        return nuts.uses_font(tonut(n),font)
+    end
+
+end
+
+-- for the moment (pre 6380)
+
+if not nuts.unprotect_glyph then
+
+    local protect_glyph    = nuts.protect_glyph
+    local protect_glyphs   = nuts.protect_glyphs
+    local unprotect_glyph  = nuts.unprotect_glyph
+    local unprotect_glyphs = nuts.unprotect_glyphs
+
+    local getnext          = nuts.getnext
+    local setnext          = nuts.setnext
+
+    function nuts.protectglyphs(first,last)
+        if first == last then
+            return protect_glyph(first)
+        elseif last then
+            local nxt = getnext(last)
+            setnext(last)
+            local f, b = protect_glyphs(first)
+            setnext(last,nxt)
+            return f, b
+        else
+            return protect_glyphs(first)
+        end
+    end
+
+    function nuts.unprotectglyphs(first,last)
+        if first == last then
+            return unprotect_glyph(first)
+        elseif last then
+            local nxt = getnext(last)
+            setnext(last)
+            local f, b = unprotect_glyphs(first)
+            setnext(last,nxt)
+            return f, b
+        else
+            return unprotect_glyphs(first)
+        end
+    end
+
+end
+
+if LUATEXFUNCTIONALITY < 6384 then -- LUATEXVERSION < 1.070
+
+    local getfield = nuts.getfield
+    local setfield = nuts.setfield
+
+    function nuts.getboxglue(n,glue_set,glue_order,glue_sign)
+        return
+            getfield(n,"glue_set"),
+            getfield(n,"glue_order"),
+            getfield(n,"glue_sign")
+    end
+
+    function nuts.setboxglue(n,glue_set,glue_order,glue_sign)
+        setfield(n,"glue_set",  glue_set   or 0)
+        setfield(n,"glue_order",glue_order or 0)
+        setfield(n,"glue_sign", glue_sign  or 0)
+    end
+
+end

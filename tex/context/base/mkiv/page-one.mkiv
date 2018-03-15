@@ -1,4 +1,4 @@
-    %D \module
+%D \module
 %D   [       file=page-one,
 %D        version=2000.10.20,
 %D          title=\CONTEXT\ Page Macros,
@@ -192,7 +192,7 @@
    \egroup}
 
 \unexpanded\def\page_one_command_side_float_output
-  {\page_otr_construct_and_shipout\unvbox\normalpagebox}
+  {\page_otr_construct_and_shipout\unvbox\normalpagebox\plusone} % three arguments, we need to be in the output group
 
 \unexpanded\def\page_one_command_routine
   {\page_sides_output_routine}
@@ -365,29 +365,33 @@
 \def\page_one_command_flush_floats_indeed % much in common with OTRSET
   {\ifconditional\c_page_floats_some_waiting
      \ifconditional\c_page_floats_pack_flushed
-       \setfalse\c_page_floats_center_box % not needed as we do call directly
        \page_floats_collect\s!text\hsize\emwidth
-       %% no longer (interferes with footnotes):
-       %%
-       %% \page_one_command_set_vsize % test 2011.06.24.001
-       %%
-       \global\setbox\floatbox\hbox to \hsize
-         {\hfil
-          \dorecurse\nofcollectedfloats
-            {\ifcase\columndirection % nog document wide
-               \page_floats_flush\s!text\plusone
-             \else
-               \page_floats_flush\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
-             \fi
-             \ifdim\wd\floatbox>\makeupwidth % \hsize
-               \hbox to \makeupwidth{\hss\box\floatbox\hss}%
-             \else
-               \box\floatbox
-             \fi
-             \ifnum\recurselevel<\nofcollectedfloats
-               \hfil
-             \fi}%
-          \hfil}%
+       \ifcase\nofcollectedfloats
+         \page_floats_get
+       \else
+         \setfalse\c_page_floats_center_box % not needed as we do call directly
+         %% no longer (interferes with footnotes):
+         %%
+         %% \page_one_command_set_vsize % test 2011.06.24.001
+         %%
+         \global\setbox\floatbox\hbox to \hsize
+           {\hfil
+            \dorecurse\nofcollectedfloats
+              {\ifcase\columndirection % nog document wide
+                 \page_floats_flush\s!text\plusone
+               \else
+                 \page_floats_flush\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
+               \fi
+               \ifdim\wd\floatbox>\makeupwidth % \hsize
+                 \hpack to \makeupwidth{\hss\box\floatbox\hss}%
+               \else
+                 \box\floatbox
+               \fi
+               \ifnum\recurselevel<\nofcollectedfloats
+                 \hfil
+               \fi}%
+            \hfil}%
+       \fi
      \else
        \page_floats_get
      \fi
@@ -423,20 +427,21 @@
      \fi
      % should be an option
      \endgroup
-     \dimen0\dimexpr\pagetotal+\floatheight+\d_strc_floats_top-\pageshrink\relax
-     \dimen2\pagegoal
+     \scratchdimenone\dimexpr\pagetotal+\floatheight+\d_strc_floats_top-\pageshrink\relax
+     \scratchdimentwo\pagegoal
      \relax % needed
      \ifcase\c_page_one_float_method
        % method 0 : raw
      \or
        % method 1 : safe
-       \dimen2 .99\pagegoal
+       % too fuzzy as it can change and for a high page it's a lot : \scratchdimentwo .99\pagegoal
+       \advance\scratchdimentwo -\strutdp
      \or
        % method 2 : tight
-       \advance\dimen0 -\onepoint
+       \advance\scratchdimenone -\onepoint
      \fi
      \relax % really needed ! ! ! !
-     \ifdim\dimen0>\dimen2
+     \ifdim\scratchdimenone>\scratchdimentwo
        \global\setfalse\c_page_floats_room
      \else
        \global\settrue\c_page_floats_room
@@ -455,7 +460,6 @@
        \page_one_command_flush_floats
      \fi\fi
    \fi}
-
 
 \def\page_one_place_float_here_indeed
   {\ifgridsnapping
@@ -596,27 +600,43 @@
 \unexpanded\def\page_one_command_test_page
   {\testpage}
 
+\unexpanded\def\page_one_command_flush_all_floats
+  {\ifconditional\c_page_floats_some_waiting
+     \begingroup
+     \c_page_floats_n_of_top\plusthousand
+     \c_page_floats_n_of_bottom\zerocount
+     % this is needed in case a float that has been stored
+     % ends up at the current page; this border case occurs when
+     % the calculated room is 'eps' smaller that the room available
+     % when just flushing; so now we have (maybe optional):
+     \pagebaselinecorrection % hm, needs checking, not needed when no floats
+     % alas, this is tricky but needed (first surfaced in prikkels)
+     \page_otr_command_flush_floats
+     \endgroup
+   \fi}
+
 \defineoutputroutine
   [\s!singlecolumn]
   [\s!page_otr_command_routine                =\page_one_command_routine,
    \s!page_otr_command_package_contents       =\page_one_command_package_contents,
    \s!page_otr_command_set_vsize              =\page_one_command_set_vsize,
    \s!page_otr_command_set_hsize              =\page_one_command_set_hsize,
+ % \s!page_otr_command_synchronize_hsize      =\page_one_command_synchronize_hsize,
    \s!page_otr_command_next_page              =\page_one_command_next_page,
    \s!page_otr_command_next_page_and_inserts  =\page_one_command_next_page_and_inserts,
- % \s!page_otr_command_synchronize_hsize      =\page_one_command_synchronize_hsize,
    \s!page_otr_command_set_top_insertions     =\page_one_command_set_top_insertions,
    \s!page_otr_command_set_bottom_insertions  =\page_one_command_set_bottom_insertions,
    \s!page_otr_command_flush_top_insertions   =\page_one_command_flush_top_insertions,
    \s!page_otr_command_flush_bottom_insertions=\page_one_command_flush_bottom_insertions,
- % \s!page_otr_command_set_float_hsize        =\page_one_command_set_float_hsize,
    \s!page_otr_command_check_if_float_fits    =\page_one_command_check_if_float_fits,
+ % \s!page_otr_command_set_float_hsize        =\page_one_command_set_float_hsize,
    \s!page_otr_command_flush_float_box        =\page_one_command_flush_float_box,
-   \s!page_otr_command_synchronize_side_floats=\page_one_command_synchronize_side_floats,
    \s!page_otr_command_side_float_output      =\page_one_command_side_float_output,
+   \s!page_otr_command_synchronize_side_floats=\page_one_command_synchronize_side_floats,
    \s!page_otr_command_flush_floats           =\page_one_command_flush_floats,
    \s!page_otr_command_flush_side_floats      =\page_one_command_flush_side_floats,
    \s!page_otr_command_flush_saved_floats     =\page_one_command_flush_saved_floats,
+   \s!page_otr_command_flush_all_floats       =\page_one_command_flush_all_floats,
    \s!page_otr_command_flush_margin_blocks    =\page_one_command_flush_margin_blocks,
    \s!page_otr_command_test_column            =\page_one_command_test_page
   ]

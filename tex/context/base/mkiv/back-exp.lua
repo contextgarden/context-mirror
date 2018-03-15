@@ -39,7 +39,7 @@ local validstring = string.valid
 local lpegmatch = lpeg.match
 local utfchar, utfvalues = utf.char, utf.values
 local concat, insert, remove, merge, sort = table.concat, table.insert, table.remove, table.merge, table.sort
-local sortedhash = table.sortedhash
+local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 local formatters = string.formatters
 local todimen = number.todimen
 local replacetemplate = utilities.templates.replace
@@ -74,6 +74,7 @@ local implement         = interfaces.implement
 local included          = backends.included
 
 local settings_to_array = utilities.parsers.settings_to_array
+local settings_to_hash  = utilities.parsers.settings_to_hash
 
 local setmetatableindex = table.setmetatableindex
 local tasks             = nodes.tasks
@@ -121,7 +122,6 @@ local getdisc           = nuts.getdisc
 local getcomponents     = nuts.getcomponents
 local getlist           = nuts.getlist
 local getid             = nuts.getid
-local getfield          = nuts.getfield
 local getattr           = nuts.getattr
 local setattr           = nuts.setattr -- maybe use properties
 local isglyph           = nuts.isglyph
@@ -149,7 +149,7 @@ local overloads         = fonts.mappings.overloads
 
 -- todo: more locals (and optimize)
 
-local exportversion     = "0.34"
+local exportversion     = "0.35"
 local mathmlns          = "http://www.w3.org/1998/Math/MathML"
 local contextns         = "http://www.contextgarden.net/context/export" -- whatever suits
 local cssnamespaceurl   = "@namespace context url('%namespace%') ;"
@@ -347,16 +347,17 @@ do
     -- /* text-align : justify ; */
 
 local documenttemplate = [[
-document, %namespace%div.document {
+document,
+%namespace%div.document {
     font-size  : %size% !important ;
     max-width  : %width% !important ;
     text-width : %align% !important ;
     hyphens    : %hyphens% !important ;
-}
-]]
+}]]
 
 local styletemplate = [[
-%element%[detail="%detail%"], %namespace%div.%element%.%detail% {
+%element%[detail="%detail%"],
+%namespace%div.%element%.%detail% {
     display      : inline ;
     font-style   : %style% ;
     font-variant : %variant% ;
@@ -416,7 +417,7 @@ local styletemplate = [[
         })
         --
         local colorspecification = xml.css.colorspecification
-        local fontspecification = xml.css.fontspecification
+        local fontspecification  = xml.css.fontspecification
         for element, details in sortedhash(usedstyles) do
             for detail, data in sortedhash(details) do
                 local s = fontspecification(data.style)
@@ -431,6 +432,7 @@ local styletemplate = [[
                     weight    = s.weight  or "inherit",
                     family    = s.family  or "inherit",
                     color     = c         or "inherit",
+                    display   = s.display and "block" or nil,
                 })
             end
         end
@@ -550,7 +552,7 @@ end
 
 do
 
-    local fields = { "title", "subtitle", "author", "keywords" }
+    local fields = { "title", "subtitle", "author", "keywords", "url", "version" }
 
     local function checkdocument(root)
         local data = root.data
@@ -717,16 +719,32 @@ end
 
 do
 
-    local highlight      = { }
-    usedstyles.highlight = highlight
-
     local strippedtag    = structurestags.strip -- we assume global styles
 
-    function structurestags.sethighlight(style,color)
-        highlight[strippedtag(locatedtag("highlight"))] = {
-            style = style, -- xml.css.fontspecification(style),
-            color = color, -- xml.css.colorspec(color),
-        }
+    local highlight      = { }
+    local construct      = { }
+
+    usedstyles.highlight = highlight
+    usedstyles.construct = construct
+
+    function structurestags.sethighlight(name,style,color,mode)
+        if not highlight[name] then
+            highlight[name] = {
+                style = style,
+                color = color,
+                mode  = mode == 1 and "display" or nil,
+            }
+        end
+    end
+
+    function structurestags.setconstruct(name,style,color,mode)
+        if not construct[name] then
+            construct[name] = {
+                style = style,
+                color = color,
+                mode  = mode == 1 and "display" or nil,
+            }
+        end
     end
 
 end
@@ -801,16 +819,20 @@ do
     function structurestags.setfigure(name,used,page,width,height,label)
         local fulltag = locatedtag("image")
         local spec    = specifications[fulltag]
-        local page    = tonumber(page)
-        image[fulltag] = {
-            id     = f_id(spec.tagname,spec.tagindex),
-            name   = name,
-            used   = used,
-            page   = page and page > 1 and page or nil,
-            width  = todimen(width, "cm","%0.3F%s"),
-            height = todimen(height,"cm","%0.3F%s"),
-            label  = label,
-        }
+        if spec then
+            local page = tonumber(page)
+            image[fulltag] = {
+                id     = f_id(spec.tagname,spec.tagindex),
+                name   = name,
+                used   = used,
+                page   = page and page > 1 and page or nil,
+                width  = todimen(width, "cm","%0.3F%s"),
+                height = todimen(height,"cm","%0.3F%s"),
+                label  = label,
+            }
+        else
+            -- we ignore images in layers in the background / pagebody
+        end
     end
 
     function extras.image(di,element,n,fulltag)
@@ -1155,6 +1177,7 @@ do
         mfrac    = true,
         mroot    = true,
         msqrt    = true,
+        mtable   = true,
         mi       = true,
         mo       = true,
         mn       = true,
@@ -1189,14 +1212,14 @@ do
                  -- sub.__o__, sup.__o__ = subscript, superscript
                     sub.__i__, sup.__i__ = superscript, subscript
                 end
---             elseif roottg == "msup" or roottg == "msub" then
---                 -- m$^2$
---                 if ndata == 1 then
---                     local d = data[1]
---                     data[2] = d
---                     d.__i__ = 2
---                     data[1] = dummy_nucleus
---                 end
+         -- elseif roottg == "msup" or roottg == "msub" then
+         --     -- m$^2$
+         --     if ndata == 1 then
+         --         local d = data[1]
+         --         data[2] = d
+         --         d.__i__ = 2
+         --         data[1] = dummy_nucleus
+         --     end
             elseif roottg == "mfenced" then
                 local s = specifications[root.fulltag]
                 local l, m, r = s.left, s.middle, s.right
@@ -1220,17 +1243,22 @@ do
                 }
             end
             if ndata == 0 then
+root.skip = "comment" -- get rid of weird artefacts
+root.nota = "weird"
                 return
             elseif ndata == 1 then
                 local d = data[1]
-                if not d then
+                if not d or d == "" then
+root.skip = "comment"
                     return
                 elseif d.content then
                     return
-                elseif #root.data == 1 then
+                else -- if ndata == 1 then
                     local tg = d.tg
-                    if automathrows and roottg == "mrow" then
+--                     if automathrows and roottg == "mrow" then
+if automathrows and (roottg == "mrow" or roottg == "mtext") then
                         -- maybe just always ! check spec first
+-- or we can have chesks.* for each as we then can flatten
                         if no_mrow[tg] then
                             root.skip = "comment"
                         end
@@ -1400,8 +1428,10 @@ do
                                     }
                                 elseif di.tg == "math" then
                                     local di = di.data[1]
-                                    data[i] = di
-                                    checkmath(di)
+                                    if di then
+                                        data[i] = di
+                                        checkmath(di)
+                                    end
                                 end
                             end
                             di.element = "mrow"
@@ -1561,55 +1591,156 @@ do
                 if #data > 0 then
                     return di
                 end
--- end
             end
-            -- could be integrated but is messy then
---             while roottg == "mrow" and #data == 1 do
---                 data = data[1]
---                 for k, v in next, data do
---                     root[k] = v
---                 end
---                 roottg = data.tg
---             end
         end
     end
 
     function checks.math(di)
-        local specification = specifications[di.fulltag]
-        local mode = specification and specification.mode == "display" and "block" or "inline"
-        di.attributes = {
-            ["display"] = mode,
-            ["xmlns:m"] = mathmlns,
-        }
-        -- can be option if needed:
-        if mode == "inline" then
-         -- di.nature = "mixed"  -- else spacing problem (maybe inline)
-            di.nature = "inline" -- we need to catch x$X$x and x $X$ x
+        if di.skip == "comment" then
+            -- already done, kind of weird, happens in mathmatrix, maybe some collapse
+            -- issue that i need to look into
         else
-            di.nature = "display"
+            local specification = specifications[di.fulltag]
+            local mode = specification and specification.mode == "display" and "block" or "inline"
+            di.attributes = {
+                ["display"] = mode,
+                ["xmlns:m"] = mathmlns,
+            }
+            -- can be option if needed:
+            if mode == "inline" then
+             -- di.nature = "mixed"  -- else spacing problem (maybe inline)
+                di.nature = "inline" -- we need to catch x$X$x and x $X$ x
+            else
+                di.nature = "display"
+            end
+            if automathstrip then
+                stripmath(di)
+            end
+            checkmath(di)
         end
-        if automathstrip then
-            stripmath(di)
-        end
-        checkmath(di)
     end
 
-    local a, z, A, Z = 0x61, 0x7A, 0x41, 0x5A
+    -- this one can replace some of the previous code .. todo (test on mathmatrix)
 
-    function extras.mi(di,element,n,fulltag) -- check with content
-        local str = di.data[1].content
-        if str and sub(str,1,1) ~= "&" then -- hack but good enough (maybe gsub op eerste)
-            for v in utfvalues(str) do
-                if (v >= a and v <= z) or (v >= A and v <= Z) then
-                    local a = di.attributes
-                    if a then
-                        a.mathvariant = "normal"
+    -- ignore with no data can be removed
+
+    local function checked(d)
+        local n = #d
+        if n == 1 then
+            local di = d[1]
+            local tg = di.tg
+            if tg == "ignore" then
+                -- todo: we can move ignore's data one level up
+                return 1
+            elseif di.content then
+                return 1
+            else
+                local dd = di.data
+                if #dd > 0 and checked(dd) > 0 then
+                    return 1
+                else
+                    return 0
+                end
+            end
+        else
+            local m = 0
+            for i=1,n do
+                local di = d[i]
+                local tg = di.tg
+                if tg == "ignore" then
+                    -- skip
+                elseif di.content then
+                    m = m + 1
+                    d[m] = di
+                else
+                    local dd = di.data
+                    if #dd > 0 and checked(dd) > 0 then
+                        m = m + 1
+                        d[m] = di
+                    end
+                end
+            end
+            if m < n then
+                for i=n,m+1,-1 do
+                    d[i] = nil
+                end
+            end
+            return m
+        end
+    end
+
+    function checks.mrow(di)
+--         local d = di.data
+--         if d then
+--             checked(d)
+--         end
+    end
+
+    -- we can move more checks here
+
+    local function flatten(di)
+        local r = di.__p__
+        while r do
+            local d = r.data
+            local n = #d
+            if d and n > 1 then
+                n = checked(d)
+            end
+            local tg = r.tg
+            if n == 1 and (tg == "mtext" or tg == "mrow") then
+                r.skip = "comment" -- weird error
+                r = r.__p__
+            else
+                break
+            end
+        end
+    end
+
+    function checks.mtable(di)
+        flatten(di)
+        local d = di.data
+        for i=1,#d do
+            local d = d[i]
+            if d.tg == "mtr" then
+                local d = d.data
+                for i=1,#d do
+                    local d = d[i]
+                    if d.tg == "mtd" then
+                        -- okay
+                    elseif d.content then
+                        d.content = ""
                     else
-                        di.attributes = { mathvariant = "normal" }
+                        d.skip = "comment" -- weird error
+                    end
+                end
+            elseif d.content then
+                d.content = ""
+            else
+                d.skip = "comment" -- weird error
+            end
+        end
+    end
+
+    do
+
+        local a, z, A, Z = 0x61, 0x7A, 0x41, 0x5A
+
+        function extras.mi(di,element,n,fulltag) -- check with content
+            local str = di.data[1].content
+            if str and sub(str,1,1) ~= "&" then -- hack but good enough (maybe gsub op eerste)
+                for v in utfvalues(str) do
+                    if (v >= a and v <= z) or (v >= A and v <= Z) then
+                        local a = di.attributes
+                        if a then
+                            a.mathvariant = "normal"
+                        else
+                            di.attributes = { mathvariant = "normal" }
+                        end
                     end
                 end
             end
         end
+
     end
 
     function extras.msub(di,element,n,fulltag)
@@ -1660,7 +1791,35 @@ do
         resolve(di,element,n,fulltag)
     end
 
-    extras.float = resolve
+    local floats = { }
+
+    function structurestags.setfloat(options,method)
+        floats[locatedtag("float")] = {
+            options = options,
+            method  = method,
+        }
+    end
+
+    function extras.float(di,element,n,fulltag)
+        local hash = floats[fulltag]
+        if hash then
+            local method  = hash.method
+            if not method or method == "" then
+                method = "here"
+            end
+            setattribute(di,"method",method)
+            local options = hash.options
+            if options and options ~= "" then
+                options = settings_to_hash(options)
+                options[method] = nil
+                options = concat(sortedkeys(options),",")
+                if #options > 0 then
+                    setattribute(di,"options",options)
+                end
+            end
+        end
+        resolve(di,element,n,fulltag)
+    end
 
     -- todo: internal is already hashed
 
@@ -1735,21 +1894,26 @@ do
     local function hascontent(data)
         for i=1,#data do
             local di = data[i]
-            if not di then
+            if not di or di.tg == "ignore" then
                 --
-            elseif di.content then
-                return true
             else
-                local d = di.data
-                if d and #d > 0 and hascontent(d) then
+                local content = di.content
+                if content == " " then
+                    --
+                elseif content then
                     return true
+                else
+                    local d = di.data
+                    if d and #d > 0 and hascontent(d) then
+                        return true
+                    end
                 end
             end
         end
     end
 
     function structurestags.settablecell(rows,columns,align)
-        if align > 0 or rows > 1 or columns > 1 then
+        if align > 0 or rows > 1 or columns > 1 then -- or kind > 0
             tabledata[locatedtag("tablecell")] = {
                 rows    = rows,
                 columns = columns,
@@ -1784,10 +1948,11 @@ do
 
     local tabulatedata = { }
 
-    function structurestags.settabulatecell(align)
-        if align > 0 then
+    function structurestags.settabulatecell(align,kind)
+        if align > 0 or kind > 0 then
             tabulatedata[locatedtag("tabulatecell")] = {
                 align = align,
+                kind  = kind, -- 1 = bold head
             }
         end
     end
@@ -1814,6 +1979,12 @@ do
                 setattribute(di,"align","flushright")
             elseif align == 3 then
                 setattribute(di,"align","middle")
+            end
+            local kind = hash.kind
+            if kind == 1 then
+                setattribute(di,"kind","strong")
+            elseif kind == 2 then
+                setattribute(di,"kind","equals")
             end
         end
     end
@@ -1891,13 +2062,6 @@ do
     local depth  = 0
     local inline = 0
 
-    local function bpar(result)
-        result[#result+1] = "\n<p>"
-    end
-    local function epar(result)
-        result[#result+1] = "</p>\n"
-    end
-
     local function emptytag(result,embedded,element,nature,di) -- currently only break but at some point
         local a = di.attributes                       -- we might add detail etc
         if a then -- happens seldom
@@ -1915,6 +2079,34 @@ do
                 result[#result+1] = f_empty_mixed(depth,namespaced[element])
             else
                 result[#result+1] = f_empty_inline(namespaced[element])
+            end
+        end
+    end
+
+ -- local function stripspaces(di)
+ --     local d = di.data
+ --     local n = #d
+ --     local m = 0
+ --     for i=1,n do
+ --         local di = d[i]
+ --         if di.tg then
+ --             m = m + 1
+ --             d[m] = di
+ --         end
+ --     end
+ --     for i=n,m+1,-1 do
+ --         d[i] = nil
+ --     end
+ -- end
+ --
+ -- -- simpler:
+
+    local function stripspaces(di)
+        local d = di.data
+        for i=1,#d do
+            local di = d[i]
+            if not di.tg then
+                di.content = ""
             end
         end
     end
@@ -1972,6 +2164,11 @@ do
             if extra then
                 extra(di,element,index,fulltag)
             end
+            --
+            if di.record then
+                stripspaces(di)
+            end
+            --
             if exportproperties then
                 local p = specification.userdata
                 if not p then
@@ -2044,7 +2241,9 @@ do
         if metadata then
             result[#result+1] = f_metadata_begin(depth)
             for k, v in table.sortedpairs(metadata) do
-                result[#result+1] = f_metadata(depth+1,k,lpegmatch(p_entity,v))
+                if v ~= "" then
+                    result[#result+1] = f_metadata(depth+1,k,lpegmatch(p_entity,v))
+                end
             end
             result[#result+1] = f_metadata_end(depth)
         end
@@ -2315,7 +2514,7 @@ do
                     if check then
                         check(d)
                     end
-                    checktree(d)
+                    checktree(d) -- so parts can pass twice
                 end
             end
         end
@@ -2333,7 +2532,7 @@ end
 -- collector code
 
 local function push(fulltag,depth)
-    local tg, n, detail
+    local tg, n, detail, element, nature, record
     local specification = specifications[fulltag]
     if specification then
         tg     = specification.tagname
@@ -2344,9 +2543,12 @@ local function push(fulltag,depth)
         tg, n = lpegmatch(tagsplitter,fulltag)
         n = tonumber(n) -- to tonumber in tagsplitter
     end
-    local p        = properties[tg]
-    local element  = p and p.export or tg
-    local nature   = p and p.nature or "inline" -- defaultnature
+    local p = properties[tg]
+    if p then
+        element = p.export or tg
+        nature  = p.nature or "inline" -- defaultnature
+        record  = p.record
+    end
     local treedata = tree.data
     local t = { -- maybe we can use the tag table
         tg         = tg,
@@ -2358,6 +2560,7 @@ local function push(fulltag,depth)
         data       = { },
         attribute  = currentattribute,
         parnumber  = currentparagraph,
+        record     = record, -- we can consider storing properties
     }
     treedata[#treedata+1] = t
     currentdepth = currentdepth + 1
@@ -2540,6 +2743,8 @@ local function finishexport()
         report_export("%w<!-- stop finalizing -->",currentdepth)
     end
 end
+
+-- inserts ?
 
 local function collectresults(head,list,pat,pap) -- is last used (we also have currentattribute)
     local p
@@ -2859,19 +3064,6 @@ function nodes.handlers.export(head) -- hooks into the page builder
     end
  -- continueexport()
     restart = true
-
--- local function f(head,depth,pat)
---     for n in node.traverse(head) do
---         local a = n[a_tagged] or pat
---         local t = taglist[a]
---         print(depth,n,a,t and table.concat(t," "))
---         if n.id == hlist_code or n.id == vlist_code and n.list then
---             f(n.list,depth+1,a)
---         end
---     end
--- end
--- f(head,1)
-
     collectresults(tonut(head))
     if trace_export then
         report_export("%w<!-- stop flushing page -->",currentdepth)
@@ -2886,7 +3078,7 @@ function builders.paragraphs.tag(head)
         local subtype = getsubtype(n)
         if subtype == line_code then
             setattr(n,a_textblock,noftextblocks)
-        elseif subtype == glue_code or subtype == kern_code then
+        elseif subtype == glue_code or subtype == kern_code then -- no need to set fontkerns
             setattr(n,a_textblock,0)
         end
     end
@@ -2894,6 +3086,9 @@ function builders.paragraphs.tag(head)
 end
 
 do
+
+    local xmlcollected  = xml.collected
+    local xmlsetcomment = xml.setcomment
 
 local xmlpreamble = [[
 <?xml version="1.0" encoding="UTF-8" standalone="%standalone%" ?>
@@ -2955,14 +3150,16 @@ local cssheadlink = [[
 local elementtemplate = [[
 /* element="%element%" detail="%detail%" chain="%chain%" */
 
-%element%, %namespace%div.%element% {
+%element%,
+%namespace%div.%element% {
     display: %display% ;
 }]]
 
 local detailtemplate = [[
 /* element="%element%" detail="%detail%" chain="%chain%" */
 
-%element%[detail=%detail%], %namespace%div.%element%.%detail% {
+%element%[detail=%detail%],
+%namespace%div.%element%.%detail% {
     display: %display% ;
 }]]
 
@@ -2983,7 +3180,7 @@ local htmltemplate = [[
 
     </head>
     <body>
-        <div xmlns="http://www.pragma-ade.com/context/export">
+        <div class="document" xmlns="http://www.pragma-ade.com/context/export">
 
 <div class="warning">Rendering can be suboptimal because there is no default/fallback css loaded.</div>
 
@@ -3061,7 +3258,7 @@ local htmltemplate = [[
             local implicits = { }
             local explicits = { }
             local overloads = { }
-            for e in xml.collected(xmltree,"*") do
+            for e in xmlcollected(xmltree,"*") do
                 local at = e.at
                 if at then
                     local explicit = at.explicit
@@ -3082,7 +3279,7 @@ local htmltemplate = [[
                     end
                 end
             end
-            for e in xml.collected(xmltree,"*") do
+            for e in xmlcollected(xmltree,"*") do
                 local at = e.at
                 if at then
                     local internal = at.internal
@@ -3214,7 +3411,7 @@ local htmltemplate = [[
 
     local function remap(specification,source,target)
         local comment = nil -- share comments
-        for c in xml.collected(source,"*") do
+        for c in xmlcollected(source,"*") do
             if not c.special then
                 local tg = c.tg
                 local ns = c.ns
@@ -3226,44 +3423,45 @@ local htmltemplate = [[
              -- elseif tg == "a" then
              --     c.ns = ""
                 else
-                 -- if tg == "tabulatecell" or tg == "tablecell" then
-                        local dt = c.dt
-                        local nt = #dt
-                        if nt == 0 or (nt == 1 and dt[1] == "") then
-                            if comment then
-                                c.dt = comment
-                            else
-                                xml.setcomment(c,"empty")
-                                comment = c.dt
-                            end
+                    local dt = c.dt
+                    local nt = #dt
+                    if nt == 0 or (nt == 1 and dt[1] == "") then
+                        if comment then
+                            c.dt = comment
+                        else
+                            xmlsetcomment(c,"empty")
+                            comment = c.dt
                         end
-                 -- end
+                    end
                     local at    = c.at
                     local class = nil
+                    local label = nil
                     if tg == "document" then
                         at.href   = nil
                         at.detail = nil
                         at.chain  = nil
                     elseif tg == "metavariable" then
-                        at.detail = "metaname-" .. at.name
+                        label = at.name
+                        at.detail = "metaname-" .. label
                         class = makeclass(tg,at)
                     else
                         class = makeclass(tg,at)
                     end
                     local id   = at.id
                     local href = at.href
+                    local attr = nil
                     if id then
-                        id = lpegmatch(p_cleanid,  id)   or id
+                        id = lpegmatch(p_cleanid, id) or id
                         if href then
                             href = lpegmatch(p_cleanhref,href) or href
-                            c.at = {
+                            attr = {
                                 class   = class,
                                 id      = id,
                                 href    = href,
                                 onclick = addclicks and f_onclick(href) or nil,
                             }
                         else
-                            c.at = {
+                            attr = {
                                 class = class,
                                 id    = id,
                             }
@@ -3271,18 +3469,22 @@ local htmltemplate = [[
                     else
                         if href then
                             href = lpegmatch(p_cleanhref,href) or href
-                            c.at = {
+                            attr = {
                                 class   = class,
                                 href    = href,
                                 onclick = addclicks and f_onclick(href) or nil,
                             }
                         else
-                            c.at = {
+                            attr = {
                                 class = class,
                             }
                         end
                     end
                     c.tg = "div"
+                    c.at = attr
+                    if label then
+                        attr.label = label
+                    end
                 end
             end
         end
@@ -3292,11 +3494,19 @@ local htmltemplate = [[
 
     local addsuffix = file.addsuffix
     local joinfile  = file.join
+    local nameonly  = file.nameonly
+    local basename  = file.basename
 
     local embedfile = false  directives.register("export.embed",function(v) embedfile = v end)
     local embedmath = false
 
-    local function stopexport(v)
+    function structurestags.finishexport()
+
+        if exporting then
+            exporting = false
+        else
+            return
+        end
 
         starttiming(treehash)
         --
@@ -3314,10 +3524,8 @@ local htmltemplate = [[
         --
         wrapups.hashlistdata()
         --
-        if type(v) ~= "string" or v == v_yes or v == "" then
-            v = tex.jobname
-        end
-
+        local askedname = finetuning.file
+        --
         -- we use a dedicated subpath:
         --
         -- ./jobname-export
@@ -3333,14 +3541,18 @@ local htmltemplate = [[
         -- ./jobname-export/styles/jobname-images.css
         -- ./jobname-export/styles/jobname-templates.css
 
-        local basename  = file.basename(v)
-        local basepath  = basename .. "-export"
+        if type(askedname) ~= "string" or askedname == v_yes or askedname == "" then
+            askedname = tex.jobname
+        end
+
+        local usedname  = nameonly(askedname)
+        local basepath  = usedname .. "-export"
         local imagepath = joinfile(basepath,"images")
         local stylepath = joinfile(basepath,"styles")
 
         local function validpath(what,pathname)
             if lfs.isdir(pathname) then
-                report_export("using exiting %s path %a",what,pathname)
+                report_export("using existing %s path %a",what,pathname)
                 return pathname
             end
             lfs.mkdir(pathname)
@@ -3358,21 +3570,23 @@ local htmltemplate = [[
         end
 
         -- we're now on the dedicated export subpath so we can't clash names
+        --
+        -- a xhtml suffix no longer seems to be work well with browsers
 
-        local xmlfilebase           = addsuffix(basename .. "-raw","xml"  )
-        local xhtmlfilebase         = addsuffix(basename .. "-tag","xhtml")
-        local htmlfilebase          = addsuffix(basename .. "-div","xhtml")
-        local specificationfilebase = addsuffix(basename .. "-pub","lua"  )
+        local xmlfilebase           = addsuffix(usedname .. "-raw","xml"  )
+        local xhtmlfilebase         = addsuffix(usedname .. "-tag","xhtml")
+        local htmlfilebase          = addsuffix(usedname .. "-div","html")
+        local specificationfilebase = addsuffix(usedname .. "-pub","lua"  )
 
         local xmlfilename           = joinfile(basepath, xmlfilebase          )
         local xhtmlfilename         = joinfile(basepath, xhtmlfilebase        )
         local htmlfilename          = joinfile(basepath, htmlfilebase         )
         local specificationfilename = joinfile(basepath, specificationfilebase)
         --
-        local defaultfilebase       = addsuffix(basename .. "-defaults", "css")
-        local imagefilebase         = addsuffix(basename .. "-images",   "css")
-        local stylefilebase         = addsuffix(basename .. "-styles",   "css")
-        local templatefilebase      = addsuffix(basename .. "-templates","css")
+        local defaultfilebase       = addsuffix(usedname .. "-defaults", "css")
+        local imagefilebase         = addsuffix(usedname .. "-images",   "css")
+        local stylefilebase         = addsuffix(usedname .. "-styles",   "css")
+        local templatefilebase      = addsuffix(usedname .. "-templates","css")
         --
         local defaultfilename       = joinfile(stylepath,defaultfilebase )
         local imagefilename         = joinfile(stylepath,imagefilebase   )
@@ -3410,7 +3624,7 @@ local htmltemplate = [[
             local list = table.unique(settings_to_array(cssfile))
             for i=1,#list do
                 local source = addsuffix(list[i],"css")
-                local target = joinfile(stylepath,file.basename(source))
+                local target = joinfile(stylepath,basename(source))
                 cssfiles[#cssfiles+1] = source
                 if not lfs.isfile(source) then
                     source = joinfile("../",source)
@@ -3445,7 +3659,7 @@ local htmltemplate = [[
             -- only for testing
             attach {
                 data       = concat{ wholepreamble(true), result },
-                name       = file.basename(xmlfilename),
+                name       = basename(xmlfilename),
                 registered = "export",
                 title      = "raw xml export",
                 method     = v_hidden,
@@ -3457,8 +3671,8 @@ local htmltemplate = [[
      --     for k, v in sortedhash(embedded) do
      --         attach {
      --             data       = v,
-     --             file       = file.basename(k),
-     --             name       = file.addsuffix(k,"xml"),
+     --             file       = basename(k),
+     --             name       = addsuffix(k,"xml"),
      --             registered = k,
      --             reference  = k,
      --             title      = "xml export snippet: " .. k,
@@ -3483,19 +3697,28 @@ local htmltemplate = [[
         io.savedata(xmlfilename,result)
 
         report_export("saving css image definitions in %a",imagefilename)
-        io.savedata(imagefilename,wrapups.allusedimages(basename))
+        io.savedata(imagefilename,wrapups.allusedimages(usedname))
 
         report_export("saving css style definitions in %a",stylefilename)
-        io.savedata(stylefilename,wrapups.allusedstyles(basename))
+        io.savedata(stylefilename,wrapups.allusedstyles(usedname))
 
         report_export("saving css template in %a",templatefilename)
-        io.savedata(templatefilename,allusedelements(basename))
+        io.savedata(templatefilename,allusedelements(usedname))
 
         -- additionally we save an xhtml file; for that we load the file as xml tree
 
         report_export("saving xhtml variant in %a",xhtmlfilename)
 
         local xmltree = cleanxhtmltree(xml.convert(result))
+
+-- local xmltree = xml.convert(result)
+-- for c in xml.collected(xmltree,"m:mtext[lastindex()=1]/m:mrow") do
+--     print(c)
+-- end
+-- for c in xml.collected(xmltree,"mtext/mrow") do
+--     print(c)
+-- end
+-- local xmltree = cleanxhtmltree(xmltree)
 
         xml.save(xmltree,xhtmlfilename)
 
@@ -3505,9 +3728,10 @@ local htmltemplate = [[
         -- at the tex end
 
         local identity = interactions.general.getidentity()
+        local metadata = structures.tags.getmetadata()
 
         local specification = {
-            name        = file.removesuffix(v),
+            name        = usedname,
             identifier  = os.uuid(),
             images      = wrapups.uniqueusedimages(),
             imagefile   = joinfile("styles",imagefilebase),
@@ -3524,6 +3748,7 @@ local htmltemplate = [[
             author      = validstring(finetuning.author) or validstring(identity.author),
             firstpage   = validstring(finetuning.firstpage),
             lastpage    = validstring(finetuning.lastpage),
+            metadata    = metadata,
         }
 
         report_export("saving specification in %a",specificationfilename,specificationfilename)
@@ -3537,10 +3762,15 @@ local htmltemplate = [[
 
         remap(specification,xmltree)
 
+        -- believe it or not, but a <title/> can prevent viewing in browsers
+
         local title = specification.title
 
         if not title or title == "" then
-            title = "no title" -- believe it or not, but a <title/> can prevent viewing in browsers
+            title = metadata.title
+            if not title or title == "" then
+                title = usedname -- was: "no title"
+            end
         end
 
         local variables = {
@@ -3555,7 +3785,7 @@ local htmltemplate = [[
         -- finally we report how an epub file can be made (using the specification)
 
         report_export("")
-        report_export('create epub with: mtxrun --script epub --make "%s" [--purge --rename --svgmath]',file.nameonly(basename))
+        report_export('create epub with: mtxrun --script epub --make "%s" [--purge --rename --svgmath]',usedname)
         report_export("")
 
         stoptiming(treehash)
@@ -3564,17 +3794,8 @@ local htmltemplate = [[
     local appendaction = nodes.tasks.appendaction
     local enableaction = nodes.tasks.enableaction
 
-    function structurestags.setupexport(t)
-        merge(finetuning,t)
-        keephyphens      = finetuning.hyphen == v_yes
-        exportproperties = finetuning.properties
-        if exportproperties == v_no then
-            exportproperties = false
-        end
-    end
-
-    local function startexport(v)
-        if v and not exporting then
+    function structurestags.initializeexport()
+        if not exporting then
             report_export("enabling export to xml")
          -- not yet known in task-ini
             appendaction("shipouts","normalizers", "nodes.handlers.export")
@@ -3584,18 +3805,18 @@ local htmltemplate = [[
          -- appendaction("finalizers","lists","builders.paragraphs.tag")
          -- enableaction("finalizers","builders.paragraphs.tag")
             luatex.registerstopactions(structurestags.finishexport)
-            exporting = v
+            exporting = true
         end
     end
 
-    function structurestags.finishexport()
-        if exporting then
-            stopexport(exporting)
-            exporting = false
+    function structurestags.setupexport(t)
+        merge(finetuning,t)
+        keephyphens      = finetuning.hyphen == v_yes
+        exportproperties = finetuning.properties
+        if exportproperties == v_no then
+            exportproperties = false
         end
     end
-
-    directives.register("backend.export",startexport) -- maybe .name
 
     statistics.register("xml exporting time", function()
         if exporting then
@@ -3624,6 +3845,7 @@ implement {
             { "lastpage" },
             { "svgstyle" },
             { "cssfile" },
+            { "file" },
         }
     }
 }
@@ -3632,6 +3854,12 @@ implement {
     name      = "finishexport",
     actions   = structurestags.finishexport,
 }
+
+implement {
+    name      = "initializeexport",
+    actions   = structurestags.initializeexport,
+}
+
 
 implement {
     name      = "settagitemgroup",
@@ -3643,6 +3871,12 @@ implement {
     name      = "settagitem",
     actions   = structurestags.setitem,
     arguments = "string"
+}
+
+implement {
+    name      = "settagfloat",
+    actions   = structurestags.setfloat,
+    arguments = { "string", "string" }
 }
 
 implement {
@@ -3684,7 +3918,13 @@ implement {
 implement {
     name      = "settaghighlight",
     actions   = structurestags.sethighlight,
-    arguments = { "string", "integer" }
+    arguments = { "string", "string", "integer", "integer" }
+}
+
+implement {
+    name      = "settagconstruct",
+    actions   = structurestags.setconstruct,
+    arguments = { "string", "string", "integer", "integer" }
 }
 
 implement {
@@ -3708,7 +3948,7 @@ implement {
 implement {
     name      = "settagtabulatecell",
     actions   = structurestags.settabulatecell,
-    arguments = "integer"
+    arguments = { "integer", "integer" },
 }
 
 implement {

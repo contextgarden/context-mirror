@@ -16,7 +16,7 @@
 %D used. After all it's not that urgent and replacing helpers is a delicate process.
 %D Don't depend on it.
 
-\registerctxluafile{syst-aux}{1.001}
+\registerctxluafile{syst-aux}{}
 
 % A dedicated primitive \ifvoidmacro\cs == \ifx\cs\empty is some 10% faster but
 % probably not that noticeable in practice. An \ifvoidtoks might make sense but we
@@ -181,7 +181,6 @@
 %D These are not needed any more now that we have wide screens (and bytes come
 %D cheap).
 
-
 \let\@EA          \singleexpandafter
 \let\@EAEAEA      \doubleexpandafter
 \let\@EAEAEAEAEAEA\tripleexpandafter
@@ -281,6 +280,15 @@
 %D This macro differs from the original in the use of \type
 %D {\localnext} because we don't want clashes with \type
 %D {\next}.
+
+\let\next          \relax
+\let\nextnext      \relax
+\let\nextnextnext  \relax
+\let\nexttoken     \relax
+\let\charactertoken\relax
+
+\let\m_syst_action_yes\relax
+\let\m_syst_action_nop\relax
 
 \unexpanded\def\doifelsenextchar#1#2#3% #1 should not be {} !
   {\let\charactertoken=#1% = needed here
@@ -1073,12 +1081,21 @@
    \fi
    \relax} % this one preserved the next {}
 
+% \def\syst_helpers_do_process_comma_list#1]#2%
+%   {\global\advance\commalevel \plusone
+%    \expandafter\def\csname\??nextcommalevel\the\commalevel\endcsname##1,%
+%      {#2{##1}\syst_helpers_do_process_comma_item}%
+%    \expandafter\syst_helpers_do_do_process_comma_item\gobbleoneargument#1,]\relax
+%    \global\advance\commalevel \minusone }
+
 \def\syst_helpers_do_process_comma_list#1]#2%
   {\global\advance\commalevel \plusone
    \expandafter\def\csname\??nextcommalevel\the\commalevel\endcsname##1,%
      {#2{##1}\syst_helpers_do_process_comma_item}%
-   \expandafter\syst_helpers_do_do_process_comma_item\gobbleoneargument#1,]\relax
+   \syst_helpers_do_do_process_comma_item_gobble#1,]\relax
    \global\advance\commalevel \minusone }
+
+\def\syst_helpers_do_do_process_comma_item_gobble#1{\syst_helpers_do_do_process_comma_item}
 
 %D One way of quitting a commalist halfway is:
 
@@ -3088,25 +3105,6 @@
 %D A fully expandable message:
 
 \let\immediatemessage\clf_immediatemessage % {} mandate
-
-%D \macros
-%D   {debuggerinfo}
-%D
-%D For debugging purposes we can enhance macros with the
-%D next alternative. Here \type{debuggerinfo} stands for both
-%D a macro accepting two arguments and a boolean (in fact a
-%D few macro's too).
-
-% \newif\ifdebuggerinfo
-%
-% \unexpanded\def\debuggerinfo#1#2%
-%   {\ifdebuggerinfo
-%      \writestatus{debugger}{#1:: #2}%
-%    \fi}
-%
-% \ifdefined\writestatus \else \let\writestatus\normalwritestatus \fi
-
-% % % % % % % % % % % % % % % % % % % % % % % %
 
 %D \macros
 %D   {rawgetparameters}
@@ -6102,40 +6100,46 @@
 %D \macros
 %D   {ScaledPointsToBigPoints,ScaledPointsToWholeBigPoints}
 %D
-%D One characteristic of \POSTSCRIPT\ and \PDF\ is that both
-%D used big points (\TEX's bp). The next macros convert points
-%D and scaled points into big points.
+%D One characteristic of \POSTSCRIPT\ and \PDF\ is that both used big points (\TEX's
+%D bp). The next macros convert points and scaled points into big points. The magic
+%D factor $72/72.27$ can be found in most \TEX\ related books.
 %D
 %D \starttyping
 %D \ScaledPointsToBigPoints      {number} \target
 %D \ScaledPointsToWholeBigPoints {number} \target
 %D \stoptyping
 %D
-%D The magic factor $72/72.27$ can be found in most \TEX\
-%D related books.
 
-% \PointsToBigPoints{10.53940pt}\test \test
-% \PointsToBigPoints{10.53941pt}\test \test
-% \PointsToBigPoints{10.53942pt}\test \test
+%D In pure \TEX:
 
-% \PointsToWholeBigPoints{10.53940pt}\test \test
-% \PointsToWholeBigPoints{10.53941pt}\test \test
-% \PointsToWholeBigPoints{10.53942pt}\test \test
+% \unexpanded\def\PointsToBigPoints#1#2%
+%   {\edef#2{\withoutpt\the\dimexpr.996264\dimexpr#1\relax\relax}}
+%
+% \unexpanded\def\PointsToWholeBigPoints#1#2%
+%   {\edef#2{\the\numexpr\dimexpr.996264\dimexpr#1\relax\relax/\maxcard\relax}}
+%
+% \unexpanded\def\ScaledPointsToBigPoints#1%    %  #2
+%   {\PointsToBigPoints{\number#1\scaledpoint}} % {#2}
+%
+% \unexpanded\def\ScaledPointsToWholeBigPoints#1%    %  #2
+%   {\PointsToWholeBigPoints{\number#1\scaledpoint}} % {#2}
 
-\unexpanded\def\PointsToBigPoints#1#2%
-  {\edef#2{\withoutpt\the\dimexpr.996264\dimexpr#1\relax\relax}}
+%D This is slower but cleaner and more accurate too. The only place these are still
+%D used is in a few backend related macros.
 
-\unexpanded\def\PointsToWholeBigPoints#1#2%
-  {\edef#2{\the\numexpr\dimexpr.996264\dimexpr#1\relax\relax/\maxcard\relax}}
+\let\tobigpoints     \clf_tobigpoints
+\let\towholebigpoints\clf_towholebigpoints
 
-\unexpanded\def\ScaledPointsToBigPoints     #1{\PointsToBigPoints     {\number#1\scaledpoint}}
-\unexpanded\def\ScaledPointsToWholeBigPoints#1{\PointsToWholeBigPoints{\number#1\scaledpoint}}
+\unexpanded\def\PointsToBigPoints           #1#2{\edef#2{\tobigpoints     #1}}             % can be avoided
+\unexpanded\def\PointsToWholeBigPoints      #1#2{\edef#2{\towholebigpoints#1}}             % can be avoided
+\unexpanded\def\ScaledPointsToBigPoints     #1#2{\edef#2{\tobigpoints     #1\scaledpoint}} % obsolete
+\unexpanded\def\ScaledPointsToWholeBigPoints#1#2{\edef#2{\towholebigpoints#1\scaledpoint}} % obsolete
 
 %D \macros
 %D   {PointsToReal}
 %D
-%D Points can be stripped from their suffix by using
-%D \type{\withoutpt}. The next macro enveloppes this macro.
+%D Points can be stripped from their suffix by using \type {\withoutpt}. The next
+%D macro enveloppes this macro.
 %D
 %D \starttyping
 %D \PointsToReal {dimension} \target
@@ -7476,3 +7480,9 @@
 % \appendtovaluelist{mylist}{mies}
 %
 % \showvalue{mylist}
+
+% \unexpanded\def\showtokenlist#1%
+%   {\begingroup
+%    \edef\tempstring{\the#1}%
+%    \tx\ttbf\string#1: \tttf\meaning\tempstring
+%    \endgroup}

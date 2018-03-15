@@ -35,7 +35,7 @@ if not characters then
     require("char-ent")
 end
 
-local type, rawget = type, rawget
+local rawget, next, type = rawget, next, type
 local concat, insert, remove = table.concat, table.insert, table.remove
 local rep, gmatch, gsub, find = string.rep, string.gmatch, string.gsub, string.find
 local utfchar, utfbyte = utf.char, utf.byte
@@ -103,13 +103,17 @@ local reserved = {
     ["max"]       = { false, "\\max" },
     ["ln"]        = { false, "\\ln" },
 
-    ["atan"]      = { false, "\\atan" }, -- extra
-    ["acos"]      = { false, "\\acos" }, -- extra
-    ["asin"]      = { false, "\\asin" }, -- extra
+ -- ["atan"]      = { false, "\\atan" }, -- extra
+ -- ["acos"]      = { false, "\\acos" }, -- extra
+ -- ["asin"]      = { false, "\\asin" }, -- extra
 
     ["arctan"]    = { false, "\\arctan" }, -- extra
     ["arccos"]    = { false, "\\arccos" }, -- extra
     ["arcsin"]    = { false, "\\arcsin" }, -- extra
+
+    ["arctanh"]   = { false, "\\arctanh" }, -- extra
+    ["arccosh"]   = { false, "\\arccosh" }, -- extra
+    ["arcsinh"]   = { false, "\\arcsinh" }, -- extra
 
     ["and"]       = { false, "\\text{and}" },
     ["or"]        = { false, "\\text{or}" },
@@ -121,8 +125,9 @@ local reserved = {
     ["frac"]      = { false, "\\frac",              "binary" },
     ["stackrel"]  = { false, "\\asciimathstackrel", "binary" },
     ["hat"]       = { false, "\\widehat",           "unary" },
-    ["bar"]       = { false, "\\overbar",           "unary" },
-    ["overbar"]   = { false, "\\overbar",           "unary" },
+    ["bar"]       = { false, "\\overline",          "unary" },
+    ["overbar"]   = { false, "\\overline",          "unary" },
+    ["overline"]  = { false, "\\overline",          "unary" },
     ["underline"] = { false, "\\underline",         "unary" },
     ["ul"]        = { false, "\\underline",         "unary" },
     ["vec"]       = { false, "\\overrightarrow",    "unary" },
@@ -797,13 +802,17 @@ local isstupid = {
     ["\\max"]       = true,
     ["\\ln"]        = true,
 
-    ["\\atan"]      = true,
-    ["\\acos"]      = true,
-    ["\\asin"]      = true,
-                      true,
+ -- ["\\atan"]      = true,
+ -- ["\\acos"]      = true,
+ -- ["\\asin"]      = true,
+
     ["\\arctan"]    = true,
     ["\\arccos"]    = true,
     ["\\arcsin"]    = true,
+
+    ["\\arctanh"]   = true,
+    ["\\arccosh"]   = true,
+    ["\\arcsinh"]   = true,
 
     ["f"]           = true,
     ["g"]           = true,
@@ -834,7 +843,8 @@ local issimplified = {
 
 --
 
--- special mess
+-- special mess (we have a generic one now but for the moment keep this)
+-- special mess (we have a generic one now but for the moment keep this)
 
 local d_one         = R("09")
 local d_two         = d_one * d_one
@@ -894,6 +904,8 @@ local symbolmethod   = nil
 local digitseparator = utfchar(0x2008)
 local digitsymbol    = "."
 
+local v_yes_digits   = interfaces and interfaces.variables.yes or true
+
 function asciimath.setup(settings)
     splitmethod = splitmethods[tonumber(settings.splitmethod) or 0]
     if splitmethod then
@@ -902,7 +914,8 @@ function asciimath.setup(settings)
              digitsymbol = "."
         end
         local separator = settings.separator
-        if separator == true or not interfaces or interfaces.variables.yes then
+     -- if separator == true or not interfaces or interfaces.variables.yes then
+        if separator == true or separator == nil or separator == v_yes_digits then
             digitseparator = utfchar(0x2008)
         elseif type(separator) == "string" and separator ~= "" then
             digitseparator = separator
@@ -1277,7 +1290,8 @@ local function collapse_bars(t)
         -- problem: we can have a proper nesting
 local d = false
 for i=1,m do
-    if find(t[i],"\\left") then
+    local ti = t[i]
+    if type(ti) == "string" and find(ti,"\\left",1,true) then
         d = true
         break
     end
@@ -1791,6 +1805,14 @@ local p = (
   + p_utf_base
 )^0
 
+-- faster:
+--
+-- local p = (
+--     (S("{[(") + P("\\left" )) * Cc(function() n = n + 1 end)
+--   + (S("}])") + P("\\right")) * Cc(function() n = n - 1 end)
+--   + p_utf_base
+-- )^0
+
 local function invalidtex(str)
     n = 0
     lpegmatch(p,str)
@@ -1933,7 +1955,7 @@ local uncrapped = {
 }
 
 local function convert(str,nowrap)
-    if #str > 0 then
+    if str ~= "" then
         local unicoded = lpegmatch(u_parser,str) or str
         if lpegmatch(p_onechar,unicoded) then
             ctx_mathematics(uncrapped[unicoded] or unicoded)

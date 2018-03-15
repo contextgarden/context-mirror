@@ -35,7 +35,7 @@
 %
 % \ctxlua{tex.setbox("global",0,node.hpack(nodes.pool.glyph("a",font.current())))}\box0
 
-\registerctxluafile{page-mix}{1.001}
+\registerctxluafile{page-mix}{}
 
 \unprotect
 
@@ -84,6 +84,7 @@
    \c!step=.25\lineheight, % needs some experimenting
   %\c!splitmethod=\v!fixed, % will be default
    \c!direction=\v!normal, % new (also todo in the new columnsets)
+   \c!notes=\v!yes,
    \c!method=\ifinner\s!box\else\s!otr\fi] % automatic as suggested by WS
 
 \let\startmixedcolumns\relax % defined later
@@ -122,6 +123,8 @@
 \setnewconstant\c_page_mix_routine_continue \plustwo
 \setnewconstant\c_page_mix_routine_balance  \plusthree
 \setnewconstant\c_page_mix_routine_error    \plusfour
+
+\newconditional\c_page_mix_process_notes
 
 %D The main environment is called as follows:
 %D
@@ -183,7 +186,8 @@
    \c!splitmethod=\v!none,
    \c!grid=\v!tolerant,
    \c!internalgrid=\v!halfline, % new, we may still revert to \v!line
-   \c!balance=\v!yes]
+   \c!balance=\v!yes,
+   \c!notes=\v!no] % kind of hidden
 
 % better
 
@@ -192,6 +196,17 @@
   [\c!splitmethod=\v!fixed,
    \c!grid=\v!yes,
    \c!internalgrid=\v!line]
+
+% even better:
+
+\setupitemgroup
+  [\c!grid=\v!tolerant:10] % 10 pct tolerance in columns snapping
+
+\setupmixedcolumns
+  [\s!itemgroupcolumns]
+  [\c!grid=\itemgroupparameter\c!grid]
+
+% the fast hooks:
 
 \unexpanded\def\strc_itemgroups_start_columns
   {\startmixedcolumns[\s!itemgroupcolumns]} % we could have a fast one
@@ -239,7 +254,7 @@
 
 \def\page_mix_routine_error
   {\showmessage\m!columns3\empty
-   \page_otr_construct_and_shipout\unvbox\normalpagebox}
+   \page_otr_construct_and_shipout\unvbox\normalpagebox\zerocount} % three arguments
 
 %D Some settings (and actions) depend on the current output routine and setting the
 %D hsize and vsize is among them. The calculation of the hsize is done elsewhere.
@@ -464,18 +479,29 @@
 
 \let\page_mix_fast_columns_stop\relax
 
+\newtoks\t_page_mix_at_the_end
+
+\def\page_mix_finalize_columns
+  {\ifconditional\c_page_mix_process_notes \else
+     \global\t_page_mix_at_the_end{\stoppostponingnotes}%
+   \fi}
+
 \unexpanded\def\page_mix_columns_stop_yes
-  {\begincsname\??mixedcolumnsstop \currentmixedcolumnsmethod\endcsname % no \relax
+  {\begincsname\??mixedcolumnsstop\currentmixedcolumnsmethod\endcsname % no \relax
+   \page_mix_finalize_columns
    \endgroup
    \begincsname\??mixedcolumnsafter\currentmixedcolumnsmethod\endcsname\relax
    \mixedcolumnsparameter\c!after\relax
    \popmacro\currentmixedcolumnsmethod
-   \popmacro\currentmixedcolumns}
+   \popmacro\currentmixedcolumns
+   \the\t_page_mix_at_the_end\global\t_page_mix_at_the_end\emptytoks}
 
 \unexpanded\def\page_mix_columns_stop_nop
-  {\endgroup
+  {\page_mix_finalize_columns
+   \endgroup
    \popmacro\currentmixedcolumnsmethod
-   \popmacro\currentmixedcolumns}
+   \popmacro\currentmixedcolumns
+   \the\t_page_mix_at_the_end\global\t_page_mix_at_the_end\emptytoks}
 
 % \unexpanded\def\page_mix_columns_stop_yes
 %   {\begincsname\??mixedcolumnsstop \currentmixedcolumnsmethod\endcsname % no \relax
@@ -527,6 +553,11 @@
    \d_page_mix_rightskip\rightskip
    \leftskip \zeropoint
    \rightskip\zeropoint
+   %
+   \doifelse{\mixedcolumnsparameter\c!notes}\v!yes\settrue\setfalse\c_page_mix_process_notes
+   \ifconditional\c_page_mix_process_notes \else
+     \startpostponingnotes
+   \fi
    %
    \d_page_mix_threshold\zeropoint
    %
@@ -634,10 +665,16 @@
 
 \unexpanded\def\page_mix_routine_construct#1%
   {\d_page_mix_max_height\mixedcolumnsparameter\c!maxheight % can have changed due to header=high
+   \ifconditional\c_page_mix_process_notes
+     \totalnoteheight\zeropoint
+   \else
+     \settotalinsertionheight
+   \fi
    \clf_mixsetsplit
        box          \b_page_mix_collected
        nofcolumns   \c_page_mix_n_of_columns
        maxheight    \d_page_mix_max_height
+       noteheight   \totalnoteheight
        step         \d_page_mix_balance_step
        cycles       \c_page_mix_balance_cycles
        preheight    \d_page_mix_preceding_height
@@ -649,7 +686,8 @@
        balance      {#1}%
        alternative  {\mixedcolumnsparameter\c!alternative}%
        internalgrid {\mixedcolumnsparameter\c!internalgrid}%
-       grid         \ifgridsnapping true\else false\fi
+       grid         \ifgridsnapping tru\else fals\fi e %
+       notes        \ifconditional\c_page_mix_process_notes tru\else fals\fi e %
    \relax
    \deadcycles\zerocount}
 
@@ -710,7 +748,13 @@
              \fi}%
        \fi
      \egroup
-   \egroup}
+     \hskip\d_page_mix_rightskip
+   \egroup
+   \wd\b_page_mix_collected\dimexpr
+     \d_page_mix_max_width
+    +\d_page_mix_rightskip
+    +\d_page_mix_leftskip
+   \relax }
 
 \unexpanded\def\page_mix_command_package_column
   {\page_mix_hbox to \d_page_mix_column_width \bgroup
@@ -719,7 +763,9 @@
      \hskip-\d_page_mix_column_width
      \vbox \bgroup
        \hsize\d_page_mix_column_width
-       \placenoteinserts
+       \ifconditional\c_page_mix_process_notes
+         \placenoteinserts
+       \fi
      \egroup
      \hss
    \egroup}
@@ -731,7 +777,7 @@
    \setbox\b_page_mix_collected\vpack{\unvbox\normalpagebox}% brrr we need to make a tight box (combine this in lua)
    \page_mix_routine_construct\v!no
    \page_mix_routine_package
-   \page_otr_construct_and_shipout\box\b_page_mix_collected
+   \page_otr_construct_and_shipout\box\b_page_mix_collected\zerocount % three arguments
    \clf_mixflushrest
    \clf_mixcleanup
    \egroup}
@@ -769,7 +815,7 @@
         % 1 = we have stuff left, so flush and rebalance
         %writestatus\m!columns{flush continue}%
         \page_mix_routine_package
-        \page_otr_construct_and_shipout\box\b_page_mix_collected
+        \page_otr_construct_and_shipout\box\b_page_mix_collected\zerocount % three arguments
         \setbox\b_page_mix_collected\vpack{\clf_mixflushrest}% we could avoid this
         \clf_mixcleanup
         \ifdim\ht\b_page_mix_collected=\zeropoint
@@ -932,10 +978,10 @@
 \unexpanded\def\page_mix_place_float_force
   {\page_one_place_float_force}
 
-\unexpanded\def\page_mix_command_side_float_output       % hm
-  {\page_otr_construct_and_shipout\unvbox\normalpagebox}
+\unexpanded\def\page_mix_command_side_float_output
+  {\page_otr_construct_and_shipout\unvbox\normalpagebox\zerocount} % three arguments
 
-\unexpanded\def\page_mix_command_synchronize_side_floats % hm
+\unexpanded\def\page_mix_command_synchronize_side_floats
   {\page_sides_forget_floats}
 
 \unexpanded\def\page_mix_command_flush_side_floats
@@ -965,27 +1011,30 @@
 %D We need to hook some handlers into the output routine and we define
 %D a dedicated one:
 
+\let\page_mix_command_flush_all_floats\page_one_command_flush_all_floats
+
 \defineoutputroutine
   [\s!mixedcolumn]
   [\s!page_otr_command_routine                =\page_mix_command_routine,
    \s!page_otr_command_package_contents       =\page_mix_command_package_contents,
    \s!page_otr_command_set_vsize              =\page_mix_command_set_vsize,
    \s!page_otr_command_set_hsize              =\page_mix_command_set_hsize,
+ % \s!page_otr_command_synchronize_hsize      =\page_mix_command_synchronize_hsize,
    \s!page_otr_command_next_page              =\page_mix_command_next_page,
    \s!page_otr_command_next_page_and_inserts  =\page_mix_command_next_page_and_inserts,
- % \s!page_otr_command_synchronize_hsize      =\page_mix_command_synchronize_hsize,
  % \s!page_otr_command_set_top_insertions     =\page_mix_command_set_top_insertions,
  % \s!page_otr_command_set_bottom_insertions  =\page_mix_command_set_bottom_insertions,
  % \s!page_otr_command_flush_top_insertions   =\page_mix_command_flush_top_insertions,
  % \s!page_otr_command_flush_bottom_insertions=\page_mix_command_flush_bottom_insertions,
- % \s!page_otr_command_set_float_hsize        =\page_mix_command_set_float_hsize,
    \s!page_otr_command_check_if_float_fits    =\page_mix_command_check_if_float_fits,
+ % \s!page_otr_command_set_float_hsize        =\page_mix_command_set_float_hsize,
    \s!page_otr_command_flush_float_box        =\page_mix_command_flush_float_box,
-   \s!page_otr_command_synchronize_side_floats=\page_mix_command_synchronize_side_floats,
    \s!page_otr_command_side_float_output      =\page_mix_command_side_float_output,
+   \s!page_otr_command_synchronize_side_floats=\page_mix_command_synchronize_side_floats,
    \s!page_otr_command_flush_floats           =\page_mix_command_flush_floats,
    \s!page_otr_command_flush_side_floats      =\page_mix_command_flush_side_floats,
    \s!page_otr_command_flush_saved_floats     =\page_mix_command_flush_saved_floats,
+   \s!page_otr_command_flush_all_floats       =\page_mix_command_flush_all_floats,
  % \s!page_otr_command_flush_margin_blocks    =\page_mix_command_flush_margin_blocks, % not used
    \s!page_otr_command_test_column            =\page_mix_command_test_column
   ]

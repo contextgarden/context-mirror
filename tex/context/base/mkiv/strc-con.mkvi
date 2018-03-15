@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Structure Macros / Constructions}
 
-\registerctxluafile{strc-con}{1.001}
+\registerctxluafile{strc-con}{}
 
 % todo: check why \copy .. probably mkii leftover
 %
@@ -73,6 +73,8 @@
     \c!display=\v!yes,
     \c!width=7\emwidth,
     \c!distance=\emwidth,
+    \c!stretch=.50,
+    \c!shrink=.25,
     \c!titledistance=.5\emwidth,
     %c!hang=,
     %c!sample=,
@@ -186,6 +188,27 @@
 
 % \ifdefined\dotagsetconstruction \else \let\dotagsetconstruction\relax \fi
 
+% \startuseMPgraphic{MyFrame}
+%     picture p ; numeric o ; path a, b ; pair c ;
+%     p := textext.rt("\FunnyFramed{\currentconstructiontext}") ;
+%   % p := textext.rt("\wrappedconstruction{\FunnyFramed{\currentconstructiontext}}") ;
+%   % p := textext.rt("\FunnyFramed{\wrappedconstruction{\currentconstructiontext}}") ;
+%   % p := textext.rt("\FunnyFramed{\wrappedcurrentconstruction}") ;
+%     ...
+% \stopuseMPgraphic
+%
+% \defineoverlay[MyFrame][\useMPgraphic{MyFrame}]
+%
+% \defineframedtext
+%   [MyText]
+%   [frame=off,
+%    background=MyFrame]
+%
+% \defineenumeration[Theorem]
+%   [alternative=empty,
+%    before=\startMyText,
+%    after=\stopMyText]
+
 \newtoks\everyconstruction
 
 \unexpanded\def\currentconstructiontext
@@ -198,6 +221,24 @@
    \constructionparameter\c!text
    \p_strc_constructions_sample
    \endstrut}
+
+\unexpanded\def\wrappedconstruction#1%
+  {\begingroup
+     \iftrialtypesetting \else
+       \currentconstructionsynchronize
+       \attribute\destinationattribute\currentconstructionattribute\relax
+     \fi
+     #1%
+   \endgroup}
+
+\unexpanded\def\wrappedcurrentconstruction
+  {\begingroup
+     \iftrialtypesetting \else
+       \currentconstructionsynchronize
+       \attribute\destinationattribute\currentconstructionattribute\relax
+     \fi
+     \currentconstructiontext
+   \endgroup}
 
 \unexpanded\setvalue{\??constructionmainhandler\v!construction}#1%
   {\iftrialtypesetting \else
@@ -410,8 +451,12 @@
 \installcommandhandler \??constructionalternative {constructionalternative} \??constructionalternative
 
 \setupconstructionalternative
-  [\c!width=\constructionparameter\c!width,
-   \c!distance=\constructionparameter\c!distance]
+  [%c!left=, % no inheritance
+   %c!right=,% no inheritance
+   \c!width=\constructionparameter\c!width,
+   \c!distance=\constructionparameter\c!distance,
+   \c!stretch=\constructionparameter\c!stretch,
+   \c!shrink=\constructionparameter\c!shrink]
 
 \defineconstructionalternative
   [\v!left]
@@ -463,7 +508,7 @@
 
 \defineconstructionalternative
   [\v!hanging]
-  [%\c!width=\v!fit,
+  [%\c!width=.75\emwidth
    \c!renderingsetup=\??constructionrenderings:\v!hanging]
 
 \defineconstructionalternative
@@ -474,6 +519,15 @@
 \defineconstructionalternative
   [\v!command]
   [\c!renderingsetup=\??constructionrenderings:\v!command]
+
+\defineconstructionalternative
+  [\v!empty]
+  [\c!renderingsetup=\??constructionrenderings:\v!empty]
+
+\defineconstructionalternative
+  [\v!label]
+  [\c!renderingsetup=\??constructionrenderings:\v!label,
+   \c!width=]
 
 \newbox   \constructionheadbox
 \newskip  \leftconstructionskip
@@ -778,7 +832,10 @@
     \flushconstructionheadbox
     \ifconditional\c_strc_constructions_distance_none \else
         \nobreak
-        \hskip\constructionsheaddistance \s!plus .5\constructionsheaddistance \s!minus .25\constructionsheaddistance\relax
+        \hskip\constructionsheaddistance
+          \s!plus \constructionalternativeparameter\c!stretch\constructionsheaddistance
+          \s!minus\constructionalternativeparameter\c!shrink \constructionsheaddistance
+        \relax
     \fi
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
@@ -822,9 +879,9 @@
     \ifconditional\c_strc_constructions_distance_none \else
       % we used to have just a kern, but long lines look bad then
       \scratchdistance\ifdim\constructionsheaddistance=\zeropoint .75\emwidth\else\constructionsheaddistance\fi
-      \hskip     \scratchdistance
-      \s!plus .25\scratchdistance
-      \s!minus.25\scratchdistance
+      \hskip \scratchdistance
+        \s!plus \constructionalternativeparameter\c!stretch\scratchdistance
+        \s!minus\constructionalternativeparameter\c!shrink \scratchdistance
     \fi
     \ifhmode
         \ifx\p_strc_constructions_width\v!line
@@ -846,6 +903,19 @@
     \constructionparameter\c!headcommand{\flushconstructionheadbox}
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!empty]
+    \noindent
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!label]
+    \dontleavehmode
+    \begingroup
+    \constructionparameter\c!headcommand{\flushconstructionheadbox}
+    \endgroup
 \stopsetups
 
 % you can use \placeclosesymbol or \qed to place a symbol at the end of a

@@ -490,6 +490,17 @@ return {
             no = "there is nothing to split",
             ro = "there is nothing to split",
         },
+        ["floatblocks:14"] = {
+            en = "float locations will be forced to %a due to exporting",
+            nl = "blok plaatsing is altijd %a vanwege export",
+        },
+        ["floatblocks:15"] = {
+            en = "location %a changed to %a due to exporting",
+            nl = "plaatsing %a vervangen door %a vanwege export",
+        },
+        ["floatblocks:16"] = {
+            en = "anchor=orange, shift=red, box=green, dummy=blue, line=cyan, depth=magenta, prev=orange",
+        },
         ["floatblocks:1"] = {
             en = "%a is empty",
         },
@@ -514,14 +525,14 @@ return {
             ro = "%a mutat",
         },
         ["floatblocks:4"] = {
-            cs = "%a umisteno",
-            de = "%a plaziert",
-            en = "%a placed",
-            fr = "%a placé",
-            it = "%a sistemato",
-            nl = "%a geplaatst",
-            no = "%a plassert",
-            ro = "%a plasat",
+            cs = "%a umisteno (%s)",
+            de = "%a plaziert (%s)",
+            en = "%a placed (%s)",
+            fr = "%a placé (%s)",
+            it = "%a sistemato (%s)",
+            nl = "%a geplaatst (%s)",
+            no = "%a plassert (%s)",
+            ro = "%a plasat (%s)",
         },
         ["floatblocks:5"] = {
             cs = "poradi prizpusobeno",

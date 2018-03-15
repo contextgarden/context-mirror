@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definecounter" file="strc-num.mkiv">
+    <cd:command name="definecounter" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcounter" file="strc-num.mkiv">
+    <cd:command name="setupcounter" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -111,7 +111,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsecounter" file="strc-num.mkiv">
+    <cd:command name="doifelsecounter" level="system" category="counter conditional" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -119,7 +119,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifcounterelse" file="strc-num.mkiv">
+    <cd:command name="doifcounterelse" level="system" category="counter conditional" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -127,21 +127,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifcounter" file="strc-num.mkiv">
+    <cd:command name="doifcounter" level="system" category="counter conditional" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotcounter" file="strc-num.mkiv">
+    <cd:command name="doifnotcounter" level="system" category="counter conditional" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setcounter" file="strc-num.mkiv">
+    <cd:command name="setcounter" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number-optional"/>
@@ -149,7 +149,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setcounterown" file="strc-num.mkiv">
+    <cd:command name="setcounterown" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number-optional"/>
@@ -157,7 +157,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="restartcounter" file="strc-num.mkiv">
+    <cd:command name="restartcounter" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number-optional"/>
@@ -165,165 +165,165 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetcounter" file="strc-num.mkiv">
+    <cd:command name="resetcounter" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="incrementcounter" file="strc-num.mkiv">
+    <cd:command name="incrementcounter" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="decrementcounter" file="strc-num.mkiv">
+    <cd:command name="decrementcounter" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rawcounter" file="strc-num.mkiv">
+    <cd:command name="rawcounter" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lastcounter" file="strc-num.mkiv">
+    <cd:command name="lastcounter" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="firstcounter" file="strc-num.mkiv">
+    <cd:command name="firstcounter" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="nextcounter" file="strc-num.mkiv">
+    <cd:command name="nextcounter" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="prevcounter" file="strc-num.mkiv">
+    <cd:command name="prevcounter" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="countersubs" file="strc-num.mkiv">
+    <cd:command name="countersubs" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="savecounter" file="strc-num.mkiv">
+    <cd:command name="savecounter" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="restorecounter" file="strc-num.mkiv">
+    <cd:command name="restorecounter" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showcounter" file="strc-num.mkiv">
+    <cd:command name="showcounter" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="incrementedcounter" file="strc-num.mkiv">
+    <cd:command name="incrementedcounter" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="decrementedcounter" file="strc-num.mkiv">
+    <cd:command name="decrementedcounter" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rawcountervalue" file="strc-num.mkiv">
+    <cd:command name="rawcountervalue" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lastcountervalue" file="strc-num.mkiv">
+    <cd:command name="lastcountervalue" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="firstcountervalue" file="strc-num.mkiv">
+    <cd:command name="firstcountervalue" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="nextcountervalue" file="strc-num.mkiv">
+    <cd:command name="nextcountervalue" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="prevcountervalue" file="strc-num.mkiv">
+    <cd:command name="prevcountervalue" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rawsubcountervalue" file="strc-num.mkiv">
+    <cd:command name="rawsubcountervalue" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lastsubcountervalue" file="strc-num.mkiv">
+    <cd:command name="lastsubcountervalue" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="firstsubcountervalue" file="strc-num.mkiv">
+    <cd:command name="firstsubcountervalue" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="nextsubcountervalue" file="strc-num.mkiv">
+    <cd:command name="nextsubcountervalue" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="prevsubcountervalue" file="strc-num.mkiv">
+    <cd:command name="prevsubcountervalue" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="convertedcounter" file="strc-num.mkiv">
+    <cd:command name="convertedcounter" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -332,7 +332,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="convertedsubcounter" file="strc-num.mkiv">
+    <cd:command name="convertedsubcounter" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords optional="yes">
@@ -344,7 +344,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="directconvertedcounter" file="strc-num.mkiv">
+    <cd:command name="directconvertedcounter" level="system" category="counter" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:keywords delimiters="braces">
@@ -360,7 +360,7 @@
         </cd:arguments>
     </cd:command>
     
-    <cd:command name="doifelsedefinedcounter" file="strc-num.mkiv">
+    <cd:command name="doifelsedefinedcounter" level="system" category="counter conditional" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -368,7 +368,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifdefinedcounterelse" file="strc-num.mkiv">
+    <cd:command name="doifdefinedcounterelse" level="system" category="counter conditional" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -376,21 +376,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifdefinedcounter" file="strc-num.mkiv">
+    <cd:command name="doifdefinedcounter" level="system" category="counter conditional" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifundefinedcounter" file="strc-num.mkiv">
+    <cd:command name="doifundefinedcounter" level="system" category="counter conditional" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineresetset" file="strc-ini.mkvi">
+    <cd:command name="defineresetset" level="style" category="counter" file="strc-ini.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="cd:name"/>
@@ -403,7 +403,7 @@
 
     <!--
 
-        <cd:command name="definestructureresetset" file="strc-ini.mkvi">
+        <cd:command name="definestructureresetset" level="style" category="counter" file="strc-ini.mkvi">
             <cd:arguments>
                 <cd:keywords>
                     <cd:constant type="cd:name"/>
@@ -416,7 +416,7 @@
 
     -->
 
-    <cd:command name="defineseparatorset" file="strc-ini.mkvi">
+    <cd:command name="defineseparatorset" level="style" category="counter" file="strc-ini.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="cd:name"/>
@@ -433,7 +433,7 @@
 
     <!--
 
-        <cd:command name="definestructureseparatorset" file="strc-ini.mkvi">
+        <cd:command name="definestructureseparatorset" level="style" category="counter" file="strc-ini.mkvi">
             <cd:arguments>
                 <cd:keywords>
                     <cd:constant type="cd:name"/>
@@ -450,7 +450,7 @@
 
     -->
 
-    <cd:command name="defineconversionset" file="strc-ini.mkvi">
+    <cd:command name="defineconversionset" level="style" category="counter" file="strc-ini.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="cd:name"/>
@@ -469,7 +469,7 @@
 
     <!--
 
-        <cd:command name="definestructureconversionset" file="strc-ini.mkvi">
+        <cd:command name="definestructureconversionset" level="style" category="counter" file="strc-ini.mkvi">
             <cd:arguments>
                 <cd:keywords>
                     <cd:constant type="cd:name"/>
@@ -488,7 +488,7 @@
 
     -->
 
-    <cd:command name="defineprefixset" file="strc-ini.mkvi">
+    <cd:command name="defineprefixset" level="style" category="counter" file="strc-ini.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="cd:name"/>
@@ -501,7 +501,7 @@
 
     <!--
 
-        <cd:command name="definestructureprefixset" file="strc-ini.mkvi">
+        <cd:command name="definestructureprefixset" level="style" category="counter" file="strc-ini.mkvi">
             <cd:arguments>
                 <cd:keywords>
                     <cd:constant type="cd:name"/>

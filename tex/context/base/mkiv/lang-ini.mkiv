@@ -22,9 +22,9 @@
 
 \writestatus{loading}{ConTeXt Language Macros / Initialization}
 
-\registerctxluafile{lang-ini}{1.001}
-\registerctxluafile{lang-def}{1.001}
-\registerctxluafile{lang-cnt}{1.001}
+\registerctxluafile{lang-ini}{}
+\registerctxluafile{lang-def}{}
+\registerctxluafile{lang-cnt}{}
 
 \unprotect
 
@@ -220,8 +220,8 @@
 %D named:
 %D
 %D \starttyping
-%D \f!languageprefix-identifier.\f!patternsextension
-%D \f!languageprefix-identifier.\f!hyhensextension
+%D lang-identifier.\f!patternsextension
+%D lang-identifier.\f!hyhensextension
 %D \stoptyping
 %D
 %D The \type{spacing} variable specifies how the spaces after
@@ -539,6 +539,12 @@
     \fi
 \to \everylanguage
 
+% new
+
+\appendtoks
+    \usebidiparameter\languageparameter
+\to \everylanguage
+
 % this will move to core-spa !
 
 \appendtoks
@@ -559,12 +565,14 @@
 % \setuplanguage[\s!default][\s!font=\v!auto]
 % \setuplanguage[nl][\s!font=\v!auto]
 
-\ifdefined\feature \else \let\feature\gobbleoneargument \fi
-
 \appendtoks
     \edef\p_language_font{\languageparameter\s!font}%
-    \ifx\p_language_font\v!auto
+    \ifx\p_language_font\empty\else
+      \ifx\p_language_font\v!auto
         \doaddfeature\currentlanguage
+      \else
+        \doaddfeature\p_language_font
+      \fi
     \fi
 \to \everylanguage
 

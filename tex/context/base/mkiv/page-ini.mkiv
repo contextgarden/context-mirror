@@ -13,6 +13,8 @@
 
 \writestatus{loading}{ConTeXt Page Macros / Initializations}
 
+\registerctxluafile{page-ini}{}
+
 %D The \type {\processpage} command has become obsolete. It's original
 %D purpose was to flush only parts of a document but nowadays we have
 %D project structure and modes. This is just one of those very early
@@ -34,7 +36,7 @@
 
 \newconditional\c_otr_shipout_enabled \settrue\c_otr_shipout_enabled
 
-\unexpanded\def\page_otr_shipout
+\unexpanded\def\page_otr_shipout % not used at all
   {\ifconditional\c_otr_shipout_enabled
      \expandafter\page_otr_shipout_yes
    \else
@@ -65,17 +67,7 @@
 \def\page_otr_flush_all_floats
   {%\flushnotes already done
    \ifconditional\c_page_floats_some_waiting
-     \begingroup
-     \c_page_floats_n_of_top\plusthousand
-     \c_page_floats_n_of_bottom\zerocount
-     % this is needed in case a float that has been stored
-     % ends up at the current page; this border case occurs when
-     % the calculated room is 'eps' smaller that the room available
-     % when just flushing; so now we have (maybe optional):
-     \pagebaselinecorrection % hm, needs checking, not needed when no floats
-     % alas, this is tricky but needed (first surfaced in prikkels)
-     \page_otr_command_flush_floats
-     \endgroup
+     \page_otr_command_flush_all_floats
    \fi}
 
 \def\page_otr_insert_dummy_page
@@ -88,13 +80,57 @@
    \fi}
 
 \def\page_otr_flush_pending_content
-  {\vskip\zeropoint\relax % brrr .. get rid of this
+  {\vskip\zeropoint\relax
    \ifvoid\normalpagebox \else
      \unvbox\normalpagebox
      \penalty\outputpenalty
    \fi}
 
-\def\page_otr_construct_and_shipout#1#2%
+\newconstant\c_page_postponed_mode % \c_page_postponed_mode\plusone
+\newbox     \b_page_otr_saved
+
+\installoutputroutine\savepagecontent
+  {\global\setbox\b_page_otr_saved\box\normalpagebox}
+
+\unexpanded\def\flushpagecontent
+  {\ifvoid\b_page_otr_saved\else\unvbox\b_page_otr_saved\fi}
+
+% Test case: assumes one group level for output routine, todo:
+% a toks.
+%
+% \starttext
+%
+% \startbuffer[makeup]
+% \startpagemakeup[pagestate=start,page=no]
+%     \color[red]{
+%         \vfill
+%         \dorecurse{3}{
+%             \samplefile{klein}
+%             \vfill
+%         }
+%     }
+% \stoppagemakeup
+% \stopbuffer
+%
+% \startcolor[green]
+%     \dorecurse{10}{
+%         \dontleavehmode{\bf 1:#1:} \samplefile{sapolsky}\par
+%     }
+% \stopcolor
+%
+% \startpostponing % [+3]
+%     \getbuffer[makeup]
+% \stoppostponing
+%
+% \startcolor[blue]
+%     \dorecurse{25}{
+%         \dontleavehmode{\bf 2:#1:} \samplefile{sapolsky}\par
+%     }
+% \stopcolor
+%
+% \stoptext
+
+\def\page_otr_construct_and_shipout#1#2#3%
   {\forgetall
    \page_boxes_shipout{\page_boxes_constructed_page#1#2}% \hbox removed
    \page_otr_flush_pending_content
@@ -110,7 +146,16 @@
    \page_otr_check_for_pending_inserts
    \page_floats_flush_page_floats % before postponed blocks
    \page_spread_flush % defined later
-   \page_postponed_blocks_flush}
+   \ifnum#3=\plusone
+     % this is tricky! we need to make sure we are in the output group
+     \ifnum\c_page_postponed_mode=\plusone
+       \aftergroup\page_postponed_blocks_flush
+     \else
+       \page_postponed_blocks_flush
+     \fi
+   \else
+     \page_postponed_blocks_flush
+   \fi}
 
 % Can't we get rid of this hackery? It's used in some widgets
 % stuff so probably not.
@@ -260,11 +305,49 @@
 % \appendtoks
 %     \ifvoid\thispageinsert\else\hbox{\smashedbox\thispageinsert}\fi
 % \to \everyshipout
+
+% not yet in i-* file
+
+\installcorenamespace{markedpage}
+
+\unexpanded\def\markpage
+  {\dodoubleempty\page_mark}
+
+\def\page_mark[#1][#2]%
+  {\clf_markpage{#1}{#2}}
+
+\def\markedpages[#1]% expandable
+  {\clf_markedpages{#1}}
+
+\unexpanded\def\doifelsemarkedpage#1%
+  {\clf_doifelsemarkedpage{#1}}
+
+\unexpanded\def\startmarkpages[#1]%
+  {\clf_startmarkpages{#1}}
+
+\unexpanded\def\stopmarkpages
+  {\clf_stopmarkpages}
+
+%D Experimental:
+
+\newconstant\c_page_force_strut_depth_trace_mode
+
+\installtextracker
+  {otr.forcestrutdepth}
+  {\c_page_force_strut_depth_trace_mode\plusone}
+  {\c_page_force_strut_depth_trace_mode\zerocount}
+
+\installoutputroutine\forcestrutdepth
+  {\clf_forcestrutdepth\normalpagebox\strutdp\c_page_force_strut_depth_trace_mode
+   \unvbox\normalpagebox}
+
+% maybe better:
 %
-% %D Idea:
+% \installoutputroutine\doforcestrutdepth
+%   {\clf_forcestrutdepth\normalpagebox\strutdp\c_page_force_strut_depth_trace_mode
+%    \unvbox\normalpagebox}
 %
-% \definemarkedpage[nobackgrounds]
-% \markpage[nobackgrounds]
-% \doifmarkedpageelse{nobackgrounds}
+% \unexpanded\def\forcestrutdepth
+%   {\par\ifvmode\ifinner\else\doforcestrutdepth\fi\fi}
 
 \protect \endinput

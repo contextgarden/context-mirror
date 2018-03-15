@@ -20,12 +20,12 @@
 
 \writestatus{loading}{ConTeXt Graphic Macros / Figure Inclusion}
 
-\registerctxluafile{grph-inc}{1.001}
-\registerctxluafile{grph-con}{1.001}
-\registerctxluafile{grph-fil}{1.001}
-\registerctxluafile{grph-mem}{1.001}
-\registerctxluafile{grph-u3d}{1.001} % this will change
-\registerctxluafile{grph-swf}{1.001} % this will change
+\registerctxluafile{grph-inc}{}
+\registerctxluafile{grph-con}{}
+\registerctxluafile{grph-fil}{}
+\registerctxluafile{grph-mem}{}
+\registerctxluafile{grph-u3d}{} % this will become a module
+\registerctxluafile{grph-swf}{} % this will become a module
 
 \unprotect
 
@@ -56,6 +56,7 @@
    \c!prefix         =,
    \c!cache          =,
    \c!page           =\zerocount,
+   \c!file           =,
    \c!display        =,
    \c!mask           =,
    \c!preset         =\v!yes,
@@ -65,8 +66,8 @@
    \c!symbol         =\v!no,
    \c!controls       =\v!no,
    \c!resources      =,
-   \c!preview        =\v!no
-   \c!repeat         =\v!no
+   \c!preview        =\v!no,
+   \c!repeat         =\v!no,
    \c!foregroundcolor=,
    \c!interaction    =\v!none,
    \c!hfactor        =,
@@ -113,19 +114,19 @@
 \newtoks \everyexternalfigureresets % for the moment still public
 \newtoks \everyexternalfigurechecks % for the moment still public
 
-% \useexternalfigure[alpha][koe]
-% \useexternalfigure[beta] [koe]       [breedte=1cm]
-% \useexternalfigure[gamma][koe][alpha]
-% \useexternalfigure[delta][koe][alpha][breedte=2cm]
+% \useexternalfigure[alpha][cow]
+% \useexternalfigure[beta] [cow]       [width=1cm]
+% \useexternalfigure[gamma][cow][alpha]
+% \useexternalfigure[delta][cow][alpha][width=2cm]
 %
-% volle breedte: \externalfigure[koe]                 \par
-% 3cm breed:     \externalfigure[koe]  [breedte=3cm]  \par
-% volle breedte: \externalfigure[alpha]               \par
-% 1cm breed:     \externalfigure[beta]                \par
-% volle breedte: \externalfigure[gamma]               \par
-% 2cm breed:     \externalfigure[delta]               \par
-% 4cm breed:     \externalfigure[beta] [breedte=4cm]  \par
-% 5cm breed:     \externalfigure[gamma][breedte=5cm]  \par
+% full width : \externalfigure[cow]               \par
+% 3cm width  : \externalfigure[cow]  [width=3cm]  \par
+% full width : \externalfigure[alpha]             \par
+% 1cm width  : \externalfigure[beta]              \par
+% full width : \externalfigure[gamma]             \par
+% 2cm width  : \externalfigure[delta]             \par
+% 4cm width  : \externalfigure[beta] [width=4cm]  \par
+% 5cm width  : \externalfigure[gamma][width=5cm]  \par
 %
 % \defineexternalfigure[a][width=10cm]
 % \defineexternalfigure[b][width=5cm]
@@ -153,14 +154,13 @@
 %
 % \defineexternalfigure[name][settings]
 
-%D Defining is persistent, i.e.\ when you redefine an instance,
-%D the already set parameters need to be set again or otherwise
-%D the old values will be used.
-
+%D Defining is persistent, i.e.\ when you redefine an instance, the already set
+%D parameters need to be set again or otherwise the old values will be used.
+%D
 %D New: \type {method=auto}: strips suffix and uses \quote {order} which is handy in
-%D some of four workflows where sources are used for web and print and where
-%D the web tools need a suffix (like gif) which we don't want as we want a high
-%D quality format.
+%D some of four workflows where sources are used for web and print and where the web
+%D tools need a suffix (like gif) which we don't want as we want a high quality
+%D format.
 
 \newconditional\c_grph_include_trace_inheritance
 
@@ -320,6 +320,7 @@
         name       {\p_grph_include_name}%
         label      {\ifx\p_label\empty\p_grph_include_label\else\p_label\fi}%
         page       {\externalfigureparameter\c!page}%
+        file       {\externalfigureparameter\c!file}%
         size       {\externalfigureparameter\c!size}%
         object     {\externalfigureparameter\c!object}%
         prefix     {\externalfigureparameter\c!prefix}%
@@ -703,8 +704,6 @@
               \letexternalfigureparameter\c!offset\v!overlay
               \letexternalfigureparameter\c!width \figurewidth
               \letexternalfigureparameter\c!height\figureheight
-%               \letexternalfigureparameter\c!align \v!middle
-%               \letexternalfigureparameter\c!autowidth\v!no
               \inheritedexternalfigureframed{\box\foundexternalfigure}%
             \fi
           \fi\fi
@@ -857,9 +856,6 @@
 % \eTABLE
 % \stoptext
 
-\unexpanded\def\showexternalfigures
-  {\writestatus\m!system{the \string\showexternalfigures\space command is not (yet) implemented in mkiv}}
-
 \unexpanded\def\overlayfigure#1%
   {\externalfigure[#1][\c!width=\d_overlay_width,\c!height=\d_overlay_height]}
 
@@ -876,16 +872,26 @@
   [\v!inline]
   [\c!height=\lineheight]
 
+\definemeasure
+  [\v!combination]
+  [(\textwidth
+    -\effectiveleftskip
+    -\effectiverightskip
+    -\numexpr\combinationparameter\c!nx-\plusone\relax\dimexpr\combinationparameter\c!distance\relax
+   )/\combinationparameter\c!nx]
+
 \defineexternalfigure
   [\v!combination]
-  [\c!width=\dimexpr(%
-     \textwidth-\effectiveleftskip-\effectiverightskip
-    -\numexpr\combinationparameter\c!nx-\plusone\relax\dimexpr\combinationparameter\c!distance\relax
-   )/\combinationparameter\c!nx\relax]
+  [\c!width=\measure{\v!combination}]
 
 % \startcombination[nx=2,ny=1]
 %     {\externalfigure[dummy][combination]} {}
 %     {\externalfigure[dummy][combination]} {}
+% \stopcombination
+
+% \startcombination[nx=2,ny=1]
+%     {\externalfigure[dummy][width=\measure{combination}]} {}
+%     {\externalfigure[dummy][width=\measure{combination}]} {}
 % \stopcombination
 
 % \startcombination[nx=2,ny=2]
@@ -912,9 +918,10 @@
 
 \protect \endinput
 
-% Moved here because this already old code is nowhere documents (so I need to
-% check it:
+%D Moved here because this already old code is nowhere documents (so I need to check
+%D it:
 %
+% \starttyping
 % \starttext
 %
 % \startluaparameterset [u3d:myset:controls:1]

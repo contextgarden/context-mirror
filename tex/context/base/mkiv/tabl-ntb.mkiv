@@ -331,6 +331,20 @@
 \def\tabl_ntb_col_doif    #1#2{\ifcsname\??naturaltablecol\m_tabl_tbl_level:\number#1:\number#2\endcsname\expandafter\firstofoneargument \else\expandafter\gobbleoneargument   \fi}
 \def\tabl_ntb_col_doifnot #1#2{\ifcsname\??naturaltablecol\m_tabl_tbl_level:\number#1:\number#2\endcsname\expandafter\gobbleoneargument  \else\expandafter\firstofoneargument  \fi}
 
+%D If we ever run into memory issues we can do:
+%
+% \def\tabl_ntb_let_tag#1#2#3%
+%   {\ifx#3\c_tabl_ntb_none\else
+%      \expandafter\let\csname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname#3%
+%    \fi}
+%
+% \def\tabl_ntb_get_tag#1#2%
+%   {\ifcsname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname
+%      \lastnamedcs
+%    \else
+%      \c_tabl_ntb_none
+%    \fi}
+
 % not used
 %
 % \def\tabl_ntb_tag_state#1#2{\ifcsname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname\zerocount\else\plusone\fi}
@@ -383,7 +397,12 @@
 \newif\iftightTBLrowspan    \tightTBLrowspantrue
 \newif\iftightTBLcolspan    \tightTBLcolspanfalse
 
-\newif\iftraceTABLE         \traceTABLEfalse
+\newconditional \c_tabl_ntb_trace_widths
+
+\installtextracker
+  {tables.natural.widths}
+  {\settrue \c_tabl_ntb_trace_widths}
+  {\setfalse\c_tabl_ntb_trace_widths}
 
 % so far
 
@@ -1446,8 +1465,8 @@
      % case: nc=maxcolumns
    \else
      \scratchdimen\tabl_ntb_get_hei{#1}%
-     \setbox\scratchbox\hbox
-       {\lower\ht\scratchbox\hbox{\raise\scratchdimen\box\scratchbox}}%
+     \setbox\scratchbox\hpack
+       {\lower\ht\scratchbox\hpack{\raise\scratchdimen\box\scratchbox}}%
      \ht\scratchbox\scratchdimen
    \fi
    \dp\scratchbox\zeropoint
@@ -1485,19 +1504,21 @@
 
 \let\tabl_ntb_preroll\relax
 
-\def\tabl_ntb_table_get_max_width#1#2%
-  {#1\wd#2\relax}
+\def\tabl_ntb_table_get_max_width
+  {\scratchdimen\wd\scratchbox\relax}
 
-% first needs testing (in projects):
-%
-% \def\tabl_ntb_table_get_max_width#1#2%
-%   {#1\zeropoint
-%    \dorecurse\c_tabl_ntb_maximum_col
-%      {\advance#1\tabl_ntb_get_wid\recurselevel
-%       \advance#1\tabl_ntb_get_dis\recurselevel}%
-%    \ifdim#1<\wd#2\relax
-%      #1\wd#2\relax
-%    \fi}
+% enable dper 2018-02-22
+
+\def\tabl_ntb_table_get_max_width_step
+  {\advance\scratchdimen\tabl_ntb_get_wid\fastloopindex
+   \advance\scratchdimen\tabl_ntb_get_dis\fastloopindex}
+
+\def\tabl_ntb_table_get_max_width
+  {\scratchdimen\zeropoint
+   \dofastloopcs\c_tabl_ntb_maximum_col\tabl_ntb_table_get_max_width_step
+   \ifdim\scratchdimen<\wd\scratchbox\relax
+     \scratchdimen\wd\scratchbox\relax
+   \fi}
 
 \def\tabl_ntb_table_stop
   {\forgetall % new, here see narrower-004.tex
@@ -1534,7 +1555,7 @@
    \fi
    \tabl_ntb_let_dis\c_tabl_ntb_maximum_col\zeropoint
    %
-   \tabl_ntb_table_get_max_width\scratchdimen\scratchbox
+   \tabl_ntb_table_get_max_width % \scratchdimen\scratchbox
    %
    \ifautoTBLspread
      % experimental, stretch non fixed cells to \hsize
@@ -1656,10 +1677,10 @@
    \ifmultipleTBLheads
      \dorecurse\c_tabl_ntb_n_of_head_lines
        {\setbox\scratchbox\vsplit\tsplitcontent to \lineheight
-        \setbox\tsplithead\vbox{\unvcopy\tsplithead\unvcopy\scratchbox}}%
+        \setbox\tsplithead\vbox{\unvcopy\tsplithead\unvcopy\scratchbox}}% \vpack ?
      \dorecurse\c_tabl_ntb_n_of_next_lines
        {\setbox\scratchbox\vsplit\tsplitcontent to \lineheight
-        \setbox\tsplitnext\vbox{\unvcopy\tsplitnext\unvcopy\scratchbox}}%
+        \setbox\tsplitnext\vbox{\unvcopy\tsplitnext\unvcopy\scratchbox}}% \vpack ?
    \fi
    \edef\p_spaceinbetween{\naturaltablelocalparameter\c!spaceinbetween}%
    \ifx\p_spaceinbetween\empty\else
@@ -1682,7 +1703,7 @@
 \def\tabl_ntb_check_widths_two{\tabl_ntb_check_widths_indeed\plusone  } % 1 = real run
 
 \def\tabl_ntb_check_widths_indeed#1%
-  {\iftraceTABLE\tabl_ntb_show_widths B#1\fi
+  {\ifconditional\c_tabl_ntb_trace_widths\tabl_ntb_show_widths B#1\fi
    \!!counta\zerocount
    \!!dimena\dimexpr
      \hsize
@@ -1715,7 +1736,7 @@
           \fi
         \fi
       \fi}%
-   \iftraceTABLE\tabl_ntb_show_widths M#1\fi
+   \ifconditional\c_tabl_ntb_trace_widths\tabl_ntb_show_widths M#1\fi
    \ifcase\!!counta \else \divide\!!dimena \!!counta \fi
    \dorecurse\c_tabl_ntb_maximum_col
      {\scratchdimen\tabl_ntb_get_wid\recurselevel\relax
@@ -1728,7 +1749,7 @@
           \tabl_ntb_set_wid\recurselevel{\the\!!dimena}%
         \fi
       \fi}%
-   \iftraceTABLE\tabl_ntb_show_widths E#1\fi}
+   \ifconditional\c_tabl_ntb_trace_widths\tabl_ntb_show_widths E#1\fi}
 
 \def\tabl_ntb_check_heights_one_indeed
   {\!!countb\tabl_ntb_get_row\c_tabl_ntb_current_row_three\c_tabl_ntb_current_col_three\relax

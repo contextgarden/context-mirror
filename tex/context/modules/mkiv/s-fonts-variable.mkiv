@@ -30,11 +30,11 @@
   {\begingroup
    \scratchskip \interwordspace plus \interwordstretch minus \interwordshrink
    \normalexpanded{\hpack\bgroup
-      \tttf
-      sp: \the\scratchskip   \hskip\emwidth
-      es: \the\extraspace\hskip\emwidth
-      ex: \the\exheight  \hskip\emwidth
-      em: \the\emwidth   \hskip\emwidth
+      \tt\txx
+      sp: \the\scratchskip\hskip\emwidth
+      es: \the\extraspace \hskip\emwidth
+      ex: \the\exheight   \hskip\emwidth
+      em: \the\emwidth    \hskip\emwidth
    \egroup}%
    \endgroup}
 
@@ -46,8 +46,8 @@
 
 \setuphead[section][before={\testpage[5]\blank[2*big]}]
 
-\enabletrackers[modules.fonts.variables.glyphs]
-\enabletrackers[modules.fonts.variables.kerns]
+% \enabletrackers[modules.fonts.variables.glyphs]
+% \enabletrackers[modules.fonts.variables.kerns]
 
 \starttext
 
@@ -72,10 +72,6 @@
         \char983040\relax\par
     \stopbuffer
 
-%     \showfontvariations
-%       [font=file:VotoSerifGX.ttf,
-%        max=6]
-
     \showfontvariations
       [font=file:adobevfprototype.otf]
 
@@ -85,9 +81,9 @@
     \showfontvariations
       [font=file:DecoVar-VF.ttf]
 
-    \showfontvariations
-      [font=file:VotoSerifGX.ttf,
-       max=15]
+  % \showfontvariations
+  %   [font=file:VotoSerifGX.ttf,
+  %    max=15]
 
     \showfontvariations
       [font=file:Selawik-Variable.ttf]
@@ -107,5 +103,8 @@
 
    %  \showfontvariations
    %    [font=file:AmstelvarAlpha-VF.ttf]
+
+    \showfontvariations
+      [font=file:bahnschrift.ttf]
 
 \stoptext

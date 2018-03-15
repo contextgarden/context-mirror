@@ -6,10 +6,8 @@ if not modules then modules = { } end modules ['util-fil'] = {
     license   = "see context related readme files"
 }
 
-local byte    = string.byte
-local char    = string.char
-local extract = bit32 and bit32.extract
-local floor   = math.floor
+local byte = string.byte
+local char = string.char
 
 -- Here are a few helpers (the starting point were old ones I used for parsing
 -- flac files). In Lua 5.3 we can probably do this better. Some code will move
@@ -35,7 +33,10 @@ function files.close(f)
 end
 
 function files.size(f)
-    return f:seek("end")
+    local current = f:seek()
+    local size = f:seek("end")
+    f:seek("set",current)
+    return size
 end
 
 files.getsize = files.size
@@ -233,12 +234,12 @@ function files.readfixed4(f)
     end
 end
 
-if extract then
+-- (real) ((n<<16)>>(16+14)) + ((n&0x3fff)/16384.0))
+
+if bit32 then
 
     local extract = bit32.extract
     local band    = bit32.band
-
-    -- (real) ((n<<16)>>(16+14)) + ((n&0x3fff)/16384.0))
 
     function files.read2dot14(f)
         local a, b = byte(f:read(2),1,2)
@@ -263,20 +264,37 @@ end
 
 -- writers (kind of slow)
 
-function files.writecardinal2(f,n)
-    local a = char(n % 256)
-    n = floor(n/256)
-    local b = char(n % 256)
-    f:write(b,a)
+if bit32 then
+
+    local rshift  = bit32.rshift
+
+    function files.writecardinal2(f,n)
+        local a = char(n % 256)
+        n = rshift(n,8)
+        local b = char(n % 256)
+        f:write(b,a)
+    end
+
+else
+
+    local floor = math.floor
+
+    function files.writecardinal2(f,n)
+        local a = char(n % 256)
+        n = floor(n/256)
+        local b = char(n % 256)
+        f:write(b,a)
+    end
+
 end
 
 function files.writecardinal4(f,n)
     local a = char(n % 256)
-    n = floor(n/256)
+    n = rshift(n,8)
     local b = char(n % 256)
-    n = floor(n/256)
+    n = rshift(n,8)
     local c = char(n % 256)
-    n = floor(n/256)
+    n = rshift(n,8)
     local d = char(n % 256)
     f:write(d,c,b,a)
 end
@@ -299,8 +317,8 @@ if fio and fio.readcardinal1 then
     files.readinteger2   = fio.readinteger2
     files.readinteger3   = fio.readinteger3
     files.readinteger4   = fio.readinteger4
- -- files.readfixed2     = fio.readfixed2 -- needs recent luatex
- -- files.readfixed4     = fio.readfixed4 -- needs recent luatex
+    files.readfixed2     = fio.readfixed2
+    files.readfixed4     = fio.readfixed4
     files.read2dot14     = fio.read2dot14
     files.setposition    = fio.setposition
     files.getposition    = fio.getposition

@@ -125,7 +125,7 @@
 \installswitchcommandhandler \??layout {layout} \??layout
 
 \appendtoks
-    \doifnothing{\strictlayoutparameter\c!state}{\letlayoutparameter\c!state\v!start}%
+    \doifnothing{\directlayoutparameter\c!state}{\letlayoutparameter\c!state\v!start}%
 \to \everydefinelayout
 
 \appendtoks
@@ -473,11 +473,23 @@
      [\page_paper_the_paper_size{#1}]%
      [\page_paper_the_print_size{#2}]}}
 
-\setvalue{\??layoutpaper\v!reset                  }{\global\setfalse\c_page_target_paper_landscape
-                                                    \global\setfalse\c_page_target_paper_mirror
-                                                    \global\setfalse\c_page_target_paper_negate
-                                                    \global\c_page_target_paper_orientation\uprotationangle
-                                                    \global\c_page_target_paper_reverse    \uprotationangle}
+\unexpanded\def\page_paper_reset_paper
+  {\global\setfalse\c_page_target_paper_landscape
+   \global\setfalse\c_page_target_paper_mirror
+   \global\setfalse\c_page_target_paper_negate
+   \global\c_page_target_paper_orientation\uprotationangle
+   \global\c_page_target_paper_reverse    \uprotationangle}
+
+\unexpanded\def\page_paper_reset_print
+  {\global\setfalse\c_page_target_print_landscape
+   \global\setfalse\c_page_target_print_mirror
+   \global\setfalse\c_page_target_print_negate
+   \global\c_page_target_print_orientation\uprotationangle
+   \global\c_page_target_print_reverse    \uprotationangle}
+
+\letvalue{\??layoutpaper\v!reset}\page_paper_reset_paper
+\letvalue{\??layoutprint\v!reset}\page_paper_reset_print
+
 \setvalue{\??layoutpaper\v!landscape              }{\global\settrue\c_page_target_paper_landscape}
 \setvalue{\??layoutpaper\v!mirrored               }{\global\settrue\c_page_target_paper_mirror}
 \setvalue{\??layoutpaper\v!negative               }{\global\settrue\c_page_target_paper_negate}
@@ -490,11 +502,6 @@
 \setvalue{\??layoutpaper\number\leftrotationangle }{\global\c_page_target_paper_orientation\leftrotationangle
                                                     \global\c_page_target_paper_reverse    \rightrotationangle}
 
-\setvalue{\??layoutprint\v!reset                  }{\global\setfalse\c_page_target_print_landscape
-                                                    \global\setfalse\c_page_target_print_mirror
-                                                    \global\setfalse\c_page_target_print_negate
-                                                    \global\c_page_target_print_orientation\uprotationangle
-                                                    \global\c_page_target_print_reverse    \uprotationangle}
 \setvalue{\??layoutprint\v!landscape              }{\global\settrue\c_page_target_print_landscape}
 \setvalue{\??layoutprint\v!mirrored               }{\global\settrue\c_page_target_print_mirror}
 \setvalue{\??layoutprint\v!negative               }{\global\settrue\c_page_target_print_negate}
@@ -519,18 +526,20 @@
    \fi}
 
 \unexpanded\def\page_paper_set_current_indeed[#1][#2]%
-  {\edef\m_page_asked_paper{\v!reset,#1}% can be the restores
-   \edef\m_page_asked_print{\v!reset,#2}%
+  {\edef\m_page_asked_paper{#1}% can be the restores
+   \edef\m_page_asked_print{#2}%
    %
    \page_paper_set_restore\m_page_asked_paper\m_page_asked_print
    %
    % locate page target
    \let\currentlayouttarget\empty
+   \page_paper_reset_paper
    \processcommacommand[\m_page_asked_paper]\page_paper_identify_target
    \ifx\currentlayouttarget\empty
      \let\currentlayouttarget\currentpage
    \fi
    \global\let\papersize\currentlayouttarget
+   \page_paper_reset_paper
    \processcommacommand[\m_page_asked_paper]\page_paper_handle_page_option
    \global\paperwidth \layouttargetparameter\c!width \relax
    \global\paperheight\layouttargetparameter\c!height\relax
@@ -550,8 +559,10 @@
    %
    \page_paper_set_offsets
    %  locate paper target
+   \page_paper_reset_print
    \processcommacommand[\m_page_asked_print]\page_paper_identify_target
    \global\let\printpapersize\currentlayouttarget
+   \page_paper_reset_print
    \processcommacommand[\m_page_asked_print]\page_paper_handle_print_option
    \global\printpaperwidth \layouttargetparameter\c!width \relax
    \global\printpaperheight\layouttargetparameter\c!height\relax
@@ -948,7 +959,7 @@
   {\setgvalue{\??layoutalternative#1}{#2}}
 
 \def\page_boxes_construct_content_default#1#2#3% targetbox flusher box
-  {\setbox#1\vbox
+  {\setbox#1\vpack % was \vbox
      {\offinterlineskip
       \begingroup % needed ?
       \uselayoutstyleandcolor\c!style\c!color
@@ -1114,7 +1125,7 @@
      \setsystemmode\v!footer
    \fi}
 
-\def\calculatevsizes % name will change
+\unexpanded\def\calculatevsizes % name will change
   {\textheight\makeupheight
    \doifelselayoutsomeline\v!header\compensatevsizeheader\donothing
    \doifelselayoutsomeline\v!footer\compensatevsizefooter\donothing
@@ -1122,14 +1133,14 @@
    \resetglobal
    \page_otr_command_set_vsize}
 
-\def\calculateglobalvsizes % name will change
+\unexpanded\def\calculateglobalvsizes % name will change
   {\global\textheight\makeupheight
    \doifelselayoutsomeline\v!header\globalcompensatevsizeheader\donothing
    \doifelselayoutsomeline\v!footer\globalcompensatevsizefooter\donothing
    \page_layouts_set_modes
    \page_otr_command_set_vsize}
 
-\def\calculatereducedvsizes % name will change
+\unexpanded\def\calculatereducedvsizes % name will change
   {\textheight\makeupheight
    \doifelselayoutsomeline\v!header\compensatevsizeheader\compensatevsizeheaderzero
    \doifelselayoutsomeline\v!footer\compensatevsizefooter\compensatevsizefooterzero}
@@ -1142,7 +1153,7 @@
 \def\compensatedinnermakeupmargin
   {\dimexpr\ifconditional\innermakeupcompensation+\innermakeupmargin\else\zeropoint\fi\relax}
 
-\def\freezetextwidth % name will change      % \makeupwidth may be set to \textwidth
+\unexpanded\def\freezetextwidth % name will change      % \makeupwidth may be set to \textwidth
   {\textwidth\makeupwidth                    % which is a tricky but valid value
    \edef\m_currentlayout_text_width {\layoutparameter\c!textwidth }%
    \edef\m_currentlayout_text_margin{\layoutparameter\c!textmargin}%
@@ -1159,7 +1170,7 @@
    \global\advance\innermakeupwidth-\scratchdimen
    \advance\textwidth-\scratchdimen}   % local
 
-\def\calculatehsizes % name will change
+\unexpanded\def\calculatehsizes % name will change
   {\freezetextwidth
    \page_otr_command_set_hsize}
 
@@ -1343,12 +1354,18 @@
 %D \showsetup{showlayout}
 %D \showsetup{showsetups}
 %D %showsetup{showmargins}
+%D %showsetup{showgrid}
 
-\fetchruntimecommand \showprint   {page-run}
-\fetchruntimecommand \showframe   {page-run}
-\fetchruntimecommand \showlayout  {page-run}
-\fetchruntimecommand \showsetups  {page-run}
-\fetchruntimecommand \showmargins {page-run}
+\fetchruntimecommand \showprint   \f!page_run
+\fetchruntimecommand \showframe   \f!page_run
+\fetchruntimecommand \showlayout  \f!page_run
+\fetchruntimecommand \showsetups  \f!page_run
+\fetchruntimecommand \showmargins \f!page_run
+\fetchruntimecommand \showgrid    \f!page_run
+
+\glet\page_grids_add_to_box\gobbleoneargument
+\glet\page_grids_add_to_one\gobbleoneargument
+\glet\page_grids_add_to_mix\gobbleoneargument
 
 %D The default dimensions are quite old and will not change.
 %D The funny fractions were introduced when we went from fixed
@@ -1590,8 +1607,8 @@
 
 \definepapersize
   [doubleoversized]
-  [ \c!width=\dimexpr \paperheight+\layouttargetparameter\c!distance\relax,
-   \c!height=\dimexpr2\paperwidth +\layouttargetparameter\c!distance\relax]
+  [ \c!width=\dimexpr \paperwidth +\layouttargetparameter\c!distance\relax,
+   \c!height=\dimexpr2\paperheight+\layouttargetparameter\c!distance\relax]
 
 \definepapersize
   [doublewide]
@@ -1604,7 +1621,7 @@
 \setuppapersize
   [A4] % [samesized]
 
-%D A few goodies:
+%D A few goodies, first a full page layout:
 
 \definelayout
   [\v!page]
@@ -1631,9 +1648,24 @@
    \c!lines=0,
    \c!grid=\v!no]
 
+%D A quick and dirty one:
+
 \definelayout
   [\v!middle]
   [\c!width=\v!middle,
    \c!height=\v!middle]
+
+%D One for testing examples (5mm is often the non printable area):
+
+\definelayout
+  [\v!tight]
+
+\definelayout
+  [\v!tight]
+  [\v!page]
+  [\c!backspace=5mm,
+   \c!cutspace=5mm,
+   \c!topspace=5mm,
+   \c!bottomspace=5mm]
 
 \protect \endinput

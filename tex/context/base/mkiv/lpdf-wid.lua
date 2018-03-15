@@ -6,7 +6,26 @@ if not modules then modules = { } end modules ['lpdf-wid'] = {
     license   = "see context related readme files"
 }
 
-local gmatch, gsub, find, lower, format = string.gmatch, string.gsub, string.find, string.lower, string.format
+-- It's about time to give up on media in pdf and admit that pdf lost it to html.
+-- First we had movies and sound, quite easy to deal with, but obsolete now. Then we
+-- had renditions but they turned out to be unreliable from the start and look
+-- obsolete too or at least they are bound to the (obsolete) flash technology for
+-- rendering. They were already complex constructs. Now we have rich media which
+-- instead of providing a robust future proof framework fo rgeneral media types
+-- again seems to depend on viewers built in (yes, also kind of obsolete) flash
+-- technology, and we cannot expect this non-open technology to show up in open
+-- browsers. So, in the end we can best just use links to external resources to be
+-- future proof. Just look at the viewer prferences pane to see how fragile support
+-- is. Interestingly u3d support is kind of built in, while e.g. mp4 support relies
+-- on wrapping in swf. We used to stay ahead of the pack with support of the fancy
+-- pdf features but it backfires and is not worth the trouble. And yes, for control
+-- (even simple like starting and stopping videos) one has to revert to JavaScript,
+-- the other fragile bit. And, now that adobe quits flash in 2020 we're without any
+-- video anyway. Also, it won't play on all platforms and devices so let's wait for
+-- html5 media in pdf then.
+
+local tonumber, next = tonumber, next
+local gmatch, gsub, find, lower = string.gmatch, string.gsub, string.find, string.lower
 local stripstring = string.strip
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash = utilities.parsers.settings_to_hash
@@ -137,8 +156,8 @@ comment_symbols.Default      = Note
 
 local function analyzesymbol(symbol,collection)
     if not symbol or symbol == "" then
-        return collection.Default, nil
-    elseif collection[symbol] then
+        return collection and collection.Default, nil
+    elseif collection and collection[symbol] then
         return collection[symbol], nil
     else
         local setn, setr, setd
@@ -159,6 +178,17 @@ local function analyzesymbol(symbol,collection)
         return nil, appearanceref
     end
 end
+
+local function analyzenormalsymbol(symbol)
+    local appearance = pdfdictionary {
+        N = registeredsymbol(symbol),
+    }
+    local appearanceref = pdfshareobjectreference(appearance)
+    return appearanceref
+end
+
+codeinjections.analyzesymbol       = analyzesymbol
+codeinjections.analyzenormalsymbol = analyzenormalsymbol
 
 local function analyzelayer(layer)
     -- todo:  (specification.layer ~= "" and pdfreference(specification.layer)) or nil, -- todo: ref to layer
@@ -289,7 +319,8 @@ function codeinjections.embedfile(specification)
     local d = pdfdictionary {
         Type = pdfconstant("Filespec"),
         F    = pdfstring(savename),
-        UF   = pdfstring(savename),
+     -- UF   = pdfstring(savename),
+        UF   = pdfunicode(savename),
         EF   = pdfdictionary { F = pdfreference(f) },
         Desc = title ~= "" and pdfunicode(title) or nil,
      -- AFRelationship = pdfconstant("Source"), -- some day maybe, not mandate
@@ -363,7 +394,7 @@ function nodeinjections.attachfile(specification)
             FS       = aref,
             Contents = pdfunicode(title),
             Name     = name,
-            NM       = pdfstring(format("attachment:%s",nofattachments)),
+            NM       = pdfstring("attachment:"..nofattachments),
             T        = author ~= "" and pdfunicode(author) or nil,
             Subj     = subtitle ~= "" and pdfunicode(subtitle) or nil,
             C        = analyzecolor(specification.colorvalue,specification.colormodel),
@@ -371,9 +402,13 @@ function nodeinjections.attachfile(specification)
             AP       = appearance,
             OC       = analyzelayer(specification.layer),
         }
-        local width, height, depth = specification.width or 0, specification.height or 0, specification.depth
-        local box = hpack_node(nodeinjections.annotation(width,height,depth,d()))
-        box.width, box.height, box.depth = width, height, depth
+        local width  = specification.width  or 0
+        local height = specification.height or 0
+        local depth  = specification.depth  or 0
+        local box    = hpack_node(nodeinjections.annotation(width,height,depth,d()))
+        box.width    = width
+        box.height   = height
+        box.depth    = depth
         return box
     end
 end
@@ -452,10 +487,12 @@ function nodeinjections.comment(specification) -- brrr: seems to be done twice
         CA        = analyzetransparency(specification.transparencyvalue),
         OC        = analyzelayer(specification.layer),
         Name      = name,
-        NM        = pdfstring(format("comment:%s",nofcomments)),
+        NM        = pdfstring("comment:"..nofcomments),
         AP        = appearance,
     }
-    local width, height, depth = specification.width or 0, specification.height or 0, specification.depth
+    local width  = specification.width  or 0
+    local height = specification.height or 0
+    local depth  = specification.depth  or 0
     local box
     if usepopupcomments then
         -- rather useless as we can hide/vide
@@ -473,7 +510,9 @@ function nodeinjections.comment(specification) -- brrr: seems to be done twice
     else
         box = hpack_node(nodeinjections.annotation(width,height,depth,d()))
     end
-    box.width, box.height, box.depth = width, height, depth -- redundant
+    box.width  = width  -- redundant
+    box.height = height -- redundant
+    box.depth  = depth  -- redundant
     return box
 end
 

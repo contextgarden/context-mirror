@@ -116,8 +116,6 @@ local function getfonts(pdffile)
             for k, v in next, lpdf.epdf.expand(fontlist) do
                 usedfonts[k] = lpdf.epdf.expand(v)
             end
-        else
-            report("no fonts")
         end
     end
     return usedfonts
@@ -221,7 +219,7 @@ end
 -- this is a quick hack ... proof of concept .. will change (derived from luigi's example) ...
 -- i will make a ctx wrapper
 
-local qpdf
+local qpdf -- just call qpdf, no need for a lib here
 
 function scripts.pdf.linearize(filename)
     qpdf = qpdf or swiglib("qpdf.core")

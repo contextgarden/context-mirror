@@ -15,7 +15,7 @@
 
 \unprotect
 
-\registerctxluafile{tabl-tbl.lua}{1.001} % experiment
+\registerctxluafile{tabl-tbl}{} % experiment
 
 %D I can probably reimplement this using a \LUATEX\ combination
 %D but it does not pay of in development time. If I need something
@@ -168,6 +168,7 @@
 \newcount        \c_tabl_tabulate_plines_min
 \newcount        \c_tabl_tabulate_plines_max
 \newcount        \c_tabl_tabulate_max_colorcolumn
+\newcount        \c_tabl_tabulate_max_vrulecolumn
 \newcount        \c_tabl_tabulate_repeathead
 \newcount        \c_tabl_tabulate_noflines
 \newcount        \c_tabl_tabulate_totalnoflines
@@ -216,6 +217,7 @@
 
 \newconstant     \c_tabl_tabulate_pass
 \newconstant     \c_tabl_tabulate_type
+\newconstant     \c_tabl_tabulate_kind % 1=strong  2=equals
 \newconstant     \c_tabl_tabulate_splitlinemode  \c_tabl_tabulate_splitlinemode\plusone
 \newconstant     \c_tabl_tabulate_colorspan
 \newconstant     \c_tabl_tabulate_localcolorspan
@@ -225,7 +227,6 @@
 
 \let             \m_tabl_tabulate_separator_factor \empty % fraction
 
-\newif           \iftracetabulate            % will become a tracker
 \newtoks         \everytabulatepar           % where used ?
 \newtoks         \everytabulate              % public ?
 
@@ -243,6 +244,7 @@
 \installcorenamespace{tabulateheader}
 \installcorenamespace{tabulatealigning}
 \installcorenamespace{tabulatepreamble}
+\installcorenamespace{tabulatevrule}
 
 \installcorenamespace{tabulatehead}
 \installcorenamespace{tabulatefoot}
@@ -262,12 +264,6 @@
      \expandafter\tabl_tabulate_initialize_boxes_step
    \fi}
 
-% \def\tabl_tabulate_initialize_box#1% also used elsewhere
-%   {\ifcsname\??tabulatebox\number#1\endcsname
-%      \tabl_tabulate_initialize_box_yes#1%
-%    \else
-%      \tabl_tabulate_initialize_box_nop#1%
-%    \fi}
 \def\tabl_tabulate_initialize_box#1% also used elsewhere
   {\ifcsname\??tabulatebox\number#1\endcsname
      \tabl_tabulate_initialize_box_yes
@@ -275,7 +271,6 @@
      \tabl_tabulate_initialize_box_nop#1%
    \fi}
 
-%def\tabl_tabulate_initialize_box_yes#1{\global     \setbox\csname\??tabulatebox\number#1\endcsname\emptybox}
 \def\tabl_tabulate_initialize_box_yes  {\global     \setbox\lastnamedcs\emptybox}
 \def\tabl_tabulate_initialize_box_nop#1{\expandafter\newbox\csname\??tabulatebox\number#1\endcsname}
 
@@ -312,11 +307,16 @@
    \kern-\linewidth
    \tabl_tabulate_break_no}
 
+\installtextracker
+  {tables.tabulate.breaks}
+  {\let\tabl_tabulate_break_no_tracer\tabl_tabulate_nobreak_inject_tracer}
+  {\let\tabl_tabulate_break_no_tracer\donothing}
+
+\let\tabl_tabulate_break_no_tracer\donothing
+
 \def\tabl_tabulate_nobreak_inject_indeed
   {\tabl_tabulate_break_no
-   \iftracetabulate
-     \tabl_tabulate_nobreak_inject_tracer
-   \fi}
+   \tabl_tabulate_break_no_tracer}
 
 \def\tabl_tabulate_nobreak_inject
   {\tabulatenoalign{\tabl_tabulate_nobreak_inject_indeed}}
@@ -1037,6 +1037,7 @@
 
 \appendtoks
      \setuevalue{\e!start\currenttabulation}{\tabl_start_defined[\currenttabulation]}%
+     \letvalue{\e!stop\currenttabulation}\relax
      \letvalue{\??tabulatehead\currenttabulation}\empty
      \letvalue{\??tabulatefoot\currenttabulation}\empty
 \to \everydefinetabulation
@@ -1076,7 +1077,7 @@
     %\expandafter\ifx\lastnamedcs\empty
        \let\tabl_tabulate_insert_foot\empty
      \else
-       \let\tabl_tabulate_insert_foot\tabl_tabulate_insert_head_content
+       \let\tabl_tabulate_insert_foot\tabl_tabulate_insert_foot_content
      \fi
    \else
      \let\tabl_tabulate_insert_foot\empty
@@ -1200,7 +1201,7 @@
 
 \unexpanded\def\tabl_tabulate_start_ignore
   {\em Nested tabulate is not (yet) supported.\relax
-   \expandafter\gobbleuntil\csname\e!stop\v!tabulate\endcsname}
+   \expandafter\gobbleuntil\csname\ifconditional\c_tabl_generic stoptabulate\else\e!stop\v!tabulate\fi\endcsname}
 
 \appendtoks
     \letvalue{\e!start\v!tabulate}\tabl_tabulate_start_ignore % only the main one
@@ -1341,12 +1342,18 @@
    \d_tabl_tabulate_indent\dimexpr\leftskip+\hangindent\ifx\p_indenting\v!yes+\parindent\fi\relax
    \global\c_tabl_tabulate_column\zerocount
    \processcontent
-     {\e!stop\ifx\currenttabulationparent\empty\v!tabulate\else\currenttabulationparent\fi}
+     {\ifconditional\c_tabl_generic stoptabulate\else\e!stop\ifx\currenttabulationparent\empty\v!tabulate\else\currenttabulationparent\fi\fi}
      \tabl_tabulate_insert_body
      \tabl_tabulate_process}
 
 \def\tabulateEQ
-  {\ifconditional\c_tabl_tabulate_firstflushed\else\tabulationparameter{EQ}\fi
+  {\ifconditional\c_tabl_tabulate_firstflushed\else
+     \dostarttaggedchained\t!ignore\empty\empty
+     \dostarttagged\t!ignore\empty
+     \tabulationparameter{EQ}%
+     \dostoptagged
+     \dostoptagged
+   \fi
    \global\setfalse\c_tabl_tabulate_equal}
 
 % The next ones will be token registers
@@ -1420,55 +1427,106 @@
    \doifelsefastoptionalcheck{\tabl_tabulate_set_color_column_yes#1}{\tabl_tabulate_set_color_column_nop#1}}
 
 \def\tabl_tabulate_set_color_column_nop
-  {\tabl_tabulate_column_normal}
+  {\tabl_tabulate_column_normal\zerocount}
 
 \def\tabl_tabulate_set_color_column_yes#1[#2]%
   {\xdef\m_tabl_tabulate_color_local{#2}%
-   \tabl_tabulate_column_normal#1}
+   \tabl_tabulate_column_normal\zerocount#1}
 
 % normal columns:
 
-\def\tabl_tabulate_column_normal#1%
+% \def\tabl_tabulate_column_normal#1#2%
+%   {\unskip
+%    \aligntab
+%    \ifconditional\c_tabl_tabulate_equal\tabulateequalpos\else\tabulatenormalpos\fi
+%    \aligntab
+%    \global\c_tabl_tabulate_kind#1%
+%    \global\c_tabl_tabulate_type#2%
+%    \aligntab}
+
+\def\tabl_tabulate_column_normal#1#2%
   {\unskip
    \aligntab
    \ifconditional\c_tabl_tabulate_equal\tabulateequalpos\else\tabulatenormalpos\fi
+   \ifnum\c_tabl_tabulate_column>\c_tabl_tabulate_max_vrulecolumn\else
+     \tabl_tabulate_column_vrule_setup
+   \fi
    \aligntab
-   \global\c_tabl_tabulate_type#1%
+   \global\c_tabl_tabulate_kind#1%
+   \global\c_tabl_tabulate_type#2%
    \aligntab}
 
 % equal columns
 
-\def\tabl_tabulate_column_equal#1%
+\def\tabl_tabulate_column_equal#1#2%
   {\unskip
    \aligntab
    \tabulateequalpos
-   \aligntab\global\c_tabl_tabulate_type#1%
+   \aligntab
+   \global\c_tabl_tabulate_kind#1%
+   \global\c_tabl_tabulate_type#2%
    \aligntab}
 
 % ruled columns
 
-\def\tabl_tabulate_column_vruled#1%
+\def\tabl_tabulate_column_vruled_preset
+  {\global\let\m_tabl_tabulate_vrule_color_local\m_tabl_tabulate_vrule_color_default
+   \global\d_tabl_tabulate_vrulethickness_local\d_tabl_tabulate_vrulethickness_default}
+
+\def\tabl_tabulate_column_vruled#1#2%
   {\unskip % 0-n
-%    \ifnum\c_tabl_tabulate_column=\plusone
-%      \global\c_tabl_tabulate_has_rule_spec_first\plusone
-%    \else\ifnum\c_tabl_tabulate_column=\c_tabl_tabulate_nofcolumns
-%      \global\c_tabl_tabulate_has_rule_spec_last\plusone
-%    \fi\fi
-   \global\let\m_tabl_tabulate_vrule_color_local\m_tabl_tabulate_vrule_color_default
-   \global\d_tabl_tabulate_vrulethickness_local\d_tabl_tabulate_vrulethickness_default
-   \doifelsefastoptionalcheck{\tabl_tabulate_column_vruled_yes#1}{\tabl_tabulate_column_vruled_nop#1}}
+  %\ifnum\c_tabl_tabulate_column=\plusone
+  %  \global\c_tabl_tabulate_has_rule_spec_first\plusone
+  %\else\ifnum\c_tabl_tabulate_column=\c_tabl_tabulate_nofcolumns
+  %  \global\c_tabl_tabulate_has_rule_spec_last\plusone
+  %\fi\fi
+   \ifnum\c_tabl_tabulate_column>\c_tabl_tabulate_max_vrulecolumn
+     \global\c_tabl_tabulate_max_vrulecolumn\c_tabl_tabulate_column
+   \fi
+   \doifelsefastoptionalcheck{\tabl_tabulate_column_vruled_yes#1#2}{\tabl_tabulate_column_vruled_nop#1#2}}
+
+\def\tabl_tabulate_column_vrule_setup
+  {\begincsname\??tabulatevrule\the\c_tabl_tabulate_column\endcsname}
 
 \def\tabl_tabulate_column_vruled_nop
-  {\tabl_tabulate_column_normal}
+  {\expandafter\glet\csname\??tabulatevrule\the\c_tabl_tabulate_column\endcsname\tabl_tabulate_column_vruled_preset
+   \tabl_tabulate_column_normal}
 
 \def\tabl_tabulate_column_vruled_step#1%
   {\doifelsenumber{#1}
      {\global\d_tabl_tabulate_vrulethickness_local#1\d_tabl_tabulate_vrulethickness_default}
      {\xdef\m_tabl_tabulate_vrule_color_local{#1}}}
 
-\def\tabl_tabulate_column_vruled_yes#1[#2]%
-  {\rawprocesscommalist[#2]\tabl_tabulate_column_vruled_step
-   \tabl_tabulate_column_normal#1}
+\def\tabl_tabulate_column_vruled_yes#1#2[#3]%
+  {\expandafter\gdef\csname\??tabulatevrule\the\c_tabl_tabulate_column\endcsname
+     {\tabl_tabulate_column_vruled_preset
+      \rawprocesscommalist[#3]\tabl_tabulate_column_vruled_step}%
+   \tabl_tabulate_column_normal#1#2}
+
+\def\tabl_tabulate_vrule_reset
+  {\ifcase\c_tabl_tabulate_max_vrulecolumn\else
+     \tabl_tabulate_vrule_reset_indeed
+   \fi}
+
+\def\tabl_tabulate_vrule_reset_indeed
+  {\dofastloopcs\c_tabl_tabulate_max_vrulecolumn\tabl_tabulate_vrule_reset_step
+   \global\c_tabl_tabulate_max_vrulecolumn\zerocount}
+
+\def\tabl_tabulate_vrule_reset_step % undefined or relax
+  {\global\expandafter\let\csname\??tabulatevrule\the\fastloopindex\endcsname\undefined}
+
+\appendtoks
+    \tabl_tabulate_vrule_reset
+\to \t_tabl_tabulate_every_after_row
+
+% sometimes more efficient:
+%
+% \def\tabl_tabulate_column_vruled_yes#1#2[#3]%
+%   {\rawprocesscommalist[#3]\tabl_tabulate_column_vruled_step
+%    \expandafter\xdef\csname\??tabulatevrule\the\c_tabl_tabulate_column\endcsname
+%      {\global\d_tabl_tabulate_vrulethickness_local\the\d_tabl_tabulate_vrulethickness_default
+%       \noexpand\xdef\noexpand\m_tabl_tabulate_vrule_color_local{\m_tabl_tabulate_vrule_color_local}}%
+%    \tabl_tabulate_column_normal#1#2}
 
 \def\tabl_tabulate_column_vruled_normal
   {\vrule\s!width\d_tabl_tabulate_vrulethickness\relax}
@@ -1506,7 +1564,7 @@
 % auto columns
 
 \def\tabl_tabulate_column_inject_auto
-  {\tabl_tabulate_column_normal\zerocount
+  {\tabl_tabulate_column_normal\zerocount\zerocount
    \ifnum\c_tabl_tabulate_column>\c_tabl_tabulate_columns\relax
      \expandafter\NR
    \else
@@ -1633,7 +1691,7 @@
    \ifnum\c_tabl_tabulate_column>\c_tabl_tabulate_max_colorcolumn
      \global\c_tabl_tabulate_max_colorcolumn\c_tabl_tabulate_column
    \fi
-   \setxvalue{\??tabulatecolor\the\c_tabl_tabulate_column}{#1}%
+   \global\expandafter\xdef\csname\??tabulatecolor\the\c_tabl_tabulate_column\endcsname{#1}%
    \hbox \thealignbackgroundcolorattr{#1}{}% pack ?
    \endgroup}
 
@@ -1802,22 +1860,22 @@
 
 % so far
 
-\unexpanded\def\tabl_tabulate_VL_first{\tabl_tabulate_column_vruled\zerocount}
-\unexpanded\def\tabl_tabulate_NC_first{\tabl_tabulate_column_normal\zerocount}
-\unexpanded\def\tabl_tabulate_RC_first{\tabl_tabulate_column_normal\plusone}
-\unexpanded\def\tabl_tabulate_HC_first{\tabl_tabulate_column_normal\plustwo}
-\unexpanded\def\tabl_tabulate_EQ_first{\tabl_tabulate_column_equal \zerocount}
-\unexpanded\def\tabl_tabulate_RQ_first{\tabl_tabulate_column_equal \plusone}
-\unexpanded\def\tabl_tabulate_HQ_first{\tabl_tabulate_column_equal \plustwo}
+\unexpanded\def\tabl_tabulate_VL_first{\tabl_tabulate_column_vruled\zerocount\zerocount}
+\unexpanded\def\tabl_tabulate_NC_first{\tabl_tabulate_column_normal\zerocount\zerocount}
+\unexpanded\def\tabl_tabulate_RC_first{\tabl_tabulate_column_normal\zerocount\plusone}
+\unexpanded\def\tabl_tabulate_HC_first{\tabl_tabulate_column_normal\zerocount\plustwo}
+\unexpanded\def\tabl_tabulate_EQ_first{\tabl_tabulate_column_equal \plustwo  \zerocount}
+\unexpanded\def\tabl_tabulate_RQ_first{\tabl_tabulate_column_equal \zerocount\plusone}
+\unexpanded\def\tabl_tabulate_HQ_first{\tabl_tabulate_column_equal \zerocount\plustwo}
 
 %unexpanded\def\tabl_tabulate_NG_first{\NC\tabl_tabulate_charalign}
 %unexpanded\def\tabl_tabulate_NG_first{\NC}
 %unexpanded\def\tabl_tabulate_NN_first{\NC\tabl_tabulate_digits} % new, undocumented, test first
 %unexpanded\def\tabl_tabulate_ND_first{\NC\tabl_tabulate_digits} % same, for old times sake
 
-\unexpanded\def\tabl_tabulate_NG_first{\tabl_tabulate_column_normal\zerocount}
-\unexpanded\def\tabl_tabulate_NN_first{\tabl_tabulate_column_normal\zerocount\tabl_tabulate_digits} % new, undocumented, test first
-\unexpanded\def\tabl_tabulate_ND_first{\tabl_tabulate_column_normal\zerocount\tabl_tabulate_digits} % same, for old times sake
+\unexpanded\def\tabl_tabulate_NG_first{\tabl_tabulate_column_normal\zerocount\zerocount}
+\unexpanded\def\tabl_tabulate_NN_first{\tabl_tabulate_column_normal\zerocount\zerocount\tabl_tabulate_digits} % new, undocumented, test first
+\unexpanded\def\tabl_tabulate_ND_first{\tabl_tabulate_column_normal\zerocount\zerocount\tabl_tabulate_digits} % same, for old times sake
 
 \unexpanded\def\tabl_tabulate_NR_first {\tabl_tabulate_NR_common\conditionaltrue \tabl_tabulate_check_penalties} % next row
 \unexpanded\def\tabl_tabulate_NB_first {\tabl_tabulate_NR_common\conditionaltrue \tabl_tabulate_nobreak_inject } % next row no break
@@ -1830,42 +1888,78 @@
 \unexpanded\def\tabl_tabulate_CM_first{\global\c_tabl_tabulate_localcolorspan\plustwo  \tabl_tabulate_set_color_column\zerocount}
 \unexpanded\def\tabl_tabulate_CR_first{\global\c_tabl_tabulate_localcolorspan\plusthree\tabl_tabulate_set_color_column\zerocount}
 
+%D Sort of special:
+%D
+%D \startbuffer
+%D \startitemize[n]
+%D \starttabulate[|||||]
+%D \NC p \NC \itemtag \NC q \NC r \NC \NR
+%D \NC p \NC \itemtag \NC q \NC r \NC \NR
+%D \NC p \NC \itemtag \NC q \NC r \NC \NR
+%D \NC p \NC \itemtag \NC q \NC r \NC \NR
+%D \stoptabulate
+%D \stopitemize
+%D
+%D \startitemize[n]
+%D \starttabulate[|||||]
+%D \NI b \NC c \NC d \NC \NR
+%D \NC a \NI c \NC d \NC \NR
+%D \NC a \NC b \NI d \NC \NR
+%D \NC a \NC b \NC c \NI \NR
+%D \stoptabulate
+%D \stopitemize
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\let\NI\relax
+
+\unexpanded\def\tabl_tabulate_NI_first{\doifelsefastoptionalcheck\tabl_tbl_NI_yes\tabl_tbl_NI_nop}
+
+\def\tabl_tbl_NI_yes[#1]{\NC \itemtag[#1]\NC}
+\def\tabl_tbl_NI_nop    {\NC \itemtag    \NC}
+
 %D The following shortcut is handy for tables where one needs bold headers:
 
 %unexpanded\def\tabl_tabulate_BC_first{\NC\let\fontstyle\globalfontstyle\bf}
-\unexpanded\def\tabl_tabulate_BC_first{\tabl_tabulate_column_normal\zerocount\let\fontstyle\globalfontstyle\bf}
+
+\unexpanded\def\tabl_tabulate_BC_first
+  {\tabl_tabulate_column_normal\plusone\zerocount
+   \let\fontstyle\globalfontstyle
+   \bf}
 
 \appendtoks
-   \let\VL\tabl_tabulate_VL_first
-   \let\NC\tabl_tabulate_NC_first
-   \let\BC\tabl_tabulate_BC_first
-   \let\RC\tabl_tabulate_RC_first
-   \let\HC\tabl_tabulate_HC_first
-   \let\EQ\tabl_tabulate_EQ_first
-   \let\RQ\tabl_tabulate_RQ_first
-   \let\HQ\tabl_tabulate_HQ_first
-   \let\NG\tabl_tabulate_NG_first
-   \let\NN\tabl_tabulate_NN_first
-   \let\ND\tabl_tabulate_ND_first
-   \let\NR\tabl_tabulate_NR_first
-   \let\NB\tabl_tabulate_NB_first
-   \let\CC\tabl_tabulate_CC_first
-   \let\CL\tabl_tabulate_CL_first
-   \let\CM\tabl_tabulate_CM_first
-   \let\CR\tabl_tabulate_CR_first
+    \let\VL\tabl_tabulate_VL_first
+    \let\NC\tabl_tabulate_NC_first
+    \let\BC\tabl_tabulate_BC_first
+    \let\RC\tabl_tabulate_RC_first
+    \let\HC\tabl_tabulate_HC_first
+    \let\EQ\tabl_tabulate_EQ_first
+    \let\RQ\tabl_tabulate_RQ_first
+    \let\HQ\tabl_tabulate_HQ_first
+    \let\NG\tabl_tabulate_NG_first
+    \let\NN\tabl_tabulate_NN_first
+    \let\ND\tabl_tabulate_ND_first
+    \let\NR\tabl_tabulate_NR_first
+    \let\NB\tabl_tabulate_NB_first
+    \let\CC\tabl_tabulate_CC_first
+    \let\CL\tabl_tabulate_CL_first
+    \let\CM\tabl_tabulate_CM_first
+    \let\CR\tabl_tabulate_CR_first
+    \let\NI\tabl_tabulate_NI_first
 \to \t_tabl_tabulate_initializers_first
 
 \appendtoks
-   \let\NR\tabl_tabulate_NR_second
-   \let\NB\tabl_tabulate_NB_second
+    \let\NR\tabl_tabulate_NR_second
+    \let\NB\tabl_tabulate_NB_second
 \to \t_tabl_tabulate_initializers_second
 
 \appendtoks
-   \let\SR\NR
-   \let\FR\NR
-   \let\MR\NR
-   \let\LR\NR
-   \let\AR\NR
+    \let\SR\NR
+    \let\FR\NR
+    \let\MR\NR
+    \let\LR\NR
+    \let\AR\NR
 \to \t_tabl_tabulate_initializers_first
 
 \unexpanded\def\tabl_tabulate_NR_common#1#2%
@@ -2589,11 +2683,21 @@
 %D \stopwhatever
 %D \stoptyping
 
-%D This is needed because we soemtimes use the english command in
+%D This is needed because we sometimes use the english command in
 %D tracing macros. In fact, most detailed tracing macros that
 %D are done with \LUA\ only work in the english interface anyway.
 
-\definetabulate[tabulate] \setuptabulate[tabulate][\c!format=\v!none] % so no \v! here
+% \definetabulate[tabulate] \setuptabulate[tabulate][\c!format=\v!none] % so no \v! here
+
+\newconditional\c_tabl_generic
+
+\unexpanded\setuvalue{starttabulate}%
+  {\bgroup % whole thing
+   \settrue\c_tabl_generic
+   \let\currenttabulationparent\empty
+   \dodoubleempty\tabl_start_regular}
+
+\letvalue{stoptabulate}\relax
 
 %D The following helpers are just there because we also have them at the \LUA\ end:
 %D

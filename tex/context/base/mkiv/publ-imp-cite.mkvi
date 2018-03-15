@@ -62,23 +62,25 @@
 \stopsetups
 
 \startsetups btx:cite:lefttext
-  \ifx\currentbtxlefttext\empty
-  \else
-    \setbtxparameterset{\s!cite}{lefttext}
-    \btxparameter\c!left
-    \currentbtxlefttext
-    \btxparameter\c!right
+  \ifx\currentbtxlefttext\empty \else
+    \startbtxrunningstyleandcolor
+        \setbtxparameterset{\s!cite}{lefttext}
+        \btxparameter\c!left
+            \currentbtxlefttext
+        \btxparameter\c!right
+    \stopbtxrunningstyleandcolor
   \fi
 \stopsetups
 
 \startsetups btx:cite:righttext
-  \ifx\currentbtxrighttext\empty
-  \else
-    \setbtxparameterset{\s!cite}{righttext}
-    \btxparameter\c!left
-    \currentbtxrighttext
-    \btxparameter\c!right
-  \fi
+    \ifx\currentbtxrighttext\empty \else
+        \startbtxrunningstyleandcolor
+            \setbtxparameterset{\s!cite}{righttext}
+            \btxparameter\c!left
+                \currentbtxrighttext
+            \btxparameter\c!right
+        \stopbtxrunningstyleandcolor
+    \fi
 \stopsetups
 
 \startsetups btx:cite:invalid
@@ -86,44 +88,17 @@
      {\tt <\currentbtxreference>}
 \stopsetups
 
-\starttexdefinition unexpanded btx:cite:concat
-    \btxparameter{\c!separator:\number\currentbtxconcat}
-\stoptexdefinition
+\startsetups btx:cite:concat
+    \startbtxrunningstyleandcolor
+        \btxparameter{\c!separator:\number\currentbtxconcat}
+    \stopbtxrunningstyleandcolor
+\stopsetups
 
 % when we have an author-year combination, the first and seconds is not
 % fields data but something more complex (that itself calls for a setup)
 
-% \startsetups btx:cite:normal
-%     \texdefinition{\s!btx:\s!cite:concat}
-%     \currentbtxlefttext
-%     \ifx\currentbtxfirst\empty
-%         \fastsetup{\s!btx:\s!cite:\s!empty}
-%     \else
-%         \texdefinition {\s!btx:\s!cite:inject} {
-%             \btxcitereference
-%             \btxusecommand [\currentbtxspecification:cite:\currentbtxcitealternative] {
-%                 \currentbtxfirst
-%             }
-%         }
-%         \ifx\currentbtxsecond\empty
-%           \btxflushsuffix
-%         \else
-%             \btxparameter\c!inbetween
-%             \texdefinition {\s!btx:\s!cite:inject} {
-%                 \btxusecommand [\currentbtxspecification:cite:\currentbtxcitealternative] {
-%                     \currentbtxsecond
-%                  }
-%             }
-%             % quite likely an error
-%             \btxflushsuffix
-%         \fi
-%     \fi
-%     \currentbtxrighttext
-% \stopsetups
-
 \startsetups btx:cite:normal
-    \texdefinition{\s!btx:\s!cite:concat}
-    %\currentbtxlefttext
+    \fastsetup{\s!btx:\s!cite:concat}
     \fastsetup{\s!btx:\s!cite:lefttext}
     \ifx\currentbtxfirst\empty
         \fastsetup{\s!btx:\s!cite:\s!empty}
@@ -136,21 +111,6 @@
             }
         }
     \else
-      %  \texdefinition {\s!btx:\s!cite:inject} {
-      %      \btxcitereference
-      %      \btxusecommand [\currentbtxspecification:cite:\currentbtxcitealternative] {
-      %          \currentbtxfirst
-      %      }
-      %  }
-      %  \btxparameter\c!inbetween
-      %  \texdefinition {\s!btx:\s!cite:inject} {
-      %      \btxusecommand [\currentbtxspecification:cite:\currentbtxcitealternative] {
-      %          \currentbtxsecond
-      %       }
-      %  }
-      %  \btxflushsuffix
-      %
-      % probably better:
         \texdefinition {\s!btx:\s!cite:inject} {
             \btxcitereference
             \btxusecommand [\currentbtxspecification:cite:\currentbtxcitealternative] {
@@ -161,13 +121,11 @@
              }
         }
     \fi\fi
-    %\currentbtxrighttext
     \fastsetup{\s!btx:\s!cite:righttext}
 \stopsetups
 
 \startsetups btx:cite:range
-    \texdefinition{\s!btx:\s!cite:concat}
-    %\currentbtxlefttext
+    \fastsetup{\s!btx:\s!cite:concat}
     \fastsetup{\s!btx:\s!cite:lefttext}
     \ifx\currentbtxfirst\empty
         \fastsetup{\s!btx:\s!cite:\s!empty}
@@ -184,15 +142,13 @@
             }
         }
     \fi
-    %\currentbtxrighttext
     \fastsetup{\s!btx:\s!cite:righttext}
 \stopsetups
 
 % somehow related to keywords:
 
 \startsetups btx:cite:listelement
-    \texdefinition{\s!btx:\s!cite:concat}
-    %\currentbtxlefttext
+    \fastsetup{\s!btx:\s!cite:concat}
     \fastsetup{\s!btx:\s!cite:lefttext}
     \ifx\currentbtxfirst\empty
         \fastsetup{\s!btx:\s!cite:\s!empty}
@@ -202,16 +158,13 @@
            \currentbtxfirst
        }
     \fi
-    %\currentbtxrighttext
     \fastsetup{\s!btx:\s!cite:righttext}
 \stopsetups
 
 \startsetups \s!btx:\s!cite:entry
-    \texdefinition{\s!btx:\s!cite:concat}
-    %\currentbtxlefttext
+    \fastsetup{\s!btx:\s!cite:concat}
     \fastsetup{\s!btx:\s!cite:lefttext}
     \btxhandleciteentry
-    %\currentbtxrighttext
     \fastsetup{\s!btx:\s!cite:righttext}
 \stopsetups
 
@@ -277,6 +230,9 @@
     \fastsetup{\s!btx:\s!cite:normal}
 \stopsetups
 \startsetups \s!btx:\s!cite:pages
+    \fastsetup{\s!btx:\s!cite:range}
+\stopsetups
+\startsetups \s!btx:\s!cite:organization
     \fastsetup{\s!btx:\s!cite:range}
 \stopsetups
 

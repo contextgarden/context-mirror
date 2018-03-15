@@ -15,7 +15,7 @@
 
 \unprotect
 
-\registerctxluafile{spac-ver}{1.001}
+\registerctxluafile{spac-ver}{}
 
 % todo: use usernodes ?
 
@@ -61,7 +61,7 @@
 
 \newif\iflocalinterlinespace
 
-\newskip\s_spac_vspacing_temp \s_spac_vspacing_temp\bigskipamount
+\newskip \s_spac_vspacing_temp \s_spac_vspacing_temp\bigskipamount
 
 \def\skipfactor    {.75}
 \def\skipgluefactor{.25}
@@ -527,7 +527,6 @@
 
 \unexpanded\def\spac_lines_start_correction[#1]%
   {\edef\m_spac_lines_around{#1}%
-   % todo: play with \fakenextstrutline
    \spac_lines_action_around
    \d_spac_prevdepth\prevdepth
    \spac_lines_initialize_corrections
@@ -1050,6 +1049,24 @@
    \box\scratchbox
    \endgroup}
 
+\unexpanded\def\halflinestrut
+  {\relax
+   \dontleavehmode
+   \begingroup
+   \setbox\scratchbox\copy\strutbox
+   \ht\scratchbox\dimexpr\strutht-.5\strutht-.5\strutdp\relax
+   \box\scratchbox
+   \endgroup}
+
+\unexpanded\def\noheightstrut
+  {\relax
+   \dontleavehmode
+   \begingroup
+   \setbox\scratchbox\copy\strutbox
+   \ht\scratchbox\zeropoint
+   \box\scratchbox
+   \endgroup}
+
 %D Sometimes a capstrut comes in handy
 %D
 %D \starttabulate[|Tl|l|l|]
@@ -1291,7 +1308,7 @@
 \let\normaloffinterlineskip\offinterlineskip % knuth's original
 
 \appendtoks
-    \ifvmode\clf_resetprevdepth\fi % a nasty hack (tested for a while now)
+    \ifvmode\clf_synchronizepage\fi % a nasty hack (tested for a while now)
 \to \everyafteroutput
 
 %D My own one:
@@ -1355,17 +1372,21 @@
      \global\let\restoreinterlinepenalty\spac_penalties_restore
    \fi}
 
-\newif\ifgridsnapping % to be sure
+\def\defaultdisplaywidowpenalty        {50}
+\def\defaultwidowpenalty             {2000} % was: 1000
+\def\defaultclubpenalty              {2000} % was:  800
+\def\defaultbrokenpenalty             {100}
+\def\defaultdoublehyphendemerits    {10000}
+\def\defaultfinalhyphendemerits      {5000}
+\def\defaultadjdemerits             {10000}
 
-\def\defaultwidowpenalty         {2000} % was: 1000
-\def\defaultclubpenalty          {2000} % was:  800
-\def\defaultdisplaywidowpenalty    {50}
-\def\defaultbrokenpenalty         {100}
-
-\def\defaultgridwidowpenalty        {0}
-\def\defaultgridclubpenalty         {0}
-\def\defaultgriddisplaywidowpenalty {0}
-\def\defaultgridbrokenpenalty       {0}
+\def\defaultgriddisplaywidowpenalty     {0}
+\def\defaultgridwidowpenalty            {0}
+\def\defaultgridclubpenalty             {0}
+\def\defaultgridbrokenpenalty           {0}
+\def\defaultgriddoublehyphendemerits{10000} % always was so
+\def\defaultgridfinalhyphendemerits  {5000} % always was so
+\def\defaultgridadjdemerits         {10000} % always was so
 
 \unexpanded\def\nopenalties
   {\widowpenalty        \zerocount
@@ -1390,10 +1411,13 @@
 
     \directsetup{\systemsetupsprefix\s!reset}
 
-    \widowpenalty       \defaultwidowpenalty
-    \clubpenalty        \defaultclubpenalty
-    \displaywidowpenalty\defaultdisplaywidowpenalty
-    \brokenpenalty      \defaultbrokenpenalty
+    \widowpenalty        \defaultwidowpenalty
+    \clubpenalty         \defaultclubpenalty
+    \displaywidowpenalty \defaultdisplaywidowpenalty
+    \brokenpenalty       \defaultbrokenpenalty
+    \doublehyphendemerits\defaultdoublehyphendemerits
+    \finalhyphendemerits \defaultfinalhyphendemerits
+    \adjdemerits         \defaultadjdemerits
 
 \stopsetups
 
@@ -1401,10 +1425,13 @@
 
     \directsetup{\systemsetupsprefix\s!reset}
 
-    \widowpenalty       \defaultgridwidowpenalty
-    \clubpenalty        \defaultgridclubpenalty
-    \displaywidowpenalty\defaultgriddisplaywidowpenalty
-    \brokenpenalty      \defaultgridbrokenpenalty
+    \widowpenalty        \defaultgridwidowpenalty
+    \clubpenalty         \defaultgridclubpenalty
+    \displaywidowpenalty \defaultgriddisplaywidowpenalty
+    \brokenpenalty       \defaultgridbrokenpenalty
+    \doublehyphendemerits\defaultgriddoublehyphendemerits
+    \finalhyphendemerits \defaultgridfinalhyphendemerits
+    \adjdemerits         \defaultgridadjdemerits
 
 \stopsetups
 
@@ -1414,9 +1441,12 @@
 
     \directsetup{\systemsetupsprefix\s!reset}
 
-    \setpenalties\widowpenalties\plustwo\maxdimen
-    \setpenalties\clubpenalties \plustwo\maxdimen
-                 \brokenpenalty         \maxdimen
+    \setpenalties \widowpenalties      \plustwo \maxdimen
+    \setpenalties \clubpenalties       \plustwo \maxdimen
+                  \brokenpenalty                \maxdimen
+                  \doublehyphendemerits         \defaultdoublehyphendemerits
+                  \finalhyphendemerits          \defaultfinalhyphendemerits
+                  \adjdemerits                  \defaultadjdemerits
 
 \stopsetups
 
@@ -1515,6 +1545,17 @@
   {%\gridsnappingtrue
    \begincsname\??gridsnappers#1\endcsname}
 
+% maybe:
+%
+% \def\spac_grids_snap_value_set#1%
+%   {%\gridsnappingtrue
+%    \ifcsname\??gridsnappers#1\endcsname
+%      \lastnamedcs
+%    \else
+%      \definegridsnapping[#1][#1]%
+%      \begincsname\??gridsnappers#1\endcsname
+%    \fi}
+
 \def\spac_grids_snap_value_auto#1%
   {\ifcsname\??gridsnappers#1\endcsname
      \lastnamedcs
@@ -1545,35 +1586,41 @@
 % min              centers a box rounded downwards
 % max              centers a box rounded upwards
 
-%D We're not downward compatible with \MKII !
+%D We're not downward compatible with \MKII ! Not yet in interface file:
 
-\definegridsnapping[\v!normal]   [\v!maxheight,\v!maxdepth,\v!strut]
-\definegridsnapping[\v!standard] [\v!maxheight,\v!maxdepth,\v!strut]
-\definegridsnapping[\v!yes]      [\v!maxheight,\v!maxdepth,\v!strut]
+\definegridsnapping[\v!normal]         [\v!maxheight,\v!maxdepth,\v!strut]
+\definegridsnapping[\v!standard]       [\v!maxheight,\v!maxdepth,\v!strut]
+\definegridsnapping[\v!yes]            [\v!maxheight,\v!maxdepth,\v!strut]
 
-\definegridsnapping[\v!strict]   [\v!maxdepth:0.8,\v!maxheight:0.8,\v!strut]
-\definegridsnapping[\v!tolerant] [\v!maxdepth:1.2,\v!maxheight:1.2,\v!strut]
+\definegridsnapping[\v!strict]           [\v!maxdepth:0.8,\v!maxheight:0.8,\v!strut]
+\definegridsnapping[\v!tolerant]         [\v!maxdepth:1.2,\v!maxheight:1.2,\v!strut]
+\definegridsnapping[\v!verytolerant]     [\v!maxdepth:1.4,\v!maxheight:1.4,\v!strut]
 
-\definegridsnapping[\v!top]      [\v!minheight,\v!maxdepth,\v!strut]
-\definegridsnapping[\v!bottom]   [\v!maxheight,\v!mindepth,\v!strut]
-\definegridsnapping[\v!both]     [\v!minheight,\v!mindepth,\v!strut]
+\definegridsnapping[\v!tolerant:10]      [\v!maxdepth:1.1,\v!maxheight:1.1,\v!strut] % 10 pct tolerance
+\definegridsnapping[\v!tolerant:20]      [\v!maxdepth:1.2,\v!maxheight:1.2,\v!strut] % 20 pct tolerance
+\definegridsnapping[\v!tolerant:30]      [\v!maxdepth:1.3,\v!maxheight:1.3,\v!strut] % 30 pct tolerance
+\definegridsnapping[\v!tolerant:40]      [\v!maxdepth:1.4,\v!maxheight:1.4,\v!strut] % 40 pct tolerance
 
-\definegridsnapping[\v!broad]    [\v!maxheight,\v!maxdepth,\v!strut,0.8] % maybe 0.85
-\definegridsnapping[\v!fit]      [\v!maxheight,\v!maxdepth,\v!strut,1.2] % tight 0.15
+\definegridsnapping[\v!top]              [\v!minheight,\v!maxdepth,\v!strut]
+\definegridsnapping[\v!bottom]           [\v!maxheight,\v!mindepth,\v!strut]
+\definegridsnapping[\v!both]             [\v!minheight,\v!mindepth,\v!strut]
 
-\definegridsnapping[\v!first]    [\v!first]
-\definegridsnapping[\v!last]     [\v!last]
-\definegridsnapping[\v!high]     [\v!minheight,\v!maxdepth,\v!none]
-\definegridsnapping[\v!one]      [\v!minheight,\v!mindepth]
-\definegridsnapping[\v!low]      [\v!maxheight,\v!mindepth,\v!none]
-\definegridsnapping[\v!none]     [\v!none]
-\definegridsnapping[\v!line]     [\v!line]
-\definegridsnapping[\v!strut]    [\v!strut]
-\definegridsnapping[\v!box]      [\v!box]
-\definegridsnapping[\v!min]      [\v!min]
-\definegridsnapping[\v!max]      [\v!max]
+\definegridsnapping[\v!broad]            [\v!maxheight,\v!maxdepth,\v!strut,0.8] % maybe 0.85
+\definegridsnapping[\v!fit]              [\v!maxheight,\v!maxdepth,\v!strut,1.2] % tight 0.15
 
-\definegridsnapping[\v!middle]   [\v!maxheight,\v!maxdepth] % used in placement
+\definegridsnapping[\v!first]            [\v!first]
+\definegridsnapping[\v!last]             [\v!last]
+\definegridsnapping[\v!high]             [\v!minheight,\v!maxdepth,\v!none]
+\definegridsnapping[\v!one]              [\v!minheight,\v!mindepth]
+\definegridsnapping[\v!low]              [\v!maxheight,\v!mindepth,\v!none]
+\definegridsnapping[\v!none]             [\v!none]
+\definegridsnapping[\v!line]             [\v!line]
+\definegridsnapping[\v!strut]            [\v!strut]
+\definegridsnapping[\v!box]              [\v!box]
+\definegridsnapping[\v!min]              [\v!min]
+\definegridsnapping[\v!max]              [\v!max]
+
+\definegridsnapping[\v!middle]           [\v!maxheight,\v!maxdepth] % used in placement
 
 \definegridsnapping[\v!math]             [\v!maxdepth:1.05,\v!maxheight:1.05,\v!strut] % experimental, maybe 1.1
 \definegridsnapping[\v!math:\v!line]     [\v!math,\v!line,\v!split]
@@ -1615,8 +1662,6 @@
 
 \newif\ifgridsnapping
 
-\let\showgridsnapping\relax
-
 %unexpanded\def\moveongrid {\dosingleempty\spac_grids_move_on}
 \unexpanded\def\snaptogrid {\dosingleempty\spac_grids_snap_to}
 \unexpanded\def\placeongrid{\dosingleempty\spac_grids_place_on}
@@ -1656,7 +1701,7 @@
    \fi
    \doifelsenothing{#1}{\spac_grids_snap_value_set\v!normal}{\spac_grids_snap_value_set{#1}}%
    \clf_vspacingsnap\nextbox\attribute\snapmethodattribute\relax
-   \ifvbox\nextbox\vbox\else\hbox\fi attr \snapmethodattribute \zerocount {\box\nextbox}% pack ?
+   \ifvbox\nextbox\vbox\else\hbox\fi attr \snapmethodattribute \zerocount {\box\nextbox}% *pack ?
    \egroup}
 
 \def\spac_grids_check_nop
@@ -1911,6 +1956,7 @@
 
 \newconditional\c_space_vspacing_done
 \newconditional\c_space_vspacing_fixed
+\newconditional\c_space_ignore_parskip
 
 \appendtoks
     \s_spac_vspacing_temp\zeropoint
@@ -1932,6 +1978,9 @@
       \fi
     \relax
 \to \everyafterblankhandling
+
+\unexpanded\def\setblankpacked
+  {\settrue\c_space_ignore_parskip}
 
 \unexpanded\def\setblankcategory#1%
   {\settrue\c_space_vspacing_done
@@ -1971,6 +2020,7 @@
 \def\dostartblankhandling
   {\begingroup
    \setfalse\c_space_vspacing_done
+   \setfalse\c_space_ignore_parskip
    \the\everybeforeblankhandling}
 
 \unexpanded\def\stopblankhandling
@@ -1978,7 +2028,11 @@
    \ifconditional\c_space_vspacing_done
      \vskip\s_spac_vspacing_temp
    \fi
-   \endgroup}
+   \ifconditional\c_space_ignore_parskip
+     \endgroup\ignoreparskip
+   \else
+     \endgroup
+   \fi}
 
 \unexpanded\def\flushblankhandling
   {\the\everyafterblankhandling
@@ -2117,10 +2171,6 @@
 \definevspacingamount[\v!height]      [\strutht]           [\bodyfontstrutheight]
 \definevspacingamount[\v!depth]       [\strutdp]           [\bodyfontstrutdepth]
 
-\definevspacingamount[-\v!line]       [-\openlineheight]   [-\bodyfontlineheight]
-\definevspacingamount[-\v!halfline]   [-.5\openlineheight] [-.5\bodyfontlineheight]
-\definevspacingamount[-\v!quarterline][-.25\openlineheight][-.25\bodyfontlineheight]
-
 \definevspacingamount[\v!standard]    [.75\openlineheight] [.75\openlineheight] % mkii compatible
 
 \def\bodyfontwhitespace
@@ -2169,23 +2219,35 @@
 \definevspacing[\v!disable]   [category:5]
 \definevspacing[\v!nowhite]   [category:6]
 \definevspacing[\v!back]      [category:7]
-%               together      [category:8]
+\definevspacing[\v!packed]    [category:8]  % noparskip (kind of special)
 \definevspacing[\v!overlay]   [category:9]
 \definevspacing[\v!enable]    [category:10]
+
+%definevspacing[\v!noparskip] [category:8]
+%definevspacing[\v!notopskip] [category:11]
 
 \definevspacing[\v!weak]      [order:0]
 \definevspacing[\v!strong]    [order:100]
 
 \definevspacing[\s!default]   [\v!white] % was big for a while
 
-% \dorecurse{10} % todo: other values < 4000
-%   {\normalexpanded{\definevspacing[\v!samepage-\recurselevel][penalty:\the\numexpr4000+250*\recurselevel\relax]}}
-
 \newcount\c_spac_vspacing_special_base \c_spac_vspacing_special_base = 32250 % 4000
 \newcount\c_spac_vspacing_special_step \c_spac_vspacing_special_step =    10 %  250
 
-\dorecurse{10}
-  {\normalexpanded{\definevspacing[\v!samepage-\recurselevel][penalty:\the\numexpr\c_spac_vspacing_special_base+\c_spac_vspacing_special_step*\recurselevel\relax]}}
+\unexpanded\def\spac_vspacing_define_same_page#1%
+  {\normalexpanded{\definevspacing
+     [\v!samepage-#1]%
+     [penalty:\the\numexpr\c_spac_vspacing_special_base+\c_spac_vspacing_special_step*#1\relax]}}
+
+\dorecurse{20}{\spac_vspacing_define_same_page{#1}}
+
+\ifdefined\everydefinesection
+    \appendtoks
+        \spac_vspacing_define_same_page\maxstructuredepth
+    \to \everydefinesection
+\else
+    % the order has changed so this code has to move to strf-def.mkiv then
+\fi
 
 \definevspacing[\v!default]  [\v!big]      % todo: needs to adapt to \setupblank
 \definevspacing[\v!before]   [\v!default]  % but we need to avoid circular references
@@ -2454,20 +2516,74 @@
 
 \prevdepth\zeropoint
 
-% not ok, so we need to figure out another way to fix this messy prevdepth-across-page issue
-% as encountered in forced blank skips (see lua code)
-%
-% \appendtoks
-%     \ifvmode\clf_resetprevdepth\fi
-% \to \everyafteroutput
-%
-% this should only happen when there is nothing left over (how to detemine that) .. testcase:
-%
-% \dorecurse{41}{line\par}
-% \starttyping
-% line 1
-% line 2
-% line 3
-% \stoptyping
+%D Helper:
+
+\unexpanded\def\checkedblank[#1]%
+  {\edef\p_blank{#1}%
+   \ifx\p_blank\empty
+     % ignore
+   \else\ifx\p_blank\v!none
+     % ignore
+   \else
+     \blank[\p_blank]%
+   \fi\fi}
+
+% \unexpanded\def\applycheckedblankwith#1#2#3%
+%   {\edef\p_blank{#2}%
+%    \ifx\p_blank\empty
+%      % ignore
+%    \else\ifx\p_blank\v!none
+%      % ignore
+%    \else
+%      \edef\p_before{#1}%
+%      \edef\p_after {#3}%
+%      \blank[\ifx\p_before\empty\else\p_before,\fi\p_blank\ifx\p_after\empty\else,\p_after\fi]%
+%    \fi\fi}
+
+% \setupwhitespace[line]
+% \prerollblank[2*line]  \the\prerolledblank
+% \prerollblank[-2*line] \the\prerolledblank
+
+\newskip\prerolledblank
+
+\unexpanded\def\prerollblank[#1]%
+  {\begingroup
+   \edef\p_blank{#1}%
+   \ifx\p_blank\empty
+     \global\prerolledblank\zeropoint
+   \else\ifx\p_blank\v!none
+     \global\prerolledblank\zeropoint
+   \else
+     % don't mess with \arskip here!
+     \scratchskip\plusten\lineheight
+     \setbox\scratchbox\vbox
+       {\vskip\scratchskip
+        \kern\zeropoint
+        \blank[\p_blank]}%
+     % \dimexpr doesn't work well with skips
+     \advance\scratchskip-\ht\scratchbox
+     \global\prerolledblank-\scratchskip
+   \fi\fi
+   \endgroup}
+
+\newcount\c_spac_vspacing_ignore_parskip
+
+% \setupwhitespace[line]
+% \setuphead[subject][after={\blank[packed]},style=\bfb]
+% \subject{foo}
+% test \par
+% test \par
+% \blank[packed] % \ignoreparskip
+% test \par
+% test \par
+% \ignoreparskip
+% test \par
+% test \par
+% \setuphead[subject][after={\blank[nowhite]},style=\bfb]
+% \subject{foo}
+% test \par
+% test \par
+
+\unexpanded\def\ignoreparskip{\c_spac_vspacing_ignore_parskip\plusone}
 
 \protect \endinput

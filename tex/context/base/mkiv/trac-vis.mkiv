@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=trac-vis, % replaces supp-vis plus some s-* modules
-%D        version=2112.06.23, % 1996.10.21,
+%D        version=2012.06.23, % 1996.10.21,
 %D          title=\CONTEXT\ Tracing Macros,
 %D       subtitle=Visualization,
 %D         author=Hans Hagen,
@@ -32,7 +32,7 @@
 
 \writestatus{loading}{ConTeXt Tracing Macros / Visualization}
 
-\registerctxluafile{trac-vis}{1.001}
+\registerctxluafile{trac-vis}{optimize}
 
 \unprotect
 
@@ -118,6 +118,12 @@
 
 \unexpanded\def\showfontkerns
   {\clf_setvisual{fontkern}}
+
+\unexpanded\def\showfontitalics
+  {\clf_setvisual{italic}}
+
+\unexpanded\def\showfontexpansion
+  {\clf_setvisual{expansion}}
 
 \unexpanded\def\setvisualizerfont
   {\dosingleempty\syst_visualizers_setfont}

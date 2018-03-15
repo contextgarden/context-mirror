@@ -6,56 +6,52 @@ if not modules then modules = { } end modules ['lpdf-fld'] = {
     license   = "see context related readme files"
 }
 
--- The problem with widgets is that so far each version of acrobat
--- has some rendering problem. I tried to keep up with this but
--- it makes no sense to do so as one cannot rely on the viewer
--- not changing. Especially Btn fields are tricky as their appearences
--- need to be synchronized in the case of children but e.g. acrobat
--- 10 does not retain the state and forces a check symbol. If you
--- make a file in acrobat then it has MK entries that seem to overload
--- the already present appearance streams (they're probably only meant for
--- printing) as it looks like the viewer has some fallback on (auto
--- generated) MK behaviour built in. So ... hard to test. Unfortunately
--- not even the default appearance is generated. This will probably be
--- solved at some point.
+-- The problem with widgets is that so far each version of acrobat has some
+-- rendering problem. I tried to keep up with this but it makes no sense to do so as
+-- one cannot rely on the viewer not changing. Especially Btn fields are tricky as
+-- their appearences need to be synchronized in the case of children but e.g.
+-- acrobat 10 does not retain the state and forces a check symbol. If you make a
+-- file in acrobat then it has MK entries that seem to overload the already present
+-- appearance streams (they're probably only meant for printing) as it looks like
+-- the viewer has some fallback on (auto generated) MK behaviour built in. So ...
+-- hard to test. Unfortunately not even the default appearance is generated. This
+-- will probably be solved at some point.
 --
--- Also, for some reason the viewer does not always show custom appearances
--- when fields are being rolled over or clicked upon, and circles or checks
--- pop up when you don't expect them. I fear that this kind of instability
--- eventually will kill pdf forms. After all, the manual says: "individual
--- annotation handlers may ignore this entry and provide their own appearances"
--- and one might wonder what 'individual' means here, but effectively this
--- renders the whole concept of appearances useless.
+-- Also, for some reason the viewer does not always show custom appearances when
+-- fields are being rolled over or clicked upon, and circles or checks pop up when
+-- you don't expect them. I fear that this kind of instability eventually will kill
+-- pdf forms. After all, the manual says: "individual annotation handlers may ignore
+-- this entry and provide their own appearances" and one might wonder what
+-- 'individual' means here, but effectively this renders the whole concept of
+-- appearances useless.
 --
--- Okay, here is one observation. A pdf file contains objects and one might
--- consider each one to be a static entity when read in. However, acrobat
--- starts rendering and seems to manipulate (appearance streams) of objects
--- in place (this is visible when the file is saved again). And, combined
--- with some other caching and hashing, this might give side effects for
--- shared objects. So, it seems that for some cases one can best be not too
--- clever and not share but duplicate information. Of course this defeats the
--- whole purpose of these objects. Of course I can be wrong.
+-- Okay, here is one observation. A pdf file contains objects and one might consider
+-- each one to be a static entity when read in. However, acrobat starts rendering
+-- and seems to manipulate (appearance streams) of objects in place (this is visible
+-- when the file is saved again). And, combined with some other caching and hashing,
+-- this might give side effects for shared objects. So, it seems that for some cases
+-- one can best be not too clever and not share but duplicate information. Of course
+-- this defeats the whole purpose of these objects. Of course I can be wrong.
 --
 -- A rarther weird side effect of the viewer is that the highlighting of fields
--- obscures values, unless you uses one of the BS variants, and this makes
--- custum appearances rather useless as there is no way to control this apart
--- from changing the viewer preferences. It could of course be a bug but it would
--- be nice if the highlighting was at least transparent. I have no clue why the
--- built in shapes work ok (some xform based appearances are generated) while
--- equally valid other xforms fail. It looks like acrobat appearances come on
--- top (being refered to in the MK) while custom ones are behind the highlight
--- rectangle. One can disable the "Show border hover color for fields" option
--- in the preferences. If you load java-imp-rhh this side effect gets disabled
--- and you get what you expect (it took me a while to figure out this hack).
+-- obscures values, unless you uses one of the BS variants, and this makes custum
+-- appearances rather useless as there is no way to control this apart from changing
+-- the viewer preferences. It could of course be a bug but it would be nice if the
+-- highlighting was at least transparent. I have no clue why the built in shapes
+-- work ok (some xform based appearances are generated) while equally valid other
+-- xforms fail. It looks like acrobat appearances come on top (being refered to in
+-- the MK) while custom ones are behind the highlight rectangle. One can disable the
+-- "Show border hover color for fields" option in the preferences. If you load
+-- java-imp-rhh this side effect gets disabled and you get what you expect (it took
+-- me a while to figure out this hack).
 --
--- When highlighting is enabled, those default symbols flash up, so it looks
--- like we have some inteference between this setting and custom appearances.
+-- When highlighting is enabled, those default symbols flash up, so it looks like we
+-- have some inteference between this setting and custom appearances.
 --
--- Anyhow, the NeedAppearances is really needed in order to get a rendering
--- for printing especially when highlighting (those colorfull foregrounds) is
--- on.
+-- Anyhow, the NeedAppearances is really needed in order to get a rendering for
+-- printing especially when highlighting (those colorfull foregrounds) is on.
 
-local tostring, next = tostring, next
+local tostring, tonumber, next = tostring, tonumber, next
 local gmatch, lower, format, formatters = string.gmatch, string.lower, string.format, string.formatters
 local lpegmatch = lpeg.match
 local bpfactor, todimen = number.dimenfactors.bp, string.todimen
@@ -92,6 +88,7 @@ local pdfshareobjectreference = lpdf.shareobjectreference
 local pdfshareobject          = lpdf.shareobject
 local pdfreserveobject        = lpdf.reserveobject
 local pdfaction               = lpdf.action
+local pdfmajorversion         = lpdf.majorversion
 
 local pdfcolor                = lpdf.color
 local pdfcolorvalues          = lpdf.colorvalues
@@ -124,39 +121,39 @@ function codeinjections.setformsmethod(name)
 end
 
 local flag = { -- /Ff
-    ReadOnly          = 2^ 0, --  1
-    Required          = 2^ 1, --  2
-    NoExport          = 2^ 2, --  3
-    MultiLine         = 2^12, -- 13
-    Password          = 2^13, -- 14
-    NoToggleToOff     = 2^14, -- 15
-    Radio             = 2^15, -- 16
-    PushButton        = 2^16, -- 17
-    PopUp             = 2^17, -- 18
-    Edit              = 2^18, -- 19
-    Sort              = 2^19, -- 20
-    FileSelect        = 2^20, -- 21
-    DoNotSpellCheck   = 2^22, -- 23
-    DoNotScroll       = 2^23, -- 24
-    Comb              = 2^24, -- 25
-    RichText          = 2^25, -- 26
-    RadiosInUnison    = 2^25, -- 26
-    CommitOnSelChange = 2^26, -- 27
+    ReadOnly          = 0x00000001, -- 2^ 0
+    Required          = 0x00000002, -- 2^ 1
+    NoExport          = 0x00000004, -- 2^ 2
+    MultiLine         = 0x00001000, -- 2^12
+    Password          = 0x00002000, -- 2^13
+    NoToggleToOff     = 0x00004000, -- 2^14
+    Radio             = 0x00008000, -- 2^15
+    PushButton        = 0x00010000, -- 2^16
+    PopUp             = 0x00020000, -- 2^17
+    Edit              = 0x00040000, -- 2^18
+    Sort              = 0x00080000, -- 2^19
+    FileSelect        = 0x00100000, -- 2^20
+    DoNotSpellCheck   = 0x00400000, -- 2^22
+    DoNotScroll       = 0x00800000, -- 2^23
+    Comb              = 0x01000000, -- 2^24
+    RichText          = 0x02000000, -- 2^25
+    RadiosInUnison    = 0x02000000, -- 2^25
+    CommitOnSelChange = 0x04000000, -- 2^26
 }
 
 local plus = { -- /F
-    Invisible         = 2^0, --   1
-    Hidden            = 2^1, --   2
-    Printable         = 2^2, --   3
-    Print             = 2^2, --   3
-    NoZoom            = 2^3, --   4
-    NoRotate          = 2^4, --   5
-    NoView            = 2^5, --   6
-    ReadOnly          = 2^6, --   7
-    Locked            = 2^7, --   8
-    ToggleNoView      = 2^8, --   9
-    LockedContents    = 2^9, --  10,
-    AutoView          = 2^8, --   6 + 9 ?
+    Invisible         = 0x00000001, -- 2^0
+    Hidden            = 0x00000002, -- 2^1
+    Printable         = 0x00000004, -- 2^2
+    Print             = 0x00000004, -- 2^2
+    NoZoom            = 0x00000008, -- 2^3
+    NoRotate          = 0x00000010, -- 2^4
+    NoView            = 0x00000020, -- 2^5
+    ReadOnly          = 0x00000040, -- 2^6
+    Locked            = 0x00000080, -- 2^7
+    ToggleNoView      = 0x00000100, -- 2^8
+    LockedContents    = 0x00000200, -- 2^9
+    AutoView          = 0x00000100, -- 2^8
 }
 
 -- todo: check what is interfaced
@@ -173,6 +170,9 @@ flag.file        = flag.FileSelect
 plus.hidden      = plus.Hidden
 plus.printable   = plus.Printable
 plus.auto        = plus.AutoView
+
+lpdf.flags.widgets     = flag
+lpdf.flags.annotations = plus
 
 -- some day .. lpeg with function or table
 
@@ -359,6 +359,8 @@ local function fieldsurrounding(specification)
     -- move up with "x.y Ts"
     return tostring(stream)
 end
+
+codeinjections.fieldsurrounding = fieldsurrounding
 
 local function registerfonts()
     if next(usedfonts) then
@@ -905,7 +907,7 @@ local function finishfields()
     end
     if #collected > 0 then
         local acroform = pdfdictionary {
-            NeedAppearances = true,
+            NeedAppearances = pdfmajorversion() == 1 or nil,
             Fields          = pdfreference(pdfflushobject(collected)),
             CO              = fieldsetlist(calculationset),
         }
@@ -1294,77 +1296,17 @@ function methods.push(name,specification)
 end
 
 local function makeradioparent(field,specification)
---     specification = enhance(specification,"Radio,RadiosInUnison")
     specification = enhance(specification,"Radio,RadiosInUnison,Print,NoToggleToOff")
---     specification = enhance(specification,"Radio,Print,NoToggleToOff")
     local d = pdfdictionary {
         T  = field.name,
         FT = pdf_btn,
---         F  = fieldplus(specification),
+     -- F  = fieldplus(specification),
         Ff = fieldflag(specification),
---         H  = pdf_n,
+     -- H  = pdf_n,
         V  = fielddefault(field),
     }
     save_parent(field,specification,d,true)
 end
-
--- local function makeradiochild(name,specification)
---     local field, parent = clones[name], nil
---     if field then
---         field = radios[field.parent]
---         parent = fields[field.parent]
---         if not parent.pobj then
---             if trace_fields then
---                 report_fields("forcing parent radio %a",parent.name)
---             end
---             makeradioparent(parent,parent)
---         end
---     else
---         field = radios[name]
---         if not field then
---             report_fields("there is some problem with field %a",name)
---             return nil
---         end
---         parent = fields[field.parent]
---         if not parent.pobj then
---             if trace_fields then
---                 report_fields("using parent radio %a",name)
---             end
---             makeradioparent(parent,parent)
---         end
---     end
---     if trace_fields then
---         report_fields("using child radio %a with values %a and default %a",name,field.values,field.default)
---     end
---     local fontsymbol = specification.fontsymbol
--- fontsymbol="star"
---     local d = pdfdictionary {
---         Subtype = pdf_widget,
---         Parent  = pdfreference(parent.pobj),
---         F       = fieldplus(specification),
---         OC      = fieldlayer(specification),
---         AA      = fieldactions(specification),
---         H       = pdf_n,
---     }
---     if fontsymbol and fontsymbol ~= "" then
--- local appearance, default, value = fieldstates_radio(field,true,false,false,name) -- false is also ok
---         specification.fontsymbol = todingbat(fontsymbol)
---         specification.fontstyle = "symbol"
---         specification.fontalternative = "dingbats"
---         d.DA = fieldsurrounding(specification)
---         d.MK = fieldrendering(specification)
--- d.AS = pdfconstant(value) -- default -- mandate when AP but confuses viewers
--- d.AP = appearance
---         return save_kid(parent,specification,d,value)
---     --         return save_kid(parent,specification,d,name)
---     else
---     --         local appearance, default, value = fieldstates_radio(field,true) -- false is also ok
---         local appearance, default, value = fieldstates_radio(field,true,false,false,name) -- false is also ok
---         d.AS = default -- mandate when AP but confuses viewers
---         d.AP = appearance
---         return save_kid(parent,specification,d,value)
---     end
--- end
 
 local function makeradiochild(name,specification)
     local field, parent = clones[name], nil

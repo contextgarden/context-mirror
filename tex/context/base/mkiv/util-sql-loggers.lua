@@ -53,16 +53,15 @@ loggers.totype   = totype
 loggers.fromtype = fromtype
 
 local template = [[
-    CREATE TABLE IF NOT EXISTS %basename% (
-        `id`     int(11) NOT NULL AUTO_INCREMENT,
-        `time`   int(11) NOT NULL,
-        `type`   int(11) NOT NULL,
-        `action` varchar(15) NOT NULL,
-        `data`   longtext,
-        PRIMARY KEY (`id`),
-        UNIQUE KEY `id_unique_key` (`id`)
-    )
-    DEFAULT CHARSET = utf8 ;
+CREATE TABLE IF NOT EXISTS %basename% (
+    `id`     int(11) NOT NULL AUTO_INCREMENT,
+    `time`   int(11) NOT NULL,
+    `type`   int(11) NOT NULL,
+    `action` varchar(15) NOT NULL,
+    `data`   longtext,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `id_unique_key` (`id`)
+) DEFAULT CHARSET = utf8 ;
 ]]
 
 local sqlite_template = [[
@@ -78,6 +77,7 @@ local sqlite_template = [[
 function loggers.createdb(presets,datatable)
 
     local db = checkeddb(presets,datatable)
+
     db.execute {
         template  = db.usedmethod == "sqlite" and sqlite_template or template,
         variables = {

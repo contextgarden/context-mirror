@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['data-sch'] = {
     license   = "see context related readme files"
 }
 
-local load = load
+local load, tonumber = load, tonumber
 local gsub, concat, format = string.gsub, table.concat, string.format
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
 
@@ -15,6 +15,8 @@ local report_schemes = logs.reporter("resolvers","schemes")
 
 local http           = require("socket.http")
 local ltn12          = require("ltn12")
+
+if mbox then mbox = nil end -- useless and even bugged (helper overwrites lib)
 
 local resolvers      = resolvers
 local schemes        = resolvers.schemes or { }
@@ -70,7 +72,7 @@ local runner     = sandbox.registerrunner {
     name     = "curl resolver",
     method   = "execute",
     program  = "curl",
-    template = "--silent -- insecure --create-dirs --output %cachename% %original%",
+    template = "--silent --insecure --create-dirs --output %cachename% %original%",
     checkers = {
         cachename = "cache",
         original  = "url",
@@ -149,7 +151,7 @@ local function http_handler(specification,cachename)
     local tempname = cachename .. ".tmp"
     local f = io.open(tempname,"wb")
     local status, message = http.request {
-        url = specification.original,
+        url  = specification.original,
         sink = ltn12.sink.file(f)
     }
     if not status then

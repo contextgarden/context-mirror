@@ -8,9 +8,11 @@ if not modules then modules = { } end modules ['supp-box'] = {
 
 -- this is preliminary code, use insert_before etc
 
-local lpegmatch = lpeg.match
-
 local report_hyphenation = logs.reporter("languages","hyphenation")
+
+local tonumber, next, type = tonumber, next, type
+
+local lpegmatch       = lpeg.match
 
 local tex             = tex
 local context         = context
@@ -30,9 +32,10 @@ local nuts            = nodes.nuts
 local tonut           = nuts.tonut
 local tonode          = nuts.tonode
 
-local getfield        = nuts.getfield
+----- getfield        = nuts.getfield
 local getnext         = nuts.getnext
 local getprev         = nuts.getprev
+local getboth         = nuts.getboth
 local getdisc         = nuts.getdisc
 local getid           = nuts.getid
 local getlist         = nuts.getlist
@@ -42,7 +45,7 @@ local getdir          = nuts.getdir
 local getwidth        = nuts.getwidth
 local takebox         = nuts.takebox
 
-local setfield        = nuts.setfield
+----- setfield        = nuts.setfield
 local setlink         = nuts.setlink
 local setboth         = nuts.setboth
 local setnext         = nuts.setnext
@@ -78,9 +81,8 @@ local texsetdimen     = tex.setdimen
 local function hyphenatedlist(head,usecolor)
     local current = head and tonut(head)
     while current do
-        local id   = getid(current)
-        local next = getnext(current)
-        local prev = getprev(current)
+        local id = getid(current)
+        local prev, next = getboth(current)
         if id == disc_code then
             local pre, post, replace = getdisc(current)
             if not usecolor then
@@ -97,31 +99,14 @@ local function hyphenatedlist(head,usecolor)
                 flush_list(replace)
             end
             setdisc(current)
-            setboth(current)
---             local list = setlink (
---                 pre and new_penalty(10000),
---                 pre,
---                 current,
---                 post,
---                 post and new_penalty(10000)
---             )
---             local tail = find_tail(list)
---             if prev then
---                 setlink(prev,list)
---             end
---             if next then
---                 setlink(tail,next)
---             end
-            setlink (
-                prev, -- there had better be one
-                pre and new_penalty(10000),
-                pre,
-                current,
-                post,
-                post and new_penalty(10000),
-                next
-            )
-         -- flush_node(current)
+            if pre then
+                setlink(prev,new_penalty(10000),pre)
+                setlink(find_tail(pre),current)
+            end
+            if post then
+                setlink(current,new_penalty(10000),post)
+                setlink(find_tail(post),next)
+            end
         elseif id == vlist_code or id == hlist_code then
             hyphenatedlist(getlist(current))
         end
@@ -164,8 +149,10 @@ end
 implement {
     name      = "showhyphenatedinlist",
     arguments = "integer",
-    actions   = function(box)
-        report_hyphenation("show: %s",listtoutf(checkedlist(n),false,true))
+    actions   = function(n)
+        -- we just hyphenate (as we pass a hpack) .. a bit too much casting but ...
+        local l = languages.hyphenators.handler(tonode(checkedlist(n)))
+        report_hyphenation("show: %s",listtoutf(l,false,true))
     end
 }
 
@@ -350,6 +337,7 @@ implement {
         local result = new_hlist()
         setlist(result,head)
         setbox(target,result)
+     -- setbox(target,new_hlist(head))
     end
 }
 

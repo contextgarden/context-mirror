@@ -10,21 +10,22 @@ if not modules then modules = { } end modules ['buff-imp-tex'] = {
 
 local P, S, V, patterns = lpeg.P, lpeg.S, lpeg.V, lpeg.patterns
 
-local context            = context
-local verbatim           = context.verbatim
-local makepattern        = visualizers.makepattern
-local makenested         = visualizers.makenested
-local getvisualizer      = visualizers.getvisualizer
+local context               = context
+local verbatim              = context.verbatim
+local makepattern           = visualizers.makepattern
+local makenested            = visualizers.makenested
+local getvisualizer         = visualizers.getvisualizer
 
-local TexSnippet         = context.TexSnippet
-local startTexSnippet    = context.startTexSnippet
-local stopTexSnippet     = context.stopTexSnippet
+local TexSnippet            = context.TexSnippet
+local startTexSnippet       = context.startTexSnippet
+local stopTexSnippet        = context.stopTexSnippet
 
-local TexSnippetName     = verbatim.TexSnippetName
-local TexSnippetGroup    = verbatim.TexSnippetGroup
-local TexSnippetBoundary = verbatim.TexSnippetBoundary
-local TexSnippetSpecial  = verbatim.TexSnippetSpecial
-local TexSnippetComment  = verbatim.TexSnippetComment
+local TexSnippetName        = verbatim.TexSnippetName
+local TexSnippetGroup       = verbatim.TexSnippetGroup
+local TexSnippetBoundary    = verbatim.TexSnippetBoundary
+local TexSnippetSpecial     = verbatim.TexSnippetSpecial
+local TexSnippetComment     = verbatim.TexSnippetComment
+local TexSnippetCommentText = verbatim.TexSnippetCommentText
 
 local handler = visualizers.newhandler {
     startinline  = function() TexSnippet(false,"{") end,
@@ -36,19 +37,20 @@ local handler = visualizers.newhandler {
     boundary     = function(s) TexSnippetBoundary(s) end,
     special      = function(s) TexSnippetSpecial(s) end,
     comment      = function(s) TexSnippetComment(s) end,
+    commenttext  = function(s) TexSnippetCommentText(s) end,
 }
 
 -- todo: unicode letters in control sequences (slow as we need to test the nature)
 
 local comment  = S("%")
-local name     = P("\\") * (patterns.letter + S("@!?_"))^1
+local name     = P("\\") * (patterns.letter + S("@!?_") + patterns.utf8two + patterns.utf8three + patterns.utf8four)^1
 local escape   = P("\\") * (patterns.anything - patterns.newline)^-1 -- else we get \n
 local group    = S("${}")
 local boundary = S('[]()<>#="')
 local special  = S("/^_-&+'`|")
 
 local p_comment     = makepattern(handler,"comment",comment)
-                    * (V("space") + V("content"))^0
+                    * makepattern(handler,"commenttext",(patterns.anything - patterns.newline)^0)
 local p_name        = makepattern(handler,"name",name)
 local p_escape      = makepattern(handler,"name",escape)
 local p_group       = makepattern(handler,"group",group)

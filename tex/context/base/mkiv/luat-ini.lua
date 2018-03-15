@@ -16,10 +16,10 @@ userdata      = userdata      or { } -- for users (e.g. functions etc)
 thirddata     = thirddata     or { } -- only for third party modules
 moduledata    = moduledata    or { } -- only for development team
 documentdata  = documentdata  or { } -- for users (e.g. raw data)
-parametersets = parametersets or { } -- experimental for team
+parametersets = parametersets or { } -- for special purposes
 
-table.setmetatableindex(moduledata,table.autokey)
-table.setmetatableindex(thirddata, table.autokey)
+table.setmetatableindex(moduledata,"table")
+table.setmetatableindex(thirddata, "table")
 
 if not global then
     global  = _G
@@ -29,8 +29,12 @@ LUATEXVERSION = status.luatex_version/100
               + tonumber(status.luatex_revision)/1000
 
 LUATEXENGINE  = status.luatex_engine and string.lower(status.luatex_engine)
-             or (string.find(status.banner,"LuajitTeX") and "luajittex" or "luatex")
+             or (string.find(status.banner,"LuajitTeX",1,true) and "luajittex" or "luatex")
 
 JITSUPPORTED  = LUATEXENGINE == "luajittex" or jit
 
 INITEXMODE    = status.ini_version
+
+function os.setlocale()
+    -- no need for a message
+end

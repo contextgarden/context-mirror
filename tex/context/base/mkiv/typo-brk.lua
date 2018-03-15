@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['typo-brk'] = {
 -- this code dates from the beginning and is kind of experimental; it
 -- will be optimized and improved soon
 
-local next, type, tonumber = next, type, tonumber
+local next, type, tonumber, tostring = next, type, tonumber, tostring
 local utfbyte, utfchar = utf.byte, utf.char
 local format = string.format
 
@@ -31,14 +31,12 @@ local getboth            = nuts.getboth
 local getsubtype         = nuts.getsubtype
 local getfont            = nuts.getfont
 local getid              = nuts.getid
-local getfield           = nuts.getfield
 ----- getattr            = nuts.getattr
 local getattrlist        = nuts.getattrlist
 local takeattr           = nuts.takeattr
 local getlang            = nuts.getlang
 local isglyph            = nuts.isglyph
 
-local setfield           = nuts.setfield
 local setattr            = nuts.setattr
 local setattrlist        = nuts.setattrlist
 local setlink            = nuts.setlink

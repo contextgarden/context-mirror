@@ -10,6 +10,7 @@ if not modules then modules = { } end modules ['lpdf-fmt'] = {
 
 -- context --directives="backend.format=PDF/X-1a:2001" --trackers=backend.format yourfile
 
+local tonumber = tonumber
 local lower, gmatch, format, find = string.lower, string.gmatch, string.format, string.find
 local concat, serialize, sortedhash = table.concat, table.serialize, table.sortedhash
 
@@ -354,7 +355,7 @@ local formats = utilities.storage.allocate {
             pdf_version             = 1.7,
             format_name             = "pdf/a-2a",
             xmp_file                = "lpdf-pda.xml",
-            gts_flag                = "GTS_PDFA2",
+            gts_flag                = "GTS_PDFA1",
             gray_scale              = true,
             cmyk_colors             = true,
             rgb_colors              = true,
@@ -378,7 +379,7 @@ local formats = utilities.storage.allocate {
             pdf_version             = 1.7,
             format_name             = "pdf/a-3a",
             xmp_file                = "lpdf-pda.xml",
-            gts_flag                = "GTS_PDFA3",
+            gts_flag                = "GTS_PDFA1",
             gray_scale              = true,
             cmyk_colors             = true,
             rgb_colors              = true,
@@ -732,17 +733,15 @@ function codeinjections.setformat(s)
             if not level then
                 level = 3 -- good compromise, default anyway
             end
-            local pdf_version = spec.pdf_version * 10
-            local inject_metadata = spec.inject_metadata
-            local majorversion = math.div(pdf_version,10)
-            local minorversion = math.mod(pdf_version,10)
-            local objectcompression = spec.object_compression and pdf_version >= 15
-            local compresslevel = level or pdf.getcompresslevel() -- keep default
-            local objectcompresslevel = (objectcompression and (level or pdf.getobjcompresslevel())) or 0
-            pdf.setcompresslevel   (compresslevel)
-            pdf.setobjcompresslevel(objectcompresslevel)
-            pdf.setmajorversion    (majorversion)
-            pdf.setminorversion    (minorversion)
+            local pdf_version         = spec.pdf_version * 10
+            local inject_metadata     = spec.inject_metadata
+            local majorversion        = math.div(pdf_version,10)
+            local minorversion        = math.mod(pdf_version,10)
+            local objectcompression   = spec.object_compression and pdf_version >= 15
+            local compresslevel       = level or lpdf.compresslevel() -- keep default
+            local objectcompresslevel = (objectcompression and (level or lpdf.objectcompresslevel())) or 0
+            lpdf.setcompression(compresslevel,objectcompresslevel)
+            lpdf.setversion(majorversion,minorversion)
             if objectcompression then
                 report_backend("forcing pdf version %s.%s, compression level %s, object compression level %s",
                     majorversion,minorversion,compresslevel,objectcompresslevel)
@@ -753,9 +752,8 @@ function codeinjections.setformat(s)
                 report_backend("forcing pdf version %s.%s, compression disabled",
                     majorversion,minorversion)
             end
-            if pdf.setomitcidset then
-                pdf.setomitcidset(formatspecification.include_cidsets == false and 1 or 0)
-            end
+            --
+            pdf.setomitcidset(formatspecification.include_cidsets == false and 1 or 0)
             --
             -- context.setupcolors { -- not this way
             --     cmyk = spec.cmyk_colors and variables.yes or variables.no,
@@ -805,8 +803,7 @@ function codeinjections.setformat(s)
             report_backend("error, format %a is not supported",format)
         end
     elseif level then
-        pdf.setcompresslevel(level)
-        pdf.setobjcompresslevel(level)
+        lpdf.setcompression(level,level)
     else
         -- we ignore this as we hook it in \everysetupbackend
     end

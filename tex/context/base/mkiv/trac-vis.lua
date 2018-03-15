@@ -6,28 +6,22 @@ if not modules then modules = { } end modules ['trac-vis'] = {
     license   = "see context related readme files"
 }
 
-local string, number, table = string, number, table
 local node, nodes, attributes, fonts, tex = node, nodes, attributes, fonts, tex
-local type = type
+local type, tonumber, next = type, tonumber, next
 local gmatch = string.gmatch
 local formatters = string.formatters
+local compactfloat = number.compactfloat
 
--- This module started out in the early days of mkiv and luatex with
--- visualizing kerns related to fonts. In the process of cleaning up the
--- visual debugger code it made sense to integrate some other code that
--- I had laying around and replace the old supp-vis debugging code. As
--- only a subset of the old visual debugger makes sense it has become a
--- different implementation. Soms of the m-visual functionality will also
--- be ported. The code is rather trivial. The caching is not really needed
--- but saves upto 50% of the time needed to add visualization. Of course
--- the overall runtime is larger because of color and layer processing in
--- the backend (can be times as much) so the runtime is somewhat larger
--- with full visualization enabled. In practice this will never happen
--- unless one is demoing.
-
--- We could use pdf literals and re stream codes but it's not worth the
--- trouble because we would end up in color etc mess. Maybe one day I'll
--- make a nodeinjection variant.
+-- This module started out in the early days of mkiv and luatex with visualizing
+-- kerns related to fonts. In the process of cleaning up the visual debugger code it
+-- made sense to integrate some other code that I had laying around and replace the
+-- old supp-vis debugging code. As only a subset of the old visual debugger makes
+-- sense it has become a different implementation. Soms of the m-visual
+-- functionality will also be ported. The code is rather trivial. The caching is not
+-- really needed but saves upto 50% of the time needed to add visualization. Of
+-- course the overall runtime is larger because of color and layer processing in the
+-- backend (can be times as much) so the runtime is somewhat larger with full
+-- visualization enabled. In practice this will never happen unless one is demoing.
 
 -- todo: global switch (so no attributes)
 -- todo: maybe also xoffset, yoffset of glyph
@@ -37,38 +31,12 @@ local formatters = string.formatters
 -- todo: dir and localpar nodes
 
 local nodecodes           = nodes.nodecodes
-local disc_code           = nodecodes.disc
-local kern_code           = nodecodes.kern
-local glyph_code          = nodecodes.glyph
-local hlist_code          = nodecodes.hlist
-local vlist_code          = nodecodes.vlist
-local glue_code           = nodecodes.glue
-local penalty_code        = nodecodes.penalty
-local whatsit_code        = nodecodes.whatsit
-local user_code           = nodecodes.user
-local math_code           = nodecodes.math
-local gluespec_code       = nodecodes.gluespec
-
-local kerncodes           = nodes.kerncodes
-local font_kern_code      = kerncodes.fontkern
-local user_kern_code      = kerncodes.userkern
-
-local gluecodes           = nodes.gluecodes
-local cleaders_code       = gluecodes.cleaders
-local userskip_code       = gluecodes.userskip
-local space_code          = gluecodes.space
-local xspace_code         = gluecodes.xspace
-local leftskip_code       = gluecodes.leftskip
-local rightskip_code      = gluecodes.rightskip
-
-local whatsitcodes        = nodes.whatsitcodes
-local mathcodes           = nodes.mathcodes
 
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
 local tonode              = nuts.tonode
 
-local setfield            = nuts.setfield
+----- setfield            = nuts.setfield
 local setboth             = nuts.setboth
 local setlink             = nuts.setlink
 local setdisc             = nuts.setdisc
@@ -97,6 +65,7 @@ local getkern             = nuts.getkern
 local getpenalty          = nuts.getpenalty
 local getdir              = nuts.getdir
 local getwidth            = nuts.getwidth
+local getdepth            = nuts.getdepth
 local getshift            = nuts.getshift
 
 local hpack_nodes         = nuts.hpack
@@ -114,6 +83,8 @@ local hpack_string        = nuts.typesetters.tohpack
 
 local texgetattribute     = tex.getattribute
 local texsetattribute     = tex.setattribute
+
+local setmetatableindex   = table.setmetatableindex
 
 local unsetvalue          = attributes.unsetvalue
 
@@ -144,57 +115,61 @@ local starttiming         = statistics.starttiming
 local stoptiming          = statistics.stoptiming
 
 local a_visual            = attributes.private("visual")
-local a_fontkern          = attributes.private("fontkern")
 local a_layer             = attributes.private("viewerlayer")
 
-local hasbit              = number.hasbit
-local bit                 = number.bit
-local setbit              = number.setbit
-local clearbit            = number.clearbit
+local band  = bit32.band
+local bor   = bit32.bor
 
 local enableaction        = nodes.tasks.enableaction
 
-local trace_hbox
-local trace_vbox
-local trace_vtop
-local trace_kern
-local trace_glue
-local trace_penalty
-local trace_fontkern
-local trace_strut
-local trace_whatsit
-local trace_user
-local trace_math
-local trace_italic
-local trace_discretionary
+-- local trace_hbox
+-- local trace_vbox
+-- local trace_vtop
+-- local trace_kern
+-- local trace_glue
+-- local trace_penalty
+-- local trace_fontkern
+-- local trace_strut
+-- local trace_whatsit
+-- local trace_user
+-- local trace_math
+-- local trace_italic
+-- local trace_discretionary
+-- local trace_expansion
+-- local trace_line
+-- local trace_space
 
 local report_visualize = logs.reporter("visualize")
 
 local modes = {
-    hbox          =     1,
-    vbox          =     2,
-    vtop          =     4,
-    kern          =     8,
-    glue          =    16,
- -- skip          =    16,
-    penalty       =    32,
-    fontkern      =    64,
-    strut         =   128,
-    whatsit       =   256,
-    glyph         =   512,
-    simple        =  1024,
-    simplehbox    =  1024 + 1,
-    simplevbox    =  1024 + 2,
-    simplevtop    =  1024 + 4,
-    user          =  2048,
-    math          =  4096,
-    italic        =  8192,
-    origin        = 16384,
-    discretionary = 32768,
+    hbox          =      1,
+    vbox          =      2,
+    vtop          =      4,
+    kern          =      8,
+    glue          =     16,
+ -- skip          =     16,
+    penalty       =     32,
+    fontkern      =     64,
+    strut         =    128,
+    whatsit       =    256,
+    glyph         =    512,
+    simple        =   1024,
+    simplehbox    =   1024 + 1,
+    simplevbox    =   1024 + 2,
+    simplevtop    =   1024 + 4,
+    user          =   2048,
+    math          =   4096,
+    italic        =   8192,
+    origin        =  16384,
+    discretionary =  32768,
+    expansion     =  65536,
+    line          = 131072,
+    space         = 262144,
+    depth         = 524288,
 }
 
 local usedfont, exheight, emwidth
-local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_italic, l_origin, l_discretionary
+local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_italic, l_origin, l_discretionary, l_expansion, l_line, l_space, l_depth
 
 local enabled = false
 local layers  = { }
@@ -212,6 +187,8 @@ function visualizers.setfont(id)
 end
 
 -- we can preset a bunch of bits
+
+local userrule -- bah, not yet defined: todo, delayed(nuts.rules,"userrule")
 
 local function enable()
     if not usedfont then
@@ -244,10 +221,18 @@ local function enable()
     l_italic        = layers.italic
     l_origin        = layers.origin
     l_discretionary = layers.discretionary
+    l_expansion     = layers.expansion
+    l_line          = layers.line
+    l_space         = layers.space
+    l_depth         = layers.depth
     enableaction("shipouts","nodes.visualizers.handler")
     report_visualize("enabled")
     enabled = true
     tex.setcount("global","c_syst_visualizers_state",1) -- so that we can optimize at the tex end
+    --
+    if not userrule then
+       userrule = nuts.rules.userrule
+    end
 end
 
 local function setvisual(n,a,what,list) -- this will become more efficient when we have the bit lib linked in
@@ -257,13 +242,13 @@ local function setvisual(n,a,what,list) -- this will become more efficient when 
         if not a or a == 0 or a == unsetvalue then
             a = preset_makeup
         else
-            a = setbit(a,preset_makeup)
+            a = bor(a,preset_makeup)
         end
     elseif n == "boxes" then
         if not a or a == 0 or a == unsetvalue then
             a = preset_boxes
         else
-            a = setbit(a,preset_boxes)
+            a = bor(a,preset_boxes)
         end
     elseif n == "all" then
         if what == false then
@@ -271,7 +256,7 @@ local function setvisual(n,a,what,list) -- this will become more efficient when 
         elseif not a or a == 0 or a == unsetvalue then
             a = preset_all
         else
-            a = setbit(a,preset_all)
+            a = bor(a,preset_all)
         end
     else
         for s in gmatch(n,"[a-z]+") do
@@ -281,7 +266,7 @@ local function setvisual(n,a,what,list) -- this will become more efficient when 
             elseif not a or a == 0 or a == unsetvalue then
                 a = m
             else
-                a = setbit(a,m)
+                a = bor(a,m)
             end
         end
     end
@@ -297,18 +282,53 @@ function nuts.setvisual(n,mode)
     setattr(n,a_visual,setvisual(mode,getattr(n,a_visual),true))
 end
 
-function nuts.setvisuals(n,mode)
+function nuts.setvisuals(n,mode) -- currently the same
     setattr(n,a_visual,setvisual(mode,getattr(n,a_visual),true,true))
 end
 
-function nuts.applyvisuals(n,mode)
+-- fast setters
+
+do
+
+    local cached = setmetatableindex(function(t,k)
+        if k == true then
+            return texgetattribute(a_visual)
+        elseif not k then
+            t[k] = unsetvalue
+            return unsetvalue
+        else
+            local v = setvisual(k)
+            t[k] = v
+            return v
+        end
+    end)
+
+ -- local function applyvisuals(n,mode)
+ --     local a = cached[mode]
+ --     apply_to_nodes(n,function(n) setattr(n,a_visual,a) end)
+ -- end
+
     local a = unsetvalue
-    if mode == true then
-        a = texgetattribute (a_visual)
-    elseif mode then
-        a = setvisual(mode)
+
+    local f = function(n) setattr(n,a_visual,a) end
+
+    local function applyvisuals(n,mode)
+        a = cached[mode]
+        apply_to_nodes(n,f)
     end
-    apply_to_nodes(n,function(n) setattr(n,a_visual,a) end)
+
+    nuts.applyvisuals = applyvisuals
+
+    function nodes.applyvisuals(n,mode)
+        applyvisuals(tonut(n),mode)
+    end
+
+    function visualizers.attribute(mode)
+        return cached[mode]
+    end
+
+    visualizers.attributes = cached
+
 end
 
 function nuts.copyvisual(n,m)
@@ -348,6 +368,7 @@ local c_negative        = "trace:r"
 local c_zero            = "trace:g"
 local c_text            = "trace:s"
 local c_space           = "trace:y"
+local c_space_x         = "trace:m"
 local c_skip_a          = "trace:c"
 local c_skip_b          = "trace:m"
 local c_glyph           = "trace:o"
@@ -355,13 +376,16 @@ local c_ligature        = "trace:s"
 local c_white           = "trace:w"
 local c_math            = "trace:r"
 local c_origin          = "trace:o"
-local c_discretionary   = "trace:o"
+local c_discretionary   = "trace:d"
+local c_expansion       = "trace:o"
+local c_depth           = "trace:o"
 
 local c_positive_d      = "trace:db"
 local c_negative_d      = "trace:dr"
 local c_zero_d          = "trace:dg"
 local c_text_d          = "trace:ds"
 local c_space_d         = "trace:dy"
+local c_space_x_d       = "trace:dm"
 local c_skip_a_d        = "trace:dc"
 local c_skip_b_d        = "trace:dm"
 local c_glyph_d         = "trace:do"
@@ -369,7 +393,9 @@ local c_ligature_d      = "trace:ds"
 local c_white_d         = "trace:dw"
 local c_math_d          = "trace:dr"
 local c_origin_d        = "trace:do"
-local c_discretionary_d = "trace:do"
+local c_discretionary_d = "trace:dd"
+local c_expansion_d     = "trace:do"
+local c_depth_d         = "trace:do"
 
 local function sometext(str,layer,color,textcolor,lap) -- we can just paste verbatim together .. no typesteting needed
     local text = hpack_string(str,usedfont)
@@ -389,7 +415,7 @@ local function sometext(str,layer,color,textcolor,lap) -- we can just paste verb
     if lap then
         info = new_hlist(setlink(new_kern(-width),info))
     else
-        info = new_hlist(info)
+        info = new_hlist(info) -- a bit overkill: double wrapped
     end
     if layer then
         setattr(info,a_layer,layer)
@@ -397,21 +423,41 @@ local function sometext(str,layer,color,textcolor,lap) -- we can just paste verb
     return info, width
 end
 
-local caches = table.setmetatableindex("table")
+local function someblob(str,layer,color,textcolor,width)
+    local text = hpack_string(str,usedfont)
+    local size = getwidth(text)
+    local rule = new_rule(width,2*exheight,exheight/2)
+    local kern = new_kern(-width + (width-size)/2)
+    if color then
+        setcolor(rule,color)
+    end
+    if textcolor then
+        setlistcolor(getlist(text),textcolor)
+    end
+    local info = setlink(rule,kern,text)
+    setlisttransparency(info,c_zero)
+    info = hpack_nodes(info)
+    local width = getwidth(info)
+    info = new_hlist(info)
+    if layer then
+        setattr(info,a_layer,layer)
+    end
+    return info, width
+end
 
-local fontkern do
+local caches = setmetatableindex("table")
+
+local fontkern, italickern do
 
     local f_cache = caches["fontkern"]
+    local i_cache = caches["italickern"]
 
-    fontkern = function(head,current)
+    local function somekern(head,current,cache,color,layer)
         local width = getkern(current)
         local extra = getfield(current,"expansion_factor")
         local kern  = width + extra
-        local info  = f_cache[kern]
-     -- report_visualize("fontkern: %p ex %p",width,extra)
-        if info then
-            -- print("hit fontkern")
-        else
+        local info  = cache[kern]
+        if not info then
             local text = hpack_string(formatters[" %0.3f"](kern*pt_factor),usedfont)
             local rule = new_rule(emwidth/fraction,6*exheight,2*exheight)
             local list = getlist(text)
@@ -422,15 +468,91 @@ local fontkern do
             else
                 setlistcolor(list,c_zero_d)
             end
-            setlisttransparency(list,c_text_d)
-            setcolor(rule,c_text_d)
-            settransparency(rule,c_text_d)
+            setlisttransparency(list,color)
+            setcolor(rule,color)
+            settransparency(rule,color)
             setshift(text,-5 * exheight)
             info = new_hlist(setlink(rule,text))
-            setattr(info,a_layer,l_fontkern)
+            setattr(info,a_layer,layer)
             f_cache[kern] = info
         end
         head = insert_node_before(head,current,copy_list(info))
+        return head, current
+    end
+
+    fontkern = function(head,current)
+        return somekern(head,current,f_cache,c_text_d,l_fontkern)
+    end
+
+    italickern = function(head,current)
+        return somekern(head,current,i_cache,c_glyph_d,l_italic)
+    end
+
+end
+
+local glyphexpansion do
+
+    local f_cache = caches["glyphexpansion"]
+
+    glyphexpansion = function(head,current)
+        local extra = getfield(current,"expansion_factor")
+        if extra ~= 0 then
+            extra = extra / 1000
+            local info = f_cache[extra]
+            if not info then
+                local text = hpack_string(compactfloat(extra,"%.1f"),usedfont)
+                local rule = new_rule(emwidth/fraction,exheight,2*exheight)
+                local list = getlist(text)
+                if extra > 0 then
+                    setlistcolor(list,c_positive_d)
+                elseif extra < 0 then
+                    setlistcolor(list,c_negative_d)
+                end
+                setlisttransparency(list,c_text_d)
+                setcolor(rule,c_text_d)
+                settransparency(rule,c_text_d)
+                setshift(text,1.5 * exheight)
+                info = new_hlist(setlink(rule,text))
+                setattr(info,a_layer,l_expansion)
+                f_cache[extra] = info
+            end
+            head = insert_node_before(head,current,copy_list(info))
+            return head, current
+        end
+        return head, current
+    end
+
+end
+
+local kernexpansion do
+
+    local f_cache = caches["kernexpansion"]
+
+    kernexpansion = function(head,current)
+        local extra = getfield(current,"expansion_factor")
+        if extra ~= 0 then
+            extra = extra / 1000
+            local info = f_cache[extra]
+            if not info then
+                local text = hpack_string(compactfloat(extra,"%.1f"),usedfont)
+                local rule = new_rule(emwidth/fraction,exheight,4*exheight)
+                local list = getlist(text)
+                if extra > 0 then
+                    setlistcolor(list,c_positive_d)
+                elseif extra < 0 then
+                    setlistcolor(list,c_negative_d)
+                end
+                setlisttransparency(list,c_text_d)
+                setcolor(rule,c_text_d)
+                settransparency(rule,c_text_d)
+                setshift(text,3.5 * exheight)
+                info = new_hlist(setlink(rule,text))
+                setattr(info,a_layer,l_expansion)
+                f_cache[extra] = info
+            end
+            head = insert_node_before(head,current,copy_list(info))
+            return head, current
+        end
         return head, current
     end
 
@@ -438,9 +560,10 @@ end
 
 local whatsit do
 
-    local w_cache = caches["whatsit"]
+    local whatsitcodes = nodes.whatsitcodes
+    local w_cache      = caches["whatsit"]
 
-    local tags    = {
+    local tags         = {
         open             = "FIC",
         write            = "FIW",
         close            = "FIC",
@@ -506,12 +629,12 @@ end
 
 local math do
 
-    local m_cache = {
+    local mathcodes = nodes.mathcodes
+    local m_cache   = {
         beginmath = caches["bmath"],
         endmath   = caches["emath"],
     }
-
-    local tags    = {
+    local tags      = {
         beginmath = "B",
         endmath   = "E",
     }
@@ -543,12 +666,27 @@ local math do
 
 end
 
+local ruleddepth do
+
+    ruleddepth = function(current,wd,ht,dp)
+        local wd, ht, dp = getwhd(current)
+        if dp ~= 0 then
+            local rule = new_rule(wd,0,dp)
+            setcolor(rule,c_depth)
+            settransparency(rule,c_zero)
+            setattr(rule,a_layer,l_depth)
+            setlist(current,setlink(rule,new_kern(-wd),getlist(current)))
+        end
+    end
+
+end
+
 local ruledbox do
 
     local b_cache = caches["box"]
     local o_cache = caches["origin"]
 
-    table.setmetatableindex(o_cache,function(t,size)
+    setmetatableindex(o_cache,function(t,size)
         local rule   = new_rule(2*size,size,size)
         local origin = hpack_nodes(rule)
         setcolor(rule,c_origin_d)
@@ -572,30 +710,30 @@ local ruledbox do
             setboth(current)
             local linewidth = emwidth/fraction
             local size      = 2*linewidth
-            local baseline, baseskip
-            if dp ~= 0 and ht ~= 0 then
-                if wd > 20*linewidth then
-                    local targetsize = wd - size
-                    baseline = b_cache[targetsize]
-                    if not baseline then
-                        -- due to an optimized leader color/transparency we need to set the glue node in order
-                        -- to trigger this mechanism
-                        local leader = setlink(new_glue(size),new_rule(3*size,linewidth,0),new_glue(size))
-                        leader = hpack_nodes(leader)
-                        baseline = new_glue(0,65536,0,2,0)
-                        setleader(baseline,leader)
-                        setsubtype(baseline,cleaders_code)
-                        setlisttransparency(baseline,c_text)
-                        baseline = hpack_nodes(baseline,targetsize)
-                        b_cache[targetsize] = baseline
-                    end
-                    baseline = copy_list(baseline)
-                    baseskip = new_kern(-wd+linewidth)
-                else
-                    baseline = new_rule(wd-size,linewidth,0)
-                    baseskip = new_kern(-wd+size)
-                end
-            end
+         -- local baseline, baseskip
+         -- if dp ~= 0 and ht ~= 0 then
+         --     if wd > 20*linewidth then
+         --         local targetsize = wd - size
+         --         baseline = b_cache[targetsize]
+         --         if not baseline then
+         --             -- due to an optimized leader color/transparency we need to set the glue node in order
+         --             -- to trigger this mechanism
+         --             local leader = setlink(new_glue(size),new_rule(3*size,linewidth,0),new_glue(size))
+         --             leader = hpack_nodes(leader)
+         --             baseline = new_glue(0,65536,0,2,0)
+         --             setleader(baseline,leader)
+         --             setsubtype(baseline,cleaders_code)
+         --             setlisttransparency(baseline,c_text)
+         --             baseline = hpack_nodes(baseline,targetsize)
+         --             b_cache[targetsize] = baseline
+         --         end
+         --         baseline = copy_list(baseline)
+         --         baseskip = new_kern(-wd+linewidth)
+         --     else
+         --         baseline = new_rule(wd-size,linewidth,0)
+         --         baseskip = new_kern(-wd+size)
+         --     end
+         -- end
             local this
             if not simple then
                 this = b_cache[what]
@@ -608,16 +746,31 @@ local ruledbox do
                 end
             end
             -- we need to trigger the right mode (else sometimes no whatits)
+         -- local info = setlink(
+         --     this and copy_list(this) or nil,
+         --     new_rule(linewidth,ht,dp),
+         --     new_rule(wd-size,-dp+linewidth,dp),
+         --     new_rule(linewidth,ht,dp),
+         --     new_kern(-wd+linewidth),
+         --     new_rule(wd-size,ht,-ht+linewidth),
+         --     baseskip,
+         --     baseskip and baseline or nil
+         -- )
+            --
+            -- userrules:
+            --
             local info = setlink(
                 this and copy_list(this) or nil,
-                new_rule(linewidth,ht,dp),
-                new_rule(wd-size,-dp+linewidth,dp),
-                new_rule(linewidth,ht,dp),
-                new_kern(-wd+linewidth),
-                new_rule(wd-size,ht,-ht+linewidth),
-                baseskip,
-                baseskip and baseline or nil
+                userrule {
+                    width  = wd,
+                    height = ht,
+                    depth  = dp,
+                    line   = linewidth,
+                    type   = "box",
+                    dashed = 3*size,
+                }
             )
+            --
             setlisttransparency(info,c_text)
             info = new_hlist(info)
             --
@@ -665,13 +818,13 @@ local ruledbox do
             if next then
                 setlink(info,next)
             end
-            if prev then
-                if getid(prev) == gluespec_code then
-                    report_visualize("ignoring invalid prev")
-                    -- weird, how can this happen, an inline glue-spec, probably math
-                else
+            if prev and prev > 0 then
+             -- if getid(prev) == gluespec_code then
+             --     report_visualize("ignoring invalid prev")
+             --     -- weird, how can this happen, an inline glue-spec, probably math
+             -- else
                     setlink(prev,info)
-                end
+             -- end
             end
             if head == current then
                 return info, info
@@ -687,6 +840,10 @@ end
 
 local ruledglyph do
 
+    -- see boundingbox feature .. maybe a pdf stream is more efficient, after all we
+    -- have a frozen color anyway or i need a more detailed cache .. below is a more
+    -- texie approach
+
     ruledglyph = function(head,current,previous) -- wrong for vertical glyphs
         local wd = getwidth(current)
      -- local wd = chardata[getfont(current)][getchar(current)].width
@@ -700,22 +857,54 @@ local ruledglyph do
             local prev = previous
             setboth(current)
             local linewidth = emwidth/(2*fraction)
-            local baseline
-         -- if dp ~= 0 and ht ~= 0 then
-            if (dp >= 0 and ht >= 0) or (dp <= 0 and ht <= 0) then
-                baseline = new_rule(wd-2*linewidth,linewidth,0)
-            end
-            local doublelinewidth = 2*linewidth
-            -- could be a pdf rule (or a user rule now)
-            local info = setlink(
-                new_rule(linewidth,ht,dp),
-                new_rule(wd-doublelinewidth,-dp+linewidth,dp),
-                new_rule(linewidth,ht,dp),
-                new_kern(-wd+linewidth),
-                new_rule(wd-doublelinewidth,ht,-ht+linewidth),
-                new_kern(-wd+doublelinewidth),
-                baseline
+            local info
+            --
+            -- original
+            --
+         -- local baseline
+         -- if (dp >= 0 and ht >= 0) or (dp <= 0 and ht <= 0) then
+         --     baseline = new_rule(wd-2*linewidth,linewidth,0)
+         -- end
+         -- local doublelinewidth = 2*linewidth
+         -- -- could be a pdf rule (or a user rule now)
+         -- info = setlink(
+         --     new_rule(linewidth,ht,dp),
+         --     new_rule(wd-doublelinewidth,-dp+linewidth,dp),
+         --     new_rule(linewidth,ht,dp),
+         --     new_kern(-wd+linewidth),
+         --     new_rule(wd-doublelinewidth,ht,-ht+linewidth),
+         --     new_kern(-wd+doublelinewidth),
+         --     baseline
+         -- )
+            --
+            -- experiment with subtype outline
+            --
+         -- if (dp >= 0 and ht >= 0) or (dp <= 0 and ht <= 0) then
+         --     baseline = new_rule(wd,linewidth/2,0)
+         -- end
+         -- local r = new_rule(wd-linewidth,ht-linewidth/4,dp-linewidth/4)
+         -- setsubtype(r,nodes.rulecodes.outline)
+         -- setfield(r,"transform",linewidth)
+         -- info = setlink(
+         --     new_kern(linewidth/4),
+         --     r,
+         --     new_kern(-wd+linewidth/2),
+         --     baseline
+         -- )
+            --
+            -- userrules:
+            --
+            info = setlink(
+                userrule {
+                    width  = wd,
+                    height = ht,
+                    depth  = dp,
+                    line   = linewidth,
+                    type   = "box",
+                },
+                new_kern(-wd)
             )
+            --
             local char = chardata[getfont(current)][getchar(current)]
             if char and type(char.unicode) == "table" then -- hackery test
                 setlistcolor(info,c_ligature)
@@ -745,37 +934,49 @@ local ruledglyph do
         end
     end
 
+    function visualizers.setruledglyph(f)
+        ruledglyph = f or ruledglyph
+    end
+
 end
 
 local ruledglue do
+
+    local gluecodes      = nodes.gluecodes
+    local cleaders_code  = gluecodes.cleaders
+    local userskip_code  = gluecodes.userskip
+    local space_code     = gluecodes.spaceskip
+    local xspace_code    = gluecodes.xspaceskip
+    local leftskip_code  = gluecodes.leftskip
+    local rightskip_code = gluecodes.rightskip
 
     local g_cache_v = caches["vglue"]
     local g_cache_h = caches["hglue"]
 
     local tags = {
      -- userskip              = "US",
-        lineskip              = "LS",
-        baselineskip          = "BS",
-        parskip               = "PS",
-        abovedisplayskip      = "DA",
-        belowdisplayskip      = "DB",
-        abovedisplayshortskip = "SA",
-        belowdisplayshortskip = "SB",
-        leftskip              = "LS",
-        rightskip             = "RS",
-        topskip               = "TS",
-        splittopskip          = "ST",
-        tabskip               = "AS",
-        spaceskip             = "SS",
-        xspaceskip            = "XS",
-        parfillskip           = "PF",
-        thinmuskip            = "MS",
-        medmuskip             = "MM",
-        thickmuskip           = "ML",
-        leaders               = "NL",
-        cleaders              = "CL",
-        xleaders              = "XL",
-        gleaders              = "GL",
+        [gluecodes.lineskip]              = "LS",
+        [gluecodes.baselineskip]          = "BS",
+        [gluecodes.parskip]               = "PS",
+        [gluecodes.abovedisplayskip]      = "DA",
+        [gluecodes.belowdisplayskip]      = "DB",
+        [gluecodes.abovedisplayshortskip] = "SA",
+        [gluecodes.belowdisplayshortskip] = "SB",
+        [gluecodes.leftskip]              = "LS",
+        [gluecodes.rightskip]             = "RS",
+        [gluecodes.topskip]               = "TS",
+        [gluecodes.splittopskip]          = "ST",
+        [gluecodes.tabskip]               = "AS",
+        [gluecodes.spaceskip]             = "SP",
+        [gluecodes.xspaceskip]            = "XS",
+        [gluecodes.parfillskip]           = "PF",
+        [gluecodes.thinmuskip]            = "MS",
+        [gluecodes.medmuskip]             = "MM",
+        [gluecodes.thickmuskip]           = "ML",
+        [gluecodes.leaders]               = "NL",
+        [gluecodes.cleaders]              = "CL",
+        [gluecodes.xleaders]              = "XL",
+        [gluecodes.gleaders]              = "GL",
      -- true                  = "VS",
      -- false                 = "HS",
     }
@@ -790,7 +991,7 @@ local ruledglue do
         if info then
             -- print("glue hit")
         else
-            if subtype == space_code or subtype == xspace_code then -- not yet all space
+            if subtype == space_code or subtype == xspace_code then
                 info = sometext(amount,l_glue,c_space)
             elseif subtype == leftskip_code or subtype == rightskip_code then
                 info = sometext(amount,l_glue,c_skip_a)
@@ -815,6 +1016,55 @@ local ruledglue do
         return head, getnext(current)
     end
 
+ -- ruledspace = function(head,current,parent)
+ --     local subtype = getsubtype(current)
+ --     if subtype == space_code or subtype == xspace_code then
+ --         local width  = effectiveglue(current,parent)
+ --         local amount = formatters["%s:%0.3f"](tags[subtype] or "HS",width*pt_factor)
+ --         local info   = g_cache_h[amount]
+ --         if info then
+ --             -- print("space hit")
+ --         else
+ --             info = sometext(amount,l_glue,c_space)
+ --             g_cache_h[amount] = info
+ --         end
+ --         info = copy_list(info)
+ --         head, current = insert_node_before(head,current,info)
+ --         return head, getnext(current)
+ --     else
+ --         return head, current
+ --     end
+ -- end
+
+    local g_cache_s = caches["space"]
+    local g_cache_x = caches["xspace"]
+
+    ruledspace = function(head,current,parent)
+        local subtype = getsubtype(current)
+        if subtype == space_code or subtype == xspace_code then -- not yet all space
+            local width = effectiveglue(current,parent)
+            local info
+            if subtype == space_code then
+                info = g_cache_s[width]
+                if not info then
+                    info = someblob("SP",l_glue,c_space,nil,width)
+                    g_cache_s[width] = info
+                end
+            else
+                info = g_cache_x[width]
+                if not info then
+                    info = someblob("XS",l_glue,c_space_x,nil,width)
+                    g_cache_x[width] = info
+                end
+            end
+            info = copy_list(info)
+            head, current = insert_node_before(head,current,info)
+            return head, getnext(current)
+        else
+            return head, current
+        end
+    end
+
 end
 
 local ruledkern do
@@ -823,11 +1073,10 @@ local ruledkern do
     local k_cache_h = caches["hkern"]
 
     ruledkern = function(head,current,vertical)
-        local kern = getkern(current)
-        local info = (vertical and k_cache_v or k_cache_h)[kern]
-        if info then
-            -- print("kern hit")
-        else
+        local kern  = getkern(current)
+        local cache = vertical and k_cache_v or k_cache_h
+        local info  = cache[kern]
+        if not info then
             local amount = formatters["%s:%0.3f"](vertical and "VK" or "HK",kern*pt_factor)
             if kern > 0 then
                 info = sometext(amount,l_kern,c_positive)
@@ -836,7 +1085,7 @@ local ruledkern do
             else
                 info = sometext(amount,l_kern,c_zero)
             end
-            (vertical and k_cache_v or k_cache_h)[kern] = info
+            cache[kern] = info
         end
         info = copy_list(info)
         if vertical then
@@ -850,14 +1099,12 @@ end
 
 local ruleditalic do
 
-    local i_cache = caches["itatalic"]
+    local i_cache = caches["italic"]
 
     ruleditalic = function(head,current)
         local kern = getkern(current)
         local info = i_cache[kern]
-        if info then
-            -- print("kern hit")
-        else
+        if not info then
             local amount = formatters["%s:%0.3f"]("IC",kern*pt_factor)
             if kern > 0 then
                 info = sometext(amount,l_kern,c_positive)
@@ -930,152 +1177,204 @@ local ruledpenalty do
 
 end
 
-local function visualize(head,vertical,forced,parent)
-    local trace_hbox     = false
-    local trace_vbox     = false
-    local trace_vtop     = false
-    local trace_kern     = false
-    local trace_glue     = false
-    local trace_penalty  = false
-    local trace_fontkern = false
-    local trace_strut    = false
-    local trace_whatsit  = false
-    local trace_glyph    = false
-    local trace_simple   = false
-    local trace_user     = false
-    local trace_math     = false
-    local trace_italic   = false
-    local trace_origin   = false
-    local current        = head
-    local previous       = nil
-    local attr           = unsetvalue
-    local prev_trace_fontkern = nil
-    while current do
-        local id = getid(current)
-        local a = forced or getattr(current,a_visual) or unsetvalue
-        if a ~= attr then
-            prev_trace_fontkern = trace_fontkern
-            if a == unsetvalue then
-                trace_hbox          = false
-                trace_vbox          = false
-                trace_vtop          = false
-                trace_kern          = false
-                trace_glue          = false
-                trace_penalty       = false
-                trace_fontkern      = false
-                trace_strut         = false
-                trace_whatsit       = false
-                trace_glyph         = false
-                trace_simple        = false
-                trace_user          = false
-                trace_math          = false
-                trace_italic        = false
-                trace_origin        = false
-                trace_discretionary = false
-            else -- dead slow:
-                trace_hbox          = hasbit(a,    1)
-                trace_vbox          = hasbit(a,    2)
-                trace_vtop          = hasbit(a,    4)
-                trace_kern          = hasbit(a,    8)
-                trace_glue          = hasbit(a,   16)
-                trace_penalty       = hasbit(a,   32)
-                trace_fontkern      = hasbit(a,   64)
-                trace_strut         = hasbit(a,  128)
-                trace_whatsit       = hasbit(a,  256)
-                trace_glyph         = hasbit(a,  512)
-                trace_simple        = hasbit(a, 1024)
-                trace_user          = hasbit(a, 2048)
-                trace_math          = hasbit(a, 4096)
-                trace_italic        = hasbit(a, 8192)
-                trace_origin        = hasbit(a,16384)
-                trace_discretionary = hasbit(a,32768)
-            end
-            attr = a
-        end
-        if trace_strut then
-            setattr(current,a_layer,l_strut)
-        elseif id == glyph_code then
-            if trace_glyph then
-                head, current = ruledglyph(head,current,previous)
-            end
-        elseif id == disc_code then
-            if trace_discretionary then
-                head, current = ruleddiscretionary(head,current)
-            end
-            local pre, post, replace = getdisc(current)
-            if pre then
-                pre = visualize(pre,false,a,parent)
-            end
-            if post then
-                post = visualize(post,false,a,parent)
-            end
-            if replace then
-                replace = visualize(replace,false,a,parent)
-            end
-            setdisc(current,pre,post,replace)
-        elseif id == kern_code then
-            local subtype = getsubtype(current)
-            -- tricky ... we don't copy the trace attribute in node-inj (yet)
-            if subtype == font_kern_code or getattr(current,a_fontkern) then
-                if trace_fontkern or prev_trace_fontkern then
-                    head, current = fontkern(head,current)
-                end
-            else -- if subtype == user_kern_code then
-                if trace_italic then
-                    head, current = ruleditalic(head,current)
-                elseif trace_kern then
-                    head, current = ruledkern(head,current,vertical)
-                end
-            end
-        elseif id == glue_code then
-            local content = getleader(current)
-            if content then
-                setleader(current,visualize(content,false,nil,parent))
-            elseif trace_glue then
-                head, current = ruledglue(head,current,vertical,parent)
-            end
-        elseif id == penalty_code then
-            if trace_penalty then
-                head, current = ruledpenalty(head,current,vertical)
-            end
-        elseif id == hlist_code then
-            local content = getlist(current)
-            if content then
-                setlist(current,visualize(content,false,nil,current))
-            end
-            if trace_hbox then
-                head, current = ruledbox(head,current,false,l_hbox,"H__",trace_simple,previous,trace_origin,parent)
-            end
-        elseif id == vlist_code then
-            local content = getlist(current)
-            if content then
-                setlist(current,visualize(content,true,nil,current))
-            end
-            if trace_vtop then
-                head, current = ruledbox(head,current,true,l_vtop,"_T_",trace_simple,previous,trace_origin,parent)
-            elseif trace_vbox then
-                head, current = ruledbox(head,current,true,l_vbox,"__V",trace_simple,previous,trace_origin,parent)
-            end
-        elseif id == whatsit_code then
-            if trace_whatsit then
-                head, current = whatsit(head,current)
-            end
-        elseif id == user_code then
-            if trace_user then
-                head, current = user(head,current)
-            end
-        elseif id == math_code then
-            if trace_math then
-                head, current = math(head,current)
-            end
-        end
-        previous = current
-        current  = getnext(current)
-    end
-    return head
-end
-
 do
+
+    local disc_code           = nodecodes.disc
+    local kern_code           = nodecodes.kern
+    local glyph_code          = nodecodes.glyph
+    local glue_code           = nodecodes.glue
+    local penalty_code        = nodecodes.penalty
+    local whatsit_code        = nodecodes.whatsit
+    local user_code           = nodecodes.user
+    local math_code           = nodecodes.math
+    local hlist_code          = nodecodes.hlist
+    local vlist_code          = nodecodes.vlist
+
+    local kerncodes           = nodes.kerncodes
+    local font_kern_code      = kerncodes.fontkern
+    local italic_kern_code    = kerncodes.italiccorrection
+    ----- user_kern_code      = kerncodes.userkern
+
+    local listcodes           = nodes.listcodes
+    local line_code           = listcodes.line
+
+    local function visualize(head,vertical,forced,parent)
+        local trace_hbox           = false
+        local trace_vbox           = false
+        local trace_vtop           = false
+        local trace_kern           = false
+        local trace_glue           = false
+        local trace_penalty        = false
+        local trace_fontkern       = false
+        local trace_strut          = false
+        local trace_whatsit        = false
+        local trace_glyph          = false
+        local trace_simple         = false
+        local trace_user           = false
+        local trace_math           = false
+        local trace_italic         = false
+        local trace_origin         = false
+        local trace_discretionary  = false
+        local trace_expansion      = false
+        local trace_line           = false
+        local trace_space          = false
+        local trace_depth          = false
+        local current              = head
+        local previous             = nil
+        local attr                 = unsetvalue
+        local prev_trace_fontkern  = nil
+        local prev_trace_italic    = nil
+        local prev_trace_expansion = nil
+        while current do
+            local id = getid(current)
+            local a = forced or getattr(current,a_visual) or unsetvalue
+            if a ~= attr then
+                prev_trace_fontkern  = trace_fontkern
+                prev_trace_italic    = trace_italic
+                prev_trace_expansion = trace_expansion
+                if a == unsetvalue then
+                    trace_hbox          = false
+                    trace_vbox          = false
+                    trace_vtop          = false
+                    trace_kern          = false
+                    trace_glue          = false
+                    trace_penalty       = false
+                    trace_fontkern      = false
+                    trace_strut         = false
+                    trace_whatsit       = false
+                    trace_glyph         = false
+                    trace_simple        = false
+                    trace_user          = false
+                    trace_math          = false
+                    trace_italic        = false
+                    trace_origin        = false
+                    trace_discretionary = false
+                    trace_expansion     = false
+                    trace_line          = false
+                    trace_space         = false
+                    trace_depth         = false
+                else -- dead slow:
+                    trace_hbox          = band(a,     1) ~= 0
+                    trace_vbox          = band(a,     2) ~= 0
+                    trace_vtop          = band(a,     4) ~= 0
+                    trace_kern          = band(a,     8) ~= 0
+                    trace_glue          = band(a,    16) ~= 0
+                    trace_penalty       = band(a,    32) ~= 0
+                    trace_fontkern      = band(a,    64) ~= 0
+                    trace_strut         = band(a,   128) ~= 0
+                    trace_whatsit       = band(a,   256) ~= 0
+                    trace_glyph         = band(a,   512) ~= 0
+                    trace_simple        = band(a,  1024) ~= 0
+                    trace_user          = band(a,  2048) ~= 0
+                    trace_math          = band(a,  4096) ~= 0
+                    trace_italic        = band(a,  8192) ~= 0
+                    trace_origin        = band(a, 16384) ~= 0
+                    trace_discretionary = band(a, 32768) ~= 0
+                    trace_expansion     = band(a, 65536) ~= 0
+                    trace_line          = band(a,131072) ~= 0
+                    trace_space         = band(a,262144) ~= 0
+                    trace_depth         = band(a,524288) ~= 0
+                end
+                attr = a
+            end
+            if trace_strut then
+                setattr(current,a_layer,l_strut)
+            elseif id == glyph_code then
+                if trace_glyph then
+                    head, current = ruledglyph(head,current,previous)
+                end
+                if trace_expansion then
+                    head, current = glyphexpansion(head,current)
+                end
+            elseif id == disc_code then
+                if trace_discretionary then
+                    head, current = ruleddiscretionary(head,current)
+                end
+                local pre, post, replace = getdisc(current)
+                if pre then
+                    pre = visualize(pre,false,a,parent)
+                end
+                if post then
+                    post = visualize(post,false,a,parent)
+                end
+                if replace then
+                    replace = visualize(replace,false,a,parent)
+                end
+                setdisc(current,pre,post,replace)
+            elseif id == kern_code then
+                local subtype = getsubtype(current)
+                if subtype == font_kern_code then
+                    if trace_fontkern or prev_trace_fontkern then
+                        head, current = fontkern(head,current)
+                    end
+                    if trace_expansion or prev_trace_expansion then
+                        head, current = kernexpansion(head,current)
+                    end
+                elseif subtype == italic_kern_code then
+                    if trace_italic or prev_trace_italic then
+                        head, current = italickern(head,current)
+                    elseif trace_kern then
+                        head, current = ruleditalic(head,current)
+                    end
+                else
+                    if trace_kern then
+                        head, current = ruledkern(head,current,vertical)
+                    end
+                end
+            elseif id == glue_code then
+                local content = getleader(current)
+                if content then
+                    setleader(current,visualize(content,false,nil,parent))
+                elseif trace_glue then
+                    head, current = ruledglue(head,current,vertical,parent)
+                elseif trace_space then
+                    head, current = ruledspace(head,current,parent)
+                end
+            elseif id == penalty_code then
+                if trace_penalty then
+                    head, current = ruledpenalty(head,current,vertical)
+                end
+            elseif id == hlist_code then
+                local content = getlist(current)
+                if content then
+                    setlist(current,visualize(content,false,nil,current))
+                end
+                if trace_depth then
+                    ruleddepth(current)
+                end
+                if trace_line and getsubtype(current) == line_code then
+                    head, current = ruledbox(head,current,false,l_line,"L__",trace_simple,previous,trace_origin,parent)
+                elseif trace_hbox then
+                    head, current = ruledbox(head,current,false,l_hbox,"H__",trace_simple,previous,trace_origin,parent)
+                end
+            elseif id == vlist_code then
+                local content = getlist(current)
+                if content then
+                    setlist(current,visualize(content,true,nil,current))
+                end
+                if trace_vtop then
+                    head, current = ruledbox(head,current,true,l_vtop,"_T_",trace_simple,previous,trace_origin,parent)
+                elseif trace_vbox then
+                    head, current = ruledbox(head,current,true,l_vbox,"__V",trace_simple,previous,trace_origin,parent)
+                end
+            elseif id == whatsit_code then
+                if trace_whatsit then
+                    head, current = whatsit(head,current)
+                end
+            elseif id == user_code then
+                if trace_user then
+                    head, current = user(head,current)
+                end
+            elseif id == math_code then
+                if trace_math then
+                    head, current = math(head,current)
+                end
+            end
+            previous = current
+            current  = getnext(current)
+        end
+        return head
+    end
 
     local function cleanup()
         for tag, cache in next, caches do
@@ -1103,28 +1402,31 @@ do
 
     luatex.registerstopactions(cleanup)
 
-end
-
-function visualizers.box(n)
-    if usedfont then
-        starttiming(visualizers)
-        local box = getbox(n)
-        if box then
-            setlist(box,visualize(getlist(box),getid(box) == vlist_code))
+    function visualizers.box(n)
+        if usedfont then
+            starttiming(visualizers)
+            local box = getbox(n)
+            if box then
+                setlist(box,visualize(getlist(box),getid(box) == vlist_code))
+            end
+            stoptiming(visualizers)
+            return head, true
+        else
+            return head, false
         end
-        stoptiming(visualizers)
-        return head, true
-    else
-        return head, false
     end
+
 end
 
 do
 
-    local last = nil
-    local used = nil
+    local hlist_code = nodecodes.hlist
+    local vlist_code = nodecodes.vlist
 
-    local mark = {
+    local last       = nil
+    local used       = nil
+
+    local mark       = {
         "trace:1", "trace:2", "trace:3",
         "trace:4", "trace:5", "trace:6",
         "trace:7",
@@ -1164,40 +1466,44 @@ end)
 
 -- interface
 
-local implement = interfaces.implement
+do
 
-implement {
-    name      = "setvisual",
-    arguments = "string",
-    actions   = visualizers.setvisual
-}
-
-implement {
-    name      = "setvisuals",
-    arguments = "string",
-    actions   = visualizers.setvisual
-}
-
-implement {
-    name      = "getvisual",
-    arguments = "string",
-    actions   = { setvisual, context }
-}
+    local implement = interfaces.implement
 
     implement {
-    name      = "setvisuallayer",
-    arguments = "string",
-    actions   = visualizers.setlayer
-}
+        name      = "setvisual",
+        arguments = "string",
+        actions   = visualizers.setvisual
+    }
 
-implement {
-    name      = "markvisualfonts",
-    arguments = "integer",
-    actions   = visualizers.markfonts
-}
+    implement {
+        name      = "setvisuals",
+        arguments = "string",
+        actions   = visualizers.setvisual
+    }
 
-implement {
-    name      = "setvisualfont",
-    arguments = "integer",
-    actions   = visualizers.setfont
-}
+    implement {
+        name      = "getvisual",
+        arguments = "string",
+        actions   = { setvisual, context }
+    }
+
+        implement {
+        name      = "setvisuallayer",
+        arguments = "string",
+        actions   = visualizers.setlayer
+    }
+
+    implement {
+        name      = "markvisualfonts",
+        arguments = "integer",
+        actions   = visualizers.markfonts
+    }
+
+    implement {
+        name      = "setvisualfont",
+        arguments = "integer",
+        actions   = visualizers.setfont
+    }
+
+end

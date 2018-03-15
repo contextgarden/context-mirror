@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['typo-cap'] = {
     license   = "see context related readme files"
     }
 
-local next, type = next, type
+local next, type, tonumber = next, type, tonumber
 local format, insert = string.format, table.insert
 local div, getrandom = math.div, utilities.randomizer.get
 
@@ -21,7 +21,6 @@ local nuts            = nodes.nuts
 local tonode          = nuts.tonode
 local tonut           = nuts.tonut
 
-local getfield        = nuts.getfield
 local getnext         = nuts.getnext
 local getprev         = nuts.getprev
 local getid           = nuts.getid
@@ -32,7 +31,6 @@ local getsubtype      = nuts.getsubtype
 local getchar         = nuts.getchar
 local getdisc         = nuts.getdisc
 
-local setfield        = nuts.setfield
 local setattr         = nuts.setattr
 local setchar         = nuts.setchar
 local setfont         = nuts.setfont
@@ -52,7 +50,7 @@ local kern_code       = nodecodes.kern
 local disc_code       = nodecodes.disc
 local math_code       = nodecodes.math
 
-local kerning_code    = kerncodes.kerning
+local fontkern_code   = kerncodes.fontkern
 
 local enableaction    = nodes.tasks.enableaction
 
@@ -80,11 +78,10 @@ local a_cases         = attributes.private("case")
 
 local extract         = bit32.extract
 local run             = 0 -- a trick to make neighbouring ranges work
-
 local blocked         = { }
 
 local function set(tag,font)
-    if run == 2^6 then
+    if run == 0x40 then -- 2^6
         run = 1
     else
         run = run + 1
@@ -95,12 +92,18 @@ local function set(tag,font)
 end
 
 local function get(a)
-    local font = extract(a,16,12) -- 4000
-    local tag  = extract(a, 8, 8) --  250
-    local run  = extract(a, 0, 8) --   50
-    return tag, font, run
+    return
+        extract(a, 8, 8), -- tag
+        extract(a,16,12), -- font
+        extract(a, 0, 8)  -- run
 end
 
+-- local function get(a)
+--     return
+--         (a >>  8) & ~(-1 <<  8), -- & 0x0FF -- tag
+--         (a >> 16) & ~(-1 << 12), -- & 0xFFF -- font
+--         (a >>  0) & ~(-1 <<  8)  -- & 0x0FF -- run
+-- end
 
 -- print(get(set(  1,   0)))
 -- print(get(set(  1,  99)))
@@ -427,7 +430,7 @@ function cases.handler(head) -- not real fast but also not used on much data
         elseif id == math_code then
             start = end_of_math(start)
             count = 0
-        elseif prev_id == kern_code and getsubtype(prev) == kerning_code then
+        elseif prev_id == kern_code and getsubtype(prev) == fontkern_code then
             -- still inside a word ...normally kerns are added later
         else
             count = 0
@@ -535,7 +538,7 @@ end
 --             elseif id == math_code then
 --                 start = end_of_math(start)
 --                 count = 0
---             elseif prev_id == kern_code and getsubtype(prev) == kerning_code then
+--             elseif prev_id == kern_code and getsubtype(prev) == fontkern_code then
 --                 -- still inside a word ...normally kerns are added later
 --             else
 --                 count = 0

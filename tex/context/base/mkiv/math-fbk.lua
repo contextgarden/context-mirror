@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['math-fbk'] = {
     license   = "see context related readme files"
 }
 
+local next, type = next, type
+
 local trace_fallbacks   = false  trackers.register("math.fallbacks", function(v) trace_fallbacks = v end)
 
 local report_fallbacks  = logs.reporter("math","fallbacks")
@@ -13,6 +15,7 @@ local report_fallbacks  = logs.reporter("math","fallbacks")
 local formatters        = string.formatters
 local fastcopy          = table.fastcopy
 local byte              = string.byte
+local sortedhash        = table.sortedhash
 
 local fallbacks         = { }
 mathematics.fallbacks   = fallbacks
@@ -26,120 +29,114 @@ local lastmathids       = fonts.hashes.lastmathids
 -- that order we could use their id's .. i.e. we could always add a font
 -- table with those id's .. in fact, we could also add a whole lot more
 -- as it doesn't hurt
---
--- todo: use index 'true when luatex provides that feature (on the agenda)
 
--- to be considered:
---
--- in luatex provide reserve_id (and pass id as field of tfmdata)
--- in context define three sizes but pass them later i.e. do virtualize afterwards
+local scripscriptdelayed = { } -- 1.005 : add characters later
+local scriptdelayed      = { } -- 1.005 : add characters later
 
 function fallbacks.apply(target,original)
-    local mathparameters = target.mathparameters -- why not hasmath
-    if mathparameters then
-        local characters = target.characters
-        local parameters = target.parameters
-        local mathsize   = parameters.mathsize
-        local size       = parameters.size
-        local usedfonts  = target.fonts
-        if not usedfonts then
-            usedfonts    = {  }
-            target.fonts = usedfonts
-        end
-        -- This is not okay yet ... we have no proper way to refer to 'self'
-        -- otherwise I will make my own id allocator).
-        local self = #usedfonts == 0 and font.nextid() or nil -- will be true
-        local textid, scriptid, scriptscriptid
-        local textindex, scriptindex, scriptscriptindex
-        local textdata, scriptdata, scriptscriptdata
-        if mathsize == 3 then
-            -- scriptscriptsize
-         -- textid         = nil -- self
-         -- scriptid       = nil -- no smaller
-         -- scriptscriptid = nil -- no smaller
-            textid         = self
-            scriptid       = self
-            scriptscriptid = self
-        elseif mathsize == 2 then
-            -- scriptsize
-         -- textid         = nil -- self
-            textid         = self
-            scriptid       = lastmathids[3]
-            scriptscriptid = lastmathids[3]
-        else
-            -- textsize
-         -- textid         = nil -- self
-            textid         = self
-            scriptid       = lastmathids[2]
-            scriptscriptid = lastmathids[3]
-        end
-        if textid then
-            textindex = #usedfonts + 1
-            usedfonts[textindex] = { id = textid }
---             textdata = identifiers[textid] or target
-            textdata = target
-        else
-            textdata = target
-        end
-        if scriptid then
-            scriptindex = #usedfonts  + 1
-            usedfonts[scriptindex] = { id = scriptid }
-            scriptdata = identifiers[scriptid]
-        else
-            scriptindex = textindex
-            scriptdata  = textdata
-        end
-        if scriptscriptid then
-            scriptscriptindex = #usedfonts  + 1
-            usedfonts[scriptscriptindex] = { id = scriptscriptid }
-            scriptscriptdata = identifiers[scriptscriptid]
-        else
-            scriptscriptindex = scriptindex
-            scriptscriptdata  = scriptdata
-        end
-     -- report_fallbacks("used textid: %S, used script id: %S, used scriptscript id: %S",textid,scriptid,scriptscriptid)
-        local data = {
-            textdata          = textdata,
-            scriptdata        = scriptdata,
-            scriptscriptdata  = scriptscriptdata,
-            textindex         = textindex,
-            scriptindex       = scriptindex,
-            scriptscriptindex = scriptscriptindex,
-            textid            = textid,
-            scriptid          = scriptid,
-            scriptscriptid    = scriptscriptid,
-            characters        = characters,
-            unicode           = k,
-            target            = target,
-            original          = original,
-            size              = size,
-            mathsize          = mathsize,
-        }
-        target.mathrelation = data
-     -- inspect(usedfonts)
-        for k, v in next, virtualcharacters do
-            if not characters[k] then
-                local tv = type(v)
-                local cd = nil
-                if tv == "table" then
-                    cd = v
-                elseif tv == "number" then
-                    cd = characters[v]
-                elseif tv == "function" then
-                    cd = v(data)
-                end
-                if cd then
-                    characters[k] = cd
-                else
-                    -- something else
-                end
-                if trace_fallbacks and characters[k] then
-                    report_fallbacks("extending math font %a with %U",target.properties.fullname,k)
-                end
+    local mathparameters = target.mathparameters
+    if not mathparameters or not next(mathparameters) then
+        return
+    end
+    -- we also have forcedsize ... at this moment we already passed through
+    -- constructors.scale so we have this set
+    local parameters = target.parameters
+    local mathsize   = parameters.mathsize
+    if mathsize < 1 or mathsize > 3 then
+        return
+    end
+    local characters = target.characters
+    local size       = parameters.size
+    local usedfonts  = target.fonts
+    if not usedfonts then
+        usedfonts    = { { id = 0 } } -- we need at least one entry (automatically done anyway)
+        target.fonts = usedfonts
+    end
+    -- not used
+    local textid, scriptid, scriptscriptid
+    local textindex, scriptindex, scriptscriptindex
+    local textdata, scriptdata, scriptscriptdata
+    if mathsize == 3 then
+        -- scriptscriptsize
+        textid         = 0
+        scriptid       = 0
+        scriptscriptid = 0
+    elseif mathsize == 2 then
+        -- scriptsize
+        textid         = 0
+        scriptid       = lastmathids[3] or 0
+        scriptscriptid = lastmathids[3] or 0
+    else
+        -- textsize
+        textid         = 0
+        scriptid       = lastmathids[2] or 0
+        scriptscriptid = lastmathids[3] or 0
+    end
+    if textid and textid ~= 0 then
+        textindex = #usedfonts + 1
+        textdata  = target
+        usedfonts[textindex] = { id = textid }
+    else
+        textdata = target
+    end
+    if scriptid and scriptid ~= 0 then
+        scriptindex = #usedfonts  + 1
+        scriptdata  = identifiers[scriptid]
+        usedfonts[scriptindex] = { id = scriptid }
+    else
+        scriptindex = textindex
+        scriptdata  = textdata
+    end
+    if scriptscriptid and scriptscriptid ~= 0 then
+        scriptscriptindex = #usedfonts  + 1
+        scriptscriptdata  = identifiers[scriptscriptid]
+        usedfonts[scriptscriptindex] = { id = scriptscriptid }
+    else
+        scriptscriptindex = scriptindex
+        scriptscriptdata  = scriptdata
+    end
+    -- report_fallbacks("used textid: %S, used script id: %S, used scriptscript id: %S",textid,scriptid,scriptscriptid)
+    local data = {
+        textdata          = textdata,
+        scriptdata        = scriptdata,
+        scriptscriptdata  = scriptscriptdata,
+        textindex         = textindex,
+        scriptindex       = scriptindex,
+        scriptscriptindex = scriptscriptindex,
+        textid            = textid,
+        scriptid          = scriptid,
+        scriptscriptid    = scriptscriptid,
+        characters        = characters,
+        unicode           = k,
+        target            = target,
+        original          = original,
+        size              = size,
+        mathsize          = mathsize,
+    }
+    target.mathrelation = data
+    --
+    for k, v in sortedhash(virtualcharacters) do
+        if not characters[k] then
+            local tv = type(v)
+            local cd = nil
+            if tv == "table" then
+                cd = v
+            elseif tv == "number" then
+                cd = characters[v]
+            elseif tv == "function" then
+                cd = v(data) -- ,k
+            end
+            if cd then
+                characters[k] = cd
+            else
+                -- something else
+            end
+            if trace_fallbacks and characters[k] then
+                report_fallbacks("extending math font %a with %U",target.properties.fullname,k)
             end
         end
-        data.unicode = nil
     end
+    data.unicode = nil
 end
 
 utilities.sequencers.appendaction("aftercopyingcharacters","system","mathematics.fallbacks.apply")
@@ -160,7 +157,7 @@ end
 
 local function raised(data,down)
     local replacement = data.replacement
-    local character = data.scriptdata.characters[replacement]
+    local character   = data.scriptdata.characters[replacement]
     if character then
         return {
             width    = character.width,
@@ -169,6 +166,7 @@ local function raised(data,down)
             commands = {
                 { "down", down and data.size/4 or -data.size/2 }, -- maybe exheight
                 reference(data.scriptindex,replacement)
+             -- { "slot", data.scriptindex or 0, char } -- hm, data.mathrelation.scriptindex
             }
         }
     end
@@ -232,35 +230,18 @@ end
 
 local addextra = mathematics.extras.add
 
-addextra(0xFE350, {
-    category="sm",
-    description="MATHEMATICAL DOUBLE ARROW LEFT END",
-    mathclass="relation",
-    mathname="ctxdoublearrowfillleftend",
-    unicodeslot=0xFE350,
-} )
-
-addextra(0xFE351, {
-    category="sm",
-    description="MATHEMATICAL DOUBLE ARROW MIDDLE PART",
-    mathclass="relation",
-    mathname="ctxdoublearrowfillmiddlepart",
-    unicodeslot=0xFE351,
-} )
-
-addextra(0xFE352, {
-    category="sm",
-    description="MATHEMATICAL DOUBLE ARROW RIGHT END",
-    mathclass="relation",
-    mathname="ctxdoublearrowfillrightend",
-    unicodeslot=0xFE352,
-} )
+addextra(0xFE350) -- MATHEMATICAL DOUBLE ARROW LEFT END
+addextra(0xFE351) -- MATHEMATICAL DOUBLE ARROW MIDDLE PART
+addextra(0xFE352) -- MATHEMATICAL DOUBLE ARROW RIGHT END
 
 local push       = { "push" }
 local pop        = { "pop" }
 local leftarrow  = { "char", 0x2190 }
 local relbar     = { "char", 0x2212 }
 local rightarrow = { "char", 0x2192 }
+-- local leftarrow  = { "slot", 0, 0x2190 }
+-- local relbar     = { "slot", 0, 0x2212 }
+-- local rightarrow = { "slot", 0, 0x2192 }
 
 virtualcharacters[0xFE350] = function(data)
  -- return combined(data,0x2190,0x2212) -- leftarrow relbar
@@ -334,10 +315,10 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
     local characters = target.characters
     local olddata = characters[oldchr]
     -- brrr ... pagella has only next
-    if olddata and not olddata.commands and olddata.width > 0 then
+    if olddata and not olddata.commands then -- not: and olddata.width > 0
         local addprivate = fonts.helpers.addprivate
         if swap then
-            swap = characters[swap]
+            swap   = characters[swap]
             height = swap.depth or 0
             depth  = 0
         else
@@ -347,6 +328,7 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
         local correction = swap and { "down", (olddata.height or 0) - height } or { "down", olddata.height + (offset or 0)}
         local newdata = {
             commands = { correction, { "slot", 1, oldchr } },
+         -- commands = { correction, { "slot", 0, oldchr } },
             width    = olddata.width,
             height   = height,
             depth    = depth,
@@ -359,11 +341,13 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
             if oldnextdata then
                 local newnextdata = {
                     commands = { correction, { "slot", 1, nextglyph } },
+                 -- commands = { correction, { "slot", 0, nextglyph } },
                     width    = oldnextdata.width,
                     height   = height,
                     depth    = depth,
                 }
-                local newnextglyph = addprivate(target,formatters["M-N-%H"](nextglyph),newnextdata)
+--                 local newnextglyph = addprivate(target,formatters["M-N-%H"](nextglyph),newnextdata)
+                local newnextglyph = addprivate(target,nil,newnextdata)
                 newdata.next = newnextglyph
                 local nextnextglyph = oldnextdata.next
                 if nextnextglyph == nextglyph then
@@ -389,11 +373,13 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
                 if olddata then
                     local newdata = {
                         commands = { correction, { "slot", 1, oldglyph } },
+                     -- commands = { correction, { "slot", 0, oldglyph } },
                         width    = olddata.width,
                         height   = height,
                         depth    = depth,
                     }
-                    hvi.glyph = addprivate(target,formatters["M-H-%H"](oldglyph),newdata)
+--                     hvi.glyph = addprivate(target,formatters["M-H-%H"](oldglyph),newdata)
+                    hvi.glyph = addprivate(target,nil,newdata)
                 else
                     report_fallbacks("error in fallback: no valid horiz_variants, slot %X, index %i",oldglyph,i)
                 end
@@ -405,24 +391,38 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
     end
 end
 
-virtualcharacters[0x203E] = function(data) -- could be FE33E instead
+virtualcharacters[0x203E] = function(data)
     local target = data.target
     local height, depth = 0, 0
-    local mathparameters = target.mathparameters
-    if mathparameters then
-        height = mathparameters.OverbarVerticalGap
-        depth  = mathparameters.UnderbarVerticalGap
-    else
+--     local mathparameters = target.mathparameters
+--     if mathparameters then
+--         height = mathparameters.OverbarVerticalGap
+--         depth  = mathparameters.UnderbarVerticalGap
+--     else
         height = target.parameters.xheight/4
         depth  = height
-    end
+--     end
     return accent_to_extensible(target,0x203E,data.original,0x0305,height,depth,nil,nil,0x203E)
 end
 
-virtualcharacters[0xFE33E] = virtualcharacters[0x203E] -- convenient
-virtualcharacters[0xFE33F] = virtualcharacters[0x203E] -- convenient
+-- virtualcharacters[0xFE33E] = virtualcharacters[0x203E] -- convenient
+-- virtualcharacters[0xFE33F] = virtualcharacters[0x203E] -- convenient
 
--- spacing
+virtualcharacters[0xFE33E] = function(data)
+    local target = data.target
+    local height = 0
+    local depth  = target.parameters.xheight/4
+    return accent_to_extensible(target,0xFE33E,data.original,0x0305,height,depth,nil,nil,0x203E)
+end
+
+virtualcharacters[0xFE33F] = function(data)
+    local target = data.target
+    local height = target.parameters.xheight/8
+    local depth  = height
+    return accent_to_extensible(target,0xFE33F,data.original,0x0305,height,depth,nil,nil,0x203E)
+end
+
+-- spacing (no need for a cache of widths)
 
 local c_zero   = byte('0')
 local c_period = byte('.')
@@ -431,7 +431,7 @@ local function spacefraction(data,fraction)
     local width = fraction * data.target.parameters.space
     return {
         width    = width,
-        commands = { right = width }
+        commands = { { "right", width } }
     }
 end
 
@@ -439,7 +439,7 @@ local function charfraction(data,char)
     local width = data.target.characters[char].width
     return {
         width    = width,
-        commands = { right = width }
+        commands = { { "right", width } }
     }
 end
 
@@ -447,7 +447,7 @@ local function quadfraction(data,fraction)
     local width = fraction * data.target.parameters.quad
     return {
         width    = width,
-        commands = { right = width }
+        commands = { { "right", width } }
     }
 end
 
@@ -480,17 +480,17 @@ local function smashed(data,unicode,swap,private)
     end
 end
 
-addextra(0xFE3DE, { description="EXTENSIBLE OF 0x03DE", unicodeslot=0xFE3DE, mathextensible = "r", mathstretch = "h", mathclass = "topaccent" } )
-addextra(0xFE3DC, { description="EXTENSIBLE OF 0x03DC", unicodeslot=0xFE3DC, mathextensible = "r", mathstretch = "h", mathclass = "topaccent" } )
-addextra(0xFE3B4, { description="EXTENSIBLE OF 0x03B4", unicodeslot=0xFE3B4, mathextensible = "r", mathstretch = "h", mathclass = "topaccent" } )
+addextra(0xFE3DE) -- EXTENSIBLE OF 0x03DE
+addextra(0xFE3DC) -- EXTENSIBLE OF 0x03DC
+addextra(0xFE3B4) -- EXTENSIBLE OF 0x03B4
 
 virtualcharacters[0xFE3DE] = function(data) return smashed(data,0x23DE,0x23DF,0xFE3DE) end
 virtualcharacters[0xFE3DC] = function(data) return smashed(data,0x23DC,0x23DD,0xFE3DC) end
 virtualcharacters[0xFE3B4] = function(data) return smashed(data,0x23B4,0x23B5,0xFE3B4) end
 
-addextra(0xFE3DF, { description="EXTENSIBLE OF 0x03DF", unicodeslot=0xFE3DF, mathextensible = "r", mathstretch = "h", mathclass = "botaccent" } )
-addextra(0xFE3DD, { description="EXTENSIBLE OF 0x03DD", unicodeslot=0xFE3DD, mathextensible = "r", mathstretch = "h", mathclass = "botaccent" } )
-addextra(0xFE3B5, { description="EXTENSIBLE OF 0x03B5", unicodeslot=0xFE3B5, mathextensible = "r", mathstretch = "h", mathclass = "botaccent" } )
+addextra(0xFE3DF) -- EXTENSIBLE OF 0x03DF
+addextra(0xFE3DD) -- EXTENSIBLE OF 0x03DD
+addextra(0xFE3B5) -- EXTENSIBLE OF 0x03B5
 
 virtualcharacters[0xFE3DF] = function(data) local c = data.target.characters[0x23DF] if c then c.unicode = 0x23DF return c end end
 virtualcharacters[0xFE3DD] = function(data) local c = data.target.characters[0x23DD] if c then c.unicode = 0x23DD return c end end
@@ -498,8 +498,8 @@ virtualcharacters[0xFE3B5] = function(data) local c = data.target.characters[0x2
 
 -- todo: add some more .. numbers might change
 
-addextra(0xFE302, { description="EXTENSIBLE OF 0x0302", unicodeslot=0xFE302, mathstretch = "h", mathclass = "topaccent" } )
-addextra(0xFE303, { description="EXTENSIBLE OF 0x0303", unicodeslot=0xFE303, mathstretch = "h", mathclass = "topaccent" } )
+addextra(0xFE302) -- EXTENSIBLE OF 0x0302
+addextra(0xFE303) -- EXTENSIBLE OF 0x0303
 
 local function smashed(data,unicode,private)
     local target = data.target
@@ -519,18 +519,17 @@ virtualcharacters[0xFE303] = function(data) return smashed(data,0x0303,0xFE303) 
 -- these primes in fonts are a real mess .. kind of a dead end, so don't wonder about
 -- the values below
 
--- todo: check tounicodes
-
 local function smashed(data,unicode,optional)
     local oldchar = data.characters[unicode]
     if oldchar then
-        local xheight = data.target.parameters.xheight
-        local height  = 1.2 * xheight
-        local shift   = oldchar.height - height
+     -- local height = 1.25 * data.target.parameters.xheight
+        local height = 0.85 * data.target.mathparameters.AccentBaseHeight
+        local shift  = oldchar.height - height
         local newchar = {
             commands = {
                 { "down", shift },
-                { "char", unicode },
+                { "slot", 0, unicode },
+--                 { "char", unicode },
             },
             height = height,
             width  = oldchar.width,
@@ -541,38 +540,14 @@ local function smashed(data,unicode,optional)
     end
 end
 
--- -- relocate all but less flexible so not used .. instead some noad hackery plus
--- -- the above
---
--- local function smashed(data,unicode,optional)
---     local oldchar = data.characters[unicode]
---     if oldchar then
---         local xheight = data.target.parameters.xheight
---         local height  = oldchar.height
---         local shift   = oldchar.height < 1.5*xheight and -(1.8*xheight-height) or 0
---         local newchar = {
---             commands = {
---                 { "down", shift },
---                 { "char", unicode },
---             },
---             unicode = unicode,
---             height  = height,
---             width   = oldchar.width,
---         }
---         return newchar
---     elseif not optional then
---         report_fallbacks("missing %U prime in font %a",unicode,data.target.properties.fullname)
---     end
--- end
+addextra(0xFE932) -- SMASHED PRIME 0x02032
+addextra(0xFE933) -- SMASHED PRIME 0x02033
+addextra(0xFE934) -- SMASHED PRIME 0x02034
+addextra(0xFE957) -- SMASHED PRIME 0x02057
 
-addextra(0xFE932, { description="SMASHED PRIME 0x02032", unicodeslot=0xFE932 } )
-addextra(0xFE933, { description="SMASHED PRIME 0x02033", unicodeslot=0xFE933 } )
-addextra(0xFE934, { description="SMASHED PRIME 0x02034", unicodeslot=0xFE934 } )
-addextra(0xFE957, { description="SMASHED PRIME 0x02057", unicodeslot=0xFE957 } )
-
-addextra(0xFE935, { description="SMASHED BACKWARD PRIME 0x02035", unicodeslot=0xFE935 } )
-addextra(0xFE936, { description="SMASHED BACKWARD PRIME 0x02036", unicodeslot=0xFE936 } )
-addextra(0xFE937, { description="SMASHED BACKWARD PRIME 0x02037", unicodeslot=0xFE937 } )
+addextra(0xFE935) -- SMASHED BACKWARD PRIME 0x02035
+addextra(0xFE936) -- SMASHED BACKWARD PRIME 0x02036
+addextra(0xFE937) -- SMASHED BACKWARD PRIME 0x02037
 
 virtualcharacters[0xFE932] = function(data) return smashed(data,0x02032) end
 virtualcharacters[0xFE933] = function(data) return smashed(data,0x02033) end
@@ -583,9 +558,41 @@ virtualcharacters[0xFE935] = function(data) return smashed(data,0x02035,true) en
 virtualcharacters[0xFE936] = function(data) return smashed(data,0x02036,true) end
 virtualcharacters[0xFE937] = function(data) return smashed(data,0x02037,true) end
 
+local hack = nil
+
+function mathematics.getridofprime(target,original)
+--     local mathsize = specification.mathsize
+--     if mathsize == 1 or mathsize == 2 or mathsize == 3) then
+    local mathparameters = original.mathparameters
+    if mathparameters and next(mathparameters) then
+        local changed = original.changed
+        if changed then
+            hack = changed[0x02032]
+            changed[0x02032] = nil
+            changed[0x02033] = nil
+            changed[0x02034] = nil
+            changed[0x02057] = nil
+            changed[0x02035] = nil
+            changed[0x02036] = nil
+            changed[0x02037] = nil
+        end
+    end
+end
+
+function mathematics.setridofprime(target,original)
+    local mathparameters = original.mathparameters
+    if mathparameters and next(mathparameters) and original.changed then
+        target.characters[0xFE931] = target.characters[hack or 0x2032]
+        hack = nil
+    end
+end
+
+utilities.sequencers.appendaction("beforecopyingcharacters","system","mathematics.getridofprime")
+utilities.sequencers.appendaction("aftercopyingcharacters", "system","mathematics.setridofprime")
+
 -- actuarian (beware: xits has an ugly one)
 
-addextra(0xFE940, { category = "mn", description="SMALL ANNUITY SYMBOL", unicodeslot=0xFE940, mathclass="topaccent", mathname="smallactuarial" })
+addextra(0xFE940) -- SMALL ANNUITY SYMBOL
 
 local function actuarian(data)
     local characters = data.target.characters
@@ -612,3 +619,49 @@ end
 
 virtualcharacters[0x020E7] = actuarian -- checked
 virtualcharacters[0xFE940] = actuarian -- unchecked
+
+local function equals(data,unicode,snippet,advance,n) -- mathpair needs them
+    local characters = data.target.characters
+    local parameters = data.target.parameters
+    local basechar   = characters[snippet]
+    local advance    = advance * parameters.quad
+    return {
+        unicode   = unicode,
+        width     = n*basechar.width + (n-1)*advance,
+        commands  = {
+            { "char", snippet },
+            { "right", advance },
+            { "char", snippet },
+            n > 2 and { "right", advance } or nil,
+            n > 2 and { "char", snippet } or nil,
+        },
+    }
+end
+
+virtualcharacters[0x2A75] = function(data) return equals(data,0x2A75,0x003D, 1/5,2) end -- ==
+virtualcharacters[0x2A76] = function(data) return equals(data,0x2A76,0x003D, 1/5,3) end -- ===
+virtualcharacters[0x2980] = function(data) return equals(data,0x2980,0x007C,-1/8,3) end -- |||
+
+-- addextra(0xFE941) -- EXTREMELY IDENTICAL TO
+--
+-- virtualcharacters[0xFE941] = function(data) -- this character is only needed for mathpairs
+--     local characters = data.target.characters
+--     local parameters = data.target.parameters
+--     local basechar   = characters[0x003D]
+--     local width      = basechar.width or 0
+--     local height     = basechar.height or 0
+--     local depth      = basechar.depth or 0
+--     return {
+--         unicode   = 0xFE941,
+--         width     = width,
+--         height    = height,         -- we cheat (no time now)
+--         depth     = depth,          -- we cheat (no time now)
+--         commands  = {
+--             { "down", - height/2 }, -- sort of works
+--             { "char", 0x003D },
+--             { "right", -width },
+--             { "down", height },     -- sort of works
+--             { "char", 0x003D },
+--         },
+--     }
+-- end

@@ -33,7 +33,6 @@ if not modules then modules = { } end modules ['math-map'] = {
 -- plus add them to the regular vectors below so that they honor \it etc
 
 local type, next = type, next
-local floor, div = math.floor, math.div
 local merged, sortedhash = table.merged, table.sortedhash
 local extract = bit32.extract
 
@@ -118,6 +117,7 @@ mathematics.gaps = allocate {
     [0x1D4AD] = 0x0211B, -- ℛ script R
     [0x1D4BA] = 0x0212F, -- ℯ script e
     [0x1D4BC] = 0x0210A, -- ℊ script g
+ -- [0x1D4C1] = 0x02113, -- exception: liter
     [0x1D4C4] = 0x02134, -- ℴ script o
     [0x1D506] = 0x0212D, -- ℭ fraktur C
     [0x1D50B] = 0x0210C, -- ℌ fraktur H
@@ -741,17 +741,17 @@ function mathematics.remapalphabets(char,mathalphabet,mathgreek)
         if not isgreek[char] then
             -- nothing needed
         elseif islcgreek[char] then
-            local lc = extract(mathgreek,4,4)
+            local lc = extract(mathgreek,4,4) --  (mathgreek >> 4) & ~(-1 << 4)
             if lc > 1 then
                 mathalphabet = remapgreek(mathalphabet,lc,"lowercase",char)
             end
         elseif isucgreek[char] then
-            local uc = extract(mathgreek,0,4)
+            local uc = extract(mathgreek,0,4) --  (mathgreek >> 0) & ~(-1 << 4)
             if uc > 1 then
                 mathalphabet = remapgreek(mathalphabet,uc,"uppercase",char)
             end
         elseif issygreek[char] then
-            local sy = extract(mathgreek,8,4)
+            local sy = extract(mathgreek,8,4) --  (mathgreek >> 8) & ~(-1 << 4)
             if sy > 1 then
                 mathalphabet = remapgreek(mathalphabet,sy,"symbol",char)
             end

@@ -106,10 +106,11 @@
 
 \installcorenamespace{paragraphs}
 
-\installcommandhandler \??paragraphs {paragraphs} \??paragraphs
+\installframedcommandhandler \??paragraphs {paragraphs} \??paragraphs
 
 \setupparagraphs
   [\c!n=3,
+   \c!offset=\zeropoint,
    \c!before=\blank,
    \c!after=\blank,
    \c!distance=\emwidth,
@@ -123,6 +124,7 @@
    \c!rulecolor=,
    \c!style=,
    \c!color=,
+   \c!frame=\v!off,
    \c!top=\vss,
    \c!bottom=\vfill]
 
@@ -163,13 +165,14 @@
 \unexpanded\def\startparagraphs[#1]% quite slow
   {\bgroup % (1)
    \edef\currentparagraphs{#1}%
-   \paragraphsparameter\c!before
+ % \paragraphsparameter\c!before
    \edef\p_width{\paragraphsparameter\c!width}%
    \ifx\p_width\empty
      \d_typo_paragraphs_width\availablehsize
    \else
      \d_typo_paragraphs_width\p_width\relax
    \fi
+   \advance\d_typo_paragraphs_width-2\dimexpr\paragraphsparameter\c!offset\relax
    \c_typo_paragraphs_max\paragraphsparameter\c!n\relax
    \d_typo_paragraphs_auto\d_typo_paragraphs_width\relax
    \scratchcounter\zerocount
@@ -191,9 +194,14 @@
    \parindent\zeropoint
    \c_typo_paragraphs_n\zerocount
    \let\\=\typo_paragraphs_next % downward compatible
-   \dontleavehmode\hbox
+   \edef\p_offset{\paragraphsparameter\c!offset}%
+   \doifelsedimension\p_offset
+     {\scratchoffset\p_offset}%
+     {\scratchoffset\zeropoint}%
+   \setbox\scratchbox\hpack
    \bgroup % (2)
    \forgetall
+   \advance\hsize-2\scratchoffset
    \let\typo_paragraphs_start_cell\typo_paragraphs_start_cell_indeed
    \let\typo_paragraphs_stop_cell \typo_paragraphs_stop_cell_indeed
    \typo_paragraphs_start_cell_indeed}
@@ -201,6 +209,9 @@
 \unexpanded\def\stopparagraphs
   {\stopparagraphscell
    \egroup  % (2)
+   \letparagraphsparameter\c!align\v!flushleft % normal
+   \paragraphsparameter\c!before
+   \dontleavehmode\inheritedparagraphsframed{\box\scratchbox}%
    \paragraphsparameter\c!after
    \egroup} % (1)
 

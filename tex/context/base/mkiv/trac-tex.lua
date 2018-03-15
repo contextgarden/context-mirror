@@ -16,10 +16,6 @@ local undefined = create("undefined").command
 
 function trackers.savehash()
     saved = texhashtokens()
-    if type(saved[1]) == "table" then
-        -- LUATEXVERSION < 1.002
-        saved = table.tohash(saved)
-    end
     return saved
 end
 
@@ -27,10 +23,6 @@ function trackers.dumphashtofile(filename,delta)
     local list   = { }
     local hash   = texhashtokens()
     local create = token.create
-    if type(hash[1]) == "table" then
-        -- LUATEXVERSION < 1.002
-        hash = table.sortedkeys(hash)
-    end
     for i=1,#hash do
         local name = hash[i]
         if not delta or not saved[name] then
@@ -84,7 +76,7 @@ local function saveusedfilesintrees(format)
         jobname = environment.jobname or "?",
         version = environment.version or "?",
         kind    = environment.kind    or "?",
-        files   = resolvers.instance.foundintrees
+        files   = resolvers.foundintrees()
     }
     local filename = file.replacesuffix(environment.jobname or "context-job",'jlg')
     if format == "lua" then

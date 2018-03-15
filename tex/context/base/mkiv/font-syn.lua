@@ -14,9 +14,11 @@ if not modules then modules = { } end modules ['font-syn'] = {
 -- old ff  loader: 140 sec
 -- new lua loader:   5 sec
 
+-- maybe find(...,strictname,1,true)
+
 local next, tonumber, type, tostring = next, tonumber, type, tostring
 local sub, gsub, match, find, lower, upper = string.sub, string.gsub, string.match, string.find, string.lower, string.upper
-local concat, sort, fastcopy = table.concat, table.sort, table.fastcopy
+local concat, sort, fastcopy, tohash = table.concat, table.sort, table.fastcopy, table.tohash
 local serialize, sortedhash = table.serialize, table.sortedhash
 local lpegmatch = lpeg.match
 local unpack = unpack or table.unpack
@@ -35,6 +37,7 @@ local splitname            = file.splitname
 local basename             = file.basename
 local nameonly             = file.nameonly
 local pathpart             = file.pathpart
+local suffixonly           = file.suffix
 local filejoin             = file.join
 local is_qualified_path    = file.is_qualified_path
 local exists               = io.exists
@@ -393,11 +396,11 @@ filters.ttc = filters.otf
 --         local hash = { }
 --         local okay = false
 --         for line in f:lines() do -- slow but only a few lines at the beginning
---             if find(line,"dict begin") then
+--             if find(line,"dict begin",1,true) then
 --                 okay = true
 --             elseif not okay then
 --                 -- go on
---             elseif find(line,"currentdict end") then
+--             elseif find(line,"currentdict end",1,true) then
 --                 break
 --             else
 --                 local key, value = lpegmatch(p_entry,line)
@@ -423,8 +426,10 @@ filters.list = {
 
 -- to be considered: loop over paths per list entry (so first all otf ttf etc)
 
-names.fontconfigfile    = "fonts.conf" -- a bit weird format, bonus feature
-names.osfontdirvariable = "OSFONTDIR"  -- the official way, in minimals etc
+names.fontconfigfile       = "fonts.conf"   -- a bit weird format, bonus feature
+names.osfontdirvariable    = "OSFONTDIR"    -- the official way, in minimals etc
+names.extrafontsvariable   = "EXTRAFONTS"   -- the official way, in minimals etc
+names.runtimefontsvariable = "RUNTIMEFONTS" -- the official way, in minimals etc
 
 filters.paths = { }
 filters.names = { }
@@ -436,7 +441,7 @@ function names.getpaths(trace)
             local v = cleanpath(t[i])
             v = gsub(v,"/+$","") -- not needed any more
             local key = lower(v)
-            report_names("%a specifies path %a",where,v)
+            report_names("variable %a specifies path %a",where,v)
             if not hash[key] then
                 r = r + 1
                 result[r] = v
@@ -445,6 +450,10 @@ function names.getpaths(trace)
         end
     end
     local path = names.osfontdirvariable or ""
+    if path ~= "" then
+        collect(resolvers.expandedpathlist(path),path)
+    end
+    local path = names.extrafontsvariable or ""
     if path ~= "" then
         collect(resolvers.expandedpathlist(path),path)
     end
@@ -539,23 +548,6 @@ names.cleanfilename = cleanfilename
 --     return result
 -- end
 
-local function walk_tree(pathlist,suffix,identify)
-    if pathlist then
-        for i=1,#pathlist do
-            local path = pathlist[i]
-            path = cleanpath(path .. "/")
-            path = gsub(path,"/+","/")
-            local pattern = path .. "**." .. suffix -- ** forces recurse
-            report_names("globbing path %a",pattern)
-            local t = dir.glob(pattern)
-            sort(t,sorter)
-            for j=1,#t do
-                local completename = t[j]
-                identify(completename,basename(completename),suffix,completename)
-            end
-        end
-    end
-end
 
 local function check_name(data,result,filename,modification,suffix,subfont)
     -- shortcuts
@@ -1002,9 +994,11 @@ local function unpackreferences()
 end
 
 local function analyzefiles(olddata)
+
     if not trace_warnings then
         report_names("warnings are disabled (tracker 'fonts.warnings')")
     end
+
     local data               = names.data
     local done               = { }
     local totalnofread       = 0
@@ -1020,6 +1014,26 @@ local function analyzefiles(olddata)
     local oldspecifications  = olddata and olddata.specifications or { }
     local oldrejected        = olddata and olddata.rejected       or { }
     local treatmentdata      = treatments.data or { } -- when used outside context
+    ----- walked             = setmetatableindex("number")
+
+    local function walk_tree(pathlist,suffix,identify)
+        if pathlist then
+            for i=1,#pathlist do
+                local path = pathlist[i]
+                path = cleanpath(path .. "/")
+                path = gsub(path,"/+","/")
+                local pattern = path .. "**." .. suffix -- ** forces recurse
+                report_names("globbing path %a",pattern)
+                local t = dir.glob(pattern)
+                sort(t,sorter)
+                for j=1,#t do
+                    local completename = t[j]
+                    identify(completename,basename(completename),suffix,completename)
+                end
+             -- walked[path] = walked[path] + #t
+            end
+        end
+    end
 
     local function identify(completename,name,suffix,storedname)
         local pathpart, basepart = splitbase(completename)
@@ -1123,6 +1137,7 @@ local function analyzefiles(olddata)
         end
         logs.flush() --  a bit overkill for each font, maybe not needed here
     end
+
     local function traverse(what, method)
         local list = filters.list
         for n=1,#list do
@@ -1141,7 +1156,9 @@ local function analyzefiles(olddata)
         end
         logs.flush()
     end
+
     -- problem .. this will not take care of duplicates
+
     local function withtree(suffix)
         resolvers.dowithfilesintree(".*%." .. suffix .. "$", function(method,root,path,name)
             if method == "file" or method == "tree" then
@@ -1158,16 +1175,20 @@ local function analyzefiles(olddata)
             report_names("%s entries found, %s %s files checked, %s okay",total,checked,suffix,done)
         end)
     end
+
     local function withlsr(suffix) -- all trees
         -- we do this only for a stupid names run, not used for context itself,
         -- using the vars is too clumsy so we just stick to a full scan instead
         local pathlist = resolvers.splitpath(resolvers.showpath("ls-R") or "")
         walk_tree(pathlist,suffix,identify)
     end
+
     local function withsystem(suffix) -- OSFONTDIR cum suis
         walk_tree(names.getpaths(trace),suffix,identify)
     end
+
     traverse("tree",withtree) -- TEXTREE only
+
     if not usesystemfonts then
         report_names("ignoring system fonts")
     elseif texconfig.kpse_init then
@@ -1175,9 +1196,15 @@ local function analyzefiles(olddata)
     else
         traverse("system", withsystem)
     end
+
     data.statistics.readfiles      = totalnofread
     data.statistics.skippedfiles   = totalnofskipped
     data.statistics.duplicatefiles = totalnofduplicates
+
+ -- for k, v in sortedhash(walked) do
+ --     report_names("%s : %i",k,v)
+ -- end
+
 end
 
 local function addfilenames()
@@ -1492,10 +1519,54 @@ end
 --     end
 -- end
 
+local runtimefiles = { }
+local runtimedone  = false
+
+local function addruntimepath(path)
+    names.load()
+    local paths    = type(path) == "table" and path or { path }
+    local suffixes = tohash(filters.list)
+    for i=1,#paths do
+        local path = resolveprefix(paths[i])
+        if path ~= "" then
+            local list = dir.glob(path.."/*")
+            for i=1,#list do
+                local fullname = list[i]
+                local suffix   = lower(suffixonly(fullname))
+                if suffixes[suffix] then
+                    local c = cleanfilename(fullname)
+                    runtimefiles[c] = fullname
+                    if trace_names then
+                        report_names("adding runtime filename %a for %a",c,fullname)
+                    end
+                end
+            end
+        end
+    end
+end
+
+local function addruntimefiles(variable)
+    local paths = variable and resolvers.expandedpathlistfromvariable(variable)
+    if paths and #paths > 0 then
+        addruntimepath(paths)
+    end
+end
+
+names.addruntimepath  = addruntimepath
+names.addruntimefiles = addruntimefiles
+
 function names.getfilename(askedname,suffix) -- last resort, strip funny chars
+    if not runtimedone then
+        addruntimefiles(names.runtimefontsvariable)
+        runtimedone = true
+    end
+    local cleanname = cleanfilename(askedname,suffix)
+    local found     = runtimefiles[cleanname]
+    if found then
+        return found
+    end
     names.load()
     local files = names.data.files
-    local cleanname = cleanfilename(askedname,suffix)
     local found = files and files[cleanname] or ""
     if found == "" and is_reloaded() then
         files = names.data.files

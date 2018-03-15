@@ -28,7 +28,6 @@ if not modules then modules = { } end modules ['typo-dir'] = {
 
 local next, type = next, type
 local format, insert, sub, find, match = string.format, table.insert, string.sub, string.find, string.match
-local formatters = string.formatters
 
 local nodes, node = nodes, node
 
@@ -36,13 +35,18 @@ local trace_textdirections  = false  trackers.register("typesetters.directions.t
 local trace_mathdirections  = false  trackers.register("typesetters.directions.math", function(v) trace_mathdirections = v end)
 local trace_directions      = false  trackers.register("typesetters.directions",      function(v) trace_textdirections = v trace_mathdirections = v end)
 
+local one_too               = false  directives.register("typesetters.directions.onetoo", function(v) one_too = v end)
+
 local report_textdirections = logs.reporter("typesetting","text directions")
 ----- report_mathdirections = logs.reporter("typesetting","math directions")
 
-local hasbit                = number.hasbit
+local band                  = bit32.band
 
 local texsetattribute       = tex.setattribute
 local unsetvalue            = attributes.unsetvalue
+
+local getnext               = nodes.getnext
+local getattr               = nodes.getattr
 
 local enableaction          = nodes.tasks.enableaction
 local tracers               = nodes.tracers
@@ -62,9 +66,9 @@ local v_local               = variables["local"]
 local v_on                  = variables.on
 local v_yes                 = variables.yes
 
-local m_enabled             = 2^6 -- 64
-local m_global              = 2^7
-local m_fences              = 2^8
+local m_enabled             = 0x00000040 -- 2^6 64
+local m_global              = 0x00000080 -- 2^7
+local m_fences              = 0x00000100 -- 2^8
 
 local handlers              = { }
 local methods               = { }
@@ -107,11 +111,11 @@ local function tomode(specification)
 end
 
 local function getglobal(a)
-    return a and a > 0 and hasbit(a,m_global)
+    return a and a > 0 and band(a,m_global) ~= 0
 end
 
 local function getfences(a)
-    return a and a > 0 and hasbit(a,m_fences)
+    return a and a > 0 and band(a,m_fences) ~= 0
 end
 
 local function getmethod(a)
@@ -155,11 +159,18 @@ local enabled = false
 local starttiming = statistics.starttiming
 local stoptiming  = statistics.stoptiming
 
-function directions.handler(head) -- ,_,_,_,direction) -- nodes not nuts | 5th arg is direction
-    if not head.next then
+-- If we have hbox{!} then the hbox determines the direction but we can consider
+-- a fast analysis, not that it matters much because there's nothing to swap in
+-- the list unless one glyphs becomes multiple (can that really happen?).
+--
+-- \enabledirectives[typesetters.directions.onetoo]
+
+function directions.handler(head,_,_,_,direction)
+    local only_one = not getnext(head)
+    if only_one and not one_too then
         return head, false
     end
-    local attr = head[a_directions]
+    local attr = getattr(head,a_directions)
     if not attr or attr == 0 then
         return head, false
     end
@@ -169,7 +180,7 @@ function directions.handler(head) -- ,_,_,_,direction) -- nodes not nuts | 5th a
         return head, false
     end
     starttiming(directions)
-    local head, done = handler(head)
+    local head, done = handler(head,direction,only_one)
     stoptiming(directions)
     return head, done
 end

@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Structure Macros / Synonyms and Sorting}
 
-\registerctxluafile{strc-syn}{1.001}
+\registerctxluafile{strc-syn}{}
 
 %D Although we could nowadays build this on top of regular lists we keep this
 %D more efficient variant around. Eventually we can add some options to lists
@@ -162,9 +162,9 @@
     %c!hang=,
     %c!sample=,
     \c!margin=\v!no,
-    \c!before=\blank,
+    \c!before=\startpacked,
     \c!inbetween=\blank,
-    \c!after=\blank,
+    \c!after=\stoppacked,
     %c!indentnext=,
     %c!indenting=,
     %
@@ -335,14 +335,16 @@
   [\c!alternative=\v!normal]
 
 \unexpanded\def\strc_synonyms_insert_meaning#1#2% name tag
-  {\begingroup
+  {\dontleavehmode % otherwise we don't get it right at the beginning of a par
+   \begingroup
    \def\currentsimplelist{#1}%
    \def\currentsynonymtag{#2}%
    \fastsetup{\??simplelistrenderings::\v!text}%
    \endgroup}
 
 \unexpanded\def\strc_synonyms_insert#1#2% name tag
-  {\begingroup
+  {\dontleavehmode % otherwise we don't get it right at the beginning of a par
+   \begingroup
    \edef\currentsimplelist{#1}%
    \let \currentsynonym\currentsimplelist % for a while
    \def \currentsynonymtag{#2}%
@@ -353,7 +355,7 @@
    \normalexpanded{\endgroup\simplelistparameter\c!next}}
 
 % \setupsimplelistalternative
-%   [\c!command=\strictsimplelistparameter\c!command]
+%   [\c!command=\directsimplelistparameter\c!command]
 
 \definesimplelistalternative
   [\v!normal]
@@ -422,8 +424,9 @@
      {\strc_constructions_initialize{#1}%
       \setupcurrentsimplelist[#2]%
       \let\synonymentry\strc_synonym_normal
-      \startpacked
-        \clf_processsynonyms
+      % so we can hook tabulate into before and after
+      \normalexpanded{\simplelistparameter\c!before
+        \noexpand\clf_processsynonyms
            {#1}%
            {%
                criterium {\simplelistparameter\c!criterium}%
@@ -431,7 +434,8 @@
                method    {\simplelistparameter\c!method}%
            }%
         \relax
-      \stoppacked}%
+      \simplelistparameter\c!after}%
+      \relax}%
      {}% todo: message that invalid
    \endgroup}
 
@@ -465,8 +469,8 @@
   %\c!command=, % we test for defined !
   %\c!criterium=,
   %\c!style=,
-  %\c!before=,
-   \c!after=\endgraf,
+   \c!before=\startpacked,
+   \c!after=\stoppacked,
   %\c!expansion=,
    \c!method=]
 
@@ -549,7 +553,8 @@
   [\c!alternative=\v!normal]
 
 \unexpanded\def\strc_sorting_insert#1#2% name tag
-  {\begingroup
+  {\dontleavehmode % otherwise we don't get it right at the beginning of a par
+   \begingroup
    % no kap currently, of .. we need to map cap onto WORD
    \edef\currentsorting{#1}%
    \def \currentsortingtag{#2}%
@@ -593,6 +598,7 @@
 \unexpanded\def\placelistofsorts
   {\dodoubleempty\strc_sorting_place_list}
 
+
 \def\strc_sorting_place_list[#1][#2]%
   {\begingroup
    \edef\currentsimplelist{#1}%
@@ -604,8 +610,9 @@
    \else
      \let\synonymentry\strc_sorting_command
    \fi
-   \startpacked
-     \clf_processsynonyms
+   % so we can hook tabulate into before and after
+   \normalexpanded{\simplelistparameter\c!before
+     \noexpand\clf_processsynonyms
         {#1}%
         {%
             criterium {\simplelistparameter\c!criterium}%
@@ -613,7 +620,7 @@
             method    {\simplelistparameter\c!method}%
         }%
      \relax
-   \stoppacked
+   \simplelistparameter\c!after}%
    \endgroup}
 
 \unexpanded\def\completelistofsorts

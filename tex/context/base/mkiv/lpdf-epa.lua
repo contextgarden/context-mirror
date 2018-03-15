@@ -6,13 +6,15 @@ if not modules then modules = { } end modules ['lpdf-epa'] = {
     license   = "see context related readme files"
 }
 
--- This is a rather experimental feature and the code will probably
--- change.
+-- This is a rather experimental feature and the code will probably change.
 
 local type, tonumber = type, tonumber
 local format, gsub, lower = string.format, string.gsub, string.lower
 local formatters = string.formatters
 local abs = math.abs
+local expandname = file.expandname
+local allocate = utilities.storage.allocate
+local isfile = lfs.isfile
 
 ----- lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
@@ -20,6 +22,8 @@ local trace_links    = false  trackers.register("figures.links",     function(v)
 local trace_outlines = false  trackers.register("figures.outliness", function(v) trace_outlines = v end)
 
 local report_link    = logs.reporter("backend","link")
+local report_comment = logs.reporter("backend","comment")
+local report_field   = logs.reporter("backend","field")
 local report_outline = logs.reporter("backend","outline")
 
 local epdf           = epdf
@@ -39,11 +43,28 @@ local escapetex      = characters.filters.utf.private.escape
 
 local bookmarks      = structures.bookmarks
 
-local maxdimen       = 2^30-1
+local maxdimen       = 0x3FFFFFFF -- 2^30-1
 
 local layerspec = { -- predefining saves time
     "epdflinks"
 }
+
+local collected = allocate()
+local tobesaved = allocate()
+
+local jobembedded = {
+    collected = collected,
+    tobesaved = tobesaved,
+}
+
+job.embedded = jobembedded
+
+local function initializer()
+    tobesaved = jobembedded.tobesaved
+    collected = jobembedded.collected
+end
+
+job.register('job.embedded.collected',tobesaved,initializer)
 
 local f_namespace = formatters["lpdf-epa-%s-"]
 
@@ -114,6 +135,16 @@ end
 -- (see section 3.10 in the 1.7 reference) so we need to test for string as well
 -- as a table. TH/20140916
 
+-- When embedded is set then files need to have page references which is seldom the
+-- case but you can generate them with context:
+--
+-- \setupinteraction[state=start,page={page,page}]
+--
+-- see tests/mkiv/interaction/cross[1|2|3].tex for an example
+
+local embedded = false directives.register("figures.embedded", function(v) embedded = v end)
+local reported = { }
+
 local function link_file(x,y,w,h,document,annotation)
     local a = annotation.A
     if a then
@@ -129,9 +160,20 @@ local function link_file(x,y,w,h,document,annotation)
             elseif type(destination) == "string" then
                 add_link(x,y,w,h,formatters["%s::%s"](filename,destination),"file (named)")
             else
-                destination = destination[1] -- array
-                if tonumber(destination) then
-                    add_link(x,y,w,h,formatters["%s::page(%s)"](filename,destination),"file (page)")
+                -- hm, zero offset so maybe: destination + 1
+                destination = tonumber(destination[1]) -- array
+                if destination then
+                    destination = destination + 1
+                    local loaded = collected[lower(expandname(filename))]
+                    if embedded and loaded then
+                        add_link(x,y,w,h,makenamespace(filename) .. destination,what)
+                    else
+                        if loaded and not reported[filename] then
+                            report_link("reference to an also loaded file %a, consider using directive: figures.embedded",filename)
+                            reported[filename] = true
+                        end
+                        add_link(x,y,w,h,formatters["%s::page(%s)"](filename,destination),"file (page)")
+                    end
                 else
                     add_link(x,y,w,h,formatters["file(%s)"](filename),"file")
                 end
@@ -145,77 +187,82 @@ function codeinjections.mergereferences(specification)
         specification = figures and figures.current()
         specification = specification and specification.status
     end
-    if specification then
-        local fullname = specification.fullname
-        local document = loadpdffile(fullname) -- costs time
-        if document then
-            local pagenumber  = specification.page    or 1
-            local xscale      = specification.yscale  or 1
-            local yscale      = specification.yscale  or 1
-            local size        = specification.size    or "crop" -- todo
-            local pagedata    = document.pages[pagenumber]
-            local annotations = pagedata and pagedata.Annots
-            local namespace   = makenamespace(fullname)
-            local reference   = namespace .. pagenumber
-            if annotations and annotations.n > 0 then
-                local mediabox  = pagedata.MediaBox
-                local llx       = mediabox[1]
-                local lly       = mediabox[2]
-                local urx       = mediabox[3]
-                local ury       = mediabox[4]
-                local width     = xscale * (urx - llx) -- \\overlaywidth, \\overlayheight
-                local height    = yscale * (ury - lly) -- \\overlaywidth, \\overlayheight
-                context.definelayer( { "epdflinks" }, { height = height.."bp" , width = width.."bp" })
-                for i=1,annotations.n do
-                    local annotation = annotations[i]
-                    if annotation then
-                        local subtype   = annotation.Subtype
-                        local rectangle = annotation.Rect
-                        local a_llx     = rectangle[1]
-                        local a_lly     = rectangle[2]
-                        local a_urx     = rectangle[3]
-                        local a_ury     = rectangle[4]
-                        local x         = xscale * (a_llx -   llx)
-                        local y         = yscale * (a_lly -   lly)
-                        local w         = xscale * (a_urx - a_llx)
-                        local h         = yscale * (a_ury - a_lly)
-                        if subtype == "Link" then
-                            local a = annotation.A
-                            if not a then
-                                report_link("missing link annotation")
-                            elseif w > width or h > height or w < 0 or h < 0 or abs(x) > (maxdimen/2) or abs(y) > (maxdimen/2) then
-                                report_link("broken link rectangle [%f %f %f %f] (max: %f)",a_llx,a_lly,a_urx,a_ury,maxdimen/2)
-                            else
-                                local linktype = a.S
-                                if linktype == "GoTo" then
-                                    link_goto(x,y,w,h,document,annotation,pagedata,namespace)
-                                elseif linktype == "GoToR" then
-                                    link_file(x,y,w,h,document,annotation)
-                                elseif linktype == "URI" then
-                                    link_uri(x,y,w,h,document,annotation)
-                                elseif trace_links then
-                                    report_link("unsupported link annotation %a",linktype)
-                                end
-                            end
-                        elseif trace_links then
-                            report_link("unsupported annotation %a",subtype)
-                        end
-                    elseif trace_links then
-                        report_link("broken annotation, index %a",i)
-                    end
-                end
-                context.flushlayer { "epdflinks" }
-            end
-            -- moved outside previous test
-            context.setgvalue("figurereference",reference) -- global
-            if trace_links then
-                report_link("setting figure reference to %a",reference)
-            end
-            specification.reference = reference
-            return namespace
-        end
+    if not specification then
+        return ""
     end
-    return ""-- no namespace, empty, not nil
+    local fullname = specification.fullname
+    local expanded = lower(expandname(fullname))
+    -- we could add a check for duplicate page insertion
+    tobesaved[expanded] = true
+    --- but that is messy anyway so we forget about it
+    local document = loadpdffile(fullname) -- costs time
+    if not document then
+        return ""
+    end
+    local pagenumber  = specification.page    or 1
+    local xscale      = specification.yscale  or 1
+    local yscale      = specification.yscale  or 1
+    local size        = specification.size    or "crop" -- todo
+    local pagedata    = document.pages[pagenumber]
+    local annotations = pagedata and pagedata.Annots
+    local namespace   = makenamespace(fullname)
+    local reference   = namespace .. pagenumber
+    if annotations and annotations.n > 0 then
+        local mediabox  = pagedata.MediaBox
+        local llx       = mediabox[1]
+        local lly       = mediabox[2]
+        local urx       = mediabox[3]
+        local ury       = mediabox[4]
+        local width     = xscale * (urx - llx) -- \\overlaywidth, \\overlayheight
+        local height    = yscale * (ury - lly) -- \\overlaywidth, \\overlayheight
+        context.definelayer( { "epdflinks" }, { height = height.."bp" , width = width.."bp" })
+        for i=1,annotations.n do
+            local annotation = annotations[i]
+            if annotation then
+                local subtype   = annotation.Subtype
+                local rectangle = annotation.Rect
+                local a_llx     = rectangle[1]
+                local a_lly     = rectangle[2]
+                local a_urx     = rectangle[3]
+                local a_ury     = rectangle[4]
+                local x         = xscale * (a_llx -   llx)
+                local y         = yscale * (a_lly -   lly)
+                local w         = xscale * (a_urx - a_llx)
+                local h         = yscale * (a_ury - a_lly)
+                if subtype == "Link" then
+                    local a = annotation.A
+                    if not a then
+                        report_link("missing link annotation")
+                    elseif w > width or h > height or w < 0 or h < 0 or abs(x) > (maxdimen/2) or abs(y) > (maxdimen/2) then
+                        report_link("broken link rectangle [%.6F %.6F %.6F %.6F] (max: %.6F)",a_llx,a_lly,a_urx,a_ury,maxdimen/2)
+                    else
+                        local linktype = a.S
+                        if linktype == "GoTo" then
+                            link_goto(x,y,w,h,document,annotation,pagedata,namespace)
+                        elseif linktype == "GoToR" then
+                            link_file(x,y,w,h,document,annotation)
+                        elseif linktype == "URI" then
+                            link_uri(x,y,w,h,document,annotation)
+                        elseif trace_links then
+                            report_link("unsupported link annotation %a",linktype)
+                        end
+                    end
+                elseif trace_links then
+                    report_link("unsupported annotation %a",subtype)
+                end
+            elseif trace_links then
+                report_link("broken annotation, index %a",i)
+            end
+        end
+        context.flushlayer { "epdflinks" }
+    end
+    -- moved outside previous test
+    context.setgvalue("figurereference",reference) -- global
+    if trace_links then
+        report_link("setting figure reference to %a",reference)
+    end
+    specification.reference = reference
+    return namespace
 end
 
 function codeinjections.mergeviewerlayers(specification)
@@ -280,7 +327,7 @@ function codeinjections.getbookmarks(filename)
 
     local document = nil
 
-    if lfs.isfile(filename) then
+    if isfile(filename) then
         document = loadpdffile(filename)
     else
         report_outline("unknown file %a",filename)
@@ -303,15 +350,22 @@ function codeinjections.getbookmarks(filename)
             local subtype = action.S
             if subtype == "GoTo" then
                 destination = action.D
-                if type(destination) == "string" then
+                local kind = type(destination)
+                if kind == "string" then
                     entry.destination = destination
                     destination = destinations[destination]
                     local pagedata = destination and destination[1]
                     if pagedata then
                         entry.realpage = pagedata.number
                     end
-                else
-                    -- maybe
+                elseif kind == "table" then
+                    local pageref = destination.n
+                    if pageref then
+                        local pagedata = pages[pageref]
+                        if pagedata then
+                            entry.realpage = pagedata.number
+                        end
+                    end
                 end
             else
                 -- maybe
@@ -413,6 +467,85 @@ function codeinjections.mergebookmarks(specification)
                     b.pageindex = specification.pageindex
                 end
             end
+        end
+    end
+end
+
+-- placeholders:
+
+function codeinjections.mergecomments(specification)
+    report_comment("unfinished experimental code, not used yet")
+end
+
+function codeinjections.mergefields(specification)
+    report_field("unfinished experimental code, not used yet")
+end
+
+-- A bit more than a placeholder but in the same perspective as
+-- inclusion of comments and fields:
+--
+-- getinfo{ filename = "tt.pdf", metadata = true }
+-- getinfo{ filename = "tt.pdf", page = 1, metadata = "xml" }
+-- getinfo("tt.pdf")
+
+function codeinjections.getinfo(specification)
+    if type(specification) == "string" then
+        specification = { filename = specification }
+    end
+    local filename = specification.filename
+    if type(filename) == "string" and isfile(filename) then
+        local pdffile = loadpdffile(filename)
+        if pdffile then
+            local pagenumber = specification.page or 1
+            local metadata   = specification.metadata
+            local catalog    = pdffile.Catalog
+            local info       = pdffile.Info
+            local pages      = pdffile.pages
+            local nofpages   = pages.n
+            if metadata then
+                local m = catalog.Metadata
+                if m then
+                    m = m()
+                    if metadata == "xml" then
+                        metadata = xml.convert(m)
+                    else
+                        metadata = m
+                    end
+                else
+                    metadata = nil
+                end
+            else
+                metadata = nil
+            end
+            if pagenumber > nofpages then
+                pagenumber = nofpages
+            end
+            local nobox = { 0, 0, 0, 0 }
+            local crop  = nobox
+            local media = nobox
+            local page  = pages[pagenumber]
+            if page then
+                crop    = page.CropBox or nobox
+                media   = page.MediaBox or crop or nobox
+                crop.n  = nil -- nicer
+                media.n = nil -- nicer
+            end
+            local bbox = crop or media or nobox
+            return {
+                filename     = filename,
+                pdfversion   = tonumber(catalog.Version),
+                nofpages     = nofpages,
+                title        = info.Title,
+                creator      = info.Creator,
+                producer     = info.Producer,
+                creationdate = info.CreationDate,
+                modification = info.ModDate,
+                metadata     = metadata,
+                width        = bbox[4] - bbox[2],
+                height       = bbox[3] - bbox[1],
+                cropbox      = { crop[1], crop[2], crop[3], crop[4] },      -- we need access
+                mediabox     = { media[1], media[2], media[3], media[4] } , -- we need access
+            }
         end
     end
 end

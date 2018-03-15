@@ -99,7 +99,7 @@
    \ifdim\wd4=\dimen0\else
      \setbox4\hbox to \dimen0{#3\displaystyle}%
    \fi
-   \mathrel{\mathop{\hbox to \dimen0{\hss\copy4\hss}}\limits\normalsuperscript{\box0}\normalsubscript{\box2}}%
+   \mathrel{\mathop{\hbox to \dimen0{\hss\copy4\hss}}\limits\normalsuperscript{\box0}\normalsubscript{\box2}}% pack ?
    \endgroup}
 
 \let\math_arrows_construct_single\math_arrows_construct
@@ -279,8 +279,8 @@
 \unexpanded\def\specrightarrowfill   {\defaultmtharrowfill \relbar               \relbar \rightarrow}
 \unexpanded\def\specleftarrowfill    {\defaultmtharrowfill \leftarrow            \relbar \relbar}
 
-\unexpanded\def\rightarrowfill       {\specrightarrowfill        \textstyle}
-\unexpanded\def\leftarrowfill        {\specleftarrowfill         \textstyle}
+\unexpanded\def\rightarrowfill       {\specrightarrowfill\textstyle}
+\unexpanded\def\leftarrowfill        {\specleftarrowfill \textstyle}
 
 \unexpanded\def\equalfill            {\defaultmtharrowfill \Relbar               \Relbar \Relbar}
 \unexpanded\def\Rightarrowfill       {\defaultmtharrowfill \Relbar               \Relbar \Rightarrow}

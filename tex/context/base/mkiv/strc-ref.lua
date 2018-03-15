@@ -16,7 +16,7 @@ if not modules then modules = { } end modules ['strc-ref'] = {
 
 local format, find, gmatch, match, strip = string.format, string.find, string.gmatch, string.match, string.strip
 local floor = math.floor
-local rawget, tonumber, type = rawget, tonumber, type
+local rawget, tonumber, type, next = rawget, tonumber, type, next
 local lpegmatch = lpeg.match
 local insert, remove, copytable = table.insert, table.remove, table.copy
 local formatters = string.formatters
@@ -37,10 +37,10 @@ local check_duplicates   = true
 directives.register("structures.referencing.checkduplicates", function(v) check_duplicates = v end)
 
 local report_references  = logs.reporter("references")
-local report_unknown     = logs.reporter("references","unknown")
 local report_identifying = logs.reporter("references","identifying")
 local report_importing   = logs.reporter("references","importing")
 local report_empty       = logs.reporter("references","empty")
+local report             = report_references
 
 local variables          = interfaces.variables
 local v_page             = variables.page
@@ -59,11 +59,7 @@ local texconditionals    = tex.conditionals
 local productcomponent   = resolvers.jobs.productcomponent
 local justacomponent     = resolvers.jobs.justacomponent
 
-local logsnewline        = logs.newline
-local logspushtarget     = logs.pushtarget
-local logspoptarget      = logs.poptarget
-
------ settings_to_array  = utilities.parsers.settings_to_array
+local settings_to_array  = utilities.parsers.settings_to_array
 local settings_to_table  = utilities.parsers.settings_to_array_obey_fences
 local process_settings   = utilities.parsers.process_stripped_settings
 local unsetvalue         = attributes.unsetvalue
@@ -122,6 +118,8 @@ local componentsplitter  = references.componentsplitter
 local currentreference   = nil
 
 local txtcatcodes        = catcodes.numbers.txtcatcodes -- or just use "txtcatcodes"
+
+local context                      = context
 
 local ctx_pushcatcodes             = context.pushcatcodes
 local ctx_popcatcodes              = context.popcatcodes
@@ -1517,7 +1515,7 @@ local function identify_outer(set,var,i)
     local inner    = var.inner
     local external = externals[outer]
     if external then
-        local v = identify_inner(set,var,nil,external)
+        local v = identify_inner(set,var,"",external)
         if v then
             v.kind = "outer with inner"
             set.external = true
@@ -1526,19 +1524,24 @@ local function identify_outer(set,var,i)
             end
             return v
         end
-        local v = identify_inner(set,var,var.outer,external)
-        if v then
-            v.kind = "outer with inner"
-            set.external = true
-            if trace_identifying then
-                report_identify_outer(set,v,i,"2b")
+        -- somewhat rubish: we use outer as first step in the externals table so it makes no
+        -- sense to have it as prefix so the next could be an option
+        local external = external[""]
+        if external then
+            local v = identify_inner(set,var,var.outer,external)
+            if v then
+                v.kind = "outer with inner"
+                set.external = true
+                if trace_identifying then
+                    report_identify_outer(set,v,i,"2b")
+                end
+                return v
             end
-            return v
         end
     end
     local external = productdata.componentreferences[outer]
     if external then
-        local v = identify_inner(set,var,nil,external)
+        local v = identify_inner(set,var,"",external)
         if v then
             v.kind = "outer with inner"
             set.external = true
@@ -1577,7 +1580,12 @@ local function identify_outer(set,var,i)
         end
         var.i = inner
         var.f = outer
-        var.r = (inner.references and inner.references.realpage) or (inner.pagedata and inner.pagedata.realpage) or 1
+        if type(inner) == "table" then
+            -- can this really happen?
+            var.r = (inner.references and inner.references.realpage) or (inner.pagedata and inner.pagedata.realpage) or 1
+        else
+            var.r = 1
+        end
         if trace_identifying then
             report_identify_outer(set,var,i,"2e")
         end
@@ -1869,52 +1877,68 @@ implement {
     }
 }
 
-function references.reportproblems() -- might become local
+logs.registerfinalactions(function()
     if nofunknowns > 0 then
         statistics.register("cross referencing", function()
             return format("%s identified, %s unknown",nofidentified,nofunknowns)
         end)
-        logspushtarget("logfile")
-        logsnewline()
-        report_references("start problematic references")
-        logsnewline()
-        for k, v in table.sortedpairs(unknowns) do
-            report_unknown("%4i: %s",v,k)
+        local sortedhash = table.sortedhash
+        logs.startfilelogging(report,"missing references")
+        for k, v in table.sortedhash(unknowns) do
+            report("%4i  %s",v,k)
         end
-        logsnewline()
-        report_references("stop problematic references")
-        logsnewline()
-        logspoptarget()
+        logs.stopfilelogging()
+        if logs.loggingerrors() then
+            logs.starterrorlogging(report,"missing references")
+            for k, v in table.sortedhash(unknowns) do
+                report("%4i  %s",v,k)
+            end
+            logs.stoperrorlogging()
+        end
     end
-end
-
-luatex.registerstopactions(references.reportproblems)
+end)
 
 -- The auto method will try to avoid named internals in a clever way which
 -- can make files smaller without sacrificing external references. Some of
 -- the housekeeping happens the backend side.
 
 local innermethod        = v_auto       -- only page|auto now
+local outermethod        = v_auto       -- only page|auto now
 local defaultinnermethod = defaultinnermethod
+local defaultoutermethod = defaultoutermethod
 references.innermethod   = innermethod  -- don't mess with this one directly
+references.outermethod   = outermethod  -- don't mess with this one directly
 
-function references.setinnermethod(m)
-    if toboolean(m) or m == v_page or m == v_yes then
+function references.setlinkmethod(inner,outer)
+    if not outer and type(inner) == "string" then
+        local m = settings_to_array(inner)
+        inner = m[1]
+        outer = m[2] or v_auto
+    end
+    if toboolean(inner) or inner == v_page or inner == v_yes then
         innermethod = v_page
-    elseif m == v_name then
+    elseif inner == v_name then
         innermethod = v_name
     else
         innermethod = v_auto
     end
+    if toboolean(outer) or outer == v_page or outer == v_yes then
+        outermethod = v_page
+    elseif inner == v_name then
+        outermethod = v_name
+    else
+        outermethod = v_auto
+    end
     references.innermethod = innermethod
-    function references.setinnermethod()
-        report_references("inner method is already set and frozen to %a",innermethod)
+    references.outermethod = outermethod
+    function references.setlinkmethod()
+        report_references("link method is already set and frozen: inner %a, outer %a",innermethod,outermethod)
     end
 end
 
 implement {
-    name      = "setinnerreferencemethod",
-    actions   = references.setinnermethod,
+    name      = "setreferencelinkmethod",
+    actions   = references.setlinkmethod,
     arguments = "string",
  -- onlyonce  = true
 }
@@ -1923,8 +1947,12 @@ function references.getinnermethod()
     return innermethod or defaultinnermethod
 end
 
+function references.getoutermethod()
+    return outermethod or defaultoutermethod
+end
+
 directives.register("references.linkmethod", function(v) -- page auto
-    references.setinnermethod(v)
+    references.setlinkmethod(v)
 end)
 
 -- we can call setinternalreference with an already known internal or with

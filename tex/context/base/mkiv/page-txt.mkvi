@@ -482,6 +482,8 @@
           \c!rightstyle\c!rightcolor\c!rightwidth{#one}}%
    \fi\fi\fi}
 
+\let\currentlayoutelement\relax
+
 \unexpanded\def\resettextcontent
   {\dotripleempty\page_layouts_reset_text_content}
 
@@ -501,6 +503,8 @@
 
 %D The placement of a whole line is handled by the next two macros. These are hooked
 %D into the general purpose token list registers mentioned before.
+
+\let\currentlayouttextline\relax
 
 \def\page_layouts_place_text_line_indeed#vertical#height%
   {\let\currentlayouttextline#vertical%
@@ -790,7 +794,7 @@
      \ifx\p_strc_pagenumbers_width\empty
        \box\scratchbox\tfskip
      \else
-       \hbox to \p_strc_pagenumbers_width{\box\scratchbox\hss}%
+       \hpack to \p_strc_pagenumbers_width{\box\scratchbox\hss}%
      \fi
    \fi
    \endgroup}
@@ -803,7 +807,7 @@
      \ifx\p_strc_pagenumbers_width\empty
        \tfskip\box\scratchbox
      \else
-       \hbox to \p_strc_pagenumbers_width{\hss\box\scratchbox}%
+       \hpack to \p_strc_pagenumbers_width{\hss\box\scratchbox}%
      \fi
    \fi
    \endgroup}
@@ -818,7 +822,7 @@
 
 \def\page_layouts_insert_elements
   {\ifcase\pageornamentstate
-     \page_layouts_place_elements_indeed
+     \page_layouts_place_elements_indeed % we could have a special flag for always ignored
    \fi}
 
 \def\page_layouts_place_elements_indeed

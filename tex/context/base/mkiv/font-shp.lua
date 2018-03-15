@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['font-shp'] = {
     license   = "see context related readme files"
 }
 
-local tonumber = tonumber
+local tonumber, next = tonumber, next
 local concat = table.concat
 local formatters = string.formatters
 
@@ -362,7 +362,7 @@ local function addvariableshapes(tfmdata,key,value)
                      -- we need inline in order to support color
                         local bt, et = getactualtext(char.tounicode or char.unicode or unicode)
                         char.commands = {
-                            { "special",  "pdf:" .. segmentstopdf(segments,factor,bt,et) }
+                            { "pdf", "origin", segmentstopdf(segments,factor,bt,et) }
                         }
                     end
                 end

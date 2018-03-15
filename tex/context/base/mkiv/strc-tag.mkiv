@@ -16,7 +16,7 @@
 
 \writestatus{loading}{ConTeXt Structure Macros / Tags}
 
-\registerctxluafile{strc-tag}{1.001}
+\registerctxluafile{strc-tag}{}
 
 \unprotect
 
@@ -32,6 +32,7 @@
 \def\t!highlight             {highlight}              % Span
 
 \def\t!section               {section}                % Sect
+\def\t!sectioncaption        {sectioncaption}         % Div
 \def\t!sectiontitle          {sectiontitle}           % H
 \def\t!sectionnumber         {sectionnumber}          % H
 \def\t!sectioncontent        {sectioncontent}         % Div
@@ -362,6 +363,9 @@
    \doifelse{\taggingparameter\c!state}\v!start{\the\everyenableelements}{\the\everydisableelements}%
 \to \everysetuptagging
 
+\unexpanded\def\forgettagging
+  {\attribute\taggedattribute\attributeunsetvalue}
+
 \setuptagging
   [\c!state=\v!stop,
    \c!method=\v!auto]
@@ -534,5 +538,7 @@
 
 \unexpanded\def\bpar{\dostarttagged\t!paragraph\empty\strc_tagged_saved_bpar}
 \unexpanded\def\epar{\strc_tagged_saved_epar\dostoptagged}
+
+% \def\untagged{attr \taggedattribute\attributeunsetvalue}
 
 \protect

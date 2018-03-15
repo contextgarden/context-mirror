@@ -379,6 +379,7 @@
 		<cd:variable name='norepeat' value='norepeat'/>
 		<cd:variable name='normal' value='normaal'/>
 		<cd:variable name='nospacing' value='geenspatiering'/>
+		<cd:variable name='nostopper' value='geenafsluiter'/>
 		<cd:variable name='not' value='niet'/>
 		<cd:variable name='notation' value='notation'/>
 		<cd:variable name='note' value='note'/>
@@ -627,6 +628,10 @@
 		<cd:constant name='align' value='uitlijnen'/>
 		<cd:constant name='aligncharacter' value='karakteruitlijnen'/>
 		<cd:constant name='alignmentcharacter' value='uitlijnkarakter'/>
+		<cd:constant name='alignmentleftsample' value='alignmentleftsample'/>
+		<cd:constant name='alignmentleftwidth' value='alignmentleftwidth'/>
+		<cd:constant name='alignmentrightsample' value='alignmentrightsample'/>
+		<cd:constant name='alignmentrightwidth' value='alignmentrightwidth'/>
 		<cd:constant name='alignsymbol' value='alignsymbol'/>
 		<cd:constant name='aligntitle' value='titeluitlijnen'/>
 		<cd:constant name='alternative' value='variant'/>
@@ -693,6 +698,7 @@
 		<cd:constant name='bottomoffset' value='onderoffset'/>
 		<cd:constant name='bottomspace' value='bodemwit'/>
 		<cd:constant name='bottomstate' value='onderstatus'/>
+		<cd:constant name='break' value='break'/>
 		<cd:constant name='buffer' value='buffer'/>
 		<cd:constant name='cache' value='cache'/>
 		<cd:constant name='calculate' value='bereken'/>
@@ -758,6 +764,7 @@
 		<cd:constant name='direction' value='richting'/>
 		<cd:constant name='directory' value='directory'/>
 		<cd:constant name='display' value='scherm'/>
+		<cd:constant name='displaythreshold' value='displaythreshold'/>
 		<cd:constant name='distance' value='afstand'/>
 		<cd:constant name='domain' value='domain'/>
 		<cd:constant name='dot' value='punt'/>
@@ -800,6 +807,7 @@
 		<cd:constant name='fieldoffset' value='veldoffset'/>
 		<cd:constant name='file' value='file'/>
 		<cd:constant name='filler' value='filler'/>
+		<cd:constant name='filter' value='filter'/>
 		<cd:constant name='filtercommand' value='filtercommand'/>
 		<cd:constant name='finalnamesep' value='finalnamesep'/>
 		<cd:constant name='finalpagesep' value='finalpagesep'/>
@@ -867,6 +875,7 @@
 		<cd:constant name='index' value='index'/>
 		<cd:constant name='indicator' value='aanduiding'/>
 		<cd:constant name='initialsep' value='initialsep'/>
+		<cd:constant name='inlinethreshold' value='inlinethreshold'/>
 		<cd:constant name='inner' value='binnen'/>
 		<cd:constant name='innermargin' value='binnenmarge'/>
 		<cd:constant name='inputfile' value='inputfile'/>
@@ -909,6 +918,7 @@
 		<cd:constant name='leftoffset' value='linkeroffset'/>
 		<cd:constant name='leftquotation' value='linkercitaat'/>
 		<cd:constant name='leftquote' value='linkerciteer'/>
+		<cd:constant name='leftsample' value='leftsample'/>
 		<cd:constant name='leftsentence' value='linkerzin'/>
 		<cd:constant name='leftspeech' value='linkeruitspraak'/>
 		<cd:constant name='leftstyle' value='linkerletter'/>
@@ -980,7 +990,8 @@
 		<cd:constant name='nleft' value='nlinks'/>
 		<cd:constant name='nlines' value='nregels'/>
 		<cd:constant name='norm' value='norm'/>
-		<cd:constant name='note' value='note'/>
+		<cd:constant name='note' value='noot'/>
+		<cd:constant name='notes' value='noten'/>
 		<cd:constant name='nr' value='nr'/>
 		<cd:constant name='nright' value='nrechts'/>
 		<cd:constant name='ntop' value='nboven'/>
@@ -1000,6 +1011,7 @@
 		<cd:constant name='numberset' value='numberset'/>
 		<cd:constant name='numberstarter' value='numberstarter'/>
 		<cd:constant name='numberstopper' value='numberstopper'/>
+		<cd:constant name='numberstrut' value='nummerstrut'/>
 		<cd:constant name='numberstyle' value='nummerletter'/>
 		<cd:constant name='numberwidth' value='nummerbreedte'/>
 		<cd:constant name='nx' value='nx'/>
@@ -1111,6 +1123,7 @@
 		<cd:constant name='rightoffset' value='rechteroffset'/>
 		<cd:constant name='rightquotation' value='rechtercitaat'/>
 		<cd:constant name='rightquote' value='rechterciteer'/>
+		<cd:constant name='rightsample' value='rightsample'/>
 		<cd:constant name='rightsentence' value='rechterzin'/>
 		<cd:constant name='rightspeech' value='rechteruitspraak'/>
 		<cd:constant name='rightstyle' value='rechterletter'/>
@@ -1153,6 +1166,7 @@
 		<cd:constant name='sidemethod' value='zijmethode'/>
 		<cd:constant name='sidespaceafter' value='zijnawit'/>
 		<cd:constant name='sidespacebefore' value='zijvoorwit'/>
+		<cd:constant name='sidethreshold' value='sidethreshold'/>
 		<cd:constant name='sign' value='teken'/>
 		<cd:constant name='size' value='formaat'/>
 		<cd:constant name='slantedfeatures' value='slantedfeatures'/>
@@ -1166,7 +1180,9 @@
 		<cd:constant name='source' value='bron'/>
 		<cd:constant name='space' value='spatie'/>
 		<cd:constant name='spaceafter' value='nawit'/>
+		<cd:constant name='spaceafterside' value='witnazij'/>
 		<cd:constant name='spacebefore' value='voorwit'/>
+		<cd:constant name='spacebeforeside' value='witvoorzij'/>
 		<cd:constant name='spaceinbetween' value='tussenwit'/>
 		<cd:constant name='spacing' value='spatiering'/>
 		<cd:constant name='specification' value='specification'/>
@@ -1231,6 +1247,7 @@
 		<cd:constant name='titledistance' value='titelafstand'/>
 		<cd:constant name='titleleft' value='titellinks'/>
 		<cd:constant name='titleright' value='titelrechts'/>
+		<cd:constant name='titlestrut' value='titelstrut'/>
 		<cd:constant name='titlestyle' value='titelletter'/>
 		<cd:constant name='to' value='aan'/>
 		<cd:constant name='toffset' value='toffset'/>

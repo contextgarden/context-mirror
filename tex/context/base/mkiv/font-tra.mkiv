@@ -32,7 +32,7 @@
 %D The implementation is rather straightforward in using
 %D \type{\halign}.
 
-\fetchruntimecommand \showbodyfont  {\f!fontprefix\s!run}
+\fetchruntimecommand \showbodyfont  \f!font_run
 
 %D \macros
 %D   {showfontstrip, testminimalbaseline, showminimalbaseline}
@@ -43,9 +43,9 @@
 %D
 %D \showfontstrip \blank \showminimalbaseline
 
-\fetchruntimecommand \showfontstrip       {\f!fontprefix\s!run}
-\fetchruntimecommand \testminimalbaseline {\f!fontprefix\s!run}
-\fetchruntimecommand \showminimalbaseline {\f!fontprefix\s!run}
+\fetchruntimecommand \showfontstrip       \f!font_run
+\fetchruntimecommand \testminimalbaseline \f!font_run
+\fetchruntimecommand \showminimalbaseline \f!font_run
 
 %D \macros
 %D   {showkerning}
@@ -54,7 +54,7 @@
 %D
 %D \showkerning{Can you guess what kerning is?}
 
-\fetchruntimecommand \showkerning {\f!fontprefix\s!run}
+\fetchruntimecommand \showkerning \f!font_run
 
 %D \macros
 %D   {showbodyfontenvironment,showfont,showfontstyle,showligatures}
@@ -67,7 +67,7 @@
 %D
 %D \showsetup{showbodyfontenvironment}
 
-\fetchruntimecommand \showbodyfontenvironment {\f!fontprefix\s!run}
+\fetchruntimecommand \showbodyfontenvironment \f!font_run
 
 %D
 %D The following command generates a fontmap:
@@ -79,12 +79,12 @@
 %D \typebuffer
 %D \getbuffer
 
-\fetchruntimecommand \showfont           {\f!fontprefix\s!run}
-\fetchruntimecommand \showfontstyle      {\f!fontprefix\s!run}
-\fetchruntimecommand \showligature       {\f!fontprefix\s!run}
-\fetchruntimecommand \showligatures      {\f!fontprefix\s!run}
-\fetchruntimecommand \showcharratio      {\f!fontprefix\s!run}
-\fetchruntimecommand \showfontparameters {\f!fontprefix\s!run}
+\fetchruntimecommand \showfont           \f!font_run
+\fetchruntimecommand \showfontstyle      \f!font_run
+\fetchruntimecommand \showligature       \f!font_run
+\fetchruntimecommand \showligatures      \f!font_run
+\fetchruntimecommand \showcharratio      \f!font_run
+\fetchruntimecommand \showfontparameters \f!font_run
 
 \unexpanded\def\showchardata          #1{\ctxcommand{showchardata("#1")}}
 \unexpanded\def\showfontdata            {\ctxcommand{showfontparameters()}}
@@ -124,7 +124,18 @@
 
 \unexpanded\def\otfstepcharcommand#1#2#3% font char class
   {\otfstepspace
-   \doif{#3}{mark}{\underbar}{U+\hexnumber{#2}}:\ruledhbox{\ctxlua{nodes.tracers.fontchar(#1,#2)}}%
+   \doif{#3}{mark}{\underbar}{U+\hexnumber{#2}}:%
+   \setbox\scratchbox\hbox{\ctxlua{nodes.tracers.fontchar(#1,#2)}}%
+   \ifdim\wd\scratchbox=\zeropoint
+     \scratchwidth.125\onepoint
+     \scratchdistance\dimexpr(\emwidth/2-\scratchwidth)\relax
+     \kern\scratchdistance
+     \ruledhbox to \scratchwidth{\hss\box\scratchbox\hss}%
+     \kern-\scratchwidth
+     \hskip\scratchdistance
+   \else
+     \ruledhbox{\box\scratchbox}%
+   \fi
    \otfstepspace}
 
 \unexpanded\def\otfstepfontcommand#1#2#3% id font size
@@ -187,6 +198,41 @@
 %       \blank}%
 %    \endgroup}
 
+\newconstant\showotfstepsmode  \showotfstepsmode\plusfour
+
+\unexpanded\def\showotfsteps_n
+  {\blank
+   \begingroup
+     \advance\leftskip6\emwidth
+     \showotfstepmessages\recurselevel
+     \par
+   \endgroup
+   \blank
+   \dontleavehmode
+   \hbox to \hsize \bgroup
+     \hbox to 6\emwidth \bgroup
+       \bf
+       \ifnum\recurselevel=\scratchcounter result\else step \recurselevel\fi
+       \hss
+     \egroup
+     \vtop \bgroup
+       \hsize\dimexpr\hsize-6\emwidth\relax
+       \resetallattributes
+       \lefttoright
+       \dontleavehmode
+       \ifnum\recurselevel=\scratchcounter
+         \ruledhbox{\box\otfcompositionbox}%
+       \else
+         \ruledhbox{\showotfstepglyphs\recurselevel}%
+       \fi
+       \quad
+       \showotfstepchars\recurselevel
+       \hfill
+       \par
+     \egroup
+   \egroup
+   \blank}
+
 \unexpanded\def\showotfsteps
   {\begingroup
    \veryraggedright
@@ -215,41 +261,28 @@
    \blank
    \scratchcounter\otfnoffeaturesteps\relax
    \dorecurse\scratchcounter
-     {\blank
-      \begingroup
-        \advance\leftskip6\emwidth
-        \showotfstepmessages\recurselevel
-        \par
-      \endgroup
-      \blank
-      \dontleavehmode
-      \hbox to \hsize \bgroup
-        \hbox to 6\emwidth \bgroup
-          \bf
-          \ifnum\recurselevel=\scratchcounter result\else step \recurselevel\fi
-          \hss
-        \egroup
-        \vtop \bgroup
-          \hsize\dimexpr\hsize-6\emwidth\relax
-          \resetallattributes
-          \pardir TLT\textdir TLT\relax
-          \dontleavehmode
-          \ifnum\recurselevel=\scratchcounter
-            \ruledhbox{\box\otfcompositionbox}%
-          \else
-            \ruledhbox{\showotfstepglyphs\recurselevel}%
-          \fi
-          \quad
-          \showotfstepchars\recurselevel
-          \hfill
-          \par
-        \egroup
-      \egroup
-      \blank}%
+     {\ifcase\showotfstepsmode
+      \or % 1 = only first
+        \ifnum\recurselevel=\plusone
+          \showotfsteps_n
+        \fi
+      \or % 2 = only last
+        \ifnum\recurselevel=\scratchcounter
+          \showotfsteps_n
+        \fi
+      \or % 3 = first and last
+        \ifnum\recurselevel=\plusone
+          \showotfsteps_n
+        \else\ifnum\recurselevel=\scratchcounter
+          \showotfsteps_n
+        \fi\fi
+      \else % everything
+        \showotfsteps_n
+      \fi}%
    \endgroup}
 
 \unexpanded\def\startotfsample
-  {\enabletrackers[*otf.sample]% beware, kind of global
+  {\enabletrackers[otf.sample.silent]% beware, kind of global
    \startotfcollecting
    \begingroup
    \veryraggedright
@@ -259,7 +292,7 @@
 \unexpanded\def\stopotfsample
   {\endgroup
    \stopotfcollecting
-   \disabletrackers[*otf.sample]% beware, kind of global: otf.sample
+   \disabletrackers[otf.sample]% beware, kind of global: otf.sample
    \showotfsteps
    \resetotfcollecting}
 
@@ -275,6 +308,9 @@
 \letvalue{\??otfcompositiondir  +1}\lefttoright
 \letvalue{\??otfcompositiondir   1}\lefttoright
 
+\unexpanded\def\setotfcompositiondirection#1%
+ {\begincsname\??otfcompositiondir#1\endcsname}
+
 \unexpanded\def\showotfcomposition#1#2#3% {font*features at size}, rl=-1, text
   {\begingroup
    \forgetparindent
@@ -283,9 +319,44 @@
    \setupalign[\v!verytolerant,\v!flushleft]%
    \startotfsample
    \nohyphens
-   \global\setbox\otfcompositionbox\hbox{\definedfont[#1]\relax\getvalue{\??otfcompositiondir#2}\relax#3}%
+   \global\setbox\otfcompositionbox\hbox{\definedfont[#1]\relax\setotfcompositiondirection{#2}\relax#3}%
    \stopotfsample
    \endgroup}
+
+%D \startbuffer
+%D \startotfcompositionlist{Serif*default @ 11pt}{l2r}%
+%D     \showotfcompositionsample{effe}
+%D \stopotfcompositionlist
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\unexpanded\def\showotfcompositionlist#1#2#3%
+  {\begingroup
+   \definedfont[#1]%
+   \setbox\scratchbox\hbox\bgroup
+     \setotfcompositiondirection{#2}%
+     #3%
+   \egroup
+   \strut
+   \def|##1|{\kern\onepoint\string|\kern\onepoint##1\kern\onepoint\string|\kern\onepoint}%
+   \cldcontext{nodes.listtoutf(tex.box[\number\scratchbox].list,"{\\kern\\onepoint}",true)}%
+   \endgroup}
+
+\unexpanded\def\startotfcompositionlist#1#2#3\stopotfcompositionlist
+  {\begingroup
+   \unexpanded\def\showotfcompositionsample##1%
+     {\NC\type{##1}%
+      \NC\showotfcompositionlist{Mono}{#2}{##1}%
+      \NC\showotfcompositionlist{#1}{#2}{##1}%
+      \NC\definedfont[#1]##1%
+      \NC\NR}%
+   \starttabulate[|||||]%
+     #3%
+   \stoptabulate
+   \endgroup}
+
+\let\stopotfcompositionlist\relax
 
 % new
 

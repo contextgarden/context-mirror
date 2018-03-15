@@ -24,7 +24,7 @@ end
 
 local lower, find, sub = string.lower, string.find, string.sub
 local concat, copy, tohash = table.concat, table.copy, table.tohash
-local next, type, rawget = next, type, rawget
+local next, type, rawget, tonumber = next, type, rawget, tonumber
 local utfchar = utf.char
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local textoutf = characters and characters.tex.toutf
@@ -138,14 +138,15 @@ local virtuals = allocate {
 }
 
 local defaulttypes = allocate {
-    author    = "author",
-    editor    = "author",
-    publisher = "author",
-    page      = "pagenumber",
-    pages     = "pagenumber",
-    keywords  = "keyword",
-    doi       = "url",
-    url       = "url",
+    author     = "author",
+    editor     = "author",
+    translator = "author",
+ -- publisher  = "author",
+    page       = "pagenumber",
+    pages      = "pagenumber",
+    keywords   = "keyword",
+    doi        = "url",
+    url        = "url",
 }
 
 local defaultsets = allocate {
@@ -265,11 +266,13 @@ local specifications = setmetatableindex(function(t,name)
     local fullname = resolvers.findfile(filename) or ""
     if fullname == "" then
         report("no data definition file %a for %a",filename,name)
+        t[name] = default
         return default
     end
     local specification = table.load(fullname)
     if not specification then
         report("invalid data definition file %a for %a",fullname,name)
+        t[name] = default
         return default
     end
     --
@@ -320,7 +323,7 @@ end
 function publications.parenttag(dataset,tag)
     if not dataset or not tag then
         report("error in specification, dataset %a, tag %a",dataset,tag)
-    elseif find(tag,"%+") then
+    elseif find(tag,"+",1,true) then
         local tags    = lpegmatch(p_splitter,tag)
         local parent  = tags[1]
         local current = datasets[dataset]
@@ -862,7 +865,7 @@ do
         publications.loadbibdata(dataset,data,fullname,kind)
     end
 
-    function loaders.lua(dataset,filename) -- if filename is a table we load that one
+    function loaders.lua(dataset,filename,loader) -- if filename is a table we load that one
         local current, data, fullname
         if type(filename) == "table" then
             current = datasets[dataset]
@@ -873,7 +876,7 @@ do
                 return
             end
             current = datasets[dataset]
-            data    = table.load(fullname)
+            data    = (loader or table.load)(fullname)
         end
         if data then
             local luadata = current.luadata
@@ -886,6 +889,10 @@ do
                 end
             end
         end
+    end
+
+    function loaders.json(dataset,filename)
+        loaders.lua(dataset,filename,utilities.json.load)
     end
 
     function loaders.buffer(dataset,name) -- if filename is a table we load that one

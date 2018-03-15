@@ -16,7 +16,7 @@ if not modules then modules = { } end modules ['anch-pgr'] = {
 -- been replaced. Background code is still not perfect, but some day ... the details manual
 -- will discuss this issue.
 
-local abs, div, floor, round, min, max = math.abs, math.div, math.floor, math.round, math.min, math.max
+local tonumber = tonumber
 local sort, concat = table.sort, table.concat
 local splitter = lpeg.splitat(":")
 local lpegmatch = lpeg.match
@@ -971,8 +971,8 @@ local function freemultipar(pagedata,frees) -- ,k
                             if trace_free then
                                 report_free("case 4, inside, right")
                             end
-                            n = n + 1  temp[n] = { xmin, lly }
                             n = n + 1  temp[n] = { xmin, uly }
+                            n = n + 1  temp[n] = { xmin, lly }
                             done = true
                         else
                             -- case 0

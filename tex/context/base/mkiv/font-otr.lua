@@ -65,11 +65,12 @@ if not modules then modules = { } end modules ['font-otr'] = {
 --     require("char-ini")
 -- end
 
-local next, type = next, type
+local next, type, tonumber = next, type, tonumber
 local byte, lower, char, gsub = string.byte, string.lower, string.char, string.gsub
 local floor, round = math.floor, math.round
 local P, R, S, C, Cs, Cc, Ct, Carg, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Ct, lpeg.Carg, lpeg.Cmt
 local lpegmatch = lpeg.match
+local rshift = bit32.rshift
 
 local setmetatableindex = table.setmetatableindex
 local formatters        = string.formatters
@@ -660,12 +661,10 @@ local widths = {
 setmetatableindex(weights, function(t,k)
     local r = floor((k + 50) / 100) * 100
     local v = (r > 900 and "black") or rawget(t,r) or "normal"
--- print("weight:",k,r,v)
     return v
 end)
 
 setmetatableindex(widths,function(t,k)
--- print("width:",k)
     return "normal"
 end)
 
@@ -1346,7 +1345,7 @@ formatreaders[4] = function(f,fontdata,offset)
         offsets[i] = readushort(f)
     end
     -- format length language nofsegments searchrange entryselector rangeshift 4-tables
-    local size = (length - 2 * 2 - 5 * 2 - 4 * nofsegments * 2) / 2
+    local size = (length - 2 * 2 - 5 * 2 - 4 * 2 * nofsegments) / 2
     for i=1,size-1 do
         indices[i] = readushort(f)
     end
@@ -1514,7 +1513,7 @@ end
 
 formatreaders[13] = function(f,fontdata,offset)
     --
-    -- this fector is only used for simple fallback fonts
+    -- this vector is only used for simple fallback fonts
     --
     setposition(f,offset+2+2+4+4) -- skip format reserved length language
     local mapping    = fontdata.mapping
@@ -1811,7 +1810,7 @@ function readers.kern(f,fontdata,specification)
             local length   = readushort(f)
             local coverage = readushort(f)
             -- bit 8-15 of coverage: format 0 or 2
-            local format   = bit32.rshift(coverage,8) -- is this ok?
+            local format   = rshift(coverage,8) -- is this ok?
             if format == 0 then
                 local nofpairs      = readushort(f)
                 local searchrange   = readushort(f)
@@ -2130,9 +2129,9 @@ local function readdata(f,offset,specification)
                 if factors then
                     specification.factors = factors
                     fontdata.factors = factors
-                    report("factors: % t",factors)
-                else
-                    report("bad factors")
+             --     report("factors: % t",factors)
+             -- else
+             --     report("bad factors")
                 end
             else
              -- report("unknown instance")

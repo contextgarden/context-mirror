@@ -1,0 +1,302 @@
+%D \module
+%D   [      file=s-present-weird, % s-pre-17,
+%D        version=1999.08.20,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Weird,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startmodule[present-balls]
+
+%D This is a rather old style, adn I used it for a presentation about \MATHML\
+%D around the turn of the century. Unfortunately I can't find back that weird
+%D presentation. I didn't change the code apart from loading the body font. One can
+%D clock on an area and get it large. Clicking elsewhere brings back the main page.
+%D It was actualy a zoom test at that time.
+
+\setupbodyfont
+  [dejavu,11pt,ss]
+
+\setupsystem
+  [random=medium]
+
+\setupbackgrounds
+  [state=repeat]
+
+\setupbackgrounds
+  [page]
+  [background={page,forward}]
+
+\setupbackgrounds
+  [text][text]
+  [background=blowdown]
+
+\setupinteraction
+  [state=start,
+ % click=off,
+   color=TitleColor,
+   contrastcolor=TitleColor]
+
+\setupinteractionscreen
+  [option=max]
+
+\setuptolerance
+  [verytolerant,stretch]
+
+\definecolor [BackColor]  [s=.30]
+\definecolor [PageColor]  [g=1]
+\definecolor [FrameColor] [r=1]
+\definecolor [TitleColor] [y=1]
+\definecolor [ArrowColor] [b=1]
+
+\defineoverlay [title]    [\useMPgraphic{title}]
+\defineoverlay [page]     [\useMPgraphic{page}]
+\defineoverlay [blowup]   [{\hboxreference[whatever:\CurrentBlaBla]{\overlaybutton{whatever:\CurrentBlaBla}}}]
+\defineoverlay [blowdown] [{\hboxreference[page:\realfolio]{\overlaybutton{page:\realfolio}}}]
+\defineoverlay [forward]  [\overlaybutton{forward}]
+
+\startMPpositiongraphic{mppos:connection}
+    path pa, pb, pc ; pair ca, cb ;
+    initialize_box(\MPpos{\MPvar{self}}) ; pa := pxy ; ca := cxy ;
+    initialize_box(\MPpos{\MPvar{prev}}) ; pb := pxy ; cb := cxy ;
+    pickup pencircle scaled .5pt ;
+    pa := pa enlarged 10pt ;
+    pb := pb enlarged 10pt ;
+    for i=1 upto 10 :
+        draw pa randomized 20pt withcolor \MPcolor{FrameColor} ;
+    endfor ;
+    if \MPp{\MPvar{prev}} > 0 :
+        pair a, b, c, d ;
+        for i=1 upto 25 :
+            a := .5[ulcorner pa,urcorner pa] randomized (10pt,10pt) ;
+            b := .5[llcorner pb,lrcorner pb] randomized (20pt,10pt) ;
+            c := .5[a,b] rotatedaround(a,-25) randomized (5pt,5pt) ;
+            d := .5[a,b] rotatedaround(a,+25) randomized (5pt,5pt) ;
+            draw (a--b) withcolor \MPcolor{ArrowColor} ;
+            draw (d--a--c) withcolor \MPcolor{ArrowColor} ;
+        endfor ;
+    fi ;
+    anchor_box(\MPanchor{\MPvar{self}}) ;
+\stopMPpositiongraphic
+
+\startuseMPgraphic{title}
+    pickup pencircle scaled .5pt ;
+    for i=1 upto 10 :
+        draw fullsquare
+            xyscaled(OverlayWidth,OverlayHeight)
+            enlarged 10pt randomized 20pt
+            withcolor \MPcolor{TitleColor} ;
+    endfor ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{page}
+    StartPage ;
+        pickup pencircle scaled .5pt ;
+        fill Page withcolor \MPcolor{BackColor} ;
+        for i=1 upto 20 :
+            draw Page enlarged -50pt randomized 50pt withcolor \MPcolor{PageColor} ;
+        endfor ;
+    StopPage ;
+\stopuseMPgraphic
+
+\newcounter\CurrentBlaBla
+
+\defineframedtext
+   [ZoomText]
+   [before=,
+    after=,
+    width=fit,
+    align=flushleft,
+    frame=off,
+    foregroundcolor=white]
+
+\starttexdefinition StartText
+    \begingroup
+    \getrandomdimen\scratchdimen{250pt}{350pt}
+    \edef\TextWidth{\the\scratchdimen}
+    \setbox\scratchbox\hbox\bgroup
+        \hsize\TextWidth
+        \ZoomText\bgroup
+\stoptexdefinition
+
+\starttexdefinition StartTextSimple
+    \begingroup
+    \setbox\scratchbox\hbox\bgroup
+        \framed [
+            frame=off,
+            foregroundcolor=white
+        ]
+        \bgroup
+\stoptexdefinition
+
+\starttexdefinition StopTextSimple
+    \StopText
+\stoptexdefinition
+
+\starttexdefinition StopText
+        \egroup
+    \egroup
+    \doglobal\increment\CurrentBlaBla
+    \let\PrevBlaBla\CurrentBlaBla \doglobal\decrement\PrevBlaBla
+    \let\NextBlaBla\CurrentBlaBla \doglobal\increment\NextBlaBla
+    \setMPpositiongraphic {
+        connection:\CurrentBlaBla
+    }{
+        mppos:connection
+    }{
+        seed=\CurrentBlaBla,
+        prev=connection:\PrevBlaBla,
+        next=connection:\NextBlaBla
+    }
+    \hbox to 600pt \bgroup
+        \setupinteraction[focus=frame]
+        \getrandomdimen\scratchdimen{50pt}{75pt}
+        \hskip0pt plus \scratchdimen minus \scratchdimen
+        \hpos {
+            connection:\CurrentBlaBla
+        }{
+            \framed [
+                frame=off,
+                offset=overlay,
+                backgroundoffset=50pt,
+                background=blowup
+            ] {
+                \box\scratchbox
+            }
+        }
+        \getrandomdimen\scratchdimen{50pt}{75pt}
+        \hskip0pt plus \scratchdimen minus \scratchdimen
+    \egroup
+    \getrandomdimen\scratchdimen{75pt}{125pt}
+    \vskip\scratchdimen
+    \endgroup
+\stoptexdefinition
+
+\dontcomplain
+
+\disablemode[SpreadPage]
+
+\starttexdefinition StartPage #1
+    \doglobal\increment(\CurrentBlaBla,100)%
+    \setvariables[StartPage][title={#1}]
+    \setbox\scratchbox\hbox\bgroup
+        \valign\bgroup
+            \ignorespaces
+            \alignmark\alignmark
+            \vss
+            \cr
+\stoptexdefinition
+
+\starttexdefinition StopPage
+    \cr
+    \egroup
+    \egroup
+    \setbox\scratchbox\vbox\bgroup
+        \vskip100pt
+        \doifelsemode {SpreadPage} {
+            \hbox spread 200pt
+        } {
+            \hbox to \wd\scratchbox
+        }
+        \bgroup
+            \setupinteraction[focus=frame]
+            \hss
+            \switchtobodyfont[big]%
+            \bfd
+            \doglobal\increment\CurrentBlaBla
+            \setupinterlinespace
+            \hpos {
+                title:\realfolio
+            }{
+                \framed [
+                    frame=off,
+                    offset=overlay,
+                    backgroundoffset=50pt,
+                    background=blowup
+                ] {
+                    \framed [
+                        frame=off,
+                        align=middle,
+                        foregroundcolor=white,
+                        background=title
+                    ] {
+                        \getvariable{StartPage}{title}
+                    }
+                }
+            }
+            \hss
+        \egroup
+        \vskip100pt
+        \box\scratchbox
+    \egroup
+    \normalexpanded {
+        \definepapersize [
+            MasterPage
+        ] [
+            width=\the\dimexpr\wd\scratchbox+100pt\relax,
+            height=\the\dimexpr\ht\scratchbox+\dp\scratchbox+100pt\relax
+        ]
+    }
+    \setuppapersize
+        [MasterPage]
+        [MasterPage]
+    \setuplayout [
+        topspace=50pt,
+        backspace=50pt,
+        width=middle,
+        header=0pt,
+        footer=0pt,
+        height=middle
+    ]
+    \centerbox {
+        \box\scratchbox
+    }
+   \page
+\stoptexdefinition
+
+\starttexdefinition StartTopic #1
+    \removeunwantedspaces
+    \cr
+    \doglobal\increment(\CurrentBlaBla,100)%
+    \vbox\bgroup
+        \vskip100pt
+        \bgroup
+            \definecolor[FrameColor][TitleColor]
+            \switchtobodyfont[big]
+            \bfd
+            \setupinterlinespace
+            \StartTextSimple
+                \ignorespaces
+                #1
+                \removeunwantedspaces
+            \StopTextSimple
+            \vskip25pt
+        \egroup
+\stoptexdefinition
+
+\starttexdefinition StopTopic
+    \vskip-\lastskip
+    \vskip100pt
+    \egroup
+    \ignorespaces
+\stoptexdefinition
+
+\starttexdefinition TitlePage #1
+    \begingroup
+        \def\\{\vskip1ex\bfc\def\\{\vskip1ex\bfb}}
+        \enablemode[SpreadPage]
+        \StartPage{#1}
+        \StopPage
+    \endgroup
+\stoptexdefinition
+
+\stopmodule
+
+\continueifinputfile{s-present-balls.mkiv}
+
+\inputpresentationfile{examples/present-weird-001.tex}

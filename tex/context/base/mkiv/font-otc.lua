@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['font-otc'] = {
     version   = 1.001,
-    comment   = "companion to font-otf.lua (context)",
+    comment   = "companion to font-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -10,6 +10,8 @@ local format, insert, sortedkeys, tohash = string.format, table.insert, table.so
 local type, next = type, next
 local lpegmatch = lpeg.match
 local utfbyte, utflen, utfsplit = utf.byte, utf.len, utf.split
+local match = string.match
+local sortedhash = table.sortedhash
 
 -- we assume that the other otf stuff is loaded already
 
@@ -21,6 +23,10 @@ local otf                 = fonts.handlers.otf
 local registerotffeature  = otf.features.register
 local setmetatableindex   = table.setmetatableindex
 
+local checkmerge          = fonts.helpers.checkmerge
+local checkflags          = fonts.helpers.checkflags
+local checksteps          = fonts.helpers.checksteps
+
 local normalized = {
     substitution      = "substitution",
     single            = "substitution",
@@ -29,6 +35,7 @@ local normalized = {
     multiple          = "multiple",
     kern              = "kern",
     pair              = "pair",
+    single            = "single",
     chainsubstitution = "chainsubstitution",
     chainposition     = "chainposition",
 }
@@ -40,6 +47,7 @@ local types = {
     multiple          = "gsub_multiple",
     kern              = "gpos_pair",
     pair              = "gpos_pair",
+    single            = "gpos_single",
     chainsubstitution = "gsub_contextchain",
     chainposition     = "gpos_contextchain",
 }
@@ -403,16 +411,16 @@ local function addfeature(data,feature,specifications)
         return coverage
     end
 
+    local prepare_single = prepare_pair -- we could have a better test on the spec
+
     local function prepare_chain(list,featuretype,sublookups)
         -- todo: coveractions
         local rules    = list.rules
         local coverage = { }
         if rules then
-            local rulehash     = { }
-            local rulesize     = 0
-            local sequence     = { }
-            local nofsequences = 0
-            local lookuptype   = types[featuretype]
+            local rulehash   = { }
+            local rulesize   = 0
+            local lookuptype = types[featuretype]
             for nofrules=1,#rules do
                 local rule         = rules[nofrules]
                 local current      = rule.current
@@ -442,7 +450,7 @@ local function addfeature(data,feature,specifications)
                 local lookups = rule.lookups or false
                 local subtype = nil
                 if lookups and sublookups then
-                    for k, v in next, lookups do
+                    for k, v in sortedhash(lookups) do
                         local t = type(v)
                         if t == "table" then
                             -- already ok
@@ -460,10 +468,10 @@ local function addfeature(data,feature,specifications)
                                     subtype = lookup.type
                                 end
                             else
-                                lookups[k] = false -- new
+                                lookups[k] = false -- { false } -- new
                             end
                         else
-                            lookups[k] = false -- new
+                            lookups[k] = false -- { false } -- new
                         end
                     end
                 end
@@ -494,14 +502,17 @@ local function addfeature(data,feature,specifications)
                         replacements, -- 7
                         subtype,      -- 8
                     }
-                    for unic in next, sequence[start] do
+--                     for unic in next, sequence[start] do
+                    for unic in sortedhash(sequence[start]) do
                         local cu = coverage[unic]
                         if not cu then
                             coverage[unic] = rulehash -- can now be done cleaner i think
                         end
                     end
+                    sequence.n = nofsequences
                 end
             end
+            rulehash.n = rulesize
         end
         return coverage
     end
@@ -542,9 +553,9 @@ local function addfeature(data,feature,specifications)
                 local s = sequences[i]
                 local f = s.features
                 if f then
-                    for k in next, f do
+                    for k in sortedhash(f) do -- next, f do
                         if k == position then
-                                index = i
+                            index = i
                             break
                         end
                     end
@@ -600,6 +611,9 @@ local function addfeature(data,feature,specifications)
             local steps         = { }
             local sublookups    = specification.lookups
             local category      = nil
+            --
+            checkflags(specification,resources)
+            --
             if sublookups then
                 local s = { }
                 for i=1,#sublookups do
@@ -621,18 +635,25 @@ local function addfeature(data,feature,specifications)
                             coverage = prepare_alternate(list,featuretype,nocheck)
                         elseif featuretype == "multiple" then
                             coverage = prepare_multiple(list,featuretype,nocheck)
-                        elseif featuretype == "kern" then
-                            format   = "kern"
+                        elseif featuretype == "kern" or featuretype == "move" then
+                            format   = featuretype
                             coverage = prepare_kern(list,featuretype)
                         elseif featuretype == "pair" then
                             format   = "pair"
                             coverage = prepare_pair(list,featuretype)
+                        elseif featuretype == "single" then
+                            format   = "single"
+                            coverage = prepare_single(list,featuretype)
                         end
                         if coverage and next(coverage) then
                             nofsteps = nofsteps + 1
                             steps[nofsteps] = register(coverage,featuretype,format,feature,nofsteps,descriptions,resources)
                         end
                     end
+                    --
+                    checkmerge(specification)
+                    checksteps(specification)
+                    --
                     s[i] = {
                         [stepkey] = steps,
                         nofsteps  = nofsteps,
@@ -658,14 +679,18 @@ local function addfeature(data,feature,specifications)
                 elseif featuretype == "multiple" then
                     category = "gsub"
                     coverage = prepare_multiple(list,featuretype,nocheck)
-                elseif featuretype == "kern" then
+                elseif featuretype == "kern" or featuretype == "move" then
                     category = "gpos"
-                    format   = "kern"
+                    format   = featuretype
                     coverage = prepare_kern(list,featuretype)
                 elseif featuretype == "pair" then
                     category = "gpos"
                     format   = "pair"
                     coverage = prepare_pair(list,featuretype)
+                elseif featuretype == "single" then
+                    category = "gpos"
+                    format   = "single"
+                    coverage = prepare_single(list,featuretype)
                 elseif featuretype == "chainsubstitution" then
                     category = "gsub"
                     coverage = prepare_chain(list,featuretype,sublookups)
@@ -688,6 +713,7 @@ local function addfeature(data,feature,specifications)
                         askedfeatures[k] = tohash(v)
                     end
                 end
+                --
                 if featureflags[1] then featureflags[1] = "mark" end
                 if featureflags[2] then featureflags[2] = "ligature" end
                 if featureflags[3] then featureflags[3] = "base" end
@@ -702,6 +728,10 @@ local function addfeature(data,feature,specifications)
                     nofsteps  = nofsteps,
                     type      = steptype,
                 }
+                --
+                checkflags(sequence,resources)
+                checkmerge(sequence)
+                checksteps(sequence)
                 -- position | prepend | append
                 local first, last = getrange(sequences,category)
                 inject(specification,sequences,sequence,first,last,category,feature)
@@ -1004,7 +1034,8 @@ registerotffeature {
 local lookups = { }
 local protect = { }
 local revert  = { }
-local zwj     = { 0x200C }
+local zwjchar = 0x200C
+local zwj     = { zwjchar }
 
 otf.addfeature {
     name    = "blockligatures",
@@ -1048,31 +1079,59 @@ registerotffeature {
 local settings_to_array = utilities.parsers and utilities.parsers.settings_to_array
                        or function(s) return string.split(s,",") end -- for generic
 
+local splitter = lpeg.splitat(":")
+
 local function blockligatures(str)
 
     local t = settings_to_array(str)
 
     for i=1,#t do
-        local ti = utfsplit(t[i])
-        if #ti > 1 then
-            local one = ti[1]
-            local two = ti[2]
-            lookups[one] = { one, 0x200C }
+        local ti = t[i]
+        local before, current, after = lpegmatch(splitter,ti)
+        if current and after then -- before is returned when no match
+            -- experimental joke
+            if before then
+                before = utfsplit(before)
+                for i=1,#before do
+                    before[i] = { before[i] }
+                end
+            end
+            if current then
+                current = utfsplit(current)
+            end
+            if after then
+                after = utfsplit(after)
+                for i=1,#after do
+                    after[i] = { after[i] }
+                end
+            end
+        else
+            before  = nil
+            current = utfsplit(ti)
+            after   = nil
+        end
+        if #current > 1 then
+            local one = current[1]
+            local two = current[2]
+            lookups[one] = { one, zwjchar }
             local one = { one }
             local two = { two }
             local new = #protect + 1
             protect[new] = {
+                before  = before,
                 current = { one, two },
+                after   = after,
                 lookups = { 1 }, -- not shared !
             }
             revert[new] = {
+             -- before = before,
                 current = { one, zwj },
+             -- after   = { two, unpack(after) },
                 after   = { two },
                 lookups = { 1 }, -- not shared !
             }
         end
     end
-
 end
 
 -- blockligatures("\0\0")
@@ -1081,6 +1140,7 @@ otf.helpers.blockligatures = blockligatures
 
 -- blockligatures("fi,ff")
 -- blockligatures("fl")
+-- blockligatures("u:fl:age")
 
 if context then
 

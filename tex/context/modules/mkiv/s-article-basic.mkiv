@@ -1,0 +1,75 @@
+%D \module
+%D   [      file=s-article-basic,
+%D        version=2010.01.01, % long ago, just for me
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Article Basic Setup,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startmodule[article-basic]
+
+\unprotect
+
+\definemeasure [article:margin]  [\paperheight/20] % was 15, see xtables-mkiv for results
+\definemeasure [overview:margin] [\paperheight/30]
+
+\definelayout
+  [article]
+  [\c!topspace=\measure{article:margin},
+   \c!bottomspace=\measure{article:margin},
+   \c!backspace=\measure{article:margin},
+   \c!header=\measure{article:margin},
+   \c!footer=0pt,
+   \c!width=\v!middle,
+   \c!height=\v!middle]
+
+
+\definelayout
+  [overview]
+  [\c!topspace=\measure{overview:margin},
+   \c!bottomspace=\measure{overview:margin},
+   \c!backspace=\measure{overview:margin},
+   \c!header=\measure{overview:margin},
+   \c!footer=0pt,
+   \c!width=\v!middle,
+   \c!height=\v!middle]
+
+\setuplayout
+  [article]
+
+\setupbodyfont
+  [dejavu,10pt] % 12pt is just to large and we use this for all kind of demos
+
+\setupwhitespace
+  [\v!big]
+
+\setuphead
+  [\v!chapter]
+  [\c!style=\bfc,
+   \c!headerstate=\v!high,
+   \c!interaction=\v!all]
+
+\setuphead
+  [\v!section]
+  [\c!style=\bfb]
+
+\setuphead
+  [\v!subsection]
+  [\c!style=\bfa]
+
+\setuphead
+  [\v!subsubsection]
+  [\c!style=\bf,
+   \c!after=]
+
+\setuplist
+  [\c!interaction=\v!all]
+
+\protect
+
+\stopmodule

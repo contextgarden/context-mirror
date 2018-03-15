@@ -50,6 +50,9 @@ local function loadscitelexer()
     if not lexer then
         lexer = require("scite-context-lexer")
         require("scite-context-theme") -- uses lexer
+        if lexer then
+            lexer.context.disablewordcheck()
+        end
     end
     return lexer
 end
@@ -122,7 +125,7 @@ end
 
 local function exportwhites()
     return setmetatableindex(function(t,k)
-        local v = find(k,"white") and true or false
+        local v = find(k,"white",1,true) and true or false
         t[k] = v
         return v
     end)

@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['lang-dis'] = {
 
 local concat = table.concat
 
+local tex                = tex
 local nodes              = nodes
 
 local tasks              = nodes.tasks
@@ -19,7 +20,6 @@ local setaction          = tasks.setaction
 local tonode             = nuts.tonode
 local tonut              = nuts.tonut
 
-local getfield           = nuts.getfield
 local setfield           = nuts.setfield
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
@@ -44,6 +44,8 @@ local traverse_id        = nuts.traverse_id
 local flush_list         = nuts.flush_list
 local flush_node         = nuts.flush_node
 
+local new_disc           = nuts.pool.disc
+
 local nodecodes          = nodes.nodecodes
 local disccodes          = nodes.disccodes
 
@@ -59,160 +61,10 @@ local a_visualize        = attributes.private("visualizediscretionary")
 local setattribute       = tex.setattribute
 
 local getlanguagedata    = languages.getdata
+local prehyphenchar      = lang.prehyphenchar
+local posthyphenchar     = lang.posthyphenchar
 
 local check_regular      = true
-
-local expanders -- this will go away
-
--- the penalty has been determined by the mode (currently we force 1):
---
--- 0 : exhyphenpenalty
--- 1 : hyphenpenalty
--- 2 : automatichyphenpenalty
---
--- following a - : the pre and post chars are already appended and set
--- so we have pre=preex and post=postex .. however, the previous
--- hyphen is already injected ... downside: the font handler sees this
--- so this is another argument for doing a hyphenation pass in context
-
-if LUATEXVERSION < 1.005 then
-
-    expanders = {
-        [discretionary_code] = function(d,template)
-            -- \discretionary
-            return template
-        end,
-        [explicit_code] = function(d,template)
-            -- \-
-            local pre, post, replace = getdisc(d)
-            local done = false
-            if pre then
-                local char = isglyph(pre)
-                if char and char <= 0 then
-                    done = true
-                    flush_list(pre)
-                    pre = nil
-                end
-            end
-            if post then
-                local char = isglyph(post)
-                if char and char <= 0 then
-                    done = true
-                    flush_list(post)
-                    post = nil
-                end
-            end
-            if done then
-                -- todo: take existing penalty
-                setdisc(d,pre,post,replace,explicit_code,tex.exhyphenpenalty)
-            else
-                setsubtype(d,explicit_code)
-            end
-            return template
-        end,
-        [automatic_code] = function(d,template)
-            local pre, post, replace = getdisc(d)
-            if pre then
-                -- we have a preex characters and want that one to replace the
-                -- character in front which is the trigger
-                if not template then
-                    -- can there be font kerns already?
-                    template = getprev(d)
-                    if template and getid(template) ~= glyph_code then
-                        template = getnext(d)
-                        if template and getid(template) ~= glyph_code then
-                            template = nil
-                        end
-                    end
-                end
-                if template then
-                    local pseudohead = getprev(template)
-                    if pseudohead then
-                        while template ~= d do
-                            pseudohead, template, removed = remove_node(pseudohead,template)
-                            -- free old replace ?
-                            replace = removed
-                            -- break ?
-                        end
-                    else
-                        -- can't happen
-                    end
-                    setdisc(d,pre,post,replace,automatic_code,tex.hyphenpenalty)
-                else
-                 -- print("lone regular discretionary ignored")
-                end
-            else
-                setdisc(d,pre,post,replace,automatic_code,tex.hyphenpenalty)
-            end
-            return template
-        end,
-        [regular_code] = function(d,template)
-            if check_regular then
-                -- simple
-                if not template then
-                    -- can there be font kerns already?
-                    template = getprev(d)
-                    if template and getid(template) ~= glyph_code then
-                        template = getnext(d)
-                        if template and getid(template) ~= glyph_code then
-                            template = nil
-                        end
-                    end
-                end
-                if template then
-                    local language = template and getlang(template)
-                    local data     = getlanguagedata(language)
-                    local prechar  = data.prehyphenchar
-                    local postchar = data.posthyphenchar
-                    local pre, post, replace = getdisc(d) -- pre can be set
-                    local done     = false
-                    if prechar and prechar > 0 then
-                        done = true
-                        pre  = copy_node(template)
-                        setchar(pre,prechar)
-                    end
-                    if postchar and postchar > 0 then
-                        done = true
-                        post = copy_node(template)
-                        setchar(post,postchar)
-                    end
-                    if done then
-                        setdisc(d,pre,post,replace,regular_code,tex.hyphenpenalty)
-                    end
-                else
-                 -- print("lone regular discretionary ignored")
-                end
-                return template
-            end
-        end,
-        [disccodes.first] = function()
-            -- forget about them
-        end,
-        [disccodes.second] = function()
-            -- forget about them
-        end,
-    }
-
-    function languages.expand(d,template,subtype)
-        if not subtype then
-            subtype = getsubtype(d)
-        end
-        if subtype ~= discretionary_code then
-            return expanders[subtype](d,template)
-        end
-    end
-
-else
-
-    function languages.expand()
-        -- nothing to be fixed
-    end
-
-end
-
-languages.expanders = expanders
-
--- -- -- -- --
 
 local setlistcolor = nodes.tracers.colors.setlist
 
@@ -252,55 +104,83 @@ interfaces.implement {
     actions = languages.showdiscretionaries
 }
 
-local toutf = nodes.listtoutf
+do
 
-function languages.serializediscretionary(d) -- will move to tracer
-    local pre, post, replace = getdisc(d)
-    return string.formatters["{%s}{%s}{%s}"](
-        pre     and toutf(pre)     or "",
-        post    and toutf(post)    or "",
-        replace and toutf(replace) or ""
-    )
+    local toutf   = nodes.listtoutf
+    local utfchar = utf.char
+    local f_disc  = string.formatters["{%s}{%s}{%s}"]
+    local replace = lpeg.replacer( {
+        [utfchar(0x200C)] = "|",
+        [utfchar(0x200D)] = "|",
+    }, nil, true)
+
+    local function convert(list)
+        return list and replace(toutf(list)) or ""
+    end
+
+    function languages.serializediscretionary(d) -- will move to tracer
+        local pre, post, replace = getdisc(d)
+        return f_disc(convert(pre),convert(post),convert(replace))
+    end
+
 end
 
 -- --
 
 local wiped = 0
 
-local function wipe(head,delayed)
-    local p, n = getboth(delayed)
-    local _, _, h, _, _, t = getdisc(delayed,true)
-    if p or n then
-        if h then
-            setlink(p,h)
-            setlink(t,n)
-            setfield(delayed,"replace")
-        else
-            setlink(p,n)
-        end
-    end
-    if head == delayed then
-        head = h
-    end
-    wiped = wiped + 1
-    flush_node(delayed)
-    return head
-end
+local flatten_discretionaries = node.flatten_discretionaries -- todo in nodes
 
-function languages.flatten(head)
-    local nuthead = tonut(head)
-    local delayed = nil
-    for d in traverse_id(disc_code,nuthead) do
-        if delayed then
-            nuthead = wipe(nuthead,delayed)
+if flatten_discretionaries then
+
+    -- This is not that much faster than the lua variant simply because there is
+    -- seldom a replace list but it fits in the picture. See luatex-todo.w for the
+    -- code.
+
+    function languages.flatten(head)
+        local h, n = flatten_discretionaries(head)
+        wiped = wiped + n
+        return h, n > 0
+    end
+
+else
+
+    local function wipe(head,delayed)
+        local p, n = getboth(delayed)
+        local _, _, h, _, _, t = getdisc(delayed,true)
+        if p or n then
+            if h then
+                setlink(p,h)
+                setlink(t,n)
+                setfield(delayed,"replace")
+            else
+                setlink(p,n)
+            end
         end
-        delayed = d
+        if head == delayed then
+            head = h
+        end
+        wiped = wiped + 1
+        flush_node(delayed)
+        return head
     end
-    if delayed then
-        return tonode(wipe(nuthead,delayed)), true
-    else
-        return head, false
+
+    function languages.flatten(head)
+        local nuthead = tonut(head)
+        local delayed = nil
+        for d in traverse_id(disc_code,nuthead) do
+            if delayed then
+                nuthead = wipe(nuthead,delayed)
+            end
+            delayed = d
+        end
+        if delayed then
+            return tonode(wipe(nuthead,delayed)), true
+        else
+            return head, false
+        end
     end
+
 end
 
 function languages.nofflattened()
@@ -325,3 +205,28 @@ directives.register("hyphenator.flatten",function(v)
     setaction("processors","nodes.handlers.flatten",v)
     setaction("contributers","nodes.handlers.flattenline",v)
 end)
+
+-- moved here:
+
+function languages.explicithyphen(template)
+    local pre, post
+    local disc = new_disc()
+    if template then
+        local langdata = getlanguagedata(getlang(template))
+        local instance = langdata and langdata.instance
+        if instance then
+            local prechr  = prehyphenchar(instance)
+            local postchr = posthyphenchar(instance)
+            if prechr >= 0 then
+                pre = copy_node(template)
+                setchar(pre,prechr)
+            end
+            if postchr >= 0 then
+                post = copy_node(template)
+                setchar(post,postchr)
+            end
+        end
+    end
+    setdisc(disc,pre,post,nil,explicit_code,tex.exhyphenpenalty)
+    return disc
+end

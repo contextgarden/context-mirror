@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Structure Macros / Itemgroups}
 
-\registerctxluafile{strc-itm}{1.001}
+\registerctxluafile{strc-itm}{}
 
 %D As we analyze/register widths and such we could as well push and pop the
 %D numbers at the \LUA\ end (which saves a few calls).
@@ -410,8 +410,14 @@
      \settrue\c_strc_itemgroups_pack
    \fi}
 
+\def\strc_itemgroups_process_set_option_unpack
+  {\ifcase\c_strc_itemgroups_nesting\else
+     \setfalse\c_strc_itemgroups_pack
+   \fi}
+
 \setvalue{\??itemgroupkeyword\!!zerocount  }{} % ignore 0
 \setvalue{\??itemgroupkeyword\v!packed     }{\strc_itemgroups_process_set_option_pack}
+\setvalue{\??itemgroupkeyword\v!unpacked   }{\strc_itemgroups_process_set_option_unpack}
 \setvalue{\??itemgroupkeyword\v!intro      }{\settrue\c_strc_itemgroups_intro} % here? not set to false
 \setvalue{\??itemgroupkeyword\v!autointro  }{\settrue\c_strc_itemgroups_auto_intro}
 \setvalue{\??itemgroupkeyword\v!broad      }{\ifx\itemgroupfirst\empty
@@ -442,6 +448,7 @@
 \setvalue{\??itemgroupkeyword\v!serried    }{\edef\itemgroupfirst{-\ifx\itemgroupfirst\empty1\else\itemgroupfirst\fi}%
                                              \letitemgroupparameter\c!factor\itemgroupfirst}
 \setvalue{\??itemgroupkeyword\v!stopper    }{\letitemgroupparameter\c!placestopper\v!yes} % keep {}
+\setvalue{\??itemgroupkeyword\v!nostopper  }{\letitemgroupparameter\c!placestopper\v!no} % keep {}
 \setvalue{\??itemgroupkeyword\v!repeat     }{\settrue\c_strc_itemgroups_repeat}
 \setvalue{\??itemgroupkeyword\v!norepeat   }{\setfalse\c_strc_itemgroups_repeat}
 \setvalue{\??itemgroupkeyword\v!reverse    }{\settrue\c_strc_itemgroups_reverse}
@@ -1125,19 +1132,21 @@
    \strc_itemgroups_margin_symbol
    \let\strc_itemgroups_margin_symbol\relax
    \dostarttagged\t!itemcontent\empty
-   \strut
+   \begstrut % \strut
    \nobreak                            % else problems with intext items
    \seteffectivehsize % NEW !
    \hskip\d_strc_itemgroups_signal     % concat
    \itemgroupparameter\c!command}
 
 \unexpanded\def\stopitemgroupitem
-  {\ifconditional\c_strc_itemgroups_text
+  {\ifhmode
+     \endstrut % new per 2017-12-15
+   \fi
+   \ifconditional\c_strc_itemgroups_text
      % nothing
    \else
      \endgraf
    \fi}
-
 \unexpanded\def\startitemgrouphead
   {\dosingleempty\strc_itemgroups_start_head}
 
@@ -1212,7 +1221,9 @@
    \dotagsetitem\s!symbol}
 
 \unexpanded\def\strc_itemgroups_start_dummy
-  {\strc_itemgroups_start_symbol\strut\strut} % two ?
+  {\strc_itemgroups_start_symbol
+  %\strut\strut} % two ?
+   \begstrut}
 
 \unexpanded\def\strc_itemgroups_start_subitem
   {\settrue\c_strc_itemgroups_sub

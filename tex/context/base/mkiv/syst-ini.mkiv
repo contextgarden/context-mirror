@@ -345,6 +345,11 @@
 \newbox      \scratchboxfour \newbox      \scratchboxfive \newbox      \scratchboxsix
 
 %D \macros
+%D   {tempstring}
+
+\let\tempstring\empty
+
+%D \macros
 %D   {scratchwidth, scratchheight, scratchdepth, scratchoffset, scratchdistance}
 %D
 %D A few more scratch dimensions:
@@ -1011,30 +1016,30 @@
 % \chardef\pdfnotrapped      = 256
 % \chardef\pdfnoid           = 512
 
-\def\pdftexversion     {\numexpr\pdffeedback version}
-\def\pdftexrevision            {\pdffeedback revision}
-\def\pdflastlink       {\numexpr\pdffeedback lastlink}
-\def\pdfretval         {\numexpr\pdffeedback retval}
-\def\pdflastobj        {\numexpr\pdffeedback lastobj}
-\def\pdflastannot      {\numexpr\pdffeedback lastannot}
-\def\pdfxformname      {\numexpr\pdffeedback xformname}
-\def\pdfcreationdate           {\pdffeedback creationdate}
-\def\pdffontname       {\numexpr\pdffeedback fontname}
-\def\pdffontobjnum     {\numexpr\pdffeedback fontobjnum}
-\def\pdffontsize       {\dimexpr\pdffeedback fontsize}
-\def\pdfpageref        {\numexpr\pdffeedback pageref}
-\def\pdfcolorstackinit         {\pdffeedback colorstackinit}
+\def\pdftexversion           {\numexpr\pdffeedback version\relax}
+\def\pdftexrevision                  {\pdffeedback revision}
+\def\pdflastlink             {\numexpr\pdffeedback lastlink\relax}
+\def\pdfretval               {\numexpr\pdffeedback retval\relax}
+\def\pdflastobj              {\numexpr\pdffeedback lastobj\relax}
+\def\pdflastannot            {\numexpr\pdffeedback lastannot\relax}
+\def\pdfxformname            {\numexpr\pdffeedback xformname\relax}
+\def\pdfcreationdate                 {\pdffeedback creationdate}
+\def\pdffontname             {\numexpr\pdffeedback fontname\relax}
+\def\pdffontobjnum           {\numexpr\pdffeedback fontobjnum\relax}
+\def\pdffontsize             {\dimexpr\pdffeedback fontsize\relax}
+\def\pdfpageref              {\numexpr\pdffeedback pageref\relax}
+\def\pdfcolorstackinit               {\pdffeedback colorstackinit}
 
-\let\pdfxform           \saveboxresource
-\let\pdflastxform       \lastsavedboxresourceindex
-\let\pdfrefxform        \useboxresource
-\let\pdfximage          \saveimageresource
-\let\pdflastximage      \lastsavedimageresourceindex
-\let\pdflastximagepages \lastsavedimageresourcepages
-\let\pdfrefximage       \useimageresource
-\let\pdfsavepos         \savepos
-\let\pdflastxpos        \lastxpos
-\let\pdflastypos        \lastypos
+\let\pdfxform                 \saveboxresource
+\let\pdflastxform             \lastsavedboxresourceindex
+\let\pdfrefxform              \useboxresource
+\let\pdfximage                \saveimageresource
+\let\pdflastximage            \lastsavedimageresourceindex
+\let\pdflastximagepages       \lastsavedimageresourcepages
+\let\pdfrefximage             \useimageresource
+\let\pdfsavepos               \savepos
+\let\pdflastxpos              \lastxpos
+\let\pdflastypos              \lastypos
 
 \edef\pdfcompresslevel       {\pdfvariable compresslevel}       \pdfcompresslevel         \plusnine
 \edef\pdfobjcompresslevel    {\pdfvariable objcompresslevel}    \pdfobjcompresslevel      \plusone
@@ -1050,6 +1055,7 @@
 \edef\pdfinclusionerrorlevel {\pdfvariable inclusionerrorlevel} \pdfinclusionerrorlevel   \zerocount
 \edef\pdfgentounicode        {\pdfvariable gentounicode}        \pdfgentounicode          \plusone
 \edef\pdfpagebox             {\pdfvariable pagebox}             \pdfpagebox               \zerocount
+\edef\pdfmajorversion        {\pdfvariable majorversion}      % \pdfmajorversion          \plusone
 \edef\pdfminorversion        {\pdfvariable minorversion}        \pdfminorversion          \plusseven
 \edef\pdfuniqueresname       {\pdfvariable uniqueresname}       \pdfuniqueresname         \zerocount
 \edef\pdfhorigin             {\pdfvariable horigin}             \pdfhorigin               1in
@@ -1095,16 +1101,28 @@
 \def\modulonumber#1#2{\the\numexpr#2-((((#2+(#1/2))/#1)-1)*#1)\relax}
 \def\dividenumber#1#2{\the\numexpr(#2-(#1/2))/#1\relax}
 
-\def \texenginename   {LuaTeX}
-\edef\texengineversion{\dividenumber{100}\luatexversion.\modulonumber{100}\luatexversion.\luatexrevision}
+\ifdefined\texenginename \else
+    %edef\texenginename{luatex}
+    \edef\texenginename{\directlua{tex.print(LUATEXENGINE)}}
+\fi
+
+\ifdefined\texengineversion \else
+    %edef\texengineversion{\dividenumber{100}\luatexversion.\modulonumber{100}\luatexversion.\luatexrevision}
+    \edef\texengineversion{\directlua{tex.print(LUATEXVERSION)}}
+\fi
+
+\ifdefined\texenginefunctionality \else
+    \edef\texenginefunctionality{\directlua{tex.print(LUATEXFUNCTIONALITY)}}
+\fi
 
 %D We have no reason not to enable this:
 
 \savingvdiscards\plusone
 
-%D We only can set this one via directives (system.synctex).
+%D We only can set this one via directives (system.synctex) and we only support
+%D the context variant.
 
-\let\synctex\undefined \newcount\synctex
+\let\synctex\undefined \newcount\synctex \let\normalsynctex\synctex
 
 %D We get rid of the funny \TEX\ offset defaults of one inch by setting them to zero.
 
@@ -1156,22 +1174,26 @@
 
 %D It makes more sense to have these here:
 
-\let\normalsuperscript\Usuperscript
-\let\normalsubscript  \Usubscript
-\let\normalstartimath \Ustartmath
-\let\normalstopimath  \Ustopmath
-\let\normalstartdmath \Ustartdisplaymath
-\let\normalstopdmath  \Ustopdisplaymath
+\let\normalsuperscript  \Usuperscript
+\let\normalsubscript    \Usubscript
+\let\normalnosuperscript\Unosuperscript
+\let\normalnosubscript  \Unosubscript
+\let\normalstartimath   \Ustartmath
+\let\normalstopimath    \Ustopmath
+\let\normalstartdmath   \Ustartdisplaymath
+\let\normalstopdmath    \Ustopdisplaymath
 
 %D For now:
 
 \ifdefined\protrusionboundary     \else \let\protrusionboundary\boundary   \fi
 \ifdefined\wordboundary           \else \let\wordboundary      \noboundary \fi
 
-\ifdefined\mathrulesfam           \else \newcount\mathrulesfam     \fi
-\ifdefined\mathrulesmode          \else \newcount\mathrulesmode    \fi
-\ifdefined\mathsurroundmode       \else \newcount\mathsurroundmode \fi
-\ifdefined\mathitalicsmode        \else \newcount\mathitalicsmode  \fi
+\ifdefined\mathrulesfam           \else \newcount\mathrulesfam       \fi
+\ifdefined\mathrulesmode          \else \newcount\mathrulesmode      \fi
+\ifdefined\mathsurroundmode       \else \newcount\mathsurroundmode   \fi
+\ifdefined\mathitalicsmode        \else \newcount\mathitalicsmode    \fi
+\ifdefined\mathdelimitersmode     \else \newcount\mathdelimitersmode \fi
+\ifdefined\mathscriptboxmode      \else \newcount\mathscriptboxmode  \fi
 
 \ifdefined\hyphenpenaltymode      \else \newcount\hyphenpenaltymode      \fi
 \ifdefined\automatichyphenpenalty \else \newcount\automatichyphenpenalty \fi
@@ -1180,5 +1202,11 @@
 
 \ifdefined\explicitdiscretionary  \else \let\explicitdiscretionary  \-                   \fi
 \ifdefined\automaticdiscretionary \else \def\automaticdiscretionary{\Uchar\exhyphenchar} \fi
+
+\ifdefined\mathpenaltiesmode      \else \newcount\mathpenaltiesmode \fi
+\ifdefined\prebinoppenalty        \else \newcount\prebinoppenalty   \fi
+\ifdefined\prerelpenalty          \else \newcount\prerelpenalty     \fi
+
+\ifdefined\breakafterdirmode      \else \newcount\breakafterdirmode \fi
 
 \protect \endinput

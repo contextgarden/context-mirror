@@ -52,7 +52,7 @@ local report_otf          = logs.reporter("fonts","otf loading")
 local fonts               = fonts
 local otf                 = fonts.handlers.otf
 
-otf.version               = 3.029 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version               = 3.103 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                 = containers.define("fonts", "otl",  otf.version, true)
 otf.svgcache              = containers.define("fonts", "svg",  otf.version, true)
 otf.sbixcache             = containers.define("fonts", "sbix", otf.version, true)
@@ -79,6 +79,8 @@ local cleanup             = 0     -- mk: 0=885M 1=765M 2=735M (regular run 730M)
 local syncspace           = true
 local forcenotdef         = false
 
+local privateoffset       = fonts.constructors and fonts.constructors.privateoffset or 0xF0000 -- 0x10FFFF
+
 local applyruntimefixes   = fonts.treatments and fonts.treatments.applyfixes
 
 local wildcard            = "*"
@@ -98,6 +100,33 @@ registerdirective("fonts.otf.loader.forcenotdef",   function(v) forcenotdef   = 
 -- otfenhancers.patch("before","migrate metadata","cambria",function() end)
 
 registerotfenhancer("check extra features", function() end) -- placeholder
+
+-- Kai has memory problems on osx so here is an experiment (I only tested on windows as
+-- my test mac is old and gets no updates and is therefore rather useless.):
+
+local checkmemory = utilities.lua and utilities.lua.checkmemory
+local threshold   = 100 -- MB
+local tracememory = false
+
+registertracker("fonts.otf.loader.memory",function(v) tracememory = v end)
+
+if not checkmemory then -- we need a generic plug (this code might move):
+
+    local collectgarbage = collectgarbage
+
+    checkmemory = function(previous,threshold) -- threshold in MB
+        local current = collectgarbage("count")
+        if previous then
+            local checked = (threshold or 64)*1024
+            if current - previous > checked then
+                collectgarbage("collect")
+                current = collectgarbage("count")
+            end
+        end
+        return current
+    end
+
+end
 
 function otf.load(filename,sub,instance)
     local base = file.basename(file.removesuffix(filename))
@@ -130,9 +159,13 @@ function otf.load(filename,sub,instance)
         data = otfreaders.loadfont(filename,sub or 1,instance) -- we can pass the number instead (if it comes from a name search)
         if data then
             -- todo: make this a plugin
+            local used       = checkmemory()
             local resources  = data.resources
             local svgshapes  = resources.svgshapes
             local sbixshapes = resources.sbixshapes
+            if cleanup == 0 then
+                checkmemory(used,threshold,tracememory)
+            end
             if svgshapes then
                 resources.svgshapes = nil
                 if otf.svgenabled then
@@ -146,6 +179,11 @@ function otf.load(filename,sub,instance)
                         hash      = hash,
                         timestamp = timestamp,
                     }
+                end
+                if cleanup > 1 then
+                    collectgarbage("collect")
+                else
+                    checkmemory(used,threshold,tracememory)
                 end
             end
             if sbixshapes then
@@ -162,18 +200,31 @@ function otf.load(filename,sub,instance)
                         timestamp = timestamp,
                     }
                 end
+                if cleanup > 1 then
+                    collectgarbage("collect")
+                else
+                    checkmemory(used,threshold,tracememory)
+                end
             end
             --
             otfreaders.compact(data)
+            if cleanup == 0 then
+                checkmemory(used,threshold,tracememory)
+            end
             otfreaders.rehash(data,"unicodes")
             otfreaders.addunicodetable(data)
             otfreaders.extend(data)
+            if cleanup == 0 then
+                checkmemory(used,threshold,tracememory)
+            end
             otfreaders.pack(data)
             report_otf("loading done")
             report_otf("saving %a in cache",filename)
             data = containers.write(otf.cache, hash, data)
             if cleanup > 1 then
                 collectgarbage("collect")
+            else
+                checkmemory(used,threshold,tracememory)
             end
             stoptiming(otfreaders)
             if elapsedtime then
@@ -181,10 +232,14 @@ function otf.load(filename,sub,instance)
             end
             if cleanup > 3 then
                 collectgarbage("collect")
+            else
+                checkmemory(used,threshold,tracememory)
             end
             data = containers.read(otf.cache,hash) -- this frees the old table and load the sparse one
             if cleanup > 2 then
                 collectgarbage("collect")
+            else
+                checkmemory(used,threshold,tracememory)
             end
         else
             data = nil
@@ -200,12 +255,12 @@ function otf.load(filename,sub,instance)
         otfreaders.expand(data) -- inline tables
         otfreaders.addunicodetable(data) -- only when not done yet
         --
-        otfenhancers.apply(data,filename,data)
+        otfenhancers.apply(data,filename,data) -- in context one can also use treatments
         --
      -- constructors.addcoreunicodes(data.resources.unicodes) -- still needed ?
         --
         if applyruntimefixes then
-            applyruntimefixes(filename,data)
+            applyruntimefixes(filename,data) -- e.g. see treatments.lfg
         end
         --
         data.metadata.math = data.resources.mathconstants
@@ -285,7 +340,7 @@ local function copytotfm(data,cache_id)
         end
         if mathspecs then
             for unicode, character in next, characters do
-                local d = descriptions[unicode]
+                local d = descriptions[unicode] -- we could use parent table here
                 local m = d.math
                 if m then
                     -- watch out: luatex uses horiz_variants for the parts
@@ -448,6 +503,8 @@ local function copytotfm(data,cache_id)
      -- properties.name          = specification.name
      -- properties.sub           = specification.sub
         --
+        properties.private       = properties.private or data.private or privateoffset
+        --
         return {
             characters     = characters,
             descriptions   = descriptions,
@@ -558,7 +615,7 @@ local function checkmathsize(tfmdata,mathsize)
         local parameters = tfmdata.parameters
         parameters.scriptpercentage       = mathdata.ScriptPercentScaleDown
         parameters.scriptscriptpercentage = mathdata.ScriptScriptPercentScaleDown
-        parameters.mathsize               = mathsize
+        parameters.mathsize               = mathsize -- only when a number !
     end
 end
 
@@ -768,6 +825,7 @@ otf.coverup = {
         multiple          = justset,
         kern              = justset,
         pair              = justset,
+        single            = justset,
         ligature          = function(coverage,unicode,ligature)
             local first = ligature[1]
             local tree  = coverage[first]

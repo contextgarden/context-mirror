@@ -79,6 +79,8 @@ local type, rawset, tonumber, next = type, rawset, tonumber, next
 local P, R, S, Cg, Cf, Ct, Cc, C, Carg, Cs = lpeg.P, lpeg.R, lpeg.S, lpeg.Cg, lpeg.Cf, lpeg.Ct, lpeg.Cc, lpeg.C, lpeg.Carg, lpeg.Cs
 local lpegmatch = lpeg.match
 
+local context    = context
+
 local concat     = table.concat
 local insert     = table.insert
 local remove     = table.remove
@@ -686,10 +688,6 @@ if context then
 
     local a_hyphenation      = attributes.private("hyphenation")
 
-    local expanders          = languages.expanders -- gone in 1.005
-    local expand_explicit    = expanders and expanders[explicit_code]
-    local expand_automatic   = expanders and expanders[automatic_code]
-
     local interwordpenalty   = 5000
 
     function traditional.loadpatterns(language)
@@ -1044,6 +1042,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
         local extrachars      = nil
         local hyphenchars     = nil
         local language        = nil
+        local lastfont        = nil
         local start           = nil
         local stop            = nil
         local word            = { } -- we reuse this table
@@ -1406,6 +1405,8 @@ featureset.hyphenonly   = hyphenonly == v_yes
 
         local skipping = false
 
+        -- In "word word word." the sequences "word" and "." can be a different font!
+
         while current and current ~= last do -- and current
             local code, id = isglyph(current)
             if code then
@@ -1413,7 +1414,8 @@ featureset.hyphenonly   = hyphenonly == v_yes
                     current = getnext(current)
                 else
                     local lang = getlang(current)
-                    if lang ~= language then
+                    local font = getfont(current)
+                    if lang ~= language or font ~= lastfont then
                         if dictionary and size > charmin and leftmin + rightmin <= size then
                             -- only german has many words starting with an uppercase character
                             if categories[word[1]] == "lu" and getfield(start,"uchyph") < 0 then
@@ -1425,10 +1427,10 @@ featureset.hyphenonly   = hyphenonly == v_yes
                                 end
                             end
                         end
-                        language = lang
-                        if language > 0 then
+                        lastfont = font
+                        if language ~= lang and lang > 0 then
                             --
-                            dictionary = dictionaries[language]
+                            dictionary = dictionaries[lang]
                             instance   = dictionary.instance
                             characters = dictionary.characters
                             unicodes   = dictionary.unicodes
@@ -1459,6 +1461,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
                         else
                             size = 0
                         end
+                        language = lang
                     elseif language <= 0 then
                         --
                     elseif size > 0 then
@@ -1541,28 +1544,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
                     skipping = false
                 end
                 if id == disc_code then
-                    if expanded then
-                        -- pre 1.005
-                        local subtype = getsubtype(current)
-                        if subtype == discretionary_code then -- \discretionary
-                            size = 0
-                        elseif subtype == explicit_code then -- \- => only here
-                            -- automatic (-) : the old parser makes negative char entries
-                            size = 0
-                            expand_explicit(current)
-                        elseif subtype == automatic_code then -- - => only here
-                            -- automatic (-) : the old hyphenator turns an exhyphen into glyph+disc
-                            size = 0
-                            expand_automatic(current)
-                        else
-                            -- first         : done by the hyphenator
-                            -- second        : done by the hyphenator
-                            -- regular       : done by the hyphenator
-                            size = 0
-                        end
-                    else
-                        size = 0
-                    end
+                    size = 0
                     current = getnext(current)
                     if hyphenonly then
                         skipping = true
@@ -1632,7 +1614,6 @@ featureset.hyphenonly   = hyphenonly == v_yes
     -- local replaceaction = nodes.tasks.replaceaction -- no longer overload this way (too many local switches)
 
     local hyphenate  = lang.hyphenate
-    local expanders  = languages.expanders
     local methods    = { }
     local usedmethod = false
     local stack      = { }
@@ -1640,29 +1621,6 @@ featureset.hyphenonly   = hyphenonly == v_yes
     local function original(head)
         local done = hyphenate(head)
         return head, done
-    end
-
-    local expanded = function (head)
-        local done = hyphenate(head)
-        return head, done
-    end
-
-    if LUATEXVERSION< 1.005 then
-
-        expanded = function(head)
-            local done = hyphenate(head)
-            if done then
-                for d in traverse_id(disc_code,tonut(head)) do
-                    local s = getsubtype(d)
-                    if s ~= discretionary_code then
-                        expanders[s](d,template)
-                        done = true
-                    end
-                end
-            end
-            return head, done
-        end
-
     end
 
     local getcount = tex.getcount
@@ -1691,7 +1649,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
 
     methods.tex         = original
     methods.original    = original
-    methods.expanded    = expanded -- obsolete starting with 1.005
+    methods.expanded    = original -- was expanded before 1.005
     methods.traditional = languages.hyphenators.traditional.hyphenate
     methods.none        = false -- function(head) return head, false end
 

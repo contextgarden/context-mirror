@@ -188,6 +188,7 @@
 		<cd:variable name='extremestretch' value='extremestretch'/>
 		<cd:variable name='fact' value='fact'/>
 		<cd:variable name='february' value='فوریه'/>
+		<cd:variable name='field' value='field'/>
 		<cd:variable name='figure' value='شکل'/>
 		<cd:variable name='figures' value='شکلها'/>
 		<cd:variable name='file' value='پرونده'/>
@@ -379,6 +380,7 @@
 		<cd:variable name='norepeat' value='norepeat'/>
 		<cd:variable name='normal' value='نرمال'/>
 		<cd:variable name='nospacing' value='بدون‌فضاگذاری'/>
+		<cd:variable name='nostopper' value='nostopper'/>
 		<cd:variable name='not' value='بدون'/>
 		<cd:variable name='notation' value='notation'/>
 		<cd:variable name='note' value='note'/>
@@ -627,6 +629,10 @@
 		<cd:constant name='align' value='تنظیم'/>
 		<cd:constant name='aligncharacter' value='حرف‌تنظیم'/>
 		<cd:constant name='alignmentcharacter' value='حرف‌تنظیم‌کردن'/>
+		<cd:constant name='alignmentleftsample' value='alignmentleftsample'/>
+		<cd:constant name='alignmentleftwidth' value='alignmentleftwidth'/>
+		<cd:constant name='alignmentrightsample' value='alignmentrightsample'/>
+		<cd:constant name='alignmentrightwidth' value='alignmentrightwidth'/>
 		<cd:constant name='alignsymbol' value='alignsymbol'/>
 		<cd:constant name='aligntitle' value='عنوان‌تنظیم'/>
 		<cd:constant name='alternative' value='جایگزین'/>
@@ -693,6 +699,7 @@
 		<cd:constant name='bottomoffset' value='آفست‌پایین'/>
 		<cd:constant name='bottomspace' value='فضای‌پایین'/>
 		<cd:constant name='bottomstate' value='وضعیت‌پایین'/>
+		<cd:constant name='break' value='break'/>
 		<cd:constant name='buffer' value='buffer'/>
 		<cd:constant name='cache' value='میانگیر'/>
 		<cd:constant name='calculate' value='محاسبه'/>
@@ -758,6 +765,7 @@
 		<cd:constant name='direction' value='جهت'/>
 		<cd:constant name='directory' value='پوشه'/>
 		<cd:constant name='display' value='نمایش'/>
+		<cd:constant name='displaythreshold' value='displaythreshold'/>
 		<cd:constant name='distance' value='فاصله'/>
 		<cd:constant name='domain' value='domain'/>
 		<cd:constant name='dot' value='نقطه'/>
@@ -800,6 +808,7 @@
 		<cd:constant name='fieldoffset' value='آفست‌میدان'/>
 		<cd:constant name='file' value='پرونده'/>
 		<cd:constant name='filler' value='filler'/>
+		<cd:constant name='filter' value='filter'/>
 		<cd:constant name='filtercommand' value='filtercommand'/>
 		<cd:constant name='finalnamesep' value='finalnamesep'/>
 		<cd:constant name='finalpagesep' value='finalpagesep'/>
@@ -847,6 +856,7 @@
 		<cd:constant name='headerstate' value='وضعیت‌سربرگ'/>
 		<cd:constant name='headlabel' value='برچسب‌سر'/>
 		<cd:constant name='headnumber' value='شماره‌سر'/>
+		<cd:constant name='headseparator' value='headseparator'/>
 		<cd:constant name='headstyle' value='سبک‌سر'/>
 		<cd:constant name='height' value='ارتفاع'/>
 		<cd:constant name='hfactor' value='عامل‌ارتفاع'/>
@@ -867,6 +877,7 @@
 		<cd:constant name='index' value='index'/>
 		<cd:constant name='indicator' value='اندیکاتور'/>
 		<cd:constant name='initialsep' value='initialsep'/>
+		<cd:constant name='inlinethreshold' value='inlinethreshold'/>
 		<cd:constant name='inner' value='داخلی'/>
 		<cd:constant name='innermargin' value='حاشیه‌داخلی'/>
 		<cd:constant name='inputfile' value='پرونده‌ورودی'/>
@@ -909,6 +920,7 @@
 		<cd:constant name='leftoffset' value='آفست‌چپ'/>
 		<cd:constant name='leftquotation' value='نقل‌قول‌چپ'/>
 		<cd:constant name='leftquote' value='نقل‌چپ'/>
+		<cd:constant name='leftsample' value='leftsample'/>
 		<cd:constant name='leftsentence' value='جمله‌چپ'/>
 		<cd:constant name='leftspeech' value='سخنرانی‌چپ'/>
 		<cd:constant name='leftstyle' value='سبک‌چپ'/>
@@ -981,6 +993,7 @@
 		<cd:constant name='nlines' value='nlines'/>
 		<cd:constant name='norm' value='norm'/>
 		<cd:constant name='note' value='note'/>
+		<cd:constant name='notes' value='notes'/>
 		<cd:constant name='nr' value='nr'/>
 		<cd:constant name='nright' value='nright'/>
 		<cd:constant name='ntop' value='ntop'/>
@@ -1000,6 +1013,7 @@
 		<cd:constant name='numberset' value='numberset'/>
 		<cd:constant name='numberstarter' value='numberstarter'/>
 		<cd:constant name='numberstopper' value='numberstopper'/>
+		<cd:constant name='numberstrut' value='numberstrut'/>
 		<cd:constant name='numberstyle' value='سبک‌شماره'/>
 		<cd:constant name='numberwidth' value='عرض‌شماره'/>
 		<cd:constant name='nx' value='nx'/>
@@ -1069,6 +1083,7 @@
 		<cd:constant name='preview' value='پیش‌دید'/>
 		<cd:constant name='previous' value='قبلی'/>
 		<cd:constant name='previousnumber' value='شماره‌قبلی'/>
+		<cd:constant name='print' value='print'/>
 		<cd:constant name='printable' value='قابل‌چاپ'/>
 		<cd:constant name='process' value='پردازش'/>
 		<cd:constant name='profile' value='profile'/>
@@ -1111,6 +1126,7 @@
 		<cd:constant name='rightoffset' value='آفست‌راست'/>
 		<cd:constant name='rightquotation' value='نقل‌قول‌راست'/>
 		<cd:constant name='rightquote' value='نقل‌راست'/>
+		<cd:constant name='rightsample' value='rightsample'/>
 		<cd:constant name='rightsentence' value='جمله‌راست'/>
 		<cd:constant name='rightspeech' value='سخنرانی‌راست'/>
 		<cd:constant name='rightstyle' value='سبک‌راست'/>
@@ -1153,7 +1169,10 @@
 		<cd:constant name='sidemethod' value='روش‌کنار'/>
 		<cd:constant name='sidespaceafter' value='فضای‌کناری‌بعد'/>
 		<cd:constant name='sidespacebefore' value='فضای‌کناری‌قبل'/>
+		<cd:constant name='sidespaceinbetween' value='sidespaceinbetween'/>
+		<cd:constant name='sidethreshold' value='sidethreshold'/>
 		<cd:constant name='sign' value='علامت'/>
+		<cd:constant name='simplecommand' value='simplecommand'/>
 		<cd:constant name='size' value='اندازه'/>
 		<cd:constant name='slantedfeatures' value='slantedfeatures'/>
 		<cd:constant name='slantedfont' value='slantedfont'/>
@@ -1166,7 +1185,9 @@
 		<cd:constant name='source' value='منبع'/>
 		<cd:constant name='space' value='فضا'/>
 		<cd:constant name='spaceafter' value='فضا‌بعداز'/>
+		<cd:constant name='spaceafterside' value='spaceafterside'/>
 		<cd:constant name='spacebefore' value='فضا‌قبل‌از'/>
+		<cd:constant name='spacebeforeside' value='spacebeforeside'/>
 		<cd:constant name='spaceinbetween' value='فضا‌دربین'/>
 		<cd:constant name='spacing' value='فضاگذاری'/>
 		<cd:constant name='specification' value='specification'/>
@@ -1231,6 +1252,7 @@
 		<cd:constant name='titledistance' value='فاصله‌عنوان'/>
 		<cd:constant name='titleleft' value='عنوان‌چپ'/>
 		<cd:constant name='titleright' value='عنوان‌راست'/>
+		<cd:constant name='titlestrut' value='titlestrut'/>
 		<cd:constant name='titlestyle' value='سبک‌عنوان'/>
 		<cd:constant name='to' value='به'/>
 		<cd:constant name='toffset' value='toffset'/>

@@ -21,7 +21,7 @@ local format = string.format
 local utfchar = utf.char
 local concat = table.concat
 
-local tonumber, tostring, rawset, type = tonumber, tostring, rawset, type
+local tonumber, tostring, rawset, type, next = tonumber, tostring, rawset, type, next
 
 local json      = utilities.json or { }
 utilities.json  = json
@@ -157,5 +157,12 @@ end
 -- inspect(tmp)
 
 -- inspect(json.tostring(true))
+
+function json.load(filename)
+    local data = io.loaddata(filename)
+    if data then
+        return lpegmatch(jsonconverter,data)
+    end
+end
 
 return json

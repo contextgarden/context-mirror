@@ -75,16 +75,88 @@ props = props or { } -- setmetatable(props,{ __index = function(k,v) props[k] = 
 local byte, lower, upper, gsub, sub, find, rep, match, gmatch, format, char = string.byte, string.lower, string.upper, string.gsub, string.sub, string.find, string.rep, string.match, string.gmatch, string.format, string.char
 local sort, concat = table.sort, table.concat
 
-local crlf = "\n"
+-- helpers : utf
 
-if not trace then
-    trace = print
+local magicstring = rep("<ctx-crlf/>", 2)
+
+local l2 = char(0xC0)
+local l3 = char(0xE0)
+local l4 = char(0xF0)
+
+local function utflen(str)
+    local n = 0
+    local l = 0
+    for s in gmatch(str,".") do
+        if l > 0 then
+            l = l - 1
+        else
+            n = n + 1
+            if s >= l4 then
+                l = 3
+            elseif s >= l3 then
+                l = 2
+            elseif s >= l2 then
+                l = 1
+            end
+        end
+    end
+    return n
 end
 
-function traceln(str)
-    trace(str .. crlf)
-    io.flush()
+-- helpers: system
+
+function io.exists(filename)
+    local ok, result, message = pcall(io.open,filename)
+    if result then
+        io.close(result)
+        return true
+    else
+        return false
+    end
 end
+
+function os.envvar(str)
+    local s = os.getenv(str)
+    if s ~= '' then
+        return s
+    end
+    s = os.getenv(upper(str))
+    if s ~= '' then
+        return s
+    end
+    s = os.getenv(lower(str))
+    if s ~= '' then
+        return s
+    end
+end
+
+-- helpers: reporting
+
+local crlf   = "\n"
+local report = nil
+local trace  = trace
+
+if trace then
+    report = function(fmt,...)
+        if fmt then
+            trace(format(fmt,...))
+        end
+        trace(crlf)
+        io.flush()
+    end
+else
+    trace  = print
+    report = function(fmt,...)
+        if fmt then
+            trace(format(fmt,...))
+        else
+            trace("")
+        end
+        io.flush()
+    end
+end
+
+-- helpers: whatever (old code, we should use our libs)
 
 local function grab(str,delimiter)
     local list = { }
@@ -116,32 +188,7 @@ local function alphasort(list,i)
     end
 end
 
-function io.exists(filename)
-    local ok, result, message = pcall(io.open,filename)
-    if result then
-        io.close(result)
-        return true
-    else
-        return false
-    end
-end
-
-function os.envvar(str)
-    local s = os.getenv(str)
-    if s ~= '' then
-        return s
-    end
-    s = os.getenv(upper(str))
-    if s ~= '' then
-        return s
-    end
-    s = os.getenv(lower(str))
-    if s ~= '' then
-        return s
-    end
-end
-
--- support functions, maybe editor namespace
+-- helpers: editor
 
 -- function column_of_position(position)
 --     local line = editor:LineFromPosition(position)
@@ -223,7 +270,7 @@ function get_dir_list(mask)
         os.execute(cmd)
         f = io.open(tmpfile)
     end
-    local files = {}
+    local files = { }
     if not f then -- path check added
         return files
     end
@@ -234,27 +281,76 @@ function get_dir_list(mask)
     return files
 end
 
+--helpers : utf from editor
+
+local cat -- has to be set to editor.CharAt
+
+local function toutfcode(pos) -- if needed we can cache
+    local c1 = cat[pos]
+    if c1 < 0 then
+        c1 = 256 + c1
+    end
+    if c1 < 128 then
+        return c1, 1
+    end
+    if c1 < 224 then
+        local c2 = cat[pos+1]
+        if c2 < 0 then
+            c2 = 256 + c2
+        end
+        return c1 * 64 + c2 - 12416, 2
+    end
+    if c1 < 240 then
+        local c2 = cat[pos+1]
+        local c3 = cat[pos+2]
+        if c2 < 0 then
+            c2 = 256 + c2
+        end
+        if c3 < 0 then
+            c3 = 256 + c3
+        end
+        return (c1 * 64 + c2) * 64 + c3 - 925824, 3
+    end
+    if c1 < 245 then
+        local c2 = cat[pos+1]
+        local c3 = cat[pos+2]
+        local c4 = cat[pos+3]
+        if c2 < 0 then
+            c2 = 256 + c2
+        end
+        if c3 < 0 then
+            c3 = 256 + c3
+        end
+        if c4 < 0 then
+            c4 = 256 + c4
+        end
+        return ((c1 * 64 + c2) * 64 + c3) * 64 + c4 - 63447168, 4
+    end
+end
+
 -- banner
 
 do
 
-    local wordpath = props['ctx.spellcheck.wordpath']
+    print("Some CTX extensions:")
 
-    if wordpath and wordpath ~= "" then
-        print("loading scite-ctx.lua definition file\n")
-        print("-  see scite-ctx.properties for configuring info\n")
-        print("-  ctx.spellcheck.wordpath set to " .. wordpath)
-        if find(lower(wordpath),"ctxspellpath") then
-            if os.getenv('ctxspellpath') then
-                print("-  ctxspellpath set to " .. os.getenv('CTXSPELLPATH'))
-            else
-                print("-  'ctxspellpath is not set")
-            end
-            print("-  ctx.spellcheck.wordpath expands to " .. expand(wordpath))
-        end
-    else
-        print("-  'ctxspellpath is not set")
-    end
+ -- local wordpath = props['ctx.spellcheck.wordpath']
+ --
+ -- if wordpath and wordpath ~= "" then
+ --     print("loading scite-ctx.lua definition file\n")
+ --     print("-  see scite-ctx.properties for configuring info\n")
+ --     print("-  ctx.spellcheck.wordpath set to " .. wordpath)
+ --     if find(lower(wordpath),"ctxspellpath") then
+ --         if os.getenv('ctxspellpath') then
+ --             print("-  ctxspellpath set to " .. os.getenv('CTXSPELLPATH'))
+ --         else
+ --             print("-  'ctxspellpath is not set")
+ --         end
+ --         print("-  ctx.spellcheck.wordpath expands to " .. expand(wordpath))
+ --     end
+ -- else
+ --     print("-  'ctxspellpath is not set")
+ -- end
 
     local wraplength = props['ctx.wraptext.length']
 
@@ -274,40 +370,14 @@ do
     end
 
     print("\n-  recognized first lines:\n")
-    print("xml   <?xml version='1.0' language='nl'")
-    print("tex   % language=nl")
+    print("xml   <?xml version='1.0' language='..'")
+    print("tex   % language=..")
 
 end
 
 -- text functions
 
 -- written while listening to Talk Talk
-
-local magicstring = rep("<ctx-crlf/>", 2)
-
-local l2 = char(0xC0)
-local l3 = char(0xE0)
-local l4 = char(0xF0)
-
-local function utflen(str)
-    local n = 0
-    local l = 0
-    for s in gmatch(str,".") do
-        if l > 0 then
-            l = l - 1
-        else
-            n = n + 1
-            if s >= l4 then
-                l = 3
-            elseif s >= l3 then
-                l = 2
-            elseif s >= l2 then
-                l = 1
-            end
-        end
-    end
-    return n
-end
 
 function wrap_text()
 
@@ -546,163 +616,147 @@ end
 -- Jagged Little Pill and Tori Amos' Beekeeper after
 -- reinstalling my good old ATH-7
 
-local language = props["ctx.spellcheck.language"]
-local wordsize = props["ctx.spellcheck.wordsize"]
-local wordpath = props["ctx.spellcheck.wordpath"]
-
-if language == '' then language = 'uk' end
-if wordsize == '' then wordsize = 4    else wordsize = tonumber(wordsize) end
-
-local wordfile = ""
-local wordlist = {}
-local worddone = 0
-
--- we use wordlist as a hash so that we can add entries without the
--- need to sort and also use a fast (built in) search
-
--- function kpsewhich_file(filename,filetype,progname)
---     local progflag, typeflag = '', ''
---     local tempname = os.tmpname()
---     if progname then
---         progflag = " --progname=" .. progname .. " "
+-- local language = props["ctx.spellcheck.language"]
+-- local wordsize = props["ctx.spellcheck.wordsize"]
+-- local wordpath = props["ctx.spellcheck.wordpath"]
+--
+-- if language == '' then language = 'uk' end
+-- if wordsize == '' then wordsize = 4    else wordsize = tonumber(wordsize) end
+--
+-- local wordfile = ""
+-- local wordlist = { }
+-- local worddone = 0
+--
+-- -- we use wordlist as a hash so that we can add entries without the
+-- -- need to sort and also use a fast (built in) search
+--
+-- function check_text() -- obsolete, replaced by lexer
+--
+--     local dlanguage = props["ctx.spellcheck.language"]
+--     local dwordsize = props["ctx.spellcheck.wordsize"]
+--     local dwordpath = props["ctx.spellcheck.wordpath"]
+--
+--     if dlanguage ~= '' then dlanguage = tostring(language) end
+--     if dwordsize ~= '' then dwordsize = tonumber(wordsize) end
+--
+--     local firstline, skipfirst = editor:GetLine(0), false
+--     local filetype, wordskip, wordgood = getfiletype(), '', ''
+--
+--     if filetype == 'tex' then
+--         wordskip  = "\\"
+--     elseif filetype  == 'xml' then
+--         wordskip  = "<"
+--         wordgood  = ">"
 --     end
---     if filetype then
---         typeflag = " --format=" .. filetype .. " "
+--
+--     if props["ctx.spellcheck.language"] == 'auto' then
+--         if filetype == 'tex' then
+--             -- % version =1.0 language=uk
+--             firstline = gsub(firstline,"^%%%s*",'')
+--             firstline = gsub(firstline,"%s*$",'')
+--             for key, val in gmatch(firstline,"(%w+)=(%w+)") do
+--                 if key == "language" then
+--                     language = val
+--                     report("auto document language '%s' (%s)",language,"tex")
+--                 end
+--             end
+--             skipfirst = true
+--         elseif filetype == 'xml' then
+--             -- <?xml version='1.0' language='uk' ?>
+--             firstline = gsub(firstline,"^%<%?xml%s*", '')
+--             firstline = gsub(firstline,"%s*%?%>%s*$", '')
+--             for key, val in gmatch(firstline,"(%w+)=[\"\'](.-)[\"\']") do
+--                 if key == "language" then
+--                     language = val
+--                     report("auto document language '%s' (%s)",language."xml")
+--                 end
+--             end
+--             skipfirst = true
+--         end
 --     end
---     local command = "kpsewhich" .. progflag .. typeflag .. " " .. filename .. " > " .. tempname
---     os.execute(command)
---     for line in io.lines(tempname) do
---         return gsub(line, "\s*$", '')
+--
+--     local fname = props["ctx.spellcheck.wordfile." .. language]
+--     local fsize = props["ctx.spellcheck.wordsize." .. language]
+--
+--     if fsize ~= '' then wordsize = tonumber(fsize) end
+--
+--     if fname ~= '' and fname ~= wordfile then
+--         wordfile, worddone, wordlist = fname, 0, { }
+--         for filename in gmatch(wordfile,"[^%,]+") do
+--             if wordpath ~= '' then
+--                 filename = expand(wordpath) .. '/' .. filename
+--             end
+--             if io.exists(filename) then
+--                 report("loading " .. filename)
+--                 for line in io.lines(filename) do
+--                     if not find(line,"^[%#-]") then
+--                         str = gsub(line,"%s*$", '')
+--                         rawset(wordlist,str,true)
+--                         worddone = worddone + 1
+--                     end
+--                 end
+--             else
+--                 report("unknown file '%s'",filename)
+--             end
+--         end
+--         report("%i words loaded",worddone)
 --     end
+--
+--     reset_text()
+--
+--     if worddone == 0 then
+--         report("no (valid) language or wordfile specified")
+--     else
+--         report("start checking")
+--         if wordskip ~= '' then
+--             report("ignoring %s ... %s",wordskip,wordgood)
+--         end
+--         local i, j, lastpos, startpos, endpos, snippet, len, first = 0, 0, -1, 0, 0, '', 0, 0
+--         local ok, skip, ch = false, false, ''
+--         if skipfirst then first = #firstline end
+--         for k = first, editor.TextLength do
+--             ch = editor:textrange(k,k+1)
+--             if wordgood ~= '' and ch == wordgood then
+--                 skip = false
+--             elseif ch == wordskip then
+--                 skip = true
+--             end
+--             if find(ch,"%w") and not find(ch,"%d") then
+--                 if not skip then
+--                     if ok then
+--                         endpos = k
+--                     else
+--                         startpos = k
+--                         endpos = k
+--                         ok = true
+--                     end
+--                 end
+--             elseif ok and not skip then
+--                 len = endpos - startpos + 1
+--                 if len >= wordsize then
+--                     snippet = editor:textrange(startpos,endpos+1)
+--                     i = i + 1
+--                     if wordlist[snippet] or wordlist[lower(snippet)] then
+--                         j = j + 1
+--                     else
+--                         editor:StartStyling(startpos,INDICS_MASK)
+--                         editor:SetStyling(len,INDIC2_MASK) -- INDIC0_MASK+2
+--                     end
+--                 end
+--                 ok = false
+--             elseif wordgood == '' then
+--                 skip = (ch == wordskip)
+--             end
+--         end
+--         report("%i words checked, %i errors found",i,i-j)
+--     end
+--
 -- end
-
-function check_text() -- obsolete, replaced by lexer
-
-    local dlanguage = props["ctx.spellcheck.language"]
-    local dwordsize = props["ctx.spellcheck.wordsize"]
-    local dwordpath = props["ctx.spellcheck.wordpath"]
-
-    if dlanguage ~= '' then dlanguage = tostring(language) end
-    if dwordsize ~= '' then dwordsize = tonumber(wordsize) end
-
-    local firstline, skipfirst = editor:GetLine(0), false
-    local filetype, wordskip, wordgood = getfiletype(), '', ''
-
-    if filetype == 'tex' then
-        wordskip  = "\\"
-    elseif filetype  == 'xml' then
-        wordskip  = "<"
-        wordgood  = ">"
-    end
-
-    if props["ctx.spellcheck.language"] == 'auto' then
-        if filetype == 'tex' then
-            -- % version =1.0 language=uk
-            firstline = gsub(firstline,"^%%%s*",'')
-            firstline = gsub(firstline,"%s*$",'')
-            for key, val in gmatch(firstline,"(%w+)=(%w+)") do
-                if key == "language" then
-                    language = val
-                    traceln("auto document language "  .. "'" .. language .. "' (tex)")
-                end
-            end
-            skipfirst = true
-        elseif filetype == 'xml' then
-            -- <?xml version='1.0' language='uk' ?>
-            firstline = gsub(firstline,"^%<%?xml%s*", '')
-            firstline = gsub(firstline,"%s*%?%>%s*$", '')
-            for key, val in gmatch(firstline,"(%w+)=[\"\'](.-)[\"\']") do
-                if key == "language" then
-                    language = val
-                    traceln("auto document language "  .. "'" .. language .. "' (xml)")
-                end
-            end
-            skipfirst = true
-        end
-    end
-
-    local fname = props["ctx.spellcheck.wordfile." .. language]
-    local fsize = props["ctx.spellcheck.wordsize." .. language]
-
-    if fsize ~= '' then wordsize = tonumber(fsize) end
-
-    if fname ~= '' and fname ~= wordfile then
-        wordfile, worddone, wordlist = fname, 0, {}
-        for filename in gmatch(wordfile,"[^%,]+") do
-            if wordpath ~= '' then
-                filename = expand(wordpath) .. '/' .. filename
-            end
-            if io.exists(filename) then
-                traceln("loading " .. filename)
-                for line in io.lines(filename) do
-                    if not find(line,"^[%#-]") then
-                        str = gsub(line,"%s*$", '')
-                        rawset(wordlist,str,true)
-                        worddone = worddone + 1
-                    end
-                end
-            else
-                traceln("unknown file '" .. filename .."'")
-            end
-        end
-        traceln(worddone .. " words loaded")
-    end
-
-    reset_text()
-
-    if worddone == 0 then
-        traceln("no (valid) language or wordfile specified")
-    else
-        traceln("start checking")
-        if wordskip ~= '' then
-            traceln("ignoring " .. wordskip .. "..." .. wordgood)
-        end
-        local i, j, lastpos, startpos, endpos, snippet, len, first = 0, 0, -1, 0, 0, '', 0, 0
-        local ok, skip, ch = false, false, ''
-        if skipfirst then first = #firstline end
-        for k = first, editor.TextLength do
-            ch = editor:textrange(k,k+1)
-            if wordgood ~= '' and ch == wordgood then
-                skip = false
-            elseif ch == wordskip then
-                skip = true
-            end
-            if find(ch,"%w") and not find(ch,"%d") then
-                if not skip then
-                    if ok then
-                        endpos = k
-                    else
-                        startpos = k
-                        endpos = k
-                        ok = true
-                    end
-                end
-            elseif ok and not skip then
-                len = endpos - startpos + 1
-                if len >= wordsize then
-                    snippet = editor:textrange(startpos,endpos+1)
-                    i = i + 1
-                    if wordlist[snippet] or wordlist[lower(snippet)] then
-                        j = j + 1
-                    else
-                        editor:StartStyling(startpos,INDICS_MASK)
-                        editor:SetStyling(len,INDIC2_MASK) -- INDIC0_MASK+2
-                    end
-                end
-                ok = false
-            elseif wordgood == '' then
-                skip = (ch == wordskip)
-            end
-        end
-        traceln(i .. " words checked, " .. (i-j) .. " errors")
-    end
-
-end
-
-function reset_text()
-    editor:StartStyling(0,INDICS_MASK)
-    editor:SetStyling(editor.TextLength,INDIC_PLAIN)
-end
+--
+-- function reset_text()
+--     editor:StartStyling(0,INDICS_MASK)
+--     editor:SetStyling(editor.TextLength,INDIC_PLAIN)
+-- end
 
 function add_text()
 
@@ -720,27 +774,211 @@ function add_text()
         if m then
             n = n + 1
             sum = sum + m
-            traceln(format("%4i : %s",n,m))
+            report("%4i : %s",n,m)
         end
     end
     if n > 0 then
-        traceln("")
-        traceln(format("sum  : %s",sum))
+        report()
+        report("sum  : %s",sum)
     else
-        traceln("no numbers selected")
+        report("no numbers selected")
     end
+
+end
+
+-- test
+
+local bidi  = nil
+local dirty = { }
+
+local mapping = {
+    l   = 0, -- "Left-to-Right",
+    lre = 7, -- "Left-to-Right Embedding",
+    lro = 7, -- "Left-to-Right Override",
+    r   = 2, -- "Right-to-Left",
+    al  = 3, -- "Right-to-Left Arabic",
+    rle = 7, -- "Right-to-Left Embedding",
+    rlo = 7, -- "Right-to-Left Override",
+    pdf = 7, -- "Pop Directional Format",
+    en  = 4, -- "European Number",
+    es  = 4, -- "European Number Separator",
+    et  = 4, -- "European Number Terminator",
+    an  = 5, -- "Arabic Number",
+    cs  = 6, -- "Common Number Separator",
+    nsm = 6, -- "Non-Spacing Mark",
+    bn  = 7, -- "Boundary Neutral",
+    b   = 0, -- "Paragraph Separator",
+    s   = 7, -- "Segment Separator",
+    ws  = 0, -- "Whitespace",
+    on  = 7, -- "Other Neutrals",
+}
+
+-- todo: take from scite-context-theme.lua
+
+local colors = { -- b g r
+    [0] = 0x000000, -- black
+    [1] = 0x00007F, -- red
+    [2] = 0x007F00, -- green
+    [3] = 0x7F0000, -- blue
+    [4] = 0x7F7F00, -- cyan
+    [5] = 0x7F007F, -- magenta
+    [6] = 0x007F7F, -- yellow
+    [7] = 0x007FB0, -- orange
+    [8] = 0x4F4F4F, -- dark
+}
+
+-- in principle, when we could inject some funny symbol that is nto part of the
+-- stream and/or use a different extra styling for each snippet then selection
+-- would work and rendering would look better too ... one problem is that a font
+-- rendering can collapse characters due to font features
+
+-- function OnChar(c)
+--
+--     cat = editor.CharAt
+--
+--     editor.CodePage = SC_CP_UTF8
+--     editor.Lexer    = SCLEX_CONTAINER
+--
+--     if not bidi then
+--         bidi = require("context.scite-ctx-bidi")
+--     end
+--
+--     local line = editor:LineFromPosition(editor.CurrentPos)
+--     local str  = editor:GetLine(line)
+--     local len  = #str
+--     local bol  = editor:PositionFromLine(line)
+--
+--     local t = { }
+--     local a = { }
+--     local n = 0
+--     local i = 0
+--
+--     local v
+--     while i < len do
+--         n = n + 1
+--         v, s = toutfcode(i)
+--         t[n] = v
+--         a[n] = s
+--         i = i + s
+--     end
+--
+--     local t = bidi.process(t)
+--
+--     local defaultcolor = mapping.l
+--     local mirrorcolor  = 1
+--
+--     local lastcolor = -1
+--     local runlength = 0
+--
+--     editor:StartStyling(bol,INDICS_MASK)
+--     for i=1,n do
+--         local ti = t[i]
+--         local direction = ti.direction
+--         local mirror    = t[i].mirror
+--         local color     = (mirror and mirrorcolor) or (direction and mapping[direction]) or defaultcolor
+--         if color == lastcolor then
+--             runlength = runlength + a[i]
+--         else
+--             if runlength > 0 then
+--                 editor:SetStyling(runlength,INDIC_STRIKE)
+--             end
+--             lastcolor = color
+--             runlength = a[i]
+--         end
+--     end
+--     if runlength > 0 then
+--         editor:SetStyling(runlength,INDIC_STRIKE)
+--     end
+--     editor:SetStyling(2,31)
+--
+--     dirty[props.FileNameExt] = true
+--
+-- end
+
+function show_bidi()
+
+    cat = editor.CharAt
+
+    editor.CodePage = SC_CP_UTF8
+    editor.Lexer    = SCLEX_CONTAINER
+
+    for i=1,#colors do -- 0,#colors
+       editor.StyleFore[i] = colors[i]
+    end
+
+    if not bidi then
+        bidi = require("context.scite-ctx-bidi")
+    end
+
+    local len = editor.TextLength
+    local str = editor:textrange(0,len-1)
+
+    local t = { }
+    local a = { }
+    local n = 0
+    local i = 0
+
+    local v
+    while i < len do
+        n = n + 1
+        v, s = toutfcode(i)
+        t[n] = v
+        a[n] = s
+        i = i + s
+    end
+
+    local t = bidi.process(t)
+
+    editor:StartStyling(0,31)
+
+    local defaultcolor = mapping.l
+    local mirrorcolor  = 1
+
+    if false then
+        for i=1,n do
+            local direction = t[i].direction
+            local color     = direction and (mapping[direction] or 0) or defaultcolor
+            editor:SetStyling(a[i],color)
+        end
+    else
+        local lastcolor = -1
+        local runlength = 0
+        for i=1,n do
+            local ti = t[i]
+            local direction = ti.direction
+            local mirror    = t[i].mirror
+            local color     = (mirror and mirrorcolor) or (direction and mapping[direction]) or defaultcolor
+            if color == lastcolor then
+                runlength = runlength + a[i]
+            else
+                if runlength > 0 then
+                    editor:SetStyling(runlength,lastcolor)
+                end
+                lastcolor = color
+                runlength = a[i]
+            end
+        end
+        if runlength > 0 then
+            editor:SetStyling(runlength,lastcolor)
+        end
+    end
+
+    editor:SetStyling(2,31)
+--     editor:StartStyling(0,31)
+
+    dirty[props.FileNameExt] = true
 
 end
 
 -- menu
 
-local menuactions   = {}
-local menufunctions = {}
+local menuactions   = { }
+local menufunctions = { }
 
 function UserListShow(menutrigger, menulist)
-    local menuentries = {}
+    local menuentries = { }
     local list = grab(menulist,"[^%|]+")
-    menuactions = {}
+    menuactions = { }
     for i=1, #list do
         if list[i] ~= '' then
             for key, val in gmatch(list[i],"%s*(.+)=(.+)%s*") do
@@ -751,7 +989,7 @@ function UserListShow(menutrigger, menulist)
     end
     local menustring = concat(menuentries,'|')
     if menustring == "" then
-        traceln("There are no templates defined for this file type.")
+        report("there are no templates defined for this file type")
     else
         editor.AutoCSeparator = byte('|')
         editor:UserListShow(menutrigger,menustring)
@@ -793,9 +1031,9 @@ local ctx_template_paths = { "./ctx-templates", "../ctx-templates", "../../ctx-t
 local ctx_auto_templates = false
 local ctx_template_list  = ""
 
-local ctx_path_list      = {}
-local ctx_path_done      = {}
-local ctx_path_name      = {}
+local ctx_path_list      = { }
+local ctx_path_done      = { }
+local ctx_path_name      = { }
 
 function ctx_list_loaded(path)
     return ctx_path_list[path] and #ctx_path_list[path] > 0
@@ -860,7 +1098,6 @@ function insert_template(templatelist)
         UserListShow(templatetrigger, templatelist)
     end
 end
-
 
 -- ctx.template.[whatever].[filetype]
 -- ctx.template.[whatever].data.[filetype]
@@ -1398,8 +1635,8 @@ local usedlists = {
 }
 
 local function make_strip()
-    local used = usedlists[enabled]
-    local lists = used.lists
+    local used     = usedlists[enabled]
+    local lists    = used.lists
     local alphabet = lists[used.current]
     local selector = "(hide)(" .. concat(used.selector,")(") .. ")"
     local alphabet = "(" .. used.current .. ":)(" .. concat(alphabet,")(") .. ")"
@@ -1446,11 +1683,22 @@ end
 -- parsing
 
 function OnOpen(filename)
- -- print("opening: " .. filename .. " (size: " .. editor.TextLength .. ")")
+--     report("opening '%s' of %i bytes",filename,editor.TextLength)
     editor:Colourise(0,editor.TextLength)
+end
+
+
+function OnSwitchFile(filename)
+    if dirty[props.FileNameExt] then
+--         report("switching '%s' of %i bytes",filename,editor.TextLength)
+        editor:Colourise(0,editor.TextLength)
+        dirty[props.FileNameExt] = false
+    end
 end
 
 -- Last time I checked the source the output pane errorlist lexer was still
 -- hardcoded and could not be turned off ... alas.
 
 -- output.Lexer = 0
+
+-- SCI_SETBIDIRECTIONAL = SC_BIDIRECTIONAL_R2L

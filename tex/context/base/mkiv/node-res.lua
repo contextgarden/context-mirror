@@ -7,7 +7,6 @@ if not modules then modules = { } end modules ['node-res'] = {
 }
 
 local gmatch, format = string.gmatch, string.format
-local tonumber, round = tonumber, math.round
 
 --[[ldx--
 <p>The next function is not that much needed but in <l n='context'/> we use
@@ -26,6 +25,7 @@ local skipcodes     = nodes.skipcodes
 local kerncodes     = nodes.kerncodes
 local rulecodes     = nodes.rulecodes
 local nodecodes     = nodes.nodecodes
+local gluecodes     = nodes.gluecodes
 local boundarycodes = nodes.boundarycodes
 local usercodes     = nodes.usercodes
 
@@ -61,35 +61,37 @@ setmetatable(userids, {
 
 -- nuts overload
 
-local nuts       = nodes.nuts
-local nutpool    = { }
-nuts.pool        = nutpool
+local nuts         = nodes.nuts
+local nutpool      = { }
+nuts.pool          = nutpool
 
-local tonut      = nuts.tonut
-local tonode     = nuts.tonode
+local tonut        = nuts.tonut
+local tonode       = nuts.tonode
 
-local getbox     = nuts.getbox
-local getfield   = nuts.getfield
-local getid      = nuts.getid
-local getlist    = nuts.getlist
-local getglue    = nuts.getglue
+local getbox       = nuts.getbox
+local getid        = nuts.getid
+local getlist      = nuts.getlist
+local getglue      = nuts.getglue
 
-local setfield   = nuts.setfield
-local setchar    = nuts.setchar
-local setlist    = nuts.setlist
-local setwhd     = nuts.setwhd
-local setglue    = nuts.setglue
-local setdisc    = nuts.setdisc
-local setfont    = nuts.setfont
-local setkern    = nuts.setkern
-local setpenalty = nuts.setpenalty
-local setdir     = nuts.setdir
-local setshift   = nuts.setshift
-local setwidth   = nuts.setwidth
+local setfield     = nuts.setfield
+local setchar      = nuts.setchar
+local setlist      = nuts.setlist
+local setwhd       = nuts.setwhd
+local setglue      = nuts.setglue
+local setdisc      = nuts.setdisc
+local setfont      = nuts.setfont
+local setkern      = nuts.setkern
+local setpenalty   = nuts.setpenalty
+local setdir       = nuts.setdir
+local setdirection = nuts.setdirection
+local setshift     = nuts.setshift
+local setwidth     = nuts.setwidth
+local setsubtype   = nuts.setsubtype
+local setleader    = nuts.setleader
 
-local copy_nut   = nuts.copy
-local new_nut    = nuts.new
-local flush_nut  = nuts.flush
+local copy_nut     = nuts.copy
+local new_nut      = nuts.new
+local flush_nut    = nuts.flush
 
 -- at some point we could have a dual set (the overhead of tonut is not much larger than
 -- metatable associations at the lua/c end esp if we also take assignments into account
@@ -162,11 +164,11 @@ local special           = register_nut(new_nut("whatsit",whatsitcodes.special))
 local user_node         = new_nut("whatsit",whatsitcodes.userdefined)
 
 local user_number       = register_nut(copy_nut(user_node)) setfield(user_number,    "type",usercodes.number)
-local user_nodes        = register_nut(copy_nut(user_node)) setfield(user_nodes,     "type",usercodes.nodes)
+local user_nodes        = register_nut(copy_nut(user_node)) setfield(user_nodes,     "type",usercodes.node)
 local user_string       = register_nut(copy_nut(user_node)) setfield(user_string,    "type",usercodes.string)
-local user_tokens       = register_nut(copy_nut(user_node)) setfield(user_tokens,    "type",usercodes.tokens)
+local user_tokens       = register_nut(copy_nut(user_node)) setfield(user_tokens,    "type",usercodes.token)
 ----- user_lua          = register_nut(copy_nut(user_node)) setfield(user_lua,       "type",usercodes.lua) -- in > 0.95
-local user_attributes   = register_nut(copy_nut(user_node)) setfield(user_attributes,"type",usercodes.attributes)
+local user_attributes   = register_nut(copy_nut(user_node)) setfield(user_attributes,"type",usercodes.attribute)
 
 local left_margin_kern  = register_nut(new_nut("margin_kern",0))
 local right_margin_kern = register_nut(new_nut("margin_kern",1))
@@ -179,9 +181,21 @@ local rightskip         = register_nut(new_nut("glue",skipcodes.rightskip))
 local temp              = register_nut(new_nut("temp",0))
 
 local noad              = register_nut(new_nut("noad"))
+local delimiter         = register_nut(new_nut("delim"))
+local fence             = register_nut(new_nut("fence"))
+local submlist          = register_nut(new_nut("sub_mlist"))
+local accent            = register_nut(new_nut("accent"))
+local radical           = register_nut(new_nut("radical"))
+local fraction          = register_nut(new_nut("fraction"))
+local subbox            = register_nut(new_nut("sub_box"))
+local mathchar          = register_nut(new_nut("math_char"))
+local mathtextchar      = register_nut(new_nut("math_text_char"))
+local choice            = register_nut(new_nut("choice"))
 
 local boundary          = register_nut(new_nut("boundary",boundarycodes.user))
 local wordboundary      = register_nut(new_nut("boundary",boundarycodes.word))
+
+local cleader           = register_nut(copy_nut(glue)) setsubtype(cleader,gluecodes.cleaders) setglue(cleader,0,65536,0,2,0)
 
 -- the dir field needs to be set otherwise crash:
 
@@ -329,6 +343,18 @@ function nutpool.textdir(dir)
     return t
 end
 
+function nutpool.direction(dir,swap)
+    local t = copy_nut(textdir)
+    if not dir then
+        -- just a l2r start node
+    elseif swap then
+        setdirection(t,dir,true)
+    else
+        setdirection(t,dir,false)
+    end
+    return t
+end
+
 function nutpool.rule(width,height,depth,dir) -- w/h/d == nil will let them adapt
     local n = copy_nut(rule)
     if width or height or depth then
@@ -358,6 +384,17 @@ function nutpool.userrule(width,height,depth,dir) -- w/h/d == nil will let them 
     end
     if dir then
         setdir(n,dir)
+    end
+    return n
+end
+
+function nutpool.leader(width,list)
+    local n = copy_nut(cleader)
+    if width then
+        setwidth(n,width)
+    end
+    if list then
+        setleader(n,list)
     end
     return n
 end
@@ -404,9 +441,19 @@ function nutpool.temp()
     return copy_nut(temp)
 end
 
-function nutpool.noad()
-    return copy_nut(noad)
-end
+function nutpool.noad()         return copy_nut(noad)         end
+function nutpool.delimiter()    return copy_nut(delimiter)    end  nutpool.delim = nutpool.delimiter
+function nutpool.fence()        return copy_nut(fence)        end
+function nutpool.submlist()     return copy_nut(submlist)     end
+function nutpool.noad()         return copy_nut(noad)         end
+function nutpool.fence()        return copy_nut(fence)        end
+function nutpool.accent()       return copy_nut(accent)       end
+function nutpool.radical()      return copy_nut(radical)      end
+function nutpool.fraction()     return copy_nut(fraction)     end
+function nutpool.subbox()       return copy_nut(subbox)       end
+function nutpool.mathchar()     return copy_nut(mathchar)     end
+function nutpool.mathtextchar() return copy_nut(mathtextchar) end
+function nutpool.choice()       return copy_nut(choice)       end
 
 local function new_hlist(list,width,height,depth,shift)
     local n = copy_nut(hlist)

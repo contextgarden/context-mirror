@@ -60,6 +60,8 @@ local formatters      = string.formatters
 local interfaces      = interfaces
 local implement       = interfaces.implement
 
+local texgetattribute = tex.getattribute
+
 -- We can distinguish between rules and glyphs but it's not worth the trouble. A
 -- first implementation did that and while it saves a bit for glyphs and rules, it
 -- costs more resourses for transparencies. So why bother.
@@ -356,7 +358,7 @@ local function reviver(data,n)
         else
             local model = colors.forcedmodel(v[1])
             if model == 2 then
-                local gray= graycolor(v[2])
+                local gray = graycolor(v[2])
                 d = { gray, gray, gray, gray }
             elseif model == 3 then
                 local gray, rgb, cmyk = graycolor(v[2]), rgbcolor(v[3],v[4],v[5]), cmykcolor(v[6],v[7],v[8],v[9])
@@ -446,6 +448,12 @@ function colors.forcesupport(value) -- can move to attr-div
     colors.supported = value
     report_colors("color is %ssupported",value and "" or "not ")
     colors.enable(value)
+end
+
+function colors.toattributes(name)
+    local mc = list[a_color][name]
+    local mm = texgetattribute(a_selector)
+    return (mm == unsetvalue and 1) or mm or 1, mc or list[a_color][1] or unsetvalue
 end
 
 -- transparencies
@@ -552,6 +560,10 @@ function transparencies.forcesupport(value) -- can move to attr-div
     transparencies.supported = value
     report_transparencies("transparency is %ssupported",value and "" or "not ")
     transparencies.enable(value)
+end
+
+function transparencies.toattribute(name)
+    return list[a_transparency][name] or unsetvalue
 end
 
 --- colorintents: overprint / knockout

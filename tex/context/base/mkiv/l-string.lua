@@ -18,7 +18,7 @@ local P, S, C, Ct, Cc, Cs = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.Cs
 --
 --     function string.split(str,pattern)
 --         local t = { }
---         if #str > 0 then
+--         if str ~= "" then
 --             local n = 1
 --             for s in gmatch(str..pattern,"(.-)"..pattern) do
 --                 t[n] = s
@@ -220,11 +220,11 @@ string.unquote = string.unquoted
 
 -- new
 
-if not string.bytetable then
+if not string.bytetable then -- used in font-cff.lua
 
     local limit = 5000 -- we can go to 8000 in luajit and much higher in lua if needed
 
-    function string.bytetable(str)
+    function string.bytetable(str) -- from a string
         local n = #str
         if n > limit then
             local t = { byte(str,1,limit) }

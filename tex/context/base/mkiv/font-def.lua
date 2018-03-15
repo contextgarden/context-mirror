@@ -21,7 +21,6 @@ local trace_defining     = false  trackers  .register("fonts.defining", function
 local directive_embedall = false  directives.register("fonts.embedall", function(v) directive_embedall = v end)
 
 trackers.register("fonts.loading", "fonts.defining", "otf.loading", "afm.loading", "tfm.loading")
-trackers.register("fonts.all", "fonts.*", "otf.*", "afm.*", "tfm.*")
 
 local report_defining = logs.reporter("fonts","defining")
 
@@ -416,10 +415,6 @@ function definers.loadfont(specification)
     return tfmdata
 end
 
-function constructors.checkvirtualids()
-    -- dummy in plain version
-end
-
 function constructors.readanddefine(name,size) -- no id -- maybe a dummy first
     local specification = definers.analyze(name,size)
     local method = specification.method
@@ -433,7 +428,6 @@ function constructors.readanddefine(name,size) -- no id -- maybe a dummy first
         local tfmdata = definers.loadfont(specification)
         if tfmdata then
             tfmdata.properties.hash = hash
-            constructors.checkvirtualids(tfmdata) -- experiment, will become obsolete when slots can selfreference
             id = font.define(tfmdata)
             definers.register(tfmdata,id)
         else
@@ -518,7 +512,7 @@ function definers.read(specification,size,id) -- id can be optional, name can al
         local properties = tfmdata.properties or { }
         local parameters = tfmdata.parameters or { }
         report_defining("using %a font with id %a, name %a, size %a, bytes %a, encoding %a, fullname %a, filename %a",
-            properties.format or "unknown", id, properties.name, parameters.size, properties.encodingbytes,
+            properties.format or "unknown", id or "-", properties.name, parameters.size, properties.encodingbytes,
             properties.encodingname, properties.fullname, basename(properties.filename))
     end
     statistics.stoptiming(fonts)

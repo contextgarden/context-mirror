@@ -15,6 +15,8 @@
 
 % !!! there are some issues with hsize an vsize as well as flushing
 % !!! floats but this module will be redone anyway
+%
+% can have some vpack and hpack
 
 \writestatus{loading}{ConTeXt Page Macros / Simple Multi Column}
 
@@ -84,7 +86,7 @@
   {\page_one_place_float_force}
 
 \unexpanded\def\page_mul_command_side_float_output
-  {\page_otr_construct_and_shipout\unvbox\normalpagebox}
+  {\page_otr_construct_and_shipout\unvbox\normalpagebox\zerocount} % three arguments
 
 \unexpanded\def\page_mul_command_flush_side_floats
   {\page_sides_forget_floats}
@@ -339,7 +341,7 @@
 
 \def\page_mul_routine_error
   {\showmessage\m!columns3\empty
-   \page_otr_construct_and_shipout\unvbox\normalpagebox}
+   \page_otr_construct_and_shipout\unvbox\normalpagebox\zerocount} % three arguments
 
 %D When we leave the multi||column mode, we have to process the not yet shipped out
 %D part of the columns. When we don't balance, we simply force a continuous output,
@@ -856,7 +858,7 @@
        {\ht\currentcolumnbox\d_page_mul_balance_target}% redundant
    \fi
    \setbox\b_page_mul_preceding\vbox{\page_mul_flush_packaged_columns_continued}%
-   \page_otr_construct_and_shipout\box\b_page_mul_preceding
+   \page_otr_construct_and_shipout\box\b_page_mul_preceding\zerocount % three arguments
    \page_otr_command_set_hsize
    \page_otr_command_set_vsize
    \page_mul_flush_floats
@@ -1818,6 +1820,7 @@
 
 \let\page_mul_command_package_contents\page_one_command_package_contents
 \let\page_mul_command_flush_float_box \page_one_command_flush_float_box
+\let\page_mul_command_flush_all_floats\page_one_command_flush_all_floats
 
 \defineoutputroutine
   [\s!multicolumn]
@@ -1825,21 +1828,22 @@
    \s!page_otr_command_package_contents       =\page_mul_command_package_contents,
    \s!page_otr_command_set_vsize              =\page_mul_command_set_vsize,
    \s!page_otr_command_set_hsize              =\page_mul_command_set_hsize,
+ % \s!page_otr_command_synchronize_hsize      =\page_mul_command_synchronize_hsize,
    \s!page_otr_command_next_page              =\page_mul_command_next_page,
    \s!page_otr_command_next_page_and_inserts  =\page_mul_command_next_page_and_inserts,
- % \s!page_otr_command_synchronize_hsize      =\page_mul_command_synchronize_hsize,
  % \s!page_otr_command_set_top_insertions     =\page_mul_command_set_top_insertions,
  % \s!page_otr_command_set_bottom_insertions  =\page_mul_command_set_bottom_insertions,
    \s!page_otr_command_flush_top_insertions   =\page_mul_command_flush_top_insertions,
  % \s!page_otr_command_flush_bottom_insertions=\page_mul_command_flush_bottom_insertions,
- % \s!page_otr_command_set_float_hsize        =\page_mul_command_set_float_hsize,
    \s!page_otr_command_check_if_float_fits    =\page_mul_command_check_if_float_fits,
+ % \s!page_otr_command_set_float_hsize        =\page_mul_command_set_float_hsize,
    \s!page_otr_command_flush_float_box        =\page_mul_command_flush_float_box,
-   \s!page_otr_command_synchronize_side_floats=\page_mul_command_synchronize_side_floats,
    \s!page_otr_command_side_float_output      =\page_mul_command_side_float_output,
+   \s!page_otr_command_synchronize_side_floats=\page_mul_command_synchronize_side_floats,
    \s!page_otr_command_flush_floats           =\page_mul_command_flush_floats,
    \s!page_otr_command_flush_side_floats      =\page_mul_command_flush_side_floats,
    \s!page_otr_command_flush_saved_floats     =\page_mul_command_flush_saved_floats,
+   \s!page_otr_command_flush_all_floats       =\page_mul_command_flush_all_floats,
  % \s!page_otr_command_flush_margin_blocks    =\page_mul_command_flush_margin_blocks, % not used
    \s!page_otr_command_test_column            =\page_mul_command_test_column
   ]

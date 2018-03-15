@@ -15,11 +15,9 @@ texconfig.shell_escape   = 't'
 texconfig.max_print_line = 100000
 texconfig.max_in_open    = 1000
 
-if not resolvers.instance then
+if not resolvers.initialized() then
 
     resolvers.reset()
-
-    resolvers.instance.validfile  = resolvers.validctxfile
 
     -- we now load the file database as we might need files other than
     -- tex and lua file on the given path
@@ -86,7 +84,7 @@ if not resolvers.instance then
         register('find_opentype_file'  , function(name) return findbinfile(name,"otf")    end, true)
         register('find_output_file'    , function(name) return name                       end, true)
         register('find_pk_file'        , findpk, true)
-        register('find_sfd_file'       , function(name) return findbinfile(name,"sfd")    end, true)
+     -- register('find_sfd_file'       , function(name) return findbinfile(name,"sfd")    end, true)
         register('find_truetype_file'  , function(name) return findbinfile(name,"ttf")    end, true)
         register('find_type1_file'     , function(name) return findbinfile(name,"pfb")    end, true)
         register('find_vf_file'        , function(name) return findbinfile(name,"vf")     end, true)
@@ -100,7 +98,7 @@ if not resolvers.instance then
         register('read_map_file'       , function(file) return loadbinfile(file,"map")    end, true)
      -- output
         register('read_pk_file'        , function(file) return loadbinfile(file,"pk")     end, true) -- 600dpi/manfnt.720pk
-        register('read_sfd_file'       , function(file) return loadbinfile(file,"sfd")    end, true)
+     -- register('read_sfd_file'       , function(file) return loadbinfile(file,"sfd")    end, true)
         register('read_vf_file'        , function(file) return loadbinfile(file,"vf" )    end, true)
 
      -- register('find_font_file'      , function(name) return findbinfile(name,"ofm")    end, true)
@@ -128,7 +126,7 @@ statistics.register("resource resolver", function()
         scandata.n,
         scandata.time,
         scandata.shared,
-        #resolvers.instance.foundintrees,
+        #resolvers.foundintrees(),
         #scandata.paths > 0 and concat(scandata.paths," ") or "<none>"
     )
 end)

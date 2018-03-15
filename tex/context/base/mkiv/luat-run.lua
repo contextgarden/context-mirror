@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['luat-run'] = {
     license   = "see context related readme files"
 }
 
+local next = next
 local format, find = string.format, string.find
 local insert, remove = table.insert, table.remove
 
@@ -20,11 +21,13 @@ local report_lua       = logs.reporter("system","lua")
 local report_tex       = logs.reporter("system","status")
 local report_tempfiles = logs.reporter("resolvers","tempfiles")
 
-luatex       = luatex or { }
-local luatex = luatex
+luatex        = luatex or { }
+local luatex  = luatex
+local synctex = luatex.synctex
 
-if not luatex.synctex then
-    luatex.synctex = table.setmetatableindex(function() return function() end end)
+if not synctex then
+    synctex        = table.setmetatableindex(function() return function() end end)
+    luatex.synctex = synctex
 end
 
 local startactions = { }
@@ -50,12 +53,24 @@ local function stop_run()
     for i=1,#stopactions do
         stopactions[i]()
     end
+    local quit = logs.finalactions()
     if trace_job_status then
         statistics.show()
     end
     if trace_tex_status then
+        logs.newline()
         for k, v in table.sortedhash(status.list()) do
             report_tex("%S=%S",k,v)
+        end
+    end
+    if quit then
+        if status.setexitcode then
+            status.setexitcode(1)
+            if type(quit) == "table" then
+                logs.newline()
+                report_tex("quitting due to: %, t",quit)
+                logs.newline()
+            end
         end
     end
     if logs.stop_run then
@@ -64,6 +79,7 @@ local function stop_run()
 end
 
 local function start_shipout_page()
+    synctex.start()
     logs.start_page_number()
 end
 
@@ -72,7 +88,7 @@ local function stop_shipout_page()
     for i=1,#pageactions do
         pageactions[i]()
     end
-    luatex.synctex.flush()
+    synctex.stop()
 end
 
 local function report_output_pages()
@@ -95,24 +111,35 @@ local function pre_dump_actions()
  -- statistics.savefmtstatus("\jobname","\contextversion","context.tex")
 end
 
+local function wrapup_synctex()
+    synctex.wrapup()
+end
+
 -- this can be done later
 
-callbacks.register('start_run',             start_run,           "actions performed at the beginning of a run")
-callbacks.register('stop_run',              stop_run,            "actions performed at the end of a run")
+callbacks.register('start_run',               start_run,           "actions performed at the beginning of a run")
+callbacks.register('stop_run',                stop_run,            "actions performed at the end of a run")
 
----------.register('show_open',             show_open,           "actions performed when opening a file")
----------.register('show_close',            show_close,          "actions performed when closing a file")
+---------.register('show_open',               show_open,           "actions performed when opening a file")
+---------.register('show_close',              show_close,          "actions performed when closing a file")
 
-callbacks.register('report_output_pages',   report_output_pages, "actions performed when reporting pages")
-callbacks.register('report_output_log',     report_output_log,   "actions performed when reporting log file")
+callbacks.register('report_output_pages',     report_output_pages, "actions performed when reporting pages")
+callbacks.register('report_output_log',       report_output_log,   "actions performed when reporting log file")
 
-callbacks.register('start_page_number',     start_shipout_page,  "actions performed at the beginning of a shipout")
-callbacks.register('stop_page_number',      stop_shipout_page,   "actions performed at the end of a shipout")
+callbacks.register('start_page_number',       start_shipout_page,  "actions performed at the beginning of a shipout")
+callbacks.register('stop_page_number',        stop_shipout_page,   "actions performed at the end of a shipout")
 
-callbacks.register('process_input_buffer',  false,               "actions performed when reading data")
-callbacks.register('process_output_buffer', false,               "actions performed when writing data")
+callbacks.register('process_input_buffer',    false,               "actions performed when reading data")
+callbacks.register('process_output_buffer',   false,               "actions performed when writing data")
 
-callbacks.register("pre_dump",              pre_dump_actions,    "lua related finalizers called before we dump the format") -- comes after \everydump
+callbacks.register("pre_dump",                pre_dump_actions,    "lua related finalizers called before we dump the format") -- comes after \everydump
+
+if LUATEXFUNCTIONALITY and LUATEXFUNCTIONALITY > 6505 then
+    callbacks.register("finish_synctex",          wrapup_synctex,      "rename temporary synctex file")
+    callbacks.register('wrapup_run',              false,               "actions performed after closing files")
+else
+    callbacks.register("finish_synctex_callback", wrapup_synctex,      "rename temporary synctex file")
+end
 
 -- an example:
 
@@ -180,7 +207,7 @@ local function report_start(left,name)
          -- report_load("%s > %s",types[left],name or "?")
             report_load("type %a, name %a",types[left],name or "?")
         end
-    elseif find(name,"virtual://") then
+    elseif find(name,"virtual://",1,true) then
         insert(stack,false)
     else
         insert(stack,name)
@@ -188,7 +215,7 @@ local function report_start(left,name)
         level = level + 1
      -- report_open("%i > %i > %s",level,total,name or "?")
         report_open("level %i, order %i, name %a",level,total,name or "?")
-        luatex.synctex.setfilename(name)
+        synctex.setfilename(name)
     end
 end
 
@@ -199,6 +226,7 @@ local function report_stop(right)
          -- report_close("%i > %i > %s",level,total,name or "?")
             report_close("level %i, order %i, name %a",level,total,name or "?")
             level = level - 1
+            synctex.setfilename(stack[#stack] or tex.jobname)
         end
     end
 end

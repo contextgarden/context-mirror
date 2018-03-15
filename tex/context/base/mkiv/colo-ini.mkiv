@@ -32,8 +32,8 @@
 \installcorenamespace{colorconversions}
 \installcorenamespace{colornumber}
 
-\registerctxluafile{colo-ini}{1.000}
-\registerctxluafile{colo-icc}{1.000}
+\registerctxluafile{colo-ini}{}
+\registerctxluafile{colo-icc}{}
 
 \unprotect
 
@@ -623,7 +623,7 @@
 %D
 %D \showsetup{showpalet}
 
-\fetchruntimecommand \showpalet {\f!colorprefix\s!run}
+\fetchruntimecommand \showpalet \f!colo_run
 
 %D \macros
 %D   {showcolorcomponents}
@@ -632,7 +632,7 @@
 %D \showcolorcomponents[color-1,color-2]
 %D \stoptyping
 
-\fetchruntimecommand \showcolorcomponents {\f!colorprefix\s!run}
+\fetchruntimecommand \showcolorcomponents \f!colo_run
 
 %D \macros
 %D   {comparepalet}
@@ -655,7 +655,7 @@
 %D
 %D \showsetup{comparepalet}
 
-\fetchruntimecommand \comparepalet {\f!colorprefix\s!run}
+\fetchruntimecommand \comparepalet \f!colo_run
 
 %D \macros
 %D   {showcolor}
@@ -671,7 +671,7 @@
 %D
 %D \showsetup{showcolor}
 
-\fetchruntimecommand \showcolor {\f!colorprefix\s!run}
+\fetchruntimecommand \showcolor \f!colo_run
 
 %D It would make sense to put the following code in \type
 %D {colo-mps}, but it it rather low level.
@@ -1414,6 +1414,47 @@
 \definetransparency [saturation] [14]
 \definetransparency [color]      [15]
 \definetransparency [luminosity] [16]
+
+%D Some common ones:
+
+\definecolor[trace:0][s=.4]
+\definecolor[trace:1][r=.6]
+\definecolor[trace:2][g=.6]
+\definecolor[trace:3][b=.6]
+\definecolor[trace:4][r=.6,g=.6]
+\definecolor[trace:5][r=.6,b=.6]
+\definecolor[trace:6][g=.6,b=.6]
+\definecolor[trace:7][r=.8,g=.4]
+\definecolor[trace:8][r=.8,b=.4]
+\definecolor[trace:9][g=.4,b=.8]
+
+\definecolor[trace:w][s=1]
+\definecolor[trace:r][r=.75,t=.5,a=1]
+\definecolor[trace:g][g=.75,t=.5,a=1]
+\definecolor[trace:b][b=.75,t=.5,a=1]
+%definecolor[trace:c][c=.75,t=.5,a=1]
+\definecolor[trace:c][g=.75,b=.75,t=.5,a=1]
+%definecolor[trace:m][m=.75,t=.5,a=1]
+\definecolor[trace:m][r=.75,b=.75,t=.5,a=1]
+%definecolor[trace:y][y=.75,t=.5,a=1]
+\definecolor[trace:y][r=.75,g=.75,t=.5,a=1]
+\definecolor[trace:s][s=.75,t=.5,a=1]
+\definecolor[trace:d][s=.25,t=.5,a=1]
+\definecolor[trace:o][r=1,g=.6,b=.1,t=.5,a=1]
+
+\definecolor[trace:dw][s=1]
+\definecolor[trace:dr][r=.75,t=.75,a=1]
+\definecolor[trace:dg][g=.75,t=.75,a=1]
+\definecolor[trace:db][b=.75,t=.75,a=1]
+%definecolor[trace:dc][c=.75,t=.75,a=1]
+\definecolor[trace:dc][g=.75,b=.75,t=.75,a=1]
+%definecolor[trace:dm][m=.75,t=.75,a=1]
+\definecolor[trace:dm][r=.75,b=.75,t=.75,a=1]
+%definecolor[trace:dy][y=.75,t=.75,a=1]
+\definecolor[trace:y][r=.75,g=.75,t=.75,a=1]
+\definecolor[trace:ds][s=.75,t=.75,a=1]
+\definecolor[trace:dd][s=.25,t=.75,a=1]
+\definecolor[trace:do][r=1,g=.6,b=.1,t=.75,a=1]
 
 \setupcolors
   [\c!state=\v!stop, % color will be enabled later on

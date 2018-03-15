@@ -1,0 +1,388 @@
+% language=uk
+
+\startcomponent fonts-tricks
+
+\environment fonts-environment
+
+\startchapter[title=Tricks][color=middleorange]
+
+\startsection[title=Introduction]
+
+In this chapter topics that don't fit in the previous chapters are
+collected.
+
+\stopsection
+
+\startsection[title=Extra characters]
+
+In one of our projects we need a small (high) minus and here we discuss
+one way of achieving this. An option is to define a new character
+and use a font feature to add it, as in:
+
+\starttyping
+\startluacode
+  local function addextraminus(tfmdata)
+    fonts.helpers.addprivate(tfmdata, "smallminus", ... ) -- see below
+    fonts.helpers.addprivate(tfmdata, "highminus",  ... ) -- see below
+  end
+  fonts.constructors.newfeatures.otf.register {
+    name        = "extraminus",
+    description = "extra minus symbols",
+    default     = true,
+    manipulators = {
+      base = addextraminus,
+      node = addextraminus,
+    }
+  }
+\stopluacode
+\stoptyping
+
+However, why make it an option when we can just add it to any font. So,
+we can end up with just:
+
+\typebuffer[extraminus] % already defined before loading fonts
+
+It is important to do this before fonts get loaded. Next we need to decide how to
+access these characters. A straightforward way is:
+
+\startbuffer
+\def\smallminus{\privatechar{smallminus}}
+\def\highminus {\privatechar{highminus}}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+An alternative is:
+
+\starttyping
+\definemathcommand [smallminus] [ord] {\privatechar{smallminus}}
+\definemathcommand [highminus]  [ord] {\privatechar{highminus}}
+\stoptyping
+
+but that fails in text mode. So, we can consider:
+
+\starttyping
+\def\smallminus{\mathortext{\mathord{\privatechar{smallminus}}}{\privatechar{smallminus}}}
+\def\highminus {\mathortext{\mathord{\privatechar {highminus}}}{\privatechar {highminus}}}
+\stoptyping
+
+or more compact
+
+\starttyping
+\def\smallminus{\mathortext\mathord\firstofoneargument{\privatechar{smallminus}}}
+\def\highminus {\mathortext\mathord\firstofoneargument{\privatechar {highminus}}}
+\stoptyping
+
+What method you choose depends on usage. With the first, simple definitions we
+get this:
+
+\startbuffer
+[\getprivateslot{smallminus}] [\getprivatechar{smallminus}] [\smallminus] $[\smallminus]$\par
+[\getprivateslot {highminus}] [\getprivatechar {highminus}] [\highminus ] $[\highminus ]$\par
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Because we are fully expandable we can even use this in:
+
+\startbuffer
+\bTABLE[aligncharacter=yes,alignmentcharacter={text->\smallminus}]
+  \bTR \bTD \mathminus100\smallminus00+ \eTD \eTR
+  \bTR \bTD           100\smallminus00  \eTD \eTR
+  \bTR \bTD \mathminus 99\smallminus00+ \eTD \eTR
+  \bTR \bTD \mathminus 99\smallminus00  \eTD \eTR
+  \bTR \bTD           100\highminus     \eTD \eTR
+\eTABLE
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+With the other definitions the alignment would not work. If you need both then
+you can define different commands for text and math.
+
+\stopsection
+
+\startsection[title=Tabular numbers]
+
+Some font features are meant to be used in controlled situations. An example is
+the \type {tnum} feature that triggers so called \quote {tabular figures} meaning
+numbers that have equal widths. Its opposite feature is \type {lnum} or lining
+figures. We have two predefined \CONTEXT\ font features for this:
+
+\starttyping
+\definefontfeature [inlinenumbers]  [lnum=yes,tnum=no]
+\definefontfeature [tabularnumbers] [tnum=yes,lnum=no]
+\stoptyping
+
+Some mechanisms in \CONTEXT\ had better be aware of this and one of them is the
+alignment mechanism in tables.
+
+\startbuffer[demo]
+\startcombination[before=,after=]
+    \startcontent
+        \switchtobodyfont[pagella]\showglyphs%
+        \disabledirectives[typesetters.characteralign.autofont]%
+        \bTABLE[alignmentcharacter=.,aligncharacter=yes]
+            \bTR \bTD  11.111 \eTD \eTR
+            \bTR \bTD   2.2   \eTD \eTR
+            \bTR \bTD 444.444 \eTD \eTR
+        \eTABLE
+        \enabledirectives[typesetters.characteralign.autofont]%
+    \stopcontent
+    \startcaption
+        \small manual \type {tnum}
+    \stopcaption
+    \startcontent
+        \switchtobodyfont[pagella]\showglyphs%
+        \bTABLE[alignmentcharacter=.,aligncharacter=yes]
+            \bTR \bTD  11.111 \eTD \eTR
+            \bTR \bTD   2.2   \eTD \eTR
+            \bTR \bTD 444.444 \eTD \eTR
+        \eTABLE
+    \stopcontent
+    \startcaption
+        \small auto \type {tnum}
+    \stopcaption
+\stopcombination
+\stopbuffer
+
+In the following examples we demonstrate how the automatic font adaption makes
+sure that tabular figures are used. The table is defined as:
+
+\typebuffer[demo]
+
+\startbuffer
+\dontleavehmode\hbox to .3\textwidth \bgroup
+    \hss\getbuffer[demo]\hss
+\egroup
+\stopbuffer
+
+In \in {figure}[fig:tabularnumbers] we see what the features do. We use the \type
+{\feature} or \type {\addfeature} macro for this. For the moment this trickery is
+controlled by a directive (beware: enabling them is global).
+
+\startplacefigure[reference=fig:tabularnumbers,title={Tabular numbers}]
+    \startcombination[nx=3,ny=2]
+        {\getbuffer}                             {\tt\nohyphens default}
+        {\addfeature  [inlinenumbers]\getbuffer} {\tt\nohyphens inlinenumbers}
+        {\addfeature [tabularnumbers]\getbuffer} {\tt\nohyphens tabularnumbers}
+        {\addfeature[oldstylenumbers]\getbuffer} {\tt\nohyphens oldstylenumbers}
+        {\addfeature[oldstylenumbers]%
+         \addfeature  [inlinenumbers]\getbuffer} {\tt\nohyphens oldstylenumbers\par inlinenumbers}
+        {\addfeature[oldstylenumbers]%
+         \addfeature [tabularnumbers]\getbuffer} {\tt\nohyphens oldstylenumbers\par tabularnumbers}
+    \stopcombination
+\stopplacefigure
+
+\stopsection
+
+\startsection[title=Symbols]
+
+You can access glyphs by name but you need to know that name, for example:
+
+\startbuffer
+\definefontsynonym [bends] [file:manfnt.afm]
+
+\startsymbolset [Dangerous Bends]
+    \definesymbol [dbend]   [\resolvedglyphdirect{bends}{n:char_7e}]
+    \definesymbol [lhdbend] [\resolvedglyphdirect{bends}{n:char_7f}]
+\stopsymbolset
+
+\setupsymbolset [Dangerous Bends]
+
+Two dangerous bends: \symbol{dbend} and \symbol{lhdbend}.
+\stopbuffer
+
+\typebuffer
+
+You can best save the fonts you use that way in a place that doesn't get
+overwritten because names can change.
+
+\getbuffer
+
+\stopsection
+
+\startsection[title=Alternative styles]
+
+\startbuffer[demo]
+    \start
+        \getbuffer[setup]
+        \subject{[ {\myslanted myslanted} ] [ {\it it} ] [ {\slanted slanted} ] [ $x=1$ ]}
+        [ {\myslanted myslanted} ] [ {\it it} ] [ {\slanted slanted} ] [ $x=1$ ]
+        \typebuffer[setup]
+        \blackrule[width=\hsize,height=1pt,depth=0pt]
+    \stop
+\stopbuffer
+
+In section heads we want a nested style (e.g.\ italic) to adapt to the main font.
+The following definitions shows how you can influence that process. We use the
+following \type {demo} buffer as sample:
+
+\typebuffer[demo]
+
+\startbuffer
+\blackrule[width=\hsize,height=1pt,depth=0pt]
+
+\startbuffer[setup]
+\setuphead[subject][style=\tfb,before=,after=]
+\definealternativestyle [myslanted] [\it] []
+\stopbuffer
+
+\getbuffer[demo]
+
+\startbuffer[setup]
+\setuphead[subject][style=\tfb,before=,after=]
+\definealternativestyle [myslanted] [\it] [\bi]
+\stopbuffer
+
+\getbuffer[demo]
+
+\startbuffer[setup]
+\setuphead[subject][style=\tfb,before=,after=]
+\definealternativestyle [myslanted] [\it] [\tf]
+\stopbuffer
+
+\getbuffer[demo]
+
+\startbuffer[setup]
+\definealternativestyle [myslanted] [\normalitalicface]
+\setuphead[subject][style=bold,before=,after=]
+\stopbuffer
+
+\getbuffer[demo]
+
+\startbuffer[setup]
+\definealternativestyle [myslanted] [\normalitalicface]
+\setuphead[subject][style=\bfd,before=,after=]
+\stopbuffer
+
+\getbuffer[demo]
+
+\startbuffer[setup]
+\definealternativestyle [myslanted] [\slantedface]
+\setuphead[subject][style=boldface,before=,after=]
+\stopbuffer
+
+\getbuffer[demo]
+\stopbuffer
+
+You can influence the main method of operation with:
+
+\starttyping
+\setupalternativestyles[method=normal]
+\setupalternativestyles[method=auto]
+\stoptyping
+
+\startplacefigure[title={Alternative style methods.},reference=fig:alternativestyle]
+    \startcombination
+        {\setupalternativestyles[method=normal]\scale[width=.45\textwidth]{\framed[width=.85\textwidth,align=normal,frame=off,offset=overlay]{\getbuffer}}} {\type{method=normal}}
+        {\setupalternativestyles  [method=auto]\scale[width=.45\textwidth]{\framed[width=.85\textwidth,align=normal,frame=off,offset=overlay]{\getbuffer}}} {\type{method=auto}}
+    \stopcombination
+\stopplacefigure
+
+The result is shown in \in {figure} [fig:alternativestyle]. Relevant commands are:
+
+\starttyping
+\emphasistypeface
+\emphasisboldface
+
+\normaltypeface    \typeface
+\normalboldface    \boldface
+\normalslantedface \slantedface
+\normalitalicface  \italicface
+\swaptypeface      \swapface
+\stoptyping
+
+\stopsection
+
+\startsection[title={A virtual hack}]
+
+Here is some virtual trickery. A virtual font is just a font but instead of a
+character being a reference to a slot in a font (often via an index) it
+constructs a glyph from whatever characters, rules, displacements, inline \PDF\
+code, etc. We use them a lot deep down in \CONTEXT. The next example defines two
+characters represented by rules. This definition is about as minimalistic as
+reasonable and demonstrates how we can apply expansion (aka hz) to such a font.
+\footnote {You need \LUATEX\ 1.08 or later for this.} We store the font id (a
+number) in a macro. Watch how we don't refer to a glyph in a font. Because we
+don't specify its type as \type {virtual} we can leave out the \type {font}
+table. After all, we don't refer to real glyphs.
+
+\startbuffer
+\startluacode
+local d = 400000 -- just over 6pt
+local a = font.define {
+    characters = {
+        [string.byte("A")] =
+            {
+                width    = d,
+                depth    = d,
+                commands = { { "down", d }, { "rule", d, d } },
+                expansion_factor = 1000,
+            },
+        [string.byte("B")] =
+            {
+                width    = d,
+                height   = d,
+                commands = { { "rule", d, d } },
+                expansion_factor = 500,
+            },
+
+    },
+    parameters = {
+        space         = 2*d,
+        space_stretch = d,
+        space_shrink  = d,
+    },
+    stretch = 8,
+    shrink  = 8,
+    step    = 2,
+    name    = "foo"
+}
+
+tex.count.scratchcounter = a
+\stopluacode
+
+\edef\MyFontID{\the\scratchcounter}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+% \enabletrackers[*expans*]
+
+\startbuffer
+\startoverlay
+  {\vbox \bgroup
+     \setuptolerance[verytolerant,stretch]
+     \setfontid\MyFontID
+     \dorecurse{5}{ABABABABABABABABABABABABABABABABA }
+   \egroup}
+  {\vbox \bgroup
+     \normaladjustspacing2
+     \middlegray
+     \setuptolerance[verytolerant,stretch]
+     \setfontid\MyFontID
+     \dorecurse{5}{ABABABABABABABABABABABABABABABABA }
+   \egroup}
+\stopoverlay
+\stopbuffer
+
+We test this with some rather low level code and show the result in \in {figure}
+[fig:virtualhack]. Of course you will never define a font this way if only
+because we don't set important parameters and this version is not generic in the
+sense that it scales well. You can find better examples elsewhere in the manual
+and in the distribution.
+
+\typebuffer
+
+\startplacefigure[title={A virtual hack.},reference=fig:virtualhack]
+    \getbuffer
+\stopplacefigure
+
+\stopsection
+
+\stopchapter

@@ -49,6 +49,9 @@ boolean context_luas ; context_luas := true ;
 %
 % Fourth variant:
 
+string mfun_lua_bs ; mfun_lua_bs := "[[" ;
+string mfun_lua_es ; mfun_lua_es := "]]" ;
+
 vardef mlib_luas_luacall(text t) =
     runscript("" for s = t :
         if string s :
@@ -72,7 +75,8 @@ vardef mlib_luas_lualist(expr c)(text t) =
             hide(b := true)
         fi
         if string s :
-            & ditto & s & ditto
+          % & ditto & s & ditto
+            & mfun_lua_bs & s & mfun_lua_es
         elseif numeric s :
             & decimal s
         elseif boolean s :
@@ -106,21 +110,11 @@ def message expr t =
     if t <> "" : lua.mp.report(t) fi ;
 enddef ;
 
-% a few helpers
+% A few helpers
 
-% A few helpers:
-
-vardef isarray suffix a =
-    lua.mp.isarray(str a)
-enddef ;
-
-vardef prefix suffix a =
-    lua.mp.prefix(str a)
-enddef ;
-
-vardef dimensions suffix a =
-    lua.mp.dimensions(str a)
-enddef ;
+vardef isarray   suffix a = lua.mp.isarray  (str a) enddef ;
+vardef prefix    suffix a = lua.mp.prefix   (str a) enddef ;
+vardef dimension suffix a = lua.mp.dimension(str a) enddef ;
 
 % More access
 

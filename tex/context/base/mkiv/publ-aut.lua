@@ -13,8 +13,8 @@ end
 
 local lpeg = lpeg
 
-local type, next, tostring = type, next, tostring
-local concat = table.concat
+local type, next, tostring, tonumber = type, next, tostring, tonumber
+local concat, sortedhash = table.concat, table.sortedhash
 local utfsub = utf.sub
 local formatters = string.formatters
 
@@ -123,18 +123,21 @@ end
 local authormap        = allocate()
 publications.authormap = authormap
 
-local function splitauthor(author)
-    local detail = cache[author]
-    if detail then
-        return detail
-    end
-    local remapped = authormap[author]
-    if remapped then
-        report("remapping %a to %a",author,remapped)
-        local detail = cache[remapped]
+local function splitauthor(author,justsplit)
+    local detail, remapped
+    if not justsplit then
+        detail = cache[author]
         if detail then
-            cache[author] = detail
             return detail
+        end
+        remapped = authormap[author]
+        if remapped then
+            report("remapping %a to %a",author,remapped)
+            local detail = cache[remapped]
+            if detail then
+                cache[author] = detail
+                return detail
+            end
         end
     end
     local author = remapped or author
@@ -253,8 +256,10 @@ local function splitauthor(author)
     if initials   and #initials   > 0 then detail.initials   = initials   end
     if juniors    and #juniors    > 0 then detail.juniors    = juniors    end
     if options    and next(options)   then detail.options    = options    end
-    cache[author] = detail
-    nofhits = nofhits + 1
+    if not justsplit then
+        cache[author] = detail
+        nofhits = nofhits + 1
+    end
     return detail
 end
 
@@ -293,8 +298,8 @@ local function splitauthorstring(str)
     return authors
 end
 
-publications.splitoneauthor  = splitauthor
-publications.splitauthor     = splitauthorstring
+publications.splitoneauthor = splitauthor
+publications.splitauthor    = splitauthorstring
 
 local function the_initials(initials,symbol,connector)
     if not symbol then
@@ -307,6 +312,7 @@ local function the_initials(initials,symbol,connector)
     for i=1,#initials do
         local initial = initials[i]
         if type(initial) == "table" then
+            -- J.-J.
             local set, s = { }, 0
             for i=1,#initial do
                 if i > 1 then
@@ -317,6 +323,7 @@ local function the_initials(initials,symbol,connector)
             end
             r = r + 1 ; result[r] = concat(set)
         else
+            -- J.
             r = r + 1 ; result[r] = initial .. symbol
         end
     end
@@ -330,17 +337,20 @@ local ctx_btxsetfirstnames    = context.btxsetfirstnames
 local ctx_btxsetvons          = context.btxsetvons
 local ctx_btxsetsurnames      = context.btxsetsurnames
 local ctx_btxsetjuniors       = context.btxsetjuniors
-local ctx_btxciteauthorsetup  = context.btxciteauthorsetup
-local ctx_btxlistauthorsetup  = context.btxlistauthorsetup
 local ctx_btxsetauthorvariant = context.btxsetauthorvariant
+
 local ctx_btxstartauthor      = context.btxstartauthor
 local ctx_btxstopauthor       = context.btxstopauthor
+
+local ctx_btxciteauthorsetup  = context.btxciteauthorsetup
+local ctx_btxlistauthorsetup  = context.btxlistauthorsetup
 
 local concatstate = publications.concatstate
 local f_invalid   = formatters["<invalid %s: %s>"]
 
-local currentauthordata   = nil
-local currentauthorsymbol = nil
+local currentauthordata      = nil
+local currentauthorsymbol    = nil
+local currentauthorconnector = nil
 
 local manipulators       = typesetters.manipulators
 local splitmanipulation  = manipulators.splitspecification
@@ -359,7 +369,7 @@ local function value(i,field)
 end
 
 implement { name = "btxcurrentfirstnames", arguments = "integer", actions = function(i) local v = value(i,"firstnames") if v then context(concat(v," ")) end end }
-implement { name = "btxcurrentinitials",   arguments = "integer", actions = function(i) local v = value(i,"initials")   if v then context(concat(the_initials(v,currentauthorsymbol))) end end }
+implement { name = "btxcurrentinitials",   arguments = "integer", actions = function(i) local v = value(i,"initials")   if v then context(concat(the_initials(v,currentauthorsymbol,currentauthorconnector))) end end }
 implement { name = "btxcurrentjuniors",    arguments = "integer", actions = function(i) local v = value(i,"juniors")    if v then context(concat(v," ")) end end }
 implement { name = "btxcurrentsurnames",   arguments = "integer", actions = function(i) local v = value(i,"surnames")   if v then context(concat(v," ")) end end }
 implement { name = "btxcurrentvons",       arguments = "integer", actions = function(i) local v = value(i,"vons")       if v then context(concat(v," ")) end end }
@@ -380,7 +390,7 @@ local function btxauthorfield(i,field)
                     context(applymanipulation(manipulator,value) or value)
                 end
             elseif field == "initials" then
-                context(concat(the_initials(value,currentauthorsymbol)))
+                context(concat(the_initials(value,currentauthorsymbol,currentauthorconnector)))
             else
                 context(concat(value," "))
             end
@@ -408,6 +418,7 @@ local function btxauthor(dataset,tag,field,settings)
         local etallast    = etaloption[v_last]
         local combiner    = settings.combiner
         local symbol      = settings.symbol
+        local connector   = settings.connector
         local index       = settings.index
         if not combiner or combiner == "" then
             combiner = "normal"
@@ -421,8 +432,9 @@ local function btxauthor(dataset,tag,field,settings)
         else
             etallast = false
         end
-        currentauthordata   = split
-        currentauthorsymbol = symbol
+        currentauthordata      = split
+        currentauthorsymbol    = symbol
+        currentauthorconnector = connector
 
         local function oneauthor(i,last,justone)
             local author = split[i]
@@ -508,6 +520,7 @@ implement {
             { "etaldisplay" },
             { "etaloption" },
             { "symbol" },
+            { "connector" },
         }
     }
 }
@@ -529,6 +542,9 @@ end
 local collapsers = allocate { }
 
 publications.authorcollapsers = collapsers
+
+-- making a constructor doesn't make the code nicer as the_initials is an
+-- exception
 
 local function default(author) -- one author
     local hash = author.hash
@@ -707,8 +723,101 @@ authorhashers.normalshort = function(authors)
     end
 end
 
-authorhashers.normalinverted = authorhashers.normal
-authorhashers.invertedshort  = authorhashers.normalshort
+local sequentialhash = function(authors)
+    if type(authors) == "table" then
+        local n = #authors
+        if n == 0 then
+            return ""
+        end
+        local result    = { }
+        local nofresult = 0
+        for i=1,n do
+            local author     = authors[i]
+            local vons       = author.vons
+            local surnames   = author.surnames
+            local firstnames = author.firstnames
+            local juniors    = author.juniors
+            if firstnames and #firstnames > 0 then
+                for j=1,#firstnames do
+                    nofresult = nofresult + 1
+                    result[nofresult] = firstnames[j]
+                end
+            end
+            if vons and #vons > 0 then
+                for j=1,#vons do
+                    nofresult = nofresult + 1
+                    result[nofresult] = vons[j]
+                end
+            end
+            if surnames and #surnames > 0 then
+                for j=1,#surnames do
+                    nofresult = nofresult + 1
+                    result[nofresult] = surnames[j]
+                end
+            end
+            if juniors and #juniors > 0 then
+                for j=1,#juniors do
+                    nofresult = nofresult + 1
+                    result[nofresult] = juniors[j]
+                end
+            end
+        end
+        return concat(result," ")
+    else
+        return authors
+    end
+end
+
+local sequentialshorthash = function(authors)
+    if type(authors) == "table" then
+        local n = #authors
+        if n == 0 then
+            return ""
+        end
+        local result    = { }
+        local nofresult = 0
+        for i=1,n do
+            local author   = authors[i]
+            local vons     = author.vons
+            local surnames = author.surnames
+            local initials = author.initials
+            local juniors  = author.juniors
+            if initials and #initials > 0 then
+                initials = the_initials(initials)
+                for j=1,#initials do
+                    nofresult = nofresult + 1
+                    result[nofresult] = initials[j]
+                end
+            end
+            if vons and #vons > 0 then
+                for j=1,#vons do
+                    nofresult = nofresult + 1
+                    result[nofresult] = vons[j]
+                end
+            end
+            if surnames and #surnames > 0 then
+                for j=1,#surnames do
+                    nofresult = nofresult + 1
+                    result[nofresult] = surnames[j]
+                end
+            end
+            if juniors and #juniors > 0 then
+                for j=1,#juniors do
+                    nofresult = nofresult + 1
+                    result[nofresult] = juniors[j]
+                end
+            end
+        end
+        return concat(result," ")
+    else
+        return authors
+    end
+end
+
+authorhashers.sequential      = sequentialhash
+authorhashers.sequentialshort = sequentialshorthash
+authorhashers.normalinverted  = authorhashers.normal
+authorhashers.invertedshort   = authorhashers.normalshort
 
 local p_clean = Cs ( (
                     P("\\btxcmd") / "" -- better keep the argument
@@ -868,6 +977,31 @@ implement {
     name      = "btxremapauthor",
     arguments = { "string", "string" },
     actions   = function(k,v)
-        publications.authormap[k] = v
+        local a  = { splitauthor(k,true) }
+        local s1 = sequentialhash(a)
+        local s2 = sequentialshorthash(a)
+        if not authormap[k] then
+            authormap[k] = v
+            report("%a mapped onto %a",k,v)
+        end
+        if not authormap[s1] then
+            authormap[s1] = v
+            report("%a mapped onto %a, derived from %a",s1,v,k)
+        end
+        if not authormap[s2] then
+            authormap[s2] = v
+            report("%a mapped onto %a, derived from %a",s2,v,k)
+        end
+    end
+}
+
+implement {
+    name      = "btxshowauthorremapping",
+    actions   = function(k,v)
+        report("start author remapping")
+        for k, v in sortedhash(authormap) do
+            report(" %s => %s",k,v)
+        end
+        report("stop author remapping")
     end
 }

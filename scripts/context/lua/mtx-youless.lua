@@ -22,7 +22,7 @@ local helpinfo = [[
  <metadata>
   <entry name="name">mtx-youless</entry>
   <entry name="detail">youless Fetcher</entry>
-  <entry name="version">1.00</entry>
+  <entry name="version">1.100</entry>
  </metadata>
  <flags>
   <category name="basic">
@@ -30,9 +30,11 @@ local helpinfo = [[
     <flag name="collect"><short>collect data from device</short></flag>
     <flag name="nobackup"><short>don't backup old datafile</short></flag>
     <flag name="nofile"><short>don't write data to file (for checking)</short></flag>
-    <flag name="kwh"><short>summative kwh data</short></flag>
-    <flag name="watt"><short>collected watt data</short></flag>
+    <flag name="electricity"><short>collected eletricity data (p)</short></flag>
+    <flag name="gas"><short>collected gas data</short></flag>
+    <flag name="pulse"><short>collected eletricity data (s)</short></flag>
     <flag name="host"><short>ip address of device</short></flag>
+    <flag name="auto"><short>fetch (refresh) all data every hour</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -40,8 +42,10 @@ local helpinfo = [[
   <category>
    <title>Example</title>
    <subcategory>
-    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --kwh</command></example>
-    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --watt somefile.lua</command></example>
+    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --electricity somefile.lua</command></example>
+    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --gas         somefile.lua</command></example>
+    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --pulse       somefile.lua</command></example>
+    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --auto        file-prefix</command></example>
    </subcategory>
   </category>
  </examples>
@@ -50,7 +54,7 @@ local helpinfo = [[
 
 local application = logs.application {
     name     = "mtx-youless",
-    banner   = "YouLess Fetcher 1.00",
+    banner   = "YouLess Fetcher 1.100",
     helpinfo = helpinfo,
 }
 
@@ -59,19 +63,37 @@ local report = application.report
 scripts         = scripts         or { }
 scripts.youless = scripts.youless or { }
 
+local arguments = environment.arguments
+local files     = environment.files
+
 function scripts.youless.collect()
-    local host     = environment.arguments.host
-    local variant  = environment.arguments.kwh and "kwh" or environment.arguments.watt and "watt"
-    local nobackup = environment.arguments.nobackup
-    local nofile   = environment.arguments.nofile
-    local password = environment.arguments.password
-    local filename = environment.files[1]
-    if not variant then
-        report("provide variant --kwh or --watt")
-        return
-    else
+    local host     = arguments.host
+    local nobackup = arguments.nobackup
+    local nofile   = arguments.nofile
+    local password = arguments.password
+    local filename = files[1]
+    local delay    = tonumber(arguments.delay) or 12*60*60
+
+    local function fetch(filename,variant)
+        local data = utilities.youless.collect {
+            filename = filename,
+            host     = host,
+            variant  = variant,
+            nobackup = nobackup,
+            password = password,
+        }
+        if type(data) ~= "table" then
+            report("no data collected")
+        elseif filename == "" then
+            report("data collected but not saved")
+        end
         report("using variant %a",variant)
+        if filename ~= "" then
+            report("using file %a",filename)
+        end
+        report("current time %a",os.now())
     end
+
     if not host then
         host = "192.168.2.50"
         report("using default host %a",host)
@@ -81,25 +103,35 @@ function scripts.youless.collect()
     if nobackup then
         report("not backing up data file")
     end
-    if not filename and not nofile then
-        filename = formatters["youless-%s.lua"](variant)
+
+    if arguments.auto then
+        local filename_electricity = formatters["%s-electricity.lua"](filename ~= "" and filename or "youless")
+        local filename_gas         = formatters["%s-gas.lua"  ]      (filename ~= "" and filename or "youless")
+        local filename_pulse       = formatters["%s-pulse.lua"]      (filename ~= "" and filename or "youless")
+        while true do
+            fetch(filename_electricity,"electricity")
+            fetch(filename_gas,        "gas")
+            fetch(filename_pulse,      "pulse")
+            report("sleeping for %i seconds",delay)
+            io.flush()
+            os.sleep(delay)
+        end
+    else
+        local variant = (environment.arguments.electricity  and "electricity") or
+                        (environment.arguments.watt         and "electricity") or
+                        (environment.arguments.gas          and "gas") or
+                        (environment.arguments.pulse        and "pulse")
+        if not variant then
+            report("provide variant --electricity, --gas or --pulse")
+            return
+        end
+        if nofile then
+            filename = ""
+        elseif not filename or filename == "" then
+            filename = formatters["youless-%s.lua"](variant)
+        end
+        fetch(filename,variant)
     end
-    if filename ~= "" then
-        report("using file %a",filename)
-    end
-    local data = utilities.youless.collect {
-        filename = filename,
-        host     = host,
-        variant  = variant,
-        nobackup = nobackup,
-        password = password,
-    }
-    if type(data) ~= "table" then
-        report("no data collected")
-    elseif filename == "" then
-        report("data collected but not saved")
-    end
-    report("current time %a",os.now())
 end
 
 if environment.argument("collect") then

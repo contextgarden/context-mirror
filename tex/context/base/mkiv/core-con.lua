@@ -20,8 +20,8 @@ local floor, date, time, concat = math.floor, os.date, os.time, table.concat
 local lower, upper, rep, match, gsub = string.lower, string.upper, string.rep, string.match, string.gsub
 local utfchar, utfbyte = utf.char, utf.byte
 local tonumber, tostring, type, rawset = tonumber, tostring, type, rawset
-local P, S, R, Cc, Cf, Cg, Ct, Cs, C = lpeg.P, lpeg.S, lpeg.R, lpeg.Cc, lpeg.Cf, lpeg.Cg, lpeg.Ct, lpeg.Cs, lpeg.C
-local lpegmatch = lpeg.match
+local P, S, R, Cc, Cf, Cg, Ct, Cs, C, V, Carg = lpeg.P, lpeg.S, lpeg.R, lpeg.Cc, lpeg.Cf, lpeg.Cg, lpeg.Ct, lpeg.Cs, lpeg.C, lpeg.V, lpeg.Carg
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local context            = context
 local commands           = commands
@@ -44,7 +44,6 @@ local languages          = languages
 
 local ctx_labeltext      = context.labeltext
 local ctx_LABELTEXT      = context.LABELTEXT
-local ctx_WORD           = context.WORD
 local ctx_space          = context.space
 local ctx_convertnumber  = context.convertnumber
 local ctx_highordinalstr = context.highordinalstr
@@ -902,39 +901,39 @@ converters.verbose = verbose
 -- verbose english
 
 local words = {
-        [0] = "zero",
-        [1] = "one",
-        [2] = "two",
-        [3] = "three",
-        [4] = "four",
-        [5] = "five",
-        [6] = "six",
-        [7] = "seven",
-        [8] = "eight",
-        [9] = "nine",
-       [10] = "ten",
-       [11] = "eleven",
-       [12] = "twelve",
-       [13] = "thirteen",
-       [14] = "fourteen",
-       [15] = "fifteen",
-       [16] = "sixteen",
-       [17] = "seventeen",
-       [18] = "eighteen",
-       [19] = "nineteen",
-       [20] = "twenty",
-       [30] = "thirty",
-       [40] = "forty",
-       [50] = "fifty",
-       [60] = "sixty",
-       [70] = "seventy",
-       [80] = "eighty",
-       [90] = "ninety",
-      [100] = "hundred",
-     [1000] = "thousand",
-   [1000^2] = "million",
-   [1000^3] = "billion",
-   [1000^4] = "trillion",
+               [0] = "zero",
+               [1] = "one",
+               [2] = "two",
+               [3] = "three",
+               [4] = "four",
+               [5] = "five",
+               [6] = "six",
+               [7] = "seven",
+               [8] = "eight",
+               [9] = "nine",
+              [10] = "ten",
+              [11] = "eleven",
+              [12] = "twelve",
+              [13] = "thirteen",
+              [14] = "fourteen",
+              [15] = "fifteen",
+              [16] = "sixteen",
+              [17] = "seventeen",
+              [18] = "eighteen",
+              [19] = "nineteen",
+              [20] = "twenty",
+              [30] = "thirty",
+              [40] = "forty",
+              [50] = "fifty",
+              [60] = "sixty",
+              [70] = "seventy",
+              [80] = "eighty",
+              [90] = "ninety",
+             [100] = "hundred",
+            [1000] = "thousand",
+         [1000000] = "million",
+      [1000000000] = "billion",
+   [1000000000000] = "trillion",
 }
 
 local function translate(n)
@@ -980,10 +979,10 @@ local function translate(n)
         end
         return n
     end
-    n = compose_two(n,1000^4)
-    n = compose_two(n,1000^3)
-    n = compose_two(n,1000^2)
-    n = compose_two(n,1000^1)
+    n = compose_two(n,1000000000000)
+    n = compose_two(n,1000000000)
+    n = compose_two(n,1000000)
+    n = compose_two(n,1000)
     if n > 0 then
         compose_one(n)
     end
@@ -1008,55 +1007,55 @@ data.en = data.english
 -- verbose spanish (unchecked)
 
 local words = {
-        [1] = "uno",
-        [2] = "dos",
-        [3] = "tres",
-        [4] = "cuatro",
-        [5] = "cinco",
-        [6] = "seis",
-        [7] = "siete",
-        [8] = "ocho",
-        [9] = "nueve",
-       [10] = "diez",
-       [11] = "once",
-       [12] = "doce",
-       [13] = "trece",
-       [14] = "catorce",
-       [15] = "quince",
-       [16] = "dieciséis",
-       [17] = "diecisiete",
-       [18] = "dieciocho",
-       [19] = "diecinueve",
-       [20] = "veinte",
-       [21] = "veintiuno",
-       [22] = "veintidós",
-       [23] = "veintitrés",
-       [24] = "veinticuatro",
-       [25] = "veinticinco",
-       [26] = "veintiséis",
-       [27] = "veintisiete",
-       [28] = "veintiocho",
-       [29] = "veintinueve",
-       [30] = "treinta",
-       [40] = "cuarenta",
-       [50] = "cincuenta",
-       [60] = "sesenta",
-       [70] = "setenta",
-       [80] = "ochenta",
-       [90] = "noventa",
-      [100] = "ciento",
-      [200] = "doscientos",
-      [300] = "trescientos",
-      [400] = "cuatrocientos",
-      [500] = "quinientos",
-      [600] = "seiscientos",
-      [700] = "setecientos",
-      [800] = "ochocientos",
-      [900] = "novecientos",
-     [1000] = "mil",
-   [1000^2] = "millón",
-   [1000^3] = "mil millones",
-   [1000^4] = "billón",
+               [1] = "uno",
+               [2] = "dos",
+               [3] = "tres",
+               [4] = "cuatro",
+               [5] = "cinco",
+               [6] = "seis",
+               [7] = "siete",
+               [8] = "ocho",
+               [9] = "nueve",
+              [10] = "diez",
+              [11] = "once",
+              [12] = "doce",
+              [13] = "trece",
+              [14] = "catorce",
+              [15] = "quince",
+              [16] = "dieciséis",
+              [17] = "diecisiete",
+              [18] = "dieciocho",
+              [19] = "diecinueve",
+              [20] = "veinte",
+              [21] = "veintiuno",
+              [22] = "veintidós",
+              [23] = "veintitrés",
+              [24] = "veinticuatro",
+              [25] = "veinticinco",
+              [26] = "veintiséis",
+              [27] = "veintisiete",
+              [28] = "veintiocho",
+              [29] = "veintinueve",
+              [30] = "treinta",
+              [40] = "cuarenta",
+              [50] = "cincuenta",
+              [60] = "sesenta",
+              [70] = "setenta",
+              [80] = "ochenta",
+              [90] = "noventa",
+             [100] = "ciento",
+             [200] = "doscientos",
+             [300] = "trescientos",
+             [400] = "cuatrocientos",
+             [500] = "quinientos",
+             [600] = "seiscientos",
+             [700] = "setecientos",
+             [800] = "ochocientos",
+             [900] = "novecientos",
+            [1000] = "mil",
+         [1000000] = "millón",
+      [1000000000] = "mil millones",
+   [1000000000000] = "billón",
 }
 
 local function translate(n)
@@ -1079,7 +1078,7 @@ local function translate(n)
             t[#t+1] = words[1000]
         -- x hundred (n.b. this will not give thirteen hundred because
         -- compose_one(n) is only called after
-        -- `n = compose(two(n, 1000^1))`.
+        -- n = compose(two(n, 1000))
         elseif a > 0 then
             t[#t+1] = words[a*100]
         end
@@ -1107,10 +1106,10 @@ local function translate(n)
         end
         return n
     end
-    n = compose_two(n,1000^4)
-    n = compose_two(n,1000^3)
-    n = compose_two(n,1000^2)
-    n = compose_two(n,1000^1)
+    n = compose_two(n,1000000000000)
+    n = compose_two(n,1000000000)
+    n = compose_two(n,1000000)
+    n = compose_two(n,1000)
     if n > 0 then
         compose_one(n)
     end
@@ -1149,15 +1148,19 @@ implement {
 -- These are just helpers but not really for the tex end. Do we have to
 -- use translate here?
 
-local whitespace  = lpeg.patterns.whitespace
-local word        = lpeg.patterns.utf8uppercharacter^-1 * (1-whitespace)^1
+local whitespace  = lpegpatterns.whitespace
+local word        = lpegpatterns.utf8uppercharacter^-1 * (1-whitespace)^1
 local pattern_one = Cs( whitespace^0 * word^-1 * P(1)^0)
 local pattern_all = Cs((whitespace^1 + word)^1)
 
 function converters.word (s) return s end -- dummies for typos
 function converters.words(s) return s end -- dummies for typos
-function converters.Word (s) return lpegmatch(pattern_one,s) or s end
-function converters.Words(s) return lpegmatch(pattern_all,s) or s end
+
+local function Word (s) return lpegmatch(pattern_one,s) or s end
+local function Words(s) return lpegmatch(pattern_all,s) or s end
+
+converters.Word  = Word
+converters.Words = Words
 
 converters.upper = characters.upper
 converters.lower = characters.lower
@@ -1324,7 +1327,7 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
                 context("%02i",year % 100)
             elseif tag == v_month or tag == "m" then
                 if currentlanguage == false then
-                    context(months[month])
+                    context(Word(months[month]))
                 elseif mnemonic then
                     ctx_labeltext(variables[mnemonic[month]])
                 else
@@ -1332,7 +1335,7 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
                 end
             elseif tag == v_MONTH then
                 if currentlanguage == false then
-                    ctx_WORD(variables[months[month]])
+                    context(Word(variables[months[month]]))
                 elseif mnemonic then
                     ctx_LABELTEXT(variables[mnemonic[month]])
                 else
@@ -1344,7 +1347,7 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
                 context(month)
             elseif tag == v_day or tag == "d" then
                 if currentlanguage == false then
-                    context(days[day])
+                    context(day)
                 else
                     ctx_convertnumber(v_day,day) -- why not direct
                 end
@@ -1358,14 +1361,14 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
             elseif tag == v_weekday or tag == "w" then
                 local wd = weekday(day,month,year)
                 if currentlanguage == false then
-                    context(days[wd])
+                    context(Word(days[wd]))
                 else
                     ctx_labeltext(variables[days[wd]])
                 end
             elseif tag == v_WEEKDAY then
                 local wd = weekday(day,month,year)
                 if currentlanguage == false then
-                    ctx_WORD(days[wd])
+                    context(Word(days[wd]))
                 else
                     ctx_LABELTEXT(variables[days[wd]])
                 end
@@ -1391,30 +1394,31 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
     end
 end
 
-implement {
-    name      = "currentdate",
-    actions   = currentdate,
-    arguments = { "string",  "string" }
-}
+
 
 implement {
-    name      = "rawdate",
-    actions   = currentdate,
-    arguments = { "string", false }
+    name      = "currentdate",
+    arguments = { "string", "string", "string" },
+    actions   = function(pattern,default,language)
+        currentdate(
+            pattern  == "" and default or pattern,
+            language == "" and false   or language
+        )
+    end,
 }
 
 implement {
     name      = "unihex",
+    arguments = "integer",
     actions   = { formatters["U+%05X"], context },
-    arguments = "integer"
 }
 
-local n = lpeg.R("09")^1 / tonumber
+local n = R("09")^1 / tonumber
 
 local p = Cf( Ct("")
     * Cg(Cc("year")  * (n           )) * P("-")^-1
     * Cg(Cc("month") * (n + Cc(   1))) * P("-")^-1
-    * Cg(Cc("day")   * (n + Cc(   1))) * lpeg.patterns.whitespace^-1
+    * Cg(Cc("day")   * (n + Cc(   1))) * whitespace^-1
     * Cg(Cc("hour")  * (n + Cc(   0))) * P(":")^-1
     * Cg(Cc("min")   * (n + Cc(   0)))
     , rawset)
@@ -1444,3 +1448,141 @@ function converters.settime(t)
         texset("time", (t.hour or 0) * 60 + (t.min or 0))
     end
 end
+
+-- taken from x-asciimath (where we needed it for a project)
+
+local d_one         = lpegpatterns.digit
+local d_two         = d_one * d_one
+local d_three       = d_two * d_one
+local d_four        = d_three * d_one
+local d_split       = P(-1) + Carg(2) * (lpegpatterns.period /"")
+
+local d_spaced      = (Carg(1) * d_three)^1
+
+local digitized_1   = Cs ( (
+                        d_three * d_spaced * d_split +
+                        d_two   * d_spaced * d_split +
+                        d_one   * d_spaced * d_split +
+                        P(1)
+                      )^1 )
+
+local p_fourbefore  = d_four * d_split
+local p_fourafter   = d_four * P(-1)
+
+local p_beforesplit = d_three * d_spaced^0 * d_split
+                    + d_two   * d_spaced^0 * d_split
+                    + d_one   * d_spaced^0 * d_split
+                    + d_one   * d_split
+
+local p_aftersplit  = p_fourafter
+                    + d_three * d_spaced
+                    + d_two   * d_spaced
+                    + d_one   * d_spaced
+
+local digitized_2   = Cs (
+                         p_fourbefore  *  (p_aftersplit^0) +
+                         p_beforesplit * ((p_aftersplit + d_one^1)^0)
+                      )
+
+local p_fourbefore  = d_four * d_split
+local p_fourafter   = d_four
+local d_spaced      = (Carg(1) * (d_three + d_two + d_one))^1
+local p_aftersplit  = p_fourafter * P(-1)
+                    + d_three * d_spaced * P(1)^0
+                    + d_one^1
+
+local digitized_3   = Cs((p_fourbefore + p_beforesplit) * p_aftersplit^0)
+
+local digits_space  = utfchar(0x2008)
+
+local splitmethods  = {
+    digitized_1,
+    digitized_2,
+    digitized_3,
+}
+
+local replacers     = table.setmetatableindex(function(t,k)
+    local v = lpeg.replacer(".",k)
+    t[k] = v
+    return v
+end)
+
+function converters.spaceddigits(settings,data)
+    local data = tostring(data or settings.data or "")
+    if data ~= "" then
+        local method = settings.method
+        local split  = splitmethods[tonumber(method) or 1]
+        if split then
+            local symbol    = settings.symbol
+            local separator = settings.separator
+            if not symbol or symbol == "" then
+                symbol = "."
+            end
+            if type(separator) ~= "string" or separator == "" then
+                separator = digits_space
+            end
+            local result = lpegmatch(split,data,1,separator,symbol)
+            if not result and symbol ~= "." then
+                result = lpegmatch(replacers[symbol],data)
+            end
+            if result then
+             -- print(method,symbol,separator,data,result)
+                return result
+            end
+        end
+    end
+    return str
+end
+
+-- method 2 : split 3 before and 3 after
+-- method 3 : split 3 before and 3 after with > 4 before
+
+-- symbols is extra split (in addition to period)
+
+-- local setup = { splitmethod = 3, symbol = "," }
+-- local setup = { splitmethod = 2, symbol = "," }
+-- local setup = { splitmethod = 1, symbol = "," }
+--
+-- local t = {
+--     "0.00002",
+--     "1", "12", "123", "1234", "12345", "123456", "1234567", "12345678", "123456789",
+--     "1.1",
+--     "12.12",
+--     "123.123",
+--     "1234.123",
+--     "1234.1234",
+--     "12345.1234",
+--     "1234.12345",
+--     "12345.12345",
+--     "123456.123456",
+--     "1234567.1234567",
+--     "12345678.12345678",
+--     "123456789.123456789",
+--     "0.1234",
+--     "1234.0",
+--     "1234.00",
+--     "0.123456789",
+--     "100.00005",
+--     "0.80018",
+--     "10.80018",
+--     "100.80018",
+--     "1000.80018",
+--     "10000.80018",
+-- }
+--
+-- for i=1,#t do
+--     print(formatters["%-20s : [%s]"](t[i],converters.spaceddigits(setup,t[i])))
+-- end
+
+implement {
+    name      = "spaceddigits",
+    actions   = { converters.spaceddigits, context },
+    arguments = {
+        {
+            { "symbol" },
+            { "separator" },
+            { "data" },
+            { "method" },
+        }
+    }
+}

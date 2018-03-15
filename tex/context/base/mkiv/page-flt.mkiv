@@ -16,26 +16,43 @@
 %D This module has code that previously was in other modules. There is
 %D also float related code in \type {strc-flt.mkiv}.
 
-\registerctxluafile{page-flt}{1.001}
+\registerctxluafile{page-flt}{}
 
 \unprotect
 
 \ifdefined\s!topfloat    \else \def\s!topfloat   {topfloat}    \fi
 \ifdefined\s!bottomfloat \else \def\s!bottomfloat{bottomfloat} \fi
+\ifdefined\s!pagefloat   \else \def\s!pagefloat  {pagefloat}   \fi
 
 \defineinsertion[\s!topfloat]
 \defineinsertion[\s!bottomfloat]
+\defineinsertion[\s!pagefloat]
 
 \newdimen   \d_page_floats_inserted_bottom
 \newdimen   \d_page_floats_inserted_top
+\newdimen   \d_page_floats_inserted_page
 \newcount   \c_page_floats_n_of_top         \c_page_floats_n_of_top   \plustwo
 \newcount   \c_page_floats_n_of_bottom      \c_page_floats_n_of_bottom\zerocount
+\newcount   \c_page_floats_n_of_page        \c_page_floats_n_of_page  \plustwo
 
 \newconstant\c_page_floats_insertions_topskip_mode  % 1 = no topskip
 
-%def\page_floats_report_saved  {\showmessage\m!floatblocks2{\the\totalnoffloats}}
-\def\page_floats_report_total  {\showmessage\m!floatblocks4{\the\totalnoffloats}}
-\def\page_floats_report_flushed{\showmessage\m!floatblocks3{\the\numexpr\totalnoffloats-\savednoffloats\relax}}
+% \def\page_floats_report_saved
+%   {\showmessage\m!floatblocks2
+%      {\the\totalnoffloats}}
+
+\def\page_floats_report_total
+  {\showmessage\m!floatblocks4%
+     {\the\totalnoffloats
+      \ifx\floatlocationmethod\empty
+        \ifx\floatlocation\empty\else,\floatlocation\fi
+      \else
+        ,\floatlocationmethod
+      \fi}}
+
+\def\page_floats_report_flushed
+  {\showmessage\m!floatblocks3%
+    {\the\numexpr\totalnoffloats-\savednoffloats\relax}}
 
 %D Extra float registers.
 
@@ -50,11 +67,12 @@
 
 %D For the moment we keep this but they will become private too.
 
-\newcount\totalnoffloats     % these will be redone ... handled at the lua end anyway
-\newcount\savednoffloats     % these will be redone ... handled at the lua end anyway
-\newcount\nofcollectedfloats % communication channel
+\newcount\totalnoffloats           % these will be redone ... handled at the lua end anyway
+\newcount\savednoffloats           % these will be redone ... handled at the lua end anyway
+\newcount\nofcollectedfloats       % communication channel
+\newdimen\maxcollectedfloatstotal  % communication channel
 
-\newcount\noffloatinserts    % these will be redone ... handled at the lua end anyway
+\newcount\noffloatinserts          % these will be redone ... handled at the lua end anyway
 
 \newbox  \floattext
 
@@ -189,12 +207,14 @@
 %D
 %D First we reimplement some helpers.
 
+\def\page_floats_get_used_hsize{\hsize}
+
 \unexpanded\def\page_floats_get
   {\ifconditional\c_page_floats_some_waiting
      \page_floats_flush\s!text\plusone
      \ifconditional\c_page_floats_center_box
-       \ifdim\wd\globalscratchbox<\hsize
-         \global\setbox\floatbox\hpack to \hsize{\hss\box\floatbox\hss}%
+       \ifdim\wd\globalscratchbox<\page_floats_get_used_hsize
+         \global\setbox\floatbox\hpack to \page_floats_get_used_hsize{\hss\box\floatbox\hss}%
        \else
          % retain special alignments
          \ifinsidecolumns
@@ -263,6 +283,8 @@
       \box\floatbox
       \doifnotinset\v!low\floatspecification\vfill}%
    \page_otr_fill_and_eject_page}
+
+\let\m_page_otf_checked_page_float\relax
 
 \unexpanded\def\page_floats_flush_page_floats % used in postpone
   {\edef\m_page_otf_checked_page_float{\clf_checkedpagefloat}%

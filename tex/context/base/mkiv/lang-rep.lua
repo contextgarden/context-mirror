@@ -15,7 +15,8 @@ if not modules then modules = { } end modules ['lang-rep'] = {
 -- although (given experiences so far) we don't really need that. After all, each problem
 -- is somewhat unique.
 
-local type, tonumber = type, tonumber
+local type, tonumber, next = type, tonumber, next
+local gmatch, gsub = string.gmatch, string.gsub
 local utfbyte, utfsplit = utf.byte, utf.split
 local P, C, U, Cc, Ct, Cs, lpegmatch = lpeg.P, lpeg.C, lpeg.patterns.utf8character, lpeg.Cc, lpeg.Ct, lpeg.Cs, lpeg.match
 local find = string.find
@@ -51,8 +52,6 @@ local getid              = nuts.getid
 local getchar            = nuts.getchar
 local isglyph            = nuts.isglyph
 
-local setfield           = nuts.setfield
-local getfield           = nuts.getfield
 local setattr            = nuts.setattr
 local setlink            = nuts.setlink
 local setnext            = nuts.setnext
@@ -77,6 +76,9 @@ local enableaction       = nodes.tasks.enableaction
 local v_reset            = interfaces.variables.reset
 
 local implement          = interfaces.implement
+
+local processors         = typesetters.processors
+local splitprocessor     = processors.split
 
 local replacements       = languages.replacements or { }
 languages.replacements   = replacements
@@ -103,7 +105,8 @@ lists[v_reset].attribute = unsetvalue -- so we discard 0
 -- todo: glue kern attr
 
 local function add(root,word,replacement)
-    local replacement = lpegmatch(stripper,replacement) or replacement
+    local processor, replacement = splitprocessor(replacement,true) -- no check
+    replacement = lpegmatch(stripper,replacement) or replacement
     local list = utfsplit(word,true)
     local size = #list
     for i=1,size do
@@ -112,16 +115,12 @@ local function add(root,word,replacement)
             root[l] = { }
         end
         if i == size then
-         -- local newlist = utfsplit(replacement,true)
-         -- for i=1,#newlist do
-         --     newlist[i] = utfbyte(newlist[i])
-         -- end
             local special = find(replacement,"{",1,true)
             local newlist = lpegmatch(splitter,replacement)
-            --
             root[l].final = {
                 word        = word,
                 replacement = replacement,
+                processor   = processor,
                 oldlength   = size,
                 newcodes    = newlist,
                 special     = special,
@@ -142,6 +141,26 @@ function replacements.add(category,word,replacement)
     end
 end
 
+-- local strip = lpeg.stripper("{}")
+
+function languages.replacements.addlist(category,list)
+    local root = lists[category].list
+    if type(list) == "string" then
+        for new in gmatch(list,"%S+") do
+            local old = gsub(new,"[{}]","")
+         -- local old = lpegmatch(strip,new)
+            add(root,old,new)
+        end
+    else
+        for i=1,#list do
+            local new = list[i]
+            local old = gsub(new,"[{}]","")
+         -- local old = lpegmatch(strip,new)
+            add(root,old,new)
+        end
+    end
+end
+
 local function hit(a,head)
     local tree = trees[a]
     if tree then
@@ -151,7 +170,10 @@ local function hit(a,head)
             local lastrun   = false
             local lastfinal = false
             while current do
-                local char = isglyph(current)
+                local char, id = isglyph(current)
+             -- if not char and id == glue_code then
+             --     char = " " -- if needed we can also deal with spaces and special nbsp and such
+             -- end
                 if char then
                     local newroot = root[char]
                     if not newroot then
@@ -194,20 +216,21 @@ local function tonodes(list,template)
     return head
 end
 
-
 function replacements.handler(head)
     head = tonut(head)
-    local current = head
-    local done    = false
+    local current  = head
+    local done     = false
+    local overload = attributes.applyoverloads
     while current do
         if getid(current) == glyph_code then
             local a = getattr(current,a_replacements)
             if a then
                 local last, final = hit(a,current)
                 if last then
-                    local oldlength = final.oldlength
-                    local newcodes  = final.newcodes
-                    local newlength = #newcodes
+                    local precurrent = getprev(current) or head
+                    local oldlength  = final.oldlength
+                    local newcodes   = final.newcodes
+                    local newlength  = newcodes and #newcodes or 0
                     if trace_replacement then
                         report_replacement("replacing word %a by %a",final.word,final.replacement)
                     end
@@ -269,6 +292,9 @@ function replacements.handler(head)
                             i = i + 1
                         end
                         flush_list(list)
+                    elseif newlength == 0 then
+                        -- nothing gets replaced
+                        current = getnext(last)
                     elseif oldlength == newlength then -- #old == #new
                         if final.word == final.replacement then
                             -- nothing to do but skip
@@ -298,10 +324,14 @@ function replacements.handler(head)
                             current = getnext(current)
                         end
                     end
+                    if overload then
+                        overload(final,getnext(precurrent),getprev(current))
+                    end
                     done = true
                 end
             end
         end
+        -- we're one ahead now but we need to because we handle words
         current = getnext(current)
     end
     return tonode(head), done
@@ -337,4 +367,10 @@ implement {
     name      = "addreplacements",
     actions   = replacements.add,
     arguments = { "string", "string", "string" }
+}
+
+implement {
+    name      = "addreplacementslist",
+    actions   = replacements.addlist,
+    arguments = { "string", "string" }
 }

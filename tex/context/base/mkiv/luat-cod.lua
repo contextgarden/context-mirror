@@ -7,26 +7,38 @@ if not modules then modules = { } end modules ['luat-cod'] = {
 }
 
 local type, loadfile, tonumber = type, loadfile, tonumber
-local match, gsub, find, format = string.match, string.gsub, string.find, string.format
+local match, gsub, find, format, gmatch = string.match, string.gsub, string.find, string.format, string.gmatch
 
 local texconfig, lua = texconfig, lua
 
 -- some basic housekeeping
 
-texconfig.kpse_init      = false
-texconfig.shell_escape   = 't'
-texconfig.max_print_line = 100000
-texconfig.max_in_open    = 1000
+texconfig.kpse_init       = false
+texconfig.shell_escape    = 't'
+
+texconfig.error_line      =     79 -- frozen / large values can crash
+texconfig.expand_depth    =  10000
+texconfig.half_error_line =     50 -- frozen
+texconfig.max_in_open     =   1000
+texconfig.max_print_line  = 100000
+texconfig.max_strings     = 500000
+texconfig.nest_size       =   1000
+texconfig.param_size      =  25000
+texconfig.save_size       = 100000
+texconfig.stack_size      =  10000
 
 -- registering bytecode chunks
 
-local bytecode    = lua.bytecode or { }
+----- bytecode    = lua.bytecode or { } -- we use functions
 local bytedata    = lua.bytedata or { }
 local bytedone    = lua.bytedone or { }
 
-lua.bytecode      = bytecode -- built in anyway
+---.bytecode      = bytecode
 lua.bytedata      = bytedata
 lua.bytedone      = bytedone
+
+local setbytecode = lua.setbytecode
+local getbytecode = lua.getbytecode
 
 lua.firstbytecode = 501
 lua.lastbytecode  = lua.lastbytecode or (lua.firstbytecode - 1) -- as we load ourselves again ... maybe return earlier
@@ -35,24 +47,30 @@ function lua.registeredcodes()
     return lua.lastbytecode - lua.firstbytecode + 1
 end
 
--- no file.* functions yet
+-- no file.* and utilities.parsers.* functions yet
 
-function lua.registercode(filename,version)
+function lua.registercode(filename,options)
     local barename = gsub(filename,"%.[%a%d]+$","")
     if barename == filename then filename = filename .. ".lua" end
     local basename = match(barename,"^.+[/\\](.-)$") or barename
     if not bytedone[basename] then
-        local code = environment.luafilechunk(filename)
+        local opts = { }
+        if type(options) == "string" and options ~= "" then
+            for s in gmatch(options,"([a-z]+)") do
+                opts[s] = true
+            end
+        end
+        local code = environment.luafilechunk(filename,false,opts.optimize)
         if code then
             bytedone[basename] = true
             if environment.initex then
                 local n = lua.lastbytecode + 1
-                bytedata[n] = { barename, version or "0.000" }
-                bytecode[n] = code
+                bytedata[n] = { name = barename, options = opts }
+                setbytecode(n,code)
                 lua.lastbytecode = n
             end
         elseif environment.initex then
-            texio.write_nl("\nerror loading file: " .. filename .. " (aborting)")
+            texio.write_nl(format("\nerror loading file: %s (aborting)",filename))
             os.exit()
         end
     end
@@ -96,29 +114,39 @@ local targetpath = "."
 -- environment.jobname = tex.jobname
 -- environment.version = tostring(tex.toks.contextversiontoks)
 
-if LUATEXVERION == nil then
-    LUATEXVERSION = status.luatex_version/100
-                  + tonumber(status.luatex_revision)/1000
-end
+-- traditionally the revision has been a one character string and only
+-- pdftex went beyond "9" but anyway we test for it
 
 if LUATEXENGINE == nil then
-    LUATEXENGINE  = status.luatex_engine and string.lower(status.luatex_engine)
-                 or (find(status.banner,"LuajitTeX") and "luajittex" or "luatex")
+    LUATEXENGINE = status.luatex_engine and string.lower(status.luatex_engine)
+                or (find(status.banner,"LuajitTeX",1,true) and "luajittex" or "luatex")
+end
+
+if LUATEXVERION == nil then
+    LUATEXVERSION = status.luatex_revision
+    LUATEXVERSION = status.luatex_version/100
+               -- + tonumber(LUATEXVERSION)/1000
+                  + (tonumber(LUATEXVERSION) or (string.byte(LUATEXVERSION)-string.byte("a")+10))/1000
+end
+
+if LUATEXFUNCTIONALITY == nil then
+    LUATEXFUNCTIONALITY = status.development_id or 6346
 end
 
 if JITSUPPORTED == nil then
-    JITSUPPORTED  = LUATEXENGINE == "luajittex" or jit
+    JITSUPPORTED = LUATEXENGINE == "luajittex" or jit
 end
 
 if INITEXMODE == nil then
-    INITEXMODE    = status.ini_version
+    INITEXMODE = status.ini_version
 end
 
-environment.initex        = INITEXMODE
-environment.initexmode    = INITEXMODE
-environment.luatexversion = LUATEXVERSION
-environment.luatexengine  = LUATEXENGINE
-environment.jitsupported  = JITSUPPORTED
+environment.luatexengine        = LUATEXENGINE
+environment.luatexversion       = LUATEXVERSION
+environment.luatexfuncitonality = LUATEXFUNCTIONALITY
+environment.jitsupported        = JITSUPPORTED
+environment.initex              = INITEXMODE
+environment.initexmode          = INITEXMODE
 
 if not environment.luafilechunk then
 

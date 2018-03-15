@@ -18,11 +18,15 @@
 
 \unprotect
 
-\registerctxluafile{typo-dir}{1.001}
-\registerctxluafile{typo-dha}{1.001}
-\registerctxluafile{typo-dua}{1.001}
-\registerctxluafile{typo-dub}{1.001}
-\registerctxluafile{typo-duc}{1.001}
+\registerctxluafile{typo-dir}{}
+\registerctxluafile{typo-dha}{}
+\registerctxluafile{typo-dua}{}
+\registerctxluafile{typo-dub}{}
+\doifelsefileexists{typo-duc-new.lua} {
+    \registerctxluafile{typo-duc-new}{}
+} {
+    \registerctxluafile{typo-duc}{}
+}
 
 \definesystemattribute[directions][public]
 
@@ -81,14 +85,20 @@
     \fi
 \to \everysetupdirections
 
+\appendtoks
+    \edef\p_option{\directionsparameter\c!break}% name can change
+    \breakafterdirmode\ifx\p_option\v!both\plusone\else\zerocount\fi
+\to \everysetupdirections
+
 % bidi: local=obey grouping, global=ignore grouping (unicode has no grouping)
 
 \setupdirections % maybe start/stop
   [\c!bidi=\v!off,
    \c!method=\v!default,
+   \c!break=\v!both, % experimental value, maybe \v!no will be default (bad name too)
    \c!fences=\v!yes]
 
-\unexpanded\edef\bidilre{\normalUchar"202A} % maybe \edef's
+\unexpanded\edef\bidilre{\normalUchar"202A}
 \unexpanded\edef\bidirle{\normalUchar"202B}
 \unexpanded\edef\bidipop{\normalUchar"202C}
 \unexpanded\edef\bidilro{\normalUchar"202D}
@@ -131,7 +141,7 @@
     end
 \stopluacode
 
-\def\biditest#1#2#3% font text raw
+\unexpanded\def\biditest#1#2#3% font text raw
   {\dontleavehmode\hbox
     {\framed[offset=overlay]{\tttf#2}\quad
      \enabletrackers[typesetters.directions]%

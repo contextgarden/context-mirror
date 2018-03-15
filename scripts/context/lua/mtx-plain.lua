@@ -49,13 +49,18 @@ scripts       = scripts       or { }
 scripts.plain = scripts.plain or { }
 
 local passed_options = table.tohash {
-    "utc"
+    "utc",
+    "synctex",
 }
 
 local function execute(...)
     local command = format(...)
     report("running command %a\n",command)
-    return os.execute(command)
+    statistics.starttiming()
+    local status = os.execute(command)
+    statistics.stoptiming()
+    report("runtime %s seconds",statistics.elapsedtime())
+    return status
 end
 
 local function resultof(...)

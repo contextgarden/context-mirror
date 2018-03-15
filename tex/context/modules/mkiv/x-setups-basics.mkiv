@@ -15,6 +15,14 @@
 %D We can make this module a bit cleaner using more recent features or we go \LUA\
 %D completely but as this style evolved over 15 years it's a waste of time.
 %D
+%D
+%D Thanks to Wolfgang these descriptions have become quite complete! In the process
+%D of covering more commands and expecially different instances of the same command,
+%D either or not generated, the supporting macros became more complex. I must admit
+%D that it's not the nicest code base and whenever I have to add or patch something
+%D I have to suppress the urge to rewrite this file. It needs watching a few
+%D energetic videos (for instance with Simon Phillips drumming) to get going.
+%D
 %D As we also have a help server we can make a common framework for this \unknown\
 %D but even then, this file is also a test for the the \XML\ processor.
 %D
@@ -25,7 +33,36 @@
 %D Currently we load the \XML\ file and when not in the english interface we just
 %D remap the relevant words to their translation.
 
-%D Todo: use lua instead of synonyms
+%D \startbuffer
+%D \usemodule[x-setups-basics]
+%D
+%D \loadsetups[context-en]
+%D
+%D \starttext
+%D
+%D     \showsetup[starttyping:instance:LUA]
+%D
+%D     \showsetup[starttyping:instance:typing]
+%D
+%D     \showsetup[starttyping:instance:argument]
+%D
+%D     \showsetup [completelistoffloats:instance:chemicals] \blank
+%D     \shortsetup[completelistoffloats:instance:chemicals] \blank
+%D     \basicsetup[completelistoffloats:instance:chemicals] \blank
+%D
+%D     \cmdfullsetup [completelistoffloats:instance:chemicals] \blank
+%D     \cmdshortsetup[completelistoffloats:instance:chemicals] \blank
+%D     \cmdbasicsetup[completelistoffloats:instance:chemicals] \blank
+%D
+%D   % \cmdinternal{...}
+%D
+%D     \page \placeeverysetup     \page
+%D     \page \placeeverysetupname \page
+%D
+%D \stoptext
+%D \stopbuffer
+
+% Todo: use lua instead of synonyms
 
 \unprotect
 
@@ -34,6 +71,8 @@
 
 \definesorting
   [texcommand]
+  [texcommands]
+  [\v!none]
 
 \setupsorting
   [texcommand]
@@ -71,7 +110,6 @@
 \unexpanded\def\setupalwcolor{}
 \unexpanded\def\setupoptcolor{darkgray}
 
-% \unexpanded\def\setupvarword#1{{\sl\detokenize{#1}}}
 \unexpanded\def\setupvarword#1{\detokenize{#1}}
 \unexpanded\def\setupintword#1{\WORD{\detokenize{#1}}}
 \unexpanded\def\setuptxtword#1{\detokenize{#1}}
@@ -108,7 +146,6 @@
         \let\currentSETUPprefix\empty
     }
     \edef\currentSETUPname{\xmlatt{#1}{name}}
-    \let\currentSETUPgenerated\empty
     \doifelsenothing {\xmlatt{#1}{variant}} {
         \let\currentSETUPvariant\empty
     } {
@@ -118,7 +155,6 @@
         \currentSETUPprefix
         \currentSETUPname
         \currentSETUPvariant
-        \currentSETUPgenerated
     }
 \stopxmlsetups
 
@@ -132,8 +168,7 @@
     } {
         \let\currentSETUPprefix\empty
     }
-%     \edef\currentSETUPname{\xmlatt{#1}{name}}
-    \let\currentSETUPgenerated\empty
+    \edef\currentSETUPname{\xmlatt{#1}{name}}
     \doifelsenothing {\xmlatt{#1}{variant}} {
         \let\currentSETUPvariant\empty
     } {
@@ -143,34 +178,19 @@
         \currentSETUPprefix
         \currentSETUPname
         \currentSETUPvariant
-        \currentSETUPgenerated
     }
 \stopxmlsetups
 
-% \startxmlsetups xml:setups:register
-%     \doifelse {\xmlatt{#1}{variant}} {instance} {
-%         \def\docommand##1%
-%           {\def\currentSETUPname{##1}%
-%            \xmlsetup{#1}{xml:setups:assemblename:instance}
-%            \expanded{\texcommand[stp:x:\currentSETUPfullname]{{#1}{##1}}}}%
-%         \processcommacommand[\clf_getinstances{#1}]\docommand
-%     } {
-%         \xmlsetup{#1}{xml:setups:assemblename}
-%         % not really needed if we just use setups
-%         \expanded{\texcommand[stp:x:\currentSETUPfullname]{{#1}{}}}
-%     }
-% \stopxmlsetups
-
 \startxmlsetups xml:setups:register
-    \doif {\xmlatt{#1}{variant}} {instance} {
-        \def\docommand##1%
-          {\xmlsetup{#1}{xml:setups:assemblename:instance}
-           \expanded{\texcommand[stp:x:\currentSETUPfullname:##1]{{#1}{##1}}}}%
+    \doifcommon {\xmlatt{#1}{variant}} {instance,instance:assignment,instance:ownnumber,instance:argument} {
+        \def\docommand##1{
+            \xmlsetup{#1}{xml:setups:assemblename:instance}
+            \expanded{\texcommand[\currentSETUPfullname:##1]{{#1}{##1}}}
+        }%
         \processcommacommand[\clf_getinstances{#1}]\docommand
     }
     \xmlsetup{#1}{xml:setups:assemblename}
-    % not really needed if we just use setups
-    \expanded{\texcommand[stp:x:\currentSETUPfullname]{{#1}{}}}
+    \expanded{\texcommand[\currentSETUPfullname]{{#1}{}}}
 \stopxmlsetups
 
 \startluacode
@@ -199,6 +219,9 @@
     moduledata.setups  = setups
     local definitions  = { }
     setups.definitions = definitions
+
+    local report       = logs.reporter("command setup")
+    local report_known = logs.reporter("command setup","known")
 
     function xml.functions.setups_define(id)
         local x = lxmlgetid(id)
@@ -271,9 +294,9 @@
                         if resolved then
                             e.__p__.dt[e.ni] = resolved
                             resolve(resolved)
-                         -- logs.report("setups","resolved: %a",name)
+                         -- report("resolved: %a",name)
                         else
-                            logs.report("setups","unable to resolve: %a",name)
+                            report("unable to resolve: %a",name)
                         end
                     end
                 end
@@ -282,7 +305,8 @@
             for e in xml.collected(xmlroot,"cd:interface/cd:define") do
                 e.__p__.dt[e.ni] = ""
             end
-            xml.delete(xmlroot,"/cd:interface/cd:interface/cd:interface/..")
+            --
+            xml.delete(xmlroot,"/cd:interface/cd:interface[@file='i-common-definitions.xml']")
             --
             xmlblob = xml.tostring(xmlroot)
             io.savedata(filename,xmlblob)
@@ -379,6 +403,30 @@
         overload  = true,
         arguments = { "string" },
     }
+
+    if structures then
+        local synonyms = structures.synonyms
+        if synonyms then
+            local collected = synonyms.collected
+            if collected then
+                local texcommand = collected.texcommand
+                if texcommand then
+                    local entries = texcommand.entries
+                    if entries then
+                        local t = { }
+                        local n = #entries
+                        for i=1,n do
+                            t[i] = entries[i].definition.tag
+                        end
+                        table.sort(t)
+                        for i=1,n do
+                            report_known(t[i])
+                        end
+                    end
+                end
+            end
+        end
+    end
 \stopluacode
 
 % <?xml version="1.0" encoding="UTF-8"?>
@@ -413,6 +461,7 @@
    \ifx\m_cmd_asked_setups\empty \else
      \doonlyonce{setups:#1}
        {\doglobal\prependtocommalist{setups:#1}\loadedsetups
+        \edef\currentloadedsetup{#1}%
         \doiffileexistselse{#1}
            {\xmlloadonly{setups:#1}{#1}{setups}}%
            {\xmlloadonly{setups:#1}{#1.xml}{setups}}%
@@ -441,9 +490,16 @@
   {%(#1)(#2)(#3)\par
    \edef\m_cmd_instance{\secondoftwoarguments#3}%
    \c_cmd_kind\plustwo
-   \xmlsetup{\firstoftwoarguments#3}{xml:setups:typeset}
+   \xmlsetup{\firstoftwoarguments#3}{xml:setups:typeset}%
    \let\m_cmd_instance\empty
    \par}
+
+\unexpanded\def\showsetupnameonly#1#2#3%
+  {\edef\m_cmd_instance{\secondoftwoarguments#3}%
+   \c_cmd_kind\plustwo
+   \xmlsetup{\firstoftwoarguments#3}{xml:setups:assemblename}%
+   \let\m_cmd_instance\empty
+   \texescape\currentSETUPfullname}
 
 \installtextracker
   {cmd.showsetup}
@@ -461,17 +517,21 @@
    \fi}
 
 \def\cmd_show_setup_nop#1% this will trigger 'used'
-  {\registersort[texcommand][stp:x:#1]%
+  {\registersort[texcommand][#1]%
    \ifconditional\c_cmd_show_setup
-     \writestatus{setup}{#1 / \rawsynonymname{texcommand}{stp:x:#1}}%
+     \writestatus{setup}{#1 / \rawsynonymname{texcommand}{#1}}%
    \fi
    \startelement[setup][name=#1]%
      \startelement[noexport][comment={setup definition #1}]%
-       \edef\cmd_id{\rawsynonymname{texcommand}{stp:x:#1}}%
+       \edef\cmd_id{\rawsynonymname{texcommand}{#1}}%
        \ifx\cmd_id\empty
-          missing: stp:x:#1
+          missing: #1
        \else
+         \ifx\m_cmd_instance\empty
+           \edef\m_cmd_instance{\expandafter\secondoftwoarguments\cmd_id}%
+         \fi
          \xmlsetup{\expandafter\firstoftwoarguments\cmd_id}{xml:setups:typeset}
+         \let\m_cmd_instance\empty
        \fi
      \stopelement
    \stopelement}
@@ -482,6 +542,17 @@
 % todo: grouped
 
 \let\placeeverysetup\placeallsetups
+
+\unexpanded\def\cmd_show_setup_list_basic#1#2#3%
+  {\NC\tttf#2\NC\basicsetup[#2]\NC\NR}
+
+\unexpanded\def\placeeverysetupname
+  {\placelistofsorts
+     [texcommand]
+     [\c!before={\starttabulate[|||]},
+      \c!after=\stoptabulate,
+      \c!criterium=\v!all,
+      \c!command=\cmd_show_setup_list_basic]}
 
 %D Typesetting:
 
@@ -620,7 +691,8 @@
             \setfalse\c_cmd_doing_line
             \global\c_cmd_current_argument\zerocount
            %\blank[\v!line] % packed mode (we could do \startunpacked ...)
-            \godown[.75\lineheight]
+%             \godown[.75\lineheight]
+            \blank[\v!samepage,\v!medium]
             \switchtobodyfont[\v!small]
             \ignorespaces\xmlfilter{#1}{/arguments/text()}\endgraf
         \egroup
@@ -638,7 +710,8 @@
 \startxmlsetups xml:setups:typeset:instances
     \ifx\m_cmd_instance\empty
         \xmldoif{#1}{/instances} {
-            \godown[.75\lineheight]
+%             \godown[.75\lineheight]
+            \blank[\v!samepage,\v!medium]
             {\ttbf instances:}
             \enspace
             \xmlfilter{#1}{/instances/(constant|resolve)/command(xml:setups:instance)}
@@ -647,22 +720,31 @@
     \fi
 \stopxmlsetups
 
+\startsetups xml:setups:start
+    \csname\e!start setuptext\endcsname
+\stopsetups
+
+\startsetups xml:setups:stop
+    \csname\e!stop setuptext\endcsname
+\stopsetups
+
 \startxmlsetups xml:setups:typeset:yes
+    \forgetparskip
     \glet\m_cmd_current_file\empty
     \ifcase\c_cmd_kind
         \xmlsetup{#1}{xml:setups:typeset:line}
     \or
-        \getvalue{\e!start setuptext}
+        \directsetup{xml:setups:start}
         \xmlsetup{#1}{xml:setups:typeset:raw}
-        \getvalue{\e!stop setuptext}
+        \directsetup{xml:setups:stop}
     \or
-        \getvalue{\e!start setuptext}
+        \directsetup{xml:setups:start}
         \xmlsetup{#1}{xml:setups:typeset:raw}
         \endgraf
         \xmlsetup{#1}{xml:setups:typeset:detail}
         \endgraf
         \xmlsetup{#1}{xml:setups:typeset:instances}
-        \getvalue{\e!stop setuptext}
+        \directsetup{xml:setups:stop}
     \fi
     \glet\m_cmd_current_file\empty
 \stopxmlsetups
@@ -713,24 +795,25 @@
     \ignorespaces
 \stopxmlsetups
 
-\startxmlsetups xml:setups:content     \show_setup_component{#1}{content}    \stopxmlsetups
-\startxmlsetups xml:setups:displaymath \show_setup_component{#1}{displaymath}\stopxmlsetups
-\startxmlsetups xml:setups:index       \show_setup_component{#1}{index}      \stopxmlsetups
-\startxmlsetups xml:setups:math        \show_setup_component{#1}{math}       \stopxmlsetups
-\startxmlsetups xml:setups:nothing     \show_setup_component{#1}{nothing}    \stopxmlsetups
-\startxmlsetups xml:setups:file        \show_setup_component{#1}{file}       \stopxmlsetups
-\startxmlsetups xml:setups:position    \show_setup_component{#1}{position}   \stopxmlsetups
-\startxmlsetups xml:setups:reference   \show_setup_component{#1}{reference}  \stopxmlsetups
 \startxmlsetups xml:setups:csname      \show_setup_component{#1}{csname}     \stopxmlsetups
-\startxmlsetups xml:setups:destination \show_setup_component{#1}{destination}\stopxmlsetups
-\startxmlsetups xml:setups:triplet     \show_setup_component{#1}{triplet}    \stopxmlsetups
-\startxmlsetups xml:setups:word        \show_setup_component{#1}{word}       \stopxmlsetups
-\startxmlsetups xml:setups:template    \show_setup_component{#1}{template}   \stopxmlsetups
-\startxmlsetups xml:setups:angles      \show_setup_component{#1}{angles}     \stopxmlsetups
-\startxmlsetups xml:setups:apply       \show_setup_component{#1}{apply}      \stopxmlsetups
-\startxmlsetups xml:setups:twowords    \show_setup_component{#1}{twowords}   \stopxmlsetups
-\startxmlsetups xml:setups:threewords  \show_setup_component{#1}{threewords} \stopxmlsetups
+\startxmlsetups xml:setups:content     \show_setup_component{#1}{content}    \stopxmlsetups
+\startxmlsetups xml:setups:position    \show_setup_component{#1}{position}   \stopxmlsetups
+\startxmlsetups xml:setups:index       \show_setup_component{#1}{index}      \stopxmlsetups
 \startxmlsetups xml:setups:text        \show_setup_component{#1}{text}       \stopxmlsetups
+\startxmlsetups xml:setups:apply       \show_setup_component{#1}{apply}      \stopxmlsetups
+\startxmlsetups xml:setups:template    \show_setup_component{#1}{template}   \stopxmlsetups
+\startxmlsetups xml:setups:triplet     \show_setup_component{#1}{triplet}    \stopxmlsetups
+\startxmlsetups xml:setups:angles      \show_setup_component{#1}{angles}     \stopxmlsetups
+
+%startxmlsetups xml:setups:displaymath \show_setup_component{#1}{displaymath}\stopxmlsetups
+%startxmlsetups xml:setups:math        \show_setup_component{#1}{math}       \stopxmlsetups
+%startxmlsetups xml:setups:nothing     \show_setup_component{#1}{nothing}    \stopxmlsetups
+%startxmlsetups xml:setups:file        \show_setup_component{#1}{file}       \stopxmlsetups
+%startxmlsetups xml:setups:reference   \show_setup_component{#1}{reference}  \stopxmlsetups
+%startxmlsetups xml:setups:destination \show_setup_component{#1}{destination}\stopxmlsetups
+%startxmlsetups xml:setups:word        \show_setup_component{#1}{word}       \stopxmlsetups
+%startxmlsetups xml:setups:twowords    \show_setup_component{#1}{twowords}   \stopxmlsetups
+%startxmlsetups xml:setups:threewords  \show_setup_component{#1}{threewords} \stopxmlsetups
 
 % todo: cd:par => \par
 % todo: cd:sep => \\
@@ -788,7 +871,8 @@
                \unknown
             }
         \cmd_column_one_stop
-        \godown[.75\lineheight]
+%         \godown[.75\lineheight]
+        \blank[\v!samepage,\v!medium]
         \ignorespaces
     \fi
 \stopxmlsetups
@@ -805,7 +889,8 @@
             \ignorespaces
             \xmlflush{#1}
         \cmd_column_one_stop
-        \godown[.75\lineheight]
+%         \godown[.75\lineheight]
+        \blank[\v!samepage,\v!medium]
         \ignorespaces
     \fi
 \stopxmlsetups
@@ -881,12 +966,12 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:inherit
-%     \cmd_column_two_start{}{}
+  % \cmd_column_two_start{}{}
         \rawsetupstring{cd:inherits}:
         \enspace
         \letterbackslash
         \xmlatt{#1}{name}
-%     \cmd_column_two_stop
+  % \cmd_column_two_stop
     \ignorespaces
 \stopxmlsetups
 
@@ -894,7 +979,8 @@
   {\cmd_column_one_start
       \cmd_internal_value{#1}%
    \cmd_column_one_stop
-   \godown[.75\lineheight]
+ % \godown[.75\lineheight]
+   \blank[\v!samepage,\v!medium]
    \ignorespaces}
 
 %D Auxiliary.
@@ -965,26 +1051,25 @@
 
 % arguments
 
-\unexpanded\def\show_setup_displaymath#1{\show_setup_any {#1}{displaymath}}
-\unexpanded\def\show_setup_index      #1{\show_setup_any {#1}{index}}
-\unexpanded\def\show_setup_math       #1{\show_setup_any {#1}{math}}
-\unexpanded\def\show_setup_nothing    #1{\show_setup_any {#1}{nothing}}
-\unexpanded\def\show_setup_file       #1{\show_setup_any {#1}{file}}
-\unexpanded\def\show_setup_position   #1{\show_setup_any {#1}{position}}
-\unexpanded\def\show_setup_template   #1{\show_setup_any {#1}{template}}
-\unexpanded\def\show_setup_angles     #1{\show_setup_any {#1}{angle}}
-\unexpanded\def\show_setup_reference  #1{\show_setup_any {#1}{reference}}
-\unexpanded\def\show_setup_apply      #1{\show_setup_any {#1}{apply}}
-\unexpanded\def\show_setup_twowords   #1{\show_setup_any {#1}{twowords}}
-\unexpanded\def\show_setup_threewords #1{\show_setup_any {#1}{threewords}}
-\unexpanded\def\show_setup_csname     #1{\show_setup_any {#1}{noargument}}
-\unexpanded\def\show_setup_destination#1{\show_setup_any {#1}{destination}}
-\unexpanded\def\show_setup_triplet    #1{\show_setup_any {#1}{triplet}}
-\unexpanded\def\show_setup_word       #1{\show_setup_any {#1}{word}}
-\unexpanded\def\show_setup_content    #1{\show_setup_any {#1}{content}}
-\unexpanded\def\show_setup_text       #1{\show_setup_any {#1}{textual}}
-\unexpanded\def\show_setup_to         #1{\show_setup_line{#1}{to}}
-\unexpanded\def\show_setup_macro      #1{\show_setup_any {#1}{macro}}
+\unexpanded\def\show_setup_csname     #1{\show_setup_any{#1}{noargument}}
+\unexpanded\def\show_setup_content    #1{\show_setup_any{#1}{content}}
+\unexpanded\def\show_setup_position   #1{\show_setup_any{#1}{position}}
+\unexpanded\def\show_setup_index      #1{\show_setup_any{#1}{index}}
+\unexpanded\def\show_setup_text       #1{\show_setup_any{#1}{textual}}
+\unexpanded\def\show_setup_apply      #1{\show_setup_any{#1}{apply}}
+\unexpanded\def\show_setup_template   #1{\show_setup_any{#1}{template}}
+\unexpanded\def\show_setup_triplet    #1{\show_setup_any{#1}{triplet}}
+\unexpanded\def\show_setup_angles     #1{\show_setup_any{#1}{angle}}
+
+%unexpanded\def\show_setup_displaymath#1{\show_setup_any{#1}{displaymath}}
+%unexpanded\def\show_setup_math       #1{\show_setup_any{#1}{math}}
+%unexpanded\def\show_setup_nothing    #1{\show_setup_any{#1}{nothing}}
+%unexpanded\def\show_setup_file       #1{\show_setup_any{#1}{file}}
+%unexpanded\def\show_setup_reference  #1{\show_setup_any{#1}{reference}}
+%unexpanded\def\show_setup_destination#1{\show_setup_any{#1}{destination}}
+%unexpanded\def\show_setup_word       #1{\show_setup_any{#1}{word}}
+%unexpanded\def\show_setup_twowords   #1{\show_setup_any{#1}{twowords}}
+%unexpanded\def\show_setup_threewords #1{\show_setup_any{#1}{threewords}}
 
 % A prelude to a rewrite and some more:
 
@@ -1026,7 +1111,7 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:parameters:values
-    \blank[\v!big]
+    \blank[\v!big,\v!samepage]
     \expanded {
         \parametercommand {
             \currentsetupparametercommand
@@ -1039,7 +1124,7 @@
         }
     }
     \blank[\v!big,\v!samepage]
-    \starttabulate[|l|p|]
+    \starttabulate[|l|pl|]
         % no /interface here
         \xmlall
             {#1}

@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['typo-itc'] = {
     license   = "see context related readme files"
 }
 
+local tonumber = tonumber
 
 local trace_italics       = false  trackers.register("typesetters.italics", function(v) trace_italics = v end)
 
@@ -31,7 +32,6 @@ local nodepool            = nuts.pool
 local tonode              = nuts.tonode
 local tonut               = nuts.tonut
 
-local getfield            = nuts.getfield
 local getprev             = nuts.getprev
 local getnext             = nuts.getnext
 local getid               = nuts.getid
@@ -42,7 +42,6 @@ local getattr             = nuts.getattr
 local setattr             = nuts.setattr
 local getattrlist         = nuts.getattrlist
 local setattrlist         = nuts.setattrlist
-local setfield            = nuts.setfield
 local setdisc             = nuts.setdisc
 local isglyph             = nuts.isglyph
 local setkern             = nuts.setkern
@@ -249,9 +248,9 @@ local function domath(head,current, done)
                                 a = a + 100
                             end
                             if trace_italics then
-                                report_italics("adding italic between math %C and non punctuation %C",getchar(glyph),char)
+                                report_italics("%s italic %p between math %C and non punctuation %C","adding",a,getchar(glyph),char)
                             end
-                            insert_node_after(head,glyph,new_correction_kern(a))
+                            insert_node_after(head,glyph,correction_kern(a,glyph))
                             done = true
                         end
                     end
@@ -263,11 +262,12 @@ local function domath(head,current, done)
 end
 
 local function mathhandler(head)
-    local current = tonut(head)
+    local nuthead = tonut(head)
+    local current = nuthead
     local done    = false
     while current do
         if getid(current) == math_code then
-            current, done = domath(head,current,done)
+            current, done = domath(nuthead,current,done)
         end
         current = getnext(current)
     end
@@ -415,7 +415,6 @@ local function texthandler(head)
                                         lastattr    = attr
                                         replacechar = char
                                         replacehead = replace
-                                        replace     = current
                                         updated     = true
                                     end
                                 end
@@ -439,7 +438,7 @@ local function texthandler(head)
                             if attr and attr > 0 then
                                 local cd = data[char]
                                 if not cd then
-                                        -- this really can happen
+                                    -- this really can happen
                                     -- postitalic = 0
                                 else
                                     postitalic = cd.italic
@@ -452,8 +451,7 @@ local function texthandler(head)
                                         lastattr = attr
                                         postchar = char
                                         posthead = post
-                                        post     = current
-                                        updated     = true
+                                        updated  = true
                                     end
                                 end
                             end

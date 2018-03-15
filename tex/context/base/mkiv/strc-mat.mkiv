@@ -14,7 +14,7 @@
 
 \writestatus{loading}{ConTeXt Structure Macros / Math Numbering}
 
-\registerctxluafile{strc-mat}{1.001}
+\registerctxluafile{strc-mat}{}
 
 % -- we have potential for captions
 % -- this module will use the commandhandler
@@ -46,6 +46,7 @@
    \c!indentnext=\v!no,
    \c!alternative=\s!default,
    \c!strut=\v!no,
+   \c!numberstrut=\v!yes, % \v!no \v!yes \v!always
    \c!distance=2\emwidth]
 
 \setupformulaframed
@@ -236,11 +237,14 @@
     \global\setfalse\c_strc_formulas_inside_place_sub
 \to \everyresetformulas
 
+\def\strc_formulas_place_number_noneed
+  {\doif{\formulaparameter\c!numberstrut}\v!always\strut}
+
 \def\strc_formulas_place_numbering % place formula
   {\settrue\c_strc_formulas_handle_number
    \strc_formulas_check_reference\c_strc_formulas_place_number_mode\currentplaceformulareference
    \ifnum\c_strc_formulas_place_number_mode=\plustwo
-     \glet\strc_formulas_place_number\relax
+     \glet\strc_formulas_place_number\strc_formulas_place_number_noneed
    \else
      \glet\strc_formulas_place_number\strc_formulas_place_number_indeed
    \fi
@@ -281,7 +285,12 @@
    \begingroup
    \useformulastyleandcolor\c!numberstyle\c!numbercolor
    \formulaparameter\c!numbercommand
-     {\strut
+     {\edef\p_strut{\formulaparameter\c!numberstrut}%
+      \ifx\p_strut\v!always
+         \strut
+      \else\ifx\p_strut\v!yes
+         \strut
+      \fi\fi
       \formulaparameter\c!left
       \namedtaggedlabeltexts
         \t!formulalabel \v!formula
@@ -295,8 +304,14 @@
    \endgroup}
 
 \unexpanded\def\strc_formulas_place_current_number
-  {\strc_formulas_handle_current_references
-   \labeltexts\currentformula{\convertedcounter[\v!formula][]}}
+  {\ifx\namedformulaentry\empty
+     \strc_formulas_handle_current_references
+     \labeltexts\currentformula{\convertedcounter[\v!formula][]}%
+   \else
+     \expandafter % hm, the next one reset \namedformulaentry
+     \strc_formulas_handle_current_references
+     \namedformulaentry
+   \fi}
 
 \def\theformuladestinationattribute#1%
   {\iflocation\ifx#1\relax\else\ifx#1\empty\else
@@ -395,8 +410,10 @@
 % needs checking ... too many:
 
 \def\strc_formulas_handle_numbering_indeed
-  {\strc_counters_increment\v!formula
-   \doiftext\currentplaceformulasuffix{\strc_counters_setown_sub\v!formula\plustwo\currentplaceformulasuffix}%
+  {\ifx\namedformulaentry\empty
+     \strc_counters_increment\v!formula
+     \doiftext\currentplaceformulasuffix{\strc_counters_setown_sub\v!formula\plustwo\currentplaceformulasuffix}%
+   \fi
    \placecurrentformulanumber}
 
 \def\strc_formulas_handle_numbering
@@ -546,8 +563,10 @@
 \newconstant\c_strc_formulas_mode      % this will go away
 \newconstant\c_strc_formulas_space_model
 
+\newconstant\c_strc_math_vertical % experiment
+
 \c_strc_formulas_mode       \plustwo   % 0=native 1=simple (old) 2=align (new)
-\c_strc_formulas_space_model\plusthree % replaces \plusone
+\c_strc_formulas_space_model\plusthree % replaces \plusone, we might use \plusfour in the future
 
 \newconditional\c_strc_formulas_tight
 
@@ -622,32 +641,41 @@
      \directvspacing\p_spaceafter
    \fi}
 
-\def\strc_math_obey_depth
-  {\ifvmode\ifdim\prevdepth<\zeropoint\else\ifdim\prevdepth<\strutdp
-     % maybe add a tracing option here
-     \ifgridsnapping
-       \directvspacing\v!depth
-     \else
-       \kern\dimexpr\strutdp-\prevdepth\relax
-       \prevdepth\strutdp
-     \fi
-   \fi\fi\fi}
-
 \setvalue{\??mathdisplayspacemodel\v!before:3}%
   {% not ok, try \stopformula\par\startformula vs \stopformula\startformula
-   \ifdim\lastskip>\zeropoint
-     % bah
-   \else
-     \strc_math_obey_depth % somehow \fakenextstrutline doesn't work here
+   \let\m_spacebefore\empty
+   \ifvmode
+     \ifdim\lastskip>\zeropoint\else
+       \ifdim\prevdepth<\zeropoint\else
+         \ifdim\prevdepth<\strutdp
+           % maybe add a tracing option here
+           \ifgridsnapping
+             \let\m_spacebefore\v!depth
+           \else
+             \edef\m_spacebefore{\the\dimexpr\strutdp-\prevdepth\relax}%
+           \fi
+         \fi
+       \fi
+     \fi
      \nointerlineskip
    \fi
-   \ifx\p_spacebefore\v!none
-     % nothing
-   \else\ifx\p_spaceafter\empty
-     \directvspacing\currentvspacing
+   \ifx\m_spacebefore\empty
+     \ifx\p_spacebefore\v!none
+       % nothing
+     \else\ifx\p_spacebefore\empty
+       \directvspacing\currentvspacing
+     \else
+       \directvspacing{\p_spacebefore,\the\scratchdimen}%
+     \fi\fi
    \else
-     \directvspacing\p_spacebefore
-   \fi\fi}
+     \ifx\p_spacebefore\v!none
+       \directvspacing{\m_spacebefore}%
+     \else\ifx\p_spacebefore\empty
+       \directvspacing{\m_spacebefore,\currentvspacing}%
+     \else
+       \directvspacing{\m_spacebefore,\p_spacebefore}%
+     \fi\fi
+   \fi}
 
 \setvalue{\??mathdisplayspacemodel\v!after:3}%
   {\prevdepth\strutdp % \directvspacing\v!depth
@@ -658,6 +686,49 @@
    \else
      \directvspacing\p_spaceafter
    \fi\fi}
+
+\newconditional\c_math_model_four_indeed
+
+\setvalue{\??mathdisplayspacemodel\v!before:4}%
+  {% not ok, try \stopformula\par\startformula vs \stopformula\startformula
+   \ifvmode
+     \ifinner
+        \csname\??mathdisplayspacemodel\v!before:3\endcsname
+     \else
+       \settrue\c_math_model_four_indeed
+       \forcestrutdepth
+       \nointerlineskip
+       \ifx\p_spacebefore\v!none
+         % nothing
+       \else\ifx\p_spacebefore\empty
+         \directvspacing\currentvspacing
+       \else
+         \directvspacing{\p_spacebefore,\the\scratchdimen}%
+       \fi\fi
+     \fi
+  \else
+     \csname\??mathdisplayspacemodel\v!before:3\endcsname
+  \fi}
+
+\setvalue{\??mathdisplayspacemodel\v!after:4}%
+  {\ifconditional\c_math_model_four_indeed
+     \setfalse\c_math_model_four_indeed
+     \forcestrutdepth
+   \else
+     \prevdepth\strutdp % \directvspacing\v!depth
+   \fi
+   \ifx\p_spaceafter\v!none
+     % nothing
+   \else\ifx\p_spaceafter\empty
+     \directvspacing\currentvspacing
+   \else
+     \directvspacing\p_spaceafter
+   \fi\fi}
+
+\unexpanded\def\setdisplaymathspacemodel[#1]%
+  {\ifcsname\??mathdisplayspacemodel\v!before:\number#1\endcsname
+     \c_strc_formulas_space_model#1\relax
+   \fi}
 
 % \newtoks\everybeforedisplay
 % \appendtoks\page_sides_check_floats_indeed\to\everybeforedisplay
@@ -730,6 +801,9 @@
   {\d_strc_formulas_display_skip_left \zeropoint
    \d_strc_formulas_display_skip_right\zeropoint}
 
+\setvalue{\??formulaoption\v!depth}%
+  {\c_strc_formulas_space_model\plusfour}
+
 \setvalue{\??formulaoption\v!line}%
   {\ifgridsnapping
      \setformulaparameter\c!grid{\v!math:\v!line}%
@@ -750,12 +824,64 @@
      \setformulaparameter\c!grid{\v!math:-\v!halfline}%
    \fi}
 
+% when we have 1.0.6 we wil use \mathpenaltiesmode
+%
+% \prebinoppenalty -100
+% \prerelpenalty   -100
+
+\def\strc_math_set_split
+  {\edef\p_split{\formulaparameter\c!split}%
+   \ifx\p_split\v!yes
+     \global\c_strc_math_vertical\plusone
+   \else\ifx\p_split\v!page
+     \global\c_strc_math_vertical\plustwo
+   \else
+     \global\c_strc_math_vertical\zerocount
+   \fi\fi
+   \ifcase\c_strc_math_vertical
+   % \mathpenaltiesmode \zerocount
+     \clf_setmathpenalties\zerocount
+     \clf_resetmathhang
+   \else
+   % \mathpenaltiesmode \plusone
+     \clf_setmathpenalties\plusone
+     \edef\p_hang{\formulaparameter\c!hang}%
+     \ifx\p_hang\v!none
+       \global\setfalse\c_strc_math_indent
+       \clf_resetmathhang
+     \else
+       \global\settrue\c_strc_math_indent
+       \clf_setmathhang {%
+          method   {\p_hang}%
+          distance \formulaparameter\c!distance
+       }%
+     \fi
+   \fi}
+
+\setupformula
+  [\c!split=\v!no,
+   \c!distance=\zeropoint,
+  %\c!interlinespace=1.5\lineheight,
+   \c!interlinespace=,
+   \c!hang=\v!none]
+
+% for the moment (when testing) we use a penalty 1
+
+\unexpanded\def\strc_math_align_here{\ifmmode\penalty\plusone\fi}%
+\unexpanded\def\strc_math_break_here{\ifmmode\hfill\break \fi}%
+
+\appendtoks
+    \let\alignhere\strc_math_align_here
+    \let\breakhere\strc_math_break_here
+\to \everymathematics
+
 \unexpanded\def\strc_formulas_start_formula_indeed[#1][#2]% setting leftskip adaption is slow !
   {\ifhmode
      \par
    \fi
    \bgroup % HERE
    \def\currentformula{#1}%
+   \strc_math_set_split
    \dostarttaggedchained\t!formula\currentformula\??formula
    \setfalse\c_strc_formulas_tight
    \d_strc_formulas_display_skip_left   \leftskip

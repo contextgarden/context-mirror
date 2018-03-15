@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['buff-ver'] = {
 -- todo: update to match context scite lexing
 
 local type, next, rawset, rawget, setmetatable, getmetatable, tonumber = type, next, rawset, rawget, setmetatable, getmetatable, tonumber
-local format, lower, upper,match, find, sub = string.format, string.lower, string.upper, string.match, string.find, string.sub
+local lower, upper,match, find, sub = string.lower, string.upper, string.match, string.find, string.sub
 local splitlines = string.splitlines
 local concat = table.concat
 local C, P, R, S, V, Carg, Cc, Cs = lpeg.C, lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Carg, lpeg.Cc, lpeg.Cs
@@ -33,6 +33,8 @@ local context              = context
 local commands             = commands
 local implement            = interfaces.implement
 
+local formatters           = string.formatters
+
 local tabtospace           = utilities.strings.tabtospace
 local variables            = interfaces.variables
 local settings_to_array    = utilities.parsers.settings_to_array
@@ -44,6 +46,8 @@ local v_yes                = variables.yes
 local v_last               = variables.last
 local v_all                = variables.all
 local v_absolute           = variables.absolute
+----- v_inline             = variables.inline  -- not !
+----- v_display            = variables.display -- not !
 
 -- beware, all macros have an argument:
 
@@ -235,12 +239,13 @@ function visualizers.load(name)
     name = lower(name)
     if rawget(specifications,name) == nil then
         name = lower(name)
-        local texname = findfile(format("buff-imp-%s.mkiv",name))
-        local luaname = findfile(format("buff-imp-%s.lua" ,name))
+        local impname = "buff-imp-"..name
+        local texname = findfile(addsuffix(impname,"mkiv"))
+        local luaname = findfile(addsuffix(impname,"lua"))
         if texname == "" or luaname == "" then
             -- assume a user specific file
             luaname = findfile(addsuffix(name,"mkiv"))
-            texname = findfile(addsuffix(name,"lua" ))
+            texname = findfile(addsuffix(name,"lua"))
         end
         if texname == "" or luaname == "" then
             if trace_visualize then
@@ -265,14 +270,15 @@ function visualizers.register(name,specification)
         report_visualizers("registering visualizer %a",name)
     end
     specifications[name] = specification
-    local parser, handler = specification.parser, specification.handler
-    local displayparser = specification.display or parser
-    local inlineparser = specification.inline or parser
-    local isparser = is_lpeg(parser)
+    local parser         = specification.parser
+    local handler        = specification.handler
+    local displayparser  = specification.display or parser
+    local inlineparser   = specification.inline  or parser
+    local isparser       = is_lpeg(parser)
     local start, stop
     if isparser then
         start = makepattern(handler,"start",patterns.alwaysmatched)
-        stop = makepattern(handler,"stop",patterns.alwaysmatched)
+        stop  = makepattern(handler,"stop", patterns.alwaysmatched)
     end
     if handler then
         if isparser then
@@ -373,7 +379,7 @@ function visualizers.registerescapepattern(name,befores,afters,normalmethod,esca
                     name,i,before,after,processor or "default")
             end
             before = P(before) * space_pattern
-            after = space_pattern * P(after)
+            after  = space_pattern * P(after)
             local action
             if processor then
                 action = function(s) apply_processor(processor,s) end
@@ -450,15 +456,16 @@ function visualizers.registerescapecommand(name,token,normalmethod,escapecommand
     return escapepattern
 end
 
-local escapedvisualizers = { }
+local escapedvisualizers  = { }
+local f_escapedvisualizer = formatters["%s : %s"]
 
 local function visualize(content,settings) -- maybe also method in settings
     if content and content ~= "" then
         local method = lower(settings.method or "default")
-        local m
+        local m = specifications[method] or specifications.default
         local e = settings.escape
-        if e and e ~= "" then
-            local newname = format("%s : %s",method,e)
+        if e and e ~= "" and not m.handler.noescape then
+            local newname = f_escapedvisualizer(method,e)
             local newspec = specifications[newname]
             if newspec then
                 m = newspec
@@ -482,9 +489,10 @@ local function visualize(content,settings) -- maybe also method in settings
                         end
                     end
                 end
-                local oldvisualizer = specifications[method] or specifications.default
-                local oldparser = oldvisualizer.direct
-                local newparser
+                local oldm       = m
+                local oldparser  = oldm.direct
+                local newhandler = oldm.handler
+                local newparser  = oldm.parser -- nil
                 if starts[1] and stops[1] ~= "" then
                     newparser = visualizers.registerescapepattern(newname,starts,stops,oldparser,nil,processors)
                 elseif starts[1] then
@@ -494,7 +502,7 @@ local function visualize(content,settings) -- maybe also method in settings
                 end
                 m = visualizers.register(newname, {
                     parser  = newparser,
-                    handler = oldvisualizer.handler,
+                    handler = newhandler,
                 })
             end
         else
@@ -789,8 +797,8 @@ local nospace   = space^1/""
 local endstring = P(-1)
 
 local compactors = {
-    [v_all]      = Cs((backslash * (1-backslash-space)^1 * nospace * (endstring + fences) + 1)^0),
-    [v_absolute] = Cs((backslash * (1-symbols  -space)^1 * nospace * (symbols+backslash) + 1) ^0),
+    [v_all]      = Cs((backslash * (1-backslash-space)^1 * nospace * (endstring+fences) + 1)^0),
+    [v_absolute] = Cs((backslash * (1-symbols  -space)^1 * nospace * (symbols +backslash) + 1) ^0),
     [v_last]     = Cs((space^1   * endstring/"" + 1)^0),
 }
 

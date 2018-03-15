@@ -15,7 +15,7 @@
 
 \unprotect
 
-\registerctxluafile{supp-box}{1.001}
+\registerctxluafile{supp-box}{}
 
 % This file is partially cleaned up.
 
@@ -79,6 +79,7 @@
 \def\strutht  {\ht\strutbox}
 \def\strutwd  {\wd\strutbox}
 \def\struthtdp{\dimexpr\ht\strutbox+\dp\strutbox\relax}
+\def\strutgap {\dimexpr\ht\strutbox-\dp\strutbox\relax}
 
 %D \macros
 %D   {voidbox,nextbox}
@@ -1071,8 +1072,8 @@
 \unexpanded\def\doshowhyphenatednextbox
   {\clf_showhyphenatedinlist\nextbox}
 
-\unexpanded\def\showhyphens
-  {\dowithnextboxcs\doshowhyphenatednextbox\hbox}
+\unexpanded\def\showhyphens % hpack: so no processing (we hyphenate in lua)
+  {\dowithnextboxcs\doshowhyphenatednextbox\hpack}
 
 %D The following macros are seldom used but handy for tracing.
 %D
@@ -2668,7 +2669,7 @@
 %D A funny (but rather stupid) one, plus a redefinition.
 
 \unexpanded\def\removebottomthings
-  {\dorecurse5{\unskip\unkern\unpenalty}}
+  {\dorecurse\plusfive{\unskip\unkern\unpenalty}}
 
 \unexpanded\def\removelastskip % \ifvmode the plain tex one \fi
   {\ifvmode\ifzeropt\lastskip\else\vskip-\lastskip\fi\fi}
@@ -2746,19 +2747,12 @@
 
 %D And even rawer:
 
-\let\naturalhbox   \hbox
-\let\naturalvbox   \vbox
-\let\naturalvtop   \normalvtop
-\let\naturalvcenter\normalvtop
-
-\ifdefined\textdir
-
-    \unexpanded\def\naturalhbox {\hbox dir TLT}
-    \unexpanded\def\naturalvbox {\vbox dir TLT}
-    \unexpanded\def\naturalhpack{\hpack dir TLT}
-    \unexpanded\def\naturalvpack{\vpack dir TLT}
-
-\fi
+           \let\naturalvtop   \normalvtop
+           \let\naturalvcenter\normalvtop
+\unexpanded\def\naturalhbox  {\hbox  dir TLT}
+\unexpanded\def\naturalvbox  {\vbox  dir TLT}
+\unexpanded\def\naturalhpack {\hpack dir TLT}
+\unexpanded\def\naturalvpack {\vpack dir TLT}
 
 %D \macros
 %D   {vcenter}
@@ -2973,7 +2967,12 @@
 
 %D Who knows when this comes in handy:
 
-\unexpanded\def\lastlinewidth{\dimexpr\clf_lastlinelength\scaledpoint\relax}
+\unexpanded\def\lastlinewidth{\dimexpr\clf_lastlinewidth\scaledpoint\relax}
+
+%D Keep as reference:
+
+% \unexpanded\def\tightvbox{\dowithnextbox{\dp\nextbox\zeropoint\box\nextbox}\vbox}
+% \unexpanded\def\tightvtop{\dowithnextbox{\ht\nextbox\zeropoint\box\nextbox}\vtop}
 
 \protect \endinput
 

@@ -11,11 +11,12 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
 local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
 local char, byte, format, gsub, concat, match, sub, gmatch = string.char, string.byte, string.format, string.gsub, table.concat, string.match, string.sub, string.gmatch
 local utfchar, utfbyte, utfvalues = utf.char, utf.byte, utf.values
-local sind, cosd, floor, max, min = math.sind, math.cosd, math.floor, math.max, math.min
+local sind, cosd, max, min = math.sind, math.cosd, math.max, math.min
 local sort = table.sort
 local lpegmatch, P, C, R, S, Cc, Cs = lpeg.match, lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs
 local formatters = string.formatters
 local isboolean = string.is_boolean
+local rshift = bit32.rshift
 
 local report_objects    = logs.reporter("backend","objects")
 local report_finalizing = logs.reporter("backend","finalizing")
@@ -23,6 +24,8 @@ local report_blocked    = logs.reporter("backend","blocked")
 
 local implement         = interfaces.implement
 local two_strings       = interfaces.strings[2]
+
+local context           = context
 
 -- In ConTeXt MkIV we use utf8 exclusively so all strings get mapped onto a hex
 -- encoded utf16 string type between <>. We could probably save some bytes by using
@@ -66,18 +69,9 @@ local two_strings       = interfaces.strings[2]
 local pdf    = pdf
 local factor = number.dimenfactors.bp
 
-do
-
-    local texget = tex.get
-    local texset = tex.set
-
-    function pdf.setmajorversion (n) texset("global","pdfmajorversion", n) end
-    function pdf.getmajorversion ( ) return texget("pdfmajorversion") end
-
-end
-
 local pdfsetinfo            = pdf.setinfo
 local pdfsetcatalog         = pdf.setcatalog
+----- pdfsettrailerid       = pdf.settrailerid
 ----- pdfsetnames           = pdf.setnames
 ----- pdfsettrailer         = pdf.settrailer
 
@@ -109,6 +103,8 @@ pdfdisablecommand("setpageattributes")
 pdfdisablecommand("setpagesattributes")
 pdfdisablecommand("registerannot")
 
+pdf.disablecommand = pdfdisablecommand
+
 local trace_finalizers = false  trackers.register("backend.finalizers", function(v) trace_finalizers = v end)
 local trace_resources  = false  trackers.register("backend.resources",  function(v) trace_resources  = v end)
 local trace_objects    = false  trackers.register("backend.objects",    function(v) trace_objects    = v end)
@@ -125,6 +121,65 @@ local pdfbackend = {
 backends.pdf     = pdfbackend
 lpdf             = lpdf or { }
 local lpdf       = lpdf
+
+lpdf.flags       = lpdf.flags or { } -- will be filled later
+
+do
+
+    local setmajorversion = pdf.setmajorversion
+    local setminorversion = pdf.setminorversion
+    local getmajorversion = pdf.getmajorversion
+    local getminorversion = pdf.getminorversion
+
+    if not setmajorversion then
+
+        setmajorversion = function() end
+        getmajorversion = function() return 1 end
+
+        pdf.setmajorversion = setmajorversion
+        pdf.getmajorversion = getmajorversion
+
+    end
+
+    function lpdf.setversion(major,minor)
+        setmajorversion(major or 1)
+        setminorversion(minor or 7)
+    end
+
+    function lpdf.getversion(major,minor)
+        return getmajorversion(), getminorversion()
+    end
+
+    lpdf.majorversion = getmajorversion
+    lpdf.minorversion = getminorversion
+
+end
+
+do
+
+    local setcompresslevel       = pdf.setcompresslevel
+    local setobjectcompresslevel = pdf.setobjcompresslevel
+    local getcompresslevel       = pdf.getcompresslevel
+    local getobjectcompresslevel = pdf.getobjcompresslevel
+
+    local frozen = false
+
+    function lpdf.setcompression(level,objectlevel,freeze)
+        if not frozen then
+            setcompresslevel(level or 3)
+            setobjectcompresslevel(objectlevel or level or 3)
+            frozen = freeze
+        end
+    end
+
+    function lpdf.getcompression()
+        return getcompresslevel(), getobjectcompresslevel()
+    end
+
+    lpdf.compresslevel       = getcompresslevel
+    lpdf.objectcompresslevel = getobjectcompresslevel
+
+end
 
 local codeinjections = pdfbackend.codeinjections
 local nodeinjections = pdfbackend.nodeinjections
@@ -201,8 +256,7 @@ end
 --             if b < 0x10000 then
 --                 r[n] = format("%04x",b)
 --             else
---              -- r[n] = format("%04x%04x",b/1024+0xD800,b%1024+0xDC00)
---                 r[n] = format("%04x%04x",floor(b/1024),b%1024+0xDC00) --bit32.rshift(b,10)
+--                 r[n] = format("%04x%04x",rshift(b,10),b%1024+0xDC00)
 --             end
 --         end
 --         n = n + 1
@@ -216,8 +270,7 @@ local cache = table.setmetatableindex(function(t,k) -- can be made weak
     if v < 0x10000 then
         v = format("%04x",v)
     else
-     -- v = format("%04x%04x",v/1024+0xD800,v%1024+0xDC00)
-        v = format("%04x%04x",floor(v/1024),v%1024+0xDC00)
+        v = format("%04x%04x",rshift(v,10),v%1024+0xDC00)
     end
     t[k] = v
     return v
@@ -543,6 +596,8 @@ function lpdf.escaped(str)
     return lpegmatch(escaped,str) or str
 end
 
+local pdfnull, pdfboolean, pdfreference, pdfverbose
+
 do
 
     local p_null  = { } setmetatable(p_null, mt_z)
@@ -618,9 +673,9 @@ function lpdf.reserveobject(name)
     return r
 end
 
+-- lpdf.reserveobject   = pdfreserveobject
 -- lpdf.immediateobject = pdfimmediateobject
 -- lpdf.deferredobject  = pdfdeferredobject
--- lpdf.object          = pdfdeferredobject
 -- lpdf.referenceobject = pdfreferenceobject
 
 local pagereference = pdf.pageref -- tex.pdfpageref is obsolete
@@ -891,6 +946,15 @@ do
         if not environment.initex then
             trace_flush("info")
             info.Type = nil
+            if lpdf.majorversion() > 1 then
+                for k, v in next, info do
+                    if k == "CreationDate" or k == "ModDate" then
+                        -- mandate >= 2.0
+                    else
+                        info[k] = nil
+                    end
+                end
+            end
             pdfsetinfo(info())
         end
     end
@@ -1011,7 +1075,7 @@ end
 
 function lpdf.rotationcm(a)
     local s, c = sind(a), cosd(a)
-    return format("%0.6F %0.6F %0.6F %0.6F 0 0 cm",c,s,-s,c)
+    return format("%.6F %.6F %.6F %.6F 0 0 cm",c,s,-s,c)
 end
 
 -- ! -> universaltime
@@ -1201,15 +1265,17 @@ do
     local f_actual_text           = formatters["/Span <</ActualText %s >> BDC"]
 
     local context   = context
-    local pdfdirect = nodes.pool.pdfdirect
+    local pdfdirect = nodes.pool.pdfdirectliteral
 
     -- todo: use tounicode from the font mapper
+
+    -- floor(unicode/1024) => rshift(unicode,10) -- better for 5.3
 
     function codeinjections.unicodetoactualtext(unicode,pdfcode)
         if unicode < 0x10000 then
             return f_actual_text_one(unicode,pdfcode)
         else
-            return f_actual_text_two(unicode/1024+0xD800,unicode%1024+0xDC00,pdfcode)
+            return f_actual_text_two(rshift(unicode,10)+0xD800,unicode%1024+0xDC00,pdfcode)
         end
     end
 
@@ -1219,7 +1285,7 @@ do
         elseif unicode < 0x10000 then
             return f_actual_text_one_b(unicode)
         else
-            return f_actual_text_two_b(unicode/1024+0xD800,unicode%1024+0xDC00)
+            return f_actual_text_two_b(rshift(unicode,10)+0xD800,unicode%1024+0xDC00)
         end
     end
 
@@ -1233,7 +1299,7 @@ do
         elseif unicode < 0x10000 then
             return f_actual_text_one_b_not(unicode)
         else
-            return f_actual_text_two_b_not(unicode/1024+0xD800,unicode%1024+0xDC00)
+            return f_actual_text_two_b_not(rshift(unicode,10)+0xD800,unicode%1024+0xDC00)
         end
     end
 
@@ -1272,3 +1338,63 @@ implement { name = "lpdf_adddocumentcolorspace", arguments = two_strings, action
 implement { name = "lpdf_adddocumentpattern",    arguments = two_strings, actions = function(a,b) lpdf.adddocumentpattern   (a,pdfverbose(b)) end }
 implement { name = "lpdf_adddocumentshade",      arguments = two_strings, actions = function(a,b) lpdf.adddocumentshade     (a,pdfverbose(b)) end }
 
+-- more helpers: copy from lepd to lpdf
+
+function lpdf.copyconstant(v)
+    if v ~= nil then
+        return pdfconstant(v)
+    end
+end
+
+function lpdf.copyboolean(v)
+    if v ~= nil then
+        return pdfboolean(v)
+    end
+end
+
+function lpdf.copyunicode(v)
+    if v then
+        return pdfunicode(v)
+    end
+end
+
+function lpdf.copyarray(a)
+    if a then
+        local t = pdfarray()
+        local k = a.__kind
+        for i=1,#a do
+            t[i] = a(i)
+        end
+-- inspect(t)
+        return t
+    end
+end
+
+function lpdf.copydictionary(d)
+    if d then
+        local t = pdfdictionary()
+        for k, v in next, d do
+            t[k] = d(k)
+        end
+-- inspect(t)
+        return t
+    end
+end
+
+function lpdf.copynumber(v)
+    return v
+end
+
+function lpdf.copyinteger(v)
+    return v -- maybe checking or round ?
+end
+
+function lpdf.copyfloat(v)
+    return v
+end
+
+function lpdf.copystring(v)
+    if v then
+        return pdfstring(v)
+    end
+end

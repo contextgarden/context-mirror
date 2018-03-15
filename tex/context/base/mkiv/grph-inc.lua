@@ -40,14 +40,17 @@ run TeX code from within Lua. Some more functionality will move to Lua.
 
 -- todo: store loaded pages per pdf file someplace
 
+local tonumber, tostring, next = tonumber, tostring, next
 local format, lower, find, match, gsub = string.format, string.lower, string.find, string.match, string.gsub
 local longtostring = string.longtostring
 local contains = table.contains
+local sortedhash = table.sortedhash
 local concat, insert, remove = table.concat, table.insert, table.remove
 local todimen = string.todimen
 local collapsepath = file.collapsepath
 local formatters = string.formatters
 local formatcolumns = utilities.formatters.formatcolumns
+local max, odd = math.max, math.odd
 
 local P, R, S, Cc, C, Cs, Ct, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.Cc, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.match
 
@@ -89,14 +92,8 @@ local trace_usage       = false  trackers.register  ("graphics.usage",      func
 local extra_check       = false  directives.register("graphics.extracheck",    function(v) extra_check    = v end)
 local auto_transform    = true   directives.register("graphics.autotransform", function(v) auto_transform = v end)
 
-if LUATEXVERSION <= 1 then
-    auto_transform = false
-end
-
+local report            = logs.reporter("graphics")
 local report_inclusion  = logs.reporter("graphics","inclusion")
-local report_figures    = logs.reporter("system","graphics")
-local report_figure     = logs.reporter("used graphic")
-local report_newline    = logs.newline
 
 local f_hash_part       = formatters["%s->%s->%s->%s"]
 local f_hash_full       = formatters["%s->%s->%s->%s->%s->%s->%s->%s"]
@@ -107,7 +104,7 @@ local v_local           = variables["local"]
 local v_default         = variables.default
 local v_auto            = variables.auto
 
-local maxdimen          = 2^30-1
+local maxdimen          = 0x3FFFFFFF -- 2^30-1
 
 local ctx_doscalefigure            = context.doscalefigure
 local ctx_relocateexternalfigure   = context.relocateexternalfigure
@@ -116,7 +113,9 @@ local ctx_stopfoundexternalfigure  = context.stopfoundexternalfigure
 local ctx_dosetfigureobject        = context.dosetfigureobject
 local ctx_doboxfigureobject        = context.doboxfigureobject
 
-function images.check(figure)
+-- extensions
+
+function checkimage(figure)
     if figure then
         local width  = figure.width
         local height = figure.height
@@ -164,8 +163,6 @@ local function imagetotable(imgtable)
     return result
 end
 
-images.totable = imagetotable
-
 function images.serialize(i,...)
     return table.serialize(imagetotable(i),...)
 end
@@ -184,7 +181,7 @@ end
 local validsizes = table.tohash(images.boxes())
 local validtypes = table.tohash(images.types())
 
-function images.checksize(size)
+local function checkimagesize(size)
     if size then
         size = gsub(size,"box","")
         return validsizes[size] and size or "crop"
@@ -192,6 +189,17 @@ function images.checksize(size)
         return "crop"
     end
 end
+
+local newimage       = images.new
+local scanimage      = images.scan
+local copyimage      = images.copy
+local cloneimage     = images.clone
+local imagetonode    = images.node
+
+images.check         = checkimage
+images.checksize     = checkimagesize
+images.tonode        = imagetonode
+images.totable       = imagetotable
 
 local indexed = { }
 
@@ -211,6 +219,7 @@ figures.defaultwidth    = 0
 figures.defaultheight   = 0
 figures.defaultdepth    = 0
 figures.nofprocessed    = 0
+figures.nofmissing      = 0
 figures.preferquality   = true -- quality over location
 
 local figures_loaded    = allocate()   figures.loaded      = figures_loaded
@@ -305,31 +314,38 @@ function figures.badname(name)
     end
 end
 
-luatex.registerstopactions(function()
+logs.registerfinalactions(function()
+    local done = false
     if trace_usage and figures.nofprocessed > 0 then
-        logs.pushtarget("logfile")
-        report_newline()
-        report_figures("start names")
-        for _, data in table.sortedhash(figures_found) do
-            report_newline()
-            report_figure("asked   : %s",data.askedname)
+        logs.startfilelogging(report,"names")
+        for _, data in sortedhash(figures_found) do
+            if done then
+                report()
+            else
+                done = true
+            end
+            report("asked   : %s",data.askedname)
             if data.found then
-                report_figure("format  : %s",data.format)
-                report_figure("found   : %s",data.foundname)
-                report_figure("used    : %s",data.fullname)
+                report("format  : %s",data.format)
+                report("found   : %s",data.foundname)
+                report("used    : %s",data.fullname)
                 if data.badname then
-                    report_figure("comment : %s","bad name")
+                    report("comment : %s","bad name")
                 elseif data.comment then
-                    report_figure("comment : %s",data.comment)
+                    report("comment : %s",data.comment)
                 end
             else
-                report_figure("comment : %s","not found")
+                report("comment : %s","not found")
             end
         end
-        report_newline()
-        report_figures("stop names")
-        report_newline()
-        logs.poptarget()
+        logs.stopfilelogging()
+    end
+    if figures.nofmissing > 0 and logs.loggingerrors() then
+        logs.starterrorlogging(report,"missing figures")
+        for _, data in sortedhash(figures_found) do
+            report("%w%s",6,data.askedname)
+        end
+        logs.stoperrorlogging()
     end
 end)
 
@@ -542,11 +558,13 @@ function figures.initialize(request)
         -- can be determined; at some point the handlers might set them to numbers instead
         local w = tonumber(request.width) or 0
         local h = tonumber(request.height) or 0
+        local p = tonumber(request.page) or 0
         request.width  = w > 0 and w or nil
         request.height = h > 0 and h or nil
         --
-        request.page      = math.max(tonumber(request.page) or 1,1)
-        request.size      = images.checksize(request.size)
+        request.page      = p > 0 and p or 1
+        request.keepopen  = p > 0
+        request.size      = checkimagesize(request.size)
         request.object    = request.object == v_yes
         request["repeat"] = request["repeat"] == v_yes
         request.preview   = request.preview == v_yes
@@ -844,6 +862,9 @@ local function register(askedname,specification)
         specification.arguments  or ""
     )
     figures_found[askedhash] = specification
+    if not specification.found then
+        figures.nofmissing = figures.nofmissing + 1
+    end
     return specification
 end
 
@@ -896,7 +917,6 @@ local function locate(request) -- name, format, cache
             askedname = path
         end
     else
-     -- local fname = methodhandler('finders',pathname .. "/" .. wantedfiles[k])
         local foundname = resolvers.findbinfile(askedname)
         if not foundname or not lfs.isfile(foundname) then -- foundname can be dummy
             if trace_figures then
@@ -1187,7 +1207,7 @@ statistics.register("used graphics",function()
         local filename = file.nameonly(environment.jobname) .. "-figures-usage.lua"
         if next(figures_found) then
             local found = { }
-            for _, data in table.sortedhash(figures_found) do
+            for _, data in sortedhash(figures_found) do
                 found[#found+1] = data
                 for k, v in next, data do
                     if v == false or v == "" then
@@ -1259,7 +1279,7 @@ function figures.done(data)
         ds.yscale = 1
     end
     -- sort of redundant but can be limited
-    ds.page   = ds.page or du.page or dr.page
+    ds.page = ds.page or du.page or dr.page
     return data
 end
 
@@ -1331,13 +1351,15 @@ local function checktransform(figure,forced)
         local orientation = (forced ~= "" and forced ~= v_auto and forced) or figure.orientation or 0
         local transform   = transforms["orientation-"..orientation]
         figure.transform = transform
-        if math.odd(transform) then
+        if odd(transform) then
             return figure.height, figure.width
         else
             return figure.width, figure.height
         end
     end
 end
+
+local pagecount = { }
 
 function checkers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
@@ -1370,16 +1392,27 @@ function checkers.generic(data)
     )
     local figure = figures_loaded[hash]
     if figure == nil then
-        figure = images.new {
+        figure = newimage {
             filename        = name,
             page            = page,
             pagebox         = dr.size,
+            keepopen        = dr.keepopen or false,
          -- visiblefilename = "", -- this prohibits the full filename ending up in the file
         }
         codeinjections.setfigurecolorspace(data,figure)
         codeinjections.setfiguremask(data,figure)
         if figure then
-            local f, comment = images.check(images.scan(figure))
+            -- new, bonus check
+            if page and page > 1 then
+                local f = scanimage{ filename = name }
+                if f.page and f.pages < page then
+                    report_inclusion("no page %i in %a, using page 1",page,name)
+                    page        = 1
+                    figure.page = page
+                end
+            end
+            -- till here
+            local f, comment = checkimage(scanimage(figure))
             if not f then
                 ds.comment = comment
                 ds.found   = false
@@ -1441,8 +1474,8 @@ function includers.generic(data)
     if figure == nil then
         figure = ds.private
         if figure then
-            figure = images.copy(figure)
-            figure = figure and images.clone(figure,data.request) or false
+            figure = copyimage(figure)
+            figure = figure and cloneimage(figure,data.request) or false
         end
         figures_used[hash] = figure
     end
@@ -1450,13 +1483,13 @@ function includers.generic(data)
         local nr     = figures.boxnumber
         nofimages    = nofimages + 1
         ds.pageindex = nofimages
-        local image  = images.node(figure)
+        local image  = imagetonode(figure)
         local pager  = new_latelua(function()
             pofimages[nofimages] = pofimages[nofimages] or tex.count.realpageno -- so when reused we register the first one only
         end)
         image.next = pager
         pager.prev = image
-        local box  = hpack(image) -- images.node(figure) not longer valid
+        local box  = hpack(image) -- imagetonode(figure) not longer valid
 
         indexed[figure.index] = figure
         box.width, box.height, box.depth = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
@@ -1775,7 +1808,7 @@ end
 local function bases_locate(askedlabel)
     for i=1,#bases_list do
         local entry = bases_list[i]
-        local t = bases_find(entry[1],askedlabel)
+        local t = bases_find(entry[1],askedlabel,1,true)
         if t then
             return t
         end
@@ -1865,11 +1898,39 @@ end
 --     end,
 -- }
 
--- local fig = figures.push { name = pdffile }
--- figures.identify()
--- figures.check()
--- local nofpages = fig.used.pages
--- figures.pop()
+-- local n = "foo.pdf"
+-- local d = figures.getinfo(n)
+-- if d then
+--     for i=1,d.used.pages do
+--         local p = figures.getinfo(n,i)
+--         if p then
+--             local u = p.used
+--             print(u.width,u.height,u.orientation)
+--         end
+--     end
+-- end
+
+function figures.getinfo(name,page)
+    if type(name) == "string" then
+        name = { name = name, page = page }
+    end
+    if name.name then
+        local data = figures.push(name)
+        figures.identify()
+        figures.check()
+        figures.pop()
+        return data
+    end
+end
+
+function figures.getpdfinfo(name,page,metadata)
+    -- not that useful but as we have it for detailed inclusion we can as
+    -- we expose it
+    if type(name) ~= "table" then
+        name = { name = name, page = page, metadata = metadata }
+    end
+    return codeinjections.getinfo(name)
+end
 
 -- interfacing
 
@@ -1882,6 +1943,7 @@ implement {
             { "name" },
             { "label" },
             { "page" },
+            { "file" },
             { "size" },
             { "object" },
             { "prefix" },
@@ -1950,7 +2012,7 @@ local registered = { }
 
 local ctx_doexternalfigurerepeat = context.doexternalfigurerepeat
 
-interfaces.implement {
+implement {
     name      = "figure_register_page",
     arguments = { "string", "string", "string" },
     actions   = function(a,b,c)
@@ -1959,14 +2021,14 @@ interfaces.implement {
     end
 }
 
-interfaces.implement {
+implement {
     name    = "figure_nof_registered_pages",
     actions = function()
         context(#registered)
     end
 }
 
-interfaces.implement {
+implement {
     name      = "figure_flush_registered_pages",
     arguments = "string",
     actions   = function(n)

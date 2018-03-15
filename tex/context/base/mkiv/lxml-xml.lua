@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['lxml-xml'] = {
     license   = "see context related readme files"
 }
 
+local tonumber, next = tonumber, next
 local concat = table.concat
 local find, lower, upper = string.find, string.lower, string.upper
 
@@ -159,6 +160,10 @@ local function xmltotext(root)
     else
         return xmlserialize(root,xmltexthandler) or ""
     end
+end
+
+function xml.serializetotext(root)
+    return root and xmlserialize(root,xmltexthandler) or ""
 end
 
 --

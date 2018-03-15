@@ -10,16 +10,17 @@ if not modules then modules = { } end modules ['util-lua'] = {
 -- we will remove the 5.1 code some day soon
 
 local rep, sub, byte, dump, format = string.rep, string.sub, string.byte, string.dump, string.format
-local load, loadfile, type = load, loadfile, type
+local load, loadfile, type, collectgarbage = load, loadfile, type, collectgarbage
 
 utilities          = utilities or {}
 utilities.lua      = utilities.lua or { }
 local luautilities = utilities.lua
 
 local report_lua = logs.reporter("system","lua")
+local report_mem = logs.reporter("system","lua memory")
 
 local tracestripping           = false
-local forcestupidcompile       = true  -- use internal bytecode compiler
+local tracememory              = false
 luautilities.stripcode         = true  -- support stripping when asked for
 luautilities.alwaysstripcode   = false -- saves 1 meg on 7 meg compressed format file (2012.08.12)
 luautilities.nofstrippedchunks = 0
@@ -71,12 +72,21 @@ end
 
 -- quite subtle ... doing this wrong incidentally can give more bytes
 
-function luautilities.loadedluacode(fullname,forcestrip,name)
+function luautilities.loadedluacode(fullname,forcestrip,name,macros)
     -- quite subtle ... doing this wrong incidentally can give more bytes
     name = name or fullname
     local code, message
-    if environment.loadpreprocessedfile then
-        code, message = environment.loadpreprocessedfile(fullname)
+    if macros then
+        macros = lua.macros
+    end
+    if macros and macros.enabled then
+     -- local c = io.loaddata(fullname) -- not yet available
+        local f = io.open(fullname,"rb") local c = f:read("*a") f:close()
+        local n = c and macros.resolvestring("--[["..fullname.."]] "..c)
+        if n and #n ~= #c then
+            report_lua("preprocessed file %a: %i => %i bytes",fullname,#c,#n)
+        end
+        code, message = load(n or c)
     else
         code, message = loadfile(fullname)
     end
@@ -103,7 +113,7 @@ function luautilities.loadedluacode(fullname,forcestrip,name)
     end
 end
 
-function luautilities.strippedloadstring(code,forcestrip,name) -- not executed
+function luautilities.strippedloadstring(code,name,forcestrip) -- not executed
     local code, message = load(code)
     if not code then
         report_lua("loading of file %a failed:\n\t%s",name,message or "no message")
@@ -114,6 +124,14 @@ function luautilities.strippedloadstring(code,forcestrip,name) -- not executed
     else
         return code, 0
     end
+end
+
+function luautilities.loadstring(code,name) -- not executed
+    local code, message = load(code)
+    if not code then
+        report_lua("loading of file %a failed:\n\t%s",name,message or "no message")
+    end
+    return code, 0
 end
 
 function luautilities.compile(luafile,lucfile,cleanup,strip,fallback) -- defaults: cleanup=false strip=true
@@ -175,4 +193,25 @@ setmetatable(finalizers, {
 
 function luautilities.registerfinalizer(f)
     finalizers[#finalizers+1] = f
+end
+
+function luautilities.checkmemory(previous,threshold,trace) -- threshold in MB
+    local current = collectgarbage("count")
+    if previous then
+        local checked = (threshold or 64)*1024
+        local delta   = current - previous
+        if current - previous > checked then
+            collectgarbage("collect")
+            local afterwards = collectgarbage("count")
+            if trace or tracememory then
+                report_mem("previous %i MB, current %i MB, delta %i MB, threshold %i MB, afterwards %i MB",
+                    previous/1024,current/1024,delta/1024,threshold,afterwards)
+            end
+            return afterwards
+        elseif trace or tracememory then
+            report_mem("previous %i MB, current %i MB, delta %i MB, threshold %i MB",
+                previous/1024,current/1024,delta/1024,threshold)
+        end
+    end
+    return current
 end

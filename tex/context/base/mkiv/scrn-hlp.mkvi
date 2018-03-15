@@ -18,7 +18,7 @@
 %D upgraded and usage has changed a bit. We also use some
 %D \LUA\ magic in order to avoid multiple passes.
 
-\registerctxluafile{scrn-hlp}{1.001}
+\registerctxluafile{scrn-hlp}{}
 
 %D Using help boils down to plugging the placement macro
 %D someplace visible, like:
@@ -114,7 +114,7 @@
    \fi}
 
 \def\scrn_help_register#text%
-  {\setbox\b_scrn_help_box\hbox{\inheritedhelpframed{#text}}%
+  {\setbox\b_scrn_help_box\hbox{\inheritedhelpframed{#text}}% \hpack ?
    \definesymbol
      [\currenthelpname]
      [\copy\b_scrn_help_box]%

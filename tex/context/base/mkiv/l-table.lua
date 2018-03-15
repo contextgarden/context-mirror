@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['l-table'] = {
     license   = "see context related readme files"
 }
 
-local type, next, tostring, tonumber, ipairs, select = type, next, tostring, tonumber, ipairs, select
+local type, next, tostring, tonumber, select = type, next, tostring, tonumber, select
 local table, string = table, string
 local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
 local format, lower, dump = string.format, string.lower, string.dump
@@ -21,6 +21,10 @@ local floor = math.floor
 -- floats and as such we get unequality e.g. in version comparisons
 
 local stripper = patterns.stripper
+
+function table.getn(t)
+    return t and #t -- for very old times sake
+end
 
 function table.strip(tab)
     local lst, l = { }, 0
@@ -460,7 +464,7 @@ function table.tohash(t,value)
     local h = { }
     if t then
         if value == nil then value = true end
-        for _, v in next, t do -- no ipairs here
+        for _, v in next, t do
             h[v] = value
         end
     end
@@ -469,7 +473,7 @@ end
 
 function table.fromhash(t)
     local hsh, h = { }, 0
-    for k, v in next, t do -- no ipairs here
+    for k, v in next, t do
         if v then
             h = h + 1
             hsh[h] = k
@@ -1092,7 +1096,9 @@ function table.unnest(t) -- bad name
 end
 
 local function are_equal(a,b,n,m) -- indexed
-    if a and b and #a == #b then
+    if a == b then
+        return true
+    elseif a and b and #a == #b then
         n = n or 1
         m = m or #a
         for i=n,m do
@@ -1114,16 +1120,18 @@ local function are_equal(a,b,n,m) -- indexed
 end
 
 local function identical(a,b) -- assumes same structure
-    for ka, va in next, a do
-        local vb = b[ka]
-        if va == vb then
-            -- same
-        elseif type(va) == "table" and  type(vb) == "table" then
-            if not identical(va,vb) then
+    if a ~= b then
+        for ka, va in next, a do
+            local vb = b[ka]
+            if va == vb then
+                -- same
+            elseif type(va) == "table" and  type(vb) == "table" then
+                if not identical(va,vb) then
+                    return false
+                end
+            else
                 return false
             end
-        else
-            return false
         end
     end
     return true
@@ -1387,4 +1395,27 @@ function table.filtered(t,pattern,sort,cmp)
     else
         return nothing
     end
+end
+
+-- lua 5.3:
+
+if not table.move then
+
+    function table.move(a1,f,e,t,a2)
+        if a2 and a1 ~= a2 then
+            for i=f,e do
+                a2[t] = a1[i]
+                t = t + 1
+            end
+            return a2
+        else
+            t = t + e - f
+            for i=e,f,-1 do
+                a1[t] = a1[i]
+                t = t - 1
+            end
+            return a1
+        end
+    end
+
 end

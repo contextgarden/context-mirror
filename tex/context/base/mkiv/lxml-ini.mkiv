@@ -16,15 +16,15 @@
 
 \writestatus{loading}{ConTeXt XML Support / Initialization}
 
-%registerctxluafile{lxml-tab}{1.001} % loader
-%registerctxluafile{lxml-lpt}{1.001} % parser
-%registerctxluafile{lxml-xml}{1.001} % xml finalizers
-%registerctxluafile{lxml-aux}{1.001} % extras using parser
-%registerctxluafile{lxml-mis}{1.001} % extras independent of parser
-\registerctxluafile{lxml-ent}{1.001} % entity hacks
-\registerctxluafile{lxml-tex}{1.001} % tex finalizers
-\registerctxluafile{lxml-dir}{1.001} % ctx hacks
-\registerctxluafile{lxml-ini}{1.001} % interface
+%registerctxluafile{lxml-tab}{} % loader
+%registerctxluafile{lxml-lpt}{} % parser
+%registerctxluafile{lxml-xml}{} % xml finalizers
+%registerctxluafile{lxml-aux}{} % extras using parser
+%registerctxluafile{lxml-mis}{} % extras independent of parser
+\registerctxluafile{lxml-ent}{} % entity hacks
+\registerctxluafile{lxml-tex}{} % tex finalizers
+\registerctxluafile{lxml-dir}{} % ctx hacks
+\registerctxluafile{lxml-ini}{} % interface
 
 \unprotect
 
@@ -49,6 +49,7 @@
 \let\xmlattdef                 \clf_xmlattdef
 \let\xmlattribute              \clf_xmlattribute
 \let\xmlattributedef           \clf_xmlattributedef
+\let\xmlbadinclusions          \clf_xmlbadinclusions
 \let\xmlchainatt               \clf_xmlchainatt
 \let\xmlchainattdef            \clf_xmlchainattdef
 \let\xmlchecknamespace         \clf_xmlchecknamespace
@@ -75,31 +76,38 @@
 \let\xmlinclude                \clf_xmlinclude
 \let\xmlincludeoptions         \clf_xmlincludeoptions
 \let\xmlinclusion              \clf_xmlinclusion
+\let\xmlinclusionbase          \clf_xmlinclusionbase
 \let\xmlinclusions             \clf_xmlinclusions
-\let\xmlbadinclusions          \clf_xmlbadinclusions
 \let\xmlindex                  \clf_xmlindex
 \let\xmlinlineverbatim         \clf_xmlinlineverbatim
 \let\xmllast                   \clf_xmllast
 \let\xmllastatt                \clf_xmllastatt
 \let\xmllastmatch              \clf_xmllastmatch
-\let\xmlpushmatch              \clf_xmlpushmatch
-\let\xmlpopmatch               \clf_xmlpopmatch
+\let\xmllastpar                \clf_xmllastpar
 \let\xmlloaddirectives         \clf_xmlloaddirectives
 \let\xmlmain                   \clf_xmlmain
 \let\xmlmatch                  \clf_xmlmatch
 \let\xmlname                   \clf_xmlname
 \let\xmlnamespace              \clf_xmlnamespace
 \let\xmlnonspace               \clf_xmlnonspace
+\let\xmlpar                    \clf_xmlpar
+\let\xmlparam                  \clf_xmlparam
 \let\xmlpath                   \clf_xmlpath
+\let\xmlpopmatch               \clf_xmlpopmatch
 \let\xmlpos                    \clf_xmlpos
 \let\xmlposition               \clf_xmlindex
 \let\xmlpure                   \clf_xmlpure
+\let\xmlpushmatch              \clf_xmlpushmatch
 \let\xmlraw                    \clf_xmlraw
 \let\xmlrefatt                 \clf_xmlrefatt
 \let\xmlregisterns             \clf_xmlregisterns         % document
 \let\xmlremapname              \clf_xmlremapname          % element
 \let\xmlremapnamespace         \clf_xmlremapnamespace     % document
 \let\xmlsave                   \clf_xmlsave
+\let\xmlsetatt                 \clf_xmlsetatt
+\let\xmlsetattribute           \clf_xmlsetattribute
+\let\xmlsetpar                 \clf_xmlsetpar
+\let\xmlsetparam               \clf_xmlsetparam
 \let\xmlsetsetup               \clf_xmlsetsetup
 \let\xmlsnippet                \clf_xmlsnippet
 \let\xmlstrip                  \clf_xmlstrip
@@ -110,13 +118,14 @@
 \let\xmltag                    \clf_xmltag
 \let\xmltext                   \clf_xmltext
 \let\xmltobuffer               \clf_xmltobuffer           % id pattern name
+\let\xmltobuffertextonly       \clf_xmltobuffertextonly   % id pattern name
 \let\xmltobufferverbose        \clf_xmltobufferverbose    % id pattern name
 \let\xmltofile                 \clf_xmltofile             % id pattern filename
 \let\xmltoparameters           \clf_xmltoparameters
 \let\xmlverbatim               \clf_xmlverbatim
 
-\unexpanded\def\xmlinfo                #1{\hbox{\ttxx[\clf_xmlname{#1}]}}
-\unexpanded\def\xmlshow                #1{\startpacked\ttx\xmlverbatim{#1}\stoppacked}
+\unexpanded\def\xmlinfo#1{\hbox{\ttxx[\clf_xmlname{#1}]}}
+\unexpanded\def\xmlshow#1{\startpacked\ttx\xmlverbatim{#1}\stoppacked}
 
 % the next one is handy for mode runs because it enforces a consistent
 % #1 indexing (needed when using \xmltext{main:123}{...} like calls
@@ -129,13 +138,37 @@
 
 % goodie:
 
-\unexpanded\def\xmlprettyprint#1#2%
-  {\xmltobufferverbose{#1}{.}{xml-temp}%
-   \ifdefined\scitebuffer
-     \scitebuffer[#2][xml-temp]%
+\def\xmltempbuffername{xml-temp}
+
+\unexpanded\def\prettyprintbuffer#1#2% only used here
+  {\ifdefined\scitebuffer
+     \scitebuffer[#2][#1]%
    \else
-     \typebuffer[xml-temp][\c!option=#2]%
+     \typebuffer[#1][\c!option=#2]%
    \fi}
+
+\unexpanded\def\xmlprettyprint#1#2%
+  {\xmltobufferverbose{#1}{.}{\xmltempbuffername}%
+   \prettyprintbuffer\xmltempbuffername{#2}}
+
+\unexpanded\def\xmlprettyprinttext#1#2%
+  {\xmltobuffertextonly{#1}{.}{\xmltempbuffername}%
+   \prettyprintbuffer\xmltempbuffername{#2}}
+
+\unexpanded\def\inlineprettyprintbuffer#1#2% only used here
+  {\ifdefined\sciteinlinebuffer
+     \sciteinlinebuffer[#2][#1]%
+   \else
+     \typeinlinebuffer[#1][\c!option=#2]%
+   \fi}
+
+\unexpanded\def\xmlinlineprettyprint#1#2%
+  {\xmltobufferverbose{#1}{.}{\xmltempbuffername}%
+   \inlineprettyprintbuffer\xmltempbuffername{#2}}
+
+\unexpanded\def\xmlinlineprettyprinttext#1#2%
+  {\xmltobuffertextonly{#1}{.}{\xmltempbuffername}%
+   \inlineprettyprintbuffer\xmltempbuffername{#2}}
 
 % kind of special:
 

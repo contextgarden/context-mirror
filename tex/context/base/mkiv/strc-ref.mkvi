@@ -27,27 +27,11 @@
 
 \writestatus{loading}{ConTeXt Structure Macros / Cross Referencing}
 
-\registerctxluafile{strc-rsc}{1.001}
-\registerctxluafile{strc-ref}{1.001}
-\registerctxluafile{node-ref}{1.001}
+\registerctxluafile{strc-rsc}{}
+\registerctxluafile{strc-ref}{}
+\registerctxluafile{node-ref}{}
 
 \unprotect
-
-%D This module is a (partial) rewrite of core-ref.tex for \MKIV. As
-%D such it will be a moving target for a while.
-
-%D Later we will do a further cleanup and move much of the code to
-%D \LUA\ (i.e.\ better backend integration).
-
-\let\mainreference\gobblefivearguments
-
-% this will go when we got rid of the tuo file
-
-\let\currentfolioreference \!!zerocount % only used in xml-fo
-\let\resetreferences       \relax
-\let\setreferences         \relax
-\let\showcurrentreference  \relax
-\let\setexecutecommandcheck\gobbletwoarguments
 
 % todo : unknown/illegal reference no arg
 % todo : +n pages check on 'samepage' (contrastcolor)
@@ -372,7 +356,7 @@
   {\begingroup
    \dowithnextbox
     {\strc_references_set_page_only_destination_attribute{#1}%
-     \hbox
+     \hpack % \hbox
        \ifnum\lastdestinationattribute=\attributeunsetvalue\else attr \destinationattribute \lastdestinationattribute \fi
        {\box\b_strc_destination_nodes\box\nextbox}%
      \endgroup}}
@@ -495,13 +479,13 @@
   {\scratchwidth \wd\nextbox
    \scratchheight\ht\nextbox
    \scratchdepth \dp\nextbox
-   \setbox\nextbox\hbox
+   \setbox\nextbox\hbox % \hpack ?
      {\framed[\c!frame=\v!off,#2]{\box\nextbox}}%
    \strc_references_set_simple_reference{#1}%
-   \setbox\nextbox\hbox attr \destinationattribute \currentdestinationattribute
+   \setbox\nextbox\hbox attr \destinationattribute \currentdestinationattribute % \hpack ?
      {\strc_references_flush_destination_nodes
       \box\nextbox}%
-   \setbox\nextbox\hbox{\box\nextbox}%
+   \setbox\nextbox\hpack{\box\nextbox}%
    \wd\nextbox\scratchwidth
    \ht\nextbox\scratchheight
    \dp\nextbox\scratchdepth
@@ -510,7 +494,7 @@
 
 \def\strc_references_content_nop_finish#1#2%
   {\strc_references_set_simple_reference{#1}%
-   \hbox attr \destinationattribute \currentdestinationattribute
+   \hbox attr \destinationattribute \currentdestinationattribute % \hpack ?
      {\strc_references_flush_destination_nodes
       \box\nextbox}%
    \egroup}
@@ -2251,27 +2235,6 @@
 %D \in{chapter}[match(never ending)]
 %D \in{figure}[match(mess)]
 %D \stoptyping
-
-%D Tracing:
-
-\unexpanded\def\strc_references_tracer#1#2% \csleft csright
-  {\hbox to \zeropoint \bgroup
-     \hss
-     \infofont
-     \darkblue
-     \ifx#1\empty\else
-         \raise\strutht \hbox \s!to \zeropoint \bgroup
-           \hss#1\hskip.2\emwidth
-         \egroup
-     \fi
-     \vrule \s!height 1.5\strutht \s!depth \strutdp \s!width .1\emwidth
-     \ifx#2\empty\else
-       \raise\strutht \hbox \s!to \zeropoint \bgroup
-         \hskip.2\emwidth#2\hss
-       \egroup
-     \fi
-     \hss
-   \egroup}%
 
 \protect \endinput
 

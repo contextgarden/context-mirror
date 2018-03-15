@@ -1,0 +1,87 @@
+%D \module
+%D   [      file=s-fonts-cjk, % was: s-fnt-24
+%D        version=2009.02.06,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=CJK Glyph Combination Testing,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startmodule[fonts-cjk]
+
+\unprotect
+
+\unexpanded\def\ShowChineseCombiChar#1#2#3#4%
+  {\blank[small]
+   \dontleavehmode
+   \hbox\bgroup
+   \dontcomplain
+   \setstrut
+   \hbox to 7em{\ruledhbox{\char#1}\hskip.25em\type{+}\hskip.25em\ruledhbox{\char#2}\hskip.25em\type{=}\hskip.25em\ruledhbox{\char#1\char#2}\hss}\relax
+   \ruledvtop{\hsize1em\char#1\char#2}\relax
+   \hskip2em
+   \ruledvtop{\hsize.625em\char#1\char#2}\relax
+   \hskip2em
+   \ruledvtop{\hsize1.5em\char#1\char#2}\relax
+   \hskip2em
+   \type{#3 + #4}\relax
+   \egroup
+   \blank[small]}
+
+\startluacode
+local example = {
+    korean           = 0x0AC00,
+    chinese          = 0x04E55,
+    full_width_open  = 0x03008,
+    full_width_close = 0x03009,
+    half_width_open  = 0x02018,
+    half_width_close = 0x02019,
+    hyphen           = 0x02026,
+    non_starter      = 0x03005,
+    other            = 0x0004D, -- M
+}
+
+function fonts.analyzers.cjktest(first,second)
+    for k, v in next, example do
+        if (not first or first == "") or first == k then
+            for kk, vv in next, example do
+                if (not second or second == "") or second == kk then
+                    context.ShowChineseCombiChar(v,vv,k,kk)
+                end
+            end
+        end
+    end
+end
+\stopluacode
+
+\unexpanded\def\ShowCombinationsKorean
+  {\dodoubleempty\doShowCombinationsKorean}
+
+\def\doShowCombinationsKorean[#1][#2]%
+  {\startpacked
+   \setscript[hangul]
+   \setupcolors[\c!state=\v!start]
+   \enabletrackers[cjk.analyzing]
+   \ctxlua{fonts.analyzers.cjktest("#1","#2")}\par % !
+   \disabletrackers[cjk.analyzing]
+   \stoppacked}
+
+\unexpanded\def\ShowCombinationsChinese
+  {\dodoubleempty\doShowCombinationsChinese}
+
+\unexpanded\def\doShowCombinationsChinese[#1][#2]%
+  {\startpacked
+   \setscript[hanzi]
+   \setupcolors[\c!state=\v!start]
+   \enabletrackers[cjk.analyzing]
+   \ctxlua{fonts.analyzers.cjktest("#1","#2")}\par % !
+   \disabletrackers[cjk.analyzing]
+   \stoppacked}
+
+\stopmodule
+
+\protect \endinput

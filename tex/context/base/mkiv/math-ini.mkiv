@@ -64,18 +64,19 @@
 % test  [[\char948 \cldcontext{utf.char(948)}]]
 % test $[[\char948 \cldcontext{utf.char(948)}]]$
 
-\registerctxluafile{math-ini}{1.001}
-\registerctxluafile{math-dim}{1.001}
-\registerctxluafile{math-act}{1.001}
-\registerctxluafile{math-ext}{1.001}
-\registerctxluafile{math-vfu}{1.001}
-\registerctxluafile{math-ttv}{1.001}
-\registerctxluafile{math-map}{1.001}
-\registerctxluafile{math-ren}{1.001}
-\registerctxluafile{math-noa}{1.001}
-\registerctxluafile{math-tag}{1.001}
-\registerctxluafile{math-fbk}{1.001}
-\registerctxluafile{math-dir}{1.001}
+\registerctxluafile{math-ini}{}
+\registerctxluafile{math-dim}{}
+\registerctxluafile{math-act}{}
+\registerctxluafile{math-ext}{}
+\registerctxluafile{math-vfu}{}
+\registerctxluafile{math-ttv}{}
+\registerctxluafile{math-map}{optimize}
+\registerctxluafile{math-ren}{}
+\registerctxluafile{math-noa}{optimize}
+\registerctxluafile{math-tag}{}
+\registerctxluafile{math-fbk}{}
+\registerctxluafile{math-dir}{}
+\registerctxluafile{math-spa}{}
 
 %D A starter:
 %D
@@ -121,6 +122,7 @@
 \definesystemattribute[mathkernpairs]  [public]
 \definesystemattribute[mathbidi]       [public]
 \definesystemattribute[mathdomain]     [public]
+\definesystemattribute[mathcollapsing] [public]
 
 \definesystemattribute[displaymath]    [public]
 
@@ -166,6 +168,17 @@
 \unexpanded\def\stopforceddisplaymath
   {\endgroup
    \stopimath}
+
+\unexpanded\def\startpickupmath % for the moment private
+  {\ifconditional\indisplaymath
+     \startforceddisplaymath
+     \let\stoppickupmath\stopforceddisplaymath
+   \else
+     \startimath
+     \let\stoppickupmath\stopimath
+   \fi}
+
+\let\stoppickupmath\relax
 
 % \unexpanded\def\rawmathcharacter#1% slow but only for tracing
 %   {\begingroup
@@ -288,31 +301,52 @@
 
 % e.g.: \definemathematics[i:mp][setups=i:tight,openup=yes]
 
-\newmuskip\defaultthickmuskip  \defaultthickmuskip  5mu plus 5mu
-\newmuskip\defaultmedmuskip    \defaultmedmuskip    4mu plus 2mu minus 4mu
-\newmuskip\defaultthinmuskip   \defaultthinmuskip   3mu
+\newmuskip\defaultthickmuskip     \defaultthickmuskip  5mu plus 5mu
+\newmuskip\defaultmedmuskip       \defaultmedmuskip    4mu plus 2mu minus 4mu
+\newmuskip\defaultthinmuskip      \defaultthinmuskip   3mu
 
-\newmuskip\halfthickmuskip     \halfthickmuskip     2.5mu plus 2.5mu
-\newmuskip\halfmedmuskip       \halfmedmuskip       2.0mu plus 1.0mu minus 2.0mu
-\newmuskip\halfthinmuskip      \halfthinmuskip      1.5mu
+\newmuskip\halfthickmuskip        \halfthickmuskip     2.5mu plus 2.5mu
+\newmuskip\halfmedmuskip          \halfmedmuskip       2.0mu plus 1.0mu minus 2.0mu
+\newmuskip\halfthinmuskip         \halfthinmuskip      1.5mu
 
-\newcount \defaultrelpenalty   \defaultrelpenalty   500
-\newcount \defaultbinoppenalty \defaultbinoppenalty 700
+\newcount \defaultrelpenalty      \defaultrelpenalty       500
+\newcount \defaultbinoppenalty    \defaultbinoppenalty     700
+\newcount \defaultprerelpenalty   \defaultprerelpenalty   -100
+\newcount \defaultprebinoppenalty \defaultprebinoppenalty -100
+
+% we need to control these otherwise:
+%
+% \prerelpenalty  \defaultprerelpenalty
+% \prebinoppenalty\defaultprebinoppenalty
 
 \startsetups math:spacing:default
-    \thickmuskip   \defaultthickmuskip
-    \medmuskip     \defaultmedmuskip
-    \thinmuskip    \defaultthinmuskip
-    \relpenalty    \defaultrelpenalty
-    \binoppenalty  \defaultbinoppenalty
+    \thickmuskip    \defaultthickmuskip
+    \medmuskip      \defaultmedmuskip
+    \thinmuskip     \defaultthinmuskip
+    \relpenalty     \defaultrelpenalty
+    \binoppenalty   \defaultbinoppenalty
+    \prebinoppenalty\maxdimen
+    \prerelpenalty  \maxdimen
+\stopsetups
+
+\startsetups math:spacing:split
+    \thickmuskip    \defaultthickmuskip
+    \medmuskip      \defaultmedmuskip
+    \thinmuskip     \defaultthinmuskip
+    \relpenalty     \defaultrelpenalty
+    \binoppenalty   \defaultbinoppenalty
+    \prebinoppenalty\defaultprebinoppenalty
+    \prerelpenalty  \defaultprerelpenalty
 \stopsetups
 
 \startsetups math:spacing:half
-    \thickmuskip   \halfthickmuskip
-    \medmuskip     \halfmedmuskip
-    \thinmuskip    \halfthinmuskip
-    \relpenalty    \defaultrelpenalty
-    \binoppenalty  \defaultbinoppenalty
+    \thickmuskip    \halfthickmuskip
+    \medmuskip      \halfmedmuskip
+    \thinmuskip     \halfthinmuskip
+    \relpenalty     \defaultrelpenalty
+    \binoppenalty   \defaultbinoppenalty
+    \prebinoppenalty\maxdimen
+    \prerelpenalty  \maxdimen
 \stopsetups
 
 \startsetups math:spacing:tight
@@ -325,8 +359,10 @@
         \medmuskip    1\halfmedmuskip
         \thinmuskip   1\halfthinmuskip
     \fi
-    \relpenalty    \defaultrelpenalty
-    \binoppenalty  \maxdimen
+    \relpenalty     \defaultrelpenalty
+    \binoppenalty   \maxdimen
+    \prebinoppenalty\maxdimen
+    \prerelpenalty  \maxdimen
 \stopsetups
 
 \startsetups math:spacing:fixed
@@ -339,8 +375,10 @@
         \medmuskip    1\halfmedmuskip
         \thinmuskip   1\halfthinmuskip
     \fi
-    \relpenalty    \maxdimen
-    \binoppenalty  \maxdimen
+    \relpenalty     \maxdimen
+    \binoppenalty   \maxdimen
+    \prebinoppenalty\maxdimen
+    \prerelpenalty  \maxdimen
 \stopsetups
 
 % \dorecurse{80}{test \m[i:tight]{\red \fakeformula} test }
@@ -632,7 +670,7 @@
    \letcsnamecsname\csname#1\endcsname\csname\??mathcommand#1\endcsname}
 
 \unexpanded\def\mathcommand#1%
-  {\csname\??mathcommand#1\endcsname}
+  {\begincsname\??mathcommand#1\endcsname}
 
 %D Let's define a few comands here:
 
@@ -757,29 +795,21 @@
    \c!functionstyle=, % rm ss etc i.e. known alternatives, otherwise math
    \c!functioncolor=]
 
-% \unexpanded\def\math_mfunction_styled
-%   {\edef\m_math_text_choice_face{\textstyleface\normalmathstyle}%
-%    \dowithnextbox
-%      {\mathop{\box\nextbox}}%
-%      \hbox\bgroup
-%      \usemathematicsstyleandcolor\c!functionstyle\c!functioncolor
-%      \m_math_text_choice_face
-%      \let\next}
-
 \unexpanded\def\math_mfunction_styled
   {\begingroup
    \usemathematicscolorparameter\c!functioncolor
    \edef\p_functionstyle{\mathematicsparameter\c!functionstyle}%
    \ifx\p_functionstyle\empty
      \expandafter\math_mfunction_styled_none
-   \else\ifcsname\??alternativestyles\p_functionstyle\endcsname
+   \else\ifcsname\??alternativestyle\p_functionstyle\endcsname
      \doubleexpandafter\math_mfunction_styled_text
    \else
      \doubleexpandafter\math_mfunction_styled_math
    \fi\fi}
 
 \unexpanded\def\math_mfunction_styled_text#1%
-  {\mathoptext{\csname\??alternativestyles\p_functionstyle\endcsname#1}%
+ %{\mathoptext{\csname\??alternativestyle\p_functionstyle\endcsname#1}%
+  {\expandafter\mathoptext\expandafter{\lastnamedcs#1}%
    \endgroup}
 
 \unexpanded\def\math_mfunction_styled_math#1%
@@ -920,6 +950,75 @@
 \activatemathcharacter\underscoreasciicode
 \activatemathcharacter\ampersandasciicode
 
+\appendtoks
+    \edef\p_ampersand{\mathematicsparameter\s!ampersand}%
+    \ifx\p_ampersand\v!normal
+        \let\specialmathaligntab\normalmathaligntab
+    \else
+        \let\specialmathaligntab\mathampersand
+    \fi
+\to \everysetupmathematics
+
+%D A simplified version of this code is:
+%D
+%D \starttyping
+%D \catcode"26=12
+%D
+%D \bgroup
+%D     \global\mathcode"26="8000
+%D
+%D     \catcode"26=4
+%D
+%D     \xdef\normalmathaligntab{&}
+%D
+%D     \catcode"26=13
+%D
+%D     \global\everymath{\def&{\normalmathaligntab}}
+%D \egroup
+%D \stoptyping
+%D
+%D The following works okay:
+%D
+%D \starttyping
+%D A & B
+%D \stoptyping
+%D
+%D As does:
+%D
+%D \starttyping
+%D $A \Umathchar"2"0"26 B$
+%D \stoptyping
+%D
+%D But the next code:
+%D
+%D \starttyping
+%D $A \char"26 B$
+%D \stoptyping
+%D
+%D fails with: \type{Misplaced alignment tab character &} and here is the
+%D reason.
+%D
+%D When we have a letter or other category a check happens for an active
+%D character and when it has one then it gets expanded and fed back into the
+%D scanner (sort of).
+%D
+%D A \type {\char} is also fed back as raw character and again when it's letter
+%D of other goes through the same process.
+%D
+%D This means that we cannot have a definition like:
+%D
+%D \starttyping
+%D \def\AND{\char"26\relax}
+%D \stoptyping
+%D
+%D that can be used in math mode, which is why the cweb macros do:
+%D
+%D \starttyping
+%D \def\AND{\def\AND{\mathchar"2026\relax}\AND}
+%D \stoptyping
+%D
+%D Maybe we need an option to treat chars like chars.
+
 % \activatemathcharacter\primeasciicode
 
 % not used:
@@ -1037,17 +1136,33 @@
 %
 % \egroup
 
+% $\char26$ gives an error because it expands to an active character that
+% then becomes an & which is then seen as an alignment character; anyway,
+% even when we switch like this the diufferen tmeaning only happens when
+% we're in math mode which can be delayed till we're in a cell
+
 \bgroup
 
     \catcode\underscoreasciicode\activecatcode
     \catcode\circumflexasciicode\activecatcode
     \catcode\ampersandasciicode \activecatcode
 
+    \glet\specialmathaligntab\normalmathaligntab
+
+    \unexpanded\gdef\obeymathcatcodes
+      {\let _\normalsubscript
+       \let ^\normalsuperscript
+       \def &\specialmathaligntab
+       }
+
     \doglobal \appendtoks
         \let _\normalsubscript
         \let ^\normalsuperscript
-        \let &\normalmathaligntab % use \def when it's \aligntab
-    \to \everymathematics
+        \let &\specialmathaligntab
+   \to \everymathematics
+
+  % \unexpanded\gdef\normalmathampersands
+  %   {\let\specialmathaligntab\mathampersand}
 
 \egroup
 
@@ -1304,6 +1419,39 @@
    \s!lcgreek=\v!italic,
    \s!ucgreek=\v!normal] % was: none
 
+%D Math collapsing (ligatures)
+
+\installcorenamespace{mathcollapsing}
+
+\setnewconstant\c_math_collapsing_attribute\attributeunsetvalue
+
+\letvalue{\??mathcollapsing       1}\plusone              % specials
+\letvalue{\??mathcollapsing       2}\plustwo              % specials + mathlist
+\letvalue{\??mathcollapsing       3}\plusthree            % mathlist + specials
+\letvalue{\??mathcollapsing\v!none }\attributeunsetvalue
+\letvalue{\??mathcollapsing\v!reset}\attributeunsetvalue
+
+\def\math_collapsing_initialize
+  {\ifnum\c_math_collapsing_attribute=\attributeunsetvalue \else
+     \clf_initializemathcollapsing % one time
+     \global\let\math_collapsing_initialize\relax
+   \fi}
+
+\appendtoks
+    \edef\p_collapsing{\mathematicsparameter\s!collapsing}%
+    \c_math_collapsing_attribute
+        \ifcsname\??mathcollapsing\p_collapsing\endcsname\lastnamedcs\else\attributeunsetvalue\fi
+    \relax
+\to \everyswitchmathematics % only in mathematics
+
+\appendtoks
+    \math_collapsing_initialize
+    \attribute\mathcollapsingattribute\c_math_collapsing_attribute
+\to \everymathematics
+
+\setupmathematics
+  [\s!collapsing=3] % mathlist wins over specials
+
 %D Math italics (experiment)
 
 %D We need keys but what names to use and because we have hardcoded solution
@@ -1326,14 +1474,6 @@
      \global\let\math_italics_initialize\relax
    \fi}
 
-% \appendtoks
-%     \edef\p_italics{\mathematicsparameter\s!italics}%
-%     \c_math_italics_attribute\csname\??mathitalics
-%         \ifcsname\??mathitalics\p_italics\endcsname\p_italics\else\v!none\fi
-%     \endcsname\relax
-%   % \math_italics_initialize
-% \to \everyswitchmathematics % only in mathematics
-
 \appendtoks
     \edef\p_italics{\mathematicsparameter\s!italics}%
     \c_math_italics_attribute
@@ -1347,8 +1487,8 @@
     \attribute\mathitalicsattribute\c_math_italics_attribute
 \to \everymathematics
 
-\setupmathematics
-  [\s!italics=3] % 4 is probably better
+% \setupmathematics % done later
+%   [\s!italics=3] % 4 is probably better
 
 % looks nicer but can generate bogus csnames
 %
@@ -1466,44 +1606,50 @@
 %
 % The next one is more efficient as it produces more flat noad lists for numbers.
 
-\setnewconstant\c_math_comma  "002C
-\setnewconstant\c_math_period "002E
-\setnewconstant\c_math_special"8000
+\setnewconstant\c_math_comma    "002C
+\setnewconstant\c_math_period   "002E
+%setnewconstant\c_math_colon    "003A
+\setnewconstant\c_math_semicolon"003B
+\setnewconstant\c_math_special  "8000
 
-\def\math_set_o_period{\Umathcode\c_math_period\mathordcode  \zerocount\c_math_period}
-\def\math_set_p_period{\Umathcode\c_math_period\mathpunctcode\zerocount\c_math_period}
-\def\math_set_o_comma {\Umathcode\c_math_comma \mathordcode  \zerocount\c_math_comma }
-\def\math_set_p_comma {\Umathcode\c_math_comma \mathpunctcode\zerocount\c_math_comma }
+\def\math_set_o_comma    {\Umathcode\c_math_comma    \mathordcode  \zerocount\c_math_comma}
+\def\math_set_p_comma    {\Umathcode\c_math_comma    \mathpunctcode\zerocount\c_math_comma}
+\def\math_set_o_period   {\Umathcode\c_math_period   \mathordcode  \zerocount\c_math_period}
+\def\math_set_p_period   {\Umathcode\c_math_period   \mathpunctcode\zerocount\c_math_period}
+\def\math_set_o_semicolon{\Umathcode\c_math_semicolon\mathordcode  \zerocount\c_math_semicolon}
+\def\math_set_p_semicolon{\Umathcode\c_math_semicolon\mathpunctcode\zerocount\c_math_semicolon}
 
 \edef\math_set_o_both {\math_set_o_period\math_set_o_comma}
 \edef\math_set_p_both {\math_set_p_period\math_set_p_comma}
 
-\unexpanded\def\math_punctuation_nop_comma {\begingroup\math_set_p_comma ,\endgroup}
-\unexpanded\def\math_punctuation_nop_period{\begingroup\math_set_o_period.\endgroup}
+\unexpanded\def\math_punctuation_nop_comma    {\begingroup\math_set_p_comma    ,\endgroup}
+\unexpanded\def\math_punctuation_nop_period   {\begingroup\math_set_o_period   .\endgroup}
+\unexpanded\def\math_punctuation_nop_semicolon{\begingroup\math_set_p_semicolon;\endgroup}
 
-\unexpanded\def\math_punctuation_all_comma {\futurelet\nexttoken\math_punctuation_comma_next}
-\unexpanded\def\math_punctuation_all_period{\futurelet\nexttoken\math_punctuation_period_next}
+\unexpanded\def\math_punctuation_all_comma    {\futurelet\nexttoken\math_punctuation_comma_next}
+\unexpanded\def\math_punctuation_all_period   {\futurelet\nexttoken\math_punctuation_period_next}
+\unexpanded\def\math_punctuation_all_semicolon{\futurelet\nexttoken\math_punctuation_semicolon_next}
 
-           \let\math_punctuation_yes_comma \math_punctuation_all_comma
-           \let\math_punctuation_yes_period\math_punctuation_nop_period
+           \let\math_punctuation_yes_comma    \math_punctuation_all_comma
+           \let\math_punctuation_yes_period   \math_punctuation_nop_period
+           \let\math_punctuation_yes_semicolon\math_punctuation_all_semicolon
 
-\def\math_punctuation_comma_next {\begingroup\Umathcode\c_math_comma \ifx\nexttoken\blankspace\mathordcode\else\mathordcode\fi\zerocount\c_math_comma ,\endgroup}
-\def\math_punctuation_period_next{\begingroup\Umathcode\c_math_period\ifx\nexttoken\blankspace\mathordcode\else\mathordcode\fi\zerocount\c_math_period.\endgroup}
-
-\setnewconstant\c_math_comma  "002C
-\setnewconstant\c_math_period "002E
-\setnewconstant\c_math_special"8000
+\def\math_punctuation_comma_next    {\begingroup\Umathcode\c_math_comma    \ifx\nexttoken\blankspace\mathordcode\else\mathordcode\fi\zerocount\c_math_comma    ,\endgroup}
+\def\math_punctuation_period_next   {\begingroup\Umathcode\c_math_period   \ifx\nexttoken\blankspace\mathordcode\else\mathordcode\fi\zerocount\c_math_period   .\endgroup}
+\def\math_punctuation_semicolon_next{\begingroup\Umathcode\c_math_semicolon\ifx\nexttoken\blankspace\mathordcode\else\mathordcode\fi\zerocount\c_math_semicolon;\endgroup}
 
 \installcorenamespace {mathautopunctuation}
 
 \bgroup
 
-    \catcode\c_math_comma \activecatcode
-    \catcode\c_math_period\activecatcode
+    \catcode\c_math_comma    \activecatcode
+    \catcode\c_math_period   \activecatcode
+    \catcode\c_math_semicolon\activecatcode
 
     \setgvalue{\??mathautopunctuation\v!no}%
       {\let,\math_punctuation_nop_comma
-       \let.\math_punctuation_nop_period}
+       \let.\math_punctuation_nop_period
+       \let;\math_punctuation_nop_semicolon}
 
   %  more efficient list:
   %
@@ -1513,26 +1659,51 @@
 
     \setgvalue{\??mathautopunctuation\v!yes}%
       {\let,\math_punctuation_yes_comma
-       \let.\math_punctuation_yes_period}
+       \let.\math_punctuation_yes_period
+       \let;\math_punctuation_nop_semicolon}
 
     \setgvalue{\??mathautopunctuation\v!all}%
       {\let,\math_punctuation_all_comma
-       \let.\math_punctuation_all_period}
+       \let.\math_punctuation_all_period
+       \let;\math_punctuation_nop_semicolon}
+
+    \setgvalue{\??mathautopunctuation comma}%
+      {\let,\math_punctuation_yes_comma
+       \let.\math_punctuation_yes_period
+       \let;\math_punctuation_nop_semicolon}
+
+    \setgvalue{\??mathautopunctuation\v!yes\string,semicolon}%
+      {\let,\math_punctuation_yes_comma
+       \let.\math_punctuation_yes_period
+       \let;\math_punctuation_yes_semicolon}
+
+    \setgvalue{\??mathautopunctuation comma\string,semicolon}%
+      {\let,\math_punctuation_yes_comma
+       \let.\math_punctuation_yes_period
+       \let;\math_punctuation_yes_semicolon}
+
+    \setgvalue{\??mathautopunctuation\v!all\string,semicolon}%
+      {\let,\math_punctuation_all_comma
+       \let.\math_punctuation_all_period
+       \let;\math_punctuation_all_semicolon}
 
 \egroup
 
 % \appendtoks
-%     \global\mathcode\c_math_comma \c_math_special
-%     \global\mathcode\c_math_period\c_math_special
+%     \global\mathcode\c_math_comma    \c_math_special
+%     \global\mathcode\c_math_period   \c_math_special
+%     \global\mathcode\c_math_semicolon\c_math_special
 % \to \everyjob
 
 % \activatemathcharacter\c_math_comma
 % \activatemathcharacter\c_math_period
+% \activatemathcharacter\c_math_semicolon
 
 \appendtoks
-    \mathcode\c_math_comma \c_math_special
-    \mathcode\c_math_period\c_math_special
-    \csname\??mathautopunctuation\mathematicsparameter\v!autopunctuation\endcsname
+    \mathcode\c_math_comma    \c_math_special
+    \mathcode\c_math_period   \c_math_special
+    \mathcode\c_math_semicolon\c_math_special
+    \begincsname\??mathautopunctuation\mathematicsparameter\v!autopunctuation\endcsname
 \to \everymathematics
 
 \appendtoks
@@ -1545,7 +1716,25 @@
 \def\disablemathpunctuation{\csname\??mathautopunctuation\v!yes\endcsname}
 
 \setupmathematics
-  [\v!autopunctuation=\v!no] % no | yes | all
+  [\v!autopunctuation=\v!no] % no | yes | all | comma | yes,semicolon | all,semicolon
+
+%D The consequences of settign this are as follows:
+%D
+%D \def\TestA#1#2#3%
+%D   {\ifnum#1=0 \type{#2}\else\setupmathematics[autopunctuation={#2}]$#3$\fi}
+%D \def\TestB#1#2%
+%D   {\NC \TestA{#1}{no}           {#2}
+%D    \NC \TestA{#1}{yes}          {#2}
+%D    \NC \TestA{#1}{yes,semicolon}{#2}
+%D    \NC \TestA{#1}{all}          {#2}
+%D    \NC \TestA{#1}{all,semicolon}{#2}
+%D    \NC \NR}
+%D \starttabulate[|c|c|c|c|c|]
+%D     \TestB{0}{}
+%D     \TestB{1}{(1,2)=(1, 2)}
+%D     \TestB{1}{(1.2)=(1. 2)}
+%D     \TestB{1}{(1;2)=(1; 2)}
+%D \stoptabulate
 
 %D \macros
 %D   {mathstyle}
@@ -1610,6 +1799,19 @@
      % error
    \fi}
 
+\def\triggeredmathstyleparameter#1% to bypass the relax
+  {\ifcase\numexpr\normalmathstyle\relax
+     #1\displaystyle             \or % 0
+     #1\crampeddisplaystyle      \or % 1
+     #1\textstyle                \or % 2
+     #1\crampedtextstyle         \or % 3
+     #1\scriptstyle              \or % 4
+     #1\crampedscriptstyle       \or % 5
+     #1\scriptscriptstyle        \or % 6
+     #1\crampedscriptscriptstyle \else
+     % error
+   \fi}
+
 \def\mathstylefont#1% #1 is number (\normalmathstyle)
   {\ifcase\numexpr#1\relax
      \textfont         \or
@@ -1621,7 +1823,20 @@
      \scriptscriptfont \or
      \scriptscriptfont \else
      \textfont
-   \fi\zerocount} % hm, can ie other value as well
+   \fi\fam} % was \zerocount
+
+\def\somemathstylefont#1% #1 is number (\normalmathstyle)
+  {\ifcase\numexpr#1\relax
+     \textfont         \or
+     \textfont         \or
+     \textfont         \or
+     \textfont         \or
+     \scriptfont       \or
+     \scriptfont       \or
+     \scriptscriptfont \or
+     \scriptscriptfont \else
+     \textfont
+   \fi}
 
 \def\mathsmallstylefont#1% #1 is number (\normalmathstyle)
   {\ifcase\numexpr#1\relax
@@ -1634,7 +1849,7 @@
      \scriptscriptfont \or
      \scriptscriptfont \else
      \scriptfont
-   \fi\zerocount} % hm, can ie other value as well
+   \fi\fam} % was \zerocount
 
 \def\mathstyleface#1% #1 is number (\normalmathstyle)
   {\ifcase\numexpr#1\relax
@@ -1701,6 +1916,46 @@
 
 \unexpanded\def\showmathstyle{\verbosemathstyle\normalmathstyle}
 
+%D Handy too:
+
+\def\mathcharwd{\fontcharwd\mathstylefont\normalmathstyle}
+\def\mathcharht{\fontcharht\mathstylefont\normalmathstyle}
+\def\mathchardp{\fontchardp\mathstylefont\normalmathstyle}
+
+%D Some dimension fun:
+
+\def\mathexheight
+  {\fontdimen
+     \plusfive
+     \ifcase\numexpr\normalmathstyle\relax
+       \textfont         \or % 0
+       \textfont         \or % 1
+       \textfont         \or % 2
+       \textfont         \or % 3
+       \scriptfont       \or % 4
+       \scriptfont       \or % 5
+       \scriptscriptfont \or % 6
+       \scriptscriptfont \else
+       \textfont
+     \fi
+     \zeropoint}
+
+\def\mathemwidth
+  {\fontdimen
+     \plussix
+     \ifcase\numexpr\normalmathstyle\relax
+       \textfont         \or % 0
+       \textfont         \or % 1
+       \textfont         \or % 2
+       \textfont         \or % 3
+       \scriptfont       \or % 4
+       \scriptfont       \or % 5
+       \scriptscriptfont \or % 6
+       \scriptscriptfont \else
+       \textfont
+     \fi
+     \zeropoint}
+
 %D A plain inheritance:
 
 \def\mathpalette#1#2%
@@ -1720,9 +1975,16 @@
 
 % to be tested: {#1} but it could have side effects
 
-\unexpanded\def\mathstylehbox#1% sensitive for: a \over b => {a\over b} or \frac{a}{b}
-  {\normalexpanded{\hbox\bgroup
-     \startimath\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup}
+% \unexpanded\def\mathstylehbox#1% sensitive for: a \over b => {a\over b} or \frac{a}{b}
+%   {\normalexpanded{\hbox\bgroup
+%      \startimath\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup}
+
+\unexpanded\def\mathstylehbox#1#% sensitive for: a \over b => {a\over b} or \frac{a}{b}
+  {\math_style_hbox{#1}}
+
+\unexpanded\def\math_style_hbox#1#2% sensitive for: a \over b => {a\over b} or \frac{a}{b}
+  {\normalexpanded{\hbox#1\bgroup
+     \startimath\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#2\stopimath\egroup}
 
 \unexpanded\def\mathstylevbox#1%
   {\normalexpanded{\vbox\bgroup
@@ -2203,6 +2465,13 @@
 
 % \ruledhbox{$\mathtext{abc ffi}$}
 % \ruledhbox{$\mathword{abc ffi}$}
+
+% I need to decide:
+%
+%mathscriptboxmode\zerocount % no kerning
+%mathscriptboxmode\plusone   % lists
+\mathscriptboxmode\plustwo   % lists and boxes
+%mathscriptboxmode\plusthree % lists and boxes with \boundary=1 (also for testing and demo)
 
 \unexpanded\def\mathtext  {\mathortext{\math_text_choice_font\relax}\hbox}
 \unexpanded\def\mathword  {\mathortext{\math_text_choice_word\relax}\hbox}

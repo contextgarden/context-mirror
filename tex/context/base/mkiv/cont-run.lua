@@ -34,9 +34,9 @@ local logfilename   = "sandbox.log"
 local function registerstats()
     statistics.register("sandboxing", function()
         if trace_files then
-            return string.format("%s calls, %s rejected, logdata in '%s'",nofcalls,nofrejected,logfilename)
+            return string.format("%i calls, %i rejected, logdata in '%s'",nofcalls,nofrejected,logfilename)
         else
-            return string.format("%s calls, %s rejected",nofcalls,nofrejected)
+            return string.format("%i calls, %i rejected",nofcalls,nofrejected)
         end
     end)
     registerstats = false
@@ -180,9 +180,47 @@ local function processjob()
     local suffix    = environment.suffix
     local filename  = environment.filename -- hm, not inputfilename !
 
-    if arguments.synctex then
-        directives.enable("system.synctex="..tostring(arguments.synctex))
+    if arguments.nosynctex then
+        luatex.synctex.setup {
+            state  = interfaces.variables.never,
+        }
+    elseif arguments.synctex then
+        luatex.synctex.setup {
+            state  = interfaces.variables.start,
+            method = interfaces.variables.max,
+        }
     end
+
+ -- -- todo: move from mtx-context to here:
+ --
+ -- local timing = arguments.timing
+ -- if type(timing) == "string" then
+ --     context.usemodule { timing }
+ -- end
+ -- local nodates = arguments.nodates
+ -- if nodates then
+ --     context.enabledirectives { "backend.date=" .. (type(nodates) == "string" and nodates or "no") }
+ -- end
+ -- local trailerid = arguments.trailerid
+ -- if type(trailerid) == "string" then
+ --     context.enabledirectives { "backend.trailerid=" .. trailerid }
+ -- end
+ -- local profile = arguments.profile
+ -- if profile then
+ --     context.enabledirectives { "system.profile=" .. tonumber(profile) or 0 }
+ -- end
+
+ -- -- already done in mtxrun / mtx-context, has to happen very early
+ --
+ -- if arguments.silent then
+ --     directives.enable("logs.blocked",arguments.silent)
+ -- end
+ --
+ -- -- already done in mtxrun / mtx-context, can as well happen here
+ --
+ -- if arguments.errors then
+ --     directives.enable("logs.errors",arguments.errors)
+ -- end
 
     if not filename or filename == "" then
         -- skip
@@ -231,6 +269,16 @@ local function processjob()
     --     context.starttext()
     --     context.input(filename)
     --     context.stoptext()
+
+    elseif suffix == "mps" or arguments.forcemps then
+
+        report("processing metapost output: %s",filename)
+
+        context.starttext()
+            context.startTEXpage()
+                context.externalfigure { filename }
+            context.stopTEXpage()
+        context.stoptext()
 
     else
 

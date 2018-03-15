@@ -61,6 +61,7 @@
 \definesystemconstant {gbenglish}      \definesystemconstant {gb}
 \definesystemconstant {german}         \definesystemconstant {de}
 \definesystemconstant {greek}          \definesystemconstant {gr}
+\definesystemconstant {hebrew}         \definesystemconstant {he}
 \definesystemconstant {hungarian}      \definesystemconstant {hu}
 \definesystemconstant {italian}        \definesystemconstant {it}
 \definesystemconstant {japanese}       \definesystemconstant {ja}
@@ -268,6 +269,7 @@
 \definesystemconstant {internal}
 \definesystemconstant {current}
 \definesystemconstant {chain}
+\definesystemconstant {class}
 
 % translating setups is asking for a mess so we keep them as-is:
 
@@ -302,8 +304,8 @@
 \definesystemconstant {ucgreek}
 \definesystemconstant {sygreek}
 \definesystemconstant {italics}
-
-\definesystemconstant {run}
+\definesystemconstant {ligatures}
+\definesystemconstant {collapsing}
 
 \definesystemconstant {default}
 
@@ -361,6 +363,8 @@
 \definesystemconstant {marker}
 \definesystemconstant {kernpairs}
 \definesystemconstant {mixedcolumn}
+
+\definesystemconstant {ampersand}
 
 %definesystemconstant {property}
 %definesystemconstant {overprint}
@@ -477,6 +481,7 @@
 \definemessageconstant {metapost}
 \definemessageconstant {chemicals}
 \definemessageconstant {publications}
+\definemessageconstant {backend}
 
 %D When we use numbers and dimensions the same applies as with the keywords like
 %D \type {width} and \type {plus} mentioned earlier.
@@ -628,47 +633,11 @@
 %D The setup files for the language, font, color and special subsystems have a common
 %D prefix. This means that we have at most three characters for unique filenames.
 
-\definefileconstant {colorprefix}        {colo-}
-%definefileconstant {encodingprefix}     {enco-}
-%definefileconstant {filterprefix}       {filt-}
-\definefileconstant {fontprefix}         {font-}
-%definefileconstant {handlingprefix}     {hand-}
-%definefileconstant {javascriptprefix}   {java-}
-%definefileconstant {languageprefix}     {lang-}
-%definefileconstant {mathprefix}         {math-}
-%definefileconstant {metapostprefix}     {meta-}
-%definefileconstant {regimeprefix}       {regi-}
-%definefileconstant {specialprefix}      {spec-}
-\definefileconstant {symbolprefix}       {symb-}
-\definefileconstant {typeprefix}         {type-}
-%definefileconstant {xtagprefix}         {xtag-}
-%definefileconstant {propprefix}         {prop-}
-%definefileconstant {unicprefix}         {unic-}
-%definefileconstant {sortprefix}         {sort-}
-%definefileconstant {prettyprefix}       {pret-}
-
-%definefileconstant {moduleprefix}       {m-}
-%definefileconstant {styleprefix}        {s-}
-%definefileconstant {xstyleprefix}       {x-}
-%definefileconstant {privateprefix}      {p-}
-%definefileconstant {thirdprefix}        {t-}
-
-%definefileconstant {beforeprefix}       {b-}
-%definefileconstant {afterprefix}        {a-}
-
-% for old times sake:
-
-% \defineinterfaceconstant {x}  {x}
-% \defineinterfaceconstant {xx} {xx}
-% \defineinterfaceconstant {em} {em} % will go
-
-% \defineinterfaceconstant {tf} {tf}
-% \defineinterfaceconstant {bf} {bf}
-% \defineinterfaceconstant {bs} {bs}
-% \defineinterfaceconstant {bi} {bi}
-% \defineinterfaceconstant {sl} {sl}
-% \defineinterfaceconstant {it} {it}
-% \defineinterfaceconstant {sc} {sc} % keep, used elsewhere (or define in mult-def)
+\definefileconstant {colo_run} {colo-run}
+\definefileconstant {font_run} {font-run}
+\definefileconstant {page_run} {page-run}
+\definefileconstant {symb_run} {symb-run}
+\definefileconstant {publ_tra} {publ-tra}
 
 %D For figure inclusion we need(ed):
 

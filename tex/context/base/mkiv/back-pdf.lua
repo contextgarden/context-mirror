@@ -8,7 +8,6 @@ if not modules then modules = { } end modules ['back-pdf'] = {
 
 -- we could do \pdfmatrix sx <> sy <> etc
 
-local tonumber = tonumber
 local sind, cosd = math.sind, math.cosd
 local insert, remove = table.insert, table.remove
 
@@ -149,12 +148,7 @@ scanners.pdfstartmirroring = function()
 end
 
 if environment.arguments.nocompression then
-    pdf.setcompresslevel(0)
-    pdf.setobjcompresslevel(0)
-    function pdf.setcompresslevel()
-        -- blocked from now on
-    end
-    pdf.setobjcompresslevel = pdf.setcompresslevel
+    lpdf.setcompression(0,0,true)
 end
 
 scanners.pdfstopmirroring = scanners.pdfstartmirroring
@@ -176,10 +170,7 @@ implement {
 implement {
     name      = "setpdfcompression",
     arguments = { "integer", "integer" },
-    actions   = function(c,o)
-        pdf.setcompresslevel(c)
-        pdf.setobjcompresslevel(o)
-    end
+    actions   = lpdf.setcompression,
 }
 
 local report = logs.reporter("backend","pdftex primitives")
@@ -272,7 +263,7 @@ scanners.pdfdest = function()
         view = "xyz"
         if scankeyword("zoom") then
             report("\\pdfdest zoom is ignored")
-            zoom = scancount()
+            zoom = scancount() -- will be divided by 1000 in the backend
         end
     elseif scankeyword("fitbh") then
         view = "fitbh"

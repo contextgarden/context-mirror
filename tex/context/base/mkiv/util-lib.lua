@@ -80,6 +80,7 @@ local pathpart      = file.pathpart
 local nameonly      = file.nameonly
 local joinfile      = file.join
 local removesuffix  = file.removesuffix
+local addsuffix     = file.addsuffix
 local findfile      = resolvers.findfile
 local findfiles     = resolvers.findfiles
 local expandpaths   = resolvers.expandedpathlistfromvariable
@@ -104,14 +105,22 @@ local function locate(required,version,trace,report,action)
     local required_path = pathpart(required_full)
     local required_base = nameonly(required_full)
     if qualifiedpath(required) then
-        if isfile(required) then
+        -- also check with suffix
+        if isfile(addsuffix(required,os.libsuffix)) then
+            if trace then
+                report("qualified name %a found",required)
+            end
             found_library = required
+        else
+            if trace then
+                report("qualified name %a not found",required)
+            end
         end
     else
         -- initialize a few variables
         local required_name = required_base .. "." .. os.libsuffix
         local version       = type(version) == "string" and version ~= "" and version or false
-        local engine        = environment.ownmain or false
+        local engine        = "luatex" -- environment.ownmain or false
         --
         if trace and not done then
             local list = expandpaths("lib") -- fresh, no reuse
@@ -177,10 +186,12 @@ local function locate(required,version,trace,report,action)
                 report("checking lib paths")
             end
             package.extralibpath(environment.ownpath)
-            local paths = package.libpaths()
+            local paths   = package.libpaths()
+            local pattern = "/[^/]+%." .. os.libsuffix .. "$"
             for i=1,#paths do
-                local found = check(lfs.isfile)
-                if found and (not checkpattern or find(found,checkpattern)) then
+                required_path = gsub(paths[i],pattern,"")
+                local found = check(lfs.isfound)
+                if type(found) == "string" and (not checkpattern or find(found,checkpattern)) then
                     return found
                 end
             end
@@ -211,18 +222,20 @@ local function locate(required,version,trace,report,action)
         if trace then
             report("found: %a",found_library)
         end
-        local message, result = action(found_library,required_base)
+        local result, message = action(found_library,required_base)
         if result then
             library = result
         else
             library = false
-            report("load error: message %a, library %a",tostring(message),found_library or "no library")
+            report("load error: message %a, library %a",tostring(message or "unknown"),found_library or "no library")
         end
     end
-    if not library then
-        report("unknown: %a",required)
-    elseif trace then
-        report("stored: %a",required)
+    if trace then
+        if not library then
+            report("unknown library: %a",required)
+        else
+            report("stored library: %a",required)
+        end
     end
     return library
 end
@@ -254,13 +267,12 @@ do
                 local libtype = type(library)
                 if libtype == "function" then
                     library = library()
-                    message = true
                 else
                     report_swiglib("load error: %a returns %a, message %a, library %a",opener,libtype,(string.gsub(message or "no message","[%s]+$","")),found_library or "no library")
                     library = false
                 end
                 popdir()
-                return message, library
+                return library
             end)
             loadedlibs[required] = library or false
         end
@@ -332,22 +344,50 @@ We use the same lookup logic for ffi loading.
     local trace_ffilib  = false
     local savedffiload  = ffi.load
 
+ -- local pushlibpath = package.pushlibpath
+ -- local poplibpath  = package.poplibpath
+
+ -- ffi.savedload = savedffiload
+
     trackers.register("resolvers.ffilib", function(v) trace_ffilib = v end)
 
+ -- pushlibpath(pathpart(name))
+ -- local message, library = pcall(savedffiload,nameonly(name))
+ -- poplibpath()
+
+    local loaded = { }
+
     local function locateindeed(name)
-        local message, library = pcall(savedffiload,removesuffix(name))
-        if type(library) == "userdata" then
-            return library
-        else
-            return false
+        name = removesuffix(name)
+        local l = loaded[name]
+        if l == nil then
+            local message, library = pcall(savedffiload,name)
+            if type(message) == "userdata" then
+                l = message
+            elseif type(library) == "userdata" then
+                l = library
+            else
+                l = false
+            end
+            loaded[name] = l
+        elseif trace_ffilib then
+            report_ffilib("reusing already loaded %a",name)
         end
+        return l
     end
 
-    function ffilib(required,version)
-        if version == "system" then
+    function ffilib(name,version)
+        name = removesuffix(name)
+        local l = loaded[name]
+        if l ~= nil then
+            if trace_ffilib then
+                report_ffilib("reusing already loaded %a",name)
+            end
+            return l
+        elseif version == "system" then
             return locateindeed(name)
         else
-            return locate(required,version,trace_ffilib,report_ffilib,locateindeed)
+            return locate(name,version,trace_ffilib,report_ffilib,locateindeed)
         end
     end
 
@@ -355,10 +395,12 @@ We use the same lookup logic for ffi loading.
         local library = ffilib(name)
         if type(library) == "userdata" then
             return library
-        else
-            report_ffilib("trying to load %a using normal loader",name)
-            return savedffiload(name)
         end
+        if trace_ffilib then
+            report_ffilib("trying to load %a using normal loader",name)
+        end
+        -- so here we don't store
+        return savedffiload(name)
     end
 
 end

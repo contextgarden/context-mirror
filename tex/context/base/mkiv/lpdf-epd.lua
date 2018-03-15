@@ -31,71 +31,86 @@ if not modules then modules = { } end modules ['lpdf-epd'] = {
 -- a safer bet is foo("Title") which will return a decoded string (or the original if it
 -- already was unicode).
 
-local setmetatable, rawset, rawget, type = setmetatable, rawset, rawget, type
+local setmetatable, rawset, rawget, type, next = setmetatable, rawset, rawget, type, next
 local tostring, tonumber = tostring, tonumber
 local lower, match, char, byte, find = string.lower, string.match, string.char, string.byte, string.find
 local abs = math.abs
 local concat = table.concat
 local toutf, toeight, utfchar = string.toutf, utf.toeight, utf.char
+local setmetatableindex = table.setmetatableindex
 
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local P, C, S, R, Ct, Cc, V, Carg, Cs, Cf, Cg = lpeg.P, lpeg.C, lpeg.S, lpeg.R, lpeg.Ct, lpeg.Cc, lpeg.V, lpeg.Carg, lpeg.Cs, lpeg.Cf, lpeg.Cg
 
-local epdf           = epdf
-      lpdf           = lpdf or { }
-local lpdf           = lpdf
-local lpdf_epdf      = { }
-lpdf.epdf            = lpdf_epdf
+local epdf      = epdf
+      lpdf      = lpdf or { }
+local lpdf      = lpdf
+local lpdf_epdf = { }
+lpdf.epdf       = lpdf_epdf
 
-local pdf_open       = epdf.open
+-- local getDict, getArray, getReal, getNum, getString, getBool, getName, getRef, getRefNum
+-- local getType, getTypeName
+-- local dictGetLength, dictGetVal, dictGetValNF, dictGetKey
+-- local arrayGetLength, arrayGetNF, arrayGet
+-- local streamReset, streamGetDict, streamGetChar
 
-local report_epdf    = logs.reporter("epdf")
+-- We use as little as possible and also not an object interface. After all, we
+-- don't know how the library (and its api) evolves so we better can be prepared
+-- for wrappers.
 
-local getDict, getArray, getReal, getNum, getString, getBool, getName, getRef, getRefNum
-local getType, getTypeName
-local dictGetLength, dictGetVal, dictGetValNF, dictGetKey
-local arrayGetLength, arrayGetNF, arrayGet
-local streamReset, streamGetDict, streamGetChar
+local registry         = debug.getregistry()
 
-do
-    local object     = epdf.Object()
-    --
-    getDict          = object.getDict
-    getArray         = object.getArray
-    getReal          = object.getReal
-    getNum           = object.getNum
-    getString        = object.getString
-    getBool          = object.getBool
-    getName          = object.getName
-    getRef           = object.getRef
-    getRefNum        = object.getRefNum
-    --
-    getType          = object.getType
-    getTypeName      = object.getTypeName
-    --
-    streamReset      = object.streamReset
-    streamGetDict    = object.streamGetDict
-    streamGetChar    = object.streamGetChar
-    --
-end
+local object           = registry["epdf.Object"]
+local dictionary       = registry["epdf.Dict"]
+local array            = registry["epdf.Array"]
+local xref             = registry["epdf.XRef"]
+local catalog          = registry["epdf.Catalog"]
+local pdfdoc           = registry["epdf.PDFDoc"]
 
-local function initialize_methods(xref)
-    local dictionary = epdf.Dict(xref)
-    local array      = epdf.Array(xref)
-    --
-    dictGetLength    = dictionary.getLength
-    dictGetVal       = dictionary.getVal
-    dictGetValNF     = dictionary.getValNF
-    dictGetKey       = dictionary.getKey
-    --
-    arrayGetLength   = array.getLength
-    arrayGetNF       = array.getNF
-    arrayGet         = array.get
-    --
-    initialize_methods = function()
-        -- already done
-    end
-end
+local openPDF          = epdf.open
+
+local getDict          = object.getDict
+local getArray         = object.getArray
+local getReal          = object.getReal
+local getInt           = object.getInt
+local getNum           = object.getNum
+local getString        = object.getString
+local getBool          = object.getBool
+local getName          = object.getName
+local getRef           = object.getRef
+local getRefNum        = object.getRefNum
+
+local getType          = object.getType
+local getTypeName      = object.getTypeName
+
+local streamReset      = object.streamReset
+local streamGetDict    = object.streamGetDict
+local streamGetChar    = object.streamGetChar
+
+local dictGetLength    = dictionary.getLength
+local dictGetVal       = dictionary.getVal
+local dictGetValNF     = dictionary.getValNF
+local dictGetKey       = dictionary.getKey
+
+local arrayGetLength   = array.getLength
+local arrayGetNF       = array.getNF
+local arrayGet         = array.get
+
+-- these are kind of weird as they can't be accessed by (root) object
+
+local getNumPages      = catalog.getNumPages
+local getPageRef       = catalog.getPageRef
+
+local getXRef          = pdfdoc.getXRef
+local getRawCatalog    = pdfdoc.getCatalog
+
+local fetch            = xref.fetch
+local getCatalog       = xref.getCatalog
+local getDocInfo       = xref.getDocInfo
+
+-- we're done with library shortcuts
+
+local report_epdf      = logs.reporter("epdf")
 
 local typenames      = { [0] =
   "boolean",
@@ -139,15 +154,50 @@ local checked_access
 
 local frompdfdoc = lpdf.frompdfdoc
 
-local function get_flagged(t,f,k)
-    local fk = f[k]
-    if not fk then
-        return t[k]
-    elseif fk == "rawtext" then
-        return frompdfdoc(t[k])
-    else -- no other flags yet
-        return t[k]
+local get_flagged
+
+if lpdf.dictionary then
+
+    local pdfdictionary = lpdf.dictionary
+    local pdfarray      = lpdf.array
+    local pdfconstant   = lpdf.constant
+    local pdfstring     = lpdf.string
+    local pdfunicode    = lpdf.unicode
+
+    get_flagged = function(t,f,k)
+        local tk = t[k] -- triggers resolve
+        local fk = f[k]
+        if not fk then
+            return tk
+        elseif fk == "name" then
+            return pdfconstant(tk)
+        elseif fk == "array" then
+            return pdfarray(tk)
+        elseif fk == "dictionary" then
+            return pdfarray(tk)
+        elseif fk == "rawtext" then
+            return pdfstring(tk)
+        elseif fk == "unicode" then
+            return pdfunicode(tk)
+        else
+            return tk
+        end
     end
+
+else
+
+    get_flagged = function(t,f,k)
+        local tk = t[k] -- triggers resolve
+        local fk = f[k]
+        if not fk then
+            return tk
+        elseif fk == "rawtext" then
+            return frompdfdoc(tk)
+        else
+            return tk
+        end
+    end
+
 end
 
 local function prepare(document,d,t,n,k,mt,flags)
@@ -166,7 +216,7 @@ local function prepare(document,d,t,n,k,mt,flags)
                         local cached = document.__cache__[objnum]
                         if not cached then
                             cached = checked_access[kind](v,document,objnum,mt)
-                            if c then
+                            if cached then
                                 document.__cache__[objnum] = cached
                                 document.__xrefs__[cached] = objnum
                             end
@@ -207,8 +257,11 @@ local function some_dictionary(d,document)
             __call = function(t,k)
                 return get_flagged(t,f,k)
             end,
+         -- __kind = function(k)
+         --     return f[k] or type(t[k])
+         -- end,
         } )
-        return t
+        return t, "dictionary"
     end
 end
 
@@ -225,8 +278,11 @@ local function get_dictionary(object,document,r,mt)
             __call = function(t,k)
                 return get_flagged(t,f,k)
             end,
+         -- __kind = function(k)
+         --     return f[k] or type(t[k])
+         -- end,
         } )
-        return t
+        return t, "dictionary"
     end
 end
 
@@ -260,8 +316,14 @@ local function prepare(document,a,t,n,k)
             fatal_error("error: invalid value at index %a in array of %a",i,document.filename)
         end
     end
-    getmetatable(t).__index = nil
-    return t[k]
+    local m = getmetatable(t)
+    if m then
+        m.__index = nil
+        m.__len   = nil
+    end
+    if k then
+        return t[k]
+    end
 end
 
 local function some_array(a,document)
@@ -270,10 +332,20 @@ local function some_array(a,document)
         local t = { n = n }
         setmetatable(t, {
             __index = function(t,k)
-                return prepare(document,a,t,n,k)
-            end
+                return prepare(document,a,t,n,k,_,_,f)
+            end,
+            __len = function(t)
+                prepare(document,a,t,n,_,_,f)
+                return n
+            end,
+            __call = function(t,k)
+                return get_flagged(t,f,k)
+            end,
+         -- __kind = function(k)
+         --     return f[k] or type(t[k])
+         -- end,
         } )
-        return t
+        return t, "array"
     end
 end
 
@@ -282,12 +354,23 @@ local function get_array(object,document)
     local n = a and arrayGetLength(a) or 0
     if n > 0 then
         local t = { n = n }
+        local f = { }
         setmetatable(t, {
             __index = function(t,k)
-                return prepare(document,a,t,n,k)
-            end
+                return prepare(document,a,t,n,k,_,_,f)
+            end,
+            __len = function(t)
+                prepare(document,a,t,n,_,_,f)
+                return n
+            end,
+            __call = function(t,k)
+                return get_flagged(t,f,k)
+            end,
+         -- __kind = function(k)
+         --     return f[k] or type(t[k])
+         -- end,
         } )
-        return t
+        return t, "array"
     end
 end
 
@@ -335,7 +418,7 @@ local u_pattern = lpeg.patterns.utfbom_16_be * lpeg.patterns.utf16_to_utf8_be
 ----- b_pattern = lpeg.patterns.hextobytes
 
 local function get_string(v)
-    -- the toutf function only converts a utf16 string and leves the original
+    -- the toutf function only converts a utf16 string and leaves the original
     -- untouched otherwise; one might want to apply lpdf.frompdfdoc to a
     -- non-unicode string
     local s = getString(v)
@@ -344,7 +427,7 @@ local function get_string(v)
     end
     local u = lpegmatch(u_pattern,s)
     if u then
-        return u -- , "unicode"
+        return u, "unicode"
     end
     -- this is too tricky and fails on e.g. reload of url www.pragma-ade.com)
  -- local b = lpegmatch(b_pattern,s)
@@ -352,6 +435,10 @@ local function get_string(v)
  --     return b, "rawtext"
  -- end
     return s, "rawtext"
+end
+
+local function get_name(v)
+    return getName(v), "name"
 end
 
 local function get_null()
@@ -369,17 +456,17 @@ local function invalidaccess(k,document)
     end
 end
 
-checked_access = table.setmetatableindex(function(t,k)
+checked_access = setmetatableindex(function(t,k)
     return function(v,document)
         invalidaccess(k,document)
     end
 end)
 
 checked_access[typenumbers.boolean]    = getBool
-checked_access[typenumbers.integer]    = getNum
+checked_access[typenumbers.integer]    = getInt
 checked_access[typenumbers.real]       = getReal
 checked_access[typenumbers.string]     = get_string     -- getString
-checked_access[typenumbers.name]       = getName
+checked_access[typenumbers.name]       = get_name
 checked_access[typenumbers.null]       = get_null
 checked_access[typenumbers.array]      = get_array      -- d,document,r
 checked_access[typenumbers.dictionary] = get_dictionary -- d,document,r
@@ -468,20 +555,25 @@ local function getstructure(document)
     return document.Catalog.StructTreeRoot
 end
 
+-- This is the only messy helper. We can't access the root as any object (it seems)
+-- so we need a few low level acessors. It's anyway sort of simple enough to deal
+-- with but it won't win a beauty contest.
+
 local function getpages(document,Catalog)
-    local __data__  = document.__data__
-    local __xrefs__ = document.__xrefs__
-    local __cache__ = document.__cache__
-    local __xref__  = document.__xref__
+    local __data__   = document.__data__
+    local __xrefs__  = document.__xrefs__
+    local __cache__  = document.__cache__
+    local __xref__   = document.__xref__
     --
-    local catalog   = __data__:getCatalog()
-    local pages     = { }
-    local nofpages  = catalog:getNumPages()
-    local metatable = { __index = Catalog.Pages }
+    local rawcatalog = getRawCatalog(__data__)
+    local nofpages   = getNumPages(rawcatalog)
+    --
+    local pages      = { }
+    local metatable  = { __index = Catalog.Pages } -- somewhat empty
     --
     for pagenumber=1,nofpages do
-        local pagereference = catalog:getPageRef(pagenumber).num
-        local pageobject    = __xref__:fetch(pagereference,0)
+        local pagereference = getPageRef(rawcatalog,pagenumber).num
+        local pageobject    = fetch(__xref__,pagereference,0)
         local pagedata      = get_dictionary(pageobject,document,pagereference,metatable)
         if pagedata then
          -- rawset(pagedata,"number",pagenumber)
@@ -496,25 +588,32 @@ local function getpages(document,Catalog)
     --
     pages.n = nofpages
     --
+    document.pages = pages
     return pages
 end
 
--- loader
-
-local function delayed(document,tag,f)
-    local t = { }
-    setmetatable(t, { __index = function(t,k)
-        local result = f()
-        if result then
-            document[tag] = result
-            return result[k]
-        end
-    end } )
-    return t
+local function resolve(document,k)
+    local entry   = nil
+    local Catalog = document.Catalog
+    local Names   = Catalog.Names
+    if     k == "pages" then
+        entry = getpages(document,Catalog)
+    elseif k == "destinations" then
+        entry = getnames(document,Names and Names.Dests)
+    elseif k == "javascripts" then
+        entry = getnames(document,Names and Names.JS)
+    elseif k == "widgets" then
+        entry = getnames(document,Names and Names.AcroForm)
+    elseif k == "embeddedfiles" then
+        entry = getnames(document,Names and Names.EmbeddedFiles)
+    elseif k == "layers" then
+        entry = getlayers(document)
+    elseif k == "structure" then
+        entry = getstructure(document)
+    end
+    document[k] = entry
+    return entry
 end
-
--- local catobj = data:getXRef():fetch(data:getXRef():getRootNum(),data:getXRef():getRootGen())
--- print(catobj:getDict(),data:getXRef():getCatalog():getDict())
 
 local loaded = { }
 
@@ -522,33 +621,20 @@ function lpdf_epdf.load(filename)
     local document = loaded[filename]
     if not document then
         statistics.starttiming(lpdf_epdf)
-        local __data__ = pdf_open(filename) -- maybe resolvers.find_file
+        local __data__ = openPDF(filename) -- maybe resolvers.find_file
         if __data__ then
-            local __xref__ = __data__:getXRef()
+            local __xref__ = getXRef(__data__)
             document = {
                 filename  = filename,
                 __cache__ = { },
                 __xrefs__ = { },
                 __fonts__ = { },
                 __data__  = __data__,
-                __xref__  = __xref__,
+                __xref__  = __xref__
             }
-            --
-            initialize_methods(__xref__)
-            --
-            local Catalog          = some_dictionary(__xref__:getCatalog():getDict(),document)
-            local Info             = some_dictionary(__xref__:getDocInfo():getDict(),document)
-            --
-            document.Catalog       = Catalog
-            document.Info          = Info
-            -- a few handy helper tables
-            document.pages         = delayed(document,"pages",        function() return getpages(document,Catalog) end)
-            document.destinations  = delayed(document,"destinations", function() return getnames(document,Catalog.Names and Catalog.Names.Dests) end)
-            document.javascripts   = delayed(document,"javascripts",  function() return getnames(document,Catalog.Names and Catalog.Names.JS) end)
-            document.widgets       = delayed(document,"widgets",      function() return getnames(document,Catalog.Names and Catalog.Names.AcroForm) end)
-            document.embeddedfiles = delayed(document,"embeddedfiles",function() return getnames(document,Catalog.Names and Catalog.Names.EmbeddedFiles) end)
-            document.layers        = delayed(document,"layers",       function() return getlayers(document) end)
-            document.structure     = delayed(document,"structure",    function() return getstructure(document) end)
+            document.Catalog = some_dictionary(getDict(getCatalog(__xref__)),document)
+            document.Info    = some_dictionary(getDict(getDocInfo(__xref__)),document)
+            setmetatableindex(document,resolve)
         else
             document = false
         end
@@ -663,7 +749,7 @@ local function analyzefonts(document,resources) -- unfinished
                     fonts[id] = {
                         tounicode = type(tounicode) == "table" and tounicode or { }
                     }
-                    table.setmetatableindex(fonts[id],"self")
+                    setmetatableindex(fonts[id],"self")
                 end
             end
         end
@@ -787,7 +873,7 @@ function lpdf_epdf.contenttotext(document,list) -- maybe signal fonts
             local dy = abs(last_y - ty)
             if dy > linefactor*last_f then
                 if last > 0 then
-                    if find(text[last],softhyphen) then
+                    if find(text[last],softhyphen,1,true) then
                         -- ignore
                     else
                         last = last + 1

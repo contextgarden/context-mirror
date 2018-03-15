@@ -98,6 +98,10 @@ pdf.setsuppressoptionalinfo(
 
 local included = backends.included
 
+local pdfsettrailerid = pdf.settrailerid
+
+pdf.disablecommand("settrailerid")
+
 function lpdf.settrailerid(v)
     if v then
         local b = toboolean(v) or v == ""
@@ -112,7 +116,7 @@ function lpdf.settrailerid(v)
         else
             report_info("using hashed trailer id %a (%a)",v,h)
         end
-        pdf.settrailerid(format("[<%s> <%s>]",h,h))
+        pdfsettrailerid(format("[<%s> <%s>]",h,h))
     end
 end
 
@@ -241,6 +245,8 @@ end
 
 -- flushing
 
+local add_xmp_blob = true  directives.register("backend.xmp",function(v) add_xmp_blob = v end)
+
 local function flushxmpinfo()
     commands.pushrandomseed()
     commands.setrandomseed(os.time())
@@ -250,7 +256,8 @@ local function flushxmpinfo()
 
     local documentid = "no unique document id here"
     local instanceid = "no unique instance id here"
-    local producer   = format("LuaTeX-%i.%i.%s",math.div(version,100),math.mod(version,100),revision)
+ -- local producer   = format("LuaTeX-%i.%02i.%s",math.div(version,100),math.mod(version,100),revision)
+    local producer   = format("LuaTeX-%0.2f.%s",version/100,revision)
     local creator    = "LuaTeX + ConTeXt MkIV"
     local time       = lpdf.timestamp()
     local fullbanner = status.banner
@@ -260,42 +267,45 @@ local function flushxmpinfo()
         instanceid = "uuid:" .. os.uuid()
     end
 
-    pdfaddxmpinfo("DocumentID",      documentid)
-    pdfaddxmpinfo("InstanceID",      instanceid)
-    pdfaddxmpinfo("Producer",        producer)
-    pdfaddxmpinfo("CreatorTool",     creator)
-    pdfaddxmpinfo("CreateDate",      time)
-    pdfaddxmpinfo("ModifyDate",      time)
-    pdfaddxmpinfo("MetadataDate",    time)
-    pdfaddxmpinfo("PTEX.Fullbanner", fullbanner)
-
     pdfaddtoinfo("Producer",         producer)
     pdfaddtoinfo("Creator",          creator)
     pdfaddtoinfo("CreationDate",     time)
     pdfaddtoinfo("ModDate",          time)
  -- pdfaddtoinfo("PTEX.Fullbanner",  fullbanner) -- no checking done on existence
 
-    local blob = xml.tostring(xml.first(xmp or valid_xmp(),"/x:xmpmeta"))
-    local md = pdfdictionary {
-        Subtype = pdfconstant("XML"),
-        Type    = pdfconstant("Metadata"),
-    }
-    if trace_xmp then
-        report_xmp("data flushed, see log file")
-        logs.pushtarget("logfile")
-        report_xmp("start xmp blob")
-        logs.newline()
-        logs.writer(blob)
-        logs.newline()
-        report_xmp("stop xmp blob")
-        logs.poptarget()
+    if add_xmp_blob then
+
+        pdfaddxmpinfo("DocumentID",      documentid)
+        pdfaddxmpinfo("InstanceID",      instanceid)
+        pdfaddxmpinfo("Producer",        producer)
+        pdfaddxmpinfo("CreatorTool",     creator)
+        pdfaddxmpinfo("CreateDate",      time)
+        pdfaddxmpinfo("ModifyDate",      time)
+        pdfaddxmpinfo("MetadataDate",    time)
+        pdfaddxmpinfo("PTEX.Fullbanner", fullbanner)
+
+        local blob = xml.tostring(xml.first(xmp or valid_xmp(),"/x:xmpmeta"))
+        local md = pdfdictionary {
+            Subtype = pdfconstant("XML"),
+            Type    = pdfconstant("Metadata"),
+        }
+        if trace_xmp then
+            report_xmp("data flushed, see log file")
+            logs.pushtarget("logfile")
+            report_xmp("start xmp blob")
+            logs.newline()
+            logs.writer(blob)
+            logs.newline()
+            report_xmp("stop xmp blob")
+            logs.poptarget()
+        end
+        blob = format(xpacket,blob)
+        if not verbose and lpdf.compresslevel() > 0 then
+            blob = gsub(blob,">%s+<","><")
+        end
+        local r = pdfflushstreamobject(blob,md,false) -- uncompressed
+        lpdf.addtocatalog("Metadata",pdfreference(r))
     end
-    blob = format(xpacket,blob)
-    if not verbose and pdf.getcompresslevel() > 0 then
-        blob = gsub(blob,">%s+<","><")
-    end
-    local r = pdfflushstreamobject(blob,md,false) -- uncompressed
-    lpdf.addtocatalog("Metadata",pdfreference(r))
 
     commands.poprandomseed() -- hack
 end

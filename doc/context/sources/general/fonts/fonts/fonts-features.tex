@@ -1,4 +1,4 @@
-language=uk
+% language=uk
 
 \startcomponent fonts-features
 
@@ -1074,11 +1074,20 @@ correction of \type {0.025} but for some shapes a different value is used. Again
 we have some commands at the \TEX\ end:
 
 \starttyping
-\setupmathematics[italics=1] % fontitalics
-\setupmathematics[italics=2] % fontdata
-\setupmathematics[italics=3] % quad based
+\setupmathematics[italics=1] % apply italics with we have an italic font
+\setupmathematics[italics=2] % apply italics anyway
+\setupmathematics[italics=3] % apply italics only when italic or bolditalic shapes
 \setupmathematics[italics=4] % combination of 1 and 3
 \stoptyping
+
+An alternative is this:
+
+\starttyping
+\definefontfeature[mathextra][mathextra][collapseitalics=yes]
+\stoptyping
+
+This extends the \type {mathextra} feature to move the italic correction into
+the character's width. Often this works out ok.
 
 Because (definitely at the start of the \LUATEX\ project) we had no
 proper \OPENTYPE\ math fonts, but at the same time wanted to move on
@@ -2534,48 +2543,40 @@ unlikely to show up in future versions of the Latin Modern fonts.
 
 \stopsection
 
-\startsection[title=Discretionaries]
-
-% speed test:
+% \startsection[title=Discretionaries]
 %
-% \edef\tufte{\cldloadfile{tufte}}
-% \enabledirectives[otf.alwaysdisc]
-% \testfeatureonce{100}{\setbox0\hbox{\tufte \smallcaps \tufte}}\elapsedtime\par
-% \disabledirectives[otf.alwaysdisc]
-% \testfeatureonce{100}{\setbox0\hbox{\tufte \smallcaps \tufte}}\elapsedtime\par
-
-\startbuffer
-\definedfont[cambria*default]
-12\discretionary
-    {3} {4} {5}%
-67\par
-12{\oldstyle\discretionary
-    {3} {4} {5}}%
-67\par
-12\discretionary
-    {3{\oldstyle3}} {{\oldstyle4}4} {5{\oldstyle5}5}%
-67\par
-\stopbuffer
-
-The font handler has to do some magick to get features working with and across
-discretionaries. To some extend you can use font switches inside discretionaries
-but for sure border cases are not dealt with. This works:
-
-\startlinecorrection[blank]
-\startcombination[nx=4,ny=1,location=top]
-    {\framed[align=normal]{\enabledirectives [otf.alwaysdisc]\setupwhitespace[line]\getbuffer}} {1}
-    {\framed[align=normal]{\enabledirectives [otf.alwaysdisc]\hsize1mm\getbuffer}} {2}
-    {\framed[align=normal]{\disabledirectives[otf.alwaysdisc]\setupwhitespace[line]\getbuffer}} {3}
-    {\framed[align=normal]{\disabledirectives[otf.alwaysdisc]\hsize1mm\getbuffer}} {4}
-\stopcombination
-\stoplinecorrection
-
-The first two examples have \type {otf.alwaysdisk} enabled, the last two have it
-disabled.
-
-\typebuffer
-
-\stopsection
+% \startbuffer
+% \definedfont[cambria*default]
+% 12\discretionary
+%     {3} {4} {5}%
+% 67\par
+% 12{\oldstyle\discretionary
+%     {3} {4} {5}}%
+% 67\par
+% 12\discretionary
+%     {3{\oldstyle3}} {{\oldstyle4}4} {5{\oldstyle5}5}%
+% 67\par
+% \stopbuffer
+%
+% The font handler has to do some magick to get features working with and across
+% discretionaries. To some extend you can use font switches inside discretionaries
+% but for sure border cases are not dealt with. This works:
+%
+% \startlinecorrection[blank]
+% \startcombination[nx=4,ny=1,location=top]
+%     {\framed[align=normal]{\enabledirectives [otf.alwaysdisc]\setupwhitespace[line]\getbuffer}} {1}
+%     {\framed[align=normal]{\enabledirectives [otf.alwaysdisc]\hsize1mm\getbuffer}} {2}
+%     {\framed[align=normal]{\disabledirectives[otf.alwaysdisc]\setupwhitespace[line]\getbuffer}} {3}
+%     {\framed[align=normal]{\disabledirectives[otf.alwaysdisc]\hsize1mm\getbuffer}} {4}
+% \stopcombination
+% \stoplinecorrection
+%
+% The first two examples have \type {otf.alwaysdisk} enabled, the last two have it
+% disabled.
+%
+% \typebuffer
+%
+% \stopsection
 
 \startsection[title=Some remarks]
 
@@ -2623,6 +2624,116 @@ Of course it also makes a bit more independent, although one may wonder if that
 matters any longer in a rapidly changing world. The original idea behind \TEX,
 that it should be useable for ages, will survive, but users might see more
 changes in a lifetime than foreseen when \TEX\ showed up.
+
+\stopsection
+
+\startsection[title=Different spaces]
+
+The width of the space and its stretch and shrink are taken from the font. The so
+called emspace is the reference for much spacing related parameters. It is the
+width of character \type {0x2014}. The regular space width is taken from \type
+{0x0020}, the space character. When there is no space character, in the case of a
+monospaced font we take the emwidth, otherwise we take half the emwidth. As a
+last resort we can take the average width of characters. And of even that fails
+we take half of the font units. When there is no emwidth that one is set to the
+font units.
+
+In the \CONTEXT\ font loader we use a stretch that is 1/2 of the width of a space
+and the shrink is 1/3 the width of a space, so we use values that are quite
+similar to what \TEX\ always used.
+
+You can overload these values when a font is loaded and the overload is
+implemented as a feature. The next example demonstrates how this is done:
+
+\startbuffer
+\definefontfeature[morespace][spacing=0.50 plus 0.50 minus 0.250]
+\definefontfeature[lessspace][spacing=0.25 plus 0.25 minus 0.125]
+
+\definedfont[Serif*default]          \samplefile{klein}\blank
+\definedfont[Serif*default,morespace]\samplefile{klein}\blank
+\definedfont[Serif*default,lessspace]\samplefile{klein}\blank
+\definedfont[Serif*default]          \samplefile{klein}\blank
+\stopbuffer
+
+\typebuffer \blank \getbuffer \blank
+
+\stopsection
+
+\startsection[title=Dynamic features]
+
+We can enable and disable features any time in the input by using the
+\type {\feature} command. he following example was posted on the list:
+
+\startbuffer
+\definefont
+  [WeirdShapes]
+  [file:linlibertiner*default]
+
+\definefontfeature
+  [hist]
+  [hlig=yes]
+
+\definefontfeature
+  [rare]
+  [dlig=yes]
+
+\setupquotation
+  [style={\feature[+][hist,rare]}]
+
+\startlines
+\WeirdShapes
+strict {\feature[+][hist]strict}
+wurtzite {\feature[+][rare]wurtzite}
+\quotation{strict wurtzite}
+\stoplines
+\stopbuffer
+
+\typebuffer
+
+Or typeset:
+
+\getbuffer
+
+The \type {\feature} command takes as first argument a directive of what
+do do:
+
+\starttabulate[|T||]
+\NC + more        \NC add set to previous set and combine with font set \NC \NR
+\NC - less        \NC subtract set to previous set and combine with font set \NC \NR
+\NC = new         \NC replace font set \NC \NR
+\NC ! < reset     \NC forget sets and revert to font set \NC \NR
+\NC > old default \NC make sure the current set is used on top of the font set \NC \NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title=Spacekerns]
+
+Some fonts kern glyphs with spaces. Although \TEX\ doesn't really have spaces we do
+support this. However, it's implemented as part of kerning so when you define such
+kerns you need to hook it into for instance the \type {kern} feature:
+
+\starttyping
+\startluacode
+    local kern = -50
+    local pair = { [32] = kern }
+
+    fonts.handlers.otf.addfeature {
+        name    = "kern", -- spacekerns assume kern
+        type    = "kern",
+        data    = {
+            A = pair, V = pair, W = pair,
+            [32] = {
+                A = kern,
+                V = kern,
+                W = kern,
+            },
+        }
+    }
+\stopluacode
+\stoptyping
+
+Of course this depends on font properties so one can wonder how useful this is.
 
 \stopsection
 

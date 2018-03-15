@@ -86,7 +86,8 @@
    \c!sectionset=\headparameter\c!sectionset,
    \c!sectionsegments=\headparameter\c!sectionsegments,
    \c!reference=\headparameter\c!reference,
-   \c!referenceprefix=\headparameter\c!referenceprefix]
+   \c!referenceprefix=\headparameter\c!referenceprefix,
+   \c!criterium=\headparameter\c!criterium]
 
 % see lists/neat-001.tex for usage of:
 
@@ -112,7 +113,14 @@
    \globallet\currentstructurebookmark\tempstring
    \endgroup}
 
-% so it's an experiment
+% zeros:
+%
+% \setuphead[subsection][criterium=all]
+%
+% \dorecurse{3} {
+%     \chapter{Blabla}                 \subsection{bla 1 1} \subsection{bla 1 2}
+%                      \section{bla 2} \subsection{bla 2 1} \subsection{bla 2 2}
+% }
 
 \unexpanded\def\strc_sectioning_register#1#2#3% #1=interfaced-settings, #2=optional user data (not yet supported)
   {\begingroup
@@ -236,6 +244,7 @@
             segments      {\structureparameter\c!sectionsegments}
             ownnumber     {\currentstructureownnumber}
             language      {\currentlanguage}% for the moment, needed for bookmarks conversion
+            criterium     {\structureparameter\c!criterium}
         }
         userdata {\detokenize{#3}}% will be converted to table at the lua end
    \relax
@@ -462,9 +471,11 @@
 % compatible but better
 
 \appendtoks
-   \doifelse{\headparameter\c!ownnumber}\v!yes
-     {\setuevalue\currenthead{\strc_sectioning_handle_own[\currenthead]}}
-     {\setuevalue\currenthead{\strc_sectioning_handle_nop[\currenthead]}}%
+    \ifx\currenthead\empty \else
+      \doifelse{\headparameter\c!ownnumber}\v!yes
+        {\setuevalue\currenthead{\strc_sectioning_handle_own[\currenthead]}}
+        {\setuevalue\currenthead{\strc_sectioning_handle_nop[\currenthead]}}%
+    \fi
 \to \everysetuphead
 
 \unexpanded\def\doredefinehead#1#2% called at lua end
@@ -585,10 +596,10 @@
     % mkii compatible. Somewhat weird that it's part of the
     % top level structure but it will be flattened anyway.
     \let\currenthead\currentsection %
-    \setheadparameter\c!textstyle  {\strictheadparameter\c!style}%
-    \setheadparameter\c!textcolor  {\strictheadparameter\c!color}%
-    \setheadparameter\c!numberstyle{\strictheadparameter\c!style}%
-    \setheadparameter\c!numbercolor{\strictheadparameter\c!color}%
+    \setheadparameter\c!textstyle  {\directheadparameter\c!style}%
+    \setheadparameter\c!textcolor  {\directheadparameter\c!color}%
+    \setheadparameter\c!numberstyle{\directheadparameter\c!style}%
+    \setheadparameter\c!numbercolor{\directheadparameter\c!color}%
 \to \everydefinesection
 
 % head -> head
@@ -660,6 +671,7 @@
 \newconditional\c_strc_sectioning_place
 \newconditional\c_strc_sectioning_empty
 \newconditional\c_strc_sectioning_hidden
+\newconditional\c_strc_sectioning_section
 
 \newconditional\headshownumber  % public
 \newconditional\headisdisplay   % public
@@ -690,22 +702,32 @@
 \setvalue{\??headplace\v!yes}%
   {\setfalse\c_strc_sectioning_empty
    \settrue \c_strc_sectioning_place
-   \setfalse\c_strc_sectioning_hidden}
+   \setfalse\c_strc_sectioning_hidden
+   \setfalse\c_strc_sectioning_section}
 
 \setvalue{\??headplace\v!empty}%
   {\settrue \c_strc_sectioning_empty
    \settrue \c_strc_sectioning_place
-   \setfalse\c_strc_sectioning_hidden}
+   \setfalse\c_strc_sectioning_hidden
+   \setfalse\c_strc_sectioning_section}
 
 \setvalue{\??headplace\v!no}%
   {\settrue \c_strc_sectioning_empty
    \setfalse\c_strc_sectioning_place
-   \setfalse\c_strc_sectioning_hidden}
+   \setfalse\c_strc_sectioning_hidden
+   \setfalse\c_strc_sectioning_section}
 
 \setvalue{\??headplace\v!hidden}%
   {\settrue \c_strc_sectioning_empty
    \setfalse\c_strc_sectioning_place
-   \settrue \c_strc_sectioning_hidden}
+   \settrue \c_strc_sectioning_hidden
+   \setfalse\c_strc_sectioning_section}
+
+\setvalue{\??headplace\v!section}%
+  {\settrue \c_strc_sectioning_empty
+   \setfalse\c_strc_sectioning_place
+   \settrue \c_strc_sectioning_hidden
+   \settrue \c_strc_sectioning_section}
 
 \unexpanded\def\strc_sectioning_initialize_placement
   {\expandnamespaceparameter\??headplace\headparameter\c!placehead\v!yes}
@@ -747,7 +769,8 @@
 % so we need a 'keep track of raw set option' (or maybe a funny internal prefix)
 
 \unexpanded\def\setheadmarking % li:: so that we can use \marking[section]{Taco needed this}
-  {\normalexpanded{\setmarking[\currenthead]{li::\currentstructurelistnumber}}}
+  {\strc_sectioning_delayed_flush
+   \normalexpanded{\setmarking[\currenthead]{li::\currentstructurelistnumber}}}
 
 \let\deepstructurenumbercommand\relax
 \let\deepstructuretitlecommand \relax
@@ -852,6 +875,7 @@
        \strc_sectioning_before_yes
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
+       \dostarttagged\t!sectioncaption\empty
        \let\getheadsyncs\theheadsynchonization
        \let\getheadtitle\fullheadtitle
        \ifconditional\headshownumber
@@ -860,18 +884,27 @@
        \else
          \strc_rendering_place_head_text
        \fi
+       \dostoptagged
        \strc_sectioning_after_yes
      \else\ifconditional\c_strc_sectioning_hidden
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
+       \dostarttagged\t!sectioncaption\empty
        \let\getheadsyncs\theheadsynchonization
-       \strc_rendering_place_head_hidden % only something when tracing
+       \ifconditional\c_strc_sectioning_section
+         \strc_rendering_place_head_section
+       \else
+         \strc_rendering_place_head_hidden % only something when tracing
+       \fi
+       \dostoptagged
      \else
        \strc_sectioning_before_nop % toegevoegd ivm subpaginanr / tug sheets
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
+       \dostarttagged\t!sectioncaption\empty
        \let\getheadsyncs\theheadsynchonization
        \strc_rendering_place_head_empty % just flush 'm
+       \dostoptagged
        \strc_sectioning_after_nop
      \fi\fi
    \else
@@ -879,22 +912,32 @@
        \strc_sectioning_before_yes
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
+       \dostarttagged\t!sectioncaption\empty
        \let\getheadsyncs\theheadsynchonization
        \let\getheadtitle\fullheadtitle
        \strc_rendering_place_head_text
+       \dostoptagged
        \strc_sectioning_after_yes
      \else\ifconditional\c_strc_sectioning_hidden
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
        \let\getheadsyncs\theheadsynchonization
-       \strc_rendering_place_head_hidden % only something when tracing
+       \dostarttagged\t!sectioncaption\empty
+       \ifconditional\c_strc_sectioning_section
+         \strc_rendering_place_head_section
+       \else
+         \strc_rendering_place_head_hidden % only something when tracing
+       \fi
+       \dostoptagged
      \else
        % do nothing / should be vbox to 0pt
        \strc_sectioning_before_nop
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
+       \dostarttagged\t!sectioncaption\empty
        \let\getheadsyncs\theheadsynchonization
        \strc_rendering_place_head_empty % just flush 'm
+       \dostoptagged
        \strc_sectioning_after_nop
      \fi\fi
    \fi
@@ -930,13 +973,27 @@
 % todo: when in the page builder we need to resolve the marking immediately
 % because otherwise we have an async
 
+\newbox\b_sectioning_delayed
+
+\def\strc_sectioning_delayed_flush
+  {\ifvoid\b_sectioning_delayed\else
+     \smashboxed\b_sectioning_delayed
+   \fi}
+
+\unexpanded\def\strc_rendering_place_head_section % see hidden below
+  {\global\setbox\b_sectioning_delayed\hpack\bgroup
+     \setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}%
+     \hpack\headreferenceattributes{}%
+     \currentstructuresynchronize
+   \egroup}
+
 \unexpanded\def\strc_rendering_place_head_hidden % maybe trialtypesetting check
   {\setxvalue{\??hiddenheadattr\currenthead}%
      {\headreferenceattributes}% can be used when making a box
    \setxvalue{\??hiddenheadsync\currenthead}%
      {\noexpand\letgvalue{\??hiddenheadsync\currenthead}\relax
       \noexpand\setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}%
-      \hbox\headreferenceattributes{}% otherwise no destination ... maybe tag ref as hidden and fall back on page reference
+      \hpack\headreferenceattributes{}% otherwise no destination ... maybe tag ref as hidden and fall back on page reference
       \currentstructuresynchronize}} % and it's a node anyway
 
 \def\synchronizehead           #1{\csname\??hiddenheadsync#1\endcsname}
@@ -1031,7 +1088,7 @@
   {\ifconditional\headisdisplay
      \ifconditional\c_strc_sectioning_auto_break
      % \vspacing[\v!samepage-\currentheadlevel]%
-\vspacing[\v!samepage]%
+       \vspacing[\v!samepage]%
      \fi
      \strc_sectioning_empty_correction
      \headparameter\c!after

@@ -310,7 +310,8 @@
    \c!etallimit=5,
    \c!etaldisplay=1, % TODO: when 2-4, show all first time, etaldisplay subsequently...
    \c!authorconversion=\v!name,
-   \c!sorttype=normal,
+   \c!sorttype=normal, % \v!normal ?
+   \c!style=,
    \c!compress=\v!yes, % note that cite sorts only work with compress=yes.
    \c!separator:names:3={\btxcomma\btxlabeltext{and}\space}, % not \textampersand
    \c!separator:names:4={\btxspace\btxlabeltext{and}\space}] % not \textampersand
@@ -342,6 +343,18 @@
 
 \definebtx
   [apa:\s!cite:author]
+  [apa:\s!cite]
+
+\definebtx
+  [apa:\s!cite:editor]
+  [apa:\s!cite:author]
+
+\definebtx
+  [apa:\s!cite:translator]
+  [apa:\s!cite:author]
+
+\definebtx
+  [apa:\s!cite:organization]
   [apa:\s!cite]
 
 \definebtx
@@ -562,7 +575,7 @@
    apa:Editors=Éditeurs,
    apa:Volume=Volume,
    apa:Volumes=Volumes,
-   apa:nd={s.d.}      % sans date
+   apa:nd={s.d.},     % sans date
    apa:supplement=Supplément,
    apa:MotionPicture={Film cinématographique},
    apa:Writer=Scénariste,
@@ -668,7 +681,7 @@
 
 % used in publ-imp-page.mkvi
 
-\startsetups [btx:apa:list:page-or-pages]
+\startsetups btx:apa:list:page-or-pages
     \ifx\currentbtxlastpage\empty
         \btxlabeltext{p}
     \else
@@ -828,6 +841,14 @@
     \btxdoifelse {year} {
         \btxflush{year}
         \btxflushsuffix
+        \btxdoif {month} { % month and day optional in publ-imp-apa.lua
+            \btxcomma
+            \btxflush{month}
+            \btxdoif {day} {
+                \btxspace
+                \btxflush{day}
+            }
+        }
     } {
         \fastsetup{btx:apa:nd}
         % Hans: the following won't work but should.
@@ -843,7 +864,11 @@
 
 \starttexdefinition unexpanded btx:apa:author-or-editor #author
     \btxdoifelse {#author} {
-        \btxflush{#author}
+        \btxstartstyleandcolor[apa:\s!list:#author]
+            \btxusecommand[apa:\s!list:#author]{
+                \btxflush{#author}
+            }
+        \btxstopstyleandcolor
         % use \processaction [] [] here?
         \doifelse {\btxfoundname{#author}} {editor} {
             \btxleftparenthesis
@@ -889,7 +914,11 @@
                     \btxrightparenthesis
                     \removeunwantedspaces
                     \btxparameter{\c!separator:names:3}
-                    \btxflush{director}
+                    \btxstartstyleandcolor[apa:\s!list:director]
+                        \btxusecommand[apa:\s!list:director]{
+                            \btxflush{director}
+                        }
+                    \btxstopstyleandcolor
                     \btxleftparenthesis
                     \btxsingularorplural {director} {
                         \btxlabeltext{apa:Director}
@@ -904,7 +933,11 @@
             \btxleftparenthesis
             \btxlabeltext{with}
             \btxspace
-            \btxflush{withauthor}
+            \btxstartstyleandcolor[apa:\s!list:withauthor]
+                \btxusecommand[apa:\s!list:withauthor]{
+                    \btxflush{withauthor}
+                }
+            \btxstopstyleandcolor
             \btxrightparenthesis
         }
     } {
@@ -947,6 +980,16 @@
         \btxspace
         \texdefinition{btx:apa:composed-title}{booktitle}
         \btxperiod
+    }
+\stoptexdefinition
+
+\starttexdefinition unexpanded btx:apa:organization-if-not-author
+    \btxdoif {organization} {
+        \doifnot {\btxfoundname{author}} {organization} {
+            \btxspace
+            \btxflush{organization}
+            \btxcomma
+        }
     }
 \stoptexdefinition
 
@@ -1165,21 +1208,25 @@
     \removeunwantedspaces
 \stoptexdefinition
 
+\starttexdefinition unexpanded btx:apa:type
+    \btxdoif {type} {
+        \btxleftbracket
+        \btxflush{type}
+        \btxrightbracketperiod
+    }
+\stoptexdefinition
+
 % Then setups, by category
 
 % An article from a journal
-% Required fields: author or editor or title, journal, (year).
+% Required fields: author or organization or editor or title, journal, (year).
 % Optional fields: volume, number, pages, type, doi, url, note.
 % Note that bibtex (and tools) do not include editor (e.g. special issue or section)
 
 \startsetups btx:apa:list:article
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}
-    \btxdoif {type} {
-        \btxleftbracket
-        \btxflush{type}
-        \btxrightbracketperiod
-    }
+    \texdefinition{btx:apa:type}
     \texdefinition{btx:apa:journal-volume-number-pages}
     \texdefinition{btx:apa:url-doi-note}
 \stopsetups
@@ -1230,6 +1277,7 @@
 \startsetups btx:apa:list:book
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}
+    \texdefinition{btx:apa:type}
     \texdefinition{btx:apa:editionset}
     \texdefinition{btx:apa:wherefrom-publisher}
     \texdefinition{btx:apa:url-doi-note}
@@ -1247,6 +1295,7 @@
 \startsetups btx:apa:list:inbook
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}
+    \texdefinition{btx:apa:type}
     \texdefinition{btx:apa:editor-in}
     \texdefinition{btx:apa:editionset}
     \texdefinition{btx:apa:wherefrom-publisher}
@@ -1280,11 +1329,7 @@
     \texdefinition{btx:apa:title-if-not-placed}
     \texdefinition{btx:apa:editor-in}
     \texdefinition{btx:apa:editionset}
-    \btxdoif {organization} {
-        \btxspace
-        \btxflush{organization}
-        \btxcomma
-    }
+    \texdefinition{btx:apa:organization-if-not-author}
     \texdefinition{btx:apa:wherefrom-publisher}
     \texdefinition{btx:apa:url-doi-note}
 \stopsetups
@@ -1386,7 +1431,11 @@
             \btxflush{nationality}
         }
         \btxspace
-        \btxlabeltext{patent}
+        \btxdoifelse{type}{
+            \btxflush{type}
+        }{
+            \btxlabeltext{patent}
+        }
         \btxdoif {number} {
             \btxspace
             \btxlabeltext{apa:number}
@@ -1411,11 +1460,8 @@
 \startsetups btx:apa:list:electronic
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}
-    \btxdoif {organization} {
-        \btxspace
-        \btxflush{organization}
-        \btxperiod
-    }
+    \texdefinition{btx:apa:type}
+    \texdefinition{btx:apa:organization-if-not-author}
     \btxdoif {howpublished} {
         \btxspace
         \btxflush{howpublished}
@@ -1466,11 +1512,7 @@
             \btxperiod
         }
     }
-    \btxdoif {type} {
-        \btxleftbracket
-        \btxflush{type}
-        \btxrightbracketperiod
-    }
+    \texdefinition{btx:apa:type}
     \texdefinition{btx:apa:wherefrom-publisher}
     \texdefinition{btx:apa:url-doi-note}
 \stopsetups
@@ -1483,7 +1525,7 @@
     \fastsetup{btx:apa:list:book}
 \stopsetups
 
-% Use this type when nothing else fits.
+% Use this category when nothing else fits.
 % Required fields: none.
 % Optional fields: author, title, howpublished, month, year, note.
 

@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\endinput
+
 %D This module is no longer generic \unknown\ but who cares. Maybe
 %D the code will be moved out of the core (apart from ruled boxes).
 
@@ -708,7 +710,7 @@
 
 \newdimen\testrulewidth  \testrulewidth=\boxrulewidth
 \newif\ifvisiblestretch  \visiblestretchfalse
-
+
 %D \macros
 %D   {ruledhss,
 %D    ruledhfil,ruledhfilneg,
@@ -892,7 +894,7 @@
 \unexpanded\def\ruledvfill   {\doruledvfiller\normalvfill   \normalvfillneg{-12}}
 \unexpanded\def\ruledvfilneg {\doruledvfiller\normalvfilneg \normalvfil      {8}}
 \unexpanded\def\ruledvfillneg{\doruledvfiller\normalvfillneg\normalvfill    {16}}
-
+
 %D \macros
 %D   {ruledhskip}
 %D
@@ -1401,7 +1403,7 @@
 \unexpanded\def\ruledvglue
   {\bgroup
    \afterassignment\supp_visualizers_vglue_indeed\scratchskip=}
-
+
 %D \macros
 %D   {ruledmkern,ruledmskip}
 %D
@@ -1695,8 +1697,6 @@
 %D
 %D For those who want to manipulate the visual cues in detail,
 %D we have grouped them.
-
-\newif\ifshowingcomposition % see later why we need this
 
 \unexpanded\def\showfils
   {\showingcompositiontrue

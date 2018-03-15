@@ -296,10 +296,10 @@
         <cd:constant type="page"/>
         <cd:constant type="leftpage"/>
         <cd:constant type="rightpage"/>
-        <cd:constant type="header"/>
-        <cd:constant type="footer"/>
         <cd:constant type="somewhere"/>
         <cd:constant type="effective"/>
+        <cd:constant type="header"/>
+        <cd:constant type="footer"/>
     </cd:define>
 
     <!-- sortorder = ... -->
@@ -413,6 +413,11 @@
         <cd:constant type="min"/>
         <cd:constant type="max"/>
         <cd:constant type="middle"/>
+        <cd:constant type="math"/>
+        <cd:constant type="line" prefix="math" method="range"/>
+        <cd:constant type="halfline" prefix="math" method="range"/>
+        <cd:constant type="-line" prefix="math" method="range"/>
+        <cd:constant type="-halfline" prefix="math" method="range"/>
         <cd:constant type="cd:name"/>
     </cd:define>
 
@@ -582,6 +587,11 @@
         <cd:constant type="tight"/>
         <cd:constant type="middle"/>
         <cd:constant type="frame"/>
+        <cd:constant type="depth"/>
+        <cd:constant type="line"/>
+        <cd:constant type="halfline"/>
+        <cd:constant type="line" prefix="-" method="none"/>
+        <cd:constant type="halfline" prefix="-" method="none"/>
         <cd:inherit name="setupbodyfont"/>
     </cd:define>
 
@@ -591,6 +601,86 @@
         <cd:constant type="+"/>
         <cd:constant type="-"/>
         <cd:constant type="cd:reference"/>
+    </cd:define>
+
+    <!-- shape = ... -->
+
+    <cd:define name="value-flowshape">
+        <cd:constant type="none"/>
+        <cd:constant type="node"/>
+        <cd:constant type="action"/>
+        <cd:constant type="procedure"/>
+        <cd:constant type="product"/>
+        <cd:constant type="subprocedure"/>
+        <cd:constant type="singledocument"/>
+        <cd:constant type="multidocument"/>
+        <cd:constant type="decision"/>
+        <cd:constant type="archive"/>
+        <cd:constant type="loop"/>
+        <cd:constant type="wait"/>
+        <cd:constant type="left"/>
+        <cd:constant type="right"/>
+        <cd:constant type="top"/>
+        <cd:constant type="up"/>
+        <cd:constant type="down"/>
+        <cd:constant type="cd:number"/>
+    </cd:define>
+
+    <!-- location = ... -->
+
+    <cd:define name="value-chartlabel">
+        <cd:constant type="l"/>
+        <cd:constant type="r"/>
+        <cd:constant type="t"/>
+        <cd:constant type="b"/>
+        <cd:constant type="lt"/>
+        <cd:constant type="rt"/>
+        <cd:constant type="lb"/>
+        <cd:constant type="rb"/>
+        <cd:constant type="tl"/>
+        <cd:constant type="tr"/>
+        <cd:constant type="bl"/>
+        <cd:constant type="br"/>
+        <!-- text only
+            <cd:constant type="c"/>
+            <cd:constant type="m"/>
+        -->
+        <cd:constant type="left"/>
+        <cd:constant type="right"/>
+        <cd:constant type="top"/>
+        <cd:constant type="bottom"/>
+        <!-- text only
+            <cd:constant type="center"/>
+            <cd:constant type="middle"/>
+        -->
+    </cd:define>
+
+    <!-- tochar = ... -->
+
+    <cd:define name="value-tochar">
+        <cd:constant prefix="e" type="cd:name" method="range"/>
+        <cd:constant prefix="x" type="cd:number" method="range"/>
+        <cd:constant prefix="d" type="cd:number" method="range"/>
+        <cd:constant prefix="s" type="cd:number" method="range"/>
+        <cd:constant prefix="i" type="cd:number" method="range"/>
+        <cd:constant prefix="n" type="cd:name" method="range"/>
+        <cd:constant prefix="c" type="cd:name" method="range"/>
+        <cd:constant prefix="u" type="cd:name" method="range"/>
+        <cd:constant prefix="a" type="cd:name" method="range"/>
+    </cd:define>
+
+    <!-- option = ... -->
+
+    <cd:define name="value-verbatim">
+        <cd:constant type="mp"/>
+        <cd:constant type="lua"/>
+        <cd:constant type="xml"/>
+        <cd:constant type="parsed-xml"/>
+        <cd:constant type="nested"/>
+        <cd:constant type="tex"/>
+        <cd:constant type="context"/>
+        <cd:constant type="none"/>
+        <cd:constant type="cd:name"/>
     </cd:define>
 
 </cd:interface>

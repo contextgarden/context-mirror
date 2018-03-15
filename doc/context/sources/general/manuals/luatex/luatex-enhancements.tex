@@ -55,7 +55,7 @@ chapters on fonts and math we discuss a few more new ones.
 There are three new primitives to test the version of \LUATEX:
 
 \starttabulate[|l|pl|pl|]
-\NC \bf primitive           \NC \bf explanation                           \NC \bf value          \NC \NR
+\BC primitive               \BC explanation                               \BC value              \NC \NR
 \NC \type {\luatexbanner}   \NC the banner reported on the command line   \NC \luatexbanner      \NC \NR
 \NC \type {\luatexversion}  \NC a combination of major and minor number   \NC \the\luatexversion \NC \NR
 \NC \type {\luatexrevision} \NC the revision number, the current value is \NC \luatexrevision    \NC \NR
@@ -550,6 +550,16 @@ $ x + 1 =
 a $
 \stoptyping
 
+\subsection{\type {\suppressprimitiveerror}}
+
+When set to a non|-|zero value the following command will not issue an error:
+
+\starttyping
+\suppressprimitiveerror = 1
+
+\primitive\notaprimitive
+\stoptyping
+
 \section {Math}
 
 \subsection{Extensions}
@@ -880,6 +890,20 @@ ignores the value.
 
 This allows for embedded spaces, without the need for double quotes. Macro
 expansion takes place inside the argument.
+
+The \type {\tracingfonts} primitive that has been inherited from \PDFTEX\ has
+been adapted to support variants in reporting the font. The reason for this
+extension is that a csname not always makes sense. The zero case is the default.
+
+\starttabulate[|T||]
+\NC 0 \EQ \type{\foo xyz} \NC \NR
+\NC 1 \EQ \type{\foo (bar)} \NC \NR
+\NC 2 \EQ \type{<bar> xyz} \NC \NR
+\NC 3 \EQ \type{<bar @ ..pt> xyz} \NC \NR
+\NC 4 \EQ \type{<id>} \NC \NR
+\NC 5 \EQ \type{<id: bar>} \NC \NR
+\NC 6 \EQ \type{<id: bar @ ..pt> xyz} \NC \NR
+\stoptabulate
 
 \subsection{Writing to file}
 

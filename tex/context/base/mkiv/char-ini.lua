@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['char-ini'] = {
 local utfchar, utfbyte, utfvalues, ustring, utotable = utf.char, utf.byte, utf.values, utf.ustring, utf.totable
 local concat, unpack, tohash, insert = table.concat, table.unpack, table.tohash, table.insert
 local next, tonumber, type, rawget, rawset = next, tonumber, type, rawget, rawset
-local format, lower, gsub, find, match = string.format, string.lower, string.gsub, string.find, string.match
+local format, lower, gsub, find = string.format, string.lower, string.gsub, string.find
 local P, R, S, C, Cs, Ct, Cc, V = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.Cc, lpeg.V
 local formatters = string.formatters
 
@@ -60,6 +60,20 @@ if data then
 else
     report_defining("fatal error: 'char-def.lua' is not loaded")
     os.exit()
+end
+
+--[[ldx--
+Extending the table.
+--ldx]]--
+
+if context and not characters.private then
+
+    require("char-prv")
+
+    for unicode, d in next, characters.private do
+        data[unicode] = d
+    end
+
 end
 
 --[[ldx--
@@ -233,6 +247,7 @@ local blocks = allocate {
     ["cjkunifiedideographsextensionc"]             = { first = 0x2A700, last = 0x2B73F,             description = "CJK Unified Ideographs Extension C" },
     ["cjkunifiedideographsextensiond"]             = { first = 0x2B740, last = 0x2B81F,             description = "CJK Unified Ideographs Extension D" },
     ["cjkunifiedideographsextensione"]             = { first = 0x2B820, last = 0x2CEAF,             description = "CJK Unified Ideographs Extension E" },
+    ["cjkunifiedideographsextensionf"]             = { first = 0x2CEB0, last = 0x2EBEF,             description = "CJK Unified Ideographs Extension F" },
     ["combiningdiacriticalmarks"]                  = { first = 0x00300, last = 0x0036F,             description = "Combining Diacritical Marks" },
     ["combiningdiacriticalmarksextended"]          = { first = 0x01AB0, last = 0x01AFF,             description = "Combining Diacritical Marks Extended" },
     ["combiningdiacriticalmarksforsymbols"]        = { first = 0x020D0, last = 0x020FF,             description = "Combining Diacritical Marks for Symbols" },
@@ -328,6 +343,7 @@ local blocks = allocate {
     ["ipaextensions"]                              = { first = 0x00250, last = 0x002AF,              description = "IPA Extensions" },
     ["javanese"]                                   = { first = 0x0A980, last = 0x0A9DF,              description = "Javanese" },
     ["kaithi"]                                     = { first = 0x11080, last = 0x110CF,              description = "Kaithi" },
+    ["kanaextendeda"]                              = { first = 0x1B100, last = 0x1B12F,              description = "Kana Extended-A" },
     ["kanasupplement"]                             = { first = 0x1B000, last = 0x1B0FF,              description = "Kana Supplement" },
     ["kanbun"]                                     = { first = 0x03190, last = 0x0319F,              description = "Kanbun" },
     ["kangxiradicals"]                             = { first = 0x02F00, last = 0x02FDF,              description = "Kangxi Radicals" },
@@ -384,6 +400,7 @@ local blocks = allocate {
     ["mandaic"]                                    = { first = 0x00840, last = 0x0085F, otf="mand",  description = "Mandaic" },
     ["manichaean"]                                 = { first = 0x10AC0, last = 0x10AFF,              description = "Manichaean" },
     ["marchen"]                                    = { first = 0x11C70, last = 0x11CBF,              description = "Marchen" },
+    ["masaramgondi"]                               = { first = 0x11D00, last = 0x11D5F,              description = "Masaram Gondi" },
     ["mathematicalalphanumericsymbols"]            = { first = 0x1D400, last = 0x1D7FF, math = true, description = "Mathematical Alphanumeric Symbols" },
     ["mathematicaloperators"]                      = { first = 0x02200, last = 0x022FF, math = true, description = "Mathematical Operators" },
     ["meeteimayek"]                                = { first = 0x0ABC0, last = 0x0ABFF,              description = "Meetei Mayek" },
@@ -413,6 +430,7 @@ local blocks = allocate {
     ["newtailue"]                                  = { first = 0x01980, last = 0x019DF,              description = "New Tai Lue" },
     ["nko"]                                        = { first = 0x007C0, last = 0x007FF, otf="nko",   description = "NKo" },
     ["numberforms"]                                = { first = 0x02150, last = 0x0218F,              description = "Number Forms" },
+    ["nushu"]                                      = { first = 0x1B170, last = 0x1B2FF,              description = "Nushu" },
     ["ogham"]                                      = { first = 0x01680, last = 0x0169F, otf="ogam",  description = "Ogham" },
     ["olchiki"]                                    = { first = 0x01C50, last = 0x01C7F,              description = "Ol Chiki" },
     ["oldhungarian"]                               = { first = 0x10C80, last = 0x10CFF,              description = "Old Hungarian" },
@@ -451,6 +469,7 @@ local blocks = allocate {
     ["sinhalaarchaicnumbers"]                      = { first = 0x111E0, last = 0x111FF,              description = "Sinhala Archaic Numbers" },
     ["smallformvariants"]                          = { first = 0x0FE50, last = 0x0FE6F,              description = "Small Form Variants" },
     ["sorasompeng"]                                = { first = 0x110D0, last = 0x110FF,              description = "Sora Sompeng" },
+    ["soyombo"]                                    = { first = 0x11A50, last = 0x11AAF,              description = "Soyombo" },
     ["spacingmodifierletters"]                     = { first = 0x002B0, last = 0x002FF,              description = "Spacing Modifier Letters" },
     ["specials"]                                   = { first = 0x0FFF0, last = 0x0FFFF,              description = "Specials" },
     ["sundanese"]                                  = { first = 0x01B80, last = 0x01BBF,              description = "Sundanese" },
@@ -467,6 +486,7 @@ local blocks = allocate {
     ["suttonsignwriting"]                          = { first = 0x1D800, last = 0x1DAAF,              description = "Sutton SignWriting" },
     ["sylotinagri"]                                = { first = 0x0A800, last = 0x0A82F, otf="sylo",  description = "Syloti Nagri" },
     ["syriac"]                                     = { first = 0x00700, last = 0x0074F, otf="syrc",  description = "Syriac" },
+    ["syriacsupplement"]                           = { first = 0x00860, last = 0x0086F,              description = "Syriac Supplement" },
     ["tagalog"]                                    = { first = 0x01700, last = 0x0171F, otf="tglg",  description = "Tagalog" },
     ["tagbanwa"]                                   = { first = 0x01760, last = 0x0177F, otf="tagb",  description = "Tagbanwa" },
     ["tags"]                                       = { first = 0xE0000, last = 0xE007F,              description = "Tags" },
@@ -492,7 +512,7 @@ local blocks = allocate {
     ["uppercaseboldfraktur"]                       = { first = 0x1D56C, last = 0x1D585, math = true },
     ["uppercasebolditalic"]                        = { first = 0x1D468, last = 0x1D481, math = true },
     ["uppercaseboldscript"]                        = { first = 0x1D4D0, last = 0x1D4E9, math = true },
-    ["uppercasedoublestruck"]                      = { first = 0x1D538, last = 0x1D551, math = true },
+    ["uppercasedoublestruck"]                      = { first = 0x1D538, last = 0x1D551, math = true }, -- gaps are filled in elsewhere
     ["uppercasefraktur"]                           = { first = 0x1D504, last = 0x1D51D, math = true },
     ["uppercasegreekbold"]                         = { first = 0x1D6A8, last = 0x1D6C1, math = true },
     ["uppercasegreekbolditalic"]                   = { first = 0x1D71C, last = 0x1D735, math = true },
@@ -517,6 +537,53 @@ local blocks = allocate {
     ["yijinghexagramsymbols"]                      = { first = 0x04DC0, last = 0x04DFF, otf="yi",    description = "Yijing Hexagram Symbols" },
     ["yiradicals"]                                 = { first = 0x0A490, last = 0x0A4CF, otf="yi",    description = "Yi Radicals" },
     ["yisyllables"]                                = { first = 0x0A000, last = 0x0A48F, otf="yi",    description = "Yi Syllables" },
+    ["zanabazarsquare"]                            = { first = 0x11A00, last = 0x11A4F,              description = "Zanabazar Square" },
+}
+
+-- moved from math-act.lua to here:
+
+-- operators    : 0x02200
+-- symbolsa     : 0x02701
+-- symbolsb     : 0x02901
+-- supplemental : 0x02A00
+
+blocks.lowercaseitalic.gaps = {
+    [0x1D455] = 0x0210E, -- ℎ h
+}
+
+blocks.uppercasescript.gaps = {
+    [0x1D49D] = 0x0212C, -- ℬ script B
+    [0x1D4A0] = 0x02130, -- ℰ script E
+    [0x1D4A1] = 0x02131, -- ℱ script F
+    [0x1D4A3] = 0x0210B, -- ℋ script H
+    [0x1D4A4] = 0x02110, -- ℐ script I
+    [0x1D4A7] = 0x02112, -- ℒ script L
+    [0x1D4A8] = 0x02133, -- ℳ script M
+    [0x1D4AD] = 0x0211B, -- ℛ script R
+}
+
+blocks.lowercasescript.gaps = {
+    [0x1D4BA] = 0x0212F, -- ℯ script e
+    [0x1D4BC] = 0x0210A, -- ℊ script g
+    [0x1D4C4] = 0x02134, -- ℴ script o
+}
+
+blocks.uppercasefraktur.gaps = {
+    [0x1D506] = 0x0212D, -- ℭ fraktur C
+    [0x1D50B] = 0x0210C, -- ℌ fraktur H
+    [0x1D50C] = 0x02111, -- ℑ fraktur I
+    [0x1D515] = 0x0211C, -- ℜ fraktur R
+    [0x1D51D] = 0x02128, -- ℨ fraktur Z
+}
+
+blocks.uppercasedoublestruck.gaps = {
+    [0x1D53A] = 0x02102, -- ℂ bb C
+    [0x1D53F] = 0x0210D, -- ℍ bb H
+    [0x1D545] = 0x02115, -- ℕ bb N
+    [0x1D547] = 0x02119, -- ℙ bb P
+    [0x1D548] = 0x0211A, -- ℚ bb Q
+    [0x1D549] = 0x0211D, -- ℝ bb R
+    [0x1D551] = 0x02124, -- ℤ bb Z
 }
 
 characters.blocks = blocks
@@ -704,7 +771,7 @@ setmetatableindex(characters.is_punctuation,mti)
 --
 -- comments taken from standard:
 
-characters.linebreaks = {
+characters.linebreaks = allocate {
 
     -- non-tailorable line breaking classes
 
@@ -799,7 +866,7 @@ table we derive a few more.</p>
 
 if not characters.fallbacks then
 
-    characters.fallbacks = {
+    characters.fallbacks = allocate {
         [0x0308] = 0x00A8, [0x00A8] = 0x0308, -- dieresiscmb      dieresis
         [0x0304] = 0x00AF, [0x00AF] = 0x0304, -- macroncmb        macron
         [0x0301] = 0x00B4, [0x00B4] = 0x0301, -- acutecomb        acute
@@ -999,7 +1066,7 @@ setmetatableindex(descriptions, function(t,k)
     for u, c in next, data do
         local d = c.description
         if d then
-            if find(d," ") then
+            if find(d," ",1,true) then
                 d = gsub(d," ","")
             end
             d = lower(d)
@@ -1017,7 +1084,7 @@ setmetatableindex(synonyms, function(t,k)
     for u, c in next, data do
         local s = c.synonyms
         if s then
-            if find(s," ") then
+            if find(s," ",1,true) then
                 s = gsub(s," ","")
             end
          -- s = lower(s) -- is already lowercase
@@ -1544,35 +1611,35 @@ local cache = setmetatable({ }, { __mode = "k" } )
         if h then
             return h
         end
-local h = cache[name]
-if h then
-    return h
-elseif h == false then
-    return
-end
+        local h = cache[name]
+        if h then
+            return h
+        elseif h == false then
+            return
+        end
         -- expand shortcuts
         local name = lpegmatch(pattern_0,name) or name
         -- expand some 25K variants
         local h = lpegmatch(p_special,name)
         if h then
-cache[name] = h
+            cache[name] = h
             return h
         end
         -- simplify
         local s = lpegmatch(pattern_1,name)
         local h = hash[s]
         if h then
-cache[name] = h
+            cache[name] = h
             return h
         end
         -- simplify
         local s = lpegmatch(pattern_2,name)
         local h = hash[s]
         if h then
-cache[name] = h
+            cache[name] = h
             return h
         end
-cache[name] = false
+        cache[name] = false
     end
 
     function emoji.known()

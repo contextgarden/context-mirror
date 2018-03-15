@@ -168,20 +168,20 @@ The input for such primitives would look like this:
 The altered \TEX82 primitives are:
 
 \starttabulate[|l|l|r|c|l|r|]
-\NC \bf primitive     \NC \bf min \NC \bf max \NC \kern 2em  \NC \bf min \NC \bf max \NC \NR
-\NC \type {\mathcode} \NC 0       \NC 10FFFF  \NC =          \NC 0       \NC 8000    \NC \NR
-\NC \type {\delcode}  \NC 0       \NC 10FFFF  \NC =          \NC 0       \NC FFFFFF  \NC \NR
+\BC primitive         \BC min \BC max    \BC \kern 2em \BC min \BC max    \NC \NR
+\NC \type {\mathcode} \NC 0   \NC 10FFFF \NC =         \NC 0   \NC 8000   \NC \NR
+\NC \type {\delcode}  \NC 0   \NC 10FFFF \NC =         \NC 0   \NC FFFFFF \NC \NR
 \stoptabulate
 
 The unaltered ones are:
 
 \starttabulate[|l|l|r|]
-\NC \bf primitive        \NC \bf min \NC \bf max \NC \NR
-\NC \type {\mathchardef} \NC 0       \NC    8000 \NC \NR
-\NC \type {\mathchar}    \NC 0       \NC    7FFF \NC \NR
-\NC \type {\mathaccent}  \NC 0       \NC    7FFF \NC \NR
-\NC \type {\delimiter}   \NC 0       \NC 7FFFFFF \NC \NR
-\NC \type {\radical}     \NC 0       \NC 7FFFFFF \NC \NR
+\BC primitive            \BC min \BC max     \NC \NR
+\NC \type {\mathchardef} \NC 0   \NC    8000 \NC \NR
+\NC \type {\mathchar}    \NC 0   \NC    7FFF \NC \NR
+\NC \type {\mathaccent}  \NC 0   \NC    7FFF \NC \NR
+\NC \type {\delimiter}   \NC 0   \NC 7FFFFFF \NC \NR
+\NC \type {\radical}     \NC 0   \NC 7FFFFFF \NC \NR
 \stoptabulate
 
 For practical reasons \type {\mathchardef} will silently accept values larger
@@ -193,18 +193,18 @@ The following new primitives are compatible with \XETEX:
 % somewhat fuzzy:
 
 \starttabulate[|l|l|r|c|l|r|]
-\NC \bf primitive                           \NC \bf min   \NC \bf max             \NC \kern 2em  \NC \bf min   \NC \bf max                    \NC \NR
-\NC \type {\Umathchardef}                   \NC 0+0+0     \NC 7+FF+10FFFF\rlap{\high{1}}   \NC   \NC           \NC                            \NC \NR
-\NC \type {\Umathcharnumdef}\rlap{\high{5}} \NC -80000000 \NC    7FFFFFFF\rlap{\high{3}}   \NC   \NC           \NC                            \NC \NR
-\NC \type {\Umathcode}                      \NC 0         \NC      10FFFF                  \NC = \NC 0+0+0     \NC 7+FF+10FFFF\rlap{\high{1}} \NC \NR
-\NC \type {\Udelcode}                       \NC 0         \NC      10FFFF                  \NC = \NC 0+0       \NC   FF+10FFFF\rlap{\high{2}} \NC \NR
-\NC \type {\Umathchar}                      \NC 0+0+0     \NC 7+FF+10FFFF                  \NC   \NC           \NC                            \NC \NR
-\NC \type {\Umathaccent}                    \NC 0+0+0     \NC 7+FF+10FFFF\rlap{\high{2,4}} \NC   \NC           \NC                            \NC \NR
-\NC \type {\Udelimiter}                     \NC 0+0+0     \NC 7+FF+10FFFF\rlap{\high{2}}   \NC   \NC           \NC                            \NC \NR
-\NC \type {\Uradical}                       \NC 0+0       \NC   FF+10FFFF\rlap{\high{2}}   \NC   \NC           \NC                            \NC \NR
-\NC \type {\Umathcharnum}                   \NC -80000000 \NC    7FFFFFFF\rlap{\high{3}}   \NC   \NC           \NC                            \NC \NR
-\NC \type {\Umathcodenum}                   \NC 0         \NC      10FFFF                  \NC = \NC -80000000 \NC    7FFFFFFF\rlap{\high{3}} \NC \NR
-\NC \type {\Udelcodenum}                    \NC 0         \NC      10FFFF                  \NC = \NC -80000000 \NC    7FFFFFFF\rlap{\high{3}} \NC \NR
+\BC primitive                               \BC min       \BC max                          \BC \kern 2em \BC min       \BC max                        \NC \NR
+\NC \type {\Umathchardef}                   \NC 0+0+0     \NC 7+FF+10FFFF\rlap{\high{1}}   \NC           \NC           \NC                            \NC \NR
+\NC \type {\Umathcharnumdef}\rlap{\high{5}} \NC -80000000 \NC    7FFFFFFF\rlap{\high{3}}   \NC           \NC           \NC                            \NC \NR
+\NC \type {\Umathcode}                      \NC 0         \NC      10FFFF                  \NC =         \NC 0+0+0     \NC 7+FF+10FFFF\rlap{\high{1}} \NC \NR
+\NC \type {\Udelcode}                       \NC 0         \NC      10FFFF                  \NC =         \NC 0+0       \NC   FF+10FFFF\rlap{\high{2}} \NC \NR
+\NC \type {\Umathchar}                      \NC 0+0+0     \NC 7+FF+10FFFF                  \NC           \NC           \NC                            \NC \NR
+\NC \type {\Umathaccent}                    \NC 0+0+0     \NC 7+FF+10FFFF\rlap{\high{2,4}} \NC           \NC           \NC                            \NC \NR
+\NC \type {\Udelimiter}                     \NC 0+0+0     \NC 7+FF+10FFFF\rlap{\high{2}}   \NC           \NC           \NC                            \NC \NR
+\NC \type {\Uradical}                       \NC 0+0       \NC   FF+10FFFF\rlap{\high{2}}   \NC           \NC           \NC                            \NC \NR
+\NC \type {\Umathcharnum}                   \NC -80000000 \NC    7FFFFFFF\rlap{\high{3}}   \NC           \NC           \NC                            \NC \NR
+\NC \type {\Umathcodenum}                   \NC 0         \NC      10FFFF                  \NC =         \NC -80000000 \NC    7FFFFFFF\rlap{\high{3}} \NC \NR
+\NC \type {\Udelcodenum}                    \NC 0         \NC      10FFFF                  \NC =         \NC -80000000 \NC    7FFFFFFF\rlap{\high{3}} \NC \NR
 \stoptabulate
 
 Specifications typically look like:
@@ -238,13 +238,13 @@ details.
 New primitives that exist in \LUATEX\ only (all of these will be explained
 in following sections):
 
-\starttabulate[|l|l|l|l|]
-\NC \bf primitive         \NC \bf value range (in hex) \NC \NR
-\NC \type {\Uroot}           \NC 0+0--FF+10FFFF$^2$       \NC \NR
-\NC \type {\Uoverdelimiter}  \NC 0+0--FF+10FFFF$^2$       \NC \NR
-\NC \type {\Uunderdelimiter} \NC 0+0--FF+10FFFF$^2$       \NC \NR
-\NC \type {\Udelimiterover}  \NC 0+0--FF+10FFFF$^2$       \NC \NR
-\NC \type {\Udelimiterunder} \NC 0+0--FF+10FFFF$^2$       \NC \NR
+\starttabulate[|l|l|]
+\BC primitive                \BC value range (in hex) \NC \NR
+\NC \type {\Uroot}           \NC 0+0--FF+10FFFF$^2$   \NC \NR
+\NC \type {\Uoverdelimiter}  \NC 0+0--FF+10FFFF$^2$   \NC \NR
+\NC \type {\Uunderdelimiter} \NC 0+0--FF+10FFFF$^2$   \NC \NR
+\NC \type {\Udelimiterover}  \NC 0+0--FF+10FFFF$^2$   \NC \NR
+\NC \type {\Udelimiterunder} \NC 0+0--FF+10FFFF$^2$   \NC \NR
 \stoptabulate
 
 \section{Cramped math styles}
@@ -336,7 +336,7 @@ now accessible via primitive commands. In fact, refactoring of the math engine
 has resulted in many more parameters than were accessible before.
 
 \starttabulate
-\NC \bf primitive name               \NC \bf description \NC \NR
+\BC primitive name                   \BC description \NC \NR
 \NC \type {\Umathquad}               \NC the width of 18 mu's \NC \NR
 \NC \type {\Umathaxis}               \NC height of the vertical center axis of
                                          the math formula above the baseline \NC \NR
@@ -412,8 +412,8 @@ to fully control spacing. Therefore \LUATEX\ comes with a new directive: \type
 {\mathdisplayskipmode}. The following values apply:
 
 \starttabulate
-\NC 0 \NC normal \TEX\ behaviour: always above, only below when larger than zero \NC \NR
-\NC 1 \NC always \NC \NR
+\NC 0 \NC normal \TEX\ behaviour \NC \NR
+\NC 1 \NC always (same as 0) \NC \NR
 \NC 2 \NC only when not zero \NC \NR
 \NC 3 \NC never, not even when not zero \NC \NR
 \stoptabulate
@@ -447,7 +447,7 @@ dimension parameter. For math fonts, this should be set to zero.
 \switchtobodyfont[8pt]
 
 \starttabulate[|l|l|l|p|]
-\NC \bf variable                      \NC \bf style             \NC \bf default value opentype               \NC \bf default value tfm \NC \NR
+\BC variable                          \BC style                 \BC default value opentype                   \BC default value tfm \NC \NR
 \NC \type {\Umathaxis}                \NC --                    \NC AxisHeight                               \NC axis_height \NC \NR
 \NC \type {\Umathoperatorsize}        \NC D, D'                 \NC DisplayOperatorMinHeight                 \NC $^6$ \NC \NR
 \NC \type {\Umathfractiondelsize}     \NC D, D'                 \NC FractionDelimiterDisplayStyleSize$^9$    \NC delim1 \NC \NR
@@ -579,7 +579,7 @@ kerns assume correction too. Anyway, with this parameter one can control it.
         \NC \mathnolimitsmode8000 $\displaystyle\int\nolimits^0_1$
     \NC \NR
     \TB
-    \NC \bf mode
+    \BC mode
         \NC \tttf 0
         \NC \tttf 1
         \NC \tttf 2
@@ -587,7 +587,7 @@ kerns assume correction too. Anyway, with this parameter one can control it.
         \NC \tttf 4
         \NC \tttf 8000
     \NC \NR
-    \NC \bf superscript
+    \BC superscript
         \NC 0
         \NC font
         \NC 0
@@ -595,7 +595,7 @@ kerns assume correction too. Anyway, with this parameter one can control it.
         \NC +ic/2
         \NC 0
     \NC \NR
-    \NC \bf subscript
+    \BC subscript
         \NC -ic
         \NC font
         \NC 0
@@ -617,25 +617,120 @@ experimenting.
 
 The \type {\mathitalicsmode} parameter can be set to~1 to force italic correction
 before noads that represent some more complex structure (read: everything
-that is not an ord, bin, rel, open, close, punct or inner).
+that is not an ord, bin, rel, open, close, punct or inner). We show a Cambria
+example.
 
 \starttexdefinition Whatever #1
-    \NC \type{\mathitalicsmode=#1}
+    \NC \type{\mathitalicsmode = #1}
     \NC \mathitalicsmode#1\ruledhbox{$\left|T^1\right|$}
     \NC \mathitalicsmode#1\ruledhbox{$\left|T\right|$}
     \NC \mathitalicsmode#1\ruledhbox{$T+1$}
     \NC \mathitalicsmode#1\ruledhbox{$T{1\over2}$}
     \NC \mathitalicsmode#1\ruledhbox{$T\sqrt{1}$}
-    \NR \NR
+    \NC \NR
 \stoptexdefinition
 
-\starttabulate[|c|c|c|c|c|c|]
-    \Whatever0
-    \Whatever1
-\stoptabulate
+\start
+    \switchtobodyfont[cambria]
+    \starttabulate[|c|c|c|c|c|c|]
+        \Whatever{0}%
+        \Whatever{1}%
+    \stoptabulate
+\stop
 
 This kind of parameters relate to the fact that italic correction in \OPENTYPE\
 math is bound to fuzzy rules. So, control is the solution.
+
+\section{Script boxes}
+
+If you want typeset text in math macro packages often provide something \type
+{\text} which obeys the script sizes. As the definition can be anything there is
+a good change that the kerning doesn't come out well when used in a script. Given
+that the first glyph ends up in an \type {\hbox} we have some control over this.
+And, as a bonus we also added control over the normal sublist kerning. The \type
+{\mathscriptboxmode} parameter defaults to~1.
+
+\starttabulate[|l|l|]
+\NC \type {0} \NC forget about kerning \NC \NR
+\NC \type {1} \NC kern math sub lists with a valid glyph \NC \NR
+\NC \type {2} \NC also kern math sub boxes that have a valid glyph \NC \NR
+\NC \type {2} \NC only kern math sub boxes with a boundary node present\NC \NR
+\stoptabulate
+
+Here we show some examples. Of course this doesn't solve all our problems, if
+only because some fonts have characters with bounding boxes that compensate for
+italics, while other fonts can lack kerns.
+
+\startbuffer[1]
+    $T_{\tf fluff}$
+\stopbuffer
+
+\startbuffer[2]
+    $T_{\text{fluff}}$
+\stopbuffer
+
+\startbuffer[3]
+    $T_{\text{\boundary1 fluff}}$
+\stopbuffer
+
+\unexpanded\def\Show#1#2#3%
+  {\doifelsenothing{#3}
+     {\small\typeinlinebuffer[#1]}
+     {\doifelse{#3}{-}
+        {\small\type{mode #2}}
+        {\switchtobodyfont[#3]\showfontkerns\showglyphs\mathscriptboxmode#2\relax\inlinebuffer[#1]}}}
+
+\starttabulate[|lT|c|c|c|c|c|]
+    \NC          \NC \Show{1}{0}{}         \NC\Show{1}{1}{}         \NC \Show{2}{1}{}         \NC \Show{2}{2}{}         \NC \Show{3}{3}{}         \NC \NR
+    \NC          \NC \Show{1}{0}{-}        \NC\Show{1}{1}{-}        \NC \Show{2}{1}{-}        \NC \Show{2}{2}{-}        \NC \Show{3}{3}{-}        \NC \NR
+    \NC modern   \NC \Show{1}{0}{modern}   \NC\Show{1}{1}{modern}   \NC \Show{2}{1}{modern}   \NC \Show{2}{2}{modern}   \NC \Show{3}{3}{modern}   \NC \NR
+    \NC lucidaot \NC \Show{1}{0}{lucidaot} \NC\Show{1}{1}{lucidaot} \NC \Show{2}{1}{lucidaot} \NC \Show{2}{2}{lucidaot} \NC \Show{3}{3}{lucidaot} \NC \NR
+    \NC pagella  \NC \Show{1}{0}{pagella}  \NC\Show{1}{1}{pagella}  \NC \Show{2}{1}{pagella}  \NC \Show{2}{2}{pagella}  \NC \Show{3}{3}{pagella}  \NC \NR
+    \NC cambria  \NC \Show{1}{0}{cambria}  \NC\Show{1}{1}{cambria}  \NC \Show{2}{1}{cambria}  \NC \Show{2}{2}{cambria}  \NC \Show{3}{3}{cambria}  \NC \NR
+    \NC dejavu   \NC \Show{1}{0}{dejavu}   \NC\Show{1}{1}{dejavu}   \NC \Show{2}{1}{dejavu}   \NC \Show{2}{2}{dejavu}   \NC \Show{3}{3}{dejavu}   \NC \NR
+\stoptabulate
+
+\section{Unscaled fences}
+
+The \type {\mathdelimitersmode} primitive is experimental and deals with the
+following (potential) problems. Three bits can be set. The first bit prevents
+an unwanted shift when the fence symbol is not scaled (a cambria side effect). The
+second bit forces italic correction between a preceding character ordinal and
+the fenced subformula, while the third bit turns that subformula into a ordinary
+so that the same spacing applies as with unfenced variants. Here we show Cambria
+(with \type {\mathitalicsmode} enabled).
+
+\starttexdefinition Whatever #1
+    \NC \type{\mathdelimitersmode = #1}
+    \NC \mathitalicsmode1\mathdelimitersmode#1\ruledhbox{\showglyphs\showfontkerns\showfontitalics$f(x)$}
+    \NC \mathitalicsmode1\mathdelimitersmode#1\ruledhbox{\showglyphs\showfontkerns\showfontitalics$f\left(x\right)$}
+    \NC \NR
+\stoptexdefinition
+
+\start
+    \switchtobodyfont[cambria]
+    \starttabulate[|l|l|l|]
+        \Whatever{0}\Whatever{1}\Whatever{2}\Whatever{3}%
+        \Whatever{4}\Whatever{5}\Whatever{6}\Whatever{7}%
+    \stoptabulate
+\stop
+
+So, when set to 7 fenced subformulas with unscaled delimiters come out the same
+as unfenced ones. This can be handy for cases where one is forced to use \type
+{\left} and \type {\right} always because of unpredictable content. As said, it's
+an experimental features (which somehow fits in the exceptional way fences are
+dealt with in the engine). The full list of flags is given in the next table:
+
+\starttabulate[|T|l|]
+\NC "01 \NC don't apply the usual shift \NC \NR
+\NC "02 \NC apply italic correction when possible \NC \NR
+\NC "04 \NC force a ordinary subformula \NC \NR
+\NC "08 \NC no shift when a base character \NC \NR
+\NC "10 \NC only shift when an extensible \NC \NR
+\stoptabulate
+
+The effect can depend on the font (and for Cambria one can use for instance \type
+{"16}).
 
 \section{Math spacing setting}
 
@@ -1033,8 +1128,8 @@ get the length of the last line, the following will often work too:
 \LUATEX\ defines six new primitives that have the same function as
 \type {^}, \type {_}, \type {$}, and \type {$$}:
 
-\starttabulate[|l|l|l|l|]
-\NC \bf primitive           \NC \bf explanation \NC \NR
+\starttabulate[|l|l|]
+\BC primitive                  \BC explanation \NC \NR
 \NC \type {\Usuperscript}      \NC Duplicates the functionality of \type {^} \NC \NR
 \NC \type {\Usubscript}        \NC Duplicates the functionality of \type {_} \NC \NR
 \NC \type {\Ustartmath}        \NC Duplicates the functionality of \type {$}, % $
@@ -1050,6 +1145,25 @@ get the length of the last line, the following will often work too:
 The \type {\Ustopmath} and \type {\Ustopdisplaymath} primitives check if the current
 math mode is the correct one (inline vs.\ displayed), but you can freely intermix
 the four mathon|/|mathoff commands with explicit dollar sign(s).
+
+\subsection{Script commands \type {\Unosuperscript} and \type {\Unosubscript}}
+
+These two commands result in super- and subscripts but with the current style (at the
+time of rendering). So,
+
+\startbuffer[script]
+$
+    x\Usuperscript  {1}\Usubscript  {2} =
+    x\Unosuperscript{1}\Unosubscript{2} =
+    x\Usuperscript  {1}\Unosubscript{2} =
+    x\Unosuperscript{1}\Usubscript  {2}
+$
+\stopbuffer
+
+\typebuffer
+
+results in \inlinebuffer[script].
+
 
 \subsection{Allowed math commands in non-math modes}
 
@@ -1071,9 +1185,7 @@ with zero being the default behaviour.
 \start
 
 \def\OneLiner#1#2%
-  {\NC #1
-%    \NC \ruledhbox{\mathsurroundmode#1\relax\hsize 100pt   x$x$x}
-%    \NC \ruledhbox{\mathsurroundmode#1\relax\hsize 100pt x $x$ x}
+  {\NC \type{#1}
    \NC \dontleavehmode\inframed[align=normal,offset=0pt,frame=off]{\mathsurroundmode#1\relax\hsize 100pt   x$x$x}
    \NC \dontleavehmode\inframed[align=normal,offset=0pt,frame=off]{\mathsurroundmode#1\relax\hsize 100pt x $x$ x}
    \NC #2
@@ -1086,7 +1198,7 @@ with zero being the default behaviour.
 
 \typebuffer \getbuffer
 
-\starttabulate[|Tc|c|c|pl|]
+\starttabulate[|c|c|c|pl|]
 \HL
 \BC mode \BC \type {x$x$x} \BC \type {x $x$ x} \BC effect \NC \NR
 \HL
@@ -1105,7 +1217,7 @@ with zero being the default behaviour.
 
 Method six omits the surround glue when there is (x)spacing glue present while
 method seven does the opposite, the glue is only applied when there is (x)space
-glue present too. Anything more fance, like checking the begining or end of a
+glue present too. Anything more fancy, like checking the begining or end of a
 paragraph (or edges of a box) would not be robust anyway. If you want that you
 can write a callback that runs over a list and analyzes a paragraph. Actually, in
 that case you could also inject glue (or set the properties of a math node)
@@ -1175,7 +1287,7 @@ still stepping through the successively larger variants. When no dimensions are
 given the \type {noaxis} command can be used to prevent shifting over the axis.
 
 You can influence the final class with the keyword \type {class} which will
-influence the spacing.
+influence the spacing. The numbers are the same as for character classes.
 
 \subsection{Fixed scripts}
 
@@ -1196,19 +1308,41 @@ effects.
   {$\mathscriptsmode#1\mathupright CH_2 + CH^+_2 + CH^2_2$}
 
 \starttabulate[|c|c|c|l|]
-\NC \bf mode \NC \bf down      \NC \bf up        \NC                \NC \NR
-\NC 0        \NC dynamic       \NC dynamic       \NC \SampleMath{0} \NC \NR
-\NC 1        \NC $d$           \NC $u$           \NC \SampleMath{1} \NC \NR
-\NC 2        \NC $s$           \NC $u$           \NC \SampleMath{2} \NC \NR
-\NC 3        \NC $s$           \NC $u + s - d$   \NC \SampleMath{3} \NC \NR
-\NC 4        \NC $d + (s-d)/2$ \NC $u + (s-d)/2$ \NC \SampleMath{4} \NC \NR
-\NC 5        \NC $d$           \NC $u + s - d$   \NC \SampleMath{5} \NC \NR
+\BC mode \BC down          \BC up            \BC                \NC \NR
+\NC 0    \NC dynamic       \NC dynamic       \NC \SampleMath{0} \NC \NR
+\NC 1    \NC $d$           \NC $u$           \NC \SampleMath{1} \NC \NR
+\NC 2    \NC $s$           \NC $u$           \NC \SampleMath{2} \NC \NR
+\NC 3    \NC $s$           \NC $u + s - d$   \NC \SampleMath{3} \NC \NR
+\NC 4    \NC $d + (s-d)/2$ \NC $u + (s-d)/2$ \NC \SampleMath{4} \NC \NR
+\NC 5    \NC $d$           \NC $u + s - d$   \NC \SampleMath{5} \NC \NR
 \stoptabulate
 
 The value of this parameter obeys grouping but applies to the whole current
 formula.
 
 % if needed we can put the value in stylenodes but maybe more should go there
+
+\subsection{Penalties: \type {\mathpenaltiesmode}}
+
+Only in inline math penalties will be added in a math list. You can force
+penalties (also in display math) by setting:
+
+\starttyping
+\mathpenaltiesmode = 1
+\stoptyping
+
+This primnitive is not really needed in \LUATEX\ because you can use the callback
+\type {mlist_to_hlist} to force penalties by just calling the regular routine
+with forced penalties. However, as part of opening up and control this primitive
+makes sense. As a bonus we also provide two extra penalties:
+
+\starttyping
+\prebinoppenalty = -100 % example value
+\prerelpenalty   =  900 % example value
+\stoptyping
+
+They default to inifinite which signals that they don't need to be inserted. When
+set they are injected before a binop or rel noad. This is an experimental feature.
 
 \subsection {Tracing}
 

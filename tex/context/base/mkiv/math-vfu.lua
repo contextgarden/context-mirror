@@ -22,9 +22,8 @@ if not modules then modules = { } end modules ['math-vfu'] = {
 -- 20D6 -> 2190
 -- 20D7 -> 2192
 
-local type, next = type, next
+local type, next, tonumber = type, next, tonumber
 local max = math.max
-local format = string.format
 local fastcopy = table.copy
 
 local fonts, nodes, mathematics = fonts, nodes, mathematics
@@ -603,22 +602,24 @@ local function copy_glyph(main,target,original,unicode,slot)
     local olddata    = original[unicode]
     if olddata then
         local newdata = {
-            width    = olddata.width,
-            height   = olddata.height,
-            depth    = olddata.depth,
-            italic   = olddata.italic,
-            kerns    = olddata.kerns,
-            commands = { { "slot", slot, unicode } },
+            width     = olddata.width,
+            height    = olddata.height,
+            depth     = olddata.depth,
+            italic    = olddata.italic,
+            kerns     = olddata.kerns,
+            tounicode = olddata.tounicode,
+            commands  = { { "slot", slot, unicode } },
         }
         local glyphdata = newdata
         local nextglyph = olddata.next
         while nextglyph do
             local oldnextdata = original[nextglyph]
             local newnextdata = {
-                commands = { { "slot", slot, nextglyph } },
-                width    = oldnextdata.width,
-                height   = oldnextdata.height,
-                depth    = oldnextdata.depth,
+                width     = oldnextdata.width,
+                height    = oldnextdata.height,
+                depth     = oldnextdata.depth,
+                tounicode = olddata.tounicode,
+                commands  = { { "slot", slot, nextglyph } },
             }
             local newnextglyph = addprivate(main,formatters["M-N-%H"](nextglyph),newnextdata)
             newdata.next = newnextglyph
@@ -641,10 +642,11 @@ local function copy_glyph(main,target,original,unicode,slot)
                 local oldglyph = hvi.glyph
                 local olddata = original[oldglyph]
                 local newdata = {
-                    commands = { { "slot", slot, oldglyph } },
-                    width    = olddata.width,
-                    height   = olddata.height,
-                    depth    = olddata.depth,
+                    width     = olddata.width,
+                    height    = olddata.height,
+                    depth     = olddata.depth,
+                    tounicode = olddata.tounicode,
+                    commands  = { { "slot", slot, oldglyph } },
                 }
                 hvi.glyph = addprivate(main,formatters["M-H-%H"](oldglyph),newdata)
 -- report_virtual("copied h variant: %X at index %i",hvi.glyph,i)
@@ -659,10 +661,11 @@ local function copy_glyph(main,target,original,unicode,slot)
                 local oldglyph = vvi.glyph
                 local olddata = original[oldglyph]
                 local newdata = {
-                    commands = { { "slot", slot, oldglyph } },
-                    width    = olddata.width,
-                    height   = olddata.height,
-                    depth    = olddata.depth,
+                    width     = olddata.width,
+                    height    = olddata.height,
+                    depth     = olddata.depth,
+                    tounicode = olddata.tounicode,
+                    commands  = { { "slot", slot, oldglyph } },
                 }
                 vvi.glyph = addprivate(main,formatters["M-V-%H"](oldglyph),newdata)
 -- report_virtual("copied v variant: %X at index %i",vvi.glyph,i)

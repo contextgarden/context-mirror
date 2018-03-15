@@ -1,0 +1,403 @@
+%D \module
+%D   [      file=s-mod-01,
+%D        version=very-old,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Module Documentation,
+%D         author={Hans Hagen \& Luigi Scarso},
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D Usage:
+%D
+%D \starttyping
+%D context --ctx=s-mod somefile.mkiv
+%D \stoptyping
+%D
+%D In due time there will be a \type {mtx-context-module} as well.
+%D
+%D Luigi Scarso coordinates the processing of modules so best contact
+%D him when you run into problems. Bugs in this style can be sent to
+%D Hans.
+
+\showframe
+
+\usemodule[abbreviations-words]
+
+\startmodule[modules-basics]
+
+\setupdocument
+   [       file=\jobname,
+           type=unknown,
+        version={\currentdate[\v!year,{.},\v!month,{.},\v!day]},
+         system=\CONTEXT,
+          title=Unknown Title,
+       subtitle=,
+         author=Unknown Author,
+           date=\currentdate,
+      copyright=Unknown Copyright,
+    suggestions=]
+
+\let\module\setupdocument
+
+\definepalet [module:unknown] [localone=black,localtwo=white]
+
+\definepalet [module:tex]     [localone=blue,localtwo=green]
+\definepalet [module:mkii]    [localone=blue,localtwo=green]
+\definepalet [module:mkiv]    [localone=blue,localtwo=green]
+\definepalet [module:mkvi]    [localone=blue,localtwo=green]
+
+\definepalet [module:lua]     [localone=red,localtwo=green]
+\definepalet [module:cld]     [localone=red,localtwo=green]
+
+\definepalet [module:mp]      [localone=red,localtwo=blue]
+\definepalet [module:mpii]    [localone=red,localtwo=blue]
+\definepalet [module:mpiv]    [localone=red,localtwo=blue]
+\definepalet [module:metapost][localone=red,localtwo=blue]
+
+\setuppalet
+  [module:unknown]
+
+\startuseMPgraphic{page}
+
+    StartPage ;
+
+        color local_white ; local_white := .8white ;
+        color local_one   ; local_one   := \MPcolor{localone} randomized (.6,.8) ;
+        color local_two   ; local_two   := \MPcolor{localtwo} randomized (.3,.4) ;
+
+        color local_one   ; local_one   := .75[\MPcolor{localone},white] ;
+        color local_two   ; local_two   := .75[\MPcolor{localtwo},white] ;
+
+        numeric width  ; width  := bbwidth  Page ;
+        numeric height ; height := bbheight Page ;
+
+        u := width/400 ;
+
+        def a_module (expr dx, dy) =
+            picture p ; p := image (
+                ddy := 0 ; sx := 60u ;
+                for i=1 upto (4 randomized 2) :
+                    sy := 7u randomized 3u ;
+                    fill unitsquare xyscaled(sx,sy) shifted (0,ddy) withcolor local_two ;
+                    ddy := ddy + sy + 4u ;
+                endfor ;
+            ) ;
+            p := p shifted (dx,dy) shifted - center p ;
+            fill boundingbox p enlarged 8u withcolor local_white ;
+            fill boundingbox p enlarged 4u withcolor local_one ;
+            draw p ;
+        enddef ;
+
+        set_grid(width, height, width/15, height/15) ;
+
+        forever:
+            if new_on_grid(uniformdeviate width,uniformdeviate height):
+                a_module(dx,dy) ;
+            fi ;
+            exitif grid_full ;
+        endfor ;
+
+        picture p ;
+
+        draw image (
+            draw anchored.urt(textext("\bf\strut\documentvariable{system}")   ysized 5.0cm,urcorner Page shifted (-1cm,- 1cm)) ;
+            draw anchored.urt(textext("\bf\strut\documentvariable{title}")    ysized 1.5cm,urcorner Page shifted (-1cm,- 8cm)) ;
+            draw anchored.urt(textext("\bf\strut\documentvariable{subtitle}") ysized 1.5cm,urcorner Page shifted (-1cm,-10cm)) ;
+            draw anchored.urt(textext("\bf\strut\documentvariable{author}")   ysized 1.5cm,lrcorner Page shifted (-1cm,  5cm)) ;
+            draw anchored.urt(textext("\bf\strut\currentdate")                ysized 1.5cm,lrcorner Page shifted (-1cm,  3cm)) ;
+        ) withcolor .25white ;
+
+    StopPage ;
+
+\stopuseMPgraphic
+
+\startsetups[document:start]
+
+    \setuppalet
+      [module:\documentvariable{type}]
+
+    \setuptyping
+      [definition]
+      [lines=yes,
+       option=\documentvariable{type}]
+
+    \startTEXpage
+        \useMPgraphic{page}
+    \stopTEXpage
+
+    \page[right]
+
+\stopsetups
+
+\startsetups[document:stop]
+
+    \page
+
+    \placeregister
+      [\v!index]
+      [\c!balance=\v!yes,
+       \c!indicator=\v!no,
+       \c!criterium=\v!text]
+
+\stopsetups
+
+% In order to be able to typeset this one too, we need to avoid
+% direct backslashed names.
+
+\starttexdefinition startmoduledocumentation
+    \starttext
+    \page
+    \begingroup
+    \startdocument
+\stoptexdefinition
+
+\starttexdefinition stopmoduledocumentation
+    \stopdocument
+    \page
+    \endgroup
+    \stoptext
+\stoptexdefinition
+
+\starttexdefinition startdocumentation
+    \par
+    \bgroup
+\stoptexdefinition
+
+\starttexdefinition stopdocumentation
+    \par
+    \egroup
+\stoptexdefinition
+
+\definetyping
+  [definition]
+
+\starttexdefinition startcompressdefinitions
+    \blank
+    \begingroup
+    \setuptyping[definition][bodyfont=small]
+\stoptexdefinition
+
+\starttexdefinition stopcompressdefinitions
+    \blank
+    \endgroup
+\stoptexdefinition
+
+% \definetyping [PL]  [\c!option=PL]
+% \definetyping [JV]  [\c!option=JV]
+% \definetyping [MP]  [\c!option=MP]
+% \definetyping [TEX] [\c!option=TEX]
+% \definetyping [LUA] [\c!option=LUA]
+
+\setuptyping
+  [\v!typing]
+  [\c!margin=\v!standard,
+   \c!lines=\v!yes]
+
+\setuptyping
+  [\v!file]
+  [\c!margin=\v!standard,
+   \c!lines=\v!yes]
+
+\setuptyping
+  [definition]
+  [\c!margin=0pt,
+   \c!numbering=\v!line,
+   \c!continue=\v!yes,
+   \c!lines=\v!yes]
+
+\setuplinenumbering
+  [definition]
+  [\c!style=\ttx,
+   \c!align=\v!flushright]
+
+% This will be cleaned up.
+
+\unexpanded\def\domodulemarginstuff#1#2%
+  {\marginstuff
+     {\ifx#1\relax
+        \index{#2}%
+      \else
+        \index{#1{#2}}%
+      \fi
+      \dontleavehmode#1{\doboundtext{#2}{\leftmarginwidth}{..}}}}
+
+\unexpanded\def\modulemarginstuff#1#2% to be renamed
+  {\processcommalist[#2]{\domodulemarginstuff#1}}
+
+\definemargindata
+  [marginstuff]
+  [left]
+  [stack=yes,
+   hoffset=2em,
+   style=\ttxx\setstrut]
+
+\unexpanded\def\macros  {\modulemarginstuff\tex  }
+\unexpanded\def\extras  {\modulemarginstuff\relax}
+\unexpanded\def\elements{\modulemarginstuff\someelement}
+
+\unexpanded\def\someelement#1{\type{<#1>}}
+
+% [index]{command}
+
+% \macros{a,b}
+% \macros{a,b}{b}
+% \macros[a]{a,b}{b}
+
+% weg ermee (indeed):
+%
+% \defineparagraphs [interface] [\c!n=2]
+% \setupparagraphs  [interface] [1] [\c!width=4cm]
+
+\starttexdefinition startexample
+    \par
+    \startnarrower
+\stoptexdefinition
+
+\starttexdefinition stopexample
+    \stopnarrower
+\stoptexdefinition
+
+%D Command references:
+
+\usemodule[int-load] \loadsetups
+
+\let\showsetup\setup
+
+\setupframedtexts
+  [setuptext]
+  [\c!background=\v!screen,
+   \c!frame=\v!off]
+
+% style (we use dejavu as it supports more characters)
+
+\usebodyfont
+  [dejavu-condensed,9pt] % preload
+
+\setupbodyfont
+  [dejavu,9pt] % main font
+
+\mainlanguage
+  [en]
+
+\setuptyping
+  [\v!typing]
+  [\c!bodyfont=dejavu-condensed]
+
+\setupwhitespace
+  [\v!big]
+
+\setuptolerance
+  [\v!verytolerant,\v!stretch]
+
+\setuplayout
+  [\c!backspace=3.5cm,
+   \c!cutspace=2cm,
+   \c!leftmargin=1.75cm,
+   \c!rightmargin=0cm,
+   \c!margindistance=.5cm,
+   \c!leftedgedistance=.25cm,
+   \c!rightedgedistance=.5cm,
+   \c!edge=1.5cm,
+   \c!width=middle,
+   \c!topspace=2cm,
+   \c!header=1.25cm,
+   \c!footer=1.25cm,
+   \c!height=middle,
+   \c!style=\ss]
+
+\setuppagenumbering
+  [\c!location=]
+
+\setuppagenumbering
+  [\c!alternative={\v!doublesided,\v!singlesided}]
+
+\setupfootertexts
+  [\v!edge]
+  [][\pagenumber]
+
+\setupfootertexts
+  [\v!margin]
+  [\filename{\documentvariable{file}}][]
+  [\filename{\documentvariable{file}}][]
+
+\setupfootertexts
+  [\v!text]
+  [\CONTEXT]
+  [\documentvariable{title}]
+
+\setupheadertexts
+  [\v!text]
+  []
+  [\documentvariable{subtitle}]
+
+\setupinmargin
+  [\c!location=\v!left]
+
+\setupheads
+  [\c!alternative=\v!inmargin]
+
+\setuphead
+  [\v!chapter]
+  [\c!style=\bfc,
+   \c!page=\v!right,
+   \c!header=\v!empty]
+
+\setuphead
+  [\v!section]
+  [\c!style=\bfb,
+   \c!page=\v!right]
+
+\setuphead
+  [\v!subsection]
+  [\c!style=\bfa]
+
+\setuplist
+  [\v!chapter]
+  [\c!style=\v!bold,
+   \c!after=\blank]
+
+\setupcombinedlist
+  [\v!content]
+  [\c!width=3em,
+   \c!aligntitle=\v!yes]
+
+\setupregister
+  [\v!index]
+  [\c!balance=\v!yes,
+   \c!indicator=\v!no]
+
+\setupinteraction
+  [\c!state=\v!start,
+   \c!color=,
+   \c!contrastcolor=,
+   \c!style=]
+
+% modes
+
+\doifmode {nocolor} {
+
+  \setupcolors
+    [\c!conversion=\v!always]
+
+}
+
+\doifmode {singlesided} {
+
+  \setuppagenumbering
+    [\c!alternative=\v!singlesided]
+
+  \setupfootertexts
+    [\v!margin]
+    [\filename{\documentvariable{file}}][]
+
+}
+
+\protect
+
+\stopmodule

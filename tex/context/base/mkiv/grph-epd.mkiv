@@ -15,7 +15,7 @@
 
 \unprotect
 
-\registerctxluafile{grph-epd}{1.001}
+\registerctxluafile{grph-epd}{}
 
 \def\figurereference{\clf_figurestatus{reference}{}} % might become private
 
@@ -42,6 +42,34 @@
       \doif\figurefiletype{pdf}{\doifnot{\externalfigureparameter\c!interaction}\v!none\grph_epdf_add_overlay}%
     \fi
 \to \externalfigurepostprocessors
+
+\defineframed
+  [epdfstampsymbol]
+  [\c!foregroundstyle=\v!mono,
+   \c!background=\c!color,
+   \c!rulethickness=.125\exheight,
+   \c!offset=.250\exheight,
+   \c!backgroundcolor=lightgray,   % can be adapted before first usage
+   \c!framecolor=darkgray,         % can be adapted before first usage
+   \c!corner=\v!round]
+
+\definesymbol[Stamped]             [\epdfstampsymbol{Stamped}]
+
+\definesymbol[Approved]            [\epdfstampsymbol{Approved}]
+\definesymbol[Experimental]        [\epdfstampsymbol{Experimental}]
+\definesymbol[NotApproved]         [\epdfstampsymbol{NotApproved}]
+\definesymbol[AsIs]                [\epdfstampsymbol{AsIs}]
+\definesymbol[Expired]             [\epdfstampsymbol{Expired}]
+\definesymbol[NotForPublicRelease] [\epdfstampsymbol{NotForPublicRelease}]
+\definesymbol[Confidential]        [\epdfstampsymbol{Confidential}]
+\definesymbol[Final]               [\epdfstampsymbol{Final}]
+\definesymbol[Sold]                [\epdfstampsymbol{Sold}]
+\definesymbol[Departmental]        [\epdfstampsymbol{Departmental}]
+\definesymbol[ForComment]          [\epdfstampsymbol{ForComment}]
+\definesymbol[TopSecret]           [\epdfstampsymbol{TopSecret}]
+\definesymbol[Draft]               [\epdfstampsymbol{Draft}]
+\definesymbol[ForPublicRelease]    [\epdfstampsymbol{ForPublicRelease}]
+
 
 \protect \endinput
 

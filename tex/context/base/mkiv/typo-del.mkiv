@@ -140,6 +140,18 @@
 % \def\beforesubsentence{\removeunwantedspaces}
 % \def\aftersubsentence {\ignorespaces}
 
+\newconditional\c_typo_subsentence_cleanup  \settrue\c_typo_subsentence_cleanup
+
+\def\typo_subsentence_cleanup_start
+  {\ifconditional\c_typo_subsentence_cleanup
+     \expandafter\ignorespaces
+   \fi}
+
+\def\typo_subsentence_cleanup_stop
+  {\ifconditional\c_typo_subsentence_cleanup
+     \removeunwantedspaces
+   \fi}
+
 \unexpanded\def\midsentence
   {\dostarttagged\t!subsentencesymbol\empty
    \dotagsetsubsentencesymbol\s!middle
@@ -162,10 +174,11 @@
    \symbol[\ifodd\c_typo_subsentence_nesting\c!leftsentence\else\c!leftsubsentence\fi]%
    \dostoptagged
    \dostarttagged\t!subsentencecontent\empty
-  }%  \ignorespaces}
+   \typo_subsentence_cleanup_start}
 
 \unexpanded\def\endofsubsentence % relax prevents space gobbling
-  {\dostoptagged
+  {\typo_subsentence_cleanup_stop
+   \dostoptagged
    \dostarttagged\t!subsentencesymbol\empty
    \dotagsetsubsentencesymbol\s!right
    \symbol[\ifodd\c_typo_subsentence_nesting\c!rightsentence\else\c!rightsubsentence\fi]%
@@ -184,7 +197,7 @@
      \unskip
      \hskip\hspaceamount\currentusedlanguage{intersentence}%
      % no good, actually language dependent:
-%     \ignorespaces
+     % \ignorespaces
    \else
      \unskip
    \fi}
@@ -199,9 +212,10 @@
 %D \typebuffer
 %D \getbuffer
 
-\unexpanded\def\startsubsentence{\beginofsubsentence     \prewordbreak\beginofsubsentencespacing}
-\unexpanded\def\stopsubsentence {\endofsubsentencespacing\prewordbreak\endofsubsentence}
+\unexpanded\def\startsubsentence{\beginofsubsentence\prewordbreak\beginofsubsentencespacing\typo_subsentence_cleanup_start}
+\unexpanded\def\stopsubsentence {\typo_subsentence_cleanup_stop\endofsubsentencespacing\prewordbreak\endofsubsentence}
 \unexpanded\def\subsentence     {\groupedcommand\startsubsentence\stopsubsentence}
+\unexpanded\def\midsubsentence  {\typo_subsentence_cleanup_start\prewordbreak\midsentence\prewordbreak\typo_subsentence_cleanup_stop}
 
 \definehspace [quotation]      [\zeropoint]
 \definehspace [interquotation] [.125em]
@@ -369,7 +383,7 @@
   %\c!language=\v!local,
    \c!repeat=\v!no]
 
-\def\typo_delimited_repeat_ideed
+\def\typo_delimited_repeat_indeed
   {\relax\ifcase\delimitedtextlevel\else
      \typo_delimited_handle_middle\c!middle
    \fi}
@@ -648,6 +662,11 @@
      \typo_delimited_right_symbol#1%
    \egroup}
 
+\appendtoks
+    \localleftbox {}%
+    \localrightbox{}%
+\to \everyforgetall
+
 % \starttext
 %    \hyphenatedword{groepsvrijstellingsverordeningen}\par
 %    \hyphenatedword{\quote{groepsvrijstellingsverordeningen}}\par
@@ -785,7 +804,8 @@
    \dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
    \usedelimitedtextstyleandcolor\c!style\c!color
    \typo_delimited_start_content
-   \typo_delimited_attributed_e
+   \bgroup
+   \aftergroup\typo_delimited_attributed_e
    \let\next=}
 
 \def\typo_delimited_attributed_e
@@ -801,6 +821,7 @@
    \usedlanguageparameter{\c!left\currentparentdelimitedtext}% was: \currentdelimitedtext
    \usedelimitedtextstyleandcolor\c!style\c!color
    \typo_delimited_start_content
+   \bgroup
    \aftergroup\typo_delimited_fontdriven_e
    \let\next=}
 

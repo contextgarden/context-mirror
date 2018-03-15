@@ -55,7 +55,8 @@ local tonut               = nuts.tonut
 local tonode              = nuts.tonode
 
 local nodepool            = nuts.pool
-local pdfliteral          = nodepool.pdfliteral
+local pdfpageliteral      = nodepool.pdfpageliteral
+local register            = nodepool.register
 
 local getid               = nuts.getid
 local getattr             = nuts.getattr
@@ -63,14 +64,12 @@ local getprev             = nuts.getprev
 local getnext             = nuts.getnext
 local getlist             = nuts.getlist
 
-local setfield            = nuts.setfield
 local setlink             = nuts.setlink
 local setlist             = nuts.setlist
 
+local copy_node           = nuts.copy
 local traverse_nodes      = nuts.traverse
 local tosequence          = nuts.tosequence
-local insert_before       = nuts.insert_before
-local insert_after        = nuts.insert_after
 
 local structure_stack     = { }
 local structure_kids      = pdfarray()
@@ -150,13 +149,15 @@ local function finishstructure()
         pdfflushobject(structure_ref,structuretree)
         addtocatalog("StructTreeRoot",pdfreference(structure_ref))
         --
-        local markinfo = pdfdictionary {
-            Marked         = pdfboolean(true),
-         -- UserProperties = pdfboolean(true),
-         -- Suspects       = pdfboolean(true),
-         -- AF             = #embeddedfilelist > 0 and pdfreference(pdfflushobject(embeddedfilelist)) or nil,
-        }
-        addtocatalog("MarkInfo",pdfreference(pdfflushobject(markinfo)))
+        if lpdf.majorversion() == 1 then
+            local markinfo = pdfdictionary {
+                Marked         = pdfboolean(true) or nil,
+             -- UserProperties = pdfboolean(true), -- maybe some day
+             -- Suspects       = pdfboolean(true) or nil,
+             -- AF             = #embeddedfilelist > 0 and pdfreference(pdfflushobject(embeddedfilelist)) or nil,
+            }
+            addtocatalog("MarkInfo",pdfreference(pdfflushobject(markinfo)))
+        end
         --
         for fulltag, element in sortedhash(elements) do -- sorting is easier on comparing pdf
             pdfflushobject(element.knum,element.kids)
@@ -312,7 +313,13 @@ end
 
 -- no need to adapt head, as we always operate on lists
 
+local EMCliteral = nil
+
 function nodeinjections.addtags(head)
+
+    if not EMCliteral then
+        EMCliteral = register(pdfpageliteral("EMC"))
+    end
 
     local last   = nil
     local ranges = { }
@@ -321,8 +328,9 @@ function nodeinjections.addtags(head)
 
     local function collectranges(head,list)
         for n in traverse_nodes(head) do
-            local id = getid(n) -- 14: image, 8: literal (mp)
+            local id = getid(n)
             if id == glyph_code then
+                -- maybe also disc
                 local at = getattr(n,a_tagged)
                 if not at then
                     range = nil
@@ -344,8 +352,7 @@ function nodeinjections.addtags(head)
                     end
                     last = nil
                 else
-                    local nl = getlist(n)
-                    collectranges(nl,n)
+                    collectranges(getlist(n),n)
                 end
             end
         end
@@ -383,7 +390,6 @@ function nodeinjections.addtags(head)
         local taglist       = specification.taglist
         local noftags       = #taglist
         local common        = 0
-
         if top then
             for i=1,noftags >= noftop and noftop or noftags do
                 if top[i] == taglist[i] then
@@ -412,12 +418,12 @@ function nodeinjections.addtags(head)
                 prev = prv
             end
         end
-
         if prev then
-            literal = pdfliteral(makecontent(prev,id,specification))
+            literal = pdfpageliteral(makecontent(prev,id,specification))
         elseif ignore then
-            literal = pdfliteral(makeignore(specification))
+            literal = pdfpageliteral(makeignore(specification))
         end
+
         if literal then
             local prev = getprev(start)
             if prev then
@@ -427,14 +433,27 @@ function nodeinjections.addtags(head)
             if list and getlist(list) == start then
                 setlist(list,literal)
             end
+            local literal = copy_node(EMCliteral)
             -- use insert instead:
-            local literal = pdfliteral("EMC")
             local next    = getnext(stop)
             if next then
                 setlink(literal,next)
             end
             setlink(stop,literal)
         end
+
+--         if literal then
+--             if list and getlist(list) == start then
+--                 setlink(literal,start)
+--                 setlist(list,literal)
+--             else
+--                 setlink(getprev(start),literal,start)
+--             end
+--             -- use insert instead:
+--             local literal = copy_node(EMCliteral)
+--             setlink(stop,literal,getnext(stop))
+--         end
+
         top    = taglist
         noftop = noftags
     end
@@ -558,9 +577,9 @@ end
 --         end
 --
 --         if r > 0 then
---             local literal = pdfliteral(concat(result,"\n"))
+--             local literal = pdfpageliteral(concat(result,"\n"))
 --             -- use insert instead:
---             local literal = pdfliteral(result)
+--             local literal = pdfpageliteral(result)
 --             local prev = getprev(start)
 --             if prev then
 --                 setlink(prev,literal)
@@ -582,7 +601,7 @@ end
 --         for i=1,noftop do
 --             result[i] = "EMC"
 --         end
---         local literal = pdfliteral(concat(result,"\n"))
+--         local literal = pdfpageliteral(concat(result,"\n"))
 --         -- use insert instead:
 --         local next = getnext(last)
 --         if next then
