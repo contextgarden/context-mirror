@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 03/10/18 14:52:21
+-- merge date  : 03/21/18 09:16:30
 
 do -- begin closure to overcome local limits and interference
 
@@ -126,6 +126,8 @@ end
 local loaded=package.loaded
 if not loaded["socket"] then loaded["socket"]=loaded["socket.core"] end
 if not loaded["mime"]  then loaded["mime"]=loaded["mime.core"]  end
+if not socket.mime then socket.mime=package.loaded["mime"] end
+if not loaded["socket.mime"] then loaded["socket.mime"]=socket.mime end
 if not loaded["socket.http"] then loaded["socket.http"]=socket.http end
 if not loaded["socket.ftp"] then loaded["socket.ftp"]=socket.ftp end
 if not loaded["socket.smtp"] then loaded["socket.smtp"]=socket.smtp end
@@ -1974,10 +1976,10 @@ function table.reversed(t)
     return tt
   end
 end
-function table.reverse(t)
+function table.reverse(t) 
   if t then
     local n=#t
-    for i=1,floor(n/2) do
+    for i=1,floor(n/2) do 
       local j=n-i+1
       t[i],t[j]=t[j],t[i]
     end
@@ -4122,7 +4124,7 @@ local format_left=function(f)
 end
 local format_q=function()
   n=n+1
-  return format("(a%s and format('%%q',a%s) or '')",n,n) 
+  return format("(a%s ~= nil and format('%%q',tostring(a%s)) or '')",n,n)
 end
 local format_Q=function() 
   n=n+1
@@ -4393,7 +4395,7 @@ local builder=Cs { "start",
   ["X"]=(prefix_any*P("X"))/format_X,
   ["o"]=(prefix_any*P("o"))/format_o,
   ["S"]=(prefix_any*P("S"))/format_S,
-  ["Q"]=(prefix_any*P("Q"))/format_S,
+  ["Q"]=(prefix_any*P("Q"))/format_Q,
   ["N"]=(prefix_any*P("N"))/format_N,
   ["k"]=(prefix_sub*P("k"))/format_k,
   ["c"]=(prefix_any*P("c"))/format_c,
@@ -21206,6 +21208,7 @@ if not nodes.properties then return end
 local next,rawget,tonumber=next,rawget,tonumber
 local fastcopy=table.fastcopy
 local registertracker=trackers.register
+local registerdirective=directives.register
 local trace_injections=false registertracker("fonts.injections",function(v) trace_injections=v end)
 local trace_marks=false registertracker("fonts.injections.marks",function(v) trace_marks=v end)
 local trace_cursive=false registertracker("fonts.injections.cursive",function(v) trace_cursive=v end)
@@ -22159,64 +22162,15 @@ local function inject_everything(head,where)
       showoffset(n,true)
     end
   end
-  local base=nil
   while current do
     local next=getnext(current)
     local char,id=ischar(current)
     if char then
       local p=rawget(properties,current)
-      if hascursives then
-        if not p then
-          local m=fontmarks[getfont(current)]
-          if m and m[char] then
-            if base then
-              p={ injections={ markbasenode=base } }
-              nofmarks=nofmarks+1
-              marks[nofmarks]=current
-              properties[current]=p
-              hasmarks=true
-            end
-          else
-            base=current
-          end
-        end
-      end
       if p then
         local i=p.injections
-        if hascursives then
-          if not i then
-            local m=fontmarks[getfont(current)]
-            if m and m[char] then
-              if base then
-                i={ markbasenode=base }
-                nofmarks=nofmarks+1
-                marks[nofmarks]=current
-                p.injections=i
-                hasmarks=true
-              end
-            else
-              base=current
-            end
-          end
-        end
         if i then
           local pm=i.markbasenode
-          if hascursives then
-            if not pm then
-              local m=fontmarks[getfont(current)]
-              if m and m[char] then
-                if base then
-                  pm=base
-                  i.markbasenode=pm
-                  hasmarks=true
-                end
-              else
-                base=current
-              end
-            else
-              base=current
-            end
-          end
           if pm then
             nofmarks=nofmarks+1
             marks[nofmarks]=current
@@ -22487,7 +22441,6 @@ local function inject_everything(head,where)
     else
       prevglyph=nil
       prevdisc=nil
-base=nil
     end
     prev=current
     current=next
