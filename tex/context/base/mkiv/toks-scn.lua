@@ -21,6 +21,7 @@ local scanners       = tokens.scanners
 local tokenbits      = tokens.bits
 
 local scanstring     = scanners.string
+local scanargument   = scanners.argument
 local scaninteger    = scanners.integer
 local scannumber     = scanners.number
 local scankeyword    = scanners.keyword
@@ -240,6 +241,19 @@ local f_check = formatters[ [[
   end
 ]] ]
 
+-- using these shortcuts saves temporary small tables (okay, it looks uglier)
+
+local presets = {
+    ["1 string" ] = { "string" },
+    ["2 strings"] = { "string", "string" },
+    ["3 strings"] = { "string", "string", "string" },
+    ["4 strings"] = { "string", "string", "string", "string" },
+    ["5 strings"] = { "string", "string", "string", "string", "string" },
+    ["6 strings"] = { "string", "string", "string", "string", "string", "string" },
+    ["7 strings"] = { "string", "string", "string", "string", "string", "string", "string" },
+    ["8 strings"] = { "string", "string", "string", "string", "string", "string", "string", "string" },
+}
+
 function tokens.compile(specification)
     local f = { }
     local n = 0
@@ -304,6 +318,10 @@ function tokens.compile(specification)
         else
             return c
         end
+    end
+    local p = t and presets[t]
+    if p then
+        t = p
     end
     local tt = type(t)
     if tt == "string" then

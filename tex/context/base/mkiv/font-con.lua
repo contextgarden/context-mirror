@@ -492,6 +492,15 @@ function constructors.scale(tfmdata,specification)
     else
         target.slant = 0
     end
+    -- effects
+    local mode = parameters.mode or 0
+    if mode ~= 0 then
+        target.mode = mode
+    end
+    local width = parameters.width or 0
+    if width ~= 0 then
+        target.width = width
+    end
     --
     targetparameters.factor       = delta
     targetparameters.hfactor      = hdelta
@@ -499,6 +508,8 @@ function constructors.scale(tfmdata,specification)
     targetparameters.size         = scaledpoints
     targetparameters.units        = units
     targetparameters.scaledpoints = askedscaledpoints
+    targetparameters.mode         = mode
+    targetparameters.width        = width
     --
     local isvirtual        = properties.virtualized or tfmdata.type == "virtual"
     local hasquality       = parameters.expansion or parameters.protrusion
@@ -875,12 +886,15 @@ function constructors.scale(tfmdata,specification)
     --
     constructors.aftercopyingcharacters(target,tfmdata)
     --
-    constructors.trytosharefont(target,tfmdata)
+   constructors.trytosharefont(target,tfmdata)
     --
     -- catch inconsistencies
     --
     local vfonts = target.fonts
-    if isvirtual then
+--     if isvirtual then
+if isvirtual or target.type == "virtual" or properties.virtualized then
+        properties.virtualized = true
+target.type = "virtual"
         if not vfonts or #vfonts == 0 then
             target.fonts = { { id = 0 } }
         end
@@ -923,6 +937,14 @@ function constructors.finalize(tfmdata)
     --
     if not parameters.size then
         parameters.size = tfmdata.size
+    end
+    --
+    if not parameters.mode then
+        parameters.mode = 0
+    end
+    --
+    if not parameters.width then
+        parameters.width = 0
     end
     --
     if not parameters.extendfactor then
@@ -1023,6 +1045,8 @@ function constructors.finalize(tfmdata)
     tfmdata.step             = nil
     tfmdata.extend           = nil
     tfmdata.slant            = nil
+    tfmdata.mode             = nil
+    tfmdata.width            = nil
     tfmdata.units            = nil
     tfmdata.units_per_em     = nil
     --

@@ -64,10 +64,11 @@ local xmlrename          = xml.rename
 
 local variables          = interfaces and interfaces.variables or { }
 
-local settings_to_hash   = utilities.parsers.settings_to_hash
-local settings_to_set    = utilities.parsers.settings_to_set
-local options_to_hash    = utilities.parsers.options_to_hash
-local options_to_array   = utilities.parsers.options_to_array
+local parsers            = utilities.parsers
+local settings_to_hash   = parsers.settings_to_hash
+local settings_to_set    = parsers.settings_to_set
+local options_to_hash    = parsers.options_to_hash
+local options_to_array   = parsers.options_to_array
 
 local insertbeforevalue  = utilities.tables.insertbeforevalue
 local insertaftervalue   = utilities.tables.insertaftervalue
@@ -468,7 +469,7 @@ lxml.addindex = addindex
 
 implement {
     name      = "xmladdindex",
-    arguments = { "string" },
+    arguments = "string",
     actions   = addindex,
 }
 
@@ -820,7 +821,7 @@ local k_parser = class * spaces * key * spaces * rest --value
 
 implement {
     name      = "xmlinstalldirective",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = function(name,csname)
         if csname then
             local keyvalueparser  = k_parser / context[csname]
@@ -1988,6 +1989,37 @@ do
     function lxml.lastatt()
         contextsprint(notcatcodes,att)
     end
+
+    local ctx_doif     = commands.doif
+    local ctx_doifnot  = commands.doifnot
+    local ctx_doifelse = commands.doifelse
+
+    implement {
+        name      = "xmldoifatt",
+        arguments = "3 strings",
+        actions = function(id,l,v)
+            local e = getid(id)
+            ctx_doif(e and e.at[k] == v or false)
+        end
+    }
+
+    implement {
+        name      = "xmldoifnotatt",
+        arguments = "3 strings",
+        actions = function(id,l,v)
+            local e = getid(id)
+            ctx_doifnot(e and e.at[k] == v or false)
+        end
+    }
+
+    implement {
+        name      = "xmldoifelseatt",
+        arguments = "3 strings",
+        actions = function(id,l,v)
+            local e = getid(id)
+            ctx_doifelse(e and e.at[k] == v or false)
+        end
+    }
 
 end
 

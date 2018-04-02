@@ -294,7 +294,7 @@ return {
         --
         "getparameters", "geteparameters", "getgparameters", "getxparameters", "forgetparameters", "copyparameters",
         --
-        "getdummyparameters", "dummyparameter", "directdummyparameter", "setdummyparameter", "letdummyparameter",
+        "getdummyparameters", "dummyparameter", "directdummyparameter", "setdummyparameter", "letdummyparameter", "setexpandeddummyparameter",
         "usedummystyleandcolor", "usedummystyleparameter", "usedummycolorparameter",
         --
         "processcommalist", "processcommacommand", "quitcommalist", "quitprevcommalist",
@@ -402,7 +402,12 @@ return {
         "obeylualines", "obeyluatokens",
         "startluacode", "stopluacode", "startlua", "stoplua",
         "startctxfunction","stopctxfunction","ctxfunction",
-        "startctxfunctiondefinition","stopctxfunctiondefinition", "installctxfunction",
+        "startctxfunctiondefinition","stopctxfunctiondefinition",
+        "installctxfunction", "installctxfunctioncall",
+        "installprotectedctxfunction", "installprotectedctxfunctioncall",
+        "installctxscanner", "installctxscannercall",
+        "resetctxscanner",
+        "installprotectedctxscanner", "installprotectedctxscannercall",
         "cldprocessfile", "cldloadfile", "cldcontext", "cldcommand",
         --
         "carryoverpar",
