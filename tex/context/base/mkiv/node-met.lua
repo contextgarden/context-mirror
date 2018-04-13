@@ -62,6 +62,26 @@ end
 -- statistics.tracefunction(node,       "node",       "getfield","setfield")
 -- statistics.tracefunction(node.direct,"node.direct","getfield","setfield")
 
+if LUATEXFUNCTIONALITY < 6695 then
+
+    local getnext = node.getnext
+    local getid   = node.getid
+
+    local function iterate(h,n)
+        if n then
+            local n = getnext(n)
+            return n, getid(n)
+        elseif h then
+            return h, getid(h), getnext(h)
+        end
+    end
+
+    function node.traverse(h)
+        return iterate, h
+    end
+
+end
+
 -- We start with some helpers and provide all relevant basic functions in the
 -- node namespace as well.
 
@@ -163,7 +183,7 @@ local n_setlink         = node.setlink or -- always
         -- not that fast but not used often anyway
         local h = nil
         for i=1,select("#",...) do
-            local n = (select(i,...))
+            local n = select(i,...)
             if not n then
                 -- go on
             elseif h then

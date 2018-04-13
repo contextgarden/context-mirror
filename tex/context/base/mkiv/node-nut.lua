@@ -143,16 +143,6 @@ nodes.tonut               = tonut
 
 -- helpers
 
-if not direct.getfam then -- LUATEXVERSION < 1.070
-
-    local getfield = direct.getfield
-    local setfield = direct.setfield
-
-    direct.getfam = function(n)   return getfield(n,"small_fam")   end
-    direct.setfam = function(n,f)        setfield(n,"small_fam",f) end
-
-end
-
 if not direct.getdirection then
 
     local getdir = direct.getdir
@@ -180,6 +170,26 @@ if not direct.getdirection then
         elseif d == 2 then if c == true then setdir(n,"-LTL") elseif c == false then setdir(n,"+LTL") else setdir(n,"LTL") end
         elseif d == 3 then if c == true then setdir(n,"-RTT") elseif c == false then setdir(n,"+RTT") else setdir(n,"RTT") end
         else               if c == true then setdir(n,"-TLT") elseif c == false then setdir(n,"+TLT") else setdir(n,"TLT") end end
+    end
+
+end
+
+if LUATEXFUNCTIONALITY < 6695 then
+
+    local getnext = direct.getnext
+    local getid   = direct.getid
+
+    local function iterate(h,n)
+        if n then
+            local n = getnext(n)
+            return n, getid(n)
+        elseif h then
+            return h, getid(h), getnext(h)
+        end
+    end
+
+    function direct.traverse(h)
+        return iterate, h
     end
 
 end

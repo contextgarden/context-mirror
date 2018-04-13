@@ -106,6 +106,31 @@ local pdf_fit                 = pdfconstant("Fit")
 local pdf_named               = pdfconstant("Named")
 
 local autoprefix              = "#"
+local usedautoprefixes        = { }
+
+local function registerautoprefix(name)
+    local internal = autoprefix .. name
+    if usedautoprefixes[internal] == nil then
+        usedautoprefixes[internal] = false
+    end
+    return internal
+end
+
+local function useautoprefix(name)
+    local internal = autoprefix .. name
+    usedautoprefixes[internal] = true
+end
+
+local function checkautoprefixes(destinations)
+    for k, v in next, usedautoprefixes do
+        if not v then
+            if trace_destinations then
+                report_destinations("flushing unused autoprefix %a",k)
+            end
+            destinations[k] = nil
+        end
+    end
+end
 
 -- Bah, I hate this kind of features .. anyway, as we have delayed resolving we
 -- only support a document-wide setup and it has to be set before the first one
@@ -193,11 +218,15 @@ local defaultdestination = pdfarray { 0, pdf_fit }
 -- fit is default (see lpdf-nod)
 
 local destinations = { } -- to be used soon
+local reported     = setmetatableindex("table")
 
 local function pdfregisterdestination(name,reference)
     local d = destinations[name]
     if d then
-        report_destinations("ignoring duplicate destination %a with reference %a",name,reference)
+        if not reported[name][reference] then
+            report_destinations("ignoring duplicate destination %a with reference %a",name,reference)
+            reported[name][reference] = true
+        end
     else
         destinations[name] = reference
     end
@@ -222,6 +251,7 @@ end)
 
 local function pdfnametree(destinations)
     local slices = { }
+    checkautoprefixes(destinations)
     local sorted = table.sortedkeys(destinations)
     local size   = #sorted
 
@@ -292,7 +322,6 @@ end
 local function pdfdestinationspecification()
     if next(destinations) then -- safeguard
         local r = pdfnametree(destinations)
-     -- pdfaddtocatalog("Dests",r)
         pdfaddtonames("Dests",r)
         if not log_destinations then
             destinations = nil
@@ -459,7 +488,7 @@ function nodeinjections.destination(width,height,depth,names,view)
             elseif type(name) == "number" then
                 local used = usedinternals[name]
                 usedviews[name] = view
-                names[n] = autoprefix .. name
+                names[n] = registerautoprefix(name)
                 doview = true
             else
                 usedviews[name] = view
@@ -479,10 +508,9 @@ function nodeinjections.destination(width,height,depth,names,view)
                     local used = usedinternals[name]
                     if used and used ~= defaultview then
                         usedviews[name] = view
-                        names[n] = autoprefix .. name
+                        names[n] = registerautoprefix(name)
                         doview = true
                     else
-                     -- names[n] = autoprefix .. name
                         names[n] = false
                     end
                 end
@@ -504,7 +532,7 @@ local function pdflinkpage(page)
 end
 
 local function pdflinkinternal(internal,page)
-    local method = references.innermethod
+ -- local method = references.innermethod
     if internal then
         flaginternals[internal] = true -- for bookmarks and so
         local used = usedinternals[internal]
@@ -512,7 +540,7 @@ local function pdflinkinternal(internal,page)
             return pagereferences[page]
         else
             if type(internal) ~= "string" then
-                internal = autoprefix .. internal
+                internal = useautoprefix(internal)
             end
             return pdfdictionary {
                 S = pdf_goto,
@@ -872,15 +900,20 @@ end
 runners["special operation"]                = runners["special"]
 runners["special operation with arguments"] = runners["special"]
 
+local reported = { }
+
 function specials.internal(var,actions) -- better resolve in strc-ref
-    local i = tonumber(var.operation)
+    local o = var.operation
+    local i = o and tonumber(o)
     local v = i and references.internals[i]
-    if not v then
-        -- error
-        report_references("no internal reference %a",i or "<unset>")
-    else
-        flaginternals[i] = true
+    if v then
+        flaginternals[i] = true -- also done in pdflinkinternal
         return pdflinkinternal(i,v.references.realpage)
+    end
+    local v = i or o or "<unset>"
+    if not reported[v] then
+        report_references("no internal reference %a",v)
+        reported[v] = true
     end
 end
 
@@ -946,19 +979,18 @@ end
 
 -- sections
 
--- function specials.section(var,actions)
---     local sectionname = var.operation
---     local destination = var.arguments
---     local internal    = structures.sections.internalreference(sectionname,destination)
---     if internal then
---         var.special   = "internal"
---         var.operation = internal
---         var.arguments = nil
---         specials.internal(var,actions)
---     end
--- end
-
-specials.section = specials.internal -- specials.section just need to have a value as it's checked
+function specials.section(var,actions)
+    -- a bit duplicate
+    local sectionname = var.arguments
+    local destination = var.operation
+    local internal    = structures.sections.internalreference(sectionname,destination)
+    if internal then
+        var.special   = "internal"
+        var.operation = internal
+        var.arguments = nil
+        return specials.internal(var,actions)
+    end
+end
 
 -- todo, do this in references namespace ordered instead (this is an experiment)
 

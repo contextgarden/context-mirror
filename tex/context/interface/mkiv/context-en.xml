@@ -11575,6 +11575,45 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
+  <cd:command category="fonts conditional" file="font-fea.mkvi" level="system" name="doifelsefontfeature">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:true"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:false"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="fonts conditional" file="font-fea.mkvi" level="system" name="doiffontfeatureelse">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:true"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:false"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="fonts conditional" file="font-fea.mkvi" level="system" name="doifunknownfontfeature">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:true"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:false"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
   <cd:command category="fonts" file="font-fea.mkvi" level="system" name="doaddfeature">
    <cd:arguments>
     <cd:keywords delimiters="braces" list="yes">
@@ -44449,6 +44488,8 @@
   <cd:command file="trc-vis.mkiv" level="document" name="showglyphs"/>
   <cd:command file="trc-vis.mkiv" level="document" name="showfontkerns"/>
   <cd:command file="trc-vis.mkiv" level="document" name="showfontitalics"/>
+  <cd:command file="trc-vis.mkiv" level="document" name="showglyphdata"/>
+  <cd:command file="trc-vis.mkiv" level="document" name="showfontexpansion"/>
   <cd:command file="trc-vis.mkiv" level="system" name="setvisualizerfont">
    <cd:arguments>
     <cd:keywords optional="yes">
@@ -45663,6 +45704,45 @@
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:lpath"/>
     </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:true"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:false"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="xml" file="lxml-ini.mkiv" level="style" name="xmldoifatt">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:node"/>
+    </cd:keywords>
+    <cd:string/>
+    <cd:string/>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:true"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="xml" file="lxml-ini.mkiv" level="style" name="xmldoifnotatt">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:node"/>
+    </cd:keywords>
+    <cd:string/>
+    <cd:string/>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:true"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="xml" file="lxml-ini.mkiv" level="style" name="xmldoifelseatt">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:node"/>
+    </cd:keywords>
+    <cd:string/>
+    <cd:string/>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:true"/>
     </cd:keywords>

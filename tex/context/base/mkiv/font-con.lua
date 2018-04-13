@@ -98,6 +98,24 @@ function constructors.getprivate(tfmdata)
     return private
 end
 
+function constructors.setmathparameter(tfmdata,name,value)
+    local m = tfmdata.mathparameters
+    local c = tfmdata.MathConstants
+    if m then
+        m[name] = value
+    end
+    if c and c ~= m then
+        c[name] = value
+    end
+end
+
+function constructors.getmathparameter(tfmdata,name)
+    local p = tfmdata.mathparameters or tfmdata.MathConstants
+    if p then
+        return p[name]
+    end
+end
+
 --[[ldx--
 <p>Beware, the boundingbox is passed as reference so we may not overwrite it
 in the process; numbers are of course copies. Here 65536 equals 1pt. (Due to
@@ -477,20 +495,28 @@ function constructors.scale(tfmdata,specification)
         target.shrink  = expansion.shrink
         target.step    = expansion.step
     end
-    -- widening
-    local extendfactor = parameters.extendfactor or 0
-    if extendfactor ~= 0 and extendfactor ~= 1 then
-        hdelta = hdelta * extendfactor
-        target.extend = extendfactor * 1000 -- extent ?
-    else
-        target.extend = 1000 -- extent ?
-    end
     -- slanting
     local slantfactor = parameters.slantfactor or 0
     if slantfactor ~= 0 then
         target.slant = slantfactor * 1000
     else
         target.slant = 0
+    end
+    -- widening
+    local extendfactor = parameters.extendfactor or 0
+    if extendfactor ~= 0 and extendfactor ~= 1 then
+        hdelta = hdelta * extendfactor
+        target.extend = extendfactor * 1000
+    else
+        target.extend = 1000 -- extent ?
+    end
+    -- squeezing
+    local squeezefactor = parameters.squeezefactor or 0
+    if squeezefactor ~= 0 and squeezefactor ~= 1 then
+        vdelta = vdelta * squeezefactor
+        target.squeeze = squeezefactor * 1000
+    else
+        target.squeeze = 1000 -- extent ?
     end
     -- effects
     local mode = parameters.mode or 0
@@ -499,7 +525,7 @@ function constructors.scale(tfmdata,specification)
     end
     local width = parameters.width or 0
     if width ~= 0 then
-        target.width = width
+        target.width = width * delta * 1000 / 655360
     end
     --
     targetparameters.factor       = delta
@@ -947,12 +973,16 @@ function constructors.finalize(tfmdata)
         parameters.width = 0
     end
     --
+    if not parameters.slantfactor then
+        parameters.slantfactor = tfmdata.slant or 0
+    end
+    --
     if not parameters.extendfactor then
         parameters.extendfactor = tfmdata.extend or 0
     end
     --
-    if not parameters.slantfactor then
-        parameters.slantfactor = tfmdata.slant or 0
+    if not parameters.squeezefactor then
+        parameters.squeezefactor = tfmdata.squeeze or 0
     end
     --
     local designsize = parameters.designsize
@@ -1043,8 +1073,9 @@ function constructors.finalize(tfmdata)
     tfmdata.stretch          = nil
     tfmdata.shrink           = nil
     tfmdata.step             = nil
-    tfmdata.extend           = nil
     tfmdata.slant            = nil
+    tfmdata.extend           = nil
+    tfmdata.squeeze          = nil
     tfmdata.mode             = nil
     tfmdata.width            = nil
     tfmdata.units            = nil
@@ -1097,7 +1128,18 @@ hashmethods.normal = function(list)
             -- no need to add to hash (maybe we need a skip list)
         else
             n = n + 1
-            s[n] = k .. '=' .. tostring(v)
+            if type(v) == "table" then
+                -- table.sequenced
+                local t = { }
+                local m = 0
+                for k, v in next, v do
+                    m = m + 1
+                    t[m] = k .. '=' .. tostring(v)
+                end
+                s[n] = k .. '={' .. concat(t,",") .. "}"
+            else
+                s[n] = k .. '=' .. tostring(v)
+            end
         end
     end
     if n > 0 then

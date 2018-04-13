@@ -1,16 +1,5 @@
 #!/usr/bin/env texlua
 
--- for k, v in next, _G.string do
---     local tv = type(v)
---     if tv == "table" then
---         for kk, vv in next, v do
---             print(k,kk,vv)
---         end
---     else
---         print(tv,k,v)
---     end
--- end
-
 if not modules then modules = { } end modules ['mtxrun'] = {
     version   = 1.001,
     comment   = "runner, lua replacement for texmfstart.rb",
@@ -992,7 +981,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 38582, stripped down to: 20518
+-- original size: 39305, stripped down to: 21144
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -1616,7 +1605,7 @@ local function make2(t,rest)
   end
   return p
 end
-function lpeg.utfchartabletopattern(list,insensitive) 
+local function utfchartabletopattern(list,insensitive) 
   local tree={}
   local n=#list
   if n==0 then
@@ -1688,6 +1677,13 @@ function lpeg.utfchartabletopattern(list,insensitive)
     end
   end
   return (insensitive and make2 or make1)(tree)
+end
+lpeg.utfchartabletopattern=utfchartabletopattern
+function lpeg.utfreplacer(list,insensitive)
+  local pattern=Cs((utfchartabletopattern(list,insensitive)/list+utf8character)^0)
+  return function(str)
+    return lpegmatch(pattern,str) or str
+  end
 end
 patterns.containseol=lpeg.finder(eol)
 local function nextstep(n,step,result)
@@ -1782,6 +1778,21 @@ function string.tobytes(s)
   else
     return lpegmatch(hextobytes,s)
   end
+end
+local patterns={} 
+local function containsws(what)
+  local p=patterns[what]
+  if not p then
+    local p1=P(what)*(whitespace+P(-1))*Cc(true)
+    local p2=whitespace*P(p1)
+    p=P(p1)+P(1-p2)^0*p2+Cc(false)
+    patterns[what]=p
+  end
+  return p
+end
+lpeg.containsws=containsws
+function string.containsws(str,what)
+  return lpegmatch(patterns[what] or containsws(what),str)
 end
 
 
@@ -1935,7 +1946,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 40197, stripped down to: 23561
+-- original size: 40547, stripped down to: 23820
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -2857,7 +2868,7 @@ function table.reverse(t)
     return t
   end
 end
-function table.sequenced(t,sep,simple) 
+local function sequenced(t,sep,simple)
   if not t then
     return ""
   end
@@ -2876,16 +2887,25 @@ function table.sequenced(t,sep,simple)
           s[n]=k
         elseif v and v~="" then
           n=n+1
-          s[n]=k.."="..tostring(v)
+          if type(v)=="table" then
+            s[n]=k.."={"..sequenced(v,sep,simple).."}"
+          else
+            s[n]=k.."="..tostring(v)
+          end
         end
       else
         n=n+1
-        s[n]=k.."="..tostring(v)
+        if type(v)=="table" then
+          s[n]=k.."={"..sequenced(v,sep,simple).."}"
+        else
+          s[n]=k.."="..tostring(v)
+        end
       end
     end
   end
   return concat(s,sep or " | ")
 end
+table.sequenced=sequenced
 function table.print(t,...)
   if type(t)~="table" then
     print(tostring(t))
@@ -3556,7 +3576,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 16268, stripped down to: 9246
+-- original size: 16586, stripped down to: 9456
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -3663,7 +3683,7 @@ end
 local launchers={
   windows="start %s",
   macosx="open %s",
-  unix="$BROWSER %s &> /dev/null &",
+  unix="xdg-open %s &> /dev/null &",
 }
 function os.launch(str)
   execute(format(launchers[os.name] or launchers.unix,str))
@@ -3695,7 +3715,8 @@ if platform~="" then
   os.platform=platform
 elseif os.type=="windows" then
   function resolvers.platform(t,k)
-    local platform,architecture="",os.getenv("PROCESSOR_ARCHITECTURE") or ""
+    local architecture=os.getenv("PROCESSOR_ARCHITECTURE") or ""
+    local platform=""
     if find(architecture,"AMD64",1,true) then
       platform="win64"
     else
@@ -3707,13 +3728,16 @@ elseif os.type=="windows" then
   end
 elseif name=="linux" then
   function resolvers.platform(t,k)
-    local platform,architecture="",os.getenv("HOSTTYPE") or resultof("uname -m") or ""
-    if find(architecture,"x86_64",1,true) then
-      platform="linux-64"
+    local architecture=os.getenv("HOSTTYPE") or resultof("uname -m") or ""
+    local platform=os.getenv("MTX_PLATFORM")
+    local musl=find(os.selfdir or "","linuxmusl")
+    if platform~="" then
+    elseif find(architecture,"x86_64",1,true) then
+      platform=musl and "linuxmusl" or "linux-64"
     elseif find(architecture,"ppc",1,true) then
       platform="linux-ppc"
     else
-      platform="linux"
+      platform=musl and "linuxmusl" or "linux"
     end
     os.setenv("MTX_PLATFORM",platform)
     os.platform=platform
@@ -3721,7 +3745,8 @@ elseif name=="linux" then
   end
 elseif name=="macosx" then
   function resolvers.platform(t,k)
-    local platform,architecture="",resultof("echo $HOSTTYPE") or ""
+    local architecture=resultof("echo $HOSTTYPE") or ""
+    local platform=""
     if architecture=="" then
       platform="osx-intel"
     elseif find(architecture,"i386",1,true) then
@@ -3737,7 +3762,8 @@ elseif name=="macosx" then
   end
 elseif name=="sunos" then
   function resolvers.platform(t,k)
-    local platform,architecture="",resultof("uname -m") or ""
+    local architecture=resultof("uname -m") or ""
+    local platform=""
     if find(architecture,"sparc",1,true) then
       platform="solaris-sparc"
     else 
@@ -3749,7 +3775,8 @@ elseif name=="sunos" then
   end
 elseif name=="freebsd" then
   function resolvers.platform(t,k)
-    local platform,architecture="",resultof("uname -m") or ""
+    local architecture=resultof("uname -m") or ""
+    local platform=""
     if find(architecture,"amd64",1,true) then
       platform="freebsd-amd64"
     else
@@ -3761,7 +3788,8 @@ elseif name=="freebsd" then
   end
 elseif name=="kfreebsd" then
   function resolvers.platform(t,k)
-    local platform,architecture="",os.getenv("HOSTTYPE") or resultof("uname -m") or ""
+    local architecture=os.getenv("HOSTTYPE") or resultof("uname -m") or ""
+    local platform=""
     if find(architecture,"x86_64",1,true) then
       platform="kfreebsd-amd64"
     else
@@ -3931,7 +3959,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 21616, stripped down to: 10359
+-- original size: 21804, stripped down to: 10461
 
 if not modules then modules={} end modules ['l-file']={
   version=1.001,
@@ -3951,24 +3979,22 @@ local lpegmatch=lpeg.match
 local getcurrentdir,attributes=lfs.currentdir,lfs.attributes
 local checkedsplit=string.checkedsplit
 local P,R,S,C,Cs,Cp,Cc,Ct=lpeg.P,lpeg.R,lpeg.S,lpeg.C,lpeg.Cs,lpeg.Cp,lpeg.Cc,lpeg.Ct
-local tricky=S("/\\")*P(-1)
 local attributes=lfs.attributes
+function lfs.isdir(name)
+  return attributes(name,"mode")=="directory"
+end
+function lfs.isfile(name)
+  local a=attributes(name,"mode")
+  return a=="file" or a=="link" or nil
+end
+function lfs.isfound(name)
+  local a=attributes(name,"mode")
+  return (a=="file" or a=="link") and name or nil
+end
 if sandbox then
   sandbox.redefine(lfs.isfile,"lfs.isfile")
   sandbox.redefine(lfs.isdir,"lfs.isdir")
-end
-function lfs.isdir(name)
-  if lpegmatch(tricky,name) then
-    return attributes(name,"mode")=="directory"
-  else
-    return attributes(name.."/.","mode")=="directory"
-  end
-end
-function lfs.isfile(name)
-  return attributes(name,"mode")=="file"
-end
-function lfs.isfound(name)
-  return attributes(name,"mode")=="file" and name or nil
+  sandbox.redefine(lfs.isfound,"lfs.isfound")
 end
 local colon=P(":")
 local period=P(".")
@@ -4324,6 +4350,10 @@ function file.withinbase(path)
     end
   end
   return true
+end
+local symlinkattributes=lfs.symlinkattributes
+function lfs.readlink(name)
+  return symlinkattributes(name,"target") or nil
 end
 
 
@@ -8150,7 +8180,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sto"] = package.loaded["util-sto"] or true
 
--- original size: 6449, stripped down to: 3069
+-- original size: 6619, stripped down to: 3214
 
 if not modules then modules={} end modules ['util-sto']={
   version=1.001,
@@ -8301,6 +8331,15 @@ function table.getmetatablekey(t,key,value)
   local m=getmetatable(t)
   return m and m[key]
 end
+function table.makeweak(t)
+  local m=getmetatable(t)
+  if m then
+    m.__mode="v"
+  else
+    setmetatable(t,{ __mode="v" })
+  end
+  return t
+end
 
 
 end -- of closure
@@ -8309,7 +8348,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 22956, stripped down to: 16106
+-- original size: 23400, stripped down to: 16473
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -8338,6 +8377,7 @@ utilities.parsers.hashes=hashes
 local digit=R("09")
 local space=P(' ')
 local equal=P("=")
+local colon=P(":")
 local comma=P(",")
 local lbrace=P("{")
 local rbrace=P("}")
@@ -8371,10 +8411,11 @@ lpegpatterns.nestedparents=nestedparents
 lpegpatterns.nested=nestedbraces 
 lpegpatterns.argument=argument   
 lpegpatterns.content=content    
-local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C((nestedbraces+(1-comma))^0)
+local value=lbrace*C((nobrace+nestedbraces)^0)*rbrace+C((nestedbraces+(1-comma))^0)
 local key=C((1-equal-comma)^1)
 local pattern_a=(space+comma)^0*(key*equal*value+key*C(""))
 local pattern_c=(space+comma)^0*(key*equal*value)
+local pattern_d=(space+comma)^0*(key*(equal+colon)*value+key*C(""))
 local key=C((1-space-equal-comma)^1)
 local pattern_b=spaces*comma^0*spaces*(key*((spaces*equal*spaces*value)+C("")))
 local hash={}
@@ -8384,9 +8425,11 @@ end
 local pattern_a_s=(pattern_a/set)^1
 local pattern_b_s=(pattern_b/set)^1
 local pattern_c_s=(pattern_c/set)^1
+local pattern_d_s=(pattern_d/set)^1
 patterns.settings_to_hash_a=pattern_a_s
 patterns.settings_to_hash_b=pattern_b_s
 patterns.settings_to_hash_c=pattern_c_s
+patterns.settings_to_hash_d=pattern_d_s
 function parsers.make_settings_to_hash_pattern(set,how)
   if how=="strict" then
     return (pattern_c/set)^1
@@ -8411,6 +8454,17 @@ function parsers.settings_to_hash(str,existing)
   else
     hash=existing or {}
     lpegmatch(pattern_a_s,str)
+    return hash
+  end
+end
+function parsers.settings_to_hash_colon_too(str)
+  if not str or str=="" then
+    return {}
+  elseif type(str)=="table" then
+    return str
+  else
+    hash={}
+    lpegmatch(pattern_d_s,str)
     return hash
   end
 end
@@ -8451,7 +8505,7 @@ function parsers.settings_to_hash_strict(str,existing)
   end
 end
 local separator=comma*space^0
-local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C((nestedbraces+(1-comma))^0)
+local value=lbrace*C((nobrace+nestedbraces)^0)*rbrace+C((nestedbraces+(1-comma))^0)
 local pattern=spaces*Ct(value*(separator*value)^0)
 patterns.settings_to_array=pattern
 function parsers.settings_to_array(str,strict)
@@ -8486,7 +8540,7 @@ function parsers.settings_to_numbers(str)
   end
   return str
 end
-local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C((nestedbraces+nestedbrackets+nestedparents+(1-comma))^0)
+local value=lbrace*C((nobrace+nestedbraces)^0)*rbrace+C((nestedbraces+nestedbrackets+nestedparents+(1-comma))^0)
 local pattern=spaces*Ct(value*(separator*value)^0)
 function parsers.settings_to_array_obey_fences(str)
   return lpegmatch(pattern,str)
@@ -8501,7 +8555,7 @@ function parsers.groupedsplitat(symbol,withaction)
   if not pattern then
     local symbols=S(symbol)
     local separator=space^0*symbols*space^0
-    local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C((nestedbraces+(1-(space^0*(symbols+P(-1)))))^0)
+    local value=lbrace*C((nobrace+nestedbraces)^0)*rbrace+C((nestedbraces+(1-(space^0*(symbols+P(-1)))))^0)
     if withaction then
       local withvalue=Carg(1)*value/function(f,s) return f(s) end
       pattern=spaces*withvalue*(separator*withvalue)^0
@@ -9274,7 +9328,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 32922, stripped down to: 23011
+-- original size: 32361, stripped down to: 22577
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -9871,51 +9925,39 @@ end)
 if tex then
   local report=logs.reporter("pages") 
   local texgetcount=tex and tex.getcount
-  local real,user,sub
+  local real,user,sub=0,0,0
   function logs.start_page_number()
     real=texgetcount("realpageno")
     user=texgetcount("userpageno")
     sub=texgetcount("subpageno")
   end
   local timing=false
-  local starttime=nil
   local lasttime=nil
   trackers.register("pages.timing",function(v) 
-    starttime=os.clock() 
-    timing=true
+    timing=""
   end)
   function logs.stop_page_number() 
     if timing then
-      local elapsed,average
-      local stoptime=os.clock()
+      local elapsed=statistics.currenttime(statistics)
+      local average,page
       if not lasttime or real<2 then
-        elapsed=stoptime
-        average=stoptime
-        starttime=stoptime
+        average=elapsed
+        page=elapsed
       else
-        elapsed=stoptime-lasttime
-        average=(stoptime-starttime)/(real-1)
+        average=elapsed/(real-1)
+        page=elapsed-lasttime
       end
-      lasttime=stoptime
-      if real<=0 then
-        report("flushing page, time %0.04f / %0.04f",elapsed,average)
-      elseif user<=0 then
-        report("flushing realpage %s, time %0.04f / %0.04f",real,elapsed,average)
-      elseif sub<=0 then
-        report("flushing realpage %s, userpage %s, time %0.04f / %0.04f",real,user,elapsed,average)
-      else
-        report("flushing realpage %s, userpage %s, subpage %s, time %0.04f / %0.04f",real,user,sub,elapsed,average)
-      end
+      lasttime=elapsed
+      timing=formatters[", total %0.03f, page %0.03f, average %0.03f"](elapsed,page,average)
+    end
+    if real<=0 then
+      report("flushing page%s",timing)
+    elseif user<=0 then
+      report("flushing realpage %s%s",real,timing)
+    elseif sub<=0 then
+      report("flushing realpage %s, userpage %s%s",real,user,timing)
     else
-      if real<=0 then
-        report("flushing page")
-      elseif user<=0 then
-        report("flushing realpage %s",real)
-      elseif sub<=0 then
-        report("flushing realpage %s, userpage %s",real,user)
-      else
-        report("flushing realpage %s, userpage %s, subpage %s",real,user,sub)
-      end
+      report("flushing realpage %s, userpage %s, subpage %s%s",real,user,sub,timing)
     end
     logs.flush()
   end
@@ -10167,7 +10209,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 8097, stripped down to: 5534
+-- original size: 8610, stripped down to: 5942
 
 if not modules then modules={} end modules ['trac-inf']={
   version=1.001,
@@ -10239,6 +10281,22 @@ local function elapsed(instance)
     return timer and seconds(timer.loadtime) or 0
   end
 end
+local function currenttime(instance)
+  if type(instance)=="number" then
+    return instance
+  else
+    local timer=timers[instance or "notimer"]
+    local it=timer.timing
+    if it>1 then
+    else
+      local starttime=timer.starttime
+      if starttime and starttime>0 then
+        return seconds(timer.loadtime+ticks()-starttime)
+      end
+    end
+    return 0
+  end
+end
 local function elapsedtime(instance)
   return format("%0.3f",elapsed(instance))
 end
@@ -10254,6 +10312,7 @@ statistics.hastiming=hastiming
 statistics.resettiming=resettiming
 statistics.starttiming=starttiming
 statistics.stoptiming=stoptiming
+statistics.currenttime=currenttime
 statistics.elapsed=elapsed
 statistics.elapsedtime=elapsedtime
 statistics.elapsedindeed=elapsedindeed
@@ -10653,12 +10712,12 @@ function luautilities.checkmemory(previous,threshold,trace)
       collectgarbage("collect")
       local afterwards=collectgarbage("count")
       if trace or tracememory then
-        report_mem("previous %i MB, current %i MB, delta %i MB, threshold %i MB, afterwards %i MB",
+        report_mem("previous %r MB, current %r MB, delta %r MB, threshold %r MB, afterwards %r MB",
           previous/1024,current/1024,delta/1024,threshold,afterwards)
       end
       return afterwards
     elseif trace or tracememory then
-      report_mem("previous %i MB, current %i MB, delta %i MB, threshold %i MB",
+      report_mem("previous %r MB, current %r MB, delta %r MB, threshold %r MB",
         previous/1024,current/1024,delta/1024,threshold)
     end
   end
@@ -13571,7 +13630,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 53301, stripped down to: 32477
+-- original size: 53326, stripped down to: 32477
 
 if not modules then modules={} end modules ['lxml-lpt']={
   version=1.001,
@@ -21346,8 +21405,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 877962
--- stripped bytes    : 317771
+-- original bytes    : 880132
+-- stripped bytes    : 318258
 
 -- end library merge
 
@@ -21623,7 +21682,7 @@ local helpinfo = [[
    </subcategory>
    <subcategory>
     <flag name="edit"><short>launch editor with found file</short></flag>
-    <flag name="launch"><short>launch files like manuals, assumes os support (<ref name="all"/>)</short></flag>
+    <flag name="launch"><short>launch files like manuals, assumes os support (<ref name="all"/>,<ref name="list"/>)</short></flag>
    </subcategory>
    <subcategory>
     <flag name="timedrun"><short>run a script and time its run</short></flag>
@@ -22022,9 +22081,9 @@ function resolvers.launch(str)
 end
 
 function runners.launch_file(filename)
-    trackers.enable("resolvers.locating")
     local allresults = environment.arguments["all"]
-    local pattern = environment.arguments["pattern"]
+    local pattern    = environment.arguments["pattern"]
+    local listonly   = environment.arguments["list"]
     if not pattern or pattern == "" then
         pattern = filename
     end
@@ -22039,14 +22098,32 @@ function runners.launch_file(filename)
             t = resolvers.findfiles("*/" .. pattern .. "*",nil,allresults)
         end
         if t and #t > 0 then
-            if allresults then
-                for _, v in pairs(t) do
-                    report("launching %s", v)
-                    resolvers.launch(v)
+            for i=1,#t do
+                local name = t[i]
+                if listonly then
+                    report("% 3i:  %-30s %s",i,file.basename(name),file.dirname(name))
+                else
+                    report("launching: %s",name)
+                    resolvers.launch(name)
+                    if not allresults then
+                        break
+                    end
                 end
-            else
-                report("launching %s", t[1])
-                resolvers.launch(t[1])
+            end
+            if listonly then
+                io.write("\n")
+                io.write("\n[select number]\n\n>> ")
+                local answer = tonumber(io.read())
+                if answer then
+                    io.write("\n")
+                    local name = t[answer]
+                    if name then
+                        report("launching: %s",name)
+                        resolvers.launch(name)
+                    else
+                        report("invalid number")
+                    end
+                end
             end
         else
             report("no match for %s", pattern)
@@ -22188,22 +22265,22 @@ function runners.execute_ctx_script(filename,...)
                     local scriptbase = match(scriptname,".*mtx%-([^%-]-)%.lua")
                     if scriptbase then
                         local data = io.loaddata(scriptname)
-local application = match(data,"local application.-=.-(%{.-%})")
-if application then
-    application = loadstring("return " .. application)
-    if application then
-        application = application()
-        local banner = application.banner
-        if banner then
-            local description, version = match(banner,"^(.-) ([%d.]+)$")
-            if description then
-                valid[#valid+1] = { scriptbase, version, description }
-            else
-                valid[#valid+1] = { scriptbase, "", banner }
-            end
-        end
-    end
-end
+                        local application = match(data,"local application.-=.-(%{.-%})")
+                        if application then
+                            application = loadstring("return " .. application)
+                            if application then
+                                application = application()
+                                local banner = application.banner
+                                if banner then
+                                    local description, version = match(banner,"^(.-) ([%d.]+)$")
+                                    if description then
+                                        valid[#valid+1] = { scriptbase, version, description }
+                                    else
+                                        valid[#valid+1] = { scriptbase, "", banner }
+                                    end
+                                end
+                            end
+                        end
                     end
                 end
                 if #valid > 0 then
