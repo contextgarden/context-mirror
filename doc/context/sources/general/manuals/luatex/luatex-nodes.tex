@@ -56,6 +56,7 @@ items. It has only one user-visible field:
 
 \starttabulate[|l|l|p|]
 \DB field       \BC type \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{next} \NC node \NC pointer to the first attribute \NC \NR
 \stoptabulate
 
@@ -68,6 +69,7 @@ defined \quote {attribute} item, whose \type {next} will point to the second
 
 \starttabulate[|l|l|p|]
 \DB field         \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{next}   \NC node   \NC pointer to the next attribute \NC \NR
 \NC \type{number} \NC number \NC the attribute type id \NC \NR
 \NC \type{value}  \NC number \NC the attribute value \NC \NR
@@ -84,6 +86,7 @@ present in all nodes regardless of their type, these are:
 
 \starttabulate[|l|l|p|]
 \DB field          \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{next}    \NC node   \NC the next node in a list, or nil \NC \NR
 \NC \type{id}      \NC number \NC the node's type (\type {id}) number \NC \NR
 \NC \type{subtype} \NC number \NC the node \type {subtype} identifier \NC \NR
@@ -106,6 +109,7 @@ internal magic uses a leading \type {temp} nodes to temporarily store a state.
 
 \starttabulate[|l|l|p|]
 \DB field             \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{subtype}    \NC number \NC \showsubtypes{list} \NC \NR
 \NC \type{attr}       \NC node   \NC list of attributes \NC \NR
 \NC \type{width}      \NC number \NC the width of the box \NC \NR
@@ -140,6 +144,7 @@ intercepted by a callback.
 
 \starttabulate[|l|l|p|]
 \DB field          \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{subtype} \NC number \NC \showsubtypes{rule} \NC \NR
 \NC \type{attr}    \NC node   \NC list of attributes \NC \NR
 \NC \type{width}   \NC number \NC the width of the rule where the special value $-1073741824$ is used for \quote {running} glue dimensions \NC \NR
@@ -153,6 +158,7 @@ intercepted by a callback.
 
 \starttabulate[|l|l|p|]
 \DB field            \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{subtype}   \NC number \NC the insertion class \NC \NR
 \NC \type{attr}      \NC node   \NC list of attributes \NC \NR
 \NC \type{cost}      \NC number \NC the penalty associated with this insert \NC \NR
@@ -174,6 +180,7 @@ names and both names are equally sensible).
 
 \starttabulate[|l|l|p|]
 \DB field          \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{subtype} \NC number \NC unused \NC \NR
 \NC \type{attr}    \NC node   \NC list of attributes \NC \NR
 \NC \type{class}   \NC number \NC the mark class \NC \NR
@@ -184,6 +191,7 @@ names and both names are equally sensible).
 
 \starttabulate[|l|l|p|]
 \DB field            \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{subtype}   \NC number \NC \showsubtypes{adjust} \NC \NR
 \NC \type{attr}      \NC node   \NC list of attributes \NC \NR
 \NC \type{head/list} \NC node   \NC adjusted material \NC \NR
@@ -196,6 +204,7 @@ its internal link structure is correct, otherwise an error may be result.
 
 \starttabulate[|l|l|p|]
 \DB field          \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{subtype} \NC number \NC \showsubtypes{disc} \NC \NR
 \NC \type{attr}    \NC node   \NC list of attributes \NC \NR
 \NC \type{pre}     \NC node   \NC pointer to the pre|-|break text \NC \NR
@@ -231,6 +240,7 @@ freeing it again might crash \LUATEX).
 
 \starttabulate[|l|l|p|]
 \DB field           \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{subtype}  \NC number \NC \showsubtypes{math} \NC \NR
 \NC \type{attr}     \NC node   \NC list of attributes \NC \NR
 \NC \type{surround} \NC number \NC width of the \type {\mathsurround} kern \NC \NR
@@ -248,6 +258,7 @@ called a \type {glue_spec}, and it has the following accessible fields:
 
 \starttabulate[|l|l|p|]
 \DB field                \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{width}         \NC number \NC the horizontal or vertical displacement \NC \NR
 \NC \type{stretch}       \NC number \NC extra (positive) displacement or stretch amount \NC \NR
 \NC \type{stretch_order} \NC number \NC factor applied to stretch amount \NC \NR
@@ -281,6 +292,7 @@ is only a few memory words larger than a spec).
 
 \starttabulate[|l|l|p|]
 \DB field          \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{subtype} \NC number \NC \showsubtypes{glue} \NC \NR
 \NC \type{attr}    \NC node   \NC list of attributes \NC \NR
 \NC \type{leader}  \NC node   \NC pointer to a box or rule for leaders \NC \NR
@@ -298,6 +310,7 @@ a \type {userskip} with subtype zero).
 
 \starttabulate[|l|l|p|]
 \DB field          \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{subtype} \NC number \NC \showsubtypes{kern} \NC \NR
 \NC \type{attr}    \NC node   \NC list of attributes \NC \NR
 \NC \type{kern}    \NC number \NC fixed horizontal or vertical advance \NC \NR
@@ -307,6 +320,7 @@ a \type {userskip} with subtype zero).
 
 \starttabulate[|l|l|p|]
 \DB field          \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{subtype} \NC number \NC \showsubtypes{penalty} \NC \NR
 \NC \type{attr}    \NC node   \NC list of attributes \NC \NR
 \NC \type{penalty} \NC number \NC the penalty value \NC \NR
@@ -320,6 +334,7 @@ accumulation of \type {club}, \type{widow} and other relevant penalties.
 
 \starttabulate[|l|l|p|]
 \DB field                   \BC type    \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{subtype}          \NC number  \NC bitfield \NC \NR
 \NC \type{attr}             \NC node    \NC list of attributes \NC \NR
 \NC \type{char}             \NC number  \NC the chatacter index in the font \NC \NR
@@ -347,6 +362,7 @@ bits for the \type {subtype} field are:
 
 \starttabulate[|c|l|]
 \DB bit \BC meaning   \NC \NR
+\TB[small,samepage]
 \NC 0   \NC character \NC \NR
 \NC 1   \NC ligature  \NC \NR
 \NC 2   \NC ghost     \NC \NR
@@ -381,6 +397,7 @@ and font id and returns true when a glyph or disc node references that font.
 
 \starttabulate[|l|l|p|]
 \DB field          \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{subtype} \NC number \NC \showsubtypes{boundary} \NC \NR
 \NC \type{attr}    \NC node   \NC list of attributes \NC \NR
 \NC \type{value}   \NC number \NC values 0--255 are reserved \NC \NR
@@ -393,6 +410,7 @@ This node relates to the \type {\noboundary}, \type {\boundary}, \type
 
 \starttabulate[|l|l|p|]
 \DB field                  \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr}            \NC node   \NC list of attributes \NC \NR
 \NC \type{pen_inter}       \NC number \NC local interline penalty (from \type {\localinterlinepenalty}) \NC \NR
 \NC \type{pen_broken}      \NC number \NC local broken penalty (from \type {\localbrokenpenalty}) \NC \NR
@@ -411,6 +429,7 @@ error may be result.
 
 \starttabulate[|l|l|p|]
 \DB field        \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr}  \NC node   \NC list of attributes \NC \NR
 \NC \type{dir}   \NC string \NC the direction (but see below) \NC \NR
 \NC \type{level} \NC number \NC nesting level of this direction whatsit \NC \NR
@@ -445,6 +464,7 @@ or popped from the direction stack.
 
 \starttabulate[|l|l|p|]
 \DB field          \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{subtype} \NC number \NC \showsubtypes{margin_kern} \NC \NR
 \NC \type{attr}    \NC node   \NC list of attributes \NC \NR
 \NC \type{width}   \NC number \NC the advance of the kern \NC \NR
@@ -470,6 +490,7 @@ The \type {next} and \type {prev} fields for these subnodes are unused.
 
 \starttabulate[|l|l|p|]
 \DB field       \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr} \NC node   \NC list of attributes \NC \NR
 \NC \type{char} \NC number \NC the character index \NC \NR
 \NC \type{fam}  \NC number \NC the family number \NC \NR
@@ -484,6 +505,7 @@ conversion (its sole function is to suppress a following italic correction).
 
 \starttabulate[|l|l|p|]
 \DB field            \BC type \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr}      \NC node \NC list of attributes \NC \NR
 \NC \type{head/list} \NC node \NC list of nodes \NC \NR
 \stoptabulate
@@ -504,6 +526,7 @@ before, the \type {next} and \type {prev} fields are unused.
 
 \starttabulate[|l|l|p|]
 \DB field             \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr}       \NC node   \NC list of attributes \NC \NR
 \NC \type{small_char} \NC number \NC character index of base character \NC \NR
 \NC \type{small_fam}  \NC number \NC family number of base character \NC \NR
@@ -526,6 +549,7 @@ Some noads have an option field. The values in this bitset are common:
 
 \starttabulate[|l|r|]
 \DB meaning         \BC bits                      \NC \NR
+\TB[small,samepage]
 \NC set             \NC               \type{0x08} \NC \NR
 \NC internal        \NC \type{0x00} + \type{0x08} \NC \NR
 \NC internal        \NC \type{0x01} + \type{0x08} \NC \NR
@@ -544,6 +568,7 @@ Some noads have an option field. The values in this bitset are common:
 
 \starttabulate[|l|l|p|]
 \DB field          \BC type        \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{subtype} \NC number      \NC \showsubtypes{noad} \NC \NR
 \NC \type{attr}    \NC node        \NC list of attributes \NC \NR
 \NC \type{nucleus} \NC kernel node \NC base \NC \NR
@@ -556,6 +581,7 @@ Some noads have an option field. The values in this bitset are common:
 
 \starttabulate[|l|l|p|]
 \DB field             \BC type        \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{subtype}    \NC number      \NC \showsubtypes{accent} \NC \NR
 \NC \type{nucleus}    \NC kernel node \NC base \NC \NR
 \NC \type{sub}        \NC kernel node \NC subscript \NC \NR
@@ -569,6 +595,7 @@ Some noads have an option field. The values in this bitset are common:
 
 \starttabulate[|l|l|p|]
 \DB field        \BC type   \BC explanation    \NC \NR
+\TB[small,samepage]
 \NC \type{style} \NC string \NC contains the style \NC \NR
 \stoptabulate
 
@@ -580,6 +607,7 @@ be prefixed by \type {cramped}.
 
 \starttabulate[|l|l|p|]
 \DB field               \BC type \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr}         \NC node \NC list of attributes \NC \NR
 \NC \type{display}      \NC node \NC list of display size alternatives \NC \NR
 \NC \type{text}         \NC node \NC list of text size alternatives \NC \NR
@@ -595,6 +623,7 @@ structure is correct, otherwise an error may be result.
 
 \starttabulate[|l|l|p|]
 \DB field          \BC type           \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{subtype} \NC number         \NC \showsubtypes{radical} \NC \NR
 \NC \type{attr}    \NC node           \NC list of attributes \NC \NR
 \NC \type{nucleus} \NC kernel node    \NC base \NC \NR
@@ -614,6 +643,7 @@ link structure is correct, otherwise an error may be result.
 
 \starttabulate[|l|l|p|]
 \DB field          \BC type           \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr}    \NC node           \NC list of attributes \NC \NR
 \NC \type{width}   \NC number         \NC (optional) width of the fraction \NC \NR
 \NC \type{num}     \NC kernel node    \NC numerator \NC \NR
@@ -632,6 +662,7 @@ may be result.
 
 \starttabulate[|l|l|p|]
 \DB field          \BC type           \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{subtype} \NC number         \NC \showsubtypes{fence} \NC \NR
 \NC \type{attr}    \NC node           \NC list of attributes \NC \NR
 \NC \type{delim}   \NC delimiter node \NC delimiter specification \NC \NR
@@ -665,6 +696,7 @@ Whatsit nodes come in many subtypes that you can ask for by running
 
 \starttabulate[|l|l|p|]
 \DB field         \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr}   \NC node   \NC list of attributes \NC \NR
 \NC \type{stream} \NC number \NC \TEX's stream id number \NC \NR
 \NC \type{name}   \NC string \NC file name \NC \NR
@@ -676,6 +708,7 @@ Whatsit nodes come in many subtypes that you can ask for by running
 
 \starttabulate[|l|l|p|]
 \DB field         \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr}   \NC node   \NC list of attributes \NC \NR
 \NC \type{stream} \NC number \NC \TEX's stream id number \NC \NR
 \NC \type{data}   \NC table  \NC a table representing the token list to be written \NC \NR
@@ -685,6 +718,7 @@ Whatsit nodes come in many subtypes that you can ask for by running
 
 \starttabulate[|l|l|p|]
 \DB field         \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr}   \NC node   \NC list of attributes \NC \NR
 \NC \type{stream} \NC number \NC \TEX's stream id number \NC \NR
 \stoptabulate
@@ -697,6 +731,7 @@ will simply step over such whatsits without ever looking at the contents.
 
 \starttabulate[|l|l|p|]
 \DB field          \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr}    \NC node   \NC list of attributes \NC \NR
 \NC \type{user_id} \NC number \NC id number \NC \NR
 \NC \type{type}    \NC number \NC type of the value \NC \NR
@@ -712,6 +747,7 @@ instead of \type {108}).
 
 \starttabulate[|r|c|p|]
 \DB value \BC meaning \BC explanation \NC \NR
+\TB[small,samepage]
 \NC   97  \NC a       \NC list of attributes (a node list) \NC \NR
 \NC  100  \NC d       \NC a \LUA\ number \NC \NR
 \NC  108  \NC l       \NC a \LUA\ value (table, number, boolean, etc) \NC \NR
@@ -724,6 +760,7 @@ instead of \type {108}).
 
 \starttabulate[|l|l|p|]
 \DB field       \BC type \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr} \NC node \NC list of attributes \NC \NR
 \stoptabulate
 
@@ -731,6 +768,7 @@ instead of \type {108}).
 
 \starttabulate[|l|l|p|]
 \DB field         \BC type     \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr}   \NC node     \NC list of attributes \NC \NR
 \NC \type{data}   \NC string   \NC data to execute \NC \NR
 \NC \type{string} \NC string   \NC data to execute \NC \NR
@@ -747,6 +785,7 @@ The difference between \type {data} and \type {string} is that on assignment, th
 
 \starttabulate[|l|l|p|]
 \DB field       \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr} \NC node   \NC list of attributes \NC \NR
 \NC \type{data} \NC string \NC the \type {\special} information \NC \NR
 \stoptabulate
@@ -757,6 +796,7 @@ The difference between \type {data} and \type {string} is that on assignment, th
 
 \starttabulate[|l|l|p|]
 \DB field       \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr} \NC node   \NC list of attributes \NC \NR
 \NC \type{mode} \NC number \NC the \quote {mode} setting of this literal \NC \NR
 \NC \type{data} \NC string \NC the \type {\pdfliteral} information \NC \NR
@@ -766,6 +806,7 @@ Possible mode values are:
 
 \starttabulate[|l|p|]
 \DB value \BC keyword        \NC \NR
+\TB[small,samepage]
 \NC 0     \NC \type{origin}  \NC \NR
 \NC 1     \NC \type{page}    \NC \NR
 \NC 2     \NC \type{direct}  \NC \NR
@@ -781,6 +822,7 @@ what you generate.
 
 \starttabulate[|l|l|p|]
 \DB field         \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr}   \NC node   \NC list of attributes \NC \NR
 \NC \type{objnum} \NC number \NC the referenced \PDF\ object number \NC \NR
 \stoptabulate
@@ -789,6 +831,7 @@ what you generate.
 
 \starttabulate[|l|l|p|]
 \DB field         \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr}   \NC node   \NC list of attributes \NC \NR
 \NC \type{width}  \NC number \NC the width (not used in calculations) \NC \NR
 \NC \type{height} \NC number \NC the height (not used in calculations) \NC \NR
@@ -801,6 +844,7 @@ what you generate.
 
 \starttabulate[|l|l|p|]
 \DB field            \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr}      \NC node   \NC list of attributes \NC \NR
 \NC \type{width}     \NC number \NC the width (not used in calculations) \NC \NR
 \NC \type{height}    \NC number \NC the height (not used in calculations) \NC \NR
@@ -814,6 +858,7 @@ what you generate.
 
 \starttabulate[|l|l|p|]
 \DB field       \BC type \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr} \NC node \NC \NC \NR
 \stoptabulate
 
@@ -821,6 +866,7 @@ what you generate.
 
 \starttabulate[|l|l|p|]
 \DB field              \BC type     \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr}        \NC node     \NC list of attributes \NC \NR
 \NC \type{width}       \NC number   \NC the width (not used in calculations) \NC \NR
 \NC \type{height}      \NC number   \NC the height (not used in calculations) \NC \NR
@@ -840,6 +886,7 @@ objects.
 
 \starttabulate[|l|l|p|]
 \DB field              \BC type             \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{action_type} \NC number           \NC the kind of action involved \NC \NR
 \NC \type{action_id}   \NC number or string \NC token list reference or string \NC \NR
 \NC \type{named_id}    \NC number           \NC the index of the destination \NC \NR
@@ -852,6 +899,7 @@ Valid action types are:
 
 \starttabulate[|l|l|]
 \DB value \BC meaning       \NC \NR
+\TB[small,samepage]
 \NC 0     \NC \type{page}   \NC \NR
 \NC 1     \NC \type{goto}   \NC \NR
 \NC 2     \NC \type{thread} \NC \NR
@@ -862,6 +910,7 @@ Valid window types are:
 
 \starttabulate[|l|l|]
 \DB value \BC meaning       \NC \NR
+\TB[small,samepage]
 \NC 0     \NC \type{notset} \NC \NR
 \NC 1     \NC \type{new}    \NC \NR
 \NC 2     \NC \type{nonew}  \NC \NR
@@ -871,6 +920,7 @@ Valid window types are:
 
 \starttabulate[|l|l|p|]
 \DB field              \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr}        \NC node   \NC list of attributes \NC \NR
 \NC \type{width}       \NC number \NC the width (not used in calculations) \NC \NR
 \NC \type{height}      \NC number \NC the height (not used in calculations) \NC \NR
@@ -885,6 +935,7 @@ Valid window types are:
 
 \starttabulate[|l|l|p|]
 \DB field              \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr}        \NC node   \NC list of attributes \NC \NR
 \NC \type{width}       \NC number \NC the width (not used in calculations) \NC \NR
 \NC \type{height}      \NC number \NC the height (not used in calculations) \NC \NR
@@ -899,6 +950,7 @@ Valid window types are:
 
 \starttabulate[|l|l|p|]
 \DB field       \BC type \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr} \NC node \NC \NC \NR
 \stoptabulate
 
@@ -906,6 +958,7 @@ Valid window types are:
 
 \starttabulate[|l|l|p|]
 \DB field          \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr}    \NC node   \NC list of attributes \NC \NR
 \NC \type{stack}   \NC number \NC colorstack id number \NC \NR
 \NC \type{command} \NC number \NC command to execute \NC \NR
@@ -916,6 +969,7 @@ Valid window types are:
 
 \starttabulate[|l|l|p|]
 \DB field       \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr} \NC node   \NC list of attributes \NC \NR
 \NC \type{data} \NC string \NC data \NC \NR
 \stoptabulate
@@ -924,6 +978,7 @@ Valid window types are:
 
 \starttabulate[|l|l|p|]
 \DB field       \BC type \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr} \NC node \NC list of attributes \NC \NR
 \stoptabulate
 
@@ -931,6 +986,7 @@ Valid window types are:
 
 \starttabulate[|l|l|p|]
 \DB field       \BC type \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{attr} \NC node \NC list of attributes \NC \NR
 \stoptabulate
 
@@ -1875,6 +1931,7 @@ Some accessors are used frequently and for these we provide more efficient helpe
 
 \starttabulate[|l|p|]
 \DB function          \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{getnext}    \NC parsing nodelist always involves this one \NC \NR
 \NC \type{getprev}    \NC used less but is logical companion to \type {getnext} \NC \NR
 \NC \type{getboth}    \NC returns the next and prev pointer of a node \NC \NR
@@ -1921,6 +1978,7 @@ consistency. You can of course always define additional accessor using \type
 
 \starttabulate[|l|c|c|]
 \DB function                     \BC node \BC direct \NC \NR
+\TB[small,samepage]
 %NC \type {do_ligature_n}        \NC \yes \NC \yes  \NC \NR % was never documented and experimental
 \NC \type {check_discretionaries}\NC \yes \NC \yes  \NC \NR
 \NC \type {copy_list}            \NC \yes \NC \yes  \NC \NR

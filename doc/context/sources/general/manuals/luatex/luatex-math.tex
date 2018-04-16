@@ -194,18 +194,19 @@ The following new primitives are compatible with \XETEX:
 % somewhat fuzzy:
 
 \starttabulate[|l|l|r|c|l|r|]
-\DB primitive                               \BC min       \BC max                          \BC \kern 2em \BC min       \BC max                        \NC \NR
-\NC \type {\Umathchardef}                   \NC 0+0+0     \NC 7+FF+10FFFF\rlap{\high{1}}   \NC           \NC           \NC                            \NC \NR
-\NC \type {\Umathcharnumdef}\rlap{\high{5}} \NC -80000000 \NC    7FFFFFFF\rlap{\high{3}}   \NC           \NC           \NC                            \NC \NR
-\NC \type {\Umathcode}                      \NC 0         \NC      10FFFF                  \NC =         \NC 0+0+0     \NC 7+FF+10FFFF\rlap{\high{1}} \NC \NR
-\NC \type {\Udelcode}                       \NC 0         \NC      10FFFF                  \NC =         \NC 0+0       \NC   FF+10FFFF\rlap{\high{2}} \NC \NR
-\NC \type {\Umathchar}                      \NC 0+0+0     \NC 7+FF+10FFFF                  \NC           \NC           \NC                            \NC \NR
-\NC \type {\Umathaccent}                    \NC 0+0+0     \NC 7+FF+10FFFF\rlap{\high{2,4}} \NC           \NC           \NC                            \NC \NR
-\NC \type {\Udelimiter}                     \NC 0+0+0     \NC 7+FF+10FFFF\rlap{\high{2}}   \NC           \NC           \NC                            \NC \NR
-\NC \type {\Uradical}                       \NC 0+0       \NC   FF+10FFFF\rlap{\high{2}}   \NC           \NC           \NC                            \NC \NR
-\NC \type {\Umathcharnum}                   \NC -80000000 \NC    7FFFFFFF\rlap{\high{3}}   \NC           \NC           \NC                            \NC \NR
-\NC \type {\Umathcodenum}                   \NC 0         \NC      10FFFF                  \NC =         \NC -80000000 \NC    7FFFFFFF\rlap{\high{3}} \NC \NR
-\NC \type {\Udelcodenum}                    \NC 0         \NC      10FFFF                  \NC =         \NC -80000000 \NC    7FFFFFFF\rlap{\high{3}} \NC \NR
+\DB primitive                               \BC min       \BC max         \BC \kern 2em \BC min       \BC max         \NC \NR
+\TB[small,samepage]
+\NC \type {\Umathchardef}                   \NC 0+0+0     \NC 7+FF+10FFFF \NC           \NC           \NC             \NC \NR
+\NC \type {\Umathcharnumdef}\rlap{\high{5}} \NC -80000000 \NC    7FFFFFFF \NC           \NC           \NC             \NC \NR
+\NC \type {\Umathcode}                      \NC 0         \NC      10FFFF \NC =         \NC 0+0+0     \NC 7+FF+10FFFF \NC \NR
+\NC \type {\Udelcode}                       \NC 0         \NC      10FFFF \NC =         \NC 0+0       \NC   FF+10FFFF \NC \NR
+\NC \type {\Umathchar}                      \NC 0+0+0     \NC 7+FF+10FFFF \NC           \NC           \NC             \NC \NR
+\NC \type {\Umathaccent}                    \NC 0+0+0     \NC 7+FF+10FFFF \NC           \NC           \NC             \NC \NR
+\NC \type {\Udelimiter}                     \NC 0+0+0     \NC 7+FF+10FFFF \NC           \NC           \NC             \NC \NR
+\NC \type {\Uradical}                       \NC 0+0       \NC   FF+10FFFF \NC           \NC           \NC             \NC \NR
+\NC \type {\Umathcharnum}                   \NC -80000000 \NC    7FFFFFFF \NC           \NC           \NC             \NC \NR
+\NC \type {\Umathcodenum}                   \NC 0         \NC      10FFFF \NC =         \NC -80000000 \NC    7FFFFFFF \NC \NR
+\NC \type {\Udelcodenum}                    \NC 0         \NC      10FFFF \NC =         \NC -80000000 \NC    7FFFFFFF \NC \NR
 \stoptabulate
 
 Specifications typically look like:
@@ -215,29 +216,27 @@ Specifications typically look like:
 \Umathcode   123="1"0"789
 \stoptyping
 
-Note 1: The new primitives that deal with delimiter|-|style objects do not set up a
+The new primitives that deal with delimiter|-|style objects do not set up a
 \quote {large family}. Selecting a suitable size for display purposes is expected
 to be dealt with by the font via the \type {\Umathoperatorsize} parameter (more
 information can be found in a following section).
 
-Note 2: For these three primitives, all information is packed into a single
-signed integer. For the first two (\type {\Umathcharnum} and \type
-{\Umathcodenum}), the lowest 21 bits are the character code, the 3 bits above
-that represent the math class, and the family data is kept in the topmost bits
-(This means that the values for math families 128--255 are actually negative).
-For \type {\Udelcodenum} there is no math class. The math family information is
-stored in the bits directly on top of the character code. Using these three
-commands is not as natural as using the two- and three|-|value commands, so
-unless you know exactly what you are doing and absolutely require the speedup
-resulting from the faster input scanning, it is better to use the verbose
-commands instead.
+For some of these primitives, all information is packed into a single signed
+integer. For the first two (\type {\Umathcharnum} and \type {\Umathcodenum}), the
+lowest 21 bits are the character code, the 3 bits above that represent the math
+class, and the family data is kept in the topmost bits This means that the values
+for math families 128--255 are actually negative. For \type {\Udelcodenum} there
+is no math class. The math family information is stored in the bits directly on
+top of the character code. Using these three commands is not as natural as using
+the two- and three|-|value commands, so unless you know exactly what you are
+doing and absolutely require the speedup resulting from the faster input
+scanning, it is better to use the verbose commands instead.
 
-Note 3: The \type {\Umathaccent} command accepts optional keywords to control
-various details regarding math accents. See \in {section} [mathacc] below for
-details.
+The \type {\Umathaccent} command accepts optional keywords to control various
+details regarding math accents. See \in {section} [mathacc] below for details.
 
-New primitives that exist in \LUATEX\ only (all of these will be explained
-in following sections):
+There are more new primitives and all of these will be explained in following
+sections:
 
 \starttabulate[|l|l|]
 \DB primitive                \BC value range (in hex) \NC \NR
@@ -295,6 +294,8 @@ we get this:
 
 \startbuffer[demo]
 \starttabulate
+\DB style         \BC example \NC \NR
+\TB[small,samepage]
 \NC default       \NC $b_{x=xx}^{x=xx}$ \NC \NR
 \NC script        \NC $b_{\scriptstyle x=xx}^{\scriptstyle x=xx}$ \NC \NR
 \NC crampedscript \NC $b_{\crampedscriptstyle x=xx}^{\crampedscriptstyle x=xx}$ \NC \NR
@@ -446,13 +447,12 @@ Besides the parameters below, \LUATEX\ also looks at the \quote {space} font
 dimension parameter. For math fonts, this should be set to zero.
 
 \def\MathLine#1#2#3#4#5%
-  {\TB
-   \NC \llap{\high{\tx #2\enspace}}\ttbf \string #1 \NC #5 \NC \NR
-   \NC \tx #3 \NC #4 \NC \NR}
+  {\TB[small,samepage]
+   \NC \llap{\high{\tx #2\enspace}}\ttbf \string #1 \NC \tt #5 \NC \NR
+   \NC \tx #3 \NC \tt #4 \NC \NR}
 
 \starttabulate[|l|l|]
 \DB variable / style \BC tfm / opentype \NC \NR
-\TB[small,samepage]
 \MathLine{\Umathaxis}               {}   {}                     {AxisHeight}                              {axis_height}
 \MathLine{\Umathoperatorsize}       {6}  {D, D'}                {DisplayOperatorMinHeight}                {\emdash}
 \MathLine{\Umathfractiondelsize}    {9}  {D, D'}                {FractionDelimiterDisplayStyleSize}       {delim1}

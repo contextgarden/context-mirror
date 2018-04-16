@@ -23,6 +23,7 @@ The top|-|level keys in the table are as follows:
 
 \starttabulate[|l|c|c|c|l|pl|]
 \DB key                     \BC vf  \BC tfm \BC used \BC value type \BC description \NC \NR
+\TB[small,samepage]
 \NC \type{name}             \NC yes \NC yes \NC yes  \NC string     \NC metric (file) name \NC \NR
 \NC \type{area}             \NC no  \NC yes \NC yes  \NC string     \NC (directory) location, typically empty \NC \NR
 \NC \type{used}             \NC no  \NC yes \NC yes  \NC boolean    \NC indicates usage (initial: false) \NC \NR
@@ -125,6 +126,7 @@ possibilities:
 
 \starttabulate[|Tc|c|Tc|c|Tc|c|Tc|c|]
 \DB \# \BC dir \BC \# \BC dir \BC \# \BC dir \BC \# \BC dir \NC \NR
+\TB[small,samepage]
 \NC  0 \NC LT  \NC  4 \NC RT  \NC  8 \NC TT  \NC 12 \NC BT  \NC \NR
 \NC  1 \NC LL  \NC  5 \NC RL  \NC  9 \NC TL  \NC 13 \NC BL  \NC \NR
 \NC  2 \NC LB  \NC  6 \NC RB  \NC 10 \NC TB  \NC 14 \NC BB  \NC \NR
@@ -146,6 +148,7 @@ The names and their internal remapping are:
 
 \starttabulate[|l|c|]
 \DB name                  \BC remapping \NC \NR
+\TB[small,samepage]
 \NC \type {slant}         \NC 1 \NC \NR
 \NC \type {space}         \NC 2 \NC \NR
 \NC \type {space_stretch} \NC 3 \NC \NR
@@ -195,6 +198,7 @@ The following top|-|level keys can be present inside a character hash:
 
 \starttabulate[|l|c|c|c|l|p|]
 \DB key                     \BC vf  \BC tfm \BC used  \BC type    \BC description \NC\NR
+\TB[small,samepage]
 \NC \type{width}            \NC yes \NC yes \NC yes   \NC number  \NC character's width, in sp (default 0) \NC\NR
 \NC \type{height}           \NC no  \NC yes \NC yes   \NC number  \NC character's height, in sp (default 0) \NC\NR
 \NC \type{depth}            \NC no  \NC yes \NC yes   \NC number  \NC character's depth, in sp (default 0) \NC\NR
@@ -247,6 +251,7 @@ very simple:
 
 \starttabulate[|l|l|p|]
 \DB key        \BC type   \BC description                \NC\NR
+\TB[small,samepage]
 \NC \type{top} \NC number \NC top character index        \NC\NR
 \NC \type{mid} \NC number \NC middle character index     \NC\NR
 \NC \type{bot} \NC number \NC bottom character index     \NC\NR
@@ -258,6 +263,7 @@ Each of those components is itself a hash of up to five keys:
 
 \starttabulate[|l|l|p|]
 \DB key             \BC type   \BC explanation \NC \NR
+\TB[small,samepage]
 \NC \type{glyph}    \NC number \NC The character index. Note that this is an encoding number, not a name. \NC \NR
 \NC \type{extender} \NC number \NC One (1) if this part is repeatable, zero (0) otherwise. \NC \NR
 \NC \type{start}    \NC number \NC The maximum overlap at the starting side (in scaled points). \NC \NR
@@ -279,6 +285,7 @@ two fields:
 
 \starttabulate[|l|l|p|]
 \DB key         \BC type   \BC description \NC \NR
+\TB[small,samepage]
 \NC \type{type} \NC number \NC the type of this ligature command, default 0 \NC \NR
 \NC \type{char} \NC number \NC the character index of the resultant ligature \NC \NR
 \stoptabulate
@@ -295,6 +302,7 @@ point will become the next \quote {left}.
 
 \starttabulate[|l|c|l|l|]
 \DB textual (Knuth)       \BC number \BC string        \BC result      \NC\NR
+\TB[small,samepage]
 \NC \type{l + r =: n}     \NC 0      \NC \type{=:}     \NC \type{|n}   \NC\NR
 \NC \type{l + r =:| n}    \NC 1      \NC \type{=:|}    \NC \type{|nr}  \NC\NR
 \NC \type{l + r |=: n}    \NC 2      \NC \type{|=:}    \NC \type{|ln}  \NC\NR
@@ -321,6 +329,7 @@ inclusion mechanism will attempt to add the needed font object definitions to th
 
 \starttabulate[|l|p|]
 \DB value          \BC description            \NC\NR
+\TB[small,samepage]
 \NC \type{real}    \NC this is a base font    \NC\NR
 \NC \type{virtual} \NC this is a virtual font \NC\NR
 \stoptabulate
@@ -364,6 +373,7 @@ encoding options.
 
 \starttabulate[|l|p|]
 \DB value           \BC description                                               \NC \NR
+\TB[small,samepage]
 \NC \type{type1}    \NC this is a \POSTSCRIPT\ \TYPEONE\ font                     \NC \NR
 \NC \type{type3}    \NC this is a bitmapped (\PK) font                            \NC \NR
 \NC \type{truetype} \NC this is a \TRUETYPE\ or \TRUETYPE|-|based \OPENTYPE\ font \NC \NR
@@ -374,6 +384,7 @@ Valid values for the \type {embedding} variable are:
 
 \starttabulate[|l|p|]
 \DB value         \BC description                             \NC \NR
+\TB[small,samepage]
 \NC \type{no}     \NC don't embed the font at all             \NC \NR
 \NC \type{subset} \NC include and atttempt to subset the font \NC \NR
 \NC \type{full}   \NC include this font in its entirety       \NC \NR
@@ -463,6 +474,7 @@ parameters to that command. The allowed commands and their arguments are:
 
 \starttabulate[|l|l|l|p|]
 \DB command        \BC arguments \BC type      \BC description \NC \NR
+\TB[small,samepage]
 \NC \type{font}    \NC 1         \NC number    \NC select a new font from the local \type {fonts} table \NC \NR
 \NC \type{char}    \NC 1         \NC number    \NC typeset this character number from the current font,
                                                    and move right by the character's width \NC \NR
@@ -479,7 +491,9 @@ parameters to that command. The allowed commands and their arguments are:
 \NC \type{pdf}     \NC 2         \NC 2 strings \NC output a \PDF\ literal, the first string is one of \type {origin},
                                                    \type {page}, \type {text}, \type {font}, \type {direct} or \type {raw}; if you
                                                    have one string only \type {origin} is assumed \NC \NR
-\NC \type{lua}     \NC 1         \NC string    \NC execute a \LUA\ script (at \type {\latelua} time) \NC \NR
+\NC \type{lua}     \NC 1         \NC string,
+                                     function  \NC execute a \LUA\ script when the glyph is embedded; in case of a
+                                                   function it gets the font id and character code passed \NC \NR
 \NC \type{image}   \NC 1         \NC image     \NC output an image (the argument can be either an \type
                                                    {<image>} variable or an \type {image_spec} table) \NC \NR
 \NC \type{comment} \NC any       \NC any       \NC the arguments of this command are ignored \NC \NR
@@ -499,6 +513,7 @@ from \PDFTEX.
 
 \starttabulate[|l|p|]
 \DB mode           \BC description \NC \NR
+\TB[small,samepage]
 \NC \type {origin} \NC enter page mode and set the position \NC \NR
 \NC \type {page}   \NC enter page mode \NC \NR
 \NC \type {text}   \NC enter text mode \NC \NR
