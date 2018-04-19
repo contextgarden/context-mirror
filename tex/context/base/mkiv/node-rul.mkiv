@@ -592,10 +592,10 @@
   {\bgroup
    \clf_enablebackgroundboxes
    \dowithnextbox{%
-     \node_linefiller_set{#3}%
+     \node_linefiller_set{#3}% already sets the attribute
      #1%
         attr \backgroundattribute \plusone
-        attr \linefillerattribute \the\attribute\linefillerattribute
+      % attr \linefillerattribute \the\attribute\linefillerattribute
        {\box\nextbox}%
      \egroup}%
    #2}
@@ -603,5 +603,9 @@
 \unexpanded\def\linefillerhbox{\node_backgrounds_filler_box\hpack\hbox}
 \unexpanded\def\linefillervbox{\node_backgrounds_filler_box\vpack\vbox}
 \unexpanded\def\linefillervtop{\node_backgrounds_filler_box\tpack\vtop}
+
+%D Bonus:
+
+\unexpanded\def\autorule{\clf_autorule}
 
 \protect \endinput
