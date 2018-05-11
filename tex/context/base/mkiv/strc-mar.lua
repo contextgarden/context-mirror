@@ -29,13 +29,16 @@ local getlist            = nuts.getlist
 local getattr            = nuts.getattr
 local getbox             = nuts.getbox
 
-local traverse           = nuts.traverse
-local traverse_id        = nuts.traverse_id
+local nextnode           = nuts.traversers.node
 
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
+
+local whatsit_code       = nodecodes.whatsit
+local whatsitcodes       = nodes.whatsitcodes
+local latelua_code       = whatsitcodes.latelua
 
 local texsetattribute    = tex.setattribute
 
@@ -116,8 +119,9 @@ end
 -- identify range
 
 local function sweep(head,first,last)
-    for n, id in traverse(head) do
-        if id == glyph_code then
+    for n, id, subtype in nextnode, head do
+        -- we need to handle empty heads so we test for latelua
+        if id == glyph_code or (id == whatsit_code and subtype == latelua_code) then
             local a = getattr(n,a_marks)
             if not a then
                 -- next

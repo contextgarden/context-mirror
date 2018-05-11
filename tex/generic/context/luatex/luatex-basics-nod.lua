@@ -11,8 +11,9 @@ if context then
     os.exit()
 end
 
--- Don't depend on code here as it is only needed to complement the
--- font handler code.
+-- Don't depend on code here as it is only needed to complement the font handler
+-- code. I will move some to another namespace as I don't see other macro packages
+-- use the context logic. It's a subset anyway.
 
 -- Attributes:
 
@@ -74,8 +75,8 @@ local flush_node   = node.flush_node
 local remove_node  = node.remove
 local traverse_id  = node.traverse_id
 
-nodes.handlers.protectglyphs   = node.protect_glyphs
-nodes.handlers.unprotectglyphs = node.unprotect_glyphs
+nodes.handlers.protectglyphs   = node.protect_glyphs   -- beware: nodes!
+nodes.handlers.unprotectglyphs = node.unprotect_glyphs -- beware: nodes!
 
 local math_code   = nodecodes.math
 local end_of_math = node.end_of_math
@@ -285,6 +286,7 @@ nuts.end_of_math         = direct.end_of_math
 nuts.traverse            = direct.traverse
 nuts.traverse_id         = direct.traverse_id
 nuts.traverse_char       = direct.traverse_char
+nuts.traverse_glyph      = direct.traverse_glyph
 nuts.ligaturing          = direct.ligaturing
 nuts.kerning             = direct.kerning
 nuts.new                 = direct.new
@@ -480,3 +482,23 @@ if not nuts.uses_font then
     end
 end
 
+--
+do
+
+    -- another poor mans substitute ... i will move these to a more protected
+    -- namespace .. experimental hack
+
+    local dummy = tonut(node.new("glyph"))
+
+    nuts.traversers = {
+        glyph    = nuts.traverse_id(nodecodes.glyph,dummy),
+        glue     = nuts.traverse_id(nodecodes.glue,dummy),
+        disc     = nuts.traverse_id(nodecodes.disc,dummy),
+        boundary = nuts.traverse_id(nodecodes.boundary,dummy),
+
+        char     = nuts.traverse_char(dummy),
+
+        node     = nuts.traverse(dummy),
+    }
+
+end

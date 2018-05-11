@@ -1946,7 +1946,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 40547, stripped down to: 23820
+-- original size: 40782, stripped down to: 23986
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -2871,12 +2871,19 @@ end
 local function sequenced(t,sep,simple)
   if not t then
     return ""
+  elseif type(t)=="string" then
+    return t 
   end
   local n=#t
   local s={}
   if n>0 then
     for i=1,n do
-      s[i]=tostring(t[i])
+      local v=t[i]
+      if type(v)=="table" then
+        s[i]="{"..sequenced(v,sep,simple).."}"
+      else
+        s[i]=tostring(t[i])
+      end
     end
   else
     n=0
@@ -6131,7 +6138,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 39663, stripped down to: 22608
+-- original size: 40074, stripped down to: 22776
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -6691,6 +6698,10 @@ local format_L=function()
   n=n+1
   return format("(a%s and 'TRUE' or 'FALSE')",n)
 end
+local format_n=function() 
+  n=n+1
+  return format("((a%s %% 1 == 0) and format('%%i',a%s) or tostring(a%s))",n,n,n)
+end
 local format_N=function() 
   n=n+1
   return format("tostring(tonumber(a%s) or a%s)",n,n)
@@ -6791,6 +6802,7 @@ local builder=Cs { "start",
 +V("s")+V("q")+V("i")+V("d")+V("f")+V("F")+V("g")+V("G")+V("e")+V("E")+V("x")+V("X")+V("o")
 +V("c")+V("C")+V("S") 
 +V("Q") 
++V("n") 
 +V("N") 
 +V("k")
 +V("r")+V("h")+V("H")+V("u")+V("U")+V("p")+V("b")+V("t")+V("T")+V("l")+V("L")+V("I")+V("w") 
@@ -6820,6 +6832,7 @@ local builder=Cs { "start",
   ["o"]=(prefix_any*P("o"))/format_o,
   ["S"]=(prefix_any*P("S"))/format_S,
   ["Q"]=(prefix_any*P("Q"))/format_Q,
+  ["n"]=(prefix_any*P("n"))/format_n,
   ["N"]=(prefix_any*P("N"))/format_N,
   ["k"]=(prefix_sub*P("k"))/format_k,
   ["c"]=(prefix_any*P("c"))/format_c,
@@ -17779,7 +17792,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 68263, stripped down to: 47789
+-- original size: 68261, stripped down to: 47789
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -21430,8 +21443,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 881109
--- stripped bytes    : 318732
+-- original bytes    : 881753
+-- stripped bytes    : 319042
 
 -- end library merge
 

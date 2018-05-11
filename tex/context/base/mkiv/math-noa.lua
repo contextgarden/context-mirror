@@ -88,7 +88,6 @@ local a_exportstatus       = privateattribute("exportstatus")
 local nuts                 = nodes.nuts
 local nodepool             = nuts.pool
 local tonut                = nuts.tonut
-local tonode               = nuts.tonode
 local nutstring            = nuts.tostring
 
 local setfield             = nuts.setfield
@@ -102,6 +101,8 @@ local setsubtype           = nuts.setsubtype
 local setattr              = nuts.setattr
 local setattrlist          = nuts.setattrlist
 local setwidth             = nuts.setwidth
+local setheight            = nuts.setheight
+local setdepth             = nuts.setdepth
 
 local getfield             = nuts.getfield
 local getnext              = nuts.getnext
@@ -114,6 +115,9 @@ local getfont              = nuts.getfont
 local getfam               = nuts.getfam
 local getattr              = nuts.getattr
 local getlist              = nuts.getlist
+local getwidth             = nuts.getwidth
+local getheight            = nuts.getheight
+local getdepth             = nuts.getdepth
 
 local getnucleus           = nuts.getnucleus
 local getsub               = nuts.getsub
@@ -299,7 +303,7 @@ local function process(start,what,n,parent)
         start = getnext(start)
     end
     if not parent then
-        return initial, true -- only first level -- for now
+        return initial -- only first level -- for now
     end
 end
 
@@ -376,15 +380,14 @@ local function processstep(current,process,n,id)
 end
 
 local function processnoads(head,actions,banner)
-    local h, d
     if trace_processing then
         report_processing("start %a",banner)
-        h, d = process(tonut(head),actions)
+        head = process(head,actions)
         report_processing("stop %a",banner)
     else
-        h, d = process(tonut(head),actions)
+        head = process(head,actions)
     end
-    return h and tonode(h) or head, d == nil and true or d
+    return head
 end
 
 noads.process       = processnoads
@@ -776,39 +779,37 @@ do
                 local method, size = div(a,100), a % 100
                 setattr(pointer,a_mathsize,0)
                 local delimiter = getfield(pointer,"delim")
-                local chr = getfield(delimiter,"small_char")
+                local chr = getchar(delimiter)
                 if chr > 0 then
-                    local fam = getfield(delimiter,"small_fam")
+                    local fam = getfam(delimiter)
                     local id = font_of_family(fam)
                     if id > 0 then
-                        setfield(delimiter,"small_char",mathematics.big(fontdata[id],chr,size,method))
+                        local data = fontdata[id]
+                        local char = mathematics.big(data,chr,size,method)
+                        local ht   = getfield(pointer,"height")
+                     -- local ht   = getheight(pointer) -- LUATEXVERSION >= 1.090
+                        local dp   = getfield(pointer,"depth")
+                     -- local dp   = getdepth(pointer) -- LUATEXVERSION >= 1.090
+                        if ht == 1 or dp == 1 then -- 1 scaled point is a signal
+                            local chardata = data.characters[char]
+                            if ht == 1 then
+                                setfield(pointer,"height",chardata.height)
+                             -- setheight(pointer,chardata.height) -- LUATEXVERSION >= 1.090
+                            end
+                            if dp == 1 then
+                                setfield(pointer,"depth",chardata.depth)
+                             -- setdepth(pointer,chardata.depth) -- LUATEXVERSION >= 1.090
+                            end
+                        end
+                        if trace_fences then
+                            report_fences("replacing %C by %C using method %a and size %a",chr,char,method,size)
+                        end
+                        setchar(delimiter,char)
                     end
                 end
             end
         end
     end
-
-    -- will become:
-
-    -- resize[math_fence] = function(pointer)
-    --     local subtype = getsubtype(pointer)
-    --     if subtype == left_fence_code or subtype == right_fence_code then
-    --         local a = getattr(pointer,a_mathsize)
-    --         if a and a > 0 then
-    --             local method, size = div(a,100), a % 100
-    --             setattr(pointer,a_mathsize,0)
-    --             local delimiter = getfield(pointer,"delim")
-    --             local chr = getchar(delimiter)
-    --             if chr > 0 then
-    --                 local fam = getfam(delimiter)
-    --                 local id = font_of_family(fam)
-    --                 if id > 0 then
-    --                     setchar(delimiter,mathematics.big(fontdata[id],chr,size,method))
-    --                 end
-    --             end
-    --         end
-    --     end
-    -- end
 
     function handlers.resize(head,style,penalties)
         processnoads(head,resize,"resize")
@@ -1038,7 +1039,7 @@ do
     function handlers.autofences(head,style,penalties)
         if enabled then -- tex.modes.c_math_fences_auto
          -- inspect(nodes.totree(head))
-            processfences(tonut(head),1)
+            processfences(head,1)
          -- inspect(nodes.totree(head))
         end
     end
@@ -1136,7 +1137,6 @@ do
 
     function handlers.unscript(head,style,penalties)
         processnoads(head,unscript,"unscript")
-    --  processnoads(head,checkers,"checkers")
         return true
     end
 
@@ -2177,7 +2177,7 @@ end
 -- just for me
 
 function handlers.showtree(head,style,penalties)
-    inspect(nodes.totree(head))
+    inspect(nodes.totree(tonut(head)))
 end
 
 registertracker("math.showtree",function(v)
@@ -2192,7 +2192,7 @@ do
     local visual       = false
 
     function handlers.makeup(head)
-        applyvisuals(tonut(head),visual)
+        applyvisuals(head,visual)
     end
 
     registertracker("math.makeup",function(v)
@@ -2213,7 +2213,7 @@ do
  -- end)
 
     function builders.kernel.mlist_to_hlist(head,style,penalties)
-        return mlist_to_hlist(head,style,force_penalties or penalties), true
+        return mlist_to_hlist(head,style,force_penalties or penalties)
     end
 
     implement {
@@ -2226,41 +2226,15 @@ do
 
 end
 
--- function builders.kernel.mlist_to_hlist(head,style,penalties)
---     print("!!!!!!! BEFORE",penalties)
---     for n in node.traverse(head) do print(n) end
---     print("!!!!!!!")
---     head = mlist_to_hlist(head,style,penalties)
---     print("!!!!!!! AFTER")
---     for n in node.traverse(head) do print(n) end
---     print("!!!!!!!")
---     return head, true
--- end
-
-tasks.new {
-    name      = "math",
-    arguments = 2,
-    processor = utilities.sequencers.nodeprocessor,
-    sequence  = {
-        "before",
-        "normalizers",
-        "builders",
-        "after",
-    },
-}
-
-tasks.freezegroup("math", "normalizers") -- experimental
-tasks.freezegroup("math", "builders")    -- experimental
-
 local actions = tasks.actions("math") -- head, style, penalties
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
 function processors.mlist_to_hlist(head,style,penalties)
     starttiming(noads)
-    local head, done = actions(head,style,penalties)
+    head = actions(head,style,penalties)
     stoptiming(noads)
-    return head, done
+    return head
 end
 
 callbacks.register('mlist_to_hlist',processors.mlist_to_hlist,"preprocessing math list")
