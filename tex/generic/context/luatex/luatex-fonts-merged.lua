@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/04/18 12:18:30
+-- merge date  : 06/08/18 09:31:24
 
 do -- begin closure to overcome local limits and interference
 
@@ -3814,13 +3814,35 @@ local endofstring=patterns.endofstring
 local whitespace=patterns.whitespace
 local spacer=patterns.spacer
 local spaceortab=patterns.spaceortab
+local ptf=1/65536
+local bpf=(7200/7227)/65536
 local function points(n)
+  if n==0 then
+    return "0pt"
+  end
   n=tonumber(n)
-  return (not n or n==0) and "0pt" or lpegmatch(stripper,format("%.5fpt",n/65536))
+  if not n or n==0 then
+    return "0pt"
+  end
+  n=n*ptf
+  if n%1==0 then
+    return format("%ipt",n)
+  end
+  return lpegmatch(stripper,format("%.5fpt",n))
 end
 local function basepoints(n)
+  if n==0 then
+    return "0pt"
+  end
   n=tonumber(n)
-  return (not n or n==0) and "0bp" or lpegmatch(stripper,format("%.5fbp",n*(7200/7227)/65536))
+  if not n or n==0 then
+    return "0pt"
+  end
+  n=n*bpf
+  if n%1==0 then
+    return format("%ibp",n)
+  end
+  return lpegmatch(stripper,format("%.5fbp",n))
 end
 number.points=points
 number.basepoints=basepoints
@@ -18254,7 +18276,7 @@ function readers.gdef(f,fontdata,specification)
       local format=readushort(f)
       if format==1 then
         local nofsets=readushort(f)
-        local sets=readcardinal(f,nofsets,ulong)
+        local sets=readcardinaltable(f,nofsets,ulong)
         for i=1,nofsets do
           local offset=sets[i]
           if offset~=0 then

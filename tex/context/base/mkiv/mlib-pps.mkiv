@@ -57,6 +57,23 @@
 
 \let\MPLIBsettext\MPLIBsetNtext
 
+\unexpanded\def\MPLIBsetNtextX#1% #2% box text
+  {\MPLIBflushenvironment
+   \hbox\bgroup % text
+   \meta_set_current_color
+   \let\MPLIBflushenvironment\doMPLIBflushenvironment
+   \let\next}
+
+\unexpanded\def\MPLIBsetCtextX#1#2% #3% box colorspec text
+  {\MPLIBflushenvironment
+   \hbox\bgroup % text
+   \directcolored[#2]%
+   \meta_set_current_color % so, textcolor wins !
+   \let\MPLIBflushenvironment\doMPLIBflushenvironment
+   \let\next}
+
+\let\MPLIBsettextX\MPLIBsetNtextX
+
 \unexpanded\def\MPLIBgettextscaled#1#2#3%  why a copy .. can be used more often
   {\clf_mpgettext\MPtextbox #1%
    \vpack to \zeropoint{\vss\hpack to \zeropoint{\scale[\c!sx=#2,\c!sy=#3]{\raise\dp\MPtextbox\box\MPtextbox}\forcecolorhack\hss}}}
@@ -184,5 +201,16 @@
   {\begingroup
    \setbox\scratchbox\hpack\bgroup
    \unexpanded\def\MPLIBstopgroup{\doMPLIBstopgroup{#1}{#2}{#3}{#4}{#5}{#6}}}
+
+% For now here ... will be cleaned up:
+
+\newtoks\mptexttoks
+\newbox \mptextbox
+\newtoks\mpoutlinetoks
+\newtoks\mpgraphictexttoks
+
+\mptexttoks       {\global\setbox\mptextbox\hbox{\clf_mptexttoks}}
+\mpoutlinetoks    {\global\setbox\mptextbox\vbox{\clf_mpoutlinetoks}}
+\mpgraphictexttoks{\global\setbox\mptextbox\vbox{\clf_mpgraphictexttoks}}
 
 \protect \endinput
