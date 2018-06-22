@@ -22,9 +22,6 @@ replace newlines in metadata
 .TP
 .B --fonts
 show used fonts (--detail)
-.TP
-.B --linearize
-linearize given file
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

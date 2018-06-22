@@ -12,7 +12,6 @@
     <flag name="metadata"><short>show metadata xml blob</short></flag>
     <flag name="pretty"><short>replace newlines in metadata</short></flag>
     <flag name="fonts"><short>show used fonts (<ref name="detail)"/></short></flag>
-    <flag name="linearize"><short>linearize given file</short></flag>
    </subcategory>
    <subcategory>
     <example><command>mtxrun --script pdf --info foo.pdf</command></example>

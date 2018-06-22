@@ -1005,7 +1005,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 39398, stripped down to: 21142
+-- original size: 39415, stripped down to: 21143
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -1163,7 +1163,7 @@ patterns.cpfloat=sign^-1*patterns.cpunsigned
 patterns.number=patterns.float+patterns.integer
 patterns.cnumber=patterns.cfloat+patterns.integer
 patterns.cpnumber=patterns.cpfloat+patterns.integer
-patterns.oct=zero*octdigits
+patterns.oct=zero*octdigits 
 patterns.octal=patterns.oct
 patterns.HEX=zero*P("X")*(digit+uppercase)^1
 patterns.hex=zero*P("x")*(digit+lowercase)^1
@@ -6171,7 +6171,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 40725, stripped down to: 23032
+-- original size: 41277, stripped down to: 23383
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -6524,6 +6524,7 @@ local sequenced=table.sequenced
 local formattednumber=number.formatted
 local sparseexponent=number.sparseexponent
 local formattedfloat=number.formattedfloat
+local stripper=lpeg.patterns.stripzeros
     ]]
 else
   environment={
@@ -6549,6 +6550,7 @@ else
     formattednumber=number.formatted,
     sparseexponent=number.sparseexponent,
     formattedfloat=number.formattedfloat,
+    stripper=lpeg.patterns.stripzeros,
   }
 end
 local arguments={ "a1" } 
@@ -6759,7 +6761,11 @@ local format_n=function()
 end
 local format_N=function() 
   n=n+1
-  return format("tostring(tonumber(a%s) or a%s)",n,n)
+  if not f or f=="" then
+    return format("(((a%s > -0.0000000005 and a%s < 0.0000000005) and '0') or ((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripper,format('%%.9f',a%s)))",n,n,n,n,n)
+  else
+    return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripper,format('%%%sf',a%s)))",n,n,f,n)
+  end
 end
 local format_a=function(f)
   n=n+1
@@ -21640,8 +21646,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 889120
--- stripped bytes    : 321251
+-- original bytes    : 889689
+-- stripped bytes    : 321468
 
 -- end library merge
 
