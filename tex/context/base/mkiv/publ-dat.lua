@@ -1209,21 +1209,6 @@ do
             }
         }
 
-        implement {
-            name      = "btxentrytobuffer",
-            arguments = "3 strings",
-            actions   = function(dataset,tag,target)
-                local d = publications.datasets[dataset]
-                if d then
-                    d = d.luadata[tag]
-                end
-                if d then
-                    d = string.fullstrip(savers.bib(dataset,false,{ [tag] = d }))
-                end
-                buffers.assign(target,d or "")
-            end
-        }
-
     end
 
 end

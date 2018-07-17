@@ -67,6 +67,7 @@ local attributes        = attributes
 local variables         = interfaces.variables
 local v_yes             = variables.yes
 local v_no              = variables.no
+local v_xml             = variables.xml
 local v_hidden          = variables.hidden
 
 local implement         = interfaces.implement
@@ -568,6 +569,7 @@ do
 
     implement {
         name      = "ignoretagsinexport",
+        arguments = "string",
         actions   = function(list)
             for tag in string.gmatch(list,"[a-z]+") do
                 if ignoredelements then
@@ -577,8 +579,51 @@ do
                 end
             end
         end,
-        arguments = "string"
     }
+
+end
+
+do
+
+    local marginanchors = { }
+    local margincontent = { }
+
+    implement {
+        name      = "settagmargintext",
+        arguments = "integer",
+        actions   = function(n)
+            marginanchors[locatedtag("margintext")] = n
+        end
+    }
+
+    implement {
+        name      = "settagmarginanchor",
+        arguments = "integer",
+        actions   = function(n)
+            marginanchors[locatedtag("marginanchor")] = n
+        end
+    }
+
+    function checks.margintext(di)
+        local i = marginanchors[di.fulltag]
+        margincontent[i] = di
+    end
+
+    function checks.marginanchor(di)
+        local i = marginanchors[di.fulltag]
+        local d = margincontent[i]
+        --
+        di.attribute = d.attribute
+        di.data      = d.data
+        di.detail    = d.detail
+        di.element   = d.element
+        di.fulltag   = d.fulltag
+        di.nature    = d.nature
+        di.samepar   = true
+        di.tg        = d.tg
+        --
+        d.skip       = "ignore"
+  end
 
 end
 
@@ -1758,6 +1803,25 @@ end
 
 do
 
+    local registered = { }
+
+    function structurestags.setformulacontent(n)
+        registered[locatedtag("formulacontent")] = {
+            n = n,
+        }
+    end
+
+    function extras.formulacontent(di,element,n,fulltag)
+        local r = registered[fulltag]
+        if r then
+            setattribute(di,"n",r.n)
+        end
+    end
+
+end
+
+do
+
     local registered = structures.sections.registered
 
     local function resolve(di,element,n,fulltag)
@@ -1859,7 +1923,7 @@ do
         end
     end
 
-    local function ignorebreaks(di,element,n,fulltag)
+    function extras.registerpages(di,element,n,fulltag) -- ignorebreaks
         local data = di.data
         for i=1,#data do
             local d = data[i]
@@ -1869,7 +1933,7 @@ do
         end
     end
 
-    local function ignorespaces(di,element,n,fulltag)
+    function extras.registerseparator(di,element,n,fulltag) -- ignorespaces
         local data = di.data
         for i=1,#data do
             local d = data[i]
@@ -1879,9 +1943,6 @@ do
             end
         end
     end
-
-    extras.registerpages     = ignorebreaks
-    extras.registerseparator = ignorespaces
 
 end
 
@@ -2060,7 +2121,7 @@ do
     local depth  = 0
     local inline = 0
 
-    local function emptytag(result,embedded,element,nature,di) -- currently only break but at some point
+    local function emptytag(result,element,nature,di) -- currently only break but at some point
         local a = di.attributes                       -- we might add detail etc
         if a then -- happens seldom
             if nature == "display" then
@@ -2109,7 +2170,7 @@ do
         end
     end
 
-    local function begintag(result,embedded,element,nature,di,skip)
+    local function begintag(result,element,nature,di,skip)
         local index         = di.n
         local fulltag       = di.fulltag
         local specification = specifications[fulltag] or { } -- we can have a dummy
@@ -2133,12 +2194,6 @@ do
             -- ignore
         else
 
-         -- if embedded then
-         --     if element == "math" then
-         --         embedded[f_tagid(element,index)] = #result+1
-         --     end
-         -- end
-
             local n = 0
             local r = { } -- delay this
             if detail then
@@ -2158,6 +2213,7 @@ do
                 n = n + 1
                 r[n] = f_index(index)
             end
+            --
             local extra = extras[element]
             if extra then
                 extra(di,element,index,fulltag)
@@ -2247,7 +2303,7 @@ do
         end
     end
 
-    local function endtag(result,embedded,element,nature,di,skip)
+    local function endtag(result,element,nature,di,skip)
         if skip == "comment" then
             if show_comment then
                 if nature == "display" and (inline == 0 or inline == 1) then
@@ -2278,18 +2334,10 @@ do
                 inline = inline - 1
                 result[#result+1] = f_end_inline(namespaced[element])
             end
-
-         -- if embedded then
-         --     if element == "math" then
-         --         local id = f_tagid(element,di.n) -- index)
-         --         local tx = concat(result,"",embedded[id],#result)
-         --         embedded[id] = "<?xml version='1.0' standalone='yes'?>" .. "\n" .. tx
-         --     end
-         -- end
         end
     end
 
-    local function flushtree(result,embedded,data,nature)
+    local function flushtree(result,data,nature)
         local nofdata = #data
         for i=1,nofdata do
             local di = data[i]
@@ -2321,23 +2369,23 @@ do
                     if not element then
                         -- skip
                     elseif element == "break" then -- or element == "pagebreak"
-                        emptytag(result,embedded,element,nature,di)
+                        emptytag(result,element,nature,di)
                     elseif element == "" or di.skip == "ignore" then
                         -- skip
                     else
                         if di.before then
-                            flushtree(result,embedded,di.before,nature)
+                            flushtree(result,di.before,nature)
                         end
                         local natu = di.nature
                         local skip = di.skip
                         if di.breaknode then
-                            emptytag(result,embedded,"break","display",di)
+                            emptytag(result,"break","display",di)
                         end
-                        begintag(result,embedded,element,natu,di,skip)
-                        flushtree(result,embedded,di.data,natu)
-                        endtag(result,embedded,element,natu,di,skip)
+                        begintag(result,element,natu,di,skip)
+                        flushtree(result,di.data,natu)
+                        endtag(result,element,natu,di,skip)
                         if di.after then
-                            flushtree(result,embedded,di.after,nature)
+                            flushtree(result,di.after,nature)
                         end
                     end
                 end
@@ -2358,19 +2406,25 @@ do
                 local di = data[i]
                 if not di then
                     -- skip
+                elseif di.skip == "ignore" then
+                    -- skip (new)
                 elseif di.content then
-                    local parnumber = di.parnumber
-                    if prevnature == "inline" and prevparnumber and prevparnumber ~= parnumber then
-                        nofnewdata = nofnewdata + 1
-                        if trace_spacing then
-                            newdata[nofnewdata] = makebreaknode { type = "a", p = prevparnumber, n = parnumber }
-                        else
-                            newdata[nofnewdata] = makebreaknode()
+                    if di.samepar then
+                        prevparnumber = false
+                    else
+                        local parnumber = di.parnumber
+                        if prevnature == "inline" and prevparnumber and prevparnumber ~= parnumber then
+                            nofnewdata = nofnewdata + 1
+                            if trace_spacing then
+                                newdata[nofnewdata] = makebreaknode { type = "a", p = prevparnumber, n = parnumber }
+                            else
+                                newdata[nofnewdata] = makebreaknode()
+                            end
                         end
+                        prevelement = nil
+                        prevparnumber = parnumber
                     end
-                    prevelement = nil
                     prevnature = "inline"
-                    prevparnumber = parnumber
                     nofnewdata = nofnewdata + 1
                     newdata[nofnewdata] = di
                 elseif not di.collapsed then
@@ -2381,39 +2435,51 @@ do
                         end
                         prevelement = element
                         prevnature = "display"
+                        nofnewdata = nofnewdata + 1
+                        newdata[nofnewdata] = di
                     elseif element == "" or di.skip == "ignore" then
                         -- skip
+                    else
+                        if di.samepar then
+                            prevnature    = "inline"
+                            prevparnumber = false
+                        else
+                            local nature = di.nature
+                            local parnumber = di.parnumber
+                            if prevnature == "inline" and nature == "inline" and prevparnumber and prevparnumber ~= parnumber then
+                                nofnewdata = nofnewdata + 1
+                                if trace_spacing then
+                                    newdata[nofnewdata] = makebreaknode { type = "b", p = prevparnumber, n = parnumber }
+                                else
+                                    newdata[nofnewdata] = makebreaknode()
+                                end
+                            end
+                            prevnature = nature
+                            prevparnumber = parnumber
+                        end
+                        prevelement = element
+                        breaktree(di,tree,element)
+                        nofnewdata = nofnewdata + 1
+                        newdata[nofnewdata] = di
+                    end
+                else
+                    if di.samepar then
+                        prevnature    = "inline"
+                        prevparnumber = false
                     else
                         local nature = di.nature
                         local parnumber = di.parnumber
                         if prevnature == "inline" and nature == "inline" and prevparnumber and prevparnumber ~= parnumber then
                             nofnewdata = nofnewdata + 1
                             if trace_spacing then
-                                newdata[nofnewdata] = makebreaknode { type = "b", p = prevparnumber, n = parnumber }
+                                newdata[nofnewdata] = makebreaknode { type = "c", p = prevparnumber, n = parnumber }
                             else
                                 newdata[nofnewdata] = makebreaknode()
                             end
                         end
                         prevnature = nature
                         prevparnumber = parnumber
-                        prevelement = element
-                        breaktree(di,tree,element)
                     end
-                    nofnewdata = nofnewdata + 1
-                    newdata[nofnewdata] = di
-                else
-                    local nature = di.nature
-                    local parnumber = di.parnumber
-                    if prevnature == "inline" and nature == "inline" and prevparnumber and prevparnumber ~= parnumber then
-                        nofnewdata = nofnewdata + 1
-                        if trace_spacing then
-                            newdata[nofnewdata] = makebreaknode { type = "c", p = prevparnumber, n = parnumber }
-                        else
-                            newdata[nofnewdata] = makebreaknode()
-                        end
-                    end
-                    prevnature = nature
-                    prevparnumber = parnumber
                     nofnewdata = nofnewdata + 1
                     newdata[nofnewdata] = di
                 end
@@ -2445,6 +2511,8 @@ do
                             local cd = currentdata[j]
                             if not cd or cd == "" then
                                 -- skip
+elseif cd.skip == "ignore" then
+    -- skip
                             elseif cd.content then
                                 if not currentpar then
                                     -- add space ?
@@ -2749,6 +2817,7 @@ local collectresults  do -- too many locals otherwise
     local nodecodes         = nodes.nodecodes
     local skipcodes         = nodes.skipcodes
     local listcodes         = nodes.listcodes
+    local whatsitcodes      = nodes.whatsitcodes
 
     local hlist_code        = nodecodes.hlist
     local vlist_code        = nodecodes.vlist
@@ -2756,6 +2825,7 @@ local collectresults  do -- too many locals otherwise
     local glue_code         = nodecodes.glue
     local kern_code         = nodecodes.kern
     local disc_code         = nodecodes.disc
+    local whatsit_code      = nodecodes.whatsit
 
     local userskip_code     = skipcodes.userskip
     local rightskip_code    = skipcodes.rightskip
@@ -2764,6 +2834,8 @@ local collectresults  do -- too many locals otherwise
     local xspaceskip_code   = skipcodes.xspaceskip
 
     local line_code         = listcodes.line
+
+    local userdefined_code  = whatsitcodes.userdefined
 
     local privateattribute  = attributes.private
     local a_image           = privateattribute('image')
@@ -2774,6 +2846,8 @@ local collectresults  do -- too many locals otherwise
     local a_tagged          = privateattribute('tagged')
     local a_taggedpar       = privateattribute("taggedpar")
     local a_textblock       = privateattribute("textblock")
+
+    local inline_mark       = nodes.pool.userids["margins.inline"]
 
     local nuts              = nodes.nuts
 
@@ -2790,13 +2864,18 @@ local collectresults  do -- too many locals otherwise
     local isglyph           = nuts.isglyph
     local getkern           = nuts.getkern
     local getwidth          = nuts.getwidth
+    local getfield          = nuts.getfield
 
     local nexthlist         = nuts.traversers.hlist
     local nextnode          = nuts.traversers.node
 
     local function collectresults(head,list,pat,pap) -- is last used (we also have currentattribute)
         local p
-        for n, id in nextnode, head do
+        for n, id, subtype in nextnode, head do
+-- can go :
+if not subtype then
+    subtype = getsubtype(n)
+end
             if id == glyph_code then
                 local c  = getchar(n)
                 local at = getattr(n,a_tagged) or pat
@@ -2958,48 +3037,75 @@ local collectresults  do -- too many locals otherwise
                         nofcurrentcontent = nofcurrentcontent + 1
                         currentcontent[nofcurrentcontent] = c
                     end
-                else
-                    local subtype = getsubtype(n)
-                    if subtype == userskip_code then
-                        if getwidth(n) > threshold then
-                            if last and not somespace[currentcontent[nofcurrentcontent]] then
-                                local a = getattr(n,a_tagged) or pat
-                                if a == last then
-                                    if trace_export then
-                                        report_export("%w<!-- injecting spacing 5a -->",currentdepth)
-                                    end
-                                    nofcurrentcontent = nofcurrentcontent + 1
-                                    currentcontent[nofcurrentcontent] = " "
-                                elseif a then
-                                    -- e.g LOGO<space>LOGO
-                                    if trace_export then
-                                        report_export("%w<!-- processing glue > threshold tagged %s becomes %s -->",currentdepth,last,a)
-                                    end
-                                    pushcontent()
-                                    if trace_export then
-                                        report_export("%w<!-- injecting spacing 5b -->",currentdepth)
-                                    end
-                                    last = a
-                                    nofcurrentcontent = nofcurrentcontent + 1
-                                    currentcontent[nofcurrentcontent] = " "
-                                    currentnesting = taglist[last]
-                                    pushentry(currentnesting)
-                                    currentattribute = last
-                                end
-                            end
-                        end
-                    elseif subtype == spaceskip_code or subtype == xspaceskip_code then
-                        if not somespace[currentcontent[nofcurrentcontent]] then
+                elseif subtype == userskip_code then
+                    if getwidth(n) > threshold then
+                        if last and not somespace[currentcontent[nofcurrentcontent]] then
                             local a = getattr(n,a_tagged) or pat
                             if a == last then
                                 if trace_export then
-                                    report_export("%w<!-- injecting spacing 7 (stay in element) -->",currentdepth)
+                                    report_export("%w<!-- injecting spacing 5a -->",currentdepth)
+                                end
+                                nofcurrentcontent = nofcurrentcontent + 1
+                                currentcontent[nofcurrentcontent] = " "
+                            elseif a then
+                                -- e.g LOGO<space>LOGO
+                                if trace_export then
+                                    report_export("%w<!-- processing glue > threshold tagged %s becomes %s -->",currentdepth,last,a)
+                                end
+                                pushcontent()
+                                if trace_export then
+                                    report_export("%w<!-- injecting spacing 5b -->",currentdepth)
+                                end
+                                last = a
+                                nofcurrentcontent = nofcurrentcontent + 1
+                                currentcontent[nofcurrentcontent] = " "
+                                currentnesting = taglist[last]
+                                pushentry(currentnesting)
+                                currentattribute = last
+                            end
+                        end
+                    end
+                elseif subtype == spaceskip_code or subtype == xspaceskip_code then
+                    if not somespace[currentcontent[nofcurrentcontent]] then
+                        local a = getattr(n,a_tagged) or pat
+                        if a == last then
+                            if trace_export then
+                                report_export("%w<!-- injecting spacing 7 (stay in element) -->",currentdepth)
+                            end
+                            nofcurrentcontent = nofcurrentcontent + 1
+                            currentcontent[nofcurrentcontent] = " "
+                        else
+                            if trace_export then
+                                report_export("%w<!-- injecting spacing 7 (end of element) -->",currentdepth)
+                            end
+                            last = a
+                            pushcontent()
+                            nofcurrentcontent = nofcurrentcontent + 1
+                            currentcontent[nofcurrentcontent] = " "
+                            currentnesting = taglist[last]
+                            pushentry(currentnesting)
+                            currentattribute = last
+                        end
+                    end
+                elseif subtype == rightskip_code then
+                    -- a line
+                    if nofcurrentcontent > 0 then
+                        local r = currentcontent[nofcurrentcontent]
+                        if r == hyphen then
+                            if not keephyphens then
+                                nofcurrentcontent = nofcurrentcontent - 1
+                            end
+                        elseif not somespace[r] then
+                            local a = getattr(n,a_tagged) or pat
+                            if a == last then
+                                if trace_export then
+                                    report_export("%w<!-- injecting spacing 1 (end of line, stay in element) -->",currentdepth)
                                 end
                                 nofcurrentcontent = nofcurrentcontent + 1
                                 currentcontent[nofcurrentcontent] = " "
                             else
                                 if trace_export then
-                                    report_export("%w<!-- injecting spacing 7 (end of element) -->",currentdepth)
+                                    report_export("%w<!-- injecting spacing 1 (end of line, end of element) -->",currentdepth)
                                 end
                                 last = a
                                 pushcontent()
@@ -3010,41 +3116,11 @@ local collectresults  do -- too many locals otherwise
                                 currentattribute = last
                             end
                         end
-                    elseif subtype == rightskip_code then
-                        -- a line
-                        if nofcurrentcontent > 0 then
-                            local r = currentcontent[nofcurrentcontent]
-                            if r == hyphen then
-                                if not keephyphens then
-                                    nofcurrentcontent = nofcurrentcontent - 1
-                                end
-                            elseif not somespace[r] then
-                                local a = getattr(n,a_tagged) or pat
-                                if a == last then
-                                    if trace_export then
-                                        report_export("%w<!-- injecting spacing 1 (end of line, stay in element) -->",currentdepth)
-                                    end
-                                    nofcurrentcontent = nofcurrentcontent + 1
-                                    currentcontent[nofcurrentcontent] = " "
-                                else
-                                    if trace_export then
-                                        report_export("%w<!-- injecting spacing 1 (end of line, end of element) -->",currentdepth)
-                                    end
-                                    last = a
-                                    pushcontent()
-                                    nofcurrentcontent = nofcurrentcontent + 1
-                                    currentcontent[nofcurrentcontent] = " "
-                                    currentnesting = taglist[last]
-                                    pushentry(currentnesting)
-                                    currentattribute = last
-                                end
-                            end
-                        end
-                    elseif subtype == parfillskip_code then
-                        -- deal with paragaph endings (crossings) elsewhere and we quit here
-                        -- as we don't want the rightskip space addition
-                        return
                     end
+                elseif subtype == parfillskip_code then
+                    -- deal with paragaph endings (crossings) elsewhere and we quit here
+                    -- as we don't want the rightskip space addition
+                    return
                 end
             elseif id == hlist_code or id == vlist_code then
                 local ai = getattr(n,a_image)
@@ -3104,6 +3180,21 @@ local collectresults  do -- too many locals otherwise
                             end
                         end
                     end
+                end
+            elseif id == whatsit_code then
+                if subtype == userdefined_code then
+                    -- similar to images, see above
+                    local at = getattr(n,a_tagged)
+                    if nofcurrentcontent > 0 then
+                        pushcontent()
+                        pushentry(currentnesting) -- ??
+                    end
+                    pushentry(taglist[at])
+                    if trace_export then
+                        report_export("%w<!-- processing anchor tagged %a",currentdepth,last)
+                    end
+                    last = nil
+                    currentparagraph = nil
                 end
             end
             p = n
@@ -3308,13 +3399,12 @@ local htmltemplate = [[
 
     local function allcontent(tree,embed)
         local result   = { }
-        local embedded = embed and { }
-        flushtree(result,embedded,tree.data,"display") -- we need to collect images
+        flushtree(result,tree.data,"display") -- we need to collect images
         result = concat(result)
         -- no need to lpeg .. fast enough
         result = gsub(result,"\n *\n","\n")
         result = gsub(result,"\n +([^< ])","\n%1")
-        return result, embedded
+        return result
     end
 
     -- local xhtmlpreamble = [[
@@ -3569,7 +3659,6 @@ local htmltemplate = [[
     local basename  = file.basename
 
     local embedfile = false  directives.register("export.embed",function(v) embedfile = v end)
-    local embedmath = false
 
     function structurestags.finishexport()
 
@@ -3579,12 +3668,18 @@ local htmltemplate = [[
             return
         end
 
+        local onlyxml = finetuning.export == v_xml
+
         starttiming(treehash)
         --
         finishexport()
         --
         report_export("")
-        report_export("exporting xml, xhtml and html files")
+        if onlyxml then
+            report_export("exporting xml, no other files")
+        else
+            report_export("exporting xml, xhtml, html and css files")
+        end
         report_export("")
         --
         wrapups.collapsetree(tree)
@@ -3612,7 +3707,7 @@ local htmltemplate = [[
         -- ./jobname-export/styles/jobname-images.css
         -- ./jobname-export/styles/jobname-templates.css
 
-        if type(askedname) ~= "string" or askedname == v_yes or askedname == "" then
+        if type(askedname) ~= "string" or askedname == "" then
             askedname = tex.jobname
         end
 
@@ -3680,6 +3775,55 @@ local htmltemplate = [[
             stylefilebase,
         }
 
+        local cssextra = cssfile and table.unique(settings_to_array(cssfile)) or { }
+
+        -- at this point we're ready for the content; the collector also does some
+        -- housekeeping and data collecting; at this point we still have an xml
+        -- representation that uses verbose element names and carries information in
+        -- attributes
+
+        local data = tree.data
+        for i=1,#data do
+            if data[i].tg ~= "document" then
+                data[i] = { }
+            end
+        end
+
+        local result = allcontent(tree,embedmath) -- embedfile is for testing
+
+        if onlyxml then
+
+            os.remove(defaultfilename)
+            os.remove(imagefilename)
+            os.remove(stylefilename)
+            os.remove(templatefilename)
+
+            for i=1,#cssextra do
+                os.remove(joinfile(stylepath,basename(source)))
+            end
+
+         -- os.remove(xmlfilename)
+
+            os.remove(imagefilename)
+            os.remove(stylefilename)
+            os.remove(templatefilename)
+            os.remove(xhtmlfilename)
+            os.remove(specificationfilename)
+            os.remove(htmlfilename)
+
+            result = concat {
+                wholepreamble(true),
+                "<!-- This export file is used for filtering runtime only! -->\n",
+                result,
+            }
+
+            report_export("saving xml data in %a",xmlfilename)
+            io.savedata(xmlfilename,result)
+
+            return
+
+        end
+
         local examplefilename = resolvers.find_file("export-example.css")
         if examplefilename then
             local data = io.loaddata(examplefilename)
@@ -3692,9 +3836,8 @@ local htmltemplate = [[
         end
 
         if cssfile then
-            local list = table.unique(settings_to_array(cssfile))
-            for i=1,#list do
-                local source = addsuffix(list[i],"css")
+            for i=1,#cssextra do
+                local source = addsuffix(cssextra[i],"css")
                 local target = joinfile(stylepath,basename(source))
                 cssfiles[#cssfiles+1] = source
                 if not lfs.isfile(source) then
@@ -3709,21 +3852,6 @@ local htmltemplate = [[
 
         local x_styles, h_styles = allusedstylesheets(cssfiles,files,"styles")
 
-        -- at this point we're ready for the content; the collector also does some
-        -- housekeeping and data collecting; at this point we still have an xml
-        -- representation that uses verbose element names and carries information in
-        -- attributes
-
-
-        local data = tree.data
-        for i=1,#data do
-            if data[i].tg ~= "document" then
-                data[i] = { }
-            end
-        end
-
-        local result, embedded = allcontent(tree,embedmath) -- embedfile is for testing
-
         local attach = backends.nodeinjections.attachfile
 
         if embedfile and attach then
@@ -3737,22 +3865,6 @@ local htmltemplate = [[
                 mimetype   = "application/mathml+xml",
             }
         end
-     -- if embedmath and attach then
-     --     local refs = { }
-     --     for k, v in sortedhash(embedded) do
-     --         attach {
-     --             data       = v,
-     --             file       = basename(k),
-     --             name       = addsuffix(k,"xml"),
-     --             registered = k,
-     --             reference  = k,
-     --             title      = "xml export snippet: " .. k,
-     --             method     = v_hidden,
-     --             mimetype   = "application/mathml+xml",
-     --         }
-     --         refs[k] = 0
-     --     end
-     -- end
 
         result = concat {
             wholepreamble(true),
@@ -3782,14 +3894,14 @@ local htmltemplate = [[
 
         local xmltree = cleanxhtmltree(xml.convert(result))
 
--- local xmltree = xml.convert(result)
--- for c in xml.collected(xmltree,"m:mtext[lastindex()=1]/m:mrow") do
---     print(c)
--- end
--- for c in xml.collected(xmltree,"mtext/mrow") do
---     print(c)
--- end
--- local xmltree = cleanxhtmltree(xmltree)
+     -- local xmltree = xml.convert(result)
+     -- for c in xml.collected(xmltree,"m:mtext[lastindex()=1]/m:mrow") do
+     --     print(c)
+     -- end
+     -- for c in xml.collected(xmltree,"mtext/mrow") do
+     --     print(c)
+     -- end
+     -- local xmltree = cleanxhtmltree(xmltree)
 
         xml.save(xmltree,xhtmlfilename)
 
@@ -3912,6 +4024,7 @@ implement {
             { "svgstyle" },
             { "cssfile" },
             { "file" },
+            { "export" },
         }
     }
 }
@@ -3942,6 +4055,12 @@ implement {
     name      = "settagfloat",
     actions   = structurestags.setfloat,
     arguments = "2 strings",
+}
+
+implement {
+    name      = "settagformulacontent",
+    actions   = structurestags.setformulacontent,
+    arguments = "integer",
 }
 
 implement {
