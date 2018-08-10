@@ -28,6 +28,11 @@ local report_comment    = logs.reporter("backend","comment")
 local report_field      = logs.reporter("backend","field")
 local report_outline    = logs.reporter("backend","outline")
 
+local lpdf              = lpdf
+local epdf              = epdf
+local backends          = backends
+local context           = context
+
 local nodeinjections    = backends.pdf.nodeinjections
 
 local pdfarray          = lpdf.array
@@ -45,14 +50,7 @@ local pdfcopyinteger    = lpdf.copyinteger
 local pdfcopystring     = lpdf.copystring
 local pdfcopyconstant   = lpdf.copyconstant
 
-local pdfgetpos         = lpdf.getpos
-
 local hpack_node        = nodes.hpack
-
-local epdf              = epdf
-local backends          = backends
-local lpdf              = lpdf
-local context           = context
 
 local loadpdffile       = lpdf.epdf.load
 
@@ -73,6 +71,14 @@ local bpfactor          = number.dimenfactors.bp
 local layerspec = { -- predefining saves time
     "epdfcontent"
 }
+
+-- can change:
+
+local pdfgetpos = lpdf.getpos
+
+updaters.register("backend.update",function()
+    pdfgetpos = lpdf.getpos
+end)
 
 local collected = allocate()
 local tobesaved = allocate()
@@ -313,7 +319,7 @@ function codeinjections.mergereferences(specification)
         end
     end
     -- moved outside previous test
-    context.setgvalue("figurereference",reference) -- global
+    context.setgvalue("figurereference",reference) -- global, todo: setmacro
     if trace_links then
         report_link("setting figure reference to %a",reference)
     end
@@ -492,6 +498,8 @@ local validstamps = {
     Draft               = true,
     ForPublicRelease    = true,
 }
+
+-- todo: we can use runtoks instead of steps
 
 local function validStamp(v)
     local name = "Stamped" -- fallback

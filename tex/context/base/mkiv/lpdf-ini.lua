@@ -85,6 +85,7 @@ local pdfgethpos            = pdf.gethpos
 local pdfgetvpos            = pdf.getvpos
 local pdfgetmatrix          = pdf.getmatrix
 local pdfhasmatrix          = pdf.hasmatrix
+local pdfprint              = pdf.print
 
 local pdfreserveobject      = pdf.reserveobj
 local pdfimmediateobject    = pdf.immediateobj
@@ -185,11 +186,36 @@ end
 local codeinjections = pdfbackend.codeinjections
 local nodeinjections = pdfbackend.nodeinjections
 
-codeinjections.getpos    = pdfgetpos     lpdf.getpos    = pdfgetpos
-codeinjections.gethpos   = pdfgethpos    lpdf.gethpos   = pdfgethpos
-codeinjections.getvpos   = pdfgetvpos    lpdf.getvpos   = pdfgetvpos
-codeinjections.hasmatrix = pdfhasmatrix  lpdf.hasmatrix = pdfhasmatrix
-codeinjections.getmatrix = pdfgetmatrix  lpdf.getmatrix = pdfgetmatrix
+-- can change:
+
+pdfbackend.codeinjections.getpos  = pdfgetpos
+pdfbackend.codeinjections.gethpos = pdfgethpos
+pdfbackend.codeinjections.getvpos = pdfgetvpos
+
+lpdf.getpos        = pdfgetpos
+lpdf.gethpos       = pdfgethpos
+lpdf.getvpos       = pdfgetvpos
+lpdf.print         = pdfprint
+
+updaters.register("backend.update.pdf",function()
+
+    pdfgetpos    = pdf.getpos
+    pdfgethpos   = pdf.gethpos
+    pdfgetvpos   = pdf.getvpos
+    pdfhasmatrix = pdf.hasmatrix
+    pdfgetmatrix = pdf.getmatrix
+    pdfprint     = pdf.print
+
+    pdfbackend.codeinjections.getpos  = pdfgetpos
+    pdfbackend.codeinjections.gethpos = pdfgethpos
+    pdfbackend.codeinjections.getvpos = pdfgetvpos
+
+    lpdf.getpos  = pdfgetpos
+    lpdf.gethpos = pdfgethpos
+    lpdf.getvpos = pdfgetvpos
+    lpdf.print   = pdfprint
+
+end)
 
 -- local function transform(llx,lly,urx,ury,rx,sx,sy,ry)
 --     local x1 = llx * rx + lly * sy
@@ -206,17 +232,17 @@ codeinjections.getmatrix = pdfgetmatrix  lpdf.getmatrix = pdfgetmatrix
 --     ury = max(y1,y2,y3,y4);
 --     return llx, lly, urx, ury
 -- end
-
-function lpdf.transform(llx,lly,urx,ury) -- not yet used so unchecked
-    if pdfhasmatrix() then
-        local sx, rx, ry, sy = pdfgetmatrix()
-        local w, h = urx - llx, ury - lly
-        return llx, lly, llx + sy*w - ry*h, lly + sx*h - rx*w
-     -- return transform(llx,lly,urx,ury,sx,rx,ry,sy)
-    else
-        return llx, lly, urx, ury
-    end
-end
+--
+-- function lpdf.transform(llx,lly,urx,ury) -- not yet used so unchecked
+--     if pdfhasmatrix() then
+--         local sx, rx, ry, sy = pdfgetmatrix()
+--         local w, h = urx - llx, ury - lly
+--         return llx, lly, llx + sy*w - ry*h, lly + sx*h - rx*w
+--      -- return transform(llx,lly,urx,ury,sx,rx,ry,sy)
+--     else
+--         return llx, lly, urx, ury
+--     end
+-- end
 
 -- funny values for tx and ty
 
@@ -266,106 +292,102 @@ end
 --     end
 -- end
 
-local cache = table.setmetatableindex(function(t,k) -- can be made weak
-    local v = utfbyte(k)
-    if v < 0x10000 then
-        v = format("%04x",v)
-    else
-        v = format("%04x%04x",rshift(v,10),v%1024+0xDC00)
-    end
-    t[k] = v
-    return v
-end)
-
-local escaped = Cs(Cc("(") * (S("\\()\n\r\t\b\f")/"\\%0" + P(1))^0 * Cc(")"))
-local unified = Cs(Cc("<feff") * (lpeg.patterns.utf8character/cache)^1 * Cc(">"))
-
-local function tosixteen(str) -- an lpeg might be faster (no table)
-    if not str or str == "" then
-        return "<feff>" -- not () as we want an indication that it's unicode
-    else
-        return lpegmatch(unified,str)
-    end
-end
-
-local more = 0
-
-local pattern = C(4) / function(s) -- needs checking !
-    local now = tonumber(s,16)
-    if more > 0 then
-        now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
-        more = 0
-        return utfchar(now)
-    elseif now >= 0xD800 and now <= 0xDBFF then
-        more = now
-        return "" -- else the c's end up in the stream
-    else
-        return utfchar(now)
-    end
-end
-
-local pattern = P(true) / function() more = 0 end * Cs(pattern^0)
-
-local function fromsixteen(str)
-    if not str or str == "" then
-        return ""
-    else
-        return lpegmatch(pattern,str)
-    end
-end
-
-local toregime   = regimes.toregime
-local fromregime = regimes.fromregime
-
-local function topdfdoc(str,default)
-    if not str or str == "" then
-        return ""
-    else
-        return lpegmatch(escaped,toregime("pdfdoc",str,default)) -- could be combined if needed
-    end
-end
-
-local function frompdfdoc(str)
-    if not str or str == "" then
-        return ""
-    else
-        return fromregime("pdfdoc",str)
-    end
-end
-
-if not toregime   then topdfdoc   = function(s) return s end end
-if not fromregime then frompdfdoc = function(s) return s end end
-
-local function toeight(str)
-    if not str or str == "" then
-        return "()"
-    else
-        return lpegmatch(escaped,str)
-    end
-end
-
-local b_pattern = Cs((P("\\")/"" * (
-    S("()")
-  + S("nrtbf") / { n = "\n", r = "\r", t = "\t", b = "\b", f = "\f" }
-  + lpegpatterns.octdigit^-3 / function(s) return char(tonumber(s,8)) end)
-+ P(1))^0)
-
-local function fromeight(str)
-    if not str or str == "" then
-        return ""
-    else
-        return lpegmatch(unescape,str)
-    end
-end
-
-lpdf.tosixteen   = tosixteen
-lpdf.toeight     = toeight
-lpdf.topdfdoc    = topdfdoc
-lpdf.fromsixteen = fromsixteen
-lpdf.fromeight   = fromeight
-lpdf.frompdfdoc  = frompdfdoc
+local tosixteen, fromsixteen, topdfdoc, frompdfdoc, toeight, fromeight
 
 do
+
+    local escaped = Cs(Cc("(") * (S("\\()\n\r\t\b\f")/"\\%0" + P(1))^0 * Cc(")"))
+
+    local cache = table.setmetatableindex(function(t,k) -- can be made weak
+        local v = utfbyte(k)
+        if v < 0x10000 then
+            v = format("%04x",v)
+        else
+            v = format("%04x%04x",rshift(v,10),v%1024+0xDC00)
+        end
+        t[k] = v
+        return v
+    end)
+
+    local unified = Cs(Cc("<feff") * (lpeg.patterns.utf8character/cache)^1 * Cc(">"))
+
+    tosixteen = function(str) -- an lpeg might be faster (no table)
+        if not str or str == "" then
+            return "<feff>" -- not () as we want an indication that it's unicode
+        else
+            return lpegmatch(unified,str)
+        end
+    end
+
+    local more = 0
+
+    local pattern = C(4) / function(s) -- needs checking !
+        local now = tonumber(s,16)
+        if more > 0 then
+            now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
+            more = 0
+            return utfchar(now)
+        elseif now >= 0xD800 and now <= 0xDBFF then
+            more = now
+            return "" -- else the c's end up in the stream
+        else
+            return utfchar(now)
+        end
+    end
+
+    local pattern = P(true) / function() more = 0 end * Cs(pattern^0)
+
+    fromsixteen = function(str)
+        if not str or str == "" then
+            return ""
+        else
+            return lpegmatch(pattern,str)
+        end
+    end
+
+    local toregime   = regimes.toregime
+    local fromregime = regimes.fromregime
+
+    topdfdoc = function(str,default)
+        if not str or str == "" then
+            return ""
+        else
+            return lpegmatch(escaped,toregime("pdfdoc",str,default)) -- could be combined if needed
+        end
+    end
+
+    frompdfdoc = function(str)
+        if not str or str == "" then
+            return ""
+        else
+            return fromregime("pdfdoc",str)
+        end
+    end
+
+    if not toregime   then topdfdoc   = function(s) return s end end
+    if not fromregime then frompdfdoc = function(s) return s end end
+
+    toeight = function(str)
+        if not str or str == "" then
+            return "()"
+        else
+            return lpegmatch(escaped,str)
+        end
+    end
+
+    local b_pattern = Cs((P("\\")/"" * (
+        S("()")
+      + S("nrtbf") / { n = "\n", r = "\r", t = "\t", b = "\b", f = "\f" }
+      + lpegpatterns.octdigit^-3 / function(s) return char(tonumber(s,8)) end)
+    + P(1))^0)
+
+    fromeight = function(str)
+        if not str or str == "" then
+            return ""
+        else
+            return lpegmatch(unescape,str)
+        end
+    end
 
     local u_pattern = lpegpatterns.utfbom_16_be * lpegpatterns.utf16_to_utf8_be -- official
                     + lpegpatterns.utfbom_16_le * lpegpatterns.utf16_to_utf8_le -- we've seen these
@@ -416,6 +438,13 @@ do
         return lpegmatch(b_pattern,s)
     end
 
+    lpdf.tosixteen   = tosixteen
+    lpdf.toeight     = toeight
+    lpdf.topdfdoc    = topdfdoc
+    lpdf.fromsixteen = fromsixteen
+    lpdf.fromeight   = fromeight
+    lpdf.frompdfdoc  = frompdfdoc
+
 end
 
 local function merge_t(a,b)
@@ -425,108 +454,116 @@ local function merge_t(a,b)
     return setmetatable(t,getmetatable(a))
 end
 
-local f_key_null       = formatters["/%s null"]
-local f_key_value      = formatters["/%s %s"]
-local f_key_dictionary = formatters["/%s << % t >>"]
-local f_dictionary     = formatters["<< % t >>"]
-local f_key_array      = formatters["/%s [ % t ]"]
-local f_array          = formatters["[ % t ]"]
-local f_key_number     = formatters["/%s %N"]
-local f_tonumber       = formatters["%N"]
-
 local tostring_a, tostring_d
 
-tostring_d = function(t,contentonly,key)
-    if next(t) then
-        local r, n = { }, 0
-        for k in next, t do
-            n = n + 1
-            r[n] = k
-        end
-        sort(r)
-        for i=1,n do
-            local k  = r[i]
-            local v  = t[k]
-            local tv = type(v)
-            if tv == "string" then
-                r[i] = f_key_value(k,toeight(v))
-            elseif tv == "number" then
-                r[i] = f_key_number(k,v)
-            elseif tv == "table" then
-                local mv = getmetatable(v)
-                if mv and mv.__lpdftype then
-                 -- if v == t then
-                 --     report_objects("ignoring circular reference in dirctionary")
-                 --     r[i] = f_key_null(k)
-                 -- else
-                        r[i] = f_key_value(k,tostring(v))
-                 -- end
-                elseif v[1] then
-                    r[i] = f_key_value(k,tostring_a(v))
-                else
-                    r[i] = f_key_value(k,tostring_d(v))
-                end
-            else
-                r[i] = f_key_value(k,tostring(v))
+do
+
+    local f_key_null       = formatters["/%s null"]
+    local f_key_value      = formatters["/%s %s"]
+    local f_key_dictionary = formatters["/%s << % t >>"]
+    local f_dictionary     = formatters["<< % t >>"]
+    local f_key_array      = formatters["/%s [ % t ]"]
+    local f_array          = formatters["[ % t ]"]
+    local f_key_number     = formatters["/%s %N"]
+    local f_tonumber       = formatters["%N"]
+
+    tostring_d = function(t,contentonly,key)
+        if next(t) then
+            local r, n = { }, 0
+            for k in next, t do
+                n = n + 1
+                r[n] = k
             end
-        end
-        if contentonly then
-            return concat(r," ")
-        elseif key then
-            return f_key_dictionary(key,r)
+            sort(r)
+            for i=1,n do
+                local k  = r[i]
+                local v  = t[k]
+                local tv = type(v)
+                -- mostly tables
+                if tv == "table" then
+                    local mv = getmetatable(v)
+                    if mv and mv.__lpdftype then
+                     -- if v == t then
+                     --     report_objects("ignoring circular reference in dirctionary")
+                     --     r[i] = f_key_null(k)
+                     -- else
+                            r[i] = f_key_value(k,tostring(v))
+                     -- end
+                    elseif v[1] then
+                        r[i] = f_key_value(k,tostring_a(v))
+                    else
+                        r[i] = f_key_value(k,tostring_d(v))
+                    end
+                elseif tv == "string" then
+                    r[i] = f_key_value(k,toeight(v))
+                elseif tv == "number" then
+                    r[i] = f_key_number(k,v)
+                else
+                    r[i] = f_key_value(k,tostring(v))
+                end
+            end
+            if contentonly then
+                return concat(r," ")
+            elseif key then
+                return f_key_dictionary(key,r)
+            else
+                return f_dictionary(r)
+            end
+        elseif contentonly then
+            return ""
         else
-            return f_dictionary(r)
+            return "<< >>"
         end
-    elseif contentonly then
-        return ""
-    else
-        return "<< >>"
     end
+
+    tostring_a = function(t,contentonly,key)
+        local tn = #t
+        if tn ~= 0 then
+            local r = { }
+            for k=1,tn do
+                local v = t[k]
+                local tv = type(v)
+                -- mostly numbers and tables
+                if tv == "number" then
+                    r[k] = f_tonumber(v)
+                elseif tv == "table" then
+                    local mv = getmetatable(v)
+                    local mt = mv and mv.__lpdftype
+                    if mt then
+                     -- if v == t then
+                     --     report_objects("ignoring circular reference in array")
+                     --     r[k] = "null"
+                     -- else
+                            r[k] = tostring(v)
+                     -- end
+                    elseif v[1] then
+                        r[k] = tostring_a(v)
+                    else
+                        r[k] = tostring_d(v)
+                    end
+                elseif tv == "string" then
+                    r[k] = toeight(v)
+                else
+                    r[k] = tostring(v)
+                end
+            end
+            if contentonly then
+                return concat(r, " ")
+            elseif key then
+                return f_key_array(key,r)
+            else
+                return f_array(r)
+            end
+        elseif contentonly then
+            return ""
+        else
+            return "[ ]"
+        end
+    end
+
 end
 
-tostring_a = function(t,contentonly,key)
-    local tn = #t
-    if tn ~= 0 then
-        local r = { }
-        for k=1,tn do
-            local v = t[k]
-            local tv = type(v)
-            if tv == "string" then
-                r[k] = toeight(v)
-            elseif tv == "number" then
-                r[k] = f_tonumber(v)
-            elseif tv == "table" then
-                local mv = getmetatable(v)
-                local mt = mv and mv.__lpdftype
-                if mt then
-                 -- if v == t then
-                 --     report_objects("ignoring circular reference in array")
-                 --     r[k] = "null"
-                 -- else
-                        r[k] = tostring(v)
-                 -- end
-                elseif v[1] then
-                    r[k] = tostring_a(v)
-                else
-                    r[k] = tostring_d(v)
-                end
-            else
-                r[k] = tostring(v)
-            end
-        end
-        if contentonly then
-            return concat(r, " ")
-        elseif key then
-            return f_key_array(key,r)
-        else
-            return f_array(r)
-        end
-    elseif contentonly then
-        return ""
-    else
-        return "[ ]"
-    end
-end
+local f_tonumber = formatters["%N"]
 
 local tostring_x = function(t) return concat(t," ")       end
 local tostring_s = function(t) return toeight(t[1])       end
@@ -652,8 +689,6 @@ end
 
 for i=-1,9 do cache[i] = pdfnumber(i) end
 
-local cache = { } -- can be weak
-
 local replacer = S("\0\t\n\r\f ()[]{}/%%#\\") / {
     ["\00"]="#00",
     ["\09"]="#09",
@@ -675,16 +710,17 @@ local replacer = S("\0\t\n\r\f ()[]{}/%%#\\") / {
 
 local escaped = Cs(Cc("/") * replacer^0)
 
+local cache = table.setmetatableindex(function(t,k)
+    local v = setmetatable({ lpegmatch(escaped,k) }, mt_c)
+    t[k] = v
+    return v
+end)
+
 local function pdfconstant(str,default)
     if not str then
-        str = default or ""
+        str = default or "none"
     end
-    local c = cache[str]
-    if not c then
-        c = setmetatable({ lpegmatch(escaped,str) },mt_c)
-        cache[str] = c
-    end
-    return c
+    return cache[str]
 end
 
 local escaped = Cs(replacer^0)
@@ -791,6 +827,10 @@ function lpdf.pagereference(n)
     else
         return pagereference(n)
     end
+end
+
+function lpdf.nofpages()
+    return structures.pages.nofpages
 end
 
 function lpdf.delayedobject(data,n)
@@ -915,6 +955,14 @@ local function resetpageproperties()
     pageresources   = pdfdictionary()
     pageattributes  = pdfdictionary()
     pagesattributes = pdfdictionary()
+end
+
+function lpdf.getpageproperties()
+    return {
+        pageresources   = pageresources,
+        pageattributes  = pageattributes,
+        pagesattributes = pagesattributes,
+    }
 end
 
 resetpageproperties()
@@ -1128,9 +1176,12 @@ do
                 ColorSpace = ColorSpace,
                 Pattern    = Pattern,
                 Shading    = Shading,
-             -- ProcSet    = pdfarray { pdfconstant("PDF") },
             }
-            return collected()
+            if options and options.serialize == false then
+                return collected
+            else
+                return collected()
+            end
         else
             return ""
         end
