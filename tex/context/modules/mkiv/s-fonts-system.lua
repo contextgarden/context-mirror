@@ -39,6 +39,8 @@ local sortedhash = table.sortedhash
 local formatters = string.formatters
 local concat = table.concat
 local lower = string.lower
+local gsub = string.gsub
+local find = string.find
 
 local function allfiles(specification)
     local pattern = lower(specification.pattern or "")
@@ -202,3 +204,88 @@ function moduledata.fonts.system.showinstalledglyphnames(specification)
     end
     table.save("s-fonts-system-glyph-names.lua",names)
 end
+
+-- -- --
+
+-- local skip = {
+--     "adobeblank",
+--     "veramo",
+--     "unitedstates",
+--     "tirek",
+--     "svbasicmanual",
+--     "sahel",
+--     "prsprorg",
+--     "piratdia",
+--     "notoserifthai",
+--     "coelacanthsubhdheavy",
+-- }
+
+-- local function bad(name)
+--     name = lower(name)
+--     for i=1,#skip do
+--         if find(name,skip[i]) then
+--             return true
+--         end
+--     end
+-- end
+
+-- function moduledata.fonts.system.showprivateglyphnames(specification)
+--     specification = interfaces.checkedspecification(specification)
+--     local paths   = caches.getreadablepaths()
+--     local files   = { }
+--     local names   = table.setmetatableindex("table")
+--     local f_u     = formatters["%04X"]
+--     for i=1,#paths do
+--         local list = dir.glob(paths[i].."/fonts/o*/**.tmc")
+--         for i=1,#list do
+--             files[list[i]] = true
+--         end
+--     end
+--     for filename in table.sortedhash(files) do
+--         logs.report("system","fontfile: %s",file.nameonly(filename))
+--         local data = table.load(filename)
+--         if data and data.format == "truetype" or data.format == "opentype" then
+--             local basename  = file.basename(data.resources.filename)
+--             local cleanname = gsub(basename," ","")
+--             if not bad(cleanname) then
+--                 local descriptions = data.descriptions
+--                 if descriptions then
+--                     local done = 0
+--                     for u, d in sortedhash(descriptions) do
+--                         local dn = d.name
+--                         local du = d.unicode
+--                         if dn and du and (u >= 0xF0000 or (u >= 0xE000 and u <= 0xF8FF)) and not find(dn,"notdef") then
+--                             if type(du) == "table" then
+--                                 local t = { }
+--                                 for i=1,#du do
+--                                     t[i] = f_u(du[i])
+--                                 end
+--                                 du = concat(t," ")
+--                             end
+--                             if done == 0 then
+--                                 logs.report("system","basename: %s",basename)
+--                                 context.starttitle { title = basename }
+--                                 context.start()
+--                                 context.definefont( { "tempfont" }, { "file:" .. cleanname })
+--                                 context.starttabulate { "|T||T|T|" }
+--                             end
+--                             NC() context("%U",u)
+--                             NC() context.tempfont() context.char(u) -- could be getglyph
+--                             NC() ctx_verbatim(dn)
+--                             NC() context(du)
+--                             NC() NR()
+--                             done = done + 1
+--                         end
+--                     end
+--                     if done > 0 then
+--                         logs.report("system","privates: %i",done)
+--                         context.stoptabulate()
+--                         context.stop()
+--                         context.stoptitle()
+--                     end
+--                 end
+--             end
+--         end
+--     end
+-- end
+

@@ -60,6 +60,8 @@ local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
 local replacetemplate   = utilities.templates.replace
 
+-- local bpfactor          = number.dimenfactors.bp
+
 local images            = img
 
 local hasscheme         = url.hasscheme
@@ -2139,6 +2141,126 @@ local function pdf_checker(data)
     return checkers.generic(data)
 end
 
+local function wrappedidentify(identify,filename)
+    local wrapup    = function() report_inclusion("fatal error reading %a",filename) end
+    local _, result = xpcall(identify,wrapup,filename)
+    return result or { error = "fatal error" }
+end
+
+local function jpg_checker(data)
+    local request = data.request
+    local used    = data.used
+    if request and used and not request.scanimage then
+        local identify = graphics.identify
+        local inject   = lpdf.injectors.jpg
+        local found    = false
+        request.scanimage = function(t)
+            local filename = t.filename
+            local result   = wrappedidentify(identify,filename)
+            local xsize    = result.xsize or 0
+            local ysize    = result.ysize or 0
+            found = not result.error
+            return {
+                filename    = filename,
+                width       = xsize * 65536,
+                height      = ysize * 65536,
+                depth       = 0,
+                colordepth  = result.colordepth or 0,
+                xres        = result.xres,
+                yres        = result.yres,
+                xsize       = xsize,
+                ysize       = ysize,
+                rotation    = result.rotation or 0,
+                colorspace  = result.colorspace or 0,
+            }
+        end
+        request.copyimage = function(t)
+            if found then
+                found = false
+                return inject(t)
+            end
+        end
+    end
+    return checkers.generic(data)
+end
+
+local function jp2_checker(data) -- idem as jpg
+    local request = data.request
+    local used    = data.used
+    if request and used and not request.scanimage then
+        local identify = graphics.identify
+        local inject   = lpdf.injectors.jp2
+        local found    = false
+        request.scanimage = function(t)
+            local filename = t.filename
+            local result   = wrappedidentify(identify,filename)
+            local xsize    = result.xsize or 0
+            local ysize    = result.ysize or 0
+            found = not result.error
+            return {
+                filename    = filename,
+                width       = xsize * 65536,
+                height      = ysize * 65536,
+                depth       = 0,
+                colordepth  = result.colordepth or 0,
+                xres        = result.xres,
+                yres        = result.yres,
+                xsize       = xsize,
+                ysize       = ysize,
+                rotation    = result.rotation or 0,
+                colorspace  = result.colorspace or 0,
+            }
+        end
+        request.copyimage = function(t)
+            if found then
+                found = false
+                return inject(t)
+            end
+        end
+    end
+    return checkers.generic(data)
+end
+
+local function png_checker(data) -- same as jpg (for now)
+    local request = data.request
+    local used    = data.used
+    if request and used and not request.scanimage then
+        local identify = graphics.identify
+        local inject   = lpdf.injectors.png
+        local found    = false
+        request.scanimage = function(t)
+            local filename = t.filename
+            local result   = wrappedidentify(identify,filename)
+            local xsize    = result.xsize or 0
+            local ysize    = result.ysize or 0
+            found = not result.error
+            return {
+                filename    = filename,
+                width       = xsize * 65536,
+                height      = ysize * 65536,
+                depth       = 0,
+                colordepth  = result.colordepth or 0,
+                xres        = result.xres,
+                yres        = result.yres,
+                xsize       = xsize,
+                ysize       = ysize,
+                rotation    = result.rotation or 0,
+                colorspace  = result.colorspace or 0,
+                tables      = result.tables,
+                interlace   = result.interlace,
+                filter      = result.filter,
+            }
+        end
+        request.copyimage = function(t)
+            if found then
+                found = false
+                return inject(t)
+            end
+        end
+    end
+    return checkers.generic(data)
+end
+
 directives.register("graphics.pdf.uselua",function(v)
     if v then
         report("%s Lua based PDF inclusion","enabling")
@@ -2148,6 +2270,37 @@ directives.register("graphics.pdf.uselua",function(v)
         checkers.pdf = nil
     end
 end)
+
+directives.register("graphics.jpg.uselua",function(v)
+    if v then
+        report("%s Lua based JPG inclusion","enabling")
+        checkers.jpg = jpg_checker
+    else
+        report("%s Lua based JPG inclusion","disabling")
+        checkers.jpg = nil
+    end
+end)
+
+directives.register("graphics.jp2.uselua",function(v)
+    if v then
+        report("%s Lua based JP2 inclusion","enabling")
+        checkers.jp2 = jp2_checker
+    else
+        report("%s Lua based JP2 inclusion","disabling")
+        checkers.jp2 = nil
+    end
+end)
+
+directives.register("graphics.png.uselua",function(v)
+    if v then
+        report("%s Lua based PNG inclusion","enabling")
+        checkers.png = png_checker
+    else
+        report("%s Lua based PNG inclusion","disabling")
+        checkers.png = nil
+    end
+end)
+
 
 -- directives.enable("graphics.pdf.uselua")
 --
@@ -2160,3 +2313,62 @@ end)
 --         context.stopTEXpage()
 --     end)
 -- end
+
+-- This is experimental, for the moment here:
+
+local bitmaps       = { }
+graphics.bitmaps    = bitmaps
+
+local report_bitmap = logs.reporter("graphics","bitmap")
+
+function bitmaps.new(xsize,ysize,colorspace,colordepth,mask)
+    if not xsize or not ysize or xsize == 0 or ysize == 0 then
+        report_bitmap("provide 'xsize' and 'ysize' larger than zero")
+        return
+    end
+    if not colorspace then
+        report_bitmap("provide 'colorspace' (1, 2, 3, 'gray', 'rgb', 'cmyk'")
+        return
+    end
+    if not colordepth then
+        report_bitmap("provide 'colordepth' (1, 2)")
+        return
+    end
+    return graphics.identifiers.bitmap {
+        colorspace = colorspace,
+        colordepth = colordepth,
+        xsize      = xsize,
+        ysize      = ysize,
+        mask       = mask and true or nil,
+    }
+end
+
+local function flush(bitmap)
+    img.write(lpdf.injectors.bitmap(bitmap))
+end
+
+bitmaps.flush = flush
+
+function bitmaps.tocontext(bitmap,width,height)
+    if type(width) == "number" then
+        width = width .. "sp"
+    end
+    if type(height) == "number" then
+        height = height .. "sp"
+    end
+    if not height and not height then
+        width  = bitmap.xsize .. "bp"
+        height = bitmap.ysize .. "bp"
+    end
+    context.scale (
+        {
+            width  = width,
+            height = height,
+        },
+        function()
+            flush(bitmap)
+        end
+    )
+end
+
+

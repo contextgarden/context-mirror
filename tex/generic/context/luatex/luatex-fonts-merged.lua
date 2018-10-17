@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 10/08/18 17:44:41
+-- merge date  : 10/17/18 15:06:55
 
 do -- begin closure to overcome local limits and interference
 
@@ -9668,6 +9668,7 @@ function constructors.scale(tfmdata,specification)
     if isunicode then
       chr.unicode=isunicode
       chr.tounicode=tounicode(isunicode)
+    else
     end
     if hasquality then
       local ve=character.expansion_factor
@@ -23846,35 +23847,41 @@ local function checkmathreplacements(tfmdata,fullname,fixitalics)
       for unicode,replacement in next,changed do
         local u=characters[unicode]
         local r=characters[replacement]
-        local n=u.next
-        local v=u.vert_variants
-        local h=u.horiz_variants
-        if fixitalics then
-          local ui=u.italic
-          if ui and not r.italic then
-            if trace_preparing then
-              report_prepare("using %i units of italic correction from %C for %U",ui,unicode,replacement)
+        if u and r then
+          local n=u.next
+          local v=u.vert_variants
+          local h=u.horiz_variants
+          if fixitalics then
+            local ui=u.italic
+            if ui and not r.italic then
+              if trace_preparing then
+                report_prepare("using %i units of italic correction from %C for %U",ui,unicode,replacement)
+              end
+              r.italic=ui 
             end
-            r.italic=ui 
           end
-        end
-        if n and not r.next then
+          if n and not r.next then
+            if trace_preparing then
+              report_prepare("forcing %s for %C substituted by %U","incremental step",unicode,replacement)
+            end
+            r.next=n
+          end
+          if v and not r.vert_variants then
+            if trace_preparing then
+              report_prepare("forcing %s for %C substituted by %U","vertical variants",unicode,replacement)
+            end
+            r.vert_variants=v
+          end
+          if h and not r.horiz_variants then
+            if trace_preparing then
+              report_prepare("forcing %s for %C substituted by %U","horizontal variants",unicode,replacement)
+            end
+            r.horiz_variants=h
+          end
+        else
           if trace_preparing then
-            report_prepare("forcing %s for %C substituted by %U","incremental step",unicode,replacement)
+            report_prepare("error replacing %C by %U",unicode,replacement)
           end
-          r.next=n
-        end
-        if v and not r.vert_variants then
-          if trace_preparing then
-            report_prepare("forcing %s for %C substituted by %U","vertical variants",unicode,replacement)
-          end
-          r.vert_variants=v
-        end
-        if h and not r.horiz_variants then
-          if trace_preparing then
-            report_prepare("forcing %s for %C substituted by %U","horizontal variants",unicode,replacement)
-          end
-          r.horiz_variants=h
         end
       end
     end
@@ -31743,7 +31750,7 @@ if not modules then modules={} end modules ['font-otc']={
   license="see context related readme files"
 }
 local insert,sortedkeys,sortedhash,tohash=table.insert,table.sortedkeys,table.sortedhash,table.tohash
-local type,next=type,next
+local type,next,tonumber=type,next,tonumber
 local lpegmatch=lpeg.match
 local utfbyte,utflen=utf.byte,utf.len
 local sortedhash=table.sortedhash
@@ -31881,6 +31888,7 @@ local function addfeature(data,feature,specifications)
   if not specifications then
     return
   end
+  local p=lpeg.P("P")*(lpeg.patterns.hexdigit^1/function(s) return tonumber(s,16) end)*lpeg.P(-1)
   local function tounicode(code)
     if not code then
       return
@@ -31898,10 +31906,17 @@ local function addfeature(data,feature,specifications)
         return u
       end
     end
+    local u=lpegmatch(p,code)
+    if u then
+      return u
+    end
     if not aglunicodes then
       aglunicodes=fonts.encodings.agl.unicodes 
     end
-    return aglunicodes[code]
+    local u=aglunicodes[code]
+    if u then
+      return u
+    end
   end
   local coverup=otf.coverup
   local coveractions=coverup.actions
