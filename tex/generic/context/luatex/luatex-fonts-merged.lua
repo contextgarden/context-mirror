@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 10/17/18 15:06:55
+-- merge date  : 10/18/18 00:07:52
 
 do -- begin closure to overcome local limits and interference
 
@@ -9414,6 +9414,7 @@ function constructors.scale(tfmdata,specification)
   targetparameters.forcedsize=forcedsize 
   targetparameters.extrafactor=extrafactor
   local tounicode=fonts.mappings.tounicode
+  local unknowncode=tounicode(0xFFFD)
   local defaultwidth=resources.defaultwidth or 0
   local defaultheight=resources.defaultheight or 0
   local defaultdepth=resources.defaultdepth or 0
@@ -9669,6 +9670,7 @@ function constructors.scale(tfmdata,specification)
       chr.unicode=isunicode
       chr.tounicode=tounicode(isunicode)
     else
+      chr.tounicode=unknowncode
     end
     if hasquality then
       local ve=character.expansion_factor
@@ -10759,31 +10761,31 @@ local unknown=f_single(0xFFFD)
 local hash={}
 local conc={}
 table.setmetatableindex(hash,function(t,k)
+  if k<0xD7FF or (k>0xDFFF and k<=0xFFFF) then
+    v=f_single(k)
+  else
+    local k=k-0x10000
+    v=f_double(rshift(k,10)+0xD800,k%1024+0xDC00)
+  end
+  t[k]=v
+  return v
+end)
+local function tounicode(k)
   if type(k)=="table" then
     local n=#k
     for l=1,n do
       conc[l]=hash[k[l]]
     end
     return concat(conc,"",1,n)
-  end
-  local v
-  if k>=0x00E000 and k<=0x00F8FF then
-    v=unknown
+  elseif k>=0x00E000 and k<=0x00F8FF then
+    return unknown
   elseif k>=0x0F0000 and k<=0x0FFFFF then
-    v=unknown
+    return unknown
   elseif k>=0x100000 and k<=0x10FFFF then
-    v=unknown
-  elseif k<0xD7FF or (k>0xDFFF and k<=0xFFFF) then
-    v=f_single(k)
+    return unknown
   else
-    k=k-0x10000
-    v=f_double(rshift(k,10)+0xD800,k%1024+0xDC00)
+    return hash[k]
   end
-  t[k]=v
-  return v
-end)
-local function tounicode(unicode)
-  return hash[unicode]
 end
 local function fromunicode16(str)
   if #str==4 then
@@ -21065,7 +21067,7 @@ local function stripredundant(fontdata)
   if descriptions then
     local n=0
     local c=0
-    if not context and fonts.privateoffsets.keepnames then
+    if (not context and fonts.privateoffsets.keepnames) or forcekeep then
       for unicode,d in next,descriptions do
         if d.class=="base" then
           d.class=nil

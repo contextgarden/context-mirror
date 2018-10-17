@@ -2262,45 +2262,32 @@ local function png_checker(data) -- same as jpg (for now)
 end
 
 directives.register("graphics.pdf.uselua",function(v)
-    if v then
-        report("%s Lua based PDF inclusion","enabling")
-        checkers.pdf = pdf_checker
-    else
-        report("%s Lua based PDF inclusion","disabling")
-        checkers.pdf = nil
-    end
+    checkers.pdf = v and pdf_checker or nil
+    report("%s Lua based PDF inclusion",v and "enabling" or "disabling")
 end)
 
 directives.register("graphics.jpg.uselua",function(v)
-    if v then
-        report("%s Lua based JPG inclusion","enabling")
-        checkers.jpg = jpg_checker
-    else
-        report("%s Lua based JPG inclusion","disabling")
-        checkers.jpg = nil
-    end
+    checkers.jpg = v and jpg_checker or nil
+    report("%s Lua based JPG inclusion",v and "enabling" or "disabling")
 end)
 
 directives.register("graphics.jp2.uselua",function(v)
-    if v then
-        report("%s Lua based JP2 inclusion","enabling")
-        checkers.jp2 = jp2_checker
-    else
-        report("%s Lua based JP2 inclusion","disabling")
-        checkers.jp2 = nil
-    end
+    checkers.jp2 = v and jp2_checker or nil
+    report("%s Lua based JP2 inclusion",v and "enabling" or "disabling")
 end)
 
 directives.register("graphics.png.uselua",function(v)
-    if v then
-        report("%s Lua based PNG inclusion","enabling")
-        checkers.png = png_checker
-    else
-        report("%s Lua based PNG inclusion","disabling")
-        checkers.png = nil
-    end
+    checkers.png = v and png_checker or nil
+    report("%s Lua based PNG inclusion",v and "enabling" or "disabling")
 end)
 
+directives.register("graphics.uselua",function(v)
+    checkers.pdf = v and pdf_checker or nil
+    checkers.jpg = v and jpg_checker or nil
+    checkers.jp2 = v and jp2_checker or nil
+    checkers.png = v and png_checker or nil
+    report("%s Lua based PDF, PNG, JPG and JP2 inclusion",v and "enabling" or "disabling")
+end)
 
 -- directives.enable("graphics.pdf.uselua")
 --
@@ -2344,30 +2331,18 @@ function bitmaps.new(xsize,ysize,colorspace,colordepth,mask)
 end
 
 local function flush(bitmap)
-    img.write(lpdf.injectors.bitmap(bitmap))
+    return img.node(lpdf.injectors.bitmap(bitmap))
 end
 
 bitmaps.flush = flush
 
-function bitmaps.tocontext(bitmap,width,height)
-    if type(width) == "number" then
-        width = width .. "sp"
-    end
-    if type(height) == "number" then
-        height = height .. "sp"
-    end
-    if not height and not height then
-        width  = bitmap.xsize .. "bp"
-        height = bitmap.ysize .. "bp"
-    end
+function bitmaps.tocontext(bitmap)
     context.scale (
         {
-            width  = width,
-            height = height,
+            width  = bitmap.xsize .. "bp",
+            height = bitmap.ysize .. "bp",
         },
-        function()
-            flush(bitmap)
-        end
+        flush(bitmap)
     )
 end
 

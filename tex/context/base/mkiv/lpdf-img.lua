@@ -39,6 +39,8 @@ local report_jpg           = logs.reporter("graphics","jpg")
 local report_jp2           = logs.reporter("graphics","jp2")
 local report_png           = logs.reporter("graphics","png")
 
+trackers.register("graphics.backend", function(v) trace = v end)
+
 local injectors = { }
 lpdf.injectors  = injectors
 

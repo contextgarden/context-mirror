@@ -114,7 +114,7 @@ end
 
 local splitter = lpeg.splitat(lpeg.S("._"),true)
 
-local method = 3
+local method = 4
 
 function moduledata.fonts.system.showinstalledglyphnames(specification)
     specification = interfaces.checkedspecification(specification)
@@ -129,7 +129,8 @@ function moduledata.fonts.system.showinstalledglyphnames(specification)
         end
     end
     for filename in table.sortedhash(files) do
-        logs.report("system","fontfile: %s",file.nameonly(filename))
+        local fontname = file.nameonly(filename)
+        logs.report("system","fontfile: %s",fontname)
         local data = table.load(filename)
         if data then
             if method == 1 then
@@ -178,31 +179,60 @@ function moduledata.fonts.system.showinstalledglyphnames(specification)
                         end
                     end
                 end
+            elseif method == 4 then
+                local descriptions = data.descriptions
+                if descriptions then
+                    for u, d in sortedhash(descriptions) do
+                        local n = d.name
+                        local u = d.unicode
+                        if n and not u and not find(n,"^%.") then
+                            local n = names[n]
+                            n[#n+1] = fontname
+                        end
+                    end
+                end
             else
                 -- nothing
             end
         end
     end
-    if next(names) then
-        context.starttabulate { "|l|pl|" }
-        local f_u = formatters["%04X~(%i)"]
-        local f_s = formatters["%s~(%i)"]
-        for k, v in sortedhash(names) do
-            local t = { }
-            for k, v in sortedhash(v) do
-                if type(k) == "string" then
-                    t[#t+1] = f_s(k,v)
-                else
-                    t[#t+1] = f_u(k,v)
-                end
+ -- names[".notdef"] = nil
+ -- names[".null"]   = nil
+    if method == 4 then
+        if next(names) then
+            context.starttabulate { "|l|pl|" }
+            local f_u = formatters["%04X~(%i)"]
+            local f_s = formatters["%s~(%i)"]
+            for k, v in sortedhash(names) do
+                NC() ctx_verbatim(k)
+                NC() context("% t",v)
+                NC() NR()
             end
-            NC() ctx_verbatim(k)
-            NC() context("% t",t)
-            NC() NR()
+            context.stoptabulate()
         end
-        context.stoptabulate()
+        table.save("s-fonts-system-glyph-unknowns.lua",names)
+    else
+        if next(names) then
+            context.starttabulate { "|l|pl|" }
+            local f_u = formatters["%04X~(%i)"]
+            local f_s = formatters["%s~(%i)"]
+            for k, v in sortedhash(names) do
+                local t = { }
+                for k, v in sortedhash(v) do
+                    if type(k) == "string" then
+                        t[#t+1] = f_s(k,v)
+                    else
+                        t[#t+1] = f_u(k,v)
+                    end
+                end
+                NC() ctx_verbatim(k)
+                NC() context("%, t",t)
+                NC() NR()
+            end
+            context.stoptabulate()
+        end
+        table.save("s-fonts-system-glyph-names.lua",names)
     end
-    table.save("s-fonts-system-glyph-names.lua",names)
 end
 
 -- -- --

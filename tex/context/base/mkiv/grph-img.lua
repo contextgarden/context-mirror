@@ -687,7 +687,6 @@ do
         else
             return
         end
-        -- maybe alpha some day
         if colordepth == 8 then
             colordepth = 1
         elseif colordepth == 16 then
