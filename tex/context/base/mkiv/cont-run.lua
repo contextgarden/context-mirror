@@ -142,6 +142,7 @@ trackers.register("sandbox.tracecalls",sandbox.logcalls)
 trackers.register("sandbox.tracefiles",sandbox.logfiles)
 
 local sandboxing = environment.arguments.sandbox
+local debugging  = environment.arguments.debug
 
 if sandboxing then
 
@@ -170,6 +171,22 @@ if sandboxing then
         \let\normalprimitive\relax
     ]]
 
+    debug = {
+        traceback = traceback,
+    }
+
+elseif debugging then
+
+    -- we keep debug
+
+else
+
+    debug = {
+        traceback = traceback,
+        getinfo   = getinfo,
+        sethook   = sethook,
+    }
+
 end
 
 local function processjob()
@@ -179,6 +196,11 @@ local function processjob()
     local arguments = environment.arguments
     local suffix    = environment.suffix
     local filename  = environment.filename -- hm, not inputfilename !
+
+    if arguments.lmtx then
+        context.enablelmtx()
+        environment.lmtxmode = true
+    end
 
     if arguments.nosynctex then
         luatex.synctex.setup {

@@ -70,6 +70,12 @@ local formatcolumns = utilities.formatters.formatcolumns
 local getsubtypes   = node.subtypes
 local getvalues     = node.values
 
+tex.magicconstants = { -- we use tex.constants for something else
+    running  = -1073741824,
+    maxdimen =  1073741823, -- 0x3FFFFFFF or 2^30-1
+    trueinch =     4736286,
+}
+
 -- local listcodes = allocate {
 --     [0] = "unknown",
 --     [1] = "line",
