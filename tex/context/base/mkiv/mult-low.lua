@@ -297,7 +297,7 @@ return {
         "singleexpandafter", "doubleexpandafter", "tripleexpandafter",
         --
         "dontleavehmode", "removelastspace", "removeunwantedspaces", "keepunwantedspaces",
-        "removepunctuation", "ignoreparskip", "forcestrutdepth",
+        "removepunctuation", "ignoreparskip", "forcestrutdepth", "onlynonbreakablespace",
         --
         "wait", "writestatus", "define", "defineexpandable", "redefine",
         --
@@ -348,7 +348,7 @@ return {
         "dosinglegroupempty", "dodoublegroupempty", "dotriplegroupempty", "doquadruplegroupempty", "doquintuplegroupempty",
         "permitspacesbetweengroups", "dontpermitspacesbetweengroups",
         --
-        "nopdfcompression", "maximumpdfcompression", "normalpdfcompression", "onlypdfobjectcompression",
+        "nopdfcompression", "maximumpdfcompression", "normalpdfcompression", "onlypdfobjectcompression", "nopdfobjectcompression",
         --
         "modulonumber", "dividenumber",
         --

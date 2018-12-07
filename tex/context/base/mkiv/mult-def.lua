@@ -13038,6 +13038,10 @@ return {
   ["cite"]={
    ["en"]="cite",
   },
+  ["closed"]={
+   ["en"]="closed",
+   ["nl"]="gesloten",
+  },
   ["color"]={
    ["cs"]="barevne",
    ["de"]="farbe",
@@ -15556,7 +15560,7 @@ return {
    ["ro"]="postscript",
   },
   ["precedingpage"]={
-   ["en"]="followingpage",
+   ["en"]="precedingpage",
    ["nl"]="voorafgaandepagina",
   },
   ["preference"]={
