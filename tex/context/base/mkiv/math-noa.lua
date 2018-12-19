@@ -1114,6 +1114,18 @@ do
             setnext(stop_super)
         end
         if start_sub then
+
+--             if mode == "sub" then
+--                 local sup = getsup(pointer)
+--                 if sup and not getsub(pointer) then
+--                     local nxt = getnext(pointer)
+--                     local new = new_noad(pointer)
+--                     setnucleus(new,new_submlist())
+--                     setlink(pointer,new,nxt)
+--                     pointer = new
+--                 end
+--             end
+
             if start_sub == stop_sub then
                 setsub(pointer,getnucleus(start_sub))
             else
@@ -1135,6 +1147,42 @@ do
         processnoads(head,unscript,"unscript")
         return true -- not needed
     end
+
+end
+
+do
+
+    local unstack = { }    noads.processors.unstack = unstack
+    local enabled = false
+
+    unstack[math_noad] = function(pointer,what,n,parent)
+        local sup = getsup(pointer)
+        local sub = getsub(pointer)
+        if sup and sub then
+            local nxt = getnext(pointer)
+            local new = new_noad(pointer)
+            setnucleus(new,new_submlist())
+            setsub(pointer)
+            setsub(new,sub)
+            setlink(pointer,new,nxt)
+        end
+    end
+
+    function handlers.unstack(head,style,penalties)
+        if enabled then
+            processnoads(head,unstack,"unstack")
+            return true -- not needed
+        end
+    end
+
+    implement {
+        name     = "enablescriptunstacking",
+        onlyonce = true,
+        actions  = function()
+            enableaction("math","noads.handlers.unstack")
+            enabled = true
+        end
+    }
 
 end
 
