@@ -64,6 +64,7 @@ local trace_kernpairs      = false  registertracker("math.kernpairs",   function
 local trace_domains        = false  registertracker("math.domains",     function(v) trace_domains     = v end)
 local trace_families       = false  registertracker("math.families",    function(v) trace_families    = v end)
 local trace_fences         = false  registertracker("math.fences",      function(v) trace_fences      = v end)
+local trace_unstacking     = false  registertracker("math.unstack",     function(v) trace_unstacking  = v end)
 
 local check_coverage       = true   registerdirective("math.checkcoverage",  function(v) check_coverage  = v end)
 
@@ -81,6 +82,7 @@ local report_kernpairs     = logreporter("mathematics","kernpairs")
 local report_domains       = logreporter("mathematics","domains")
 local report_families      = logreporter("mathematics","families")
 local report_fences        = logreporter("mathematics","fences")
+local report_unstacking    = logreporter("mathematics","unstack")
 
 local a_mathrendering      = privateattribute("mathrendering")
 local a_exportstatus       = privateattribute("exportstatus")
@@ -1152,19 +1154,25 @@ end
 
 do
 
-    local unstack = { }    noads.processors.unstack = unstack
-    local enabled = false
+    local unstack   = { }    noads.processors.unstack = unstack
+    local enabled   = false
+    local a_unstack = privateattribute("mathunstack")
 
-    unstack[math_noad] = function(pointer,what,n,parent)
-        local sup = getsup(pointer)
-        local sub = getsub(pointer)
-        if sup and sub then
-            local nxt = getnext(pointer)
-            local new = new_noad(pointer)
-            setnucleus(new,new_submlist())
-            setsub(pointer)
-            setsub(new,sub)
-            setlink(pointer,new,nxt)
+    unstack[math_noad] = function(pointer)
+        if getattr(pointer,a_unstack) then
+            local sup = getsup(pointer)
+            local sub = getsub(pointer)
+            if sup and sub then
+             -- if trace_unstacking then
+             --     report_unstacking() -- todo ... what to show ...
+             -- end
+                local nxt = getnext(pointer)
+                local new = new_noad(pointer)
+                setnucleus(new,new_submlist())
+                setsub(pointer)
+                setsub(new,sub)
+                setlink(pointer,new,nxt)
+            end
         end
     end
 
