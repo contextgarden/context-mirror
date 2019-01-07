@@ -63,7 +63,7 @@ local getlist             = nuts.getlist
 local getchar             = nuts.getchar
 local getattr             = nuts.getattr
 local getprop             = nuts.getprop
-local getdir ection       = nuts.getdirection
+local getdirection        = nuts.getdirection
 
 local setprop             = nuts.setprop
 local setchar             = nuts.setchar
@@ -405,7 +405,7 @@ end
 
 local function get_baselevel(head,list,size) -- todo: skip if first is object (or pass head and test for localpar)
     local id = getid(head)
-    if id == localpar_code then
+    if id == localpar_code and getsubtype(head) == 0 then
         local direction = getdirection(head)
         if direction == righttoleft_code or direction == "TRT" then -- for old times sake we we handle strings too
             return 1, righttoleft_code, true
@@ -887,8 +887,8 @@ local function insert_dir_points(list,size)
         local enddir   -- = nil
         local prev     -- = nil
         if toggle then
-            begindir = righttoleft_code
-            enddir   = righttoleft_code
+            begindir = lefttoright_code
+            enddir   = lefttoright_code
             toggle   = false
         else
             begindir = righttoleft_code
@@ -932,7 +932,7 @@ local function insert_dir_points(list,size)
             if trace_list and n > 1 then
                 report_directions("unbalanced list")
             end
-            last.enddir = s[n] == righttoleft_code or lefttoright_code
+            last.enddir = s[n] == righttoleft_code and righttoleft_code or lefttoright_code
         end
     end
 end
@@ -984,7 +984,7 @@ local function apply_to_list(list,size,head,pardir)
                 enddir = false
             end
         elseif begindir then
-            if id == localpar_code then
+            if id == localpar_code and getsubtype(current) == 0 then
                 -- localpar should always be the 1st node
                 local d = new_direction(begindir)
                 setprop(d,"directions",true)

@@ -1163,7 +1163,9 @@
 
 \normalpdfcompression
 
-\outputmode \zerocount % we generate the format in this mode
+\ifdefined\outputmode
+    \outputmode \zerocount % we generate the format in this mode
+\fi
 
 %D Basic status stuff.
 
@@ -1198,7 +1200,7 @@
 \savingvdiscards\plusone
 
 %D We only can set this one via directives (system.synctex) and we only support
-%D the context variant.
+%D the context variant. This will go away completely.
 
 \let\synctex\undefined \newcount\synctex \let\normalsynctex\synctex
 
@@ -1207,10 +1209,12 @@
 \voffset\zeropoint \let\voffset\relax \newdimen\voffset \let\normalvoffset\voffset
 \hoffset\zeropoint \let\hoffset\relax \newdimen\hoffset \let\normalhoffset\hoffset
 
-\let\pageleftoffset  \hoffset \let\normalpageleftoffset  \hoffset
-\let\pagerightoffset \hoffset \let\normalpagerightoffset \hoffset
-\let\pagetopoffset   \voffset \let\normalpagetopoffset   \voffset
-\let\pagebottomoffset\voffset \let\normalpagebottomoffset\voffset
+\ifdefined\pageleftoffset
+    \let\pageleftoffset  \hoffset \let\normalpageleftoffset  \hoffset
+    \let\pagerightoffset \hoffset \let\normalpagerightoffset \hoffset
+    \let\pagetopoffset   \voffset \let\normalpagetopoffset   \voffset
+    \let\pagebottomoffset\voffset \let\normalpagebottomoffset\voffset
+\fi
 
 %D Handy.
 

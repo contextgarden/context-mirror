@@ -138,7 +138,7 @@ interfaces.implement {
 
 actions[v_default] = function(head,setting)
     local id   = getid(head)
-    if id == localpar_code then
+    if id == localpar_code then -- and getsubtype(head) == 0
         -- begin of par
         local first  = getnext(head)
         local indent = false
@@ -222,8 +222,7 @@ actions[v_default] = function(head,setting)
                 -- maybe also: get all A. B. etc
                 local next = getnext(first)
                 if next then
-                    for current in nextglyph, next do
-                        local char = getchar(current)
+                    for current, char in nextglyph, next do
                         local kind = category(char)
                         if kind == "po" then
                             if method[v_last] then
