@@ -351,7 +351,7 @@ function splitters.split(head) -- best also pass the direction
     local function flush() -- we can move this
         local font = getfont(start)
         local last = getnext(stop)
-        local list = last and copy_node_list(start,stop) or copy_node_list(start)
+        local list = last and copy_node_list(start,last) or copy_node_list(start)
         local n    = #cache + 1
         if encapsulate then
             local user_one = new_usernumber(splitter_one,n)
