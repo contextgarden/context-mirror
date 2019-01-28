@@ -416,9 +416,9 @@
 \newtoks \everycurrentdate
 
 \def\syst_converters_check_date
-  {\edef\temp{\systemparameter\c!y}\scratchcounterone  \ifx\temp\empty\normalyear \else\temp\fi
+  {\edef\temp{\systemparameter\c!d}\scratchcounterone  \ifx\temp\empty\normalday  \else\temp\fi
    \edef\temp{\systemparameter\c!m}\scratchcountertwo  \ifx\temp\empty\normalmonth\else\temp\fi
-   \edef\temp{\systemparameter\c!d}\scratchcounterthree\ifx\temp\empty\normalday  \else\temp\fi}
+   \edef\temp{\systemparameter\c!y}\scratchcounterthree\ifx\temp\empty\normalyear \else\temp\fi}
 
 \unexpanded\def\currentdate
   {\dosingleempty\syst_converters_current_date}
