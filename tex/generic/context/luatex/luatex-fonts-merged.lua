@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 01/28/19 12:25:54
+-- merge date  : 01/28/19 16:58:09
 
 do -- begin closure to overcome local limits and interference
 
@@ -31029,9 +31029,6 @@ end
 local start={ "pdf","mode","font" }
 local push={ "pdf","page","q" }
 local pop={ "pdf","page","Q" }
-if not LUATEXFUNCTIONALITY or LUATEXFUNCTIONALITY<6472 then 
- start={ "nop" }
-end
 local function initialize(tfmdata,kind,value)
  if value then
   local resources=tfmdata.resources
