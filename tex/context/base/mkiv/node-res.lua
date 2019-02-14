@@ -172,6 +172,10 @@ local savepos           = register_nut(new_nut(whatsit_code,whatsitcodes.savepos
 
 local user_node         = new_nut(whatsit_code,whatsitcodes.userdefined)
 
+if not CONTEXTLMTXMODE then
+    setfield(user_node,"type",usercodes.number)
+end
+
 local left_margin_kern  = register_nut(new_nut(nodecodes.marginkern,0))
 local right_margin_kern = register_nut(new_nut(nodecodes.marginkern,1))
 

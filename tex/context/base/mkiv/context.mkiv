@@ -42,8 +42,12 @@
 %D has to match \type {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2019.02.10 17:43}
+\edef\contextversion{2019.02.14 16:57}
 \edef\contextkind   {beta}
+
+%D Kind of special:
+
+\chardef\contextlmtxmode\directlua{tex.print(CONTEXTLMTXMODE and 1 or 0)}\relax
 
 %D For those who want to use this:
 
@@ -62,6 +66,8 @@
 \def\loadmkiifile#1{}
 \def\loadmkivfile#1{\normalinput#1.mkiv\relax}
 \def\loadmkvifile#1{\normalinput#1.mkvi\relax}
+\def\loadlmtxfile#1{\ifcase\contextlmtxmode\else\normalinput#1.mkiv\relax\fi}
+
 
 %D First we load the system modules. These implement a lot of
 %D manipulation macros. We start with setting up some basic \TEX\
@@ -77,8 +83,8 @@
 
 %D We just quit if new functionality is expected.
 
-\ifnum\luatexversion<108 % also change message
-    \writestatus{!!!!}{Your luatex binary is too old, you need at least version 1.08!}
+\ifnum\luatexversion<109 % also change message
+    \writestatus{!!!!}{Your luatex binary is too old, you need at least version 1.09!}
     \expandafter\end
 \fi
 
@@ -127,14 +133,11 @@
 
 \loadmarkfile{luat-usr}
 
-% \loadmarkfile{luat-ini} % moved up
-% \loadmarkfile{toks-ini} % moved up
-
 \loadmkvifile{file-ini}
 \loadmkvifile{file-res}
 \loadmkvifile{file-lib}
 
-\doifelsefileexists{core-lmt.mkiv}{\loadmarkfile{core-lmt}}{}
+\loadlmtxfile{core-lmt}
 
 % needs more checking for clashes:
 %
@@ -180,6 +183,8 @@
 \loadmarkfile{node-fin}
 \loadmarkfile{node-mig}
 %loadmarkfile{node-pag}
+
+\loadmarkfile{driv-ini}
 
 \loadmarkfile{back-ini}
 
@@ -595,8 +600,7 @@
 
 \loadmarkfile{cont-run} % the main runner (used in cont-yes.mkiv)
 
-\doifelsefileexists{back-out.mkiv}{\loadmarkfile{back-out}}{}
-\doifelsefileexists{back-shp.mkiv}{\loadmarkfile{back-shp}}{}
+\loadlmtxfile{driv-shp}
 
 \setupcurrentlanguage[\defaultlanguagetag]
 
