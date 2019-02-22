@@ -140,6 +140,7 @@
 		<cd:variable name='chemicals' value='chemicals'/>
 		<cd:variable name='chemistry' value='chemistry'/>
 		<cd:variable name='cite' value='cite'/>
+		<cd:variable name='closed' value='closed'/>
 		<cd:variable name='color' value='رنگ'/>
 		<cd:variable name='column' value='ستون'/>
 		<cd:variable name='columns' value='ستونها'/>
@@ -421,7 +422,7 @@
 		<cd:variable name='positive' value='مثبت'/>
 		<cd:variable name='postponing' value='تاخیر'/>
 		<cd:variable name='postscript' value='پست‌اسکریپت'/>
-		<cd:variable name='precedingpage' value='followingpage'/>
+		<cd:variable name='precedingpage' value='precedingpage'/>
 		<cd:variable name='preference' value='ترجیح'/>
 		<cd:variable name='preview' value='پیش‌دید'/>
 		<cd:variable name='previous' value='قبلی'/>
@@ -1033,6 +1034,7 @@
 		<cd:constant name='otherstext' value='otherstext'/>
 		<cd:constant name='outermargin' value='حاشیه‌خارجی'/>
 		<cd:constant name='overprint' value='overprint'/>
+		<cd:constant name='ownerpassword' value='ownerpassword'/>
 		<cd:constant name='ownnumber' value='شماره‌خود'/>
 		<cd:constant name='page' value='صفحه'/>
 		<cd:constant name='pageboundaries' value='مرزهای‌صفحه'/>
@@ -1246,6 +1248,7 @@
 		<cd:constant name='textstyle' value='سبک‌متن'/>
 		<cd:constant name='textwidth' value='عرض‌متن'/>
 		<cd:constant name='threshold' value='threshold'/>
+		<cd:constant name='time' value='time'/>
 		<cd:constant name='title' value='عنوان'/>
 		<cd:constant name='titlecolor' value='رنگ‌عنوان'/>
 		<cd:constant name='titlecommand' value='فرمان‌عنوان'/>
@@ -1274,12 +1277,14 @@
 		<cd:constant name='up' value='up'/>
 		<cd:constant name='urlalternative' value='urlalternative'/>
 		<cd:constant name='urlspace' value='urlspace'/>
+		<cd:constant name='userpassword' value='userpassword'/>
 		<cd:constant name='validate' value='تاییداعتبار'/>
 		<cd:constant name='values' value='values'/>
 		<cd:constant name='vcommand' value='vcommand'/>
 		<cd:constant name='vcompact' value='vcompact'/>
 		<cd:constant name='vector' value='vector'/>
 		<cd:constant name='veroffset' value='آفست‌عم'/>
+		<cd:constant name='vfactor' value='vfactor'/>
 		<cd:constant name='vfil' value='vfil'/>
 		<cd:constant name='viewerprefix' value='viewerprefix'/>
 		<cd:constant name='voffset' value='آفست‌ع'/>

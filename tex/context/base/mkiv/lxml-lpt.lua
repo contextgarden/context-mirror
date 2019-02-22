@@ -157,32 +157,47 @@ apply_axis['root'] = function(list)
 end
 
 apply_axis['self'] = function(list)
---~     local collected = { }
---~     for l=1,#list do
---~         collected[l] = list[l]
---~     end
---~     return collected
+ -- local collected = { }
+ -- for l=1,#list do
+ --     collected[l] = list[l]
+ -- end
+ -- return collected
     return list
 end
 
 apply_axis['child'] = function(list)
-    local collected, c = { }, 0
+    local collected = { }
+    local c         = 0
     for l=1,#list do
         local ll = list[l]
         local dt = ll.dt
         if dt then -- weird that this is needed
-            local en = 0
-            for k=1,#dt do
-                local dk = dt[k]
+            local n = #dt
+            if n == 0 then
+                ll.en = 0
+            elseif n == 1 then
+                local dk = dt[1]
                 if dk.tg then
                     c = c + 1
                     collected[c] = dk
-                    dk.ni = k -- refresh
-                    en = en + 1
-                    dk.ei = en
+                    dk.ni = 1 -- refresh
+                    dk.ei = 1
+                    ll.en = 1
                 end
+            else
+                local en = 0
+                for k=1,#dt do
+                    local dk = dt[k]
+                    if dk.tg then
+                        c = c + 1
+                        en = en + 1
+                        collected[c] = dk
+                        dk.ni = k -- refresh
+                        dk.ei = en
+                    end
+                end
+                ll.en = en
             end
-            ll.en = en
         end
     end
     return collected
@@ -191,25 +206,43 @@ end
 local function collect(list,collected,c)
     local dt = list.dt
     if dt then
-        local en = 0
-        for k=1,#dt do
-            local dk = dt[k]
+        local n = #dt
+        if n == 0 then
+            list.en = 0
+        elseif n == 1 then
+            local dk = dt[1]
             if dk.tg then
                 c = c + 1
                 collected[c] = dk
-                dk.ni = k -- refresh
-                en = en + 1
-                dk.ei = en
+                dk.ni = 1 -- refresh
+                dk.ei = 1
                 c = collect(dk,collected,c)
+                list.en = 1
+            else
+                list.en = 0
             end
+        else
+            local en = 0
+            for k=1,n do
+                local dk = dt[k]
+                if dk.tg then
+                    c = c + 1
+                    en = en + 1
+                    collected[c] = dk
+                    dk.ni = k -- refresh
+                    dk.ei = en
+                    c = collect(dk,collected,c)
+                end
+            end
+            list.en = en
         end
-        list.en = en
     end
     return c
 end
 
 apply_axis['descendant'] = function(list)
-    local collected, c = { }, 0
+    local collected = { }
+    local c = 0
     for l=1,#list do
         c = collect(list[l],collected,c)
     end
@@ -219,24 +252,41 @@ end
 local function collect(list,collected,c)
     local dt = list.dt
     if dt then
-        local en = 0
-        for k=1,#dt do
-            local dk = dt[k]
+        local n = #dt
+        if n == 0 then
+            list.en = 0
+        elseif n == 1 then
+            local dk = dt[1]
             if dk.tg then
                 c = c + 1
                 collected[c] = dk
-                dk.ni = k -- refresh
-                en = en + 1
-                dk.ei = en
+                dk.ni = 1 -- refresh
+                dk.ei = 1
                 c = collect(dk,collected,c)
+                list.en = 1
             end
+        else
+            local en = 0
+            for k=1,#dt do
+                local dk = dt[k]
+                if dk.tg then
+                    c = c + 1
+                    en = en + 1
+                    collected[c] = dk
+                    dk.ni = k -- refresh
+                    dk.ei = en
+                    c = collect(dk,collected,c)
+                end
+            end
+            list.en = en
         end
-        list.en = en
     end
     return c
 end
+
 apply_axis['descendant-or-self'] = function(list)
-    local collected, c = { }, 0
+    local collected = { }
+    local c = 0
     for l=1,#list do
         local ll = list[l]
         if ll.special ~= true then -- catch double root
@@ -249,7 +299,8 @@ apply_axis['descendant-or-self'] = function(list)
 end
 
 apply_axis['ancestor'] = function(list)
-    local collected, c = { }, 0
+    local collected = { }
+    local c = 0
     for l=1,#list do
         local ll = list[l]
         while ll do
@@ -264,7 +315,8 @@ apply_axis['ancestor'] = function(list)
 end
 
 apply_axis['ancestor-or-self'] = function(list)
-    local collected, c = { }, 0
+    local collected = { }
+    local c = 0
     for l=1,#list do
         local ll = list[l]
         c = c + 1
@@ -281,7 +333,8 @@ apply_axis['ancestor-or-self'] = function(list)
 end
 
 apply_axis['parent'] = function(list)
-    local collected, c = { }, 0
+    local collected = { }
+    local c = 0
     for l=1,#list do
         local pl = list[l].__p__
         if pl then
@@ -301,45 +354,47 @@ apply_axis['namespace'] = function(list)
 end
 
 apply_axis['following'] = function(list) -- incomplete
---~     local collected, c = { }, 0
---~     for l=1,#list do
---~         local ll = list[l]
---~         local p = ll.__p__
---~         local d = p.dt
---~         for i=ll.ni+1,#d do
---~             local di = d[i]
---~             if type(di) == "table" then
---~                 c = c + 1
---~                 collected[c] = di
---~                 break
---~             end
---~         end
---~     end
---~     return collected
+ -- local collected, c = { }, 0
+ -- for l=1,#list do
+ --     local ll = list[l]
+ --     local p = ll.__p__
+ --     local d = p.dt
+ --     for i=ll.ni+1,#d do
+ --         local di = d[i]
+ --         if type(di) == "table" then
+ --             c = c + 1
+ --             collected[c] = di
+ --             break
+ --         end
+ --     end
+ -- end
+ -- return collected
     return { }
 end
 
 apply_axis['preceding'] = function(list) -- incomplete
---~     local collected, c = { }, 0
---~     for l=1,#list do
---~         local ll = list[l]
---~         local p = ll.__p__
---~         local d = p.dt
---~         for i=ll.ni-1,1,-1 do
---~             local di = d[i]
---~             if type(di) == "table" then
---~                 c = c + 1
---~                 collected[c] = di
---~                 break
---~             end
---~         end
---~     end
---~     return collected
+ -- local collected = { }
+ -- local c = 0
+ -- for l=1,#list do
+ --     local ll = list[l]
+ --     local p = ll.__p__
+ --     local d = p.dt
+ --     for i=ll.ni-1,1,-1 do
+ --         local di = d[i]
+ --         if type(di) == "table" then
+ --             c = c + 1
+ --             collected[c] = di
+ --             break
+ --         end
+ --     end
+ -- end
+ -- return collected
     return { }
 end
 
 apply_axis['following-sibling'] = function(list)
-    local collected, c = { }, 0
+    local collected = { }
+    local c = 0
     for l=1,#list do
         local ll = list[l]
         local p = ll.__p__
@@ -356,7 +411,8 @@ apply_axis['following-sibling'] = function(list)
 end
 
 apply_axis['preceding-sibling'] = function(list)
-    local collected, c = { }, 0
+    local collected = { }
+    local c = 0
     for l=1,#list do
         local ll = list[l]
         local p = ll.__p__
@@ -373,7 +429,8 @@ apply_axis['preceding-sibling'] = function(list)
 end
 
 apply_axis['reverse-sibling'] = function(list) -- reverse preceding
-    local collected, c = { }, 0
+    local collected = { }
+    local c = 0
     for l=1,#list do
         local ll = list[l]
         local p = ll.__p__
@@ -400,7 +457,8 @@ local function apply_nodes(list,directive,nodes)
     -- ... currently ignored
     local maxn = #nodes
     if maxn == 3 then --optimized loop
-        local nns, ntg = nodes[2], nodes[3]
+        local nns = nodes[2]
+        local ntg = nodes[3]
         if not nns and not ntg then -- wildcard
             if directive then
                 return list
@@ -408,40 +466,47 @@ local function apply_nodes(list,directive,nodes)
                 return { }
             end
         else
-            local collected, c, m, p = { }, 0, 0, nil
+            local collected = { }
+            local c = 0
+            local m = 0
+            local p = nil
             if not nns then -- only check tag
                 for l=1,#list do
-                    local ll = list[l]
+                    local ll  = list[l]
                     local ltg = ll.tg
                     if ltg then
                         if directive then
                             if ntg == ltg then
-                                local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                                local llp = ll.__p__ ; if llp ~= p then p = llp ; m = 1 else m = m + 1 end
                                 c = c + 1
-                                collected[c], ll.mi = ll, m
+                                collected[c] = ll
+                                ll.mi = m
                             end
                         elseif ntg ~= ltg then
-                            local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                            local llp = ll.__p__ ; if llp ~= p then p = llp ; m = 1 else m = m + 1 end
                             c = c + 1
-                            collected[c], ll.mi = ll, m
+                            collected[c] = ll
+                            ll.mi = m
                         end
                     end
                 end
             elseif not ntg then -- only check namespace
                 for l=1,#list do
-                    local ll = list[l]
+                    local ll  = list[l]
                     local lns = ll.rn or ll.ns
                     if lns then
                         if directive then
                             if lns == nns then
-                                local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                                local llp = ll.__p__ ; if llp ~= p then p = llp ; m = 1 else m = m + 1 end
                                 c = c + 1
-                                collected[c], ll.mi = ll, m
+                                collected[c] = ll
+                                ll.mi = m
                             end
                         elseif lns ~= nns then
-                            local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                            local llp = ll.__p__ ; if llp ~= p then p = llp ; m = 1 else m = m + 1 end
                             c = c + 1
-                            collected[c], ll.mi = ll, m
+                            collected[c] = ll
+                            ll.mi = m
                         end
                     end
                 end
@@ -454,14 +519,16 @@ local function apply_nodes(list,directive,nodes)
                         local ok = ltg == ntg and lns == nns
                         if directive then
                             if ok then
-                                local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                                local llp = ll.__p__ ; if llp ~= p then p = llp ; m = 1 else m = m + 1 end
                                 c = c + 1
-                                collected[c], ll.mi = ll, m
+                                collected[c] = ll
+                                ll.mi = m
                             end
                         elseif not ok then
-                            local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                            local llp = ll.__p__ ; if llp ~= p then p = llp ; m = 1 else m = m + 1 end
                             c = c + 1
-                            collected[c], ll.mi = ll, m
+                            collected[c] = ll
+                            ll.mi = m
                         end
                     end
                 end
@@ -469,15 +536,19 @@ local function apply_nodes(list,directive,nodes)
             return collected
         end
     else
-        local collected, c, m, p = { }, 0, 0, nil
+        local collected = { }
+        local c = 0
+        local m = 0
+        local p = nil
         for l=1,#list do
-            local ll = list[l]
+            local ll  = list[l]
             local ltg = ll.tg
             if ltg then
                 local lns = ll.rn or ll.ns
-                local ok = false
+                local ok  = false
                 for n=1,maxn,3 do
-                    local nns, ntg = nodes[n+1], nodes[n+2]
+                    local nns = nodes[n+1]
+                    local ntg = nodes[n+2]
                     ok = (not ntg or ltg == ntg) and (not nns or lns == nns)
                     if ok then
                         break
@@ -485,14 +556,16 @@ local function apply_nodes(list,directive,nodes)
                 end
                 if directive then
                     if ok then
-                        local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                        local llp = ll.__p__ ; if llp ~= p then p = llp ; m = 1 else m = m + 1 end
                         c = c + 1
-                        collected[c], ll.mi = ll, m
+                        collected[c] = ll
+                        ll.mi = m
                     end
                 elseif not ok then
-                    local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
+                    local llp = ll.__p__ ; if llp ~= p then p = llp ; m = 1 else m = m + 1 end
                     c = c + 1
-                    collected[c], ll.mi = ll, m
+                    collected[c] = ll
+                    ll.mi = m
                 end
             end
         end
@@ -503,7 +576,8 @@ end
 local quit_expression = false
 
 local function apply_expression(list,expression,order)
-    local collected, c = { }, 0
+    local collected = { }
+    local c = 0
     quit_expression = false
     for l=1,#list do
         local ll = list[l]
@@ -900,7 +974,8 @@ local function tagstostring(list)
         local t = { }
         for i=1, #list do
             local li = list[i]
-            local ns, tg = li.ns, li.tg
+            local ns = li.ns
+            local tg = li.tg
             if not ns or ns == "" then ns = "*" end
             if not tg or tg == "" then tg = "*" end
             t[i] = (tg == "@rt@" and "[root]") or format("%s:%s",ns,tg)
@@ -1365,7 +1440,8 @@ expressions.name = function(e,n) -- ns + tg
     if n == 0 then
         found = type(e) == "table" and e
     elseif n < 0 then
-        local d, k = e.__p__.dt, e.ni
+        local d = e.__p__.dt
+        local k = e.ni
         for i=k-1,1,-1 do
             local di = d[i]
             if type(di) == "table" then
@@ -1378,7 +1454,8 @@ expressions.name = function(e,n) -- ns + tg
             end
         end
     else
-        local d, k = e.__p__.dt, e.ni
+        local d = e.__p__.dt
+        local k = e.ni
         for i=k+1,#d,1 do
             local di = d[i]
             if type(di) == "table" then
@@ -1392,7 +1469,8 @@ expressions.name = function(e,n) -- ns + tg
         end
     end
     if found then
-        local ns, tg = found.rn or found.ns or "", found.tg
+        local ns = found.rn or found.ns or ""
+        local tg = found.tg
         if ns ~= "" then
             return ns .. ":" .. tg
         else
@@ -1412,7 +1490,8 @@ expressions.tag = function(e,n) -- only tg
         if n == 0 then
             found = (type(e) == "table") and e -- seems to fail
         elseif n < 0 then
-            local d, k = e.__p__.dt, e.ni
+            local d = e.__p__.dt
+            local k = e.ni
             for i=k-1,1,-1 do
                 local di = d[i]
                 if type(di) == "table" then
@@ -1425,7 +1504,8 @@ expressions.tag = function(e,n) -- only tg
                 end
             end
         else
-            local d, k = e.__p__.dt, e.ni
+            local d = e.__p__.dt
+            local k = e.ni
             for i=k+1,#d,1 do
                 local di = d[i]
                 if type(di) == "table" then
@@ -1592,8 +1672,8 @@ end
 -- local w = lpeg.patterns.whitespace
 -- local p = w^0 * lpeg.Cf(lpeg.Ct("") * lpeg.Cg(lpeg.C((1-w)^1) * lpeg.Cc(true) * w^0)^1,rawset)
 
--- function xml.functions.classes(e) -- cache
---     local class = e.at.class
+-- function xml.functions.classes(e,class) -- cache
+--     class = class and e.at[class] or e.at.class
 --     if class then
 --         return lpegmatch(p,class)
 --     else

@@ -18,7 +18,7 @@
 %D packaging and expansion we also keep tracing reasonable. For instance, multiple
 %D stacked backgrounds can slow down a run if not optimized this way.
 
-\registerctxluafile{pack-rul}{}
+\registerctxluafile{pack-rul}{optimize}
 
 \unprotect
 
@@ -141,6 +141,7 @@
 \setupframed
   [\c!width=\v!fit,
    \c!height=\v!broad,
+  %\c!minheight=\zeropoint,
   %\c!lines=,
    \c!offset=.25\exheight,  % \defaultframeoffset
    \c!empty=\v!no,
@@ -239,7 +240,6 @@
 \let\p_framed_backgroundcolor \empty
 \let\p_framed_framecolor      \empty
 \let\p_framed_component       \empty
-\let\p_framed_region          \empty
 \let\p_framed_background      \empty
 \let\p_framed_rulethickness   \empty
 \let\p_framed_foregroundcolor \empty
@@ -443,6 +443,8 @@
 \newdimen\d_overlay_offset
 \newdimen\d_overlay_linewidth
 
+\let\m_overlay_region\empty
+
 % expandable ... in a future version the space will go (in my one can use Overlay*)
 
 \def\overlaywidth        {\the\d_overlay_width    \space} % We preset the variables
@@ -450,6 +452,7 @@
 \def\overlaydepth        {\the\d_overlay_depth    \space} % values.
 \def\overlayoffset       {\the\d_overlay_offset   \space} % of the frame can be (are)
 \def\overlaylinewidth    {\the\d_overlay_linewidth\space} % set somewhere else.
+\def\overlayregion       {\m_overlay_region}
 
 % public but kind of protected
 
@@ -553,40 +556,36 @@
 
 \def\pack_framed_process_background_indeed_internal#1% % : in name
   {\bgroup
-   \setbox\b_framed_extra\hbox{%\bgroup
-     \ifzeropt\framedbackgroundoffset
-      %\csname\??overlaybuiltin\m_framed_background\endcsname
-       #1
-     \else
+   \setbox\b_framed_extra\hpack\bgroup
+     \ifzeropt\framedbackgroundoffset\else
        \kern-\framedbackgroundoffset
-      %\hbox{\csname\??overlaybuiltin\m_framed_background\endcsname}%
-       \hbox{#1}%
      \fi
-   }%\egroup
+     \hbox\bgroup#1\egroup
+   \egroup
    \wd\b_framed_extra\zeropoint
    \ht\b_framed_extra\framedbackgroundheight
    \dp\b_framed_extra\framedbackgrounddepth
    \box\b_framed_extra
    \egroup}
 
-\def\pack_framed_process_background_indeed_external#1%
+% \def\pack_framed_process_background_indeed_external#1%
+%   {\pack_framed_overlay_initialize
+%    \bgroup
+%    \setbox\b_framed_extra\hpack\bgroup
+%      \ifzeropt\framedbackgroundoffset\else
+%        \kern-\framedbackgroundoffset
+%      \fi
+%      \hbox\bgroup#1\egroup
+%    \egroup
+%    \wd\b_framed_extra\zeropoint
+%    \ht\b_framed_extra\framedbackgroundheight
+%    \dp\b_framed_extra\framedbackgrounddepth
+%    \box\b_framed_extra
+%    \egroup}
+
+\def\pack_framed_process_background_indeed_external
   {\pack_framed_overlay_initialize
-   \bgroup
-   \setbox\b_framed_extra\hbox{%\bgroup
-     \ifzeropt\framedbackgroundoffset
-      %\csname\??overlay\m_framed_background\endcsname
-       #1%
-     \else
-       \kern-\framedbackgroundoffset
-      %\hbox{\csname\??overlay\m_framed_background\endcsname}%
-       \hbox{#1}%
-     \fi
-   }%\egroup
-   \wd\b_framed_extra\zeropoint
-   \ht\b_framed_extra\framedbackgroundheight
-   \dp\b_framed_extra\framedbackgrounddepth
-   \box\b_framed_extra
-   \egroup}
+   \pack_framed_process_background_indeed_internal}
 
 \def\pack_framed_process_backgrounds#1,#2% #2 gobbles spaces (we could avoid one catch if we have nextbackground)
   {\edef\m_framed_background{#1}%
@@ -606,15 +605,23 @@
 \def\pack_framed_background_box_content% fuzzy but needed hack, this \vss, otherwise
   {\vpack to \framedbackgroundheight{\vss\box\b_framed_normal\vss}} % vertical shift \backgroundheight
 
-\def\pack_framed_add_region % experiment
-  {\ifx\p_framed_region\v!yes
-     \anch_mark_region_box\b_framed_normal
-   \else
-     \anch_mark_tagged_box\b_framed_normal\p_framed_region
+\def\pack_framed_set_region % experiment
+  {\ifx\m_overlay_region\v!yes
+     \edef\m_overlay_region{\reservedautoregiontag}%
    \fi}
 
+% \def\pack_framed_add_region % experiment
+%   {\ifx\m_overlay_region\v!yes
+%      \anch_mark_region_box\b_framed_normal
+%    \else
+%      \anch_mark_tagged_box\b_framed_normal\m_overlay_region
+%    \fi}
+
+\def\pack_framed_add_region % experiment
+  {\anch_mark_tagged_box\b_framed_normal\m_overlay_region}
+
 \def\pack_framed_add_background
-  {\setbox\b_framed_normal\hbox % was vbox % see also *1*
+  {\setbox\b_framed_normal\hpack % was vbox % see also *1*
      {%\pack_framed_forgetall % can be relaxed
       \boxmaxdepth\maxdimen
       \framedbackgroundoffset\d_framed_backgroundoffset
@@ -631,7 +638,7 @@
         \setlayoutcomponentattribute{\v!background:\p_framed_component}%
       \fi
       \let\foregroundbox\pack_framed_background_box_content
-      \hbox \layoutcomponentboxattribute to \framedbackgroundwidth\bgroup % width in case 'foreground' is used as overlay
+      \hpack \layoutcomponentboxattribute to \framedbackgroundwidth\bgroup % width in case 'foreground' is used as overlay
          \the\everybackgroundbox % moved
          \expandafter\pack_framed_process_backgrounds\p_framed_background,\s!unknown,\relax % hm, messy .. look into it
          \box\b_framed_normal
@@ -692,10 +699,10 @@
         \scratchdimen\zeropoint
       \fi
       \edef\overlaylinecolor{\framedparameter\c!framecolor}% twice, also in background
-      \setbox\b_framed_extra\hbox
+      \setbox\b_framed_extra\hpack
         {\kern-\d_framed_frameoffset
          \raise\scratchdimen
-         \hbox{\ifx\overlaylinecolor\empty\else\dousecolorparameter\overlaylinecolor\fi\pack_framed_stroked_box}}%
+         \hpack{\ifx\overlaylinecolor\empty\else\dousecolorparameter\overlaylinecolor\fi\pack_framed_stroked_box}}%
       \wd\b_framed_extra\wd\b_framed_normal
       \ht\b_framed_extra\ht\b_framed_normal
       \dp\b_framed_extra\dp\b_framed_normal
@@ -724,25 +731,44 @@
 %    \dp\scratchbox\d_framed_target_dp
 %    \box\scratchbox}
 
-\def\pack_framed_stroked_box_normal
+\def\pack_framed_stroked_box_normal_opened
   {\setbox\scratchbox\vpack \bgroup
-     \csname   \??framedtop\p_framed_frame\framedparameter\c!topframe   \endcsname
+     \csname\??framedtop\p_framed_frame\framedparameter\c!topframe\endcsname
      \nointerlineskip % new (needed for fences)
-     \hbox \bgroup
-       \csname \??framedleft\p_framed_frame\framedparameter\c!leftframe  \endcsname
+     \hpack \bgroup
+       \csname\??framedleft\p_framed_frame\framedparameter\c!leftframe\endcsname
        \novrule
          \s!width \d_framed_target_wd
          \s!height\d_framed_target_ht
          \s!depth \d_framed_target_dp
-       \csname \??framedright\p_framed_frame\framedparameter\c!rightframe \endcsname
+       \csname\??framedright\p_framed_frame\framedparameter\c!rightframe\endcsname
      \egroup
      \nointerlineskip % new (needed for fences)
-     \csname   \??framedbottom\p_framed_frame\framedparameter\c!bottomframe\endcsname
+     \csname\??framedbottom\p_framed_frame\framedparameter\c!bottomframe\endcsname
    \egroup
    \wd\scratchbox\d_framed_target_wd
    \ht\scratchbox\d_framed_target_ht
    \dp\scratchbox\d_framed_target_dp
    \box\scratchbox}
+
+\def\pack_framed_stroked_box_normal_closed
+  {\hpack\bgroup
+     \scratchdimen.5\d_framed_linewidth
+     \hskip\scratchdimen
+     \clf_framedoutline
+       \dimexpr\d_framed_target_wd-\d_framed_linewidth\relax
+       \dimexpr\d_framed_target_ht-\scratchdimen\relax
+       \dimexpr\d_framed_target_dp-\scratchdimen\relax
+       \d_framed_linewidth
+     \relax
+   \egroup}
+
+\def\pack_framed_stroked_box_normal
+  {\ifx\p_framed_frame\v!closed
+     \pack_framed_stroked_box_normal_closed
+   \else
+     \pack_framed_stroked_box_normal_opened
+   \fi}
 
 \def\pack_framed_t_rule{\hrule\s!height\d_framed_linewidth\kern-\d_framed_linewidth}
 \def\pack_framed_b_rule{\kern-\d_framed_linewidth\hrule\s!height\d_framed_linewidth}
@@ -836,7 +862,7 @@
 %D for passing this identifier between brackets lays in the mere fact that this way
 %D we can use the optional argument grabbers.
 
-\def\defaultframeoffset{.25ex}
+\def\defaultframeoffset{.25\exheight}
 
 \installcorenamespace{regularframedlevel}
 
@@ -999,9 +1025,11 @@
    \edef\currentframed{#1}%
    \pack_framed_initialize
    \setbox\b_framed_normal\hbox{#4}%
-   \edef\p_framed_region{\framedparameter\c!region}%
-   \ifx\p_framed_region\v!yes % maybe later named
-     \pack_framed_add_region
+   \iftrialtypesetting \else
+     \edef\m_overlay_region{\framedparameter\c!region}%
+     \ifx\m_overlay_region\empty\else
+       \pack_framed_set_region
+     \fi
    \fi
    \setupcurrentframed[#3]%
    \edef\p_framed_rulethickness{\framedparameter\c!rulethickness}% also used in backgrounds
@@ -1028,6 +1056,11 @@
      \pack_framed_add_background
    \fi
    \pack_framed_restore_depth
+   \iftrialtypesetting \else
+     \ifx\m_overlay_region\empty\else
+       \pack_framed_add_region
+     \fi
+   \fi
    \box\b_framed_normal
    \egroup}
 
@@ -1036,9 +1069,9 @@
 
 \unexpanded\def\pack_framed_process_box_indeed#1#2% component box (assumes parameters set and grouped usage)
   {\setbox\b_framed_normal\box#2% could actually be \let\b_framed_normal#2
-   \edef\p_framed_region{\framedparameter\c!region}%
-   \ifx\p_framed_region\empty\else
-     \pack_framed_add_region
+   \edef\m_overlay_region{\framedparameter\c!region}%
+   \ifx\m_overlay_region\empty\else
+     \pack_framed_set_region
    \fi
    \edef\p_framed_rulethickness{\framedparameter\c!rulethickness}% also used in backgrounds
    \d_framed_frameoffset\framedparameter\c!frameoffset\relax     % also used in backgrounds
@@ -1060,6 +1093,9 @@
        \fi
      \edef\p_framed_component{#1}%
      \pack_framed_add_background
+   \fi
+   \ifx\m_overlay_region\empty\else
+     \pack_framed_add_region
    \fi
    \box\b_framed_normal
    \egroup}
@@ -1602,6 +1638,13 @@
    \fi
    \ifconditional\c_framed_has_height
      \ht\b_framed_normal\d_framed_height
+   \else
+     \edef\p_framed_minheight{\framedparameter\c!minheight}%
+     \ifx\p_framed_minheight\empty \else
+       \ifdim\ht\b_framed_normal<\p_framed_minheight
+         \ht\b_framed_normal\p_framed_minheight
+       \fi
+     \fi
    \fi
    \edef\p_framed_empty{\framedparameter\c!empty}%
    \ifx\p_framed_empty\v!yes
@@ -1609,9 +1652,9 @@
    \fi
    \pack_framed_stop_orientation % moved here at 2014-05-25
    \iftrialtypesetting \else
-     \edef\p_framed_region{\framedparameter\c!region}%
-     \ifx\p_framed_region\empty\else
-       \pack_framed_add_region
+     \edef\m_overlay_region{\framedparameter\c!region}%
+     \ifx\m_overlay_region\empty\else
+       \pack_framed_set_region
      \fi
    \fi
    \d_framed_applied_offset
@@ -1649,6 +1692,11 @@
      \fi
    \fi
    \pack_framed_locator_after\p_framed_location
+   \iftrialtypesetting \else
+     \ifx\m_overlay_region\empty\else
+       \pack_framed_add_region
+     \fi
+   \fi
    \box\b_framed_normal
    \global\frameddimensionstate % global so to be used directly afterwards !
      \ifconditional\c_framed_has_width
@@ -2203,7 +2251,7 @@
    \ignorespaces}
 
 \def\dododoformatonelinerbox
-  {\hbox to \hsize % maybe \hpack
+  {\hpack to \hsize % was \hbox
      {\ifcase\raggedstatus\or\hss\or\hss       \fi
       \unhbox\nextbox \removeunwantedspaces
       \ifcase\raggedstatus\or    \or\hss\or\hss\fi}%
@@ -2324,7 +2372,7 @@
        \doformatonelinerbox}
 
 \def\pack_framed_format_format_vsize
-  {\vbox to \d_framed_height
+  {\vbox to \d_framed_height % no vpack .. maybe grid
      \bgroup
        \let\postprocessframebox\relax
      % \pack_framed_forgetall
@@ -2551,9 +2599,9 @@
    \par
    \kern-\d_framed_linewidth
    \dontleavehmode
-     \hpack to \zeropoint{\normalhss\vrule\s!height\d_framed_linewidth\s!depth\zeropoint\s!width\scratchwidth}%
+     \hpack to \zeropoint{\hss\vrule\s!height\d_framed_linewidth\s!depth\zeropoint\s!width\scratchwidth}%
      \hfill
-     \hpack to \zeropoint{\vrule\s!height\d_framed_linewidth\s!depth\zeropoint\s!width\scratchwidth\normalhss}%
+     \hpack to \zeropoint{\vrule\s!height\d_framed_linewidth\s!depth\zeropoint\s!width\scratchwidth\hss}%
    \par
    \nointerlineskip
    \kern\scratchoffset
@@ -2792,7 +2840,7 @@
    \csname\??framedtextlocation\framedtextparameter\c!location\endcsname
    \resetframedtextparameter\c!location
    \pack_framed_text_check
-   \setbox\b_framed_normal\vbox
+   \setbox\b_framed_normal\vbox % \vpack
      \startboxedcontent
        \hsize\localhsize
     %  \insidefloattrue % ? better
@@ -3069,7 +3117,7 @@
    \fi}
 
 \def\pack_framed_start_content_indeed
-  {\setbox\b_framed_normal\hbox\bgroup % maybe \hpack
+  {\setbox\b_framed_normal\hpack\bgroup
      \setlocalhsize
      \hsize\localhsize
      \scratchleftoffset  \framedcontentparameter\c!leftoffset  \relax
@@ -3079,16 +3127,16 @@
      \advance\hsize\dimexpr-\scratchleftoffset-\scratchrightoffset \relax
      \advance\vsize\dimexpr-\scratchtopoffset -\scratchbottomoffset\relax
      \kern\scratchleftoffset
-     \vbox\bgroup
+     \vpack\bgroup
        \vskip\scratchtopoffset
-         \vbox\bgroup
-           \forgetall
-           \blank[\v!disable]}
+       \vbox\bgroup
+         \forgetall
+         \blank[\v!disable]}
 
 \def\pack_framed_stop_content_indeed
-          {\removelastskip
-        \egroup
-        \vskip\scratchbottomoffset
+         {\removelastskip
+       \egroup
+       \vskip\scratchbottomoffset
      \egroup
      \kern\scratchrightoffset
    \egroup
@@ -3131,5 +3179,17 @@
 %D \stoptyping
 
 \let\themaxboxwidth\clf_themaxboxwidth
+
+%D New: slow but ok for most cases:
+
+\unexpanded\def\doifelseframed#1%
+  {\ifcase\numexpr\zerocount
+     \immediateassignment\edef\tempstring{#1\c!frame      }\ifx\tempstring\v!on      +\plusone\fi
+     \immediateassignment\edef\tempstring{#1\c!topframe   }\ifx\tempstring\v!on      +\plusone\fi
+     \immediateassignment\edef\tempstring{#1\c!bottomframe}\ifx\tempstring\v!on      +\plusone\fi
+     \immediateassignment\edef\tempstring{#1\c!leftframe  }\ifx\tempstring\v!on      +\plusone\fi
+     \immediateassignment\edef\tempstring{#1\c!rightframe }\ifx\tempstring\v!on      +\plusone\fi
+     \immediateassignment\edef\tempstring{#1\c!background }\ifx\tempstring\empty\else+\plusone\fi
+   \relax\expandafter\secondoftwoarguments\else\expandafter\firstoftwoarguments\fi}
 
 \protect \endinput

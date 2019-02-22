@@ -12,20 +12,22 @@ if not modules then modules = { } end modules ['font-ctx'] = {
 -- Todo: make a proper 'next id' mechanism (register etc) or wait till 'true'
 -- in virtual fonts indices is implemented.
 
-local context, commands = context, commands
+local tostring, next, type, rawget, tonumber = tostring, next, type, rawget, tonumber
 
 local format, gmatch, match, find, lower, upper, gsub, byte, topattern = string.format, string.gmatch, string.match, string.find, string.lower, string.upper, string.gsub, string.byte, string.topattern
 local concat, serialize, sort, fastcopy, mergedtable = table.concat, table.serialize, table.sort, table.fastcopy, table.merged
 local sortedhash, sortedkeys, sequenced = table.sortedhash, table.sortedkeys, table.sequenced
-local settings_to_hash, hash_to_string, settings_to_array = utilities.parsers.settings_to_hash, utilities.parsers.hash_to_string, utilities.parsers.settings_to_array
+local parsers = utilities.parsers
+local settings_to_hash, hash_to_string, settings_to_array = parsers.settings_to_hash, parsers.hash_to_string, parsers.settings_to_array
 local formatcolumns = utilities.formatters.formatcolumns
 local mergehashes = utilities.parsers.mergehashes
 local formatters = string.formatters
 local basename = file.basename
 
-local tostring, next, type, rawget, tonumber = tostring, next, type, rawget, tonumber
 local utfchar, utfbyte = utf.char, utf.byte
 local round = math.round
+
+local context, commands = context, commands
 
 local P, S, C, Cc, Cf, Cg, Ct, lpegmatch = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Cf, lpeg.Cg, lpeg.Ct, lpeg.match
 
@@ -66,6 +68,8 @@ local hashes              = fonts.hashes
 local currentfont         = font.current
 local definefont          = font.define
 
+local getprivateslot      = helpers.getprivateslot
+
 local cleanname           = names.cleanname
 
 local encodings           = fonts.encodings
@@ -75,11 +79,12 @@ local aglunicodes         = nil -- delayed loading
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
 
+local nextchar            = nuts.traversers.char
+
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
 local getprop             = nuts.getprop
 local setprop             = nuts.setprop
-local getfont             = nuts.getfont
 local setsubtype          = nuts.setsubtype
 
 local texgetattribute     = tex.getattribute
@@ -158,17 +163,8 @@ helpers.name = getfontname
 
 local addformatter = utilities.strings.formatters.add
 
-if LUAVERSION < 5.2  then
-
-    addformatter(formatters,"font:name",    [["'"..fontname(%s).."'"]],          "local fontname  = fonts.helpers.name")
-    addformatter(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]],"local sequenced = table.sequenced")
-
-else
-
-    addformatter(formatters,"font:name",    [["'"..fontname(%s).."'"]],          { fontname  = helpers.name })
-    addformatter(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]],{ sequenced = table.sequenced })
-
-end
+addformatter(formatters,"font:name",    [["'"..fontname(%s).."'"]],          { fontname  = helpers.name })
+addformatter(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]],{ sequenced = table.sequenced })
 
 -- ... like font-sfm or so
 
@@ -472,36 +468,40 @@ registerotffeature {
 --     },
 -- }
 
-local beforecopyingcharacters = sequencers.new {
-    name      = "beforecopyingcharacters",
-    arguments = "target,original",
-}
+do
 
-appendgroup(beforecopyingcharacters,"before") -- user
-appendgroup(beforecopyingcharacters,"system") -- private
-appendgroup(beforecopyingcharacters,"after" ) -- user
+    local beforecopyingcharacters = sequencers.new {
+        name      = "beforecopyingcharacters",
+        arguments = "target,original",
+    }
 
-function constructors.beforecopyingcharacters(original,target)
-    local runner = beforecopyingcharacters.runner
-    if runner then
-        runner(original,target)
+    appendgroup(beforecopyingcharacters,"before") -- user
+    appendgroup(beforecopyingcharacters,"system") -- private
+    appendgroup(beforecopyingcharacters,"after" ) -- user
+
+    function constructors.beforecopyingcharacters(original,target)
+        local runner = beforecopyingcharacters.runner
+        if runner then
+            runner(original,target)
+        end
     end
-end
 
-local aftercopyingcharacters = sequencers.new {
-    name      = "aftercopyingcharacters",
-    arguments = "target,original",
-}
+    local aftercopyingcharacters = sequencers.new {
+        name      = "aftercopyingcharacters",
+        arguments = "target,original",
+    }
 
-appendgroup(aftercopyingcharacters,"before") -- user
-appendgroup(aftercopyingcharacters,"system") -- private
-appendgroup(aftercopyingcharacters,"after" ) -- user
+    appendgroup(aftercopyingcharacters,"before") -- user
+    appendgroup(aftercopyingcharacters,"system") -- private
+    appendgroup(aftercopyingcharacters,"after" ) -- user
 
-function constructors.aftercopyingcharacters(original,target)
-    local runner = aftercopyingcharacters.runner
-    if runner then
-        runner(original,target)
+    function constructors.aftercopyingcharacters(original,target)
+        local runner = aftercopyingcharacters.runner
+        if runner then
+            runner(original,target)
+        end
     end
+
 end
 
 --[[ldx--
@@ -566,6 +566,12 @@ local function definecontext(name,t) -- can be shared
     return number, t
 end
 
+-- {a,b,c} as table (so we don' need to parse again when it gets applied)
+-- we will update this ... when we have foo={a,b,c} then we can keep the table
+
+-- \definefontfeature[demo][a={b,c}]
+-- \definefontfeature[demo][a={b=12,c={34,35}}]
+
 local function presetcontext(name,parent,features) -- will go to con and shared
     if features == "" and find(parent,"=",1,true) then
         features = parent
@@ -575,6 +581,16 @@ local function presetcontext(name,parent,features) -- will go to con and shared
         features = { }
     elseif type(features) == "string" then
         features = normalize_features(settings_to_hash(features))
+     -- if type(value) == "string" and find(value,"[=:]") then
+     --     local t = settings_to_hash_colon_too(value) -- clashes with foo=file:bar
+        for key, value in next, features do
+            if type(value) == "string" and find(value,"[=]") then
+                local t = settings_to_hash(value)
+                if next(t) then
+                    features[key] = sequenced(normalize_features(t,true),",")
+                end
+            end
+        end
     else
         features = normalize_features(features)
     end
@@ -584,8 +600,8 @@ local function presetcontext(name,parent,features) -- will go to con and shared
             local s = setups[p]
             if s then
                 for k, v in next, s do
--- no, as then we cannot overload: e.g. math,mathextra
--- reverted, so we only take from parent when not set
+                    -- no, as then we cannot overload: e.g. math,mathextra
+                    -- reverted, so we only take from parent when not set
                     if features[k] == nil then
                         features[k] = v
                     end
@@ -777,7 +793,8 @@ end
 local function registercontext(fontnumber,extraname,option)
     local extra = setups[extraname]
     if extra then
-        local mergedfeatures, mergedname = { }, nil
+        local mergedfeatures = { }
+        local mergedname     = nil
         if option < 0 then
             mergedname = fontnumber .. "-" .. extraname
         else
@@ -997,25 +1014,33 @@ definers.registersplit(":",colonized,"direct")
 
 -- define (two steps)
 
------ space        = P(" ")
------ spaces       = space^0
-local leftparent   = (P"(")
-local rightparent  = (P")")
-local value        = C((leftparent * (1-rightparent)^0 * rightparent + (1-space))^1)
-local dimension    = C((space/"" + P(1))^1)
-local rest         = C(P(1)^0)
-local scale_none   =                     Cc(0)
-local scale_at     = (P("at") +P("@")) * Cc(1) * spaces * dimension -- dimension
-local scale_sa     = P("sa")           * Cc(2) * spaces * dimension -- number
-local scale_mo     = P("mo")           * Cc(3) * spaces * dimension -- number
-local scale_scaled = P("scaled")       * Cc(4) * spaces * dimension -- number
-local scale_ht     = P("ht")           * Cc(5) * spaces * dimension -- dimension
-local scale_cp     = P("cp")           * Cc(6) * spaces * dimension -- dimension
+local sizepattern, splitpattern, specialscale  do
 
-local specialscale = { [5] = "ht", [6] = "cp" }
+    ----- space          = P(" ")
+    ----- spaces         = space^0
+    local leftparent     = (P"(")
+    local rightparent    = (P")")
+    local leftbrace      = (P"{")
+    local rightbrace     = (P"}")
+    local withinparents  = leftparent * (1-rightparent)^0 * rightparent
+    local withinbraces   = leftbrace  * (1-rightbrace )^0 * rightbrace
+    local value          = C((withinparents + withinbraces + (1-space))^1)
+    local dimension      = C((space/"" + P(1))^1)
+    local rest           = C(P(1)^0)
+    local scale_none     =                     Cc(0)
+    local scale_at       = (P("at") +P("@")) * Cc(1) * spaces * dimension -- dimension
+    local scale_sa       = P("sa")           * Cc(2) * spaces * dimension -- number
+    local scale_mo       = P("mo")           * Cc(3) * spaces * dimension -- number
+    local scale_scaled   = P("scaled")       * Cc(4) * spaces * dimension -- number
+    local scale_ht       = P("ht")           * Cc(5) * spaces * dimension -- dimension
+    local scale_cp       = P("cp")           * Cc(6) * spaces * dimension -- dimension
 
-local sizepattern  = spaces * (scale_at + scale_sa + scale_mo + scale_ht + scale_cp + scale_scaled + scale_none)
-local splitpattern = spaces * value * spaces * rest
+    specialscale = { [5] = "ht", [6] = "cp" }
+
+    sizepattern  = spaces * (scale_at + scale_sa + scale_mo + scale_ht + scale_cp + scale_scaled + scale_none)
+    splitpattern = spaces * value * spaces * rest
+
+end
 
 function helpers.splitfontpattern(str)
     local name, size = lpegmatch(splitpattern,str)
@@ -1299,7 +1324,6 @@ do  -- else too many locals
     local busy = false
 
     scanners.definefont_two = function()
-
         local global          = scanboolean() -- \ifx\fontclass\empty\s!false\else\s!true\fi
         local cs              = scanstring () -- {#csname}%
         local str             = scanstring () -- \somefontfile
@@ -1411,6 +1435,7 @@ do  -- else too many locals
                 specification.fallbacks = fontfallbacks
             end
         end
+        --
         local tfmdata = definers.read(specification,size) -- id not yet known (size in spec?)
         --
         local lastfontid = 0
@@ -1426,15 +1451,15 @@ do  -- else too many locals
          -- characters[0x2007] = { width = characters[0x0030] and characters[0x0030].width or parameters.space } -- figure
          -- characters[0x2008] = { width = characters[0x002E] and characters[0x002E].width or parameters.space } -- period
             --
-            local fallbacks = specification.fallbacks
+            local fallbacks = specification.fallbacks or ""
             local mathsize  = (mathsize == 1 or mathsize == 2 or mathsize == 3) and mathsize or nil -- can be unset so we test 1 2 3
-            if fallbacks and fallbacks ~= "" and mathsize and not busy then
+            if fallbacks ~= "" and mathsize and not busy then
                 busy = true
                 -- We need this ugly hack in order to resolve fontnames (at the \TEX end). Originally
                 -- math was done in Lua after loading (plugged into aftercopying).
                 --
                 -- After tl 2017 I'll also do text fallbacks this way (although backups there are done
-                -- in a completely different way.
+                -- in a completely different way.)
                 if trace_defining then
                     report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a, step %a",
                         name,id,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks,1)
@@ -1825,7 +1850,7 @@ function mappings.loadfile(name)
         if trace_mapfiles then
             report_mapfiles("loading map file %a",name)
         end
-        pdf.mapfile(name)
+        lpdf.setmapfile(name)
         loaded[name] = true
     end
 end
@@ -1843,16 +1868,14 @@ function mappings.loadline(how,line)
         if trace_mapfiles then
             report_mapfiles("processing map line %a",line)
         end
-        pdf.mapline(how)
+        lpdf.setmapline(how)
         loaded[how] = true
     end
 end
 
 function mappings.reset()
-    pdf.mapfile("")
+    lpdf.setmapfile("") -- tricky ... backend related
 end
-
-mappings.reset() -- resets the default file
 
 implement {
     name      = "loadmapfile",
@@ -1876,19 +1899,36 @@ implement {
 
 -- => commands
 
-local function nametoslot(name)
+local pattern = P("P")
+              * (lpeg.patterns.hexdigit^4 / function(s) return tonumber(s,16) end)
+              * P(-1)
+
+local function nametoslot(name) -- also supports PXXXXX (4+ positions)
     local t = type(name)
     if t == "string" then
-        local slot = unicodes[true][name]
+        local unic = unicodes[true]
+        local slot = unic[name]
         if slot then
             return slot
         end
+        --
+        local slot = unic[gsub(name,"_"," ")] or unic[gsub(name,"_","-")] or
+                     unic[gsub(name,"-"," ")] or unic[gsub(name,"-","_")] or
+                     unic[gsub(name," ","_")] or unic[gsub(name," ","-")]
+        if slot then
+            return slot
+        end
+        --
         if not aglunicodes then
             aglunicodes = encodings.agl.unicodes
         end
         local char = characters[true]
         local slot = aglunicodes[name]
-        if char[slot] then
+        if slot and char[slot] then
+            return slot
+        end
+        local slot = lpegmatch(pattern,name)
+        if slot and char[slot] then
             return slot
         end
         -- not in font
@@ -1901,14 +1941,13 @@ local function nametoslot(name)
     end
 end
 
-
 local found = { }
 
 local function descriptiontoslot(name)
     local t = type(name)
     if t == "string" then
         -- slow
-        local list = sortedkeys(chardata)
+        local list = sortedkeys(chardata) -- can be a cache with weak tables
         local slot = found[name]
         local char = characters[true]
         if slot then
@@ -1971,13 +2010,17 @@ local function descriptiontoslot(name)
     end
 end
 
-local function indextoslot(index)
-    local r = resources[true]
+local function indextoslot(font,index)
+    if not index then
+        index = font
+        font  = true
+    end
+    local r = resources[font]
     if r then
         local indices = r.indices
         if not indices then
             indices = { }
-            local c = characters[true]
+            local c = characters[font]
             for unicode, data in next, c do
                 local di = data.index
                 if di then
@@ -2397,9 +2440,12 @@ do
         return f and (f.gpos[n] or f.gsub[n])
     end
 
+    local ctx_doifelse = commands.doifelse
+    local ctx_doif     = commands.doif
+
     implement {
         name      = "doifelsecurrentfonthasfeature",
-        actions   = { constructors.currentfonthasfeature, commands.doifelse },
+        actions   = { constructors.currentfonthasfeature, ctx_doifelse },
         arguments = "string"
     }
 
@@ -2443,8 +2489,21 @@ do
     implement {
         name      = "definefontfeature",
         arguments = "3 strings",
-        actions   = presetcontext
+        actions   = presetcontext,
     }
+
+    implement {
+        name      = "doifelsefontfeature",
+        arguments = "string",
+        actions   = function(name) ctx_doifelse(contextnumber(name) > 1) end,
+    }
+
+    implement {
+        name      = "doifunknownfontfeature",
+        arguments = "string",
+        actions   = function(name) ctx_doif(contextnumber(name) == 0) end,
+    }
+
 
     implement {
         name      = "adaptfontfeature",
@@ -2602,8 +2661,6 @@ do
 
     local unsetvalue      = attributes.unsetvalue
 
-    local traverse_char   = nuts.traverse_char
-
     local a_color         = attributes.private('color')
     local a_colormodel    = attributes.private('colormodel')
     local a_state         = attributes.private('state')
@@ -2627,11 +2684,14 @@ do
         [states.pstf] = "font:5",
     }
 
+    -- todo: traversers
+    -- todo: check attr_list so that we can use the same .. helper: setcolorattr
+
     local function markstates(head)
         if head then
             head = tonut(head)
             local model = getattr(head,a_colormodel) or 1
-            for glyph in traverse_char(head) do
+            for glyph in nextchar, head do
                 local a = getprop(glyph,a_state)
                 if a then
                     local name = colornames[a]
@@ -2682,8 +2742,8 @@ do
 
 
     function methods.nocolor(head,font,attr)
-        for n in traverse_char(head) do
-            if not font or getfont(n) == font then
+        for n, c, f in nextchar, head do
+            if not font or f == font then
                 setattr(n,a_color,unsetvalue)
             end
         end
@@ -2708,9 +2768,13 @@ implement {
     arguments = "string",
 }
 
-local list = storage.shared.bodyfontsizes or { }
+local sharedstorage = storage.shared
 
-storage.shared.bodyfontsizes = list
+local list    = sharedstorage.bodyfontsizes        or { }
+local unknown = sharedstorage.unknownbodyfontsizes or { }
+
+sharedstorage.bodyfontsizes        = list
+sharedstorage.unknownbodyfontsizes = unknown
 
 implement {
     name      = "registerbodyfontsize",
@@ -2718,6 +2782,17 @@ implement {
     actions   = function(size)
         list[size] = true
     end
+}
+
+interfaces.implement {
+    name      = "registerunknownbodysize",
+    arguments = "string",
+    actions   = function(size)
+        if not unknown[size] then
+            interfaces.showmessage("fonts",14,size)
+        end
+        unknown[size] = true
+    end,
 }
 
 implement {
@@ -2873,6 +2948,12 @@ end
 
 -- for the font manual
 
+statistics.register("body font sizes", function()
+    if next(unknown) then
+        return formatters["defined: % t, undefined: % t"](sortedkeys(list),sortedkeys(unknown))
+    end
+end)
+
 statistics.register("used fonts",function()
     if trace_usage then
         local filename = file.nameonly(environment.jobname) .. "-fonts-usage.lua"
@@ -3018,79 +3099,285 @@ end
 
 -- for the moment here (and not in font-con.lua):
 
-local identical     = table.identical
-local copy          = table.copy
-local fontdata      = fonts.hashes.identifiers
-local addcharacters = font.addcharacters
+do
 
--- This helper is mostly meant to add last-resort (virtual) characters
--- or runtime generated fonts (so we forget about features and such). It
--- will probably take a while before it get used.
+    local identical     = table.identical
+    local copy          = table.copy
+    local fontdata      = fonts.hashes.identifiers
+    local addcharacters = font.addcharacters
 
-local trace_adding  = false
-local report_adding = logs.reporter("fonts","add characters")
+    -- This helper is mostly meant to add last-resort (virtual) characters
+    -- or runtime generated fonts (so we forget about features and such). It
+    -- will probably take a while before it get used.
 
-trackers.register("fonts.addcharacters",function(v) trace_adding = v end)
+    local trace_adding  = false
+    local report_adding = logs.reporter("fonts","add characters")
 
-if addcharacters then
+    trackers.register("fonts.addcharacters",function(v) trace_adding = v end)
 
-    function fonts.constructors.addcharacters(id,list)
-        local newchar = list.characters
-        if newchar then
-            local data    = fontdata[id]
-            local newfont = list.fonts
-            local oldchar = data.characters
-            local oldfont = data.fonts
-            addcharacters(id, {
-                characters = newchar,
-                fonts      = newfont,
-                nomath     = not data.properties.hasmath,
-            })
-            -- this is just for tracing, as the assignment only uses the fonts list
-            -- and doesn't store it otherwise
-            if newfont then
-                if oldfont then
-                    local oldn = #oldfont
-                    local newn = #newfont
-                    for n=1,newn do
-                        local ok = false
-                        local nf = newfont[n]
-                        for o=1,oldn do
-                            if identical(nf,oldfont[o]) then
-                                ok = true
-                                break
+    if addcharacters then
+
+        function fonts.constructors.addcharacters(id,list)
+            local newchar = list.characters
+            if newchar then
+                local data    = fontdata[id]
+                local newfont = list.fonts
+                local oldchar = data.characters
+                local oldfont = data.fonts
+                addcharacters(id, {
+                    characters = newchar,
+                    fonts      = newfont,
+                    nomath     = not data.properties.hasmath,
+                })
+                -- this is just for tracing, as the assignment only uses the fonts list
+                -- and doesn't store it otherwise
+                if newfont then
+                    if oldfont then
+                        local oldn = #oldfont
+                        local newn = #newfont
+                        for n=1,newn do
+                            local ok = false
+                            local nf = newfont[n]
+                            for o=1,oldn do
+                                if identical(nf,oldfont[o]) then
+                                    ok = true
+                                    break
+                                end
+                            end
+                            if not ok then
+                                oldn = oldn + 1
+                                oldfont[oldn] = newfont[i]
                             end
                         end
-                        if not ok then
-                            oldn = oldn + 1
-                            oldfont[oldn] = newfont[i]
-                        end
+                    else
+                        data.fonts = newfont
                     end
-                else
-                    data.fonts = newfont
+                end
+                -- this is because we need to know what goes on and also might
+                -- want to access character data
+                for u, c in next, newchar do
+                    if trace_adding then
+                        report_adding("adding character %U to font %!font:name!",u,id)
+                    end
+                    oldchar[u] = c
                 end
             end
-            -- this is because we need to know what goes on and also might
-            -- want to access character data
-            for u, c in next, newchar do
-                if trace_adding then
-                    report_adding("adding character %U to font %!font:name!",u,id)
-                end
-                oldchar[u] = c
+        end
+
+    else
+        function fonts.constructors.addcharacters(id,list)
+            report_adding("adding characters to %!font:name! is not yet supported",id)
+        end
+    end
+
+    implement {
+        name      = "addfontpath",
+        arguments = "string",
+        actions   = function(list)
+            names.addruntimepath(settings_to_array(list))
+        end
+    }
+
+end
+
+-- moved here
+
+do
+
+    local family_font    = node.family_font
+    local new_glyph      = nodes.pool.glyph
+    local fontproperties = fonts.hashes.properties
+
+    local function getprivateslot(id,name)
+        if not name then
+            name = id
+            id   = currentfont()
+        end
+        local properties = fontproperties[id]
+        local privates   = properties and properties.privates
+        return privates and privates[name]
+    end
+
+    local function getprivatenode(tfmdata,name)
+        if type(tfmdata) == "number" then
+            tfmdata = fontdata[tfmdata]
+        end
+        local properties = tfmdata.properties
+        local font = properties.id
+        local slot = getprivateslot(font,name)
+        if slot then
+            -- todo: set current attribibutes
+            local char   = tfmdata.characters[slot]
+            local tonode = char.tonode
+            if tonode then
+                return tonode(font,char)
+            else
+                return new_glyph(font,slot)
             end
         end
     end
 
-else
-    function fonts.constructors.addcharacters(id,list)
-        report_adding("adding characters to %!font:name! is not yet supported",id)
+    local function getprivatecharornode(tfmdata,name)
+        if type(tfmdata) == "number" then
+            tfmdata = fontdata[tfmdata]
+        end
+        local properties = tfmdata.properties
+        local font = properties.id
+        local slot = getprivateslot(font,name)
+        if slot then
+            -- todo: set current attributes
+            local char   = tfmdata.characters[slot]
+            local tonode = char.tonode
+            if tonode then
+                return "node", tonode(tfmdata,char)
+            else
+                return "char", slot
+            end
+        end
     end
+
+    helpers.getprivateslot       = getprivateslot
+    helpers.getprivatenode       = getprivatenode
+    helpers.getprivatecharornode = getprivatecharornode
+
+    implement {
+        name      = "getprivatechar",
+        arguments = "string",
+        actions   = function(name)
+            local p = getprivateslot(name)
+            if p then
+                context(utfchar(p))
+            end
+        end
+    }
+
+    implement {
+        name      = "getprivatemathchar",
+        arguments = "string",
+        actions   = function(name)
+            local p = getprivateslot(family_font(0),name)
+            if p then
+                context(utfchar(p))
+            end
+        end
+    }
+
+    implement {
+        name      = "getprivateslot",
+        arguments = "string",
+        actions   = function(name)
+            local p = getprivateslot(name)
+            if p then
+                context(p)
+            end
+        end
+    }
+
 end
 
-implement {
-    name      = "addfontpath",
-    arguments = "string",
-    actions   = function(list)
-        names.addruntimepath(settings_to_array(list))
+-- handy, for now here:
+
+function fonts.helpers.collectanchors(tfmdata)
+
+    local resources = tfmdata.resources -- todo: use shared
+
+    if not resources or resources.anchors then
+        return resources.anchors
     end
-}
+
+    local anchors = { }
+
+    local function set(unicode,target,class,anchor)
+        local a = anchors[unicode]
+        if not a then
+            anchors[unicode] = { [target] = { anchor } }
+            return
+        end
+        local t = a[target]
+        if not t then
+            a[target] = { anchor }
+            return
+        end
+        local x = anchor[1]
+        local y = anchor[2]
+        for k, v in next, t do
+            if v[1] == x and v[2] == y then
+                return
+            end
+        end
+        t[#t+1] = anchor
+    end
+
+    local function getanchors(steps,target)
+        for i=1,#steps do
+            local step     = steps[i]
+            local coverage = step.coverage
+            for unicode, data in next, coverage do
+                local class  = data[1]
+                local anchor = data[2]
+                if anchor[1] ~= 0 or anchor[2] ~= 0 then
+                    set(unicode,target,class,anchor)
+                end
+            end
+        end
+    end
+
+    local function getcursives(steps)
+        for i=1,#steps do
+            local step     = steps[i]
+            local coverage = step.coverage
+            for unicode, data in next, coverage do
+                local class  = data[1]
+                local en = data[2]
+                local ex = data[3]
+                if en then
+                    set(unicode,"entry",class,en)
+                end
+                if ex then
+                    set(unicode,"exit", class,ex)
+                end
+            end
+        end
+    end
+
+    local function collect(list)
+        if list then
+            for i=1,#list do
+                local entry = list[i]
+                local steps = entry.steps
+                local kind  = entry.type
+                if kind == "gpos_mark2mark" then
+                    getanchors(steps,"mark")
+                elseif kind == "gpos_mark2base" then
+                    getanchors(steps,"base")
+                elseif kind == "gpos_mark2ligature" then
+                    getanchors(steps,"ligature")
+                elseif kind == "gpos_cursive" then
+                    getcursives(steps)
+                end
+            end
+        end
+    end
+
+    collect(resources.sequences)
+    collect(resources.sublookups)
+
+    local function sorter(a,b)
+        if a[1] == b[1] then
+            return a[2] < b[2]
+        else
+            return a[1] < b[1]
+        end
+    end
+
+    for unicode, old in next, anchors do
+        for target, list in next, old do
+            sort(list,sorter)
+        end
+    end
+
+    resources.anchors = anchors
+
+    return anchors
+
+end

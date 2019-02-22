@@ -88,6 +88,7 @@ function luautilities.loadedluacode(fullname,forcestrip,name,macros)
         code()
     else
         report_lua("loading of file %a failed:\n\t%s",fullname,message or "no message")
+        code, message = loadfile(fullname)
     end
     if forcestrip and luautilities.stripcode then
         if type(forcestrip) == "function" then
@@ -114,7 +115,7 @@ function luautilities.strippedloadstring(code,name,forcestrip) -- not executed
     end
     if forcestrip and luautilities.stripcode or luautilities.alwaysstripcode then
         register(name)
-        return load(dump(code,true)), 0 -- not yet executes
+        return load(dump(code,true)), 0 -- not yet executed
     else
         return code, 0
     end
@@ -198,12 +199,12 @@ function luautilities.checkmemory(previous,threshold,trace) -- threshold in MB
             collectgarbage("collect")
             local afterwards = collectgarbage("count")
             if trace or tracememory then
-                report_mem("previous %i MB, current %i MB, delta %i MB, threshold %i MB, afterwards %i MB",
+                report_mem("previous %r MB, current %r MB, delta %r MB, threshold %r MB, afterwards %r MB",
                     previous/1024,current/1024,delta/1024,threshold,afterwards)
             end
             return afterwards
         elseif trace or tracememory then
-            report_mem("previous %i MB, current %i MB, delta %i MB, threshold %i MB",
+            report_mem("previous %r MB, current %r MB, delta %r MB, threshold %r MB",
                 previous/1024,current/1024,delta/1024,threshold)
         end
     end

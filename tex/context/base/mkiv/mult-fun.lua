@@ -3,7 +3,7 @@ return {
         --
         "nocolormodel", "greycolormodel", "graycolormodel", "rgbcolormodel", "cmykcolormodel",
         "shadefactor",
-        "textextoffset",
+        "textextoffset", "textextanchor",
         "normaltransparent", "multiplytransparent", "screentransparent", "overlaytransparent",
         "softlighttransparent", "hardlighttransparent", "colordodgetransparent", "colorburntransparent",
         "darkentransparent", "lightentransparent", "differencetransparent", "exclusiontransparent",
@@ -53,17 +53,19 @@ return {
         "shadedinto", "withshadecolors",
         "withshadedomain", "withshademethod", "withshadefactor", "withshadevector",
         "withshadecenter", "withshadedirection", "withshaderadius", "withshadetransform",
-        "withshadestep", "withshadefraction",
+        "withshadestep", "withshadefraction", "withshadeorigin", "shownshadevector", "shownshadeorigin",
         "cmyk", "spotcolor", "multitonecolor", "namedcolor",
         "drawfill", "undrawfill",
         "inverted", "uncolored", "softened", "grayed", "greyed",
         "onlayer",
         "along",
-        "graphictext", "loadfigure", "externalfigure", "figure", "register", "outlinetext", -- "lua",
+        "graphictext", "loadfigure", "externalfigure", "figure", "register",
+        "outlinetext", "filloutlinetext", "drawoutlinetext", "outlinetexttopath",
         "checkedbounds", "checkbounds", "strut", "rule",
         "withmask", "bitmapimage",
         "colordecimals", "ddecimal", "dddecimal", "ddddecimal", "colordecimalslist",
         "textext", "thetextext", "rawtextext", "textextoffset", "texbox", "thetexbox", "rawtexbox", "istextext",
+        "notcached",
         "verbatim",
         "thelabel", "label",
         "autoalign",
@@ -144,5 +146,31 @@ return {
         "sortlist", "copylist", "shapedlist", "listtocurves", "listtolines", "listsize", "listlast", "uniquelist",
         --
         "circularpath", "squarepath", "linearpath",
+        --
+        "theoffset",
+        --
+        "texmode", "systemmode",
+        "texvar", "texstr",
+        "isarray", "prefix", "dimension",
+        "getmacro", "getdimen", "getcount", "gettoks",
+        "setmacro", "setdimen", "setcount", "settoks",
+        --
+        "positionpath", "positioncurve", "positionxy", "positionpxy",
+        "positionwhd", "positionpage", "positionregion", "positionbox",
+        "positionanchor", "positioninregion", "positionatanchor",
+        --
+        "wdpart", "htpart", "dppart",
+        --
+        "texvar", "texstr",
+        --
+        "inpath", "pointof", "leftof", "rightof",
+        --
+        "newhash", "disposehash", "inhash", "tohash",
+        --
+        "isarray", "prefix", "isobject",
+        --
+        "comment", "report", "lua", "mp", "MP", "luacall",
+        --
+        "mirrored", "mirroredabout",
     },
 }

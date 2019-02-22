@@ -41,6 +41,9 @@
 \newdimen       \d_page_sides_progress
 \newdimen       \d_page_sides_page_total
 
+\newdimen       \d_page_sides_leftoffset
+\newdimen       \d_page_sides_rightoffset
+
 %newbox         \b_page_sides_bottom
 
 \newcount       \c_page_sides_lines_done
@@ -48,6 +51,7 @@
 \newcount       \c_page_sides_n_of_lines
 \newcount       \c_page_sides_n_of_hang
 \newconstant    \c_page_sides_float_type
+\newcount       \c_page_sides_hangafter
 
 \newconditional \c_page_sides_short
 \newconditional \c_page_sides_flag
@@ -76,6 +80,9 @@
 \newconstant    \c_page_sides_method % sort of obsolete
 
 \newdimen       \d_page_sides_progression
+
+\newcount       \c_page_sides_m_of_lines
+\newconditional \c_page_sides_delayed
 
 \newif          \iftracesidefloats % public (might change)
 
@@ -216,6 +223,8 @@
        +\compensatedinnermakeupmargin
      \relax
    \fi
+   \global\d_page_sides_leftoffset \d_page_sides_rightskip
+   \global\d_page_sides_rightoffset\d_page_sides_leftskip
    \ifdim\d_page_sides_rightskip>\zeropoint
      \global\advance\d_page_sides_rightskip\rightskip
    \fi
@@ -394,7 +403,8 @@
      \endgroup
    \else
      \forcestrutdepth
-   \fi}
+   \fi
+   \page_otr_command_set_vsize} % new
 
 \def\page_sides_flush_floats
   {\par
@@ -541,30 +551,43 @@
 \def\page_sides_inject_dummy_lines
   {\par
    \nointerlineskip
+ % \ifnum\lastpenalty>\zerocount
+ %   \penalty\plustenthousand
+ % \fi
    \dontleavehmode
    \iftracesidefloats
      \page_sides_inject_dummy_line_traced
    \else
      \page_sides_inject_dummy_line_normal
    \fi
-   \vskip-\dimexpr\lineheight+\strutdp\relax
+   \par
+   % on an empty page we have topskip, say 12pt
+   \ignoreparskip
+   % this can be 18.5pt
+   \kern-\dimexpr\lineheight+\strutdp\relax
+   % so we can actually have a -2.5pt skip on top
    \ignoreparskip
    \blank[\v!samepage]
-   \blank[\v!disable]}
+   \blank[\v!disable]
+   % now say we are negative now
+   \ifdim\pagetotal<\zeropoint
+      % then we're at the top of the page ... quite messy .. i really need to
+      % make the page builder a bit more flexible .. should we do something now?
+   \fi}
 
 %D Checkers:
 
 \def\page_sides_check_floats_after_par
   {\page_sides_check_floats_indeed
    \ifdim\d_page_sides_pagetotal=\pagetotal \else
-     \global\let\page_sides_check_floats\page_sides_check_floats_indeed
+     \glet\page_sides_check_floats\page_sides_check_floats_indeed
      \page_sides_flush_floats
      \global\c_page_sides_n_of_lines\zerocount % here !
    \fi}
 
 \unexpanded\def\page_sides_flush_floats_after_par
   {\global\d_page_sides_pagetotal\pagetotal
-   \global\let\page_sides_check_floats\page_sides_check_floats_after_par}
+   \glet\page_sides_check_floats\page_sides_check_floats_after_par}
 
 \unexpanded\def\page_sides_forget_floats
   {\global\d_page_sides_vsize\d_page_sides_vsize_reset
@@ -651,18 +674,49 @@
    \fi
    \endgroup}
 
+% \def\page_sides_analyse_progress
+%   {\d_page_sides_progress\d_page_sides_vsize
+%    \ifconditional\c_page_sides_flag
+%      \advance\d_page_sides_progress-\d_page_sides_page_total
+%      \global\setfalse\c_page_sides_flag
+%    \else
+%      \advance\d_page_sides_progress-\pagetotal
+%    \fi}
+
+% test case
+%
+% \usemodule[art-01]
+% \starttext
+%     \dorecurse{40}{\line{#1}}
+%     \placefigure[left]{}{}
+%     \input ward
+%     \startitemize
+%         \item word \item word \item word \item word
+%     \stopitemize
+%     \input ward
+%     \page
+% \stoptext
+
 \def\page_sides_analyse_progress
-  {\d_page_sides_progress\d_page_sides_vsize
+  {%\page_otr_command_set_vsize % this is new, otherwise topfloats are not taken into account
+   \d_page_sides_progress\d_page_sides_vsize
    \ifconditional\c_page_sides_flag
      \advance\d_page_sides_progress-\d_page_sides_page_total
      \global\setfalse\c_page_sides_flag
    \else
+     \ifdim\dimexpr\d_page_sides_progress+\d_page_sides_bottomtotal\relax>\pagegoal
+       % we adapt pagegoal because we can already have placed something with
+       % everypar and we hope that it triggers a flush, see test above
+       \pagegoal\dimexpr\pagegoal-\d_page_sides_bottomtotal\relax
+     \fi
      \advance\d_page_sides_progress-\pagetotal
    \fi}
 
 \def\page_sides_analyse_space
   {\global\settrue\c_page_sides_flag
-   \page_sides_force_depth
+% \ifdim\pagegoal=\maxdimen
+%     \pagegoal\textheight % maybe
+% \fi
    \global\d_page_sides_page_total \pagetotal % global
    \ifnum\c_page_sides_float_type<\plusfour
      \global\d_page_sides_width \zeropoint
@@ -716,8 +770,18 @@
 %D As we have no clear end of one or more paragraphs we only have pre float
 %D skips.
 
-\def\page_sides_handle_float#1% grid (4) is rather experimental
-  {\page_sides_check_horizontal_skips
+\newconstant\c_page_sides_page_method % will be: \c_page_sides_page_method\plusone
+
+\def\page_otr_force_new_page_one
+  {\vskip\d_page_sides_height
+   \penalty\outputpenalty
+   \vskip-\dimexpr\d_page_sides_height-\strutdp\relax
+   \prevdepth\strutdp}
+  %\ignoreparskip}
+
+\def\page_sides_handle_float#1%
+  {\page_sides_initialize_checker
+   \page_sides_check_horizontal_skips
    \page_sides_check_vertical_skips
    \page_sides_apply_horizontal_shift
    \page_sides_check_previous_float
@@ -726,13 +790,26 @@
    \page_sides_relocate_float{#1}%
    \page_sides_apply_vertical_shift
    \page_sides_analyse_space
-   \ifconditional\c_page_floats_room \else
-     \page_otr_fill_and_eject_page
+   \ifconditional\c_page_floats_room
+     \global\setfalse\c_page_sides_delayed
+     % we're ok
+   \else
+     \global\settrue\c_page_sides_delayed
+     \global\c_page_sides_m_of_lines\c_page_sides_n_of_lines
+     \ifcase\c_page_sides_page_method
+       \page_otr_fill_and_eject_page
+     \or
+       \page_otr_force_new_page_one
+     \else
+       \page_otr_fill_and_eject_page
+     \fi
+     \global\c_page_sides_n_of_lines\c_page_sides_m_of_lines
      \page_sides_analyse_space
     %\page_sides_inject_before
      \page_sides_inject_dummy_lines
    \fi
    \page_sides_place_float
+   \global\setfalse\c_page_sides_delayed
    \page_sides_check_floats_reset
    \page_sides_wrapup}
 
@@ -740,8 +817,7 @@
   {% we need to do this aftergroup
    \aftergroup\par
    \aftergroup\ignoreparskip
-   \aftergroup\ignorespaces
-   }
+   \aftergroup\ignorespaces}
 
 \def\page_sides_check_floats_indeed
   {\page_sides_analyse_progress
@@ -752,7 +828,16 @@
    \fi
    \parskip\s_spac_whitespace_parskip} % not needed
 
-\let\page_sides_check_floats\page_sides_check_floats_indeed
+% \let\page_sides_check_floats\page_sides_check_floats_indeed
+
+\let\page_sides_check_floats\relax
+
+\def\page_sides_initialize_checker
+  {\ifx\page_sides_check_floats\relax
+     \glet\page_sides_check_floats\page_sides_check_floats_indeed
+     \clf_enablesidefloatchecker
+     \glet\page_sides_initialize_checker\relax
+   \fi}
 
 \unexpanded\def\page_sides_check_floats_tracer
   {\begingroup
@@ -771,8 +856,30 @@
    \fi
    \endgroup}
 
+% tricky test:
+
+% \starttext
+%     \dorecurse{33}{\line{#1}}
+%     \placefigure[left]{}{}
+%     \input ward
+%     \startitemize
+%         \item word \item word \item word \item word
+%     \stopitemize
+%     \input ward
+%     \page
+%     \placefigure[left]{}{}
+%     \dontleavehmode \begingroup \input ward \par \endgroup
+%     \dontleavehmode \begingroup \input ward \par \endgroup
+%     \dontleavehmode \begingroup \input ward \par \endgroup
+%     \input ward
+% \stoptext
+
 \unexpanded\def\page_sides_check_floats_set
   {\edef\p_sidethreshold{\floatparameter\c!sidethreshold}%
+   \ifconditional\c_page_sides_delayed
+     % For Alan's hanging right float that moved to the next page.
+     \d_page_sides_progress\zeropoint
+   \fi
    \ifx\p_sidethreshold\v!old
      \d_page_sides_progression\dimexpr\d_page_sides_progress+\strutht-\roundingeps\relax
      \c_page_sides_n_of_hang\d_page_sides_progression
@@ -785,8 +892,14 @@
          \dimexpr\d_page_sides_progress-\p_sidethreshold\relax
        \fi
      \getnoflines\d_page_sides_progression
+     % this can be an option
+     \ifdim\dimexpr\noflines\lineheight>\dimexpr\pagegoal-\pagetotal\relax
+       \getrawnoflines\d_page_sides_progression
+     \fi
+     %
      \c_page_sides_n_of_hang\noflines
    \fi
+   \global\c_page_sides_hangafter\zerocount
    \ifnum\c_page_sides_n_of_hang>\zerocount
      \ifcase\c_page_sides_n_of_lines
      \else
@@ -822,6 +935,7 @@
      \else
        \hangindent \ifnum\c_page_sides_float_type>\plusfour -\fi\d_page_sides_width
        \hangafter-\c_page_sides_n_of_hang
+       \global\c_page_sides_hangafter\hangafter
      \fi
    \fi
    \global\advance\c_page_sides_checks_done \plusone
@@ -830,7 +944,16 @@
    \fi}
 
 \unexpanded\def\page_sides_check_floats_reset
-  {\global\c_page_sides_checks_done\zerocount}
+  {\ifcase\c_page_sides_checks_done\else
+     \ifcase\c_page_sides_hangafter\else
+       % we need to deal with par's ending in a group which would restore
+       % hang parameters
+       \global\c_page_sides_hangafter\zerocount
+       \hangindent\zeropoint
+     \fi
+   % \global % no, otherwise a next hangindent won't work
+     \c_page_sides_checks_done\zerocount
+   \fi}
 
 \unexpanded\def\page_sides_synchronize_floats
   {\ifinner \else

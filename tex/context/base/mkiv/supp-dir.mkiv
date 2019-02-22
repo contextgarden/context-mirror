@@ -11,40 +11,44 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D We no longer have the \ETEX\ direction primitives.
-
 \unprotect
 
-% \expanded{\defineactivecharacter \number"2000E} {\textdir TRT\relax}
-% \expanded{\defineactivecharacter \number"2000F} {\textdir TLT\relax}
+\chardef\directionlefttoright\zerocount
+\chardef\directionrighttoleft\plusone
 
-%D As we have less directions now we can use something
+\edef\??bdir{\ifdefined\bodydir bdir\else direction\fi}
 
-% \chardef\@@D@@TLT0
-% \chardef\@@D@@TRT1
-% \chardef\@@D@@RTT0
-% \chardef\@@D@@LRL1
-%
-% \def\thetextdir{\csname @@D@@\the\textdir\endcsname}
-%
-% \ifnum\thetextdir=0 L\else R\fi \textdir TRT \ifnum\thetextdir=0 L\else R\fi
+\unexpanded\edef\naturalhbox  {\hbox  \??bdir\directionlefttoright}
+\unexpanded\edef\naturalvbox  {\vbox  \??bdir\directionlefttoright}
+\unexpanded\edef\naturalvtop  {\vtop  \??bdir\directionlefttoright}
+\unexpanded\edef\naturalhpack {\hpack \??bdir\directionlefttoright}
+\unexpanded\edef\naturalvpack {\vpack \??bdir\directionlefttoright}
+\unexpanded\edef\naturaltpack {\tpack \??bdir\directionlefttoright}
+
+\unexpanded\edef\reversehbox  {\hbox  \??bdir\directionrighttoleft}
+\unexpanded\edef\reversevbox  {\vbox  \??bdir\directionrighttoleft}
+\unexpanded\edef\reversevtop  {\vtop  \??bdir\directionrighttoleft}
+\unexpanded\edef\reversehpack {\hpack \??bdir\directionrighttoleft}
+\unexpanded\edef\reversevpack {\vpack \??bdir\directionrighttoleft}
+\unexpanded\edef\reversetpack {\tpack \??bdir\directionrighttoleft}
+
+\ifdefined\bodydir
+    \let\bodydir      \undefined \let\normalbodydir      \undefined
+    \let\bodydirection\undefined \let\normalbodydirection\undefined
+\fi
+
+\ifdefined\pagedir
+    \let\pagedir      \undefined \let\normalpagedir      \undefined
+    \let\pagedirection\undefined \let\normalpagedirection\undefined
+\fi
+
+% \expanded{\defineactivecharacter \number"2000E} {\textdirection\directionrighttoleft\relax}
+% \expanded{\defineactivecharacter \number"2000F} {\textdirection\directionlefttoright\relax}
+
+\def\syst_direction_string#1{\ifcase#1=\plusone r2l\else l2r\fi}
 
 \unexpanded\def\showdirsinmargin
-  {\inleft{\normalexpanded{\noexpand\hbox dir TLT{\ttxx[\the\pardir,\the\textdir]}}}}
-
-\bgroup
-    \catcode`L=\othercatcode \gdef\istltdir#1#2#3{\if#2L0\else1\fi}
-    \catcode`R=\othercatcode \gdef\istrtdir#1#2#3{\if#2R0\else1\fi}
-\egroup
-
-\def\istlttextdir{\expandafter\istltdir\the\textdir}
-\def\istrttextdir{\expandafter\istrtdir\the\textdir}
-
-\def\istltpardir {\expandafter\istltdir\the\pardir }
-\def\istrtpardir {\expandafter\istrtdir\the\pardir }
-
-% \ifcase\istlttextdir          Y\else N\fi
-% \ifcase\istltpardir           Y\else N\fi
-% \ifcase\istltdir    TRT\relax Y\else N\fi
+  {\normalexpanded{\inleft{\naturalhbox
+     {\ttxx[\syst_direction_string\pardirection,\syst_direction_string\textdirection]}}}}
 
 \protect \endinput

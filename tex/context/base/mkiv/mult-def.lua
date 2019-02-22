@@ -7503,6 +7503,10 @@ return {
    ["pe"]="تاریخ",
    ["ro"]="data",
   },
+  ["time"]={
+   ["en"]="time",
+   ["nl"]="tijd",
+  },
   ["deepnumbercommand"]={
    ["cs"]="deepnumbercommand",
    ["de"]="deepnumbercommand",
@@ -8278,7 +8282,7 @@ return {
    ["ro"]="inaltime",
   },
   ["hfactor"]={
-   ["cs"]="vfaktor",
+   ["cs"]="hfaktor",
    ["de"]="hfaktor",
    ["en"]="hfactor",
    ["fr"]="facteurhauteur",
@@ -8286,6 +8290,14 @@ return {
    ["nl"]="hfactor",
    ["pe"]="عامل‌ارتفاع",
    ["ro"]="hfactor",
+  },
+  ["vfactor"]={
+   ["cs"]="vfaktor",
+   ["de"]="vfaktor",
+   ["en"]="vfactor",
+   ["it"]="vfactor",
+   ["nl"]="vfactor",
+   ["ro"]="vfactor",
   },
   ["hfil"]={
    ["cs"]="hfil",
@@ -11544,6 +11556,12 @@ return {
    ["pe"]="گام‌وای",
    ["ro"]="ystep",
   },
+  ["ownerpassword"]={
+    ["en"]="ownerpassword",
+  },
+  ["userpassword"]={
+    ["en"]="userpassword",
+  },
  },
  ["elements"]={
   ["answerlines"]={
@@ -13019,6 +13037,10 @@ return {
   },
   ["cite"]={
    ["en"]="cite",
+  },
+  ["closed"]={
+   ["en"]="closed",
+   ["nl"]="gesloten",
   },
   ["color"]={
    ["cs"]="barevne",
@@ -15538,7 +15560,7 @@ return {
    ["ro"]="postscript",
   },
   ["precedingpage"]={
-   ["en"]="followingpage",
+   ["en"]="precedingpage",
    ["nl"]="voorafgaandepagina",
   },
   ["preference"]={
@@ -17053,6 +17075,9 @@ return {
   ["unframed"]={
    ["en"]="unframed",
   },
+  ["unicode"]={
+   ["en"]="unicode",
+  },
   ["unit"]={
    ["cs"]="jednotka",
    ["de"]="einheit",
@@ -17815,8 +17840,8 @@ return {
   ["cd:brackets-l"]                = { en = "[...,...]", lua = "{..., ...}" },
   ["cd:parenthesis-s"]             = { en = "(...)" },
   ["cd:parenthesis-l"]             = { en = "(...,...)" },
-  ["cd:index-s"]                   = { en = "[...]" },
-  ["cd:index-l"]                   = { en = "[..+...+..]" },
+  ["cd:index-s"]                   = { en = "{...}" },
+  ["cd:index-l"]                   = { en = "{..+...+..}" },
   ["cd:math-s"]                    = { en = "$...$" },
   ["cd:math-l"]                    = { en = "$...$" },
   ["cd:inlinemath-s"]              = { en = "$...$" },

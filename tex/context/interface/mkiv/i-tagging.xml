@@ -25,7 +25,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="element" type="environment" category="xml" file="strc-tag.mkiv">
+    <cd:command name="element" type="environment" level="document" category="xml" file="strc-tag.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="assignment-userdata-list-optional"/>
@@ -69,6 +69,12 @@
     <cd:command name="settaggedmetadata" level="document" category="xml" file="strc-tag.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-userdata-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="ignoretagsinexport" level="style" category="xml" file="strc-tag.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
 

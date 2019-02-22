@@ -30,7 +30,6 @@ local context            = context
 local implement          = interfaces.implement
 
 local nuts               = nodes.nuts
-local tonut              = nuts.tonut
 local tonode             = nuts.tonode
 
 local getnext            = nuts.getnext
@@ -38,7 +37,6 @@ local getprev            = nuts.getprev
 local getboth            = nuts.getboth
 local setboth            = nuts.setboth
 local getid              = nuts.getid
-local getsubtype         = nuts.getsubtype
 local getwidth           = nuts.getwidth
 local getlist            = nuts.getlist
 local setlist            = nuts.setlist
@@ -58,14 +56,16 @@ local glue_code          = nodecodes.glue
 
 local spaceskip_code     = nodes.gluecodes.spaceskip
 
-local traverse_id        = nuts.traverse_id
+local nextglyph          = nuts.traversers.glyph
+local nextdisc           = nuts.traversers.disc
+
 local flush_node_list    = nuts.flush_list
 local flush_node         = nuts.flush_node
 local copy_node_list     = nuts.copy_list
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local remove_node        = nuts.remove
-local list_dimensions    = nuts.dimensions
+local getdimensions      = nuts.dimensions
 local hpack_node_list    = nuts.hpack
 
 local nodepool           = nuts.pool
@@ -136,7 +136,7 @@ actions[v_line] = function(head,setting)
     local linebreaks = { }
 
     local function set(head)
-        for g in traverse_id(glyph_code,head) do
+        for g in nextglyph, head do
             if dynamic > 0 then
                 setattr(g,0,dynamic)
             end
@@ -146,7 +146,7 @@ actions[v_line] = function(head,setting)
 
     set(temp)
 
-    for g in traverse_id(disc_code,temp) do
+    for g in nextdisc, temp do
         local pre, post, replace = getdisc(g)
         if pre then
             set(pre)
@@ -173,17 +173,13 @@ actions[v_line] = function(head,setting)
 
         local function list_dimensions(list,start)
             local temp = copy_node_list(list,start)
-            temp = tonode(temp)
             temp = nodes.handlers.characters(temp)
             temp = nodes.injections.handler(temp)
          -- temp = typesetters.fontkerns.handler(temp) -- maybe when enabled
-         -- nodes.handlers.protectglyphs(temp)         -- not needed as we discard
+         --        nodes.handlers.protectglyphs(temp)  -- not needed as we discard
          -- temp = typesetters.spacings.handler(temp)  -- maybe when enabled
          -- temp = typesetters.kerns.handler(temp)     -- maybe when enabled
-            temp = tonut(temp)
-            temp = hpack_node_list(temp)
-            local width = getwidth(temp)
-            flush_node_list(temp)
+            local width = getdimensions(temp)
             return width
         end
 
@@ -206,7 +202,7 @@ actions[v_line] = function(head,setting)
         while start do
             local id = getid(start)
             if id == glyph_code then
-                n = n + 1
+                -- go on
             elseif id == disc_code then
                 -- this could be an option
                 n = n + 1
@@ -218,7 +214,8 @@ actions[v_line] = function(head,setting)
                 end
             elseif id == kern_code then -- todo: fontkern
                 -- this could be an option
-            elseif n > 0 then
+            elseif id == glue_code then
+                n = n + 1
                 if try() then
                     break
                 end
@@ -255,7 +252,6 @@ actions[v_line] = function(head,setting)
             local id = getid(start)
             local ok = false
             if id == glyph_code then
-                n = n + 1
                 update(start)
             elseif id == disc_code then
                 n = n + 1
@@ -264,7 +260,7 @@ actions[v_line] = function(head,setting)
                 if linebreak == n then
                     local p, n = getboth(start)
                     if pre then
-                        for current in traverse_id(glyph_code,pre) do
+                        for current in nextglyph, pre do
                             update(current)
                         end
                         setlink(pretail,n)
@@ -284,7 +280,7 @@ actions[v_line] = function(head,setting)
                 else
                     local p, n = getboth(start)
                     if replace then
-                        for current in traverse_id(glyph_code,replace) do
+                        for current in nextglyph, replace do
                             update(current)
                         end
                         setlink(replacetail,n)
@@ -299,22 +295,30 @@ actions[v_line] = function(head,setting)
                 setdisc(disc,pre,post,replace)
                 flush_node(disc)
             elseif id == glue_code then
-                head = insert_node_before(head,start,newpenalty(10000)) -- nobreak
-            end
-            if linebreak == n then
-                if trace_firstlines then
-                    head, start = insert_node_after(head,start,newpenalty(10000)) -- nobreak
-                    head, start = insert_node_after(head,start,newkern(-65536))
-                    head, start = insert_node_after(head,start,tracerrule(65536,4*65536,2*65536,"darkblue"))
+                n = n + 1
+                if linebreak ~= n then
+                    head = insert_node_before(head,start,newpenalty(10000)) -- nobreak
                 end
-                head, start = insert_node_after(head,start,newpenalty(-10000)) -- break
+            end
+            local next = getnext(start)
+            if linebreak == n then
+                if start ~= head then
+                    local where = id == glue_code and getprev(start) or start
+                    if trace_firstlines then
+                        head, where = insert_node_after(head,where,newpenalty(10000)) -- nobreak
+                        head, where = insert_node_after(head,where,newkern(-65536))
+                        head, where = insert_node_after(head,where,tracerrule(65536,4*65536,2*65536,"darkblue"))
+                    end
+                    head, where = insert_node_after(head,where,newpenalty(-10000)) -- break
+                end
+                start = next
                 break
             end
-            start = getnext(start)
+            start = next
         end
     end
 
-    return head, true
+    return head
 end
 
 actions[v_word] = function(head,setting)
@@ -359,13 +363,12 @@ actions[v_word] = function(head,setting)
         end
         start = getnext(start)
     end
-    return head, true
+    return head
 end
 
 actions[v_default] = actions[v_line]
 
 function firstlines.handler(head)
-    head = tonut(head)
     local start = head
     local attr  = nil
     while start do
@@ -388,11 +391,10 @@ function firstlines.handler(head)
             if trace_firstlines then
                 report_firstlines("processing firstlines, alternative %a",alternative)
             end
-            local head, done = action(head,settings)
-            return tonode(head), done
+            return action(head,settings)
         end
     end
-    return tonode(head), false
+    return head
 end
 
 -- goodie
@@ -401,7 +403,7 @@ local function applytofirstcharacter(box,what)
     local tbox = getbox(box) -- assumes hlist
     local list = getlist(tbox)
     local done = nil
-    for n in traverse_id(glyph_code,list) do
+    for n in nextglyph, list do
         list = remove_node(list,n)
         done = n
         break

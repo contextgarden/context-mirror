@@ -56,13 +56,10 @@ graphics.backgrounds    = backgrounds
 -- -- --
 
 local texsetattribute   = tex.setattribute
-local pdfgetpos         = pdf.getpos  -- why not a generic name !
 
 local a_textbackground  = attributes.private("textbackground")
 
 local nuts              = nodes.nuts
-local tonut             = nodes.tonut
-local tonode            = nodes.tonode
 
 local new_latelua       = nuts.pool.latelua
 local new_rule          = nuts.pool.rule
@@ -82,11 +79,12 @@ local localpar_code     = nodecodes.localpar
 local insert_before     = nuts.insert_before
 local insert_after      = nuts.insert_after
 
-local processranges     = nodes.processranges
+local processranges     = nuts.processranges
 
 local unsetvalue        = attributes.unsetvalue
 
 local jobpositions      = job.positions
+local getpos            = jobpositions.getpos
 
 local data              = { }
 local realpage          = 1
@@ -96,10 +94,17 @@ local enabled           = false
 -- Freeing the data is somewhat tricky as we can have backgrounds spanning
 -- many pages but for an arbitrary background shape that is not so common.
 
-local function check(a,index,depth,d,where,ht,dp)
+local function check(specification)
+    local a     = specification.attribute
+    local index = specification.index
+    local depth = specification.depth
+    local d     = specification.data
+    local where = specification.where
+    local ht    = specification.ht
+    local dp    = specification.dp
     -- this is not yet r2l ready
     local w = d.shapes[realpage]
-    local x, y = pdfgetpos()
+    local x, y = getpos()
     if trace_ranges then
         report_shapes("attribute %i, index %i, depth %i, location %s, position (%p,%p)",
             a,index,depth,where,x,y)
@@ -109,7 +114,7 @@ local function check(a,index,depth,d,where,ht,dp)
         n = n + 1
         d.index = index
         d.depth = depth
---                 w[n] = { x, x, y, ht, dp }
+     -- w[n] = { x, x, y, ht, dp }
         w[n] = { y, ht, dp, x, x }
     else
         local wn = w[n]
@@ -150,13 +155,13 @@ local function flush(head,f,l,a,parent,depth)
         local ix = index
         local ht = getheight(parent)
         local dp = getdepth(parent)
-        local ln = new_latelua(function() check(a,ix,depth,d,"l",ht,dp) end)
-        local rn = new_latelua(function() check(a,ix,depth,d,"r",ht,dp) end)
+        local ln = new_latelua { action = check, attribute = a, index = ix, depth = depth, data = d, where = "l", ht = ht, dp = dp }
+        local rn = new_latelua { action = check, attribute = a, index = ix, depth = depth, data = d, where = "r", ht = ht, dp = dp }
         if trace_ranges then
             ln = new_hlist(setlink(new_rule(65536,65536*4,0),new_kern(-65536),ln))
             rn = new_hlist(setlink(new_rule(65536,0,65536*4),new_kern(-65536),rn))
         end
-        if getid(f) == localpar_code then -- we need to clean this mess
+        if getid(f) == localpar_code and getsubtype(f) == 0 then -- we need to clean this mess
             insert_after(head,f,ln)
         else
             head, f = insert_before(head,f,ln)
@@ -213,10 +218,8 @@ end
 
 nodes.handlers.textbackgrounds = function(head,where,parent) -- we have hlistdir and local dir
     -- todo enable action in register
-    head = tonut(head)
     index = index + 1
-    local head, done = processranges(a_textbackground,flush,head,parent)
-    return tonode(head), done
+    return processranges(a_textbackground,flush,head,parent)
 end
 
 interfaces.implement {
@@ -228,6 +231,8 @@ interfaces.implement {
 -- optimized already but we can assume a cycle i.e. prune the last point and then
 -- even less code .. we could merge some loops but his is more robust
 
+-- use idiv here
+
 local function topairs(t,n)
     local r = { }
     for i=1,n do
@@ -237,7 +242,7 @@ local function topairs(t,n)
     return concat(r," ")
 end
 
-local eps = 65536 / 4 -- 2
+local eps = 65536 / 4
 local pps =   eps
 local nps = - pps
 
@@ -509,7 +514,8 @@ local function shape(kind,b,p,realpage,xmin,xmax,ymin,ymax,fh,ld)
         -- use height of b and depth of e, maybe check for weird border
         -- cases here
         if fh then
-            local lsf, rsf = ls[1], rs[1]
+            local lsf = ls[1]
+            local rsf = rs[1]
             if lsf[2] < fh then
                 lsf[2] = fh
             end
@@ -518,7 +524,8 @@ local function shape(kind,b,p,realpage,xmin,xmax,ymin,ymax,fh,ld)
             end
         end
         if fd then
-            local lsl, rsl = ls[n], rs[n]
+            local lsl = ls[n]
+            local rsl = rs[n]
             if lsl[2] > fd then
                 lsl[2] = fd
             end
@@ -535,12 +542,18 @@ local function shape(kind,b,p,realpage,xmin,xmax,ymin,ymax,fh,ld)
 end
 
 local function singlepart(b,e,p,realpage,r,left,right)
-    local bx, by = b.x, b.y
-    local ex, ey = e.x, e.y
-    local rx, ry = r.x, r.y
-    local bh, bd = by + b.h, by - b.d
-    local eh, ed = ey + e.h, ey - e.d
-    local rh, rd = ry + r.h, ry - r.d
+    local bx = b.x
+    local by = b.y
+    local ex = e.x
+    local ey = e.y
+    local rx = r.x
+    local ry = r.y
+    local bh = by + b.h
+    local bd = by - b.d
+    local eh = ey + e.h
+    local ed = ey - e.d
+    local rh = ry + r.h
+    local rd = ry - r.d
     local rw = rx + r.w
     if left then
         rx = rx + left
@@ -593,10 +606,14 @@ local function singlepart(b,e,p,realpage,r,left,right)
 end
 
 local function firstpart(b,e,p,realpage,r,left,right)
-    local bx, by = b.x, b.y
-    local rx, ry = r.x, r.y
-    local bh, bd = by + b.h, by - b.d
-    local rh, rd = ry + r.h, ry - r.d
+    local bx = b.x
+    local by = b.y
+    local rx = r.x
+    local ry = r.y
+    local bh = by + b.h
+    local bd = by - b.d
+    local rh = ry + r.h
+    local rd = ry - r.d
     local rw = rx + r.w
     if left then
         rx = rx + left
@@ -630,8 +647,10 @@ local function firstpart(b,e,p,realpage,r,left,right)
 end
 
 local function middlepart(b,e,p,realpage,r,left,right)
-    local rx, ry = r.x, r.y
-    local rh, rd = ry + r.h, ry - r.d
+    local rx = r.x
+    local ry = r.y
+    local rh = ry + r.h
+    local rd = ry - r.d
     local rw = rx + r.w
     if left then
         rx = rx + left
@@ -654,10 +673,14 @@ local function middlepart(b,e,p,realpage,r,left,right)
 end
 
 local function lastpart(b,e,p,realpage,r,left,right)
-    local ex, ey = e.x, e.y
-    local rx, ry = r.x, r.y
-    local eh, ed = ey + e.h, ey - e.d
-    local rh, rd = ry + r.h, ry - r.d
+    local ex = e.x
+    local ey = e.y
+    local rx = r.x
+    local ry = r.y
+    local eh = ey + e.h
+    local ed = ey - e.d
+    local rh = ry + r.h
+    local rd = ry - r.d
     local rw = rx + r.w
     if left then
         rx = rx + left
@@ -740,7 +763,7 @@ local function calculatemultipar(tag)
     local bp = b.p -- page
     if trace_shapes then
         report_shapes("tag %a, left %p, right %p, par %s, page %s, column %s",
-            left,right,bn or "-",bp or "-",bc or "-")
+            tag,left,right,bn or "-",bp or "-",bc or "-")
     end
     --
     if bindex == eindex then
@@ -844,8 +867,10 @@ local function freemultipar(pagedata,frees) -- ,k
             local areas  = { }
             data.areas   = areas
 
-            local f_1, n_1 = { }, 0
-            local f_2, n_2 = { }, 0
+            local f_1 = { }
+            local n_1 = 0
+            local f_2 = { }
+            local n_2 = 0
             for i=1,#frees do
                 local f = frees[i]
                 local k = f.k
@@ -908,14 +933,18 @@ local function freemultipar(pagedata,frees) -- ,k
             -- we can collect the coordinates first
 
             local function check_two(area,frees)
-                local ul = area[1]
-                local ur = area[2]
-                local lr = area[3]
-                local ll = area[4]
-                local ulx, uly = ul[1], ul[2]
-                local urx, ury = ur[1], ur[2]
-                local lrx, lry = lr[1], lr[2]
-                local llx, lly = ll[1], ll[2]
+                local ul  = area[1]
+                local ur  = area[2]
+                local lr  = area[3]
+                local ll  = area[4]
+                local ulx = ul[1]
+                local uly = ul[2]
+                local urx = ur[1]
+                local ury = ur[2]
+                local lrx = lr[1]
+                local lry = lr[2]
+                local llx = ll[1]
+                local lly = ll[2]
 
                 local temp = { }
                 local n    = 0
@@ -1108,12 +1137,16 @@ local function fetchmultipar(n,anchor,page)
                     report_graphics("fetching %a at page %s using anchor %a containing %s multipars",
                         n,page,anchor,nofmultipars)
                 end
-                local x, y    = a.x, a.y
-                local w, h, d = a.w, a.h, a.d
-                local bpos    = data.bpos
-                local bh, bd  = bpos.h, bpos.d
-                local result  = { false } -- slot 1 will be set later
-                local n       = 0
+                local x      = a.x
+                local y      = a.y
+                local w      = a.w
+                local h      = a.h
+                local d      = a.d
+                local bpos   = data.bpos
+                local bh     = bpos.h
+                local bd     = bpos.d
+                local result = { false } -- slot 1 will be set later
+                local n      = 0
                 for i=1,nofmultipars do
                     local data     = pagedata[i]
                     local location = data.location
@@ -1178,7 +1211,8 @@ implement {
         if type(tags) == "string" then
             tags = utilities.parsers.settings_to_array(tags)
         end
-        local list, nofboxes = { }, 0
+        local list     = { }
+        local nofboxes = 0
         for i=1,#tags do
             local tag= tags[i]
             local c = collected[tag]
@@ -1187,7 +1221,11 @@ implement {
                 if r then
                     r = collected[r]
                     if r then
-                        local rx, ry, rw, rh, rd = r.x, r.y, r.w, r.h, r.d
+                        local rx = r.x
+                        local ry = r.y
+                        local rw = r.w
+                        local rh = r.h
+                        local rd = r.d
                         local cx = c.x - rx
                         local cy = c.y
                         local cw = cx + c.w

@@ -37,7 +37,7 @@ local next, type, tonumber = next, type, tonumber
 local sub, gsub = string.sub, string.gsub
 local validstring = string.valid
 local lpegmatch = lpeg.match
-local utfchar, utfvalues = utf.char, utf.values
+local utfchar, utfvalues, utflen = utf.char, utf.values, utf.len
 local concat, insert, remove, merge, sort = table.concat, table.insert, table.remove, table.merge, table.sort
 local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 local formatters = string.formatters
@@ -46,6 +46,7 @@ local replacetemplate = utilities.templates.replace
 
 local trace_export  = false  trackers.register  ("export.trace",         function(v) trace_export  = v end)
 local trace_spacing = false  trackers.register  ("export.trace.spacing", function(v) trace_spacing = v end)
+local trace_detail  = false  trackers.register  ("export.trace.detail",  function(v) trace_detail  = v end)
 
 local less_state    = false  directives.register("export.lessstate",     function(v) less_state    = v end)
 local show_comment  = true   directives.register("export.comment",       function(v) show_comment  = v end)
@@ -67,6 +68,7 @@ local attributes        = attributes
 local variables         = interfaces.variables
 local v_yes             = variables.yes
 local v_no              = variables.no
+local v_xml             = variables.xml
 local v_hidden          = variables.hidden
 
 local implement         = interfaces.implement
@@ -82,55 +84,7 @@ local fontchar          = fonts.hashes.characters
 local fontquads         = fonts.hashes.quads
 local languagenames     = languages.numbers
 
-local nodecodes         = nodes.nodecodes
-local skipcodes         = nodes.skipcodes
-local listcodes         = nodes.listcodes
-
-local hlist_code        = nodecodes.hlist
-local vlist_code        = nodecodes.vlist
-local glyph_code        = nodecodes.glyph
-local glue_code         = nodecodes.glue
-local kern_code         = nodecodes.kern
-local disc_code         = nodecodes.disc
-
-local userskip_code     = skipcodes.userskip
-local rightskip_code    = skipcodes.rightskip
-local parfillskip_code  = skipcodes.parfillskip
-local spaceskip_code    = skipcodes.spaceskip
-local xspaceskip_code   = skipcodes.xspaceskip
-
-local line_code         = listcodes.line
-
 local texgetcount       = tex.getcount
-
-local privateattribute  = attributes.private
-local a_characters      = privateattribute('characters')
-local a_exportstatus    = privateattribute('exportstatus')
-local a_tagged          = privateattribute('tagged')
-local a_taggedpar       = privateattribute("taggedpar")
-local a_image           = privateattribute('image')
-local a_reference       = privateattribute('reference')
-local a_textblock       = privateattribute("textblock")
-
-local nuts              = nodes.nuts
-local tonut             = nuts.tonut
-
-local getnext           = nuts.getnext
-local getsubtype        = nuts.getsubtype
-local getfont           = nuts.getfont
-local getdisc           = nuts.getdisc
-local getcomponents     = nuts.getcomponents
-local getlist           = nuts.getlist
-local getid             = nuts.getid
-local getattr           = nuts.getattr
-local setattr           = nuts.setattr -- maybe use properties
-local isglyph           = nuts.isglyph
-local getkern           = nuts.getkern
-local getwidth          = nuts.getwidth
-
-
-local traverse_id       = nuts.traverse_id
-local traverse_nodes    = nuts.traverse
 
 local references        = structures.references
 local structurestags    = structures.tags
@@ -167,7 +121,7 @@ local currentparagraph  = nil
 
 local noftextblocks     = 0
 
-local hyphencode        = 0xAD
+----- hyphencode        = 0xAD
 local hyphen            = utfchar(0xAD) -- todo: also emdash etc
 local tagsplitter       = structurestags.patterns.splitter
 ----- colonsplitter     = lpeg.splitat(":")
@@ -554,6 +508,8 @@ do
 
     local fields = { "title", "subtitle", "author", "keywords", "url", "version" }
 
+    local ignoredelements = false
+
     local function checkdocument(root)
         local data = root.data
         if data then
@@ -578,6 +534,9 @@ do
                 elseif di.content then
                     -- okay
                 elseif tg == "ignore" then
+                    di.element = ""
+                    checkdocument(di)
+                elseif ignoredelements and ignoredelements[tg] then
                     di.element = ""
                     checkdocument(di)
                 else
@@ -608,6 +567,64 @@ do
         end
         checkdocument(di)
     end
+
+    implement {
+        name      = "ignoretagsinexport",
+        arguments = "string",
+        actions   = function(list)
+            for tag in string.gmatch(list,"[a-z]+") do
+                if ignoredelements then
+                    ignoredelements[tag] = true
+                else
+                    ignoredelements = { [tag] = true }
+                end
+            end
+        end,
+    }
+
+end
+
+do
+
+    local marginanchors = { }
+    local margincontent = { }
+
+    implement {
+        name      = "settagmargintext",
+        arguments = "integer",
+        actions   = function(n)
+            marginanchors[locatedtag("margintext")] = n
+        end
+    }
+
+    implement {
+        name      = "settagmarginanchor",
+        arguments = "integer",
+        actions   = function(n)
+            marginanchors[locatedtag("marginanchor")] = n
+        end
+    }
+
+    function checks.margintext(di)
+        local i = marginanchors[di.fulltag]
+        margincontent[i] = di
+    end
+
+    function checks.marginanchor(di)
+        local i = marginanchors[di.fulltag]
+        local d = margincontent[i]
+        --
+        di.attribute = d.attribute
+        di.data      = d.data
+        di.detail    = d.detail
+        di.element   = d.element
+        di.fulltag   = d.fulltag
+        di.nature    = d.nature
+        di.samepar   = true
+        di.tg        = d.tg
+        --
+        d.skip       = "ignore"
+  end
 
 end
 
@@ -922,7 +939,8 @@ evaluators.special = function(di,var)
     end
 end
 
-local referencehash = { }
+local referencehash   = { }
+local destinationhash = { }
 
 do
 
@@ -1040,10 +1058,37 @@ do
         end
     end
 
+    local function reference(di,element,n,fulltag)
+        local destination = destinationhash[fulltag]
+        if destination then
+            local d = structures.references.internals[destination]
+            if d then
+                addreference(di,d.references)
+                return true
+            else
+                return false
+            end
+        else
+            local data = di.data
+            if data then
+                for i=1,#data do
+                    local di = data[i]
+                    if di then
+                        local fulltag = di.fulltag
+                        if fulltag and reference(di,element,n,fulltag) then
+                            return true
+                        end
+                    end
+                end
+            end
+        end
+    end
+
     extras.adddestination = adddestination
     extras.addreference   = addreference
 
     extras.link           = link
+    extras.reference      = reference
 
 end
 
@@ -1243,22 +1288,21 @@ do
                 }
             end
             if ndata == 0 then
-root.skip = "comment" -- get rid of weird artefacts
-root.nota = "weird"
+                root.skip = "comment" -- get rid of weird artefacts
+                root.nota = "weird"
                 return
             elseif ndata == 1 then
                 local d = data[1]
                 if not d or d == "" then
-root.skip = "comment"
+                    root.skip = "comment"
                     return
                 elseif d.content then
                     return
                 else -- if ndata == 1 then
                     local tg = d.tg
---                     if automathrows and roottg == "mrow" then
-if automathrows and (roottg == "mrow" or roottg == "mtext") then
+                    if automathrows and (roottg == "mrow" or roottg == "mtext") then
                         -- maybe just always ! check spec first
--- or we can have chesks.* for each as we then can flatten
+                        -- or we can have chesks.* for each as we then can flatten
                         if no_mrow[tg] then
                             root.skip = "comment"
                         end
@@ -1670,10 +1714,10 @@ if automathrows and (roottg == "mrow" or roottg == "mtext") then
     end
 
     function checks.mrow(di)
---         local d = di.data
---         if d then
---             checked(d)
---         end
+     -- local d = di.data
+     -- if d then
+     --     checked(d)
+     -- end
     end
 
     -- we can move more checks here
@@ -1755,6 +1799,25 @@ if automathrows and (roottg == "mrow" or roottg == "mtext") then
     end
 
     extras.msup = extras.msub
+
+end
+
+do
+
+    local registered = { }
+
+    function structurestags.setformulacontent(n)
+        registered[locatedtag("formulacontent")] = {
+            n = n,
+        }
+    end
+
+    function extras.formulacontent(di,element,n,fulltag)
+        local r = registered[fulltag]
+        if r then
+            setattribute(di,"n",r.n)
+        end
+    end
 
 end
 
@@ -1861,7 +1924,7 @@ do
         end
     end
 
-    local function ignorebreaks(di,element,n,fulltag)
+    function extras.registerpages(di,element,n,fulltag) -- ignorebreaks
         local data = di.data
         for i=1,#data do
             local d = data[i]
@@ -1871,7 +1934,7 @@ do
         end
     end
 
-    local function ignorespaces(di,element,n,fulltag)
+    function extras.registerseparator(di,element,n,fulltag) -- ignorespaces
         local data = di.data
         for i=1,#data do
             local d = data[i]
@@ -1881,9 +1944,6 @@ do
             end
         end
     end
-
-    extras.registerpages     = ignorebreaks
-    extras.registerseparator = ignorespaces
 
 end
 
@@ -1991,6 +2051,41 @@ do
 
 end
 
+do
+
+    local usedpublications = { }
+    local tagsindatasets   = setmetatableindex("table")
+    local serialize        = false
+
+    function structurestags.setpublication(dataset,tag,rendering)
+        usedpublications[locatedtag("publication")] = {
+            dataset   = dataset,
+            tag       = tag,
+            rendering = rendering
+        }
+        tagsindatasets[dataset][tag] = true
+        if not serialize then
+            structures.tags.registerextradata("btx",function()
+                local t = { "<btxdata>"}
+                for dataset, used in sortedhash(tagsindatasets) do
+                    t[#t+1] = publications.converttoxml(dataset,true,false,true,false,true,true)
+                end
+                t[#t+1] = "</btxdata>"
+                return concat(t,"\n")
+            end)
+        end
+    end
+
+    function extras.publication(di,element,n,fulltag)
+        local hash = usedpublications[fulltag]
+        if hash then
+            setattribute(di,"dataset",hash.dataset)
+            setattribute(di,"tag",hash.tag)
+        end
+    end
+
+end
+
 -- flusher
 
 do
@@ -1998,7 +2093,7 @@ do
     local f_detail                     = formatters[' detail="%s"']
     local f_chain                      = formatters[' chain="%s"']
     local f_index                      = formatters[' n="%s"']
-    local f_spacing                    = formatters['<c n="%s">%s</c>']
+    local f_spacing                    = formatters['<c p="%s">%s</c>']
 
     local f_empty_inline               = formatters["<%s/>"]
     local f_empty_mixed                = formatters["%w<%s/>\n"]
@@ -2062,7 +2157,7 @@ do
     local depth  = 0
     local inline = 0
 
-    local function emptytag(result,embedded,element,nature,di) -- currently only break but at some point
+    local function emptytag(result,element,nature,di) -- currently only break but at some point
         local a = di.attributes                       -- we might add detail etc
         if a then -- happens seldom
             if nature == "display" then
@@ -2111,7 +2206,7 @@ do
         end
     end
 
-    local function begintag(result,embedded,element,nature,di,skip)
+    local function begintag(result,element,nature,di,skip)
         local index         = di.n
         local fulltag       = di.fulltag
         local specification = specifications[fulltag] or { } -- we can have a dummy
@@ -2135,12 +2230,6 @@ do
             -- ignore
         else
 
-         -- if embedded then
-         --     if element == "math" then
-         --         embedded[f_tagid(element,index)] = #result+1
-         --     end
-         -- end
-
             local n = 0
             local r = { } -- delay this
             if detail then
@@ -2160,6 +2249,7 @@ do
                 n = n + 1
                 r[n] = f_index(index)
             end
+            --
             local extra = extras[element]
             if extra then
                 extra(di,element,index,fulltag)
@@ -2181,8 +2271,14 @@ do
             end
             local a = di.attributes
             if a then
+                if trace_spacing then
+                    a.p = di.parnumber or 0
+                end
                 n = n + 1
                 r[n] = attributes(a)
+            elseif trace_spacing then
+                n = n + 1
+                r[n] = attributes { p = di.parnumber or 0 }
             end
             if n == 0 then
                 if nature == "inline" or inline > 0 then
@@ -2249,7 +2345,7 @@ do
         end
     end
 
-    local function endtag(result,embedded,element,nature,di,skip)
+    local function endtag(result,element,nature,di,skip)
         if skip == "comment" then
             if show_comment then
                 if nature == "display" and (inline == 0 or inline == 1) then
@@ -2280,18 +2376,10 @@ do
                 inline = inline - 1
                 result[#result+1] = f_end_inline(namespaced[element])
             end
-
-         -- if embedded then
-         --     if element == "math" then
-         --         local id = f_tagid(element,di.n) -- index)
-         --         local tx = concat(result,"",embedded[id],#result)
-         --         embedded[id] = "<?xml version='1.0' standalone='yes'?>" .. "\n" .. tx
-         --     end
-         -- end
         end
     end
 
-    local function flushtree(result,embedded,data,nature)
+    local function flushtree(result,data,nature)
         local nofdata = #data
         for i=1,nofdata do
             local di = data[i]
@@ -2323,23 +2411,23 @@ do
                     if not element then
                         -- skip
                     elseif element == "break" then -- or element == "pagebreak"
-                        emptytag(result,embedded,element,nature,di)
+                        emptytag(result,element,nature,di)
                     elseif element == "" or di.skip == "ignore" then
                         -- skip
                     else
                         if di.before then
-                            flushtree(result,embedded,di.before,nature)
+                            flushtree(result,di.before,nature)
                         end
                         local natu = di.nature
                         local skip = di.skip
                         if di.breaknode then
-                            emptytag(result,embedded,"break","display",di)
+                            emptytag(result,"break","display",di)
                         end
-                        begintag(result,embedded,element,natu,di,skip)
-                        flushtree(result,embedded,di.data,natu)
-                        endtag(result,embedded,element,natu,di,skip)
+                        begintag(result,element,natu,di,skip)
+                        flushtree(result,di.data,natu)
+                        endtag(result,element,natu,di,skip)
                         if di.after then
-                            flushtree(result,embedded,di.after,nature)
+                            flushtree(result,di.after,nature)
                         end
                     end
                 end
@@ -2360,19 +2448,25 @@ do
                 local di = data[i]
                 if not di then
                     -- skip
+                elseif di.skip == "ignore" then
+                    -- skip (new)
                 elseif di.content then
-                    local parnumber = di.parnumber
-                    if prevnature == "inline" and prevparnumber and prevparnumber ~= parnumber then
-                        nofnewdata = nofnewdata + 1
-                        if trace_spacing then
-                            newdata[nofnewdata] = makebreaknode { type = "a", p = prevparnumber, n = parnumber }
-                        else
-                            newdata[nofnewdata] = makebreaknode()
+                    if di.samepar then
+                        prevparnumber = false
+                    else
+                        local parnumber = di.parnumber
+                        if prevnature == "inline" and prevparnumber and prevparnumber ~= parnumber then
+                            nofnewdata = nofnewdata + 1
+                            if trace_spacing then
+                                newdata[nofnewdata] = makebreaknode { type = "a", p = prevparnumber, n = parnumber }
+                            else
+                                newdata[nofnewdata] = makebreaknode()
+                            end
                         end
+                        prevelement = nil
+                        prevparnumber = parnumber
                     end
-                    prevelement = nil
                     prevnature = "inline"
-                    prevparnumber = parnumber
                     nofnewdata = nofnewdata + 1
                     newdata[nofnewdata] = di
                 elseif not di.collapsed then
@@ -2383,39 +2477,51 @@ do
                         end
                         prevelement = element
                         prevnature = "display"
+                        nofnewdata = nofnewdata + 1
+                        newdata[nofnewdata] = di
                     elseif element == "" or di.skip == "ignore" then
                         -- skip
+                    else
+                        if di.samepar then
+                            prevnature    = "inline"
+                            prevparnumber = false
+                        else
+                            local nature = di.nature
+                            local parnumber = di.parnumber
+                            if prevnature == "inline" and nature == "inline" and prevparnumber and prevparnumber ~= parnumber then
+                                nofnewdata = nofnewdata + 1
+                                if trace_spacing then
+                                    newdata[nofnewdata] = makebreaknode { type = "b", p = prevparnumber, n = parnumber }
+                                else
+                                    newdata[nofnewdata] = makebreaknode()
+                                end
+                            end
+                            prevnature = nature
+                            prevparnumber = parnumber
+                        end
+                        prevelement = element
+                        breaktree(di,tree,element)
+                        nofnewdata = nofnewdata + 1
+                        newdata[nofnewdata] = di
+                    end
+                else
+                    if di.samepar then
+                        prevnature    = "inline"
+                        prevparnumber = false
                     else
                         local nature = di.nature
                         local parnumber = di.parnumber
                         if prevnature == "inline" and nature == "inline" and prevparnumber and prevparnumber ~= parnumber then
                             nofnewdata = nofnewdata + 1
                             if trace_spacing then
-                                newdata[nofnewdata] = makebreaknode { type = "b", p = prevparnumber, n = parnumber }
+                                newdata[nofnewdata] = makebreaknode { type = "c", p = prevparnumber, n = parnumber }
                             else
                                 newdata[nofnewdata] = makebreaknode()
                             end
                         end
                         prevnature = nature
                         prevparnumber = parnumber
-                        prevelement = element
-                        breaktree(di,tree,element)
                     end
-                    nofnewdata = nofnewdata + 1
-                    newdata[nofnewdata] = di
-                else
-                    local nature = di.nature
-                    local parnumber = di.parnumber
-                    if prevnature == "inline" and nature == "inline" and prevparnumber and prevparnumber ~= parnumber then
-                        nofnewdata = nofnewdata + 1
-                        if trace_spacing then
-                            newdata[nofnewdata] = makebreaknode { type = "c", p = prevparnumber, n = parnumber }
-                        else
-                            newdata[nofnewdata] = makebreaknode()
-                        end
-                    end
-                    prevnature = nature
-                    prevparnumber = parnumber
                     nofnewdata = nofnewdata + 1
                     newdata[nofnewdata] = di
                 end
@@ -2446,6 +2552,8 @@ do
                         for j=1,#currentdata do
                             local cd = currentdata[j]
                             if not cd or cd == "" then
+                                -- skip
+                            elseif cd.skip == "ignore" then
                                 -- skip
                             elseif cd.content then
                                 if not currentpar then
@@ -2593,9 +2701,9 @@ local function pop()
         currentdepth = currentdepth - 1
         if trace_export then
             if top then
-                report_export("%w</%s>",currentdepth,top)
+                report_export("%w</%s>",currentdepth,tree.tg)
             else
-                report_export("</%s>",top)
+                report_export("</%s>",tree.tg)
             end
         end
     else
@@ -2701,7 +2809,7 @@ local function pushcontent(oldparagraph,newparagraph)
                 local nd = #td
                 td[nd+1] = { parnumber = oldparagraph or currentparagraph, content = content }
                 if trace_export then
-                    report_export("%w<!-- start content with length %s -->",currentdepth,#content)
+                    report_export("%w<!-- start content with length %s -->",currentdepth,utflen(content))
                     report_export("%w%s",currentdepth,(gsub(content,"\n","\\n")))
                     report_export("%w<!-- stop content -->",currentdepth)
                 end
@@ -2746,27 +2854,119 @@ end
 
 -- inserts ?
 
-local function collectresults(head,list,pat,pap) -- is last used (we also have currentattribute)
-    local p
-    for n in traverse_nodes(head) do
-        local c, id = isglyph(n) -- 14: image, 8: literal (mp)
-        if c then
-            local at = getattr(n,a_tagged) or pat
-            if not at then
-             -- we need to tag the pagebody stuff as being valid skippable
-             --
-             -- report_export("skipping character: %C (no attribute)",n.char)
+local collectresults  do -- too many locals otherwise
+
+    local nodecodes        = nodes.nodecodes
+    local gluecodes        = nodes.gluecodes
+    local listcodes        = nodes.listcodes
+    local whatsitcodes     = nodes.whatsitcodes
+
+    local subtypes         = nodes.subtypes
+
+    local hlist_code       = nodecodes.hlist
+    local vlist_code       = nodecodes.vlist
+    local glyph_code       = nodecodes.glyph
+    local glue_code        = nodecodes.glue
+    local kern_code        = nodecodes.kern
+    local disc_code        = nodecodes.disc
+    local whatsit_code     = nodecodes.whatsit
+    local localpar_code    = nodecodes.localpar
+
+    local userskip_code    = gluecodes.userskip
+    local rightskip_code   = gluecodes.rightskip
+    local parfillskip_code = gluecodes.parfillskip
+    local spaceskip_code   = gluecodes.spaceskip
+    local xspaceskip_code  = gluecodes.xspaceskip
+
+    local linelist_code    = listcodes.line
+
+    local userdefinedwhatsit_code  = whatsitcodes.userdefined
+
+    local privateattribute = attributes.private
+    local a_image          = privateattribute('image')
+    local a_reference      = privateattribute('reference')
+    local a_destination    = privateattribute('destination')
+    local a_characters     = privateattribute('characters')
+    local a_exportstatus   = privateattribute('exportstatus')
+    local a_tagged         = privateattribute('tagged')
+    local a_taggedpar      = privateattribute("taggedpar")
+    local a_textblock      = privateattribute("textblock")
+
+    local inline_mark      = nodes.pool.userids["margins.inline"]
+
+    local nuts             = nodes.nuts
+
+    local getnext          = nuts.getnext
+    local getdisc          = nuts.getdisc
+    local getlist          = nuts.getlist
+    local getid            = nuts.getid
+    local getattr          = nuts.getattr
+    local setattr          = nuts.setattr -- maybe use properties
+    local isglyph          = nuts.isglyph
+    local getkern          = nuts.getkern
+    local getwidth         = nuts.getwidth
+
+    local nexthlist        = nuts.traversers.hlist
+    local nextnode         = nuts.traversers.node
+
+    local function addtomaybe(maybewrong,c,case)
+        if trace_export then
+            report_export("%w<!-- possible paragraph mixup at %C case %i -->",currentdepth,c,case)
+        else
+            local s = formatters["%C"](c)
+            if maybewrong then
+                maybewrong[#maybewrong+1] = s
             else
-                -- we could add tonunicodes for ligatures (todo)
-                local components = getcomponents(n)
-                if components and (not characterdata[c] or overloads[c]) then -- we loose data
-                    collectresults(components,nil,at) -- this assumes that components have the same attribute as the glyph ... we should be more tolerant (see math)
+                maybewrong = { s }
+            end
+            return maybewrong
+        end
+    end
+
+    local function showmaybe(maybewrong)
+        if not trace_export then
+            report_export("fuzzy paragraph: % t",maybewrong)
+        end
+    end
+
+    local function showdetail(n,id,subtype)
+        local a = getattr(n,a_tagged)
+        local t = taglist[a]
+        local c = nodecodes[id]
+        local s = subtypes[id][subtype]
+        if a and t then
+            report_export("node %a, subtype %a, tag %a, element %a, tree '% t'",c,s,a,t.tagname,t.taglist)
+        else
+            report_export("node %a, subtype %a, untagged",c,s)
+        end
+    end
+
+    local function collectresults(head,list,pat,pap) -- is last used (we also have currentattribute)
+        local p
+        local localparagraph
+        local maybewrong
+        local pid
+        for n, id, subtype in nextnode, head do
+            if trace_detail then
+                showdetail(n,id,subtype)
+            end
+            if id == glyph_code then
+                local c, f = isglyph(n)
+                local at   = getattr(n,a_tagged) or pat
+                if not at then
+                 -- we need to tag the pagebody stuff as being valid skippable
+                 --
+                 -- report_export("skipping character: %C (no attribute)",n.char)
                 else
                     if last ~= at then
                         local tl = taglist[at]
+                        local ap = getattr(n,a_taggedpar) or pap
+                        if localparagraph and (not ap or ap < localparagraph) then
+                            maybewrong = addtomaybe(maybewrong,c,1)
+                        end
                         pushcontent()
-                        currentnesting = tl
-                        currentparagraph = getattr(n,a_taggedpar) or pap
+                        currentnesting   = tl
+                        currentparagraph = ap
                         currentattribute = at
                         last = at
                         pushentry(currentnesting)
@@ -2780,6 +2980,11 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
                             local t = tl.taglist
                             referencehash[t[#t]] = r -- fulltag
                         end
+                        local d = getattr(n,a_destination)
+                        if d then
+                            local t = tl.taglist
+                            destinationhash[t[#t]] = d -- fulltag
+                        end
                         --
                     elseif last then
                         -- we can consider tagging the pars (lines) in the parbuilder but then we loose some
@@ -2792,12 +2997,15 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
                             currentattribute = last
                             currentparagraph = ap
                         end
+                        if localparagraph and (not ap or ap < localparagraph) then
+                            maybewrong = addtomaybe(maybewrong,c,2)
+                        end
                         if trace_export then
-                            report_export("%w<!-- processing glyph %C tagged %a) -->",currentdepth,c,last)
+                            report_export("%w<!-- processing glyph %C tagged %a -->",currentdepth,c,last)
                         end
                     else
                         if trace_export then
-                            report_export("%w<!-- processing glyph %C tagged %a) -->",currentdepth,c,at)
+                            report_export("%w<!-- processing glyph %C tagged %a -->",currentdepth,c,at)
                         end
                     end
                     local s = getattr(n,a_exportstatus)
@@ -2820,7 +3028,7 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
                             currentcontent[nofcurrentcontent] = " "
                         end
                     else
-                        local fc = fontchar[getfont(n)]
+                        local fc = fontchar[f]
                         if fc then
                             fc = fc and fc[c]
                             if fc then
@@ -2851,63 +3059,60 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
                         end
                     end
                 end
-            end
-        elseif id == disc_code then -- probably too late
-            local pre, post, replace = getdisc(n)
-            if keephyphens then
-                if pre and not getnext(pre) and isglyph(pre) == hyphencode then
-                    nofcurrentcontent = nofcurrentcontent + 1
-                    currentcontent[nofcurrentcontent] = hyphen
-                end
-            end
-            if replace then
-                collectresults(replace,nil)
-            end
-        elseif id == glue_code then
-            -- we need to distinguish between hskips and vskips
-            local ca = getattr(n,a_characters)
-            if ca == 0 then
-                -- skip this one ... already converted special character (node-acc)
-            elseif ca then
-                local a = getattr(n,a_tagged) or pat
-                if a then
-                    local c = specialspaces[ca]
-                    if last ~= a then
-                        local tl = taglist[a]
-                        if trace_export then
-                            report_export("%w<!-- processing space glyph %U tagged %a case 1 -->",currentdepth,ca,a)
-                        end
-                        pushcontent()
-                        currentnesting = tl
-                        currentparagraph = getattr(n,a_taggedpar) or pap
-                        currentattribute = a
-                        last = a
-                        pushentry(currentnesting)
-                        -- no reference check (see above)
-                    elseif last then
-                        local ap = getattr(n,a_taggedpar) or pap
-                        if ap ~= currentparagraph then
-                            pushcontent(currentparagraph,ap)
-                            pushentry(currentnesting)
-                            currentattribute = last
-                            currentparagraph = ap
-                        end
-                        if trace_export then
-                            report_export("%w<!-- processing space glyph %U tagged %a case 2 -->",currentdepth,ca,last)
-                        end
+            elseif id == disc_code then -- probably too late
+                local pre, post, replace = getdisc(n)
+                if keephyphens then
+                    if pre and not getnext(pre) and isglyph(pre) == 0xAD then -- hyphencode then
+                        nofcurrentcontent = nofcurrentcontent + 1
+                        currentcontent[nofcurrentcontent] = hyphen
                     end
-                    -- if somespace[currentcontent[nofcurrentcontent]] then
-                    --     if trace_export then
-                    --         report_export("%w<!-- removing space -->",currentdepth)
-                    --     end
-                    --     nofcurrentcontent = nofcurrentcontent - 1
-                    -- end
-                    nofcurrentcontent = nofcurrentcontent + 1
-                    currentcontent[nofcurrentcontent] = c
                 end
-            else
-                local subtype = getsubtype(n)
-                if subtype == userskip_code then
+                if replace then
+                    collectresults(replace,nil)
+                end
+            elseif id == glue_code then
+                -- we need to distinguish between hskips and vskips
+                local ca = getattr(n,a_characters)
+                if ca == 0 then
+                    -- skip this one ... already converted special character (node-acc)
+                elseif ca then
+                    local a = getattr(n,a_tagged) or pat
+                    if a then
+                        local c = specialspaces[ca]
+                        if last ~= a then
+                            local tl = taglist[a]
+                            if trace_export then
+                                report_export("%w<!-- processing space glyph %U tagged %a case 1 -->",currentdepth,ca,a)
+                            end
+                            pushcontent()
+                            currentnesting = tl
+                            currentparagraph = getattr(n,a_taggedpar) or pap
+                            currentattribute = a
+                            last = a
+                            pushentry(currentnesting)
+                            -- no reference check (see above)
+                        elseif last then
+                            local ap = getattr(n,a_taggedpar) or pap
+                            if ap ~= currentparagraph then
+                                pushcontent(currentparagraph,ap)
+                                pushentry(currentnesting)
+                                currentattribute = last
+                                currentparagraph = ap
+                            end
+                            if trace_export then
+                                report_export("%w<!-- processing space glyph %U tagged %a case 2 -->",currentdepth,ca,last)
+                            end
+                        end
+                        -- if somespace[currentcontent[nofcurrentcontent]] then
+                        --     if trace_export then
+                        --         report_export("%w<!-- removing space -->",currentdepth)
+                        --     end
+                        --     nofcurrentcontent = nofcurrentcontent - 1
+                        -- end
+                        nofcurrentcontent = nofcurrentcontent + 1
+                        currentcontent[nofcurrentcontent] = c
+                    end
+                elseif subtype == userskip_code then
                     if getwidth(n) > threshold then
                         if last and not somespace[currentcontent[nofcurrentcontent]] then
                             local a = getattr(n,a_tagged) or pat
@@ -2965,6 +3170,8 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
                             if not keephyphens then
                                 nofcurrentcontent = nofcurrentcontent - 1
                             end
+                        elseif pid == disc_code then
+                            -- go on .. tricky: we should mark the glyhs as coming from a disc
                         elseif not somespace[r] then
                             local a = getattr(n,a_tagged) or pat
                             if a == last then
@@ -2988,101 +3195,134 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
                         end
                     end
                 elseif subtype == parfillskip_code then
-                    -- deal with paragaph endings (crossings) elsewhere and we quit here
+                    -- deal with paragraph endings (crossings) elsewhere and we quit here
                     -- as we don't want the rightskip space addition
+                    if maybewrong then
+                        showmaybe(maybewrong)
+                    end
                     return
                 end
-            end
-        elseif id == hlist_code or id == vlist_code then
-            local ai = getattr(n,a_image)
-            if ai then
-                local at = getattr(n,a_tagged) or pat
-                if nofcurrentcontent > 0 then
-                    pushcontent()
-                    pushentry(currentnesting) -- ??
-                end
-                pushentry(taglist[at]) -- has an index, todo: flag empty element
-                if trace_export then
-                    report_export("%w<!-- processing image tagged %a",currentdepth,last)
-                end
-                last = nil
-                currentparagraph = nil
-            else
-                -- we need to determine an end-of-line
-                local list = getlist(n)
-                if list then
+            elseif id == hlist_code or id == vlist_code then
+                local ai = getattr(n,a_image)
+                if ai then
                     local at = getattr(n,a_tagged) or pat
-                    collectresults(list,n,at)
+                    if nofcurrentcontent > 0 then
+                        pushcontent()
+                        pushentry(currentnesting) -- ??
+                    end
+                    pushentry(taglist[at]) -- has an index, todo: flag empty element
+                    if trace_export then
+                        report_export("%w<!-- processing image tagged %a",currentdepth,last)
+                    end
+                    last = nil
+                    currentparagraph = nil
+                else
+                    -- we need to determine an end-of-line
+                    local list = getlist(n)
+                    if list then
+                        -- todo: no par checking needed in math
+                        local at = getattr(n,a_tagged) or pat
+                        collectresults(list,n,at)
+                    end
                 end
-            end
-        elseif id == kern_code then
-            local kern = getkern(n)
-            if kern > 0 then
-                local limit = threshold
-                if p and getid(p) == glyph_code then
-                    limit = fontquads[getfont(p)] / 4
-                end
-                if kern > limit then
-                    if last and not somespace[currentcontent[nofcurrentcontent]] then
-                        local a = getattr(n,a_tagged) or pat
-                        if a == last then
-                            if not somespace[currentcontent[nofcurrentcontent]] then
+            elseif id == kern_code then
+                local kern = getkern(n)
+                if kern > 0 then
+                    local limit = threshold
+                    if p then
+                        local c, f = isglyph(p)
+                        if c then
+                            limit = fontquads[f] / 4
+                        end
+                    end
+                    if kern > limit then
+                        if last and not somespace[currentcontent[nofcurrentcontent]] then
+                            local a = getattr(n,a_tagged) or pat
+                            if a == last then
+                                if not somespace[currentcontent[nofcurrentcontent]] then
+                                    if trace_export then
+                                        report_export("%w<!-- injecting spacing 8 (kern %p) -->",currentdepth,kern)
+                                    end
+                                    nofcurrentcontent = nofcurrentcontent + 1
+                                    currentcontent[nofcurrentcontent] = " "
+                                end
+                            elseif a then
+                                -- e.g LOGO<space>LOGO
                                 if trace_export then
-                                    report_export("%w<!-- injecting spacing 8 (kern %p) -->",currentdepth,kern)
+                                    report_export("%w<!-- processing kern, threshold %p, tag %s => %s -->",currentdepth,limit,last,a)
+                                end
+                                last = a
+                                pushcontent()
+                                if trace_export then
+                                    report_export("%w<!-- injecting spacing 9 (kern %p) -->",currentdepth,kern)
                                 end
                                 nofcurrentcontent = nofcurrentcontent + 1
                                 currentcontent[nofcurrentcontent] = " "
+                                currentnesting = taglist[last]
+                                pushentry(currentnesting)
+                                currentattribute = last
                             end
-                        elseif a then
-                            -- e.g LOGO<space>LOGO
-                            if trace_export then
-                                report_export("%w<!-- processing kern, threshold %p, tag %s => %s -->",currentdepth,limit,last,a)
-                            end
-                            last = a
-                            pushcontent()
-                            if trace_export then
-                                report_export("%w<!-- injecting spacing 9 (kern %p) -->",currentdepth,kern)
-                            end
-                            nofcurrentcontent = nofcurrentcontent + 1
-                            currentcontent[nofcurrentcontent] = " "
-                            currentnesting = taglist[last]
-                            pushentry(currentnesting)
-                            currentattribute = last
                         end
                     end
                 end
+            elseif id == whatsit_code then
+                if subtype == userdefinedwhatsit_code then
+                    -- similar to images, see above
+                    local at = getattr(n,a_tagged)
+                    if nofcurrentcontent > 0 then
+                        pushcontent()
+                        pushentry(currentnesting) -- ??
+                    end
+                    pushentry(taglist[at])
+                    if trace_export then
+                        report_export("%w<!-- processing anchor tagged %a",currentdepth,last)
+                    end
+                    last = nil
+                    currentparagraph = nil
+                end
+            elseif not localparagraph and id == localpar_code and subtype == 0 then
+                localparagraph = getattr(n,a_taggedpar)
+            end
+            p   = n
+            pid = id
+        end
+        if maybewrong then
+            showmaybe(maybewrong)
+        end
+    end
+
+    function nodes.handlers.export(head) -- hooks into the page builder
+        starttiming(treehash)
+        if trace_export then
+            report_export("%w<!-- start flushing page -->",currentdepth)
+        end
+     -- continueexport()
+        restart = true
+        collectresults(head)
+        if trace_export then
+            report_export("%w<!-- stop flushing page -->",currentdepth)
+        end
+        stoptiming(treehash)
+        return head
+    end
+
+    function nodes.handlers.checkparcounter(p)
+        setattr(p,a_taggedpar,texgetcount("tagparcounter") + 1)
+        return p
+    end
+
+    function builders.paragraphs.tag(head)
+        noftextblocks = noftextblocks + 1
+        for n, subtype in nexthlist, head do
+            if subtype == linelist_code then
+                setattr(n,a_textblock,noftextblocks)
+            elseif subtype == glue_code or subtype == kern_code then -- no need to set fontkerns
+                setattr(n,a_textblock,0)
             end
         end
-        p = n
+        return false
     end
-end
 
-function nodes.handlers.export(head) -- hooks into the page builder
-    starttiming(treehash)
-    if trace_export then
-        report_export("%w<!-- start flushing page -->",currentdepth)
-    end
- -- continueexport()
-    restart = true
-    collectresults(tonut(head))
-    if trace_export then
-        report_export("%w<!-- stop flushing page -->",currentdepth)
-    end
-    stoptiming(treehash)
-    return head, true
-end
-
-function builders.paragraphs.tag(head)
-    noftextblocks = noftextblocks + 1
-    for n in traverse_id(hlist_code,tonut(head)) do
-        local subtype = getsubtype(n)
-        if subtype == line_code then
-            setattr(n,a_textblock,noftextblocks)
-        elseif subtype == glue_code or subtype == kern_code then -- no need to set fontkerns
-            setattr(n,a_textblock,0)
-        end
-    end
-    return false
 end
 
 do
@@ -3237,13 +3477,12 @@ local htmltemplate = [[
 
     local function allcontent(tree,embed)
         local result   = { }
-        local embedded = embed and { }
-        flushtree(result,embedded,tree.data,"display") -- we need to collect images
+        flushtree(result,tree.data,"display") -- we need to collect images
         result = concat(result)
         -- no need to lpeg .. fast enough
         result = gsub(result,"\n *\n","\n")
         result = gsub(result,"\n +([^< ])","\n%1")
-        return result, embedded
+        return result
     end
 
     -- local xhtmlpreamble = [[
@@ -3498,7 +3737,6 @@ local htmltemplate = [[
     local basename  = file.basename
 
     local embedfile = false  directives.register("export.embed",function(v) embedfile = v end)
-    local embedmath = false
 
     function structurestags.finishexport()
 
@@ -3508,12 +3746,18 @@ local htmltemplate = [[
             return
         end
 
+        local onlyxml = finetuning.export == v_xml
+
         starttiming(treehash)
         --
         finishexport()
         --
         report_export("")
-        report_export("exporting xml, xhtml and html files")
+        if onlyxml then
+            report_export("exporting xml, no other files")
+        else
+            report_export("exporting xml, xhtml, html and css files")
+        end
         report_export("")
         --
         wrapups.collapsetree(tree)
@@ -3541,7 +3785,7 @@ local htmltemplate = [[
         -- ./jobname-export/styles/jobname-images.css
         -- ./jobname-export/styles/jobname-templates.css
 
-        if type(askedname) ~= "string" or askedname == v_yes or askedname == "" then
+        if type(askedname) ~= "string" or askedname == "" then
             askedname = tex.jobname
         end
 
@@ -3609,6 +3853,74 @@ local htmltemplate = [[
             stylefilebase,
         }
 
+        local cssextra = cssfile and table.unique(settings_to_array(cssfile)) or { }
+
+        -- at this point we're ready for the content; the collector also does some
+        -- housekeeping and data collecting; at this point we still have an xml
+        -- representation that uses verbose element names and carries information in
+        -- attributes
+
+        local data = tree.data
+        for i=1,#data do
+            if data[i].tg ~= "document" then
+                data[i] = { }
+            end
+        end
+
+        local result = allcontent(tree,embedmath) -- embedfile is for testing
+
+        -- ugly but so be it:
+
+        local extradata = structures.tags.getextradata()
+        if extradata then
+            local t = { "" }
+            t[#t+1] = "<extradata>"
+            for name, action in sortedhash(extradata) do
+                t[#t+1] = action()
+            end
+            t[#t+1] = "</extradata>"
+            t[#t+1] = "</document>"
+            -- we use a function because otherwise we can have a bad capture index
+            result = gsub(result,"</document>",function()
+                return concat(t,"\n")
+            end)
+        end
+
+        -- done with ugly
+
+        if onlyxml then
+
+            os.remove(defaultfilename)
+            os.remove(imagefilename)
+            os.remove(stylefilename)
+            os.remove(templatefilename)
+
+            for i=1,#cssextra do
+                os.remove(joinfile(stylepath,basename(source)))
+            end
+
+         -- os.remove(xmlfilename)
+
+            os.remove(imagefilename)
+            os.remove(stylefilename)
+            os.remove(templatefilename)
+            os.remove(xhtmlfilename)
+            os.remove(specificationfilename)
+            os.remove(htmlfilename)
+
+            result = concat {
+                wholepreamble(true),
+                "<!-- This export file is used for filtering runtime only! -->\n",
+                result,
+            }
+
+            report_export("saving xml data in %a",xmlfilename)
+            io.savedata(xmlfilename,result)
+
+            return
+
+        end
+
         local examplefilename = resolvers.find_file("export-example.css")
         if examplefilename then
             local data = io.loaddata(examplefilename)
@@ -3621,9 +3933,8 @@ local htmltemplate = [[
         end
 
         if cssfile then
-            local list = table.unique(settings_to_array(cssfile))
-            for i=1,#list do
-                local source = addsuffix(list[i],"css")
+            for i=1,#cssextra do
+                local source = addsuffix(cssextra[i],"css")
                 local target = joinfile(stylepath,basename(source))
                 cssfiles[#cssfiles+1] = source
                 if not lfs.isfile(source) then
@@ -3638,21 +3949,6 @@ local htmltemplate = [[
 
         local x_styles, h_styles = allusedstylesheets(cssfiles,files,"styles")
 
-        -- at this point we're ready for the content; the collector also does some
-        -- housekeeping and data collecting; at this point we still have an xml
-        -- representation that uses verbose element names and carries information in
-        -- attributes
-
-
-        local data = tree.data
-        for i=1,#data do
-            if data[i].tg ~= "document" then
-                data[i] = { }
-            end
-        end
-
-        local result, embedded = allcontent(tree,embedmath) -- embedfile is for testing
-
         local attach = backends.nodeinjections.attachfile
 
         if embedfile and attach then
@@ -3666,22 +3962,6 @@ local htmltemplate = [[
                 mimetype   = "application/mathml+xml",
             }
         end
-     -- if embedmath and attach then
-     --     local refs = { }
-     --     for k, v in sortedhash(embedded) do
-     --         attach {
-     --             data       = v,
-     --             file       = basename(k),
-     --             name       = addsuffix(k,"xml"),
-     --             registered = k,
-     --             reference  = k,
-     --             title      = "xml export snippet: " .. k,
-     --             method     = v_hidden,
-     --             mimetype   = "application/mathml+xml",
-     --         }
-     --         refs[k] = 0
-     --     end
-     -- end
 
         result = concat {
             wholepreamble(true),
@@ -3711,14 +3991,14 @@ local htmltemplate = [[
 
         local xmltree = cleanxhtmltree(xml.convert(result))
 
--- local xmltree = xml.convert(result)
--- for c in xml.collected(xmltree,"m:mtext[lastindex()=1]/m:mrow") do
---     print(c)
--- end
--- for c in xml.collected(xmltree,"mtext/mrow") do
---     print(c)
--- end
--- local xmltree = cleanxhtmltree(xmltree)
+     -- local xmltree = xml.convert(result)
+     -- for c in xml.collected(xmltree,"m:mtext[lastindex()=1]/m:mrow") do
+     --     print(c)
+     -- end
+     -- for c in xml.collected(xmltree,"mtext/mrow") do
+     --     print(c)
+     -- end
+     -- local xmltree = cleanxhtmltree(xmltree)
 
         xml.save(xmltree,xhtmlfilename)
 
@@ -3727,8 +4007,8 @@ local htmltemplate = [[
         -- looking at identity is somewhat redundant as we also inherit from interaction
         -- at the tex end
 
-        local identity = interactions.general.getidentity()
-        local metadata = structures.tags.getmetadata()
+        local identity  = interactions.general.getidentity()
+        local metadata  = structures.tags.getmetadata()
 
         local specification = {
             name        = usedname,
@@ -3791,19 +4071,15 @@ local htmltemplate = [[
         stoptiming(treehash)
     end
 
-    local appendaction = nodes.tasks.appendaction
     local enableaction = nodes.tasks.enableaction
 
     function structurestags.initializeexport()
         if not exporting then
             report_export("enabling export to xml")
-         -- not yet known in task-ini
-            appendaction("shipouts","normalizers", "nodes.handlers.export")
-         -- enableaction("shipouts","nodes.handlers.export")
+            enableaction("shipouts","nodes.handlers.export")
             enableaction("shipouts","nodes.handlers.accessibility")
             enableaction("math",    "noads.handlers.tags")
-         -- appendaction("finalizers","lists","builders.paragraphs.tag")
-         -- enableaction("finalizers","builders.paragraphs.tag")
+            enableaction("everypar","nodes.handlers.checkparcounter")
             luatex.registerstopactions(structurestags.finishexport)
             exporting = true
         end
@@ -3846,6 +4122,7 @@ implement {
             { "svgstyle" },
             { "cssfile" },
             { "file" },
+            { "export" },
         }
     }
 }
@@ -3859,7 +4136,6 @@ implement {
     name      = "initializeexport",
     actions   = structurestags.initializeexport,
 }
-
 
 implement {
     name      = "settagitemgroup",
@@ -3877,6 +4153,12 @@ implement {
     name      = "settagfloat",
     actions   = structurestags.setfloat,
     arguments = "2 strings",
+}
+
+implement {
+    name      = "settagformulacontent",
+    actions   = structurestags.setformulacontent,
+    arguments = "integer",
 }
 
 implement {
@@ -3961,4 +4243,10 @@ implement {
     name      = "settaglist",
     actions   = structurestags.setlist,
     arguments = "integer"
+}
+
+implement {
+    name      = "settagpublication",
+    actions   = structurestags.setpublication,
+    arguments = "2 strings"
 }

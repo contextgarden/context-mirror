@@ -27,9 +27,6 @@ local nodes, node = nodes, node
 
 local nuts               = nodes.nuts
 
-local tonode             = nuts.tonode
-local tonut              = nuts.tonut
-
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getattr            = nuts.getattr
@@ -38,7 +35,6 @@ local getlang            = nuts.getlang
 local setchar            = nuts.setchar
 local setattrlist        = nuts.setattrlist
 local getfont            = nuts.getfont
-local getchar            = nuts.getchar
 local setsubtype         = nuts.setsubtype
 local setdisc            = nuts.setdisc
 local isglyph            = nuts.isglyph
@@ -48,12 +44,12 @@ local setcolor           = nodes.tracers.colors.set
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local remove_node        = nuts.remove
-local traverse_id        = nuts.traverse_id
-local traverse_char      = nuts.traverse_char
+----- traverse_id        = nuts.traverse_id
+----- traverse_char      = nuts.traverse_char
+local nextchar           = nuts.traversers.char
+local nextglyph          = nuts.traversers.glyph
 
 local copy_node          = nuts.copy
-
-local tasks              = nodes.tasks
 
 local nodepool           = nuts.pool
 local new_penalty        = nodepool.penalty
@@ -63,12 +59,10 @@ local new_rule           = nodepool.rule
 local new_disc           = nodepool.disc
 
 local nodecodes          = nodes.nodecodes
-local skipcodes          = nodes.skipcodes
-local disccodes          = nodes.disccodes
+local gluecodes          = nodes.gluecodes
 
 local glyph_code         = nodecodes.glyph
-local space_skip_code    = skipcodes.spaceskip
-local explicit_code      = disccodes.explicit
+local spaceskip_code     = gluecodes.spaceskip
 
 local chardata           = characters.data
 local is_punctuation     = characters.is_punctuation
@@ -101,8 +95,7 @@ local function inject_quad_space(unicode,head,current,fraction)
     setattrlist(glue,current)
     setattrlist(current) -- why reset all
     setattr(glue,a_character,unicode)
-    head, current = insert_node_after(head,current,glue)
-    return head, current
+    return insert_node_after(head,current,glue)
 end
 
 local function inject_char_space(unicode,head,current,parent)
@@ -112,8 +105,7 @@ local function inject_char_space(unicode,head,current,parent)
     setattrlist(glue,current)
     setattrlist(current) -- why reset all
     setattr(glue,a_character,unicode)
-    head, current = insert_node_after(head,current,glue)
-    return head, current
+    return insert_node_after(head,current,glue)
 end
 
 local function inject_nobreak_space(unicode,head,current,space,spacestretch,spaceshrink)
@@ -132,18 +124,17 @@ local function inject_nobreak_space(unicode,head,current,space,spacestretch,spac
         head, current = insert_node_after(head,current,kern)
         head, current = insert_node_after(head,current,penalty)
     end
-    head, current = insert_node_after(head,current,glue)
-    return head, current
+    return insert_node_after(head,current,glue)
 end
 
 local function nbsp(head,current)
     local para = fontparameters[getfont(current)]
     if getattr(current,a_alignstate) == 1 then -- flushright
         head, current = inject_nobreak_space(0x00A0,head,current,para.space,0,0)
-        setsubtype(current,space_skip_code)
+        setsubtype(current,spaceskip_code)
     else
         head, current = inject_nobreak_space(0x00A0,head,current,para.space,para.spacestretch,para.spaceshrink)
-        setsubtype(current,space_skip_code)
+        setsubtype(current,spaceskip_code)
     end
     return head, current
 end
@@ -152,27 +143,13 @@ end
 
 function characters.replacenbsp(head,original)
     local head, current = nbsp(head,original)
-    head = remove_node(head,original,true)
-    return head, current
+    return remove_node(head,original,true)
 end
 
--- function characters.replacenbspaces(head)
---     for current in traverse_id(glyph_code,head) do
---         if getchar(current) == 0x00A0 then
---             local h = nbsp(head,current)
---             if h then
---                 head = remove_node(h,current,true)
---             end
---         end
---     end
---     return head
--- end
-
 function characters.replacenbspaces(head)
-    local head = tonut(head)
     local wipe = false
-    for current in traverse_id(glyph_code,head) do -- can be anytiem so no traverse_char
-        if getchar(current) == 0x00A0 then
+    for current, char, font in nextglyph, head do -- can be anytime so no traverse_char
+        if char == 0x00A0 then
             if wipe then
                 head = remove_node(h,current,true)
                 wipe = false
@@ -184,15 +161,16 @@ function characters.replacenbspaces(head)
         end
     end
     if wipe then
-        head = remove_node(h,current,true)
+        head = remove_node(head,current,true)
     end
-    return tonode(head)
+    return head
 end
 
 -- This initialization might move someplace else if we need more of it. The problem is that
 -- this module depends on fonts so we have an order problem.
 
 local nbsphash = { } setmetatableindex(nbsphash,function(t,k)
+    -- this needs checking !
     for i=unicodeblocks.devanagari.first,unicodeblocks.devanagari.last do nbsphash[i] = true end
     for i=unicodeblocks.kannada   .first,unicodeblocks.kannada   .last do nbsphash[i] = true end
     setmetatableindex(nbsphash,nil)
@@ -209,11 +187,11 @@ local methods = {
     [0x001F] = function(head,current) -- kind of special
         local next = getnext(current)
         if next then
-            local char = isglyph(next)
+            local char, font = isglyph(next)
             if char then
                 head, current = remove_node(head,current,true)
                 if not is_punctuation[char] then
-                    local p = fontparameters[getfont(next)]
+                    local p = fontparameters[font]
                     head, current = insert_node_before(head,current,new_glue(p.space,p.space_stretch,p.space_shrink))
                 end
             end
@@ -319,9 +297,7 @@ local methods = {
 characters.methods = methods
 
 -- function characters.handler(head) -- todo: use traverse_id
---     head = tonut(head)
 --     local current = head
---     local done = false
 --     while current do
 --         local char, id = isglyph(current)
 --         if char then
@@ -335,47 +311,39 @@ characters.methods = methods
 --                 if h then
 --                     head = remove_node(h,current,true)
 --                 end
---                 done = true
 --             end
 --             current = next
 --         else
 --             current = getnext(current)
 --         end
 --     end
---     return tonode(head), done
+--     return head
 -- end
-
--- for current, char, font in traverse_char_data(head) will save 0.015 on a 300 page doc
 
 -- this also works ok in math as we run over glyphs and these stay glyphs ... not sure
 -- about scripts and such but that is not important anyway ... some day we can consider
 -- special definitions in math
 
 function characters.handler(head)
-    local head = tonut(head)
     local wipe = false
-    for current in traverse_char(head) do
-        local char = getchar(current)
-        if char then
-            local method = methods[char]
-            if method then
-                if wipe then
-                    head = remove_node(head,wipe,true)
-                    wipe = false
-                end
-                if trace_characters then
-                    report_characters("replacing character %C, description %a",char,lower(chardata[char].description))
-                end
-                local h = method(head,current)
-                if h then
-                    wipe = current
-                end
-                done = true
+    for current, char in nextchar, head do
+        local method = methods[char]
+        if method then
+            if wipe then
+                head = remove_node(head,wipe,true)
+                wipe = false
+            end
+            if trace_characters then
+                report_characters("replacing character %C, description %a",char,lower(chardata[char].description))
+            end
+            local h = method(head,current)
+            if h then
+                wipe = current
             end
         end
     end
     if wipe then
         head = remove_node(head,wipe,true)
     end
-    return tonode(head), done
+    return head
 end

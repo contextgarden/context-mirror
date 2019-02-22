@@ -19,15 +19,11 @@ local fastcopy = table.fastcopy
 local formatters = string.formatters
 
 local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-
-local getfont            = nuts.getfont
-local getchar            = nuts.getchar
 
 local setfont            = nuts.setfont
 
-local traverse_id        = nuts.traverse_id
-local traverse_char      = nuts.traverse_char
+----- traverse_char      = nuts.traverse_char
+local nextchar           = nuts.traversers.char
 
 local settings_to_hash   = utilities.parsers.settings_to_hash
 
@@ -47,27 +43,37 @@ collections.definitions  = definitions
 local vectors            = collections.vectors or { }
 collections.vectors      = vectors
 
-local fonthashes         = fonts.hashes
-local fonthelpers        = fonts.helpers
+local helpers            = fonts.helpers
+local charcommand        = helpers.commands.char
+local rightcommand       = helpers.commands.right
+local addprivate         = helpers.addprivate
+local hasprivate         = helpers.hasprivate
+local fontpatternhassize = helpers.fontpatternhassize
 
-local fontdata           = fonthashes.identifiers
-local fontquads          = fonthashes.quads
-local chardata           = fonthashes.characters
-local propdata           = fonthashes.properties
-
-local addprivate         = fonthelpers.addprivate
-local hasprivate         = fonthelpers.hasprivate
+local hashes             = fonts.hashes
+local fontdata           = hashes.identifiers
+local fontquads          = hashes.quads
+local chardata           = hashes.characters
+local propdata           = hashes.properties
+local mathparameters     = hashes.mathparameters
 
 local currentfont        = font.current
 local addcharacters      = font.addcharacters
-
-local fontpatternhassize = fonts.helpers.fontpatternhassize
 
 local implement          = interfaces.implement
 
 local list               = { }
 local current            = 0
 local enabled            = false
+
+local validvectors       = table.setmetatableindex(function(t,k)
+    local v = false
+    if not mathparameters[k] then
+        v = vectors[k]
+    end
+    t[k] = v
+    return v
+end)
 
 local function checkenabled()
     -- a bit ugly but nicer than a fuzzy state while defining math
@@ -113,6 +119,23 @@ function collections.define(name,font,ranges,details)
     end
     details = settings_to_hash(details)
     -- todo, combine per font start/stop as arrays
+    local offset = details.offset
+    if type(offset) == "string" then
+        offset = characters.getrange(offset,true) or false
+    else
+        offset = tonumber(offset) or false
+    end
+    local target = details.target
+    if type(target) == "string" then
+        target = characters.getrange(target,true) or false
+    else
+        target = tonumber(target) or false
+    end
+    local rscale   = tonumber (details.rscale) or 1
+    local force    = toboolean(details.force,true)
+    local check    = toboolean(details.check,true)
+    local factor   = tonumber(details.factor)
+    local features = details.features
     for s in gmatch(ranges,"[^, ]+") do
         local start, stop, description, gaps = characters.getrange(s,true)
         if start and stop then
@@ -127,24 +150,19 @@ function collections.define(name,font,ranges,details)
                     end
                 end
             end
-            local offset = details.offset
-            if type(offset) == "string" then
-                local start = characters.getrange(offset,true)
-                offset = start or false
-            else
-                offset = tonumber(offset) or false
-            end
             d[#d+1] = {
                 font     = font,
                 start    = start,
                 stop     = stop,
                 gaps     = gaps,
                 offset   = offset,
-                rscale   = tonumber (details.rscale) or 1,
-                force    = toboolean(details.force,true),
-                check    = toboolean(details.check,true),
-                factor   = tonumber(details.factor),
-                features = details.features,
+                target   = target,
+                rscale   = rscale,
+                force    = force,
+                check    = check,
+                method   = details.method,
+                factor   = factor,
+                features = features,
             }
         end
     end
@@ -163,6 +181,32 @@ end
 -- check: when true, only set when present in font
 -- force: when false, then not set when already set
 
+local uccodes = characters.uccodes
+local lccodes = characters.lccodes
+
+local methods = {
+    lowercase = function(oldchars,newchars,vector,start,stop,cloneid)
+        for k, v in next, oldchars do
+            if k >= start and k <= stop then
+                local lccode = lccodes[k]
+                if k ~= lccode and newchars[lccode] then
+                    vector[k] = { cloneid, lccode }
+                end
+            end
+        end
+    end,
+    uppercase = function(oldchars,newchars,vector,start,stop,cloneid)
+        for k, v in next, oldchars do
+            if k >= start and k <= stop then
+                local uccode = uccodes[k]
+                if k ~= uccode and newchars[uccode] then
+                    vector[k] = { cloneid, uccode }
+                end
+            end
+        end
+    end,
+}
+
 function collections.clonevector(name)
     statistics.starttiming(fonts)
     if trace_collecting then
@@ -179,7 +223,9 @@ function collections.clonevector(name)
         local check      = definition.check
         local force      = definition.force
         local offset     = definition.offset or start
-        local remap      = definition.remap
+        local remap      = definition.remap -- not used
+        local target     = definition.target
+        local method     = definition.method
         local cloneid    = list[i]
         local oldchars   = fontdata[current].characters
         local newchars   = fontdata[cloneid].characters
@@ -188,28 +234,60 @@ function collections.clonevector(name)
             vector.factor = factor
         end
         if trace_collecting then
-            report_fonts("remapping font %a to %a for range %U - %U",current,cloneid,start,stop)
+            if target then
+                report_fonts("remapping font %a to %a for range %U - %U, offset %X, target %U",current,cloneid,start,stop,offset,target)
+            else
+                report_fonts("remapping font %a to %a for range %U - %U, offset %X",current,cloneid,start,stop,offset)
+            end
         end
-        if check then
-            for unicode = start, stop do
-                local unic = unicode + offset - start
-                if not newchars[unicode] then
-                    -- not in font
-                elseif force or (not vector[unic] and not oldchars[unic]) then
-                    if remap then
-                        vector[unic] = { cloneid, remap[unicode] }
-                    else
+        if method then
+            method = methods[method]
+        end
+        if method then
+            method(oldchars,newchars,vector,start,stop,cloneid)
+        elseif check then
+            if target then
+                for unicode = start, stop do
+                    local unic = unicode + offset - start
+                    if not newchars[target] then
+                        -- not in font
+                    elseif force or (not vector[unic] and not oldchars[unic]) then
+                        vector[unic] = { cloneid, target }
+                    end
+                    target = target + 1
+                end
+            elseif remap then
+                -- not used
+            else
+                for unicode = start, stop do
+                    local unic = unicode + offset - start
+                    if not newchars[unicode] then
+                        -- not in font
+                    elseif force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = cloneid
                     end
                 end
             end
         else
-            for unicode = start, stop do
-                local unic = unicode + offset - start
-                if force or (not vector[unic] and not oldchars[unic]) then
-                    if remap then
+            if target then
+                for unicode = start, stop do
+                    local unic = unicode + offset - start
+                    if force or (not vector[unic] and not oldchars[unic]) then
+                        vector[unic] = { cloneid, target }
+                    end
+                    target = target + 1
+                end
+            elseif remap then
+                for unicode = start, stop do
+                    local unic = unicode + offset - start
+                    if force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = { cloneid, remap[unicode] }
-                    else
+                    end
+                end
+            else
+                for unicode = start, stop do
+                    local unic = unicode + offset - start
+                    if force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = cloneid
                     end
                 end
@@ -219,8 +297,11 @@ function collections.clonevector(name)
     if trace_collecting then
         report_fonts("activating collection %a for font %a",name,current)
     end
-    checkenabled()
     statistics.stoptiming(fonts)
+    -- for WS: needs checking
+    if validvectors[current] then
+        checkenabled()
+    end
 end
 
 -- we already have this parser
@@ -284,13 +365,16 @@ local function monoslot(font,char,parent,factor)
         local width      = factor * fontquads[parent]
         local character  = characters[char]
         if character then
+            -- runtime patching of the font (can only be new characters)
+            -- instead of messing with existing dimensions
             local data = {
+                -- no features so a simple copy
                 width    = width,
                 height   = character.height,
                 depth    = character.depth,
                 commands = {
-                    { "right", (width - character.width or 0)/2 },
-                    { "slot", 0, char }
+                    rightcommand[(width - character.width or 0)/2],
+                    charcommand[char],
                 }
             }
             local u = addprivate(tfmdata, privatename, data)
@@ -308,12 +392,9 @@ local function monoslot(font,char,parent,factor)
 end
 
 function collections.process(head) -- this way we keep feature processing
-    local done = false
-    for n in traverse_char(tonut(head)) do
-        local font   = getfont(n)
-        local vector = vectors[font]
+    for n, char, font in nextchar, head do
+        local vector = validvectors[font]
         if vector then
-            local char = getchar(n)
             local vect = vector[char]
             if not vect then
                 -- keep it
@@ -326,7 +407,6 @@ function collections.process(head) -- this way we keep feature processing
                     )
                 end
                 setfont(n,newfont,newchar)
-                done = true
             else
                 local fakemono = vector.factor
                 if trace_collecting then
@@ -339,11 +419,10 @@ function collections.process(head) -- this way we keep feature processing
                 else
                     setfont(n,vect)
                 end
-                done = true
             end
         end
     end
-    return head, done
+    return head
 end
 
 function collections.found(font,char) -- this way we keep feature processing

@@ -49,6 +49,10 @@
                     <cd:constant type="all"/>
                     <cd:constant type="packed"/>
                 </cd:parameter>
+                <cd:parameter name="check">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
                 <cd:parameter name="criterium">
                     <cd:constant type="local"/>
                     <cd:constant type="text"/>
@@ -161,6 +165,12 @@
                 </cd:parameter>
                 <cd:parameter name="pagecolor">
                     <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="pageleft">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="pageright">
+                    <cd:constant type="cd:command"/>
                 </cd:parameter>
                 <cd:parameter name="n">
                     <cd:constant type="cd:number"/>
@@ -215,6 +225,10 @@
                     <cd:constant type="no" default="yes"/>
                     <cd:constant type="all"/>
                 </cd:parameter>
+                <cd:parameter name="check">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
                 <cd:parameter name="criterium">
                     <cd:constant type="local"/>
                     <cd:constant type="text"/>
@@ -327,6 +341,12 @@
                 </cd:parameter>
                 <cd:parameter name="pagecolor">
                     <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="pageleft">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="pageright">
+                    <cd:constant type="cd:command"/>
                 </cd:parameter>
                 <cd:parameter name="n">
                     <cd:constant type="cd:number"/>
@@ -544,7 +564,7 @@
             </cd:keywords>
             <cd:index list="yes"/>
         </cd:arguments>
-    </cd:command>        
+    </cd:command>
 
     <cd:command name="stopregister" level="document" category="structure" file="strc-reg.mkiv">
         <cd:arguments>

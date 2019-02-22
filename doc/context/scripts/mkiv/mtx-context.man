@@ -1,4 +1,4 @@
-.TH "mtx-context" "1" "01-01-2018" "version 1.01" "ConTeXt Process Management"
+.TH "mtx-context" "1" "01-01-2019" "version 1.01" "ConTeXt Process Management"
 .SH NAME
 .B mtx-context
 .SH SYNOPSIS
@@ -64,6 +64,9 @@ set directive variables (show list with --showdirectives)
 .TP
 .B --silent=list
 disable logcatgories (show list with --showlogcategories)
+.TP
+.B --strip
+strip Lua code (only meant for production where no errors are expected)
 .TP
 .B --errors=list
 show errors at the end of a run, quit when in list (also when ----silent)
@@ -164,6 +167,9 @@ keep previous tuc files (jobname-tuc-[run].tmp)
 .TP
 .B --keeplog
 keep previous log files (jobname-log-[run].tmp)
+.TP
+.B --lmtx
+force lmtx mode (when available)
 .TP
 .B --extra=name
 process extra (mtx-context-... in distribution)

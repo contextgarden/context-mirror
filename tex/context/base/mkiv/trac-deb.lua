@@ -220,7 +220,13 @@ function tracers.printerror(specification)
     else
         report_nl()
         if luaerrorline then
-            report("lua error on line %s in file %s:\n\n%s",linenumber,filename,lastluaerror)
+            if linenumber == 0 or not filename or filename == "" then
+                print("\nfatal lua error:\n\n",lastluaerror,"\n")
+                os.exit(1)
+                return
+            else
+                report("lua error on line %s in file %s:\n\n%s",linenumber,filename,lastluaerror)
+            end
         elseif lastmpserror then
             report("mp error on line %s in file %s:\n\n%s",linenumber,filename,lastmpserror)
         else
@@ -341,22 +347,25 @@ directives.register("system.showerror", lmx.overloaderror)
 --     trace_calls(n)
 -- end) -- indirect is needed for nilling
 
-local editor = [[scite "-open:%filename%" -goto:%linenumber%]]
+-- Obsolete ... not that usefull as normally one runs from an editor and
+-- when run unattended it makes no sense either.
 
-directives.register("system.editor",function(v)
-    editor = v
-end)
-
-callback.register("call_edit",function(filename,linenumber)
-    if editor then
-        editor = gsub(editor,"%%s",filename)
-        editor = gsub(editor,"%%d",linenumber)
-        editor = gsub(editor,"%%filename%%",filename)
-        editor = gsub(editor,"%%linenumber%%",linenumber)
-        logs.report("system","starting editor: %s",editor)
-        os.execute(editor)
-    end
-end)
+-- local editor = [[scite "-open:%filename%" -goto:%linenumber%]]
+--
+-- directives.register("system.editor",function(v)
+--     editor = v
+-- end)
+--
+-- callback.register("call_edit",function(filename,linenumber)
+--     if editor then
+--         editor = gsub(editor,"%%s",filename)
+--         editor = gsub(editor,"%%d",linenumber)
+--         editor = gsub(editor,"%%filename%%",filename)
+--         editor = gsub(editor,"%%linenumber%%",linenumber)
+--         logs.report("system","starting editor: %s",editor)
+--         os.execute(editor)
+--     end
+-- end)
 
 implement { name = "showtrackers",       actions = trackers.show }
 implement { name = "enabletrackers",     actions = trackers.enable,     arguments = "string" }

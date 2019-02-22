@@ -42,8 +42,12 @@
 %D has to match \type {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2018.04.04 00:51}
+\edef\contextversion{2019.02.22 19:35}
 \edef\contextkind   {beta}
+
+%D Kind of special:
+
+\chardef\contextlmtxmode\directlua{tex.print(CONTEXTLMTXMODE or 0)}\relax
 
 %D For those who want to use this:
 
@@ -77,8 +81,8 @@
 
 %D We just quit if new functionality is expected.
 
-\ifnum\luatexversion<105 % also change message
-    \writestatus{!!!!}{Your luatex binary is too old, you need at least version 1.05!}
+\ifnum\luatexversion<109 % also change message
+    \writestatus{!!!!}{Your luatex binary is too old, you need at least version 1.09!}
     \expandafter\end
 \fi
 
@@ -99,6 +103,7 @@
 \loadmarkfile{luat-cod}
 \loadmarkfile{luat-bas}
 \loadmarkfile{luat-lib}
+\loadmarkfile{luat-soc}
 
 \loadmarkfile{catc-ini}
 \loadmarkfile{catc-act}
@@ -106,6 +111,7 @@
 \loadmarkfile{catc-ctx}
 \loadmarkfile{catc-sym}
 
+\loadmarkfile{toks-ini}
 \loadmarkfile{cldf-ini}
 
 % \tracecatcodetables
@@ -114,7 +120,7 @@
 % \unexpanded long before etex came around.
 
 \loadmarkfile{luat-ini}
-\loadmarkfile{toks-ini}
+\loadmarkfile{toks-scn}
 
 \loadmarkfile{syst-aux}
 \loadmarkfile{syst-lua}
@@ -125,12 +131,17 @@
 
 \loadmarkfile{luat-usr}
 
-% \loadmarkfile{luat-ini} % moved up
-% \loadmarkfile{toks-ini} % moved up
-
 \loadmkvifile{file-ini}
 \loadmkvifile{file-res}
 \loadmkvifile{file-lib}
+
+\doifelsefileexists{core-lmt.mkiv} {\loadmarkfile{core-lmt}} {}
+
+% needs more checking for clashes:
+%
+% no need to register, just execute once, slightly faster
+%
+% \doifelsefileexists{l-macro-imp-codes.lua}{\registerctxluafile{l-macro-imp-codes}{}}{}
 
 \loadmarkfile{supp-dir}
 
@@ -153,6 +164,7 @@
 % \loadmarkfile{luat-ini}
 
 \loadmarkfile{toks-tra}
+\loadmarkfile{toks-aux}
 %loadmarkfile{toks-map} % obsolete, never used
 
 \loadmarkfile{attr-ini}
@@ -169,6 +181,8 @@
 \loadmarkfile{node-fin}
 \loadmarkfile{node-mig}
 %loadmarkfile{node-pag}
+
+\loadmarkfile{driv-ini}
 
 \loadmarkfile{back-ini}
 
@@ -202,6 +216,7 @@
 \loadmkvifile{file-syn}
 \loadmkvifile{file-mod}
 
+\loadmarkfile{core-sys}
 \loadmarkfile{core-con}
 
 \loadmarkfile{cont-fil}
@@ -274,7 +289,6 @@
 \loadmarkfile{spac-lin}
 \loadmarkfile{spac-pag}
 \loadmarkfile{spac-par}
-%loadmarkfile{spac-adj} % no longer needed
 \loadmarkfile{spac-def}
 \loadmkvifile{spac-prf}
 \loadmarkfile{spac-grd}
@@ -296,7 +310,7 @@
 \loadmarkfile{strc-lab}
 \loadmarkfile{strc-syn}
 
-\loadmarkfile{core-sys}
+% \loadmarkfile{core-sys}
 
 \loadmarkfile{page-var}
 \loadmkvifile{page-otr}
@@ -319,9 +333,11 @@
 
 \loadmarkfile{page-pst}
 \loadmkvifile{page-mbk}
-\loadmarkfile{page-mul} % partly overloaded
-\loadmarkfile{page-mix} % new
-\loadmarkfile{page-set}
+%loadmarkfile{page-mul} % \usecolumns[old-multicolumns]
+\loadmarkfile{page-mix}
+\loadmarkfile{page-smp}
+%loadmarkfile{page-set} % \usecolumns[old-columnsets]
+\loadmarkfile{page-cst}
 \loadmarkfile{page-pcl} % new
 \loadmarkfile{pack-lyr}
 \loadmarkfile{pack-pos}
@@ -507,6 +523,7 @@
 
 \loadmkvifile{strc-not}
 \loadmkvifile{strc-lnt}
+\loadmkivfile{strc-usr}
 
 \loadmarkfile{pack-com}
 \loadmarkfile{typo-del}
@@ -547,7 +564,7 @@
 
 \loadmarkfile{cont-log}
 
-\loadmarkfile{task-ini}
+% \loadmarkfile{task-ini}
 
 \loadmarkfile{cldf-ver} % verbatim, this can come late
 \loadmarkfile{cldf-com} % commands, this can come late
@@ -565,12 +582,23 @@
 \loadmarkfile{back-exp}
 
 \loadmarkfile{back-pdf} % actually, this one should load the next three using document.arguments.backend
+
 \loadmarkfile{mlib-pdf}
 \loadmarkfile{mlib-pps}
 \loadmarkfile{meta-pdf}
+\loadmarkfile{meta-blb}
 \loadmarkfile{grph-epd}
 
+\loadmarkfile{math-inc} % an experiment
+\loadmarkfile{publ-inc} % an experiment
+
+\loadmarkfile{task-ini}
+
+\loadmarkfile{syst-cmp} % compatibility stuff moved here
+
 \loadmarkfile{cont-run} % the main runner (used in cont-yes.mkiv)
+
+\doifelsefileexists{driv-shp.mkiv} {\loadmarkfile{driv-shp}} {}
 
 \setupcurrentlanguage[\defaultlanguagetag]
 
@@ -581,6 +609,14 @@
 \appendtoks
     \ctxlua{statistics.stoptiming(statistics)}%
 \to \everyjob
+
+% \appendtoks
+%     \ctxlua{job.prepare()}%
+% \to \everyjob
+
+% \appendtoks
+%     \enabletrackers[*]%
+% \to \everyjob
 
 \appendtoks
     \ctxlua{statistics.savefmtstatus("\jobname","\contextversion","context.mkiv","\contextkind","\contextbanner")}% can become automatic

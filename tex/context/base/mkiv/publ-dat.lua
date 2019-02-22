@@ -22,6 +22,10 @@ if not characters then
     dofile(resolvers.findfile("char-tex.lua"))
 end
 
+if not utilities.sequencers then
+    dofile(resolvers.findfile("util-seq.lua"))
+end
+
 local lower, find, sub = string.lower, string.find, string.sub
 local concat, copy, tohash = table.concat, table.copy, table.tohash
 local next, type, rawget, tonumber = next, type, rawget, tonumber
@@ -30,7 +34,7 @@ local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local textoutf = characters and characters.tex.toutf
 local settings_to_hash, settings_to_array = utilities.parsers.settings_to_hash, utilities.parsers.settings_to_array
 local formatters = string.formatters
-local sortedkeys, sortedhash, keys = table.sortedkeys, table.sortedhash, table.keys
+local sortedkeys, sortedhash, keys, sort = table.sortedkeys, table.sortedhash, table.keys, table.sort
 local xmlcollected, xmltext, xmlconvert = xml.collected, xml.text, xml.convert
 local setmetatableindex = table.setmetatableindex
 
@@ -439,7 +443,7 @@ do
     ----- command   = P("\\") * (Carg(1) * C(R("az","AZ")^1) * space^0 / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
     local command   = P("\\") * (Carg(1) * C(csletter^1) * space^0 / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
     local whatever  = P("\\") * P(" ")^1 / " "
-                    + P("\\") * ( P("hbox") + P("raise") ) -- bah
+    -----           + P("\\") * ( P("hbox") + P("raise") ) -- bah -- no longer
     local somemath  = P("$") * ((1-P("$"))^1) * P("$") -- let's not assume nested math
     ----- character = lpegpatterns.utf8character
     local any       = P(1)
@@ -481,6 +485,8 @@ do
     -- todo: fields     : metatable that lowers
 
     local tags = table.setmetatableindex("table")
+
+    local indirectcrossrefs = true
 
     local function do_definition(category,tag,tab,dataset)
         publicationsstats.nofdefinitions = publicationsstats.nofdefinitions + 1
@@ -529,11 +535,23 @@ do
                     value = lpegmatch(filter_2,value,1,dataset.commands) -- we need to start at 1 for { }
                 end
                 if normalized == "crossref" then
-                    local parent = luadata[value]
-                    if parent then
-                        setmetatableindex(entries,parent)
+                    if indirectcrossrefs then
+                        setmetatableindex(entries,function(t,k)
+                            local parent = rawget(luadata,value)
+                            if parent == entries then
+                                report_duplicates("bad parent %a for %a in dataset %s",value,hashtag,dataset.name)
+                                setmetatableindex(entries,nil)
+                                return entries
+                            elseif parent then
+                                setmetatableindex(entries,parent)
+                                return entries[k]
+                            else
+                                report_duplicates("no valid parent %a for %a in dataset %s",value,hashtag,dataset.name)
+                                setmetatableindex(entries,nil)
+                            end
+                        end)
                     else
-                        -- warning
+                        dataset.nofcrossrefs = dataset.nofcrossrefs +1
                     end
                 end
                 entries[normalized] = value
@@ -640,16 +658,17 @@ do
     local somevalue  = d_value + b_value + s_value + r_value + n_value + e_value
     local value      = Cs((somevalue * ((spacing * hash * spacing)/"" * somevalue)^0))
 
-    local stripper   = lpegpatterns.stripper
-          value      = value / function(s) return lpegmatch(stripper,s) end
+    local stripper   = lpegpatterns.collapser
+    local stripped   = value / function(s) return lpegmatch(stripper,s) end
 
     local forget     = percent^1 * (1-lineending)^0
     local spacing    = spacing * forget^0 * spacing
-    local assignment = spacing * key * spacing * equal * spacing * value * spacing
+    local replacement= spacing * key * spacing * equal * spacing * value    * spacing
+    local assignment = spacing * key * spacing * equal * spacing * stripped * spacing
     local definition = category * spacing * left * spacing * tag * spacing * comma * Ct((assignment * comma^0)^0) * spacing * right * Carg(1) / do_definition
 
     local crapword   = C((1-space-left)^1)
-    local shortcut   = Cmt(crapword,function(_,p,s) return lower(s) == "string"  and p end) * spacing * left * ((assignment * Carg(1))/do_shortcut * comma^0)^0  * spacing * right
+    local shortcut   = Cmt(crapword,function(_,p,s) return lower(s) == "string"  and p end) * spacing * left * ((replacement * Carg(1))/do_shortcut * comma^0)^0  * spacing * right
     local comment    = Cmt(crapword,function(_,p,s) return lower(s) == "comment" and p end) * spacing * lpegpatterns.argument * Carg(1) / do_comment
 
     local casecrap   = #S("sScC") * (shortcut + comment)
@@ -682,12 +701,37 @@ do
         statistics.starttiming(publications)
         publicationsstats.nofbytes = publicationsstats.nofbytes + size
         current.nofbytes = current.nofbytes + size
+        current.nofcrossrefs = 0
         if source then
             table.insert(current.sources, { filename = source, checksum = md5.HEX(content) })
             current.loaded[source] = kind or true
         end
-        current.newtags = #current.luadata > 0 and { } or current.newtags
+        local luadata = current.luadata
+        current.newtags = #luadata > 0 and { } or current.newtags
         lpegmatch(bibtotable,content or "",1,current)
+        if current.nofcrossrefs > 0 then
+            for tag, entries in next, luadata do
+                local value = entries.crossref
+                if value then
+                    local parent = luadata[value]
+                    if parent == entries then
+                        report_duplicates("bad parent %a for %a in dataset %s",value,hashtag,dataset.name)
+                    elseif parent then
+                        local t = { }
+                        for k, v in next, parent do
+                            if not entries[k] then
+                                entries[k] = v
+                                t[#t+1] = k
+                            end
+                        end
+                        sort(t)
+                        entries.inherited = concat(t,",")
+                    else
+                        report_duplicates("no valid parent %a for %a in dataset %s",value,hashtag,dataset.name)
+                    end
+                end
+            end
+        end
         statistics.stoptiming(publications)
     end
 
@@ -708,22 +752,27 @@ do
 
     local compact = false -- can be a directive but then we also need to deal with newlines ... not now
 
-    function publications.converttoxml(dataset,nice,dontstore,usedonly,subset) -- we have fields !
+    function publications.converttoxml(dataset,nice,dontstore,usedonly,subset,noversion,rawtoo) -- we have fields !
         local current = datasets[dataset]
         local luadata = subset or (current and current.luadata)
         if luadata then
             statistics.starttiming(publications)
             --
             local result, r, n = { }, 0, 0
-            local usedonly = usedonly and publications.usedentries()
+            if usedonly then
+                usedonly = publications.usedentries()
+                usedonly = usedonly[current.name]
+            end
             --
             r = r + 1 ; result[r] = "<?xml version='1.0' standalone='yes'?>"
-            r = r + 1 ; result[r] = "<bibtex>"
+            r = r + 1 ; result[r] = formatters["<bibtex dataset='%s'>"](current.name)
             --
             if nice then -- will be default
                 local f_entry_start = formatters[" <entry tag='%s' category='%s' index='%s'>"]
                 local s_entry_stop  = " </entry>"
                 local f_field       = formatters["  <field name='%s'>%s</field>"]
+                local f_cdata       = formatters["  <field name='rawbibtex'><![CDATA[%s]]></field>"]
+
                 for tag, entry in sortedhash(luadata) do
                     if not usedonly or usedonly[tag] then
                         r = r + 1 ; result[r] = f_entry_start(tag,entry.category,entry.index)
@@ -736,6 +785,11 @@ do
                                     r = r + 1 ; result[r] = f_field(key,value)
                                 end
                             end
+                        end
+                        if rawtoo then
+                            local s = publications.savers.bib(current,false,{ [tag] = entry })
+                            s = utilities.strings.striplines(s,"prune and collapse")
+                            r = r + 1 ; result[r] = f_cdata(s)
                         end
                         r = r + 1 ; result[r] = s_entry_stop
                         n = n + 1
@@ -766,7 +820,7 @@ do
             --
             r = r + 1 ; result[r] = "</bibtex>"
             --
-            result = concat(result,nice and "\n" or nil)
+            result = concat(result,nice and "\n" or nil,noversion and 2 or 1,#result)
             --
             if dontstore then
                 -- indeed
@@ -1084,7 +1138,7 @@ do
     \ifdefined\btxcmd
         % we're probably in context
     \else
-        \def\btxcmd#1{\csname#1\endcsname}
+        \def\btxcmd#1{\begincsname#1\endcsname}
     \fi
 }
 
@@ -1094,8 +1148,8 @@ do
         local f_start = formatters["@%s{%s,\n"]
         local f_field = formatters["  %s = {%s},\n"]
         local s_stop  = "}\n\n"
-        local result  = { s_preamble }
-        local n, r = 0, 1
+        local result  = { }
+        local n, r = 0, 0
         for tag, data in sortedhash(tobesaved) do
             r = r + 1 ; result[r] = f_start(data.category or "article",tag)
             for key, value in sortedhash(data) do
@@ -1106,8 +1160,16 @@ do
             r = r + 1 ; result[r] = s_stop
             n = n + 1
         end
-        report("%s entries from dataset %a saved in %a",n,dataset,filename)
-        io.savedata(filename,concat(result))
+        result = concat(result)
+        if find(result,"\\btxcmd") then
+            result = s_preamble .. result
+        end
+        if filename then
+            report("%s entries from dataset %a saved in %a",n,dataset,filename)
+            io.savedata(filename,result)
+        else
+            return result
+        end
     end
 
     function savers.lua(dataset,filename,tobesaved)
@@ -1127,8 +1189,8 @@ do
         table.save(filename,list)
     end
 
-    function savers.xml(dataset,filename,tobesaved)
-        local result, n = publications.converttoxml(dataset,true,true,false,tobesaved)
+    function savers.xml(dataset,filename,tobesaved,rawtoo)
+        local result, n = publications.converttoxml(dataset,true,true,false,tobesaved,false,rawtoo)
         report("%s entries from dataset %a saved in %a",n,dataset,filename)
         io.savedata(filename,result)
     end
@@ -1174,6 +1236,8 @@ do
         statistics.stoptiming(publications)
         return dataset
     end
+
+    publications.savers = savers
 
     if implement then
 
@@ -1248,3 +1312,18 @@ do
     writers.pagenumber = writers.range
 
 end
+
+if implement then
+
+    implement {
+        name      = "btxshortcut",
+        arguments = "2 strings",
+        actions   = function(instance,key)
+            local d = publications.datasets[instance]
+            context(d and d.shortcuts[key] or "?")
+        end,
+    }
+
+end
+
+-- inspect(publications.load { filename = "e:/tmp/oeps.bib" })

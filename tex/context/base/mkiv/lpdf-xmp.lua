@@ -11,6 +11,7 @@ local tostring, type = tostring, type
 local format, gsub = string.format, string.gsub
 local utfchar = utf.char
 local xmlfillin = xml.fillin
+local md5HEX = md5.HEX
 
 local trace_xmp  = false  trackers.register("backend.xmp",  function(v) trace_xmp  = v end)
 local trace_info = false  trackers.register("backend.info", function(v) trace_info = v end)
@@ -33,7 +34,7 @@ local pdfgetmetadata       = lpdf.getmetadata
 -- XMP-Toolkit-SDK-CC201607.zip. So we hardcode the id.
 
 local xpacket = format ( [[
-<?xpacket begin="﻿%s" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<?xpacket begin="%s" id="W5M0MpCehiHzreSzNTczkc9d"?>
 
 %%s
 
@@ -46,7 +47,8 @@ local mapping = {
     ["ConTeXt.Url"]          = { "context", "rdf:Description/pdfx:ConTeXt.Url" },
     ["ConTeXt.Support"]      = { "context", "rdf:Description/pdfx:ConTeXt.Support" },
     ["ConTeXt.Version"]      = { "context", "rdf:Description/pdfx:ConTeXt.Version" },
-    ["TeX.Support"]          = { "metadata", "rdf:Description/pdfx:TeX.Support" },
+    ["ConTeXt.LMTX"]         = { "context", "rdf:Description/pdfx:ConTeXt.LMTX" },
+    ["TeX.Support"]          = { "metadata","rdf:Description/pdfx:TeX.Support" },
     ["LuaTeX.Version"]       = { "metadata","rdf:Description/pdfx:LuaTeX.Version" },
     ["LuaTeX.Functionality"] = { "metadata","rdf:Description/pdfx:LuaTeX.Functionality" },
     ["LuaTeX.LuaVersion"]    = { "metadata","rdf:Description/pdfx:LuaTeX.LuaVersion" },
@@ -89,7 +91,7 @@ local mapping = {
     ["CaptionWriter"]        = { "metadata", "rdf:Description/photoshop:CaptionWriter" },
 }
 
-pdf.setsuppressoptionalinfo(
+lpdf.setsuppressoptionalinfo (
         0 --
     +   1 -- pdfnofullbanner
     +   2 -- pdfnofilename
@@ -104,59 +106,62 @@ pdf.setsuppressoptionalinfo(
 )
 
 local included = backends.included
-
-local pdfsettrailerid = pdf.settrailerid
-
-local lpdfid = lpdf.id
+local lpdfid   = lpdf.id
 
 function lpdf.id() -- overload of ini
     return lpdfid(included.date)
 end
 
-pdf.disablecommand("settrailerid")
+local settrailerid = lpdf.settrailerid -- this is the wrapped one
 
-function lpdf.settrailerid(v)
-    if v then
-        local b = toboolean(v) or v == ""
+local trailerid = nil
+local dates     = nil
+
+local function update()
+    if trailer_id then
+        local b = toboolean(trailer_id) or trailer_id == ""
         if b then
-            v = "This file is processed by ConTeXt and LuaTeX."
+            trailer_id = "This file is processed by ConTeXt and LuaTeX."
         else
-            v = tostring(v)
+            trailer_id = tostring(trailer_id)
         end
-        local h = md5.HEX(v)
+        local h = md5HEX(trailer_id)
         if b then
             report_info("using frozen trailer id")
         else
-            report_info("using hashed trailer id %a (%a)",v,h)
+            report_info("using hashed trailer id %a (%a)",trailer_id,h)
         end
-        pdfsettrailerid(format("[<%s> <%s>]",h,h))
+        settrailerid(format("[<%s> <%s>]",h,h))
     end
-end
-
-function lpdf.setdates(v)
-    local t = type(v)
+    --
+    local t = type(dates)
     if t == "number" or t == "string" then
-        t = converters.totime(v)
-        if t then
+        local d = converters.totime(dates)
+        if d then
             included.date = true
             included.id   = "fake"
-            report_info("forced date/time information %a will be used",lpdf.settime(t))
-            lpdf.settrailerid(false)
+            report_info("forced date/time information %a will be used",lpdf.settime(d))
+            settrailerid(false)
             return
         end
-    end
-    v = toboolean(v)
-    included.date = v
-    if v then
-        included.id = true
-    else
-        report_info("no date/time but fake id information will be added")
-        lpdf.settrailerid(true)
-        included.id = "fake"
-     -- maybe: lpdf.settime(231631200) -- 1975-05-05 % first entry of knuth about tex mentioned in DT
+        if t == "string" then
+            dates = toboolean(dates)
+            included.date = dates
+            if dates ~= false then
+                included.id = true
+            else
+                report_info("no date/time but fake id information will be added")
+                settrailerid(true)
+                included.id = "fake"
+            end
+        end
     end
 end
 
+function lpdf.settrailerid(v) trailerid = v end
+function lpdf.setdates    (v) dates     = v end
+
+lpdf.registerdocumentfinalizer(update,"trailer id and dates",1)
 
 directives.register("backend.trailerid", lpdf.settrailerid)
 directives.register("backend.date",      lpdf.setdates)
@@ -313,7 +318,7 @@ local function flushxmpinfo()
     commands.poprandomseed() -- hack
 end
 
---  his will be enabled when we can inhibit compression for a stream at the lua end
+--  this will be enabled when we can inhibit compression for a stream at the lua end
 
 lpdf.registerdocumentfinalizer(flushxmpinfo,1,"metadata")
 

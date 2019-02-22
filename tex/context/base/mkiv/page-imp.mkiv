@@ -26,7 +26,7 @@
 \newtoks\t_page_text_data
 
 \unexpanded\def\starttextdata#1\stoptextdata
-  {\global\let\page_shipouts_flush_text_data\page_shipouts_flush_text_data_indeed
+  {\glet\page_shipouts_flush_text_data\page_shipouts_flush_text_data_indeed
    \globaladdtotoks\t_page_text_data{#1}}
 
 \let\stoptextdata\relax
@@ -34,7 +34,7 @@
 \def\page_shipouts_flush_text_data_indeed
   {\vsmashed{\the\t_page_text_data}%
    \global\t_page_text_data\emptytoks
-   \global\let\page_shipouts_flush_text_data\relax}
+   \glet\page_shipouts_flush_text_data\relax}
 
 \let\page_shipouts_flush_text_data\relax
 
@@ -63,22 +63,27 @@
 
 \newbox        \shipoutscratchbox
 
-\setnewconstant\shipoutfinalizemethod\plusone % this will be default (we will have two finalizers)
+\setnewconstant\shipoutfinalizemethod\plusone
 
-\unexpanded\def\installshipoutmethod#1#2%                   % a handler takes one argument: something to be boxed
+\unexpanded\def\shipoutrange#1#2%
+  {\begingroup
+   \scratchtoks\emptytoks
+   \dostepwiserecurse{#1}{\numexpr#2-\plusone\relax}\plusone{\etoksapp\scratchtoks{##1,}}%
+   \xdef\pagestoshipout{\the\scratchtoks,\number#2}%
+   \doglobal\appendtoks
+     \ifnum\realpageno>\numexpr#2+\plusone\relax
+       \global\everypar{\normalend}%
+     \fi
+   \to\everyaftershipout
+   \endgroup}
+
+\unexpanded\def\installshipoutmethod#1#2%      % a handler takes one argument: something to be boxed
   {\setgvalue{\??shipoutmethod#1}##1{#2{##1}}} % and shipped out (don't depend on the exact package)
 
 \let\installpagehandler\installshipoutmethod % will go
 
 \unexpanded\def\invokepagehandler#1%
   {\expandnamespacevalue\??shipoutmethod{#1}\v!normal}
-
-% \def\page_shipouts_handle
-%   {\csname\??shipoutmethod\ifcsname\??shipoutmethod\v_page_target_method\endcsname
-%      \v_page_target_method
-%    \else
-%      \v!none
-%    \fi\endcsname}
 
 \def\page_shipouts_handle
   {\ifcsname\??shipoutmethod\v_page_target_method\endcsname
@@ -112,12 +117,14 @@
      \page_boxes_flush_before
    \fi
    \the\everybeforeshipout
-   \ifcase\shipoutfinalizemethod
+   \ifcase\shipoutfinalizemethod % not nice ... needs thinking
      \page_shipouts_handle{#1}%
    \else
-     \setbox\shipoutscratchbox\hpack{#1}% just in case there are objects there, hook for testing (will go away)
-     \finalizeshipoutbox\shipoutscratchbox
-     \page_shipouts_handle{\box\shipoutscratchbox}%
+     \setbox\shipoutscratchbox\hpack
+       {#1}% just in case there are objects there, hook for testing (will go away)
+     \page_shipouts_handle
+       {\finalizeshipoutbox\shipoutscratchbox
+        \box\shipoutscratchbox}%
    \fi
    \setnextrealpageno       % so this comes before \everyaftershipout so in fact:
    \the\everyaftershipout   % at this point we're already on the next realpage
@@ -127,11 +134,12 @@
 
 \def\page_shipouts_ignore#1%
   {\begingroup
-   \message
-     {[\ifarrangingpages arranged \fi page
+   \writestatus\m!system
+     {\ifarrangingpages arranged \fi page
        \ifarrangingpages\the\arrangeno\else\the\realpageno\fi\normalspace
-       not flushed]}%
-   \setbox\scratchbox\hpack{#1}%
+       not flushed}%
+ % \setbox\scratchbox\hpack
+ %   {#1}% no finalize
    \deadcycles\zerocount
    \endgroup}
 
@@ -154,7 +162,11 @@
    \box\scratchbox
    \endgroup}
 
-\newdimen\d_page_shipouts_offset \d_page_shipouts_offset=-1in
+\ifdefined \page_shipout_box \else
+
+    \def\page_shipout_box#1{\normalshipout\box#1\relax} % takes a number
+
+\fi
 
 \def\page_shipouts_normal#1%
   {\global\advance\shippedoutpages\plusone
@@ -173,30 +185,36 @@
      \normalexpanded{\doifelseinset{\the\shippedoutpages}{\pagestoshipout}}\donetrue\donefalse
    \fi
    \ifdone
-     \setbox\shipoutscratchbox\hpack{#1}%
+     \setbox\shipoutscratchbox\hpack
+       {#1}% finalizes
      \ifcase\shipoutfinalizemethod
        \finalizeshipoutbox\shipoutscratchbox
      \fi
-     \normalshipout\vpack
-       {\offinterlineskip
-        \vskip\d_page_shipouts_offset
-        \hskip\d_page_shipouts_offset
+     \setbox\shipoutscratchbox\vpack
+       {\scratchdimen\clf_shipoutoffset\relax
+        \ifdim\scratchdimen=\zeropoint\else
+          \offinterlineskip
+          \vkern\scratchdimen
+          \hkern\scratchdimen
+        \fi
         \hpack
           {\page_otr_flush_every_stuff
            \page_otr_flush_special_content
            \box\shipoutscratchbox}}%
+     \page_shipout_box\shipoutscratchbox % takes a box number!
    \else
      \page_shipouts_ignore{#1}%
    \fi}
 
 \def\page_shipouts_arrange#1%
-  {% \global\advance\shippedoutpages\plusone
-   \begingroup
-   \setbox\scratchbox\hpack
+  {\begingroup
+   \setbox\shipoutscratchbox\hpack
+     {#1}% finalizes
+   \setbox\shipoutscratchbox\hpack
      {\page_otr_flush_every_stuff
       \page_otr_flush_special_content
       \box\shipoutscratchbox}%
-   \pusharrangedpage\scratchbox
+   \pusharrangedpage\shipoutscratchbox
    \deadcycles\zerocount
    \endgroup}
 
@@ -310,14 +328,14 @@
 \let\pusharrangedpage\relax
 
 \def\dosetuparrangement#1#2#3#4#5#6#7#8%
-  {\global\arrangedpageX         #1%
-   \global\arrangedpageY         #2%
-   \global\arrangedpageT         #3%
-   \global\c_page_marks_nx       #4%
-   \global\c_page_marks_ny       #5%
-   \global\let\pusharrangedpage  #6%
-   \global\let\poparrangedpages  #7%
-   \global\let\handlearrangedpage#8}
+  {\global\arrangedpageX     #1%
+   \global\arrangedpageY     #2%
+   \global\arrangedpageT     #3%
+   \global\c_page_marks_nx   #4%
+   \global\c_page_marks_ny   #5%
+   \glet  \pusharrangedpage  #6%
+   \glet  \poparrangedpages  #7%
+   \glet  \handlearrangedpage#8}
 
 \installpagearrangement {\v!normal}
   {\global\arrangingpagesfalse}

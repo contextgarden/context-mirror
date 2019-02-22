@@ -49,7 +49,9 @@ local function gref(descriptions,n)
             return f_unicode(n)
         end
     elseif n then
-        local num, nam, j = { }, { }, 0
+        local num = { }
+        local nam = { }
+        local j   = 0
         for i=1,#n do
             local ni = n[i]
             if tonumber(ni) then -- first is likely a key
@@ -121,8 +123,8 @@ local basehash, basehashes, applied = { }, 1, { }
 
 local function registerbasehash(tfmdata)
     local properties = tfmdata.properties
-    local hash = concat(applied," ")
-    local base = basehash[hash]
+    local hash       = concat(applied," ")
+    local base       = basehash[hash]
     if not base then
         basehashes     = basehashes + 1
         base           = basehashes
@@ -310,13 +312,16 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
 
         for i=1,nofligatures do
             local ligature = ligatures[i]
-            local unicode, tree = ligature[1], ligature[2]
+            local unicode  = ligature[1]
+            local tree     = ligature[2]
             make_1(present,tree,"ctx_"..unicode)
         end
 
         for i=1,nofligatures do
-            local ligature = ligatures[i]
-            local unicode, tree, lookupname = ligature[1], ligature[2], ligature[3]
+            local ligature   = ligatures[i]
+            local unicode    = ligature[1]
+            local tree       = ligature[2]
+            local lookupname = ligature[3]
             make_2(present,tfmdata,characters,tree,"ctx_"..unicode,unicode,unicode,done,sequence)
         end
 
@@ -415,36 +420,42 @@ local function checkmathreplacements(tfmdata,fullname,fixitalics)
             for unicode, replacement in next, changed do
                 local u = characters[unicode]
                 local r = characters[replacement]
-                local n = u.next
-                local v = u.vert_variants
-                local h = u.horiz_variants
-                if fixitalics then
-                    -- quite some warnings on stix ...
-                    local ui = u.italic
-                    if ui and not r.italic then
-                        if trace_preparing then
-                            report_prepare("using %i units of italic correction from %C for %U",ui,unicode,replacement)
+                if u and r then
+                    local n = u.next
+                    local v = u.vert_variants
+                    local h = u.horiz_variants
+                    if fixitalics then
+                        -- quite some warnings on stix ...
+                        local ui = u.italic
+                        if ui and not r.italic then
+                            if trace_preparing then
+                                report_prepare("using %i units of italic correction from %C for %U",ui,unicode,replacement)
+                            end
+                            r.italic = ui -- print(ui,ri)
                         end
-                        r.italic = ui -- print(ui,ri)
                     end
-                end
-                if n and not r.next then
+                    if n and not r.next then
+                        if trace_preparing then
+                            report_prepare("forcing %s for %C substituted by %U","incremental step",unicode,replacement)
+                        end
+                        r.next = n
+                    end
+                    if v and not r.vert_variants then
+                        if trace_preparing then
+                            report_prepare("forcing %s for %C substituted by %U","vertical variants",unicode,replacement)
+                        end
+                        r.vert_variants = v
+                    end
+                    if h and not r.horiz_variants then
+                        if trace_preparing then
+                            report_prepare("forcing %s for %C substituted by %U","horizontal variants",unicode,replacement)
+                        end
+                        r.horiz_variants = h
+                    end
+                else
                     if trace_preparing then
-                        report_prepare("forcing %s for %C substituted by %U","incremental step",unicode,replacement)
+                        report_prepare("error replacing %C by %U",unicode,replacement)
                     end
-                    r.next = n
-                end
-                if v and not r.vert_variants then
-                    if trace_preparing then
-                        report_prepare("forcing %s for %C substituted by %U","vertical variants",unicode,replacement)
-                    end
-                    r.vert_variants = v
-                end
-                if h and not r.horiz_variants then
-                    if trace_preparing then
-                        report_prepare("forcing %s for %C substituted by %U","horizontal variants",unicode,replacement)
-                    end
-                    r.horiz_variants = h
                 end
             end
         end

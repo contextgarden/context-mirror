@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['meta-pdf'] = {
     license   = "see context related readme files"
 }
 
+-- This module is not used in practice but we keep it around for historic
+-- reasons.
+
 -- Finally we used an optimized version. The test code can be found in
 -- meta-pdh.lua but since we no longer want to overload functione we use
 -- more locals now. This module keeps changing as it is also a testbed.
@@ -35,20 +38,24 @@ local pdfgraycode               = lpdf.graycode
 local pdfspotcode               = lpdf.spotcode
 local pdftransparencycode       = lpdf.transparencycode
 local pdffinishtransparencycode = lpdf.finishtransparencycode
------ pdfpageliteral            = nodes.pool.pdfpageliteral
 
 metapost.mptopdf = metapost.mptopdf or { }
 local mptopdf    = metapost.mptopdf
 
 mptopdf.nofconverted = 0
 
-local f_translate = formatters["1 0 0 0 1 %F %F cm"]   -- no %s due to 1e-035 issues
-local f_concat    = formatters["%F %F %F %F %F %F cm"] -- no %s due to 1e-035 issues
+local f_translate = formatters["1 0 0 0 1 %.6F %.6F cm"]
+local f_concat    = formatters["%.6F %.6F %.6F %.6F %.6F %.6F cm"]
+
+directives.register("pdf.stripzeros",function()
+    f_translate = formatters["1 0 0 0 1 %.6N %.6N cm"]
+    f_concat    = formatters["%.6N %.6N %.6N %.6N %.6N %.6N cm"]
+end)
 
 local m_path, m_stack, m_texts, m_version, m_date, m_shortcuts = { }, { }, { }, 0, 0, false
 
 local m_stack_close, m_stack_path, m_stack_concat = false, { }, nil
-local extra_path_code, ignore_path = nil, false
+local extra_path_data, ignore_path = nil, false
 local specials = { }
 
 local function resetpath()
@@ -57,28 +64,21 @@ end
 
 local function resetall()
     m_path, m_stack, m_texts, m_version, m_shortcuts = { }, { }, { }, 0, false
-    extra_path_code, ignore_path = nil, false
+    extra_path_data, ignore_path = nil, false
     specials = { }
     resetpath()
 end
 
 resetall()
 
--- -- this does not work as expected (displacement of text) beware, needs another
--- -- comment hack
---
--- local function pdfcode(str)
---    context(pdfpageliteral(str))
--- end
-
 local pdfcode = context.pdfliteral
 
 local function mpscode(str)
     if ignore_path then
         pdfcode("h W n")
-        if extra_path_code then
-            pdfcode(extra_path_code)
-            extra_path_code = nil
+        if extra_path_data then
+            pdfcode(extra_path_data)
+            extra_path_data = nil
         end
         ignore_path = false
     else
@@ -99,16 +99,28 @@ local function flushpath(cmd)
     if #m_stack_path > 0 then
         local path = { }
         if m_stack_concat then
-            local sx, sy = m_stack_concat[1], m_stack_concat[4]
-            local rx, ry = m_stack_concat[2], m_stack_concat[3]
-            local tx, ty = m_stack_concat[5], m_stack_concat[6]
+            local sx = m_stack_concat[1]
+            local sy = m_stack_concat[4]
+            local rx = m_stack_concat[2]
+            local ry = m_stack_concat[3]
+            local tx = m_stack_concat[5]
+            local ty = m_stack_concat[6]
             local d = (sx*sy) - (rx*ry)
             for k=1,#m_stack_path do
-                local v = m_stack_path[k]
-                local px, py = v[1], v[2] ; v[1], v[2] = (sy*(px-tx)-ry*(py-ty))/d, (sx*(py-ty)-rx*(px-tx))/d -- mpconcat(v[1],v[2])
+                local v  = m_stack_path[k]
+                local px = v[1]
+                local py = v[2]
+                v[1] = (sy*(px-tx)-ry*(py-ty))/d
+                v[2] = (sx*(py-ty)-rx*(px-tx))/d
                 if #v == 7 then
-                    local px, py = v[3], v[4] ; v[3], v[4] = (sy*(px-tx)-ry*(py-ty))/d, (sx*(py-ty)-rx*(px-tx))/d -- mpconcat(v[3],v[4])
-                    local px, py = v[5], v[6] ; v[5], v[6] = (sy*(px-tx)-ry*(py-ty))/d, (sx*(py-ty)-rx*(px-tx))/d -- mpconcat(v[5],v[6])
+                    px = v[3]
+                    py = v[4]
+                    v[3] = (sy*(px-tx)-ry*(py-ty))/d
+                    v[4] = (sx*(py-ty)-rx*(px-tx))/d
+                    px = v[5]
+                    py = v[6]
+                    v[5] = (sy*(px-tx)-ry*(py-ty))/d
+                    v[6] = (sx*(py-ty)-rx*(px-tx))/d
                 end
                 path[k] = concat(v," ")
             end
@@ -161,7 +173,8 @@ function mps.lineto(x,y)
 end
 
 function mps.rlineto(x,y)
-    local dx, dy = 0, 0
+    local dx = 0
+    local dy = 0
     local topofstack = #m_stack_path
     if topofstack > 0 then
         local msp = m_stack_path[topofstack]
@@ -238,7 +251,8 @@ function mps.clip()
 end
 
 function mps.textext(font, scale, str) -- old parser
-    local dx, dy = 0, 0
+    local dx = 0
+    local dy = 0
     if #m_stack_path > 0 then
         dx, dy = m_stack_path[1][1], m_stack_path[1][2]
     end
@@ -279,7 +293,7 @@ local function linearshade(colorspace,domain,ca,cb,coordinates)
     nofshades = nofshades + 1
     local name = formatters["MpsSh%s"](nofshades)
     lpdf.linearshade(name,domain,ca,cb,1,colorspace,coordinates)
-    extra_path_code, ignore_path = formatters["/%s sh Q"](name), true
+    extra_path_data, ignore_path = formatters["/%s sh Q"](name), true
     pdfcode("q /Pattern cs")
 end
 
@@ -288,7 +302,7 @@ local function circularshade(colorspace,domain,ca,cb,coordinates)
     nofshades = nofshades + 1
     local name = formatters["MpsSh%s"](nofshades)
     lpdf.circularshade(name,domain,ca,cb,1,colorspace,coordinates)
-    extra_path_code, ignore_path = formatters["/%s sh Q"](name), true
+    extra_path_data, ignore_path = formatters["/%s sh Q"](name), true
     pdfcode("q /Pattern cs")
 end
 
@@ -333,9 +347,12 @@ handlers[50] = function() report_mptopdf("skipping special %s",50) end
 --end of not supported
 
 function mps.setrgbcolor(r,g,b) -- extra check
-    r, g, b = tonumber(r), tonumber(g), tonumber(b) -- needed when we use lpeg
+    r = tonumber(r) -- needed when we use lpeg
+    g = tonumber(g) -- needed when we use lpeg
+    b = tonumber(b) -- needed when we use lpeg
     if r == 0.0123 and g < 0.1 then
-        g, b = round(g*10000), round(b*10000)
+        g = round(g*10000)
+        b = round(b*10000)
         local s = specials[b]
         local h = round(s[#s])
         local handler = handlers[h]
@@ -345,7 +362,8 @@ function mps.setrgbcolor(r,g,b) -- extra check
             report_mptopdf("unknown special handler %s (1)",h)
         end
     elseif r == 0.123 and g < 0.1 then
-        g, b = round(g*1000), round(b*1000)
+        g = round(g*1000)
+        b = round(b*1000)
         local s = specials[b]
         local h = round(s[#s])
         local handler = handlers[h]

@@ -20,63 +20,67 @@ local nodes           = nodes
 
 local implement       = interfaces.implement
 
-local nodecodes       = nodes.nodecodes
+local nodecodes     = nodes.nodecodes
 
-local disc_code       = nodecodes.disc
-local hlist_code      = nodecodes.hlist
-local vlist_code      = nodecodes.vlist
-local glue_code       = nodecodes.glue
-local glyph_code      = nodecodes.glyph
+local disc_code     = nodecodes.disc
+local hlist_code    = nodecodes.hlist
+local vlist_code    = nodecodes.vlist
+local glue_code     = nodecodes.glue
+local glyph_code    = nodecodes.glyph
 
-local nuts            = nodes.nuts
-local tonut           = nuts.tonut
-local tonode          = nuts.tonode
+local nuts          = nodes.nuts
+local tonut         = nuts.tonut
+local tonode        = nuts.tonode
 
------ getfield        = nuts.getfield
-local getnext         = nuts.getnext
-local getprev         = nuts.getprev
-local getboth         = nuts.getboth
-local getdisc         = nuts.getdisc
-local getid           = nuts.getid
-local getlist         = nuts.getlist
-local getattribute    = nuts.getattribute
-local getbox          = nuts.getbox
-local getdir          = nuts.getdir
-local getwidth        = nuts.getwidth
-local takebox         = nuts.takebox
+----- getfield      = nuts.getfield
+local getnext       = nuts.getnext
+local getprev       = nuts.getprev
+local getboth       = nuts.getboth
+local getdisc       = nuts.getdisc
+local getid         = nuts.getid
+local getlist       = nuts.getlist
+local getattribute  = nuts.getattribute
+local getbox        = nuts.getbox
+local getdirection  = nuts.getdirection
+local getwidth      = nuts.getwidth
+local takebox       = nuts.takebox
 
------ setfield        = nuts.setfield
-local setlink         = nuts.setlink
-local setboth         = nuts.setboth
-local setnext         = nuts.setnext
-local setbox          = nuts.setbox
-local setlist         = nuts.setlist
-local setdisc         = nuts.setdisc
-local setwidth        = nuts.setwidth
-local setheight       = nuts.setheight
-local setdepth        = nuts.setdepth
+----- setfield      = nuts.setfield
+local setlink       = nuts.setlink
+local setboth       = nuts.setboth
+local setnext       = nuts.setnext
+local setbox        = nuts.setbox
+local setlist       = nuts.setlist
+local setdisc       = nuts.setdisc
+local setwidth      = nuts.setwidth
+local setheight     = nuts.setheight
+local setdepth      = nuts.setdepth
+local setshift      = nuts.setshift
 
-local flush_node      = nuts.flush_node
-local flush_list      = nuts.flush_list
-local copy_node       = nuts.copy
-local copy_list       = nuts.copy_list
-local find_tail       = nuts.tail
-local traverse_id     = nuts.traverse_id
-local list_dimensions = nuts.dimensions
-local hpack           = nuts.hpack
+local flush_node    = nuts.flush_node
+local flush_list    = nuts.flush_list
+local copy_node     = nuts.copy
+local copy_list     = nuts.copy_list
+local find_tail     = nuts.tail
+local getdimensions = nuts.dimensions
+local hpack         = nuts.hpack
 
-local listtoutf       = nodes.listtoutf
+local nextdisc      = nuts.traversers.disc
+local nextdir       = nuts.traversers.dir
+local nexthlist     = nuts.traversers.hlist
 
-local nodepool        = nuts.pool
-local new_penalty     = nodepool.penalty
-local new_hlist       = nodepool.hlist
-local new_glue        = nodepool.glue
+local listtoutf     = nodes.listtoutf
 
-local setlistcolor    = nodes.tracers.colors.setlist
+local nodepool      = nuts.pool
+local new_penalty   = nodepool.penalty
+local new_hlist     = nodepool.hlist
+local new_glue      = nodepool.glue
 
-local texget          = tex.get
-local texgetbox       = tex.getbox
-local texsetdimen     = tex.setdimen
+local setlistcolor  = nodes.tracers.colors.setlist
+
+local texget        = tex.get
+local texgetbox     = tex.getbox
+local texsetdimen   = tex.setdimen
 
 local function hyphenatedlist(head,usecolor)
     local current = head and tonut(head)
@@ -127,7 +131,7 @@ implement {
 
 -- local function hyphenatedhack(head,pre)
 --     pre = tonut(pre)
---     for n in traverse_id(disc_code,tonut(head)) do
+--     for n in nextdisc, tonut(head) do
 --         local hyphen = getfield(n,"pre")
 --         if hyphen then
 --             flush_list(hyphen)
@@ -361,10 +365,12 @@ implement {
 }
 
 local function getnaturaldimensions(n)
-    local w, h, d = 0, 0, 0
+    local w = 0
+    local h = 0
+    local d = 0
     local l = getlist(getbox(n))
     if l then
-        w, h, d = list_dimensions(l)
+        w, h, d = getdimensions(l)
     end
     texsetdimen("lastnaturalboxwd",w)
     texsetdimen("lastnaturalboxht",h)
@@ -391,10 +397,12 @@ interfaces.implement {
     name      = "getnaturalwd",
     arguments = "integer",
     actions   = function(n)
-        local w, h, d = 0, 0, 0
+        local w = 0
+        local h = 0
+        local d = 0
         local l = getlist(getbox(n))
         if l then
-            w, h, d = list_dimensions(l)
+            w, h, d = getdimensions(l)
         end
         context("\\dimexpr%i\\scaledpoint\\relax",w)
     end
@@ -416,46 +424,60 @@ interfaces.implement {
 
 nodes.setboxtonaturalwd = setboxtonaturalwd
 
-local function firstdirinbox(n)
-    local b = getbox(n)
-    if b then
-        local l = getlist(b)
-        if l then
-            for h in traverse_id(hlist_code,l) do
-                return getdir(h)
-            end
-        end
-    end
-end
-
-nodes.firstdirinbox = firstdirinbox
-
 local doifelse = commands.doifelse
 
-interfaces.implement {
-    name      = "doifelserighttoleftinbox",
-    arguments = "integer",
-    actions   = function(n)
-        doifelse(firstdirinbox(n) == "TRT")
+do
+
+    local dirvalues        = nodes.dirvalues
+    local lefttoright_code = dirvalues.lefttoright
+    local righttoleft_code = dirvalues.righttoleft
+
+    local function firstdirinbox(n)
+        local b = getbox(n)
+        if b then
+            local l = getlist(b)
+            if l then
+                for d in nextdir, l do
+                    return getdirection(d)
+                end
+                for h in nexthlist, l do
+                    return getdirection(h)
+                end
+            end
+        end
+        return lefttoright_code
     end
-}
+
+    nodes.firstdirinbox = firstdirinbox
+
+    interfaces.implement {
+        name      = "doifelserighttoleftinbox",
+        arguments = "integer",
+        actions   = function(n)
+            doifelse(firstdirinbox(n) == righttoleft_code)
+        end
+    }
+
+end
 
 -- new (handy for mp) .. might move to its own module
 
 do
 
-    local flush_list = nodes.flush_list
-    local copy_list  = nodes.copy_list
-    local takebox    = nodes.takebox
-    local texsetbox  = tex.setbox
+    local nuts       = nodes.nuts
+    local tonode     = nuts.tonode
+    local takebox    = nuts.takebox
+    local flush_list = nuts.flush_list
+    local copy_list  = nuts.copy_list
+    local getwhd     = nuts.getwhd
+    local setbox     = nuts.setbox
+    local new_hlist  = nuts.pool.hlist
 
-    local new_hlist  = nodes.pool.hlist
-
-    local boxes  = { }
-    nodes.boxes  = boxes
-    local cache  = table.setmetatableindex("table")
-    local report = logs.reporter("boxes","cache")
-    local trace  = false
+    local boxes      = { }
+    nodes.boxes      = boxes
+    local cache      = table.setmetatableindex("table")
+    local report     = logs.reporter("boxes","cache")
+    local trace      = false
 
     trackers.register("nodes.boxes",function(v) trace = v end)
 
@@ -487,7 +509,9 @@ do
         if trace then
             report("category %a, name %a, %s (%s)",category,name,"direct",b and "content" or "empty")
         end
-        return b or nil
+        if b then
+            return tonode(b)
+        end
     end
 
     function boxes.restore(category,name,box,copy)
@@ -508,10 +532,8 @@ do
         if trace then
             report("category %a, name %a, %s (%s)",category,name,"restore",b and "content" or "empty")
         end
-        texsetbox(box,b or nil)
+        setbox(box,b or nil)
     end
-
-    local getwhd = nodes.getwhd
 
     function boxes.dimensions(category,name)
         name = tonumber(name) or name
@@ -592,13 +614,19 @@ do
         actions   = boxes.reset,
     }
 
-    implement {
-        name    = "lastlinewidth",
-        actions = function()
-            local head = tex.lists.page_head
-            -- list dimensions returns 3 value but we take the first
-            context(head and list_dimensions(getlist(find_tail(tonut(tex.lists.page_head)))) or 0)
-        end
-    }
-
 end
+
+implement {
+    name    = "lastlinewidth",
+    actions = function()
+        local head = tex.lists.page_head
+        -- list dimensions returns 3 value but we take the first
+        context(head and getdimensions(getlist(find_tail(tonut(tex.lists.page_head)))) or 0)
+    end
+}
+
+interfaces.implement {
+    name      = "shiftbox",
+    arguments = { "integer", "dimension" },
+    actions   = function(n,d) setshift(getbox(n),d) end,
+}

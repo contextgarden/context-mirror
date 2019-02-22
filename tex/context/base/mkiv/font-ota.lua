@@ -37,12 +37,10 @@ local getprev             = nuts.getprev
 local getprev             = nuts.getprev
 local getprop             = nuts.getprop
 local setprop             = nuts.setprop
-local getfont             = nuts.getfont
 local getsubtype          = nuts.getsubtype
 local getchar             = nuts.getchar
 local ischar              = nuts.is_char
 
-local traverse_id         = nuts.traverse_id
 local end_of_math         = nuts.end_of_math
 
 local nodecodes           = nodes.nodecodes
@@ -111,6 +109,8 @@ analyzers.useunicodemarks = false
 
 -- todo: analyzers per script/lang, cross font, so we need an font id hash -> script
 -- e.g. latin -> hyphenate, arab -> 1/2/3 analyze -- its own namespace
+
+-- done can go away as can tonut
 
 function analyzers.setstate(head,font)
     local useunicodemarks  = analyzers.useunicodemarks
@@ -302,9 +302,9 @@ if not classifiers then
 end
 
 function methods.arab(head,font,attr)
-    local first, last = nil, nil
-    local c_first, c_last = nil, nil
-    local current, done = head, false
+    local first, last, c_first, c_last
+    local current = head
+    local done    = false
     current = tonut(current)
     while current do
         local char, id = ischar(current,font)

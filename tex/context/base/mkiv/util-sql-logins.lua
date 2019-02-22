@@ -211,9 +211,10 @@ end
 logins.userpurge = userpurge
 
 local function verdict(okay,...)
-    if not trace_logins then
-        -- no tracing
-    elseif okay then
+--     if not trace_logins then
+--         -- no tracing
+--     else
+    if okay then
         report_logins("%s, granted",formatter(...))
     else
         report_logins("%s, blocked",formatter(...))
@@ -244,6 +245,11 @@ function logins.userpermitted(db,name)
         }
     end
     if not data or not data.name then
+        if not data then
+            report_logins("no user data for %a",name)
+        else
+            report_logins("no name entry for %a",name)
+        end
         local d = {
             name  = name,
             state = 0,

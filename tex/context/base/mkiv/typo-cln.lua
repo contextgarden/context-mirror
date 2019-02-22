@@ -31,15 +31,13 @@ local enableaction    = nodes.tasks.enableaction
 local texsetattribute = tex.setattribute
 
 local nuts            = nodes.nuts
-local tonut           = nuts.tonut
 
-local getchar         = nuts.getchar
 local getattr         = nuts.getattr
 local setattr         = nuts.setattr
 
 local setchar         = nuts.setchar
 
-local traverse_id     = nuts.traverse_id
+local nextglyph       = nuts.traversers.glyph
 
 local unsetvalue      = attributes.unsetvalue
 
@@ -58,9 +56,8 @@ local resetter = { -- this will become an entry in char-def
 -- cleaning comes first.
 
 function cleaners.handler(head)
-    local inline, done = false, false
-    for n in traverse_id(glyph_code,tonut(head)) do
-        local char = getchar(n)
+    local inline = false
+    for n, char, font in nextglyph, head do
         if resetter[char] then
             inline = false
         elseif not inline then
@@ -71,7 +68,6 @@ function cleaners.handler(head)
                     -- some day, not much change that \SS ends up here
                 else
                     setchar(n,upper)
-                    done = true
                     if trace_autocase then
                         report_autocase("")
                     end
@@ -80,7 +76,7 @@ function cleaners.handler(head)
             inline = true
         end
     end
-    return head, done
+    return head
 end
 
 -- see typo-cap for a more advanced settings handler .. not needed now

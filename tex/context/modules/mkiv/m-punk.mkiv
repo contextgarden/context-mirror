@@ -104,19 +104,20 @@ function metapost.characters.process(mpxformat, name, instances, scalefactor)
         for i=1,instances do
             characters   = { }
             descriptions = { }
-            metapost.process(
-                mpxformat,
-                {
+            metapost.process {
+                mpx         = mpxformat,
+             -- trialrun    = false,
+                flusher     = flusher,
+             -- multipass   = false,
+             -- isextrapass = false,
+                askedfig    = "all",
+             -- incontext   = false,
+                data        = {
                     "randomseed := " .. i*10 .. ";",
                     "scale_factor := " .. scalefactor .. " ;",
                     data
                 },
-                false,
-                flusher,
-                false,
-                false,
-                "all"
-            )
+            }
             lists[i] = {
                 characters   = characters,
                 descriptions = descriptions,
@@ -210,18 +211,18 @@ metapost.characters.flusher = flusher
 statistics.register("metapost font generation", function()
     local time = statistics.elapsedtime(flusher)
     if total > 0 then
-        return string.format("%i glyphs, %.3f seconds runtime, %0.3f glyphs/second", total, time, total/time)
+        return string.format("%i glyphs, %s seconds runtime, %0.3f glyphs/second", total, time, total/tonumber(time))
     else
-        return string.format("%i glyphs, %.3f seconds runtime", total, time)
+        return string.format("%i glyphs, %s seconds runtime", total, time)
     end
 end)
 
 statistics.register("metapost font loading",function()
     local time = statistics.elapsedtime(metapost.characters)
     if variants > 0 then
-        return string.format("%.3f seconds, %i instances, %0.3f instances/second", time, variants, variants/time)
+        return string.format("%s seconds, %i instances, %0.3f instances/second", time, variants, variants/tonumber(time))
     else
-        return string.format("%.3f seconds, %i instances", time, variants)
+        return string.format("%s seconds, %i instances", time, variants)
     end
 end)
 \stopluacode

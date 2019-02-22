@@ -46,9 +46,18 @@ fonts.encodings.math    = mathencodings -- better is then: fonts.encodings.vecto
 local vfmath            = allocate()
 fonts.handlers.vf.math  = vfmath
 
+local helpers           = fonts.helpers
+local vfcommands        = helpers.commands
+local rightcommand      = vfcommands.right
+local leftcommand       = vfcommands.left
+local downcommand       = vfcommands.down
+local upcommand         = vfcommands.up
+local push              = vfcommands.push
+local pop               = vfcommands.pop
+
 local shared            = { }
 
--- local push, pop, back = { "push" }, { "pop" }, { "slot", 1, 0x2215 }
+-- local back = { "slot", 1, 0x2215 }
 --
 -- local function negate(main,characters,id,size,unicode,basecode)
 --     if not characters[unicode] then
@@ -64,8 +73,8 @@ local shared            = { }
 --                 commands = {
 --                     { "slot", 1, basecode },
 --                     push,
---                     { "down",    ht/5},
---                     { "right", - wd/2},
+--                     downcommand[ht/5],
+--                     leftcommand[wd/2],
 --                     back,
 --                     push,
 --                 }
@@ -139,107 +148,96 @@ local function parent(main,characters,id,size,unicode,first,rule,last)
     end
 end
 
-local push, pop, step = { "push" }, { "pop" }, 0.2 -- 0.1 is nicer but gives larger files
+local step = 0.2 -- 0.1 is nicer but gives larger files
 
 local function make(main,characters,id,size,n,m)
     local old = 0xFF000 + n
-    local c = characters[old]
+    local c   = characters[old]
     if c then
-        local upslot, dnslot, uprule, dnrule = 0xFF100 + n, 0xFF200 + n, 0xFF300 + m, 0xFF400 + m
-        local xu = main.parameters.x_height + 0.3*size
-        local xd = 0.3*size
-        local w, h, d = c.width, c.height, c.depth
+        local upslot    = 0xFF100 + n
+        local dnslot    = 0xFF200 + n
+        local uprule    = 0xFF300 + m
+        local dnrule    = 0xFF400 + m
+        local xu        = main.parameters.x_height + 0.3*size
+        local xd        = 0.3*size
+        local w         = c.width or 0
+        local h         = c.height or 0
+        local d         = c.depth or 0
         local thickness = h - d
         local rulewidth = step*size -- we could use an overlap
-        local slot = { "slot", id, old }
-        local rule = { "rule", thickness, rulewidth  }
-        local up = { "down", -xu }
-        local dn = { "down", xd }
-        local ht, dp = xu + 3*thickness, 0
+        local slot      = { "slot", id, old }
+        local rule      = { "rule", thickness, rulewidth  }
+        local up        = upcommand[xu]
+        local dn        = downcommand[xd]
+        local ht        = xu + 3*thickness
+        local dp        = 0
         if not characters[uprule] then
-            characters[uprule] = { width = rulewidth, height = ht, depth = dp, commands = { push, up, rule, pop } }
+            characters[uprule] = {
+                width    = rulewidth,
+                height   = ht,
+                depth    = dp,
+                commands = { push, up, rule, pop },
+            }
         end
-        characters[upslot] = { width = w, height = ht, depth = dp, commands = { push, up, slot, pop } }
-        local ht, dp = 0, xd + 3*thickness
+        characters[upslot] = {
+            width    = w,
+            height   = ht,
+            depth    = dp,
+            commands = { push, up, slot, pop },
+        }
+        local ht = 0
+        local dp = xd + 3*thickness
         if not characters[dnrule] then
-            characters[dnrule] = { width = rulewidth, height = ht, depth = dp, commands = { push, dn, rule, pop } }
+            characters[dnrule] = {
+                width    = rulewidth,
+                height   = ht,
+                depth    = dp,
+                commands = { push, dn, rule, pop }
+            }
         end
-        characters[dnslot] = { width = w, height = ht, depth = dp, commands = { push, dn, slot, pop } }
+        characters[dnslot] = {
+            width    = w,
+            height   = ht,
+            depth    = dp,
+            commands = { push, dn, slot, pop },
+        }
     end
 end
 
 local function clipped(main,characters,id,size,unicode,original) -- push/pop needed?
     local minus = characters[original]
     if minus then
-        local mu = size/18
-        local step = 3*mu
+        local mu    = size/18
+        local step  = 3*mu
         local width = minus.width
         if width > step then
             width = width - step
-            step = step / 2
+            step  = step / 2
         else
             width = width / 2
-            step = width
+            step  = width
         end
         characters[unicode] = {
             width    = width,
             height   = minus.height,
             depth    = minus.depth,
-            commands = { push, { "right", -step }, { "slot", id, original }, pop }
+            commands = {
+                push,
+                leftcommand[step],
+                { "slot", id, original },
+                pop,
+            }
         }
     end
 end
 
--- fails: pdf:page: pdf:direct: ... some funny displacement
-
--- this does not yet work ... { "scale", 2, 0, 0, 3 } .. commented code
---
--- this does not work ... no interpretation going on here
---
--- local nodeinjections = backends.nodeinjections
--- { "node", nodeinjections.save() },
--- { "node", nodeinjections.transform(.7,0,0,.7) },
--- commands[#commands+1] = { "node", nodeinjections.restore() }
-
--- local done = { }
---
--- local function raise(main,characters,id,size,unicode,private,n,id_of_smaller) -- this is a real fake mess
---     local raised = characters[private]
---     if raised then
---         if not done[unicode] then
---             report_virtual("temporary too large %U due to issues in luatex backend",unicode)
---             done[unicode] = true
---         end
---         local up = 0.85 * main.parameters.x_height
---         local slot = { "slot", id, private }
---         local commands = {
---             push,
---             { "down", - up },
---          -- { "scale", .7, 0, 0, .7 },
---             slot,
---         }
---         for i=2,n do
---             commands[#commands+1] = slot
---         end
---         commands[#commands+1] = pop
---         characters[unicode] = {
---             width    = .7 * n * raised.width,
---             height   = .7 * (raised.height + up),
---             depth    = .7 * (raised.depth  - up),
---             commands = commands,
---         }
---     end
--- end
-
 local function raise(main,characters,id,size,unicode,private,n,id_of_smaller) -- this is a real fake mess
     local raised = fonts.hashes.characters[main.fonts[id_of_smaller].id][private]  -- characters[private]
     if raised then
-        local up = 0.85 * main.parameters.x_height
+        local up   = 0.85 * main.parameters.x_height
         local slot = { "slot", id_of_smaller, private }
         local commands = {
-            push,
-            { "down", - up },
-            slot,
+            push, upcommand[up], slot,
         }
         for i=2,n do
             commands[#commands+1] = slot
@@ -258,65 +256,85 @@ end
 local function dots(main,characters,id,size,unicode)
     local c = characters[0x002E]
     if c then
-        local w, h, d = c.width, c.height, c.depth
-        local mu = size/18
-        local right3mu  = { "right", 3*mu }
-        local right1mu  = { "right", 1*mu }
-        local up1size   = { "down", -.1*size }
-        local up4size   = { "down", -.4*size }
-        local up7size   = { "down", -.7*size }
-        local right2muw = { "right", 2*mu + w }
-        local slot = { "slot", id, 0x002E }
+        local w         = c.width
+        local h         = c.height
+        local d         = c.depth
+        local mu        = size/18
+        local right3mu  = rightcommand[3*mu]
+        local right1mu  = rightcommand[1*mu]
+        local up1size   = upcommand[.1*size]
+        local up4size   = upcommand[.4*size]
+        local up7size   = upcommand[.7*size]
+        local right2muw = rightcommand[2*mu + w]
+        local slot      = { "slot", id, 0x002E }
         if unicode == 0x22EF then
             local c = characters[0x022C5]
             if c then
-                local w, h, d = c.width, c.height, c.depth
-                local slot = { "slot", id, 0x022C5 }
+                local width  = c.width
+                local height = c.height
+                local depth  = c.depth
+                local slot   = { "slot", id, 0x022C5 }
                 characters[unicode] = {
-                    width = 3*w + 2*3*mu, height = h, depth = d,
-                    commands = { push, slot, right3mu, slot, right3mu, slot, pop }
+                    width    = 3*width + 2*3*mu,
+                    height   = height,
+                    depth    = depth,
+                    commands = {
+                        push, slot, right3mu, slot, right3mu, slot, pop,
+                    }
                 }
             end
         elseif unicode == 0x22EE then
             -- weird height !
             characters[unicode] = {
-                width = w, height = h+(1.4)*size, depth = 0,
-                commands = { push, push, slot, pop, up4size, push, slot, pop, up4size, slot, pop }
+                width    = w,
+                height   = h+(1.4)*size,
+                depth    = 0,
+                commands = {
+                    push, push, slot, pop, up4size, push, slot, pop, up4size, slot, pop,
+                }
             }
         elseif unicode == 0x22F1 then
             characters[unicode] = {
-                width = 3*w + 6*size/18, height = 1.5*size, depth = 0,
+                width    = 3*w + 6*size/18,
+                height   = 1.5*size,
+                depth    = 0,
                 commands = {
                     push,
-                        right1mu,
-                        push, up7size, slot, pop,
-                        right2muw,
-                        push, up4size, slot, pop,
-                        right2muw,
-                        push, up1size, slot, pop,
-                        right1mu,
+                    right1mu,
+                    push, up7size, slot, pop,
+                    right2muw,
+                    push, up4size, slot, pop,
+                    right2muw,
+                    push, up1size, slot, pop,
+                    right1mu,
                     pop
                 }
             }
         elseif unicode == 0x22F0 then
             characters[unicode] = {
-                width = 3*w + 6*size/18, height = 1.5*size, depth = 0,
+                width    = 3*w + 6*size/18,
+                height   = 1.5*size,
+                depth    = 0,
                 commands = {
                     push,
-                        right1mu,
-                        push, up1size, slot, pop,
-                        right2muw,
-                        push, up4size, slot, pop,
-                        right2muw,
-                        push, up7size, slot, pop,
-                        right1mu,
+                    right1mu,
+                    push, up1size, slot, pop,
+                    right2muw,
+                    push, up4size, slot, pop,
+                    right2muw,
+                    push, up7size, slot, pop,
+                    right1mu,
                     pop
                 }
             }
         else
             characters[unicode] = {
-                width = 3*w + 2*3*mu, height = h, depth = d,
-                commands = { push, slot, right3mu, slot, right3mu, slot, pop }
+                width    = 3*w + 2*3*mu,
+                height   = h,
+                depth    = d,
+                commands = {
+                    push, slot, right3mu, slot, right3mu, slot, pop,
+                }
             }
         end
     end
@@ -331,21 +349,23 @@ local function vertbar(main,characters,id,size,parent,scale,unicode)
             width    = cp.width,
             height   = cp.height + sc,
             depth    = cp.depth + sc,
+            next     = cp.next, -- can be extensible
             commands = {
-                push, { "down", -sc }, pc, pop,
-                push, { "down",  sc }, pc, pop,
+                push, upcommand  [sc], pc, pop,
+                push, downcommand[sc], pc, pop,
                                        pc,
             },
-            next = cp.next -- can be extensible
         }
         cp.next = unicode
     end
 end
 
 local function jointwo(main,characters,id,size,unicode,u1,d12,u2,what)
-    local c1, c2 = characters[u1], characters[u2]
+    local c1 = characters[u1]
+    local c2 = characters[u2]
     if c1 and c2 then
-        local w1, w2 = c1.width, c2.width
+        local w1 = c1.width
+        local w2 = c2.width
         local mu = size/18
         characters[unicode] = {
             width    = w1 + w2 - d12 * mu,
@@ -353,7 +373,7 @@ local function jointwo(main,characters,id,size,unicode,u1,d12,u2,what)
             depth    = max(c1.depth  or 0, c2.depth  or 0),
             commands = {
                 { "slot", id, u1 },
-                { "right", -d12*mu } ,
+                leftcommand[d12*mu],
                 { "slot", id, u2 },
             },
         }
@@ -361,19 +381,23 @@ local function jointwo(main,characters,id,size,unicode,u1,d12,u2,what)
 end
 
 local function jointhree(main,characters,id,size,unicode,u1,d12,u2,d23,u3)
-    local c1, c2, c3 = characters[u1], characters[u2], characters[u3]
+    local c1 = characters[u1]
+    local c2 = characters[u2]
+    local c3 = characters[u3]
     if c1 and c2 and c3 then
-        local w1, w2, w3 = c1.width, c2.width, c3.width
+        local w1 = c1.width
+        local w2 = c2.width
+        local w3 = c3.width
         local mu = size/18
         characters[unicode] = {
             width    = w1 + w2 + w3 - d12*mu - d23*mu,
             height   = max(c1.height or 0, c2.height or 0, c3.height or 0),
-            depth    = max(c1.depth or 0, c2.depth or 0, c3.depth or 0),
+            depth    = max(c1.depth  or 0, c2.depth  or 0, c3.depth  or 0),
             commands = {
                 { "slot", id, u1 },
-                { "right", - d12*mu } ,
+                leftcommand[d12*mu],
                 { "slot", id, u2 },
-                { "right", - d23*mu },
+                leftcommand[d23*mu],
                 { "slot", id, u3 },
             }
         }
@@ -381,24 +405,32 @@ local function jointhree(main,characters,id,size,unicode,u1,d12,u2,d23,u3)
 end
 
 local function stack(main,characters,id,size,unicode,u1,d12,u2)
-    local c1, c2 = characters[u1], characters[u2]
-    if c1 and c2 then
-        local w1, w2 = c1.width, c2.width
-        local h1, h2 = c1.height, c2.height
-        local d1, d2 = c1.depth, c2.depth
-        local mu = size/18
-        characters[unicode] = {
-            width    = w1,
-            height   = h1 + h2 + d12,
-            depth    = d1,
-            commands = {
-                { "slot", id, u1 },
-                { "right", - w1/2 - w2/2 } ,
-                { "down", -h1 + d2 -d12*mu } ,
-                { "slot", id, u2 },
-            }
-        }
+    local c1 = characters[u1]
+    if not c1 then
+        return
     end
+    local c2 = characters[u2]
+    if not c2 then
+        return
+    end
+    local w1 = c1.width  or 0
+    local h1 = c1.height or 0
+    local d1 = c1.depth  or 0
+    local w2 = c2.width  or 0
+    local h2 = c2.height or 0
+    local d2 = c2.depth  or 0
+    local mu = size/18
+    characters[unicode] = {
+        width    = w1,
+        height   = h1 + h2 + d12,
+        depth    = d1,
+        commands = {
+            { "slot", id, u1 },
+            leftcommand[w1/2 + w2/2],
+            downcommand[-h1 + d2 -d12*mu],
+            { "slot", id, u2 },
+        }
+    }
 end
 
 local function repeated(main,characters,id,size,unicode,u,n,private,fraction) -- math-fbk.lua
@@ -406,16 +438,14 @@ local function repeated(main,characters,id,size,unicode,u,n,private,fraction) --
     if c then
         local width  = c.width
         local italic = fraction*width -- c.italic or 0 -- larger ones have funny italics
-        local tc = { "slot", id, u }
-        local tr = { "right", -italic } -- see hack elsewhere
+        local tc     = { "slot", id, u }
+        local tr     = leftcommand[italic] -- see hack elsewhere
         local commands = { }
         for i=1,n-1 do
             commands[#commands+1] = tc
             commands[#commands+1] = tr
         end
         commands[#commands+1] = tc
---         inspect(c)
---         inspect(commands)
         local next = c.next
         if next then
             repeated(main,characters,id,size,private,next,n,private+1,fraction)
@@ -589,13 +619,18 @@ setmetatableindex(reverse, function(t,name)
     if trace_virtual then
         report_virtual("initializing math vector %a",name)
     end
-    local m, r = mathencodings[name], { }
+    local m = mathencodings[name]
+    local r = { }
     for u, i in next, m do
         r[i] = u
     end
     reverse[name] = r
     return r
 end)
+
+-- use char and font hash
+--
+-- commands  = { { "font", slot }, { "char", unicode } },
 
 local function copy_glyph(main,target,original,unicode,slot)
     local addprivate = fonts.helpers.addprivate
@@ -623,7 +658,6 @@ local function copy_glyph(main,target,original,unicode,slot)
             }
             local newnextglyph = addprivate(main,formatters["M-N-%H"](nextglyph),newnextdata)
             newdata.next = newnextglyph
--- report_virtual("copied next: %X",newdata.next)
             local nextnextglyph = oldnextdata.next
             if nextnextglyph == nextglyph then
                 break
@@ -649,7 +683,6 @@ local function copy_glyph(main,target,original,unicode,slot)
                     commands  = { { "slot", slot, oldglyph } },
                 }
                 hvi.glyph = addprivate(main,formatters["M-H-%H"](oldglyph),newdata)
--- report_virtual("copied h variant: %X at index %i",hvi.glyph,i)
             end
         end
         local vv = olddata.vert_variants
@@ -668,7 +701,6 @@ local function copy_glyph(main,target,original,unicode,slot)
                     commands  = { { "slot", slot, oldglyph } },
                 }
                 vvi.glyph = addprivate(main,formatters["M-V-%H"](oldglyph),newdata)
--- report_virtual("copied v variant: %X at index %i",vvi.glyph,i)
             end
         end
         return newdata
@@ -678,13 +710,17 @@ end
 vfmath.copy_glyph = copy_glyph
 
 function vfmath.define(specification,set,goodies)
-    local name = specification.name -- symbolic name
-    local size = specification.size -- given size
-    local loaded, fontlist, names, main = { }, { }, { }, nil
-    local start = (trace_virtual or trace_timings) and os.clock()
-    local okset, n = { }, 0
+    local name     = specification.name -- symbolic name
+    local size     = specification.size -- given size
+    local loaded   = { }
+    local fontlist = { }
+    local names    = { }
+    local main     = nil
+    local start    = (trace_virtual or trace_timings) and os.clock()
+    local okset    = { }
+    local n        = 0
     for s=1,#set do
-        local ss = set[s]
+        local ss     = set[s]
         local ssname = ss.name
         if add_optional and ss.optional then
             if trace_virtual then
@@ -828,11 +864,11 @@ function vfmath.define(specification,set,goodies)
         elseif add_optional and ss.optional then
             -- skip, redundant
         else
-            local newparameters = fs.parameters
+            local newparameters     = fs.parameters
             local newmathparameters = fs.mathparameters
             if newmathparameters then
                 if not parameters_done or ss.parameters then
-                    mathparameters = newmathparameters
+                    mathparameters  = newmathparameters
                     parameters_done = true
                 end
             elseif not newparameters then
@@ -867,7 +903,7 @@ function vfmath.define(specification,set,goodies)
             --  report_virtual("loading and virtualizing font %a at size %p, setting sy parameters",name,size)
             end
             if ss.overlay then
-                local fc = fs.characters
+                local fc    = fs.characters
                 local first = ss.first
                 if first then
                     local last = ss.last or first
@@ -882,12 +918,14 @@ function vfmath.define(specification,set,goodies)
             else
                 local vectorname = ss.vector
                 if vectorname then
-                    local offset = 0xFF000
-                    local vector = mathencodings[vectorname]
-                    local rotcev = reverse[vectorname]
+                    local offset      = 0xFF000
+                    local vector      = mathencodings[vectorname]
+                    local rotcev      = reverse[vectorname]
                     local isextension = ss.extension
                     if vector and rotcev then
-                        local fc, fd, si = fs.characters, fs.descriptions, shared[s]
+                        local fc       = fs.characters
+                        local fd       = fs.descriptions
+                        local si       = shared[s]
                         local skewchar = ss.skewchar
                         for unicode, index in next, vector do
                             local fci = fc[index]
@@ -913,8 +951,8 @@ function vfmath.define(specification,set,goodies)
                                     ref = { { 'slot', s, index } }
                                     si[index] = ref
                                 end
-                                local kerns = fci.kerns
-                                local width = fci.width
+                                local kerns  = fci.kerns
+                                local width  = fci.width
                                 local italic = fci.italic
                                 if italic and italic > 0 then
                                         -- int_a^b

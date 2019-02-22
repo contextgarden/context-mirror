@@ -23,7 +23,7 @@ local registrations           = backends.pdf.registrations
 
 local nodepool                = nodes.nuts.pool
 local register                = nodepool.register
-local pdfpageliteral          = nodepool.pdfpageliteral
+local pageliteral             = nodepool.pageliteral
 
 local pdfconstant             = lpdf.constant
 local pdfdictionary           = lpdf.dictionary
@@ -64,12 +64,19 @@ local f_cmyk   = formatters["%.3F %.3F %.3F %.3F k %.3F %.3F %.3F %.3F K"]
 local f_spot   = formatters["/%s cs /%s CS %s SCN %s scn"]
 local f_tr     = formatters["Tr%s"]
 local f_cm     = formatters["q %.6F %.6F %.6F %.6F %.6F %.6F cm"]
-local f_effect = formatters["%s Tc %s w %s Tr"]
+local f_effect = formatters["%s Tc %s w %s Tr"] -- %.3F ?
 local f_tr_gs  = formatters["/Tr%s gs"]
 local f_num_1  = tostring
 local f_num_2  = formatters["%s %s"]
 local f_num_3  = formatters["%s %s %s"]
 local f_num_4  = formatters["%s %s %s %s"]
+
+directives.register("pdf.stripzeros",function()
+    f_gray = formatters["%.3N g %.3N G"]
+    f_rgb  = formatters["%.3N %.3N %.3N rg %.3N %.3N %.3N RG"]
+    f_cmyk = formatters["%.3N %.3N %.3N %.3N k %.3N %.3N %.3N %.3N K"]
+    f_cm   = formatters["q %.6N %.6N %.6N %.6N %.6N %.6N cm"]
+end)
 
 local report_color = logs.reporter("colors","backend")
 
@@ -122,26 +129,26 @@ lpdf.registerpagefinalizer(addpagegroup,3,"pagegroup")
 -- color injection
 
 function nodeinjections.rgbcolor(r,g,b)
-    return register(pdfpageliteral(f_rgb(r,g,b,r,g,b)))
+    return register(pageliteral(f_rgb(r,g,b,r,g,b)))
 end
 
 function nodeinjections.cmykcolor(c,m,y,k)
-    return register(pdfpageliteral(f_cmyk(c,m,y,k,c,m,y,k)))
+    return register(pageliteral(f_cmyk(c,m,y,k,c,m,y,k)))
 end
 
 function nodeinjections.graycolor(s) -- caching 0/1 does not pay off
-    return register(pdfpageliteral(f_gray(s,s)))
+    return register(pageliteral(f_gray(s,s)))
 end
 
 function nodeinjections.spotcolor(n,f,d,p)
     if type(p) == "string" then
         p = gsub(p,","," ") -- brr misuse of spot
     end
-    return register(pdfpageliteral(f_spot(n,n,p,p)))
+    return register(pageliteral(f_spot(n,n,p,p)))
 end
 
 function nodeinjections.transparency(n)
-    return register(pdfpageliteral(f_tr_gs(n)))
+    return register(pageliteral(f_tr_gs(n)))
 end
 
 -- a bit weird but let's keep it here for a while
@@ -160,7 +167,7 @@ function nodeinjections.effect(effect,stretch,rulethickness)
     -- always, no zero test (removed)
     rulethickness = bp * rulethickness
     effect = effects[effect] or effects['normal']
-    return register(pdfpageliteral(f_effect(stretch,rulethickness,effect))) -- watch order
+    return register(pageliteral(f_effect(stretch,rulethickness,effect))) -- watch order
 end
 
 -- spot- and indexcolors
@@ -335,7 +342,9 @@ local function registersomeindexcolor(name,noffractions,names,p,colorspace,range
         colorspace,
         pdfreference(n),
     }
-    local vector, set, n = { }, { }, #values
+    local vector = { }
+    local set    = { }
+    local n      = #values
     for i=255,0,-1 do
         for j=1,n do
             set[j] = format("%02X",round(values[j]*i))
@@ -512,13 +521,21 @@ local function lpdfcolor(model,ca,default) -- todo: use gray when no color
                 local s = cv[2]
                 return f_gray(s,s)
             elseif model == 3 then
-                local r, g, b = cv[3], cv[4], cv[5]
+                local r = cv[3]
+                local g = cv[4]
+                local b = cv[5]
                 return f_rgb(r,g,b,r,g,b)
             elseif model == 4 then
-                local c, m, y, k = cv[6],cv[7],cv[8],cv[9]
+                local c = cv[6]
+                local m = cv[7]
+                local y = cv[8]
+                local k = cv[9]
                 return f_cmyk(c,m,y,k,c,m,y,k)
             else
-                local n,f,d,p = cv[10],cv[11],cv[12],cv[13]
+                local n = cv[10]
+                local f = cv[11]
+                local d = cv[12]
+                local p = cv[13]
                 if type(p) == "string" then
                     p = gsub(p,","," ") -- brr misuse of spot
                 end
@@ -617,7 +634,7 @@ function lpdf.colorvalues(model,ca,default)
             return cv[3], cv[4], cv[5]
         elseif model == 4 then
             return cv[6], cv[7], cv[8], cv[9]
-        elseif model == 4 then
+        elseif model == 5 then
             return cv[13]
         end
     else
@@ -716,6 +733,10 @@ do
     local pdftransparency = lpdf.transparency
 
     local f_slant = formatters["q 1 0 %.6F 1 0 0 cm"]
+
+    directives.register("pdf.stripzeros",function()
+        f_slant = formatters["q 1 0 %.6N 1 0 0 cm"]
+    end)
 
  -- local fillcolors = {
  --     red        = { "pdf", "origin", "1 0 0 rg" },

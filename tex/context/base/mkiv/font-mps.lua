@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['font-mps'] = {
     license   = "see context related readme files"
 }
 
+local tostring   = tostring
 local concat     = table.concat
 local formatters = string.formatters
 
@@ -34,6 +35,17 @@ local f_draw        = formatters["draw %s;"]
 
 local f_boundingbox = formatters["((%.6F,%.6F)--(%.6F,%.6F)--(%.6F,%.6F)--(%.6F,%.6F)--cycle)"]
 local f_vertical    = formatters["((%.6F,%.6F)--(%.6F,%.6F))"]
+
+directives.register("metapost.stripzeros", function()
+
+    f_moveto      = formatters["(%.6N,%.6N)"]
+    f_lineto      = formatters["--(%.6N,%.6N)"]
+    f_curveto     = formatters["..controls(%.6N,%.6N)and(%.6N,%.6N)..(%.6N,%.6N)"]
+
+    f_boundingbox = formatters["((%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--cycle)"]
+    f_vertical    = formatters["((%.6N,%.6N)--(%.6N,%.6N))"]
+
+end)
 
 function metapost.boundingbox(d,factor)
     local bounds = d.boundingbox
@@ -97,9 +109,12 @@ function metapost.paths(d,xfactor,yfactor)
             elseif operator =="q" then -- "quadraticto"
                 size = size + 1
                 -- first is always a moveto
-                local l_x, l_y = xfactor*sequence[i-2], yfactor*sequence[i-1]
-                local m_x, m_y = xfactor*sequence[i+1], yfactor*sequence[i+2]
-                local r_x, r_y = xfactor*sequence[i+3], yfactor*sequence[i+4]
+                local l_x = xfactor*sequence[i-2]
+                local l_y = yfactor*sequence[i-1]
+                local m_x = xfactor*sequence[i+1]
+                local m_y = yfactor*sequence[i+2]
+                local r_x = xfactor*sequence[i+3]
+                local r_y = yfactor*sequence[i+4]
                 path[size] = f_curveto (
                     l_x + 2/3 * (m_x-l_x),
                     l_y + 2/3 * (m_y-l_y),
@@ -137,9 +152,12 @@ function metapost.paths(d,xfactor,yfactor)
                 size = size + 1
                 -- first is always a moveto
                 local prev = segments[i-1]
-                local l_x, l_y = xfactor*prev[#prev-2], yfactor*prev[#prev-1]
-                local m_x, m_y = xfactor*segment[1], yfactor*segment[2]
-                local r_x, r_y = xfactor*segment[3], yfactor*segment[4]
+                local l_x = xfactor*prev[#prev-2]
+                local l_y = yfactor*prev[#prev-1]
+                local m_x = xfactor*segment[1]
+                local m_y = yfactor*segment[2]
+                local r_x = xfactor*segment[3]
+                local r_y = yfactor*segment[4]
                 path[size] = f_curveto (
                     l_x + 2/3 * (m_x-l_x),
                     l_y + 2/3 * (m_y-l_y),
@@ -196,7 +214,10 @@ function metapost.maxbounds(data,index,factor)
     local boundingbox = glyph.boundingbox
     local xmin, ymin, xmax, ymax
     if not maxbounds then
-        xmin, ymin, xmax, ymax = 0, 0, 0, 0
+        xmin = 0
+        ymin = 0
+        xmax = 0
+        ymax = 0
         for i=1,#glyphs do
             local d = glyphs[i]
             if d then
@@ -240,45 +261,52 @@ end
 -- right time. It's probably why I like watching https://www.youtube.com/watch?v=c5FqpddnJmc
 -- so much: precisely (and perfectly) timed too.
 
-local nodecodes      = nodes.nodecodes -- no nuts yet
+local nodecodes       = nodes.nodecodes -- no nuts yet
+local rulecodes       = nodes.rulecodes
 
-local glyph_code     = nodecodes.glyph
-local disc_code      = nodecodes.disc
-local kern_code      = nodecodes.kern
-local glue_code      = nodecodes.glue
-local hlist_code     = nodecodes.hlist
-local vlist_code     = nodecodes.vlist
-local rule_code      = nodecodes.rule
+local glyph_code      = nodecodes.glyph
+local disc_code       = nodecodes.disc
+local kern_code       = nodecodes.kern
+local glue_code       = nodecodes.glue
+local hlist_code      = nodecodes.hlist
+local vlist_code      = nodecodes.vlist
+local rule_code       = nodecodes.rule
 
-local normal_rule    = nodes.rulecodes.normal
+local normalrule_code = rulecodes.normal
 
-local nuts           = nodes.nuts
-local getnext        = nuts.getnext
-local getid          = nuts.getid
-local getlist        = nuts.getlist
-local getchar        = nuts.getchar
-local getfont        = nuts.getfont
-local getsubtype     = nuts.getsubtype
-local getfield       = nuts.getfield
-local getbox         = nuts.getbox
-local getwhd         = nuts.getwhd
-local getkern        = nuts.getkern
-local getshift       = nuts.getshift
-local getwidth       = nuts.getwidth
-local getheight      = nuts.getheight
-local getdepth       = nuts.getdepth
+local nuts            = nodes.nuts
+local getnext         = nuts.getnext
+local getid           = nuts.getid
+local getlist         = nuts.getlist
+local getsubtype      = nuts.getsubtype
+local getfield        = nuts.getfield
+local getbox          = nuts.getbox
+local getwhd          = nuts.getwhd
+local getkern         = nuts.getkern
+local getshift        = nuts.getshift
+local getwidth        = nuts.getwidth
+local getheight       = nuts.getheight
+local getdepth        = nuts.getdepth
+local getexpansion    = nuts.getexpansion
+local isglyph         = nuts.isglyph
 
-local effective_glue = nuts.effective_glue
+local effective_glue  = nuts.effective_glue
 
-local characters     = fonts.hashes.characters
-local parameters     = fonts.hashes.parameters
-local shapes         = fonts.hashes.shapes
-local topaths        = metapost.paths
+local characters      = fonts.hashes.characters
+local parameters      = fonts.hashes.parameters
+local shapes          = fonts.hashes.shapes
+local topaths         = metapost.paths
 
-local f_code         = formatters["mfun_do_outline_text_flush(%q,%i,%.6F,%.6F)(%,t);"]
-local f_rule         = formatters["mfun_do_outline_rule_flush(%q,%.6F,%.6F,%.6F,%.6F);"]
-local f_bounds       = formatters["checkbounds(%.6F,%.6F,%.6F,%.6F);"]
-local s_nothing      = "(origin scaled 10)"
+local f_code          = formatters["mfun_do_outline_text_flush(%q,%i,%.6F,%.6F,%q)(%,t);"]
+local f_rule          = formatters["mfun_do_outline_rule_flush(%q,%.6F,%.6F,%.6F,%.6F);"]
+local f_bounds        = formatters["checkbounds(%.6F,%.6F,%.6F,%.6F);"]
+local s_nothing       = "(origin scaled 10)"
+
+directives.register("metapost.stripzeros", function()
+    f_code   = formatters["mfun_do_outline_text_flush(%q,%i,%.6N,%.6N,%q)(%,t);"]
+    f_rule   = formatters["mfun_do_outline_rule_flush(%q,%.6N,%.6N,%.6N,%.6N);"]
+    f_bounds = formatters["checkbounds(%.6N,%.6N,%.6N,%.6N);"]
+end)
 
 local sc             = 10
 local fc             = number.dimenfactors.bp * sc / 10
@@ -302,13 +330,14 @@ function metapost.output(kind,font,char,advance,shift,ex)
                     local advance   = advance or 0
                     local exfactor  = ex or 0
                     local wfactor   = 1
+                    local detail    = kind == "p" and tostring(char) or ""
                     if exfactor ~= 0 then
                         wfactor = (1+(ex/units)/1000)
                         xfactor = xfactor * wfactor
                     end
                     local paths = topaths(glyf,xfactor,yfactor)
                     if paths then
-                        local code = f_code(kind,#paths,advance,shift,paths)
+                        local code = f_code(kind,#paths,advance,shift,detail,paths)
                         return code, character.width * fc * wfactor
                     else
                         return "", 0
@@ -337,9 +366,9 @@ function fonts.metapost.boxtomp(n,kind)
     horizontal = function(parent,current,xoffset,yoffset)
         local dx = 0
         while current do
-            local id = getid(current)
-            if id == glyph_code then
-                local code, width = metapost.output(kind,getfont(current),getchar(current),xoffset+dx,yoffset,getfield(current,"expansion_factor"))
+            local char, id = isglyph(current)
+            if char then
+                local code, width = metapost.output(kind,id,char,xoffset+dx,yoffset,getexpansion(current))
                 result[#result+1] = code
                 dx = dx + width
             elseif id == disc_code then
@@ -374,7 +403,7 @@ function fonts.metapost.boxtomp(n,kind)
                         dp = getdepth(parent)
                     end
                     local hd = (ht + dp) * fc
-                    if hd ~= 0 and getsubtype(current) == normal_rule then
+                    if hd ~= 0 and getsubtype(current) == normalrule_code then
                         result[#result+1] = f_rule(kind,xoffset+dx+wd/2,yoffset+hd/2,wd,hd)
                     end
                     dx = dx + wd

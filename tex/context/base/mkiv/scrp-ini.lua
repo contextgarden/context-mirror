@@ -22,72 +22,75 @@ local report_splitting     = logs.reporter("scripts","splitting")
 local utfbyte, utfsplit = utf.byte, utf.split
 local gmatch = string.gmatch
 
-local attributes        = attributes
-local nodes             = nodes
-local context           = context
+local attributes         = attributes
+local nodes              = nodes
+local context            = context
 
-local texsetattribute   = tex.setattribute
+local texsetattribute    = tex.setattribute
 
-local nodecodes         = nodes.nodecodes
-local unsetvalue        = attributes.unsetvalue
+local nodecodes          = nodes.nodecodes
+local unsetvalue         = attributes.unsetvalue
 
-local implement         = interfaces.implement
+local implement          = interfaces.implement
 
-local glyph_code        = nodecodes.glyph
-local glue_code         = nodecodes.glue
+local glyph_code         = nodecodes.glyph
+local glue_code          = nodecodes.glue
 
-local emwidths          = fonts.hashes.emwidths
-local exheights         = fonts.hashes.exheights
+local emwidths           = fonts.hashes.emwidths
+local exheights          = fonts.hashes.exheights
 
-local a_scriptinjection = attributes.private('scriptinjection')
-local a_scriptsplitting = attributes.private('scriptsplitting')
-local a_scriptstatus    = attributes.private('scriptstatus')
+local a_scriptinjection  = attributes.private('scriptinjection')
+local a_scriptsplitting  = attributes.private('scriptsplitting')
+local a_scriptstatus     = attributes.private('scriptstatus')
 
-local fontdata          = fonts.hashes.identifiers
-local allocate          = utilities.storage.allocate
-local setnodecolor      = nodes.tracers.colors.set
-local setmetatableindex = table.setmetatableindex
+local fontdata           = fonts.hashes.identifiers
+local allocate           = utilities.storage.allocate
+local setnodecolor       = nodes.tracers.colors.set
+local setmetatableindex  = table.setmetatableindex
 
-local enableaction      = nodes.tasks.enableaction
-local disableaction     = nodes.tasks.disableaction
+local enableaction       = nodes.tasks.enableaction
+local disableaction      = nodes.tasks.disableaction
 
-local nuts              = nodes.nuts
-local tonut             = nuts.tonut
-local tonode            = nuts.tonode
+local nuts               = nodes.nuts
 
-local getnext           = nuts.getnext
-local getchar           = nuts.getchar
-local getfont           = nuts.getfont
-local getid             = nuts.getid
-local getattr           = nuts.getattr
-local setattr           = nuts.setattr
-local isglyph           = nuts.isglyph
+local getnext            = nuts.getnext
+local getchar            = nuts.getchar
+local getfont            = nuts.getfont
+local getid              = nuts.getid
+local getattr            = nuts.getattr
+local setattr            = nuts.setattr
+local isglyph            = nuts.isglyph
 
-local insert_node_after = nuts.insert_after
-local first_glyph       = nuts.first_glyph
-local traverse_id       = nuts.traverse_id
-local traverse_char     = nuts.traverse_char
+local insert_node_after  = nuts.insert_after
+local insert_node_before = nuts.insert_before
 
-local nodepool          = nuts.pool
+local first_glyph        = nuts.first_glyph
 
-local new_glue          = nodepool.glue
-local new_rule          = nodepool.rule
-local new_penalty       = nodepool.penalty
+----- traverse_id        = nuts.traverse_id
+----- traverse_char      = nuts.traverse_char
+local nextglyph          = nuts.traversers.glyph
+local nextchar           = nuts.traversers.char
 
-scripts                 = scripts or { }
-local scripts           = scripts
+local nodepool           = nuts.pool
 
-scripts.hash            = scripts.hash or { }
-local hash              = scripts.hash
+local new_glue           = nodepool.glue
+local new_rule           = nodepool.rule
+local new_penalty        = nodepool.penalty
 
-local handlers          = allocate()
-scripts.handlers        = handlers
+scripts                  = scripts or { }
+local scripts            = scripts
 
-local injectors         = allocate()
-scripts.injectors       = handlers
+scripts.hash             = scripts.hash or { }
+local hash               = scripts.hash
 
-local splitters         = allocate()
-scripts.splitters       = splitters
+local handlers           = allocate()
+scripts.handlers         = handlers
+
+local injectors          = allocate()
+scripts.injectors        = handlers
+
+local splitters          = allocate()
+scripts.splitters        = splitters
 
 local hash = { -- we could put these presets in char-def.lua
     --
@@ -206,6 +209,11 @@ local hash = { -- we could put these presets in char-def.lua
     [0x1361] = "ethiopic_word",
     [0x1362] = "ethiopic_sentence",
     --
+    -- tibetan:
+    --
+    [0x0F0B] = "breaking_tsheg",
+    [0x0F0C] = "nonbreaking_tsheg",
+
 }
 
 local function provide(t,k)
@@ -225,6 +233,7 @@ local function provide(t,k)
     elseif (k >= 0x01160 and k <= 0x011A7) then v = "jamo_medial"
     elseif (k >= 0x011A8 and k <= 0x011FF) then v = "jamo_final"
     elseif (k >= 0x01200 and k <= 0x0139F) then v = "ethiopic_syllable"
+    elseif (k >= 0x00F00 and k <= 0x00FFF) then v = "tibetan"
                                            else v = false
     end
     t[k] = v
@@ -267,6 +276,7 @@ function scripts.installmethod(handler)
         report_preprocessing("missing (default) dataset in script %a",name)
         datasets.default = { } -- slower but an error anyway
     end
+
     for k, v in next, datasets do
         setmetatableindex(v,defaults)
     end
@@ -387,6 +397,8 @@ local scriptcolors = allocate {  -- todo: just named colors
     ethiopic_syllable = "trace:1",
     ethiopic_word     = "trace:2",
     ethiopic_sentence = "trace:3",
+    breaking_tsheg    = "trace:1",
+    nonbreaking_tsheg = "trace:2",
 }
 
 scripts.colors = scriptcolors
@@ -409,6 +421,8 @@ local numbertocategory = allocate { -- rather bound to cjk ... will be generaliz
     "ethiopic_syllable",
     "ethiopic_word",
     "ethiopic_sentence",
+    "breaking_tsheg",
+    "nonbreaking_tsheg",
 }
 
 local categorytonumber = allocate(table.swapped(numbertocategory)) -- could be one table
@@ -417,7 +431,7 @@ scripts.categorytonumber = categorytonumber
 scripts.numbertocategory = numbertocategory
 
 local function colorize(start,stop)
-    for n in traverse_id(glyph_code,start) do
+    for n in nextglyph, start do
         local kind = numbertocategory[getattr(n,a_scriptstatus)]
         if kind then
             local ac = scriptcolors[kind]
@@ -450,13 +464,12 @@ end
 -- we can have a fonts.hashes.originals
 
 function scripts.injectors.handler(head)
-    head = tonut(head)
     local start = first_glyph(head) -- we already have glyphs here (subtype 1)
     if not start then
-        return tonode(head), false
+        return head
     else
-        local last_a, normal_process, lastfont, originals = nil, nil, nil, nil
-        local done, first, last, ok = false, nil, nil, false
+        local last_a, normal_process, lastfont, originals, first, last
+        local ok = false
         while start do
             local char, id = isglyph(start)
             if char then
@@ -473,7 +486,7 @@ function scripts.injectors.handler(head)
                                 else
                                     normal_process(head,first,last)
                                 end
-                                ok, done = false, true
+                                ok = false
                             end
                             first, last = nil, nil
                         end
@@ -482,16 +495,15 @@ function scripts.injectors.handler(head)
                         normal_process = handler.injector
                     end
                     if normal_process then
-                        -- wrong: originals are indices !
-                        local font = getfont(start)
-                        if font ~= lastfont then
-                            originals = fontdata[font].resources
+                        -- id == font
+                        if id ~= lastfont then
+                            originals = fontdata[id].resources
                             if resources then
                                 originals = resources.originals
                             else
                                 originals = nil -- can't happen
                             end
-                            lastfont = font
+                            lastfont = id
                         end
                         if originals and type(originals) == "number" then
                             char = originals[char] or char
@@ -517,7 +529,7 @@ function scripts.injectors.handler(head)
                                 else
                                     normal_process(head,first,last)
                                 end
-                                ok, done = false, true
+                                ok = false
                             end
                             first, last = nil, nil
                         end
@@ -532,7 +544,7 @@ function scripts.injectors.handler(head)
                         else
                             normal_process(head,first,last)
                         end
-                        ok, done = false, true
+                        ok = false
                     end
                     first, last = nil, nil
                 end
@@ -554,7 +566,7 @@ function scripts.injectors.handler(head)
                     else
                         normal_process(head,first,last)
                     end
-                    first, last, ok, done = nil, nil, false, true
+                    first, last, ok = nil, nil, false
                 elseif first then
                     first, last = nil, nil
                 end
@@ -570,16 +582,15 @@ function scripts.injectors.handler(head)
             else
                 normal_process(head,first,last)
             end
-            done = true
         end
-        return tonode(head), done
+        return head
     end
 end
 
 -- kind of experimental .. might move to it's own module
 
 -- function scripts.splitters.handler(head)
---     return head, false
+--     return head
 -- end
 
 local function addwords(tree,data)
@@ -701,32 +712,6 @@ end)
 
 local categories = characters.categories or { }
 
--- local function hit(root,head)
---     local current   = getnext(head)
---     local lastrun   = false
---     local lastfinal = false
---     while current and getid(current) == glyph_code do
---         local char = getchar(current)
---         local newroot = root[char]
---         if newroot then
---             local final = newroot.final
---             if final then
---                 lastrun   = current
---                 lastfinal = final
---             end
---             root = newroot
---         elseif categories[char] == "mn" then
---             -- continue
---         else
---             return lastrun, lastfinal
---         end
---         current = getnext(current)
---     end
---     if lastrun then
---         return lastrun, lastfinal
---     end
--- end
-
 local function hit(root,head)
     local current   = getnext(head)
     local lastrun   = false
@@ -759,9 +744,7 @@ end
 local tree, attr, proc
 
 function splitters.handler(head) -- todo: also first_glyph test
-    head = tonut(head)
     local current = head
-    local done = false
     while current do
         if getid(current) == glyph_code then
             local a = getattr(current,a_scriptsplitting)
@@ -792,7 +775,6 @@ function splitters.handler(head) -- todo: also first_glyph test
                                         end
                                     end
                                     head, current = proc(handler,head,current,last,1)
-                                    done = true
                                 else
                                     if trace_splitdetail then
                                         -- could be punctuation
@@ -803,7 +785,6 @@ function splitters.handler(head) -- todo: also first_glyph test
                                         end
                                     end
                                     head, current = proc(handler,head,current,last,2)
-                                    done = true
                                 end
                             end
                         end
@@ -813,7 +794,7 @@ function splitters.handler(head) -- todo: also first_glyph test
         end
         current = getnext(current)
     end
-    return tonode(head), done
+    return head
 end
 
 local function marker(head,current,font,color) -- could become: nodes.tracers.marker
@@ -907,15 +888,13 @@ setmetatableindex(cache_nop,function(t,k) local v = { } t[k] = v return v end)
 -- playing nice
 
 function autofontfeature.handler(head)
-    for n in traverse_char(tonut(head)) do
+    for n, char, font in nextchar, head do
      -- if getattr(n,a_scriptinjection) then
      --     -- already tagged by script feature, maybe some day adapt
      -- else
-            local char   = getchar(n)
             local script = otfscripts[char]
             if script then
                 local dynamic = getattr(n,0) or 0
-                local font = getfont(n)
                 if dynamic > 0 then
                     local slot = cache_yes[font]
                     local attr = slot[script]
@@ -980,3 +959,73 @@ implement {
     name      = "resetscript",
     actions   = scripts.reset
 }
+
+-- some common helpers
+
+
+do
+
+    local parameters = fonts.hashes.parameters
+
+    local space, stretch, shrink, lastfont
+
+    local inter_character_space_factor   = 1
+    local inter_character_stretch_factor = 1
+    local inter_character_shrink_factor  = 1
+
+    local function space_glue(current)
+        local data = numbertodataset[getattr(current,a_scriptinjection)]
+        if data then
+            inter_character_space_factor   = data.inter_character_space_factor   or 1
+            inter_character_stretch_factor = data.inter_character_stretch_factor or 1
+            inter_character_shrink_factor  = data.inter_character_shrink_factor  or 1
+        end
+        local font = getfont(current)
+        if lastfont ~= font then
+            local pf = parameters[font]
+            space    = pf.space
+            stretch  = pf.space_stretch
+            shrink   = pf.space_shrink
+            lastfont = font
+        end
+        return new_glue(
+            inter_character_space_factor   * space,
+            inter_character_stretch_factor * stretch,
+            inter_character_shrink_factor  * shrink
+        )
+    end
+
+    scripts.inserters = {
+
+        space_before = function(head,current)
+            return insert_node_before(head,current,space_glue(current))
+        end,
+        space_after = function(head,current)
+            return insert_node_after(head,current,space_glue(current))
+        end,
+
+        zerowidthspace_before = function(head,current)
+            return insert_node_before(head,current,new_glue(0))
+        end,
+        zerowidthspace_after = function(head,current)
+            return insert_node_after(head,current,new_glue(0))
+        end,
+
+        nobreakspace_before = function(head,current)
+            local g = space_glue(current)
+            local p = new_penalty(10000)
+            head, current = insert_node_before(head,current,p)
+            return insert_node_before(head,current,g)
+        end,
+        nobreakspace_after = function(head,current)
+            local g = space_glue(current)
+            local p = new_penalty(10000)
+            head, current = insert_node_after(head,current,g)
+            return insert_node_after(head,current,p)
+        end,
+
+    }
+
+end
+
+-- end of helpers

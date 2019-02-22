@@ -49,41 +49,95 @@ boolean context_luas ; context_luas := true ;
 %
 % Fourth variant:
 
-string mfun_lua_bs ; mfun_lua_bs := "[[" ;
-string mfun_lua_es ; mfun_lua_es := "]]" ;
+string mfun_lua_bs ; mfun_lua_bs := "[===[" ;
+string mfun_lua_es ; mfun_lua_es := "]===]" ;
 
 vardef mlib_luas_luacall(text t) =
     runscript("" for s = t :
         if string s :
             & s
+          % & mfun_lua_bs & s & mfun_lua_es
         elseif numeric s :
             & decimal s
         elseif boolean s :
             & if s : "true" else : "false" fi
+        elseif pair s :
+            & mfun_pair_to_table(s)
+        elseif path s :
+            & mfun_path_to_table(s)
+        elseif rgbcolor s :
+            & mfun_rgb_to_table(s)
+        elseif cmykcolor s :
+            & mfun_cmyk_to_table(s)
         else :
             & ditto & tostring(s) & ditto
         fi endfor
     )
 enddef ;
 
+% vardef mlib_luas_lualist(expr c)(text t) =
+%     save b ; boolean b ; b := false ;
+%     runscript(c & "(" for s = t :
+%         if b :
+%             & ","
+%         else :
+%             hide(b := true)
+%         fi
+%         if string s :
+%           % & ditto & s & ditto
+%             & mfun_lua_bs & s & mfun_lua_es
+%         elseif numeric s :
+%             & decimal s
+%         elseif boolean s :
+%             & if s : "true" else : "false" fi
+%         elseif pair s :
+%             & mfun_pair_to_table(s)
+%         elseif path s :
+%             & mfun_path_to_table(s)
+%         elseif rgbcolor s :
+%             & mfun_rgb_to_table(s)
+%         elseif cmykcolor s :
+%             & mfun_cmyk_to_table(s)
+%         else :
+%             & ditto & tostring(s) & ditto
+%         fi endfor & ")"
+%     )
+% enddef ;
+
+newinternal mfun_luas_b ;
+
+def mlib_luas_luadone =
+    exitif numeric begingroup mfun_luas_b := 1 ; endgroup ;
+enddef ;
+
 vardef mlib_luas_lualist(expr c)(text t) =
-    save b ; boolean b ; b := false ;
-    runscript(c & "(" for s = t :
-        if b :
-            & ","
+    interim mfun_luas_b := 0 ;
+    runscript(c & for s = t :
+        if mfun_luas_b = 0 :
+            "("
+          % hide(mfun_luas_b := 1)
+            mlib_luas_luadone
         else :
-            hide(b := true)
+            ","
         fi
+        &
         if string s :
-          % & ditto & s & ditto
-            & mfun_lua_bs & s & mfun_lua_es
+            mfun_lua_bs & s & mfun_lua_es
         elseif numeric s :
-            & decimal s
+            decimal s
         elseif boolean s :
-            & if s : "true" else : "false" fi
+            if s : "true" else : "false" fi
+        elseif pair s :
+            mfun_pair_to_table(s)
+        elseif path s :
+            mfun_path_to_table(s)
+        elseif rgbcolor s :
+            mfun_rgb_to_table(s)
+        elseif cmykcolor s :
+            mfun_cmyk_to_table(s)
         else :
-            & ditto & tostring(s) & ditto
-        fi endfor & ")"
+            ditto & tostring(s) & ditto
+        fi & endfor if mfun_luas_b = 0 : "()" else : ")" fi
     )
 enddef ;
 
@@ -107,8 +161,13 @@ vardef MP@#(text t) =
 enddef ;
 
 def message expr t =
-    if t <> "" : lua.mp.report(t) fi ;
+    lua.mp.report(tostring(t)) ;
 enddef ;
+
+% Modes:
+
+vardef texmode   (expr s) = lua.mp("mode",      s) enddef ;
+vardef systemmode(expr s) = lua.mp("systemmode",s) enddef ;
 
 % A few helpers
 
@@ -118,19 +177,15 @@ vardef dimension suffix a = lua.mp.dimension(str a) enddef ;
 
 % More access
 
-def getdimen(expr k)    = lua.mp._get_dimen_(k)   enddef ;
-def getcount(expr k)    = lua.mp._get_count_(k)   enddef ;
-def gettoks (expr k)    = lua.mp._get_toks_ (k)   enddef ;
-def setdimen(expr k, v) = lua.mp._set_dimen_(k,v) enddef ;
-def setcount(expr k, v) = lua.mp._set_count_(k,v) enddef ;
-def settoks (expr k, v) = lua.mp._set_toks_ (k,v) enddef ;
+vardef getmacro(expr k)   = lua.mp._get_macro_(k)   enddef ;
+vardef getdimen(expr k)   = lua.mp._get_dimen_(k)   enddef ;
+vardef getcount(expr k)   = lua.mp._get_count_(k)   enddef ;
+vardef gettoks (expr k)   = lua.mp._get_toks_ (k)   enddef ;
 
-% vardef getdimen(expr k)   = save getdimen ; lua.mp.getdimen(k) enddef ;
-% vardef getcount(expr k)   = save getcount ; lua.mp.getcount(k) enddef ;
-% vardef gettoks (expr k)   = save gettoks  ; lua.mp.gettoks (k) enddef ;
-% vardef setdimen(expr k,v) = save setdimen ; lua.mp.setdimen(k,v) enddef ;
-% vardef setcount(expr k,v) = save setcount ; lua.mp.setcount(k,v) enddef ;
-% vardef settoks (expr k,v) = save settoks  ; lua.mp.settoks (k,v) enddef ;
+def setmacro(expr k,v) = lua.mp._set_macro_(k,v) enddef ;
+def setdimen(expr k,v) = lua.mp._set_dimen_(k,v) enddef ;
+def setcount(expr k,v) = lua.mp._set_count_(k,v) enddef ;
+def settoks (expr k,v) = lua.mp._set_toks_ (k,v) enddef ;
 
 vardef positionpath  (expr name) = lua.mp.positionpath  (name) enddef ;
 vardef positioncurve (expr name) = lua.mp.positioncurve (name) enddef ;
@@ -154,6 +209,43 @@ vardef positionatanchor(expr name) =
     currentpicture := currentpicture shifted - positionxy(name) ;
 enddef ;
 
-
 vardef texvar(expr name) = lua.mp.texvar(name) enddef ;
 vardef texstr(expr name) = lua.mp.texstr(name) enddef ;
+
+%D New experimental feature for Alan-The-Number-Cruncher:
+
+% \startMPcode{doublefun}
+%     path p ; p := (
+%         for i=1 upto 20000 :
+%             origin randomized 10000 ..
+%         endfor cycle
+%     ) xysized (TextWidth,TextHeight) ;
+%     draw for i inpath p:
+%         pointof i .. controls (leftof i) and (rightof i) ..
+%     endfor cycle ;
+% \stopMPcode
+
+% def inpath suffix p =
+%     = 1 step 1 until lua.mp.mf_path_length(str p)
+% enddef ;
+
+% def inpath suffix p =
+%  %  = 1 step 1 until lua.mp.mf_path_length(str p)
+%     = 1 step 1 until (begingroup save n ; n := lua.mp.mf_path_length(str p) ; if n = 0 : 1 else : n fi endgroup)
+% enddef ;
+
+def inpath suffix p = % permits p[0]
+    = 1 step 1 until
+    begingroup
+    save mfun_inpath_r,mfun_inpath_n ; path mfun_inpath_r ;
+    mfun_inpath_r = p ;
+    mfun_inpath_n := lua.mp.mf_path_length(str mfun_inpath_r) ;
+    if mfun_inpath_n = 0 : 1 else : mfun_inpath_n fi
+    endgroup
+enddef ;
+
+vardef pointof primary i = lua.mp.mf_path_point(i) enddef ;
+vardef leftof  primary i = lua.mp.mf_path_left (i) enddef ;
+vardef rightof primary i = lua.mp.mf_path_right(i) enddef ;
+
+extra_endfig := extra_endfig & " lua.mp.mf_path_reset() ; " ;

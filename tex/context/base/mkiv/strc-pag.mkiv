@@ -152,7 +152,7 @@
 
 \setupsubpagenumber
   [\c!way=\v!by\v!part,
-   \c!state=\v!stop]
+   \c!state=\v!start] % was stop but start looks better in logging
 
 % Counters
 
@@ -263,7 +263,7 @@
 \def\currentpage{\the\realpageno}% rather useless
 
 \appendtoks
-    \ifnum\realpageno>\lastpage \globallet\lastpage\lastrealpage \fi
+    \ifnum\realpageno>\lastpage \glet\lastpage\lastrealpage \fi
 \to \everyinitializepagecounters
 
 % States:
@@ -309,6 +309,8 @@
 
 % some day ifsinglesided and ifdoublesided will become obsolete
 
+\newtoks\everysidedswitch
+
 \appendtoks
    \singlesidedfalse \setfalse\layoutisdoublesided
    \doublesidedfalse \setfalse\layoutissinglesided
@@ -317,13 +319,7 @@
    \processallactionsinset[\directpagenumberingparameter\c!alternative]
      [ \v!singlesided=>\setsystemmode\v!singlesided\singlesidedtrue\settrue\layoutissinglesided,
        \v!doublesided=>\setsystemmode\v!doublesided\doublesidedtrue\settrue\layoutisdoublesided]%
-   \ifdefined\trackingmarginnotestrue
-     \ifdoublesided
-       \trackingmarginnotestrue
-     \else
-       \trackingmarginnotesfalse
-     \fi
-   \fi
+   \the\everysidedswitch
    \pageduplexmode
      \ifsinglesided
        \ifdoublesided\plustwo\else\zerocount\fi
@@ -333,6 +329,16 @@
    \page_backgrounds_recalculate
    \strc_pagenumbers_set_location
 \to \everysetuppagenumbering
+
+\appendtoks
+   \ifdefined\trackingmarginnotestrue
+     \ifdoublesided
+       \trackingmarginnotestrue
+     \else
+       \trackingmarginnotesfalse
+     \fi
+   \fi
+\to \everysidedswitch
 
 \ifdefined \page_backgrounds_recalculate \else
     \let\page_backgrounds_recalculate\relax
@@ -401,10 +407,9 @@
 \unexpanded\def\strc_pagenumbers_check_state_change#1#2%
   {\edef\m_strc_pagenumbers_state_new{\namedcounterparameter#1\c!state}%
    \ifx\m_strc_pagenumbers_state_new\m_strc_pagenumbers_state_old \else
-     \doifelse\m_strc_pagenumbers_state_new\v!start
-       {#2\plustwo}%
-       {#2\zerocount}%
+     #2\ifx\m_strc_pagenumbers_state_new\v!start\plustwo\else\zerocount\fi
    \fi}
+
 
 \appendtoks % todo: set state: none, start, stop, reset
     \strc_pagenumbers_check_state_change\s!realpage\c_strc_pagenumbers_state_realpage

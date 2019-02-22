@@ -323,9 +323,47 @@ end
 implement { name = "texdefinition_one", actions = texdefinition_one, scope = "private", arguments = "string" }
 implement { name = "texdefinition_two", actions = texdefinition_two, scope = "private" }
 
-implement { name = "upper", arguments = "string", actions = { utf.upper,    context } }
-implement { name = "lower", arguments = "string", actions = { utf.lower,    context } }
-implement { name = "strip", arguments = "string", actions = { string.strip, context } } -- or utf.strip
+do
+
+    -- Quite probably we don't yet have characters loaded so we delay some
+    -- aliases.
+
+    local _lower_, _upper_, _strip_
+
+    _lower_ = function(s)
+        if characters and characters.lower then
+            _lower_ = characters.lower
+            return _lower_(s)
+        end
+        return string.lower(s)
+    end
+
+    _upper_ = function(s)
+        if characters and characters.upper then
+            _upper_ = characters.upper
+            return _upper_(s)
+        end
+        return string.upper(s)
+    end
+
+    _strip_ = function(s)
+        -- or utf.strip
+        if string.strip then
+            _strip_ = string.strip
+            return _strip_(s)
+        end
+        return s
+    end
+
+    local function lower(s) context(_lower_(s)) end
+    local function upper(s) context(_upper_(s)) end
+    local function strip(s) context(_strip_(s)) end
+
+    implement { name = "upper", arguments = "string", actions = upper }
+    implement { name = "lower", arguments = "string", actions = lower }
+    implement { name = "strip", arguments = "string", actions = strip }
+
+end
 
 implement {
     name      = "converteddimen",
@@ -373,10 +411,17 @@ implement {
 
 -- not faster but just less tracing:
 
-local firstoftwoarguments  = context.firstoftwoarguments
-local secondoftwoarguments = context.secondoftwoarguments
-local firstofoneargument   = context.firstofoneargument
-local gobbleoneargument    = context.gobbleoneargument
+local ctx_protected_cs         = context.protected.cs -- more efficient
+
+local ctx_firstoftwoarguments  = ctx_protected_cs.firstoftwoarguments
+local ctx_secondoftwoarguments = ctx_protected_cs.secondoftwoarguments
+local ctx_firstofoneargument   = ctx_protected_cs.firstofoneargument
+local ctx_gobbleoneargument    = ctx_protected_cs.gobbleoneargument
+
+context.firstoftwoarguments    = ctx_firstoftwoarguments
+context.secondoftwoarguments   = ctx_secondoftwoarguments
+context.firstofoneargument     = ctx_firstofoneargument
+context.gobbleoneargument      = ctx_gobbleoneargument
 
 local hash = utilities.parsers.hashes.settings_to_set
 
@@ -384,9 +429,9 @@ local function doifelsecommon(a,b)
     if a == b then
         setmacro("commalistelement",a)
         if a == "" then
-            secondoftwoarguments()
+            ctx_secondoftwoarguments()
         else
-            firstoftwoarguments()
+            ctx_firstoftwoarguments()
         end
         return
     end
@@ -400,7 +445,7 @@ local function doifelsecommon(a,b)
         for k in next, ha do
             if hb[k] then
                 setmacro("commalistelement",k)
-                firstoftwoarguments()
+                ctx_firstoftwoarguments()
                 return
             end
         end
@@ -408,28 +453,28 @@ local function doifelsecommon(a,b)
         if hash[a][b] then
      -- if settings_to_set(a)[b] then
             setmacro("commalistelement",b)
-            firstoftwoarguments()
+            ctx_firstoftwoarguments()
             return
         end
     elseif bb then
         if hash[b][a] then
      -- if settings_to_set(b)[a] then
             setmacro("commalistelement",a)
-            firstoftwoarguments()
+            ctx_firstoftwoarguments()
             return
         end
     end
     setmacro("commalistelement","")
-    secondoftwoarguments()
+    ctx_secondoftwoarguments()
 end
 
 local function doifcommon(a,b)
     if a == b then
         setmacro("commalistelement",a)
         if a == "" then
-            gobbleoneargument()
+            ctx_gobbleoneargument()
         else
-            firstofoneargument()
+            ctx_firstofoneargument()
         end
         return
     end
@@ -443,7 +488,7 @@ local function doifcommon(a,b)
         for k in next, ha do
             if hb[k] then
                 setmacro("commalistelement",k)
-                firstofoneargument()
+                ctx_firstofoneargument()
                 return
             end
         end
@@ -451,28 +496,28 @@ local function doifcommon(a,b)
         if hash[a][b] then
      -- if settings_to_set(a)[b] then
             setmacro("commalistelement",b)
-            firstofoneargument()
+            ctx_firstofoneargument()
             return
         end
     elseif bb then
         if hash[b][a] then
      -- if settings_to_set(b)[a] then
             setmacro("commalistelement",a)
-            firstofoneargument()
+            ctx_firstofoneargument()
             return
         end
     end
     setmacro("commalistelement","")
-    gobbleoneargument()
+    ctx_gobbleoneargument()
 end
 
 local function doifnotcommon(a,b)
     if a == b then
         setmacro("commalistelement",a)
         if a == "" then
-            firstofoneargument()
+            ctx_firstofoneargument()
         else
-            gobbleoneargument()
+            ctx_gobbleoneargument()
         end
         return
     end
@@ -486,7 +531,7 @@ local function doifnotcommon(a,b)
         for k in next, ha do
             if hb[k] then
                 setmacro("commalistelement",k)
-                gobbleoneargument()
+                ctx_gobbleoneargument()
                 return
             end
         end
@@ -494,28 +539,28 @@ local function doifnotcommon(a,b)
         if hash[a][b] then
      -- if settings_to_set(a)[b] then
             setmacro("commalistelement",b)
-            gobbleoneargument()
+            ctx_gobbleoneargument()
             return
         end
     elseif bb then
         if hash[b][a] then
      -- if settings_to_set(b)[a] then
             setmacro("commalistelement",a)
-            gobbleoneargument()
+            ctx_gobbleoneargument()
             return
         end
     end
     setmacro("commalistelement","")
-    firstofoneargument()
+    ctx_firstofoneargument()
 end
 
 local function doifelseinset(a,b)
     if a == b then
         setmacro("commalistelement",a)
         if a == "" then
-            secondoftwoarguments()
+            ctx_secondoftwoarguments()
         else
-            firstoftwoarguments()
+            ctx_firstoftwoarguments()
         end
         return
     end
@@ -524,21 +569,21 @@ local function doifelseinset(a,b)
         if hash[b][a] then
      -- if settings_to_set(b)[a] then
             setmacro("commalistelement",a)
-            firstoftwoarguments()
+            ctx_firstoftwoarguments()
             return
         end
     end
     setmacro("commalistelement","")
-    secondoftwoarguments()
+    ctx_secondoftwoarguments()
 end
 
 local function doifinset(a,b)
     if a == b then
         setmacro("commalistelement",a)
         if a == "" then
-            gobbleoneargument()
+            ctx_gobbleoneargument()
         else
-            firstofoneargument()
+            ctx_firstofoneargument()
         end
         return
     end
@@ -547,21 +592,21 @@ local function doifinset(a,b)
        if hash[b][a] then
     -- if settings_to_set(b)[a] then
             setmacro("commalistelement",a)
-            firstofoneargument()
+            ctx_firstofoneargument()
             return
         end
     end
     setmacro("commalistelement","")
-    gobbleoneargument()
+    ctx_gobbleoneargument()
 end
 
 local function doifnotinset(a,b)
     if a == b then
         setmacro("commalistelement",a)
         if a == "" then
-            firstofoneargument()
+            ctx_firstofoneargument()
         else
-            gobbleoneargument()
+            ctx_gobbleoneargument()
         end
         return
     end
@@ -570,12 +615,12 @@ local function doifnotinset(a,b)
         if hash[b][a] then
      -- if settings_to_set(b)[a] then
             setmacro("commalistelement",a)
-            gobbleoneargument()
+            ctx_gobbleoneargument()
             return
         end
     end
     setmacro("commalistelement","")
-    firstofoneargument()
+    ctx_firstofoneargument()
 end
 
 implement {
@@ -613,6 +658,20 @@ implement {
     actions   = doifnotinset,
     arguments = "2 strings",
 }
+
+-- done elsewhere:
+--
+-- local function firstinset(a)
+--     local aa = hash[a]
+--     context(aa and aa[1] or a)
+-- end
+--
+-- implement {
+--     name      = "firstinset",
+--     actions   = firstinset,
+--     arguments = "string",
+--     private   = false,
+-- }
 
 -- implement {
 --     name      = "stringcompare",

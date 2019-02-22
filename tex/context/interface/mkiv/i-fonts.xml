@@ -31,11 +31,19 @@
                     <cd:constant type="cd:number"/>
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
+                <cd:parameter name="target">
+                    <cd:constant type="cd:number"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
                 <cd:parameter name="features">
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
                 <cd:parameter name="factor">
                     <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="method">
+                    <cd:constant type="lowercase"/>
+                    <cd:constant type="uppercase"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>
@@ -332,7 +340,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="subtractfeature" variant="direct" clevel="style" ategory="fonts" file="font-fea.mkvi">
+    <cd:command name="subtractfeature" variant="direct" level="style" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
@@ -421,8 +429,30 @@
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
-
     <cd:command name="doifcurrentfonthasfeatureelse" level="system" category="fonts conditional" file="font-fea.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelsefontfeature" level="system" category="fonts conditional" file="font-fea.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+    <cd:command name="doiffontfeatureelse" level="system" category="fonts conditional" file="font-fea.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifunknownfontfeature" level="system" category="fonts conditional" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -935,7 +965,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="switchstyleonly" clevel="style" ategory="fonts" file="font-ini.mkiv">
+    <cd:command name="switchstyleonly" level="style" category="fonts" file="font-ini.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="rm"/>

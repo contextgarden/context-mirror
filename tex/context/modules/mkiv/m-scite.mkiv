@@ -102,7 +102,8 @@ local function exportcolors()
         local function black(f)
             return (f[1] == f[2]) and (f[2] == f[3]) and (f[3] == 0)
         end
-        local result, r = { f_mapping }, 1
+--         local result, r = { f_mapping }, 1
+local result, r = { }, 0
         for k, v in table.sortedhash(lexer.context.styles) do
             local fore = v.fore
             if fore and not black(fore) then
@@ -226,7 +227,7 @@ local function lexdata(data,lexname)
         end
         data = indent(data)
     end
-io.savedata("temp.logs ",data)
+ -- io.savedata("temp.log",data)
     assignbuffer("lex",data)
 end
 
@@ -288,6 +289,7 @@ visualizers.register("cld",   visualizer)
 visualizers.register("tex",   visualizer)
 visualizers.register("lua",   visualizer)
 visualizers.register("mps",   visualizer)
+visualizers.register("pdf",   visualizer)
 visualizers.register("xml",   visualizer)
 visualizers.register("bibtex",visualizer)
 visualizers.register("btx",   visualizer)
@@ -296,6 +298,7 @@ visualizers.register("cpp",   visualizer)
 visualizers.register("txt",   visualizer)
 visualizers.register("bnf",   visualizer)
 visualizers.register("sql",   visualizer)
+visualizers.register("json",  visualizer)
 
 \stopluacode
 
@@ -304,11 +307,13 @@ visualizers.register("sql",   visualizer)
 \definetyping[BTX] [option=bibtex]
 \definetyping[MPS] [option=mps]
 \definetyping[MP]  [option=mps]
+\definetyping[PDF] [option=pdf]
 \definetyping[CPP] [option=web]
 \definetyping[WEB] [option=web]
 \definetyping[TXT] [option=txt]
 \definetyping[BNF] [option=bnf]    % I might use this in the metafun manual.
 \definetyping[SQL] [option=sql]    % To be tested in an upcoming manual.
+\definetyping[JSON][option=json]   % To be tested in an upcoming manual.
 \definetyping[NONE][option=none]
 
 % This is a preliminary interface.
@@ -319,11 +324,11 @@ visualizers.register("sql",   visualizer)
 
 \unexpanded\def\buff_scite_slxb#1%
   {\hangindent\numexpr#1+2\relax\scitespaceskip
-   \hskip#1\scitespaceskip
+   \begstrut\hskip#1\scitespaceskip
    \hangafter 1\relax}
 
 \unexpanded\def\buff_scite_slxe
-  {\par}
+  {\endstrut\par}
 
 \unexpanded\def\buff_scite_slxs  {\hskip\scitespaceskip\relax}
 \unexpanded\def\buff_scite_slxf#1{\hskip#1\scitespaceskip\relax}
@@ -332,6 +337,7 @@ visualizers.register("sql",   visualizer)
   {\scitespaceskip\interwordspace % \fontcharwd\font`0\relax % brrrrr
    \let\slxb\gobbleoneargument
    \let\slxe\space
+   \let\slxbreak\relax
    \let\installscitecommandsinline\relax}
 
 \unexpanded\def\installscitecommandsdisplay
@@ -342,10 +348,24 @@ visualizers.register("sql",   visualizer)
 
 \clf_sciteinstallcommands
 
-\installscitecommandsinline
+\let\slxb    \gobbleoneargument
+\let\slxe    \space
+\let\slxbreak\relax
 
-\let\slxS\buff_scite_slxs
-\let\slxF\buff_scite_slxf
+\let\slxL    \letterleftbrace
+\let\slxR    \letterrightbrace
+\let\slxM    \letterdollar
+\let\slxV    \letterbar
+\let\slxU    \letterhat
+\let\slxD    \letterunderscore
+\let\slxH    \letterhash
+\let\slxB    \letterbackslash
+\let\slxP    \letterpercent
+\let\slxT    \lettertilde
+\let\slxS    \fixedspace
+
+\let\slxS    \buff_scite_slxs
+\let\slxF    \buff_scite_slxf
 
 \def\module_scite_inherit_typing
   {\buff_verbatim_initialize_typing_one

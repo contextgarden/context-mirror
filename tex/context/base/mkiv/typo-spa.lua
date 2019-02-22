@@ -23,12 +23,9 @@ local unsetvalue         = attributes.unsetvalue
 local v_reset            = interfaces.variables.reset
 
 local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-local tonode             = nuts.tonode
 
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
-local getfont            = nuts.getfont
 local takeattr           = nuts.takeattr
 local isglyph            = nuts.isglyph
 
@@ -73,8 +70,6 @@ end
 -- todo cache lastattr
 
 function spacings.handler(head)
-    head = tonut(head)
-    local done = false
     local start = head
     -- head is always begin of par (whatsit), so we have at least two prev nodes
     -- penalty followed by glue
@@ -87,10 +82,11 @@ function spacings.handler(head)
                 if data then
                     local map = data.characters[char]
                     if map then
+                        local font = id
                         local left = map.left
                         local right = map.right
                         local alternative = map.alternative
-                        local quad = quaddata[getfont(start)]
+                        local quad = quaddata[font]
                         local prev = getprev(start)
                         if left and left ~= 0 and prev then
                             local ok = false
@@ -122,7 +118,6 @@ function spacings.handler(head)
                                 end
                                 insert_node_before(head,start,new_penalty(10000))
                                 insert_node_before(head,start,new_glue(left*quad))
-                                done = true
                             end
                         end
                         local next = getnext(start)
@@ -159,7 +154,6 @@ function spacings.handler(head)
                                 end
                                 insert_node_after(head,start,new_glue(right*quad))
                                 insert_node_after(head,start,new_penalty(10000))
-                                done = true
                             end
                         end
                     end
@@ -172,7 +166,7 @@ function spacings.handler(head)
             start = getnext(start)
         end
     end
-    return tonode(head), done
+    return head
 end
 
 local enabled = false

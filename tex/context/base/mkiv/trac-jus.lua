@@ -15,7 +15,6 @@ local a_alignstate    = attributes.private("alignstate")
 local a_justification = attributes.private("justification")
 
 local nuts            = nodes.nuts
-local tonut           = nuts.tonut
 
 local getfield        = nuts.getfield
 local getlist         = nuts.getlist
@@ -26,8 +25,9 @@ local setlink         = nuts.setlink
 local getwidth        = nuts.getwidth
 local findtail        = nuts.tail
 
-local traverse_id     = nuts.traverse_id
-local list_dimensions = nuts.dimensions
+local nexthlist       = nuts.traversers.hlist
+
+local getdimensions   = nuts.dimensions
 local copy_list       = nuts.copy_list
 
 local tracedrule      = nodes.tracers.pool.nuts.rule
@@ -77,14 +77,14 @@ trackers.register("visualizers.justification", function(v)
 end)
 
 function checkers.handler(head)
-    for current in traverse_id(hlist_code,tonut(head)) do
+    for current in nexthlist, head do
         if getattr(current,a_justification) == 1 then
             setattr(current,a_justification,0) -- kind of reset
             local width = getwidth(current)
             if width > 0 then
                 local list = getlist(current)
                 if list then
-                    local naturalwidth, naturalheight, naturaldepth = list_dimensions(list)
+                    local naturalwidth, naturalheight, naturaldepth = getdimensions(list)
                     local delta = naturalwidth - width
                     if naturalwidth == 0 or delta == 0 then
                         -- special box

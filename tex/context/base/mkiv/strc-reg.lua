@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['strc-reg'] = {
 }
 
 local next, type, tonumber = next, type, tonumber
-local format, gmatch = string.format, string.gmatch
+local char, format, gmatch = string.char, string.format, string.gmatch
 local equal, concat, remove = table.are_equal, table.concat, table.remove
 local lpegmatch, P, C, Ct = lpeg.match, lpeg.P, lpeg.C, lpeg.Ct
 local allocate = utilities.storage.allocate
@@ -38,6 +38,7 @@ local texgetcount          = tex.getcount
 local variables            = interfaces.variables
 local v_forward            = variables.forward
 local v_all                = variables.all
+local v_no                 = variables.no
 local v_yes                = variables.yes
 local v_packed             = variables.packed
 local v_current            = variables.current
@@ -47,7 +48,7 @@ local v_last               = variables.last
 local v_text               = variables.text
 
 local context              = context
-local commands             = commands
+local ctx_latelua          = context.latelua
 
 local implement            = interfaces.implement
 
@@ -81,10 +82,12 @@ local ctx_startregisterpages    = context.startregisterpages
 local ctx_stopregisterpages     = context.stopregisterpages
 local ctx_startregisterseewords = context.startregisterseewords
 local ctx_stopregisterseewords  = context.stopregisterseewords
+
 local ctx_registerentry         = context.registerentry
 local ctx_registerseeword       = context.registerseeword
 local ctx_registerpagerange     = context.registerpagerange
 local ctx_registeronepage       = context.registeronepage
+
 local ctx_registerpacked        = context.registerpacked
 
 -- possible export, but ugly code (overloads)
@@ -452,23 +455,6 @@ local tagged = { }
 local function preprocessentries(rawdata)
     local entries = rawdata.entries
     if entries then
-        --
-     -- local e = entries[1] or ""
-     -- local k = entries[2] or ""
-     -- local et, kt, entryproc, pageproc
-     -- if type(e) == "table" then
-     --     et = e
-     -- else
-     --     entryproc, e = splitprocessor(e)
-     --     et = lpegmatch(entrysplitter,e)
-     -- end
-     -- if type(k) == "table" then
-     --     kt = k
-     -- else
-     --     pageproc, k = splitprocessor(k)
-     --     kt = lpegmatch(entrysplitter,k)
-     -- end
-        --
         local processors = rawdata.processors
         local et         = entries.entries
         local kt         = entries.keys
@@ -533,6 +519,7 @@ local function storeregister(rawdata) -- metadata, references, entries
         metadata.kind = "entry"
     end
     --
+    --
     if not metadata.catcodes then
         metadata.catcodes = tex.catcodetable -- get
     end
@@ -581,17 +568,20 @@ local function storeregister(rawdata) -- metadata, references, entries
     return #entries
 end
 
-registers.store = storeregister
-
-function registers.enhance(name,n)
-    local data = tobesaved[name].metadata.notsaved and collected[name] or tobesaved[name]
+local function enhanceregister(specification)
+    local name  = specification.name
+    local n     = specification.n
+    local saved = tobesaved[name]
+    local data  = saved.metadata.notsaved and collected[name] or saved
     local entry = data.entries[n]
     if entry then
         entry.references.realpage = texgetcount("realpageno")
     end
 end
 
-function registers.extend(name,tag,rawdata) -- maybe do lastsection internally
+-- This can become extendregister(specification)!
+
+local function extendregister(name,tag,rawdata) -- maybe do lastsection internally
     if type(tag) == "string" then
         tag = tagged[tag]
     end
@@ -635,6 +625,10 @@ function registers.extend(name,tag,rawdata) -- maybe do lastsection internally
     end
 end
 
+registers.store   = storeregister
+registers.enhance = enhanceregister
+registers.extend  = extendregister
+
 function registers.get(tag,n)
     local list = tobesaved[tag]
     return list and list.entries[n]
@@ -642,13 +636,24 @@ end
 
 implement {
     name      = "enhanceregister",
-    actions   = registers.enhance,
     arguments = { "string", "integer" },
+    actions   = function(name,n)
+        enhanceregister { name = name, n = n } -- todo: move to scanner
+    end,
+}
+
+implement {
+    name      = "deferredenhanceregister",
+    arguments = { "string", "integer" },
+    protected = true,
+    actions   = function(name,n)
+        ctx_latelua { action = enhanceregister, name = name, n = n }
+    end,
 }
 
 implement {
     name      = "extendregister",
-    actions   = registers.extend,
+    actions   = extendregister,
     arguments = "2 strings",
 }
 
@@ -714,7 +719,8 @@ function registers.compare(a,b)
         local ka = a.metadata.kind
         local kb = b.metadata.kind
         if ka == kb then
-            local page_a, page_b = a.references.realpage, b.references.realpage
+            local page_a = a.references.realpage
+            local page_b = b.references.realpage
             if not page_a or not page_b then
                 return 0
             elseif page_a < page_b then
@@ -739,7 +745,7 @@ local seeindex = 0
 
 -- meerdere loops, seewords, dan words, anders seewords
 
-local function crosslinkseewords(result) -- all words
+local function crosslinkseewords(result,check) -- all words
     -- collect all seewords
     local seewords = { }
     for i=1,#result do
@@ -783,24 +789,17 @@ local function crosslinkseewords(result) -- all words
                 local seeparent = seeparents[text]
                 if seeparent then
                     local seeindex = seewords[text]
-                    local s, ns, d, w, l = { }, 0, data.split, seeparent.split, data.list
-                    -- trick: we influence sorting by adding fake subentries
-                    for i=1,#d do
-                        ns = ns + 1
-                        s[ns] = d[i] -- parent
-                    end
-                    for i=1,#w do
-                        ns = ns + 1
-                        s[ns] = w[i] -- see
-                    end
-                    data.split = s
-                    -- we also register a fake extra list entry so that the
-                    -- collapser works okay
-                    l[#l+1] = { text, "" }
                     data.references.seeindex = seeindex
                     if trace_registers then
                         report_registers("see crosslink %03i: %s",seeindex,text)
                     end
+                    seeword.valid = true
+                elseif check then
+                    report_registers("invalid crosslink : %s, %s",text,"ignored")
+                    seeword.valid = false
+                else
+                    report_registers("invalid crosslink : %s, %s",text,"passed")
+                    seeword.valid = true
                 end
             end
         end
@@ -824,17 +823,22 @@ local function removeemptyentries(result)
     end
 end
 
-function registers.prepare(data)
+function registers.prepare(data,options)
     -- data has 'list' table
     local strip    = sorters.strip
     local splitter = sorters.splitters.utf
     local result   = data.result
     if result then
+        local seeprefix = char(0)
         for i=1, #result do
             local entry = result[i]
             local split = { }
             local list  = entry.list
             if list then
+                if entry.seeword then
+                    -- we can have multiple seewords, only two levels supported
+                    list[#list+1] = { seeprefix .. strip(entry.seeword.text) }
+                end
                 for l=1,#list do
                     local ll   = list[l]
                     local word = ll[1]
@@ -848,7 +852,7 @@ function registers.prepare(data)
             entry.split = split
         end
         removeemptyentries(result)
-        crosslinkseewords(result)
+        crosslinkseewords(result,options.check ~= v_no)
     end
 end
 
@@ -861,7 +865,9 @@ function registers.sort(data,options)
 end
 
 function registers.unique(data,options)
-    local result, nofresult, prev = { }, 0, nil
+    local result     = { }
+    local nofresult  = 0
+    local prev       = nil
     local dataresult = data.result
     for k=1,#dataresult do
         local v = dataresult[k]
@@ -873,7 +879,8 @@ function registers.unique(data,options)
             elseif pr.realpage ~= vr.realpage then
                 -- ok
             else
-                local pl, vl = pr.lastrealpage, vr.lastrealpage
+                local pl = pr.lastrealpage
+                local vl = vr.lastrealpage
                 if pl or vl then
                     if not vl then
                         -- ok
@@ -901,7 +908,11 @@ end
 function registers.finalize(data,options) -- maps character to index (order)
     local result = data.result
     data.metadata.nofsorted = #result
-    local split, nofsplit, lasttag, done, nofdone = { }, 0, nil, nil, 0
+    local split    = { }
+    local nofsplit = 0
+    local lasttag  = nil
+    local done     = nil
+    local nofdone  = 0
     local firstofsplit = sorters.firstofsplit
     for k=1,#result do
         local v = result[k]
@@ -922,8 +933,46 @@ function registers.finalize(data,options) -- maps character to index (order)
     data.result = split
 end
 
+-- local function analyzeregister(class,options)
+--     local data = collected[class]
+--     if data and data.entries then
+--         options = options or { }
+--         sorters.setlanguage(options.language,options.method,options.numberorder)
+--         registers.filter(data,options)   -- filter entries into results (criteria)
+--         registers.prepare(data,options)  -- adds split table parallel to list table
+--         registers.sort(data,options)     -- sorts results
+--         registers.unique(data,options)   -- get rid of duplicates
+--         registers.finalize(data,options) -- split result in ranges
+--         data.metadata.sorted = true
+--         return data.metadata.nofsorted or 0
+--     else
+--         return 0
+--     end
+-- end
+
 local function analyzeregister(class,options)
-    local data = collected[class]
+    local data = rawget(collected,class)
+    if not data then
+        local list     = utilities.parsers.settings_to_array(class)
+        local entries  = { }
+        local metadata = false
+        for i=1,#list do
+            local l = list[i]
+            local d = collected[l]
+            local e = d.entries
+            for i=1,#e do
+                entries[#entries+1] = e[i]
+            end
+            if not metadata then
+                metadata = d.metadata
+            end
+        end
+        data = {
+            metadata = metadata or { },
+            entries  = entries,
+        }
+        collected[class] = data
+    end
     if data and data.entries then
         options = options or { }
         sorters.setlanguage(options.language,options.method,options.numberorder)
@@ -973,8 +1022,10 @@ implement {
 -- todo: ownnumber
 
 local function pagerange(f_entry,t_entry,is_last,prefixspec,pagespec)
-    local fer, ter = f_entry.references, t_entry.references
+    local fer = f_entry.references
+    local ter = t_entry.references
     ctx_registerpagerange(
+        f_entry.metadata.name or "",
         f_entry.processors and f_entry.processors[2] or "",
         fer.internal or 0,
         fer.realpage or 0,
@@ -996,6 +1047,7 @@ end
 local function pagenumber(entry,prefixspec,pagespec)
     local er = entry.references
     ctx_registeronepage(
+        entry.metadata.name or "",
         entry.processors and entry.processors[2] or "",
         er.internal or 0,
         er.realpage or 0,
@@ -1004,7 +1056,8 @@ local function pagenumber(entry,prefixspec,pagespec)
 end
 
 local function packed(f_entry,t_entry)
-    local fer, ter = f_entry.references, t_entry.references
+    local fer = f_entry.references
+    local ter = t_entry.references
     ctx_registerpacked(
         fer.internal or 0,
         ter.internal or 0
@@ -1013,8 +1066,12 @@ end
 
 local function collapsedpage(pages)
     for i=2,#pages do
-        local first, second = pages[i-1], pages[i]
-        local first_first, first_last, second_first, second_last = first[1], first[2], second[1], second[2]
+        local first             = pages[i-1]
+        local second            = pages[i]
+        local first_first       = first[1]
+        local first_last        = first[2]
+        local second_first      = second[1]
+        local second_last       = second[2]
         local first_last_pn     = first_last  .references.realpage
         local second_first_pn   = second_first.references.realpage
         local second_last_pn    = second_last .references.realpage
@@ -1110,7 +1167,8 @@ function registers.flush(data,options,prefixspec,pagespec)
             done[i] = false
         end
         local data = sublist.data
-        local d, n = 0, 0
+        local d    = 0
+        local n    = 0
         ctx_startregistersection(sublist.tag)
         for d=1,#data do
             local entry = data[d]
@@ -1126,6 +1184,7 @@ function registers.flush(data,options,prefixspec,pagespec)
         end
         -- ok, this is tricky: we use e[i] delayed so we need it to be local
         -- but we don't want to allocate too many entries so there we go
+
         while d < #data do
             d = d + 1
             local entry    = data[d]
@@ -1164,8 +1223,8 @@ function registers.flush(data,options,prefixspec,pagespec)
                         started = false
                     end
                     if n == i then
---                             ctx_stopregisterentries()
---                             ctx_startregisterentries(n)
+                     -- ctx_stopregisterentries()
+                     -- ctx_startregisterentries(n)
                     else
                         while n > i do
                             n = n - 1
@@ -1186,127 +1245,131 @@ function registers.flush(data,options,prefixspec,pagespec)
                     ctx_startregisterentry(0) -- will become a counter
                     started = true
                     if metadata then
-                        ctx_registerentry(processor,internal,seeparent,function() h_title(e[i],metadata) end)
+                        ctx_registerentry(metadata.name or "",processor,internal,seeparent,function() h_title(e[i],metadata) end)
                     else
                         -- can this happen?
-                        ctx_registerentry(processor,internal,seeindex,e[i])
+                        ctx_registerentry("",processor,internal,seeindex,e[i])
                     end
                 end
             end
-            if kind == 'entry' then
-                if show_page_number then
-                    ctx_startregisterpages()
-                    if collapse_singles or collapse_ranges then
-                        -- we collapse ranges and keep existing ranges as they are
-                        -- so we get prebuilt as well as built ranges
-                        local first, last, prev, pages, dd, nofpages = entry, nil, entry, { }, d, 0
-                        while dd < #data do
-                            dd = dd + 1
-                            local next = data[dd]
-                            if next and next.metadata.kind == "see" then
-                                dd = dd - 1
-                                break
-                            else
-                                local el, nl = entry.list, next.list
-                                if not equal(el,nl) then
-                                    dd = dd - 1
-                                --~ first = nil
-                                    break
-                                elseif next.references.lastrealpage then
-                                    nofpages = nofpages + 1
-                                    pages[nofpages] = first and { first, last or first } or { entry, entry }
-                                    nofpages = nofpages + 1
-                                    pages[nofpages] = { next, next }
-                                    first, last, prev = nil, nil, nil
-                                elseif not first then
-                                    first, prev = next, next
-                                elseif next.references.realpage - prev.references.realpage == 1 then -- 1 ?
-                                    last, prev = next, next
-                                else
-                                    nofpages = nofpages + 1
-                                    pages[nofpages] = { first, last or first }
-                                    first, last, prev = next, nil, next
-                                end
-                            end
-                        end
-                        if first then
+
+            local function case_1()
+                -- we collapse ranges and keep existing ranges as they are
+                -- so we get prebuilt as well as built ranges
+                local first, last, prev, pages, dd, nofpages = entry, nil, entry, { }, d, 0
+                while dd < #data do
+                    dd = dd + 1
+                    local next = data[dd]
+                    if next and next.metadata.kind == "see" then
+                        dd = dd - 1
+                        break
+                    else
+                        local el, nl = entry.list, next.list
+                        if not equal(el,nl) then
+                            dd = dd - 1
+                        --~ first = nil
+                            break
+                        elseif next.references.lastrealpage then
+                            nofpages = nofpages + 1
+                            pages[nofpages] = first and { first, last or first } or { entry, entry }
+                            nofpages = nofpages + 1
+                            pages[nofpages] = { next, next }
+                            first, last, prev = nil, nil, nil
+                        elseif not first then
+                            first, prev = next, next
+                        elseif next.references.realpage - prev.references.realpage == 1 then -- 1 ?
+                            last, prev = next, next
+                        else
                             nofpages = nofpages + 1
                             pages[nofpages] = { first, last or first }
-                        end
-                        if collapse_ranges and nofpages > 1 then
-                            nofpages = collapsepages(pages)
-                        end
-                        if nofpages > 0 then -- or 0
-                            d = dd
-                            for p=1,nofpages do
-                                local first, last = pages[p][1], pages[p][2]
-                                if first == last then
-                                    if first.references.lastrealpage then
-                                        pagerange(first,first,true,prefixspec,pagespec)
-                                    else
-                                        pagenumber(first,prefixspec,pagespec)
-                                    end
-                                elseif last.references.lastrealpage then
-                                    pagerange(first,last,true,prefixspec,pagespec)
-                                else
-                                    pagerange(first,last,false,prefixspec,pagespec)
-                                end
-                            end
-                        elseif entry.references.lastrealpage then
-                            pagerange(entry,entry,true,prefixspec,pagespec)
-                        else
-                            pagenumber(entry,prefixspec,pagespec)
-                        end
-                    elseif collapse_packed then
-                        local first = nil
-                        local last  = nil
-                        while true do
-                            if not first then
-                                first = entry
-                            end
-                            last  = entry
-                            if d == #data then
-                                break
-                            else
-                                d = d + 1
-                                local next = data[d]
-                                if next.metadata.kind == "see" or not equal(entry.list,next.list) then
-                                    d = d - 1
-                                    break
-                                else
-                                    entry = next
-                                end
-                            end
-                        end
-                        packed(first,last) -- returns internals
-                    else
-                        while true do
-                            if entry.references.lastrealpage then
-                                pagerange(entry,entry,true,prefixspec,pagespec)
-                            else
-                                pagenumber(entry,prefixspec,pagespec)
-                            end
-                            if d == #data then
-                                break
-                            else
-                                d = d + 1
-                                local next = data[d]
-                                if next.metadata.kind == "see" or not equal(entry.list,next.list) then
-                                    d = d - 1
-                                    break
-                                else
-                                    entry = next
-                                end
-                            end
+                            first, last, prev = next, nil, next
                         end
                     end
-                    ctx_stopregisterpages()
                 end
-            elseif kind == 'see' then
-                local t, nt = { }, 0
+                if first then
+                    nofpages = nofpages + 1
+                    pages[nofpages] = { first, last or first }
+                end
+                if collapse_ranges and nofpages > 1 then
+                    nofpages = collapsepages(pages)
+                end
+                if nofpages > 0 then -- or 0
+                    d = dd
+                    for p=1,nofpages do
+                        local first, last = pages[p][1], pages[p][2]
+                        if first == last then
+                            if first.references.lastrealpage then
+                                pagerange(first,first,true,prefixspec,pagespec)
+                            else
+                                pagenumber(first,prefixspec,pagespec)
+                            end
+                        elseif last.references.lastrealpage then
+                            pagerange(first,last,true,prefixspec,pagespec)
+                        else
+                            pagerange(first,last,false,prefixspec,pagespec)
+                        end
+                    end
+                elseif entry.references.lastrealpage then
+                    pagerange(entry,entry,true,prefixspec,pagespec)
+                else
+                    pagenumber(entry,prefixspec,pagespec)
+                end
+            end
+
+            local function case_2()
+                local first = nil
+                local last  = nil
                 while true do
-                    nt = nt + 1
-                    t[nt] = entry
+                    if not first then
+                        first = entry
+                    end
+                    last  = entry
+                    if d == #data then
+                        break
+                    else
+                        d = d + 1
+                        local next = data[d]
+                        if next.metadata.kind == "see" or not equal(entry.list,next.list) then
+                            d = d - 1
+                            break
+                        else
+                            entry = next
+                        end
+                    end
+                end
+                packed(first,last) -- returns internals
+            end
+
+            local function case_3()
+                while true do
+                    if entry.references.lastrealpage then
+                        pagerange(entry,entry,true,prefixspec,pagespec)
+                    else
+                        pagenumber(entry,prefixspec,pagespec)
+                    end
+                    if d == #data then
+                        break
+                    else
+                        d = d + 1
+                        local next = data[d]
+                        if next.metadata.kind == "see" or not equal(entry.list,next.list) then
+                            d = d - 1
+                            break
+                        else
+                            entry = next
+                        end
+                    end
+                end
+            end
+
+            local function case_4()
+                local t  = { }
+                local nt = 0
+                while true do
+                    if entry.seeword and entry.seeword.valid then
+                        nt = nt + 1
+                        t[nt] = entry
+                    end
                     if d == #data then
                         break
                     else
@@ -1320,19 +1383,36 @@ function registers.flush(data,options,prefixspec,pagespec)
                         end
                     end
                 end
-                ctx_startregisterseewords()
                 for i=1,nt do
-                    local entry = t[i]
+                    local entry     = t[i]
                     local seeword   = entry.seeword
                     local seetext   = seeword.text or ""
                     local processor = seeword.processor or (entry.processors and entry.processors[1]) or ""
                     local seeindex  = entry.references.seeindex or ""
-                 -- ctx_registerseeword(i,nt,processor,0,seeindex,seetext)
-                    ctx_registerseeword(i,nt,processor,0,seeindex,function() h_title(seetext,metadata) end)
+                    ctx_registerseeword(metadata.name or "",i,nt,processor,0,seeindex,function() h_title(seetext,metadata) end)
                 end
+            end
+
+            if kind == "entry" then
+                if show_page_number then
+                    ctx_startregisterpages()
+                    if collapse_singles or collapse_ranges then
+                        case_1()
+                    elseif collapse_packed then
+                        case_2()
+                    else
+                        case_3()
+                    end
+                    ctx_stopregisterpages()
+                end
+            elseif kind == "see" then
+                ctx_startregisterseewords()
+                case_4()
                 ctx_stopregisterseewords()
             end
+
         end
+
         if started then
             ctx_stopregisterentry()
             started = false
@@ -1373,6 +1453,7 @@ implement {
             { "numberorder" },
             { "compress" },
             { "criterium" },
+            { "check" },
             { "pagenumber", "boolean" },
         },
         {

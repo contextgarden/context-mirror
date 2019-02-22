@@ -36,11 +36,11 @@
 
 % for now indirect
 
-\def\xmlconcat          #1#2#3{\clf_xmlconcat           {#1}{#2}{\detokenize{#3}}}
-\def\xmlconcatrange #1#2#3#4#5{\clf_xmlconcatrange      {#1}{#2}{#3}{#4}{\detokenize{#5}}}
-\def\xmlload              #1#2{\clf_xmlload             {#1}{#2}{\directxmlparameter\c!compress}}
-\def\xmlloadbuffer        #1#2{\clf_xmlloadbuffer       {#1}{#2}{\directxmlparameter\c!compress}}
-\def\xmlloaddata          #1#2{\clf_xmlloaddata         {#1}{#2}{\directxmlparameter\c!compress}}
+\def\xmlconcat          #1#2#3{\clf_xmlconcat     {#1}{#2}{\detokenize{#3}}}
+\def\xmlconcatrange #1#2#3#4#5{\clf_xmlconcatrange{#1}{#2}{#3}{#4}{\detokenize{#5}}}
+\def\xmlload              #1#2{\clf_xmlload       {#1}{#2}{\directxmlparameter\c!compress}}
+\def\xmlloadbuffer        #1#2{\clf_xmlloadbuffer {#1}{#2}{\directxmlparameter\c!compress}}
+\def\xmlloaddata          #1#2{\clf_xmlloaddata   {#1}{#2}{\directxmlparameter\c!compress}}
 
 % aliased
 
@@ -231,6 +231,7 @@
 \unexpanded\def\xmlremovedocumentsetup   #1#2{\clf_xmlremovesetup {#1}{#2}}
 \unexpanded\def\xmlresetdocumentsetups     #1{\clf_xmlresetsetups {#1}}
 
+\unexpanded\def\xmlflushsetups             #1{\clf_xmlflushsetups {#1}{*}{}}   % #1 == id where to apply *
 \unexpanded\def\xmlflushdocumentsetups   #1#2{\clf_xmlflushsetups {#1}{*}{#2}} % #1 == id where to apply * and #2
 
 \let\xmlregistersetup        \xmlappendsetup
@@ -240,7 +241,7 @@
 
 \unexpanded\def\xmlregisteredsetups
   {\xmlstarttiming
-   \xmlflushsetups
+   \xmlflushsetups\xmldocument
    \xmldefaulttotext\xmldocument % after include
    \xmlstoptiming}
 
@@ -260,8 +261,8 @@
    %xmlpushdocument{#3}%
    #2{#3}{#4}%
    \setcatcodetable\notcatcodes
-   \doifelsenothing{#5}
-     {\xmlsetup{#3}{xml:process}}
+   \doifelsenothing{#5}%
+     {\xmlsetup{#3}{xml:process}}%
      {\xmlsetup{#3}{#5}}%
    %xmlpopdocument
    \endgroup}
@@ -326,7 +327,7 @@
    \fi
    \unexpanded\def\stopxmldisplayverbatim
      {\endofverbatimlines
-      \stoppacked}
+      \stoppacked}%
    \doinitializeverbatim
    \beginofverbatimlines}
 
@@ -404,7 +405,7 @@
    \c!entities=\v!no]    % load big entity file
 
 \appendtoks
-    \doif{\directxmlparameter\c!entities}\clf_xmlloadentities
+    \doif{\directxmlparameter\c!entities}\v!yes\clf_xmlloadentities
 \to \everysetupxml
 
 \def\xmlmapvalue    #1#2#3{\setvalue{\??xmlmapvalue#1:#2}{#3}} % keep #3 to grab spaces

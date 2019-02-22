@@ -20,8 +20,12 @@ more efficient.</p>
 -- this is one of the first modules using scanners and we need to replace
 -- it by implement and friends
 
+-- we could have namespaces, like p, page, region, columnarea, textarea but then
+-- we need virtual table accessors as well as have tag/id accessors ... we don't
+-- save much here (at least not now)
+
 local tostring, next, rawget, rawset, setmetatable, tonumber = tostring, next, rawget, rawset, setmetatable, tonumber
-local sort, sortedhash, sortedkeys = table.sort, table.sortedhash, table.sortedkeys
+local sort = table.sort
 local format, gmatch = string.format, string.gmatch
 local rawget = rawget
 local lpegmatch = lpeg.match
@@ -40,7 +44,8 @@ local scanners          = interfaces.scanners
 
 local commands          = commands
 local context           = context
-local ctxnode           = context.nodes.flush
+
+local ctx_latelua       = context.latelua
 
 local tex               = tex
 local texgetcount       = tex.getcount
@@ -63,12 +68,12 @@ local getbox            = nuts.getbox
 local getid             = nuts.getid
 local getwhd            = nuts.getwhd
 
------ hlist_code        = nodes.listcodes.hlist
+local hlist_code        = nodes.nodecodes.hlist
 
 local find_tail         = nuts.tail
+local hpack             = nuts.hpack
 
 local new_latelua       = nuts.pool.latelua
-local new_latelua_node  = nodes.pool.latelua
 
 local variables         = interfaces.variables
 local v_text            = variables.text
@@ -236,7 +241,6 @@ end
 --         t[#t+1] = data
 --     end
 --
---     --
 --     local pages = structures.pages.collected
 --     if pages then
 --         local last = nil
@@ -326,9 +330,19 @@ local nofpages   = nil
 
 -- beware ... we're not sparse here as lua will reserve slots for the nilled
 
-local getpos  = function() getpos  = backends.codeinjections.getpos  return getpos () end
-local gethpos = function() gethpos = backends.codeinjections.gethpos return gethpos() end
-local getvpos = function() getvpos = backends.codeinjections.getvpos return getvpos() end
+local getpos, gethpos, getvpos
+
+function jobpositions.registerhandlers(t)
+    getpos  = t and t.getpos  or function() return 0, 0 end
+    gethpos = t and t.gethpos or function() return 0    end
+    getvpos = t and t.getvpos or function() return    0 end
+end
+
+function jobpositions.getpos () return getpos () end
+function jobpositions.gethpos() return gethpos() end
+function jobpositions.getvpos() return getvpos() end
+
+jobpositions.registerhandlers()
 
 local function setall(name,p,x,y,w,h,d,extra)
     tobesaved[name] = {
@@ -386,9 +400,28 @@ end
 -- analyze some files (with lots if margindata) and then when one key optionally
 -- use that one instead of a table (so, a 3rd / 4th argument: key, e.g. "x")
 
-local function set(name,index,val) -- ,key
-    local data = enhance(val or index)
-    if val then
+local function set(name,index,value) -- ,key
+    local data = enhance(value or index)
+    if value then
+        container = tobesaved[name]
+        if not container then
+            tobesaved[name] = {
+                [index] = data
+            }
+        else
+            container[index] = data
+        end
+    else
+        tobesaved[name] = data
+    end
+end
+
+local function setspec(specification)
+    local name  = specification.name
+    local index = specification.index
+    local value = specification.value
+    local data  = enhance(value or index)
+    if value then
         container = tobesaved[name]
         if not container then
             tobesaved[name] = {
@@ -411,16 +444,11 @@ local function get(id,index)
     end
 end
 
-------------.setdim = setdim
-jobpositions.setall = setall
-jobpositions.set    = set
-jobpositions.get    = get
-
--- scanners.setpos     = setall
-
--- trackers.enable("tokens.compi*")
-
--- something weird: the compiler fails us here
+------------.setdim  = setdim
+jobpositions.setall  = setall
+jobpositions.set     = set
+jobpositions.setspec = setspec
+jobpositions.get     = get
 
 scanners.dosaveposition = compilescanner {
     actions   = setall, -- name p x y
@@ -442,7 +470,8 @@ scanners.dosavepositionplus = compilescanner {
 
 -- not much gain in keeping stack (inc/dec instead of insert/remove)
 
-local function b_column(tag)
+local function b_column(specification)
+    local tag = specification.tag
     local x = gethpos()
     tobesaved[tag] = {
         r = true,
@@ -453,7 +482,7 @@ local function b_column(tag)
     column = tag
 end
 
-local function e_column(tag)
+local function e_column()
     local t = tobesaved[column]
     if not t then
         -- something's wrong
@@ -479,7 +508,7 @@ scanners.bposcolumnregistered = function() -- tag
     local tag = scanstring()
     insert(columns,tag)
     column = tag
-    ctxnode(new_latelua_node(function() b_column(tag) end))
+    ctx_latelua { action = b_column, tag = tag }
 end
 
 scanners.eposcolumn = function()
@@ -488,37 +517,41 @@ scanners.eposcolumn = function()
 end
 
 scanners.eposcolumnregistered = function()
-    ctxnode(new_latelua_node(e_column))
+    ctx_latelua { action = e_column }
     remove(columns)
     column = columns[#columns]
 end
 
 -- regions
 
-local function b_region(tag)
+local function b_region(specification)
+    local tag  = specification.tag or specification
     local last = tobesaved[tag]
     local x, y = getpos()
     last.x = x ~= 0 and x or nil
     last.y = y ~= 0 and y or nil
     last.p = texgetcount("realpageno")
-    insert(regions,tag)
+    insert(regions,tag) -- todo: fast stack
     region = tag
 end
 
-local function e_region(correct)
+local function e_region(specification)
     local last = tobesaved[region]
     local y = getvpos()
-    if correct then
+    local x, y = getpos()
+    if specification.correct then
         local h = (last.y or 0) - y
         last.h = h ~= 0 and h or nil
     end
     last.y = y ~= 0 and y or nil
-    remove(regions)
+    remove(regions) -- todo: fast stack
     region = regions[#regions]
 end
 
 jobpositions.b_region = b_region
 jobpositions.e_region = e_region
+
+local lastregion
 
 local function setregionbox(n,tag,k,lo,ro,to,bo) -- kind
     if not tag or tag == "" then
@@ -527,34 +560,34 @@ local function setregionbox(n,tag,k,lo,ro,to,bo) -- kind
     end
     local box = getbox(n)
     local w, h, d = getwhd(box)
-    local x, y = getpos() -- hm, makes no sense here
     tobesaved[tag] = {
-     -- p = texgetcount("realpageno"), -- we copy them
-        x = x ~= 0 and x or nil,       -- was true
-        y = y ~= 0 and y or nil,
-        w = w ~= 0 and w or nil,
-        h = h ~= 0 and h or nil,
-        d = d ~= 0 and d or nil,
-        k = k ~= 0 and k or nil,
+     -- p  = texgetcount("realpageno"), -- we copy them
+        x  = 0,
+        y  = 0,
+        w  = w  ~= 0 and w  or nil,
+        h  = h  ~= 0 and h  or nil,
+        d  = d  ~= 0 and d  or nil,
+        k  = k  ~= 0 and k  or nil,
         lo = lo ~= 0 and lo or nil,
         ro = ro ~= 0 and ro or nil,
         to = to ~= 0 and to or nil,
         bo = bo ~= 0 and bo or nil,
     }
+    lastregion = tag
     return tag, box
 end
 
 local function markregionbox(n,tag,correct,...) -- correct needs checking
     local tag, box = setregionbox(n,tag,...)
      -- todo: check if tostring is needed with formatter
-    local push = new_latelua(function() b_region(tag) end)
-    local pop  = new_latelua(function() e_region(correct) end)
+    local push = new_latelua { action = b_region, tag = tag }
+    local pop  = new_latelua { action = e_region, correct = correct }
     -- maybe we should construct a hbox first (needs experimenting) so that we can avoid some at the tex end
     local head = getlist(box)
- -- no :
+    -- no, this fails with \framed[region=...] .. needs thinking
  -- if getid(box) ~= hlist_code then
  --  -- report("mark region box assumes a hlist, fix this for %a",tag)
- --     head = nuts.hpack(head)
+ --     head = hpack(head)
  -- end
     if head then
         local tail = find_tail(head)
@@ -584,7 +617,7 @@ end
 
 local nofparagraphs = 0
 
-scanners.parpos = function() -- todo: relate to localpar (so this is an intermediate variant)
+scanners.parpos = function()
     nofparagraphs = nofparagraphs + 1
     texsetcount("global","c_anch_positions_paragraph",nofparagraphs)
     local box = getbox("strutbox")
@@ -623,14 +656,14 @@ scanners.parpos = function() -- todo: relate to localpar (so this is an intermed
     if parshape and #parshape > 0 then
         t.ps = parshape
     end
-    local tag = f_p_tag(nofparagraphs)
-    tobesaved[tag] = t
-    ctxnode(new_latelua_node(function() enhance(tobesaved[tag]) end))
+    local name = f_p_tag(nofparagraphs)
+    tobesaved[name] = t
+    ctx_latelua { action = enhance, specification = t }
 end
 
 scanners.dosetposition = function() -- name
     local name = scanstring()
-    tobesaved[name] = {
+    local spec = {
         p = true,
         c = column,
         r = true,
@@ -639,15 +672,15 @@ scanners.dosetposition = function() -- name
         n = nofparagraphs > 0 and nofparagraphs or nil,
         r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
-    ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
+    ctx_latelua { action = enhance, specification = spec }
 end
 
 scanners.dosetpositionwhd = function() -- name w h d extra
     local name = scanstring()
-    local w = scandimen()
-    local h = scandimen()
-    local d = scandimen()
-    tobesaved[name] = {
+    local w    = scandimen()
+    local h    = scandimen()
+    local d    = scandimen()
+    local spec = {
         p = true,
         c = column,
         r = true,
@@ -659,14 +692,14 @@ scanners.dosetpositionwhd = function() -- name w h d extra
         n = nofparagraphs > 0 and nofparagraphs or nil,
         r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
-    ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
+    ctx_latelua { action = enhance, specification = spec }
 end
 
 scanners.dosetpositionbox = function() -- name box
     local name = scanstring()
     local box  = getbox(scaninteger())
     local w, h, d = getwhd(box)
-    tobesaved[name] = {
+    local spec = {
         p = true,
         c = column,
         r = true,
@@ -678,15 +711,15 @@ scanners.dosetpositionbox = function() -- name box
         n = nofparagraphs > 0 and nofparagraphs or nil,
         r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
-    ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
+    ctx_latelua { action = enhance, specification = spec }
 end
 
 scanners.dosetpositionplus = function() -- name w h d extra
     local name = scanstring()
-    local w = scandimen()
-    local h = scandimen()
-    local d = scandimen()
-    tobesaved[name] = {
+    local w    = scandimen()
+    local h    = scandimen()
+    local d    = scandimen()
+    local spec = {
         p = true,
         c = column,
         r = true,
@@ -699,14 +732,14 @@ scanners.dosetpositionplus = function() -- name w h d extra
         e = scanstring(),
         r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
-    ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
+    ctx_latelua { action = enhance, specification = spec }
 end
 
 scanners.dosetpositionstrut = function() -- name
     local name = scanstring()
     local box  = getbox("strutbox")
     local w, h, d = getwhd(box)
-    tobesaved[name] = {
+    local spec = {
         p = true,
         c = column,
         r = true,
@@ -717,7 +750,7 @@ scanners.dosetpositionstrut = function() -- name
         n = nofparagraphs > 0 and nofparagraphs or nil,
         r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
-    ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
+    ctx_latelua { action = enhance, specification = spec }
 end
 
 scanners.dosetpositionstrutkind = function() -- name
@@ -725,7 +758,7 @@ scanners.dosetpositionstrutkind = function() -- name
     local kind = scaninteger()
     local box  = getbox("strutbox")
     local w, h, d = getwhd(box)
-    tobesaved[name] = {
+    local spec = {
         k = kind,
         p = true,
         c = column,
@@ -737,7 +770,7 @@ scanners.dosetpositionstrutkind = function() -- name
         n = nofparagraphs > 0 and nofparagraphs or nil,
         r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
-    ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
+    ctx_latelua { action = enhance, specification = spec }
 end
 
 function jobpositions.getreserved(tag,n)
@@ -1375,6 +1408,11 @@ end
 scanners.markregionboxtaggedkind = function() -- box tag kind
     markregionbox(scaninteger(),scanstring(),nil,
         scaninteger(),scandimen(),scandimen(),scandimen(),scandimen())
+end
+
+scanners.reservedautoregiontag = function()
+    nofregions = nofregions + 1
+    context(f_region(nofregions))
 end
 
 -- statistics (at least for the moment, when testing)

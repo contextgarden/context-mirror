@@ -20,7 +20,15 @@
 
 \writestatus{loading}{ConTeXt Graphic Macros / Figure Inclusion}
 
-\registerctxluafile{grph-inc}{}
+\ifcase\contextlmtxmode
+    \registerctxluafile{grph-inc}{}
+\else
+    \registerctxluafile{grph-img}{}
+    \registerctxluafile{grph-inc}{}
+    \registerctxluafile{grph-bmp}{}
+    \registerctxluafile{grph-chk}{}
+\fi
+
 \registerctxluafile{grph-con}{}
 \registerctxluafile{grph-fil}{}
 \registerctxluafile{grph-mem}{}
@@ -32,7 +40,7 @@
 %D Including graphics is complicated by the fact that  we need to locate them first,
 %D optionally manipulate them and scale then next. Lookups are to be done as efficient
 %D as possible and inclusion of the data might happens only once. In \MKIV\ much of this
-%D is delegated to the \LUA\ end. There is nor so much less code as in \MKII\ but it's
+%D is delegated to the \LUA\ end. There is not so much less code as in \MKII\ but it's
 %D more powerful, flexible, pluggable and some of the extended functionality has been
 %D moved from modules to the core. The overall functionality is rather stable and has
 %D not changed much over the years.
@@ -105,6 +113,9 @@
    \c!align          =\v!none, % New, for Tacos extremely large graphics.
    \c!crossreference =\v!no,
    \c!transform      =\v!auto,
+   \c!userpassword   =,
+   \c!ownerpassword  =,
+   \c!compact        =,
   ]
 
 %D Defining figures.
@@ -201,7 +212,7 @@
            {\grph_include_use_indeed{#1}{#2}{#3}{#4}}}}}
 
 \def\grph_include_use_indeed#1#2#3#4%
-  {\setvalue{\??externalfigureinstance#1}{\grph_include_setup{#2}{#3}{#4}}%
+  {\dodoglobal\setvalue{\??externalfigureinstance#1}{\grph_include_setup{#2}{#3}{#4}}%
    \grph_include_analyze_collection[#2][#4]}
 
 % inclusion
@@ -317,27 +328,30 @@
    %
    \dostarttagged\t!image\empty
    \clf_figure_push {
-        name       {\p_grph_include_name}%
-        label      {\ifx\p_label\empty\p_grph_include_label\else\p_label\fi}%
-        page       {\externalfigureparameter\c!page}%
-        file       {\externalfigureparameter\c!file}%
-        size       {\externalfigureparameter\c!size}%
-        object     {\externalfigureparameter\c!object}%
-        prefix     {\externalfigureparameter\c!prefix}%
-        cache      {\externalfigureparameter\c!cache}%
-        format     {\externalfigureparameter\c!method}%
-        preset     {\externalfigureparameter\c!prefix}%
-        controls   {\externalfigureparameter\c!controls}%
-        resources  {\externalfigureparameter\c!resources}%
-        preview    {\externalfigureparameter\c!preview}%
-        display    {\externalfigureparameter\c!display}%
-        mask       {\externalfigureparameter\c!mask}%
-        conversion {\externalfigureparameter\c!conversion}%
-        resolution {\externalfigureparameter\c!resolution}%
-        color      {\externalfigureparameter\c!color}% unprocessed raw key
-        arguments  {\externalfigureparameter\c!arguments}% used for converters
-        repeat     {\externalfigureparameter\c!repeat}%
-        transform  {\externalfigureparameter\c!transform}%
+        name         {\p_grph_include_name}%
+        label        {\ifx\p_label\empty\p_grph_include_label\else\p_label\fi}%
+        page         {\externalfigureparameter\c!page}%
+        file         {\externalfigureparameter\c!file}%
+        size         {\externalfigureparameter\c!size}%
+        object       {\externalfigureparameter\c!object}%
+        prefix       {\externalfigureparameter\c!prefix}%
+        cache        {\externalfigureparameter\c!cache}%
+        format       {\externalfigureparameter\c!method}%
+        preset       {\externalfigureparameter\c!prefix}%
+        controls     {\externalfigureparameter\c!controls}%
+        resources    {\externalfigureparameter\c!resources}%
+        preview      {\externalfigureparameter\c!preview}%
+        display      {\externalfigureparameter\c!display}%
+        mask         {\externalfigureparameter\c!mask}%
+        conversion   {\externalfigureparameter\c!conversion}%
+        resolution   {\externalfigureparameter\c!resolution}%
+        color        {\externalfigureparameter\c!color}% unprocessed raw key
+        arguments    {\externalfigureparameter\c!arguments}% used for converters
+        repeat       {\externalfigureparameter\c!repeat}%
+        transform    {\externalfigureparameter\c!transform}%
+        compact      {\externalfigureparameter\c!compact}% experiment, share fonts
+        userpassword {\externalfigureparameter\c!userpassword}%
+        ownerpassword{\externalfigureparameter\c!ownerpassword}%
     \ifx\p_width\empty \else
         width      \dimexpr\p_width\relax
     \fi
@@ -589,9 +603,9 @@
 
 \def\grph_include_set_mode
   {\ifcase\figurestatus
-     \global\resetsystemmode\v!figure % todo, also: \v!resource
+     \globalresetsystemmode\v!figure % todo, also: \v!resource
    \else
-     \global\setsystemmode  \v!figure % todo, also: \v!resource
+     \globalsetsystemmode  \v!figure % todo, also: \v!resource
    \fi}
 
 \appendtoks
@@ -641,10 +655,41 @@
 \unexpanded\def\docheckfiguremps     #1{\global\setbox\foundexternalfigure\vpack{\convertMPtoPDF{#1}11}}
 \unexpanded\def\docheckfiguremprun #1#2{\global\setbox\foundexternalfigure\vpack{\useMPrun{#1}{#2}}}
 
-\unexpanded\def\relocateexternalfigure % easier here than in lua
+% \unexpanded\def\relocateexternalfigure % easier here than in lua
+%   {\global\setbox\foundexternalfigure\vpack to \ht\foundexternalfigure\bgroup
+%      \vss
+%      \ht\foundexternalfigure\zeropoint
+%      \hpack to \wd\foundexternalfigure\bgroup
+%         \box\foundexternalfigure
+%         \hss
+%      \egroup
+%    \egroup}
+
+\unexpanded\def\relocateexternalfigure
   {\global\setbox\foundexternalfigure\vpack to \ht\foundexternalfigure\bgroup
-     \vss
+     %
+     % The \vss can (!) introduce 1 sp excess visible in xform which in itself
+     % is not that important but some don't like these cosmetic side effects, for
+     % instance we can get:
+     %
+     % vss   : \vbox(845.1575+0.0)x597.23125, glue set 845.15747fil, direction TLT
+     % vskip : \vbox(845.1575+0.0)x597.23125, direction TLT
+     %
+     % or
+     %
+     % 1 0 0 1 0 0.00003 cm
+     % 1 0 0 1 0 0       cm
+     %
+     % This is a known property of using glue and can even depend on the architecture
+     % (float implementation). Anyway, let's for now use a skip. Of course this can
+     % shift the issue elsewhere, as vss is used a lot elsewhere.
+     %
+   % \vss
+     \vkern\ht\foundexternalfigure
+     %
+   % \parfillskip\zeropoint
      \ht\foundexternalfigure\zeropoint
+     \dp\foundexternalfigure\zeropoint
      \hpack to \wd\foundexternalfigure\bgroup
         \box\foundexternalfigure
         \hss

@@ -43,6 +43,7 @@ local findfile             = resolvers.findfile
 local addsuffix            = file.addsuffix
 
 local v_yes                = variables.yes
+local v_no                 = variables.no
 local v_last               = variables.last
 local v_all                = variables.all
 local v_absolute           = variables.absolute
@@ -141,7 +142,8 @@ local functions = { __index = {
 local handlers = { }
 
 function visualizers.newhandler(name,data)
-    local tname, tdata = type(name), type(data)
+    local tname = type(name)
+    local tdata = type(data)
     if tname == "table" then -- (data)
         setmetatable(name,getmetatable(name) or functions)
         return name
@@ -255,7 +257,7 @@ function visualizers.load(name)
             if trace_visualize then
                 report_visualizers("loading visualizer %a",name)
             end
-            lua.registercode(luaname)
+            lua.registercode(luaname) -- only used here, end up in format
             context.input(texname)
         end
         if rawget(specifications,name) == nil then
@@ -445,7 +447,7 @@ function visualizers.registerescapecommand(name,token,normalmethod,escapecommand
         end
         token = P(token)
         local notoken = hack((1 - token)^1)
-        local cstoken = name_pattern * space_pattern
+        local cstoken = Cs(name_pattern * (space_pattern/""))
         escapepattern = (
             (token / "")
           * (cstoken / (escapecommand or texcommand))
@@ -614,7 +616,12 @@ end
 local onlyspaces = S(" \t\f\n\r")^0 * P(-1)
 
 local function getstrip(lines,first,last)
-    local first, last = first or 1, last or #lines
+    if not first then
+        first = 1
+    end
+    if not last then
+        last = #lines
+    end
     for i=first,last do
         local li = lines[i]
         if #li == 0 or lpegmatch(onlyspaces,li) then
@@ -736,12 +743,14 @@ end
 
 local function filter(lines,settings) -- todo: inline or display in settings
     local strip = settings.strip
-    if strip and strip ~= "" then
+ -- if strip and strip == "" then
+    if strip ~= v_no and strip ~= false then
         lines = realign(lines,strip)
     end
-    local line, n = 0, 0
-    local first, last, m = getstrip(lines)
+    local line  = 0
+    local n     = 0
     local range = settings.range
+    local first, last, m = getstrip(lines)
     if range then
         first, last = getrange(lines,first,last,range)
         first, last = getstrip(lines,first,last)

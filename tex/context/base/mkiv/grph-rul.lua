@@ -8,33 +8,48 @@ if not modules then modules = { } end modules ['grph-rul'] = {
 
 local tonumber, next, type = tonumber, next, type
 
-local attributes     = attributes
-local nodes          = nodes
-local context        = context
+local attributes       = attributes
+local nodes            = nodes
+local context          = context
 
-local ruleactions    = nodes.rules.ruleactions
-local userrule       = nodes.rules.userrule
-local bpfactor       = number.dimenfactors.bp
-local pdfprint       = pdf.print
+local bpfactor         = number.dimenfactors.bp
 
-local current_attr   = nodes.current_attr
-local setfield       = nodes.setfield
+local nuts             = nodes.nuts
+local userrule         = nuts.rules.userrule
+local outlinerule      = nuts.pool.outlinerule
+local ruleactions      = nuts.rules.ruleactions
 
-local getattribute   = tex.getattribute
+local setattrlist      = nuts.setattrlist
+local setattr          = nuts.setattr
+local tonode           = nuts.tonode
 
-local a_color        = attributes.private('color')
-local a_transparency = attributes.private('transparency')
-local a_colormodel   = attributes.private('colormodel')
+local getattribute     = tex.getattribute
 
-local mpcolor        = attributes.colors.mpcolor
+local lefttoright_code = nodes.dirvalues.lefttoright
 
-local trace_mp       = false  trackers.register("rules.mp", function(v) trace_mp = v end)
+local a_color          = attributes.private('color')
+local a_transparency   = attributes.private('transparency')
+local a_colormodel     = attributes.private('colormodel')
 
-local report_mp      = logs.reporter("rules","mp")
+local mpcolor          = attributes.colors.mpcolor
 
-local floor          = math.floor
-local getrandom      = utilities.randomizer.get
-local formatters     = string.formatters
+local trace_mp         = false  trackers.register("rules.mp", function(v) trace_mp = v end)
+
+local report_mp        = logs.reporter("rules","mp")
+
+local floor            = math.floor
+local getrandom        = utilities.randomizer.get
+local formatters       = string.formatters
+
+-- This is very pdf specific. Maybe move some to lpdf-rul.lua some day.
+
+local pdfprint
+
+pdfprint = function(...) pdfprint = lpdf.print return pdfprint(...) end
+
+updaters.register("backend.update",function()
+    pdfprint = lpdf.print
+end)
 
 do
 
@@ -97,19 +112,18 @@ def RuleColor = %color% enddef ;
     ruleactions.mp = function(p,h,v,i,n)
         local name = p.name or "fake:rest"
         local code = (predefined[name] or predefined["fake:rest"]) {
-            data            = p.data or "",
-            width           = p.width * bpfactor,
-            height          = p.height * bpfactor,
-            depth           = p.depth * bpfactor,
-            factor          = (p.factor or 0) * bpfactor, -- needs checking
-            offset          = p.offset or 0,
-            line            = (p.line or 65536) * bpfactor,
-            color           = mpcolor(p.ma,p.ca,p.ta),
-            option          = p.option or "",
-            direction       = p.direction or "TLT",
-            h               = h * bpfactor,
-            v               = v * bpfactor,
-
+            data      = p.data or "",
+            width     = p.width * bpfactor,
+            height    = p.height * bpfactor,
+            depth     = p.depth * bpfactor,
+            factor    = (p.factor or 0) * bpfactor, -- needs checking
+            offset    = p.offset or 0,
+            line      = (p.line or 65536) * bpfactor,
+            color     = mpcolor(p.ma,p.ca,p.ta),
+            option    = p.option or "",
+            direction = p.direction or lefttoright_code,
+            h         = h * bpfactor,
+            v         = v * bpfactor,
         }
         if not initialized then
             initialized = true
@@ -134,14 +148,28 @@ do
     local f_rectangle = formatters["%.6F w %.6F %.6F %.6F %.6F re %s"]
     local f_baselined = formatters["%.6F w %.6F %.6F %.6F %.6F re s %.6F %.6F m %.6F %.6F l s"]
     local f_dashlined = formatters["%.6F w %.6F %.6F %.6F %.6F re s [%.6F %.6F] 2 d %.6F %.6F m %.6F %.6F l s"]
-    local f_radtangle = formatters[ [[
-        %.6F w %.6F %.6F m
-        %.6F %.6F l %.6F %.6F %.6F %.6F y
-        %.6F %.6F l %.6F %.6F %.6F %.6F y
-        %.6F %.6F l %.6F %.6F %.6F %.6F y
-        %.6F %.6F l %.6F %.6F %.6F %.6F y
-        h %s
-    ]] ]
+    local f_radtangle = formatters[
+    [[%.6F w %.6F %.6F m
+%.6F %.6F l %.6F %.6F %.6F %.6F y
+%.6F %.6F l %.6F %.6F %.6F %.6F y
+%.6F %.6F l %.6F %.6F %.6F %.6F y
+%.6F %.6F l %.6F %.6F %.6F %.6F y
+h %s]]
+        ]
+
+    directives.register("metapost.stripzeros",function() -- confusing name but ok
+        f_rectangle = formatters["%.6N w %.6N %.6N %.6N %.6N re %s"]
+        f_baselined = formatters["%.6N w %.6N %.6N %.6N %.6N re s %.6N %.6N m %.6N %.6N l s"]
+        f_dashlined = formatters["%.6N w %.6N %.6N %.6N %.6N re s [%.6N %.6N] 2 d %.6N %.6N m %.6N %.6N l s"]
+        f_radtangle = formatters[
+[[%.6N w %.6N %.6N m
+%.6N %.6N l %.6N %.6N %.6N %.6N y
+%.6N %.6N l %.6N %.6N %.6N %.6N y
+%.6N %.6N l %.6N %.6N %.6N %.6N y
+%.6N %.6N l %.6N %.6N %.6N %.6N y
+h %s]]
+        ]
+    end)
 
     ruleactions.fill = function(p,h,v,i,n)
         local l = (p.line or 65536)*bpfactor
@@ -210,17 +238,44 @@ interfaces.implement {
         local ma = getattribute(a_colormodel) or 1
         local ca = getattribute(a_color)
         local ta = getattribute(a_transparency)
-        setfield(rule,"attr",current_attr())
+        setattrlist(rule,true)
         if t.type == "mp" then
             t.ma = ma
             t.ca = ca
             t.ta = ta
         else
-            rule[a_colormodel]   = ma
-            rule[a_color]        = ca
-            rule[a_transparency] = ta
+            setattr(rule,a_colormodel,ma)
+            setattr(rule,a_color,ca)
+            setattr(rule,a_transparency,ta)
         end
-        context(rule)
+        context(tonode(rule)) -- will become context.nodes.flush
+    end
+}
+
+interfaces.implement {
+    name      = "outlinerule",
+    public    = true,
+    protected = true,
+    arguments = { {
+        { "width",  "dimension" },
+        { "height", "dimension" },
+        { "depth",  "dimension" },
+        { "line",   "dimension" },
+    } } ,
+    actions = function(t)
+        local rule = outlinerule(t.width,t.height,t.depth,t.line)
+        setattrlist(rule,true)
+        context(tonode(rule)) -- will become context.nodes.flush
+    end
+}
+
+interfaces.implement {
+    name      = "framedoutline",
+    arguments = { "dimension", "dimension", "dimension", "dimension" },
+    actions   = function(w,h,d,l)
+        local rule = outlinerule(w,h,d,l)
+        setattrlist(rule,true)
+        context(tonode(rule)) -- will become context.nodes.flush
     end
 }
 
@@ -247,8 +302,8 @@ interfaces.implement {
             type   = "mp",
             name   = t.name,
         }
-        setfield(rule,"attr",current_attr())
-        context(rule)
+        setattrlist(rule,true)
+        context(tonode(rule))
     end
 }
 

@@ -626,13 +626,10 @@ if context then
     local math_code          = nodecodes.math
     local hlist_code         = nodecodes.hlist
 
-    local discretionary_code = disccodes.discretionary
-    local explicit_code      = disccodes.explicit
-    local automatic_code     = disccodes.automatic
-    local regular_code       = disccodes.regular
+    local automaticdisc_code = disccodes.automatic
+    local regulardisc_code   = disccodes.regular
 
     local nuts               = nodes.nuts
-    local tonut              = nodes.tonut
     local tonode             = nodes.tonode
     local nodepool           = nuts.pool
 
@@ -666,7 +663,9 @@ if context then
     local remove_node        = nuts.remove
     local end_of_math        = nuts.end_of_math
     local node_tail          = nuts.tail
-    local traverse_id        = nuts.traverse_id
+
+    local nexthlist          = nuts.traversers.hlist
+    local nextdisc           = nuts.traversers.disc
 
     local setcolor           = nodes.tracers.colors.set
 
@@ -1028,9 +1027,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
 
     function traditional.hyphenate(head)
 
-        local first           = tonut(head)
-
-
+        local first           = head
         local tail            = nil
         local last            = nil
         local current         = first
@@ -1289,7 +1286,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
                     if leftchar then
                         post = serialize(true,leftchar)
                     end
-                    setdisc(disc,pre,post,nil,regular_code,hyphenpenalty)
+                    setdisc(disc,pre,post,nil,regulardisc_code,hyphenpenalty)
                     if attrnode then
                         setattrlist(disc,attrnode)
                     end
@@ -1324,7 +1321,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
                         end
                     end
                     -- maybe regular code
-                    setdisc(disc,pre,post,replace,regular_code,hyphenpenalty)
+                    setdisc(disc,pre,post,replace,regulardisc_code,hyphenpenalty)
                     if attrnode then
                         setattrlist(disc,attrnode)
                     end
@@ -1364,7 +1361,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
                 end
                 pre = copy_node(glyph)
                 setchar(pre,rightchar and rightchar > 0 and rightchar or code)
-                setdisc(disc,pre,post,replace,automatic_code,hyphenpenalty) -- ex ?
+                setdisc(disc,pre,post,replace,automaticdisc_code,hyphenpenalty) -- ex ?
                 if attrnode then
                     setattrlist(disc,attrnode)
                 end
@@ -1386,7 +1383,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
             local pre     = copy_list(start)
             local post    = nil
             local replace = start
-            setdisc(disc,pre,post,replace,automatic_code,hyphenpenalty) -- ex ?
+            setdisc(disc,pre,post,replace,automaticdisc_code,hyphenpenalty) -- ex ?
             if attrnode then
                 setattrlist(disc,attrnode)
             end
@@ -1585,7 +1582,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
 
         stoptiming(traditional)
 
-        return head, true
+        return head
     end
 
     statistics.register("hyphenation",function()
@@ -1613,15 +1610,31 @@ featureset.hyphenonly   = hyphenonly == v_yes
 
     -- local replaceaction = nodes.tasks.replaceaction -- no longer overload this way (too many local switches)
 
-    local hyphenate  = lang.hyphenate
-    local methods    = { }
-    local usedmethod = false
-    local stack      = { }
+    local hyphenate    = lang.hyphenate
+    local hyphenating  = nuts.hyphenating
+    local methods      = { }
+    local usedmethod   = false
+    local stack        = { }
 
-    local function original(head)
-        local done = hyphenate(head)
-        return head, done
-    end
+    local original = hyphenating and
+        function(head)
+            return (hyphenating(head))
+        end
+    or
+        function(head)
+            hyphenate(tonode(head))
+            return head -- a nut
+        end
+
+ -- local has_language = lang.has_language
+ --
+ -- local function original(head) -- kernel.hyphenation(head)
+ --     local h = tonode(head)
+ --     if has_language(h) then
+ --         hyphenate(h)
+ --     end
+ --     return head
+ -- end
 
     local getcount = tex.getcount
 
@@ -1637,13 +1650,13 @@ featureset.hyphenonly   = hyphenonly == v_yes
                     forced = false
                     return usedmethod(head)
                 else
-                    return head, false
+                    return head
                 end
             else
                 return usedmethod(head)
             end
         else
-            return head, false
+            return head
         end
     end
 
@@ -1729,13 +1742,12 @@ featureset.hyphenonly   = hyphenonly == v_yes
     }
 
     function nodes.stripdiscretionaries(head)
-        local h = tonut(head)
-        for l in traverse_id(hlist_code,h) do
-            for d in traverse_id(disc_code,getlist(l)) do
+        for l in nexthlist, head do
+            for d in nextdisc, getlist(l) do
                 remove_node(h,false,true)
             end
         end
-        return tonode(h)
+        return head
     end
 
 

@@ -16,7 +16,7 @@ slower but look nicer this way.</p>
 <p>Some code may move to a module in the language namespace.</p>
 --ldx]]--
 
-local floor, date, time, concat = math.floor, os.date, os.time, table.concat
+local floor, osdate, ostime, concat = math.floor, os.date, os.time, table.concat
 local lower, upper, rep, match, gsub = string.lower, string.upper, string.rep, string.match, string.gsub
 local utfchar, utfbyte = utf.char, utf.byte
 local tonumber, tostring, type, rawset = tonumber, tostring, type, rawset
@@ -33,6 +33,7 @@ local setmetatableindex  = table.setmetatableindex
 local formatters         = string.formatters
 local variables          = interfaces.variables
 local constants          = interfaces.constants
+local addformatter       = utilities.strings.formatters.add
 
 local texset             = tex.set
 
@@ -41,6 +42,9 @@ local converters         = converters
 
 languages                = languages  or { }
 local languages          = languages
+
+local helpers            = converters.helpers or { }
+converters.helpers       = helpers
 
 local ctx_labeltext      = context.labeltext
 local ctx_LABELTEXT      = context.LABELTEXT
@@ -304,14 +308,14 @@ local function leapyear(year)
 end
 
 local function textime()
-    return tonumber(date("%H")) * 60 + tonumber(date("%M"))
+    return tonumber(osdate("%H")) * 60 + tonumber(osdate("%M"))
 end
 
-function converters.year  () return date("%Y") end
-function converters.month () return date("%m") end
-function converters.hour  () return date("%H") end
-function converters.minute() return date("%M") end
-function converters.second() return date("%S") end
+function converters.year  () return osdate("%Y") end
+function converters.month () return osdate("%m") end
+function converters.hour  () return osdate("%H") end
+function converters.minute() return osdate("%M") end
+function converters.second() return osdate("%S") end
 
 converters.weekday    = weekday
 converters.isleapyear = isleapyear
@@ -323,11 +327,11 @@ implement { name = "weekday",  actions = { weekday,  context }, arguments = { "i
 implement { name = "leapyear", actions = { leapyear, context }, arguments = { "integer" } }
 implement { name = "nofdays",  actions = { nofdays,  context }, arguments = { "integer", "integer" } }
 
-implement { name = "year",     actions = { date,     context }, arguments = "'%Y'" }
-implement { name = "month",    actions = { date,     context }, arguments = "'%m'" }
-implement { name = "hour",     actions = { date,     context }, arguments = "'%H'" }
-implement { name = "minute",   actions = { date,     context }, arguments = "'%M'" }
-implement { name = "second",   actions = { date,     context }, arguments = "'%S'" }
+implement { name = "year",     actions = { osdate,   context }, arguments = "'%Y'" }
+implement { name = "month",    actions = { osdate,   context }, arguments = "'%m'" }
+implement { name = "hour",     actions = { osdate,   context }, arguments = "'%H'" }
+implement { name = "minute",   actions = { osdate,   context }, arguments = "'%M'" }
+implement { name = "second",   actions = { osdate,   context }, arguments = "'%S'" }
 implement { name = "textime",  actions = { textime,  context } }
 
 implement {
@@ -1222,45 +1226,108 @@ setmetatableindex(months,     function(t,k) return "unknown" end)
 setmetatableindex(days,       function(t,k) return "unknown" end)
 setmetatableindex(monthmnems, function(t,k) return months[k] .. ":mnem" end)
 
-local function dayname(n)
-    return days[n]
+do
+
+    local function dayname(n)
+        ctx_labeltext(days[n])
+    end
+
+    local function weekdayname(day,month,year)
+        ctx_labeltext(days[weekday(day,month,year)])
+    end
+
+    local function monthname(n)
+        ctx_labeltext(months[n])
+    end
+
+    local function monthmnem(n)
+        ctx_labeltext(monthmnems[n])
+    end
+
+    implement {
+        name      = "dayname",
+        actions   = dayname,
+        arguments = "integer",
+    }
+
+    implement {
+        name      = "weekdayname",
+        actions   = weekdayname,
+        arguments = { "integer", "integer", "integer" }
+    }
+
+    implement {
+        name      = "monthname",
+        actions   = monthname,
+        arguments = { "integer" }
+    }
+
+    implement {
+        name      = "monthmnem",
+        actions   = monthmnem,
+        arguments = { "integer" }
+    }
+
+    local f_monthlong    = formatters["\\monthlong{%s}"]
+    local f_monthshort   = formatters["\\monthshort{%s}"]
+    local f_weekday      = formatters["\\weekday{%s}"]
+    local f_dayoftheweek = formatters["\\dayoftheweek{%s}{%s}{%s}"]
+
+    local function tomonthlong (m) return f_monthlong (tonumber(m) or 1) end
+    local function tomonthshort(m) return f_monthshort(tonumber(m) or 1) end
+    local function toweekday   (d) return f_weekday   (tonumber(d) or 1) end
+
+    local function todayoftheweek(d,m,y)
+        return f_dayoftheweek(tonumber(d) or 1,tonumber(m) or 1,tonumber(y) or 2000)
+    end
+
+    addformatter(formatters,"monthlong",   [[tomonthlong(%s)]],         { tomonthlong    = tomonthlong    })
+    addformatter(formatters,"monthshort",  [[tomonthshort(%s)]],        { tomonthshort   = tomonthshort   })
+    addformatter(formatters,"weekday",     [[toweekday(%s)]],           { toweekday      = toweekday      })
+    addformatter(formatters,"dayoftheweek",[[todayoftheweek(%s,%s,%s)]],{ todayoftheweek = todayoftheweek })
+
+    -- using %t is slower, even with caching as we seldom use > 3 items per epoch
+
+    local function toeyear  (e) return osdate("%Y",tonumber(e))  end
+    local function toemonth (e) return osdate("%m",tonumber(e))  end
+    local function toeday   (e) return osdate("%d",tonumber(e))  end
+    local function toeminute(e) return osdate("%M",tonumber(e))  end
+    local function toesecond(e) return osdate("%S",tonumber(e))  end
+
+    local function toemonthlong(e)
+        return f_monthlong(tonumber(osdate("%m",tonumber(e))))
+    end
+
+    local function toemonthshort(e)
+        return f_monthshort(tonumber(osdate("%m",tonumber(e))))
+    end
+
+    local function toeweek(e) -- we run from 1-7 not 0-6
+        return tostring(tonumber(osdate("%w",tonumber(e)))+1)
+    end
+
+    local function toeweekday(e)
+        return f_weekday(tonumber(osdate("%w",tonumber(e)))+1)
+    end
+
+    local function toedate(format,e)
+        return osdate(format,tonumber(e))
+    end
+
+    addformatter(formatters,"eyear",        [[toeyear(%s)]],        { toeyear         = toeyear         })
+    addformatter(formatters,"emonth",       [[toemonth(%s)]],       { toemonth        = toemonth        })
+    addformatter(formatters,"eday",         [[toeday(%s)]],         { toeday          = toeday          })
+    addformatter(formatters,"eweek",        [[toeweek(%s)]],        { toeweek         = toeweek         })
+    addformatter(formatters,"eminute",      [[toeminute(%s)]],      { toeminute       = toeminute       })
+    addformatter(formatters,"esecond",      [[toesecond(%s)]],      { toesecond       = toesecond       })
+
+    addformatter(formatters,"emonthlong",   [[toemonthlong(%s)]],   { toemonthlong    = toemonthlong    })
+    addformatter(formatters,"emonthshort",  [[toemonthshort(%s)]],  { toemonthshort   = toemonthshort   })
+    addformatter(formatters,"eweekday",     [[toeweekday(%s)]],     { toeweekday      = toeweekday      })
+
+    addformatter(formatters,"edate",        [[toedate(%s,%s)]],     { toedate         = toedate         })
+
 end
-
-local function weekdayname(day,month,year)
-    return days[weekday(day,month,year)]
-end
-
-local function monthname(n)
-    return months[n]
-end
-
-local function monthmnem(n)
-    return monthmnems[n]
-end
-
-implement {
-    name      = "dayname",
-    actions   = { dayname,  ctx_labeltext },
-    arguments = "integer",
-}
-
-implement {
-    name      = "weekdayname",
-    actions   = { weekdayname,  ctx_labeltext },
-    arguments = { "integer", "integer", "integer" }
-}
-
-implement {
-    name      = "monthname",
-    actions   = { monthname,  ctx_labeltext },
-    arguments = { "integer" }
-}
-
-implement {
-    name      = "monthmnem",
-    actions   = { monthmnem,  ctx_labeltext },
-    arguments = { "integer" }
-}
 
 -- a prelude to a function that we can use at the lua end
 
@@ -1287,125 +1354,146 @@ local variants = {
     jalali = setmetatableindex(function(t,k) return months[k] .. ":jalali" end),
 }
 
-local function currentdate(str,currentlanguage) -- second argument false : no label
-    local list       = utilities.parsers.settings_to_array(str)
-    local splitlabel = languages.labels.split or string.itself -- we need to get the loading order right
-    local year       = tex.year
-    local month      = tex.month
-    local day        = tex.day
-    local auto       = true
-    if currentlanguage == "" then
-        currentlanguage = false
-    end
-    for i=1,#list do
-        local entry = list[i]
-        local convert = dateconverters[entry]
-        if convert then
-            year, month, day = convert(year,month,day)
-        else
-            local tag, plus = splitlabel(entry)
-            local ordinal, mnemonic, whatordinal, highordinal = false, false, nil, false
-            if not tag then
-                tag = entry
-            elseif plus == "+" or plus == "ord" then
-                ordinal = true
-            elseif plus == "++" or plus == "highord" then
-                ordinal = true
-                highordinal = true
-         -- elseif plus == "mnem" then
-         --     mnemonic = true
-            elseif plus then -- elseif plus == "mnem" then
-                mnemonic = variants[plus]
-            end
-            if not auto and spaced[tag] then
-                ctx_space()
-            end
-            auto = false
-            if tag == v_year or tag == "y" or tag == "Y" then
-                context(year)
-            elseif tag == "yy" or tag == "YY" then
-                context("%02i",year % 100)
-            elseif tag == v_month or tag == "m" then
-                if currentlanguage == false then
-                    context(Word(months[month]))
-                elseif mnemonic then
-                    ctx_labeltext(variables[mnemonic[month]])
-                else
-                    ctx_labeltext(variables[months[month]])
+do
+
+    local function currentdate(str,currentlanguage,year,month,day) -- second argument false : no label
+        local list       = utilities.parsers.settings_to_array(str)
+        local splitlabel = languages.labels.split or string.itself -- we need to get the loading order right
+     -- local year       = tex.year
+     -- local month      = tex.month
+     -- local day        = tex.day
+        local auto       = true
+        if currentlanguage == "" then
+            currentlanguage = false
+        end
+        for i=1,#list do
+            local entry = list[i]
+            local convert = dateconverters[entry]
+            if convert then
+                year, month, day = convert(year,month,day)
+            else
+                local tag, plus = splitlabel(entry)
+                local ordinal, mnemonic, whatordinal, highordinal = false, false, nil, false
+                if not tag then
+                    tag = entry
+                elseif plus == "+" or plus == "ord" then
+                    ordinal = true
+                elseif plus == "++" or plus == "highord" then
+                    ordinal = true
+                    highordinal = true
+             -- elseif plus == "mnem" then
+             --     mnemonic = true
+                elseif plus then -- elseif plus == "mnem" then
+                    mnemonic = variants[plus]
                 end
-            elseif tag == v_MONTH then
-                if currentlanguage == false then
-                    context(Word(variables[months[month]]))
-                elseif mnemonic then
-                    ctx_LABELTEXT(variables[mnemonic[month]])
-                else
-                    ctx_LABELTEXT(variables[months[month]])
+                if not auto and spaced[tag] then
+                    ctx_space()
                 end
-            elseif tag == "mm" then
-                context("%02i",month)
-            elseif tag == "M" then
-                context(month)
-            elseif tag == v_day or tag == "d" then
-                if currentlanguage == false then
+                auto = false
+                if tag == v_year or tag == "y" or tag == "Y" then
+                    context(year)
+                elseif tag == "yy" or tag == "YY" then
+                    context("%02i",year % 100)
+                elseif tag == v_month or tag == "m" then
+                    if currentlanguage == false then
+                        context(Word(months[month]))
+                    elseif mnemonic then
+                        ctx_labeltext(variables[mnemonic[month]])
+                    else
+                        ctx_labeltext(variables[months[month]])
+                    end
+                elseif tag == v_MONTH then
+                    if currentlanguage == false then
+                        context(Word(variables[months[month]]))
+                    elseif mnemonic then
+                        ctx_LABELTEXT(variables[mnemonic[month]])
+                    else
+                        ctx_LABELTEXT(variables[months[month]])
+                    end
+                elseif tag == "mm" then
+                    context("%02i",month)
+                elseif tag == "M" then
+                    context(month)
+                elseif tag == v_day or tag == "d" then
+                    if currentlanguage == false then
+                        context(day)
+                    else
+                        ctx_convertnumber(v_day,day) -- why not direct
+                    end
+                    whatordinal = day
+                elseif tag == "dd" then
+                    context("%02i",day)
+                    whatordinal = day
+                elseif tag == "D" then
                     context(day)
-                else
-                    ctx_convertnumber(v_day,day) -- why not direct
+                    whatordinal = day
+                elseif tag == v_weekday or tag == "w" then
+                    local wd = weekday(day,month,year)
+                    if currentlanguage == false then
+                        context(Word(days[wd]))
+                    else
+                        ctx_labeltext(variables[days[wd]])
+                    end
+                elseif tag == v_WEEKDAY then
+                    local wd = weekday(day,month,year)
+                    if currentlanguage == false then
+                        context(Word(days[wd]))
+                    else
+                        ctx_LABELTEXT(variables[days[wd]])
+                    end
+                elseif tag == "W" then
+                    context(weekday(day,month,year))
+                elseif tag == v_referral then
+                    context("%04i%02i%02i",year,month,day)
+                elseif tag == v_space or tag == "\\ " then
+                    ctx_space()
+                    auto = true
+                elseif tag ~= "" then
+                    context(tag)
+                    auto = true
                 end
-                whatordinal = day
-            elseif tag == "dd" then
-                context("%02i",day)
-                whatordinal = day
-            elseif tag == "D" then
-                context(day)
-                whatordinal = day
-            elseif tag == v_weekday or tag == "w" then
-                local wd = weekday(day,month,year)
-                if currentlanguage == false then
-                    context(Word(days[wd]))
-                else
-                    ctx_labeltext(variables[days[wd]])
-                end
-            elseif tag == v_WEEKDAY then
-                local wd = weekday(day,month,year)
-                if currentlanguage == false then
-                    context(Word(days[wd]))
-                else
-                    ctx_LABELTEXT(variables[days[wd]])
-                end
-            elseif tag == "W" then
-                context(weekday(day,month,year))
-            elseif tag == v_referral then
-                context("%04i%02i%02i",year,month,day)
-            elseif tag == v_space or tag == "\\ " then
-                ctx_space()
-                auto = true
-            elseif tag ~= "" then
-                context(tag)
-                auto = true
-            end
-            if ordinal and whatordinal then
-                if currentlanguage == false then
-                    -- ignore
-                else
-                    context[highordinal and "highordinalstr" or "ordinalstr"](converters.ordinal(whatordinal,currentlanguage))
+                if ordinal and whatordinal then
+                    if currentlanguage == false then
+                        -- ignore
+                    else
+                        context[highordinal and "highordinalstr" or "ordinalstr"](converters.ordinal(whatordinal,currentlanguage))
+                    end
                 end
             end
         end
     end
+
+    implement {
+        name      = "currentdate",
+        arguments = { "string", "string", "string", "integer", "integer", "integer" },
+        actions   = function(pattern,default,language,year,month,day)
+            currentdate(
+                pattern  == "" and default or pattern,
+                language == "" and false   or language,
+                year, month, day
+            )
+        end,
+    }
+
+    local function todate(s,y,m,d)
+        if y or m or d then
+            return formatters["\\date[y=%s,m=%s,d=%s][%s]\\relax"](y or "",m or "",d or "",s or "")
+        else
+            return formatters["\\currentdate[%s]\\relax"](s)
+        end
+    end
+
+    addformatter(formatters,"date", [[todate(...)]], { todate = todate })
+
+    -- context("one: %4!date!","MONTH",2020,12,11)          context.par()
+    -- context("one: %4!date!","month",2020,12,11)          context.par()
+    -- context("one: %4!date!","year,-,mm,-,dd",2020,12,11) context.par()
+
+    -- context("two: %3!date!","MONTH",false,12)          context.par()
+    -- context("two: %3!date!","month",false,12)          context.par()
+    -- context("two: %3!date!","year,-,mm,-,dd",false,12) context.par()
+
 end
-
-
-
-implement {
-    name      = "currentdate",
-    arguments = "3 strings",
-    actions   = function(pattern,default,language)
-        currentdate(
-            pattern  == "" and default or pattern,
-            language == "" and false   or language
-        )
-    end,
-}
 
 implement {
     name      = "unihex",
@@ -1586,3 +1674,4 @@ implement {
         }
     }
 }
+

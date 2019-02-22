@@ -70,12 +70,16 @@ if not resolvers.initialized() then
             return okay or ""
         end
 
+        resolvers.findpk = findpk
+
      -- register('process_jobname'     , function(name) return name end, true)
 
         register('find_read_file'      , function(id,name) return findtexfile(name)       end, true)
         register('open_read_file'      , function(   name) return opentexfile(name)       end, true)
 
         register('find_data_file'      , function(name) return findbinfile(name,"tex")    end, true)
+        register('open_data_file'      , function(name) return opentexfile(name)          end, true)
+
         register('find_enc_file'       , function(name) return findbinfile(name,"enc")    end, true)
         register('find_font_file'      , function(name) return findbinfile(name,"tfm")    end, true)
      -- register('find_format_file'    , function(name) return findbinfile(name,"fmt")    end, true)

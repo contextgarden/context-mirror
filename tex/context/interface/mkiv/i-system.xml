@@ -1007,6 +1007,12 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="firstinlist" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-command-list"/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="dogetcommacommandelement" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-number"/>
@@ -1641,7 +1647,7 @@
 
     <cd:command name="increment" variant="argument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:keywords delimiters="parentheses" list="yes">
+            <cd:keywords delimiters="parenthesis" list="yes">
                 <cd:constant type="cd:csname"/>
                 <cd:constant type="cd:number"/>
             </cd:keywords>
@@ -1656,7 +1662,7 @@
 
     <cd:command name="decrement" variant="argument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:keywords delimiters="parentheses" list="yes">
+            <cd:keywords delimiters="parenthesis" list="yes">
                 <cd:constant type="cd:csname"/>
                 <cd:constant type="cd:number"/>
             </cd:keywords>
@@ -1831,6 +1837,22 @@
             <cd:delimiter name="else"/>
             <cd:resolve name="string-false"/>
             <cd:delimiter name="fi"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelseassignmentcs" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:csname/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifassignmentelsecs" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:csname/>
+            <cd:csname/>
         </cd:arguments>
     </cd:command>
 
@@ -3598,6 +3620,31 @@
             <cd:content/>
             <cd:content/>
             <cd:resolve name="argument-true"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="expandeddoif" level="system" file="syst-lua.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+            <cd:resolve name="argument-true"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="expandeddoifnot" level="system" file="syst-lua.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+            <cd:resolve name="argument-true"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="expandeddoifelse" level="system" file="syst-lua.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 

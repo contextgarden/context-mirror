@@ -16,6 +16,7 @@ local lpeg = lpeg
 local type, next, tostring, tonumber = type, next, tostring, tonumber
 local concat, sortedhash = table.concat, table.sortedhash
 local utfsub = utf.sub
+local find = string.find
 local formatters = string.formatters
 
 local P, S, C, V, Cs, Ct, Cg, Cf, Cc = lpeg.P, lpeg.S, lpeg.C, lpeg.V, lpeg.Cs, lpeg.Ct, lpeg.Cg, lpeg.Cf, lpeg.Cc
@@ -37,6 +38,8 @@ local allocate        = utilities.storage.allocate
 local chardata        = characters.data
 
 local trace_hashing   = false  trackers.register("publications.authorhash", function(v) trace_hashing = v end)
+
+local expand_authors  = false  directives.register("publications.prerollauthor", function(v) expand_authors = v end)
 
 local report          = logs.reporter("publications","authors")
 local report_cite     = logs.reporter("publications","cite")
@@ -61,8 +64,8 @@ local v_last          = interfaces.variables.last
 
 local space          = lpegpatterns.whitespace
 local comma          = P(",")
-local period         = P(".")
-local dash           = P("-")
+local period         = P(".") + P("{.}")
+local dash           = P("-") + P("{-}")
 local firstcharacter = lpegpatterns.utf8byte
 local utf8character  = lpegpatterns.utf8character
 local p_and          = space^1 * (P("and") + P("&&") + P("++")) * space^1
@@ -123,6 +126,8 @@ end
 local authormap        = allocate()
 publications.authormap = authormap
 
+local prerollcmdstring = publications.prerollcmdstring
+
 local function splitauthor(author,justsplit)
     local detail, remapped
     if not justsplit then
@@ -142,6 +147,9 @@ local function splitauthor(author,justsplit)
     end
     local author = remapped or author
     local firstnames, vons, surnames, initials, juniors, options
+    if expand_authors and find(author,"\\btxcmd") then
+        author = prerollcmdstring(author)
+    end
     local split = lpegmatch(commasplitter,author)
     local n = #split
     detail = {
@@ -151,8 +159,11 @@ local function splitauthor(author,justsplit)
     if n == 1 then
         -- {First Middle von Last}
         local words = lpegmatch(spacesplitter,author)
-        firstnames, vons, surnames = { }, { }, { }
-        local i, n = 1, #words
+        local i     = 1
+        local n     = #words
+        firstnames  = { }
+        vons        = { }
+        surnames    = { }
         while i <= n do
             local w = words[i]
             if is_upper(w) then
@@ -190,9 +201,12 @@ local function splitauthor(author,justsplit)
     elseif n == 2 then
         -- {Last, First}
         -- {von Last, First}
-        firstnames, vons, surnames = { }, { }, { }
         local words = lpegmatch(spacesplitter,split[1])
-        local i, n = 1, #words
+        local i     = 1
+        local n     = #words
+        firstnames = { }
+        vons       = { }
+        surnames   = { }
         while i <= n do
             local w = words[i]
             if is_upper(w) then
@@ -202,21 +216,25 @@ local function splitauthor(author,justsplit)
             end
         end
         while i <= n do
-            surnames[#surnames+1], i = words[i], i + 1
+            surnames[#surnames+1] = words[i]
+            i = i + 1
         end
         --
         local words = lpegmatch(spacesplitter,split[2])
-        local i, n = 1, #words
+        local i     = 1
+        local n     = #words
         while i <= n do
             local w = words[i]
             if is_upper(w) then
-                firstnames[#firstnames+1], i = w, i + 1
+                firstnames[#firstnames+1] = w
+                i = i + 1
             else
                 break
             end
         end
         while i <= n do
-            vons[#vons+1], i = words[i], i + 1
+            vons[#vons+1] = words[i]
+            i = i + 1
         end
         if surnames and firstnames and #surnames == 0 then
             -- safeguard
@@ -308,12 +326,14 @@ local function the_initials(initials,symbol,connector)
     if not connector then
         connector = "-"
     end
-    local result, r = { }, 0
+    local result = { }
+    local r      = 0
     for i=1,#initials do
         local initial = initials[i]
         if type(initial) == "table" then
             -- J.-J.
-            local set, s = { }, 0
+            local set = { }
+            local s   = 0
             for i=1,#initial do
                 if i > 1 then
                     s = s + 1 ; set[s] = connector
@@ -825,8 +845,10 @@ local p_clean = Cs ( (
                   + lpeg.patterns.utf8character
                 )^1)
 
+-- Probabbly more robust is a two pass approach.
+
 authorhashers.short = function(authors)
-    -- a short is a real dumb hardcodes kind of tag and we only support
+    -- a short is a real dumb hardcoded kind of tag and we only support
     -- this one because some users might expect it, not because it makes
     -- sense
     if type(authors) == "table" then

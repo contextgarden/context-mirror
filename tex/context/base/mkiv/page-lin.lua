@@ -43,15 +43,14 @@ local v_no               = variables.no
 local properties         = nodes.properties
 
 local nodecodes          = nodes.nodecodes
-local skipcodes          = nodes.skipcodes
-local whatcodes          = nodes.whatcodes
 local listcodes          = nodes.listcodes
 
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local whatsit_code       = nodecodes.whatsit
 local glyph_code         = nodecodes.glyph
-local line_code          = listcodes.line
+
+local linelist_code      = listcodes.line
 
 local a_displaymath      = attributes.private('displaymath')
 local a_linenumber       = attributes.private('linenumber')
@@ -71,7 +70,7 @@ local getattr            = nuts.getattr
 local setattr            = nuts.setattr
 local getlist            = nuts.getlist
 local getbox             = nuts.getbox
------ getdir             = nuts.getdir
+----- getdirection       = nuts.getdirection
 ----- getwidth           = nuts.getwidth
 local getheight          = nuts.getheight
 local getdepth           = nuts.getdepth
@@ -79,8 +78,9 @@ local getdepth           = nuts.getdepth
 local setprop            = nuts.setprop
 local getprop            = nuts.getprop
 
-local traverse_id        = nuts.traverse_id
-local traverse           = nuts.traverse
+local nexthlist          = nuts.traversers.hlist
+local nextvlist          = nuts.traversers.vlist
+
 local copy_node          = nuts.copy
 ----- hpack_nodes        = nuts.hpack
 local is_display_math    = nuts.is_display_math
@@ -224,7 +224,9 @@ implement {
 local function check_number(n,a,skip,sameline)
     local d = data[a]
     if d then
-        local tag, skipflag, s = d.tag or "", 0, d.start or 1
+        local tag      = d.tag or ""
+        local skipflag = 0
+        local s        = d.start or 1
         current_list[#current_list+1] = { n, s }
         if sameline then
             skipflag = 0
@@ -244,7 +246,7 @@ local function check_number(n,a,skip,sameline)
         end
         local p = checkline(n)
         if p then
-            ctx_makelinenumber(tag,skipflag,s,p.hsize,p.reverse and "TRT" or "TLT")
+            ctx_makelinenumber(tag,skipflag,s,p.hsize,p.reverse and 1 or 0)
         else
             report_lines("needs checking")
         end
@@ -283,8 +285,8 @@ end
 
 local function listisnumbered(list)
     if list then
-        for n in traverse_id(hlist_code,list) do
-            if getsubtype(n) == line_code then
+        for n, subtype in nexthlist, list do
+            if subtype == linelist_code then
                 local a = getattr(n,a_linenumber)
                 if a then
                     -- a quick test for lines (only valid when \par before \stoplinenumbering)
@@ -306,7 +308,7 @@ local function findnumberedlist(list)
     while n do
         local id = getid(n)
         if id == hlist_code then
-            if getsubtype(n) == line_code then
+            if getsubtype(n) == linelist_code then
                 local a = getattr(n,a_linenumber)
                 if a then
                     return a > 0 and list
@@ -383,9 +385,8 @@ function boxed.stage_one(n,nested)
     local skip   = false
 
     local function check()
-        for n in traverse_id(hlist_code,list) do -- attr test here and quit as soon as zero found
-            local subtype = getsubtype(n)
-            if subtype ~= line_code then
+        for n, subtype in nexthlist, list do
+            if subtype ~= linelist_code then
                 -- go on
             elseif getheight(n) == 0 and getdepth(n) == 0 then
                 -- skip funny hlists -- todo: check line subtype
@@ -450,7 +451,7 @@ function boxed.stage_one(n,nested)
         if not list then
             return
         end
-        for n in traverse_id(vlist_code,list) do
+        for n in nextvlist, list do
             local p = properties[n]
             if p and p.columngap then
                 if trace_numbers then
@@ -472,18 +473,21 @@ end
 function boxed.stage_two(n,m)
     if #current_list > 0 then
         m = m or lines.scratchbox
-        local t, tn = { }, 0
-        for l in traverse_id(hlist_code,getlist(getbox(m))) do
+        local t  = { }
+        local tn = 0
+        for l in nexthlist, getlist(getbox(m)) do
             tn = tn + 1
             t[tn] = copy_node(l) -- use take_box instead
         end
         for i=1,#current_list do
             local li = current_list[i]
-            local n, m, ti = li[1], li[2], t[i]
+            local n  = li[1]
+            local m  = li[2]
+            local ti = t[i]
             if ti then
-             -- local d = getdir(n)
+             -- local d = getdirection(n)
              -- local l = getlist(n)
-             -- if d == "TRT" then
+             -- if d == 1 then
              --     local w = getwidth(n)
              --     ti = hpack_nodes(linked_nodes(new_kern(-w),ti,new_kern(w)))
              -- end

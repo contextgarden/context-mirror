@@ -16,16 +16,15 @@ local next, type, format = next, type, string.format
 local attributes, nodes, node = attributes, nodes, node
 
 local nuts               = nodes.nuts
-local tonode             = nuts.tonode
-local tonut              = nuts.tonut
 
 local getnext            = nuts.getnext
-local getprev            = nuts.getprev
 local getid              = nuts.getid
 local getlist            = nuts.getlist
 local getleader          = nuts.getleader
 local getattr            = nuts.getattr
 local getwidth           = nuts.getwidth
+local getwhd             = nuts.getwhd
+local getorientation     = nuts.getorientation
 
 local setlist            = nuts.setlist
 local setleader          = nuts.setleader
@@ -34,9 +33,21 @@ local copy_node          = nuts.copy
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 
+local nextnode           = nuts.traversers.node
+
 local nodecodes          = nodes.nodecodes
-local whatcodes          = nodes.whatcodes
 local rulecodes          = nodes.rulecodes
+
+----- normalrule_code    = rulecodes.normal
+local boxrule_code       = rulecodes.box
+local imagerule_code     = rulecodes.image
+local emptyrule_code     = rulecodes.empty
+----- userrule_code      = rulecodes.user
+----- overrule_code      = rulecodes.over
+----- underrule_code     = rulecodes.under
+----- fractionrule_code  = rulecodes.fraction
+----- radicalrule_code   = rulecodes.radical
+----- outlinerule_code   = rulecodes.outline
 
 local glyph_code         = nodecodes.glyph
 local disc_code          = nodecodes.disc
@@ -82,37 +93,34 @@ local finalizer = plugin.finalizer
 local flusher = plugin.flusher
 if not processor then
     return function(head)
-        return head, false
+        return head
     end
 elseif initializer or finalizer or resolver then
     return function(head)
         starttiming(attributes)
-        local done, used, ok, inheritance = false, nil, false, nil
+        local used, inheritance
         if resolver then
             inheritance = resolver()
         end
         if initializer then
             initializer(namespace,attribute,head)
         end
-        head, ok = processor(namespace,attribute,head,inheritance)
-        if ok then
-            if finalizer then
-                head, ok, used = finalizer(namespace,attribute,head)
-                if used and flusher then
-                    head = flusher(namespace,attribute,head,used)
-                end
+        head = processor(namespace,attribute,head,inheritance)
+        if finalizer then
+            head, used = finalizer(namespace,attribute,head)
+            if used and flusher then
+                head = flusher(namespace,attribute,head,used)
             end
-            done = true
         end
         stoptiming(attributes)
-        return head, done
+        return head
     end
 else
     return function(head)
         starttiming(attributes)
-        local head, done = processor(namespace,attribute,head)
+        head = processor(namespace,attribute,head)
         stoptiming(attributes)
-        return head, done
+        return head
     end
 end
 nodes.plugindata = nil
@@ -126,7 +134,7 @@ end
 -- the injectors
 
 local nsdata, nsnone, nslistwise, nsforced, nsselector, nstrigger
-local current, current_selector, done = 0, 0, false -- nb, stack has a local current !
+local current, current_selector = 0, 0 -- nb, stack has a local current !
 local nsbegin, nsend, nsreset
 
 function states.initialize(namespace,attribute,head)
@@ -138,7 +146,6 @@ function states.initialize(namespace,attribute,head)
     nstrigger        = triggering and namespace.triggering and a_trigger
     current          = 0
     current_selector = 0
-    done             = false -- todo: done cleanup
     nsstep           = namespace.resolve_step
     if nsstep then
         nsreset      = namespace.resolve_reset
@@ -151,7 +158,6 @@ end
 
 function states.finalize(namespace,attribute,head) -- is this one ok?
     if current > 0 and nsnone then
-        head = tonut(head)
         local id = getid(head)
         if id == hlist_code or id == vlist_code then
             local content = getlist(head)
@@ -164,20 +170,17 @@ function states.finalize(namespace,attribute,head) -- is this one ok?
         else
             head = insert_node_before(head,head,copy_node(nsnone))
         end
-        return tonode(head), true, true
+        return head, true
     end
-    return head, false, false
+    return head, false
 end
 
 -- we need to deal with literals too (reset as well as oval)
 
 local function process(attribute,head,inheritance,default) -- one attribute
-    local stack  = head
-    local done   = false
     local check  = false
     local leader = nil
-    while stack do
-        local id = getid(stack)
+    for stack, id in nextnode, head do
         if id == glyph_code or id == disc_code then
             check = true -- disc no longer needed as we flatten replace
         elseif id == glue_code then
@@ -188,39 +191,52 @@ local function process(attribute,head,inheritance,default) -- one attribute
         elseif id == hlist_code or id == vlist_code then
             local content = getlist(stack)
             if content then
+                -- tricky checking
+                local outer
+                if getorientation(stack) then
+                    outer = getattr(stack,attribute)
+                    if outer then
+                        if default and outer == inheritance then
+                            if current ~= default then
+                                head    = insert_node_before(head,stack,copy_node(nsdata[default]))
+                                current = default
+                            end
+                        elseif current ~= outer then
+                            head    = insert_node_before(head,stack,copy_node(nsdata[c]))
+                            current = outer
+                        end
+                    elseif default and inheritance then
+                        if current ~= default then
+                            head    = insert_node_before(head,stack,copy_node(nsdata[default]))
+                            current = default
+                        end
+                    elseif current > 0 then
+                        head    = insert_node_before(head,stack,copy_node(nsnone))
+                        current = 0
+                    end
+                end
                 -- begin nested --
+                local list
                 if nstrigger and getattr(stack,nstrigger) then
-                    local outer = getattr(stack,attribute)
+                    if not outer then
+                        outer = getattr(stack,attribute)
+                    end
                     if outer ~= inheritance then
-                        local list, ok = process(attribute,content,inheritance,outer)
-                        if content ~= list then
-                            setlist(stack,list)
-                        end
-                        if ok then
-                            done = true
-                        end
+                        list = process(attribute,content,inheritance,outer)
                     else
-                        local list, ok = process(attribute,content,inheritance,default)
-                        if content ~= list then
-                            setlist(stack,list)
-                        end
-                        if ok then
-                            done = true
-                        end
+                        list = process(attribute,content,inheritance,default)
                     end
                 else
-                    local list, ok = process(attribute,content,inheritance,default)
-                    if content ~= list then
-                        setlist(stack,list)
-                    end
-                    if ok then
-                        done = true
-                    end
+                    list = process(attribute,content,inheritance,default)
+                end
+                if content ~= list then
+                    setlist(stack,list)
                 end
                 -- end nested --
             end
         elseif id == rule_code then
-            check = getwidth(stack) ~= 0
+            local wd, ht, dp = getwhd(stack)
+            check = wd ~= 0 or (ht+dp) ~= 0
         end
         -- much faster this way than using a check() and nested() function
         if check then
@@ -230,12 +246,10 @@ local function process(attribute,head,inheritance,default) -- one attribute
                     if current ~= default then
                         head    = insert_node_before(head,stack,copy_node(nsdata[default]))
                         current = default
-                        done    = true
                     end
                 elseif current ~= c then
                     head    = insert_node_before(head,stack,copy_node(nsdata[c]))
                     current = c
-                    done    = true
                 end
                 if leader then
                     local savedcurrent = current
@@ -247,33 +261,19 @@ local function process(attribute,head,inheritance,default) -- one attribute
                         current = 0
                     end
                     -- begin nested --
+                    local list
                     if nstrigger and getattr(stack,nstrigger) then
                         local outer = getattr(stack,attribute)
                         if outer ~= inheritance then
-                            local list, ok = process(attribute,leader,inheritance,outer)
-                            if leader ~= list then
-                                setleader(stack,list)
-                            end
-                            if ok then
-                                done = true
-                            end
+                            list = process(attribute,leader,inheritance,outer)
                         else
-                            local list, ok = process(attribute,leader,inheritance,default)
-                            if leader ~= list then
-                                setleader(stack,list)
-                            end
-                            if ok then
-                                done = true
-                            end
+                            list = process(attribute,leader,inheritance,default)
                         end
                     else
-                        local list, ok = process(attribute,leader,inheritance,default)
-                        if leader ~= list then
-                            setleader(stack,list)
-                        end
-                        if ok then
-                            done = true
-                        end
+                        list = process(attribute,leader,inheritance,default)
+                    end
+                    if leader ~= list then
+                        setleader(stack,list)
                     end
                     -- end nested --
                     current = savedcurrent
@@ -283,23 +283,19 @@ local function process(attribute,head,inheritance,default) -- one attribute
                 if current ~= default then
                     head    = insert_node_before(head,stack,copy_node(nsdata[default]))
                     current = default
-                    done    = true
                 end
             elseif current > 0 then
                 head    = insert_node_before(head,stack,copy_node(nsnone))
                 current = 0
-                done    = true
             end
             check = false
         end
-        stack = getnext(stack)
     end
-    return head, done
+    return head
 end
 
 states.process = function(namespace,attribute,head,default)
-    local head, done = process(attribute,tonut(head),default)
-    return tonode(head), done
+    return process(attribute,head,default)
 end
 
 -- we can force a selector, e.g. document wide color spaces, saves a little
@@ -309,13 +305,9 @@ end
 -- each other with the same color but different color spaces e.g. \showcolor)
 
 local function selective(attribute,head,inheritance,default) -- two attributes
- -- local head   = head
-    local stack  = head
-    local done   = false
     local check  = false
     local leader = nil
-    while stack do
-        local id = getid(stack)
+    for stack, id, subtype in nextnode, head do
         if id == glyph_code or id == disc_code then
             check = true -- disc no longer needed as we flatten replace
         elseif id == glue_code then
@@ -326,41 +318,66 @@ local function selective(attribute,head,inheritance,default) -- two attributes
         elseif id == hlist_code or id == vlist_code then
             local content = getlist(stack)
             if content then
+                -- tricky checking
+                local outer
+                if getorientation(stack) then
+                    outer = getattr(stack,attribute)
+                    if outer then
+                        if default and outer == inheritance then
+                            if current ~= default then
+                                local data = nsdata[default]
+                                head = insert_node_before(head,stack,copy_node(data[nsforced or getattr(stack,nsselector) or nsselector]))
+                                current = default
+                            end
+                        else
+                            local s = getattr(stack,nsselector)
+                         -- local s = nsforced or getattr(stack,nsselector)
+                            if current ~= outer or current_selector ~= s then
+                                local data = nsdata[outer]
+                                head = insert_node_before(head,stack,copy_node(data[nsforced or s or nsselector]))
+                                current = outer
+                                current_selector = s
+                            end
+                        end
+                    elseif default and inheritance then
+                        if current ~= default then
+                            local data = nsdata[default]
+                            head    = insert_node_before(head,stack,copy_node(data[nsforced or getattr(stack,nsselector) or nsselector]))
+                            current = default
+                        end
+                    elseif current > 0 then
+                        head = insert_node_before(head,stack,copy_node(nsnone))
+                        current, current_selector = 0, 0
+                    end
+                end
                 -- begin nested
+                local list
                 if nstrigger and getattr(stack,nstrigger) then
-                    local outer = getattr(stack,attribute)
+                    if not outer then
+                        outer = getattr(stack,attribute)
+                    end
                     if outer ~= inheritance then
-                        local list, ok = selective(attribute,content,inheritance,outer)
-                        if content ~= list then
-                            setlist(stack,list)
-                        end
-                        if ok then
-                            done = true
-                        end
+                        list = selective(attribute,content,inheritance,outer)
                     else
-                        local list, ok = selective(attribute,content,inheritance,default)
-                        if content ~= list then
-                            setlist(stack,list)
-                        end
-                        if ok then
-                            done = true
-                        end
+                        list = selective(attribute,content,inheritance,default)
                     end
                 else
-                    local list, ok = selective(attribute,content,inheritance,default)
-                    if content ~= list then
-                        setlist(stack,list)
-                    end
-                    if ok then
-                        done = true
-                    end
+                    list = selective(attribute,content,inheritance,default)
+                end
+                if content ~= list then
+                    setlist(stack,list)
                 end
                 -- end nested
             end
         elseif id == rule_code then
-            check = getwidth(stack) ~= 0
+            if subtype == boxrule_code or subtype == imagerule_code or subtype == emptyrule_code then
+                -- so no redundant color stuff (only here, layers for instance should obey)
+                check = false
+            else
+                local wd, ht, dp = getwhd(stack)
+                check = wd ~= 0 or (ht+dp) ~= 0
+            end
         end
-
         if check then
             local c = getattr(stack,attribute)
             if c then
@@ -369,9 +386,6 @@ local function selective(attribute,head,inheritance,default) -- two attributes
                         local data = nsdata[default]
                         head = insert_node_before(head,stack,copy_node(data[nsforced or getattr(stack,nsselector) or nsselector]))
                         current = default
-                        if ok then
-                            done = true
-                        end
                     end
                 else
                     local s = getattr(stack,nsselector)
@@ -379,43 +393,25 @@ local function selective(attribute,head,inheritance,default) -- two attributes
                     if current ~= c or current_selector ~= s then
                         local data = nsdata[c]
                         head = insert_node_before(head,stack,copy_node(data[nsforced or s or nsselector]))
-                     -- head = insert_node_before(head,stack,copy_node(data[s or nsselector]))
                         current = c
                         current_selector = s
-                        if ok then
-                            done = true
-                        end
                     end
                 end
                 if leader then
                     -- begin nested
+                    local list
                     if nstrigger and getattr(stack,nstrigger) then
                         local outer = getattr(stack,attribute)
                         if outer ~= inheritance then
-                            local list, ok = selective(attribute,leader,inheritance,outer)
-                            if leader ~= list then
-                                setleader(stack,list)
-                            end
-                            if ok then
-                                done = true
-                            end
+                            list = selective(attribute,leader,inheritance,outer)
                         else
-                            local list, ok = selective(attribute,leader,inheritance,default)
-                            if leader ~= list then
-                                setleader(stack,list)
-                            end
-                            if ok then
-                                done = true
-                            end
+                            list = selective(attribute,leader,inheritance,default)
                         end
                     else
-                        local list, ok = selective(attribute,leader,inheritance,default)
-                        if leader ~= list then
-                            setleader(stack,list)
-                        end
-                        if ok then
-                            done = true
-                        end
+                        list = selective(attribute,leader,inheritance,default)
+                    end
+                    if leader ~= list then
+                        setleader(stack,list)
                     end
                     -- end nested
                     leader = false
@@ -425,22 +421,19 @@ local function selective(attribute,head,inheritance,default) -- two attributes
                     local data = nsdata[default]
                     head    = insert_node_before(head,stack,copy_node(data[nsforced or getattr(stack,nsselector) or nsselector]))
                     current = default
-                    done    = true
                 end
             elseif current > 0 then
                 head = insert_node_before(head,stack,copy_node(nsnone))
-                current, current_selector, done = 0, 0, true
+                current, current_selector = 0, 0
             end
             check = false
         end
-        stack = getnext(stack)
     end
-    return head, done
+    return head
 end
 
 states.selective = function(namespace,attribute,head,default)
-    local head = selective(attribute,tonut(head),default)
-    return tonode(head), true
+    return selective(attribute,head,default)
 end
 
 -- Ideally the next one should be merged with the previous but keeping it separate is
@@ -454,7 +447,6 @@ end
 
 local function stacked(attribute,head,default) -- no triggering, no inheritance, but list-wise
     local stack   = head
-    local done    = false
     local current = default or 0
     local depth   = 0
     local check   = false
@@ -472,42 +464,30 @@ local function stacked(attribute,head,default) -- no triggering, no inheritance,
             local content = getlist(stack)
             if content then
              -- the problem is that broken lines gets the attribute which can be a later one
+                local list
                 if nslistwise then
                     local a = getattr(stack,attribute)
                     if a and current ~= a and nslistwise[a] then -- viewerlayer / needs checking, see below
                         local p = current
                         current = a
                         head    = insert_node_before(head,stack,copy_node(nsdata[a]))
-                        local list = stacked(attribute,content,current) -- two return values
-                        if content ~= list then
-                            setlist(stack,list)
-                        end
+                        list    = stacked(attribute,content,current) -- two return values
                         head, stack = insert_node_after(head,stack,copy_node(nsnone))
                         current = p
-                        done    = true
                     else
-                        local list, ok = stacked(attribute,content,current)
-                        if content ~= list then
-                            setlist(stack,list) -- only if ok
-                        end
-                        if ok then
-                            done = true
-                        end
+                        list = stacked(attribute,content,current)
                     end
                 else
-                    local list, ok = stacked(attribute,content,current)
-                    if content ~= list then
-                        setlist(stack,list) -- only if ok
-                    end
-                    if ok then
-                        done = true
-                    end
+                    list = stacked(attribute,content,current)
+                end
+                if content ~= list then
+                    setlist(stack,list) -- only if ok
                 end
             end
         elseif id == rule_code then
-            check = getwidth(stack) ~= 0
+            local wd, ht, dp = getwhd(stack)
+            check = wd ~= 0 or (ht+dp) ~= 0
         end
-
         if check then
             local a = getattr(stack,attribute)
             if a then
@@ -515,15 +495,14 @@ local function stacked(attribute,head,default) -- no triggering, no inheritance,
                     head    = insert_node_before(head,stack,copy_node(nsdata[a]))
                     depth   = depth + 1
                     current = a
-                    done    = true
                 end
                 if leader then
-                    local list, ok = stacked(attribute,content,current)
-                    if leader ~= list then
-                        setleader(stack,list) -- only if ok
-                    end
-                    if ok then
-                        done = true
+                    local content = getlist(leader)
+                    if content then
+                        local list = stacked(attribute,content,current)
+                        if leader ~= list then
+                            setleader(stack,list) -- only if ok
+                        end
                     end
                     leader = false
                 end
@@ -533,7 +512,6 @@ local function stacked(attribute,head,default) -- no triggering, no inheritance,
                 head    = insert_node_before(head,stack,copy_node(nsnone))
                 depth   = depth - 1
                 current = 0
-                done    = true
             end
             check = false
         end
@@ -543,24 +521,22 @@ local function stacked(attribute,head,default) -- no triggering, no inheritance,
         head = insert_node_after(head,stack,copy_node(nsnone))
         depth = depth - 1
     end
-    return head, done
+    return head
 end
 
 states.stacked = function(namespace,attribute,head,default)
-    local head, done = stacked(attribute,tonut(head),default)
-    return tonode(head), done
+    return stacked(attribute,head,default)
 end
 
 -- experimental
 
 local function stacker(attribute,head,default) -- no triggering, no inheritance, but list-wise
 
---     nsbegin()
+ -- nsbegin()
     local stacked  = false
 
     local current  = head
     local previous = head
-    local done     = false
     local attrib   = default or unsetvalue
     local check    = false
     local leader   = false
@@ -576,38 +552,27 @@ local function stacker(attribute,head,default) -- no triggering, no inheritance,
             end
         elseif id == hlist_code or id == vlist_code then
             local content = getlist(current)
-            if not content then
-                -- skip
-            elseif nslistwise then
-                local a = getattr(current,attribute)
-                if a and attrib ~= a and nslistwise[a] then -- viewerlayer
-                    head = insert_node_before(head,current,copy_node(nsdata[a]))
-                    local list = stacker(attribute,content,a)
-                    if list ~= content then
-                        setlist(current,list)
+            if content then
+                local list
+                if nslistwise then
+                    local a = getattr(current,attribute)
+                    if a and attrib ~= a and nslistwise[a] then -- viewerlayer
+                        head = insert_node_before(head,current,copy_node(nsdata[a]))
+                        list = stacker(attribute,content,a)
+                        head, current = insert_node_after(head,current,copy_node(nsnone))
+                    else
+                        list = stacker(attribute,content,attrib)
                     end
-                    done = true
-                    head, current = insert_node_after(head,current,copy_node(nsnone))
                 else
-                    local list, ok = stacker(attribute,content,attrib)
-                    if content ~= list then
-                        setlist(current,list)
-                    end
-                    if ok then
-                        done = true
-                    end
+                    list = stacker(attribute,content,default)
                 end
-            else
-                local list, ok = stacker(attribute,content,default)
                 if list ~= content then
                     setlist(current,list)
                 end
-                if ok then
-                    done = true
-                end
             end
         elseif id == rule_code then
-            check = getwidth(current) ~= 0
+            local wd, ht, dp = getwhd(current)
+            check = wd ~= 0 or (ht+dp) ~= 0
         end
 
         if check then
@@ -619,16 +584,22 @@ local function stacker(attribute,head,default) -- no triggering, no inheritance,
                 end
                 local n = nsstep(a)
                 if n then
-                    head = insert_node_before(head,current,tonut(n)) -- a
+                    head = insert_node_before(head,current,n) -- a
                 end
                 attrib = a
-                done   = true
                 if leader then
                     -- tricky as a leader has to be a list so we cannot inject before
-                    local list, ok = stacker(attribute,leader,attrib)
-                    if ok then
-                        done = true
+                 -- local list = stacker(attribute,leader,attrib)
+                 -- leader = false
+
+                    local content = getlist(leader)
+                    if content then
+                        local list = stacker(attribute,leader,attrib)
+                        if leader ~= list then
+                            setleader(current,list)
+                        end
                     end
+
                     leader = false
                 end
             end
@@ -642,18 +613,101 @@ local function stacker(attribute,head,default) -- no triggering, no inheritance,
     if stacked then
         local n = nsend()
         while n do
-            head = insert_node_after(head,previous,tonut(n))
+            head = insert_node_after(head,previous,n)
             n = nsend()
         end
     end
 
-    return head, done
+    return head
 end
 
+-- local nextid = nodes.nuts.traversers.id
+--
+-- local function stacker(attribute,head,default) -- no triggering, no inheritance, but list-wise
+--
+--  -- nsbegin()
+--     local stacked  = false
+--
+--     local current  = head
+--     local previous = head
+--     local attrib   = default or unsetvalue
+--     local check    = false
+--     local leader   = false
+--
+--     local id       = getid(current)
+--     while current do
+--         if id == glyph_code then
+--             check = true
+--         elseif id == glue_code then
+--             leader = getleader(current)
+--             if leader then
+--                 check = true
+--             end
+--         elseif id == hlist_code or id == vlist_code then
+--             local content = getlist(current)
+--             if content then
+--                 local list
+--                 if nslistwise then
+--                     local a = getattr(current,attribute)
+--                     if a and attrib ~= a and nslistwise[a] then -- viewerlayer
+--                         head = insert_node_before(head,current,copy_node(nsdata[a]))
+--                         list = stacker(attribute,content,a)
+--                         head, current = insert_node_after(head,current,copy_node(nsnone))
+--                     else
+--                         list = stacker(attribute,content,attrib)
+--                     end
+--                 else
+--                     list = stacker(attribute,content,default)
+--                 end
+--                 if list ~= content then
+--                     setlist(current,list)
+--                 end
+--             end
+--         elseif id == rule_code then
+--             check = getwidth(current) ~= 0
+--         end
+--
+--         if check then
+--             local a = getattr(current,attribute) or unsetvalue
+--             if a ~= attrib then
+--                 if not stacked then
+--                     stacked = true
+--                     nsbegin()
+--                 end
+--                 local n = nsstep(a)
+--                 if n then
+--                     head = insert_node_before(head,current,n) -- a
+--                 end
+--                 attrib = a
+--                 if leader then
+--                     -- tricky as a leader has to be a list so we cannot inject before
+--                     local list = stacker(attribute,leader,attrib)
+--                     leader = false
+--                 end
+--             end
+--             check = false
+--         end
+--
+--         previous = current
+--
+--         current, id = nextid(current,current)
+--     end
+--
+--     if stacked then
+--         local n = nsend()
+--         while n do
+--             head = insert_node_after(head,previous,n)
+--             n = nsend()
+--         end
+--     end
+--
+--     return head
+-- end
+
 states.stacker = function(namespace,attribute,head,default)
-    local head, done = stacker(attribute,tonut(head),default)
+    local head = stacker(attribute,head,default)
     nsreset()
-    return tonode(head), done
+    return head
 end
 
 -- -- --

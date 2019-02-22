@@ -18,8 +18,6 @@ local report_casing = logs.reporter("typesetting","casing")
 local nodes, node = nodes, node
 
 local nuts            = nodes.nuts
-local tonode          = nuts.tonode
-local tonut           = nuts.tonut
 
 local getnext         = nuts.getnext
 local getprev         = nuts.getprev
@@ -29,6 +27,7 @@ local takeattr        = nuts.takeattr
 local getfont         = nuts.getfont
 local getsubtype      = nuts.getsubtype
 local getchar         = nuts.getchar
+local isglyph         = nuts.isglyph
 local getdisc         = nuts.getdisc
 
 local setattr         = nuts.setattr
@@ -37,12 +36,12 @@ local setfont         = nuts.setfont
 
 local copy_node       = nuts.copy
 local end_of_math     = nuts.end_of_math
-local traverse_id     = nuts.traverse_id
 local insert_after    = nuts.insert_after
 local find_attribute  = nuts.find_attribute
 
+local nextglyph       = nuts.traversers.glyph
+
 local nodecodes       = nodes.nodecodes
-local skipcodes       = nodes.skipcodes
 local kerncodes       = nodes.kerncodes
 
 local glyph_code      = nodecodes.glyph
@@ -98,19 +97,6 @@ local function get(a)
         extract(a, 0, 8)  -- run
 end
 
--- local function get(a)
---     return
---         (a >>  8) & ~(-1 <<  8), -- & 0x0FF -- tag
---         (a >> 16) & ~(-1 << 12), -- & 0xFFF -- font
---         (a >>  0) & ~(-1 <<  8)  -- & 0x0FF -- run
--- end
-
--- print(get(set(  1,   0)))
--- print(get(set(  1,  99)))
--- print(get(set(  2,  96)))
--- print(get(set( 30, 922)))
--- print(get(set(250,4000)))
-
 -- a previous implementation used char(0) as placeholder for the larger font, so we needed
 -- to remove it before it can do further harm ... that was too tricky as we use char 0 for
 -- other cases too
@@ -128,10 +114,9 @@ local categories = characters.categories
 -- true false true == mixed
 
 local function replacer(start,codes)
-    local char = getchar(start)
-    local dc   = codes[char]
+    local char, fnt = isglyph(start)
+    local dc = codes[char]
     if dc then
-        local fnt = getfont(start)
         local ifc = fontchar[fnt]
         if type(dc) == "table" then
             for i=1,#dc do
@@ -149,13 +134,11 @@ local function replacer(start,codes)
                     insert_after(start,start,g)
                 end
             end
-            return start, true
         elseif ifc[dc] then
             setchar(start,dc)
-            return start, true
         end
     end
-    return start, false
+    return start
 end
 
 local registered, n = { }, 0
@@ -191,9 +174,9 @@ local function Words(start,attr,lastfont,n,count,where,first) -- looks quite com
     end
     if count == 1 and where ~= "post" then
         replacer(first or start,uccodes)
-        return start, true, true
+        return start, true
     else
-        return start, false, true
+        return start, true
     end
 end
 
@@ -203,9 +186,9 @@ local function Word(start,attr,lastfont,n,count,where,first)
 end
 
 local function camel(start,attr,lastfont,n,count,where,first)
-    local _, done_1 = word(start,attr,lastfont,n,count,where,first)
-    local _, done_2 = Words(start,attr,lastfont,n,count,where,first)
-    return start, done_1 or done_2, true
+    word(start,attr,lastfont,n,count,where,first)
+    Words(start,attr,lastfont,n,count,where,first)
+    return start, true
 end
 
 -- local function mixed(start,attr,lastfont,n,count,where,first)
@@ -216,19 +199,16 @@ end
 --     local char = getchar(first)
 --     local dc   = uccodes[char]
 --     if not dc then
---         return start, false, true
+--         -- quit
 --     elseif dc == char then
 --         local lfa = lastfont[n]
 --         if lfa then
 --             setfont(first,lfa)
---             return start, true, true
---         else
---             return start, false, true
 --         end
 --     else
 --         replacer(first or start,uccodes)
---         return start, true, true
 --     end
+--     return start, true
 -- end
 
 local function mixed(start,attr,lastfont,n,count,where,first)
@@ -239,38 +219,33 @@ local function mixed(start,attr,lastfont,n,count,where,first)
     local char = getchar(used)
     local dc   = uccodes[char]
     if not dc then
-        return start, false, true
+        -- quit
     elseif dc == char then
         local lfa = lastfont[n]
         if lfa then
             setfont(used,lfa)
-            return start, true, true
-        else
-            return start, false, true
         end
-    else
-        if check_kerns then
-            local p = getprev(used)
-            if p and getid(p) == glyph_code then
-                local c = lccodes[char]
-                local c = type(c) == "table" and c[1] or c
-                replacer(used,uccodes)
-                local fp = getfont(p)
-                local fc = getfont(used)
-                if fp ~= fc then
-                    local k = fonts.getkern(fontdata[fp],getchar(p),c)
-                    if k ~= 0 then
-                        insert_after(p,p,newkern(k))
-                    end
+    elseif check_kerns then
+        local p = getprev(used)
+        if p and getid(p) == glyph_code then
+            local c = lccodes[char]
+            local c = type(c) == "table" and c[1] or c
+            replacer(used,uccodes)
+            local fp = getfont(p)
+            local fc = getfont(used)
+            if fp ~= fc then
+                local k = fonts.getkern(fontdata[fp],getchar(p),c)
+                if k ~= 0 then
+                    insert_after(p,p,newkern(k))
                 end
-            else
-                replacer(used,uccodes)
             end
         else
             replacer(used,uccodes)
         end
-        return start, true, true
+    else
+        replacer(used,uccodes)
     end
+    return start, true
 end
 
 local function Capital(start,attr,lastfont,n,count,where,first,once) -- 3
@@ -284,11 +259,11 @@ local function Capital(start,attr,lastfont,n,count,where,first,once) -- 3
             end
         end
     end
-    local s, d, c = replacer(first or start,uccodes)
+    local s, c = replacer(first or start,uccodes)
     if once then
         lastfont[n] = false -- here
     end
-    return start, d, c
+    return start, c
 end
 
 local function capital(start,attr,lastfont,n,where,count,first,count) -- 4
@@ -296,7 +271,7 @@ local function capital(start,attr,lastfont,n,where,count,first,count) -- 4
 end
 
 local function none(start,attr,lastfont,n,count,where,first)
-    return start, false, true
+    return start, true
 end
 
 local function randomized(start,attr,lastfont,n,count,where,first)
@@ -311,7 +286,7 @@ local function randomized(start,attr,lastfont,n,count,where,first)
             local n = getrandom("capital lu",0x41,0x5A)
             if tfm[n] then -- this also intercepts tables
                 setchar(used,n)
-                return start, true
+                return start
             end
         end
     elseif kind == "ll" then
@@ -319,11 +294,11 @@ local function randomized(start,attr,lastfont,n,count,where,first)
             local n = getrandom("capital ll",0x61,0x7A)
             if tfm[n] then -- this also intercepts tables
                 setchar(used,n)
-                return start, true
+                return start
             end
         end
     end
-    return start, false
+    return start
 end
 
 register(variables.WORD,   WORD)              --   1
@@ -341,10 +316,9 @@ register(variables.cap,    variables.capital) -- clone
 register(variables.Cap,    variables.Capital) -- clone
 
 function cases.handler(head) -- not real fast but also not used on much data
-    local start    = tonut(head)
+    local start    = head
     local lastfont = { }
     local lastattr = nil
-    local done     = false
     local count    = 0
     local previd   = nil
     local prev     = nil
@@ -367,10 +341,7 @@ function cases.handler(head) -- not real fast but also not used on much data
                 end
                 local action = actions[n] -- map back to low number
                 if action then
-                    start, ok = action(start,attr,lastfont,n,count)
-                    if ok then
-                        done = true
-                    end
+                    start = action(start,attr,lastfont,n,count)
                     if trace_casing then
                         report_casing("case trigger %a, instance %a, fontid %a, result %a",n,m,id,ok)
                     end
@@ -396,32 +367,38 @@ function cases.handler(head) -- not real fast but also not used on much data
                     local pre, post, replace = getdisc(start)
                     if replace then
                         local cnt = count
-                        for g in traverse_id(glyph_code,replace) do
+                        for g in nextglyph, replace do
                             cnt = cnt + 1
                             takeattr(g,a_cases)
                          -- setattr(g,a_cases,unsetvalue)
-                            local _, _, quit = action(start,attr,lastfont,n,cnt,"replace",g)
-                            if quit then break end
+                            local h, quit = action(start,attr,lastfont,n,cnt,"replace",g)
+                            if quit then
+                                break
+                            end
                         end
                     end
                     if pre then
                         local cnt = count
-                        for g in traverse_id(glyph_code,pre) do
+                        for g in nextglyph, pre do
                             cnt = cnt + 1
                             takeattr(g,a_cases)
                          -- setattr(g,a_cases,unsetvalue)
-                            local _,  _, quit = action(start,attr,lastfont,n,cnt,"pre",g)
-                            if quit then break end
+                            local h, quit = action(start,attr,lastfont,n,cnt,"pre",g)
+                            if quit then
+                                break
+                            end
                         end
                     end
                     if post then
                         local cnt = count
-                        for g in traverse_id(glyph_code,post) do
+                        for g in nextglyph, post do
                             cnt = cnt + 1
                             takeattr(g,a_cases)
                          -- setattr(g,a_cases,unsetvalue)
-                            local _,  _, quit = action(start,attr,lastfont,n,cnt,"post",g)
-                            if quit then break end
+                            local h, quit = action(start,attr,lastfont,n,cnt,"post",g)
+                            if quit then
+                                break
+                            end
                         end
                     end
                 end
@@ -441,17 +418,16 @@ function cases.handler(head) -- not real fast but also not used on much data
             start  = getnext(start)
         end
     end
-    return head, done
+    return head
 end
 
 -- function cases.handler(head) -- not real fast but also not used on much data
---     local attr, start = find_attribute(tonut(head),a_cases)
+--     local attr, start = find_attribute(head,a_cases)
 --     if not start then
 --         return head, false
 --     end
 --     local lastfont = { }
 --     local lastattr = nil
---     local done     = false
 --     local count    = 0
 --     local previd   = nil
 --     local prev     = nil
@@ -475,10 +451,7 @@ end
 --                     end
 --                     local action = actions[n] -- map back to low number
 --                     if action then
---                         start, ok = action(start,attr,lastfont,n,count)
---                         if ok then
---                             done = true
---                         end
+--                         start = action(start,attr,lastfont,n,count)
 --                         if trace_casing then
 --                             report_casing("case trigger %a, instance %a, fontid %a, result %a",n,m,id,ok)
 --                         end
@@ -504,32 +477,38 @@ end
 --                         local pre, post, replace = getdisc(start)
 --                         if replace then
 --                             local cnt = count
---                             for g in traverse_id(glyph_code,replace) do
+--                             for g in glyph_code, replace do
 --                                 cnt = cnt + 1
 --                                 takeattr(g,a_cases)
 --                              -- setattr(g,a_cases,unsetvalue)
---                                 local _, _, quit = action(start,attr,lastfont,n,cnt,"replace",g)
---                                 if quit then break end
+--                                 local h, quit = action(start,attr,lastfont,n,cnt,"replace",g)
+--                                 if quit then
+--                                      break
+--                                 end
 --                             end
 --                         end
 --                         if pre then
 --                             local cnt = count
---                             for g in traverse_id(glyph_code,pre) do
+--                             for g in nextglyph, pre do
 --                                 cnt = cnt + 1
 --                                 takeattr(g,a_cases)
 --                              -- setattr(g,a_cases,unsetvalue)
---                                 local _,  _, quit = action(start,attr,lastfont,n,cnt,"pre",g)
---                                 if quit then break end
+--                                 local h, quit = action(start,attr,lastfont,n,cnt,"pre",g)
+--                                 if quit then
+--                                      break
+--                                 end
 --                             end
 --                         end
 --                         if post then
 --                             local cnt = count
---                             for g in traverse_id(glyph_code,post) do
+--                             for g in nextglyph, post do
 --                                 cnt = cnt + 1
 --                                 takeattr(g,a_cases)
 --                              -- setattr(g,a_cases,unsetvalue)
---                                 local _,  _, quit = action(start,attr,lastfont,n,cnt,"post",g)
---                                 if quit then break end
+--                                 local h, quit = action(start,attr,lastfont,n,cnt,"post",g)
+--                                 if quit then
+--                                      break
+--                                 end
 --                             end
 --                         end
 --                     end
@@ -555,26 +534,22 @@ end
 --             attr, start = find_attribute(start,a_cases)
 --         end
 --     end
---     return head, done
+--     return head
 -- end
 
 -- function cases.handler(head) -- let's assume head doesn't change ... no reason
---     local done     = false
 --     local lastfont = { }
---     for first, last, size, attr in nuts.words(tonut(head),a_cases) do
+--     for first, last, size, attr in nuts.words(head,a_cases) do
 --         local n, id, m = get(attr)
 --         if lastfont[n] == nil then
 --             lastfont[n] = id
 --         end
 --         local action = actions[n]
 --         if action then
---             local _, ok = action(first,attr,lastfont,n)
---             if ok then
---                 done = true
---             end
+--             action(first,attr,lastfont,n)
 --         end
 --     end
---     return head, done
+--     return head
 -- end
 
 local enabled = false

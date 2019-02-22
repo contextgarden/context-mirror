@@ -68,65 +68,70 @@ end
 nodes                       = nodes or { }
 local nodes                 = nodes
 
-local nodecodes             = nodes.nodecodes
+local nodecodes               = nodes.nodecodes
 
-nodes.tostring              = node.tostring or tostring
-nodes.copy                  = node.copy
-nodes.copy_node             = node.copy
-nodes.copy_list             = node.copy_list
-nodes.delete                = node.delete
-nodes.dimensions            = node.dimensions
-nodes.rangedimensions       = node.rangedimensions
-nodes.end_of_math           = node.end_of_math
-nodes.flush                 = node.flush_node
-nodes.flush_node            = node.flush_node
-nodes.flush_list            = node.flush_list
-nodes.free                  = node.free
-nodes.insert_after          = node.insert_after
-nodes.insert_before         = node.insert_before
-nodes.hpack                 = node.hpack
-nodes.new                   = node.new
-nodes.tail                  = node.tail
-nodes.traverse              = node.traverse
-nodes.traverse_id           = node.traverse_id
-nodes.traverse_char         = node.traverse_char
-nodes.slide                 = node.slide
-nodes.vpack                 = node.vpack
-nodes.fields                = node.fields
-nodes.is_node               = node.is_node
-nodes.setglue               = node.setglue
+nodes.tostring                = node.tostring or tostring
+nodes.copy                    = node.copy
+nodes.copy_node               = node.copy
+nodes.copy_list               = node.copy_list
+nodes.delete                  = node.delete
+nodes.dimensions              = node.dimensions
+nodes.rangedimensions         = node.rangedimensions
+nodes.end_of_math             = node.end_of_math
+nodes.flush                   = node.flush_node
+nodes.flush_node              = node.flush_node
+nodes.flush_list              = node.flush_list
+nodes.free                    = node.free
+nodes.insert_after            = node.insert_after
+nodes.insert_before           = node.insert_before
+nodes.hpack                   = node.hpack
+nodes.new                     = node.new
+nodes.tail                    = node.tail
+nodes.traverse                = node.traverse
+nodes.traverse_id             = node.traverse_id
+nodes.traverse_char           = node.traverse_char
+nodes.traverse_glyph          = node.traverse_glyph
+nodes.traverse_list           = node.traverse_list
+nodes.slide                   = node.slide
+nodes.vpack                   = node.vpack
+nodes.fields                  = node.fields
+nodes.is_node                 = node.is_node
+nodes.setglue                 = node.setglue
+nodes.uses_font               = node.uses_font
 
-nodes.first_glyph           = node.first_glyph
-nodes.has_glyph             = node.has_glyph or node.first_glyph
+nodes.first_glyph             = node.first_glyph
+nodes.has_glyph               = node.has_glyph or node.first_glyph
 
-nodes.current_attr          = node.current_attr
-nodes.has_field             = node.has_field
-nodes.last_node             = node.last_node
-nodes.usedlist              = node.usedlist
-nodes.protrusion_skippable  = node.protrusion_skippable
-nodes.check_discretionaries = node.check_discretionaries
-nodes.write                 = node.write
+nodes.current_attr            = node.current_attr
+nodes.has_field               = node.has_field
+nodes.last_node               = node.last_node
+nodes.usedlist                = node.usedlist
+nodes.protrusion_skippable    = node.protrusion_skippable
+nodes.check_discretionaries   = node.check_discretionaries
+nodes.write                   = node.write
+nodes.flatten_discretionaries = node.flatten_discretionaries
 
-nodes.count                 = node.count
-nodes.length                = node.length
+nodes.count                   = node.count
+nodes.length                  = node.length
 
-nodes.has_attribute         = node.has_attribute
-nodes.set_attribute         = node.set_attribute
-nodes.find_attribute        = node.find_attribute
-nodes.unset_attribute       = node.unset_attribute
+nodes.has_attribute           = node.has_attribute
+nodes.set_attribute           = node.set_attribute
+nodes.find_attribute          = node.find_attribute
+nodes.unset_attribute         = node.unset_attribute
 
-nodes.protect_glyph         = node.protect_glyph
-nodes.protect_glyphs        = node.protect_glyphs
-nodes.unprotect_glyph       = node.unprotect_glyph
-nodes.unprotect_glyphs      = node.unprotect_glyphs
-nodes.kerning               = node.kerning
-nodes.ligaturing            = node.ligaturing
-nodes.mlist_to_hlist        = node.mlist_to_hlist
+nodes.protect_glyph           = node.protect_glyph
+nodes.protect_glyphs          = node.protect_glyphs
+nodes.unprotect_glyph         = node.unprotect_glyph
+nodes.unprotect_glyphs        = node.unprotect_glyphs
+nodes.kerning                 = node.kerning
+nodes.ligaturing              = node.ligaturing
+nodes.hyphenating             = node.hyphenating
+nodes.mlist_to_hlist          = node.mlist_to_hlist
 
-nodes.effective_glue       = node.effective_glue
-nodes.getglue              = node.getglue
-nodes.setglue              = node.setglue
-nodes.is_zero_glue         = node.is_zero_glue
+nodes.effective_glue          = node.effective_glue
+nodes.getglue                 = node.getglue
+nodes.setglue                 = node.setglue
+nodes.is_zero_glue            = node.is_zero_glue
 
 nodes.tonode = function(n) return n end
 nodes.tonut  = function(n) return n end
@@ -163,7 +168,7 @@ local n_setlink         = node.setlink or -- always
         -- not that fast but not used often anyway
         local h = nil
         for i=1,select("#",...) do
-            local n = (select(i,...))
+            local n = select(i,...)
             if not n then
                 -- go on
             elseif h then
@@ -621,7 +626,7 @@ local messyhack    = table.tohash { -- temporary solution
     nodecodes.action,
 }
 
-table.setmetatableindex(keys,function(t,k)
+setmetatableindex(keys,function(t,k)
     local v = (k == "attributelist" or k == nodecodes.attributelist) and { } or getfields(k)
     if messyhack[k] then
         for i=1,#v do
@@ -638,7 +643,7 @@ table.setmetatableindex(keys,function(t,k)
     return v
 end)
 
-table.setmetatableindex(whatsitkeys,function(t,k)
+setmetatableindex(whatsitkeys,function(t,k)
     local v = getfields(whatsit_code,k)
     if v[ 0] then v[#v+1] = "next" v[ 0] = nil end
     if v[-1] then v[#v+1] = "prev" v[-1] = nil end
@@ -659,46 +664,3 @@ end
 
 nodes.keys   = keys       -- [id][subtype]
 nodes.fields = nodefields -- (n)
-
--- for the moment (pre 6380)
-
-if not nodes.unprotect_glyph then
-
-    local protect_glyph    = nodes.protect_glyph
-    local protect_glyphs   = nodes.protect_glyphs
-    local unprotect_glyph  = nodes.unprotect_glyph
-    local unprotect_glyphs = nodes.unprotect_glyphs
-
-    local getnext          = nodes.getnext
-    local setnext          = nodes.setnext
-
-    function nodes.protectglyphs(first,last)
-        if first == last then
-            return protect_glyph(first)
-        elseif last then
-            local nxt = getnext(last)
-            setnext(last)
-            local f, b = protect_glyphs(first)
-            setnext(last,nxt)
-            return f, b
-        else
-            return protect_glyphs(first)
-        end
-    end
-
-    function nodes.unprotectglyphs(first,last)
-        if first == last then
-            return unprotect_glyph(first)
-        elseif last then
-            local nxt = getnext(last)
-            setnext(last)
-            local f, b = unprotect_glyphs(first)
-            setnext(last,nxt)
-            return f, b
-        else
-            return unprotect_glyphs(first)
-        end
-    end
-
-end
-

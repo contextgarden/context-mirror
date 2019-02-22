@@ -72,16 +72,16 @@
       \vskip\zeropoint\s!plus-\positionbarparameter\c!n  \s!fill}}
 
 \unexpanded\def\horizontalgrowingbar[#1]%
-  {\hbox to \hsize
+  {\hpack to \hsize
      {\setuppositionbar[#1]%
       \usepositionbarstyleandcolor\c!style\c!color
-      \leaders\vrule\hskip\zeropoint\s!plus \numexpr\positionbarparameter\c!n-\positionbarparameter\c!min+\plusone\relax\s!fill
+      \leaders\vrule\hskip\zeropoint\s!plus\numexpr\positionbarparameter\c!n-\positionbarparameter\c!min+\plusone\relax\s!fill
       \vrule\s!width\zeropoint\s!height\positionbarparameter\c!height\s!depth\positionbarparameter\c!depth
       \hskip\zeropoint\s!plus \positionbarparameter\c!max\s!fill
       \hskip\zeropoint\s!plus-\positionbarparameter\c!n  \s!fill}}
 
 \unexpanded\def\verticalgrowingbar[#1]%
-  {\vbox to \vsize
+  {\vpack to \vsize
      {\setuppositionbar[#1]%
       \usepositionbarstyleandcolor\c!style\c!color
       \leaders\hrule\vskip\zeropoint\s!plus\numexpr\positionbarparameter\c!n-\positionbarparameter\c!min+\plusone\relax\s!fill

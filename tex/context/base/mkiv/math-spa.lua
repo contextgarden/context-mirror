@@ -8,24 +8,23 @@ if not modules then modules = { } end modules ['math-spa'] = {
 
 -- for the moment (when testing) we use a penalty 1
 
-local penalty_code = nodes.nodecodes.penalty
-local glue_code    = nodes.nodecodes.glue
+local penalty_code  = nodes.nodecodes.penalty
+local glue_code     = nodes.nodecodes.glue
 
-local nuts         = nodes.nuts
-local tonut        = nodes.tonut
-local tonode       = nodes.tonode
-local getid        = nuts.getid
-local getnext      = nuts.getnext
-local getwidth     = nuts.getwidth
-local setglue      = nuts.setglue
-local getpenalty   = nuts.getpenalty
-local setpenalty   = nuts.setpenalty
+local nuts          = nodes.nuts
+local tonut         = nodes.tonut
+local tonode        = nodes.tonode
 
-local traverse_id    = nuts.traverse_id
-local get_dimensions = nuts.dimensions
+local getid         = nuts.getid
+local getnext       = nuts.getnext
+local getwidth      = nuts.getwidth
+local setglue       = nuts.setglue
+local getpenalty    = nuts.getpenalty
+local setpenalty    = nuts.setpenalty
+local getdimensions = nuts.dimensions
+local nextglue      = nuts.traversers.glue
 
-
-local texsetdimen    = tex.setdimen
+local texsetdimen   = tex.setdimen
 
 local v_none = interfaces.variables.none
 local v_auto = interfaces.variables.auto
@@ -33,9 +32,8 @@ local v_auto = interfaces.variables.auto
 local method   = v_none
 local distance = 0
 
-function noads.handlers.align(l)
+function noads.handlers.align(h)
     if method ~= v_none then
-        local h = tonut(l)
         if method == v_auto then
             local s = h
             while s do
@@ -47,7 +45,7 @@ function noads.handlers.align(l)
                         s = n
                         n = getnext(s)
                     end
-                    local w = get_dimensions(h,n) + distance
+                    local w = getdimensions(h,n) + distance
                     texsetdimen("global","d_strc_math_indent",w)
                     break
                 end
@@ -56,13 +54,12 @@ function noads.handlers.align(l)
         else
             texsetdimen("global","d_strc_math_indent",distance)
         end
-        for n in traverse_id(glue_code,h) do
+        for n in nextglue, h do
             setglue(n,getwidth(n),0,0)
         end
     else
      -- texsetdimen("global","d_strc_math_indent",0)
     end
-    return l, true
 end
 
 interfaces.implement {

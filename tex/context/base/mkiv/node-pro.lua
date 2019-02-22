@@ -35,7 +35,7 @@ do
     local n = 0
 
     local function reconstruct(head) -- we probably have a better one
-        local t, n, h = { }, 0, tonut(head)
+        local t, n, h = { }, 0, head
         while h do
             n = n + 1
             local char, id = isglyph(h)
@@ -49,7 +49,7 @@ do
         return concat(t)
     end
 
-    function processors.tracer(what,state,head,groupcode,before,after,show)
+    function processors.tracer(what,head,groupcode,before,after,show)
         if not groupcode then
             groupcode = "unknown"
         elseif groupcode == "" then
@@ -57,15 +57,13 @@ do
         end
         n = n + 1
         if show then
-            report_nodes("%s: location %a, state %a, group %a, # before %a, # after %s, stream: %s",what,n,state,groupcode,before,after,reconstruct(head))
+            report_nodes("%s: location %a, group %a, # before %a, # after %s, stream: %s",what,n,groupcode,before,after,reconstruct(head))
         else
-            report_nodes("%s: location %a, state %a, group %a, # before %a, # after %s",what,n,state,groupcode,before,after)
+            report_nodes("%s: location %a, group %a, # before %a, # after %s",what,n,groupcode,before,after)
         end
     end
 
 end
-
-local tracer = processors.tracer
 
 processors.enabled = true -- this will become a proper state (like trackers)
 
@@ -74,154 +72,131 @@ do
     local has_glyph   = nodes.has_glyph
     local count_nodes = nodes.countall
 
-    function processors.pre_linebreak_filter(head,groupcode) -- ,size,packtype,direction
+    local texget      = tex.get
+
+    local tracer      = processors.tracer
+
+    local function pre_linebreak_filter(head,groupcode)
         local found = force_processors or has_glyph(head)
         if found then
             if trace_callbacks then
                 local before = count_nodes(head,true)
-                local head, done = actions(head,groupcode) -- ,size,packtype,direction
+                head = actions(head,groupcode)
                 local after = count_nodes(head,true)
-                if done then
-                    tracer("pre_linebreak","changed",head,groupcode,before,after,true)
-                else
-                    tracer("pre_linebreak","unchanged",head,groupcode,before,after,true)
-                end
-                return done and head or true
+                tracer("pre_linebreak",head,groupcode,before,after,true)
             else
-                local head, done = actions(head,groupcode) -- ,size,packtype,direction
-                return done and head or true
+                head = actions(head,groupcode)
             end
         elseif trace_callbacks then
             local n = count_nodes(head,false)
-            tracer("pre_linebreak","no chars",head,groupcode,n,n)
+            tracer("pre_linebreak",head,groupcode,n,n)
         end
-        return true
+        return head
     end
 
     local function hpack_filter(head,groupcode,size,packtype,direction,attributes)
         local found = force_processors or has_glyph(head)
         if found then
+            --
+            -- yes or no or maybe an option
+            --
+            if not direction then
+                direction = texget("textdir")
+            end
+            --
             if trace_callbacks then
                 local before = count_nodes(head,true)
-                local head, done = actions(head,groupcode,size,packtype,direction,attributes)
+                head = actions(head,groupcode,size,packtype,direction,attributes)
                 local after = count_nodes(head,true)
-                if done then
-                    tracer("hpack","changed",head,groupcode,before,after,true)
-                else
-                    tracer("hpack","unchanged",head,groupcode,before,after,true)
-                end
-                return done and head or true
+                tracer("hpack",head,groupcode,before,after,true)
             else
-                local head, done = actions(head,groupcode,size,packtype,direction,attributes)
-                return done and head or true
+                head = actions(head,groupcode,size,packtype,direction,attributes)
             end
         elseif trace_callbacks then
             local n = count_nodes(head,false)
-            tracer("hpack","no chars",head,groupcode,n,n)
+            tracer("hpack",head,groupcode,n,n)
         end
-        return true
+        return head
     end
 
-    processors.hpack_filter = hpack_filter
+    processors.pre_linebreak_filter = pre_linebreak_filter
+    processors.hpack_filter         = hpack_filter
 
     do
 
-        local setfield = nodes.setfield
-        local hpack    = nodes.hpack
+        local hpack = nodes.hpack
 
         function nodes.fullhpack(head,...)
-            local ok = hpack_filter(head)
-            if not done or done == true then
-                ok = head
-            end
-            local hp, b = hpack(ok,...)
-            setfield(hp,"prev",nil)
-            setfield(hp,"next",nil)
-            return hp, b
+            return hpack((hpack_filter(head)),...)
         end
 
     end
 
     do
 
-        local setboth = nuts.setboth
-        local hpack   = nuts.hpack
+        local hpack = nuts.hpack
 
         function nuts.fullhpack(head,...)
-            local ok = hpack_filter(tonode(head))
-            if not done or done == true then
-                ok = head
-            else
-                ok = tonut(ok)
-            end
-            local hp, b = hpack(...)
-            setboth(hp)
-            return hp, b
+            return hpack(tonut(hpack_filter(tonode(head))),...)
         end
 
     end
 
-    callbacks.register('pre_linebreak_filter', processors.pre_linebreak_filter, "all kind of horizontal manipulations (before par break)")
-    callbacks.register('hpack_filter'        , processors.hpack_filter,         "all kind of horizontal manipulations (before hbox creation)")
+    callbacks.register('pre_linebreak_filter', pre_linebreak_filter, "horizontal manipulations (before par break)")
+    callbacks.register('hpack_filter'        , hpack_filter,         "horizontal manipulations (before hbox creation)")
 
 end
 
 do
+    -- Beware, these are packaged boxes so no first_glyph test needed. Maybe some day I'll add a hash
+    -- with valid groupcodes. Watch out, much can pass twice, for instance vadjust passes two times,
 
     local actions     = tasks.actions("finalizers") -- head, where
     local count_nodes = nodes.countall
 
-    -- beware, these are packaged boxes so no first_glyph test
-    -- maybe some day a hash with valid groupcodes
-    --
-    -- beware, much can pass twice, for instance vadjust passes two times
-    --
-    -- something weird here .. group mvl when making a vbox
+    local tracer      = processors.tracer
 
-    function processors.post_linebreak_filter(head,groupcode)
+    local function post_linebreak_filter(head,groupcode)
         if trace_callbacks then
             local before = count_nodes(head,true)
-            local head, done = actions(head,groupcode)
+            head = actions(head,groupcode)
             local after = count_nodes(head,true)
-            if done then
-                tracer("post_linebreak","changed",head,groupcode,before,after,true)
-            else
-                tracer("post_linebreak","unchanged",head,groupcode,before,after,true)
-            end
-            return done and head or true
+            tracer("post_linebreak",head,groupcode,before,after,true)
         else
-            local head, done = actions(head,groupcode)
-            return done and head or true
+            head = actions(head,groupcode)
         end
+        return head
     end
 
-    callbacks.register('post_linebreak_filter', processors.post_linebreak_filter,"all kind of horizontal manipulations (after par break)")
+    processors.post_linebreak_filter = post_linebreak_filter
+
+    callbacks.register("post_linebreak_filter", post_linebreak_filter,"horizontal manipulations (after par break)")
 
 end
 
 do
 
-    local texnest    = tex.nest
+    local texnest       = tex.nest
 
-    local getlist    = nodes.getlist
-    local setlist    = nodes.setlist
-    local getsubtype = nodes.getsubtype
+    local getlist       = nodes.getlist
+    local setlist       = nodes.setlist
+    local getsubtype    = nodes.getsubtype
 
-    local line_code  = nodes.listcodes.line
+    local linelist_code = nodes.listcodes.line
 
-    local actions    = tasks.actions("contributers")
+    local actions       = tasks.actions("contributers")
 
     function processors.contribute_filter(groupcode)
         if groupcode == "box" then -- "pre_box"
             local whatever = texnest[texnest.ptr]
             if whatever then
                 local line = whatever.tail
-                if line and getsubtype(line) == line_code then
+                if line and getsubtype(line) == linelist_code then
                     local head = getlist(line)
                     if head then
-                        local okay, done = actions(head,groupcode,line)
-                        if okay and okay ~= head then
-                            setlist(line,okay)
+                        local result = actions(head,groupcode,line)
+                        if result and result ~= head then
+                            setlist(line,result)
                         end
                     end
                 end
@@ -229,7 +204,7 @@ do
         end
     end
 
-    callbacks.register('contribute_filter', processors.contribute_filter,"things done with lines")
+    callbacks.register("contribute_filter", processors.contribute_filter,"things done with lines")
 
 end
 

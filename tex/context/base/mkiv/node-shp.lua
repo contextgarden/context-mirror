@@ -13,50 +13,51 @@ local format = string.format
 local concat, sortedpairs = table.concat, table.sortedpairs
 local setmetatableindex = table.setmetatableindex
 
-local nodecodes      = nodes.nodecodes
-local whatsitcodes   = nodes.whatsitcodes
-local disccodes      = nodes.disccodes
+local nodecodes    = nodes.nodecodes
+local whatsitcodes = nodes.whatsitcodes
+local disccodes    = nodes.disccodes
 
-local tasks          = nodes.tasks
-local handlers       = nodes.handlers
+local tasks        = nodes.tasks
+local handlers     = nodes.handlers
 
-local hlist_code     = nodecodes.hlist
-local vlist_code     = nodecodes.vlist
-local disc_code      = nodecodes.disc
-local whatsit_code   = nodecodes.whatsit
+local hlist_code   = nodecodes.hlist
+local vlist_code   = nodecodes.vlist
+local disc_code    = nodecodes.disc
+local whatsit_code = nodecodes.whatsit
 
-local fulldisc_code  = disccodes.discretionary
+local discretionarydisc_code = disccodes.discretionary
 
-local texgetbox      = tex.getbox
+local implement    = interfaces.implement
 
-local implement      = interfaces.implement
+local nuts         = nodes.nuts
+local tonut        = nuts.tonut
+local tonode       = nuts.tonode
+local remove_node  = nuts.remove
 
-local nuts           = nodes.nuts
-local tonut          = nuts.tonut
-local tonode         = nuts.tonode
-local remove_node    = nuts.remove
-local traverse_nodes = nuts.traverse
+local nextnode     = nuts.traversers.node
 
-local setfield       = nuts.setfield
-local setlink        = nuts.setlink
-local setprev        = nuts.setprev
-local setnext        = nuts.setnext
-local getid          = nuts.getid
-local getdisc        = nuts.getdisc
-local getboth        = nuts.getboth
-local getnext        = nuts.getnext
-local getlist        = nuts.getlist
-local getsubtype     = nuts.getsubtype
+local setfield     = nuts.setfield
+local setlink      = nuts.setlink
+local setprev      = nuts.setprev
+local setnext      = nuts.setnext
+local getid        = nuts.getid
+local getdisc      = nuts.getdisc
+local getboth      = nuts.getboth
+local getnext      = nuts.getnext
+local getlist      = nuts.getlist
+local getsubtype   = nuts.getsubtype
 
-local setlist        = nuts.setlist
+local setlist      = nuts.setlist
 
-local removables     = {
+local getbox       = nuts.getbox
+
+local removables   = {
     [whatsitcodes.open]    = true,
     [whatsitcodes.close]   = true,
     [whatsitcodes.write]   = true,
     [whatsitcodes.savepos] = true,
     [whatsitcodes.latelua] = true,
-    [whatsitcodes.pdfdest] = true,
+ -- [whatsitcodes.pdfdest] = true,
 }
 
 -- About 10% of the nodes make no sense for the backend. By (at least)
@@ -72,7 +73,7 @@ local function cleanup_redundant(head) -- better name is: flatten_page
     while start do
         local id = getid(start)
         if id == disc_code then
-            if getsubtype(start) == fulldisc_code then
+            if getsubtype(start) == discretionarydisc_code then
                 local _, _, replace, _, _ tail = getdisc(start,true)
                 if replace then
                     local prev, next = getboth(start)
@@ -117,6 +118,8 @@ local function cleanup_redundant(head) -- better name is: flatten_page
     return head
 end
 
+handlers.cleanuppage = cleanup_redundant -- nut
+
 local function cleanup_flushed(head) -- rough
     local start = head
     while start do
@@ -143,26 +146,20 @@ local function cleanup_flushed(head) -- rough
     return head
 end
 
-function handlers.cleanuppage(head)
-    return tonode(cleanup_redundant(tonut(head))), true
-end
-
-function handlers.cleanupbox(head)
-    return tonode(cleanup_flushed(tonut(head))), true
+function handlers.cleanupbox(box)
+    cleanup_flushed(getbox(box))
 end
 
 local actions = tasks.actions("shipouts")
 
-function handlers.finalize(head,where) -- problem, attr loaded before node, todo ...
-    return actions(head,where)
+function handlers.finalizebox(box)
+    actions(getbox(box)) -- nut
 end
-
--- handlers.finalize = actions
 
 -- interface
 
-implement { name = "cleanupbox",  actions = { texgetbox, cleanup_flushed }, arguments = "integer" }
-implement { name = "finalizebox", actions = { texgetbox, actions },         arguments = "integer" }
+implement { name = "cleanupbox",  actions = handlers.cleanupbox,  arguments = "integer" }
+implement { name = "finalizebox", actions = handlers.finalizebox, arguments = "integer" }
 
 -- just in case we want to optimize lookups:
 
@@ -192,8 +189,7 @@ local function count(head,data,subcategory)
     -- no components, pre, post, replace .. can maybe an option .. but
     -- we use this for optimization so it makes sense to look the the
     -- main node only
-    for n in traverse_nodes(tonut(head)) do
-        local id = getid(n)
+    for n, id in nextnode, tonut(head) do
         local dn = data[nodecodes[id]] -- we could use id and then later convert to nodecodes
         dn[subcategory] = dn[subcategory] + 1
         if id == hlist_code or id == vlist_code then

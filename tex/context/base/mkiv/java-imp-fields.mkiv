@@ -1,0 +1,648 @@
+%D \module
+%D   [       file=java-imp-fields, % was java-fld
+%D        version=1998.05.20,
+%D          title=\CONTEXT\ JavaScript Macros,
+%D       subtitle=Field Support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D In \LUATEX\ the following does not work out well:
+%D
+%D \starttyping
+%D v = v.replace(/\\\\"e/g,"\\353") ;
+%D \stoptyping
+%D
+%D But this does:
+%D
+%D \starttyping
+%D v = String(v).replace(/\\\\"e/g,"\\353") ;
+%D \stoptyping
+%D
+%D Probably a \UNICODE\ issue. Beware, in \MKIV\ we have a
+%D different escaping of \type {\\}.
+%D
+%D Watch out: cf. the latest pdf specification we've changed On into Yes. Also,
+%D we've changed the test for the on value into !Off as we dón't know what value it
+%D gets in the reader.
+
+% Is this still okay? We can have unicode now, can't we? Anyway it's kind of
+% messy and unneeded in these unicode times.
+
+\startluasetups javascript:pdfencoding
+    local ctx_verbatim = context.verbatim
+    local utfbyte      = utf.byte
+    local sortedhash   = table.sortedhash
+
+    ctx_verbatim("{\n")
+    for accent, group in sortedhash(characters.tex.accentmapping) do
+        for character, mapping in sortedhash(group) do
+            if character == "" then
+                character = " "
+            end
+            if accent == '"' then
+                ctx_verbatim("    '\\\\%s%s' : '\\u%04X',\n",accent,character,utfbyte(mapping))
+            else
+                ctx_verbatim('    "\\\\%s%s" : "\\u%04X",\n',accent,character,utfbyte(mapping))
+            end
+        end
+    end
+    for command, mapping in sortedhash(characters.tex.commandmapping) do
+        ctx_verbatim('    "\\\\%s" : "\\u%04X",\n',command,utfbyte(mapping))
+    end
+ -- ctx_verbatim("    '\\\\<<' : '\\u00AB',\n")
+ -- ctx_verbatim("    '\\\\>>' : '\\u00BB',\n")
+    ctx_verbatim("}\n")
+
+\stopluasetups
+
+% maybe make { } tex braces in javascript code so that we can call lua
+
+\def\JavaScriptTeXAccentMapping{\luasetup{javascript:pdfencoding}}
+
+\startJSpreamble SanitizeTeXInput used later
+
+var TeXAccentMapping = \JavaScriptTeXAccentMapping
+
+function TeX_Replacer(original,str) {
+    return (TeXAccentMapping[str] || str) ;
+}
+
+function Sanitized_TeX_String(value) {
+    return (value.replace(/(\\..)/g, TeX_Replacer)) ;
+}
+
+var TeX_Key_Mode = 0 ;
+var TeX_Key_Char = "" ;
+
+function Initialize_TeX_Keystroke() {
+    TeX_Key_Char = "" ;
+    TeX_Key_Mode = 0 ;
+}
+
+function Sanitized_TeX_Keystroke(change) {
+    if (!event.willCommit) {
+    if (change=="\\") {
+        TeX_Key_Mode = 1 ;
+        return ("")
+    } else if (TeX_Key_Mode == 1) {
+        TeX_Key_Mode = 2 ;
+        TeX_Key_Char = change ;
+        return ("")
+    } else if (TeX_Key_Mode == 2) {
+        TeX_Key_Mode = 0 ;
+        TeX_Key_Char = "\\"+TeX_Key_Char+change ;
+        return (Sanitized_TeX_String(TeX_Key_Char))
+    } else {
+        TeX_Key_Mode = 0 ;
+        return (change)
+    }
+    }
+}
+
+function Initialize_TeX_Key() {
+    Initialize_TeX_Keystroke() ;
+}
+
+function Convert_TeX_Key() {
+    if (!event.willCommit) {
+        event.change = Sanitized_TeX_Keystroke(event.change) ;
+    }
+}
+
+function Convert_TeX_String() {
+    event.value = Sanitized_TeX_String(event.value) ;
+}
+
+\stopJSpreamble
+
+% \startJScode {Initialize_TeX_Key} uses {SanitizeTeXInput}
+%     Initialize_TeX_Keystroke() ;
+% \stopJScode
+%
+% \startJScode {Convert_TeX_Key} uses {SanitizeTeXInput}
+%     if (!event.willCommit) {
+%         event.change = Sanitized_TeX_Keystroke(event.change) ;
+%     }
+% \stopJScode
+%
+% \startJScode{Convert_TeX_String} uses {SanitizeTeXInput}
+%     event.value = Sanitized_TeX_String(event.value) ;
+% \stopJScode
+
+% was used now but we autocheck anyway so lets test this for a while
+
+\startJSpreamble FieldsStates used later
+
+var visible_field  = new Array() ;
+var visible_fields = 0 ;
+
+function PresetFields() {
+    this.syncAnnotScan() ;
+}
+
+function Preset_Fields() {
+    this.syncAnnotScan() ;
+}
+
+function Hide_When_Down() {
+    event.target.hidden = true ;
+}
+
+function Hide_Field(Name) {
+    var v = this.getField(Name) ;
+    if (v) {
+        v.hidden = true ;
+        v.readonly = true ;
+        this.dirty = false ;
+    }
+}
+
+function Do_Vide_Field(Name, Closable) {
+    var v = this.getField(Name) ;
+    if (v) {
+        ++visible_fields ;
+        visible_field[visible_fields] = Name ;
+        v.hidden = false ;
+        if (Closable) {
+            v.readonly = false ;
+            v.value = "Yes" ;
+        }
+        this.dirty = false ;
+    }
+}
+
+function Vide_Field(Name) {
+    Do_Vide_Field(Name,false) ;
+}
+
+function Vide_Hide_Field(Name) {
+    Do_Vide_Field(Name,true) ;
+}
+
+function Hide_Fields() {
+    while (visible_fields>0) {
+        Hide_Field(visible_field[visible_fields]) ;
+        --visible_fields ;
+    }
+}
+
+function Vide_Fields(Name) {
+    Hide_Fields() ;
+    Vide_Field(Name) ;
+}
+
+function Vide_Hide_Fields(Name) {
+    Hide_Fields() ;
+    Vide_Hide_Field(Name) ;
+}
+
+function Toggle_Hide(Name) {
+    var v = this.getField(Name) ;
+    if (v) {
+        v.hidden = !v.hidden ;
+        this.dirty = false ;
+    }
+}
+
+function Field_On(Name) {
+    v = this.getField(Name) ;
+    if (v) {
+        v.value = "Yes" ;
+        this.dirty = false ;
+    }
+}
+
+function Field_Off(Name) {
+    var v = this.getField(Name) ;
+    if (v) {
+        v.value = "Off" ;
+        this.dirty = false ;
+    }
+}
+
+function Toggle_Value(Name) {
+    var v = this.getField(Name) ;
+    if (v) {
+        if (v.value != "Off") {
+            v.value = "Off" ;
+        } else {
+            v.value = "Yes" ;
+        }
+    }
+    this.dirty = false ;
+}
+
+function Toggle_Read(Name) {
+    var v = this.getField(Name);
+    if (v) {
+        v.readonly = !v.readonly ;
+    }
+}
+
+function Flip_Fields(Name) {
+    var Names = Name.split(",") ;
+    for (var i=0; i < Names.length; i++) {
+        v = this.getField(Names[i]) ;
+        if (v) {
+            v.hidden = !v.hidden ;
+            v.value = "Yes" ;
+        }
+    }
+}
+
+function Forget_Changes() {
+    this.dirty = false ;
+}
+
+function ForgetChanges() {
+    this.dirty = false ;
+}
+
+function Step_Fields (Name, First, Last) {
+    for (var i = Number(First) ; i <= Number(Last) ; i++) {
+        var s = Name + ":" + i ;
+        var v = this.getField(s) ;
+        if (v) {
+            ++visible_fields ;
+            visible_field[visible_fields] = s ;
+            if (v.hidden) {
+                v.hidden   = false ;
+                this.dirty = false ;
+                return ;
+            }
+        }
+    }
+}
+\stopJSpreamble
+
+\definereference[VideFields]   [JS(Vide_Fields)]
+\definereference[HideFields]   [JS(Hide_Fields)]
+\definereference[ForgetChanges][JS(Forget_Changes)]
+\definereference[StepFields]   [JS(Step_Fields)]
+
+% This can be done more efficient, by keeping track of the
+% current top of the stack.
+
+\startJSpreamble FieldStack used later
+
+function Field_Name(FieldSet,i) {
+    return this.getField(FieldSet + ":" + i)
+}
+
+function Reset_Fields(FieldSet) {
+    var i = 1 ;
+    while (true) {
+        var v = Field_Name(FieldSet,i) ;
+        if (!v) {
+            break ;
+        } else {
+            v.value = "Off" ;
+        }
+        i++ ;
+    }
+    this.dirty = false ;
+}
+
+function Set_Fields(FieldSet) {
+    var i = 1 ;
+    while (true) {
+        var v = Field_Name(FieldSet,i) ;
+        if (!v) {
+            break ;
+        } else {
+            v.value = "Yes" ;
+        }
+        i++ ;
+    }
+    this.dirty = false ;
+}
+
+function Set_Field(FieldSet, FieldName) {
+    Reset_Fields(FieldSet) ;
+    var v = Field_Name(FieldSet,FieldName) ;
+    if (v) {
+        v.value = "Yes" ;
+        this.dirty = false ;
+    }
+}
+
+function Reset_Field(FieldSet, FieldName) {
+    Set_Fields(FieldSet) ;
+    var v = Field_Name(FieldSet,FieldName) ;
+    if (v) {
+        v.value = "Off" ;
+        this.dirty = false ;
+    }
+}
+
+function Walk_Field(FieldSet) {
+    var i = 1 ;
+    this.syncAnnotScan();
+    while (true) {
+        var v = Field_Name(FieldSet,i) ;
+        if (v) {
+            if (v.value != "Off") {
+                v.value = "Off" ;
+                v = Field_Name(FieldSet,i + 1) ;
+                if (! v) {
+                    v = Field_Name(FieldSet,1) ;
+                } else {
+                }
+                if (v) {
+                    v.value = "Yes" ;
+                }
+                break ;
+            }
+            i++ ;
+        } else {
+            v = Field_Name(FieldSet,1) ;
+            if (v) {
+                v.value = "Yes" ;
+            }
+            break ;
+        }
+    }
+    this.dirty = false ;
+}
+
+var FieldSets = new Array() ;
+
+function Do_Get_Check_Walk_Field(FieldSet) {
+    var f = FieldSets[FieldSet]
+    if (! f) {
+        f = new Array() ;
+        f.number = 0 ;
+        f.delay = 500 ;
+        f.paused = false ;
+        f.running = false ;
+        f.name = FieldSet ;
+        f.timeout = null ;
+        f.repeat = true ;
+        f.total = 0 ;
+        f.pauseset = new Array() ;
+        FieldSets[FieldSet] = f ;
+        for (var i=1; i>0; i++) {
+            var v = Field_Name(FieldSet,i) ;
+            if (! v) {
+                f.total = i - 1 ;
+                break ;
+            }
+        }
+        f.start = 0 ;
+        f.stop = f.total ;
+        f.pause = 0 ;
+    }
+    this.dirty = false ;
+    return f
+}
+
+function Do_Next_Auto_Walk_Field_Step(FieldSet,fieldset,n) {
+    var v = Field_Name(FieldSet,fieldset.number) ;
+    if (v) {
+        if (v.value != "Off") {
+            v.value = "Off" ;
+        }
+    }
+    v = Field_Name(FieldSet,n) ;
+    if (v) {
+        fieldset.number = n ;
+        v.value = "Yes" ;
+        if (fieldset.pauseset[n]) {
+       //     fieldset.pause = n ;
+       //     Do_Stop_Auto_Walk_Field(Fieldset) ;
+                Do_Stop_Auto_Walk_Field(FieldSet) ;
+                fieldset.paused = true ;
+        }
+    }
+    this.dirty = false ;
+}
+
+function Do_Next_Auto_Walk_Field(FieldSet) {
+    var fieldset = Do_Get_Check_Walk_Field(FieldSet) ;
+    if (fieldset) {
+        if (fieldset.number >= fieldset.stop) {
+            if (fieldset.repeat == false) {
+                fieldset.running = false ;
+                Do_Stop_Auto_Walk_Field(fieldset) ;
+            } else {
+                Do_Next_Auto_Walk_Field_Step(FieldSet,fieldset,fieldset.start) ;
+            }
+        } else {
+            Do_Next_Auto_Walk_Field_Step(FieldSet,fieldset,fieldset.number+1) ;
+        }
+        this.dirty = false ;
+    }
+}
+
+function Do_Stop_Auto_Walk_Field(FieldSet) {
+    var fieldset = Do_Get_Check_Walk_Field(FieldSet) ;
+    if (fieldset) {
+        try {
+            app.clearInterval(fieldset.timeout) ;
+            app.clearTimeOut(fieldset.timeout) ;
+        } catch (e) {
+        }
+        this.dirty = false ;
+    }
+}
+
+function Do_Start_Auto_Walk_Field(FieldSet) {
+    var fieldset = Do_Get_Check_Walk_Field(FieldSet) ;
+    if (fieldset) {
+        Do_Stop_Auto_Walk_Field(FieldSet) ;
+        Do_Next_Auto_Walk_Field(FieldSet) ;
+        fieldset.timeout = app.setInterval("Do_Next_Auto_Walk_Field('"+FieldSet+"')", fieldset.delay) ;
+        this.dirty = false ;
+    }
+}
+
+function Start_Walk_Field(FieldSet, Delay) {
+    var fieldset = Do_Get_Check_Walk_Field(FieldSet) ;
+    if (fieldset) {
+        fieldset.number = 0 ;
+        if (Delay) {
+            fieldset.delay = Delay ;
+        }
+        Reset_Fields(FieldSet) ;
+        Do_Start_Auto_Walk_Field(FieldSet) ;
+        fieldset.running = true ;
+        fieldset.paused = false ;
+    }
+}
+
+function Pause_Walk_Field(FieldSet) {
+    var fieldset = Do_Get_Check_Walk_Field(FieldSet) ;
+    if (fieldset) {
+        if (fieldset.running) {
+            if (fieldset.paused) {
+                Do_Start_Auto_Walk_Field(FieldSet) ;
+                fieldset.paused = false ;
+            } else {
+                Do_Stop_Auto_Walk_Field(FieldSet) ;
+                fieldset.paused = true ;
+            }
+        }
+    }
+}
+
+function Start_Pause_Walk_Field(FieldSet, Delay, Option) {
+    var fieldset = Do_Get_Check_Walk_Field(FieldSet) ;
+    if (fieldset) {
+        if (Option == "once") {
+            fieldset.repeat = false ;
+        } else if (Option == "pause") {
+            fieldset.repeat = false ;
+        } else {
+            fieldset.repeat = true ;
+        }
+        if (Option == "pause") {
+            for (i=3; i<arguments.length; i++) {
+                fieldset.pauseset[parseInt(arguments[i])] = true ;
+            }
+            if (fieldset.pause == fieldset.stop) {
+                fieldset.start = 1 ;
+                fieldset.pause = 0 ;
+            } else if (fieldset.pause > 1) {
+                fieldset.start = fieldset.pause - 1 ;
+            } else {
+                fieldset.start = 1 ;
+            }
+            fieldset.stop = fieldset.total ;
+        } else {
+            var Start = arguments[3] ;
+            var Stop = arguments[4] ;
+            if (typeof Start == "string") {
+                fieldset.start = parseInt(Start) ;
+            } else if (typeof Start == "number") {
+                fieldset.start = Start ;
+            } else {
+                fieldset.start = 1 ;
+            }
+            if (typeof Stop == "string") {
+                fieldset.stop = parseInt(Stop) ;
+            } else if (typeof Stop == "number") {
+                fieldset.stop = Stop ;
+            } else {
+                fieldset.stop = fieldset.total ;
+            }
+            fieldset.pause = 0 ;
+        }
+        if (fieldset.running) {
+            if (fieldset.paused) {
+                Do_Start_Auto_Walk_Field(FieldSet) ;
+                fieldset.paused = false ;
+            } else {
+                Do_Stop_Auto_Walk_Field(FieldSet) ;
+                fieldset.paused = true ;
+            }
+        } else {
+            fieldset.number = fieldset.start - 1  ;
+            if (Delay) {
+                fieldset.delay = Delay ;
+            }
+            Reset_Fields(FieldSet) ;
+            Do_Start_Auto_Walk_Field(FieldSet) ;
+            fieldset.running = true ;
+            fieldset.paused = false ;
+        }
+    }
+}
+
+function Stop_Walk_Field(FieldSet) {
+    var fieldset = Do_Get_Check_Walk_Field(FieldSet) ;
+    if (fieldset) {
+        Do_Stop_Auto_Walk_Field(FieldSet) ;
+        fieldset.running = false ;
+        fieldset.paused = false ;
+    }
+}
+
+function Reset_Walk_Field(FieldSet) {
+    var fieldset = Do_Get_Check_Walk_Field(FieldSet) ;
+    if (fieldset) {
+        Do_Stop_Auto_Walk_Field(FieldSet) ;
+        fieldset.number = 0 ;
+        fieldset.running = false ;
+        fieldset.paused = false ;
+        Reset_Fields(FieldSet) ;
+    }
+}
+
+function Previous_Walk_Field(FieldSet) {
+    var fieldset = Do_Get_Check_Walk_Field(FieldSet) ;
+    if (fieldset) {
+        Do_Stop_Auto_Walk_Field(FieldSet) ;
+        fieldset.running = false ;
+        fieldset.paused = false ;
+        if (fieldset.number>0) {
+            var v = Field_Name(FieldSet,fieldset.number) ;
+            if (v) {
+                if (v.value != "Off") {
+                    v.value = "Off" ;
+                }
+            }
+            fieldset.number-- ;
+            v = Field_Name(FieldSet,fieldset.number) ;
+            if (v) {
+                v.value = "Yes" ;
+            }
+            this.dirty = false ;
+        }
+    }
+}
+
+function Next_Walk_Field(FieldSet) {
+    var fieldset = Do_Get_Check_Walk_Field(FieldSet) ;
+    if (fieldset) {
+        Do_Stop_Auto_Walk_Field(FieldSet) ;
+        fieldset.running = false ;
+        fieldset.paused = false ;
+        var f = fieldset.number + 1 ;
+        var v = Field_Name(FieldSet,f) ;
+        if (v) {
+            var v = Field_Name(FieldSet,fieldset.number) ;
+            if (v) {
+                if (v.value != "Off") {
+                    v.value = "Off" ;
+                }
+            }
+            fieldset.number++ ;
+            v = Field_Name(FieldSet,fieldset.number) ;
+            if (v) {
+                v.value = "Yes" ;
+            }
+            this.dirty = false ;
+        }
+    }
+}
+
+function Set_Walk_Field_Delay(FieldSet, Delay) {
+    var fieldset = Do_Get_Check_Walk_Field(FieldSet) ;
+    if (fieldset) {
+        if (Delay) {
+            fieldset.delay = Delay ;
+            if (fieldset.running) {
+                Do_Stop_Auto_Walk_Field(FieldSet) ;
+                Do_Start_Auto_Walk_Field(FieldSet) ;
+            }
+        }
+    }
+}
+
+\stopJSpreamble
+
+\definereference[Walk]        [JS(Walk_Field)]
+\definereference[StartWalk]   [JS(Start_Walk_Field)]
+\definereference[StopWalk]    [JS(Stop_Walk_Field)]
+\definereference[PauseWalk]   [JS(Pause_Walk_Field)]
+\definereference[ResetWalk]   [JS(Reset_Walk_Field)]
+\definereference[PreviousWalk][JS(Previous_Walk_Field)]
+\definereference[NextWalk]    [JS(Next_Walk_Field)]
+\definereference[SetWalkDelay][JS(Set_Walk_Field_Delay)]
+
+\endinput

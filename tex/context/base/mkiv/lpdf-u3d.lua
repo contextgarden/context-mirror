@@ -27,7 +27,6 @@ local nodeinjections           = backends.pdf.nodeinjections
 
 local pdfconstant              = lpdf.constant
 local pdfboolean               = lpdf.boolean
-local pdfnumber                = lpdf.number
 local pdfunicode               = lpdf.unicode
 local pdfdictionary            = lpdf.dictionary
 local pdfarray                 = lpdf.array
@@ -38,6 +37,8 @@ local pdfflushstreamfileobject = lpdf.flushstreamfileobject
 
 local checkedkey               = lpdf.checkedkey
 local limited                  = lpdf.limited
+
+local embedimage               = images.embed
 
 local schemes = table.tohash {
     "Artwork", "None", "White", "Day", "Night", "Hard",
@@ -347,6 +348,12 @@ end
 
 local stored_js, stored_3d, stored_pr, streams = { }, { }, { }, { }
 
+local f_image = formatters["q /GS gs %.6F 0 0 %.6F 0 0 cm /IM Do Q"]
+
+directives.register("pdf.stripzeros",function()
+    f_image = formatters["q /GS gs %.6N 0 0 %.6N 0 0 cm /IM Do Q"]
+end)
+
 local function insert3d(spec) -- width, height, factor, display, controls, label, foundname
 
     local width, height, factor = spec.width, spec.height, spec.factor or number.dimenfactors.bp
@@ -431,7 +438,7 @@ local function insert3d(spec) -- width, height, factor, display, controls, label
         local tag = formatters["%s:%s:%s"](label,stream,preview)
         local ref = stored_pr[tag]
         if not ref then
-            local figure = img.immediatewrite {
+            local figure = embedimage {
                 filename = preview,
                 width    = width,
                 height   = height
@@ -440,13 +447,13 @@ local function insert3d(spec) -- width, height, factor, display, controls, label
             stored_pr[tag] = ref
         end
         if ref then -- see back-pdf ** .. here we have a local /IM !
-            local zero, one = pdfnumber(0), pdfnumber(1) -- not really needed
             local pw   = pdfdictionary {
                 Type      = pdfconstant("XObject"),
                 Subtype   = pdfconstant("Form"),
-                FormType  = one,
-                BBox      = pdfarray { zero, zero, pdfnumber(factor*width), pdfnumber(factor*height) },
-                Matrix    = pdfarray { one, zero, zero, one, zero, zero },
+                FormType  = 1,
+                BBox      = pdfarray { 0, 0, pdfnumber(factor*width), pdfnumber(factor*height) },
+                Matrix    = pdfarray { 1, 0, 0, 1, 0, 0 },
+                ProcSet   = lpdf.procset(),
                 Resources = pdfdictionary {
                                 XObject = pdfdictionary {
                                     IM = pdfreference(ref)
@@ -455,13 +462,12 @@ local function insert3d(spec) -- width, height, factor, display, controls, label
                 ExtGState = pdfdictionary {
                                 GS = pdfdictionary {
                                     Type = pdfconstant("ExtGState"),
-                                    CA   = one,
-                                    ca   = one,
+                                    CA   = 1,
+                                    ca   = 1,
                                 }
                             },
-                ProcSet    = pdfarray { pdfconstant("PDF"), pdfconstant("ImageC") },
             }
-            local pwd = pdfflushstreamobject(formatters["q /GS gs %.6F 0 0 %.6F 0 0 cm /IM Do Q"](factor*width,factor*height),pw)
+            local pwd = pdfflushstreamobject(f_image(factor*width,factor*height),pw)
             annot.AP = pdfdictionary {
                 N = pdfreference(pwd)
             }

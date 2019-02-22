@@ -29,13 +29,9 @@ local enableaction        = nodes.tasks.enableaction
 local nuts                = nodes.nuts
 local nodepool            = nuts.pool
 
-local tonode              = nuts.tonode
-local tonut               = nuts.tonut
-
 local getprev             = nuts.getprev
 local getnext             = nuts.getnext
 local getid               = nuts.getid
-local getfont             = nuts.getfont
 local getchar             = nuts.getchar
 local getdisc             = nuts.getdisc
 local getattr             = nuts.getattr
@@ -128,14 +124,22 @@ local function okay(data,current,font,prevchar,previtalic,char,what)
         return false
     end
     if threshold then
-        local ht = getheight(current)
-        local ex = exheights[font]
-        local th = threshold * ex
-        if ht <= th then
-            if trace_italics then
-                report_italics("ignoring correction between %s italic %C and regular %C, height %p less than threshold %p",prevchar,what,char,ht,th)
+     -- if getid(current) == glyph_code then
+        while current and getid(current) ~= glyph_code do
+            current = getprev(current)
+        end
+        if current then
+            local ht = getheight(current)
+            local ex = exheights[font]
+            local th = threshold * ex
+            if ht <= th then
+                if trace_italics then
+                    report_italics("ignoring correction between %s italic %C and regular %C, height %p less than threshold %p",prevchar,what,char,ht,th)
+                end
+                return false
             end
-            return false
+        else
+            -- maybe backtrack to glyph
         end
     end
     if trace_italics then
@@ -177,7 +181,7 @@ local textokay   = false
 local enablemath = false
 local enabletext = false
 
-local function domath(head,current, done)
+local function domath(head,current)
     current    = end_of_math(current)
     local next = getnext(current)
     if next then
@@ -200,8 +204,7 @@ local function domath(head,current, done)
                                 a = a + 100
                             end
                             local i = getkern(kern)
-                            local f = getfont(glyph)
-                            local c = getchar(glyph)
+                            local c, f = isglyph(glyph)
                             if getheight(next) < 1.25*exheights[f] then
                                 if i == 0 then
                                     if trace_italics then
@@ -212,7 +215,6 @@ local function domath(head,current, done)
                                         report_italics("%s italic between math %C and punctuation %C","removing",i,c,char)
                                     end
                                     setkern(kern,0) -- or maybe a small value or half the ic
-                                    done = true
                                 end
                             elseif i == 0 then
                                 local d = chardata[f][c]
@@ -226,7 +228,6 @@ local function domath(head,current, done)
                                     if trace_italics then
                                         report_italics("%s italic %p between math %C and punctuation %C","setting",i,c,char)
                                     end
-                                    done = true
                                 end
                             elseif trace_italics then
                                 report_italics("%s italic %p between math %C and punctuation %C","keeping",k,c,char)
@@ -251,34 +252,31 @@ local function domath(head,current, done)
                                 report_italics("%s italic %p between math %C and non punctuation %C","adding",a,getchar(glyph),char)
                             end
                             insert_node_after(head,glyph,correction_kern(a,glyph))
-                            done = true
                         end
                     end
                 end
             end
         end
     end
-    return current, done
+    return current
 end
 
 local function mathhandler(head)
-    local nuthead = tonut(head)
-    local current = nuthead
-    local done    = false
+    local current = head
     while current do
         if getid(current) == math_code then
-            current, done = domath(nuthead,current,done)
+            current = domath(head,current)
         end
         current = getnext(current)
     end
-    return head, done
+    return head
 end
 
 local function texthandler(head)
 
     local prev            = nil
     local prevchar        = nil
-    local prevhead        = tonut(head)
+    local prevhead        = head
     local previtalic      = 0
     local previnserted    = nil
 
@@ -300,20 +298,18 @@ local function texthandler(head)
     local replaceinserted = nil
 
     local current         = prevhead
-    local done            = false
     local lastfont        = nil
     local lastattr        = nil
 
     while current do
         local char, id = isglyph(current)
         if char then
-            local font = getfont(current)
+            local font = id
             local data = italicsdata[font]
             if font ~= lastfont then
                 if previtalic ~= 0 then
                     if okay(data,current,font,prevchar,previtalic,char,"glyph") then
                         insert_node_after(prevhead,prev,correction_kern(previtalic,current))
-                        done = true
                     end
                 elseif previnserted and data then
                     if trace_italics then
@@ -325,7 +321,6 @@ local function texthandler(head)
                     if replaceitalic ~= 0 then
                         if okay(data,replace,font,replacechar,replaceitalic,char,"replace") then
                             insert_node_after(replacehead,replace,correction_kern(replaceitalic,current))
-                            done = true
                         end
                         replaceitalic = 0
                     elseif replaceinserted and data then
@@ -338,7 +333,6 @@ local function texthandler(head)
                     if postitalic ~= 0 then
                         if okay(data,post,font,postchar,postitalic,char,"post") then
                             insert_node_after(posthead,post,correction_kern(postitalic,current))
-                            done = true
                         end
                         postitalic = 0
                     elseif postinserted and data then
@@ -395,7 +389,7 @@ local function texthandler(head)
                 while current do
                     local char, id = isglyph(current)
                     if char then
-                        local font = getfont(current)
+                        local font = id
                         local data = italicsdata[font]
                         if data then
                             local attr = forcedvariant or getattr(current,a_italics)
@@ -431,7 +425,7 @@ local function texthandler(head)
                 while current do
                     local char, id = isglyph(current)
                     if char then
-                        local font = getfont(current)
+                        local font = id
                         local data = italicsdata[font]
                         if data then
                             local attr = forcedvariant or getattr(current,a_italics)
@@ -479,7 +473,6 @@ local function texthandler(head)
                 end
                 previnserted = correction_glue(previtalic,current) -- maybe just add ? else problem with penalties
                 previtalic   = 0
-                done         = true
                 insert_node_after(prevhead,prev,previnserted)
             else
                 if replaceitalic ~= 0 then
@@ -488,7 +481,6 @@ local function texthandler(head)
                     end
                     replaceinserted = correction_kern(replaceitalic,current) -- needs to be a kern
                     replaceitalic   = 0
-                    done            = true
                     insert_node_after(replacehead,replace,replaceinserted)
                 end
                 if postitalic ~= 0 then
@@ -497,7 +489,6 @@ local function texthandler(head)
                     end
                     postinserted = correction_kern(postitalic,current) -- needs to be a kern
                     postitalic   = 0
-                    done         = true
                     insert_node_after(posthead,post,postinserted)
                 end
             end
@@ -510,7 +501,7 @@ local function texthandler(head)
             postinserted    = nil
             postitalic      = 0
             if mathokay then
-                current, done = domath(head,current,done)
+                current = domath(head,current)
             else
                 current = end_of_math(current)
             end
@@ -526,7 +517,6 @@ local function texthandler(head)
                 replaceitalic   = 0
                 postinserted    = nil
                 postitalic      = 0
-                done            = true
             else
                 if replaceitalic ~= 0 then
                     if trace_italics then
@@ -539,7 +529,6 @@ local function texthandler(head)
                     replaceitalic   = 0
                     postinserted    = nil
                     postitalic      = 0
-                    done            = true
                 end
                 if postitalic ~= 0 then
                     if trace_italics then
@@ -552,7 +541,6 @@ local function texthandler(head)
                     replaceitalic   = 0
                     postinserted    = nil
                     postitalic      = 0
-                    done            = true
                 end
             end
         end
@@ -564,25 +552,22 @@ local function texthandler(head)
                 report_italics("inserting %p between %s italic %C and end of list",previtalic,"glyph",prevchar)
             end
             insert_node_after(prevhead,prev,correction_kern(previtalic,current))
-            done = true
         else
             if replaceitalic ~= 0 then
                 if trace_italics then
                     report_italics("inserting %p between %s italic %C and end of list",replaceitalic,"replace",replacechar)
                 end
                 insert_node_after(replacehead,replace,correction_kern(replaceitalic,current))
-                done = true
             end
             if postitalic ~= 0 then
                 if trace_italics then
                     report_italics("inserting %p between %s italic %C and end of list",postitalic,"post",postchar)
                 end
                 insert_node_after(posthead,post,correction_kern(postitalic,current))
-                done = true
             end
         end
     end
-    return head, done
+    return head
 end
 
 function italics.handler(head)

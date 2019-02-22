@@ -140,6 +140,7 @@
 		<cd:variable name='chemicals' value='chemicals'/>
 		<cd:variable name='chemistry' value='chemie'/>
 		<cd:variable name='cite' value='cite'/>
+		<cd:variable name='closed' value='gesloten'/>
 		<cd:variable name='color' value='kleur'/>
 		<cd:variable name='column' value='kolom'/>
 		<cd:variable name='columns' value='kolommen'/>
@@ -188,6 +189,7 @@
 		<cd:variable name='extremestretch' value='extremestretch'/>
 		<cd:variable name='fact' value='gegeven'/>
 		<cd:variable name='february' value='februari'/>
+		<cd:variable name='field' value='veld'/>
 		<cd:variable name='figure' value='figuur'/>
 		<cd:variable name='figures' value='figuren'/>
 		<cd:variable name='file' value='file'/>
@@ -800,7 +802,7 @@
 		<cd:constant name='family' value='soort'/>
 		<cd:constant name='features' value='features'/>
 		<cd:constant name='fences' value='fences'/>
-		<cd:constant name='field' value='field'/>
+		<cd:constant name='field' value='veld'/>
 		<cd:constant name='fieldbackgroundcolor' value='veldachtergrondkleur'/>
 		<cd:constant name='fieldframecolor' value='veldkaderkleur'/>
 		<cd:constant name='fieldlayer' value='veldlaag'/>
@@ -855,6 +857,7 @@
 		<cd:constant name='headerstate' value='hoofdstatus'/>
 		<cd:constant name='headlabel' value='koplabel'/>
 		<cd:constant name='headnumber' value='kopnummer'/>
+		<cd:constant name='headseparator' value='kopscheider'/>
 		<cd:constant name='headstyle' value='kopletter'/>
 		<cd:constant name='height' value='hoogte'/>
 		<cd:constant name='hfactor' value='hfactor'/>
@@ -1031,6 +1034,7 @@
 		<cd:constant name='otherstext' value='otherstext'/>
 		<cd:constant name='outermargin' value='buitenmarge'/>
 		<cd:constant name='overprint' value='overprint'/>
+		<cd:constant name='ownerpassword' value='ownerpassword'/>
 		<cd:constant name='ownnumber' value='eigennummer'/>
 		<cd:constant name='page' value='pagina'/>
 		<cd:constant name='pageboundaries' value='paginaovergangen'/>
@@ -1081,6 +1085,7 @@
 		<cd:constant name='preview' value='preview'/>
 		<cd:constant name='previous' value='vorige'/>
 		<cd:constant name='previousnumber' value='vorigenummer'/>
+		<cd:constant name='print' value='print'/>
 		<cd:constant name='printable' value='printbaar'/>
 		<cd:constant name='process' value='proces'/>
 		<cd:constant name='profile' value='profile'/>
@@ -1166,8 +1171,10 @@
 		<cd:constant name='sidemethod' value='zijmethode'/>
 		<cd:constant name='sidespaceafter' value='zijnawit'/>
 		<cd:constant name='sidespacebefore' value='zijvoorwit'/>
+		<cd:constant name='sidespaceinbetween' value='zijtussenwit'/>
 		<cd:constant name='sidethreshold' value='sidethreshold'/>
 		<cd:constant name='sign' value='teken'/>
+		<cd:constant name='simplecommand' value='simpelcommando'/>
 		<cd:constant name='size' value='formaat'/>
 		<cd:constant name='slantedfeatures' value='slantedfeatures'/>
 		<cd:constant name='slantedfont' value='slantedfont'/>
@@ -1241,6 +1248,7 @@
 		<cd:constant name='textstyle' value='tekstletter'/>
 		<cd:constant name='textwidth' value='tekstbreedte'/>
 		<cd:constant name='threshold' value='threshold'/>
+		<cd:constant name='time' value='tijd'/>
 		<cd:constant name='title' value='titel'/>
 		<cd:constant name='titlecolor' value='titelkleur'/>
 		<cd:constant name='titlecommand' value='titelcommando'/>
@@ -1269,12 +1277,14 @@
 		<cd:constant name='up' value='up'/>
 		<cd:constant name='urlalternative' value='urlvariant'/>
 		<cd:constant name='urlspace' value='urlspatie'/>
+		<cd:constant name='userpassword' value='userpassword'/>
 		<cd:constant name='validate' value='valideer'/>
 		<cd:constant name='values' value='waarden'/>
 		<cd:constant name='vcommand' value='vcommando'/>
 		<cd:constant name='vcompact' value='vcomprimeer'/>
 		<cd:constant name='vector' value='vector'/>
 		<cd:constant name='veroffset' value='kopoffset'/>
+		<cd:constant name='vfactor' value='vfactor'/>
 		<cd:constant name='vfil' value='vfil'/>
 		<cd:constant name='viewerprefix' value='viewerprefix'/>
 		<cd:constant name='voffset' value='voffset'/>

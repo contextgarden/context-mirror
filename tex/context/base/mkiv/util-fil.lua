@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['util-fil'] = {
     license   = "see context related readme files"
 }
 
+local tonumber = tonumber
 local byte = string.byte
 local char = string.char
 
@@ -196,41 +197,23 @@ function files.readinteger4le(f)
     end
 end
 
--- function files.readfixed2(f)
---     local a, b = byte(f:read(2),1,2)
---     if a >= 0x80 then
---         return (0x100 * a + b - 0x10000)/256.0
---     else
---         return (0x100 * a + b)/256.0
---     end
--- end
-
 function files.readfixed2(f)
     local a, b = byte(f:read(2),1,2)
     if a >= 0x80 then
-        return (a - 0x100) + b/0x100
+        tonumber((a - 0x100) .. "." .. b)
     else
-        return (a        ) + b/0x100
+        tonumber(( a       ) .. "." .. b)
     end
 end
 
--- (real) (n>>16) + ((n&0xffff)/65536.0))
-
--- function files.readfixed4(f)
---     local a, b, c, d = byte(f:read(4),1,4)
---     if a >= 0x80 then
---         return (0x1000000 * a + 0x10000 * b + 0x100 * c + d - 0x100000000)/65536.0
---     else
---         return (0x1000000 * a + 0x10000 * b + 0x100 * c + d)/65536.0
---     end
--- end
+-- (real) (n>>16) + ((n&0xffff)/65536.0)) but no cast in lua (we could use unpack)
 
 function files.readfixed4(f)
     local a, b, c, d = byte(f:read(4),1,4)
     if a >= 0x80 then
-        return (0x100 * a + b - 0x10000) + (0x100 * c + d)/0x10000
+        tonumber((0x100 * a + b - 0x10000) .. "." .. (0x100 * c + d))
     else
-        return (0x100 * a + b          ) + (0x100 * c + d)/0x10000
+        tonumber((0x100 * a + b          ) .. "." .. (0x100 * c + d))
     end
 end
 
@@ -340,6 +323,43 @@ if fio and fio.readcardinal1 then
 
     function files.skiplong(f,n)
         skipposition(f,4*(n or 1))
+    end
+
+end
+
+if fio and fio.readcardinaltable then
+
+    files.readcardinaltable = fio.readcardinaltable
+    files.readintegertable  = fio.readintegertable
+
+else
+
+    local readcardinal1 = files.readcardinal1
+    local readcardinal2 = files.readcardinal2
+    local readcardinal3 = files.readcardinal3
+    local readcardinal4 = files.readcardinal4
+
+    function files.readcardinaltable(f,n,b)
+        local t = { }
+            if b == 1 then for i=1,n do t[i] = readcardinal1(f) end
+        elseif b == 2 then for i=1,n do t[i] = readcardinal2(f) end
+        elseif b == 3 then for i=1,n do t[i] = readcardinal3(f) end
+        elseif b == 4 then for i=1,n do t[i] = readcardinal4(f) end end
+        return t
+    end
+
+    local readinteger1 = files.readinteger1
+    local readinteger2 = files.readinteger2
+    local readinteger3 = files.readinteger3
+    local readinteger4 = files.readinteger4
+
+    function files.readintegertable(f,n,b)
+        local t = { }
+            if b == 1 then for i=1,n do t[i] = readinteger1(f) end
+        elseif b == 2 then for i=1,n do t[i] = readinteger2(f) end
+        elseif b == 3 then for i=1,n do t[i] = readinteger3(f) end
+        elseif b == 4 then for i=1,n do t[i] = readinteger4(f) end end
+        return t
     end
 
 end

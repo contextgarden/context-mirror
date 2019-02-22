@@ -123,8 +123,11 @@
 \definesystemattribute[mathbidi]       [public]
 \definesystemattribute[mathdomain]     [public]
 \definesystemattribute[mathcollapsing] [public]
+\definesystemattribute[mathunstack]    [public]
 
 \definesystemattribute[displaymath]    [public]
+
+\mathflattenmode 31
 
 \appendtoks
     \attribute\mathmodeattribute\plusone
@@ -217,18 +220,20 @@
 \unexpanded\def\startmathematics % no grouping, if ever then also an optional second
   {\doifelsenextoptionalcs\math_mathematics_start_yes\math_mathematics_start_nop}
 
+\installmacrostack\currentmathematics
+
 \unexpanded\def\math_mathematics_start_yes[#1]%
-  {\pushmacro\currentmathematics
+  {\push_macro_currentmathematics
    \edef\currentmathematics{#1}% check for valid
    \the\everyswitchmathematics}
 
 \unexpanded\def\math_mathematics_start_nop
-  {\pushmacro\currentmathematics
+  {\push_macro_currentmathematics
    \let\currentmathematics\empty
    \the\everyswitchmathematics}
 
 \unexpanded\def\stopmathematics
-  {\popmacro\currentmathematics
+  {\pop_macro_currentmathematics
    \the\everyswitchmathematics}
 
 \definemathematics[\v!default] % not needed, but nicer when nesting back to normal
@@ -734,7 +739,6 @@
 %
 % \def\math_op{\ifx\nexttoken\bgroup\else\nexttoken\egroup\fi}
 
-
 % this one too: \letvalue{\??mathcodecommand op}\mathop ?
 
 \unexpanded\def\normalmbox
@@ -750,17 +754,15 @@
   {\ifmmode\normalmbox\else\normalhbox\fi}
 
 \unexpanded\def\enablembox
-  {\appendtoks\math_enable_mbox\to \everymathematics}
-  {\everymathematics\expandafter{\the\everymathematics\math_enable_mbox}}
+  {\toksapp\everymathematics{\math_enable_mbox}}
 
 \def\math_enable_mbox
-  {\ifdefined\normalhbox\else\let\normalhbox\hbox\fi % ?
-   \let\hbox\mbox}
+  {\let\hbox\mbox}
 
 \unexpanded\def\snappedmath#1% sort of \struttedbox
   {\dontleavehmode
    \begingroup
-   \setbox\scratchbox\hbox\bgroup
+   \setbox\scratchbox\normalhbox\bgroup
      \startimath#1\stopimath
    \egroup
    \ht\scratchbox\strutht
@@ -1077,8 +1079,8 @@
 
 % most math fonts have messed up primes, just test this: $\prime^{\prime^{\prime}}$
 
-{ \catcode\circumflexasciicode\othercatcode       \global\let\othercircumflextoken      ^ }
-{ \catcode\circumflexasciicode\superscriptcatcode \global\let\superscriptcircumflextoken^ }
+{ \catcode\circumflexasciicode\othercatcode       \glet\othercircumflextoken      ^ }
+{ \catcode\circumflexasciicode\superscriptcatcode \glet\superscriptcircumflextoken^ }
 
 \ifdefined \prime \else
     \Umathchardef\prime "0 "0 "2032
@@ -1273,9 +1275,13 @@
 
 %D Memory saver:
 
+\def\math_basics_check_compact
+  {\doifelse{\mathematicsparameter\c!compact}\v!yes
+     \enabledirectives\disabledirectives[math.virtual.optional]}
+
 \appendtoks
     \ifx\currentmathematics\empty
-        \doifelse{\mathematicsparameter\c!compact}\v!yes\enabledirectives\disabledirectives[math.virtual.optional]%
+        \math_basics_check_compact % less tracing
     \fi
 \to \everysetupmathematics
 
@@ -1311,18 +1317,31 @@
 %D \HL
 %D \stoptabulate
 
+% We will use proper constants when we go numbers instead of XXX.
+
 \newconditional\c_math_right_to_left
 
+\installcorenamespace{mathaligndirection}
+
+\setvalue{\??mathaligndirection           r2l}{\settrue\c_math_right_to_left}
+\setvalue{\??mathaligndirection\v!righttoleft}{\settrue\c_math_right_to_left}
+
 \appendtoks
-    \doifelse{\mathematicsparameter\c!align}{r2l}\settrue\setfalse\c_math_right_to_left
+    \ifcsname\??mathaligndirection\mathematicsparameter\c!align\endcsname
+      \lastnamedcs
+    \else
+      \setfalse\c_math_right_to_left
+    \fi
 \to \everyswitchmathematics
 
 \unexpanded\def\math_basics_synchronize_direction
-  {\mathdir T\ifconditional\c_math_right_to_left R\else L\fi T}
+  {\mathdirection\ifconditional\c_math_right_to_left\directionrighttoleft\else\directionlefttoright\fi}
+
+% Not \everymathematics as it comes too late and I'm not in the mood for a mixed mode
+% kludge now (should be a property of beginmath nodes and passed to callbacks).
 
 \appendtoks
     \math_basics_synchronize_direction
-%to \everymathematics % comes too late and I'm not in the mood for a mixed mode kludge now (should be a property of beginmath nodes and passed to callbacks)
 \to \everyswitchmathematics
 
 % experimental (needed for an article)
@@ -1336,11 +1355,6 @@
 
 \letvalue{\??mathbidi\v!yes}\math_bidi_enable
 \letvalue{\??mathbidi\v!no }\math_bidi_disable
-
-% \appendtoks
-%     \edef\p_bidi{\mathematicsparameter\c!bidi}%
-%     \csname\??mathbidi\ifcsname\??mathbidi\p_bidi\endcsname\p_bidi\else\v!no\fi\endcsname
-% \to \everysetupmathematics
 
 \appendtoks
     \edef\p_bidi{\mathematicsparameter\c!bidi}% still needed ?
@@ -1434,7 +1448,7 @@
 \def\math_collapsing_initialize
   {\ifnum\c_math_collapsing_attribute=\attributeunsetvalue \else
      \clf_initializemathcollapsing % one time
-     \global\let\math_collapsing_initialize\relax
+     \glet\math_collapsing_initialize\relax
    \fi}
 
 \appendtoks
@@ -1471,7 +1485,7 @@
 \def\math_italics_initialize
   {\ifnum\c_math_italics_attribute=\attributeunsetvalue \else
      \clf_initializemathitalics % one time
-     \global\let\math_italics_initialize\relax
+     \glet\math_italics_initialize\relax
    \fi}
 
 \appendtoks
@@ -1511,7 +1525,7 @@
 \def\math_kernpairs_initialize
   {\ifnum\c_math_kernpairs_attribute=\attributeunsetvalue \else
      \clf_initializemathkernpairs % one time
-     \global\let\math_kernpairs_initialize\relax
+     \glet\math_kernpairs_initialize\relax
    \fi}
 
 \appendtoks
@@ -2343,7 +2357,7 @@
 %    \c_math_styles_state_cramped\zerocount
 %    \c_math_styles_state_size   \zerocount
 %    \rawprocesscommacommand[\m_math_style_asked]\math_style_collect
-%    \global\expandafter\let\csname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}%
+%    \expandafter\glet\csname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}%
 %    \csname\??mathstylecache\m_math_style_asked\endcsname}
 
 \def\math_style_set_indeed
@@ -2365,7 +2379,7 @@
    \c_math_styles_state_cramped\zerocount
    \c_math_styles_state_size   \zerocount
    \rawprocesscommacommand[\m_math_style_asked]\math_style_collect
-   \global\expandafter\let\csname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}%
+   \expandafter\glet\csname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}%
    \csname\??mathstylecache\m_math_style_asked\endcsname}
 
 \letvalue{\??mathstyle     \??mathstyle     }\math_style_set_mathstyle_mathstyle      % still needed?
@@ -2468,10 +2482,12 @@
 
 % I need to decide:
 %
-%mathscriptboxmode\zerocount % no kerning
-%mathscriptboxmode\plusone   % lists
-\mathscriptboxmode\plustwo   % lists and boxes
-%mathscriptboxmode\plusthree % lists and boxes with \boundary=1 (also for testing and demo)
+%mathscriptboxmode    \zerocount % no kerning
+%mathscriptboxmode    \plusone   % lists
+\mathscriptboxmode    \plustwo   % lists and boxes
+\mathscriptcharmode   \plusone   % lists and boxes
+%mathscriptboxmode    \plusthree % lists and boxes with \boundary=1 (also for testing and demo)
+\mathrulethicknessmode\plusone   % adaptive
 
 \unexpanded\def\mathtext  {\mathortext{\math_text_choice_font\relax}\hbox}
 \unexpanded\def\mathword  {\mathortext{\math_text_choice_word\relax}\hbox}
@@ -2529,7 +2545,7 @@
 % this can become an option:
 
 \unexpanded\def\math_display_align_hack % I don't like the global, maybe we should push and pop
-  {\global\let\math_display_align_hack_indeed\math_display_align_hack_remove_skip
+  {\glet\math_display_align_hack_indeed\math_display_align_hack_remove_skip
    \math_openup\displayopenupvalue % was \math_openup\jot
    \everycr{\noalign{\math_display_align_hack_indeed}}}
 
@@ -2537,7 +2553,7 @@
   {\ifdim\prevdepth>-\thousandpoint
      \vskip\dimexpr-\lineskiplimit+\normallineskiplimit\relax
    \fi
-   \global\let\math_display_align_hack_indeed\math_display_align_hack_insert_penalty}
+   \glet\math_display_align_hack_indeed\math_display_align_hack_insert_penalty}
 
 \def\math_display_align_hack_insert_penalty
   {\penalty\interdisplaylinepenalty}
@@ -2767,7 +2783,7 @@
 \def\math_domain_initialize
   {\ifnum\c_math_domain_attribute=\attributeunsetvalue \else
      \clf_initializemathdomain % one time
-     \global\let\math_domain_initialize\relax
+     \glet\math_domain_initialize\relax
    \fi}
 
 \appendtoks
@@ -2791,7 +2807,7 @@
 
 \installcorenamespace{mathrules}
 
-\unexpanded\def\enablemathrules{\global\letvalue{\??mathrules\fontclass}\plusone}
+\unexpanded\def\enablemathrules{\letgvalue{\??mathrules\fontclass}\plusone}
 
 \appendtoks
     \mathrulesmode\ifcsname\??mathrules\fontclass\endcsname
@@ -2800,6 +2816,70 @@
       \zerocount
     \fi
     \mathrulesfam\zerocount
+\to \everymathematics
+
+%D Maybe:
+
+% \starttabulate[|||c|c|]
+% \BC positive                            \BC negative                               \BC text                           \BC math \NC \NR
+% \NC \tex {f1} \tex {hairspace}  \tex{,} \NC \tex {b1} \tex {neghairspace}          \NC {\darkred\vl}\f1{\darkblue\vl} \NC ${\darkred\vl}\f1{\darkblue\vl}$ \NC \NR
+% \NC \tex {f2} \tex {thinspace}  \tex{:} \NC \tex {b2} \tex {negthinspace}  \tex{!} \NC {\darkred\vl}\f2{\darkblue\vl} \NC ${\darkred\vl}\f2{\darkblue\vl}$ \NC \NR
+% \NC \tex {f3} \tex {medspace}   \tex{;} \NC \tex {b3} \tex {negmedspace}           \NC {\darkred\vl}\f3{\darkblue\vl} \NC ${\darkred\vl}\f3{\darkblue\vl}$ \NC \NR
+% \NC \tex {f4} \tex {thickspace}         \NC \tex {b4} \tex {negthickspace}         \NC {\darkred\vl}\f4{\darkblue\vl} \NC ${\darkred\vl}\f4{\darkblue\vl}$ \NC \NR
+% \NC \tex {f5} \tex {enspace}            \NC \tex {b5}                              \NC {\darkred\vl}\f5{\darkblue\vl} \NC ${\darkred\vl}\f5{\darkblue\vl}$ \NC \NR
+% \NC \tex {f6} \tex {emspace}            \NC \tex {b6}                              \NC {\darkred\vl}\f6{\darkblue\vl} \NC ${\darkred\vl}\f6{\darkblue\vl}$ \NC \NR
+% \stoptabulate
+
+% \unexpanded\def\negenspace{\kern-.5\emwidth}
+% \unexpanded\def\negemspace{\kern-  \emwidth}
+%
+% \unexpanded\def\math_f#1%
+%   {\ifcase#1\or
+%      \hairspace
+%    \or
+%      \thinspace
+%    \or
+%      \medspace
+%    \or
+%      \thickspace
+%    \or
+%      \enspace
+%    \or
+%      \emspace
+%    \fi}
+%
+% \unexpanded\def\math_b#1%
+%   {\ifcase#1\or
+%      \neghairspace
+%    \or
+%      \negthinspace
+%    \or
+%      \negmedspace
+%    \or
+%      \negthickspace
+%    \or
+%      \negenspace
+%    \or
+%      \negemspace
+%    \fi}
+%
+% \appendtoks
+%     \let\f\math_f
+%     \let\b\math_b
+% \to \everymathematics
+
+%D Experiment
+
+\unexpanded\def\math_scripts_stack
+  {\attribute\mathunstackattribute\attributeunsetvalue}
+
+\unexpanded\def\math_scripts_unstack
+  {\clf_enablescriptunstacking
+   \attribute\mathunstackattribute\plusone}
+
+\appendtoks
+    \let\stackscripts  \math_scripts_stack
+    \let\unstackscripts\math_scripts_unstack
 \to \everymathematics
 
 \protect \endinput

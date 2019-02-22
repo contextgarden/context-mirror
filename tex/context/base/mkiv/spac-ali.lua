@@ -38,7 +38,8 @@ local listcodes        = nodes.listcodes
 
 local hlist_code       = nodecodes.hlist
 local vlist_code       = nodecodes.vlist
-local line_code        = listcodes.line
+
+local linelist_code    = listcodes.line
 
 local new_stretch      = nodepool.stretch
 
@@ -63,13 +64,12 @@ local nofrealigned     = 0
 -- raggedright     0           0         fil
 -- raggedcenter    0 +         0 +        -
 
-local function handler(head,leftpage,realpageno)
+local function handler(head,leftpage,realpageno) -- traverse_list
     local current = head
-    local done = false
     while current do
         local id = getid(current)
         if id == hlist_code then
-            if getsubtype(current) == line_code then
+            if getsubtype(current) == linelist_code then
                 local a = takeattr(current,a_realign)
                 if not a or a == 0 then
                     -- skip
@@ -102,7 +102,6 @@ local function handler(head,leftpage,realpageno)
                         elseif trace_realign then
                             report_realign("invalid flushing, align %a, page %a, realpage %a",align,pageno,realpageno)
                         end
-                        done = true
                         nofrealigned = nofrealigned + 1
                     end
                 end
@@ -113,14 +112,11 @@ local function handler(head,leftpage,realpageno)
         end
         current = getnext(current)
     end
-    return head, done
+    return head
 end
 
 function alignments.handler(head)
-    local leftpage = isleftpage()
-    local realpageno = texgetcount("realpageno")
-    local head, done = handler(tonut(head),leftpage,realpageno)
-    return tonode(head), done
+    return handler(head,isleftpage(),texgetcount("realpageno"))
 end
 
 local enabled = false

@@ -68,6 +68,14 @@
   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
    \lastnamedcs\disabledmode}
 
+\unexpanded\def\globalsetmode#1%
+  {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
+   \global\lastnamedcs\enabledmode}
+
+\unexpanded\def\globalresetmode#1%
+  {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
+   \global\lastnamedcs\disabledmode}
+
 \unexpanded\def\newsystemmode#1%
   {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi}
 
@@ -79,6 +87,14 @@
   {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
    \lastnamedcs\disabledmode}
 
+\unexpanded\def\globalsetsystemmode#1%
+  {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
+   \global\lastnamedcs\enabledmode}
+
+\unexpanded\def\globalresetsystemmode#1%
+  {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
+   \global\lastnamedcs\disabledmode}
+
 % \def\dosetsystemmode#1%
 %   {\csname\??mode\systemmodeprefix#1\endcsname\enabledmode}
 %
@@ -87,16 +103,18 @@
 
 % demo: trialtypesetting is a systemmode as well as an if
 
-\newsystemmode{trialtypesetting} % the name of \@@trialtypesetting might change (also at the lua end)
+\newsystemmode{trialtypesetting}
 
-\expandafter\let\expandafter\@@trialtypesetting\csname\??mode\systemmodeprefix trialtypesetting\endcsname % private !
+\expandafter\let\csname\??mode\systemmodeprefix trialtypesetting\endcsname\trialtypesettingstate
 
 \appendtoks
-    \@@trialtypesetting\enabledmode
+    \trialtypesettingstate\enabledmode
+    \luacopyinputnodes\plusone
 \to \everysettrialtypesetting
 
 \appendtoks
-    \@@trialtypesetting\disabledmode
+    \trialtypesettingstate\disabledmode
+    \luacopyinputnodes\zerocount
 \to \everyresettrialtypesetting
 
 % user ones
@@ -661,6 +679,24 @@
      \dodoglobal\undefinevalue{\??setup:#1}%
    \fi}
 
+% \unexpanded\def\resetsetups[#1]% see x-fo for usage
+%   {\dodoglobal\expandafter\let\csname\??setup
+%      \ifgridsnapping\ifcsname\??setup\v!grid:#1\endcsname\v!grid\fi
+%    :#1\endcsname\undefined}
+
+\unexpanded\def\copysetups
+  {\dodoubleargument\syst_setups_copy}
+
+% \def\syst_setups_copy[#1][#2]%
+%   {\ifcsname\??setup:#2\endcsname
+%       \expandafter\let\csname\??setup:#1\expandafter\endcsname\csname\??setup:#2\endcsname
+%    \fi}
+
+\def\syst_setups_copy[#1][#2]%
+  {\ifcsname\??setup:#2\endcsname
+      \expandafter\let\csname\??setup:#1\expandafter\endcsname\lastnamedcs
+   \fi}
+
 \unexpanded\def\showsetupsdefinition[#1]%
   {\showvalue{\??setup:#1}} % temp hack for debugging
 
@@ -777,7 +813,7 @@
  %{\edef\m_syst_string_one{\csname\??variables\ifcsname\??variables#1:#2\endcsname#1:#2\else:\fi\endcsname}%
   {\edef\m_syst_string_one{\begincsname\??variables#1:#2\endcsname}%
    \ifx\m_syst_string_one\empty
-     \expandafter\firstoffourarguments
+     \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}

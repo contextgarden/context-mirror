@@ -39,6 +39,7 @@ o1iu
 uo3u
 1b
 2bb
+2bc
 2bd
 b2l
 2bm

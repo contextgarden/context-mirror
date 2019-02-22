@@ -66,14 +66,12 @@ local hpack_node           = node.hpack
 
 local nuts                 = nodes.nuts
 local tonut                = nuts.tonut
-local tonode               = nuts.tonode
 
-local getfont              = nuts.getfont
-local getchar              = nuts.getchar
-
+local isglyph              = nuts.isglyph
 local setchar              = nuts.setchar
 
-local traverse_id          = nuts.traverse_id
+local nextglyph            = nuts.traversers.glyph
+
 local remove_node          = nuts.remove
 local insert_node_after    = nuts.insert_after
 
@@ -142,7 +140,7 @@ local mapping = allocate { -- this is just an experiment to illustrate some prin
 
 table.setmetatableindex(mapping,
     function(t,k)
-        v = "placeholder unknown gray"
+        local v = "placeholder unknown gray"
         t[k] = v
         return v
     end
@@ -196,7 +194,10 @@ local variants = allocate {
     { tag = "yellow",  r = .6, g = .6, b =  0 },
 }
 
-local pdf_blob = "pdf: q %.6F 0 0 %.6F 0 0 cm %s %s %s rg %s %s %s RG 10 M 1 j 1 J 0.05 w %s Q"
+-- bah .. low level pdf ... should be a rule or plugged in
+
+----- pdf_blob = "pdf: q %.6F 0 0 %.6F 0 0 cm %s %s %s rg %s %s %s RG 10 M 1 j 1 J 0.05 w %s Q"
+local pdf_blob = "q %.6F 0 0 %.6F 0 0 cm %s %s %s rg %s %s %s RG 10 M 1 j 1 J 0.05 w %s Q"
 
 local cache = { } -- saves some tables but not that impressive
 
@@ -235,8 +236,8 @@ local function addmissingsymbols(tfmdata) -- we can have an alternative with rul
                         width    = size*fake.width,
                         height   = size*fake.height,
                         depth    = size*fake.depth,
-                        -- bah .. low level pdf ... should be a rule or plugged in
-                        commands = { { "special", formatters[pdf_blob](scale,scale,r,g,b,r,g,b,fake.code) } }
+                     -- commands = { { "special", formatters[pdf_blob](scale,scale,r,g,b,r,g,b,fake.code) } }
+                        commands = { { "pdf", formatters[pdf_blob](scale,scale,r,g,b,r,g,b,fake.code) } }
                     }
                     cache[hash] = char
                 end
@@ -278,7 +279,7 @@ end
 
 local function placeholder(font,char)
     local tfmdata  = fontdata[font]
-    local category = chardata[char].category
+    local category = chardata[char].category or "unknown"
     local fakechar = mapping[category]
     local slot     = getprivateslot(font,fakechar)
     if not slot then
@@ -292,15 +293,12 @@ checkers.placeholder = placeholder
 
 function checkers.missing(head)
     local lastfont, characters, found = nil, nil, nil
-    head = tonut(head)
-    for n in traverse_id(glyph_code,head) do -- faster than while loop so we delay removal
-        local font = getfont(n)
-        local char = getchar(n)
+    for n, char, font in nextglyph, head do -- faster than while loop so we delay removal
         if font ~= lastfont then
             characters = fontcharacters[font]
             lastfont   = font
         end
-        if font > 0 and not characters[char] and is_character[chardata[char].category] then
+        if font > 0 and not characters[char] and is_character[chardata[char].category or "unknown"] then
             if action == "remove" then
                 onetimemessage(font,char,"missing (will be deleted)")
             elseif action == "replace" then
@@ -324,7 +322,8 @@ function checkers.missing(head)
     elseif action == "replace" then
         for i=1,#found do
             local node = found[i]
-            local kind, char = placeholder(getfont(node),getchar(node))
+            local char, font = isglyph(node)
+            local kind, char = placeholder(font,char)
             if kind == "node" then
                 insert_node_after(head,node,tonut(char))
                 head = remove_node(head,node,true)
@@ -337,7 +336,7 @@ function checkers.missing(head)
     else
         -- maye write a report to the log
     end
-    return tonode(head), false
+    return head
 end
 
 local relevant = {
@@ -362,6 +361,9 @@ local function getmissing(id)
             local messages = shared and shared.messages
             if messages then
                 local filename = d.properties.filename
+                if not filename then
+                    filename = tostring(d)
+                end
                 local tf = t[filename] or { }
                 for i=1,#relevant do
                     local tm = messages[relevant[i]]
@@ -390,7 +392,6 @@ checkers.getmissing = getmissing
 do
 
     local reported = true
-    local tracked  = false
 
     callback.register("glyph_not_found",function(font,char)
         if font > 0 then
@@ -408,7 +409,6 @@ do
     trackers.register("fonts.missing", function(v)
         if v then
             enableaction("processors","fonts.checkers.missing")
-            tracked = true
         else
             disableaction("processors","fonts.checkers.missing")
         end
@@ -419,27 +419,25 @@ do
     end)
 
     logs.registerfinalactions(function()
---         if tracked then
-            local collected, details = getmissing()
-            if next(collected) then
+        local collected, details = getmissing()
+        if next(collected) then
+            for filename, list in sortedhash(details) do
+                logs.startfilelogging(report,"missing characters",filename)
+                for u, v in sortedhash(list) do
+                    report("%4i  %U  %c  %s",v,u,u,chardata[u].description)
+                end
+                logs.stopfilelogging()
+            end
+            if logs.loggingerrors() then
                 for filename, list in sortedhash(details) do
-                    logs.startfilelogging(report,"missing characters",filename)
+                    logs.starterrorlogging(report,"missing characters",filename)
                     for u, v in sortedhash(list) do
                         report("%4i  %U  %c  %s",v,u,u,chardata[u].description)
                     end
-                    logs.stopfilelogging()
-                end
-                if logs.loggingerrors() then
-                    for filename, list in sortedhash(details) do
-                        logs.starterrorlogging(report,"missing characters",filename)
-                        for u, v in sortedhash(list) do
-                            report("%4i  %U  %c  %s",v,u,u,chardata[u].description)
-                        end
-                        logs.stoperrorlogging()
-                    end
+                    logs.stoperrorlogging()
                 end
             end
---         end
+        end
     end)
 
 end
@@ -507,3 +505,31 @@ local dummies_specification = {
 
 registerotffeature(dummies_specification)
 registerafmfeature(dummies_specification)
+
+--
+
+local function addvisualspace(tfmdata)
+    local spacechar = tfmdata.characters[32]
+    if spacechar and not spacechar.commands then
+        local w = spacechar.width
+        local h = tfmdata.parameters.xheight
+        local c = {
+            width    = w,
+            commands = { { "rule", h, w } }
+        }
+        local u = addprivate(tfmdata, "visualspace", c)
+    end
+end
+
+local visualspace_specification = {
+    name        = "visualspace",
+    description = "visual space",
+    default     = true,
+    manipulators = {
+        base = addvisualspace,
+        node = addvisualspace,
+    }
+}
+
+registerotffeature(visualspace_specification)
+registerafmfeature(visualspace_specification)

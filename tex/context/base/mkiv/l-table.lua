@@ -8,10 +8,9 @@ if not modules then modules = { } end modules ['l-table'] = {
 
 local type, next, tostring, tonumber, select = type, next, tostring, tonumber, select
 local table, string = table, string
-local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
+local concat, sort = table.concat, table.sort
 local format, lower, dump = string.format, string.lower, string.dump
 local getmetatable, setmetatable = getmetatable, setmetatable
-local getinfo = debug.getinfo
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local floor = math.floor
 
@@ -27,7 +26,8 @@ function table.getn(t)
 end
 
 function table.strip(tab)
-    local lst, l = { }, 0
+    local lst = { }
+    local l   = 0
     for i=1,#tab do
         local s = lpegmatch(stripper,tab[i]) or ""
         if s == "" then
@@ -42,7 +42,8 @@ end
 
 function table.keys(t)
     if t then
-        local keys, k = { }, 0
+        local keys = { }
+        local k    = 0
         for key in next, t do
             k = k + 1
             keys[k] = key
@@ -146,7 +147,9 @@ end
 
 local function sortedkeys(tab)
     if tab then
-        local srt, category, s = { }, 0, 0 -- 0=unknown 1=string, 2=number 3=mixed
+        local srt      = { }
+        local category = 0 -- 0=unknown 1=string, 2=number 3=mixed
+        local s        = 0
         for key in next, tab do
             s = s + 1
             srt[s] = key
@@ -186,7 +189,8 @@ end
 
 local function sortedhashonly(tab)
     if tab then
-        local srt, s = { }, 0
+        local srt = { }
+        local s   = 0
         for key in next, tab do
             if type(key) == "string" then
                 s = s + 1
@@ -204,7 +208,8 @@ end
 
 local function sortedindexonly(tab)
     if tab then
-        local srt, s = { }, 0
+        local srt = { }
+        local s   = 0
         for key in next, tab do
             if type(key) == "number" then
                 s = s + 1
@@ -222,7 +227,8 @@ end
 
 local function sortedhashkeys(tab,cmp) -- fast one
     if tab then
-        local srt, s = { }, 0
+        local srt = { }
+        local s   = 0
         for key in next, tab do
             if key then
                 s= s + 1
@@ -318,7 +324,9 @@ end
 -- end
 
 function table.merge(t, ...) -- first one is target
-    t = t or { }
+    if not t then
+        t = { }
+    end
     for i=1,select("#",...) do
         for k, v in next, (select(i,...)) do
             t[k] = v
@@ -384,7 +392,8 @@ end
 -- end
 
 function table.imerged(...)
-    local tmp, ntmp = { }, 0
+    local tmp  = { }
+    local ntmp = 0
     for i=1,select("#",...) do
         local nst = select(i,...)
         for j=1,#nst do
@@ -421,7 +430,9 @@ end
 -- todo : copy without metatable
 
 local function copy(t,tables) -- taken from lua wiki, slightly adapted
-    tables = tables or { }
+    if not tables then
+        tables = { }
+    end
     local tcopy = { }
     if not tables[t] then
         tables[t] = tcopy
@@ -472,7 +483,8 @@ function table.tohash(t,value)
 end
 
 function table.fromhash(t)
-    local hsh, h = { }, 0
+    local hsh = { }
+    local h   = 0
     for k, v in next, t do
         if v then
             h = h + 1
@@ -670,7 +682,8 @@ local function do_serialize(root,name,depth,level,indexed)
     end
     -- we could check for k (index) being number (cardinal)
     if root and next(root) ~= nil then
-        local first, last = nil, 0
+        local first = nil
+        local last  = 0
         if compact then
             last = #root
             for k=1,last do
@@ -830,22 +843,25 @@ local function do_serialize(root,name,depth,level,indexed)
                 end
             elseif tv == "function" then
                 if functions then
-                    local f = getinfo(v).what == "C" and dump(dummy) or dump(v) -- maybe strip
-                 -- local f = getinfo(v).what == "C" and dump(function(...) return v(...) end) or dump(v) -- maybe strip
-                    if tk == "number" then
-                        if hexify then
-                            handle(format("%s [0x%X]=load(%q),",depth,k,f))
+                    local getinfo = debug and debug.getinfo
+                    if getinfo then
+                        local f = getinfo(v).what == "C" and dump(dummy) or dump(v) -- maybe strip
+                     -- local f = getinfo(v).what == "C" and dump(function(...) return v(...) end) or dump(v) -- maybe strip
+                        if tk == "number" then
+                            if hexify then
+                                handle(format("%s [0x%X]=load(%q),",depth,k,f))
+                            else
+                                handle(format("%s [%s]=load(%q),",depth,k,f))
+                            end
+                        elseif tk == "boolean" then
+                            handle(format("%s [%s]=load(%q),",depth,k and "true" or "false",f))
+                        elseif tk ~= "string" then
+                            -- ignore
+                        elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
+                            handle(format("%s %s=load(%q),",depth,k,f))
                         else
-                            handle(format("%s [%s]=load(%q),",depth,k,f))
+                            handle(format("%s [%q]=load(%q),",depth,k,f))
                         end
-                    elseif tk == "boolean" then
-                        handle(format("%s [%s]=load(%q),",depth,k and "true" or "false",f))
-                    elseif tk ~= "string" then
-                        -- ignore
-                    elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
-                        handle(format("%s %s=load(%q),",depth,k,f))
-                    else
-                        handle(format("%s [%q]=load(%q),",depth,k,f))
                     end
                 end
             else
@@ -958,7 +974,8 @@ end
 -- number   : [number] = { }
 
 function table.serialize(root,name,specification)
-    local t, n = { }, 0
+    local t = { }
+    local n = 0
     local function flush(s)
         n = n + 1
         t[n] = s
@@ -982,13 +999,15 @@ function table.tofile(filename,root,name,specification)
     local f = io.open(filename,'w')
     if f then
         if maxtab > 1 then
-            local t, n = { }, 0
+            local t = { }
+            local n = 0
             local function flush(s)
                 n = n + 1
                 t[n] = s
                 if n > maxtab then
                     f:write(concat(t,"\n"),"\n") -- hm, write(sometable) should be nice
-                    t, n = { }, 0 -- we could recycle t if needed
+                    t = { } -- we could recycle t if needed
+                    n = 0
                 end
             end
             serialize(flush,root,name,specification)
@@ -1006,12 +1025,12 @@ end
 
 local function flattened(t,f,depth) -- also handles { nil, 1, nil, 2 }
     if f == nil then
-        f = { }
+        f     = { }
         depth = 0xFFFF
     elseif tonumber(f) then
         -- assume that only two arguments are given
         depth = f
-        f = { }
+        f     = { }
     elseif not depth then
         depth = 0xFFFF
     end
@@ -1099,8 +1118,12 @@ local function are_equal(a,b,n,m) -- indexed
     if a == b then
         return true
     elseif a and b and #a == #b then
-        n = n or 1
-        m = m or #a
+        if not n then
+            n = 1
+        end
+        if not m then
+            m = #a
+        end
         for i=n,m do
             local ai, bi = a[i], b[i]
             if ai==bi then
@@ -1213,7 +1236,8 @@ end
 
 function table.reversed(t)
     if t then
-        local tt, tn = { }, #t
+        local tt = { }
+        local tn = #t
         if tn > 0 then
             local ttn = 0
             for i=tn,1,-1 do
@@ -1228,24 +1252,32 @@ end
 function table.reverse(t) -- check with 5.3 ?
     if t then
         local n = #t
+        local m = n + 1
         for i=1,floor(n/2) do -- maybe just n//2
-            local j = n - i + 1
+            local j = m - i
             t[i], t[j] = t[j], t[i]
         end
         return t
     end
 end
 
-function table.sequenced(t,sep,simple) -- hash only
+local function sequenced(t,sep,simple)
     if not t then
         return ""
+    elseif type(t) == "string" then
+        return t -- handy fallback
     end
     local n = #t
     local s = { }
     if n > 0 then
         -- indexed
         for i=1,n do
-            s[i] = tostring(t[i])
+            local v = t[i]
+            if type(v) == "table" then
+                s[i] = "{" .. sequenced(v,sep,simple) .. "}"
+            else
+                s[i] = tostring(t[i])
+            end
         end
     else
         -- hashed
@@ -1257,16 +1289,26 @@ function table.sequenced(t,sep,simple) -- hash only
                     s[n] = k
                 elseif v and v~= "" then
                     n = n + 1
-                    s[n] = k .. "=" .. tostring(v)
+                    if type(v) == "table" then
+                        s[n] = k .. "={" .. sequenced(v,sep,simple) .. "}"
+                    else
+                        s[n] = k .. "=" .. tostring(v)
+                    end
                 end
             else
                 n = n + 1
-                s[n] = k .. "=" .. tostring(v)
+                if type(v) == "table" then
+                    s[n] = k .. "={" .. sequenced(v,sep,simple) .. "}"
+                else
+                    s[n] = k .. "=" .. tostring(v)
+                end
             end
         end
     end
     return concat(s,sep or " | ")
 end
+
+table.sequenced = sequenced
 
 function table.print(t,...)
     if type(t) ~= "table" then
@@ -1312,8 +1354,8 @@ end
 
 function table.unique(old)
     local hash = { }
-    local new = { }
-    local n = 0
+    local new  = { }
+    local n    = 0
     for i=1,#old do
         local oi = old[i]
         if not hash[oi] then
@@ -1334,12 +1376,14 @@ end
 
 function table.values(t,s) -- optional sort flag
     if t then
-        local values, keys, v = { }, { }, 0
+        local values = { }
+        local keys   = { }
+        local v      = 0
         for key, value in next, t do
             if not keys[value] then
                 v = v + 1
                 values[v] = value
-                keys[k] = key
+                keys[k]   = key
             end
         end
         if s then

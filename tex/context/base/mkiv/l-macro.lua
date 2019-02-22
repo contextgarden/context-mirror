@@ -14,14 +14,16 @@ if not modules then modules = { } end modules ['l-macros'] = {
 local S, P, R, V, C, Cs, Cc, Ct, Carg = lpeg.S, lpeg.P, lpeg.R, lpeg.V, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Ct, lpeg.Carg
 local lpegmatch = lpeg.match
 local concat = table.concat
-local format, sub = string.format, string.sub
+local format, sub, match = string.format, string.sub, string.match
 local next, load, type = next, load, type
 
 local newline       = S("\n\r")^1
 local continue      = P("\\") * newline
+local whitespace    = S(" \t\n\r")
 local spaces        = S(" \t") + continue
-local name          = R("az","AZ","__","09")^1
-local body          = ((1+continue/"")-newline)^1
+local nametoken     = R("az","AZ","__","09")
+local name          = nametoken^1
+local body          = ((continue/"" + 1) - newline)^1
 local lparent       = P("(")
 local rparent       = P(")")
 local noparent      = 1 - (lparent  + rparent)
@@ -53,7 +55,9 @@ end
 
 -- todo: zero case
 
-resolve = C(C(name) * arguments^-1) / function(raw,s,a)
+local safeguard = P("local") * whitespace^1 * name * (whitespace + P("="))
+
+resolve = safeguard + C(C(name) * (arguments^-1)) / function(raw,s,a)
     local d = definitions[s]
     if d then
         if a then
@@ -85,7 +89,7 @@ subparser = Cs((resolve + P(1))^1)
 
 local enddefine   = P("#enddefine") / ""
 
-local beginregister = (C(name) * spaces^0 * (arguments + Cc(false)) * C((1-enddefine)^1) * enddefine) / function(k,a,v)
+local beginregister = (C(name) * (arguments + Cc(false)) * C((1-enddefine)^1) * enddefine) / function(k,a,v)
     local n = 0
     if a then
         n = #a
@@ -103,14 +107,14 @@ local beginregister = (C(name) * spaces^0 * (arguments + Cc(false)) * C((1-endde
     end
     local d = definitions[k]
     if not d then
-        d = { [0] = false, false, false, false, false, false, false, false, false }
+        d = { a = a, [0] = false, false, false, false, false, false, false, false, false }
         definitions[k] = d
     end
     d[n] = lpegmatch(subparser,v) or v
     return ""
 end
 
-local register = (C(name) * spaces^0 * (arguments + Cc(false)) * spaces^0 * C(body)) / function(k,a,v)
+local register = (Cs(name) * (arguments + Cc(false)) * spaces^0 * Cs(body)) / function(k,a,v)
     local n = 0
     if a then
         n = #a
@@ -128,7 +132,7 @@ local register = (C(name) * spaces^0 * (arguments + Cc(false)) * spaces^0 * C(bo
     end
     local d = definitions[k]
     if not d then
-        d = { [0] = false, false, false, false, false, false, false, false, false }
+        d = { a = a, [0] = false, false, false, false, false, false, false, false, false }
         definitions[k] = d
     end
     d[n] = lpegmatch(subparser,v) or v
@@ -162,12 +166,76 @@ function macros.reset()
     patterns    = { }
 end
 
+function macros.showdefinitions()
+    -- no helpers loaded but not called early
+    for name, list in table.sortedhash(definitions) do
+        local arguments = list.a
+        if arguments then
+            arguments = "(" .. concat(arguments,",") .. ")"
+        else
+            arguments = ""
+        end
+        print("macro: " .. name .. arguments)
+        for i=0,#list do
+            local l = list[i]
+            if l then
+                print("  " .. l)
+            end
+        end
+    end
+end
+
 function macros.resolvestring(str)
     return lpegmatch(parser,str) or str
 end
 
 function macros.resolving()
     return next(patterns)
+end
+
+local function reload(path,name,data)
+    local only = match(name,".-([^/]+)%.lua")
+    if only and only ~= "" then
+        local name = path .. "/" .. only
+        local f = io.open(name,"wb")
+        f:write(data)
+        f:close()
+        local f = loadfile(name)
+        os.remove(name)
+        return f
+    end
+end
+
+-- local function reload(path,name,data)
+--     if path and path ~= "" then
+--         local only = file.nameonly(name) .. "-macro.lua"
+--         local name = file.join(path,only)
+--         io.savedata(name,data)
+--         local l = loadfile(name)
+--         os.remove(name)
+--         return l
+--     end
+--     return load(data,name)
+-- end
+--
+-- assumes no helpers
+
+local function reload(path,name,data)
+    if path and path ~= "" then
+        local only = string.match(name,".-([^/]+)%.lua")
+        if only and only ~= "" then
+            local name = path .. "/" .. only .. "-macro.lua"
+            local f = io.open(name,"wb")
+            if f then
+                f:write(data)
+                f:close()
+                local l = loadfile(name)
+                os.remove(name)
+                return l
+            end
+        end
+    end
+    return load(data,name)
 end
 
 local function loaded(name,trace,detail)
@@ -194,12 +262,11 @@ local function loaded(name,trace,detail)
             report_lua("no macros expanded in '%s'",name)
         end
     end
-    if #name > 30 then
-        n = "--[[" .. sub(name,-30) .. "]] " .. n
-    else
-        n = "--[[" ..     name      .. "]] " .. n
-    end
-    return load(n)
+ -- if #name > 30 then
+ --     name = sub(name,-30)
+ -- end
+ -- n = "--[[" .. name .. "]]\n" .. n
+    return reload(lfs and lfs.currentdir(),name,n)
 end
 
 macros.loaded = loaded

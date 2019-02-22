@@ -11,27 +11,34 @@ local P, R, S = lpeg.P, lpeg.R, lpeg.S
 local lpegmatch = lpeg.match
 local insert, remove, copy, unpack = table.insert, table.remove, table.copy, table.unpack
 
-local formatters        = string.formatters
-local sortedkeys        = table.sortedkeys
-local sortedhash        = table.sortedhash
-local tohash            = table.tohash
-local setmetatableindex = table.setmetatableindex
+local formatters           = string.formatters
+local sortedkeys           = table.sortedkeys
+local sortedhash           = table.sortedhash
+local tohash               = table.tohash
+local setmetatableindex    = table.setmetatableindex
 
-local report            = logs.reporter("otf reader")
+local report_error         = logs.reporter("otf reader","error")
+local report_markwidth     = logs.reporter("otf reader","markwidth")
+local report_cleanup       = logs.reporter("otf reader","cleanup")
+local report_optimizations = logs.reporter("otf reader","merges")
+local report_unicodes      = logs.reporter("otf reader","unicodes")
 
-local trace_markwidth   = false  trackers.register("otf.markwidth",function(v) trace_markwidth = v end)
+local trace_markwidth      = false  trackers.register("otf.markwidth",     function(v) trace_markwidth     = v end)
+local trace_cleanup        = false  trackers.register("otf.cleanups",      function(v) trace_cleanups      = v end)
+local trace_optimizations  = false  trackers.register("otf.optimizations", function(v) trace_optimizations = v end)
+local trace_unicodes       = false  trackers.register("otf.unicodes",      function(v) trace_unicodes      = v end)
 
-local readers           = fonts.handlers.otf.readers
-local privateoffset     = fonts.constructors and fonts.constructors.privateoffset or 0xF0000 -- 0x10FFFF
+local readers              = fonts.handlers.otf.readers
+local privateoffset        = fonts.constructors and fonts.constructors.privateoffset or 0xF0000 -- 0x10FFFF
 
-local f_private         = formatters["P%05X"]
-local f_unicode         = formatters["U%05X"]
-local f_index           = formatters["I%05X"]
-local f_character_y     = formatters["%C"]
-local f_character_n     = formatters["[ %C ]"]
+local f_private            = formatters["P%05X"]
+local f_unicode            = formatters["U%05X"]
+local f_index              = formatters["I%05X"]
+local f_character_y        = formatters["%C"]
+local f_character_n        = formatters["[ %C ]"]
 
-local check_duplicates  = true -- can become an option (pseudo feature) / aways needed anyway
-local check_soft_hyphen = true -- can become an option (pseudo feature) / needed for tagging
+local check_duplicates     = true -- can become an option (pseudo feature) / aways needed anyway
+local check_soft_hyphen    = true -- can become an option (pseudo feature) / needed for tagging
 
 directives.register("otf.checksofthyphen",function(v)
     check_soft_hyphen = v
@@ -67,6 +74,8 @@ local function unifyresources(fontdata,indices)
         return
     end
     --
+    local nofindices = #indices
+    --
     local variants = fontdata.resources.variants
     if variants then
         for selector, unicodes in next, variants do
@@ -83,8 +92,8 @@ local function unifyresources(fontdata,indices)
                 local u = indices[k]
                 if u then
                     newmarks[u] = v
-                else
-                    report("discarding mark %i",k)
+                elseif trace_optimizations then
+                    report_optimizations("discarding mark %i",k)
                 end
             end
             return newmarks
@@ -123,7 +132,12 @@ local function unifyresources(fontdata,indices)
             if not done[c] then
                 local t = { }
                 for k, v in next, c do
-                    t[indices[k]] = v
+                    local ug = indices[k]
+                    if ug then
+                        t[ug] = v
+                    else
+                        report_error("case %i, bad index in unifying %s: %s of %s",1,"coverage",k,nofindices)
+                    end
                 end
                 cover[i] = t
                 done[c]  = d
@@ -131,11 +145,16 @@ local function unifyresources(fontdata,indices)
         end
     end
     --
-    local function recursed(c) -- ligs are not packed
+    local function recursed(c,kind) -- ligs are not packed
         local t = { }
         for g, d in next, c do
             if type(d) == "table" then
-                t[indices[g]] = recursed(d)
+                local ug = indices[g]
+                if ug then
+                    t[ug] = recursed(d,kind)
+                else
+                    report_error("case %i, bad index in unifying %s: %s of %s",1,kind,g,nofindices)
+                end
             else
                 t[g] = indices[d] -- ligature
             end
@@ -167,19 +186,31 @@ local function unifyresources(fontdata,indices)
                                 if duplicates then
                                     for g1, d1 in next, c do
                                         local ug1 = indices[g1]
-                                        local ud1 = indices[d1]
-                                        t1[ug1] = ud1
-                                        --
-                                        local dg1 = duplicates[ug1]
-                                        if dg1 then
-                                            for u in next, dg1 do
-                                                t1[u] = ud1
+                                        if ug1 then
+                                            local ud1 = indices[d1]
+                                            if ud1 then
+                                                t1[ug1] = ud1
+                                                local dg1 = duplicates[ug1]
+                                                if dg1 then
+                                                    for u in next, dg1 do
+                                                        t1[u] = ud1
+                                                    end
+                                                end
+                                            else
+                                                report_error("case %i, bad index in unifying %s: %s of %s",3,kind,d1,nofindices)
                                             end
+                                        else
+                                            report_error("case %i, bad index in unifying %s: %s of %s",1,kind,g1,nofindices)
                                         end
                                     end
                                 else
                                     for g1, d1 in next, c do
-                                        t1[indices[g1]] = indices[d1]
+                                        local ug1 = indices[g1]
+                                        if ug1 then
+                                            t1[ug1] = indices[d1]
+                                        else
+                                            report_error("fuzzy case %i in unifying %s: %i",2,kind,g1)
+                                        end
                                     end
                                 end
                                 done[c] = t1
@@ -193,15 +224,25 @@ local function unifyresources(fontdata,indices)
                             if not t1 then
                                 t1 = { }
                                 for g1, d1 in next, c do
-                                    local t2 = done[d1]
-                                    if not t2 then
-                                        t2 = { }
-                                        for g2, d2 in next, d1 do
-                                            t2[indices[g2]] = d2
+                                    local ug1 = indices[g1]
+                                    if ug1 then
+                                        local t2 = done[d1]
+                                        if not t2 then
+                                            t2 = { }
+                                            for g2, d2 in next, d1 do
+                                                local ug2 = indices[g2]
+                                                if ug2 then
+                                                    t2[ug2] = d2
+                                                else
+                                                    report_error("case %i, bad index in unifying %s: %s of %s",1,kind,g2,nofindices,nofindices)
+                                                end
+                                            end
+                                            done[d1] = t2
                                         end
-                                        done[d1] = t2
+                                        t1[ug1] = t2
+                                    else
+                                        report_error("case %i, bad index in unifying %s: %s of %s",2,kind,g1,nofindices)
                                     end
-                                    t1[indices[g1]] = t2
                                 end
                                 done[c] = t1
                             end
@@ -210,7 +251,7 @@ local function unifyresources(fontdata,indices)
                     elseif kind == "gsub_ligature" then
                         local c = step.coverage
                         if c then
-                            step.coverage = recursed(c)
+                            step.coverage = recursed(c,kind)
                         end
                     elseif kind == "gsub_alternate" or kind == "gsub_multiple" then
                         local c = step.coverage
@@ -221,24 +262,74 @@ local function unifyresources(fontdata,indices)
                                 if duplicates then
                                     for g1, d1 in next, c do
                                         for i=1,#d1 do
-                                            d1[i] = indices[d1[i]]
+                                            local d1i = d1[i]
+                                            local d1u = indices[d1i]
+                                            if d1u then
+                                                d1[i] = d1u
+                                            else
+                                                report_error("case %i, bad index in unifying %s: %s of %s",1,kind,i,d1i,nofindices)
+                                            end
                                         end
                                         local ug1 = indices[g1]
-                                        t1[ug1] = d1
-                                        --
-                                        local dg1 = duplicates[ug1]
-                                        if dg1 then
-                                            for u in next, dg1 do
-                                                t1[u] = copy(d1)
+                                        if ug1 then
+                                            t1[ug1] = d1
+                                            local dg1 = duplicates[ug1]
+                                            if dg1 then
+                                                for u in next, dg1 do
+                                                    t1[u] = copy(d1)
+                                                end
                                             end
+                                        else
+                                            report_error("case %i, bad index in unifying %s: %s of %s",2,kind,g1,nofindices)
                                         end
                                     end
                                 else
                                     for g1, d1 in next, c do
                                         for i=1,#d1 do
-                                            d1[i] = indices[d1[i]]
+                                            local d1i = d1[i]
+                                            local d1u = indices[d1i]
+                                            if d1u then
+                                                d1[i] = d1u
+                                            else
+                                                report_error("case %i, bad index in unifying %s: %s of %s",2,kind,d1i,nofindices)
+                                            end
                                         end
                                         t1[indices[g1]] = d1
+                                    end
+                                end
+                                done[c] = t1
+                            end
+                            step.coverage = t1
+                        end
+                    elseif kind == "gpos_single" then
+                        local c = step.coverage
+                        if c then
+                            local t1 = done[c]
+                            if not t1 then
+                                t1 = { }
+                                if duplicates then
+                                    for g1, d1 in next, c do
+                                        local ug1 = indices[g1]
+                                        if ug1 then
+                                            t1[ug1] = d1
+                                            local dg1 = duplicates[ug1]
+                                            if dg1 then
+                                                for u in next, dg1 do
+                                                    t1[u] = d1
+                                                end
+                                            end
+                                        else
+                                            report_error("case %i, bad index in unifying %s: %s of %s",1,kind,g1,nofindices)
+                                        end
+                                    end
+                                else
+                                    for g1, d1 in next, c do
+                                        local ug1 = indices[g1]
+                                        if ug1 then
+                                            t1[ug1] = d1
+                                        else
+                                            report_error("case %i, bad index in unifying %s: %s of %s",2,kind,g1,nofindices)
+                                        end
                                     end
                                 end
                                 done[c] = t1
@@ -252,7 +343,12 @@ local function unifyresources(fontdata,indices)
                             if not t1 then
                                 t1 = { }
                                 for g1, d1 in next, c do
-                                    t1[indices[g1]] = d1
+                                    local ug1 = indices[g1]
+                                    if ug1 then
+                                        t1[ug1] = d1
+                                    else
+                                        report_error("case %i, bad index in unifying %s: %s of %s",1,kind,g1,nofindices)
+                                    end
                                 end
                                 done[c] = t1
                             end
@@ -267,7 +363,12 @@ local function unifyresources(fontdata,indices)
                                     if not t2 then
                                         t2 = { }
                                         for g2, d2 in next, d1 do
-                                            t2[indices[g2]] = d2
+                                            local ug2 = indices[g2]
+                                            if ug2 then
+                                                t2[ug2] = d2
+                                            else
+                                                report_error("case %i, bad index in unifying %s: %s of %s",2,kind,g2,nofindices)
+                                            end
                                         end
                                         done[d1] = t2
                                     end
@@ -275,33 +376,6 @@ local function unifyresources(fontdata,indices)
                                 end
                                 done[c] = c
                             end
-                        end
-                    elseif kind == "gpos_single" then
-                        local c = step.coverage
-                        if c then
-                            local t1 = done[c]
-                            if not t1 then
-                                t1 = { }
-                                if duplicates then
-                                    for g1, d1 in next, c do
-                                        local ug1 = indices[g1]
-                                        t1[ug1] = d1
-                                        --
-                                        local dg1 = duplicates[ug1]
-                                        if dg1 then
-                                            for u in next, dg1 do
-                                                t1[u] = d1
-                                            end
-                                        end
-                                    end
-                                else
-                                    for g1, d1 in next, c do
-                                        t1[indices[g1]] = d1
-                                    end
-                                end
-                                done[c] = t1
-                            end
-                            step.coverage = t1
                         end
                     elseif kind == "gpos_cursive" then
                         local c = step.coverage
@@ -312,19 +386,28 @@ local function unifyresources(fontdata,indices)
                                 if duplicates then
                                     for g1, d1 in next, c do
                                         local ug1 = indices[g1]
-                                        t1[ug1] = d1
-                                        --
-                                        local dg1 = duplicates[ug1]
-                                        if dg1 then
-                                            -- probably needs a bit more
-                                            for u in next, dg1 do
-                                                t1[u] = copy(d1)
+                                        if ug1 then
+                                            t1[ug1] = d1
+                                            --
+                                            local dg1 = duplicates[ug1]
+                                            if dg1 then
+                                                -- probably needs a bit more
+                                                for u in next, dg1 do
+                                                    t1[u] = copy(d1)
+                                                end
                                             end
+                                        else
+                                            report_error("case %i, bad index in unifying %s: %s of %s",1,kind,g1,nofindices)
                                         end
                                     end
                                 else
                                     for g1, d1 in next, c do
-                                        t1[indices[g1]] = d1
+                                        local ug1 = indices[g1]
+                                        if ug1 then
+                                            t1[ug1] = d1
+                                        else
+                                            report_error("case %i, bad index in unifying %s: %s of %s",2,kind,g1,nofindices)
+                                        end
                                     end
                                 end
                                 done[c] = t1
@@ -376,9 +459,13 @@ local function copyduplicates(fontdata)
             if not ds or ds.width == 0 then
                 if ds then
                     descriptions[0xAD] = nil
-                    report("patching soft hyphen")
+                    if trace_unicodes then
+                        report_unicodes("patching soft hyphen")
+                    end
                 else
-                    report("adding soft hyphen")
+                    if trace_unicodes then
+                        report_unicodes("adding soft hyphen")
+                    end
                 end
                 if not duplicates then
                     duplicates = { }
@@ -414,10 +501,12 @@ local function copyduplicates(fontdata)
                         end
                         n = n + 1
                     end
-                    if n <= m then
-                        report("duplicates: %i : % t",n,t)
-                    else
-                        report("duplicates: %i : % t ...",n,t)
+                    if trace_unicodes then
+                        if n <= m then
+                            report_unicodes("%i : % t",n,t)
+                        else
+                            report_unicodes("%i : % t ...",n,t)
+                        end
                     end
                 else
                     -- what a mess
@@ -457,7 +546,6 @@ local function checklookups(fontdata,missing,nofmissing)
             end
         end
     end
-
     local function collectthem(sequences)
         if not sequences then
             return
@@ -549,7 +637,9 @@ local function checklookups(fontdata,missing,nofmissing)
             end
         end
         if nofmissing <= 0 then
-            report("all done in %s loops",loops)
+            if trace_unicodes then
+                report_unicodes("all missings done in %s loops",loops)
+            end
             return
         elseif old == nofmissing then
             break
@@ -601,7 +691,9 @@ local function checklookups(fontdata,missing,nofmissing)
                 recursed(ligatures[i])
             end
             if nofmissing <= 0 then
-                report("all done in %s loops",loops)
+                if trace_unicodes then
+                    report_unicodes("all missings done in %s loops",loops)
+                end
                 return
             elseif old == nofmissing then
                 break
@@ -611,7 +703,7 @@ local function checklookups(fontdata,missing,nofmissing)
         n = 0
     end
 
-    if nofmissing > 0 then
+    if trace_unicodes and nofmissing > 0 then
         local done = { }
         for i, r in next, missing do
             if r then
@@ -623,7 +715,7 @@ local function checklookups(fontdata,missing,nofmissing)
             end
         end
         if next(done) then
-            report("not unicoded: % t",sortedkeys(done))
+            report_unicodes("not unicoded: % t",sortedkeys(done))
         end
     end
 end
@@ -648,6 +740,10 @@ local function unifymissing(fontdata)
     resources.unicodes = nil
 end
 
+local firstprivate = fonts.privateoffsets and fonts.privateoffsets.textbase or 0xF0000
+local puafirst     = 0xE000
+local pualast      = 0xF8FF
+
 local function unifyglyphs(fontdata,usenames)
     local private      = fontdata.private or privateoffset
     local glyphs       = fontdata.glyphs
@@ -671,44 +767,107 @@ local function unifyglyphs(fontdata,usenames)
         indices[0] = zerocode
     end
     --
-    for index=1,#glyphs do
-        local glyph   = glyphs[index]
-        local unicode = glyph.unicode -- this is the primary one
-        if not unicode then
-         -- report("assigning private unicode %U to glyph indexed %05X (%s)",private,index,"unset")
-            unicode = private
-            -- glyph.unicode  = -1
-            if names then
+    if names then
+        -- seldom uses, we don't issue message ... this branch might even go away
+        for index=1,#glyphs do
+            local glyph   = glyphs[index]
+            local unicode = glyph.unicode -- this is the primary one
+            if not unicode then
+                unicode        = private
                 local name     = glyph.name or f_private(unicode)
                 indices[index] = name
                 names[name]    = unicode
-            else
-                indices[index] = unicode
-            end
-            private = private + 1
-        elseif descriptions[unicode] then
-            -- real weird
-            report("assigning private unicode %U to glyph indexed %05X (%C)",private,index,unicode)
-            unicode = private
-            -- glyph.unicode  = -1
-            if names then
+                private        = private + 1
+            elseif unicode >= firstprivate then
+                unicode        = private
                 local name     = glyph.name or f_private(unicode)
                 indices[index] = name
                 names[name]    = unicode
+                private        = private + 1
+            elseif unicode >= puafirst and unicode <= pualast then
+                local name     = glyph.name or f_private(unicode)
+                indices[index] = name
+                names[name]    = unicode
+            elseif descriptions[unicode] then
+                unicode        = private
+                local name     = glyph.name or f_private(unicode)
+                indices[index] = name
+                names[name]    = unicode
+                private        = private + 1
             else
-                indices[index] = unicode
-            end
-            private = private + 1
-        else
-            if names then
                 local name     = glyph.name or f_unicode(unicode)
                 indices[index] = name
                 names[name]    = unicode
+            end
+            descriptions[unicode] = glyph
+        end
+    elseif trace_unicodes then
+        for index=1,#glyphs do
+            local glyph   = glyphs[index]
+            local unicode = glyph.unicode -- this is the primary one
+            if not unicode then
+                unicode        = private
+                indices[index] = unicode
+                private        = private + 1
+            elseif unicode >= firstprivate then
+                local name = glyph.name
+                if name then
+                    report_unicodes("moving glyph %a indexed %05X from private %U to %U ",name,index,unicode,private)
+                else
+                    report_unicodes("moving glyph indexed %05X from private %U to %U ",index,unicode,private)
+                end
+                unicode        = private
+                indices[index] = unicode
+                private        = private + 1
+            elseif unicode >= puafirst and unicode <= pualast then
+                local name = glyph.name
+                if name then
+                    report_unicodes("keeping private unicode %U for glyph %a indexed %05X",unicode,name,index)
+                else
+                    report_unicodes("keeping private unicode %U for glyph indexed %05X",unicode,index)
+                end
+                indices[index] = unicode
+            elseif descriptions[unicode] then
+                local name = glyph.name
+                if name then
+                    report_unicodes("assigning duplicate unicode %U to %U for glyph %a indexed %05X ",unicode,private,name,index)
+                else
+                    report_unicodes("assigning duplicate unicode %U to %U for glyph indexed %05X ",unicode,private,index)
+                end
+                unicode        = private
+                indices[index] = unicode
+                private        = private + 1
             else
                 indices[index] = unicode
             end
+            descriptions[unicode] = glyph
         end
-        descriptions[unicode] = glyph
+    else
+        for index=1,#glyphs do
+            local glyph   = glyphs[index]
+            local unicode = glyph.unicode -- this is the primary one
+            if not unicode then
+                unicode        = private
+                indices[index] = unicode
+                private        = private + 1
+            elseif unicode >= firstprivate then
+                local name = glyph.name
+                unicode        = private
+                indices[index] = unicode
+                private        = private + 1
+            elseif unicode >= puafirst and unicode <= pualast then
+                local name = glyph.name
+                indices[index] = unicode
+            elseif descriptions[unicode] then
+                local name = glyph.name
+                unicode        = private
+                indices[index] = unicode
+                private        = private + 1
+            else
+                indices[index] = unicode
+            end
+            descriptions[unicode] = glyph
+        end
     end
     --
     for index=1,#glyphs do
@@ -757,36 +916,92 @@ local function unifyglyphs(fontdata,usenames)
     return indices, names
 end
 
-local p_bogusname = (
-    (P("uni") + P("UNI") + P("Uni") + P("U") + P("u")) * S("Xx")^0 * R("09","AF")^1
-  + (P("identity") + P("Identity") + P("IDENTITY")) * R("09","AF")^1
-  + (P("index") + P("Index") + P("INDEX")) * R("09")^1
-) * P(-1)
+local p_crappyname  do
+
+    local p_hex   = R("af","AF","09")
+    local p_digit = R("09")
+    local p_done  = S("._-")^0 + P(-1)
+    local p_alpha = R("az","AZ")
+    local p_ALPHA = R("AZ")
+
+    p_crappyname = (
+    -- (P("uni") + P("UNI") + P("Uni") + P("U") + P("u"))
+        lpeg.utfchartabletopattern({ "uni", "u" },true)
+      * S("Xx_")^0
+      * p_hex^1
+   -- + (P("identity") + P("Identity") + P("IDENTITY") + P("glyph") + P("jamo"))
+      + lpeg.utfchartabletopattern({ "identity", "glyph", "jamo" },true)
+      * p_hex^1
+   -- + (P("index") + P("Index") + P("INDEX")+ P("afii"))
+      + lpeg.utfchartabletopattern({ "index", "afii" }, true)
+      * p_digit^1
+      -- also happens l
+      + p_digit
+      * p_hex^3
+      + p_alpha
+      * p_digit^1
+      -- sort of special
+      + P("aj")
+      * p_digit^1
+      + P("eh_")
+      * (p_digit^1 + p_ALPHA * p_digit^1)
+      + (1-P("_"))^1
+      * P("_uni")
+      * p_hex^1
+      + P("_")
+      * P(1)^1
+    ) * p_done
+
+end
+
+-- In context we only keep glyph names because of tracing and access by name
+-- so weird names make no sense.
+
+local forcekeep = false -- only for testing something
+
+directives.register("otf.keepnames",function(v)
+    report_cleanup("keeping weird glyph names, expect larger files and more memory usage")
+    forcekeep = v
+end)
 
 local function stripredundant(fontdata)
     local descriptions = fontdata.descriptions
     if descriptions then
         local n = 0
         local c = 0
-        for unicode, d in next, descriptions do
-            local name = d.name
-            if name and lpegmatch(p_bogusname,name) then
-                d.name = nil
-                n = n + 1
+        -- in context we always strip
+        if (not context and fonts.privateoffsets.keepnames) or forcekeep then
+            for unicode, d in next, descriptions do
+                if d.class == "base" then
+                    d.class = nil
+                    c = c + 1
+                end
             end
-            if d.class == "base" then
-                d.class = nil
-                c = c + 1
+        else
+            for unicode, d in next, descriptions do
+                local name = d.name
+                if name and lpegmatch(p_crappyname,name) then
+                    d.name = nil
+                    n = n + 1
+                end
+                if d.class == "base" then
+                    d.class = nil
+                    c = c + 1
+                end
             end
         end
-        if n > 0 then
-            report("%s bogus names removed (verbose unicode)",n)
-        end
-        if c > 0 then
-            report("%s base class tags removed (default is base)",c)
+        if trace_cleanup then
+            if n > 0 then
+                report_cleanup("%s bogus names removed (verbose unicode)",n)
+            end
+            if c > 0 then
+                report_cleanup("%s base class tags removed (default is base)",c)
+            end
         end
     end
 end
+
+readers.stripredundant = stripredundant
 
 function readers.getcomponents(fontdata) -- handy for resolving ligatures when names are missing
     local resources = fontdata.resources
@@ -813,9 +1028,9 @@ function readers.getcomponents(fontdata) -- handy for resolving ligatures when n
                         end
                         for i=1,#steps do
                          -- we actually had/have this in base mode
-                            local coverage = steps[i].coverage
-                            if coverage then
-                                for k, v in next, coverage do
+                            local c = steps[i].coverage
+                            if c then
+                                for k, v in next, c do
                                     traverse(k,k,v)
                                 end
                             end
@@ -1251,7 +1466,9 @@ function readers.pack(data)
                 end
                 return false
             elseif nt >= threshold then
-                local one, two, rest = 0, 0, 0
+                local one  = 0
+                local two  = 0
+                local rest = 0
                 if pass == 1 then
                     for k,v in next, c do
                         if v == 1 then
@@ -2125,17 +2342,24 @@ local function mergesteps_1(lookup,strict)
         local f = first.format
         for i=2,nofsteps do
             if steps[i].format ~= f then
-                report("not merging %a steps of %a lookup %a, different formats",nofsteps,lookup.type,lookup.name)
+                if trace_optimizations then
+                    report_optimizations("not merging %a steps of %a lookup %a, different formats",nofsteps,lookup.type,lookup.name)
+                end
                 return 0
             end
         end
     end
-    report("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
+    if trace_optimizations then
+        report_optimizations("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
+    end
     local target = first.coverage
     for i=2,nofsteps do
-        for k, v in next, steps[i].coverage do
-            if not target[k] then
-                target[k] = v
+        local c = steps[i].coverage
+        if c then
+            for k, v in next, c do
+                if not target[k] then
+                    target[k] = v
+                end
             end
         end
     end
@@ -2156,24 +2380,31 @@ local function mergesteps_2(lookup) -- pairs
         local f = first.format
         for i=2,nofsteps do
             if steps[i].format ~= f then
-                report("not merging %a steps of %a lookup %a, different formats",nofsteps,lookup.type,lookup.name)
+                if trace_optimizations then
+                    report_optimizations("not merging %a steps of %a lookup %a, different formats",nofsteps,lookup.type,lookup.name)
+                end
                 return 0
             end
         end
     end
-    report("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
+    if trace_optimizations then
+        report_optimizations("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
+    end
     local target = first.coverage
     for i=2,nofsteps do
-        for k, v in next, steps[i].coverage do
-            local tk = target[k]
-            if tk then
-                for kk, vv in next, v do
-                    if tk[kk] == nil then
-                        tk[kk] = vv
+        local c = steps[i].coverage
+        if c then
+            for k, v in next, c do
+                local tk = target[k]
+                if tk then
+                    for kk, vv in next, v do
+                        if tk[kk] == nil then
+                            tk[kk] = vv
+                        end
                     end
+                else
+                    target[k] = v
                 end
-            else
-                target[k] = v
             end
         end
     end
@@ -2189,17 +2420,24 @@ end
 local function mergesteps_3(lookup,strict) -- marks
     local steps    = lookup.steps
     local nofsteps = lookup.nofsteps
-    report("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
+    if trace_optimizations then
+        report_optimizations("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
+    end
     -- check first
     local coverage = { }
     for i=1,nofsteps do
-        for k, v in next, steps[i].coverage do
-            local tk = coverage[k] -- { class, { x, y } }
-            if tk then
-                report("quitting merge due to multiple checks")
-                return nofsteps
-            else
-                coverage[k] = v
+        local c = steps[i].coverage
+        if c then
+            for k, v in next, c do
+                local tk = coverage[k] -- { class, { x, y } }
+                if tk then
+                    if trace_optimizations then
+                        report_optimizations("quitting merge due to multiple checks")
+                    end
+                    return nofsteps
+                else
+                    coverage[k] = v
+                end
             end
         end
     end
@@ -2245,15 +2483,20 @@ local function mergesteps_4(lookup) -- ligatures
     local steps    = lookup.steps
     local nofsteps = lookup.nofsteps
     local first    = steps[1]
-    report("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
+    if trace_optimizations then
+        report_optimizations("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
+    end
     local target = first.coverage
     for i=2,nofsteps do
-        for k, v in next, steps[i].coverage do
-            local tk = target[k]
-            if tk then
-                nested(v,tk)
-            else
-                target[k] = v
+        local c = steps[i].coverage
+        if c then
+            for k, v in next, c do
+                local tk = target[k]
+                if tk then
+                    nested(v,tk)
+                else
+                    target[k] = v
+                end
             end
         end
     end
@@ -2270,7 +2513,9 @@ local function mergesteps_5(lookup) -- cursive
     local steps    = lookup.steps
     local nofsteps = lookup.nofsteps
     local first    = steps[1]
-    report("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
+    if trace_optimizations then
+        report_optimizations("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
+    end
     local target = first.coverage
     local hash   = nil
     for k, v in next, target do
@@ -2278,18 +2523,21 @@ local function mergesteps_5(lookup) -- cursive
         break
     end
     for i=2,nofsteps do
-        for k, v in next, steps[i].coverage do
-            local tk = target[k]
-            if tk then
-                if not tk[2] then
-                    tk[2] = v[2]
+        local c = steps[i].coverage
+        if c then
+            for k, v in next, c do
+                local tk = target[k]
+                if tk then
+                    if not tk[2] then
+                        tk[2] = v[2]
+                    end
+                    if not tk[3] then
+                        tk[3] = v[3]
+                    end
+                else
+                    target[k] = v
+                    v[1] = hash
                 end
-                if not tk[3] then
-                    tk[3] = v[3]
-                end
-            else
-                target[k] = v
-                v[1] = hash
             end
         end
     end
@@ -2319,7 +2567,9 @@ local function checkkerns(lookup)
                 end
             end
             if kerns then
-                report("turning pairs of step %a of %a lookup %a into kerns",i,lookup.type,lookup.name)
+                if trace_optimizations then
+                    report_optimizations("turning pairs of step %a of %a lookup %a into kerns",i,lookup.type,lookup.name)
+                end
                 local c = { }
                 for g1, d1 in next, coverage do
                     if d1 and d1 ~= true then
@@ -2379,7 +2629,9 @@ local function checkpairs(lookup)
         if step.format == "pair" then
             local coverage = onlykerns(step)
             if coverage then
-                report("turning pairs of step %a of %a lookup %a into kerns",i,lookup.type,lookup.name)
+                if trace_optimizations then
+                    report_optimizations("turning pairs of step %a of %a lookup %a into kerns",i,lookup.type,lookup.name)
+                end
                 for g1, d1 in next, coverage do
                     local d = { }
                     for g2, d2 in next, d1 do
@@ -2502,17 +2754,19 @@ function readers.compact(data)
                     end
                 end
             end
-        else
-            report("no lookups in %a",what)
+        elseif trace_optimizations then
+            report_optimizations("no lookups in %a",what)
         end
     end
     compact("sequences")
     compact("sublookups")
-    if merged > 0 then
-        report("%i steps of %i removed due to merging",merged,allsteps)
-    end
-    if kerned > 0 then
-        report("%i steps of %i steps turned from pairs into kerns",kerned,allsteps)
+    if trace_optimizations then
+        if merged > 0 then
+            report_optimizations("%i steps of %i removed due to merging",merged,allsteps)
+        end
+        if kerned > 0 then
+            report_optimizations("%i steps of %i steps turned from pairs into kerns",kerned,allsteps)
+        end
     end
 end
 
@@ -2612,7 +2866,7 @@ function readers.expand(data)
                 -- or bb?
                 d.width = defaultwidth
             elseif trace_markwidth and wd ~= 0 and d.class == "mark" then
-                report("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
+                report_markwidth("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
             end
             if bb then
                 local ht =  bb[4]

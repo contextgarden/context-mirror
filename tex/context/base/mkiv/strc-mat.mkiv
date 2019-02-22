@@ -208,9 +208,9 @@
       \c!reference=#1,\c!title=\namedformulaentry,\c!bookmark=]%
      [#2]%
    \glet\namedformulaentry\empty % \relax
-   \globallet#3\m_strc_counters_last_registered_index
-   \globallet#4\m_strc_counters_last_registered_synchronize
-   \globallet#5\m_strc_counters_last_registered_attribute}
+   \glet#3\m_strc_counters_last_registered_index
+   \glet#4\m_strc_counters_last_registered_synchronize
+   \glet#5\m_strc_counters_last_registered_attribute}
 
 % modes: 0=unset, 1=forced, 2=none, 3=reference
 
@@ -880,6 +880,9 @@
      \par
    \fi
    \bgroup % HERE
+   \iftrialtypesetting\else
+     \global\advance\c_strc_formulas_n\plusone
+   \fi
    \def\currentformula{#1}%
    \strc_math_set_split
    \dostarttaggedchained\t!formula\currentformula\??formula
@@ -896,7 +899,7 @@
        {\edef\p_option{\formulaparameter\c!option}%
         \edef\p_option{\ifx\p_option\empty\else\p_option,\fi#2}}%
    \else
-     \edef\p_option{\formulaparameter\c!option}
+     \edef\p_option{\formulaparameter\c!option}%
    \fi
    \ifx\p_option\empty \else
      \rawprocesscommacommand[\p_option]\strc_formulas_option
@@ -922,10 +925,15 @@
 
 % tagging of formulanumbers is not ok (we get two display maths blobs)
 
+\newcount\c_strc_formulas_n
+
+\ifdefined\dotagregisterformula \else \let\dotagregisterformula\gobbleoneargument \fi
+
 \unexpanded\def\strc_formulas_stop_formula
   {\strc_formulas_place_number % in case it hasn't happened yet
    \strc_formulas_flush_number % in case we are in native mode
    \dostarttagged\t!formulacontent\empty
+   \dotagregisterformula\c_strc_formulas_n
    \csname\e!stop\formulaparameter\c!alternative\v!formula\endcsname
    \dostoptagged
    \dostoptagged

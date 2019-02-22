@@ -188,6 +188,8 @@ fi ;
 
 string CurrentLayout ; CurrentLayout := "default" ;
 
+% runscript("mp.PaperHeight()") % way faster of course
+
 vardef PaperHeight          = lua.mp.PaperHeight         () enddef ;
 vardef PaperWidth           = lua.mp.PaperWidth          () enddef ;
 vardef PrintPaperHeight     = lua.mp.PrintPaperHeight    () enddef ;
@@ -319,8 +321,9 @@ vardef OverlayHeight     = lua.mp.OverlayHeight   ()  enddef ;
 vardef OverlayDepth      = lua.mp.OverlayDepth    ()  enddef ;
 vardef OverlayLineWidth  = lua.mp.OverlayLineWidth()  enddef ;
 vardef OverlayOffset     = lua.mp.OverlayOffset   ()  enddef ;
+vardef OverlayRegion     = lua.mp.OverlayRegion   ()  enddef ;
 
-vardef defaultcolormodel = lua.mp.defaultcolormodel() enddef ;
+vardef defaultcolormodel = lua.mp.mf_default_color_model() enddef ;
 
 %  def OverlayLineColor  = lua.mp.OverlayLineColor()  enddef ;
 %  def OverlayColor      = lua.mp.OverlayColor    ()  enddef ;

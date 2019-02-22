@@ -12,8 +12,6 @@ local attributes         = attributes
 local nodes              = nodes
 
 local nuts               = nodes.nuts
-local tonode             = nuts.tonode
-local tonut              = nuts.tonut
 
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
@@ -26,9 +24,8 @@ local setlist            = nuts.setlist
 local end_of_math        = nuts.end_of_math
 
 local nodecodes          = nodes.nodecodes
-local rulecodes          = nodes.rulecodes
+local leadercodes        = nodes.leadercodes
 local gluecodes          = nodes.gluecodes
-local listcodes          = nodes.listcodes
 local kerncodes          = nodes.kerncodes
 
 local glyph_code         = nodecodes.glyph
@@ -46,7 +43,8 @@ local vlist_code         = nodecodes.vlist
 local userskip_code      = gluecodes.userskip
 local spaceskip_code     = gluecodes.spaceskip
 local xspaceskip_code    = gluecodes.xspaceskip
-local leader_code        = gluecodes.leaders
+
+local leaders_code       = leadercodes.leaders
 
 local fontkern_code      = kerncodes.fontkern
 
@@ -97,7 +95,7 @@ local function striprange(first,last) -- todo: dir
     return first, last
 end
 
-nodes.striprange = striprange
+nuts.striprange = striprange
 
 -- todo: order and maybe other dimensions
 
@@ -205,7 +203,7 @@ local function processwords(attribute,data,flush,head,parent,skip) -- we have hl
                     elseif id == glue_code then
                         -- catch \underbar{a} \underbar{a} (subtype test is needed)
                         local subtype = getsubtype(n)
-                        if getattr(n,attribute) and (subtype == userskip_code or subtype == spaceskip_code or subtype == xspaceskip_code or (leaders and subtype >= leader_code)) then
+                        if getattr(n,attribute) and (subtype == userskip_code or subtype == spaceskip_code or subtype == xspaceskip_code or (leaders and subtype >= leaders_code)) then
                             l = n
                         else
                             head, done = flush(head,f,l,d,level,parent,strip), true
@@ -228,17 +226,11 @@ local function processwords(attribute,data,flush,head,parent,skip) -- we have hl
     end
 end
 
-nodes.processwords = function(attribute,data,flush,head,parent) -- we have hlistdir and local dir
-    head = tonut(head)
-    if parent then
-        parent = tonut(parent)
-    end
-    local head, done = processwords(attribute,data,flush,head,parent)
-    return tonode(head), done
+nuts.processwords = function(attribute,data,flush,head,parent) -- we have hlistdir and local dir
+    return processwords(attribute,data,flush,head,parent)
 end
 
 -- works on lines !
-
 -- todo: stack because skip can change when nested
 
 local function processranges(attribute,flush,head,parent,depth,skip)
@@ -319,11 +311,6 @@ local function processranges(attribute,flush,head,parent,depth,skip)
     end
 end
 
-nodes.processranges = function(attribute,flush,head,parent) -- we have hlistdir and local dir
-    head = tonut(head)
-    if parent then
-        parent = tonut(parent)
-    end
-    local head, done = processranges(attribute,flush,head,parent,0)
-    return tonode(head), done
+nuts.processranges = function(attribute,flush,head,parent) -- we have hlistdir and local dir
+    return processranges(attribute,flush,head,parent,0)
 end

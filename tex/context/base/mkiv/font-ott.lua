@@ -8,7 +8,8 @@ if not modules then modules = { } end modules ["font-ott"] = {
 }
 
 local type, next, tonumber, tostring, rawget, rawset = type, next, tonumber, tostring, rawget, rawset
-local gsub, lower, format, match = string.gsub, string.lower, string.format, string.match
+local gsub, lower, format, match, gmatch, find = string.gsub, string.lower, string.format, string.match, string.gmatch, string.find
+local sequenced = table.sequenced
 local is_boolean = string.is_boolean
 
 local setmetatableindex    = table.setmetatableindex
@@ -389,6 +390,7 @@ local languages = allocate {
     ["kiu" ] = "kirmanjki",
     ["kjd" ] = "southern kiwai",
     ["kjp" ] = "eastern pwo karen",
+    ["kjz" ] = "bumthangkha",
     ["kkn" ] = "kokni",
     ["klm" ] = "kalmyk",
     ["kmb" ] = "kamba",
@@ -477,6 +479,7 @@ local languages = allocate {
     ["mdr" ] = "mandar",
     ["men" ] = "me'en",
     ["mer" ] = "meru",
+    ["mfa" ] = "pattani malay",
     ["mfe" ] = "morisyen",
     ["min" ] = "minangkabau",
     ["miz" ] = "mizo",
@@ -674,6 +677,7 @@ local languages = allocate {
     ["tpi" ] = "tok pisin",
     ["trk" ] = "turkish",
     ["tsg" ] = "tsonga",
+    ["tsj" ] = "tshangla",
     ["tua" ] = "turoyo aramaic",
     ["tul" ] = "tulu",
     ["tuv" ] = "tuvin",
@@ -704,6 +708,7 @@ local languages = allocate {
     ["xbd" ] = "lü",
     ["xhs" ] = "xhosa",
     ["xjb" ] = "minjangbal",
+    ["xkf" ] = "khengkha",
     ["xog" ] = "soga",
     ["xpe" ] = "kpelle (liberia)",
     ["yak" ] = "sakha",
@@ -987,9 +992,13 @@ setmetatableindex(languages, function(t,k)
     return "dflt"
 end)
 
-setmetatablenewindex(languages, "ignore")
-setmetatablenewindex(baselines, "ignore")
-setmetatablenewindex(baselines, "ignore")
+if setmetatablenewindex then
+
+    setmetatablenewindex(languages, "ignore")
+    setmetatablenewindex(scripts,   "ignore")
+    setmetatablenewindex(baselines, "ignore")
+
+end
 
 local function resolve(t,k)
     if k then
@@ -1029,7 +1038,11 @@ local function assign(t,k,v)
     end
 end
 
-setmetatablenewindex(features, assign)
+if setmetatablenewindex then
+
+    setmetatablenewindex(features, assign)
+
+end
 
 local checkers = {
     rand = function(v)
@@ -1085,7 +1098,7 @@ storage.register("fonts/otf/usedfeatures", usedfeatures, "fonts.handlers.otf.sta
 
 local normalizedaxis = otf.readers.helpers.normalizedaxis or function(s) return s end
 
-function otffeatures.normalize(features)
+function otffeatures.normalize(features,wrap) -- wrap is for context
     if features then
         local h = { }
         for key, value in next, features do
@@ -1098,9 +1111,9 @@ function otffeatures.normalize(features)
                 h.script = rawget(verbosescripts,v) or (scripts[v] and v) or "dflt" -- auto adds
             elseif k == "axis" then
                 h[k] = normalizedaxis(value)
-if not callbacks.supported.glyph_stream_provider then
-    h.variableshapes = true -- for the moment
-end
+                if not callbacks.supported.glyph_stream_provider then
+                    h.variableshapes = true -- for the moment
+                end
             else
                 local uk = usedfeatures[key]
                 local uv = uk[value]
@@ -1113,10 +1126,27 @@ end
                     elseif type(value) == "string" then
                         local b = is_boolean(value)
                         if type(b) == "nil" then
-                            uv = lower(value)
+                         -- we do this elsewhere
+                         --
+                         -- if find(value,"=") then
+                         --     local t = { }
+                         --     for k, v in gmatch(value,"([^%s,=]+)%s*=%s*([^%s,=]+)") do
+                         --         t[k] = tonumber(v) or v
+                         --     end
+                         --     if next(t) then
+                         --         value = sequenced(t,",")
+                         --     end
+                         -- end
+                            if wrap and find(value,",") then
+                                uv = "{"..lower(value).."}"
+                            else
+                                uv = lower(value)
+                            end
                         else
                             uv = b
                         end
+                    elseif type(value) == "table" then
+                        uv = sequenced(t,",")
                     else
                         uv = value
                     end

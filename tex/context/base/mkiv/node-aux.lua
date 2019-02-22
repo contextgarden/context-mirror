@@ -32,8 +32,6 @@ local getnext            = nuts.getnext
 local getid              = nuts.getid
 local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
-local getfont            = nuts.getfont
-local getchar            = nuts.getchar
 local getattr            = nuts.getattr
 local getboth            = nuts.getboth
 local getcomponents      = nuts.getcomponents
@@ -51,8 +49,10 @@ local setprev            = nuts.setprev
 local setcomponents      = nuts.setcomponents
 local setattrlist        = nuts.setattrlist
 
-local traverse_nodes     = nuts.traverse
-local traverse_id        = nuts.traverse_id
+----- traverse_nodes     = nuts.traverse
+----- traverse_id        = nuts.traverse_id
+local nextnode           = nuts.traversers.node
+local nextglyph          = nuts.traversers.glyph
 local flush_node         = nuts.flush
 local flush_list         = nuts.flush_list
 local hpack_nodes        = nuts.hpack
@@ -154,9 +154,8 @@ function nodes.repackhlist(list,...)
 end
 
 local function set_attributes(head,attr,value)
-    for n in traverse_nodes(head) do
+    for n, id in nextnode, head do
         setattr(n,attr,value)
-        local id = getid(n)
         if id == hlist_node or id == vlist_node then
             set_attributes(getlist(n),attr,value)
         end
@@ -164,11 +163,10 @@ local function set_attributes(head,attr,value)
 end
 
 local function set_unset_attributes(head,attr,value)
-    for n in traverse_nodes(head) do
+    for n, id in nextnode, head do
         if not getattr(n,attr) then
             setattr(n,attr,value)
         end
-        local id = getid(n)
         if id == hlist_code or id == vlist_code then
             set_unset_attributes(getlist(n),attr,value)
         end
@@ -176,9 +174,8 @@ local function set_unset_attributes(head,attr,value)
 end
 
 local function unset_attributes(head,attr)
-    for n in traverse_nodes(head) do
+    for n, id in nextnode, head do
         setattr(n,attr,unsetvalue)
-        local id = getid(n)
         if id == hlist_code or id == vlist_code then
             unset_attributes(getlist(n),attr)
         end
@@ -197,98 +194,11 @@ nuts.setattributes       = set_attributes                    nodes.setattributes
 nuts.setunsetattributes  = set_unset_attributes              nodes.setunsetattributes = vianuts(set_unset_attributes)
 nuts.unsetattributes     = unset_attributes                  nodes.unsetattributes    = vianuts(unset_attributes)
 
--- history:
---
--- local function glyph_width(a)
---     local ch = chardata[getfont(a)][getchar(a)]
---     return (ch and ch.width) or 0
--- end
---
--- local function glyph_total(a)
---     local ch = chardata[getfont(a)][getchar(a)]
---     return (ch and (ch.height+ch.depth)) or 0
--- end
---
--- local function non_discardable(a) -- inline
---     return getid(id) < math_node -- brrrr
--- end
---
--- local function calculate_badness(t,s)
---     if t == 0 then
---         return 0
---     elseif s <= 0 then
---         return INF_BAD
---     else
---         local r
---         if t <= 7230584 then
---             r = t * 297 / s
---         elseif s >= 1663497 then
---             r = t / floor(s / 297)
---         else
---             r = t
---         end
---         r = floor(r)
---         if r > 1290 then
---             return INF_BAD
---         else
---             return floor((r * r * r + 0x20000) / 0x40000) -- 0400000 / 01000000
---         end
---     end
--- end
---
--- left-overs
---
--- local function round_xn_over_d(x, n, d)
---     local positive -- was x >= 0
---     if x >= 0 then
---         positive = true
---     else
---         x = -x
---         positive = false
---     end
---     local t = floor(x % 0x8000) * n              -- 0100000
---     local f = floor(t / 0x8000)                  -- 0100000
---     local u = floor(x / 0x8000) * n + f          -- 0100000
---     local v = floor(u % d) * 0x8000 + f          -- 0100000
---     if floor(u / d) >= 0x8000 then               -- 0100000
---         report_parbuilders('arith_error')
---     else
---         u = 0x8000 * floor(u / d) + floor(v / d) -- 0100000
---     end
---     v = floor(v % d)
---     if 2*v >= d then
---         u = u + 1
---     end
---     if positive then
---         return u
---     else
---         return -u
---     end
--- end
---
--- local function firstline(n)
---     while n do
---         local id = getid(n)
---         if id == hlist_code then
---             if getsubtype(n) == line_code then
---                 return n
---             else
---                 return firstline(getlist(n))
---             end
---         elseif id == vlist_code then
---             return firstline(getlist(n))
---         end
---         n = getnext(n)
---     end
--- end
---
--- nodes.firstline = firstline
-
 function nuts.firstcharacter(n,untagged) -- tagged == subtype > 255
     if untagged then
         return first_glyph(n)
     else
-        for g in traverse_id(glyph_code,n) do
+        for g in nextglyph ,n do
             return g
         end
     end
@@ -297,8 +207,8 @@ end
 local function firstcharinbox(n)
     local l = getlist(getbox(n))
     if l then
-        for g in traverse_id(glyph_code,l) do
-            return getchar(g)
+        for g, c in nextglyph, l do
+            return c
         end
     end
     return 0
@@ -431,10 +341,9 @@ nodes.link = function(list,currentfont,currentattr,head,tail)
 end
 
 local function locate(start,wantedid,wantedsubtype)
-    for n in traverse_nodes(start) do
-        local id = getid(n)
+    for n, id, subtype in nextnode, start do
         if id == wantedid then
-            if not wantedsubtype or getsubtype(n) == wantedsubtype then
+            if not wantedsubtype or subtype == wantedsubtype then
                 return n
             end
         elseif id == hlist_code or id == vlist_code then
@@ -490,87 +399,6 @@ end
 --     end
 -- end
 
--- these component helpers might move to another module
-
--- nodemode helper: here we also flatten components, no check for disc here
-
-function nuts.set_components(target,start,stop)
-    local head = getcomponents(target)
-    if head then
-        flush_list(head)
-        head = nil
-    end
-    if start then
-        setprev(start)
-    else
-        return nil
-    end
-    if stop then
-        setnext(stop)
-    end
-    local tail = nil
-    while start do
-        local c = getcomponents(start)
-        local n = getnext(start)
-        if c then
-            if head then
-                setlink(tail,c)
-            else
-                head = c
-            end
-            tail = find_tail(c)
-            setcomponents(start)
-            flush_node(start)
-        else
-            if head then
-                setlink(tail,start)
-            else
-                head = start
-            end
-            tail = start
-        end
-        start = n
-    end
-    setcomponents(target,head)
-    -- maybe also upgrade the subtype but we don't use it anyway
-    return head
-end
-
-function nuts.get_components(target)
-    return getcomponents(target)
-end
-
-nuts.get_components = getcomponents
-
-function nuts.take_components(target)
-    local c = getcomponents(target)
-    setcomponents(target)
-    -- maybe also upgrade the subtype but we don't use it anyway
-    return c
-end
-
--- nodemode helper: we assume a glyph and a flat components list (basemode can
--- have nested components)
-
-function nuts.count_components(n,marks)
-    local components = getcomponents(n)
-    if components then
-        if marks then
-            local i = 0
-            for g in traverse_id(glyph_code,components) do
-                if not marks[getchar(g)] then
-                    i = i + 1
-                end
-            end
-            return i
-        else
-            return count(glyph_code,components)
-        end
-    else
-        return 0
-    end
-end
-
 -- nodemode helper: the next and prev pointers are untouched
 
 function nuts.copy_no_components(g,copyinjection)
@@ -596,7 +424,7 @@ end
 function nuts.copy_only_glyphs(current)
     local head     = nil
     local previous = nil
-    for n in traverse_id(glyph_code,current) do
+    for n in nextglyph, current do
         n = copy_node(n)
         if head then
             setlink(previous,n)

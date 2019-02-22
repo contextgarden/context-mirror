@@ -11,11 +11,11 @@ if not modules then modules = { } end modules ['lpdf-wid'] = {
 -- had renditions but they turned out to be unreliable from the start and look
 -- obsolete too or at least they are bound to the (obsolete) flash technology for
 -- rendering. They were already complex constructs. Now we have rich media which
--- instead of providing a robust future proof framework fo rgeneral media types
+-- instead of providing a robust future proof framework for general media types
 -- again seems to depend on viewers built in (yes, also kind of obsolete) flash
 -- technology, and we cannot expect this non-open technology to show up in open
 -- browsers. So, in the end we can best just use links to external resources to be
--- future proof. Just look at the viewer prferences pane to see how fragile support
+-- future proof. Just look at the viewer preferences pane to see how fragile support
 -- is. Interestingly u3d support is kind of built in, while e.g. mp4 support relies
 -- on wrapping in swf. We used to stay ahead of the pack with support of the fancy
 -- pdf features but it backfires and is not worth the trouble. And yes, for control
@@ -29,7 +29,7 @@ local gmatch, gsub, find, lower = string.gmatch, string.gsub, string.find, strin
 local stripstring = string.strip
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash = utilities.parsers.settings_to_hash
-local sortedhash = table.sortedhash
+local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 
 local report_media             = logs.reporter("backend","media")
 local report_attachment        = logs.reporter("backend","attachment")
@@ -141,6 +141,10 @@ local attachment_symbols = {
 attachment_symbols.PushPin = attachment_symbols.Pushpin
 attachment_symbols.Default = attachment_symbols.Pushpin
 
+function lpdf.attachmentsymbols()
+    return sortedkeys(comment_symbols)
+end
+
 local comment_symbols = {
     Comment      = pdfconstant("Comment"),
     Help         = pdfconstant("Help"),
@@ -153,6 +157,10 @@ local comment_symbols = {
 
 comment_symbols.NewParagraph = Newparagraph
 comment_symbols.Default      = Note
+
+function lpdf.commentsymbols()
+    return sortedkeys(comment_symbols)
+end
 
 local function analyzesymbol(symbol,collection)
     if not symbol or symbol == "" then
@@ -239,10 +247,12 @@ local function flushembeddedfiles()
                 e[#e+1] = pdfstring(tag)
                 e[#e+1] = reference -- already a reference
             else
-                -- messy spec ... when annot not in named else twice in menu list acrobat
+         --     -- messy spec ... when annot not in named else twice in menu list acrobat
             end
         end
-        lpdf.addtonames("EmbeddedFiles",pdfreference(pdfflushobject(pdfdictionary{ Names = e })))
+        if #e > 0 then
+            lpdf.addtonames("EmbeddedFiles",pdfreference(pdfflushobject(pdfdictionary{ Names = e })))
+        end
     end
 end
 
@@ -257,8 +267,12 @@ function codeinjections.embedfile(specification)
     local keepdir  = specification.keepdir -- can change
     local usedname = specification.usedname
     local filetype = specification.filetype
+    local compress = specification.compress
     if filename == "" then
         filename = nil
+    end
+    if compress == nil then
+        compress = true
     end
     if data then
         local r = filestreams[hash]
@@ -314,7 +328,7 @@ function codeinjections.embedfile(specification)
         specification.data = true -- signal that still data but already flushed
     else
         local foundname = specification.foundname or filename
-        f = pdfflushstreamfileobject(foundname,a)
+        f = pdfflushstreamfileobject(foundname,a,compress)
     end
     local d = pdfdictionary {
         Type = pdfconstant("Filespec"),
@@ -417,7 +431,8 @@ function codeinjections.attachmentid(filename) -- not used in context
     return filestreams[filename]
 end
 
-local nofcomments, usepopupcomments = 0, false
+local nofcomments      = 0
+local usepopupcomments = false
 
 local defaultattributes = {
     ["xmlns"]           = "http://www.w3.org/1999/xhtml",
@@ -612,7 +627,8 @@ local function insertrendering(specification)
     local option = settings_to_hash(specification.option)
     if not mf[label] then
         local filename = specification.filename
-        local isurl = find(filename,"://",1,true)
+        local isurl    = find(filename,"://",1,true)
+        local mimetype = specification.mimetype or specification.mime
      -- local start = pdfdictionary {
      --     Type = pdfconstant("MediaOffset"),
      --     S = pdfconstant("T"), -- time
@@ -648,13 +664,17 @@ local function insertrendering(specification)
         if isurl then
             descriptor.FS = pdfconstant("URL")
         elseif option[v_embed] then
-            descriptor.EF = codeinjections.embedfile { file = filename }
+            descriptor.EF = codeinjections.embedfile {
+                file     = filename,
+                mimetype = mimetype, -- yes or no
+                compress = false,
+            }
         end
         local clip = pdfdictionary {
             Type = pdfconstant("MediaClip"),
             S    = pdfconstant("MCD"),
             N    = label,
-            CT   = specification.mime,
+            CT   = mimetype,
             Alt  = pdfarray { "", "file not found" }, -- language id + message
             D    = pdfreference(pdfflushobject(descriptor)),
          -- P    = pdfreference(pdfflushobject(parameters)),

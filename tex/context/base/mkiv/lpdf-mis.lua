@@ -18,7 +18,6 @@ if not modules then modules = { } end modules ['lpdf-mis'] = {
 local next, tostring, type = next, tostring, type
 local format, gsub, formatters = string.format, string.gsub, string.formatters
 local flattened = table.flattened
-local texset, texget = tex.set, tex.get
 
 local backends, lpdf, nodes = backends, lpdf, nodes
 
@@ -30,7 +29,7 @@ local nuts                 = nodes.nuts
 local copy_node            = nuts.copy
 
 local nodepool             = nuts.pool
-local pdfpageliteral       = nodepool.pdfpageliteral
+local pageliteral          = nodepool.pageliteral
 local register             = nodepool.register
 
 local pdfdictionary        = lpdf.dictionary
@@ -54,6 +53,8 @@ local addtonames           = lpdf.addtonames
 
 local pdfgetmetadata       = lpdf.getmetadata
 
+local texset               = tex.set
+
 local variables            = interfaces.variables
 
 local v_stop               = variables.stop
@@ -72,11 +73,18 @@ local v_page               = variables.page
 local v_paper              = variables.paper
 local v_attachment         = variables.attachment
 local v_layer              = variables.layer
+local v_lefttoright        = variables.lefttoright
+local v_righttoleft        = variables.righttoleft
+local v_title              = variables.title
 
-local positive             = register(pdfpageliteral("/GSpositive gs"))
-local negative             = register(pdfpageliteral("/GSnegative gs"))
-local overprint            = register(pdfpageliteral("/GSoverprint gs"))
-local knockout             = register(pdfpageliteral("/GSknockout gs"))
+local positive             = register(pageliteral("/GSpositive gs"))
+local negative             = register(pageliteral("/GSnegative gs"))
+local overprint            = register(pageliteral("/GSoverprint gs"))
+local knockout             = register(pageliteral("/GSknockout gs"))
+
+local omitextraboxes       = false
+
+directives.register("backend.omitextraboxes", function(v) omitextraboxes = v end)
 
 local function initializenegative()
     local a = pdfarray { 0, 1 }
@@ -86,7 +94,7 @@ local function initializenegative()
         Range        = a,
         Domain       = a,
     }
-    local negative = pdfdictionary { Type = g, TR = pdfreference(pdfflushstreamobject("{ 1 exch sub }",d)) }
+    local negative = pdfdictionary { Type = g, TR = pdfreference(pdfflushstreamobject("{ 1 exch sub }",d)) } -- can be shared
     local positive = pdfdictionary { Type = g, TR = pdfconstant("Identity") }
     adddocumentextgstate("GSnegative", pdfreference(pdfflushobject(negative)))
     adddocumentextgstate("GSpositive", pdfreference(pdfflushobject(positive)))
@@ -230,6 +238,12 @@ local function setupidentity()
         addtoinfo("ID", pdfstring(id), id) -- needed for pdf/x
         --
         addtoinfo("ConTeXt.Version",version)
+        --
+        local lmtx = codeinjections.lmtxmode()
+        if lmtx then
+            addtoinfo("ConTeXt.LMTX",formatters["%0.2f"](lmtx))
+        end
+        --
         addtoinfo("ConTeXt.Time",os.date("%Y-%m-%d %H:%M"))
         addtoinfo("ConTeXt.Jobname",jobname)
         addtoinfo("ConTeXt.Url","www.pragma-ade.com")
@@ -254,7 +268,9 @@ local function flushjavascripts()
         local a = pdfarray()
         local pdf_javascript = pdfconstant("JavaScript")
         for i=1,#t do
-            local name, script = t[i][1], t[i][2]
+            local ti     = t[i]
+            local name   = ti[1]
+            local script = ti[2]
             local j = pdfdictionary {
                 S  = pdf_javascript,
                 JS = pdfreference(pdfflushstreamobject(script)),
@@ -304,14 +320,26 @@ local plusspecs = {
     [v_paper] = {
         paper  = true,
     },
+    [v_title] ={
+        title = true,
+    },
+    [v_lefttoright] ={
+        direction = "L2R",
+    },
+    [v_righttoleft] ={
+        direction = "R2R",
+    },
 }
 
 local pagespecs = {
     --
-    [v_max]        = plusspecs[v_max],
-    [v_bookmark]   = plusspecs[v_bookmark],
-    [v_attachment] = plusspecs[v_attachment],
-    [v_layer]      = plusspecs[v_layer],
+    [v_max]         = plusspecs[v_max],
+    [v_bookmark]    = plusspecs[v_bookmark],
+    [v_attachment]  = plusspecs[v_attachment],
+    [v_layer]       = plusspecs[v_layer],
+    [v_lefttoright] = plusspecs[v_lefttoright],
+    [v_righttoleft] = plusspecs[v_righttoleft],
+    [v_title]       = plusspecs[v_title],
     --
     [v_none] = {
     },
@@ -372,21 +400,23 @@ local cropoffset, bleedoffset, trimoffset, artoffset = 0, 0, 0, 0
 local marked = false
 local copies = false
 
+local getpagedimensions  getpagedimensions = function()
+    getpagedimensions = backends.codeinjections.getpagedimensions
+    return getpagedimensions()
+end
+
 function codeinjections.setupcanvas(specification)
     local paperheight = specification.paperheight
     local paperwidth  = specification.paperwidth
     local paperdouble = specification.doublesided
-    if paperheight then
-        texset('global','pageheight',paperheight)
-    end
-    if paperwidth then
-        texset('global','pagewidth',paperwidth)
-    end
+    --
+    paperwidth, paperheight = codeinjections.setpagedimensions(paperwidth,paperheight)
+    --
     pagespec    = specification.mode       or pagespec
     topoffset   = specification.topoffset  or 0
     leftoffset  = specification.leftoffset or 0
-    height      = specification.height     or texget("pageheight")
-    width       = specification.width      or texget("pagewidth")
+    height      = specification.height     or paperheight
+    width       = specification.width      or paperwidth
     marked      = specification.print
     --
     copies      = specification.copies
@@ -433,13 +463,15 @@ local function documentspecification()
             end
         end
     end
-    --
-    local layout = spec.layout
-    local mode   = spec.mode
-    local fit    = spec.fit
-    local fixed  = spec.fixed
-    local duplex = spec.duplex
-    local paper  = spec.paper
+    -- maybe interfaces.variables
+    local layout    = spec.layout
+    local mode      = spec.mode
+    local fit       = spec.fit
+    local fixed     = spec.fixed
+    local duplex    = spec.duplex
+    local paper     = spec.paper
+    local title     = spec.title
+    local direction = spec.direction
     if layout then
         addtocatalog("PageLayout",pdfconstant(layout))
     end
@@ -458,34 +490,42 @@ local function documentspecification()
             prints = pdfarray(flattened(pages.toranges(marked)))
         end
     end
-    if fit or fixed or duplex or copies or paper or prints then
+    if fit or fixed or duplex or copies or paper or prints or title or direction then
         addtocatalog("ViewerPreferences",pdfdictionary {
-            FitWindow         = fit    and true                or nil,
-            PrintScaling      = fixed  and pdfconstant("None") or nil,
-            Duplex            = duplex and pdfconstant(duplex) or nil,
-            NumCopies         = copies and copies              or nil,
-            PickTrayByPDFSize = paper  and true                or nil,
-            PrintPageRange    = prints                         or nil,
+            FitWindow         = fit       and true                   or nil,
+            PrintScaling      = fixed     and pdfconstant("None")    or nil,
+            Duplex            = duplex    and pdfconstant(duplex)    or nil,
+            NumCopies         = copies    and copies                 or nil,
+            PickTrayByPDFSize = paper     and true                   or nil,
+            PrintPageRange    = prints                               or nil,
+            DisplayDocTitle   = title     and true                   or nil,
+            Direction         = direction and pdfconstant(direction) or nil,
         })
     end
     addtoinfo   ("Trapped", pdfconstant("False")) -- '/Trapped' in /Info, 'Trapped' in XMP
     addtocatalog("Version", pdfconstant(format("1.%s",pdfminorversion())))
+    addtocatalog("Lang",    pdfstring(tokens.getters.macro("currentmainlanguage")))
 end
 
 -- temp hack: the mediabox is not under our control and has a precision of 5 digits
 
 local factor  = number.dimenfactors.bp
-local f_value = formatters["%0.6F"]
+local f_value = formatters["%.6F"]
+
+directives.register("pdf.stripzeros",function()
+    local f_value = formatters["%.6N"]
+end)
 
 local function boxvalue(n) -- we could share them
     return pdfverbose(f_value(factor * n))
 end
 
 local function pagespecification()
+    local paperwidth, paperheight = codeinjections.getpagedimensions()
     local llx = leftoffset
-    local lly = texget("pageheight") + topoffset - height
+    local lly = paperheight + topoffset - height
     local urx = width - leftoffset
-    local ury = texget("pageheight") - topoffset
+    local ury = paperheight - topoffset
     -- boxes can be cached
     local function extrabox(WhatBox,offset,always)
         if offset ~= 0 or always then
@@ -497,10 +537,14 @@ local function pagespecification()
             })
         end
     end
-    extrabox("CropBox",cropoffset,true) -- mandate for rendering
-    extrabox("TrimBox",trimoffset,true) -- mandate for pdf/x
-    extrabox("BleedBox",bleedoffset)    -- optional
- -- extrabox("ArtBox",artoffset)        -- optional .. unclear what this is meant to do
+    if omitextraboxes then
+        -- only useful for testing / comparing
+    else
+        extrabox("CropBox",cropoffset,true) -- mandate for rendering
+        extrabox("TrimBox",trimoffset,true) -- mandate for pdf/x
+        extrabox("BleedBox",bleedoffset)    -- optional
+     -- extrabox("ArtBox",artoffset)        -- optional .. unclear what this is meant to do
+    end
 end
 
 lpdf.registerpagefinalizer(pagespecification,"page specification")

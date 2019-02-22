@@ -67,6 +67,7 @@ local owntree = ownpath
 
 local ownlibs = {
 
+    "l-bit32.lua",
     "l-lua.lua",
     "l-macro.lua",
     "l-sandbox.lua",
@@ -82,6 +83,7 @@ local ownlibs = {
     "l-file.lua",     -- limited functionality when no lfs
  -- "l-gzip.lua",
     "l-md5.lua",      -- not loaded when no md5 library
+    "l-sha.lua",      -- not loaded when no sha2 library
     "l-url.lua",
     "l-dir.lua",      -- limited functionality when no lfs
     "l-boolean.lua",
@@ -97,6 +99,19 @@ local ownlibs = {
     "util-prs.lua",
  -- "util-fmt.lua", -- no need for table formatters
  -- "util-deb.lua", -- no need for debugging (and tracing)
+
+    "util-soc-imp-reset",
+    "util-soc-imp-socket",
+    "util-soc-imp-copas",
+    "util-soc-imp-ltn12",
+ -- "util-soc-imp-mbox",
+    "util-soc-imp-mime",
+    "util-soc-imp-url",
+    "util-soc-imp-headers",
+    "util-soc-imp-tp",
+    "util-soc-imp-http",
+    "util-soc-imp-ftp",
+    "util-soc-imp-smtp",
 
     "trac-set.lua",
     "trac-log.lua",

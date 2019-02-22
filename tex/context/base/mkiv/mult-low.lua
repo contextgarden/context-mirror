@@ -12,7 +12,8 @@ return {
     ["constants"] = {
         --
         "zerocount", "minusone", "minustwo", "plusone", "plustwo", "plusthree", "plusfour", "plusfive",
-        "plussix", "plusseven", "pluseight", "plusnine", "plusten", "plussixteen", "plushundred", "plustwohundred",
+        "plussix", "plusseven", "pluseight", "plusnine", "plusten", "plussixteen",
+        "plusfifty", "plushundred", "plusonehundred", "plustwohundred", "plusfivehundred",
         "plusthousand", "plustenthousand", "plustwentythousand", "medcard", "maxcard", "maxcardminusone",
         "zeropoint", "onepoint", "halfapoint", "onebasepoint", "maxcount", "maxdimen", "scaledpoint", "thousandpoint",
         "points", "halfpoint",
@@ -20,7 +21,9 @@ return {
         "zeromuskip", "onemuskip",
         "pluscxxvii", "pluscxxviii", "pluscclv", "pluscclvi",
         "normalpagebox",
-        --        --
+        --
+        "directionlefttoright", "directionrighttoleft",
+        --
         "endoflinetoken", "outputnewlinechar",
         --
         "emptytoks", "empty", "undefined",
@@ -31,9 +34,7 @@ return {
         --
         "fmtname", "fmtversion", "texengine", "texenginename", "texengineversion", "texenginefunctionality",
         "luatexengine", "pdftexengine", "xetexengine", "unknownengine",
-     -- "etexversion",
-     -- "pdftexversion", "pdftexrevision",
-     -- "xetexversion", "xetexrevision",
+        "contextformat", "contextversion", "contextkind", "contextlmtxmode", "contextmark", "mksuffix",
         --
         "activecatcode",
         --
@@ -59,6 +60,7 @@ return {
         "spaceasciicode", "hashasciicode", "dollarasciicode", "commentasciicode", "ampersandasciicode",
         "colonasciicode", "backslashasciicode", "circumflexasciicode", "underscoreasciicode",
         "leftbraceasciicode", "barasciicode", "rightbraceasciicode", "tildeasciicode", "delasciicode",
+        "leftparentasciicode", "rightparentasciicode",
         "lessthanasciicode", "morethanasciicode", "doublecommentsignal",
         "atsignasciicode", "exclamationmarkasciicode", "questionmarkasciicode",
         "doublequoteasciicode", "singlequoteasciicode", "forwardslashasciicode",
@@ -101,7 +103,9 @@ return {
         "startcomponent", "stopcomponent", "component",
         "startproduct", "stopproduct", "product",
         "startproject", "stopproject", "project",
-        "starttext", "stoptext", "startnotext", "stopnotext","startdocument", "stopdocument", "documentvariable", "unexpandeddocumentvariable", "setupdocument", "presetdocument",
+        "starttext", "stoptext", "startnotext", "stopnotext",
+        "startdocument", "stopdocument", "documentvariable", "unexpandeddocumentvariable", "setupdocument", "presetdocument",
+        "doifelsedocumentvariable", "doifdocumentvariableelse", "doifdocumentvariable", "doifnotdocumentvariable",
         "startmodule", "stopmodule", "usemodule", "usetexmodule", "useluamodule","setupmodule","currentmoduleparameter","moduleparameter",
         "everystarttext", "everystoptext",
         --
@@ -153,10 +157,12 @@ return {
         "texdefinition",
         --
         "doifelsesetups", "doifsetupselse", "doifsetups", "doifnotsetups", "setup", "setups", "texsetup", "xmlsetup", "luasetup", "directsetup", "fastsetup",
+        "copysetups", "resetsetups",
         "doifelsecommandhandler", "doifcommandhandlerelse", "doifnotcommandhandler", "doifcommandhandler",
         --
         "newmode", "setmode", "resetmode",
         "newsystemmode", "setsystemmode", "resetsystemmode", "pushsystemmode", "popsystemmode",
+        "globalsetmode", "globalresetmode", "globalsetsystemmode", "globalresetsystemmode",
         "booleanmodevalue",
         --
         "newcount", "newdimen", "newskip", "newmuskip", "newbox", "newtoks", "newread", "newwrite", "newmarks", "newinsert", "newattribute", "newif",
@@ -165,14 +171,19 @@ return {
         "then",
         "begcsname",
         --
+        "autorule",
+        --
         "strippedcsname","checkedstrippedcsname",
         --
         "firstargumentfalse", "firstargumenttrue",
         "secondargumentfalse", "secondargumenttrue",
         "thirdargumentfalse", "thirdargumenttrue",
         "fourthargumentfalse", "fourthargumenttrue",
-        "fifthargumentfalse", "fifthsargumenttrue",
-        "sixthargumentfalse", "sixtsargumenttrue",
+        "fifthargumentfalse", "fifthargumenttrue",
+        "sixthargumentfalse", "sixthargumenttrue",
+        "seventhargumentfalse", "seventhargumenttrue",
+        --
+        "vkern", "hkern",
         --
         "doglobal", "dodoglobal", "redoglobal", "resetglobal",
         --
@@ -197,8 +208,8 @@ return {
         --
         "hglue", "vglue", "hfillneg", "vfillneg", "hfilllneg", "vfilllneg",
         --
-        "ruledhss", "ruledhfil", "ruledhfill", "ruledhfilneg", "ruledhfillneg", "normalhfillneg",
-        "ruledvss", "ruledvfil", "ruledvfill", "ruledvfilneg", "ruledvfillneg", "normalvfillneg",
+        "ruledhss", "ruledhfil", "ruledhfill", "ruledhfilll", "ruledhfilneg", "ruledhfillneg", "normalhfillneg",  "normalhfilllneg",
+        "ruledvss", "ruledvfil", "ruledvfill", "ruledvfilll", "ruledvfilneg", "ruledvfillneg", "normalvfillneg",  "normalvfilllneg",
         "ruledhbox", "ruledvbox", "ruledvtop", "ruledvcenter", "ruledmbox",
         "ruledhpack", "ruledvpack", "ruledtpack",
         "ruledhskip", "ruledvskip", "ruledkern", "ruledmskip", "ruledmkern",
@@ -214,11 +225,20 @@ return {
         "scratchtoks", "globalscratchtoks", "privatescratchtoks",
         "scratchbox", "globalscratchbox", "privatescratchbox",
         --
+        "globalscratchcounterone", "globalscratchcountertwo", "globalscratchcounterthree",
+        --
+        "groupedcommand", "groupedcommandcs",
+        "triggergroupedcommand", "triggergroupedcommandcs",
+        "simplegroupedcommand", "pickupgroupedcommand",
+        --
         "normalbaselineskip", "normallineskip", "normallineskiplimit",
         --
         "availablehsize", "localhsize", "setlocalhsize", "distributedhsize", "hsizefraction",
         --
+        "next", "nexttoken",
+        --
         "nextbox", "dowithnextbox", "dowithnextboxcs", "dowithnextboxcontent", "dowithnextboxcontentcs", "flushnextbox",
+        "boxisempty",
         --
         "scratchwidth", "scratchheight", "scratchdepth", "scratchoffset", "scratchdistance",
         "scratchhsize", "scratchvsize",
@@ -239,6 +259,7 @@ return {
         "scratchleftskip", "scratchrightskip", "scratchtopskip", "scratchbottomskip",
         --
         "doif", "doifnot", "doifelse",
+        "firstinset",
         "doifinset", "doifnotinset",
         "doifelseinset", "doifinsetelse",
         "doifelsenextchar", "doifnextcharelse",
@@ -262,7 +283,7 @@ return {
         "doifelsenumber", "doifnumberelse", "doifnumber", "doifnotnumber",
         "doifelsecommon", "doifcommonelse", "doifcommon", "doifnotcommon",
         "doifinstring", "doifnotinstring", "doifelseinstring", "doifinstringelse",
-        "doifelseassignment", "doifassignmentelse", "docheckassignment",
+        "doifelseassignment", "doifassignmentelse", "docheckassignment", "doifelseassignmentcs", "doifassignmentelsecs",
         "doiftext", "doifelsetext", "doiftextelse", "doifnottext",
         --
         "tracingall", "tracingnone", "loggingall",
@@ -278,7 +299,7 @@ return {
         "singleexpandafter", "doubleexpandafter", "tripleexpandafter",
         --
         "dontleavehmode", "removelastspace", "removeunwantedspaces", "keepunwantedspaces",
-        "removepunctuation", "ignoreparskip", "forcestrutdepth",
+        "removepunctuation", "ignoreparskip", "forcestrutdepth", "onlynonbreakablespace",
         --
         "wait", "writestatus", "define", "defineexpandable", "redefine",
         --
@@ -329,7 +350,7 @@ return {
         "dosinglegroupempty", "dodoublegroupempty", "dotriplegroupempty", "doquadruplegroupempty", "doquintuplegroupempty",
         "permitspacesbetweengroups", "dontpermitspacesbetweengroups",
         --
-        "nopdfcompression", "maximumpdfcompression", "normalpdfcompression",
+        "nopdfcompression", "maximumpdfcompression", "normalpdfcompression", "onlypdfobjectcompression", "nopdfobjectcompression",
         --
         "modulonumber", "dividenumber",
         --
@@ -403,12 +424,8 @@ return {
         "startluacode", "stopluacode", "startlua", "stoplua",
         "startctxfunction","stopctxfunction","ctxfunction",
         "startctxfunctiondefinition","stopctxfunctiondefinition",
-        "installctxfunction", "installctxfunctioncall",
-        "installprotectedctxfunction", "installprotectedctxfunctioncall",
-        "installctxscanner", "installctxscannercall",
-        "resetctxscanner",
-        "installprotectedctxscanner", "installprotectedctxscannercall",
-        "cldprocessfile", "cldloadfile", "cldcontext", "cldcommand",
+        "installctxfunction", "installprotectedctxfunction",  "installprotectedctxscanner", "installctxscanner", "resetctxscanner",
+        "cldprocessfile", "cldloadfile", "cldloadviafile", "cldcontext", "cldcommand",
         --
         "carryoverpar",
         "lastlinewidth",
@@ -433,7 +450,8 @@ return {
         --
         "nospace", "nospacing", "dospacing",
         --
-        "naturalhbox", "naturalvbox", "naturalvtop", "naturalhpack", "naturalvpack",
+        "naturalhbox", "naturalvbox", "naturalvtop", "naturalhpack", "naturalvpack", "naturaltpack",
+        "reversehbox", "reversevbox", "reversevtop", "reversehpack", "reversevpack", "reversetpack",
         --
         "frule",
         --

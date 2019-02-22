@@ -40,49 +40,49 @@ local application = logs.application {
 }
 
 -- local luatexflags = {
---     ["8bit"]                        = true, -- ignored, input is assumed to be in UTF-8 encoding
---     ["default-translate-file"]      = true, -- ignored, input is assumed to be in UTF-8 encoding
---     ["translate-file"]              = true, -- ignored, input is assumed to be in UTF-8 encoding
---     ["etex"]                        = true, -- ignored, the etex extensions are always active
---     ["parse-first-line"]            = true, -- ignored, enable parsing of the first line of the input file
---     ["no-parse-first-line"]         = true, -- ignored, disable parsing of the first line of the input file
+--     ["8bit"]                        = true,  -- ignored, input is assumed to be in UTF-8 encoding
+--     ["default-translate-file"]      = true,  -- ignored, input is assumed to be in UTF-8 encoding
+--     ["translate-file"]              = true,  -- ignored, input is assumed to be in UTF-8 encoding
+--     ["etex"]                        = true,  -- ignored, the etex extensions are always active
+--     ["parse-first-line"]            = true,  -- ignored, enable parsing of the first line of the input file
+--     ["no-parse-first-line"]         = true,  -- ignored, disable parsing of the first line of the input file
 --
---     ["credits"]                     = true, -- display credits and exit
---     ["debug-format"]                = true, -- enable format debugging
---     ["disable-write18"]             = true, -- disable \write18{SHELL COMMAND}
---     ["draftmode"]                   = true, -- switch on draft mode (generates no output PDF)
---     ["enable-write18"]              = true, -- enable \write18{SHELL COMMAND}
---     ["file-line-error"]             = true, -- enable file:line:error style messages
---     ["file-line-error-style"]       = true, -- aliases of --file-line-error
---     ["no-file-line-error"]          = true, -- disable file:line:error style messages
---     ["no-file-line-error-style"]    = true, -- aliases of --no-file-line-error
---     ["fmt"]                         = true, -- load the format file FORMAT
---     ["halt-on-error"]               = true, -- stop processing at the first error
---     ["help"]                        = true, -- display help and exit
---     ["ini"]                         = true, -- be iniluatex, for dumping formats
---     ["interaction"]                 = true, -- set interaction mode (STRING=batchmode/nonstopmode/scrollmode/errorstopmode)
---     ["jobname"]                     = true, -- set the job name to STRING
---     ["kpathsea-debug"]              = true, -- set path searching debugging flags according to the bits of NUMBER
---     ["lua"]                         = true, -- load and execute a lua initialization script
---     ["mktex"]                       = true, -- enable mktexFMT generation (FMT=tex/tfm)
---     ["no-mktex"]                    = true, -- disable mktexFMT generation (FMT=tex/tfm)
---     ["nosocket"]                    = true, -- disable the lua socket library
---     ["output-comment"]              = true, -- use STRING for DVI file comment instead of date (no effect for PDF)
---     ["output-directory"]            = true, -- use existing DIR as the directory to write files in
---     ["output-format"]               = true, -- use FORMAT for job output; FORMAT is 'dvi' or 'pdf'
---     ["progname"]                    = true, -- set the program name to STRING
---     ["recorder"]                    = true, -- enable filename recorder
---     ["safer"]                       = true, -- disable easily exploitable lua commands
---     ["shell-escape"]                = true, -- enable \write18{SHELL COMMAND}
---     ["no-shell-escape"]             = true, -- disable \write18{SHELL COMMAND}
---     ["shell-restricted"]            = true, -- restrict \write18 to a list of commands given in texmf.cnf
---     ["nodates"]                     = true, -- no production dates in pdf file
---     ["trailerid"]                   = true, -- alternative trailer id
---     ["synctex"]                     = true, -- enable synctex
---     ["version"]                     = true, -- display version and exit
---     ["luaonly"]                     = true, -- run a lua file, then exit
---     ["luaconly"]                    = true, -- byte-compile a lua file, then exit
---     ["jiton"]                       = false,
+--     ["credits"]                     = true,  -- display credits and exit
+--     ["debug-format"]                = true,  -- enable format debugging
+--     ["disable-write18"]             = true,  -- disable \write18{SHELL COMMAND}
+--     ["draftmode"]                   = true,  -- switch on draft mode (generates no output PDF)
+--     ["enable-write18"]              = true,  -- enable \write18{SHELL COMMAND}
+--     ["file-line-error"]             = true,  -- enable file:line:error style messages
+--     ["file-line-error-style"]       = true,  -- aliases of --file-line-error
+--     ["no-file-line-error"]          = true,  -- disable file:line:error style messages
+--     ["no-file-line-error-style"]    = true,  -- aliases of --no-file-line-error
+--     ["fmt"]                         = true,  -- load the format file FORMAT
+--     ["halt-on-error"]               = true,  -- stop processing at the first error
+--     ["help"]                        = true,  -- display help and exit
+--     ["ini"]                         = true,  -- be iniluatex, for dumping formats
+--     ["interaction"]                 = true,  -- set interaction mode (STRING=batchmode/nonstopmode/scrollmode/errorstopmode)
+--     ["jobname"]                     = true,  -- set the job name to STRING
+--     ["kpathsea-debug"]              = true,  -- set path searching debugging flags according to the bits of NUMBER
+--     ["lua"]                         = true,  -- load and execute a lua initialization script
+--     ["mktex"]                       = true,  -- enable mktexFMT generation (FMT=tex/tfm)
+--     ["no-mktex"]                    = true,  -- disable mktexFMT generation (FMT=tex/tfm)
+--     ["nosocket"]                    = true,  -- disable the lua socket library
+--     ["output-comment"]              = true,  -- use STRING for DVI file comment instead of date (no effect for PDF)
+--     ["output-directory"]            = true,  -- use existing DIR as the directory to write files in
+--     ["output-format"]               = true,  -- use FORMAT for job output; FORMAT is 'dvi' or 'pdf'
+--     ["progname"]                    = true,  -- set the program name to STRING
+--     ["recorder"]                    = true,  -- enable filename recorder
+--     ["safer"]                       = true,  -- disable easily exploitable lua commands
+--     ["shell-escape"]                = true,  -- enable \write18{SHELL COMMAND}
+--     ["no-shell-escape"]             = true,  -- disable \write18{SHELL COMMAND}
+--     ["shell-restricted"]            = true,  -- restrict \write18 to a list of commands given in texmf.cnf
+--     ["nodates"]                     = true,  -- no production dates in pdf file
+--     ["trailerid"]                   = true,  -- alternative trailer id
+--     ["synctex"]                     = true,  -- enable synctex
+--     ["version"]                     = true,  -- display version and exit
+--     ["luaonly"]                     = true,  -- run a lua file, then exit
+--     ["luaconly"]                    = true,  -- byte-compile a lua file, then exit
+--     ["jiton"]                       = false, -- not supported (makes no sense, slower)
 -- }
 
 local report = application.report
@@ -95,11 +95,14 @@ scripts.context = scripts.context or { }
 if jit then -- already luajittex
     setargument("engine","luajittex")
     setargument("jit",nil)
-elseif getargument("jit") or getargument("jiton") then -- relaunch luajittex
-    -- bonus shortcut, we assume than --jit also indicates the engine
+elseif getargument("jit") then -- relaunch luajittex
+    -- bonus shortcut, we assume that --jit also indicates the engine
     -- although --jit and --engine=luajittex are independent
     setargument("engine","luajittex")
 end
+
+-- -- The way we use stubs will change in a bit in 2019 (mtxrun and context). We also normalize
+-- -- the platforms to use a similar approach to this.
 
 local engine_new = file.nameonly(getargument("engine") or directives.value("system.engine"))
 local engine_old = file.nameonly(environment.ownbin)
@@ -111,15 +114,15 @@ local function restart(engine_old,engine_new)
     os.exit(result == 0 and 0 or 1)
 end
 
-if getargument("redirected") then
-    setargument("engine",engine_old) -- later on we need this
-elseif engine_new == engine_old then
-    setargument("engine",engine_new) -- later on we need this
-elseif environment.validengines[engine_new] and engine_new ~= environment.basicengines[engine_old] then
-    restart(engine_old,engine_new)
-else
-    setargument("engine",engine_new) -- later on we need this
-end
+-- if getargument("redirected") then
+--     setargument("engine",engine_old) -- later on we need this
+-- elseif engine_new == engine_old then
+--     setargument("engine",engine_new) -- later on we need this
+-- elseif environment.validengines[engine_new] and engine_new ~= environment.basicengines[engine_old] then
+--     restart(engine_old,engine_new)
+-- else
+--     setargument("engine",engine_new) -- later on we need this
+-- end
 
 -- so far
 
@@ -433,6 +436,7 @@ end
 local pdfview -- delayed
 
 local function pdf_open(name,method)
+    statistics.starttiming("pdfview")
     pdfview = pdfview or dofile(resolvers.findfile("l-pdfview.lua","tex"))
     pdfview.setmethod(method)
     report(pdfview.status())
@@ -441,9 +445,12 @@ local function pdf_open(name,method)
         pdfname = name .. ".pdf" -- agressive
     end
     pdfview.open(pdfname)
+    statistics.stoptiming("pdfview")
+    report("pdfview overhead: %s seconds",statistics.elapsedtime("pdfview"))
 end
 
 local function pdf_close(name,method)
+    statistics.starttiming("pdfview")
     pdfview = pdfview or dofile(resolvers.findfile("l-pdfview.lua","tex"))
     pdfview.setmethod(method)
     local pdfname = filenewsuffix(name,"pdf")
@@ -452,6 +459,7 @@ local function pdf_close(name,method)
     end
     pdfname = name .. ".pdf" -- agressive
     pdfview.close(pdfname)
+    statistics.stoptiming("pdfview")
 end
 
 -- result file handling
@@ -596,7 +604,7 @@ function scripts.context.run(ctxdata,filename)
     local a_nofile = getargument("nofile")
     local a_engine = getargument("engine")
     --
-    local files    = environment.files or { }
+    local files    = environment.filenames or { }
     --
     local filelist, mainfile
     --
@@ -651,7 +659,6 @@ function scripts.context.run(ctxdata,filename)
     local a_backend       = getargument("backend")
     local a_arrange       = getargument("arrange")
     local a_noarrange     = getargument("noarrange")
-    local a_jiton         = getargument("jiton")
     local a_jithash       = getargument("jithash")
     local a_texformat     = getargument("texformat")
     local a_keeptuc       = getargument("keeptuc")
@@ -665,11 +672,11 @@ function scripts.context.run(ctxdata,filename)
     -- side effects (so no bug reports please) .. we provide --sandbox that
     -- does similar things but tries to ensure that context works as expected
 
-    local a_safer       = getargument("safer")
-
-    if a_safer then
-        report("warning: using the luatex safer options, processing is not guaranteed")
-    end
+ -- local a_safer       = getargument("safer")
+ --
+ -- if a_safer then
+ --     report("warning: using the luatex safer options, processing is not guaranteed")
+ -- end
 
     --
     a_batchmode = (a_batchmode and "batchmode") or (a_nonstopmode and "nonstopmode") or (a_scrollmode and "scrollmode") or nil
@@ -688,7 +695,7 @@ function scripts.context.run(ctxdata,filename)
         --
         if pathname == "" and not a_global and filename ~= usedfiles.nop then
             filename = "./" .. filename
-            if not validfile(filename) then
+            if not validfile(filename) and not validfile(filename..".tex") then
                 report("warning: no (local) file %a, proceeding",filename)
             end
         end
@@ -709,7 +716,6 @@ function scripts.context.run(ctxdata,filename)
                 formatfile, scriptfile = resolvers.locateformat(formatname)
             end
             --
-            a_jiton   = (a_jiton   or toboolean(analysis.jiton,true)) and true or nil
             a_jithash = validstring(a_jithash or analysis.jithash) or nil
             --
             if not formatfile or not scriptfile then
@@ -795,6 +801,7 @@ function scripts.context.run(ctxdata,filename)
                     ctx            = validstring(ctxname),
                     export         = a_export and true or nil,
                     nocompression  = a_nocompression and true or nil,
+                    texmfbinpath   = os.selfdir,
                 }
                 --
                 for k, v in next, environment.arguments do
@@ -809,14 +816,13 @@ function scripts.context.run(ctxdata,filename)
                 local l_flags = {
                     ["interaction"]           = a_batchmode,
                  -- ["synctex"]               = false,       -- context has its own way
-                    ["no-parse-first-line"]   = true,        -- obsolete
-                    ["safer"]                 = a_safer,     -- better use --sandbox
+                 -- ["no-parse-first-line"]   = true,        -- obsolete
+                 -- ["safer"]                 = a_safer,     -- better use --sandbox
                  -- ["no-mktex"]              = true,
                  -- ["file-line-error-style"] = true,
                     ["fmt"]                   = formatfile,
                     ["lua"]                   = scriptfile,
                     ["jobname"]               = jobname,
-                    ["jiton"]                 = a_jiton,
                     ["jithash"]               = a_jithash,
                 }
                 --
@@ -1185,9 +1191,9 @@ function scripts.context.make(name)
     if not getargument("fast") then -- as in texexec
         scripts.context.generate()
     end
-    local list = (name and { name }) or (environment.files[1] and environment.files) or defaultformats
+    local list = (name and { name }) or (environment.filenames[1] and environment.filenames) or defaultformats
     local engine = getargument("engine") or "luatex"
-    if getargument("jit") or getargument("jiton") then
+    if getargument("jit") then
         engine = "luajittex"
     end
     for i=1,#list do
@@ -1205,7 +1211,7 @@ end
 
 function scripts.context.ctx()
     local ctxdata = ctxrunner.new()
-    ctxdata.jobname = environment.files[1]
+    ctxdata.jobname = environment.filenames[1]
     ctxrunner.checkfile(ctxdata,getargument("ctx"))
     ctxrunner.checkflags(ctxdata)
     scripts.context.run(ctxdata)
@@ -1213,7 +1219,7 @@ end
 
 function scripts.context.autoctx()
     local ctxdata   = nil
-    local files     = environment.files
+    local files     = environment.filenames
     local firstfile = #files > 0 and files[1]
     if firstfile then
         local suffix  = filesuffix(firstfile)
@@ -1248,7 +1254,7 @@ end
 -- local loaded = false
 --
 -- function scripts.context.metapost()
---     local filename = environment.files[1] or ""
+--     local filename = environment.filenames[1] or ""
 --     if not loaded then
 --         dofile(resolvers.findfile("mlib-run.lua"))
 --         loaded = true
@@ -1265,7 +1271,7 @@ end
 --         local jobname = "mtx-context-metapost"
 --         local tempname = fileaddsuffix(jobname,"tex")
 --         io.savedata(tempname,format(template,"metafun",filename))
---         environment.files[1] = tempname
+--         environment.filenames[1] = tempname
 --         setargument("result",resultname)
 --         setargument("once",true)
 --         scripts.context.run()
@@ -1583,7 +1589,7 @@ end
 -- updating (often one will use mtx-update instead)
 
 function scripts.context.timed(action)
-    statistics.timed(action)
+    statistics.timed(action,true)
 end
 
 local zipname     = "cont-tmf.zip"
@@ -1792,14 +1798,14 @@ elseif getargument("expert") then
 elseif getargument("showmodules") or getargument("modules") then
     scripts.context.modules()
 elseif getargument("showextras") or getargument("extras") then
-    scripts.context.extras(environment.files[1] or getargument("extras"))
+    scripts.context.extras(environment.filenames[1] or getargument("extras"))
 elseif getargument("extra") then
     scripts.context.extra()
 elseif getargument("exporthelp") then
- -- application.export(getargument("exporthelp"),environment.files[1])
+ -- application.export(getargument("exporthelp"),environment.filenames[1])
     application.export()
 elseif getargument("help") then
-    if environment.files[1] == "extras" then
+    if environment.filenames[1] == "extras" then
         scripts.context.extras()
     else
         application.help("basic")
@@ -1810,7 +1816,7 @@ elseif getargument("showdirectives") or getargument("directives") == true then
     scripts.context.directives()
 elseif getargument("showlogcategories") then
     scripts.context.logcategories()
-elseif environment.files[1] or getargument("nofile") then
+elseif environment.filenames[1] or getargument("nofile") then
     scripts.context.timed(scripts.context.autoctx)
 elseif getargument("pipe") then
     scripts.context.timed(scripts.context.pipe)

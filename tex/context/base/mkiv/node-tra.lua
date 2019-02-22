@@ -21,68 +21,67 @@ local report_nodes = logs.reporter("nodes","tracing")
 
 local nodes, node, context = nodes, node, context
 
-local texgetattribute  = tex.getattribute
+local texgetattribute = tex.getattribute
 
-local tracers          = nodes.tracers or { }
-nodes.tracers          = tracers
+local tracers         = nodes.tracers or { }
+nodes.tracers         = tracers
 
-local tasks            = nodes.tasks or { }
-nodes.tasks            = tasks
+local tasks           = nodes.tasks or { }
+nodes.tasks           = tasks
 
-local handlers         = nodes.handlers or {}
-nodes.handlers         = handlers
+local handlers        = nodes.handlers or {}
+nodes.handlers        = handlers
 
-local injections       = nodes.injections or { }
-nodes.injections       = injections
+local injections      = nodes.injections or { }
+nodes.injections      = injections
 
-local nuts             = nodes.nuts
-local tonut            = nuts.tonut
-local tonode           = nuts.tonode
+local nuts            = nodes.nuts
+local tonut           = nuts.tonut
+local tonode          = nuts.tonode
 
-local getnext          = nuts.getnext
-local getprev          = nuts.getprev
-local getid            = nuts.getid
-local getchar          = nuts.getchar
-local getsubtype       = nuts.getsubtype
-local getlist          = nuts.getlist
-local getdisc          = nuts.getdisc
-local setattr          = nuts.setattr
-local getglue          = nuts.getglue
-local isglyph          = nuts.isglyph
-local getcomponents    = nuts.getcomponents
-local getdir           = nuts.getdir
-local getwidth         = nuts.getwidth
+local getnext         = nuts.getnext
+local getprev         = nuts.getprev
+local getid           = nuts.getid
+local getsubtype      = nuts.getsubtype
+local getlist         = nuts.getlist
+local getdisc         = nuts.getdisc
+local setattr         = nuts.setattr
+local getglue         = nuts.getglue
+local isglyph         = nuts.isglyph
+local getdirection    = nuts.getdirection
+local getwidth        = nuts.getwidth
 
-local flush_list       = nuts.flush_list
-local count_nodes      = nuts.countall
-local used_nodes       = nuts.usedlist
+local flush_list      = nuts.flush_list
+local count_nodes     = nuts.countall
+local used_nodes      = nuts.usedlist
 
-local traverse_by_id   = nuts.traverse_id
-local traverse_nodes   = nuts.traverse
-local d_tostring       = nuts.tostring
+local nextnode        = nuts.traversers.node
+local nextglyph       = nuts.traversers.glyph
 
-local nutpool          = nuts.pool
-local new_rule         = nutpool.rule
+local d_tostring      = nuts.tostring
 
-local nodecodes        = nodes.nodecodes
-local whatcodes        = nodes.whatcodes
-local skipcodes        = nodes.skipcodes
-local fillcodes        = nodes.fillcodes
+local nutpool         = nuts.pool
+local new_rule        = nutpool.rule
 
-local glyph_code       = nodecodes.glyph
-local hlist_code       = nodecodes.hlist
-local vlist_code       = nodecodes.vlist
-local disc_code        = nodecodes.disc
-local glue_code        = nodecodes.glue
-local kern_code        = nodecodes.kern
-local rule_code        = nodecodes.rule
-local dir_code         = nodecodes.dir
-local localpar_code    = nodecodes.localpar
-local whatsit_code     = nodecodes.whatsit
+local nodecodes       = nodes.nodecodes
+local whatsitcodes    = nodes.whatsitcodes
+local fillcodes       = nodes.fillcodes
 
-local dimenfactors     = number.dimenfactors
-local fillorders       = nodes.fillcodes
-local formatters       = string.formatters
+local subtypes        = nodes.subtypes
+
+local glyph_code      = nodecodes.glyph
+local hlist_code      = nodecodes.hlist
+local vlist_code      = nodecodes.vlist
+local disc_code       = nodecodes.disc
+local glue_code       = nodecodes.glue
+local kern_code       = nodecodes.kern
+local rule_code       = nodecodes.rule
+local dir_code        = nodecodes.dir
+local localpar_code   = nodecodes.localpar
+local whatsit_code    = nodecodes.whatsit
+
+local dimenfactors    = number.dimenfactors
+local formatters      = string.formatters
 
 -- this will be reorganized:
 
@@ -90,23 +89,26 @@ function nodes.showlist(head, message)
     if message then
         report_nodes(message)
     end
-    for n in traverse_nodes(tonut(head)) do
+    for n in nextnode, tonut(head) do
         report_nodes(d_tostring(n))
     end
 end
 
 function nodes.handlers.checkglyphs(head,message)
-    local h = tonut(head)
+    local h = tonut(head) -- tonut needed?
     local t = { }
-    for g in traverse_by_id(glyph_code,h) do
-        t[#t+1] = formatters["%U:%s"](getchar(g),getsubtype(g))
+    local n = 0
+    local f = formatters["%U:%s"]
+    for g, char, font in nextglyph, h do
+        n = n + 1
+        t[n] = f(char,getsubtype(g))
     end
-    if #t > 0 then
-        if message and message ~= "" then
-            report_nodes("%s, %s glyphs: % t",message,#t,t)
-        else
-            report_nodes("%s glyphs: % t",#t,t)
-        end
+    if n == 0 then
+        -- nothing to report
+    elseif message and message ~= "" then
+        report_nodes("%s, %s glyphs: % t",message,n,t)
+    else
+        report_nodes("%s glyphs: % t",n,t)
     end
     return false
 end
@@ -114,8 +116,8 @@ end
 function nodes.handlers.checkforleaks(sparse)
     local l = { }
     local q = used_nodes()
-    for p in traverse_nodes(q) do
-        local s = table.serialize(nodes.astable(p,sparse),nodecodes[getid(p)])
+    for p, id in nextnode, q do
+        local s = table.serialize(nodes.astable(p,sparse),nodecodes[id])
         l[s] = (l[s] or 0) + 1
     end
     flush_list(q)
@@ -124,42 +126,51 @@ function nodes.handlers.checkforleaks(sparse)
     end
 end
 
-local f_sequence = formatters["U+%04X:%s"]
-local f_subrange = formatters["[[ %s ][ %s ][ %s ]]"]
+local fontcharacters -- = fonts.hashes.descriptions
 
 local function tosequence(start,stop,compact)
     if start then
+        if not fontcharacters then
+            fontcharacters = fonts.hashes.descriptions
+            if not fontcharacters then
+                return "[no char data]"
+            end
+        end
+        local f_sequence = formatters["U+%04X:%s"]
+        local f_subrange = formatters["[[ %s ][ %s ][ %s ]]"]
         start = tonut(start)
         stop = stop and tonut(stop)
         local t = { }
+        local n = 0
         while start do
             local c, id = isglyph(start)
             if c then
-                if compact then
-                    local components = getcomponents(start)
-                    if components then
-                        t[#t+1] = tosequence(components,nil,compact)
-                    else
-                        t[#t+1] = utfchar(c)
+                local u = fontcharacters[id][c] -- id == font id
+                u = u and u.unicode or c
+                if type(u) == "table" then
+                    local tt = { }
+                    for i=1,#u do
+                        local c = u[i]
+                        tt[i] = compact and utfchar(c) or f_sequence(c,utfchar(c))
                     end
+                    n = n + 1 ; t[n] = "(" .. concat(tt," ") .. ")"
                 else
-                    t[#t+1] = f_sequence(c,utfchar(c))
+                    n = n + 1 ; t[n] = compact and utfchar(c) or f_sequence(c,utfchar(c))
                 end
             elseif id == disc_code then
                 local pre, post, replace = getdisc(start)
                 t[#t+1] = f_subrange(pre and tosequence(pre),post and tosequence(post),replace and tosequence(replace))
             elseif id == rule_code then
-                if compact then
-                    t[#t+1] = "|"
-                else
-                    t[#t+1] = nodecodes[id]
-                end
-            elseif id == dir_code or id == localpar_code then
-                t[#t+1] = "[" .. getdir(start) .. "]"
+                n = n + 1 ; t[n] = compact and "|" or nodecodes[id] or "?"
+            elseif id == dir_code then
+                local d, p = getdirection(start)
+                n = n + 1 ; t[n] = "[<" .. (p and "-" or "+") .. d .. ">]" -- todo l2r etc
+            elseif id == localpar_code and getsubtype(start) == 0 then
+                n = n + 1 ; t[n] = "[<" .. getdirection(start) .. ">]" -- todo l2r etc
             elseif compact then
-                t[#t+1] = "[]"
+                n = n + 1 ; t[n] = "[]"
             else
-                t[#t+1] = nodecodes[id]
+                n = n + 1 ; t[n] = nodecodes[id]
             end
             if start == stop then
                 break
@@ -180,13 +191,13 @@ end
 nodes.tosequence = tosequence
 nuts .tosequence = tosequence
 
-function nodes.report(t,done)
-    report_nodes("output %a, changed %a, %s nodes",status.output_active,done,count_nodes(tonut(t)))
+function nodes.report(t)
+    report_nodes("output %a, %s nodes",status.output_active,count_nodes(t))
 end
 
 function nodes.packlist(head)
     local t = { }
-    for n in traverse_nodes(tonut(head)) do
+    for n in nextnode, tonut(head) do
         t[#t+1] = d_tostring(n)
     end
     return t
@@ -198,10 +209,11 @@ function nodes.idstostring(head,tail)
     local t       = { }
     local last_id = nil
     local last_n  = 0
-    for n in traverse_nodes(head,tail) do -- hm, does not stop at tail
-        local id = getid(n)
+    local f_two   = formatters["[%s*%s]"]
+    local f_one   = formatters["[%s]"]
+    for n, id, subtype in nextnode, head do
         if id == whatsit_code then
-            id = whatcodes[getsubtype(n)]
+            id = whatsitcodes[subtype]
         else
             id = nodecodes[id]
         end
@@ -212,9 +224,9 @@ function nodes.idstostring(head,tail)
             last_n = last_n + 1
         else
             if last_n > 1 then
-                t[#t+1] = formatters["[%s*%s]"](last_n,last_id)
+                t[#t+1] = f_two(last_n,last_id)
             else
-                t[#t+1] = formatters["[%s]"](last_id)
+                t[#t+1] = f_one(last_id)
             end
             last_id = id
             last_n  = 1
@@ -227,12 +239,27 @@ function nodes.idstostring(head,tail)
         t[#t+1] = "no nodes"
     else
         if last_n > 1 then
-            t[#t+1] = formatters["[%s*%s]"](last_n,last_id)
+            t[#t+1] = f_two(last_n,last_id)
         else
-            t[#t+1] = formatters["[%s]"](last_id)
+            t[#t+1] = f_one(last_id)
         end
     end
     return concat(t," ")
+end
+
+function nodes.idsandsubtypes(head)
+    local h = tonut(head)
+    local t = { }
+    local f = formatters["%s:%s"]
+    for n, id, subtype in nextnode, h do
+        local c = nodecodes[id]
+        if subtype then
+            t[#t+1] = f(c,subtypes[id][subtype])
+        else
+            t[#t+1] = c
+        end
+    end
+    return concat(t, " ")
 end
 
 -- function nodes.xidstostring(head,tail) -- only for special tracing of backlinks
@@ -299,17 +326,19 @@ nodes.showsimplelist = function(h,depth) showsimplelist(h,depth,0) end
 local function listtoutf(h,joiner,textonly,last,nodisc)
     local w = { }
     local n = 0
+    local g = formatters["<%i>"]
+    local d = formatters["[%s|%s|%s]"]
     while h do
         local c, id = isglyph(h)
         if c then
-            n = n + 1 ; w[n] = c >= 0 and utfchar(c) or formatters["<%i>"](c)
+            n = n + 1 ; w[n] = c >= 0 and utfchar(c) or g(c)
             if joiner then
                 n = n + 1 ; w[n] = joiner
             end
         elseif id == disc_code then
             local pre, pos, rep = getdisc(h)
             if not nodisc then
-                n = n + 1 ; w[n] = formatters["[%s|%s|%s]"] (
+                n = n + 1 ; w[n] = d(
                     pre and listtoutf(pre,joiner,textonly) or "",
                     pos and listtoutf(pos,joiner,textonly) or "",
                     rep and listtoutf(rep,joiner,textonly) or ""
@@ -354,11 +383,9 @@ local what = { [0] = "unknown", "line", "box", "indent", "row", "cell" }
 local function showboxes(n,symbol,depth)
     depth  = depth  or 0
     symbol = symbol or "."
-    for n in traverse_nodes(tonut(n)) do
-        local id = getid(n)
+    for n, id, subtype in nextnode, tonut(n) do
         if id == hlist_code or id == vlist_code then
-            local s = getsubtype(n)
-            report_nodes(rep(symbol,depth) .. what[s] or s)
+            report_nodes(rep(symbol,depth) .. what[subtype] or subtype)
             showboxes(getlist(n),symbol,depth+1)
         end
     end
@@ -401,17 +428,17 @@ local function nodetodimen(n)
     width   = width   / 65536
     if stretch_order ~= 0 then
         if shrink_order ~= 0 then
-            return f_f_f(width,stretch,fillorders[stretch_order],shrink,fillorders[shrink_order])
+            return f_f_f(width,stretch,fillcodes[stretch_order],shrink,fillcodes[shrink_order])
         elseif shrink ~= 0 then
-            return f_f_m(width,stretch,fillorders[stretch_order],shrink)
+            return f_f_m(width,stretch,fillcodes[stretch_order],shrink)
         else
-            return f_f_z(width,stretch,fillorders[stretch_order])
+            return f_f_z(width,stretch,fillcodes[stretch_order])
         end
     elseif shrink_order ~= 0 then
         if stretch ~= 0 then
-            return f_p_f(width,stretch,shrink,fillorders[shrink_order])
+            return f_p_f(width,stretch,shrink,fillcodes[shrink_order])
         else
-            return f_z_f(width,shrink,fillorders[shrink_order])
+            return f_z_f(width,shrink,fillcodes[shrink_order])
         end
     elseif stretch ~= 0 then
         if shrink ~= 0 then
@@ -630,6 +657,9 @@ local function setproperties(n,c,s)
 end
 
 tracers.setproperties = setproperties
+
+-- setting attrlist entries instead of attr for successive entries doesn't
+-- speed up much (this function is only used in tracers anyway)
 
 function tracers.setlist(n,c,s)
     local nn = tonut(n)

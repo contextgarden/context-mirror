@@ -46,6 +46,10 @@
     \attribute\linenumberattribute\attributeunsetvalue
 \to \everyforgetall
 
+\appendtoks
+    \attribute\linenumberattribute \attributeunsetvalue
+\to \everyinsidefloat
+
 \newcount   \linenumber % not used
 \newbox     \b_page_lines_scratch
 \newcount   \c_page_lines_reference
@@ -275,8 +279,8 @@
      \fi\fi\fi
    \fi
    \the\beforeeverylinenumbering
-   \globallet\page_postprocessors_page  \page_postprocessors_linenumbers_page
-   \globallet\page_postprocessors_column\page_postprocessors_linenumbers_column
+   \glet\page_postprocessors_page  \page_postprocessors_linenumbers_page
+   \glet\page_postprocessors_column\page_postprocessors_linenumbers_column
    \global\settrue\page_postprocessors_needed_box % see core-rul.mkiv
    \ifcase\c_page_lines_mode\relax
      \page_lines_start_update % continue
@@ -349,7 +353,7 @@
      \d_page_lines_distance\linenumberingparameter\c!distance\relax
      \edef\p_align{\linenumberingparameter\c!align}%
      \edef\p_location{\linenumberingparameter\c!location}%
-     \ifcase\istltdir#dir\relax
+     \ifcase#dir\relax
        \settrue \c_page_lines_dir_left_to_right
      \else
        \setfalse\c_page_lines_dir_left_to_right

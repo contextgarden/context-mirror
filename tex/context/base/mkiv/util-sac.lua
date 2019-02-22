@@ -10,15 +10,23 @@ if not modules then modules = { } end modules ['util-sac'] = {
 -- with bytes)
 
 local byte, sub = string.byte, string.sub
-local extract = bit32 and bit32.extract
+local tonumber = tonumber
 
 utilities         = utilities or { }
 local streams     = { }
 utilities.streams = streams
 
 function streams.open(filename,zerobased)
-    local f = io.loaddata(filename)
-    return { f, 1, #f, zerobased or false }
+    local f = filename and io.loaddata(filename)
+    if f then
+        return { f, 1, #f, zerobased or false }
+    end
+end
+
+function streams.openstring(f,zerobased)
+    if f then
+        return { f, 1, #f, zerobased or false }
+    end
 end
 
 function streams.close()
@@ -233,31 +241,31 @@ function streams.readinteger4le(f)
     end
 end
 
-function streams.readfixed4(f)
-    local i = f[2]
-    local j = i + 3
-    f[2] = j + 1
-    local a, b, c, d = byte(f[1],i,j)
-    if a >= 0x80 then
-        return (0x100 * a + b - 0x10000) + (0x100 * c + d)/0x10000
-    else
-        return (0x100 * a + b          ) + (0x100 * c + d)/0x10000
-    end
-end
-
 function streams.readfixed2(f)
     local i = f[2]
     local j = i + 1
     f[2] = j + 1
     local a, b = byte(f[1],i,j)
     if a >= 0x80 then
-        return (a - 0x100) + b/0x100
+        tonumber((a - 0x100) .. "." .. b)
     else
-        return (a        ) + b/0x100
+        tonumber((a        ) .. "." .. b)
     end
 end
 
-if extract then
+function streams.readfixed4(f)
+    local i = f[2]
+    local j = i + 3
+    f[2] = j + 1
+    local a, b, c, d = byte(f[1],i,j)
+    if a >= 0x80 then
+        tonumber((0x100 * a + b - 0x10000) .. "." .. (0x100 * c + d))
+    else
+        tonumber((0x100 * a + b          ) .. "." .. (0x100 * c + d))
+    end
+end
+
+if bit32 then
 
     local extract = bit32.extract
     local band    = bit32.band
@@ -384,5 +392,82 @@ if sio and sio.readcardinal2 then
     streams.readsignedbyte = streams.readinteger1
     streams.readcardinal   = streams.readcardinal1
     streams.readinteger    = streams.readinteger1
+
+end
+
+if sio and sio.readcardinaltable then
+
+    local readcardinaltable = sio.readcardinaltable
+    local readintegertable  = sio.readintegertable
+
+    function utilities.streams.readcardinaltable(f,n,b)
+        local i = f[2]
+        local s = f[3]
+        local p = i + n * b
+        if p > s then
+            f[2] = s + 1
+        else
+            f[2] = p
+        end
+        return readcardinaltable(f[1],i,n,b)
+    end
+
+    function utilities.streams.readintegertable(f,n,b)
+        local i = f[2]
+        local s = f[3]
+        local p = i +  n * b
+        if p > s then
+            f[2] = s + 1
+        else
+            f[2] = p
+        end
+        return readintegertable(f[1],i,n,b)
+    end
+
+else
+
+    local readcardinal1 = streams.readcardinal1
+    local readcardinal2 = streams.readcardinal2
+    local readcardinal3 = streams.readcardinal3
+    local readcardinal4 = streams.readcardinal4
+
+    function streams.readcardinaltable(f,n,b)
+        local i = f[2]
+        local s = f[3]
+        local p = i + n * b
+        if p > s then
+            f[2] = s + 1
+        else
+            f[2] = p
+        end
+        local t = { }
+            if b == 1 then for i=1,n do t[i] = readcardinal1(f[1],i) end
+        elseif b == 2 then for i=1,n do t[i] = readcardinal2(f[1],i) end
+        elseif b == 3 then for i=1,n do t[i] = readcardinal3(f[1],i) end
+        elseif b == 4 then for i=1,n do t[i] = readcardinal4(f[1],i) end end
+        return t
+    end
+
+    local readinteger1 = streams.readinteger1
+    local readinteger2 = streams.readinteger2
+    local readinteger3 = streams.readinteger3
+    local readinteger4 = streams.readinteger4
+
+    function streams.readintegertable(f,n,b)
+        local i = f[2]
+        local s = f[3]
+        local p = i + n * b
+        if p > s then
+            f[2] = s + 1
+        else
+            f[2] = p
+        end
+        local t = { }
+            if b == 1 then for i=1,n do t[i] = readinteger1(f[1],i) end
+        elseif b == 2 then for i=1,n do t[i] = readinteger2(f[1],i) end
+        elseif b == 3 then for i=1,n do t[i] = readinteger3(f[1],i) end
+        elseif b == 4 then for i=1,n do t[i] = readinteger4(f[1],i) end end
+        return t
+    end
 
 end

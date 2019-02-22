@@ -70,7 +70,7 @@ local getbox              = nuts.getbox
 local getwhd              = nuts.getwhd
 
 local setlink             = nuts.setlink
-local setdir              = nuts.setdir
+local setdirection        = nuts.setdirection
 local setshift            = nuts.setshift
 
 local copy_node_list      = nuts.copy_list
@@ -83,6 +83,8 @@ local nodepool            = nuts.pool
 local new_glue            = nodepool.glue
 local new_kern            = nodepool.kern
 local new_hlist           = nodepool.hlist
+
+local lefttoright_code    = nodes.dirvalues.lefttoright
 
 local v_stretch           = variables.stretch
 local v_normal            = variables.normal
@@ -375,7 +377,8 @@ function xtables.set_reflow_width()
     --
     drc.dimensionstate = dimensionstate
     --
-    local nx, ny = drc.nx, drc.ny
+    local nx = drc.nx
+    local ny = drc.ny
     if nx > 1 or ny > 1 then
      -- local spans = data.spans -- not used
         local self = true
@@ -886,13 +889,13 @@ function xtables.construct()
                 -- we have a direction issue here but hpack_node_list(list,0,"exactly","TLT") cannot be used
                 -- due to the fact that we need the width
                 local hbox = hpack_node_list(list)
-                setdir(hbox,"TLT")
+                setdirection(hbox,lefttoright_code)
                 result[nofr] = {
                     hbox,
                     size,
                     i < nofrange and rowdistance > 0 and rowdistance or false, -- might move
                     false,
-                    rp and rp.samepage or false,
+                    rp or false,
                 }
             end
         end
@@ -901,7 +904,7 @@ function xtables.construct()
             result[1]   [5] = false
             result[nofr][5] = false
             for i=2,nofr-1 do
-                local r = result[i]
+                local r = result[i][5]
                 if r == v_both or r == v_before then
                     result[i-1][5] = true
                 elseif r == v_after then

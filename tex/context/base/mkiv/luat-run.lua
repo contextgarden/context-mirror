@@ -115,6 +115,29 @@ local function wrapup_synctex()
     synctex.wrapup()
 end
 
+-- For Taco ...
+
+local sequencers    = utilities.sequencers
+local appendgroup   = sequencers.appendgroup
+local appendaction  = sequencers.appendaction
+local wrapupactions = sequencers.new { }
+
+appendgroup(wrapupactions,"system")
+appendgroup(wrapupactions,"user")
+
+local function wrapup_run()
+    local runner = wrapupactions.runner
+    if runner then
+        runner()
+    end
+end
+
+function luatex.wrapup(action)
+    appendaction(wrapupactions,"user",action)
+end
+
+appendaction(wrapupactions,"system",synctex.wrapup)
+
 -- this can be done later
 
 callbacks.register('start_run',               start_run,           "actions performed at the beginning of a run")
@@ -126,20 +149,26 @@ callbacks.register('stop_run',                stop_run,            "actions perf
 callbacks.register('report_output_pages',     report_output_pages, "actions performed when reporting pages")
 callbacks.register('report_output_log',       report_output_log,   "actions performed when reporting log file")
 
-callbacks.register('start_page_number',       start_shipout_page,  "actions performed at the beginning of a shipout")
-callbacks.register('stop_page_number',        stop_shipout_page,   "actions performed at the end of a shipout")
+---------.register('start_page_number',       start_shipout_page,  "actions performed at the beginning of a shipout")
+---------.register('stop_page_number',        stop_shipout_page,   "actions performed at the end of a shipout")
+
+callbacks.register('start_page_number',       function() end,      "actions performed at the beginning of a shipout")
+callbacks.register('stop_page_number',        function() end,      "actions performed at the end of a shipout")
 
 callbacks.register('process_input_buffer',    false,               "actions performed when reading data")
 callbacks.register('process_output_buffer',   false,               "actions performed when writing data")
 
 callbacks.register("pre_dump",                pre_dump_actions,    "lua related finalizers called before we dump the format") -- comes after \everydump
 
-if LUATEXFUNCTIONALITY and LUATEXFUNCTIONALITY > 6505 then
-    callbacks.register("finish_synctex",          wrapup_synctex,      "rename temporary synctex file")
-    callbacks.register('wrapup_run',              false,               "actions performed after closing files")
-else
-    callbacks.register("finish_synctex_callback", wrapup_synctex,      "rename temporary synctex file")
-end
+-- finish_synctex might go away (move to wrapup_run)
+
+callbacks.register("finish_synctex",          wrapup_synctex,      "rename temporary synctex file")
+callbacks.register('wrapup_run',              wrapup_run,          "actions performed after closing files")
+
+-- temp hack for testing:
+
+callbacks.functions.start_page_number = start_shipout_page
+callbacks.functions.stop_page_number  = stop_shipout_page
 
 -- an example:
 
@@ -176,14 +205,6 @@ luatex.registerstopactions(luatex.cleanuptempfiles)
 
 -- filenames
 
-local types = {
-    "data",
-    "font map",
-    "image",
-    "font subset",
-    "full font",
-}
-
 local report_open  = logs.reporter("open source")
 local report_close = logs.reporter("close source")
 local report_load  = logs.reporter("load resource")
@@ -199,15 +220,8 @@ function luatex.currentfile()
     return stack[#stack] or tex.jobname
 end
 
-local function report_start(left,name)
-    if not left then
-        -- skip
-    elseif left ~= 1 then
-        if all then
-         -- report_load("%s > %s",types[left],name or "?")
-            report_load("type %a, name %a",types[left],name or "?")
-        end
-    elseif find(name,"virtual://",1,true) then
+local function report_start(name)
+    if find(name,"virtual://",1,true) then
         insert(stack,false)
     else
         insert(stack,name)
@@ -219,16 +233,47 @@ local function report_start(left,name)
     end
 end
 
-local function report_stop(right)
-    if level == 1 or not right or right == 1 then
-        local name = remove(stack)
-        if name then
-         -- report_close("%i > %i > %s",level,total,name or "?")
-            report_close("level %i, order %i, name %a",level,total,name or "?")
-            level = level - 1
-            synctex.setfilename(stack[#stack] or tex.jobname)
+local function report_stop()
+    local name = remove(stack)
+    if name then
+     -- report_close("%i > %i > %s",level,total,name or "?")
+        report_close("level %i, order %i, name %a",level,total,name or "?")
+        level = level - 1
+        synctex.setfilename(stack[#stack] or tex.jobname)
+    end
+end
+
+if CONTEXTLMTXMODE < 2 then
+
+    local types = {
+        "data",
+        "font map",
+        "image",
+        "font subset",
+        "full font",
+    }
+
+    local do_report_start = report_start
+    local do_report_stop  = report_stop
+
+    report_start = function(left,name)
+        if not left then
+            -- skip
+        elseif left ~= 1 then
+            if all then
+                report_load("type %a, name %a",types[left],name or "?")
+            end
+        else
+            do_report_start(name)
         end
     end
+
+    report_stop = function(right)
+        if level == 1 or not right or right == 1 then
+            do_report_stop()
+        end
+    end
+
 end
 
 local function report_none()

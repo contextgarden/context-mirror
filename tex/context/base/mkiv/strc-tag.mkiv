@@ -107,6 +107,7 @@
 \def\t!listcontent           {listcontent}            % P
 \def\t!listdata              {listdata}               % P
 \def\t!listpage              {listpage}               % Reference
+\def\t!listtext              {listtext}               % Span
 
 \def\t!delimitedblock        {delimited}              % BlockQuote
 \def\t!delimited             {delimited}              % Quote
@@ -136,9 +137,11 @@
 \def\t!subformula            {subformula}             % Div
 
 \def\t!link                  {link}                   % Link
+\def\t!reference             {reference}              % Span
 
 \def\t!margintext            {margintext}             % Span
 \def\t!margintextblock       {margintextblock}        % Div
+\def\t!marginanchor          {marginanchor}           % Span
 
 % we might opt for verbose variants so this is experimental:
 
@@ -162,6 +165,13 @@
 \def\t!combinationcontent    {combinationcontent}     % Span
 \def\t!combinationcaption    {combinationcaption}     % Span
 
+\def\t!publications          {publications}           % Span
+\def\t!publication           {publication}            % Span
+\def\t!pubfld                {pubfld}                 % Span
+
+\def\t!block                 {block}                  % Div
+\def\t!userdata              {userdata}               % Div
+
 % \setuptaglabeltext
 %   [en]
 %   [\t!document=document]
@@ -180,41 +190,50 @@
 \unexpanded\def\strc_tags_set_aspect_nop#1#2{}
 \unexpanded\def\strc_tags_set_aspect_yes#1#2{\clf_settagaspect{#1}{#2}} % todo: ignore when no export / also \let
 
+\unexpanded\def\ignoretagsinexport[#1]%
+  {\clf_ignoretagsinexport{#1}}
+
 \installcorenamespace{tagging}
 
 \installsetuponlycommandhandler \??tagging {tagging}
+
+% it makes no sense to have labels ... maybe some day as a last 'replace' in the export
+% which might be more efficient then ... okay, we now cannot overload but who cares
 
 \unexpanded\def\strc_tags_element_start_yes{\dodoubleempty\strc_tags_element_start_yes_indeed}
 \unexpanded\def\strc_tags_element_start_nop{\dodoubleempty\strc_tags_element_start_nop_indeed}
 
 \unexpanded\def\strc_tags_element_start_yes_indeed
   {\iftrialtypesetting
-     \expandafter\strc_tags_element_start_nop_indeed
+     \expandafter\strc_tags_element_start_yes_indeed_nop
    \else
      \expandafter\strc_tags_element_start_yes_indeed_yes
    \fi}
 
-\unexpanded\def\strc_tags_element_stop
-  {\iftrialtypesetting
-     \expandafter\strc_tags_element_stop_nop
-   \else
-     \expandafter\strc_tags_element_stop_yes
-   \fi}
-
-% it makes no sense to have labels ... maybe some day as a last 'replace' in the export
-% which might be more efficient then ... okay, we now cannot overload but who cares
+\unexpanded\def\strc_tags_element_start_yes_indeed_nop[#1][#2]%
+  {}
 
 \unexpanded\def\strc_tags_element_start_yes_indeed_yes[#1][#2]%
   {\clf_starttag_u{#1}{#2}}
 
 \unexpanded\def\strc_tags_element_stop_yes
-  {\clf_stoptag}
-
-\unexpanded\def\strc_tags_element_start_nop_indeed[#1][#2]%
-  {}
+  {\iftrialtypesetting
+     \expandafter\strc_tags_element_stop_yes_indeed_nop
+   \else
+     \expandafter\strc_tags_element_stop_yes_indeed_yes
+   \fi}
 
 \unexpanded\def\strc_tags_element_stop_nop
   {}
+
+\unexpanded\def\strc_tags_element_stop_yes_indeed_nop
+  {}
+
+\unexpanded\def\strc_tags_element_stop_yes_indeed_yes
+  {\clf_stoptag}
+
+\let\strc_tags_element_start_nop_indeed\strc_tags_element_start_yes_indeed_nop
+\let\strc_tags_element_stop_nop_indeed \strc_tags_element_stop_yes_indeed_nop
 
 \def\strc_tags_report_hyphen#1%
   {\writestatus\m!languages{setting #1 to U+00AD}}
@@ -293,12 +312,18 @@
 % \dostarttaggedchained  % {tag} {detail} \??hash
 % \dostarttaggednodetail % {tag}
 
-% \unexpanded\def\strc_tags_enable
-%   {\let\dostarttagged\strc_tags_start_yes
-%    \let\dostoptagged \strc_tags_stop_yes}
+\newconditional\c_strc_tags_enabled
+
+\let\dotaggedplaceholder\empty
+
+\chardef\strc_tags_placeholder_char\zerocount % "FFFC
 
 \unexpanded\def\strc_tags_enable
-  {\let\dostarttagged        \strc_tags_enabled_start_detail
+  {% once enable one is toast
+   \global\settrue\c_strc_tags_enabled
+   % and gets:
+   \let\dotaggedplaceholder  \strc_tags_placeholder_char
+   \let\dostarttagged        \strc_tags_enabled_start_detail
    \let\dostarttaggednodetail\strc_tags_enabled_start_no_detail
    \let\dostarttaggedchained \strc_tags_enabled_start_chained
    \let\dostoptagged         \strc_tags_enabled_stop
@@ -306,12 +331,23 @@
    \let\dostopignoretagging  \strc_tags_stop_yes_ignore}
 
 \unexpanded\def\strc_tags_disable
-  {\let\dostarttagged        \strc_tags_start_nop_detail
-   \let\dostarttaggednodetail\strc_tags_start_nop_no_detail
-   \let\dostarttaggedchained \strc_tags_start_nop_chained
-   \let\dostoptagged         \strc_tags_stop_nop
-   \let\dostartignoretagging \strc_tags_start_nop_ignore
-   \let\dostopignoretagging  \strc_tags_stop_nop_ignore}
+  {\ifconditional\c_strc_tags_enabled
+     % so now all are artifacts
+     \let\dotaggedplaceholder  \strc_tags_placeholder_char
+     \let\dostarttagged        \strc_tags_start_nop_detail
+     \let\dostarttaggednodetail\strc_tags_start_nop_no_detail
+     \let\dostarttaggedchained \strc_tags_start_nop_chained
+     \let\dostoptagged         \strc_tags_stop_nop_ignore
+   \else
+     % initial
+     \let\dotaggedplaceholder  \empty
+     \let\dostarttagged        \strc_tags_start_nop_detail
+     \let\dostarttaggednodetail\strc_tags_start_nop_no_detail
+     \let\dostarttaggedchained \strc_tags_start_nop_chained
+     \let\dostoptagged         \strc_tags_stop_nop_ignore
+     \let\dostartignoretagging \strc_tags_start_nop_ignore
+     \let\dostopignoretagging  \strc_tags_stop_nop_ignore
+   \fi}
 
 % for luigi (beware: fully expandable):
 
@@ -468,13 +504,27 @@
 
 %D This will only work well with sane use.
 
-\appendtoks
-   \dostartignoretagging
-\to \everybeforepagebody
+% \appendtoks
+%     {%
+%         \doglobal\appendtoks
+%             \strc_tags_start_yes_ignore
+%         \to \everybeforepagebody
+%         \doglobal\appendtoks
+%             \strc_tags_stop_yes_ignore
+%         \to \everyafterpagebody
+%     }%
+% \to \everyenableelements
 
-\appendtoks
-    \dostopignoretagging
-\to \everyafterpagebody
+% This doesn't work well either, so instead we handle the ornaments in the
+% tagging in a different way (see attr -> false code).
+
+% \appendtoks
+%     \dostartignoretagging
+% \to \everybeforepagebody
+%
+% \appendtoks
+%     \dostopignoretagging
+% \to \everyafterpagebody
 
 % \doifelseinelement{structure:section}            {yes} {no}
 % \doifelseinelement{structure:chapter}            {yes} {no}

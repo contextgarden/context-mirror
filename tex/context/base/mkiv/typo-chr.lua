@@ -6,40 +6,40 @@ if not modules then modules = { } end modules ['typo-chr'] = {
     license   = "see context related readme files"
 }
 
--- local nodecodes      = nodes.nodecodes
--- local whatsitcodes   = nodes.whatsitcodes
--- local glyph_code     = nodecodes.glyph
--- local whatsit_code   = nodecodes.whatsit
--- local user_code      = whatsitcodes.userdefined
+-- This module can be optimized.
+
+-- local nodecodes        = nodes.nodecodes
+-- local whatsitcodes     = nodes.whatsitcodes
 --
--- local stringusernode = nodes.pool.userstring
+-- local glyph_code       = nodecodes.glyph
+-- local whatsit_code     = nodecodes.whatsit
 --
--- local nuts           = nodes.nuts
--- local pool           = nuts.pool
+-- local userwhatsit_code = whatsitcodes.userdefined
 --
--- local tonut          = nuts.tonut
--- local tonode         = nuts.tonode
--- local getid          = nuts.getid
--- local getprev        = nuts.getprev
--- local getsubtype     = nuts.getsubtype
--- local getchar        = nuts.getchar
--- local getfield       = nuts.getfield
+-- local stringusernode   = nodes.pool.userstring
 --
--- local remove_node    = nuts.remove
--- local traverse_by_id = nuts.traverse_id
+-- local nuts             = nodes.nuts
+-- local pool             = nuts.pool
 --
--- local signal         = pool.userids.signal
+-- local getid            = nuts.getid
+-- local getprev          = nuts.getprev
+-- local getchar          = nuts.getchar
+-- local getdata          = nuts.getdata
+-- local getfield         = nuts.getfield
 --
--- local is_punctuation = characters.is_punctuation
+-- local remove_node      = nuts.remove
+-- local nextwhatsit      = nuts.traversers.whatsit
+--
+-- local signal           = pool.userids.signal
+--
+-- local is_punctuation   = characters.is_punctuation
 --
 -- local actions = {
 --     removepunctuation = function(head,n)
 --         local prev = getprev(n)
 --         if prev then
---             if getid(prev) == glyph_code then
---                 if is_punctuation[getchar(prev)] then
---                     head = remove_node(head,prev,true)
---                 end
+--             if getid(prev) == glyph_code and is_punctuation[getchar(prev)] then
+--                 head = remove_node(head,prev,true)
 --             end
 --         end
 --         return head
@@ -51,23 +51,18 @@ if not modules then modules = { } end modules ['typo-chr'] = {
 -- typesetters.signals = { }
 --
 -- function typesetters.signals.handler(head)
---     local h = tonut(head)
 --     local done = false
---     for n in traverse_by_id(whatsit_code,h) do
---         if getsubtype(n) == user_code and getfield(n,"user_id") == signal and getfield(n,"type") == 115 then
---             local action = actions[getfield(n,"value")]
+--     for n, subtype in nextwhatsit, head do
+--         if subtype == userwhatsit_code and getfield(n,"user_id") == signal and getfield(n,"type") == 115 then
+--             local action = actions[getdata(n)]
 --             if action then
---                 h = action(h,n)
+--                 head = action(h,n)
 --             end
---             h = remove_node(h,n,true)
+--             head = remove_node(head,n,true)
 --             done = true
 --         end
 --     end
---     if done then
---         return tonode(h), true
---     else
---         return head
---     end
+--     return head, done
 -- end
 --
 -- local enabled = false
@@ -88,35 +83,44 @@ if not modules then modules = { } end modules ['typo-chr'] = {
 
 local insert, remove = table.insert, table.remove
 
-local context         = context
+local context           = context
+local ctx_doifelse      = commands.doifelse
 
-local nodecodes       = nodes.nodecodes
-local glyph_code      = nodecodes.glyph
-local localpar_code   = nodecodes.localpar
+local nodecodes         = nodes.nodecodes
+local boundarycodes     = nodes.boundarycodes
+local subtypes          = nodes.subtypes
 
-local texnest         = tex.nest
-local flush_node      = node.flush_node
-local flush_list      = node.flush_list
+local glyph_code        = nodecodes.glyph
+local localpar_code     = nodecodes.localpar
+local boundary_code     = nodecodes.boundary
 
-local settexattribute = tex.setattribute
-local punctuation     = characters.is_punctuation
+local wordboundary_code = boundarycodes.word
 
-local variables       = interfaces.variables
-local v_all           = variables.all
-local v_reset         = variables.reset
+local texgetnest        = tex.getnest -- to be used
+local texsetcount       = tex.setcount
 
-local a_marked        = attributes.numbers['marked']
-local lastmarked      = 0
-local marked          = {
+local flush_node        = node.flush_node
+local flush_list        = node.flush_list
+
+local settexattribute   = tex.setattribute
+local punctuation       = characters.is_punctuation
+
+local variables         = interfaces.variables
+local v_all             = variables.all
+local v_reset           = variables.reset
+
+local stack             = { }
+
+local a_marked          = attributes.numbers['marked']
+local lastmarked        = 0
+local marked            = {
     [v_all]   = 1,
     [""]      = 1,
     [v_reset] = attributes.unsetvalue,
 }
 
-local stack           = { }
-
 local function pickup()
-    local list = texnest[texnest.ptr]
+    local list = texgetnest()
     if list then
         local tail = list.tail
         if tail and tail.id == glyph_code and punctuation[tail.char] then
@@ -171,8 +175,7 @@ local function pickup(head,tail,str)
         while true do
             local prev = first.prev
             if prev and prev[a_marked] == attr then
-                local id = prev.id
-                if id == localpar_code then
+                if prev.id == localpar_code then -- and prev.subtype == 0
                     break
                 else
                     first = prev
@@ -187,7 +190,7 @@ end
 
 local actions = {
     remove = function(specification)
-        local list = texnest[texnest.ptr]
+        local list = texgetnest()
         if list then
             local head = list.head
             local tail = list.tail
@@ -250,3 +253,95 @@ interfaces.implement {
     actions   = markcontent,
     arguments = "string",
 }
+
+-- We just put these here.
+
+interfaces.implement {
+    name    = "lastnodeidstring",
+    public  = true,
+    actions = function()
+        local list = texgetnest() -- "top"
+        local okay = false
+        if list then
+            local tail = list.tail
+            if tail then
+                okay = nodecodes[tail.id]
+            end
+        end
+        context(okay or "")
+    end,
+}
+
+-- local t_lastnodeid = token.create("c_syst_last_node_id")
+--
+-- interfaces.implement {
+--     name    = "lastnodeid",
+--     public  = true,
+--     actions = function()
+--         ...
+--         tex.setcount("c_syst_last_node_id",okay)
+--         context.sprint(t_lastnodeid)
+--     end,
+-- }
+
+interfaces.implement {
+    name    = "lastnodeid",
+    actions = function()
+        local list = texgetnest() -- "top"
+        local okay = -1
+        if list then
+            local tail = list.tail
+            if tail then
+                okay = tail.id
+            end
+        end
+        texsetcount("c_syst_last_node_id",okay)
+    end,
+}
+
+interfaces.implement {
+    name    = "lastnodesubtypestring",
+    public  = true,
+    actions = function()
+        local list = texgetnest() -- "top"
+        local okay = false
+        if list then
+            local tail = list.tail
+            if head then
+                okay = subtypes[tail.id][tail.subtype]
+            end
+        end
+        context(okay or "")
+    end,
+}
+
+local function lastnodeequals(id,subtype)
+    local list = texgetnest() -- "top"
+    local okay = false
+    if list then
+        local tail = list.tail
+        if tail then
+            local i = tail.id
+            okay = i == id or i == nodecodes[id]
+            if subtype then
+                local s = tail.subtype
+                okay = s == subtype or s == subtypes[i][subtype]
+            end
+        end
+    end
+    ctx_doifelse(okay)
+end
+
+interfaces.implement {
+    name      = "lastnodeequals",
+    arguments = "2 strings",
+    actions   = lastnodeequals,
+}
+
+interfaces.implement {
+    name    = "atwordboundary",
+    actions = function()
+        lastnodeequals(boundary_code,wordboundary_code)
+    end,
+}
+

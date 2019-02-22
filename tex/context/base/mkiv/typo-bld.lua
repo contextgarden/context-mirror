@@ -54,10 +54,12 @@ storage.register("builders/paragraphs/constructors/names",   names,   "builders.
 storage.register("builders/paragraphs/constructors/numbers", numbers, "builders.paragraphs.constructors.numbers")
 
 local trace_page_builder = false  trackers.register("builders.page", function(v) trace_page_builder = v end)
+local trace_vbox_builder = false  trackers.register("builders.vbox", function(v) trace_vbox_builder = v end)
 local trace_post_builder = false  trackers.register("builders.post", function(v) trace_post_builder = v end)
 
-local report_par_builder  = logs.reporter("builders","par")
 local report_page_builder = logs.reporter("builders","page")
+local report_vbox_builder = logs.reporter("builders","vbox")
+local report_par_builder  = logs.reporter("builders","par")
 
 local mainconstructor = nil -- not stored in format
 local nofconstructors = 0
@@ -137,7 +139,7 @@ end
 
 -- also for testing (now also surrounding spacing done)
 
-function builders.paragraphs.constructors.methods.oneline(head,followed_by_display)
+function parbuilders.constructors.methods.oneline(head,followed_by_display)
     -- when needed we will turn this into a helper
     local t = texnest[texnest.ptr]
     local h = hpack_node(head)
@@ -193,15 +195,11 @@ function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
     local done = false
     if head then
         starttiming(builders)
-        if trace_vpacking then
+        if trace_vbox_builder then
             local before = count_nodes(head)
             head, done = vboxactions(head,groupcode,size,packtype,maxdepth,direction)
             local after = count_nodes(head)
-            if done then
-                nodes.processors.tracer("vpack","changed",head,groupcode,before,after,true)
-            else
-                nodes.processors.tracer("vpack","unchanged",head,groupcode,before,after,true)
-            end
+            nodes.processors.tracer("vpack",head,groupcode,before,after,done)
         else
             head, done = vboxactions(head,groupcode)
         end
@@ -254,13 +252,13 @@ function builders.buildpage_filter(groupcode)
         if trace_page_builder then
             report(groupcode)
         end
-        return nil, false -- no return value needed
+--         return nil, false -- no return value needed
+        return nil
     end
 end
 
-registercallback('vpack_filter',      builders.vpack_filter,      "vertical spacing etc")
-registercallback('buildpage_filter',  builders.buildpage_filter,  "vertical spacing etc (mvl)")
-----------------('contribute_filter', builders.contribute_filter, "adding content to lists")
+registercallback('vpack_filter',          builders.vpack_filter,      "vertical spacing etc")
+registercallback('buildpage_filter',      builders.buildpage_filter,  "vertical spacing etc (mvl)")
 
 statistics.register("v-node processing time", function()
     return statistics.elapsedseconds(builders)
@@ -277,11 +275,21 @@ implement { name = "disableparbuilder", actions = constructors.disable }
 
 -- Here are some tracers:
 
-local new_kern     = nodes.pool.kern
-local new_rule     = nodes.pool.rule
-local hpack        = nodes.hpack
+local nuts         = nodes.nuts
+local tonut        = nodes.tonut
 local setcolor     = nodes.tracers.colors.set
 local listtoutf    = nodes.listtoutf
+local new_kern     = nuts.pool.kern
+local new_rule     = nuts.pool.rule
+local hpack        = nuts.hpack
+local getheight    = nuts.getheight
+local getdepth     = nuts.getdepth
+local getdirection = nuts.getdirection
+local getlist      = nuts.getlist
+local setwidth     = nuts.setwidth
+local setdirection = nuts.setdirection
+local setlink      = nuts.setlink
+local tonode       = nuts.tonode
 
 local report_hpack = logs.reporter("hpack routine")
 local report_vpack = logs.reporter("vpack routine")
@@ -305,8 +313,9 @@ end)
 local report, show = false, false
 
 local function hpack_quality(how,detail,n,first,last)
+    n = tonut(n)
     if report then
-        local str = listtoutf(n.head,"",true,nil,true)
+        local str = listtoutf(getlist(n),"",true,nil,true)
         if last <= 0 then
             report_hpack("%s hbox: %s",how,str)
         elseif first > 0 and first < last then
@@ -316,10 +325,10 @@ local function hpack_quality(how,detail,n,first,last)
         end
     end
     if show then
-        local width  = 2*65536
-        local height = n.height
-        local depth  = n.depth
-        local dir    = n.dir
+        local width     = 2*65536
+        local height    = getheight(n)
+        local depth     = getdepth(n)
+        local direction = getdirection(n)
         if height < 4*65526 then
             height = 4*65526
         end
@@ -327,12 +336,11 @@ local function hpack_quality(how,detail,n,first,last)
             depth = 2*65526
         end
         local rule = new_rule(width,height,depth)
-        rule.dir = dir
+        setdirection(rule,direction)
         if how == "overfull" then
             setcolor(rule,"red")
             local kern = new_kern(-detail)
-            kern.next = rule
-            rule.prev = kern
+            setlink(kern,rule)
             rule = kern
         elseif how == "underfull" then
             setcolor(rule,"blue")
@@ -342,9 +350,9 @@ local function hpack_quality(how,detail,n,first,last)
             setcolor(rule,"cyan")
         end
         rule = hpack(rule)
-        rule.width = 0
-        rule.dir = dir
-        return rule
+        setwidth(rule,0)
+        setdirection(rule,direction)
+        return tonode(rule) -- can be a nut
     end
 end
 
@@ -387,3 +395,4 @@ end)
 --     end,
 --     "experimental prevdepth checking"
 -- )
+

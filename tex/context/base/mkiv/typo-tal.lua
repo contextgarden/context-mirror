@@ -34,7 +34,6 @@ local v_number             = variables.number
 
 local nuts                 = nodes.nuts
 local tonut                = nuts.tonut
-local tonode               = nuts.tonode
 
 local getnext              = nuts.getnext
 local getprev              = nuts.getprev
@@ -50,8 +49,8 @@ local setchar              = nuts.setchar
 
 local insert_node_before   = nuts.insert_before
 local insert_node_after    = nuts.insert_after
-local traverse_list_by_id  = nuts.traverse_id
-local list_dimensions      = nuts.dimensions
+local nextglyph            = nuts.traversers.glyph
+local getdimensions        = nuts.dimensions
 local first_glyph          = nuts.first_glyph
 
 local setglue              = nuts.setglue
@@ -171,23 +170,22 @@ local function traced_kern(w)
     return tracedrule(w,nil,nil,"darkgray")
 end
 
-function characteralign.handler(originalhead,where)
+function characteralign.handler(head,where)
     if not datasets then
-        return originalhead, false
+        return head
     end
-    local head = tonut(originalhead)
  -- local first = first_glyph(head) -- we could do that once
     local first
-    for n in traverse_list_by_id(glyph_code,head) do
+    for n in nextglyph, head do
         first = n
         break
     end
     if not first then
-        return originalhead, false
+        return head
     end
     local a = getattr(first,a_characteralign)
     if not a or a == 0 then
-        return originalhead, false
+        return head
     end
     local column    = div(a,0xFFFF)
     local row       = a % 0xFFFF
@@ -210,7 +208,7 @@ function characteralign.handler(originalhead,where)
         while current do
             local char, id = isglyph(current)
             if char then
-                local font    = getfont(current)
+                local font    = id --- nicer
                 local data    = fontcharacters[font][char]
                 local unicode = data and data.unicode or char -- ignore tables
                 if not unicode then -- type(unicode) ~= "number"
@@ -234,8 +232,9 @@ function characteralign.handler(originalhead,where)
                         if not b_start then
                             if sign then
                                 b_start = sign
-                                local new = validsigns[getchar(sign)]
-                                if char == new or not fontcharacters[getfont(sign)][new] then
+                                local c, f = isglyph(sign)
+                                local new = validsigns[c]
+                                if char == new or not fontcharacters[f][new] then
                                     if trace_split then
                                         setcolor(sign,"darkyellow")
                                     end
@@ -285,7 +284,7 @@ function characteralign.handler(originalhead,where)
         while current do
             local char, id = isglyph(current)
             if char then
-                local font = getfont(current)
+                local font = id -- nicer
              -- local unicode = unicodes[font][char]
                 local unicode = fontcharacters[font][char].unicode or char -- ignore tables
                 if not unicode then
@@ -322,21 +321,21 @@ function characteralign.handler(originalhead,where)
     local predefined = dataset.predefined
     local before, after
     if predefined then
-        before = b_start and list_dimensions(b_start,getnext(b_stop)) or 0
-        after  = a_start and list_dimensions(a_start,getnext(a_stop)) or 0
+        before = b_start and getdimensions(b_start,getnext(b_stop)) or 0
+        after  = a_start and getdimensions(a_start,getnext(a_stop)) or 0
     else
         local entry = list[row]
         if entry then
             before = entry.before or 0
             after  = entry.after  or 0
         else
-            before = b_start and list_dimensions(b_start,getnext(b_stop)) or 0
-            after  = a_start and list_dimensions(a_start,getnext(a_stop)) or 0
+            before = b_start and getdimensions(b_start,getnext(b_stop)) or 0
+            after  = a_start and getdimensions(a_start,getnext(a_stop)) or 0
             list[row] = {
                 before = before,
                 after  = after,
             }
-            return tonode(head), true
+            return head, true
         end
         if not dataset.collected then
          -- print("[maxbefore] [maxafter]")
@@ -404,5 +403,5 @@ function characteralign.handler(originalhead,where)
             insert_node_after(head,c,new_kern(maxafter))
         end
     end
-    return tonode(head), true
+    return head
 end

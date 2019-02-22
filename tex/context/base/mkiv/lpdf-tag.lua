@@ -13,7 +13,8 @@ local settings_to_hash = utilities.parsers.settings_to_hash
 local sortedhash = table.sortedhash
 local formatters = string.formatters
 
-local trace_tags = false  trackers.register("structures.tags", function(v) trace_tags = v end)
+local trace_tags = false  trackers.register("structures.tags",      function(v) trace_tags = v end)
+local trace_info = false  trackers.register("structures.tags.info", function(v) trace_info = v end)
 
 local report_tags = logs.reporter("backend","tags")
 
@@ -51,11 +52,9 @@ local a_tagged            = attributes.private('tagged')
 local a_image             = attributes.private('image')
 
 local nuts                = nodes.nuts
-local tonut               = nuts.tonut
-local tonode              = nuts.tonode
 
 local nodepool            = nuts.pool
-local pdfpageliteral      = nodepool.pdfpageliteral
+local pageliteral         = nodepool.pageliteral
 local register            = nodepool.register
 
 local getid               = nuts.getid
@@ -68,17 +67,17 @@ local setlink             = nuts.setlink
 local setlist             = nuts.setlist
 
 local copy_node           = nuts.copy
-local traverse_nodes      = nuts.traverse
 local tosequence          = nuts.tosequence
 
-local structure_stack     = { }
-local structure_kids      = pdfarray()
-local structure_ref       = pdfreserveobject()
-local parent_ref          = pdfreserveobject()
-local root                = { pref = pdfreference(structure_ref), kids = structure_kids }
+local nextnode            = nuts.traversers.node
+
+local structure_kids   -- delayed
+local structure_ref    -- delayed
+local parent_ref       -- delayed
+local root             -- delayed
+local names            -- delayed
 local tree                = { }
 local elements            = { }
-local names               = pdfarray()
 
 local structurestags      = structures.tags
 local taglist             = structurestags.taglist
@@ -112,7 +111,7 @@ local usedmapping         = { }
 -- end
 
 local function finishstructure()
-    if #structure_kids > 0 then
+    if root and #structure_kids > 0 then
         local nums, n = pdfarray(), 0
         for i=1,#tree do
             n = n + 1 ; nums[n] = i - 1
@@ -171,6 +170,7 @@ local index, pageref, pagenum, list = 0, nil, 0, nil
 
 local pdf_mcr            = pdfconstant("MCR")
 local pdf_struct_element = pdfconstant("StructElem")
+local pdf_s              = pdfconstant("S")
 
 local function initializepage()
     index   = 0
@@ -183,6 +183,8 @@ end
 local function finishpage()
     -- flush what can be flushed
     addtopageattributes("StructParents",pagenum-1)
+    -- there might be more
+    addtopageattributes("Tabs",s)
 end
 
 -- here we can flush and free elements that are finished
@@ -255,9 +257,10 @@ local function makeelement(fulltag,parent)
         AF         = af,
     }
     local s = pdfreference(pdfflushobject(d))
-    if id then
-        names[#names+1] = id
-        names[#names+1] = s
+    if id and names then
+        local size = #names
+        names[size+1] = id
+        names[size+2] = s
     end
     local kids = parent.kids
     kids[#kids+1] = s
@@ -314,27 +317,35 @@ end
 -- no need to adapt head, as we always operate on lists
 
 local EMCliteral = nil
+local visualize  = nil
 
 function nodeinjections.addtags(head)
 
     if not EMCliteral then
-        EMCliteral = register(pdfpageliteral("EMC"))
+        EMCliteral = register(pageliteral("EMC"))
     end
 
     local last   = nil
     local ranges = { }
     local range  = nil
-	local head   = tonut(head)
+
+    if not root then
+        structure_kids = pdfarray()
+        structure_ref  = pdfreserveobject()
+        parent_ref     = pdfreserveobject()
+        root           = { pref = pdfreference(structure_ref), kids = structure_kids }
+        names          = pdfarray()
+    end
 
     local function collectranges(head,list)
-        for n in traverse_nodes(head) do
-            local id = getid(n)
+        for n, id in nextnode, head do
             if id == glyph_code then
                 -- maybe also disc
-                local at = getattr(n,a_tagged)
-                if not at then
-                    range = nil
-                elseif last ~= at then
+                local at = getattr(n,a_tagged) or false -- false: pagebody or so, so artifact
+             -- if not at then
+             --     range = nil
+             -- elseif ...
+                if last ~= at then
                     range = { at, "glyph", n, n, list } -- attr id start stop list
                     ranges[#ranges+1] = range
                     last = at
@@ -344,12 +355,12 @@ function nodeinjections.addtags(head)
             elseif id == hlist_code or id == vlist_code then
                 local at = getattr(n,a_image)
                 if at then
-                    local at = getattr(n,a_tagged)
-                    if not at then
-                        range = nil
-                    else
+                    local at = getattr(n,a_tagged) or false -- false: pagebody or so, so artifact
+                 -- if not at then
+                 --     range = nil
+                 -- else
                         ranges[#ranges+1] = { at, "image", n, n, list } -- attr id start stop list
-                    end
+                 -- end
                     last = nil
                 else
                     collectranges(getlist(n),n)
@@ -379,89 +390,117 @@ function nodeinjections.addtags(head)
     local top    = nil
     local noftop = 0
 
-    for i=1,#ranges do
-        local range         = ranges[i]
-        local attr          = range[1]
-        local id            = range[2]
-        local start         = range[3]
-        local stop          = range[4]
-        local list          = range[5]
-        local specification = taglist[attr]
-        local taglist       = specification.taglist
-        local noftags       = #taglist
-        local common        = 0
-        if top then
-            for i=1,noftags >= noftop and noftop or noftags do
-                if top[i] == taglist[i] then
-                    common = i
-                else
-                    break
-                end
-            end
-        end
 
-        local prev    = common > 0 and elements[taglist[common]] or root
-        local ignore  = false
-        local literal = nil
-
-        for j=common+1,noftags do
-            local tag = taglist[j]
-            local prv = elements[tag] or makeelement(tag,prev)
-            if prv == false then
-                -- ignore this one
-                prev   = false
-                ignore = true
-                break
-            elseif prv == true then
-                -- skip this one
-            else
-                prev = prv
-            end
-        end
+    local function inject(start,stop,list,literal,left,right)
+        local prev = getprev(start)
         if prev then
-            literal = pdfpageliteral(makecontent(prev,id,specification))
-        elseif ignore then
-            literal = pdfpageliteral(makeignore(specification))
+            setlink(prev,literal)
         end
-
-        if literal then
-            local prev = getprev(start)
-            if prev then
-                setlink(prev,literal)
-            end
+        if left then
+            setlink(literal,left,start)
+        else
             setlink(literal,start)
-            if list and getlist(list) == start then
-                setlist(list,literal)
-            end
-            local literal = copy_node(EMCliteral)
-            -- use insert instead:
-            local next    = getnext(stop)
-            if next then
-                setlink(literal,next)
-            end
+        end
+        if list and getlist(list) == start then
+            setlist(list,literal)
+        end
+        local literal = copy_node(EMCliteral)
+        -- use insert instead:
+        local next = getnext(stop)
+        if next then
+            setlink(literal,next)
+        end
+        if right then
+            setlink(stop,right,literal)
+        else
             setlink(stop,literal)
         end
+    end
 
---         if literal then
---             if list and getlist(list) == start then
---                 setlink(literal,start)
---                 setlist(list,literal)
---             else
---                 setlink(getprev(start),literal,start)
---             end
---             -- use insert instead:
---             local literal = copy_node(EMCliteral)
---             setlink(stop,literal,getnext(stop))
---         end
+    for i=1,#ranges do
 
-        top    = taglist
-        noftop = noftags
+        local range = ranges[i]
+        local attr  = range[1]
+        local id    = range[2]
+        local start = range[3]
+        local stop  = range[4]
+        local list  = range[5]
+
+        if attr then
+
+            local specification = taglist[attr]
+            local taglist       = specification.taglist
+            local noftags       = #taglist
+            local common        = 0
+            local literal       = nil
+            local ignore        = false
+
+            if top then
+                for i=1,noftags >= noftop and noftop or noftags do
+                    if top[i] == taglist[i] then
+                        common = i
+                    else
+                        break
+                    end
+                end
+            end
+
+            local prev = common > 0 and elements[taglist[common]] or root
+
+            for j=common+1,noftags do
+                local tag = taglist[j]
+                local prv = elements[tag] or makeelement(tag,prev)
+                if prv == false then
+                    -- ignore this one
+                    prev   = false
+                    ignore = true
+                    break
+                elseif prv == true then
+                    -- skip this one
+                else
+                    prev = prv
+                end
+            end
+
+            if prev then
+                literal = pageliteral(makecontent(prev,id,specification))
+            elseif ignore then
+                literal = pageliteral(makeignore(specification))
+            else
+                -- maybe also ignore or maybe better: comment or so
+            end
+
+            if literal then
+                local left,right
+                if trace_info then
+                    local name = specification.tagname
+                    if name then
+                        if not visualize then
+                            visualize = nodes.visualizers.register("tags")
+                        end
+                        left  = visualize(name)
+                        right = visualize()
+                    end
+                end
+                inject(start,stop,list,literal,left,right)
+            end
+
+            top    = taglist
+            noftop = noftags
+
+        else
+
+            local literal = pageliteral(makeignore(specification))
+
+            inject(start,stop,list,literal)
+
+        end
+
     end
 
     finishpage()
 
-    head = tonode(head)
-    return head, true
+    return head
 
 end
 
@@ -472,8 +511,7 @@ end
 --     local last, ranges, range = nil, { }, nil
 --
 --     local function collectranges(head,list)
---         for n in traverse_nodes(head) do
---             local id = getid(n) -- 14: image, 8: literal (mp)
+--         for n, id in nextnode, head do
 --             if id == glyph_code then
 --                 local at = getattr(n,a_tagged)
 --                 if not at then
@@ -505,7 +543,6 @@ end
 --
 --     initializepage()
 --
--- 	head = tonut(head)
 --     collectranges(head)
 --
 --     if trace_tags then
@@ -577,9 +614,9 @@ end
 --         end
 --
 --         if r > 0 then
---             local literal = pdfpageliteral(concat(result,"\n"))
+--             local literal = pageliteral(concat(result,"\n"))
 --             -- use insert instead:
---             local literal = pdfpageliteral(result)
+--             local literal = pageliteral(result)
 --             local prev = getprev(start)
 --             if prev then
 --                 setlink(prev,literal)
@@ -601,7 +638,7 @@ end
 --         for i=1,noftop do
 --             result[i] = "EMC"
 --         end
---         local literal = pdfpageliteral(concat(result,"\n"))
+--         local literal = pageliteral(concat(result,"\n"))
 --         -- use insert instead:
 --         local next = getnext(last)
 --         if next then
@@ -612,8 +649,7 @@ end
 --
 --     finishpage()
 --
---     head = tonode(head)
---     return head, true
+--     return head
 --
 -- end
 

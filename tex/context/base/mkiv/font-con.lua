@@ -46,9 +46,10 @@ constructors.namemode        = "fullpath" -- will be a function
 constructors.version         = 1.01
 constructors.cache           = containers.define("fonts", "constructors", constructors.version, false)
 
-constructors.privateoffset   = 0xF0000 -- 0x10FFFF | context also uses privates: 0xE000-0xEFFF
-
+constructors.privateoffset   = fonts.privateoffsets.textbase or 0xF0000
 constructors.cacheintex      = true -- so we see the original table in fonts.font
+
+constructors.addtounicode    = true
 
 -- This might become an interface:
 
@@ -96,6 +97,24 @@ function constructors.getprivate(tfmdata)
     local private = properties.private
     properties.private = private + 1
     return private
+end
+
+function constructors.setmathparameter(tfmdata,name,value)
+    local m = tfmdata.mathparameters
+    local c = tfmdata.MathConstants
+    if m then
+        m[name] = value
+    end
+    if c and c ~= m then
+        c[name] = value
+    end
+end
+
+function constructors.getmathparameter(tfmdata,name)
+    local p = tfmdata.mathparameters or tfmdata.MathConstants
+    if p then
+        return p[name]
+    end
 end
 
 --[[ldx--
@@ -407,7 +426,10 @@ function constructors.scale(tfmdata,specification)
     targetparameters.forcedsize  = forcedsize  -- context specific
     targetparameters.extrafactor = extrafactor -- context specific
     --
+    local addtounicode  = constructors.addtounicode
+    --
     local tounicode     = fonts.mappings.tounicode
+    local unknowncode   = tounicode(0xFFFD)
     --
     local defaultwidth  = resources.defaultwidth  or 0
     local defaultheight = resources.defaultheight or 0
@@ -455,7 +477,8 @@ function constructors.scale(tfmdata,specification)
     local psname   = properties.psname   or tfmdata.psname
     local name     = properties.name     or tfmdata.name
     --
-    -- the psname used in pdf file as well as for selecting subfont in ttc
+    -- The psname used in pdf file as well as for selecting subfont in ttc although
+    -- we don't need that subfont look up here (mapfile stuff).
     --
     local psname, psfixed = fixedpsname(psname,fontname or fullname or file.nameonly(filename))
     --
@@ -477,20 +500,28 @@ function constructors.scale(tfmdata,specification)
         target.shrink  = expansion.shrink
         target.step    = expansion.step
     end
-    -- widening
-    local extendfactor = parameters.extendfactor or 0
-    if extendfactor ~= 0 and extendfactor ~= 1 then
-        hdelta = hdelta * extendfactor
-        target.extend = extendfactor * 1000 -- extent ?
-    else
-        target.extend = 1000 -- extent ?
-    end
     -- slanting
     local slantfactor = parameters.slantfactor or 0
     if slantfactor ~= 0 then
         target.slant = slantfactor * 1000
     else
         target.slant = 0
+    end
+    -- widening
+    local extendfactor = parameters.extendfactor or 0
+    if extendfactor ~= 0 and extendfactor ~= 1 then
+        hdelta = hdelta * extendfactor
+        target.extend = extendfactor * 1000
+    else
+        target.extend = 1000 -- extent ?
+    end
+    -- squeezing
+    local squeezefactor = parameters.squeezefactor or 0
+    if squeezefactor ~= 0 and squeezefactor ~= 1 then
+        vdelta = vdelta * squeezefactor
+        target.squeeze = squeezefactor * 1000
+    else
+        target.squeeze = 1000 -- extent ?
     end
     -- effects
     local mode = parameters.mode or 0
@@ -499,7 +530,7 @@ function constructors.scale(tfmdata,specification)
     end
     local width = parameters.width or 0
     if width ~= 0 then
-        target.width = width
+        target.width = width * delta * 1000 / 655360
     end
     --
     targetparameters.factor       = delta
@@ -565,6 +596,7 @@ function constructors.scale(tfmdata,specification)
         targetparameters.descender = delta * descender
     end
     --
+-- inspect(targetparameters)
     constructors.enhanceparameters(targetparameters) -- official copies for us, now virtual
     --
     local protrusionfactor = (targetquad ~= 0 and 1000/targetquad) or 0
@@ -708,11 +740,19 @@ function constructors.scale(tfmdata,specification)
             end
         end
         local isunicode = description.unicode
-        if isunicode then
-            chr.unicode   = isunicode
-            chr.tounicode = tounicode(isunicode)
-            -- in luatex > 0.85 we can do this:
-            -- chr.tounicode = isunicode
+        if addtounicode then
+            if isunicode then
+                chr.unicode   = isunicode
+                chr.tounicode = tounicode(isunicode)
+                -- in luatex > 0.85 we can do this:
+                -- chr.tounicode = isunicode
+            else
+                chr.tounicode = unknowncode
+            end
+        else
+            if isunicode then
+                chr.unicode   = isunicode
+            end
         end
         if hasquality then
             -- we could move these calculations elsewhere (saves calculations)
@@ -742,12 +782,15 @@ function constructors.scale(tfmdata,specification)
                     local t = { }
                     for i=1,#vv do
                         local vvi = vv[i]
-                        t[i] = {
-                            ["start"]    = (vvi["start"]   or 0)*vdelta,
-                            ["end"]      = (vvi["end"]     or 0)*vdelta,
-                            ["advance"]  = (vvi["advance"] or 0)*vdelta,
-                            ["extender"] =  vvi["extender"],
-                            ["glyph"]    =  vvi["glyph"],
+                        local s = vvi["start"]   or 0
+                        local e = vvi["end"]     or 0
+                        local a = vvi["advance"] or 0
+                        t[i] = { -- zero check nicer for 5.3
+                            ["start"]    = s == 0 and 0 or s * vdelta,
+                            ["end"]      = e == 0 and 0 or e * vdelta,
+                            ["advance"]  = a == 0 and 0 or a * vdelta,
+                            ["extender"] = vvi["extender"],
+                            ["glyph"]    = vvi["glyph"],
                         }
                     end
                     chr.vert_variants = t
@@ -757,12 +800,15 @@ function constructors.scale(tfmdata,specification)
                         local t = { }
                         for i=1,#hv do
                             local hvi = hv[i]
-                            t[i] = {
-                                ["start"]    = (hvi["start"]   or 0)*hdelta,
-                                ["end"]      = (hvi["end"]     or 0)*hdelta,
-                                ["advance"]  = (hvi["advance"] or 0)*hdelta,
-                                ["extender"] =  hvi["extender"],
-                                ["glyph"]    =  hvi["glyph"],
+                            local s = hvi["start"]   or 0
+                            local e = hvi["end"]     or 0
+                            local a = hvi["advance"] or 0
+                            t[i] = { -- zero check nicer for 5.3
+                                ["start"]    = s == 0 and 0 or s * hdelta,
+                                ["end"]      = e == 0 and 0 or e * hdelta,
+                                ["advance"]  = a == 0 and 0 or a * hdelta,
+                                ["extender"] = hvi["extender"],
+                                ["glyph"]    = hvi["glyph"],
                             }
                         end
                         chr.horiz_variants = t
@@ -781,7 +827,10 @@ function constructors.scale(tfmdata,specification)
             if stackmath then
                 local mk = character.mathkerns
                 if mk then
-                    local tr, tl, br, bl = mk.topright, mk.topleft, mk.bottomright, mk.bottomleft
+                    local tr = mk.topright
+                    local tl = mk.topleft
+                    local br = mk.bottomright
+                    local bl = mk.bottomleft
                     chr.mathkern = { -- singular -> should be patched in luatex !
                         top_right    = tr and mathkerns(tr,vdelta) or nil,
                         top_left     = tl and mathkerns(tl,vdelta) or nil,
@@ -876,7 +925,7 @@ function constructors.scale(tfmdata,specification)
                 else
                     chr.commands = vc
                 end
-                chr.index = nil
+             -- chr.index = nil
             end
         end
         targetcharacters[unicode] = chr
@@ -886,15 +935,14 @@ function constructors.scale(tfmdata,specification)
     --
     constructors.aftercopyingcharacters(target,tfmdata)
     --
-   constructors.trytosharefont(target,tfmdata)
+    constructors.trytosharefont(target,tfmdata)
     --
     -- catch inconsistencies
     --
     local vfonts = target.fonts
---     if isvirtual then
-if isvirtual or target.type == "virtual" or properties.virtualized then
+    if isvirtual or target.type == "virtual" or properties.virtualized then
         properties.virtualized = true
-target.type = "virtual"
+        target.type = "virtual"
         if not vfonts or #vfonts == 0 then
             target.fonts = { { id = 0 } }
         end
@@ -947,12 +995,16 @@ function constructors.finalize(tfmdata)
         parameters.width = 0
     end
     --
+    if not parameters.slantfactor then
+        parameters.slantfactor = tfmdata.slant or 0
+    end
+    --
     if not parameters.extendfactor then
         parameters.extendfactor = tfmdata.extend or 0
     end
     --
-    if not parameters.slantfactor then
-        parameters.slantfactor = tfmdata.slant or 0
+    if not parameters.squeezefactor then
+        parameters.squeezefactor = tfmdata.squeeze or 0
     end
     --
     local designsize = parameters.designsize
@@ -988,24 +1040,22 @@ function constructors.finalize(tfmdata)
         properties.virtualized = tfmdata.type == "virtual"
     end
     --
-    if not tfmdata.properties then
-        tfmdata.properties = {
-            fontname      = tfmdata.fontname,
-            filename      = tfmdata.filename,
-            fullname      = tfmdata.fullname,
-            name          = tfmdata.name,
-            psname        = tfmdata.psname,
-            --
-            encodingbytes = tfmdata.encodingbytes or 1,
-            embedding     = tfmdata.embedding     or "subset",
-            tounicode     = tfmdata.tounicode     or 1,
-            cidinfo       = tfmdata.cidinfo       or nil,
-            format        = tfmdata.format        or "type1",
-            direction     = tfmdata.direction     or 0,
-            writingmode   = tfmdata.writingmode   or "horizontal",
-            identity      = tfmdata.identity      or "horizontal",
-        }
-    end
+    properties.fontname      = tfmdata.fontname
+    properties.filename      = tfmdata.filename
+    properties.fullname      = tfmdata.fullname
+    properties.name          = tfmdata.name
+    properties.psname        = tfmdata.psname
+    --
+    properties.encodingbytes = tfmdata.encodingbytes or 1
+    properties.embedding     = tfmdata.embedding     or "subset"
+    properties.tounicode     = tfmdata.tounicode     or 1
+    properties.cidinfo       = tfmdata.cidinfo       or nil
+    properties.format        = tfmdata.format        or "type1"
+    properties.direction     = tfmdata.direction     or 0
+    properties.writingmode   = tfmdata.writingmode   or "horizontal"
+    properties.identity      = tfmdata.identity      or "horizontal"
+    properties.usedbitmap    = tfmdata.usedbitmap
+    --
     if not tfmdata.resources then
         tfmdata.resources = { }
     end
@@ -1043,8 +1093,9 @@ function constructors.finalize(tfmdata)
     tfmdata.stretch          = nil
     tfmdata.shrink           = nil
     tfmdata.step             = nil
-    tfmdata.extend           = nil
     tfmdata.slant            = nil
+    tfmdata.extend           = nil
+    tfmdata.squeeze          = nil
     tfmdata.mode             = nil
     tfmdata.width            = nil
     tfmdata.units            = nil
@@ -1097,7 +1148,18 @@ hashmethods.normal = function(list)
             -- no need to add to hash (maybe we need a skip list)
         else
             n = n + 1
-            s[n] = k .. '=' .. tostring(v)
+            if type(v) == "table" then
+                -- table.sequenced
+                local t = { }
+                local m = 0
+                for k, v in next, v do
+                    m = m + 1
+                    t[m] = k .. '=' .. tostring(v)
+                end
+                s[n] = k .. '={' .. concat(t,",") .. "}"
+            else
+                s[n] = k .. '=' .. tostring(v)
+            end
         end
     end
     if n > 0 then
@@ -1115,7 +1177,9 @@ loose our testcases for <l n='luatex'/>.</p>
 --ldx]]--
 
 function constructors.hashinstance(specification,force)
-    local hash, size, fallbacks = specification.hash, specification.size, specification.fallbacks
+    local hash      = specification.hash
+    local size      = specification.size
+    local fallbacks = specification.fallbacks
     if force or not hash then
         hash = constructors.hashfeatures(specification)
         specification.hash = hash
@@ -1553,7 +1617,8 @@ end
 -- while typesetting
 
 function constructors.collectprocessors(what,tfmdata,features,trace,report)
-    local processes, nofprocesses = { }, 0
+    local processes    = { }
+    local nofprocesses = 0
     if features and next(features) then
         local properties     = tfmdata.properties
         local whathandler    = handlers[what]

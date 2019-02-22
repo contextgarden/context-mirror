@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['cldf-ini'] = {
     license   = "see context related readme files"
 }
 
+-- todo: {token} -> 3 tokens
+
 -- This started as an experiment: generating context code at the lua end. After all
 -- it is surprisingly simple to implement due to metatables. I was wondering if
 -- there was a more natural way to deal with commands at the lua end. Of course it's
@@ -29,7 +31,7 @@ if not modules then modules = { } end modules ['cldf-ini'] = {
 -- todo : context("%bold{total: }%s",total)
 -- todo : context.documentvariable("title")
 --
--- during the crited project we ran into the situation that luajittex was 10-20 times
+-- During the crited project we ran into the situation that luajittex was 10-20 times
 -- slower that luatex ... after 3 days of testing and probing we finally figured out that
 -- the the differences between the lua and luajit hashers can lead to quite a slowdown
 -- in some cases.
@@ -51,6 +53,11 @@ if not modules then modules = { } end modules ['cldf-ini'] = {
 -- I cleaned this code up a bit when updating the cld manual but got distracted a bit by
 -- watching Trio Hiromi Uehara, Anthony Jackson & Simon Phillips (discovered via the
 -- later on YT). Hopefully the video breaks made the following better in the end.
+
+-- This module is also a test bed for experimental features so the content changes over
+-- time (for the better or worse). There have been no fundamental changes for many years
+-- and performance has not changed much either.
+
 
 local format, stripstring = string.format, string.strip
 local next, type, tostring, tonumber, unpack, select, rawset = next, type, tostring, tonumber, unpack, select, rawset
@@ -84,6 +91,13 @@ local texgetcount       = tex.getcount
 local isnode            = node.is_node
 local writenode         = node.write
 local copynodelist      = node.copy_list
+local tonut             = node.direct.todirect
+local tonode            = node.direct.tonode
+
+local istoken           = token.is_token
+local newtoken          = token.new
+local createtoken       = token.create
+local setluatoken       = token.set_lua
 
 local catcodenumbers    = catcodes.numbers
 
@@ -104,16 +118,31 @@ local report_cld        = logs.reporter("cld","stack")
 
 local processlines      = true -- experiments.register("context.processlines", function(v) processlines = v end)
 
+local tokenflushmode    = true
+local nodeflushmode     = true
+local scannerdefmode    = true
+local maxflushnodeindex = 0x10FFFF - 1
+
+-- tokenflushmode    = false
+-- scannerdefmode    = false
+-- nodeflushmode     = false
+
 -- In earlier experiments a function tables was referred to as lua.calls and the
 -- primitive \luafunctions was \luacall and we used our own implementation of
 -- a function table (more indirectness).
+
+local trialtypesettingstate = createtoken("trialtypesettingstate").index
+
+function context.trialtypesetting()
+    return texgetcount(trialtypesettingstate) ~= 0
+end
 
 local knownfunctions = lua.get_functions_table()
 local showstackusage = false
 
 trackers.register("context.stack",function(v) showstackusage = v end)
 
-local freed, nofused, noffreed = { }, 0, 0 -- maybe use the number of @@trialtypesetting
+local freed, nofused, noffreed = { }, 0, 0
 
 local usedstack = function()
     return nofused, noffreed
@@ -122,7 +151,7 @@ end
 local flushfunction = function(slot,arg)
     if arg() then
         -- keep
-    elseif texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
+    elseif texgetcount(trialtypesettingstate) == 0 then
         noffreed = noffreed + 1
         freed[noffreed] = slot
         knownfunctions[slot] = false
@@ -147,7 +176,7 @@ local storefunction = function(arg)
 end
 
 local flushnode = function(slot,arg)
-    if texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
+    if texgetcount(trialtypesettingstate) == 0 then
         writenode(arg)
         noffreed = noffreed + 1
         freed[noffreed] = slot
@@ -182,9 +211,13 @@ local f_resolve = nil
 local p_resolve  = ((1-lpegP("."))^1 / function(s) f_resolve = f_resolve[s] end * lpegP(".")^0)^1
 
 local function resolvestoredfunction(str)
-    f_resolve = global
-    lpegmatch(p_resolve,str)
-    return f_resolve
+    if type(str) == "string" then
+        f_resolve = global
+        lpegmatch(p_resolve,str)
+        return f_resolve
+    else
+        return str
+    end
 end
 
 local function expose(slot,f,...) -- so we can register yet undefined functions
@@ -246,17 +279,17 @@ local registerfunction = function(f,direct) -- either f=code or f=namespace,dire
             func = resolvestoredfunction(f)
         end
         if type(func) ~= "function" then
-            func = function() report_cld("invalid resolve %A",f) end
+            func = function() report_cld("invalid resolve %A, case %s",f,1) end
         end
     elseif type(f) == "string" then
         func = loadstring(f)
         if type(func) ~= "function" then
-            func = function() report_cld("invalid code %A",f) end
+            func = function() report_cld("invalid code %A, case %s",f,2) end
         end
     elseif type(f) == "function" then
         func = f
     else
-        func = function() report_cld("invalid function %A",f) end
+        func = function() report_cld("invalid function %A, case %s",f,3) end
     end
     knownfunctions[slot] = func
     return slot
@@ -305,53 +338,52 @@ local storedscanners      = interfaces.storedscanners
 storage.register("interfaces/storedscanners", storedscanners, "interfaces.storedscanners")
 
 local interfacescanners = setmetatablenewindex(function(t,k,v)
+    rawset(t,k,v)
     if storedscanners[k] then
-     -- report_cld("warning: scanner %a is already set",k)
+     -- report_cld("warning: scanner %a is already set (mode 1a)",k)
      -- os.exit()
         -- \scan_<k> is already in the format
      -- report_cld("using interface scanner: %s",k)
+    elseif scannerdefmode then
+     -- report_cld("installing interface scanner: %s (mode 1b)",k)
+     -- local n = registerfunction(interfaces.scanners[k],true)
+        local n = registerfunction("interfaces.scanners."..k,true)
+        storedscanners[k] = n
+        local name = "clf_" .. k
+        setluatoken(name,n,"global") -- todo : protected and "protected" or ""
     else
-        -- todo: allocate slot here and pass it
+     -- report_cld("installing interface scanner: %s (mode 1c)",k)
         storedscanners[k] = true
-     -- report_cld("installing interface scanner: %s",k)
         context("\\installctxscanner{clf_%s}{interfaces.scanners.%s}",k,k)
     end
-    rawset(t,k,v)
+ -- rawset(t,k,v)
 end)
 
 function interfaces.registerscanner(name,action,protected,public,call)
+    rawset(interfacescanners,name,action)
     if storedscanners[name] then
-     -- report_cld("warning: scanner %a is already set",k)
+     -- report_cld("warning: scanner %a is already set (mode 2a)",name)
      -- os.exit()
         -- \scan_<k> is already in the format
      -- report_cld("using interface scanner: %s",k)
+    elseif scannerdefmode then
+     -- report_cld("installing interface scanner: %s (mode 2b)",name)
+     -- local n = registerfunction(action,true) -- todo
+        local n = registerfunction("interfaces.scanners."..name,true)
+        storedscanners[name] = n
+        local name = public and name or ("clf_" .. name)
+        setluatoken(name,n,"global",protected and "protected" or "")
     else
         storedscanners[name] = true
---         if protected then
---          -- report_cld("installing expandable interface scanner: %s",k)
---             if public then
---                 context("\\installprotectedctxscanner{%s}{interfaces.scanners.%s}",name,name)
---             else
---                 context("\\installprotectedctxscanner{clf_%s}{interfaces.scanners.%s}",name,name)
---             end
---         else
---          -- report_cld("installing protected interface scanner: %s",k)
---             if public then
---                 context("\\installctxscanner{%s}{interfaces.scanners.%s}",name,name)
---             else
---                 context("\\installctxscanner{clf_%s}{interfaces.scanners.%s}",name,name)
---             end
---         end
-         -- report_cld("installing interface scanner: %s",k)
-            context("\\install%sctxscanner%s{%s%s}{interfaces.scanners.%s}",
-                protected and "protected" or "",
-                call      and "call"      or "",
-                public    and ""          or "clf_",
-                name,
-                name
-            )
+     -- report_cld("installing interface scanner: %s (mode 2c)",name)
+        context("\\install%sctxscanner{%s%s}{interfaces.scanners.%s}",
+            protected and "protected" or "",
+            public and "" or "clf_",
+            name,
+            name
+        )
     end
-    rawset(interfacescanners,name,action)
+ -- rawset(interfacescanners,name,action)
 end
 
 interfaces.scanners = storage.mark(interfacescanners)
@@ -379,17 +411,13 @@ end
 
 local function dummy() end
 
-function commands.ctxresetter(name)
+function commands.ctxresetter(name) -- to be checked
     return function()
         if storedscanners[name] then
             rawset(interfacescanners,name,dummy)
             context.resetctxscanner("clf_" .. name)
         end
     end
-end
-
-function context.trialtypesetting()
-    return texgetcount("@@trialtypesetting") ~= 0
 end
 
 -- Should we keep the catcodes with the function?
@@ -673,6 +701,8 @@ local s_cldl_option_b   = "[\\cldl"
 local s_cldl_option_f   = "[\\cldl" -- add space (not needed)
 local s_cldl_option_e   = "]"
 local s_cldl_option_s   = "\\cldl"
+----- s_cldl_option_d   = "\\cldd"
+local s_cldl_option_d   = s_cldl_option_s
 local s_cldl_argument_b = "{\\cldl"
 local s_cldl_argument_f = "{\\cldl "
 local s_cldl_argument_e = "}"
@@ -683,14 +713,23 @@ local s_cldl_argument_e = "}"
 -- local s_cldl_argument_b = "{"
 -- local s_cldl_argument_f = "{ "
 
+local t_cldl_luafunction             = createtoken("luafunctioncall")
+local lua_expandable_call_token_code = token.command_id and token.command_id("lua_expandable_call")
+
 local function writer(parent,command,...) -- already optimized before call
-    flush(currentcatcodes,command) -- todo: ctx|prt|texcatcodes
+
+    if type(command) == "string" then -- for now
+        flush(currentcatcodes,command) -- todo: ctx|prt|texcatcodes
+    else
+        flush(command) -- todo: ctx|prt|texcatcodes
+    end
+
     local direct = false
  -- local t = { ... }
  -- for i=1,#t do
  --     local ti = t[i]
     for i=1,select("#",...) do
-        local ti = (select(i,...))
+        local ti = select(i,...)
         if direct then
             local typ = type(ti)
             if typ == "string" or typ == "number" then
@@ -703,6 +742,8 @@ local function writer(parent,command,...) -- already optimized before call
             -- nothing
         elseif ti == "" then
             flush(currentcatcodes,"{}")
+     -- elseif ti == 1 then
+     --     flush(currentcatcodes,"{1}")
         else
             local typ = type(ti)
             if typ == "string" then
@@ -719,7 +760,7 @@ local function writer(parent,command,...) -- already optimized before call
                     flush(currentcatcodes,"}")
                 end
             elseif typ == "number" then
-                -- numbers never have funny catcodes
+                -- numbers never have funny catcodesz
                 flush(currentcatcodes,"{",ti,"}")
             elseif typ == "table" then
                 local tn = #ti
@@ -749,7 +790,16 @@ local function writer(parent,command,...) -- already optimized before call
                 elseif tn == 1 then -- some 20% faster than the next loop
                     local tj = ti[1]
                     if type(tj) == "function" then
-                        flush(currentcatcodes,s_cldl_option_b,storefunction(tj),s_cldl_option_e)
+                        tj = storefunction(tj)
+                        if tokenflushmode then
+                            if newtoken then
+                                flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_code),"]")
+                            else
+                                flush(currentcatcodes,"[",t_cldl_luafunction,tj,"]")
+                            end
+                        else
+                            flush(currentcatcodes,s_cldl_option_b,tj,s_cldl_option_e)
+                        end
                     else
                         flush(currentcatcodes,"[",tj,"]")
                     end
@@ -758,10 +808,15 @@ local function writer(parent,command,...) -- already optimized before call
                     for j=1,tn do
                         local tj = ti[j]
                         if type(tj) == "function" then
-                            if j == tn then
-                                flush(currentcatcodes,s_cldl_option_s,storefunction(tj),"]")
+                            tj = storefunction(tj)
+                            if tokenflushmode then
+                                if newtoken then
+                                    flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_code),j == tn and "]" or ",")
+                                else
+                                    flush(currentcatcodes,"[",t_cldl_luafunction,tj,j == tn and "]" or ",")
+                                end
                             else
-                                flush(currentcatcodes,s_cldl_option_s,storefunction(tj),",")
+                                flush(currentcatcodes,s_cldl_option_s,tj,j == tn and "]" or ",")
                             end
                         else
                             if j == tn then
@@ -774,7 +829,16 @@ local function writer(parent,command,...) -- already optimized before call
                 end
             elseif typ == "function" then
                 -- todo: ctx|prt|texcatcodes
-                flush(currentcatcodes,s_cldl_argument_f,storefunction(ti),s_cldl_argument_e)
+                ti = storefunction(ti)
+                if tokenflushmode then
+                    if newtoken then
+                        flush(currentcatcodes,"{",newtoken(ti,lua_expandable_call_token_code),"}")
+                    else
+                        flush(currentcatcodes,"{",t_cldl_luafunction,ti,"}")
+                    end
+                else
+                    flush(currentcatcodes,s_cldl_argument_f,ti,s_cldl_argument_e)
+                end
             elseif typ == "boolean" then
                 if ti then
                     flushdirect(currentcatcodes,"\r")
@@ -783,62 +847,123 @@ local function writer(parent,command,...) -- already optimized before call
                 end
             elseif typ == "thread" then
                 report_context("coroutines not supported as we cannot yield across boundaries")
-            elseif isnode(ti) then -- slow
-                flush(currentcatcodes,s_cldl_argument_b,storenode(ti),s_cldl_argument_e)
+            elseif isnode(ti) then -- slow | why {} here ?
+                if nodeflushmode then
+                    local n = tonut(ti)
+                    if n <= maxflushnodeindex then
+                        flush(currentcatcodes,"{",ti,"}")
+                    else
+                        flush(currentcatcodes,s_cldl_argument_b,storenode(ti),s_cldl_argument_e)
+                    end
+                else
+                    flush(currentcatcodes,s_cldl_argument_b,storenode(ti),s_cldl_argument_e)
+                end
             else
                 report_context("error: %a gets a weird argument %a",command,ti)
             end
+--             else
+--                 local n = isnode(ti)
+--                 if n then
+--                     if nodeflushmode and n <= maxflushnodeindex then
+--                         flush(ti)
+--                     else
+--                         flush(currentcatcodes,s_cldl_argument_b,storenode(ti),s_cldl_argument_e)
+--                     end
+--                 else
+--                     report_context("error: %a gets a weird argument %a",command,ti)
+--                 end
+--             end
         end
     end
 end
 
--- if performance really matters we can consider a compiler but it will never
--- pay off
+local core
 
--- local function prtwriter(command,...) -- already optimized before call
---     flush(prtcatcodes,command)
---     for i=1,select("#",...) do
---         local ti = (select(i,...))
---         if ti == nil then
---             -- nothing
---         elseif ti == "" then
---             flush(prtcatcodes,"{}")
---         else
---             local tp = type(ti)
---             if tp == "string" or tp == "number"then
---                 flush(prtcatcodes,"{",ti,"}")
---             elseif tp == "function" then
---                 flush(prtcatcodes,s_cldl_argument_f,storefunction(ti),s_cldl_argument_e)
---             elseif isnode(ti) then
---                 flush(prtcatcodes,s_cldl_argument_b,storenode(ti),s_cldl_argument_e)
+if tokenflushmode then -- combine them
+
+    local toks = tokens.cache
+
+    context.tokenizedcs = toks
+
+    core = setmetatableindex(function(parent,k)
+        local t
+        local f = function(first,...)
+            if not t then
+                t = toks[k]
+            end
+            if first == nil then
+                flush(t)
+            else
+                return writer(context,t,first,...)
+            end
+        end
+        parent[k] = f
+        return f
+    end)
+
+-- core = setmetatableindex(function(parent,k)
+--     local t
+--     local f = function(first,...)
+--         if not t then
+--             t = toks[k]
+--         end
+--         local f = function(first,...)
+--             if first == nil then
+--                 flush(t)
 --             else
---                 report_context("fatal error: prt %a gets a weird argument %a",command,ti)
+--                 return writer(context,t,first,...)
 --             end
 --         end
+--         parent[k] = f
+--         if first == nil then
+--             flush(t)
+--         else
+--             return writer(context,t,first,...)
+--         end
 --     end
--- end
+--     parent[k] = f
+--     return f
+-- end)
 
-local core = setmetatableindex(function(parent,k)
-    local c = "\\" .. k -- tostring(k)
-    local f = function(first,...)
-        if first == nil then
-            flush(currentcatcodes,c)
-        else
-            return writer(context,c,first,...)
+    core.cs = setmetatableindex(function(parent,k)
+        local t
+        local f = function()
+            if not t then
+                t = toks[k]
+            end
+            flush(t)
         end
-    end
-    parent[k] = f
-    return f
-end)
+        parent[k] = f
+        return f
+    end)
 
-core.cs = setmetatableindex(function(parent,k)
-    local c = "\\" .. k -- tostring(k)
-    local f = function()
-        flush(currentcatcodes,c)
-    end
-    parent[k] = f
-    return f
-end)
+else
+
+    context.tokenizedcs = false
+
+    core = setmetatableindex(function(parent,k)
+        local c = "\\" .. k
+        local f = function(first,...)
+            if first == nil then
+                flush(currentcatcodes,c)
+            else
+                return writer(context,c,first,...)
+            end
+        end
+        parent[k] = f
+        return f
+    end)
+
+    core.cs = setmetatableindex(function(parent,k)
+        local c = "\\" .. k -- tostring(k)
+        local f = function()
+            flush(currentcatcodes,c)
+        end
+        parent[k] = f
+        return f
+    end)
+
+end
 
 local indexer = function(parent,k)
     if type(k) == "string" then
@@ -933,8 +1058,16 @@ local caller = function(parent,f,a,...)
             end
         elseif typ == "function" then
             -- ignored: a ...
-            flush(currentcatcodes,"{\\cldl",storefunction(f),"}") -- todo: ctx|prt|texcatcodes
-         -- flush(currentcatcodes,"{",storefunction(f),"}") -- todo: ctx|prt|texcatcodes
+            f = storefunction(f)
+            if tokenflushmode then
+                if newtoken then
+                    flush(currentcatcodes,"{",newtoken(f,lua_expandable_call_token_code),"}")
+                else
+                    flush(currentcatcodes,"{",t_cldl_luafunction,f,"}")
+                end
+            else
+                flush(currentcatcodes,s_cldl_argument_b,f,s_cldl_argument_e) -- todo: ctx|prt|texcatcodes
+            end
         elseif typ == "boolean" then
             if f then
                 if a ~= nil then
@@ -953,20 +1086,55 @@ local caller = function(parent,f,a,...)
         elseif typ == "thread" then
             report_context("coroutines not supported as we cannot yield across boundaries")
         elseif isnode(f) then -- slow
-         -- writenode(f)
-            flush(currentcatcodes,"\\cldl",storenode(f)," ")
-         -- flush(currentcatcodes,"",storenode(f)," ")
+            if nodeflushmode then
+                local n = tonut(f)
+                if n <= maxflushnodeindex then
+                    flush(f)
+                else
+                    flush(currentcatcodes,s_cldl_option_s,storenode(f)," ")
+                end
+            else
+                flush(currentcatcodes,s_cldl_option_s,storenode(f)," ")
+            end
         else
             report_context("error: %a gets a weird argument %a","context",f)
         end
+--         else
+--             local n = isnode(f)
+--             if n then
+--                 if nodeflushmode and n <= maxflushnodeindex then
+--                     flush(f)
+--                 else
+--                     flush(currentcatcodes,s_cldl_option_s,storenode(f)," ")
+--                 end
+--             else
+--                 report_context("error: %a gets a weird argument %a","context",f)
+--             end
+--         end
     end
 end
 
-context.nodes = {
+context.nodes = { -- todo
     store = storenode,
     flush = function(n)
-        flush(currentcatcodes,"\\cldl",storenode(n)," ")
-     -- flush(currentcatcodes,"",storenode(n)," ")
+        if nodeflushmode and tonut(n) <= maxflushnodeindex then
+            flush(n)
+        else
+            flush(currentcatcodes,d and s_cldl_option_d or s_cldl_option_s,storenode(n)," ")
+        end
+    end,
+}
+
+context.nuts = { -- todo
+    store = function(n)
+        return storenode(tonut(n))
+    end,
+    flush = function(n,d)
+        if nodeflushmode and n <= maxflushnodeindex then
+            flush(tonode(n))
+        else
+            flush(currentcatcodes,d and s_cldl_option_d or s_cldl_option_s,storenode(tonode(n))," ")
+        end
     end,
 }
 
@@ -1012,8 +1180,8 @@ local nofflushes        = 0
 local tracingpermitted  = true
 
 local visualizer = lpeg.replacer {
-    { "\n","<<newline>>" },
-    { "\r","<<par>>" },
+    { "\n", "<<newline>>" },
+    { "\r", "<<par>>" },
 }
 
 statistics.register("traced context", function()
@@ -1026,13 +1194,48 @@ statistics.register("traced context", function()
     end
 end)
 
+local function userdata(argument)
+    if isnode(argument) then
+        return formatters["<< %s node %i>>"](nodes.nodecodes[argument.id],tonut(argument))
+    end
+    if istoken(argument) then
+        local csname = argument.csname
+        if csname then
+         -- return formatters["<<\\%s>>"](csname)
+            return formatters["\\%s"](csname)
+        end
+        local cmdname = argument.cmdname
+        if cmdname == "lua_expandable_call" or cmdname == "lua_call" then
+            return "<<function>>" -- argument.mode
+        end
+        return "<<token>>"
+    end
+    return "<<userdata>>"
+end
+
+
 local tracedwriter = function(parent,...) -- also catcodes ?
     nofwriters = nofwriters + 1
     local savedflush       = flush
     local savedflushdirect = flushdirect -- unlikely to be used here
-    local t, n = { "w : - : " }, 1
+    local t = { "w : - : " }
+    local n = 1
     local traced = function(catcodes,...) -- todo: check for catcodes
-        local s = concat({...})
+        local s = type(catcodes) == "number" and { ... } or { catcodes, ... }
+        for i=1,#s do
+            local argument = s[i]
+            local argtype  = type(argument)
+            if argtype == "string" then
+                s[i] = lpegmatch(visualizer,argument)
+            elseif argtype == "number" then
+                s[i] = argument
+            elseif argtype == "userdata" then
+                s[i] = userdata(argument)
+            else
+                s[i] = formatters["<<%S>>"](argument)
+            end
+        end
+        s = concat(s)
         s = lpegmatch(visualizer,s)
         n = n + 1
         t[n] = s
@@ -1060,9 +1263,10 @@ end
 local traced = function(one,two,...)
     if two ~= nil then
         -- only catcodes if 'one' is number
-        local catcodes = type(one) == "number" and one
+        local catcodes  = type(one) == "number" and one
         local arguments = catcodes and { two, ... } or { one, two, ... }
-        local collapsed, c = { formatters["f : %s : "](catcodes or '-') }, 1
+        local collapsed = { formatters["f : %s : "](catcodes or '-') }
+        local c         = 1
         for i=1,#arguments do
             local argument = arguments[i]
             local argtype = type(argument)
@@ -1071,6 +1275,8 @@ local traced = function(one,two,...)
                 collapsed[c] = lpegmatch(visualizer,argument)
             elseif argtype == "number" then
                 collapsed[c] = argument
+            elseif argtype == "userdata" then
+                collapsed[c] = userdata(argument)
             else
                 collapsed[c] = formatters["<<%S>>"](argument)
             end
@@ -1083,6 +1289,8 @@ local traced = function(one,two,...)
             currenttrace(formatters["f : - : %s"](lpegmatch(visualizer,one)))
         elseif argtype == "number" then
             currenttrace(formatters["f : - : %s"](one))
+        elseif argtype == "userdata" then
+            currenttrace(formatters["F : - : %s"](userdata(one)))
         else
             currenttrace(formatters["f : - : <<%S>>"](one))
         end
@@ -1175,23 +1383,20 @@ do
     local sentinel     = string.char(26) -- ASCII SUB character : endoffileasciicode : ignorecatcode
     local level        = 0
 
-    local function collect(c,...) -- can be optimized
-        -- snippets
-        for i=1,select("#",...) do
+    local function collect(c,a,...) -- can be optimized
+        if type(c) == "userdata" then
             nofcollected = nofcollected + 1
-            collected[nofcollected] = (select(i,...))
+         -- collected[nofcollected] = userdata(c)
+            collected[nofcollected] = "\\" .. c.csname
+        end
+        if a then
+            for i=1,select("#",a,...) do
+                local c = select(i,a,...)
+                nofcollected = nofcollected + 1
+                collected[nofcollected] = type(c) == "userdata" and userdata(c) or c
+            end
         end
     end
-
-    -- local function collectdirect(c,...) -- can be optimized
-    --     -- lines
-    --     for i=1,select("#",...) do
-    --         n = n + 1
-    --         t[n] = (select(i,...))
-    --         n = n + 1
-    --         t[n] = "\r"
-    --     end
-    -- end
 
     local collectdirect = collect
     local permitted     = true
@@ -1224,34 +1429,39 @@ do
         end
     end
 
-end
+    local findtexfile = resolvers.findtexfile
+    local findfile    = resolvers.findfile
 
---
-
-function context.runfile(filename)
-    local foundname = resolvers.findtexfile(file.addsuffix(filename,"cld")) or ""
-    if foundname ~= "" then
-        local ok = dofile(foundname)
-        if type(ok) == "function" then
-            if trace_cld then
-                report_context("begin of file %a (function call)",foundname)
+    function context.runfile(filename)
+        local foundname = findtexfile(file.addsuffix(filename,"cld")) or ""
+        if foundname ~= "" then
+            local ok = dofile(foundname)
+            if type(ok) == "function" then
+                if trace_cld then
+                    report_context("begin of file %a (function call)",foundname)
+                end
+                ok()
+                if trace_cld then
+                    report_context("end of file %a (function call)",foundname)
+                end
+            elseif ok then
+                report_context("file %a is processed and returns true",foundname)
+            else
+                report_context("file %a is processed and returns nothing",foundname)
             end
-            ok()
-            if trace_cld then
-                report_context("end of file %a (function call)",foundname)
-            end
-        elseif ok then
-            report_context("file %a is processed and returns true",foundname)
         else
-            report_context("file %a is processed and returns nothing",foundname)
+            report_context("unknown file %a",filename)
         end
-    else
-        report_context("unknown file %a",filename)
     end
-end
 
-function context.loadfile(filename)
-    context(stripstring(loaddata(resolvers.findfile(filename))))
+    function context.loadfile(filename)
+        context(stripstring(loaddata(findfile(filename))))
+    end
+
+    function context.loadviafile(filename)
+        viafile(stripstring(loaddata(findfile(filename))))
+    end
+
 end
 
 -- some functions
@@ -1270,7 +1480,7 @@ do
 
     local function indexer(parent,k)
         local f = function(...)
-            local a = { ... }
+            local a = { ... } -- this also freezes ...
             return function()
              -- return context[k](unpack(a))
                 return core[k](unpack(a))
@@ -1295,46 +1505,48 @@ do
 
 end
 
-do
+-- do
+--
+--     -- context.nested (todo: lines), creates strings
+--
+--     local nested = { }
+--
+--     local function indexer(parent,k) -- not ok when traced
+--         local f = function(...)
+--             local t, savedflush, n = { }, flush, 0
+--             flush = function(c,f,s,...) -- catcodes are ignored
+--                 n = n + 1
+--                 t[n] = s and concat{f,s,...} or f -- optimized for #args == 1
+--             end
+--          -- context[k](...)
+--             core[k](...)
+--             flush = savedflush
+--             return concat(t)
+--         end
+--         parent[k] = f
+--         return f
+--     end
+--
+--     local function caller(parent,...)
+--         local t, savedflush, n = { }, flush, 0
+--         flush = function(c,f,s,...) -- catcodes are ignored
+--             n = n + 1
+--             t[n] = s and concat{f,s,...} or f -- optimized for #args == 1
+--         end
+--      -- context(...)
+--         defaultcaller(context,...)
+--         flush = savedflush
+--         return concat(t)
+--     end
+--
+--     setmetatableindex(nested,indexer)
+--     setmetatablecall (nested,caller)
+--
+--     context.nested = nested
+--
+-- end
 
-    -- context.nested (todo: lines), creates strings
-
-    local nested = { }
-
-    local function indexer(parent,k) -- not ok when traced
-        local f = function(...)
-            local t, savedflush, n = { }, flush, 0
-            flush = function(c,f,s,...) -- catcodes are ignored
-                n = n + 1
-                t[n] = s and concat{f,s,...} or f -- optimized for #args == 1
-            end
-         -- context[k](...)
-            core[k](...)
-            flush = savedflush
-            return concat(t)
-        end
-        parent[k] = f
-        return f
-    end
-
-    local function caller(parent,...)
-        local t, savedflush, n = { }, flush, 0
-        flush = function(c,f,s,...) -- catcodes are ignored
-            n = n + 1
-            t[n] = s and concat{f,s,...} or f -- optimized for #args == 1
-        end
-     -- context(...)
-        defaultcaller(context,...)
-        flush = savedflush
-        return concat(t)
-    end
-
-    setmetatableindex(nested,indexer)
-    setmetatablecall (nested,caller)
-
-    context.nested = nested
-
-end
+context.nested = context.delayed
 
 -- verbatim
 
@@ -1360,14 +1572,22 @@ function context.newindexer(catcodes,cmdcodes)
         contentcatcodes = savedcatcodes
     end
 
-    handler.cs = setmetatableindex(function(parent,k)
-        local c = "\\" .. k -- tostring(k)
-        local f = function()
-            flush(cmdcodes,c)
-        end
-        parent[k] = f
-        return f
-    end)
+    if tokenflushmode then
+
+        handler.cs = core.cs
+
+    else
+
+        handler.cs = setmetatableindex(function(parent,k)
+            local c = "\\" .. k -- tostring(k)
+            local f = function()
+                flush(cmdcodes,c)
+            end
+            parent[k] = f
+            return f
+        end)
+
+    end
 
     setmetatableindex(handler,indexer)
     setmetatablecall (handler,caller)
@@ -1420,21 +1640,51 @@ do
         end
     end
 
-    local function indexer(parent,k)
-        if type(k) == "string" then
-            local c = "\\" .. k
-            local f = function(first,...)
-                if first == nil then
-                    flush(currentcatcodes,c)
-                else
-                    return formattedflush(parent,c,first,...)
+    local indexer
+
+    if tokenflushmode then -- combine them
+
+        local toks = tokens.cache
+
+        indexer = function(parent,k)
+            if type(k) == "string" then
+                local t
+                local f = function(first,...)
+                    if not t then
+                        t = toks[k]
+                    end
+                    if first == nil then
+                        flush(t)
+                    else
+                        return formattedflush(parent,t,first,...)
+                    end
                 end
+                parent[k] = f
+                return f
+            else
+                return context -- catch
             end
-            parent[k] = f
-            return f
-        else
-            return context -- catch
         end
+
+    else
+
+        indexer = function(parent,k)
+            if type(k) == "string" then
+                local c = "\\" .. k
+                local f = function(first,...)
+                    if first == nil then
+                        flush(currentcatcodes,c)
+                    else
+                        return formattedflush(parent,c,first,...)
+                    end
+                end
+                parent[k] = f
+                return f
+            else
+                return context -- catch
+            end
+        end
+
     end
 
     -- formatted([catcodes,]format[,...])

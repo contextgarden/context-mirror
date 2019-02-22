@@ -38,7 +38,6 @@
 %D \goto{calculate total}[Sum(1.5,2.3)]
 %D \stoptyping
 
-
 %D \macros
 %D   {startJScode}
 %D
@@ -55,7 +54,7 @@
 %D actually include the preamble needed.
 %D
 %D \starttyping
-%D \startJScode{uses} uses {later}
+%D \startJScode{uses} used {later}
 %D   uses = 6 ;
 %D \stopJScode
 %D \stoptyping
@@ -155,5 +154,19 @@
 \def\java_use_scripts[#1][#2]%
   {\clf_usejavascriptscripts {#1}%  two steps as this one calls tex code
    \clf_usejavascriptpreamble{#2}}% so this one comes later
+
+\unexpanded\def\useJSpreamble
+  {\dosingleempty\java_use_preamble}
+
+\def\java_use_preamble[#1]%
+  {\clf_usejavascriptpreamble{#1}}% so this one comes later
+
+%D Here:
+
+\definefilesynonym[java-imp-fld.mkiv] [java-imp-fields.mkiv]
+\definefilesynonym[java-imp-stp.mkiv] [java-imp-steps.mkiv]
+\definefilesynonym[java-imp-fil.mkiv] [java-imp-print.mkiv]
+\definefilesynonym[java-imp-rhh.mkiv] [java-imp-highlight.mkiv]
+\definefilesynonym[java-imp-exa.mkiv] [java-imp-example.mkiv]
 
 \protect \endinput

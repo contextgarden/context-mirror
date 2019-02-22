@@ -6,6 +6,11 @@ if not modules then modules = { } end modules ['grph-inc'] = {
     license   = "see context related readme files"
 }
 
+-- todo: in pdfe: pdfe.copyappearance(document,objnum)
+--
+-- local im = createimage { filename = fullname }
+-- local on = images.flushobject(im,document.__xrefs__[AP])
+
 -- todo: files are sometimes located twice
 -- todo: empty filename or only suffix always false (not found)
 -- lowercase types
@@ -40,17 +45,16 @@ run TeX code from within Lua. Some more functionality will move to Lua.
 
 -- todo: store loaded pages per pdf file someplace
 
-local tonumber, tostring, next = tonumber, tostring, next
+local tonumber, tostring, next, unpack = tonumber, tostring, next, unpack
 local format, lower, find, match, gsub = string.format, string.lower, string.find, string.match, string.gsub
 local longtostring = string.longtostring
 local contains = table.contains
-local sortedhash = table.sortedhash
+local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 local concat, insert, remove = table.concat, table.insert, table.remove
 local todimen = string.todimen
 local collapsepath = file.collapsepath
 local formatters = string.formatters
-local formatcolumns = utilities.formatters.formatcolumns
-local max, odd = math.max, math.odd
+local odd = math.odd
 
 local P, R, S, Cc, C, Cs, Ct, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.Cc, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.match
 
@@ -60,7 +64,10 @@ local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
 local replacetemplate   = utilities.templates.replace
 
-local images            = img
+local bpfactor          = number.dimenfactors.bp
+
+images                  = images or { }
+local images            = images
 
 local hasscheme         = url.hasscheme
 local urlhashed         = url.hashed
@@ -104,7 +111,7 @@ local v_local           = variables["local"]
 local v_default         = variables.default
 local v_auto            = variables.auto
 
-local maxdimen          = 0x3FFFFFFF -- 2^30-1
+local maxdimen          = tex.magicconstants.maxdimen -- 0x3FFFFFFF -- 2^30-1
 
 local ctx_doscalefigure            = context.doscalefigure
 local ctx_relocateexternalfigure   = context.relocateexternalfigure
@@ -120,11 +127,11 @@ function checkimage(figure)
         local width  = figure.width
         local height = figure.height
         if width <= 0 or height <= 0 then
-            report_inclusion("image %a has bad dimensions (%p,%p), discarding",figure.filename,width,height)
+            report_inclusion("image %a has bad dimensions (%p,%p), discarding",figure.filename or "?",width,height)
             return false, "bad dimensions"
         end
-        local xres    = figure.xres
-        local yres    = figure.yres
+     -- local xres    = figure.xres
+     -- local yres    = figure.yres
         local changes = false
         if height > width then
             if height > maxdimen then
@@ -150,14 +157,117 @@ function checkimage(figure)
     end
 end
 
---- some extra img functions --- can become luat-img.lua
+--- begin of mapping / this will become graphics & code|nodeinjections but not this year
 
-local allimagekeys = images.keys()
+local  __img__ = type(img) == "table" and img or { }
+images.__img__ =__img__
+
+local imgnew   = __img__.new
+local imgscan  = __img__.scan
+local imgcopy  = __img__.copy
+local imgwrap  = __img__.node
+local imgembed = __img__.immediatewrite
+
+if imgnew then
+    -- catch (actually we should be less picky in img)
+    local __img__new__ = img_new
+    imgnew = function(t)
+        t.kind = nil
+        return __img__new__(t)
+    end
+end
+
+updaters.register("backend.update",function()
+    local img = images.__img__
+    imgnew   = img.new
+    imgscan  = img.scan
+    imgcopy  = img.copy
+    imgwrap  = img.wrap
+    imgembed = img.embed
+end)
+
+local imagekeys  = { -- only relevant ones
+    "width", "height", "depth", "bbox",
+    "colordepth", "colorspace",
+    "filename", "filepath", "visiblefilename",
+    "imagetype", "stream",
+    "index", "objnum",
+    "pagebox", "page", "pages",
+    "rotation", "transform",
+    "xsize", "ysize", "xres", "yres",
+}
+
+local imagesizes = {
+    art   = true, bleed = true,  crop = true,
+    media = true, none  = true,  trim = true,
+}
+
+local imagetypes = { [0] =
+    "none",
+    "pdf", "png", "jpg", "jp2", "jbig2",
+    "stream", "memstream",
+}
+
+imagetypes   = table.swapped(imagetypes,imagetypes)
+
+images.keys  = imagekeys
+images.types = imagetypes
+images.sizes = imagesizes
+
+-- new interface
+
+local function createimage(specification)
+    return imgnew(specification)
+end
+
+local function copyimage(specification)
+    return imgcopy(specification)
+end
+
+local function scanimage(specification)
+    return imgscan(specification)
+end
+
+local function embedimage(specification)
+    -- write the image to file
+    return imgembed(specification)
+end
+
+local function wrapimage(specification)
+    -- create an image rule
+    return imgwrap(specification)
+end
+
+images.create = createimage
+images.scan   = scanimage
+images.copy   = copyimage
+images.wrap   = wrapimage
+images.embed  = embedimage
+
+-- now we reimplement img:
+
+img = {
+    new                  = createimage,
+    scan                 = scanimage,
+    copy                 = copyimage,
+    node                 = wrapimage,
+    write                = function(specification) context(wrapimage(specification)) end,
+    immediatewrite       = embedimage,
+    immediatewriteobject = function() end, -- not upported, experimental anyway
+    boxes                = function() return sortedkeys(imagesizes) end,
+    fields               = function() return imagekeys end,
+    types                = function() return { unpack(imagetypes,0,#imagetypes) } end,
+}
+
+-- end of copies / mapping
 
 local function imagetotable(imgtable)
+    if type(imgtable) == "table" then
+        return copy(imgtable)
+    end
     local result = { }
-    for k=1,#allimagekeys do
-        local key = allimagekeys[k]
+    for k=1,#imagekeys do
+        local key   = imagekeys[k]
         result[key] = imgtable[key]
     end
     return result
@@ -171,41 +281,24 @@ function images.print(i,...)
     return table.print(imagetotable(i),...)
 end
 
-function images.clone(i,data)
-    i.width  = data.width  or i.width
-    i.height = data.height or i.height
-    -- attr etc
-    return i
-end
-
-local validsizes = table.tohash(images.boxes())
-local validtypes = table.tohash(images.types())
-
 local function checkimagesize(size)
     if size then
         size = gsub(size,"box","")
-        return validsizes[size] and size or "crop"
+        return imagesizes[size] and size or "crop"
     else
         return "crop"
     end
 end
 
-local newimage       = images.new
-local scanimage      = images.scan
-local copyimage      = images.copy
-local cloneimage     = images.clone
-local imagetonode    = images.node
+images.check     = checkimage
+images.checksize = checkimagesize
+images.totable   = imagetotable
 
-images.check         = checkimage
-images.checksize     = checkimagesize
-images.tonode        = imagetonode
-images.totable       = imagetotable
-
-local indexed = { }
-
-function images.ofindex(n)
-    return indexed[n]
-end
+-- local indexed = { }
+--
+-- function images.ofindex(n)
+--     return indexed[n]
+-- end
 
 --- we can consider an grph-ini file
 
@@ -372,22 +465,30 @@ function figures.setorder(list) -- can be table or string
     end
 end
 
+local function guessfromstring(str)
+    if str then
+        for i=1,#figures_magics do
+            local pattern = figures_magics[i]
+            if lpegmatch(pattern.pattern,str) then
+                local format = pattern.format
+                if trace_figures then
+                    report_inclusion("file %a has format %a",filename,format)
+                end
+                return format
+            end
+        end
+    end
+end
+
+figures.guessfromstring = guessfromstring
+
 function figures.guess(filename)
     local f = io.open(filename,'rb')
     if f then
         local str = f:read(100)
         f:close()
         if str then
-            for i=1,#figures_magics do
-                local pattern = figures_magics[i]
-                if lpegmatch(pattern.pattern,str) then
-                    local format = pattern.format
-                    if trace_figures then
-                        report_inclusion("file %a has format %a",filename,format)
-                    end
-                    return format
-                end
-            end
+            return guessfromstring(str)
         end
     end
 end
@@ -571,6 +672,7 @@ function figures.initialize(request)
         request.cache     = request.cache ~= "" and request.cache
         request.prefix    = request.prefix ~= "" and request.prefix
         request.format    = request.format ~= "" and request.format
+        request.compact   = request.compact == v_yes
         table.merge(figuredata.request,request)
     end
     return figuredata
@@ -818,7 +920,7 @@ local function register(askedname,specification)
                     end
                 elseif io.exists(oldname) then
                     report_inclusion("file %a is bugged",oldname)
-                    if format and validtypes[format] then
+                    if format and imagetypes[format] then
                         specification.fullname = oldname
                     end
                     specification.converted = false
@@ -827,13 +929,13 @@ local function register(askedname,specification)
             end
         end
         if format then
-            local found = figures_suffixes[format] -- validtypes[format]
+            local found = figures_suffixes[format]
             if not found then
                 specification.found = false
                 if trace_figures then
                     report_inclusion("format %a is not supported",format)
                 end
-            elseif validtypes[format] then
+            elseif imagetypes[format] then
                 specification.found = true
                 if trace_figures then
                     report_inclusion("format %a natively supported by backend",format)
@@ -1362,15 +1464,18 @@ end
 local pagecount = { }
 
 function checkers.generic(data)
-    local dr, du, ds = data.request, data.used, data.status
-    local name       = du.fullname or "unknown generic"
-    local page       = du.page or dr.page
-    local size       = dr.size or "crop"
-    local color      = dr.color or "natural"
-    local mask       = dr.mask or "none"
-    local conversion = dr.conversion
-    local resolution = dr.resolution
-    local arguments  = dr.arguments
+    local dr, du, ds    = data.request, data.used, data.status
+    local name          = du.fullname or "unknown generic"
+    local page          = du.page or dr.page
+    local size          = dr.size or "crop"
+    local color         = dr.color or "natural"
+    local mask          = dr.mask or "none"
+    local conversion    = dr.conversion
+    local resolution    = dr.resolution
+    local arguments     = dr.arguments
+    local scanimage     = dr.scanimage or scanimage
+    local userpassword  = dr.userpassword
+    local ownerpassword = dr.ownerpassword
     if not conversion or conversion == "" then
         conversion = "default"
     end
@@ -1390,22 +1495,29 @@ function checkers.generic(data)
         resolution,
         arguments
     )
+    --
     local figure = figures_loaded[hash]
     if figure == nil then
-        figure = newimage {
+        figure = createimage {
             filename        = name,
             page            = page,
             pagebox         = dr.size,
             keepopen        = dr.keepopen or false,
+            userpassword    = userpassword,
+            ownerpassword   = ownerpassword,
          -- visiblefilename = "", -- this prohibits the full filename ending up in the file
         }
         codeinjections.setfigurecolorspace(data,figure)
         codeinjections.setfiguremask(data,figure)
         if figure then
-            -- new, bonus check
+            -- new, bonus check (a bogus check in lmtx)
             if page and page > 1 then
-                local f = scanimage{ filename = name }
-                if f.page and f.pages < page then
+                local f = scanimage {
+                    filename      = name,
+                    userpassword  = userpassword,
+                    ownerpassword = ownerpassword,
+                }
+                if f and f.page and f.pages < page then
                     report_inclusion("no page %i in %a, using page 1",page,name)
                     page        = 1
                     figure.page = page
@@ -1417,6 +1529,10 @@ function checkers.generic(data)
                 ds.comment = comment
                 ds.found   = false
                 ds.error   = true
+            end
+            if figure.attr and not f.attr then
+                -- tricky as img doesn't allow it
+                f.attr = figure.attr
             end
             figure = f
         end
@@ -1459,6 +1575,11 @@ function figures.getrealpage(index)
     return pofimages[index] or 0
 end
 
+local function updatepage(specification)
+    local n = specification.n
+    pofimages[n] = pofimages[n] or tex.count.realpageno -- so when reused we register the first one only
+end
+
 function includers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
     -- here we set the 'natural dimensions'
@@ -1472,10 +1593,13 @@ function includers.generic(data)
  --     height   = dr.height,
  -- }
     if figure == nil then
-        figure = ds.private
+        figure = ds.private -- the img object
         if figure then
-            figure = copyimage(figure)
-            figure = figure and cloneimage(figure,data.request) or false
+            figure = (dr.copyimage or copyimage)(figure)
+            if figure then
+                figure.width  = dr.width  or figure.width
+                figure.height = dr.height or figure.height
+            end
         end
         figures_used[hash] = figure
     end
@@ -1483,16 +1607,15 @@ function includers.generic(data)
         local nr     = figures.boxnumber
         nofimages    = nofimages + 1
         ds.pageindex = nofimages
-        local image  = imagetonode(figure)
-        local pager  = new_latelua(function()
-            pofimages[nofimages] = pofimages[nofimages] or tex.count.realpageno -- so when reused we register the first one only
-        end)
+        local image  = wrapimage(figure)
+        local pager  = new_latelua { action = updatepage, n = nofimages }
         image.next = pager
         pager.prev = image
-        local box  = hpack(image) -- imagetonode(figure) not longer valid
-
-        indexed[figure.index] = figure
-        box.width, box.height, box.depth = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
+        local box  = hpack(image)
+     -- indexed[figure.index] = figure
+        box.width  = figure.width
+        box.height = figure.height
+        box.depth  = 0
         texsetbox(nr,box)
         ds.objectnumber = figure.objnum
         ctx_relocateexternalfigure()
@@ -1546,7 +1669,7 @@ function checkers.mov(data)
         nodeinjections.insertmovie {
             width      = width,
             height     = height,
-            factor     = number.dimenfactors.bp,
+            factor     = bpfactor,
             ["repeat"] = dr["repeat"],
             controls   = dr.controls,
             preview    = dr.preview,
@@ -1916,8 +2039,10 @@ function figures.getinfo(name,page)
     end
     if name.name then
         local data = figures.push(name)
-        figures.identify()
-        figures.check()
+        data = figures.identify(data)
+        if data.status and data.status.status > 0 then
+            data = figures.check(data)
+        end
         figures.pop()
         return data
     end
@@ -1961,8 +2086,11 @@ implement {
             { "arguments" },
             { "repeat" },
             { "transform" },
+            { "compact" },
             { "width", "dimen" },
             { "height", "dimen" },
+            { "userpassword" },
+            { "ownerpassword" },
         }
     }
 }

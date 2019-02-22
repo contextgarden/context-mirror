@@ -9,7 +9,6 @@ if not modules then modules = { } end modules ['typo-pnc'] = {
 local nodes           = nodes
 local fonts           = fonts
 
-local prependaction   = nodes.tasks.prependaction
 local enableaction    = nodes.tasks.enableaction
 
 local nuts            = nodes.nuts
@@ -23,7 +22,8 @@ local spaceskip_code  = gluecodes.spaceskip
 
 local new_kern        = nuts.pool.kern
 local insert_after    = nuts.insert_after
-local traverse_id     = nuts.traverse_id
+
+local nextglyph       = nuts.traversers.glyph
 
 local getchar         = nuts.getchar
 local getfont         = nuts.getfont
@@ -68,10 +68,8 @@ local mapping = periodkerns.mapping
 local factors = periodkerns.factors
 
 function periodkerns.handler(head)
-    local done = false
-    local hnut = tonut(head)
-    for current in traverse_id(glyph_code,tonut(hnut)) do
-        if getchar(current) == period then
+    for current, char, font in nextglyph, head do
+        if char == period then
             local a = getattr(current,a_periodkern)
             if a then
                 local factor = mapping[a]
@@ -79,10 +77,10 @@ function periodkerns.handler(head)
                     local prev, next = getboth(current)
                     if prev and next and getid(prev) == glyph_code and getid(next) == glyph_code then
                         local pchar = getchar(prev)
-                        local pcode = categories[getchar(prev)]
+                        local pcode = categories[pchar]
                         if pcode == "lu" or pcode == "ll" then
                             local nchar = getchar(next)
-                            local ncode = categories[getchar(next)]
+                            local ncode = categories[nchar]
                             if ncode == "lu" or ncode == "ll" then
                                 local next2 = getnext(next)
                                 if next2 and getid(next2) == glyph_code and getchar(next2) == period then
@@ -91,11 +89,10 @@ function periodkerns.handler(head)
                                     if factor ~= 0 then
                                         fontspace = parameters[getfont(current)].space -- can be sped up
                                         inserted  = factor * fontspace
-                                        insert_after(hnut,current,new_kern(inserted))
+                                        insert_after(head,current,new_kern(inserted))
                                         if trace then
                                             report("inserting space at %C . [%p] %C .",pchar,inserted,nchar)
                                         end
-                                        done = true
                                     end
                                     local next3 = getnext(next2)
                                     if next3 and getid(next3) == glue_code and getsubtype(next3) == spaceskip_code then
@@ -115,7 +112,6 @@ function periodkerns.handler(head)
                                                         end
                                                     end
                                                     setwidth(next3,space)
-                                                    done = true
                                                 else
                                                     if trace then
                                                         if inserted then
@@ -136,7 +132,7 @@ function periodkerns.handler(head)
             end
         end
     end
-    return head, done
+    return head
 end
 
 local enabled = false
@@ -144,7 +140,6 @@ local enabled = false
 function periodkerns.set(factor)
     factor = tonumber(factor) or 0
     if not enabled then
-        prependaction("processors","normalizers","typesetters.periodkerns.handler")
         enableaction("processors","typesetters.periodkerns.handler")
         enabled = true
     end

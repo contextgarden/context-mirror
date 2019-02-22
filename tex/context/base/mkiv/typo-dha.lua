@@ -41,13 +41,11 @@ if not modules then modules = { } end modules ['typo-dha'] = {
 
 local nodes, node = nodes, node
 
-local trace_directions   = false  trackers.register("typesetters.directions.default", function(v) trace_directions = v end)
+local trace_directions   = false  trackers.register("typesetters.directions", function(v) trace_directions = v end)
 
 local report_directions  = logs.reporter("typesetting","text directions")
 
 local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-local tonode             = nuts.tonode
 
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
@@ -57,7 +55,7 @@ local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
 local getattr            = nuts.getattr
 local getprop            = nuts.getprop
-local getdir            = nuts.getdir
+local getdirection       = nuts.getdirection
 local isglyph            = nuts.isglyph -- or ischar
 
 local setprop            = nuts.setprop
@@ -71,7 +69,7 @@ local end_of_math        = nuts.end_of_math
 local nodepool           = nuts.pool
 
 local nodecodes          = nodes.nodecodes
-local skipcodes          = nodes.skipcodes
+local gluecodes          = nodes.gluecodes
 
 local glyph_code         = nodecodes.glyph
 local math_code          = nodecodes.math
@@ -80,9 +78,13 @@ local glue_code          = nodecodes.glue
 local dir_code           = nodecodes.dir
 local localpar_code      = nodecodes.localpar
 
-local parfillskip_code   = skipcodes.parfillskip
+local dirvalues          = nodes.dirvalues
+local lefttoright_code   = dirvalues.lefttoright
+local righttoleft_code   = dirvalues.righttoleft
 
-local new_textdir        = nodepool.textdir
+local parfillskip_code   = gluecodes.parfillskip
+
+local new_direction      = nodepool.direction
 
 local insert             = table.insert
 
@@ -104,14 +106,14 @@ local strip              = false
 
 local s_isol             = fonts.analyzers.states.isol
 
-local function stopdir(finish)
-    local n = new_textdir(finish == "TRT" and "-TRT" or "-TLT")
+local function stopdir(finish) -- we could use finish directly
+    local n = new_direction(finish == righttoleft_code and righttoleft_code or lefttoright_code,true)
     setprop(n,"direction",true)
     return n
 end
 
-local function startdir(finish)
-    local n = new_textdir(finish == "TRT" and "+TRT" or "+TLT")
+local function startdir(finish) -- we could use finish directly
+    local n = new_direction(finish == righttoleft_code and righttoleft_code or lefttoright_code)
     setprop(n,"direction",true)
     return n
 end
@@ -136,7 +138,7 @@ end
 
 local function process(start)
 
-    local head     = tonut(start) -- we have a global head
+    local head     = start
     local current  = head
     local autodir  = 0
     local embedded = 0
@@ -309,27 +311,31 @@ local function process(start)
             elseif id == kern_code then
                 setprop(current,"direction",'k')
             elseif id == dir_code then
-                local dir = getdir(current)
-                if dir == "+TRT" then
-                    autodir = -1
-                elseif dir == "+TLT" then
-                    autodir = 1
-                elseif dir == "-TRT" or dir == "-TLT" then
-                    if embedded and embedded~= 0 then
+                local direction, pop = getdirection(current)
+                if direction == righttoleft_code then
+                    if not pop then
+                        autodir = -1
+                    elseif embedded and embedded~= 0 then
                         autodir = embedded
                     else
                         autodir = 0
                     end
-                else
-                    -- message
+                elseif direction == lefttoright_code then
+                    if not pop then
+                        autodir = 1
+                    elseif embedded and embedded~= 0 then
+                        autodir = embedded
+                    else
+                        autodir = 0
+                    end
                 end
                 textdir = autodir
                 setprop(current,"direction",true)
-            elseif id == localpar_code then
-                local dir = getdir(current)
-                if dir == 'TRT' then
+            elseif id == localpar_code and getsubtype(current) == 0 then
+                local direction = getdirection(current)
+                if direction == righttoleft_code then
                     autodir = -1
-                elseif dir == 'TLT' then
+                elseif direction == lefttoright_code then
                     autodir = 1
                 end
                 pardir  = autodir
@@ -443,7 +449,7 @@ local function process(start)
         end
     end
 
-    return tonode(head), done
+    return head
 
 end
 

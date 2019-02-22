@@ -36,8 +36,8 @@ local report_math           = logs.reporter("mathematics","initializing")
 mathematics                 = mathematics or { }
 local mathematics           = mathematics
 
-mathematics.extrabase       = 0xFE000 -- here we push some virtuals
-mathematics.privatebase     = 0xFF000 -- here we push the ex
+mathematics.extrabase       = fonts.privateoffsets.mathextrabase -- here we push some virtuals
+mathematics.privatebase     = fonts.privateoffsets.mathbase      -- here we push the ex
 
 local unsetvalue            = attributes.unsetvalue
 local allocate              = utilities.storage.allocate
@@ -289,7 +289,8 @@ function mathematics.define(family)
     local data = characters.data
     for unicode, character in sortedhash(data) do
         local symbol = character.mathsymbol
-        local mset, dset = true, true
+        local mset   = true
+        local dset   = true
         if symbol then
             local other = data[symbol]
             local class = other.mathclass
@@ -641,7 +642,7 @@ function mathematics.big(tfmdata,unicode,n,method)
                     end
                 end
             end
-        else
+        elseif method == 3 then
             local size = 1.33^n
             if method == 4 then
                 size = tfmdata.parameters.size * size

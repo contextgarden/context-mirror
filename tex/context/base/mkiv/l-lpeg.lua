@@ -202,13 +202,13 @@ local fullstripper     = whitespace^0 * C((whitespace^0 * nonwhitespace^1)^0)
 local collapser        = Cs(spacer^0/"" * nonspacer^0 * ((spacer^0/" " * nonspacer^1)^0))
 local nospacer         = Cs((whitespace^1/"" + nonwhitespace^1)^0)
 
-local b_collapser      = Cs( whitespace^0        /"" * (nonwhitespace^1 + whitespace^1/" ")^0)
-local e_collapser      = Cs((whitespace^1 * P(-1)/"" +  nonwhitespace^1 + whitespace^1/" ")^0)
-local m_collapser      = Cs(                           (nonwhitespace^1 + whitespace^1/" ")^0)
+local b_collapser      = Cs( whitespace^0              /"" * (nonwhitespace^1 + whitespace^1/" ")^0)
+local e_collapser      = Cs((whitespace^1 * endofstring/"" +  nonwhitespace^1 + whitespace^1/" ")^0)
+local m_collapser      = Cs(                                 (nonwhitespace^1 + whitespace^1/" ")^0)
 
-local b_stripper       = Cs( spacer^0        /"" * (nonspacer^1 + spacer^1/" ")^0)
-local e_stripper       = Cs((spacer^1 * P(-1)/"" +  nonspacer^1 + spacer^1/" ")^0)
-local m_stripper       = Cs(                       (nonspacer^1 + spacer^1/" ")^0)
+local b_stripper       = Cs( spacer^0              /"" * (nonspacer^1 + spacer^1/" ")^0)
+local e_stripper       = Cs((spacer^1 * endofstring/"" +  nonspacer^1 + spacer^1/" ")^0)
+local m_stripper       = Cs(                             (nonspacer^1 + spacer^1/" ")^0)
 
 patterns.stripper      = stripper
 patterns.fullstripper  = fullstripper
@@ -270,7 +270,7 @@ patterns.cpfloat       = sign^-1 * patterns.cpunsigned
 patterns.number        = patterns.float + patterns.integer
 patterns.cnumber       = patterns.cfloat + patterns.integer
 patterns.cpnumber      = patterns.cpfloat + patterns.integer
-patterns.oct           = zero * octdigits
+patterns.oct           = zero * octdigits -- hm is this ok
 patterns.octal         = patterns.oct
 patterns.HEX           = zero * P("X") * (digit+uppercase)^1
 patterns.hex           = zero * P("x") * (digit+lowercase)^1
@@ -289,10 +289,14 @@ patterns.propername    = (uppercase + lowercase + underscore) * (uppercase + low
 patterns.somecontent   = (anything - newline - space)^1 -- (utf8char - newline - space)^1
 patterns.beginline     = #(1-newline)
 
-patterns.longtostring  = Cs(whitespace^0/"" * ((patterns.quoted + nonwhitespace^1 + whitespace^1/"" * (P(-1) + Cc(" ")))^0))
+patterns.longtostring  = Cs(whitespace^0/"" * ((patterns.quoted + nonwhitespace^1 + whitespace^1/"" * (endofstring + Cc(" ")))^0))
 
-local function anywhere(pattern) --slightly adapted from website
-    return P { P(pattern) + 1 * V(1) }
+-- local function anywhere(pattern) -- slightly adapted from website
+--     return P { P(pattern) + 1 * V(1) }
+-- end
+
+function anywhere(pattern) -- faster
+    return (1-P(pattern))^0 * P(pattern)
 end
 
 lpeg.anywhere = anywhere
@@ -304,12 +308,28 @@ function lpeg.instringchecker(p)
     end
 end
 
+-- function lpeg.splitter(pattern, action)
+--     return (((1-P(pattern))^1)/action+1)^0
+-- end
+
+-- function lpeg.tsplitter(pattern, action)
+--     return Ct((((1-P(pattern))^1)/action+1)^0)
+-- end
+
 function lpeg.splitter(pattern, action)
-    return (((1-P(pattern))^1)/action+1)^0
+    if action then
+        return (((1-P(pattern))^1)/action+1)^0
+    else
+        return (Cs((1-P(pattern))^1)+1)^0
+    end
 end
 
 function lpeg.tsplitter(pattern, action)
-    return Ct((((1-P(pattern))^1)/action+1)^0)
+    if action then
+        return Ct((((1-P(pattern))^1)/action+1)^0)
+    else
+        return Ct((Cs((1-P(pattern))^1)+1)^0)
+    end
 end
 
 -- probleem: separator can be lpeg and that does not hash too well, but
@@ -637,82 +657,6 @@ function lpeg.counter(pattern,action)
     end
 end
 
--- utf extensies
-
-utf = utf or (unicode and unicode.utf8) or { }
-
-local utfcharacters = utf and utf.characters or string.utfcharacters
-local utfgmatch     = utf and utf.gmatch
-local utfchar       = utf and utf.char
-
-lpeg.UP = lpeg.P
-
-if utfcharacters then
-
-    function lpeg.US(str)
-        local p = P(false)
-        for uc in utfcharacters(str) do
-            p = p + P(uc)
-        end
-        return p
-    end
-
-
-elseif utfgmatch then
-
-    function lpeg.US(str)
-        local p = P(false)
-        for uc in utfgmatch(str,".") do
-            p = p + P(uc)
-        end
-        return p
-    end
-
-else
-
-    function lpeg.US(str)
-        local p = P(false)
-        local f = function(uc)
-            p = p + P(uc)
-        end
-        lpegmatch((utf8char/f)^0,str)
-        return p
-    end
-
-end
-
-local range = utf8byte * utf8byte + Cc(false) -- utf8byte is already a capture
-
-function lpeg.UR(str,more)
-    local first, last
-    if type(str) == "number" then
-        first = str
-        last = more or first
-    else
-        first, last = lpegmatch(range,str)
-        if not last then
-            return P(str)
-        end
-    end
-    if first == last then
-        return P(str)
-    elseif utfchar and (last - first < 8) then -- a somewhat arbitrary criterium
-        local p = P(false)
-        for i=first,last do
-            p = p + P(utfchar(i))
-        end
-        return p -- nil when invalid range
-    else
-        local f = function(b)
-            return b >= first and b <= last
-        end
-        -- tricky, these nested captures
-        return utf8byte / f -- nil when invalid range
-    end
-end
-
--- print(lpeg.match(lpeg.Cs((C(lpeg.UR("αω"))/{ ["χ"] = "OEPS" })^0),"αωχαω"))
-
 -- lpeg.print(lpeg.R("ab","cd","gh"))
 -- lpeg.print(lpeg.P("a","b","c"))
 -- lpeg.print(lpeg.S("a","b","c"))
@@ -944,7 +888,7 @@ local function make2(t,rest) -- only ascii
     return p
 end
 
-function lpeg.utfchartabletopattern(list,insensitive) -- goes to util-lpg
+local function utfchartabletopattern(list,insensitive) -- goes to util-lpg
     local tree = { }
     local n = #list
     if n == 0 then
@@ -1020,6 +964,15 @@ function lpeg.utfchartabletopattern(list,insensitive) -- goes to util-lpg
  -- collapse(tree,"") -- needs testing, maybe optional, slightly faster because P("x")*P("X") seems slower than P"(xX") (why)
  -- inspect(tree)
     return (insensitive and make2 or make1)(tree)
+end
+
+lpeg.utfchartabletopattern = utfchartabletopattern
+
+function lpeg.utfreplacer(list,insensitive)
+    local pattern = Cs((utfchartabletopattern(list,insensitive)/list + utf8character)^0)
+    return function(str)
+        return lpegmatch(pattern,str) or str
+    end
 end
 
 -- local t = { "start", "stoep", "staart", "paard" }
@@ -1119,25 +1072,38 @@ end
 
 -- moved here (before util-str)
 
------ digit         = R("09")
------ period        = P(".")
------ zero          = P("0")
-local trailingzeros = zero^0 * -digit -- suggested by Roberto R
-local case_1        = period * trailingzeros / ""
-local case_2        = period * (digit - trailingzeros)^1 * (trailingzeros / "")
-local number        = digits * (case_1 + case_2)
-local stripper      = Cs((number + 1)^0)
+do
 
-lpeg.patterns.stripzeros = stripper
+    local trailingzeros = zero^0 * -digit -- suggested by Roberto
+    local stripper      = Cs((
+        digits * (
+            period * trailingzeros / ""
+          + period * (digit - trailingzeros)^1 * (trailingzeros / "")
+        ) + 1
+    )^0)
 
--- local sample = "bla 11.00 bla 11 bla 0.1100 bla 1.00100 bla 0.00 bla 0.001 bla 1.1100 bla 0.100100100 bla 0.00100100100"
--- collectgarbage("collect")
--- str = string.rep(sample,10000)
--- local ts = os.clock()
--- lpegmatch(stripper,str)
--- print(#str, os.clock()-ts, lpegmatch(stripper,sample))
+    lpeg.patterns.stripzeros = stripper -- multiple in string
 
--- for practical reasone we keep this here:
+    local nonzero       = digit - zero
+    local trailingzeros = zero^1 * endofstring
+    local stripper      = Cs( (1-period)^0 * (
+        period *               trailingzeros/""
+      + period * (nonzero^1 + (trailingzeros/"") + zero^1)^0
+      + endofstring
+    ))
+
+    lpeg.patterns.stripzero  = stripper -- slightly more efficient but expects a float !
+
+    -- local sample = "bla 11.00 bla 11 bla 0.1100 bla 1.00100 bla 0.00 bla 0.001 bla 1.1100 bla 0.100100100 bla 0.00100100100"
+    -- collectgarbage("collect")
+    -- str = string.rep(sample,10000)
+    -- local ts = os.clock()
+    -- lpegmatch(stripper,str)
+    -- print(#str, os.clock()-ts, lpegmatch(stripper,sample))
+
+end
+
+-- for practical reasons we keep this here:
 
 local byte_to_HEX = { }
 local byte_to_hex = { }
@@ -1209,3 +1175,22 @@ end
 -- local h = "ADFE0345"
 -- local b = lpegmatch(patterns.hextobytes,h)
 -- print(h,b,string.tohex(b),string.toHEX(b))
+
+local patterns = { } -- can be made weak
+
+local function containsws(what)
+    local p = patterns[what]
+    if not p then
+        local p1 = P(what) * (whitespace + endofstring) * Cc(true)
+        local p2 = whitespace * P(p1)
+        p = P(p1) + P(1-p2)^0 * p2 + Cc(false)
+        patterns[what] = p
+    end
+    return p
+end
+
+lpeg.containsws = containsws
+
+function string.containsws(str,what)
+    return lpegmatch(patterns[what] or containsws(what),str)
+end

@@ -432,15 +432,50 @@
    \c!style=\v!italic]
 
 \definebtx
+  [apa:\s!cite:subtitle]
+  [apa:\s!cite:title]
+
+\definebtx
   [apa:\s!cite:booktitle]
   [apa:\s!cite:title]
+
+\definebtx
+  [apa:\s!cite:subbooktitle]
+  [apa:\s!cite:booktitle]
+
+% Will these get used?
+
+\definebtx
+  [apa:\s!cite:title:inbook]
+  [apa:\s!cite:title]
+  [\c!style=] % not italic
+
+\definebtx
+  [apa:\s!cite:title:incollection]
+  [apa:\s!cite:title:inbook]
+
+\definebtx
+  [apa:\s!cite:title:inproceedings]
+  [apa:\s!cite:title:inbook]
+
+\definebtx
+  [apa:\s!cite:subtitle:inbook]
+  [apa:\s!cite:title:inbook]
+
+\definebtx
+  [apa:\s!cite:subtitle:incollection]
+  [apa:\s!cite:title:incollection]
+
+\definebtx
+  [apa:\s!cite:subtitle:inproceedings]
+  [apa:\s!cite:title:inproceedings]
+
 
 \definebtx
   [apa:\s!cite:tag]
   [apa:\s!cite]
   [\c!left={[},
    \c!right={]}]
-
 
 \definebtx
   [apa:\s!cite:index]
@@ -679,6 +714,50 @@
     \fastsetup{\s!btx:\s!cite:author:years}
 \stopsetups
 
+% these setups need to be explicitly defined in order to get cite rendering
+
+\startsetups \s!btx:apa:\s!cite:organization
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
+\startsetups \s!btx:apa:\s!cite:subtitle
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
+\startsetups \s!btx:apa:\s!cite:booktitle
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
+\startsetups \s!btx:apa:\s!cite:subbooktitle
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
+% are these needed?
+
+\startsetups \s!btx:apa:\s!cite:title:inbook
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
+\startsetups \s!btx:apa:\s!cite:title:incollection
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
+\startsetups \s!btx:apa:\s!cite:title:inproceedings
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
+\startsetups \s!btx:apa:\s!cite:subtitle:inbook
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
+\startsetups \s!btx:apa:\s!cite:subtitle:incollection
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
+\startsetups \s!btx:apa:\s!cite:subtitle:inproceedings
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
 % used in publ-imp-page.mkvi
 
 \startsetups btx:apa:list:page-or-pages
@@ -797,7 +876,7 @@
         % A book might have an editor AND an author
         \doif {\currentbtxcategory} {book} {
             \doifnot {\btxfoundname{author}} {editor} {
-                \btxdoif {ineditor} { % ineditor authorconversion
+                \btxdoif {ineditor} { % ineditor specific authorconversion
                     \btxleftparenthesis
                     \btxflush{ineditor}
                     \btxcomma
@@ -973,11 +1052,11 @@
 \starttexdefinition unexpanded btx:apa:editor-in
     \btxdoif {booktitle} {
         \btxlabeltext{In}
-        \doifnot {\btxfoundname{author}} {editor} {
-            \btxspace
-            \texdefinition{btx:apa:author-or-editor} {ineditor}
-        }
         \btxspace
+        \doifnot {\btxfoundname{author}} {editor} {
+            \texdefinition{btx:apa:author-or-editor} {ineditor}
+            \btxcomma
+        }
         \texdefinition{btx:apa:composed-title}{booktitle}
         \btxperiod
     }

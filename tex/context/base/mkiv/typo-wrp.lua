@@ -8,65 +8,80 @@ if not modules then modules = { } end modules ['typo-wrp'] = {
 
 -- begin/end par wrapping stuff ... more to come
 
-local nodecodes         = nodes.nodecodes
+local nodecodes              = nodes.nodecodes
+local gluecodes              = nodes.gluecodes
+local penaltycodes           = nodes.penaltycodes
+local boundarycodes          = nodes.boundarycodes
 
-local glue_code         = nodecodes.glue
-local penalty_code      = nodecodes.penalty
-local parfill_skip_code = nodes.gluecodes.parfillskip
-local user_penalty_code = nodes.penaltycodes.userpenalty
+local glue_code              = nodecodes.glue
+local penalty_code           = nodecodes.penalty
+local boundary_code          = nodecodes.boundary
 
-local nuts              = nodes.nuts
-local tonut             = nodes.tonut
-local tonode            = nodes.tonode
+local parfillskip_code       = gluecodes.parfillskip
 
-local find_node_tail    = nuts.tail
-local getprev           = nuts.getprev
-local getid             = nuts.getid
-local getsubtype        = nuts.getsubtype
-local getpenalty        = nuts.getpenalty
-local remove            = nuts.remove
+local userpenalty_code       = penaltycodes.userpenalty
+local linepenalty_code       = penaltycodes.linepenalty
+local linebreakpenalty_code  = penaltycodes.linebreakpenalty
 
-local enableaction      = nodes.tasks.enableaction
+local wordboundary_code      = boundarycodes.word
 
-local wrappers          = { }
-typesetters.wrappers    = wrappers
+local nuts                   = nodes.nuts
 
-local trace_wrappers    = trackers.register("typesetters.wrappers",function(v) trace_wrappers = v end)
+local find_node_tail         = nuts.tail
+local getprev                = nuts.getprev
+local getid                  = nuts.getid
+local getsubtype             = nuts.getsubtype
+local getpenalty             = nuts.getpenalty
+local remove                 = nuts.remove
 
-local report            = logs.reporter("paragraphs","wrappers")
+local enableaction           = nodes.tasks.enableaction
+
+local wrappers               = { }
+typesetters.wrappers         = wrappers
+
+local trace_wrappers         = trackers.register("typesetters.wrappers",function(v) trace_wrappers = v end)
+
+local report                 = logs.reporter("paragraphs","wrappers")
 
 -- we really need to pass tail too ... but then we need to check all the plugins
 -- bah ... slowdown
 
+-- This check is very tight to the crlf definition. We check for:
+--
+-- [break -10000] [wordboundary] [line(break)penalty] [parfillskip]
+--
+-- If needed we can extend this checker for other cases but then we will also
+-- use attributes.
+
 local function remove_dangling_crlf(head,tail)
-    if tail and getid(tail) == glue_code and getsubtype(tail) == parfill_skip_code then
+    if head and tail and getid(tail) == glue_code and getsubtype(tail) == parfillskip_code then
         tail = getprev(tail)
-        if tail and getid(tail) == penalty_code and getsubtype(tail) == user_penalty_code and getpenalty(tail) == 10000 then
-            tail = getprev(tail)
-            if tail and getid(tail) == penalty_code and getsubtype(tail) == user_penalty_code and getpenalty(tail) == -10000 then
-                if tail == head then
-                    -- can't happen
-                else
-                    if trace_wrappers then
-                        report("removing a probably unwanted end-of-par break in line %s (guess)",tex.inputlineno)
+        if tail and getid(tail) == penalty_code then
+            local subtype = getsubtype(tail)
+            if subtype == linepenalty_code or subtype == linebreakpenalty_code then
+                tail = getprev(tail)
+                if tail and getid(tail) == boundary_code and getsubtype(tail) == wordboundary_code then
+                    tail = getprev(tail)
+                    if tail ~= head and getid(tail) == penalty_code and getsubtype(tail) == userpenalty_code and getpenalty(tail) == -10000 then
+                        if trace_wrappers then
+                            report("removing a probably unwanted end-of-par break in line %s (guess)",tex.inputlineno)
+                        end
+                        remove(head,tail,true)
+                        return head, tail
                     end
-                    remove(head,tail,true)
-                    return head, tail, true
                 end
             end
         end
     end
-    return head, tail, false
+    return head, tail
 end
 
 function wrappers.handler(head)
-    local head = tonut(head)
     if head then
         local tail = find_node_tail(head)
-        local done = false
-        head, tail, done = remove_dangling_crlf(head,tail) -- will be action chain
+        head, tail = remove_dangling_crlf(head,tail) -- will be action chain
     end
-    return head, true
+    return head
 end
 
 interfaces.implement {

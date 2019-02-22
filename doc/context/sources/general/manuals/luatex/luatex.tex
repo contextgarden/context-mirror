@@ -1,11 +1,12 @@
 % macros=mkvi
 
+% \nopdfcompression
+
 % \disabledirectives[vspacing.synchronizepage]
 
 % wsl /data/context/runcontext.sh --global --path=/mnt/c/data/develop/context/manuals/mkiv/external/luatex luatex.tex
 %
 % same runtime as regular context or linux
-
 % author    : Hans Hagen with Taco Hoekwater, Luigi Scarso & Hartmut Henkel
 % copyright : PRAGMA ADE & ConTeXt Development Team
 % license   : Creative Commons Attribution ShareAlike 4.0 International
@@ -22,10 +23,6 @@
 % comment   : Some (parts of) chapters might have been published in TugBoat, the NTG Maps, the
 %             ConTeXt Group journal or otherwise. Thanks to the editors for corrections. Also
 %             thanks to users for testing, feedback and corrections.
-%
-% 238 pages : 2017-07-06
-%             luatex 9.5 sec / luajittex 7.0 sec
-%             Dell 7600 / i7 3840QM / passmark 1.922 / Windows 10 64 bit
 
 % \tex vs \type vs \syntax vs. \luatex
 % \em \it \/
@@ -33,12 +30,28 @@
 % "context --nodates --nocompression luatex" can be used for comparison
 % runs, not that we do it
 
+% todo: all (sub)section to start/stop
+
 % \enabledirectives[hyphenator.flatten]
 
 % \setupsynctex[state=start,method=max] % adds 5 pct overhead
 
+% compoundhyphenmode      : looks okay
+% endlocalcontrol         : very experimental
+% fixupboxesmode          : very experimental
+% mathflattenmode         : looks okay
+% mathrulethicknessmode   : looks okay
+
+% after adding primitives: context mult-prm.mkiv
+
 \environment luatex-style
+
+\startmode[book]
+    \environment luatex-style-book
+\stopmode
+
 \environment luatex-logos
+\environment luatex-private
 
 \startmode[export]
 
@@ -47,14 +60,14 @@
 
 \stopmode
 
-\dontcomplain
-
 \startdocument
-  [status=experimental,
-   version=1.08.0]
+  [manual=Lua\TeX,
+   status=experimental,
+   version=1.10]
 
 \startnotmode[*export]
     \component luatex-titlepage
+    \component luatex-firstpage
 \stopnotmode
 
 \startmode[*export]
@@ -67,6 +80,7 @@
 \stopfrontmatter
 
 \startbodymatter
+    \component luatex-preamble
     \component luatex-enhancements
     \component luatex-modifications
     \component luatex-lua
@@ -80,5 +94,10 @@
     \component luatex-fontloader
     \component luatex-backend
 \stopbodymatter
+
+\startbackmatter
+    \component luatex-registers
+    \component luatex-statistics
+\stopbackmatter
 
 \stopdocument

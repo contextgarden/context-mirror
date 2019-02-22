@@ -64,7 +64,7 @@ local listcodes         = nodes.listcodes
 local hlist_code        = nodecodes.hlist
 local glue_code         = nodecodes.glue
 local kern_code         = nodecodes.kern
-local line_code         = listcodes.line
+local linelist_code     = listcodes.line
 ----- localpar_code     = nodecodes.localpar
 local leftskip_code     = gluecodes.leftskip
 local rightskip_code    = gluecodes.rightskip
@@ -73,7 +73,7 @@ local parfillskip_code  = gluecodes.parfillskip
 local tonut             = nodes.tonut
 local tonode            = nodes.tonode
 
-local traverse_id       = nuts.traverse_id
+local nexthlist         = nuts.traversers.hlist
 local insert_before     = nuts.insert_before
 local insert_after      = nuts.insert_after
 local find_tail         = nuts.tail
@@ -90,7 +90,7 @@ local getboth           = nuts.getboth
 local setlink           = nuts.setlink
 local setkern           = nuts.setkern
 local getkern           = nuts.getkern
-local getdir            = nuts.getdir
+local getdirection      = nuts.getdirection
 local getshift          = nuts.getshift
 local setshift          = nuts.setshift
 local getwidth          = nuts.getwidth
@@ -108,6 +108,8 @@ local new_rightskip     = nodepool.rightskip
 local new_hlist         = nodepool.hlist
 local new_rule          = nodepool.rule
 local new_glue          = nodepool.glue
+
+local righttoleft_code  = nodes.dirvalues.righttoleft
 
 local texgetcount       = tex.getcount
 local texgetglue        = tex.getglue
@@ -127,22 +129,12 @@ local noflines          = 0
 -- This is the third version, a mix between immediate (prestice lines) and delayed
 -- as we don't want anchors that are not used.
 
--- if reverse then delta = - delta end
--- head = insert_before(head,head,nodepool.textdir("-TLT"))
--- ....
--- head = insert_before(head,head,nodepool.textdir("TLT"))
-
--- todo: figure out metatable mess ... when we copy we also need to copy
--- anchors ... use rawgets
-
--- problem: what if a box is copied ... we could check an attribute
-
 local function finalize(prop,key) -- delayed calculations
     local line     = prop.line
     local hsize    = prop.hsize
     local width    = prop.width
     local shift    = getshift(line) -- dangerous as it can be vertical as well
-    local reverse  = getdir(line) == "TRT" or false
+    local reverse  = getdirection(line) == righttoleft_code or false
     local pack     = new_hlist()
     local head     = getlist(line)
     local delta    = 0
@@ -248,49 +240,47 @@ function paragraphs.normalize(head,islocal)
         return head, false
     end
     -- this can become a separate handler but it makes sense to integrate it here
-    local l_width, l_stretch, l_shrink = texgetglue("parfillleftskip")
-    if l_width ~= 0 or l_stretch ~= 0 or l_shrink ~= 0 then
-        local last = nil -- a nut
-        local done = false
-        for line in traverse_id(hlist_code,tonut(head)) do
-            if getsubtype(line) == line_code and not getprop(line,"line") then
-                if done then
-                    last = line
-                else
-                    done = true
+    local mode = texgetcount("parfillleftmode")
+    if mode > 0 then
+        local l_width, l_stretch, l_shrink = texgetglue("parfillleftskip")
+        if l_width ~= 0 or l_stretch ~= 0 or l_shrink ~= 0 then
+            local last = nil -- a nut
+            local done = mode == 2 -- false
+            for line, subtype in nexthlist, head do
+                if subtype == linelist_code and not getprop(line,"line") then
+                    if done then
+                        last = line
+                    else
+                        done = true
+                    end
                 end
             end
-        end
-        if last then -- only if we have more than one line
-            local head    = getlist(last)
-            local current = head
-            if current then
-                if getid(current) == glue_code and getsubtype(current,leftskip_code) then
-                    current = getnext(current)
-                end
+            if last then -- only if we have more than one line
+                local head    = getlist(last)
+                local current = head
                 if current then
-                    head, current = insert_before(head,current,new_glue(l_width,l_stretch,l_shrink))
-                    if head == current then
-                        setlist(last,head)
+                    if getid(current) == glue_code and getsubtype(current,leftskip_code) then
+                        current = getnext(current)
                     end
-                    -- can be a 'rehpack(h  )'
-                    rehpack(last)
+                    if current then
+                        head, current = insert_before(head,current,new_glue(l_width,l_stretch,l_shrink))
+                        if head == current then
+                            setlist(last,head)
+                        end
+                        -- can be a 'rehpack(h  )'
+                        rehpack(last)
+                    end
                 end
             end
         end
     end
     -- normalizer
-    for line in traverse_id(hlist_code,tonut(head)) do
-        if getsubtype(line) == line_code and not getprop(line,"line") then
+    for line, subtype in nexthlist, head do
+        if subtype == linelist_code and not getprop(line,"line") then
             normalize(line)
-            if done then
-                last = line
-            else
-                done = true
-            end
         end
     end
-    return head, true
+    return head, true -- true is obsolete
 end
 
 -- print(nodes.idstostring(head))
@@ -418,12 +408,17 @@ function paragraphs.moveinline(n,blob,dx,dy)
     end
 end
 
-local lateluafunction = nodepool.lateluafunction
-local setposition     = job.positions.set
-local t_anchor        = { x = true, c = true }
+local latelua     = nodepool.latelua
+local setposition = jobpositions.setspec
+local t_anchor    = { x = true, c = true } -- needs checking
 
 local function setanchor(h_anchor)
-    return lateluafunction(function() setposition("md:h",h_anchor,t_anchor) end)
+    return latelua {
+        action = setposition,
+        name   = "md:h",
+        index  = h_anchor,
+        value  = t_anchor, -- really shared ?
+    }
 end
 
 function paragraphs.calculatedelta(n,width,delta,atleft,islocal,followshape,area)

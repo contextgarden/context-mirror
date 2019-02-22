@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['mtx-pdf'] = {
 }
 
 local tonumber = tonumber
-local format, gmatch = string.format, string.gmatch
+local format, gmatch, gsub = string.format, string.gmatch, string.gsub
 local utfchar = utf.char
 local concat = table.concat
 local setmetatableindex, sortedhash, sortedkeys = table.setmetatableindex, table.sortedhash, table.sortedkeys
@@ -25,8 +25,13 @@ local helpinfo = [[
    <subcategory>
     <flag name="info"><short>show some info about the given file</short></flag>
     <flag name="metadata"><short>show metadata xml blob</short></flag>
+    <flag name="pretty"><short>replace newlines in metadata</short></flag>
     <flag name="fonts"><short>show used fonts (<ref name="detail)"/></short></flag>
-    <flag name="linearize"><short>linearize given file</short></flag>
+   </subcategory>
+   <subcategory>
+    <example><command>mtxrun --script pdf --info foo.pdf</command></example>
+    <example><command>mtxrun --script pdf --metadata foo.pdf</command></example>
+    <example><command>mtxrun --script pdf --metadata --pretty foo.pdf</command></example>
    </subcategory>
   </category>
  </flags>
@@ -41,10 +46,16 @@ local application = logs.application {
 
 local report = application.report
 
-dofile(resolvers.findfile("lpdf-epd.lua","tex"))
+if pdfe then
+    dofile(resolvers.findfile("lpdf-pde.lua","tex"))
+else
+    dofile(resolvers.findfile("lpdf-epd.lua","tex"))
+end
 
 scripts     = scripts     or { }
 scripts.pdf = scripts.pdf or { }
+
+local details = environment.argument("detail") or environment.argument("details")
 
 local function loadpdffile(filename)
     if not filename or filename == "" then
@@ -64,60 +75,134 @@ end
 function scripts.pdf.info(filename)
     local pdffile = loadpdffile(filename)
     if pdffile then
-        local catalog  = pdffile.Catalog
-        local info     = pdffile.Info
-        local pages    = pdffile.pages
-        local nofpages = pages.n -- no # yet. will be in 5.2
+        local catalog      = pdffile.Catalog
+        local info         = pdffile.Info
+        local pages        = pdffile.pages
+        local nofpages     = pdffile.nofpages
 
-        report("filename > %s",filename)
-        report("pdf version > %s",catalog.Version)
-        report("number of pages > %s",nofpages)
-        report("title > %s",info.Title)
-        report("creator > %s",info.Creator)
-        report("producer > %s",info.Producer)
-        report("creation date > %s",info.CreationDate)
-        report("modification date > %s",info.ModDate)
+        local unset    = "<unset>"
 
-        local width, height, start
-        for i=1, nofpages do
-            local page = pages[i]
-            local bbox = page.CropBox or page.MediaBox
-            local w, h = bbox[4]-bbox[2],bbox[3]-bbox[1]
-            if w ~= width or h ~= height then
-                if start then
-                    report("cropbox > pages: %s-%s, width: %s, height: %s",start,i-1,width,height)
+        report("%-17s > %s","filename",          filename)
+        report("%-17s > %s","pdf version",       catalog.Version      or unset)
+        report("%-17s > %s","major version",     pdffile.majorversion or unset)
+        report("%-17s > %s","minor version",     pdffile.minorversion or unset)
+        report("%-17s > %s","number of pages",   nofpages             or 0)
+        report("%-17s > %s","title",             info.Title           or unset)
+        report("%-17s > %s","creator",           info.Creator         or unset)
+        report("%-17s > %s","producer",          info.Producer        or unset)
+        report("%-17s > %s","creation date",     info.CreationDate    or unset)
+        report("%-17s > %s","modification date", info.ModDate         or unset)
+
+        local function somebox(what)
+            local box = string.lower(what)
+            local width, height, start
+            for i=1, nofpages do
+                local page = pages[i]
+                local bbox = page[what] or page.MediaBox or { 0, 0, 0, 0 }
+                local w, h = bbox[4]-bbox[2],bbox[3]-bbox[1]
+                if w ~= width or h ~= height then
+                    if start then
+                        report("%-17s > pages: %s-%s, width: %s, height: %s",box,start,i-1,width,height)
+                    end
+                    width, height, start = w, h, i
                 end
-                width, height, start = w, h, i
             end
+            report("%-17s > pages: %s-%s, width: %s, height: %s",box,start,nofpages,width,height)
         end
-        report("cropbox > pages: %s-%s, width: %s, height: %s",start,nofpages,width,height)
+
+        if details then
+            somebox("MediaBox")
+            somebox("ArtBox")
+            somebox("BleedBox")
+            somebox("CropBox")
+            somebox("TrimBox")
+        else
+            somebox("CropBox")
+        end
+
+     -- if details then
+            local annotations = 0
+            for i=1, nofpages do
+                local page = pages[i]
+                local a    = page.Annots
+                if a then
+                    annotations = annotations + #a
+                end
+            end
+            if annotations > 0 then
+                report("%-17s > %s", "annotations",annotations)
+            end
+     -- end
+
+     -- if details then
+            local d = pdffile.destinations
+            local k = d and sortedkeys(d)
+            if k and #k > 0 then
+                report("%-17s > %s", "destinations",#k)
+            end
+            local d = pdffile.javascripts
+            local k = d and sortedkeys(d)
+            if k and #k > 0 then
+                report("%-17s > %s", "javascripts",#k)
+            end
+            local d = pdffile.widgets
+            if d and #d > 0 then
+                report("%-17s > %s", "widgets",#d)
+            end
+            local d = pdffile.embeddedfiles
+            local k = d and sortedkeys(d)
+            if k and #k > 0 then
+                report("%-17s > %s", "embeddedfiles",#k)
+            end
+    --  end
+
     end
 end
 
-function scripts.pdf.metadata(filename)
+function scripts.pdf.metadata(filename,pretty)
     local pdffile = loadpdffile(filename)
     if pdffile then
         local catalog  = pdffile.Catalog
         local metadata = catalog.Metadata
         if metadata then
-            report("metadata > \n\n%s\n",metadata())
+            metadata = metadata()
+            if pretty then
+                metadata = gsub(metadata,"\r","\n")
+            end
+            report("metadata > \n\n%s\n",metadata)
         else
             report("no metadata")
         end
     end
 end
 
+local expanded = lpdf.epdf.expanded
+
 local function getfonts(pdffile)
     local usedfonts = { }
-    for i=1,pdffile.pages.n do
-        local page = pdffile.pages[i]
-        local fontlist = page.Resources.Font
-        if fontlist then
-            for k, v in next, lpdf.epdf.expand(fontlist) do
-                usedfonts[k] = lpdf.epdf.expand(v)
+
+    local function collect(where,tag)
+        local resources = where.Resources
+        if resources then
+            local fontlist = resources.Font
+            if fontlist then
+                for k, v in expanded(fontlist) do
+                    usedfonts[tag and (tag .. "." .. k) or k] = v
+                end
+            end
+            local objects = resources.XObject
+            if objects then
+                for k, v in expanded(objects) do
+                    collect(v,tag and (tag .. "." .. k) or k)
+                end
             end
         end
     end
+
+    for i=1,pdffile.nofpages do
+        collect(pdffile.pages[i])
+    end
+
     return usedfonts
 end
 
@@ -125,7 +210,8 @@ local function getunicodes(font)
     local cid = font.ToUnicode
     if cid then
         cid = cid()
-        local counts = { }
+        local counts  = { }
+        local indices = { }
      -- for s in gmatch(cid,"begincodespacerange%s*(.-)%s*endcodespacerange") do
      --     for a, b in gmatch(s,"<([^>]+)>%s+<([^>]+)>") do
      --         print(a,b)
@@ -141,18 +227,20 @@ local function getunicodes(font)
                 for i=first,last do
                     local c = i + offset
                     counts[c] = counts[c] + 1
+                    indices[i] = true
                 end
             end
         end
         for s in gmatch(cid,"beginbfchar%s*(.-)%s*endbfchar") do
             for old, new in gmatch(s,"<([^>]+)>%s+<([^>]+)>") do
+                indices[tonumber(old,16)] = true
                 for n in gmatch(new,"....") do
                     local c = tonumber(n,16)
                     counts[c] = counts[c] + 1
                 end
             end
         end
-        return counts
+        return counts, indices
     end
 end
 
@@ -161,49 +249,93 @@ function scripts.pdf.fonts(filename)
     if pdffile then
         local usedfonts = getfonts(pdffile)
         local found     = { }
+        local common    = table.setmetatableindex("table")
         for k, v in table.sortedhash(usedfonts) do
-            local counts = getunicodes(v)
-            local codes = { }
-            local chars = { }
-            local freqs = { }
+            local basefont = v.BaseFont
+            local encoding = v.Encoding
+            local subtype  = v.Subtype
+            local unicode  = v.ToUnicode
+            local counts,
+                  indices  = getunicodes(v)
+            local codes    = { }
+            local chars    = { }
+            local freqs    = { }
+            local names    = { }
             if counts then
                 codes = sortedkeys(counts)
                 for i=1,#codes do
                     local k = codes[i]
-                    local c = utfchar(k)
-                    chars[i] = c
-                    freqs[i] = format("U+%05X  %s  %s",k,counts[k] > 1 and "+" or " ", c)
+                    if k > 32 then
+                        local c = utfchar(k)
+                        chars[i] = c
+                        freqs[i] = format("U+%05X  %s  %s",k,counts[k] > 1 and "+" or " ", c)
+                    else
+                        freqs[i] = format("U+%05X  %s  --",k,counts[k] > 1 and "+" or " ")
+                    end
+                end
+                if basefont and unicode then
+                    local b = gsub(basefont,"^.*%+","")
+                    local c = common[b]
+                    for k in next, indices do
+                        c[k] = true
+                    end
                 end
                 for i=1,#codes do
                     codes[i] = format("U+%05X",codes[i])
                 end
             end
+            local d = encoding and encoding.Differences
+            if d then
+                for i=1,#d do
+                    local di = d[i]
+                    if type(di) == "string" then
+                        names[#names+1] = di
+                    end
+                end
+            end
             found[k] = {
-                basefont = v.BaseFont or "no basefont",
-                encoding = v.Encoding or "no encoding",
-                subtype  = v.Subtype or "no subtype",
-                unicode  = v.ToUnicode and "unicode" or "no unicode",
+                basefont = basefont or "no basefont",
+                encoding = (d and "custom n=" .. #d) or "no encoding",
+                subtype  = subtype or "no subtype",
+                unicode  = tounicode and "unicode" or "no vector",
                 chars    = chars,
                 codes    = codes,
                 freqs    = freqs,
+                names    = names,
             }
         end
 
-        if environment.argument("detail") then
+        if details then
             for k, v in sortedhash(found) do
-                report("id         : %s",k)
-                report("basefont   : %s",v.basefont)
-                report("encoding   : %s",v.encoding)
-                report("subtype    : %s",v.subtype)
-                report("unicode    : %s",v.unicode)
-                report("characters : %s", concat(v.chars," "))
-                report("codepoints : %s", concat(v.codes," "))
+                report("id         : %s",  k)
+                report("basefont   : %s",  v.basefont)
+                report("encoding   : % t", v.names)
+                report("subtype    : %s",  v.subtype)
+                report("unicode    : %s",  v.unicode)
+                if #v.chars > 0 then
+                    report("characters : % t", v.chars)
+                end
+                if #v.codes > 0 then
+                    report("codepoints : % t", v.codes)
+                end
+                report("")
+            end
+            for k, v in sortedhash(common) do
+                report("basefont   : %s",k)
+                report("indices    : % t", sortedkeys(v))
                 report("")
             end
         else
-            local results = { { "id", "basefont", "encoding", "subtype", "unicode", "characters" } }
+            local haschar = false
             for k, v in sortedhash(found) do
-                results[#results+1] = { k, v.basefont, v.encoding, v.subtype, v.unicode, concat(v.chars," ") }
+                if #v.chars > 0 then
+                    haschar = true
+                    break
+                end
+            end
+            local results = { { "id", "basefont", "encoding", "subtype", "unicode", haschar and "characters" or nil } }
+            for k, v in sortedhash(found) do
+                results[#results+1] = { k, v.basefont, v.encoding, v.subtype, v.unicode, haschar and concat(v.chars," ") or nil }
             end
             utilities.formatters.formatcolumns(results)
             report(results[1])
@@ -214,46 +346,6 @@ function scripts.pdf.fonts(filename)
             report("")
         end
     end
-end
-
--- this is a quick hack ... proof of concept .. will change (derived from luigi's example) ...
--- i will make a ctx wrapper
-
-local qpdf -- just call qpdf, no need for a lib here
-
-function scripts.pdf.linearize(filename)
-    qpdf = qpdf or swiglib("qpdf.core")
-    local oldfile = filename or environment.files[1]
-    if not oldfile then
-        return
-    end
-    file.addsuffix(oldfile,"pdf")
-    if not lfs.isfile(oldfile) then
-        return
-    end
-    local newfile = environment.files[2]
-    if not newfile or file.removesuffix(oldfile) == file.removesuffix(newfile)then
-        newfile = file.addsuffix(file.removesuffix(oldfile) .. "-linearized","pdf")
-    end
-    local password = environment.arguments.password
-    local instance = qpdf.qpdf_init()
-    if bit32.band(qpdf.qpdf_read(instance,oldfile,password),qpdf.QPDF_ERRORS) ~= 0 then
-        report("unable to open input file")
-    elseif bit32.band(qpdf.qpdf_init_write(instance,newfile),qpdf.QPDF_ERRORS) ~= 0 then
-        report("unable to open output file")
-    else
-        report("linearizing %a into %a",oldfile,newfile)
-        qpdf.qpdf_set_static_ID(instance,qpdf.QPDF_TRUE)
-        qpdf.qpdf_set_linearization(instance,qpdf.QPDF_TRUE)
-        qpdf.qpdf_write(instance)
-    end
-    while qpdf.qpdf_more_warnings(instance) ~= 0 do
-        report("warning: %s",qpdf.qpdf_get_error_full_text(instance,qpdf.qpdf_next_warning(qpdf)))
-    end
-    if qpdf.qpdf_has_error(instance) ~= 0 then
-        report("error: %s",qpdf.qpdf_get_error_full_text(instance,qpdf.qpdf_get_error(qpdf)))
-    end
-    qpdf.qpdf_cleanup_p(instance)
 end
 
 -- scripts.pdf.info("e:/tmp/oeps.pdf")
@@ -268,11 +360,9 @@ if filename == "" then
 elseif environment.argument("info") then
     scripts.pdf.info(filename)
 elseif environment.argument("metadata") then
-    scripts.pdf.metadata(filename)
+    scripts.pdf.metadata(filename,environment.argument("pretty"))
 elseif environment.argument("fonts") then
     scripts.pdf.fonts(filename)
-elseif environment.argument("linearize") then
-    scripts.pdf.linearize(filename)
 elseif environment.argument("exporthelp") then
     application.export(environment.argument("exporthelp"),filename)
 else

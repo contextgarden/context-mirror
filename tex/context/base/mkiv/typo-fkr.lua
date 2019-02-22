@@ -7,12 +7,10 @@ if not modules then modules = { } end modules ['typo-fkr'] = {
 }
 
 local nuts          = nodes.nuts
-local tonut         = nuts.tonut
 local getid         = nuts.getid
 local getnext       = nuts.getnext
-local getchar       = nuts.getchar
-local getfont       = nuts.getfont
 local getattr       = nuts.getattr
+local isglyph       = nuts.isglyph
 
 local nodecodes     = nodes.nodecodes
 local glyph_code    = nodecodes.glyph
@@ -32,20 +30,15 @@ local a_extrakern   = attributes.private("extrafontkern")
 typesetters.fontkerns = { }
 
 function typesetters.fontkerns.handler(head)
-    local kepthead  = head
-    local head      = tonut(head)
     local current   = head
     local lastfont  = nil
     local lastchar  = nil
     local lastdata  = nil
-    local done      = false
     while current do
-        local id = getid(current)
-        if id == glyph_code then
+        local char, font = isglyph(current)
+        if char then
             local a = getattr(current,a_extrakern)
             if a then
-                local char = getchar(current)
-                local font = getfont(current)
                 if font ~= lastfont then
                     if a > 0 and lastchar then
                         if not lastdata then
@@ -64,7 +57,6 @@ function typesetters.fontkerns.handler(head)
                         end
                         if kern ~= 0 then
                             head, current = insert_before(head,current,new_kern(kern))
-                            done = true
                         end
                         lastdata = data
                     else
@@ -77,7 +69,6 @@ function typesetters.fontkerns.handler(head)
                     local kern = getkernpair(lastdata,lastchar,char)
                     if kern ~= 0 then
                         head, current = insert_before(head,current,new_kern(kern))
-                        done = true
                     end
                 end
                 lastchar = char
@@ -94,7 +85,7 @@ function typesetters.fontkerns.handler(head)
         end
         current = getnext(current)
     end
-    return kepthead, done
+    return head
 end
 
 if context then

@@ -97,7 +97,7 @@
    \ifx\currentMPinstance\empty
      \let\currentMPinstance\defaultMPinstance
    \fi
-   \global\t_meta_definitions\expandafter{\the\t_meta_definitions#2}%
+   \gtoksapp\t_meta_definitions{#2}%
    \let\currentMPinstance\m_meta_saved_instance}
 
 \let\stopMPdefinitions\relax
@@ -111,7 +111,7 @@
 \let\stopMPextensions\relax
 
 \unexpanded\def\startMPinitializations#1\stopMPinitializations % for all instances, when enabled
-  {\global\t_meta_initializations\expandafter{\the\t_meta_initializations#1}}
+  {\gtoksapp\t_meta_initializations{#1}}
 
 \let\stopMPinitializations\relax
 
@@ -131,7 +131,7 @@
    \ifx\m_meta_option\!!plustoken \else
      \global\t_meta_inclusions\emptytoks
    \fi
-   \global\t_meta_inclusions\expandafter{\the\t_meta_inclusions#2}%
+   \gtoksapp\t_meta_inclusions{#2}%
    \let\currentMPinstance\m_meta_saved_instance}
 
 \let\stopMPinclusions\relax
@@ -152,7 +152,7 @@
    \ifx\m_meta_option\!!plustoken \else
      \global\t_meta_inclusions\emptytoks
    \fi
-   \global\t_meta_inclusions\expandafter{\the\t_meta_inclusions#2}%
+   \gtoksapp\t_meta_inclusions{#2}%
    \let\currentMPinstance\m_meta_saved_instance}
 
 \installcommandhandler \??mpinstance {MPinstance} \??mpinstance
@@ -211,6 +211,7 @@
 \def\currentMPformat     {\currentMPinstance}
 
 \defineMPinstance[metafun]    [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
+\defineMPinstance[minifun]    [\s!format=minifun,\s!extensions=\v!yes,\s!initializations=\v!yes]
 \defineMPinstance[extrafun]   [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
 \defineMPinstance[lessfun]    [\s!format=metafun]
 \defineMPinstance[doublefun]  [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!double]
@@ -275,11 +276,13 @@
    \endgroup}
 
 \def\meta_process_graphic_start
-  {\setbox\b_meta_graphic\hpack\bgroup}
+  {\pushMPboundingbox
+   \setbox\b_meta_graphic\hpack\bgroup}
 
 \def\meta_process_graphic_stop
   {\egroup
-   \meta_place_graphic}
+   \meta_place_graphic
+   \popMPboundingbox}
 
 \unexpanded\def\meta_process_graphic_instance#1%
   {\edef\currentMPinstance{#1}%
@@ -365,12 +368,12 @@
 \let\MPdrawingdata\empty
 
 \unexpanded\def\resetMPdrawing
-  {\global\let\MPdrawingdata\empty
+  {\glet\MPdrawingdata\empty
    \global\MPdrawingdonefalse}
 
 \unexpanded\def\pushMPdrawing
   {\globalpushmacro\MPdrawingdata
-   \global\let\MPdrawingdata\empty}
+   \glet\MPdrawingdata\empty}
 
 \unexpanded\def\popMPdrawing
   {\globalpopmacro\MPdrawingdata}
@@ -728,7 +731,7 @@
 % \def\meta_start_use_graphic#1#2#3\stopuseMPgraphic
 %  %{\setgvalue{\??mpgraphic#1}{\meta_handle_use_graphic{#1}{#2}{#3}}}
 %  %{\setxvalue{\??mpgraphic#1}{\noexpand\meta_handle_use_graphic{#1}{\normalunexpanded{#2}}{\normalunexpanded{#3}}}}
-%   {\global\expandafter\gdef\csname\??mpgraphic#1\expandafter\endcsname\expandafter{\expandafter\meta_handle_use_graphic\expandafter{\normalexpanded{#1}}{#2}{#3}}}
+%   {\expandafter\gdef\csname\??mpgraphic#1\expandafter\endcsname\expandafter{\expandafter\meta_handle_use_graphic\expandafter{\normalexpanded{#1}}{#2}{#3}}}
 %
 % cleaner:
 
@@ -785,11 +788,28 @@
 \unexpanded\def\useMPgraphic
   {\dodoublegroupempty\meta_use_graphic}
 
+% \def\meta_use_graphic#1#2%
+%   {\meta_begin_graphic_group{#1}%
+%   %\doifsomething{#2}{\setupMPvariables[\currentMPgraphicname][#2]}%
+%    \doifsomething{#2}{\setupMPvariables[#1][#2]}%
+%    \csname\??mpgraphic#1\endcsname\empty
+%    \meta_end_graphic_group}
+
 \def\meta_use_graphic#1#2%
   {\meta_begin_graphic_group{#1}%
-%    \doifsomething{#2}{\setupMPvariables[\currentMPgraphicname][#2]}%
-   \doifsomething{#2}{\setupMPvariables[#1][#2]}%
-   \csname\??mpgraphic#1\endcsname\empty
+   \ifcsname\??mpgraphic#1\endcsname
+     \edef\usedMPgraphicname{#1}%
+   \else\ifcsname\??mpgraphic\currentMPgraphicname\endcsname
+     \let\usedMPgraphicname\currentMPgraphicname
+   \else
+     \let\usedMPgraphicname\empty
+   \fi\fi
+   \ifx\usedMPgraphicname\empty
+     % message
+   \else
+     \doifsomething{#2}{\setupMPvariables[\usedMPgraphicname][#2]}%
+     \csname\??mpgraphic\usedMPgraphicname\endcsname
+   \fi
    \meta_end_graphic_group}
 
 \let\reuseMPgraphic   \useMPgraphic   % we can save a setup here if needed
@@ -860,19 +880,6 @@
 \def\meta_extend_overlay_stamp#1%
   {\meta_prepare_instance_variable{#1}%
    \edef\overlaystamp{\overlaystamp:\MPvariable{#1}}}
-
-%D \macros
-%D   {MPdatafile}
-%D
-%D We redefine a macro from \type {supp-mps.tex}:
-
-% This will change ...
-
-\def\MPdataMPYfile{\jobname-mpgraph.mpy}
-
-\startMPextensions
-    def data_mpy_file = "\noexpand\MPdataMPYfile" enddef ;
-\stopMPextensions
 
 \unexpanded\def\getMPdata  {\clf_getMPdata}
            \let\rawMPdata   \clf_getMPdata

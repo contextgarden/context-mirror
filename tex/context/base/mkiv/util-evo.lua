@@ -161,13 +161,20 @@ local function loadedtable(filename)
         for i=1,10 do
             local t = loadtable(filename)
             if t then
+                report("file %a loaded",filename)
                 return t
             else
                 ossleep(1/4)
             end
         end
     end
+    report("file %a not loaded",filename)
     return { }
+end
+
+local function savedtable(filename,data)
+    savetable(filename,data)
+    report("file %a saved",filename)
 end
 
 local function loadpresets(filename)
@@ -190,6 +197,13 @@ end
 local function loadeverything(filename)
     if type(filename) == "table" and validpresets(filename) then
         filename = filename.files and filename.files.everything
+    end
+    return loadedtable(filename)
+end
+
+local function loadlatest(filename)
+    if type(filename) == "table" and validpresets(filename) then
+        filename = filename.files and filename.files.latest
     end
     return loadedtable(filename)
 end
@@ -365,6 +379,21 @@ local function findzone(presets,name)
     return usedzones and usedzones[name]
 end
 
+local function getzonenames(presets)
+    if not presets then
+        return { }
+    end
+    local data = presets.data
+    if not data then
+        return { }
+    end
+    local t = sortedkeys(data.zones or { })
+    for i=1,#t do
+        t[i] = lower(t[i])
+    end
+    return t
+end
+
 local function gettargets(zone) -- maybe also for a day
     local schedule = zone.schedule
     local min      = false
@@ -503,7 +532,7 @@ local function geteverything(presets,noschedules)
                     end
                 end
             end
-            savetable(presets.files.everything,data)
+            savedtable(presets.files.everything,data)
             return result(data,"getting everything, %s")
         end
     end
@@ -521,26 +550,29 @@ local function gettemperatures(presets)
             for i=1,#data do
                 local gateways     = data[i].gateways
                 local locationinfo = data[i].locationInfo
-                local locationid   = locationinfo.locationId
-                if gateways then
-                    local status = getstatus(presets,locationid,locationinfo.name)
-                    if status then
-                        for i=1,#gateways do
-                            local g = status.gateways[i]
-                            local gateway = gateways[i]
-                            local systems = gateway.temperatureControlSystems
-                            if systems then
-                                local s = g.temperatureControlSystems
-                                for i=1,#systems do
-                                    local zones = systems[i].zones
-                                    if zones then
-                                        local z = s[i].zones
-                                        for i=1,#zones do
-                                            if validzonetypes[zone.zoneType] then
-                                                local z = z[i]
-                                                if z.name == zone.name then
-                                                    zone.temperatureStatus = z.temperatureStatus
-                                                    updated = true
+                if locationinfo then
+                    local locationid = locationinfo.locationId
+                    if gateways then
+                        local status = getstatus(presets,locationid,locationinfo.name)
+                        if status then
+                            for i=1,#gateways do
+                                local g = status.gateways[i]
+                                local gateway = gateways[i]
+                                local systems = gateway.temperatureControlSystems
+                                if systems then
+                                    local s = g.temperatureControlSystems
+                                    for i=1,#systems do
+                                        local zones = systems[i].zones
+                                        if zones then
+                                            local z = s[i].zones
+                                            for i=1,#zones do
+                                                local zone = zones[i]
+                                                if validzonetypes[zone.zoneType] then
+                                                    local z = z[i]
+                                                    if z.name == zone.name then
+                                                        zone.temperatureStatus = z.temperatureStatus
+                                                        updated = true
+                                                    end
                                                 end
                                             end
                                         end
@@ -548,12 +580,16 @@ local function gettemperatures(presets)
                                 end
                             end
                         end
+                    else
+                        report("no gateways")
                     end
+                else
+                    report("no location info")
                 end
             end
             if updated then
                 data.time = ostime()
-                savetable(presets.files.latest,data)
+                savedtable(presets.files.latest,data)
             end
             return result(data,"getting temperatures, %s")
         end
@@ -601,7 +637,10 @@ end
 
 local function loadtemperatures(presets)
     if validpresets(presets) then
-        local status = loadeverything(presets)
+        local status = loadlatest(presets)
+        if not status or not next(status) then
+            status = loadeverything(presets)
+        end
         if status then
             local usedgateways = presets.data.gateways
             for i=1,#status do
@@ -637,9 +676,10 @@ end
 local function updatetemperatures(presets)
     if validpresets(presets) then
         local everythingname = presets.files.everything
+        local latestname     = presets.files.latest
         local historyname    = presets.files.history
-        if everythingname and historyname then
-            gettemperatures(presets,everythingname)
+        if (everythingname or latestname) and historyname then
+            gettemperatures(presets)
             local t = loadtemperatures(presets)
             if t then
                 local data = { }
@@ -649,7 +689,7 @@ local function updatetemperatures(presets)
                 end
                 local history = loadhistory(historyname) or { }
                 setmoment(history,ostime(),data)
-                savetable(historyname,history)
+                savedtable(historyname,history)
                 return result(t,"updating temperatures, %s")
             end
         end
@@ -747,10 +787,10 @@ local function off(presets,name)
     end
 end
 
-local function on(presets,name)
+local function on(presets,name,temperature)
     local zone = presets and getzonestate(presets,name)
     if zone then
-        setzonestate(presets,name,zone.highest)
+        setzonestate(presets,name,temperature or zone.highest)
     end
 end
 
@@ -787,7 +827,7 @@ local function settask(presets,when,tag,action)
         else
             list[tag] = nil
         end
-        savetable(presets.files.schedules,list)
+        savedtable(presets.files.schedules,list)
     end
 end
 
@@ -832,7 +872,7 @@ local function checktasks(presets)
             for k, v in next, q do
                 list[q] = nil
             end
-            savetable(presets.files.schedules,list)
+            savedtable(presets.files.schedules,list)
         end
         return list
     end
@@ -954,10 +994,10 @@ end
 
 evohome = {
     helpers = {
-        getaccesstoken     = getaccesstoken,    -- presets
-        getuserinfo        = getuserinfo,       -- presets
-        getlocationinfo    = getlocationinfo,   -- presets
-        getschedule        = getschedule,       -- presets, name
+        getaccesstoken     = getaccesstoken,     -- presets
+        getuserinfo        = getuserinfo,        -- presets
+        getlocationinfo    = getlocationinfo,    -- presets
+        getschedule        = getschedule,        -- presets, name
         --
         geteverything      = geteverything,      -- presets, noschedules
         gettemperatures    = gettemperatures,    -- presets
@@ -965,6 +1005,7 @@ evohome = {
         setzonestate       = setzonestate,       -- presets, name, temperature
         resetzonestate     = resetzonestate,     -- presets, name
         getzonedata        = findzone,           -- presets, name
+        getzonenames       = getzonenames,       -- presets
         --
         loadpresets        = loadpresets,        -- filename
         loadhistory        = loadhistory,        -- presets | filename

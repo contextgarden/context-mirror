@@ -35,6 +35,8 @@ local commands          = commands
 local implement         = interfaces.implement
 local conditionals      = tex.conditionals
 
+local ctx_latelua       = context.latelua
+
 local structures        = structures
 local lists             = structures.lists
 local sections          = structures.sections
@@ -97,7 +99,8 @@ local v_default         = variables.default
 -- for the moment not public --
 
 local function zerostrippedconcat(t,separator)
-    local f, l = 1, #t
+    local f = 1
+    local l = #t
     for i=f,l do
         if t[i] == 0 then
             f = f + 1
@@ -307,7 +310,8 @@ local synchronizepage = function(r)  -- bah ... will move
     return synchronizepage(r)
 end
 
-function lists.enhance(n)
+local function enhancelist(specification)
+    local n = specification.n
     local l = cached[n]
     if not l then
         report_lists("enhancing %a, unknown internal",n)
@@ -347,6 +351,8 @@ function lists.enhance(n)
         return l
     end
 end
+
+lists.enhance = enhancelist
 
 -- we can use level instead but we can also decide to remove level from the metadata
 
@@ -847,18 +853,22 @@ end
 function lists.userdata(name,r,tag) -- to tex (todo: xml)
     local result = lists.result[r]
     if result then
-        local userdata, metadata = result.userdata, result.metadata
+        local userdata = result.userdata
         local str = userdata and userdata[tag]
         if str then
-            return str, metadata
+            return str, result.metadata
         end
     end
 end
 
 function lists.uservalue(name,r,tag,default) -- to lua
     local str = lists.result[r]
-    str = str and str.userdata
-    str = str and str[tag]
+    if str then
+        str = str.userdata
+    end
+    if str then
+        str = str[tag]
+    end
     return str or default
 end
 
@@ -1071,8 +1081,19 @@ implement {
 
 implement {
     name      = "enhancelist",
-    actions   = lists.enhance,
-    arguments = "integer"
+    arguments = "integer",
+    actions   = function(n)
+        enhancelist { n = n }
+    end
+}
+
+implement {
+    name      = "deferredenhancelist",
+    arguments = "integer",
+    protected = true, -- for now, pre 1.09
+    actions   = function(n)
+        ctx_latelua { action = enhancelist, n = n }
+    end,
 }
 
 implement {

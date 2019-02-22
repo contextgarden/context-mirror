@@ -26,6 +26,7 @@ local setmetatablenewindex = table.setmetatablenewindex
 local setmetatablecall     = table.setmetatablecall
 
 local createtoken          = token.create
+local isdefined            = tokens.isdefined
 
 texmodes                   = allocate { }  tex.modes        = texmodes
 texsystemmodes             = allocate { }  tex.systemmodes  = texsystemmodes
@@ -40,18 +41,27 @@ local systemmodes          = { }
 -- we could use the built-in tex.is[count|dimen|skip|toks] here but caching
 -- at the lua end is not that bad (and we need more anyway)
 
--- undefined: mode == 0 or cmdname = "undefined_cs"
-
-local cache = setmetatableindex(function(t,k)
-    local v = createtoken(k)
-    t[k] = v
-    return v
-end)
+local cache = tokens.cache
 
 -- we can have a modes cache too
 
-local iftrue    = cache["iftrue"].mode
-local undefined = cache["*undefined*crap*"].mode -- is this ok?
+local iftrue        = cache["iftrue"].mode
+
+local dimencode     = cache["scratchdimen"]    .command
+local countcode     = cache["scratchcounter"]  .command
+local tokencode     = cache["scratchtoken"]    .command
+local skipcode      = cache["scratchskip"]     .command
+local muskipcode    = cache["scratchmuskip"]   .command
+----- attributecode = cache["scratchattribute"].command
+
+local types = {
+    [dimencode]     = "dimen",
+    [countcode]     = "count",
+    [tokencode]     = "token",
+    [skipcode]      = "skip",
+    [muskipcode]    = "muskip",
+ -- [attributecode] = "attribute",
+}
 
 setmetatableindex(texmodes, function(t,k)
     local m = modes[k]
@@ -59,16 +69,17 @@ setmetatableindex(texmodes, function(t,k)
         return m()
     elseif k then
         local n = "mode>" .. k
-        if cache[n].mode == 0 then
-            return false
-        else
+        if isdefined(n) then
             rawset(modes,k, function() return texgetcount(n) == 1 end)
             return texgetcount(n) == 1 -- 2 is prevented
+        else
+            return false
         end
     else
         return false
     end
 end)
+
 setmetatablenewindex(texmodes, function(t,k)
     report_mode("you cannot set the %s named %a this way","mode",k)
 end)
@@ -79,11 +90,11 @@ setmetatableindex(texsystemmodes, function(t,k)
         return m()
     else
         local n = "mode>*" .. k
-        if cache[n].mode == 0 then
-            return false
-        else
+        if isdefined(n) then
             rawset(systemmodes,k,function() return texgetcount(n) == 1 end)
             return texgetcount(n) == 1 -- 2 is prevented
+        else
+            return false
         end
     end
 end)
@@ -112,31 +123,7 @@ setmetatablenewindex(texifs, function(t,k)
     -- just ignore
 end)
 
-setmetatableindex(texisdefined, function(t,k)
-    return k and cache[k].mode ~= 0
-end)
-setmetatablecall(texisdefined, function(t,k)
-    return k and cache[k].mode ~= 0
-end)
-setmetatablenewindex(texisdefined, function(t,k)
-    -- just ignore
-end)
-
-local dimencode     = cache["scratchdimen"]    .command
-local countcode     = cache["scratchcounter"]  .command
-local tokencode     = cache["scratchtoken"]    .command
-local skipcode      = cache["scratchskip"]     .command
-local muskipcode    = cache["scratchmuskip"]   .command
----- attributecode = cache["scratchattribute"].command
-
-local types = {
-    [dimencode]     = "dimen",
-    [countcode]     = "count",
-    [tokencode]     = "token",
-    [skipcode]      = "skip",
-    [muskipcode]    = "muskip",
- -- [attributecode] = "attribute",
-}
+tex.isdefined = isdefined
 
 function tex.isdimen(name)
     local hit = cache[name]

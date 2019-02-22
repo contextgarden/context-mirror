@@ -13,13 +13,20 @@ local round, max = math.round, math.round
 local sortedkeys, sortedhash = table.sortedkeys, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 
-local formatters = string.formatters
-local tounicode  = fonts.mappings.tounicode
+local formatters   = string.formatters
+local tounicode    = fonts.mappings.tounicode
 
-local otf        = fonts.handlers.otf
+local helpers      = fonts.helpers
 
-local f_color    = formatters["%.3f %.3f %.3f rg"]
-local f_gray     = formatters["%.3f g"]
+local charcommand  = helpers.commands.char
+local rightcommand = helpers.commands.right
+local leftcommand  = helpers.commands.left
+local downcommand  = helpers.commands.down
+
+local otf          = fonts.handlers.otf
+
+local f_color      = formatters["%.3f %.3f %.3f rg"]
+local f_gray       = formatters["%.3f g"]
 
 if context then
 
@@ -56,31 +63,41 @@ end)
 
 if context then
 
+    -- \definefontcolorpalette [emoji-r] [emoji-red,emoji-gray,textcolor] -- looks bad
+    -- \definefontcolorpalette [emoji-r] [emoji-red,emoji-gray]           -- looks okay
+
     local colors          = attributes.list[attributes.private('color')] or { }
     local transparencies  = attributes.list[attributes.private('transparency')] or { }
 
     function otf.registerpalette(name,values)
         sharedpalettes[name] = values
+        local color          = lpdf.color
+        local transparency   = lpdf.transparency
+        local register       = colors.register
         for i=1,#values do
             local v = values[i]
-            local c = nil
-            local t = nil
-            if type(v) == "table" then
-                c = colors.register(name,"rgb",
-                    max(round((v.r or 0)*255),255)/255,
-                    max(round((v.g or 0)*255),255)/255,
-                    max(round((v.b or 0)*255),255)/255
-                )
+            if v == "textcolor" then
+                values[i] = false
             else
-                c = colors[v]
-                t = transparencies[v]
-            end
-            if c and t then
-                values[i] = hash[lpdf.color(1,c) .. " " .. lpdf.transparency(t)]
-            elseif c then
-                values[i] = hash[lpdf.color(1,c)]
-            elseif t then
-                values[i] = hash[lpdf.color(1,t)]
+                local c = nil
+                local t = nil
+                if type(v) == "table" then
+                    c = register(name,"rgb",
+                        max(round((v.r or 0)*255),255)/255,
+                        max(round((v.g or 0)*255),255)/255,
+                        max(round((v.b or 0)*255),255)/255
+                    )
+                else
+                    c = colors[v]
+                    t = transparencies[v]
+                end
+                if c and t then
+                    values[i] = hash[color(1,c) .. " " .. transparency(t)]
+                elseif c then
+                    values[i] = hash[color(1,c)]
+                elseif t then
+                    values[i] = hash[color(1,t)]
+                end
             end
         end
     end
@@ -91,11 +108,13 @@ else -- for generic
         sharedpalettes[name] = values
         for i=1,#values do
             local v = values[i]
-            values[i] = hash[f_color(
-                max(round((v.r or 0)*255),255)/255,
-                max(round((v.g or 0)*255),255)/255,
-                max(round((v.b or 0)*255),255)/255
-            )]
+            if v then
+                values[i] = hash[f_color(
+                    max(round((v.r or 0)*255),255)/255,
+                    max(round((v.g or 0)*255),255)/255,
+                    max(round((v.b or 0)*255),255)/255
+                )]
+            end
         end
     end
 
@@ -127,16 +146,11 @@ local start = { "pdf", "mode", "font" } -- force text mode (so get q Q right)
 local push  = { "pdf", "page", "q" }
 local pop   = { "pdf", "page", "Q" }
 
-if not LUATEXFUNCTIONALITY or LUATEXFUNCTIONALITY < 6472 then
-    start = { "nop" }
-    ----- = stop
-end
-
 -- -- This one results in color directives inside BT ET but has less q Q pairs. It
 -- -- only shows the first glyph in acrobat and nothing more. No problem with other
 -- -- renderers.
 --
--- local function initializecolr(tfmdata,kind,value) -- hm, always value
+-- local function initialize(tfmdata,kind,value) -- hm, always value
 --     if value then
 --         local resources = tfmdata.resources
 --         local palettes  = resources.colorpalettes
@@ -161,23 +175,12 @@ end
 --             tfmdata.fonts = {
 --                 { id = 0 }
 --             }
---             local widths = setmetatableindex(function(t,k)
---                 local v = { "right", -k }
---                 t[k] = v
---                 return v
---             end)
 --             --
 --             local getactualtext = otf.getactualtext
 --             local default       = colorvalues[#colorvalues]
 --             local b, e          = getactualtext(tounicode(0xFFFD))
 --             local actualb       = { "pdf", "page", b } -- saves tables
 --             local actuale       = { "pdf", "page", e } -- saves tables
---             --
---             local cache = setmetatableindex(function(t,k)
---                 local v = { "char", k } -- could he a weak shared hash
---                 t[k] = v
---                 return v
---             end)
 --             --
 --             for unicode, character in next, characters do
 --                 local description = descriptions[unicode]
@@ -187,7 +190,7 @@ end
 --                         local u = description.unicode or characters[unicode].unicode
 --                         local w = character.width or 0
 --                         local s = #colorlist
---                         local goback = w ~= 0 and widths[w] or nil -- needs checking: are widths the same
+--                         local goback = w ~= 0 and leftcommand[w] or nil -- needs checking: are widths the same
 --                         local t = {
 --                             start,
 --                             not u and actualb or { "pdf", "page", (getactualtext(tounicode(u))) }
@@ -202,7 +205,7 @@ end
 --                                 n = n + 1 t[n] = v
 --                                 l = v
 --                             end
---                             n = n + 1 t[n] = cache[entry.slot]
+--                             n = n + 1 t[n] = charcommand[entry.slot]
 --                             if s > 1 and i < s and goback then
 --                                 n = n + 1 t[n] = goback
 --                             end
@@ -221,7 +224,7 @@ end
 -- -- Here we have no color change in BT .. ET and  more q Q pairs but even then acrobat
 -- -- fails displaying the overlays correctly. Other renderers do it right.
 
-local function initializecolr(tfmdata,kind,value) -- hm, always value
+local function initialize(tfmdata,kind,value)
     if value then
         local resources = tfmdata.resources
         local palettes  = resources.colorpalettes
@@ -232,8 +235,14 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
                 converted = setmetatableindex(convert)
                 resources.converted = converted
             end
-            local colorvalues = sharedpalettes[value] or converted[palettes[tonumber(value) or 1] or palettes[1]] or { }
-            local classes     = #colorvalues
+            local colorvalues = sharedpalettes[value]
+            local default     = false -- so the text color (bad for icon overloads)
+            if colorvalues then
+                default = colorvalues[#colorvalues]
+            else
+                colorvalues = converted[palettes[tonumber(value) or 1] or palettes[1]] or { }
+            end
+            local classes = #colorvalues
             if classes == 0 then
                 return
             end
@@ -246,23 +255,11 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
             tfmdata.fonts = {
                 { id = 0 }
             }
-            local widths = setmetatableindex(function(t,k)
-                local v = { "right", -k }
-                t[k] = v
-                return v
-            end)
             --
             local getactualtext = otf.getactualtext
-            local default       = colorvalues[#colorvalues]
             local b, e          = getactualtext(tounicode(0xFFFD))
             local actualb       = { "pdf", "page", b } -- saves tables
             local actuale       = { "pdf", "page", e } -- saves tables
-            --
-            local cache = setmetatableindex(function(t,k)
-                local v = { "char", k } -- could he a weak shared hash
-                t[k] = v
-                return v
-            end)
             --
             for unicode, character in next, characters do
                 local description = descriptions[unicode]
@@ -272,7 +269,7 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
                         local u = description.unicode or characters[unicode].unicode
                         local w = character.width or 0
                         local s = #colorlist
-                        local goback = w ~= 0 and widths[w] or nil -- needs checking: are widths the same
+                        local goback = w ~= 0 and leftcommand[w] or nil -- needs checking: are widths the same
                         local t = {
                             start, -- really needed
                             not u and actualb or { "pdf", "page", (getactualtext(tounicode(u))) }
@@ -291,8 +288,14 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
                                 f = true
                                 n = n + 1 t[n] = v
                                 l = v
+                            else
+                                if f then
+                                    n = n + 1 t[n] = pop
+                                end
+                                f = false
+                                l = nil
                             end
-                            n = n + 1 t[n] = cache[entry.slot]
+                            n = n + 1 t[n] = charcommand[entry.slot]
                             if s > 1 and i < s and goback then
                                 n = n + 1 t[n] = goback
                             end
@@ -314,23 +317,12 @@ fonts.handlers.otf.features.register {
     name         = "colr",
     description  = "color glyphs",
     manipulators = {
-        base = initializecolr,
-        node = initializecolr,
+        base = initialize,
+        node = initialize,
     }
 }
 
 do
-
- -- local f_setstream = formatters[ [[io.savedata("svg-glyph-%05i",%q)]] ]
- -- local f_getstream = formatters[ [[svg-glyph-%05i]] ]
-
- -- function otfsvg.storepdfdata(pdf)
- --     nofstreams = nofstreams + 1
- --     storepdfdata = function(pdf)
- --         nofstreams = nofstreams + 1
- --         return f_setstream(nofstreams,pdf), f_getstream(nofstreams)
- --     end
- -- end
 
     local nofstreams = 0
     local f_name     = formatters[ [[pdf-glyph-%05i]] ]
@@ -338,56 +330,47 @@ do
     local hashed     = { }
     local cache      = { }
 
-    function otf.storepdfdata(pdf)
-        local done = hashed[pdf]
-        if not done then
-            nofstreams = nofstreams + 1
-            local o, n = epdf.openMemStream(pdf,#pdf,f_name(nofstreams))
-            cache[n] = o -- we need to keep in mem
-            done = f_used(n)
-            hashed[pdf] = done
-        end
-        return nil, done, nil
-    end
+    if epdf then
 
- -- maybe more efficient but much slower (and we hash already)
- --
- -- if context then
- --
- --     local storepdfdata = otf.storepdfdata
- --     local initialized  = false
- --
- --     function otf.storepdfdata(pdf)
- --         if not initialized then
- --             if resolvers.setmemstream then
- --                 local f_setstream = formatters[ [[resolvers.setmemstream("pdf-glyph-%05i",%q,true)]] ]
- --                 local f_getstream = formatters[ [[memstream:///pdf-glyph-%05i]] ]
- --                 local f_nilstream = formatters[ [[resolvers.resetmemstream("pdf-glyph-%05i",true)]] ]
- --                 storepdfdata = function(pdf)
- --                     local done  = hashed[pdf]
- --                     local set   = nil
- --                     local reset = nil
- --                     if not done then
- --                         nofstreams = nofstreams + 1
- --                         set   = f_setstream(nofstreams,pdf)
- --                         done  = f_getstream(nofstreams)
- --                         reset = f_nilstream(nofstreams)
- --                         hashed[pdf] = done
- --                     end
- --                     return set, done, reset
- --                 end
- --                 otf.storepdfdata = storepdfdata
- --             end
- --             initialized = true
- --         end
- --         return storepdfdata(pdf)
- --     end
- --
- -- end
+        local openpdf = epdf.openMemStream
+
+        function otf.storepdfdata(pdf)
+            local done = hashed[pdf]
+            if not done then
+                nofstreams = nofstreams + 1
+                local o, n = openpdf(pdf,#pdf,f_name(nofstreams))
+                cache[n] = o -- we need to keep in mem
+                done = f_used(n)
+                hashed[pdf] = done
+            end
+            return done
+        end
+
+    else
+
+        local openpdf = pdfe.new
+        ----- prefix  = "data:application/pdf,"
+
+        function otf.storepdfdata(pdf)
+            local done = hashed[pdf]
+            if not done then
+                nofstreams = nofstreams + 1
+                local f = f_name(nofstreams)
+                local n = openpdf(pdf,#pdf,f)
+                done = f_used(n)
+                hashed[pdf] = done
+            end
+            return done
+        end
+
+    end
 
 end
 
-local function pdftovirtual(tfmdata,pdfshapes,kind) -- kind = sbix|svg
+-- I'll probably make a variant for context as we can do it more efficient there than in
+-- generic.
+
+local function pdftovirtual(tfmdata,pdfshapes,kind) -- kind = png|svg
     if not tfmdata or not pdfshapes or not kind then
         return
     end
@@ -400,7 +383,7 @@ local function pdftovirtual(tfmdata,pdfshapes,kind) -- kind = sbix|svg
     properties.virtualized = true
     --
     tfmdata.fonts = {
-        { id = 0 }
+        { id = 0 } -- not really needed
     }
         --
     local getactualtext = otf.getactualtext
@@ -409,6 +392,12 @@ local function pdftovirtual(tfmdata,pdfshapes,kind) -- kind = sbix|svg
     local b, e          = getactualtext(tounicode(0xFFFD))
     local actualb       = { "pdf", "page", b } -- saves tables
     local actuale       = { "pdf", "page", e } -- saves tables
+    --
+    local vfimage = lpdf and lpdf.vfimage or function(wd,ht,dp,data,name)
+        -- needed for generic (if used there at all)
+        local name = storepdfdata(data)
+        return { "image", { filename = name, width = wd, height = ht, depth = dp } }
+    end
     --
     for unicode, character in sortedhash(characters) do  -- sort is nicer for svg
         local index = character.index
@@ -428,31 +417,30 @@ local function pdftovirtual(tfmdata,pdfshapes,kind) -- kind = sbix|svg
                 dy   = 0
             end
             if data then
-                local setcode, name, nilcode = storepdfdata(data)
-                if name then
-                    local bt = unicode and getactualtext(unicode)
-                    local wd = character.width  or 0
-                    local ht = character.height or 0
-                    local dp = character.depth  or 0
-                    character.commands = {
-                        not unicode and actualb or { "pdf", "page", (getactualtext(unicode)) },
-                        { "down", dp + dy * hfactor },
-                        { "right", dx * hfactor },
-                     -- setcode and { "lua", setcode } or nop,
-                        { "image", { filename = name, width = wd, height = ht, depth = dp } },
-                     -- nilcode and { "lua", nilcode } or nop,
-                        actuale,
-                    }
-                    character[kind] = true
-                end
+                -- We can delay storage by a lua function in commands: but then we need to
+                -- be able to provide our own mem stream name (so that we can reserve it).
+                -- Anyway, we will do this different in a future version of context.
+                local bt = unicode and getactualtext(unicode)
+                local wd = character.width  or 0
+                local ht = character.height or 0
+                local dp = character.depth  or 0
+                -- The down and right will change too (we can move that elsewhere).
+                character.commands = {
+                    not unicode and actualb or { "pdf", "page", (getactualtext(unicode)) },
+                    downcommand[dp + dy * hfactor],
+                    rightcommand[dx * hfactor],
+                    vfimage(wd,ht,dp,data,name),
+                    actuale,
+                }
+                character[kind] = true
             end
         end
     end
 end
 
 local otfsvg   = otf.svg or { }
-otf.svg         = otfsvg
-otf.svgenabled  = true
+otf.svg        = otfsvg
+otf.svgenabled = true
 
 do
 
@@ -583,27 +571,27 @@ fonts.handlers.otf.features.register {
 
 -- This can be done differently e.g. with ffi and gm and we can share code anway. Using
 -- batchmode in gm is not faster and as it accumulates we would need to flush all
--- individual shapes.
+-- individual shapes. But ... in context lmtx (and maybe the backport) we will use
+-- a different and more efficient method anyway. I'm still wondering if I should
+-- keep color code in generic. Maybe it should be optional.
 
-local otfsbix   = otf.sbix or { }
-otf.sbix        = otfsbix
-otf.sbixenabled = true
+local otfpng   = otf.png or { }
+otf.png        = otfpng
+otf.pngenabled = true
 
 do
 
-    -- for now png but also other bitmap formats
-
-    local report_sbix = logs.reporter("fonts","sbix conversion")
+    local report_png = logs.reporter("fonts","png conversion")
 
     local loaddata   = io.loaddata
     local savedata   = io.savedata
     local remove     = os.remove
 
     local runner = sandbox and sandbox.registerrunner {
-        name     = "otfsbix",
+        name     = "otfpng",
         program  = "gm",
-        template = "convert -quality 100 temp-otf-sbix-shape.sbix temp-otf-sbix-shape.pdf > temp-otf-svg-shape.log",
-     -- reporter = report_sbix,
+        template = "convert -quality 100 temp-otf-png-shape.png temp-otf-png-shape.pdf > temp-otf-svg-shape.log",
+     -- reporter = report_png,
     }
 
     if not runner then
@@ -611,29 +599,29 @@ do
         -- poor mans variant for generic:
         --
         runner = function()
-            return os.execute("gm convert -quality 100 temp-otf-sbix-shape.sbix temp-otf-sbix-shape.pdf > temp-otf-svg-shape.log")
+            return os.execute("gm convert -quality 100 temp-otf-png-shape.png temp-otf-png-shape.pdf > temp-otf-svg-shape.log")
         end
     end
 
     -- Alternatively we can create a single pdf file with -adjoin and then pick up pages from
     -- that file but creating thousands of small files is no fun either.
 
-    function otfsbix.topdf(sbixshapes)
+    function otfpng.topdf(pngshapes)
         local pdfshapes  = { }
-        local sbixfile   = "temp-otf-sbix-shape.sbix"
-        local pdffile    = "temp-otf-sbix-shape.pdf"
+        local pngfile    = "temp-otf-png-shape.png"
+        local pdffile    = "temp-otf-png-shape.pdf"
         local nofdone    = 0
-        local indices    = sortedkeys(sbixshapes) -- can be sparse
+        local indices    = sortedkeys(pngshapes) -- can be sparse
         local nofindices = #indices
-        report_sbix("processing %i sbix containers",nofindices)
+        report_png("processing %i png containers",nofindices)
         statistics.starttiming()
         for i=1,nofindices do
             local index = indices[i]
-            local entry = sbixshapes[index]
-            local data  = entry.data
+            local entry = pngshapes[index]
+            local data  = entry.data -- or placeholder
             local x     = entry.x
             local y     = entry.y
-            savedata(sbixfile,data)
+            savedata(pngfile,data)
             runner()
             pdfshapes[index] = {
                 x     = x ~= 0 and x or nil,
@@ -642,43 +630,44 @@ do
             }
             nofdone = nofdone + 1
             if nofdone % 100 == 0 then
-                report_sbix("%i shapes processed",nofdone)
+                report_png("%i shapes processed",nofdone)
             end
         end
-        report_sbix("processing %i pdf results",nofindices)
-        remove(sbixfile)
+        report_png("processing %i pdf results",nofindices)
+        remove(pngfile)
         remove(pdffile)
         statistics.stoptiming()
         if statistics.elapsedseconds then
-            report_sbix("sbix conversion time %s",statistics.elapsedseconds() or "-")
+            report_png("png conversion time %s",statistics.elapsedseconds() or "-")
         end
         return pdfshapes
-     -- end
     end
 
 end
 
-local function initializesbix(tfmdata,kind,value) -- hm, always value
-    if value and otf.sbixenabled then
-        local sbix      = tfmdata.properties.sbix
-        local hash      = sbix and sbix.hash
-        local timestamp = sbix and sbix.timestamp
+-- This will change in a future version of context. More direct.
+
+local function initializepng(tfmdata,kind,value) -- hm, always value
+    if value and otf.pngenabled then
+        local png       = tfmdata.properties.png
+        local hash      = png and png.hash
+        local timestamp = png and png.timestamp
         if not hash then
             return
         end
         local pdffile   = containers.read(otf.pdfcache,hash)
         local pdfshapes = pdffile and pdffile.pdfshapes
         if not pdfshapes or pdffile.timestamp ~= timestamp then
-            local sbixfile   = containers.read(otf.sbixcache,hash)
-            local sbixshapes = sbixfile and sbixfile.sbixshapes
-            pdfshapes = sbixshapes and otfsbix.topdf(sbixshapes) or { }
+            local pngfile   = containers.read(otf.pngcache,hash)
+            local pngshapes = pngfile and pngfile.pngshapes
+            pdfshapes = pngshapes and otfpng.topdf(pngshapes) or { }
             containers.write(otf.pdfcache, hash, {
                 pdfshapes = pdfshapes,
                 timestamp = timestamp,
             })
         end
         --
-        pdftovirtual(tfmdata,pdfshapes,"sbix")
+        pdftovirtual(tfmdata,pdfshapes,"png")
     end
 end
 
@@ -686,8 +675,16 @@ fonts.handlers.otf.features.register {
     name         = "sbix",
     description  = "sbix glyphs",
     manipulators = {
-        base = initializesbix,
-        node = initializesbix,
+        base = initializepng,
+        node = initializepng,
     }
 }
 
+fonts.handlers.otf.features.register {
+    name         = "cblc",
+    description  = "cblc glyphs",
+    manipulators = {
+        base = initializepng,
+        node = initializepng,
+    }
+}

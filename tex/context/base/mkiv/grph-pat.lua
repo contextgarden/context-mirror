@@ -15,7 +15,7 @@ local texsetbox   = tex.setbox
 local texgetbox   = tex.getbox
 
 local nodepool    = nodes.pool
-local new_literal = nodepool.pdforiginliteral -- really ?
+local new_literal = nodepool.originliteral -- really ?
 local new_hlist   = nodepool.hlist
 
 local names       = { }
@@ -37,7 +37,7 @@ interfaces.implement {
         if not name or name == "" then
             return
         end
-        nodes.handlers.finalize(box,"object")
+        nodes.handlers.finalizebox(number)
         names[name] = lpdf.registerpattern {
             number  = number,
             width   = specification.width  or  box.width,

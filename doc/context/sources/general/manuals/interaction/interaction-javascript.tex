@@ -1,0 +1,136 @@
+% language=uk
+
+\environment interaction-style
+
+\startcomponent interaction-javascript
+
+\startchapter[title={JavaScript}]
+
+Annotations can be controlled with \JAVASCRIPT\ but it really depends on the
+viewer if it works out well. Using these scripts is a multi||step process where
+common functions and data structures can be shared and collected in preambles:
+
+\starttyping
+\startJSpreamble {name}
+  MyCounter = 0 ;
+\stopJSpreamble
+\stoptyping
+
+The more action oriented scripts are defined as:
+
+\starttyping
+\startJScode {increment}
+  MyCounter = MyCounter + 1 ; // or: ++MyCounter ;
+\stopJScode
+\stoptyping
+
+This script is executed with:
+
+\starttyping
+\goto {advance by one} [JS(increment)]
+\stoptyping
+
+Nicer is to define a function:
+
+\starttyping
+\startJSpreamble {helpers} used now
+    function Increment(n) {
+        MyCounter = MyCounter + n ;
+    }
+\stopJSpreamble
+\stoptyping
+
+and then say:
+
+\starttyping
+\goto {advance by one} [JS(Increment{5})]
+\stoptyping
+
+The distribution contains a collection of scripts that can be preloaded and used
+when needed. You can recognize the files by the \type {java-imp-} prefix. To
+prevent all preambles ending up in the \PDF\ file, we can say:
+
+\starttyping
+\startJSpreamble {something} used later
+\stopJSpreamble
+\stoptyping
+
+We already saw that one can also say \type {used now} and there's also a way
+to filter specific preambles on usage:
+
+\starttyping
+\startJScode {mything} uses {something}
+\stopJScode
+\stoptyping
+
+One should be aware of the fact that there is no decent way to check if every
+script is all right! Even worse, the \JAVASCRIPT\ interpreter currently used in
+the \ACROBAT\ tools is not reentrant, and breaks down on typos
+
+The full repertoire of commands is:
+
+\showsetup{startJScode}
+
+\showsetup{startJSpreamble}
+
+\showsetup{addtoJSpreamble}
+
+\showsetup{setJSpreamble}
+
+As we're into \LUA\ and because \LUA\ is so lightweight I've wondered several
+times now if it would make sense to embed \LUA\ in \PDF\ viewers. After all,
+annotations are an extension mechanism. In the early days of \PDF\ this was
+actually quite doable because \ACROBAT\ reader (and exchange) had a plugin model.
+However, the more functionality ended up in the program, the least interesting
+(and popular) the plugins mechanism became. Some open source viewers have an
+\API\ so in principle adding the lightweight \LUA\ interpreter (of course with
+\LPEG, and quite probably without file \IO) is possible. It has been discussed at
+a recent \CONTEXT\ meeting, so who knows \unknown For now we're stuck with
+\JAVASCRIPT.
+
+An example of \JAVASCRIPT\ usage is the following, where we load a video and add
+some controls. Beware that this kind of functionality is very viewer dependent
+and therefore also very unstable over time. Even worse, if you look at the loaded
+\JAVASCRIPT\ file you will notice a dependency on soon obsolete (in \ACROBAT\ at
+least) shockwave support. First we load a library that will predefine a video
+graphic: and then create an instance:
+
+\starttyping
+\useJSscripts[vplayer]
+
+\setupinteraction
+  [state=start]
+
+\externalfigure
+  [shockwave]
+  [frame=on,
+   width=480pt,
+   height=270pt,
+   file=test.mp4,
+   label=foo]
+\stoptyping
+
+The controls are defined with:
+
+\starttyping
+\goto{START} [JS(StartShockwave{foo})]
+\goto{REWIND}[JS(RewindShockwave{foo})]
+\goto{PAUSE} [JS(PauseShockwave{foo})]
+\goto{STOP}  [JS(StopShockwave{foo})]
+\stoptyping
+
+or, as we have some defined reference shortcuts:
+
+\starttyping
+\goto{START} [StartShockwave{foo}]
+\goto{REWIND}[RewindShockwave{foo}]
+\goto{PAUSE} [PauseShockwave{foo}]
+\goto{STOP}  [StopShockwave{foo}]
+\stoptyping
+
+It's actually not that hard to add all kind of functionality if only we could be
+sure of stable support and continuity.
+
+\stopchapter
+
+\stopcomponent

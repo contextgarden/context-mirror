@@ -29,14 +29,10 @@ local registerotffeature = fonts.handlers.otf.features.register
 
 local fontgoodies        = fonts.goodies or { }
 
-local glyph_code         = nodes.nodecodes.glyph
-
 local nuts               = nodes.nuts
 local tonut              = nuts.tonut
-local getfont            = nuts.getfont
-local getchar            = nuts.getchar
 local getattr            = nuts.getattr
-local traverse_id        = nuts.traverse_id
+local nextglyph          = nuts.traversers.glyph
 
 -- colorschemes
 
@@ -100,10 +96,10 @@ local function setcolorscheme(tfmdata,scheme)
                     end
                 end
                 if privatestoo then
-                    local private      = fonts.constructors.privateoffset
-                    local descriptions = tfmdata.descriptions
+                    local privateoffset = fonts.constructors.privateoffset
+                    local descriptions  = tfmdata.descriptions
                     for unicode, data in next, characters do
-                        if unicode >= private then
+                        if unicode >= privateoffset then
                             if not reverse[unicode] then
                                 local d = descriptions[unicode]
                                 if d then
@@ -128,68 +124,9 @@ local function setcolorscheme(tfmdata,scheme)
 end
 
 local fontproperties = fonts.hashes.properties
-
 local a_colorscheme  = attributes.private('colorscheme')
 local setnodecolor   = nodes.tracers.colors.set
-
--- function colorschemes.coloring(head)
---     local lastfont, lastscheme
---     local done = false
---     for n in traverse_id(glyph_code,tonut(head)) do
---         local a = getattr(n,a_colorscheme)
---         if a then
---             local f = getfont(n)
---             if f ~= lastfont then
---                 lastscheme = fontproperties[f].colorscheme
---                 lastfont   = f
---             end
---             if lastscheme then
---                 local sc = lastscheme[getchar(n)]
---                 if sc then
---                     done = true
---                     setnodecolor(n,"colorscheme:"..a..":"..sc) -- slow
---                 end
---             end
---         end
---     end
---     return head, done
--- end
-
--- seldom used, mostly in manuals, so non critical .. anyhow, somewhat faster:
-
--- function colorschemes.coloring(head)
---     local lastfont   = nil
---     local lastattr   = nil
---     local lastscheme = nil
---     local lastprefix = nil
---     local done       = nil
---     for n in traverse_id(glyph_code,tonut(head)) do
---         local a = getattr(n,a_colorscheme)
---         if a then
---             if a ~= lastattr then
---                 lastattr   = a
---                 lastprefix = "colorscheme:" .. a .. ":"
---             end
---             local f = getfont(n)
---             if f ~= lastfont then
---                 lastfont   = f
---                 lastscheme = fontproperties[f].colorscheme
---             end
---             if lastscheme then
---                 local sc = lastscheme[getchar(n)]
---                 if sc then
---                     setnodecolor(n,lastprefix .. sc) -- slow
---                     done = true
---                 end
---             end
---         end
---     end
---     return head, done
--- end
-
--- ok, in case we have hundreds of pages colored:
-
-local cache = { } -- this could be a weak table
+local cache          = { } -- this could be a weak table
 
 setmetatableindex(cache,function(t,a)
     local v = { }
@@ -207,11 +144,9 @@ function colorschemes.coloring(head)
     local lastattr   = nil
     local lastcache  = nil
     local lastscheme = nil
-    local done       = nil
-    for n in traverse_id(glyph_code,tonut(head)) do
+    for n, char, f in nextglyph, head do
         local a = getattr(n,a_colorscheme)
         if a then
-            local f = getfont(n)
             if f ~= lastfont then
                 lastfont   = f
                 lastscheme = fontproperties[f].colorscheme
@@ -221,19 +156,18 @@ function colorschemes.coloring(head)
                 lastcache = cache[a]
             end
             if lastscheme then
-                local sc = lastscheme[getchar(n)]
+                local sc = lastscheme[char]
                 if sc then
                     setnodecolor(n,lastcache[sc]) -- we could inline this one
-                    done = true
                 end
             end
         end
     end
-    return head, done
+    return head
 end
 
 function colorschemes.enable()
-    nodes.tasks.appendaction("processors","fonts","fonts.goodies.colorschemes.coloring")
+    nodes.tasks.enableaction("processors","fonts.goodies.colorschemes.coloring")
     function colorschemes.enable() end
 end
 

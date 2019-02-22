@@ -19,9 +19,9 @@ local function primaryflags()
     if arguments.silent then
         flags[#flags+1] = "--interaction=batchmode"
     end
-    if arguments.jit then
-        flags[#flags+1] = "--jiton"
-    end
+ -- if arguments.jit then
+ --     flags[#flags+1] = "--jiton"
+ -- end
     return concat(flags," ")
 end
 
@@ -48,10 +48,16 @@ local function secondaryflags()
     if arguments.ansi then
         flags[#flags+1] = "--c:ansi"
     end
+    if arguments.strip then
+        flags[#flags+1] = "--c:strip"
+    end
+    if arguments.lmtx then
+        flags[#flags+1] = "--c:lmtx"
+    end
     return concat(flags," ")
 end
 
--- The silent option is Taco. It's a bit of a hack because we cannot yet mess
+-- The silent option is for Taco. It's a bit of a hack because we cannot yet mess
 -- with directives. In fact, I could probably clean up the maker a bit by now.
 
 local template = [[--ini %primaryflags% --lua=%luafile% %texfile% %secondaryflags% %dump% %redirect%]]

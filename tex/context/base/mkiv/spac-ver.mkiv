@@ -15,7 +15,7 @@
 
 \unprotect
 
-\registerctxluafile{spac-ver}{}
+\registerctxluafile{spac-ver}{optimize}
 
 % todo: use usernodes ?
 
@@ -165,6 +165,8 @@
 
 \installcommandhandler \??interlinespace {interlinespace} \??interlinespace
 
+\installmacrostack\currentinterlinespace
+
 \unexpanded\def\setupinterlinespace
   {\dodoubleempty\spac_linespacing_setup}
 
@@ -205,7 +207,7 @@
    \ifx\p_spac_checked_interlinespace\empty
      \spac_linespacing_synchronize_local
    \else\ifcsname\namedinterlinespacehash\p_spac_checked_interlinespace\s!parent\endcsname % we could have a \s!check
-     \pushmacro\currentinterlinespace
+     \push_macro_currentinterlinespace
      \let\currentinterlinespace\p_spac_checked_interlinespace
      \spac_linespacing_setup_specified_interline_space % \dosetupspecifiedinterlinespaceindeed
      \iflocalinterlinespace
@@ -215,7 +217,7 @@
        \the\everysetuplocalinterlinespace
        \localinterlinespacefalse
      \fi
-     \popmacro\currentinterlinespace
+     \pop_macro_currentinterlinespace
    \else
      \normalexpanded{\noexpand\doifelseassignment{\p_spac_checked_interlinespace}%
        \setupspecifiedinterlinespace\setuprelativeinterlinespace[\p_spac_checked_interlinespace]}%
@@ -230,9 +232,9 @@
 
 \unexpanded\def\setuplocalinterlinespace[#1]%
   {\localinterlinespacetrue
-   \pushmacro\currentinterlinespace
+   \push_macro_currentinterlinespace
    \setupinterlinespace[#1]%
-   \popmacro\currentinterlinespace
+   \pop_macro_currentinterlinespace
    \localinterlinespacefalse}
 
 \let\switchtointerlinespace\setuplocalinterlinespace
@@ -282,47 +284,50 @@
 
 \unexpanded\def\smallbreak
   {\par
-   \ifdim\lastskip<\smallskipamount
+   \ifvmode\ifdim\lastskip<\smallskipamount
      \removelastskip
-     \penalty-50
+     \penalty-\plusfifty
      \smallskip
-   \fi}
+   \fi\fi}
 
 \unexpanded\def\medbreak
   {\par
-   \ifdim\lastskip<\medskipamount
+   \ifvmode\ifdim\lastskip<\medskipamount
      \removelastskip
-     \penalty-100
+     \penalty-\plusonehundred
      \medskip
-   \fi}
+   \fi\fi}
 
 \unexpanded\def\bigbreak
   {\par
-   \ifdim\lastskip<\bigskipamount
+   \ifvmode\ifdim\lastskip<\bigskipamount
      \removelastskip
-     \penalty-200
+     \penalty-\plustwohundred
      \bigskip
-   \fi}
+   \fi\fi}
 
-\unexpanded\def\break     {\penalty-\plustenthousand}     % can be hmode or vmode
-\unexpanded\def\nobreak   {\penalty \plustenthousand}     % can be hmode or vmode
-\unexpanded\def\allowbreak{\penalty \zeropoint}           % can be hmode or vmode
-\unexpanded\def\goodbreak {\par\penalty-500\relax}        % forces vmode
-\unexpanded\def\filbreak  {\par\vfil\penalty-200\vfilneg} % forces vmode
+\unexpanded\def\break     {\penalty-\plustenthousand} % can be hmode or vmode
+\unexpanded\def\nobreak   {\penalty \plustenthousand} % can be hmode or vmode
+\unexpanded\def\allowbreak{\penalty \zerocount}       % can be hmode or vmode
+
+\unexpanded\def\goodbreak {\par\ifvmode\penalty-\plusfivehundred\relax\fi}       % forces vmode
+\unexpanded\def\filbreak  {\par\ifvmode\vfil\penalty-\plustwohundred\vfilneg\fi} % forces vmode
 
 %D Made slightly more readable:
 
 \unexpanded\def\vglue  {\afterassignment\spac_helpers_vglue_indeed\s_spac_lastskip=}
 \unexpanded\def\hglue  {\afterassignment\spac_helpers_hglue_indeed\s_spac_lastskip=}
-\unexpanded\def\topglue{\nointerlineskip\vglue-\topskip\vglue}
+\unexpanded\def\topglue{\par\ifvmode\nointerlineskip\vglue-\topskip\vglue\fi}
 
 \def\spac_helpers_vglue_indeed
   {\par
-   \d_spac_prevdepth\prevdepth
-   \hrule\s!height\zeropoint
-   \nobreak
-   \vskip\s_spac_lastskip
-   \prevdepth\d_spac_prevdepth}
+   \ifvmode
+     \d_spac_prevdepth\prevdepth
+     \hrule\s!height\zeropoint
+     \nobreak
+     \vskip\s_spac_lastskip
+     \prevdepth\d_spac_prevdepth
+   \fi}
 
 \def\spac_helpers_hglue_indeed
   {\dontleavehmode
@@ -895,10 +900,13 @@
    \dosetstrut}
 
 \unexpanded\def\setcharstrut#1%
-  {\setbox\strutbox\hbox{#1}% hm, maybe hpack i.e. why apply fonts .. conceptual choice
+  {\setbox\strutbox\hbox{#1}% no \hpack, in case we have smallcaps
    \strutht\ht\strutbox
    \strutdp\dp\strutbox
    \dosetstrut}
+
+\unexpanded\def\settightstrut
+  {\setcharstrut{(}}
 
 \unexpanded\def\setfontstrut
   {\setcharstrut{(gplQT}}
@@ -1307,9 +1315,41 @@
 
 \let\normaloffinterlineskip\offinterlineskip % knuth's original
 
+%D This is tricky. The prevdepth value is still set to the last one even if there is
+%D nothing on the page. The same is true for prevgraf, which doesn't resemble the
+%D value on the current page.
+%D
+%D So, here we kick in a checker but it has to happen after the output group and it
+%D only has to be done once (output can trigger itself!).
+%D
+%D However, prevgraf is somehow bound to hangindent so we can get very
+%D nasty side effects. So, in tne end we use our own variable!
+
+\ifdefined\getnofpreviouslines
+    % defined public at the lua end
+\else
+    \let\getnofpreviouslines\!!zerocount
+\fi
+
+\unexpanded\def\page_otr_synchronize_page_yes
+  {\aftergroup\page_otr_synchronize_page_indeed
+   \glet\page_otr_synchronize_page\relax}
+
+% \unexpanded\def\page_otr_synchronize_page_indeed
+%   {\clf_synchronizepage
+%    \glet\page_otr_synchronize_page\page_otr_synchronize_page_yes}
+%
+% This has to become an otr method: \s!page_otr_command_synchonize_page
+
+\unexpanded\def\page_otr_synchronize_page_indeed
+  {\ifx\currentoutputroutine\s!multicolumn\else\clf_synchronizepage\fi
+   \glet\page_otr_synchronize_page\page_otr_synchronize_page_yes}
+
+\let\page_otr_synchronize_page\page_otr_synchronize_page_yes
+
 \appendtoks
-    \ifvmode\clf_synchronizepage\fi % a nasty hack (tested for a while now)
-\to \everyafteroutput
+    \page_otr_synchronize_page
+\to \everyaftershipout
 
 %D My own one:
 
@@ -1361,7 +1401,7 @@
 \let\restoreinterlinepenalty\relax
 
 \unexpanded\def\spac_penalties_restore
-  {\global\let\restoreinterlinepenalty\relax
+  {\glet\restoreinterlinepenalty\relax
    \global\resetpenalties\interlinepenalties
    \global\c_spac_keep_lines_together\zerocount}
 
@@ -1369,7 +1409,7 @@
   {\ifnum#1>\c_spac_keep_lines_together
      \global\c_spac_keep_lines_together#1%
      \global\setpenalties\interlinepenalties\c_spac_keep_lines_together\plustenthousand
-     \global\let\restoreinterlinepenalty\spac_penalties_restore
+     \glet\restoreinterlinepenalty\spac_penalties_restore
    \fi}
 
 \def\defaultdisplaywidowpenalty        {50}
@@ -1701,7 +1741,7 @@
    \fi
    \doifelsenothing{#1}{\spac_grids_snap_value_set\v!normal}{\spac_grids_snap_value_set{#1}}%
    \clf_vspacingsnap\nextbox\attribute\snapmethodattribute\relax
-   \ifvbox\nextbox\vbox\else\hbox\fi attr \snapmethodattribute \zerocount {\box\nextbox}% *pack ?
+   \ifvbox\nextbox\vbox\else\hbox\fi attr \snapmethodattribute \zerocount {\box\nextbox}% no pack (?), we snap
    \egroup}
 
 \def\spac_grids_check_nop
@@ -1816,15 +1856,15 @@
 
 \unexpanded\def\gridboxvbox
   {\ifcase\gridboxlinemode
-     \vbox
+     \vpack
    \or
-     \ruledvbox
+     \ruledvpack
    \or
-     \vbox
+     \vpack
    \or
-     \ruledvbox
+     \ruledvpack
    \else
-     \ruledvbox
+     \ruledvpack
    \fi}
 
 \def\gridboxwidth{\ifcase\gridboxlinemode0\or.5\or.5\or0\else.5\fi\linewidth}
@@ -1836,8 +1876,10 @@
       \resetteststrut
       \offinterlineskip
       \hsize#2%
-      \ifnum\gridboxlinenomode=\plusthree
-        \gridboxlinenomode\ifodd\realpageno\plusone\else\plustwo\fi
+      \ifcase\gridboxlinenomode\or\or\or
+        \gridboxlinenomode\doifoddpageelse\plusone\plustwo % 3: outer
+      \or
+        \gridboxlinenomode\doifoddpageelse\plustwo\plusone % 4: inner
       \fi
       \topskipcorrection
       \gridboxvbox % calculated size
@@ -2014,7 +2056,7 @@
      \expandafter\nostartblankhandling
    \fi}
 
-\def\nostartblankhandling#1\stopblankhandling
+\unexpanded\def\nostartblankhandling#1\stopblankhandling
   {}
 
 \def\dostartblankhandling
@@ -2042,7 +2084,7 @@
    \setfalse\c_space_vspacing_done
    \the\everybeforeblankhandling}
 
-\def\addpredefinedblankskip#1#2%
+\unexpanded\def\addpredefinedblankskip#1#2%
   {\settrue\c_space_vspacing_done
    \advance\s_spac_vspacing_temp#1\dimexpr\csname\??vspacingamount#2\endcsname\relax}
 
@@ -2089,8 +2131,56 @@
 \def\spac_vspacing_nop_ignore
   {\ifmmode\else\par\fi}
 
-\def\directvspacing#1%
-  {\par\clf_vspacing{#1}}
+% \unexpanded\def\directvspacing#1%
+%   {\par\clf_vspacing{#1}}
+%
+%
+% \def\directdefaultvspacing
+%   {\ifinpagebody % somewhat weird
+%      \clf_vspacing{\currentvspacing}%
+%    \else\ifconditional\c_spac_packed_blank
+%      \clf_vspacing{\currentvspacing}%
+%    \fi\fi}
+%
+% \unexpanded\def\useblankparameter#1% faster local variant
+%   {\edef\m_spac_blank_asked{#1\c!blank}%
+%    \ifx\m_spac_blank_asked\empty\else
+%      \clf_vspacing{\m_spac_blank_asked}
+%    \fi}
+
+\installcorenamespace{vspacing}
+
+\unexpanded\def\directvspacing#1%
+  {\par
+   \ifcsname\??vspacing#1\endcsname
+     \lastnamedcs
+   \else
+     \spac_vspacing_yes_preset{#1}%
+   \fi}
+
+\def\spac_vspacing_yes_preset#1%
+  {\setxvalue{\??vspacing#1}{\clf_vspacing{#1}}%
+  %\writestatus{}{}%
+  %\writestatus{#1}{\expandafter\meaning\csname\??vspacing#1\endcsname}%
+  %\writestatus{}{}%
+   \csname\??vspacing#1\endcsname}
+
+\def\spac_vspacing_yes_indeed[#1]%
+  {\ifmmode\else
+     \directvspacing{#1}%
+   \fi}
+
+\def\spac_vspacing_nop_indeed
+  {\ifmmode\else
+     \directvspacing\currentvspacing
+   \fi}
+
+\def\directdefaultvspacing
+  {\ifinpagebody % somewhat weird
+     \directvspacing\currentvspacing
+   \else\ifconditional\c_spac_packed_blank
+     \directvspacing\currentvspacing
+   \fi\fi}
 
 \def\directcheckedvspacing
   {\ifinpagebody % somewhat weird
@@ -2101,17 +2191,10 @@
      \doubleexpandafter\gobbleoneargument
    \fi\fi}
 
-\def\directdefaultvspacing
-  {\ifinpagebody % somewhat weird
-     \clf_vspacing{\currentvspacing}%
-   \else\ifconditional\c_spac_packed_blank
-     \clf_vspacing{\currentvspacing}%
-   \fi\fi}
-
 \unexpanded\def\useblankparameter#1% faster local variant
   {\edef\m_spac_blank_asked{#1\c!blank}%
    \ifx\m_spac_blank_asked\empty\else
-     \clf_vspacing{\m_spac_blank_asked}
+     \directvspacing\m_spac_blank_asked
    \fi}
 
 % handy (and faster):
@@ -2418,12 +2501,13 @@
    \scratchwidth\dimexpr\wd\nextbox+\scratchdistance\relax
    \ifx\m_spac_hanging_location\v!right
      \hangindent\ifconditional\displaylefttoright-\fi\scratchwidth
-     \rlap{\hskip\dimexpr\hsize-\wd\nextbox\relax\box\nextbox}%
+     \rlap{\hskip\dimexpr\hsize-\leftskip-\wd\nextbox\relax\box\nextbox}% \leftskip is new
    \else
      \hangindent\ifconditional\displaylefttoright\else-\fi\scratchwidth
      \llap{\box\nextbox\hskip\scratchdistance}%
    \fi
    \ignorespaces}
+
 
 %D \macros
 %D   {startfixed}

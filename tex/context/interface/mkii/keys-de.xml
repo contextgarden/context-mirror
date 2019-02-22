@@ -140,6 +140,7 @@
 		<cd:variable name='chemicals' value='chemicals'/>
 		<cd:variable name='chemistry' value='chemistry'/>
 		<cd:variable name='cite' value='cite'/>
+		<cd:variable name='closed' value='closed'/>
 		<cd:variable name='color' value='farbe'/>
 		<cd:variable name='column' value='column'/>
 		<cd:variable name='columns' value='spalten'/>
@@ -421,7 +422,7 @@
 		<cd:variable name='positive' value='positiv'/>
 		<cd:variable name='postponing' value='verschieben'/>
 		<cd:variable name='postscript' value='postscript'/>
-		<cd:variable name='precedingpage' value='followingpage'/>
+		<cd:variable name='precedingpage' value='precedingpage'/>
 		<cd:variable name='preference' value='einstellung'/>
 		<cd:variable name='preview' value='vorschau'/>
 		<cd:variable name='previous' value='vorig'/>
@@ -589,6 +590,7 @@
 		<cd:variable name='understrike' value='understrike'/>
 		<cd:variable name='understrikes' value='understrikes'/>
 		<cd:variable name='unframed' value='unframed'/>
+		<cd:variable name='unicode' value='unicode'/>
 		<cd:variable name='unit' value='einheit'/>
 		<cd:variable name='units' value='einheiten'/>
 		<cd:variable name='unknown' value='unbekannt'/>
@@ -1033,6 +1035,7 @@
 		<cd:constant name='otherstext' value='otherstext'/>
 		<cd:constant name='outermargin' value='outermargin'/>
 		<cd:constant name='overprint' value='overprint'/>
+		<cd:constant name='ownerpassword' value='ownerpassword'/>
 		<cd:constant name='ownnumber' value='eigenenummer'/>
 		<cd:constant name='page' value='seite'/>
 		<cd:constant name='pageboundaries' value='seitenbegrenzung'/>
@@ -1246,6 +1249,7 @@
 		<cd:constant name='textstyle' value='textstil'/>
 		<cd:constant name='textwidth' value='textbreite'/>
 		<cd:constant name='threshold' value='threshold'/>
+		<cd:constant name='time' value='time'/>
 		<cd:constant name='title' value='titel'/>
 		<cd:constant name='titlecolor' value='titelfarbe'/>
 		<cd:constant name='titlecommand' value='titlecommand'/>
@@ -1274,12 +1278,14 @@
 		<cd:constant name='up' value='up'/>
 		<cd:constant name='urlalternative' value='urlalternative'/>
 		<cd:constant name='urlspace' value='urlspatium'/>
+		<cd:constant name='userpassword' value='userpassword'/>
 		<cd:constant name='validate' value='validieren'/>
 		<cd:constant name='values' value='values'/>
 		<cd:constant name='vcommand' value='vbefehl'/>
 		<cd:constant name='vcompact' value='vcompact'/>
 		<cd:constant name='vector' value='vector'/>
 		<cd:constant name='veroffset' value='kopfoffset'/>
+		<cd:constant name='vfactor' value='vfaktor'/>
 		<cd:constant name='vfil' value='vfil'/>
 		<cd:constant name='viewerprefix' value='viewerprefix'/>
 		<cd:constant name='voffset' value='voffset'/>

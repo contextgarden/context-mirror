@@ -54,8 +54,6 @@ local settings_to_hash   = utilities.parsers.settings_to_hash
 local tasks              = nodes.tasks
 
 local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-local tonode             = nuts.tonode
 
 local getfield           = nuts.getfield
 local getnext            = nuts.getnext
@@ -65,8 +63,10 @@ local getattr            = nuts.getattr
 local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
-local getdir             = nuts.getdir
+local getdirection       = nuts.getdirection
 local getwidth           = nuts.getwidth
+local getdata            = nuts.getdata
+
 local getboxglue         = nuts.getboxglue
 
 local setattr            = nuts.setattr
@@ -78,12 +78,14 @@ local find_node_tail     = nuts.tail
 local flush_node         = nuts.flush_node
 local flush_node_list    = nuts.flush_list
 local copy_node_list     = nuts.copy_list
-local traverse_nodes     = nuts.traverse
-local traverse_ids       = nuts.traverse_id
 local hpack_nodes        = nuts.hpack
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local protect_glyphs     = nuts.protect_glyphs
+
+local nextnode           = nuts.traversers.next
+local nexthlist          = nuts.traversers.hlist
+local nextwhatsit        = nuts.traversers.whatsit
 
 local repack_hlist       = nuts.repackhlist
 
@@ -108,13 +110,15 @@ local whatsit_code       = nodecodes.whatsit
 
 local fontkern_code      = kerncodes.fontkern
 
-local userdefined_code   = whatsitcodes.userdefined
+local userdefinedwhatsit_code = whatsitcodes.userdefined
+
+local nodeproperties     = nodes.properties.data
 
 local nodepool           = nuts.pool
 local usernodeids        = nodepool.userids
 
-local new_textdir        = nodepool.textdir
-local new_usernumber     = nodepool.usernumber
+local new_direction      = nodepool.direction
+local new_usernode       = nodepool.usernode
 local new_glue           = nodepool.glue
 local new_leftskip       = nodepool.leftskip
 
@@ -237,7 +241,6 @@ local function convert(featuresets,name,list)
                 fs = contextsetups[feature]
                 fn = fs and fs.number
             end
--- inspect(fs)
             if fn then
                 nofnumbers = nofnumbers + 1
                 numbers[nofnumbers] = fn
@@ -344,20 +347,23 @@ directives.register("builders.paragraphs.solutions.splitters.encapsulate", funct
     encapsulate = v
 end)
 
-function splitters.split(head)
-    -- quite fast
-    head = tonut(head)
-    local current, done, rlmode, start, stop, attribute = head, false, false, nil, nil, 0
-    cache, max_less, max_more = { }, 0, 0
+function splitters.split(head) -- best also pass the direction
+    local current   = head
+    local r2l       = false
+    local start     = nil
+    local stop      = nil
+    local attribute = 0
+    cache           = { }
+    max_less        = 0
+    max_more        = 0
     local function flush() -- we can move this
         local font = getfont(start)
         local last = getnext(stop)
---         local list = last and copy_node_list(start,last) or copy_node_list(start)
-        local list = last and copy_node_list(start,stop) or copy_node_list(start)
-        local n = #cache + 1
+        local list = last and copy_node_list(start,last) or copy_node_list(start)
+        local n    = #cache + 1
         if encapsulate then
-            local user_one = new_usernumber(splitter_one,n)
-            local user_two = new_usernumber(splitter_two,n)
+            local user_one = new_usernode(splitter_one,n)
+            local user_two = new_usernode(splitter_two,n)
             head, start = insert_node_before(head,start,user_one)
             insert_node_after(head,stop,user_two)
         else
@@ -371,9 +377,8 @@ function splitters.split(head)
                 end
             end
         end
-        local r2l = rlmode == "TRT" or rlmode == "+TRT"
         if r2l then
-            local dirnode = new_textdir("+TRT")
+            local dirnode = new_direction(righttoleft) -- brrr, we don't pop ... to be done (when used at all)
             setlink(dirnode,list)
             list = dirnode
         end
@@ -393,7 +398,7 @@ function splitters.split(head)
         local m = #solution.more
         if l > max_less then max_less = l end
         if m > max_more then max_more = m end
-        start, stop, done = nil, nil, true
+        start, stop = nil, nil
     end
     while current do -- also ischar
         local next = getnext(current)
@@ -422,11 +427,19 @@ function splitters.split(head)
             else
                 start, stop = nil, nil
             end
-        elseif id == dir_code or id == localpar_code then
+        elseif id == dir_code then
+            -- not tested (to be done by idris when font is ready)
             if start then
                 flush()
             end
-            rlmode = getdir(current)
+            local direction, pop = getdirection(current)
+            r2l = not pop and direction == righttoleft
+        elseif id == localpar_code and getsubtype(current) == 0 then
+            if start then
+                flush() -- very unlikely as this starts a paragraph
+            end
+            local direction = getdirection(current)
+            r2l = direction == righttoleft or direction == "TRT" -- for old times sake
         else
             if start then
                 flush()
@@ -438,31 +451,37 @@ function splitters.split(head)
         flush()
     end
     nofparagraphs = nofparagraphs + 1
-    nofwords = nofwords + #cache
-    return tonode(head), done
+    nofwords      = nofwords + #cache
+    return head
 end
 
 local function collect_words(list) -- can be made faster for attributes
-    local words, w, word = { }, 0, nil
+    local words = { }
+    local w     = 0
+    local word  = nil
     if encapsulate then
-        for current in traverse_ids(whatsit_code,list) do
-            if getsubtype(current) == userdefined_code then -- hm
-                local user_id = getfield(current,"user_id")
-                if user_id == splitter_one then
-                    word = { getfield(current,"value"), current, current }
-                    w = w + 1
-                    words[w] = word
-                elseif user_id == splitter_two then
-                    if word then
-                        word[3] = current
-                    else
-                        -- something is wrong
+        for current, subtype in nextwhatsit, list do
+            if subtype == userdefinedwhatsit_code then -- hm
+                local p = nodeproperties[current]
+                if p then
+                    local user_id = p.id
+                    if user_id == splitter_one then
+                        word = { p.data, current, current }
+                        w = w + 1
+                        words[w] = word
+                    elseif user_id == splitter_two then
+                        if word then
+                            word[3] = current
+                        else
+                            -- something is wrong
+                        end
                     end
                 end
             end
         end
     else
-        local current, first, last, index = list, nil, nil, nil
+        local first, last, index
+        local current = list
         while current do
             -- todo: disc and kern
             local id = getid(current)
@@ -527,7 +546,9 @@ local function collect_words(list) -- can be made faster for attributes
         if trace_split then
             for i=1,#words do
                 local w = words[i]
-                local n, f, l = w[1], w[2], w[3]
+                local n = w[1]
+                local f = w[2]
+                local l = w[3]
                 local c = cache[n]
                 if c then
                     report_splitters("found %4i: word %a, cached %a",n,nodes_to_utf(f,true,true,l),nodes_to_utf(c.original,true))
@@ -584,21 +605,20 @@ local function doit(word,list,best,width,badness,line,set,listdir)
                 noftries = noftries + 1
                 local first = copy_node_list(original)
                 if not trace_colors then
-                    for n in traverse_nodes(first) do -- maybe fast force so no attr needed
+                    for n in nextnode, first do -- maybe fast force so no attr needed
                         setattr(n,0,featurenumber) -- this forces dynamics
                     end
                 elseif set == "less" then
-                    for n in traverse_nodes(first) do
+                    for n in nextnode, first do
                         setnodecolor(n,"font:isol") -- yellow
                         setattr(n,0,featurenumber)
                     end
                 else
-                    for n in traverse_nodes(first) do
+                    for n in nextnode, first do
                         setnodecolor(n,"font:medi") -- green
                         setattr(n,0,featurenumber)
                     end
                 end
-first = tonode(first)
                 local font = found.font
                 local setdynamics = setfontdynamics[font]
                 if setdynamics then
@@ -610,7 +630,6 @@ first = tonode(first)
                     report_solutions("fatal error, no dynamics for font %a",font)
                 end
                 first = inject_kerns(first)
-first = tonut(first)
                 if getid(first) == whatsit_code then
                     local temp = first
                     first = getnext(first)
@@ -753,19 +772,19 @@ function splitters.optimize(head)
     if trace_optimize then
         report_optimizers("preroll %a, variant %a, criterium %a, cache size %a",preroll,variant,criterium,nc)
     end
-    for current in traverse_ids(hlist_code,tonut(head)) do
+    for current in nexthlist, head do
         line = line + 1
-        local sign  = getfield(current,"glue_sign")
-        local dir   = getdir(current)
-        local width = getwidth(current)
-        local list  = getlist(current)
+        local sign      = getfield(current,"glue_sign")
+        local direction = getdirection(current)
+        local width     = getwidth(current)
+        local list      = getlist(current)
         if not encapsulate and getid(list) == glyph_code then
             -- nasty .. we always assume a prev being there .. future luatex will always have a leftskip set
             -- is this assignment ok ? .. needs checking
             list = insert_node_before(list,list,new_leftskip(0)) -- new_glue(0)
             setlist(current,list)
         end
-        local temp, badness = repack_hlist(list,width,'exactly',dir) -- it would be nice if the badness was stored in the node
+        local temp, badness = repack_hlist(list,width,"exactly",direction) -- it would be nice if the badness was stored in the node
         if badness > 0 then
             if sign == 0 then
                 if trace_optimize then
@@ -785,7 +804,8 @@ function splitters.optimize(head)
                     set, max = "less", max_less
                 end
                 -- we can keep the best variants
-                local lastbest, lastbadness = nil, badness
+                local lastbest    = nil
+                local lastbadness = badness
                 if preroll then
                     local bb, base
                     for i=1,max do
@@ -858,7 +878,7 @@ statistics.register("optimizer statistics", function()
     if nofwords > 0 then
         local elapsed = statistics.elapsedtime(splitters)
         local average = noftries/elapsed
-        return format("%s words identified in %s paragraphs, %s words retried, %s lines tried, %0.3f seconds used, %s adapted, %0.1f lines per second",
+        return format("%s words identified in %s paragraphs, %s words retried, %s lines tried, %s seconds used, %s adapted, %0.1f lines per second",
             nofwords,nofparagraphs,noftries,nofadapted+nofkept,elapsed,nofadapted,average)
     end
 end)

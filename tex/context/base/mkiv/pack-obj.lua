@@ -13,8 +13,10 @@ reusable components.</p>
 
 local context         = context
 local codeinjections  = backends.codeinjections
-
 local ctx_doifelse    = commands.doifelse
+
+local report          = logs.reporter("objects")
+local trace           = false  trackers.register("objects",function(v) trace = v end)
 
 local nuts            = nodes.nuts
 
@@ -26,10 +28,7 @@ local new_latelua     = nuts.pool.latelua
 
 local settexdimen     = tokens.setters.dimen
 
-local gettexbox       = tokens.getters.box
-local settexbox       = tokens.setters.box
-local gettexdimen     = tokens.getters.dimen
-local gettexcount     = tokens.getters.count
+local getcount        = tex.getcount
 
 local implement       = interfaces.implement
 local setmacro        = interfaces.setmacro
@@ -54,8 +53,16 @@ end
 job.register('job.objects.collected', tobesaved, initializer, nil)
 
 local function saveobject(tag,number,page)
-    local t = { number, page }
-    tobesaved[tag], collected[tag] = t, t
+    local data = { number, page }
+    tobesaved[tag] = data
+    collected[tag] = data
+end
+
+local function saveobjectspec(specification)
+    local tag  = specification.tag
+    local data = { specification.number, specification.page }
+    tobesaved[tag] = data
+    collected[tag] = data
 end
 
 local function setobject(tag,number,page)
@@ -128,8 +135,9 @@ objects = {
 local objects = objects
 
 function objects.register(ns,id,b,referenced,offset,mode)
-    objects.n = objects.n + 1
-    nodes.handlers.finalize(gettexbox(b),"object")
+    local n = objects.n + 1
+    objects.n = n
+    nodes.handlers.finalizebox(b)
     if mode == 0 then
         -- tex
         data[ns][id] = {
@@ -147,6 +155,9 @@ function objects.register(ns,id,b,referenced,offset,mode)
             mode,
         }
     end
+    if trace then
+        report("registering object %a (n=%i)",id,n)
+    end
 end
 
 function objects.restore(ns,id) -- why not just pass a box number here too (ok, we also set offset)
@@ -159,9 +170,12 @@ function objects.restore(ns,id) -- why not just pass a box number here too (ok, 
         local hbox   = codeinjections.restoreboxresource(index) -- a nut !
         if status then
             local list = getlist(hbox)
-            local page = new_latelua(function()
-                saveobject(ns .. "::" .. id,index,gettexcount("realpageno"))
-            end)
+            local page = new_latelua {
+                action = saveobjectspec,
+                tag    = ns .. "::" .. id,
+                number = index,
+                page   = getcount("realpageno"),
+            }
             setlink(list,page)
         end
         setbox("objectbox",hbox)
@@ -169,6 +183,9 @@ function objects.restore(ns,id) -- why not just pass a box number here too (ok, 
     else
         setbox("objectbox",nil)
         settexdimen("objectoff",0) -- for good old times
+    end
+    if trace then
+        report("restoring object %a",id)
     end
 end
 
@@ -191,7 +208,7 @@ function objects.reference(ns,id)
 end
 
 function objects.page(ns,id)
-    return getobjectpage(ns .."::" .. id,gettexcount("realpageno"))
+    return getobjectpage(ns .."::" .. id,getcount("realpageno"))
 end
 
 function objects.found(ns,id)

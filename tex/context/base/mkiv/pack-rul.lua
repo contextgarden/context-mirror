@@ -20,42 +20,50 @@ if not modules then modules = { } end modules ['pack-rul'] = {
 
 local type = type
 
-local context         = context
+local context           = context
 
-local hlist_code      = nodes.nodecodes.hlist
-local vlist_code      = nodes.nodecodes.vlist
-local box_code        = nodes.listcodes.box
-local line_code       = nodes.listcodes.line
-local equation_code   = nodes.listcodes.equation
+local nodecodes         = nodes.nodecodes
+local listcodes         = nodes.listcodes
 
-local texsetdimen     = tex.setdimen
-local texsetcount     = tex.setcount
+local hlist_code        = nodecodes.hlist
+local vlist_code        = nodecodes.vlist
 
-local implement       = interfaces.implement
+local boxlist_code      = listcodes.box
+local linelist_code     = listcodes.line
+local equationlist_code = listcodes.equation
 
-local nuts            = nodes.nuts
+local texsetdimen       = tex.setdimen
+local texsetcount       = tex.setcount
 
-local getnext         = nuts.getnext
-local getprev         = nuts.getprev
-local getlist         = nuts.getlist
-local setlist         = nuts.setlist
-local getwhd          = nuts.getwhd
-local getid           = nuts.getid
-local getsubtype      = nuts.getsubtype
-local getbox          = nuts.getbox
-local getdir          = nuts.getdir
-local setshift        = nuts.setshift
-local setwidth        = nuts.setwidth
-local getwidth        = nuts.getwidth
-local setboxglue      = nuts.setboxglue
-local getboxglue      = nuts.getboxglue
+local implement         = interfaces.implement
 
-local hpack           = nuts.hpack
-local traverse_id     = nuts.traverse_id
-local list_dimensions = nuts.dimensions
-local flush_node      = nuts.flush
+local nuts              = nodes.nuts
 
-local checkformath    = false
+local getnext           = nuts.getnext
+local getprev           = nuts.getprev
+local getlist           = nuts.getlist
+local setlist           = nuts.setlist
+local getwhd            = nuts.getwhd
+local getid             = nuts.getid
+local getsubtype        = nuts.getsubtype
+local getbox            = nuts.getbox
+local getdirection      = nuts.getdirection
+local setshift          = nuts.setshift
+local setwidth          = nuts.setwidth
+local getwidth          = nuts.getwidth
+local setboxglue        = nuts.setboxglue
+local getboxglue        = nuts.getboxglue
+
+local hpack             = nuts.hpack
+local getdimensions     = nuts.dimensions
+local flush_node        = nuts.flush
+
+local traversers        = nuts.traversers
+local nexthlist         = traversers.hlist
+local nextvlist         = traversers.vlist
+local nextlist          = traversers.list
+
+local checkformath      = false
 
 directives.register("framed.checkmath",function(v) checkformath = v end) -- experiment
 
@@ -76,24 +84,25 @@ local function doreshapeframedbox(n)
     if boxwidth ~= 0 then -- and h.subtype == vlist_code
         local list = getlist(box)
         if list then
-            local function check(n,repack)
+            local hdone = false
+            for n, id, subtype, list in nextlist, list do -- no dir etc needed
                 local width, height, depth = getwhd(n)
                 if not firstheight then
                     firstheight = height
                 end
                 lastdepth = depth
                 noflines  = noflines + 1
-                local l   = getlist(n)
-                if l then
-                    if repack then
-                        local subtype = getsubtype(n)
-                        if subtype == box_code or subtype == line_code then
-                            lastlinelength = list_dimensions(l,getdir(n))
+                if list then
+                    if id == hlist_code then
+                        if subtype == boxlist_code or subtype == linelist_code then
+                            lastlinelength = getdimensions(list)
                         else
                             lastlinelength = width
                         end
+                        hdone = true
                     else
                         lastlinelength = width
+                     -- vdone = true
                     end
                     if lastlinelength > maxwidth then
                         maxwidth = lastlinelength
@@ -107,31 +116,19 @@ local function doreshapeframedbox(n)
                     totalwidth = totalwidth + lastlinelength
                 end
             end
-            local hdone = false
-            for h in traverse_id(hlist_code,list) do -- no dir etc needed
-                check(h,true)
-                hdone = true
-            end
-         -- local vdone = false
-            for v in traverse_id(vlist_code,list) do -- no dir etc needed
-                check(v,false)
-             -- vdone = true
-            end
             if not firstheight then
                 -- done)
             elseif maxwidth ~= 0 then
                 if hdone then
-                    for h in traverse_id(hlist_code,list) do
-                        local l = getlist(h)
-                        if l then
-                            local subtype = getsubtype(h)
-                            if subtype == box_code or subtype == line_code then
-                                local p = hpack(l,maxwidth,'exactly',getdir(h)) -- multiple return value
+                    for h, id, subtype, list in nextlist, list do
+                        if list and id == hlist_code then
+                            if subtype == boxlist_code or subtype == linelist_code then
+                                local p = hpack(list,maxwidth,'exactly',getdirection(h)) -- multiple return value
                                 local set, order, sign = getboxglue(p)
                                 setboxglue(h,set,order,sign)
                                 setlist(p)
                                 flush_node(p)
-                            elseif checkformath and subtype == equation_code then
+                            elseif checkformath and subtype == equationlist_code then
                              -- display formulas use a shift
                                 if nofnonzero == 1 then
                                     setshift(h,0)
@@ -142,7 +139,7 @@ local function doreshapeframedbox(n)
                     end
                 end
              -- if vdone then
-             --     for v in traverse_id(vlist_code,list) do
+             --     for v in nextvlist, list do
              --         local width = getwidth(n)
              --         if width > maxwidth then
              --             setwidth(v,maxwidth)
@@ -164,7 +161,7 @@ local function doreshapeframedbox(n)
     texsetdimen("global","framedaveragewidth",averagewidth)
 end
 
-local function doanalyzeframedbox(n)
+local function doanalyzeframedbox(n) -- traverse_list
     local box         = getbox(n)
     local noflines    = 0
     local firstheight = nil
@@ -172,7 +169,7 @@ local function doanalyzeframedbox(n)
     if getwidth(box) ~= 0 then
         local list = getlist(box)
         if list then
-            local function check(n)
+            for n in nexthlist, list do
                 local width, height, depth = getwhd(n)
                 if not firstheight then
                     firstheight = height
@@ -180,11 +177,13 @@ local function doanalyzeframedbox(n)
                 lastdepth = depth
                 noflines  = noflines + 1
             end
-            for h in traverse_id(hlist_code,list) do
-                check(h)
-            end
-            for v in traverse_id(vlist_code,list) do
-                check(v)
+            for n in nextvlist, list do
+                local width, height, depth = getwhd(n)
+                if not firstheight then
+                    firstheight = height
+                end
+                lastdepth = depth
+                noflines  = noflines + 1
             end
         end
     end
@@ -210,16 +209,11 @@ local function maxboxwidth(box)
     end
     local lastlinelength = 0
     local maxwidth       = 0
-    local function check(n,repack)
+    for n, subtype in nexthlist, list do -- no dir etc needed
         local l = getlist(n)
         if l then
-            if repack then
-                local subtype = getsubtype(n)
-                if subtype == box_code or subtype == line_code then
-                    lastlinelength = list_dimensions(l,getdir(n))
-                else
-                    lastlinelength = getwidth(n)
-                end
+            if subtype == boxlist_code or subtype == linelist_code then
+                lastlinelength = getdimensions(l)
             else
                 lastlinelength = getwidth(n)
             end
@@ -228,11 +222,14 @@ local function maxboxwidth(box)
             end
         end
     end
-    for h in traverse_id(hlist_code,list) do -- no dir etc needed
-        check(h,true)
-    end
-    for v in traverse_id(vlist_code,list) do -- no dir etc needed
-        check(v,false)
+    for n, subtype in nextvlist, list do -- no dir etc needed
+        local l = getlist(n)
+        if l then
+            lastlinelength = getwidth(n)
+            if lastlinelength > maxwidth then
+                maxwidth = lastlinelength
+            end
+        end
     end
     return maxwidth
 end

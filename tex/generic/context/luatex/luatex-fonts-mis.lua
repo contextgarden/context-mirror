@@ -7,7 +7,6 @@ if not modules then modules = { } end modules ['luatex-font-mis'] = {
 }
 
 if context then
-    texio.write_nl("fatal error: this module is not for context")
     os.exit()
 end
 
@@ -30,3 +29,7 @@ table.setmetatableindex(marks,function(t,k)
         return marks
     end
 end)
+
+function font.each()
+    return table.sortedhash(fonts.hashes.identifiers)
+end

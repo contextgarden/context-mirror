@@ -73,7 +73,7 @@
 \newsystemmode{combination}
 
 \appendtoks
-    \global\resetsystemmode{combination}%
+    \globalresetsystemmode{combination}%
 \to \everyinsidefloat
 
 \newcount\c_pack_combinations_nesting  % local
@@ -113,7 +113,7 @@
      \setbox\b_pack_combinations_content_saved \box\b_pack_combinations_content
      \setbox\b_pack_combinations_caption_saved \box\b_pack_combinations_caption
    \else
-     \global\setsystemmode{combination}% why global
+     \globalsetsystemmode{combination}% why global
    \fi}
 
 \def\pack_combinations_pop
@@ -126,7 +126,7 @@
      \setbox\b_pack_combinations_content        \box\b_pack_combinations_content_saved
      \setbox\b_pack_combinations_caption        \box\b_pack_combinations_caption_saved
    \else
-     \global\resetsystemmode{combination}% why global
+     \globalresetsystemmode{combination}% why global
    \fi
    \advance\c_pack_combinations_nesting\minusone}
 
@@ -205,7 +205,7 @@
 %   {\bgroup
 %    \scratchtoks{{}}%
 %    \dorecurse\c_pack_combinations_y
-%      {\scratchtoks\expandafter{\the\scratchtoks{}{}}}%
+%      {\toksapp{{}{}}}%
 %    \expandafter\egroup\the\scratchtoks
 %    \egroup
 %    \dostoptagged
@@ -290,7 +290,7 @@
    \alignmark\alignmark
    \m_pack_combinations_rightfiller
    \aligntab
-   \tabskip\zeropoint \s!plus 1fill
+   \tabskip\zeropoint \s!plus 1fill % \fillskip
    \alignmark\alignmark
    \cr
    \pack_combinations_pickup}
@@ -437,10 +437,10 @@
         \nointerlineskip % indeed
         \combinationparameter\c!inbetween
         \global\c_pack_combinations_x\c_pack_combinations_max
-        \globallet\pack_combinations_flush_captions_indeed\pack_combinations_flush_captions_yes
+        \glet\pack_combinations_flush_captions_indeed\pack_combinations_flush_captions_yes
       \else
         \global\setbox\b_pack_combinations_captions\emptybox
-        \globallet\pack_combinations_flush_captions_indeed\pack_combinations_flush_captions_nop
+        \glet\pack_combinations_flush_captions_indeed\pack_combinations_flush_captions_nop
       \fi}%
    \pack_combinations_flush_captions_indeed
    \crcr}
@@ -656,7 +656,7 @@
 \newsystemmode{pairedbox}
 
 \appendtoks
-    \global\resetsystemmode{pairedbox}%
+    \globalresetsystemmode{pairedbox}%
 \to \everyinsidefloat
 
 \installcorenamespace {pairedbox}
@@ -720,7 +720,7 @@
    \let\startcaption\pack_common_caption_start
    \let\stopcaption \pack_common_caption_stop
    %
-   \global\setsystemmode{pairedbox}%
+   \globalsetsystemmode{pairedbox}%
    \pack_pairedboxes_before
    \assumelongusagecs\pack_pairedboxes_first_pickup}
 

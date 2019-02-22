@@ -22,26 +22,37 @@ if not modules then modules = { } end modules ['cldf-bas'] = {
 --     flush(ctxcatcodes,"}")
 -- end
 
-local tonumber     = tonumber
-local type         = type
-local format       = string.format
-local utfchar      = utf.char
-local concat       = table.concat
+local tonumber      = tonumber
+local type          = type
+local format        = string.format
+local utfchar       = utf.char
+local concat        = table.concat
 
-local context      = context
-local ctxcore      = context.core
-local variables    = interfaces.variables
+local context       = context
+local ctxcore       = context.core
 
-local nodepool     = nodes.pool
-local new_rule     = nodepool.rule
-local new_glyph    = nodepool.glyph
-local current_attr = nodes.current_attr
+local variables     = interfaces.variables
 
-local current_font = font.current
-local texgetcount  = tex.getcount
-local texsetcount  = tex.setcount
+local ctx_flushnode = context.nuts.flush
+
+local nuts          = nodes.nuts
+local tonode        = nuts.tonode
+local nodepool      = nuts.pool
+local new_rule      = nodepool.rule
+local new_glyph     = nodepool.glyph
+local new_latelua   = nodepool.latelua
+
+local setattrlist   = nuts.setattrlist
+
+local texgetcount   = tex.getcount
+local texsetcount   = tex.setcount
 
 -- a set of basic fast ones
+
+function context.setfontid(n)
+    -- isn't there a setter?
+    context("\\setfontid%i\\relax",n)
+end
 
 function context.char(k) -- used as escape too, so don't change to utf
     if type(k) == "table" then
@@ -70,30 +81,35 @@ function context.utfchar(k)
     end
 end
 
-function context.rule(w,h,d,dir)
+function context.rule(w,h,d,direction)
     local rule
     if type(w) == "table" then
-        rule = new_rule(w.width,w.height,w.depth,w.dir)
+        rule = new_rule(w.width,w.height,w.depth,w.direction)
     else
-        rule = new_rule(w,h,d,dir)
+        rule = new_rule(w,h,d,direction)
     end
-    rule.attr = current_attr()
-    context(rule)
+    setattrlist(rule,true)
+    context(tonode(rule))
+ -- ctx_flushnode(tonode(rule))
 end
 
 function context.glyph(id,k)
     if id then
         if not k then
-            id, k = current_font(), id
+            id, k = true, id
         end
         local glyph = new_glyph(id,k)
-        glyph.attr = current_attr()
-        context(glyph)
+        setattrlist(glyph,true)
+        context(tonode(glyph))
+     -- ctx_flushnode(tonode(glyph))
     end
 end
 
-local function ctx_par  () context("\\par")   end
-local function ctx_space() context("\\space") end
+-- local function ctx_par  () context("\\par")   end
+-- local function ctx_space() context("\\space") end
+
+local ctx_par   = context.cs.par
+local ctx_space = context.cs.space
 
 context.par   = ctx_par
 context.space = ctx_space
@@ -101,8 +117,11 @@ context.space = ctx_space
 ctxcore.par   = ctx_par
 ctxcore.space = ctx_space
 
-local function ctx_bgroup() context("{") end
-local function ctx_egroup() context("}") end
+-- local function ctx_bgroup() context("{") end
+-- local function ctx_egroup() context("}") end
+
+local ctx_bgroup = context.cs.bgroup
+local ctx_egroup = context.cs.egroup
 
 context.bgroup = ctx_bgroup
 context.egroup = ctx_egroup
@@ -136,13 +155,21 @@ function ctxcore.flushboxregister(n)
     context(type(n) == "number" and [[\box%s ]] or [[\box\%s]],n)
 end
 
-function ctxcore.beginhbox() context([[\hbox{]]) end
-function ctxcore.beginvbox() context([[\vbox{]]) end
-function ctxcore.beginvtop() context([[\vtop{]]) end
+-- function ctxcore.beginhbox() context([[\hbox\bgroup]]) end
+-- function ctxcore.beginvbox() context([[\vbox\bgroup]]) end
+-- function ctxcore.beginvtop() context([[\vtop\bgroup]]) end
 
-ctxcore.endhbox = ctx_egroup
-ctxcore.endvbox = ctx_egroup
-ctxcore.endvtop = ctx_egroup
+local ctx_hbox = context.cs.hbox
+local ctx_vbox = context.cs.vbox
+local ctx_vtop = context.cs.vtop
+
+function ctxcore.beginhbox() ctx_hbox() ctx_bgroup() end
+function ctxcore.beginvbox() ctx_vbox() ctx_bgroup() end
+function ctxcore.beginvtop() ctx_vtop() ctx_bgroup() end
+
+ctxcore.endhbox = ctx_egroup -- \egroup
+ctxcore.endvbox = ctx_egroup -- \egroup
+ctxcore.endvtop = ctx_egroup -- \egroup
 
 local function allocate(name,what,cmd)
     local a = format("c_syst_last_allocated_%s",what)
@@ -165,3 +192,65 @@ context.registers = {
     -- not really a register but kind of belongs here
     newchar   = function(name,u) context([[\chardef\%s=%s\relax]],name,u) end,
 }
+
+do
+
+    if CONTEXTLMTXMODE > 1 then
+
+        function context.latelua(f)
+            -- table check moved elsewhere
+            local latelua = new_latelua(f)
+            setattrlist(latelua,true) -- will become an option
+            ctx_flushnode(latelua,true)
+        end
+
+    else
+
+        function context.latelua(f)
+            if type(f) == "table" then
+                local action        = f.action
+                local specification = f.specification or f
+                f = function() action(specification) end
+            end
+            local latelua = new_latelua(f)
+            setattrlist(latelua,true) -- will become an option
+            ctx_flushnode(latelua,true)
+        end
+
+    end
+
+end
+-- yes or no
+
+do
+
+    local NC = ctxcore.NC
+    local BC = ctxcore.BC
+    local NR = ctxcore.NR
+
+    context.nc = setmetatable({ }, {
+        __call =
+            function(t,...)
+                NC()
+                return context(...)
+            end,
+        __index =
+            function(t,k)
+                NC()
+                return context[k]
+            end,
+        }
+    )
+
+    function context.bc(...)
+        BC()
+        return context(...)
+    end
+
+    function context.nr(...)
+        NC()
+        NR()
+    end
+
+end
+

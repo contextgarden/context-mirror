@@ -69,8 +69,25 @@ function scripts.package.merge_luatex_files(name)
                     end
                 end
             end
-            report("saving %q",newname)
-            io.savedata(newname,table.concat(collected))
+            collected = table.concat(collected)
+            if environment.argument("stripcontext") then
+                local stripped = 0
+                local eol      = lpeg.patterns.eol
+                local space    = lpeg.patterns.space^0
+                local start    = eol * lpeg.P("if context then") * space * eol
+                local stop     = eol * (lpeg.P("else") + lpeg.P("end")) * space * eol
+                local noppes   = function()
+                    stripped = stripped + 1
+                    return "\n--removed\n"
+                end
+                local pattern = lpeg.Cs((start * ((1-stop)^1/noppes) * stop + lpeg.P(1))^0)
+                collected = lpeg.match(pattern,collected)
+                if stripped > 0 then
+                    report("%i context specific sections stripped",stripped)
+                end
+            end
+            report("saving %q (%i bytes)",newname,#collected)
+            io.savedata(newname,collected)
         end
     end
 end

@@ -79,17 +79,17 @@
 
 \setvalue{\??paragraphintro\v!first}#1%
   {\global\settrue\c_spac_paragraphs_intro_first
-   \global\t_spac_paragraphs_intro_first\expandafter{\the\t_spac_paragraphs_intro_first#1}%
+   \gtoksapp\t_spac_paragraphs_intro_first{#1}%
    \glet\insertparagraphintro\spac_paragraphs_flush_intro}
 
 \setvalue{\??paragraphintro\v!next}#1%
   {\global\settrue\c_spac_paragraphs_intro_next
-   \global\t_spac_paragraphs_intro_next\expandafter{\the\t_spac_paragraphs_intro_next#1}%
+   \gtoksapp\t_spac_paragraphs_intro_next{#1}%
    \glet\insertparagraphintro\spac_paragraphs_flush_intro}
 
 \setvalue{\??paragraphintro\v!each}#1%
   {\global\settrue\c_spac_paragraphs_intro_each
-   \global\t_spac_paragraphs_intro_each\expandafter{\the\t_spac_paragraphs_intro_each#1}%
+   \gtoksapp\t_spac_paragraphs_intro_each{#1}%
    \glet\insertparagraphintro\spac_paragraphs_flush_intro}
 
 %D We can say:
@@ -130,7 +130,7 @@
 
 \unexpanded\def\flushatparagraph#1%
   {\global\c_spac_paragraphs_intro_first\plusone
-   \global\t_spac_paragraphs_intro_first\expandafter{\the\t_spac_paragraphs_intro_first#1}%
+   \gtoksapp\t_spac_paragraphs_intro_first{#1}%
    \glet\insertparagraphintro\spac_paragraphs_flush_intro}
 
 %D Here comes the flusher (we misuse the one level expansion of token
@@ -221,19 +221,19 @@
    \dowithnextboxcs\spac_postponed_data_finish\hbox}
 
 \def\spac_postponed_data_finish
-  {\global\setbox\b_spac_postponed_data\hbox % to\zeropoint
+  {\global\setbox\b_spac_postponed_data\hpack % to\zeropoint
      {\box\b_spac_postponed_data\box\nextbox}%
    \endgroup}
 
 \def\spac_postponed_data_flush
   {%\iftrialtypesetting \else
      \ifvoid\b_spac_postponed_data\else
-       \hbox{\smashedbox\b_spac_postponed_data}% \box\b_spac_postponed_data
+       \hpack{\smashedbox\b_spac_postponed_data}% \box\b_spac_postponed_data
      \fi
      \glet\flushpostponednodedata\relax
    }%\fi}
 
-\unexpanded\def\doflushatpar
+\unexpanded\def\doflushatpar % might be renamed
   {\ifvmode
      \expandafter\flushatnextpar
    \else

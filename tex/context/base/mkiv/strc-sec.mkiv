@@ -35,6 +35,7 @@
    \c!label=,
    \c!coupling=,
    \c!ownnumber=,
+ % \c!interaction=\v!list,
    \c!sectionseparatorset=\s!default,
    \c!sectionconversionset=\s!default,
    \c!sectionstopper=,
@@ -53,6 +54,10 @@
 \def\m_strc_references_prefix_yes{+}
 \def\m_strc_references_prefix_nop{-}
 
+\let\currentstructurereferenceprefix\empty
+
+\installglobalmacrostack\currentstructurereferenceprefix
+
 \def\strc_sectioning_set_reference_prefix
   {\ifx\currentstructurereferenceprefix\empty
      % nothing
@@ -64,7 +69,7 @@
    \else
      \setupglobalreferenceprefix[\currentstructurereferenceprefix]%
    \fi\fi\fi
-   \let\currentstructurereferenceprefix\referenceprefix}
+   \glet\currentstructurereferenceprefix\referenceprefix}
 
 % why xdef ?
 
@@ -108,9 +113,10 @@
 
 \def\strc_sectioning_autobookmark#1%
   {\begingroup
+ % \settrialtypesetting
    \the\everypreroll
    \nodestostring\tempstring{#1}%
-   \globallet\currentstructurebookmark\tempstring
+   \glet\currentstructurebookmark\tempstring
    \endgroup}
 
 % zeros:
@@ -150,9 +156,9 @@
        \strc_sectioning_autobookmark\currentstructuretitle
      \fi \fi \fi
      \ifx\currentstructurelist\empty
-       \globallet\currentstructurelist\currentstructuretitle
+       \glet\currentstructurelist\currentstructuretitle
      \fi
-     \globallet\currentstructurecoding\s!xml
+     \glet\currentstructurecoding\s!xml
    \else
      \ifx\currentstructureexpansion\v!yes
        \xdef\currentstructuretitle   {\structureparameter\c!title}%
@@ -179,9 +185,9 @@
        \fi \fi
      \fi
      \ifx\currentstructurelist\empty
-       \globallet\currentstructurelist\currentstructuretitle
+       \glet\currentstructurelist\currentstructuretitle
      \fi
-     \globallet\currentstructurecoding\s!tex
+     \glet\currentstructurecoding\s!tex
    \fi
    \setnextinternalreference
    \storeinternalreference\currentstructurename{\the\locationcount}%
@@ -249,7 +255,7 @@
         userdata {\detokenize{#3}}% will be converted to table at the lua end
    \relax
    \xdef\currentstructurelistnumber{\clf_currentsectiontolist}%
-   % \currentstructuresynchronize has to be called someplace, since it introduces a node
+ % \currentstructuresynchronize has to be called someplace, since it introduces a node
    \setstructuresynchronization\currentstructurelistnumber
    \endgroup}
 
@@ -339,6 +345,9 @@
 \installcorenamespace{headmarknop}
 
 \installcommandhandler \??head {head} \??head
+
+\installmacrostack\currenthead
+\installmacrostack\currentheadparent
 
 \setuphead [%
     %\c!after=,
@@ -479,15 +488,17 @@
 \to \everysetuphead
 
 \unexpanded\def\doredefinehead#1#2% called at lua end
-  {\pushmacro\currenthead
-   \pushmacro\currentheadparent
+  {\push_macro_currenthead
+   \push_macro_currentheadparent
    \edef\currenthead{#1}%
    \edef\currentheadparent{#2}%
    \the\everyredefinehead\relax
-   \popmacro\currentheadparent
-   \popmacro\currenthead}
+   \pop_macro_currentheadparent
+   \pop_macro_currenthead}
 
 \let\currentnamedsection\empty
+
+\installmacrostack\currentnamedsection
 
 \unexpanded\def\startnamedsection
   {\dotripleempty\strc_sectioning_start_named_section}
@@ -577,7 +588,7 @@
    \fi}
 
 \def\strc_sectioning_setup_indeed[#1][#2][#3]%
-  {\pushmacro\currenthead
+  {\push_macro_currenthead
    \ifthirdargument
      \edef\currenthead{#1#2}%     % not used at any more in mkiv (sets now)
      \setupcurrenthead[#3]%
@@ -585,7 +596,7 @@
      \edef\currenthead{#1}%
      \setupcurrenthead[#2]%
    \fi
-   \popmacro\currenthead}
+   \pop_macro_currenthead}
 
 % we share the parameters as sections are roots of heads so eventually we can
 % consider \definesection -> \definehead with one argument
@@ -638,7 +649,8 @@
   {\strc_sectioning_handle{#1}{\c!reference={#2},\c!title={#3}}{}} % name ref nr title --
 
 \unexpanded\def\strc_sectioning_start_named_section[#1][#2][#3]% for the moment no grouping, too annoying with page breaks
-  {\pushmacro\currentnamedsection
+  {\push_macro_currentnamedsection
+   \push_macro_currentstructurereferenceprefix
    \edef\currentnamedsection{#1}%
    \setfalse\currentstructureown
   %\globalpushmacro\currenthead % this does not work out well
@@ -659,7 +671,8 @@
    \headparameter\c!aftersection
    \the\everyafterhead
    \resetsystemmode\currenthead
-   \popmacro\currentnamedsection} % new, also here now
+   \pop_macro_currentstructurereferenceprefix
+   \pop_macro_currentnamedsection} % new, also here now
 
 \let\dostarthead\strc_sectioning_start % used at lua end
 \let\dostophead \strc_sectioning_stop  % used at lua end
@@ -755,15 +768,25 @@
      \setfalse\headshownumber
    \fi}
 
+% Beware, we do need some node for anchoring marks and normally a zwnj will
+% do but it interferes so we deal with it at the \LUA\ end.
+
 \newtoks\everyheadsynchronization
+
+% \appendtoks
+%     \currentstructuresynchronize
+% \to \everyheadsynchronization
+
+\let\currentstructuresynchronize\donothing
 
 \appendtoks
     \currentstructuresynchronize
+    \glet\currentstructuresynchronize\donothing
 \to \everyheadsynchronization
 
 \unexpanded\def\theheadsynchonization
-  {\the\everyheadsynchronization
-   \currentstructuresynchronize}
+  {% no, interferes: \signalcharacter
+   \the\everyheadsynchronization}
 
 % BEWARE: \marking[section]{my text} does not work as we use list indices instead
 % so we need a 'keep track of raw set option' (or maybe a funny internal prefix)
@@ -801,6 +824,17 @@
 \let\currentheadsection \empty
 \let\currentheadlevel   \!!zerocount
 \let\currentheadcounter \!!zerocount
+
+\let\strc_show_used\relax
+
+\installtextracker
+  {structures.showused}
+  {\let\strc_show_used\clf_showstructure}
+  {\let\strc_show_used\relax}
+
+\appendtoks
+    \strc_show_used
+\to \everystoptext
 
 \unexpanded\def\placeheadtext  {\dosingleempty\strc_sectioning_place_head_text  } % use with care
 \unexpanded\def\placeheadnumber{\dosingleempty\strc_sectioning_place_head_number} % use with care
@@ -842,6 +876,9 @@
 
 \ifdefined\triggerautostructurelevel \else \let\triggerautostructurelevel\relax \fi
 
+\newtoks\everybeforesectionheadhandle
+\newtoks\everyaftersectionheadhandle
+
 \def\strc_sectioning_handle#1#2#3% name data userdata (we can move #1 to the caller)
   {\xdef\currenthead        {#1}%
    \xdef\currentheadcoupling{\sectionheadcoupling\currenthead}%
@@ -855,7 +892,7 @@
    \strc_sectioning_initialize_placement
    \strc_sectioning_initialize_number
    %
-   \flushingcolumnfloatsfalse
+   \the\everybeforesectionheadhandle
    %
    % todo: also mark (for header)
    %
@@ -941,7 +978,9 @@
        \strc_sectioning_after_nop
      \fi\fi
    \fi
-   \flushingcolumnfloatstrue
+   %
+   \the\everyaftersectionheadhandle
+   %
    \setfalse\c_strc_sectioning_ignore_page
    % ignorespaces prevents spaces creeping in when after=\dontleavehmode
    \dostarttagged\t!sectioncontent\empty
@@ -983,8 +1022,8 @@
 \unexpanded\def\strc_rendering_place_head_section % see hidden below
   {\global\setbox\b_sectioning_delayed\hpack\bgroup
      \setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}%
-     \hpack\headreferenceattributes{}%
-     \currentstructuresynchronize
+     \hpack\headreferenceattributes{}% also does the mark
+     \theheadsynchonization
    \egroup}
 
 \unexpanded\def\strc_rendering_place_head_hidden % maybe trialtypesetting check
@@ -994,7 +1033,7 @@
      {\noexpand\letgvalue{\??hiddenheadsync\currenthead}\relax
       \noexpand\setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}%
       \hpack\headreferenceattributes{}% otherwise no destination ... maybe tag ref as hidden and fall back on page reference
-      \currentstructuresynchronize}} % and it's a node anyway
+      \theheadsynchonization}} % and it's a node anyway
 
 \def\synchronizehead           #1{\csname\??hiddenheadsync#1\endcsname}
 \def\theheadreferenceattributes#1{\csname\??hiddenheadattr#1\endcsname}
@@ -1002,6 +1041,26 @@
 \unexpanded\def\placerawheaddata  [#1]{\synchronizehead{#1}}
 \unexpanded\def\placerawheadtext  [#1]{\getspecificstructuretitle{\thenamedheadlevel{#1}}}
 \unexpanded\def\placerawheadnumber[#1]{\getfullstructurenumber{\thenamedheadlevel{#1}}}
+
+\unexpanded\def\repeathead[#1]%
+  {\begingroup
+   \setupinteraction[\c!state=\v!stop]%
+   \def\currenthead{#1}
+   \strc_sectioning_initialize_placement
+   \strc_sectioning_initialize_number
+   \dostarttagged\t!sectioncaption\empty
+   \let\getheadsyncs \relax
+   \def\getheadtitle {\getmarking[#1]}
+   \def\getheadnumber{\getmarking[#1\v!number]}
+   \strc_sectioning_before_yes
+   \ifconditional\headshownumber
+      \strc_rendering_place_head_number_and_text
+   \else
+      \strc_rendering_place_head_text
+   \fi
+   \dostoptagged
+   \strc_sectioning_after_yes
+   \endgroup}
 
 % \setuphead[chapter][placehead=hidden]
 % \chapter {test}
@@ -1154,7 +1213,7 @@
    \else
      \strc_sectioning_check_layout
    \fi
-   \globallet\previoushead\currenthead}
+   \glet\previoushead\currenthead}
 
 \def\strc_sectioning_handle_page_yes
   {\ifconditional\c_strc_sectioning_ignore_page
@@ -1178,7 +1237,7 @@
      \fi
      \global\c_strc_sectioning_preceding_level\currentheadlevel
    \fi
-   \globallet\previoushead\currenthead}
+   \glet\previoushead\currenthead}
 
 \unexpanded\def\strc_sectioning_prevent_page_break#1% see strc-con
   {\ifconditional\c_strc_sectioning_auto_break

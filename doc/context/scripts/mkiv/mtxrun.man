@@ -1,4 +1,4 @@
-.TH "mtxrun" "1" "01-01-2018" "version 1.33" "ConTeXt TDS Runner Tool"
+.TH "mtxrun" "1" "01-01-2019" "version 1.33" "ConTeXt TDS Runner Tool"
 .SH NAME
 .B mtxrun
 .SH SYNOPSIS
@@ -32,14 +32,8 @@ run script using built in libraries (same as --ctxlua)
 .B --locate
 locate given filename in database (default) or system (--first --all --detail)
 .TP
-.B --autotree
-use texmf tree cf. env texmfstart_tree or texmfstarttree
-.TP
 .B --tree=pathtotree
 use given texmf tree (default file: setuptex.tmf)
-.TP
-.B --environment=name
-use given (tmf) environment file
 .TP
 .B --path=runpath
 go to given path before execution
@@ -81,7 +75,7 @@ show current operating system, processor, etc
 launch editor with found file
 .TP
 .B --launch
-launch files like manuals, assumes os support (--all)
+launch files like manuals, assumes os support (--all,--list)
 .TP
 .B --timedrun
 run a script and time its run

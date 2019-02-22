@@ -26,22 +26,27 @@
 
 % the otf font loader:
 
+% helpers
+
+
 \registerctxluafile{font-otr}{optimize} % opentype fontloader
 \registerctxluafile{font-web}{}         % opentype fontloader
 \registerctxluafile{font-cff}{optimize} % quadratic outlines
 \registerctxluafile{font-ttf}{optimize} % cubic outlines
 \registerctxluafile{font-dsp}{optimize} % ... for this one
 \registerctxluafile{font-hsh}{}         % hashes used by context
-\registerctxluafile{font-nod}{}
+\registerctxluafile{font-vfc}{}
+\registerctxluafile{font-prv}{}         % needs hashes
+\registerctxluafile{font-nod}{optimize}
 \registerctxluafile{font-oti}{}         % otf initialization
 \registerctxluafile{font-ott}{}         % otf tables (first)
 \registerctxluafile{font-otl}{}
 \registerctxluafile{font-oto}{}
-\registerctxluafile{font-otj}{}
+\registerctxluafile{font-otj}{optimize}
 \registerctxluafile{font-oup}{}
 \registerctxluafile{font-ota}{}
-\registerctxluafile{font-ots}{}
-\registerctxluafile{font-otd}{}
+\registerctxluafile{font-ots}{optimize}
+\registerctxluafile{font-otd}{optimize}
 \registerctxluafile{font-otc}{}
 \registerctxluafile{font-oth}{}
 \registerctxluafile{font-osd}{}
@@ -55,7 +60,12 @@
 
 % tfm
 
-\registerctxluafile{font-tfm}{}
+\doifelsefileexists {font-tpk.lua} {
+    \registerctxluafile{font-tpk}{optimize}
+    \registerctxluafile{font-tfm}{}
+} {
+    \registerctxluafile{font-tfm}{}
+}
 
 % name database
 
@@ -87,7 +97,28 @@
 \registerctxluafile{font-def}{}
 \registerctxluafile{font-ctx}{} % after def as it overloads
 
-\registerctxluafile{font-ext}{}
+% extensions, order matters
+
+\registerctxluafile{font-imp-ligatures}{}
+\registerctxluafile{font-imp-tex}{}
+\registerctxluafile{font-imp-reorder}{}
+\registerctxluafile{font-imp-properties}{}
+\registerctxluafile{font-imp-unicode}{}
+\registerctxluafile{font-imp-math}{}
+\registerctxluafile{font-imp-notused}{}
+\registerctxluafile{font-imp-effects}{}
+\registerctxluafile{font-imp-quality}{}
+\registerctxluafile{font-imp-italics}{}
+\registerctxluafile{font-imp-dimensions}{}
+
+\doifelsefileexists{font-imp-scripts.lua} {
+    \registerctxluafile{font-imp-scripts}{}
+} {
+    % not yet, lmtx feature
+}
+
+\registerctxluafile{font-imp-tracing}{} % comes last!
+
 \registerctxluafile{font-fbk}{}
 
 \registerctxluafile{font-aux}{}

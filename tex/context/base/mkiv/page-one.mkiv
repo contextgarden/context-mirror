@@ -73,6 +73,7 @@
    \else
      \global\vsize\textheight
    \fi
+   \global\advance\vsize\d_page_adapts_delta
    % alternatively we could set it in builders.buildpage_filter
  % \ifdim\pagegoal<\maxdimen .. \fi
    \global\pagegoal\dimexpr\vsize-\d_page_floats_inserted_top-\d_page_floats_inserted_bottom\relax}
@@ -141,16 +142,17 @@
      {\page_otr_command_flush_top_insertions
       % this is messy ... we will provide a more tight area (no big deal as we can
       % do that at the lua end)
+% \parfillskip\zeropoint
       \page_one_registered_text_area_a#1#2% \unvbox <box>
       %
       \ifgridsnapping
-        \vskip\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
+        \vkern\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
         \prevdepth\openstrutdepth
         \page_otr_command_flush_bottom_insertions
         \vfil
       \else\ifcase\bottomraggednessmode
         % ragged (default)
-        \vskip\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
+        \vkern\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
         \prevdepth\openstrutdepth
         \page_otr_command_flush_bottom_insertions
         \vfil
@@ -159,7 +161,7 @@
         \page_otr_command_flush_bottom_insertions
       \or
         % baseline
-        \kern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
+        \vkern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
         \page_otr_command_flush_bottom_insertions
       \fi\fi
       \fakepagenotes}%
@@ -227,6 +229,9 @@
      \page_otr_command_flush_float_box
      \vskip\s_page_one_between_top_insert
    \egroup}
+
+\let\totaltopinserted\!!zeropoint
+\let\totalbotinserted\!!zeropoint
 
 \unexpanded\def\page_one_command_set_top_insertions
   {\bgroup
@@ -312,37 +317,43 @@
 
 \unexpanded\def\page_one_command_flush_top_insertions
   {\ifvoid\namedinsertionnumber\s!topfloat\else
-     \ifgridsnapping
-       \box\namedinsertionnumber\s!topfloat
-       \vskip-\topskip
-       \vskip\strutheight % [xx] new: see icare topbleed
-     \else
-       \ifcase\c_page_floats_insertions_topskip_mode
-         % 0: default, do nothing
-       \or
-         % 1: no topskip (crossed fingers)
-         \vskip-\topskip
-         \vskip\strutheight
-       \fi
-       \unvbox\namedinsertionnumber\s!topfloat
-     \fi
+     \page_one_command_flush_top_insertions_indeed % less tracing
    \fi
    \global\d_page_floats_inserted_top\zeropoint}
 
+\def\page_one_command_flush_top_insertions_indeed
+  {\ifgridsnapping
+     \box\namedinsertionnumber\s!topfloat
+     \vkern-\topskip
+     \vkern\strutheight % [xx] new: see icare topbleed
+   \else
+     \ifcase\c_page_floats_insertions_topskip_mode
+       % 0: default, do nothing
+     \or
+       % 1: no topskip (crossed fingers)
+       \vskip-\topskip % skip !
+       \vkern\strutheight
+     \fi
+     \unvbox\namedinsertionnumber\s!topfloat
+   \fi}
+
 \unexpanded\def\page_one_command_flush_bottom_insertions
   {\ifvoid\namedinsertionnumber\s!bottomfloat\else
-     \ifgridsnapping
-     % \floatparameter\c!bottombefore
-       \snaptogrid\hbox{\box\namedinsertionnumber\s!bottomfloat}%
-     % \floatparameter\c!bottomafter
-     \else
-       \floatparameter\c!bottombefore
-       \unvbox\namedinsertionnumber\s!bottomfloat
-       \floatparameter\c!bottomafter
-     \fi
+     \page_one_command_flush_bottom_insertions_indeed
    \fi
    \global\d_page_floats_inserted_bottom\zeropoint
    \global\setfalse\c_page_floats_not_permitted}
+
+\def\page_one_command_flush_bottom_insertions_indeed
+  {\ifgridsnapping
+   % \floatparameter\c!bottombefore
+     \snaptogrid\hbox{\box\namedinsertionnumber\s!bottomfloat}%
+   % \floatparameter\c!bottomafter
+   \else
+     \floatparameter\c!bottombefore
+     \unvbox\namedinsertionnumber\s!bottomfloat
+     \floatparameter\c!bottomafter
+   \fi}
 
 \unexpanded\def\page_one_command_flush_floats
   {\global\settrue\c_page_floats_flushing

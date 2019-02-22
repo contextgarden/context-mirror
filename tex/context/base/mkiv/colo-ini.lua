@@ -43,6 +43,7 @@ local texsetattribute     = tex.setattribute
 local texgetattribute     = tex.getattribute
 local texgetcount         = tex.getcount
 local texgettoks          = tex.gettoks
+local texgetmacro         = tokens.getters.macro
 
 local a_color             = attributes.private('color')
 local a_transparency      = attributes.private('transparency')
@@ -273,7 +274,9 @@ local function forcedmodel(model) -- delayed till the backend but mp directly
             return 2
         end
     elseif model == 5 then -- spot
-        if cmyk_okay then
+        if spot_okay then
+            return 5
+        elseif cmyk_okay then
             return 4
         elseif rgb_okay then
             return 3
@@ -309,7 +312,8 @@ local function definetransparency(name,n,global)
     end
     local settings = settings_to_hash_strict(n)
     if settings then
-        local a, t = settings.a, settings.t
+        local a = settings.a
+        local t = settings.t
         if a and t then
             definetransparent(name, transparencies.register(name,transparent[a] or tonumber(a) or 1,tonumber(t) or 1), global)
         else
@@ -440,16 +444,23 @@ local function defineprocesscolor(name,str,global,freeze) -- still inconsistent 
     else
         local settings = settings_to_hash_strict(str)
         if settings then
-            local r, g, b = settings.r, settings.g, settings.b
+            local r = settings.r
+            local g = settings.g
+            local b = settings.b
             if r or g or b then
                 -- we can consider a combined rgb cmyk s definition
                 definecolor(name, register_color(name,'rgb', tonumber(r) or 0, tonumber(g) or 0, tonumber(b) or 0), global)
             else
-                local c, m, y, k = settings.c, settings.m, settings.y, settings.k
+                local c = settings.c
+                local m = settings.m
+                local y = settings.y
+                local k = settings.k
                 if c or m or y or k then
                     definecolor(name, register_color(name,'cmyk',tonumber(c) or 0, tonumber(m) or 0, tonumber(y) or 0, tonumber(k) or 0), global)
                 else
-                    local h, s, v = settings.h, settings.s, settings.v
+                    local h = settings.h
+                    local s = settings.s
+                    local v = settings.v
                     if v then
                         r, g, b = colors.hsvtorgb(tonumber(h) or 0, tonumber(s) or 1, tonumber(v) or 1) -- maybe later native
                         definecolor(name, register_color(name,'rgb',r,g,b), global)
@@ -468,7 +479,8 @@ local function defineprocesscolor(name,str,global,freeze) -- still inconsistent 
                     end
                 end
             end
-            local a, t = settings.a, settings.t
+            local a = settings.a
+            local t = settings.t
             if a and t then
                 definetransparent(name, transparencies.register(name,transparent[a] or tonumber(a) or 1,tonumber(t) or 1), global)
             elseif colors.couple then
@@ -520,7 +532,8 @@ local function definespotcolor(name,parent,str,global)
                 do_registerspotcolor(parent,cp,t.e,1,"",tp) -- p not really needed, only diagnostics
                 if name and name ~= "" then
                     definecolor(name,register_color(name,'spot',parent,1,"",tp),true)
-                    local ta, tt = t.a, t.t
+                    local ta = t.a
+                    local tt = t.t
                     if ta and tt then
                         definetransparent(name, transparencies.register(name,transparent[ta] or tonumber(ta) or 1,tonumber(tt) or 1), global)
                     elseif colors.couple then
@@ -564,7 +577,7 @@ local function f(i,colors,fraction)
     return otf
 end
 
-local function definemixcolor(makename,name,fractions,cs,global,freeze)
+local function definemixcolor(makecolor,name,fractions,cs,global,freeze)
     local values = { }
     for i=1,#cs do -- do fraction in here
         local v = colorvalues[cs[i]]
@@ -592,12 +605,15 @@ local function definemixcolor(makename,name,fractions,cs,global,freeze)
         end
         definecolor(name,ca,global,freeze)
     else
-        report_colors("invalid specification of components for color %a",makename)
+        report_colors("invalid specification of components for color %a",makecolor)
     end
 end
 
 local function definemultitonecolor(name,multispec,colorspec,selfspec)
-    local dd, pp, nn, max = { }, { }, { }, 0
+    local dd  = { }
+    local pp  = { }
+    local nn  = { }
+    local max = 0
     for k,v in gmatch(multispec,"([^=,]+)=([^%,]*)") do -- use settings_to_array
         max = max + 1
         dd[max] = k
@@ -608,12 +624,12 @@ local function definemultitonecolor(name,multispec,colorspec,selfspec)
         nn = concat(nn,'_')
         local parent = gsub(lower(nn),"[^%d%a%.]+","_")
         if not colorspec or colorspec == "" then
+            -- this can happens when we come from metapost
             local cc = { }
             for i=1,max do
---                 cc[i] = l_color[dd[i]]
                 cc[i] = resolvedname(dd[i])
             end
-            definemixcolor(name,parent,pp,cc,global,freeze) -- can become local
+            definemixcolor(name,parent,pp,cc,true,true)
         else
             if selfspec ~= "" then
                 colorspec = colorspec .. "," .. selfspec
@@ -645,24 +661,29 @@ colors.definemultitonecolor = definemultitonecolor
 -- that we cannot cast .. so we really need to use (s,s,s) for gray in order
 -- to be able to map onto 'color'
 
-local function mpcolor(model,ca,ta,default)
+local function mpcolor(model,ca,ta,default,name)
     local cv = colorvalues[ca]
     if cv then
         local tv = transparencyvalues[ta]
+        -- maybe move the 5 logic into the forcedmodel call
+        local cm = cv[1]
         if model == 1 then
-            model = cv[1]
+            model = cm
         end
         model = forcedmodel(model)
+        if cm == 5 and model == 4 then
+            model = 5 -- a cheat but ok as spot colors have a representation
+        end
         if tv then
             if model == 2 then
                 return formatters["transparent(%s,%s,(%s,%s,%s))"](tv[1],tv[2],cv[3],cv[4],cv[5])
             elseif model == 3 then
                 return formatters["transparent(%s,%s,(%s,%s,%s))"](tv[1],tv[2],cv[3],cv[4],cv[5])
             elseif model == 4 then
-                return formatters["transparent(%s,%s,cmyk(%s,%s,%s,%s))"](tv[1],tv[2],cv[6],cv[7],cv[8],cv[9])
+                return formatters["transparent(%s,%s,(%s,%s,%s,%s))"](tv[1],tv[2],cv[6],cv[7],cv[8],cv[9])
             elseif model == 5 then
              -- return formatters['transparent(%s,%s,multitonecolor("%s",%s,"%s","%s"))'](tv[1],tv[2],cv[10],cv[11],cv[12],cv[13])
-                return formatters['transparent(%s,%s,namedcolor("%s"))'](tv[1],tv[2],cv[10])
+                return formatters['transparent(%s,%s,namedcolor("%s"))'](tv[1],tv[2],name or cv[10])
             else -- see ** in meta-ini.mkiv: return formatters["transparent(%s,%s,(%s))"](tv[1],tv[2],cv[2])
                 return formatters["transparent(%s,%s,(%s,%s,%s))"](tv[1],tv[2],cv[3],cv[4],cv[5])
             end
@@ -672,10 +693,9 @@ local function mpcolor(model,ca,ta,default)
             elseif model == 3 then
                 return formatters["(%s,%s,%s)"](cv[3],cv[4],cv[5])
             elseif model == 4 then
-                return formatters["cmyk(%s,%s,%s,%s)"](cv[6],cv[7],cv[8],cv[9])
+                return formatters["(%s,%s,%s,%s)"](cv[6],cv[7],cv[8],cv[9])
             elseif model == 5 then
-             -- return formatters['multitonecolor("%s",%s,"%s","%s")'](cv[10],cv[11],cv[12],cv[13])
-                return formatters['namedcolor("%s")'](cv[10])
+                return formatters['namedcolor("%s")'](name or cv[10])
             else -- see ** in meta-ini.mkiv: return formatters["%s"]((cv[2]))
                 return formatters["(%s,%s,%s)"](cv[3],cv[4],cv[5])
             end
@@ -698,7 +718,8 @@ local paletnamespace  = getnamespace("colorpalet")
 
 local function namedcolorattributes(name)
     local space  = texgetattribute(a_colormodel)
-    local prefix = texgettoks("t_colo_prefix")
+    ----- prefix = texgettoks("t_colo_prefix")
+    local prefix = texgetmacro("currentcolorprefix")
     local color
     if prefix ~= "" then
         color = valid[prefix..name]
@@ -734,7 +755,8 @@ end
 colors.namedcolorattributes = namedcolorattributes -- can be used local
 
 local function mpnamedcolor(name)
-    return mpcolor(namedcolorattributes(name))
+    local model, ca, ta = namedcolorattributes(name)
+    return mpcolor(model,ca,ta,nil,name)
 end
 
 local function mpoptions(model,ca,ta,default) -- will move to mlib-col .. not really needed
@@ -1090,7 +1112,7 @@ implement {
 implement {
     name      = "defineprocesscolordummy",
     actions   = defineprocesscolor,
-    arguments = { "'d_u_m_m_y'", "string", false, false }
+    arguments = { "'c_o_l_o_r'", "string", false, false }
 }
 
 implement {

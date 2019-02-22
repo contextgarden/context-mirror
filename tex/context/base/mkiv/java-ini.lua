@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['java-ini'] = {
 
 -- todo: don't flush scripts if no JS key
 
-local format = string.format
+local format, gsub, find = string.format, string.gsub, string.find
 local concat = table.concat
 local lpegmatch, P, S, C, Carg, Cc = lpeg.match, lpeg.P, lpeg.S, lpeg.C, lpeg.Carg, lpeg.Cc
 
@@ -69,6 +69,7 @@ local parsefunctions = (fname + any)^0
 function javascripts.storecode(str)
     local name, uses, script = lpegmatch(parsecode,str)
     if name and name ~= "" then
+        script = gsub(script,"%s*([^\n\r]+)%s*[\n\r]+$","%1")
         codes[name] = { uses, script }
     end
 end
@@ -123,8 +124,9 @@ function javascripts.usepreamblenow(name) -- now later
         local names = settings_to_array(name)
         for i=1,#names do
             local somename = names[i]
-            if not preambled[somename] then
-                preambles[preambled[somename]][2] = "now"
+            local preamble = preambled[somename]
+            if preamble  then
+                preambles[preamble][2] = "now"
                 if trace_javascript then
                     report_javascripts("used preamble %a, state %a, order %a",somename,"now","auto")
                 end

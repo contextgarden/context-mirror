@@ -13,78 +13,82 @@ local insert, concat = table.insert, table.concat
 local tostring, next, rawget, type = tostring, next, rawget, type
 local lpegmatch = lpeg.match
 
-local context            = context
-local commands           = commands
+local context             = context
+local commands            = commands
 
-local implement          = interfaces.implement
+local implement           = interfaces.implement
 
-local allocate           = utilities.storage.allocate
-local setmetatableindex  = table.setmetatableindex
+local allocate            = utilities.storage.allocate
+local setmetatableindex   = table.setmetatableindex
 
-local nuts               = nodes.nuts
-local tonut              = nuts.tonut
+local nuts                = nodes.nuts
+local tonut               = nuts.tonut
 
-local getid              = nuts.getid
-local getlist            = nuts.getlist
-local getattr            = nuts.getattr
-local getbox             = nuts.getbox
+local getid               = nuts.getid
+local getlist             = nuts.getlist
+local getattr             = nuts.getattr
+local getbox              = nuts.getbox
 
-local traverse           = nuts.traverse
-local traverse_id        = nuts.traverse_id
+local nextnode            = nuts.traversers.node
 
-local nodecodes          = nodes.nodecodes
-local glyph_code         = nodecodes.glyph
-local hlist_code         = nodecodes.hlist
-local vlist_code         = nodecodes.vlist
+local nodecodes           = nodes.nodecodes
+local whatsitcodes        = nodes.whatsitcodes
 
-local texsetattribute    = tex.setattribute
+local glyph_code          = nodecodes.glyph
+local hlist_code          = nodecodes.hlist
+local vlist_code          = nodecodes.vlist
+local whatsit_code        = nodecodes.whatsit
 
-local a_marks            = attributes.private("structure","marks")
+local lateluawhatsit_code = whatsitcodes.latelua
 
-local trace_marks_set    = false  trackers.register("marks.set",    function(v) trace_marks_set = v end)
-local trace_marks_get    = false  trackers.register("marks.get",    function(v) trace_marks_get = v end)
-local trace_marks_all    = false  trackers.register("marks.detail", function(v) trace_marks_all = v end)
+local texsetattribute     = tex.setattribute
 
-local report_marks       = logs.reporter("structure","marks")
+local a_marks             = attributes.private("structure","marks")
 
-local variables          = interfaces.variables
+local trace_marks_set     = false  trackers.register("marks.set",    function(v) trace_marks_set = v end)
+local trace_marks_get     = false  trackers.register("marks.get",    function(v) trace_marks_get = v end)
+local trace_marks_all     = false  trackers.register("marks.detail", function(v) trace_marks_all = v end)
 
-local v_first            = variables.first
-local v_last             = variables.last
-local v_previous         = variables.previous
-local v_next             = variables.next
-local v_top              = variables.top
-local v_bottom           = variables.bottom
-local v_current          = variables.current
-local v_default          = variables.default
-local v_page             = variables.page
-local v_all              = variables.all
-local v_keep             = variables.keep
+local report_marks        = logs.reporter("structure","marks")
 
-local v_nocheck_suffix   = ":" .. variables.nocheck
+local variables           = interfaces.variables
 
-local v_first_nocheck    = variables.first    .. v_nocheck_suffix
-local v_last_nocheck     = variables.last     .. v_nocheck_suffix
-local v_previous_nocheck = variables.previous .. v_nocheck_suffix
-local v_next_nocheck     = variables.next     .. v_nocheck_suffix
-local v_top_nocheck      = variables.top      .. v_nocheck_suffix
-local v_bottom_nocheck   = variables.bottom   .. v_nocheck_suffix
+local v_first             = variables.first
+local v_last              = variables.last
+local v_previous          = variables.previous
+local v_next              = variables.next
+local v_top               = variables.top
+local v_bottom            = variables.bottom
+local v_current           = variables.current
+local v_default           = variables.default
+local v_page              = variables.page
+local v_all               = variables.all
+local v_keep              = variables.keep
 
-local structures         = structures
-local marks              = structures.marks
-local lists              = structures.lists
+local v_nocheck_suffix    = ":" .. variables.nocheck
 
-local settings_to_array  = utilities.parsers.settings_to_array
+local v_first_nocheck     = variables.first    .. v_nocheck_suffix
+local v_last_nocheck      = variables.last     .. v_nocheck_suffix
+local v_previous_nocheck  = variables.previous .. v_nocheck_suffix
+local v_next_nocheck      = variables.next     .. v_nocheck_suffix
+local v_top_nocheck       = variables.top      .. v_nocheck_suffix
+local v_bottom_nocheck    = variables.bottom   .. v_nocheck_suffix
 
-local boxes_too          = false -- at some point we can also tag boxes or use a zero char
+local structures          = structures
+local marks               = structures.marks
+local lists               = structures.lists
+
+local settings_to_array   = utilities.parsers.settings_to_array
+
+local boxes_too           = false -- at some point we can also tag boxes or use a zero char
 
 directives.register("marks.boxestoo", function(v) boxes_too = v end)
 
-marks.data               = marks.data or allocate()
+local data = marks.data or allocate()
+marks.data = data
 
 storage.register("structures/marks/data", marks.data, "structures.marks.data")
 
-local data = marks.data
 local stack, topofstack = { }, 0
 
 local ranges = {
@@ -116,9 +120,9 @@ end
 -- identify range
 
 local function sweep(head,first,last)
-    for n in traverse(head) do
-        local id = getid(n)
-        if id == glyph_code then
+    for n, id, subtype in nextnode, head do
+        -- we need to handle empty heads so we test for latelua
+        if id == glyph_code or (id == whatsit_code and subtype == lateluawhatsit_code) then
             local a = getattr(n,a_marks)
             if not a then
                 -- next
@@ -433,7 +437,8 @@ local function resolve(name,first,last,strict,quitonfalse,notrace)
                 if trace_marks_get and not notrace then
                     report_marks("found chain [ % => T ]",fullchain)
                 end
-                local chaindata, chainlength = { }, #fullchain
+                local chaindata   = { }
+                local chainlength = #fullchain
                 for i=1,chainlength do
                     local cname = fullchain[i]
                     if data[cname].set > 0 then
@@ -509,7 +514,8 @@ local methods  = { }
 
 local function doresolve(name,rangename,swap,df,dl,strict)
     local range = ranges[rangename] or ranges[v_page]
-    local first, last = range.first, range.last
+    local first = range.first
+    local last  = range.last
     if trace_marks_get then
         report_marks("action %a, name %a, range %a, swap %a, first %a, last %a, df %a, dl %a, strict %a",
             "resolving",name,rangename,swap or false,first,last,df,dl,strict or false)
@@ -638,7 +644,10 @@ function marks.tracers.showtable()
     context.tabulaterowbold("name","parent","chain","children","fullchain")
     context.ML()
     for k, v in table.sortedpairs(data) do
-        local parent, chain, children, fullchain = v.parent or "", v.chain or "", v.children or { }, v.fullchain or { }
+        local parent    = v.parent    or ""
+        local chain     = v.chain     or ""
+        local children  = v.children  or { }
+        local fullchain = v.fullchain or { }
         table.sort(children) -- in-place but harmless
         context.tabulaterowtyp(k,parent,chain,concat(children," "),concat(fullchain," "))
     end
@@ -647,28 +656,49 @@ end
 
 -- pushing to context:
 
-local separator = context.nested.markingseparator
-local command   = context.nested.markingcommand
-local ctxconcat = context.concat
+-- local separator = context.nested.markingseparator
+-- local command   = context.nested.markingcommand
+-- local ctxconcat = context.concat
 
-local function fetchonemark(name,range,method)
-    context(command(name,fetched(name,range,method)))
-end
+-- local function fetchonemark(name,range,method)
+--     context(command(name,fetched(name,range,method)))
+-- end
 
-local function fetchtwomarks(name,range)
-    ctxconcat( {
-        command(name,fetched(name,range,v_first)),
-        command(name,fetched(name,range,v_last)),
-    }, separator(name))
-end
+-- local function fetchtwomarks(name,range)
+--     ctxconcat( {
+--         command(name,fetched(name,range,v_first)),
+--         command(name,fetched(name,range,v_last)),
+--     }, separator(name))
+-- end
 
-local function fetchallmarks(name,range)
-    ctxconcat( {
-        command(name,fetched(name,range,v_previous)),
-        command(name,fetched(name,range,v_first)),
-        command(name,fetched(name,range,v_last)),
-    }, separator(name))
-end
+-- local function fetchallmarks(name,range)
+--     ctxconcat( {
+--         command(name,fetched(name,range,v_previous)),
+--         command(name,fetched(name,range,v_first)),
+--         command(name,fetched(name,range,v_last)),
+--     }, separator(name))
+-- end
+
+    local ctx_separator = context.markingseparator
+    local ctx_command   = context.markingcommand
+
+    local function fetchonemark(name,range,method)
+        ctx_command(name,fetched(name,range,method))
+    end
+
+    local function fetchtwomarks(name,range)
+        ctx_command(name,fetched(name,range,v_first))
+        ctx_separator(name)
+        ctx_command(name,fetched(name,range,v_last))
+    end
+
+    local function fetchallmarks(name,range)
+        ctx_command(name,fetched(name,range,v_previous))
+        ctx_separator(name)
+        ctx_command(name,fetched(name,range,v_first))
+        ctx_separator(name)
+        ctx_command(name,fetched(name,range,v_last))
+    end
 
 function marks.fetch(name,range,method) -- chapter page first | chapter column:1 first
     if trace_marks_get then

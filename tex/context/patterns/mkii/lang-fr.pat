@@ -18,12 +18,14 @@ a1è2dre
 .ae3s4ch
 'ae3s4ch
 1alcool
+'2alcool
 a2l1algi
 .amino1a2c
 'amino1a2c
 .ana3s4tr
 'ana3s4tr
 1a2nesthési
+'2a2nesthési
 .anti1a2
 'anti1a2
 .anti1e2
@@ -454,6 +456,7 @@ uevil4l
 uvil4l
 xil3l
 1informat
+'2informat
 .in1a2
 'in1a2
 .in2a3nit
@@ -725,6 +728,7 @@ n1x
 .ô4
 o2b3long
 1octet
+'2octet
 o1d2l
 o1è2dre
 o1ioni

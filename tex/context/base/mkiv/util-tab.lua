@@ -22,7 +22,8 @@ local utftoeight = utf.toeight
 local splitter = lpeg.tsplitat(".")
 
 function utilities.tables.definetable(target,nofirst,nolast) -- defines undefined tables
-    local composed, t = nil, {  }
+    local composed = nil
+    local t        = { }
     local snippets = lpegmatch(splitter,target)
     for i=1,#snippets - (nolast and 1 or 0) do
         local name = snippets[i]
@@ -818,4 +819,55 @@ if setinspector then
             return true
         end
     end)
+end
+
+-- ordered hashes (for now here but in the table namespace):
+
+-- local t = table.orderedhash()
+--
+-- t["1"]  = { "a", "b" }
+-- t["2"]  = { }
+-- t["2a"] = { "a", "c", "d" }
+--
+-- for k, v in table.ordered(t) do
+--     ...
+-- end
+
+local mt = {
+    __newindex = function(t,k,v)
+        local n = t.last + 1
+        t.last    = n
+        t.list[n] = k
+        t.hash[k] = v
+    end,
+    __index = function(t,k)
+        return t.hash[k]
+    end,
+    __len = function(t)
+        return t.last
+    end,
+}
+
+function table.orderedhash()
+    return setmetatable({ list = { }, hash = { }, last = 0 }, mt)
+end
+
+function table.ordered(t)
+    local n = t.last
+    if n > 0 then
+        local l = t.list
+        local i = 1
+        local h = t.hash
+        local f = function()
+            if i <= n then
+                local k = i
+                local v = h[l[k]]
+                i = i + 1
+                return k, v
+            end
+        end
+        return f, 1, h[l[1]]
+    else
+        return function() end
+    end
 end

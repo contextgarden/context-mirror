@@ -32,11 +32,78 @@ local concat = table.concat
 local random, ceil, randomseed = math.random, math.ceil, math.randomseed
 local rawget, rawset, type, getmetatable, setmetatable, tonumber, tostring = rawget, rawset, type, getmetatable, setmetatable, tonumber, tostring
 
--- The following code permits traversing the environment table, at least
--- in luatex. Internally all environment names are uppercase.
+-- This check needs to happen real early on. Todo: we can pick it up from the commandline
+-- if we pass --binpath= (which is useful anyway)
+
+do
+    local selfdir = os.selfdir
+    if selfdir == "" then
+        selfdir = nil
+    end
+    if not selfdir then
+        -- We need a fallback plan so let's see what we get.
+        if arg then
+            -- passed by mtx-context ... saves network access
+            for i=1,#arg do
+                local a = arg[i]
+                if find(a,"^%-%-[c:]*texmfbinpath=") then
+                    selfdir = gsub(a,"^.-=","")
+                    break
+                end
+            end
+        end
+        if not selfdir then
+            selfdir = os.selfbin or "luatex"
+            if find(selfdir,"[/\\]") then
+                selfdir = gsub(selfdir,"[/\\][^/\\]*$","")
+            elseif os.getenv then
+                local path = os.getenv("PATH")
+                local name = gsub(selfdir,"^.*[/\\][^/\\]","")
+                local patt = "[^:]+"
+                if os.type == "windows" then
+                    patt = "[^;]+"
+                    name = name .. ".exe"
+                end
+                local isfile
+                if lfs then
+                    -- we're okay as lfs is assumed present
+                    local attributes = lfs.attributes
+                    isfile = function(name)
+                        local a = attributes(name,"mode")
+                        return a == "file" or a == "link" or nil
+                    end
+                else
+                    -- we're not okay and much will not work as we miss lfs
+                    local open = io.open
+                    isfile = function(name)
+                        local f = open(name)
+                        if f then
+                            f:close()
+                            return true
+                        end
+                    end
+                end
+                for p in gmatch(path,patt) do
+                    -- possible speedup: there must be tex in 'p'
+                    if isfile(p .. "/" .. name) then
+                        selfdir = p
+                        break
+                    end
+                end
+            end
+        end
+        -- let's hope we're okay now
+        os.selfdir = selfdir or "."
+    end
+end
+-- print(os.selfdir) os.exit()
+
+-- The following code permits traversing the environment table, at least in luatex. Internally all
+-- environment names are uppercase.
 
 -- The randomseed in Lua is not that random, although this depends on the operating system as well
--- as the binary (Luatex is normally okay). But to be sure we set the seed anyway.
+-- as the binary (Luatex is normally okay). But to be sure we set the seed anyway. It will be better
+-- in Lua 5.4 (according to the announcements.)
 
 math.initialseed = tonumber(string.sub(string.reverse(tostring(ceil(socket and socket.gettime()*10000 or time()))),1,6))
 
@@ -156,7 +223,7 @@ end
 local launchers = {
     windows = "start %s",
     macosx  = "open %s",
-    unix    = "$BROWSER %s &> /dev/null &",
+    unix    = "xdg-open %s &> /dev/null &",
 }
 
 function os.launch(str)
@@ -223,6 +290,13 @@ local name, platform = os.name or "linux", os.getenv("MTX_PLATFORM") or ""
 
 -- os.bits = 32 | 64
 
+-- os.uname()
+--     sysname
+--     machine
+--     release
+--     version
+--     nodename
+
 if platform ~= "" then
 
     os.platform = platform
@@ -234,10 +308,12 @@ elseif os.type == "windows" then
     -- PROCESSOR_ARCHITECTURE : binary platform
     -- PROCESSOR_ARCHITEW6432 : OS platform
 
+    -- mswin-64 is now win64
+
     function resolvers.platform(t,k)
-        local platform, architecture = "", os.getenv("PROCESSOR_ARCHITECTURE") or ""
+        local architecture = os.getenv("PROCESSOR_ARCHITECTURE") or ""
+        local platform     = ""
         if find(architecture,"AMD64",1,true) then
-         -- platform = "mswin-64"
             platform = "win64"
         else
             platform = "mswin"
@@ -251,13 +327,17 @@ elseif name == "linux" then
 
     function resolvers.platform(t,k)
         -- we sometimes have HOSTTYPE set so let's check that first
-        local platform, architecture = "", os.getenv("HOSTTYPE") or resultof("uname -m") or ""
-        if find(architecture,"x86_64",1,true) then
-            platform = "linux-64"
+        local architecture = os.getenv("HOSTTYPE") or resultof("uname -m") or ""
+        local platform     = os.getenv("MTX_PLATFORM") or ""
+        local musl         = find(os.selfdir or "","linuxmusl")
+        if platform ~= "" then
+            -- we're done
+        elseif find(architecture,"x86_64",1,true) then
+            platform = musl and "linuxmusl" or "linux-64"
         elseif find(architecture,"ppc",1,true) then
             platform = "linux-ppc"
         else
-            platform = "linux"
+            platform = musl and "linuxmusl" or "linux"
         end
         os.setenv("MTX_PLATFORM",platform)
         os.platform = platform
@@ -277,11 +357,13 @@ elseif name == "macosx" then
       ]]--
 
     function resolvers.platform(t,k)
-     -- local platform, architecture = "", os.getenv("HOSTTYPE") or ""
+     -- local platform     = ""
+     -- local architecture = os.getenv("HOSTTYPE") or ""
      -- if architecture == "" then
      --     architecture = resultof("echo $HOSTTYPE") or ""
      -- end
-        local platform, architecture = "", resultof("echo $HOSTTYPE") or ""
+        local architecture = resultof("echo $HOSTTYPE") or ""
+        local platform     = ""
         if architecture == "" then
          -- print("\nI have no clue what kind of OSX you're running so let's assume an 32 bit intel.\n")
             platform = "osx-intel"
@@ -300,7 +382,8 @@ elseif name == "macosx" then
 elseif name == "sunos" then
 
     function resolvers.platform(t,k)
-        local platform, architecture = "", resultof("uname -m") or ""
+        local architecture = resultof("uname -m") or ""
+        local platform     = ""
         if find(architecture,"sparc",1,true) then
             platform = "solaris-sparc"
         else -- if architecture == 'i86pc'
@@ -314,7 +397,8 @@ elseif name == "sunos" then
 elseif name == "freebsd" then
 
     function resolvers.platform(t,k)
-        local platform, architecture = "", resultof("uname -m") or ""
+        local architecture = resultof("uname -m") or ""
+        local platform     = ""
         if find(architecture,"amd64",1,true) then
             platform = "freebsd-amd64"
         else
@@ -329,7 +413,8 @@ elseif name == "kfreebsd" then
 
     function resolvers.platform(t,k)
         -- we sometimes have HOSTTYPE set so let's check that first
-        local platform, architecture = "", os.getenv("HOSTTYPE") or resultof("uname -m") or ""
+        local architecture = os.getenv("HOSTTYPE") or resultof("uname -m") or ""
+        local platform     = ""
         if find(architecture,"x86_64",1,true) then
             platform = "kfreebsd-amd64"
         else
@@ -563,4 +648,21 @@ function os.validdate(year,month,day)
         end
     end
     return year, month, day
+end
+
+local osexit   = os.exit
+local exitcode = nil
+
+function os.setexitcode(code)
+    exitcode = code
+end
+
+function os.exit(c)
+    if exitcode ~= nil then
+        return osexit(exitcode)
+    end
+    if c ~= nil then
+        return osexit(c)
+    end
+    return osexit()
 end

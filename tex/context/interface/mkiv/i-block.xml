@@ -24,8 +24,24 @@
                 <cd:parameter name="after">
                     <cd:constant type="cd:command"/>
                 </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="alternative">
+                    <cd:constant type="paragraph" default="yes"/>
+                    <cd:constant type="text"/>
+                </cd:parameter>
                 <cd:parameter name="inner">
                     <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="setups">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="align">
+                    <cd:resolve name="value-alignsimple"/>
                 </cd:parameter>
                 <cd:parameter name="style">
                     <cd:resolve name="value-style"/>
@@ -47,6 +63,7 @@
                 <cd:constant type="-"/>
                 <cd:constant type="cd:name"/>
             </cd:keywords>
+            <cd:resolve name="assignment-userdata-list-optional"/>
         </cd:arguments>
     </cd:command>
 
@@ -100,6 +117,12 @@
                     <cd:constant type="cd:section"/>
                 </cd:parameter>
             </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="blockuservariable" level="document" category="structure" file="strc-blk.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 

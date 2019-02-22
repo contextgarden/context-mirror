@@ -68,8 +68,6 @@ local directiondata       = characters.directions
 local mirrordata          = characters.mirrors
 
 local nuts                = nodes.nuts
-local tonut               = nuts.tonut
-local tonode              = nuts.tonode
 
 local getnext             = nuts.getnext
 local getid               = nuts.getid
@@ -77,11 +75,11 @@ local getsubtype          = nuts.getsubtype
 local getlist             = nuts.getlist
 local getchar             = nuts.getchar
 local getprop             = nuts.getprop
-local getdir              = nuts.getdir
+local getdirection        = nuts.getdirection
 
 local setprop             = nuts.setprop
 local setchar             = nuts.setchar
-local setdir              = nuts.setdir
+local setdirection        = nuts.setdirection
 ----- setattrlist         = nuts.setattrlist
 
 local remove_node         = nuts.remove
@@ -89,10 +87,10 @@ local insert_node_after   = nuts.insert_after
 local insert_node_before  = nuts.insert_before
 
 local nodepool            = nuts.pool
-local new_textdir         = nodepool.textdir
+local new_direction       = nodepool.direction
 
 local nodecodes           = nodes.nodecodes
-local skipcodes           = nodes.skipcodes
+local gluecodes           = nodes.gluecodes
 
 local glyph_code          = nodecodes.glyph
 local glue_code           = nodecodes.glue
@@ -101,22 +99,27 @@ local vlist_code          = nodecodes.vlist
 local math_code           = nodecodes.math
 local dir_code            = nodecodes.dir
 local localpar_code       = nodecodes.localpar
-local parfillskip_code    = skipcodes.parfillskip
 
------ object_replacement  = 0xFFFC -- object replacement character
-local maximum_stack       = 60     -- probably spec but not needed
+local parfillskip_code    = gluecodes.parfillskip
+
+local dirvalues           = nodes.dirvalues
+local lefttoright_code    = dirvalues.lefttoright
+local righttoleft_code    = dirvalues.righttoleft
+
+local maximum_stack       = 60
 
 local directions          = typesetters.directions
 local setcolor            = directions.setcolor
 
------ a_directions        = attributes.private('directions')
-
 local remove_controls     = true  directives.register("typesetters.directions.one.removecontrols",function(v) remove_controls  = v end)
 
-local trace_directions    = false trackers  .register("typesetters.directions.one",               function(v) trace_directions = v end)
-local trace_details       = false trackers  .register("typesetters.directions.one.details",       function(v) trace_details    = v end)
-
 local report_directions   = logs.reporter("typesetting","directions one")
+
+local trace_directions    = false trackers  .register("typesetters.directions",               function(v) trace_directions = v end)
+local trace_details       = false trackers  .register("typesetters.directions.details",       function(v) trace_details    = v end)
+
+
+
 
 local whitespace = {
     lre = true,
@@ -234,13 +237,19 @@ local function build_list(head) -- todo: store node pointer ... saves loop
             list[size] = { char = 0x0020, direction = "ws", original = "ws", level = 0 }
             current = getnext(current)
         elseif id == dir_code then
-            local dir = getdir(current)
-            if dir == "+TLT" then
-                list[size] = { char = 0x202A, direction = "lre", original = "lre", level = 0 }
-            elseif dir == "+TRT" then
-                list[size] = { char = 0x202B, direction = "rle", original = "rle", level = 0 }
-            elseif dir == "-TLT" or dir == "-TRT" then
-                list[size] = { char = 0x202C, direction = "pdf", original = "pdf", level = 0 }
+            local direction, pop = getdirection(current)
+            if direction == lefttoright_code then
+                if pop then
+                    list[size] = { char = 0x202C, direction = "pdf", original = "pdf", level = 0 }
+                else
+                    list[size] = { char = 0x202A, direction = "lre", original = "lre", level = 0 }
+                end
+            elseif direction == righttoleft_code then
+                if pop then
+                    list[size] = { char = 0x202C, direction = "pdf", original = "pdf", level = 0 }
+                else
+                    list[size] = { char = 0x202B, direction = "rle", original = "rle", level = 0 }
+                end
             else
                 list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, id = id } -- object replacement character
             end
@@ -323,27 +332,33 @@ local function find_run_limit_b_s_ws_on(list,start,limit)
     return start
 end
 
-local function get_baselevel(head,list,size) -- todo: skip if first is object (or pass head and test for localpar)
-    local id = getid(head)
-    if id == localpar_code then
-        if getdir(head) == "TRT" then
-            return 1, "TRT", true
-        else
-            return 0, "TLT", true
+local function get_baselevel(head,list,size,direction)
+    -- This is an adapted version:
+    if direction == lefttoright_code or direction == righttoleft_code then
+        return direction, true
+    elseif getid(head) == localpar_code and getsubtype(head) == 0 then
+        direction = getdirection(head)
+        if direction == lefttoright_code or direction == righttoleft_code then
+            return direction, true
         end
-    else
-        -- P2, P3
-        for i=1,size do
-            local entry     = list[i]
-            local direction = entry.direction
-            if direction == "r" or direction == "al" then
-                return 1, "TRT", true
-            elseif direction == "l" then
-                return 0, "TLT", true
-            end
-        end
-        return 0, "TLT", false
     end
+    -- for old times sake we we handle strings too
+    if direction == "TLT" then
+        return lefttoright_code, true
+    elseif direction == "TRT" then
+        return righttoleft_code, true
+    end
+    -- P2, P3
+    for i=1,size do
+        local entry     = list[i]
+        local direction = entry.direction
+        if direction == "r" or direction == "al" then
+            return righttoleft_code, true
+        elseif direction == "l" then
+            return lefttoright_code, true
+        end
+    end
+    return lefttoright_code, false
 end
 
 local function resolve_explicit(list,size,baselevel)
@@ -409,7 +424,7 @@ local function resolve_explicit(list,size,baselevel)
             end
         -- X7
         elseif direction == "pdf" then
-            if nofstack < maximum_stack then
+            if noifstack > 0 then
                 local stacktop  = stack[nofstack]
                 nofstack        = nofstack - 1
                 level           = stacktop[1]
@@ -418,7 +433,7 @@ local function resolve_explicit(list,size,baselevel)
                 entry.direction = "bn"
                 entry.remove    = true
             elseif trace_directions then
-                report_directions("stack overflow at position %a with direction %a",i,direction)
+                report_directions("stack underflow at position %a with direction %a",i,direction)
             end
         -- X6
         else
@@ -679,8 +694,6 @@ local function resolve_levels(list,size,baselevel)
     end
 end
 
--- This is not ok but we keep it as-is:
-
 local function insert_dir_points(list,size)
     -- L2, but no actual reversion is done, we simply annotate where
     -- begindir/endddir node will be inserted.
@@ -697,11 +710,11 @@ local function insert_dir_points(list,size)
         local begindir = nil
         local enddir   = nil
         if level % 2 == 1 then
-            begindir = "+TRT"
-            enddir   = "-TRT"
+            begindir = righttoleft_code
+            enddir   = righttoleft_code
         else
-            begindir = "+TLT"
-            enddir   = "-TLT"
+            begindir = lefttoright_code
+            enddir   = lefttoright_code
         end
         for i=1,size do
             local entry = list[i]
@@ -730,7 +743,6 @@ end
 local function apply_to_list(list,size,head,pardir)
     local index   = 1
     local current = head
-    local done    = false
     while current do
         if index > size then
             report_directions("fatal error, size mismatch")
@@ -751,34 +763,31 @@ local function apply_to_list(list,size,head,pardir)
                 setcolor(current,direction,false,mirror)
             end
         elseif id == hlist_code or id == vlist_code then
-            setdir(current,pardir) -- is this really needed?
+            setdirection(current,pardir) -- is this really needed?
         elseif id == glue_code then
             if enddir and getsubtype(current) == parfillskip_code then
                 -- insert the last enddir before \parfillskip glue
-                local d = new_textdir(enddir)
-                setprop(d,"directions",true)
+                local d = new_direction(enddir,true)
+             -- setprop(d,"directions",true)
              -- setattrlist(d,current)
                 head = insert_node_before(head,current,d)
                 enddir = false
-                done = true
             end
         elseif begindir then
-            if id == localpar_code then
+            if id == localpar_code and getsubtype(current) == 0 then
                 -- localpar should always be the 1st node
-                local d = new_textdir(begindir)
-                setprop(d,"directions",true)
+                local d = new_direction(begindir)
+             -- setprop(d,"directions",true)
              -- setattrlist(d,current)
                 head, current = insert_node_after(head,current,d)
                 begindir = nil
-                done = true
             end
         end
         if begindir then
-            local d = new_textdir(begindir)
-            setprop(d,"directions",true)
+            local d = new_direction(begindir)
+         -- setprop(d,"directions",true)
          -- setattrlist(d,current)
             head = insert_node_before(head,current,d)
-            done = true
         end
         local skip = entry.skip
         if skip and skip > 0 then
@@ -788,30 +797,28 @@ local function apply_to_list(list,size,head,pardir)
             end
         end
         if enddir then
-            local d = new_textdir(enddir)
-            setprop(d,"directions",true)
+            local d = new_direction(enddir,true)
+         -- setprop(d,"directions",true)
          -- setattrlist(d,current)
             head, current = insert_node_after(head,current,d)
-            done = true
         end
         if not entry.remove then
             current = getnext(current)
         elseif remove_controls then
             -- X9
             head, current = remove_node(head,current,true)
-            done = true
         else
             current = getnext(current)
         end
         index = index + 1
     end
-    return head, done
+    return head
 end
 
-local function process(head)
-    head = tonut(head)
+local function process(head,direction,only_one,where)
+    -- This is an adapted version: 
     local list, size = build_list(head)
-    local baselevel, pardir, dirfound = get_baselevel(head,list,size) -- we always have an inline dir node in context
+    local baselevel, dirfound = get_baselevel(head,list,size,direction)
     if not dirfound and trace_details then
         report_directions("no initial direction found, gambling")
     end
@@ -825,8 +832,7 @@ local function process(head)
         report_directions("after  : %s",show_list(list,size,"direction"))
         report_directions("result : %s",show_done(list,size))
     end
-    local head, done = apply_to_list(list,size,head,pardir)
-    return tonode(head), done
+    return apply_to_list(list,size,head,baselevel)
 end
 
 directions.installhandler(interfaces.variables.one,process)

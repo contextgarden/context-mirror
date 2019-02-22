@@ -19,7 +19,7 @@ if not modules then modules = { } end modules ['math-noa'] = {
 -- 20D6 -> 2190
 -- 20D7 -> 2192
 
--- todo: most is math_char so we can have simple dedicated loops
+-- todo: most is mathchar_code so we can have simple dedicated loops
 
 -- nota bene: uunderdelimiter uoverdelimiter etc are radicals (we have 5 types)
 
@@ -31,177 +31,184 @@ local insert, remove = table.insert, table.remove
 local div = math.div
 local bor, band = bit32.bor, bit32.band
 
-local fonts                = fonts
-local nodes                = nodes
-local node                 = node
-local mathematics          = mathematics
-local context              = context
+local fonts              = fonts
+local nodes              = nodes
+local node               = node
+local mathematics        = mathematics
+local context            = context
 
-local otf                  = fonts.handlers.otf
-local otffeatures          = fonts.constructors.features.otf
-local registerotffeature   = otffeatures.register
+local otf                = fonts.handlers.otf
+local otffeatures        = fonts.constructors.features.otf
+local registerotffeature = otffeatures.register
 
-local privateattribute     = attributes.private
-local registertracker      = trackers.register
-local registerdirective    = directives.register
-local logreporter          = logs.reporter
-local setmetatableindex    = table.setmetatableindex
+local privateattribute   = attributes.private
+local registertracker    = trackers.register
+local registerdirective  = directives.register
+local logreporter        = logs.reporter
+local setmetatableindex  = table.setmetatableindex
 
-local colortracers         = nodes.tracers.colors
+local colortracers       = nodes.tracers.colors
 
-local trace_remapping      = false  registertracker("math.remapping",   function(v) trace_remapping   = v end)
-local trace_processing     = false  registertracker("math.processing",  function(v) trace_processing  = v end)
-local trace_analyzing      = false  registertracker("math.analyzing",   function(v) trace_analyzing   = v end)
-local trace_normalizing    = false  registertracker("math.normalizing", function(v) trace_normalizing = v end)
-local trace_collapsing     = false  registertracker("math.collapsing",  function(v) trace_collapsing  = v end)
-local trace_fixing         = false  registertracker("math.fixing",      function(v) trace_foxing      = v end)
-local trace_patching       = false  registertracker("math.patching",    function(v) trace_patching    = v end)
-local trace_goodies        = false  registertracker("math.goodies",     function(v) trace_goodies     = v end)
-local trace_variants       = false  registertracker("math.variants",    function(v) trace_variants    = v end)
-local trace_alternates     = false  registertracker("math.alternates",  function(v) trace_alternates  = v end)
-local trace_italics        = false  registertracker("math.italics",     function(v) trace_italics     = v end)
-local trace_kernpairs      = false  registertracker("math.kernpairs",   function(v) trace_kernpairs   = v end)
-local trace_domains        = false  registertracker("math.domains",     function(v) trace_domains     = v end)
-local trace_families       = false  registertracker("math.families",    function(v) trace_families    = v end)
-local trace_fences         = false  registertracker("math.fences",      function(v) trace_fences      = v end)
+local trace_remapping    = false  registertracker("math.remapping",   function(v) trace_remapping   = v end)
+local trace_processing   = false  registertracker("math.processing",  function(v) trace_processing  = v end)
+local trace_analyzing    = false  registertracker("math.analyzing",   function(v) trace_analyzing   = v end)
+local trace_normalizing  = false  registertracker("math.normalizing", function(v) trace_normalizing = v end)
+local trace_collapsing   = false  registertracker("math.collapsing",  function(v) trace_collapsing  = v end)
+local trace_fixing       = false  registertracker("math.fixing",      function(v) trace_foxing      = v end)
+local trace_patching     = false  registertracker("math.patching",    function(v) trace_patching    = v end)
+local trace_goodies      = false  registertracker("math.goodies",     function(v) trace_goodies     = v end)
+local trace_variants     = false  registertracker("math.variants",    function(v) trace_variants    = v end)
+local trace_alternates   = false  registertracker("math.alternates",  function(v) trace_alternates  = v end)
+local trace_italics      = false  registertracker("math.italics",     function(v) trace_italics     = v end)
+local trace_kernpairs    = false  registertracker("math.kernpairs",   function(v) trace_kernpairs   = v end)
+local trace_domains      = false  registertracker("math.domains",     function(v) trace_domains     = v end)
+local trace_families     = false  registertracker("math.families",    function(v) trace_families    = v end)
+local trace_fences       = false  registertracker("math.fences",      function(v) trace_fences      = v end)
+local trace_unstacking   = false  registertracker("math.unstack",     function(v) trace_unstacking  = v end)
 
-local check_coverage       = true   registerdirective("math.checkcoverage",  function(v) check_coverage  = v end)
+local check_coverage     = true   registerdirective("math.checkcoverage",  function(v) check_coverage  = v end)
 
-local report_processing    = logreporter("mathematics","processing")
-local report_remapping     = logreporter("mathematics","remapping")
-local report_normalizing   = logreporter("mathematics","normalizing")
-local report_collapsing    = logreporter("mathematics","collapsing")
-local report_fixing        = logreporter("mathematics","fixing")
-local report_patching      = logreporter("mathematics","patching")
-local report_goodies       = logreporter("mathematics","goodies")
-local report_variants      = logreporter("mathematics","variants")
-local report_alternates    = logreporter("mathematics","alternates")
-local report_italics       = logreporter("mathematics","italics")
-local report_kernpairs     = logreporter("mathematics","kernpairs")
-local report_domains       = logreporter("mathematics","domains")
-local report_families      = logreporter("mathematics","families")
-local report_fences        = logreporter("mathematics","fences")
+local report_processing  = logreporter("mathematics","processing")
+local report_remapping   = logreporter("mathematics","remapping")
+local report_normalizing = logreporter("mathematics","normalizing")
+local report_collapsing  = logreporter("mathematics","collapsing")
+local report_fixing      = logreporter("mathematics","fixing")
+local report_patching    = logreporter("mathematics","patching")
+local report_goodies     = logreporter("mathematics","goodies")
+local report_variants    = logreporter("mathematics","variants")
+local report_alternates  = logreporter("mathematics","alternates")
+local report_italics     = logreporter("mathematics","italics")
+local report_kernpairs   = logreporter("mathematics","kernpairs")
+local report_domains     = logreporter("mathematics","domains")
+local report_families    = logreporter("mathematics","families")
+local report_fences      = logreporter("mathematics","fences")
+local report_unstacking  = logreporter("mathematics","unstack")
 
-local a_mathrendering      = privateattribute("mathrendering")
-local a_exportstatus       = privateattribute("exportstatus")
+local a_mathrendering    = privateattribute("mathrendering")
+local a_exportstatus     = privateattribute("exportstatus")
 
-local nuts                 = nodes.nuts
-local nodepool             = nuts.pool
-local tonut                = nuts.tonut
-local tonode               = nuts.tonode
-local nutstring            = nuts.tostring
+local nuts               = nodes.nuts
+local nodepool           = nuts.pool
+local tonut              = nuts.tonut
+local nutstring          = nuts.tostring
 
-local setfield             = nuts.setfield
-local setlink              = nuts.setlink
-local setlist              = nuts.setlist
-local setnext              = nuts.setnext
-local setprev              = nuts.setprev
-local setchar              = nuts.setchar
-local setfam               = nuts.setfam
-local setsubtype           = nuts.setsubtype
-local setattr              = nuts.setattr
-local setattrlist          = nuts.setattrlist
+local setfield           = nuts.setfield
+local setlink            = nuts.setlink
+local setlist            = nuts.setlist
+local setnext            = nuts.setnext
+local setprev            = nuts.setprev
+local setchar            = nuts.setchar
+local setfam             = nuts.setfam
+local setsubtype         = nuts.setsubtype
+local setattr            = nuts.setattr
+local setattrlist        = nuts.setattrlist
+local setwidth           = nuts.setwidth
+local setheight          = nuts.setheight
+local setdepth           = nuts.setdepth
 
-local getfield             = nuts.getfield
-local getnext              = nuts.getnext
-local getprev              = nuts.getprev
-local getboth              = nuts.getboth
-local getid                = nuts.getid
-local getsubtype           = nuts.getsubtype
-local getchar              = nuts.getchar
-local getfont              = nuts.getfont
-local getfam               = nuts.getfam
-local getattr              = nuts.getattr
-local getlist              = nuts.getlist
+local getfield           = nuts.getfield
+local getnext            = nuts.getnext
+local getprev            = nuts.getprev
+local getboth            = nuts.getboth
+local getid              = nuts.getid
+local getsubtype         = nuts.getsubtype
+local getchar            = nuts.getchar
+local getfont            = nuts.getfont
+local getfam             = nuts.getfam
+local getattr            = nuts.getattr
+local getlist            = nuts.getlist
+local getwidth           = nuts.getwidth
+local getheight          = nuts.getheight
+local getdepth           = nuts.getdepth
 
-local getnucleus           = nuts.getnucleus
-local getsub               = nuts.getsub
-local getsup               = nuts.getsup
+local getnucleus         = nuts.getnucleus
+local getsub             = nuts.getsub
+local getsup             = nuts.getsup
 
-local setnucleus           = nuts.setnucleus
-local setsub               = nuts.setsub
-local setsup               = nuts.setsup
+local setnucleus         = nuts.setnucleus
+local setsub             = nuts.setsub
+local setsup             = nuts.setsup
 
-local flush_node           = nuts.flush
-local copy_node            = nuts.copy
-local slide_nodes          = nuts.slide
-local set_visual           = nuts.setvisual
+local flush_node         = nuts.flush
+local copy_node          = nuts.copy
+local slide_nodes        = nuts.slide
+local set_visual         = nuts.setvisual
 
-local mlist_to_hlist       = nodes.mlist_to_hlist
+local mlist_to_hlist     = nuts.mlist_to_hlist
 
-local font_of_family       = node.family_font
+local font_of_family     = node.family_font
 
-local new_kern             = nodepool.kern
-local new_submlist         = nodepool.submlist
-local new_noad             = nodepool.noad
-local new_delimiter        = nodepool.delimiter
-local new_fence            = nodepool.fence
+local new_kern           = nodepool.kern
+local new_submlist       = nodepool.submlist
+local new_noad           = nodepool.noad
+local new_delimiter      = nodepool.delimiter
+local new_fence          = nodepool.fence
 
-local fonthashes           = fonts.hashes
-local fontdata             = fonthashes.identifiers
-local fontcharacters       = fonthashes.characters
-local fontitalics          = fonthashes.italics
+local fonthashes         = fonts.hashes
+local fontdata           = fonthashes.identifiers
+local fontcharacters     = fonthashes.characters
+local fontitalics        = fonthashes.italics
 
-local variables            = interfaces.variables
-local texsetattribute      = tex.setattribute
-local texgetattribute      = tex.getattribute
-local unsetvalue           = attributes.unsetvalue
-local implement            = interfaces.implement
+local variables          = interfaces.variables
+local texsetattribute    = tex.setattribute
+local texgetattribute    = tex.getattribute
+local unsetvalue         = attributes.unsetvalue
+local implement          = interfaces.implement
 
-local v_reset              = variables.reset
+local v_reset            = variables.reset
 
-local chardata             = characters.data
+local chardata           = characters.data
 
-noads                      = noads or { }  -- todo: only here
-local noads                = noads
+noads                    = noads or { }  -- todo: only here
+local noads              = noads
 
-noads.processors           = noads.processors or { }
-local processors           = noads.processors
+noads.processors         = noads.processors or { }
+local processors         = noads.processors
 
-noads.handlers             = noads.handlers   or { }
-local handlers             = noads.handlers
+noads.handlers           = noads.handlers   or { }
+local handlers           = noads.handlers
 
-local tasks                = nodes.tasks
-local enableaction         = tasks.enableaction
-local setaction            = tasks.setaction
+local tasks              = nodes.tasks
+local enableaction       = tasks.enableaction
+local setaction          = tasks.setaction
 
-local nodecodes            = nodes.nodecodes
-local noadcodes            = nodes.noadcodes
-local fencecodes           = nodes.fencecodes
+local nodecodes          = nodes.nodecodes
+local noadcodes          = nodes.noadcodes
+local fencecodes         = nodes.fencecodes
 
-local noad_ord             = noadcodes.ord
-local noad_rel             = noadcodes.rel
-local noad_bin             = noadcodes.bin
-local noad_open            = noadcodes.open
-local noad_close           = noadcodes.close
-local noad_punct           = noadcodes.punct
-local noad_opdisplaylimits = noadcodes.opdisplaylimits
-local noad_oplimits        = noadcodes.oplimits
-local noad_opnolimits      = noadcodes.opnolimits
-local noad_inner           = noadcodes.inner
+local ordnoad_code             = noadcodes.ord
+local relnode_code             = noadcodes.rel
+local binnoad_code             = noadcodes.bin
+local opennoad_code            = noadcodes.open
+local closenoad_code           = noadcodes.close
+local punctnoad_code           = noadcodes.punct
+local opdisplaylimitsnoad_code = noadcodes.opdisplaylimits
+local oplimitsnoad_code        = noadcodes.oplimits
+local opnolimitsnoad_code      = noadcodes.opnolimits
+local innernoad_code           = noadcodes.inner
 
-local math_noad            = nodecodes.noad           -- attr nucleus sub sup
-local math_accent          = nodecodes.accent         -- attr nucleus sub sup accent
-local math_radical         = nodecodes.radical        -- attr nucleus sub sup left degree
-local math_fraction        = nodecodes.fraction       -- attr nucleus sub sup left right
-local math_subbox          = nodecodes.subbox         -- attr list
-local math_submlist        = nodecodes.submlist       -- attr list
-local math_char            = nodecodes.mathchar       -- attr fam char
-local math_textchar        = nodecodes.mathtextchar   -- attr fam char
-local math_delim           = nodecodes.delim          -- attr small_fam small_char large_fam large_char
------ math_style           = nodecodes.style          -- attr style
-local math_choice          = nodecodes.choice         -- attr display text script scriptscript
-local math_fence           = nodecodes.fence          -- attr subtype
+local noad_code          = nodecodes.noad           -- attr nucleus sub sup
+local accent_code        = nodecodes.accent         -- attr nucleus sub sup accent
+local radical_code       = nodecodes.radical        -- attr nucleus sub sup left degree
+local fraction_code      = nodecodes.fraction       -- attr nucleus sub sup left right
+local subbox_code        = nodecodes.subbox         -- attr list
+local submlist_code      = nodecodes.submlist       -- attr list
+local mathchar_code      = nodecodes.mathchar       -- attr fam char
+local mathtextchar_code  = nodecodes.mathtextchar   -- attr fam char
+local delim_code         = nodecodes.delim          -- attr small_fam small_char large_fam large_char
+----- style_code         = nodecodes.style          -- attr style
+local math_choice        = nodecodes.choice         -- attr display text script scriptscript
+local fence_code         = nodecodes.fence          -- attr subtype
 
-local left_fence_code      = fencecodes.left
-local middle_fence_code    = fencecodes.middle
-local right_fence_code     = fencecodes.right
+local leftfence_code     = fencecodes.left
+local middlefence_code   = fencecodes.middle
+local rightfence_code    = fencecodes.right
 
 -- local mathclasses          = mathematics.classes
 -- local fenceclasses         = {
---     [left_fence_code]   = mathclasses.open,
---     [middle_fence_code] = mathclasses.middle,
---     [right_fence_code]  = mathclasses.close,
+--     [leftfence_code]   = mathclasses.open,
+--     [middlefence_code] = mathclasses.middle,
+--     [rightfence_code]  = mathclasses.close,
 -- }
 
 -- this initial stuff is tricky as we can have removed and new nodes with the same address
@@ -211,6 +218,7 @@ local right_fence_code     = fencecodes.right
 -- local sf = setfield local st = setmetatableindex("number") setfield = function(n,f,v) st[f] = st[f] + 1        sf(n,f,v) end mathematics.SETFIELD = st
 
 local function process(start,what,n,parent)
+
     if n then
         n = n + 1
     else
@@ -224,9 +232,9 @@ local function process(start,what,n,parent)
     while start do
         local id = getid(start)
         if trace_processing then
-            if id == math_noad then
+            if id == noad_code then
                 report_processing("%w%S, class %a",n*2,nutstring(start),noadcodes[getsubtype(start)])
-            elseif id == math_char then
+            elseif id == mathchar_code then
                 local char = getchar(start)
                 local font = getfont(start)
                 local fam  = getfam(start)
@@ -256,16 +264,16 @@ local function process(start,what,n,parent)
                  -- report_processing("stop processing")
                 end
             end
-        elseif id == math_noad then
+        elseif id == noad_code then
             -- single characters are like this
             local noad = getnucleus(start)              if noad then process(noad,what,n,start) end -- list
                   noad = getsup    (start)              if noad then process(noad,what,n,start) end -- list
                   noad = getsub    (start)              if noad then process(noad,what,n,start) end -- list
-        elseif id == math_char or id == math_textchar or id == math_delim then
+        elseif id == mathchar_code or id == mathtextchar_code or id == delim_code then
             break
-        elseif id == math_subbox or id == math_submlist then
+        elseif id == subbox_code or id == submlist_code then
             local noad = getlist(start)                 if noad then process(noad,what,n,start) end -- list (not getlist !)
-        elseif id == math_fraction then
+        elseif id == fraction_code then
             local noad = getfield(start,"num")          if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"denom")        if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"left")         if noad then process(noad,what,n,start) end -- delimiter
@@ -275,21 +283,21 @@ local function process(start,what,n,parent)
                   noad = getfield(start,"text")         if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"script")       if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"scriptscript") if noad then process(noad,what,n,start) end -- list
-        elseif id == math_fence then
+        elseif id == fence_code then
             local noad = getfield(start,"delim")        if noad then process(noad,what,n,start) end -- delimiter
-        elseif id == math_radical then
+        elseif id == radical_code then
             local noad = getnucleus(start)              if noad then process(noad,what,n,start) end -- list
                   noad = getsup    (start)              if noad then process(noad,what,n,start) end -- list
                   noad = getsub    (start)              if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"left")         if noad then process(noad,what,n,start) end -- delimiter
                   noad = getfield(start,"degree")       if noad then process(noad,what,n,start) end -- list
-        elseif id == math_accent then
+        elseif id == accent_code then
             local noad = getnucleus(start)              if noad then process(noad,what,n,start) end -- list
                   noad = getsup    (start)              if noad then process(noad,what,n,start) end -- list
                   noad = getsub    (start)              if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"accent")       if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"bot_accent")   if noad then process(noad,what,n,start) end -- list
-     -- elseif id == math_style then
+     -- elseif id == style_code then
      --     -- has a next
      -- else
      --     -- glue, penalty, etc
@@ -297,20 +305,20 @@ local function process(start,what,n,parent)
         start = getnext(start)
     end
     if not parent then
-        return initial, true -- only first level -- for now
+        return initial -- only first level -- for now
     end
 end
 
 local function processnested(current,what,n)
     local noad = nil
     local id   = getid(current)
-    if id == math_noad then
+    if id == noad_code then
         noad = getnucleus(current)              if noad then process(noad,what,n,current) end -- list
         noad = getsup    (current)              if noad then process(noad,what,n,current) end -- list
         noad = getsub    (current)              if noad then process(noad,what,n,current) end -- list
-    elseif id == math_subbox or id == math_submlist then
+    elseif id == subbox_code or id == submlist_code then
         noad = getlist(current)                 if noad then process(noad,what,n,current) end -- list (not getlist !)
-    elseif id == math_fraction then
+    elseif id == fraction_code then
         noad = getfield(current,"num")          if noad then process(noad,what,n,current) end -- list
         noad = getfield(current,"denom")        if noad then process(noad,what,n,current) end -- list
         noad = getfield(current,"left")         if noad then process(noad,what,n,current) end -- delimiter
@@ -320,15 +328,15 @@ local function processnested(current,what,n)
         noad = getfield(current,"text")         if noad then process(noad,what,n,current) end -- list
         noad = getfield(current,"script")       if noad then process(noad,what,n,current) end -- list
         noad = getfield(current,"scriptscript") if noad then process(noad,what,n,current) end -- list
-    elseif id == math_fence then
+    elseif id == fence_code then
         noad = getfield(current,"delim")        if noad then process(noad,what,n,current) end -- delimiter
-    elseif id == math_radical then
+    elseif id == radical_code then
         noad = getnucleus(current)              if noad then process(noad,what,n,current) end -- list
         noad = getsup    (current)              if noad then process(noad,what,n,current) end -- list
         noad = getsub    (current)              if noad then process(noad,what,n,current) end -- list
         noad = getfield(current,"left")         if noad then process(noad,what,n,current) end -- delimiter
         noad = getfield(current,"degree")       if noad then process(noad,what,n,current) end -- list
-    elseif id == math_accent then
+    elseif id == accent_code then
         noad = getnucleus(current)              if noad then process(noad,what,n,current) end -- list
         noad = getsup    (current)              if noad then process(noad,what,n,current) end -- list
         noad = getsub    (current)              if noad then process(noad,what,n,current) end -- list
@@ -340,13 +348,13 @@ end
 local function processstep(current,process,n,id)
     local noad = nil
     local id   = id or getid(current)
-    if id == math_noad then
+    if id == noad_code then
         noad = getnucleus(current)              if noad then process(noad,n,current) end -- list
         noad = getsup    (current)              if noad then process(noad,n,current) end -- list
         noad = getsub    (current)              if noad then process(noad,n,current) end -- list
-    elseif id == math_subbox or id == math_submlist then
+    elseif id == subbox_code or id == submlist_code then
         noad = getlist(current)                 if noad then process(noad,n,current) end -- list (not getlist !)
-    elseif id == math_fraction then
+    elseif id == fraction_code then
         noad = getfield(current,"num")          if noad then process(noad,n,current) end -- list
         noad = getfield(current,"denom")        if noad then process(noad,n,current) end -- list
         noad = getfield(current,"left")         if noad then process(noad,n,current) end -- delimiter
@@ -356,15 +364,15 @@ local function processstep(current,process,n,id)
         noad = getfield(current,"text")         if noad then process(noad,n,current) end -- list
         noad = getfield(current,"script")       if noad then process(noad,n,current) end -- list
         noad = getfield(current,"scriptscript") if noad then process(noad,n,current) end -- list
-    elseif id == math_fence then
+    elseif id == fence_code then
         noad = getfield(current,"delim")        if noad then process(noad,n,current) end -- delimiter
-    elseif id == math_radical then
+    elseif id == radical_code then
         noad = getnucleus(current)              if noad then process(noad,n,current) end -- list
         noad = getsup    (current)              if noad then process(noad,n,current) end -- list
         noad = getsub    (current)              if noad then process(noad,n,current) end -- list
         noad = getfield(current,"left")         if noad then process(noad,n,current) end -- delimiter
         noad = getfield(current,"degree")       if noad then process(noad,n,current) end -- list
-    elseif id == math_accent then
+    elseif id == accent_code then
         noad = getnucleus(current)              if noad then process(noad,n,current) end -- list
         noad = getsup    (current)              if noad then process(noad,n,current) end -- list
         noad = getsub    (current)              if noad then process(noad,n,current) end -- list
@@ -374,15 +382,14 @@ local function processstep(current,process,n,id)
 end
 
 local function processnoads(head,actions,banner)
-    local h, d
     if trace_processing then
         report_processing("start %a",banner)
-        h, d = process(tonut(head),actions)
+        head = process(head,actions)
         report_processing("stop %a",banner)
     else
-        h, d = process(tonut(head),actions)
+        head = process(head,actions)
     end
-    return h and tonode(h) or head, d == nil and true or d
+    return head
 end
 
 noads.process       = processnoads
@@ -456,7 +463,35 @@ do
         "pseudobold",
     }
 
-    families[math_char] = function(pointer)
+    families[fraction_code] = function(pointer,what,n,parent)
+        local a = getattr(pointer,a_mathfamily)
+        if a and a >= 0 then
+            if a > 0 then
+                setattr(pointer,a_mathfamily,0)
+                if a > 5 then
+                    a = a - 3
+                end
+            end
+            setfam(pointer,a)
+        end
+        processnested(pointer,families,n+1)
+    end
+
+    families[noad_code] = function(pointer,what,n,parent)
+        local a = getattr(pointer,a_mathfamily)
+        if a and a >= 0 then
+            if a > 0 then
+                setattr(pointer,a_mathfamily,0)
+                if a > 5 then
+                    a = a - 3
+                end
+            end
+            setfam(pointer,a)
+        end
+        processnested(pointer,families,n+1)
+    end
+
+    families[mathchar_code] = function(pointer)
         if getfam(pointer) == 0 then
             local a = getattr(pointer,a_mathfamily)
             if a and a > 0 then
@@ -501,8 +536,7 @@ do
             end
         end
     end
-
-    families[math_delim] = function(pointer)
+    families[delim_code] = function(pointer)
         if getfield(pointer,"small_fam") == 0 then
             local a = getattr(pointer,a_mathfamily)
             if a and a > 0 then
@@ -534,7 +568,7 @@ do
 
     -- will become:
 
-    -- families[math_delim] = function(pointer)
+    -- families[delim_code] = function(pointer)
     --     if getfam(pointer) == 0 then
     --         local a = getattr(pointer,a_mathfamily)
     --         if a and a > 0 then
@@ -556,11 +590,11 @@ do
     --     end
     -- end
 
-    families[math_textchar] = families[math_char]
+    families[mathtextchar_code] = families[mathchar_code]
 
     function handlers.families(head,style,penalties)
         processnoads(head,families,"families")
-        return true
+        return true -- not needed
     end
 
 end
@@ -604,7 +638,7 @@ do
         end
     end
 
-    relocate[math_char] = function(pointer)
+    relocate[mathchar_code] = function(pointer)
         local g          = getattr(pointer,a_mathgreek) or 0
         local a          = getattr(pointer,a_mathalphabet) or 0
         local char       = getchar(pointer)
@@ -671,13 +705,13 @@ do
         end
     end
 
-    relocate[math_textchar] = function(pointer)
+    relocate[mathtextchar_code] = function(pointer)
         if trace_analyzing then
             setnodecolor(pointer,"font:init")
         end
     end
 
-    relocate[math_delim] = function(pointer)
+    relocate[delim_code] = function(pointer)
         if trace_analyzing then
             setnodecolor(pointer,"font:fina")
         end
@@ -685,7 +719,7 @@ do
 
     function handlers.relocate(head,style,penalties)
         processnoads(head,relocate,"relocate")
-        return true
+        return true -- not needed
     end
 
 end
@@ -698,7 +732,7 @@ do
 
     local rendersets = mathematics.renderings.numbers or { } -- store
 
-    render[math_char] = function(pointer)
+    render[mathchar_code] = function(pointer)
         local attr = getattr(pointer,a_mathrendering)
         if attr and attr > 0 then
             local char = getchar(pointer)
@@ -719,7 +753,7 @@ do
 
     function handlers.render(head,style,penalties)
         processnoads(head,render,"render")
-        return true
+        return true -- not needed
     end
 
 end
@@ -739,51 +773,46 @@ do
     local a_mathsize  = privateattribute("mathsize") -- this might move into other fence code
     local resize      = { }
 
-    resize[math_fence] = function(pointer)
+    resize[fence_code] = function(pointer)
         local subtype = getsubtype(pointer)
-        if subtype == left_fence_code or subtype == right_fence_code then
+        if subtype == leftfence_code or subtype == rightfence_code then
             local a = getattr(pointer,a_mathsize)
             if a and a > 0 then
-                local method, size = div(a,100), a % 100
+                local method = div(a,100)
+                local size   = a % 100
                 setattr(pointer,a_mathsize,0)
                 local delimiter = getfield(pointer,"delim")
-                local chr = getfield(delimiter,"small_char")
+                local chr = getchar(delimiter)
                 if chr > 0 then
-                    local fam = getfield(delimiter,"small_fam")
+                    local fam = getfam(delimiter)
                     local id = font_of_family(fam)
                     if id > 0 then
-                        setfield(delimiter,"small_char",mathematics.big(fontdata[id],chr,size,method))
+                        local data = fontdata[id]
+                        local char = mathematics.big(data,chr,size,method)
+                        local ht   = getheight(pointer)
+                        local dp   = getdepth(pointer)
+                        if ht == 1 or dp == 1 then -- 1 scaled point is a signal
+                            local chardata = data.characters[char]
+                            if ht == 1 then
+                                setheight(pointer,chardata.height)
+                            end
+                            if dp == 1 then
+                                setdepth(pointer,chardata.depth)
+                            end
+                        end
+                        if trace_fences then
+                            report_fences("replacing %C by %C using method %a and size %a",chr,char,method,size)
+                        end
+                        setchar(delimiter,char)
                     end
                 end
             end
         end
     end
 
-    -- will become:
-
-    -- resize[math_fence] = function(pointer)
-    --     local subtype = getsubtype(pointer)
-    --     if subtype == left_fence_code or subtype == right_fence_code then
-    --         local a = getattr(pointer,a_mathsize)
-    --         if a and a > 0 then
-    --             local method, size = div(a,100), a % 100
-    --             setattr(pointer,a_mathsize,0)
-    --             local delimiter = getfield(pointer,"delim")
-    --             local chr = getchar(delimiter)
-    --             if chr > 0 then
-    --                 local fam = getfam(delimiter)
-    --                 local id = font_of_family(fam)
-    --                 if id > 0 then
-    --                     setchar(delimiter,mathematics.big(fontdata[id],chr,size,method))
-    --                 end
-    --             end
-    --         end
-    --     end
-    -- end
-
     function handlers.resize(head,style,penalties)
         processnoads(head,resize,"resize")
-        return true
+        return true -- not needed
     end
 
 end
@@ -797,8 +826,8 @@ do
     local dummyfencechar  = 0x2E
 
     local function makefence(what,char)
-        local d = new_delimiter()
-        local f = new_fence()
+        local d = new_delimiter() -- todo: attr
+        local f = new_fence()     -- todo: attr
         if char then
             local sym = getnucleus(char)
             local chr = getchar(sym)
@@ -821,8 +850,8 @@ do
     -- will become
 
     -- local function makefence(what,char)
-    --     local d = new_delimiter()
-    --     local f = new_fence()
+    --     local d = new_delimiter() -- todo: attr
+    --     local f = new_fence()     -- todo: attr
     --     if char then
     --         local sym = getnucleus(char)
     --         local chr = getchar(sym)
@@ -843,7 +872,7 @@ do
     local function makelist(noad,f_o,o_next,c_prev,f_c,middle)
         local list = new_submlist()
         setlist(list,f_o)
-        setsubtype(noad,noad_inner)
+        setsubtype(noad,innernoad_code)
         setnucleus(noad,list)
         setlink(f_o,o_next)
         setlink(c_prev,f_c)
@@ -854,7 +883,7 @@ do
                 local m = middle[current]
                 if m then
                     local next  = getnext(current)
-                    local fence = makefence(middle_fence_code,current)
+                    local fence = makefence(middlefence_code,current)
                     setnucleus(current)
                     flush_node(current)
                     middle[current] = nil
@@ -876,8 +905,8 @@ do
         if o_next == close then
             return close
         else
-            local f_o = makefence(left_fence_code,open)
-            local f_c = makefence(right_fence_code,close)
+            local f_o = makefence(leftfence_code,open)
+            local f_c = makefence(rightfence_code,close)
             makelist(open,f_o,o_next,c_prev,f_c,middle)
             setnucleus(close)
             flush_node(close)
@@ -890,8 +919,8 @@ do
     end
 
     local function convert_open(open,last,middle)
-        local f_o = makefence(left_fence_code,open)
-        local f_c = makefence(right_fence_code)
+        local f_o = makefence(leftfence_code,open)
+        local f_c = makefence(rightfence_code)
         local o_prev, o_next = getboth(open)
         local l_prev, l_next = getboth(last)
         makelist(open,f_o,o_next,last,f_c,middle)
@@ -903,8 +932,8 @@ do
     end
 
     local function convert_close(close,first,middle)
-        local f_o = makefence(left_fence_code)
-        local f_c = makefence(right_fence_code,close)
+        local f_o = makefence(leftfence_code)
+        local f_c = makefence(rightfence_code,close)
         local c_prev = getprev(close)
         makelist(close,f_o,first,c_prev,f_c,middle)
         return close
@@ -922,7 +951,7 @@ do
         local middle  = nil -- todo: use properties
         while current do
             local id = getid(current)
-            if id == math_noad then
+            if id == noad_code then
                 local a = getattr(current,a_autofence)
                 if a and a > 0 then
                     local stack = stacks[n]
@@ -1009,7 +1038,7 @@ do
     function handlers.autofences(head,style,penalties)
         if enabled then -- tex.modes.c_math_fences_auto
          -- inspect(nodes.totree(head))
-            processfences(tonut(head),1)
+            processfences(head,1)
          -- inspect(nodes.totree(head))
         end
     end
@@ -1031,9 +1060,9 @@ do
         local next = getnext(pointer)
         local start_super, stop_super, start_sub, stop_sub
         local mode = "unset"
-        while next and getid(next) == math_noad do
+        while next and getid(next) == noad_code do
             local nextnucleus = getnucleus(next)
-            if nextnucleus and getid(nextnucleus) == math_char and not getsub(next) and not getsup(next) then
+            if nextnucleus and getid(nextnucleus) == mathchar_code and not getsub(next) and not getsup(next) then
                 local char = getchar(nextnucleus)
                 local s = superscripts[char]
                 if s then
@@ -1088,6 +1117,18 @@ do
             setnext(stop_super)
         end
         if start_sub then
+
+--             if mode == "sub" then
+--                 local sup = getsup(pointer)
+--                 if sup and not getsub(pointer) then
+--                     local nxt = getnext(pointer)
+--                     local new = new_noad(pointer)
+--                     setnucleus(new,new_submlist())
+--                     setlink(pointer,new,nxt)
+--                     pointer = new
+--                 end
+--             end
+
             if start_sub == stop_sub then
                 setsub(pointer,getnucleus(start_sub))
             else
@@ -1103,13 +1144,54 @@ do
         -- we could return stop
     end
 
-    unscript[math_char] = replace -- not noads as we need to recurse
+    unscript[mathchar_code] = replace -- not noads as we need to recurse
 
     function handlers.unscript(head,style,penalties)
         processnoads(head,unscript,"unscript")
-    --  processnoads(head,checkers,"checkers")
-        return true
+        return true -- not needed
     end
+
+end
+
+do
+
+    local unstack   = { }    noads.processors.unstack = unstack
+    local enabled   = false
+    local a_unstack = privateattribute("mathunstack")
+
+    unstack[noad_code] = function(pointer)
+        if getattr(pointer,a_unstack) then
+            local sup = getsup(pointer)
+            local sub = getsub(pointer)
+            if sup and sub then
+             -- if trace_unstacking then
+             --     report_unstacking() -- todo ... what to show ...
+             -- end
+                local nxt = getnext(pointer)
+                local new = new_noad(pointer)
+                setnucleus(new,new_submlist())
+                setsub(pointer)
+                setsub(new,sub)
+                setlink(pointer,new,nxt)
+            end
+        end
+    end
+
+    function handlers.unstack(head,style,penalties)
+        if enabled then
+            processnoads(head,unstack,"unstack")
+            return true -- not needed
+        end
+    end
+
+    implement {
+        name     = "enablescriptunstacking",
+        onlyonce = true,
+        actions  = function()
+            enableaction("math","noads.handlers.unstack")
+            enabled = true
+        end
+    }
 
 end
 
@@ -1306,7 +1388,7 @@ do
         arguments = { "integer", "string" }
     }
 
-    alternate[math_char] = function(pointer) -- slow
+    alternate[mathchar_code] = function(pointer) -- slow
         local a = getattr(pointer,a_mathalternate)
         if a and a > 0 then
             setattr(pointer,a_mathalternate,0)
@@ -1347,7 +1429,7 @@ do
 
     function handlers.alternates(head,style,penalties)
         processnoads(head,alternate,"alternate")
-        return true
+        return true -- not needed
     end
 
 end
@@ -1365,7 +1447,7 @@ end
 
 -- in opentype the italic correction of a limop is added to the width and luatex does
 -- some juggling that we want to avoid but we need to do something here (in fact, we could
--- better fix the width of the character
+-- better fix the width of the character)
 
 do
 
@@ -1382,8 +1464,8 @@ do
     local c_negative_d = "trace:dr"
 
     local function insert_kern(current,kern)
-        local sub  = new_submlist()
-        local noad = new_noad()
+        local sub  = new_submlist() -- todo: attr
+        local noad = new_noad()     -- todo: attr
         setlist(sub,kern)
         setnext(kern,noad)
         setnucleus(noad,current)
@@ -1393,7 +1475,7 @@ do
     registertracker("math.italics.visualize", function(v)
         if v then
             italic_kern = function(k)
-                local n = new_kern(k)
+                local n = new_kern(k) -- todo: attr
                 set_visual(n,"italic")
                 return n
             end
@@ -1454,7 +1536,7 @@ do
 
     end
 
-    italics[math_char] = function(pointer,what,n,parent)
+    italics[mathchar_code] = function(pointer,what,n,parent)
         local method = getattr(pointer,a_mathitalics)
         if method and method > 0 and method < 100 then
             local char = getchar(pointer)
@@ -1485,7 +1567,7 @@ do
 
     function handlers.italics(head,style,penalties)
         processnoads(head,italics,"italics")
-        return true
+        return true -- not needed
     end
 
     local enable = function()
@@ -1582,7 +1664,7 @@ do
 
     -- no correction after prime because that moved to a superscript
 
-    kernpairs[math_char] = function(pointer,what,n,parent)
+    kernpairs[mathchar_code] = function(pointer,what,n,parent)
         if getattr(pointer,a_kernpairs) == 1 then
             local font = getfont(pointer)
             local list = hash[font]
@@ -1591,7 +1673,7 @@ do
                 local found = list[first]
                 if found then
                     local next = getnext(parent)
-                    if next and getid(next) == math_noad then
+                    if next and getid(next) == noad_code then
                         pointer = getnucleus(next)
                         if pointer then
                             if getfont(pointer) == font then
@@ -1602,7 +1684,7 @@ do
                                     if trace_kernpairs then
                                         report_kernpairs("adding %p kerning between %C and %C",kern,first,second)
                                     end
-                                    setlink(parent,new_kern(kern),getnext(parent))
+                                    setlink(parent,new_kern(kern),getnext(parent)) -- todo: attr
                                 end
                             end
                         end
@@ -1614,7 +1696,7 @@ do
 
     function handlers.kernpairs(head,style,penalties)
         processnoads(head,kernpairs,"kernpairs")
-        return true
+        return true -- not needed
     end
 
 end
@@ -1629,20 +1711,20 @@ do
     local collapse         = { }
     local mathlists        = characters.mathlists
     local validpair        = {
-        [noad_ord]             = true,
-        [noad_rel]             = true,
-        [noad_bin]             = true, -- new
-        [noad_open]            = true, -- new
-        [noad_close]           = true, -- new
-        [noad_punct]           = true, -- new
-        [noad_opdisplaylimits] = true,
-        [noad_oplimits]        = true,
-        [noad_opnolimits]      = true,
+        [ordnoad_code]             = true,
+        [relnode_code]             = true,
+        [binnoad_code]             = true, -- new
+        [opennoad_code]            = true, -- new
+        [closenoad_code]           = true, -- new
+        [punctnoad_code]           = true, -- new
+        [opdisplaylimitsnoad_code] = true,
+        [oplimitsnoad_code]        = true,
+        [opnolimitsnoad_code]      = true,
     }
 
     local reported = setmetatableindex("table")
 
-    collapse[math_char] = function(pointer,what,n,parent)
+    collapse[mathchar_code] = function(pointer,what,n,parent)
 
         if parent and mathlists[getchar(pointer)] then
             local found, last, lucleus, lsup, lsub, category
@@ -1727,7 +1809,7 @@ do
 
     function noads.handlers.collapse(head,style,penalties)
         processnoads(head,collapse,"collapse")
-        return true
+        return true -- not needed
     end
 
     local enable = function()
@@ -1784,7 +1866,7 @@ do
 
  -- local function movesubscript(parent,current_nucleus,oldchar,newchar)
  --     local prev = getprev(parent)
- --     if prev and getid(prev) == math_noad then
+ --     if prev and getid(prev) == noad_code then
  --         local psup = getsup(prev)
  --         local psub = getsub(prev)
  --         if not psup and not psub then
@@ -1827,7 +1909,7 @@ do
         setnucleus(parent,dummy)
     end
 
-    fixscripts[math_char] = function(pointer,what,n,parent,nested) -- todo: switch to turn in on and off
+    fixscripts[mathchar_code] = function(pointer,what,n,parent,nested) -- todo: switch to turn in on and off
         if parent then
             local oldchar = getchar(pointer)
             local newchar = movesub[oldchar]
@@ -1846,7 +1928,7 @@ do
                         -- print("[char] --- sup")
                     else
                         local prev = getprev(parent)
-                        if prev and getid(prev) == math_noad then
+                        if prev and getid(prev) == noad_code then
                             local psub = getsub(prev)
                             local psup = getsup(prev)
                             if psub then
@@ -1875,7 +1957,7 @@ do
 
     function noads.handlers.fixscripts(head,style,penalties)
         processnoads(head,fixscripts,"fixscripts")
-        return true
+        return true -- not needed
     end
 
 end
@@ -1901,14 +1983,14 @@ do
         [0x2ACB] = 0xFE00, [0x2ACC] = 0xFE00,
     }
 
-    variants[math_char] = function(pointer,what,n,parent) -- also set export value
+    variants[mathchar_code] = function(pointer,what,n,parent) -- also set export value
         local char = getchar(pointer)
         local selector = validvariants[char]
         if selector then
             local next = getnext(parent)
-            if next and getid(next) == math_noad then
+            if next and getid(next) == noad_code then
                 local nucleus = getnucleus(next)
-                if nucleus and getid(nucleus) == math_char and getchar(nucleus) == selector then
+                if nucleus and getid(nucleus) == mathchar_code and getchar(nucleus) == selector then
                     local variant
                     local tfmdata = fontdata[getfont(pointer)]
                     local mathvariants = tfmdata.resources.variants -- and variantdata
@@ -1939,7 +2021,7 @@ do
 
     function handlers.variants(head,style,penalties)
         processnoads(head,variants,"unicode variant")
-        return true
+        return true -- not needed
     end
 
 end
@@ -1950,25 +2032,25 @@ do
 
     local classes = { }
     local colors  = {
-        [noad_rel]             = "trace:dr",
-        [noad_ord]             = "trace:db",
-        [noad_bin]             = "trace:dg",
-        [noad_open]            = "trace:dm",
-        [noad_close]           = "trace:dm",
-        [noad_punct]           = "trace:dc",
-     -- [noad_opdisplaylimits] = "",
-     -- [noad_oplimits]        = "",
-     -- [noad_opnolimits]      = "",
-     -- [noad_inner            = "",
-     -- [noad_under            = "",
-     -- [noad_over             = "",
-     -- [noad_vcenter          = "",
+        [relnode_code]             = "trace:dr",
+        [ordnoad_code]             = "trace:db",
+        [binnoad_code]             = "trace:dg",
+        [opennoad_code]            = "trace:dm",
+        [closenoad_code]           = "trace:dm",
+        [punctnoad_code]           = "trace:dc",
+     -- [opdisplaylimitsnoad_code] = "",
+     -- [oplimitsnoad_code]        = "",
+     -- [opnolimitsnoad_code]      = "",
+     -- [innernoad_code            = "",
+     -- [undernoad_code]           = "",
+     -- [overnoad_code]            = "",
+     -- [vcenternoad_code]         = "",
     }
 
     local setcolor   = colortracers.set
     local resetcolor = colortracers.reset
 
-    classes[math_char] = function(pointer,what,n,parent)
+    classes[mathchar_code] = function(pointer,what,n,parent)
         local color = colors[getsubtype(parent)]
         if color then
             setcolor(pointer,color)
@@ -1979,7 +2061,7 @@ do
 
     function handlers.classes(head,style,penalties)
         processnoads(head,classes,"classes")
-        return true
+        return true -- not needed
     end
 
     registertracker("math.classes",function(v)
@@ -2006,11 +2088,11 @@ do
     local a_mathdomain  = privateattribute("mathdomain")
     mathematics.domains = categories
     local permitted     = {
-        ordinary    = noad_ord,
-        binary      = noad_bin,
-        relation    = noad_rel,
-        punctuation = noad_punct,
-        inner       = noad_inner,
+        ordinary    = ordnoad_code,
+        binary      = binnoad_code,
+        relation    = relnode_code,
+        punctuation = punctnoad_code,
+        inner       = innernoad_code,
     }
 
     function mathematics.registerdomain(data)
@@ -2113,7 +2195,7 @@ do
         return hash
     end
 
-    domains[math_char] = function(pointer,what,n,parent)
+    domains[mathchar_code] = function(pointer,what,n,parent)
         local attr = getattr(pointer,a_mathdomain)
         if attr then
             local domain = numbers[attr]
@@ -2140,7 +2222,7 @@ do
 
     function handlers.domains(head,style,penalties)
         processnoads(head,domains,"domains")
-        return true
+        return true -- not needed
     end
 
 end
@@ -2148,7 +2230,7 @@ end
 -- just for me
 
 function handlers.showtree(head,style,penalties)
-    inspect(nodes.totree(head))
+    inspect(nodes.totree(tonut(head)))
 end
 
 registertracker("math.showtree",function(v)
@@ -2163,7 +2245,7 @@ do
     local visual       = false
 
     function handlers.makeup(head)
-        applyvisuals(tonut(head),visual)
+        applyvisuals(head,visual)
     end
 
     registertracker("math.makeup",function(v)
@@ -2184,8 +2266,14 @@ do
  -- end)
 
     function builders.kernel.mlist_to_hlist(head,style,penalties)
-        return mlist_to_hlist(head,style,force_penalties or penalties), true
+        return mlist_to_hlist(head,style,force_penalties or penalties)
     end
+
+ -- function builders.kernel.mlist_to_hlist(head,style,penalties)
+ --     local h = mlist_to_hlist(head,style,force_penalties or penalties)
+ --     inspect(nodes.totree(h,true,true,true))
+ --     return h
+ -- end
 
     implement {
         name      = "setmathpenalties",
@@ -2197,41 +2285,15 @@ do
 
 end
 
--- function builders.kernel.mlist_to_hlist(head,style,penalties)
---     print("!!!!!!! BEFORE",penalties)
---     for n in node.traverse(head) do print(n) end
---     print("!!!!!!!")
---     head = mlist_to_hlist(head,style,penalties)
---     print("!!!!!!! AFTER")
---     for n in node.traverse(head) do print(n) end
---     print("!!!!!!!")
---     return head, true
--- end
-
-tasks.new {
-    name      = "math",
-    arguments = 2,
-    processor = utilities.sequencers.nodeprocessor,
-    sequence  = {
-        "before",
-        "normalizers",
-        "builders",
-        "after",
-    },
-}
-
-tasks.freezegroup("math", "normalizers") -- experimental
-tasks.freezegroup("math", "builders")    -- experimental
-
 local actions = tasks.actions("math") -- head, style, penalties
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
 function processors.mlist_to_hlist(head,style,penalties)
     starttiming(noads)
-    local head, done = actions(head,style,penalties)
+    head = actions(head,style,penalties)
     stoptiming(noads)
-    return head, done
+    return head
 end
 
 callbacks.register('mlist_to_hlist',processors.mlist_to_hlist,"preprocessing math list")

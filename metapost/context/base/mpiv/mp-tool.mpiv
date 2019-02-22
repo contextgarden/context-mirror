@@ -17,6 +17,8 @@ boolean context_tool ; context_tool := true ;
 
 let @## = @# ;
 
+let noexpand = quote ;
+
 %D New, version number testing:
 %D
 %D \starttyping
@@ -242,19 +244,19 @@ boolean savingdata     ; savingdata     := false ;
 boolean savingdatadone ; savingdatadone := false ;
 
 def savedata expr txt =
-    lua.mp.save_data(txt);
+    lua.mp.mf_save_data(txt);
 enddef ;
 
 def startsavingdata =
-    lua.mp.start_saving_data();
+    lua.mp.mf_start_saving_data();
 enddef ;
 
 def stopsavingdata =
-    lua.mp.stop_saving_data() ;
+    lua.mp.mf_stop_saving_data() ;
 enddef ;
 
 def finishsavingdata =
-    lua.mp.finish_saving_data() ;
+    lua.mp.mf_finish_saving_data() ;
 enddef ;
 
 %D Instead of a keystroke eating save and allocation
@@ -302,7 +304,7 @@ def newpair      text v = forsuffixes i=v : save i ; pair      i ; endfor ; endd
 %D set_inner_boundingbox p
 %D \stoptyping
 
-path    mfun_boundingbox_stack ;
+path    mfun_boundingbox_stack[] ;
 numeric mfun_boundingbox_stack_depth ;
 
 mfun_boundingbox_stack_depth := 0 ;
@@ -314,7 +316,7 @@ enddef ;
 
 def popboundingbox text p =
     setbounds p to mfun_boundingbox_stack[mfun_boundingbox_stack_depth] ;
-    mfun_boundingbox_stack[mfun_boundingbox_stack_depth] := origin ;
+    mfun_boundingbox_stack[mfun_boundingbox_stack_depth] := origin -- cycle ;
     mfun_boundingbox_stack_depth := mfun_boundingbox_stack_depth - 1 ;
 enddef ;
 
@@ -323,7 +325,7 @@ let pop_boundingbox  = popboundingbox  ; % downward compatible
 
 vardef boundingbox primary p =
     if (path p) or (picture p) :
-        llcorner p -- lrcorner p -- urcorner p -- ulcorner  p
+        llcorner p -- lrcorner p -- urcorner p -- ulcorner p
     else :
         origin
     fi -- cycle
@@ -393,6 +395,14 @@ vardef boundingpoint@#(expr p) =
    %else :
    %    origin
     fi
+enddef ;
+
+def mirrored primary a =
+    a scaled -1
+enddef ;
+
+primarydef a mirroredabout b =
+    (a shifted -b) scaled -1 shifted b
 enddef ;
 
 %D Some missing functions can be implemented rather straightforward (thanks to
@@ -2881,13 +2891,15 @@ enddef ;
 
 % This could be standard mplib 2 behaviour:
 
+% vardef rcomponent expr p = if rgbcolor  p : redpart     elseif cmykcolor p : 1 - cyanpart    fi p enddef ;
+
 vardef rcomponent expr p = if rgbcolor  p : redpart     p elseif cmykcolor p : 1 - cyanpart    p else : p fi enddef ;
 vardef gcomponent expr p = if rgbcolor  p : greenpart   p elseif cmykcolor p : 1 - magentapart p else : p fi enddef ;
 vardef bcomponent expr p = if rgbcolor  p : bluepart    p elseif cmykcolor p : 1 - yellowpart  p else : p fi enddef ;
 vardef ccomponent expr p = if cmykcolor p : cyanpart    p elseif rgbcolor  p : 1 - redpart     p else : p fi enddef ;
 vardef mcomponent expr p = if cmykcolor p : magentapart p elseif rgbcolor  p : 1 - greenpart   p else : p fi enddef ;
 vardef ycomponent expr p = if cmykcolor p : yellowpart  p elseif rgbcolor  p : 1 - bluepart    p else : p fi enddef ;
-vardef bcomponent expr p = if cmykcolor p : blackpart   p elseif rgbcolor  p :                 0 else : p fi enddef ;
+vardef kcomponent expr p = if cmykcolor p : blackpart   p elseif rgbcolor  p : 0                 else : p fi enddef ;
 
 % draw image       (...) ... ; % prescripts prepended to first, postscripts appended to last
 % draw decorated   (...) ... ; % prescripts prepended to each,  postscripts appended to each
@@ -3405,8 +3417,7 @@ primarydef p crossingunder q =
                 a := hold[hold] ; hold := hold - 1 ;
             fi
             if i = crossingnumbermax :
-                message("crossingunder reached maximum " & decimal i &
-                        " intersections.");
+                message("crossingunder reached maximum " & decimal i & " intersections.");
             fi
         endfor
 
@@ -3554,3 +3565,40 @@ enddef ;
 vardef tocycle(suffix p)(text t) =
     topath(p,t) t cycle
 enddef ;
+
+% reimplemented to support paths and pictures
+
+def drawdot expr p =
+    if pair p :
+        addto currentpicture doublepath p
+            withpen currentpen _op_
+    elseif path p :
+        draw image (
+            for i=0 upto length p :
+                addto currentpicture doublepath point i of p
+                    withpen currentpen _op_ ;
+            endfor ;
+        )
+    elseif picture p :
+        draw image (
+            save pp ; path pp ;
+            for i within p :
+                if stroked i or filled i :
+                    pp := pathpart i ;
+                    for j=0 upto length pp :
+                        addto currentpicture doublepath point j of pp
+                            withpen currentpen _op_ ;
+                    endfor ;
+                fi ;
+            endfor ;
+        )
+    fi
+enddef ;
+
+% vardef textlength(text t) =
+%     save n ; n := 0 ;
+%     for i = t :
+% 		n := n + 1 ;
+% 	endfor;
+%     n
+% enddef;

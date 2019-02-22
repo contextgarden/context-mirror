@@ -24,7 +24,16 @@ if not modules then modules = { } end modules ['node-syn'] = {
 -- I only tested SumatraPDF with SciTE, for which one needs to configure in the
 -- viewer:
 --
--- InverseSearchCmdLine = c:\data\system\scite\wscite\scite.exe "%f" "-goto:%l" $
+--   InverseSearchCmdLine = c:\data\system\scite\wscite\scite.exe "%f" "-goto:%l" $
+--
+-- In fact, a way more powerful implementation would have been not to add a library
+-- to a viewer, but letthe viewer call an external program:
+--
+--   InverseSearchCmdLine = mtxrun.exe --script synctex --edit --name="%f" --line="%l" $
+--
+-- which would (re)launch the editor in the right spot. That way we can really
+-- tune well to the macro package used and also avoid the fuzzy heuristics of
+-- the library.
 --
 -- Unfortunately syntex always removes the files at the end and not at the start
 -- (this happens in synctexterminate) so we need to work around that by using an
@@ -124,10 +133,9 @@ local openfile, renamefile, removefile = io.open, os.rename, os.remove
 local report_system = logs.reporter("system")
 
 local tex                = tex
+local texget             = tex.get
 
 local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-local tonode             = nuts.tonode
 
 local getid              = nuts.getid
 local getlist            = nuts.getlist
@@ -168,13 +176,8 @@ local set_synctex_tag    = tex.set_synctex_tag
 local force_synctex_tag  = tex.force_synctex_tag
 local force_synctex_line = tex.force_synctex_line
 ----- get_synctex_tag    = tex.get_synctex_tag
------ get_synctex_line   = tex.get_synctex_line
+local get_synctex_line   = tex.get_synctex_line
 local set_synctex_mode   = tex.set_synctex_mode
-
-local getpos             = function()
-                               getpos = backends.codeinjections.getpos
-                               return getpos()
-                           end
 
 local foundintree        = resolvers.foundintree
 
@@ -198,6 +201,8 @@ local f_vlist_2          = formatters["v%i,%i:%i,%s:%i,%i,%i\010"]
 
 local synctex            = luatex.synctex or { }
 luatex.synctex           = synctex
+
+local getpos ; getpos = function() getpos = job.positions.getpos return getpos() end
 
 -- status stuff
 
@@ -268,6 +273,34 @@ function synctex.resetfilename()
     end
 end
 
+do
+
+    local nesting = 0
+    local ignored = false
+
+    function synctex.pushline()
+        nesting = nesting + 1
+        if nesting == 1 then
+            local l = get_synctex_line()
+            ignored = l and l > 0
+            if not ignored then
+                force_synctex_line(texget("inputlineno"))
+            end
+        end
+    end
+
+    function synctex.popline()
+        if nesting == 1 then
+            if not ignored then
+                force_synctex_line()
+                ignored = false
+            end
+        end
+        nesting = nesting - 1
+    end
+
+end
+
 -- the node stuff
 
 local filehandle = nil
@@ -324,6 +357,7 @@ end
 function synctex.wrapup()
     if tmpfile then
         renamefile(tmpfile,logfile)
+        tmpfile = nil
     end
 end
 
@@ -340,9 +374,15 @@ local function flushpostamble()
     enabled = false
 end
 
+local getpagedimensions  getpagedimensions = function()
+    getpagedimensions = backends.codeinjections.getpagedimensions
+    return getpagedimensions()
+end
+
 -- local function doaction(action,t,l,w,h,d)
+--     local pagewidth, pageheight = getpagedimensions()
 --     local x, y = getpos()
---     filehandle:write(action(t,l,x,tex.pageheight-y,w,h,d))
+--     filehandle:write(action(t,l,x,pageheight-y,w,h,d))
 --     nofobjects = nofobjects + 1
 -- end
 --
@@ -378,24 +418,27 @@ end
 -- generic
 --
 -- local function doaction(t,l,w,h,d)
+--     local pagewidth, pageheight = getpagedimensions()
 --     local x, y = getpos()
---     filehandle:write(f_hlist_1(t,l,x,tex.pageheight-y,w,h,d))
+--     filehandle:write(f_hlist_1(t,l,x,pageheight-y,w,h,d))
 --     nofobjects = nofobjects + 1
 -- end
 
 local x_hlist  do
 
     local function doaction_1(t,l,w,h,d)
+        local pagewidth, pageheight = getpagedimensions()
         local x, y = getpos()
-        filehandle:write(f_hlist_1(t,l,x,tex.pageheight-y,w,h,d))
+        filehandle:write(f_hlist_1(t,l,x,pageheight-y,w,h,d))
         nofobjects = nofobjects + 1
     end
 
     -- local lastx, lasty, lastw, lasth, lastd
     --
     -- local function doaction_2(t,l,w,h,d)
+    --     local pagewidth, pageheight = getpagedimensions()
     --     local x, y = getpos()
-    --     y = tex.pageheight-y
+    --     y = pageheight-y
     --     filehandle:write(f_hlist_2(t,l,
     --         x == lastx and "=" or x,
     --         y == lasty and "=" or y,
@@ -412,8 +455,9 @@ local x_hlist  do
     local lasty = false
 
     local function doaction_2(t,l,w,h,d)
+        local pagewidth, pageheight = getpagedimensions()
         local x, y = getpos()
-        y = tex.pageheight - y
+        y = pageheight - y
         filehandle:write(f_hlist_2(t,l,x,y == lasty and "=" or y,w,h,d))
         lasty = y
         nofobjects = nofobjects + 1
@@ -623,16 +667,10 @@ end
 collect = collect_max
 
 function synctex.collect(head,where)
-    if enabled then
-        if where == "object" then
-            return head, false
-        else
-            local h = tonut(head)
-            h = collect(h,h)
-            return tonode(h), true
-        end
+    if enabled and where ~= "object" then
+        return collect(head,head)
     else
-        return head, false
+        return head
     end
 end
 
@@ -645,10 +683,9 @@ function synctex.start()
             writeanchor()
             filehandle:write("{",nofsheets,eol)
             -- this seems to work:
-            local h = tex.pageheight
-            local w = tex.pagewidth
+            local pagewidth, pageheight = getpagedimensions()
             filehandle:write(z_hlist)
-            filehandle:write(f_vlist_1(0,0,0,h,w,h,0))
+            filehandle:write(f_vlist_1(0,0,0,pageheight,pagewidth,pageheight,0))
         end
     end
 end
@@ -678,7 +715,7 @@ function synctex.enable()
         enabled = true
         set_synctex_mode(3) -- we want details
         if not used then
-            nodes.tasks.appendaction("shipouts", "after", "luatex.synctex.collect")
+            nodes.tasks.enableaction("shipouts","luatex.synctex.collect")
             report_system("synctex functionality is enabled, expect 5-10 pct runtime overhead!")
             used = true
         end
@@ -786,11 +823,21 @@ implement {
 }
 
 implement {
-    name      = "synctexpause",
-    actions   = synctex.pause,
+    name    = "synctexpause",
+    actions = synctex.pause,
 }
 
 implement {
-    name      = "synctexresume",
-    actions   = synctex.resume,
+    name    = "synctexresume",
+    actions = synctex.resume,
 }
+
+interfaces.implement {
+    name    = "synctexpushline",
+    actions = synctex.pushline,
+}
+interfaces.implement {
+    name    = "synctexpopline",
+    actions = synctex.popline,
+}
+

@@ -190,10 +190,10 @@
 %D want to use as meaningful commands as possible, and because \TEX\ already
 %D uses up some of those, we save the original meanings.
 
-\savenormalmeaning\time
-\savenormalmeaning\year
-\savenormalmeaning\month
-\savenormalmeaning\day
+% \savenormalmeaning\time
+% \savenormalmeaning\year
+% \savenormalmeaning\month
+% \savenormalmeaning\day
 
 %D \macros
 %D   {month,MONTH}
@@ -218,7 +218,7 @@
 %D \showsetup{month}
 %D \showsetup{MONTH}
 
-\let\month              \monthlong
+\let\month\monthlong
 
 \unexpanded\def\MONTH     #1{\WORD{\month     {#1}}}
 \unexpanded\def\MONTHLONG #1{\WORD{\monthlong {#1}}}
@@ -414,30 +414,43 @@
   {\dosingleempty\syst_converters_current_date}
 
 \def\syst_converters_current_date[#1]%
-  {\begingroup
+  {\dontleavehmode
+   \begingroup
    \the\everycurrentdate
-   \clf_currentdate{#1}{\currentdatespecification}{\labellanguage}%
+   \clf_currentdate
+     {#1}{\currentdatespecification}{\labellanguage}%
+     \normalyear\normalmonth\normalday
    \endgroup}
 
 \unexpanded\def\date
   {\dodoubleempty\syst_converters_date}
 
 \def\syst_converters_date[#1][#2]%
-  {\begingroup
+  {\dontleavehmode
+   \begingroup
+   \scratchcounterone  \normalyear
+   \scratchcountertwo  \normalmonth
+   \scratchcounterthree\normalday
    \iffirstargument
-     \letdummyparameter\c!d\normalday
-     \letdummyparameter\c!m\normalmonth
-     \letdummyparameter\c!y\normalyear
+     \letdummyparameter\c!y\empty
+     \letdummyparameter\c!m\empty
+     \letdummyparameter\c!d\empty
      \getdummyparameters[#1]%
-     \normalday  \directdummyparameter\c!d\relax
-     \normalmonth\directdummyparameter\c!m\relax
-     \normalyear \directdummyparameter\c!y\relax
+     \edef\temp{\dummyparameter\c!y}\ifx\temp\empty\else\scratchcounterone  \temp\fi
+     \edef\temp{\dummyparameter\c!m}\ifx\temp\empty\else\scratchcountertwo  \temp\fi
+     \edef\temp{\dummyparameter\c!d}\ifx\temp\empty\else\scratchcounterthree\temp\fi
+     \relax
    \fi
-   \syst_converters_current_date[#2]%
+   \the\everycurrentdate
+   \clf_currentdate
+     {#2}{\currentdatespecification}{\labellanguage}%
+     \scratchcounterone\scratchcountertwo\scratchcounterthree
    \endgroup}
 
 \def\rawdate[#1]% expandable and no labels
-  {\clf_currentdate{#1}{\currentdatespecification}{}}
+  {\clf_currentdate
+     {#1}{\currentdatespecification}{}%
+     \normalyear\normalmonth\normalday}
 
 %D \macros
 %D   {currenttime}
@@ -454,7 +467,7 @@
 \let\currentminute\!!plusone
 \let\currentsecond\!!plusone
 
-\def\currenttimespecification{h,:,m}
+% \def\currenttimespecification{h,:,m}
 
 \unexpanded\def\currenttime
   {\doifelsenextoptional\syst_converters_current_time_yes\syst_converters_current_time_nop}
@@ -805,61 +818,119 @@
 
 \ifdefined\symbol \else \def\symbol[#1]{#1} \fi % todo
 
+% \defineconversion
+%   [set 0]
+%   [{\symbol[bullet]},
+%    {\symbol[dash]},
+%    {\symbol[star]},
+%    {\symbol[triangle]},
+%    {\symbol[circle]},
+%    {\symbol[medcircle]},
+%    {\symbol[bigcircle]},
+%    {\symbol[square]},
+%    {\symbol[checkmark]}]
+
+% \defineconversion
+%   [set 1]
+%   [\mathematics{\star},
+%    \mathematics{\star\star},
+%    \mathematics{\star\star\star},
+%    \mathematics{\ddagger},
+%    \mathematics{\ddagger\ddagger},
+%    \mathematics{\ddagger\ddagger\ddagger},
+%    \mathematics{\ast},
+%    \mathematics{\ast\ast},
+%    \mathematics{\ast\ast\ast}]
+%
+% \defineconversion
+%   [set 2]
+%   [\mathematics{\ast},
+%    \mathematics{\dag},
+%    \mathematics{\ddag},
+%    \mathematics{\ast\ast},
+%    \mathematics{\dag\dag},
+%    \mathematics{\ddag\ddag},
+%    \mathematics{\ast\ast\ast},
+%    \mathematics{\dag\dag\dag},
+%    \mathematics{\ddag\ddag\ddag},
+%    \mathematics{\ast\ast\ast\ast},
+%    \mathematics{\dag\dag\dag\dag},
+%    \mathematics{\ddag\ddag\ddag\ddag}]
+%
+% \defineconversion
+%   [set 3]
+%   [\mathematics{\star},
+%    \mathematics{\star\star},
+%    \mathematics{\star\star\star},
+%    \mathematics{\ddagger},
+%    \mathematics{\ddagger\ddagger},
+%    \mathematics{\ddagger\ddagger\ddagger},
+%    \mathematics{\P},
+%    \mathematics{\P\P},
+%    \mathematics{\P\P\P},
+%    \mathematics{\S},
+%    \mathematics{\S\S},
+%    \mathematics{\S\S\S},
+%    \mathematics{\ast},
+%    \mathematics{\ast\ast},
+%    \mathematics{\ast\ast\ast}]
+
 \defineconversion
   [set 0]
-  [{\symbol[bullet]},
-   {\symbol[dash]},
-   {\symbol[star]},
-   {\symbol[triangle]},
-   {\symbol[circle]},
-   {\symbol[medcircle]},
-   {\symbol[bigcircle]},
-   {\symbol[square]}]
+  [\symbol{bullet},
+   \symbol{dash},
+   \symbol{star},
+   \symbol{triangle},
+   \symbol{circle},
+   \symbol{medcircle},
+   \symbol{bigcircle},
+   \symbol{square},
+   \symbol{checkmark}]
 
 \defineconversion
   [set 1]
-  [\mathematics{\star},
-   \mathematics{\star\star},
-   \mathematics{\star\star\star},
-   \mathematics{\ddagger},
-   \mathematics{\ddagger\ddagger},
-   \mathematics{\ddagger\ddagger\ddagger},
-   \mathematics{\ast},
-   \mathematics{\ast\ast},
-   \mathematics{\ast\ast\ast}]
+  [\textormathchars{⋆},
+   \textormathchars{⋆⋆},
+   \textormathchars{⋆⋆⋆},
+   \textormathchars{‡},
+   \textormathchars{‡‡},
+   \textormathchars{‡‡‡},
+   \textormathchars{∗},
+   \textormathchars{∗∗},
+   \textormathchars{∗∗∗}]
 
 \defineconversion
   [set 2]
-  [\mathematics{*},
-   \mathematics{\dag},
-   \mathematics{\ddag},
-   \mathematics{**},
-   \mathematics{\dag\dag},
-   \mathematics{\ddag\ddag},
-   \mathematics{***},
-   \mathematics{\dag\dag\dag},
-   \mathematics{\ddag\ddag\ddag},
-   \mathematics{****},
-   \mathematics{\dag\dag\dag\dag},
-   \mathematics{\ddag\ddag\ddag\ddag}]
+  [\textormathchars{∗},
+   \textormathchars{†},
+   \textormathchars{‡},
+   \textormathchars{∗∗},
+   \textormathchars{††},
+   \textormathchars{‡‡},
+   \textormathchars{∗∗∗},
+   \textormathchars{†††},
+   \textormathchars{‡‡‡},
+   \textormathchars{∗∗∗∗},
+   \textormathchars{††††},
+   \textormathchars{‡‡‡‡}]
 
 \defineconversion
   [set 3]
-  [\mathematics{\star},
-   \mathematics{\star\star},
-   \mathematics{\star\star\star},
-   \mathematics{\ddagger},
-   \mathematics{\ddagger\ddagger},
-   \mathematics{\ddagger\ddagger\ddagger},
-   \mathematics{\P},
-   \mathematics{\P\P},
-   \mathematics{\P\P\P},
-   \mathematics{\S},
-   \mathematics{\S\S},
-   \mathematics{\S\S\S},
-   \mathematics{\ast},
-   \mathematics{\ast\ast},
-   \mathematics{\ast\ast\ast}]
+  [\textormathchars{⋆},
+   \textormathchars{⋆⋆},
+   \textormathchars{⋆⋆⋆},
+   \textormathchars{‡},
+   \textormathchars{‡‡},
+   \textormathchars{‡‡‡},
+   \textormathchars{¶},
+   \textormathchars{¶¶},
+   \textormathchars{¶¶¶},
+   \textormathchars{§},
+   \textormathchars{§§},
+   \textormathchars{§§§},
+   \textormathchars{∗},
+   \textormathchars{∗∗},
+   \textormathchars{∗∗∗}]
 
 %D Iteration of suggestion by WS on mailinglist 2010.12.22:
 %D
@@ -887,5 +958,24 @@
       separator {\spaceddigitsseparator}%
       data      {#1}%
    \relax}
+
+%D For those who sart counting at zero:
+%D
+%D \starttyping
+%D \defineconversionset [zero] [n,zero] [n]
+%D
+%D \setuphead [sectionconversionset=zero]
+%D
+%D \starttext
+%D     \startchapter [title=Introduction]
+%D         \startsection [title=First topic]  \stopsection
+%D         \startsection [title=Second topic] \stopsection
+%D     \stopchapter
+%D \stoptext
+%D \stoptyping
+
+\def\zeronumberconversion#1{\number\numexpr#1-\plusone\relax}
+
+\defineconversion [zero] [\zeronumberconversion]
 
 \protect \endinput

@@ -23,7 +23,6 @@ local settings_to_array  = utilities.parsers.settings_to_array
 
 local nuts               = nodes.nuts
 local tonut              = nuts.tonut
-local tonode             = nuts.tonode
 
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
@@ -76,13 +75,13 @@ local new_wordboundary   = nodepool.wordboundary
 local nodecodes          = nodes.nodecodes
 local kerncodes          = nodes.kerncodes
 
-local glyph_code         = nodecodes.glyph
 local kern_code          = nodecodes.kern
 local math_code          = nodecodes.math
 
 local fontkern_code      = kerncodes.fontkern
------ userkern_code      = kerncodes.userkern
 local italickern_code    = kerncodes.italiccorrection
+
+local is_letter          = characters.is_letter
 
 local typesetters        = typesetters
 
@@ -241,10 +240,9 @@ end
 
 function breakpoints.handler(head)
     local done    = false
-    local nead    = tonut(head)
     local attr    = nil
     local map     = nil
-    local current = nead
+    local current = head
     while current do
         local char, id = isglyph(current)
         if char then
@@ -313,7 +311,7 @@ function breakpoints.handler(head)
         end
     end
     if not done then
-        return head, false
+        return head
     end
     -- we have hits
     local numbers = languages.numbers
@@ -323,17 +321,21 @@ function breakpoints.handler(head)
         local stop  = data[2]
         local cmap  = data[3]
         local smap  = data[4]
---         local lang  = getlang(start)
 --         -- we do a sanity check for language
+--         local lang  = getlang(start)
 --         local smap = lang and lang >= 0 and lang < 0x7FFF and (cmap[numbers[lang]] or cmap[""])
 --         if smap then
             local nleft = smap.nleft
             local cleft = 0
             local prev  = getprev(start)
-            local kern   = nil
+            local kern  = nil
             while prev and nleft ~= cleft do
-                local id = getid(prev)
-                if id == glyph_code then
+                local char, id = isglyph(prev)
+                if char then
+                    if not is_letter[char] then
+                        cleft = -1
+                        break
+                    end
                     cleft = cleft + 1
                     prev  = getprev(prev)
                 elseif id == kern_code then
@@ -359,6 +361,10 @@ function breakpoints.handler(head)
                 while next and nright ~= cright do
                     local char, id = isglyph(next)
                     if char then
+                        if not is_letter[char] then
+                            cright = -1
+                            break
+                        end
                         if cright == 1 and cmap[char] then
                             -- let's not make it too messy
                             break
@@ -383,13 +389,13 @@ function breakpoints.handler(head)
                 if nright == cright then
                     local method = methods[smap.type]
                     if method then
-                        nead, start = method(nead,start,stop,smap,kern)
+                        head, start = method(head,start,stop,smap,kern)
                     end
                 end
 --             end
         end
     end
-    return tonode(nead), true
+    return head
 end
 
 local enabled = false

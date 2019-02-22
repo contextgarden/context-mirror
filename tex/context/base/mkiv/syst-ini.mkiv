@@ -19,116 +19,124 @@
 %D Characters can have special states, that can be triggered by setting their
 %D category coded. Some are preset, others are to be set as soon as possible,
 %D otherwise we cannot define any useful macros.
+%D
+%D First we define a bunch of constants. Normally we would \type {\setconstant}
+%D but we're prestine and have no macros defined yet. Abstraction also makes it
+%D possible to avoid the \type {^^} in the input.
 
-%catcode`\^^@   =  9 % ascii null is ignored
-%catcode`\\     =  0 % backslash is TeX escape character
+\chardef\escapecatcode             0
+\chardef\begingroupcatcode         1
+\chardef\endgroupcatcode           2
+\chardef\mathshiftcatcode          3
+\chardef\alignmentcatcode          4
+\chardef\endoflinecatcode          5
+\chardef\parametercatcode          6
+\chardef\superscriptcatcode        7
+\chardef\subscriptcatcode          8
+\chardef\ignorecatcode             9
+\chardef\spacecatcode             10
+\chardef\lettercatcode            11
+\chardef\othercatcode             12  % finally obsolete: \let\other \othercatcode
+\chardef\activecatcode            13  % finally obsolete: \let\active\activecatcode
+\chardef\commentcatcode           14
+\chardef\invalidcatcode           15
 
-\catcode`\{     =  1 % left brace is begin-group character
-\catcode`\}     =  2 % right brace is end-group character
-\catcode`\$     =  3 % dollar sign is math shift
-\catcode`\&     =  4 % ampersand is alignment tab
-\catcode`\#     =  6 % hash mark is macro parameter character
-\catcode`\^     =  7 % circumflex and uparrow are for superscripts
-\catcode`\_     =  8 % underline and downarrow are for subscripts
-\catcode`\^^I   = 10 % ascii tab is a blank space
+%chardef\zeroasciicode             0
+\chardef\tabasciicode              9
+\chardef\newlineasciicode         10  % don't confuse this one with \endoflineasciicode
+\chardef\formfeedasciicode        12
+\chardef\endoflineasciicode       13  % somewhat messy but this can be the active \par
+\chardef\endoffileasciicode       26
+\chardef\spaceasciicode           32
+\chardef\exclamationmarkasciicode 33 % ! used in namespace protection
+\chardef\doublequoteasciicode     34 % "
+\chardef\hashasciicode            35
+\chardef\dollarasciicode          36
+\chardef\commentasciicode         37
+\chardef\ampersandasciicode       38
+\chardef\singlequoteasciicode     39 % '
+\chardef\primeasciicode           39 % '
+\chardef\leftparentasciicode      40
+\chardef\rightparentasciicode     41
+\chardef\hyphenasciicode          45
+\chardef\forwardslashasciicode    47 % /
+\chardef\colonasciicode           58
+\chardef\lessthanasciicode        60 % < used as alternative verbatim {
+\chardef\morethanasciicode        62 % > used as alternative verbatim }
+\chardef\questionmarkasciicode    63 % ? used in namespace protection
+\chardef\atsignasciicode          64 % @ used in namespace protection
+\chardef\backslashasciicode       92 % `\\
+\chardef\circumflexasciicode      94
+\chardef\underscoreasciicode      95
+\chardef\leftbraceasciicode      123 % `\{
+\chardef\barasciicode            124 % `\|
+\chardef\rightbraceasciicode     125 % `\}
+\chardef\tildeasciicode          126 % `\~
+\chardef\delasciicode            127
 
-%catcode`\^^M   =  5 % ascii return is end-line
-%catcode`\%     = 14 % percent sign is comment character
-%catcode`\      = 10 % ascii space is blank space
-%catcode`\^^?   = 15 % ascii delete is invalid
+%catcode\zeroasciicode           \ignorecatcode      % `\^^@   ascii null is ignored
+\catcode\tabasciicode            \spacecatcode       % `\^^I   ascii tab is a blank space
+\catcode\formfeedasciicode       \activecatcode      % `\^^L   ascii form-feed (active, set later)
+%catcode\endoflineasciicode      \endoflinecatcode   % `\^^M   ascii return is end-line
+\catcode\endoffileasciicode      \ignorecatcode      % `\^^Z   endoffile (ignored in ConTeXt)
+%catcode\spaceasciicode          \spacecatcode       % `\      ascii space is blank space
+\catcode\hashasciicode           \parametercatcode   % `\#     hash mark is macro parameter character
+\catcode\dollarasciicode         \mathshiftcatcode   % `\$     dollar sign is math shift
+%catcode\commentasciicode        \commentcatcode     % `\%     percent sign is comment character
+\catcode\ampersandasciicode      \alignmentcatcode   % `\&     ampersand is alignment tab
+%catcode\backslashasciicode      \escapecatcode      % `\\     backslash is TeX escape character
+\catcode\circumflexasciicode     \superscriptcatcode % `\^     circumflex and uparrow are for superscripts
+\catcode\underscoreasciicode     \subscriptcatcode   % `\_     underline and downarrow are for subscripts
+\catcode\leftbraceasciicode      \begingroupcatcode  % `\{     left brace is begin-group character
+\catcode\rightbraceasciicode     \endgroupcatcode    % `\}     right brace is end-group character
+\catcode\tildeasciicode          \activecatcode      % `\~     tilde is active
+%catcode\delasciicode            \invalidcatcode     % `\^^?   ascii delete is invalid
 
-\catcode`\~     = 13 % tilde is active
-\catcode`\^^L   = 13 % ascii form-feed
-
-%catcode`\A     = 11
-%.......
-%catcode`\Z     = 11
-
-%catcode`\a     = 11
-%.......
-%catcode`\z     = 11
-
-\def ^^L{\par}
-\def\^^M{\   } % control <return> = control <space>
-\def\^^I{\   } % same for <tab>
-
-%D In \CONTEXT, we simply ignore end||of||file tokens:
-
-\catcode`\^^Z=9
-
-%D It makes sense to know what engine we're running so let's try to deduce it.
-
-\chardef\unknownengine = 0
-\chardef\pdftexengine  = 1
-\chardef\xetexengine   = 2
-\chardef\luatexengine  = 3
-
-\chardef\statuswrite   = 128
-
-\ifx\directlua\undefined
-    \ifx\XeTeXversion\undefined
-        \ifx\pdftexversion\undefined
-            \let\texengine\unknownengine
-        \else
-            \let\texengine\pdftexengine
-        \fi
-    \else
-        \let\texengine\xetexengine
-    \fi
-\else
-    \let\texengine\luatexengine
-\fi
-
-\ifnum\texengine=\luatexengine
-    % for historic reasons we keep some mkii code around
-\else
-    \immediate\write\statuswrite{>>>}
-    \immediate\write\statuswrite{>>> only luatex is supported}
-    \immediate\write\statuswrite{>>>}
-    \let\dump\relax
-    \expandafter\end
-\fi
+\chardef\statuswrite   128
 
 %D Initialization of primitives.
 
-\directlua 0 { % this info is stored in the format
-    lua.name[0] = "main ctx instance"
+\directlua {
+    local baseprimitives = tex.extraprimitives("core","tex")
+    local moreprimitives = tex.extraprimitives("etex","luatex")
 
-    local coreprimitives   = tex.extraprimitives("core")
-    local texprimitives    = tex.extraprimitives("tex")
-    local etexprimitives   = tex.extraprimitives("etex")
-    local luatexprimitives = tex.extraprimitives("luatex")
+    tex.enableprimitives("",moreprimitives)
 
-    tex.enableprimitives("",etexprimitives)
-    tex.enableprimitives("",luatexprimitives)
+    tex.enableprimitives("normal",baseprimitives)
+    tex.enableprimitives("normal",moreprimitives)
 
-    tex.enableprimitives("normal",coreprimitives)
-    tex.enableprimitives("normal",texprimitives)
-    tex.enableprimitives("normal",etexprimitives)
-    tex.enableprimitives("normal",luatexprimitives)
+    function tex.enableprimitives() end
 }
 
-%D \ETEX\ has a not so handy way of telling you the version number, i.e. the revision
-%D number has a period in it:
+\def\space{ }
+\def\empty{}
+
+\letcharcode \formfeedasciicode \par    % \def ^^L{\par}  formfeed
+\letcharcode \tildeasciicode    \       %                 tilde
+\letcharcode \spaceasciicode    \space  %                 space
+
+\expandafter\def\csname\Uchar\tabasciicode      \endcsname {\ }   % \def\^^I{\ }    tab
+\expandafter\def\csname\Uchar\formfeedasciicode \endcsname {\par} % \def\^^L{\par}  formfeed
+\expandafter\def\csname\Uchar\endoflineasciicode\endcsname {\ }   % \def\^^M{\ }    return
+
+%D For now:
 
 \def\gobbleoneargument#1{} % will be defined later on anyway
-
-\mathchardef\etexversion = \numexpr\eTeXversion*100+\expandafter\gobbleoneargument\eTeXrevision\relax
 
 %D First we define a simplified version of the \CONTEXT\ protection mechanism.
 %D Later we will implement a better variant.
 
 \def\unprotect
   {\edef\protect
-     {\catcode`@=\the\catcode`@\relax
-      \catcode`?=\the\catcode`?\relax
-      \catcode`!=\the\catcode`!\relax
-      \catcode`_=\the\catcode`_\relax
+     {\catcode\atsignasciicode         \the\catcode\atsignasciicode         \relax
+      \catcode\exclamationmarkasciicode\the\catcode\exclamationmarkasciicode\relax
+      \catcode\questionmarkasciicode   \the\catcode\questionmarkasciicode   \relax
+      \catcode\underscoreasciicode     \the\catcode\underscoreasciicode     \relax
       \let\protect\relax}%
-   \catcode`@=11
-   \catcode`?=11
-   \catcode`!=11
-   \catcode`_=11 }
+   \catcode\atsignasciicode         \lettercatcode
+   \catcode\exclamationmarkasciicode\lettercatcode
+   \catcode\questionmarkasciicode   \lettercatcode
+   \catcode\underscoreasciicode     \lettercatcode}
 
 \let\protect\relax
 
@@ -169,13 +177,13 @@
 \countdef   \c_syst_max_allocated_read       =    55 \c_syst_max_allocated_read       =    16
 \countdef   \c_syst_min_allocated_language   =    56 \c_syst_min_allocated_language   =     0
 \countdef   \c_syst_max_allocated_language   =    57 \c_syst_max_allocated_language   =   255
-\countdef   \c_syst_max_allocated_insert     =    58 \c_syst_max_allocated_insert     =   254
-\countdef   \c_syst_min_allocated_insert     =    59 \c_syst_min_allocated_insert     =   128
+\countdef   \c_syst_min_allocated_insert     =    58 \c_syst_min_allocated_insert     =   128
+\countdef   \c_syst_max_allocated_insert     =    59 \c_syst_max_allocated_insert     =   254
 \countdef   \c_syst_min_allocated_family     =    60 \c_syst_min_allocated_family     =   128
 \countdef   \c_syst_max_allocated_family     =    61 \c_syst_max_allocated_family     =   255
-\countdef   \c_syst_min_allocated_attribute  =    62 \c_syst_min_allocated_attribute  =  1024 % 127-1023 : private
-\countdef   \c_syst_min_allocated_write      =    63 \c_syst_min_allocated_write      =     0 % luatex >= 0.82
-\countdef   \c_syst_max_allocated_write      =    64 \c_syst_max_allocated_write      =   127 % luatex >= 0.82
+\countdef   \c_syst_min_allocated_attribute  =    62 \c_syst_min_allocated_attribute  =  1024 % 0-1023 : private
+\countdef   \c_syst_min_allocated_write      =    63 \c_syst_min_allocated_write      =     0
+\countdef   \c_syst_max_allocated_write      =    64 \c_syst_max_allocated_write      =   127
 
 \countdef   \c_syst_last_allocated_count     =    32 \c_syst_last_allocated_count     = \c_syst_min_allocated_register
 \countdef   \c_syst_last_allocated_dimen     =    33 \c_syst_last_allocated_dimen     = \c_syst_min_allocated_register
@@ -212,10 +220,10 @@
 
 % A few traditional allocations (these might go):
 
-\countdef   \count@                   =   255 % hm, used in \newif .. todo: replace it there
-\dimendef   \dimen@                   =     0
-\dimendef   \dimen@i                  =     1 % global only
-\dimendef   \dimen@ii                 =     2
+\countdef \count@   255 % hm, used in \newif .. todo: replace it there
+\dimendef \dimen@     0
+\dimendef \dimen@i    1 % global only
+\dimendef \dimen@ii   2
 
 %D So, effectively we start allocating from 256 and upwards. The inserts sit in the
 %D range 128 upto 254. Page numbers use the counters 0 upto 9 and the pagebox is
@@ -258,8 +266,7 @@
 
 % %D The next definitions are really needed (in \CONTEXT):
 
-%newlinechar=10   \def\outputnewlinechar{\rawcharacter{10}}
-\newlinechar=10  \edef\outputnewlinechar{^^J}
+\newlinechar\newlineasciicode  \edef\outputnewlinechar{\Uchar\newlineasciicode} % {^^J}
 
 %D One reason to start high with allocation is that it permits us to allocate
 %D consecutive ranges more easily, for instance if for \MPLIB\ we want to allocate a
@@ -268,7 +275,8 @@
 %D as all engines now provide many registers we removed all traces.
 
 \ifdefined\writestatus \else
-    \normalprotected\def\writestatus#1#2{\immediate\write\statuswrite{#1: #2}}
+   %\normalprotected\def\writestatus#1#2{\immediate\write\statuswrite{#1: #2}}
+    \normalprotected\def\writestatus#1#2{\message{#1: #2}}
 \fi
 
 \def\syst_basics_allocate_yes#1#2#3#4#5% last class method max name
@@ -304,6 +312,7 @@
 %D 128-1023 are private and should not be touched.
 
 \let\attributeunsetvalue\c_syst_min_counter_value % used to be \minusone
+
 \normalprotected\def\newattribute{\syst_basics_allocate\c_syst_last_allocated_attribute\attribute\attributedef\c_syst_max_allocated_register}
 
 %D Not used by \CONTEXT\ but for instance \PICTEX\ needs it. It's a trick to force
@@ -343,6 +352,10 @@
 \newmuskip\scratchmuskipfour \newmuskip\scratchmuskipfive \newmuskip\scratchmuskipsix
 \newtoks    \scratchtoksfour \newtoks    \scratchtoksfive \newtoks    \scratchtokssix
 \newbox      \scratchboxfour \newbox      \scratchboxfive \newbox      \scratchboxsix
+
+\newcount\globalscratchcounterone
+\newcount\globalscratchcountertwo
+\newcount\globalscratchcounterthree
 
 %D \macros
 %D   {tempstring}
@@ -395,19 +408,19 @@
 
 %D More allocations:
 
-\newskip  \zeroskip      \zeroskip      = 0pt plus 0pt minus 0pt
-\newdimen \zeropoint     \zeropoint     = 0pt
-\newdimen \onepoint      \onepoint      = 1pt
-\newdimen \halfapoint    \halfapoint    = 0.5pt
-\newdimen \maxdimen      \maxdimen      = 16383.99999pt
-\newcount \maxcount      \maxcount      = 2147483647
-\newdimen \onebasepoint  \onebasepoint  = 1bp
-\newdimen \scaledpoint   \scaledpoint   = 1sp
-\newdimen \thousandpoint \thousandpoint = 1000pt
-\newmuskip\zeromuskip    \zeromuskip    = 0mu
-\newmuskip\onemuskip     \onemuskip     = 1mu
+\newskip  \zeroskip      \zeroskip      0pt plus 0pt minus 0pt
+\newdimen \zeropoint     \zeropoint     0pt
+\newdimen \onepoint      \onepoint      1pt
+\newdimen \halfapoint    \halfapoint    0.5pt
+\newdimen \maxdimen      \maxdimen      16383.99999pt
+\newcount \maxcount      \maxcount      2147483647
+\newdimen \onebasepoint  \onebasepoint  1bp
+\newdimen \scaledpoint   \scaledpoint   1sp
+\newdimen \thousandpoint \thousandpoint 1000pt
+\newmuskip\zeromuskip    \zeromuskip    0mu
+\newmuskip\onemuskip     \onemuskip     1mu
 
-\newmuskip\muquad        \muquad        = 18mu
+\newmuskip\muquad        \muquad        18mu
 
 \let\points   \onepoint
 \let\halfpoint\halfapoint
@@ -416,32 +429,35 @@
 
 %D And even more: (todo: countdefs 60+)
 
-%newcount   \minusone \minusone =    -1
-\newcount   \minustwo \minustwo =    -2
-%chardef    \zerocount          =     0
-%chardef    \plusone            =     1
-\chardef    \plustwo            =     2
-\chardef    \plusthree          =     3
-\chardef    \plusfour           =     4
-\chardef    \plusfive           =     5
-\chardef    \plussix            =     6
-\chardef    \plusseven          =     7
-\chardef    \pluseight          =     8
-\chardef    \plusnine           =     9
-\chardef    \plusten            =    10
-\chardef    \plussixteen        =    16
-\chardef    \plushundred        =   100
-\chardef    \plustwohundred     =   200
-\chardef    \pluscxxvii         =   127
-\chardef    \pluscxxviii        =   128
-\chardef    \pluscclv           =   255
-\chardef    \pluscclvi          =   256
-\chardef    \plusthousand       =  1000
-\chardef    \plustenthousand    = 10000
-\chardef    \plustwentythousand = 20000
-\chardef    \medcard            = 32768
-\chardef    \maxcard            = 65536 % pdftex has less mathchars
-\chardef    \maxcardminusone    = 65535
+%newcount\minusone \minusone    -1
+\newcount\minustwo \minustwo    -2
+%chardef \zerocount              0
+%chardef \plusone                1
+\chardef \plustwo                2
+\chardef \plusthree              3
+\chardef \plusfour               4
+\chardef \plusfive               5
+\chardef \plussix                6
+\chardef \plusseven              7
+\chardef \pluseight              8
+\chardef \plusnine               9
+\chardef \plusten               10
+\chardef \plussixteen           16
+\chardef \plusfifty             50
+\chardef \plushundred          100
+\chardef \plusonehundred       100
+\chardef \plustwohundred       200
+\chardef \plusfivehundred      500
+\chardef \pluscxxvii           127
+\chardef \pluscxxviii          128
+\chardef \pluscclv             255
+\chardef \pluscclvi            256
+\chardef \plusthousand        1000
+\chardef \plustenthousand    10000
+\chardef \plustwentythousand 20000
+\chardef \medcard            32768
+\chardef \maxcard            65536 % pdftex has less mathchars
+\chardef \maxcardminusone    65535
 
 %D \macros
 %D   {doubleexpandafter,tripleexpandafter,expanded,startexpanded}
@@ -462,8 +478,8 @@
 
 \def\unvoidbox{\unhbox\voidbox}
 \def\emptybox {\box   \voidbox}  % used in initializations so no attributes
-\def\emptyvbox{\normalvbox{}}    % no copy as we need to set attributes
-\def\emptyhbox{\normalhbox{}}    % no copy as we need to set attributes
+\def\emptyvbox{\normalvpack{}}   % no copy as we need to set attributes
+\def\emptyhbox{\normalhpack{}}   % no copy as we need to set attributes
 
 \let\leavevmode\unvoidbox % we prefer to use \dontleavehmode
 
@@ -506,21 +522,47 @@
 %D creates \type {\footrue}, \type {\foofalse} to go with \type {\iffoo}.
 %D \stopnarrower
 
+% \normalprotected\def\newif#1%
+%   {\count@\escapechar
+%    \escapechar\minusone
+%    \expandafter\expandafter\expandafter\def\new_if #1{true}{\let#1\iftrue }%
+%    \expandafter\expandafter\expandafter\def\new_if#1{false}{\let#1\iffalse}%
+%    \new_if#1{false}% the condition starts out false
+%    \escapechar\count@}
+%
+% \def\new_if#1#2%
+%   {\csname\expandafter\if@\string#1#2\endcsname}
+%
+% \bgroup % `if' is required
+%   \uccode`1=`i \uccode`2=`f \uppercase{\gdef\if@12{}}
+% \egroup
+
+% We use \csstring so there is no need to push/pop escapechar.
+% We use different names so that we get a better error message.
+%
+% \normalprotected\def\newif#1%
+%   {\let\new_if_saved\newif
+%    \let\newif\new_if_check
+%    \expandafter\expandafter\expandafter\def\new_if_cs #1{true}{\let#1\iftrue }%
+%    \expandafter\expandafter\expandafter\def\new_if_cs#1{false}{\let#1\iffalse}%
+%    \new_if_cs#1{false}%
+%    \let\newif\new_if_saved}
+%
+% \normalprotected\def\new_if_cs#1#2%
+%   {\csname\expandafter\newif\csstring#1#2\endcsname}
+%
+% We wrap all into one macro:
+
 \normalprotected\def\newif#1%
-  {\count@\escapechar
-   \escapechar\minusone
-   \expandafter\expandafter\expandafter\def\@if #1{true}{\let#1\iftrue }%
-   \expandafter\expandafter\expandafter\def\@if#1{false}{\let#1\iffalse}%
-   \@if#1{false}% the condition starts out false
-   \escapechar\count@}
+  {\let\new_if_saved\newif
+   \let\newif\new_if_check
+   \expandafter\def\csname\expandafter\newif\csstring#1true\endcsname {\let#1\iftrue }%
+   \expandafter\def\csname\expandafter\newif\csstring#1false\endcsname{\let#1\iffalse}%
+   \csname\expandafter\newif\csstring#1false\endcsname
+   \let\newif\new_if_saved}
 
-\def\@if#1#2%
-  {\csname\expandafter\if@\string#1#2\endcsname}
-
-\bgroup % `if' is required
-
-  \uccode`1=`i \uccode`2=`f \uppercase{\gdef\if@12{}}
-
+\bgroup
+   \normalexpanded{\gdef\noexpand\new_if_check\string i\string f{}}
 \egroup
 
 %D Let's test this one:
@@ -534,31 +576,10 @@
 
 %D A few shortcuts:
 
-\normalprotected\def\glet {\global         \let }
 \normalprotected\def\udef {\normalprotected\def }
 \normalprotected\def\ugdef{\normalprotected\gdef}
 \normalprotected\def\uedef{\normalprotected\edef}
 \normalprotected\def\uxdef{\normalprotected\xdef}
-
-%D The catcode constants will be redefined in later catcode related modules
-%D but they can be used in the same way.
-
-\chardef\escapecatcode      =  0
-\chardef\begingroupcatcode  =  1
-\chardef\endgroupcatcode    =  2
-\chardef\mathshiftcatcode   =  3
-\chardef\alignmentcatcode   =  4
-\chardef\endoflinecatcode   =  5
-\chardef\parametercatcode   =  6
-\chardef\superscriptcatcode =  7
-\chardef\subscriptcatcode   =  8
-\chardef\ignorecatcode      =  9
-\chardef\spacecatcode       = 10
-\chardef\lettercatcode      = 11
-\chardef\othercatcode       = 12
-\chardef\activecatcode      = 13
-\chardef\commentcatcode     = 14
-\chardef\invalidcatcode     = 15
 
 %D For a while we keep the following, as systems like tikz need it. Best
 %D not use that one \CONTEXT.
@@ -789,7 +810,8 @@
 \normalprotected\def\newmacro   #1{\let#1\empty}
 \normalprotected\def\setnewmacro#1{\let#1}
 
-\def\!!plusone{1}
+\def\!!zerocount{0}
+\def\!!plusone  {1}
 
 \normalprotected\def\newfraction#1{\let#1\!!plusone}
 
@@ -872,28 +894,28 @@
 \let\endgraf\par
 \let\endline\cr
 
-\def\space{ }
-\def\empty{}
-
 \normalprotected\def\null{\hpack{}}
 
 %D The following two might be overloaded later on but some modules need then
 %D earlier. These functionality is reflected in the name and will not change.
 
-\bgroup
-    \catcode`\^^M=\activecatcode%
-    \gdef\obeylines{\catcode`\^^M\activecatcode \let^^M\par}%
-    \global\let^^M\par%
-\egroup
+% \bgroup
+%     \catcode`\^^M=\activecatcode%
+%     \gdef\obeylines{\catcode`\^^M\activecatcode \let^^M\par}%
+%     \glet^^M\par%
+% \egroup
+%
+% \bgroup
+%     \gdef\obeyspaces{\catcode`\ \activecatcode}%
+%     \obeyspaces\glet =\space%
+% \egroup
 
-\bgroup
-    \gdef\obeyspaces{\catcode`\ \activecatcode}%
-    \obeyspaces\global\let =\space%
-\egroup
+\def\obeylines {\catcode\endoflineasciicode\activecatcode\letcharcode\endoflineasciicode\par}
+\def\obeyspaces{\catcode\spaceasciicode    \activecatcode\letcharcode\spaceasciicode    \space}
 
-%D A constant:
-
-\let\endoflinetoken=^^M
+% %D A constant:
+%
+% \let\endoflinetoken=^^M
 
 %D Also needed might be a simple loop structure and we borrow plain \TEX's one
 %D as it is often expected to be present and it is about the fastest you can
@@ -948,6 +970,12 @@
 \lineskip      =  1pt
 \lineskiplimit =  0pt
 
+%D Sometimes kerns make more sense than glue but we need to be in the
+%D right mode:
+
+\normalprotected\def\vkern{\ifhmode\par           \fi\kern}
+\normalprotected\def\hkern{\ifvmode\dontleavehmode\fi\kern}
+
 %D Again a few kind-of-extensions the core. These come from plain \TEX\ but
 %D are probably not used in \CONTEXT.
 
@@ -976,116 +1004,47 @@
 
 %D Backend:
 
-% For the moment we define some \pdf... helpers but this will move to the backend
-% module after which the official interfaces have to be used. This is needed for
-% modules not made by ctx developers.
+\ifdefined\pdfvariable
 
-\normalprotected\def\pdfliteral               {\pdfextension literal }
-\normalprotected\def\pdfcolorstack            {\pdfextension colorstack }
-\normalprotected\def\pdfsetmatrix             {\pdfextension setmatrix }
-\normalprotected\def\pdfsave                  {\pdfextension save\relax}
-\normalprotected\def\pdfrestore               {\pdfextension restore\relax}
-\normalprotected\def\pdfobj                   {\pdfextension obj }
-\normalprotected\def\pdfrefobj                {\pdfextension refobj }
-\normalprotected\def\pdfannot                 {\pdfextension annot }
-\normalprotected\def\pdfstartlink             {\pdfextension startlink }
-\normalprotected\def\pdfendlink               {\pdfextension endlink\relax}
-\normalprotected\def\pdfoutline               {\pdfextension outline }
-\normalprotected\def\pdfdest                  {\pdfextension dest }
-\normalprotected\def\pdfthread                {\pdfextension thread }
-\normalprotected\def\pdfstartthread           {\pdfextension startthread }
-\normalprotected\def\pdfendthread             {\pdfextension endthread\relax}
-\normalprotected\def\pdfinfo                  {\pdfextension info }
-\normalprotected\def\pdfcatalog               {\pdfextension catalog }
-\normalprotected\def\pdfnames                 {\pdfextension names }
-\normalprotected\def\pdfincludechars          {\pdfextension includechars }
-\normalprotected\def\pdffontattr              {\pdfextension fontattr }
-\normalprotected\def\pdfmapfile               {\pdfextension mapfile }
-\normalprotected\def\pdfmapline               {\pdfextension mapline }
-\normalprotected\def\pdftrailer               {\pdfextension trailer }
-\normalprotected\def\pdfglyphtounicode        {\pdfextension glyphtounicode }
+    \pdfvariable compresslevel       \plusthree
+    \pdfvariable objcompresslevel    \plusone
+  % \pdfvariable recompress          \zerocount
+    \pdfvariable decimaldigits       \plussix
+    \pdfvariable gamma               \plusthousand
+    \pdfvariable imageresolution     300
+    \pdfvariable imageapplygamma     \zerocount
+    \pdfvariable imagegamma          2200
+    \pdfvariable imagehicolor        \plusone
+    \pdfvariable imageaddfilename    \plusone
+    \pdfvariable pkresolution        1200
+    \pdfvariable inclusioncopyfonts  \plusone
+    \pdfvariable inclusionerrorlevel \zerocount
+    \pdfvariable gentounicode        \plusone
+    \pdfvariable omitcidset          \plusone
+    \pdfvariable omitcharset         \plusone
+    \pdfvariable pagebox             \zerocount
+  % \pdfvariable majorversion      % \plusone
+    \pdfvariable minorversion        \plusseven
+    \pdfvariable uniqueresname       \zerocount
+    \pdfvariable horigin             1in
+    \pdfvariable vorigin             1in
+  % \pdfvariable linkmargin          \zeropoint
+  % \pdfvariable destmargin          \zeropoint
+  % \pdfvariable threadmargin        \zeropoint
+  % \pdfvariable xformmargin         \zeropoint
+    \pdfvariable pkfixeddpi          \plusone
+    \pdfvariable ignoreunknownimages \zerocount
 
-% \chardef\pdfnofullbanner   =   1
-% \chardef\pdfnofilename     =   2
-% \chardef\pdfnopagenumber   =   4
-% \chardef\pdfnoinfodict     =   8
-% \chardef\pdfnocreator      =  16
-% \chardef\pdfnocreationdate =  32
-% \chardef\pdfnomoddate      =  64
-% \chardef\pdfnoproducer     = 128
-% \chardef\pdfnotrapped      = 256
-% \chardef\pdfnoid           = 512
+\fi
 
-\def\pdftexversion           {\numexpr\pdffeedback version\relax}
-\def\pdftexrevision                  {\pdffeedback revision}
-\def\pdflastlink             {\numexpr\pdffeedback lastlink\relax}
-\def\pdfretval               {\numexpr\pdffeedback retval\relax}
-\def\pdflastobj              {\numexpr\pdffeedback lastobj\relax}
-\def\pdflastannot            {\numexpr\pdffeedback lastannot\relax}
-\def\pdfxformname            {\numexpr\pdffeedback xformname\relax}
-\def\pdfcreationdate                 {\pdffeedback creationdate}
-\def\pdffontname             {\numexpr\pdffeedback fontname\relax}
-\def\pdffontobjnum           {\numexpr\pdffeedback fontobjnum\relax}
-\def\pdffontsize             {\dimexpr\pdffeedback fontsize\relax}
-\def\pdfpageref              {\numexpr\pdffeedback pageref\relax}
-\def\pdfcolorstackinit               {\pdffeedback colorstackinit}
+\let\nopdfcompression        \relax
+\let\onlypdfobjectcompression\relax
+\let\maximumpdfcompression   \relax
+\let\normalpdfcompression    \relax
 
-\let\pdfxform                 \saveboxresource
-\let\pdflastxform             \lastsavedboxresourceindex
-\let\pdfrefxform              \useboxresource
-\let\pdfximage                \saveimageresource
-\let\pdflastximage            \lastsavedimageresourceindex
-\let\pdflastximagepages       \lastsavedimageresourcepages
-\let\pdfrefximage             \useimageresource
-\let\pdfsavepos               \savepos
-\let\pdflastxpos              \lastxpos
-\let\pdflastypos              \lastypos
-
-\edef\pdfcompresslevel       {\pdfvariable compresslevel}       \pdfcompresslevel         \plusnine
-\edef\pdfobjcompresslevel    {\pdfvariable objcompresslevel}    \pdfobjcompresslevel      \plusone
-\edef\pdfdecimaldigits       {\pdfvariable decimaldigits}       \pdfdecimaldigits         \plusfive
-\edef\pdfgamma               {\pdfvariable gamma}               \pdfgamma                 \plusthousand
-\edef\pdfimageresolution     {\pdfvariable imageresolution}     \pdfimageresolution       300
-\edef\pdfimageapplygamma     {\pdfvariable imageapplygamma}     \pdfimageapplygamma       \zerocount
-\edef\pdfimagegamma          {\pdfvariable imagegamma}          \pdfimagegamma            2200
-\edef\pdfimagehicolor        {\pdfvariable imagehicolor}        \pdfimagehicolor          \plusone
-\edef\pdfimageaddfilename    {\pdfvariable imageaddfilename}    \pdfimageaddfilename      \plusone
-\edef\pdfpkresolution        {\pdfvariable pkresolution}        \pdfpkresolution          1200
-\edef\pdfinclusioncopyfonts  {\pdfvariable inclusioncopyfonts}  \pdfinclusioncopyfonts    \plusone
-\edef\pdfinclusionerrorlevel {\pdfvariable inclusionerrorlevel} \pdfinclusionerrorlevel   \zerocount
-\edef\pdfgentounicode        {\pdfvariable gentounicode}        \pdfgentounicode          \plusone
-\edef\pdfpagebox             {\pdfvariable pagebox}             \pdfpagebox               \zerocount
-\edef\pdfmajorversion        {\pdfvariable majorversion}      % \pdfmajorversion          \plusone
-\edef\pdfminorversion        {\pdfvariable minorversion}        \pdfminorversion          \plusseven
-\edef\pdfuniqueresname       {\pdfvariable uniqueresname}       \pdfuniqueresname         \zerocount
-\edef\pdfhorigin             {\pdfvariable horigin}             \pdfhorigin               1in
-\edef\pdfvorigin             {\pdfvariable vorigin}             \pdfvorigin               \pdfhorigin
-\edef\pdflinkmargin          {\pdfvariable linkmargin}          \pdflinkmargin            \zeropoint
-\edef\pdfdestmargin          {\pdfvariable destmargin}          \pdfdestmargin            \zeropoint
-\edef\pdfthreadmargin        {\pdfvariable threadmargin}        \pdfthreadmargin          \zeropoint
-\edef\pdfxformmargin         {\pdfvariable xformmargin}         \pdfxformmargin           \zeropoint
-\edef\pdfpkfixeddpi          {\pdfvariable pkfixeddpi}          \pdfpkfixeddpi            \plusone
-\edef\pdfignoreunknownimages {\pdfvariable ignoreunknownimages} \pdfignoreunknownimages   \zerocount
-
-\edef\pdfpagesattr           {\pdfvariable pagesattr}
-\edef\pdfpageattr            {\pdfvariable pageattr}
-\edef\pdfpageresources       {\pdfvariable pageresources}
-\edef\pdfxformattr           {\pdfvariable xformattr}
-\edef\pdfxformresources      {\pdfvariable xformresources}
-\edef\pdfpkmode              {\pdfvariable pkmode}
-
-\edef\pdfsuppressoptionalinfo{\pdfvariable suppressoptionalinfo }
-\let \pdfsuppressptexinfo              \pdfsuppressoptionalinfo
-\edef\pdftrailerid           {\pdfvariable trailerid }
-\edef\pdfinfoomitdate        {\pdfvariable suppressoptionalinfo \numexpr32+64\relax}
-
-\normalprotected\def\nopdfcompression     {\pdfobjcompresslevel\zerocount \pdfcompresslevel\zerocount}
-\normalprotected\def\maximumpdfcompression{\pdfobjcompresslevel\plusnine  \pdfcompresslevel\plusnine }
-\normalprotected\def\normalpdfcompression {\pdfobjcompresslevel\plusthree \pdfcompresslevel\plusthree}
-
-\normalpdfcompression
-
-\outputmode \zerocount % we generate the format in this mode
+\ifdefined\outputmode
+    \outputmode \zerocount % we generate the format in this mode
+\fi
 
 %D Basic status stuff.
 
@@ -1102,12 +1061,10 @@
 \def\dividenumber#1#2{\the\numexpr(#2-(#1/2))/#1\relax}
 
 \ifdefined\texenginename \else
-    %edef\texenginename{luatex}
     \edef\texenginename{\directlua{tex.print(LUATEXENGINE)}}
 \fi
 
 \ifdefined\texengineversion \else
-    %edef\texengineversion{\dividenumber{100}\luatexversion.\modulonumber{100}\luatexversion.\luatexrevision}
     \edef\texengineversion{\directlua{tex.print(LUATEXVERSION)}}
 \fi
 
@@ -1120,43 +1077,39 @@
 \savingvdiscards\plusone
 
 %D We only can set this one via directives (system.synctex) and we only support
-%D the context variant.
+%D the context variant. This will go away completely.
 
 \let\synctex\undefined \newcount\synctex \let\normalsynctex\synctex
 
 %D We get rid of the funny \TEX\ offset defaults of one inch by setting them to zero.
 
-\voffset\zeropoint \let\voffset\relax \newdimen\voffset % prevent messing up
-\hoffset\zeropoint \let\hoffset\relax \newdimen\hoffset % prevent messing up
+\voffset\zeropoint \let\voffset\relax \newdimen\voffset \let\normalvoffset\voffset
+\hoffset\zeropoint \let\hoffset\relax \newdimen\hoffset \let\normalhoffset\hoffset
+
+\ifdefined\pageleftoffset
+    \let\pageleftoffset  \hoffset \let\normalpageleftoffset  \hoffset
+    \let\pagerightoffset \hoffset \let\normalpagerightoffset \hoffset
+    \let\pagetopoffset   \voffset \let\normalpagetopoffset   \voffset
+    \let\pagebottomoffset\voffset \let\normalpagebottomoffset\voffset
+\fi
 
 %D Handy.
 
-\suppresslongerror    \plusone % \let\suppresslongerror    \relax
-\suppressoutererror   \plusone % \let\suppressoutererror   \relax
-\suppressmathparerror \plusone % \let\suppressmathparerror \relax
-\suppressifcsnameerror\plusone % \let\suppressifcsnameerror\relax
+\suppresslongerror    \plusone
+\suppressoutererror   \plusone
+\suppressmathparerror \plusone
+\suppressifcsnameerror\plusone
 
-\matheqnogapstep      \zerocount % fr now
+\let     \suppresslongerror    \relax
+\newcount\suppresslongerror                       \let\normalsuppresslongerror    \suppresslongerror
+\let     \suppressoutererror   \suppresslongerror \let\normalsuppressoutererror   \suppresslongerror
+\let     \suppressmathparerror \suppresslongerror \let\normalsuppressmathparerror \suppresslongerror
+\let     \suppressifcsnameerror\suppresslongerror \let\normalsuppressifcsnameerror\suppresslongerror
 
-%D While cleaning this code up a bit I was listening to Heather Nova's \CD\ Redbird.
-%D The first song on that \CD\ ends with a few lines suitable for ending this
-%D initialization module:
-%D
-%D \startlines
-%D And there's so much I can do for you
-%D Given time I know that I can prove
-%D Now my world is opened up to you
-%D Come inside
-%D
-%D Welcome to my life
-%D Welcome to my world
-%D Come inside
-%D \stoplines
-%D
-%D So let's see what \TEX\ can do now that we've opened up the basic machinery.
+\matheqnogapstep\zerocount % for now
 
-%D Now we define a few helpers that we need in a very early stage. We hav eno message system
-%D yet but redundant definitions are fatal anyway.
+%D Now we define a few helpers that we need in a very early stage. We have no
+%D message system yet but redundant definitions are fatal anyway.
 
 \newcount\c_syst_helpers_n_of_namespaces \c_syst_helpers_n_of_namespaces\pluseight % 1-8 reserved for catcodes
 
@@ -1182,31 +1135,5 @@
 \let\normalstopimath    \Ustopmath
 \let\normalstartdmath   \Ustartdisplaymath
 \let\normalstopdmath    \Ustopdisplaymath
-
-%D For now:
-
-\ifdefined\protrusionboundary     \else \let\protrusionboundary\boundary   \fi
-\ifdefined\wordboundary           \else \let\wordboundary      \noboundary \fi
-
-\ifdefined\mathrulesfam           \else \newcount\mathrulesfam       \fi
-\ifdefined\mathrulesmode          \else \newcount\mathrulesmode      \fi
-\ifdefined\mathsurroundmode       \else \newcount\mathsurroundmode   \fi
-\ifdefined\mathitalicsmode        \else \newcount\mathitalicsmode    \fi
-\ifdefined\mathdelimitersmode     \else \newcount\mathdelimitersmode \fi
-\ifdefined\mathscriptboxmode      \else \newcount\mathscriptboxmode  \fi
-
-\ifdefined\hyphenpenaltymode      \else \newcount\hyphenpenaltymode      \fi
-\ifdefined\automatichyphenpenalty \else \newcount\automatichyphenpenalty \fi
-\ifdefined\automatichyphenmode    \else \newcount\automatichyphenmode    \fi
-\ifdefined\explicithyphenpenalty  \else \newcount\explicithyphenpenalty  \fi
-
-\ifdefined\explicitdiscretionary  \else \let\explicitdiscretionary  \-                   \fi
-\ifdefined\automaticdiscretionary \else \def\automaticdiscretionary{\Uchar\exhyphenchar} \fi
-
-\ifdefined\mathpenaltiesmode      \else \newcount\mathpenaltiesmode \fi
-\ifdefined\prebinoppenalty        \else \newcount\prebinoppenalty   \fi
-\ifdefined\prerelpenalty          \else \newcount\prerelpenalty     \fi
-
-\ifdefined\breakafterdirmode      \else \newcount\breakafterdirmode \fi
 
 \protect \endinput

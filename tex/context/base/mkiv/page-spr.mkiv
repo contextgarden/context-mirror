@@ -23,15 +23,32 @@
 
 % beware, ugly overload, to be redone
 
+% \def\normalsettextpagecontent#1#2#3% #2 and #3 will disappear
+%   {\setbox#1\hbox
+%      {\setlayoutcomponentattribute{\v!page:\v!text}%
+%       \vbox \layoutcomponentboxattribute to \textheight
+%         {\offinterlineskip
+%          \freezetextwidth
+%          \hsize\textwidth   % local variant of \sethsize
+%          \boxmaxdepth\maxdepth
+%          \noindent             % content can be < \hsize
+%          \page_otr_command_package_contents#2#3}}%
+%    \dp#1\zeropoint
+%    \ifconditional\c_page_spread_busy
+%       \normalsettextpagecontent_spread{#1}%
+%    \else
+%       \normalsettextpagecontent_normal{#1}%
+%    \fi}
+
 \def\normalsettextpagecontent#1#2#3% #2 and #3 will disappear
-  {\setbox#1\hbox
+  {\setbox#1\hpack
      {\setlayoutcomponentattribute{\v!page:\v!text}%
-      \vbox \layoutcomponentboxattribute to \textheight
+      \vpack \layoutcomponentboxattribute to \textheight
         {\offinterlineskip
          \freezetextwidth
          \hsize\textwidth   % local variant of \sethsize
          \boxmaxdepth\maxdepth
-         \noindent             % content can be < \hsize
+         \noindent          % content can be < \hsize
          \page_otr_command_package_contents#2#3}}%
    \dp#1\zeropoint
    \ifconditional\c_page_spread_busy
@@ -40,12 +57,18 @@
       \normalsettextpagecontent_normal{#1}%
    \fi}
 
+% \def\normalsettextpagecontent_normal#1%
+%   {\setbox#1\hbox to \makeupwidth
+%      {\hss\box#1\hss}} % never change the \hss's
+
 \def\normalsettextpagecontent_normal#1%
-  {\setbox#1\hbox to \makeupwidth
-     {\hss\box#1\hss}} % never change the \hss's
+  {\ifdim\wd#1=\makeupwidth\else
+     \setbox#1\hpack to \makeupwidth
+       {\hss\box#1\hss}% never change the \hss's
+   \fi}
 
 \def\normalsettextpagecontent_spread#1%
-  {\setbox#1\hbox to \makeupwidth
+  {\setbox#1\hpack to \makeupwidth
      {\ifvoid\b_page_spread_content
         \ifconditional\c_page_spread_once
           \box#1%

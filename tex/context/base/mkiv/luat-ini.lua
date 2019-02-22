@@ -25,15 +25,19 @@ if not global then
     global  = _G
 end
 
-LUATEXVERSION = status.luatex_version/100
-              + tonumber(status.luatex_revision)/1000
+LUATEXVERSION       = status.luatex_version/100
+                    + tonumber(status.luatex_revision)/1000
 
-LUATEXENGINE  = status.luatex_engine and string.lower(status.luatex_engine)
-             or (string.find(status.banner,"LuajitTeX",1,true) and "luajittex" or "luatex")
+LUATEXENGINE        = status.luatex_engine and string.lower(status.luatex_engine)
+                   or (string.find(status.banner,"LuajitTeX",1,true) and "luajittex" or "luatex")
 
-JITSUPPORTED  = LUATEXENGINE == "luajittex" or jit
+LUATEXFUNCTIONALITY = status.development_id or 6346
 
-INITEXMODE    = status.ini_version
+JITSUPPORTED        = LUATEXENGINE == "luajittex" or jit
+
+INITEXMODE          = status.ini_version
+
+CONTEXTLMTXMODE     = CONTEXTLMTXMODE or (status.obj_ptr == nil and 2 or 1)
 
 function os.setlocale()
     -- no need for a message

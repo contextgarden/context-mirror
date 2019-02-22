@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['data-res'] = {
 -- todo: cache:/// home:/// selfautoparent:/// (sometime end 2012)
 
 local gsub, find, lower, upper, match, gmatch = string.gsub, string.find, string.lower, string.upper, string.match, string.gmatch
-local concat, insert, remove, sortedkeys, sortedhash = table.concat, table.insert, table.remove, table.sortedkeys, table.sortedhash
+local concat, insert, remove = table.concat, table.insert, table.remove
 local next, type, rawget = next, type, rawget
 local os = os
 
@@ -1875,7 +1875,7 @@ function resolvers.booleanvariable(str,default)
 end
 
 function resolvers.dowithfilesintree(pattern,handle,before,after) -- will move, can be a nice iterator instead
-    local hashes   = instance.hashes
+    local hashes = instance.hashes
     for i=1,#hashes do
         local hash     = hashes[i]
         local blobtype = hash.type
@@ -1903,7 +1903,7 @@ function resolvers.dowithfilesintree(pattern,handle,before,after) -- will move, 
                 end
             end
             if after then
-                after(blobtype,blobpath,pattern,total,checked,done)
+                after(blobtype,blobpath,pattern,checked,done)
             end
         end
     end

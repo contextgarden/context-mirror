@@ -18,6 +18,7 @@ local rep, format, find = string.rep, string.format, string.find
 local min = math.min
 local lpegmatch = lpeg.match
 local formatters = string.formatters
+local sortedkeys = table.sortedkeys
 
 local backends, lpdf = backends, lpdf
 
@@ -48,10 +49,6 @@ local nodeinjections          = backends.pdf.nodeinjections
 local codeinjections          = backends.pdf.codeinjections
 local registrations           = backends.pdf.registrations
 
-local getpos                  = codeinjections.getpos
-local gethpos                 = codeinjections.gethpos
-local getvpos                 = codeinjections.getvpos
-
 local javascriptcode          = interactions.javascripts.code
 
 local references              = structures.references
@@ -68,11 +65,14 @@ local executers               = references.executers
 
 local nodepool                = nodes.pool
 
------ pdfannotation_node      = nodepool.pdfannotation
------ pdfdestination_node     = nodepool.pdfdestination
 local new_latelua             = nodepool.latelua
 
 local texgetcount             = tex.getcount
+
+local jobpositions            = job.positions
+local getpos                  = jobpositions.getpos
+local gethpos                 = jobpositions.gethpos
+local getvpos                 = jobpositions.getvpos
 
 local pdfdictionary           = lpdf.dictionary
 local pdfarray                = lpdf.array
@@ -106,6 +106,32 @@ local pdf_fit                 = pdfconstant("Fit")
 local pdf_named               = pdfconstant("Named")
 
 local autoprefix              = "#"
+local usedautoprefixes        = { }
+
+local function registerautoprefix(name)
+    local internal = autoprefix .. name
+    if usedautoprefixes[internal] == nil then
+        usedautoprefixes[internal] = false
+    end
+    return internal
+end
+
+local function useautoprefix(name)
+    local internal = autoprefix .. name
+    usedautoprefixes[internal] = true
+    return internal
+end
+
+local function checkautoprefixes(destinations)
+    for k, v in next, usedautoprefixes do
+        if not v then
+            if trace_destinations then
+                report_destinations("flushing unused autoprefix %a",k)
+            end
+            destinations[k] = nil
+        end
+    end
+end
 
 -- Bah, I hate this kind of features .. anyway, as we have delayed resolving we
 -- only support a document-wide setup and it has to be set before the first one
@@ -113,9 +139,9 @@ local autoprefix              = "#"
 -- thin without dashing lines. This is as far as I'm prepared to go. This way
 -- it can also be used as a debug feature.
 
-local pdf_border_style        = pdfarray { 0, 0, 0 } -- radius radius linewidth
-local pdf_border_color        = nil
-local set_border              = false
+local pdf_border_style = pdfarray { 0, 0, 0 } -- radius radius linewidth
+local pdf_border_color = nil
+local set_border       = false
 
 local function pdfborder()
     set_border = true
@@ -131,7 +157,9 @@ directives.register("references.border",function(v)
             local c = m and m[v]
             local v = c and attributes.colors.value(c)
             if v then
-                local r, g, b = v[3], v[4], v[5]
+                local r = v[3]
+                local g = v[4]
+                local b = v[5]
              -- if r == g and g == b then
              --     pdf_border_color = pdfarray { r }       -- reduced, not not ... bugged viewers
              -- else
@@ -192,12 +220,16 @@ local defaultdestination = pdfarray { 0, pdf_fit }
 
 -- fit is default (see lpdf-nod)
 
-local destinations = { } -- to be used soon
+local destinations = { }
+local reported     = setmetatableindex("table")
 
 local function pdfregisterdestination(name,reference)
     local d = destinations[name]
     if d then
-        report_destinations("ignoring duplicate destination %a with reference %a",name,reference)
+        if not reported[name][reference] then
+            report_destinations("ignoring duplicate destination %a with reference %a",name,reference)
+            reported[name][reference] = true
+        end
     else
         destinations[name] = reference
     end
@@ -222,7 +254,11 @@ end)
 
 local function pdfnametree(destinations)
     local slices = { }
-    local sorted = table.sortedkeys(destinations)
+    checkautoprefixes(destinations)
+    if not next(destinations) then
+        return
+    end
+    local sorted = sortedkeys(destinations)
     local size   = #sorted
 
     if size <= 1.5*maxslice then
@@ -232,11 +268,12 @@ local function pdfnametree(destinations)
     for i=1,size,maxslice do
         local amount = min(i+maxslice-1,size)
         local names  = pdfarray { }
+        local n      = 0
         for j=i,amount do
             local destination = sorted[j]
             local pagenumber  = destinations[destination]
-            names[#names+1] = tostring(destination) -- tostring is a safeguard
-            names[#names+1] = pdfreference(pagenumber)
+            n = n + 1 ; names[n] = tostring(destination) -- tostring is a safeguard
+            n = n + 1 ; names[n] = pdfreference(pagenumber)
         end
         local first = sorted[i]
         local last  = sorted[amount]
@@ -254,18 +291,23 @@ local function pdfnametree(destinations)
         }
     end
     local function collectkids(slices,first,last)
-        local k = pdfarray()
-        local d = pdfdictionary {
-            Kids   = k,
-            Limits = pdfarray {
-                slices[first].limits[1],
-                slices[last ].limits[2],
-            },
-        }
-        for i=first,last do
-            k[#k+1] = slices[i].reference
+        local f = slices[first]
+        local l = slices[last]
+        if f and l then
+            local k = pdfarray()
+            local n = 0
+            local d = pdfdictionary {
+                Kids   = k,
+                Limits = pdfarray {
+                    f.limits[1],
+                    l.limits[2],
+                },
+            }
+            for i=first,last do
+                n = n + 1 ; k[n] = slices[i].reference
+            end
+            return d
         end
-        return d
     end
     if #slices == 1 then
         return slices[1].reference
@@ -276,14 +318,24 @@ local function pdfnametree(destinations)
                 local size = #slices
                 for i=1,size,maxslice do
                     local kids = collectkids(slices,i,min(i+maxslice-1,size))
-                    temp[#temp+1] = {
-                        reference = pdfreference(pdfflushobject(kids)),
-                        limits    = kids.Limits,
-                    }
+                    if kids then
+                        temp[#temp+1] = {
+                            reference = pdfreference(pdfflushobject(kids)),
+                            limits    = kids.Limits,
+                        }
+                    else
+                        -- error
+                    end
                 end
                 slices = temp
             else
-                return pdfreference(pdfflushobject(collectkids(slices,1,#slices)))
+                local kids = collectkids(slices,1,#slices)
+                if kids then
+                    return pdfreference(pdfflushobject(kids))
+                else
+                    -- error
+                    return
+                end
             end
         end
     end
@@ -292,8 +344,9 @@ end
 local function pdfdestinationspecification()
     if next(destinations) then -- safeguard
         local r = pdfnametree(destinations)
-     -- pdfaddtocatalog("Dests",r)
-        pdfaddtonames("Dests",r)
+        if r then
+            pdfaddtonames("Dests",r)
+        end
         if not log_destinations then
             destinations = nil
         end
@@ -309,14 +362,25 @@ lpdf.registerdocumentfinalizer(pdfdestinationspecification,"collect destinations
 
 local destinations = { }
 
-local f_xyz   = formatters["<< /D [ %i 0 R /XYZ %0.3F %0.3F null ] >>"]
+local f_xyz   = formatters["<< /D [ %i 0 R /XYZ %.6F %.6F null ] >>"]
 local f_fit   = formatters["<< /D [ %i 0 R /Fit ] >>"]
 local f_fitb  = formatters["<< /D [ %i 0 R /FitB ] >>"]
-local f_fith  = formatters["<< /D [ %i 0 R /FitH %0.3F ] >>"]
-local f_fitv  = formatters["<< /D [ %i 0 R /FitV %0.3F ] >>"]
-local f_fitbh = formatters["<< /D [ %i 0 R /FitBH %0.3F ] >>"]
-local f_fitbv = formatters["<< /D [ %i 0 R /FitBV %0.3F ] >>"]
-local f_fitr  = formatters["<< /D [ %i 0 R /FitR %0.3F %0.3F %0.3F %0.3F ] >>"]
+local f_fith  = formatters["<< /D [ %i 0 R /FitH %.6F ] >>"]
+local f_fitv  = formatters["<< /D [ %i 0 R /FitV %.6F ] >>"]
+local f_fitbh = formatters["<< /D [ %i 0 R /FitBH %.6F ] >>"]
+local f_fitbv = formatters["<< /D [ %i 0 R /FitBV %.6F ] >>"]
+local f_fitr  = formatters["<< /D [ %i 0 R /FitR %.6F %.6F %.6F %.6F ] >>"]
+
+directives.register("pdf.stripzeros",function()
+    f_xyz   = formatters["<< /D [ %i 0 R /XYZ %.6N %.6N null ] >>"]
+    f_fit   = formatters["<< /D [ %i 0 R /Fit ] >>"]
+    f_fitb  = formatters["<< /D [ %i 0 R /FitB ] >>"]
+    f_fith  = formatters["<< /D [ %i 0 R /FitH %.6N ] >>"]
+    f_fitv  = formatters["<< /D [ %i 0 R /FitV %.6N ] >>"]
+    f_fitbh = formatters["<< /D [ %i 0 R /FitBH %.6N ] >>"]
+    f_fitbv = formatters["<< /D [ %i 0 R /FitBV %.6N ] >>"]
+    f_fitr  = formatters["<< /D [ %i 0 R /FitR %.6N %.6N %.6N %.6N ] >>"]
+end)
 
 local v_standard  = variables.standard
 local v_frame     = variables.frame
@@ -404,13 +468,15 @@ local pagedestinations = setmetatableindex(function(t,k) -- not the same as the 
     return v
 end)
 
-local function flushdestination(width,height,depth,names,view)
-    local r = pdfpagereference(texgetcount("realpageno"))
+local function flushdestination(specification)
+    local names = specification.names
+    local view  = specification.view
+    local r     = pdfpagereference(texgetcount("realpageno"))
     if (references.innermethod ~= v_name) and (view == defaultview or not view or view == "") then
         r = pagedestinations[r]
     else
         local action = view and destinationactions[view] or defaultaction
-        r = pdfdelayedobject(action(r,width,height,depth,offset))
+        r = pdfdelayedobject(action(r,specification.width,specification.height,specification.depth,offset))
     end
     for n=1,#names do
         local name = names[n]
@@ -459,7 +525,7 @@ function nodeinjections.destination(width,height,depth,names,view)
             elseif type(name) == "number" then
                 local used = usedinternals[name]
                 usedviews[name] = view
-                names[n] = autoprefix .. name
+                names[n] = registerautoprefix(name)
                 doview = true
             else
                 usedviews[name] = view
@@ -479,10 +545,9 @@ function nodeinjections.destination(width,height,depth,names,view)
                     local used = usedinternals[name]
                     if used and used ~= defaultview then
                         usedviews[name] = view
-                        names[n] = autoprefix .. name
+                        names[n] = registerautoprefix(name)
                         doview = true
                     else
-                     -- names[n] = autoprefix .. name
                         names[n] = false
                     end
                 end
@@ -493,7 +558,14 @@ function nodeinjections.destination(width,height,depth,names,view)
         end
     end
     if doview then
-        return new_latelua(function() flushdestination(width,height,depth,names,view) end)
+        return new_latelua {
+            action = flushdestination,
+            width  = width,
+            height = height,
+            depth  = depth,
+            names  = names,
+            view   = view,
+        }
     end
 end
 
@@ -504,7 +576,7 @@ local function pdflinkpage(page)
 end
 
 local function pdflinkinternal(internal,page)
-    local method = references.innermethod
+ -- local method = references.innermethod
     if internal then
         flaginternals[internal] = true -- for bookmarks and so
         local used = usedinternals[internal]
@@ -512,7 +584,7 @@ local function pdflinkinternal(internal,page)
             return pagereferences[page]
         else
             if type(internal) ~= "string" then
-                internal = autoprefix .. internal
+                internal = useautoprefix(internal)
             end
             return pdfdictionary {
                 S = pdf_goto,
@@ -559,7 +631,7 @@ local function pdffilelink(filename,destination,page,actions)
     end
     filename = file.addsuffix(filename,"pdf")
     if (not destination or destination == "") or (references.outermethod == v_page) then
-        destination = pdfarray { (page or 0) - 1, pdf_fit }
+        destination = pdfarray { (page or 1) - 1, pdf_fit }
     end
     return pdfdictionary {
         S = pdf_gotor, -- can also be pdf_launch
@@ -635,7 +707,7 @@ local function pdfaction(actions)
                     return nil
                 end
             end
-            return first, actions.n
+            return first, actions.n or #actions
         end
     end
 end
@@ -686,9 +758,15 @@ local nofused    = 0
 local nofspecial = 0
 local share      = true
 
-local f_annot = formatters["<< /Type /Annot %s /Rect [ %0.3F %0.3F %0.3F %0.3F ] >>"]
+local f_annot = formatters["<< /Type /Annot %s /Rect [ %0.6F %0.6F %0.6F %0.6F ] >>"]
 
-directives.register("references.sharelinks", function(v) share = v end)
+directives.register("pdf.stripzeros",function()
+    f_annot = formatters["<< /Type /Annot %s /Rect [ %0.6N %0.6N %0.6N %0.6N ] >>"]
+end)
+
+directives.register("references.sharelinks", function(v)
+    share = v
+end)
 
 setmetatableindex(hashed,function(t,k)
     local v = pdfdelayedobject(k)
@@ -699,24 +777,26 @@ setmetatableindex(hashed,function(t,k)
     return v
 end)
 
-local function finishreference(width,height,depth,prerolled) -- %0.2f looks okay enough (no scaling anyway)
-    local annot = hashed[f_annot(prerolled,pdfrectangle(width,height,depth))]
+local function finishreference(specification) -- %0.2f looks okay enough (no scaling anyway)
+    local annot = hashed[f_annot(specification.prerolled,pdfrectangle(specification.width,specification.height,specification.depth))]
     nofused = nofused + 1
     return pdfregisterannotation(annot)
 end
 
-local function finishannotation(width,height,depth,prerolled,r)
+local function finishannotation(specification)
+    local prerolled = specification.prerolled
+    local objref    = specification.objref
     if type(prerolled) == "function" then
         prerolled = prerolled()
     end
-    local annot = f_annot(prerolled,pdfrectangle(width,height,depth))
-    if r then
-        pdfdelayedobject(annot,r)
+    local annot = f_annot(prerolled,pdfrectangle(specification.width,specification.height,specification.depth))
+    if objref then
+        pdfdelayedobject(annot,objref)
     else
-        r = pdfdelayedobject(annot)
+        objref = pdfdelayedobject(annot)
     end
     nofspecial = nofspecial + 1
-    return pdfregisterannotation(r)
+    return pdfregisterannotation(objref)
 end
 
 function nodeinjections.reference(width,height,depth,prerolled)
@@ -724,17 +804,30 @@ function nodeinjections.reference(width,height,depth,prerolled)
         if trace_references then
             report_references("link: width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
         end
-        return new_latelua(function() finishreference(width,height,depth,prerolled) end)
+        return new_latelua {
+            action    = finishreference,
+            width     = width,
+            height    = height,
+            depth     = depth,
+            prerolled = prerolled,
+        }
     end
 end
 
-function nodeinjections.annotation(width,height,depth,prerolled,r)
+function nodeinjections.annotation(width,height,depth,prerolled,objref)
     if prerolled then
         if trace_references then
             report_references("special: width %p, height %p, depth %p, prerolled %a",width,height,depth,
                 type(prerolled) == "string" and prerolled or "-")
         end
-        return new_latelua(function() finishannotation(width,height,depth,prerolled,r or false) end)
+        return new_latelua {
+            action    = finishannotation,
+            width     = width,
+            height    = height,
+            depth     = depth,
+            prerolled = prerolled,
+            objref    = objref or false,
+        }
     end
 end
 
@@ -757,7 +850,9 @@ pdfregisterannotation = lpdf.registerannotation
 function lpdf.annotationspecification()
     if annotations then
         local r = pdfdelayedobject(tostring(annotations)) -- delayed so okay in latelua
-        pdfaddtopageattributes("Annots",pdfreference(r))
+        if r then
+            pdfaddtopageattributes("Annots",pdfreference(r))
+        end
         annotations = nil
     end
 end
@@ -872,15 +967,20 @@ end
 runners["special operation"]                = runners["special"]
 runners["special operation with arguments"] = runners["special"]
 
+local reported = { }
+
 function specials.internal(var,actions) -- better resolve in strc-ref
-    local i = tonumber(var.operation)
+    local o = var.operation
+    local i = o and tonumber(o)
     local v = i and references.internals[i]
-    if not v then
-        -- error
-        report_references("no internal reference %a",i or "<unset>")
-    else
-        flaginternals[i] = true
+    if v then
+        flaginternals[i] = true -- also done in pdflinkinternal
         return pdflinkinternal(i,v.references.realpage)
+    end
+    local v = i or o or "<unset>"
+    if not reported[v] then
+        report_references("no internal reference %a",v)
+        reported[v] = true
     end
 end
 
@@ -946,19 +1046,18 @@ end
 
 -- sections
 
--- function specials.section(var,actions)
---     local sectionname = var.operation
---     local destination = var.arguments
---     local internal    = structures.sections.internalreference(sectionname,destination)
---     if internal then
---         var.special   = "internal"
---         var.operation = internal
---         var.arguments = nil
---         specials.internal(var,actions)
---     end
--- end
-
-specials.section = specials.internal -- specials.section just need to have a value as it's checked
+function specials.section(var,actions)
+    -- a bit duplicate
+    local sectionname = var.arguments
+    local destination = var.operation
+    local internal    = structures.sections.internalreference(sectionname,destination)
+    if internal then
+        var.special   = "internal"
+        var.operation = internal
+        var.arguments = nil
+        return specials.internal(var,actions)
+    end
+end
 
 -- todo, do this in references namespace ordered instead (this is an experiment)
 
@@ -1129,7 +1228,8 @@ end
 local function build(levels,start,parent,method,nested)
     local startlevel = levels[start].level
     local noflevels  = #levels
-    local i, n = start, 0
+    local i = start
+    local n = 0
     local child, entry, m, prev, first, last, f, l
     while i and i <= noflevels do
         local current = levels[i]
@@ -1146,11 +1246,12 @@ local function build(levels,start,parent,method,nested)
             local variant   = "unknown"
             if reftype == "table" then
                 -- we're okay
-                variant = "list"
-                block   = reference.block
+                variant  = "list"
+                block    = reference.block
+                realpage = reference.realpage
             elseif reftype == "string" then
                 local resolved = references.identify("",reference)
-                local realpage = resolved and structures.references.setreferencerealpage(resolved) or 0
+                realpage = resolved and structures.references.setreferencerealpage(resolved) or 0
                 if realpage > 0 then
                     variant   = "realpage"
                     realpage  = realpage
@@ -1251,7 +1352,6 @@ end
 
 function codeinjections.addbookmarks(levels,method)
     if levels and #levels > 0 then
--- inspect(levels)
         local parent = pdfreserveobject()
         local _, m, first, last = build(levels,1,pdfreference(parent),method or "internal",false)
         local dict = pdfdictionary {

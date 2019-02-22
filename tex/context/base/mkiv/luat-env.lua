@@ -11,7 +11,8 @@
 -- sense. Much of this evolved before bytecode arrays were available and so a lot of
 -- code has disappeared already.
 
-local rawset, rawget, loadfile, assert = rawset, rawget, loadfile, assert
+local rawset, rawget, loadfile = rawset, rawget, loadfile
+local gsub = string.gsub
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
@@ -123,7 +124,7 @@ function environment.loadluafile(filename, version)
         luaname = file.addsuffix(basename,luasuffixes.lua)
         lucname = file.addsuffix(basename,luasuffixes.luc)
     else
-        luaname = basename -- forced suffix
+        luaname = filename -- forced suffix
         lucname = nil
     end
     -- when not overloaded by explicit suffix we look for a luc file first
@@ -136,7 +137,7 @@ function environment.loadluafile(filename, version)
         chunk = loadfile(fullname) -- this way we don't need a file exists check
     end
     if chunk then
-        assert(chunk)()
+        chunk()
         if version then
             -- we check of the version number of this chunk matches
             local v = version -- can be nil
@@ -168,9 +169,24 @@ function environment.loadluafile(filename, version)
                 report_lua("unknown file %a",filename)
             end
         else
-            assert(chunk)()
+            chunk()
             return true
         end
     end
     return false
 end
+
+environment.filenames = setmetatable( { }, {
+    __index = function(t,k)
+        local v = environment.files[k]
+        if v then
+            return (gsub(v,"%.+$",""))
+        end
+    end,
+    __newindex = function(t,k)
+        -- nothing
+    end,
+    __len = function(t)
+        return #environment.files
+    end,
+} )

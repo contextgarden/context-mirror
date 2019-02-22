@@ -72,20 +72,16 @@ end
 -- dirty tricks (we will replace the texlua call by luatex --luaonly)
 
 local validengines = allocate {
-    ["luatex"]        = true,
-    ["luajittex"]     = true,
- -- ["luatex.exe"]    = true,
- -- ["luajittex.exe"] = true,
+    ["luatex"]    = true,
+    ["luajittex"] = true,
 }
 
 local basicengines = allocate {
-    ["luatex"]        = "luatex",
-    ["texlua"]        = "luatex",
-    ["texluac"]       = "luatex",
-    ["luajittex"]     = "luajittex",
-    ["texluajit"]     = "luajittex",
- -- ["texlua.exe"]    = "luatex",
- -- ["texluajit.exe"] = "luajittex",
+    ["luatex"]    = "luatex",
+    ["texlua"]    = "luatex",    -- obsolete
+    ["texluac"]   = "luatex",    -- obsolete
+    ["luajittex"] = "luajittex",
+    ["texluajit"] = "luajittex", -- obsolete
 }
 
 local luaengines = allocate {
@@ -154,8 +150,11 @@ environment.sortedflags = nil
 -- context specific arguments (in order not to confuse the engine)
 
 function environment.initializearguments(arg)
-    local arguments, files = { }, { }
-    environment.arguments, environment.files, environment.sortedflags = arguments, files, nil
+    local arguments = { }
+    local files     = { }
+    environment.arguments   = arguments
+    environment.files       = files
+    environment.sortedflags = nil
     for index=1,#arg do
         local argument = arg[index]
         if index > 0 then
@@ -172,6 +171,11 @@ function environment.initializearguments(arg)
                     files[#files+1] = argument
                 end
             end
+        end
+    end
+    if not environment.ownname then
+        if os.selfpath and os.selfname then
+            environment.ownname = file.addsuffix(file.join(os.selfpath,os.selfname),"lua")
         end
     end
     environment.ownname = file.reslash(environment.ownname or arg[0] or 'unknown.lua')
@@ -281,13 +285,20 @@ if arg then
     for index=1,#arg do
         local argument = arg[index]
         if find(argument,"^\"") then
-            newarg[#newarg+1] = gsub(argument,"^\"","")
-            if not find(argument,"\"$") then
+            if find(argument,"\"$") then
+                newarg[#newarg+1] = gsub(argument,"^\"(.-)\"$","%1")
+                instring = false
+            else
+                newarg[#newarg+1] = gsub(argument,"^\"","")
                 instring = true
             end
         elseif find(argument,"\"$") then
-            newarg[#newarg] = newarg[#newarg] .. " " .. gsub(argument,"\"$","")
-            instring = false
+            if instring then
+                newarg[#newarg] = newarg[#newarg] .. " " .. gsub(argument,"\"$","")
+                instring = false
+            else
+                newarg[#newarg+1] = argument
+            end
         elseif instring then
             newarg[#newarg] = newarg[#newarg] .. " " .. argument
         else

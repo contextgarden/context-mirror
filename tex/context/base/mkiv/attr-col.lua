@@ -114,11 +114,15 @@ local data        = colors.data
 local values      = colors.values
 local registered  = colors.registered
 
+local cmykrgbmode = 0 -- only for testing, already defined colors are not affected
+
 local numbers     = attributes.numbers
 local list        = attributes.list
 
 registerstorage("attributes/colors/values",     values,     "attributes.colors.values")
 registerstorage("attributes/colors/registered", registered, "attributes.colors.registered")
+
+directives.register("colors.cmykrgbmode", function(v) cmykrgbmode = tonumber(v) or 0 end)
 
 local f_colors = {
     rgb  = formatters["r:%s:%s:%s"],
@@ -148,8 +152,11 @@ end
 local function cmyktorgb(c,m,y,k)
     if not c then
         return 0, 0, 0, 1
+    elseif cmykrgbmode == 1 then
+        local d = 1.0 - k
+        return 1.0 - min(1.0,c*d+k), 1.0 - min(1.0,m*d+k), 1.0 - min(1.0,y*d+k)
     else
-        return 1.0 - min(1.0,c+k), 1.0 - min(1.0,m+k), 1.0 - min(1.0,y+k)
+        return 1.0 - min(1.0,c  +k), 1.0 - min(1.0,m  +k), 1.0 - min(1.0,y  +k)
     end
 end
 
@@ -295,7 +302,7 @@ function colors.spot(parent,f,d,p)
             local v = values[n]
             if v then
                 -- the via cmyk hack is dirty, but it scales better
-                local c, m, y, k = p*v[6], p*v[7], p*v[8], p*v[8]
+                local c, m, y, k = p*v[6], p*v[7], p*v[8], p*v[9]
                 local r, g, b = cmyktorgb(c,m,y,k)
                 local s = cmyktogray(c,m,y,k)
                 return { 5, s, r, g, b, c, m, y, k, parent, f, d, p }
@@ -318,7 +325,7 @@ function colors.spot(parent,f,d,p)
                         c = c + p*v[6]
                         m = m + p*v[7]
                         y = y + p*v[8]
-                        k = k + p*v[8]
+                        k = k + p*v[9]
                         done = true
                     end
                 end
@@ -361,10 +368,14 @@ local function reviver(data,n)
                 local gray = graycolor(v[2])
                 d = { gray, gray, gray, gray }
             elseif model == 3 then
-                local gray, rgb, cmyk = graycolor(v[2]), rgbcolor(v[3],v[4],v[5]), cmykcolor(v[6],v[7],v[8],v[9])
+                local gray = graycolor(v[2])
+                local rgb  = rgbcolor(v[3],v[4],v[5])
+                local cmyk = cmykcolor(v[6],v[7],v[8],v[9])
                 d = { rgb, gray, rgb, cmyk }
             elseif model == 4 then
-                local gray, rgb, cmyk = graycolor(v[2]), rgbcolor(v[3],v[4],v[5]), cmykcolor(v[6],v[7],v[8],v[9])
+                local gray = graycolor(v[2])
+                local rgb  = rgbcolor(v[3],v[4],v[5])
+                local cmyk = cmykcolor(v[6],v[7],v[8],v[9])
                 d = { cmyk, gray, rgb, cmyk }
             elseif model == 5 then
                 local spot = spotcolor(v[10],v[11],v[12],v[13])
@@ -406,10 +417,29 @@ function colors.setmodel(name,weightgray)
             weightgray = true
         end
     end
-    colors.model      = name              -- global, not useful that way
-    colors.default    = models[name] or 1 -- global
-    colors.weightgray = weightgray        -- global
-    return colors.default
+    local default = models[name] or 1
+
+    colors.model      = name       -- global, not useful that way
+    colors.default    = default    -- global
+    colors.weightgray = weightgray -- global
+
+    -- avoid selective checking is no need for it
+
+    local forced = colors.forced
+
+    if forced == nil then
+        -- unset
+        colors.forced = default
+    elseif forced == false then
+        -- assumed mixed
+    elseif forced ~= default then
+        -- probably mixed
+        colors.forced = false
+    else
+        -- stil the same
+    end
+
+    return default
 end
 
 function colors.register(name, colorspace, ...) -- passing 9 vars is faster (but not called that often)

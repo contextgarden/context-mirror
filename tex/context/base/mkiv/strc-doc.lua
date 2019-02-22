@@ -18,6 +18,7 @@ if not modules then modules = { } end modules ['strc-doc'] = {
 local next, type, tonumber, select = next, type, tonumber, select
 local find, match = string.find, string.match
 local concat, fastcopy, insert, remove = table.concat, table.fastcopy, table.insert, table.remove
+local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 local max, min = math.max, math.min
 local allocate, mark, accesstable = utilities.storage.allocate, utilities.storage.mark, utilities.tables.accesstable
 local setmetatableindex = table.setmetatableindex
@@ -37,11 +38,13 @@ local v_auto              = variables.auto
 local v_strict            = variables.strict
 local v_all               = variables.all
 local v_positive          = variables.positive
+local v_current           = variables.current
 
 local trace_sectioning    = false  trackers.register("structures.sectioning", function(v) trace_sectioning = v end)
 local trace_detail        = false  trackers.register("structures.detail",     function(v) trace_detail     = v end)
 
 local report_structure    = logs.reporter("structure","sectioning")
+local report_used         = logs.reporter("structure")
 
 local context             = context
 local commands            = commands
@@ -122,12 +125,16 @@ local tobesaved  = allocate()
 sections.collected  = collected
 sections.tobesaved  = tobesaved
 
--- local function initializer()
---     collected = sections.collected
---     tobesaved = sections.tobesaved
--- end
---
--- job.register('structures.sections.collected', tobesaved, initializer)
+-- We have to save this mostly redundant list because we can have (rare)
+-- cases with own numbers that don't end up in the list so we get out of
+-- sync when we use (*).
+
+local function initializer()
+    collected = sections.collected
+    tobesaved = sections.tobesaved
+end
+
+job.register('structures.sections.collected', tobesaved, initializer)
 
 local registered    = sections.registered or allocate()
 sections.registered = registered
@@ -158,7 +165,7 @@ end
 local lastsaved = 0
 
 function sections.save(sectiondata)
---  local sectionnumber = helpers.simplify(section.sectiondata) -- maybe done earlier
+local sectiondata = helpers.simplify(sectiondata) -- maybe done earlier
     local numberdata = sectiondata.numberdata
     local ntobesaved = #tobesaved
     if not numberdata or sectiondata.metadata.nolist then
@@ -178,28 +185,28 @@ function sections.currentsectionindex()
     return lastsaved -- only for special controlled situations
 end
 
-function sections.load()
-    setmetatableindex(collected,nil)
-    local lists = lists.collected
-    for i=1,#lists do
-        local list = lists[i]
-        local metadata = list.metadata
-        if metadata and metadata.kind == "section" and not metadata.nolist then
-            local numberdata = list.numberdata
-            if numberdata then
-                collected[#collected+1] = numberdata
-            end
-        end
-    end
-    sections.load = functions.dummy
-end
-
-table.setmetatableindex(collected, function(t,i)
-    sections.load()
-    return collected[i] or { }
-end)
-
+-- See comment above (*). We cannot use the following space optimization:
 --
+-- function sections.load()
+--     setmetatableindex(collected,nil)
+--     local lists = lists.collected
+--     for i=1,#lists do
+--         local list = lists[i]
+--         local metadata = list.metadata
+--         if metadata and metadata.kind == "section" and not metadata.nolist then
+--             local numberdata = list.numberdata
+--             if numberdata then
+--                 collected[#collected+1] = numberdata
+--             end
+--         end
+--     end
+--     sections.load = functions.dummy
+-- end
+--
+-- table.setmetatableindex(collected, function(t,i)
+--     sections.load()
+--     return collected[i] or { }
+-- end)
 
 sections.verbose          = true
 
@@ -382,8 +389,9 @@ function sections.setentry(given)
     -- new number
     olddepth = newdepth
     if metadata.increment then
-        local oldn, newn = numbers[newdepth] or 0, 0
-        local fd = forced[newdepth]
+        local oldn = numbers[newdepth] or 0
+        local newn = 0
+        local fd   = forced[newdepth]
         if fd then
             if fd[1] == "add" then
                 newn = oldn + fd[2] + 1
@@ -438,7 +446,10 @@ end
 
 function sections.reportstructure()
     if sections.verbose then
-        local numbers, ownnumbers, status, depth = data.numbers, data.ownnumbers, data.status, data.depth
+        local numbers    = data.numbers
+        local ownnumbers = data.ownnumbers
+        local status     = data.status
+        local depth      = data.depth
         local d = status[depth]
         local o = concat(ownnumbers,".",1,depth)
         local n = (numbers and concat(numbers,".",1,min(depth,#numbers))) or 0
@@ -711,8 +722,12 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
             criterium = 0
         end
         --
-        local firstprefix, lastprefix = 0, 16 -- too much, could max found level
-        if segments then
+        local firstprefix =  0
+        local lastprefix  = 16 -- too much, could max found level
+        if segments == v_current then
+            firstprefix = data.depth
+            lastprefix  = firstprefix
+        elseif segments then
             local f, l = match(tostring(segments),"^(.-):(.+)$")
             if l == "*" or l == v_all then
                 l = 100 -- new
@@ -731,9 +746,11 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
             end
         end
         --
-        local numbers, ownnumbers = entry.numbers, entry.ownnumbers
+        local numbers    = entry.numbers
+        local ownnumbers = entry.ownnumbers
         if numbers then
-            local done, preceding = false, false
+            local done      = false
+            local preceding = false
             --
             local result = kind == "direct" and { }
             if result then
@@ -751,11 +768,14 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
             if prefixlist and (kind == "section" or kind == "prefix" or kind == "direct") then
                 -- find valid set (problem: for sectionnumber we should pass the level)
                 -- no holes
-                local b, e, bb, ee = 1, #prefixlist, 0, 0
+                local b  = 1
+                local e  = #prefixlist
+                local bb = 0
+                local ee = 0
                 -- find last valid number
                 for k=e,b,-1 do
                     local prefix = prefixlist[k]
-                    local index = sections.getlevel(prefix) or k
+                    local index  = sections.getlevel(prefix) or k
                     if index >= firstprefix and index <= lastprefix then
                         local number = numbers and numbers[index]
                         if number then
@@ -771,7 +791,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                 -- find valid range
                 for k=b,e do
                     local prefix = prefixlist[k]
-                    local index = sections.getlevel(prefix) or k
+                    local index  = sections.getlevel(prefix) or k
                     if index >= firstprefix and index <= lastprefix then
                         local number = numbers and numbers[index]
                         if number then
@@ -972,6 +992,47 @@ function sections.getnumber(depth,what) -- redefined here
     context(askednumber)
 end
 
+-- maybe handy
+
+function sections.showstructure()
+
+    local tobesaved = structures.lists.tobesaved
+
+    if not tobesaved then
+        return
+    end
+
+    local levels = setmetatableindex("table")
+    local names  = setmetatableindex("table")
+
+    report_used()
+    report_used("sections")
+    for i=1,#tobesaved do
+        local si = tobesaved[i]
+        local md = si.metadata
+        if md and md.kind == "section" then
+            local level   = md.level
+            local name    = md.name
+            local numbers = si.numberdata.numbers
+            local  title  = si.titledata.title
+            report_used("  %i : %-10s %-20s %s",level,concat(numbers,"."),name,title)
+            levels[level][name] = true
+            names[name][level]  = true
+        end
+    end
+    report_used()
+    report_used("levels")
+    for level, list in sortedhash(levels) do
+        report_used("  %s : % t",level,sortedkeys(list))
+    end
+    report_used()
+    report_used("names")
+    for name, list in sortedhash(names) do
+        report_used("  %-10s : % t",name,sortedkeys(list))
+    end
+    report_used()
+end
+
 -- experimental
 
 local levels = { }
@@ -1042,6 +1103,7 @@ implement { name = "getsomefullstructurenumber", actions = sections.fullnumber, 
 implement { name = "getspecificstructuretitle",  actions = sections.structuredata,   arguments = { "string", "'titledata.title'",false,"string" } }
 
 implement { name = "reportstructure",            actions = sections.reportstructure }
+implement { name = "showstructure",              actions = sections.showstructure }
 
 implement {
     name      = "registersection",

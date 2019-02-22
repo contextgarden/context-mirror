@@ -52,6 +52,8 @@ local context            = context
 local commands           = commands
 local implement          = interfaces.implement
 
+local ctx_latelua        = context.latelua
+
 local texgetcount        = tex.getcount
 local texsetcount        = tex.setcount
 local texconditionals    = tex.conditionals
@@ -72,6 +74,7 @@ local lists              = structures.lists
 local counters           = structures.counters
 
 local jobpositions       = job.positions
+local getpos             = jobpositions.getpos
 
 -- some might become local
 
@@ -137,6 +140,7 @@ storage.register("structures/references/defined", references.defined, "structure
 
 local initializers = { }
 local finalizers   = { }
+local somefound    = false -- so we don't report missing when we have a fresh start
 
 function references.registerinitializer(func) -- we could use a token register instead
     initializers[#initializers+1] = func
@@ -162,6 +166,7 @@ local function initializer() -- can we use a tobesaved as metatable for collecte
             end
         end
     end
+    somefound = next(collected)
 end
 
 local function finalizer()
@@ -370,6 +375,8 @@ implement {
     arguments = "2 strings",
 }
 
+local reported = setmetatableindex("table")
+
 function references.set(data)
     local references = data.references
     local reference  = references.reference
@@ -388,16 +395,23 @@ function references.set(data)
         if ref == "" then
             -- skip
         elseif check_duplicates and pd[ref] then
-            if prefix and prefix ~= "" then
-                report_references("redundant reference %a in namespace %a",ref,prefix)
-            else
-                report_references("redundant reference %a",ref)
+            if not prefix then
+                prefix = ""
+            end
+            if not reported[prefix][ref] then
+                if prefix ~= "" then
+                    report_references("redundant reference %a in namespace %a",ref,prefix)
+                else
+                    report_references("redundant reference %a",ref)
+                end
+                reported[prefix][ref] = true
             end
         else
             n = n + 1
             pd[ref] = data
             local r = data.references
             ctx_dofinishreference(prefix or "",ref or "",r and r.internal or 0)
+         -- ctx_latelua(function() structures.references.enhance(prefix or ref,ref or "") end)
         end
     end
     process_settings(reference,action)
@@ -411,8 +425,6 @@ end
 --     end
 -- end
 
-local getpos = function() getpos = backends.codeinjections.getpos  return getpos () end
-
 local function synchronizepage(reference) -- non public helper
     reference.realpage = texgetcount("realpageno")
     if jobpositions.used then
@@ -422,17 +434,30 @@ end
 
 references.synchronizepage = synchronizepage
 
-function references.enhance(prefix,tag)
-    local l = tobesaved[prefix][tag]
+local function enhancereference(specification)
+    local l = tobesaved[specification.prefix][specification.tag]
     if l then
         synchronizepage(l.references)
     end
 end
 
+references.enhance = enhancereference
+
+-- implement {
+--     name      = "enhancereference",
+--     arguments = "2 strings",
+--     actions   = function(prefix,tag)
+--        enhancereference { prefix = prefix, tag = tag }
+--     end,
+-- }
+
 implement {
-    name      = "enhancereference",
-    actions   = references.enhance,
+    name      = "deferredenhancereference",
     arguments = "2 strings",
+    protected = true,
+    actions   = function(prefix,tag)
+        ctx_latelua { action = enhancereference, prefix = prefix, tag = tag }
+    end,
 }
 
 -- -- -- related to strc-ini.lua -- -- --
@@ -1004,9 +1029,9 @@ local function loadexternalreferences(name,utilitydata)
         local pages    = struc.pages.collected      -- pagenumber data
         -- a bit weird one, as we don't have the externals in the collected
         for prefix, set in next, external do
-if prefix == "" then
-    prefix = name -- this can clash!
-end
+            if prefix == "" then
+                prefix = name -- this can clash!
+            end
             for reference, data in next, set do
                 if trace_importing then
                     report_importing("registering %a reference, kind %a, name %a, prefix %a, reference %a",
@@ -1034,9 +1059,9 @@ end
                     if kind and realpage then
                         references.pagedata = pages[realpage]
                         local prefix = references.prefix or ""
-if prefix == "" then
-    prefix = name -- this can clash!
-end
+                        if prefix == "" then
+                            prefix = name -- this can clash!
+                        end
                         local target = external[prefix]
                         if not target then
                             target = { }
@@ -1468,7 +1493,7 @@ local function identify_inner(set,var,prefix,collected,derived)
         end
     end
     -- we now ignore the split prefix and treat the whole inner as a potential
-    -- referenice into the global list
+    -- reference into the global list
     local i = collected[prefix]
     if i then
         i = i[inner]
@@ -1524,6 +1549,17 @@ local function identify_outer(set,var,i)
             end
             return v
         end
+-- weird too (we really need to check how this table is build
+        local v = identify_inner(set,var,var.outer,external)
+        if v then
+            v.kind = "outer with inner"
+            set.external = true
+            if trace_identifying then
+                report_identify_outer(set,v,i,"2c")
+            end
+            return v
+        end
+--
         -- somewhat rubish: we use outer as first step in the externals table so it makes no
         -- sense to have it as prefix so the next could be an option
         local external = external[""]
@@ -1798,8 +1834,7 @@ local nofidentified = 0
 
 local function identify(prefix,reference)
     if not reference then
-        prefix    = ""
-        reference = prefix
+        prefix, reference = "", prefix
     end
     local set = resolve(prefix,reference)
     local bug = false
@@ -1847,7 +1882,9 @@ function references.valid(prefix,reference,specification)
         local str = f_valid(prefix,reference)
         local u = unknowns[str]
         if not u then
-            interfaces.showmessage("references",1,str) -- 1 = unknown, 4 = illegal
+            if somefound then
+                interfaces.showmessage("references",1,str) -- 1 = unknown, 4 = illegal
+            end
             unknowns[str] = 1
             nofunknowns = nofunknowns + 1
         else
@@ -1964,13 +2001,14 @@ local function setinternalreference(specification)
     local internal    = specification.internal
     local destination = unsetvalue
     if innermethod == v_auto or innermethod == v_name then
-        local t, tn = { }, 0 -- maybe add to current (now only used for tracing)
+        local t         = { } -- maybe add to current (now only used for tracing)
+        local tn        = 0
         local reference = specification.reference
         local view      = specification.view
         if reference then
             local prefix = specification.prefix
             if prefix and prefix ~= "" then
-                prefix = prefix .. ":" -- watch out, : here
+                local prefix = prefix .. ":" -- watch out, : here
                 local function action(ref)
                     tn = tn + 1
                     t[tn] = prefix .. ref
@@ -1987,7 +2025,7 @@ local function setinternalreference(specification)
         -- ugly .. later we decide to ignore it when we have a real one
         -- but for testing we might want to see them all
         if internal then
-            if innermethod ~= v_name then -- so page and auto
+            if innermethod ~= v_name then -- innermethod == v_auto
              -- we don't want too many #1 #2 #3 etc
                 tn = tn + 1
                 t[tn] = internal -- when number it's internal
@@ -2064,7 +2102,7 @@ function references.setandgetattribute(data) -- maybe do internal automatically 
         local done = references.set(data) -- we had kind i.e .item -> full
         if done then
             attr = setinternalreference {
-                prefix    = prefix,
+                prefix    = rdat.prefix,
                 reference = rdat.reference,
                 internal  = rdat.internal,
                 view      = rdat.view
@@ -2285,7 +2323,8 @@ genericfilters.default = genericfilters.text
 function genericfilters.page(data,prefixspec,pagespec)
     local pagedata = data.pagedata
     if pagedata then
-        local number, conversion = pagedata.number, pagedata.conversion
+        local number     = pagedata.number
+        local conversion = pagedata.conversion
         if not number then
             -- error
         elseif conversion then
@@ -2527,10 +2566,19 @@ local function referencepagestate(position,detail,spread)
     if not actions then
         return 0
     else
-        if not actions.pagestate then
-            references.analyze(actions,position,spread) -- delayed unless explicitly asked for
-        end
         local pagestate = actions.pagestate
+        for i=1,#actions do
+            local a = actions[i]
+            if a.outer then
+                pagestate = 0
+                actions.pagestate = pagestate
+                break
+            end
+        end
+        if not pagestate then
+            references.analyze(actions,position,spread) -- delayed unless explicitly asked for
+            pagestate = actions.pagestate
+        end
         if detail then
             return pagestate
         elseif pagestate == 4 then
