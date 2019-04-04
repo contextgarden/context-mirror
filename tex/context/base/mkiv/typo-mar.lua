@@ -59,8 +59,6 @@ local v_paragraph        = variables.paragraph
 local v_line             = variables.line
 
 local nuts               = nodes.nuts
-local nodepool           = nuts.pool
-
 local tonode             = nuts.tonode
 
 local hpack_nodes        = nuts.hpack
@@ -82,7 +80,6 @@ local setshift           = nuts.setshift
 local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
 local getheight          = nuts.getheight
-local getprop            = nuts.getprop
 
 local setattrlist        = nuts.setattrlist
 
@@ -103,10 +100,9 @@ local userdefined_code   = whatsitcodes.userdefined
 
 local nodepool           = nuts.pool
 
-local new_usernode       = nodepool.usernode
 local new_hlist          = nodepool.hlist
-
-local lateluafunction    = nodepool.lateluafunction
+local new_usernode       = nodepool.usernode
+local latelua            = nodepool.latelua
 
 local texgetdimen        = tex.getdimen
 local texgetcount        = tex.getcount
@@ -204,7 +200,6 @@ end
 function margins.save(t)
     setmetatable(t,defaults)
     local content  = takebox(t.number)
-    setprop(content,"specialcontent","margindata")
     local location = t.location
     local category = t.category
     local inline   = t.inline
@@ -220,6 +215,7 @@ function margins.save(t)
         report_margindata("ignoring empty margin data %a",location or "unknown")
         return
     end
+    setprop(content,"specialcontent","margindata")
     local store
     if inline then
         store = inlinestore
@@ -450,25 +446,29 @@ end
 
 -- anchors are only set for lines that have a note
 
-local function sa(tag) -- maybe l/r keys ipv left/right keys
-    local p = cache[tag]
+local function sa(specification) -- maybe l/r keys ipv left/right keys
+    local tag = specification.tag
+    local p   = cache[tag]
     if p then
         if trace_marginstack then
             report_margindata("updating anchor %a",tag)
         end
         p.p = true
         p.y = true
-        setposition('md:v',tag,p)
+        -- maybe settobesaved first
+        setposition("md:v",tag,p)
         cache[tag] = nil -- do this later, per page a cleanup
     end
 end
 
 local function setanchor(v_anchor) -- freezes the global here
-    return lateluafunction(function() sa(v_anchor) end)
+    return latelua { action = sa, tag = v_anchor }
 end
 
-local function aa(tag,n) -- maybe l/r keys ipv left/right keys
-    local p = jobpositions.gettobesaved('md:v',tag)
+local function aa(specification) -- maybe l/r keys ipv left/right keys
+    local tag = specification.tag
+    local n   = specification.n
+    local p   = jobpositions.gettobesaved('md:v',tag)
     if p then
         if trace_marginstack then
             report_margindata("updating injected %a",tag)
@@ -485,7 +485,7 @@ local function aa(tag,n) -- maybe l/r keys ipv left/right keys
 end
 
 local function addtoanchor(v_anchor,n) -- freezes the global here
-    return lateluafunction(function() aa(v_anchor,n) end)
+    return latelua { action = aa, tag = v_anchor, n = n }
 end
 
 local function markovershoot(current) -- todo: alleen als offset > line
@@ -589,7 +589,7 @@ local function inject(parent,head,candidate)
         elseif previous == current then
             firstonstack = false
         elseif ap and ac and ap.p == ac.p then
-            local distance = ap.y - ac.y
+            local distance = (ap.y or 0) - (ac.y or 0)
             if trace_margindata then
                 report_margindata("distance %p",distance)
             end
@@ -680,7 +680,7 @@ local function inject(parent,head,candidate)
     setwidth(box,0) -- not needed when wrapped
     --
     if isstacked then
-        setlink(box,addtoanchor(v_anchor,nofinjected))
+        setlink(box,addtoanchor(v_anchors,nofinjected))
         box = new_hlist(box)
         -- set height / depth ?
     end
@@ -733,7 +733,7 @@ local function flushinline(parent,head)
                         -- for now we also check for inline+yes/continue, maybe someday no such check
                         -- will happen; we can assume most inlines are one line heigh; also this
                         -- together feature can become optional
-                        registertogether(tonode(parent),room) -- !! tonode
+                        registertogether(parent,room)
                     end
                 end
             end
@@ -768,7 +768,7 @@ local function flushed(scope,parent) -- current is hlist
                         continue  = continue or con
                         nofstored = nofstored - 1
                         if room then
-                            registertogether(tonode(parent),room) -- !! tonode
+                            registertogether(parent,room)
                         end
                     else
                         break

@@ -14,7 +14,6 @@ local format, gsub, rep, sub, find = string.format, string.gsub, string.rep, str
 local load, dump = load, string.dump
 local tonumber, type, tostring, next, setmetatable = tonumber, type, tostring, next, setmetatable
 local unpack, concat = table.unpack, table.concat
-local unpack, concat = table.unpack, table.concat
 local P, V, C, S, R, Ct, Cs, Cp, Carg, Cc = lpeg.P, lpeg.V, lpeg.C, lpeg.S, lpeg.R, lpeg.Ct, lpeg.Cs, lpeg.Cp, lpeg.Carg, lpeg.Cc
 local patterns, lpegmatch = lpeg.patterns, lpeg.match
 local utfchar, utfbyte, utflen = utf.char, utf.byte, utf.len
@@ -610,8 +609,8 @@ local environment = {
     formattednumber = number.formatted,
     sparseexponent  = number.sparseexponent,
     formattedfloat  = number.formattedfloat,
-    stripzero       = lpeg.patterns.stripzero,
-    stripzeros      = lpeg.patterns.stripzeros,
+    stripzero       = patterns.stripzero,
+    stripzeros      = patterns.stripzeros,
 
     FORMAT          = string.f9,
 }
@@ -745,7 +744,7 @@ end
 
 local format_k = function(b,a) -- slow
     n = n + 1
-    return format("formattedfloat(a%s,%i,%i)",n,b or 0, a or 0)
+    return format("formattedfloat(a%s,%s,%s)",n,b or 0,a or 0)
 end
 
 local format_g = function(f)
@@ -1329,9 +1328,9 @@ patterns.luaquoted = Cs(Cc('"') * ((1-S('"\n'))^1 + P('"')/'\\"' + P('\n')/'\\n"
 -- escaping by lpeg is faster for strings without quotes, slower on a string with quotes, but
 -- faster again when other q-escapables are found (the ones we don't need to escape)
 
-add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],{ xmlescape = lpeg.patterns.xmlescape })
-add(formatters,"tex",[[lpegmatch(texescape,%s)]],{ texescape = lpeg.patterns.texescape })
-add(formatters,"lua",[[lpegmatch(luaescape,%s)]],{ luaescape = lpeg.patterns.luaescape })
+add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],{ xmlescape = patterns.xmlescape })
+add(formatters,"tex",[[lpegmatch(texescape,%s)]],{ texescape = patterns.texescape })
+add(formatters,"lua",[[lpegmatch(luaescape,%s)]],{ luaescape = patterns.luaescape })
 
 -- -- yes or no:
 --
@@ -1408,4 +1407,32 @@ local f_16_16 = formatters["%0.5N"]
 
 function number.to16dot16(n)
     return f_16_16(n/65536.0)
+end
+
+--
+
+if not string.explode then
+
+    local tsplitat = lpeg.tsplitat
+
+    local p_utf   = patterns.utf8character
+    local p_check = C(p_utf) * (P("+") * Cc(true))^0
+    local p_split = Ct(C(p_utf)^0)
+    local p_space = Ct((C(1-P(" ")^1) + P(" ")^1)^0)
+
+    function string.explode(str,symbol)
+        if symbol == "" then
+            return lpegmatch(p_split,str)
+        elseif symbol then
+            local a, b = lpegmatch(p_check,symbol)
+            if b then
+                return lpegmatch(tsplitat(P(a)^1),str)
+            else
+                return lpegmatch(tsplitat(a),str)
+            end
+        else
+            return lpegmatch(p_space,str)
+        end
+    end
+
 end

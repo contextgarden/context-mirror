@@ -42,12 +42,12 @@
 %D has to match \type {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2019.02.14 16:57}
+\edef\contextversion{2019.04.04 13:31}
 \edef\contextkind   {beta}
 
 %D Kind of special:
 
-\chardef\contextlmtxmode\directlua{tex.print(CONTEXTLMTXMODE and 1 or 0)}\relax
+\chardef\contextlmtxmode\directlua{tex.print(CONTEXTLMTXMODE or 0)}\relax
 
 %D For those who want to use this:
 
@@ -66,8 +66,6 @@
 \def\loadmkiifile#1{}
 \def\loadmkivfile#1{\normalinput#1.mkiv\relax}
 \def\loadmkvifile#1{\normalinput#1.mkvi\relax}
-\def\loadlmtxfile#1{\ifcase\contextlmtxmode\else\normalinput#1.mkiv\relax\fi}
-
 
 %D First we load the system modules. These implement a lot of
 %D manipulation macros. We start with setting up some basic \TEX\
@@ -137,7 +135,7 @@
 \loadmkvifile{file-res}
 \loadmkvifile{file-lib}
 
-\loadlmtxfile{core-lmt}
+\loadmarkfile{core-lmt}
 
 % needs more checking for clashes:
 %
@@ -600,7 +598,7 @@
 
 \loadmarkfile{cont-run} % the main runner (used in cont-yes.mkiv)
 
-\loadlmtxfile{driv-shp}
+\loadmarkfile{driv-shp}
 
 \setupcurrentlanguage[\defaultlanguagetag]
 

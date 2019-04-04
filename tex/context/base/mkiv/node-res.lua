@@ -172,7 +172,7 @@ local savepos           = register_nut(new_nut(whatsit_code,whatsitcodes.savepos
 
 local user_node         = new_nut(whatsit_code,whatsitcodes.userdefined)
 
-if not CONTEXTLMTXMODE then
+if CONTEXTLMTXMODE < 2 then
     setfield(user_node,"type",usercodes.number)
 end
 
@@ -364,49 +364,37 @@ function nutpool.direction(dir,swap)
     return t
 end
 
-function nutpool.rule(width,height,depth,direction) -- w/h/d == nil will let them adapt
+function nutpool.rule(width,height,depth) -- w/h/d == nil will let them adapt
     local n = copy_nut(rule)
     if width or height or depth then
         setwhd(n,width,height,depth)
     end
-    if direction then
-        setdirection(n,direction)
-    end
     return n
 end
 
-function nutpool.emptyrule(width,height,depth,direction) -- w/h/d == nil will let them adapt
+function nutpool.emptyrule(width,height,depth) -- w/h/d == nil will let them adapt
     local n = copy_nut(emptyrule)
     if width or height or depth then
         setwhd(n,width,height,depth)
     end
-    if direction then
-        setdirection(n,direction)
-    end
     return n
 end
 
-function nutpool.userrule(width,height,depth,direction) -- w/h/d == nil will let them adapt
+function nutpool.userrule(width,height,depth) -- w/h/d == nil will let them adapt
     local n = copy_nut(userrule)
     if width or height or depth then
         setwhd(n,width,height,depth)
     end
-    if direction then
-        setdirection(n,direction)
-    end
     return n
 end
 
-function nutpool.outlinerule(width,height,depth,line,direction) -- w/h/d == nil will let them adapt
+function nutpool.outlinerule(width,height,depth,line) -- w/h/d == nil will let them adapt
     local n = copy_nut(outlinerule)
     if width or height or depth then
         setwhd(n,width,height,depth)
     end
     if line then
-        setfield(n,"transform",line)
-    end
-    if direction then
-        setdirection(n,direction)
+        if CONTEXTLMTXMODE > 1 then setdata(n,line) else setfield(n,"transform",line) end
     end
     return n
 end
@@ -426,7 +414,7 @@ function nutpool.savepos()
     return copy_nut(savepos)
 end
 
-if CONTEXTLMTXMODE then
+if CONTEXTLMTXMODE > 1 then
 
     function nutpool.latelua(code)
         local n = copy_nut(latelua)
@@ -438,13 +426,16 @@ else
 
     function nutpool.latelua(code)
         local n = copy_nut(latelua)
+        if type(code) == "table" then
+            local action        = code.action
+            local specification = code.specification or code
+            code = function() action(specification) end
+        end
         setdata(n,code)
         return n
     end
 
 end
-
-nutpool.lateluafunction = nutpool.latelua
 
 function nutpool.leftmarginkern(glyph,width)
     local n = copy_nut(left_margin_kern)
@@ -573,7 +564,7 @@ end
 local function usage()
     local t = { }
     for n, tag in gmatch(status.node_mem_usage,"(%d+) ([a-z_]+)") do
-        t[tag] = n
+        t[tag] = tonumber(n) or 0
     end
     return t
 end

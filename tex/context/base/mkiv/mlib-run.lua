@@ -131,7 +131,9 @@ function metapost.reporterror(result)
     if not result then
         report_metapost("error: no result object returned")
     elseif result.status > 0 then
-        local t, e, l = result.term, result.error, result.log
+        local t = result.term
+        local e = result.error
+        local l = result.log
         local report = metapost.texerrors and texerrormessage or report_metapost
         if t and t ~= "" then
             report("mp error: %s",striplines(t))
@@ -201,6 +203,7 @@ function metapost.load(name,method)
         make_text    = metapost.maketext,
         extensions   = 1,
      -- random_seed  = seed,
+        utf8_mode    = true,
     }
     report_metapost("initializing number mode %a",method)
     local result
@@ -345,6 +348,13 @@ function metapost.pushformat(specification,f,m) -- was: instance, name, method
     specification.mpx = mpx
     return mpx
 end
+
+
+-- luatex.wrapup(function()
+--     for k, mpx in next, mpxformats do
+--         mpx:finish()
+--     end
+-- end)
 
 function metapost.popformat()
     nofformats = nofformats - 1

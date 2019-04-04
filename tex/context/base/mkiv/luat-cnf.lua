@@ -30,6 +30,8 @@ texconfig.nest_size       =   1000
 texconfig.param_size      =  25000
 texconfig.save_size       = 100000
 texconfig.stack_size      =  10000
+texconfig.function_size   =  32768
+texconfig.properties_size =  65536
 
 local stub = [[
 
@@ -154,6 +156,8 @@ function texconfig.init()
 
 end
 
+CONTEXTLMTXMODE = %s
+
 -- we provide a qualified path
 
 callback.register('find_format_file',function(name)
@@ -176,6 +180,8 @@ local variablenames = {
     param_size      = true,
     save_size       = true,
     stack_size      = true,
+    function_size   = true,
+    properties_size = true,
 }
 
 local function makestub()
@@ -212,7 +218,7 @@ local function makestub()
             t[#t+1] = format("texconfig.%s=%s",v,tv)
         end
     end
-    io.savedata(name,format("%s\n\n%s",concat(t,"\n"),format(stub,firsttable)))
+    io.savedata(name,format("%s\n\n%s",concat(t,"\n"),format(stub,firsttable,tostring(CONTEXTLMTXMODE) or 0)))
     logs.newline()
 end
 

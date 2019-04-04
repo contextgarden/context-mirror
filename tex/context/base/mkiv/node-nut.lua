@@ -127,11 +127,11 @@ nodes.tonut               = tonut
 -- function nuts.reportattr()
 --     inspect(hash)
 -- end
---
+
 -- local function track(name)
 --     local n = 0
---     local f = nuts[name]
---     function nuts[name](...)
+--     local f = direct[name]
+--     direct[name] = function(...)
 --         n = n + 1
 --         if n % 1000 == 0 then
 --             print(name,n)
@@ -139,7 +139,6 @@ nodes.tonut               = tonut
 --         return f(...)
 --     end
 -- end
---
 -- track("getfield")
 
 -- helpers
@@ -698,7 +697,7 @@ nuts.nestedtracedslide = nestedtracedslide
 
 -- this might move
 
-local propertydata = direct.get_properties_table and direct.get_properties_table()
+local propertydata = direct.get_properties_table(true)
 
 local getattr = nuts.getattr
 local setattr = nuts.setattr

@@ -168,6 +168,7 @@ local nodepool            = nuts.pool
 
 local new_penalty         = nodepool.penalty
 local new_kern            = nodepool.kern
+local new_glue            = nodepool.glue
 local new_rule            = nodepool.rule
 
 local nodecodes           = nodes.nodecodes
@@ -877,7 +878,8 @@ end
 local trace_list, tracing_info, before, after = { }, false, "", ""
 
 local function nodes_to_string(head)
-    local current, t = head, { }
+    local current = head
+    local t       = { }
     while current do
         local id = getid(current)
         local ty = nodecodes[id]
@@ -1266,17 +1268,26 @@ do
         if trace then
             reset_tracing(head)
         end
-        local current, oldhead = head, head
-        local glue_order, glue_data, force_glue = 0, nil, false
-        local penalty_order, penalty_data, natural_penalty, special_penalty = 0, nil, nil, nil
-        local parskip, ignore_parskip, ignore_following, ignore_whitespace, keep_together = nil, false, false, false, false
-        local lastsnap = nil
+        local current           = head
+        local oldhead           = head
+        local glue_order        = 0
+        local glue_data
+        local force_glue        = false
+        local penalty_order     = 0
+        local penalty_data
+        local natural_penalty
+        local special_penalty
+        local parskip
+        local ignore_parskip    = false
+        local ignore_following  = false
+        local ignore_whitespace = false
+        local keep_together     = false
+        local lastsnap
+        local pagehead
+        local pagetail
         --
         -- todo: keep_together: between headers
         --
-        local pagehead = nil
-        local pagetail = nil
-
         local function getpagelist()
             if not pagehead then
                 pagehead = texlists.page_head
@@ -1952,8 +1963,9 @@ do
                 if stackhead then
                     if trace_collect_vspacing then report("%s > appending %s nodes to stack (final): %s",where,newhead) end
                     setlink(stacktail,newhead)
-                    newhead = stackhead
-                    stackhead, stacktail = nil, nil
+                    newhead   = stackhead
+                    stackhead = nil
+                    stacktail = nil
                 end
                 if stackhack then
                     stackhack = false
@@ -2146,25 +2158,103 @@ do
 
     trackers.register("vspacing.forcestrutdepth",function(v) trace = v end)
 
-    function vspacing.forcestrutdepth(n,depth,trace_mode)
+    local last = nil
+
+ -- function vspacing.forcestrutdepth(n,depth,trace_mode,plus)
+ --     local box = texgetbox(n)
+ --     if box then
+ --         box = tonut(box)
+ --         local head = getlist(box)
+ --         if head then
+ --             local tail = find_node_tail(head)
+ --             if tail and getid(tail) == hlist_code then
+ --                 local dp = getdepth(tail)
+ --                 if dp < depth then
+ --                     setdepth(tail,depth)
+ --                     outer.prevdepth = depth
+ --                     if trace or trace_mode > 0 then
+ --                         nuts.setvisual(tail,"depth")
+ --                     end
+ --                 end
+ --             end
+ --         end
+ --     end
+ -- end
+
+    function vspacing.forcestrutdepth(n,depth,trace_mode,plus)
         local box = texgetbox(n)
         if box then
             box = tonut(box)
             local head = getlist(box)
             if head then
                 local tail = find_node_tail(head)
-                if tail and getid(tail) == hlist_code then
-                    local dp = getdepth(tail)
-                    if dp < depth then
-                        setdepth(tail,depth)
-                        outer.prevdepth = depth
-                        if trace or trace_mode > 0 then
-                            nuts.setvisual(tail,"depth")
+                if tail then
+                    if getid(tail) == hlist_code then
+                        local dp = getdepth(tail)
+                        if dp < depth then
+                            setdepth(tail,depth)
+                            outer.prevdepth = depth
+                            if trace or trace_mode > 0 then
+                                nuts.setvisual(tail,"depth")
+                            end
                         end
+                    end
+                    last = nil
+                    if plus then
+                        -- penalty / skip ...
+                        local height = 0
+                        local sofar  = 0
+                        local same   = false
+                        local seen   = false
+                        local list   = { }
+                              last   = nil
+                        while tail do
+                            local id = getid(tail)
+                            if id == hlist_code or id == vlist_code then
+                                local w, h, d = getwhd(tail)
+                                height = height + h + d + sofar
+                                sofar  = 0
+                                last   = tail
+                            elseif id == kern_code then
+                                sofar = sofar + getkern(tail)
+                            elseif id == glue_code then
+                                if seen then
+                                    sofar = sofar + getwidth(tail)
+                                    seen  = false
+                                else
+                                    break
+                                end
+                            elseif id == penalty_code then
+                                local p = getpenalty(tail)
+                                if p >= 10000 then
+                                    same = true
+                                    seen = true
+                                else
+                                    break
+                                end
+                            else
+                                break
+                            end
+                            tail = getprev(tail)
+                        end
+                        texsetdimen("global","d_spac_prevcontent",same and height or 0)
                     end
                 end
             end
         end
+    end
+
+    function vspacing.pushatsame()
+        -- needs better checking !
+        if last then -- setsplit
+            nuts.setnext(getprev(last))
+            nuts.setprev(last)
+        end
+    end
+
+    function vspacing.popatsame()
+        -- needs better checking !
+        nuts.write(last)
     end
 
 end
@@ -2190,6 +2280,25 @@ do
         name      = "forcestrutdepth",
         arguments = { "integer", "dimension", "integer" },
         actions   = vspacing.forcestrutdepth,
+        scope     = "private"
+    }
+
+    implement {
+        name      = "forcestrutdepthplus",
+        arguments = { "integer", "dimension", "integer", true },
+        actions   = vspacing.forcestrutdepth,
+        scope     = "private"
+    }
+
+    implement {
+        name      = "pushatsame",
+        actions   = vspacing.pushatsame,
+        scope     = "private"
+    }
+
+    implement {
+        name      = "popatsame",
+        actions   = vspacing.popatsame,
         scope     = "private"
     }
 

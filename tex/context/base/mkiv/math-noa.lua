@@ -778,7 +778,8 @@ do
         if subtype == leftfence_code or subtype == rightfence_code then
             local a = getattr(pointer,a_mathsize)
             if a and a > 0 then
-                local method, size = div(a,100), a % 100
+                local method = div(a,100)
+                local size   = a % 100
                 setattr(pointer,a_mathsize,0)
                 local delimiter = getfield(pointer,"delim")
                 local chr = getchar(delimiter)
@@ -1335,7 +1336,7 @@ do
                     local resets = mathalternates.resets
                     attribute = presets[tag]
                     if not attribute then
-                        attribute  = 0
+                        attribute = 0
                         local alternates = mathalternates.alternates
                         for s in gmatch(tag,"[^, ]+") do
                             if s == v_reset then
@@ -1409,13 +1410,15 @@ do
                                 alt = otf.getalternate(fontdata[fontid],char,what.feature,what.value) or false
                                 if alt == char then
                                     alt = false
-                                elseif trace_alternates then
-                                    report_alternates("alternate %a, value %a, replacing glyph %U by glyph %U",
-                                        tostring(what.feature),tostring(what.value),getchar(pointer),alt)
                                 end
                                 hashes[i][char] = alt
                             end
                             if alt then
+                                if trace_alternates then
+                                    local what = attributes[r]
+                                    report_alternates("alternate %a, value %a, replacing glyph %U by glyph %U",
+                                        tostring(what.feature),tostring(what.value),getchar(pointer),alt)
+                                end
                                 setchar(pointer,alt)
                                 break
                             end

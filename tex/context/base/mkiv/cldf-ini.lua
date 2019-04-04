@@ -137,7 +137,7 @@ function context.trialtypesetting()
     return texgetcount(trialtypesettingstate) ~= 0
 end
 
-local knownfunctions = lua.get_functions_table()
+local knownfunctions = (lua.getfunctionstable or lua.get_functions_table)(true)
 local showstackusage = false
 
 trackers.register("context.stack",function(v) showstackusage = v end)
@@ -793,7 +793,7 @@ local function writer(parent,command,...) -- already optimized before call
                         tj = storefunction(tj)
                         if tokenflushmode then
                             if newtoken then
-                                flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_code),"]")
+                                flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_token_code),"]")
                             else
                                 flush(currentcatcodes,"[",t_cldl_luafunction,tj,"]")
                             end
@@ -811,7 +811,7 @@ local function writer(parent,command,...) -- already optimized before call
                             tj = storefunction(tj)
                             if tokenflushmode then
                                 if newtoken then
-                                    flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_code),j == tn and "]" or ",")
+                                    flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_token_code),j == tn and "]" or ",")
                                 else
                                     flush(currentcatcodes,"[",t_cldl_luafunction,tj,j == tn and "]" or ",")
                                 end
@@ -1218,7 +1218,8 @@ local tracedwriter = function(parent,...) -- also catcodes ?
     nofwriters = nofwriters + 1
     local savedflush       = flush
     local savedflushdirect = flushdirect -- unlikely to be used here
-    local t, n = { "w : - : " }, 1
+    local t = { "w : - : " }
+    local n = 1
     local traced = function(catcodes,...) -- todo: check for catcodes
         local s = type(catcodes) == "number" and { ... } or { catcodes, ... }
         for i=1,#s do
@@ -1262,9 +1263,10 @@ end
 local traced = function(one,two,...)
     if two ~= nil then
         -- only catcodes if 'one' is number
-        local catcodes = type(one) == "number" and one
+        local catcodes  = type(one) == "number" and one
         local arguments = catcodes and { two, ... } or { one, two, ... }
-        local collapsed, c = { formatters["f : %s : "](catcodes or '-') }, 1
+        local collapsed = { formatters["f : %s : "](catcodes or '-') }
+        local c         = 1
         for i=1,#arguments do
             local argument = arguments[i]
             local argtype = type(argument)

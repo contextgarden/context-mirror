@@ -514,6 +514,20 @@
    aps:tobe={que se publicará},
    aps:unpublished={inédito}]
 
+\setupbtxlabeltext
+  [sv]
+  [aps:number={nr.},
+   aps:edition={Utgåva},
+   aps:Editor=Redaktör,
+   aps:Editors=Redaktörer,
+   aps:Volume=Band,
+   aps:Volumes=Band,
+   aps:supplement=Bilaga,
+   aps:inpress={under tryckning},
+   aps:tobe={att publiceras},
+   aps:unpublished={opublicerat}]
+
+
 % cite setups
 
 \startsetups btx:aps:nd
@@ -651,8 +665,10 @@
 \stoptexdefinition
 
 \starttexdefinition unexpanded btx:aps:author
-    \btxflush{author}
-    \btxcomma
+    \btxdoif {author} {
+        \btxflush{author}
+        \btxcomma
+    }
 \stoptexdefinition
 
 \starttexdefinition unexpanded btx:aps:organization-if-not-author

@@ -268,8 +268,8 @@
 
 \def\math_m_yes_text_openedup#1%
   {\setbox\scratchbox\hbox\bgroup
-      \normalstartimath
       \the\everyswitchmathematics\relax
+      \normalstartimath
       #1%
       \normalstopimath
    \egroup
@@ -285,8 +285,8 @@
    \endgroup}
 
 \def\math_m_yes_text_normal#1%
-  {\normalstartimath
-   \the\everyswitchmathematics\relax
+  {\the\everyswitchmathematics\relax
+   \normalstartimath
    #1%
    \normalstopimath
    \endgroup}
@@ -435,6 +435,16 @@
 
 % if there were many features we could have a feature pass over math nodes but it makes no
 % sense now so we have commands to deal with it
+
+% \enabletrackers[math.alternates]
+% \setupbodyfont[lucidaot]
+%
+% \startTEXpage
+%     \setupmathematics[stylealternative={reset}]$x+\mathcal A$\par
+%     \setupmathematics[stylealternative={reset,calligraphic}]$x+\mathcal A$\par
+%     \setupmathematics[stylealternative={reset,italic}]$x+\mathcal A$\par
+%     \setupmathematics[stylealternative={reset,calligraphic,italic}]$x+\mathcal A$
+% \stopTEXpage
 
 \unexpanded\def\mathaltcalligraphic{\math_set_font_alternate{calligraphic}\cal}          % set via goody file
 \unexpanded\def\mathaltitalic      {\math_set_font_alternate{italic}}                    % set via goody file

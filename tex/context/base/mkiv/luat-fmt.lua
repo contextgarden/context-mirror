@@ -19,9 +19,9 @@ local function primaryflags()
     if arguments.silent then
         flags[#flags+1] = "--interaction=batchmode"
     end
-    if arguments.jit then
-        flags[#flags+1] = "--jiton"
-    end
+ -- if arguments.jit then
+ --     flags[#flags+1] = "--jiton"
+ -- end
     return concat(flags," ")
 end
 
@@ -51,6 +51,9 @@ local function secondaryflags()
     if arguments.strip then
         flags[#flags+1] = "--c:strip"
     end
+    if arguments.lmtx then
+        flags[#flags+1] = "--c:lmtx"
+    end
     return concat(flags," ")
 end
 
@@ -72,6 +75,13 @@ local runners = {
     luatex = sandbox.registerrunner {
         name     = "make luatex format",
         program  = "luatex",
+        template = template,
+        checkers = checkers,
+        reporter = report_format,
+    },
+    luametatex = sandbox.registerrunner {
+        name     = "make luametatex format",
+        program  = "luametatex",
         template = template,
         checkers = checkers,
         reporter = report_format,

@@ -468,7 +468,6 @@ do
         runs = runs + 1
         local f = cache[code]
         if not f then
-         -- f = loadstring(f_code(code))
             f = loadstring(code .. " return mp._f_()")
             if f then
                 cache[code] = f
@@ -480,8 +479,10 @@ do
             end
         end
         if f then
-            local _buffer_, _n_ = buffer, n
-            buffer, n = { }, 0
+            local _buffer_ = buffer
+            local _n_      = n
+                   buffer  = { }
+                   n       = 0
             local result = f()
             if result then
                 local t = type(result)
@@ -493,17 +494,16 @@ do
                 if trace then
                     if #result == 0 then
                         report_luarun("%i: no result",nesting)
--- print(debug.traceback())
                     else
                         report_luarun("%i: result: %s",nesting,result)
                     end
                 end
-                buffer, n = _buffer_, _n_
+                buffer = _buffer_
+                n      = _n_
                 nesting = nesting - 1
                 return result
             elseif trace then
                 report_luarun("%i: no result",nesting)
--- print(debug.traceback())
             end
             buffer, n = _buffer_, _n_
         else
@@ -1025,5 +1025,24 @@ do
     mp.mf_path_left   = mf_path_left     mp.pathleft   = mf_path_left
     mp.mf_path_right  = mf_path_right    mp.pathright  = mf_path_right
     mp.mf_path_reset  = mf_path_reset    mp.pathreset  = mf_path_reset
+
+end
+
+do
+
+    -- if needed we can optimize the sub (cache last split)
+
+    local utflen, utfsub = utf.len, utf.sub
+
+    local mpnumeric = aux.numeric
+    local mpquoted  = aux.quoted
+
+    function mp.utflen(s)
+        mpnumeric(utflen(s))
+    end
+
+    function mp.utfsub(s,f,t)
+        mpquoted(utfsub(s,f,t or f))
+    end
 
 end

@@ -124,8 +124,8 @@ local ctx_doboxfigureobject        = context.doboxfigureobject
 
 function checkimage(figure)
     if figure then
-        local width  = figure.width
-        local height = figure.height
+        local width  = figure.width or 0
+        local height = figure.height or 0
         if width <= 0 or height <= 0 then
             report_inclusion("image %a has bad dimensions (%p,%p), discarding",figure.filename or "?",width,height)
             return false, "bad dimensions"
@@ -162,28 +162,28 @@ end
 local  __img__ = type(img) == "table" and img or { }
 images.__img__ =__img__
 
-local img_new   = __img__.new
-local img_scan  = __img__.scan
-local img_copy  = __img__.copy
-local img_wrap  = __img__.node
-local img_embed = __img__.immediatewrite
+local imgnew   = __img__.new
+local imgscan  = __img__.scan
+local imgcopy  = __img__.copy
+local imgwrap  = __img__.node
+local imgembed = __img__.immediatewrite
 
-if img_new then
+if imgnew then
     -- catch (actually we should be less picky in img)
-    local __img__new__ = img_new
-    img_new = function(t)
+    local __img__new__ = imgnew
+    imgnew = function(t)
         t.kind = nil
         return __img__new__(t)
     end
 end
 
-updaters.register("backend.update",function()
+updaters.register("backend.update.img",function()
     local img = images.__img__
-    img_new   = img.new
-    img_scan  = img.scan
-    img_copy  = img.copy
-    img_wrap  = img.wrap
-    img_embed = img.embed
+    imgnew   = img.new
+    imgscan  = img.scan
+    imgcopy  = img.copy
+    imgwrap  = img.wrap
+    imgembed = img.embed
 end)
 
 local imagekeys  = { -- only relevant ones
@@ -217,25 +217,25 @@ images.sizes = imagesizes
 -- new interface
 
 local function createimage(specification)
-    return img_new(specification)
+    return imgnew(specification)
 end
 
 local function copyimage(specification)
-    return img_copy(specification)
+    return imgcopy(specification)
 end
 
 local function scanimage(specification)
-    return img_scan(specification)
+    return imgscan(specification)
 end
 
 local function embedimage(specification)
     -- write the image to file
-    return img_embed(specification)
+    return imgembed(specification)
 end
 
 local function wrapimage(specification)
     -- create an image rule
-    return img_wrap(specification)
+    return imgwrap(specification)
 end
 
 images.create = createimage
@@ -918,6 +918,7 @@ local function register(askedname,specification)
                             format = suffix
                         end
                     end
+specification.format = format
                 elseif io.exists(oldname) then
                     report_inclusion("file %a is bugged",oldname)
                     if format and imagetypes[format] then
@@ -1285,6 +1286,7 @@ function figures.identify(data)
         for i=1,#list do
             local identifier = list[i]
             local data = identifier(data)
+--             if data and (not data.status and data.status.status > 0) then
             if data and (not data.status and data.status.status > 0) then
                 break
             end
@@ -1575,6 +1577,11 @@ function figures.getrealpage(index)
     return pofimages[index] or 0
 end
 
+local function updatepage(specification)
+    local n = specification.n
+    pofimages[n] = pofimages[n] or tex.count.realpageno -- so when reused we register the first one only
+end
+
 function includers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
     -- here we set the 'natural dimensions'
@@ -1603,18 +1610,16 @@ function includers.generic(data)
         nofimages    = nofimages + 1
         ds.pageindex = nofimages
         local image  = wrapimage(figure)
-        local pager  = new_latelua(function()
-            pofimages[nofimages] = pofimages[nofimages] or tex.count.realpageno -- so when reused we register the first one only
-        end)
-        image.next = pager
-        pager.prev = image
-        local box  = hpack(image)
-     -- indexed[figure.index] = figure
-        box.width  = figure.width
-        box.height = figure.height
-        box.depth  = 0
+        local pager  = new_latelua { action = updatepage, n = nofimages }
+        image.next   = pager
+        pager.prev   = image
+        local box    = hpack(image)
+        box.width    = figure.width
+        box.height   = figure.height
+        box.depth    = 0
         texsetbox(nr,box)
         ds.objectnumber = figure.objnum
+     -- indexed[figure.index] = figure
         ctx_relocateexternalfigure()
     end
     return data
@@ -1691,6 +1696,7 @@ local ctx_docheckfiguremps   = context.docheckfiguremps
 
 local function internal(askedname)
     local spec, mprun, mpnum = match(lower(askedname),"mprun([:%.]?)(.-)%.(%d+)")
+ -- mpnum = tonumber(mpnum) or 0 -- can be string or number, fed to context anyway
     if spec ~= "" then
         return mprun, mpnum
     else
