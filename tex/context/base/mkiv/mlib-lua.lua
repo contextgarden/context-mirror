@@ -21,6 +21,7 @@ local lpegpatterns = lpeg.patterns
 local P, S, Ct, Cs, Cc, C = lpeg.P, lpeg.S, lpeg.Ct, lpeg.Cs, lpeg.Cc, lpeg.C
 
 local report_luarun  = logs.reporter("metapost","lua")
+local report_script  = logs.reporter("metapost","script")
 local report_message = logs.reporter("metapost")
 
 local trace_luarun   = false  trackers.register("metapost.lua",function(v) trace_luarun = v end)
@@ -28,12 +29,13 @@ local trace_enabled  = true
 
 local be_tolerant    = true   directives.register("metapost.lua.tolerant", function(v) be_tolerant = v end)
 
-local get, set, aux = { }, { }, { }
+local get, set, aux, scan = { }, { }, { }, { }
 
 mp = mp or {  -- system namespace
-    set = set,
-    get = get,
-    aux = aux,
+    set  = set,
+    get  = get,
+    aux  = aux,
+    scan = scan,
 }
 
 MP = MP or { -- user namespace
@@ -56,22 +58,50 @@ table.setmetatablecall(MP,function(t,k,...) return t[k](...) end)
 
 do
 
-    local currentmpx  = nil
-    local stack       = { }
+    local currentmpx = nil
+    local stack      = { }
 
     local get_numeric = mplib.get_numeric
     local get_string  = mplib.get_string
     local get_boolean = mplib.get_boolean
     local get_path    = mplib.get_path
-    local set_path    = mplib.set_path
 
     get.numeric = function(s) return get_numeric(currentmpx,s) end
+    get.number  = function(s) return get_numeric(currentmpx,s) end
     get.string  = function(s) return get_string (currentmpx,s) end
     get.boolean = function(s) return get_boolean(currentmpx,s) end
     get.path    = function(s) return get_path   (currentmpx,s) end
-    get.number  = function(s) return get_numeric(currentmpx,s) end
 
-    set.path    = function(s,t) return set_path(currentmpx,s,t) end -- not working yet
+    local set_path = mplib.set_path
+
+    set.path = function(s,t) return set_path(currentmpx,s,t) end -- not working yet
+
+    local scan_next       = mplib.scan_next
+    local scan_expression = mplib.scan_expression
+    local scan_token      = mplib.scan_token
+    local scan_symbol     = mplib.scan_symbol
+    local scan_numeric    = mplib.scan_numeric
+    local scan_boolean    = mplib.scan_boolean
+    local scan_string     = mplib.scan_string
+    local scan_pair       = mplib.scan_pair
+    local scan_color      = mplib.scan_color
+    local scan_cmykcolor  = mplib.scan_cmykcolor
+    local scan_transform  = mplib.scan_transform
+    local scan_path       = mplib.scan_path
+
+    scan.next       = function(k) return scan_next      (currentmpx,k) end
+    scan.expression = function(k) return scan_expression(currentmpx,k) end
+    scan.token      = function(k) return scan_token     (currentmpx,k) end
+    scan.symbol     = function(k) return scan_symbol    (currentmpx,k) end
+    scan.numeric    = function()  return scan_numeric   (currentmpx)   end
+    scan.number     = function()  return scan_numeric   (currentmpx)   end
+    scan.boolean    = function()  return scan_boolean   (currentmpx)   end
+    scan.string     = function()  return scan_string    (currentmpx)   end
+    scan.pair       = function(t) return scan_pair      (currentmpx,t) end
+    scan.color      = function(t) return scan_color     (currentmpx,t) end
+    scan.cmykcolor  = function(t) return scan_cmykcolor (currentmpx,t) end
+    scan.transform  = function(t) return scan_transform (currentmpx,t) end
+    scan.path       = function(t) return scan_path      (currentmpx,t) end
 
     function metapost.pushscriptrunner(mpx)
         insert(stack,mpx)
@@ -85,7 +115,6 @@ do
     function metapost.currentmpx()
         return currentmpx
     end
-
 
 end
 
@@ -101,14 +130,14 @@ do
         if trace_enabled and trace_luarun then
             local result = concat(buffer," ",1,n)
             if n > max then
-                buffer = { }
+                buffer = { } -- newtable(20,0)
             end
             n = 0
             report_luarun("%i: data: %s",nesting,result)
             return result
         else
             if n == 0 then
-                return ""
+                return "" -- can be nil
             end
             local result
             if n == 1 then
@@ -117,7 +146,7 @@ do
                 result = concat(buffer," ",1,n)
             end
             if n > max then
-                buffer = { }
+                buffer = { } -- newtable(20,0)
             end
             n = 0
             return result
@@ -464,31 +493,67 @@ do
 
     local cache = table.makeweak()
 
+    local runscripts = { }
+    local runnames   = { }
+    local nofscripts = 0
+
+    function metapost.registerscript(name,f)
+        nofscripts = nofscripts + 1
+        if f then
+            runscripts[nofscripts] = f
+            runnames[name] = nofscripts
+        else
+            runscripts[nofscripts] = name
+        end
+        return nofscripts
+    end
+
+    function metapost.scriptindex(name)
+        return runnames[name] or 0
+    end
+
     function metapost.runscript(code)
         nesting = nesting + 1
+        local index = type(code) == "number"
         local trace = trace_enabled and trace_luarun
-        if trace then
-            report_luarun("%i: code: %s",nesting,code)
-        end
         runs = runs + 1
-        local f = cache[code]
-        if not f then
-            f = loadstring(code .. " return mp._f_()")
-            if f then
-                cache[code] = f
-            elseif be_tolerant then
-                f = loadstring(code)
+        local f
+        if index then
+            f = runscripts[code]
+            if not f then
+                report_luarun("%i: bad index: %s",nesting,code)
+            elseif trace then
+                report_luarun("%i: index: %i",nesting,code)
+            end
+        else
+            if trace then
+                report_luarun("%i: code: %s",nesting,code)
+            end
+            f = cache[code]
+            if not f then
+                f = loadstring(code .. " return mp._f_()")
                 if f then
                     cache[code] = f
+                elseif be_tolerant then
+                    f = loadstring(code)
+                    if f then
+                        cache[code] = f
+                    end
                 end
             end
         end
+
+        -- returning nil is more efficient and a signel not to scan in mp
+
         if f then
             local _buffer_ = buffer
             local _n_      = n
                    buffer  = { }
                    n       = 0
             local result = f()
+            if index and not result then
+                result = _f_()
+            end
             if result then
                 local t = type(result)
                 if t == "number" then
@@ -526,12 +591,44 @@ end
 
 do
 
+    -- Another experimental feature:
+
+    local mpnumeric   = mp.numeric
+    local scanstring  = scan.string
+    local scriptindex = metapost.scriptindex
+
+    function mp.mf_script_index(name)
+        local index = scriptindex(name)
+     -- report_script("method %i, name %a, index %i",1,name,index)
+        mpnumeric(index)
+    end
+
+    -- once bootstrapped ... (needs pushed mpx instances)
+
+    metapost.registerscript("scriptindex",function()
+        local name  = scanstring()
+        local index = scriptindex(name)
+     -- report_script("method %i, name %a, index %i",2,name,index)
+        mpnumeric(index)
+    end)
+
+end
+
+-- the next will move to mlib-lmp.lua
+
+do
+
     local mpnamedcolor = attributes.colors.mpnamedcolor
     local mpprint      = aux.print
+    local scanstring   = scan.string
 
     mp.mf_named_color = function(str)
         mpprint(mpnamedcolor(str))
     end
+
+    metapost.registerscript("namedcolor",function()
+        mpprint(mpnamedcolor(scanstring()))
+    end)
 
 end
 
@@ -975,79 +1072,6 @@ do
 
     function mp.isobject(str)
         mpboolean(pattern and str ~= "" and lpegmatch(pattern,str))
-    end
-
-end
-
-do
-
-    local mpnumeric = aux.numeric
-    local mppair    = aux.pair
-    local mpgetpath = get.path
-
-    local p = nil
-    local n = 0
-
-    local function mf_path_length(name)
-        p = mpgetpath(name)
-        n = p and #p or 0
-        mpnumeric(n)
-    end
-
-    local function mf_path_point(i)
-        if i > 0 and i <= n then
-            local pi = p[i]
-            mppair(pi[1],pi[2])
-        end
-    end
-
-    local function mf_path_left(i)
-        if i > 0 and i <= n then
-            local pi = p[i]
-            mppair(pi[5],pi[6])
-        end
-    end
-
-    local function mf_path_right(i)
-        if i > 0 and i <= n then
-            local pn
-            if i == 1 then
-                pn = p[2] or p[1]
-            else
-                pn = p[i+1] or p[1]
-            end
-            mppair(pn[3],pn[4])
-        end
-    end
-
-    local function mf_path_reset()
-        p = nil
-        n = 0
-    end
-
-    mp.mf_path_length = mf_path_length   mp.pathlength = mf_path_length
-    mp.mf_path_point  = mf_path_point    mp.pathpoint  = mf_path_point
-    mp.mf_path_left   = mf_path_left     mp.pathleft   = mf_path_left
-    mp.mf_path_right  = mf_path_right    mp.pathright  = mf_path_right
-    mp.mf_path_reset  = mf_path_reset    mp.pathreset  = mf_path_reset
-
-end
-
-do
-
-    -- if needed we can optimize the sub (cache last split)
-
-    local utflen, utfsub = utf.len, utf.sub
-
-    local mpnumeric = aux.numeric
-    local mpquoted  = aux.quoted
-
-    function mp.utflen(s)
-        mpnumeric(utflen(s))
-    end
-
-    function mp.utfsub(s,f,t)
-        mpquoted(utfsub(s,f,t or f))
     end
 
 end
