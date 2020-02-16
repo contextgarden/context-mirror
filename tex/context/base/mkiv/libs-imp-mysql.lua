@@ -44,15 +44,20 @@ local validspecification = helpers.validspecification
 local preparetemplate    = helpers.preparetemplate
 local querysplitter      = helpers.querysplitter
 local cache              = { }
+local timeout         -- = 3600 -- to be tested
 
 local function connect(specification)
-    return mysql_open(
+    local db = mysql_open(
         specification.database or "",
         specification.username or "",
         specification.password or "",
         specification.host     or "",
         specification.port
     )
+    if db and timeout then
+        mysql_execute(db,formatters["SET SESSION connect_timeout=%s ;"](timeout))
+    end
+    return db
 end
 
 local function execute_once(specification,retry)
@@ -110,13 +115,13 @@ local function execute_once(specification,retry)
                     result[nofrows] = convert(values)
                 end
             else
-                local column = { }
                 callback = function(nofcolumns,values,fields)
+                    local column = { }
                     for i=1,nofcolumns do
                         local field
                         if fields then
                             field = fields[i]
-                            keys[i+1] = field
+                            keys[i] = field
                         else
                             field = keys[i]
                         end
@@ -131,7 +136,7 @@ local function execute_once(specification,retry)
             for i=1,#query do
                 local okay = mysql_execute(db,query[i],callback)
                 if not okay then
-                    if id and option == "retry" and i == 1 then
+                    if id and retry and i == 1 then
                         report("error: %s, retrying to connect",mysql_getmessage(db))
                         mysql_close(db)
                         cache[id] = nil
@@ -183,6 +188,23 @@ return function(cells)
 end
 ]]
 
+-- return function(result)
+--     if not result then
+--         return { }
+--     end
+--     local nofrows = #result
+--     if nofrows == 0 then
+--         return { }
+--     end
+--     local target = { } -- no %s needed here
+--     for i=1,nofrows do
+--         target[%s] = {
+--             %s
+--         }
+--     end
+--     return result
+-- end
+
 local celltemplate = "cells[%s]"
 
 methods.mysql = {
@@ -192,5 +214,7 @@ methods.mysql = {
     celltemplate = celltemplate,
 }
 
-package.loaded["util-sql-imp-mysql"] = methods.mysql
-package.loaded[libname]              = methods.mysql
+package.loaded["util-sql-imp-ffi"]     = methods.mysql
+package.loaded["util-sql-imp-mysql"]   = methods.mysql
+package.loaded["util-sql-imp-library"] = methods.mysql
+package.loaded[libname]                = methods.mysql
