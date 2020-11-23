@@ -231,37 +231,38 @@ local setmathcharacter = function(class,family,slot,unicode,mset,dset)
     return mset, dset
 end
 
-local f_accent    = formatters[ [[\ugdef\%s{\Umathaccent 0 "%X "%X }]] ]
-local f_topaccent = formatters[ [[\ugdef\%s{\Umathaccent 0 "%X "%X }]] ]
-local f_botaccent = formatters[ [[\ugdef\%s{\Umathbotaccent 0 "%X "%X }]] ]
-local f_over      = formatters[ [[\ugdef\%s{\Udelimiterover "%X "%X }]] ]
-local f_under     = formatters[ [[\ugdef\%s{\Udelimiterunder "%X "%X }]] ]
-local f_fence     = formatters[ [[\ugdef\%s{\Udelimiter "%X "%X "%X }]] ]
-local f_delimiter = formatters[ [[\ugdef\%s{\Udelimiter 0 "%X "%X }]] ]
-local f_radical   = formatters[ [[\ugdef\%s{\Uradical "%X "%X }]] ]
-local f_root      = formatters[ [[\ugdef\%s{\Uroot "%X "%X }]] ]
------ f_char      = formatters[ [[\ugdef\%s{\Umathchar "%X "%X "%X }]]
-local f_char      = formatters[ [[\Umathchardef\%s "%X "%X "%X ]] ]
+-- todo: make nice setters for this in lua
+
+local f_accent    = formatters[ [[\defUmathtopaccent \%s{%X}{%X}{%X}]] ]
+local f_topaccent = formatters[ [[\defUmathtopaccent \%s{%X}{%X}{%X}]] ]
+local f_botaccent = formatters[ [[\defUmathbotaccent \%s{%X}{%X}{%X}]] ]
+local f_over      = formatters[ [[\defUdelimiterover \%s{%X}{%X}{%X}]] ]
+local f_under     = formatters[ [[\defUdelimiterunder\%s{%X}{%X}{%X}]] ]
+local f_fence     = formatters[ [[\defUdelimiter     \%s{%X}{%X}{%X}]] ]
+local f_delimiter = formatters[ [[\defUdelimiter     \%s{%X}{%X}{%X}]] ]
+local f_radical   = formatters[ [[\defUradical       \%s{%X}{%X}]]     ]
+local f_root      = formatters[ [[\defUroot          \%s{%X}{%X}]]     ]
+local f_char      = formatters[ [[\defUmathchar      \%s{%X}{%X}{%X}]] ]
 
 local texmathchardef = tex.mathchardef
 
 local setmathsymbol = function(name,class,family,slot) -- hex is nicer for tracing
     if class == classes.accent then
-        ctx_sprint(f_accent(name,family,slot))
+        ctx_sprint(f_topaccent(name,0,family,slot))
     elseif class == classes.topaccent then
-        ctx_sprint(f_topaccent(name,family,slot))
+        ctx_sprint(f_topaccent(name,0,family,slot))
     elseif class == classes.botaccent then
-        ctx_sprint(f_botaccent(name,family,slot))
+        ctx_sprint(f_botaccent(name,0,family,slot))
     elseif class == classes.over then
-        ctx_sprint(f_over(name,family,slot))
+        ctx_sprint(f_over(name,0,family,slot))
     elseif class == classes.under then
-        ctx_sprint(f_under(name,family,slot))
+        ctx_sprint(f_under(name,0,family,slot))
     elseif class == open_class or class == close_class or class == middle_class then
         setdelcode("global",slot,{family,slot,0,0})
         ctx_sprint(f_fence(name,class,family,slot))
     elseif class == classes.delimiter then
         setdelcode("global",slot,{family,slot,0,0})
-        ctx_sprint(f_delimiter(name,family,slot))
+        ctx_sprint(f_delimiter(name,0,family,slot))
     elseif class == classes.radical then
         ctx_sprint(f_radical(name,family,slot))
     elseif class == classes.root then
