@@ -249,7 +249,7 @@
    \ifempty\m_bodyfont
      \switchtobodyfont[\m_bodyfont]%
    \fi
-   \getvalue{\??chemicalsize\chemicalparameter\c!size}%
+   \begincsname\??chemicalsize\chemicalparameter\c!size\endcsname
 % \to \everystructurechemical
 \to \everychemical
 

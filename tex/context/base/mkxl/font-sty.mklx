@@ -368,11 +368,11 @@
 \permanent\tolerant\protected\def\definestyleinstance[#instance]#*[#2]#*[#3]#*[#4]% [name] [rm|ss|tt|..] [sl|bf|...] [whatever]
   {\ifparameter#instance\or
      \ifarguments\or\or
-       \letvalueempty{\??stylecollection#instance::#2}%
+       \letcsname\??stylecollection#instance::#2\endcsname\empty
      \or
-       \setvalue{\??stylecollection#instance::#2}{#3}%
+       \defcsname\??stylecollection#instance::#2\endcsname{#3}%
      \or
-       \setvalue{\??stylecollection#instance:#2:#3}{#4}%
+       \defcsname\??stylecollection#instance:#2:#3\endcsname{#4}%
      \fi
      \ifcsname#instance\endcsname\else\font_styles_define_style_collection[#instance]\fi
   \fi}

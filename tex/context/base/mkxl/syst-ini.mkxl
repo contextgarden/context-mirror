@@ -1104,4 +1104,10 @@
 \mutable\let\par\par
 \popoverloadmode
 
+%D Temp hack ... build bot down:
+
+\ifdefined\gletcsname \else \protected\def\gletcsname{\global\letcsname } \fi
+\ifdefined\gdefcsname \else \protected\def\gdefcsname{\global\defcsname } \fi
+\ifdefined\xdefcsname \else \protected\def\xdefcsname{\global\edefcsname} \fi
+
 \protect \endinput

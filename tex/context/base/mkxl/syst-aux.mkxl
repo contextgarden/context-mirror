@@ -4714,16 +4714,13 @@
      {\dodoglobal\edef#2{#1\ifempty#2\else,#2\fi}}}
 
 \permanent\protected\def\xsplitstring#1#2% \cs {str}
- %{\def\syst_helpers_split_string##1,#2,##2,#2,##3\\%
   {\def\syst_helpers_split_string##1,#2,##2,#2,##-\\%
-     {\edef\m_syst_string_one{\bcleanedupcommalist##1\empty\empty\relax}%
-      \edef\m_syst_string_two{\acleanedupcommalist##2,,\relax}}%
+     {\edef\m_syst_string_one{\syst_cleanedup_commalist_b##1\empty\empty\relax}%
+      \edef\m_syst_string_two{\syst_cleanedup_commalist_a##2,,\relax}}%
    \expandafter\syst_helpers_split_string\expandafter,#1,,#2,,#2,\\}
 
-\def\bcleanedupcommalist#1#2#3\relax{\if#1,\else#1\fi\if#2,\else#2\fi#3}
-\def\bcleanedupcommalist#1#2\relax{\if#1,\else#1\fi#2}
-%def\acleanedupcommalist#1,,#2\relax{#1}
-\def\acleanedupcommalist#1,,#-\relax{#1}
+\def\syst_cleanedup_commalist_b#1#2\relax{\if#1,\else#1\fi#2}
+\def\syst_cleanedup_commalist_a#1,,#-\relax{#1}
 
 \permanent\protected\def\removefromcommalist#1#2% to be sped up
   {\rawdoifelseinset{#1}#2%

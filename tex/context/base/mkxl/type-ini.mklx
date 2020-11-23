@@ -432,12 +432,12 @@
          \edef\fontclass{#typeface}%
        \else
          % todo: message
-         \letvalueempty{\??fontclassnop#typeface}%
+         \letcsname\??fontclassnop#typeface\endcsname\empty
        \fi
      \fi
    \else
      % todo: message
-     \letvalueempty{\??fontclassnop#typeface}%
+     \letcsname\??fontclassnop#typeface\endcsname\empty
    \fi}
 
 %D Now we define:

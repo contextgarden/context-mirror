@@ -2327,7 +2327,7 @@
    \ifcsname\??stacklst#1\endcsname
      \expandafter\processcommacommand\expandafter[\lastnamedcs]\docommand
    \fi
-   \letgvalueempty{\??stacklst#1}}
+   \gletcsname\??stacklst#1\endcsname\empty}
 
 \permanent\protected\def\savebox#1#2% stack name
   {% beware, \setxvalue defines the cs beforehand so we cannot use the test inside the { }

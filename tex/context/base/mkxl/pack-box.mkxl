@@ -468,7 +468,7 @@
         {\egroup\collectedtext}%
         {\egroup\layeredtext  }%
       [#1][#2]}%
-     {\egroup\getvalue{#1}}}
+     {\egroup\csname#1\endcsname}}
 
 \permanent\tolerant\protected\def\defineornament[#1]#*[#2]#*[#3]%
   {\setuvalue{#1}{\pack_ornament_text[#2][#3]}}

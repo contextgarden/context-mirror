@@ -189,6 +189,9 @@ if not environment.luafilechunk then
         if sourcepath ~= "" then
             fullname = sourcepath .. "/" .. filename
         end
+        if not lfs.isfile(fullname) then
+            fullname = gsub(fullname,"mkxl","mkiv")
+        end
         local data = loadfile(fullname)
         texio.write("terminal_and_logfile","<",data and "+ " or "- ",fullname,">")
         if data then

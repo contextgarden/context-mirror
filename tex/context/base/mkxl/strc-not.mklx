@@ -946,20 +946,20 @@
 \protected\def\strc_notes_set_delayed_yes{\settrue \c_strc_notes_delayed}
 \protected\def\strc_notes_set_delayed_nop{\setfalse\c_strc_notes_delayed}
 
-\setvalue{\??notelocation\v!page       }{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_nop
-                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_page}
-\setvalue{\??notelocation\v!columns    }{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_nop
-                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_columns}
-\setvalue{\??notelocation\v!lastcolumn }{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_nop
-                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_lastcolumn}
-\setvalue{\??notelocation\v!firstcolumn}{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_nop
-                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_firstcolumn}
-\setvalue{\??notelocation\v!none       }{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_yes
-                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_none}
-\setvalue{\??notelocation\v!text       }{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_yes
-                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_text}
-\setvalue{\??notelocation\v!high       }{\letvalue{\??notepositionvariant\currentnote}\strc_notes_set_position_high}
-\setvalue{\??notelocation\v!bottom     }{\letvalue{\??notepositionvariant\currentnote}\strc_notes_set_position_bottom}
+\setvalue{\??notelocation\v!page       }{\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_nop
+                                         \letcsname\??notelocationvariant\currentnote\endcsname\strc_notes_set_location_page}
+\setvalue{\??notelocation\v!columns    }{\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_nop
+                                         \letcsname\??notelocationvariant\currentnote\endcsname\strc_notes_set_location_columns}
+\setvalue{\??notelocation\v!lastcolumn }{\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_nop
+                                         \letcsname\??notelocationvariant\currentnote\endcsname\strc_notes_set_location_lastcolumn}
+\setvalue{\??notelocation\v!firstcolumn}{\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_nop
+                                         \letcsname\??notelocationvariant\currentnote\endcsname\strc_notes_set_location_firstcolumn}
+\setvalue{\??notelocation\v!none       }{\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_yes
+                                         \letcsname\??notelocationvariant\currentnote\endcsname\strc_notes_set_location_none}
+\setvalue{\??notelocation\v!text       }{\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_yes
+                                         \letcsname\??notelocationvariant\currentnote\endcsname\strc_notes_set_location_text}
+\setvalue{\??notelocation\v!high       }{\letcsname\??notepositionvariant\currentnote\endcsname\strc_notes_set_position_high}
+\setvalue{\??notelocation\v!bottom     }{\letcsname\??notepositionvariant\currentnote\endcsname\strc_notes_set_position_bottom}
 
 \setvalue{\??notedelayedvariant \??notedelayedvariant }{\strc_notes_set_delayed_nop}      % not let
 \setvalue{\??notepositionvariant\??notepositionvariant}{\strc_notes_set_position_bottom}  % not let

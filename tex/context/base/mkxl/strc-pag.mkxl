@@ -136,8 +136,8 @@
 
 \installcorenamespace{pagestatestack} % no level yet
 
-\protected\def\strc_pagenumbers_page_state_push{\setxvalue{\??pagestatestack\c!state}{\namedcounterparameter\s!userpage\c!state}}
-\protected\def\strc_pagenumbers_page_state_pop {\normalexpanded{\setuppagenumber[\c!state=\getvalue{\??pagestatestack\c!state}]}}
+\protected\def\strc_pagenumbers_page_state_push{\xdefcsname\??pagestatestack\c!state\endcsname{\namedcounterparameter\s!userpage\c!state}}
+\protected\def\strc_pagenumbers_page_state_pop {\normalexpanded{\setuppagenumber[\c!state=\csname\??pagestatestack\c!state\endcsname]}}
 
 \setuppagenumber
   [\c!way=\v!by\v!text,

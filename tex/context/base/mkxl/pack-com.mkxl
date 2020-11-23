@@ -814,8 +814,8 @@
    \let\pack_pairedboxes_align_t\vss
    \let\pack_pairedboxes_align_b\vss}
 
-\setvalue{\??pairedboxalign\v!bottom}{\getvalue{\??pairedboxalign\v!low }}
-\setvalue{\??pairedboxalign   \v!top}{\getvalue{\??pairedboxalign\v!high}}
+\setvalue{\??pairedboxalign\v!bottom}{\csname\??pairedboxalign\v!low \endcsname}
+\setvalue{\??pairedboxalign   \v!top}{\csname\??pairedboxalign\v!high\endcsname}
 
 \def\pack_pairedbox_valign#1{\setbox#1\vpack to \s_pack_pairedboxes_size{\pack_pairedboxes_align_t\box#1\pack_pairedboxes_align_b}}
 \def\pack_pairedbox_halign#1{\setbox#1\hpack to \s_pack_pairedboxes_size{\pack_pairedboxes_align_l\box#1\pack_pairedboxes_align_r}}
