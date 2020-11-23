@@ -144,42 +144,42 @@
    \fi}
 
 \permanent\tolerant\protected\def\rawcounter[#1]#*[#2]%
-  {\ifarguments\or\or
+  {\ifarguments\or
      \clf_countervalue   {\namedcounterparameter{#1}\s!name}%
    \else
      \clf_subcountervalue{\namedcounterparameter{#1}\s!name}\numexpr#2\relax\or
    \fi}
 
 \permanent\tolerant\protected\def\lastcounter[#1]#*[#2]%
-  {\ifarguments\or\or
+  {\ifarguments\or
      \clf_lastcountervalue   {\namedcounterparameter{#1}\s!name}%
    \else
      \clf_lastsubcountervalue{\namedcounterparameter{#1}\s!name}\numexpr#2\relax\or
    \fi}
 
 \permanent\tolerant\protected\def\firstcounter[#1]#*[#2]%
-  {\ifarguments\or\or
+  {\ifarguments\or
      \clf_firstcountervalue   {\namedcounterparameter{#1}\s!name}%
    \else
      \clf_firstsubcountervalue{\namedcounterparameter{#1}\s!name}\numexpr#2\relax\or
    \fi}
 
 \permanent\tolerant\protected\def\prevcounter[#1]#*[#2]%
-  {\ifarguments\or\or
+  {\ifarguments\or
      \clf_previouscountervalue   {\namedcounterparameter{#1}\s!name}%}
    \else
      \clf_previoussubcountervalue{\namedcounterparameter{#1}\s!name}\numexpr#2\relax\or
    \fi}
 
 \permanent\tolerant\protected\def\nextcounter[#1]#*[#2]%
-  {\ifarguments\or\or
+  {\ifarguments\or
      \clf_nextcountervalue   {\namedcounterparameter{#1}\s!name}%
    \else
      \clf_nextsubcountervalue{\namedcounterparameter{#1}\s!name}\numexpr#2\relax\or
    \fi}
 
 \permanent\tolerant\protected\def\countersubs[#1]#*[#2]%
-  {\ifarguments\or\or
+  {\ifarguments\or
     \clf_subcountervalues   {\namedcounterparameter{#1}\s!name}%
    \else
     \clf_subsubcountervalues{\namedcounterparameter{#1}\s!name}\numexpr#2\relax\or

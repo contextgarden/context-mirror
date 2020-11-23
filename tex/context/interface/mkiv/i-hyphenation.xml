@@ -267,7 +267,7 @@
 
     <cd:command name="usehyphensparameter" level="system" category="language" file="lang-ini.mkxl">
         <cd:arguments>
-            <cd:csname"/>
+            <cd:csname/>
         </cd:arguments>
     </cd:command>
 

@@ -743,7 +743,7 @@
 %D \typebuffer \placetable{}{\getbuffer}
 
 \appendtoks
-    \letvalue{\??xtablecheck\currentxtable}\relax % faster than checking parent
+    \letcsname\??xtablecheck\currentxtable\endcsname\relax % faster than checking parent
 \to \everysetupxtable
 
 % \definefontfamily[newtimes][serif][TeX Gyre Termes]
@@ -793,7 +793,7 @@
   {\begingroup
    \doifelsenextoptionalcs\tabl_x_start_cell_delayed_one\tabl_x_start_cell_nop}
 
-\tolerant\protected\def\tabl_x_start_cell_delayed_one[#tag]#spacer%
+\protected\def\tabl_x_start_cell_delayed_one[#tag]%
   {\ifcsname\??xtablecheck\detokenize\expandafter{\normalexpanded{#tag}}\endcsname
      \expandafter\tabl_x_start_cell_delayed_two
    \else
@@ -908,7 +908,7 @@
      \gtoksapp\t_tabl_x_swapped\expandafter{\expandafter\tabl_x_c_cell_start\expandafter{\m_tabl_x_swapped_settings}#content\tabl_x_c_cell_stop}%
    \fi}
 
-\tolerant\def\tabl_x_collect_cell_start_yes[#settings]#spacer#content\stopxcell
+\def\tabl_x_collect_cell_start_yes[#settings]#content\stopxcell
   {\tabl_x_collect_advance
    \ifempty\m_tabl_x_swapped_settings
      \gtoksapp\t_tabl_x_swapped{\tabl_x_c_cell_start{}[#settings]#content\tabl_x_c_cell_stop}%

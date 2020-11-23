@@ -533,12 +533,15 @@
 \def\pack_textrule_yes[#1]%
   {\expandnamespacevalue\??textrulealternatives{#1}\v!bottom}
 
-\tolerant\def\pack_textrule_nop[#1]#:#=%
-  {\ifparameter#2\or
-     \expandafter\pack_textrule_nop_indeed_yes
-   \else
-     \expandafter\pack_textrule_nop_indeed_nop
-   \fi[#1]{#2}}
+% \tolerant\def\pack_textrule_nop[#1]#:#=%
+%   {\ifparameter#2\or
+%      \expandafter\pack_textrule_nop_indeed_yes
+%    \else
+%      \expandafter\pack_textrule_nop_indeed_nop
+%    \fi[#1]{#2}}
+
+\def\pack_textrule_nop[#1]%
+  {\doifelsenextbgroupcs\pack_textrule_nop_indeed_yes\pack_textrule_nop_indeed_nop}
 
 \def\pack_textrule_nop_indeed_yes
   {\csname\??textrulealternatives\v!top\endcsname}

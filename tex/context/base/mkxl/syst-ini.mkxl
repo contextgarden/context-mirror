@@ -138,6 +138,14 @@
 %D available; it cannot limit itself to being \TEX\ or \ETEX. It could not do that
 %D anyway because there are differences (no backend, to mention one).
 
+%D Temp hack ... build bot down:
+
+\ifdefined\gletcsname \else \protected\def\gletcsname{\global\letcsname } \fi
+\ifdefined\gdefcsname \else \protected\def\gdefcsname{\global\defcsname } \fi
+\ifdefined\xdefcsname \else \protected\def\xdefcsname{\global\edefcsname} \fi
+
+%D We create (for now) aliases:
+
 \directlua {
     local primitives = tex.extraprimitives()  % "tex","etex","luatex"
     tex.enableprimitives("normal",primitives) % could default to everything
@@ -1103,11 +1111,5 @@
 \pushoverloadmode
 \mutable\let\par\par
 \popoverloadmode
-
-%D Temp hack ... build bot down:
-
-\ifdefined\gletcsname \else \protected\def\gletcsname{\global\letcsname } \fi
-\ifdefined\gdefcsname \else \protected\def\gdefcsname{\global\defcsname } \fi
-\ifdefined\xdefcsname \else \protected\def\xdefcsname{\global\edefcsname} \fi
 
 \protect \endinput

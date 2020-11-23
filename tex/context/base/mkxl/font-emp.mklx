@@ -230,10 +230,20 @@
 % \protected\def\emphtf{\groupedcommand{\tf\def\emphbf{\bf}\def\emphit{\it}\def\emphsl{\sl}}{}}
 % \protected\def\emph  {\groupedcommand{\em}{}}
 
-\protected\def\font_emphasis_bf{\bf\def\emphit{\bi}\def\emphsl{\bs}}
-\protected\def\font_emphasis_it{\it\def\emphbf{\bi}\def\emphsl{\sl}}
-\protected\def\font_emphasis_sl{\sl\def\emphbf{\bs}\def\emphit{\it}}
-\protected\def\font_emphasis_tf{\tf\def\emphbf{\bf}\def\emphit{\it}\def\emphsl{\sl}}
+
+\permanent\protected\def\font_tf{\tf} \permanent\protected\def\font_bf{\bf}
+\permanent\protected\def\font_sl{\sl} \permanent\protected\def\font_bs{\bs}
+\permanent\protected\def\font_it{\it} \permanent\protected\def\font_bi{\bi}
+
+\protected\def\font_emphasis_bf{\bf\enforced\aliased\let\emphit\font_bi
+                                   \enforced\aliased\let\emphsl\font_bs}
+\protected\def\font_emphasis_it{\it\enforced\aliased\let\emphbf\font_bi
+                                   \enforced\aliased\let\emphsl\font_sl}
+\protected\def\font_emphasis_sl{\sl\enforced\aliased\let\emphbf\font_bs
+                                   \enforced\aliased\let\emphit\font_it}
+\protected\def\font_emphasis_tf{\tf\enforced\aliased\let\emphbf\font_bf
+                                   \enforced\aliased\let\emphit\font_it
+                                   \enforced\aliased\let\emphsl\font_sl}
 
 \permanent\protected\def\emphbf{\triggergroupedcommandcs\font_emphasis_bf}
 \permanent\protected\def\emphit{\triggergroupedcommandcs\font_emphasis_it}

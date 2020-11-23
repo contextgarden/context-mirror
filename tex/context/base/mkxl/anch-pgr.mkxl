@@ -317,16 +317,16 @@
 \newbox\b_anch_positions_graphic
 
 \permanent\tolerant\protected\def\startMPpositiongraphic#=#*#=#:#3\stopMPpositiongraphic % tag list mpcode
-  {\setgvalue{\??positiongraphic#1}{\anch_positions_meta_graphic_use{#1}{#2}{#3}}}
+  {\gdefcsname\??positiongraphic#1\endcsname{\anch_positions_meta_graphic_use{#1}{#2}{#3}}}
 
 \aliased\let\stopMPpositiongraphic\relax
 
 \def\anch_positions_meta_graphic_prepare
   {\ifcsname\??graphicvariable\currentmpvariableclass:self\endcsname \else
-     \letvalue{\??graphicvariable\currentmpvariableclass:self}\currentposition
+     \letcsname\??graphicvariable\currentmpvariableclass:self\endcsname\currentposition
    \fi
    \ifcsname\??graphicvariable\currentmpvariableclass:from\endcsname \else
-     \letvalue{\??graphicvariable\currentmpvariableclass:from}\currentposition
+     \letcsname\??graphicvariable\currentmpvariableclass:from\endcsname\currentposition
    \fi}
 
 \def\anch_positions_meta_graphic_use#1#2#3%

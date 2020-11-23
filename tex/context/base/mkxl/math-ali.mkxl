@@ -1379,8 +1379,8 @@
   {\doif{\formulaparameter\c!strut}\v!yes\strut}
 
 \permanent\protected\def\defineinnermathhandler#1#2#3%
-  {\setvalue{\??mathinnerstart#1}{#2}%
-   \setvalue{\??mathinnerstop #1}{#3}}
+  {\defcsname\??mathinnerstart#1\endcsname{#2}%
+   \defcsname\??mathinnerstop #1\endcsname{#3}}
 
 \installtextracker
   {formulas.boxes}

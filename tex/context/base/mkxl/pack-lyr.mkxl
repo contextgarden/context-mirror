@@ -37,9 +37,9 @@
 \permanent\overloaded\tolerant\protected\def\defineoverlay[#1]#*[#2]#*[#3]% overlay [layer] content
   {\ifnum\lastarguments=\plusthree
     %\writestatus{BEWARE}{This (overlay definition) has changed!}% temp
-     \def\pack_framed_define_overlay_indeed##1{\setvalue{\??overlay##1}{\setlayer[#2]{\executedefinedoverlay{##1}{#3}}}}%
+     \def\pack_framed_define_overlay_indeed##1{\defcsname\??overlay##1\endcsname{\setlayer[#2]{\executedefinedoverlay{##1}{#3}}}}%
    \else
-     \def\pack_framed_define_overlay_indeed##1{\setvalue{\??overlay##1}{\executedefinedoverlay{##1}{#2}}}%
+     \def\pack_framed_define_overlay_indeed##1{\defcsname\??overlay##1\endcsname{\executedefinedoverlay{##1}{#2}}}%
    \fi
    \processcommalist[#1]\pack_framed_define_overlay_indeed}
 
@@ -292,13 +292,12 @@
    \edef\m_pack_layers_page{\layerparameter\c!page}}
 
 \permanent\tolerant\protected\def\definelayerpreset[#1]#*[#2]%
-  {\ifarguments
-   \or
-     \letvalue{\??layerpreset#1}\empty
+  {\ifarguments\or
+     \letcsname\??layerpreset#1\endcsname\empty
    \orelse\ifhastok={#2}%
-     \setvalue{\??layerpreset#1}{\setupcurrentlayer[#2]}%
+     \defcsname\??layerpreset#1\endcsname{\setupcurrentlayer[#2]}%
    \else
-     \setvalue{\??layerpreset#1}{\csname\??layerpreset#2\endcsname}%
+     \defcsname\??layerpreset#1\endcsname{\csname\??layerpreset#2\endcsname}%
    \fi}
 
 \def\pack_layers_set_content#1%

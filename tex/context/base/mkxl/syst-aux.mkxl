@@ -465,7 +465,7 @@
 %D existance is not the same as the one described here. Therefore we introduce:
 
 \permanent\protected\def\letbeundefined#1%
-  {\letcsname#1\endcsname\undefined} % or use \undefinevalue to match \setvalue
+  {\letcsname#1\endcsname\undefined}
 
 \permanent\protected\def\localundefine#1% conditional
   {\ifcsname#1\endcsname\letcsname#1\endcsname\undefined\fi}

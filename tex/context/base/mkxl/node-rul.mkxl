@@ -531,7 +531,7 @@
   {\begingroup
    \par
    \def\currentlinefiller{#1}%
-   \ifargument#1\or
+   \ifargument#2\or
      % we need to update settings
      \setuplinefiller[#1][#2]% no \setupcurrentlinefiller as we need to update settings
    \fi

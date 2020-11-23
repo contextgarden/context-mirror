@@ -126,7 +126,7 @@
 
 \permanent\tolerant\protected\def\startpagegrid[#1]#*[#2]%
   {\bgroup
-   \let\page_grd_start\page_grd_start_dummy
+   \enforced\let\startpagegrid\page_grd_start_dummy
    \ifarguments
      \let\currentpagegrid\empty
    \or
@@ -184,7 +184,7 @@
    %
    }%\begingroup}
 
-\def\page_grd_start_dummy[#1][#2]%
+\tolerant\def\page_grd_start_dummy[#1]#*[#2]%
   {\let\page_grd_stop\egroup}
 
 \permanent\protected\def\stoppagegrid

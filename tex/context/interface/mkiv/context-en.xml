@@ -16611,7 +16611,7 @@
   <cd:command category="language" file="lang-ini.mkxl" level="style" name="nohyphens"/>
   <cd:command category="language" file="lang-ini.mkxl" level="system" name="usehyphensparameter">
    <cd:arguments>
-    <cd:csname _error_="&quot;"/>
+    <cd:csname/>
    </cd:arguments>
   </cd:command>
   <cd:command category="language" file="lang-mis.mkxl" level="system" name="compounddiscretionary"/>

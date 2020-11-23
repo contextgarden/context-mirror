@@ -76,7 +76,7 @@
    \ifzeropt\scratchdimen\else
      \parfillskip \scratchdimen\s!plus \plusone\s!fil\relax
    \fi
-   \spac_fillers_indeed[#1]%
+   \filler[#1]%
    \doifsomething{#2}{\hbox{#2}}%
    \par
    \endgroup

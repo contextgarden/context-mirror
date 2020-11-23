@@ -209,15 +209,15 @@
 
 \ifdefined\externalfigure \else \def\externalfigure[#1][#2]{#1} \fi
 
-\def\defaultsymbolfactor{10}
-\def\defaultsymbolheight{1.25ex}
+\mutable\def\defaultsymbolfactor{10}
+\mutable\def\defaultsymbolheight{1.25ex}
 
 \permanent\tolerant\protected\def\figuresymbol[#1]#*[#2]%
   {\externalfigure[#1][\c!reset=\v!yes,\c!symbol=\v!yes,\c!height=\defaultsymbolheight,#2]}
 
 \permanent\tolerant\protected\def\definefiguresymbol[#1]#*[#2]#*[#3]%
   {\ifarguments\or\else
-     \definesymbol[#1][{\symb_figure[#2][#3]}]%
+     \definesymbol[#1][{\figuresymbol[#2][#3]}]%
    \fi}
 
 %D \macros

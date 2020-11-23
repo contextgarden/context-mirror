@@ -200,6 +200,6 @@
    \egroup}
 
 \permanent\tolerant\protected\def\pagefigure[#1]#*[#2]%
-  {\page_figures_start[#1][#2]\stoppagefigure}
+  {\startpagefigure[#1][#2]\stoppagefigure}
 
 \protect \endinput

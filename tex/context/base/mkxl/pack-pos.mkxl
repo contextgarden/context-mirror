@@ -111,7 +111,7 @@
       \ifdim           #3<-#7\relax \global#7-#3\relax    \fi
       \ifdim\scratchdimen> #6\relax \global#6\scratchdimen\fi}}
 
-\permanent\tolerant\protected\def\position[#1]#*(#2,#3)%
+\permanent\tolerant\protected\def\position[#1]#:(#2,#3)%
   {\bgroup
    \ifparameter#1\or
      \setupcurrentpositioning[#1]%

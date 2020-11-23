@@ -61,12 +61,12 @@
 % use \v!list instead of \s!list
 
 \permanent\protected\def\doinstallinjector#1%
-  {\letvalue{typo_injectors_mark_#1}\donothing
-   \letvalue{typo_injectors_check_#1}\donothing}
+  {\letcsname typo_injectors_mark_#1\endcsname\donothing
+   \letcsname typo_injectors_check_#1\endcsname\donothing}
 
 \permanent\protected\def\doactivateinjector#1% used at lua end
-  {\setuxvalue{typo_injectors_mark_#1}{\dontleavehmode\noexpand\clf_markinjector{#1}}%
-   \setuxvalue{typo_injectors_check_#1}{\noexpand\clf_checkinjector{#1}}}
+  {\protected\defcsname typo_injectors_mark_#1\endcsname{\dontleavehmode\noexpand\clf_markinjector{#1}}%
+   \protected\defcsname typo_injectors_check_#1\endcsname{\noexpand\clf_checkinjector{#1}}}
 
 \permanent\protected\def\dotestinjector#1%  only for testing outside unprotect
   {\begincsname typo_injectors_check_#1\endcsname
