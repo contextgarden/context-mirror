@@ -41,7 +41,7 @@
 \immutable\integerdef\commentcatcode           14
 \immutable\integerdef\invalidcatcode           15
 
-%chardef\zeroasciicode             0
+%immutable\integerdef\zeroasciicode             0
 \immutable\integerdef\tabasciicode              9
 \immutable\integerdef\newlineasciicode         10  % don't confuse this one with \endoflineasciicode
 \immutable\integerdef\formfeedasciicode        12
@@ -140,10 +140,6 @@
 
 %D Temp hack ... build bot down:
 
-\ifdefined\gletcsname \else \protected\def\gletcsname{\global\letcsname } \fi
-\ifdefined\gdefcsname \else \protected\def\gdefcsname{\global\defcsname } \fi
-\ifdefined\xdefcsname \else \protected\def\xdefcsname{\global\edefcsname} \fi
-
 %D We create (for now) aliases:
 
 \directlua {
@@ -151,6 +147,10 @@
     tex.enableprimitives("normal",primitives) % could default to everything
     function tex.enableprimitives() end       % so we kind of protect what's there
 }
+
+\ifdefined\gletcsname \else \protected\def\gletcsname{\global\letcsname } \fi
+\ifdefined\gdefcsname \else \protected\def\gdefcsname{\global\defcsname } \fi
+\ifdefined\xdefcsname \else \protected\def\xdefcsname{\global\edefcsname} \fi
 
 \immutable\def\space{ }
 \immutable\def\empty{}
@@ -455,18 +455,30 @@
 
 %D More allocations:
 
+% \newcount \maxcount      \immutable\maxcount      2147483647
+
+% \newdimen \zeropoint     \immutable\zeropoint     0pt
+% \newdimen \onepoint      \immutable\onepoint      1pt
+% \newdimen \halfapoint    \immutable\halfapoint    0.5pt
+% \newdimen \maxdimen      \immutable\maxdimen      16383.99999pt % 1073741823sp
+% \newdimen \onebasepoint  \immutable\onebasepoint  1bp
+% \newdimen \scaledpoint   \immutable\scaledpoint   1sp
+% \newdimen \thousandpoint \immutable\thousandpoint 1000pt
+
+\immutable\integerdef   \maxcount 2147483647
+
+\immutable\dimensiondef \zeropoint     0pt
+\immutable\dimensiondef \onepoint      1pt
+\immutable\dimensiondef \halfapoint    0.5pt
+\immutable\dimensiondef \maxdimen      16383.99999pt % 1073741823sp
+\immutable\dimensiondef \onebasepoint  1bp
+\immutable\dimensiondef \scaledpoint   1sp
+\immutable\dimensiondef \thousandpoint 1000pt
+
 \newskip  \zeroskip      \immutable\zeroskip      0pt plus 0pt minus 0pt
-\newdimen \zeropoint     \immutable\zeropoint     0pt
-\newdimen \onepoint      \immutable\onepoint      1pt
-\newdimen \halfapoint    \immutable\halfapoint    0.5pt
-\newdimen \maxdimen      \immutable\maxdimen      16383.99999pt % 1073741823sp
-\newcount \maxcount      \immutable\maxcount      2147483647
-\newdimen \onebasepoint  \immutable\onebasepoint  1bp
-\newdimen \scaledpoint   \immutable\scaledpoint   1sp
-\newdimen \thousandpoint \immutable\thousandpoint 1000pt
+
 \newmuskip\zeromuskip    \immutable\zeromuskip    0mu
 \newmuskip\onemuskip     \immutable\onemuskip     1mu
-
 \newmuskip\muquad        \immutable\muquad        18mu
 
 \aliased\let\points   \onepoint

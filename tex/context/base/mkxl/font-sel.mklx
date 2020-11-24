@@ -58,7 +58,7 @@
 \installcorenamespace {selectfontpreset}
 
 \permanent\tolerant\protected\def\definefontfamilypreset[#name]#spacer[#settings]%
-  {\setvalue{\??selectfontpreset#name}{\setupcurrentselectfont[#settings]}%
+  {\defcsname\??selectfontpreset#name\endcsname{\setupcurrentselectfont[#settings]}%
    \clf_definefontfamilypreset{#name}{\luaexpanded{#settings}}}
 
 \def\selectfont_preset_process#name%
@@ -247,15 +247,19 @@
 % tf = … | * … | name:… | name:* … | file:… | file:* … | style:medium
 
 \permanent\tolerant\protected\def\definefontfamily[#typeface]#spacer[#style]#spacer[#family]#spacer[#settings]%
-  {\doifelseassignment{#settings}
-     {\selectfont_register[#style][\c!label={#typeface},\c!style={#style},\c!name={#family},#settings]}
-     {\selectfont_register[#style][\c!label={#typeface},\c!style={#style},\c!name={#family},\c!preset={#settings}]}%
+  {\ifhastok={#settings}%
+     \selectfont_register[#style][\c!label={#typeface},\c!style={#style},\c!name={#family},#settings]%
+   \else
+     \selectfont_register[#style][\c!label={#typeface},\c!style={#style},\c!name={#family},\c!preset={#settings}]%
+   \fi
    \clf_definefontfamily\selectfont_index\relax}
 
 \permanent\tolerant\def\definefallbackfamily[#typeface]#spacer[#style]#spacer[#family]#spacer[#settings]%
-  {\doifelseassignment{#settings}
-     {\selectfont_register[#style][\c!label={#typeface},\c!style={#style},\c!name={#family},#settings]}
-     {\selectfont_register[#style][\c!label={#typeface},\c!style={#style},\c!name={#family},\c!preset={#settings}]}%
+  {\ifhastok={#settings}%
+     \selectfont_register[#style][\c!label={#typeface},\c!style={#style},\c!name={#family},#settings]%
+   \else
+     \selectfont_register[#style][\c!label={#typeface},\c!style={#style},\c!name={#family},\c!preset={#settings}]%
+   \fi
    \clf_definefallbackfamily\selectfont_index\relax}
 
 \permanent\tolerant\protected\def\setupfontfamily[#style]#spacer[#settings]%

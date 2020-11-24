@@ -389,9 +389,9 @@
 
 \appendtoks
     \ifnum\fontid\textfont\zerocount=\fontid\textfont\plusthree
-        \letvalue{\??fontmathstoredstrategy\fontclass}\font_helpers_set_math_partial_bold_strategy
+        \letcsname\??fontmathstoredstrategy\fontclass\endcsname\font_helpers_set_math_partial_bold_strategy
     \else
-        \letvalue{\??fontmathstoredstrategy\fontclass}\font_helpers_set_math_full_bold_strategy
+        \letcsname\??fontmathstoredstrategy\fontclass\endcsname\font_helpers_set_math_full_bold_strategy
     \fi
 \to \t_font_math_strategies
 

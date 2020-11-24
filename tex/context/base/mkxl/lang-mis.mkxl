@@ -192,9 +192,9 @@
 \installcorenamespace{discretionarymode}
 
 \permanent\protected\def\installdiscretionary#1#2%
-  {\setevalue{\??discretionarymath\detokenize{#1}}{\detokenize{#1}}% ?
-   \setvalue {\??discretionarytext\detokenize{#1}}{#2}%
-   \setvalue {\??discretionaryboth\detokenize{#1}}{\lang_discretionaries_command#1}%
+  {\edefcsname\??discretionarymath\detokenize{#1}\endcsname{\detokenize{#1}}% ?
+   \defcsname \??discretionarytext\detokenize{#1}\endcsname{#2}%
+   \defcsname \??discretionaryboth\detokenize{#1}\endcsname{\lang_discretionaries_command#1}%
    \scratchcounter\expandafter`\detokenize{#1}%
    \expandafter\uedcatcodecommand\expandafter\ctxcatcodes\expandafter\scratchcounter\csname\??discretionaryboth\detokenize{#1}\endcsname}
 
@@ -366,7 +366,7 @@
  %{\discretionary options \plusthree{\hbox{#1}}{}{\hbox{#1}}}
 
 \permanent\protected\def\definetextmodediscretionary #1
-  {\setvalue{\??discretionaryaction\detokenize{#1}}}
+  {\defcsname\??discretionaryaction\detokenize{#1}\endcsname}
 
 % \start \hsize 1mm
 % test |||test test|||, test\blank

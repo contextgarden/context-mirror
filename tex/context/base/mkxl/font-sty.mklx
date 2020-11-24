@@ -63,12 +63,12 @@
      % no redefinition
    \orelse\ifnum\c_fonts_basics_alternative_style_method=\plusone
       \ifparameter#command\or
-        \permanent\setuevalue{#command}{\triggergroupedcommandcs\begincsname\??alternativestyle#command\endcsname}%
+        \permanent\protected\edefcsname#command\endcsname{\triggergroupedcommandcs\begincsname\??alternativestyle#command\endcsname}%
       \else
-        \permanent\setuvalue{#command}{\triggergroupedcommand{#variantone}}%
+        \permanent\protected\defcsname#command\endcsname{\triggergroupedcommand{#variantone}}%
       \fi
    \else
-     \permanent\setuvalue{#command}{\triggergroupedcommand{#variantone}}%
+     \permanent\protected\defcsname#command\endcsname{\triggergroupedcommand{#variantone}}%
    \fi}
 
 \def\font_helpers_apply_alternative_style

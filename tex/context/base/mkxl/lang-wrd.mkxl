@@ -39,12 +39,14 @@
 \installdirectcommandhandler \??spell {spellchecking}
 
 \appendtoks
-   \doifelse{\directspellcheckingparameter\c!state}\v!start
-     {\clf_enablespellchecking
-        method {\directspellcheckingparameter\c!method}%
-        list   {\directspellcheckingparameter\c!list}%
-      \relax}
-     {\clf_disablespellchecking}%
+   \ifcstok{\directspellcheckingparameter\c!state}\v!start
+     \clf_enablespellchecking
+       method {\directspellcheckingparameter\c!method}%
+       list   {\directspellcheckingparameter\c!list}%
+     \relax
+   \else
+     \clf_disablespellchecking
+   \fi
 \to \everysetupspellchecking
 
 \permanent\tolerant\protected\def\loadspellchecklist[#1]#*[#2]% can be public implementor

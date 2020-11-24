@@ -104,7 +104,7 @@
 \permanent\let\stoptypescriptcollection\relax
 
 \permanent\protected\def\usetypescriptfile[#filename]%
-  {\iftok{#filename}{\v!reset}%
+  {\ifcstok{#filename}\v!reset
      \let\typescriptfiles\empty
    \else
      \splitfilename{#filename}%

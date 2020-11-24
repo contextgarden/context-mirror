@@ -333,7 +333,7 @@
    \the\everybodyfont
    \settrue\c_font_synchronize}
 
-\let\savedfont\empty
+\mutable\let\savedfont\empty
 
 \installmacrostack\savedfont
 
@@ -559,8 +559,8 @@
    \processcommalist[#commands]{\font_basics_define_fontstyle_indeed{#style}}}
 
 \def\font_basics_define_fontstyle_indeed#style#command%
-  {\setvalue{\??fontshortstyle#command}{#style}%
-   \setvalue{\??fontstyle     #command}{\csname#style\endcsname}}
+  {\defcsname\??fontshortstyle#command\endcsname{#style}%
+   \defcsname\??fontstyle     #command\endcsname{\csname#style\endcsname}}
 
 \permanent\protected\def\definefontsize[#size]%
   {\ifcsname\??fontsizeknown#size\endcsname \else
@@ -1983,6 +1983,9 @@
    \scratchcounterthree\fontid\font\relax
    % parent -> x -> xx
    % parent -> xx
+   %
+   % this can become \integerdef
+   %
    \global\expandafter\chardef\csname\??fontscalex \number\scratchcounterone\endcsname\scratchcountertwo
    \global\expandafter\chardef\csname\??fontscalexx\number\scratchcounterone\endcsname\scratchcounterthree
    \global\expandafter\chardef\csname\??fontscalex \number\scratchcountertwo\endcsname\scratchcounterthree
@@ -2417,7 +2420,7 @@
 \installcorenamespace{predefinedfont}
 
 \permanent\protected\def\predefinefont[#1]#*[#2]% global !
-  {\setugvalue{#1}{\font_basics_predefine{#1}{#2}}}
+  {\protected\gdefcsname#1\endcsname{\font_basics_predefine{#1}{#2}}}
 
 \permanent\protected\def\predefinedfont[#1]% global !
   {\ifcsname\??predefinedfont#1\endcsname

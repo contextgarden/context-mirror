@@ -52,7 +52,7 @@
 % maybe use chardefs
 
 \def\typo_dir_get_mode
-  {\def\currentbidimode{\clf_getbidimode
+  {\edef\currentbidimode{\clf_getbidimode
         scope  {\directionsparameter\c!bidi}%
         method {\directionsparameter\c!method}%
         fences {\directionsparameter\c!fences}%

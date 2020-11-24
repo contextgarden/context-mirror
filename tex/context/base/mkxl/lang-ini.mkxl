@@ -196,21 +196,22 @@
   {\ifcondition\validassignment{#2}%
      \doifelselanguage{#1}
        {\getparameters[\??language#1][#2]}
-       {\setvalue{\??languagelinked#1}{#1}%
+       {\defcsname\??languagelinked#1\endcsname{#1}%
         \getparameters[\??language#1][\c!state=\v!start,#2]%
         \lang_basics_install_indeed{#1}{#1}}%
      \edef\currentsetuplanguage{#1}%
      \clf_definelanguage{#1}{\specificlanguageparameter{#1}\s!default}%
      \the\everysetuplanguage
    \else
-     \setvalue{\??languagelinked#1}{#2}%
+     \defcsname\??languagelinked#1\endcsname{#2}%
      \clf_setlanguagesynonym{#1}{#2}%
      \lang_basics_install_indeed{#1}{#2}%
   \fi}
 
 \def\lang_basics_install_indeed#1#2%
-  {\doifnot{\specificlanguageparameter{#1}\c!command}\v!no
-     {\ifcsname#1\endcsname\else\frozen\instance\setuvalue{#1}{\lang_basics_set_current[#2]}\fi}}
+  {\ifcstok{\specificlanguageparameter{#1}\c!command}\v!no\else
+     \ifcsname#1\endcsname\else\frozen\instance\setuvalue{#1}{\lang_basics_set_current[#2]}\fi
+   \fi}
 
 %D When the second argument is a language identifier, a synonym is created. This
 %D feature is present because we used dutch mnemonics in the dutch version, but
