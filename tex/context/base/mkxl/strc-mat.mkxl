@@ -1157,8 +1157,8 @@
   {\def\currentformulareference{#1}%
    \strc_formulas_place_number_in_box}
 
-\permanent\protected\def\placeformula   {\global\settrue\c_strc_formulas_inside_place}
-\permanent\protected\def\placesubformula{\global\settrue\c_strc_formulas_inside_place_sub}
+\permanent\protected\def\placeformula   {\global\settrue\c_strc_formulas_inside_place    \strc_formulas_place}
+\permanent\protected\def\placesubformula{\global\settrue\c_strc_formulas_inside_place_sub\strc_formulas_place}
 
 \tolerant\protected\def\strc_formulas_place[#1]%
   {\def\currentplaceformulareference{#1}%
