@@ -246,7 +246,7 @@
      % was : \hskip\parindent
      % can be: \indent
      % but we test:
-     \noindent\hskip\parindent
+     \noindent\hskip\parindent % hm, we cannot undent this one
    \fi \fi}
 
 % public:
@@ -877,36 +877,36 @@
        {\processcommacommand[#1]\spac_tolerances_step_horizontal}%
    \fi}
 
-%D \macros
-%D   {pushindentation,popindentation}
-%D
-%D The pushing and popping is done by:
+% %D \macros
+% %D   {pushindentation,popindentation}
+% %D
+% %D The pushing and popping is done by:
+%
+% \newbox\b_spac_indentations_a
+% \newbox\b_spac_indentations_b
+%
+% \permanent\protected\def\pushindentation
+%   {\begingroup
+%    \ifhmode
+%      \unskip
+%      \setbox\b_spac_indentations_a\lastbox       % get \strut if present
+%      \unskip
+%      \setbox\b_spac_indentations_b\lastbox       % get \indent generated box
+%      \unskip
+%    \else
+%      \dontleavehmode % was \hskip\zeropoint      % switch to horizontal mode
+%      \unskip
+%      \setbox\b_spac_indentations_a\lastbox       % get \indent generated box
+%      \setbox\b_spac_indentations_b\emptybox
+%    \fi}
+%
+% \permanent\protected\def\popindentation
+%   {\box\b_spac_indentations_b
+%    \box\b_spac_indentations_a
+%    \endgroup}
 
-\newbox\b_spac_indentations_a
-\newbox\b_spac_indentations_b
-
-\permanent\protected\def\pushindentation
-  {\begingroup
-   \ifhmode
-     \unskip
-     \setbox\b_spac_indentations_a\lastbox       % get \strut if present
-     \unskip
-     \setbox\b_spac_indentations_b\lastbox       % get \indent generated box
-     \unskip
-   \else
-     \dontleavehmode % was \hskip\zeropoint      % switch to horizontal mode
-     \unskip
-     \setbox\b_spac_indentations_a\lastbox       % get \indent generated box
-     \setbox\b_spac_indentations_b\emptybox
-   \fi}
-
-\permanent\protected\def\popindentation
-  {\box\b_spac_indentations_b
-   \box\b_spac_indentations_a
-   \endgroup}
-
-%D The only complication lays in \type{\strut}. In \PLAIN\
-%D \TEX\ a \type{\strut} is defined as:
+%D The only complication lays in \type{\strut}. In \PLAIN\ \TEX\ a \type{\strut} is
+%D defined as:
 %D
 %D \starttyping
 %D \def\strut%

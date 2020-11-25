@@ -203,7 +203,8 @@
    \else
      % todo: take set value or none .. better done elsewhere (200 is normal)
    \fi
-   \ifx\dohyphens\relax % was 2.5 in old implementation using scratch registers
+%  \ifx\dohyphens\relax % was 2.5 in old implementation using scratch registers
+   \ifrelax\dohyphens % was 2.5 in old implementation using scratch registers
      \hyphenpenalty\dimexpr2.8\hsize/\dimexpr#1\relax\relax % 50 in raggedright/raggedleft
   %\else
      % no need to do something as we're in \nohyphens
@@ -579,7 +580,8 @@
 \permanent\protected\def\spac_align_prepare#1% deferred
   {\edef\m_spac_align_asked{#1}%
    \expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
-   \ifx\raggedcommand\relax
+%  \ifx\raggedcommand\relax
+   \ifrelax\raggedcommand
      \spac_align_add_to_cache
    \else
      \expandafter\let\expandafter\updateraggedskips\csname\??alignmentraggedcache\m_spac_align_asked\endcsname
@@ -592,7 +594,8 @@
 \permanent\tolerant\protected\def\setupalign[#1]% immediate
   {\edef\m_spac_align_asked{#1}%
    \expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
-   \ifx\raggedcommand\relax
+%  \ifx\raggedcommand\relax
+   \ifrelax\raggedcommand
      \spac_align_add_to_cache
    \else
      \expandafter\let\expandafter\updateraggedskips\csname\??alignmentraggedcache\m_spac_align_asked\endcsname
@@ -613,7 +616,8 @@
 
 \def\spac_align_use_indeed
   {\expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
-   \ifx\raggedcommand\relax
+%  \ifx\raggedcommand\relax
+   \ifrelax\raggedcommand
      \spac_align_add_to_cache
    \else
      \expandafter\let\expandafter\updateraggedskips\csname\??alignmentraggedcache\m_spac_align_asked\endcsname
@@ -626,7 +630,8 @@
   {\begingroup
    \edef\m_spac_align_asked{#1}%
    \expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
-   \ifx\raggedcommand\relax
+%  \ifx\raggedcommand\relax
+   \ifrelax\raggedcommand
      \spac_align_add_to_cache
    \fi
    \endgroup}
@@ -892,7 +897,8 @@
 % tracing:
 
 \def\spac_show_par_data#1%
-  {\ifx#1\relax\else
+% {\ifx#1\relax\else
+  {\ifrelax#1\else
      \hbox{\string#1: \the#1}\endgraf
      \expandafter\spac_show_par_data
    \fi}

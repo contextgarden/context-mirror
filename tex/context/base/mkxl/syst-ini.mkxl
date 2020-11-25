@@ -296,7 +296,8 @@
 \protected\def\setconstantvalue#1#2{\csname#1\endcsname\numexpr#2\relax}
 
 \protected\def\newconstant#1%
-  {\ifx#1\relax
+% {\ifx#1\relax
+  {\ifrelax#1%
     %\writestatus{!!!!!!!!!!}{\string #1 => RELAX}%
      \unletfrozen#1%
      \newcount#1%
@@ -334,13 +335,23 @@
 \def\syst_basics_allocate_nop#1#2#3#4#5% last class method max name
   {\writestatus{warning}{\string#2 \string#5 is already defined (\string\relax\space it first)}}
 
+% \def\syst_basics_allocate#1#2#3#4#5% last class method max name
+%   {\ifx#5\undefined
+%      \expandafter\syst_basics_allocate_yes
+%    \orelse\ifx#5\relax
+%      \expandafter\syst_basics_allocate_yes
+%    \else
+%      \expandafter\syst_basics_allocate_nop
+%    \fi
+%    #1#2#3#4#5}
+
 \def\syst_basics_allocate#1#2#3#4#5% last class method max name
-  {\ifx#5\undefined
+  {\ifrelax#5%
      \expandafter\syst_basics_allocate_yes
-   \orelse\ifx#5\relax
-     \expandafter\syst_basics_allocate_yes
-   \else
+   \orelse\ifdefined#5%
      \expandafter\syst_basics_allocate_nop
+   \else
+     \expandafter\syst_basics_allocate_yes
    \fi
    #1#2#3#4#5}
 

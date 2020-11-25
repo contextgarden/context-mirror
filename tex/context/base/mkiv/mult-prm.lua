@@ -328,6 +328,7 @@ return {
   "ifnumval",
   "ifparameter",
   "ifparameters",
+  "ifrelax",
   "iftok",
   "ignorearguments",
   "ignorepars",
