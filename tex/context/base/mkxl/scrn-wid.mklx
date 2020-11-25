@@ -190,8 +190,8 @@
      depth             \dimexpr\currentattachmentdepth \relax
      color             {\attachmentparameter\c!color}%
      colormodel        \c_attr_colormodel
-     colorvalue        \numexpr\thecolorattribute{\attachmentparameter\c!color}\relax % or are these chardefs
-     transparencyvalue \numexpr\thetransparencyattribute{\attachmentparameter\c!color}\relax % or are these chardefs
+     colorvalue        \rawcolorattribute{\attachmentparameter\c!color}%
+     transparencyvalue \rawtransparencyattribute{\attachmentparameter\c!color}%
      symbol            {\currentattachmentsymbol}%
      layer             {\attachmentparameter\c!textlayer}%
      % these will be overloaded by registered when available
@@ -478,8 +478,8 @@
      nx                {\commentparameter\c!nx}%
      ny                {\commentparameter\c!ny}%
      colormodel        \c_attr_colormodel
-     colorvalue        \numexpr\thecolorattribute{\commentparameter\c!color}\relax
-     transparencyvalue \numexpr\thetransparencyattribute{\commentparameter\c!color}\relax
+     colorvalue        \rawcolorattribute{\commentparameter\c!color}%
+     transparencyvalue \rawtransparencyattribute{\commentparameter\c!color}%
      option            {\commentparameter\c!option}% % todo
      symbol            {\commentparameter\c!symbol}%
      buffer            {\commentparameter\c!buffer}% {\v!comment}%

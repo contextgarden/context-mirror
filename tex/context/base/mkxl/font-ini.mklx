@@ -1706,7 +1706,7 @@
 \ifdefined\trycurrentfontclass \else
 
     \protected\def\trycurrentfontclass#typeface%
-      {\letvalueempty{\??fontclassnop#typeface}}
+      {\letcsname\??fontclassnop#typeface\endcsname\empty}
 
 \fi
 
@@ -2282,7 +2282,7 @@
 
 %D The next auxilliary macro is an alternative to \type {\fontname}.
 
-\def\purefontname#font{\clf_purefontname{\fontname#font}}
+\permanent\def\purefontname#font{\clf_purefontname{\fontname#font}}
 
 %D \macros
 %D   {switchstyleonly}
@@ -2360,7 +2360,7 @@
 %D the running text is temporary set to a smaller one|>| by saying \type
 %D {\switchtobodyfont [global]}.
 
-\let\globalfontstyle\s!rm
+\mutable\let\globalfontstyle\s!rm
 
 \permanent\protected\def\fullrestoreglobalbodyfont
   {\let\fontsize\defaultfontsize
@@ -2426,7 +2426,7 @@
   {\ifcsname\??predefinedfont#1\endcsname
      \lastnamedcs
    \else
-     \font_basics_predefined{#1}%
+     \definedfont[#1]%
    \fi}
 
 \protected\def\font_basics_predefine#1#2%
@@ -2445,8 +2445,8 @@
    \xdef\saveddefinedfontname{\fontname\font}%
    \egroup}
 
-\def\saveddefinedfontid  {\number\fontid\font}
-\def\saveddefinedfontname{\fontname\font}
+\mutable\def\saveddefinedfontid  {\number\fontid\font}
+\mutable\def\saveddefinedfontname{\fontname\font}
 
 %D Ugly helper:
 
@@ -2458,17 +2458,17 @@
       \c_attr_transparency\the\c_attr_transparency
       \relax}}
 
-\let\restorerunningstyleandcolor\relax
+\aliased\let\restorerunningstyleandcolor\relax
 
 %D Handy for defining additional glyphs:
 
 % todo: public implementors
 
-\let\getprivateglyphslot\clf_getprivateglyphslot % kind of private macro
+\aliased\let\getprivateglyphslot\clf_getprivateglyphslot % kind of private macro
 
-\let\getprivatechar     \clf_getprivatechar     % gives back a utf !
-\let\getprivatemathchar \clf_getprivatemathchar % gives back a utf !
-\let\getprivateslot     \clf_getprivateslot     % companion to fonts.helpers.addprivate
+\aliased\let\getprivatechar     \clf_getprivatechar     % gives back a utf !
+\aliased\let\getprivatemathchar \clf_getprivatemathchar % gives back a utf !
+\aliased\let\getprivateslot     \clf_getprivateslot     % companion to fonts.helpers.addprivate
 
 % \protected\def\getprivatemathchar#1%
 %   {\begingroup\the\textfont\zerocount\getprivatechar{#1}\endgroup}

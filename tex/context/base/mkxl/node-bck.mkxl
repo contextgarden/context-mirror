@@ -36,12 +36,12 @@
 \def\node_backgrounds_thecolorattr#1%
   {attr \colormodelattribute   \c_attr_colormodel
    attr \colorattribute        \lastnamedcs
-   attr \transparencyattribute \thetransparencyattribute{#1} } % can be optimized
+   attr \transparencyattribute \rawtransparencyattribute{#1} } % can be optimized
 
 \permanent\def\thecolorattr#1%
   {attr \colormodelattribute   \c_attr_colormodel
    attr \colorattribute        \csname\??colorattribute#1\endcsname
-   attr \transparencyattribute \thetransparencyattribute{#1} } % can be optimized
+   attr \transparencyattribute \rawtransparencyattribute{#1} } % can be optimized
 
 \permanent\def\backgroundcolorattr#1%
   {\ifcsname\??colorattribute\currentcolorprefix#1\endcsname
@@ -54,36 +54,24 @@
   {attr \backgroundattribute      \plusone
    attr \colormodelattribute      \c_attr_colormodel
    attr \colorattribute           \csname\??colorattribute#1\endcsname
-   attr \transparencyattribute    \thetransparencyattribute{#1} } % can be optimized
+   attr \transparencyattribute    \rawtransparencyattribute{#1} } % can be optimized
 
 \def\node_backgrounds_thebackgroundcolorattr#1%
   {attr \backgroundattribute      \plusone
    attr \colormodelattribute      \c_attr_colormodel
    attr \colorattribute           \lastnamedcs
-   attr \transparencyattribute    \thetransparencyattribute{#1} } % can be optimized
+   attr \transparencyattribute    \rawtransparencyattribute{#1} } % can be optimized
 
 \permanent\def\thealignbackgroundcolorattr#1%
   {attr \alignbackgroundattribute \plusone
    attr \colormodelattribute      \c_attr_colormodel
    attr \colorattribute           \csname\??colorattribute#1\endcsname
-   attr \transparencyattribute    \thetransparencyattribute{#1} } % can be optimized
+   attr \transparencyattribute    \rawtransparencyattribute{#1} } % can be optimized
 
 \permanent\protected\def\backgroundhbox{\node_backgrounds_boxes_add\hbox}
 \permanent\protected\def\backgroundvbox{\node_backgrounds_boxes_add\vbox}
 \permanent\protected\def\backgroundvtop{\node_backgrounds_boxes_add\vtop}
 \permanent\protected\def\backgroundline{\dontleavehmode\node_backgrounds_boxes_add\hbox}
-
-% \def\node_backgrounds_boxes_add#1[#2]%
-%   {\begingroup
-%    \clf_enablebackgroundboxes
-%    \dousecolorparameter{#2}%
-%    \normalexpanded{\endgroup#1
-%      attr \backgroundattribute   \plusone
-%      attr \colormodelattribute   \the\c_attr_colormodel
-%      attr \colorattribute        \the\c_attr_color
-%      attr \transparencyattribute \the\c_attr_transparency}}
-%
-% more efficient:
 
 \def\node_backgrounds_boxes_add#1[#2]%
   {\clf_enablebackgroundboxes

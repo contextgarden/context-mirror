@@ -1754,7 +1754,7 @@
 \protected\def\startcollectitems % todo: frozen
   {\ifconditional\c_strc_itemgroups_collecting
      \c_strc_itemgroups_collected_stored\zerocount
-     \letvalue{\e!start\v!item}\strc_itemgroups_collected_store
+     \letcsname\e!start\v!item\endcsname\strc_itemgroups_collected_store
    \fi}
 
 %D Left-overs:

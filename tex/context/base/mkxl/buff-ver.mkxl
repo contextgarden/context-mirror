@@ -836,8 +836,8 @@
 \permanent\protected\def\typeinlinebuffer
   {\dontleavehmode
    \begingroup
-   \let\buff_verbatim_type_buffer_indeed\buff_verbatim_type_buffer_indeed_inline
-   \let\setupcurrenttyping\setupcurrenttype % a terrible hack but it saves code
+   \enforced\let\buff_verbatim_type_buffer_indeed\buff_verbatim_type_buffer_indeed_inline
+   \enforced\let\setupcurrenttyping\setupcurrenttype % a terrible hack but it saves code
    \let\currenttype\empty
    \buff_verbatim_type_buffer}
 

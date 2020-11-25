@@ -405,7 +405,7 @@
      \resetlayoutelementparameter\c!righttext
    \or % 3
      \edef\currentlayoutelement{#vertical:#horizontal}%
-     \letvalueempty{\layoutelementhash\begincsname\??layouttextcontent\v!text:#tag\endcsname\c!middletext}%
+     \letcsname\layoutelementhash\begincsname\??layouttextcontent\v!text:#tag\endcsname\c!middletext\endcsname\empty
    \fi}
 
 \letvalue{\??layouttextcontent\v!text:\c!middle}\c!middletext

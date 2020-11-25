@@ -402,7 +402,7 @@
    \fi}
 
 \permanent\protected\def\installwhitespacemethod#1#2%
-  {\setvalue{\??whitespacemethod#1}{#2}}
+  {\defcsname\??whitespacemethod#1\endcsname{#2}}
 
 \installwhitespacemethod \v!fix         {}
 \installwhitespacemethod \v!fixed       {\setfalse\c_spac_whitespace_flexible}
@@ -1489,8 +1489,8 @@
 \newdimen \globalbodyfontstrutheight
 \newdimen \globalbodyfontstrutdepth
 
-\permanent\def\snappedvboxattribute{\ifgridsnapping    attr\snapvboxattribute\c_attr_snapmethod\fi}
-\permanent\def\setlocalgridsnapping{\ifgridsnapping \c_attr_snapvbox         \c_attr_snapmethod\fi}
+\permanent\def\snappedvboxattribute{\ifgridsnapping attr\snapvboxattribute\c_attr_snapmethod\fi}
+\permanent\def\setlocalgridsnapping{\ifgridsnapping \c_attr_snapvbox \c_attr_snapmethod\fi}
 
 \def\spac_grids_set_local_snapping#1%
   {\ifgridsnapping
@@ -1502,9 +1502,7 @@
 \def\spac_grids_expand_snapper#1%
   {\edef\m_spac_snapper
      {\ifempty\m_spac_snapper\else\m_spac_snapper,\fi
-      \ifcsname\??gridsnappersets#1\endcsname
-        \lastnamedcs\else#1%
-      \fi}}
+      \ifcsname\??gridsnappersets#1\endcsname\lastnamedcs\else#1\fi}}
 
 \permanent\protected\def\installsnapvalues#1#2%
   {\let\m_spac_snapper\empty
@@ -1514,10 +1512,10 @@
      \scratchcounter\lastnamedcs % already defined
    \else
      \scratchcounter\clf_definesnapmethod{#1}{\m_spac_snapper}%
-     \setevalue{\??gridsnapperattributes\currentsnapper}{\the\scratchcounter}%
+     \edefcsname\??gridsnapperattributes\currentsnapper\endcsname{\the\scratchcounter}%
    \fi
-   \setevalue{\??gridsnappers#1}{\c_attr_snapmethod\the\scratchcounter\relax}%
-   \letvalue{\??gridsnappersets#1}\m_spac_snapper}
+   \edefcsname\??gridsnappers#1\endcsname{\c_attr_snapmethod\the\scratchcounter\relax}%
+   \letcsname\??gridsnappersets#1\endcsname\m_spac_snapper}
 
 \permanent\def\theexpandedsnapperset#1{\begincsname\??gridsnappersets#1\endcsname} % only for manuals
 
@@ -1900,13 +1898,13 @@
 
 \permanent\tolerant\protected\def\definevspacingamount[#1]#*[#2]#*[#3]% can be combined
   {\ifarguments
-     %setvalue{\??vspacingamount#1}{\lineheight}%
+     %defcsname\??vspacingamount#1\endcsname{\lineheight}%
    \or
-     \setvalue{\??vspacingamount#1}{\lineheight}%
+     \defcsname\??vspacingamount#1\endcsname{\lineheight}%
    \or
-     \setvalue{\??vspacingamount#1}{\ifgridsnapping\lineheight\else#2\fi}%
+     \defcsname\??vspacingamount#1\endcsname{\ifgridsnapping\lineheight\else#2\fi}%
    \or
-     \setvalue{\??vspacingamount#1}{\ifgridsnapping#3\else#2\fi}%
+     \defcsname\??vspacingamount#1\endcsname{\ifgridsnapping#3\else#2\fi}%
    \fi
    \clf_vspacingsetamount{#1}}
 
@@ -2008,7 +2006,7 @@
    \fi}
 
 \def\spac_vspacing_yes_preset#1%
-  {\setxvalue{\??vspacing#1}{\clf_vspacing{#1}}%
+  {\xdefcsname\??vspacing#1\endcsname{\clf_vspacing{#1}}%
   %\writestatus{}{}%
   %\writestatus{#1}{\expandafter\meaning\csname\??vspacing#1\endcsname}%
   %\writestatus{}{}%
@@ -2205,11 +2203,11 @@
 \permanent\tolerant\protected\def\definevspace[#1]#*[#2]#*[#3]%
   {\ifarguments
    \or
-     \letvalue{\??vspace:#1}\empty % or undefined?
+     \letcsname\??vspace:#1\endcsname\empty
    \or
-     \setvalue{\??vspace:#1}{#2}%
+     \defcsname\??vspace:#1\endcsname{#2}%
    \or
-     \setvalue{\??vspace#1:#2}{#3}%
+     \defcsname\??vspace#1:#2\endcsname{#3}%
    \fi}
 
 \letvalue{\??vspace:\s!unknown}\zeropoint

@@ -126,7 +126,7 @@
 \permanent\protected\def\pdfbackendsetshade         #1#2{\clf_lpdf_adddocumentshade{#1}{#2}}
 
 \permanent          \def\pdfbackendcurrentresources     {\clf_lpdf_collectedresources}
-\permanent          \def\pdfcolor                     #1{\clf_lpdf_color\numexpr\thecolorattribute{#1}\relax}
+\permanent          \def\pdfcolor                     #1{\clf_lpdf_color\numexpr\rawcolorattribute{#1}\relax}
 
 %D This is a temporary hack mthat will be removed, improved or somehow can become
 %D default.

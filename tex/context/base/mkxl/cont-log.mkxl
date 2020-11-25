@@ -213,7 +213,7 @@
         \ifx\fontalternative\s!it\syst_logos_xetex_e\orelse
         \ifx\fontalternative\s!sl\syst_logos_xetex_e\orelse
         \ifx\fontalternative\s!bi\syst_logos_xetex_e\orelse
-        \ifx\fontalternative\s!bs\syst_logos_xetex_e\orelse
+        \ifx\fontalternative\s!bs\syst_logos_xetex_e\else
                                           \mirror{E}\fi
       \fi}%
    \kern-.1667\emwidth\TeX}

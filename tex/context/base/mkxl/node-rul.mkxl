@@ -116,27 +116,28 @@
    \ifx\p_node_text\empty\else
      \setbox\b_node_rules\hbox{\p_node_text}%
    \fi
-   \setevalue{\??barattribute\currentbar}{\number
+   \expandafter\integerdef\csname\??barattribute\currentbar\endcsname
      \clf_definerule
-        continue      {\barparameter\c!continue}%
-        unit          {\barparameter\c!unit}%
-        order         {\barparameter\c!order}%
-        rulethickness {\barparameter\c!rulethickness}%
-        method        \barparameter\c!method
-        max           \barparameter\c!max\space % number
-        mp           {\includeMPgraphic{\barparameter\c!mp}}
-        ma            \thecolormodelattribute
-        ca            \thecolorattribute\p_node_rules_color
-        ta            \thetransparencyattribute\p_node_rules_color
-        offset        \barparameter\c!offset\space % number
-        dy            \barparameter\c!dy\space % number
-        empty        {\barparameter\c!empty}%
+       continue      {\barparameter\c!continue}%
+       unit          {\barparameter\c!unit}%
+       order         {\barparameter\c!order}%
+       rulethickness {\barparameter\c!rulethickness}%
+       method        \barparameter\c!method
+       max           \barparameter\c!max\space % number
+       mp           {\includeMPgraphic{\barparameter\c!mp}}
+       ma            \c_attr_colormodel
+       ca            \rawcolorattribute\p_node_rules_color
+       ta            \rawtransparencyattribute\p_node_rules_color
+       offset        \barparameter\c!offset\space % number
+       dy            \barparameter\c!dy\space % number
+       empty        {\barparameter\c!empty}%
      \ifx\p_node_text\empty\else
-        % not that useful and efficient, more for testing something
-        text         \b_node_rules
-        repeat       {\barparameter\c!repeat}%
+       % not that useful and efficient, more for testing something
+       text         \b_node_rules
+       repeat       {\barparameter\c!repeat}%
      \fi
-     \relax}}
+     \relax
+   \relax}
 
 \protected\def\node_rules_redefine#1%
   {\def\currentbar{#1}\node_rules_define}
@@ -498,21 +499,22 @@
 
 \protected\def\node_linefiller_define
   {\edef\p_node_rules_color{\linefillerparameter\c!color}%
-   \setevalue{\??linefillerattribute\currentlinefiller}{\number
-   \clf_definelinefiller
-    %method         \linefillerparameter\c!method
-     location      {\linefillerparameter\c!location}%
-     scope         {\linefillerparameter\c!scope}%
-     mp            {\includeMPgraphic{\linefillerparameter\c!mp}}%
-     ma             \thecolormodelattribute
-     ca             \thecolorattribute\p_node_rules_color
-     ta             \thetransparencyattribute\p_node_rules_color
-     height         \dimexpr\linefillerparameter\c!height\relax
-     depth          \dimexpr\linefillerparameter\c!depth\relax
-     distance       \dimexpr\linefillerparameter\c!distance\relax
-     threshold      \dimexpr\linefillerparameter\c!threshold\relax
-     rulethickness  \dimexpr\linefillerparameter\c!rulethickness\relax
-   \relax}}
+   \expandafter\integerdef\csname\??linefillerattribute\currentlinefiller\endcsname
+     \clf_definelinefiller
+      %method         \linefillerparameter\c!method
+       location      {\linefillerparameter\c!location}%
+       scope         {\linefillerparameter\c!scope}%
+       mp            {\includeMPgraphic{\linefillerparameter\c!mp}}%
+       ma             \c_attr_colormodel
+       ca             \rawcolorattribute\p_node_rules_color
+       ta             \rawtransparencyattribute\p_node_rules_color
+       height         \dimexpr\linefillerparameter\c!height\relax
+       depth          \dimexpr\linefillerparameter\c!depth\relax
+       distance       \dimexpr\linefillerparameter\c!distance\relax
+       threshold      \dimexpr\linefillerparameter\c!threshold\relax
+       rulethickness  \dimexpr\linefillerparameter\c!rulethickness\relax
+     \relax
+   \relax}
 
 \protected\def\node_linefiller_redefine#1%
   {\def\currentlinefiller{#1}\node_linefiller_define}

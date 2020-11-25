@@ -529,11 +529,8 @@
 \let\strc_itemgroups_start_columns_old\strc_itemgroups_start_columns
 \let\strc_itemgroups_stop_columns_old \strc_itemgroups_stop_columns
 
-\def\strc_itemgroups_start_columns_new
-  {\startmulticolumns[\c!n=\itemgroupparameter\c!n]}
-
-\def\strc_itemgroups_stop_columns_new
-  {\stopmulticolumns}
+\def\strc_itemgroups_start_columns_new{\startmulticolumns[\c!n=\itemgroupparameter\c!n]}
+\def\strc_itemgroups_stop_columns_new {\stopmulticolumns}
 
 \installtexexperiment
   {itemize.columns}

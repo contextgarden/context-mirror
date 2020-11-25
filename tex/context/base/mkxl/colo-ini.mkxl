@@ -1250,6 +1250,7 @@
      \colo_helpers_inherited_current_ca{#1} %
      \colo_helpers_inherited_current_ta{#1} }
 
+\permanent\def\rawcolormodelattribute    {\c_attr_colormodel}
 \permanent\def\thecolormodelattribute    {\the\c_attr_colormodel}
 
 \permanent\def\rawcolorattribute       #1{\ifcsname\??colorattribute       \currentcolorprefix#1\endcsname\lastnamedcs\orelse\ifcsname\??colorattribute       #1\endcsname\lastnamedcs\else\zerocount\fi}

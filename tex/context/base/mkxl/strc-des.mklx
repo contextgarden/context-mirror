@@ -129,7 +129,7 @@
 % \description [reference]         text \par
 % \description [reference] {title} text \par
 
-\tolerant\protected\def\strc_descriptions_command[#1]#*[#2]#:#*#=%
+\tolerant\protected\def\strc_descriptions_command[#1]#*[#2]%
   {\begingroup
    \strc_constructions_initialize{#1}%
    \ifhastok={#2}%

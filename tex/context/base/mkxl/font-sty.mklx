@@ -58,7 +58,7 @@
 % maybe permanent
 
 \def\font_basics_define_alternative_style_indeed#variantone#varianttwo#command%
-  {\setuvalue{\??alternativestyle#command}{\font_helpers_apply_alternative_style{#variantone}{#varianttwo}}%
+  {\protected\defcsname\??alternativestyle#command\endcsname{\font_helpers_apply_alternative_style{#variantone}{#varianttwo}}%
    \ifcsname#command\endcsname
      % no redefinition
    \orelse\ifnum\c_fonts_basics_alternative_style_method=\plusone

@@ -37,8 +37,9 @@ local function set_components(base,list)
         end
         list = getnext(list)
     end
-    -- was forgotten:
-    flush_list(l)
+    -- not yet as we need them
+    --
+    -- flush_list(l)
     --
     setprop(base,"components",n > 0 and t or false)
 end
@@ -107,6 +108,7 @@ nuts.get_components     = get_components
 nuts.copy_only_glyphs   = copy_only_glyphs
 nuts.copy_no_components = copy_no_components
 nuts.count_components   = count_components
+nuts.flush_components   = flush_list
 
 nuts.setcomponents = function() report_error("unsupported: %a","setcomponents") end
 nuts.getcomponents = function() report_error("unsupported: %a","getcomponents") end

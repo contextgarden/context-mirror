@@ -838,10 +838,10 @@
 %D
 %D \typebuffer \getbuffer
 
-\tolerant\def\tabl_ntb_th[#1]#2\eTH
+\tolerant\def\tabl_ntb_th[#1]#:#2\eTH
   {\tabl_ntb_td[#1,\c!color=\naturaltablelocalparameter\c!headcolor,\c!style=\naturaltablelocalparameter\c!headstyle,\c!aligncharacter=\v!no]#2\eTD}
 
-\tolerant\def\tabl_ntb_tn[#1]#2\eTN
+\tolerant\def\tabl_ntb_tn[#1]#:#2\eTN
   {\tabl_ntb_td[#1]\digits#2\relax\eTD}
 
 %D Vit Zyka needed the option to create a distance between columns, so I added
