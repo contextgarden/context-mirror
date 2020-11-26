@@ -202,7 +202,7 @@
      \stopreadingfile
      \letgvalue{\??runtimeloaded#2}\empty
    \fi
-   \ifx#1\undefined
+   \ifdefined#1\else
      \writestatus\m!system{command \string#1 not found in file #2}%
      \protected\gdef#1{{\infofont[unknown command \string#1]}}%
    \fi

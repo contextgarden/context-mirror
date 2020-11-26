@@ -276,8 +276,8 @@
 
 \appendtoks
     \normalexpanded {%
-        \startsetups[\currentdocument:\v!start]\noexpand\directsetup{\ifx\empty\currentdocumentparent\s!document\else\currentdocumentparent\fi:\v!start}\stopsetups
-        \startsetups[\currentdocument:\v!stop ]\noexpand\directsetup{\ifx\empty\currentdocumentparent\s!document\else\currentdocumentparent\fi:\v!stop }\stopsetups
+        \startsetups[\currentdocument:\v!start]\noexpand\directsetup{\ifempty\currentdocumentparent\s!document\else\currentdocumentparent\fi:\v!start}\stopsetups
+        \startsetups[\currentdocument:\v!stop ]\noexpand\directsetup{\ifempty\currentdocumentparent\s!document\else\currentdocumentparent\fi:\v!stop }\stopsetups
         \permanent\setvalue{\e!start\currentdocument}{\startdocument[\currentdocument]}%
         \permanent\setvalue{\e!stop \currentdocument}{\stopdocument}
     }%
@@ -308,7 +308,7 @@
   {\documentvariable\c!after
    \the\everystopdocument
    \stoptext
-   \ifx\empty\currentdocument\else\resetmode\currentdocument\fi
+   \ifempty\currentdocument\else\resetmode\currentdocument\fi
    \popmacro\currentdocument}
 
 \aliased            \let\documentvariable           \documentparameter

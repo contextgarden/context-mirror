@@ -118,7 +118,7 @@
       \setbox\scratchbox\hpack
         {\hskip-\scratchwidth
          \edef\p_category{\directwithpagesparameter\c!category}% \useexternalfigure[foo][width=\textwidth]
-         \ifx\p_category\empty
+         \ifempty\p_category
            \externalfigure[#filename][\c!page=#page,\c!height=\textheight]%
          \else
            \externalfigure[#filename][\p_category][\c!page=#page]%

@@ -780,7 +780,7 @@
 
 \newcount\contextversionno
 
-\ifx\contextversion\undefined
+\ifdefined\contextversion \else
     \immutable\edef\contextversion{\the\normalyear.\the\normalmonth.\the\normalday\space 00:00}
 \fi
 
@@ -795,7 +795,7 @@
 %D
 %D This one is only used when we generate the format.
 
-% \ifx\undefined\everydump
+% \ifdefined\everydump \else
 %     \newtoks\everydump
 %     \def\dump{\the\everydump\global\everydump\emptytoks\glet\dump\relax\normaldump}
 % \fi

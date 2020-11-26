@@ -378,7 +378,7 @@
 %D met 0~regels. The raw alternative does not round. See the \MKII\ and \MKIV\ files
 %D for historic variants.
 
-\ifx\roundingeps\undefined \newdimen\roundingeps \roundingeps=10sp \fi
+\ifdefined\roundingeps \else \newdimen\roundingeps \roundingeps=10sp \fi
 
 \newcount\noflines
 \newdimen\noflinesheight
@@ -836,7 +836,7 @@
      \setbox\newshapebox\box\tmpshapebox
    \fi}
 
-\ifx\originalshapebox\undefined \let\originalshapebox\oldshapebox \fi
+\ifdefined\originalshapebox \else \let\originalshapebox\oldshapebox \fi
 
 % We will turn this into a \MKIV\ variant (we can use \type {\vpack} too).
 
@@ -1165,7 +1165,7 @@
         \global\setbox\plusone\lastbox
         \global\setbox\plusone\hbox{\strut\unhbox\plusone}%
         \hbox % to #2 % \hpack
-          {\ifx\clip\undefined
+          {\unless\ifdefined\clip
              \box\plusone
            \orelse\ifdim\wd\plusone>\hsize
              \lower\strutdepth\hpack{\clip[\c!width=\hsize,\c!height=\lineheight]{\hpack{\raise\strutdepth\box\plusone}}}%
@@ -2384,7 +2384,7 @@
 \protected\def\syst_boxes_push#1#2%
   {\global\advance\c_syst_boxes_stack\plusone
    \expandafter\let\expandafter\b_syst_boxes_stack\csname\??boxstack\number\c_syst_boxes_stack\endcsname
-   \ifx\b_syst_boxes_stack\relax % cheaper then csname check as in most cases it's defined
+   \ifrelax\b_syst_boxes_stack % cheaper then csname check as in most cases it's defined
       \syst_boxes_stack_allocate
    \fi
    #1\setbox\b_syst_boxes_stack\box#2\relax}
@@ -2710,7 +2710,7 @@
 
 \permanent\protected\def\newlocalbox#1%
   {\expandafter\let\expandafter#1\csname\??localbox\string#1\endcsname
-   \ifx#1\relax
+   \ifrelax#1%
      \syst_aux_new_localbox#1%
    \fi}
 

@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.11.25 21:39}
+\edef\contextversion{2020.11.26 15:38}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -50,7 +50,7 @@
 \edef\mksuffix   {mkiv}
 \edef\contextmark{LMTX}
 
-\ifx\normalinput\undefined \let\normalinput\input \fi
+\ifdefined\normalinput \else \let\normalinput\input \fi
 
 \def\loadmarkfile#1{\normalinput{#1.\mksuffix}}
 \def\loadmkivfile#1{\normalinput{#1.mkiv}}

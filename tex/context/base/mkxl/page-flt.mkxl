@@ -36,8 +36,8 @@
 \def\page_floats_report_total
   {\showmessage\m!floatblocks4%
      {\the\totalnoffloats
-      \ifx\floatlocationmethod\empty
-        \ifx\floatlocation\empty\else,\floatlocation\fi
+      \ifempty\floatlocationmethod
+        \ifempty\floatlocation\else,\floatlocation\fi
       \else
         ,\floatlocationmethod
       \fi}}
@@ -275,7 +275,7 @@
 
 \protected\def\page_floats_flush_page_floats % used in postpone
   {\edef\m_page_otr_checked_page_float{\clf_checkedpagefloat}%
-   \ifx\m_page_otr_checked_page_float\empty
+   \ifempty\m_page_otr_checked_page_float
      % nothing
    \orelse\ifx\m_page_otr_checked_page_float\v!empty
       \emptyhbox \page_otr_fill_and_eject_page % why not dummy_page

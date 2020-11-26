@@ -111,7 +111,7 @@
    \font_preload_default_fonts}
 
 \protected\def\font_preloads_third_stage % always
-  {\ifx\fontclass\empty
+  {\ifempty\fontclass
      \writestatus\m!fonts{preloading latin modern fonts (third stage)}%
      \font_preload_default_fonts
      \font_preloads_reset

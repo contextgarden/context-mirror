@@ -162,7 +162,7 @@
 %
 % % End of experimental code.
 
-%D We keep the above as reference, btu from now on experiment with the following
+%D We keep the above as reference, but from now on experiment with the following
 %D implementation. In principle this one is faster, but because normally we don't
 %D have that many assignments it doesn't get noticed. For instance, the \LUAMETATEX\
 %D manual does less than 6000 assignments and the payoff starts around a tenfold of
@@ -273,7 +273,6 @@
 \protected\def\mult_interfaces_install_parameter_handler#1#2#3#4#5#6#7#8#9%
   {\frozen\def#3##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
    \frozen\def#4##1##2{\ifcsname##1:##2\endcsname##1:##2\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
-%  \frozen\edef#5##1##2{\noexpand\ifx##1\relax\??empty\noexpand\else\noexpand#4##1{##2}\noexpand\fi}% is {} needed around ##1 ?
    \frozen\edef#5##1##2{\noexpand\ifrelax##1\??empty\noexpand\else\noexpand#4##1{##2}\noexpand\fi}% is {} needed around ##1 ?
    \frozen\def#6##1##2{\csname\ifcsname#1##1:##2\endcsname#1##1:##2\else\expandafter#5\csname#1##1:\s!parent\endcsname{##2}\fi\endcsname}%
    \frozen\def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2:##1\endcsname}}% always root, no backtrack
@@ -309,7 +308,6 @@
 \protected\def\mult_interfaces_install_parameter_hash_handler#1#2#3#4#5#6#7#8#9%
   {\frozen\def#3##1{#1#4{#1#2}{##1}:}% leading #1 was missing .. is this one used?
    \frozen\def#4##1##2{\ifcsname##1:##2\endcsname##1\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
-%  \frozen\def#5##1##2{\ifx##1\relax\else#4##1{##2}\fi}%
    \frozen\def#5##1##2{\ifrelax##1\else#4##1{##2}\fi}%
    \frozen\def#6{#1#2:}%
    \frozen\def#7##1{#1##1:}%
@@ -1005,7 +1003,6 @@
    \let#6\empty
    \protected\def#2%
      {\expandafter\let\expandafter\c_mult_set\csname #1_t_#6\endcsname
-%     \ifx\c_mult_set\relax
       \ifrelax\c_mult_set
         \expandafter\newtoks\c_mult_set
         \letcsname#1_t_#6\endcsname\c_mult_set
@@ -1094,16 +1091,16 @@
 %  \protected\def\TestMeA[#1]%
 %    {\edef\currenttest{#1}
 %     \edef\p_before{\testparameter\c!before}%
-%     \ifx\p_before\empty \relax \else \relax \fi}
+%     \ifempty\p_before \relax \else \relax \fi}
 %  \protected\def\TestMeB[#1]%
 %    {\edef\currenttest{#1}
 %     \doifelsenothing{\testparameter\c!before}\relax\relax}
 %  \protected\def\TestMeC[#1]%
 %    {\edef\currenttest{#1}
-%     \expandafter\expandafter\expandafter\ifx\testparameter\c!before\empty \relax \else \relax \fi}
+%     \expandafter\expandafter\expandafter\ifempty\testparameter\c!before \relax \else \relax \fi}
 %  \protected\def\TestMeD[#1]%
 %    {\edef\currenttest{#1}
-%     \doubleexpandafter\ifx\testparameter\c!before\empty \relax \else \relax \fi}
+%     \doubleexpandafter\ifempty\testparameter\c!before \relax \else \relax \fi}
 %
 %  \protect
 %

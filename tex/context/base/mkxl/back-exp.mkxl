@@ -293,7 +293,7 @@
 
 \permanent\protected\def\doinitializeexport
   {\edef\p_export{\backendparameter\c!export}%
-   \ifx\p_export\empty \else
+   \ifempty\p_export \else
       % yes | xml
       \setuptagging[\c!state=\v!start]%
       \clf_initializeexport

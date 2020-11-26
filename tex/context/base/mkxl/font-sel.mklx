@@ -23,7 +23,7 @@
    \checkselectfontparent
    \setupcurrentselectfont[#settings]%
    \edef\p_selectfont_preset{\selectfontparameter\c!preset}%
-   \ifx\p_selectfont_preset\empty \else
+   \ifempty\p_selectfont_preset \else
      \processcommacommand[\p_selectfont_preset]\selectfont_preset_process
      \setupcurrentselectfont[#settings]%
    \fi

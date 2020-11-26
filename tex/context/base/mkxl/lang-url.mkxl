@@ -122,7 +122,7 @@
 %D \hyphenatedfilename{here/there/filename.suffix}
 %D \stoptyping
 
-\ifx\hyphenatedfilename\undefined \aliased\let\hyphenatedfilename\hyphenatedurl \fi
+\ifdefined\hyphenatedfilename \else \aliased\let\hyphenatedfilename\hyphenatedurl \fi
 
 % \def\test#1%
 %   {\dontleavehmode

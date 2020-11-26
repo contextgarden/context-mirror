@@ -292,7 +292,7 @@
       \floatcaptionparameter\c!suffixstopper}}
 
 \permanent\protected\def\thecurrentfloatnumber
-  {\ifnofloatcaption \orelse \ifnofloatnumber \orelse \ifx\currentfloatnumber\relax \else
+  {\ifnofloatcaption \orelse \ifnofloatnumber \orelse \ifrelax\currentfloatnumber \else
      \namedtaggedlabeltexts
        \t!floatlabel \currentfloat
        \t!floatnumber\currentfloat
@@ -304,7 +304,7 @@
    \fi}
 
 \permanent\protected\def\thecurrentfloatcaption
-  {\ifnofloatcaption \orelse \ifemptyfloatcaption \orelse \ifx\currentfloatnumber\relax \else
+  {\ifnofloatcaption \orelse \ifemptyfloatcaption \orelse \ifrelax\currentfloatnumber \else
      \dostarttagged\t!floattext\empty
      \begstrut
      \floatcaptionparameter\c!textcommand
@@ -522,7 +522,7 @@
 %D \def\strc_float_load_data % precedes save !
 %D   {\global\advance\c_strc_floats_n\plusone
 %D    \xdef\strc_float_realpage{\datasetvariable\s!float{\number\c_strc_floats_n}\s!page}%
-%D    \ifx\strc_float_realpage\empty
+%D    \ifempty\strc_float_realpage
 %D      \glet\strc_float_realpage\realpageno % \realfolio
 %D    \fi}
 %D \stoptyping
@@ -572,7 +572,7 @@
 
 \def\strc_floats_set_current_tag#tag%
   {\edef\currentfloat{#tag}%
-   \ifx\currentfloat\empty
+   \ifempty\currentfloat
      \let\currentfloat\v!figure % a bit of a hack
    \fi
    \doifelsecommandhandler\??float\currentfloat
@@ -690,7 +690,7 @@
    \fi
    % check
    \edef\floatlocation{\floatcaptionparameter\c!location}%
-   \ifx\floatlocation\empty
+   \ifempty\floatlocation
       \edef\floatlocation{\floatparameter\c!default}%
    \fi
    % inherit

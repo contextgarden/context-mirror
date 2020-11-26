@@ -32,7 +32,7 @@
 \installswitchcommandhandler \??interaction {interaction} \??interaction
 
 \appendtoks
-    \ifx\previousinteraction\empty
+    \ifempty\previousinteraction
       \checkinteractionstate
     \orelse\ifx\currentinteraction\previousinteraction
       \checkinteractionstate
@@ -130,7 +130,7 @@
 \permanent\protected\def\setlocationcolorspecified#1% not grouped !
   {\ifnum#1=\plusone
      \edef\askedcontrastcolor{\interactionparameter\c!contrastcolor}%
-     \ifx\askedcontrastcolor\empty
+     \ifempty\askedcontrastcolor
        \useinteractioncolorparameter\c!color
      \else
        \useinteractioncolorparameter\c!contrastcolor
@@ -142,7 +142,7 @@
 \permanent\protected\def\setlocationattributesspecified#1% not grouped !
   {\ifnum#1=\plusone
      \edef\askedcontrastcolor{\interactionparameter\c!contrastcolor}%
-     \ifx\askedcontrastcolor\empty
+     \ifempty\askedcontrastcolor
        \useinteractionstyleandcolor\c!style\c!color
      \else
        \useinteractionstyleandcolor\c!style\c!contrastcolor
@@ -154,7 +154,7 @@
 \permanent\protected\def\setlocationcolorspecspecified#1#2% \resolver
   {\ifnum#1=\plusone
      \edef\askedcontrastcolor{#2\c!contrastcolor}%
-     \ifx\askedcontrastcolor\empty
+     \ifempty\askedcontrastcolor
        \colo_helpers_activate{#2\c!color}%
      \else
        \colo_helpers_activate\askedcontrastcolor
@@ -197,7 +197,7 @@
 \def\scrn_identity_prerolled#1%
   {\begingroup
    \edef\tempstring{\interactionparameter#1}%
-   \ifx\tempstring\empty
+   \ifempty\tempstring
      \endgroup
    \else
      \the\everypreroll

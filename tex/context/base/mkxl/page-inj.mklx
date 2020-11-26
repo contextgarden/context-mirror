@@ -127,7 +127,7 @@
   {\edef\p_page_injections_pagestate{\pageinjectionparameter\c!pagestate}%
    \ifx\p_page_injections_pagestate\v!stop \else
      \edef\p_page_injections_n{\pageinjectionparameter\c!n}%
-     \ifx\p_page_injections_n\empty
+     \ifempty\p_page_injections_n
         \let\p_page_injections_n\plusone
      \fi
      \dorecurse\p_page_injections_n

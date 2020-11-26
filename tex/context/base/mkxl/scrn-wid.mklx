@@ -170,7 +170,7 @@
    \edef\currentattachmentwidth {\attachmentparameter\c!width }%
    \edef\currentattachmentheight{\attachmentparameter\c!height}%
    \edef\currentattachmentdepth {\attachmentparameter\c!depth }%
-   \ifx\currentattachmentsymbol\empty
+   \ifempty\currentattachmentsymbol
      \ifx\currentattachmentwidth \v!fit\edef\currentattachmentwidth {.5\emwidth}\fi
      \ifx\currentattachmentheight\v!fit\edef\currentattachmentheight{.5\emwidth}\fi
      \ifx\currentattachmentdepth \v!fit\let \currentattachmentdepth \zeropoint\fi

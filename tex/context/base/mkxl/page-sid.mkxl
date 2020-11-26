@@ -641,7 +641,7 @@
 
 \def\page_sides_place_snap_to_grid#1%
   {\edef\p_grid{\floatparameter\c!grid}%
-   \ifx\p_grid\empty\else
+   \ifempty\p_grid\else
      \snaptogrid[\p_grid]%
    \fi
    \hpack{#1}}
@@ -861,7 +861,7 @@
 \let\page_sides_check_floats\relax
 
 \def\page_sides_initialize_checker
-  {\ifx\page_sides_check_floats\relax
+  {\ifrelax\page_sides_check_floats
      \glet\page_sides_check_floats\page_sides_check_floats_indeed
      \clf_enablesidefloatchecker
      \glet\page_sides_initialize_checker\relax
@@ -914,7 +914,7 @@
      \divide\c_page_sides_n_of_hang \baselineskip\relax
    \else
      \d_page_sides_progression
-       \ifx\p_sidethreshold\empty
+       \ifempty\p_sidethreshold
          \d_page_sides_progress
        \else
          \dimexpr\d_page_sides_progress-\p_sidethreshold\relax

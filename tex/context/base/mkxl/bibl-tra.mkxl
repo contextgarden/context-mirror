@@ -10,7 +10,8 @@
 %C Donated to the public domain.
 
 %D This is really obsolete in \LMTX. For now I keep it but it will either go
-%D away. The code is not upgraded, we only deal with macro protection.
+%D away. The code is not upgraded, we only deal with macro protection. I will
+%D only update the bits that annoy me in grepping for possible optimizations.
 
 % % % % watch out ... bibl-tra-new.mkiv is work in progress % % % %
 
@@ -211,7 +212,7 @@
 
 \protected\def\bibdoifelse#1%
   {\expandafter\def\expandafter\!!stringa\expandafter{#1}%
-   \ifx\!!stringa\empty
+   \ifempty\!!stringa
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments
@@ -219,7 +220,7 @@
 
 \protected\def\bibdoifnot#1%
   {\expandafter\def\expandafter\!!stringa\expandafter{#1}%
-   \ifx\!!stringa\empty
+   \ifempty\!!stringa
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
@@ -227,7 +228,7 @@
 
 \protected\def\bibdoif#1%
   {\expandafter\def\expandafter\!!stringa\expandafter{#1}%
-   \ifx\!!stringa\empty
+   \ifempty\!!stringa
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
@@ -274,7 +275,7 @@
 \def\thebibtexsorter{\executeifdefined{\??pb:\c!sort:\@@pbsort}\@@pbsort}
 
 \appendtoks
-   \ifx\@@pbdatabase\empty\else
+   \ifempty\@@pbdatabase\else
      \doifmode{*\v!first}{\ctxlua{bibtex.hacks.process { style="\thebibtexsorter", database="\@@pbdatabase" }}}%
    \fi
 \to \everysetupbibtex
@@ -536,7 +537,7 @@
        \let\templist\empty
        \dorecurse{#2}
          {\scratchtoks\doubleexpandafter{\csname\??pb @#1\recurselevel\endcsname}%
-          \edef\templist{\ifx\templist\empty\else\templist,\fi\the\scratchtoks}}%
+          \edef\templist{\ifempty\templist\else\templist,\fi\the\scratchtoks}}%
        #3\publicationlistparameter\c!command{#1}{\todocounter}{\templist}#4\relax
      \else
        #5%
@@ -820,7 +821,7 @@
   {\begingroup
    \setuplist[pubs][#1]%
    \edef\currentbibtexsessiontitle{\publicationlistparameter\c!title}%
-   \ifx\currentbibtexsessiontitle\empty
+   \ifempty\currentbibtexsessiontitle
      \normalexpanded{\startnamedsection[\v!chapter][\c!reference=pubs,\c!title={\headtext{pubs}}]}%
    \else
      \normalexpanded{\startnamedsection[\v!chapter][\c!reference=pubs,\c!title={\currentbibtexsessiontitle}]}%
@@ -952,17 +953,17 @@
      {#1}%
      {\getparameters[LO][\c!alternative=,\c!extras=,#1]%
       \edef\@@currentalternative{\LOalternative}%
-      \ifx\@@currentalternative\empty
+      \ifempty\@@currentalternative
         \edef\@@currentalternative{\@@citedefault}%
       \fi
-      \ifx\LOextras\empty
+      \ifempty\LOextras
         \setupcite[\@@currentalternative][#1]%
       \else
-        \expandafter\ifx\csname \??pv \@@currentalternative\c!right\endcsname\relax
+        \expandafter\ifrelax\csname \??pv \@@currentalternative\c!right\endcsname
           % avoids tail recursion
           \expandafter\let\csname \??pv \@@currentalternative\c!right\endcsname\empty
         \fi
-        \expandafter\ifx\csname LOright\endcsname \relax
+        \expandafter\ifrelax\csname LOright\endcsname
           \edef\LOextras{{\LOextras\bibalternative\c!right}}%
         \else
           \edef\LOextras{{\LOextras\LOright}}%
@@ -1135,7 +1136,7 @@
 \protected\def\docurrentbibauthor#1,#2%
   {\doifelseempty{#2}
      {\def\currentbibauthor{#1\bibalternative{otherstext}}}
-     {\expandafter\ifx\csname\??pv\@@currentalternative authoretallimit\endcsname\relax
+     {\expandafter\ifrelax\csname\??pv\@@currentalternative authoretallimit\endcsname
         \edef\currentbibauthor{#1\bibalternative{andtext}#2}%
       \else
         \edef\currentbibauthor{#1%
@@ -1151,7 +1152,7 @@
 
     \protected\def\robustaddtocommalist#1#2% {item} \cs
       {\robustdoifelseinset{#1}#2\resetglobal
-         {\dodoglobal\xdef#2{\ifx#2\empty\else#2,\fi#1}}}
+         {\dodoglobal\xdef#2{\ifempty#2\else#2,\fi#1}}}
 
 \popoverloadmode
 
@@ -1183,7 +1184,7 @@
      {\xdef\myauthor{\bibgetvara{#1}}%
       \xdef\myyear  {\bibgetvary{#1}}}
      {}%
-    \ifx\myauthor\empty\else
+    \ifempty\myauthor\else
       \checkifmyauthoralreadyexists
       \findmatchingyear
     \fi}
@@ -1233,7 +1234,7 @@
 \protected\def\findmatchingyear
   {\edef\wantednumber{\the\bibitemwanted}%
    \getfromcommacommand[\thebibyears][\wantednumber]%
-   \ifx\commalistelement\empty
+   \ifempty\commalistelement
      \edef\myyear{{\myyear}}%
    \else
      \edef\myyear{{\commalistelement,\myyear}}%

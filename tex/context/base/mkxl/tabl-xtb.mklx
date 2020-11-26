@@ -891,7 +891,7 @@
      \global\c_tabl_x_swapped_max\c_tabl_x_swapped
    \fi
    \mutable\expandafter\let\expandafter\t_tabl_x_swapped\csname\??xtableswap\number\c_tabl_x_swapped\endcsname
-   \ifx\t_tabl_x_swapped\relax
+   \ifrelax\t_tabl_x_swapped
      \tabl_x_collect_allocate
    \fi}
 

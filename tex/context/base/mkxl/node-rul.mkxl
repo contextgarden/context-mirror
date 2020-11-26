@@ -113,7 +113,7 @@
 \protected\def\node_rules_define
   {\edef\p_node_rules_color{\barparameter\c!color}%
    \edef\p_node_text{\barparameter\c!text}%
-   \ifx\p_node_text\empty\else
+   \ifempty\p_node_text\else
      \setbox\b_node_rules\hbox{\p_node_text}%
    \fi
    \expandafter\integerdef\csname\??barattribute\currentbar\endcsname
@@ -131,7 +131,7 @@
        offset        \barparameter\c!offset\space % number
        dy            \barparameter\c!dy\space % number
        empty        {\barparameter\c!empty}%
-     \ifx\p_node_text\empty\else
+     \ifempty\p_node_text\else
        % not that useful and efficient, more for testing something
        text         \b_node_rules
        repeat       {\barparameter\c!repeat}%

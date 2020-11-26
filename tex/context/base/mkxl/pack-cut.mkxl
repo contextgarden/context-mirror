@@ -90,7 +90,7 @@
       \hss
       \vpack to \cutmarklength
         {\scratchdimen\dimexpr\cutmarklength/2\relax
-         \scratchskip \ifx\cutmarkhoffset\empty\cutmarkoffset\scratchdimen\else\cutmarkhoffset\fi
+         \scratchskip \ifempty\cutmarkhoffset\cutmarkoffset\scratchdimen\else\cutmarkhoffset\fi
          \vss
          \hbox to \d_pack_cutmarks_width
            {\llap{\copy\scratchbox\hskip\scratchskip}%
@@ -115,10 +115,10 @@
       \hsize\d_pack_cutmarks_width
       \setbox\scratchbox\vpack
         {\setbox\scratchbox\hpack{\horizontalcuts}%
-         \scratchskip\ifx\cutmarkvoffset\empty\cutmarkoffset\scratchdimen\else\cutmarkvoffset\fi
+         \scratchskip\ifempty\cutmarkvoffset\cutmarkoffset\scratchdimen\else\cutmarkvoffset\fi
          \tlap{\copy\scratchbox\vskip\scratchskip}%
          \hpack to \d_pack_cutmarks_width
-           {\scratchskip\ifx\cutmarkhoffset\empty\cutmarkoffset\scratchdimen\else\cutmarkhoffset\fi
+           {\scratchskip\ifempty\cutmarkhoffset\cutmarkoffset\scratchdimen\else\cutmarkhoffset\fi
             \setbox\scratchbox\hpack{\verticalcuts}%
             \llap{\copy\scratchbox\hskip\scratchskip}%
             \ifdim\d_pack_cutmarks_depth=\zeropoint
@@ -138,9 +138,9 @@
       \wd\scratchbox\zeropoint
       \startcolor[\defaulttextcolor]%
       \box\scratchbox
-      \ifx\cutmarksymbol\relax \else
+      \ifrelax\cutmarksymbol \else
         \setbox\scratchbox\vpack
-          {\scratchskip\ifx\cutmarkvoffset\empty\cutmarkoffset\scratchdimen\else\cutmarkvoffset\fi
+          {\scratchskip\ifempty\cutmarkvoffset\cutmarkoffset\scratchdimen\else\cutmarkvoffset\fi
            \vskip-\dimexpr\scratchskip+\cutmarklength\relax
            \hpack{\cutmarksymbols\cutmarktoptext}%
            \vskip\dimexpr\scratchskip+\d_pack_cutmarks_height+\d_pack_cutmarks_depth+\scratchskip\relax

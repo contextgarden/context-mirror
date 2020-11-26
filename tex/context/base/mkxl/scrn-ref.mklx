@@ -57,10 +57,10 @@
   {\iflocation
      \edef\currentinteractionopenaction {\interactionparameter\c!openaction }%
      \edef\currentinteractioncloseaction{\interactionparameter\c!closeaction}%
-     \ifx\currentinteractionopenaction\empty \else
+     \ifempty\currentinteractionopenaction \else
        \clf_setopendocumentaction{\currentinteractionopenaction}%
      \fi
-     \ifx\currentinteractioncloseaction\empty \else
+     \ifempty\currentinteractioncloseaction \else
        \clf_setclosedocumentaction{\currentinteractioncloseaction}%
      \fi
      \glet\scrn_reference_set_text_actions\relax
@@ -70,10 +70,10 @@
   {\iflocation
      \edef\currentinteractionopenpageaction {\interactionparameter\c!openpageaction }%
      \edef\currentinteractionclosepageaction{\interactionparameter\c!closepageaction}%
-     \ifx\currentinteractionopenpageaction\empty \else
+     \ifempty\currentinteractionopenpageaction \else
        \clf_setopenpageaction{\currentinteractionopenpageaction}%
      \fi
-     \ifx\currentinteractionclosepageaction\empty \else
+     \ifempty\currentinteractionclosepageaction \else
        \clf_setclosepageaction{\currentinteractionclosepageaction}%
      \fi
    \fi}

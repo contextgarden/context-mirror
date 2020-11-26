@@ -198,7 +198,7 @@
 
 \def\font_helpers_preset_math_family_indeed#fam#familytag%
   {\expandafter\let\expandafter\v_font_math_one\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname
-   \ifx\v_font_math_one\relax
+   \ifrelax\v_font_math_one
      \font_helpers_preset_math_family_warning
    \orelse\ifnum\fontid\textfont#fam=\fontid\v_font_math_one\else
      \font_helpers_preset_math_family_indeed_changed#fam#familytag%

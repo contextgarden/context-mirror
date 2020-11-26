@@ -617,7 +617,7 @@
 \protected\def\mult_interfaces_counter_association#1#2#3#4#5#6#7% tag current setup parameter list sync register
   {\strc_counter_preset_using_parameter#3\rootcounterparameter
    \newtoks#5%
-   \permanent\protected\def   #6{\ifx#2\empty\the#5\else\strc_counter_setup_using_parameter#2#4\fi}% sync
+   \permanent\protected\def   #6{\ifempty#2\the#5\else\strc_counter_setup_using_parameter#2#4\fi}% sync
    \permanent\protected\def#7##1{\normalexpanded{#5{\the#5\strc_counter_setup_using_parameter{##1}\noexpand#4}}}} % register
 
 \permanent\protected\def\installcounterassociation#1% => synchronize#1counters register#1counter
@@ -652,7 +652,7 @@
 %    \newtoks#5%
 %    \protected\def#6% sync
 %      {\strc_counter_setup_push
-%       \ifx#2\empty
+%       \ifempty#2%
 %         \the#5%
 %       \else
 %         \let\currentcounter\empty

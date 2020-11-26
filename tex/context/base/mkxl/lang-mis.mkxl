@@ -150,7 +150,7 @@
 
 % hm why ex
 
-\ifx\compoundhyphen\undefined
+\ifdefined\compoundhyphen \else
     \permanent\protected\def\compoundhyphen{\hbox{-\kern-.10775\emwidth-}} % .25\exheight
 \fi
 
@@ -159,9 +159,9 @@
 %D compound characters like |-| or || to be separated from the words. \TEX\ hackers
 %D will recognise the next two macro's:
 
-\ifx\prewordbreak \undefined \permanent\protected\def\prewordbreak    {\penalty\plustenthousand\hskip\zeropoint\relax} \fi
-\ifx\postwordbreak\undefined \permanent\protected\def\postwordbreak   {\penalty\zerocount      \hskip\zeropoint\relax} \fi
-\ifx\hspaceamount \undefined                     \def\hspaceamount#1#2{.16667\emwidth}                                 \fi % will be overloaded
+\ifdefined\prewordbreak \else \permanent\protected\def\prewordbreak    {\penalty\plustenthousand\hskip\zeropoint\relax} \fi
+\ifdefined\postwordbreak\else \permanent\protected\def\postwordbreak   {\penalty\zerocount      \hskip\zeropoint\relax} \fi
+\ifdefined\hspaceamount \else                     \def\hspaceamount#1#2{.16667\emwidth}                                 \fi % will be overloaded
 
 %frozen\protected\def\permithyphenation{\ifhmode\prewordbreak\fi} % doesn't remove spaces
 \permanent\protected\def\permithyphenation{\ifhmode\wordboundary\fi} % doesn't remove spaces

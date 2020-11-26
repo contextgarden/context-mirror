@@ -23,8 +23,8 @@
 
 \unprotect
 
-\ifx\??syncposcounter\undefined \installcorenamespace{syncposcounter} \fi
-\ifx\s!syncpos       \undefined \def\s!syncpos       {syncpos}        \fi
+\ifdefined\??syncposcounter \else \installcorenamespace{syncposcounter} \fi
+\ifdefined\s!syncpos        \else \def\s!syncpos       {syncpos}        \fi
 
 \let\c_sync_n\relax
 

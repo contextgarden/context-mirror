@@ -798,7 +798,7 @@
    \dostarttagged\t!sectionnumber\empty
    \labeltexts
      {\headparameter\currentheadlabeltag}
-     {\ifx\deepstructurenumbercommand\relax
+     {\ifrelax\deepstructurenumbercommand
         \structurenumber
       \else
         \normalexpanded{\noexpand\deepstructurenumbercommand{\structurenumber}}%
@@ -807,7 +807,7 @@
 
 \permanent\protected\def\fullheadtitle
   {\dostarttagged\t!sectiontitle\empty
-   \ifx\deepstructuretitlecommand\relax
+   \ifrelax\deepstructuretitlecommand
      \structuretitle
    \else
      \normalexpanded{\noexpand\deepstructuretitlecommand{\structuretitle}}%

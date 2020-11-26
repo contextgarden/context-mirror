@@ -78,11 +78,11 @@
       \ifdone
         \donefalse
       \else
-        \ifx\currentproject  \empty \else \space\v!project  :\space\currentproject  \space \donetrue \fi
-        \ifx\currentproduct  \empty \else \space\v!product  :\space\currentproduct  \space \donetrue \fi
-        \ifx\currentcomponent\empty \else \space\v!component:\space\currentcomponent\space \donetrue \fi
+        \ifempty\currentproject   \else \space\v!project  :\space\currentproject  \space \donetrue \fi
+        \ifempty\currentproduct   \else \space\v!product  :\space\currentproduct  \space \donetrue \fi
+        \ifempty\currentcomponent \else \space\v!component:\space\currentcomponent\space \donetrue \fi
       \fi
-        \ifdone                     \else \space\v!file     :\space\jobname         \space           \fi
+        \ifdone                   \else \space\v!file     :\space\jobname         \space           \fi
       \hss
       \currentversiontext
       \quad

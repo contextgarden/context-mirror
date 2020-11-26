@@ -1292,7 +1292,7 @@
 % %D the \DIMENSION\ \type{\mathparentwd}. This value is derived from
 % %D the width of \type{\tenrm B}, so let's take care of it now:
 %
-% \ifx\mathparentwd\undefined \newdimen\mathparentwd \fi
+% \ifdefined\mathparentwd \else \newdimen\mathparentwd \fi
 %
 % \let\normalbordermatrix\bordermatrix % move that code to here instead
 %

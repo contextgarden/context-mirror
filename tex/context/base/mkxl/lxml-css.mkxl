@@ -20,7 +20,7 @@
 % No stable interface yet.
 
 %     \edef\CellPadding{\xmlatt{#1}{cellpadding}}
-%     \ifx\CellPadding\empty
+%     \ifempty\CellPadding
 %       \edef\CellPadding{.25ex}
 %     \else
 %       \edef\CellPadding{\cssgetsinglepadding{\xmlatt{#1}{cellpadding}}}

@@ -766,7 +766,7 @@
       \setuppagecolumns[#1]}%
      {\edef\currentpagecolumns{#1}}%
    \edef\p_page{\pagecolumnsparameter\c!page}%
-   \ifx\p_page\empty
+   \ifempty\p_page
      \setfalse\c_page_col_page
    \orelse\ifx\p_page\v!no
      \setfalse\c_page_col_page

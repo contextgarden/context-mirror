@@ -104,7 +104,7 @@
       \edef\p_axis {\mathdelimiterparameter\c!axis}%
       \edef\p_leftoffset{\mathdelimiterparameter\c!leftoffset}%
       \edef\p_rightoffset{\mathdelimiterparameter\c!rightoffset}%
-      \ifx\p_leftoffset\empty\else
+      \ifempty\p_leftoffset\else
         \mskip\p_leftoffset
       \fi
       \Uvextensible
@@ -114,7 +114,7 @@
          depth  \p_factor\dimexpr\mathdelimiterparameter\c!depth \relax
          \Udelimiter\zerocount\zerocount\mathdelimiterparameter\c!symbol
       \relax
-      \ifx\p_rightoffset\empty\else
+      \ifempty\p_rightoffset\else
         \mskip\p_rightoffset
       \fi}}
 

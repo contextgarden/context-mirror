@@ -357,7 +357,7 @@
 \def\math_frac_command_u
   {\clf_umathfraction
      {\mathfractionparameter\c!rule}%
-     \ifx\p_math_fraction_fences\empty
+     \ifempty\p_math_fraction_fences
        \mathfractionparameter\c!left \space
        \mathfractionparameter\c!right\space
      \else

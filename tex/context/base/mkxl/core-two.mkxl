@@ -85,7 +85,7 @@
 \let     \twopassdatalist  \empty
 
 \def\syst_twopass_check % can be delegated to lua once obsolete is gone
-  {\ifx\twopassdata\empty
+  {\ifempty\twopassdata
      \setfalse\twopassdatafound
    \else
      \settrue\twopassdatafound

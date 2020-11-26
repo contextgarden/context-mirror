@@ -563,7 +563,7 @@
 
 \permanent\def\checklinecolumndimension#1#2#3%
   {\global\edef#1\number#3\endcsname
-     {\expandafter\ifx\csname#1\number#3\endcsname\relax
+     {\expandafter\ifrelax\csname#1\number#3\endcsname
         \the#2\b_tabl_lines_cell
       \orelse\ifdim\csname#1\number#3\endcsname<#2\b_tabl_lines_cell
         \the#2\b_tabl_lines_cell
@@ -701,7 +701,7 @@
    \fi}
 
 \permanent\protected\def\tabl_lines_BH
-  {\ifx\EC\relax
+  {\ifrelax\EC
      % signal, grabbing lines
    \else
      \t_tabl_lines_head\emptytoks

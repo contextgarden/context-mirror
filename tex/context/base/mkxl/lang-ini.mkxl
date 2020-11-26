@@ -397,7 +397,7 @@
 % to keep the language set:
 %
 % \protected\def\nohyphens % nicer for url's
-%   {\ifx\dohyphens\relax
+%   {\ifrelax\dohyphens
 %      \protected\edef\dohyphens
 %        {\hyphenminoffset\the\hyphenminoffset\relax
 %         \lang_basics_synchronize_min_max}%

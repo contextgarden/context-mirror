@@ -284,7 +284,7 @@
    \fi}
 
 \def\scrn_transitions_set
-  {\iflocation \ifx\scrn_transitions_list\empty \else
+  {\iflocation \ifempty\scrn_transitions_list \else
      \scrn_transitions_set_indeed
    \fi \fi}
 

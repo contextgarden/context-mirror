@@ -81,15 +81,14 @@
 %D The last object number used is avaliable in the macro
 %D \type {\lastPDFMPobject}.
 
-\ifx\makeMPintoPDFobject   \undefined \newconstant\makeMPintoPDFobject    \fi
-\ifx\everyMPtoPDFconversion\undefined \newtoks    \everyMPtoPDFconversion \fi
+\ifdefined\makeMPintoPDFobject    \else \newconstant\makeMPintoPDFobject    \fi
+\ifdefined\everyMPtoPDFconversion \else \newtoks    \everyMPtoPDFconversion \fi
 
 \let\lastPDFMPobject    \!!zerocount
 \let\currentPDFresources\empty
 \let\setMPextensions    \relax
 
-\def\PDFMPformoffset
-  {\ifx\objectoffset\undefined\zeropoint\else\objectoffset\fi}
+\def\PDFMPformoffset{\ifdefined\objectoffset\objectoffset\else\zeropoint\fi}
 
 \def\resetMPvariables#1#2#3%
   {\glet\MPwidth    \!!zeropoint
@@ -98,8 +97,8 @@
    \glet\MPlly      \!!zerocount
    \glet\MPurx      \!!zerocount
    \glet\MPury      \!!zerocount
-   \xdef\MPxscale   {#2}\ifx\MPxscale\empty\let\MPxscale\!!plusone\fi
-   \xdef\MPyscale   {#3}\ifx\MPyscale\empty\let\MPyscale\!!plusone\fi
+   \xdef\MPxscale   {#2}\ifempty\MPxscale\let\MPxscale\!!plusone\fi
+   \xdef\MPyscale   {#3}\ifempty\MPyscale\let\MPyscale\!!plusone\fi
    \xdef\MPfilename {#1}}
 
 %D The main macro:
@@ -145,7 +144,7 @@
 %D Objects.
 
 \def\dopackageMPgraphic#1% #1 = boxregister
-  {\ifcase\makeMPintoPDFobject\or\or\ifx\currentPDFresources\empty\else
+  {\ifcase\makeMPintoPDFobject\or\or\ifempty\currentPDFresources\else
      % an existing value of 2 signals object support (set elsewhere)
      \makeMPintoPDFobject\plusone
    \fi\fi
@@ -170,7 +169,7 @@
    \fi}
 
 \def\setMPPDFobject#1#2% resources boxnumber
-  {\ifx\everyPDFxform\undefined\else\the\everyPDFxform\fi
+  {\ifdefined\everyPDFxform\the\everyPDFxform\fi
    \immediate\saveboxresource resources{#1}#2%
    \edef\getMPPDFobject{\noexpand\useboxresource\the\lastsavedboxresourceindex}}
 
@@ -181,11 +180,11 @@
 %D    startMPresources,
 %D    stopMPresources}
 
-\ifx\deleteMPgraphic\undefined
+\ifdefined\deleteMPgraphic \else
   \def\deleteMPgraphic#1{}
 \fi
 
-\ifx\startMPresources\undefined
+\ifdefined\startMPresources \else
   \let\startMPresources\relax
   \let\stopMPresources\relax
 \fi

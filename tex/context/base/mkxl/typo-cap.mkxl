@@ -226,7 +226,7 @@
 \aliased\let\font_style_normalword       \word
 
 \appendtoks
-    \ifx\currentcapitals\empty
+    \ifempty\currentcapitals
       \doifelse{\directcapitalsparameter\c!title}\v!yes
         {\definealternativestyle[\v!capital  ][\font_style_normalsmallcapped][\font_style_normalsmallcapped]%
          \definealternativestyle[\v!smallcaps][\setsmallcaps][\setsmallcaps]}

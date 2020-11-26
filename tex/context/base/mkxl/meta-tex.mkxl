@@ -189,7 +189,7 @@
 \permanent\protected\def\svgnormal#1#2#3#4% family weight style text
   {\bgroup
    \edef\p_family{#1}%
-   \ifx\p_family\empty\else
+   \ifempty\p_family\else
       \edef\p_font{\ifcsname\??svgfamily#1\endcsname\lastnamedcs\else#1\fi-#2-#3}%
       \predefinedfont[\s!spec:\p_font*\s!default\space @ 10bp]%
    \fi

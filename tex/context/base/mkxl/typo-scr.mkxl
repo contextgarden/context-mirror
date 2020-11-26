@@ -55,7 +55,7 @@
    \kern\lowparameter\c!distance\relax
    \setbox\scratchbox\runninghbox\bgroup
      \lower\lowparameter\c!down\hbox\bgroup
-       \ifx\fontsize\empty
+       \ifempty\fontsize
          \ifmmode
            \mr % no color yet
          \else
@@ -81,7 +81,7 @@
    \kern\highparameter\c!distance\relax
    \setbox\scratchbox\runninghbox\bgroup
      \raise\highparameter\c!up\hbox\bgroup
-       \ifx\fontsize\empty
+       \ifempty\fontsize
          \ifmmode
            \mr % no color yet
          \else
@@ -166,7 +166,7 @@
   {\kern\scratchdimen
    \setbox\scratchbox\hpack\bgroup
      #1\lowhighparameter#2\hbox\bgroup
-       \ifx\fontsize\empty
+       \ifempty\fontsize
          \ifmmode
            \mr % no color yet
          \else

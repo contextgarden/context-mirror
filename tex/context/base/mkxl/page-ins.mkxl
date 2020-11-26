@@ -44,7 +44,7 @@
    \clf_setinsertmigration{\p_anchoring}}
 
 \appendtoks
-    \ifx\currentinsertionparent\empty
+    \ifempty\currentinsertionparent
         \page_inserts_check_anchoring
     \fi
 \to \everysetupinsertion
@@ -81,7 +81,7 @@
 % \floatingpenalty\zerocount
 
 \appendtoks
-    \ifx\currentinsertionparent\empty \else
+    \ifempty\currentinsertionparent \else
         \page_inserts_synchronize_registers
     \fi
 \to \everysetupinsertion
@@ -125,7 +125,7 @@
 % we already know the number.
 
 \appendtoks
-    \ifx\currentinsertionparent\empty
+    \ifempty\currentinsertionparent
         \ifcsname\??insertionnumber\currentinsertion\endcsname
           % bad news
         \else
@@ -151,7 +151,7 @@
 \to \everydefineinsertion
 
 \appendtoks
-    \ifx\currentinsertionparent\empty \else
+    \ifempty\currentinsertionparent \else
         \clf_setupinsertion
           {\currentinsertion}
           {%

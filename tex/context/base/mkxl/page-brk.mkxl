@@ -107,13 +107,13 @@
 
 \permanent\protected\def\usepageparameter#1%
   {\edef\m_page_breaks_asked{#1\c!page}%
-   \ifx\m_page_breaks_asked\empty\else
+   \ifempty\m_page_breaks_asked\else
      \pagebreak[\m_page_breaks_asked]%
    \fi}
 
 \permanent\protected\def\dousepageparameter#1%
   {\edef\m_page_breaks_asked{#1}%
-   \ifx\m_spac_align_asked\empty\else
+   \ifempty\m_spac_align_asked\else
      \pagebreak[\m_page_breaks_asked]%
    \fi}
 

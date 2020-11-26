@@ -115,7 +115,7 @@
    \ifzeropt\scratchskip \else
      \let\buff_verbatim_set_line_margin\buff_verbatim_set_line_margin_indeed
    \fi
-   \ifx\buff_verbatim_set_line_margin\relax
+   \ifrelax\buff_verbatim_set_line_margin
      \doadaptleftskip{\typingparameter\c!margin}%
    \fi
    \edef\p_buff_option{\typingparameter\c!option}%
@@ -377,7 +377,7 @@
 \permanent\protected\def\explicitcontrolspace  {\optionalcontrolspace\allowbreak} % uses asciispace
 
 \appendtoks
-    \enforced\protected\def\obeyedspace{\hskip\zeropoint\asciispacechar\hskip\zeropoint}%
+    \enforced\protected\def\obeyedspace{\hskip\zeropoint\relax\asciispacechar\hskip\zeropoint\relax}%
 \to \everyenableelements
 
 \permanent\protected\def\obeyhyphens

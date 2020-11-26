@@ -364,10 +364,6 @@
 \permanent\protected\def\hboxreference[#1]{\boxreference[#1]\hbox}
 \permanent\protected\def\vboxreference[#1]{\boxreference[#1]\vbox}
 
-% \ifx\currentdestinationattribute\empty
-%   \begingroup\c_attr_destination\currentdestinationattribute\emptyhbox\endgroup % todo
-% \fi
-
 \def\defaultreferencepage#text{[[[#text]]]}
 \def\defaultreferencetext#text{[[[#text]]]}
 

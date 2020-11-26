@@ -176,7 +176,7 @@
 \def\page_shipouts_normal#1%
   {\global\advance\shippedoutpages\plusone
    % this is not resource safe!
-   \ifx\pagestoshipout\empty
+   \ifempty\pagestoshipout
      \ifcase\whichpagetoshipout\relax
        \donetrue
      \or % 1
@@ -1357,14 +1357,14 @@
 
 \def\page_boxes_filter_shift#1#2#3% #1=\dimenx #2=\xpageshifts #3=\nofxpageshifts
   {#1\zeropoint
-   \ifx#2\empty \else
+   \ifempty#2\else
      \global\advance#3\plusone
      \getfromcommacommand[#2][#3]%
-     \ifx\commalistelement\empty
+     \ifempty\commalistelement
        \global#3\plusone % we cycle
        \getfromcommacommand[#2][#3]%
      \fi
-     \ifx\commalistelement\empty \else
+     \ifempty\commalistelement \else
        #1\commalistelement\relax % the relax is really needed as there is an \if later on
      \fi
    \fi}

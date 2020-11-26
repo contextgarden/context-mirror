@@ -428,7 +428,7 @@
    \usealignparameter\multicolumnsparameter
    %
    \edef\p_blank{\multicolumnsparameter\c!blank}%
-   \ifx\p_blank\empty \else
+   \ifempty\p_blank \else
        \setupblank[\p_blank]%
    \fi
    %

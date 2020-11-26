@@ -429,11 +429,11 @@
      \d_free_offset_top
      \d_free_offset_bottom}
 
-\ifx\strc_floats_mark_pag_as_free\relax \else
+\ifrelax\strc_floats_mark_pag_as_free \else
     \writestatus{error}{wrong place for pag_as_free}\wait
 \fi
 
-\ifx\strc_floats_mark_par_as_free\relax \else
+\ifrelax\strc_floats_mark_par_as_free \else
     \writestatus{error}{wrong place for par_as_free}\wait
 \fi
 
@@ -650,7 +650,7 @@
    \c!background=,
    \c!alternative=1]
 
-\ifx\basegrid\undefined \else
+\ifdefined\basegrid
     \aliased\letcsname\v!grid\endcsname\basegrid
 \fi
 

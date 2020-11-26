@@ -828,7 +828,7 @@
      \page_layouts_check_default_indeed\v_real_page_current
    \orelse\ifcsname\namedlayouthash\v_real_page_odd_or_even\c!state\endcsname
      \page_layouts_check_default_indeed\v_real_page_odd_or_even
-   \orelse\ifx\v_page_layouts_pre_check\relax
+   \orelse\ifrelax\v_page_layouts_pre_check
      % okay
    \else
      \page_layouts_check_revert
@@ -1068,7 +1068,7 @@
    \page_adapts_check}
 
 \def\page_adapts_status_info % used elsewhere
-  {\ifx\page_adepts_pop\relax \else
+  {\ifrelax\page_adepts_pop \else
      \space(adept: \the\d_page_adepts_height)\space
    \fi
    \the\realpageno}
@@ -1088,7 +1088,7 @@
 
 % NOG EENS NAGAAN WANNEER NU GLOBAL EN WANNEER NIET
 
-\ifx\doifelselayoutsomeline\undefined % eventually defined in page-txt
+\ifdefined\doifelselayoutsomeline \else % eventually defined in page-txt
     \let\doifelselayoutsomeline\secondofthreearguments
 \fi
 

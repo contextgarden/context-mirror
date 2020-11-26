@@ -12,7 +12,8 @@
 %C details.
 
 %D This is really obsolete in \LMTX. For now I keep it but it will either go
-%D away. The code is not upgraded, we only deal with macro protection.
+%D away. The code is not upgraded, we only deal with macro protection. I will
+%D only update the bits that annoy me in grepping for possible optimizations.
 
 \writestatus{loading}{ConTeXt Bibliography Support / Experimental BibTeX}
 
@@ -447,7 +448,7 @@
 \def\doloadbibtexpublicationalternative
   {\ifproductionrun
      \edef\bibtexpublicationsalternative{\@@pbalternative}% parent
-     \ifx\bibtexpublicationsalternative\empty \else
+     \ifempty\bibtexpublicationsalternative \else
        \processcommacommand[\bibtexpublicationsalternative]\dodoloadbibtexpublicationalternative
        \let\@@pbalternative\empty
      \fi
@@ -528,7 +529,7 @@
    \let\currentlist\currentbibtexsession
    \setuplist[\currentbibtexsession][\c!criterium=\v!previous,#2]
    \edef\currentbibtexsessiontitle{\namedlistparameter\currentbibtexsession\c!title}%
-   \ifx\currentbibtexsessiontitle\empty
+   \ifempty\currentbibtexsessiontitle
      \normalexpanded{\startnamedsection[\v!chapter][\c!reference=\currentbibtexsession,\c!title={\headtext{\currentbibtexsession}}]}%
    \else
      \normalexpanded{\startnamedsection[\v!chapter][\c!reference=\currentbibtexsession,\c!title={\currentbibtexsessiontitle}]}%
@@ -638,7 +639,7 @@
 
 \protected\def\typesetbibtexpublication#1%
   {\edef\currentbibtexsessiontag{#1}%
-   \ifx\currentbibtexsessiontag\empty
+   \ifempty\currentbibtexsessiontag
      % can't really happen
    \orelse\ifx\currentbibtexcriterium\v!all
      \dotypesetbibtexpublication % was \doplacepublicationindeed
@@ -706,10 +707,10 @@
    \doifelseassignment{#1}
      {\getparameters[\??pb\??pb][\c!alternative=,\c!extras=,#1]%
       \edef\currentbibtexvariant{\@@pb@@pbalternative}%
-      \ifx\currentbibtexvariant\empty
+      \ifempty\currentbibtexvariant
         \edef\currentbibtexvariant{\bibtexpublicationparameter\c!refcommand}%
       \fi
-      \ifx\@@pb@@pbextras\empty
+      \ifempty\@@pb@@pbextras
         \setupcite[\currentbibtexvariant][#1]%
       \else
         \edef\@@pb@@pbextras{{\@@pb@@pbextras\ifdefined\@@pb@@pbright\@@pb@@pbright\else\bibtexpublicationparameter\c!right\fi}}%

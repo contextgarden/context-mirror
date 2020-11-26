@@ -399,9 +399,9 @@
 %D local (sometimes in the textflow) size. We store these dimensions in two
 %D \DIMENSION\ registers. These registers are not to be misused in calculations.
 
-\ifdefined\globalbodyfontsize\else \newdimen\globalbodyfontsize \fi \globalbodyfontsize=12pt
-\ifdefined\localbodyfontsize \else \newdimen\localbodyfontsize  \fi \localbodyfontsize =\globalbodyfontsize
-\ifdefined\bodyfontsize      \else \newdimen\bodyfontsize       \fi \bodyfontsize      =\globalbodyfontsize
+\ifdefined\globalbodyfontsize \else \newdimen\globalbodyfontsize \fi \globalbodyfontsize=12pt
+\ifdefined\localbodyfontsize  \else \newdimen\localbodyfontsize  \fi \localbodyfontsize =\globalbodyfontsize
+\ifdefined\bodyfontsize       \else \newdimen\bodyfontsize       \fi \bodyfontsize      =\globalbodyfontsize
 
 %D When we assign for instance 12pt to a \DIMENSION\ register the \type {\the}'d
 %D value comes out as 12.0pt, which is often not the way users specify the bodyfont
@@ -412,7 +412,7 @@
 
 \permanent\protected\def\normalizebodyfontsize#macro#body%
   {\expandafter\let\expandafter#macro\csname\??fontnormalizedbody\number\dimexpr#body\endcsname
-   \ifx#macro\relax
+   \ifrelax#macro%
       \normalizebodyfontsize_indeed#macro{#body}%
    \fi}
 
@@ -2099,7 +2099,7 @@
   {\bodyfontsize#size\relax
    \normalizebodyfontsize\normalizedbodyfontsize\bodyfontsize
    \expandafter\let\expandafter\font_basics_set_faces\csname\??fontbodyfaces\fontbody\endcsname
-   \ifx\font_basics_set_faces\relax
+   \ifrelax\font_basics_set_faces
      \font_basics_set_faces_preset
    \fi
    \font_basics_set_faces}
@@ -2155,8 +2155,8 @@
 %D Both macros look alike. The second one also has to take all kind of keywords into
 %D account.
 
-\ifx\saveinterlinespace   \undefined \let\saveinterlinespace   \relax \fi
-\ifx\restoreinterlinespace\undefined \let\restoreinterlinespace\relax \fi
+\ifdefined\saveinterlinespace    \else \let\saveinterlinespace   \relax \fi
+\ifdefined\restoreinterlinespace \else \let\restoreinterlinespace\relax \fi
 
 % \newtoks \everysetupbodyfont
 % \newtoks \everyswitchtobodyfont

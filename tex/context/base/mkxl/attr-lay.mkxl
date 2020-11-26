@@ -80,7 +80,7 @@
 
 \permanent\def\attr_layoutcomponent_set#1% make this faster
   {\expandafter\let\expandafter\layoutcomponentboxattribute\csname\??layoutcomponentattribute#1\endcsname
-   \ifx\layoutcomponentboxattribute\relax
+   \ifrelax\layoutcomponentboxattribute
      \attr_layoutcomponent_initialize{#1}% get rid of { }
    \fi}
 

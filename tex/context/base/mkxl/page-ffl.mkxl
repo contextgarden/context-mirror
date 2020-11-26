@@ -77,7 +77,7 @@
    \c!page=\v!left]
 
 \appendtoks
-    \ifx\currentfacingfloatparent\empty
+    \ifempty\currentfacingfloatparent
         \normalexpanded{\definefacingfloat[\currentfacingfloat:\v!left ][\currentfacingfloat]}%
         \normalexpanded{\definefacingfloat[\currentfacingfloat:\v!right][\currentfacingfloat]}%
     \fi
@@ -180,7 +180,7 @@
   {\begingroup
    % todo: \usepageparameter
 %    \edef\p_page{\facingfloatparameter\c!page}%
-%    \ifx\p_page\empty\else
+%    \ifempty\p_page\else
 %      \page[\p_page]%
 %    \fi
    %
@@ -205,7 +205,7 @@
 
 \protected\def\strc_floats_facing_wrap_up
   {\edef\p_spaceinbetween{\facingfloatparameter\c!spaceinbetween}%
-   \ifx\p_spaceinbetween\empty
+   \ifempty\p_spaceinbetween
      \scratchdimen\zeropoint
    \else
      \setbox\scratchbox\vbox{\directvspacing\p_spaceinbetween}%
