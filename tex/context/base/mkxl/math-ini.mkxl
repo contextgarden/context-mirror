@@ -409,18 +409,18 @@
 % todo: only in mmode
 % these commands are semi-public but should not be used directly (lua names wil change)
 
-\protected\def\math_set_attribute   #1#2{\ifmmode\clf_setmathattribute{#1}{#2}\fi}
-\protected\def\math_set_alphabet      #1{\ifmmode\clf_setmathalphabet{#1}\fi}
-\protected\def\math_set_font_style    #1{\ifmmode\clf_setmathstyle{#1}\fi}
-\protected\def\math_set_font_alternate#1{\ifmmode\clf_setmathalternate\defaultmathfamily{#1}\fi}
+\permanent\protected\def\setmathattribute  #1#2{\ifmmode\clf_setmathattribute{#1}{#2}\fi}
+\permanent\protected\def\setmathalphabet     #1{\ifmmode\clf_setmathalphabet{#1}\fi}
+\permanent\protected\def\setmathfontstyle    #1{\ifmmode\clf_setmathstyle{#1}\fi}
+\permanent\protected\def\setmathfontalternate#1{\ifmmode\clf_setmathalternate\defaultmathfamily{#1}\fi}
 
 \installcorenamespace{mathstylealternative} % might become a setuphandler
 
-\protected\def\math_set_font_style_alternate#1%
+\permanent\protected\def\setmathfontstylealternate#1%
   {\ifcsname\??mathstylealternative\fontclass:#1\endcsname
-     \expandafter\math_set_font_alternate\lastnamedcs
+     \expandafter\setmathfontalternate\lastnamedcs
    \orelse\ifcsname\??mathstylealternative#1\endcsname
-     \expandafter\math_set_font_alternate\lastnamedcs
+     \expandafter\setmathfontalternate\lastnamedcs
    \fi}
 
 \permanent\tolerant\protected\def\setupmathrendering[#1]#*[#2]% the name might change
@@ -457,10 +457,10 @@
     \enforced\let\dotlessj\dotlessj
 \popoverloadmode
 
-\permanent\protected\def\mathaltcalligraphic{\math_set_font_alternate{calligraphic}\cal}          % set via goody file
-\permanent\protected\def\mathaltitalic      {\math_set_font_alternate{italic}}                    % set via goody file
-\permanent\protected\def\mathslashedzero    {\begingroup\math_set_font_alternate{zero}∅\endgroup} % set via goody file or automatic
-\permanent\protected\def\mathdotless        {\math_set_font_alternate{dotless}}                   % set via goody file or automatic
+\permanent\protected\def\mathaltcalligraphic{\setmathfontalternate{calligraphic}\cal}          % set via goody file
+\permanent\protected\def\mathaltitalic      {\setmathfontalternate{italic}}                    % set via goody file
+\permanent\protected\def\mathslashedzero    {\begingroup\setmathfontalternate{zero}∅\endgroup} % set via goody file or automatic
+\permanent\protected\def\mathdotless        {\setmathfontalternate{dotless}}                   % set via goody file or automatic
 \permanent\protected\def\mathdotlessi       {\begingroup\mathdotless i\endgroup}
 \permanent\protected\def\mathdotlessj       {\begingroup\mathdotless j\endgroup}
 
@@ -477,35 +477,29 @@
     \enforced\let\dotlessj\autodotlessj
 \to \everymathematics
 
-\let\setmathattribute           \math_set_attribute
-\let\setmathalphabet            \math_set_alphabet
-\let\setmathfontstyle           \math_set_font_style
-\let\setmathfontalternate       \math_set_font_alternate
-\let\setmathfontalternative     \math_set_font_alternate
-\let\setmathfontstylealternate  \math_set_font_style_alternate
-\let\setmathfontstylealternative\math_set_font_style_alternate
+\aliased\let\setmathfontalternative     \setmathfontalternate
+\aliased\let\setmathfontstylealternative\setmathfontstylealternate
+\aliased\let\mathalternate              \setmathfontalternate
 
-\let\mathalternate              \math_set_font_alternate
+\permanent\protected\def\mathupright   {\setmathattribute\s!regular\s!tf\setmathfontstylealternate\s!tf}
+\permanent\protected\def\mathitalic    {\setmathattribute\s!regular\s!it\setmathfontstylealternate\s!it}
+\permanent\protected\def\mathscript    {\setmathalphabet \s!script      \setmathfontstylealternate\s!script}
+\permanent\protected\def\mathfraktur   {\setmathalphabet \s!fraktur     \setmathfontstylealternate\s!fraktur}
+\permanent\protected\def\mathblackboard{\setmathalphabet \s!blackboard  \setmathfontstylealternate\s!blackboard}
 
-\permanent\protected\def\mathupright   {\math_set_attribute\s!regular\s!tf\math_set_font_style_alternate\s!tf}
-\permanent\protected\def\mathitalic    {\math_set_attribute\s!regular\s!it\math_set_font_style_alternate\s!it}
-\permanent\protected\def\mathscript    {\math_set_alphabet \s!script      \math_set_font_style_alternate\s!script}
-\permanent\protected\def\mathfraktur   {\math_set_alphabet \s!fraktur     \math_set_font_style_alternate\s!fraktur}
-\permanent\protected\def\mathblackboard{\math_set_alphabet \s!blackboard  \math_set_font_style_alternate\s!blackboard}
+\permanent\protected\def\mathrm        {\setmathattribute\s!rm\s!tf     \setmathfontstylealternate\s!tf}
+\permanent\protected\def\mathss        {\setmathattribute\s!ss\s!tf     \setmathfontstylealternate\s!tf}
+\permanent\protected\def\mathtt        {\setmathattribute\s!tt\s!tf     \setmathfontstylealternate\s!tf}
 
-\permanent\protected\def\mathrm        {\math_set_attribute\s!rm\s!tf     \math_set_font_style_alternate\s!tf}
-\permanent\protected\def\mathss        {\math_set_attribute\s!ss\s!tf     \math_set_font_style_alternate\s!tf}
-\permanent\protected\def\mathtt        {\math_set_attribute\s!tt\s!tf     \math_set_font_style_alternate\s!tf}
+\permanent\protected\def\mathtf        {\setmathfontstyle\s!tf         \setmathfontstylealternate\s!tf}
+\permanent\protected\def\mathsl        {\setmathfontstyle\s!it         \setmathfontstylealternate\s!it} % no sl
+\permanent\protected\def\mathit        {\setmathfontstyle\s!it         \setmathfontstylealternate\s!it}
 
-\permanent\protected\def\mathtf        {\math_set_font_style\s!tf         \math_set_font_style_alternate\s!tf}
-\permanent\protected\def\mathsl        {\math_set_font_style\s!it         \math_set_font_style_alternate\s!it} % no sl
-\permanent\protected\def\mathit        {\math_set_font_style\s!it         \math_set_font_style_alternate\s!it}
+\permanent\protected\def\mathbf        {\setmathfontstyle\s!bf         \setmathfontstylealternate\s!bf}
+\permanent\protected\def\mathbs        {\setmathfontstyle\s!bi         \setmathfontstylealternate\s!bi} % no sl
+\permanent\protected\def\mathbi        {\setmathfontstyle\s!bi         \setmathfontstylealternate\s!bi}
 
-\permanent\protected\def\mathbf        {\math_set_font_style\s!bf         \math_set_font_style_alternate\s!bf}
-\permanent\protected\def\mathbs        {\math_set_font_style\s!bi         \math_set_font_style_alternate\s!bi} % no sl
-\permanent\protected\def\mathbi        {\math_set_font_style\s!bi         \math_set_font_style_alternate\s!bi}
-
-\let\mathdefault\mathitalic
+\aliased\let\mathdefault\mathitalic
 
 \appendtoks
     \edef\p_default{\mathematicsparameter\c!default}%

@@ -16,7 +16,10 @@ storage.register("catcodes/names",   catcodes.names,   "catcodes.names")
 local numbers = catcodes.numbers
 local names   = catcodes.names
 
--- this only happens at initime
+-- We register the catcode tables in the \type {tex} namespace as we have been doing
+-- right from the start (when there wasn't much in that namespace). Normally
+-- registration of a table only happens when we're in so called ini mode. Also, the
+-- number of tables is rather small.
 
 function catcodes.register(name,number)
     numbers[name] = number
@@ -29,13 +32,13 @@ function catcodes.register(name,number)
     tex[name] = number -- downward compatible
 end
 
--- this only happens at runtime
+-- At runtime we need to populate the \type {tex} namespace again.
 
 for name, number in next, numbers do
     tex[name] = number -- downward compatible
 end
 
--- nasty
+-- We catch wrong usage.
 
 table.setmetatableindex(numbers,function(t,k) if type(k) == "number" then t[k] = k return k end end)
 table.setmetatableindex(names,  function(t,k) if type(k) == "string" then t[k] = k return k end end)

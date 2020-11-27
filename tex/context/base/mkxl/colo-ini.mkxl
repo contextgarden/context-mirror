@@ -61,10 +61,10 @@
 
 \let\m_colo_weight_gray\v!yes
 
-\let\currentcolormodel \empty
-\let\currentcolorname  \empty
-\let\currentcolorpalet \empty
-\let\currentcolorprefix\empty % \currentcolorpalet:
+\mutable\let\currentcolormodel \empty
+\mutable\let\currentcolorname  \empty
+\mutable\let\currentcolorpalet \empty
+\mutable\let\currentcolorprefix\empty % \currentcolorpalet:
 
 %D \macros
 %D   {definecolor,defineglobalcolor,definenamedcolor,definespotcolor,definemultitonecolor,

@@ -308,7 +308,7 @@
 \def\page_breaks_columns_handle_direct#1%
   {\begincsname\??columnbreakmethod\currentoutputroutine:#1\endcsname}
 
-\protected\def\installcolumnbreakmethod#1#2#3% #1=otr-id #2=tag #3=action
+\permanent\protected\def\installcolumnbreakmethod#1#2#3% #1=otr-id #2=tag #3=action
   {\setvalue{\??columnbreakmethod#1:#2}{#3}}
 
 \aliased\let\installcolumnbreakhandler\installcolumnbreakmethod % will go

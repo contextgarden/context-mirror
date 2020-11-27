@@ -648,33 +648,31 @@
 \newdimen\openstrutheight
 \newdimen\openstrutdepth
 \newdimen\topskipgap
+
+\newdimen\strutheight
+\newdimen\strutdepth
 \newdimen\struttotal
-
-\def\strutheightfactor      {.72}
-\def\strutdepthfactor       {.28}
-
-\def\baselinefactor         {2.8}
+\newdimen\strutwidth
 
 \let\m_spac_vertical_baseline_stretch_factor \zerocount
 \let\m_spac_vertical_baseline_shrink_factor  \zerocount
 
-\def\minimumstrutheight     {\zeropoint}
-\def\minimumstrutdepth      {\zeropoint}
+\mutable\def\strutheightfactor   {.72}
+\mutable\def\strutdepthfactor    {.28}
+\mutable\def\baselinefactor      {2.8}
+\mutable\def\topskipfactor       {1.0}
+\mutable\def\maxdepthfactor      {0.5}
 
-\def\normallineheight       {\baselinefactor\exheight}
-\def\minimumlinedistance    {\lineskip}
+\mutable\def\minimumstrutheight  {\zeropoint}
+\mutable\def\minimumstrutdepth   {\zeropoint}
 
-\def\strutheight            {\zeropoint}
-\def\strutdepth             {\zeropoint}
-\def\strutwidth             {\zeropoint}
+\mutable\def\normallineheight    {\baselinefactor\exheight}
+\mutable\def\minimumlinedistance {\lineskip}
 
-\let\spacingfactor          \plusone
+\mutable\let\spacingfactor        \plusone
 
-\def\topskipfactor          {1.0}
-\def\maxdepthfactor         {0.5}
-
-\def\systemtopskipfactor    {\topskipfactor}
-\def\systemmaxdepthfactor   {\maxdepthfactor}
+\mutable\def\systemtopskipfactor {\topskipfactor}
+\mutable\def\systemmaxdepthfactor{\maxdepthfactor}
 
 \ifdefined\globalbodyfontsize \else
     \newdimen\globalbodyfontsize
@@ -768,7 +766,7 @@
   {\ifgridsnapping
      \let\spacingfactor\plusone
    \else
-     \edef\spacingfactor{#1}%
+     \permanent\edef\spacingfactor{#1}%
    \fi
    \edef\systemtopskipfactor {\thewithoutunit\dimexpr#1\dimexpr\topskipfactor \points}%
    \edef\systemmaxdepthfactor{\thewithoutunit\dimexpr#1\dimexpr\maxdepthfactor\points}%
@@ -927,8 +925,8 @@
    \else
      \struttotal\dimexpr\strutht+\strutdp\relax
    \fi
-   \edef\strutheight{\the\strutht}%
-   \edef\strutdepth {\the\strutdp}%
+   \strutheight\strutht
+   \strutdepth \strutdp
    \ifdim\strutwidth=\zeropoint
       \spac_struts_set_hide
    \else
@@ -1103,7 +1101,7 @@
    \settestcrlf}
 
 \permanent\protected\def\setteststrut
-  {\def\strutwidth{.8pt}%
+  {\strutwidth.8\onepoint
    \setstrut}
 
 \permanent\protected\def\dontshowstruts
@@ -1111,10 +1109,10 @@
    \settestcrlf}
 
 \permanent\protected\def\unsetteststrut
-  {\let\strutwidth\zeropoint
+  {\strutwidth\zeropoint
    \setstrut}
 
-\def\autostrutfactor{1.1}
+\mutable\def\autostrutfactor{1.1}
 
 \permanent\protected\def\setautostrut
   {\begingroup
@@ -1240,7 +1238,7 @@
 \let\pseudoendstrut\removeunwantedspaces
 
 \permanent\protected\def\resetteststrut
-  {\def\strutwidth{\zeropoint}% no let
+  {\strutwidth\zeropoint
    \setstrut}
 
 \ifdefined\setfontparameters \else
@@ -1260,7 +1258,7 @@
 
 %D Handy:
 
-\def\baselinedistance{\the\lineheight}
+\permanent\def\baselinedistance{\the\lineheight}
 
 %D We need \type {\normaloffinterlineskip} because the new definition contains an
 %D assignment, and |<|don't ask me why|>| this assignment gives troubles in for
@@ -1273,7 +1271,7 @@
    \lineskip     \zeropoint
    \lineskiplimit\maxdimen
    % We also need this here now; thanks to taco for figuring that out!
-   \def\minimumlinedistance{\zeropoint}}
+   \let\minimumlinedistance\zeropoint}
 
 \overloaded\permanent\protected\def\nointerlineskip
   {\prevdepth-\thousandpoint}
@@ -1302,10 +1300,6 @@
   {\aftergroup\page_otr_synchronize_page_indeed
    \global\enforced\let\page_otr_synchronize_page\relax}
 
-% \protected\def\page_otr_synchronize_page_indeed
-%   {\clf_synchronizepage
-%    \glet\page_otr_synchronize_page\page_otr_synchronize_page_yes}
-%
 % This has to become an otr method: \s!page_otr_command_synchonize_page
 
 \protected\def\page_otr_synchronize_page_indeed
@@ -2445,6 +2439,6 @@
 % test \par
 % test \par
 
-\protected\def\ignoreparskip{\c_spac_vspacing_ignore_parskip\plusone}
+\permanent\protected\def\ignoreparskip{\c_spac_vspacing_ignore_parskip\plusone}
 
 \protect \endinput

@@ -103,9 +103,29 @@
 \installcorenamespace{constructionlevel} % frozen after definition
 \installcorenamespace{constructionclass} % frozen after definition
 
-\let\currentconstructionmain   \empty
-\let\currentconstructionlevel  \empty
-\let\currentconstructionhandler\empty
+%aliased\let\currentconstructionhash           \??construction
+
+\mutable\let\currentconstructionmain           \empty
+\mutable\let\currentconstructionlevel          \empty
+\mutable\let\currentconstructionhandler        \empty
+
+\mutable\let\currentconstructionattribute      \empty
+\mutable\let\currentconstructionbookmark       \empty
+\mutable\let\currentconstructioncatcodes       \empty
+\mutable\let\currentconstructioncoding         \empty
+\mutable\let\currentconstructionexpansion      \empty
+\mutable\let\currentconstructionincrementnumber\empty
+\mutable\let\currentconstructionlabel          \empty
+\mutable\let\currentconstructionlist           \empty
+\mutable\let\currentconstructionlistentry      \empty
+\mutable\let\currentconstructionlistnumber     \empty
+\mutable\let\currentconstructionmarking        \empty
+\mutable\let\currentconstructionnumber         \empty
+\mutable\let\currentconstructionreference      \empty
+\mutable\let\currentconstructionreferenceprefix\empty
+\mutable\let\currentconstructionsynchronize    \empty
+\mutable\let\currentconstructiontitle          \empty
+\mutable\let\currentconstructionxmlsetup       \empty
 
 \settrue\c_strc_constructions_define_commands % use with care, might become a proper key
 
@@ -307,8 +327,6 @@
    \constructionsheadwidth   \zeropoint
    % we also need to make sure that no stretch creeps in (new per 2015-02-02, for Alan)
    \settrue\c_strc_constructions_distance_none}
-
-\overloaded\let\currentconstructionhash\??construction
 
 \protected\setvalue{\??constructionstarthandler\v!construction}% this will be redone (reorganized) .. too much boxing
   {\dostarttaggedchained\t!construction\currentconstruction\currentconstructionhash

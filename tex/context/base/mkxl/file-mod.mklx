@@ -31,9 +31,9 @@
 
 \installcorenamespace{module}
 
-\let\currentmodule          \s!unknown
-\let\currentmodulecategory  \empty
-\let\currentmoduleparameters\empty
+\mutable\let\currentmodule          \s!unknown
+\mutable\let\currentmodulecategory  \empty
+\mutable\let\currentmoduleparameters\empty
 
 \installmacrostack\currentmodule
 \installmacrostack\currentmodulecategory

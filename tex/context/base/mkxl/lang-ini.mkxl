@@ -552,9 +552,9 @@
     \permanent\protected\def\language
       {\doifelsenextoptionalcs\lang_basics_set_current\normallanguage}
 
-    \let\setlanguage\language % we make these synonyms
+    \aliased\let\setlanguage\language % we make these synonyms
 
-    \let\patterns\gobbleoneargument
+    \aliased\let\patterns\gobbleoneargument
 
 \popoverloadmode
 

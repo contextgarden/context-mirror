@@ -35,6 +35,10 @@
 \newdimen\canvasbleedoffset
 \newdimen\canvasartoffset
 
+\mutable\let\currentinteractionscreendelay \empty
+\mutable\let\currentinteractionscreenheight\empty
+\mutable\let\currentinteractionscreenwidth \empty
+
 \newconditional\c_scrn_canvas_tight_page
 
 \def\scrn_canvas_calculate

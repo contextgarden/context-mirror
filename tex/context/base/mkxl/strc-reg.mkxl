@@ -122,6 +122,30 @@
 %D test \index{test+one} test \index{test+two} more \index{more}
 %D \stoptyping
 
+\mutable\let\currentregistercharacter   \empty
+\mutable\let\currentregistercoding      \empty
+\mutable\let\currentregisterentries     \empty
+\mutable\let\currentregisterentriesa    \empty
+\mutable\let\currentregisterentriesb    \empty
+\mutable\let\currentregisterentriesc    \empty
+\mutable\let\currentregisterexpansion   \empty
+\mutable\let\currentregisterkeys        \empty
+\mutable\let\currentregisterkeysa       \empty
+\mutable\let\currentregisterkeysb       \empty
+\mutable\let\currentregisterkeysc       \empty
+\mutable\let\currentregisterlabel       \empty
+\mutable\let\currentregistermaxwidth    \empty
+\mutable\let\currentregistername        \empty
+\mutable\let\currentregisternumber      \empty
+\mutable\let\currentregisterownnumber   \empty
+\mutable\let\currentregisterpageindex   \empty
+\mutable\let\currentregisterpagesymbol  \empty
+\mutable\let\currentregistersectionindex\empty
+\mutable\let\currentregisterseeindex    \empty
+\mutable\let\currentregisterseeword     \empty
+\mutable\let\currentregistersynchronize \empty
+\mutable\let\currentregisterxmlsetup    \empty
+
 \newconditional\c_strc_registers_defining
 \setnewconstant\c_strc_registers_maxlevel \plusfive
 

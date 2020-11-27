@@ -453,7 +453,7 @@
 \to \everyoverlay
 
 \permanent\tolerant\protected\def\defineoverlay[#1]#*[#2]% wil be overloaded
-  {\def\pack_framed_define_overlay_indeed##1{\setvalue{\??overlay##1}{\executedefinedoverlay{##1}{#2}}}%
+  {\def\pack_framed_define_overlay_indeed##1{\defcsname\??overlay##1\endcsname{\executedefinedoverlay{##1}{#2}}}%
    \processcommalist[#1]\pack_framed_define_overlay_indeed}
 
 \permanent\protected\def\executedefinedoverlay#1#2% we can share the definitions
@@ -1595,9 +1595,9 @@
    \dp\scratchbox\dp\b_framed_normal
    \setbox\b_framed_normal\box\scratchbox}
 
-\def\installframedlocator#1#2#3%
-  {\setvalue{\??framedlocatorbefore#1}{#2}%
-   \setvalue{\??framedlocatorafter #1}{#3}}
+\permanent\protected\def\installframedlocator#1#2#3%
+  {\defcsname\??framedlocatorbefore#1\endcsname{#2}%
+   \defcsname\??framedlocatorafter #1\endcsname{#3}}
 
 \def\pack_framed_locator_before#1{\begincsname\??framedlocatorbefore#1\endcsname}
 \def\pack_framed_locator_after #1{\begincsname\??framedlocatorafter #1\endcsname}

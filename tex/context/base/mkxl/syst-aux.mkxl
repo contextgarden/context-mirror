@@ -2829,7 +2829,7 @@
 %D
 %D A fully expandable message:
 
-\let\immediatemessage\clf_immediatemessage % {} mandate / todo permanent at lua end
+\aliased\let\immediatemessage\clf_immediatemessage % {} mandate / todo permanent at lua end
 
 %D \macros
 %D   {rawgetparameters}
@@ -5737,10 +5737,10 @@
 \permanent\protected\def\settrialtypesetting  {\the\everysettrialtypesetting  } % obeys grouping so
 \permanent\protected\def\resettrialtypesetting{\the\everyresettrialtypesetting} % this one is seldom needed
 
-\let\iftrialtypesetting\iffalse % so we have no \trialtypesettingtrue|false in mkiv !
+\aliased\let\iftrialtypesetting\iffalse % so we have no \trialtypesettingtrue|false in mkiv !
 
-\appendtoks \let\iftrialtypesetting\iftrue  \to \everysettrialtypesetting
-\appendtoks \let\iftrialtypesetting\iffalse \to \everyresettrialtypesetting
+\appendtoks \enforced\aliased\let\iftrialtypesetting\iftrue  \to \everysettrialtypesetting
+\appendtoks \enforced\aliased\let\iftrialtypesetting\iffalse \to \everyresettrialtypesetting
 
 %D \macros
 %D   {twodigitrounding}

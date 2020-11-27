@@ -41,7 +41,7 @@
 \registerctxluafile{font-oto}{}
 \registerctxluafile{font-otj}{optimize}
 \registerctxluafile{font-oup}{}
-\registerctxluafile{font-ota}{}
+\registerctxluafile{font-ota}{autosuffix}
 \registerctxluafile{font-ots}{optimize}
 \registerctxluafile{font-otd}{optimize}
 \registerctxluafile{font-otc}{}

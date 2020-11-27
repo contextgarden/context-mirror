@@ -38,6 +38,7 @@
 \newtoks\t_math_align_c
 
 \newskip\d_math_eqalign_distance
+\newskip\d_math_eqalign_rulethickness
 
 \protected\def\math_eqalign_distance
   {\relax
@@ -806,7 +807,9 @@
   [\c!distance=\emwidth,
    \c!left=,
    \c!right=,
-   \c!align=\v!middle]
+   \c!align=\v!middle,
+   \c!rulecolor=,
+   \c!rulethickness=\linewidth]
 
 \appendtoks
     \frozen\instance\setuevalue{\e!start\currentmathmatrix}{\math_matrix_start[\currentmathmatrix]}%
@@ -894,15 +897,55 @@
 %    \crcr
 %    \noalign{\vskip-\struthtdp}}
 
+\def\math_matrix_check_rule_step#1%
+  {\doifelsenumber{#1}
+     {\scratchdimen#1\d_math_eqalign_rulethickness}
+     {\edef\p_rulecolor{#1}}}
+
+\def\math_matrix_check_rule[#1]%
+  {\d_math_eqalign_rulethickness\mathmatrixparameter\c!rulethickness\relax
+   \scratchdimen\d_math_eqalign_rulethickness
+   \edef\p_rulecolor{\mathmatrixparameter\c!rulecolor}%
+   \iftok{#1}\emptytoks\else
+     \rawprocesscommalist[#1]\math_matrix_check_rule_step
+   \fi
+   \ifempty\p_rulecolor\else
+     \dousecolorparameter\p_rulecolor
+   \fi}
+
+\noaligned\permanent\tolerant\protected\def\math_matrix_HL[#1]#*%
+  {\noalign\bgroup
+     \math_matrix_check_rule[#1]%
+     \divide\scratchdimen\plustwo
+     \autorule\s!height\scratchdimen\s!depth\scratchdimen\relax
+   \egroup}
+
+\permanent\tolerant\protected\def\math_matrix_VL[#1]#*%
+  {\NC
+     \math_matrix_check_rule[#1]%
+     \divide\d_math_eqalign_distance\plustwo
+     \hskip-\d_math_eqalign_distance
+     \autorule\s!width\scratchdimen\relax
+     \hskip-\d_math_eqalign_distance
+   \NC}
+
+\newtoks\everymathmatrix
+
+\appendtoks
+   \enforced\let\NR\math_matrix_NR
+   \enforced\let\NC\math_matrix_NC
+   \enforced\let\MC\math_matrix_NC
+   \enforced\let\HL\math_matrix_HL
+   \enforced\let\VL\math_matrix_VL
+   \enforced\let\TB\math_common_TB
+\to \everymathmatrix
+
 \def\math_matrix_start_processing
   {\dontleavehmode
    \bgroup
    \tabskip\zeropoint
    \math_matrix_pickup
-   \enforced\let\NR\math_matrix_NR
-   \enforced\let\NC\math_matrix_NC
-   \enforced\let\MC\math_matrix_NC
-   \enforced\let\TB\math_common_TB
+   \the\everymathmatrix
    %
    \enforced\let\endmath\relax
    %
@@ -940,6 +983,8 @@
      \fi
    \fi
    \d_math_eqalign_distance\mathmatrixparameter\c!distance\relax
+ % \d_math_eqalign_rulethickness\mathmatrixparameter\c!rulethickness\relax
+ % \edef\p_rulecolor{\mathmatrixparameter\c!rulecolor}
    \edef\math_matrix_set_style{\mathmatrixparameter\c!style}}
 
 \def\math_matrix_set_defaults

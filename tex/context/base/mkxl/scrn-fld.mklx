@@ -110,6 +110,14 @@
 \setupforms
   [\c!method=XML] % no need for everyjob initialization as this is the default
 
+\mutable\let\currentfieldbackgroundcolor     \empty
+\mutable\let\currentfieldbackgroundcolorvalue\empty
+\mutable\let\currentfieldbodycategory        \empty
+\mutable\let\currentfieldframecolor          \empty
+\mutable\let\currentfieldframecolorvalue     \empty
+\mutable\let\currentfieldlabel               \empty
+\mutable\let\currentfieldstackname           \empty
+
 \appendtoks
     \iflocation
       \clf_exportformdata{\formsparameter\c!export}%

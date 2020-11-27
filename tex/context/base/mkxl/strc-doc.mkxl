@@ -19,6 +19,46 @@
 
 %D This will move:
 
+\mutable\let\currentstructureattribute               \empty
+\mutable\let\currentstructurebackreference           \empty
+\mutable\let\currentstructurebookmark                \empty
+\mutable\let\currentstructurecatcodes                \empty
+\mutable\let\currentstructurecoding                  \empty
+\mutable\let\currentstructurecoupling                \empty
+\mutable\let\currentstructureexpansion               \empty
+\mutable\let\currentstructureincrementnumber         \empty
+\mutable\let\currentstructurelabel                   \empty
+\mutable\let\currentstructurelevel                   \empty
+\mutable\let\currentstructurelist                    \empty
+\mutable\let\currentstructurelistattribute           \empty
+\mutable\let\currentstructuremarking                 \empty
+\mutable\let\currentstructurename                    \empty
+\mutable\let\currentstructureownnumber               \empty
+\mutable\let\currentstructureplaceholder             \empty
+\mutable\let\currentstructurereference               \empty
+\mutable\let\currentstructurereferenceattribute      \empty
+\mutable\let\currentstructurereferenceprefix         \empty
+\mutable\let\currentstructuresaveinlist              \empty
+\mutable\let\currentstructureshownumber              \empty
+\mutable\let\currentstructuretitle                   \empty
+\mutable\let\currentstructurexmlsetup                \empty
+
+\mutable\let\currentstructurecomponentattribute      \empty
+\mutable\let\currentstructurecomponentbookmark       \empty
+\mutable\let\currentstructurecomponentcatcodes       \empty
+\mutable\let\currentstructurecomponentcoding         \empty
+\mutable\let\currentstructurecomponentexpansion      \empty
+\mutable\let\currentstructurecomponentlabel          \empty
+\mutable\let\currentstructurecomponentlevel          \empty
+\mutable\let\currentstructurecomponentlist           \empty
+\mutable\let\currentstructurecomponentmarking        \empty
+\mutable\let\currentstructurecomponentname           \empty
+\mutable\let\currentstructurecomponentreference      \empty
+\mutable\let\currentstructurecomponentreferenceprefix\empty
+\mutable\let\currentstructurecomponentsynchronize    \empty
+\mutable\let\currentstructurecomponenttitle          \empty
+\mutable\let\currentstructurecomponentxmlsetup       \empty
+
 \permanent\protected\def\setstructuresynchronization#1% todo: use ctxcontext
   {\clf_setinternalreference
      prefix    {\currentstructurereferenceprefix}%

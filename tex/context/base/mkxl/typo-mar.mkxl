@@ -142,6 +142,11 @@
 \newconditional\inhibitmargindata      % This one is used at the Lua end!
 \newtoks       \everymargindatacontent % Later on we will set this one.
 
+\mutable\let\currentmargindatastrut  \empty
+\mutable\let\currentmargindatawidth  \empty
+\mutable\let\currentmarginfirstheight\empty
+\mutable\let\currentmarginreference  \empty
+
 \appendtoks
     \settrue\inhibitmargindata
 \to \everyforgetall

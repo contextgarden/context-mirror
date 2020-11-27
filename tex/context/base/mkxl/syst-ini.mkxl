@@ -626,7 +626,7 @@
 \newif\ifscratchconditionone
 \newif\ifscratchconditiontwo
 
-\let\htdp\boxtotal
+\aliased\let\htdp\boxtotal
 
 %D A few shortcuts:
 
@@ -723,11 +723,13 @@
 
 \tracingstats\plusone
 
-%D This is only used when we load \CONTEXT:
+%D This is only used when we load \CONTEXT. Nesting is not supported here.
 
 \permanent\def\pushoverloadmode
-  {\edef\popoverloadmode{\overloadmode\the\overloadmode}%
+  {\enforced\permanent\protected\edef\popoverloadmode{\overloadmode\the\overloadmode\enforced\let\popoverloadmode\relax}%
    \overloadmode\zerocount}
+
+\aliased\let\popoverloadmode\relax
 
 \newtoks\everydump
 

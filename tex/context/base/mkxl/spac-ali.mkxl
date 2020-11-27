@@ -19,7 +19,7 @@
 %D variants. Starting at the last day of 2011 both methods are merged into one and
 %D caching has been added, which makes switching twice as fast.
 
-\registerctxluafile{spac-ali}{optimize}
+\registerctxluafile{spac-ali}{autosuffix,optimize}
 
 \definesystemattribute[realign]   [public] % might be combined with the next one
 \definesystemattribute[alignstate][public] % will make a single attributes for several states
@@ -29,7 +29,6 @@
     \c_attr_alignstate\attributeunsetvalue
 \to \everyforgetall
 
-\permanent\protected\def\resetrealignsignal{\c_attr_realign\attributeunsetvalue}
 \permanent\protected\def\signalinnerrealign{\clf_setrealign\plustwo}
 \permanent\protected\def\signalouterrealign{\clf_setrealign\plusone}
 
@@ -147,8 +146,8 @@
 
 \installcorenamespace{bidi}
 
-\letvalue{\??bidi\v!left }\checkedlefttoright \letvalue{\??bidi l2r}\checkedlefttoright
-\letvalue{\??bidi\v!right}\checkedrighttoleft \letvalue{\??bidi r2l}\checkedrighttoleft
+\letcsname\??bidi\v!left \endcsname\checkedlefttoright \letcsname\??bidi l2r\endcsname\checkedlefttoright
+\letcsname\??bidi\v!right\endcsname\checkedrighttoleft \letcsname\??bidi r2l\endcsname\checkedrighttoleft
 
 \permanent\protected\def\usebidiparameter#1%
   {\begincsname\??bidi#1\c!bidi\endcsname}
@@ -197,7 +196,7 @@
 
 \def\spac_align_set_raggedness_middle{\ifzeropt\hsize\plussix\bodyfontsize\else.5\hsize\fi}
 
-\protected\def\setraggedness#1% tricky .. we keep the global tolerance otherwise ... to be reconsidered
+\permanent\protected\def\setraggedness#1% tricky .. we keep the global tolerance otherwise ... to be reconsidered
   {\ifnum\tolerance<\c_spac_tolerance_minimum
      \tolerance\c_spac_tolerance_minimum % small values have unwanted side effects
    \else
@@ -557,8 +556,7 @@
      \rawprocesscommacommand[\m_spac_align_asked]\spac_align_collect
    \fi
    \normalexpanded{\t_spac_align_collected
-     {% \resetrealignsignal % can go as it is always set
-      \setfalse\raggedonelinerstate % bad
+     {\setfalse\raggedonelinerstate % bad
       \the\t_spac_align_collected
       \spac_align_flush_horizontal
       \spac_align_flush_vertical
@@ -636,112 +634,91 @@
 
 % Maybe we need something different in columns.
 
-\protected\def\installalign#1#2% beware: commands must be unexpandable!
+\permanent\protected\def\installalign#1#2% beware: commands must be unexpandable!
   {\ifcsname\??aligncommand#1\endcsname \else
-     \setvalue{\??aligncommand#1}{\toksapp\t_spac_align_collected{#2}}%
+     \defcsname\??aligncommand#1\endcsname{\toksapp\t_spac_align_collected{#2}}%
    \fi}
-
-% beware, toks stuff and states are set at a differt time, so installalign is
-% only for special options
-%
-% \setvalue{\??aligncommand whatever}%
-%   {\c_spac_align_state_horizontal\plushundred
-%    \toksapp\t_spac_align_collected{.....}}
-%
-% this one could deal with both
-%
-% \protected\def\installalignoption#1#2%
-%   {\ifcsname\??aligncommand#1\endcsname \else
-%      \setvalue{\??aligncommand#1}%
-%        {\spac_align_set_horizontal_none
-%         \c_spac_align_state_horizontal\plushundred % don't set
-%         \toksapp\t_spac_align_collected{#2}}%
-%    \fi}
-%
-% \installalignoption
-%   {whatever}
-%   {}
 
 % The keywords:
 
-\letvalue{\??aligncommand\empty            }\empty
-\setvalue{\??aligncommand\v!broad          }{\c_spac_align_state_broad     \plusone  }
-\setvalue{\??aligncommand\v!wide           }{\c_spac_align_state_broad     \plustwo  }
+\letcsname\??aligncommand\empty            \endcsname\empty
+\defcsname\??aligncommand\v!broad          \endcsname{\c_spac_align_state_broad     \plusone  }
+\defcsname\??aligncommand\v!wide           \endcsname{\c_spac_align_state_broad     \plustwo  }
 
-\setvalue{\??aligncommand\v!bottom         }{\c_spac_align_state_page      \plusone  }
-\setvalue{\??aligncommand\v!height         }{\c_spac_align_state_page      \plustwo  }
-\setvalue{\??aligncommand\v!line           }{\c_spac_align_state_page      \plusthree
-                                             % this will become another keyword (undocumented anyway)
-                                             \toksapp\t_spac_align_collected{\settrue\raggedonelinerstate}}
+\defcsname\??aligncommand\v!bottom         \endcsname{\c_spac_align_state_page      \plusone  }
+\defcsname\??aligncommand\v!height         \endcsname{\c_spac_align_state_page      \plustwo  }
+\defcsname\??aligncommand\v!line           \endcsname{\c_spac_align_state_page      \plusthree
+                                                      % this will become another keyword (undocumented anyway)
+                                                      \toksapp\t_spac_align_collected{\settrue\raggedonelinerstate}}
 
-\setvalue{\??aligncommand\v!high           }{\c_spac_align_state_vertical  \plusthree}
-\setvalue{\??aligncommand\v!low            }{\c_spac_align_state_vertical  \plustwo  }
-\setvalue{\??aligncommand\v!lohi           }{\c_spac_align_state_vertical  \plusone  }
+\defcsname\??aligncommand\v!high           \endcsname{\c_spac_align_state_vertical  \plusthree}
+\defcsname\??aligncommand\v!low            \endcsname{\c_spac_align_state_vertical  \plustwo  }
+\defcsname\??aligncommand\v!lohi           \endcsname{\c_spac_align_state_vertical  \plusone  }
 
-\setvalue{\??aligncommand\v!flushright     }{\c_spac_align_state_horizontal\plusthree}
-\setvalue{\??aligncommand\v!flushleft      }{\c_spac_align_state_horizontal\plustwo  }
-\setvalue{\??aligncommand\v!middle         }{\c_spac_align_state_horizontal\plusone  }
-\setvalue{\??aligncommand\v!no             }{\c_spac_align_state_horizontal\plustwo  }
-\setvalue{\??aligncommand\v!yes            }{\c_spac_align_state_horizontal\zerocount}
-\setvalue{\??aligncommand\v!width          }{\c_spac_align_state_horizontal\zerocount}
-\setvalue{\??aligncommand\v!normal         }{\c_spac_align_state_horizontal\zerocount}
-\setvalue{\??aligncommand\v!reset          }{\c_spac_align_state_page      \zerocount
-                                             \c_spac_align_state_horizontal\zerocount}
-\setvalue{\??aligncommand\v!inner          }{\c_spac_align_state_horizontal\plusfour }
-\setvalue{\??aligncommand\v!outer          }{\c_spac_align_state_horizontal\plusfive }
-\setvalue{\??aligncommand\v!flushinner     }{\c_spac_align_state_horizontal\plusfour }
-\setvalue{\??aligncommand\v!flushouter     }{\c_spac_align_state_horizontal\plusfive }
-\setvalue{\??aligncommand\v!right          }{\c_spac_align_state_horizontal\plustwo  }
-\setvalue{\??aligncommand\v!left           }{\c_spac_align_state_horizontal\plusthree}
-\setvalue{\??aligncommand\v!center         }{\c_spac_align_state_horizontal\plusone
-                                             \c_spac_align_state_broad     \plustwo  }
-\setvalue{\??aligncommand\v!disable        }{\c_spac_align_state_horizontal\plussix  }
-\setvalue{\??aligncommand\v!last           }{\c_spac_align_state_horizontal\plusseven}
-\setvalue{\??aligncommand\v!end            }{\c_spac_align_state_horizontal\pluseight}
-\setvalue{\??aligncommand\v!paragraph      }{\c_spac_align_state_horizontal\plusnine}
+\defcsname\??aligncommand\v!flushright     \endcsname{\c_spac_align_state_horizontal\plusthree}
+\defcsname\??aligncommand\v!flushleft      \endcsname{\c_spac_align_state_horizontal\plustwo  }
+\defcsname\??aligncommand\v!middle         \endcsname{\c_spac_align_state_horizontal\plusone  }
+\defcsname\??aligncommand\v!no             \endcsname{\c_spac_align_state_horizontal\plustwo  }
+\defcsname\??aligncommand\v!yes            \endcsname{\c_spac_align_state_horizontal\zerocount}
+\defcsname\??aligncommand\v!width          \endcsname{\c_spac_align_state_horizontal\zerocount}
+\defcsname\??aligncommand\v!normal         \endcsname{\c_spac_align_state_horizontal\zerocount}
+\defcsname\??aligncommand\v!reset          \endcsname{\c_spac_align_state_page      \zerocount
+                                                      \c_spac_align_state_horizontal\zerocount}
+\defcsname\??aligncommand\v!inner          \endcsname{\c_spac_align_state_horizontal\plusfour }
+\defcsname\??aligncommand\v!outer          \endcsname{\c_spac_align_state_horizontal\plusfive }
+\defcsname\??aligncommand\v!flushinner     \endcsname{\c_spac_align_state_horizontal\plusfour }
+\defcsname\??aligncommand\v!flushouter     \endcsname{\c_spac_align_state_horizontal\plusfive }
+\defcsname\??aligncommand\v!right          \endcsname{\c_spac_align_state_horizontal\plustwo  }
+\defcsname\??aligncommand\v!left           \endcsname{\c_spac_align_state_horizontal\plusthree}
+\defcsname\??aligncommand\v!center         \endcsname{\c_spac_align_state_horizontal\plusone
+                                                      \c_spac_align_state_broad     \plustwo  }
+\defcsname\??aligncommand\v!disable        \endcsname{\c_spac_align_state_horizontal\plussix  }
+\defcsname\??aligncommand\v!last           \endcsname{\c_spac_align_state_horizontal\plusseven}
+\defcsname\??aligncommand\v!end            \endcsname{\c_spac_align_state_horizontal\pluseight}
+\defcsname\??aligncommand\v!paragraph      \endcsname{\c_spac_align_state_horizontal\plusnine}
 
-\setvalue{\??aligncommand\v!lefttoright    }{\c_spac_align_state_direction \plusone  }
-\setvalue{\??aligncommand\v!righttoleft    }{\c_spac_align_state_direction \plustwo  }
-\setvalue{\??aligncommand               l2r}{\c_spac_align_state_direction \plusone  }
-\setvalue{\??aligncommand               r2l}{\c_spac_align_state_direction \plustwo  }
+\defcsname\??aligncommand\v!lefttoright    \endcsname{\c_spac_align_state_direction \plusone  }
+\defcsname\??aligncommand\v!righttoleft    \endcsname{\c_spac_align_state_direction \plustwo  }
+\defcsname\??aligncommand               l2r\endcsname{\c_spac_align_state_direction \plusone  }
+\defcsname\??aligncommand               r2l\endcsname{\c_spac_align_state_direction \plustwo  }
 
-\setvalue{\??aligncommand\v!table          }{\c_spac_align_state_vertical  \plusthree
-                                             \c_spac_align_state_broad     \plusone
-                                             \c_spac_align_state_horizontal\plustwo  }
+\defcsname\??aligncommand\v!table          \endcsname{\c_spac_align_state_vertical  \plusthree
+                                                      \c_spac_align_state_broad     \plusone
+                                                      \c_spac_align_state_horizontal\plustwo  }
 
-\setvalue{\??aligncommand\v!lesshyphenation}{\toksapp\t_spac_align_collected{\lesshyphens}}
-\setvalue{\??aligncommand\v!morehyphenation}{\toksapp\t_spac_align_collected{\morehyphens}}
+\defcsname\??aligncommand\v!lesshyphenation\endcsname{\toksapp\t_spac_align_collected{\lesshyphens}}
+\defcsname\??aligncommand\v!morehyphenation\endcsname{\toksapp\t_spac_align_collected{\morehyphens}}
 
-\setvalue{\??aligncommand\v!hanging        }{\toksapp\t_spac_align_collected{\font_protruding_enable }}
-\setvalue{\??aligncommand\v!hangingboth    }{\toksapp\t_spac_align_collected{\font_protruding_enable_b}}
-\setvalue{\??aligncommand\v!nothanging     }{\toksapp\t_spac_align_collected{\font_protruding_disable}}
-\setvalue{\??aligncommand\v!hz             }{\toksapp\t_spac_align_collected{\font_expansion_enable  }}
-\setvalue{\??aligncommand\v!fullhz         }{\toksapp\t_spac_align_collected{\font_expansion_enable_k}}
-\setvalue{\??aligncommand\v!nohz           }{\toksapp\t_spac_align_collected{\font_expansion_disable }}
-%setvalue{\??aligncommand\v!spacing        }{\toksapp\t_spac_align_collected{\normalspacing\zerocount}} % not yet
-%setvalue{\??aligncommand\v!nospacing      }{\toksapp\t_spac_align_collected{\normalspacing\plusone}}   % not yet
-\setvalue{\??aligncommand\v!hyphenated     }{\toksapp\t_spac_align_collected{\dohyphens}}
-\setvalue{\??aligncommand\v!nothyphenated  }{\toksapp\t_spac_align_collected{\nohyphens}}
+\defcsname\??aligncommand\v!hanging        \endcsname{\toksapp\t_spac_align_collected{\font_protruding_enable }}
+\defcsname\??aligncommand\v!hangingboth    \endcsname{\toksapp\t_spac_align_collected{\font_protruding_enable_b}}
+\defcsname\??aligncommand\v!nothanging     \endcsname{\toksapp\t_spac_align_collected{\font_protruding_disable}}
+\defcsname\??aligncommand\v!hz             \endcsname{\toksapp\t_spac_align_collected{\font_expansion_enable  }}
+\defcsname\??aligncommand\v!fullhz         \endcsname{\toksapp\t_spac_align_collected{\font_expansion_enable_k}}
+\defcsname\??aligncommand\v!nohz           \endcsname{\toksapp\t_spac_align_collected{\font_expansion_disable }}
+%defcsname\??aligncommand\v!spacing        \endcsname{\toksapp\t_spac_align_collected{\normalspacing\zerocount}} % not yet
+%defcsname\??aligncommand\v!nospacing      \endcsname{\toksapp\t_spac_align_collected{\normalspacing\plusone}}   % not yet
+\defcsname\??aligncommand\v!hyphenated     \endcsname{\toksapp\t_spac_align_collected{\dohyphens}}
+\defcsname\??aligncommand\v!nothyphenated  \endcsname{\toksapp\t_spac_align_collected{\nohyphens}}
 
-\setvalue{\??aligncommand\v!tolerant       }{\toksapp\t_spac_align_collected{\spac_align_set_tolerant}}
-\setvalue{\??aligncommand\v!verytolerant   }{\toksapp\t_spac_align_collected{\spac_align_set_very_tolerant}}
-\setvalue{\??aligncommand\v!stretch        }{\toksapp\t_spac_align_collected{\spac_align_set_stretch}}
-\setvalue{\??aligncommand\v!extremestretch }{\toksapp\t_spac_align_collected{\spac_align_set_extreme_stretch}}
+\defcsname\??aligncommand\v!tolerant       \endcsname{\toksapp\t_spac_align_collected{\spac_align_set_tolerant}}
+\defcsname\??aligncommand\v!verytolerant   \endcsname{\toksapp\t_spac_align_collected{\spac_align_set_very_tolerant}}
+\defcsname\??aligncommand\v!stretch        \endcsname{\toksapp\t_spac_align_collected{\spac_align_set_stretch}}
+\defcsname\??aligncommand\v!extremestretch \endcsname{\toksapp\t_spac_align_collected{\spac_align_set_extreme_stretch}}
 
-\setvalue{\??aligncommand  \v!final}{\c_spac_align_state_par_fill\plusone}
-\setvalue{\??aligncommand1*\v!final}{\c_spac_align_state_par_fill\plusone}
-\setvalue{\??aligncommand2*\v!final}{\c_spac_align_state_par_fill\plustwo}      % hardcoded multiplier
-\setvalue{\??aligncommand3*\v!final}{\c_spac_align_state_par_fill\plusthree}
-\setvalue{\??aligncommand4*\v!final}{\c_spac_align_state_par_fill\plusfour}
+\defcsname\??aligncommand  \v!final\endcsname{\c_spac_align_state_par_fill\plusone}
+\defcsname\??aligncommand1*\v!final\endcsname{\c_spac_align_state_par_fill\plusone}
+\defcsname\??aligncommand2*\v!final\endcsname{\c_spac_align_state_par_fill\plustwo}      % hardcoded multiplier
+\defcsname\??aligncommand3*\v!final\endcsname{\c_spac_align_state_par_fill\plusthree}
+\defcsname\??aligncommand4*\v!final\endcsname{\c_spac_align_state_par_fill\plusfour}
 
 % a one shot (only usefull in e.g. framed, also needs tolerance and stretch)
 
-\setvalue{\??aligncommand  \v!more}{\toksapp\t_spac_align_collected{\looseness\plusone}}
-\setvalue{\??aligncommand1*\v!more}{\toksapp\t_spac_align_collected{\looseness\plusone}}
-\setvalue{\??aligncommand2*\v!more}{\toksapp\t_spac_align_collected{\looseness\plustwo}}
+\defcsname\??aligncommand  \v!more\endcsname{\toksapp\t_spac_align_collected{\looseness\plusone}}
+\defcsname\??aligncommand1*\v!more\endcsname{\toksapp\t_spac_align_collected{\looseness\plusone}}
+\defcsname\??aligncommand2*\v!more\endcsname{\toksapp\t_spac_align_collected{\looseness\plustwo}}
 
-% \setvalue{\??aligncommand ... }{\toksapp\t_spac_align_collected{\nopenalties}}
-% \setvalue{\??aligncommand ... }{\toksapp\t_spac_align_collected{\setdefaultpenalties}}
+%defcsname\??aligncommand ...\endcsname{\toksapp\t_spac_align_collected{\nopenalties}}
+%defcsname\??aligncommand ...\endcsname{\toksapp\t_spac_align_collected{\setdefaultpenalties}}
 
 \definehspace [\v!final] [\emspaceamount]
 
@@ -762,8 +739,8 @@
 \newtoks \t_spac_every_swap_align
 
 \appendtoks
-    \setvalue{\??aligncommand\v!right}{\c_spac_align_state_horizontal\plusthree}%
-    \setvalue{\??aligncommand\v!left }{\c_spac_align_state_horizontal\plustwo  }%
+    \defcsname\??aligncommand\v!right\endcsname{\c_spac_align_state_horizontal\plusthree}%
+    \defcsname\??aligncommand\v!left \endcsname{\c_spac_align_state_horizontal\plustwo  }%
 \to \t_spac_every_swap_align
 
 \permanent\protected\def\enablereversealignment
@@ -809,11 +786,11 @@
 
 \let\raggedbox\relax
 
-\def\dosetraggedvbox#1% can be more keys .. how about caching here (but seldom used)
+\permanent\protected\def\dosetraggedvbox#1% can be more keys .. how about caching here (but seldom used)
   {\enforced\let\raggedbox\vbox
    \processcommacommand[#1]\spac_align_set_ragged_vbox}
 
-\def\dosetraggedhbox#1% can be more keys .. how about caching here (but seldom used)
+\permanent\protected\def\dosetraggedhbox#1% can be more keys .. how about caching here (but seldom used)
   {\enforced\let\raggedbox\hbox
    \processcommacommand[#1]\spac_align_set_ragged_hbox}
 
@@ -848,24 +825,24 @@
 \permanent\protected\def\spac_align_horizontal_flushright{\doalignedline\v!left}
 \permanent\protected\def\spac_align_horizontal_center    {\doalignedline\v!middle}
 
-\setvalue{\??alignvertical  \v!left      }{\enforced\let\raggedbox\spac_align_vertical_left}
-\setvalue{\??alignvertical  \v!right     }{\enforced\let\raggedbox\spac_align_vertical_right}
-\setvalue{\??alignvertical  \v!middle    }{\enforced\let\raggedbox\spac_align_vertical_middle}
-\setvalue{\??alignvertical  \v!inner     }{\enforced\let\raggedbox\spac_align_vertical_inner}
-\setvalue{\??alignvertical  \v!outer     }{\enforced\let\raggedbox\spac_align_vertical_outer}
-\setvalue{\??alignvertical  \v!flushleft }{\enforced\let\raggedbox\spac_align_vertical_flushleft }
-\setvalue{\??alignvertical  \v!flushright}{\enforced\let\raggedbox\spac_align_vertical_flushright}
-\setvalue{\??alignvertical  \v!center    }{\enforced\let\raggedbox\spac_align_vertical_center}
-\setvalue{\??alignvertical  \v!no        }{\enforced\let\raggedbox\spac_align_vertical_no}
+\defcsname\??alignvertical  \v!left      \endcsname{\enforced\let\raggedbox\spac_align_vertical_left}
+\defcsname\??alignvertical  \v!right     \endcsname{\enforced\let\raggedbox\spac_align_vertical_right}
+\defcsname\??alignvertical  \v!middle    \endcsname{\enforced\let\raggedbox\spac_align_vertical_middle}
+\defcsname\??alignvertical  \v!inner     \endcsname{\enforced\let\raggedbox\spac_align_vertical_inner}
+\defcsname\??alignvertical  \v!outer     \endcsname{\enforced\let\raggedbox\spac_align_vertical_outer}
+\defcsname\??alignvertical  \v!flushleft \endcsname{\enforced\let\raggedbox\spac_align_vertical_flushleft }
+\defcsname\??alignvertical  \v!flushright\endcsname{\enforced\let\raggedbox\spac_align_vertical_flushright}
+\defcsname\??alignvertical  \v!center    \endcsname{\enforced\let\raggedbox\spac_align_vertical_center}
+\defcsname\??alignvertical  \v!no        \endcsname{\enforced\let\raggedbox\spac_align_vertical_no}
 
-\setvalue{\??alignhorizontal\v!left      }{\enforced\let\raggedbox\spac_align_horizontal_left}
-\setvalue{\??alignhorizontal\v!right     }{\enforced\let\raggedbox\spac_align_horizontal_right}
-\setvalue{\??alignhorizontal\v!middle    }{\enforced\let\raggedbox\spac_align_horizontal_middle}
-\setvalue{\??alignhorizontal\v!inner     }{\enforced\let\raggedbox\spac_align_horizontal_inner}
-\setvalue{\??alignhorizontal\v!outer     }{\enforced\let\raggedbox\spac_align_horizontal_outer}
-\setvalue{\??alignhorizontal\v!flushleft }{\enforced\let\raggedbox\spac_align_horizontal_flushleft}
-\setvalue{\??alignhorizontal\v!flushright}{\enforced\let\raggedbox\spac_align_horizontal_flushright}
-\setvalue{\??alignhorizontal\v!center    }{\enforced\let\raggedbox\spac_align_horizontal_center}
+\defcsname\??alignhorizontal\v!left      \endcsname{\enforced\let\raggedbox\spac_align_horizontal_left}
+\defcsname\??alignhorizontal\v!right     \endcsname{\enforced\let\raggedbox\spac_align_horizontal_right}
+\defcsname\??alignhorizontal\v!middle    \endcsname{\enforced\let\raggedbox\spac_align_horizontal_middle}
+\defcsname\??alignhorizontal\v!inner     \endcsname{\enforced\let\raggedbox\spac_align_horizontal_inner}
+\defcsname\??alignhorizontal\v!outer     \endcsname{\enforced\let\raggedbox\spac_align_horizontal_outer}
+\defcsname\??alignhorizontal\v!flushleft \endcsname{\enforced\let\raggedbox\spac_align_horizontal_flushleft}
+\defcsname\??alignhorizontal\v!flushright\endcsname{\enforced\let\raggedbox\spac_align_horizontal_flushright}
+\defcsname\??alignhorizontal\v!center    \endcsname{\enforced\let\raggedbox\spac_align_horizontal_center}
 
 % The next one can be in use so we keep it around but oen should
 % be aware of possible interference.
@@ -874,7 +851,7 @@
   {\protected\def\updateraggedskips{\dosetraggedskips{#1}{#2}{#3}{#4}{#5}{#6}{#7}}%
    \updateraggedskips}
 
-\permanent\def\dosetraggedskips#1#2#3#4#5#6#7%
+\permanent\protected\def\dosetraggedskips#1#2#3#4#5#6#7%
   {\raggedstatus                 #1\relax
    \leftskip   1\leftskip \s!plus#2\relax
    \rightskip  1\rightskip\s!plus#3\relax
@@ -951,7 +928,7 @@
      {\everyleftofalignedline {\hskip\dimexpr#1+#4\relax}%
       \everyrightofalignedline{\hskip\dimexpr#2+#3\relax}}}
 
-\permanent\def\doalignline#1#2% \\ == newline
+\permanent\protected\def\doalignline#1#2% \\ == newline
   {\noindentation  % was \noindent
    \dontleavehmode % added in marrakesch at TUG 2006\begingroup
    \begingroup
@@ -968,21 +945,21 @@
 
 % plain commands
 
-\ifdefined\line       \else \permanent\def\line        {\hbox to\hsize}    \fi
-\ifdefined\leftline   \else \permanent\def\leftline  #1{\line{#1\hss}}     \fi
-\ifdefined\rightline  \else \permanent\def\rightline #1{\line{\hss#1}}     \fi
-\ifdefined\centerline \else \permanent\def\centerline#1{\line{\hss#1\hss}} \fi
+\ifdefined\line       \else \permanent\protected\def\line        {\hbox to\hsize}    \fi
+\ifdefined\leftline   \else \permanent\protected\def\leftline  #1{\line{#1\hss}}     \fi
+\ifdefined\rightline  \else \permanent\protected\def\rightline #1{\line{\hss#1}}     \fi
+\ifdefined\centerline \else \permanent\protected\def\centerline#1{\line{\hss#1\hss}} \fi
 
 % direct commands
 
 \installcorenamespace{alignwrapper}
 
-\setuvalue{\??alignwrapper\v!left  }{\doalignline\relax \hss  }
-\setuvalue{\??alignwrapper\v!middle}{\doalignline\hss   \hss  }
-\setuvalue{\??alignwrapper\v!right }{\doalignline\hss   \relax}
-\setuvalue{\??alignwrapper\v!max   }{\doalignline\relax \relax}
+\protected\defcsname\??alignwrapper\v!left  \endcsname{\doalignline\relax \hss  }
+\protected\defcsname\??alignwrapper\v!middle\endcsname{\doalignline\hss   \hss  }
+\protected\defcsname\??alignwrapper\v!right \endcsname{\doalignline\hss   \relax}
+\protected\defcsname\??alignwrapper\v!max   \endcsname{\doalignline\relax \relax}
 
-\def\spac_align_wrapper_middle      {\doalignline\hss   \hss}
+\def\spac_align_wrapper_middle{\doalignline\hss\hss}
 
 \def\spac_align_wrapper_handle#1%
   {\ifcsname\??alignwrapper#1\endcsname\expandafter\lastnamedcs\else\expandafter\spac_align_wrapper_middle\fi}
@@ -1014,15 +991,13 @@
 
 \installcorenamespace{alignline}
 
-\letvalue{\??alignline\v!left      }\leftaligned
-\letvalue{\??alignline\v!right     }\rightaligned
-\letvalue{\??alignline\v!middle    }\midaligned
-\letvalue{\??alignline\v!flushleft }\rightaligned % beware, makes no sense in locations / we will have a special locations handler
-\letvalue{\??alignline\v!flushright}\leftaligned  % beware, makes no sense in locations / we will have a special locations handler
-\letvalue{\??alignline\v!center    }\midaligned
-\letvalue{\??alignline\v!max       }\maxaligned
-
-% \permanent\protected\def\doalignedline#1{\resetrealignsignal\csname\??alignline#1\endcsname}
+\letcsname\??alignline\v!left      \endcsname\leftaligned
+\letcsname\??alignline\v!right     \endcsname\rightaligned
+\letcsname\??alignline\v!middle    \endcsname\midaligned
+\letcsname\??alignline\v!flushleft \endcsname\rightaligned % beware, makes no sense in locations / we will have a special locations handler
+\letcsname\??alignline\v!flushright\endcsname\leftaligned  % beware, makes no sense in locations / we will have a special locations handler
+\letcsname\??alignline\v!center    \endcsname\midaligned
+\letcsname\??alignline\v!max       \endcsname\maxaligned
 
 %D Experimental (will be redone when floats are redone as it's real messy
 %D now). It can also be made faster (if needed).
@@ -1048,21 +1023,21 @@
 \permanent\protected\def\doxcheckline % used for floats so multipass anyway
   {\signalrightpage\doifelserightpage\donetrue\donefalse}
 
-\setvalue{\??alignline\v!inner      }{\doxalignline\doxcheckline++\zeropoint       \relax\hss  }
-\setvalue{\??alignline\v!outer      }{\doxalignline\doxcheckline++\zeropoint       \hss  \relax}
-\setvalue{\??alignline\v!innermargin}{\doxalignline\doxcheckline-+\innermargintotal\relax\hss  }
-\setvalue{\??alignline\v!outermargin}{\doxalignline\doxcheckline+-\outermargintotal\hss  \relax}
-\setvalue{\??alignline\v!inneredge  }{\doxalignline\doxcheckline-+\inneredgetotal  \relax\hss  }
-\setvalue{\??alignline\v!outeredge  }{\doxalignline\doxcheckline+-\outeredgetotal  \hss  \relax}
-\setvalue{\??alignline\v!backspace  }{\doxalignline\doxcheckline-+\backspace       \relax\hss  }
-\setvalue{\??alignline\v!cutspace   }{\doxalignline\doxcheckline+-\cutspace        \hss  \relax}
+\defcsname\??alignline\v!inner      \endcsname{\doxalignline\doxcheckline++\zeropoint       \relax\hss  }
+\defcsname\??alignline\v!outer      \endcsname{\doxalignline\doxcheckline++\zeropoint       \hss  \relax}
+\defcsname\??alignline\v!innermargin\endcsname{\doxalignline\doxcheckline-+\innermargintotal\relax\hss  }
+\defcsname\??alignline\v!outermargin\endcsname{\doxalignline\doxcheckline+-\outermargintotal\hss  \relax}
+\defcsname\??alignline\v!inneredge  \endcsname{\doxalignline\doxcheckline-+\inneredgetotal  \relax\hss  }
+\defcsname\??alignline\v!outeredge  \endcsname{\doxalignline\doxcheckline+-\outeredgetotal  \hss  \relax}
+\defcsname\??alignline\v!backspace  \endcsname{\doxalignline\doxcheckline-+\backspace       \relax\hss  }
+\defcsname\??alignline\v!cutspace   \endcsname{\doxalignline\doxcheckline+-\cutspace        \hss  \relax}
 
-\setvalue{\??alignline\v!leftmargin }{\doxalignline\donefalse   --\leftmargintotal \hss  \relax}
-\setvalue{\??alignline\v!rightmargin}{\doxalignline\donefalse   ++\rightmargintotal\relax\hss  }
-\setvalue{\??alignline\v!leftedge   }{\doxalignline\donefalse   --\leftedgetotal   \hss  \relax}
-\setvalue{\??alignline\v!rightedge  }{\doxalignline\donefalse   ++\rightedgetotal  \relax\hss  }
+\defcsname\??alignline\v!leftmargin \endcsname{\doxalignline\donefalse   --\leftmargintotal \hss  \relax}
+\defcsname\??alignline\v!rightmargin\endcsname{\doxalignline\donefalse   ++\rightmargintotal\relax\hss  }
+\defcsname\??alignline\v!leftedge   \endcsname{\doxalignline\donefalse   --\leftedgetotal   \hss  \relax}
+\defcsname\??alignline\v!rightedge  \endcsname{\doxalignline\donefalse   ++\rightedgetotal  \relax\hss  }
 
-\permanent\protected\def\doalignedline#1{\csname\??alignline#1\endcsname} % no \resetrealignsignal here ?
+\permanent\protected\def\doalignedline#1{\begincsname\??alignline#1\endcsname}
 
 \permanent\protected\def\alignedline#1#2% setting default
   {\ifcsname\??alignline#1\endcsname
@@ -1143,21 +1118,21 @@
 \protected\def\spac_align_simple_right #1{{\hss#1}}
 \protected\def\spac_align_simple_middle#1{{\hss#1\hss}}
 
-\letvalue{\??alignsimple       \v!right     }\spac_align_simple_left
-\letvalue{\??alignsimple       \v!outer     }\spac_align_simple_left   % not managed! see linenumbers
-\letvalue{\??alignsimple       \v!flushleft }\spac_align_simple_left
-\letvalue{\??alignsimple       \v!left      }\spac_align_simple_right
-\letvalue{\??alignsimple       \v!inner     }\spac_align_simple_right  % not managed! see linenumbers
-\letvalue{\??alignsimple       \v!flushright}\spac_align_simple_right
-\letvalue{\??alignsimple       \v!middle    }\spac_align_simple_middle
+\letcsname\??alignsimple       \v!right     \endcsname\spac_align_simple_left
+\letcsname\??alignsimple       \v!outer     \endcsname\spac_align_simple_left   % not managed! see linenumbers
+\letcsname\??alignsimple       \v!flushleft \endcsname\spac_align_simple_left
+\letcsname\??alignsimple       \v!left      \endcsname\spac_align_simple_right
+\letcsname\??alignsimple       \v!inner     \endcsname\spac_align_simple_right  % not managed! see linenumbers
+\letcsname\??alignsimple       \v!flushright\endcsname\spac_align_simple_right
+\letcsname\??alignsimple       \v!middle    \endcsname\spac_align_simple_middle
 
-\letvalue{\??alignsimplereverse\v!right     }\spac_align_simple_right
-\letvalue{\??alignsimplereverse\v!outer     }\spac_align_simple_right % not managed! see linenumbers
-\letvalue{\??alignsimplereverse\v!flushleft }\spac_align_simple_right
-\letvalue{\??alignsimplereverse\v!left      }\spac_align_simple_left
-\letvalue{\??alignsimplereverse\v!inner     }\spac_align_simple_left  % not managed! see linenumbers
-\letvalue{\??alignsimplereverse\v!flushright}\spac_align_simple_left
-\letvalue{\??alignsimplereverse\v!middle    }\spac_align_simple_middle
+\letcsname\??alignsimplereverse\v!right     \endcsname\spac_align_simple_right
+\letcsname\??alignsimplereverse\v!outer     \endcsname\spac_align_simple_right % not managed! see linenumbers
+\letcsname\??alignsimplereverse\v!flushleft \endcsname\spac_align_simple_right
+\letcsname\??alignsimplereverse\v!left      \endcsname\spac_align_simple_left
+\letcsname\??alignsimplereverse\v!inner     \endcsname\spac_align_simple_left  % not managed! see linenumbers
+\letcsname\??alignsimplereverse\v!flushright\endcsname\spac_align_simple_left
+\letcsname\??alignsimplereverse\v!middle    \endcsname\spac_align_simple_middle
 
 \permanent\protected\def\simplealignedbox#1#2%
   {\hbox \ifdim#1>\zeropoint to #1
@@ -1206,38 +1181,22 @@
      \fi
    \fi}
 
-% \installnamespace{alignsets}
-%
-% \setvalue{\??alignsets\v!right     }#1#2{\let#1\relax\let#2\hss  }
-% \setvalue{\??alignsets\v!left      }#1#2{\let#1\hss  \let#2\relax}
-% \setvalue{\??alignsets\v!flushright}#1#2{\let#1\hss  \let#2\relax}
-% \setvalue{\??alignsets\v!flushleft }#1#2{\let#1\relax\let#2\hss  }
-% \setvalue{\??alignsets\v!middle    }#1#2{\let#1\hss  \let#2\hss  }
-% \setvalue{\??alignsets\v!low       }#1#2{\let#1\vss  \let#2\relax}
-% \setvalue{\??alignsets\v!high      }#1#2{\let#1\relax\let#2\vss  }
-% \setvalue{\??alignsets\v!lohi      }#1#2{\let#1\vss  \let#2\vss  }
-% \setvalue{\??alignsets\s!unknown   }#1#2{\let#1\relax\let#2\relax}
-%
-% \protected\def\spac_align_set_ss#1%
-%   {\csname\??alignsetss\ifcsname\??alignsetss#1\endcsname#1\else\s!unknown\fi\endcsname}
-
 % Some obsolete (old) helpers:
 
-\permanent\tolerant\protected\def\definehbox[#1][#2]%
-  {\ifarguments\else\setvalue{hbox#1}##1{\hbox to #2{\begstrut##1\endstrut\hss}}\fi}
+\permanent\tolerant\protected\def\definehbox[#1]#*[#2]%
+  {\ifarguments\else\frozen\instance\protected\defcsname hbox#1\endcsname##1{\hbox to #2{\begstrut##1\endstrut\hss}}\fi}
 
 %D Some direction related helpers:
 
 \installcorenamespace {reverse}
 
-\setvalue{\??reverse\v!normal }{\ifconditional\inlinelefttoright\else\s!reverse\fi}
-\setvalue{\??reverse\v!reverse}{\ifconditional\inlinelefttoright     \s!reverse\fi}
+\defcsname\??reverse\v!normal \endcsname{\ifconditional\inlinelefttoright\else\s!reverse\fi}
+\defcsname\??reverse\v!reverse\endcsname{\ifconditional\inlinelefttoright     \s!reverse\fi}
 
 \permanent\def\usedirectionparameterreverse#1{\begincsname\??reverse#1\c!direction\endcsname}
 
 %D Now official:
 
-\permanent\protected\def\spaceorpar
-  {\endgraf\ifhmode\space\fi}
+\permanent\protected\def\spaceorpar{\endgraf\ifhmode\space\fi}
 
 \protect \endinput

@@ -15,9 +15,9 @@
 
 \unprotect
 
-\registerctxluafile{spac-hor}{}
+\registerctxluafile{spac-hor}{autosuffix}
 
-\let\parfillrightskip\parfillskip
+\aliased\let\parfillrightskip\parfillskip
 
 \bitwiseflip \normalizelinemode \parindentskipcode
 \bitwiseflip \normalizelinemode \normalizelinecode
@@ -126,7 +126,7 @@
 \installcorenamespace{indentingmethod}
 
 \permanent\protected\def\installindentingmethod#1#2%
-  {\setvalue{\??indentingmethod#1}{#2}}
+  {\defcsname\??indentingmethod#1\endcsname{#2}}
 
 \installindentingmethod \v!no    {\parindent\zeropoint}
 \installindentingmethod \v!not   {\parindent\zeropoint}
@@ -281,10 +281,10 @@
      \begincsname\??indentnext\p_indentnext\endcsname
    \fi}
 
-\letvalue{\??indentnext       }\donothing
-\letvalue{\??indentnext\v!yes }\spac_indentation_variant_yes
-\letvalue{\??indentnext\v!no  }\spac_indentation_variant_no
-\letvalue{\??indentnext\v!auto}\spac_indentation_variant_auto
+\letcsname\??indentnext       \endcsname\donothing
+\letcsname\??indentnext\v!yes \endcsname\spac_indentation_variant_yes
+\letcsname\??indentnext\v!no  \endcsname\spac_indentation_variant_no
+\letcsname\??indentnext\v!auto\endcsname\spac_indentation_variant_auto
 
 %D An example of usage:
 %D
@@ -383,16 +383,6 @@
 \installspacingmethod \v!packed {\newfrenchspacing} % slighly more after punctuation
 \installspacingmethod \v!broad  {\nonfrenchspacing} % more depending on what punctuation
 
-%% \permanent\protected\def\setupspacing
-%%   {\doifelsenextoptionalcs\spac_spacecodes_setup_yes\spac_spacecodes_setup_nop}
-%%
-%% \def\spac_spacecodes_setup_yes[#1]%
-%%   {\begincsname\??spacecodemethod#1\endcsname
-%%    \updateraggedskips}
-%%
-%% \def\spac_spacecodes_setup_nop
-%%   {\updateraggedskips}
-
 \permanent\tolerant\protected\def\setupspacing[#1]%
   {\ifarguments\or
      \begincsname\??spacecodemethod#1\endcsname
@@ -481,7 +471,7 @@
 
 \letcatcodecommand \ctxcatcodes \tildeasciicode \nonbreakablespace % overloaded later
 
-%                \def\space          { }
+%                   \def\space          { }
 \permanent\protected\def\removelastspace{\ifhmode\unskip\fi}
 \permanent\protected\def\nospace        {\removelastspace\ignorespaces}
 
@@ -645,12 +635,12 @@
    \c!default=\v!middle]
 
 \appendtoks
-   \frozen\instance\setuevalue{\e!start\currentnarrower}{\spac_narrower_start[\currentnarrower]}%
-   \frozen\instance\setuevalue{\e!stop \currentnarrower}{\spac_narrower_stop}%
+   \frozen\instance\protected\defcsname\e!start\currentnarrower\endcsname{\spac_narrower_start[\currentnarrower]}%
+   \frozen\instance\protected\defcsname\e!stop \currentnarrower\endcsname{\spac_narrower_stop}%
 \to \everydefinenarrower
 
 \permanent\protected\def\installnarrowermethod#1#2%
-  {\setvalue{\??narrowermethod#1}{#2}}
+  {\defcsname\??narrowermethod#1\endcsname{#2}}
 
 \protected\def\spac_narrower_method_analyze#1%
   {\ifcsname\??narrowermethod#1\endcsname
@@ -793,21 +783,15 @@
 \newskip\leftskipadaption
 \newskip\rightskipadaption
 
-\setvalue{\??skipadaptionleft \v!yes     }{\ifzeropt\d_spac_indentation_par\narrowerparameter\c!left\else\d_spac_indentation_par\fi}
-\letvalue{\??skipadaptionleft \v!no      }\zeropoint
-\letvalue{\??skipadaptionleft \empty     }\zeropoint
-\setvalue{\??skipadaptionright\v!yes     }{\narrowerparameter\c!right}
-\letvalue{\??skipadaptionright\v!no      }\zeropoint
-\letvalue{\??skipadaptionright\empty     }\zeropoint
+\defcsname\??skipadaptionleft \v!yes\endcsname{\ifzeropt\d_spac_indentation_par\narrowerparameter\c!left\else\d_spac_indentation_par\fi}
+\letcsname\??skipadaptionleft \v!no \endcsname\zeropoint
+\letcsname\??skipadaptionleft \empty\endcsname\zeropoint
+\defcsname\??skipadaptionright\v!yes\endcsname{\narrowerparameter\c!right}
+\letcsname\??skipadaptionright\v!no \endcsname\zeropoint
+\letcsname\??skipadaptionright\empty\endcsname\zeropoint
 
-% \setvalue{\??skipadaptionleft \v!standard}{\ifzeropt\d_spac_indentation_par\narrowerparameter\c!left\else\d_spac_indentation_par\fi}
-% \setvalue{\??skipadaptionright\v!standard}{\narrowerparameter\c!right}
-
-\letcsnamecsname\csname\??skipadaptionleft \v!standard\endcsname\csname\??skipadaptionleft \v!yes\endcsname
-\letcsnamecsname\csname\??skipadaptionright\v!standard\endcsname\csname\??skipadaptionright\v!yes\endcsname
-
-% \protected\def\dosetleftskipadaption #1{\leftskipadaption \ifcsname\??skipadaptionleft #1\endcsname\csname\??skipadaptionleft #1\endcsname\else#1\fi\relax}
-% \protected\def\dosetrightskipadaption#1{\rightskipadaption\ifcsname\??skipadaptionright#1\endcsname\csname\??skipadaptionright#1\endcsname\else#1\fi\relax}
+\letcsname\??skipadaptionleft \v!standard\expandafter\endcsname\csname\??skipadaptionleft \v!yes\endcsname
+\letcsname\??skipadaptionright\v!standard\expandafter\endcsname\csname\??skipadaptionright\v!yes\endcsname
 
 \permanent\protected\def\dosetleftskipadaption #1{\leftskipadaption \ifcsname\??skipadaptionleft #1\endcsname\lastnamedcs\else#1\fi\relax}
 \permanent\protected\def\dosetrightskipadaption#1{\rightskipadaption\ifcsname\??skipadaptionright#1\endcsname\lastnamedcs\else#1\fi\relax}
@@ -840,7 +824,7 @@
 \installcorenamespace{tolerancemethods}
 
 \permanent\protected\def\installtolerancemethod#1#2#3%
-  {\setvalue{\??tolerancemethods#1:#2}{#3}}
+  {\defcsname\??tolerancemethods#1:#2\endcsname{#3}}
 
 \installtolerancemethod \v!vertical   \v!verystrict   {\let\bottomtolerance\empty}
 \installtolerancemethod \v!vertical   \v!strict       {\def\bottomtolerance{.050}}
@@ -913,17 +897,13 @@
 %D   {\relax\ifmmode\copy\strutbox\else\unhcopy\strutbox\fi}
 %D \stoptyping
 %D
-%D But what is a \type{\strut}? Normally it's a rule of width
-%D zero, but when made visual, it's a rule and a negative skip.
-%D The mechanism for putting things in the margins described
-%D here cannot handle this situation very well. One
-%D characteristic of \type{\strut} is that the \type{\unhcopy}
-%D results in entering horizontal mode, which in return leads
-%D to some indentation.
+%D But what is a \type {\strut}? Normally it's a rule of width zero, but when made
+%D visual, it's a rule and a negative skip. The mechanism for putting things in the
+%D margins described here cannot handle this situation very well. One characteristic
+%D of \type {\strut} is that the \type {\unhcopy} results in entering horizontal
+%D mode, which in return leads to some indentation.
 %D
-%D To serve our purpose a bit better, the macro \type{\strut}
-%D can be redefined as:
-%D
+%D To serve our purpose a bit better, the macro \type {\strut} can be redefined as:
 %D \starttyping
 %D \def\strut
 %D   {\relax\ifmmode\else\hskip0pt\fi\copy\strutbox}
@@ -940,9 +920,9 @@
 %D    \fi}
 %D \stoptyping
 %D
-%D In \CONTEXT\ however we save some processing time by putting
-%D an extra \type{\hbox} around the \type{\strutbox}.
-
+%D In \CONTEXT\ however we save some processing time by putting an extra \type
+%D {\hbox} around the \type {\strutbox}.
+%D
 %D \starttyping
 %D % \setuplayout[gridgrid=yes] \showgrid
 %D
@@ -970,8 +950,8 @@
 %D \stoptyping
 
 \permanent\protected\def\justonespace{\removeunwantedspaces\space}
-%frozen\protected\def\justaperiod {\removeunwantedspaces.}
-%frozen\protected\def\justacomma  {\removeunwantedspaces,}
+%permanent\protected\def\justaperiod {\removeunwantedspaces.}
+%permanent\protected\def\justacomma  {\removeunwantedspaces,}
 
 \installcorenamespace{hspace}
 
@@ -981,9 +961,9 @@
 
 \permanent\tolerant\protected\def\definehspace[#1]#*[#2]#*[#3]% #1 = optional namespace
   {\ifparameter#3\or
-     \setvalue{\??hspace#1:#2}{#3}%
+     \defcsname\??hspace#1:#2\endcsname{#3}%
    \else
-     \setvalue{\??hspace:#1}{#2}%
+     \defcsname\??hspace  :#1\endcsname{#2}%
    \fi}
 
 \permanent\tolerant\protected\def\hspace[#1]#*[#2]%
@@ -1081,7 +1061,7 @@
 \installcorenamespace{spacemethods}
 
 \permanent\protected\def\installspacemethod#1#2% needs to set \obeyedspace
-  {\setvalue{\??spacemethods#1}{#2}}
+  {\defcsname\??spacemethods#1\endcsname{#2}}
 
 \permanent\def\activatespacehandler#1%
   {\csname\??spacemethods\ifcsname\??spacemethods#1\endcsname#1\else\v!off\fi\endcsname}
@@ -1127,21 +1107,17 @@
 %D
 %D \typebuffer \getbuffer
 
-\permanent\protected\def\autoinsertnextspace
-  {\futurelet\nexttoken\spac_spaces_auto_insert_next}
-
-\permanent\def\spac_spaces_auto_insert_next
-  {\clf_autonextspace{\normalmeaning\nexttoken}} % todo, just consult nexttoken at the lua end
+% \autoinsertnextspace % defined at the lua end
 
 %D Moved from bib module:
 
 \permanent\protected\def\outdented#1%
   {\hskip-\hangindent#1\relax}
 
-%D Beware: due to char-def this becomes an active character but that
-%D might change sometime when we will replace all these specials to
-%D node insertions. We might even expand it to utf then as it then
-%D can be used in string comparison (not that much needed anyway).
+%D Beware: due to char-def this becomes an active character but that might change
+%D sometime when we will replace all these specials to node insertions. We might
+%D even expand it to utf then as it then can be used in string comparison (not that
+%D much needed anyway).
 
 % \chardef\zwnj="200C
 % \chardef\zwj ="200D

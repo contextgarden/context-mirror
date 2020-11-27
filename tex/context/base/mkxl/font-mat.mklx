@@ -416,7 +416,7 @@
 
 \newconditional\c_math_bold
 
-\protected\def\mr % math regular
+\permanent\protected\def\mr % math regular
   {\ifmmode
      \font_helpers_synchronize_math_family_mr
    \else
@@ -425,7 +425,7 @@
    \mathdefault
    \setfalse\c_math_bold}
 
-\protected\def\mb % math bold
+\permanent\protected\def\mb % math bold
   {\ifmmode
      \font_helpers_synchronize_math_family_mb
    \else
@@ -463,13 +463,13 @@
   \fi
 \to \everymathematics
 
-\protected\def\nobigmath  {\synchronizebigmathflag\zerocount}
-\protected\def\autobigmath{\synchronizebigmathflag\plusone\synchronizebigmath}
-\protected\def\bigmath    {\synchronizebigmathflag\plustwo\synchronizebigmath}
+\permanent\protected\def\nobigmath  {\synchronizebigmathflag\zerocount}
+\permanent\protected\def\autobigmath{\synchronizebigmathflag\plusone\synchronizebigmath}
+\permanent\protected\def\bigmath    {\synchronizebigmathflag\plustwo\synchronizebigmath}
 
-\let\bigmathfontsize\empty
+\mutable\let\bigmathfontsize\empty
 
-\protected\def\synchronizebigmath
+\permanent\protected\def\synchronizebigmath
   {\ifx\bigmathfontsize\fontsize
      % already in sync
    \else

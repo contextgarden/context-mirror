@@ -94,6 +94,12 @@
    \c!depth=\v!fit,
    \c!location=\v!high]
 
+\mutable\let\currentattachmentdepth     \empty
+\mutable\let\currentattachmentheight    \empty
+\mutable\let\currentattachmentregistered\empty
+\mutable\let\currentattachmentsymbol    \empty
+\mutable\let\currentattachmentwidth     \empty
+
 \permanent\tolerant\protected\def\registerattachment[#tag]#spacer[#settings]% we save (globally) at the lua end
   {\ifarguments\else
      \begingroup
@@ -396,6 +402,11 @@
    \c!ny=10,
    \c!buffer=\v!comment,
    \c!location=\v!high]
+
+\mutable\let\currentcommentdepth \empty
+\mutable\let\currentcommentheight\empty
+\mutable\let\currentcommentsymbol\empty
+\mutable\let\currentcommentwidth \empty
 
 \appendtoks
     \frozen\instance\setuevalue         \currentcomment {\scrn_comment_argument[\currentcomment]}%

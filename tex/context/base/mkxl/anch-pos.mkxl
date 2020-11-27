@@ -396,18 +396,16 @@
   {\the\t_anch_positions_tracers}
 
 \permanent\protected\def\enableparpositions % global
-  {\glet\registerparoptions\doregisterparoptions
+  {\enforced\aliased\glet\registerparoptions\doregisterparoptions
    \global\positioningtrue}
 
 \permanent\let\disableparpositions\relax
 
-\let\registerparoptions\relax
+\aliased\let\registerparoptions\relax
 
-\protected\def\doregisterparoptions
-  {\iftrialtypesetting \else
-     \ifinpagebody \else \ifmmode \else \ifinformula \else
-       \anch_positions_register_par_options
-     \fi \fi \fi
+\permanent\protected\def\doregisterparoptions
+  {\iftrialtypesetting \orelse\ifinpagebody \orelse\ifmmode \orelse\ifinformula \else
+      \anch_positions_register_par_options
    \fi}
 
 \def\anch_positions_register_par_options_normal

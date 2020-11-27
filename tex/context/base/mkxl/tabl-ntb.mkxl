@@ -1679,7 +1679,7 @@
 
 \newbox\TABLEsplitbox % public, don't change
 
-\let\extratblsplitheight\zeropoint % additional space taken by before/afterTABLEsplitbox
+\mutable\let\extratblsplitheight\zeropoint % additional space taken by before/afterTABLEsplitbox
 
 \def\tabl_ntb_split_box
   {\resettsplit
@@ -1707,13 +1707,13 @@
 
 % ! ! ! ! TODO: naast \postprocessTABLEsplitbox ook evt \postprocessTABLEbox voor niet split
 
-\let\postprocessTABLEsplitbox\gobbleoneargument
-\let\postprocessTABLEbox     \gobbleoneargument
+\mutable\let\postprocessTABLEsplitbox\gobbleoneargument % maybe just a parameter
+\mutable\let\postprocessTABLEbox     \gobbleoneargument % maybe just a parameter
 
-\let\beforeTABLEsplitbox\relax
-\let\afterTABLEsplitbox \relax
-\let\beforeTABLEbox     \relax
-\let\afterTABLEbox      \relax
+\mutable\let\beforeTABLEsplitbox\relax                  % maybe just a parameter
+\mutable\let\afterTABLEsplitbox \relax                  % maybe just a parameter
+\mutable\let\beforeTABLEbox     \relax                  % maybe just a parameter
+\mutable\let\afterTABLEbox      \relax                  % maybe just a parameter
 
 \def\tabl_ntb_check_widths_one{\tabl_ntb_check_widths_indeed\zerocount} % 0 = trial run
 \def\tabl_ntb_check_widths_two{\tabl_ntb_check_widths_indeed\plusone  } % 1 = real run

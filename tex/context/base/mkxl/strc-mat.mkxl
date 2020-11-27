@@ -315,15 +315,15 @@
      \glet#1\relax
    \fi\fi}
 
-\let\currentplaceformulaattribute\relax
-\let\currentformulaattribute     \relax
-\let\currentsubformulaattribute  \relax
-\let\currentformulasattribute    \relax
+\mutable\let\currentplaceformulaattribute\relax
+\mutable\let\currentformulaattribute     \relax
+\mutable\let\currentsubformulaattribute  \relax
+\mutable\let\currentformulasattribute    \relax
 
-\let\currentplaceformulanumber\relax
-\let\currentformulanumber     \relax
-\let\currentsubformulanumber  \relax
-\let\currentformulasnumber    \relax
+\mutable\let\currentplaceformulanumber\relax
+\mutable\let\currentformulanumber     \relax
+\mutable\let\currentsubformulanumber  \relax
+\mutable\let\currentformulasnumber    \relax
 
 \mutable\let\currentformulasreference     \empty
 \mutable\let\currentformulareference      \empty
@@ -349,10 +349,10 @@
     \glet\currentnestedformulasuffix\empty
 \to \everyresetformulas
 
-\let\currentplaceformulasynchronize\relax
-\let\currentformulasynchronize     \relax
-\let\currentsubformulasynchronize  \relax
-\let\currentformulassynchronize    \relax
+\mutable\let\currentplaceformulasynchronize\relax
+\mutable\let\currentformulasynchronize     \relax
+\mutable\let\currentsubformulasynchronize  \relax
+\mutable\let\currentformulassynchronize    \relax
 
 \appendtoks
     \glet\currentplaceformulasynchronize \relax
@@ -360,6 +360,11 @@
     \glet\currentsubformulassynchronize  \relax
     \glet\currentnestedformulasynchronize\relax
 \to \everyresetformulas
+
+\mutable\let\currentsubformulasattribute  \empty
+\mutable\let\currentsubformulasnumber     \empty
+\mutable\let\currentsubformulasreference  \empty
+\mutable\let\currentsubformulassynchronize\empty
 
 % currently we do the number, some day we will do the (sub) formula
 

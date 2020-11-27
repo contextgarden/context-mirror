@@ -327,6 +327,9 @@
 
 \aliased\let\setupinteractionmenus\setupinteractionmenu
 
+\mutable\let\currentinteractionmenudistance\empty
+\mutable\let\currentinteractionmenustate   \empty
+
 \let\scrn_menu_action\relax
 
 \let\scrn_menu_define_original\defineinteractionmenu

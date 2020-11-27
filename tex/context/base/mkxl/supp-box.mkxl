@@ -814,7 +814,7 @@
 
 \newevery \everyshapebox \relax
 
-\def\shapesignal{.12345678pt} % or 12345sp
+\permanent\dimensiondef\shapesignal.12345678pt % or 12345sp
 
 \permanent\protected\def\reshapebox#1%
   {\doreshapebox

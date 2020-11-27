@@ -232,9 +232,9 @@
 \newtoks         \everytabulate              % public ?
 
 \protected\def\tolerantTABLEbreaktrue   {\settrue \c_tabl_tabulate_tolerant_break} % used in styles !
-\protected\def\handletabulatepbreakfalse{\setfalse\c_tabl_tabulate_handlepbreak  } % depricated
+%protected\def\handletabulatepbreakfalse{\setfalse\c_tabl_tabulate_handlepbreak  } % depricated
 
-\def\noftabulaterows{\number\c_tabl_tabulate_noflines} % handy for testing if a table is empty
+\permanent\def\noftabulaterows{\number\c_tabl_tabulate_noflines} % handy for testing if a table is empty
 
 \installcorenamespace{tabulatebox}
 \installcorenamespace{tabulatesetup}
@@ -769,7 +769,7 @@
      {\global\d_tabl_tabulate_vrulethickness#1\d_tabl_tabulate_vrulethickness_default}
      {\xdef\m_tabl_tabulate_vrule_color{#1}}}
 
-\def\tabl_tabulate_set_entry#1#2% rulespec template
+\permanent\protected\def\tabl_tabulate_set_entry#1#2% rulespec template
   {\c_tabl_tabulate_align\v_tabl_tabulate_align
    \c_tabl_tabulate_modus\zerocount
    \setfalse\c_tabl_tabulate_pwidth_set
@@ -807,7 +807,7 @@
      \tabl_tabulate_set_width_simple
    \fi}
 
-\def\tabl_tabulate_set_last_entry#1% rulespec
+\permanent\protected\def\tabl_tabulate_set_last_entry#1% rulespec
   {\glet\m_tabl_tabulate_color\empty
    \glet\m_tabl_tabulate_vrule_color\empty
    \edef\currenttabulationtrulespec{#1}%
@@ -822,8 +822,8 @@
      \tabl_tabulate_check_local_vrule_color\constantemptyargument\m_tabl_tabulate_vrule_color
      \tabl_tabulate_column_vrule_inject}}
 
-\let\settabulateentry    \tabl_tabulate_set_entry      % used at the lua end
-\let\settabulatelastentry\tabl_tabulate_set_last_entry % used at the lua end
+\aliased\let\settabulateentry    \tabl_tabulate_set_entry      % used at the lua end
+\aliased\let\settabulatelastentry\tabl_tabulate_set_last_entry % used at the lua end
 
 \def\tabl_tabulate_normalize_splitline
   {\ifcase\c_tabl_tabulate_splitlinemode

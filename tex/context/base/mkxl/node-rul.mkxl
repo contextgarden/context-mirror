@@ -383,7 +383,7 @@
     \fi
     \normalexpanded{\t_node_shifts_checklist{\the\t_node_shifts_checklist\node_shifts_redefine{\currentshift}}}% order ?
     \node_shifts_define
-    \setuevalue\currentshift{\node_shifts_direct{\currentshift}}%
+    \frozen\instance\setuevalue\currentshift{\node_shifts_direct{\currentshift}}%
 \to \everydefineshift
 
 \protected\def\node_shifts_define

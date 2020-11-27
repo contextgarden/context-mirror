@@ -171,7 +171,7 @@
                                              \page_margin_blocks_set_l_box
                                              \page_margin_blocks_set_r_box}
 
-\protected\def\page_margin_blocks_place_r_yes
+\permanent\protected\def\page_margin_blocks_place_r_yes
   {\setbox\b_page_margin_blocks_prepared\hbox to \rightmarginwidth
      {\marginblockparameter\c!left
       \box\b_page_margin_blocks_prepared
@@ -179,7 +179,7 @@
    \vsmashbox\b_page_margin_blocks_prepared
    \box\b_page_margin_blocks_prepared}
 
-\protected\def\page_margin_blocks_place_l_yes
+\permanent\protected\def\page_margin_blocks_place_l_yes
   {\setbox\b_page_margin_blocks_prepared\hbox to \leftmarginwidth
      {\marginblockparameter\c!right
       \box\b_page_margin_blocks_prepared
@@ -187,14 +187,14 @@
    \vsmashbox\b_page_margin_blocks_prepared
    \box\b_page_margin_blocks_prepared}
 
-\protected\def\page_margin_blocks_place_r_nop{\hskip\rightmarginwidth}
-\protected\def\page_margin_blocks_place_l_nop{\hskip\leftmarginwidth}
+\permanent\protected\def\page_margin_blocks_place_r_nop{\hskip\rightmarginwidth}
+\permanent\protected\def\page_margin_blocks_place_l_nop{\hskip\leftmarginwidth}
 
-\let\placerightmarginblock\page_margin_blocks_place_r_nop
-\let\placeleftmarginblock \page_margin_blocks_place_l_nop
+\aliased\let\placerightmarginblock\page_margin_blocks_place_r_nop
+\aliased\let\placeleftmarginblock \page_margin_blocks_place_l_nop
 
-\def\page_margin_blocks_set_r_box{\let\placerightmarginblock\page_margin_blocks_place_r_yes}
-\def\page_margin_blocks_set_l_box{\let\placeleftmarginblock \page_margin_blocks_place_l_yes}
+\def\page_margin_blocks_set_r_box{\enforced\aliased\let\placerightmarginblock\page_margin_blocks_place_r_yes}
+\def\page_margin_blocks_set_l_box{\enforced\aliased\let\placeleftmarginblock \page_margin_blocks_place_l_yes}
 
 % margin floats (keyword 'margin' in option list)
 

@@ -253,9 +253,9 @@
 
 \resettsplit
 
-\def\tsplitdirectwidth{\hsize}
+\mutable\def\tsplitdirectwidth{\hsize}
 
-\protected\def\handletsplit
+\permanent\protected\def\handletsplit
   {\page_split_float_check_caption{\wd\b_split_content}%
    \global\setfalse\splitfloatfirstdone
    \testpagesync % new, sync, but still tricky

@@ -99,6 +99,16 @@
 \permanent\def\namedstructureheadlocation#1% expandable, maybe [#1]
   {\csname\??savedinternalreference\ifcsname\??savedinternalreference#1\endcsname#1\else\s!default\fi\endcsname}
 
+\mutable\let\currentheadbackreference       \empty
+\mutable\let\currentheaddefault             \empty
+\mutable\let\currentheadincrement           \empty
+\mutable\let\currentheadinteraction         \empty
+\mutable\let\currentheadlabeltag            \empty
+\mutable\let\currentheadnumber              \!!zerocount
+\mutable\let\currentheadrenderingalternative\empty
+\mutable\let\currentheadrenderingsetup      \empty
+\mutable\let\currentheadtext                \empty
+
 % The next directive only makes sense when we have sort of garanteed outcome (math is not so
 % nice for instance).
 %
@@ -790,8 +800,8 @@
   {\strc_sectioning_delayed_flush
    \normalexpanded{\setmarking[\currenthead]{li::\currentstructurelistnumber}}}
 
-\let\deepstructurenumbercommand\relax
-\let\deepstructuretitlecommand \relax
+\mutable\let\deepstructurenumbercommand\relax
+\mutable\let\deepstructuretitlecommand \relax
 
 \permanent\protected\def\fullheadnumber
   {\edef\currentheadlabeltag{\currentsectionblock\c!label}%
@@ -814,11 +824,11 @@
    \fi
    \dostoptagged}
 
-\let\currenthead        \empty
-\let\currentheadcoupling\empty
-\let\currentheadsection \empty
-\let\currentheadlevel   \!!zerocount
-\let\currentheadcounter \!!zerocount
+\mutable\let\currenthead        \empty
+\mutable\let\currentheadcoupling\empty
+\mutable\let\currentheadsection \empty
+\mutable\let\currentheadlevel   \!!zerocount
+\mutable\let\currentheadcounter \!!zerocount
 
 \let\strc_show_used\relax
 
@@ -1182,7 +1192,7 @@
 %permanent\def\previoussectioncountervalue{\clf_depthnumber\numexpr\thenamedheadlevel\currenthead+\minusone\relax}
 \permanent\def\previoussectioncountervalue{\clf_depthnumber\numexpr\thenamedheadlevel\previoushead\relax}
 
-\let\previoushead\empty
+\mutable\let\previoushead\empty
 
 \def\strc_sectioning_handle_page_nop
   {\edef\p_continue{\headparameter\c!continue}%
@@ -1258,8 +1268,6 @@
 
 \permanent\tolerant\protected\def\setupheadnumber[#1]#*[#2]% todo: reset if at other level
   {\setstructurenumber{\thenamedheadlevel{#1}}{\number#2}}
-
-\def\currentheadnumber{0} % ==> \currentheadnumber
 
 \permanent\protected\def\determineheadnumber[#1]%
   {\xdef\currentheadnumber{\getstructurenumber{\thenamedheadlevel{#1}}}}

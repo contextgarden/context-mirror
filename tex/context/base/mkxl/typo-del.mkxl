@@ -145,8 +145,8 @@
 \newsignal\d_typo_subsentence_signal
 \newcount \c_typo_subsentence_nesting
 
-\let\beforesubsentence\donothing
-\let\aftersubsentence \donothing
+\mutable\let\beforesubsentence\donothing % maybe just a parameter
+\mutable\let\aftersubsentence \donothing % maybe just a parameter
 
 % todo: make this language option
 %

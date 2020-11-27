@@ -20,11 +20,11 @@
 
 \unprotect
 
-\registerctxluafile{spac-prf}{}
+\registerctxluafile{spac-prf}{autosuffix}
 
 \definesystemattribute[profilemethod][public]
 
-\installcorenamespace {profile} % beware, profiles are not like in mkii at all
+\installcorenamespace {profile}
 \installcorenamespace {profiles}
 
 \installcommandhandler \??profile {profile} \??profile
@@ -84,11 +84,11 @@
    \ifparameter#settings\or
      \edef\currentprofile{#profile}%
      \setupcurrentprofile[#settings]%
+   \orelse\ifhastok={#profile}%
+      \let\currentprofile\v!none
+      \setupcurrentprofile[#profile]%
    \else
-     \doifassignmentelse{#profile}
-       {\let\currentprofile\v!none
-        \setupcurrentprofile[#profile]}%
-       {\edef\currentprofile{#profile}}%
+      \edef\currentprofile{#profile}%
    \fi
    \dowithnextbox
      {\profilegivenbox\currentprofile\nextbox

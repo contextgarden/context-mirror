@@ -390,7 +390,7 @@
 \newconditional\c_math_fenced_done
 \newconditional\c_math_fenced_unknown  \settrue\c_math_fenced_unknown
 
-\protected\def\installmathfencepair#1#2#3#4%
+\permanent\protected\def\installmathfencepair#1#2#3#4%
   {\letcsname\??mathleft \normalmeaning#1\endcsname#2%
    \letcsname\??mathright\normalmeaning#3\endcsname#4}
 

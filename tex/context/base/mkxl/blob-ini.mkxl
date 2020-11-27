@@ -36,7 +36,7 @@
 \aliased\let\heightanddepthofstring\totalofstring
 \aliased\let\htdpofstring          \hdofstring
 
-\let\hd\htdp % if yes then move this
+% \let\hd\htdp % if yes then move this
 
 % This one takes anything that can be typeset
 

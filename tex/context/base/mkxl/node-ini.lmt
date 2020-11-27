@@ -162,40 +162,6 @@ nodes.literalvalues = literalvalues
 
 nodes.nodecodes     = nodecodes
 
--- local subtypes = allocate {
---     [nodecodes.glue]      = gluecodes,
---     [nodecodes.dir]       = dircodes,
---     [nodecodes.boundary]  = boundarycodes,
---     [nodecodes.noad]      = noadcodes,
---     [nodecodes.whatsit]   = whatcodes,
---     [nodecodes.glyph]     = glyphcodes,
---     [nodecodes.kern]      = kerncodes,
---     [nodecodes.penalty]   = penaltycodes,
---     [nodecodes.math]      = mathcodes,
---     [nodecodes.disc]      = disccodes,
---     [nodecodes.accent]    = accentcodes,
---     [nodecodes.radical]   = radicalcodes,
---     [nodecodes.fence]     = fencecodes,
---     [nodecodes.par]       = parcodes,
---     [nodecodes.rule]      = rulecodes,
-
---     [nodecodes.vlist]     = listcodes,
---     [nodecodes.hlist]     = listcodes,
-
---  -- [nodecodes.list]      = listcodes,
-
---  -- [nodecodes.parameter] = parametercodes,
---  -- [nodecodes.user]      = usercodes,
--- }
-
--- for k in next, table.sortedkeys(subtypes) do
---     local v = nodecodes[k]
---     print(k,v)
---     if k and subtypes[k] then
---         subtypes[v] = subtypes[k]
---     end
--- end
-
 local subtypes = allocate {
     glue      = gluecodes,
     dir       = dircodes,
@@ -276,5 +242,3 @@ end
 for i=0,#gluecodes do
     texsetintegervalue(gluecodes[i] .. "subtypecode",i,"immutable")
 end
-
--- tex.set("internalcodesmode",1) -- obsolete

@@ -228,15 +228,15 @@
 \let           \m_strc_itemgroups_indenting      \empty
 \let           \m_strc_itemgroups_destination    \empty
 
-\let           \currentitemlevel                 \!!zerocount % public
-\def           \currentnofitems                  {\the\c_strc_itemgroups_max_items}
-\def           \currentitemnumber                {\strc_counters_raw_sub\v_strc_itemgroups_counter\currentitemlevel} % public
+\mutable\let   \currentitemlevel                 \!!zerocount % public
+\mutable\def   \currentnofitems                  {\the\c_strc_itemgroups_max_items}
+\mutable\def   \currentitemnumber                {\strc_counters_raw_sub\v_strc_itemgroups_counter\currentitemlevel} % public
 
 \newtoks       \itemgroupcommands                % maybe public
 
-\def           \currentitemgroupsymbol           {n}    % here we cannot use a _ in the name
-\let           \currentitemgroupconversionset    \empty % here we cannot use a _ in the name
-\let           \currentitemgroupsegments         \empty
+\mutable\def   \currentitemgroupsymbol           {n}    % here we cannot use a _ in the name
+\mutable\let   \currentitemgroupconversionset    \empty % here we cannot use a _ in the name
+\mutable\let   \currentitemgroupsegments         \empty
 
 \def\strc_itemgroups_register_status
   {\clf_registeritemgroup{\currentparentitemgroup}\c_strc_itemgroups_nesting\c_strc_itemgroups_n_of_items\dimexpr\itemgroupparameter\c!maxwidth\relax}

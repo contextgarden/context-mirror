@@ -936,6 +936,8 @@ local ruledglue do
  -- local keepskip_code         = gluecodes.keepskip or gluecodes.userskip
     local leftskip_code         = gluecodes.leftskip
     local rightskip_code        = gluecodes.rightskip
+    local lefthangskip_code     = gluecodes.lefthangskip
+    local righthangskip_code    = gluecodes.righthangskip
     local parfillleftskip_code  = gluecodes.parfillleftskip or parfillskip_code
     local parfillrightskip_code = gluecodes.parfillrightskip or parfillskip_code
     local indentskip_code       = gluecodes.indentskip
@@ -956,8 +958,6 @@ local ruledglue do
         [gluecodes.topskip]               = "TS",
         [gluecodes.splittopskip]          = "ST",
         [gluecodes.tabskip]               = "AS",
-        [gluecodes.lefthangskip]          = "LH",
-        [gluecodes.righthangskip]         = "RH",
         [gluecodes.thinmuskip]            = "MS",
         [gluecodes.medmuskip]             = "MM",
         [gluecodes.thickmuskip]           = "ML",
@@ -972,6 +972,8 @@ local ruledglue do
      -- false                             = "HS",
         [leftskip_code]                   = "LS",
         [rightskip_code]                  = "RS",
+        [lefthangskip_code]               = "LH",
+        [righthangskip_code]              = "RH",
         [spaceskip_code]                  = "SP",
         [xspaceskip_code]                 = "XS",
         [zerospaceskip_code]              = "ZS",
@@ -995,6 +997,8 @@ local ruledglue do
                 info = sometext(amount,l_glue,c_space)
             elseif subtype == leftskip_code or subtype == rightskip_code then
                 info = sometext(amount,l_glue,c_skip_a)
+            elseif subtype == lefthangskip_code or subtype == righthangskip_code then
+                info = sometext(amount,l_glue,c_skip_b)
             elseif subtype == parfillleftskip_code or subtype == parfillrightskip_code or subtype == indentskip_code or subtype == correctionskip_code then
                 info = sometext(amount,l_glue,c_indent)
             elseif subtype == userskip_code then

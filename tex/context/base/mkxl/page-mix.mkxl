@@ -341,7 +341,7 @@
 
 \installcorenamespace{mixedcolumnsseparator}
 
-\protected\def\installmixedcolumnseparator#1#2%
+\permanent\protected\def\installmixedcolumnseparator#1#2%
   {\setvalue{\??mixedcolumnsseparator#1}{#2}}
 
 \installmixedcolumnseparator\v!rule

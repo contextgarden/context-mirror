@@ -28,8 +28,8 @@
 %D dependencies are more consistent. Beware, the version number has to match \type
 %D {YYYY.MM.DD HH:MM} format.
 
-\edef\contextformat {\jobname}
-\edef\contextversion{2020.11.26 15:38}
+\immutable\edef\contextformat {\jobname}
+\immutable\edef\contextversion{2020.11.27 20:07}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -38,17 +38,17 @@
 
 %D Kind of special:
 
-\chardef\contextlmtxmode\directlua{tex.print(CONTEXTLMTXMODE or 0)}\relax
+\immutable\chardef\contextlmtxmode\directlua{tex.print(CONTEXTLMTXMODE or 0)}\relax
 
 %D For those who want to use this:
 
-\let\fmtname   \contextformat
-\let\fmtversion\contextversion
+\aliased\let\fmtname   \contextformat
+\aliased\let\fmtversion\contextversion
 
 %D Loading:
 
-\edef\mksuffix   {mkiv}
-\edef\contextmark{LMTX}
+\immutable\edef\mksuffix   {mkiv}
+\immutable\edef\contextmark{LMTX}
 
 \ifdefined\normalinput \else \let\normalinput\input \fi
 

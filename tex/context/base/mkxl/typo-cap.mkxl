@@ -18,7 +18,7 @@
 %D Maybe we need a more clever system: either command or style mode etc. so
 %D that we can avoid the grouped mess in a simple style switch.
 
-\registerctxluafile{typo-cap}{optimize}
+\registerctxluafile{typo-cap}{autosuffix,optimize}
 
 % \definesystemattribute[case][public] % already predefined
 
@@ -73,13 +73,13 @@
 % test \word{test TEST \TeX} test
 % test \Word{test TEST \TeX} test
 
-\permanent\protected\def\setcharactercasing[#1]{\clf_setcharactercasing{#1}\fontid\font} % can be public implementor
+\permanent\protected\def\setcharactercasing[#1]{\clf_setcharactercasing{#1}} % can be public implementor
 
-\protected\def\typo_capitale_WORD {\clf_setcharactercasing{\v!WORD }\fontid\font}
-\protected\def\typo_capitale_word {\clf_setcharactercasing{\v!word }\fontid\font}
-\protected\def\typo_capitale_Word {\clf_setcharactercasing{\v!Word }\fontid\font}
-\protected\def\typo_capitale_Words{\clf_setcharactercasing{\v!Words}\fontid\font}
-\protected\def\typo_capitale_camel{\clf_setcharactercasing{\v!camel}\fontid\font}
+\protected\def\typo_capitale_WORD {\clf_setcharactercasing\v!WORD }
+\protected\def\typo_capitale_word {\clf_setcharactercasing\v!word }
+\protected\def\typo_capitale_Word {\clf_setcharactercasing\v!Word }
+\protected\def\typo_capitale_Words{\clf_setcharactercasing\v!Words}
+\protected\def\typo_capitale_camel{\clf_setcharactercasing\v!camel}
 
 \pushoverloadmode
 
@@ -157,13 +157,13 @@
 
 \def\typo_capitals_set_fake#1%
   {\edef\currentcapitals{#1}%
-   \clf_setcharactercasing{\currentcapitals}\fontid\font
+   \clf_setcharactercasing\currentcapitals
    \usecapitalsstyleparameter\c!style}
 
 \def\typo_capitals_set_real#1%
   {\edef\currentcapitals{#1}%
    \sc
-   \clf_setcharactercasing{\currentcapitals}\fontid\font}
+   \clf_setcharactercasing\currentcapitals}
 
 \permanent\protected\def\pseudosmallcapped{\triggergroupedcommandcs\font_style_pseudosmallcapped}
 \permanent\protected\def\pseudoSmallcapped{\triggergroupedcommandcs\font_style_pseudoSmallcapped}

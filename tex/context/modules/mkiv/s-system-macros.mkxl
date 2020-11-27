@@ -25,6 +25,8 @@
 % \usemodule[article-basic] \setuplayout[tight] \setupbodyfont[7pt,tt]
 \usemodule[article-basic] \setuplayout[tight] \setupbodyfont[5pt,tt]
 
+\setupbackgrounds[page][background=color,backgroundcolor=darkgray] \setupcolors[textcolor=white]
+
 \setuppapersize
   [A4,landscape]
   [A4,landscape]

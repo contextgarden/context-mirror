@@ -29,7 +29,7 @@
 
 \registerctxluafile{strc-rsc}{}
 \registerctxluafile{strc-ref}{}
-\registerctxluafile{node-ref}{optimize}
+\registerctxluafile{node-ref}{autosuffix,optimize}
 
 \unprotect
 
@@ -58,11 +58,31 @@
 %D page number in an unnumbered document). By setting the \type{interaction}
 %D variable, one can influences the way interactive references are set.
 
-\let\referenceprefix\empty
-
 \installcorenamespace{referencing}
 
 \installdirectcommandhandler \??referencing {referencing} % \??referencing
+
+\mutable\let\referenceprefix               \empty
+
+\mutable\let\currentreferenceattribute     \empty
+\mutable\let\currentreferencecoding        \empty
+\mutable\let\currentreferencecontent       \empty
+\mutable\let\currentreferencedata          \empty
+\mutable\let\currentreferenceexpansion     \empty
+\mutable\let\currentreferenceformatautocase\empty
+\mutable\let\currentreferenceformatlabel   \empty
+\mutable\let\currentreferenceformatsetups  \empty
+\mutable\let\currentreferenceformattype    \empty
+\mutable\let\currentreferencekind          \empty
+\mutable\let\currentreferencelabels        \empty
+\mutable\let\currentreferencenumber        \empty
+\mutable\let\currentreferenceorder         \empty
+\mutable\let\currentreferencepage          \empty
+\mutable\let\currentreferencerealpage      \empty
+\mutable\let\currentreferencetext          \empty
+\mutable\let\currentreferencetitle         \empty
+\mutable\let\currentreferenceuserdata      \empty
+
 
 \newif\ifreferencing \referencingtrue
 

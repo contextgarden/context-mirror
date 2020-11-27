@@ -187,6 +187,12 @@
     \d_page_floats_compress_distance\floatparameter\c!compressdistance\relax
 \to \everysetupfloat
 
+\mutable\let\currentfloatattribute  \empty
+\mutable\let\currentfloatcounter    \empty
+\mutable\let\currentfloatgroup      \empty
+\mutable\let\currentfloatnumber     \empty
+\mutable\let\currentfloatsynchronize\empty
+
 %D We need to do it again here:
 
 \setupfloat
@@ -1030,8 +1036,6 @@
 
 % todo: optional user pars
 
-\let\currentfloatattribute\empty % to be checked
-
 \def\floatcaptionattribute
   {\iflocation
      \ifempty\currentfloatattribute
@@ -1231,7 +1235,7 @@
 \setvalue{\??floatmovement+2*\v!line}{\strc_floats_move_down_line{2}}
 \setvalue{\??floatmovement 2*\v!line}{\strc_floats_move_down_line{2}}
 
-\protected\def\installfloatmovement#1#2{\setvalue{\??floatmovement#1}{#2}}
+\permanent\protected\def\installfloatmovement#1#2{\setvalue{\??floatmovement#1}{#2}}
 
 \def\strc_floats_move_down#setting%
   {\begincsname\??floatmovement#setting\endcsname}
