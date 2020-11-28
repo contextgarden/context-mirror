@@ -226,13 +226,13 @@ local inject_areas do
                 end
             else
                 if trace_areas then
-                    report_area("dimensions taken of range starting with %a using parent",nodecodes[id])
+                    report_area("dimensions taken of range starting with %a using parent",nodecodes[getid(start)])
                 end
                 return hlist_dimensions(start,stop,parent)
             end
         else
             if trace_areas then
-                report_area("dimensions taken of range starting with %a",nodecodes[id])
+                report_area("dimensions taken of range starting with %a",nodecodes[getid(start)])
             end
             return hlist_dimensions(start,stop)
         end
@@ -313,17 +313,26 @@ local inject_areas do
                 -- test \goto{\TeX}[page(2)] test \gotobox{\hbox {x} \hbox {x}}[page(2)]
                 if r then
                     if not reference then
-                        reference, first, last, firstdir = r, current, current, txtdir
+                        reference = r
+                        first     = current
+                        last      = current
+                        firstdir  = txtdir
                     elseif r == reference then
                         -- same link
                         last = current
                     elseif (done[reference] or 0) == 0 then
                         if not skip or r > skip then -- maybe no > test
                             head, current = inject_range(head,first,last,reference,parent,pardir,firstdir)
-                            reference, first, last, firstdir = nil, nil, nil, nil
+                            reference = nil
+                            first     = nil
+                            last      = nil
+                            firstdir  = nil
                         end
                     else
-                        reference, first, last, firstdir = r, current, current, txtdir
+                        reference = r
+                        first     = current
+                        last      = current
+                        firstdir  = txtdir
                     end
                     done[r] = (done[r] or 0) + 1
                 end
@@ -355,7 +364,10 @@ local inject_areas do
                 elseif subtype == rightskip_code or subtype == parfillskip_code then
                     if reference and (done[reference] or 0) == 0 then
                         head, current = inject_range(head,first,last,reference,parent,pardir,firstdir)
-                        reference, first, last, firstdir = nil, nil, nil, nil
+                        reference = nil
+                        first     = nil
+                        last      = nil
+                        firstdir  = nil
                     end
                     goto NEXT
                 end
@@ -365,16 +377,29 @@ local inject_areas do
                 if not r then
                     -- just go on, can be kerns
                 elseif not reference then
-                    reference, first, last, firstdir = r, current, current, txtdir
+                    reference = r
+                    first     = current
+                    last      = current
+                    firstdir  = txtdir
                 elseif r == reference then
                     last = current
                 elseif (done[reference] or 0) == 0 then -- or (id == glue_code and getsubtype(current) == right_skip_code) then
                     if not skip or r > skip then -- maybe no > test
                         head, current = inject_range(head,first,last,reference,parent,pardir,firstdir)
-                        reference, first, last, firstdir = nil, nil, nil, nil
+                        reference = nil
+                        first     = nil
+                        last      = nil
+                        firstdir  = nil
+                    else
+--                         print("!!!!!!!!")
                     end
                 else
-                    reference, first, last, firstdir = r, current, current, txtdir
+                    -- todo: safeguard when we have a glyph or dics or ... so we might as well
+                    -- then scan for all possibel content nodes
+                    reference = r
+                    first     = current
+                    last      = current
+                    firstdir  = txtdir
                 end
             end
           ::NEXT::

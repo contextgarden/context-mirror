@@ -635,8 +635,8 @@
    \c!default=\v!middle]
 
 \appendtoks
-   \frozen\instance\protected\defcsname\e!start\currentnarrower\endcsname{\spac_narrower_start[\currentnarrower]}%
-   \frozen\instance\protected\defcsname\e!stop \currentnarrower\endcsname{\spac_narrower_stop}%
+   \frozen\instance\protected\edefcsname\e!start\currentnarrower\endcsname{\spac_narrower_start[\currentnarrower]}%
+   \frozen\instance\protected\edefcsname\e!stop \currentnarrower\endcsname{\spac_narrower_stop}%
 \to \everydefinenarrower
 
 \permanent\protected\def\installnarrowermethod#1#2%
@@ -685,18 +685,18 @@
    \edef\askednarrower{#1}%
    \ifx\askednarrower\v!reverse
      \ifconditional\s_spac_narrower_last_swap
-       \permanent\leftskip \s_spac_narrower_right_last
-       \permanent\rightskip\s_spac_narrower_left_last
+       \leftskip \s_spac_narrower_right_last
+       \rightskip\s_spac_narrower_left_last
        \setfalse\s_spac_narrower_last_swap
      \else
-       \permanent\leftskip \s_spac_narrower_left_last
-       \permanent\rightskip\s_spac_narrower_right_last
+       \leftskip \s_spac_narrower_left_last
+       \rightskip\s_spac_narrower_right_last
        \settrue\s_spac_narrower_last_swap
      \fi
    \else
      \normalexpanded{\processcommalistwithparameters[\askednarrower]}\spac_narrower_initialize
-     \permanent\advance\leftskip \dimexpr\s_spac_narrower_left +\s_spac_narrower_middle\relax
-     \permanent\advance\rightskip\dimexpr\s_spac_narrower_right+\s_spac_narrower_middle\relax
+     \advance\leftskip \dimexpr\s_spac_narrower_left +\s_spac_narrower_middle\relax
+     \advance\rightskip\dimexpr\s_spac_narrower_right+\s_spac_narrower_middle\relax
    \fi
    \seteffectivehsize}
 
