@@ -634,6 +634,102 @@ end
 
 -- experimental
 
+-- local function stacker(attribute,head,default) -- no triggering, no inheritance, but list-wise
+--
+--  -- nsbegin()
+--     local stacked  = false
+--
+--     local current  = head
+--     local previous = head
+--     local attrib   = default or unsetvalue
+--     local check    = false
+--     local leader   = false
+--
+--     while current do
+--         local id = getid(current)
+--         if id == glyph_code then
+--             check = true
+--         elseif id == glue_code then
+--             leader = getleader(current)
+--             if leader then
+--                 check = true
+--             end
+--         elseif id == hlist_code or id == vlist_code then
+--             local content = getlist(current)
+--             if content then
+--                 local list
+--                 if nslistwise then
+--                     local a = getattr(current,attribute)
+--                     if a and attrib ~= a and nslistwise[a] then -- viewerlayer
+--                         head = insert_node_before(head,current,copy_node(nsdata[a]))
+--                         list = stacker(attribute,content,a)
+--                         if list ~= content then
+--                             setlist(current,list)
+--                         end
+--                         head, current = insert_node_after(head,current,copy_node(nsnone))
+--                     else
+--                         list = stacker(attribute,content,attrib)
+--                         if list ~= content then
+--                             setlist(current,list)
+--                         end
+--                     end
+--                 else
+--                     list = stacker(attribute,content,default)
+--                     if list ~= content then
+--                         setlist(current,list)
+--                     end
+--                 end
+--             end
+--         elseif id == rule_code then
+--             check = has_dimensions(current)
+--         end
+--
+--         if check then
+--             local a = getattr(current,attribute) or unsetvalue
+--             if a ~= attrib then
+--                 if not stacked then
+--                     stacked = true
+--                     nsbegin()
+--                 end
+--                 local n = nsstep(a)
+--                 if n then
+--                     head = insert_node_before(head,current,n) -- a
+--                 end
+--                 attrib = a
+--                 if leader then
+--                     -- tricky as a leader has to be a list so we cannot inject before
+--                  -- local list = stacker(attribute,leader,attrib)
+--                  -- leader = false
+--
+--                     local content = getlist(leader)
+--                     if content then
+--                         local list = stacker(attribute,leader,attrib)
+--                         if leader ~= list then
+--                             setleader(current,list)
+--                         end
+--                     end
+--
+--                     leader = false
+--                 end
+--             end
+--             check = false
+--         end
+--
+--         previous = current
+--         current = getnext(current)
+--     end
+--
+--     if stacked then
+--         local n = nsend()
+--         while n do
+--             head = insert_node_after(head,previous,n)
+--             n = nsend()
+--         end
+--     end
+--
+--     return head
+-- end
+
 local function stacker(attribute,head,default) -- no triggering, no inheritance, but list-wise
 
  -- nsbegin()
@@ -645,43 +741,42 @@ local function stacker(attribute,head,default) -- no triggering, no inheritance,
     local check    = false
     local leader   = false
 
-    while current do
-        local id = getid(current)
+    for current, id, subtype, content in nextcontent, head do
         if id == glyph_code then
             check = true
         elseif id == glue_code then
-            leader = getleader(current)
-            if leader then
-                check = true
-            end
+            leader = content
+            check  = true
         elseif id == hlist_code or id == vlist_code then
-            local content = getlist(current)
-            if content then
-                local list
-                if nslistwise then
-                    local a = getattr(current,attribute)
-                    if a and attrib ~= a and nslistwise[a] then -- viewerlayer
-                        head = insert_node_before(head,current,copy_node(nsdata[a]))
-                        list = stacker(attribute,content,a)
-                        if list ~= content then
-                            setlist(current,list)
-                        end
-                        head, current = insert_node_after(head,current,copy_node(nsnone))
-                    else
-                        list = stacker(attribute,content,attrib)
-                        if list ~= content then
-                            setlist(current,list)
-                        end
+            local list
+            if nslistwise then
+                local a = getattr(current,attribute)
+                if a and attrib ~= a and nslistwise[a] then -- viewerlayer
+                    head = insert_node_before(head,current,copy_node(nsdata[a]))
+                    list = stacker(attribute,content,a)
+                    if list ~= content then
+                        setlist(current,list)
                     end
+                    head, current = insert_node_after(head,current,copy_node(nsnone))
                 else
-                    list = stacker(attribute,content,default)
+                    list = stacker(attribute,content,attrib)
                     if list ~= content then
                         setlist(current,list)
                     end
                 end
+            else
+                list = stacker(attribute,content,default)
+                if list ~= content then
+                    setlist(current,list)
+                end
             end
         elseif id == rule_code then
-            check = has_dimensions(current)
+            if subtype == boxrule_code or subtype == imagerule_code or subtype == emptyrule_code then
+                -- so no redundant color stuff (only here, layers for instance should obey)
+                check = false
+            else
+                check = has_dimensions(current)
+            end
         end
 
         if check then
@@ -716,7 +811,6 @@ local function stacker(attribute,head,default) -- no triggering, no inheritance,
         end
 
         previous = current
-        current = getnext(current)
     end
 
     if stacked then

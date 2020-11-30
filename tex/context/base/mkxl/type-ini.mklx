@@ -82,8 +82,8 @@
 
 % tricky ... here we push/pop ... so \let
 
-\let\typescriptmethod\plusone % 1: empty==all==true  2: empty==false
-\let\typescriptstate \plustwo % 1: process 2: store
+\mutable\let\typescriptmethod\plusone % 1: empty==all==true  2: empty==false
+\mutable\let\typescriptstate \plustwo % 1: process 2: store
 
 \installmacrostack\typescriptmethod
 \installmacrostack\typescriptstate

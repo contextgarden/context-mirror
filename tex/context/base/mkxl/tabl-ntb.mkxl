@@ -77,8 +77,8 @@
 %D
 %D \typebuffer \getbuffer
 
-\ifdefined\dotagTABLEcell   \else \let\dotagTABLEcell  \relax \fi % todo: namespace
-\ifdefined\dotagTABLEsignal \else \let\dotagTABLEsignal\relax \fi % todo: namespace
+\ifdefined\dotagTABLEcell   \else \aliased\let\dotagTABLEcell  \relax \fi % todo: namespace
+\ifdefined\dotagTABLEsignal \else \aliased\let\dotagTABLEsignal\relax \fi % todo: namespace
 
 \let\tabl_ntb_next_level\relax
 

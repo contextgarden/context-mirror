@@ -53,9 +53,9 @@
 
 \installcommandhandler \??framed {framed} \??framed
 
-\let\pack_framed_framedparameter    \framedparameter
-\let\pack_framed_framedparameterhash\framedparameterhash
-\let\pack_framed_setupcurrentframed \setupcurrentframed
+\aliased\let\pack_framed_framedparameter    \framedparameter
+\aliased\let\pack_framed_framedparameterhash\framedparameterhash
+\aliased\let\pack_framed_setupcurrentframed \setupcurrentframed
 
 \def\pack_framed_initialize
   {\enforced\let\framedparameter    \pack_framed_framedparameter
@@ -1657,23 +1657,6 @@
 %   \framed[width=2cm,align=middle,location=middle] {location\\equals\\middle}
 %   B}
 
-% \installframedlocator \v!hanging % best with strut=no
-%   {}
-%   {\dp\b_framed_normal\ht\b_framed_normal
-%    \ht\b_framed_normal\zeropoint}
-%
-% \installframedlocator \v!depth
-%   {}
-%   {\ht\b_framed_normal\dimexpr\ht\b_framed_normal-\strutdp\relax
-%    \dp\b_framed_normal\strutdp
-%    \box\b_framed_normal}
-%
-% \installframedlocator \v!height
-%   {}
-%   {\dp\b_framed_normal\dimexpr\ht\b_framed_normal-\strutht\relax
-%    \ht\b_framed_normal\strutht
-%    \box\b_framed_normal}
-
 \installframedlocator \v!hanging % best with strut=no *1* / see mail to list by SB
   {}
   {\scratchdimen\ht\b_framed_normal
@@ -2623,9 +2606,9 @@
    \c!margin=\v!standard]
 
 \appendtoks
-    \frozen\instance\setuevalue{\e!start\currentframedtext}{\pack_framed_text_start {\currentframedtext}}%
-    \frozen\instance\setuevalue{\e!stop \currentframedtext}{\pack_framed_text_stop                      }%
-    \frozen\instance\setuevalue        {\currentframedtext}{\pack_framed_text_direct[\currentframedtext]}%
+    \frozen\instance\protected\edefcsname\e!start\currentframedtext\endcsname{\pack_framed_text_start [\currentframedtext]}%
+    \frozen\instance\protected\edefcsname\e!stop \currentframedtext\endcsname{\pack_framed_text_stop                      }%
+    \frozen\instance\protected\edefcsname        \currentframedtext\endcsname{\pack_framed_text_direct[\currentframedtext]}%
 \to \everydefineframedtext
 
 \setvalue{\??framedtextlocation\v!left  }{\letframedtextparameter\c!left \relax
@@ -2641,15 +2624,12 @@
                                           \letframedtextparameter\c!right\relax
                                           \settrue\c_framed_text_location_none}
 
-\protected\def\pack_framed_text_start#1%
+\tolerant\protected\def\pack_framed_text_start[#1]#*[#2]#*[#3]% or #1#*[#2]#*[#3]% and pass {#1}
   {\bgroup
-   \edef\currentframedtext{#1}%
-   \dodoubleempty\pack_framed_text_start_indeed}
-
-\def\pack_framed_text_start_indeed[#1][#2]%
-  {\doifelseassignment{#1}
-     {\pack_framed_text_start_continue\empty{#1}}
-     {\pack_framed_text_start_continue{#1}{#2}}}
+   \edef\currentframedtext{#1}
+   \doifelseassignment{#2}
+     {\pack_framed_text_start_continue\empty{#2}}
+     {\pack_framed_text_start_continue{#2}{#3}}}
 
 % todo: sort out first/lastline ht/dp
 
@@ -2779,7 +2759,7 @@
   {\bgroup
    \edef\currentframedtext{#1}%
    \usebodyfontparameter\framedtextparameter
-   \setupcurrentframedtext[#1]%
+   \setupcurrentframedtext[#2]%
    \edef\p_framed_text_strut{\framedtextparameter\c!strut}%
    \letframedtextparameter\c!strut\v!no
    \inheritedframedtextframed\bgroup

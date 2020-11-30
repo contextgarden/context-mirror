@@ -583,7 +583,7 @@
      \expandafter\let\expandafter\updateraggedskips\csname\??alignmentraggedcache\m_spac_align_asked\endcsname
    \fi}
 
-\let\dosetraggedcommand\spac_align_prepare % sort of public
+\aliased\let\dosetraggedcommand\spac_align_prepare % sort of public
 
 % The regular align setter:
 

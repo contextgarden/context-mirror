@@ -106,7 +106,7 @@
      \fi
    \fi}
 
-\def\strc_floats_facing_flush_indeed
+\permanent\protected\def\strc_floats_facing_flush_indeed
   {\global\advance\c_strc_floats_facing_flushed\plusone
    \floatingpenalty\zerocount
    \insert\namedinsertionnumber\s!topfloat\bgroup
@@ -128,7 +128,7 @@
      \resetboxesincache{\currentfacingfloat}%
    \fi}
 
-\let\flushfacingfloats\strc_floats_facing_flush
+\aliased\let\flushfacingfloats\strc_floats_facing_flush
 
 \protected\def\strc_floats_facing_setup
   {\edef\currentfacingfloat{\currentfacingfloat:\m_strc_floats_state}%

@@ -17,8 +17,8 @@
 
 \unprotect
 
-\ifdefined\dotagsetdelimitedsymbol   \else \let\dotagsetdelimitedsymbol  \gobbleoneargument \fi
-\ifdefined\dotagsetsubsentencesymbol \else \let\dotagsetsubsentencesymbol\gobbleoneargument \fi
+\ifdefined\dotagsetdelimitedsymbol   \else \aliased\let\dotagsetdelimitedsymbol  \gobbleoneargument \fi
+\ifdefined\dotagsetsubsentencesymbol \else \aliased\let\dotagsetsubsentencesymbol\gobbleoneargument \fi
 
 % THIS IS OBSOLETE:
 

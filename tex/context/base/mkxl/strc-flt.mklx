@@ -321,8 +321,12 @@
 
 %D Captions.
 
-\let\floatcaptionsuffix\empty % an optional suffix
-\let\floatcaptionnumber\empty % a logical counter
+\mutable\let\floatcaptionarrangement\empty
+\mutable\let\floatcaptionattribute  \empty
+\mutable\let\floatcaptiondirectives \empty
+\mutable\let\floatcaptionlocation   \empty
+\mutable\let\floatcaptionnumber     \empty
+\mutable\let\floatcaptionsuffix     \empty
 
 % For a while these were placeholders:
 %
@@ -601,11 +605,11 @@
 
 % place
 
-\let\floatlabel         \empty
-\let\floatcolumn        \empty
-\let\floatrow           \empty
-\let\floatlocation      \empty
-\let\floatlocationmethod\empty
+\mutable\let\floatlabel         \empty
+\mutable\let\floatcolumn        \empty
+\mutable\let\floatrow           \empty
+\mutable\let\floatlocation      \empty
+\mutable\let\floatlocationmethod\empty
 
 \def\strc_floats_analyze_location
   {% more will be moved here
@@ -624,7 +628,7 @@
     \setupfloat[\c!spacebefore=\v!none,\c!spaceafter=\v!none]%
 \to \c_floats_every_table_float
 
-\ifdefined\dotagregisterfloat \else \let\dotagregisterfloat\gobbletwoarguments \fi
+\ifdefined\dotagregisterfloat \else \aliased\let\dotagregisterfloat\gobbletwoarguments \fi
 
 \tolerant\def\strc_floats_place[#tag]#spacer[#location]#spacer[#reference]#:#caption%
   {\strc_floats_set_current_tag{#tag}%
@@ -774,7 +778,7 @@
 \ifdefined\page_margin_strc_floats_before    \else \let\page_margin_strc_floats_before   \relax \fi
 \ifdefined\page_margin_strc_floats_set_hsize \else \let\page_margin_strc_floats_set_hsize\relax \fi
 
-\def\flushfloatslist
+\immutable\def\flushfloatslist
   {\v!left,\v!right,\v!inner,\v!outer,%
    \v!backspace,\v!cutspace,%
    \v!inleft,\v!inright,\v!inmargin,%
@@ -1266,12 +1270,13 @@
 \permanent\protected\def\hangsidefloat[#number]%
   {\global\c_page_sides_n_of_lines#number\relax}
 
+\mutable\let\extrafloatlocation\empty
+
 \def\strc_floats_set_extra_action#rightpagelocation#leftpagelocation%
   {\rightorleftpageaction
      {\let\extrafloatlocation#rightpagelocation}%
      {\let\extrafloatlocation#leftpagelocation}}
 
-\let\extrafloatlocation\empty
 
 \installcorenamespace{extrafloataction}
 
@@ -2419,11 +2424,13 @@
 
 \installcorenamespace{floatmethods}
 
-\let\floatmethod      \empty % set by lua
-\let\floatlabel       \empty % set by lua
-\let\floatcolumn      \empty % set by lua
-\let\floatrow         \empty % set by lua
-\let\forcedfloatmethod\empty % set by lua and floatcombinations
+\mutable\let\floatmethod       \empty % set by lua
+\mutable\let\floatlabel        \empty % set by lua
+\mutable\let\floatcolumn       \empty % set by lua
+\mutable\let\floatrow          \empty % set by lua
+\mutable\let\floatspecification\empty
+
+\mutable\let\forcedfloatmethod \empty % set by lua and floatcombinations
 
 \permanent\protected\def\setfloatmethodvariables#1% \floatmethod \floatlabel \floatrow \floatcolumn
   {\clf_analysefloatmethod{#1}} % move definition to lua end
@@ -2433,14 +2440,6 @@
 
 \def\strc_floats_get_box
   {\ifvisible
-%      \let\floatlabel \empty
-%      \let\floatcolumn\empty
-%      \let\floatrow   \empty
-%      \setfloatmethodvariables\floatlocation
-     % todo: nog algemeen otr
-%      \ifdefined\OTRSETsetpreferedcolumnslot
-%        \OTRSETsetpreferedcolumnslot\floatcolumn\floatrow
-%      \fi
      \ifcsname\??floatmethods\currentoutputroutine:\floatmethod\endcsname \else
         \let\floatmethod\v!here
      \fi

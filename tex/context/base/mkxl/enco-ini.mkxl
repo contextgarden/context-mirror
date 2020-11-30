@@ -382,7 +382,9 @@
 
 \permanent\protected\def\normalunderscore{\ifmmode\mathunderscore\else\textunderscore\fi}
 
-\let\_\normalunderscore
+\pushoverloadmode
+    \let\_\normalunderscore
+\popoverloadmode
 
 %D To be sorted out:
 

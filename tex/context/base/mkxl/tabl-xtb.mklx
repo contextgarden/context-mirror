@@ -410,7 +410,7 @@
 %
 % \let\xtablesplitstate\c_tabl_x_state
 
-\let\extratxtablesplitheight\zeropoint % might disappear so don't depend on it
+\mutable\let\extraxtablesplitheight\zeropoint % might disappear so don't depend on it
 
 \protected\def\tabl_x_flush_float_normal
   {\clf_x_table_flush
@@ -420,7 +420,7 @@
 \protected\def\tabl_x_flush_float_split
   {\resetdirecttsplit
    \edef\extrasplitfloatlines{\xtableparameter\c!split}%
-   \d_split_minimum_free_space\dimexpr\extratxtablesplitheight+\xtableparameter\c!splitoffset\relax
+   \d_split_minimum_free_space\dimexpr\extraxtablesplitheight+\xtableparameter\c!splitoffset\relax
   %\c_split_minimum_free_lines\plustwo % not needed here as we're precise enough
    \let\tsplitdirectsplitter\tabl_x_split_splitter
    \let\tsplitdirectwidth   \d_tabl_x_final_width

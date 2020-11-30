@@ -33,23 +33,23 @@
    \relax}
 
 \permanent\protected\def\btxattach
-  {\iftrialtypesetting \else \ifexporting \iflocation
+  {\iftrialtypesetting\orelse\ifexporting\iflocation
      \dostarttagged\t!ignore\empty
        \btx_add_blob{btxattachment}\attachment
      \dostoptagged
-   \fi \fi \fi}
+   \fi\fi}
 
 \permanent\protected\def\btxcomment
-  {\iftrialtypesetting \else \ifexporting \iflocation
+  {\iftrialtypesetting\orelse\ifexporting\iflocation
      \dostarttagged\t!ignore\empty
        \btx_add_blob{btxcomment}\comment
      \dostoptagged
-   \fi \fi \fi}
+   \fi\fi}
 
 %D This kind of feature creep is not yet configurable, nor documented.
 
 \permanent\protected\def\btxaddsource
-  {\iftrialtypesetting \else \ifexporting \iflocation
+  {\iftrialtypesetting\orelse\ifexporting\iflocation
      \dostarttagged\t!ignore\empty
      \llap{%
        \btx_add_blob{btxattachment}\attachment
@@ -58,6 +58,6 @@
        \hskip\leftmargindistance
      }%
      \dostoptagged
-   \fi \fi \fi}
+   \fi\fi}
 
 \protect \endinput

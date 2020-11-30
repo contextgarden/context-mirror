@@ -159,8 +159,10 @@
 \permanent\protected\def\typethreelast#1{\char#1\relax}
 \permanent\protected\def\typethreecode#1{\pdfliteral direct {#1}}
 
-\newtoks\typethreetoks
-\let    \typethreemacro\empty
+% This might change ...
+
+\newtoks    \typethreetoks         % used at the lua end
+\mutable\let\typethreemacro\empty  % used at the lua end
 
 \typethreetoks {%
     \setbox\zerocount\hpack{\typethreemacro}%

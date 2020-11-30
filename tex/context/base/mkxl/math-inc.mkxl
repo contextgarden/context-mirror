@@ -40,23 +40,23 @@
    \relax}
 
 \permanent\protected\def\xmlattachmml
-  {\iftrialtypesetting \else \ifexporting \iflocation
+  {\iftrialtypesetting\orelse\ifexporting\iflocation
      \dostarttagged\t!ignore\empty
        \lxml_add_mml_blob{mmlattachment}\attachment
      \dostoptagged
-   \fi \fi \fi}
+   \fi\fi}
 
 \permanent\protected\def\xmlcommentmml
-  {\iftrialtypesetting \else \ifexporting \iflocation
+  {\iftrialtypesetting\orelse\ifexporting\iflocation
      \dostarttagged\t!ignore\empty
        \lxml_add_mml_blob{mmlcomment}\comment
      \dostoptagged
-   \fi \fi \fi}
+   \fi\fi}
 
 %D This kind of feature creep is not yet configurable, nor documented.
 
 \permanent\protected\def\xmladdmmlsource
-  {\iftrialtypesetting \else \ifexporting \iflocation
+  {\iftrialtypesetting\orelse\ifexporting\iflocation
      \dostarttagged\t!ignore\empty
      \inleftmargin{%
        \lxml_add_mml_blob{mmlattachment}\attachment
@@ -64,6 +64,6 @@
        \lxml_add_mml_blob{mmlcomment}\comment
      }%
      \dostoptagged
-   \fi \fi \fi}
+   \fi\fi}
 
 \protect \endinput

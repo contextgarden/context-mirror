@@ -371,7 +371,7 @@
    \dostoptagged
    \endgroup}
 
-\let\dotagregisterlocation\relax % experiment
+\aliased\let\dotagregisterlocation\relax % experiment
 
 \tolerant\protected\def\strc_registers_insert_entry[#1]#*[#2]%
   {\def\currentregister{#1}%

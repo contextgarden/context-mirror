@@ -759,7 +759,7 @@
 
 % so far
 
-\def\colo_helpers_activate#1% two-step is not that much faster but less tracing
+\permanent\protected\def\colo_helpers_activate#1% two-step is not that much faster but less tracing
   {\edef\currentcolorname{#1}%
    \ifempty\currentcolorprefix
     %\expandafter
@@ -796,7 +796,7 @@
      \lastnamedcs
    \fi}
 
-\let\dousecolorparameter\colo_helpers_activate
+\aliased\let\dousecolorparameter\colo_helpers_activate
 
 \permanent\protected\def\dousecolorhashparameter#1#2%
   {\ifcsname#1#2\endcsname

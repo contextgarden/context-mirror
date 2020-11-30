@@ -40,7 +40,7 @@
 %D moved from modules to the core. The overall functionality is rather stable and has
 %D not changed much over the years.
 
-\ifdefined\dotagfigure \else \let\dotagfigure\relax \fi
+\ifdefined\dotagfigure \else \aliased\let\dotagfigure\relax \fi
 
 \installcorenamespace{externalfigure}
 \installcorenamespace{externalfigureinstance}
@@ -251,7 +251,7 @@
 \newtoks\t_grph_include_local_settings
 
 \appendtoks
-   \let\textunderscore\letterunderscore % {\string _} % space needed as _ is now letter in unprotected mode (probably no longer needed)
+   \enforced\let\textunderscore\letterunderscore % {\string _} % space needed as _ is now letter in unprotected mode (probably no longer needed)
    %
    \dontcomplain
    \restorecatcodes

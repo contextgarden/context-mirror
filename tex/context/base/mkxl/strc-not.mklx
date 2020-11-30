@@ -21,8 +21,8 @@
 % todo: more p_strc_notations_* (outside trial loop)
 % todo: see if we can now use \insertpenalties (>0 == some left)
 
-\ifdefined\dotagsetnotesymbol \else \let\dotagsetnotesymbol\relax \fi
-\ifdefined\dotagsetnotation   \else \let\dotagsetnotation  \relax \fi
+\ifdefined\dotagsetnotesymbol \else \aliased\let\dotagsetnotesymbol\relax \fi
+\ifdefined\dotagsetnotation   \else \aliased\let\dotagsetnotation  \relax \fi
 
 \permanent\protected\def\unvboxed {\ifvmode\unvbox \else\box \fi} % will change or used more often
 \permanent\protected\def\unvcopied{\ifvmode\unvcopy\else\copy\fi} % will change or used more often

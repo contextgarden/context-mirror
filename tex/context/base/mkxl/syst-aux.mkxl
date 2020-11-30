@@ -5083,8 +5083,8 @@
    \ifdone\expandafter#1\else\expandafter#2\fi}
 
 \permanent\protected\def\doifelseallcommon{\syst_helpers_do_if_all_common_else\firstoftwoarguments\secondoftwoarguments}
-\permanent\protected\def\doifallcommon    {\syst_helpers_do_if_all_common_else\firstofonearguments\gobbleoneargument   }
-\permanent\protected\def\doifnotallcommon {\syst_helpers_do_if_all_common_else\gobbleoneargument  \firstofonearguments }
+\permanent\protected\def\doifallcommon    {\syst_helpers_do_if_all_common_else\firstofoneargument \gobbleoneargument   }
+\permanent\protected\def\doifnotallcommon {\syst_helpers_do_if_all_common_else\gobbleoneargument  \firstofoneargument  }
 
 \aliased\let\doifallcommonelse\doifelseallcommon
 
@@ -5534,9 +5534,9 @@
 %D
 %D \starttyping
 %D \def\dontleavehmode
-%D   {\ifhmode\else \ifmmode\else
+%D   {\ifhmode\orelse\ifmmode\else
 %D      {\mathsurround\zeropoint\everymath\emptytoks$ $}%
-%D    \fi \fi}
+%D    \fi}
 %D \stoptyping
 %D
 %D And finaly we got the following alternative, one that avoids interfering grouping
@@ -5546,9 +5546,9 @@
 %D \newbox\b_syst_helpers_dlh
 %D
 %D \protected\def\dontleavehmode
-%D   {\ifhmode\else \ifmmode\else
+%D   {\ifhmode\orelse\ifmmode\else
 %D      \setbox\b_syst_helpers_dlh\hbox{\mathsurround\zeropoint\everymath\emptytoks$ $}\unhbox\b_syst_helpers_dlh
-%D    \fi \fi}
+%D    \fi}
 %D \stoptyping
 %D
 %D But, as we run a recent version of \TEX, we can use the new primitive:

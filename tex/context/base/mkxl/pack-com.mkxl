@@ -67,7 +67,7 @@
 %D \stopcombination
 %D \stoptyping
 
-\ifdefined\dotagcombination \else \let\dotagcombination\relax \fi
+\ifdefined\dotagcombination \else \aliased\let\dotagcombination\relax \fi
 
 \newsystemmode{combination}
 

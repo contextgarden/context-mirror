@@ -189,7 +189,7 @@
 \def\page_otr_add_special_content
   {\dowithnextboxcs\page_otr_add_special_content_indeed\hbox}
 
-\def\page_otr_add_special_content_indeed
+\permanent\protected\def\page_otr_add_special_content_indeed
   {\wd\nextbox\zeropoint
    \ht\nextbox\zeropoint
    \dp\nextbox\zeropoint
@@ -197,9 +197,9 @@
      {%\hskip-\maxdimen                    % not here, fails in acrobat (clips)
       \box\b_page_otr_special\box\nextbox}}% was \unhbox, is now box again
 
-\let\flushatshipout\page_otr_add_special_content
+\aliased\let\flushatshipout\page_otr_add_special_content % this might go away
 
-\maxdeadcycles=1000
+\maxdeadcycles\plusthousand
 
 \newtoks\afterpage     \newtoks\aftereverypage
 \newtoks\beforepage    \newtoks\beforeeverypage

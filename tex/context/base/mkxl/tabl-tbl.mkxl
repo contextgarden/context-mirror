@@ -219,14 +219,15 @@
 \newconstant     \c_tabl_tabulate_pass
 \newconstant     \c_tabl_tabulate_type
 \newconstant     \c_tabl_tabulate_kind % 1=strong  2=equals
-\newconstant     \c_tabl_tabulate_splitlinemode  \c_tabl_tabulate_splitlinemode\plusone
+\newconstant     \c_tabl_tabulate_splitlinemode    \c_tabl_tabulate_splitlinemode\plusone
 \newconstant     \c_tabl_tabulate_colorspan
 \newconstant     \c_tabl_tabulate_localcolorspan
 \newconstant     \c_tabl_tabulate_modus
 
-\let\tabulatesplitlinemode\c_tabl_tabulate_splitlinemode % temp hack, we need an interface
-
 \let             \m_tabl_tabulate_separator_factor \empty % fraction
+
+\aliased\let\tabulatesplitlinemode\c_tabl_tabulate_splitlinemode % temp hack, we need an interface
+
 
 \newtoks         \everytabulatepar           % where used ?
 \newtoks         \everytabulate              % public ?
@@ -342,8 +343,8 @@
 
 \let\tabl_tabulate_shaped_par_end\egroup
 
-\ifdefined\dotagtabulatecell   \else \let\dotagtabulatecell  \relax \fi
-\ifdefined\dotagtabulatesignal \else \let\dotagtabulatesignal\relax \fi
+\ifdefined\dotagtabulatecell   \else \aliased\let\dotagtabulatecell  \relax \fi
+\ifdefined\dotagtabulatesignal \else \aliased\let\dotagtabulatesignal\relax \fi
 
 \protected\def\tabl_tabulate_check_local_color_first#1#2%
   {\relax}
@@ -1328,7 +1329,7 @@
      \tabl_tabulate_insert_body
      \tabl_tabulate_process}
 
-\def\tabulateEQ
+\permanent\protected\def\tabulateEQ
   {\ifconditional\c_tabl_tabulate_firstflushed\else
      \dostarttaggedchained\t!ignore\empty\empty
      \dostarttagged\t!ignore\empty
@@ -1356,13 +1357,13 @@
 \let\m_tabl_tabulate_blank_default      \empty
 
 \appendtoks
-    \glet\m_tabl_tabulate_color_previous      \empty
-    \glet\m_tabl_tabulate_color               \empty
-    \glet\m_tabl_tabulate_text_color          \empty
-    \glet\m_tabl_tabulate_color_local         \empty
-    \glet\m_tabl_tabulate_vrule_color         \empty
-    \glet\m_tabl_tabulate_vrule_color_local   \empty
-    \global    \d_tabl_tabulate_vrulethickness_local\zeropoint
+    \glet  \m_tabl_tabulate_color_previous      \empty
+    \glet  \m_tabl_tabulate_color               \empty
+    \glet  \m_tabl_tabulate_text_color          \empty
+    \glet  \m_tabl_tabulate_color_local         \empty
+    \glet  \m_tabl_tabulate_vrule_color         \empty
+    \glet  \m_tabl_tabulate_vrule_color_local   \empty
+    \global\d_tabl_tabulate_vrulethickness_local\zeropoint
 \to \t_tabl_tabulate_every_row
 
 \protected\def\tabl_tabulate_color_side_right_second
@@ -2296,7 +2297,7 @@
    \dostarttagged\t!tabulaterow\empty
    \setfalse\inhibitmargindata % new per 2012.06.13 ... really needed
 %  % \everycr\expandafter{\the\everycr\noalign{\the\t_tabl_tabulate_every_real_row}\dostoptagged\dostarttagged\t!tabulaterow\empty}%
-%    \toksapp\everycr{\noalign{\the\t_tabl_tabulate_every_real_row\dostoptagged\dostarttagged\t!tabulaterow\empty}}%
+   \toksapp\everycr{\noalign{\the\t_tabl_tabulate_every_real_row\dostoptagged\dostarttagged\t!tabulaterow\empty}}%
    \expandafter\halign\expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}%
    \dostoptagged
    \dostoptagged

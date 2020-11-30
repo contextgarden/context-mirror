@@ -608,7 +608,7 @@
         \nonoindentation
       \fi}}
 
-\def\floatautofactor{.5}
+\mutable\def\floatautofactor{.5}
 
 \def\page_one_place_float_auto_top_bottom
   {\ifx\floatmethod\v!auto

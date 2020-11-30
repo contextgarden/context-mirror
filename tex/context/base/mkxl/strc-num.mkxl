@@ -353,7 +353,6 @@
 \aliased\let \convertednumber       \convertedcounter       % [name]
 
 \aliased\let \doifdefinednumber     \doifdefinedcounter     % {number}{true}
-\aliased\let \doifundefinednumber   \doifnotdefinedcounter  % {number}{true}
 \aliased\let \doifelsedefinednumber \doifelsedefinedcounter % {number}{true}{false}
 \aliased\let \doifdefinednumberelse \doifelsedefinedcounter % {number}{true}{false}
 

@@ -97,9 +97,17 @@ local classes = allocate {
     root        = 16, -- a private one
 }
 
-local open_class   = 4
-local middle_class = 4
-local close_class  = 5
+local open_class      =  4
+local middle_class    =  4
+local close_class     =  5
+local accent_class    =  8
+local radical_class   =  9
+local topaccent_class = 11
+local botaccent_class = 12
+local under_class     = 13
+local over_class      = 14
+local delimiter_class = 15
+local root_class      = 16
 
 local accents = allocate {
     accent    = true, -- some can be both
@@ -246,26 +254,55 @@ local f_char      = formatters[ [[\defUmathchar      \%s{%X}{%X}{%X}]] ]
 
 local texmathchardef = tex.mathchardef
 
+-- local setmathsymbol = function(name,class,family,slot) -- hex is nicer for tracing
+--     if class == classes.accent then
+--         ctx_sprint(f_topaccent(name,0,family,slot))
+--     elseif class == classes.topaccent then
+--         ctx_sprint(f_topaccent(name,0,family,slot))
+--     elseif class == classes.botaccent then
+--         ctx_sprint(f_botaccent(name,0,family,slot))
+--     elseif class == classes.over then
+--         ctx_sprint(f_over(name,0,family,slot))
+--     elseif class == classes.under then
+--         ctx_sprint(f_under(name,0,family,slot))
+--     elseif class == open_class or class == close_class or class == middle_class then
+--         setdelcode("global",slot,{family,slot,0,0})
+--         ctx_sprint(f_fence(name,class,family,slot))
+--     elseif class == classes.delimiter then
+--         setdelcode("global",slot,{family,slot,0,0})
+--         ctx_sprint(f_delimiter(name,0,family,slot))
+--     elseif class == classes.radical then
+--         ctx_sprint(f_radical(name,family,slot))
+--     elseif class == classes.root then
+--         ctx_sprint(f_root(name,family,slot))
+--     elseif texmathchardef then
+--         texmathchardef(name,class,family,slot,"permanent")
+--     else
+--         -- beware, open/close and other specials should not end up here
+--         ctx_sprint(f_char(name,class,family,slot))
+--     end
+-- end
+
 local setmathsymbol = function(name,class,family,slot) -- hex is nicer for tracing
-    if class == classes.accent then
+    if class == accent_class then
         ctx_sprint(f_topaccent(name,0,family,slot))
-    elseif class == classes.topaccent then
+    elseif class == topaccent_class then
         ctx_sprint(f_topaccent(name,0,family,slot))
-    elseif class == classes.botaccent then
+    elseif class == botaccent_class then
         ctx_sprint(f_botaccent(name,0,family,slot))
-    elseif class == classes.over then
+    elseif class == over_class then
         ctx_sprint(f_over(name,0,family,slot))
-    elseif class == classes.under then
+    elseif class == under_class then
         ctx_sprint(f_under(name,0,family,slot))
     elseif class == open_class or class == close_class or class == middle_class then
         setdelcode("global",slot,{family,slot,0,0})
         ctx_sprint(f_fence(name,class,family,slot))
-    elseif class == classes.delimiter then
+    elseif class == delimiter_class then
         setdelcode("global",slot,{family,slot,0,0})
         ctx_sprint(f_delimiter(name,0,family,slot))
-    elseif class == classes.radical then
+    elseif class == radical_class then
         ctx_sprint(f_radical(name,family,slot))
-    elseif class == classes.root then
+    elseif class == root_class then
         ctx_sprint(f_root(name,family,slot))
     elseif texmathchardef then
         texmathchardef(name,class,family,slot,"permanent")

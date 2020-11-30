@@ -84,7 +84,7 @@
 
 \permanent\def\tbPOSprefix{\??positiontables\number\noftabpositions:}
 
-\protected\def\tablepos
+\permanent\protected\def\tablepos
   {\normalexpanded{\global\posXCtoks\emptytoks\the\posXCtoks}}
 
 \permanent\protected\def\tbXC {\anch_table_checked\anch_tables_indeed_XC }
@@ -170,7 +170,7 @@
 
 \aliased\let\tabulatepos\tablepos
 
-\def\tabulatenormalpos
+\permanent\protected\def\tabulatenormalpos
   {\iftrialtypesetting
      % nothing
    \orelse\ifconditional\tablehaspositions
@@ -179,7 +179,7 @@
      % nothing
    \fi}
 
-\def\tabulateequalpos
+\permanent\protected\def\tabulateequalpos
   {\iftrialtypesetting
      \tabulateEQ
    \orelse\ifconditional\tablehaspositions
@@ -188,7 +188,7 @@
      \tabulateEQ
    \fi}
 
-\def\tabulateEQpos
+\permanent\protected\def\tabulateEQpos
   {\setbox\scratchbox\hbox{\tabulateEQ}%
    \hbox to \wd\scratchbox{\hss\kern\zeropoint\tabulatepos\hss}% hpack
    \kern-\wd\scratchbox

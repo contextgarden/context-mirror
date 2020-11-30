@@ -296,7 +296,7 @@
 
 \newconditional\c_strc_tags_enabled
 
-\permanent\let\dotaggedplaceholder\empty
+\aliased\let\dotaggedplaceholder\empty
 
 \immutable\chardef\strc_tags_placeholder_char\zerocount % "FFFC
 
@@ -396,7 +396,7 @@
   [\c!color=,
    \c!style=]
 
-\ifdefined\dotagparagraph \else \let\dotagparagraph\gobbleoneargument \fi
+\ifdefined\dotagparagraph \else \aliased\let\dotagparagraph\gobbleoneargument \fi
 
 \permanent\tolerant\protected\def\startparagraph[#1]#*[#2]%
   {\endgraf % we end before the group

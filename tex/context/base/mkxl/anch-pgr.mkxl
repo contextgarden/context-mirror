@@ -97,22 +97,18 @@
 \def\anch_positions_cleanup_action % not in trialtypesetting
   {\ifcsname\??positioncleanup\currentpositionaction\endcsname
      \the\everycleanpositionaction
-     \xdefcsname\??positioncleanup\currentpositionaction\endcsname
-       {\csname\??positioncleanup\currentpositionaction\endcsname}%
+     \xdefcsname\??positioncleanup\currentpositionaction\endcsname{\csname\??positioncleanup\currentpositionaction\endcsname}%
    \fi}
 
 \permanent\protected\def\handlepositionaction#1\with#2\on#3% ugly, will change
   {\begingroup
-   \edef\currentpositionanchor
-     {\ifempty\currentpositionoverlay#3\else\currentpositionoverlay::\MPanchoridentifier\fi}%
-   \normalexpanded{\anch_positions_set_action{\currentpositionanchor}{\noexpand\getvalue{\??positioncleanup\currentpositionanchor}}}%
+   \edef\currentpositionanchor{\ifempty\currentpositionoverlay#3\else\currentpositionoverlay::\MPanchoridentifier\fi}%
+   \normalexpanded{\anch_positions_set_action{\currentpositionanchor}{\noexpand\csname\??positioncleanup\currentpositionanchor\endcsname}}%
    \let#1\relax
    \ifcsname\??positioncleanup\currentpositionanchor\endcsname
-     \xdefcsname\??positioncleanup\currentpositionanchor\endcsname
-       {\csname\??positioncleanup\currentpositionanchor\endcsname#1#2}%
+     \xdefcsname\??positioncleanup\currentpositionanchor\endcsname{\csname\??positioncleanup\currentpositionanchor\endcsname#1#2}%
    \else
-     \xdefcsname\??positioncleanup\currentpositionanchor\endcsname
-       {#1#2}%
+     \xdefcsname\??positioncleanup\currentpositionanchor\endcsname{#1#2}%
    \fi
    \endgroup}
 
@@ -345,18 +341,6 @@
      \expandafter\gobbletwoarguments
    \fi{#1}{#2}}
 
-% \unexpanded\def\MPpositiongraphic
-%   {\dodoublegroupempty\anch_positions_meta_graphic_direct}
-
-% \def\anch_positions_meta_graphic_direct#1% tag setups
-%   {\ifcsname\??positionmethod#1\endcsname % method
-%      \expandafter\anch_positions_meta_graphic_direct_indeed_method
-%    \else\ifcsname\??positiongraphic#1\endcsname
-%      \doubleexpandafter\anch_positions_meta_graphic_direct_indeed_normal
-%    \else
-%      \doubleexpandafter\anch_positions_meta_graphic_direct_indeed_unknown
-%    \fi\fi{#1}}
-
 \def\anch_positions_meta_graphic_direct_method{\anch_positions_meta_graphic_direct\??positionmethod }
 \def\anch_positions_meta_graphic_direct_normal{\anch_positions_meta_graphic_direct\??positiongraphic}
 
@@ -367,7 +351,7 @@
    \anch_positions_meta_graphic_prepare
    \obeyMPboxorigin % do we also set the size ? when needed this must be done in mp ... might change
    \enforced\tolerant\protected\def\MPpositiongraphic##=##*##={\anch_positions_meta_graphic_nested{#3}{##1}{##2}}% takes two extra arguments
-%    \def\anch_positions_meta_graphic_direct{\anch_positions_meta_graphic_nested{#3}}% takes two extra arguments
+ % \def\anch_positions_meta_graphic_direct{\anch_positions_meta_graphic_nested{#3}}% takes two extra arguments
    \setbox\b_anch_positions_graphic\hbox % \hpack
      {\ignorespaces\begincsname#1#2\endcsname\removelastspace}%
    \smashbox\b_anch_positions_graphic

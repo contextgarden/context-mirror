@@ -935,7 +935,7 @@
 
 \newcount\c_strc_formulas_n
 
-\ifdefined\dotagregisterformula \else \let\dotagregisterformula\gobbleoneargument \fi
+\ifdefined\dotagregisterformula \else \aliased\let\dotagregisterformula\gobbleoneargument \fi
 
 \protected\def\strc_formulas_stop_formula
   {\strc_formulas_place_number % in case it hasn't happened yet
@@ -1194,8 +1194,9 @@
 % \startplaceformula[title=whatever] \startformula e=mc^2 \stopformula \stopplaceformula
 % \startplaceformula[suffix=x]       \startformula e=mc^2 \stopformula \stopplaceformula
 
-\let\currentplaceformulareference\empty
-\let\currentplaceformulasuffix   \empty
+\mutable\let\currentplaceformulatitle    \empty
+\mutable\let\currentplaceformulareference\empty
+\mutable\let\currentplaceformulasuffix   \empty
 
 \permanent\tolerant\protected\def\startplaceformula[#1]%
   {\begingroup

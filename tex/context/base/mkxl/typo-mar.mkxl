@@ -164,8 +164,8 @@
 \newcount\nofmargintexts
 \newcount\c_typo_margins_n
 
-\ifdefined\dotagmarginanchor \else \let\dotagmarginanchor\gobbleoneargument \fi
-\ifdefined\dotagmargintext   \else \let\dotagmargintext  \gobbleoneargument \fi
+\ifdefined\dotagmarginanchor \else \aliased\let\dotagmarginanchor\gobbleoneargument \fi
+\ifdefined\dotagmargintext   \else \aliased\let\dotagmargintext  \gobbleoneargument \fi
 
 \definepagestate[\s!margintext]
 

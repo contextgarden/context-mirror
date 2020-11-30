@@ -681,7 +681,7 @@ if not csletters then
                         if isletter then
                             texsetmacro(contextname,utfchar(u),"immutable")
                         else
-                            texsetchar(contextname,u)
+                            texsetchar(contextname,u,"immutable")
                         end
                     else
                         texsetmacro(contextname,utfchar(u),"immutable")

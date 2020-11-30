@@ -1229,9 +1229,9 @@
 \def\swapmargins % name will change, frozen?
   {\doifelsemarginswap\relax\doswapmargins}
 
-\def\doswapmargins % name will change, frozen?
-  {\let\swapmargins  \relax % to prevent local swapping
-   \let\doswapmargins\relax % to prevent local swapping
+\permanent\protected\def\doswapmargins
+  {\enforced\let\swapmargins  \relax % to prevent local swapping
+   \enforced\let\doswapmargins\relax % to prevent local swapping
    \the\everyswapmargins}
 
 \permanent\def\rightorleftpageaction

@@ -495,7 +495,7 @@
 \permanent\def\usestructurelistprocessor#tag%
   {\csname\??structurelistprocessor#tag\endcsname}
 
-\let\dotaglistlocation\relax
+\aliased\let\dotaglistlocation\relax
 
 \def\strc_lists_entry_process_default
   {no list method}
@@ -1097,10 +1097,10 @@
                     \hangindent\dimexpr\wd\b_strc_lists_number+\scratchdistance\relax
                     \hangafter\ifx\p_hang\v!no\zerocount\else\plusone\fi
                     \scratchdimen\listalternativeparameter\c!distance\relax
-                    \ifzeropt\wd\b_strc_lists_page \else \ifdim\scratchdimen>\zeropoint\relax
+                    \ifzeropt\wd\b_strc_lists_page\orelse\ifdim\scratchdimen>\zeropoint\relax
                         \rightskip\scratchdimen\s!plus\listalternativeparameter\c!stretch\relax
                         \parfillskip-\rightskip
-                    \fi \fi
+                    \fi
                 \else
                     \scratchdistance\zeropoint
                 \fi

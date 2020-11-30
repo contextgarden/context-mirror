@@ -74,8 +74,8 @@
 \newcount      \noffloatssplits
 \newtoks       \everysplitfloatsetup
 
-\let           \extrasplitfloatlines \!!zerocount
-\let           \splitfloatfinalizer  \relax
+\mutable\let   \extrasplitfloatlines \!!zerocount
+\mutable\let   \splitfloatfinalizer  \relax
 
 \mutable\let   \floatcaptionsuffix   \empty
 

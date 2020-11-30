@@ -206,7 +206,7 @@
 %D Also, passing the title as argument has some history so we need to keep that as
 %D well.
 
-% \ifdefined\dotagsetconstruction \else \let\dotagsetconstruction\relax \fi
+% \ifdefined\dotagsetconstruction \else \aliased\let\dotagsetconstruction\relax \fi
 
 % \startuseMPgraphic{MyFrame}
 %     picture p ; numeric o ; path a, b ; pair c ;

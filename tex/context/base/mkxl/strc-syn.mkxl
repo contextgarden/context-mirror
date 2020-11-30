@@ -184,7 +184,7 @@
     \settrue\c_strc_constructions_define_commands
 \to \everydefinesimplelist
 
-\setuvalue{\??constructioninitializer\v!simplelist}%
+\protected\defcsname\??constructioninitializer\v!simplelist\endcsname
   {\let         \currentsimplelist               \currentconstruction
    \enforced\let\constructionparameter           \simplelistparameter
    \enforced\let\constructionnamespace           \??simplelist
@@ -193,10 +193,10 @@
    \enforced\let\useconstructionstyleandcolor    \usesimpleliststyleandcolor
    \enforced\let\setupcurrentconstruction        \setupcurrentsimplelist}
 
-\setuvalue{\??constructionfinalizer\v!simplelist}%
+\protected\defcsname\??constructionfinalizer\v!simplelist\endcsname
   {}
 
-\setuvalue{\??constructiontexthandler\v!simplelist}%
+\protected\defcsname\??constructiontexthandler\v!simplelist\endcsname
   {\begingroup
    \useconstructionstyleandcolor\c!headstyle\c!headcolor
    \the\everyconstruction
@@ -207,8 +207,8 @@
 
 % And we build on top of this.
 
-\ifdefined\dotagsynonym \else \let\dotagsynonym\relax \fi
-\ifdefined\dotagsorting \else \let\dotagsorting\relax \fi
+\ifdefined\dotagsynonym \else \aliased\let\dotagsynonym\relax \fi
+\ifdefined\dotagsorting \else \aliased\let\dotagsorting\relax \fi
 
 \definesimplelist
   [\v!synonym]
@@ -233,12 +233,21 @@
 
 \aliased\let\setupsynonyms\setupsimplelist
 
+% these  might become private
+
+\mutable\let\currentsynonymoption   \empty
+\mutable\let\currentsynonymcoding   \empty
+\mutable\let\currentsynonymexpansion\empty
+\mutable\let\currentsynonym         \empty
+\mutable\let\currentsynonymtag      \empty
+\mutable\let\currentsynonymtext     \empty
+
 \permanent\tolerant\protected\def\definesynonyms[#1]#*[#2]#*[#3]#*[#4]% name plural \meaning \use
   {\ifnum\lastarguments=\plusfour
      \protected\instance\def#4##1{\strc_synonyms_insert{#1}{##1}}% name tag
-     \frozen\instance\setuvalue{#1}{\definesynonym[\v!no][#1]}% \name
+     \frozen\instance\protected\defcsname#1\endcsname{\definesynonym[\v!no][#1]}% \name
    \else
-     \frozen\instance\setuvalue{#1}{\definesynonym[\v!yes][#1]}% \name
+     \frozen\instance\protected\defcsname#1\endcsname{\definesynonym[\v!yes][#1]}% \name
    \fi
    \ifparameter#3\or
      \frozen\instance\protected\def#3##1{\strc_synonyms_insert_meaning{#1}{##1}}% \meaning
@@ -260,9 +269,9 @@
      %
      % These will go away. Actually the overloads catched this empty case!
      %
-     \frozen\instance\setuvalue{\e!setup #2\e!endsetup}{\setupsynonyms[#1]}% obsolete definition
-     \frozen\instance\setuvalue{\e!place   \e!listof#2}{\placelistofsynonyms[#1]}% accepts extra argument
-     \frozen\instance\setuvalue{\e!complete\e!listof#2}{\completelistofsynonyms[#1]}%
+     \frozen\instance\protected\defcsname\e!setup #2\e!endsetup\endcsname{\setupsynonyms[#1]}% obsolete definition
+     \frozen\instance\protected\defcsname\e!place   \e!listof#2\endcsname{\placelistofsynonyms[#1]}% accepts extra argument
+     \frozen\instance\protected\defcsname\e!complete\e!listof#2\endcsname{\completelistofsynonyms[#1]}%
    \fi}
 
 \permanent\tolerant\protected\def\definesynonym[#1]#*[#2]#*[#3]%
@@ -467,15 +476,24 @@
 
 % if #3=\relax or \v!none, then no command but still protected
 
+% these  might become private
+
+\mutable\let\currentsortingoption   \empty
+\mutable\let\currentsortingcoding   \empty
+\mutable\let\currentsortingexpansion\empty
+\mutable\let\currentsorting         \empty
+\mutable\let\currentsortingtag      \empty
+\mutable\let\currentsortingtext     \empty
+
 \permanent\tolerant\protected\def\definesorting[#1]#*[#2]#*[#3]%
   {\ifnum\lastarguments=\plusthree
      \doifnot{#3}\v!none
        {\ifx#3\relax \else
           \protected\instance\def#3##1{\strc_sorting_insert{#1}{##1}}%
         \fi}%
-     \frozen\instance\setuvalue{#1}{\definesort[\v!no][#1]}%
+     \frozen\instance\protected\defcsname#1\endcsname{\definesort[\v!no][#1]}%
    \else
-     \frozen\instance\setuvalue{#1}{\definesort[\v!yes][#1]}%
+     \frozen\instance\protected\defcsname#1\endcsname{\definesort[\v!yes][#1]}%
    \fi
    \edef\currentsorting{#1}%
    \setfalse\c_strc_constructions_define_commands
@@ -494,9 +512,9 @@
      %
      \presetheadtext[#2=\Word{#2}]%
      %
-     \frozen\instance\setuvalue{\e!setup #2\e!endsetup}{\setupsorting[#1]}% obsolete definition
-     \frozen\instance\setuvalue{\e!place   \e!listof#2}{\placelistofsorts[#1]}%
-     \frozen\instance\setuvalue{\e!complete\e!listof#2}{\completelistofsorts[#1]}%
+     \frozen\instance\protected\defcsname\e!setup #2\e!endsetup\endcsname{\setupsorting[#1]}% obsolete definition
+     \frozen\instance\protected\defcsname\e!place   \e!listof#2\endcsname{\placelistofsorts[#1]}%
+     \frozen\instance\protected\defcsname\e!complete\e!listof#2\endcsname{\completelistofsorts[#1]}%
    \fi}
 
 \permanent\tolerant\protected\def\definesort[#1]#*[#2]#*[#3]%

@@ -37,9 +37,7 @@ local tonut               = nuts.tonut
 
 local setboth             = nuts.setboth
 local setlink             = nuts.setlink
-local setdisc             = nuts.setdisc
 local setlist             = nuts.setlist
-local setleader           = nuts.setleader
 local setsubtype          = nuts.setsubtype
 local setattr             = nuts.setattr
 local setwidth            = nuts.setwidth
@@ -51,18 +49,13 @@ local getattr             = nuts.getattr
 local getsubtype          = nuts.getsubtype
 local getbox              = nuts.getbox
 local getlist             = nuts.getlist
-local getleader           = nuts.getleader
 local getnext             = nuts.getnext
 local getboth             = nuts.getboth
-local getdisc             = nuts.getdisc
 local getwhd              = nuts.getwhd
 local getkern             = nuts.getkern
-local getpenalty          = nuts.getpenalty
 local getwidth            = nuts.getwidth
 local getdepth            = nuts.getdepth
-local getshift            = nuts.getshift
 local getexpansion        = nuts.getexpansion
-local getdirection        = nuts.getdirection
 local getstate            = nuts.getstate
 
 local isglyph             = nuts.isglyph
@@ -75,7 +68,6 @@ local flush_node_list     = nuts.flush_list
 local insert_node_before  = nuts.insert_before
 local insert_node_after   = nuts.insert_after
 local apply_to_nodes      = nuts.apply
-local effectiveglue       = nuts.effective_glue
 
 local hpack_string        = nuts.typesetters.tohpack
 
@@ -185,9 +177,9 @@ local preset_all    = preset_makeup
                     + modes.dir + modes.whatsit
 
 function visualizers.setfont(id)
-    usedfont = id or current_font()
-    exheight = exheights[usedfont]
-    emwidth  = emwidths[usedfont]
+    usedfont  = id or current_font()
+    exheight  = exheights[usedfont]
+    emwidth   = emwidths[usedfont]
 end
 
 -- we can preset a bunch of bits
@@ -373,7 +365,8 @@ for mode, value in next, modes do
     trackers.register(formatters["visualizers.%s"](mode), function(v) set(mode,v) end)
 end
 
-local fraction = 10
+local fraction  = 10
+local normalize = true
 
 trackers  .register("visualizers.reset",    function(v) set("reset", v) end)
 trackers  .register("visualizers.all",      function(v) set("all",   v) end)
@@ -417,7 +410,9 @@ local c_discretionary_d = "trace:dd"
 ----- c_depth_d         = "trace:do"
 ----- c_indent_d        = "trace:ds"
 
-local function sometext(str,layer,color,textcolor,lap) -- we can just paste verbatim together .. no typesteting needed
+-- we can just paste verbatim together .. no typesetting needed
+
+local function sometext(str,layer,color,textcolor,lap,variant)
     local text = hpack_string(str,usedfont)
     local size = getwidth(text)
     local rule = new_rule(size,2*exheight,exheight/2)
@@ -432,6 +427,9 @@ local function sometext(str,layer,color,textcolor,lap) -- we can just paste verb
     setlisttransparency(info,c_zero)
     info = hpack_nodes(info)
     local width = getwidth(info)
+    if variant then
+        nuts.setoffsets(info,0,variant*exheight)
+    end
     if lap then
         info = new_hlist(setlink(new_kern(-width),info))
     else
@@ -627,14 +625,16 @@ end
 
 local dir, par do
 
-    local dircodes    = nodes.dircodes
-    local dirvalues   = nodes.dirvalues
+    local dircodes     = nodes.dircodes
+    local dirvalues    = nodes.dirvalues
 
-    local cancel_code = dircodes.cancel
-    local l2r_code    = dirvalues.l2r
-    local r2l_code    = dirvalues.r2l
+    local cancel_code  = dircodes.cancel
+    local l2r_code     = dirvalues.l2r
+    local r2l_code     = dirvalues.r2l
 
-    local d_cache     = caches["dir"]
+    local d_cache      = caches["dir"]
+
+    local getdirection = nuts.getdirection
 
     local tags = {
         l2r    = "L2R",
@@ -756,6 +756,8 @@ local ruledbox do
 
     local b_cache = caches["box"]
     local o_cache = caches["origin"]
+
+    local getshift = nuts.getshift
 
     setmetatableindex(o_cache,function(t,size)
         local rule   = new_rule(2*size,size,size)
@@ -927,6 +929,8 @@ end
 
 local ruledglue do
 
+    local effectiveglue         = nuts.effective_glue
+
     local gluecodes             = nodes.gluecodes
 
     local userskip_code         = gluecodes.userskip
@@ -943,8 +947,16 @@ local ruledglue do
     local indentskip_code       = gluecodes.indentskip
     local correctionskip_code   = gluecodes.correctionskip
 
-    local g_cache_v = caches["vglue"]
-    local g_cache_h = caches["hglue"]
+    local g_cache_v  = caches["vglue"]
+    local g_cache_h  = caches["hglue"]
+    local g_cache_ls = caches["leftskip"]
+    local g_cache_rs = caches["rightskip"]
+    local g_cache_lh = caches["lefthang"]
+    local g_cache_rh = caches["righthang"]
+    local g_cache_lp = caches["parfillleftskip"]
+    local g_cache_rp = caches["parfillrightskip"]
+    local g_cache_is = caches["indentskip"]
+    local g_cache_cs = caches["correctionskip"]
 
     local tags = {
      -- [userskip_code]                   = "US",
@@ -983,11 +995,21 @@ local ruledglue do
         [correctionskip_code]             = "CS",
     }
 
+    local stags = {
+        [lefthangskip_code]     =  0.5,
+        [righthangskip_code]    =  0.5,
+        [leftskip_code]         = -2,
+        [rightskip_code]        = -2,
+        [parfillleftskip_code]  = -0.75,
+        [parfillrightskip_code] = -0.75,
+    }
+
     -- we sometimes pass previous as we can have issues in math (not watertight for all)
 
     ruledglue = function(head,current,vertical,parent)
         local subtype = getsubtype(current)
         local width   = effectiveglue(current,parent)
+        local stag    = normalize and stags[subtype]
         local amount  = formatters["%s:%0.3f"](tags[subtype] or (vertical and "VS") or "HS",width*pt_factor)
         local info    = (vertical and g_cache_v or g_cache_h)[amount]
         if info then
@@ -995,12 +1017,6 @@ local ruledglue do
         else
             if subtype == spaceskip_code or subtype == xspaceskip_code or subtype == zerospaceskip_code then
                 info = sometext(amount,l_glue,c_space)
-            elseif subtype == leftskip_code or subtype == rightskip_code then
-                info = sometext(amount,l_glue,c_skip_a)
-            elseif subtype == lefthangskip_code or subtype == righthangskip_code then
-                info = sometext(amount,l_glue,c_skip_b)
-            elseif subtype == parfillleftskip_code or subtype == parfillrightskip_code or subtype == indentskip_code or subtype == correctionskip_code then
-                info = sometext(amount,l_glue,c_indent)
             elseif subtype == userskip_code then
                 if width > 0 then
                     info = sometext(amount,l_glue,c_positive)
@@ -1009,11 +1025,26 @@ local ruledglue do
                 else
                     info = sometext(amount,l_glue,c_zero)
                 end
+            elseif subtype == indentskip_code or subtype == correctionskip_code then
+                info = sometext(amount,l_glue,c_indent)
+            elseif subtype == leftskip_code then
+                info = sometext(amount,l_glue,normalize and c_space or c_skip_a,false,true,stag)
+            elseif subtype == rightskip_code then
+                info = sometext(amount,l_glue,normalize and c_space or c_skip_a,false,false,stag)
+            elseif subtype == lefthangskip_code then
+                info = sometext(amount,l_glue,normalize and c_space or c_skip_b,false,true,stag)
+            elseif subtype == righthangskip_code then
+                info = sometext(amount,l_glue,normalize and c_space or c_skip_b,false,false,stag)
+            elseif subtype == parfillleftskip_code then
+                info = sometext(amount,l_glue,c_indent,false,true,stag)
+            elseif subtype == parfillrightskip_code then
+                info = sometext(amount,l_glue,c_indent,false,false,stag)
             else
                 info = sometext(amount,l_glue,c_skip_b)
             end
             (vertical and g_cache_v or g_cache_h)[amount] = info
         end
+      ::PICKIP::
         info = copy_list(info)
         if vertical then
             info = vpack_nodes(info)
@@ -1207,6 +1238,8 @@ local ruledpenalty do
 
     local raisepenalties = false
 
+    local getpenalty     = nuts.getpenalty
+
     directives.register("visualizers.raisepenalties",function(v) raisepenalties = v end)
 
     ruledpenalty = function(head,current,vertical)
@@ -1266,6 +1299,12 @@ do
     local linelist_code        = listcodes.line
 
     local vtop_package_state   = 3 -- todo: symbolic
+
+    local getleader            = nuts.getleader
+    local getdisc              = nuts.getdisc
+
+    local setleader            = nuts.setleader
+    local setdisc              = nuts.setdisc
 
     local cache
 

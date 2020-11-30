@@ -46,6 +46,11 @@
 \newbox\b_anch_position
 \newif \ifpositioning   % sort of public
 
+\mutable\let\currentposition      \empty
+\mutable\let\currentpositionaction\empty
+\mutable\let\currentpositionanchor\empty
+\mutable\let\currentpositionregion\empty
+
 %D Sometimes we want to trick the position handler a bit:
 
 % \replacepospxywhd #1#2#3#4#5#6#7 % defined at lua end

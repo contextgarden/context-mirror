@@ -67,10 +67,10 @@
 
 % public:
 
-\let\finalscaleboxxscale \!!plusone
-\let\finalscaleboxyscale \!!plusone
-\let\finalscaleboxwidth  \!!zeropoint
-\let\finalscaleboxheight \!!zeropoint
+\mutable\let\finalscaleboxxscale \!!plusone
+\mutable\let\finalscaleboxyscale \!!plusone
+\mutable\let\finalscaleboxwidth  \!!zeropoint
+\mutable\let\finalscaleboxheight \!!zeropoint
 
 % we can let sx/sy win (first check)
 

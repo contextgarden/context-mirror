@@ -89,11 +89,11 @@
    \fi}
 
 \permanent\def\setinlineheadreferenceattributes
-  {\ifconditional\headisdisplay \else \iflocation
+  {\ifconditional\headisdisplay\orelse\iflocation
      \c_attr_destination\currentstructureattribute
      \c_attr_reference  \currentstructurereferenceattribute
    % \c_attr_internal   \locationcount
-   \fi \fi}
+   \fi}
 
 \permanent\protected\def\docheckheadreference
   {\edef\currentheadinteraction{\headparameter\c!interaction}%

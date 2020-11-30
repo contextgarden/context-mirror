@@ -452,10 +452,10 @@
 
 % no longer needed now we have enforce so the next few lines will go
 
-\pushoverloadmode
-    \enforced\let\dotlessi\dotlessi
-    \enforced\let\dotlessj\dotlessj
-\popoverloadmode
+% \pushoverloadmode
+%     \enforced\let\dotlessi\dotlessi
+%     \enforced\let\dotlessj\dotlessj
+% \popoverloadmode
 
 \permanent\protected\def\mathaltcalligraphic{\setmathfontalternate{calligraphic}\cal}          % set via goody file
 \permanent\protected\def\mathaltitalic      {\setmathfontalternate{italic}}                    % set via goody file

@@ -75,12 +75,12 @@
 \mutable\let\currentreferenceformattype    \empty
 \mutable\let\currentreferencekind          \empty
 \mutable\let\currentreferencelabels        \empty
-\mutable\let\currentreferencenumber        \empty
+%mutable\let\currentreferencenumber        \empty
 \mutable\let\currentreferenceorder         \empty
-\mutable\let\currentreferencepage          \empty
-\mutable\let\currentreferencerealpage      \empty
-\mutable\let\currentreferencetext          \empty
-\mutable\let\currentreferencetitle         \empty
+%mutable\let\currentreferencepage          \empty
+%mutable\let\currentreferencerealpage      \empty
+%mutable\let\currentreferencetext          \empty
+%mutable\let\currentreferencetitle         \empty
 \mutable\let\currentreferenceuserdata      \empty
 
 
@@ -572,12 +572,11 @@
 %D
 %D We also use the odd/even characteristic to determine the page state.
 
-\let\currentrealreference      \empty
-\let\currentpagereference      \empty
-\let\currenttextreference      \empty
-\let\currentreferenceorder     \empty
-\let\currentsubtextreference   \empty
-\let\currentsubsubtextreference\empty
+\mutable\let\currentrealreference      \empty
+\mutable\let\currentpagereference      \empty
+\mutable\let\currenttextreference      \empty
+\mutable\let\currentsubtextreference   \empty
+\mutable\let\currentsubsubtextreference\empty
 
 \newcount\referencehastexstate % set in backend
 
@@ -973,22 +972,24 @@
 %D active (and when asked for, typeset in a different color and typeface).
 
 \appendtoks
-    \ifdefined\in    \let\normalmathin   \in    \protected\def\in   {\mathortext\normalmathin   \strc_references_in   } \else \let\in   \strc_references_in    \fi
-    \ifdefined\at    \let\normalmathat   \at    \protected\def\at   {\mathortext\normalmathat   \strc_references_at   } \else \let\at   \strc_references_at    \fi
-    \ifdefined\about \let\normalmathabout\about \protected\def\about{\mathortext\normalmathabout\strc_references_about} \else \let\about\strc_references_about \fi
-    \ifdefined\from  \let\normalmathfrom \from  \protected\def\from {\mathortext\normalmathfrom \strc_references_from } \else \let\from \strc_references_from  \fi
-    \ifdefined\over  \let\normalmathover \over  \protected\def\over {\mathortext\normalmathover \strc_references_about} \else \let\over \strc_references_about \fi
+    % likely math
+    \ifdefined\in    \aliased\let\normalmathin   \in    \permanent\protected\def\in   {\mathortext\normalmathin   \strc_references_in   } \else \aliased\let\in   \strc_references_in    \fi
+    \ifdefined\over  \aliased\let\normalmathover \over  \permanent\protected\def\over {\mathortext\normalmathover \strc_references_about} \else \aliased\let\over \strc_references_about \fi
+    %
+    \ifdefined\at    \aliased\let\normalmathat   \at    \permanent\protected\def\at   {\mathortext\normalmathat   \strc_references_at   } \else \aliased\let\at   \strc_references_at    \fi
+    \ifdefined\about \aliased\let\normalmathabout\about \permanent\protected\def\about{\mathortext\normalmathabout\strc_references_about} \else \aliased\let\about\strc_references_about \fi
+    \ifdefined\from  \aliased\let\normalmathfrom \from  \permanent\protected\def\from {\mathortext\normalmathfrom \strc_references_from } \else \aliased\let\from \strc_references_from  \fi
 \to \everydump
 
 \permanent          \def\filterreference  #key{\clf_filterreference{#key}} % no checking, expandable
 \permanent\protected\def\getreferenceentry#key{\clf_filterreference{#key}} % no checking, not expandable
 
-\def\currentreferencenumber  {\clf_filterreference{number}}
-\def\currentreferencepage    {\clf_filterreference{page}}
-\def\currentreferencetitle   {\clf_filterreference{title}}
-\def\currentreferencetext    {\clf_filterreference{text}}
-\def\currentreferencedefault {\clf_filterreference{default}}
-\def\currentreferencerealpage{\clf_filterreference{realpage}}
+\permanent\def\currentreferencenumber  {\clf_filterreference{number}}
+\permanent\def\currentreferencepage    {\clf_filterreference{page}}
+\permanent\def\currentreferencetitle   {\clf_filterreference{title}}
+\permanent\def\currentreferencetext    {\clf_filterreference{text}}
+%permanent\def\currentreferencedefault {\clf_filterreference{default}}
+\permanent\def\currentreferencerealpage{\clf_filterreference{realpage}}
 
 %D The most straightforward way of retrieving references is using \type {\ref}.
 
@@ -1003,7 +1004,7 @@
 
 %D Special cases:
 
-\protected\def\strc_references_about[#label]%
+\permanent\protected\def\strc_references_about[#label]%
   {\dontleavehmode
    \begingroup
    \enforced\let\crlf\space
@@ -1284,12 +1285,12 @@
       \goto{\referencesequence}[#3]}%
    \strc_references_stop_goto}
 
-\protected\def\strc_references_in
+\permanent\protected\def\strc_references_in
   {\strc_references_start_goto
    \let\currentreferencecontent\currentreferencedefault
    \strc_references_pickup_goto}
 
-\protected\def\strc_references_at
+\permanent\protected\def\strc_references_at
   {\strc_references_start_goto
    \let\currentreferencecontent\currentreferencepage
    \strc_references_pickup_goto}
